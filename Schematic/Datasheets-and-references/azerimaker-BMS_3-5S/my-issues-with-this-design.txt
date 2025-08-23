@@ -1,0 +1,31 @@
+REFERENCE: TIDA-010030 
+
+The CP_EN should not be low:
+
+Enabling CP_EN directly keeps the charge pump active. This is "highly recommended" by the sources to be done during system start-up. When CP_EN is enabled (high), the charge pump is running and ready. This is contrasted with the behavior when CP_EN is low: the charge pump only automatically enables when either the CHG_EN or DSG_EN signal is high. Explicitly enabling the charge pump via CP_EN means the FETs can turn on faster once CHG_EN or DSG_EN are asserted, as the charge pump doesn't need to start up first, thus avoiding an additional delay.
+
+DATASHEET:
+The device allows independent control on charging and discharge via the digital enable pins. The device has integrated charge pump which is enabled by the CP_EN pin. The enable inputs, CHG_EN, DSG_EN, and PCHG_EN control the CHG, DSG, and PCHG FET gate drivers, respectively. The enable inputs can be connected to low-side FET driver outputs of an Analog Front End (AFE) such as Texas Instruments bq769x0 series, a general purpose microcontroller, or dedicated battery pack controller such as the bq783xx series.
+
+What you would do to enable it: 
+CP_EN is a digital input pin. To enable it, you would need to drive this pin to a logic high voltage level (VIH) from a controlling device such as an MCU, an AFE's output, or a battery pack controller. If using an MCU, this means configuring a GPIO pin as an output and setting its state high.
+
+Do we always keep it high?
+So, no, you don't always have to hold CP_EN high forever. The choice depends on the design trade-offs between FET turn-on speed and continuous power consumption. Holding it high provides faster FET response, especially at startup, while connecting it to ground saves some power but adds a turn-on delay.
+
+
+----
+
+PMON_EN / PACKDIV Pins: What is the purpose of the PACKDIV output? Is it to show battery life or something more complex?
+
+The PMON_EN pin (pin 7) is a digital input that controls the PACKDIV output (pin 10). The PACKDIV pin provides the PACK+ voltage after passing through an internal switch. This internal switch has an on-resistance (R(PMONFET)) when PMON_EN is high.
+
+The primary purpose of the PACKDIV output is to allow measurement of the PACK+ voltage by an external microcontroller's Analog-to-Digital Converter (ADC). Typically, an external resistor divider is connected to the PACKDIV pin to scale down the PACK+ voltage to a range measurable by the MCU's ADC.
+
+This scaled-down PACK+ voltage measurement can be used for various system functions, such as charger detection or to implement advanced charging control. For example, by monitoring the PACK+ voltage, the system can determine if a charger is connected and adjust charging algorithms accordingly.
+
+The PACKDIV output is not directly used to show battery life percentage in the way a fuel gauge might display it on LEDs or provide a State of Charge (SOC) reading via communication commands. Devices like the BQ34z100-G1 or BQ78350/R1 family are designed as fuel gauges that calculate and provide battery status information like RemainingCapacity() or StateOfHealth(), AverageTimeToEmpty(), or StateTime() through communication interfaces (like I²C, HDQ, or SMBus). While the pack voltage is a factor in fuel gauging, the PACKDIV provides a raw, scaled voltage signal, not a calculated battery life metric.
+
+The PACKDIV output is intended for intermittent operation, meaning PMON_EN should only be enabled when the PACK+ voltage measurement is needed. This is done to reduce power consumption. The current drawn from the battery when PMON_EN is high is approximately 3 mA (regulated, though the recommended current through the external switch is 500 µA or less).
+
+Similar to CP_EN, if the system design does not require the PACKDIV functionality, the PMON_EN pin should be connected to ground, and the PACKDIV pin should be left floating. This disables the internal switch and the PACKDIV output.
