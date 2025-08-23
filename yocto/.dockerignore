@@ -1,0 +1,40 @@
+# Docker ignore file for Yocto build
+
+# Build artifacts
+build/arago-tmp-*
+build/bitbake-cookerdaemon.log*
+build/cache/
+downloads/
+sstate-cache/
+
+# Git
+.git/
+.gitignore
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker files (don't copy into image)
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Scripts (dev-setup.sh not needed in container)
+dev-setup.sh
+# docker-entrypoint.sh - NEEDED for container
+
+# Logs
+*.log
+*.log.*
+
+# Temporary files
+*.tmp
+*.temp
