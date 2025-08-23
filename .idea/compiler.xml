@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <bytecodeTargetLevel>
+      <module name="com.projectstar.robot-gateway" target="17" />
+      <module name="com.projectstar.robot-gateway.main" target="17" />
+      <module name="com.projectstar.robot-gateway.test" target="17" />
+      <module name="com.projectstar.server-backend" target="17" />
+      <module name="com.projectstar.server-backend.main" target="17" />
+      <module name="com.projectstar.server-backend.test" target="17" />
+    </bytecodeTargetLevel>
+  </component>
+  <component name="JavacSettings">
+    <option name="ADDITIONAL_OPTIONS_OVERRIDE">
+      <module name="RobotGateway" options="-parameters" />
+      <module name="RobotGateway.main" options="-parameters" />
+      <module name="RobotGateway.test" options="-parameters" />
+      <module name="ServerBackend" options="-parameters" />
+      <module name="ServerBackend.main" options="-parameters" />
+      <module name="ServerBackend.test" options="-parameters" />
+      <module name="backend" options="-parameters" />
+      <module name="backend.main" options="-parameters" />
+      <module name="backend.test" options="-parameters" />
+      <module name="com.projectstar.robot-gateway" options="-parameters" />
+      <module name="com.projectstar.robot-gateway.main" options="-parameters" />
+      <module name="com.projectstar.robot-gateway.test" options="-parameters" />
+      <module name="com.projectstar.server-backend" options="-parameters" />
+      <module name="com.projectstar.server-backend.main" options="-parameters" />
+      <module name="com.projectstar.server-backend.test" options="-parameters" />
+      <module name="robot-gateway" options="-parameters" />
+      <module name="robot-gateway.main" options="-parameters" />
+      <module name="robot-gateway.test" options="-parameters" />
+      <module name="server-backend" options="-parameters" />
+      <module name="server-backend.main" options="-parameters" />
+      <module name="server-backend.test" options="-parameters" />
+    </option>
+  </component>
+</project>
