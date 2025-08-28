@@ -626,7 +626,7 @@
 			(uuid "d80b82ee-533b-4214-8adb-7fdb7028cc7a")
 		)
 		(instances
-			(project "Project-Star"
+			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/4e2cfc12-ee40-4d17-9d6f-838ea40fdecb/406f95f2-c45d-4573-8d35-711cc1fa1057"
 					(reference "U1")
 					(unit 1)
@@ -693,7 +693,7 @@
 			(uuid "432fc59a-dbde-4842-ba1c-6c3338be55ab")
 		)
 		(instances
-			(project "Project-Star"
+			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/4e2cfc12-ee40-4d17-9d6f-838ea40fdecb/406f95f2-c45d-4573-8d35-711cc1fa1057"
 					(reference "R2")
 					(unit 1)
@@ -759,7 +759,7 @@
 			(uuid "440410bf-26eb-4e0a-a7df-707505ad5a21")
 		)
 		(instances
-			(project "Project-Star"
+			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/4e2cfc12-ee40-4d17-9d6f-838ea40fdecb/406f95f2-c45d-4573-8d35-711cc1fa1057"
 					(reference "#PWR02")
 					(unit 1)
