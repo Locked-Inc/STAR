@@ -18,6 +18,22 @@
 		)
 		(uuid "9ebd4b4c-eb36-4e79-b3a9-2c5f7c6440e2")
 	)
+	(text "## The Correct Flashing Process\nHere is the correct workflow:\n\nGenerate Your Configuration: Use the TPS2575x Application Customization Tool from Texas Instruments to create the binary file (.bin) that contains all your desired settings.\n\nProgram the EEPROM Separately: Connect the CAT24C512 EEPROM to your dedicated flasher or an Arduino. Do this before connecting it to the TPS25751.\n\nConnect power (VCC), ground (GND), SDA, and SCL.\n\nUse the flasher's software to write the .bin file you generated onto the EEPROM.\n\nAssemble the Final Circuit: Once the EEPROM is successfully flashed, connect it to the I2Cc (the controller port) of the TPS25751.\n\nNow, when you power on your circuit, the TPS25751 will use its I2Cc port to automatically read the settings you loaded onto the EEPROM and will configure itself correctly."
+		(exclude_from_sim no)
+		(at 94.996 179.832 0)
+		(effects
+			(font
+				(size 1.143 1.143)
+			)
+		)
+		(uuid "d850ea21-8d68-4ef7-8295-fa9cd422aeea")
+	)
+	(junction
+		(at 107.95 128.27)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "3d9ed44d-fbe8-4a02-b882-9a60c3610a31")
+	)
 	(junction
 		(at 130.81 67.31)
 		(diameter 0)
@@ -34,7 +50,7 @@
 		(at 130.81 34.29)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "a8439e46-0d29-4643-860d-c5a233e81282")
+		(uuid "bf7f86cd-ef8a-45ab-93a9-aeaf3f381e2c")
 	)
 	(wire
 		(pts
@@ -118,16 +134,6 @@
 	)
 	(wire
 		(pts
-			(xy 130.81 34.29) (xy 133.35 34.29)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "2aea1f77-f963-4567-98b8-f21aeba956c1")
-	)
-	(wire
-		(pts
 			(xy 71.12 69.85) (xy 71.12 43.18)
 		)
 		(stroke
@@ -168,7 +174,7 @@
 	)
 	(wire
 		(pts
-			(xy 104.14 128.27) (xy 124.46 128.27)
+			(xy 104.14 128.27) (xy 107.95 128.27)
 		)
 		(stroke
 			(width 0)
@@ -205,6 +211,16 @@
 			(type default)
 		)
 		(uuid "4e6a029c-90fe-49a0-a5c6-6785d2f2e08c")
+	)
+	(wire
+		(pts
+			(xy 107.95 128.27) (xy 124.46 128.27)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "53ec6f18-24be-4625-a3f2-1d778a3e8cb9")
 	)
 	(wire
 		(pts
@@ -318,6 +334,16 @@
 	)
 	(wire
 		(pts
+			(xy 130.81 34.29) (xy 132.08 34.29)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8fbf9282-97f6-4776-b265-afb590def957")
+	)
+	(wire
+		(pts
 			(xy 148.59 38.1) (xy 163.83 38.1)
 		)
 		(stroke
@@ -418,6 +444,16 @@
 	)
 	(wire
 		(pts
+			(xy 107.95 128.27) (xy 107.95 133.35)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "baa2f28b-36dc-4e2b-848f-6650b64aec83")
+	)
+	(wire
+		(pts
 			(xy 198.12 73.66) (xy 224.79 73.66)
 		)
 		(stroke
@@ -425,6 +461,16 @@
 			(type default)
 		)
 		(uuid "bbc58cd0-e17a-4b8e-8cdf-6b58a4210014")
+	)
+	(wire
+		(pts
+			(xy 107.95 133.35) (xy 111.76 133.35)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "bc2e9cc1-5410-471c-b622-b2ad8d02917d")
 	)
 	(wire
 		(pts
@@ -916,6 +962,28 @@
 		)
 		(uuid "fba3e54b-4fff-4052-953e-b96ed7f748a2")
 	)
+	(hierarchical_label "P5V0"
+		(shape output)
+		(at 111.76 133.35 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "1957095e-1778-4aa2-8317-cbd43a92a013")
+	)
+	(hierarchical_label "SDA"
+		(shape input)
+		(at 148.59 40.64 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "1a3ad5fc-13cf-4f43-801a-bc267a445a90")
+	)
 	(hierarchical_label "PACK+"
 		(shape bidirectional)
 		(at 55.88 128.27 180)
@@ -927,19 +995,8 @@
 		)
 		(uuid "51130d77-ecb2-43ec-9e5b-b03b4bb7177a")
 	)
-	(hierarchical_label "SDA"
-		(shape output)
-		(at 148.59 40.64 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "75e92454-54a7-407d-997a-f3c17ebdc1de")
-	)
 	(hierarchical_label "SCL"
-		(shape output)
+		(shape input)
 		(at 148.59 38.1 180)
 		(effects
 			(font
@@ -947,18 +1004,18 @@
 			)
 			(justify right)
 		)
-		(uuid "b19c7469-076d-4e0c-a0a8-06332da93a4d")
+		(uuid "ded3e603-e5a8-4572-801a-3c26be4958ef")
 	)
 	(hierarchical_label "LDO_3V3"
 		(shape output)
-		(at 133.35 34.29 0)
+		(at 132.08 34.29 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "b5f46822-68b7-4619-9b47-ec3c82cce763")
+		(uuid "f0a7aab8-50fd-4925-abbb-d40ae3580a0e")
 	)
 	(sheet
 		(at 124.46 116.84)
@@ -1025,7 +1082,7 @@
 			)
 		)
 		(instances
-			(project "Project-Star"
+			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154"
 					(page "16")
 				)
@@ -1257,7 +1314,7 @@
 			)
 		)
 		(instances
-			(project "Project-Star"
+			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154"
 					(page "17")
 				)
@@ -1459,7 +1516,7 @@
 			)
 		)
 		(instances
-			(project "Project-Star"
+			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154"
 					(page "19")
 				)
@@ -1611,7 +1668,7 @@
 			)
 		)
 		(instances
-			(project "Project-Star"
+			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154"
 					(page "14")
 				)
@@ -1683,7 +1740,7 @@
 			)
 		)
 		(instances
-			(project "Project-Star"
+			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154"
 					(page "15")
 				)
@@ -1745,7 +1802,7 @@
 			)
 		)
 		(instances
-			(project "Project-Star"
+			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154"
 					(page "18")
 				)
@@ -1837,7 +1894,7 @@
 			)
 		)
 		(instances
-			(project "Project-Star"
+			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154"
 					(page "13")
 				)

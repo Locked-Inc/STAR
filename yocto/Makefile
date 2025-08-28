@@ -1,7 +1,7 @@
 # TDA4VM Yocto Build System
 # Simplified commands for building embedded Linux images
 
-.PHONY: help setup build build-minimal build-default clean shell logs status \
+.PHONY: help setup build build-minimal build-default build-ros2 clean shell logs status \
         docker-build docker-up docker-down docker-logs menuconfig \
         flash-info build-info
 
@@ -13,6 +13,7 @@ help: ## Show this help message
 	@echo "Quick Start:"
 	@echo "  make setup     - Set up Docker environment"
 	@echo "  make build     - Build EdgeAI image (recommended)"
+	@echo "  make build-ros2 - Build EdgeAI + ROS2 image"
 	@echo "  make shell     - Enter development shell"
 	@echo ""
 	@echo "Available targets:"
@@ -23,6 +24,7 @@ DOCKER_COMPOSE := docker-compose
 CONTAINER_NAME := tda4vm-yocto-builder
 MACHINE := j721e-evm
 IMAGE_EDGEAI := tisdk-edgeai-image
+IMAGE_EDGEAI_ROS2 := tisdk-edgeai-ros2-image
 IMAGE_DEFAULT := tisdk-default-image
 IMAGE_MINIMAL := core-image-minimal
 
@@ -76,10 +78,19 @@ build-minimal: docker-up ## Build minimal image for testing
 	@echo "✅ Minimal image build complete!"
 	@make flash-info
 
+build-ros2: docker-up ## Build EdgeAI image with ROS2 Jazzy support
+	@echo "🤖 Building EdgeAI + ROS2 image..."
+	$(DOCKER_COMPOSE) exec yocto-builder bash -c "\
+		cd build && \
+		. conf/setenv && \
+		MACHINE=$(MACHINE) bitbake $(IMAGE_EDGEAI_ROS2)"
+	@echo "✅ EdgeAI + ROS2 image build complete!"
+	@make flash-info
+
 # Development targets
 shell: docker-up ## Enter interactive development shell
 	@echo "🐚 Starting development shell..."
-	@echo "💡 Available images: $(IMAGE_EDGEAI), $(IMAGE_DEFAULT), $(IMAGE_MINIMAL)"
+	@echo "💡 Available images: $(IMAGE_EDGEAI), $(IMAGE_EDGEAI_ROS2), $(IMAGE_DEFAULT), $(IMAGE_MINIMAL)"
 	@echo "💡 To build: MACHINE=$(MACHINE) bitbake <image-name>"
 	$(DOCKER_COMPOSE) exec yocto-builder /bin/bash
 
@@ -116,7 +127,7 @@ status: ## Show build status and information
 	@echo "=================================="
 	@echo "Machine: $(MACHINE)"
 	@echo "Container: $(CONTAINER_NAME)"
-	@echo "Images: EdgeAI ($(IMAGE_EDGEAI)), Default ($(IMAGE_DEFAULT)), Minimal ($(IMAGE_MINIMAL))"
+	@echo "Images: EdgeAI ($(IMAGE_EDGEAI)), EdgeAI+ROS2 ($(IMAGE_EDGEAI_ROS2)), Default ($(IMAGE_DEFAULT)), Minimal ($(IMAGE_MINIMAL))"
 	@echo ""
 	@echo "🐳 Docker Status:"
 	@$(DOCKER_COMPOSE) ps 2>/dev/null || echo "Container not running"
