@@ -4,10 +4,175 @@
 	(generator_version "9.0")
 	(uuid "75b1ba6d-78d4-4bef-8bc0-41bb1a5805a8")
 	(paper "A4")
-	(lib_symbols)
+	(lib_symbols
+		(symbol "Device:R"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "R"
+				(at 2.032 0 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "R"
+				(at 0 0 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at -1.778 0 90)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Resistor"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "R res resistor"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "R_*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "R_0_1"
+				(rectangle
+					(start -1.016 -2.54)
+					(end 1.016 2.54)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "R_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 1.27)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 1.27)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+	)
+	(text "we need only 1 pullup resistor, since this is open drain"
+		(exclude_from_sim no)
+		(at 93.98 43.942 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "cfe8506b-26c6-4f0e-9e93-e67b10bc88fc")
+	)
+	(junction
+		(at 127 55.88)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "66603f09-cad4-4a08-91fa-e2bd6dce2ef4")
+	)
+	(junction
+		(at 127 58.42)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "6d370528-b3cd-46ad-9c3e-72fbbc44c244")
+	)
+	(junction
+		(at 127 60.96)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "9565f8ae-6a13-40fd-9833-40c04c991ba5")
+	)
+	(junction
+		(at 60.96 57.15)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "b5dc02bb-6947-494d-a31d-b3b66a0388eb")
+	)
+	(junction
+		(at 127 63.5)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "d0a7e736-91ac-4c5e-909c-a93a71cfa29d")
+	)
 	(wire
 		(pts
-			(xy 41.91 50.8) (xy 64.77 50.8)
+			(xy 43.18 81.28) (xy 66.04 81.28)
 		)
 		(stroke
 			(width 0)
@@ -17,7 +182,7 @@
 	)
 	(wire
 		(pts
-			(xy 41.91 33.02) (xy 64.77 33.02)
+			(xy 43.18 63.5) (xy 66.04 63.5)
 		)
 		(stroke
 			(width 0)
@@ -27,7 +192,7 @@
 	)
 	(wire
 		(pts
-			(xy 175.26 96.52) (xy 198.12 96.52)
+			(xy 176.53 127) (xy 199.39 127)
 		)
 		(stroke
 			(width 0)
@@ -37,17 +202,7 @@
 	)
 	(wire
 		(pts
-			(xy 176.53 83.82) (xy 198.12 83.82)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "105b31b1-5e4b-4f6f-bedb-7515e065ca87")
-	)
-	(wire
-		(pts
-			(xy 238.76 81.28) (xy 259.08 81.28)
+			(xy 240.03 111.76) (xy 260.35 111.76)
 		)
 		(stroke
 			(width 0)
@@ -57,7 +212,17 @@
 	)
 	(wire
 		(pts
-			(xy 105.41 78.74) (xy 125.73 78.74)
+			(xy 60.96 57.15) (xy 66.04 57.15)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "16b573bf-78f7-48cf-900e-fcccf289bcd2")
+	)
+	(wire
+		(pts
+			(xy 106.68 109.22) (xy 124.46 109.22)
 		)
 		(stroke
 			(width 0)
@@ -67,7 +232,17 @@
 	)
 	(wire
 		(pts
-			(xy 41.91 38.1) (xy 64.77 38.1)
+			(xy 60.96 53.34) (xy 60.96 57.15)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "245a24a2-5b6c-43b6-a3fc-0dbeef9ff861")
+	)
+	(wire
+		(pts
+			(xy 43.18 68.58) (xy 66.04 68.58)
 		)
 		(stroke
 			(width 0)
@@ -77,17 +252,17 @@
 	)
 	(wire
 		(pts
-			(xy 43.18 78.74) (xy 64.77 78.74)
+			(xy 109.22 60.96) (xy 127 60.96)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "26fe6f04-0d66-4a34-af67-b5e0a0217d56")
+		(uuid "27d975d2-c78d-4614-923b-20a7d7142d6b")
 	)
 	(wire
 		(pts
-			(xy 41.91 44.45) (xy 64.77 44.45)
+			(xy 43.18 74.93) (xy 66.04 74.93)
 		)
 		(stroke
 			(width 0)
@@ -97,7 +272,7 @@
 	)
 	(wire
 		(pts
-			(xy 105.41 81.28) (xy 125.73 81.28)
+			(xy 106.68 111.76) (xy 127 111.76)
 		)
 		(stroke
 			(width 0)
@@ -107,17 +282,7 @@
 	)
 	(wire
 		(pts
-			(xy 176.53 35.56) (xy 198.12 35.56)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "393a39e4-2bea-42a1-99eb-97638a6cfc9e")
-	)
-	(wire
-		(pts
-			(xy 41.91 99.06) (xy 64.77 99.06)
+			(xy 43.18 129.54) (xy 66.04 129.54)
 		)
 		(stroke
 			(width 0)
@@ -127,7 +292,7 @@
 	)
 	(wire
 		(pts
-			(xy 41.91 26.67) (xy 64.77 26.67)
+			(xy 43.18 57.15) (xy 60.96 57.15)
 		)
 		(stroke
 			(width 0)
@@ -137,7 +302,27 @@
 	)
 	(wire
 		(pts
-			(xy 238.76 78.74) (xy 259.08 78.74)
+			(xy 177.8 109.22) (xy 199.39 109.22)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3fa5e99c-d08c-4ef7-86d6-d373e36e73b0")
+	)
+	(wire
+		(pts
+			(xy 127 58.42) (xy 127 60.96)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "40190169-3d97-49c2-90af-65c412c463c7")
+	)
+	(wire
+		(pts
+			(xy 240.03 109.22) (xy 257.81 109.22)
 		)
 		(stroke
 			(width 0)
@@ -147,7 +332,17 @@
 	)
 	(wire
 		(pts
-			(xy 41.91 86.36) (xy 64.77 86.36)
+			(xy 127 55.88) (xy 127 58.42)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "461f6207-e936-4989-a3db-49be11f6a693")
+	)
+	(wire
+		(pts
+			(xy 43.18 116.84) (xy 66.04 116.84)
 		)
 		(stroke
 			(width 0)
@@ -157,7 +352,7 @@
 	)
 	(wire
 		(pts
-			(xy 105.41 35.56) (xy 125.73 35.56)
+			(xy 106.68 66.04) (xy 128.27 66.04)
 		)
 		(stroke
 			(width 0)
@@ -167,7 +362,7 @@
 	)
 	(wire
 		(pts
-			(xy 41.91 92.71) (xy 64.77 92.71)
+			(xy 43.18 123.19) (xy 66.04 123.19)
 		)
 		(stroke
 			(width 0)
@@ -177,7 +372,7 @@
 	)
 	(wire
 		(pts
-			(xy 176.53 72.39) (xy 198.12 72.39)
+			(xy 177.8 102.87) (xy 199.39 102.87)
 		)
 		(stroke
 			(width 0)
@@ -187,7 +382,7 @@
 	)
 	(wire
 		(pts
-			(xy 41.91 29.21) (xy 64.77 29.21)
+			(xy 43.18 59.69) (xy 66.04 59.69)
 		)
 		(stroke
 			(width 0)
@@ -197,7 +392,7 @@
 	)
 	(wire
 		(pts
-			(xy 175.26 92.71) (xy 198.12 92.71)
+			(xy 176.53 123.19) (xy 199.39 123.19)
 		)
 		(stroke
 			(width 0)
@@ -207,7 +402,17 @@
 	)
 	(wire
 		(pts
-			(xy 175.26 86.36) (xy 198.12 86.36)
+			(xy 109.22 58.42) (xy 127 58.42)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "62b036be-1421-438f-a2eb-5cccd502dc52")
+	)
+	(wire
+		(pts
+			(xy 176.53 116.84) (xy 199.39 116.84)
 		)
 		(stroke
 			(width 0)
@@ -217,7 +422,7 @@
 	)
 	(wire
 		(pts
-			(xy 175.26 90.17) (xy 198.12 90.17)
+			(xy 176.53 120.65) (xy 199.39 120.65)
 		)
 		(stroke
 			(width 0)
@@ -227,17 +432,27 @@
 	)
 	(wire
 		(pts
-			(xy 176.53 78.74) (xy 198.12 78.74)
+			(xy 109.22 55.88) (xy 127 55.88)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "7ebb0c8d-b350-40e8-a91e-dd0a0c28e1a2")
+		(uuid "755ab0ff-b1b6-4fd5-8e58-4a13623dd6dd")
 	)
 	(wire
 		(pts
-			(xy 238.76 33.02) (xy 259.08 33.02)
+			(xy 199.39 68.58) (xy 177.8 68.58)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7a05698d-ab76-44b8-bd99-46461d93b52e")
+	)
+	(wire
+		(pts
+			(xy 240.03 63.5) (xy 257.81 63.5)
 		)
 		(stroke
 			(width 0)
@@ -247,7 +462,27 @@
 	)
 	(wire
 		(pts
-			(xy 176.53 29.21) (xy 198.12 29.21)
+			(xy 127 60.96) (xy 127 63.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8267ae39-9a47-4a8a-a386-d67fa0a372d9")
+	)
+	(wire
+		(pts
+			(xy 44.45 111.76) (xy 66.04 111.76)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8410a3c3-a336-4960-bedb-a7b31e987f09")
+	)
+	(wire
+		(pts
+			(xy 177.8 59.69) (xy 199.39 59.69)
 		)
 		(stroke
 			(width 0)
@@ -257,7 +492,7 @@
 	)
 	(wire
 		(pts
-			(xy 41.91 53.34) (xy 64.77 53.34)
+			(xy 43.18 83.82) (xy 66.04 83.82)
 		)
 		(stroke
 			(width 0)
@@ -267,7 +502,7 @@
 	)
 	(wire
 		(pts
-			(xy 41.91 46.99) (xy 64.77 46.99)
+			(xy 43.18 77.47) (xy 66.04 77.47)
 		)
 		(stroke
 			(width 0)
@@ -277,7 +512,17 @@
 	)
 	(wire
 		(pts
-			(xy 43.18 74.93) (xy 64.77 74.93)
+			(xy 199.39 114.3) (xy 177.8 114.3)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8a8d8531-6288-46e1-ae10-d71a1b6ba524")
+	)
+	(wire
+		(pts
+			(xy 44.45 105.41) (xy 66.04 105.41)
 		)
 		(stroke
 			(width 0)
@@ -287,17 +532,7 @@
 	)
 	(wire
 		(pts
-			(xy 43.18 81.28) (xy 64.77 81.28)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "8cc53efe-656c-492f-b888-be44bf8fd209")
-	)
-	(wire
-		(pts
-			(xy 105.41 33.02) (xy 125.73 33.02)
+			(xy 106.68 63.5) (xy 127 63.5)
 		)
 		(stroke
 			(width 0)
@@ -307,7 +542,17 @@
 	)
 	(wire
 		(pts
-			(xy 175.26 99.06) (xy 198.12 99.06)
+			(xy 177.8 63.5) (xy 199.39 63.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8f3fc512-08a0-4c59-b750-adc1b28ec3e2")
+	)
+	(wire
+		(pts
+			(xy 176.53 129.54) (xy 199.39 129.54)
 		)
 		(stroke
 			(width 0)
@@ -317,7 +562,17 @@
 	)
 	(wire
 		(pts
-			(xy 238.76 35.56) (xy 259.08 35.56)
+			(xy 60.96 41.91) (xy 60.96 45.72)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "92899e2e-b4a0-4d4d-9190-49b9d6888271")
+	)
+	(wire
+		(pts
+			(xy 240.03 66.04) (xy 260.35 66.04)
 		)
 		(stroke
 			(width 0)
@@ -327,7 +582,7 @@
 	)
 	(wire
 		(pts
-			(xy 41.91 40.64) (xy 64.77 40.64)
+			(xy 43.18 71.12) (xy 66.04 71.12)
 		)
 		(stroke
 			(width 0)
@@ -337,7 +592,7 @@
 	)
 	(wire
 		(pts
-			(xy 41.91 96.52) (xy 64.77 96.52)
+			(xy 43.18 127) (xy 66.04 127)
 		)
 		(stroke
 			(width 0)
@@ -347,7 +602,7 @@
 	)
 	(wire
 		(pts
-			(xy 175.26 46.99) (xy 198.12 46.99)
+			(xy 176.53 77.47) (xy 199.39 77.47)
 		)
 		(stroke
 			(width 0)
@@ -357,7 +612,17 @@
 	)
 	(wire
 		(pts
-			(xy 175.26 53.34) (xy 198.12 53.34)
+			(xy 60.96 41.91) (xy 127 41.91)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a3efb67d-4677-4009-a2ab-bd95dcf307d4")
+	)
+	(wire
+		(pts
+			(xy 176.53 83.82) (xy 199.39 83.82)
 		)
 		(stroke
 			(width 0)
@@ -367,7 +632,7 @@
 	)
 	(wire
 		(pts
-			(xy 175.26 50.8) (xy 198.12 50.8)
+			(xy 176.53 81.28) (xy 199.39 81.28)
 		)
 		(stroke
 			(width 0)
@@ -377,7 +642,7 @@
 	)
 	(wire
 		(pts
-			(xy 41.91 35.56) (xy 64.77 35.56)
+			(xy 43.18 66.04) (xy 66.04 66.04)
 		)
 		(stroke
 			(width 0)
@@ -387,7 +652,7 @@
 	)
 	(wire
 		(pts
-			(xy 176.53 26.67) (xy 198.12 26.67)
+			(xy 177.8 57.15) (xy 199.39 57.15)
 		)
 		(stroke
 			(width 0)
@@ -397,7 +662,7 @@
 	)
 	(wire
 		(pts
-			(xy 176.53 74.93) (xy 198.12 74.93)
+			(xy 177.8 105.41) (xy 199.39 105.41)
 		)
 		(stroke
 			(width 0)
@@ -407,7 +672,27 @@
 	)
 	(wire
 		(pts
-			(xy 43.18 72.39) (xy 64.77 72.39)
+			(xy 177.8 66.04) (xy 199.39 66.04)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "bd35bb1b-4552-49ff-8378-f1fba688e4d9")
+	)
+	(wire
+		(pts
+			(xy 177.8 111.76) (xy 199.39 111.76)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "bf33c64e-1c2d-4686-9226-aa7dda5c2e24")
+	)
+	(wire
+		(pts
+			(xy 44.45 102.87) (xy 66.04 102.87)
 		)
 		(stroke
 			(width 0)
@@ -417,27 +702,37 @@
 	)
 	(wire
 		(pts
-			(xy 176.53 33.02) (xy 198.12 33.02)
+			(xy 66.04 114.3) (xy 44.45 114.3)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "c4815a12-697a-4dd1-bce7-a3506e77cd60")
+		(uuid "c1e5e8f7-39ca-424f-81be-bc13df25b748")
 	)
 	(wire
 		(pts
-			(xy 176.53 81.28) (xy 198.12 81.28)
+			(xy 128.27 63.5) (xy 127 63.5)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "c622d128-5a2b-4150-8fc8-e6f3b3b24031")
+		(uuid "c8171fc9-24ff-40b7-ad65-26cd98736dd7")
 	)
 	(wire
 		(pts
-			(xy 175.26 44.45) (xy 198.12 44.45)
+			(xy 44.45 109.22) (xy 66.04 109.22)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c8474490-a266-4310-a611-a2d102d7326f")
+	)
+	(wire
+		(pts
+			(xy 176.53 74.93) (xy 199.39 74.93)
 		)
 		(stroke
 			(width 0)
@@ -447,17 +742,7 @@
 	)
 	(wire
 		(pts
-			(xy 176.53 38.1) (xy 198.12 38.1)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "d86e9556-73a0-49e9-8f56-ce236364c995")
-	)
-	(wire
-		(pts
-			(xy 175.26 40.64) (xy 198.12 40.64)
+			(xy 176.53 71.12) (xy 199.39 71.12)
 		)
 		(stroke
 			(width 0)
@@ -467,7 +752,17 @@
 	)
 	(wire
 		(pts
-			(xy 41.91 90.17) (xy 64.77 90.17)
+			(xy 127 41.91) (xy 127 55.88)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "eef800a2-e7e1-4a74-b875-93293f3d2cae")
+	)
+	(wire
+		(pts
+			(xy 43.18 120.65) (xy 66.04 120.65)
 		)
 		(stroke
 			(width 0)
@@ -475,18 +770,8 @@
 		)
 		(uuid "f87ed4c7-a5a9-4f00-a461-0f1b292ea1be")
 	)
-	(wire
-		(pts
-			(xy 43.18 83.82) (xy 64.77 83.82)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f97e2628-c9b4-4ead-91b5-f25ef6427798")
-	)
 	(label "MOTOR2_IPROPI"
-		(at 107.95 81.28 0)
+		(at 109.22 111.76 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -496,7 +781,7 @@
 		(uuid "02756811-91e8-4663-a472-6896c167b46a")
 	)
 	(label "MOTOR2_EN_IN1"
-		(at 43.18 96.52 0)
+		(at 44.45 127 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -505,8 +790,18 @@
 		)
 		(uuid "061e7643-0b5b-4974-afe2-e25fc1b4cee2")
 	)
+	(label "MOTOR4_nFAULT"
+		(at 109.22 55.88 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "0a2fd6ff-523a-4a02-9e9c-354a2894d2e3")
+	)
 	(label "MOTOR1_IPROPI"
-		(at 107.95 35.56 0)
+		(at 109.22 66.04 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -515,28 +810,28 @@
 		)
 		(uuid "0d33bbf8-201e-4646-ac69-b40262624bbd")
 	)
-	(label "MOTOR1_nFAULT"
-		(at 107.95 33.02 0)
+	(label "MOTOR2_nFAULT"
+		(at 109.22 60.96 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left bottom)
 		)
-		(uuid "222513c5-2fc8-4157-bf51-e35b52f69b22")
+		(uuid "1a04e326-8bc7-44d7-baf1-f485090b8618")
 	)
-	(label "MOTOR3_nFAULT"
-		(at 241.3 33.02 0)
+	(label "SPI_SCLK"
+		(at 177.8 63.5 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left bottom)
 		)
-		(uuid "39b331ad-352f-4a57-8a5c-ce86ba126c8d")
+		(uuid "215f8b7b-91f3-4bbd-9172-76cf32eb4ab7")
 	)
 	(label "P24V0"
-		(at 176.53 29.21 0)
+		(at 177.8 59.69 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -545,18 +840,18 @@
 		)
 		(uuid "3a366a35-6272-4b3c-881b-5b81cd9815dd")
 	)
-	(label "MOTORx_SDI"
-		(at 176.53 81.28 0)
+	(label "MOTOR1_nFAULT"
+		(at 124.46 63.5 180)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify right bottom)
 		)
-		(uuid "3ae3c9a2-cb99-44bb-99ef-1ed48b58a144")
+		(uuid "3f567def-c03e-4031-bc4d-4406e5bc469e")
 	)
 	(label "MOTOR1_TERMINAL1"
-		(at 43.18 44.45 0)
+		(at 44.45 74.93 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -566,7 +861,7 @@
 		(uuid "41aa3156-7320-45a9-b786-d214c561d7d0")
 	)
 	(label "MOTOR2_TERMINAL1"
-		(at 43.18 90.17 0)
+		(at 44.45 120.65 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -576,7 +871,7 @@
 		(uuid "48912b4e-0e49-44ad-a0b4-331c49a73cd9")
 	)
 	(label "MOTOR3_IPROPI"
-		(at 241.3 35.56 0)
+		(at 242.57 66.04 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -585,8 +880,18 @@
 		)
 		(uuid "49aa58dc-fc3c-4724-a973-6e91c194daf8")
 	)
+	(label "MOTOR3_nFAULT"
+		(at 257.81 63.5 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "5206234e-9ae5-463e-b8d0-9ebd6fbf1271")
+	)
 	(label "MOTOR3_nCS"
-		(at 176.53 40.64 0)
+		(at 177.8 71.12 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -595,8 +900,8 @@
 		)
 		(uuid "531c5e19-8631-4086-a00d-8b9640bc51db")
 	)
-	(label "MOTORx_SDO"
-		(at 43.18 38.1 0)
+	(label "SPI_SDO"
+		(at 44.45 68.58 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -606,7 +911,7 @@
 		(uuid "67229447-393c-49c3-8317-46e4ce87ca3a")
 	)
 	(label "MOTOR1_PH_IN2"
-		(at 43.18 53.34 0)
+		(at 44.45 83.82 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -616,7 +921,7 @@
 		(uuid "6e917d6c-f34e-4afa-8a61-1308fecba39c")
 	)
 	(label "MOTOR1_EN_IN1"
-		(at 43.18 50.8 0)
+		(at 44.45 81.28 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -626,7 +931,7 @@
 		(uuid "6ee17ba5-037f-4a23-88d1-784b125a2f96")
 	)
 	(label "MOTOR1_nCS"
-		(at 43.18 40.64 0)
+		(at 44.45 71.12 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -636,7 +941,7 @@
 		(uuid "7188c82b-ff47-474b-923f-7d2829f64800")
 	)
 	(label "MOTOR2_PH_IN2"
-		(at 43.18 99.06 0)
+		(at 44.45 129.54 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -646,7 +951,7 @@
 		(uuid "73f0a735-2025-4f7b-bf38-22ae5fd6ad5d")
 	)
 	(label "MOTOR4_PH_IN2"
-		(at 176.53 99.06 0)
+		(at 177.8 129.54 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -656,7 +961,7 @@
 		(uuid "74129486-f751-40e2-939d-b8a84697a9e7")
 	)
 	(label "P24V0"
-		(at 43.18 29.21 0)
+		(at 44.45 59.69 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -665,18 +970,18 @@
 		)
 		(uuid "7a8d12cb-1b72-4c7d-9f21-7ef0f9de4c73")
 	)
-	(label "MOTORx_SDO"
-		(at 176.53 83.82 0)
+	(label "SPI_SDO"
+		(at 177.8 114.3 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left bottom)
 		)
-		(uuid "7c9859f4-22b3-4110-962f-d48ce5167c7a")
+		(uuid "7ec784be-d17c-4c78-bbd9-d04d78df884a")
 	)
 	(label "MOTOR3_TERMINAL2"
-		(at 176.53 46.99 0)
+		(at 177.8 77.47 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -685,38 +990,8 @@
 		)
 		(uuid "84ecee77-7017-44cd-a0eb-36f12a54a66b")
 	)
-	(label "MOTORx_SDO"
-		(at 176.53 38.1 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "8872f79a-f84e-40e6-a4b8-e5f13b67ba7c")
-	)
-	(label "MOTORx_SCLK"
-		(at 43.18 78.74 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "8ada4ca8-8c9a-44e6-8c69-f29f7e69dd73")
-	)
-	(label "MOTORx_SDI"
-		(at 43.18 81.28 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "8d7b85f0-bc18-428a-9afe-cb4f5b141d5a")
-	)
 	(label "SENSOR_P3V3"
-		(at 176.53 26.67 0)
+		(at 177.8 57.15 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -726,7 +1001,7 @@
 		(uuid "905a2109-96a4-4a6e-b953-4954d4000975")
 	)
 	(label "MOTOR4_IPROPI"
-		(at 241.3 81.28 0)
+		(at 242.57 111.76 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -735,18 +1010,8 @@
 		)
 		(uuid "93761fd8-ab5f-4d96-8b13-8999125a3a27")
 	)
-	(label "MOTOR4_nFAULT"
-		(at 241.3 78.74 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "95c69764-26db-4175-97b3-feae2b1c62ff")
-	)
 	(label "MOTOR3_TERMINAL1"
-		(at 176.53 44.45 0)
+		(at 177.8 74.93 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -756,7 +1021,7 @@
 		(uuid "965d9c30-8199-4b41-918e-fe06c9f33988")
 	)
 	(label "P24V0"
-		(at 43.18 74.93 0)
+		(at 44.45 105.41 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -766,7 +1031,7 @@
 		(uuid "9684f61e-9103-4c04-be4b-7d697a0adba4")
 	)
 	(label "MOTOR3_EN_IN1"
-		(at 176.53 50.8 0)
+		(at 177.8 81.28 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -775,18 +1040,8 @@
 		)
 		(uuid "9ac0564d-9341-47e3-b91f-847975046659")
 	)
-	(label "MOTORx_SCLK"
-		(at 176.53 78.74 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "9eda10ad-daef-46ba-a8de-727d85683196")
-	)
 	(label "MOTOR1_TERMINAL2"
-		(at 43.18 46.99 0)
+		(at 44.45 77.47 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -796,7 +1051,7 @@
 		(uuid "a4cf38a4-4e6f-475d-99ec-5ac0becfce5c")
 	)
 	(label "SENSOR_P3V3"
-		(at 43.18 26.67 0)
+		(at 44.45 57.15 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -806,7 +1061,7 @@
 		(uuid "a74975cd-8d48-4fb0-9d63-c512a1dce0e8")
 	)
 	(label "MOTOR4_nCS"
-		(at 176.53 86.36 0)
+		(at 177.8 116.84 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -815,8 +1070,8 @@
 		)
 		(uuid "ac4d2884-c5af-4ecd-8478-abdc7922f125")
 	)
-	(label "MOTORx_SCLK"
-		(at 43.18 33.02 0)
+	(label "SPI_SCLK"
+		(at 44.45 63.5 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -826,7 +1081,7 @@
 		(uuid "b29578a8-ee39-4c8b-ab93-e2a5bcc78773")
 	)
 	(label "MOTOR3_PH_IN2"
-		(at 176.53 53.34 0)
+		(at 177.8 83.82 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -836,7 +1091,7 @@
 		(uuid "b49783ee-1d0a-4c72-98f3-f3847e12dc8d")
 	)
 	(label "MOTOR4_EN_IN1"
-		(at 176.53 96.52 0)
+		(at 177.8 127 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -845,28 +1100,28 @@
 		)
 		(uuid "b50bf8d2-aae7-4aeb-b35e-285b85ec6959")
 	)
-	(label "MOTORx_SDI"
-		(at 176.53 35.56 0)
+	(label "SPI_SDI"
+		(at 44.45 111.76 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left bottom)
 		)
-		(uuid "b9741112-05ec-4e3f-90bc-d3b4a53fd644")
+		(uuid "b8218a7d-a451-4926-9eb3-c4bdf1cf7d41")
 	)
 	(label "MOTOR2_nFAULT"
-		(at 107.95 78.74 0)
+		(at 124.46 109.22 180)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify right bottom)
 		)
-		(uuid "c54faf57-63d2-4857-8d06-a967e635843c")
+		(uuid "c4aad8ad-042f-4345-b169-6569b16b127b")
 	)
 	(label "SENSOR_P3V3"
-		(at 43.18 72.39 0)
+		(at 44.45 102.87 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -875,8 +1130,8 @@
 		)
 		(uuid "ca167b77-336f-4837-92b4-f5f3745258f3")
 	)
-	(label "MOTORx_SDI"
-		(at 43.18 35.56 0)
+	(label "SPI_SDI"
+		(at 44.45 66.04 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -885,18 +1140,8 @@
 		)
 		(uuid "cfb5cdcf-c6c9-4763-9f19-bee1225cb4f4")
 	)
-	(label "MOTORx_SCLK"
-		(at 176.53 33.02 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "d33fb5c6-20fd-497e-b05e-23bb6e84ebf5")
-	)
 	(label "MOTOR4_TERMINAL2"
-		(at 176.53 92.71 0)
+		(at 177.8 123.19 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -905,8 +1150,28 @@
 		)
 		(uuid "dcecadee-1030-46e5-be53-d861b71bef4c")
 	)
+	(label "SPI_SDO"
+		(at 44.45 114.3 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "de65aa6b-9ad9-4711-b62d-add506862b7b")
+	)
+	(label "MOTOR3_nFAULT"
+		(at 109.22 58.42 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "e20eaacd-97d1-4856-873b-66d1d7f808f3")
+	)
 	(label "MOTOR2_TERMINAL2"
-		(at 43.18 92.71 0)
+		(at 44.45 123.19 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -916,7 +1181,7 @@
 		(uuid "e5811536-ce82-430d-9fec-3f4bff8c38b7")
 	)
 	(label "SENSOR_P3V3"
-		(at 176.53 72.39 0)
+		(at 177.8 102.87 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -925,8 +1190,18 @@
 		)
 		(uuid "e5a79a6e-3f64-4368-98b3-09009d53140a")
 	)
+	(label "MOTOR4_nFAULT"
+		(at 257.81 109.22 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "e5cfe037-8308-4238-a643-0d68ae9ecce8")
+	)
 	(label "MOTOR2_nCS"
-		(at 43.18 86.36 0)
+		(at 44.45 116.84 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -935,8 +1210,18 @@
 		)
 		(uuid "e7573453-e2fd-4727-b5cc-b80917d7dff1")
 	)
+	(label "SPI_SDI"
+		(at 177.8 111.76 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "e84de7ea-6d34-4916-ae33-58902eb67ebd")
+	)
 	(label "MOTOR4_TERMINAL1"
-		(at 176.53 90.17 0)
+		(at 177.8 120.65 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -945,18 +1230,38 @@
 		)
 		(uuid "f0160478-c10d-4671-a713-4fc08b1f81d1")
 	)
-	(label "MOTORx_SDO"
-		(at 43.18 83.82 0)
+	(label "SPI_SDO"
+		(at 177.8 68.58 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left bottom)
 		)
-		(uuid "f8c6abee-accd-479e-b20a-9fca0eb98de9")
+		(uuid "f2a83b7d-2dfb-4b45-a7cd-e96b8c913094")
+	)
+	(label "SPI_SCLK"
+		(at 44.45 109.22 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "f41e984b-8a8b-42f1-a344-30bae1df83b6")
+	)
+	(label "SPI_SDI"
+		(at 177.8 66.04 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "f434cf55-72b4-4151-b26f-70faeff925e0")
 	)
 	(label "P24V0"
-		(at 176.53 74.93 0)
+		(at 177.8 105.41 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -965,9 +1270,19 @@
 		)
 		(uuid "f8f642d1-86af-4b67-9612-3a3641006c81")
 	)
-	(hierarchical_label "MOTORx_SDO"
+	(label "SPI_SCLK"
+		(at 177.8 109.22 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "fce12305-4d81-4196-9d7d-4e240d2bfb45")
+	)
+	(hierarchical_label "SPI_SDO"
 		(shape input)
-		(at 41.91 38.1 180)
+		(at 43.18 68.58 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -976,20 +1291,9 @@
 		)
 		(uuid "18d5fb06-e499-4e0a-ba3e-0016603c6c35")
 	)
-	(hierarchical_label "MOTOR2_nFAULT"
-		(shape output)
-		(at 125.73 78.74 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "227b81b3-7f22-4c3c-910c-81be34033ed5")
-	)
 	(hierarchical_label "MOTOR4_TERMINAL2"
 		(shape bidirectional)
-		(at 175.26 92.71 180)
+		(at 176.53 123.19 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1000,7 +1304,7 @@
 	)
 	(hierarchical_label "MOTOR4_TERMINAL1"
 		(shape bidirectional)
-		(at 175.26 90.17 180)
+		(at 176.53 120.65 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1011,7 +1315,7 @@
 	)
 	(hierarchical_label "MOTOR4_IPROPI"
 		(shape output)
-		(at 259.08 81.28 0)
+		(at 260.35 111.76 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1020,20 +1324,20 @@
 		)
 		(uuid "27d37c4c-32e1-4c07-876b-d55af52adee0")
 	)
-	(hierarchical_label "MOTOR4_nFAULT"
+	(hierarchical_label "MOTORx_nFAULT"
 		(shape output)
-		(at 259.08 78.74 0)
+		(at 128.27 63.5 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "2bbaa2f3-ef5f-40ca-ad4f-dcd1033eb1df")
+		(uuid "2f507b8a-fb0f-436d-a73e-dcb83a084ff7")
 	)
 	(hierarchical_label "MOTOR2_PH_IN2"
 		(shape input)
-		(at 41.91 99.06 180)
+		(at 43.18 129.54 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1044,7 +1348,7 @@
 	)
 	(hierarchical_label "MOTOR3_TERMINAL1"
 		(shape bidirectional)
-		(at 175.26 44.45 180)
+		(at 176.53 74.93 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1055,7 +1359,7 @@
 	)
 	(hierarchical_label "MOTOR3_nCS"
 		(shape input)
-		(at 175.26 40.64 180)
+		(at 176.53 71.12 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1064,20 +1368,9 @@
 		)
 		(uuid "52c8b9f1-5cb5-47e9-a91b-dd12dd5da99b")
 	)
-	(hierarchical_label "MOTOR3_nFAULT"
-		(shape output)
-		(at 259.08 33.02 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "6ecbf0bc-2b1c-446e-98c0-cc32d4d075c4")
-	)
 	(hierarchical_label "MOTOR1_PH_IN2"
 		(shape input)
-		(at 41.91 53.34 180)
+		(at 43.18 83.82 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1088,7 +1381,7 @@
 	)
 	(hierarchical_label "MOTOR2_EN_IN1"
 		(shape input)
-		(at 41.91 96.52 180)
+		(at 43.18 127 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1099,7 +1392,7 @@
 	)
 	(hierarchical_label "SENSOR_P3V3"
 		(shape input)
-		(at 41.91 26.67 180)
+		(at 43.18 57.15 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1110,7 +1403,7 @@
 	)
 	(hierarchical_label "MOTOR3_EN_IN1"
 		(shape input)
-		(at 175.26 50.8 180)
+		(at 176.53 81.28 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1121,7 +1414,7 @@
 	)
 	(hierarchical_label "MOTOR1_TERMINAL1"
 		(shape bidirectional)
-		(at 41.91 44.45 180)
+		(at 43.18 74.93 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1132,7 +1425,7 @@
 	)
 	(hierarchical_label "MOTOR2_TERMINAL2"
 		(shape bidirectional)
-		(at 41.91 92.71 180)
+		(at 43.18 123.19 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1143,7 +1436,7 @@
 	)
 	(hierarchical_label "MOTOR1_TERMINAL2"
 		(shape bidirectional)
-		(at 41.91 46.99 180)
+		(at 43.18 77.47 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1154,7 +1447,7 @@
 	)
 	(hierarchical_label "MOTOR1_IPROPI"
 		(shape output)
-		(at 125.73 35.56 0)
+		(at 128.27 66.04 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1165,7 +1458,7 @@
 	)
 	(hierarchical_label "MOTOR3_IPROPI"
 		(shape output)
-		(at 259.08 35.56 0)
+		(at 260.35 66.04 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1176,7 +1469,7 @@
 	)
 	(hierarchical_label "MOTOR4_nCS"
 		(shape input)
-		(at 175.26 86.36 180)
+		(at 176.53 116.84 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1185,9 +1478,9 @@
 		)
 		(uuid "c5e065a6-ad2f-4179-9dc4-873b4a7e98d9")
 	)
-	(hierarchical_label "MOTORx_SDI"
+	(hierarchical_label "SPI_SDI"
 		(shape input)
-		(at 41.91 35.56 180)
+		(at 43.18 66.04 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1198,7 +1491,7 @@
 	)
 	(hierarchical_label "MOTOR1_EN_IN1"
 		(shape input)
-		(at 41.91 50.8 180)
+		(at 43.18 81.28 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1207,9 +1500,9 @@
 		)
 		(uuid "cbcec58b-7b01-42e4-9f79-d455087365e4")
 	)
-	(hierarchical_label "MOTORx_SCLK"
+	(hierarchical_label "SPI_SCLK"
 		(shape input)
-		(at 41.91 33.02 180)
+		(at 43.18 63.5 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1220,7 +1513,7 @@
 	)
 	(hierarchical_label "MOTOR4_PH_IN2"
 		(shape input)
-		(at 175.26 99.06 180)
+		(at 176.53 129.54 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1231,7 +1524,7 @@
 	)
 	(hierarchical_label "MOTOR2_IPROPI"
 		(shape output)
-		(at 125.73 81.28 0)
+		(at 127 111.76 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1242,7 +1535,7 @@
 	)
 	(hierarchical_label "MOTOR2_nCS"
 		(shape input)
-		(at 41.91 86.36 180)
+		(at 43.18 116.84 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1253,7 +1546,7 @@
 	)
 	(hierarchical_label "MOTOR3_TERMINAL2"
 		(shape bidirectional)
-		(at 175.26 46.99 180)
+		(at 176.53 77.47 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1264,7 +1557,7 @@
 	)
 	(hierarchical_label "MOTOR4_EN_IN1"
 		(shape input)
-		(at 175.26 96.52 180)
+		(at 176.53 127 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1275,7 +1568,7 @@
 	)
 	(hierarchical_label "MOTOR3_PH_IN2"
 		(shape input)
-		(at 175.26 53.34 180)
+		(at 176.53 83.82 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1284,20 +1577,9 @@
 		)
 		(uuid "e368b98c-c902-4c4f-aff1-51a44df7ff09")
 	)
-	(hierarchical_label "MOTOR1_nFAULT"
-		(shape output)
-		(at 125.73 33.02 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "eb5f57c4-2486-4af8-9e41-e13d19f5a700")
-	)
 	(hierarchical_label "MOTOR1_nCS"
 		(shape input)
-		(at 41.91 40.64 180)
+		(at 43.18 71.12 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1308,7 +1590,7 @@
 	)
 	(hierarchical_label "MOTOR2_TERMINAL1"
 		(shape bidirectional)
-		(at 41.91 90.17 180)
+		(at 43.18 120.65 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1319,7 +1601,7 @@
 	)
 	(hierarchical_label "P24V0"
 		(shape input)
-		(at 41.91 29.21 180)
+		(at 43.18 59.69 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -1328,8 +1610,409 @@
 		)
 		(uuid "f9577c10-77ca-4ac7-b9ad-cc2a343bbf26")
 	)
+	(symbol
+		(lib_id "Device:R")
+		(at 60.96 49.53 0)
+		(mirror x)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "8edaaffe-441f-4f79-820a-9e34b6abefd7")
+		(property "Reference" "R139"
+			(at 64.008 45.974 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "4k7"
+			(at 62.992 53.086 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 59.182 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 60.96 49.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 60.96 49.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Display" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCB ID" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC Part" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "A_MAX" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "BALL_COLUMNS" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "BALL_ROWS" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "BODY_DIAMETER" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "B_MAX" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "B_MIN" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "B_NOM" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "D2_NOM" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DMAX" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DMIN" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DNOM" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "D_MAX" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "D_MIN" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "D_NOM" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "E2_NOM" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "EMAX" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "EMIN" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "ENOM" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "E_MAX" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "E_MIN" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "E_NOM" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "IPC" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JEDEC" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "L_MAX" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "L_MIN" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "L_NOM" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "PACKAGE_TYPE" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "PARTEV" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "PINS" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "PIN_COLUMNS" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "PIN_COUNT_D" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "PIN_COUNT_E" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "THERMAL_PAD" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VACANCIES" ""
+			(at 60.96 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "edb35482-b9fd-4d2b-9604-8e63ff91d586")
+		)
+		(pin "2"
+			(uuid "d603c2f6-ca69-4fba-b2e0-b44709807bce")
+		)
+		(instances
+			(project "STAR"
+				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/07712c52-f5ae-4a00-8c08-8de30640eab9"
+					(reference "R139")
+					(unit 1)
+				)
+			)
+		)
+	)
 	(sheet
-		(at 198.12 21.59)
+		(at 199.39 52.07)
 		(size 40.64 36.83)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -1343,9 +2026,9 @@
 		(fill
 			(color 0 0 0 0.0000)
 		)
-		(uuid "60a70c1d-23d4-4b83-bc12-70a980647562")
+		(uuid "12332cca-8dae-4b9a-a306-a89e304a2f02")
 		(property "Sheetname" "Motor with Driver3"
-			(at 198.12 20.8784 0)
+			(at 199.39 51.3584 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1354,7 +2037,7 @@
 			)
 		)
 		(property "Sheetfile" "Motor with Driver.kicad_sch"
-			(at 198.12 59.0046 0)
+			(at 199.39 89.4846 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1362,9 +2045,9 @@
 				(justify left top)
 			)
 		)
-		(pin "MOTORx_SCLK" input
-			(at 198.12 33.02 180)
-			(uuid "e8e65c65-74da-474a-8e40-240890560143")
+		(pin "SPI_SCLK" input
+			(at 199.39 63.5 180)
+			(uuid "5588b1e8-327d-4e43-90c2-c94af40ff73a")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1373,8 +2056,8 @@
 			)
 		)
 		(pin "P24V0" input
-			(at 198.12 29.21 180)
-			(uuid "bddd8275-cb54-49a0-8c1c-81e801d8c830")
+			(at 199.39 59.69 180)
+			(uuid "66ca0193-9abe-40c3-b49e-36cffd28a42c")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1383,8 +2066,8 @@
 			)
 		)
 		(pin "SENSOR_P3V3" input
-			(at 198.12 26.67 180)
-			(uuid "520b6681-ca94-4f7e-9b3b-8dc56d49a32b")
+			(at 199.39 57.15 180)
+			(uuid "88a77e9a-add7-419a-b613-d620632d3eb6")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1393,8 +2076,8 @@
 			)
 		)
 		(pin "MOTORx_TERMINAL2" bidirectional
-			(at 198.12 46.99 180)
-			(uuid "bac7980a-8199-4f13-8687-e3230ddb491b")
+			(at 199.39 77.47 180)
+			(uuid "6f49dd7d-126a-42c8-a7b9-6521ae9d3748")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1402,9 +2085,9 @@
 				(justify left)
 			)
 		)
-		(pin "MOTORx_SDO" input
-			(at 198.12 38.1 180)
-			(uuid "69affe9b-783f-47ad-a1b4-85177c80a830")
+		(pin "SPI_SDO" input
+			(at 199.39 68.58 180)
+			(uuid "ce7b77d9-4420-4cbd-a90d-dd5fc05efe22")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1413,8 +2096,8 @@
 			)
 		)
 		(pin "MOTORx_TERMINAL1" bidirectional
-			(at 198.12 44.45 180)
-			(uuid "56888c9e-41d5-4010-bb62-16f9ef68074e")
+			(at 199.39 74.93 180)
+			(uuid "68b9d719-78f4-4686-803f-14e6b2bddfc7")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1423,8 +2106,8 @@
 			)
 		)
 		(pin "MOTORx_nCS" input
-			(at 198.12 40.64 180)
-			(uuid "aa2758cd-e559-4198-8471-e09bdc1236a5")
+			(at 199.39 71.12 180)
+			(uuid "95ae869a-8dec-4ea4-84e0-be2ee295fff9")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1433,8 +2116,8 @@
 			)
 		)
 		(pin "MOTORx_nFAULT" output
-			(at 238.76 33.02 0)
-			(uuid "4a098b73-fff7-44a4-87cc-e09fba58a08d")
+			(at 240.03 63.5 0)
+			(uuid "b3a1a39a-6129-4102-adb2-b272063afea3")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1443,8 +2126,8 @@
 			)
 		)
 		(pin "MOTORx_IPROPI" output
-			(at 238.76 35.56 0)
-			(uuid "e3e06035-533f-4325-8e86-beb99a54e2c7")
+			(at 240.03 66.04 0)
+			(uuid "f08f1a82-2178-4957-b48d-fbcc4b6287b6")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1453,8 +2136,8 @@
 			)
 		)
 		(pin "MOTORx_EN_IN1" input
-			(at 198.12 50.8 180)
-			(uuid "e5438e30-7226-482d-b1db-b2347a375059")
+			(at 199.39 81.28 180)
+			(uuid "c70bc917-dfa2-4e47-834e-89952ae7293a")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1463,8 +2146,8 @@
 			)
 		)
 		(pin "MOTORx_PH_IN2" input
-			(at 198.12 53.34 180)
-			(uuid "94447ff9-350f-4073-9f90-5bdbf6f066bc")
+			(at 199.39 83.82 180)
+			(uuid "9be2e0f0-4f90-4b90-8511-a3ee8285dbc5")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1472,9 +2155,9 @@
 				(justify left)
 			)
 		)
-		(pin "MOTORx_SDI" input
-			(at 198.12 35.56 180)
-			(uuid "2ce0c4b3-cdca-4393-be61-7c01a46bcb3f")
+		(pin "SPI_SDI" input
+			(at 199.39 66.04 180)
+			(uuid "f8f021fc-9033-4490-ba68-b69793519e8d")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1491,7 +2174,169 @@
 		)
 	)
 	(sheet
-		(at 64.77 21.59)
+		(at 66.04 97.79)
+		(size 40.64 36.83)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(stroke
+			(width 0.1524)
+			(type solid)
+		)
+		(fill
+			(color 0 0 0 0.0000)
+		)
+		(uuid "7a91eb0b-b549-46c5-8b0e-dbd0b5aceef7")
+		(property "Sheetname" "Motor with Driver2"
+			(at 66.04 97.0784 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left bottom)
+			)
+		)
+		(property "Sheetfile" "Motor with Driver.kicad_sch"
+			(at 66.04 135.2046 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+			)
+		)
+		(pin "SPI_SCLK" input
+			(at 66.04 109.22 180)
+			(uuid "b7b61c07-939c-4b75-8af9-a1df8770ef89")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "P24V0" input
+			(at 66.04 105.41 180)
+			(uuid "213909cf-451f-4b71-91d3-03a6f4b3651f")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "SENSOR_P3V3" input
+			(at 66.04 102.87 180)
+			(uuid "90acab1f-1730-4c32-aee3-acd06e67ffa6")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "MOTORx_TERMINAL2" bidirectional
+			(at 66.04 123.19 180)
+			(uuid "88841d1c-d2d7-4f4a-b918-042f6157a81e")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "SPI_SDO" input
+			(at 66.04 114.3 180)
+			(uuid "a8cd5e62-edb8-4ad9-88f8-838b80d6261f")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "MOTORx_TERMINAL1" bidirectional
+			(at 66.04 120.65 180)
+			(uuid "a31b1a2d-43ea-4cda-92be-89d4b8acf53c")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "MOTORx_nCS" input
+			(at 66.04 116.84 180)
+			(uuid "a2b0576e-e616-4e9d-972b-ceab6520addc")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "MOTORx_nFAULT" output
+			(at 106.68 109.22 0)
+			(uuid "48e49fa2-8436-41e0-aef8-8e1058900fdf")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "MOTORx_IPROPI" output
+			(at 106.68 111.76 0)
+			(uuid "e7b09170-f5c4-4a17-9b88-94e9b8416fd2")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(pin "MOTORx_EN_IN1" input
+			(at 66.04 127 180)
+			(uuid "67062f24-62ed-4c35-8f6f-d3006f347024")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "MOTORx_PH_IN2" input
+			(at 66.04 129.54 180)
+			(uuid "e5be0edd-de83-4d7f-9e4d-c401eb17ad6b")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(pin "SPI_SDI" input
+			(at 66.04 111.76 180)
+			(uuid "b379035b-16f9-4a5a-b097-66d40415d033")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(instances
+			(project "STAR"
+				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/07712c52-f5ae-4a00-8c08-8de30640eab9"
+					(page "27")
+				)
+			)
+		)
+	)
+	(sheet
+		(at 66.04 52.07)
 		(size 40.64 36.83)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -1507,7 +2352,7 @@
 		)
 		(uuid "843d6ab8-aee5-4b9b-9eb5-61d6831c2a8c")
 		(property "Sheetname" "Motor with Driver1"
-			(at 64.77 20.8784 0)
+			(at 66.04 51.3584 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1516,7 +2361,7 @@
 			)
 		)
 		(property "Sheetfile" "Motor with Driver.kicad_sch"
-			(at 64.77 59.0046 0)
+			(at 66.04 89.4846 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1524,8 +2369,8 @@
 				(justify left top)
 			)
 		)
-		(pin "MOTORx_SCLK" input
-			(at 64.77 33.02 180)
+		(pin "SPI_SCLK" input
+			(at 66.04 63.5 180)
 			(uuid "cf012d89-82ba-46d9-8ab6-b9e9012da557")
 			(effects
 				(font
@@ -1535,7 +2380,7 @@
 			)
 		)
 		(pin "P24V0" input
-			(at 64.77 29.21 180)
+			(at 66.04 59.69 180)
 			(uuid "5749326f-6532-4b33-9262-944773712ad2")
 			(effects
 				(font
@@ -1545,7 +2390,7 @@
 			)
 		)
 		(pin "SENSOR_P3V3" input
-			(at 64.77 26.67 180)
+			(at 66.04 57.15 180)
 			(uuid "56aa0962-47b9-42ec-9caa-90277800da1e")
 			(effects
 				(font
@@ -1555,7 +2400,7 @@
 			)
 		)
 		(pin "MOTORx_TERMINAL2" bidirectional
-			(at 64.77 46.99 180)
+			(at 66.04 77.47 180)
 			(uuid "52eefe05-6808-4b44-8a87-371a8cc5ef01")
 			(effects
 				(font
@@ -1564,8 +2409,8 @@
 				(justify left)
 			)
 		)
-		(pin "MOTORx_SDO" input
-			(at 64.77 38.1 180)
+		(pin "SPI_SDO" input
+			(at 66.04 68.58 180)
 			(uuid "26f809e9-d33f-4218-bd1a-708566981c36")
 			(effects
 				(font
@@ -1575,7 +2420,7 @@
 			)
 		)
 		(pin "MOTORx_TERMINAL1" bidirectional
-			(at 64.77 44.45 180)
+			(at 66.04 74.93 180)
 			(uuid "f56b2541-85a7-42fb-85b1-0b3bb85df884")
 			(effects
 				(font
@@ -1585,7 +2430,7 @@
 			)
 		)
 		(pin "MOTORx_nCS" input
-			(at 64.77 40.64 180)
+			(at 66.04 71.12 180)
 			(uuid "6097969c-63a8-4d17-8e86-d719dce7e7b0")
 			(effects
 				(font
@@ -1595,7 +2440,7 @@
 			)
 		)
 		(pin "MOTORx_nFAULT" output
-			(at 105.41 33.02 0)
+			(at 106.68 63.5 0)
 			(uuid "c345c6a1-ce4a-4d56-b84c-f3eec0f98282")
 			(effects
 				(font
@@ -1605,7 +2450,7 @@
 			)
 		)
 		(pin "MOTORx_IPROPI" output
-			(at 105.41 35.56 0)
+			(at 106.68 66.04 0)
 			(uuid "43470410-c805-4841-a90c-70fd7023cfc0")
 			(effects
 				(font
@@ -1615,7 +2460,7 @@
 			)
 		)
 		(pin "MOTORx_EN_IN1" input
-			(at 64.77 50.8 180)
+			(at 66.04 81.28 180)
 			(uuid "1a7734e7-f7d1-4611-8b0e-54ca8a51ccb8")
 			(effects
 				(font
@@ -1625,7 +2470,7 @@
 			)
 		)
 		(pin "MOTORx_PH_IN2" input
-			(at 64.77 53.34 180)
+			(at 66.04 83.82 180)
 			(uuid "975460bc-5bf2-4a10-af21-fb9ca1fcb93d")
 			(effects
 				(font
@@ -1634,8 +2479,8 @@
 				(justify left)
 			)
 		)
-		(pin "MOTORx_SDI" input
-			(at 64.77 35.56 180)
+		(pin "SPI_SDI" input
+			(at 66.04 66.04 180)
 			(uuid "b7b381f8-a4f7-470f-a2c6-aea7f178d5ea")
 			(effects
 				(font
@@ -1653,7 +2498,7 @@
 		)
 	)
 	(sheet
-		(at 64.77 67.31)
+		(at 199.39 97.79)
 		(size 40.64 36.83)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -1667,171 +2512,9 @@
 		(fill
 			(color 0 0 0 0.0000)
 		)
-		(uuid "ceb02b0e-fcd5-48f7-8c41-819b18e83f9d")
-		(property "Sheetname" "Motor with Driver2"
-			(at 64.77 66.5984 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left bottom)
-			)
-		)
-		(property "Sheetfile" "Motor with Driver.kicad_sch"
-			(at 64.77 104.7246 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-			)
-		)
-		(pin "MOTORx_SCLK" input
-			(at 64.77 78.74 180)
-			(uuid "cfe8e2ac-ed9b-40f5-b423-d05615499a62")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(pin "P24V0" input
-			(at 64.77 74.93 180)
-			(uuid "4a4e78eb-0e0c-4210-823a-a82e93cf3224")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(pin "SENSOR_P3V3" input
-			(at 64.77 72.39 180)
-			(uuid "44ff8edb-7575-41fa-9de1-dd09b37479ed")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(pin "MOTORx_TERMINAL2" bidirectional
-			(at 64.77 92.71 180)
-			(uuid "30cb4ebd-14dd-4f10-ba1d-cfc5610f8a3a")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(pin "MOTORx_SDO" input
-			(at 64.77 83.82 180)
-			(uuid "e8eeb97d-1d33-4b0a-a443-8c0aab64099a")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(pin "MOTORx_TERMINAL1" bidirectional
-			(at 64.77 90.17 180)
-			(uuid "dca407d3-0517-495f-b655-d2571e08aab8")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(pin "MOTORx_nCS" input
-			(at 64.77 86.36 180)
-			(uuid "ec46864b-fd3c-4765-abf0-478c950bd01a")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(pin "MOTORx_nFAULT" output
-			(at 105.41 78.74 0)
-			(uuid "2637a2fb-cfb5-47a1-990a-02b052cfe846")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(pin "MOTORx_IPROPI" output
-			(at 105.41 81.28 0)
-			(uuid "04ad71a8-24b2-40b9-b628-3d53e95cec9e")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(pin "MOTORx_EN_IN1" input
-			(at 64.77 96.52 180)
-			(uuid "33557193-3079-4ef8-8b77-bc0602d019f2")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(pin "MOTORx_PH_IN2" input
-			(at 64.77 99.06 180)
-			(uuid "24708c53-d9a5-42e1-b819-0fe69625b303")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(pin "MOTORx_SDI" input
-			(at 64.77 81.28 180)
-			(uuid "467b2495-19b6-47bf-adff-56041d29a7c8")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(instances
-			(project "STAR"
-				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/07712c52-f5ae-4a00-8c08-8de30640eab9"
-					(page "27")
-				)
-			)
-		)
-	)
-	(sheet
-		(at 198.12 67.31)
-		(size 40.64 36.83)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(stroke
-			(width 0.1524)
-			(type solid)
-		)
-		(fill
-			(color 0 0 0 0.0000)
-		)
-		(uuid "d7da498a-b2cb-4aed-9b68-54bd352eacb9")
+		(uuid "ffd511cd-348c-4aa2-92a6-874df4b88d02")
 		(property "Sheetname" "Motor with Driver4"
-			(at 198.12 66.5984 0)
+			(at 199.39 97.0784 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1840,7 +2523,7 @@
 			)
 		)
 		(property "Sheetfile" "Motor with Driver.kicad_sch"
-			(at 198.12 104.7246 0)
+			(at 199.39 135.2046 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1848,9 +2531,9 @@
 				(justify left top)
 			)
 		)
-		(pin "MOTORx_SCLK" input
-			(at 198.12 78.74 180)
-			(uuid "8d415867-5432-4409-9109-67b5645092b4")
+		(pin "SPI_SCLK" input
+			(at 199.39 109.22 180)
+			(uuid "52016533-f84b-4e37-93f6-6b659b1c7273")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1859,8 +2542,8 @@
 			)
 		)
 		(pin "P24V0" input
-			(at 198.12 74.93 180)
-			(uuid "617d31d7-8439-4bd0-9bfb-136a21b9bcac")
+			(at 199.39 105.41 180)
+			(uuid "e0be4596-8fe3-4819-9207-caa46e56094a")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1869,8 +2552,8 @@
 			)
 		)
 		(pin "SENSOR_P3V3" input
-			(at 198.12 72.39 180)
-			(uuid "cb488fc7-fd82-4543-b91e-c9110513add2")
+			(at 199.39 102.87 180)
+			(uuid "4055743e-ef5a-484a-85d9-2dc67025605a")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1879,8 +2562,8 @@
 			)
 		)
 		(pin "MOTORx_TERMINAL2" bidirectional
-			(at 198.12 92.71 180)
-			(uuid "9318bae6-5f3c-4374-9a63-d82ee4af5792")
+			(at 199.39 123.19 180)
+			(uuid "885b4ede-60c8-4cf1-b64b-361357b924c6")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1888,9 +2571,9 @@
 				(justify left)
 			)
 		)
-		(pin "MOTORx_SDO" input
-			(at 198.12 83.82 180)
-			(uuid "423fe235-fa45-4479-93c4-8b26b2cd8236")
+		(pin "SPI_SDO" input
+			(at 199.39 114.3 180)
+			(uuid "0c1fa67d-317f-47e2-907f-7b19034b36e8")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1899,8 +2582,8 @@
 			)
 		)
 		(pin "MOTORx_TERMINAL1" bidirectional
-			(at 198.12 90.17 180)
-			(uuid "f6310e20-a11c-45e2-a6bd-eec66d5d4d3f")
+			(at 199.39 120.65 180)
+			(uuid "dd2bfaba-8e96-47f3-aa20-8ccedad1e20d")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1909,8 +2592,8 @@
 			)
 		)
 		(pin "MOTORx_nCS" input
-			(at 198.12 86.36 180)
-			(uuid "d07f014d-7137-451d-8abd-6e70e92995f4")
+			(at 199.39 116.84 180)
+			(uuid "b96b882b-cb2c-46b9-877d-d1caf44e555a")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1919,8 +2602,8 @@
 			)
 		)
 		(pin "MOTORx_nFAULT" output
-			(at 238.76 78.74 0)
-			(uuid "2ae45011-3da1-457f-8299-4a6fc1a90a10")
+			(at 240.03 109.22 0)
+			(uuid "9e25bcd2-b411-4e53-be1a-7b4c4d59a6da")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1929,8 +2612,8 @@
 			)
 		)
 		(pin "MOTORx_IPROPI" output
-			(at 238.76 81.28 0)
-			(uuid "0f65f762-fe6e-4a52-b1e4-7c11feca0fdb")
+			(at 240.03 111.76 0)
+			(uuid "e57be7cf-fc09-40bc-bf9a-28cb0e7c0247")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1939,8 +2622,8 @@
 			)
 		)
 		(pin "MOTORx_EN_IN1" input
-			(at 198.12 96.52 180)
-			(uuid "0cc1e3d4-b4ac-4d91-a16d-de20975a225f")
+			(at 199.39 127 180)
+			(uuid "51ba8175-3576-4c17-b960-d479d4115189")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1949,8 +2632,8 @@
 			)
 		)
 		(pin "MOTORx_PH_IN2" input
-			(at 198.12 99.06 180)
-			(uuid "bb334466-f2f8-4c5b-b973-b88fa3f02bcd")
+			(at 199.39 129.54 180)
+			(uuid "f8655c58-b614-4787-8462-07d19e30b63b")
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1958,9 +2641,9 @@
 				(justify left)
 			)
 		)
-		(pin "MOTORx_SDI" input
-			(at 198.12 81.28 180)
-			(uuid "f96dfb5e-3640-43ea-b0e2-377081ba416f")
+		(pin "SPI_SDI" input
+			(at 199.39 111.76 180)
+			(uuid "d89a3b24-b5b0-443b-b1c3-e2bcaa08c40a")
 			(effects
 				(font
 					(size 1.27 1.27)

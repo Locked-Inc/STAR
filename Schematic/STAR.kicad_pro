@@ -245,7 +245,12 @@
     "equivalence_files": []
   },
   "erc": {
-    "erc_exclusions": [],
+    "erc_exclusions": [
+      [
+        "pin_to_pin|1701800|1117600|81e8bfec-143c-4cf7-8ea2-55c6e66be38c|12eb4dd8-c4b6-4c1a-aad1-95af27449903|/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/07712c52-f5ae-4a00-8c08-8de30640eab9/ffd511cd-348c-4aa2-92a6-874df4b88d02|/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/07712c52-f5ae-4a00-8c08-8de30640eab9/ffd511cd-348c-4aa2-92a6-874df4b88d02|/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/07712c52-f5ae-4a00-8c08-8de30640eab9/ffd511cd-348c-4aa2-92a6-874df4b88d02",
+        ""
+      ]
+    ],
     "meta": {
       "version": 0
     },
@@ -1139,15 +1144,15 @@
       "Motor with Driver1"
     ],
     [
-      "ceb02b0e-fcd5-48f7-8c41-819b18e83f9d",
+      "7a91eb0b-b549-46c5-8b0e-dbd0b5aceef7",
       "Motor with Driver2"
     ],
     [
-      "60a70c1d-23d4-4b83-bc12-70a980647562",
+      "12332cca-8dae-4b9a-a306-a89e304a2f02",
       "Motor with Driver3"
     ],
     [
-      "d7da498a-b2cb-4aed-9b68-54bd352eacb9",
+      "ffd511cd-348c-4aa2-92a6-874df4b88d02",
       "Motor with Driver4"
     ],
     [
@@ -1161,6 +1166,10 @@
     [
       "75e06a36-2807-4a4b-af1f-d37310ed1ba6",
       "IMU Sensor"
+    ],
+    [
+      "12bd6774-3c71-41d8-bbdc-bae46e746955",
+      "Quadrature Counter"
     ]
   ],
   "text_variables": {}

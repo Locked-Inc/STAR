@@ -1036,6 +1036,16 @@
 		)
 		(uuid "0d48dc64-7018-43f5-82c8-d37022b95939")
 	)
+	(text "MAX current draw is 260uA"
+		(exclude_from_sim no)
+		(at 141.986 118.364 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "370c7ed0-12ea-442b-9c04-fabf1ec834ac")
+	)
 	(text "Per the datasheet, the unused INT pin is tied to GND to prevent a floating input.\nCRITICAL: The interrupt pin must be disabled in software to prevent a short circuit.\nEnsure the 'int_en' bit in the INT_CONFIG register (0x14) remains disabled (set to 0).\n\n\nDatasheet sets the IRQ to 0 on start up, so never turn it on\nPAGE49: 0x14 on reset is set to 0x35\nPAGE49: <int_en 2bits> <int_od 2bits> <int_pol 2bits> <int_mode 2bits LSB>\nPAGE51: 8.5, setup for 0x14, <0> <1> <0> <1>\nthis means: int_mode = latched, int_pol = active low, int_od = open_drain, int_en = disabled\nINT_CONFIG.int_en = 0\nINT_CONFIG.od = 1\nINT_CONFIG.pol = 0\nINT_CONFIG.mode = 1\nINT_CONFIG.pad_int_drv = 3"
 		(exclude_from_sim no)
 		(at 98.298 78.232 0)
@@ -1650,7 +1660,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "02c9667b-a554-40e9-9a46-8c0d6fbdab35")
-		(property "Reference" "R156"
+		(property "Reference" "R148"
 			(at 92.964 109.728 0)
 			(effects
 				(font
@@ -2035,7 +2045,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/93231d0a-659f-4d39-8e8d-78b96a3896a1/525f2b83-8347-468d-b8c8-5a1df0e1c532"
-					(reference "R156")
+					(reference "R148")
 					(unit 1)
 				)
 			)
@@ -2425,7 +2435,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "169929e4-618a-4273-9603-bcda89dc0178")
-		(property "Reference" "#PWR096"
+		(property "Reference" "#PWR0100"
 			(at 166.37 137.16 0)
 			(effects
 				(font
@@ -2476,7 +2486,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/93231d0a-659f-4d39-8e8d-78b96a3896a1/525f2b83-8347-468d-b8c8-5a1df0e1c532"
-					(reference "#PWR096")
+					(reference "#PWR0100")
 					(unit 1)
 				)
 			)
@@ -2491,7 +2501,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "25c2910d-d3fc-4b4c-b0af-664cb65f4150")
-		(property "Reference" "J17"
+		(property "Reference" "J21"
 			(at 186.944 147.574 0)
 			(effects
 				(font
@@ -2854,7 +2864,7 @@
 		(instances
 			(project ""
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/93231d0a-659f-4d39-8e8d-78b96a3896a1/525f2b83-8347-468d-b8c8-5a1df0e1c532"
-					(reference "J17")
+					(reference "J21")
 					(unit 1)
 				)
 			)
@@ -2869,7 +2879,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "316e9091-3bf8-444e-9327-e2f0be4380b3")
-		(property "Reference" "C187"
+		(property "Reference" "C189"
 			(at 115.824 110.998 0)
 			(effects
 				(font
@@ -3229,7 +3239,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/93231d0a-659f-4d39-8e8d-78b96a3896a1/525f2b83-8347-468d-b8c8-5a1df0e1c532"
-					(reference "C187")
+					(reference "C189")
 					(unit 1)
 				)
 			)
@@ -3244,7 +3254,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "6ec1a5d6-cdfd-4709-ad3a-4a478f73e1a1")
-		(property "Reference" "C189"
+		(property "Reference" "C190"
 			(at 180.594 105.918 0)
 			(effects
 				(font
@@ -3604,7 +3614,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/93231d0a-659f-4d39-8e8d-78b96a3896a1/525f2b83-8347-468d-b8c8-5a1df0e1c532"
-					(reference "C189")
+					(reference "C190")
 					(unit 1)
 				)
 			)
@@ -3619,7 +3629,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "7cd74e93-2abe-4124-890f-933276422c09")
-		(property "Reference" "C190"
+		(property "Reference" "C191"
 			(at 188.214 105.918 0)
 			(effects
 				(font
@@ -3979,7 +3989,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/93231d0a-659f-4d39-8e8d-78b96a3896a1/525f2b83-8347-468d-b8c8-5a1df0e1c532"
-					(reference "C190")
+					(reference "C191")
 					(unit 1)
 				)
 			)
@@ -3994,7 +4004,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "9a4eb0ca-4d4a-4c84-9015-44abd8dce9cd")
-		(property "Reference" "U20"
+		(property "Reference" "U23"
 			(at 151.892 94.234 0)
 			(effects
 				(font
@@ -4375,7 +4385,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/93231d0a-659f-4d39-8e8d-78b96a3896a1/525f2b83-8347-468d-b8c8-5a1df0e1c532"
-					(reference "U20")
+					(reference "U23")
 					(unit 1)
 				)
 			)
@@ -4391,7 +4401,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "e00a98d0-3f8b-4a0d-9289-f7d8dde142e7")
-		(property "Reference" "D48"
+		(property "Reference" "D47"
 			(at 94.234 120.904 90)
 			(effects
 				(font
@@ -4778,7 +4788,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/93231d0a-659f-4d39-8e8d-78b96a3896a1/525f2b83-8347-468d-b8c8-5a1df0e1c532"
-					(reference "D48")
+					(reference "D47")
 					(unit 1)
 				)
 			)
