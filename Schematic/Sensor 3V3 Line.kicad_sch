@@ -1451,7 +1451,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "e941f020-c469-4d57-869c-69aa2263f9a2")
-		(property "Reference" "#PWR080"
+		(property "Reference" "#PWR081"
 			(at 124.46 133.35 0)
 			(effects
 				(font
@@ -1502,7 +1502,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/93231d0a-659f-4d39-8e8d-78b96a3896a1/79d08640-5c3f-40a9-8b33-48497b13ec54"
-					(reference "#PWR080")
+					(reference "#PWR081")
 					(unit 1)
 				)
 			)
