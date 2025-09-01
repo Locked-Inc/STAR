@@ -1,6 +1,0 @@
-/build
-/sources
-/downloads
-/bitbake.lock
-/pseudodone
-*.dot
