@@ -1,0 +1,3 @@
+[submodule "Yocto/oe-layersetup"]
+	path = Yocto/oe-layersetup
+	url = https://git.ti.com/git/arago-project/oe-layersetup.git
