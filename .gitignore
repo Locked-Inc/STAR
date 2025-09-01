@@ -1,5 +1,5 @@
 # Ignore Yocto build artifacts, but not the SDK
-/Yocto/*
+
 !/Yocto/sdk/
 
 # macOS system files
