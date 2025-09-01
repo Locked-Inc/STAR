@@ -1,3 +1,38 @@
 # Ignore Yocto build artifacts, but not the SDK
 /Yocto/*
 !/Yocto/sdk/
+
+# macOS system files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Gradle
+.gradle/
+*/build/
+build/
+gradle-app.setting
+!gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# Local configuration files
+local.properties
+
+# KiCad lock files
+*.kicad_sch.lck
+*.kicad_pcb.lck
+
+# Windows paths and logs
+**/C:*
+*.log
