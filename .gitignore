@@ -36,3 +36,4 @@ local.properties
 # Windows paths and logs
 **/C:*
 *.log
+/Yocto/jammy-server-cloudimg-amd64.img
