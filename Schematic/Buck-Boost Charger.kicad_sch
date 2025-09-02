@@ -1946,6 +1946,16 @@
 		)
 		(uuid 67a21b1b-ec95-41a2-939c-a9884b18f0c4)
 	)
+	(text "these should be precision resistors"
+		(exclude_from_sim no)
+		(at 124.968 80.772 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "18e4fea8-a028-48cf-9d82-ab7959006b0a")
+	)
 	(text "For my application:\n8S4P setup, each cell is ~2200mAh\n4 * 2200mAh = 8.8Ah\n\nSetting charging at 0.5*C\nIchg = 8.8Ah * 0.5 = 4.4A\nR = 50AkΩ / 4.4A = 11.36kΩ"
 		(exclude_from_sim no)
 		(at 19.812 168.656 0)
@@ -2747,7 +2757,7 @@
 	)
 	(wire
 		(pts
-			(xy 67.31 115.57) (xy 67.31 111.76)
+			(xy 77.47 115.57) (xy 77.47 111.76)
 		)
 		(stroke
 			(width 0)
@@ -2797,7 +2807,7 @@
 	)
 	(wire
 		(pts
-			(xy 67.31 118.11) (xy 110.49 118.11)
+			(xy 77.47 118.11) (xy 110.49 118.11)
 		)
 		(stroke
 			(width 0)
@@ -3327,7 +3337,7 @@
 	)
 	(wire
 		(pts
-			(xy 67.31 111.76) (xy 60.96 111.76)
+			(xy 77.47 111.76) (xy 60.96 111.76)
 		)
 		(stroke
 			(width 0)
@@ -3627,7 +3637,7 @@
 	)
 	(wire
 		(pts
-			(xy 67.31 118.11) (xy 67.31 121.92)
+			(xy 77.47 118.11) (xy 77.47 121.92)
 		)
 		(stroke
 			(width 0)
@@ -4047,7 +4057,7 @@
 	)
 	(wire
 		(pts
-			(xy 67.31 115.57) (xy 110.49 115.57)
+			(xy 77.47 115.57) (xy 110.49 115.57)
 		)
 		(stroke
 			(width 0)
@@ -4287,7 +4297,7 @@
 	)
 	(wire
 		(pts
-			(xy 67.31 121.92) (xy 60.96 121.92)
+			(xy 77.47 121.92) (xy 60.96 121.92)
 		)
 		(stroke
 			(width 0)
@@ -11277,8 +11287,8 @@
 				)
 			)
 		)
-		(property "Value" "249k"
-			(at 63.754 110.236 0)
+		(property "Value" "249k±0.1%"
+			(at 66.802 110.236 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -12748,8 +12758,8 @@
 				)
 			)
 		)
-		(property "Value" "11k36"
-			(at 39.37 158.496 0)
+		(property "Value" "11k36±0.1%"
+			(at 41.91 158.75 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13215,8 +13225,8 @@
 				)
 			)
 		)
-		(property "Value" "2k49"
-			(at 68.58 158.496 0)
+		(property "Value" "2k49±0.1%"
+			(at 70.866 158.496 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -19944,8 +19954,8 @@
 				)
 			)
 		)
-		(property "Value" "100k"
-			(at 86.614 157.48 0)
+		(property "Value" "100k±0.1%"
+			(at 89.408 157.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -25985,8 +25995,8 @@
 				)
 			)
 		)
-		(property "Value" "11k96"
-			(at 64.262 120.396 0)
+		(property "Value" "11k96±0.1%"
+			(at 67.31 120.396 0)
 			(effects
 				(font
 					(size 1.27 1.27)
