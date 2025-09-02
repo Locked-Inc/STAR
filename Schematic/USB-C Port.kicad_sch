@@ -6474,7 +6474,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "6e7539ce-fb5d-4213-ab95-07552c6452e8")
-		(property "Reference" "D39"
+		(property "Reference" "D41"
 			(at 170.942 109.474 0)
 			(effects
 				(font
@@ -6966,7 +6966,7 @@
 		(instances
 			(project ""
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/f6f5f8c2-3fe5-486c-93b1-10011acff681"
-					(reference "D39")
+					(reference "D41")
 					(unit 1)
 				)
 			)

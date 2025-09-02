@@ -8021,7 +8021,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "17943973-7a79-4c4c-bb86-a20e5492f0b2")
-		(property "Reference" "TP40"
+		(property "Reference" "TP39"
 			(at 103.124 171.45 90)
 			(effects
 				(font
@@ -8073,7 +8073,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b"
-					(reference "TP40")
+					(reference "TP39")
 					(unit 1)
 				)
 			)
@@ -8088,7 +8088,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "1a93926e-b92a-43a0-8601-12cb1dc84e5b")
-		(property "Reference" "TP21"
+		(property "Reference" "TP20"
 			(at 21.336 143.51 90)
 			(effects
 				(font
@@ -8140,7 +8140,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b"
-					(reference "TP21")
+					(reference "TP20")
 					(unit 1)
 				)
 			)
@@ -8155,7 +8155,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "1dfb0f36-b2d1-4870-ba86-6e8cab7e7d60")
-		(property "Reference" "TP18"
+		(property "Reference" "TP17"
 			(at 21.336 110.49 90)
 			(effects
 				(font
@@ -8207,7 +8207,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b"
-					(reference "TP18")
+					(reference "TP17")
 					(unit 1)
 				)
 			)
@@ -8753,7 +8753,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "3cf91a84-ce44-44ad-b324-4f4750c37055")
-		(property "Reference" "TP34"
+		(property "Reference" "TP33"
 			(at 103.124 148.59 90)
 			(effects
 				(font
@@ -8805,7 +8805,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b"
-					(reference "TP34")
+					(reference "TP33")
 					(unit 1)
 				)
 			)
@@ -9287,7 +9287,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "41418df0-e30f-4d36-b51c-24376eeace70")
-		(property "Reference" "TP36"
+		(property "Reference" "TP35"
 			(at 103.124 158.75 90)
 			(effects
 				(font
@@ -9339,7 +9339,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b"
-					(reference "TP36")
+					(reference "TP35")
 					(unit 1)
 				)
 			)
@@ -10133,7 +10133,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "4715659c-c068-4060-93eb-b4278f6ff3c0")
-		(property "Reference" "TP20"
+		(property "Reference" "TP19"
 			(at 21.336 115.57 90)
 			(effects
 				(font
@@ -10185,7 +10185,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b"
-					(reference "TP20")
+					(reference "TP19")
 					(unit 1)
 				)
 			)
@@ -10267,7 +10267,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "4d73e5db-5cc6-46a5-a419-25eb4d66fb08")
-		(property "Reference" "TP27"
+		(property "Reference" "TP26"
 			(at 21.336 163.83 90)
 			(effects
 				(font
@@ -10319,7 +10319,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b"
-					(reference "TP27")
+					(reference "TP26")
 					(unit 1)
 				)
 			)
@@ -10334,7 +10334,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "500d300e-7da3-4711-b8c4-5264a5ff5193")
-		(property "Reference" "TP28"
+		(property "Reference" "TP27"
 			(at 21.336 166.37 90)
 			(effects
 				(font
@@ -10386,7 +10386,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b"
-					(reference "TP28")
+					(reference "TP27")
 					(unit 1)
 				)
 			)
@@ -10401,7 +10401,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "5096516f-34c4-4f27-9ad1-3ea8280ac5d0")
-		(property "Reference" "TP37"
+		(property "Reference" "TP36"
 			(at 103.124 161.29 90)
 			(effects
 				(font
@@ -10453,7 +10453,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b"
-					(reference "TP37")
+					(reference "TP36")
 					(unit 1)
 				)
 			)
@@ -10937,7 +10937,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "5d171d44-9e51-471a-8a91-f3ab553cbb8e")
-		(property "Reference" "TP30"
+		(property "Reference" "TP29"
 			(at 21.336 176.53 90)
 			(effects
 				(font
@@ -10989,7 +10989,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b"
-					(reference "TP30")
+					(reference "TP29")
 					(unit 1)
 				)
 			)
@@ -11996,7 +11996,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "692b473e-0899-44ff-9100-d59966e2ea75")
-		(property "Reference" "TP19"
+		(property "Reference" "TP18"
 			(at 21.336 113.03 90)
 			(effects
 				(font
@@ -12048,7 +12048,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b"
-					(reference "TP19")
+					(reference "TP18")
 					(unit 1)
 				)
 			)
@@ -12129,7 +12129,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "6c584d1f-81a9-42b2-8254-0112abc5e3bd")
-		(property "Reference" "TP22"
+		(property "Reference" "TP21"
 			(at 21.336 146.05 90)
 			(effects
 				(font
@@ -12181,7 +12181,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b"
-					(reference "TP22")
+					(reference "TP21")
 					(unit 1)
 				)
 			)
@@ -12797,7 +12797,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "7fb9142f-e543-4b8c-a820-55c9f6b4142a")
-		(property "Reference" "TP38"
+		(property "Reference" "TP37"
 			(at 103.124 166.37 90)
 			(effects
 				(font
@@ -12849,7 +12849,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b"
-					(reference "TP38")
+					(reference "TP37")
 					(unit 1)
 				)
 			)
@@ -13289,7 +13289,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "938f1cf9-b4b6-4fd8-b657-cd763c74fa24")
-		(property "Reference" "TP31"
+		(property "Reference" "TP30"
 			(at 21.336 179.07 90)
 			(effects
 				(font
@@ -13341,7 +13341,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b"
-					(reference "TP31")
+					(reference "TP30")
 					(unit 1)
 				)
 			)
@@ -13555,7 +13555,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "a40662e1-2c40-4476-a44e-e208a107b7d6")
-		(property "Reference" "TP17"
+		(property "Reference" "TP16"
 			(at 21.336 107.95 90)
 			(effects
 				(font
@@ -13607,7 +13607,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b"
-					(reference "TP17")
+					(reference "TP16")
 					(unit 1)
 				)
 			)
@@ -13622,7 +13622,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "a65251fb-c71d-4d4c-a21d-72dac5c47804")
-		(property "Reference" "TP39"
+		(property "Reference" "TP38"
 			(at 103.124 168.91 90)
 			(effects
 				(font
@@ -13674,7 +13674,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b"
-					(reference "TP39")
+					(reference "TP38")
 					(unit 1)
 				)
 			)
@@ -13689,7 +13689,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "a6b17bad-5581-469c-b150-41919fa597c2")
-		(property "Reference" "TP35"
+		(property "Reference" "TP34"
 			(at 103.124 151.13 90)
 			(effects
 				(font
@@ -13741,7 +13741,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b"
-					(reference "TP35")
+					(reference "TP34")
 					(unit 1)
 				)
 			)
@@ -13822,7 +13822,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "ae6664a1-20e2-40b7-a348-024322eb4558")
-		(property "Reference" "TP33"
+		(property "Reference" "TP32"
 			(at 54.61 194.31 0)
 			(effects
 				(font
@@ -13874,7 +13874,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b"
-					(reference "TP33")
+					(reference "TP32")
 					(unit 1)
 				)
 			)
@@ -14531,7 +14531,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "c25b12fa-a494-4154-89f8-6d943366e403")
-		(property "Reference" "TP23"
+		(property "Reference" "TP22"
 			(at 21.336 148.59 90)
 			(effects
 				(font
@@ -14583,7 +14583,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b"
-					(reference "TP23")
+					(reference "TP22")
 					(unit 1)
 				)
 			)
@@ -14776,7 +14776,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "c95295cd-dd93-44e9-a98e-61db9f77a8b4")
-		(property "Reference" "TP32"
+		(property "Reference" "TP31"
 			(at 37.338 124.714 0)
 			(effects
 				(font
@@ -14828,7 +14828,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b"
-					(reference "TP32")
+					(reference "TP31")
 					(unit 1)
 				)
 			)
@@ -14843,7 +14843,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "ca5ad3cc-5413-41a8-970f-366dad3b3ab0")
-		(property "Reference" "TP29"
+		(property "Reference" "TP28"
 			(at 21.336 168.91 90)
 			(effects
 				(font
@@ -14895,7 +14895,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b"
-					(reference "TP29")
+					(reference "TP28")
 					(unit 1)
 				)
 			)
@@ -15916,7 +15916,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "e54007cd-31fb-4ad4-a52f-d02b98393fab")
-		(property "Reference" "TP26"
+		(property "Reference" "TP25"
 			(at 21.336 158.75 90)
 			(effects
 				(font
@@ -15968,7 +15968,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b"
-					(reference "TP26")
+					(reference "TP25")
 					(unit 1)
 				)
 			)
@@ -16897,7 +16897,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "ecca54e8-2b6f-442e-bda9-af0f824a0e82")
-		(property "Reference" "TP25"
+		(property "Reference" "TP24"
 			(at 21.336 156.21 90)
 			(effects
 				(font
@@ -16949,7 +16949,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b"
-					(reference "TP25")
+					(reference "TP24")
 					(unit 1)
 				)
 			)
@@ -16964,7 +16964,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "f542025b-695e-40bb-bbe2-6dfcacfcafbe")
-		(property "Reference" "TP24"
+		(property "Reference" "TP23"
 			(at 21.336 153.67 90)
 			(effects
 				(font
@@ -17016,7 +17016,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b"
-					(reference "TP24")
+					(reference "TP23")
 					(unit 1)
 				)
 			)
