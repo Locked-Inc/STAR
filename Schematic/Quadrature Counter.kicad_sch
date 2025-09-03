@@ -866,6 +866,16 @@
 			(embedded_fonts no)
 		)
 	)
+	(text "put an end or source termination on the external clock or both (put with DNP)"
+		(exclude_from_sim no)
+		(at 131.064 186.69 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "023e0a09-5b19-470e-a52b-d7ee5f4da722")
+	)
 	(text "Only connect 1 pull-up resistor\nThis is a open-drain output"
 		(exclude_from_sim no)
 		(at 226.314 56.896 0)
@@ -895,6 +905,16 @@
 			)
 		)
 		(uuid "c78ae884-b70d-400d-9148-8c2ed90d2ad4")
+	)
+	(text "we might need to have 4 crystals\n\nput an oscillator instead:\n\n. Instead of a crystal the\n\nfCKi input may also be driven by an external clock.\n"
+		(exclude_from_sim no)
+		(at 131.826 169.164 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "f10a531c-4ec0-4cbb-9946-084ebf04949e")
 	)
 	(junction
 		(at 73.66 44.45)
@@ -2770,7 +2790,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "05ce10cf-9840-4e83-bfe9-699957b09082")
-		(property "Reference" "R178"
+		(property "Reference" "R179"
 			(at 103.886 38.1 0)
 			(effects
 				(font
@@ -3155,7 +3175,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/12bd6774-3c71-41d8-bbdc-bae46e746955"
-					(reference "R178")
+					(reference "R179")
 					(unit 1)
 				)
 			)
@@ -3783,7 +3803,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "52a3dfd6-cdb4-4447-a238-1b7f5eaffa88")
-		(property "Reference" "R179"
+		(property "Reference" "R180"
 			(at 190.5 56.134 90)
 			(effects
 				(font
@@ -4168,7 +4188,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/12bd6774-3c71-41d8-bbdc-bae46e746955"
-					(reference "R179")
+					(reference "R180")
 					(unit 1)
 				)
 			)

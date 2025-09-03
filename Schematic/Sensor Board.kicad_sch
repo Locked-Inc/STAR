@@ -5,6 +5,16 @@
 	(uuid "bf67175b-371f-4aa7-9d74-e5ad2070fa92")
 	(paper "A4")
 	(lib_symbols)
+	(text "put FB on the 3v3 Lines"
+		(exclude_from_sim no)
+		(at 134.874 154.686 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "753e691a-20db-4373-85a8-547ddda8cb30")
+	)
 	(junction
 		(at 90.17 90.17)
 		(diameter 0)
