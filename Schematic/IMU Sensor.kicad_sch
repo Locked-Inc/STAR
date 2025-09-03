@@ -2667,7 +2667,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "03e71c2a-bf27-4c89-bf00-aa97ae0f8818")
-		(property "Reference" "R175"
+		(property "Reference" "R176"
 			(at 100.076 87.884 90)
 			(effects
 				(font
@@ -3052,7 +3052,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/93231d0a-659f-4d39-8e8d-78b96a3896a1/75e06a36-2807-4a4b-af1f-d37310ed1ba6"
-					(reference "R175")
+					(reference "R176")
 					(unit 1)
 				)
 			)
@@ -3067,7 +3067,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "04d0c0fc-f1c0-4e4b-aae7-324d53ad771b")
-		(property "Reference" "R177"
+		(property "Reference" "R178"
 			(at 188.976 113.284 90)
 			(effects
 				(font
@@ -3452,7 +3452,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/93231d0a-659f-4d39-8e8d-78b96a3896a1/75e06a36-2807-4a4b-af1f-d37310ed1ba6"
-					(reference "R177")
+					(reference "R178")
 					(unit 1)
 				)
 			)
@@ -4736,7 +4736,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "6111356c-05df-4e90-ae6b-e152c884b0e7")
-		(property "Reference" "R173"
+		(property "Reference" "R174"
 			(at 48.514 88.138 0)
 			(effects
 				(font
@@ -5121,7 +5121,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/93231d0a-659f-4d39-8e8d-78b96a3896a1/75e06a36-2807-4a4b-af1f-d37310ed1ba6"
-					(reference "R173")
+					(reference "R174")
 					(unit 1)
 				)
 			)
@@ -6736,7 +6736,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "aeccdcc3-4c44-4e6f-b004-8b6ad6965ef2")
-		(property "Reference" "R176"
+		(property "Reference" "R177"
 			(at 188.976 110.744 90)
 			(effects
 				(font
@@ -7121,7 +7121,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/93231d0a-659f-4d39-8e8d-78b96a3896a1/75e06a36-2807-4a4b-af1f-d37310ed1ba6"
-					(reference "R176")
+					(reference "R177")
 					(unit 1)
 				)
 			)
@@ -7952,7 +7952,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "d6c8ef3c-089d-4722-9d7e-aef912923b97")
-		(property "Reference" "R174"
+		(property "Reference" "R175"
 			(at 93.726 145.034 90)
 			(effects
 				(font
@@ -8337,7 +8337,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/93231d0a-659f-4d39-8e8d-78b96a3896a1/75e06a36-2807-4a4b-af1f-d37310ed1ba6"
-					(reference "R174")
+					(reference "R175")
 					(unit 1)
 				)
 			)
