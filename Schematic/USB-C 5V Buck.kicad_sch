@@ -1783,107 +1783,6 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "power:GNDA"
-			(power)
-			(pin_numbers
-				(hide yes)
-			)
-			(pin_names
-				(offset 0)
-				(hide yes)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "#PWR"
-				(at 0 -6.35 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Value" "GNDA"
-				(at 0 -3.81 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" ""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Description" "Power symbol creates a global label with name \"GNDA\" , analog ground"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "global power"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "GNDA_0_1"
-				(polyline
-					(pts
-						(xy 0 0) (xy 0 -1.27) (xy 1.27 -1.27) (xy 0 -2.54) (xy -1.27 -1.27) (xy 0 -1.27)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "GNDA_1_1"
-				(pin power_in line
-					(at 0 0 270)
-					(length 0)
-					(name "~"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 		(symbol "power:PWR_FLAG"
 			(power)
 			(pin_numbers
@@ -2636,7 +2535,7 @@
 	)
 	(wire
 		(pts
-			(xy 93.98 105.41) (xy 95.25 105.41)
+			(xy 86.36 105.41) (xy 95.25 105.41)
 		)
 		(stroke
 			(width 0)
@@ -3186,7 +3085,7 @@
 	)
 	(wire
 		(pts
-			(xy 171.45 140.97) (xy 171.45 142.24)
+			(xy 171.45 140.97) (xy 171.45 147.32)
 		)
 		(stroke
 			(width 0)
@@ -3726,7 +3625,7 @@
 	)
 	(wire
 		(pts
-			(xy 67.31 146.05) (xy 67.31 148.59)
+			(xy 67.31 146.05) (xy 67.31 152.4)
 		)
 		(stroke
 			(width 0)
@@ -3904,6 +3803,16 @@
 		)
 		(uuid "32e2bc59-cc04-41fb-8423-6bb5568a98b9")
 	)
+	(label "GNDA"
+		(at 67.31 152.4 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "33b463c2-57b2-4f9f-8ea5-8d21193d1317")
+	)
 	(label "VCC"
 		(at 162.56 125.73 0)
 		(effects
@@ -3913,6 +3822,16 @@
 			(justify left bottom)
 		)
 		(uuid "405b6da2-61d0-4628-8362-ffcad1cdfca8")
+	)
+	(label "GNDA"
+		(at 132.08 171.45 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "6406633f-aea9-4557-97f5-adff87a1b4b7")
 	)
 	(label "PACK+"
 		(at 24.13 85.09 0)
@@ -3934,6 +3853,16 @@
 		)
 		(uuid "7b41ad1d-afe1-40ea-a5a3-e93a41cd29ec")
 	)
+	(label "GNDA"
+		(at 86.36 105.41 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "854ba63d-ac88-4b5b-aab9-4c2f337cd6fd")
+	)
 	(label "VCC"
 		(at 101.6 113.03 180)
 		(effects
@@ -3943,6 +3872,16 @@
 			(justify right bottom)
 		)
 		(uuid "8aa9ab8f-2c88-421b-a2a3-c130cf53565a")
+	)
+	(label "GNDA"
+		(at 171.45 147.32 90)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "cd01b834-1861-4dd1-9422-f015ab3eb96a")
 	)
 	(hierarchical_label "P5V0"
 		(shape output)
@@ -4041,7 +3980,7 @@
 		(on_board yes)
 		(dnp yes)
 		(uuid "0907d1c6-688f-4f1e-a11e-5737ab7f46c3")
-		(property "Reference" "R122"
+		(property "Reference" "R147"
 			(at 226.06 103.124 0)
 			(effects
 				(font
@@ -4426,7 +4365,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "R122")
+					(reference "R147")
 					(unit 1)
 				)
 			)
@@ -4442,7 +4381,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "0fa741b9-5c68-4f07-b999-d5c51ddc081b")
-		(property "Reference" "R119"
+		(property "Reference" "R144"
 			(at 99.314 129.794 90)
 			(effects
 				(font
@@ -4827,7 +4766,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "R119")
+					(reference "R144")
 					(unit 1)
 				)
 			)
@@ -4842,7 +4781,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "11c2ab05-4ce3-4aa6-a09b-e57f975885f8")
-		(property "Reference" "Q25"
+		(property "Reference" "Q29"
 			(at 195.072 81.28 0)
 			(effects
 				(font
@@ -5239,7 +5178,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "Q25")
+					(reference "Q29")
 					(unit 1)
 				)
 			)
@@ -5254,7 +5193,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "1611f9bc-cfa2-410d-861f-b1608fda0385")
-		(property "Reference" "C111"
+		(property "Reference" "C136"
 			(at 34.544 112.268 0)
 			(effects
 				(font
@@ -5614,7 +5553,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "C111")
+					(reference "C136")
 					(unit 1)
 				)
 			)
@@ -5629,7 +5568,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "1cc9f921-d9de-4794-a5b8-09b1da037e67")
-		(property "Reference" "C120"
+		(property "Reference" "C145"
 			(at 165.1 88.9 90)
 			(effects
 				(font
@@ -5989,7 +5928,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "C120")
+					(reference "C145")
 					(unit 1)
 				)
 			)
@@ -6005,7 +5944,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "28e944ad-eab1-4335-bd32-e12ac41668e8")
-		(property "Reference" "R123"
+		(property "Reference" "R148"
 			(at 232.41 99.314 0)
 			(effects
 				(font
@@ -6390,7 +6329,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "R123")
+					(reference "R148")
 					(unit 1)
 				)
 			)
@@ -6405,7 +6344,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "3781fbcb-7ef8-4a59-899c-d7fe75ab7b11")
-		(property "Reference" "C115"
+		(property "Reference" "C140"
 			(at 63.754 112.268 0)
 			(effects
 				(font
@@ -6765,7 +6704,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "C115")
+					(reference "C140")
 					(unit 1)
 				)
 			)
@@ -6780,7 +6719,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "4cf8f9fb-239e-4462-be88-3bf4e3fb61e5")
-		(property "Reference" "C119"
+		(property "Reference" "C144"
 			(at 105.41 134.62 90)
 			(effects
 				(font
@@ -7140,7 +7079,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "C119")
+					(reference "C144")
 					(unit 1)
 				)
 			)
@@ -7155,7 +7094,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "5302e737-ade1-477f-8c44-90aca5296812")
-		(property "Reference" "L1"
+		(property "Reference" "L2"
 			(at 217.17 93.98 90)
 			(effects
 				(font
@@ -7513,7 +7452,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "L1")
+					(reference "L2")
 					(unit 1)
 				)
 			)
@@ -7528,7 +7467,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "564e451a-c699-402a-bec3-3f18456f3f4f")
-		(property "Reference" "U14"
+		(property "Reference" "U16"
 			(at 152.4 76.2 0)
 			(effects
 				(font
@@ -7942,7 +7881,7 @@
 		(instances
 			(project ""
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "U14")
+					(reference "U16")
 					(unit 1)
 				)
 			)
@@ -7957,7 +7896,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "5836a98d-270f-4f9a-a082-fb754edb46d4")
-		(property "Reference" "C117"
+		(property "Reference" "C142"
 			(at 77.47 139.7 90)
 			(effects
 				(font
@@ -8317,72 +8256,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "C117")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GNDA")
-		(at 67.31 148.59 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "58814d9e-5011-4156-8bf4-cb3d47ab53a6")
-		(property "Reference" "#PWR064"
-			(at 67.31 154.94 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GNDA"
-			(at 67.31 152.4 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 67.31 148.59 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 67.31 148.59 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GNDA\" , analog ground"
-			(at 67.31 148.59 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "ae303489-3e2d-465c-ba78-8026c437edbc")
-		)
-		(instances
-			(project "STAR"
-				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "#PWR064")
+					(reference "C142")
 					(unit 1)
 				)
 			)
@@ -8397,7 +8271,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "5d505c06-5913-4df6-ab55-e2eb56ee4655")
-		(property "Reference" "C113"
+		(property "Reference" "C138"
 			(at 49.784 112.268 0)
 			(effects
 				(font
@@ -8757,7 +8631,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "C113")
+					(reference "C138")
 					(unit 1)
 				)
 			)
@@ -8773,7 +8647,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "5f743dac-352e-4c7b-8c2c-e89b033944a1")
-		(property "Reference" "R116"
+		(property "Reference" "R141"
 			(at 71.374 124.714 90)
 			(effects
 				(font
@@ -9158,7 +9032,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "R116")
+					(reference "R141")
 					(unit 1)
 				)
 			)
@@ -9173,7 +9047,7 @@
 		(on_board yes)
 		(dnp yes)
 		(uuid "63206223-bb9e-44d1-a150-6dc02c757117")
-		(property "Reference" "C124"
+		(property "Reference" "C149"
 			(at 217.424 98.044 90)
 			(effects
 				(font
@@ -9533,7 +9407,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "C124")
+					(reference "C149")
 					(unit 1)
 				)
 			)
@@ -9549,7 +9423,7 @@
 		(on_board yes)
 		(dnp yes)
 		(uuid "6a23ff83-4424-404c-93f4-99da42dc8bb9")
-		(property "Reference" "R121"
+		(property "Reference" "R146"
 			(at 213.36 103.124 0)
 			(effects
 				(font
@@ -9934,72 +9808,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "R121")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GNDA")
-		(at 132.08 171.45 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "6bdb990a-63bb-4eaf-8282-06913efe9ecb")
-		(property "Reference" "#PWR067"
-			(at 132.08 177.8 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GNDA"
-			(at 132.08 175.006 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 132.08 171.45 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 132.08 171.45 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GNDA\" , analog ground"
-			(at 132.08 171.45 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "98b3b88e-259d-4c9f-8349-aa234d18cae6")
-		)
-		(instances
-			(project ""
-				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "#PWR067")
+					(reference "R146")
 					(unit 1)
 				)
 			)
@@ -10014,7 +9823,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "724323bd-3886-4507-aa50-8f2c8efa871b")
-		(property "Reference" "Q26"
+		(property "Reference" "Q30"
 			(at 195.072 101.6 0)
 			(effects
 				(font
@@ -10411,7 +10220,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "Q26")
+					(reference "Q30")
 					(unit 1)
 				)
 			)
@@ -10426,7 +10235,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "7297613b-4c28-432e-8836-83703aadd04b")
-		(property "Reference" "C116"
+		(property "Reference" "C141"
 			(at 74.93 128.27 90)
 			(effects
 				(font
@@ -10786,7 +10595,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "C116")
+					(reference "C141")
 					(unit 1)
 				)
 			)
@@ -10802,7 +10611,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "7bb04469-d2dc-408f-9da8-4b15d7e1679a")
-		(property "Reference" "R118"
+		(property "Reference" "R143"
 			(at 95.504 104.394 90)
 			(effects
 				(font
@@ -11187,7 +10996,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "R118")
+					(reference "R143")
 					(unit 1)
 				)
 			)
@@ -11202,7 +11011,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "7d9c168d-7ff8-443f-bbc3-718814c8be03")
-		(property "Reference" "C121"
+		(property "Reference" "C146"
 			(at 175.514 137.668 0)
 			(effects
 				(font
@@ -11562,7 +11371,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "C121")
+					(reference "C146")
 					(unit 1)
 				)
 			)
@@ -11577,7 +11386,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "8bd50da1-5eda-4e61-b44b-5c6a8557847c")
-		(property "Reference" "C122"
+		(property "Reference" "C147"
 			(at 181.864 137.668 0)
 			(effects
 				(font
@@ -11937,72 +11746,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "C122")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GNDA")
-		(at 93.98 105.41 270)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "9427a1e6-2d18-461c-94fe-a3c87817d91a")
-		(property "Reference" "#PWR065"
-			(at 87.63 105.41 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GNDA"
-			(at 88.646 105.41 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 93.98 105.41 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 93.98 105.41 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GNDA\" , analog ground"
-			(at 93.98 105.41 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "bc2ce684-0451-4e33-bca4-83cc117e237e")
-		)
-		(instances
-			(project "STAR"
-				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "#PWR065")
+					(reference "C147")
 					(unit 1)
 				)
 			)
@@ -12018,7 +11762,7 @@
 		(on_board yes)
 		(dnp yes)
 		(uuid "aefa4a05-1774-4267-9928-a86dcda9e2ed")
-		(property "Reference" "R125"
+		(property "Reference" "R150"
 			(at 245.11 99.314 0)
 			(effects
 				(font
@@ -12403,7 +12147,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "R125")
+					(reference "R150")
 					(unit 1)
 				)
 			)
@@ -12419,7 +12163,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "b67a7c34-2b15-4298-a221-88bf5aa20d99")
-		(property "Reference" "J10"
+		(property "Reference" "J15"
 			(at 83.566 105.664 0)
 			(effects
 				(font
@@ -12782,72 +12526,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "J10")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GNDA")
-		(at 171.45 142.24 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "b6d536c7-3531-44f8-b4fc-10a2f4da5b27")
-		(property "Reference" "#PWR069"
-			(at 171.45 148.59 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GNDA"
-			(at 171.45 145.796 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 171.45 142.24 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 171.45 142.24 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GNDA\" , analog ground"
-			(at 171.45 142.24 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "929a7957-6992-4f91-aabb-d39cd1ebb2ad")
-		)
-		(instances
-			(project "STAR"
-				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "#PWR069")
+					(reference "J15")
 					(unit 1)
 				)
 			)
@@ -12862,7 +12541,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "c08c6789-9e7f-4cf2-84ae-ce3e9bfa05df")
-		(property "Reference" "C126"
+		(property "Reference" "C151"
 			(at 249.174 117.348 0)
 			(effects
 				(font
@@ -13222,7 +12901,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "C126")
+					(reference "C151")
 					(unit 1)
 				)
 			)
@@ -13237,7 +12916,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "c241baa1-1a29-426c-bcb4-f1bcbacb801d")
-		(property "Reference" "C118"
+		(property "Reference" "C143"
 			(at 77.47 144.78 90)
 			(effects
 				(font
@@ -13597,7 +13276,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "C118")
+					(reference "C143")
 					(unit 1)
 				)
 			)
@@ -13677,7 +13356,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "c438dc8f-b5e6-409d-b457-ec78f08ad784")
-		(property "Reference" "C129"
+		(property "Reference" "C154"
 			(at 268.224 117.348 0)
 			(effects
 				(font
@@ -14037,7 +13716,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "C129")
+					(reference "C154")
 					(unit 1)
 				)
 			)
@@ -14052,7 +13731,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "c4ab0a0c-cd55-4d69-b845-f8f64d8a95f1")
-		(property "Reference" "C127"
+		(property "Reference" "C152"
 			(at 255.524 117.348 0)
 			(effects
 				(font
@@ -14412,7 +14091,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "C127")
+					(reference "C152")
 					(unit 1)
 				)
 			)
@@ -14803,7 +14482,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "d39bc9ff-56f6-49c0-826e-6765790e14c2")
-		(property "Reference" "C110"
+		(property "Reference" "C135"
 			(at 26.924 112.268 0)
 			(effects
 				(font
@@ -15163,7 +14842,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "C110")
+					(reference "C135")
 					(unit 1)
 				)
 			)
@@ -15179,7 +14858,7 @@
 		(on_board yes)
 		(dnp yes)
 		(uuid "d938fbaa-dc3d-4f99-a140-0fac716aee1a")
-		(property "Reference" "R120"
+		(property "Reference" "R145"
 			(at 197.104 98.044 90)
 			(effects
 				(font
@@ -15564,7 +15243,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "R120")
+					(reference "R145")
 					(unit 1)
 				)
 			)
@@ -15579,7 +15258,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "da16ac16-8888-4b38-90db-48f201ba56bc")
-		(property "Reference" "C128"
+		(property "Reference" "C153"
 			(at 261.874 117.348 0)
 			(effects
 				(font
@@ -15939,7 +15618,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "C128")
+					(reference "C153")
 					(unit 1)
 				)
 			)
@@ -15954,7 +15633,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "e04bc96d-b2ba-4cc2-bcec-51157f9eb333")
-		(property "Reference" "C123"
+		(property "Reference" "C148"
 			(at 188.214 137.668 0)
 			(effects
 				(font
@@ -16314,7 +15993,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "C123")
+					(reference "C148")
 					(unit 1)
 				)
 			)
@@ -16329,7 +16008,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "e6595a91-9805-46f6-b9b0-7e9a0cc9dca3")
-		(property "Reference" "C125"
+		(property "Reference" "C150"
 			(at 235.204 112.014 90)
 			(effects
 				(font
@@ -16689,7 +16368,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "C125")
+					(reference "C150")
 					(unit 1)
 				)
 			)
@@ -16704,7 +16383,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "ed7a7319-d938-43c1-97af-3814190e9a5e")
-		(property "Reference" "C112"
+		(property "Reference" "C137"
 			(at 42.164 112.268 0)
 			(effects
 				(font
@@ -17064,7 +16743,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "C112")
+					(reference "C137")
 					(unit 1)
 				)
 			)
@@ -17080,7 +16759,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "f0dd4bc4-b2c2-491f-abcd-683bf128691c")
-		(property "Reference" "R117"
+		(property "Reference" "R142"
 			(at 92.964 139.954 90)
 			(effects
 				(font
@@ -17465,7 +17144,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "R117")
+					(reference "R142")
 					(unit 1)
 				)
 			)
@@ -17480,7 +17159,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "f158b389-bfa9-4ee0-a1e4-7ab23129daa5")
-		(property "Reference" "C114"
+		(property "Reference" "C139"
 			(at 57.404 112.268 0)
 			(effects
 				(font
@@ -17840,7 +17519,7 @@
 		(instances
 			(project ""
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "C114")
+					(reference "C139")
 					(unit 1)
 				)
 			)
@@ -17855,7 +17534,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "f7971226-a9b5-4198-8d50-812b3d5de69a")
-		(property "Reference" "#PWR068"
+		(property "Reference" "#PWR080"
 			(at 167.64 172.72 0)
 			(effects
 				(font
@@ -17906,7 +17585,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "#PWR068")
+					(reference "#PWR080")
 					(unit 1)
 				)
 			)
@@ -17921,7 +17600,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "fe225cb7-8311-4ca4-8c19-1105f5828d07")
-		(property "Reference" "#PWR066"
+		(property "Reference" "#PWR079"
 			(at 102.87 120.65 0)
 			(effects
 				(font
@@ -17972,7 +17651,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "#PWR066")
+					(reference "#PWR079")
 					(unit 1)
 				)
 			)
@@ -17988,7 +17667,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "fe7a8192-a2c3-431c-aaf8-478af59b43ae")
-		(property "Reference" "R124"
+		(property "Reference" "R149"
 			(at 231.394 94.234 90)
 			(effects
 				(font
@@ -18373,7 +18052,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/e37625a4-4166-4d08-b145-52540d65bd12"
-					(reference "R124")
+					(reference "R149")
 					(unit 1)
 				)
 			)

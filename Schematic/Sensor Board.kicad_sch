@@ -5,16 +5,6 @@
 	(uuid "bf67175b-371f-4aa7-9d74-e5ad2070fa92")
 	(paper "A4")
 	(lib_symbols)
-	(text "put FB on the 3v3 Lines"
-		(exclude_from_sim no)
-		(at 134.874 154.686 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "753e691a-20db-4373-85a8-547ddda8cb30")
-	)
 	(junction
 		(at 90.17 90.17)
 		(diameter 0)
@@ -175,7 +165,7 @@
 	)
 	(wire
 		(pts
-			(xy 22.86 43.18) (xy 39.37 43.18)
+			(xy 26.67 43.18) (xy 39.37 43.18)
 		)
 		(stroke
 			(width 0)
@@ -222,6 +212,16 @@
 			(type default)
 		)
 		(uuid "d6e09b39-e812-4277-b8c3-9a29b691f6e2")
+	)
+	(wire
+		(pts
+			(xy 26.67 39.37) (xy 39.37 39.37)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d7b9db86-29a6-4916-8c2f-6daccb63b5cf")
 	)
 	(wire
 		(pts
@@ -313,6 +313,16 @@
 		)
 		(uuid "84ed4176-25e4-4c73-9e91-586a819140b4")
 	)
+	(label "MCU_VBUS"
+		(at 27.94 39.37 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "98e3afbe-51d5-4214-a5b0-cab9b9c19e2a")
+	)
 	(label "GPS_RX"
 		(at 189.23 99.06 180)
 		(effects
@@ -376,7 +386,7 @@
 	)
 	(hierarchical_label "P5V0"
 		(shape input)
-		(at 22.86 43.18 180)
+		(at 26.67 43.18 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -384,6 +394,17 @@
 			(justify right)
 		)
 		(uuid "030ef1f6-c6f1-4992-9bb0-60235f3a4a6f")
+	)
+	(hierarchical_label "MCU_VBUS"
+		(shape input)
+		(at 26.67 39.37 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "0f00f39c-ef97-48cb-90ed-20ad43ffa406")
 	)
 	(hierarchical_label "I2C_SCL"
 		(shape output)
@@ -539,7 +560,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/93231d0a-659f-4d39-8e8d-78b96a3896a1"
-					(page "30")
+					(page "37")
 				)
 			)
 		)
@@ -631,7 +652,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/93231d0a-659f-4d39-8e8d-78b96a3896a1"
-					(page "32")
+					(page "39")
 				)
 			)
 		)
@@ -690,10 +711,20 @@
 				(justify right)
 			)
 		)
+		(pin "MCU_VBUS" input
+			(at 39.37 39.37 180)
+			(uuid "ec1da57b-e1ff-45c7-9865-9307c7396b71")
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/93231d0a-659f-4d39-8e8d-78b96a3896a1"
-					(page "23")
+					(page "36")
 				)
 			)
 		)
@@ -785,7 +816,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/93231d0a-659f-4d39-8e8d-78b96a3896a1"
-					(page "31")
+					(page "38")
 				)
 			)
 		)
