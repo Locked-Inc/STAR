@@ -18,7 +18,7 @@
 		)
 		(uuid "9ebd4b4c-eb36-4e79-b3a9-2c5f7c6440e2")
 	)
-	(text "## The Correct Flashing Process\nHere is the correct workflow:\n\nGenerate Your Configuration: Use the TPS2575x Application Customization Tool from Texas Instruments to create the binary file (.bin) that contains all your desired settings.\n\nProgram the EEPROM Separately: Connect the CAT24C512 EEPROM to your dedicated flasher or an Arduino. Do this before connecting it to the TPS25751.\n\nConnect power (VCC), ground (GND), SDA, and SCL.\n\nUse the flasher's software to write the .bin file you generated onto the EEPROM.\n\nAssemble the Final Circuit: Once the EEPROM is successfully flashed, connect it to the I2Cc (the controller port) of the TPS25751.\n\nNow, when you power on your circuit, the TPS25751 will use its I2Cc port to automatically read the settings you loaded onto the EEPROM and will configure itself correctly."
+	(text "The Correct Flashing Process\n\nGenerate Your Configuration: Use the TPS2575x Application Customization Tool from Texas Instruments to create the binary file (.bin) that contains all your desired settings.\n\nProgram the EEPROM Separately: Connect the CAT24C512 EEPROM to your dedicated flasher or an Arduino. Do this before connecting it to the TPS25751.\n\nConnect power (VCC), ground (GND), SDA, and SCL.\n\nUse the flasher's software to write the .bin file you generated onto the EEPROM.\n\nAssemble the Final Circuit: Once the EEPROM is successfully flashed, connect it to the I2Cc (the controller port) of the TPS25751.\n\nNow, when you power on your circuit, the TPS25751 will use its I2Cc port to automatically read the settings you loaded onto the EEPROM and will configure itself correctly."
 		(exclude_from_sim no)
 		(at 94.996 179.832 0)
 		(effects
@@ -1084,7 +1084,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154"
-					(page "16")
+					(page "21")
 				)
 			)
 		)
@@ -1316,7 +1316,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154"
-					(page "17")
+					(page "22")
 				)
 			)
 		)
@@ -1518,7 +1518,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154"
-					(page "19")
+					(page "23")
 				)
 			)
 		)
@@ -1670,7 +1670,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154"
-					(page "14")
+					(page "19")
 				)
 			)
 		)
@@ -1742,7 +1742,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154"
-					(page "15")
+					(page "20")
 				)
 			)
 		)
@@ -1804,7 +1804,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154"
-					(page "18")
+					(page "24")
 				)
 			)
 		)
@@ -1896,7 +1896,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154"
-					(page "13")
+					(page "18")
 				)
 			)
 		)
