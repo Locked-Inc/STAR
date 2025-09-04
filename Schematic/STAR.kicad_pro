@@ -1039,6 +1039,22 @@
       "Root"
     ],
     [
+      "f27ff2e9-3317-49a4-9819-b00013085e8b",
+      "MCU"
+    ],
+    [
+      "6e8cf85b-4291-4721-8f0f-92813a250136",
+      "MCU USB-C"
+    ],
+    [
+      "cc1b9e8f-9e76-421f-8513-a28a30963e04",
+      "External 40 Pin Header"
+    ],
+    [
+      "e6e5c4a3-ad64-49fb-9536-7ceda03bd508",
+      "ESP32"
+    ],
+    [
       "e8da5d81-614b-4fe5-84b3-4c351fab7114",
       "BMS Protection Board"
     ],
@@ -1063,10 +1079,6 @@
       "Wake Up"
     ],
     [
-      "15d8d2f8-18df-455b-b74e-5d59f69dac44",
-      "High Side Gate Driver"
-    ],
-    [
       "6b10105f-d41f-4638-b42b-c651baa60ee4",
       "BMS Thermistors"
     ],
@@ -1077,6 +1089,10 @@
     [
       "90a55f0b-8dba-4da8-a9bd-d2e0c1dd6a37",
       "Fuel Gauge"
+    ],
+    [
+      "15d8d2f8-18df-455b-b74e-5d59f69dac44",
+      "High Side Gate Driver"
     ],
     [
       "ec72a35b-e7f2-4422-8859-60e9fb848154",
@@ -1103,28 +1119,20 @@
       "Buck-Boost Charger"
     ],
     [
-      "e37625a4-4166-4d08-b145-52540d65bd12",
-      "USB-C 5V Buck"
-    ],
-    [
       "9fb42b36-af5a-430a-ae71-09fe6d8fbe9c",
       "Charger FET Array"
+    ],
+    [
+      "e37625a4-4166-4d08-b145-52540d65bd12",
+      "USB-C 5V Buck"
     ],
     [
       "f73d6367-f3ba-42df-a3ea-bd155f1c219f",
       "Motor Control Board"
     ],
     [
-      "93231d0a-659f-4d39-8e8d-78b96a3896a1",
-      "Sensor Board"
-    ],
-    [
       "3f0d1238-5e65-4d96-8961-a5c2e74dde4b",
       "Motor 24V Line"
-    ],
-    [
-      "79d08640-5c3f-40a9-8b33-48497b13ec54",
-      "Sensor 3V3 Line"
     ],
     [
       "2d1f23db-77e1-469c-85c1-12a11504ed46",
@@ -1151,6 +1159,22 @@
       "Motor with Driver4"
     ],
     [
+      "12bd6774-3c71-41d8-bbdc-bae46e746955",
+      "Quadrature Counter"
+    ],
+    [
+      "d79e1bb1-de29-4ffc-9e0f-e3a3e5738587",
+      "Mux and Demux Lines"
+    ],
+    [
+      "93231d0a-659f-4d39-8e8d-78b96a3896a1",
+      "Sensor Board"
+    ],
+    [
+      "79d08640-5c3f-40a9-8b33-48497b13ec54",
+      "Sensor 3V3 Line"
+    ],
+    [
       "525f2b83-8347-468d-b8c8-5a1df0e1c532",
       "Barometric Pressure Sensor"
     ],
@@ -1161,10 +1185,6 @@
     [
       "75e06a36-2807-4a4b-af1f-d37310ed1ba6",
       "IMU Sensor"
-    ],
-    [
-      "12bd6774-3c71-41d8-bbdc-bae46e746955",
-      "Quadrature Counter"
     ]
   ],
   "text_variables": {}

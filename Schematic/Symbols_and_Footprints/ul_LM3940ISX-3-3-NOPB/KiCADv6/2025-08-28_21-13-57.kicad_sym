@@ -83,7 +83,7 @@
 		(symbol "LM3940ISX-3.3_NOPB_0_1"
 			(pin input line
 				(at 0 0 0)
-				(length 7.62)
+				(length 3.81)
 				(name "IN"
 					(effects
 						(font
@@ -101,7 +101,7 @@
 			)
 			(pin passive line
 				(at 0 -2.54 0)
-				(length 7.62)
+				(length 3.81)
 				(name "GND"
 					(effects
 						(font
@@ -118,8 +118,8 @@
 				)
 			)
 			(pin output line
-				(at 40.64 0 180)
-				(length 7.62)
+				(at 27.94 0 180)
+				(length 3.81)
 				(name "OUT"
 					(effects
 						(font
@@ -136,8 +136,8 @@
 				)
 			)
 			(pin unspecified line
-				(at 40.64 -2.54 180)
-				(length 7.62)
+				(at 27.94 -2.54 180)
+				(length 3.81)
 				(name ""
 					(effects
 						(font
@@ -156,8 +156,8 @@
 		)
 		(symbol "LM3940ISX-3.3_NOPB_1_1"
 			(rectangle
-				(start 7.62 5.08)
-				(end 33.02 -6.35)
+				(start 3.81 5.08)
+				(end 24.13 -6.35)
 				(stroke
 					(width 0)
 					(type default)
