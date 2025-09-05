@@ -262,6 +262,113 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Connector:TestPoint"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0.762)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "TP"
+				(at 0 6.858 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "TestPoint"
+				(at 0 5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 5.08 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 5.08 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "test point"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "test point tp"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "Pin* Test*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "TestPoint_0_1"
+				(circle
+					(center 0 3.302)
+					(radius 0.762)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "TestPoint_1_1"
+				(pin passive line
+					(at 0 0 90)
+					(length 2.54)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Connector_Generic:Conn_01x03"
 			(pin_names
 				(offset 1.016)
@@ -1419,6 +1526,16 @@
 	)
 	(wire
 		(pts
+			(xy 163.83 163.83) (xy 144.78 163.83)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "cd8b27a7-a4b6-4855-b28a-698a3f6dba06")
+	)
+	(wire
+		(pts
 			(xy 90.17 116.84) (xy 90.17 119.38)
 		)
 		(stroke
@@ -1607,6 +1724,16 @@
 		)
 		(uuid "daea5a1a-37a1-4785-b63f-e5d347f42042")
 	)
+	(label "BMP_INT"
+		(at 163.83 163.83 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "e6977021-b00a-49a6-9ff0-4a2b436cae76")
+	)
 	(hierarchical_label "BMP_INT"
 		(shape output)
 		(at 175.26 149.86 180)
@@ -1656,11 +1783,11 @@
 		(at 90.17 113.03 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+		(in_bom no)
+		(on_board no)
+		(dnp yes)
 		(uuid "02c9667b-a554-40e9-9a46-8c0d6fbdab35")
-		(property "Reference" "R176"
+		(property "Reference" "R172"
 			(at 92.964 109.728 0)
 			(effects
 				(font
@@ -2036,6 +2163,51 @@
 				(hide yes)
 			)
 		)
+		(property "Link" ""
+			(at 90.17 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" ""
+			(at 90.17 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price per Unit" ""
+			(at 90.17 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 90.17 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" ""
+			(at 90.17 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "e86c19c6-05fc-4adc-ad91-75bb0c0318eb")
 		)
@@ -2045,7 +2217,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/93231d0a-659f-4d39-8e8d-78b96a3896a1/525f2b83-8347-468d-b8c8-5a1df0e1c532"
-					(reference "R176")
+					(reference "R172")
 					(unit 1)
 				)
 			)
@@ -2056,11 +2228,11 @@
 		(at 107.95 113.03 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+		(in_bom no)
+		(on_board no)
+		(dnp yes)
 		(uuid "0b130380-777c-4d3c-ad90-4d0156b9bce5")
-		(property "Reference" "C212"
+		(property "Reference" "C208"
 			(at 108.204 110.998 0)
 			(effects
 				(font
@@ -2078,7 +2250,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_1206_3216Metric_Pad1.33x1.80mm_HandSolder"
 			(at 108.9152 116.84 0)
 			(effects
 				(font
@@ -2411,6 +2583,69 @@
 				(hide yes)
 			)
 		)
+		(property "Link" "https://mou.sr/41y0aEA"
+			(at 107.95 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" "CL31B105KBHNNNE"
+			(at 107.95 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price per Unit" "0.11"
+			(at 107.95 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Mouser"
+			(at 107.95 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier Part Number" "187-CL31B105KBHNNNE"
+			(at 107.95 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 107.95 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" ""
+			(at 107.95 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "03f7e029-9690-4578-b68c-6a912549a4e5")
 		)
@@ -2420,7 +2655,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/93231d0a-659f-4d39-8e8d-78b96a3896a1/525f2b83-8347-468d-b8c8-5a1df0e1c532"
-					(reference "C212")
+					(reference "C208")
 					(unit 1)
 				)
 			)
@@ -2431,11 +2666,11 @@
 		(at 166.37 130.81 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+		(in_bom no)
+		(on_board no)
+		(dnp yes)
 		(uuid "169929e4-618a-4273-9603-bcda89dc0178")
-		(property "Reference" "#PWR0115"
+		(property "Reference" "#PWR0110"
 			(at 166.37 137.16 0)
 			(effects
 				(font
@@ -2486,7 +2721,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/93231d0a-659f-4d39-8e8d-78b96a3896a1/525f2b83-8347-468d-b8c8-5a1df0e1c532"
-					(reference "#PWR0115")
+					(reference "#PWR0110")
 					(unit 1)
 				)
 			)
@@ -2497,11 +2732,11 @@
 		(at 187.96 152.4 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+		(in_bom no)
+		(on_board no)
+		(dnp yes)
 		(uuid "25c2910d-d3fc-4b4c-b0af-664cb65f4150")
-		(property "Reference" "J29"
+		(property "Reference" "J27"
 			(at 186.944 147.574 0)
 			(effects
 				(font
@@ -2852,6 +3087,51 @@
 				(hide yes)
 			)
 		)
+		(property "Link" ""
+			(at 187.96 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" ""
+			(at 187.96 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price per Unit" ""
+			(at 187.96 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 187.96 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" ""
+			(at 187.96 152.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "3"
 			(uuid "5a4b494f-2825-4b1d-b3c4-81d69fe7cd1c")
 		)
@@ -2864,7 +3144,7 @@
 		(instances
 			(project ""
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/93231d0a-659f-4d39-8e8d-78b96a3896a1/525f2b83-8347-468d-b8c8-5a1df0e1c532"
-					(reference "J29")
+					(reference "J27")
 					(unit 1)
 				)
 			)
@@ -2875,11 +3155,11 @@
 		(at 115.57 113.03 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+		(in_bom no)
+		(on_board no)
+		(dnp yes)
 		(uuid "316e9091-3bf8-444e-9327-e2f0be4380b3")
-		(property "Reference" "C213"
+		(property "Reference" "C209"
 			(at 115.824 110.998 0)
 			(effects
 				(font
@@ -2897,7 +3177,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_1206_3216Metric_Pad1.33x1.80mm_HandSolder"
 			(at 116.5352 116.84 0)
 			(effects
 				(font
@@ -3230,6 +3510,69 @@
 				(hide yes)
 			)
 		)
+		(property "Link" "https://mou.sr/4n9ybmQ"
+			(at 115.57 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" "CL31B104KBCNNNC"
+			(at 115.57 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price per Unit" "0.11"
+			(at 115.57 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Mouser"
+			(at 115.57 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier Part Number" "187-CL31B104KBCNNNC"
+			(at 115.57 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 115.57 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" ""
+			(at 115.57 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "a0935c9a-4600-409c-b329-00dc262da535")
 		)
@@ -3239,7 +3582,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/93231d0a-659f-4d39-8e8d-78b96a3896a1/525f2b83-8347-468d-b8c8-5a1df0e1c532"
-					(reference "C213")
+					(reference "C209")
 					(unit 1)
 				)
 			)
@@ -3250,11 +3593,11 @@
 		(at 180.34 107.95 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+		(in_bom no)
+		(on_board no)
+		(dnp yes)
 		(uuid "6ec1a5d6-cdfd-4709-ad3a-4a478f73e1a1")
-		(property "Reference" "C214"
+		(property "Reference" "C210"
 			(at 180.594 105.918 0)
 			(effects
 				(font
@@ -3272,7 +3615,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_1206_3216Metric_Pad1.33x1.80mm_HandSolder"
 			(at 181.3052 111.76 0)
 			(effects
 				(font
@@ -3605,6 +3948,69 @@
 				(hide yes)
 			)
 		)
+		(property "Link" "https://mou.sr/41y0aEA"
+			(at 180.34 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" "CL31B105KBHNNNE"
+			(at 180.34 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price per Unit" "0.11"
+			(at 180.34 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Mouser"
+			(at 180.34 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier Part Number" "187-CL31B105KBHNNNE"
+			(at 180.34 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 180.34 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" ""
+			(at 180.34 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "216ed34d-e21b-4a2d-9184-03a270751c18")
 		)
@@ -3614,7 +4020,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/93231d0a-659f-4d39-8e8d-78b96a3896a1/525f2b83-8347-468d-b8c8-5a1df0e1c532"
-					(reference "C214")
+					(reference "C210")
 					(unit 1)
 				)
 			)
@@ -3625,11 +4031,11 @@
 		(at 187.96 107.95 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+		(in_bom no)
+		(on_board no)
+		(dnp yes)
 		(uuid "7cd74e93-2abe-4124-890f-933276422c09")
-		(property "Reference" "C215"
+		(property "Reference" "C211"
 			(at 188.214 105.918 0)
 			(effects
 				(font
@@ -3647,7 +4053,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_1206_3216Metric_Pad1.33x1.80mm_HandSolder"
 			(at 188.9252 111.76 0)
 			(effects
 				(font
@@ -3980,6 +4386,69 @@
 				(hide yes)
 			)
 		)
+		(property "Link" "https://mou.sr/4n9ybmQ"
+			(at 187.96 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" "CL31B104KBCNNNC"
+			(at 187.96 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price per Unit" "0.11"
+			(at 187.96 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Mouser"
+			(at 187.96 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier Part Number" "187-CL31B104KBCNNNC"
+			(at 187.96 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 187.96 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" ""
+			(at 187.96 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "ae0c74b5-fa6c-4c74-bf7d-0c0061661d5f")
 		)
@@ -3989,7 +4458,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/93231d0a-659f-4d39-8e8d-78b96a3896a1/525f2b83-8347-468d-b8c8-5a1df0e1c532"
-					(reference "C215")
+					(reference "C211")
 					(unit 1)
 				)
 			)
@@ -4000,11 +4469,11 @@
 		(at 120.65 100.33 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+		(in_bom no)
+		(on_board no)
+		(dnp yes)
 		(uuid "9a4eb0ca-4d4a-4c84-9015-44abd8dce9cd")
-		(property "Reference" "U33"
+		(property "Reference" "U31"
 			(at 151.892 94.234 0)
 			(effects
 				(font
@@ -4020,7 +4489,7 @@
 				)
 			)
 		)
-		(property "Footprint" "LGA9_BMP585_BOS"
+		(property "Footprint" ""
 			(at 120.65 100.33 0)
 			(effects
 				(font
@@ -4355,6 +4824,51 @@
 				(hide yes)
 			)
 		)
+		(property "Link" ""
+			(at 120.65 100.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" ""
+			(at 120.65 100.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price per Unit" ""
+			(at 120.65 100.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 120.65 100.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" ""
+			(at 120.65 100.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "3"
 			(uuid "ade5708b-e9db-4185-8568-0e105567c513")
 		)
@@ -4385,7 +4899,119 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/93231d0a-659f-4d39-8e8d-78b96a3896a1/525f2b83-8347-468d-b8c8-5a1df0e1c532"
-					(reference "U33")
+					(reference "U31")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector:TestPoint")
+		(at 144.78 163.83 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board no)
+		(dnp yes)
+		(uuid "da3446c6-f72a-4e52-a457-731e2600b7f5")
+		(property "Reference" "TP153"
+			(at 140.716 163.83 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "TestPoint"
+			(at 143.51 163.576 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at 144.78 158.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 144.78 158.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "test point"
+			(at 144.78 163.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Link" ""
+			(at 144.78 163.83 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" ""
+			(at 144.78 163.83 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price per Unit" ""
+			(at 144.78 163.83 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 144.78 163.83 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" ""
+			(at 144.78 163.83 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "b6ad35fe-3091-44ac-934f-90a2be153e45")
+		)
+		(instances
+			(project "STAR"
+				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/93231d0a-659f-4d39-8e8d-78b96a3896a1/525f2b83-8347-468d-b8c8-5a1df0e1c532"
+					(reference "TP153")
 					(unit 1)
 				)
 			)
@@ -4397,11 +5023,11 @@
 		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+		(in_bom no)
+		(on_board no)
+		(dnp yes)
 		(uuid "e00a98d0-3f8b-4a0d-9289-f7d8dde142e7")
-		(property "Reference" "D50"
+		(property "Reference" "D47"
 			(at 94.234 120.904 90)
 			(effects
 				(font
@@ -4419,7 +5045,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "PCM_Diode_SMD_AKL:D_0805_2012Metric"
+		(property "Footprint" "ASMM-CR03-BU802:LEDM3528X210N"
 			(at 92.964 122.174 0)
 			(effects
 				(font
@@ -4779,6 +5405,69 @@
 				(hide yes)
 			)
 		)
+		(property "Link" "https://mou.sr/460BFB7"
+			(at 90.17 123.19 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" "ASMM-CR03-BU802"
+			(at 90.17 123.19 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price per Unit" "0.32"
+			(at 90.17 123.19 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Mouser"
+			(at 90.17 123.19 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier Part Number" " 630-ASMM-CR03-BU802"
+			(at 90.17 123.19 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 90.17 123.19 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" ""
+			(at 90.17 123.19 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "3364053a-b09d-406c-a494-37d2ab5aad53")
 		)
@@ -4788,7 +5477,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/93231d0a-659f-4d39-8e8d-78b96a3896a1/525f2b83-8347-468d-b8c8-5a1df0e1c532"
-					(reference "D50")
+					(reference "D47")
 					(unit 1)
 				)
 			)
@@ -4799,11 +5488,11 @@
 		(at 181.61 156.21 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+		(in_bom no)
+		(on_board no)
+		(dnp yes)
 		(uuid "f0595c95-8acb-403d-b453-b17ac3134e50")
-		(property "Reference" "#PWR0116"
+		(property "Reference" "#PWR0111"
 			(at 181.61 162.56 0)
 			(effects
 				(font
@@ -4854,7 +5543,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/93231d0a-659f-4d39-8e8d-78b96a3896a1/525f2b83-8347-468d-b8c8-5a1df0e1c532"
-					(reference "#PWR0116")
+					(reference "#PWR0111")
 					(unit 1)
 				)
 			)

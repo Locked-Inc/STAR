@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP AHA0810560M040R
+D 56 F 40 V Aluminum - Polymer Capacitors Radial, Can - SMD 32mOhm 10000 Hrs @ 105C
+K
+F https://datasheets.kyocera-avx.com/kyocera-avx-aha-series.pdf
+$ENDCMP
+#
+#End Doc Library
