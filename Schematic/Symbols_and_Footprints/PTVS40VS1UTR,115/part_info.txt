@@ -1,0 +1,9 @@
+Manufacturer=Nexperia
+PartNumber=PTVS40VS1UTR,115
+PartCategory=Diode ESD (Uni-directional)
+PackageCategory=Other
+PinCount=2
+Version=8.2
+Released=2020-12-09 09:22:20
+Downloaded=2025-09-05 04:30:41
+3D=Y

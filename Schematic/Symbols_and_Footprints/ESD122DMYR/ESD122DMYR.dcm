@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP ESD122DMYR
+D 2-Channel ESD Protection Diode for USB Type-C and HDMI 2.0
+K
+F http://www.ti.com/lit/ds/symlink/esd122.pdf
+$ENDCMP
+#
+#End Doc Library

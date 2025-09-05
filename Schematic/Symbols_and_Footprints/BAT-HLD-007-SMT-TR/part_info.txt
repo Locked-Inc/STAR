@@ -1,0 +1,9 @@
+Manufacturer=TE Connectivity
+PartNumber=BAT-HLD-007-SMT-TR
+PartCategory=Battery
+PackageCategory=Other
+PinCount=3
+Version=1.11
+Released=2022-10-17 11:35:41
+Downloaded=2025-09-04 18:05:04
+3D=N

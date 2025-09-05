@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP 1N4148W
+D Rectifier Diode Small Signal Switching 100V 0.15A 4ns 2-Pin SOD-123F T/R
+K
+F https://diotec.com/request/datasheet/1n4148w.pdf
+$ENDCMP
+#
+#End Doc Library

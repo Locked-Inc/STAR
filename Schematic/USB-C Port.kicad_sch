@@ -3060,7 +3060,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "0129ef4d-f9fb-4880-bc02-e80782d731aa")
-		(property "Reference" "C65"
+		(property "Reference" "C60"
 			(at 161.29 70.104 90)
 			(effects
 				(font
@@ -3078,7 +3078,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_1206_3216Metric_Pad1.33x1.80mm_HandSolder"
 			(at 166.37 70.1548 0)
 			(effects
 				(font
@@ -3438,6 +3438,69 @@
 				(hide yes)
 			)
 		)
+		(property "Link" "https://mou.sr/3OC0xXF"
+			(at 162.56 71.12 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" "CL31B103KHFNFNE"
+			(at 162.56 71.12 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price per Unit" "0.13"
+			(at 162.56 71.12 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Mouser"
+			(at 162.56 71.12 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier Part Number" "187-CL31B103KHFNFNE"
+			(at 162.56 71.12 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 162.56 71.12 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" ""
+			(at 162.56 71.12 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "7084b51b-601a-4a89-b41b-f5f3a83b956c")
 		)
@@ -3447,7 +3510,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/f6f5f8c2-3fe5-486c-93b1-10011acff681"
-					(reference "C65")
+					(reference "C60")
 					(unit 1)
 				)
 			)
@@ -3462,7 +3525,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "19b5850a-0962-4db6-8815-2b557ce0f974")
-		(property "Reference" "C66"
+		(property "Reference" "C61"
 			(at 161.29 75.184 90)
 			(effects
 				(font
@@ -3480,7 +3543,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_1206_3216Metric_Pad1.33x1.80mm_HandSolder"
 			(at 166.37 75.2348 0)
 			(effects
 				(font
@@ -3840,6 +3903,69 @@
 				(hide yes)
 			)
 		)
+		(property "Link" "https://mou.sr/3OC0xXF"
+			(at 162.56 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" "CL31B103KHFNFNE"
+			(at 162.56 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price per Unit" "0.13"
+			(at 162.56 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Mouser"
+			(at 162.56 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier Part Number" "187-CL31B103KHFNFNE"
+			(at 162.56 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 162.56 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" ""
+			(at 162.56 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "5a41794b-8089-491b-9b10-b8ad5c95252f")
 		)
@@ -3849,7 +3975,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/f6f5f8c2-3fe5-486c-93b1-10011acff681"
-					(reference "C66")
+					(reference "C61")
 					(unit 1)
 				)
 			)
@@ -3864,7 +3990,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "1aa23e95-de14-43d8-be3a-8aeaead9f74f")
-		(property "Reference" "#PWR052"
+		(property "Reference" "#PWR047"
 			(at 110.49 142.24 0)
 			(effects
 				(font
@@ -3915,7 +4041,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/f6f5f8c2-3fe5-486c-93b1-10011acff681"
-					(reference "#PWR052")
+					(reference "#PWR047")
 					(unit 1)
 				)
 			)
@@ -3930,7 +4056,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "1d91335e-4bd6-4130-add5-193bc583bb4b")
-		(property "Reference" "C62"
+		(property "Reference" "C57"
 			(at 127 73.914 90)
 			(effects
 				(font
@@ -3948,7 +4074,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_1206_3216Metric_Pad1.33x1.80mm_HandSolder"
 			(at 132.08 73.9648 0)
 			(effects
 				(font
@@ -4308,6 +4434,69 @@
 				(hide yes)
 			)
 		)
+		(property "Link" "https://mou.sr/45jYGQI"
+			(at 128.27 74.93 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" "CL31B475KBHNFNE"
+			(at 128.27 74.93 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price per Unit" "0.27"
+			(at 128.27 74.93 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Mouser"
+			(at 128.27 74.93 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier Part Number" "187-CL31B475KBHNFNE"
+			(at 128.27 74.93 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 128.27 74.93 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" ""
+			(at 128.27 74.93 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "1f2ea6f9-0212-435f-8723-e2537b158d02")
 		)
@@ -4317,7 +4506,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/f6f5f8c2-3fe5-486c-93b1-10011acff681"
-					(reference "C62")
+					(reference "C57")
 					(unit 1)
 				)
 			)
@@ -4711,6 +4900,51 @@
 				(hide yes)
 			)
 		)
+		(property "Link" ""
+			(at 135.89 86.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" ""
+			(at 135.89 86.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price per Unit" ""
+			(at 135.89 86.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 135.89 86.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" ""
+			(at 135.89 86.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "ad5952fa-16f8-4349-be35-709d7dc2ffa9")
 		)
@@ -4735,7 +4969,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "2b808ef3-093f-451f-a23f-a3f22651dff3")
-		(property "Reference" "#PWR054"
+		(property "Reference" "#PWR049"
 			(at 176.53 120.65 0)
 			(effects
 				(font
@@ -4786,7 +5020,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/f6f5f8c2-3fe5-486c-93b1-10011acff681"
-					(reference "#PWR054")
+					(reference "#PWR049")
 					(unit 1)
 				)
 			)
@@ -4801,7 +5035,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "52f2e959-cd39-47d7-962e-80f2b0912bad")
-		(property "Reference" "U11"
+		(property "Reference" "U9"
 			(at 166.624 90.424 90)
 			(effects
 				(font
@@ -4817,7 +5051,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Package_SON:WSON-6-1EP_2x2mm_P0.65mm_EP1x1.6mm"
+		(property "Footprint" ""
 			(at 171.45 88.9 0)
 			(effects
 				(font
@@ -5150,6 +5384,51 @@
 				(hide yes)
 			)
 		)
+		(property "Link" ""
+			(at 162.56 93.98 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" ""
+			(at 162.56 93.98 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price per Unit" ""
+			(at 162.56 93.98 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 162.56 93.98 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" ""
+			(at 162.56 93.98 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "3"
 			(uuid "29db7626-c73b-4381-b839-8bcdea81dcab")
 		)
@@ -5174,7 +5453,7 @@
 		(instances
 			(project ""
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/f6f5f8c2-3fe5-486c-93b1-10011acff681"
-					(reference "U11")
+					(reference "U9")
 					(unit 1)
 				)
 			)
@@ -5189,7 +5468,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "5535be47-bc9f-4a49-bb8a-e97829348e83")
-		(property "Reference" "C61"
+		(property "Reference" "C56"
 			(at 127 68.834 90)
 			(effects
 				(font
@@ -5207,7 +5486,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_1206_3216Metric_Pad1.33x1.80mm_HandSolder"
 			(at 132.08 68.8848 0)
 			(effects
 				(font
@@ -5567,6 +5846,69 @@
 				(hide yes)
 			)
 		)
+		(property "Link" "https://mou.sr/45jYGQI"
+			(at 128.27 69.85 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" "CL31B475KBHNFNE"
+			(at 128.27 69.85 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price per Unit" "0.27"
+			(at 128.27 69.85 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Mouser"
+			(at 128.27 69.85 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier Part Number" "187-CL31B475KBHNFNE"
+			(at 128.27 69.85 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 128.27 69.85 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" ""
+			(at 128.27 69.85 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "a94501f4-6418-4954-84a9-a6be36a5ade6")
 		)
@@ -5576,7 +5918,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/f6f5f8c2-3fe5-486c-93b1-10011acff681"
-					(reference "C61")
+					(reference "C56")
 					(unit 1)
 				)
 			)
@@ -5591,7 +5933,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "62c9fc06-4253-4925-9e6e-2ba06fde89b8")
-		(property "Reference" "J14"
+		(property "Reference" "J12"
 			(at 122.936 92.964 0)
 			(effects
 				(font
@@ -5941,6 +6283,51 @@
 				(hide yes)
 			)
 		)
+		(property "Link" ""
+			(at 114.3 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" ""
+			(at 114.3 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price per Unit" ""
+			(at 114.3 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 114.3 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" ""
+			(at 114.3 111.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "A7"
 			(uuid "8702f34c-b723-434c-a009-2e91c8d1bcc4")
 		)
@@ -5989,7 +6376,7 @@
 		(instances
 			(project ""
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/f6f5f8c2-3fe5-486c-93b1-10011acff681"
-					(reference "J14")
+					(reference "J12")
 					(unit 1)
 				)
 			)
@@ -6004,7 +6391,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "6a2d398d-2cbd-4955-becb-9a010e700137")
-		(property "Reference" "TP103"
+		(property "Reference" "TP80"
 			(at 202.946 78.74 90)
 			(effects
 				(font
@@ -6050,13 +6437,58 @@
 				(hide yes)
 			)
 		)
+		(property "Link" ""
+			(at 207.01 78.74 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" ""
+			(at 207.01 78.74 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price per Unit" ""
+			(at 207.01 78.74 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 207.01 78.74 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" ""
+			(at 207.01 78.74 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "80c746a2-d66f-4a92-b7b9-455e6b02b31b")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/f6f5f8c2-3fe5-486c-93b1-10011acff681"
-					(reference "TP103")
+					(reference "TP80")
 					(unit 1)
 				)
 			)
@@ -6071,7 +6503,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "6e35740e-c464-47e5-95c6-e0eb31c9c78b")
-		(property "Reference" "C67"
+		(property "Reference" "C62"
 			(at 161.29 80.264 90)
 			(effects
 				(font
@@ -6089,7 +6521,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_1206_3216Metric_Pad1.33x1.80mm_HandSolder"
 			(at 166.37 80.3148 0)
 			(effects
 				(font
@@ -6449,6 +6881,69 @@
 				(hide yes)
 			)
 		)
+		(property "Link" "https://mou.sr/3OC0xXF"
+			(at 162.56 81.28 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" "CL31B103KHFNFNE"
+			(at 162.56 81.28 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price per Unit" "0.13"
+			(at 162.56 81.28 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Mouser"
+			(at 162.56 81.28 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier Part Number" "187-CL31B103KHFNFNE"
+			(at 162.56 81.28 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 162.56 81.28 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" ""
+			(at 162.56 81.28 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "22a8075e-81fd-498e-8461-fa8c8b83eb79")
 		)
@@ -6458,7 +6953,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/f6f5f8c2-3fe5-486c-93b1-10011acff681"
-					(reference "C67")
+					(reference "C62")
 					(unit 1)
 				)
 			)
@@ -6473,7 +6968,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "6e7539ce-fb5d-4213-ab95-07552c6452e8")
-		(property "Reference" "D42"
+		(property "Reference" "D39"
 			(at 170.942 109.474 0)
 			(effects
 				(font
@@ -6489,7 +6984,7 @@
 				)
 			)
 		)
-		(property "Footprint" "ESD122DMYR:DIO_ESD122DMYR"
+		(property "Footprint" "ESD122DMYR:ESD122DMYR"
 			(at 167.64 113.03 0)
 			(effects
 				(font
@@ -6538,16 +7033,6 @@
 			)
 		)
 		(property "Package" "X2SON-3 Texas Instruments"
-			(at 167.64 113.03 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
-		(property "Price" "None"
 			(at 167.64 113.03 0)
 			(effects
 				(font
@@ -6953,6 +7438,69 @@
 				(hide yes)
 			)
 		)
+		(property "Link" "https://mou.sr/46mVGTO"
+			(at 167.64 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" "ESD122DMYR"
+			(at 167.64 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price per Unit" "1.01"
+			(at 167.64 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Mouser"
+			(at 167.64 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier Part Number" "595-ESD122DMYR"
+			(at 167.64 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 167.64 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" ""
+			(at 167.64 113.03 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "5ad3a4d9-bb5a-4ff5-9079-76330e422008")
 		)
@@ -6965,7 +7513,7 @@
 		(instances
 			(project ""
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/f6f5f8c2-3fe5-486c-93b1-10011acff681"
-					(reference "D42")
+					(reference "D39")
 					(unit 1)
 				)
 			)
@@ -6980,7 +7528,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "73c58a82-a7b9-4277-8f04-61ff563b3698")
-		(property "Reference" "TP99"
+		(property "Reference" "TP76"
 			(at 202.946 68.58 90)
 			(effects
 				(font
@@ -7026,13 +7574,58 @@
 				(hide yes)
 			)
 		)
+		(property "Link" ""
+			(at 207.01 68.58 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" ""
+			(at 207.01 68.58 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price per Unit" ""
+			(at 207.01 68.58 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 207.01 68.58 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" ""
+			(at 207.01 68.58 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "4b9e86d0-8acc-4d6c-a8c4-a5e8b15ac661")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/f6f5f8c2-3fe5-486c-93b1-10011acff681"
-					(reference "TP99")
+					(reference "TP76")
 					(unit 1)
 				)
 			)
@@ -7047,7 +7640,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "76f75898-30bf-4b31-b37e-ae5ee60fe672")
-		(property "Reference" "C64"
+		(property "Reference" "C59"
 			(at 161.29 65.024 90)
 			(effects
 				(font
@@ -7065,7 +7658,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_1206_3216Metric_Pad1.33x1.80mm_HandSolder"
 			(at 166.37 65.0748 0)
 			(effects
 				(font
@@ -7425,6 +8018,69 @@
 				(hide yes)
 			)
 		)
+		(property "Link" "https://mou.sr/3OC0xXF"
+			(at 162.56 66.04 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" "CL31B103KHFNFNE"
+			(at 162.56 66.04 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price per Unit" "0.13"
+			(at 162.56 66.04 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Mouser"
+			(at 162.56 66.04 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier Part Number" "187-CL31B103KHFNFNE"
+			(at 162.56 66.04 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 162.56 66.04 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" ""
+			(at 162.56 66.04 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "e6eb4345-ea2f-46a6-9619-50ca13a31365")
 		)
@@ -7434,7 +8090,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/f6f5f8c2-3fe5-486c-93b1-10011acff681"
-					(reference "C64")
+					(reference "C59")
 					(unit 1)
 				)
 			)
@@ -7449,7 +8105,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "8762a6bb-34c2-4479-9fbc-8f1aab383101")
-		(property "Reference" "TP100"
+		(property "Reference" "TP77"
 			(at 202.946 71.12 90)
 			(effects
 				(font
@@ -7495,13 +8151,58 @@
 				(hide yes)
 			)
 		)
+		(property "Link" ""
+			(at 207.01 71.12 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" ""
+			(at 207.01 71.12 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price per Unit" ""
+			(at 207.01 71.12 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 207.01 71.12 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" ""
+			(at 207.01 71.12 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "55120afe-5ea6-4931-a604-d03a1cb6a942")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/f6f5f8c2-3fe5-486c-93b1-10011acff681"
-					(reference "TP100")
+					(reference "TP77")
 					(unit 1)
 				)
 			)
@@ -7516,7 +8217,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "aadb2049-747c-4e59-a2d2-5208c59619d0")
-		(property "Reference" "TP101"
+		(property "Reference" "TP78"
 			(at 202.946 73.66 90)
 			(effects
 				(font
@@ -7562,13 +8263,58 @@
 				(hide yes)
 			)
 		)
+		(property "Link" ""
+			(at 207.01 73.66 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" ""
+			(at 207.01 73.66 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price per Unit" ""
+			(at 207.01 73.66 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 207.01 73.66 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" ""
+			(at 207.01 73.66 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "853dc3b9-da85-4f85-8825-9a4f4a55a390")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/f6f5f8c2-3fe5-486c-93b1-10011acff681"
-					(reference "TP101")
+					(reference "TP78")
 					(unit 1)
 				)
 			)
@@ -7583,7 +8329,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "b59f1337-8c5c-44fc-8ee9-ee9d13ef1dd4")
-		(property "Reference" "C63"
+		(property "Reference" "C58"
 			(at 127 78.994 90)
 			(effects
 				(font
@@ -7601,7 +8347,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_1206_3216Metric_Pad1.33x1.80mm_HandSolder"
 			(at 132.08 79.0448 0)
 			(effects
 				(font
@@ -7961,6 +8707,69 @@
 				(hide yes)
 			)
 		)
+		(property "Link" "https://mou.sr/4n9ybmQ"
+			(at 128.27 80.01 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" "CL31B104KBCNNNC"
+			(at 128.27 80.01 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price per Unit" "0.11"
+			(at 128.27 80.01 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Mouser"
+			(at 128.27 80.01 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier Part Number" "187-CL31B104KBCNNNC"
+			(at 128.27 80.01 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 128.27 80.01 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" ""
+			(at 128.27 80.01 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "862e7221-0cd5-465e-aab1-d4e885126593")
 		)
@@ -7970,7 +8779,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/f6f5f8c2-3fe5-486c-93b1-10011acff681"
-					(reference "C63")
+					(reference "C58")
 					(unit 1)
 				)
 			)
@@ -7985,7 +8794,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "b93e4a72-dfb9-4232-ae71-a34c31d1b922")
-		(property "Reference" "#PWR053"
+		(property "Reference" "#PWR048"
 			(at 123.19 87.63 0)
 			(effects
 				(font
@@ -8036,7 +8845,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/f6f5f8c2-3fe5-486c-93b1-10011acff681"
-					(reference "#PWR053")
+					(reference "#PWR048")
 					(unit 1)
 				)
 			)
@@ -8051,7 +8860,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "eb1cf506-253f-45db-9f23-b119ea83b715")
-		(property "Reference" "TP102"
+		(property "Reference" "TP79"
 			(at 202.946 76.2 90)
 			(effects
 				(font
@@ -8097,13 +8906,58 @@
 				(hide yes)
 			)
 		)
+		(property "Link" ""
+			(at 207.01 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" ""
+			(at 207.01 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price per Unit" ""
+			(at 207.01 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 207.01 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" ""
+			(at 207.01 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "0ba2ed67-8664-46a0-af06-9fe5da16ed54")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/f6f5f8c2-3fe5-486c-93b1-10011acff681"
-					(reference "TP102")
+					(reference "TP79")
 					(unit 1)
 				)
 			)

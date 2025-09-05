@@ -1,0 +1,9 @@
+Manufacturer=Diotec
+PartNumber=1N4148W
+PartCategory=Diode
+PackageCategory=Small Outline Diode Flat Lead
+PinCount=2
+Version=1.1
+Released=2023-02-22 10:59:26
+Downloaded=2025-09-05 04:25:30
+3D=Y

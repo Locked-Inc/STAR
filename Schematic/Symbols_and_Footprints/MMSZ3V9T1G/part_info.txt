@@ -1,0 +1,9 @@
+Manufacturer=onsemi
+PartNumber=MMSZ3V9T1G
+PartCategory=Zener Diode
+PackageCategory=Small Outline Diode
+PinCount=2
+Version=2.2
+Released=2017-05-04 08:31:21
+Downloaded=2025-09-05 04:02:39
+3D=Y
