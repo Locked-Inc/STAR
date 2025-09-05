@@ -1,0 +1,9 @@
+Manufacturer=Kyocera AVX
+PartNumber=AHA0810560M040R
+PartCategory=Capacitor Polarised
+PackageCategory=Capacitor Al Electrolytic
+PinCount=2
+Version=1.1
+Released=2025-04-16 14:25:32
+Downloaded=2025-09-04 20:50:33
+3D=Y

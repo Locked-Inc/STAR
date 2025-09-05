@@ -67,16 +67,6 @@
 	)
 	(wire
 		(pts
-			(xy 228.6 43.18) (xy 248.92 43.18)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "32dc6214-f3fc-4a3e-a0bf-a03845d58df1")
-	)
-	(wire
-		(pts
 			(xy 165.1 50.8) (xy 185.42 50.8)
 		)
 		(stroke
@@ -167,23 +157,13 @@
 	)
 	(wire
 		(pts
-			(xy 165.1 40.64) (xy 185.42 40.64)
+			(xy 168.91 40.64) (xy 185.42 40.64)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "610a1788-5116-473e-960f-807c6269bc5f")
-	)
-	(wire
-		(pts
-			(xy 165.1 44.45) (xy 185.42 44.45)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "614d2bf9-c7a0-4f2f-bc14-c6e3564df7d0")
 	)
 	(wire
 		(pts
@@ -194,16 +174,6 @@
 			(type default)
 		)
 		(uuid "62438f61-6972-43d7-a026-16934ad5c087")
-	)
-	(wire
-		(pts
-			(xy 165.1 72.39) (xy 185.42 72.39)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "64361115-c106-4411-bcbe-e5294f0fa264")
 	)
 	(wire
 		(pts
@@ -237,16 +207,6 @@
 	)
 	(wire
 		(pts
-			(xy 165.1 82.55) (xy 185.42 82.55)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "7b88adcc-03be-40da-8f0f-cbd8c735a697")
-	)
-	(wire
-		(pts
 			(xy 165.1 53.34) (xy 185.42 53.34)
 		)
 		(stroke
@@ -254,16 +214,6 @@
 			(type default)
 		)
 		(uuid "7c2ffd6c-807d-4f0f-ad67-43fe14feb875")
-	)
-	(wire
-		(pts
-			(xy 58.42 92.71) (xy 82.55 92.71)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "858e60ba-ebd7-4443-9724-6288af982b00")
 	)
 	(wire
 		(pts
@@ -467,16 +417,6 @@
 	)
 	(wire
 		(pts
-			(xy 165.1 46.99) (xy 185.42 46.99)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "eab293d2-93e5-4d89-938d-f3196f400231")
-	)
-	(wire
-		(pts
 			(xy 58.42 130.81) (xy 82.55 130.81)
 		)
 		(stroke
@@ -555,16 +495,6 @@
 		)
 		(uuid "2a23b5ce-3e95-4ddb-a28a-9b44a49379e5")
 	)
-	(label "IMU_INT"
-		(at 165.1 72.39 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "2c329f0a-f6f2-4840-90d4-a369ff2f09b7")
-	)
 	(label "IO_RST"
 		(at 248.92 45.72 180)
 		(effects
@@ -574,26 +504,6 @@
 			(justify right bottom)
 		)
 		(uuid "2d4e1757-d898-46ba-900b-3d7880a4c81f")
-	)
-	(label "GPS_RX"
-		(at 165.1 44.45 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "351b3283-5d3a-45fb-b225-5fbe0d6ca999")
-	)
-	(label "BMP_INT"
-		(at 165.1 82.55 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "367a8358-4fc0-4300-8d83-59f1bc11de2e")
 	)
 	(label "MOTOR_PH_DATA"
 		(at 165.1 91.44 0)
@@ -614,16 +524,6 @@
 			(justify left bottom)
 		)
 		(uuid "3d26cb19-beb8-4a31-a217-620ba48ba0ca")
-	)
-	(label "IMU_nRESET"
-		(at 248.92 43.18 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "42a25efc-7d29-45d9-80c6-54cf2b32e4c4")
 	)
 	(label "I2C_SDA"
 		(at 62.23 105.41 0)
@@ -825,16 +725,6 @@
 		)
 		(uuid "c97fc0e1-c5ab-4718-83f8-d12319845bff")
 	)
-	(label "GPS_TX"
-		(at 165.1 46.99 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "cadc1c7d-1ce2-4045-80f3-2288a9e11afd")
-	)
 	(label "SPI_SDO"
 		(at 62.23 115.57 0)
 		(effects
@@ -846,7 +736,7 @@
 		(uuid "cd1c36ff-412c-468e-8ed0-e1a43e1c33ce")
 	)
 	(label "SENSOR_P3V3"
-		(at 165.1 40.64 0)
+		(at 168.91 40.64 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -884,16 +774,6 @@
 			(justify right bottom)
 		)
 		(uuid "ded6ba07-5a7e-4c1b-b56e-c01a98fc1b21")
-	)
-	(label "SENSOR_P3V3"
-		(at 62.23 92.71 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "e3994a10-eef0-47b8-b550-36b329df0b8c")
 	)
 	(label "GPS_RX"
 		(at 62.23 96.52 0)
@@ -1095,17 +975,6 @@
 		)
 		(uuid "752b7fbf-1971-4de9-b269-0f1104f0cf52")
 	)
-	(hierarchical_label "SENSOR_P3V3"
-		(shape input)
-		(at 58.42 92.71 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "7a66392e-4683-4b0d-a199-85ec9cff82b7")
-	)
 	(hierarchical_label "ENCODER_SEL2"
 		(shape output)
 		(at 143.51 111.76 0)
@@ -1127,6 +996,17 @@
 			(justify right)
 		)
 		(uuid "917dc458-ec0c-4182-afaf-e55f16d9648d")
+	)
+	(hierarchical_label "SENSOR_P3V3"
+		(shape input)
+		(at 168.91 40.64 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "9b463aca-175e-4d58-aced-3a2cce746098")
 	)
 	(hierarchical_label "I2C_SCL"
 		(shape output)
@@ -1281,9 +1161,9 @@
 		(at 82.55 88.9)
 		(size 38.1 54.61)
 		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+		(in_bom no)
+		(on_board no)
+		(dnp yes)
 		(fields_autoplaced yes)
 		(stroke
 			(width 0.1524)
@@ -1339,16 +1219,6 @@
 					(size 1.27 1.27)
 				)
 				(justify right)
-			)
-		)
-		(pin "SENSOR_P3V3" input
-			(at 82.55 92.71 180)
-			(uuid "24000359-d367-4ad2-802f-7e77050ed544")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
 			)
 		)
 		(pin "GPS_RX" input
@@ -1583,26 +1453,6 @@
 				(justify left)
 			)
 		)
-		(pin "IMU_nRESET" output
-			(at 228.6 43.18 0)
-			(uuid "fb1229ed-253e-40bf-951b-4e0abc7fe985")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(pin "BMP_INT" input
-			(at 185.42 82.55 180)
-			(uuid "388b5e11-fc6a-484b-bcec-5d36547e37f7")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
 		(pin "ENCODER_SEL1" output
 			(at 228.6 57.15 0)
 			(uuid "52463b08-1790-45e4-9cc3-d34d58d7d4b5")
@@ -1623,26 +1473,6 @@
 				(justify right)
 			)
 		)
-		(pin "GPS_RX" input
-			(at 185.42 44.45 180)
-			(uuid "8fee0e83-96cc-4489-8d04-fa60d716b1c9")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(pin "GPS_TX" output
-			(at 185.42 46.99 180)
-			(uuid "ba7a25ac-5147-4aa9-9d42-1728f639da93")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
 		(pin "I2C_SCL" output
 			(at 185.42 50.8 180)
 			(uuid "6cd1930d-2b3b-4f6e-8f4b-7a30a81a011c")
@@ -1656,16 +1486,6 @@
 		(pin "I2C_SDA" bidirectional
 			(at 185.42 53.34 180)
 			(uuid "16cc5c24-965b-4c02-9abe-085c1cdd6818")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(pin "IMU_INT" input
-			(at 185.42 72.39 180)
-			(uuid "e8401595-b111-4619-95b7-d0fe25e44a58")
 			(effects
 				(font
 					(size 1.27 1.27)

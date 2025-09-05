@@ -1,0 +1,9 @@
+Manufacturer=Diodes Incorporated
+PartNumber=DDZ5V6ASF-7
+PartCategory=Zener Diode
+PackageCategory=Small Outline Diode Flat Lead
+PinCount=2
+Version=3.1
+Released=2020-02-04 11:43:46
+Downloaded=2025-09-04 23:11:27
+3D=Y

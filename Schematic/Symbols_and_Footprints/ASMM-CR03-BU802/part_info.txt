@@ -1,0 +1,9 @@
+Manufacturer=Avago Technologies
+PartNumber=ASMM-CR03-BU802
+PartCategory=LED
+PackageCategory=LED Moulded
+PinCount=2
+Version=1.1
+Released=2022-02-08 11:46:49
+Downloaded=2025-09-04 22:17:28
+3D=N
