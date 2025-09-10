@@ -7617,6 +7617,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 62.23 81.28 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "88950544-9b93-4c6a-a03b-e4df84519f9e")
 		)
@@ -7641,7 +7650,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "048cbca2-0a38-4d8f-8222-beac4583a35a")
-		(property "Reference" "C109"
+		(property "Reference" "C102"
 			(at 208.28 23.368 0)
 			(effects
 				(font
@@ -8055,6 +8064,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 208.28 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "7689f474-dcb3-4cc8-b6e3-21f658249f8b")
 		)
@@ -8064,7 +8082,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C109")
+					(reference "C102")
 					(unit 1)
 				)
 			)
@@ -8079,7 +8097,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "04f4c352-3200-407b-a814-1396ba6e2e47")
-		(property "Reference" "C94"
+		(property "Reference" "C87"
 			(at 165.1 23.368 0)
 			(effects
 				(font
@@ -8493,6 +8511,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 165.1 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "265cccbb-874f-465b-9d9f-22bf8537d19f")
 		)
@@ -8502,7 +8529,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C94")
+					(reference "C87")
 					(unit 1)
 				)
 			)
@@ -8582,7 +8609,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "0ab6e305-0e2c-4e47-b577-370423140bac")
-		(property "Reference" "TP105"
+		(property "Reference" "TP98"
 			(at 234.696 130.81 90)
 			(effects
 				(font
@@ -8673,13 +8700,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 130.81 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "bfff3e81-a2da-48bd-9bdb-c9db16c1f6fb")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP105")
+					(reference "TP98")
 					(unit 1)
 				)
 			)
@@ -8694,7 +8730,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "101acf29-6a71-48f8-bed4-acdc2dc5fe3d")
-		(property "Reference" "TP112"
+		(property "Reference" "TP105"
 			(at 234.696 148.59 90)
 			(effects
 				(font
@@ -8785,13 +8821,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 148.59 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "be246886-b306-4c11-a108-c0c4f6877164")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP112")
+					(reference "TP105")
 					(unit 1)
 				)
 			)
@@ -8806,7 +8851,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "104683a1-ec91-4104-a8b3-684b05747659")
-		(property "Reference" "#PWR062"
+		(property "Reference" "#PWR051"
 			(at 95.25 167.64 0)
 			(effects
 				(font
@@ -8857,7 +8902,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "#PWR062")
+					(reference "#PWR051")
 					(unit 1)
 				)
 			)
@@ -8872,7 +8917,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "105d7760-930d-40a9-8a3a-6944271c8dc6")
-		(property "Reference" "C110"
+		(property "Reference" "C103"
 			(at 208.28 42.418 0)
 			(effects
 				(font
@@ -9286,6 +9331,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 208.28 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "68be7921-77e6-421c-be4e-13131a9d498e")
 		)
@@ -9295,7 +9349,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C110")
+					(reference "C103")
 					(unit 1)
 				)
 			)
@@ -9310,7 +9364,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "126acf20-a763-4fa3-b8ea-ccf3f442102a")
-		(property "Reference" "#PWR065"
+		(property "Reference" "#PWR054"
 			(at 194.31 113.03 0)
 			(effects
 				(font
@@ -9361,7 +9415,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "#PWR065")
+					(reference "#PWR054")
 					(unit 1)
 				)
 			)
@@ -9376,7 +9430,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "159b3f0c-59a8-4baa-9ca4-268ff073f5b7")
-		(property "Reference" "C117"
+		(property "Reference" "C110"
 			(at 237.49 23.368 0)
 			(effects
 				(font
@@ -9817,6 +9871,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 237.49 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "004d295b-3623-409b-9f66-cb79bc308252")
 		)
@@ -9826,7 +9889,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C117")
+					(reference "C110")
 					(unit 1)
 				)
 			)
@@ -9841,7 +9904,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "1850b560-b070-4d78-92ae-62ac93da01df")
-		(property "Reference" "C120"
+		(property "Reference" "C113"
 			(at 243.84 42.418 0)
 			(effects
 				(font
@@ -10282,6 +10345,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 243.84 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "7b89749b-6099-433e-8328-9bf22537626e")
 		)
@@ -10291,7 +10363,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C120")
+					(reference "C113")
 					(unit 1)
 				)
 			)
@@ -10306,7 +10378,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "1f355931-b67f-4b75-b0c1-11bcaeae41ce")
-		(property "Reference" "C91"
+		(property "Reference" "C84"
 			(at 149.86 42.418 0)
 			(effects
 				(font
@@ -10720,6 +10792,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 149.86 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "8ebc31a1-8ddd-44e6-bbf7-158221f37897")
 		)
@@ -10729,7 +10810,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C91")
+					(reference "C84")
 					(unit 1)
 				)
 			)
@@ -10744,7 +10825,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "1fd562b6-602f-4cb2-b59a-e3be42181f21")
-		(property "Reference" "TP92"
+		(property "Reference" "TP85"
 			(at 234.696 97.79 90)
 			(effects
 				(font
@@ -10835,13 +10916,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 97.79 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "61fdf2da-9814-4a0f-8ee1-05f2a131d96c")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP92")
+					(reference "TP85")
 					(unit 1)
 				)
 			)
@@ -10856,7 +10946,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "2dc0e0e3-ba1a-470c-84e7-c09dc8135eec")
-		(property "Reference" "C92"
+		(property "Reference" "C85"
 			(at 157.48 23.368 0)
 			(effects
 				(font
@@ -11270,6 +11360,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 157.48 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "2151e0c1-da67-4252-9934-5161e928b823")
 		)
@@ -11279,7 +11378,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C92")
+					(reference "C85")
 					(unit 1)
 				)
 			)
@@ -11294,7 +11393,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "2e50b775-57a8-45b3-b3ff-3c6f577bfe6b")
-		(property "Reference" "C107"
+		(property "Reference" "C100"
 			(at 195.58 98.298 0)
 			(effects
 				(font
@@ -11735,6 +11834,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 195.58 100.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "a4e7c146-2a87-4856-8ede-f16d0956be3e")
 		)
@@ -11744,7 +11852,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C107")
+					(reference "C100")
 					(unit 1)
 				)
 			)
@@ -11759,7 +11867,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "30771cdf-d8d4-4f3d-baca-5a497662d27f")
-		(property "Reference" "C121"
+		(property "Reference" "C114"
 			(at 250.19 23.368 0)
 			(effects
 				(font
@@ -12200,6 +12308,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 250.19 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "09052c6a-10e8-4980-ae1c-559308d32675")
 		)
@@ -12209,7 +12326,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C121")
+					(reference "C114")
 					(unit 1)
 				)
 			)
@@ -12224,7 +12341,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "318a650a-72e2-4305-a21b-1b638e1e88a1")
-		(property "Reference" "TP97"
+		(property "Reference" "TP90"
 			(at 234.696 110.49 90)
 			(effects
 				(font
@@ -12315,13 +12432,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 110.49 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "4e934503-0feb-4b92-b6f3-8e5879ac39d4")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP97")
+					(reference "TP90")
 					(unit 1)
 				)
 			)
@@ -12336,7 +12462,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "345d0b4c-3a72-4c9c-a31d-fd53d79cc6bd")
-		(property "Reference" "C97"
+		(property "Reference" "C90"
 			(at 172.72 42.418 0)
 			(effects
 				(font
@@ -12777,6 +12903,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 172.72 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "071dc3d9-a9d1-4f0c-adab-5905feeac148")
 		)
@@ -12786,7 +12921,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C97")
+					(reference "C90")
 					(unit 1)
 				)
 			)
@@ -12801,7 +12936,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "3737abad-5ffc-46c7-a8b2-ad909f883371")
-		(property "Reference" "TP101"
+		(property "Reference" "TP94"
 			(at 234.696 120.65 90)
 			(effects
 				(font
@@ -12892,13 +13027,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 120.65 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "f900e3e3-d8e5-4bac-81ae-fabf31cb3582")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP101")
+					(reference "TP94")
 					(unit 1)
 				)
 			)
@@ -12913,7 +13057,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "3bbebc17-d0b7-4f6f-8159-65d7a55ec3e1")
-		(property "Reference" "C100"
+		(property "Reference" "C93"
 			(at 181.864 98.298 0)
 			(effects
 				(font
@@ -13354,6 +13498,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 181.61 100.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "12124917-7da3-4faa-a404-1598b7438023")
 		)
@@ -13363,7 +13516,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C100")
+					(reference "C93")
 					(unit 1)
 				)
 			)
@@ -13799,6 +13952,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 60.96 106.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "bc6d3cfc-b6b3-41e1-840f-23db9b2f635c")
 		)
@@ -13823,7 +13985,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "427f6ff4-b8d8-4ced-a0c8-639ecaa5cdbd")
-		(property "Reference" "TP98"
+		(property "Reference" "TP91"
 			(at 234.696 113.03 90)
 			(effects
 				(font
@@ -13914,13 +14076,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 113.03 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "aa401095-47ed-42d5-830e-c083ee5a432d")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP98")
+					(reference "TP91")
 					(unit 1)
 				)
 			)
@@ -13935,7 +14106,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "44236c18-a442-4c38-a603-24cd202ddcbd")
-		(property "Reference" "C108"
+		(property "Reference" "C101"
 			(at 201.93 98.298 0)
 			(effects
 				(font
@@ -14376,6 +14547,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 201.93 100.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "b27a3204-6f35-4b88-86b5-389677c5bc5b")
 		)
@@ -14385,7 +14565,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C108")
+					(reference "C101")
 					(unit 1)
 				)
 			)
@@ -14400,7 +14580,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "462bcbf4-b42e-47a1-93a6-a151a38f9a91")
-		(property "Reference" "TP100"
+		(property "Reference" "TP93"
 			(at 234.696 118.11 90)
 			(effects
 				(font
@@ -14491,13 +14671,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 118.11 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "6f45060b-89d5-4327-a791-8aebc6b90cbb")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP100")
+					(reference "TP93")
 					(unit 1)
 				)
 			)
@@ -14934,6 +15123,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 62.23 76.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "f89dbe6d-8c57-45e4-8ca6-2375adca9555")
 		)
@@ -14958,7 +15156,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "50ed0fd1-39b7-49da-86d5-f2f27c41e948")
-		(property "Reference" "TP93"
+		(property "Reference" "TP86"
 			(at 234.696 100.33 90)
 			(effects
 				(font
@@ -15049,13 +15247,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 100.33 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "d205aeaf-30ed-4232-ad2b-730083a0e63b")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP93")
+					(reference "TP86")
 					(unit 1)
 				)
 			)
@@ -15070,7 +15277,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "512a0e12-3b5a-4f68-8ec4-c3d2a6677060")
-		(property "Reference" "C105"
+		(property "Reference" "C98"
 			(at 191.77 23.368 0)
 			(effects
 				(font
@@ -15511,6 +15718,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 191.77 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "e2b5f5e5-51e6-4769-a49f-d035bba5f68d")
 		)
@@ -15520,7 +15736,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C105")
+					(reference "C98")
 					(unit 1)
 				)
 			)
@@ -15535,7 +15751,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "5c3cfc7a-6f2c-44e0-b4c0-e2f8396db97c")
-		(property "Reference" "TP90"
+		(property "Reference" "TP83"
 			(at 234.696 92.71 90)
 			(effects
 				(font
@@ -15626,13 +15842,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 92.71 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "6614d44c-ff83-4953-b116-ebbdb2a9f48a")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP90")
+					(reference "TP83")
 					(unit 1)
 				)
 			)
@@ -16068,6 +16293,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 35.56 154.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "5682c37c-dc55-47a1-a579-256a401c06de")
 		)
@@ -16092,7 +16326,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "5ee84fcb-f117-4817-b1e4-31ffa42d32bd")
-		(property "Reference" "C95"
+		(property "Reference" "C88"
 			(at 165.1 42.418 0)
 			(effects
 				(font
@@ -16506,6 +16740,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 165.1 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "5eaa4351-b544-479a-8971-58f7cb250275")
 		)
@@ -16515,7 +16758,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C95")
+					(reference "C88")
 					(unit 1)
 				)
 			)
@@ -16530,7 +16773,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "63a5933c-a89f-4f97-9fee-d4568450912f")
-		(property "Reference" "TP113"
+		(property "Reference" "TP106"
 			(at 234.696 151.13 90)
 			(effects
 				(font
@@ -16621,13 +16864,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 151.13 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "3cc16436-654d-47d9-90d3-cde76a5d9dbd")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP113")
+					(reference "TP106")
 					(unit 1)
 				)
 			)
@@ -17055,6 +17307,15 @@
 			)
 		)
 		(property "Sim.Pins" ""
+			(at 64.77 154.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "SNAPEDA_PACKAGE_ID" ""
 			(at 64.77 154.94 0)
 			(effects
 				(font
@@ -17508,6 +17769,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 35.56 29.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "34a3c117-ced4-4813-9d87-4bc510e9f912")
 		)
@@ -17532,7 +17802,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "6c20b085-1d09-4285-8178-d72b2c3c25fc")
-		(property "Reference" "TP103"
+		(property "Reference" "TP96"
 			(at 234.696 125.73 90)
 			(effects
 				(font
@@ -17623,13 +17893,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 125.73 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "97f18ba2-c1c0-4d98-b270-d9d35a7cec49")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP103")
+					(reference "TP96")
 					(unit 1)
 				)
 			)
@@ -17644,7 +17923,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "6e664ec1-ffe3-42d9-a09e-2234b87e709d")
-		(property "Reference" "C112"
+		(property "Reference" "C105"
 			(at 215.9 42.418 0)
 			(effects
 				(font
@@ -18058,6 +18337,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 215.9 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "4051abde-2fa5-4225-811d-9b92ac20182a")
 		)
@@ -18067,7 +18355,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C112")
+					(reference "C105")
 					(unit 1)
 				)
 			)
@@ -18082,7 +18370,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "7229e6ce-8422-463d-bc60-e38e1d09d69f")
-		(property "Reference" "C101"
+		(property "Reference" "C94"
 			(at 184.15 124.968 0)
 			(effects
 				(font
@@ -18523,6 +18811,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 184.15 127 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "aac13990-1031-4b67-8e7f-8f305fab8bcf")
 		)
@@ -18532,7 +18829,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C101")
+					(reference "C94")
 					(unit 1)
 				)
 			)
@@ -18968,6 +19265,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 35.56 40.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "5580d072-6819-4007-a092-20123b696fff")
 		)
@@ -18992,7 +19298,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "7ea7a0f1-1394-4830-b8be-6e71d1f0c2f6")
-		(property "Reference" "TP99"
+		(property "Reference" "TP92"
 			(at 234.696 115.57 90)
 			(effects
 				(font
@@ -19083,13 +19389,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 115.57 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "b80f2f5c-5245-4baf-bb4f-1dff3c0183d6")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP99")
+					(reference "TP92")
 					(unit 1)
 				)
 			)
@@ -19104,7 +19419,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "7fb591fd-1549-4e60-bc54-be412912de67")
-		(property "Reference" "C90"
+		(property "Reference" "C83"
 			(at 149.86 23.368 0)
 			(effects
 				(font
@@ -19518,6 +19833,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 149.86 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "230ffebd-36bf-42e8-813a-3ef5d8e557d0")
 		)
@@ -19527,7 +19851,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C90")
+					(reference "C83")
 					(unit 1)
 				)
 			)
@@ -19542,7 +19866,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "806c5fb7-0d49-43b2-9b98-261d142cb1a0")
-		(property "Reference" "TP94"
+		(property "Reference" "TP87"
 			(at 234.696 102.87 90)
 			(effects
 				(font
@@ -19633,13 +19957,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 102.87 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "dc9c6753-6965-42ba-9abd-1f540bb416fe")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP94")
+					(reference "TP87")
 					(unit 1)
 				)
 			)
@@ -19654,7 +19987,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "81008463-dd97-485c-a010-f0b1dc1e811e")
-		(property "Reference" "C88"
+		(property "Reference" "C81"
 			(at 63.5 25.908 0)
 			(effects
 				(font
@@ -20095,6 +20428,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 63.5 27.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "d2aba5e4-60ed-4359-afa2-bf0a2790ea93")
 		)
@@ -20104,7 +20446,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C88")
+					(reference "C81")
 					(unit 1)
 				)
 			)
@@ -20119,7 +20461,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "81591213-ae74-484d-be37-a5df519ab0af")
-		(property "Reference" "C93"
+		(property "Reference" "C86"
 			(at 157.48 42.418 0)
 			(effects
 				(font
@@ -20533,6 +20875,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 157.48 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "be0f9e44-b1d6-422f-8156-8d883f3edefe")
 		)
@@ -20542,7 +20893,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C93")
+					(reference "C86")
 					(unit 1)
 				)
 			)
@@ -20557,7 +20908,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "81d594aa-5348-45ca-863b-13a87026ecc6")
-		(property "Reference" "TP89"
+		(property "Reference" "TP82"
 			(at 234.696 90.17 90)
 			(effects
 				(font
@@ -20648,13 +20999,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 90.17 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "f5b6d2a8-25d4-44a2-945c-ec8c20b9308a")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP89")
+					(reference "TP82")
 					(unit 1)
 				)
 			)
@@ -21090,6 +21450,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 43.18 77.47 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "fd6f1e8a-bb60-4aac-a7cb-1ec9ddcf1510")
 		)
@@ -21114,7 +21483,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "89acc1d7-a9bc-4447-9603-f916e2546c2e")
-		(property "Reference" "TP115"
+		(property "Reference" "TP108"
 			(at 234.696 156.21 90)
 			(effects
 				(font
@@ -21205,13 +21574,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 156.21 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "c33f3a9c-014d-4154-a21f-a28d592218eb")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP115")
+					(reference "TP108")
 					(unit 1)
 				)
 			)
@@ -21226,7 +21604,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "8c2f228f-84ec-48d0-9b90-7af350361e79")
-		(property "Reference" "C118"
+		(property "Reference" "C111"
 			(at 237.49 42.418 0)
 			(effects
 				(font
@@ -21667,6 +22045,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 237.49 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "27ead4fb-2029-419a-9dda-06ae842013c4")
 		)
@@ -21676,7 +22063,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C118")
+					(reference "C111")
 					(unit 1)
 				)
 			)
@@ -21691,7 +22078,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "8d0eb953-7336-49a9-bc86-f852986e86f5")
-		(property "Reference" "TP95"
+		(property "Reference" "TP88"
 			(at 234.696 105.41 90)
 			(effects
 				(font
@@ -21782,13 +22169,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 105.41 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "022bd1d1-e9c9-4664-8f23-0c16c99ee6f3")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP95")
+					(reference "TP88")
 					(unit 1)
 				)
 			)
@@ -21868,7 +22264,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "932dc29d-c23c-4e08-b77a-0e0fd3181c02")
-		(property "Reference" "TP108"
+		(property "Reference" "TP101"
 			(at 234.696 138.43 90)
 			(effects
 				(font
@@ -21959,13 +22355,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 138.43 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "4375a685-b5a2-4c24-99d2-839e2400fb64")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP108")
+					(reference "TP101")
 					(unit 1)
 				)
 			)
@@ -21980,7 +22385,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "975b82ae-d025-4453-9d02-05a52ac858de")
-		(property "Reference" "TP106"
+		(property "Reference" "TP99"
 			(at 234.696 133.35 90)
 			(effects
 				(font
@@ -22071,13 +22476,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 133.35 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "92f0a84a-94f0-4b15-aedc-6c1f7861556e")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP106")
+					(reference "TP99")
 					(unit 1)
 				)
 			)
@@ -22515,6 +22929,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 25.4 40.64 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "bd51a7d4-93d8-4fd5-9b3f-2accba47926c")
 		)
@@ -22539,7 +22962,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "992b5534-9afa-47c2-bf35-3b84c1f7c591")
-		(property "Reference" "TP86"
+		(property "Reference" "TP79"
 			(at 234.696 82.55 90)
 			(effects
 				(font
@@ -22630,13 +23053,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 82.55 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "8750a28c-be53-4396-ad7c-5335353af70e")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP86")
+					(reference "TP79")
 					(unit 1)
 				)
 			)
@@ -22651,7 +23083,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "992f0724-2299-4dae-8f88-19d6c286edaa")
-		(property "Reference" "C122"
+		(property "Reference" "C115"
 			(at 250.19 42.418 0)
 			(effects
 				(font
@@ -23092,6 +23524,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 250.19 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "dbe966d9-5ab9-41c1-a85a-4e5d985ee28e")
 		)
@@ -23101,7 +23542,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C122")
+					(reference "C115")
 					(unit 1)
 				)
 			)
@@ -23116,7 +23557,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "9c4b42c5-d9a1-428a-a61d-5caf56766b44")
-		(property "Reference" "#PWR061"
+		(property "Reference" "#PWR050"
 			(at 35.56 55.88 0)
 			(effects
 				(font
@@ -23167,7 +23608,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "#PWR061")
+					(reference "#PWR050")
 					(unit 1)
 				)
 			)
@@ -23182,7 +23623,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "9cc11bb2-471b-4bd8-9559-55f9896d13b0")
-		(property "Reference" "C115"
+		(property "Reference" "C108"
 			(at 231.14 23.368 0)
 			(effects
 				(font
@@ -23623,6 +24064,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 231.14 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "e509751e-7fee-4766-b1cc-b1f638d88857")
 		)
@@ -23632,7 +24082,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C115")
+					(reference "C108")
 					(unit 1)
 				)
 			)
@@ -23647,7 +24097,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "9e8d78ff-2d4e-44e6-9cf8-ff3de347360e")
-		(property "Reference" "C116"
+		(property "Reference" "C109"
 			(at 231.14 42.418 0)
 			(effects
 				(font
@@ -24088,6 +24538,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 231.14 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "519227c5-ec31-411c-b024-fb29b9ad77c5")
 		)
@@ -24097,7 +24556,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C116")
+					(reference "C109")
 					(unit 1)
 				)
 			)
@@ -24525,6 +24984,15 @@
 			)
 		)
 		(property "Sim.Pins" ""
+			(at 83.82 153.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "SNAPEDA_PACKAGE_ID" ""
 			(at 83.82 153.67 0)
 			(effects
 				(font
@@ -24979,6 +25447,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 62.23 78.74 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "748e5d4d-b42d-4c67-b20a-1b20510e9e55")
 		)
@@ -25003,7 +25480,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "a146d947-925a-4671-bc5b-ca7aedbddb18")
-		(property "Reference" "C106"
+		(property "Reference" "C99"
 			(at 191.77 42.418 0)
 			(effects
 				(font
@@ -25444,6 +25921,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 191.77 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "604b3f61-5f38-4980-b4a4-ba5f979572d7")
 		)
@@ -25453,7 +25939,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C106")
+					(reference "C99")
 					(unit 1)
 				)
 			)
@@ -25890,6 +26376,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 62.23 73.66 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "dd155204-64e7-4779-8035-c8a024d0cf2c")
 		)
@@ -25914,7 +26409,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "a4f8e9a8-eaae-4169-8ea4-5f22a07f1305")
-		(property "Reference" "TP110"
+		(property "Reference" "TP103"
 			(at 234.696 143.51 90)
 			(effects
 				(font
@@ -26005,13 +26500,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 143.51 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "0932eb05-3b04-4c13-9f13-ac2fe8f276c7")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP110")
+					(reference "TP103")
 					(unit 1)
 				)
 			)
@@ -26026,7 +26530,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "a8d89291-dc2d-4746-be54-8922b1ec5e5b")
-		(property "Reference" "#PWR066"
+		(property "Reference" "#PWR055"
 			(at 218.44 38.1 0)
 			(effects
 				(font
@@ -26077,7 +26581,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "#PWR066")
+					(reference "#PWR055")
 					(unit 1)
 				)
 			)
@@ -26092,7 +26596,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "aa6f849e-2f30-479d-b213-c508ecee8cb3")
-		(property "Reference" "TP114"
+		(property "Reference" "TP107"
 			(at 234.696 153.67 90)
 			(effects
 				(font
@@ -26183,13 +26687,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 153.67 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "1d13d1f7-9c00-40cc-b04f-b298d8f829f4")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP114")
+					(reference "TP107")
 					(unit 1)
 				)
 			)
@@ -26204,7 +26717,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "ad8df08f-16c2-4a5e-a2f4-019a5d3fc5b0")
-		(property "Reference" "TP107"
+		(property "Reference" "TP100"
 			(at 234.696 135.89 90)
 			(effects
 				(font
@@ -26295,13 +26808,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 135.89 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "ddd88b32-0420-4466-974d-8e48c15217c9")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP107")
+					(reference "TP100")
 					(unit 1)
 				)
 			)
@@ -26316,7 +26838,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "af47c466-ec61-43c7-9f15-0e9c88484eaa")
-		(property "Reference" "C113"
+		(property "Reference" "C106"
 			(at 223.52 23.368 0)
 			(effects
 				(font
@@ -26730,6 +27252,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 223.52 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "ee772c64-851b-452b-8f70-8c0d829332d3")
 		)
@@ -26739,7 +27270,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C113")
+					(reference "C106")
 					(unit 1)
 				)
 			)
@@ -26754,7 +27285,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "b10a8fb9-d6a8-4455-801d-def2b4941bd0")
-		(property "Reference" "TP109"
+		(property "Reference" "TP102"
 			(at 234.696 140.97 90)
 			(effects
 				(font
@@ -26845,13 +27376,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 140.97 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "50af1183-409b-4b4f-897f-780b180ad2a9")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP109")
+					(reference "TP102")
 					(unit 1)
 				)
 			)
@@ -26931,7 +27471,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "c0075a03-7970-457c-9620-e0252690fa68")
-		(property "Reference" "TP104"
+		(property "Reference" "TP97"
 			(at 234.696 128.27 90)
 			(effects
 				(font
@@ -27022,13 +27562,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 128.27 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "2ecdd0c9-ab4f-4f66-ab0a-b0f9dba56b4c")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP104")
+					(reference "TP97")
 					(unit 1)
 				)
 			)
@@ -27044,7 +27593,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "c1ae90c6-c77d-4a3e-b21c-40583337b89d")
-		(property "Reference" "D41"
+		(property "Reference" "D40"
 			(at 95.758 39.37 0)
 			(effects
 				(font
@@ -27152,6 +27701,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 80.01 50.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "fd84d2eb-d24d-4dd3-a4c6-4f1af35221cd")
 		)
@@ -27179,7 +27737,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "D41")
+					(reference "D40")
 					(unit 1)
 				)
 			)
@@ -27194,7 +27752,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "c37706eb-61cc-44a6-b6ae-501d8fd8a3ba")
-		(property "Reference" "TP111"
+		(property "Reference" "TP104"
 			(at 234.696 146.05 90)
 			(effects
 				(font
@@ -27285,13 +27843,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 146.05 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "88bad495-1039-4303-a925-e7589d122131")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP111")
+					(reference "TP104")
 					(unit 1)
 				)
 			)
@@ -27306,7 +27873,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "c4bdc3e9-b163-45b0-b730-02e405fbfbaf")
-		(property "Reference" "C89"
+		(property "Reference" "C82"
 			(at 101.6 25.908 0)
 			(effects
 				(font
@@ -27747,6 +28314,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 101.6 27.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "92b8e7b0-d618-49c1-88c9-d73fc53b8f42")
 		)
@@ -27756,7 +28332,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C89")
+					(reference "C82")
 					(unit 1)
 				)
 			)
@@ -27771,7 +28347,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "c55fbcfb-1a86-4cc5-b133-ba25e858a159")
-		(property "Reference" "TP116"
+		(property "Reference" "TP109"
 			(at 234.696 158.75 90)
 			(effects
 				(font
@@ -27862,13 +28438,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 158.75 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "2ddd81c3-ded3-494a-a932-30fc25feac6d")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP116")
+					(reference "TP109")
 					(unit 1)
 				)
 			)
@@ -27883,7 +28468,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "c6798135-d8ef-4534-a763-e10d149ad76e")
-		(property "Reference" "TP88"
+		(property "Reference" "TP81"
 			(at 234.696 87.63 90)
 			(effects
 				(font
@@ -27974,13 +28559,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 87.63 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "af0b97a2-863b-4019-8f53-b75e416c6099")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP88")
+					(reference "TP81")
 					(unit 1)
 				)
 			)
@@ -28060,7 +28654,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "cf8841f1-b8ad-4d74-8a56-77c5070f7bb5")
-		(property "Reference" "C104"
+		(property "Reference" "C97"
 			(at 189.23 98.298 0)
 			(effects
 				(font
@@ -28501,6 +29095,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 189.23 100.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "a8b5a6ac-a930-49f9-94b9-81e2bb34bcc9")
 		)
@@ -28510,7 +29113,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C104")
+					(reference "C97")
 					(unit 1)
 				)
 			)
@@ -28525,7 +29128,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "d2d1d456-2b26-4703-a496-4462f3953df3")
-		(property "Reference" "U13"
+		(property "Reference" "U12"
 			(at 144.526 81.534 0)
 			(effects
 				(font
@@ -29030,6 +29633,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 130.81 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "29"
 			(uuid "3c6a37e7-ba0e-48bf-99d1-01c038466c3a")
 		)
@@ -29144,7 +29756,7 @@
 		(instances
 			(project ""
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "U13")
+					(reference "U12")
 					(unit 1)
 				)
 			)
@@ -29159,7 +29771,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "d5e6ff94-c1da-474b-983c-a9d848e46b84")
-		(property "Reference" "C96"
+		(property "Reference" "C89"
 			(at 172.72 23.368 0)
 			(effects
 				(font
@@ -29600,6 +30212,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 172.72 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "66dfe5d8-3726-4c56-8de7-bd36a18057f5")
 		)
@@ -29609,7 +30230,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C96")
+					(reference "C89")
 					(unit 1)
 				)
 			)
@@ -29624,7 +30245,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "da46d9d3-454e-4bf9-83af-ad6a8a125545")
-		(property "Reference" "#PWR063"
+		(property "Reference" "#PWR052"
 			(at 160.02 38.1 0)
 			(effects
 				(font
@@ -29675,7 +30296,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "#PWR063")
+					(reference "#PWR052")
 					(unit 1)
 				)
 			)
@@ -29690,7 +30311,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "e07ddaa8-d020-4d37-992d-77da260864ae")
-		(property "Reference" "C119"
+		(property "Reference" "C112"
 			(at 243.84 23.368 0)
 			(effects
 				(font
@@ -30131,6 +30752,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 243.84 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "a3cff2a8-456e-4972-a4bb-a9e5881a275e")
 		)
@@ -30140,7 +30770,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C119")
+					(reference "C112")
 					(unit 1)
 				)
 			)
@@ -30155,7 +30785,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "e0efefd7-c546-4ca3-8b45-cc50035b0289")
-		(property "Reference" "C98"
+		(property "Reference" "C91"
 			(at 179.07 23.368 0)
 			(effects
 				(font
@@ -30596,6 +31226,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 179.07 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "1ba3eb20-829d-4728-b6f0-41baf809e025")
 		)
@@ -30605,7 +31244,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C98")
+					(reference "C91")
 					(unit 1)
 				)
 			)
@@ -30620,7 +31259,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "e636faa9-eeb0-435f-8c1b-400e9793b31e")
-		(property "Reference" "C99"
+		(property "Reference" "C92"
 			(at 179.07 42.418 0)
 			(effects
 				(font
@@ -31061,6 +31700,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 179.07 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "b93b7c3a-e13e-4bab-a02f-74bd3ca85bf2")
 		)
@@ -31070,7 +31718,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C99")
+					(reference "C92")
 					(unit 1)
 				)
 			)
@@ -31085,7 +31733,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "e680312b-c275-4534-bd39-c5b8fb48fe3b")
-		(property "Reference" "TP102"
+		(property "Reference" "TP95"
 			(at 234.696 123.19 90)
 			(effects
 				(font
@@ -31176,13 +31824,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 123.19 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "e40ab237-d010-4cdc-b39c-3ed4993bdd8c")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP102")
+					(reference "TP95")
 					(unit 1)
 				)
 			)
@@ -31197,7 +31854,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "ea19826b-6f98-47bc-b122-76a8aa4c9598")
-		(property "Reference" "TP87"
+		(property "Reference" "TP80"
 			(at 234.696 85.09 90)
 			(effects
 				(font
@@ -31288,13 +31945,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 85.09 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "9d95f860-be56-4fa7-9f29-2ecb50264b23")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP87")
+					(reference "TP80")
 					(unit 1)
 				)
 			)
@@ -31309,7 +31975,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "ec3b348c-2815-4d89-b4f8-51af6a0fed73")
-		(property "Reference" "C103"
+		(property "Reference" "C96"
 			(at 185.42 42.418 0)
 			(effects
 				(font
@@ -31750,6 +32416,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 185.42 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "6f471343-3e6f-417e-b39a-b7e27ab182bc")
 		)
@@ -31759,7 +32434,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C103")
+					(reference "C96")
 					(unit 1)
 				)
 			)
@@ -31774,7 +32449,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "ecaa7811-d640-4214-a0ef-6b6a49b5b166")
-		(property "Reference" "C102"
+		(property "Reference" "C95"
 			(at 185.42 23.368 0)
 			(effects
 				(font
@@ -32215,6 +32890,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 185.42 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "1ecaee9f-a721-40b3-83ec-3e6b900265c8")
 		)
@@ -32224,7 +32908,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C102")
+					(reference "C95")
 					(unit 1)
 				)
 			)
@@ -32239,7 +32923,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "ee130281-167b-4399-9f05-5b46c71b87a6")
-		(property "Reference" "#PWR067"
+		(property "Reference" "#PWR056"
 			(at 218.44 57.15 0)
 			(effects
 				(font
@@ -32290,7 +32974,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "#PWR067")
+					(reference "#PWR056")
 					(unit 1)
 				)
 			)
@@ -32305,7 +32989,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "f0769f86-9921-419e-8b6f-d56cf03dc2f5")
-		(property "Reference" "TP96"
+		(property "Reference" "TP89"
 			(at 234.696 107.95 90)
 			(effects
 				(font
@@ -32396,13 +33080,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 107.95 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "5534e92d-21ec-4ae8-ac5a-a54b8123fda7")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP96")
+					(reference "TP89")
 					(unit 1)
 				)
 			)
@@ -32417,7 +33110,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "f1a273fb-14f7-4ed4-a85a-01c653210fee")
-		(property "Reference" "C114"
+		(property "Reference" "C107"
 			(at 223.52 42.418 0)
 			(effects
 				(font
@@ -32831,6 +33524,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 223.52 44.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "5c90fc43-5413-41cf-b2d0-42624f1eaac8")
 		)
@@ -32840,7 +33542,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C114")
+					(reference "C107")
 					(unit 1)
 				)
 			)
@@ -32855,7 +33557,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "f23c98af-2036-431d-a653-5396f5f71100")
-		(property "Reference" "C111"
+		(property "Reference" "C104"
 			(at 215.9 23.368 0)
 			(effects
 				(font
@@ -33269,6 +33971,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 215.9 25.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "1d5e8f0b-7f86-4a26-9b45-42dd80a6903a")
 		)
@@ -33278,7 +33989,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "C111")
+					(reference "C104")
 					(unit 1)
 				)
 			)
@@ -33293,7 +34004,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "f276fb54-869f-401f-96cf-c46b733baeb9")
-		(property "Reference" "TP91"
+		(property "Reference" "TP84"
 			(at 234.696 95.25 90)
 			(effects
 				(font
@@ -33384,13 +34095,22 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 238.76 95.25 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "715cd4aa-a156-481d-a962-48b25db4bbe1")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "TP91")
+					(reference "TP84")
 					(unit 1)
 				)
 			)
@@ -33826,6 +34546,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 60.96 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "b6eaa467-932e-478d-ad2b-61604fe5da0e")
 		)
@@ -33851,7 +34580,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "f7e5213e-1061-4c50-b84d-3c983449d0f5")
-		(property "Reference" "D42"
+		(property "Reference" "D41"
 			(at 75.438 39.37 0)
 			(effects
 				(font
@@ -33959,6 +34688,15 @@
 				(hide yes)
 			)
 		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 85.09 50.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "b550c907-fd7a-4d5b-92b1-617bcb5a468d")
 		)
@@ -33986,7 +34724,7 @@
 		(instances
 			(project ""
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "D42")
+					(reference "D41")
 					(unit 1)
 				)
 			)
@@ -34001,7 +34739,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "f9ec878f-1d0b-4a1a-a9a1-9ea8b1baa3fe")
-		(property "Reference" "#PWR064"
+		(property "Reference" "#PWR053"
 			(at 160.02 57.15 0)
 			(effects
 				(font
@@ -34052,7 +34790,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/ec72a35b-e7f2-4422-8859-60e9fb848154/6f9fe965-58a5-4a06-b6b6-8090ff5dc05f"
-					(reference "#PWR064")
+					(reference "#PWR053")
 					(unit 1)
 				)
 			)
@@ -34481,6 +35219,15 @@
 			)
 		)
 		(property "Sim.Pins" ""
+			(at 95.25 153.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "SNAPEDA_PACKAGE_ID" ""
 			(at 95.25 153.67 0)
 			(effects
 				(font

@@ -1,0 +1,9 @@
+Manufacturer=Nexperia
+PartNumber=PDTC114ET,215
+PartCategory=Transistor RET NPN
+PackageCategory=SOT23 (3-Pin)
+PinCount=3
+Version=3.2
+Released=2017-04-27 19:04:24
+Downloaded=2025-09-10 04:48:04
+3D=Y

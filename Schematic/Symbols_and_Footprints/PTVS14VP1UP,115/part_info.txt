@@ -1,0 +1,9 @@
+Manufacturer=Nexperia
+PartNumber=PTVS14VP1UP,115
+PartCategory=Diode ESD (Uni-directional)
+PackageCategory=Other
+PinCount=2
+Version=8.3
+Released=2020-12-09 09:22:20
+Downloaded=2025-09-10 08:15:50
+3D=Y

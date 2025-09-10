@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP PDTC114ET,215
+D PDTC114E series - NPN resistor-equipped transistors; R1 = 10 kOhm, R2 = 10 kOhm
+K
+F https://assets.nexperia.com/documents/data-sheet/PDTC114E_SER.pdf
+$ENDCMP
+#
+#End Doc Library

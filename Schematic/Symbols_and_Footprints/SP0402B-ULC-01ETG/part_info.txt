@@ -1,0 +1,9 @@
+Manufacturer=LITTELFUSE
+PartNumber=SP0402B-ULC-01ETG
+PartCategory=TVS Diode (Bi-directional)
+PackageCategory=Other
+PinCount=2
+Version=3.4
+Released=2019-10-11 16:15:32
+Downloaded=2025-09-09 22:16:59
+3D=Y

@@ -1018,6 +1018,12 @@
           "label": "Mouser Price/Stock",
           "name": "Mouser Price/Stock",
           "show": false
+        },
+        {
+          "group_by": false,
+          "label": "Manufacturer_Part_Number",
+          "name": "Manufacturer_Part_Number",
+          "show": false
         }
       ],
       "filter_string": "",
@@ -1085,96 +1091,20 @@
       "MCU"
     ],
     [
-      "6e8cf85b-4291-4721-8f0f-92813a250136",
-      "MCU USB-C"
-    ],
-    [
-      "cc1b9e8f-9e76-421f-8513-a28a30963e04",
-      "External 40 Pin Header"
-    ],
-    [
-      "e6e5c4a3-ad64-49fb-9536-7ceda03bd508",
-      "ESP32"
-    ],
-    [
       "e8da5d81-614b-4fe5-84b3-4c351fab7114",
       "BMS Protection Board"
     ],
     [
-      "2e07670d-30e4-461b-a69e-227505cf7e3a",
-      "Passive Balancing Circuit"
-    ],
-    [
-      "630f7375-f278-4dbb-a8b3-ba91b4ac5d22",
-      "Balancing - BMC (AFE)"
-    ],
-    [
-      "ec6b8b52-e72f-4bdb-9407-1b78ccd1535b",
-      "Current Sense Filtering"
-    ],
-    [
-      "cc0a7e05-dd91-401b-a994-41ee02720f37",
-      "Pack Switching and Current Sensing"
-    ],
-    [
-      "9d9414eb-0fa9-444a-a653-4c48988997ba",
-      "Wake Up"
-    ],
-    [
-      "6b10105f-d41f-4638-b42b-c651baa60ee4",
-      "BMS Thermistors"
-    ],
-    [
-      "e3d465d4-4bae-42f2-91c8-f61f15aa6ae9",
-      "High Voltage REGSRC Supply"
-    ],
-    [
-      "90a55f0b-8dba-4da8-a9bd-d2e0c1dd6a37",
-      "Fuel Gauge"
-    ],
-    [
-      "15d8d2f8-18df-455b-b74e-5d59f69dac44",
-      "High Side Gate Driver"
-    ],
-    [
-      "ec72a35b-e7f2-4422-8859-60e9fb848154",
-      "USB-C Power Delivery"
-    ],
-    [
-      "f6f5f8c2-3fe5-486c-93b1-10011acff681",
-      "USB-C Port"
-    ],
-    [
-      "b3612068-8c8c-481f-99d3-d6528c245904",
-      "USB-C PD Controller"
-    ],
-    [
-      "c75e3b3c-5e7c-48a1-b9c1-6d22fff06a0f",
-      "USB-C EEPROM"
-    ],
-    [
-      "020614fe-6171-4ea0-a28e-58c67e69c732",
-      "USB-C 3V3 LDO"
-    ],
-    [
-      "6f9fe965-58a5-4a06-b6b6-8090ff5dc05f",
-      "Buck-Boost Charger"
-    ],
-    [
-      "9fb42b36-af5a-430a-ae71-09fe6d8fbe9c",
-      "Charger FET Array"
-    ],
-    [
-      "e37625a4-4166-4d08-b145-52540d65bd12",
-      "USB-C 5V Buck"
+      "c2defb4d-38b3-40ac-9668-02aeaa0ca7b7",
+      "5V Line"
     ],
     [
       "f73d6367-f3ba-42df-a3ea-bd155f1c219f",
       "Motor Control Board"
     ],
     [
-      "3f0d1238-5e65-4d96-8961-a5c2e74dde4b",
-      "Motor 24V Line"
+      "59156c40-dbaf-44c5-bcaf-7991575a4ded",
+      "Motor 6V Line"
     ],
     [
       "2d1f23db-77e1-469c-85c1-12a11504ed46",
@@ -1185,48 +1115,8 @@
       "Motor Drivers"
     ],
     [
-      "843d6ab8-aee5-4b9b-9eb5-61d6831c2a8c",
-      "Motor with Driver1"
-    ],
-    [
-      "7a91eb0b-b549-46c5-8b0e-dbd0b5aceef7",
-      "Motor with Driver2"
-    ],
-    [
-      "12332cca-8dae-4b9a-a306-a89e304a2f02",
-      "Motor with Driver3"
-    ],
-    [
-      "ffd511cd-348c-4aa2-92a6-874df4b88d02",
-      "Motor with Driver4"
-    ],
-    [
       "12bd6774-3c71-41d8-bbdc-bae46e746955",
       "Quadrature Counter"
-    ],
-    [
-      "d79e1bb1-de29-4ffc-9e0f-e3a3e5738587",
-      "Mux and Demux Lines"
-    ],
-    [
-      "93231d0a-659f-4d39-8e8d-78b96a3896a1",
-      "Sensor Board"
-    ],
-    [
-      "79d08640-5c3f-40a9-8b33-48497b13ec54",
-      "Sensor 3V3 Line"
-    ],
-    [
-      "525f2b83-8347-468d-b8c8-5a1df0e1c532",
-      "Barometric Pressure Sensor"
-    ],
-    [
-      "9289cd12-1ef3-48ff-8b8d-a8a786e9b637",
-      "GPS Sensor"
-    ],
-    [
-      "75e06a36-2807-4a4b-af1f-d37310ed1ba6",
-      "IMU Sensor"
     ]
   ],
   "text_variables": {}

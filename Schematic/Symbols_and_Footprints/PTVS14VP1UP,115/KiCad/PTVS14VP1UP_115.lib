@@ -1,0 +1,27 @@
+EESchema-LIBRARY Version 2.3
+#encoding utf-8
+#SamacSys ECAD Model PTVS14VP1UP,115
+#/1435387/1764184/2.50/2/2/Diode ESD (Uni-directional)
+DEF PTVS14VP1UP,115 D 0 30 Y Y 1 F N
+F0 "D" 400 350 50 H V L CNN
+F1 "PTVS14VP1UP,115" 400 250 50 H V L CNN
+F2 "PMEG3050EP115" 400 150 50 H I L CNN
+F3 "https://assets.nexperia.com/documents/data-sheet/PTVSXP1UP_SER.pdf" 400 50 50 H I L CNN
+F4 "PTVSxP1UP series - 600 W Transient Voltage Suppressor" 400 -50 50 H I L CNN "Description"
+F5 "1" 400 -150 50 H I L CNN "Height"
+F6 "771-PTVS14VP1UP115" 400 -250 50 H I L CNN "Mouser Part Number"
+F7 "https://www.mouser.co.uk/ProductDetail/Nexperia/PTVS14VP1UP115?qs=5eMHoInnifQuxJvPJO2x7g%3D%3D" 400 -350 50 H I L CNN "Mouser Price/Stock"
+F8 "Nexperia" 400 -450 50 H I L CNN "Manufacturer_Name"
+F9 "PTVS14VP1UP,115" 400 -550 50 H I L CNN "Manufacturer_Part_Number"
+DRAW
+X ~ 1 0 0 100 R 50 50 0 0 P
+X ~ 2 600 0 100 L 50 50 0 0 P
+P 4 0 1 6 200 0 400 100 400 -100 200 0 N
+P 2 0 1 6 200 100 200 -100 N
+P 2 0 1 6 100 0 200 0 N
+P 2 0 1 6 500 0 400 0 N
+P 2 0 1 6 200 -100 260 -100 N
+ENDDRAW
+ENDDEF
+#
+#End Library
