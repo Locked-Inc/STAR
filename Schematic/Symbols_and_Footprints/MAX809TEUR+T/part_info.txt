@@ -1,0 +1,9 @@
+Manufacturer=Analog Devices
+PartNumber=MAX809TEUR+T
+PartCategory=Integrated Circuit
+PackageCategory=SOT23 (3-Pin)
+PinCount=3
+Version=3.1
+Released=2017-01-11 21:24:41
+Downloaded=2025-09-10 05:00:14
+3D=Y

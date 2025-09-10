@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP PTVS14VP1UP,115
+D PTVSxP1UP series - 600 W Transient Voltage Suppressor
+K
+F https://assets.nexperia.com/documents/data-sheet/PTVSXP1UP_SER.pdf
+$ENDCMP
+#
+#End Doc Library
