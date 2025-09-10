@@ -1,0 +1,20 @@
+(kicad_sch
+	(version 20250114)
+	(generator "eeschema")
+	(generator_version "9.0")
+	(uuid "28d4f183-2f02-46cb-bd82-2f869b25969f")
+	(paper "A4")
+	(lib_symbols)
+	(text "*** IMPLEMENENT ***"
+		(exclude_from_sim no)
+		(at 145.542 100.838 0)
+		(effects
+			(font
+				(face "Bodoni 72 Smallcaps")
+				(size 5.08 5.08)
+				(bold yes)
+			)
+		)
+		(uuid "4f7c26c1-2da1-4f7b-a850-1a8a25e4ac63")
+	)
+)
