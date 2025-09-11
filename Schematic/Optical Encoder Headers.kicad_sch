@@ -7826,7 +7826,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "CL10B104MB8NNNC:CAPC1608X90N"
 			(at 126.6952 81.28 0)
 			(effects
 				(font
@@ -8159,7 +8159,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/3JWJm45"
 			(at 125.73 77.47 0)
 			(effects
 				(font
@@ -8168,7 +8168,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "CL10B104MB8NNNC"
 			(at 125.73 77.47 0)
 			(effects
 				(font
@@ -8177,7 +8177,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 125.73 77.47 0)
 			(effects
 				(font
@@ -8186,7 +8186,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" ""
+		(property "Supplier" "Mouser"
 			(at 125.73 77.47 0)
 			(effects
 				(font
@@ -8195,7 +8195,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" ""
+		(property "Supplier Part Number" "187-CL10B104MB8NNNC "
 			(at 125.73 77.47 0)
 			(effects
 				(font
@@ -9815,7 +9815,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "CL10B104MB8NNNC:CAPC1608X90N"
 			(at 141.9352 81.28 0)
 			(effects
 				(font
@@ -10148,7 +10148,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/3JWJm45"
 			(at 140.97 77.47 0)
 			(effects
 				(font
@@ -10157,7 +10157,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "CL10B104MB8NNNC"
 			(at 140.97 77.47 0)
 			(effects
 				(font
@@ -10166,7 +10166,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 140.97 77.47 0)
 			(effects
 				(font
@@ -10175,7 +10175,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" ""
+		(property "Supplier" "Mouser"
 			(at 140.97 77.47 0)
 			(effects
 				(font
@@ -10184,7 +10184,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" ""
+		(property "Supplier Part Number" "187-CL10B104MB8NNNC "
 			(at 140.97 77.47 0)
 			(effects
 				(font
