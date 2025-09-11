@@ -2803,7 +2803,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "5017:5017"
+		(property "Footprint" "3825:3825"
 			(at 29.21 63.5 0)
 			(effects
 				(font
@@ -2830,7 +2830,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" "https://mou.sr/4gj83nj"
+		(property "Link" "https://mou.sr/3MgWhw3"
 			(at 29.21 68.58 90)
 			(effects
 				(font
@@ -2839,7 +2839,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" "5017"
+		(property "Manufacturer Part Number" "3825"
 			(at 29.21 68.58 90)
 			(effects
 				(font
@@ -2848,7 +2848,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" "0.21"
+		(property "Price per Unit" "9.95"
 			(at 29.21 68.58 90)
 			(effects
 				(font
@@ -3010,7 +3010,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" "534-5017"
+		(property "Supplier Part Number" "485-3825"
 			(at 29.21 68.58 90)
 			(effects
 				(font
@@ -3737,7 +3737,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "5017:5017"
+		(property "Footprint" "3825:3825"
 			(at 29.21 53.34 0)
 			(effects
 				(font
@@ -3764,7 +3764,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" "https://mou.sr/4gj83nj"
+		(property "Link" "https://mou.sr/3MgWhw3"
 			(at 29.21 58.42 90)
 			(effects
 				(font
@@ -3773,7 +3773,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" "5017"
+		(property "Manufacturer Part Number" "3825"
 			(at 29.21 58.42 90)
 			(effects
 				(font
@@ -3782,7 +3782,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" "0.21"
+		(property "Price per Unit" "9.95"
 			(at 29.21 58.42 90)
 			(effects
 				(font
@@ -3944,7 +3944,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" "534-5017"
+		(property "Supplier Part Number" "485-3825"
 			(at 29.21 58.42 90)
 			(effects
 				(font
@@ -3993,7 +3993,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "5017:5017"
+		(property "Footprint" "3825:3825"
 			(at 29.21 58.42 0)
 			(effects
 				(font
@@ -4020,7 +4020,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" "https://mou.sr/4gj83nj"
+		(property "Link" "https://mou.sr/3MgWhw3"
 			(at 29.21 63.5 90)
 			(effects
 				(font
@@ -4029,7 +4029,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" "5017"
+		(property "Manufacturer Part Number" "3825"
 			(at 29.21 63.5 90)
 			(effects
 				(font
@@ -4038,7 +4038,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" "0.21"
+		(property "Price per Unit" "9.95"
 			(at 29.21 63.5 90)
 			(effects
 				(font
@@ -4200,7 +4200,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" "534-5017"
+		(property "Supplier Part Number" "485-3825"
 			(at 29.21 63.5 90)
 			(effects
 				(font
@@ -4249,7 +4249,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "5017:5017"
+		(property "Footprint" "3825:3825"
 			(at 29.21 60.96 0)
 			(effects
 				(font
@@ -4276,7 +4276,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" "https://mou.sr/4gj83nj"
+		(property "Link" "https://mou.sr/3MgWhw3"
 			(at 29.21 66.04 90)
 			(effects
 				(font
@@ -4285,7 +4285,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" "5017"
+		(property "Manufacturer Part Number" "3825"
 			(at 29.21 66.04 90)
 			(effects
 				(font
@@ -4294,7 +4294,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" "0.21"
+		(property "Price per Unit" "9.95"
 			(at 29.21 66.04 90)
 			(effects
 				(font
@@ -4456,7 +4456,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" "534-5017"
+		(property "Supplier Part Number" "485-3825"
 			(at 29.21 66.04 90)
 			(effects
 				(font
@@ -5087,7 +5087,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "5017:5017"
+		(property "Footprint" "3825:3825"
 			(at 29.21 83.82 0)
 			(effects
 				(font
@@ -5114,7 +5114,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" "https://mou.sr/4gj83nj"
+		(property "Link" "https://mou.sr/3MgWhw3"
 			(at 29.21 88.9 90)
 			(effects
 				(font
@@ -5123,7 +5123,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" "5017"
+		(property "Manufacturer Part Number" "3825"
 			(at 29.21 88.9 90)
 			(effects
 				(font
@@ -5132,7 +5132,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" "0.21"
+		(property "Price per Unit" "9.95"
 			(at 29.21 88.9 90)
 			(effects
 				(font
@@ -5294,7 +5294,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" "534-5017"
+		(property "Supplier Part Number" "485-3825"
 			(at 29.21 88.9 90)
 			(effects
 				(font
@@ -5343,7 +5343,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "5017:5017"
+		(property "Footprint" "3825:3825"
 			(at 29.21 66.04 0)
 			(effects
 				(font
@@ -5370,7 +5370,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" "https://mou.sr/4gj83nj"
+		(property "Link" "https://mou.sr/3MgWhw3"
 			(at 29.21 71.12 90)
 			(effects
 				(font
@@ -5379,7 +5379,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" "5017"
+		(property "Manufacturer Part Number" "3825"
 			(at 29.21 71.12 90)
 			(effects
 				(font
@@ -5388,7 +5388,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" "0.21"
+		(property "Price per Unit" "9.95"
 			(at 29.21 71.12 90)
 			(effects
 				(font
@@ -5550,7 +5550,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" "534-5017"
+		(property "Supplier Part Number" "485-3825"
 			(at 29.21 71.12 90)
 			(effects
 				(font
@@ -5599,7 +5599,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "5017:5017"
+		(property "Footprint" "3825:3825"
 			(at 29.21 68.58 0)
 			(effects
 				(font
@@ -5626,7 +5626,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" "https://mou.sr/4gj83nj"
+		(property "Link" "https://mou.sr/3MgWhw3"
 			(at 29.21 73.66 90)
 			(effects
 				(font
@@ -5635,7 +5635,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" "5017"
+		(property "Manufacturer Part Number" "3825"
 			(at 29.21 73.66 90)
 			(effects
 				(font
@@ -5644,7 +5644,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" "0.21"
+		(property "Price per Unit" "9.95"
 			(at 29.21 73.66 90)
 			(effects
 				(font
@@ -5806,7 +5806,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" "534-5017"
+		(property "Supplier Part Number" "485-3825"
 			(at 29.21 73.66 90)
 			(effects
 				(font
@@ -7727,7 +7727,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "5017:5017"
+		(property "Footprint" "3825:3825"
 			(at 29.21 71.12 0)
 			(effects
 				(font
@@ -7754,7 +7754,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" "https://mou.sr/4gj83nj"
+		(property "Link" "https://mou.sr/3MgWhw3"
 			(at 29.21 76.2 90)
 			(effects
 				(font
@@ -7763,7 +7763,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" "5017"
+		(property "Manufacturer Part Number" "3825"
 			(at 29.21 76.2 90)
 			(effects
 				(font
@@ -7772,7 +7772,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" "0.21"
+		(property "Price per Unit" "9.95"
 			(at 29.21 76.2 90)
 			(effects
 				(font
@@ -7934,7 +7934,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" "534-5017"
+		(property "Supplier Part Number" "485-3825"
 			(at 29.21 76.2 90)
 			(effects
 				(font
@@ -9177,7 +9177,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "5017:5017"
+		(property "Footprint" "3825:3825"
 			(at 29.21 76.2 0)
 			(effects
 				(font
@@ -9204,7 +9204,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" "https://mou.sr/4gj83nj"
+		(property "Link" "https://mou.sr/3MgWhw3"
 			(at 29.21 81.28 90)
 			(effects
 				(font
@@ -9213,7 +9213,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" "5017"
+		(property "Manufacturer Part Number" "3825"
 			(at 29.21 81.28 90)
 			(effects
 				(font
@@ -9222,7 +9222,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" "0.21"
+		(property "Price per Unit" "9.95"
 			(at 29.21 81.28 90)
 			(effects
 				(font
@@ -9384,7 +9384,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" "534-5017"
+		(property "Supplier Part Number" "485-3825"
 			(at 29.21 81.28 90)
 			(effects
 				(font
@@ -9433,7 +9433,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "5017:5017"
+		(property "Footprint" "3825:3825"
 			(at 29.21 81.28 0)
 			(effects
 				(font
@@ -9460,7 +9460,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" "https://mou.sr/4gj83nj"
+		(property "Link" "https://mou.sr/3MgWhw3"
 			(at 29.21 86.36 90)
 			(effects
 				(font
@@ -9469,7 +9469,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" "5017"
+		(property "Manufacturer Part Number" "3825"
 			(at 29.21 86.36 90)
 			(effects
 				(font
@@ -9478,7 +9478,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" "0.21"
+		(property "Price per Unit" "9.95"
 			(at 29.21 86.36 90)
 			(effects
 				(font
@@ -9640,7 +9640,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" "534-5017"
+		(property "Supplier Part Number" "485-3825"
 			(at 29.21 86.36 90)
 			(effects
 				(font
@@ -10236,7 +10236,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "5017:5017"
+		(property "Footprint" "3825:3825"
 			(at 29.21 78.74 0)
 			(effects
 				(font
@@ -10263,7 +10263,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" "https://mou.sr/4gj83nj"
+		(property "Link" "https://mou.sr/3MgWhw3"
 			(at 29.21 83.82 90)
 			(effects
 				(font
@@ -10272,7 +10272,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" "5017"
+		(property "Manufacturer Part Number" "3825"
 			(at 29.21 83.82 90)
 			(effects
 				(font
@@ -10281,7 +10281,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" "0.21"
+		(property "Price per Unit" "9.95"
 			(at 29.21 83.82 90)
 			(effects
 				(font
@@ -10443,7 +10443,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" "534-5017"
+		(property "Supplier Part Number" "485-3825"
 			(at 29.21 83.82 90)
 			(effects
 				(font
@@ -10492,7 +10492,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "5017:5017"
+		(property "Footprint" "3825:3825"
 			(at 29.21 73.66 0)
 			(effects
 				(font
@@ -10519,7 +10519,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" "https://mou.sr/4gj83nj"
+		(property "Link" "https://mou.sr/3MgWhw3"
 			(at 29.21 78.74 90)
 			(effects
 				(font
@@ -10528,7 +10528,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" "5017"
+		(property "Manufacturer Part Number" "3825"
 			(at 29.21 78.74 90)
 			(effects
 				(font
@@ -10537,7 +10537,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" "0.21"
+		(property "Price per Unit" "9.95"
 			(at 29.21 78.74 90)
 			(effects
 				(font
@@ -10699,7 +10699,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" "534-5017"
+		(property "Supplier Part Number" "485-3825"
 			(at 29.21 78.74 90)
 			(effects
 				(font
@@ -10748,7 +10748,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "5017:5017"
+		(property "Footprint" "3825:3825"
 			(at 29.21 55.88 0)
 			(effects
 				(font
@@ -10775,7 +10775,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" "https://mou.sr/4gj83nj"
+		(property "Link" "https://mou.sr/3MgWhw3"
 			(at 29.21 60.96 90)
 			(effects
 				(font
@@ -10784,7 +10784,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" "5017"
+		(property "Manufacturer Part Number" "3825"
 			(at 29.21 60.96 90)
 			(effects
 				(font
@@ -10793,7 +10793,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" "0.21"
+		(property "Price per Unit" "9.95"
 			(at 29.21 60.96 90)
 			(effects
 				(font
@@ -10955,7 +10955,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" "534-5017"
+		(property "Supplier Part Number" "485-3825"
 			(at 29.21 60.96 90)
 			(effects
 				(font
