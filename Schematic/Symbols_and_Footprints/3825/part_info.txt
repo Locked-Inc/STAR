@@ -1,0 +1,9 @@
+Manufacturer=Adafruit
+PartNumber=3825
+PartCategory=Test Point
+PackageCategory=Other
+PinCount=1
+Version=1.3
+Released=2024-06-07 08:24:13
+Downloaded=2025-09-11 23:50:58
+3D=Y
