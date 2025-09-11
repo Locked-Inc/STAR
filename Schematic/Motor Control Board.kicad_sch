@@ -203,16 +203,6 @@
 	)
 	(wire
 		(pts
-			(xy 128.27 130.81) (xy 171.45 130.81)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "81d7431d-fa6b-4ff0-9660-ced8059629ea")
-	)
-	(wire
-		(pts
 			(xy 127 99.06) (xy 171.45 99.06)
 		)
 		(stroke
@@ -273,16 +263,6 @@
 	)
 	(wire
 		(pts
-			(xy 128.27 130.81) (xy 128.27 149.86)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b08dcd69-dc82-4350-a559-45095ccefe08")
-	)
-	(wire
-		(pts
 			(xy 157.48 83.82) (xy 171.45 83.82)
 		)
 		(stroke
@@ -313,6 +293,16 @@
 	)
 	(wire
 		(pts
+			(xy 67.31 130.81) (xy 80.01 130.81)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "cdf74d31-36e2-46a7-96f7-7b6f28af1f33")
+	)
+	(wire
+		(pts
 			(xy 127 48.26) (xy 171.45 48.26)
 		)
 		(stroke
@@ -323,7 +313,7 @@
 	)
 	(wire
 		(pts
-			(xy 128.27 149.86) (xy 119.38 149.86)
+			(xy 127 130.81) (xy 171.45 130.81)
 		)
 		(stroke
 			(width 0)
@@ -373,16 +363,6 @@
 	)
 	(wire
 		(pts
-			(xy 60.96 149.86) (xy 72.39 149.86)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ed63d4ad-5c78-4d75-a80a-b71069ab48c9")
-	)
-	(wire
-		(pts
 			(xy 148.59 149.86) (xy 171.45 149.86)
 		)
 		(stroke
@@ -420,6 +400,16 @@
 			(justify right bottom)
 		)
 		(uuid "028b815a-eba8-4b80-a7bf-0a6651176087")
+	)
+	(label "P6V0"
+		(at 148.59 130.81 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "09a5beec-d4df-4978-b3aa-e762b80df97a")
 	)
 	(label "SPI_SDO"
 		(at 148.59 140.97 0)
@@ -571,16 +561,6 @@
 		)
 		(uuid "94168781-ba32-4d09-a73d-8e332a68dc91")
 	)
-	(label "P6V0"
-		(at 120.65 149.86 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "a1caf3d0-fa70-41e1-b252-fdabefd1a7df")
-	)
 	(label "MOTOR2_TERMINAL2"
 		(at 143.51 105.41 0)
 		(effects
@@ -692,7 +672,7 @@
 		(uuid "e1e648db-6058-4ecd-823d-854c5a0973ac")
 	)
 	(label "PACK+"
-		(at 60.96 149.86 0)
+		(at 68.58 130.81 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -897,7 +877,7 @@
 	)
 	(hierarchical_label "PACK+"
 		(shape input)
-		(at 60.96 149.86 180)
+		(at 67.31 130.81 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -929,7 +909,7 @@
 		(uuid "fbb02566-636d-4727-86e4-83e8c91123e5")
 	)
 	(hierarchical_label "SPI_SCLK"
-		(shape bidirectional)
+		(shape input)
 		(at 148.59 135.89 180)
 		(effects
 			(font
@@ -1334,7 +1314,7 @@
 	)
 	(sheet
 		(at 71.12 34.29)
-		(size 55.88 92.71)
+		(size 55.88 80.01)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
@@ -1358,7 +1338,7 @@
 			)
 		)
 		(property "Sheetfile" "Optical Encoder Headers.kicad_sch"
-			(at 71.12 127.5846 0)
+			(at 71.12 114.8846 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1475,7 +1455,7 @@
 		)
 	)
 	(sheet
-		(at 72.39 140.97)
+		(at 80.01 121.92)
 		(size 46.99 17.78)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -1491,7 +1471,7 @@
 		)
 		(uuid "59156c40-dbaf-44c5-bcaf-7991575a4ded")
 		(property "Sheetname" "Motor 6V Line"
-			(at 72.39 140.2584 0)
+			(at 80.01 121.2084 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1500,7 +1480,7 @@
 			)
 		)
 		(property "Sheetfile" "Motor 6V Line.kicad_sch"
-			(at 72.39 159.3346 0)
+			(at 80.01 140.2846 0)
 			(effects
 				(font
 					(size 1.27 1.27)

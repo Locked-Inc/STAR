@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP SDR1806-2R2ML
+D Power Inductors - SMD 2.2uH 20% SMD 1806
+K
+F https://www.bourns.com/docs/Product-Datasheets/SDR1806.pdf
+$ENDCMP
+#
+#End Doc Library
