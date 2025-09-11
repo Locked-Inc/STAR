@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP VLS6045EX-1R0N
+D TDK VLS-EX Series Type 6045 Shielded Wire-wound SMD Inductor with a Ferrite Core, 1 uH Wire-Wound 6A Idc
+K
+F https://product.tdk.com/system/files/dam/doc/product/inductor/inductor/smd/catalog/inductor_commercial_power_vls6045ex_en.pdf
+$ENDCMP
+#
+#End Doc Library

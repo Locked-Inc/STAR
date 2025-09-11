@@ -1,0 +1,9 @@
+Manufacturer=Bourns
+PartNumber=SDR1806-2R2ML
+PartCategory=Inductor
+PackageCategory=Other
+PinCount=2
+Version=1.2
+Released=2023-09-25 05:37:24
+Downloaded=2025-09-11 07:45:15
+3D=Y
