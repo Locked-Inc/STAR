@@ -6655,7 +6655,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "DRV8243SQDGQRQ1:SOP50P490X110-29N"
 			(at 118.11 34.29 0)
 			(effects
 				(font
@@ -7846,7 +7846,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "DRV8243SQDGQRQ1:SOP50P490X110-29N"
 			(at 115.57 102.87 0)
 			(effects
 				(font

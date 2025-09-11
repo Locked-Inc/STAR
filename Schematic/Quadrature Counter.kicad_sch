@@ -1983,7 +1983,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "LS7366R_S:SOIC127P600X175-14N"
 			(at 114.3 71.12 0)
 			(effects
 				(font
@@ -2325,7 +2325,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "ASV-30.000MHZ-E-T:ASV25000MHZEJT"
 			(at 59.69 106.68 0)
 			(effects
 				(font
@@ -3970,7 +3970,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "LS7366R_S:SOIC127P600X175-14N"
 			(at 114.3 102.87 0)
 			(effects
 				(font
