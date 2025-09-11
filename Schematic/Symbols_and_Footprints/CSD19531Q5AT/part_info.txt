@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=CSD19531Q5AT
+PartCategory=MOSFET (N-Channel)
+PackageCategory=Other
+PinCount=9
+Version=1.2
+Released=2018-02-04 19:33:28
+Downloaded=2025-09-11 21:21:42
+3D=Y

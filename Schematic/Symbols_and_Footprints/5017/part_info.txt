@@ -1,0 +1,9 @@
+Manufacturer=Keystone Electronics
+PartNumber=5017
+PartCategory=Test Point
+PackageCategory=Other
+PinCount=1
+Version=2.6
+Released=2018-08-16 09:07:30
+Downloaded=2025-09-11 21:55:04
+3D=Y
