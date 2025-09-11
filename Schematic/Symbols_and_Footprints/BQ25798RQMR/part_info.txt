@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=BQ25798RQMR
+PartCategory=Integrated Circuit
+PackageCategory=Other
+PinCount=33
+Version=2.3
+Released=2021-08-26 14:58:46
+Downloaded=2025-09-11 05:00:03
+3D=Y

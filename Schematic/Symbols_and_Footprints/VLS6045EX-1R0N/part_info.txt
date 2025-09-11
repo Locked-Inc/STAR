@@ -1,0 +1,9 @@
+Manufacturer=TDK
+PartNumber=VLS6045EX-1R0N
+PartCategory=Inductor
+PackageCategory=Other
+PinCount=2
+Version=4.2
+Released=2019-04-09 15:49:09
+Downloaded=2025-09-11 09:10:33
+3D=Y
