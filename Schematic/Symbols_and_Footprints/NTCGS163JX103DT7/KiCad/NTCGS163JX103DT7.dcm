@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP NTCGS163JX103DT7
+D NTC,10K,0.5%,0603,125C,AEC-Q200,ECO
+K
+F https://product.tdk.com/system/files/dam/doc/product/sensor/ntc/chip-ntc-thermistor/catalog/tpd_automotive_ntc-thermistor_ntcgs_en.pdf
+$ENDCMP
+#
+#End Doc Library

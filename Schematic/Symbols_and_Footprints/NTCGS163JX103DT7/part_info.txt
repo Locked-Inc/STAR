@@ -1,0 +1,9 @@
+Manufacturer=TDK
+PartNumber=NTCGS163JX103DT7
+PartCategory=Thermistor
+PackageCategory=Thermistors Chip
+PinCount=2
+Version=2.5
+Released=2024-02-13 14:05:14
+Downloaded=2025-09-11 21:42:20
+3D=Y
