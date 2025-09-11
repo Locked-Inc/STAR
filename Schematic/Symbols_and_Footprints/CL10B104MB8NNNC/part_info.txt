@@ -1,0 +1,9 @@
+Manufacturer=SAMSUNG
+PartNumber=CL10B104MB8NNNC
+PartCategory=Capacitor
+PackageCategory=Capacitor Chip Non-polarised
+PinCount=2
+Version=2.1
+Released=2019-11-05 14:43:33
+Downloaded=2025-09-11 19:39:39
+3D=Y

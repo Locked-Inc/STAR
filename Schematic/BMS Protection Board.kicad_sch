@@ -28886,7 +28886,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "CL10B104MB8NNNC:CAPC1608X90N"
 			(at 544.5252 416.56 0)
 			(effects
 				(font
@@ -29246,7 +29246,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/3JWJm45"
 			(at 543.56 412.75 0)
 			(effects
 				(font
@@ -29255,7 +29255,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "CL10B104MB8NNNC"
 			(at 543.56 412.75 0)
 			(effects
 				(font
@@ -29264,7 +29264,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 543.56 412.75 0)
 			(effects
 				(font
@@ -29273,7 +29273,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" ""
+		(property "Supplier" "Mouser"
 			(at 543.56 412.75 0)
 			(effects
 				(font
@@ -29282,7 +29282,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" ""
+		(property "Supplier Part Number" "187-CL10B104MB8NNNC "
 			(at 543.56 412.75 0)
 			(effects
 				(font
@@ -32528,7 +32528,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "CL10B104MB8NNNC:CAPC1608X90N"
 			(at 261.3152 226.06 0)
 			(effects
 				(font
@@ -32888,7 +32888,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/3JWJm45"
 			(at 260.35 222.25 0)
 			(effects
 				(font
@@ -32897,7 +32897,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "CL10B104MB8NNNC"
 			(at 260.35 222.25 0)
 			(effects
 				(font
@@ -32906,7 +32906,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 260.35 222.25 0)
 			(effects
 				(font
@@ -32915,7 +32915,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" ""
+		(property "Supplier" "Mouser"
 			(at 260.35 222.25 0)
 			(effects
 				(font
@@ -32924,7 +32924,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" ""
+		(property "Supplier Part Number" "187-CL10B104MB8NNNC "
 			(at 260.35 222.25 0)
 			(effects
 				(font
@@ -34442,7 +34442,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "CL10B104MB8NNNC:CAPC1608X90N"
 			(at 201.93 235.9152 0)
 			(effects
 				(font
@@ -34802,7 +34802,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/3JWJm45"
 			(at 198.12 234.95 90)
 			(effects
 				(font
@@ -34811,7 +34811,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "CL10B104MB8NNNC"
 			(at 198.12 234.95 90)
 			(effects
 				(font
@@ -34820,7 +34820,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 198.12 234.95 90)
 			(effects
 				(font
@@ -34829,7 +34829,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" ""
+		(property "Supplier" "Mouser"
 			(at 198.12 234.95 90)
 			(effects
 				(font
@@ -34838,7 +34838,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" ""
+		(property "Supplier Part Number" "187-CL10B104MB8NNNC "
 			(at 198.12 234.95 90)
 			(effects
 				(font
@@ -37091,7 +37091,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "CL10B104MB8NNNC:CAPC1608X90N"
 			(at 184.15 181.9148 0)
 			(effects
 				(font
@@ -37451,7 +37451,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/3JWJm45"
 			(at 180.34 182.88 90)
 			(effects
 				(font
@@ -37460,7 +37460,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "CL10B104MB8NNNC"
 			(at 180.34 182.88 90)
 			(effects
 				(font
@@ -37469,7 +37469,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 180.34 182.88 90)
 			(effects
 				(font
@@ -37478,7 +37478,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" ""
+		(property "Supplier" "Mouser"
 			(at 180.34 182.88 90)
 			(effects
 				(font
@@ -37487,7 +37487,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" ""
+		(property "Supplier Part Number" "187-CL10B104MB8NNNC "
 			(at 180.34 182.88 90)
 			(effects
 				(font
@@ -45300,7 +45300,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "CL10B104MB8NNNC:CAPC1608X90N"
 			(at 135.5852 435.61 0)
 			(effects
 				(font
@@ -45660,7 +45660,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/3JWJm45"
 			(at 134.62 431.8 0)
 			(effects
 				(font
@@ -45669,7 +45669,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "CL10B104MB8NNNC"
 			(at 134.62 431.8 0)
 			(effects
 				(font
@@ -45678,7 +45678,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 134.62 431.8 0)
 			(effects
 				(font
@@ -45687,7 +45687,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" ""
+		(property "Supplier" "Mouser"
 			(at 134.62 431.8 0)
 			(effects
 				(font
@@ -45696,7 +45696,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" ""
+		(property "Supplier Part Number" "187-CL10B104MB8NNNC "
 			(at 134.62 431.8 0)
 			(effects
 				(font
@@ -47043,7 +47043,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "CL10B104MB8NNNC:CAPC1608X90N"
 			(at 329.8952 435.61 0)
 			(effects
 				(font
@@ -47403,7 +47403,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/3JWJm45"
 			(at 328.93 431.8 0)
 			(effects
 				(font
@@ -47412,7 +47412,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "CL10B104MB8NNNC"
 			(at 328.93 431.8 0)
 			(effects
 				(font
@@ -47421,7 +47421,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 328.93 431.8 0)
 			(effects
 				(font
@@ -47430,7 +47430,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" ""
+		(property "Supplier" "Mouser"
 			(at 328.93 431.8 0)
 			(effects
 				(font
@@ -47439,7 +47439,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" ""
+		(property "Supplier Part Number" "187-CL10B104MB8NNNC "
 			(at 328.93 431.8 0)
 			(effects
 				(font
@@ -55164,7 +55164,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "CL10B104MB8NNNC:CAPC1608X90N"
 			(at 566.1152 416.56 0)
 			(effects
 				(font
@@ -55524,7 +55524,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/3JWJm45"
 			(at 565.15 412.75 0)
 			(effects
 				(font
@@ -55533,7 +55533,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "CL10B104MB8NNNC"
 			(at 565.15 412.75 0)
 			(effects
 				(font
@@ -55542,7 +55542,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 565.15 412.75 0)
 			(effects
 				(font
@@ -55551,7 +55551,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" ""
+		(property "Supplier" "Mouser"
 			(at 565.15 412.75 0)
 			(effects
 				(font
@@ -55560,7 +55560,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" ""
+		(property "Supplier Part Number" "187-CL10B104MB8NNNC "
 			(at 565.15 412.75 0)
 			(effects
 				(font
@@ -76749,7 +76749,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "CL10B104MB8NNNC:CAPC1608X90N"
 			(at 630.8852 416.56 0)
 			(effects
 				(font
@@ -77109,7 +77109,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/3JWJm45"
 			(at 629.92 412.75 0)
 			(effects
 				(font
@@ -77118,7 +77118,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "CL10B104MB8NNNC"
 			(at 629.92 412.75 0)
 			(effects
 				(font
@@ -77127,7 +77127,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 629.92 412.75 0)
 			(effects
 				(font
@@ -77136,7 +77136,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" ""
+		(property "Supplier" "Mouser"
 			(at 629.92 412.75 0)
 			(effects
 				(font
@@ -77145,7 +77145,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" ""
+		(property "Supplier Part Number" "187-CL10B104MB8NNNC "
 			(at 629.92 412.75 0)
 			(effects
 				(font
@@ -82913,7 +82913,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "CL10B104MB8NNNC:CAPC1608X90N"
 			(at 261.3152 233.68 0)
 			(effects
 				(font
@@ -83273,7 +83273,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/3JWJm45"
 			(at 260.35 229.87 0)
 			(effects
 				(font
@@ -83282,7 +83282,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "CL10B104MB8NNNC"
 			(at 260.35 229.87 0)
 			(effects
 				(font
@@ -83291,7 +83291,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 260.35 229.87 0)
 			(effects
 				(font
@@ -83300,7 +83300,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" ""
+		(property "Supplier" "Mouser"
 			(at 260.35 229.87 0)
 			(effects
 				(font
@@ -83309,7 +83309,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" ""
+		(property "Supplier Part Number" "187-CL10B104MB8NNNC "
 			(at 260.35 229.87 0)
 			(effects
 				(font
@@ -84075,7 +84075,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "CL10B104MB8NNNC:CAPC1608X90N"
 			(at 399.7452 429.26 0)
 			(effects
 				(font
@@ -84435,7 +84435,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/3JWJm45"
 			(at 398.78 425.45 0)
 			(effects
 				(font
@@ -84444,7 +84444,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "CL10B104MB8NNNC"
 			(at 398.78 425.45 0)
 			(effects
 				(font
@@ -84453,7 +84453,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 398.78 425.45 0)
 			(effects
 				(font
@@ -84462,7 +84462,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" ""
+		(property "Supplier" "Mouser"
 			(at 398.78 425.45 0)
 			(effects
 				(font
@@ -84471,7 +84471,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" ""
+		(property "Supplier Part Number" "187-CL10B104MB8NNNC "
 			(at 398.78 425.45 0)
 			(effects
 				(font
@@ -89353,7 +89353,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "CL10B104MB8NNNC:CAPC1608X90N"
 			(at 308.3052 435.61 0)
 			(effects
 				(font
@@ -89713,7 +89713,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/3JWJm45"
 			(at 307.34 431.8 0)
 			(effects
 				(font
@@ -89722,7 +89722,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "CL10B104MB8NNNC"
 			(at 307.34 431.8 0)
 			(effects
 				(font
@@ -89731,7 +89731,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 307.34 431.8 0)
 			(effects
 				(font
@@ -89740,7 +89740,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" ""
+		(property "Supplier" "Mouser"
 			(at 307.34 431.8 0)
 			(effects
 				(font
@@ -89749,7 +89749,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" ""
+		(property "Supplier Part Number" "187-CL10B104MB8NNNC "
 			(at 307.34 431.8 0)
 			(effects
 				(font
@@ -92456,7 +92456,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "CL10B104MB8NNNC:CAPC1608X90N"
 			(at 187.96 235.9152 0)
 			(effects
 				(font
@@ -92816,7 +92816,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/3JWJm45"
 			(at 184.15 234.95 90)
 			(effects
 				(font
@@ -92825,7 +92825,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "CL10B104MB8NNNC"
 			(at 184.15 234.95 90)
 			(effects
 				(font
@@ -92834,7 +92834,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 184.15 234.95 90)
 			(effects
 				(font
@@ -92843,7 +92843,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" ""
+		(property "Supplier" "Mouser"
 			(at 184.15 234.95 90)
 			(effects
 				(font
@@ -92852,7 +92852,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" ""
+		(property "Supplier Part Number" "187-CL10B104MB8NNNC "
 			(at 184.15 234.95 90)
 			(effects
 				(font
@@ -97901,7 +97901,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "CL10B104MB8NNNC:CAPC1608X90N"
 			(at 601.6752 416.56 0)
 			(effects
 				(font
@@ -98261,7 +98261,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/3JWJm45"
 			(at 600.71 412.75 0)
 			(effects
 				(font
@@ -98270,7 +98270,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "CL10B104MB8NNNC"
 			(at 600.71 412.75 0)
 			(effects
 				(font
@@ -98279,7 +98279,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 600.71 412.75 0)
 			(effects
 				(font
@@ -98288,7 +98288,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" ""
+		(property "Supplier" "Mouser"
 			(at 600.71 412.75 0)
 			(effects
 				(font
@@ -98297,7 +98297,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" ""
+		(property "Supplier Part Number" "187-CL10B104MB8NNNC "
 			(at 600.71 412.75 0)
 			(effects
 				(font
@@ -101853,7 +101853,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "CL10B104MB8NNNC:CAPC1608X90N"
 			(at 385.7752 439.42 0)
 			(effects
 				(font
@@ -102213,7 +102213,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/3JWJm45"
 			(at 384.81 435.61 0)
 			(effects
 				(font
@@ -102222,7 +102222,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "CL10B104MB8NNNC"
 			(at 384.81 435.61 0)
 			(effects
 				(font
@@ -102231,7 +102231,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 384.81 435.61 0)
 			(effects
 				(font
@@ -102240,7 +102240,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" ""
+		(property "Supplier" "Mouser"
 			(at 384.81 435.61 0)
 			(effects
 				(font
@@ -102249,7 +102249,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" ""
+		(property "Supplier Part Number" "187-CL10B104MB8NNNC "
 			(at 384.81 435.61 0)
 			(effects
 				(font
@@ -103624,7 +103624,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "CL10B104MB8NNNC:CAPC1608X90N"
 			(at 209.55 181.9148 0)
 			(effects
 				(font
@@ -103984,7 +103984,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/3JWJm45"
 			(at 205.74 182.88 90)
 			(effects
 				(font
@@ -103993,7 +103993,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "CL10B104MB8NNNC"
 			(at 205.74 182.88 90)
 			(effects
 				(font
@@ -104002,7 +104002,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 205.74 182.88 90)
 			(effects
 				(font
@@ -104011,7 +104011,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" ""
+		(property "Supplier" "Mouser"
 			(at 205.74 182.88 90)
 			(effects
 				(font
@@ -104020,7 +104020,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" ""
+		(property "Supplier Part Number" "187-CL10B104MB8NNNC "
 			(at 205.74 182.88 90)
 			(effects
 				(font
@@ -112458,7 +112458,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "CL10B104MB8NNNC:CAPC1608X90N"
 			(at 196.85 181.9148 0)
 			(effects
 				(font
@@ -112818,7 +112818,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/3JWJm45"
 			(at 193.04 182.88 90)
 			(effects
 				(font
@@ -112827,7 +112827,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "CL10B104MB8NNNC"
 			(at 193.04 182.88 90)
 			(effects
 				(font
@@ -112836,7 +112836,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 193.04 182.88 90)
 			(effects
 				(font
@@ -112845,7 +112845,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" ""
+		(property "Supplier" "Mouser"
 			(at 193.04 182.88 90)
 			(effects
 				(font
@@ -112854,7 +112854,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" ""
+		(property "Supplier Part Number" "187-CL10B104MB8NNNC "
 			(at 193.04 182.88 90)
 			(effects
 				(font
@@ -116198,7 +116198,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "CL10B104MB8NNNC:CAPC1608X90N"
 			(at 482.6 410.5148 0)
 			(effects
 				(font
@@ -116558,7 +116558,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/3JWJm45"
 			(at 478.79 411.48 90)
 			(effects
 				(font
@@ -116567,7 +116567,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "CL10B104MB8NNNC"
 			(at 478.79 411.48 90)
 			(effects
 				(font
@@ -116576,7 +116576,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 478.79 411.48 90)
 			(effects
 				(font
@@ -116585,7 +116585,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" ""
+		(property "Supplier" "Mouser"
 			(at 478.79 411.48 90)
 			(effects
 				(font
@@ -116594,7 +116594,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" ""
+		(property "Supplier Part Number" "187-CL10B104MB8NNNC "
 			(at 478.79 411.48 90)
 			(effects
 				(font
@@ -125093,7 +125093,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "CL10B104MB8NNNC:CAPC1608X90N"
 			(at 225.7552 482.6 0)
 			(effects
 				(font
@@ -125453,7 +125453,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/3JWJm45"
 			(at 224.79 478.79 0)
 			(effects
 				(font
@@ -125462,7 +125462,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "CL10B104MB8NNNC"
 			(at 224.79 478.79 0)
 			(effects
 				(font
@@ -125471,7 +125471,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 224.79 478.79 0)
 			(effects
 				(font
@@ -125480,7 +125480,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" ""
+		(property "Supplier" "Mouser"
 			(at 224.79 478.79 0)
 			(effects
 				(font
@@ -125489,7 +125489,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" ""
+		(property "Supplier Part Number" "187-CL10B104MB8NNNC "
 			(at 224.79 478.79 0)
 			(effects
 				(font
@@ -129914,7 +129914,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "CL10B104MB8NNNC:CAPC1608X90N"
 			(at 440.69 80.3148 0)
 			(effects
 				(font
@@ -130274,7 +130274,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/3JWJm45"
 			(at 436.88 81.28 90)
 			(effects
 				(font
@@ -130283,7 +130283,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "CL10B104MB8NNNC"
 			(at 436.88 81.28 90)
 			(effects
 				(font
@@ -130292,7 +130292,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 436.88 81.28 90)
 			(effects
 				(font
@@ -130301,7 +130301,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" ""
+		(property "Supplier" "Mouser"
 			(at 436.88 81.28 90)
 			(effects
 				(font
@@ -130310,7 +130310,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" ""
+		(property "Supplier Part Number" "187-CL10B104MB8NNNC "
 			(at 436.88 81.28 90)
 			(effects
 				(font
@@ -132293,7 +132293,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "CL10B104MB8NNNC:CAPC1608X90N"
 			(at 386.08 472.7448 0)
 			(effects
 				(font
@@ -132653,7 +132653,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/3JWJm45"
 			(at 382.27 473.71 90)
 			(effects
 				(font
@@ -132662,7 +132662,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "CL10B104MB8NNNC"
 			(at 382.27 473.71 90)
 			(effects
 				(font
@@ -132671,7 +132671,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 382.27 473.71 90)
 			(effects
 				(font
@@ -132680,7 +132680,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" ""
+		(property "Supplier" "Mouser"
 			(at 382.27 473.71 90)
 			(effects
 				(font
@@ -132689,7 +132689,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" ""
+		(property "Supplier Part Number" "187-CL10B104MB8NNNC "
 			(at 382.27 473.71 90)
 			(effects
 				(font
@@ -134613,7 +134613,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "CL10B104MB8NNNC:CAPC1608X90N"
 			(at 468.63 90.4748 0)
 			(effects
 				(font
@@ -134973,7 +134973,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/3JWJm45"
 			(at 464.82 91.44 90)
 			(effects
 				(font
@@ -134982,7 +134982,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "CL10B104MB8NNNC"
 			(at 464.82 91.44 90)
 			(effects
 				(font
@@ -134991,7 +134991,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 464.82 91.44 90)
 			(effects
 				(font
@@ -135000,7 +135000,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" ""
+		(property "Supplier" "Mouser"
 			(at 464.82 91.44 90)
 			(effects
 				(font
@@ -135009,7 +135009,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" ""
+		(property "Supplier Part Number" "187-CL10B104MB8NNNC "
 			(at 464.82 91.44 90)
 			(effects
 				(font
@@ -135777,7 +135777,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "CL10B104MB8NNNC:CAPC1608X90N"
 			(at 295.6052 441.96 0)
 			(effects
 				(font
@@ -136137,7 +136137,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/3JWJm45"
 			(at 294.64 438.15 0)
 			(effects
 				(font
@@ -136146,7 +136146,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "CL10B104MB8NNNC"
 			(at 294.64 438.15 0)
 			(effects
 				(font
@@ -136155,7 +136155,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 294.64 438.15 0)
 			(effects
 				(font
@@ -136164,7 +136164,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" ""
+		(property "Supplier" "Mouser"
 			(at 294.64 438.15 0)
 			(effects
 				(font
@@ -136173,7 +136173,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" ""
+		(property "Supplier Part Number" "187-CL10B104MB8NNNC "
 			(at 294.64 438.15 0)
 			(effects
 				(font
@@ -146959,7 +146959,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "CL10B104MB8NNNC:CAPC1608X90N"
 			(at 162.2552 435.61 0)
 			(effects
 				(font
@@ -147319,7 +147319,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/3JWJm45"
 			(at 161.29 431.8 0)
 			(effects
 				(font
@@ -147328,7 +147328,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "CL10B104MB8NNNC"
 			(at 161.29 431.8 0)
 			(effects
 				(font
@@ -147337,7 +147337,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 161.29 431.8 0)
 			(effects
 				(font
@@ -147346,7 +147346,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" ""
+		(property "Supplier" "Mouser"
 			(at 161.29 431.8 0)
 			(effects
 				(font
@@ -147355,7 +147355,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" ""
+		(property "Supplier Part Number" "187-CL10B104MB8NNNC "
 			(at 161.29 431.8 0)
 			(effects
 				(font
@@ -157877,7 +157877,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "CL10B104MB8NNNC:CAPC1608X90N"
 			(at 448.0052 138.43 0)
 			(effects
 				(font
@@ -158237,7 +158237,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/3JWJm45"
 			(at 447.04 134.62 0)
 			(effects
 				(font
@@ -158246,7 +158246,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "CL10B104MB8NNNC"
 			(at 447.04 134.62 0)
 			(effects
 				(font
@@ -158255,7 +158255,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 447.04 134.62 0)
 			(effects
 				(font
@@ -158264,7 +158264,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" ""
+		(property "Supplier" "Mouser"
 			(at 447.04 134.62 0)
 			(effects
 				(font
@@ -158273,7 +158273,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" ""
+		(property "Supplier Part Number" "187-CL10B104MB8NNNC "
 			(at 447.04 134.62 0)
 			(effects
 				(font
@@ -167706,7 +167706,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "CL10B104MB8NNNC:CAPC1608X90N"
 			(at 108.9152 431.8 0)
 			(effects
 				(font
@@ -168066,7 +168066,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/3JWJm45"
 			(at 107.95 427.99 0)
 			(effects
 				(font
@@ -168075,7 +168075,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "CL10B104MB8NNNC"
 			(at 107.95 427.99 0)
 			(effects
 				(font
@@ -168084,7 +168084,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 107.95 427.99 0)
 			(effects
 				(font
@@ -168093,7 +168093,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" ""
+		(property "Supplier" "Mouser"
 			(at 107.95 427.99 0)
 			(effects
 				(font
@@ -168102,7 +168102,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" ""
+		(property "Supplier Part Number" "187-CL10B104MB8NNNC "
 			(at 107.95 427.99 0)
 			(effects
 				(font
