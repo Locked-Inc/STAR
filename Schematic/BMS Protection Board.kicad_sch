@@ -7250,6 +7250,274 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Switch:SW_DPST"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "SW"
+				(at 0 6.35 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "SW_DPST"
+				(at 0 -5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Double Pole Single Throw (DPST) Switch"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "switch dual double-pole single-throw OFF-ON"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "SW_DPST_0_0"
+				(circle
+					(center -2.032 2.54)
+					(radius 0.508)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center -2.032 -2.54)
+					(radius 0.508)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.524 2.794) (xy 1.27 4.064)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.524 -2.286) (xy 1.27 -1.016)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 2.54) (xy 0 3.175)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 1.27) (xy 0 1.905)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 0.635)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0 -1.27) (xy 0 -0.635)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 2.032 2.54)
+					(radius 0.508)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 2.032 -2.54)
+					(radius 0.508)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "SW_DPST_1_1"
+				(rectangle
+					(start -3.175 4.445)
+					(end 3.175 -3.81)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(pin passive line
+					(at -5.08 2.54 0)
+					(length 2.54)
+					(name "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 -2.54 0)
+					(length 2.54)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 5.08 2.54 180)
+					(length 2.54)
+					(name "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "4"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 5.08 -2.54 180)
+					(length 2.54)
+					(name "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Switch:SW_Push"
 			(pin_numbers
 				(hide yes)
@@ -10416,6 +10684,16 @@
 		)
 		(uuid "480db90d-bb2c-42e4-bb95-63309c190754")
 	)
+	(text "I_L(ripple) = (Vout * (Vin_max - Vout)) / (Vin_max * Lout * Fsw)\nI_L(ripple) = (5 * (12.6 - 5)) / (12.6 * 2.2u * 594130) = 2.31A"
+		(exclude_from_sim no)
+		(at 446.532 389.382 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "50073fea-fc02-4cbc-acb3-b686f711f290")
+	)
 	(text "512Kb"
 		(exclude_from_sim no)
 		(at 61.214 413.004 0)
@@ -10428,7 +10706,7 @@
 	)
 	(text "*** VERIFY THIS (esp the d+/-) ***"
 		(exclude_from_sim no)
-		(at 725.17 394.462 0)
+		(at 725.424 357.124 0)
 		(effects
 			(font
 				(face "Bodoni 72 Smallcaps")
@@ -10539,6 +10817,17 @@
 		)
 		(uuid "9f81c784-860a-407d-8a2b-4940464cad26")
 	)
+	(text "ICIN(rms) = Iout * sqrt((Vout / Vin_min) * ((Vin_min - Vout) / Vin_min))\nICIN(rms) = 5A * sqrt((5V / 9V) * ((9V - 5V) / 9V)) = 2.48A"
+		(exclude_from_sim no)
+		(at 484.378 389.128 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "a504c406-8648-4e31-aa80-7eb4996cb2f6")
+	)
 	(text "From slvu925c"
 		(exclude_from_sim no)
 		(at 479.044 113.03 0)
@@ -10570,6 +10859,16 @@
 		)
 		(uuid "aed67f05-086a-49e8-8961-3f174a5c6bcc")
 	)
+	(text "VSYS caps need 2A ripple support"
+		(exclude_from_sim no)
+		(at 614.426 380.746 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "af57c734-6e75-4bd2-8b00-493e25f39676")
+	)
 	(text "From slusc16b"
 		(exclude_from_sim no)
 		(at 444.5 211.074 0)
@@ -10591,7 +10890,7 @@
 		)
 		(uuid "be84a943-b5b6-4b38-b0ba-acc398acd1a6")
 	)
-	(text "BMS Protection Board for 3S4P Battery Pack\nIn/Out: min voltage: 9.6 V, nominal voltage: 11.1 V, max voltage: 12.6 V\nOutput: 25A continuous discharge current\nMin Each Cell set to 3.2 V, Max Each Cell set to 4.2 V"
+	(text "BMS Protection Board for 3S Battery Pack\nIn/Out: min voltage: 9.6 V, nominal voltage: 11.1 V, max voltage: 12.6 V\nOutput: 25A continuous discharge current\nMin Each Cell set to 3.2 V, Max Each Cell set to 4.2 V"
 		(exclude_from_sim no)
 		(at 271.78 264.668 0)
 		(effects
@@ -10865,12 +11164,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "11f5856a-eb74-44f0-9a2a-2704f86bb670")
-	)
-	(junction
-		(at 737.87 398.78)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "154849b5-5760-4a06-bc51-d14e309a8a75")
 	)
 	(junction
 		(at 199.39 292.1)
@@ -15332,7 +15625,7 @@
 	)
 	(wire
 		(pts
-			(xy 737.87 398.78) (xy 741.68 398.78)
+			(xy 737.87 400.05) (xy 741.68 400.05)
 		)
 		(stroke
 			(width 0)
@@ -16122,6 +16415,16 @@
 	)
 	(wire
 		(pts
+			(xy 55.88 187.96) (xy 62.23 187.96)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4c21f414-88c9-4bc1-8019-838157159573")
+	)
+	(wire
+		(pts
 			(xy 113.03 135.89) (xy 113.03 137.16)
 		)
 		(stroke
@@ -16359,6 +16662,16 @@
 			(type default)
 		)
 		(uuid "50ce1c73-660e-4137-b5fd-e060ddf96962")
+	)
+	(wire
+		(pts
+			(xy 81.28 182.88) (xy 72.39 182.88)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "51146eeb-542e-4a89-8936-812e9c75d9f5")
 	)
 	(wire
 		(pts
@@ -16892,7 +17205,7 @@
 	)
 	(wire
 		(pts
-			(xy 737.87 397.51) (xy 737.87 398.78)
+			(xy 737.87 397.51) (xy 737.87 400.05)
 		)
 		(stroke
 			(width 0)
@@ -18262,6 +18575,16 @@
 	)
 	(wire
 		(pts
+			(xy 55.88 182.88) (xy 62.23 182.88)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7e8afcff-390c-4d4a-9131-99e69d93f55c")
+	)
+	(wire
+		(pts
 			(xy 378.46 223.52) (xy 389.89 223.52)
 		)
 		(stroke
@@ -18419,6 +18742,16 @@
 			(type default)
 		)
 		(uuid "81d71ddd-4851-42da-a070-3a5d01026b64")
+	)
+	(wire
+		(pts
+			(xy 81.28 187.96) (xy 72.39 187.96)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "81f1ec73-c44f-4d5f-b8fd-044e577a7729")
 	)
 	(wire
 		(pts
@@ -19529,16 +19862,6 @@
 			(type default)
 		)
 		(uuid "9a431c40-1b48-484d-a807-63097dc627ed")
-	)
-	(wire
-		(pts
-			(xy 737.87 398.78) (xy 737.87 400.05)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "9a736c7f-6b3b-4faf-b051-7036638b6a5c")
 	)
 	(wire
 		(pts
@@ -24181,6 +24504,17 @@
 		)
 		(uuid "467f8de5-c0eb-42ea-becd-cee1390be4fa")
 	)
+	(label "BATT+"
+		(at 81.28 182.88 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.1588)
+			)
+			(justify right bottom)
+		)
+		(uuid "47b9d781-10b1-4e10-be92-a9771a8b207e")
+	)
 	(label "SW1"
 		(at 676.91 400.05 0)
 		(effects
@@ -24382,6 +24716,17 @@
 		)
 		(uuid "70383b39-aed6-42a1-aa6f-2d3083d8d526")
 	)
+	(label "BATT-"
+		(at 81.28 187.96 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.1588)
+			)
+			(justify right bottom)
+		)
+		(uuid "718ffc72-0597-44d9-be28-24fdec4a9999")
+	)
 	(label "SRP"
 		(at 199.39 152.4 0)
 		(effects
@@ -24564,16 +24909,15 @@
 		)
 		(uuid "8b3969a2-9fa9-470c-8e48-4d8bd97b47c3")
 	)
-	(label "BATT-"
-		(at 91.44 176.53 0)
+	(label "C0"
+		(at 55.88 187.96 0)
 		(effects
 			(font
 				(size 1.27 1.27)
-				(thickness 0.1588)
 			)
 			(justify left bottom)
 		)
-		(uuid "8ef0a9e8-084a-4ff9-b064-240c0da4451f")
+		(uuid "8c18644e-d436-42f5-966f-33b8a4ccb97c")
 	)
 	(label "PACK-"
 		(at 506.73 130.81 0)
@@ -24746,6 +25090,16 @@
 			(justify right bottom)
 		)
 		(uuid "a91ba599-e235-4e70-9ed1-a7c31220fb39")
+	)
+	(label "C3"
+		(at 55.88 182.88 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "a92b1bb2-9074-4b9c-9270-f261afe43784")
 	)
 	(label "REGSRC"
 		(at 236.22 172.72 180)
@@ -24998,17 +25352,6 @@
 			(justify right bottom)
 		)
 		(uuid "d4a7559c-42a5-4e19-8a08-c3eb8e32d328")
-	)
-	(label "BATT+"
-		(at 91.44 100.33 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-				(thickness 0.1588)
-			)
-			(justify left bottom)
-		)
-		(uuid "d658ddd9-769c-4679-b406-02a9a6c71faa")
 	)
 	(label "VC2"
 		(at 167.64 125.73 180)
@@ -57695,8 +58038,8 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+		(on_board no)
+		(dnp yes)
 		(uuid "39eb1879-c6e5-487c-ae1b-713fa74227c8")
 		(property "Reference" "U22"
 			(at 31.75 108.204 0)
@@ -59960,8 +60303,8 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+		(on_board no)
+		(dnp yes)
 		(uuid "3eed2ce3-70de-49c3-830f-6d7d483a8a72")
 		(property "Reference" "U27"
 			(at 49.53 159.004 0)
@@ -65163,8 +65506,8 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+		(on_board no)
+		(dnp yes)
 		(uuid "47b8c9ce-f8a0-4ab7-877b-dcae812e6d7b")
 		(property "Reference" "U24"
 			(at 31.75 159.004 0)
@@ -114074,7 +114417,7 @@
 	)
 	(symbol
 		(lib_id "power:GNDA")
-		(at 741.68 398.78 90)
+		(at 741.68 400.05 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -114082,7 +114425,7 @@
 		(dnp no)
 		(uuid "9b6a1316-0918-4d61-8fca-13d55922b235")
 		(property "Reference" "#PWR057"
-			(at 748.03 398.78 0)
+			(at 748.03 400.05 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -114091,7 +114434,7 @@
 			)
 		)
 		(property "Value" "BQ25798_GNDA"
-			(at 751.84 398.78 90)
+			(at 751.84 400.05 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -114099,7 +114442,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 741.68 398.78 0)
+			(at 741.68 400.05 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -114108,7 +114451,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 741.68 398.78 0)
+			(at 741.68 400.05 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -114117,7 +114460,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GNDA\" , analog ground"
-			(at 741.68 398.78 0)
+			(at 741.68 400.05 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -114143,8 +114486,8 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+		(on_board no)
+		(dnp yes)
 		(uuid "9c09fbfa-fbc5-429a-a4a7-c91e6f9ca88c")
 		(property "Reference" "U25"
 			(at 49.53 108.204 0)
@@ -125558,8 +125901,8 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+		(on_board no)
+		(dnp yes)
 		(uuid "ac96bd33-2c19-467e-a692-0b62d756a051")
 		(property "Reference" "U23"
 			(at 31.75 133.604 0)
@@ -153073,8 +153416,8 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board yes)
-		(dnp no)
+		(on_board no)
+		(dnp yes)
 		(uuid "d8980cb5-22c1-41ad-8924-498decba3584")
 		(property "Reference" "U26"
 			(at 49.53 133.604 0)
@@ -158684,6 +159027,584 @@
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/e8da5d81-614b-4fe5-84b3-4c351fab7114"
 					(reference "C87")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Switch:SW_DPST")
+		(at 67.31 185.42 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "e04029d7-69e1-4e4c-a70b-8e8b37372645")
+		(property "Reference" "SW1"
+			(at 67.31 180.086 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "SW_DPST"
+			(at 67.31 190.5 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Double Pole Single Throw (DPST) Switch"
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Display" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCB ID" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC Part" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "A_MAX" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "BALL_COLUMNS" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "BALL_ROWS" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "BODY_DIAMETER" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "B_MAX" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "B_MIN" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "B_NOM" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "D2_NOM" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DMAX" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DMIN" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DNOM" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "D_MAX" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "D_MIN" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "D_NOM" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "E2_NOM" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "EMAX" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "EMIN" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "ENOM" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "E_MAX" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "E_MIN" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "E_NOM" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "IPC" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JEDEC" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "L_MAX" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "L_MIN" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "L_NOM" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "PACKAGE_TYPE" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "PARTEV" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "PINS" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "PIN_COLUMNS" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "PIN_COUNT_D" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "PIN_COUNT_E" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "THERMAL_PAD" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VACANCIES" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Link" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Price per Unit" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Availability" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Check_prices" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description_1" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MANUFACTURER" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MAXIMUM_PACKAGE_HEIGHT" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MF" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MP" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "PARTREV" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Package" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Part Number" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "STANDARD" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "SnapEDA_Link" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Specifications" ""
+			(at 67.31 185.42 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "4"
+			(uuid "4c493dde-8c7a-479b-973c-1a55c70413c2")
+		)
+		(pin "2"
+			(uuid "d04c9f4d-ec9c-40b9-8980-520683381570")
+		)
+		(pin "3"
+			(uuid "98ae1318-2555-4990-87d6-8fe5a0221bf6")
+		)
+		(pin "1"
+			(uuid "c6d5cade-228a-48fe-b34a-5b17dbe3ab39")
+		)
+		(instances
+			(project "STAR"
+				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/e8da5d81-614b-4fe5-84b3-4c351fab7114"
+					(reference "SW1")
 					(unit 1)
 				)
 			)
