@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=TPS40305DRCT
+PartCategory=Integrated Circuit
+PackageCategory=Other
+PinCount=15
+Version=1.1
+Released=2022-08-01 08:45:44
+Downloaded=2025-09-11 14:13:55
+3D=Y
