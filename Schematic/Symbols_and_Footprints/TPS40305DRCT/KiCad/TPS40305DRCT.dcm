@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP TPS40305DRCT
+D 3-20V Synchronous Buck Controller VSON10
+K
+F https://www.ti.com/lit/gpn/tps40305?HQS=ti-null-null-sf-df-pf-sep-wwe&DCM=yes?hkey=EF798316E3902B6ED9A73243A3159BB0
+$ENDCMP
+#
+#End Doc Library
