@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP DRV8243SQDGQRQ1
+D Motor / Motion / Ignition Controllers & Drivers Automotive 40-V, 12-A H-bridge driver with integrated current sensing and feedback
+K
+F https://www.ti.com/lit/ds/symlink/drv8243-q1.pdf?HQS=dis-mous-null-mousermode-dsf-pf-null-wwe&ts=1691487455666&ref_url=https%253A%252F%252Fwww.mouser.at%252F
+$ENDCMP
+#
+#End Doc Library

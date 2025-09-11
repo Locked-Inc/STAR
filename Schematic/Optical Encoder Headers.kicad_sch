@@ -4826,7 +4826,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "74LVC125APW,118:SOP65P640X110-14N"
 			(at 111.76 142.24 0)
 			(effects
 				(font

@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP ASV-30.000MHZ-E-T
+D 3.3Vdc HCMOS SMD Crystal Clock Oscillator
+K
+F https://componentsearchengine.com/Datasheets/1/ASV-30.000MHZ-E-T.pdf
+$ENDCMP
+#
+#End Doc Library

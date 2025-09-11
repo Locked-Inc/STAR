@@ -224,7 +224,7 @@
 				)
 			)
 			(pin passive line
-				(at 15.24 15.24 270)
+				(at 7.62 -25.4 90)
 				(length 5.08)
 				(name "EP_1"
 					(effects
@@ -242,7 +242,25 @@
 				)
 			)
 			(pin passive line
-				(at 15.24 -25.4 90)
+				(at 10.16 -25.4 90)
+				(length 5.08)
+				(name "EP_2"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+				(number "12"
+					(effects
+						(font
+							(size 1.27 1.27)
+						)
+					)
+				)
+			)
+			(pin passive line
+				(at 12.7 -25.4 90)
 				(length 5.08)
 				(name "EP_3"
 					(effects
@@ -260,25 +278,7 @@
 				)
 			)
 			(pin passive line
-				(at 17.78 15.24 270)
-				(length 5.08)
-				(name "EP_5"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-				(number "15"
-					(effects
-						(font
-							(size 1.27 1.27)
-						)
-					)
-				)
-			)
-			(pin passive line
-				(at 17.78 -25.4 90)
+				(at 15.24 -25.4 90)
 				(length 5.08)
 				(name "EP_4"
 					(effects
@@ -296,16 +296,16 @@
 				)
 			)
 			(pin passive line
-				(at 20.32 15.24 270)
+				(at 17.78 -25.4 90)
 				(length 5.08)
-				(name "EP_2"
+				(name "EP_5"
 					(effects
 						(font
 							(size 1.27 1.27)
 						)
 					)
 				)
-				(number "12"
+				(number "15"
 					(effects
 						(font
 							(size 1.27 1.27)

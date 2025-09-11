@@ -3214,7 +3214,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_2x20_P2.54mm_Vertical"
 			(at 196.85 96.52 0)
 			(effects
 				(font
@@ -3597,7 +3597,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "7-534206-0:SHDR40W69P254_2X20_5080X503X813P"
 			(at 96.52 96.52 0)
 			(effects
 				(font

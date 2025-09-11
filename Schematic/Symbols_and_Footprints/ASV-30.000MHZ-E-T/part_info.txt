@@ -1,0 +1,9 @@
+Manufacturer=ABRACON
+PartNumber=ASV-30.000MHZ-E-T
+PartCategory=Crystal or Oscillator
+PackageCategory=Other
+PinCount=4
+Version=4.2
+Released=2023-04-06 10:04:55
+Downloaded=2025-09-11 19:12:33
+3D=Y

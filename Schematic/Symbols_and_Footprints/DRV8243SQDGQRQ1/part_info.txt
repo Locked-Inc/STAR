@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=DRV8243SQDGQRQ1
+PartCategory=Integrated Circuit
+PackageCategory=Small Outline Packages
+PinCount=29
+Version=1.1
+Released=2024-03-20 11:10:06
+Downloaded=2025-09-11 19:17:51
+3D=Y

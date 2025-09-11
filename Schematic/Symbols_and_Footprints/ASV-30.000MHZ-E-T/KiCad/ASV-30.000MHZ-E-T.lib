@@ -1,0 +1,25 @@
+EESchema-LIBRARY Version 2.3
+#encoding utf-8
+#SamacSys ECAD Model ASV-30.000MHZ-E-T
+#/815017/1764184/2.50/4/2/Crystal or Oscillator
+DEF ASV-30.000MHZ-E-T Y 0 30 Y Y 1 F N
+F0 "Y" 2150 300 50 H V L CNN
+F1 "ASV-30.000MHZ-E-T" 2150 200 50 H V L CNN
+F2 "ASV25000MHZEJT" 2150 100 50 H I L CNN
+F3 "https://componentsearchengine.com/Datasheets/1/ASV-30.000MHZ-E-T.pdf" 2150 0 50 H I L CNN
+F4 "3.3Vdc HCMOS SMD Crystal Clock Oscillator" 2150 -100 50 H I L CNN "Description"
+F5 "1.8" 2150 -200 50 H I L CNN "Height"
+F6 "815-ASV-30.000M-E-T" 2150 -300 50 H I L CNN "Mouser Part Number"
+F7 "http://www.mouser.com/Search/ProductDetail.aspx?qs=NE97hfUNX0EUJhqscJ8bdQ%3d%3d" 2150 -400 50 H I L CNN "Mouser Price/Stock"
+F8 "ABRACON" 2150 -500 50 H I L CNN "Manufacturer_Name"
+F9 "ASV-30.000MHZ-E-T" 2150 -600 50 H I L CNN "Manufacturer_Part_Number"
+DRAW
+X TRI-STATE_ENABLE/DISABLE 1 0 -100 200 R 50 50 0 0 P
+X GND/CASE 2 2300 -100 200 L 50 50 0 0 P
+X OUTPUT 3 2300 0 200 L 50 50 0 0 P
+X VDD 4 0 0 200 R 50 50 0 0 P
+P 5 0 1 6 200 100 2100 100 2100 -200 200 -200 200 100 N
+ENDDRAW
+ENDDEF
+#
+#End Library
