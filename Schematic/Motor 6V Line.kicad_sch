@@ -1401,6 +1401,17 @@
 			(embedded_fonts no)
 		)
 	)
+	(text "V_OC = (R_OCSET * 2 * I_OCSET_min) + V_OCLOS_min\nV_OC = (7.68 kΩ * 2 * 9.5 µA) + (-8 mV)\nV_OC = 137.9 mV\n\nI_valley = V_OC / R_DS(on)\nI_valley = 137.9 mV / 7.8 mΩ\nI_valley = 17.68 A\n\nI_SCP = I_valley + (I_RIPPLE / 2)\nI_SCP = 17.68 A + (5.95 A / 2)\nI_SCP = 20.66 A"
+		(exclude_from_sim no)
+		(at 156.972 143.764 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "2702c293-89fe-46bf-ab63-0a131b9593f3")
+	)
 	(text "6V 20A"
 		(exclude_from_sim no)
 		(at 141.732 84.074 0)
@@ -3622,7 +3633,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 72.898 109.22 90)
 			(effects
 				(font
@@ -3982,7 +3993,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/4n9UsBp"
 			(at 71.12 109.22 0)
 			(effects
 				(font
@@ -3991,7 +4002,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "AC0603FR-7W4K7L"
 			(at 71.12 109.22 0)
 			(effects
 				(font
@@ -4000,7 +4011,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 71.12 109.22 0)
 			(effects
 				(font
@@ -4145,6 +4156,24 @@
 			)
 		)
 		(property "Specifications" ""
+			(at 71.12 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Mouser"
+			(at 71.12 109.22 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier Part Number" "603-AC0603FR-7W4K7L"
 			(at 71.12 109.22 0)
 			(effects
 				(font
@@ -7992,7 +8021,7 @@
 				)
 			)
 		)
-		(property "Value" "11k8"
+		(property "Value" "7k68"
 			(at 176.53 121.92 0)
 			(effects
 				(font
@@ -8000,7 +8029,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 175.768 118.11 90)
 			(effects
 				(font
@@ -8360,7 +8389,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/4pmZ9Jx"
 			(at 173.99 118.11 0)
 			(effects
 				(font
@@ -8369,7 +8398,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "RT0603FRE077K68L"
 			(at 173.99 118.11 0)
 			(effects
 				(font
@@ -8378,7 +8407,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 173.99 118.11 0)
 			(effects
 				(font
@@ -8523,6 +8552,24 @@
 			)
 		)
 		(property "Specifications" ""
+			(at 173.99 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Mouser"
+			(at 173.99 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier Part Number" "603-RT0603FRE077K68L"
 			(at 173.99 118.11 0)
 			(effects
 				(font
@@ -9162,7 +9209,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 93.218 120.65 90)
 			(effects
 				(font
@@ -9522,7 +9569,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/3IjcfqA"
 			(at 91.44 120.65 0)
 			(effects
 				(font
@@ -9531,7 +9578,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "RT0603DRE071K37L "
 			(at 91.44 120.65 0)
 			(effects
 				(font
@@ -9540,7 +9587,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 91.44 120.65 0)
 			(effects
 				(font
@@ -9685,6 +9732,24 @@
 			)
 		)
 		(property "Specifications" ""
+			(at 91.44 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Mouser"
+			(at 91.44 120.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier Part Number" "603-RT0603DRE071K37L"
 			(at 91.44 120.65 0)
 			(effects
 				(font
@@ -14235,7 +14300,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 225.298 116.84 90)
 			(effects
 				(font
@@ -14595,7 +14660,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/4pjaV7O"
 			(at 223.52 116.84 0)
 			(effects
 				(font
@@ -14604,7 +14669,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "MCT0603MD1001DP500 "
 			(at 223.52 116.84 0)
 			(effects
 				(font
@@ -14613,7 +14678,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 223.52 116.84 0)
 			(effects
 				(font
@@ -14766,6 +14831,24 @@
 				(hide yes)
 			)
 		)
+		(property "Supplier" "Mouser"
+			(at 223.52 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier Part Number" "594-MCT0603MD1001DP5 "
+			(at 223.52 116.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "6d5074a4-99bb-4ece-8eeb-ba53df469c67")
 		)
@@ -14806,7 +14889,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 225.298 106.68 90)
 			(effects
 				(font
@@ -15166,7 +15249,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/463dpQf"
 			(at 223.52 106.68 0)
 			(effects
 				(font
@@ -15175,7 +15258,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "RCA060310K0FKEC "
 			(at 223.52 106.68 0)
 			(effects
 				(font
@@ -15184,7 +15267,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 223.52 106.68 0)
 			(effects
 				(font
@@ -15329,6 +15412,24 @@
 			)
 		)
 		(property "Specifications" ""
+			(at 223.52 106.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Mouser"
+			(at 223.52 106.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier Part Number" "71-RCA060310K0FKEC"
 			(at 223.52 106.68 0)
 			(effects
 				(font
@@ -15968,7 +16069,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 213.868 106.68 90)
 			(effects
 				(font
@@ -16328,7 +16429,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/4mbJQRa"
 			(at 212.09 106.68 0)
 			(effects
 				(font
@@ -16337,7 +16438,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "ERA-3AEB3090V "
 			(at 212.09 106.68 0)
 			(effects
 				(font
@@ -16346,7 +16447,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 212.09 106.68 0)
 			(effects
 				(font
@@ -16491,6 +16592,24 @@
 			)
 		)
 		(property "Specifications" ""
+			(at 212.09 106.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Mouser"
+			(at 212.09 106.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier Part Number" "667-ERA-3AEB3090V"
 			(at 212.09 106.68 0)
 			(effects
 				(font
