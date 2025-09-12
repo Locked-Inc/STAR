@@ -4890,7 +4890,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 215.9 33.528 90)
 			(effects
 				(font
@@ -5250,7 +5250,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/4m95jdp"
 			(at 215.9 31.75 90)
 			(effects
 				(font
@@ -5259,7 +5259,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "RG1608P-331-D-T5 "
 			(at 215.9 31.75 90)
 			(effects
 				(font
@@ -5268,7 +5268,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 215.9 31.75 90)
 			(effects
 				(font
@@ -5413,6 +5413,24 @@
 			)
 		)
 		(property "Specifications" ""
+			(at 215.9 31.75 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Mouser"
+			(at 215.9 31.75 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier Part Number" "754-RG1608P-331DT5"
 			(at 215.9 31.75 90)
 			(effects
 				(font
@@ -9636,7 +9654,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 201.422 105.41 90)
 			(effects
 				(font
@@ -9996,7 +10014,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/48a41vp"
 			(at 203.2 105.41 0)
 			(effects
 				(font
@@ -10005,7 +10023,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "RCS06034K70FKEA "
 			(at 203.2 105.41 0)
 			(effects
 				(font
@@ -10014,7 +10032,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.13"
 			(at 203.2 105.41 0)
 			(effects
 				(font
@@ -10159,6 +10177,24 @@
 			)
 		)
 		(property "Specifications" ""
+			(at 203.2 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Mouser"
+			(at 203.2 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier Part Number" "71-RCS06034K70FKEA "
 			(at 203.2 105.41 0)
 			(effects
 				(font
@@ -12191,7 +12227,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 216.662 121.92 90)
 			(effects
 				(font
@@ -12551,7 +12587,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/46iPyuQ"
 			(at 218.44 121.92 0)
 			(effects
 				(font
@@ -12560,7 +12596,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "RMC1/16K8200FTP "
 			(at 218.44 121.92 0)
 			(effects
 				(font
@@ -12569,7 +12605,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.10"
 			(at 218.44 121.92 0)
 			(effects
 				(font
@@ -12722,6 +12758,24 @@
 				(hide yes)
 			)
 		)
+		(property "Supplier" "Mouser"
+			(at 218.44 121.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier Part Number" "791-RMC1/16K8200FTP "
+			(at 218.44 121.92 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "b3ce5ccf-df51-427f-a647-bba89cfdde2e")
 		)
@@ -12762,7 +12816,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 202.692 36.83 90)
 			(effects
 				(font
@@ -13122,7 +13176,7 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
+		(property "Link" "https://mou.sr/48a41vp"
 			(at 204.47 36.83 0)
 			(effects
 				(font
@@ -13131,7 +13185,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" ""
+		(property "Manufacturer Part Number" "RCS06034K70FKEA "
 			(at 204.47 36.83 0)
 			(effects
 				(font
@@ -13140,7 +13194,7 @@
 				(hide yes)
 			)
 		)
-		(property "Price per Unit" ""
+		(property "Price per Unit" "0.13"
 			(at 204.47 36.83 0)
 			(effects
 				(font
@@ -13285,6 +13339,24 @@
 			)
 		)
 		(property "Specifications" ""
+			(at 204.47 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" "Mouser"
+			(at 204.47 36.83 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier Part Number" "71-RCS06034K70FKEA "
 			(at 204.47 36.83 0)
 			(effects
 				(font
