@@ -631,6 +631,12 @@
         },
         {
           "group_by": false,
+          "label": "Manufactaurer Part Number",
+          "name": "Manufactaurer Part Number",
+          "show": true
+        },
+        {
+          "group_by": false,
           "label": "Datasheet",
           "name": "Datasheet",
           "show": false
@@ -651,18 +657,18 @@
           "group_by": false,
           "label": "Supplier",
           "name": "Supplier",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "Mouser Part Number",
+          "name": "Mouser Part Number",
           "show": true
         },
         {
           "group_by": false,
-          "label": "Supplier Part Number",
-          "name": "Supplier Part Number",
-          "show": true
-        },
-        {
-          "group_by": false,
-          "label": "Manufacturer Part Number",
-          "name": "Manufacturer Part Number",
+          "label": "Mouser Price per Unit",
+          "name": "Mouser Price per Unit",
           "show": true
         },
         {
@@ -919,12 +925,6 @@
         },
         {
           "group_by": false,
-          "label": "Price per Unit",
-          "name": "Price per Unit",
-          "show": true
-        },
-        {
-          "group_by": false,
           "label": "SNAPEDA_PACKAGE_ID",
           "name": "SNAPEDA_PACKAGE_ID",
           "show": false
@@ -991,8 +991,8 @@
         },
         {
           "group_by": false,
-          "label": "Link",
-          "name": "Link",
+          "label": "Mouser Link",
+          "name": "Mouser Link",
           "show": true
         },
         {
@@ -1009,29 +1009,35 @@
         },
         {
           "group_by": false,
-          "label": "Mouser Part Number",
-          "name": "Mouser Part Number",
-          "show": false
-        },
-        {
-          "group_by": false,
           "label": "Mouser Price/Stock",
           "name": "Mouser Price/Stock",
           "show": false
         },
         {
           "group_by": false,
-          "label": "Manufacturer_Part_Number",
-          "name": "Manufacturer_Part_Number",
-          "show": false
+          "label": "DigiKey Part Number",
+          "name": "DigiKey Part Number",
+          "show": true
+        },
+        {
+          "group_by": false,
+          "label": "DigiKey Price per Unit",
+          "name": "DigiKey Price per Unit",
+          "show": true
+        },
+        {
+          "group_by": false,
+          "label": "DigiKey Link",
+          "name": "DigiKey Link",
+          "show": true
         }
       ],
-      "filter_string": "r",
+      "filter_string": "",
       "group_symbols": true,
       "include_excluded_from_bom": false,
       "name": "",
       "sort_asc": false,
-      "sort_field": "Value"
+      "sort_field": "Mouser Price per Unit"
     },
     "connection_grid_size": 50.0,
     "drawing": {

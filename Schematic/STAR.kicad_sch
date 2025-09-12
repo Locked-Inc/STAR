@@ -1464,7 +1464,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "571-796739-2"
+		(property "Mouser Part Number" ""
 			(at 36.83 569.85 0)
 			(effects
 				(font
@@ -1494,13 +1494,21 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "796739-2"
-			(at 36.83 869.85 0)
+		(property "DigiKey Link" ""
+			(at 53.34 74.93 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" ""
+			(at 53.34 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 				(hide yes)
 			)
 		)
@@ -1567,33 +1575,6 @@
 		)
 		(property "Description" "test point"
 			(at 81.28 115.57 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Link" "https://mou.sr/3MgWhw3"
-			(at 81.28 115.57 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Part Number" "3825"
-			(at 81.28 115.57 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Price per Unit" "9.95"
-			(at 81.28 115.57 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1745,7 +1726,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" "Mouser"
+		(property "Supplier" ""
 			(at 81.28 115.57 90)
 			(effects
 				(font
@@ -1754,7 +1735,61 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" "485-3825"
+		(property "DigiKey Link" "https://www.digikey.com/short/n04bqb2d"
+			(at 81.28 115.57 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "1528-3825-ND"
+			(at 81.28 115.57 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "3825"
+			(at 81.28 115.57 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3MgWhw3"
+			(at 81.28 115.57 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "485-3825"
+			(at 81.28 115.57 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "9.95"
+			(at 81.28 115.57 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "9.95"
 			(at 81.28 115.57 90)
 			(effects
 				(font
@@ -1830,33 +1865,6 @@
 				(hide yes)
 			)
 		)
-		(property "Link" "https://mou.sr/3MgWhw3"
-			(at 81.28 129.54 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Part Number" "3825"
-			(at 81.28 129.54 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Price per Unit" "9.95"
-			(at 81.28 129.54 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "Sim.Device" ""
 			(at 81.28 129.54 90)
 			(effects
@@ -2001,7 +2009,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" "Mouser"
+		(property "Supplier" ""
 			(at 81.28 129.54 90)
 			(effects
 				(font
@@ -2010,7 +2018,61 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" "485-3825"
+		(property "DigiKey Link" "https://www.digikey.com/short/n04bqb2d"
+			(at 81.28 129.54 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "1528-3825-ND"
+			(at 81.28 129.54 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "3825"
+			(at 81.28 129.54 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3MgWhw3"
+			(at 81.28 129.54 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "485-3825"
+			(at 81.28 129.54 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "9.95"
+			(at 81.28 129.54 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "9.95"
 			(at 81.28 129.54 90)
 			(effects
 				(font
@@ -2086,33 +2148,6 @@
 				(hide yes)
 			)
 		)
-		(property "Link" "https://mou.sr/3MgWhw3"
-			(at 81.28 119.38 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Part Number" "3825"
-			(at 81.28 119.38 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Price per Unit" "9.95"
-			(at 81.28 119.38 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "Sim.Device" ""
 			(at 81.28 119.38 90)
 			(effects
@@ -2257,7 +2292,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" "Mouser"
+		(property "Supplier" ""
 			(at 81.28 119.38 90)
 			(effects
 				(font
@@ -2266,7 +2301,61 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" "485-3825"
+		(property "DigiKey Link" "https://www.digikey.com/short/n04bqb2d"
+			(at 81.28 119.38 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "1528-3825-ND"
+			(at 81.28 119.38 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "3825"
+			(at 81.28 119.38 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3MgWhw3"
+			(at 81.28 119.38 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "485-3825"
+			(at 81.28 119.38 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "9.95"
+			(at 81.28 119.38 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "9.95"
 			(at 81.28 119.38 90)
 			(effects
 				(font
@@ -2342,33 +2431,6 @@
 				(hide yes)
 			)
 		)
-		(property "Link" "https://mou.sr/3MgWhw3"
-			(at 81.28 127 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Part Number" "3825"
-			(at 81.28 127 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Price per Unit" "9.95"
-			(at 81.28 127 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "Sim.Device" ""
 			(at 81.28 127 90)
 			(effects
@@ -2513,7 +2575,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" "Mouser"
+		(property "Supplier" ""
 			(at 81.28 127 90)
 			(effects
 				(font
@@ -2522,7 +2584,61 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" "485-3825"
+		(property "DigiKey Link" "https://www.digikey.com/short/n04bqb2d"
+			(at 81.28 127 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "1528-3825-ND"
+			(at 81.28 127 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "3825"
+			(at 81.28 127 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3MgWhw3"
+			(at 81.28 127 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "485-3825"
+			(at 81.28 127 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "9.95"
+			(at 81.28 127 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "9.95"
 			(at 81.28 127 90)
 			(effects
 				(font
@@ -2598,33 +2714,6 @@
 				(hide yes)
 			)
 		)
-		(property "Link" "https://mou.sr/3MgWhw3"
-			(at 81.28 113.03 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Part Number" "3825"
-			(at 81.28 113.03 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Price per Unit" "9.95"
-			(at 81.28 113.03 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "Sim.Device" ""
 			(at 81.28 113.03 90)
 			(effects
@@ -2769,7 +2858,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" "Mouser"
+		(property "Supplier" ""
 			(at 81.28 113.03 90)
 			(effects
 				(font
@@ -2778,7 +2867,61 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" "485-3825"
+		(property "DigiKey Link" "https://www.digikey.com/short/n04bqb2d"
+			(at 81.28 113.03 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "1528-3825-ND"
+			(at 81.28 113.03 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "3825"
+			(at 81.28 113.03 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3MgWhw3"
+			(at 81.28 113.03 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "485-3825"
+			(at 81.28 113.03 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "9.95"
+			(at 81.28 113.03 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "9.95"
 			(at 81.28 113.03 90)
 			(effects
 				(font
@@ -2920,33 +3063,6 @@
 				(hide yes)
 			)
 		)
-		(property "Link" "https://mou.sr/3MgWhw3"
-			(at 81.28 110.49 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Part Number" "3825"
-			(at 81.28 110.49 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Price per Unit" "9.95"
-			(at 81.28 110.49 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "Sim.Device" ""
 			(at 81.28 110.49 90)
 			(effects
@@ -3091,7 +3207,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" "Mouser"
+		(property "Supplier" ""
 			(at 81.28 110.49 90)
 			(effects
 				(font
@@ -3100,7 +3216,61 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" "485-3825"
+		(property "DigiKey Link" "https://www.digikey.com/short/n04bqb2d"
+			(at 81.28 110.49 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "1528-3825-ND"
+			(at 81.28 110.49 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "3825"
+			(at 81.28 110.49 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3MgWhw3"
+			(at 81.28 110.49 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "485-3825"
+			(at 81.28 110.49 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "9.95"
+			(at 81.28 110.49 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "9.95"
 			(at 81.28 110.49 90)
 			(effects
 				(font
@@ -3176,33 +3346,6 @@
 				(hide yes)
 			)
 		)
-		(property "Link" "https://mou.sr/3MgWhw3"
-			(at 81.28 124.46 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Part Number" "3825"
-			(at 81.28 124.46 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Price per Unit" "9.95"
-			(at 81.28 124.46 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "Sim.Device" ""
 			(at 81.28 124.46 90)
 			(effects
@@ -3347,7 +3490,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" "Mouser"
+		(property "Supplier" ""
 			(at 81.28 124.46 90)
 			(effects
 				(font
@@ -3356,7 +3499,61 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" "485-3825"
+		(property "DigiKey Link" "https://www.digikey.com/short/n04bqb2d"
+			(at 81.28 124.46 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "1528-3825-ND"
+			(at 81.28 124.46 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "3825"
+			(at 81.28 124.46 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3MgWhw3"
+			(at 81.28 124.46 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "485-3825"
+			(at 81.28 124.46 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "9.95"
+			(at 81.28 124.46 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "9.95"
 			(at 81.28 124.46 90)
 			(effects
 				(font
@@ -3547,6 +3744,24 @@
 				(hide yes)
 			)
 		)
+		(property "DigiKey Link" ""
+			(at 49.53 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" ""
+			(at 49.53 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "3"
 			(uuid "d0c524cf-27e9-4aad-b910-8efea4272955")
 		)
@@ -3616,33 +3831,6 @@
 		)
 		(property "Description" "test point"
 			(at 81.28 132.08 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Link" "https://mou.sr/3MgWhw3"
-			(at 81.28 132.08 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Part Number" "3825"
-			(at 81.28 132.08 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Price per Unit" "9.95"
-			(at 81.28 132.08 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3794,7 +3982,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" "Mouser"
+		(property "Supplier" ""
 			(at 81.28 132.08 90)
 			(effects
 				(font
@@ -3803,7 +3991,61 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" "485-3825"
+		(property "DigiKey Link" "https://www.digikey.com/short/n04bqb2d"
+			(at 81.28 132.08 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "1528-3825-ND"
+			(at 81.28 132.08 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "3825"
+			(at 81.28 132.08 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3MgWhw3"
+			(at 81.28 132.08 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "485-3825"
+			(at 81.28 132.08 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "9.95"
+			(at 81.28 132.08 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "9.95"
 			(at 81.28 132.08 90)
 			(effects
 				(font
@@ -4182,33 +4424,6 @@
 				(hide yes)
 			)
 		)
-		(property "Link" ""
-			(at 116.84 52.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Part Number" ""
-			(at 116.84 52.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Price per Unit" ""
-			(at 116.84 52.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "Sim.Device" ""
 			(at 116.84 52.07 0)
 			(effects
@@ -4345,6 +4560,24 @@
 			)
 		)
 		(property "Specifications" ""
+			(at 116.84 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" ""
+			(at 116.84 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" ""
 			(at 116.84 52.07 0)
 			(effects
 				(font
@@ -4429,33 +4662,6 @@
 				(hide yes)
 			)
 		)
-		(property "Link" "https://mou.sr/3MgWhw3"
-			(at 81.28 121.92 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Part Number" "3825"
-			(at 81.28 121.92 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Price per Unit" "9.95"
-			(at 81.28 121.92 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
 		(property "Sim.Device" ""
 			(at 81.28 121.92 90)
 			(effects
@@ -4600,7 +4806,7 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier" "Mouser"
+		(property "Supplier" ""
 			(at 81.28 121.92 90)
 			(effects
 				(font
@@ -4609,7 +4815,61 @@
 				(hide yes)
 			)
 		)
-		(property "Supplier Part Number" "485-3825"
+		(property "DigiKey Link" "https://www.digikey.com/short/n04bqb2d"
+			(at 81.28 121.92 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "1528-3825-ND"
+			(at 81.28 121.92 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "3825"
+			(at 81.28 121.92 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3MgWhw3"
+			(at 81.28 121.92 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "485-3825"
+			(at 81.28 121.92 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "9.95"
+			(at 81.28 121.92 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "9.95"
 			(at 81.28 121.92 90)
 			(effects
 				(font
