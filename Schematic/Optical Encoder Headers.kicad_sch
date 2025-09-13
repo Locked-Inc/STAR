@@ -2784,7 +2784,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "0c3da2cf-5359-4639-9b88-e1a141093b42")
-		(property "Reference" "TP43"
+		(property "Reference" "TP40"
 			(at 25.146 68.58 90)
 			(effects
 				(font
@@ -2992,7 +2992,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "1528-3825-ND"
+		(property "DigiKey Part Number" ""
 			(at 29.21 68.58 90)
 			(effects
 				(font
@@ -3052,7 +3052,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/2d1f23db-77e1-469c-85c1-12a11504ed46"
-					(reference "TP43")
+					(reference "TP40")
 					(unit 1)
 				)
 			)
@@ -3085,7 +3085,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "7967392"
+		(property "Footprint" "796739-2:7967392"
 			(at 149.86 199.06 0)
 			(effects
 				(font
@@ -3124,7 +3124,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "571-796739-2"
 			(at 149.86 599.06 0)
 			(effects
 				(font
@@ -3154,7 +3154,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" ""
+		(property "DigiKey Link" "https://www.digikey.com/short/p5c2tn08"
 			(at 166.37 104.14 0)
 			(effects
 				(font
@@ -3164,6 +3164,42 @@
 			)
 		)
 		(property "DigiKey Part Number" ""
+			(at 166.37 104.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "5.47"
+			(at 166.37 104.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "796739-2"
+			(at 166.37 104.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3rBvrr5"
+			(at 166.37 104.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "1.98"
 			(at 166.37 104.14 0)
 			(effects
 				(font
@@ -3192,7 +3228,7 @@
 		(at 177.8 52.07 90)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
@@ -3744,7 +3780,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "2c098813-8a47-4454-bdcd-19fa5ac44909")
-		(property "Reference" "TP39"
+		(property "Reference" "TP36"
 			(at 25.146 58.42 90)
 			(effects
 				(font
@@ -3952,7 +3988,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "1528-3825-ND"
+		(property "DigiKey Part Number" ""
 			(at 29.21 58.42 90)
 			(effects
 				(font
@@ -4012,7 +4048,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/2d1f23db-77e1-469c-85c1-12a11504ed46"
-					(reference "TP39")
+					(reference "TP36")
 					(unit 1)
 				)
 			)
@@ -4027,7 +4063,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "2da25079-9ecf-4a33-8feb-a6e78ab50689")
-		(property "Reference" "TP41"
+		(property "Reference" "TP38"
 			(at 25.146 63.5 90)
 			(effects
 				(font
@@ -4235,7 +4271,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "1528-3825-ND"
+		(property "DigiKey Part Number" ""
 			(at 29.21 63.5 90)
 			(effects
 				(font
@@ -4295,7 +4331,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/2d1f23db-77e1-469c-85c1-12a11504ed46"
-					(reference "TP41")
+					(reference "TP38")
 					(unit 1)
 				)
 			)
@@ -4310,7 +4346,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "4b08f1fb-4094-438b-8a2b-62655b97c84c")
-		(property "Reference" "TP42"
+		(property "Reference" "TP39"
 			(at 25.146 66.04 90)
 			(effects
 				(font
@@ -4518,7 +4554,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "1528-3825-ND"
+		(property "DigiKey Part Number" ""
 			(at 29.21 66.04 90)
 			(effects
 				(font
@@ -4578,7 +4614,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/2d1f23db-77e1-469c-85c1-12a11504ed46"
-					(reference "TP42")
+					(reference "TP39")
 					(unit 1)
 				)
 			)
@@ -4593,7 +4629,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "4d42b80b-f37a-41f0-b06e-2ed28d2f2b36")
-		(property "Reference" "U25"
+		(property "Reference" "U23"
 			(at 143.002 137.414 0)
 			(effects
 				(font
@@ -5097,7 +5133,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "1727-3092-2-ND"
+		(property "DigiKey Part Number" ""
 			(at 111.76 142.24 0)
 			(effects
 				(font
@@ -5196,7 +5232,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/2d1f23db-77e1-469c-85c1-12a11504ed46"
-					(reference "U25")
+					(reference "U23")
 					(unit 1)
 				)
 			)
@@ -5211,7 +5247,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "57b620ce-5c3e-49c6-967d-1576aa2a1498")
-		(property "Reference" "TP51"
+		(property "Reference" "TP48"
 			(at 25.146 88.9 90)
 			(effects
 				(font
@@ -5419,7 +5455,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "1528-3825-ND"
+		(property "DigiKey Part Number" ""
 			(at 29.21 88.9 90)
 			(effects
 				(font
@@ -5479,7 +5515,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/2d1f23db-77e1-469c-85c1-12a11504ed46"
-					(reference "TP51")
+					(reference "TP48")
 					(unit 1)
 				)
 			)
@@ -5494,7 +5530,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "5c3debd9-3cde-4101-8079-c990d3f53f70")
-		(property "Reference" "TP44"
+		(property "Reference" "TP41"
 			(at 25.146 71.12 90)
 			(effects
 				(font
@@ -5702,7 +5738,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "1528-3825-ND"
+		(property "DigiKey Part Number" ""
 			(at 29.21 71.12 90)
 			(effects
 				(font
@@ -5762,7 +5798,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/2d1f23db-77e1-469c-85c1-12a11504ed46"
-					(reference "TP44")
+					(reference "TP41")
 					(unit 1)
 				)
 			)
@@ -5777,7 +5813,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "6b05ad15-ae94-455c-9323-92a6ce531454")
-		(property "Reference" "TP45"
+		(property "Reference" "TP42"
 			(at 25.146 73.66 90)
 			(effects
 				(font
@@ -5985,7 +6021,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "1528-3825-ND"
+		(property "DigiKey Part Number" ""
 			(at 29.21 73.66 90)
 			(effects
 				(font
@@ -6045,7 +6081,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/2d1f23db-77e1-469c-85c1-12a11504ed46"
-					(reference "TP45")
+					(reference "TP42")
 					(unit 1)
 				)
 			)
@@ -7119,7 +7155,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "CL10B104MB8NNNC"
+		(property "DigiKey Part Number" ""
 			(at 125.73 77.47 0)
 			(effects
 				(font
@@ -7215,7 +7251,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "7967392"
+		(property "Footprint" "796739-2:7967392"
 			(at 176.53 199.06 0)
 			(effects
 				(font
@@ -7254,7 +7290,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "571-796739-2"
 			(at 176.53 599.06 0)
 			(effects
 				(font
@@ -7284,7 +7320,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" ""
+		(property "DigiKey Link" "https://www.digikey.com/short/p5c2tn08"
 			(at 193.04 104.14 0)
 			(effects
 				(font
@@ -7294,6 +7330,42 @@
 			)
 		)
 		(property "DigiKey Part Number" ""
+			(at 193.04 104.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "5.47"
+			(at 193.04 104.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "796739-2"
+			(at 193.04 104.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3rBvrr5"
+			(at 193.04 104.14 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "1.98"
 			(at 193.04 104.14 0)
 			(effects
 				(font
@@ -7322,12 +7394,12 @@
 		(at 203.2 52.07 90)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a52351a5-bea0-4bab-a646-89e2bf38df0a")
-		(property "Reference" "J13"
+		(property "Reference" "J12"
 			(at 204.47 45.72 90)
 			(effects
 				(font
@@ -7859,7 +7931,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/2d1f23db-77e1-469c-85c1-12a11504ed46"
-					(reference "J13")
+					(reference "J12")
 					(unit 1)
 				)
 			)
@@ -7940,7 +8012,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "ba54920c-9ab5-4ddb-868e-5d8e1ea73c1b")
-		(property "Reference" "TP46"
+		(property "Reference" "TP43"
 			(at 25.146 76.2 90)
 			(effects
 				(font
@@ -8148,7 +8220,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "1528-3825-ND"
+		(property "DigiKey Part Number" ""
 			(at 29.21 76.2 90)
 			(effects
 				(font
@@ -8208,7 +8280,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/2d1f23db-77e1-469c-85c1-12a11504ed46"
-					(reference "TP46")
+					(reference "TP43")
 					(unit 1)
 				)
 			)
@@ -9282,7 +9354,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "CL10B104MB8NNNC"
+		(property "DigiKey Part Number" ""
 			(at 140.97 77.47 0)
 			(effects
 				(font
@@ -9426,7 +9498,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "c51e331c-0f3f-4d9f-88b8-64a603fe7179")
-		(property "Reference" "TP48"
+		(property "Reference" "TP45"
 			(at 25.146 81.28 90)
 			(effects
 				(font
@@ -9634,7 +9706,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "1528-3825-ND"
+		(property "DigiKey Part Number" ""
 			(at 29.21 81.28 90)
 			(effects
 				(font
@@ -9694,7 +9766,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/2d1f23db-77e1-469c-85c1-12a11504ed46"
-					(reference "TP48")
+					(reference "TP45")
 					(unit 1)
 				)
 			)
@@ -9709,7 +9781,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "c6adc700-4133-4b25-a960-6fdef82b190c")
-		(property "Reference" "TP50"
+		(property "Reference" "TP47"
 			(at 25.146 86.36 90)
 			(effects
 				(font
@@ -9917,7 +9989,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "1528-3825-ND"
+		(property "DigiKey Part Number" ""
 			(at 29.21 86.36 90)
 			(effects
 				(font
@@ -9977,7 +10049,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/2d1f23db-77e1-469c-85c1-12a11504ed46"
-					(reference "TP50")
+					(reference "TP47")
 					(unit 1)
 				)
 			)
@@ -10530,7 +10602,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "c88bad24-9dd6-4c39-acc6-532c908a4aa4")
-		(property "Reference" "TP49"
+		(property "Reference" "TP46"
 			(at 25.146 83.82 90)
 			(effects
 				(font
@@ -10738,7 +10810,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "1528-3825-ND"
+		(property "DigiKey Part Number" ""
 			(at 29.21 83.82 90)
 			(effects
 				(font
@@ -10798,7 +10870,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/2d1f23db-77e1-469c-85c1-12a11504ed46"
-					(reference "TP49")
+					(reference "TP46")
 					(unit 1)
 				)
 			)
@@ -10813,7 +10885,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "e5ecd89d-9016-4075-bf3f-726290fc7690")
-		(property "Reference" "TP47"
+		(property "Reference" "TP44"
 			(at 25.146 78.74 90)
 			(effects
 				(font
@@ -11021,7 +11093,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "1528-3825-ND"
+		(property "DigiKey Part Number" ""
 			(at 29.21 78.74 90)
 			(effects
 				(font
@@ -11081,7 +11153,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/2d1f23db-77e1-469c-85c1-12a11504ed46"
-					(reference "TP47")
+					(reference "TP44")
 					(unit 1)
 				)
 			)
@@ -11096,7 +11168,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "ef59e2a3-ad4a-418b-a59a-cfa73d128f84")
-		(property "Reference" "TP40"
+		(property "Reference" "TP37"
 			(at 25.146 60.96 90)
 			(effects
 				(font
@@ -11304,7 +11376,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "1528-3825-ND"
+		(property "DigiKey Part Number" ""
 			(at 29.21 60.96 90)
 			(effects
 				(font
@@ -11364,7 +11436,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/2d1f23db-77e1-469c-85c1-12a11504ed46"
-					(reference "TP40")
+					(reference "TP37")
 					(unit 1)
 				)
 			)

@@ -1,0 +1,9 @@
+Manufacturer=onsemi
+PartNumber=CAT24C512WI-GT3
+PartCategory=Integrated Circuit
+PackageCategory=Small Outline Packages
+PinCount=8
+Version=4.1
+Released=2015-07-29 10:16:52
+Downloaded=2025-09-13 01:14:25
+3D=Y

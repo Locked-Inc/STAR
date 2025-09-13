@@ -1425,7 +1425,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" "7967392"
+		(property "Footprint" "796739-2:7967392"
 			(at 36.83 169.85 0)
 			(effects
 				(font
@@ -1464,7 +1464,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" ""
+		(property "Mouser Part Number" "571-796739-2"
 			(at 36.83 569.85 0)
 			(effects
 				(font
@@ -1494,7 +1494,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" ""
+		(property "DigiKey Link" "https://www.digikey.com/short/p5c2tn08"
 			(at 53.34 74.93 0)
 			(effects
 				(font
@@ -1504,6 +1504,42 @@
 			)
 		)
 		(property "DigiKey Part Number" ""
+			(at 53.34 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "5.47"
+			(at 53.34 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "796739-2"
+			(at 53.34 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3rBvrr5"
+			(at 53.34 74.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "1.98"
 			(at 53.34 74.93 0)
 			(effects
 				(font
@@ -1744,7 +1780,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "1528-3825-ND"
+		(property "DigiKey Part Number" ""
 			(at 81.28 115.57 90)
 			(effects
 				(font
@@ -1819,7 +1855,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "4715659c-c068-4060-93eb-b4278f6ff3c0")
-		(property "Reference" "TP10"
+		(property "Reference" "TP8"
 			(at 77.216 129.54 90)
 			(effects
 				(font
@@ -2027,7 +2063,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "1528-3825-ND"
+		(property "DigiKey Part Number" ""
 			(at 81.28 129.54 90)
 			(effects
 				(font
@@ -2087,7 +2123,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b"
-					(reference "TP10")
+					(reference "TP8")
 					(unit 1)
 				)
 			)
@@ -2310,7 +2346,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "1528-3825-ND"
+		(property "DigiKey Part Number" ""
 			(at 81.28 119.38 90)
 			(effects
 				(font
@@ -2593,7 +2629,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "1528-3825-ND"
+		(property "DigiKey Part Number" ""
 			(at 81.28 127 90)
 			(effects
 				(font
@@ -2876,7 +2912,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "1528-3825-ND"
+		(property "DigiKey Part Number" ""
 			(at 81.28 113.03 90)
 			(effects
 				(font
@@ -3225,7 +3261,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "1528-3825-ND"
+		(property "DigiKey Part Number" ""
 			(at 81.28 110.49 90)
 			(effects
 				(font
@@ -3508,7 +3544,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "1528-3825-ND"
+		(property "DigiKey Part Number" ""
 			(at 81.28 124.46 90)
 			(effects
 				(font
@@ -3579,7 +3615,7 @@
 		(at 49.53 64.77 180)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(uuid "c9072148-4109-4dac-a4f8-972ef02aa51e")
@@ -3792,7 +3828,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "cfcc0142-2562-41bf-8c5e-d7052ef6e100")
-		(property "Reference" "TP11"
+		(property "Reference" "TP9"
 			(at 77.216 132.08 90)
 			(effects
 				(font
@@ -4000,7 +4036,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "1528-3825-ND"
+		(property "DigiKey Part Number" ""
 			(at 81.28 132.08 90)
 			(effects
 				(font
@@ -4060,7 +4096,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b"
-					(reference "TP11")
+					(reference "TP9")
 					(unit 1)
 				)
 			)
@@ -4071,7 +4107,7 @@
 		(at 116.84 52.07 0)
 		(unit 1)
 		(exclude_from_sim no)
-		(in_bom yes)
+		(in_bom no)
 		(on_board yes)
 		(dnp no)
 		(uuid "e9f88543-50be-443d-b68d-05661fd65175")
@@ -4824,7 +4860,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "1528-3825-ND"
+		(property "DigiKey Part Number" ""
 			(at 81.28 121.92 90)
 			(effects
 				(font

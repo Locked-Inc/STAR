@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=TVS2200DRVR
+PartCategory=Integrated Circuit
+PackageCategory=Small Outline No-lead
+PinCount=7
+Version=1.2
+Released=2021-11-08 05:30:56
+Downloaded=2025-09-13 01:00:03
+3D=Y

@@ -1030,6 +1030,12 @@
           "label": "DigiKey Link",
           "name": "DigiKey Link",
           "show": true
+        },
+        {
+          "group_by": false,
+          "label": "Manufacturer_Part_Number",
+          "name": "Manufacturer_Part_Number",
+          "show": false
         }
       ],
       "filter_string": "",

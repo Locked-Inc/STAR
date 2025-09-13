@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP CAT24C512WI-GT3
+D Supports Standard, Fast and Fast-Plus I2C Protocol; 1.8 V to 5.5 V Supply Voltage Range; 128-Byte Page Write Buffer; Hardware Write Protection for Entire Memory; Schmitt Triggers and Noise Suppression Filters on I2C Bus Inputs (SCL and SDA); Low Power CMOS Technology; 1,000,000 Program/Erase Cycles; 100 Year Data Retention; Industrial Temperature Range; 8-lead SOIC and TSSOP and 8-pad UDFN packages; These Devices are Pb-Free, Halogen Free/BFR Free and are RoHS Compliant
+K
+F https://www.onsemi.com/pub/Collateral/CAT24C512-D.PDF
+$ENDCMP
+#
+#End Doc Library

@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=TPS25751DREFR
+PartCategory=Integrated Circuit
+PackageCategory=Other
+PinCount=34
+Version=1.4
+Released=2024-05-31 15:18:41
+Downloaded=2025-09-13 01:11:04
+3D=Y
