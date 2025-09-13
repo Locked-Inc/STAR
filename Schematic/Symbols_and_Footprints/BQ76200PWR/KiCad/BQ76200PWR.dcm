@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP BQ76200PWR
+D High-Side N-Channel FET Driver
+K
+F http://www.ti.com/lit/gpn/bq76200
+$ENDCMP
+#
+#End Doc Library

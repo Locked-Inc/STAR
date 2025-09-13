@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=BQ76200PWR
+PartCategory=Integrated Circuit
+PackageCategory=Small Outline Packages
+PinCount=16
+Version=3.1
+Released=2017-08-10 08:17:54
+Downloaded=2025-09-13 01:08:17
+3D=Y

@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP SPB1308-R44M
+D Ind,13.5x13x8mm,440nH+/-20%,50A,shd
+K
+F http://www.bourns.com/docs/Product-Datasheets/SPB1308.pdf
+$ENDCMP
+#
+#End Doc Library
