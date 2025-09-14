@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP MMSZ5226C-E3-08
+D Zener Diodes 3.3 Volt 0.5W 2%
+K
+F https://www.vishay.com/docs/85774/mmsz5225.pdf
+$ENDCMP
+#
+#End Doc Library
