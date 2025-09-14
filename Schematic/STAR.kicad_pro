@@ -1036,6 +1036,12 @@
           "label": "Manufacturer_Part_Number",
           "name": "Manufacturer_Part_Number",
           "show": false
+        },
+        {
+          "group_by": false,
+          "label": "SNAPEDA_PN",
+          "name": "SNAPEDA_PN",
+          "show": false
         }
       ],
       "filter_string": "",
