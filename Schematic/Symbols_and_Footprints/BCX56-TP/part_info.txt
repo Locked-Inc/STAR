@@ -1,0 +1,9 @@
+Manufacturer=MCC
+PartNumber=BCX56-TP
+PartCategory=Transistor BJT NPN
+PackageCategory=Other
+PinCount=4
+Version=3.3
+Released=2024-01-02 08:27:53
+Downloaded=2025-09-13 21:38:04
+3D=Y

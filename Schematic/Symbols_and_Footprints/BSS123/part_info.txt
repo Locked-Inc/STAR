@@ -1,0 +1,9 @@
+Manufacturer=onsemi
+PartNumber=BSS123
+PartCategory=MOSFET (N-Channel)
+PackageCategory=SOT23 (3-Pin)
+PinCount=3
+Version=2.1
+Released=2018-12-24 11:26:18
+Downloaded=2025-09-13 21:16:01
+3D=Y
