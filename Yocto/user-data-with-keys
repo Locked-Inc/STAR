@@ -1,7 +1,0 @@
-#cloud-config
-user: yoctouser
-password: yocto
-chpasswd: { expire: False }
-ssh_pwauth: True
-ssh_authorized_keys:
-  - ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAJ+dr7h0Lu3pZsdPg8M9aeqxa2AFu2gtN+0JNScYe4U yocto-vm-key
