@@ -1,0 +1,9 @@
+Manufacturer=Vishay
+PartNumber=MMSZ5226C-E3-08
+PartCategory=Zener Diode
+PackageCategory=Small Outline Diode
+PinCount=2
+Version=2.1
+Released=2018-11-28 05:42:36
+Downloaded=2025-09-14 14:13:21
+3D=Y
