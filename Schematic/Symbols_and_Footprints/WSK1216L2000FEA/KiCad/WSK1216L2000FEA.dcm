@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP WSK1216L2000FEA
+D 0.2 mOhms +/-1% 8W Chip Resistor Wide 1612 (3831 Metric), 1216 Anti-Sulfur, Automotive AEC-Q200, Current Sense, Pulse Withstanding Metal Element
+K
+F https://www.vishay.com/docs/30189/wsk1216.pdf
+$ENDCMP
+#
+#End Doc Library

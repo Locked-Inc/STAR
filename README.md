@@ -7,7 +7,7 @@ This project contains the robot gateway, server backend, and Android application
 ```
 Retroid Pocket 2S (Controller) 
     ↓ [WiFi/Network]
-Robot Gateway (Port 8080) 
+Robot Gateway (Port 8080)
     ↓ [Relays commands to robot movement system]
     ↓ [Sends telemetry/data via HTTP/REST]
 Server Backend (Port 8081)
