@@ -2626,7 +2626,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "52a3dfd6-cdb4-4447-a238-1b7f5eaffa88")
-		(property "Reference" "R90"
+		(property "Reference" "R85"
 			(at 194.31 85.344 90)
 			(effects
 				(font
@@ -3227,7 +3227,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/12bd6774-3c71-41d8-bbdc-bae46e746955"
-					(reference "R90")
+					(reference "R85")
 					(unit 1)
 				)
 			)
@@ -4522,7 +4522,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "c98d36cc-a0e4-411d-bcc3-e0848cf4a2b6")
-		(property "Reference" "R91"
+		(property "Reference" "R86"
 			(at 194.31 117.094 90)
 			(effects
 				(font
@@ -5123,7 +5123,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/12bd6774-3c71-41d8-bbdc-bae46e746955"
-					(reference "R91")
+					(reference "R86")
 					(unit 1)
 				)
 			)
