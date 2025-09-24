@@ -1,0 +1,22 @@
+PYNQ-Z2 Robot System - Layer Status
+Generated: Wed Sep 24 02:12:58 CDT 2025
+
+Core Layers:
+✓ meta-openembedded (OpenEmbedded core functionality)
+✓ meta-xilinx (Xilinx/AMD hardware support)
+✓ meta-petalinux (PetaLinux tools integration)
+✓ meta-pynq (PYNQ framework)
+✓ meta-ros (ROS2 robotics middleware)
+✓ meta-opencv (Computer vision libraries)
+✓ meta-qt5 (Qt5 GUI framework)
+✓ meta-security (Security hardening)
+✓ meta-realtime (Real-time kernel support)
+
+Custom Layers:
+- meta-robot-slam (Robot-specific recipes)
+- meta-vitis-ai (Vitis AI integration)
+
+Build Configuration:
+- Target: PYNQ-Z2 (Zynq-7020)
+- Distribution: Poky/Kirkstone
+- Features: ROS2, OpenCV, ML acceleration, Real-time
