@@ -1,0 +1,70 @@
+# PYNQ-Z2 Yocto Build Environment Docker Compose Configuration
+version: '3.8'
+
+services:
+  pynq-builder:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile
+      args:
+        USERNAME: ${USER:-builder}
+        USER_UID: ${UID:-1000}
+        USER_GID: ${GID:-1000}
+    image: pynq-z2-builder:latest
+    container_name: pynq-z2-builder
+    hostname: pynq-builder
+    
+    # Mount volumes for persistent data and Xilinx tools
+    volumes:
+      # Yocto build workspace (persistent)
+      - ../:/workspace/yocto-build:rw
+      
+      # Xilinx tools (read-only, adjust path as needed)
+      # Uncomment and modify the path below to match your Xilinx installation
+      # - /opt/Xilinx:/opt/Xilinx:ro
+      
+      # Cache directories for faster rebuilds
+      - yocto-downloads:/workspace/yocto-build/downloads
+      - yocto-sstate:/workspace/yocto-build/sstate-cache
+      - yocto-build-tmp:/workspace/yocto-build/build/tmp
+      
+      # SSH keys for Git access (optional)
+      # - ~/.ssh:/home/${USER:-builder}/.ssh:ro
+      
+    # Environment variables
+    environment:
+      - DISPLAY=${DISPLAY:-}
+      - BB_ENV_EXTRAWHITE=MACHINE DL_DIR SSTATE_DIR TMPDIR
+      - MACHINE=zynq-generic
+      - DL_DIR=/workspace/yocto-build/downloads
+      - SSTATE_DIR=/workspace/yocto-build/sstate-cache
+      
+    # Resource limits (adjust based on your system)
+    deploy:
+      resources:
+        limits:
+          memory: 16G
+        reservations:
+          memory: 8G
+          
+    # Enable access to host networking for tool licensing
+    network_mode: host
+    
+    # Keep container running
+    stdin_open: true
+    tty: true
+    
+    # Working directory
+    working_dir: /workspace/yocto-build
+    
+    # Default command
+    command: /bin/bash
+
+# Named volumes for persistent caching
+volumes:
+  yocto-downloads:
+    driver: local
+  yocto-sstate:
+    driver: local
+  yocto-build-tmp:
+    driver: local
