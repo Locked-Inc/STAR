@@ -1,0 +1,9 @@
+Manufacturer=Phoenix Contact
+PartNumber=1017495
+PartCategory=Connector
+PackageCategory=Other
+PinCount=12
+Version=3.1
+Released=2020-05-14 12:33:23
+Downloaded=2025-09-17 19:05:34
+3D=Y

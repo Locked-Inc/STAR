@@ -3274,10 +3274,10 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board yes)
+		(on_board no)
 		(dnp no)
 		(uuid "023e6449-d4dc-49ce-a1dc-26f395a86321")
-		(property "Reference" "#PWR04"
+		(property "Reference" "#PWR03"
 			(at 80.01 121.92 0)
 			(effects
 				(font
@@ -3328,7 +3328,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f27ff2e9-3317-49a4-9819-b00013085e8b"
-					(reference "#PWR04")
+					(reference "#PWR03")
 					(unit 1)
 				)
 			)
@@ -3341,10 +3341,10 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board yes)
+		(on_board no)
 		(dnp no)
 		(uuid "0ba351e2-5f07-4112-a71c-d8dd5e30978c")
-		(property "Reference" "#PWR011"
+		(property "Reference" "#PWR010"
 			(at 180.34 104.14 0)
 			(effects
 				(font
@@ -3395,7 +3395,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f27ff2e9-3317-49a4-9819-b00013085e8b"
-					(reference "#PWR011")
+					(reference "#PWR010")
 					(unit 1)
 				)
 			)
@@ -3408,10 +3408,10 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board yes)
+		(on_board no)
 		(dnp no)
 		(uuid "2202b343-7543-436c-9862-37b1fbbfaed4")
-		(property "Reference" "#PWR07"
+		(property "Reference" "#PWR06"
 			(at 115.57 96.52 0)
 			(effects
 				(font
@@ -3462,7 +3462,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f27ff2e9-3317-49a4-9819-b00013085e8b"
-					(reference "#PWR07")
+					(reference "#PWR06")
 					(unit 1)
 				)
 			)
@@ -3474,7 +3474,7 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
-		(on_board yes)
+		(on_board no)
 		(dnp no)
 		(uuid "2d6497f0-ad24-4f6d-9bb6-3cc40fe0fd10")
 		(property "Reference" "J4"
@@ -3675,10 +3675,10 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board yes)
+		(on_board no)
 		(dnp no)
 		(uuid "6b3d9684-096f-4a47-a648-ed4e578f49ec")
-		(property "Reference" "#PWR06"
+		(property "Reference" "#PWR05"
 			(at 115.57 88.9 0)
 			(effects
 				(font
@@ -3729,7 +3729,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f27ff2e9-3317-49a4-9819-b00013085e8b"
-					(reference "#PWR06")
+					(reference "#PWR05")
 					(unit 1)
 				)
 			)
@@ -3742,10 +3742,10 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board yes)
+		(on_board no)
 		(dnp no)
 		(uuid "6d248c71-a6fd-4f50-9b8c-3b2c5584a88d")
-		(property "Reference" "#PWR03"
+		(property "Reference" "#PWR02"
 			(at 80.01 104.14 0)
 			(effects
 				(font
@@ -3796,7 +3796,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f27ff2e9-3317-49a4-9819-b00013085e8b"
-					(reference "#PWR03")
+					(reference "#PWR02")
 					(unit 1)
 				)
 			)
@@ -3809,10 +3809,10 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board yes)
+		(on_board no)
 		(dnp no)
 		(uuid "80d49b63-8d71-4f7d-836b-b0ec230fac20")
-		(property "Reference" "#PWR09"
+		(property "Reference" "#PWR08"
 			(at 115.57 114.3 0)
 			(effects
 				(font
@@ -3863,7 +3863,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f27ff2e9-3317-49a4-9819-b00013085e8b"
-					(reference "#PWR09")
+					(reference "#PWR08")
 					(unit 1)
 				)
 			)
@@ -3875,7 +3875,7 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board yes)
+		(on_board no)
 		(dnp no)
 		(uuid "8e3fa739-ac97-4e5e-9f5b-62ab7ebc614f")
 		(property "Reference" "J3"
@@ -4121,10 +4121,10 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board yes)
+		(on_board no)
 		(dnp no)
 		(uuid "957f9cca-b136-40a6-b118-08242eb33f34")
-		(property "Reference" "#PWR017"
+		(property "Reference" "#PWR016"
 			(at 215.9 114.3 0)
 			(effects
 				(font
@@ -4175,7 +4175,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f27ff2e9-3317-49a4-9819-b00013085e8b"
-					(reference "#PWR017")
+					(reference "#PWR016")
 					(unit 1)
 				)
 			)
@@ -4188,10 +4188,10 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board yes)
+		(on_board no)
 		(dnp no)
 		(uuid "a7fc8798-97c3-4a07-b736-bed30ddcd22c")
-		(property "Reference" "#PWR012"
+		(property "Reference" "#PWR011"
 			(at 180.34 121.92 0)
 			(effects
 				(font
@@ -4242,7 +4242,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f27ff2e9-3317-49a4-9819-b00013085e8b"
-					(reference "#PWR012")
+					(reference "#PWR011")
 					(unit 1)
 				)
 			)
@@ -4255,10 +4255,10 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board yes)
+		(on_board no)
 		(dnp no)
 		(uuid "b2d0023c-2356-4baf-9e0c-ab01a7406c76")
-		(property "Reference" "#PWR015"
+		(property "Reference" "#PWR014"
 			(at 215.9 96.52 0)
 			(effects
 				(font
@@ -4309,7 +4309,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f27ff2e9-3317-49a4-9819-b00013085e8b"
-					(reference "#PWR015")
+					(reference "#PWR014")
 					(unit 1)
 				)
 			)
@@ -4322,10 +4322,10 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board yes)
+		(on_board no)
 		(dnp no)
 		(uuid "cca1d69d-57e8-439a-ad95-3f58e3a39617")
-		(property "Reference" "#PWR013"
+		(property "Reference" "#PWR012"
 			(at 215.9 78.74 0)
 			(effects
 				(font
@@ -4376,7 +4376,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f27ff2e9-3317-49a4-9819-b00013085e8b"
-					(reference "#PWR013")
+					(reference "#PWR012")
 					(unit 1)
 				)
 			)
@@ -4389,10 +4389,10 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board yes)
+		(on_board no)
 		(dnp no)
 		(uuid "cf1bfd22-753f-42ff-bce9-522f5adb5dab")
-		(property "Reference" "#PWR014"
+		(property "Reference" "#PWR013"
 			(at 215.9 88.9 0)
 			(effects
 				(font
@@ -4443,7 +4443,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f27ff2e9-3317-49a4-9819-b00013085e8b"
-					(reference "#PWR014")
+					(reference "#PWR013")
 					(unit 1)
 				)
 			)
@@ -4456,10 +4456,10 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board yes)
+		(on_board no)
 		(dnp no)
 		(uuid "e0887a78-c38b-4537-8825-ac93e0289146")
-		(property "Reference" "#PWR08"
+		(property "Reference" "#PWR07"
 			(at 115.57 109.22 0)
 			(effects
 				(font
@@ -4510,7 +4510,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f27ff2e9-3317-49a4-9819-b00013085e8b"
-					(reference "#PWR08")
+					(reference "#PWR07")
 					(unit 1)
 				)
 			)
@@ -4523,7 +4523,7 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
-		(on_board yes)
+		(on_board no)
 		(dnp no)
 		(uuid "e27a8354-39cb-4b0e-a446-b99e2b2c50e8")
 		(property "Reference" "J5"
@@ -5066,10 +5066,10 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board yes)
+		(on_board no)
 		(dnp no)
 		(uuid "e2f6bf73-d20e-4cbd-9c4e-0f9701e09f55")
-		(property "Reference" "#PWR010"
+		(property "Reference" "#PWR09"
 			(at 180.34 83.82 0)
 			(effects
 				(font
@@ -5120,7 +5120,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f27ff2e9-3317-49a4-9819-b00013085e8b"
-					(reference "#PWR010")
+					(reference "#PWR09")
 					(unit 1)
 				)
 			)
@@ -5133,10 +5133,10 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board yes)
+		(on_board no)
 		(dnp no)
 		(uuid "e64293f5-2c9a-41cf-9777-03b94d1d7718")
-		(property "Reference" "#PWR02"
+		(property "Reference" "#PWR01"
 			(at 80.01 83.82 0)
 			(effects
 				(font
@@ -5187,7 +5187,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f27ff2e9-3317-49a4-9819-b00013085e8b"
-					(reference "#PWR02")
+					(reference "#PWR01")
 					(unit 1)
 				)
 			)
@@ -5200,10 +5200,10 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board yes)
+		(on_board no)
 		(dnp no)
 		(uuid "f03b6ebb-12cb-44a9-a2fa-b0a4367b4a31")
-		(property "Reference" "#PWR05"
+		(property "Reference" "#PWR04"
 			(at 115.57 78.74 0)
 			(effects
 				(font
@@ -5254,7 +5254,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f27ff2e9-3317-49a4-9819-b00013085e8b"
-					(reference "#PWR05")
+					(reference "#PWR04")
 					(unit 1)
 				)
 			)
@@ -5267,10 +5267,10 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board yes)
+		(on_board no)
 		(dnp no)
 		(uuid "f2b85701-028d-4af2-ad80-42fbe59220f8")
-		(property "Reference" "#PWR016"
+		(property "Reference" "#PWR015"
 			(at 215.9 109.22 0)
 			(effects
 				(font
@@ -5321,7 +5321,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f27ff2e9-3317-49a4-9819-b00013085e8b"
-					(reference "#PWR016")
+					(reference "#PWR015")
 					(unit 1)
 				)
 			)

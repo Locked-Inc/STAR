@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP SS34
+D Low-Forward Voltage Drop; Metal to Silicon Rectifiers, Majority Carrier Conduction; High-Surge Current Capability; Easy Pick and Place
+K
+F https://www.onsemi.com/pub/Collateral/SS39-D.PDF
+$ENDCMP
+#
+#End Doc Library
