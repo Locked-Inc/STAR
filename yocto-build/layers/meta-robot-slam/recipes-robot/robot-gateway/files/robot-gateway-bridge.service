@@ -1,0 +1,40 @@
+[Unit]
+Description=Robot Gateway Bridge Service
+Documentation=https://github.com/your-repo/robot-gateway-bridge
+After=network.target
+Wants=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+ExecStart=/usr/bin/python3 /usr/bin/robot_gateway_bridge.py
+ExecReload=/bin/kill -HUP $MAINPID
+KillMode=mixed
+Restart=on-failure
+RestartSec=5
+
+# Environment
+Environment=PYTHONPATH=/usr/lib/python3.11/site-packages
+Environment=ROS_DOMAIN_ID=0
+
+# Working directory
+WorkingDirectory=/opt/robot
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=robot-gateway-bridge
+
+# Security
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/opt/robot /tmp /var/log
+
+# Resource limits
+MemoryLimit=512M
+CPUQuota=50%
+
+[Install]
+WantedBy=multi-user.target
