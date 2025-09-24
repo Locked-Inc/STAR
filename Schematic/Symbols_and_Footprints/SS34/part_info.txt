@@ -1,0 +1,9 @@
+Manufacturer=onsemi
+PartNumber=SS34
+PartCategory=Schottky Diode
+PackageCategory=Diodes Moulded
+PinCount=2
+Version=2.1
+Released=2018-07-23 06:28:10
+Downloaded=2025-09-24 05:48:06
+3D=Y

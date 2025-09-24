@@ -1,0 +1,9 @@
+Manufacturer=Phoenix Contact
+PartNumber=1991011
+PartCategory=Connector
+PackageCategory=Other
+PinCount=12
+Version=6.2
+Released=2020-01-21 09:42:01
+Downloaded=2025-09-17 01:35:31
+3D=Y
