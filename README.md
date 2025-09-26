@@ -1,99 +1,60 @@
-# Handheld Controller
+# STAR Robot
 
-This project contains the robot gateway, server backend, and Android application for controlling a robot with a handheld device (Retroid Pocket 2S).
+STAR (Simultaneous Tracking And Robotics) is a LiDAR SLAM robot with remote control capabilities.
 
-## Architecture Flow
+## Hardware
+
+- **Main Board**: PYNQ-Z2 (Xilinx Zynq-7020 SoC) 
+- **LiDAR**: For mapping and navigation
+- **Cameras**: Stereo vision for depth perception
+- **Controller**: Handheld remote (Retroid Pocket 2S)
+
+## Software Architecture
 
 ```
-Retroid Pocket 2S (Controller) 
-    ↓ [WiFi/Network]
-Robot Gateway (Port 8080)
-    ↓ [Relays commands to robot movement system]
-    ↓ [Sends telemetry/data via HTTP/REST]
-Server Backend (Port 8081)
-    ↓ [Stores in database]
-PostgreSQL Database
+Handheld Controller (Retroid Pocket 2S)
+    ↓ [WiFi]
+Robot Gateway (Java/Spring Boot) 
+    ↓ [Commands & Telemetry]
+PYNQ-Z2 Linux System
+    ↓ [SLAM & Computer Vision]
+LiDAR + Stereo Cameras
 ```
 
 ## Modules
 
-- `robot-gateway`: A lightweight Spring Boot application running **on the robot** that:
-  - Receives commands from the handheld controller
-  - Relays commands to the robot's movement system  
-  - Forwards telemetry data to the server backend
-  - **No persistent database** (uses in-memory H2 only for temporary data)
-- `server-backend`: A Spring Boot application running **on your physical server** that:
-  - Receives and stores all robot data (video, sensor data, position data, logs)
-  - Manages persistent data storage with PostgreSQL
-  - Provides APIs for data analysis and retrieval
-- `android-app`: An Android application running on the **Retroid Pocket 2S** that sends control commands to the robot gateway
+- **`android-app/`**: Controller app for Retroid Pocket 2S
+- **`robot-gateway/`**: Java gateway running on robot
+- **`server-backend/`**: Data collection server
+- **`yocto-build/`**: PYNQ-Z2 Linux image build system
+- **`Schematic/`**: Hardware design files (KiCad)
 
-## Quick Setup
+## Features
 
-### Prerequisites
+- **LiDAR SLAM**: Real-time mapping and localization
+- **Computer Vision**: Object detection with stereo cameras  
+- **Remote Control**: Handheld wireless controller
+- **Custom Linux**: Optimized embedded system for PYNQ-Z2
 
-- Java 17+ (for robot gateway and server backend)
-- Android SDK (for Android app)
-- Git
+## Quick Start
 
-### Robot Gateway Setup
+### Build Robot Linux Image
+```bash
+cd yocto-build
+# See BUILD_INSTRUCTIONS.md for complete steps
+./flash-pynq-z2-macos.sh /dev/diskX
+```
 
-1. Navigate to the robot gateway directory:
-   ```bash
-   cd robot-gateway
-   ```
+### Controller Setup
+```bash
+cd android-app
+./gradlew assembleDebug
+# Install APK on Retroid Pocket 2S
+```
 
-2. Build and run the robot gateway:
-   ```bash
-   ./gradlew bootRun
-   ```
-
-The robot gateway will be available at `http://localhost:8080` with an H2 in-memory database.
-
-### Server Backend Setup
-
-1. Navigate to the server backend directory:
-   ```bash
-   cd server-backend
-   ```
-
-2. Build and run the server backend:
-   ```bash
-   ./gradlew bootRun
-   ```
-
-The server backend will be available at `http://localhost:8081` with an H2 in-memory database.
-
-### Android App Setup
-
-1. Navigate to the android-app directory:
-   ```bash
-   cd android-app
-   ```
-
-2. Build the APK:
-   ```bash
-   ./gradlew assembleDebug
-   ```
-
-The APK will be generated at `android-app/build/outputs/apk/debug/HandheldController-debug.apk`
-
-### Installation on Retroid Pocket
-
-Transfer the generated APK to your Retroid Pocket device and install it via the Android package installer.
-
-## Project Status
-
-✅ Robot gateway compiles and runs successfully
-✅ Server backend compiles and runs successfully  
-✅ Android app compiles and builds APK successfully
-✅ Basic project structure is set up for robot control functionality
-
-## Development Notes
-
-- **Robot gateway**: Uses H2 in-memory database only (no persistent storage needed on robot)
-- **Server backend**: Uses H2 for development, **should use PostgreSQL for production** with proper Flyway migrations
-- Android app uses Jetpack Compose UI framework
-- Both modules include build configurations for Kotlin and proper dependency management
-
-See the `README.md` file in each module for more detailed setup instructions.
+### Robot Operation
+1. Flash SD card and boot PYNQ-Z2
+2. Connect LiDAR and cameras
+3. Start robot gateway software
+4. Use handheld controller for manual operation
+5. Run SLAM for autonomous mapping
