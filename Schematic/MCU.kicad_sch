@@ -1571,6 +1571,18 @@
 		)
 		(uuid "0ba8b6b2-041d-4f5d-b000-c84e64ffe0fc")
 	)
+	(text "VERIFY THIS IS STILL VALID WITH THE NEW BOARD"
+		(exclude_from_sim no)
+		(at 143.002 96.266 0)
+		(effects
+			(font
+				(size 7.62 7.62)
+				(thickness 1.524)
+				(bold yes)
+			)
+		)
+		(uuid "3fb76332-c08a-43c5-a69c-f9faf0fc4d15")
+	)
 	(wire
 		(pts
 			(xy 91.44 83.82) (xy 86.36 83.82)
@@ -3477,7 +3489,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "2d6497f0-ad24-4f6d-9bb6-3cc40fe0fd10")
-		(property "Reference" "J4"
+		(property "Reference" "J3"
 			(at 198.12 71.12 0)
 			(effects
 				(font
@@ -3662,7 +3674,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f27ff2e9-3317-49a4-9819-b00013085e8b"
-					(reference "J4")
+					(reference "J3")
 					(unit 1)
 				)
 			)
@@ -3878,7 +3890,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "8e3fa739-ac97-4e5e-9f5b-62ab7ebc614f")
-		(property "Reference" "J3"
+		(property "Reference" "J2"
 			(at 97.79 71.12 0)
 			(effects
 				(font
@@ -4108,7 +4120,7 @@
 		(instances
 			(project ""
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f27ff2e9-3317-49a4-9819-b00013085e8b"
-					(reference "J3")
+					(reference "J2")
 					(unit 1)
 				)
 			)
@@ -4526,7 +4538,7 @@
 		(on_board no)
 		(dnp no)
 		(uuid "e27a8354-39cb-4b0e-a446-b99e2b2c50e8")
-		(property "Reference" "J5"
+		(property "Reference" "J4"
 			(at 199.39 135.636 0)
 			(effects
 				(font
@@ -5053,7 +5065,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f27ff2e9-3317-49a4-9819-b00013085e8b"
-					(reference "J5")
+					(reference "J4")
 					(unit 1)
 				)
 			)
