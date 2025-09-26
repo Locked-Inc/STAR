@@ -39,3 +39,4 @@ local.properties
 /Yocto/jammy-server-cloudimg-amd64.img
 
 #auto_saved_files#
+yocto-build-final/
