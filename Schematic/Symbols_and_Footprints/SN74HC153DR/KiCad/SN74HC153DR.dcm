@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP SN74HC153DR
+D Texas Instruments SN74HC153DR, Multiplexer Dual 4:1, 16-Pin SOIC
+K
+F http://www.ti.com/lit/gpn/sn74hc153
+$ENDCMP
+#
+#End Doc Library

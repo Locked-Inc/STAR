@@ -1964,10 +1964,10 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "40c9dcdb-3e93-43b0-885d-e159c20049c5")
-		(property "Reference" "U23"
+		(property "Reference" "U17"
 			(at 150.368 66.294 0)
 			(effects
 				(font
@@ -2264,7 +2264,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/12bd6774-3c71-41d8-bbdc-bae46e746955"
-					(reference "U23")
+					(reference "U17")
 					(unit 1)
 				)
 			)
@@ -2276,7 +2276,7 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "436fd9e8-8538-4078-90e9-7f5f25c6d96f")
 		(property "Reference" "#PWR083"
@@ -2342,7 +2342,7 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "460558a7-d527-4ec9-833e-52258483221e")
 		(property "Reference" "Y1"
@@ -2623,7 +2623,7 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "52a3dfd6-cdb4-4447-a238-1b7f5eaffa88")
 		(property "Reference" "R91"
@@ -3239,10 +3239,10 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "917a45ed-6132-4f4d-8267-833c5e53b008")
-		(property "Reference" "C133"
+		(property "Reference" "C130"
 			(at 73.914 99.568 0)
 			(effects
 				(font
@@ -3845,7 +3845,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/12bd6774-3c71-41d8-bbdc-bae46e746955"
-					(reference "C133")
+					(reference "C130")
 					(unit 1)
 				)
 			)
@@ -3857,7 +3857,7 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "9acabcfe-d474-4c06-8ffe-4c57c7be3bba")
 		(property "Reference" "TP28"
@@ -4140,10 +4140,10 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "9b87c2d4-31a0-4356-9eb9-7c42732f4464")
-		(property "Reference" "U24"
+		(property "Reference" "U18"
 			(at 150.368 98.044 0)
 			(effects
 				(font
@@ -4440,7 +4440,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/12bd6774-3c71-41d8-bbdc-bae46e746955"
-					(reference "U24")
+					(reference "U18")
 					(unit 1)
 				)
 			)
@@ -4452,7 +4452,7 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "a6b313c9-85e4-4bb2-83d6-3e07ed2d8a08")
 		(property "Reference" "#PWR081"
@@ -4519,7 +4519,7 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "c98d36cc-a0e4-411d-bcc3-e0848cf4a2b6")
 		(property "Reference" "R92"
@@ -5135,7 +5135,7 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "d145d6da-afc4-47f6-ad01-d2b47df0bd2d")
 		(property "Reference" "#PWR082"
@@ -5201,7 +5201,7 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "dfaa90ba-6ca2-4192-a46a-1e772328d993")
 		(property "Reference" "TP29"

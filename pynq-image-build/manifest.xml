@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <remote name="yocto" fetch="https://git.yoctoproject.org/git"/>
+  <remote name="github" fetch="https://github.com"/>
+  <remote name="openembedded" fetch="https://git.openembedded.org"/>
+
+  <default revision="nanbield" sync-j="4"/>
+
+  <project name="poky" remote="yocto" path="sources/poky"/>
+  <project name="meta-xilinx" remote="github" path="sources/meta-xilinx" revision="nanbield"/>
+  <project name="meta-pynq" remote="github" path="sources/meta-pynq" revision="master"/>
+  <project name="meta-openembedded" remote="openembedded" path="sources/meta-openembedded" revision="nanbield"/>
+  <project name="meta-ros" remote="github" path="sources/meta-ros" revision="nanbield"/>
+</manifest>

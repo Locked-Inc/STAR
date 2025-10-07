@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=TPS7A9101DSKR
+PartCategory=Integrated Circuit
+PackageCategory=Small Outline No-lead
+PinCount=11
+Version=2.1
+Released=2017-03-19 13:37:34
+Downloaded=2025-10-06 18:00:54
+3D=Y
