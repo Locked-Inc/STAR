@@ -1031,12 +1031,12 @@
           "show": false
         }
       ],
-      "filter_string": "R",
+      "filter_string": "",
       "group_symbols": true,
       "include_excluded_from_bom": false,
       "name": "",
       "sort_asc": false,
-      "sort_field": "Mouser Price per Unit"
+      "sort_field": "DigiKey Part Number"
     },
     "connection_grid_size": 50.0,
     "drawing": {
