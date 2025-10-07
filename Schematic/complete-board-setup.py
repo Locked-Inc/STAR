@@ -140,8 +140,9 @@ def complete_board_setup():
     rectangle.SetWidth(0)
     rectangle.SetFilled(False)
     board.Add(rectangle)
+    rectangle.SetLocked(True)
     
-    print(f"✓ Created {BOARD_WIDTH_MM}mm x {BOARD_HEIGHT_MM}mm board outline")
+    print(f"✓ Created {BOARD_WIDTH_MM}mm x {BOARD_HEIGHT_MM}mm board outline - LOCKED")
     
     # 3. ADD MOUNTING HOLES
     print("\n=== MOUNTING HOLES ===")
@@ -205,6 +206,7 @@ def complete_board_setup():
         footprint.SetPosition(position)
         
         board.Add(footprint)
+        footprint.SetLocked(True)
         grounded_group.AddItem(footprint)
         print(f"  ✓ Added grounded hole {i+1}")
     
@@ -226,6 +228,7 @@ def complete_board_setup():
         footprint.SetPosition(position)
         
         board.Add(footprint)
+        footprint.SetLocked(True)
         isolated_group.AddItem(footprint)
         print(f"  ✓ Added isolated hole {i+1}")
     
@@ -302,8 +305,8 @@ def complete_board_setup():
     
     print("✅ COMPLETE!")
     print(f"✓ {BOARD_WIDTH_MM}mm x {BOARD_HEIGHT_MM}mm board outline")
-    print(f"✓ 4 grounded mounting holes ({STAR_PAD_CLEARANCE_MM}mm clearance)")
-    print(f"✓ 4 isolated mounting holes ({OTHER_BOARD_WIDTH_MM}x{OTHER_BOARD_HEIGHT_MM}mm pattern)")
+    print(f"✓ 4 grounded mounting holes ({STAR_PAD_CLEARANCE_MM}mm clearance) - LOCKED")
+    print(f"✓ 4 isolated mounting holes ({OTHER_BOARD_WIDTH_MM}x{OTHER_BOARD_HEIGHT_MM}mm pattern) - LOCKED")
     # print(f"✓ 2x20 pin header connector ({PIN_HEADER_OFFSET_X_MM}mm from top-right hole, {PIN_HEADER_WIDTH_MM}mm width)")
     print("✓ All components with hidden references")
     print("\n💾 Don't forget to save your PCB file!")

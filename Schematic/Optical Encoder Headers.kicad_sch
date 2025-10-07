@@ -2657,7 +2657,7 @@
 		)
 		(uuid "6862dbf1-090f-4efd-a3b3-9c32b48faa49")
 	)
-	(label "MCU_P3V3"
+	(label "P3V3"
 		(at 135.89 115.57 180)
 		(effects
 			(font
@@ -2897,7 +2897,7 @@
 		)
 		(uuid "d0ef1be0-d9ef-4015-83d5-1e1db56fb735")
 	)
-	(label "MCU_P3V3"
+	(label "P3V3"
 		(at 135.89 157.48 180)
 		(effects
 			(font
@@ -3052,7 +3052,7 @@
 		)
 		(uuid "704909d3-bb81-4d55-8ad4-800b14307fa1")
 	)
-	(hierarchical_label "MCU_P3V3"
+	(hierarchical_label "P3V3"
 		(shape input)
 		(at 137.16 157.48 0)
 		(effects
@@ -3173,7 +3173,7 @@
 		)
 		(uuid "eab93aaa-1a1d-451c-ab82-4b9c2bd2a93a")
 	)
-	(hierarchical_label "MCU_P3V3"
+	(hierarchical_label "P3V3"
 		(shape input)
 		(at 137.16 115.57 0)
 		(effects
@@ -3212,7 +3212,7 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "0c3da2cf-5359-4639-9b88-e1a141093b42")
 		(property "Reference" "TP19"
@@ -3495,11 +3495,11 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "2373f981-0cae-4915-ad96-69fd050d975e")
-		(property "Reference" "J12"
+		(property "Reference" "J13"
 			(at 179.07 45.72 90)
 			(effects
 				(font
@@ -4031,7 +4031,7 @@
 		(instances
 			(project ""
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/2d1f23db-77e1-469c-85c1-12a11504ed46"
-					(reference "J12")
+					(reference "J13")
 					(unit 1)
 				)
 			)
@@ -4043,7 +4043,7 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "2c098813-8a47-4454-bdcd-19fa5ac44909")
 		(property "Reference" "TP15"
@@ -4326,7 +4326,7 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "2da25079-9ecf-4a33-8feb-a6e78ab50689")
 		(property "Reference" "TP17"
@@ -4609,7 +4609,7 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "4b08f1fb-4094-438b-8a2b-62655b97c84c")
 		(property "Reference" "TP18"
@@ -4892,10 +4892,10 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "4d42b80b-f37a-41f0-b06e-2ed28d2f2b36")
-		(property "Reference" "U17"
+		(property "Reference" "U14"
 			(at 102.362 110.744 0)
 			(effects
 				(font
@@ -5498,7 +5498,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/2d1f23db-77e1-469c-85c1-12a11504ed46"
-					(reference "U17")
+					(reference "U14")
 					(unit 1)
 				)
 			)
@@ -5510,7 +5510,7 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "57b620ce-5c3e-49c6-967d-1576aa2a1498")
 		(property "Reference" "TP27"
@@ -5793,7 +5793,7 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "5c3debd9-3cde-4101-8079-c990d3f53f70")
 		(property "Reference" "TP20"
@@ -6076,7 +6076,7 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "6b05ad15-ae94-455c-9323-92a6ce531454")
 		(property "Reference" "TP21"
@@ -6359,10 +6359,10 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "76aa49e3-03c7-489e-b966-ddb3930be474")
-		(property "Reference" "C119"
+		(property "Reference" "C130"
 			(at 134.874 75.438 0)
 			(effects
 				(font
@@ -6893,7 +6893,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/2d1f23db-77e1-469c-85c1-12a11504ed46"
-					(reference "C119")
+					(reference "C130")
 					(unit 1)
 				)
 			)
@@ -6905,10 +6905,10 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "857470cb-627f-4b3a-ab96-c88bd6132274")
-		(property "Reference" "C118"
+		(property "Reference" "C129"
 			(at 125.984 75.438 0)
 			(effects
 				(font
@@ -7484,7 +7484,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/2d1f23db-77e1-469c-85c1-12a11504ed46"
-					(reference "C118")
+					(reference "C129")
 					(unit 1)
 				)
 			)
@@ -7496,10 +7496,10 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "9ec54b17-8c61-4fae-808f-527949aa1d34")
-		(property "Reference" "#PWR063"
+		(property "Reference" "#PWR057"
 			(at 68.58 189.23 0)
 			(effects
 				(font
@@ -7550,7 +7550,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/2d1f23db-77e1-469c-85c1-12a11504ed46"
-					(reference "#PWR063")
+					(reference "#PWR057")
 					(unit 1)
 				)
 			)
@@ -7562,11 +7562,11 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "a52351a5-bea0-4bab-a646-89e2bf38df0a")
-		(property "Reference" "J13"
+		(property "Reference" "J14"
 			(at 204.47 45.72 90)
 			(effects
 				(font
@@ -8098,7 +8098,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/2d1f23db-77e1-469c-85c1-12a11504ed46"
-					(reference "J13")
+					(reference "J14")
 					(unit 1)
 				)
 			)
@@ -8110,10 +8110,10 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "b8df2ff0-c9f7-4061-891e-08baea4d98f6")
-		(property "Reference" "#PWR064"
+		(property "Reference" "#PWR058"
 			(at 119.38 97.79 0)
 			(effects
 				(font
@@ -8164,7 +8164,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/2d1f23db-77e1-469c-85c1-12a11504ed46"
-					(reference "#PWR064")
+					(reference "#PWR058")
 					(unit 1)
 				)
 			)
@@ -8176,7 +8176,7 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "ba54920c-9ab5-4ddb-868e-5d8e1ea73c1b")
 		(property "Reference" "TP22"
@@ -8459,10 +8459,10 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "babc2353-8ca4-4908-980c-49d2f0a2f7b5")
-		(property "Reference" "C117"
+		(property "Reference" "C128"
 			(at 119.634 75.438 0)
 			(effects
 				(font
@@ -8993,7 +8993,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/2d1f23db-77e1-469c-85c1-12a11504ed46"
-					(reference "C117")
+					(reference "C128")
 					(unit 1)
 				)
 			)
@@ -9005,10 +9005,10 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "bf239e03-9db2-409b-bca6-58275800303a")
-		(property "Reference" "C120"
+		(property "Reference" "C131"
 			(at 141.224 75.438 0)
 			(effects
 				(font
@@ -9584,7 +9584,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/2d1f23db-77e1-469c-85c1-12a11504ed46"
-					(reference "C120")
+					(reference "C131")
 					(unit 1)
 				)
 			)
@@ -9596,10 +9596,10 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "c2005c1f-2c75-4347-8824-35e0fdb819a2")
-		(property "Reference" "#PWR062"
+		(property "Reference" "#PWR056"
 			(at 68.58 147.32 0)
 			(effects
 				(font
@@ -9650,7 +9650,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/2d1f23db-77e1-469c-85c1-12a11504ed46"
-					(reference "#PWR062")
+					(reference "#PWR056")
 					(unit 1)
 				)
 			)
@@ -9662,7 +9662,7 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "c51e331c-0f3f-4d9f-88b8-64a603fe7179")
 		(property "Reference" "TP24"
@@ -9945,7 +9945,7 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "c6adc700-4133-4b25-a960-6fdef82b190c")
 		(property "Reference" "TP26"
@@ -10228,7 +10228,7 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "c8798b2a-8cf4-415e-9490-2779d354ab29")
 		(property "Reference" "NT3"
@@ -10766,7 +10766,7 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "c88bad24-9dd6-4c39-acc6-532c908a4aa4")
 		(property "Reference" "TP25"
@@ -11049,10 +11049,10 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "de871ed6-f57f-4514-9f2e-d9a514ec9172")
-		(property "Reference" "U18"
+		(property "Reference" "U15"
 			(at 102.362 152.654 0)
 			(effects
 				(font
@@ -11655,7 +11655,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/2d1f23db-77e1-469c-85c1-12a11504ed46"
-					(reference "U18")
+					(reference "U15")
 					(unit 1)
 				)
 			)
@@ -11667,11 +11667,11 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "e16710c8-3217-4f80-98a5-ec861da3baef")
-		(property "Reference" "J14"
+		(property "Reference" "J15"
 			(at 231.14 45.72 90)
 			(effects
 				(font
@@ -12203,7 +12203,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/2d1f23db-77e1-469c-85c1-12a11504ed46"
-					(reference "J14")
+					(reference "J15")
 					(unit 1)
 				)
 			)
@@ -12215,7 +12215,7 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "e5ecd89d-9016-4075-bf3f-726290fc7690")
 		(property "Reference" "TP23"
@@ -12498,7 +12498,7 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(uuid "ef59e2a3-ad4a-418b-a59a-cfa73d128f84")
 		(property "Reference" "TP16"
@@ -12781,11 +12781,11 @@
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
-		(on_board no)
+		(on_board yes)
 		(dnp no)
 		(fields_autoplaced yes)
 		(uuid "f1ac1ddb-13ad-4133-ace5-5aa427659fb4")
-		(property "Reference" "J15"
+		(property "Reference" "J16"
 			(at 256.54 45.72 90)
 			(effects
 				(font
@@ -13317,7 +13317,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/2d1f23db-77e1-469c-85c1-12a11504ed46"
-					(reference "J15")
+					(reference "J16")
 					(unit 1)
 				)
 			)

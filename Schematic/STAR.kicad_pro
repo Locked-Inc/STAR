@@ -1031,7 +1031,7 @@
           "show": false
         }
       ],
-      "filter_string": "",
+      "filter_string": "R",
       "group_symbols": true,
       "include_excluded_from_bom": false,
       "name": "",
@@ -1092,12 +1092,12 @@
       "Root"
     ],
     [
-      "f27ff2e9-3317-49a4-9819-b00013085e8b",
-      "MCU"
-    ],
-    [
       "e8da5d81-614b-4fe5-84b3-4c351fab7114",
       "BMS Protection Board"
+    ],
+    [
+      "f27ff2e9-3317-49a4-9819-b00013085e8b",
+      "MCU"
     ],
     [
       "f73d6367-f3ba-42df-a3ea-bd155f1c219f",
@@ -1114,10 +1114,6 @@
     [
       "07712c52-f5ae-4a00-8c08-8de30640eab9",
       "Motor Drivers"
-    ],
-    [
-      "12bd6774-3c71-41d8-bbdc-bae46e746955",
-      "Quadrature Counter"
     ]
   ],
   "text_variables": {}
