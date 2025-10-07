@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=TPS2115AIPWRQ1
+PartCategory=Integrated Circuit
+PackageCategory=Small Outline Packages
+PinCount=8
+Version=2.1
+Released=2017-01-12 12:59:53
+Downloaded=2025-10-06 21:35:47
+3D=Y

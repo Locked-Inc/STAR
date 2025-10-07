@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP 74HC139D,653
+D 74HC(T)139 - Dual 2-to-4 line decoder/demultiplexer@en-us
+K
+F https://assets.nexperia.com/documents/data-sheet/74HC_HCT139.pdf
+$ENDCMP
+#
+#End Doc Library

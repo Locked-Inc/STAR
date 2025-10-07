@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP FDD4141
+D RoHS Compliant ; High performance trench technology for extremely low RDS(on) ; Maximum RDS(on) = 12.3m at VGS = -10V, ID = -12.7A ; Maximum RDS(on) = 18.0m at VGS = -4.5V, ID = -10.4A
+K
+F https://www.onsemi.com/pub/Collateral/FDD4141-D.PDF
+$ENDCMP
+#
+#End Doc Library

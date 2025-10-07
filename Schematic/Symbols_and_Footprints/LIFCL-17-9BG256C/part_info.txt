@@ -1,0 +1,9 @@
+Manufacturer=Lattice Semiconductor
+PartNumber=LIFCL-17-9BG256C
+PartCategory=Integrated Circuit
+PackageCategory=BGA
+PinCount=256
+Version=2.1
+Released=2021-02-03 07:14:57
+Downloaded=2025-10-04 23:51:12
+3D=Y

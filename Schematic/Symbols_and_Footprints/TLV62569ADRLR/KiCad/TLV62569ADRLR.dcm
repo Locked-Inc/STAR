@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP TLV62569ADRLR
+D 2A High Efficiency Step-down Buck Converter with forced PWM in SOT Package
+K
+F http://www.ti.com/lit/gpn/tlv62569a
+$ENDCMP
+#
+#End Doc Library

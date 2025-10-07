@@ -1,0 +1,34 @@
+EESchema-LIBRARY Version 2.3
+#encoding utf-8
+#SamacSys ECAD Model FDD4141
+#/729608/1764184/2.50/3/2/MOSFET (P-Channel)
+DEF FDD4141 Q 0 30 Y Y 1 F N
+F0 "Q" 450 150 50 H V L CNN
+F1 "FDD4141" 450 50 50 H V L CNN
+F2 "FQD1N80TM" 450 -50 50 H I L CNN
+F3 "https://www.onsemi.com/pub/Collateral/FDD4141-D.PDF" 450 -150 50 H I L CNN
+F4 "RoHS Compliant ; High performance trench technology for extremely low RDS(on) ; Maximum RDS(on) = 12.3m at VGS = -10V, ID = -12.7A ; Maximum RDS(on) = 18.0m at VGS = -4.5V, ID = -10.4A" 450 -250 50 H I L CNN "Description"
+F5 "2.39" 450 -350 50 H I L CNN "Height"
+F6 "512-FDD4141" 450 -450 50 H I L CNN "Mouser Part Number"
+F7 "https://www.mouser.co.uk/ProductDetail/onsemi-Fairchild/FDD4141?qs=uX8DSVXMAZECDZwLcfL3Uw%3D%3D" 450 -550 50 H I L CNN "Mouser Price/Stock"
+F8 "onsemi" 450 -650 50 H I L CNN "Manufacturer_Name"
+F9 "FDD4141" 450 -750 50 H I L CNN "Manufacturer_Part_Number"
+DRAW
+X ~ 1 0 0 100 R 50 50 0 0 P
+X ~ 2 300 400 100 D 50 50 0 0 P
+X ~ 3 300 -200 100 U 50 50 0 0 P
+P 2 0 1 6 300 100 300 -100 N
+P 2 0 1 6 300 200 300 300 N
+P 3 0 1 6 100 0 200 0 200 200 N
+P 2 0 1 6 300 100 230 100 N
+P 2 0 1 6 300 200 230 200 N
+P 2 0 1 6 230 0 300 0 N
+P 2 0 1 6 230 220 230 180 N
+P 2 0 1 6 230 -20 230 20 N
+P 2 0 1 6 230 80 230 120 N
+C 250 100 150 0 1 10 N
+P 4 0 1 10 300 100 260 120 260 80 300 100 F
+ENDDRAW
+ENDDEF
+#
+#End Library

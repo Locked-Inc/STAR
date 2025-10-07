@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=SN74HC153DR
+PartCategory=Integrated Circuit
+PackageCategory=Small Outline Packages
+PinCount=16
+Version=2.1
+Released=2020-01-03 11:27:52
+Downloaded=2025-10-06 05:53:09
+3D=Y
