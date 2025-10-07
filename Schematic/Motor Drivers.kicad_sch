@@ -6983,7 +6983,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" "https://www.digikey.com/short/2nhzzz3n"
+		(property "DigiKey Link" "https://www.digikey.com/short/mnn51wf5"
 			(at 68.58 55.88 0)
 			(effects
 				(font
@@ -6992,7 +6992,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" ""
+		(property "DigiKey Part Number" "311-1779-1-ND"
 			(at 68.58 55.88 0)
 			(effects
 				(font
@@ -7001,7 +7001,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CL10B104MB8NNNC"
+		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
 			(at 68.58 55.88 0)
 			(effects
 				(font
@@ -7010,7 +7010,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://mou.sr/3JWJm45"
+		(property "Mouser Link" "https://mou.sr/3KIvj2i"
 			(at 68.58 55.88 0)
 			(effects
 				(font
@@ -7019,7 +7019,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "187-CL10B104MB8NNNC "
+		(property "Mouser Part Number" "603-CC603JRX7R9BB104"
 			(at 68.58 55.88 0)
 			(effects
 				(font
@@ -7037,7 +7037,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Price per Unit" "0.08"
+		(property "DigiKey Price per Unit" "0.10"
 			(at 68.58 55.88 0)
 			(effects
 				(font
@@ -7086,7 +7086,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder"
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 213.36 102.108 90)
 			(effects
 				(font
@@ -7590,7 +7590,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" "https://www.digikey.com/short/vqmpz0p3"
+		(property "DigiKey Link" "https://www.digikey.com/short/0zttpzn7"
 			(at 213.36 100.33 90)
 			(effects
 				(font
@@ -7599,7 +7599,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "YAG3664CT-ND"
+		(property "DigiKey Part Number" "408-RG1608P-331-D-T5CT-ND"
 			(at 213.36 100.33 90)
 			(effects
 				(font
@@ -7617,7 +7617,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "AC0603JR-07330RL"
+		(property "Manufactaurer Part Number" "RG1608P-331-D-T5 "
 			(at 213.36 100.33 90)
 			(effects
 				(font
@@ -7626,7 +7626,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://mou.sr/3VRPQUq"
+		(property "Mouser Link" "https://mou.sr/4m95jdp"
 			(at 213.36 100.33 90)
 			(effects
 				(font
@@ -7635,7 +7635,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "603-AC0603JR-07330RL"
+		(property "Mouser Part Number" "754-RG1608P-331DT5"
 			(at 213.36 100.33 90)
 			(effects
 				(font
@@ -8181,7 +8181,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" ""
+		(property "DigiKey Link" "https://www.digikey.com/short/z5b8jq48"
 			(at 58.42 182.88 0)
 			(effects
 				(font
@@ -8190,7 +8190,52 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" ""
+		(property "DigiKey Part Number" "1276-CL10B224KB8NNNCCT-ND"
+			(at 58.42 182.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.11"
+			(at 58.42 182.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "CL10B224KB8NNNC"
+			(at 58.42 182.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/472foUb"
+			(at 58.42 182.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "187-CL10B224KB8NNNC"
+			(at 58.42 182.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "0.11"
 			(at 58.42 182.88 0)
 			(effects
 				(font
@@ -10121,7 +10166,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" ""
+		(property "DigiKey Part Number" "408-RG1608P-331-D-T5CT-ND"
 			(at 215.9 31.75 90)
 			(effects
 				(font
@@ -11385,7 +11430,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" ""
+		(property "DigiKey Link" "https://www.digikey.com/short/z5b8jq48"
 			(at 62.23 55.88 0)
 			(effects
 				(font
@@ -11394,7 +11439,52 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" ""
+		(property "DigiKey Part Number" "1276-CL10B224KB8NNNCCT-ND"
+			(at 62.23 55.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.11"
+			(at 62.23 55.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "CL10B224KB8NNNC"
+			(at 62.23 55.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/472foUb"
+			(at 62.23 55.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "187-CL10B224KB8NNNC"
+			(at 62.23 55.88 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "0.11"
 			(at 62.23 55.88 0)
 			(effects
 				(font
@@ -12543,7 +12633,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" ""
+		(property "DigiKey Link" "https://www.digikey.com/short/z5b8jq48"
 			(at 55.88 251.46 0)
 			(effects
 				(font
@@ -12552,7 +12642,52 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" ""
+		(property "DigiKey Part Number" "1276-CL10B224KB8NNNCCT-ND"
+			(at 55.88 251.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.11"
+			(at 55.88 251.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "CL10B224KB8NNNC"
+			(at 55.88 251.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/472foUb"
+			(at 55.88 251.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "187-CL10B224KB8NNNC"
+			(at 55.88 251.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "0.11"
 			(at 55.88 251.46 0)
 			(effects
 				(font
@@ -13089,7 +13224,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" ""
+		(property "DigiKey Part Number" "296-DRV8243SQDGQRQ1CT-ND"
 			(at 118.11 34.29 0)
 			(effects
 				(font
@@ -14364,7 +14499,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" "https://www.digikey.com/short/2nhzzz3n"
+		(property "DigiKey Link" "https://www.digikey.com/short/mnn51wf5"
 			(at 62.23 251.46 0)
 			(effects
 				(font
@@ -14373,7 +14508,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" ""
+		(property "DigiKey Part Number" "311-1779-1-ND"
 			(at 62.23 251.46 0)
 			(effects
 				(font
@@ -14382,7 +14517,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CL10B104MB8NNNC"
+		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
 			(at 62.23 251.46 0)
 			(effects
 				(font
@@ -14391,7 +14526,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://mou.sr/3JWJm45"
+		(property "Mouser Link" "https://mou.sr/3KIvj2i"
 			(at 62.23 251.46 0)
 			(effects
 				(font
@@ -14400,7 +14535,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "187-CL10B104MB8NNNC "
+		(property "Mouser Part Number" "603-CC603JRX7R9BB104"
 			(at 62.23 251.46 0)
 			(effects
 				(font
@@ -14418,7 +14553,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Price per Unit" "0.08"
+		(property "DigiKey Price per Unit" "0.10"
 			(at 62.23 251.46 0)
 			(effects
 				(font
@@ -14955,7 +15090,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" ""
+		(property "DigiKey Part Number" "296-DRV8243SQDGQRQ1CT-ND"
 			(at 111.76 229.87 0)
 			(effects
 				(font
@@ -15618,7 +15753,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" ""
+		(property "DigiKey Part Number" "296-DRV8243SQDGQRQ1CT-ND"
 			(at 115.57 102.87 0)
 			(effects
 				(font
@@ -16925,7 +17060,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" ""
+		(property "DigiKey Part Number" "516-ASMM-CR03-BU802CT-ND"
 			(at 229.87 31.75 0)
 			(effects
 				(font
@@ -17573,7 +17708,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" "https://www.digikey.com/short/2nhzzz3n"
+		(property "DigiKey Link" "https://www.digikey.com/short/mnn51wf5"
 			(at 66.04 124.46 0)
 			(effects
 				(font
@@ -17582,7 +17717,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" ""
+		(property "DigiKey Part Number" "311-1779-1-ND"
 			(at 66.04 124.46 0)
 			(effects
 				(font
@@ -17591,7 +17726,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CL10B104MB8NNNC"
+		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
 			(at 66.04 124.46 0)
 			(effects
 				(font
@@ -17600,7 +17735,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://mou.sr/3JWJm45"
+		(property "Mouser Link" "https://mou.sr/3KIvj2i"
 			(at 66.04 124.46 0)
 			(effects
 				(font
@@ -17609,7 +17744,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "187-CL10B104MB8NNNC "
+		(property "Mouser Part Number" "603-CC603JRX7R9BB104"
 			(at 66.04 124.46 0)
 			(effects
 				(font
@@ -17627,7 +17762,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Price per Unit" "0.08"
+		(property "DigiKey Price per Unit" "0.10"
 			(at 66.04 124.46 0)
 			(effects
 				(font
@@ -18354,7 +18489,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder"
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 209.55 229.108 90)
 			(effects
 				(font
@@ -18858,7 +18993,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" "https://www.digikey.com/short/vqmpz0p3"
+		(property "DigiKey Link" "https://www.digikey.com/short/0zttpzn7"
 			(at 209.55 227.33 90)
 			(effects
 				(font
@@ -18867,7 +19002,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "YAG3664CT-ND"
+		(property "DigiKey Part Number" "408-RG1608P-331-D-T5CT-ND"
 			(at 209.55 227.33 90)
 			(effects
 				(font
@@ -18885,7 +19020,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "AC0603JR-07330RL"
+		(property "Manufactaurer Part Number" "RG1608P-331-D-T5 "
 			(at 209.55 227.33 90)
 			(effects
 				(font
@@ -18894,7 +19029,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://mou.sr/3VRPQUq"
+		(property "Mouser Link" "https://mou.sr/4m95jdp"
 			(at 209.55 227.33 90)
 			(effects
 				(font
@@ -18903,7 +19038,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "603-AC0603JR-07330RL"
+		(property "Mouser Part Number" "754-RG1608P-331DT5"
 			(at 209.55 227.33 90)
 			(effects
 				(font
@@ -20197,7 +20332,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" ""
+		(property "DigiKey Link" "https://www.digikey.com/short/z5b8jq48"
 			(at 59.69 124.46 0)
 			(effects
 				(font
@@ -20206,7 +20341,52 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" ""
+		(property "DigiKey Part Number" "1276-CL10B224KB8NNNCCT-ND"
+			(at 59.69 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.11"
+			(at 59.69 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "CL10B224KB8NNNC"
+			(at 59.69 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/472foUb"
+			(at 59.69 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "187-CL10B224KB8NNNC"
+			(at 59.69 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "0.11"
 			(at 59.69 124.46 0)
 			(effects
 				(font
@@ -20780,7 +20960,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" ""
+		(property "DigiKey Part Number" "516-ASMM-CR03-BU802CT-ND"
 			(at 227.33 100.33 0)
 			(effects
 				(font
@@ -21531,7 +21711,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" ""
+		(property "DigiKey Part Number" "516-ASMM-CR03-BU802CT-ND"
 			(at 223.52 227.33 0)
 			(effects
 				(font
@@ -22729,7 +22909,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" "https://www.digikey.com/short/2nhzzz3n"
+		(property "DigiKey Link" "https://www.digikey.com/short/mnn51wf5"
 			(at 64.77 182.88 0)
 			(effects
 				(font
@@ -22738,7 +22918,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" ""
+		(property "DigiKey Part Number" "311-1779-1-ND"
 			(at 64.77 182.88 0)
 			(effects
 				(font
@@ -22747,7 +22927,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CL10B104MB8NNNC"
+		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
 			(at 64.77 182.88 0)
 			(effects
 				(font
@@ -22756,7 +22936,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://mou.sr/3JWJm45"
+		(property "Mouser Link" "https://mou.sr/3KIvj2i"
 			(at 64.77 182.88 0)
 			(effects
 				(font
@@ -22765,7 +22945,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "187-CL10B104MB8NNNC "
+		(property "Mouser Part Number" "603-CC603JRX7R9BB104"
 			(at 64.77 182.88 0)
 			(effects
 				(font
@@ -22783,7 +22963,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Price per Unit" "0.08"
+		(property "DigiKey Price per Unit" "0.10"
 			(at 64.77 182.88 0)
 			(effects
 				(font
@@ -24643,7 +24823,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" ""
+		(property "DigiKey Part Number" "408-RG1608P-331-D-T5CT-ND"
 			(at 212.09 158.75 90)
 			(effects
 				(font
@@ -25262,7 +25442,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" ""
+		(property "DigiKey Part Number" "516-ASMM-CR03-BU802CT-ND"
 			(at 226.06 158.75 0)
 			(effects
 				(font
@@ -25910,7 +26090,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" ""
+		(property "DigiKey Part Number" "296-DRV8243SQDGQRQ1CT-ND"
 			(at 114.3 161.29 0)
 			(effects
 				(font
