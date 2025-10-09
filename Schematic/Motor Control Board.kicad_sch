@@ -5,32 +5,6 @@
 	(uuid "4991a986-9d09-4d9e-8471-32175883484a")
 	(paper "A3")
 	(lib_symbols)
-	(text "* We do not need 4\nWe can use 2"
-		(exclude_from_sim no)
-		(at 196.85 92.456 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "f0dfb9a3-2803-4772-9535-cf4f02c24dfc")
-	)
-	(no_connect
-		(at 179.07 91.44)
-		(uuid "0e220777-1e02-4fed-9388-ad5d9bf3b387")
-	)
-	(no_connect
-		(at 179.07 97.79)
-		(uuid "41af9646-dc83-4fbd-b949-070972f34e0c")
-	)
-	(no_connect
-		(at 179.07 88.9)
-		(uuid "45479ba8-d9ba-43ab-ac0c-0c594b7f0631")
-	)
-	(no_connect
-		(at 179.07 95.25)
-		(uuid "b4a9ffe1-f06e-4caf-8e5e-0abcdbc27dfb")
-	)
 	(wire
 		(pts
 			(xy 200.66 190.5) (xy 223.52 190.5)
@@ -1659,46 +1633,6 @@
 		(pin "MOTOR1_TERMINAL1" bidirectional
 			(at 179.07 133.35 0)
 			(uuid "850e84b3-4ac2-4740-9980-7f99fe8de040")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(pin "ENCODER3_OUTPUT1" output
-			(at 179.07 88.9 0)
-			(uuid "64f27e57-14e3-4e4c-b951-1db64bfc10d5")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(pin "ENCODER4_OUTPUT1" output
-			(at 179.07 95.25 0)
-			(uuid "2040c1bb-1efc-4bc4-9ca9-558ff37032d3")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(pin "ENCODER3_OUTPUT2" output
-			(at 179.07 91.44 0)
-			(uuid "f97c5495-6767-49aa-94f3-31600e5078a6")
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(pin "ENCODER4_OUTPUT2" output
-			(at 179.07 97.79 0)
-			(uuid "1eddbec8-2ebd-4dc9-9352-90addf787888")
 			(effects
 				(font
 					(size 1.27 1.27)

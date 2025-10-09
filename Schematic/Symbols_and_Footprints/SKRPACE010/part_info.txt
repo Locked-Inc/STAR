@@ -1,0 +1,9 @@
+Manufacturer=ALPS Electric
+PartNumber=SKRPACE010
+PartCategory=Switch
+PackageCategory=Other
+PinCount=4
+Version=1.2
+Released=2017-06-13 09:29:40
+Downloaded=2025-10-08 01:10:18
+3D=Y
