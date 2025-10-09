@@ -18,7 +18,7 @@ import pcbnew
 # Other board mounting holes (isolated)
 OTHER_BOARD_WIDTH_MM = 129  # Other board hole pattern width in mm
 OTHER_BOARD_HEIGHT_MM = 79  # Other board hole pattern height in mm
-OTHER_BOARD_OFFSET_MM = 27.9 # Offset up from STAR holes in mm (2.5 + 25.4 for extra inch)
+OTHER_BOARD_OFFSET_MM = 25 # Offset up from STAR holes in mm (2.5 + 25.4 for extra inch)
 
 # Pin header connector
 PIN_HEADER_LIB = "./Connector_PinHeader_2.54mm.pretty"
