@@ -1,0 +1,9 @@
+Manufacturer=GCT (GLOBAL CONNECTOR TECHNOLOGY)
+PartNumber=USB4216-03-A
+PartCategory=Connector
+PackageCategory=Other
+PinCount=16
+Version=2.7
+Released=2025-05-01 15:25:38
+Downloaded=2025-10-08 03:54:04
+3D=Y
