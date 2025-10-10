@@ -44134,6 +44134,69 @@
 				(hide yes)
 			)
 		)
+		(property "DigiKey Link" "https://www.digikey.com/short/r8130h84"
+			(at 107.95 228.6 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "541-100GCT-ND"
+			(at 107.95 228.6 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.10"
+			(at 107.95 228.6 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "CRCW0603100RJNEA"
+			(at 107.95 228.6 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3IoWmio"
+			(at 107.95 228.6 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "71-CRCW0603J-100-E3"
+			(at 107.95 228.6 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "0.10"
+			(at 107.95 228.6 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "5974a403-9831-41fb-8583-83a5255704a3")
 		)
@@ -106448,15 +106511,15 @@
 		(dnp no)
 		(uuid "a63a5aa2-edb6-4cb2-b8be-9aa1e7237143")
 		(property "Reference" "R70"
-			(at 760.222 387.858 90)
+			(at 759.714 388.874 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 			)
 		)
-		(property "Value" "65R"
-			(at 769.112 387.858 90)
+		(property "Value" "68R"
+			(at 769.112 388.874 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -106483,6 +106546,69 @@
 		)
 		(property "Description" "Resistor"
 			(at 764.54 389.89 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/short/50bh1dpj"
+			(at 764.54 389.89 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "13-RT0603FRE0768RLCT-ND"
+			(at 764.54 389.89 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.10"
+			(at 764.54 389.89 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "RT0603FRE0768RL"
+			(at 764.54 389.89 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/4ojfXQB"
+			(at 764.54 389.89 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "603-RT0603FRE0768RL "
+			(at 764.54 389.89 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "0.10"
+			(at 764.54 389.89 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -112966,6 +113092,69 @@
 		)
 		(property "Description" "Resistor"
 			(at 109.22 203.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/short/r8130h84"
+			(at 109.22 203.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "541-100GCT-ND"
+			(at 109.22 203.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.10"
+			(at 109.22 203.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "CRCW0603100RJNEA"
+			(at 109.22 203.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3IoWmio"
+			(at 109.22 203.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "71-CRCW0603J-100-E3"
+			(at 109.22 203.2 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "0.10"
+			(at 109.22 203.2 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -120501,6 +120690,69 @@
 		)
 		(property "Description" "Resistor"
 			(at 109.22 177.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/short/r8130h84"
+			(at 109.22 177.8 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "541-100GCT-ND"
+			(at 109.22 177.8 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.10"
+			(at 109.22 177.8 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "CRCW0603100RJNEA"
+			(at 109.22 177.8 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3IoWmio"
+			(at 109.22 177.8 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "71-CRCW0603J-100-E3"
+			(at 109.22 177.8 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "0.10"
+			(at 109.22 177.8 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -152986,7 +153238,7 @@
 		(dnp no)
 		(uuid "f2314567-a6cf-47ce-bf70-543c39fec047")
 		(property "Reference" "R32"
-			(at 254.254 175.768 0)
+			(at 252.984 175.514 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -152994,8 +153246,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "25R"
-			(at 254.508 182.626 0)
+		(property "Value" "24R"
+			(at 252.984 182.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -153022,6 +153274,69 @@
 			)
 		)
 		(property "Description" "Resistor"
+			(at 252.73 179.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/short/20p4zfd1"
+			(at 252.73 179.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "13-RT0603BRD0724RLCT-ND"
+			(at 252.73 179.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.10"
+			(at 252.73 179.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "RT0603BRD0724RL"
+			(at 252.73 179.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3J239ih"
+			(at 252.73 179.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "603-RT0603BRD0724RL"
+			(at 252.73 179.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "0.10"
 			(at 252.73 179.07 0)
 			(effects
 				(font
