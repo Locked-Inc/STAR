@@ -28907,7 +28907,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "SML-D12Y1WT86:LEDC1608X55N"
 			(at 451.866 196.596 0)
 			(effects
 				(font
@@ -29447,7 +29447,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://www.mouser.com/ProductDetail/ROHM-Semiconductor/SML-D12M1WT86?qs=M3jcYzEJUdHoswTb5Zs%2BhA%3D%3D"
+		(property "Mouser Link" "https://mou.sr/3Wu8tOz"
 			(at 450.85 199.39 0)
 			(effects
 				(font
@@ -42918,7 +42918,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "SML-D12Y1WT86:LEDC1608X55N"
 			(at 451.866 199.136 0)
 			(effects
 				(font
@@ -43458,7 +43458,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://www.mouser.com/ProductDetail/ROHM-Semiconductor/SML-D12M1WT86?qs=M3jcYzEJUdHoswTb5Zs%2BhA%3D%3D"
+		(property "Mouser Link" "https://mou.sr/3Wu8tOz"
 			(at 450.85 201.93 0)
 			(effects
 				(font
@@ -44107,7 +44107,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 107.95 230.378 90)
 			(effects
 				(font
@@ -56413,7 +56413,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "SML-D12Y1WT86:LEDC1608X55N"
 			(at 249.936 186.944 0)
 			(effects
 				(font
@@ -60709,7 +60709,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "SML-D12Y1WT86:LEDC1608X55N"
 			(at 104.394 222.504 0)
 			(effects
 				(font
@@ -61249,7 +61249,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://www.mouser.com/ProductDetail/ROHM-Semiconductor/SML-D12Y1WT86?qs=M3jcYzEJUdG%2FAKvzZK%2Bz7w%3D%3D"
+		(property "Mouser Link" "https://mou.sr/46ZD5wp"
 			(at 101.6 223.52 90)
 			(effects
 				(font
@@ -76787,7 +76787,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "SML-D12Y1WT86:LEDC1608X55N"
 			(at 751.586 387.096 0)
 			(effects
 				(font
@@ -85926,7 +85926,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "SML-D12Y1WT86:LEDC1608X55N"
 			(at 104.394 171.704 0)
 			(effects
 				(font
@@ -86466,7 +86466,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://www.mouser.com/ProductDetail/ROHM-Semiconductor/SML-D12Y1WT86?qs=M3jcYzEJUdG%2FAKvzZK%2Bz7w%3D%3D"
+		(property "Mouser Link" "https://mou.sr/46ZD5wp"
 			(at 101.6 172.72 90)
 			(effects
 				(font
@@ -106463,7 +106463,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 764.54 391.668 90)
 			(effects
 				(font
@@ -112946,7 +112946,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 109.22 204.978 90)
 			(effects
 				(font
@@ -120481,7 +120481,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 109.22 179.578 90)
 			(effects
 				(font
@@ -126441,7 +126441,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "SML-D12Y1WT86:LEDC1608X55N"
 			(at 104.394 197.104 0)
 			(effects
 				(font
@@ -126981,7 +126981,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://www.mouser.com/ProductDetail/ROHM-Semiconductor/SML-D12Y1WT86?qs=M3jcYzEJUdG%2FAKvzZK%2Bz7w%3D%3D"
+		(property "Mouser Link" "https://mou.sr/46ZD5wp"
 			(at 101.6 198.12 90)
 			(effects
 				(font
@@ -138983,7 +138983,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "SML-D12Y1WT86:LEDC1608X55N"
 			(at 451.866 191.516 0)
 			(effects
 				(font
@@ -139523,7 +139523,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://www.mouser.com/ProductDetail/ROHM-Semiconductor/SML-D12M1WT86?qs=M3jcYzEJUdHoswTb5Zs%2BhA%3D%3D"
+		(property "Mouser Link" "https://mou.sr/3Wu8tOz"
 			(at 450.85 194.31 0)
 			(effects
 				(font
@@ -141896,7 +141896,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "SML-D12Y1WT86:LEDC1608X55N"
 			(at 451.866 188.976 0)
 			(effects
 				(font
@@ -142436,7 +142436,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://www.mouser.com/ProductDetail/ROHM-Semiconductor/SML-D12M1WT86?qs=M3jcYzEJUdHoswTb5Zs%2BhA%3D%3D"
+		(property "Mouser Link" "https://mou.sr/3Wu8tOz"
 			(at 450.85 191.77 0)
 			(effects
 				(font
@@ -149932,7 +149932,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "SML-D12Y1WT86:LEDC1608X55N"
 			(at 451.866 194.056 0)
 			(effects
 				(font
@@ -150472,7 +150472,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://www.mouser.com/ProductDetail/ROHM-Semiconductor/SML-D12M1WT86?qs=M3jcYzEJUdHoswTb5Zs%2BhA%3D%3D"
+		(property "Mouser Link" "https://mou.sr/3Wu8tOz"
 			(at 450.85 196.85 0)
 			(effects
 				(font
@@ -153003,7 +153003,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 250.952 179.07 90)
 			(effects
 				(font

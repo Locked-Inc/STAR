@@ -15355,7 +15355,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "SML-D12Y1WT86:LEDC1608X55N"
 			(at 228.854 28.956 0)
 			(effects
 				(font
@@ -18054,7 +18054,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 209.55 229.108 90)
 			(effects
 				(font
@@ -18715,7 +18715,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "SML-D12Y1WT86:LEDC1608X55N"
 			(at 226.314 97.536 0)
 			(effects
 				(font
@@ -19466,7 +19466,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "SML-D12Y1WT86:LEDC1608X55N"
 			(at 222.504 224.536 0)
 			(effects
 				(font
@@ -20082,7 +20082,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 213.36 102.108 90)
 			(effects
 				(font
@@ -20149,7 +20149,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 215.9 33.528 90)
 			(effects
 				(font
@@ -22715,7 +22715,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "SML-D12Y1WT86:LEDC1608X55N"
 			(at 225.044 155.956 0)
 			(effects
 				(font
@@ -23397,7 +23397,7 @@
 				)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 212.09 160.528 90)
 			(effects
 				(font
