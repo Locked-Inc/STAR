@@ -1,0 +1,9 @@
+Manufacturer=ROHM Semiconductor
+PartNumber=SML-D12Y1WT86
+PartCategory=LED
+PackageCategory=LEDs Chip
+PinCount=2
+Version=2.1
+Released=2018-05-29 08:01:51
+Downloaded=2025-10-10 03:11:06
+3D=Y
