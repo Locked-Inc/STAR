@@ -11608,6 +11608,16 @@
 		)
 		(uuid "0e059664-8e6d-4b50-81cf-0a3196a53c13")
 	)
+	(text "(4.2-2.2)/20mA = 100 Ohms"
+		(exclude_from_sim no)
+		(at 94.488 206.756 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "111a365c-9723-41fa-b101-33075b32b8d9")
+	)
 	(text "3V3 Buck"
 		(exclude_from_sim no)
 		(at 352.298 422.656 0)
@@ -11835,6 +11845,16 @@
 		)
 		(uuid "6b7f5140-eee3-46a6-b254-1934398bd2f7")
 	)
+	(text "R = (3.3-2)/20ma = 65 Ohms"
+		(exclude_from_sim no)
+		(at 781.558 392.176 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "71576497-9e40-4fc2-9031-9c819ca17cf9")
+	)
 	(text "From slva729a VDDCP was picked"
 		(exclude_from_sim no)
 		(at 488.95 323.342 0)
@@ -11920,6 +11940,16 @@
 		)
 		(uuid "9e8e73a7-e630-4b7c-af40-18bc050c85f5")
 	)
+	(text "R = (2.5-2)/20mA = 25 Ohms\n"
+		(exclude_from_sim no)
+		(at 270.002 181.102 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "9ff98f53-7773-4e5d-9f8e-8105f94bbe6f")
+	)
 	(text "ICIN(rms) = Iout * sqrt((Vout / Vin_min) * ((Vin_min - Vout) / Vin_min))\nICIN(rms) = 5A * sqrt((5V / 9V) * ((9V - 5V) / 9V)) = 2.48A"
 		(exclude_from_sim no)
 		(at 474.218 404.368 0)
@@ -11930,6 +11960,16 @@
 			(justify left)
 		)
 		(uuid "a504c406-8648-4e31-aa80-7eb4996cb2f6")
+	)
+	(text "(4.2-2.2)/20mA = 100 Ohms"
+		(exclude_from_sim no)
+		(at 94.996 231.394 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "ab8a1e97-3375-4e62-b949-231f966e3e9b")
 	)
 	(text "From slvu925c"
 		(exclude_from_sim no)
@@ -12089,6 +12129,16 @@
 		)
 		(uuid "ea4db9ba-2379-449c-97ce-6bb930470ec9")
 	)
+	(text "(4.2-2.2)/20mA = 100 Ohms"
+		(exclude_from_sim no)
+		(at 97.536 180.848 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "ed45fd79-5403-489c-b4f3-9adb5ea9ef90")
+	)
 	(text "VC0-VSS (Vin max 3V6)"
 		(exclude_from_sim no)
 		(at 163.83 242.824 0)
@@ -12110,6 +12160,16 @@
 			)
 		)
 		(uuid "facca630-4d01-439d-88a3-c4877f97e999")
+	)
+	(text "I used the typical calculations here as well since those resulted in\nbigger resistor values. Figured we don't want the LEDs here to explode"
+		(exclude_from_sim no)
+		(at 71.628 185.42 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "fb41471d-54b5-48e5-beb9-92f72a418a75")
 	)
 	(text "25ppm/°C"
 		(exclude_from_sim no)
@@ -28838,7 +28898,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "GREEN"
+		(property "Value" "YELGREEN"
 			(at 448.31 198.374 0)
 			(effects
 				(font
@@ -28847,7 +28907,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "ASMM-CR03-BU802:LEDM3528X210N"
+		(property "Footprint" ""
 			(at 451.866 196.596 0)
 			(effects
 				(font
@@ -29360,7 +29420,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" "https://www.digikey.com/short/hqm8tb8v"
+		(property "DigiKey Link" "https://www.digikey.com/short/ttnrmcwt"
 			(at 450.85 199.39 0)
 			(effects
 				(font
@@ -29369,7 +29429,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "516-ASMM-CF03-AP402CT-ND"
+		(property "DigiKey Part Number" "SML-D12M1WT86CT-ND"
 			(at 450.85 199.39 0)
 			(effects
 				(font
@@ -29378,7 +29438,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "ASMM-CF03-AP402"
+		(property "Manufactaurer Part Number" " SML-D12M1WT86 "
 			(at 450.85 199.39 0)
 			(effects
 				(font
@@ -29387,7 +29447,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://mou.sr/3LP5jj1"
+		(property "Mouser Link" "https://www.mouser.com/ProductDetail/ROHM-Semiconductor/SML-D12M1WT86?qs=M3jcYzEJUdHoswTb5Zs%2BhA%3D%3D"
 			(at 450.85 199.39 0)
 			(effects
 				(font
@@ -29396,7 +29456,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "630-ASMM-CF03-AP402"
+		(property "Mouser Part Number" " 755-SML-D12M1WT86 "
 			(at 450.85 199.39 0)
 			(effects
 				(font
@@ -29405,7 +29465,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Price per Unit" "0.35"
+		(property "Mouser Price per Unit" "0.19"
 			(at 450.85 199.39 0)
 			(effects
 				(font
@@ -29414,7 +29474,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Price per Unit" "0.29"
+		(property "DigiKey Price per Unit" "0.19"
 			(at 450.85 199.39 0)
 			(effects
 				(font
@@ -41731,613 +41791,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:R")
-		(at 109.22 177.8 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "1bfce26a-075a-40c1-9e15-dd34230cf1df")
-		(property "Reference" "R5"
-			(at 104.902 176.53 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "1k"
-			(at 113.284 176.53 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
-			(at 109.22 179.578 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 109.22 177.8 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 109.22 177.8 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Display" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "JLCPCB ID" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "LCSC Part" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "A_MAX" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "BALL_COLUMNS" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "BALL_ROWS" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "BODY_DIAMETER" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "B_MAX" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "B_MIN" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "B_NOM" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "D2_NOM" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DMAX" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DMIN" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DNOM" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "D_MAX" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "D_MIN" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "D_NOM" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "E2_NOM" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "EMAX" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "EMIN" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "ENOM" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "E_MAX" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "E_MIN" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "E_NOM" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "IPC" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "JEDEC" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "L_MAX" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "L_MIN" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "L_NOM" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PACKAGE_TYPE" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PARTEV" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PINS" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PIN_COLUMNS" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PIN_COUNT_D" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PIN_COUNT_E" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "THERMAL_PAD" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "VACANCIES" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Sim.Device" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Sim.Pins" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "SNAPEDA_PACKAGE_ID" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Availability" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Check_prices" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description_1" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MANUFACTURER" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MAXIMUM_PACKAGE_HEIGHT" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MF" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PARTREV" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Package" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Part Number" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "STANDARD" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "SnapEDA_Link" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Specifications" ""
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Link" "https://www.digikey.com/short/3mtvv5hc"
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Part Number" "13-AC0603JR-131KLCT-ND"
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Price per Unit" "0.10"
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufactaurer Part Number" "AC0603JR-131KL"
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Link" "https://mou.sr/4nyAct5"
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "603-AC0603JR-131KL"
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price per Unit" "0.10"
-			(at 109.22 177.8 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "bcc0189d-1a82-4148-ad7d-240345c0fef2")
-		)
-		(pin "2"
-			(uuid "630a679e-3fb2-4ce8-8ed8-f88483d45b1d")
-		)
-		(instances
-			(project "STAR"
-				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/e8da5d81-614b-4fe5-84b3-4c351fab7114"
-					(reference "R5")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:C")
 		(at 224.79 245.11 90)
 		(unit 1)
@@ -43456,7 +42909,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "GREEN"
+		(property "Value" "YELGREEN"
 			(at 448.31 200.914 0)
 			(effects
 				(font
@@ -43465,7 +42918,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "ASMM-CR03-BU802:LEDM3528X210N"
+		(property "Footprint" ""
 			(at 451.866 199.136 0)
 			(effects
 				(font
@@ -43978,7 +43431,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" "https://www.digikey.com/short/hqm8tb8v"
+		(property "DigiKey Link" "https://www.digikey.com/short/ttnrmcwt"
 			(at 450.85 201.93 0)
 			(effects
 				(font
@@ -43987,7 +43440,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "516-ASMM-CF03-AP402CT-ND"
+		(property "DigiKey Part Number" "SML-D12M1WT86CT-ND"
 			(at 450.85 201.93 0)
 			(effects
 				(font
@@ -43996,7 +43449,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "ASMM-CF03-AP402"
+		(property "Manufactaurer Part Number" " SML-D12M1WT86 "
 			(at 450.85 201.93 0)
 			(effects
 				(font
@@ -44005,7 +43458,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://mou.sr/3LP5jj1"
+		(property "Mouser Link" "https://www.mouser.com/ProductDetail/ROHM-Semiconductor/SML-D12M1WT86?qs=M3jcYzEJUdHoswTb5Zs%2BhA%3D%3D"
 			(at 450.85 201.93 0)
 			(effects
 				(font
@@ -44014,7 +43467,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "630-ASMM-CF03-AP402"
+		(property "Mouser Part Number" " 755-SML-D12M1WT86 "
 			(at 450.85 201.93 0)
 			(effects
 				(font
@@ -44023,7 +43476,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Price per Unit" "0.35"
+		(property "Mouser Price per Unit" "0.19"
 			(at 450.85 201.93 0)
 			(effects
 				(font
@@ -44032,7 +43485,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Price per Unit" "0.29"
+		(property "DigiKey Price per Unit" "0.19"
 			(at 450.85 201.93 0)
 			(effects
 				(font
@@ -44624,6 +44077,73 @@
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/e8da5d81-614b-4fe5-84b3-4c351fab7114"
 					(reference "C47")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 107.95 228.6 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "24174f7c-3d4c-420f-bbff-77d5885883dc")
+		(property "Reference" "R4"
+			(at 103.632 227.584 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "100R"
+			(at 112.014 226.568 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 107.95 230.378 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 107.95 228.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 107.95 228.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "5974a403-9831-41fb-8583-83a5255704a3")
+		)
+		(pin "2"
+			(uuid "474335df-c6d0-44f3-8d80-0131c1acfe13")
+		)
+		(instances
+			(project "STAR"
+				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/e8da5d81-614b-4fe5-84b3-4c351fab7114"
+					(reference "R4")
 					(unit 1)
 				)
 			)
@@ -56893,7 +56413,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "ASMM-CR03-BU802:LEDM3528X210N"
+		(property "Footprint" ""
 			(at 249.936 186.944 0)
 			(effects
 				(font
@@ -57406,7 +56926,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" "https://www.digikey.com/short/7pp2m58h"
+		(property "DigiKey Link" "https://www.digikey.com/short/r7z0p5pf"
 			(at 252.73 187.96 90)
 			(effects
 				(font
@@ -57415,7 +56935,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "516-ASMM-CR03-BU802CT-ND"
+		(property "DigiKey Part Number" "732-4978-1-ND"
 			(at 252.73 187.96 90)
 			(effects
 				(font
@@ -57424,7 +56944,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "ASMM-CR03-BU802"
+		(property "Manufactaurer Part Number" "150060RS75000 "
 			(at 252.73 187.96 90)
 			(effects
 				(font
@@ -57433,7 +56953,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://mou.sr/460BFB7"
+		(property "Mouser Link" "https://mou.sr/3ul6dOR"
 			(at 252.73 187.96 90)
 			(effects
 				(font
@@ -57442,7 +56962,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" " 630-ASMM-CR03-BU802"
+		(property "Mouser Part Number" "710-150060RS75000 "
 			(at 252.73 187.96 90)
 			(effects
 				(font
@@ -57451,7 +56971,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Price per Unit" "0.32"
+		(property "Mouser Price per Unit" "0.16"
 			(at 252.73 187.96 90)
 			(effects
 				(font
@@ -57460,7 +56980,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Price per Unit" "0.32"
+		(property "DigiKey Price per Unit" "0.15"
 			(at 252.73 187.96 90)
 			(effects
 				(font
@@ -61180,8 +60700,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "RED"
-			(at 105.41 225.044 90)
+		(property "Value" "YELLOW"
+			(at 109.474 225.298 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -61189,7 +60709,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "ASMM-CR03-BU802:LEDM3528X210N"
+		(property "Footprint" ""
 			(at 104.394 222.504 0)
 			(effects
 				(font
@@ -61702,7 +61222,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" "https://www.digikey.com/short/7pp2m58h"
+		(property "DigiKey Link" "https://www.digikey.com/short/vhhfm398"
 			(at 101.6 223.52 90)
 			(effects
 				(font
@@ -61711,7 +61231,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "516-ASMM-CR03-BU802CT-ND"
+		(property "DigiKey Part Number" "SML-D12Y1WT86CT-ND"
 			(at 101.6 223.52 90)
 			(effects
 				(font
@@ -61720,7 +61240,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "ASMM-CR03-BU802"
+		(property "Manufactaurer Part Number" " SML-D12Y1WT86 "
 			(at 101.6 223.52 90)
 			(effects
 				(font
@@ -61729,7 +61249,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://mou.sr/460BFB7"
+		(property "Mouser Link" "https://www.mouser.com/ProductDetail/ROHM-Semiconductor/SML-D12Y1WT86?qs=M3jcYzEJUdG%2FAKvzZK%2Bz7w%3D%3D"
 			(at 101.6 223.52 90)
 			(effects
 				(font
@@ -61738,7 +61258,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" " 630-ASMM-CR03-BU802"
+		(property "Mouser Part Number" " 755-SML-D12Y1WT86 "
 			(at 101.6 223.52 90)
 			(effects
 				(font
@@ -61747,7 +61267,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Price per Unit" "0.32"
+		(property "Mouser Price per Unit" "0.19"
 			(at 101.6 223.52 90)
 			(effects
 				(font
@@ -61756,7 +61276,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Price per Unit" "0.32"
+		(property "DigiKey Price per Unit" "0.19"
 			(at 101.6 223.52 90)
 			(effects
 				(font
@@ -73574,613 +73094,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:R")
-		(at 109.22 203.2 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "61714064-c02c-4d80-8c2d-caa32271d3cc")
-		(property "Reference" "R6"
-			(at 104.902 201.93 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "1k"
-			(at 113.284 201.93 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
-			(at 109.22 204.978 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 109.22 203.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 109.22 203.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Display" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "JLCPCB ID" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "LCSC Part" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "A_MAX" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "BALL_COLUMNS" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "BALL_ROWS" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "BODY_DIAMETER" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "B_MAX" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "B_MIN" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "B_NOM" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "D2_NOM" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DMAX" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DMIN" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DNOM" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "D_MAX" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "D_MIN" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "D_NOM" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "E2_NOM" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "EMAX" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "EMIN" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "ENOM" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "E_MAX" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "E_MIN" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "E_NOM" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "IPC" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "JEDEC" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "L_MAX" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "L_MIN" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "L_NOM" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PACKAGE_TYPE" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PARTEV" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PINS" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PIN_COLUMNS" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PIN_COUNT_D" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PIN_COUNT_E" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "THERMAL_PAD" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "VACANCIES" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Sim.Device" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Sim.Pins" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "SNAPEDA_PACKAGE_ID" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Availability" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Check_prices" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description_1" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MANUFACTURER" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MAXIMUM_PACKAGE_HEIGHT" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MF" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PARTREV" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Package" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Part Number" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "STANDARD" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "SnapEDA_Link" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Specifications" ""
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Link" "https://www.digikey.com/short/3mtvv5hc"
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Part Number" "13-AC0603JR-131KLCT-ND"
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Price per Unit" "0.10"
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufactaurer Part Number" "AC0603JR-131KL"
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Link" "https://mou.sr/4nyAct5"
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "603-AC0603JR-131KL"
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price per Unit" "0.10"
-			(at 109.22 203.2 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "b6008b59-d3f9-4139-aef5-7661c9f95b10")
-		)
-		(pin "2"
-			(uuid "e8eea47a-c643-48f6-8077-d63be01e5910")
-		)
-		(instances
-			(project "STAR"
-				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/e8da5d81-614b-4fe5-84b3-4c351fab7114"
-					(reference "R6")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:D_Zener_Filled")
 		(at 473.71 222.25 270)
 		(unit 1)
@@ -77874,7 +76787,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "ASMM-CR03-BU802:LEDM3528X210N"
+		(property "Footprint" ""
 			(at 751.586 387.096 0)
 			(effects
 				(font
@@ -78387,7 +77300,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" "https://www.digikey.com/short/7pp2m58h"
+		(property "DigiKey Link" "https://www.digikey.com/short/r7z0p5pf"
 			(at 750.57 389.89 0)
 			(effects
 				(font
@@ -78396,7 +77309,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "516-ASMM-CR03-BU802CT-ND"
+		(property "DigiKey Part Number" "732-4978-1-ND"
 			(at 750.57 389.89 0)
 			(effects
 				(font
@@ -78405,7 +77318,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "ASMM-CR03-BU802"
+		(property "Manufactaurer Part Number" "150060RS75000 "
 			(at 750.57 389.89 0)
 			(effects
 				(font
@@ -78414,7 +77327,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://mou.sr/460BFB7"
+		(property "Mouser Link" "https://mou.sr/3ul6dOR"
 			(at 750.57 389.89 0)
 			(effects
 				(font
@@ -78423,7 +77336,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" " 630-ASMM-CR03-BU802"
+		(property "Mouser Part Number" "710-150060RS75000 "
 			(at 750.57 389.89 0)
 			(effects
 				(font
@@ -78432,7 +77345,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Price per Unit" "0.32"
+		(property "Mouser Price per Unit" "0.16"
 			(at 750.57 389.89 0)
 			(effects
 				(font
@@ -78441,7 +77354,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Price per Unit" "0.32"
+		(property "DigiKey Price per Unit" "0.15"
 			(at 750.57 389.89 0)
 			(effects
 				(font
@@ -81426,613 +80339,6 @@
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/e8da5d81-614b-4fe5-84b3-4c351fab7114"
 					(reference "C87")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:R")
-		(at 764.54 389.89 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "709932db-5940-42a6-8660-5b94db2f76db")
-		(property "Reference" "R70"
-			(at 759.206 388.874 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "330R"
-			(at 769.62 388.874 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
-			(at 764.54 391.668 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 764.54 389.89 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 764.54 389.89 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Display" ""
-			(at 764.54 389.89 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "JLCPCB ID" ""
-			(at 764.54 389.89 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "LCSC Part" ""
-			(at 764.54 389.89 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "A_MAX" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "BALL_COLUMNS" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "BALL_ROWS" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "BODY_DIAMETER" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "B_MAX" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "B_MIN" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "B_NOM" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "D2_NOM" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DMAX" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DMIN" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DNOM" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "D_MAX" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "D_MIN" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "D_NOM" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "E2_NOM" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "EMAX" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "EMIN" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "ENOM" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "E_MAX" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "E_MIN" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "E_NOM" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "IPC" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "JEDEC" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "L_MAX" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "L_MIN" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "L_NOM" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PACKAGE_TYPE" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PARTEV" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PINS" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PIN_COLUMNS" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PIN_COUNT_D" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PIN_COUNT_E" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "THERMAL_PAD" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "VACANCIES" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Sim.Device" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Sim.Pins" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "SNAPEDA_PACKAGE_ID" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Availability" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Check_prices" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description_1" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MANUFACTURER" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MAXIMUM_PACKAGE_HEIGHT" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MF" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PARTREV" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Package" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Part Number" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "STANDARD" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "SnapEDA_Link" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Specifications" ""
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Link" "https://www.digikey.com/short/0zttpzn7"
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Part Number" "408-RG1608P-331-D-T5CT-ND"
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Price per Unit" "0.10"
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufactaurer Part Number" "RG1608P-331-D-T5 "
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Link" "https://mou.sr/4m95jdp"
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "754-RG1608P-331DT5"
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price per Unit" "0.10"
-			(at 764.54 389.89 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "4c5536ad-0f75-4e0b-9cd7-03921e6f6e3c")
-		)
-		(pin "2"
-			(uuid "64ec43d6-7e5d-41d1-b612-73c9c005953b")
-		)
-		(instances
-			(project "STAR"
-				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/e8da5d81-614b-4fe5-84b3-4c351fab7114"
-					(reference "R70")
 					(unit 1)
 				)
 			)
@@ -87611,8 +85917,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "RED"
-			(at 105.41 174.244 90)
+		(property "Value" "YELLOW"
+			(at 109.22 174.244 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -87620,7 +85926,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "ASMM-CR03-BU802:LEDM3528X210N"
+		(property "Footprint" ""
 			(at 104.394 171.704 0)
 			(effects
 				(font
@@ -88133,7 +86439,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" "https://www.digikey.com/short/7pp2m58h"
+		(property "DigiKey Link" "https://www.digikey.com/short/vhhfm398"
 			(at 101.6 172.72 90)
 			(effects
 				(font
@@ -88142,7 +86448,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "516-ASMM-CR03-BU802CT-ND"
+		(property "DigiKey Part Number" "SML-D12Y1WT86CT-ND"
 			(at 101.6 172.72 90)
 			(effects
 				(font
@@ -88151,7 +86457,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "ASMM-CR03-BU802"
+		(property "Manufactaurer Part Number" " SML-D12Y1WT86 "
 			(at 101.6 172.72 90)
 			(effects
 				(font
@@ -88160,7 +86466,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://mou.sr/460BFB7"
+		(property "Mouser Link" "https://www.mouser.com/ProductDetail/ROHM-Semiconductor/SML-D12Y1WT86?qs=M3jcYzEJUdG%2FAKvzZK%2Bz7w%3D%3D"
 			(at 101.6 172.72 90)
 			(effects
 				(font
@@ -88169,7 +86475,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" " 630-ASMM-CR03-BU802"
+		(property "Mouser Part Number" " 755-SML-D12Y1WT86 "
 			(at 101.6 172.72 90)
 			(effects
 				(font
@@ -88178,7 +86484,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Price per Unit" "0.32"
+		(property "Mouser Price per Unit" "0.19"
 			(at 101.6 172.72 90)
 			(effects
 				(font
@@ -88187,7 +86493,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Price per Unit" "0.32"
+		(property "DigiKey Price per Unit" "0.19"
 			(at 101.6 172.72 90)
 			(effects
 				(font
@@ -106203,613 +104509,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:R")
-		(at 107.95 228.6 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "a21055f6-db0a-44c5-9671-94c07ab53c6b")
-		(property "Reference" "R4"
-			(at 103.632 227.33 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "1k"
-			(at 112.014 227.33 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
-			(at 107.95 230.378 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 107.95 228.6 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 107.95 228.6 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Display" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "JLCPCB ID" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "LCSC Part" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "A_MAX" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "BALL_COLUMNS" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "BALL_ROWS" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "BODY_DIAMETER" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "B_MAX" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "B_MIN" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "B_NOM" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "D2_NOM" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DMAX" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DMIN" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DNOM" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "D_MAX" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "D_MIN" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "D_NOM" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "E2_NOM" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "EMAX" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "EMIN" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "ENOM" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "E_MAX" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "E_MIN" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "E_NOM" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "IPC" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "JEDEC" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "L_MAX" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "L_MIN" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "L_NOM" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PACKAGE_TYPE" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PARTEV" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PINS" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PIN_COLUMNS" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PIN_COUNT_D" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PIN_COUNT_E" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "THERMAL_PAD" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "VACANCIES" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Sim.Device" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Sim.Pins" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "SNAPEDA_PACKAGE_ID" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Availability" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Check_prices" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description_1" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MANUFACTURER" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MAXIMUM_PACKAGE_HEIGHT" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MF" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PARTREV" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Package" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Part Number" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "STANDARD" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "SnapEDA_Link" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Specifications" ""
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Link" "https://www.digikey.com/short/3mtvv5hc"
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Part Number" "13-AC0603JR-131KLCT-ND"
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Price per Unit" "0.10"
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufactaurer Part Number" "AC0603JR-131KL"
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Link" "https://mou.sr/4nyAct5"
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "603-AC0603JR-131KL"
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price per Unit" "0.10"
-			(at 107.95 228.6 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "7b6fa55d-cdc5-4dab-81a6-afdc4c068c5e")
-		)
-		(pin "2"
-			(uuid "fa59b174-a39a-4f51-809b-954b03607d6a")
-		)
-		(instances
-			(project "STAR"
-				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/e8da5d81-614b-4fe5-84b3-4c351fab7114"
-					(reference "R4")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:C")
 		(at 393.7 440.69 0)
 		(unit 1)
@@ -108734,6 +106433,73 @@
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/e8da5d81-614b-4fe5-84b3-4c351fab7114"
 					(reference "C86")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 764.54 389.89 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "a63a5aa2-edb6-4cb2-b8be-9aa1e7237143")
+		(property "Reference" "R70"
+			(at 760.222 387.858 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "65R"
+			(at 769.112 387.858 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 764.54 391.668 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 764.54 389.89 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 764.54 389.89 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "2"
+			(uuid "2198a23e-3215-41e9-a722-cbaa0578cfa4")
+		)
+		(pin "1"
+			(uuid "4d48a892-038b-4c22-84c6-440504b782d7")
+		)
+		(instances
+			(project ""
+				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/e8da5d81-614b-4fe5-84b3-4c351fab7114"
+					(reference "R70")
 					(unit 1)
 				)
 			)
@@ -115150,6 +112916,73 @@
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/e8da5d81-614b-4fe5-84b3-4c351fab7114"
 					(reference "J9")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 109.22 203.2 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "b2af10aa-12f0-4a73-b8a0-f41377d29540")
+		(property "Reference" "R6"
+			(at 104.902 202.184 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "100R"
+			(at 112.014 201.168 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 109.22 204.978 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 109.22 203.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 109.22 203.2 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "4f46ba6b-d271-4905-aabd-4493d6ba4a79")
+		)
+		(pin "2"
+			(uuid "c46db3bb-6c19-47ac-af61-5aca3c993fc9")
+		)
+		(instances
+			(project "STAR"
+				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/e8da5d81-614b-4fe5-84b3-4c351fab7114"
+					(reference "R6")
 					(unit 1)
 				)
 			)
@@ -122624,6 +120457,73 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:R")
+		(at 109.22 177.8 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "c5f1a1fb-e141-4df1-bbf6-08b977bb187a")
+		(property "Reference" "R5"
+			(at 104.902 176.784 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "100R"
+			(at 111.76 175.768 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 109.22 179.578 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 109.22 177.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 109.22 177.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "c7b03f5c-762f-45f3-80e6-9f1a68c36b7a")
+		)
+		(pin "2"
+			(uuid "ebd347ad-5ead-4e6a-8938-d58cdf1cae82")
+		)
+		(instances
+			(project ""
+				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/e8da5d81-614b-4fe5-84b3-4c351fab7114"
+					(reference "R5")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 151.13 256.54 0)
 		(unit 1)
@@ -125760,613 +123660,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:R")
-		(at 252.73 179.07 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "cb8b67de-3e20-4175-8d4f-0e1fd90794f0")
-		(property "Reference" "R32"
-			(at 255.016 175.514 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "1k"
-			(at 254.254 182.626 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
-			(at 250.952 179.07 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Resistor"
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Display" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "JLCPCB ID" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "LCSC Part" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "A_MAX" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "BALL_COLUMNS" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "BALL_ROWS" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "BODY_DIAMETER" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "B_MAX" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "B_MIN" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "B_NOM" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "D2_NOM" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DMAX" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DMIN" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DNOM" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "D_MAX" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "D_MIN" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "D_NOM" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "E2_NOM" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "EMAX" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "EMIN" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "ENOM" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "E_MAX" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "E_MIN" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "E_NOM" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "IPC" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "JEDEC" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "L_MAX" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "L_MIN" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "L_NOM" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PACKAGE_TYPE" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PARTEV" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PINS" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PIN_COLUMNS" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PIN_COUNT_D" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PIN_COUNT_E" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "THERMAL_PAD" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "VACANCIES" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Sim.Device" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Sim.Pins" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "SNAPEDA_PACKAGE_ID" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Availability" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Check_prices" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description_1" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MANUFACTURER" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MAXIMUM_PACKAGE_HEIGHT" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MF" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "MP" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "PARTREV" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Package" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Part Number" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "STANDARD" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "SnapEDA_Link" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Specifications" ""
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Link" "https://www.digikey.com/short/3mtvv5hc"
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Part Number" "13-AC0603JR-131KLCT-ND"
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Price per Unit" "0.10"
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufactaurer Part Number" "AC0603JR-131KL"
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Link" "https://mou.sr/4nyAct5"
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "603-AC0603JR-131KL"
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price per Unit" "0.10"
-			(at 252.73 179.07 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "90fe4eaf-1499-4a7f-9002-aaaebbe29528")
-		)
-		(pin "2"
-			(uuid "d9e8de85-c4b4-4657-b7ec-69edd2eaa3b4")
-		)
-		(instances
-			(project "STAR"
-				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/e8da5d81-614b-4fe5-84b3-4c351fab7114"
-					(reference "R32")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:GND")
 		(at 473.71 199.39 0)
 		(unit 1)
@@ -129139,8 +126432,8 @@
 				(justify left)
 			)
 		)
-		(property "Value" "RED"
-			(at 105.41 199.644 90)
+		(property "Value" "YELLOW"
+			(at 109.474 199.644 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -129148,7 +126441,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "ASMM-CR03-BU802:LEDM3528X210N"
+		(property "Footprint" ""
 			(at 104.394 197.104 0)
 			(effects
 				(font
@@ -129661,7 +126954,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" "https://www.digikey.com/short/7pp2m58h"
+		(property "DigiKey Link" "https://www.digikey.com/short/vhhfm398"
 			(at 101.6 198.12 90)
 			(effects
 				(font
@@ -129670,7 +126963,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "516-ASMM-CR03-BU802CT-ND"
+		(property "DigiKey Part Number" "SML-D12Y1WT86CT-ND"
 			(at 101.6 198.12 90)
 			(effects
 				(font
@@ -129679,7 +126972,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "ASMM-CR03-BU802"
+		(property "Manufactaurer Part Number" " SML-D12Y1WT86 "
 			(at 101.6 198.12 90)
 			(effects
 				(font
@@ -129688,7 +126981,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://mou.sr/460BFB7"
+		(property "Mouser Link" "https://www.mouser.com/ProductDetail/ROHM-Semiconductor/SML-D12Y1WT86?qs=M3jcYzEJUdG%2FAKvzZK%2Bz7w%3D%3D"
 			(at 101.6 198.12 90)
 			(effects
 				(font
@@ -129697,7 +126990,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" " 630-ASMM-CR03-BU802"
+		(property "Mouser Part Number" " 755-SML-D12Y1WT86 "
 			(at 101.6 198.12 90)
 			(effects
 				(font
@@ -129706,7 +126999,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Price per Unit" "0.32"
+		(property "Mouser Price per Unit" "0.19"
 			(at 101.6 198.12 90)
 			(effects
 				(font
@@ -129715,7 +127008,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Price per Unit" "0.32"
+		(property "DigiKey Price per Unit" "0.19"
 			(at 101.6 198.12 90)
 			(effects
 				(font
@@ -141681,7 +138974,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "GREEN"
+		(property "Value" "YELGREEN"
 			(at 448.31 193.294 0)
 			(effects
 				(font
@@ -141690,7 +138983,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "ASMM-CR03-BU802:LEDM3528X210N"
+		(property "Footprint" ""
 			(at 451.866 191.516 0)
 			(effects
 				(font
@@ -142203,7 +139496,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" "https://www.digikey.com/short/hqm8tb8v"
+		(property "DigiKey Link" "https://www.digikey.com/short/ttnrmcwt"
 			(at 450.85 194.31 0)
 			(effects
 				(font
@@ -142212,7 +139505,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "516-ASMM-CF03-AP402CT-ND"
+		(property "DigiKey Part Number" "SML-D12M1WT86CT-ND"
 			(at 450.85 194.31 0)
 			(effects
 				(font
@@ -142221,7 +139514,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "ASMM-CF03-AP402"
+		(property "Manufactaurer Part Number" " SML-D12M1WT86 "
 			(at 450.85 194.31 0)
 			(effects
 				(font
@@ -142230,7 +139523,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://mou.sr/3LP5jj1"
+		(property "Mouser Link" "https://www.mouser.com/ProductDetail/ROHM-Semiconductor/SML-D12M1WT86?qs=M3jcYzEJUdHoswTb5Zs%2BhA%3D%3D"
 			(at 450.85 194.31 0)
 			(effects
 				(font
@@ -142239,7 +139532,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "630-ASMM-CF03-AP402"
+		(property "Mouser Part Number" " 755-SML-D12M1WT86 "
 			(at 450.85 194.31 0)
 			(effects
 				(font
@@ -142248,7 +139541,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Price per Unit" "0.35"
+		(property "Mouser Price per Unit" "0.19"
 			(at 450.85 194.31 0)
 			(effects
 				(font
@@ -142257,7 +139550,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Price per Unit" "0.29"
+		(property "DigiKey Price per Unit" "0.19"
 			(at 450.85 194.31 0)
 			(effects
 				(font
@@ -144594,7 +141887,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "GREEN"
+		(property "Value" "YELGREEN"
 			(at 448.31 190.754 0)
 			(effects
 				(font
@@ -144603,7 +141896,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "ASMM-CR03-BU802:LEDM3528X210N"
+		(property "Footprint" ""
 			(at 451.866 188.976 0)
 			(effects
 				(font
@@ -145116,7 +142409,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" "https://www.digikey.com/short/hqm8tb8v"
+		(property "DigiKey Link" "https://www.digikey.com/short/ttnrmcwt"
 			(at 450.85 191.77 0)
 			(effects
 				(font
@@ -145125,7 +142418,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "516-ASMM-CF03-AP402CT-ND"
+		(property "DigiKey Part Number" "SML-D12M1WT86CT-ND"
 			(at 450.85 191.77 0)
 			(effects
 				(font
@@ -145134,7 +142427,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "ASMM-CF03-AP402"
+		(property "Manufactaurer Part Number" " SML-D12M1WT86 "
 			(at 450.85 191.77 0)
 			(effects
 				(font
@@ -145143,7 +142436,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://mou.sr/3LP5jj1"
+		(property "Mouser Link" "https://www.mouser.com/ProductDetail/ROHM-Semiconductor/SML-D12M1WT86?qs=M3jcYzEJUdHoswTb5Zs%2BhA%3D%3D"
 			(at 450.85 191.77 0)
 			(effects
 				(font
@@ -145152,7 +142445,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "630-ASMM-CF03-AP402"
+		(property "Mouser Part Number" " 755-SML-D12M1WT86 "
 			(at 450.85 191.77 0)
 			(effects
 				(font
@@ -145161,7 +142454,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Price per Unit" "0.35"
+		(property "Mouser Price per Unit" "0.19"
 			(at 450.85 191.77 0)
 			(effects
 				(font
@@ -145170,7 +142463,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Price per Unit" "0.29"
+		(property "DigiKey Price per Unit" "0.19"
 			(at 450.85 191.77 0)
 			(effects
 				(font
@@ -152630,7 +149923,7 @@
 				(justify left)
 			)
 		)
-		(property "Value" "GREEN"
+		(property "Value" "YELGREEN"
 			(at 448.31 195.834 0)
 			(effects
 				(font
@@ -152639,7 +149932,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "ASMM-CR03-BU802:LEDM3528X210N"
+		(property "Footprint" ""
 			(at 451.866 194.056 0)
 			(effects
 				(font
@@ -153152,7 +150445,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" "https://www.digikey.com/short/hqm8tb8v"
+		(property "DigiKey Link" "https://www.digikey.com/short/ttnrmcwt"
 			(at 450.85 196.85 0)
 			(effects
 				(font
@@ -153161,7 +150454,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "516-ASMM-CF03-AP402CT-ND"
+		(property "DigiKey Part Number" "SML-D12M1WT86CT-ND"
 			(at 450.85 196.85 0)
 			(effects
 				(font
@@ -153170,7 +150463,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "ASMM-CF03-AP402"
+		(property "Manufactaurer Part Number" " SML-D12M1WT86 "
 			(at 450.85 196.85 0)
 			(effects
 				(font
@@ -153179,7 +150472,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://mou.sr/3LP5jj1"
+		(property "Mouser Link" "https://www.mouser.com/ProductDetail/ROHM-Semiconductor/SML-D12M1WT86?qs=M3jcYzEJUdHoswTb5Zs%2BhA%3D%3D"
 			(at 450.85 196.85 0)
 			(effects
 				(font
@@ -153188,7 +150481,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "630-ASMM-CF03-AP402"
+		(property "Mouser Part Number" " 755-SML-D12M1WT86 "
 			(at 450.85 196.85 0)
 			(effects
 				(font
@@ -153197,7 +150490,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Price per Unit" "0.35"
+		(property "Mouser Price per Unit" "0.19"
 			(at 450.85 196.85 0)
 			(effects
 				(font
@@ -153206,7 +150499,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Price per Unit" "0.29"
+		(property "DigiKey Price per Unit" "0.19"
 			(at 450.85 196.85 0)
 			(effects
 				(font
@@ -155678,6 +152971,75 @@
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/e8da5d81-614b-4fe5-84b3-4c351fab7114"
 					(reference "R49")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:R")
+		(at 252.73 179.07 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "f2314567-a6cf-47ce-bf70-543c39fec047")
+		(property "Reference" "R32"
+			(at 254.254 175.768 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "25R"
+			(at 254.508 182.626 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" ""
+			(at 250.952 179.07 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 252.73 179.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Resistor"
+			(at 252.73 179.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "1120cafe-6dc2-4b16-bba5-fe7e76e6f74d")
+		)
+		(pin "2"
+			(uuid "79d26f95-caf8-4e0a-b74b-d2ee60930e3a")
+		)
+		(instances
+			(project ""
+				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/e8da5d81-614b-4fe5-84b3-4c351fab7114"
+					(reference "R32")
 					(unit 1)
 				)
 			)
