@@ -42923,7 +42923,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder"
+		(property "Footprint" ""
 			(at 379.4252 455.93 0)
 			(effects
 				(font
@@ -50324,7 +50324,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Price per Unit" "N/A "
+		(property "DigiKey Price per Unit" "N/A"
 			(at 554.99 427.99 0)
 			(effects
 				(font
@@ -50456,7 +50456,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Price per Unit" "N/A "
+		(property "DigiKey Price per Unit" "N/A"
 			(at 567.69 427.99 0)
 			(effects
 				(font
@@ -56835,7 +56835,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Price per Unit" "N/A "
+		(property "DigiKey Price per Unit" "N/A"
 			(at 403.86 440.69 0)
 			(effects
 				(font
@@ -57651,7 +57651,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Price per Unit" "N/A "
+		(property "DigiKey Price per Unit" "N/A"
 			(at 419.1 440.69 0)
 			(effects
 				(font
@@ -63932,7 +63932,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Price per Unit" "N/A "
+		(property "DigiKey Price per Unit" "N/A"
 			(at 574.04 427.99 0)
 			(effects
 				(font
@@ -64848,7 +64848,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Price per Unit" "N/A "
+		(property "DigiKey Price per Unit" "N/A"
 			(at 411.48 440.69 0)
 			(effects
 				(font
@@ -94589,7 +94589,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Price per Unit" "N/A "
+		(property "DigiKey Price per Unit" "N/A"
 			(at 580.39 427.99 0)
 			(effects
 				(font
@@ -118966,7 +118966,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Price per Unit" "N/A "
+		(property "DigiKey Price per Unit" "N/A"
 			(at 396.24 440.69 0)
 			(effects
 				(font
@@ -140545,7 +140545,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Price per Unit" "N/A "
+		(property "DigiKey Price per Unit" "N/A"
 			(at 548.64 427.99 0)
 			(effects
 				(font
