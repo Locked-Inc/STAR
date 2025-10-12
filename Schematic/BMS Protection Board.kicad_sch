@@ -12070,7 +12070,7 @@
 		)
 		(uuid "94f02570-71d8-4a1b-af8a-147b9e1ed896")
 	)
-	(text "R2 = (R1 * V_OUT) / (V_IN - V_OUT)\nR2 = (300k * 0.93V) / (12.6V - 0.93V) = 23.91kΩ\n\nV_OUT = V_IN * (R2 / (R1 + R2))\nV_OUT = 12.6V * (23.7k / (300k + 23.7k)) = 0.923V"
+	(text "R2 = (R1 * V_OUT) / (V_IN - V_OUT)\nR2 = (300k * 0.93V) / (12.6V - 0.93V) = 23.91kΩ\n\nV_OUT = V_IN * (R2 / (R1 + R2))\nV_OUT = 12.6V * (24.9k / (300k + 24.9k)) = 0.966V"
 		(exclude_from_sim no)
 		(at 318.516 181.102 0)
 		(effects

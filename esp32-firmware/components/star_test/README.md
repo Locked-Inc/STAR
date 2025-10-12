@@ -1,0 +1,275 @@
+# STAR_TEST Framework
+
+A lightweight testing framework designed specifically for ESP32 firmware testing.
+
+## Overview
+
+STAR_TEST is a custom testing framework created for the STAR project that provides:
+- Simple test definition with macros
+- Multiple assertion types
+- Test grouping and organization
+- Detailed test results reporting
+- No external dependencies beyond ESP-IDF
+
+## Why STAR_TEST?
+
+This framework was created to replace Unity, which had compatibility issues with the ESP32 environment. STAR_TEST is specifically designed for embedded systems and avoids problematic features like constructor-based auto-registration.
+
+## Features
+
+- ✅ Simple test case definition
+- ✅ Multiple assertion macros
+- ✅ Test grouping by component
+- ✅ Pass/fail tracking
+- ✅ Detailed failure reporting
+- ✅ Minimal memory footprint
+- ✅ No constructor magic - explicit registration
+
+## Quick Start
+
+### 1. Define Your Tests
+
+```c
+#include "star_test.h"
+
+STAR_TEST_CASE(example, basic_test)
+{
+  int result = 2 + 2;
+  STAR_ASSERT_EQUAL(4, result);
+}
+
+STAR_TEST_CASE(example, string_test)
+{
+  const char* str = "hello";
+  STAR_ASSERT_STR_EQUAL("hello", str);
+}
+```
+
+### 2. Register Your Tests
+
+After defining tests, create a test list:
+
+```c
+STAR_TEST_LIST_BEGIN()
+  STAR_TEST_REF(example, basic_test)
+  STAR_TEST_REF(example, string_test)
+STAR_TEST_LIST_END()
+```
+
+### 3. Run Tests in app_main()
+
+```c
+#include "star_test.h"
+
+void app_main(void)
+{
+  /* Wait for serial to connect */
+  vTaskDelay(pdMS_TO_TICKS(2000));
+
+  /* Register all tests */
+  star_test_register_all();
+
+  /* Run all tests */
+  star_test_run_all();
+
+  /* Print summary */
+  star_test_print_results();
+
+  /* Get results programmatically */
+  star_test_results_t results = star_test_get_results();
+  if (results.failed == 0) {
+    printf("All %lu tests passed!\n", (unsigned long)results.total);
+  }
+}
+```
+
+## Assertion Macros
+
+### Basic Assertions
+
+```c
+STAR_ASSERT(condition)              // Assert condition is true
+STAR_ASSERT_TRUE(condition)         // Same as STAR_ASSERT
+STAR_ASSERT_FALSE(condition)        // Assert condition is false
+```
+
+### Equality Assertions
+
+```c
+STAR_ASSERT_EQUAL(expected, actual)       // Assert values are equal
+STAR_ASSERT_NOT_EQUAL(expected, actual)   // Assert values are not equal
+```
+
+### Pointer Assertions
+
+```c
+STAR_ASSERT_NULL(ptr)               // Assert pointer is NULL
+STAR_ASSERT_NOT_NULL(ptr)           // Assert pointer is not NULL
+```
+
+### String Assertions
+
+```c
+STAR_ASSERT_STR_EQUAL(expected, actual)   // Assert strings are equal
+```
+
+## Test Organization
+
+### Test Groups
+
+Tests are organized by group name:
+
+```c
+STAR_TEST_CASE(wifi, connection_test) { /* ... */ }
+STAR_TEST_CASE(wifi, scan_test) { /* ... */ }
+STAR_TEST_CASE(uart, transmit_test) { /* ... */ }
+STAR_TEST_CASE(uart, receive_test) { /* ... */ }
+```
+
+### Running Specific Groups
+
+```c
+star_test_run_group("wifi");  // Run only wifi tests
+```
+
+## CMake Integration
+
+### Component CMakeLists.txt
+
+```cmake
+idf_component_register(
+    SRCS "my_tests.c"
+    INCLUDE_DIRS "."
+    PRIV_REQUIRES star_test
+)
+```
+
+### Test Application Structure
+
+```
+test_app/
+├── CMakeLists.txt
+├── main/
+│   ├── CMakeLists.txt
+│   ├── test_main.c
+│   └── example_tests.c
+└── sdkconfig
+```
+
+## Running Tests
+
+### Build and Flash
+
+```bash
+cd test_app
+idf.py build
+idf.py -p /dev/ttyUSB1 flash
+```
+
+### Monitor Output
+
+```bash
+idf.py -p /dev/ttyUSB1 monitor
+```
+
+Or use the provided helper script:
+
+```bash
+./run_tests.sh
+```
+
+## Example Output
+
+```
+================================================================================
+                      STAR Test Framework - Running Tests
+================================================================================
+
+[ RUN      ] [example] basic_assertion
+[       OK ] [example] basic_assertion
+[ RUN      ] [example] integer_equality
+[       OK ] [example] integer_equality
+[ RUN      ] [example] string_comparison
+[       OK ] [example] string_comparison
+
+================================================================================
+                          STAR Test Results Summary
+================================================================================
+  Total Tests:  3
+  Passed:       3
+  Failed:       0
+================================================================================
+
+  ALL TESTS PASSED!
+```
+
+## Writing Good Tests
+
+### Test Naming
+
+- Use descriptive group names (component names)
+- Use clear test names that describe what's being tested
+- Example: `STAR_TEST_CASE(pin_validator, invalid_pin_rejected)`
+
+### Test Independence
+
+- Each test should be independent
+- Don't rely on test execution order
+- Clean up resources after tests
+
+### Assertion Messages
+
+When a test fails, you'll see:
+
+```
+[  FAILED  ] test_file.c:42: Expected 5, got 3
+```
+
+## API Reference
+
+### Test Registration
+
+```c
+void star_test_register(star_test_case_t* test);
+void star_test_register_all(void);  // Generated by STAR_TEST_LIST_END()
+```
+
+### Test Execution
+
+```c
+void star_test_run_all(void);
+void star_test_run_group(const char* group);
+```
+
+### Results
+
+```c
+typedef struct {
+  uint32_t total;
+  uint32_t passed;
+  uint32_t failed;
+} star_test_results_t;
+
+star_test_results_t star_test_get_results(void);
+void star_test_print_results(void);
+```
+
+## Limitations
+
+- No setup/teardown hooks (can be added if needed)
+- No test fixtures (use static functions in test files)
+- No mocking framework (use manual mocks)
+- Tests run sequentially, not in parallel
+
+## Future Enhancements
+
+Possible additions:
+- Setup/teardown functions per test group
+- Test timeout support
+- Memory leak detection
+- Performance timing per test
+- XML output for CI integration
+
+## License
+
+Part of the STAR project.

@@ -1,0 +1,26 @@
+# test_app/sdkconfig.defaults
+#
+# Default configuration for test application
+
+# Enable Unity test framework
+CONFIG_UNITY_ENABLE_FLOAT=y
+CONFIG_UNITY_ENABLE_DOUBLE=y
+CONFIG_UNITY_ENABLE_64BIT=y
+CONFIG_UNITY_ENABLE_COLOR=y
+
+# Enable FreeRTOS for testing
+CONFIG_FREERTOS_HZ=1000
+
+# Logging
+CONFIG_LOG_DEFAULT_LEVEL_INFO=y
+CONFIG_LOG_COLORS=y
+
+# Increase main task stack for tests
+CONFIG_ESP_MAIN_TASK_STACK_SIZE=8192
+
+# Enable assertions for testing
+CONFIG_COMPILER_OPTIMIZATION_ASSERTIONS_ENABLE=y
+
+# Memory debugging
+CONFIG_HEAP_POISONING_COMPREHENSIVE=y
+CONFIG_HEAP_TRACING_STANDALONE=y
