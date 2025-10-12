@@ -1,0 +1,14 @@
+# esp32-firmware/components/star_bus/Kconfig
+
+menu "STAR Bus Configuration"
+
+config STAR_KCONFIG_BUS_MUTEX_TIMEOUT_MS
+    int "Bus manager mutex timeout (milliseconds)"
+    default 1000
+    range 100 10000
+    help
+        Timeout in milliseconds for acquiring bus manager mutex.
+        Default is 1000ms (1 second). Increase if you experience
+        timeout errors in high-load scenarios.
+
+endmenu
