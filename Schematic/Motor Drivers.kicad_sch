@@ -1385,17 +1385,6 @@
 		)
 		(uuid "1ff6c87d-85a4-4ce0-af63-748e4401ec0a")
 	)
-	(text "Motor Current = I_IPROPI x A_IPROPI\nMotor Current = 0.0039 A x 3075\nMotor Current ≈ 12 A\n\n"
-		(exclude_from_sim no)
-		(at 225.552 128.27 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "23123d5e-3bc5-43f1-8c33-e40a3b3efd66")
-	)
 	(text "R = (3.3-2)/20ma = 65 Ohms"
 		(exclude_from_sim no)
 		(at 216.154 27.432 0)
@@ -1416,16 +1405,6 @@
 		)
 		(uuid "4af93cd6-43f6-40fd-8931-ab4f7ac8d077")
 	)
-	(text "V = 3.9 mA × 820 Ω = 3.2V"
-		(exclude_from_sim no)
-		(at 235.966 249.428 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "597a7fe3-dca4-4bad-ba92-337b553aa736")
-	)
 	(text "R = (3.3-2)/20ma = 65 Ohms"
 		(exclude_from_sim no)
 		(at 213.868 96.266 0)
@@ -1435,27 +1414,6 @@
 			)
 		)
 		(uuid "657a6407-3226-43d4-8e3a-3dc38badc59c")
-	)
-	(text "V = 3.9 mA × 820 Ω = 3.2V"
-		(exclude_from_sim no)
-		(at 242.316 53.848 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "7da562f2-12bb-4dbd-bcfb-573dda313ded")
-	)
-	(text "Motor Current = I_IPROPI x A_IPROPI\nMotor Current = 0.0039 A x 3075\nMotor Current ≈ 12 A\n\n"
-		(exclude_from_sim no)
-		(at 221.742 255.27 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "7f288d4f-0a97-4e33-8bf4-006fb6e90cf5")
 	)
 	(text "need a pullup on this line"
 		(exclude_from_sim no)
@@ -1477,27 +1435,6 @@
 		)
 		(uuid "97d9346a-4bb8-450e-aadc-4b490d81d7c4")
 	)
-	(text "Motor Current = I_IPROPI x A_IPROPI\nMotor Current = 0.0039 A x 3075\nMotor Current ≈ 12 A\n\n"
-		(exclude_from_sim no)
-		(at 228.092 59.69 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "aadd6e67-41ec-409e-a6f3-65cec68bf9fd")
-	)
-	(text "V = 3.9 mA × 820 Ω = 3.2V"
-		(exclude_from_sim no)
-		(at 238.506 180.848 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "af80a02a-b4b7-45ff-b354-1539d15bd767")
-	)
 	(text "R = (3.3-2)/20ma = 65 Ohms"
 		(exclude_from_sim no)
 		(at 212.852 154.432 0)
@@ -1518,26 +1455,16 @@
 		)
 		(uuid "cabc0af7-6d95-4015-882d-80e9b9ad032e")
 	)
-	(text "Motor Current = I_IPROPI x A_IPROPI\nMotor Current = 0.0039 A x 3075\nMotor Current ≈ 12 A\n\n"
+	(text "input line is 20A, 4 motors, 5A each, ADC overhead, 6A\n\nI_motor = I_IPROPI x A_IPROPI\n6A = I_IPROPI x 3075, I_IPROPI=0.00195121951\n\n3.3V = 0.00195A x R, R = 1692.3 -> 1k69\n\n\nWITH CODE: Shut off the motors at 4A"
 		(exclude_from_sim no)
-		(at 224.282 186.69 0)
+		(at 235.712 60.452 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "d5b01240-f774-4ce7-bdc3-f581dce432a4")
-	)
-	(text "V = 3.9 mA × 820 Ω = 3.2V"
-		(exclude_from_sim no)
-		(at 239.776 122.428 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "e5d6b47a-959b-4529-b33d-bf1223a53170")
+		(uuid "fc67a23b-b855-4369-aba3-157e2a839607")
 	)
 	(junction
 		(at 139.7 147.32)
@@ -8366,7 +8293,7 @@
 				)
 			)
 		)
-		(property "Value" "820R"
+		(property "Value" "1k69"
 			(at 217.17 252.476 0)
 			(effects
 				(font
@@ -8887,7 +8814,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" "N/A"
+		(property "DigiKey Link" "https://www.digikey.com/short/p5zddvc9"
 			(at 214.63 248.92 0)
 			(effects
 				(font
@@ -8896,7 +8823,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "N/A"
+		(property "DigiKey Part Number" "P1.69KDBCT-ND"
 			(at 214.63 248.92 0)
 			(effects
 				(font
@@ -8905,7 +8832,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "RMC1/16K8200FTP "
+		(property "Manufactaurer Part Number" "ERA-3AEB1691V"
 			(at 214.63 248.92 0)
 			(effects
 				(font
@@ -8914,7 +8841,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://mou.sr/46iPyuQ"
+		(property "Mouser Link" "https://mou.sr/42AecpD"
 			(at 214.63 248.92 0)
 			(effects
 				(font
@@ -8923,7 +8850,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "791-RMC1/16K8200FTP"
+		(property "Mouser Part Number" "667-ERA-3AEB1691V"
 			(at 214.63 248.92 0)
 			(effects
 				(font
@@ -8941,7 +8868,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Price per Unit" "N/A"
+		(property "DigiKey Price per Unit" "0.10"
 			(at 214.63 248.92 0)
 			(effects
 				(font
@@ -14872,7 +14799,7 @@
 				)
 			)
 		)
-		(property "Value" "820R"
+		(property "Value" "1k69"
 			(at 223.52 56.896 0)
 			(effects
 				(font
@@ -15384,7 +15311,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" "N/A"
+		(property "DigiKey Link" "https://www.digikey.com/short/p5zddvc9"
 			(at 220.98 53.34 0)
 			(effects
 				(font
@@ -15393,7 +15320,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "N/A"
+		(property "DigiKey Part Number" "P1.69KDBCT-ND"
 			(at 220.98 53.34 0)
 			(effects
 				(font
@@ -15402,7 +15329,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Price per Unit" "N/A"
+		(property "DigiKey Price per Unit" "0.10"
 			(at 220.98 53.34 0)
 			(effects
 				(font
@@ -15411,7 +15338,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "RMC1/16K8200FTP "
+		(property "Manufactaurer Part Number" "ERA-3AEB1691V"
 			(at 220.98 53.34 0)
 			(effects
 				(font
@@ -15420,7 +15347,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://mou.sr/46iPyuQ"
+		(property "Mouser Link" "https://mou.sr/42AecpD"
 			(at 220.98 53.34 0)
 			(effects
 				(font
@@ -15429,7 +15356,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "791-RMC1/16K8200FTP"
+		(property "Mouser Part Number" "667-ERA-3AEB1691V"
 			(at 220.98 53.34 0)
 			(effects
 				(font
@@ -21850,7 +21777,7 @@
 				)
 			)
 		)
-		(property "Value" "820R"
+		(property "Value" "1k69"
 			(at 220.98 125.476 0)
 			(effects
 				(font
@@ -22371,7 +22298,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" "N/A"
+		(property "DigiKey Link" "https://www.digikey.com/short/p5zddvc9"
 			(at 218.44 121.92 0)
 			(effects
 				(font
@@ -22380,7 +22307,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "N/A"
+		(property "DigiKey Part Number" "P1.69KDBCT-ND"
 			(at 218.44 121.92 0)
 			(effects
 				(font
@@ -22389,7 +22316,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "RMC1/16K8200FTP "
+		(property "Manufactaurer Part Number" "ERA-3AEB1691V"
 			(at 218.44 121.92 0)
 			(effects
 				(font
@@ -22398,7 +22325,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://mou.sr/46iPyuQ"
+		(property "Mouser Link" "https://mou.sr/42AecpD"
 			(at 218.44 121.92 0)
 			(effects
 				(font
@@ -22407,7 +22334,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "791-RMC1/16K8200FTP"
+		(property "Mouser Part Number" "667-ERA-3AEB1691V"
 			(at 218.44 121.92 0)
 			(effects
 				(font
@@ -22425,7 +22352,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Price per Unit" "N/A"
+		(property "DigiKey Price per Unit" "0.10"
 			(at 218.44 121.92 0)
 			(effects
 				(font
@@ -22466,7 +22393,7 @@
 				)
 			)
 		)
-		(property "Value" "820R"
+		(property "Value" "1k69"
 			(at 219.71 183.896 0)
 			(effects
 				(font
@@ -22978,7 +22905,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" "N/A"
+		(property "DigiKey Link" "https://www.digikey.com/short/p5zddvc9"
 			(at 217.17 180.34 0)
 			(effects
 				(font
@@ -22987,7 +22914,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "N/A"
+		(property "DigiKey Part Number" "P1.69KDBCT-ND"
 			(at 217.17 180.34 0)
 			(effects
 				(font
@@ -22996,7 +22923,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Price per Unit" "N/A"
+		(property "DigiKey Price per Unit" "0.10"
 			(at 217.17 180.34 0)
 			(effects
 				(font
@@ -23005,7 +22932,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "RMC1/16K8200FTP "
+		(property "Manufactaurer Part Number" "ERA-3AEB1691V"
 			(at 217.17 180.34 0)
 			(effects
 				(font
@@ -23014,7 +22941,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://mou.sr/46iPyuQ"
+		(property "Mouser Link" "https://mou.sr/42AecpD"
 			(at 217.17 180.34 0)
 			(effects
 				(font
@@ -23023,7 +22950,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "791-RMC1/16K8200FTP"
+		(property "Mouser Part Number" "667-ERA-3AEB1691V"
 			(at 217.17 180.34 0)
 			(effects
 				(font
