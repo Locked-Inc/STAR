@@ -1375,16 +1375,6 @@
 		)
 		(uuid "2702c293-89fe-46bf-ab63-0a131b9593f3")
 	)
-	(text "Double check cap calculations, for 10 micro, each 10uF cap should be rated 1.4 A"
-		(exclude_from_sim no)
-		(at 160.528 84.836 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "36fab2f3-3e84-4529-a932-79ab063a51b8")
-	)
 	(text "6V 20A"
 		(exclude_from_sim no)
 		(at 209.042 122.174 0)
@@ -1397,67 +1387,16 @@
 		)
 		(uuid "71384c74-ba26-4f73-a1ab-363f4eeb7bdc")
 	)
-	(text "12.6V coming need 10Aripple left side, 60 microF\n"
+	(text "6V/20A\nL=440nH\nf=1.2MHz\nVin=[9.6,12.6]\n\nD = Vout/Vin = 6/12.6 = 0.476 ; use for worst-case input ripple\nI_Ripple = (Vout(1 - Vout/Vin))/(L*f) ; use larger Vin\nI_In = Iout * (Vout/Vin) ; use smaller Vin for max current\nIc(RMS,in) = Iout * SQRT[D*(1-D)]\nIc(RMS,out) = I_Ripple / (2*sqrt(3))\n\nI_Ripple = 5.95A\nI_In = 12.5A\nIc(RMS,in) = 9.99A -> 12A\nIc(RMS,out) = 1.72A -> 2.1A\n\n1, Input cap bank > 12A rms ripple current\n2, Output cap bank > 2.1A rms ripple current\n\n3, Ripple_Vout = I_Ripple * ESR\n60mA = 5.95A * ESR, ESR=10.1mOhm\n\n4, 12.5A is the max average current drawn from the source\n"
 		(exclude_from_sim no)
-		(at 115.316 117.856 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "734f2157-505d-42f7-a8e5-27e86cee9a0c")
-	)
-	(text "5.95 A 6V,add up to 60 micrF"
-		(exclude_from_sim no)
-		(at 309.88 115.824 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "8b7643c6-8eb2-4df9-8d3e-92479d5cd1d0")
-	)
-	(text "I_RMS(cin) = I_OUT * sqrt(D * (1 - D))\nI_RMS(cin) = 20 A * sqrt(0.5 * (1 - 0.5)) = 10 A"
-		(exclude_from_sim no)
-		(at 100.33 131.318 0)
+		(at 174.752 93.218 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "9952b3a7-5c25-42c9-9a42-5faad44c7705")
-	)
-	(text "8, 10 MICRO EACH RATED 1.4A, 8*1.4 = 11.2"
-		(exclude_from_sim no)
-		(at 70.104 125.476 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "c0a80565-3a69-4e62-89af-80a085b975bf")
-	)
-	(text "I_RMS(cout) = I_RIPPLE / sqrt(12)\nI_RIPPLE = ((V_IN_max - V_OUT) / L) * (V_OUT / V_IN_max) * (1 / f_SW)\nI_RIPPLE = ((12.6 V - 6 V) / 440 nH) * (6 V / 12.6 V) * (1 / 1.2 MHz) = 5.95 A"
-		(exclude_from_sim no)
-		(at 266.192 131.826 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "c6e201ea-7517-49dc-b68d-31a2309522bc")
-	)
-	(text "caps more than enough cover, no changes, except type of cap"
-		(exclude_from_sim no)
-		(at 326.644 168.148 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-		)
-		(uuid "cc10a728-4040-41da-b8e8-e299af676c26")
+		(uuid "ff96f8cc-a02c-46ba-a4ed-ab7a81fcd54d")
 	)
 	(junction
 		(at 330.2 139.7)
@@ -3143,7 +3082,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "18564a19-8a10-4f62-b3fe-898e9a3d693d")
-		(property "Reference" "C121"
+		(property "Reference" "C123"
 			(at 311.658 148.082 0)
 			(effects
 				(font
@@ -3260,7 +3199,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C121")
+					(reference "C123")
 					(unit 1)
 				)
 			)
@@ -3891,7 +3830,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "233c8043-8bc8-48d2-a67d-304a8d8ef36f")
-		(property "Reference" "C110"
+		(property "Reference" "C112"
 			(at 112.268 141.732 0)
 			(effects
 				(font
@@ -4008,7 +3947,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C110")
+					(reference "C112")
 					(unit 1)
 				)
 			)
@@ -4207,7 +4146,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "32b2411a-5d15-4b35-a407-2d9f1f73c0ed")
-		(property "Reference" "C124"
+		(property "Reference" "C126"
 			(at 330.708 148.082 0)
 			(effects
 				(font
@@ -4324,7 +4263,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C124")
+					(reference "C126")
 					(unit 1)
 				)
 			)
@@ -4339,7 +4278,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "34202aba-1aff-44d6-b78d-fa540787ae3b")
-		(property "Reference" "C109"
+		(property "Reference" "C111"
 			(at 105.918 141.732 0)
 			(effects
 				(font
@@ -4456,7 +4395,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C109")
+					(reference "C111")
 					(unit 1)
 				)
 			)
@@ -5089,7 +5028,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "42253471-8012-4ded-8989-7c4a27bd37f5")
-		(property "Reference" "C74"
+		(property "Reference" "C107"
 			(at 80.518 141.732 0)
 			(effects
 				(font
@@ -5206,7 +5145,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C74")
+					(reference "C107")
 					(unit 1)
 				)
 			)
@@ -5221,7 +5160,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "5602ef20-8b67-4653-90c6-1ecb3e4b3226")
-		(property "Reference" "C125"
+		(property "Reference" "C127"
 			(at 337.058 148.082 0)
 			(effects
 				(font
@@ -5338,7 +5277,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C125")
+					(reference "C127")
 					(unit 1)
 				)
 			)
@@ -8439,7 +8378,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "7a5d67ab-f105-4558-8e1a-64a1359deccb")
-		(property "Reference" "C123"
+		(property "Reference" "C125"
 			(at 324.358 148.082 0)
 			(effects
 				(font
@@ -8556,7 +8495,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C123")
+					(reference "C125")
 					(unit 1)
 				)
 			)
@@ -8571,7 +8510,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "88eca417-1c53-491d-8cb6-efb499b01a75")
-		(property "Reference" "C111"
+		(property "Reference" "C113"
 			(at 118.618 141.732 0)
 			(effects
 				(font
@@ -8688,7 +8627,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C111")
+					(reference "C113")
 					(unit 1)
 				)
 			)
@@ -8703,7 +8642,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "8f7861f0-532f-4e3c-ac10-d95971221cae")
-		(property "Reference" "C113"
+		(property "Reference" "C122"
 			(at 305.308 148.082 0)
 			(effects
 				(font
@@ -8820,7 +8759,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C113")
+					(reference "C122")
 					(unit 1)
 				)
 			)
@@ -9167,7 +9106,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "a9a8ebc0-73e0-43d5-83dd-35cc21260820")
-		(property "Reference" "C127"
+		(property "Reference" "C121"
 			(at 298.45 147.828 0)
 			(effects
 				(font
@@ -9770,7 +9709,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C127")
+					(reference "C121")
 					(unit 1)
 				)
 			)
@@ -9969,7 +9908,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "afc237e0-63ab-4d3a-9e9d-d82eef30082c")
-		(property "Reference" "C112"
+		(property "Reference" "C106"
 			(at 74.168 141.732 0)
 			(effects
 				(font
@@ -10086,7 +10025,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C112")
+					(reference "C106")
 					(unit 1)
 				)
 			)
@@ -10101,7 +10040,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "b0982498-824e-44bc-a692-d819ea2375e2")
-		(property "Reference" "C108"
+		(property "Reference" "C110"
 			(at 99.568 141.732 0)
 			(effects
 				(font
@@ -10218,7 +10157,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C108")
+					(reference "C110")
 					(unit 1)
 				)
 			)
@@ -11534,7 +11473,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "b95d6825-103a-4034-a264-2776dd698e10")
-		(property "Reference" "C77"
+		(property "Reference" "C109"
 			(at 93.218 141.732 0)
 			(effects
 				(font
@@ -11651,7 +11590,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C77")
+					(reference "C109")
 					(unit 1)
 				)
 			)
@@ -12282,7 +12221,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "c131610a-59a2-464f-8515-2d83783b9b1f")
-		(property "Reference" "C76"
+		(property "Reference" "C108"
 			(at 86.868 141.732 0)
 			(effects
 				(font
@@ -12399,7 +12338,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C76")
+					(reference "C108")
 					(unit 1)
 				)
 			)
@@ -14266,7 +14205,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "dacae9e2-ec0e-41a6-833e-f53b8ed49130")
-		(property "Reference" "C122"
+		(property "Reference" "C124"
 			(at 318.008 148.082 0)
 			(effects
 				(font
@@ -14383,7 +14322,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C122")
+					(reference "C124")
 					(unit 1)
 				)
 			)
