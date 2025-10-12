@@ -1031,11 +1031,11 @@
           "show": false
         }
       ],
-      "filter_string": "c",
+      "filter_string": "R",
       "group_symbols": true,
       "include_excluded_from_bom": false,
       "name": "",
-      "sort_asc": true,
+      "sort_asc": false,
       "sort_field": "Value"
     },
     "connection_grid_size": 50.0,
