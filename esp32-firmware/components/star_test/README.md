@@ -17,13 +17,13 @@ This framework was created to replace Unity, which had compatibility issues with
 
 ## Features
 
-- ✅ Simple test case definition
-- ✅ Multiple assertion macros
-- ✅ Test grouping by component
-- ✅ Pass/fail tracking
-- ✅ Detailed failure reporting
-- ✅ Minimal memory footprint
-- ✅ No constructor magic - explicit registration
+- [SUCCESS] Simple test case definition
+- [SUCCESS] Multiple assertion macros
+- [SUCCESS] Test grouping by component
+- [SUCCESS] Pass/fail tracking
+- [SUCCESS] Detailed failure reporting
+- [SUCCESS] Minimal memory footprint
+- [SUCCESS] No constructor magic - explicit registration
 
 ## Quick Start
 
@@ -148,12 +148,12 @@ idf_component_register(
 
 ```
 test_app/
-├── CMakeLists.txt
-├── main/
-│   ├── CMakeLists.txt
-│   ├── test_main.c
-│   └── example_tests.c
-└── sdkconfig
++-- CMakeLists.txt
++-- main/
+|   +-- CMakeLists.txt
+|   +-- test_main.c
+|   +-- example_tests.c
++-- sdkconfig
 ```
 
 ## Running Tests

@@ -10,6 +10,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 
+#include <inttypes.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -74,13 +75,14 @@ star_bus_config_t* star_bus_config_create_i2c(const char* name,
   }
 
   ESP_LOGI(TAG,
-           "Created I2C config '%s' (Port: %d, Addr: 0x%02X, SDA: %d, SCL: %d, Speed: %lu Hz)",
+           "Created I2C config '%s' (Port: %d, Addr: 0x%02X, SDA: %d, SCL: %d, Speed: %" PRIu32
+           " Hz)",
            name,
            port,
            address,
            sda_pin,
            scl_pin,
-           (unsigned long)clk_speed);
+           clk_speed);
   return config;
 }
 
@@ -89,7 +91,7 @@ star_bus_config_t* star_bus_config_create_spi_device(const char*                
                                                      gpio_num_t                           copi_pin,
                                                      gpio_num_t                           cipo_pin,
                                                      gpio_num_t                           sclk_pin,
-                                                     int                                  dma_chan,
+                                                     int32_t                              dma_chan,
                                                      const spi_device_interface_config_t* dev_cfg)
 {
   ESP_RETURN_ON_FALSE(dev_cfg, NULL, TAG, "SPI device config cannot be NULL");
@@ -135,7 +137,8 @@ star_bus_config_t* star_bus_config_create_spi_device(const char*                
 
   ESP_LOGI(
     TAG,
-    "Created SPI config '%s' (Host: %d, COPI: %d, CIPO: %d, SCLK: %d, CS: %d, Mode: %d, Speed: %ld Hz, DMA: %s)",
+    "Created SPI config '%s' (Host: %d, COPI: %d, CIPO: %d, SCLK: %d, CS: %d, Mode: %d, Speed: %" PRId32
+    " Hz, DMA: %s)",
     name,
     host,
     copi_pin,
@@ -155,7 +158,7 @@ star_bus_config_t* star_bus_config_create_spi_peripheral(const char*       name,
                                                          gpio_num_t        cipo_pin,
                                                          gpio_num_t        sclk_pin,
                                                          gpio_num_t        cs_pin,
-                                                         int               queue_size,
+                                                         int32_t           queue_size,
                                                          uint8_t           mode)
 {
   ESP_RETURN_ON_FALSE(host >= 0 && host < SPI_HOST_MAX,
@@ -352,10 +355,10 @@ esp_err_t star_bus_config_init(star_bus_config_t* config, star_bus_manager_t* ma
             .max_transfer_sz = config->proto.spi.max_transfer_sz,
             .flags           = config->proto.spi.bus_cfg.flags,
           };
-          int dma_chan = (config->proto.spi.bus_cfg.flags & SPICOMMON_BUSFLAG_MASTER)
-                           ? SPI_DMA_CH_AUTO
-                           : SPI_DMA_DISABLED;
-          ret          = spi_bus_initialize(host, &esp_idf_bus_cfg, dma_chan);
+          int32_t dma_chan = (config->proto.spi.bus_cfg.flags & SPICOMMON_BUSFLAG_MASTER)
+                               ? SPI_DMA_CH_AUTO
+                               : SPI_DMA_DISABLED;
+          ret              = spi_bus_initialize(host, &esp_idf_bus_cfg, dma_chan);
           ESP_GOTO_ON_ERROR(ret,
                             fail,
                             TAG,

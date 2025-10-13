@@ -219,13 +219,13 @@ star_bus_manager_set_reset_function(&manager, my_reset, NULL);
 
 ## Pin Sharing Rules
 
-### ✅ Shareable Pins
+### [SUCCESS] Shareable Pins
 - I2C SDA/SCL
 - SPI MISO/MOSI/SCLK
 
 Multiple buses can share these pins.
 
-### ❌ Non-Shareable Pins
+### [ERROR] Non-Shareable Pins
 - SPI CS (Chip Select)
 
 Each SPI device needs unique CS pin.
@@ -366,7 +366,7 @@ Error: ESP_ERR_TIMEOUT
 Fix:
 - Check wiring
 - Verify device address
-- Add pull-ups (I2C: 4.7kΩ recommended)
+- Add pull-ups (I2C: 4.7kOhm recommended)
 ```
 
 ### Invalid GPIO

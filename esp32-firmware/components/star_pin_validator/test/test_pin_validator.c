@@ -7,6 +7,8 @@
 
 #include "driver/gpio.h"
 
+#include <inttypes.h>
+
 #include "soc/gpio_num.h"
 #include "star_pin_validator.h"
 #include "star_test.h"
@@ -91,7 +93,7 @@ STAR_TEST_CASE(pin_validator, register_pin_max_length_description)
   cleanup_pin_validator();
   /* Create description exactly at max length - 1 (for null terminator) */
   char desc[PIN_VALIDATOR_DESC_MAX_LEN];
-  for (int i = 0; i < PIN_VALIDATOR_DESC_MAX_LEN - 1; i++) {
+  for (uint32_t i = 0; i < PIN_VALIDATOR_DESC_MAX_LEN - 1; i++) {
     desc[i] = 'A';
   }
   desc[PIN_VALIDATOR_DESC_MAX_LEN - 1] = '\0';
@@ -106,7 +108,7 @@ STAR_TEST_CASE(pin_validator, register_pin_too_long_description)
   cleanup_pin_validator();
   /* Create description that exceeds max length */
   char desc[PIN_VALIDATOR_DESC_MAX_LEN + 10];
-  for (int i = 0; i < PIN_VALIDATOR_DESC_MAX_LEN + 5; i++) {
+  for (uint32_t i = 0; i < PIN_VALIDATOR_DESC_MAX_LEN + 5; i++) {
     desc[i] = 'B';
   }
   desc[PIN_VALIDATOR_DESC_MAX_LEN + 5] = '\0';
@@ -203,7 +205,7 @@ STAR_TEST_CASE(pin_validator, shared_pin_long_descriptions)
   char desc1[PIN_VALIDATOR_DESC_MAX_LEN];
   char desc2[PIN_VALIDATOR_DESC_MAX_LEN];
 
-  for (int i = 0; i < PIN_VALIDATOR_DESC_MAX_LEN - 2; i++) {
+  for (uint32_t i = 0; i < PIN_VALIDATOR_DESC_MAX_LEN - 2; i++) {
     desc1[i] = 'X';
     desc2[i] = 'Y';
   }
@@ -231,9 +233,9 @@ STAR_TEST_CASE(pin_validator, many_shared_users)
 {
   cleanup_pin_validator();
   /* Register 10 users on same shared pin */
-  for (int i = 0; i < 10; i++) {
+  for (uint32_t i = 0; i < 10; i++) {
     char desc[32];
-    snprintf(desc, sizeof(desc), "User %d", i);
+    snprintf(desc, sizeof(desc), "User %" PRIu32 "", i);
     esp_err_t result = star_register_pin(GPIO_NUM_27, desc, true);
     STAR_ASSERT_EQUAL(ESP_OK, result);
   }
@@ -400,9 +402,9 @@ STAR_TEST_CASE(pin_validator, free_with_many_shared_users)
 {
   cleanup_pin_validator();
   /* Register many users on shared pin */
-  for (int i = 0; i < 15; i++) {
+  for (uint32_t i = 0; i < 15; i++) {
     char desc[32];
-    snprintf(desc, sizeof(desc), "User %d", i);
+    snprintf(desc, sizeof(desc), "User %" PRIu32 "", i);
     star_register_pin(GPIO_NUM_27, desc, true);
   }
   esp_err_t result = star_free_pin_validator();

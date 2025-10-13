@@ -5,6 +5,7 @@
 #include <esp_log.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include <inttypes.h>
 #include <string.h>
 
 #include "star_bus_i2c.h"
@@ -142,7 +143,7 @@ esp_err_t star_batch_create(star_bus_manager_t*        manager,
 
   *handle = (star_batch_handle_t)ctx;
 
-  ESP_LOGD(TAG, "Batch created: mode=%d, timeout=%lu ms", config->mode, config->timeout_ms);
+  ESP_LOGD(TAG, "Batch created: mode=%d, timeout=%" PRIu32 " ms", config->mode, config->timeout_ms);
 
   return ESP_OK;
 }
@@ -422,7 +423,7 @@ esp_err_t star_batch_execute(star_batch_handle_t handle, star_batch_stats_t* sta
     return ESP_ERR_INVALID_STATE;
   }
 
-  ESP_LOGI(TAG, "Executing batch with %lu operations", ctx->operation_count);
+  ESP_LOGI(TAG, "Executing batch with %" PRIu32 " operations", ctx->operation_count);
 
   ctx->start_tick       = xTaskGetTickCount();
   esp_err_t first_error = ESP_OK;
@@ -437,7 +438,7 @@ esp_err_t star_batch_execute(star_batch_handle_t handle, star_batch_stats_t* sta
       succeeded++;
     } else {
       failed++;
-      ESP_LOGE(TAG, "Operation %lu failed: %s", i, esp_err_to_name(result));
+      ESP_LOGE(TAG, "Operation %" PRIu32 " failed: %s", i, esp_err_to_name(result));
 
       if (first_error == ESP_OK) {
         first_error = result;
@@ -471,7 +472,10 @@ esp_err_t star_batch_execute(star_batch_handle_t handle, star_batch_stats_t* sta
     stats->total_time_ms        = pdTICKS_TO_MS(ctx->end_tick - ctx->start_tick);
   }
 
-  ESP_LOGI(TAG, "Batch execution complete: %lu succeeded, %lu failed", succeeded, failed);
+  ESP_LOGI(TAG,
+           "Batch execution complete: %" PRIu32 " succeeded, %" PRIu32 " failed",
+           succeeded,
+           failed);
 
   return first_error;
 }

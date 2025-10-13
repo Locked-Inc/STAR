@@ -26,7 +26,7 @@ while (( attempt < max_attempts )); do
     find . -type f -name 'Kconfig*.new' -print0 \
       | xargs -0 -I{} sh -c '
           orig="${1%.new}"
-          echo "Moving $1 → $orig"
+          echo "Moving $1 -> $orig"
           mv "$1" "$orig"
         ' _ {}
 

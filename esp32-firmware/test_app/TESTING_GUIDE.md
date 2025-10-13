@@ -61,26 +61,26 @@ All 100 tests complete in approximately **1-2 minutes** on ESP32 hardware.
 
 ```
 test_app/                         # Standalone test application
-├── main/
-│   ├── test_main.c              # Test runner entry point
-│   ├── test_error_handler.c     # 30 tests for error_handler
-│   ├── test_pin_validator.c     # 35 tests for pin_validator
-│   └── test_protocol.c          # 35 tests for protocol
-├── CMakeLists.txt               # Build configuration
-├── sdkconfig.defaults           # ESP32 test configuration
-└── run_tests.sh                 # Convenience script
++-- main/
+|   +-- test_main.c              # Test runner entry point
+|   +-- test_error_handler.c     # 30 tests for error_handler
+|   +-- test_pin_validator.c     # 35 tests for pin_validator
+|   +-- test_protocol.c          # 35 tests for protocol
++-- CMakeLists.txt               # Build configuration
++-- sdkconfig.defaults           # ESP32 test configuration
++-- run_tests.sh                 # Convenience script
 
 components/
-├── star_test/                   # The test framework itself
-│   ├── include/star_test.h      # Public API and macros
-│   ├── star_test.c              # Implementation
-│   └── README.md                # Framework documentation
-├── star_error_handler/
-│   └── test/                    # Placeholder (tests moved to test_app)
-├── star_pin_validator/
-│   └── test/                    # Placeholder (tests moved to test_app)
-└── pynq_wifi_bridge/
-    └── test/                    # Placeholder (tests moved to test_app)
++-- star_test/                   # The test framework itself
+|   +-- include/star_test.h      # Public API and macros
+|   +-- star_test.c              # Implementation
+|   +-- README.md                # Framework documentation
++-- star_error_handler/
+|   +-- test/                    # Placeholder (tests moved to test_app)
++-- star_pin_validator/
+|   +-- test/                    # Placeholder (tests moved to test_app)
++-- pynq_wifi_bridge/
+    +-- test/                    # Placeholder (tests moved to test_app)
 ```
 
 ### Why test_app Directory?
@@ -287,7 +287,7 @@ STAR_TEST_CASE(example, comprehensive_test)
   Failed:       0
 ================================================================================
 
-  ✓✓✓ ALL TESTS PASSED! ✓✓✓
+  [OK][OK][OK] ALL TESTS PASSED! [OK][OK][OK]
 
 Test execution complete. System will continue running.
 ```

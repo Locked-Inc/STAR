@@ -121,7 +121,7 @@ def main():
                                 print(f"Status: 0x{status:02X} {'(OK)' if status == STATUS_OK else '(FAILED)'}")
 
                                 if status != STATUS_OK:
-                                    print("\n✓ Test successful! Connection failed as expected.")
+                                    print("\n[OK] Test successful! Connection failed as expected.")
                                     print("  Check the logs above to see the error handler in action.")
                             break
 

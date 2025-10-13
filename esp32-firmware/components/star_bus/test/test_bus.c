@@ -20,6 +20,8 @@
 #include "driver/i2c.h"
 #include "driver/spi_master.h"
 
+#include <inttypes.h>
+
 #include "star_bus_config.h"
 #include "star_bus_i2c.h"
 #include "star_bus_manager.h"
@@ -103,7 +105,7 @@ STAR_TEST_CASE(bus_manager, deinit_null_pointer)
 STAR_TEST_CASE(bus_manager, init_deinit_multiple_times)
 {
   star_bus_manager_t manager;
-  for (int i = 0; i < 3; i++) {
+  for (uint32_t i = 0; i < 3; i++) {
     esp_err_t init_result = star_bus_manager_init(&manager, "TestMgr");
     STAR_ASSERT_EQUAL(ESP_OK, init_result);
     esp_err_t deinit_result = star_bus_manager_deinit(&manager);
@@ -140,7 +142,7 @@ STAR_TEST_CASE(bus_config, create_i2c_null_name)
 STAR_TEST_CASE(bus_config, create_i2c_various_speeds)
 {
   uint32_t speeds[] = {10000, 50000, 100000, 400000};
-  for (int i = 0; i < 4; i++) {
+  for (uint32_t i = 0; i < 4; i++) {
     star_bus_config_t* config = star_bus_config_create_i2c("test_i2c",
                                                            I2C_NUM_0,
                                                            TEST_I2C_ADDR,
@@ -449,9 +451,9 @@ STAR_TEST_CASE(bus_operations, add_multiple_buses)
 
   /* ESP32 has 2 I2C ports, so we can test 2 buses */
   i2c_port_t ports[] = {I2C_NUM_0, I2C_NUM_1};
-  for (int i = 0; i < 2; i++) {
+  for (uint32_t i = 0; i < 2; i++) {
     char name[16];
-    snprintf(name, sizeof(name), "i2c_bus_%d", i);
+    snprintf(name, sizeof(name), "i2c_bus_%" PRIu32 "", i);
     star_bus_config_t* config = star_bus_config_create_i2c(name,
                                                            ports[i],
                                                            TEST_I2C_ADDR + i,
@@ -463,9 +465,9 @@ STAR_TEST_CASE(bus_operations, add_multiple_buses)
   }
 
   /* Verify all buses can be found */
-  for (int i = 0; i < 2; i++) {
+  for (uint32_t i = 0; i < 2; i++) {
     char name[16];
-    snprintf(name, sizeof(name), "i2c_bus_%d", i);
+    snprintf(name, sizeof(name), "i2c_bus_%" PRIu32 "", i);
     star_bus_config_t* found = star_bus_manager_find_bus(&manager, name);
     STAR_ASSERT_NOT_NULL(found);
   }
@@ -984,7 +986,7 @@ static esp_err_t test_reset_success(void* context)
 }
 
 /* Test reset callback that tracks call count */
-static int       reset_call_count = 0;
+static int32_t   reset_call_count = 0;
 static esp_err_t test_reset_counter(void* context)
 {
   (void)context;
@@ -1139,7 +1141,7 @@ STAR_TEST_CASE(error_handler, reset_callback_can_clear_errors)
                                                          TEST_I2C_CLOCK);
 
   /* Attempt to add multiple times to trigger retry exhaustion */
-  for (int i = 0; i < 5; i++) {
+  for (uint32_t i = 0; i < 5; i++) {
     star_bus_manager_add_bus(&manager, config);
   }
 
@@ -1522,7 +1524,7 @@ STAR_TEST_CASE(smbus, write_byte_various_commands)
 
   /* Test different command codes (should all fail - no bus, but validates params) */
   uint8_t commands[] = {0x00, 0x10, 0x7F, 0xFF};
-  for (int i = 0; i < 4; i++) {
+  for (uint32_t i = 0; i < 4; i++) {
     esp_err_t result = star_smbus_write_byte(&manager, "test", 0x3C, commands[i], 0x42);
     STAR_ASSERT_NOT_EQUAL(ESP_OK, result); /* No bus exists */
   }
@@ -1586,7 +1588,7 @@ STAR_TEST_CASE(smbus, write_word_little_endian)
 
   /* Test various word values (validates params, no actual I2C) */
   uint16_t words[] = {0x0000, 0x1234, 0x5678, 0xABCD, 0xFFFF};
-  for (int i = 0; i < 5; i++) {
+  for (uint32_t i = 0; i < 5; i++) {
     esp_err_t result = star_smbus_write_word(&manager, "test", 0x3C, 0x10, words[i]);
     STAR_ASSERT_NOT_EQUAL(ESP_OK, result); /* No bus exists */
   }
@@ -1663,7 +1665,7 @@ STAR_TEST_CASE(smbus, process_call_various_data)
 
   /* Test various data values */
   uint16_t write_values[] = {0x0000, 0xAAAA, 0x5555, 0xFFFF};
-  for (int i = 0; i < 4; i++) {
+  for (uint32_t i = 0; i < 4; i++) {
     uint16_t  read_data;
     esp_err_t result =
       star_smbus_process_call(&manager, "test", 0x3C, 0x10, write_values[i], &read_data);
@@ -1723,7 +1725,7 @@ STAR_TEST_CASE(smbus, block_write_max_size)
   star_bus_manager_init(&manager, "TestMgr");
 
   uint8_t data[STAR_SMBUS_MAX_BLOCK_SIZE];
-  for (int i = 0; i < STAR_SMBUS_MAX_BLOCK_SIZE; i++) {
+  for (uint32_t i = 0; i < STAR_SMBUS_MAX_BLOCK_SIZE; i++) {
     data[i] = i;
   }
   esp_err_t result =

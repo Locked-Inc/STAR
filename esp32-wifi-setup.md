@@ -32,7 +32,7 @@ sudo apt update
 sudo apt install -y git wget flex bison gperf python3 python3-pip python3-venv cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
 ```
 
-**Status**: ✅ Completed
+**Status**: [x] Completed
 
 ### Clone ESP-IDF v5.5
 
@@ -42,7 +42,7 @@ cd ~/esp
 git clone -b v5.5 --recursive https://github.com/espressif/esp-idf.git
 ```
 
-**Status**: ✅ Completed
+**Status**: [x] Completed
 
 ### Install ESP-IDF Tools
 
@@ -53,7 +53,7 @@ cd ~/esp/esp-idf
 
 This installs the ESP32 toolchain (xtensa-esp-elf, debugger, etc.) to `~/.espressif/`.
 
-**Status**: ✅ Completed
+**Status**: [x] Completed
 
 ### Source ESP-IDF Environment
 
@@ -69,7 +69,7 @@ Or add this to your `~/.bashrc` for automatic setup:
 echo 'alias get_idf=". ~/esp/esp-idf/export.sh"' >> ~/.bashrc
 ```
 
-**Status**: 🔄 In Progress
+**Status**: [IN PROGRESS] In Progress
 
 ## Phase 2: ESP-Hosted Firmware Build
 

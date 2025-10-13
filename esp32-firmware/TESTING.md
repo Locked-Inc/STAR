@@ -26,11 +26,11 @@ The STAR firmware project uses a **comprehensive testing strategy** with multipl
 - **Mock-Based Tests**: Test with mocked dependencies (WiFi, UART, etc.)
 
 **Key Principles:**
-- ✅ Tests are **excluded from production builds** (zero overhead)
-- ✅ Tests run in `components/<component>/test/` directories
-- ✅ Unity framework for assertions
-- ✅ CMock for automatic mock generation
-- ✅ Code coverage tracking with gcov/lcov
+- [x] Tests are **excluded from production builds** (zero overhead)
+- [x] Tests run in `components/<component>/test/` directories
+- [x] Unity framework for assertions
+- [x] CMock for automatic mock generation
+- [x] Code coverage tracking with gcov/lcov
 
 ---
 
@@ -196,13 +196,13 @@ Tests live in `components/<component>/test/` directory:
 
 ```
 components/
-└── my_component/
-    ├── include/
-    ├── my_component.c
-    ├── CMakeLists.txt
-    └── test/                        # ← Tests here
-        ├── test_my_component.c
-        └── CMakeLists.txt
++-- my_component/
+    +-- include/
+    +-- my_component.c
+    +-- CMakeLists.txt
+    +-- test/                        # <- Tests here
+        +-- test_my_component.c
+        +-- CMakeLists.txt
 ```
 
 ### 2. Write Test File
@@ -367,7 +367,7 @@ jobs:
 
 ## Current Test Status
 
-### ✅ Completed Components
+### [x] Completed Components
 
 - **star_error_handler**: 15 unit tests
   - Initialization
@@ -389,13 +389,13 @@ jobs:
   - Payload encoding
   - Edge cases
 
-### 🚧 In Progress
+### [IN PROGRESS] In Progress
 
 - WiFi manager tests (with mocks)
 - UART transport tests
 - Command handler tests
 
-### 📋 Planned
+### [PLANNED] Planned
 
 - Host-based test execution
 - Code coverage integration
@@ -435,7 +435,7 @@ sudo usermod -a -G dialout $USER
 ```bash
 # Increase timeout in sdkconfig
 idf.py menuconfig
-# → Component config → Unity test framework → Timeout
+# -> Component config -> Unity test framework -> Timeout
 
 # Or edit test_app/sdkconfig.defaults:
 CONFIG_UNITY_TIMEOUT_MS=30000

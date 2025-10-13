@@ -7,10 +7,13 @@
 
 #include "star_test.h"
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
 
 #include "esp_log.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
 
 static const char* TAG = "STAR_TEST";
 
@@ -117,6 +120,9 @@ void star_test_run_all(void)
       }
     }
 
+    /* Yield CPU to allow IDLE task to run and reset watchdog */
+    vTaskDelay(pdMS_TO_TICKS(1));
+
     current = current->next;
   }
 
@@ -176,6 +182,9 @@ void star_test_run_group(const char* group)
           printf("[   NOTE   ] Re-run with verbose logging to see error details.\n");
         }
       }
+
+      /* Yield CPU to allow IDLE task to run and reset watchdog */
+      vTaskDelay(pdMS_TO_TICKS(1));
     }
 
     current = current->next;
@@ -201,9 +210,9 @@ void star_test_print_results(void)
   printf("================================================================================\n");
   printf("                          STAR Test Results Summary\n");
   printf("================================================================================\n");
-  printf("  Total Tests:  %lu\n", (unsigned long)g_star_test_results.total);
-  printf("  Passed:       %lu\n", (unsigned long)g_star_test_results.passed);
-  printf("  Failed:       %lu\n", (unsigned long)g_star_test_results.failed);
+  printf("  Total Tests:  %" PRIu32 "\n", g_star_test_results.total);
+  printf("  Passed:       %" PRIu32 "\n", g_star_test_results.passed);
+  printf("  Failed:       %" PRIu32 "\n", g_star_test_results.failed);
   printf("================================================================================\n");
 
   if (g_star_test_results.failed == 0) {
@@ -211,14 +220,14 @@ void star_test_print_results(void)
     ESP_LOGI(TAG, "ALL TESTS PASSED");
   } else {
     printf("\n  SOME TESTS FAILED\n\n");
-    ESP_LOGE(TAG, "%lu TEST(S) FAILED", (unsigned long)g_star_test_results.failed);
+    ESP_LOGE(TAG, "%" PRIu32 " TEST(S) FAILED", g_star_test_results.failed);
   }
 }
 
 /**
  * @brief Handle assertion failure
  */
-void star_test_fail(const char* file, int line, const char* message)
+void star_test_fail(const char* file, int32_t line, const char* message)
 {
   g_star_test_results.failed++;
 
@@ -230,11 +239,11 @@ void star_test_fail(const char* file, int line, const char* message)
     filename++; /* Skip the '/' */
   }
 
-  printf("[  FAILED  ] %s:%d: %s\n", filename, line, message);
+  printf("[  FAILED  ] %s:%" PRId32 ": %s\n", filename, line, message);
 
   if (g_star_test_current != NULL) {
     ESP_LOGE(TAG,
-             "Test failed: [%s] %s - %s:%d: %s",
+             "Test failed: [%s] %s - %s:%" PRId32 ": %s",
              g_star_test_current->group,
              g_star_test_current->name,
              filename,

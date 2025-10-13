@@ -168,8 +168,8 @@ esp_err_t star_unregister_pin(gpio_num_t gpio_num, const char* desc)
   }
 
   /* Find the matching description */
-  int found_index = -1;
-  for (int i = 0; i < pin->usage_count; i++) {
+  int32_t found_index = -1;
+  for (uint32_t i = 0; i < pin->usage_count; i++) {
     if (strcmp(pin->users[i], desc) == 0) {
       found_index = i;
       break;
@@ -186,7 +186,7 @@ esp_err_t star_unregister_pin(gpio_num_t gpio_num, const char* desc)
   free(pin->users[found_index]);
 
   /* Shift remaining entries down */
-  for (int i = found_index; i < pin->usage_count - 1; i++) {
+  for (uint32_t i = found_index; i < pin->usage_count - 1; i++) {
     pin->users[i] = pin->users[i + 1];
   }
 
@@ -242,7 +242,7 @@ esp_err_t star_validate_pins(void)
   }
 
   /* Check each pin for conflicts */
-  for (int i = 0; i < GPIO_NUM_MAX; i++) {
+  for (uint32_t i = 0; i < GPIO_NUM_MAX; i++) {
     star_pin_info_t* pin = &g_pin_validator.pins[i];
 
     if (pin->usage_count > 1 && !pin->can_be_shared) {
@@ -250,7 +250,7 @@ esp_err_t star_validate_pins(void)
       ESP_LOGE(TAG, "Conflict on GPIO %d: Used %d times but not shareable", i, pin->usage_count);
 
       /* Log all users of this conflicting pin */
-      for (int j = 0; j < pin->usage_count; j++) {
+      for (uint32_t j = 0; j < pin->usage_count; j++) {
         ESP_LOGE(TAG, "  User %d: %s", j + 1, pin->users[j]);
       }
     } else if (pin->usage_count > 0) {
@@ -308,11 +308,11 @@ esp_err_t star_free_pin_validator(void)
   }
 
   /* Free all allocated memory for pin descriptions */
-  for (int i = 0; i < GPIO_NUM_MAX; i++) {
+  for (uint32_t i = 0; i < GPIO_NUM_MAX; i++) {
     star_pin_info_t* pin = &g_pin_validator.pins[i];
 
     if (pin->users != NULL) {
-      for (int j = 0; j < pin->usage_count; j++) {
+      for (uint32_t j = 0; j < pin->usage_count; j++) {
         if (pin->users[j] != NULL) {
           free(pin->users[j]);
           pin->users[j] = NULL;

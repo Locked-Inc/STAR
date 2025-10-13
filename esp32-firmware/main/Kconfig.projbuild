@@ -7,17 +7,32 @@ menu "PYNQ WiFi Bridge Configuration"
         default PYNQ_BOARD_ESP32_WROOM_32
         help
             Select the ESP32 board type for pin defaults and optimizations.
+            This automatically configures the correct partition table:
+            - ESP32-WROOM-32: 4MB flash, 900KB OTA partitions
+            - ESP32-S3-WROOM-1-N16: 16MB flash, 2MB OTA partitions + 8MB SPIFFS
 
         config PYNQ_BOARD_ESP32_WROOM_32
-            bool "ESP32-WROOM-32"
+            bool "ESP32-WROOM-32 (4MB flash)"
             help
                 Current development board (ESP32-WROOM-32)
+                - 4 MB flash
+                - OTA partitions: 900 KB each
+                - Suitable for testing and development
 
         config PYNQ_BOARD_ESP32_S3_WROOM_1_N16
-            bool "ESP32-S3-WROOM-1-N16"
+            bool "ESP32-S3-WROOM-1-N16 (16MB flash)"
             help
                 Future production board (ESP32-S3-WROOM-1-N16)
+                - 16 MB flash + 8 MB PSRAM
+                - OTA partitions: 2 MB each
+                - SPIFFS: 8 MB for logs/data
+                - Coredump: 64 KB for debugging
     endchoice
+
+    config PYNQ_CUSTOM_PARTITION_TABLE_PATH
+        string
+        default "partitions_ota_4mb.csv" if PYNQ_BOARD_ESP32_WROOM_32
+        default "partitions_ota_16mb.csv" if PYNQ_BOARD_ESP32_S3_WROOM_1_N16
 
     choice PYNQ_TRANSPORT_MODE
         prompt "Transport Mode"
@@ -146,6 +161,59 @@ menu "PYNQ WiFi Bridge Configuration"
             default 5
             help
                 Maximum number of retry attempts when connecting to WiFi
+
+    endmenu
+
+    menu "OTA Update Configuration"
+
+        config PYNQ_OTA_UPDATE_URL
+            string "OTA Update URL"
+            default "https://robot-backend.com/api/esp32/firmware.bin"
+            help
+                URL to download firmware updates from.
+                This should point to your backend server's firmware endpoint.
+                Example: https://robot-backend.com/api/esp32/firmware.bin
+
+        config PYNQ_OTA_VERSION_CHECK_URL
+            string "OTA Version Check URL"
+            default "https://robot-backend.com/api/esp32/version"
+            help
+                URL to check for firmware version information.
+                Server should return JSON with: version, url, min_version, changelog
+                Example: https://robot-backend.com/api/esp32/version
+
+        config PYNQ_OTA_AUTO_UPDATE
+            bool "Enable Automatic OTA Updates"
+            default n
+            help
+                If enabled, ESP32 will automatically check for and install updates.
+                If disabled (default), updates must be triggered manually via PYNQ.
+
+        config PYNQ_OTA_CHECK_INTERVAL_MS
+            int "OTA Update Check Interval (milliseconds)"
+            default 3600000
+            range 60000 86400000
+            depends on PYNQ_OTA_AUTO_UPDATE
+            help
+                How often to check for firmware updates (in milliseconds).
+                Default: 3600000 (1 hour)
+                Min: 60000 (1 minute)
+                Max: 86400000 (24 hours)
+
+        config PYNQ_OTA_AUTO_REBOOT
+            bool "Automatically Reboot After Update"
+            default y
+            help
+                If enabled, ESP32 will automatically reboot after a successful update.
+                If disabled, reboot must be triggered manually.
+
+        config PYNQ_OTA_HTTPS_CERT_VERIFICATION
+            bool "Enable HTTPS Certificate Verification"
+            default n
+            help
+                If enabled, OTA downloads will verify the server's TLS certificate.
+                Requires a valid CA certificate to be embedded in the firmware.
+                Disable for testing with self-signed certificates or HTTP servers.
 
     endmenu
 
