@@ -13,7 +13,7 @@
 
 /* Convenience macros for the shared transport mock */
 #define g_transport_buffer transport_mock_get_buffer()
-#define g_transport_len    transport_mock_get_length()
+#define g_transport_len transport_mock_get_length()
 #define reset_transport_mock() transport_mock_reset()
 
 /* Helper to safely parse packet with assertions */
@@ -140,7 +140,7 @@ STAR_TEST_CASE(system_handler, ping_response_echo)
   STAR_ASSERT_TRUE(g_transport_len > 0);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
@@ -162,7 +162,7 @@ STAR_TEST_CASE(system_handler, ping_response_empty)
   STAR_ASSERT_TRUE(g_transport_len > 0);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
@@ -278,7 +278,7 @@ STAR_TEST_CASE(system_handler, get_version_response_valid)
   STAR_ASSERT_TRUE(g_transport_len > 0);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
@@ -304,7 +304,7 @@ STAR_TEST_CASE(system_handler, get_version_multiple_calls)
     protocol_send_response(k_status_ok, version, 3);
 
     protocol_packet_t* packet = NULL;
-    bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+    bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
     STAR_ASSERT_TRUE(parsed);
     STAR_ASSERT_NOT_NULL(packet);
 
@@ -343,7 +343,7 @@ STAR_TEST_CASE(system_handler, get_version_response_size)
   protocol_send_response(k_status_ok, version, 3);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
@@ -361,7 +361,7 @@ STAR_TEST_CASE(system_handler, get_version_semver_format)
     protocol_send_response(k_status_ok, versions[i], 3);
 
     protocol_packet_t* packet = NULL;
-    bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+    bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
     STAR_ASSERT_TRUE(parsed);
     STAR_ASSERT_NOT_NULL(packet);
 
@@ -380,7 +380,7 @@ STAR_TEST_CASE(system_handler, get_version_error_handling)
   protocol_send_error(k_status_error);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
@@ -439,7 +439,7 @@ STAR_TEST_CASE(system_handler, reset_response_ok)
   protocol_send_response(k_status_ok, NULL, 0);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
@@ -500,7 +500,7 @@ STAR_TEST_CASE(system_handler, reset_error_handling)
   protocol_send_error(k_status_error);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
@@ -543,7 +543,7 @@ STAR_TEST_CASE(system_handler, invalid_command_error)
   protocol_send_error(k_status_invalid_cmd);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
@@ -558,7 +558,7 @@ STAR_TEST_CASE(system_handler, timeout_error)
   protocol_send_error(k_status_timeout);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
@@ -584,7 +584,7 @@ STAR_TEST_CASE(system_handler, general_error)
   protocol_send_error(k_status_error);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 

@@ -9,12 +9,11 @@
 
 #include "pynq_wifi_protocol.h"
 #include "star_test.h"
-
 #include "test_transport_mock.h"
 
 /* Convenience macros for the shared transport mock */
 #define g_transport_buffer transport_mock_get_buffer()
-#define g_transport_len    transport_mock_get_length()
+#define g_transport_len transport_mock_get_length()
 #define reset_transport_mock() transport_mock_reset()
 
 /* ========================================================================

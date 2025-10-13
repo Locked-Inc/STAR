@@ -9,12 +9,11 @@
 
 #include "pynq_wifi_protocol.h"
 #include "star_test.h"
-
 #include "test_transport_mock.h"
 
 /* Convenience macros for the shared transport mock */
 #define g_transport_buffer transport_mock_get_buffer()
-#define g_transport_len    transport_mock_get_length()
+#define g_transport_len transport_mock_get_length()
 #define reset_transport_mock() transport_mock_reset()
 
 /* ========================================================================
@@ -169,7 +168,7 @@ STAR_TEST_CASE(tcp_handler, tcp_connect_response_with_socket_id)
   STAR_ASSERT_TRUE(g_transport_len > 0);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
@@ -190,7 +189,7 @@ STAR_TEST_CASE(tcp_handler, tcp_connect_multiple_socket_ids)
     protocol_send_response(k_status_ok, &socket_id, 1);
 
     protocol_packet_t* packet = NULL;
-    bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+    bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
     STAR_ASSERT_TRUE(parsed);
     STAR_ASSERT_NOT_NULL(packet);
 
@@ -209,7 +208,7 @@ STAR_TEST_CASE(tcp_handler, tcp_connect_error)
   protocol_send_error(k_status_error);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
@@ -386,7 +385,7 @@ STAR_TEST_CASE(tcp_handler, tcp_send_response_with_data)
   STAR_ASSERT_TRUE(g_transport_len > 0);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
@@ -403,7 +402,7 @@ STAR_TEST_CASE(tcp_handler, tcp_send_response_no_data)
   protocol_send_response(k_status_ok, NULL, 0);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
@@ -420,7 +419,7 @@ STAR_TEST_CASE(tcp_handler, tcp_send_invalid_socket_id)
   protocol_send_error(k_status_error);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
@@ -560,7 +559,7 @@ STAR_TEST_CASE(tcp_handler, tcp_close_response_ok)
   protocol_send_response(k_status_ok, NULL, 0);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
@@ -576,7 +575,7 @@ STAR_TEST_CASE(tcp_handler, tcp_close_invalid_socket)
   protocol_send_error(k_status_error);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
@@ -592,7 +591,7 @@ STAR_TEST_CASE(tcp_handler, tcp_close_already_closed)
   protocol_send_error(k_status_error);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
@@ -609,7 +608,7 @@ STAR_TEST_CASE(tcp_handler, tcp_close_multiple_sockets)
     protocol_send_response(k_status_ok, NULL, 0);
 
     protocol_packet_t* packet = NULL;
-    bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+    bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
     STAR_ASSERT_TRUE(parsed);
     STAR_ASSERT_NOT_NULL(packet);
 
@@ -629,7 +628,7 @@ STAR_TEST_CASE(tcp_handler, tcp_wifi_not_connected)
   protocol_send_error(k_status_wifi_failed);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
@@ -644,7 +643,7 @@ STAR_TEST_CASE(tcp_handler, tcp_timeout_error)
   protocol_send_error(k_status_timeout);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
@@ -659,7 +658,7 @@ STAR_TEST_CASE(tcp_handler, tcp_connection_refused)
   protocol_send_error(k_status_error);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
@@ -675,7 +674,7 @@ STAR_TEST_CASE(tcp_handler, tcp_max_connections_exceeded)
   protocol_send_error(k_status_error);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 

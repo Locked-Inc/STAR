@@ -14,7 +14,7 @@
 
 /* Convenience macros for the shared transport mock */
 #define g_transport_buffer transport_mock_get_buffer()
-#define g_transport_len    transport_mock_get_length()
+#define g_transport_len transport_mock_get_length()
 #define reset_transport_mock() transport_mock_reset()
 
 /* ========================================================================
@@ -196,7 +196,7 @@ STAR_TEST_CASE(wifi_handler, wifi_connect_response_ok)
   STAR_ASSERT_TRUE(g_transport_len > 0);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
@@ -211,7 +211,7 @@ STAR_TEST_CASE(wifi_handler, wifi_connect_response_failed)
   protocol_send_error(k_status_wifi_failed);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
@@ -226,7 +226,7 @@ STAR_TEST_CASE(wifi_handler, wifi_connect_timeout)
   protocol_send_error(k_status_timeout);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
@@ -269,7 +269,7 @@ STAR_TEST_CASE(wifi_handler, wifi_disconnect_response_ok)
   protocol_send_response(k_status_ok, NULL, 0);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
@@ -285,7 +285,7 @@ STAR_TEST_CASE(wifi_handler, wifi_disconnect_when_not_connected)
   protocol_send_response(k_status_ok, NULL, 0);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
@@ -300,7 +300,7 @@ STAR_TEST_CASE(wifi_handler, wifi_disconnect_error)
   protocol_send_error(k_status_error);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
@@ -451,7 +451,7 @@ STAR_TEST_CASE(wifi_handler, wifi_status_response_with_data)
   protocol_send_response(k_status_ok, &status, sizeof(status));
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
@@ -605,7 +605,7 @@ STAR_TEST_CASE(wifi_handler, wifi_scan_response_empty)
   protocol_send_response(k_status_ok, NULL, 0);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
@@ -626,7 +626,7 @@ STAR_TEST_CASE(wifi_handler, wifi_scan_response_with_results)
   protocol_send_response(k_status_ok, results, sizeof(results));
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
@@ -646,7 +646,7 @@ STAR_TEST_CASE(wifi_handler, wifi_general_error)
   protocol_send_error(k_status_error);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
@@ -661,7 +661,7 @@ STAR_TEST_CASE(wifi_handler, wifi_timeout_error)
   protocol_send_error(k_status_timeout);
 
   protocol_packet_t* packet = NULL;
-  bool parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
   STAR_ASSERT_TRUE(parsed);
   STAR_ASSERT_NOT_NULL(packet);
 
