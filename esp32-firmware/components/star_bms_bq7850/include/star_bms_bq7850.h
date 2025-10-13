@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include "star_bus_manager.h"
+#include "star_error_handler.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -226,132 +227,144 @@ typedef struct {
   char     chemistry[32];    /**< Battery chemistry */
 } bq7850_device_info_t;
 
+/**
+ * @brief BQ7850 device handle
+ *
+ * Maintains state and error handling for BMS operations.
+ * This structure should be initialized once and reused for all operations.
+ */
+typedef struct bq7850_handle {
+  star_bus_manager_t* manager;       /**< Pointer to bus manager */
+  const char*         bus_name;      /**< Name of I2C/SMBus for this device */
+  uint8_t             smbus_addr;    /**< SMBus device address */
+  bq7850_config_t     config;        /**< Device configuration */
+  error_handler_t     error_handler; /**< Error handler with retry logic */
+} bq7850_handle_t;
+
 /* --- Core Functions --- */
 
 /**
- * @brief Initialize BQ7850 BMS device
+ * @brief Create and initialize BQ7850 BMS device handle
  *
  * Performs device detection, reads configuration, and verifies communication.
+ * Creates a handle that maintains state and error tracking across operations.
  *
- * @param[in] manager   Pointer to initialized bus manager
- * @param[in] bus_name  Name of I2C/SMBus configured for this device
- * @param[in] config    Device configuration
+ * @param[out] handle    Pointer to handle structure (must be allocated by caller)
+ * @param[in]  manager   Pointer to initialized bus manager
+ * @param[in]  bus_name  Name of I2C/SMBus configured for this device
+ * @param[in]  config    Device configuration
  *
  * @return ESP_OK on success, error code otherwise
+ *
+ * @note The handle must be deinitialized with star_bms_bq7850_deinit() when done
  */
-esp_err_t star_bms_bq7850_init(star_bus_manager_t*    manager,
+esp_err_t star_bms_bq7850_init(bq7850_handle_t*       handle,
+                               star_bus_manager_t*    manager,
                                const char*            bus_name,
                                const bq7850_config_t* config);
 
 /**
- * @brief Read device information from BQ7850
+ * @brief Deinitialize BQ7850 BMS device handle
  *
- * @param[in]  manager   Pointer to initialized bus manager
- * @param[in]  bus_name  Name of bus configured for this device
- * @param[out] info      Device information structure
+ * Cleans up resources associated with the handle, including the error handler.
+ *
+ * @param[in] handle Pointer to initialized handle
  *
  * @return ESP_OK on success, error code otherwise
  */
-esp_err_t star_bms_bq7850_get_device_info(star_bus_manager_t*   manager,
-                                          const char*           bus_name,
-                                          bq7850_device_info_t* info);
+esp_err_t star_bms_bq7850_deinit(bq7850_handle_t* handle);
+
+/**
+ * @brief Read device information from BQ7850
+ *
+ * @param[in]  handle Pointer to initialized BMS handle
+ * @param[out] info   Device information structure
+ *
+ * @return ESP_OK on success, error code otherwise
+ */
+esp_err_t star_bms_bq7850_get_device_info(const bq7850_handle_t* handle,
+                                          bq7850_device_info_t*  info);
 
 /**
  * @brief Software reset of BQ7850
  *
  * Issues a soft reset command. Device will take approximately 1 second to reset.
  *
- * @param[in] manager  Pointer to initialized bus manager
- * @param[in] bus_name Name of bus configured for this device
+ * @param[in] handle Pointer to initialized BMS handle
  *
  * @return ESP_OK on success, error code otherwise
  */
-esp_err_t star_bms_bq7850_reset(star_bus_manager_t* manager, const char* bus_name);
+esp_err_t star_bms_bq7850_reset(const bq7850_handle_t* handle);
 
 /* --- Cell Voltage Functions --- */
 
 /**
  * @brief Read all cell voltages
  *
- * @param[in]  manager   Pointer to initialized bus manager
- * @param[in]  bus_name  Name of bus configured for this device
+ * @param[in]  handle    Pointer to initialized BMS handle
  * @param[out] cell_data Cell voltage data structure
  *
  * @return ESP_OK on success, error code otherwise
  */
-esp_err_t star_bms_bq7850_read_cells(star_bus_manager_t* manager,
-                                     const char*         bus_name,
-                                     bq7850_cell_data_t* cell_data);
+esp_err_t star_bms_bq7850_read_cells(const bq7850_handle_t* handle, bq7850_cell_data_t* cell_data);
 
 /**
  * @brief Read single cell voltage
  *
- * @param[in]  manager     Pointer to initialized bus manager
- * @param[in]  bus_name    Name of bus configured for this device
- * @param[in]  cell_index  Cell index (0-15)
- * @param[out] voltage_mv  Cell voltage in millivolts
+ * @param[in]  handle     Pointer to initialized BMS handle
+ * @param[in]  cell_index Cell index (0-15)
+ * @param[out] voltage_mv Cell voltage in millivolts
  *
  * @return ESP_OK on success, ESP_ERR_INVALID_ARG if cell_index >= 16
  */
-esp_err_t star_bms_bq7850_read_cell_voltage(star_bus_manager_t* manager,
-                                            const char*         bus_name,
-                                            uint8_t             cell_index,
-                                            uint16_t*           voltage_mv);
+esp_err_t star_bms_bq7850_read_cell_voltage(const bq7850_handle_t* handle,
+                                            uint8_t                cell_index,
+                                            uint16_t*              voltage_mv);
 
 /**
  * @brief Read pack voltage
  *
- * @param[in]  manager    Pointer to initialized bus manager
- * @param[in]  bus_name   Name of bus configured for this device
+ * @param[in]  handle     Pointer to initialized BMS handle
  * @param[out] voltage_mv Pack voltage in millivolts
  *
  * @return ESP_OK on success, error code otherwise
  */
-esp_err_t star_bms_bq7850_read_pack_voltage(star_bus_manager_t* manager,
-                                            const char*         bus_name,
-                                            uint16_t*           voltage_mv);
+esp_err_t star_bms_bq7850_read_pack_voltage(const bq7850_handle_t* handle, uint16_t* voltage_mv);
 
 /* --- Temperature Functions --- */
 
 /**
  * @brief Read all temperature sensors
  *
- * @param[in]  manager   Pointer to initialized bus manager
- * @param[in]  bus_name  Name of bus configured for this device
+ * @param[in]  handle    Pointer to initialized BMS handle
  * @param[out] temp_data Temperature data structure
  *
  * @return ESP_OK on success, error code otherwise
  */
-esp_err_t star_bms_bq7850_read_temperatures(star_bus_manager_t* manager,
-                                            const char*         bus_name,
-                                            bq7850_temp_data_t* temp_data);
+esp_err_t star_bms_bq7850_read_temperatures(const bq7850_handle_t* handle,
+                                            bq7850_temp_data_t*    temp_data);
 
 /**
  * @brief Read pack temperature
  *
- * @param[in]  manager  Pointer to initialized bus manager
- * @param[in]  bus_name Name of bus configured for this device
- * @param[out] temp_c   Temperature in 0.1°C (e.g., 253 = 25.3°C)
+ * @param[in]  handle Pointer to initialized BMS handle
+ * @param[out] temp_c Temperature in 0.1°C (e.g., 253 = 25.3°C)
  *
  * @return ESP_OK on success, error code otherwise
  */
-esp_err_t star_bms_bq7850_read_temperature(star_bus_manager_t* manager,
-                                           const char*         bus_name,
-                                           int16_t*            temp_c);
+esp_err_t star_bms_bq7850_read_temperature(const bq7850_handle_t* handle, int16_t* temp_c);
 
 /* --- Current and Power Functions --- */
 
 /**
  * @brief Read current measurements
  *
- * @param[in]  manager      Pointer to initialized bus manager
- * @param[in]  bus_name     Name of bus configured for this device
+ * @param[in]  handle       Pointer to initialized BMS handle
  * @param[out] current_data Current and power data structure
  *
  * @return ESP_OK on success, error code otherwise
  */
-esp_err_t star_bms_bq7850_read_current(star_bus_manager_t*    manager,
-                                       const char*            bus_name,
+esp_err_t star_bms_bq7850_read_current(const bq7850_handle_t* handle,
                                        bq7850_current_data_t* current_data);
 
 /* --- State of Charge Functions --- */
@@ -359,30 +372,24 @@ esp_err_t star_bms_bq7850_read_current(star_bus_manager_t*    manager,
 /**
  * @brief Read state of charge data
  *
- * @param[in]  manager  Pointer to initialized bus manager
- * @param[in]  bus_name Name of bus configured for this device
+ * @param[in]  handle   Pointer to initialized BMS handle
  * @param[out] soc_data SOC data structure
  *
  * @return ESP_OK on success, error code otherwise
  */
-esp_err_t star_bms_bq7850_read_soc(star_bus_manager_t* manager,
-                                   const char*         bus_name,
-                                   bq7850_soc_data_t*  soc_data);
+esp_err_t star_bms_bq7850_read_soc(const bq7850_handle_t* handle, bq7850_soc_data_t* soc_data);
 
 /* --- Status Functions --- */
 
 /**
  * @brief Read all status flags
  *
- * @param[in]  manager Pointer to initialized bus manager
- * @param[in]  bus_name Name of bus configured for this device
- * @param[out] status  Status structure
+ * @param[in]  handle Pointer to initialized BMS handle
+ * @param[out] status Status structure
  *
  * @return ESP_OK on success, error code otherwise
  */
-esp_err_t star_bms_bq7850_read_status(star_bus_manager_t* manager,
-                                      const char*         bus_name,
-                                      bq7850_status_t*    status);
+esp_err_t star_bms_bq7850_read_status(const bq7850_handle_t* handle, bq7850_status_t* status);
 
 /**
  * @brief Read complete battery state
@@ -390,14 +397,12 @@ esp_err_t star_bms_bq7850_read_status(star_bus_manager_t* manager,
  * Reads all battery parameters in a single call (cells, temps, current, SOC, status).
  * This is more efficient than calling individual functions.
  *
- * @param[in]  manager Pointer to initialized bus manager
- * @param[in]  bus_name Name of bus configured for this device
- * @param[out] state   Complete battery state structure
+ * @param[in]  handle Pointer to initialized BMS handle
+ * @param[out] state  Complete battery state structure
  *
  * @return ESP_OK on success, error code otherwise
  */
-esp_err_t star_bms_bq7850_read_battery_state(star_bus_manager_t*     manager,
-                                             const char*             bus_name,
+esp_err_t star_bms_bq7850_read_battery_state(const bq7850_handle_t*  handle,
                                              bq7850_battery_state_t* state);
 
 /* --- Cell Balancing Functions --- */
@@ -408,67 +413,57 @@ esp_err_t star_bms_bq7850_read_battery_state(star_bus_manager_t*     manager,
  * Enables cell balancing for specified cells. The BQ7850 will automatically
  * balance cells based on configured thresholds.
  *
- * @param[in] manager   Pointer to initialized bus manager
- * @param[in] bus_name  Name of bus configured for this device
+ * @param[in] handle    Pointer to initialized BMS handle
  * @param[in] cell_mask Bitmask of cells to balance (bit 0 = cell 1, etc.)
  *
  * @return ESP_OK on success, error code otherwise
  */
-esp_err_t star_bms_bq7850_enable_cell_balancing(star_bus_manager_t* manager,
-                                                const char*         bus_name,
-                                                uint16_t            cell_mask);
+esp_err_t star_bms_bq7850_enable_cell_balancing(const bq7850_handle_t* handle, uint16_t cell_mask);
 
 /**
  * @brief Disable cell balancing
  *
- * @param[in] manager  Pointer to initialized bus manager
- * @param[in] bus_name Name of bus configured for this device
+ * @param[in] handle Pointer to initialized BMS handle
  *
  * @return ESP_OK on success, error code otherwise
  */
-esp_err_t star_bms_bq7850_disable_cell_balancing(star_bus_manager_t* manager, const char* bus_name);
+esp_err_t star_bms_bq7850_disable_cell_balancing(const bq7850_handle_t* handle);
 
 /**
  * @brief Get cell balancing status
  *
- * @param[in]  manager     Pointer to initialized bus manager
- * @param[in]  bus_name    Name of bus configured for this device
+ * @param[in]  handle      Pointer to initialized BMS handle
  * @param[out] active_mask Bitmask of cells currently balancing
  *
  * @return ESP_OK on success, error code otherwise
  */
-esp_err_t star_bms_bq7850_get_balancing_status(star_bus_manager_t* manager,
-                                               const char*         bus_name,
-                                               uint16_t*           active_mask);
+esp_err_t star_bms_bq7850_get_balancing_status(const bq7850_handle_t* handle,
+                                               uint16_t*              active_mask);
 
 /* --- Protection Functions --- */
 
 /**
  * @brief Read protection thresholds
  *
- * @param[in]  manager    Pointer to initialized bus manager
- * @param[in]  bus_name   Name of bus configured for this device
+ * @param[in]  handle     Pointer to initialized BMS handle
  * @param[out] protection Protection thresholds structure
  *
  * @return ESP_OK on success, error code otherwise
  */
-esp_err_t star_bms_bq7850_read_protection(star_bus_manager_t*  manager,
-                                          const char*          bus_name,
-                                          bq7850_protection_t* protection);
+esp_err_t star_bms_bq7850_read_protection(const bq7850_handle_t* handle,
+                                          bq7850_protection_t*   protection);
 
 /**
  * @brief Write protection thresholds
  *
  * Note: Device must be unsealed to modify protection settings.
  *
- * @param[in] manager    Pointer to initialized bus manager
- * @param[in] bus_name   Name of bus configured for this device
+ * @param[in] handle     Pointer to initialized BMS handle
  * @param[in] protection Protection thresholds to write
  *
  * @return ESP_OK on success, error code otherwise
  */
-esp_err_t star_bms_bq7850_write_protection(star_bus_manager_t*        manager,
-                                           const char*                bus_name,
+esp_err_t star_bms_bq7850_write_protection(const bq7850_handle_t*     handle,
                                            const bq7850_protection_t* protection);
 
 /* --- FET Control Functions --- */
@@ -476,17 +471,14 @@ esp_err_t star_bms_bq7850_write_protection(star_bus_manager_t*        manager,
 /**
  * @brief Control charge/discharge FETs
  *
- * @param[in] manager      Pointer to initialized bus manager
- * @param[in] bus_name     Name of bus configured for this device
- * @param[in] charge_fet   true to enable charge FET
+ * @param[in] handle        Pointer to initialized BMS handle
+ * @param[in] charge_fet    true to enable charge FET
  * @param[in] discharge_fet true to enable discharge FET
  *
  * @return ESP_OK on success, error code otherwise
  */
-esp_err_t star_bms_bq7850_control_fets(star_bus_manager_t* manager,
-                                       const char*         bus_name,
-                                       bool                charge_fet,
-                                       bool                discharge_fet);
+esp_err_t
+star_bms_bq7850_control_fets(const bq7850_handle_t* handle, bool charge_fet, bool discharge_fet);
 
 /* --- Helper Functions --- */
 
