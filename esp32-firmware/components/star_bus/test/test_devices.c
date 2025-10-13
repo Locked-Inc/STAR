@@ -10,8 +10,6 @@
 #include "star_bus_manager.h"
 #include "star_test.h"
 
-static const char* TAG = "test_devices";
-
 /* Test fixtures */
 static star_bus_manager_t test_manager;
 

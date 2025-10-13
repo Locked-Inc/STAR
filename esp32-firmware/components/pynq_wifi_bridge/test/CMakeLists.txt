@@ -2,4 +2,4 @@
 
 idf_component_register(SRC_DIRS "."
                        INCLUDE_DIRS "."
-                       REQUIRES star_test pynq_wifi_bridge)
+                       REQUIRES star_test pynq_wifi_bridge star_bus)

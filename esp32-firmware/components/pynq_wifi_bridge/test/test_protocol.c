@@ -13,9 +13,10 @@
 /* Mock transport for testing send functions */
 static uint8_t  g_transport_buffer[2048];
 static uint16_t g_transport_len   = 0;
-static int      g_transport_error = 0;
+static uint8_t  g_transport_error = 0;
 
-int transport_send(const uint8_t* data, uint16_t len)
+/* Weak symbol to override real transport_send in test environment */
+__attribute__((weak)) int32_t transport_send(const uint8_t* data, uint16_t len)
 {
   if (g_transport_error) {
     return -1;
@@ -25,7 +26,7 @@ int transport_send(const uint8_t* data, uint16_t len)
   }
   memcpy(g_transport_buffer, data, len);
   g_transport_len = len;
-  return len;
+  return (int32_t)len;
 }
 
 static void reset_transport_mock(void)

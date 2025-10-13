@@ -7,6 +7,7 @@
 extern "C" {
 #endif
 
+#include "driver/gpio.h"
 #include "driver/i2c.h"
 #include "driver/spi_master.h" /* Added for SPI */
 
@@ -17,6 +18,7 @@ extern "C" {
 #include "star_bus_common_types.h"
 #include "star_bus_event_types.h"
 #include "star_bus_function_types.h"
+#include "star_error_handler.h"
 
 /* --- Protocol Configuration Structures --- */
 
@@ -43,11 +45,12 @@ typedef struct star_i2c_ops {
  * @brief I2C bus configuration structure (part of star_bus_config_t).
  */
 typedef struct star_i2c_bus_config {
-  i2c_port_t           port;      /**< I2C port number */
-  i2c_config_t         config;    /**< Underlying ESP-IDF I2C configuration */
-  uint8_t              address;   /**< 7-bit I2C device address for this config */
-  star_i2c_callbacks_t callbacks; /**< User-provided callback functions */
-  star_i2c_ops_t       ops;       /**< Operation function pointers (defaults provided) */
+  i2c_port_t           port;          /**< I2C port number */
+  i2c_config_t         config;        /**< Underlying ESP-IDF I2C configuration */
+  uint8_t              address;       /**< 7-bit I2C device address for this config */
+  star_i2c_callbacks_t callbacks;     /**< User-provided callback functions */
+  star_i2c_ops_t       ops;           /**< Operation function pointers (defaults provided) */
+  error_handler_t      error_handler; /**< Error handler for I2C transaction retry logic */
 } star_i2c_bus_config_t;
 
 /**
@@ -90,15 +93,15 @@ typedef struct star_spi_bus_config {
    * This modern terminology removes master/slave language while maintaining clarity.
    * The ESP-IDF still uses mosi_io_num/miso_io_num internally, which we map here.
    */
-  int     copi_io_num;     /**< GPIO pin for COPI (Controller Out, Peripheral In) */
-  int     cipo_io_num;     /**< GPIO pin for CIPO (Controller In, Peripheral Out) */
-  int     sclk_io_num;     /**< GPIO pin for SCLK (Serial Clock) */
-  int     cs_io_num;       /**< GPIO pin for CS (Chip Select) - used in peripheral mode */
-  int     quadwp_io_num;   /**< GPIO pin for Quad SPI WP (Write Protect) */
-  int     quadhd_io_num;   /**< GPIO pin for Quad SPI HD (Hold) */
-  int     max_transfer_sz; /**< Maximum transfer size, in bytes */
-  int     queue_size;      /**< Transaction queue size (peripheral mode) */
-  uint8_t mode;            /**< SPI mode 0-3 (peripheral mode) */
+  gpio_num_t copi_io_num;     /**< GPIO pin for COPI (Controller Out, Peripheral In) */
+  gpio_num_t cipo_io_num;     /**< GPIO pin for CIPO (Controller In, Peripheral Out) */
+  gpio_num_t sclk_io_num;     /**< GPIO pin for SCLK (Serial Clock) */
+  gpio_num_t cs_io_num;       /**< GPIO pin for CS (Chip Select) - used in peripheral mode */
+  gpio_num_t quadwp_io_num;   /**< GPIO pin for Quad SPI WP (Write Protect) */
+  gpio_num_t quadhd_io_num;   /**< GPIO pin for Quad SPI HD (Hold) */
+  int32_t    max_transfer_sz; /**< Maximum transfer size, in bytes */
+  uint8_t    queue_size;      /**< Transaction queue size (peripheral mode) */
+  uint8_t    mode;            /**< SPI mode 0-3 (peripheral mode) */
   /* flags and intr_flags are also part of spi_bus_config_t if needed */
 
 } star_spi_bus_config_t;

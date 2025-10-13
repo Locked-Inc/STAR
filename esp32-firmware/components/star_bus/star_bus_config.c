@@ -16,6 +16,7 @@
 #include "esp_check.h"
 #include "esp_log.h"
 #include "star_bus_manager_types.h"
+#include "star_error_handler.h"
 
 /* --- Constants --- */
 
@@ -59,6 +60,18 @@ star_bus_config_t* star_bus_config_create_i2c(const char* name,
 
   /* Initialize default operations */
   star_bus_i2c_init_default_ops(&config->proto.i2c.ops);
+
+  /* Initialize error handler for I2C retry logic */
+  esp_err_t err = error_handler_init(&config->proto.i2c.error_handler,
+                                     3,     /* max_retries */
+                                     10,    /* base_retry_delay (ms) */
+                                     100,   /* max_retry_delay (ms) */
+                                     NULL,  /* no reset function */
+                                     NULL); /* no reset context */
+  if (err != ESP_OK) {
+    ESP_LOGE(TAG, "Failed to initialize error handler for '%s': %s", name, esp_err_to_name(err));
+    /* Continue anyway - operations will work without retry */
+  }
 
   ESP_LOGI(TAG,
            "Created I2C config '%s' (Port: %d, Addr: 0x%02X, SDA: %d, SCL: %d, Speed: %lu Hz)",
@@ -416,6 +429,10 @@ esp_err_t star_bus_config_deinit(star_bus_config_t* config)
     case k_star_bus_type_i2c:
       /* Deinitialize I2C bus */
       ESP_LOGI(TAG, "Deinitializing I2C bus '%s' (Port %d)", bus_name, config->proto.i2c.port);
+
+      /* Deinitialize error handler */
+      error_handler_deinit(&config->proto.i2c.error_handler);
+
       ret = i2c_driver_delete(config->proto.i2c.port);
       break;
 

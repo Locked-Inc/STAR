@@ -405,8 +405,8 @@ esp_err_t star_bus_uart_enable_pattern(star_bus_manager_t* manager,
                                        const char*         bus_name,
                                        char                pattern,
                                        uint8_t             count,
-                                       int                 post_idle,
-                                       int                 pre_idle)
+                                       int32_t             post_idle,
+                                       int32_t             pre_idle)
 {
   if (manager == NULL || bus_name == NULL) {
     return ESP_ERR_INVALID_ARG;
