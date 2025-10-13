@@ -9,7 +9,7 @@
 static const char* TAG = "protocol";
 
 /* Forward declarations for transport layer (implemented elsewhere) */
-extern int transport_send(const uint8_t* data, uint16_t len);
+extern int32_t transport_send(const uint8_t* data, uint16_t len);
 
 uint16_t
 protocol_create_packet(uint8_t cmd, const void* payload, uint16_t payload_len, uint8_t* packet_out)
@@ -111,7 +111,7 @@ void protocol_send_response(uint8_t status, const void* data, uint16_t data_len)
                                                buffer);
 
   if (packet_len > 0) {
-    int ret = transport_send(buffer, packet_len);
+    int32_t ret = transport_send(buffer, packet_len);
     if (ret < 0) {
       ESP_LOGE(TAG, "Failed to send response: %d", ret);
     }

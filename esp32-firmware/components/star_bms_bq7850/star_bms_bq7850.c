@@ -72,11 +72,12 @@ static esp_err_t bq7850_read_cell_voltage_internal(star_bus_manager_t* manager,
 
 /* --- Core Functions --- */
 
-esp_err_t star_bms_bq7850_init(star_bus_manager_t*    manager,
+esp_err_t star_bms_bq7850_init(bq7850_handle_t*       handle,
+                               star_bus_manager_t*    manager,
                                const char*            bus_name,
                                const bq7850_config_t* config)
 {
-  if (manager == NULL || bus_name == NULL || config == NULL) {
+  if (handle == NULL || manager == NULL || bus_name == NULL || config == NULL) {
     return ESP_ERR_INVALID_ARG;
   }
 
@@ -88,21 +89,41 @@ esp_err_t star_bms_bq7850_init(star_bus_manager_t*    manager,
     return ESP_ERR_INVALID_ARG;
   }
 
+  /* Initialize handle */
+  memset(handle, 0, sizeof(bq7850_handle_t));
+  handle->manager    = manager;
+  handle->bus_name   = bus_name;
+  handle->smbus_addr = config->smbus_addr;
+  memcpy(&handle->config, config, sizeof(bq7850_config_t));
+
+  /* Initialize error handler with BMS-specific parameters */
+  esp_err_t ret = error_handler_init(&handle->error_handler,
+                                     3,     /* max_retries */
+                                     50,    /* base_retry_delay (ms) - longer for BMS */
+                                     200,   /* max_retry_delay (ms) */
+                                     NULL,  /* no reset function */
+                                     NULL); /* no reset context */
+  if (ret != ESP_OK) {
+    ESP_LOGE(TAG, "Failed to initialize error handler: %s", esp_err_to_name(ret));
+    return ret;
+  }
+
   ESP_LOGI(TAG,
            "Initializing BQ7850 BMS on bus '%s' at address 0x%02X",
            bus_name,
            config->smbus_addr);
 
   /* Verify device communication by reading device type */
-  uint16_t  device_type = 0;
-  esp_err_t ret         = bq7850_manufacturer_access(manager,
-                                             bus_name,
-                                             config->smbus_addr,
-                                             BQ7850_SUBCMD_DEVICE_TYPE,
-                                             &device_type);
+  uint16_t device_type = 0;
+  ret                  = bq7850_manufacturer_access(manager,
+                                   bus_name,
+                                   config->smbus_addr,
+                                   BQ7850_SUBCMD_DEVICE_TYPE,
+                                   &device_type);
 
   if (ret != ESP_OK) {
     ESP_LOGE(TAG, "Failed to communicate with BQ7850: %s", esp_err_to_name(ret));
+    error_handler_deinit(&handle->error_handler);
     return ret;
   }
 
@@ -124,6 +145,7 @@ esp_err_t star_bms_bq7850_init(star_bus_manager_t*    manager,
   ret = star_smbus_read_word(manager, bus_name, config->smbus_addr, BQ7850_CMD_VOLTAGE, &voltage);
   if (ret != ESP_OK) {
     ESP_LOGE(TAG, "Failed to read pack voltage: %s", esp_err_to_name(ret));
+    error_handler_deinit(&handle->error_handler);
     return ret;
   }
 
@@ -132,17 +154,33 @@ esp_err_t star_bms_bq7850_init(star_bus_manager_t*    manager,
   return ESP_OK;
 }
 
-esp_err_t star_bms_bq7850_get_device_info(star_bus_manager_t*   manager,
-                                          const char*           bus_name,
-                                          bq7850_device_info_t* info)
+esp_err_t star_bms_bq7850_deinit(bq7850_handle_t* handle)
 {
-  if (manager == NULL || bus_name == NULL || info == NULL) {
+  if (handle == NULL) {
     return ESP_ERR_INVALID_ARG;
   }
 
-  /* Use default address if not specified elsewhere */
-  uint8_t   addr = BQ7850_DEFAULT_ADDR;
-  esp_err_t ret;
+  ESP_LOGI(TAG, "Deinitializing BQ7850 BMS handle");
+
+  /* Deinitialize error handler */
+  error_handler_deinit(&handle->error_handler);
+
+  /* Clear handle */
+  memset(handle, 0, sizeof(bq7850_handle_t));
+
+  return ESP_OK;
+}
+
+esp_err_t star_bms_bq7850_get_device_info(const bq7850_handle_t* handle, bq7850_device_info_t* info)
+{
+  if (handle == NULL || info == NULL) {
+    return ESP_ERR_INVALID_ARG;
+  }
+
+  star_bus_manager_t* manager  = handle->manager;
+  const char*         bus_name = handle->bus_name;
+  uint8_t             addr     = handle->smbus_addr;
+  esp_err_t           ret;
 
   memset(info, 0, sizeof(bq7850_device_info_t));
 
@@ -177,7 +215,7 @@ esp_err_t star_bms_bq7850_get_device_info(star_bus_manager_t*   manager,
   }
 
   /* Read serial number */
-  uint16_t serial_low = 0, serial_high = 0;
+  uint16_t serial_low = 0;
   ret = star_smbus_read_word(manager, bus_name, addr, BQ7850_CMD_SERIAL_NUMBER, &serial_low);
   if (ret == ESP_OK) {
     info->serial_number = serial_low;
@@ -229,18 +267,19 @@ esp_err_t star_bms_bq7850_get_device_info(star_bus_manager_t*   manager,
   return ESP_OK;
 }
 
-esp_err_t star_bms_bq7850_reset(star_bus_manager_t* manager, const char* bus_name)
+esp_err_t star_bms_bq7850_reset(const bq7850_handle_t* handle)
 {
-  if (manager == NULL || bus_name == NULL) {
+  if (handle == NULL) {
     return ESP_ERR_INVALID_ARG;
   }
 
-  uint8_t addr = BQ7850_DEFAULT_ADDR;
-
   ESP_LOGW(TAG, "Issuing software reset to BQ7850");
 
-  esp_err_t ret =
-    bq7850_manufacturer_access(manager, bus_name, addr, BQ7850_SUBCMD_DEVICE_RESET, NULL);
+  esp_err_t ret = bq7850_manufacturer_access(handle->manager,
+                                             handle->bus_name,
+                                             handle->smbus_addr,
+                                             BQ7850_SUBCMD_DEVICE_RESET,
+                                             NULL);
 
   if (ret == ESP_OK) {
     /* Device takes ~1 second to reset */
@@ -253,16 +292,16 @@ esp_err_t star_bms_bq7850_reset(star_bus_manager_t* manager, const char* bus_nam
 
 /* --- Cell Voltage Functions --- */
 
-esp_err_t star_bms_bq7850_read_cells(star_bus_manager_t* manager,
-                                     const char*         bus_name,
-                                     bq7850_cell_data_t* cell_data)
+esp_err_t star_bms_bq7850_read_cells(const bq7850_handle_t* handle, bq7850_cell_data_t* cell_data)
 {
-  if (manager == NULL || bus_name == NULL || cell_data == NULL) {
+  if (handle == NULL || cell_data == NULL) {
     return ESP_ERR_INVALID_ARG;
   }
 
-  uint8_t   addr = BQ7850_DEFAULT_ADDR;
-  esp_err_t ret  = ESP_OK;
+  star_bus_manager_t* manager  = handle->manager;
+  const char*         bus_name = handle->bus_name;
+  uint8_t             addr     = handle->smbus_addr;
+  esp_err_t           ret      = ESP_OK;
 
   memset(cell_data, 0, sizeof(bq7850_cell_data_t));
 
@@ -287,12 +326,11 @@ esp_err_t star_bms_bq7850_read_cells(star_bus_manager_t* manager,
   return (cell_data->valid_cells > 0) ? ESP_OK : ESP_FAIL;
 }
 
-esp_err_t star_bms_bq7850_read_cell_voltage(star_bus_manager_t* manager,
-                                            const char*         bus_name,
-                                            uint8_t             cell_index,
-                                            uint16_t*           voltage_mv)
+esp_err_t star_bms_bq7850_read_cell_voltage(const bq7850_handle_t* handle,
+                                            uint8_t                cell_index,
+                                            uint16_t*              voltage_mv)
 {
-  if (manager == NULL || bus_name == NULL || voltage_mv == NULL) {
+  if (handle == NULL || voltage_mv == NULL) {
     return ESP_ERR_INVALID_ARG;
   }
 
@@ -300,34 +338,39 @@ esp_err_t star_bms_bq7850_read_cell_voltage(star_bus_manager_t* manager,
     return ESP_ERR_INVALID_ARG;
   }
 
-  uint8_t addr = BQ7850_DEFAULT_ADDR;
-  return bq7850_read_cell_voltage_internal(manager, bus_name, addr, cell_index, voltage_mv);
+  return bq7850_read_cell_voltage_internal(handle->manager,
+                                           handle->bus_name,
+                                           handle->smbus_addr,
+                                           cell_index,
+                                           voltage_mv);
 }
 
-esp_err_t star_bms_bq7850_read_pack_voltage(star_bus_manager_t* manager,
-                                            const char*         bus_name,
-                                            uint16_t*           voltage_mv)
+esp_err_t star_bms_bq7850_read_pack_voltage(const bq7850_handle_t* handle, uint16_t* voltage_mv)
 {
-  if (manager == NULL || bus_name == NULL || voltage_mv == NULL) {
+  if (handle == NULL || voltage_mv == NULL) {
     return ESP_ERR_INVALID_ARG;
   }
 
-  uint8_t addr = BQ7850_DEFAULT_ADDR;
-  return star_smbus_read_word(manager, bus_name, addr, BQ7850_CMD_VOLTAGE, voltage_mv);
+  return star_smbus_read_word(handle->manager,
+                              handle->bus_name,
+                              handle->smbus_addr,
+                              BQ7850_CMD_VOLTAGE,
+                              voltage_mv);
 }
 
 /* --- Temperature Functions --- */
 
-esp_err_t star_bms_bq7850_read_temperatures(star_bus_manager_t* manager,
-                                            const char*         bus_name,
-                                            bq7850_temp_data_t* temp_data)
+esp_err_t star_bms_bq7850_read_temperatures(const bq7850_handle_t* handle,
+                                            bq7850_temp_data_t*    temp_data)
 {
-  if (manager == NULL || bus_name == NULL || temp_data == NULL) {
+  if (handle == NULL || temp_data == NULL) {
     return ESP_ERR_INVALID_ARG;
   }
 
-  uint8_t   addr = BQ7850_DEFAULT_ADDR;
-  esp_err_t ret;
+  star_bus_manager_t* manager  = handle->manager;
+  const char*         bus_name = handle->bus_name;
+  uint8_t             addr     = handle->smbus_addr;
+  esp_err_t           ret;
 
   memset(temp_data, 0, sizeof(bq7850_temp_data_t));
 
@@ -357,15 +400,16 @@ esp_err_t star_bms_bq7850_read_temperatures(star_bus_manager_t* manager,
   return (temp_data->valid_sensors > 0) ? ESP_OK : ESP_FAIL;
 }
 
-esp_err_t
-star_bms_bq7850_read_temperature(star_bus_manager_t* manager, const char* bus_name, int16_t* temp_c)
+esp_err_t star_bms_bq7850_read_temperature(const bq7850_handle_t* handle, int16_t* temp_c)
 {
-  if (manager == NULL || bus_name == NULL || temp_c == NULL) {
+  if (handle == NULL || temp_c == NULL) {
     return ESP_ERR_INVALID_ARG;
   }
 
-  uint8_t   addr = BQ7850_DEFAULT_ADDR;
-  uint16_t  temp_raw;
+  star_bus_manager_t* manager  = handle->manager;
+  const char*         bus_name = handle->bus_name;
+  uint8_t             addr     = handle->smbus_addr;
+  uint16_t            temp_raw;
   esp_err_t ret = star_smbus_read_word(manager, bus_name, addr, BQ7850_CMD_TEMPERATURE, &temp_raw);
 
   if (ret == ESP_OK) {
@@ -378,16 +422,17 @@ star_bms_bq7850_read_temperature(star_bus_manager_t* manager, const char* bus_na
 
 /* --- Current and Power Functions --- */
 
-esp_err_t star_bms_bq7850_read_current(star_bus_manager_t*    manager,
-                                       const char*            bus_name,
+esp_err_t star_bms_bq7850_read_current(const bq7850_handle_t* handle,
                                        bq7850_current_data_t* current_data)
 {
-  if (manager == NULL || bus_name == NULL || current_data == NULL) {
+  if (handle == NULL || current_data == NULL) {
     return ESP_ERR_INVALID_ARG;
   }
 
-  uint8_t   addr = BQ7850_DEFAULT_ADDR;
-  esp_err_t ret;
+  star_bus_manager_t* manager  = handle->manager;
+  const char*         bus_name = handle->bus_name;
+  uint8_t             addr     = handle->smbus_addr;
+  esp_err_t           ret;
 
   memset(current_data, 0, sizeof(bq7850_current_data_t));
 
@@ -428,16 +473,16 @@ esp_err_t star_bms_bq7850_read_current(star_bus_manager_t*    manager,
 
 /* --- State of Charge Functions --- */
 
-esp_err_t star_bms_bq7850_read_soc(star_bus_manager_t* manager,
-                                   const char*         bus_name,
-                                   bq7850_soc_data_t*  soc_data)
+esp_err_t star_bms_bq7850_read_soc(const bq7850_handle_t* handle, bq7850_soc_data_t* soc_data)
 {
-  if (manager == NULL || bus_name == NULL || soc_data == NULL) {
+  if (handle == NULL || soc_data == NULL) {
     return ESP_ERR_INVALID_ARG;
   }
 
-  uint8_t   addr = BQ7850_DEFAULT_ADDR;
-  esp_err_t ret;
+  star_bus_manager_t* manager  = handle->manager;
+  const char*         bus_name = handle->bus_name;
+  uint8_t             addr     = handle->smbus_addr;
+  esp_err_t           ret;
 
   memset(soc_data, 0, sizeof(bq7850_soc_data_t));
 
@@ -487,16 +532,16 @@ esp_err_t star_bms_bq7850_read_soc(star_bus_manager_t* manager,
 
 /* --- Status Functions --- */
 
-esp_err_t star_bms_bq7850_read_status(star_bus_manager_t* manager,
-                                      const char*         bus_name,
-                                      bq7850_status_t*    status)
+esp_err_t star_bms_bq7850_read_status(const bq7850_handle_t* handle, bq7850_status_t* status)
 {
-  if (manager == NULL || bus_name == NULL || status == NULL) {
+  if (handle == NULL || status == NULL) {
     return ESP_ERR_INVALID_ARG;
   }
 
-  uint8_t   addr = BQ7850_DEFAULT_ADDR;
-  esp_err_t ret;
+  star_bus_manager_t* manager  = handle->manager;
+  const char*         bus_name = handle->bus_name;
+  uint8_t             addr     = handle->smbus_addr;
+  esp_err_t           ret;
 
   memset(status, 0, sizeof(bq7850_status_t));
 
@@ -544,11 +589,10 @@ esp_err_t star_bms_bq7850_read_status(star_bus_manager_t* manager,
   return ESP_OK;
 }
 
-esp_err_t star_bms_bq7850_read_battery_state(star_bus_manager_t*     manager,
-                                             const char*             bus_name,
+esp_err_t star_bms_bq7850_read_battery_state(const bq7850_handle_t*  handle,
                                              bq7850_battery_state_t* state)
 {
-  if (manager == NULL || bus_name == NULL || state == NULL) {
+  if (handle == NULL || state == NULL) {
     return ESP_ERR_INVALID_ARG;
   }
 
@@ -557,27 +601,27 @@ esp_err_t star_bms_bq7850_read_battery_state(star_bus_manager_t*     manager,
   memset(state, 0, sizeof(bq7850_battery_state_t));
 
   /* Read all battery parameters */
-  ret = star_bms_bq7850_read_cells(manager, bus_name, &state->cells);
+  ret = star_bms_bq7850_read_cells(handle, &state->cells);
   if (ret != ESP_OK) {
     ESP_LOGE(TAG, "Failed to read cell data: %s", esp_err_to_name(ret));
   }
 
-  ret = star_bms_bq7850_read_temperatures(manager, bus_name, &state->temps);
+  ret = star_bms_bq7850_read_temperatures(handle, &state->temps);
   if (ret != ESP_OK) {
     ESP_LOGW(TAG, "Failed to read temperature data: %s", esp_err_to_name(ret));
   }
 
-  ret = star_bms_bq7850_read_current(manager, bus_name, &state->current);
+  ret = star_bms_bq7850_read_current(handle, &state->current);
   if (ret != ESP_OK) {
     ESP_LOGE(TAG, "Failed to read current data: %s", esp_err_to_name(ret));
   }
 
-  ret = star_bms_bq7850_read_soc(manager, bus_name, &state->soc);
+  ret = star_bms_bq7850_read_soc(handle, &state->soc);
   if (ret != ESP_OK) {
     ESP_LOGE(TAG, "Failed to read SOC data: %s", esp_err_to_name(ret));
   }
 
-  ret = star_bms_bq7850_read_status(manager, bus_name, &state->status);
+  ret = star_bms_bq7850_read_status(handle, &state->status);
   if (ret != ESP_OK) {
     ESP_LOGE(TAG, "Failed to read status: %s", esp_err_to_name(ret));
   }
@@ -587,59 +631,62 @@ esp_err_t star_bms_bq7850_read_battery_state(star_bus_manager_t*     manager,
 
 /* --- Cell Balancing Functions --- */
 
-esp_err_t star_bms_bq7850_enable_cell_balancing(star_bus_manager_t* manager,
-                                                const char*         bus_name,
-                                                uint16_t            cell_mask)
+esp_err_t star_bms_bq7850_enable_cell_balancing(const bq7850_handle_t* handle, uint16_t cell_mask)
 {
-  if (manager == NULL || bus_name == NULL) {
+  if (handle == NULL) {
     return ESP_ERR_INVALID_ARG;
   }
 
-  uint8_t addr = BQ7850_DEFAULT_ADDR;
+  star_bus_manager_t* manager  = handle->manager;
+  const char*         bus_name = handle->bus_name;
+  uint8_t             addr     = handle->smbus_addr;
 
   ESP_LOGI(TAG, "Enabling cell balancing, mask: 0x%04X", cell_mask);
 
   return star_smbus_write_word(manager, bus_name, addr, BQ7850_CMD_CELL_BALANCE_CTRL, cell_mask);
 }
 
-esp_err_t star_bms_bq7850_disable_cell_balancing(star_bus_manager_t* manager, const char* bus_name)
+esp_err_t star_bms_bq7850_disable_cell_balancing(const bq7850_handle_t* handle)
 {
-  if (manager == NULL || bus_name == NULL) {
+  if (handle == NULL) {
     return ESP_ERR_INVALID_ARG;
   }
 
-  uint8_t addr = BQ7850_DEFAULT_ADDR;
+  star_bus_manager_t* manager  = handle->manager;
+  const char*         bus_name = handle->bus_name;
+  uint8_t             addr     = handle->smbus_addr;
 
   ESP_LOGI(TAG, "Disabling cell balancing");
 
   return star_smbus_write_word(manager, bus_name, addr, BQ7850_CMD_CELL_BALANCE_CTRL, 0x0000);
 }
 
-esp_err_t star_bms_bq7850_get_balancing_status(star_bus_manager_t* manager,
-                                               const char*         bus_name,
-                                               uint16_t*           active_mask)
+esp_err_t star_bms_bq7850_get_balancing_status(const bq7850_handle_t* handle, uint16_t* active_mask)
 {
-  if (manager == NULL || bus_name == NULL || active_mask == NULL) {
+  if (handle == NULL || active_mask == NULL) {
     return ESP_ERR_INVALID_ARG;
   }
 
-  uint8_t addr = BQ7850_DEFAULT_ADDR;
+  star_bus_manager_t* manager  = handle->manager;
+  const char*         bus_name = handle->bus_name;
+  uint8_t             addr     = handle->smbus_addr;
 
   return star_smbus_read_word(manager, bus_name, addr, BQ7850_CMD_CELL_BALANCE_CTRL, active_mask);
 }
 
 /* --- Protection Functions --- */
 
-esp_err_t star_bms_bq7850_read_protection(star_bus_manager_t*  manager,
-                                          const char*          bus_name,
-                                          bq7850_protection_t* protection)
+esp_err_t star_bms_bq7850_read_protection(const bq7850_handle_t* handle,
+                                          bq7850_protection_t*   protection)
 {
-  if (manager == NULL || bus_name == NULL || protection == NULL) {
+  if (handle == NULL || protection == NULL) {
     return ESP_ERR_INVALID_ARG;
   }
 
-  uint8_t   addr = BQ7850_DEFAULT_ADDR;
-  esp_err_t ret;
+  star_bus_manager_t* manager  = handle->manager;
+  const char*         bus_name = handle->bus_name;
+  uint8_t             addr     = handle->smbus_addr;
+  esp_err_t           ret;
 
   memset(protection, 0, sizeof(bq7850_protection_t));
 
@@ -674,16 +721,17 @@ esp_err_t star_bms_bq7850_read_protection(star_bus_manager_t*  manager,
   return ESP_OK;
 }
 
-esp_err_t star_bms_bq7850_write_protection(star_bus_manager_t*        manager,
-                                           const char*                bus_name,
+esp_err_t star_bms_bq7850_write_protection(const bq7850_handle_t*     handle,
                                            const bq7850_protection_t* protection)
 {
-  if (manager == NULL || bus_name == NULL || protection == NULL) {
+  if (handle == NULL || protection == NULL) {
     return ESP_ERR_INVALID_ARG;
   }
 
-  uint8_t   addr = BQ7850_DEFAULT_ADDR;
-  esp_err_t ret;
+  star_bus_manager_t* manager  = handle->manager;
+  const char*         bus_name = handle->bus_name;
+  uint8_t             addr     = handle->smbus_addr;
+  esp_err_t           ret;
 
   ESP_LOGW(TAG, "Writing protection thresholds (device must be unsealed)");
 
@@ -714,17 +762,17 @@ esp_err_t star_bms_bq7850_write_protection(star_bus_manager_t*        manager,
 
 /* --- FET Control Functions --- */
 
-esp_err_t star_bms_bq7850_control_fets(star_bus_manager_t* manager,
-                                       const char*         bus_name,
-                                       bool                charge_fet,
-                                       bool                discharge_fet)
+esp_err_t
+star_bms_bq7850_control_fets(const bq7850_handle_t* handle, bool charge_fet, bool discharge_fet)
 {
-  if (manager == NULL || bus_name == NULL) {
+  if (handle == NULL) {
     return ESP_ERR_INVALID_ARG;
   }
 
-  uint8_t  addr        = BQ7850_DEFAULT_ADDR;
-  uint16_t fet_control = 0;
+  star_bus_manager_t* manager     = handle->manager;
+  const char*         bus_name    = handle->bus_name;
+  uint8_t             addr        = handle->smbus_addr;
+  uint16_t            fet_control = 0;
 
   if (charge_fet) {
     fet_control |= BQ7850_FET_CONTROL_CHG_FET;

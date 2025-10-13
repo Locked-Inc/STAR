@@ -10,6 +10,7 @@
 #include "esp_log.h"
 #include "star_bus_manager.h" /* Needed for star_bus_manager_find_bus */
 #include "star_bus_types.h"   /* Needed for star_bus_config_t and union */
+#include "star_error_handler.h"
 
 /* --- Constants --- */
 
@@ -36,6 +37,24 @@ static esp_err_t priv_star_bus_i2c_read_raw(const star_bus_config_t* config,
                                             uint8_t*                 data,
                                             size_t                   len,
                                             size_t*                  bytes_read);
+
+/**
+ * @brief Helper: Execute I2C command with retry logic
+ *
+ * Wraps i2c_master_cmd_begin() with automatic retry for transient errors.
+ * Distinguishes between transient errors (timeout, general failure) that
+ * should be retried and permanent errors (invalid parameters) that shouldn't.
+ *
+ * @param[in] config Pointer to I2C bus configuration
+ * @param[in] port I2C port number
+ * @param[in] cmd I2C command handle
+ * @param[in] operation_name Name of operation for logging
+ * @return esp_err_t Final result after retries
+ */
+static esp_err_t priv_i2c_execute_with_retry(const star_bus_config_t* config,
+                                             i2c_port_t               port,
+                                             i2c_cmd_handle_t         cmd,
+                                             const char*              operation_name);
 
 /* --- Public Functions --- */
 
@@ -184,6 +203,88 @@ esp_err_t star_bus_i2c_read_raw(const star_bus_manager_t* manager,
 
 /* --- Private Functions (Default Ops Implementations) --- */
 
+/**
+ * @brief Helper: Execute I2C command with retry logic
+ */
+static esp_err_t priv_i2c_execute_with_retry(const star_bus_config_t* config,
+                                             i2c_port_t               port,
+                                             i2c_cmd_handle_t         cmd,
+                                             const char*              operation_name)
+{
+  esp_err_t        ret           = ESP_OK;
+  error_handler_t* error_handler = (error_handler_t*)&config->proto.i2c.error_handler;
+
+  /* Attempt transaction with retry logic */
+  do {
+    ret = i2c_master_cmd_begin(port, cmd, pdMS_TO_TICKS(I2C_TIMEOUT_MS));
+
+    if (ret == ESP_OK) {
+      /* Success - reset error handler state */
+      error_handler_reset_state(error_handler);
+      return ESP_OK;
+    }
+
+    /* Determine if error is transient (should retry) or permanent (should not retry) */
+    bool is_transient_error = false;
+    switch (ret) {
+      case ESP_ERR_TIMEOUT:
+      case ESP_FAIL:
+      case ESP_ERR_INVALID_STATE:
+        /* These are potentially transient - worth retrying */
+        is_transient_error = true;
+        break;
+
+      case ESP_ERR_INVALID_ARG:
+      case ESP_ERR_INVALID_SIZE:
+        /* These are permanent errors - don't retry */
+        is_transient_error = false;
+        break;
+
+      default:
+        /* Unknown error - assume transient to be safe */
+        is_transient_error = true;
+        break;
+    }
+
+    if (!is_transient_error) {
+      /* Permanent error - don't retry */
+      ESP_LOGE(TAG,
+               "%s '%s': Permanent error %s - not retrying",
+               operation_name,
+               config->name,
+               esp_err_to_name(ret));
+      return ret;
+    }
+
+    /* Record error and check if we can retry */
+    RECORD_ERROR(error_handler, ret, operation_name);
+
+    if (error_handler_can_retry(error_handler)) {
+      ESP_LOGW(TAG,
+               "%s '%s': Transient error %s - retry %lu/%lu after %lu ms",
+               operation_name,
+               config->name,
+               esp_err_to_name(ret),
+               (unsigned long)error_handler->current_retry,
+               (unsigned long)error_handler->max_retries,
+               (unsigned long)error_handler->current_retry_delay);
+
+      /* Wait before retrying with exponential backoff */
+      vTaskDelay(pdMS_TO_TICKS(error_handler->current_retry_delay));
+    } else {
+      ESP_LOGE(TAG,
+               "%s '%s': Max retries (%lu) exhausted for error %s",
+               operation_name,
+               config->name,
+               (unsigned long)error_handler->max_retries,
+               esp_err_to_name(ret));
+      return ret;
+    }
+  } while (error_handler_can_retry(error_handler));
+
+  return ret;
+}
+
 static esp_err_t priv_star_bus_i2c_write(const star_bus_config_t* config,
                                          const uint8_t*           data,
                                          size_t                   len,
@@ -252,13 +353,9 @@ static esp_err_t priv_star_bus_i2c_write(const star_bus_config_t* config,
                     config->name,
                     esp_err_to_name(ret));
 
-  ret = i2c_master_cmd_begin(port, cmd, pdMS_TO_TICKS(I2C_TIMEOUT_MS));
-  ESP_GOTO_ON_ERROR(ret,
-                    write_fail,
-                    TAG,
-                    "Write '%s': CMD Begin failed: %s",
-                    config->name,
-                    esp_err_to_name(ret));
+  /* Execute with retry logic */
+  ret = priv_i2c_execute_with_retry(config, port, cmd, "Write");
+  ESP_GOTO_ON_ERROR(ret, write_fail, TAG, "Write '%s': CMD failed after retries", config->name);
 
   /* Success path */
   i2c_cmd_link_delete(cmd);
@@ -400,13 +497,9 @@ static esp_err_t priv_star_bus_i2c_read(const star_bus_config_t* config,
                     config->name,
                     esp_err_to_name(ret));
 
-  ret = i2c_master_cmd_begin(port, cmd, pdMS_TO_TICKS(I2C_TIMEOUT_MS));
-  ESP_GOTO_ON_ERROR(ret,
-                    read_fail,
-                    TAG,
-                    "Read '%s': CMD Begin failed: %s",
-                    config->name,
-                    esp_err_to_name(ret));
+  /* Execute with retry logic */
+  ret = priv_i2c_execute_with_retry(config, port, cmd, "Read");
+  ESP_GOTO_ON_ERROR(ret, read_fail, TAG, "Read '%s': CMD failed after retries", config->name);
 
   /* Success path */
   i2c_cmd_link_delete(cmd);
@@ -506,13 +599,13 @@ static esp_err_t priv_star_bus_i2c_write_command(const star_bus_config_t* config
                     config->name,
                     esp_err_to_name(ret));
 
-  ret = i2c_master_cmd_begin(port, cmd, pdMS_TO_TICKS(I2C_TIMEOUT_MS));
+  /* Execute with retry logic */
+  ret = priv_i2c_execute_with_retry(config, port, cmd, "WriteCmd");
   ESP_GOTO_ON_ERROR(ret,
                     write_cmd_fail,
                     TAG,
-                    "WriteCmd '%s': CMD Begin failed: %s",
-                    config->name,
-                    esp_err_to_name(ret));
+                    "WriteCmd '%s': CMD failed after retries",
+                    config->name);
 
   /* Success path */
   i2c_cmd_link_delete(cmd);
@@ -624,13 +717,13 @@ static esp_err_t priv_star_bus_i2c_read_raw(const star_bus_config_t* config,
                     config->name,
                     esp_err_to_name(ret));
 
-  ret = i2c_master_cmd_begin(port, cmd, pdMS_TO_TICKS(I2C_TIMEOUT_MS));
+  /* Execute with retry logic */
+  ret = priv_i2c_execute_with_retry(config, port, cmd, "ReadRaw");
   ESP_GOTO_ON_ERROR(ret,
                     read_raw_fail,
                     TAG,
-                    "ReadRaw '%s': CMD Begin failed: %s",
-                    config->name,
-                    esp_err_to_name(ret));
+                    "ReadRaw '%s': CMD failed after retries",
+                    config->name);
 
   /* Success path */
   i2c_cmd_link_delete(cmd);

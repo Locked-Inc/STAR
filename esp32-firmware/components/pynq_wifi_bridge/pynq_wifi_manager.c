@@ -26,11 +26,10 @@ static const char* TAG = "wifi_manager";
 /* Module state */
 static bool               g_initialized = false;
 static EventGroupHandle_t g_wifi_event_group;
-static wifi_status_t      g_wifi_status = k_wifi_disconnected;
-static uint8_t            g_ip_addr[4]  = {0, 0, 0, 0};
-static int8_t             g_rssi        = 0;
-static uint8_t            g_retry_count = 0;
-static wifi_scan_result_t g_scan_results[MAX_SCAN_RESULTS];
+static wifi_status_t      g_wifi_status     = k_wifi_disconnected;
+static uint8_t            g_ip_addr[4]      = {0, 0, 0, 0};
+static int8_t             g_rssi            = 0;
+static uint8_t            g_retry_count     = 0;
 static uint16_t           g_scan_count      = 0;
 static error_handler_t    g_connect_handler = {0};
 

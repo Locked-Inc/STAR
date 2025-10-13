@@ -3,6 +3,7 @@
 #ifndef STAR_BUS_ONEWIRE_H
 #define STAR_BUS_ONEWIRE_H
 
+#include <driver/gpio.h>
 #include <esp_err.h>
 #include <stdbool.h>
 #include <stdint.h>
@@ -102,7 +103,7 @@ typedef uint64_t star_onewire_rom_t;
  * @brief 1-Wire bus configuration
  */
 typedef struct {
-  int                  gpio_pin;            /**< GPIO pin for 1-Wire data */
+  gpio_num_t           gpio_pin;            /**< GPIO pin for 1-Wire data */
   star_onewire_speed_t speed;               /**< Speed mode */
   bool                 use_parasitic_power; /**< Enable parasite power */
   bool                 use_strong_pullup;   /**< Enable strong pull-up */
@@ -409,7 +410,7 @@ void star_bus_onewire_print_stats(const char* bus_name, const star_onewire_stats
  */
 #define STAR_ONEWIRE_CONFIG_DEFAULT()                                                              \
   {                                                                                                \
-    .gpio_pin = -1, .speed = STAR_ONEWIRE_SPEED_STANDARD, .use_parasitic_power = false,            \
+    .gpio_pin = GPIO_NUM_NC, .speed = STAR_ONEWIRE_SPEED_STANDARD, .use_parasitic_power = false,   \
     .use_strong_pullup = false, .search_timeout_ms = 5000,                                         \
   }
 

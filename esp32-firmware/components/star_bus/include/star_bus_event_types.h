@@ -7,6 +7,7 @@
 extern "C" {
 #endif
 
+#include "driver/gpio.h"
 #include "driver/i2c.h"
 #include "driver/spi_master.h" /* Added for SPI */
 
@@ -32,7 +33,7 @@ typedef struct star_i2c_event_data {
  */
 typedef struct star_spi_event_data {
   spi_host_device_t host;     /**< SPI host number */
-  int               cs_pin;   /**< Chip select pin used for the transaction */
+  gpio_num_t        cs_pin;   /**< Chip select pin used for the transaction */
   bool              is_write; /**< True if it was primarily a write/transmit operation */
   size_t            tx_len;   /**< Length of data transmitted */
   size_t            rx_len;   /**< Length of data received */

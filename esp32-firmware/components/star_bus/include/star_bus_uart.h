@@ -3,6 +3,7 @@
 #ifndef STAR_BUS_UART_H
 #define STAR_BUS_UART_H
 
+#include <driver/gpio.h>
 #include <driver/uart.h>
 #include <esp_err.h>
 #include <stdbool.h>
@@ -131,10 +132,10 @@ typedef struct {
   star_uart_mode_t      mode;      /**< UART mode */
 
   /* Pin Configuration */
-  int tx_pin;  /**< TX GPIO pin */
-  int rx_pin;  /**< RX GPIO pin */
-  int rts_pin; /**< RTS GPIO pin (-1 if not used) */
-  int cts_pin; /**< CTS GPIO pin (-1 if not used) */
+  gpio_num_t tx_pin;  /**< TX GPIO pin */
+  gpio_num_t rx_pin;  /**< RX GPIO pin */
+  gpio_num_t rts_pin; /**< RTS GPIO pin (GPIO_NUM_NC if not used) */
+  gpio_num_t cts_pin; /**< CTS GPIO pin (GPIO_NUM_NC if not used) */
 
   /* Buffer Configuration */
   size_t rx_buffer_size; /**< RX buffer size (bytes) */
@@ -316,8 +317,8 @@ esp_err_t star_bus_uart_enable_pattern(star_bus_manager_t* manager,
                                        const char*         bus_name,
                                        char                pattern,
                                        uint8_t             count,
-                                       int                 post_idle,
-                                       int                 pre_idle);
+                                       int32_t             post_idle,
+                                       int32_t             pre_idle);
 
 /**
  * @brief Disable pattern detection
@@ -371,10 +372,10 @@ void star_bus_uart_print_stats(const char* bus_name, const star_uart_stats_t* st
   {                                                                                                \
     .port = UART_NUM_1, .baud_rate = 115200, .data_bits = STAR_UART_DATA_8_BITS,                   \
     .stop_bits = STAR_UART_STOP_1_BIT, .parity = STAR_UART_PARITY_NONE,                            \
-    .flow_ctrl = STAR_UART_FLOW_CTRL_NONE, .mode = STAR_UART_MODE_UART, .tx_pin = -1,              \
-    .rx_pin = -1, .rts_pin = -1, .cts_pin = -1, .rx_buffer_size = 1024, .tx_buffer_size = 1024,    \
-    .event_callback = NULL, .event_context = NULL, .event_queue_size = 10, .use_ref_tick = false,  \
-    .rx_thresh = 120, .tx_thresh = 10,                                                             \
+    .flow_ctrl = STAR_UART_FLOW_CTRL_NONE, .mode = STAR_UART_MODE_UART, .tx_pin = GPIO_NUM_NC,     \
+    .rx_pin = GPIO_NUM_NC, .rts_pin = GPIO_NUM_NC, .cts_pin = GPIO_NUM_NC, .rx_buffer_size = 1024, \
+    .tx_buffer_size = 1024, .event_callback = NULL, .event_context = NULL, .event_queue_size = 10, \
+    .use_ref_tick = false, .rx_thresh = 120, .tx_thresh = 10,                                      \
   }
 
 /**

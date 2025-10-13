@@ -63,7 +63,8 @@ static stats_state_t* get_stats_state(const char* bus_name, bool create)
 /**
  * @brief Update timing statistics
  */
-static void update_timing_stats(stats_state_t* state, uint32_t operation_time_us)
+__attribute__((unused)) static void update_timing_stats(stats_state_t* state,
+                                                        uint32_t       operation_time_us)
 {
   if (!state->config.collect_timing) {
     return;
