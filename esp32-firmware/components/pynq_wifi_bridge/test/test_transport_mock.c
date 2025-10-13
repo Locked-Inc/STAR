@@ -8,8 +8,8 @@
  * used by all test files when linker wrapping is enabled (--wrap=transport_send).
  */
 
-#include <string.h>
 #include <stdint.h>
+#include <string.h>
 
 /* Mock transport state - shared across all tests */
 static uint8_t  g_transport_buffer[8192];
