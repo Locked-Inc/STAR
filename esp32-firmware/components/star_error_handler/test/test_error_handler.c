@@ -15,7 +15,7 @@
 /* Test helper - successful reset function */
 static esp_err_t test_reset_success(void* context)
 {
-  int* counter = (int*)context;
+  int32_t* counter = (int32_t*)context;
   if (counter) {
     (*counter)++;
   }
@@ -29,11 +29,11 @@ static esp_err_t test_reset_fail(void* context)
 }
 
 /* Test helper - reset function that succeeds after N attempts */
-static int       reset_attempt_counter = 0;
+static int32_t   reset_attempt_counter = 0;
 static esp_err_t test_reset_after_attempts(void* context)
 {
   reset_attempt_counter++;
-  int* required_attempts = (int*)context;
+  int32_t* required_attempts = (int32_t*)context;
   if (reset_attempt_counter >= *required_attempts) {
     return ESP_OK;
   }
@@ -65,7 +65,7 @@ STAR_TEST_CASE(error_handler, init_with_null_handler)
 STAR_TEST_CASE(error_handler, init_with_reset_function)
 {
   error_handler_t handler;
-  int             reset_counter = 0;
+  int32_t         reset_counter = 0;
   esp_err_t result = error_handler_init(&handler, 3, 100, 5000, test_reset_success, &reset_counter);
   STAR_ASSERT_EQUAL(ESP_OK, result);
   STAR_ASSERT_NOT_NULL(handler.reset_fn);
@@ -175,7 +175,7 @@ STAR_TEST_CASE(error_handler, record_error_sets_error_state)
 STAR_TEST_CASE(error_handler, record_error_with_reset_fn_success)
 {
   error_handler_t handler;
-  int             reset_counter = 0;
+  int32_t         reset_counter = 0;
   error_handler_init(&handler, 3, 100, 5000, test_reset_success, &reset_counter);
 
   /* First few errors won't trigger reset */
@@ -317,7 +317,7 @@ STAR_TEST_CASE(error_handler, retry_delay_respects_max)
   error_handler_init(&handler, 10, 100, 1000, test_reset_fail, NULL);
 
   /* Generate many errors to exceed max delay */
-  for (int i = 0; i < 10; i++) {
+  for (uint32_t i = 0; i < 10; i++) {
     error_handler_record_error(&handler, ESP_FAIL, "Test", __FILE__, __LINE__, __func__);
   }
 
@@ -412,7 +412,7 @@ STAR_TEST_CASE(error_handler, many_errors_sequential)
   error_handler_t handler;
   error_handler_init(&handler, 100, 10, 1000, NULL, NULL);
 
-  for (int i = 0; i < 50; i++) {
+  for (uint32_t i = 0; i < 50; i++) {
     error_handler_record_error(&handler, ESP_FAIL, "Stress test", __FILE__, __LINE__, __func__);
   }
 
@@ -425,7 +425,7 @@ STAR_TEST_CASE(error_handler, many_errors_sequential)
 STAR_TEST_CASE(error_handler, reset_fn_eventually_succeeds)
 {
   error_handler_t handler;
-  int             required_attempts = 3;
+  int32_t         required_attempts = 3;
   reset_attempt_counter             = 0;
 
   error_handler_init(&handler, 5, 10, 1000, test_reset_after_attempts, &required_attempts);

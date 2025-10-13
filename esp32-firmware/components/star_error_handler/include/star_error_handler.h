@@ -106,7 +106,7 @@ esp_err_t error_handler_record_error(error_handler_t* handler,
                                      esp_err_t        error,
                                      const char*      description,
                                      const char*      file,
-                                     int line, /* Its an int since __LINE__ expands to an int */
+                                     int32_t line, /* Its an int since __LINE__ expands to an int */
                                      const char* func);
 
 /**

@@ -10,9 +10,9 @@ ESP32 is configured to use UART1 on GPIO 17 (TX) and GPIO 16 (RX)
 On most ESP32 dev boards these pins are labeled TX2/RX2
 
 Connect USB-UART adapter to ESP32:
-  - Adapter RX  → ESP32 TX2 (GPIO 17)
-  - Adapter TX  → ESP32 RX2 (GPIO 16)
-  - Adapter GND → ESP32 GND
+  - Adapter RX  -> ESP32 TX2 (GPIO 17)
+  - Adapter TX  -> ESP32 RX2 (GPIO 16)
+  - Adapter GND -> ESP32 GND
 
 FINDING THE CORRECT /dev/ttyUSB* DEVICE:
 ========================================

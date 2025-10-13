@@ -7,6 +7,7 @@
 #include <esp_timer.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include <inttypes.h>
 #include <rom/ets_sys.h>
 #include <string.h>
 
@@ -103,7 +104,7 @@ static inline void delay_us(uint32_t us)
 /**
  * @brief Set GPIO output low
  */
-static inline void gpio_low(int pin)
+static inline void gpio_low(gpio_num_t pin)
 {
   gpio_set_level(pin, 0);
 }
@@ -111,7 +112,7 @@ static inline void gpio_low(int pin)
 /**
  * @brief Set GPIO output high (release for pull-up)
  */
-static inline void gpio_high(int pin)
+static inline void gpio_high(gpio_num_t pin)
 {
   gpio_set_level(pin, 1);
 }
@@ -119,7 +120,7 @@ static inline void gpio_high(int pin)
 /**
  * @brief Read GPIO input
  */
-static inline int gpio_read(int pin)
+static inline int gpio_read(gpio_num_t pin)
 {
   return gpio_get_level(pin);
 }
@@ -212,8 +213,8 @@ esp_err_t star_bus_onewire_reset(star_bus_manager_t* manager, const char* bus_na
     return ESP_ERR_NOT_FOUND;
   }
 
-  int      pin        = state->config.gpio_pin;
-  uint32_t start_time = esp_timer_get_time();
+  gpio_num_t pin        = state->config.gpio_pin;
+  uint32_t   start_time = esp_timer_get_time();
 
   state->stats.total_resets++;
 
@@ -226,8 +227,8 @@ esp_err_t star_bus_onewire_reset(star_bus_manager_t* manager, const char* bus_na
   delay_us(TIMING_PRESENCE_WAIT);
 
   /* Sample bus for presence pulse (device pulls low) */
-  int level = gpio_read(pin);
-  *present  = (level == 0);
+  int32_t level = gpio_read(pin);
+  *present      = (level == 0);
 
   /* Wait for end of presence pulse */
   delay_us(TIMING_PRESENCE_SAMPLE);
@@ -255,7 +256,7 @@ esp_err_t star_bus_onewire_write_bit(star_bus_manager_t* manager, const char* bu
     return ESP_ERR_NOT_FOUND;
   }
 
-  int pin = state->config.gpio_pin;
+  gpio_num_t pin = state->config.gpio_pin;
 
   if (bit & 1) {
     /* Write 1 */
@@ -285,7 +286,7 @@ esp_err_t star_bus_onewire_read_bit(star_bus_manager_t* manager, const char* bus
     return ESP_ERR_NOT_FOUND;
   }
 
-  int pin = state->config.gpio_pin;
+  gpio_num_t pin = state->config.gpio_pin;
 
   /* Pull low to initiate read */
   gpio_low(pin);
@@ -385,7 +386,7 @@ esp_err_t star_bus_onewire_write_bytes(star_bus_manager_t* manager,
     if (result == ESP_OK) {
       uint8_t rom_bytes[8];
       star_bus_onewire_rom_to_bytes(rom, rom_bytes);
-      for (int i = 0; i < 8; i++) {
+      for (uint32_t i = 0; i < 8; i++) {
         result = star_bus_onewire_write_byte(manager, bus_name, rom_bytes[i]);
         if (result != ESP_OK) {
           break;
@@ -646,7 +647,7 @@ uint16_t star_bus_onewire_crc16(const uint8_t* data, size_t length)
 
 void star_bus_onewire_rom_to_bytes(star_onewire_rom_t rom, uint8_t bytes[8])
 {
-  for (int i = 0; i < 8; i++) {
+  for (uint32_t i = 0; i < 8; i++) {
     bytes[i] = (rom >> (i * 8)) & 0xFF;
   }
 }
@@ -655,7 +656,7 @@ star_onewire_rom_t star_bus_onewire_bytes_to_rom(const uint8_t bytes[8])
 {
   star_onewire_rom_t rom = 0;
 
-  for (int i = 0; i < 8; i++) {
+  for (uint32_t i = 0; i < 8; i++) {
     rom |= ((uint64_t)bytes[i]) << (i * 8);
   }
 
@@ -716,13 +717,13 @@ void star_bus_onewire_print_stats(const char* bus_name, const star_onewire_stats
 
   printf("\nSearch:\n");
   printf("  Operations:    %llu\n", stats->search_operations);
-  printf("  Devices Found: %lu\n", stats->devices_found);
+  printf("  Devices Found: %" PRIu32 "\n", stats->devices_found);
 
   printf("\nErrors:\n");
   printf("  CRC Errors: %llu\n", stats->crc_errors);
 
   printf("\nTiming:\n");
-  printf("  Last Operation: %lu us\n", stats->last_operation_time_us);
+  printf("  Last Operation: %" PRIu32 " us\n", stats->last_operation_time_us);
 
   printf("==================================\n\n");
 }

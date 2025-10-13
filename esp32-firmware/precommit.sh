@@ -66,10 +66,10 @@ if [ -f "./remove_trailing_whitespace.sh" ]; then
         echo -e "${YELLOW}Found files with trailing whitespace.${NC}"
         echo -e "${YELLOW}Run './remove_trailing_whitespace.sh --fix' to fix them.${NC}"
         ALL_CHECKS_PASSED=false
-        append_report "${RED}✗ Trailing whitespace check failed${NC}"
+        append_report "${RED}[FAIL] Trailing whitespace check failed${NC}"
     else
         echo -e "${GREEN}No trailing whitespace found in staged files.${NC}"
-        append_report "${GREEN}✓ Trailing whitespace check passed${NC}"
+        append_report "${GREEN}[OK] Trailing whitespace check passed${NC}"
     fi
 else
     echo "Custom whitespace check (remove_trailing_whitespace.sh not found)"
@@ -85,14 +85,14 @@ else
 
         if $WHITESPACE_FOUND; then
             ALL_CHECKS_PASSED=false
-            append_report "${RED}✗ Trailing whitespace check failed${NC}"
+            append_report "${RED}[FAIL] Trailing whitespace check failed${NC}"
         else
             echo -e "${GREEN}No trailing whitespace found in staged files.${NC}"
-            append_report "${GREEN}✓ Trailing whitespace check passed${NC}"
+            append_report "${GREEN}[OK] Trailing whitespace check passed${NC}"
         fi
     else
         echo "No relevant files found for whitespace check."
-        append_report "${GREEN}✓ Trailing whitespace check skipped (no relevant files)${NC}"
+        append_report "${GREEN}[OK] Trailing whitespace check skipped (no relevant files)${NC}"
     fi
 fi
 
@@ -109,10 +109,10 @@ if check_command "clang-format" "code formatting"; then
                 echo -e "${YELLOW}Found files with formatting issues.${NC}"
                 echo -e "${YELLOW}Run './apply_clang_format.sh --fix' to fix them.${NC}"
                 ALL_CHECKS_PASSED=false
-                append_report "${RED}✗ Code formatting check failed${NC}"
+                append_report "${RED}[FAIL] Code formatting check failed${NC}"
             else
                 echo -e "${GREEN}All files are properly formatted.${NC}"
-                append_report "${GREEN}✓ Code formatting check passed${NC}"
+                append_report "${GREEN}[OK] Code formatting check passed${NC}"
             fi
         else
             echo "Custom clang-format check (apply_clang_format.sh not found)"
@@ -130,22 +130,22 @@ if check_command "clang-format" "code formatting"; then
 
                 if $FORMATTING_ISSUES; then
                     ALL_CHECKS_PASSED=false
-                    append_report "${RED}✗ Code formatting check failed${NC}"
+                    append_report "${RED}[FAIL] Code formatting check failed${NC}"
                 else
                     echo -e "${GREEN}All files are properly formatted.${NC}"
-                    append_report "${GREEN}✓ Code formatting check passed${NC}"
+                    append_report "${GREEN}[OK] Code formatting check passed${NC}"
                 fi
             else
                 echo "No relevant files found for clang-format check."
-                append_report "${GREEN}✓ Code formatting check skipped (no relevant files)${NC}"
+                append_report "${GREEN}[OK] Code formatting check skipped (no relevant files)${NC}"
             fi
         fi
     else
         echo -e "${YELLOW}No .clang-format file found. Skipping code formatting check.${NC}"
-        append_report "${YELLOW}⚠ Code formatting check skipped (no .clang-format file)${NC}"
+        append_report "${YELLOW}[WARN] Code formatting check skipped (no .clang-format file)${NC}"
     fi
 else
-    append_report "${YELLOW}⚠ Code formatting check skipped (clang-format not installed)${NC}"
+    append_report "${YELLOW}[WARN] Code formatting check skipped (clang-format not installed)${NC}"
 fi
 
 # -----------------------------------------------------------------------------
@@ -209,18 +209,18 @@ if [ -f "./add_file_header.sh" ]; then
         if $HEADER_CHECK_FAILED; then
             echo -e "${YELLOW}Run './add_file_header.sh' to fix headers.${NC}"
             ALL_CHECKS_PASSED=false
-            append_report "${RED}✗ File header check failed${NC}"
+            append_report "${RED}[FAIL] File header check failed${NC}"
         else
             echo -e "${GREEN}All files have correct headers.${NC}"
-            append_report "${GREEN}✓ File header check passed${NC}"
+            append_report "${GREEN}[OK] File header check passed${NC}"
         fi
     else
         echo "No relevant files found for header check."
-        append_report "${GREEN}✓ File header check skipped (no relevant files)${NC}"
+        append_report "${GREEN}[OK] File header check skipped (no relevant files)${NC}"
     fi
 else
     echo -e "${YELLOW}add_file_header.sh not found. Skipping file header check.${NC}"
-    append_report "${YELLOW}⚠ File header check skipped (add_file_header.sh not found)${NC}"
+    append_report "${YELLOW}[WARN] File header check skipped (add_file_header.sh not found)${NC}"
 fi
 
 # -----------------------------------------------------------------------------
@@ -235,10 +235,10 @@ if [ -f "./find_consecutive_blank_lines.sh" ]; then
         echo -e "${YELLOW}Found files with consecutive blank lines:${NC}"
         echo "$BLANK_LINES_OUTPUT"
         ALL_CHECKS_PASSED=false
-        append_report "${RED}✗ Consecutive blank lines check failed${NC}"
+        append_report "${RED}[FAIL] Consecutive blank lines check failed${NC}"
     else
         echo -e "${GREEN}No consecutive blank lines found.${NC}"
-        append_report "${GREEN}✓ Consecutive blank lines check passed${NC}"
+        append_report "${GREEN}[OK] Consecutive blank lines check passed${NC}"
     fi
 else
     echo "Custom blank lines check (find_consecutive_blank_lines.sh not found)"
@@ -269,14 +269,14 @@ else
 
         if $BLANK_LINES_FOUND; then
             ALL_CHECKS_PASSED=false
-            append_report "${RED}✗ Consecutive blank lines check failed${NC}"
+            append_report "${RED}[FAIL] Consecutive blank lines check failed${NC}"
         else
             echo -e "${GREEN}No consecutive blank lines found in staged files.${NC}"
-            append_report "${GREEN}✓ Consecutive blank lines check passed${NC}"
+            append_report "${GREEN}[OK] Consecutive blank lines check passed${NC}"
         fi
     else
         echo "No relevant files found for blank lines check."
-        append_report "${GREEN}✓ Consecutive blank lines check skipped (no relevant files)${NC}"
+        append_report "${GREEN}[OK] Consecutive blank lines check skipped (no relevant files)${NC}"
     fi
 fi
 
@@ -312,18 +312,18 @@ if [ -n "$KCONFIG_FILES" ]; then
 
         if $KCONFIG_ISSUES; then
             ALL_CHECKS_PASSED=false
-            append_report "${RED}✗ Kconfig validation failed${NC}"
+            append_report "${RED}[FAIL] Kconfig validation failed${NC}"
         else
             echo -e "${GREEN}All Kconfig files are valid.${NC}"
-            append_report "${GREEN}✓ Kconfig validation passed${NC}"
+            append_report "${GREEN}[OK] Kconfig validation passed${NC}"
         fi
     else
         echo -e "${YELLOW}kconfcheck module not found. Skipping Kconfig validation.${NC}"
-        append_report "${YELLOW}⚠ Kconfig validation skipped (kconfcheck not installed)${NC}"
+        append_report "${YELLOW}[WARN] Kconfig validation skipped (kconfcheck not installed)${NC}"
     fi
 else
     echo "No Kconfig files found for validation."
-    append_report "${GREEN}✓ Kconfig validation skipped (no Kconfig files)${NC}"
+    append_report "${GREEN}[OK] Kconfig validation skipped (no Kconfig files)${NC}"
 fi
 
 # -----------------------------------------------------------------------------

@@ -151,9 +151,9 @@ typedef struct {
  * @brief BQ7850 temperature data
  */
 typedef struct {
-  int16_t temp_c[BQ7850_MAX_TEMP_SENSORS]; /**< Temperature sensors (0.1°C) */
+  int16_t temp_c[BQ7850_MAX_TEMP_SENSORS]; /**< Temperature sensors (0.1C) */
   uint8_t valid_sensors;                   /**< Number of valid sensors */
-  int16_t avg_temp_c;                      /**< Average temperature (0.1°C) */
+  int16_t avg_temp_c;                      /**< Average temperature (0.1C) */
 } bq7850_temp_data_t;
 
 /**
@@ -199,8 +199,8 @@ typedef struct {
   uint16_t undervoltage_mv;  /**< Undervoltage threshold per cell (mV) */
   uint16_t overcharge_ma;    /**< Overcharge current threshold (mA) */
   uint16_t overdischarge_ma; /**< Overdischarge current threshold (mA) */
-  int16_t  overtemp_c;       /**< Over-temperature threshold (0.1°C) */
-  int16_t  undertemp_c;      /**< Under-temperature threshold (0.1°C) */
+  int16_t  overtemp_c;       /**< Over-temperature threshold (0.1C) */
+  int16_t  undertemp_c;      /**< Under-temperature threshold (0.1C) */
 } bq7850_protection_t;
 
 /**
@@ -348,7 +348,7 @@ esp_err_t star_bms_bq7850_read_temperatures(const bq7850_handle_t* handle,
  * @brief Read pack temperature
  *
  * @param[in]  handle Pointer to initialized BMS handle
- * @param[out] temp_c Temperature in 0.1°C (e.g., 253 = 25.3°C)
+ * @param[out] temp_c Temperature in 0.1C (e.g., 253 = 25.3C)
  *
  * @return ESP_OK on success, error code otherwise
  */
@@ -483,11 +483,11 @@ star_bms_bq7850_control_fets(const bq7850_handle_t* handle, bool charge_fet, boo
 /* --- Helper Functions --- */
 
 /**
- * @brief Convert temperature from 0.1K to °C
+ * @brief Convert temperature from 0.1K to C
  *
  * @param[in] temp_01k Temperature in 0.1K units
  *
- * @return Temperature in °C (float)
+ * @return Temperature in C (float)
  */
 float star_bms_bq7850_convert_temp_to_celsius(int16_t temp_01k);
 

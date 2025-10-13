@@ -66,7 +66,7 @@ star_bus_config_t* star_bus_config_create_spi_device(const char*                
                                                      gpio_num_t                           copi_pin,
                                                      gpio_num_t                           cipo_pin,
                                                      gpio_num_t                           sclk_pin,
-                                                     int                                  dma_chan,
+                                                     int32_t                              dma_chan,
                                                      const spi_device_interface_config_t* dev_cfg);
 
 /**
@@ -118,7 +118,7 @@ star_bus_config_t* star_bus_config_create_spi_peripheral(const char*       name,
                                                          gpio_num_t        cipo_pin,
                                                          gpio_num_t        sclk_pin,
                                                          gpio_num_t        cs_pin,
-                                                         int               queue_size,
+                                                         int32_t           queue_size,
                                                          uint8_t           mode);
 
 /**

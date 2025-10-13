@@ -4,6 +4,7 @@
 
 #include "freertos/FreeRTOS.h"
 
+#include <inttypes.h>
 #include <string.h>
 
 #include "esp_check.h"
@@ -261,22 +262,22 @@ static esp_err_t priv_i2c_execute_with_retry(const star_bus_config_t* config,
 
     if (error_handler_can_retry(error_handler)) {
       ESP_LOGW(TAG,
-               "%s '%s': Transient error %s - retry %lu/%lu after %lu ms",
+               "%s '%s': Transient error %s - retry %" PRIu32 "/%" PRIu32 " after %" PRIu32 " ms",
                operation_name,
                config->name,
                esp_err_to_name(ret),
-               (unsigned long)error_handler->current_retry,
-               (unsigned long)error_handler->max_retries,
-               (unsigned long)error_handler->current_retry_delay);
+               error_handler->current_retry,
+               error_handler->max_retries,
+               error_handler->current_retry_delay);
 
       /* Wait before retrying with exponential backoff */
       vTaskDelay(pdMS_TO_TICKS(error_handler->current_retry_delay));
     } else {
       ESP_LOGE(TAG,
-               "%s '%s': Max retries (%lu) exhausted for error %s",
+               "%s '%s': Max retries (%" PRIu32 ") exhausted for error %s",
                operation_name,
                config->name,
-               (unsigned long)error_handler->max_retries,
+               error_handler->max_retries,
                esp_err_to_name(ret));
       return ret;
     }

@@ -11,6 +11,7 @@
 #ifndef STAR_TEST_H
 #define STAR_TEST_H
 
+#include <inttypes.h>
 #include <stdbool.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -55,7 +56,7 @@ void                star_test_print_results(void);
 void star_test_set_verbose(bool verbose);
 
 /* Internal assertion failure handler */
-void star_test_fail(const char* file, int line, const char* message);
+void star_test_fail(const char* file, int32_t line, const char* message);
 
 /**
  * @brief Define a test case
@@ -105,7 +106,7 @@ void star_test_fail(const char* file, int line, const char* message);
   ;                                                                                                \
   __attribute__((constructor)) static void star_test_register_module(void)                         \
   {                                                                                                \
-    for (int i = 0; star_test_list[i] != NULL; i++) {                                              \
+    for (uint32_t i = 0; star_test_list[i] != NULL; i++) {                                         \
       star_test_register(star_test_list[i]);                                                       \
     }                                                                                              \
   }
@@ -128,7 +129,11 @@ void star_test_fail(const char* file, int line, const char* message);
   do {                                                                                             \
     if ((expected) != (actual)) {                                                                  \
       char msg[128];                                                                               \
-      snprintf(msg, sizeof(msg), "Expected %ld, got %ld", (long)(expected), (long)(actual));       \
+      snprintf(msg,                                                                                \
+               sizeof(msg),                                                                        \
+               "Expected %" PRId32 ", got %" PRId32 "",                                            \
+               (int32_t)(expected),                                                                \
+               (int32_t)(actual));                                                                 \
       star_test_fail(__FILE__, __LINE__, msg);                                                     \
       return;                                                                                      \
     }                                                                                              \
@@ -141,7 +146,7 @@ void star_test_fail(const char* file, int line, const char* message);
   do {                                                                                             \
     if ((expected) == (actual)) {                                                                  \
       char msg[128];                                                                               \
-      snprintf(msg, sizeof(msg), "Expected not equal to %ld", (long)(expected));                   \
+      snprintf(msg, sizeof(msg), "Expected not equal to %" PRId32 "", (int32_t)(expected));        \
       star_test_fail(__FILE__, __LINE__, msg);                                                     \
       return;                                                                                      \
     }                                                                                              \
@@ -185,7 +190,7 @@ void star_test_fail(const char* file, int line, const char* message);
 #define STAR_ASSERT_STR_EQUAL(expected, actual)                                                    \
   do {                                                                                             \
     if (strcmp((expected), (actual)) != 0) {                                                       \
-      char msg[128];                                                                               \
+      char msg[512];                                                                               \
       snprintf(msg, sizeof(msg), "Expected \"%s\", got \"%s\"", (expected), (actual));             \
       star_test_fail(__FILE__, __LINE__, msg);                                                     \
       return;                                                                                      \

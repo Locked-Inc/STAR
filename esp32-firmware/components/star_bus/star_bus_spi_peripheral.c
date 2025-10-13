@@ -4,6 +4,7 @@
 
 #include "freertos/FreeRTOS.h"
 
+#include <inttypes.h>
 #include <string.h>
 
 #include "esp_check.h"
@@ -178,10 +179,10 @@ static esp_err_t priv_star_bus_spi_peripheral_receive(const star_bus_config_t* c
                       esp_err_to_name(ret));
 
   ESP_LOGD(TAG,
-           "Peripheral '%s': Received %zu bytes (actual: %lu bits)",
+           "Peripheral '%s': Received %zu bytes (actual: %" PRIu32 " bits)",
            config->name,
            len,
-           (unsigned long)trans_out->trans_len);
+           trans_out->trans_len);
 
   /* Call success callback */
   if (config->proto.spi.callbacks.on_transfer_complete) {
@@ -237,10 +238,10 @@ static esp_err_t priv_star_bus_spi_peripheral_transmit(const star_bus_config_t* 
                       esp_err_to_name(ret));
 
   ESP_LOGD(TAG,
-           "Peripheral '%s': Transmitted %zu bytes (actual: %lu bits)",
+           "Peripheral '%s': Transmitted %zu bytes (actual: %" PRIu32 " bits)",
            config->name,
            len,
-           (unsigned long)trans_out->trans_len);
+           trans_out->trans_len);
 
   /* Call success callback */
   if (config->proto.spi.callbacks.on_transfer_complete) {
@@ -297,10 +298,10 @@ static esp_err_t priv_star_bus_spi_peripheral_transceive(const star_bus_config_t
                       esp_err_to_name(ret));
 
   ESP_LOGD(TAG,
-           "Peripheral '%s': Transceived %zu bytes (actual: %lu bits)",
+           "Peripheral '%s': Transceived %zu bytes (actual: %" PRIu32 " bits)",
            config->name,
            len,
-           (unsigned long)trans_out->trans_len);
+           trans_out->trans_len);
 
   /* Call success callback */
   if (config->proto.spi.callbacks.on_transfer_complete) {

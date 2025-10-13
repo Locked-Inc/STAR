@@ -5,6 +5,7 @@
 #include <esp_log.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include <inttypes.h>
 #include <math.h>
 #include <stdio.h>
 #include <string.h>
@@ -359,33 +360,33 @@ void star_bus_stats_print(const char* bus_name, const star_bus_stats_t* stats)
   printf("\nData Transfer:\n");
   printf("  Bytes Read:    %llu\n", stats->bytes_read);
   printf("  Bytes Written: %llu\n", stats->bytes_written);
-  printf("  Throughput:    %lu bytes/sec\n", star_bus_stats_throughput(stats));
+  printf("  Throughput:    %" PRIu32 " bytes/sec\n", star_bus_stats_throughput(stats));
 
   printf("\nTiming (microseconds):\n");
-  printf("  Min: %lu\n", stats->min_operation_time_us);
-  printf("  Max: %lu\n", stats->max_operation_time_us);
-  printf("  Avg: %lu\n", stats->avg_operation_time_us);
+  printf("  Min: %" PRIu32 "\n", stats->min_operation_time_us);
+  printf("  Max: %" PRIu32 "\n", stats->max_operation_time_us);
+  printf("  Avg: %" PRIu32 "\n", stats->avg_operation_time_us);
 
   printf("\nErrors:\n");
-  printf("  Timeouts: %lu\n", stats->timeout_errors);
-  printf("  NACKs:    %lu\n", stats->nack_errors);
-  printf("  Bus:      %lu\n", stats->bus_errors);
-  printf("  Other:    %lu\n", stats->other_errors);
+  printf("  Timeouts: %" PRIu32 "\n", stats->timeout_errors);
+  printf("  NACKs:    %" PRIu32 "\n", stats->nack_errors);
+  printf("  Bus:      %" PRIu32 "\n", stats->bus_errors);
+  printf("  Other:    %" PRIu32 "\n", stats->other_errors);
 
   printf("\nUtilization:\n");
-  printf("  Active Time: %lu ms\n", stats->total_bus_time_ms);
-  printf("  Idle Time:   %lu ms\n", stats->idle_time_ms);
+  printf("  Active Time: %" PRIu32 " ms\n", stats->total_bus_time_ms);
+  printf("  Idle Time:   %" PRIu32 " ms\n", stats->idle_time_ms);
   printf("  Utilization: %.2f%%\n", star_bus_stats_utilization(stats));
 
   printf("\nLast Operation:\n");
   printf("  Error: %s\n", esp_err_to_name(stats->last_error));
-  printf("  Time:  %lu us\n", stats->last_operation_time_us);
+  printf("  Time:  %" PRIu32 " us\n", stats->last_operation_time_us);
 
   printf("\nStats Collection:\n");
-  printf("  Started: %lu ms ago\n",
+  printf("  Started: %" PRIu32 " ms ago\n",
          pdTICKS_TO_MS(xTaskGetTickCount()) - stats->stats_start_time_ms);
   if (stats->last_reset_time_ms > 0) {
-    printf("  Last Reset: %lu ms ago\n",
+    printf("  Last Reset: %" PRIu32 " ms ago\n",
            pdTICKS_TO_MS(xTaskGetTickCount()) - stats->last_reset_time_ms);
   }
   printf("================================\n\n");
@@ -417,48 +418,48 @@ esp_err_t star_bus_stats_to_json(const star_bus_stats_t* stats, char* buffer, si
     return ESP_ERR_INVALID_ARG;
   }
 
-  int written = snprintf(buffer,
-                         buffer_size,
-                         "{"
-                         "\"total_operations\":%llu,"
-                         "\"read_operations\":%llu,"
-                         "\"write_operations\":%llu,"
-                         "\"failed_operations\":%llu,"
-                         "\"bytes_read\":%llu,"
-                         "\"bytes_written\":%llu,"
-                         "\"min_time_us\":%lu,"
-                         "\"max_time_us\":%lu,"
-                         "\"avg_time_us\":%lu,"
-                         "\"timeout_errors\":%lu,"
-                         "\"nack_errors\":%lu,"
-                         "\"bus_errors\":%lu,"
-                         "\"other_errors\":%lu,"
-                         "\"active_time_ms\":%lu,"
-                         "\"idle_time_ms\":%lu,"
-                         "\"error_rate\":%.2f,"
-                         "\"utilization\":%.2f,"
-                         "\"throughput\":%lu,"
-                         "\"ops_per_sec\":%lu"
-                         "}",
-                         stats->total_operations,
-                         stats->read_operations,
-                         stats->write_operations,
-                         stats->failed_operations,
-                         stats->bytes_read,
-                         stats->bytes_written,
-                         stats->min_operation_time_us,
-                         stats->max_operation_time_us,
-                         stats->avg_operation_time_us,
-                         stats->timeout_errors,
-                         stats->nack_errors,
-                         stats->bus_errors,
-                         stats->other_errors,
-                         stats->total_bus_time_ms,
-                         stats->idle_time_ms,
-                         star_bus_stats_error_rate(stats),
-                         star_bus_stats_utilization(stats),
-                         star_bus_stats_throughput(stats),
-                         star_bus_stats_ops_per_second(stats));
+  int32_t written = snprintf(buffer,
+                             buffer_size,
+                             "{"
+                             "\"total_operations\":%llu,"
+                             "\"read_operations\":%llu,"
+                             "\"write_operations\":%llu,"
+                             "\"failed_operations\":%llu,"
+                             "\"bytes_read\":%llu,"
+                             "\"bytes_written\":%llu,"
+                             "\"min_time_us\":%" PRIu32 ","
+                             "\"max_time_us\":%" PRIu32 ","
+                             "\"avg_time_us\":%" PRIu32 ","
+                             "\"timeout_errors\":%" PRIu32 ","
+                             "\"nack_errors\":%" PRIu32 ","
+                             "\"bus_errors\":%" PRIu32 ","
+                             "\"other_errors\":%" PRIu32 ","
+                             "\"active_time_ms\":%" PRIu32 ","
+                             "\"idle_time_ms\":%" PRIu32 ","
+                             "\"error_rate\":%.2f,"
+                             "\"utilization\":%.2f,"
+                             "\"throughput\":%" PRIu32 ","
+                             "\"ops_per_sec\":%" PRIu32 ""
+                             "}",
+                             stats->total_operations,
+                             stats->read_operations,
+                             stats->write_operations,
+                             stats->failed_operations,
+                             stats->bytes_read,
+                             stats->bytes_written,
+                             stats->min_operation_time_us,
+                             stats->max_operation_time_us,
+                             stats->avg_operation_time_us,
+                             stats->timeout_errors,
+                             stats->nack_errors,
+                             stats->bus_errors,
+                             stats->other_errors,
+                             stats->total_bus_time_ms,
+                             stats->idle_time_ms,
+                             star_bus_stats_error_rate(stats),
+                             star_bus_stats_utilization(stats),
+                             star_bus_stats_throughput(stats),
+                             star_bus_stats_ops_per_second(stats));
 
   if (written < 0 || (size_t)written >= buffer_size) {
     return ESP_ERR_NO_MEM;

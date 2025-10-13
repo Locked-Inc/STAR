@@ -7,6 +7,7 @@
 #include <esp_timer.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include <inttypes.h>
 #include <string.h>
 
 /* --- Constants --- */
@@ -195,7 +196,7 @@ esp_err_t star_bus_uart_init(star_bus_manager_t*       manager,
   state->initialized = true;
 
   ESP_LOGI(TAG,
-           "UART bus '%s' initialized on port %d at %lu baud",
+           "UART bus '%s' initialized on port %d at %" PRIu32 " baud",
            bus_name,
            config->port,
            config->baud_rate);
@@ -246,7 +247,7 @@ esp_err_t star_bus_uart_write(star_bus_manager_t* manager,
 
   uint32_t start_time = esp_timer_get_time();
 
-  int written = uart_write_bytes(state->config.port, data, length);
+  int32_t written = uart_write_bytes(state->config.port, data, length);
 
   uint32_t elapsed             = (uint32_t)(esp_timer_get_time() - start_time);
   state->stats.last_tx_time_us = elapsed;
@@ -279,7 +280,7 @@ esp_err_t star_bus_uart_read(star_bus_manager_t* manager,
 
   uint32_t start_time = esp_timer_get_time();
 
-  int read = uart_read_bytes(state->config.port, data, buffer_size, pdMS_TO_TICKS(timeout_ms));
+  int32_t read = uart_read_bytes(state->config.port, data, buffer_size, pdMS_TO_TICKS(timeout_ms));
 
   uint32_t elapsed             = (uint32_t)(esp_timer_get_time() - start_time);
   state->stats.last_rx_time_us = elapsed;
@@ -495,8 +496,8 @@ void star_bus_uart_print_stats(const char* bus_name, const star_uart_stats_t* st
   printf("  Break:    %llu\n", stats->break_conditions);
 
   printf("\nTiming:\n");
-  printf("  Last TX: %lu us\n", stats->last_tx_time_us);
-  printf("  Last RX: %lu us\n", stats->last_rx_time_us);
+  printf("  Last TX: %" PRIu32 " us\n", stats->last_tx_time_us);
+  printf("  Last RX: %" PRIu32 " us\n", stats->last_rx_time_us);
 
   printf("===============================\n\n");
 }

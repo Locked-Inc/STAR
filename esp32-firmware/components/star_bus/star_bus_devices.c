@@ -428,7 +428,7 @@ esp_err_t star_bus_ssd1306_clear(const star_bus_manager_t* manager, const char* 
 
   // Clear display by writing zeros
   uint8_t zeros[128] = {0};
-  for (int page = 0; page < 8; page++) {
+  for (uint32_t page = 0; page < 8; page++) {
     // Set page address
     uint8_t   page_cmd = 0xB0 | page;
     esp_err_t ret      = star_bus_i2c_write_command(manager, bus_name, page_cmd);
@@ -786,7 +786,7 @@ esp_err_t star_bus_ds3231_get_temperature(const star_bus_manager_t* manager,
     return ret;
   }
 
-  // Convert to temperature (10-bit value, 0.25°C resolution)
+  // Convert to temperature (10-bit value, 0.25C resolution)
   int16_t temp_raw = (int16_t)(temp_data[0] << 8 | temp_data[1]) >> 6;
   *temp_celsius    = (float)temp_raw * 0.25f;
 

@@ -19,12 +19,12 @@ The STAR Bus Manager provides a centralized, type-safe interface for managing mu
 
 ```
 star_bus_manager
-    ├── star_bus_config      (Bus configuration)
-    ├── star_bus_i2c         (I2C master operations)
-    ├── star_bus_spi         (SPI master operations)
-    ├── star_bus_spi_peripheral (SPI peripheral/slave mode)
-    ├── star_bus_smbus       (SMBus protocol layer)
-    └── star_pin_validator   (GPIO conflict detection)
+    +-- star_bus_config      (Bus configuration)
+    +-- star_bus_i2c         (I2C master operations)
+    +-- star_bus_spi         (SPI master operations)
+    +-- star_bus_spi_peripheral (SPI peripheral/slave mode)
+    +-- star_bus_smbus       (SMBus protocol layer)
+    +-- star_pin_validator   (GPIO conflict detection)
 ```
 
 ## Quick Start
@@ -403,20 +403,20 @@ typedef struct {
 ### I2C Specifications
 
 - **Clock Speed**: 100kHz (standard), 400kHz (fast), 1MHz (fast plus)
-- **Pull-ups**: External 4.7kΩ recommended for 100kHz
+- **Pull-ups**: External 4.7kOhm recommended for 100kHz
 - **Max capacitance**: 400pF per bus
 
 ### SPI Specifications
 
 - **Max Speed**: 80MHz (hardware limitation)
-- **Recommended**: ≤20MHz for reliable operation
+- **Recommended**: <=20MHz for reliable operation
 - **Modes**: 0, 1, 2, 3 supported
 - **Queue Size**: 1-7 transactions
 
 ### SMBus Specifications
 
 - **Timeout**: 25-35ms (configurable, default 30ms)
-- **Clock Low**: Min 4.7μs
+- **Clock Low**: Min 4.7us
 - **Block Size**: Max 32 bytes
 - **PEC**: CRC-8 (polynomial 0x07)
 

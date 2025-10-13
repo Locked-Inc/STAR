@@ -45,7 +45,7 @@ Example output:
 sdb          28.9G disk /media/user/... MassStorageClass
 ```
 
-**⚠️ WARNING**: Make absolutely sure you have identified the correct device! Flashing will ERASE ALL DATA on the target device.
+**[WARN] WARNING**: Make absolutely sure you have identified the correct device! Flashing will ERASE ALL DATA on the target device.
 
 ## Step 3: Extract and Flash the Image
 

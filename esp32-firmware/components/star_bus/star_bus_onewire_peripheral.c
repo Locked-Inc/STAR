@@ -26,7 +26,7 @@ typedef struct {
   star_onewire_peripheral_config_t config;
   star_onewire_peripheral_stats_t  stats;
   bool                             enabled;
-  int                              gpio_pin;
+  gpio_num_t                       gpio_pin;
   bool                             alarm_active;
 
   /* Response buffer for read operations */

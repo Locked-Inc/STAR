@@ -385,7 +385,7 @@ esp_err_t star_bms_bq7850_read_temperatures(const bq7850_handle_t* handle,
 
     if (ret == ESP_OK && temp_raw > 0) {
       /* BQ7850 returns temperature in 0.1K units */
-      /* Convert to 0.1°C: T(°C) = T(K) - 273.15 */
+      /* Convert to 0.1C: T(C) = T(K) - 273.15 */
       temp_data->temp_c[i] = temp_raw - 2731; /* 273.1K = 2731 in 0.1K units */
       temp_data->valid_sensors++;
       temp_sum += temp_data->temp_c[i];
@@ -413,7 +413,7 @@ esp_err_t star_bms_bq7850_read_temperature(const bq7850_handle_t* handle, int16_
   esp_err_t ret = star_smbus_read_word(manager, bus_name, addr, BQ7850_CMD_TEMPERATURE, &temp_raw);
 
   if (ret == ESP_OK) {
-    /* Convert from 0.1K to 0.1°C */
+    /* Convert from 0.1K to 0.1C */
     *temp_c = temp_raw - 2731;
   }
 

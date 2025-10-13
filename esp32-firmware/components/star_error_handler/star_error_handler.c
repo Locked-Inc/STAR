@@ -2,6 +2,7 @@
 
 #include "star_error_handler.h"
 
+#include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -66,7 +67,7 @@ esp_err_t error_handler_record_error(error_handler_t* handler,
                                      esp_err_t        error,
                                      const char*      description,
                                      const char*      file,
-                                     int              line,
+                                     int32_t line,
                                      const char*      func)
 /* clang-format on */
 {
@@ -116,17 +117,13 @@ esp_err_t error_handler_record_error(error_handler_t* handler,
     } else {
       handler->current_retry_delay = (uint32_t)new_delay_64;
     }
-    ESP_LOGI(TAG,
-             "Backoff: Next retry delay: %lu ms",
-             (unsigned long int)handler->current_retry_delay);
+    ESP_LOGI(TAG, "Backoff: Next retry delay: %" PRIu32 " ms", handler->current_retry_delay);
   } else {
     /* Retries already exhausted, log the max count */
     retry_count_to_log = handler->max_retries;
     /* Keep the max delay */
     handler->current_retry_delay = handler->max_retry_delay;
-    ESP_LOGI(TAG,
-             "Backoff: Next retry delay: %lu ms",
-             (unsigned long int)handler->current_retry_delay);
+    ESP_LOGI(TAG, "Backoff: Next retry delay: %" PRIu32 " ms", handler->current_retry_delay);
   }
 
   /* Construct detailed log message using retry_count_to_log */
@@ -134,15 +131,15 @@ esp_err_t error_handler_record_error(error_handler_t* handler,
   char log_buffer[256]; /* Using reasonable buffer size for ESP logging */
   snprintf(log_buffer,
            sizeof(log_buffer),
-           "Desc: %s | Code: %d (%s) | Loc: %s:%d (%s) | Retry: %lu/%lu", /* Use %lu */
+           "Desc: %s | Code: %d (%s) | Loc: %s:%" PRId32 " (%s) | Retry: %" PRIu32 "/%" PRIu32 "",
            desc,
            error,
            esp_err_to_name(error),
            filename,
            line,
            funcname,
-           (unsigned long)retry_count_to_log, /* Cast to unsigned long for %lu */
-           (unsigned long)handler->max_retries);
+           retry_count_to_log,
+           handler->max_retries);
   log_buffer[sizeof(log_buffer) - 1] = '\0'; /* Ensure null termination */
 
   ESP_LOGE(TAG, "Error Recorded: %s", log_buffer); /* Log the detailed message */
@@ -155,8 +152,8 @@ esp_err_t error_handler_record_error(error_handler_t* handler,
   /* Check if retries are exhausted based on the *actual* current_retry */
   if (handler->current_retry >= handler->max_retries) {
     ESP_LOGE(TAG,
-             "Max Retries: Max retries (%lu) exceeded for error %d (%s).",
-             (unsigned long int)handler->max_retries,
+             "Max Retries: Max retries (%" PRIu32 ") exceeded for error %d (%s).",
+             handler->max_retries,
              error,
              esp_err_to_name(error));
     /* Try reset function if available as a last resort */

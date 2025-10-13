@@ -1,0 +1,31 @@
+# ESP32 Firmware Default Configuration
+# This file contains sensible defaults for the project
+
+# Partition Table Configuration
+# Use custom partition table with OTA support
+CONFIG_PARTITION_TABLE_CUSTOM=y
+CONFIG_PARTITION_TABLE_CUSTOM_FILENAME="partitions_ota_4mb.csv"
+CONFIG_PARTITION_TABLE_OFFSET=0x8000
+
+# Compiler Optimization
+# Use size optimization for better flash usage
+CONFIG_COMPILER_OPTIMIZATION_SIZE=y
+
+# Logging
+# Default log level
+CONFIG_LOG_DEFAULT_LEVEL_INFO=y
+
+# FreeRTOS
+# Standard tick rate
+CONFIG_FREERTOS_HZ=100
+
+# ESP System
+# Enable core dumps to flash for debugging crashes
+CONFIG_ESP_COREDUMP_ENABLE_TO_FLASH=y
+CONFIG_ESP_COREDUMP_DATA_FORMAT_ELF=y
+
+# Note: When building for ESP32-S3, run:
+#   idf.py set-target esp32s3
+#   idf.py menuconfig
+#   Select: PYNQ WiFi Bridge Configuration -> Board Type -> ESP32-S3-WROOM-1-N16
+# This will automatically switch to partitions_ota_16mb.csv

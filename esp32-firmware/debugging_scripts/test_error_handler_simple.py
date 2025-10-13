@@ -58,7 +58,7 @@ def main():
         connect_packet = create_packet(CMD_WIFI_CONNECT, payload)
         ser.write(connect_packet)
 
-        print("\n✓ Command sent!")
+        print("\n[OK] Command sent!")
         print("\nNow watch the other terminal for error handler logs.")
         print("You should see:")
         print("  - 'Error Recorded' messages with retry counts (0/5, 1/5, 2/5...)")
@@ -72,7 +72,7 @@ def main():
             print(f"\rTime elapsed: {i+1}s", end='', flush=True)
             time.sleep(1)
 
-        print("\n\n✓ Test complete!")
+        print("\n\n[OK] Test complete!")
         print("Check the monitor terminal to verify error handler behavior.")
 
         ser.close()
