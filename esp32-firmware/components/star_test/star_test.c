@@ -7,13 +7,14 @@
 
 #include "star_test.h"
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
 #include <inttypes.h>
 #include <stdio.h>
 #include <string.h>
 
 #include "esp_log.h"
-#include "freertos/FreeRTOS.h"
-#include "freertos/task.h"
 
 static const char* TAG = "STAR_TEST";
 
