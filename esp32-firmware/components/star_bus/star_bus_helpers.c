@@ -13,8 +13,10 @@ static const char* TAG = "STAR_HELPERS";
 
 /* --- I2C Presets --- */
 
-star_bus_config_t*
-star_bus_config_i2c_standard(const char* name, uint8_t address, int sda_pin, int scl_pin)
+star_bus_config_t* star_bus_config_i2c_standard(const char* name,
+                                                uint8_t     address,
+                                                gpio_num_t  sda_pin,
+                                                gpio_num_t  scl_pin)
 {
   return star_bus_config_create_i2c(name,
                                     I2C_NUM_0,
@@ -25,7 +27,7 @@ star_bus_config_i2c_standard(const char* name, uint8_t address, int sda_pin, int
 }
 
 star_bus_config_t*
-star_bus_config_i2c_fast(const char* name, uint8_t address, int sda_pin, int scl_pin)
+star_bus_config_i2c_fast(const char* name, uint8_t address, gpio_num_t sda_pin, gpio_num_t scl_pin)
 {
   return star_bus_config_create_i2c(name,
                                     I2C_NUM_0,
@@ -35,8 +37,10 @@ star_bus_config_i2c_fast(const char* name, uint8_t address, int sda_pin, int scl
                                     STAR_BUS_I2C_FREQ_FAST);
 }
 
-star_bus_config_t*
-star_bus_config_i2c_fast_plus(const char* name, uint8_t address, int sda_pin, int scl_pin)
+star_bus_config_t* star_bus_config_i2c_fast_plus(const char* name,
+                                                 uint8_t     address,
+                                                 gpio_num_t  sda_pin,
+                                                 gpio_num_t  scl_pin)
 {
   return star_bus_config_create_i2c(name,
                                     I2C_NUM_0,
@@ -72,7 +76,7 @@ bool star_bus_validate_uart_baudrate(uint32_t baudrate)
   return (baudrate >= 300 && baudrate <= 921600);
 }
 
-bool star_bus_validate_gpio_i2c(int pin)
+bool star_bus_validate_gpio_i2c(gpio_num_t pin)
 {
   /* ESP32: Most GPIO pins support I2C except strapping pins */
   if (pin < 0 || pin >= GPIO_NUM_MAX) {
@@ -85,7 +89,7 @@ bool star_bus_validate_gpio_i2c(int pin)
   return true;
 }
 
-bool star_bus_validate_gpio_spi(int pin)
+bool star_bus_validate_gpio_spi(gpio_num_t pin)
 {
   /* Same restrictions as I2C */
   return star_bus_validate_gpio_i2c(pin);
@@ -96,8 +100,8 @@ bool star_bus_validate_gpio_spi(int pin)
 esp_err_t star_bus_quick_setup_i2c(star_bus_manager_t* manager,
                                    const char*         bus_name,
                                    uint8_t             address,
-                                   int                 sda_pin,
-                                   int                 scl_pin)
+                                   gpio_num_t          sda_pin,
+                                   gpio_num_t          scl_pin)
 {
   if (manager == NULL || bus_name == NULL) {
     return ESP_ERR_INVALID_ARG;

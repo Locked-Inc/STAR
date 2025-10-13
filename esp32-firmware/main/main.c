@@ -1,9 +1,11 @@
 /* esp32-firmware/main/main.c */
 
+#include <inttypes.h>
 #include <stdio.h>
 
 #include "esp_log.h"
 #include "nvs_flash.h"
+#include "pynq_ota_manager.h"
 #include "pynq_wifi_handler.h"
 #include "pynq_wifi_transport.h"
 #include "star_bus_manager.h"
@@ -112,6 +114,37 @@ void app_main(void)
   if (ret != ESP_OK) {
     ESP_LOGE(TAG, "Pin validation failed! Check logs for conflicts.");
     return;
+  }
+
+  /* Initialize OTA manager with Kconfig settings */
+  ota_config_t ota_cfg = {
+    .update_url = CONFIG_PYNQ_OTA_UPDATE_URL,
+#ifdef CONFIG_PYNQ_OTA_AUTO_UPDATE
+    .check_interval_ms = CONFIG_PYNQ_OTA_CHECK_INTERVAL_MS,
+    .auto_update       = true,
+#else
+    .check_interval_ms = 0, /* Disable periodic checking if auto-update is off */
+    .auto_update       = false,
+#endif
+#ifdef CONFIG_PYNQ_OTA_AUTO_REBOOT
+    .auto_reboot = true,
+#else
+    .auto_reboot = false,
+#endif
+  };
+
+  if (!ota_manager_init(&ota_cfg)) {
+    ESP_LOGW(TAG, "Failed to initialize OTA manager (non-critical)");
+    /* Continue even if OTA fails - it's not critical for basic operation */
+  } else {
+    ESP_LOGI(TAG, "OTA manager initialized");
+#ifdef CONFIG_PYNQ_OTA_AUTO_UPDATE
+    ESP_LOGI(TAG,
+             "Auto-update enabled (check interval: %" PRIu32 " ms)",
+             CONFIG_PYNQ_OTA_CHECK_INTERVAL_MS);
+#else
+    ESP_LOGI(TAG, "Auto-update disabled (manual updates only)");
+#endif
   }
 
   ESP_LOGI(TAG, "PYNQ WiFi Bridge Firmware Ready");

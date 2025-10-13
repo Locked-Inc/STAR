@@ -214,7 +214,7 @@ esp_err_t star_bus_manager_init(star_bus_manager_t* manager, const char* tag)
   }
 
   /* Initialize SPI host tracking */
-  for (int i = 0; i < SPI_HOST_MAX; ++i) {
+  for (uint32_t i = 0; i < SPI_HOST_MAX; ++i) {
     manager->spi_host_initialized[i] = false;
     manager->spi_device_count[i]     = 0; /* Initialize device count */
   }
@@ -562,7 +562,7 @@ esp_err_t star_bus_manager_deinit(star_bus_manager_t* manager)
   }
 
   /* Free underlying SPI buses that might still be marked as initialized */
-  for (int host = 0; host < SPI_HOST_MAX; ++host) {
+  for (uint32_t host = 0; host < SPI_HOST_MAX; ++host) {
     if (manager->spi_host_initialized[host]) {
       ESP_LOGI(manager->tag, "Freeing potentially orphaned SPI bus driver for host %d...", host);
       esp_err_t free_ret = spi_bus_free((spi_host_device_t)host);

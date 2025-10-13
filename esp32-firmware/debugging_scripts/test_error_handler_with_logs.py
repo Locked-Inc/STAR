@@ -47,7 +47,7 @@ def monitor_logs(log_port, stop_event, error_logs):
     """Monitor ESP32 serial logs and capture error handler messages"""
     try:
         ser = serial.Serial(log_port, BAUD_RATE, timeout=0.5)
-        print(f"✓ Log monitor started on {log_port}\n")
+        print(f"[OK] Log monitor started on {log_port}\n")
 
         buffer = ""
         while not stop_event.is_set():
@@ -67,7 +67,7 @@ def monitor_logs(log_port, stop_event, error_logs):
                                 error_logs.append(line)
                                 # Print important lines in real-time
                                 if 'Error Recorded' in line or 'Backoff' in line or 'Max Retries' in line:
-                                    print(f"  ⚠️  {line.strip()}")
+                                    print(f"  [WARN]  {line.strip()}")
                                 break
                 except:
                     pass
@@ -120,16 +120,16 @@ def main():
         # Send WIFI_CONNECT command
         connect_packet = create_packet(CMD_WIFI_CONNECT, payload)
         cmd_ser.write(connect_packet)
-        print("✓ Command sent!\n")
+        print("[OK] Command sent!\n")
 
         print("Monitoring error handler behavior...")
         print("Expected sequence:")
-        print("  • Attempt 1: Fail, retry after ~1000ms  (Retry: 0/5)")
-        print("  • Attempt 2: Fail, retry after ~2000ms  (Retry: 1/5)")
-        print("  • Attempt 3: Fail, retry after ~4000ms  (Retry: 2/5)")
-        print("  • Attempt 4: Fail, retry after ~8000ms  (Retry: 3/5)")
-        print("  • Attempt 5: Fail, retry after ~10000ms (Retry: 4/5)")
-        print("  • Attempt 6: Fail, max retries reached  (Retry: 5/5)")
+        print("  - Attempt 1: Fail, retry after ~1000ms  (Retry: 0/5)")
+        print("  - Attempt 2: Fail, retry after ~2000ms  (Retry: 1/5)")
+        print("  - Attempt 3: Fail, retry after ~4000ms  (Retry: 2/5)")
+        print("  - Attempt 4: Fail, retry after ~8000ms  (Retry: 3/5)")
+        print("  - Attempt 5: Fail, retry after ~10000ms (Retry: 4/5)")
+        print("  - Attempt 6: Fail, max retries reached  (Retry: 5/5)")
         print("\nWatching logs (this takes ~30 seconds)...\n")
         print("-" * 70)
 
@@ -143,7 +143,7 @@ def main():
             # Check if we've seen max retries
             if any('Max Retries' in log for log in error_logs):
                 print("\n" + "-" * 70)
-                print("✓ Detected max retries reached!")
+                print("[OK] Detected max retries reached!")
                 time.sleep(2)  # Wait a bit more for final logs
                 break
 
@@ -158,7 +158,7 @@ def main():
         print("=" * 70)
 
         if error_logs:
-            print(f"\n✓ Captured {len(error_logs)} error handler log entries:")
+            print(f"\n[OK] Captured {len(error_logs)} error handler log entries:")
             print("\nKey error handler events:")
             for log in error_logs:
                 # Clean up the log line
@@ -168,25 +168,25 @@ def main():
                     if 'Retry:' in log_clean:
                         retry_match = re.search(r'Retry:\s*(\d+)/(\d+)', log_clean)
                         if retry_match:
-                            print(f"  → Retry {retry_match.group(1)}/{retry_match.group(2)}")
+                            print(f"  -> Retry {retry_match.group(1)}/{retry_match.group(2)}")
                     elif 'Backoff' in log_clean:
                         delay_match = re.search(r'delay:\s*(\d+)', log_clean)
                         if delay_match:
-                            print(f"     └─ Backoff delay: {delay_match.group(1)}ms")
+                            print(f"     +- Backoff delay: {delay_match.group(1)}ms")
                     elif 'Max Retries' in log_clean:
-                        print(f"  ✗ Max retries exceeded")
+                        print(f"  [FAIL] Max retries exceeded")
                     elif 'Reset' in log_clean:
-                        print(f"  ⟳ Reset attempt")
+                        print(f"  [RESET] Reset attempt")
 
             # Count retries
             retry_count = sum(1 for log in error_logs if 'Retry:' in log)
-            print(f"\n📊 Statistics:")
-            print(f"  • Total retry attempts detected: {retry_count}")
-            print(f"  • Expected: 5 retry attempts")
-            print(f"  • Status: {'✓ PASS' if retry_count >= 5 else '⚠️  CHECK LOGS'}")
+            print(f"\n[STATS] Statistics:")
+            print(f"  - Total retry attempts detected: {retry_count}")
+            print(f"  - Expected: 5 retry attempts")
+            print(f"  - Status: {'[OK] PASS' if retry_count >= 5 else '[WARN]  CHECK LOGS'}")
 
         else:
-            print("\n⚠️  No error handler logs captured.")
+            print("\n[WARN]  No error handler logs captured.")
             print("This might mean:")
             print("  - The WiFi connected successfully (unlikely with fake SSID)")
             print("  - Logs weren't captured (check /dev/ttyUSB1 connection)")
@@ -197,7 +197,7 @@ def main():
         print("=" * 70)
 
     except serial.SerialException as e:
-        print(f"\n❌ Serial error: {e}")
+        print(f"\n[ERROR] Serial error: {e}")
         print("Make sure both /dev/ttyUSB0 and /dev/ttyUSB1 are available.")
         stop_event.set()
         sys.exit(1)
@@ -206,7 +206,7 @@ def main():
         stop_event.set()
         sys.exit(0)
     except Exception as e:
-        print(f"\n❌ Unexpected error: {e}")
+        print(f"\n[ERROR] Unexpected error: {e}")
         stop_event.set()
         sys.exit(1)
 

@@ -9,32 +9,12 @@
 
 #include "pynq_wifi_protocol.h"
 #include "star_test.h"
+#include "test_transport_mock.h"
 
-/* Mock transport for testing send functions */
-static uint8_t  g_transport_buffer[2048];
-static uint16_t g_transport_len   = 0;
-static uint8_t  g_transport_error = 0;
-
-/* Weak symbol to override real transport_send in test environment */
-__attribute__((weak)) int32_t transport_send(const uint8_t* data, uint16_t len)
-{
-  if (g_transport_error) {
-    return -1;
-  }
-  if (len > sizeof(g_transport_buffer)) {
-    return -1;
-  }
-  memcpy(g_transport_buffer, data, len);
-  g_transport_len = len;
-  return (int32_t)len;
-}
-
-static void reset_transport_mock(void)
-{
-  memset(g_transport_buffer, 0, sizeof(g_transport_buffer));
-  g_transport_len   = 0;
-  g_transport_error = 0;
-}
+/* Convenience macros for the shared transport mock */
+#define g_transport_buffer transport_mock_get_buffer()
+#define g_transport_len    transport_mock_get_length()
+#define reset_transport_mock() transport_mock_reset()
 
 /* ========================================================================
  * Packet Creation Tests (12 tests)
@@ -75,7 +55,7 @@ STAR_TEST_CASE(protocol, create_packet_with_small_payload)
 STAR_TEST_CASE(protocol, create_packet_with_large_payload)
 {
   uint8_t payload[256];
-  for (int i = 0; i < 256; i++) {
+  for (uint32_t i = 0; i < 256; i++) {
     payload[i] = (uint8_t)i;
   }
 
@@ -333,7 +313,7 @@ STAR_TEST_CASE(protocol, parse_packet_max_payload)
   data[2] = 0x00; /* 1024 & 0xFF */
   data[3] = 0x04; /* 1024 >> 8 */
 
-  for (int i = 0; i < PROTOCOL_MAX_PAYLOAD_SIZE; i++) {
+  for (uint32_t i = 0; i < PROTOCOL_MAX_PAYLOAD_SIZE; i++) {
     data[PROTOCOL_HEADER_SIZE + i] = (uint8_t)(i & 0xFF);
   }
 
@@ -341,6 +321,7 @@ STAR_TEST_CASE(protocol, parse_packet_max_payload)
   bool               result = protocol_parse_packet(data, sizeof(data), &packet);
 
   STAR_ASSERT_TRUE(result);
+  STAR_ASSERT_NOT_NULL(packet);
   STAR_ASSERT_EQUAL(PROTOCOL_MAX_PAYLOAD_SIZE, packet->payload_len);
   STAR_ASSERT_EQUAL(0, packet->payload[0]);
   STAR_ASSERT_EQUAL(255, packet->payload[255]);
@@ -374,6 +355,7 @@ STAR_TEST_CASE(protocol, parse_packet_large_payload_encoding)
   bool               result = protocol_parse_packet(data, sizeof(data), &packet);
 
   STAR_ASSERT_TRUE(result);
+  STAR_ASSERT_NOT_NULL(packet);
   STAR_ASSERT_EQUAL(256, packet->payload_len);
 }
 
@@ -395,6 +377,7 @@ STAR_TEST_CASE(protocol, parse_wifi_connect_packet)
   bool               result = protocol_parse_packet(data, sizeof(data), &packet);
 
   STAR_ASSERT_TRUE(result);
+  STAR_ASSERT_NOT_NULL(packet);
   STAR_ASSERT_EQUAL(k_cmd_wifi_connect, packet->cmd);
 
   wifi_connect_payload_t* parsed = (wifi_connect_payload_t*)packet->payload;
@@ -421,6 +404,7 @@ STAR_TEST_CASE(protocol, parse_response_packet)
   bool               result = protocol_parse_packet(data, sizeof(data), &packet);
 
   STAR_ASSERT_TRUE(result);
+  STAR_ASSERT_NOT_NULL(packet);
   STAR_ASSERT_EQUAL(k_cmd_response, packet->cmd);
 
   response_payload_t* parsed = (response_payload_t*)packet->payload;
@@ -445,6 +429,7 @@ STAR_TEST_CASE(protocol, send_response_no_data)
   bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
 
   STAR_ASSERT_TRUE(parsed);
+  STAR_ASSERT_NOT_NULL(packet);
   STAR_ASSERT_EQUAL(k_cmd_response, packet->cmd);
 
   response_payload_t* response = (response_payload_t*)packet->payload;
@@ -465,6 +450,7 @@ STAR_TEST_CASE(protocol, send_response_with_data)
   bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
 
   STAR_ASSERT_TRUE(parsed);
+  STAR_ASSERT_NOT_NULL(packet);
   STAR_ASSERT_EQUAL(k_cmd_response, packet->cmd);
 
   response_payload_t* response = (response_payload_t*)packet->payload;
@@ -489,6 +475,7 @@ STAR_TEST_CASE(protocol, send_error_response)
   bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
 
   STAR_ASSERT_TRUE(parsed);
+  STAR_ASSERT_NOT_NULL(packet);
   STAR_ASSERT_EQUAL(k_cmd_response, packet->cmd);
 
   response_payload_t* response = (response_payload_t*)packet->payload;
@@ -506,6 +493,7 @@ STAR_TEST_CASE(protocol, send_error_invalid_cmd)
   bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
 
   STAR_ASSERT_TRUE(parsed);
+  STAR_ASSERT_NOT_NULL(packet);
 
   response_payload_t* response = (response_payload_t*)packet->payload;
   STAR_ASSERT_EQUAL(k_status_invalid_cmd, response->status);
@@ -518,7 +506,10 @@ STAR_TEST_CASE(protocol, send_error_timeout)
   protocol_send_error(k_status_timeout);
 
   protocol_packet_t* packet = NULL;
-  protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+
+  STAR_ASSERT_TRUE(parsed);
+  STAR_ASSERT_NOT_NULL(packet);
 
   response_payload_t* response = (response_payload_t*)packet->payload;
   STAR_ASSERT_EQUAL(k_status_timeout, response->status);
@@ -531,7 +522,10 @@ STAR_TEST_CASE(protocol, send_error_wifi_failed)
   protocol_send_error(k_status_wifi_failed);
 
   protocol_packet_t* packet = NULL;
-  protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+  bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
+
+  STAR_ASSERT_TRUE(parsed);
+  STAR_ASSERT_NOT_NULL(packet);
 
   response_payload_t* response = (response_payload_t*)packet->payload;
   STAR_ASSERT_EQUAL(k_status_wifi_failed, response->status);
@@ -542,7 +536,7 @@ STAR_TEST_CASE(protocol, send_response_large_data)
   reset_transport_mock();
 
   uint8_t large_data[512];
-  for (int i = 0; i < 512; i++) {
+  for (uint32_t i = 0; i < 512; i++) {
     large_data[i] = (uint8_t)i;
   }
 
@@ -554,6 +548,7 @@ STAR_TEST_CASE(protocol, send_response_large_data)
   bool               parsed = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet);
 
   STAR_ASSERT_TRUE(parsed);
+  STAR_ASSERT_NOT_NULL(packet);
 
   response_payload_t* response = (response_payload_t*)packet->payload;
   STAR_ASSERT_EQUAL(512, response->data_len);
@@ -562,7 +557,7 @@ STAR_TEST_CASE(protocol, send_response_large_data)
 STAR_TEST_CASE(protocol, send_response_transport_error)
 {
   reset_transport_mock();
-  g_transport_error = 1; /* Simulate transport failure */
+  transport_mock_set_error(1); /* Simulate transport failure */
 
   protocol_send_response(k_status_ok, NULL, 0);
 
@@ -591,7 +586,9 @@ STAR_TEST_CASE(protocol, send_response_different_statuses)
   reset_transport_mock();
   protocol_send_response(k_status_ok, NULL, 0);
   protocol_packet_t* packet1 = NULL;
-  protocol_parse_packet(g_transport_buffer, g_transport_len, &packet1);
+  bool               parsed1 = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet1);
+  STAR_ASSERT_TRUE(parsed1);
+  STAR_ASSERT_NOT_NULL(packet1);
   response_payload_t* resp1 = (response_payload_t*)packet1->payload;
   STAR_ASSERT_EQUAL(k_status_ok, resp1->status);
 
@@ -599,7 +596,9 @@ STAR_TEST_CASE(protocol, send_response_different_statuses)
   reset_transport_mock();
   protocol_send_response(k_status_http_failed, NULL, 0);
   protocol_packet_t* packet2 = NULL;
-  protocol_parse_packet(g_transport_buffer, g_transport_len, &packet2);
+  bool               parsed2 = protocol_parse_packet(g_transport_buffer, g_transport_len, &packet2);
+  STAR_ASSERT_TRUE(parsed2);
+  STAR_ASSERT_NOT_NULL(packet2);
   response_payload_t* resp2 = (response_payload_t*)packet2->payload;
   STAR_ASSERT_EQUAL(k_status_http_failed, resp2->status);
 }

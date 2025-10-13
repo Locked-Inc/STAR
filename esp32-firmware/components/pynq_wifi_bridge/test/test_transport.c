@@ -503,7 +503,7 @@ STAR_TEST_CASE(transport, multiple_send_operations)
   bool init_ret = transport_init(&config, test_rx_callback);
   STAR_ASSERT_TRUE(init_ret);
 
-  for (int i = 0; i < 10; i++) {
+  for (uint32_t i = 0; i < 10; i++) {
     uint8_t data[5] = {(uint8_t)i,
                        (uint8_t)(i + 1),
                        (uint8_t)(i + 2),
@@ -538,7 +538,7 @@ STAR_TEST_CASE(transport, multiple_deinit)
 
 STAR_TEST_CASE(transport, init_deinit_cycle)
 {
-  for (int i = 0; i < 3; i++) {
+  for (uint32_t i = 0; i < 3; i++) {
     esp_err_t err = star_bus_manager_init(&g_manager, "test_transport");
     STAR_ASSERT_EQUAL(ESP_OK, err);
 

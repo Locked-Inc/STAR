@@ -10,6 +10,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#include <inttypes.h>
 #include <stdio.h>
 
 #include "esp_log.h"
@@ -42,12 +43,9 @@ void app_main(void)
   star_test_results_t results = star_test_get_results();
 
   if (results.failed == 0) {
-    ESP_LOGI(TAG, "All %lu tests passed!", (unsigned long)results.total);
+    ESP_LOGI(TAG, "All %" PRIu32 " tests passed!", results.total);
   } else {
-    ESP_LOGE(TAG,
-             "%lu of %lu tests failed!",
-             (unsigned long)results.failed,
-             (unsigned long)results.total);
+    ESP_LOGE(TAG, "%" PRIu32 " of %" PRIu32 " tests failed!", results.failed, results.total);
   }
 
   /* Print completion marker for CI/CD detection */

@@ -15,7 +15,8 @@ if ! command -v awk &> /dev/null; then
 fi
 
 # Collect all relevant .c and .h files from main/ and components/
-file_list=$(find main components -type f \( -name '*.c' -o -name '*.h' \))
+# Exclude build directories
+file_list=$(find main components -type d -name build -prune -o -type f \( -name '*.c' -o -name '*.h' \) -print)
 
 if [[ -z "$file_list" ]]; then
   echo "No .c or .h files found in main/ or components/ directories." >&2

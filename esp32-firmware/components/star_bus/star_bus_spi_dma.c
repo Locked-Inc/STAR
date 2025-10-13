@@ -5,6 +5,7 @@
 #include <driver/spi_master.h>
 #include <esp_heap_caps.h>
 #include <esp_log.h>
+#include <inttypes.h>
 #include <string.h>
 
 #include "star_bus_spi.h"
@@ -156,7 +157,7 @@ esp_err_t star_bus_spi_configure_dma(star_bus_manager_t*          manager,
   memcpy(&state->config, config, sizeof(star_spi_dma_config_t));
 
   ESP_LOGI(TAG,
-           "DMA configured for bus '%s': enabled=%d, min_size=%lu, channel=%d",
+           "DMA configured for bus '%s': enabled=%d, min_size=%" PRIu32 ", channel=%d",
            bus_name,
            config->enabled,
            config->min_transfer_size,

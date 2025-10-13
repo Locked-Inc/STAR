@@ -43,7 +43,7 @@ extern "C" {
  *                          size_t* length, void* ctx) {
  *   if (function_cmd == 0x44) { // Convert T
  *     // Return temperature data
- *     data[0] = 0x50; data[1] = 0x05; // 85°C
+ *     data[0] = 0x50; data[1] = 0x05; // 85C
  *     *length = 2;
  *   }
  *   return ESP_OK;

@@ -5,6 +5,7 @@
 #include <driver/i2c.h>
 #include <esp_heap_caps.h>
 #include <esp_log.h>
+#include <inttypes.h>
 #include <string.h>
 
 #include "star_bus_i2c.h"
@@ -161,7 +162,7 @@ esp_err_t star_bus_i2c_configure_dma(star_bus_manager_t*          manager,
   memcpy(&state->config, config, sizeof(star_i2c_dma_config_t));
 
   ESP_LOGI(TAG,
-           "DMA configured for bus '%s': enabled=%d, min_size=%lu, channel=%d",
+           "DMA configured for bus '%s': enabled=%d, min_size=%" PRIu32 ", channel=%d",
            bus_name,
            config->enabled,
            config->min_transfer_size,
@@ -228,7 +229,7 @@ esp_err_t star_bus_i2c_write_dma(star_bus_manager_t*     manager,
   if (!use_dma) {
     /* Fall back to standard I2C write */
     ESP_LOGD(TAG,
-             "Using standard I2C write (length=%zu, threshold=%lu)",
+             "Using standard I2C write (length=%zu, threshold=%" PRIu32 ")",
              length,
              state->config.min_transfer_size);
     esp_err_t result = star_bus_i2c_write(manager, bus_name, data, length, command, NULL);
@@ -314,7 +315,7 @@ esp_err_t star_bus_i2c_read_dma(star_bus_manager_t*     manager,
   if (!use_dma) {
     /* Fall back to standard I2C read */
     ESP_LOGD(TAG,
-             "Using standard I2C read (length=%zu, threshold=%lu)",
+             "Using standard I2C read (length=%zu, threshold=%" PRIu32 ")",
              length,
              state->config.min_transfer_size);
     esp_err_t result = star_bus_i2c_read(manager, bus_name, data, length, command, NULL);

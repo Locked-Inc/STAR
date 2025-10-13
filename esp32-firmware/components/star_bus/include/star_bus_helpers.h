@@ -27,20 +27,24 @@ extern "C" {
 /**
  * @brief Create I2C config for standard mode (100 kHz)
  */
-star_bus_config_t*
-star_bus_config_i2c_standard(const char* name, uint8_t address, int sda_pin, int scl_pin);
+star_bus_config_t* star_bus_config_i2c_standard(const char* name,
+                                                uint8_t     address,
+                                                gpio_num_t  sda_pin,
+                                                gpio_num_t  scl_pin);
 
 /**
  * @brief Create I2C config for fast mode (400 kHz)
  */
 star_bus_config_t*
-star_bus_config_i2c_fast(const char* name, uint8_t address, int sda_pin, int scl_pin);
+star_bus_config_i2c_fast(const char* name, uint8_t address, gpio_num_t sda_pin, gpio_num_t scl_pin);
 
 /**
  * @brief Create I2C config for fast mode plus (1 MHz)
  */
-star_bus_config_t*
-star_bus_config_i2c_fast_plus(const char* name, uint8_t address, int sda_pin, int scl_pin);
+star_bus_config_t* star_bus_config_i2c_fast_plus(const char* name,
+                                                 uint8_t     address,
+                                                 gpio_num_t  sda_pin,
+                                                 gpio_num_t  scl_pin);
 
 /* --- Validation Helpers --- */
 
@@ -67,12 +71,12 @@ bool star_bus_validate_uart_baudrate(uint32_t baudrate);
 /**
  * @brief Check if GPIO pin is valid for I2C
  */
-bool star_bus_validate_gpio_i2c(int pin);
+bool star_bus_validate_gpio_i2c(gpio_num_t pin);
 
 /**
  * @brief Check if GPIO pin is valid for SPI
  */
-bool star_bus_validate_gpio_spi(int pin);
+bool star_bus_validate_gpio_spi(gpio_num_t pin);
 
 /* --- Quick Setup Helpers --- */
 
@@ -90,8 +94,8 @@ bool star_bus_validate_gpio_spi(int pin);
 esp_err_t star_bus_quick_setup_i2c(star_bus_manager_t* manager,
                                    const char*         bus_name,
                                    uint8_t             address,
-                                   int                 sda_pin,
-                                   int                 scl_pin);
+                                   gpio_num_t          sda_pin,
+                                   gpio_num_t          scl_pin);
 
 /* --- Pin Mapping Helpers --- */
 

@@ -90,11 +90,11 @@ TEST_CASE("BQ7850 temperature data structure", "[bq7850][data]")
   bq7850_temp_data_t temp_data;
   memset(&temp_data, 0, sizeof(temp_data));
 
-  /* Simulate temperature readings (in 0.1°C) */
-  temp_data.temp_c[0]     = 250; /* 25.0°C */
-  temp_data.temp_c[1]     = 260; /* 26.0°C */
+  /* Simulate temperature readings (in 0.1C) */
+  temp_data.temp_c[0]     = 250; /* 25.0C */
+  temp_data.temp_c[1]     = 260; /* 26.0C */
   temp_data.valid_sensors = 2;
-  temp_data.avg_temp_c    = 255; /* 25.5°C */
+  temp_data.avg_temp_c    = 255; /* 25.5C */
 
   TEST_ASSERT_EQUAL(2, temp_data.valid_sensors);
   TEST_ASSERT_EQUAL(250, temp_data.temp_c[0]);
@@ -159,17 +159,17 @@ TEST_CASE("BQ7850 temperature conversion", "[bq7850][helper]")
   int16_t temp_01k;
   float   temp_c;
 
-  /* 25.0°C = 298.15K = 2981 in 0.1K units */
+  /* 25.0C = 298.15K = 2981 in 0.1K units */
   temp_01k = 2981;
   temp_c   = star_bms_bq7850_convert_temp_to_celsius(temp_01k);
   TEST_ASSERT_FLOAT_WITHIN(0.1, 25.0, temp_c);
 
-  /* 0.0°C = 273.15K = 2731 in 0.1K units */
+  /* 0.0C = 273.15K = 2731 in 0.1K units */
   temp_01k = 2731;
   temp_c   = star_bms_bq7850_convert_temp_to_celsius(temp_01k);
   TEST_ASSERT_FLOAT_WITHIN(0.1, 0.0, temp_c);
 
-  /* -10.0°C = 263.15K = 2631 in 0.1K units */
+  /* -10.0C = 263.15K = 2631 in 0.1K units */
   temp_01k = 2631;
   temp_c   = star_bms_bq7850_convert_temp_to_celsius(temp_01k);
   TEST_ASSERT_FLOAT_WITHIN(0.1, -10.0, temp_c);
@@ -228,8 +228,8 @@ TEST_CASE("BQ7850 protection structure", "[bq7850][protection]")
   protection.undervoltage_mv  = 3000;  /* 3.0V per cell */
   protection.overcharge_ma    = 5000;  /* 5A */
   protection.overdischarge_ma = 10000; /* 10A */
-  protection.overtemp_c       = 600;   /* 60°C */
-  protection.undertemp_c      = -100;  /* -10°C */
+  protection.overtemp_c       = 600;   /* 60C */
+  protection.undertemp_c      = -100;  /* -10C */
 
   TEST_ASSERT_EQUAL(4200, protection.overvoltage_mv);
   TEST_ASSERT_EQUAL(3000, protection.undervoltage_mv);

@@ -21,10 +21,10 @@ The BQ7850 communicates via SMBus (I2C compatible):
 ```
 ESP32          BQ7850
 -----          ------
-GPIO21 (SDA) → SDA
-GPIO22 (SCL) → SCL
-GND          → GND
-3.3V         → VCC (if needed)
+GPIO21 (SDA) -> SDA
+GPIO22 (SCL) -> SCL
+GND          -> GND
+3.3V         -> VCC (if needed)
 ```
 
 Default SMBus address: `0x08`
@@ -223,9 +223,9 @@ typedef struct {
 
 ```c
 typedef struct {
-    int16_t temp_c[BQ7850_MAX_TEMP_SENSORS];  // Temps in 0.1°C
+    int16_t temp_c[BQ7850_MAX_TEMP_SENSORS];  // Temps in 0.1degC
     uint8_t valid_sensors;                     // Number of valid sensors
-    int16_t avg_temp_c;                        // Average temp (0.1°C)
+    int16_t avg_temp_c;                        // Average temp (0.1degC)
 } bq7850_temp_data_t;
 ```
 
@@ -262,7 +262,7 @@ bq7850_config_t config = {
     .num_temp        = 1,      // 1 temperature sensor
     .smbus_addr      = 0x08,   // Default address
     .design_capacity = 2500,   // 2500 mAh
-    .design_voltage  = 14800,  // 14.8V nominal (4 × 3.7V)
+    .design_voltage  = 14800,  // 14.8V nominal (4 x 3.7V)
 };
 ```
 
@@ -274,8 +274,8 @@ bq7850_protection_t protection = {
     .undervoltage_mv  = 3000,  // 3.0V per cell min
     .overcharge_ma    = 5000,  // 5A charge limit
     .overdischarge_ma = 10000, // 10A discharge limit
-    .overtemp_c       = 600,   // 60°C max (in 0.1°C)
-    .undertemp_c      = -100,  // -10°C min (in 0.1°C)
+    .overtemp_c       = 600,   // 60degC max (in 0.1degC)
+    .undertemp_c      = -100,  // -10degC min (in 0.1degC)
 };
 ```
 
@@ -312,7 +312,7 @@ idf.py -C components/star_bms_bq7850/test build flash monitor
 If you get communication errors:
 
 1. Check I2C connections (SDA, SCL, GND)
-2. Verify pull-up resistors (typically 4.7kΩ on SDA and SCL)
+2. Verify pull-up resistors (typically 4.7kOhm on SDA and SCL)
 3. Check SMBus address (default 0x08)
 4. Verify I2C bus speed (100 kHz recommended)
 
@@ -354,7 +354,7 @@ Temperatures are reported in 0.1K units. Use the helper function to convert:
 ```c
 int16_t temp_raw = 2981;  // 298.1K from BQ7850
 float temp_c = star_bms_bq7850_convert_temp_to_celsius(temp_raw);
-// Returns 25.0°C
+// Returns 25.0degC
 ```
 
 ## Dependencies

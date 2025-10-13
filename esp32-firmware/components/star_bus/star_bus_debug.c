@@ -5,6 +5,7 @@
 #include <driver/i2c.h>
 #include <esp_log.h>
 #include <esp_timer.h>
+#include <inttypes.h>
 #include <string.h>
 
 #include "star_bus_config.h"
@@ -100,7 +101,7 @@ esp_err_t star_bus_debug_print_buses(const star_bus_manager_t* manager)
   ESP_LOGI(TAG, "=== Configured Buses ===");
 
   // Iterate through linked list of buses
-  int                count  = 0;
+  int32_t            count  = 0;
   star_bus_config_t* config = manager->buses;
 
   while (config != NULL) {
@@ -155,7 +156,7 @@ esp_err_t star_bus_debug_print_bus_info(const star_bus_manager_t* manager, const
     ESP_LOGI(TAG, "  I2C Port: %d", config->proto.i2c.port);
     ESP_LOGI(TAG, "  SDA Pin: %d", config->proto.i2c.config.sda_io_num);
     ESP_LOGI(TAG, "  SCL Pin: %d", config->proto.i2c.config.scl_io_num);
-    ESP_LOGI(TAG, "  Clock Speed: %lu Hz", config->proto.i2c.config.master.clk_speed);
+    ESP_LOGI(TAG, "  Clock Speed: %" PRIu32 " Hz", config->proto.i2c.config.master.clk_speed);
   }
 
   return ESP_OK;
@@ -235,8 +236,8 @@ esp_err_t star_bus_debug_dump_regs(const star_bus_manager_t* manager,
 
   // Print in rows of 16
   for (size_t i = 0; i < max_read; i += 16) {
-    char line[128] = {0};
-    int  offset    = 0;
+    char    line[128] = {0};
+    int32_t offset    = 0;
 
     offset += snprintf(line + offset, sizeof(line) - offset, "  0x%02X: ", start_reg + i);
 
@@ -365,7 +366,7 @@ esp_err_t star_bus_debug_logger_print(const star_bus_transaction_logger_t* logge
                result);
     } else {
       ESP_LOGI(TAG,
-               "  [%llu] Bus=%d Addr=0x%02X Reg=0x%02X Len=%u %s %s (error=%ld)",
+               "  [%llu] Bus=%d Addr=0x%02X Reg=0x%02X Len=%u %s %s (error=%" PRId32 ")",
                entry->timestamp_us,
                entry->bus_index,
                entry->address,
@@ -449,22 +450,22 @@ esp_err_t star_bus_debug_stats_print(const star_bus_error_stats_t* stats)
   }
 
   ESP_LOGI(TAG, "=== Error Statistics ===");
-  ESP_LOGI(TAG, "  Total transactions: %lu", stats->total_transactions);
-  ESP_LOGI(TAG, "  Failed transactions: %lu", stats->failed_transactions);
+  ESP_LOGI(TAG, "  Total transactions: %" PRIu32 "", stats->total_transactions);
+  ESP_LOGI(TAG, "  Failed transactions: %" PRIu32 "", stats->failed_transactions);
 
   if (stats->total_transactions > 0) {
     float error_rate = (float)stats->failed_transactions / stats->total_transactions * 100.0f;
     ESP_LOGI(TAG, "  Error rate: %.2f%%", error_rate);
   }
 
-  ESP_LOGI(TAG, "  Timeout errors: %lu", stats->timeout_errors);
-  ESP_LOGI(TAG, "  NACK errors: %lu", stats->nack_errors);
-  ESP_LOGI(TAG, "  Bus errors: %lu", stats->bus_errors);
-  ESP_LOGI(TAG, "  Other errors: %lu", stats->other_errors);
+  ESP_LOGI(TAG, "  Timeout errors: %" PRIu32 "", stats->timeout_errors);
+  ESP_LOGI(TAG, "  NACK errors: %" PRIu32 "", stats->nack_errors);
+  ESP_LOGI(TAG, "  Bus errors: %" PRIu32 "", stats->bus_errors);
+  ESP_LOGI(TAG, "  Other errors: %" PRIu32 "", stats->other_errors);
 
   if (stats->failed_transactions > 0) {
     ESP_LOGI(TAG,
-             "  Last error: %ld at %llu us",
+             "  Last error: %" PRId32 " at %llu us",
              stats->last_error_code,
              stats->last_error_time_us);
   }

@@ -103,9 +103,10 @@ esp_err_t star_bus_bmp280_read_pressure(const star_bus_manager_t* manager,
 
 /** MPU6050 configuration structure */
 typedef struct {
-  uint8_t accel_range; /**< Accelerometer range (0=±2g, 1=±4g, 2=±8g, 3=±16g) */
-  uint8_t gyro_range; /**< Gyroscope range (0=±250°/s, 1=±500°/s, 2=±1000°/s, 3=±2000°/s) */
-  uint8_t dlpf_mode;  /**< Digital low-pass filter mode */
+  uint8_t accel_range; /**< Accelerometer range (0=+/-2g, 1=+/-4g, 2=+/-8g, 3=+/-16g) */
+  uint8_t
+    gyro_range; /**< Gyroscope range (0=+/-250deg/s, 1=+/-500deg/s, 2=+/-1000deg/s, 3=+/-2000deg/s) */
+  uint8_t dlpf_mode;       /**< Digital low-pass filter mode */
   uint8_t sample_rate_div; /**< Sample rate divider */
 } mpu6050_config_t;
 

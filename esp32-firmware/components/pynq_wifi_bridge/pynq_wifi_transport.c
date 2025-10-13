@@ -6,6 +6,7 @@
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
+#include <inttypes.h>
 #include <string.h>
 
 #include "esp_log.h"
@@ -274,10 +275,10 @@ bool transport_init(const transport_config_t* config, transport_rx_callback_t rx
     }
 
     ESP_LOGI(TAG,
-             "UART transport initialized: TX=%d, RX=%d, baud=%lu",
+             "UART transport initialized: TX=%d, RX=%d, baud=%" PRIu32 "",
              uart_cfg->tx_pin,
              uart_cfg->rx_pin,
-             (unsigned long)uart_cfg->baud_rate);
+             uart_cfg->baud_rate);
 
   } else if (g_type == k_transport_spi) {
     /* Initialize SPI peripheral transport */
@@ -445,18 +446,16 @@ int32_t transport_send(const uint8_t* data, uint16_t len)
 
       if (error_handler_can_retry(&g_error_handler)) {
         ESP_LOGW(TAG,
-                 "UART write failed: %s - retry %lu/%lu after %lu ms",
+                 "UART write failed: %s - retry %" PRIu32 "/%" PRIu32 " after %" PRIu32 " ms",
                  esp_err_to_name(ret),
-                 (unsigned long)g_error_handler.current_retry,
-                 (unsigned long)g_error_handler.max_retries,
-                 (unsigned long)g_error_handler.current_retry_delay);
+                 g_error_handler.current_retry,
+                 g_error_handler.max_retries,
+                 g_error_handler.current_retry_delay);
         vTaskDelay(pdMS_TO_TICKS(g_error_handler.current_retry_delay));
       }
     } while (error_handler_can_retry(&g_error_handler));
 
-    ESP_LOGE(TAG,
-             "UART write failed after %lu retries",
-             (unsigned long)g_error_handler.max_retries);
+    ESP_LOGE(TAG, "UART write failed after %" PRIu32 " retries", g_error_handler.max_retries);
     return -1;
 
   } else if (g_type == k_transport_spi) {

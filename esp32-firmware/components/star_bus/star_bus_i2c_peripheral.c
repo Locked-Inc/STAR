@@ -7,6 +7,7 @@
 #include <esp_timer.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include <inttypes.h>
 #include <string.h>
 
 /* --- Constants --- */
@@ -83,7 +84,7 @@ static esp_err_t get_i2c_port(const char* bus_name, i2c_port_t* port)
 
   /* Parse bus name to extract port number */
   if (strncmp(bus_name, "i2c", 3) == 0) {
-    int port_num = bus_name[3] - '0';
+    int32_t port_num = bus_name[3] - '0';
     if (port_num >= 0 && port_num < I2C_NUM_MAX) {
       *port = (i2c_port_t)port_num;
       return ESP_OK;
@@ -104,10 +105,10 @@ static void peripheral_task(void* param)
 
   while (state->task_running) {
     /* Read from I2C slave buffer */
-    int len = i2c_slave_read_buffer(state->port,
-                                    state->rx_buffer,
-                                    state->config.rx_buffer_size,
-                                    pdMS_TO_TICKS(100));
+    int32_t len = i2c_slave_read_buffer(state->port,
+                                        state->rx_buffer,
+                                        state->config.rx_buffer_size,
+                                        pdMS_TO_TICKS(100));
 
     if (len > 0) {
       /* Master wrote data to us */
@@ -392,7 +393,7 @@ esp_err_t star_bus_i2c_peripheral_set_response(star_bus_manager_t* manager,
   state->tx_data_length = length;
 
   /* Write to I2C slave tx buffer */
-  int written =
+  int32_t written =
     i2c_slave_write_buffer(state->port, data, length, pdMS_TO_TICKS(state->config.timeout_ms));
 
   if (written < 0) {
@@ -491,7 +492,7 @@ void star_bus_i2c_peripheral_print_stats(const char*                        bus_
   printf("  Last Error: %s\n", esp_err_to_name(stats->last_error));
 
   printf("\nTiming:\n");
-  printf("  Last Request: %lu us\n", stats->last_request_time_us);
+  printf("  Last Request: %" PRIu32 " us\n", stats->last_request_time_us);
 
   printf("======================================\n\n");
 }

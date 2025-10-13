@@ -12,8 +12,8 @@ The `test_app` folder is a **standalone ESP-IDF application** specifically desig
    - Hardware-specific behavior (GPIO, timers, etc.)
 
 2. **Separate from Production**: Your main firmware is for production use. `test_app` is only for testing:
-   - Flash `test_app` → Run 100 tests → Verify results
-   - Flash production firmware → Deploy to device
+   - Flash `test_app` -> Run 100 tests -> Verify results
+   - Flash production firmware -> Deploy to device
 
 3. **Complete Test Coverage**: Contains all 100 comprehensive tests:
    - 30 error_handler tests
@@ -83,7 +83,7 @@ When all tests pass:
   Failed:       0
 ================================================================================
 
-  ✓✓✓ ALL TESTS PASSED! ✓✓✓
+  [OK][OK][OK] ALL TESTS PASSED! [OK][OK][OK]
 
 Test execution complete. System will continue running.
 ```
@@ -125,17 +125,17 @@ STAR_ASSERT_STR_EQUAL(expected, actual)
 
 ```
 test_app/
-├── CMakeLists.txt              # Test app project config
-├── sdkconfig.defaults          # ESP32 configuration for testing
-├── run_tests.sh                # Helper script to run tests
-├── README.md                   # This file
-├── TESTING_GUIDE.md            # Detailed testing guide
-└── main/
-    ├── CMakeLists.txt          # Main component config
-    ├── test_main.c             # Test runner entry point
-    ├── test_error_handler.c    # 30 error handler tests
-    ├── test_pin_validator.c    # 35 pin validator tests
-    └── test_protocol.c         # 35 protocol tests
++-- CMakeLists.txt              # Test app project config
++-- sdkconfig.defaults          # ESP32 configuration for testing
++-- run_tests.sh                # Helper script to run tests
++-- README.md                   # This file
++-- TESTING_GUIDE.md            # Detailed testing guide
++-- main/
+    +-- CMakeLists.txt          # Main component config
+    +-- test_main.c             # Test runner entry point
+    +-- test_error_handler.c    # 30 error handler tests
+    +-- test_pin_validator.c    # 35 pin validator tests
+    +-- test_protocol.c         # 35 protocol tests
 ```
 
 ## Configuration
@@ -259,7 +259,7 @@ This test app can be integrated into CI/CD pipelines:
     grep "ALL TESTS PASSED" test_output.log
 ```
 
-## Workflow: Development → Testing → Production
+## Workflow: Development -> Testing -> Production
 
 1. **Development**: Work on main firmware in `esp32-firmware/main/`
 2. **Testing**:

@@ -165,12 +165,12 @@ def main():
     print(f"Backoff mentions: {len(backoff_matches)}")
 
     if len(retry_matches) >= 5:
-        print("\n✓ SUCCESS: Error handler retry logic appears to be working!")
+        print("\n[OK] SUCCESS: Error handler retry logic appears to be working!")
         print("  Multiple retry attempts detected with exponential backoff.")
     elif len(retry_matches) > 0:
-        print("\n⚠️  PARTIAL: Some retry activity detected, but less than expected.")
+        print("\n[WARN]  PARTIAL: Some retry activity detected, but less than expected.")
     else:
-        print("\n⚠️  NOTE: No explicit retry messages detected in logs.")
+        print("\n[WARN]  NOTE: No explicit retry messages detected in logs.")
         print("  This might mean:")
         print("    - Error handler logs are at a different log level")
         print("    - Connection didn't reach the retry stage")
