@@ -1,0 +1,102 @@
+# PYNQ Build System Gitignore
+
+# PYNQ submodule contents (tracked separately)
+PYNQ/
+
+# Build outputs
+*.img
+*.img.md5
+*.img.gz
+*.iso
+sdbuild/output/
+sdbuild/build/
+sdbuild/downloads/
+sdbuild/ccache/
+
+# PetaLinux build artifacts
+*.bsp
+petalinux_project/
+images/
+build/
+components/
+hardware_project/
+
+# Vivado/Vitis artifacts
+*.bit
+*.bin
+*.elf
+*.hwh
+*.xsa
+*.hdf
+*.log
+*.jou
+*.str
+*.zip
+vivado*.log
+vivado*.jou
+.Xil/
+.metadata/
+.analytics/
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# IDE artifacts
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.old
+
+# Compressed files (except source archives)
+*.tar
+*.tar.gz
+*.tgz
+*.zip
+
+# Cache directories
+.cache/
+ccache/
+downloads/
+tmp/
+
+# Log files
+*.log
+build.log
+error.log
+
+# Credentials and secrets
+*.key
+*.pem
+credentials.json
+.env
+.env.local
+
+# Large binary files
+*.iso
+*.ova
+*.vmdk
+
+# Don't ignore
+!.gitkeep
+!README.md
+!*.md
