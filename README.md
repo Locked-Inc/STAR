@@ -36,6 +36,15 @@ LiDAR + Stereo Cameras
 - **Remote Control**: Handheld wireless controller
 - **Custom Linux**: Optimized embedded system for PYNQ-Z2
 
+## Development Environment
+
+This project was developed and tested on:
+- **OS**: Ubuntu 20.04.6 LTS (Focal Fossa)
+- **Kernel**: 5.15.0-139-generic
+- **CPU**: 12th Gen Intel(R) Core(TM) i7-1280P (20 cores)
+- **RAM**: 32GB
+- **Machine**: ThinkPad X13 Gen 3
+
 ## Quick Start
 
 ### Build Robot Linux Image
