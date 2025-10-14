@@ -76,7 +76,22 @@ Covers:
 
 ---
 
-### 6. [Lidar Visualization Options](./lidar-visualization-options.md)
+### 6. [SICK TiM561 ROS2 Setup Guide](./sick-tim561-ros2-setup.md)
+**Complete setup guide for integrating the SICK TiM561 lidar with ROS2**
+
+Covers:
+- Hardware connection and network configuration
+- Driver installation (binary and source)
+- Launching and verifying data stream
+- RViz2 visualization setup
+- SLAM examples (Hector SLAM, SLAM Toolbox, Cartographer)
+- Data recording and playback
+- Advanced features (multi-sensor, transforms, services)
+- Integration with STAR robot
+
+**Read this first if you're wondering:** "How do I get my SICK TiM561 lidar working with ROS2?"
+
+### 7. [Lidar Visualization Options](./lidar-visualization-options.md)
 **Three approaches to displaying lidar point cloud data**
 
 Covers:
