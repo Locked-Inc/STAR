@@ -1,0 +1,3 @@
+[submodule "pynq-image/PYNQ"]
+	path = pynq-image/PYNQ
+	url = https://github.com/Xilinx/PYNQ.git
