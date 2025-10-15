@@ -16,6 +16,21 @@ echo -e "${BLUE}STAR Build Cache Cleanup${NC}"
 echo -e "${BLUE}========================================${NC}"
 echo ""
 
+# Ensure PYNQ submodule is on the correct branch
+echo -e "${YELLOW}Checking PYNQ submodule branch...${NC}"
+cd ~/Documents/git/STAR/pynq-image/PYNQ
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [ "$CURRENT_BRANCH" != "star-customizations" ]; then
+    echo -e "${YELLOW}Switching to star-customizations branch...${NC}"
+    git checkout star-customizations
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}ERROR: Failed to checkout star-customizations branch${NC}"
+        exit 1
+    fi
+fi
+echo -e "${GREEN}✓${NC} PYNQ on branch: star-customizations"
+echo ""
+
 cd ~/Documents/git/STAR/pynq-image/PYNQ/sdbuild
 
 # Step 1: Kill any chroot processes
