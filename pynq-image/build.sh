@@ -41,11 +41,26 @@ if [ ! -d "$BOARD_DIR/STAR-Z2" ]; then
     exit 1
 fi
 
-# Navigate to build directory
-cd "$BUILD_DIR"
-
 echo -e "${GREEN}✓${NC} Directories verified"
 echo ""
+
+# Ensure PYNQ submodule is on the correct branch
+echo -e "${YELLOW}Checking PYNQ submodule branch...${NC}"
+cd "$SCRIPT_DIR/PYNQ"
+CURRENT_BRANCH=$(git rev-parse --abbrev-ref HEAD)
+if [ "$CURRENT_BRANCH" != "star-customizations" ]; then
+    echo -e "${YELLOW}Switching to star-customizations branch...${NC}"
+    git checkout star-customizations
+    if [ $? -ne 0 ]; then
+        echo -e "${RED}ERROR: Failed to checkout star-customizations branch${NC}"
+        exit 1
+    fi
+fi
+echo -e "${GREEN}✓${NC} PYNQ on branch: star-customizations"
+echo ""
+
+# Navigate to build directory
+cd "$BUILD_DIR"
 
 # Show what will be built
 echo -e "${YELLOW}Build Configuration:${NC}"
