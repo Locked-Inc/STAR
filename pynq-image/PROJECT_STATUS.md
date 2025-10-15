@@ -131,7 +131,8 @@ source /opt/petalinux/2022.1/settings.sh
 sudo ./scripts/flash.sh
 
 # Boot PYNQ-Z2 and connect
-ssh xilinx@pynq  # password: xilinx
+ssh star@192.168.2.99  # password: star
+# Or with alias: ssh star
 ```
 
 ## Customization Points
