@@ -1,0 +1,9 @@
+Manufacturer=KEMET
+PartNumber=T527T226M025ATE100
+PartCategory=Capacitor Polarised
+PackageCategory=Capacitor Moulded Polarised
+PinCount=2
+Version=1.1
+Released=2023-11-16 13:40:05
+Downloaded=2025-10-15 23:19:59
+3D=Y

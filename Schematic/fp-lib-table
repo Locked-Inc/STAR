@@ -73,4 +73,7 @@
   (lib (name "VLS6045EX-1R0N")(type "KiCad")(uri "${KIPRJMOD}/Symbols_and_Footprints/VLS6045EX-1R0N/KiCad")(options "")(descr ""))
   (lib (name "WSK1216L2000FEA")(type "KiCad")(uri "${KIPRJMOD}/Symbols_and_Footprints/WSK1216L2000FEA/KiCad")(options "")(descr ""))
   (lib (name "ZXMP10A13FTA")(type "KiCad")(uri "${KIPRJMOD}/Symbols_and_Footprints/ZXMP10A13FTA/KiCad")(options "")(descr ""))
+  (lib (name "T527T226M025ATE100")(type "KiCad")(uri "${KIPRJMOD}/Symbols_and_Footprints/T527T226M025ATE100/KiCad")(options "")(descr ""))
+  (lib (name "T521B106M025ATE100")(type "KiCad")(uri "${KIPRJMOD}/Symbols_and_Footprints/T521B106M025ATE100/KiCad")(options "")(descr ""))
+  (lib (name "865080343007")(type "KiCad")(uri "${KIPRJMOD}/Symbols_and_Footprints/865080343007/KiCad")(options "")(descr ""))
 )
