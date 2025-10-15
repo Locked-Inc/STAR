@@ -1,0 +1,9 @@
+Manufacturer=KEMET
+PartNumber=T521B106M025ATE100
+PartCategory=Capacitor Polarised
+PackageCategory=Other
+PinCount=2
+Version=5.2
+Released=2022-01-15 14:30:31
+Downloaded=2025-10-15 23:32:32
+3D=Y

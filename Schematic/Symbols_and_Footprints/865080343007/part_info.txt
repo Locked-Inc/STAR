@@ -1,0 +1,9 @@
+Manufacturer=Würth Elektronik
+PartNumber=865080343007
+PartCategory=Capacitor Polarised
+PackageCategory=Capacitor Al Electrolytic
+PinCount=2
+Version=1.1
+Released=2020-11-30 05:36:21
+Downloaded=2025-10-15 23:35:53
+3D=Y
