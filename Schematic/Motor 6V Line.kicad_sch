@@ -590,6 +590,167 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Device:C_Polarized"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0.254)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "C"
+				(at 0.635 2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Value" "C_Polarized"
+				(at 0.635 -2.54 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left)
+				)
+			)
+			(property "Footprint" ""
+				(at 0.9652 -3.81 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Polarized capacitor"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "cap capacitor"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "CP_*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "C_Polarized_0_1"
+				(rectangle
+					(start -2.286 0.508)
+					(end 2.286 1.016)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.778 2.286) (xy -0.762 2.286)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy -1.27 2.794) (xy -1.27 1.778)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start 2.286 -0.508)
+					(end -2.286 -1.016)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+			)
+			(symbol "C_Polarized_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 2.794)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 0 -3.81 90)
+					(length 2.794)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Device:L"
 			(pin_numbers
 				(hide yes)
@@ -1399,16 +1560,28 @@
 		(uuid "ff96f8cc-a02c-46ba-a4ed-ab7a81fcd54d")
 	)
 	(junction
-		(at 330.2 139.7)
+		(at 341.63 139.7)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "0393f2ab-6cb4-4d89-ae74-6e243c8c92de")
 	)
 	(junction
-		(at 92.71 163.83)
+		(at 82.55 163.83)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "051e3871-ce29-4992-ab04-13873e066e27")
+	)
+	(junction
+		(at 306.07 163.83)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "0642d2dd-5bef-45e8-b297-bcccee73900f")
+	)
+	(junction
+		(at 109.22 163.83)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "06cecddc-36d2-4f8c-a9c9-b0d3b426ad60")
 	)
 	(junction
 		(at 298.45 139.7)
@@ -1441,7 +1614,7 @@
 		(uuid "1f1bb18d-8db6-4730-9f49-73c54a6b02c1")
 	)
 	(junction
-		(at 330.2 163.83)
+		(at 341.63 163.83)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "233f2c95-573d-45bd-9dc3-43a0652741a1")
@@ -1453,13 +1626,19 @@
 		(uuid "29f9c2b2-0173-4d25-9a1f-7b5f4a851b9a")
 	)
 	(junction
-		(at 323.85 139.7)
+		(at 109.22 134.62)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "2e780034-106f-4d17-8de4-c1cb932182a7")
+	)
+	(junction
+		(at 332.74 139.7)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "308e99d8-9388-4a2e-a698-2403d9983705")
 	)
 	(junction
-		(at 311.15 139.7)
+		(at 314.96 139.7)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "3622c394-fbf3-4df5-9587-519a39be6a66")
@@ -1471,13 +1650,7 @@
 		(uuid "376f9e92-6eef-4487-8806-3ad04f094107")
 	)
 	(junction
-		(at 111.76 163.83)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "3c488050-abd8-4cb5-a609-29c8e27e7749")
-	)
-	(junction
-		(at 92.71 134.62)
+		(at 82.55 134.62)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "3d82a261-4103-43ca-9841-764fab978db5")
@@ -1495,10 +1668,10 @@
 		(uuid "43baf1b6-f28d-4018-82f1-bc945deb177a")
 	)
 	(junction
-		(at 304.8 139.7)
+		(at 323.85 163.83)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "464c1353-aa1b-4403-8c58-62ed72ebf3bb")
+		(uuid "440ab202-a9ec-4838-a0ee-cf6c83257bad")
 	)
 	(junction
 		(at 132.08 163.83)
@@ -1507,13 +1680,13 @@
 		(uuid "4b322b21-4be0-4dfa-bbbe-e89836c6885e")
 	)
 	(junction
-		(at 336.55 139.7)
+		(at 350.52 139.7)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "4f170b59-0f8d-4d75-bad4-7d9c44f71039")
 	)
 	(junction
-		(at 86.36 134.62)
+		(at 73.66 134.62)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "5c3dd518-2895-4a9c-9e8d-75ac0e4e5286")
@@ -1525,7 +1698,7 @@
 		(uuid "60716ee9-e53c-4826-8253-c027d426f55b")
 	)
 	(junction
-		(at 80.01 134.62)
+		(at 64.77 134.62)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "6d7561d6-b5a1-468c-a521-6392a15c735e")
@@ -1537,34 +1710,34 @@
 		(uuid "7afd3779-b3cf-40a2-8a1a-0dbe726cda45")
 	)
 	(junction
-		(at 73.66 134.62)
+		(at 55.88 134.62)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "80fde056-5d59-4493-8b51-025944202909")
 	)
 	(junction
-		(at 105.41 163.83)
+		(at 100.33 163.83)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "8193123d-f48c-4a60-966a-0c8f4e59841a")
 	)
 	(junction
-		(at 99.06 163.83)
+		(at 91.44 163.83)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "84cdca26-df89-431f-8316-16dd27184375")
 	)
 	(junction
-		(at 80.01 163.83)
+		(at 306.07 139.7)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "88ed7499-ea54-4996-b474-ebf8ed99f5d0")
+	)
+	(junction
+		(at 64.77 163.83)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "8f2e39fb-a06e-4e9a-9bd1-e22a858633b8")
-	)
-	(junction
-		(at 111.76 134.62)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "8f78c795-2f50-4354-9c25-99ceba4f6941")
 	)
 	(junction
 		(at 118.11 163.83)
@@ -1573,31 +1746,31 @@
 		(uuid "96297022-cef2-4d7a-aad6-07b9ed9e5cc3")
 	)
 	(junction
-		(at 317.5 139.7)
+		(at 323.85 139.7)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "a266fa69-dcf3-4a10-b061-33a68ff70df5")
+		(uuid "97f6116d-4b25-4f1d-83ad-50d14c6f8c20")
 	)
 	(junction
-		(at 86.36 163.83)
+		(at 73.66 163.83)
 		(diameter 0)
 		(color 0 0 0 0)
-		(uuid "a4b32aeb-1dac-4ab5-ae97-a4543d2fdf3b")
+		(uuid "a30150d4-2a92-442f-87b5-738b669b4675")
 	)
 	(junction
-		(at 105.41 134.62)
+		(at 100.33 134.62)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "aa053425-0054-4a69-b0c9-74e8b3fdf431")
 	)
 	(junction
-		(at 99.06 134.62)
+		(at 91.44 134.62)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "abbfeb5a-0063-4d7c-bd88-14481a25d8ee")
 	)
 	(junction
-		(at 323.85 163.83)
+		(at 332.74 163.83)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "aef8f69b-6645-415d-bbb7-4a029273b1c0")
@@ -1651,12 +1824,6 @@
 		(uuid "c8ec6a58-2cfe-4dd2-a9a7-0af64455f022")
 	)
 	(junction
-		(at 317.5 163.83)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "ca3ae958-020d-42bd-b2d2-80d7f21263c1")
-	)
-	(junction
 		(at 241.3 149.86)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -1669,7 +1836,7 @@
 		(uuid "dd81a465-b79f-42c2-b658-73e81f5181f2")
 	)
 	(junction
-		(at 311.15 163.83)
+		(at 314.96 163.83)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "de5d650e-ed5e-403b-9a2b-14cf16927a73")
@@ -1693,12 +1860,6 @@
 		(uuid "ef0904a1-0374-4a8d-9bc9-c527682ea3bb")
 	)
 	(junction
-		(at 304.8 163.83)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "f1131a8e-d1cb-4c7e-b536-d103a62ea6e5")
-	)
-	(junction
 		(at 256.54 163.83)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -1712,7 +1873,7 @@
 	)
 	(wire
 		(pts
-			(xy 330.2 153.67) (xy 330.2 163.83)
+			(xy 341.63 153.67) (xy 341.63 163.83)
 		)
 		(stroke
 			(width 0)
@@ -1722,23 +1883,13 @@
 	)
 	(wire
 		(pts
-			(xy 336.55 139.7) (xy 339.09 139.7)
+			(xy 350.52 139.7) (xy 353.06 139.7)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "036bf8d8-e66f-49b2-9f8f-d95f40ac9944")
-	)
-	(wire
-		(pts
-			(xy 86.36 147.32) (xy 86.36 163.83)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "04329f9d-4468-4c97-8b72-10c7cccb9b2e")
 	)
 	(wire
 		(pts
@@ -1752,17 +1903,7 @@
 	)
 	(wire
 		(pts
-			(xy 330.2 163.83) (xy 336.55 163.83)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "047ee592-a56b-41cd-bfc7-c5e1857d75a1")
-	)
-	(wire
-		(pts
-			(xy 298.45 163.83) (xy 304.8 163.83)
+			(xy 298.45 163.83) (xy 306.07 163.83)
 		)
 		(stroke
 			(width 0)
@@ -1792,16 +1933,6 @@
 	)
 	(wire
 		(pts
-			(xy 92.71 163.83) (xy 99.06 163.83)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "07b414e0-a80a-435a-a852-c7a764298a57")
-	)
-	(wire
-		(pts
 			(xy 138.43 163.83) (xy 138.43 166.37)
 		)
 		(stroke
@@ -1822,7 +1953,27 @@
 	)
 	(wire
 		(pts
-			(xy 105.41 134.62) (xy 111.76 134.62)
+			(xy 109.22 163.83) (xy 118.11 163.83)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0f6955d0-60af-41de-964c-dbb654b924fd")
+	)
+	(wire
+		(pts
+			(xy 82.55 134.62) (xy 91.44 134.62)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "106ece14-ac61-436a-8eb9-33de439825cc")
+	)
+	(wire
+		(pts
+			(xy 100.33 134.62) (xy 109.22 134.62)
 		)
 		(stroke
 			(width 0)
@@ -1842,7 +1993,7 @@
 	)
 	(wire
 		(pts
-			(xy 317.5 153.67) (xy 317.5 163.83)
+			(xy 323.85 153.67) (xy 323.85 163.83)
 		)
 		(stroke
 			(width 0)
@@ -1852,7 +2003,7 @@
 	)
 	(wire
 		(pts
-			(xy 73.66 134.62) (xy 73.66 139.7)
+			(xy 55.88 134.62) (xy 55.88 139.7)
 		)
 		(stroke
 			(width 0)
@@ -1882,7 +2033,7 @@
 	)
 	(wire
 		(pts
-			(xy 311.15 163.83) (xy 317.5 163.83)
+			(xy 314.96 163.83) (xy 323.85 163.83)
 		)
 		(stroke
 			(width 0)
@@ -1892,7 +2043,7 @@
 	)
 	(wire
 		(pts
-			(xy 304.8 153.67) (xy 304.8 163.83)
+			(xy 306.07 153.67) (xy 306.07 163.83)
 		)
 		(stroke
 			(width 0)
@@ -1932,7 +2083,7 @@
 	)
 	(wire
 		(pts
-			(xy 317.5 139.7) (xy 317.5 146.05)
+			(xy 323.85 139.7) (xy 323.85 146.05)
 		)
 		(stroke
 			(width 0)
@@ -1942,7 +2093,7 @@
 	)
 	(wire
 		(pts
-			(xy 311.15 139.7) (xy 311.15 146.05)
+			(xy 314.96 139.7) (xy 314.96 146.05)
 		)
 		(stroke
 			(width 0)
@@ -1952,7 +2103,7 @@
 	)
 	(wire
 		(pts
-			(xy 336.55 153.67) (xy 336.55 163.83)
+			(xy 350.52 153.67) (xy 350.52 163.83)
 		)
 		(stroke
 			(width 0)
@@ -1962,13 +2113,13 @@
 	)
 	(wire
 		(pts
-			(xy 304.8 163.83) (xy 311.15 163.83)
+			(xy 73.66 147.32) (xy 73.66 163.83)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "29b0b0ca-84b6-4a28-a9fd-f68135543c00")
+		(uuid "29738fc0-2778-4574-bdd9-a38572b44e54")
 	)
 	(wire
 		(pts
@@ -1992,7 +2143,7 @@
 	)
 	(wire
 		(pts
-			(xy 330.2 139.7) (xy 330.2 146.05)
+			(xy 341.63 139.7) (xy 341.63 146.05)
 		)
 		(stroke
 			(width 0)
@@ -2012,7 +2163,7 @@
 	)
 	(wire
 		(pts
-			(xy 311.15 139.7) (xy 317.5 139.7)
+			(xy 314.96 139.7) (xy 323.85 139.7)
 		)
 		(stroke
 			(width 0)
@@ -2062,7 +2213,7 @@
 	)
 	(wire
 		(pts
-			(xy 105.41 163.83) (xy 111.76 163.83)
+			(xy 100.33 163.83) (xy 109.22 163.83)
 		)
 		(stroke
 			(width 0)
@@ -2092,13 +2243,13 @@
 	)
 	(wire
 		(pts
-			(xy 304.8 139.7) (xy 311.15 139.7)
+			(xy 332.74 163.83) (xy 341.63 163.83)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "476fd2fa-5ccd-4d7e-9a76-4d8c75fb7448")
+		(uuid "43095794-5cb1-4e4b-a46f-d10a07c90f7e")
 	)
 	(wire
 		(pts
@@ -2122,16 +2273,6 @@
 	)
 	(wire
 		(pts
-			(xy 323.85 139.7) (xy 330.2 139.7)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "4947d980-1345-4861-8546-a21d5843ebec")
-	)
-	(wire
-		(pts
 			(xy 132.08 163.83) (xy 138.43 163.83)
 		)
 		(stroke
@@ -2142,7 +2283,7 @@
 	)
 	(wire
 		(pts
-			(xy 336.55 139.7) (xy 336.55 146.05)
+			(xy 350.52 139.7) (xy 350.52 146.05)
 		)
 		(stroke
 			(width 0)
@@ -2182,6 +2323,26 @@
 	)
 	(wire
 		(pts
+			(xy 341.63 163.83) (xy 350.52 163.83)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "51a942ea-0f82-4986-ac3c-aa62643be67d")
+	)
+	(wire
+		(pts
+			(xy 306.07 139.7) (xy 314.96 139.7)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "57544933-7186-447a-9991-4ac78ddc60c3")
+	)
+	(wire
+		(pts
 			(xy 138.43 152.4) (xy 144.78 152.4)
 		)
 		(stroke
@@ -2192,7 +2353,7 @@
 	)
 	(wire
 		(pts
-			(xy 73.66 134.62) (xy 80.01 134.62)
+			(xy 55.88 134.62) (xy 64.77 134.62)
 		)
 		(stroke
 			(width 0)
@@ -2202,7 +2363,7 @@
 	)
 	(wire
 		(pts
-			(xy 99.06 147.32) (xy 99.06 163.83)
+			(xy 91.44 147.32) (xy 91.44 163.83)
 		)
 		(stroke
 			(width 0)
@@ -2232,23 +2393,33 @@
 	)
 	(wire
 		(pts
-			(xy 99.06 163.83) (xy 105.41 163.83)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "622a6d22-67a6-48b1-a571-9e26d0621ce5")
-	)
-	(wire
-		(pts
-			(xy 80.01 147.32) (xy 80.01 163.83)
+			(xy 64.77 147.32) (xy 64.77 163.83)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "62fdc22f-e9c5-41cc-9cec-628ea6ab90c6")
+	)
+	(wire
+		(pts
+			(xy 341.63 139.7) (xy 350.52 139.7)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "634ab7d0-51fe-4043-8698-d317f552dcc2")
+	)
+	(wire
+		(pts
+			(xy 109.22 134.62) (xy 118.11 134.62)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6535b1c4-0ff7-4366-ab3d-254d8a4d6e50")
 	)
 	(wire
 		(pts
@@ -2282,13 +2453,23 @@
 	)
 	(wire
 		(pts
-			(xy 304.8 139.7) (xy 304.8 146.05)
+			(xy 306.07 139.7) (xy 306.07 146.05)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "6d490c30-c650-414a-8350-1ccaee00b59d")
+	)
+	(wire
+		(pts
+			(xy 91.44 163.83) (xy 100.33 163.83)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6dcc830d-86bd-4da9-a972-7046247aff21")
 	)
 	(wire
 		(pts
@@ -2312,26 +2493,6 @@
 	)
 	(wire
 		(pts
-			(xy 111.76 134.62) (xy 118.11 134.62)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "70fe0a2c-e768-4635-ab78-96a8def9cda0")
-	)
-	(wire
-		(pts
-			(xy 317.5 163.83) (xy 323.85 163.83)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "7189e6e8-6940-4e1b-910a-b7300f91a7c3")
-	)
-	(wire
-		(pts
 			(xy 256.54 101.6) (xy 256.54 123.19)
 		)
 		(stroke
@@ -2339,16 +2500,6 @@
 			(type default)
 		)
 		(uuid "7597fe5c-c44e-4688-9e6c-fa84d2d1ddd4")
-	)
-	(wire
-		(pts
-			(xy 323.85 163.83) (xy 330.2 163.83)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "75ad0499-f7fb-47d9-8e46-cc6c4d45c501")
 	)
 	(wire
 		(pts
@@ -2372,7 +2523,7 @@
 	)
 	(wire
 		(pts
-			(xy 80.01 134.62) (xy 86.36 134.62)
+			(xy 64.77 134.62) (xy 73.66 134.62)
 		)
 		(stroke
 			(width 0)
@@ -2382,7 +2533,7 @@
 	)
 	(wire
 		(pts
-			(xy 80.01 163.83) (xy 86.36 163.83)
+			(xy 64.77 163.83) (xy 73.66 163.83)
 		)
 		(stroke
 			(width 0)
@@ -2402,7 +2553,7 @@
 	)
 	(wire
 		(pts
-			(xy 111.76 134.62) (xy 111.76 139.7)
+			(xy 109.22 134.62) (xy 109.22 139.7)
 		)
 		(stroke
 			(width 0)
@@ -2412,7 +2563,7 @@
 	)
 	(wire
 		(pts
-			(xy 105.41 147.32) (xy 105.41 163.83)
+			(xy 100.33 147.32) (xy 100.33 163.83)
 		)
 		(stroke
 			(width 0)
@@ -2442,7 +2593,7 @@
 	)
 	(wire
 		(pts
-			(xy 86.36 163.83) (xy 92.71 163.83)
+			(xy 73.66 163.83) (xy 82.55 163.83)
 		)
 		(stroke
 			(width 0)
@@ -2462,6 +2613,16 @@
 	)
 	(wire
 		(pts
+			(xy 82.55 163.83) (xy 91.44 163.83)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8f19a9cf-7db3-4867-821b-e012f1652090")
+	)
+	(wire
+		(pts
 			(xy 256.54 163.83) (xy 290.83 163.83)
 		)
 		(stroke
@@ -2469,6 +2630,16 @@
 			(type default)
 		)
 		(uuid "8fd6e8a8-e884-4830-9c37-a01b17419c28")
+	)
+	(wire
+		(pts
+			(xy 323.85 163.83) (xy 332.74 163.83)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "911471b3-d665-4dc5-96bf-446c6a92e452")
 	)
 	(wire
 		(pts
@@ -2502,23 +2673,13 @@
 	)
 	(wire
 		(pts
-			(xy 92.71 134.62) (xy 92.71 139.7)
+			(xy 82.55 134.62) (xy 82.55 139.7)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "97b0c9da-180f-46f6-bc0e-55c99f3beff8")
-	)
-	(wire
-		(pts
-			(xy 92.71 134.62) (xy 99.06 134.62)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "99d1c42c-4609-4b34-808d-75c60b76f8d5")
 	)
 	(wire
 		(pts
@@ -2542,17 +2703,27 @@
 	)
 	(wire
 		(pts
-			(xy 330.2 139.7) (xy 336.55 139.7)
+			(xy 323.85 139.7) (xy 332.74 139.7)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "aa085466-0e0f-4e59-bf7f-418df14167ae")
+		(uuid "a1de2d9a-a3d4-4fe5-bb22-56b277752b82")
 	)
 	(wire
 		(pts
-			(xy 323.85 139.7) (xy 323.85 146.05)
+			(xy 306.07 163.83) (xy 314.96 163.83)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a660c101-5331-45ba-9770-5dbbfd7b8729")
+	)
+	(wire
+		(pts
+			(xy 332.74 139.7) (xy 332.74 146.05)
 		)
 		(stroke
 			(width 0)
@@ -2562,7 +2733,7 @@
 	)
 	(wire
 		(pts
-			(xy 71.12 134.62) (xy 73.66 134.62)
+			(xy 53.34 134.62) (xy 55.88 134.62)
 		)
 		(stroke
 			(width 0)
@@ -2592,23 +2763,13 @@
 	)
 	(wire
 		(pts
-			(xy 298.45 139.7) (xy 304.8 139.7)
+			(xy 298.45 139.7) (xy 306.07 139.7)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "b2e3b932-bb44-451a-b944-afff8718021a")
-	)
-	(wire
-		(pts
-			(xy 317.5 139.7) (xy 323.85 139.7)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b52c18cb-37a3-4333-bda3-0d037d2ab1ec")
 	)
 	(wire
 		(pts
@@ -2652,7 +2813,7 @@
 	)
 	(wire
 		(pts
-			(xy 99.06 134.62) (xy 99.06 139.7)
+			(xy 91.44 134.62) (xy 91.44 139.7)
 		)
 		(stroke
 			(width 0)
@@ -2712,7 +2873,7 @@
 	)
 	(wire
 		(pts
-			(xy 323.85 153.67) (xy 323.85 163.83)
+			(xy 332.74 153.67) (xy 332.74 163.83)
 		)
 		(stroke
 			(width 0)
@@ -2732,7 +2893,7 @@
 	)
 	(wire
 		(pts
-			(xy 80.01 134.62) (xy 80.01 139.7)
+			(xy 64.77 134.62) (xy 64.77 139.7)
 		)
 		(stroke
 			(width 0)
@@ -2762,7 +2923,7 @@
 	)
 	(wire
 		(pts
-			(xy 86.36 134.62) (xy 86.36 139.7)
+			(xy 73.66 134.62) (xy 73.66 139.7)
 		)
 		(stroke
 			(width 0)
@@ -2772,7 +2933,7 @@
 	)
 	(wire
 		(pts
-			(xy 105.41 134.62) (xy 105.41 139.7)
+			(xy 100.33 134.62) (xy 100.33 139.7)
 		)
 		(stroke
 			(width 0)
@@ -2802,7 +2963,7 @@
 	)
 	(wire
 		(pts
-			(xy 86.36 134.62) (xy 92.71 134.62)
+			(xy 73.66 134.62) (xy 82.55 134.62)
 		)
 		(stroke
 			(width 0)
@@ -2822,7 +2983,7 @@
 	)
 	(wire
 		(pts
-			(xy 73.66 147.32) (xy 73.66 163.83)
+			(xy 55.88 147.32) (xy 55.88 163.83)
 		)
 		(stroke
 			(width 0)
@@ -2842,6 +3003,16 @@
 	)
 	(wire
 		(pts
+			(xy 332.74 139.7) (xy 341.63 139.7)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e5d7d4ee-e3cb-4709-9c7c-b79a501c68ef")
+	)
+	(wire
+		(pts
 			(xy 200.66 160.02) (xy 200.66 163.83)
 		)
 		(stroke
@@ -2852,7 +3023,7 @@
 	)
 	(wire
 		(pts
-			(xy 311.15 153.67) (xy 311.15 163.83)
+			(xy 314.96 153.67) (xy 314.96 163.83)
 		)
 		(stroke
 			(width 0)
@@ -2862,7 +3033,7 @@
 	)
 	(wire
 		(pts
-			(xy 111.76 147.32) (xy 111.76 163.83)
+			(xy 109.22 147.32) (xy 109.22 163.83)
 		)
 		(stroke
 			(width 0)
@@ -2912,7 +3083,7 @@
 	)
 	(wire
 		(pts
-			(xy 99.06 134.62) (xy 105.41 134.62)
+			(xy 91.44 134.62) (xy 100.33 134.62)
 		)
 		(stroke
 			(width 0)
@@ -2942,7 +3113,7 @@
 	)
 	(wire
 		(pts
-			(xy 92.71 147.32) (xy 92.71 163.83)
+			(xy 82.55 147.32) (xy 82.55 163.83)
 		)
 		(stroke
 			(width 0)
@@ -2982,16 +3153,6 @@
 	)
 	(wire
 		(pts
-			(xy 111.76 163.83) (xy 118.11 163.83)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "fb9cb305-0dd8-471c-8ca9-056677a014b7")
-	)
-	(wire
-		(pts
 			(xy 132.08 137.16) (xy 132.08 139.7)
 		)
 		(stroke
@@ -3022,7 +3183,7 @@
 	)
 	(wire
 		(pts
-			(xy 73.66 163.83) (xy 80.01 163.83)
+			(xy 55.88 163.83) (xy 64.77 163.83)
 		)
 		(stroke
 			(width 0)
@@ -3031,7 +3192,7 @@
 		(uuid "ffef732f-e577-47d3-93b4-62d73e4b7cdf")
 	)
 	(label "6V"
-		(at 339.09 139.7 180)
+		(at 353.06 139.7 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -3042,7 +3203,7 @@
 		(uuid "314517a6-d1c0-44b3-aaf8-1b722a19502d")
 	)
 	(label "PACK+"
-		(at 83.82 134.62 0)
+		(at 68.58 134.62 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -3053,7 +3214,7 @@
 	)
 	(hierarchical_label "P6V0"
 		(shape output)
-		(at 339.09 139.7 0)
+		(at 353.06 139.7 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -3064,7 +3225,7 @@
 	)
 	(hierarchical_label "PACK+"
 		(shape input)
-		(at 71.12 134.62 180)
+		(at 53.34 134.62 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -3074,16 +3235,16 @@
 		(uuid "be0c49a1-07be-4128-9e1d-0e3537f28c2d")
 	)
 	(symbol
-		(lib_id "Device:C")
-		(at 311.15 149.86 0)
+		(lib_id "Device:C_Polarized")
+		(at 91.44 143.51 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "18564a19-8a10-4f62-b3fe-898e9a3d693d")
-		(property "Reference" "C123"
-			(at 311.658 148.082 0)
+		(uuid "086dbb6b-1929-443b-89c0-a278855c7200")
+		(property "Reference" "C121"
+			(at 91.948 141.732 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3092,7 +3253,7 @@
 			)
 		)
 		(property "Value" "10u"
-			(at 311.658 151.892 0)
+			(at 91.948 145.542 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3100,8 +3261,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
-			(at 312.1152 153.67 0)
+		(property "Footprint" "T521B106M025ATE100:T521B"
+			(at 92.4052 147.32 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3110,7 +3271,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 311.15 149.86 0)
+			(at 91.44 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3118,8 +3279,8 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
-			(at 311.15 149.86 0)
+		(property "Description" "Polarized capacitor"
+			(at 91.44 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3128,7 +3289,7 @@
 			)
 		)
 		(property "DigiKey Link" "https://www.digikey.com/en/products/detail/kemet/T521B106M025ATE100/8042244"
-			(at 311.15 149.86 0)
+			(at 91.44 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3137,7 +3298,7 @@
 			)
 		)
 		(property "DigiKey Part Number" "399-16632-2-ND"
-			(at 311.15 149.86 0)
+			(at 91.44 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3146,7 +3307,7 @@
 			)
 		)
 		(property "DigiKey Price per Unit" "1.74"
-			(at 311.15 149.86 0)
+			(at 91.44 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3155,7 +3316,7 @@
 			)
 		)
 		(property "Manufactaurer Part Number" "T521B106M025ATE100"
-			(at 311.15 149.86 0)
+			(at 91.44 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3164,7 +3325,7 @@
 			)
 		)
 		(property "Mouser Link" "https://mou.sr/3IRJz8z"
-			(at 311.15 149.86 0)
+			(at 91.44 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3173,7 +3334,7 @@
 			)
 		)
 		(property "Mouser Part Number" "80-T521B106M25ATE100 "
-			(at 311.15 149.86 0)
+			(at 91.44 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3182,7 +3343,7 @@
 			)
 		)
 		(property "Mouser Price per Unit" "1.74"
-			(at 311.15 149.86 0)
+			(at 91.44 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -3191,15 +3352,279 @@
 			)
 		)
 		(pin "1"
-			(uuid "0bb45510-86dc-4b40-ba16-09492cf9bf08")
+			(uuid "ffafa729-e369-4196-98f3-1c2808821b61")
 		)
 		(pin "2"
-			(uuid "cf77f437-9422-414a-8caa-bb981d8a5438")
+			(uuid "8024b5e5-f5d4-4523-8b3f-23638f0b24bb")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C123")
+					(reference "C121")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C_Polarized")
+		(at 341.63 149.86 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "17887d98-368a-477f-89f9-1ba1a0342fc4")
+		(property "Reference" "C137"
+			(at 342.138 148.082 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10u"
+			(at 342.138 151.892 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "T521B106M025ATE100:T521B"
+			(at 342.5952 153.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 341.63 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Polarized capacitor"
+			(at 341.63 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/en/products/detail/kemet/T521B106M025ATE100/8042244"
+			(at 341.63 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "399-16632-2-ND"
+			(at 341.63 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "1.74"
+			(at 341.63 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "T521B106M025ATE100"
+			(at 341.63 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3IRJz8z"
+			(at 341.63 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "80-T521B106M25ATE100 "
+			(at 341.63 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "1.74"
+			(at 341.63 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "2c8315f7-a13a-440c-94d0-19839e6545e7")
+		)
+		(pin "2"
+			(uuid "70005d25-0b59-4dfc-a148-43a52fb2a8e3")
+		)
+		(instances
+			(project "STAR"
+				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
+					(reference "C137")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C_Polarized")
+		(at 314.96 149.86 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "199c2910-e7d7-4d8f-a7a9-84f66e055e57")
+		(property "Reference" "C134"
+			(at 315.468 148.082 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10u"
+			(at 315.468 151.892 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "T521B106M025ATE100:T521B"
+			(at 315.9252 153.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 314.96 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Polarized capacitor"
+			(at 314.96 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/en/products/detail/kemet/T521B106M025ATE100/8042244"
+			(at 314.96 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "399-16632-2-ND"
+			(at 314.96 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "1.74"
+			(at 314.96 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "T521B106M025ATE100"
+			(at 314.96 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3IRJz8z"
+			(at 314.96 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "80-T521B106M25ATE100 "
+			(at 314.96 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "1.74"
+			(at 314.96 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "e3b7e28e-25df-42a2-972b-f322df0ec84f")
+		)
+		(pin "2"
+			(uuid "c1f210e1-d484-4c34-86e5-8658a2decf99")
+		)
+		(instances
+			(project "STAR"
+				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
+					(reference "C134")
 					(unit 1)
 				)
 			)
@@ -3822,138 +4247,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:C")
-		(at 111.76 143.51 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "233c8043-8bc8-48d2-a67d-304a8d8ef36f")
-		(property "Reference" "C112"
-			(at 112.268 141.732 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "10u"
-			(at 112.268 145.542 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 112.7252 147.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 111.76 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Unpolarized capacitor"
-			(at 111.76 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Link" "https://www.digikey.com/en/products/detail/kemet/T521B106M025ATE100/8042244"
-			(at 111.76 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Part Number" "399-16632-2-ND"
-			(at 111.76 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Price per Unit" "1.74"
-			(at 111.76 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufactaurer Part Number" "T521B106M025ATE100"
-			(at 111.76 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Link" "https://mou.sr/3IRJz8z"
-			(at 111.76 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "80-T521B106M25ATE100 "
-			(at 111.76 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price per Unit" "1.74"
-			(at 111.76 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "cbae1e7f-143d-4aa1-875a-58ecee2ed401")
-		)
-		(pin "2"
-			(uuid "b04578d7-996a-44b6-8f3c-b8be903461fd")
-		)
-		(instances
-			(project "STAR"
-				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C112")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "CSD19531Q5AT:CSD19531Q5AT")
 		(at 238.76 151.13 0)
 		(unit 1)
@@ -4139,270 +4432,6 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 330.2 149.86 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "32b2411a-5d15-4b35-a407-2d9f1f73c0ed")
-		(property "Reference" "C126"
-			(at 330.708 148.082 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "10u"
-			(at 330.708 151.892 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 331.1652 153.67 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 330.2 149.86 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Unpolarized capacitor"
-			(at 330.2 149.86 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Link" "https://www.digikey.com/en/products/detail/kemet/T521B106M025ATE100/8042244"
-			(at 330.2 149.86 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Part Number" "399-16632-2-ND"
-			(at 330.2 149.86 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Price per Unit" "1.74"
-			(at 330.2 149.86 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufactaurer Part Number" "T521B106M025ATE100"
-			(at 330.2 149.86 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Link" "https://mou.sr/3IRJz8z"
-			(at 330.2 149.86 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "80-T521B106M25ATE100 "
-			(at 330.2 149.86 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price per Unit" "1.74"
-			(at 330.2 149.86 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "c24b6843-d07a-407e-831f-dd345da74f1c")
-		)
-		(pin "2"
-			(uuid "686707a6-5b48-43a9-94ed-db5e9488de78")
-		)
-		(instances
-			(project "STAR"
-				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C126")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:C")
-		(at 105.41 143.51 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "34202aba-1aff-44d6-b78d-fa540787ae3b")
-		(property "Reference" "C111"
-			(at 105.918 141.732 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "10u"
-			(at 105.918 145.542 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 106.3752 147.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 105.41 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Unpolarized capacitor"
-			(at 105.41 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Link" "https://www.digikey.com/en/products/detail/kemet/T521B106M025ATE100/8042244"
-			(at 105.41 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Part Number" "399-16632-2-ND"
-			(at 105.41 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Price per Unit" "1.74"
-			(at 105.41 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufactaurer Part Number" "T521B106M025ATE100"
-			(at 105.41 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Link" "https://mou.sr/3IRJz8z"
-			(at 105.41 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "80-T521B106M25ATE100 "
-			(at 105.41 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price per Unit" "1.74"
-			(at 105.41 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "12071862-9277-4068-b7f0-2f83bd9d651b")
-		)
-		(pin "2"
-			(uuid "b6922b33-60ae-4c2a-ad70-44e01b0ac13c")
-		)
-		(instances
-			(project "STAR"
-				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C111")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:C")
 		(at 158.75 149.86 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -4410,7 +4439,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "3e5eee9d-f528-4373-a55c-ac883a2e9d5e")
-		(property "Reference" "C118"
+		(property "Reference" "C129"
 			(at 158.75 147.828 0)
 			(effects
 				(font
@@ -5013,271 +5042,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C118")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:C")
-		(at 80.01 143.51 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "42253471-8012-4ded-8989-7c4a27bd37f5")
-		(property "Reference" "C107"
-			(at 80.518 141.732 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "10u"
-			(at 80.518 145.542 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 80.9752 147.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 80.01 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Unpolarized capacitor"
-			(at 80.01 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Link" "https://www.digikey.com/en/products/detail/kemet/T521B106M025ATE100/8042244"
-			(at 80.01 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Part Number" "399-16632-2-ND"
-			(at 80.01 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Price per Unit" "1.74"
-			(at 80.01 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufactaurer Part Number" "T521B106M025ATE100"
-			(at 80.01 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Link" "https://mou.sr/3IRJz8z"
-			(at 80.01 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "80-T521B106M25ATE100 "
-			(at 80.01 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price per Unit" "1.74"
-			(at 80.01 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "d4d0b68c-0c28-4268-b619-9428192a284f")
-		)
-		(pin "2"
-			(uuid "576fddab-2d18-4983-a2f8-2d6e0377ac66")
-		)
-		(instances
-			(project "STAR"
-				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C107")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:C")
-		(at 336.55 149.86 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "5602ef20-8b67-4653-90c6-1ecb3e4b3226")
-		(property "Reference" "C127"
-			(at 337.058 148.082 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "10u"
-			(at 337.058 151.892 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 337.5152 153.67 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 336.55 149.86 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Unpolarized capacitor"
-			(at 336.55 149.86 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Link" "https://www.digikey.com/en/products/detail/kemet/T521B106M025ATE100/8042244"
-			(at 336.55 149.86 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Part Number" "399-16632-2-ND"
-			(at 336.55 149.86 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Price per Unit" "1.74"
-			(at 336.55 149.86 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufactaurer Part Number" "T521B106M025ATE100"
-			(at 336.55 149.86 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Link" "https://mou.sr/3IRJz8z"
-			(at 336.55 149.86 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "80-T521B106M25ATE100 "
-			(at 336.55 149.86 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price per Unit" "1.74"
-			(at 336.55 149.86 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "ab14116c-2006-4843-b8bf-84d0c17a99a7")
-		)
-		(pin "2"
-			(uuid "1a509e7b-a546-4cff-9edf-ab2694b21f8f")
-		)
-		(instances
-			(project "STAR"
-				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C127")
+					(reference "C129")
 					(unit 1)
 				)
 			)
@@ -5292,7 +5057,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "656c49be-0c6a-474c-bd4c-eb21fd2c1d9b")
-		(property "Reference" "C116"
+		(property "Reference" "C127"
 			(at 138.43 155.448 0)
 			(effects
 				(font
@@ -5895,7 +5660,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C116")
+					(reference "C127")
 					(unit 1)
 				)
 			)
@@ -6518,6 +6283,138 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:C_Polarized")
+		(at 73.66 143.51 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "6b6259b3-a726-4de3-b45c-93d9ebed5d61")
+		(property "Reference" "C119"
+			(at 74.168 141.732 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10u"
+			(at 74.168 145.542 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "T521B106M025ATE100:T521B"
+			(at 74.6252 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 73.66 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Polarized capacitor"
+			(at 73.66 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/en/products/detail/kemet/T521B106M025ATE100/8042244"
+			(at 73.66 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "399-16632-2-ND"
+			(at 73.66 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "1.74"
+			(at 73.66 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "T521B106M025ATE100"
+			(at 73.66 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3IRJz8z"
+			(at 73.66 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "80-T521B106M25ATE100 "
+			(at 73.66 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "1.74"
+			(at 73.66 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "747ac7f3-3f52-4b30-a6b0-50b39d068aa3")
+		)
+		(pin "2"
+			(uuid "05d66584-0c7b-4174-b459-59e650583ef4")
+		)
+		(instances
+			(project "STAR"
+				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
+					(reference "C119")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C")
 		(at 279.4 154.94 0)
 		(unit 1)
@@ -6526,7 +6423,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "708f32ba-85ca-43d0-a5ba-c5be5d75b90b")
-		(property "Reference" "C120"
+		(property "Reference" "C131"
 			(at 279.4 152.908 0)
 			(effects
 				(font
@@ -7129,7 +7026,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C120")
+					(reference "C131")
 					(unit 1)
 				)
 			)
@@ -7760,7 +7657,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "78346d94-b283-4930-8967-81081312bed2")
-		(property "Reference" "C115"
+		(property "Reference" "C126"
 			(at 132.08 141.478 0)
 			(effects
 				(font
@@ -8363,23 +8260,23 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C115")
+					(reference "C126")
 					(unit 1)
 				)
 			)
 		)
 	)
 	(symbol
-		(lib_id "Device:C")
-		(at 323.85 149.86 0)
+		(lib_id "Device:C_Polarized")
+		(at 64.77 143.51 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "7a5d67ab-f105-4558-8e1a-64a1359deccb")
-		(property "Reference" "C125"
-			(at 324.358 148.082 0)
+		(uuid "79d0b2c8-49f7-47fa-ac52-96a36a8463e2")
+		(property "Reference" "C118"
+			(at 65.278 141.732 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8388,7 +8285,7 @@
 			)
 		)
 		(property "Value" "10u"
-			(at 324.358 151.892 0)
+			(at 65.278 145.542 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8396,8 +8293,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
-			(at 324.8152 153.67 0)
+		(property "Footprint" "T521B106M025ATE100:T521B"
+			(at 65.7352 147.32 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8406,7 +8303,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 323.85 149.86 0)
+			(at 64.77 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8414,8 +8311,8 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
-			(at 323.85 149.86 0)
+		(property "Description" "Polarized capacitor"
+			(at 64.77 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8424,7 +8321,7 @@
 			)
 		)
 		(property "DigiKey Link" "https://www.digikey.com/en/products/detail/kemet/T521B106M025ATE100/8042244"
-			(at 323.85 149.86 0)
+			(at 64.77 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8433,7 +8330,7 @@
 			)
 		)
 		(property "DigiKey Part Number" "399-16632-2-ND"
-			(at 323.85 149.86 0)
+			(at 64.77 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8442,7 +8339,7 @@
 			)
 		)
 		(property "DigiKey Price per Unit" "1.74"
-			(at 323.85 149.86 0)
+			(at 64.77 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8451,7 +8348,7 @@
 			)
 		)
 		(property "Manufactaurer Part Number" "T521B106M025ATE100"
-			(at 323.85 149.86 0)
+			(at 64.77 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8460,7 +8357,7 @@
 			)
 		)
 		(property "Mouser Link" "https://mou.sr/3IRJz8z"
-			(at 323.85 149.86 0)
+			(at 64.77 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8469,7 +8366,7 @@
 			)
 		)
 		(property "Mouser Part Number" "80-T521B106M25ATE100 "
-			(at 323.85 149.86 0)
+			(at 64.77 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8478,7 +8375,7 @@
 			)
 		)
 		(property "Mouser Price per Unit" "1.74"
-			(at 323.85 149.86 0)
+			(at 64.77 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8487,31 +8384,31 @@
 			)
 		)
 		(pin "1"
-			(uuid "6e96bf07-fc60-42fb-937c-71247f21782d")
+			(uuid "48a4f3ef-19cc-485a-8728-fc9a835624e4")
 		)
 		(pin "2"
-			(uuid "3e189763-c02e-4ada-bdc5-85320c506f62")
+			(uuid "4f390c7c-b59b-4827-b5b2-0da1f0d5b146")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C125")
+					(reference "C118")
 					(unit 1)
 				)
 			)
 		)
 	)
 	(symbol
-		(lib_id "Device:C")
-		(at 118.11 143.51 0)
+		(lib_id "Device:C_Polarized")
+		(at 306.07 149.86 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "88eca417-1c53-491d-8cb6-efb499b01a75")
-		(property "Reference" "C113"
-			(at 118.618 141.732 0)
+		(uuid "95d39a25-88f6-4742-bbbf-447675bd243e")
+		(property "Reference" "C133"
+			(at 306.578 148.082 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8520,7 +8417,7 @@
 			)
 		)
 		(property "Value" "10u"
-			(at 118.618 145.542 0)
+			(at 306.578 151.892 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8528,8 +8425,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
-			(at 119.0752 147.32 0)
+		(property "Footprint" "T521B106M025ATE100:T521B"
+			(at 307.0352 153.67 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8538,7 +8435,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 118.11 143.51 0)
+			(at 306.07 149.86 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8546,140 +8443,8 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
-			(at 118.11 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Link" "https://www.digikey.com/en/products/detail/kemet/T521B106M025ATE100/8042244"
-			(at 118.11 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Part Number" "399-16632-2-ND"
-			(at 118.11 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Price per Unit" "1.74"
-			(at 118.11 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufactaurer Part Number" "T521B106M025ATE100"
-			(at 118.11 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Link" "https://mou.sr/3IRJz8z"
-			(at 118.11 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "80-T521B106M25ATE100 "
-			(at 118.11 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price per Unit" "1.74"
-			(at 118.11 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "554e769d-6908-4b72-8d97-c22250b9bbcd")
-		)
-		(pin "2"
-			(uuid "d3d76e33-a462-4c95-be50-a14b76151eb7")
-		)
-		(instances
-			(project "STAR"
-				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C113")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:C")
-		(at 304.8 149.86 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "8f7861f0-532f-4e3c-ac10-d95971221cae")
-		(property "Reference" "C122"
-			(at 305.308 148.082 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "10u"
-			(at 305.308 151.892 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 305.7652 153.67 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 304.8 149.86 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Unpolarized capacitor"
-			(at 304.8 149.86 0)
+		(property "Description" "Polarized capacitor"
+			(at 306.07 149.86 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8688,7 +8453,7 @@
 			)
 		)
 		(property "DigiKey Link" "https://www.digikey.com/en/products/detail/kemet/T521B106M025ATE100/8042244"
-			(at 304.8 149.86 0)
+			(at 306.07 149.86 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8697,7 +8462,7 @@
 			)
 		)
 		(property "DigiKey Part Number" "399-16632-2-ND"
-			(at 304.8 149.86 0)
+			(at 306.07 149.86 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8706,7 +8471,7 @@
 			)
 		)
 		(property "DigiKey Price per Unit" "1.74"
-			(at 304.8 149.86 0)
+			(at 306.07 149.86 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8715,7 +8480,7 @@
 			)
 		)
 		(property "Manufactaurer Part Number" "T521B106M025ATE100"
-			(at 304.8 149.86 0)
+			(at 306.07 149.86 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8724,7 +8489,7 @@
 			)
 		)
 		(property "Mouser Link" "https://mou.sr/3IRJz8z"
-			(at 304.8 149.86 0)
+			(at 306.07 149.86 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8733,7 +8498,7 @@
 			)
 		)
 		(property "Mouser Part Number" "80-T521B106M25ATE100 "
-			(at 304.8 149.86 0)
+			(at 306.07 149.86 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8742,7 +8507,7 @@
 			)
 		)
 		(property "Mouser Price per Unit" "1.74"
-			(at 304.8 149.86 0)
+			(at 306.07 149.86 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8751,15 +8516,15 @@
 			)
 		)
 		(pin "1"
-			(uuid "b40ae47d-4561-423d-a256-26720b760ac7")
+			(uuid "f94b48ed-0c12-425e-88fd-04c1b01130dc")
 		)
 		(pin "2"
-			(uuid "d45a877d-84ac-4dfb-9fe2-d2fea9dde8f2")
+			(uuid "1f5e8b3a-17af-4610-a89a-3e1b0531dd5c")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C122")
+					(reference "C133")
 					(unit 1)
 				)
 			)
@@ -9098,6 +8863,138 @@
 		)
 	)
 	(symbol
+		(lib_id "Device:C_Polarized")
+		(at 82.55 143.51 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "a294553e-afe1-4ea6-aa1a-a33f83bfe39f")
+		(property "Reference" "C120"
+			(at 83.058 141.732 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10u"
+			(at 83.058 145.542 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "T521B106M025ATE100:T521B"
+			(at 83.5152 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 82.55 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Polarized capacitor"
+			(at 82.55 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/en/products/detail/kemet/T521B106M025ATE100/8042244"
+			(at 82.55 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "399-16632-2-ND"
+			(at 82.55 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "1.74"
+			(at 82.55 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "T521B106M025ATE100"
+			(at 82.55 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3IRJz8z"
+			(at 82.55 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "80-T521B106M25ATE100 "
+			(at 82.55 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "1.74"
+			(at 82.55 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "f5885e60-6fa1-4a81-9266-7ec70ef455d9")
+		)
+		(pin "2"
+			(uuid "4beb31d7-f1c3-4bf5-b3c6-b69e536d2b07")
+		)
+		(instances
+			(project "STAR"
+				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
+					(reference "C120")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C")
 		(at 298.45 149.86 0)
 		(unit 1)
@@ -9106,7 +9003,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "a9a8ebc0-73e0-43d5-83dd-35cc21260820")
-		(property "Reference" "C121"
+		(property "Reference" "C132"
 			(at 298.45 147.828 0)
 			(effects
 				(font
@@ -9709,7 +9606,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C121")
+					(reference "C132")
 					(unit 1)
 				)
 			)
@@ -9900,16 +9797,16 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:C")
-		(at 73.66 143.51 0)
+		(lib_id "Device:C_Polarized")
+		(at 55.88 143.51 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(uuid "afc237e0-63ab-4d3a-9e9d-d82eef30082c")
-		(property "Reference" "C106"
-			(at 74.168 141.732 0)
+		(property "Reference" "C117"
+			(at 56.388 141.732 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9918,7 +9815,7 @@
 			)
 		)
 		(property "Value" "10u"
-			(at 74.168 145.542 0)
+			(at 56.388 145.542 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9926,8 +9823,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
-			(at 74.6252 147.32 0)
+		(property "Footprint" "T521B106M025ATE100:T521B"
+			(at 56.8452 147.32 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9936,7 +9833,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 73.66 143.51 0)
+			(at 55.88 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9944,8 +9841,8 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
-			(at 73.66 143.51 0)
+		(property "Description" "Polarized capacitor"
+			(at 55.88 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9954,7 +9851,7 @@
 			)
 		)
 		(property "DigiKey Link" "https://www.digikey.com/en/products/detail/kemet/T521B106M025ATE100/8042244"
-			(at 73.66 143.51 0)
+			(at 55.88 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9963,7 +9860,7 @@
 			)
 		)
 		(property "DigiKey Part Number" "399-16632-2-ND"
-			(at 73.66 143.51 0)
+			(at 55.88 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9972,7 +9869,7 @@
 			)
 		)
 		(property "DigiKey Price per Unit" "1.74"
-			(at 73.66 143.51 0)
+			(at 55.88 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9981,7 +9878,7 @@
 			)
 		)
 		(property "Manufactaurer Part Number" "T521B106M025ATE100"
-			(at 73.66 143.51 0)
+			(at 55.88 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9990,7 +9887,7 @@
 			)
 		)
 		(property "Mouser Link" "https://mou.sr/3IRJz8z"
-			(at 73.66 143.51 0)
+			(at 55.88 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9999,7 +9896,7 @@
 			)
 		)
 		(property "Mouser Part Number" "80-T521B106M25ATE100 "
-			(at 73.66 143.51 0)
+			(at 55.88 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10008,7 +9905,7 @@
 			)
 		)
 		(property "Mouser Price per Unit" "1.74"
-			(at 73.66 143.51 0)
+			(at 55.88 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10025,139 +9922,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C106")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:C")
-		(at 99.06 143.51 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "b0982498-824e-44bc-a692-d819ea2375e2")
-		(property "Reference" "C110"
-			(at 99.568 141.732 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "10u"
-			(at 99.568 145.542 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 100.0252 147.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 99.06 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Unpolarized capacitor"
-			(at 99.06 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Link" "https://www.digikey.com/en/products/detail/kemet/T521B106M025ATE100/8042244"
-			(at 99.06 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Part Number" "399-16632-2-ND"
-			(at 99.06 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Price per Unit" "1.74"
-			(at 99.06 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufactaurer Part Number" "T521B106M025ATE100"
-			(at 99.06 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Link" "https://mou.sr/3IRJz8z"
-			(at 99.06 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "80-T521B106M25ATE100 "
-			(at 99.06 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price per Unit" "1.74"
-			(at 99.06 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "c859e644-e3a1-49cc-8d9c-98e94abd0f47")
-		)
-		(pin "2"
-			(uuid "a1e66be9-5873-4d84-a7cd-4c233d216033")
-		)
-		(instances
-			(project "STAR"
-				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C110")
+					(reference "C117")
 					(unit 1)
 				)
 			)
@@ -10172,7 +9937,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "b11bc3e6-3051-4a32-a625-f99e22f441e2")
-		(property "Reference" "C114"
+		(property "Reference" "C125"
 			(at 125.73 141.478 0)
 			(effects
 				(font
@@ -10775,7 +10540,271 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C114")
+					(reference "C125")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C_Polarized")
+		(at 118.11 143.51 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "b407d189-4136-49eb-b519-b752514f83a7")
+		(property "Reference" "C124"
+			(at 118.618 141.732 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10u"
+			(at 118.618 145.542 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "T521B106M025ATE100:T521B"
+			(at 119.0752 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 118.11 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Polarized capacitor"
+			(at 118.11 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/en/products/detail/kemet/T521B106M025ATE100/8042244"
+			(at 118.11 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "399-16632-2-ND"
+			(at 118.11 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "1.74"
+			(at 118.11 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "T521B106M025ATE100"
+			(at 118.11 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3IRJz8z"
+			(at 118.11 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "80-T521B106M25ATE100 "
+			(at 118.11 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "1.74"
+			(at 118.11 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "e3562196-561b-4535-8e69-8aff5806ad8e")
+		)
+		(pin "2"
+			(uuid "9f6df379-f7dd-4c6d-b1f8-b635117281de")
+		)
+		(instances
+			(project "STAR"
+				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
+					(reference "C124")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C_Polarized")
+		(at 332.74 149.86 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "b55e9941-9d86-40ad-a0b3-bae7a7faba49")
+		(property "Reference" "C136"
+			(at 333.248 148.082 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10u"
+			(at 333.248 151.892 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "T521B106M025ATE100:T521B"
+			(at 333.7052 153.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 332.74 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Polarized capacitor"
+			(at 332.74 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/en/products/detail/kemet/T521B106M025ATE100/8042244"
+			(at 332.74 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "399-16632-2-ND"
+			(at 332.74 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "1.74"
+			(at 332.74 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "T521B106M025ATE100"
+			(at 332.74 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3IRJz8z"
+			(at 332.74 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "80-T521B106M25ATE100 "
+			(at 332.74 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "1.74"
+			(at 332.74 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "00c8dd25-5817-449a-9bc4-efcb6ce473dd")
+		)
+		(pin "2"
+			(uuid "35b39706-d6ad-400d-9aaa-938c2ebbf7e5")
+		)
+		(instances
+			(project "STAR"
+				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
+					(reference "C136")
 					(unit 1)
 				)
 			)
@@ -11465,138 +11494,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Device:C")
-		(at 92.71 143.51 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "b95d6825-103a-4034-a264-2776dd698e10")
-		(property "Reference" "C109"
-			(at 93.218 141.732 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "10u"
-			(at 93.218 145.542 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 93.6752 147.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 92.71 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Unpolarized capacitor"
-			(at 92.71 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Link" "https://www.digikey.com/en/products/detail/kemet/T521B106M025ATE100/8042244"
-			(at 92.71 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Part Number" "399-16632-2-ND"
-			(at 92.71 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Price per Unit" "1.74"
-			(at 92.71 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufactaurer Part Number" "T521B106M025ATE100"
-			(at 92.71 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Link" "https://mou.sr/3IRJz8z"
-			(at 92.71 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "80-T521B106M25ATE100 "
-			(at 92.71 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price per Unit" "1.74"
-			(at 92.71 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "f4038cff-2ab7-4a58-b4eb-aee61232e760")
-		)
-		(pin "2"
-			(uuid "cacb23bf-80c5-4616-bc1f-f5273b95e3da")
-		)
-		(instances
-			(project "STAR"
-				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C109")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:R")
 		(at 290.83 144.78 180)
 		(unit 1)
@@ -12214,138 +12111,6 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 86.36 143.51 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "c131610a-59a2-464f-8515-2d83783b9b1f")
-		(property "Reference" "C108"
-			(at 86.868 141.732 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "10u"
-			(at 86.868 145.542 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" ""
-			(at 87.3252 147.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 86.36 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Unpolarized capacitor"
-			(at 86.36 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Link" "https://www.digikey.com/en/products/detail/kemet/T521B106M025ATE100/8042244"
-			(at 86.36 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Part Number" "399-16632-2-ND"
-			(at 86.36 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Price per Unit" "1.74"
-			(at 86.36 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufactaurer Part Number" "T521B106M025ATE100"
-			(at 86.36 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Link" "https://mou.sr/3IRJz8z"
-			(at 86.36 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "80-T521B106M25ATE100 "
-			(at 86.36 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price per Unit" "1.74"
-			(at 86.36 143.51 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "505c546f-3358-4f0d-995e-722fe8ae13d9")
-		)
-		(pin "2"
-			(uuid "c1fc555b-3bbf-48e5-b3ab-b9f14815cea7")
-		)
-		(instances
-			(project "STAR"
-				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C108")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Device:C")
 		(at 240.03 137.16 90)
 		(unit 1)
 		(exclude_from_sim no)
@@ -12353,7 +12118,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "d54b0632-951b-48aa-bdb9-2c0969aae259")
-		(property "Reference" "C119"
+		(property "Reference" "C130"
 			(at 239.014 135.89 90)
 			(effects
 				(font
@@ -12956,7 +12721,7 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C119")
+					(reference "C130")
 					(unit 1)
 				)
 			)
@@ -13587,7 +13352,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "d9161b78-5d2c-4b34-8eb7-4127eaa57c59")
-		(property "Reference" "C117"
+		(property "Reference" "C128"
 			(at 152.4 152.908 0)
 			(effects
 				(font
@@ -14190,23 +13955,23 @@
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C117")
+					(reference "C128")
 					(unit 1)
 				)
 			)
 		)
 	)
 	(symbol
-		(lib_id "Device:C")
-		(at 317.5 149.86 0)
+		(lib_id "Device:C_Polarized")
+		(at 109.22 143.51 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "dacae9e2-ec0e-41a6-833e-f53b8ed49130")
-		(property "Reference" "C124"
-			(at 318.008 148.082 0)
+		(uuid "e2e40021-e0a4-4807-aafb-ce35e0ae4b26")
+		(property "Reference" "C123"
+			(at 109.728 141.732 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14215,7 +13980,7 @@
 			)
 		)
 		(property "Value" "10u"
-			(at 318.008 151.892 0)
+			(at 109.728 145.542 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14223,8 +13988,8 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
-			(at 318.4652 153.67 0)
+		(property "Footprint" "T521B106M025ATE100:T521B"
+			(at 110.1852 147.32 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14233,7 +13998,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 317.5 149.86 0)
+			(at 109.22 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14241,8 +14006,8 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Unpolarized capacitor"
-			(at 317.5 149.86 0)
+		(property "Description" "Polarized capacitor"
+			(at 109.22 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14251,7 +14016,7 @@
 			)
 		)
 		(property "DigiKey Link" "https://www.digikey.com/en/products/detail/kemet/T521B106M025ATE100/8042244"
-			(at 317.5 149.86 0)
+			(at 109.22 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14260,7 +14025,7 @@
 			)
 		)
 		(property "DigiKey Part Number" "399-16632-2-ND"
-			(at 317.5 149.86 0)
+			(at 109.22 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14269,7 +14034,7 @@
 			)
 		)
 		(property "DigiKey Price per Unit" "1.74"
-			(at 317.5 149.86 0)
+			(at 109.22 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14278,7 +14043,7 @@
 			)
 		)
 		(property "Manufactaurer Part Number" "T521B106M025ATE100"
-			(at 317.5 149.86 0)
+			(at 109.22 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14287,7 +14052,7 @@
 			)
 		)
 		(property "Mouser Link" "https://mou.sr/3IRJz8z"
-			(at 317.5 149.86 0)
+			(at 109.22 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14296,7 +14061,7 @@
 			)
 		)
 		(property "Mouser Part Number" "80-T521B106M25ATE100 "
-			(at 317.5 149.86 0)
+			(at 109.22 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14305,7 +14070,7 @@
 			)
 		)
 		(property "Mouser Price per Unit" "1.74"
-			(at 317.5 149.86 0)
+			(at 109.22 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14314,15 +14079,411 @@
 			)
 		)
 		(pin "1"
-			(uuid "b32c6bc4-859a-4888-98a8-bbc5a509e1c3")
+			(uuid "9ef7fdf3-c4a3-409b-bda1-5054d21ffb37")
 		)
 		(pin "2"
-			(uuid "b4895547-bfd4-4d85-bda8-f8dc75925281")
+			(uuid "13881cbf-6340-43a3-a5d5-0a28acff69f0")
 		)
 		(instances
 			(project "STAR"
 				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
-					(reference "C124")
+					(reference "C123")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C_Polarized")
+		(at 100.33 143.51 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "ebc462be-e578-4cfe-ad6d-fa791eb702b7")
+		(property "Reference" "C122"
+			(at 100.838 141.732 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10u"
+			(at 100.838 145.542 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "T521B106M025ATE100:T521B"
+			(at 101.2952 147.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 100.33 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Polarized capacitor"
+			(at 100.33 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/en/products/detail/kemet/T521B106M025ATE100/8042244"
+			(at 100.33 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "399-16632-2-ND"
+			(at 100.33 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "1.74"
+			(at 100.33 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "T521B106M025ATE100"
+			(at 100.33 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3IRJz8z"
+			(at 100.33 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "80-T521B106M25ATE100 "
+			(at 100.33 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "1.74"
+			(at 100.33 143.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "58ba7d5c-625e-404d-b784-c8d8aa912a04")
+		)
+		(pin "2"
+			(uuid "3f1f9ce3-7b6a-4da2-80f6-c302d15d1a15")
+		)
+		(instances
+			(project "STAR"
+				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
+					(reference "C122")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C_Polarized")
+		(at 323.85 149.86 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "fb1bd0b9-238e-4f7f-9b3e-2853a05c7956")
+		(property "Reference" "C135"
+			(at 324.358 148.082 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10u"
+			(at 324.358 151.892 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "T521B106M025ATE100:T521B"
+			(at 324.8152 153.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 323.85 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Polarized capacitor"
+			(at 323.85 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/en/products/detail/kemet/T521B106M025ATE100/8042244"
+			(at 323.85 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "399-16632-2-ND"
+			(at 323.85 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "1.74"
+			(at 323.85 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "T521B106M025ATE100"
+			(at 323.85 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3IRJz8z"
+			(at 323.85 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "80-T521B106M25ATE100 "
+			(at 323.85 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "1.74"
+			(at 323.85 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "75890502-29a6-4b33-b95b-c04ae6ecd2cf")
+		)
+		(pin "2"
+			(uuid "6b3ecedc-3e91-42a6-af23-cc93beacd3a5")
+		)
+		(instances
+			(project "STAR"
+				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
+					(reference "C135")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C_Polarized")
+		(at 350.52 149.86 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "fed2b512-77de-4681-8e35-b7cc81aabd9b")
+		(property "Reference" "C138"
+			(at 351.028 148.082 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "10u"
+			(at 351.028 151.892 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "T521B106M025ATE100:T521B"
+			(at 351.4852 153.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 350.52 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Polarized capacitor"
+			(at 350.52 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/en/products/detail/kemet/T521B106M025ATE100/8042244"
+			(at 350.52 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "399-16632-2-ND"
+			(at 350.52 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "1.74"
+			(at 350.52 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "T521B106M025ATE100"
+			(at 350.52 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3IRJz8z"
+			(at 350.52 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "80-T521B106M25ATE100 "
+			(at 350.52 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "1.74"
+			(at 350.52 149.86 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "cd077eb0-49c8-4956-ada8-6f4b1a4bbf04")
+		)
+		(pin "2"
+			(uuid "8890228d-a510-4bea-b323-1170773ccf82")
+		)
+		(instances
+			(project "STAR"
+				(path "/fc8533bc-25dd-4c20-9b4c-ffebebd6739b/f73d6367-f3ba-42df-a3ea-bd155f1c219f/59156c40-dbaf-44c5-bcaf-7991575a4ded"
+					(reference "C138")
 					(unit 1)
 				)
 			)

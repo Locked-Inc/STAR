@@ -72,4 +72,7 @@
   (lib (name "VLS6045EX-1R0N")(type "KiCad")(uri "${KIPRJMOD}/Symbols_and_Footprints/VLS6045EX-1R0N/KiCad/VLS6045EX-1R0N.kicad_sym")(options "")(descr ""))
   (lib (name "WSK1216L2000FEA")(type "KiCad")(uri "${KIPRJMOD}/Symbols_and_Footprints/WSK1216L2000FEA/KiCad/WSK1216L2000FEA.kicad_sym")(options "")(descr ""))
   (lib (name "ZXMP10A13FTA")(type "KiCad")(uri "${KIPRJMOD}/Symbols_and_Footprints/ZXMP10A13FTA/KiCad/ZXMP10A13FTA.kicad_sym")(options "")(descr ""))
+  (lib (name "T527T226M025ATE100")(type "KiCad")(uri "${KIPRJMOD}/Symbols_and_Footprints/T527T226M025ATE100/KiCad/T527T226M025ATE100.kicad_sym")(options "")(descr ""))
+  (lib (name "T521B106M025ATE100")(type "KiCad")(uri "${KIPRJMOD}/Symbols_and_Footprints/T521B106M025ATE100/KiCad/T521B106M025ATE100.kicad_sym")(options "")(descr ""))
+  (lib (name "865080343007")(type "KiCad")(uri "${KIPRJMOD}/Symbols_and_Footprints/865080343007/KiCad/865080343007.kicad_sym")(options "")(descr ""))
 )
