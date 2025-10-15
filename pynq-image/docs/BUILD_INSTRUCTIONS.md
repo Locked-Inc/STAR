@@ -218,9 +218,9 @@ ping pynq
 ### SSH Access
 
 ```bash
-ssh xilinx@<board-ip>
+ssh star@192.168.2.99
 # Or
-ssh xilinx@pynq
+ssh star@192.168.2.99
 
 # Default credentials:
 # Username: xilinx
@@ -235,7 +235,7 @@ http://<board-ip>:9090
 # Or
 http://pynq:9090
 
-# Default password: xilinx
+# Default password: star
 ```
 
 ## Verification
@@ -244,7 +244,7 @@ After first boot, verify the installation:
 
 ```bash
 # SSH into board
-ssh xilinx@pynq
+ssh star@192.168.2.99
 
 # Check PYNQ version
 python3 -c "import pynq; print(pynq.__version__)"
@@ -317,14 +317,14 @@ echo $PETALINUX
 3. Try direct connection with static IP:
    - Set board IP: `sudo ifconfig eth0 192.168.1.10`
    - Set PC IP: `192.168.1.11`
-   - Connect: `ssh xilinx@192.168.1.10`
+   - Connect: `ssh star@192.168.2.99`
 
 ### Custom Packages Not Installed
 
 Check package installation logs:
 ```bash
 # On board
-ssh xilinx@pynq
+ssh star@192.168.2.99
 cat /var/log/pynq-install.log
 ```
 

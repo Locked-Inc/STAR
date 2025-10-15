@@ -102,7 +102,6 @@ backup_*
 *.ncd
 *.ngm
 *.xrpt
-*.csv
 *.xml
 *.html
 *.xdc

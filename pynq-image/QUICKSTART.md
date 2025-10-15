@@ -65,13 +65,10 @@ sudo ./scripts/flash.sh
 2. **Connect**:
    ```bash
    # Wait 1-2 minutes for boot
-   ssh xilinx@pynq
-   # Password: xilinx
+   ssh star@192.168.2.99
+   # Password: star
+   # Or with alias: ssh star
    ```
-
-3. **Access Jupyter**:
-   - Open browser: http://pynq:9090
-   - Password: xilinx
 
 **Time required**: 2-5 minutes
 
@@ -79,7 +76,7 @@ sudo ./scripts/flash.sh
 
 ```bash
 # SSH into board
-ssh xilinx@pynq
+ssh star@192.168.2.99
 
 # Check PYNQ
 python3 -c "import pynq; print(f'PYNQ {pynq.__version__}')"
