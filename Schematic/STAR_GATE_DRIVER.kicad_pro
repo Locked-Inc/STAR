@@ -451,7 +451,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "GATE_DRIVER.kicad_pro",
+    "filename": "STAR_GATE_DRIVER.kicad_pro",
     "version": 3
   },
   "net_settings": {
@@ -487,10 +487,10 @@
       "gencad": "",
       "idf": "",
       "netlist": "",
-      "plot": "",
+      "plot": "STAR_GATE_DRIVER_EXPORTS/",
       "pos_files": "",
       "specctra_dsn": "",
-      "step": "",
+      "step": "STAR_GATE_DRIVER.step",
       "svg": "",
       "vrml": ""
     },
