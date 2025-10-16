@@ -1550,6 +1550,16 @@
 		)
 		(uuid "63d288e0-171d-4552-9642-cd20bc86706a")
 	)
+	(text "we need 4 motor drivers"
+		(exclude_from_sim no)
+		(at 228.854 97.536 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "ae8e5ae2-b7e5-4cf5-8aba-eed74e451e8d")
+	)
 	(text "2A\nFsw=1.5MHz\nL=1uH"
 		(exclude_from_sim no)
 		(at 138.43 120.904 0)
@@ -1662,6 +1672,12 @@
 		(uuid "748ed83e-a700-46d7-8226-0649bf151dd9")
 	)
 	(junction
+		(at 228.6 132.08)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "78fbabc4-ec01-4eac-8765-c359ecc3205a")
+	)
+	(junction
 		(at 96.52 95.25)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -1704,6 +1720,12 @@
 		(uuid "bace1e43-0254-46c2-80ac-75e277c5c5ca")
 	)
 	(junction
+		(at 228.6 127)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "ce07b50c-136f-4005-b507-9bdb9d7d949b")
+	)
+	(junction
 		(at 243.84 100.33)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -1726,6 +1748,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "e4eeba25-ecd4-411f-a446-460325612fe3")
+	)
+	(junction
+		(at 228.6 129.54)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "ed191ad1-1ef3-4324-b2c6-0b1d2b59852b")
 	)
 	(junction
 		(at 265.43 100.33)
@@ -1781,6 +1809,16 @@
 	)
 	(wire
 		(pts
+			(xy 228.6 127) (xy 228.6 129.54)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0726caaa-e650-4574-a654-d93209b696b1")
+	)
+	(wire
+		(pts
 			(xy 88.9 111.76) (xy 88.9 127)
 		)
 		(stroke
@@ -1788,6 +1826,26 @@
 			(type default)
 		)
 		(uuid "0838db8b-a2d1-4766-8997-3d23215f24df")
+	)
+	(wire
+		(pts
+			(xy 228.6 127) (xy 252.73 127)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0c4b6ed4-ac5c-4453-89cb-f4b5ddd169eb")
+	)
+	(wire
+		(pts
+			(xy 228.6 129.54) (xy 228.6 132.08)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0ddf11a8-9e6c-4b34-8c6d-a60135536364")
 	)
 	(wire
 		(pts
@@ -1891,16 +1949,6 @@
 	)
 	(wire
 		(pts
-			(xy 231.14 134.62) (xy 252.73 134.62)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "2a2e3bd6-61f8-444f-997b-d35bcdf5ec6b")
-	)
-	(wire
-		(pts
 			(xy 153.67 106.68) (xy 148.59 106.68)
 		)
 		(stroke
@@ -1908,6 +1956,16 @@
 			(type default)
 		)
 		(uuid "2c881184-933d-4174-b2ea-2cd8d3e7fe5d")
+	)
+	(wire
+		(pts
+			(xy 228.6 132.08) (xy 252.73 132.08)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "330ecfdd-cb2d-4534-a0ae-9f96a4223aa9")
 	)
 	(wire
 		(pts
@@ -1991,6 +2049,16 @@
 	)
 	(wire
 		(pts
+			(xy 228.6 132.08) (xy 228.6 134.62)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "4a75b423-79b6-4d39-88d5-c3eb1aeae924")
+	)
+	(wire
+		(pts
 			(xy 168.91 100.33) (xy 168.91 106.68)
 		)
 		(stroke
@@ -2048,16 +2116,6 @@
 			(type default)
 		)
 		(uuid "5a5724e9-588a-467a-84e3-4518c75fddef")
-	)
-	(wire
-		(pts
-			(xy 231.14 129.54) (xy 252.73 129.54)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "61fa8d21-921e-4c8f-9464-6350c1e4d440")
 	)
 	(wire
 		(pts
@@ -2191,6 +2249,16 @@
 	)
 	(wire
 		(pts
+			(xy 228.6 129.54) (xy 252.73 129.54)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7f0c7e9c-0428-45e5-8ed0-74373661f723")
+	)
+	(wire
+		(pts
 			(xy 182.88 127) (xy 177.8 127)
 		)
 		(stroke
@@ -2291,13 +2359,23 @@
 	)
 	(wire
 		(pts
-			(xy 215.9 127) (xy 252.73 127)
+			(xy 215.9 127) (xy 228.6 127)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "94ee2a52-96c0-45af-ad08-9372fa8be08b")
+	)
+	(wire
+		(pts
+			(xy 228.6 134.62) (xy 252.73 134.62)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "955a6785-3e8e-4ee3-acbe-5c9f3989190f")
 	)
 	(wire
 		(pts
@@ -2531,16 +2609,6 @@
 	)
 	(wire
 		(pts
-			(xy 231.14 132.08) (xy 252.73 132.08)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e12bbd23-1062-4572-96d1-4dacd4e97610")
-	)
-	(wire
-		(pts
 			(xy 104.14 127) (xy 96.52 127)
 		)
 		(stroke
@@ -2589,8 +2657,8 @@
 		)
 		(uuid "f996b6bd-e609-4559-bd20-f0bf783d2ac0")
 	)
-	(label "MOTOR_DRIVER_P3V3"
-		(at 231.14 127 0)
+	(label "OPTICAL_ENCODER_P3V3"
+		(at 229.87 127 0)
 		(effects
 			(font
 				(size 1.27 1.27)

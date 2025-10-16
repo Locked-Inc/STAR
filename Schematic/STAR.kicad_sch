@@ -927,7 +927,7 @@
 		)
 		(uuid "26ee193c-1ecb-4fed-b284-bf19953bb6a8")
 	)
-	(label "SPI_SDI"
+	(label "SPI_CIPO"
 		(at 175.26 142.24 0)
 		(effects
 			(font
@@ -1148,7 +1148,7 @@
 		)
 		(uuid "aa3e86ee-cfcf-4417-a8b4-4b0983156b18")
 	)
-	(label "SPI_SDO"
+	(label "SPI_COPI"
 		(at 175.26 144.78 0)
 		(effects
 			(font
@@ -1707,7 +1707,7 @@
 				(justify left)
 			)
 		)
-		(pin "SPI_SDI" output
+		(pin "SPI_CIPO" output
 			(at 196.85 142.24 180)
 			(uuid "06592ee6-6c37-4f4a-9dc4-25a1abc6c8ef")
 			(effects
@@ -1717,7 +1717,7 @@
 				(justify left)
 			)
 		)
-		(pin "SPI_SDO" input
+		(pin "SPI_COPI" input
 			(at 196.85 144.78 180)
 			(uuid "6ec6ac4e-6639-4c33-9541-021acf6bee4b")
 			(effects
@@ -1999,7 +1999,7 @@
 				(justify left)
 			)
 		)
-		(pin "SPI_SDI" input
+		(pin "SPI_CIPO" input
 			(at 167.64 142.24 0)
 			(uuid "ea97984f-2bc7-4805-9e2f-c3bfecf17371")
 			(effects
@@ -2019,7 +2019,7 @@
 				(justify right)
 			)
 		)
-		(pin "SPI_SDO" output
+		(pin "SPI_COPI" output
 			(at 167.64 144.78 0)
 			(uuid "62a729af-ca0b-4944-af8e-591374492de8")
 			(effects

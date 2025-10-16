@@ -75,7 +75,7 @@
         )
       )
       (pin output line (at 17.78 -7.62 180.0) (length 5.08)
-        (name "MISO"
+        (name "CIPO"
           (effects (font (size 1.016 1.016)))
         )
         (number "6"
@@ -83,7 +83,7 @@
         )
       )
       (pin input line (at 17.78 -5.08 180.0) (length 5.08)
-        (name "MOSI"
+        (name "COPI"
           (effects (font (size 1.016 1.016)))
         )
         (number "7"

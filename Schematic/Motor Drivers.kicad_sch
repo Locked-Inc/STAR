@@ -357,7 +357,7 @@
 				(pin input line
 					(at 50.8 -2.54 180)
 					(length 7.62)
-					(name "SDI"
+					(name "CIPO"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -375,7 +375,7 @@
 				(pin output line
 					(at 50.8 -5.08 180)
 					(length 7.62)
-					(name "SDO"
+					(name "COPI"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -4830,7 +4830,7 @@
 		)
 		(uuid "0c917299-bb95-44b9-bc06-48712a62ee09")
 	)
-	(label "SPI_SDO"
+	(label "SPI_COPI"
 		(at 180.34 166.37 180)
 		(effects
 			(font
@@ -4930,7 +4930,7 @@
 		)
 		(uuid "43d41d2a-4f72-4edd-a3bb-819a7385b446")
 	)
-	(label "SPI_SDI"
+	(label "SPI_CIPO"
 		(at 181.61 105.41 180)
 		(effects
 			(font
@@ -4950,7 +4950,7 @@
 		)
 		(uuid "452b871b-41f1-4407-806f-99ac4ef3e036")
 	)
-	(label "SPI_SDO"
+	(label "SPI_COPI"
 		(at 184.15 39.37 180)
 		(effects
 			(font
@@ -5020,7 +5020,7 @@
 		)
 		(uuid "60720c4b-c9e1-42de-95c7-5cd97b73ef80")
 	)
-	(label "SPI_SDI"
+	(label "SPI_CIPO"
 		(at 180.34 163.83 180)
 		(effects
 			(font
@@ -5050,7 +5050,7 @@
 		)
 		(uuid "6d654016-f1cd-4d5f-a7db-6782adf15877")
 	)
-	(label "SPI_SDI"
+	(label "SPI_CIPO"
 		(at 184.15 36.83 180)
 		(effects
 			(font
@@ -5120,7 +5120,7 @@
 		)
 		(uuid "7dc248a6-7aa5-43e5-8de3-00a6de69d215")
 	)
-	(label "SPI_SDO"
+	(label "SPI_COPI"
 		(at 177.8 234.95 180)
 		(effects
 			(font
@@ -5170,7 +5170,7 @@
 		)
 		(uuid "8ec18574-fdc7-4879-b1e3-ff16076f2351")
 	)
-	(label "SPI_SDO"
+	(label "SPI_COPI"
 		(at 181.61 107.95 180)
 		(effects
 			(font
@@ -5210,7 +5210,7 @@
 		)
 		(uuid "ba909e04-2d2b-476c-a629-265ef8a3f410")
 	)
-	(label "SPI_SDI"
+	(label "SPI_CIPO"
 		(at 177.8 232.41 180)
 		(effects
 			(font
@@ -5623,7 +5623,7 @@
 		)
 		(uuid "9ac1b78e-9247-4415-9563-0ee1f252c68f")
 	)
-	(hierarchical_label "SPI_SDO"
+	(hierarchical_label "SPI_COPI"
 		(shape output)
 		(at 190.5 39.37 0)
 		(effects
@@ -5656,7 +5656,7 @@
 		)
 		(uuid "a751fa11-b9c0-4881-ab14-719a4a29c0cd")
 	)
-	(hierarchical_label "SPI_SDI"
+	(hierarchical_label "SPI_CIPO"
 		(shape input)
 		(at 190.5 36.83 0)
 		(effects
