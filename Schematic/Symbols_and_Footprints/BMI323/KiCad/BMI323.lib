@@ -14,7 +14,7 @@ F7 "https://www.mouser.co.uk/ProductDetail/Bosch-Sensortec/BMI323?qs=By6Nw2ByBD3
 F8 "BOSCH" 1050 -200 50 H I L CNN "Manufacturer_Name"
 F9 "BMI323" 1050 -300 50 H I L CNN "Manufacturer_Part_Number"
 DRAW
-X SDO 1 0 0 200 R 50 50 0 0 P
+X COPI 1 0 0 200 R 50 50 0 0 P
 X NC_1 2 0 -100 200 R 50 50 0 0 P
 X NC_2 3 0 -200 200 R 50 50 0 0 P
 X INT1 4 0 -300 200 R 50 50 0 0 P

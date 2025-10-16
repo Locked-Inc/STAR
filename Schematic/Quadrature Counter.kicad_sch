@@ -547,7 +547,7 @@
 				(pin output line
 					(at 0 -12.7 0)
 					(length 7.62)
-					(name "MISO"
+					(name "CIPO"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -565,7 +565,7 @@
 				(pin input line
 					(at 0 -15.24 0)
 					(length 7.62)
-					(name "MOSI"
+					(name "COPI"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1666,7 +1666,7 @@
 		)
 		(uuid "2e11bef5-dfc2-4880-8987-d52f7d8a1ce3")
 	)
-	(label "SPI_SDI"
+	(label "SPI_CIPO"
 		(at 99.06 118.11 0)
 		(effects
 			(font
@@ -1676,7 +1676,7 @@
 		)
 		(uuid "3cc0c528-35e4-45d9-9b10-69d566aea802")
 	)
-	(label "SPI_SDI"
+	(label "SPI_CIPO"
 		(at 99.06 86.36 0)
 		(effects
 			(font
@@ -1726,7 +1726,7 @@
 		)
 		(uuid "8bef462c-6c31-422f-85e3-7c824da480bb")
 	)
-	(label "SPI_SDO"
+	(label "SPI_COPI"
 		(at 99.06 83.82 0)
 		(effects
 			(font
@@ -1756,7 +1756,7 @@
 		)
 		(uuid "a31ade1d-3ceb-466f-abc2-3a3e5ae40560")
 	)
-	(label "SPI_SDO"
+	(label "SPI_COPI"
 		(at 99.06 115.57 0)
 		(effects
 			(font
@@ -1826,7 +1826,7 @@
 		)
 		(uuid "fccabbfd-7196-4043-9b69-de53e218ee2e")
 	)
-	(hierarchical_label "SPI_SDI"
+	(hierarchical_label "SPI_CIPO"
 		(shape input)
 		(at 97.79 86.36 180)
 		(effects
@@ -1936,7 +1936,7 @@
 		)
 		(uuid "a2a47865-e6bb-4ba1-a8e1-4a9e95b51b43")
 	)
-	(hierarchical_label "SPI_SDO"
+	(hierarchical_label "SPI_COPI"
 		(shape input)
 		(at 97.79 83.82 180)
 		(effects

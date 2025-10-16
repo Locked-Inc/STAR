@@ -722,7 +722,7 @@
 				(pin passive line
 					(at 0 0 0)
 					(length 5.08)
-					(name "SDO"
+					(name "COPI"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -4350,7 +4350,7 @@
 		)
 		(uuid "44ab571e-0363-487a-890c-5bd78bf2dfce")
 	)
-	(text "SPI2 will act as a \"master\""
+	(text "SPI2 will act as a \"controller\""
 		(exclude_from_sim no)
 		(at 320.294 148.336 0)
 		(effects
@@ -4390,7 +4390,7 @@
 		)
 		(uuid "81819899-4d46-423d-8678-c5f6b210be36")
 	)
-	(text "3,sda\n5,scl\n8,txd\n10,rxd\n19,mosi\n21,miso\n23,sclk\n24,ce0\n26,ce1"
+	(text "3,sda\n5,scl\n8,txd\n10,rxd\n19,copi\n21,cipo\n23,sclk\n24,ce0\n26,ce1"
 		(exclude_from_sim yes)
 		(at 118.11 98.298 0)
 		(effects
@@ -4440,7 +4440,7 @@
 		)
 		(uuid "e3c0ebe7-8408-4da4-836f-9145cc36afa4")
 	)
-	(text "SPI3 will act as a \"slave\""
+	(text "SPI3 will act as a \"peripheral\""
 		(exclude_from_sim no)
 		(at 206.248 164.846 0)
 		(effects
@@ -7326,7 +7326,7 @@
 		)
 		(uuid "0e60d23b-3044-4777-9acb-39c444ac0eba")
 	)
-	(label "SPI2_MM_MISO"
+	(label "SPI2_CM_CIPO"
 		(at 275.59 153.67 0)
 		(effects
 			(font
@@ -7538,7 +7538,7 @@
 		)
 		(uuid "431c294e-257e-4d20-9c8f-b7bb3fb6e186")
 	)
-	(label "SPI3_SM_MOSI"
+	(label "SPI3_PM_COPI"
 		(at 83.82 127 0)
 		(effects
 			(font
@@ -7548,7 +7548,7 @@
 		)
 		(uuid "4547b3d6-a71b-4528-993c-428ff52f94fd")
 	)
-	(label "SPI3_SM_SCLK"
+	(label "SPI3_PM_SCLK"
 		(at 220.98 166.37 0)
 		(effects
 			(font
@@ -7558,7 +7558,7 @@
 		)
 		(uuid "47d62c2c-67f2-440e-bcc5-dfea52dd67ef")
 	)
-	(label "SPI3_SM_CS"
+	(label "SPI3_PM_CS"
 		(at 123.19 132.08 180)
 		(effects
 			(font
@@ -7761,7 +7761,7 @@
 		)
 		(uuid "795354fc-53ff-4837-8b0f-0304aabc7a45")
 	)
-	(label "SPI3_SM_MOSI"
+	(label "SPI3_PM_COPI"
 		(at 220.98 163.83 0)
 		(effects
 			(font
@@ -7771,7 +7771,7 @@
 		)
 		(uuid "7ba3c2d1-33c7-4068-8bda-f3478882aa45")
 	)
-	(label "SPI3_SM_MISO"
+	(label "SPI3_PM_CIPO"
 		(at 83.82 129.54 0)
 		(effects
 			(font
@@ -7872,7 +7872,7 @@
 		)
 		(uuid "a247f615-a6e0-43d1-ae1c-661814907f25")
 	)
-	(label "SPI3_SM_CS"
+	(label "SPI3_PM_CS"
 		(at 220.98 161.29 0)
 		(effects
 			(font
@@ -7902,7 +7902,7 @@
 		)
 		(uuid "b57e6560-7e96-4327-b904-5ae7c39191f9")
 	)
-	(label "SPI2_MM_SCLK"
+	(label "SPI2_CM_SCLK"
 		(at 275.59 151.13 0)
 		(effects
 			(font
@@ -8062,7 +8062,7 @@
 		)
 		(uuid "e0898ecc-b845-4e68-b465-5b7d63aedc93")
 	)
-	(label "SPI2_MM_MOSI"
+	(label "SPI2_CM_COPI"
 		(at 275.59 148.59 0)
 		(effects
 			(font
@@ -8132,7 +8132,7 @@
 		)
 		(uuid "ee10f154-ffd3-47e9-8eda-603d3f4f47a3")
 	)
-	(label "SPI3_SM_MISO"
+	(label "SPI3_PM_CIPO"
 		(at 220.98 168.91 0)
 		(effects
 			(font
@@ -8182,7 +8182,7 @@
 		)
 		(uuid "fc7c1462-900a-48f8-a73c-febc175fe43f")
 	)
-	(label "SPI3_SM_SCLK"
+	(label "SPI3_PM_SCLK"
 		(at 83.82 132.08 0)
 		(effects
 			(font
@@ -8202,7 +8202,7 @@
 		)
 		(uuid "fd6a85ad-9131-4492-bb52-114657067cfa")
 	)
-	(hierarchical_label "SPI_SDO"
+	(hierarchical_label "SPI_COPI"
 		(shape output)
 		(at 294.64 153.67 0)
 		(effects
@@ -8279,7 +8279,7 @@
 		)
 		(uuid "25a2cc68-e8f9-468f-9421-3ca99f5a3236")
 	)
-	(hierarchical_label "SPI_SDI"
+	(hierarchical_label "SPI_CIPO"
 		(shape input)
 		(at 294.64 148.59 0)
 		(effects
