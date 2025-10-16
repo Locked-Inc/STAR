@@ -4620,7 +4620,7 @@
 		)
 		(uuid "26e1a962-59e4-4576-9780-ab98ebe407df")
 	)
-	(label "BUCK_BOOST_PACK+"
+	(label "AFE_PACK+"
 		(at 184.15 214.63 180)
 		(effects
 			(font
@@ -4630,7 +4630,7 @@
 		)
 		(uuid "30539c53-322f-4978-8b7b-c8d4303edebd")
 	)
-	(label "5V_BUCK_SYS"
+	(label "P5V0_BUCK_SYS"
 		(at 353.06 135.89 180)
 		(effects
 			(font
@@ -4650,7 +4650,7 @@
 		)
 		(uuid "372bae83-0e09-4e32-a530-4f5710aa683d")
 	)
-	(label "5V_BUCK_SYS"
+	(label "P5V0_BUCK_SYS"
 		(at 114.3 228.6 0)
 		(effects
 			(font
@@ -4690,7 +4690,7 @@
 		)
 		(uuid "4ca40d67-5250-43fc-a692-39c2ab944d36")
 	)
-	(label "5V_BUCK_SYS"
+	(label "P5V0_BUCK_SYS"
 		(at 181.61 228.6 180)
 		(effects
 			(font
@@ -4740,7 +4740,7 @@
 		)
 		(uuid "77c81471-7156-4169-9659-27977762d40e")
 	)
-	(label "LDO_3V3"
+	(label "USB_C_LDO_3V3"
 		(at 96.52 116.84 0)
 		(effects
 			(font
@@ -4750,7 +4750,7 @@
 		)
 		(uuid "7d275b53-bd89-4d96-b721-cbb58929c4d1")
 	)
-	(label "BUCK_BOOST_PACK+"
+	(label "AFE_PACK+"
 		(at 257.81 128.27 180)
 		(effects
 			(font
@@ -4780,7 +4780,7 @@
 		)
 		(uuid "90b98415-f9f3-4875-96a0-f6285e637ed1")
 	)
-	(label "BUCK_BOOST_PACK+"
+	(label "AFE_PACK+"
 		(at 114.3 214.63 0)
 		(effects
 			(font
@@ -4890,7 +4890,7 @@
 		)
 		(uuid "fbe57ecd-2345-4546-9811-52cda6469305")
 	)
-	(hierarchical_label "BUCK_BOOST_PACK+"
+	(hierarchical_label "AFE_PACK+"
 		(shape input)
 		(at 111.76 214.63 180)
 		(effects
@@ -4912,7 +4912,7 @@
 		)
 		(uuid "a3ff3764-ce4d-449e-94cb-f45d91328811")
 	)
-	(hierarchical_label "5V_BUCK_SYS"
+	(hierarchical_label "P5V0_BUCK_SYS"
 		(shape output)
 		(at 181.61 228.6 0)
 		(effects

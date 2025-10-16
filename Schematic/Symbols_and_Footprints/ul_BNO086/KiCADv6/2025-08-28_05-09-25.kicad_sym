@@ -480,7 +480,7 @@
 			(pin unspecified line
 				(at 71.12 -20.32 180)
 				(length 7.62)
-				(name "H_SDA/H_MISO/TX"
+				(name "H_SDA/H_CIPO/TX"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -534,7 +534,7 @@
 			(pin unspecified line
 				(at 71.12 -27.94 180)
 				(length 7.62)
-				(name "SA0/H_MOSI"
+				(name "SA0/H_COPI"
 					(effects
 						(font
 							(size 1.27 1.27)

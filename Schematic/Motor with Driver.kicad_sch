@@ -357,7 +357,7 @@
 				(pin input line
 					(at 50.8 -2.54 180)
 					(length 7.62)
-					(name "SDI"
+					(name "CIPO"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -375,7 +375,7 @@
 				(pin output line
 					(at 50.8 -5.08 180)
 					(length 7.62)
-					(name "SDO"
+					(name "COPI"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1406,7 +1406,7 @@
 		)
 		(uuid "91e0a990-383c-4873-adce-a7ae15abe76f")
 	)
-	(text "For the SPI (P) variant, you can set the SCLK frequency up to 10 MHz.\n\nFor the SPI (S) variant, the maximum is 10 MHz, but you should reduce it to 8 MHz if you have a 20 pF load on the SDO line."
+	(text "For the SPI (P) variant, you can set the SCLK frequency up to 10 MHz.\n\nFor the SPI (S) variant, the maximum is 10 MHz, but you should reduce it to 8 MHz if you have a 20 pF load on the COPI line."
 		(exclude_from_sim no)
 		(at 147.066 54.356 0)
 		(effects
@@ -2208,7 +2208,7 @@
 		)
 		(uuid "fdc3ffe6-5161-4b17-b035-03204a559fbc")
 	)
-	(label "SPI_SDI"
+	(label "SPI_CIPO"
 		(at 185.42 78.74 180)
 		(effects
 			(font
@@ -2308,7 +2308,7 @@
 		)
 		(uuid "b41b18f3-539f-42d1-993a-83510d44a526")
 	)
-	(label "SPI_SDO"
+	(label "SPI_COPI"
 		(at 185.42 81.28 180)
 		(effects
 			(font
@@ -2414,7 +2414,7 @@
 		)
 		(uuid "56b7ca01-ad67-4679-98c9-efe8100a7e48")
 	)
-	(hierarchical_label "SPI_SDO"
+	(hierarchical_label "SPI_COPI"
 		(shape input)
 		(at 191.77 81.28 0)
 		(effects
@@ -2425,7 +2425,7 @@
 		)
 		(uuid "5886a5f2-221b-4913-84c3-60de454dfe6f")
 	)
-	(hierarchical_label "SPI_SDI"
+	(hierarchical_label "SPI_CIPO"
 		(shape input)
 		(at 191.77 78.74 0)
 		(effects
