@@ -44,6 +44,23 @@ else
     exit 1
 fi
 
+# Check for pip cache configuration (RECOMMENDED)
+PIP_CACHE_CONFIG="$SCRIPT_DIR/.pip-cache-config"
+if [ -f "$PIP_CACHE_CONFIG" ]; then
+    source "$PIP_CACHE_CONFIG"
+    if [ -d "$PIP_CACHE_DIR" ]; then
+        CACHE_SIZE=$(du -sh "$PIP_CACHE_DIR" 2>/dev/null | cut -f1 || echo "0B")
+        echo "  Pip Cache:   ENABLED ($CACHE_SIZE)"
+        export PIP_CACHE_DIR
+    else
+        echo "  Pip Cache:   NOT FOUND (configured but directory missing)"
+        echo -e "${YELLOW}             Run: ./setup-pip-cache.sh${NC}"
+    fi
+else
+    echo "  Pip Cache:   NOT CONFIGURED (optional but recommended)"
+    echo -e "${YELLOW}             Run: ./setup-pip-cache.sh${NC}"
+fi
+
 echo ""
 
 # Check if PYNQ directory exists

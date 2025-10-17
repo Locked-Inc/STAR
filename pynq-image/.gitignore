@@ -79,6 +79,9 @@ ccache/
 downloads/
 tmp/
 
+# Build cache configuration (user-specific)
+.pip-cache-config
+
 # Log files
 *.log
 build.log
