@@ -25,6 +25,25 @@ echo -e "${YELLOW}Configuration:${NC}"
 echo "  Script Dir:  $SCRIPT_DIR"
 echo "  Board Dir:   $BOARD_DIR"
 echo "  Build Dir:   $BUILD_DIR"
+
+# Check for apt-cacher-ng (REQUIRED)
+if systemctl is-active --quiet apt-cacher-ng 2>/dev/null; then
+    echo "  Apt Cache:   ENABLED (http://127.0.0.1:3142)"
+    export http_proxy="http://127.0.0.1:3142"
+    export https_proxy="http://127.0.0.1:3142"
+else
+    echo ""
+    echo -e "${RED}ERROR: apt-cacher-ng is not running!${NC}"
+    echo ""
+    echo "The build requires apt-cacher-ng to be set up and running."
+    echo "This caches packages locally for much faster repeated builds."
+    echo ""
+    echo -e "${YELLOW}To set up apt-cacher-ng, run:${NC}"
+    echo "  ./setup-apt-cache.sh"
+    echo ""
+    exit 1
+fi
+
 echo ""
 
 # Check if PYNQ directory exists
@@ -65,7 +84,6 @@ cd "$BUILD_DIR"
 # Show what will be built
 echo -e "${YELLOW}Build Configuration:${NC}"
 echo "  Board:       STAR-Z2"
-echo "  Changes:     Java 17, No Jupyter, No gcc-mb, No sigrok"
 echo "  Output:      $BUILD_DIR/output/STAR-Z2-3.0.1.img"
 echo ""
 
