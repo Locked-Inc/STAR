@@ -136,10 +136,5 @@ else
     echo -e "${YELLOW}Check build log for errors:${NC}"
     echo "  cat $BUILD_DIR/build/build.log | grep -i error"
     echo ""
-    echo -e "${YELLOW}Common issues:${NC}"
-    echo "  1. Disk space: df -h"
-    echo "  2. Clean and retry: make clean && ./build.sh"
-    echo "  3. Check internet connection for package downloads"
-    echo ""
     exit 1
 fi
