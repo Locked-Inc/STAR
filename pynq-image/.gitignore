@@ -81,6 +81,7 @@ tmp/
 
 # Build cache configuration (user-specific)
 .pip-cache-config
+.git-cache-config
 
 # Log files
 *.log
