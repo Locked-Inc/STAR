@@ -61,6 +61,24 @@ else
     echo -e "${YELLOW}             Run: ./setup-pip-cache.sh${NC}"
 fi
 
+# Check for git cache configuration (RECOMMENDED)
+GIT_CACHE_CONFIG="$SCRIPT_DIR/.git-cache-config"
+if [ -f "$GIT_CACHE_CONFIG" ]; then
+    source "$GIT_CACHE_CONFIG"
+    if [ -d "$GIT_CACHE_DIR" ]; then
+        CACHE_SIZE=$(du -sh "$GIT_CACHE_DIR" 2>/dev/null | cut -f1 || echo "0B")
+        REPO_COUNT=$(find "$GIT_CACHE_DIR" -name "config" -path "*/refs/*" -prune -o -type f -name "config" -print 2>/dev/null | wc -l)
+        echo "  Git Cache:   ENABLED ($CACHE_SIZE, $REPO_COUNT repos)"
+        export GIT_CACHE_DIR
+    else
+        echo "  Git Cache:   NOT FOUND (configured but directory missing)"
+        echo -e "${YELLOW}             Run: ./setup-git-cache.sh${NC}"
+    fi
+else
+    echo "  Git Cache:   NOT CONFIGURED (optional but recommended)"
+    echo -e "${YELLOW}             Run: ./setup-git-cache.sh${NC}"
+fi
+
 echo ""
 
 # Check if PYNQ directory exists
