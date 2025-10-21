@@ -4,7 +4,7 @@ STAR (Simultaneous Tracking And Robotics) is a LiDAR SLAM robot with remote cont
 
 ## Hardware
 
-- **Main Board**: PYNQ-Z2 (Xilinx Zynq-7020 SoC) 
+- **Main Board**: Raspberry Pi 5
 - **LiDAR**: For mapping and navigation
 - **Cameras**: Stereo vision for depth perception
 - **Controller**: Handheld remote (Retroid Pocket 2S)
@@ -14,9 +14,9 @@ STAR (Simultaneous Tracking And Robotics) is a LiDAR SLAM robot with remote cont
 ```
 Handheld Controller (Retroid Pocket 2S)
     ↓ [WiFi]
-Robot Gateway (Java/Spring Boot) 
+Robot Gateway (Java/Spring Boot)
     ↓ [Commands & Telemetry]
-PYNQ-Z2 Linux System
+Raspberry Pi 5 Linux System
     ↓ [SLAM & Computer Vision]
 LiDAR + Stereo Cameras
 ```
@@ -26,15 +26,16 @@ LiDAR + Stereo Cameras
 - **`android-app/`**: Controller app for Retroid Pocket 2S
 - **`robot-gateway/`**: Java gateway running on robot
 - **`server-backend/`**: Data collection server
-- **`yocto-build/`**: PYNQ-Z2 Linux image build system
+- **`esp32-firmware/`**: ESP32 WiFi bridge firmware (optional)
 - **`Schematic/`**: Hardware design files (KiCad)
+- **`docs/`**: Documentation and guides
 
 ## Features
 
 - **LiDAR SLAM**: Real-time mapping and localization
-- **Computer Vision**: Object detection with stereo cameras  
+- **Computer Vision**: Object detection with stereo cameras
 - **Remote Control**: Handheld wireless controller
-- **Custom Linux**: Optimized embedded system for PYNQ-Z2
+- **Raspberry Pi OS**: Standard Raspberry Pi OS on Raspberry Pi 5
 
 ## Development Environment
 
@@ -47,11 +48,11 @@ This project was developed and tested on:
 
 ## Quick Start
 
-### Build Robot Linux Image
+### Setup Raspberry Pi 5
 ```bash
-cd yocto-build
-# See BUILD_INSTRUCTIONS.md for complete steps
-./flash-pynq-z2-macos.sh /dev/diskX
+# Flash Raspberry Pi OS to SD card using Raspberry Pi Imager
+# See raspberry-pi-5-setup-guide.md for complete steps
+# Boot Raspberry Pi 5 and install required software
 ```
 
 ### Controller Setup
@@ -62,7 +63,7 @@ cd android-app
 ```
 
 ### Robot Operation
-1. Flash SD card and boot PYNQ-Z2
+1. Boot Raspberry Pi 5 with configured SD card
 2. Connect LiDAR and cameras
 3. Start robot gateway software
 4. Use handheld controller for manual operation

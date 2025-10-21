@@ -2,7 +2,7 @@
 
 ## Overview
 
-The UART transport layer provides reliable serial communication between the ESP32 and PYNQ-Z2 board. This document covers the physical layer configuration, protocol implementation, buffer management, error handling, and best practices for robust communication.
+The UART transport layer provides reliable serial communication between the ESP32 and Raspberry Pi 5 board. This document covers the physical layer configuration, protocol implementation, buffer management, error handling, and best practices for robust communication.
 
 ### Key Features
 
@@ -31,20 +31,20 @@ The UART transport layer provides reliable serial communication between the ESP3
 
 #### ESP32-WROOM-32 (4MB Flash)
 ```c
-TX Pin: GPIO 17  // Transmit to PYNQ
-RX Pin: GPIO 16  // Receive from PYNQ
+TX Pin: GPIO 17  // Transmit to Raspberry Pi
+RX Pin: GPIO 16  // Receive from Raspberry Pi
 ```
 
 #### ESP32-S3-WROOM-1-N16 (16MB Flash)
 ```c
-TX Pin: GPIO 43  // Transmit to PYNQ (TXD0)
-RX Pin: GPIO 44  // Receive from PYNQ (RXD0)
+TX Pin: GPIO 43  // Transmit to Raspberry Pi (TXD0)
+RX Pin: GPIO 44  // Receive from Raspberry Pi (RXD0)
 ```
 
 ### Wiring Diagram
 
 ```
-ESP32              PYNQ-Z2
+ESP32              Raspberry Pi 5
 -----              -------
 GPIO 17 (TX) ----> RX
 GPIO 16 (RX) <---- TX
@@ -62,8 +62,8 @@ GND          ----- GND
 Default buffer sizes (configurable in code):
 
 ```c
-RX Buffer: 2048 bytes  // Receiving from PYNQ
-TX Buffer: 2048 bytes  // Transmitting to PYNQ
+RX Buffer: 2048 bytes  // Receiving from Raspberry Pi
+TX Buffer: 2048 bytes  // Transmitting to Raspberry Pi
 ```
 
 ---
@@ -312,7 +312,7 @@ esp_err_t ret = star_bus_uart_flush(manager, "uart_bus");
 Since hardware flow control (RTS/CTS) is not used, the protocol implements software flow control:
 
 1. **Receive Window**: Application should read from UART buffer faster than data arrives
-2. **Back Pressure**: If ESP32 buffer is filling up, stop sending requests from PYNQ
+2. **Back Pressure**: If ESP32 buffer is filling up, stop sending requests from Raspberry Pi
 3. **Buffer Monitoring**: Check available space before sending large payloads
 
 ```python
@@ -1287,11 +1287,11 @@ with serial.Serial('/dev/ttyUSB0', 115200, timeout=1) as ser:
 - **Implementation Files**:
   - `/components/star_bus/star_bus_uart.c`
   - `/components/star_bus/include/star_bus_uart.h`
-  - `/components/pynq_wifi_bridge/pynq_wifi_transport.c`
-  - `/components/pynq_wifi_bridge/include/pynq_wifi_transport.h`
+  - `/components/star_wifi_bridge/pynq_wifi_transport.c`
+  - `/components/star_wifi_bridge/include/pynq_wifi_transport.h`
 - **Example Scripts**:
   - `/debugging_scripts/test_uart.py`
-  - `/components/pynq_wifi_bridge/examples/uart_transport_example.c`
+  - `/components/star_wifi_bridge/examples/uart_transport_example.c`
 
 ---
 

@@ -1,6 +1,6 @@
-# PYNQ-Z2 Hardware Test Scripts
+# Raspberry Pi 5 Hardware Test Scripts
 
-This directory contains test scripts for verifying hardware interfaces on the PYNQ-Z2 board.
+This directory contains test scripts for verifying hardware interfaces on the Raspberry Pi 5 board.
 
 ## Quick Start
 
@@ -60,7 +60,7 @@ sudo python3 ~/test_arduino_shield.py
 | Script | Purpose | Notes |
 |--------|---------|-------|
 | `test_uart_simple.py` | Raw UART using stty | No external packages |
-| `test_uart_minimal.py` | Minimal UART test | Uses PYNQ library only |
+| `test_uart_minimal.py` | Minimal UART test | Uses Raspberry Pi library only |
 | `test_uart_hardware.py` | PS UART test | Requires pyserial |
 | `test_uart_gpio.py` | Software UART (bit-bang) | Slow, ~9600 baud max |
 

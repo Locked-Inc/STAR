@@ -17,7 +17,7 @@ The core module that handles firmware update operations:
 - **Optional auto-update** that checks periodically (configurable interval)
 
 ### 2. Protocol Commands (`pynq_wifi_protocol.h`)
-Three commands allow PYNQ to control OTA remotely:
+Three commands allow Raspberry Pi to control OTA remotely:
 
 - **`k_cmd_ota_check_update` (0x28)** - Check if update available
 - **`k_cmd_ota_start_update` (0x29)** - Start downloading firmware from URL
@@ -41,7 +41,7 @@ These process the commands from PYNQ:
 +----------------------------------------------+
 
 Step 1: ESP32 boots from ota_0 (running v0.1.0)
-Step 2: PYNQ sends CMD_OTA_START_UPDATE with URL and SHA256
+Step 2: Raspberry Pi sends CMD_OTA_START_UPDATE with URL and SHA256
 Step 3: ESP32 downloads v0.2.0 to ota_1 (while still running from ota_0!)
 Step 4: Download completes -> Read back from flash and verify SHA256
 Step 5: If hash matches -> Mark ota_1 as bootable
@@ -56,7 +56,7 @@ Step 8: Next update goes back to ota_0 (alternating)
 PYNQ controls when updates happen by sending OTA commands.
 
 ```python
-# From PYNQ Python:
+# From Raspberry Pi Python:
 # 1. Start update with hash verification
 esp32.send_ota_command(
     url="https://robot-backend.com/firmware/esp32-v0.2.0.bin",
@@ -78,7 +78,7 @@ while True:
 ### Mode 2: Automatic - Optional
 Set `CONFIG_PYNQ_OTA_AUTO_UPDATE=y` in menuconfig and the ESP32 will:
 - Check for updates every hour automatically (configurable)
-- Download and install without PYNQ intervention
+- Download and install without Raspberry Pi intervention
 - Auto-reboot to new firmware
 
 ## Safety Features
@@ -118,15 +118,15 @@ The implementation is **complete and functional** with:
 ## Files
 
 ### Created:
-- `components/pynq_wifi_bridge/include/pynq_ota_manager.h` - OTA manager API
-- `components/pynq_wifi_bridge/pynq_ota_manager.c` - OTA manager implementation (600+ lines)
-- `components/pynq_wifi_bridge/test/test_ota_manager.c` - 35 comprehensive tests
-- `components/pynq_wifi_bridge/test/test_ota_handler.c` - 25 protocol tests
+- `components/star_wifi_bridge/include/pynq_ota_manager.h` - OTA manager API
+- `components/star_wifi_bridge/pynq_ota_manager.c` - OTA manager implementation (600+ lines)
+- `components/star_wifi_bridge/test/test_ota_manager.c` - 35 comprehensive tests
+- `components/star_wifi_bridge/test/test_ota_handler.c` - 25 protocol tests
 
 ### Modified:
-- `components/pynq_wifi_bridge/include/pynq_wifi_protocol.h` - Added OTA commands
-- `components/pynq_wifi_bridge/pynq_wifi_handler.c` - Added OTA command handlers
-- `components/pynq_wifi_bridge/CMakeLists.txt` - Added OTA files and dependencies
+- `components/star_wifi_bridge/include/pynq_wifi_protocol.h` - Added OTA commands
+- `components/star_wifi_bridge/pynq_wifi_handler.c` - Added OTA command handlers
+- `components/star_wifi_bridge/CMakeLists.txt` - Added OTA files and dependencies
 - `main/main.c` - Initialize OTA manager on startup
 - `main/Kconfig.projbuild` - Added OTA configuration menu
 

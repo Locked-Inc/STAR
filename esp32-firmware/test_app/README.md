@@ -28,7 +28,7 @@ Current test coverage (100 tests total):
 |-----------|-------|-------------|
 | `star_error_handler` | 30 | Error tracking, retry logic, state management |
 | `star_pin_validator` | 35 | GPIO pin conflict detection and validation |
-| `pynq_wifi_bridge/protocol` | 35 | Protocol packet creation, parsing, and transport |
+| `star_wifi_bridge/protocol` | 35 | Protocol packet creation, parsing, and transport |
 
 ## Quick Start
 
@@ -235,7 +235,7 @@ idf_component_register(
          "test_your_component.c"
     INCLUDE_DIRS "."
     PRIV_REQUIRES star_test star_error_handler star_pin_validator
-                  pynq_wifi_bridge your_component esp_driver_gpio
+                  star_wifi_bridge your_component esp_driver_gpio
 )
 ```
 

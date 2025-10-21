@@ -1,4 +1,4 @@
-# esp32-firmware/components/pynq_wifi_bridge/test/CMakeLists.txt
+# esp32-firmware/components/star_wifi_bridge/test/CMakeLists.txt
 
 idf_component_register(SRCS "test_protocol.c"
                             # "test_transport.c"  # Disabled - requires hardware UART/SPI
@@ -12,7 +12,7 @@ idf_component_register(SRCS "test_protocol.c"
                             "test_system_handler.c"
                             "test_transport_mock.c"
                        INCLUDE_DIRS "."
-                       REQUIRES star_test pynq_wifi_bridge star_bus)
+                       REQUIRES star_test star_wifi_bridge star_bus)
 
 # Wrap transport_send for testing - allows test mocks to override real implementation
 target_link_options(${COMPONENT_LIB} INTERFACE "-Wl,--wrap=transport_send")

@@ -4,7 +4,7 @@ Minimal UART/GPIO test using only PYNQ library (already installed)
 No additional dependencies needed
 """
 
-from pynq import GPIO
+import RPi.GPIO as GPIO
 import time
 
 def test_gpio_simple():

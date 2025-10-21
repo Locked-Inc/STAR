@@ -1,4 +1,0 @@
-[submodule "pynq-image/PYNQ"]
-	path = pynq-image/PYNQ
-	url = https://github.com/Locked-Inc/PYNQ.git
-	branch = star-customizations

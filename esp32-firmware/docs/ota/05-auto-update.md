@@ -292,7 +292,7 @@ if (available && g_config.auto_update) {
 Enable auto-update in `idf.py menuconfig`:
 
 ```
-PYNQ WiFi Bridge Configuration
+STAR WiFi Bridge Configuration
   +-> OTA Update Configuration
       +-> OTA Update URL: https://robot-backend.com/api/esp32/firmware.bin
       +-> OTA Version Check URL: https://robot-backend.com/api/esp32/version
@@ -415,7 +415,7 @@ Time: 02:04 - Next auto-check
    - Return same hash in version API
 
 4. **Never skip hash verification in auto-update**
-   - Manual update via PYNQ can skip if needed
+   - Manual update via Raspberry Pi can skip if needed
    - Auto-update should ALWAYS verify
 
 ## Summary

@@ -1,6 +1,6 @@
 # PYNQ-ESP32 Communication Protocol Documentation
 
-Comprehensive documentation for the binary protocol used to communicate between PYNQ and ESP32 via UART.
+Comprehensive documentation for the binary protocol used to communicate between Raspberry Pi and ESP32 via UART.
 
 ## Quick Start
 
@@ -275,10 +275,10 @@ if __name__ == "__main__":
 ### ESP32 C Implementation
 
 Key files in the firmware:
-- **Protocol Definition**: `components/pynq_wifi_bridge/include/pynq_wifi_protocol.h`
-- **Command Handlers**: `components/pynq_wifi_bridge/pynq_wifi_handler.c`
-- **Protocol Functions**: `components/pynq_wifi_bridge/pynq_wifi_protocol.c`
-- **UART Transport**: `components/pynq_wifi_bridge/pynq_wifi_transport.c`
+- **Protocol Definition**: `components/star_wifi_bridge/include/pynq_wifi_protocol.h`
+- **Command Handlers**: `components/star_wifi_bridge/pynq_wifi_handler.c`
+- **Protocol Functions**: `components/star_wifi_bridge/pynq_wifi_protocol.c`
+- **UART Transport**: `components/star_wifi_bridge/pynq_wifi_transport.c`
 
 ### Adding New Commands
 
@@ -286,7 +286,7 @@ Key files in the firmware:
 2. **Define payload structure** (if needed)
 3. **Implement handler** in `pynq_wifi_handler.c`
 4. **Add to switch statement** in `command_handler_process()`
-5. **Write tests** in `components/pynq_wifi_bridge/test/`
+5. **Write tests** in `components/star_wifi_bridge/test/`
 6. **Document command** in this documentation
 
 Example:
@@ -444,8 +444,8 @@ Typical command latencies:
 ### Firmware Source Code
 
 - **GitHub**: `/home/bsikar/Documents/git/STAR/esp32-firmware/`
-- **Components**: `components/pynq_wifi_bridge/`
-- **Tests**: `components/pynq_wifi_bridge/test/`
+- **Components**: `components/star_wifi_bridge/`
+- **Tests**: `components/star_wifi_bridge/test/`
 
 ### Getting Help
 

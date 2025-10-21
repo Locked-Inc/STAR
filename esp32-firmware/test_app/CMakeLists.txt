@@ -9,7 +9,7 @@ cmake_minimum_required(VERSION 3.16)
 set(EXTRA_COMPONENT_DIRS "../components")
 
 # Enable testing
-set(TEST_COMPONENTS "star_error_handler star_pin_validator star_bus pynq_wifi_bridge" CACHE STRING "Components to test")
+set(TEST_COMPONENTS "star_error_handler star_pin_validator star_bus star_wifi_bridge" CACHE STRING "Components to test")
 
 include($ENV{IDF_PATH}/tools/cmake/project.cmake)
 

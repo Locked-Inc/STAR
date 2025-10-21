@@ -12,7 +12,7 @@ System commands provide basic ESP32 functionality including connectivity testing
 
 ## CMD_PING (0x01)
 
-Test connectivity between PYNQ and ESP32. The ESP32 echoes back any payload data sent with the command.
+Test connectivity between Raspberry Pi and ESP32. The ESP32 echoes back any payload data sent with the command.
 
 ### Request Packet
 

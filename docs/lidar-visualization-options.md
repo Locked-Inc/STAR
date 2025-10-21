@@ -8,18 +8,18 @@ You want to reconstruct and display a rendering of the lidar-scanned environment
 
 ### Option 1: **Offboard Visualization** (RECOMMENDED)
 
-**Run visualization on your development laptop, not the Zynq board**
+**Run visualization on your development laptop, not the Raspberry Pi**
 
 #### Why This Approach:
 - ✅ **Computationally feasible**: Lidar point cloud rendering is GPU-intensive
 - ✅ **Better tools**: RViz, CloudCompare, PCL viewer
-- ✅ **Zynq focuses on real-time tasks**: Data acquisition, SLAM, control
+- ✅ **Raspberry Pi focuses on real-time tasks**: Data acquisition, SLAM, control
 - ✅ **Standard robotics practice**: Separate robot and visualization
 
 #### How It Works:
 ```
 ┌─────────────┐          ┌──────────────┐
-│ Zynq Board  │          │ Your Laptop  │
+│ Raspberry Pi  │          │ Your Laptop  │
 │             │          │              │
 │ Lidar ──►   │          │              │
 │ ROS Node    │──WiFi──►│   RViz       │
@@ -34,7 +34,7 @@ You want to reconstruct and display a rendering of the lidar-scanned environment
 
 #### Implementation:
 
-**On Zynq Board:**
+**On Raspberry Pi:**
 ```bash
 # Launch lidar driver
 ros2 run urg_node urg_node_driver
@@ -75,64 +75,62 @@ ros2 topic echo /scan  # Should see lidar data
 
 ---
 
-### Option 2: **Onboard Visualization with FPGA Acceleration**
+### Option 2: **Onboard Visualization with GPU Acceleration**
 
-**Use FPGA fabric for rendering pipeline**
+**Use Raspberry Pi 5's VideoCore VII GPU for rendering**
 
 #### Concept:
-Implement custom point cloud rendering in FPGA:
-1. Zynq ARM receives lidar data
-2. Transfers point cloud to FPGA via AXI
-3. FPGA does parallel point projection
-4. FPGA generates pixels
-5. FPGA drives HDMI directly
+Use the Raspberry Pi 5's built-in GPU for point cloud rendering:
+1. Raspberry Pi CPU receives lidar data
+2. Transfers point cloud to GPU
+3. GPU does parallel point projection
+4. GPU generates pixels
+5. Direct HDMI output to monitor
 
 #### Advantages:
 - ✅ Standalone (no laptop needed)
-- ✅ FPGA good at parallel pixel operations
-- ✅ Direct HDMI output
+- ✅ GPU good at parallel pixel operations
+- ✅ Direct HDMI output (dual 4K capable)
 
 #### Disadvantages:
-- ❌ **Complex HDL development** (weeks/months of work)
-- ❌ Essentially building a custom GPU in FPGA
-- ❌ Limited by FPGA resources
+- ❌ **Limited GPU power** compared to desktop GPUs
+- ❌ Competes with other system resources
 - ❌ Requires:
-  - Custom Verilog/VHDL rendering pipeline
-  - 3D transformation logic
-  - Framebuffer management
-  - HDMI IP cores
-  - Significant FPGA expertise
+  - OpenGL ES or Vulkan programming
+  - 3D graphics expertise
+  - Custom rendering software
+  - Significant development time
 
 #### Realistic Assessment:
-This is a **major project** suitable for:
-- Research/academic projects
-- When you need standalone operation
-- When you have FPGA expertise
-- Not recommended for initial development
+This is a **moderate complexity project** suitable for:
+- Standalone operation requirements
+- When you have graphics programming experience
+- Educational/demonstration purposes
+- Not recommended for initial development (use Option 1)
 
 ---
 
-### Option 3: **Onboard Software Rendering**
+### Option 3: **Onboard Software Rendering (CPU Only)**
 
-**Configure Linux framebuffer + lightweight viewer**
+**Use CPU-only rendering without GPU acceleration**
 
 #### Setup:
-1. Configure HDMI in PetaLinux BSP
-2. Enable framebuffer in kernel
-3. Run software 3D renderer
+1. Install lightweight viewer (e.g., matplotlib, simple OpenCV)
+2. Run software 3D renderer on CPU
+3. Display on HDMI monitor
 
 #### Reality Check:
-**Performance will be VERY poor:**
-- ARM Cortex-A9 has **no GPU**
-- Software rendering of 3D points: ~1-5 FPS
+**Performance will be limited:**
+- CPU rendering without GPU: ~5-15 FPS max
 - Limited to simple visualizations
-- Still requires BSP customization for HDMI
+- High CPU usage affects other tasks
+- Competes with SLAM and control loops
 
 #### When to Consider:
-- Very low point cloud density
+- Very low point cloud density (<1000 points)
 - Static scenes (not real-time)
-- Simple 2D projections
-- Educational purposes
+- Simple 2D projections or top-down views
+- Testing/debugging purposes only
 
 ---
 
@@ -144,7 +142,7 @@ Most professional robotics systems use this architecture:
 
 ```
 ┌────────────────────────────────────────────┐
-│           Robot (Zynq Board)               │
+│           Robot (Raspberry Pi)               │
 │                                            │
 │  ┌──────────┐    ┌─────────────┐          │
 │  │  Lidar   │───►│ ROS Driver  │          │
