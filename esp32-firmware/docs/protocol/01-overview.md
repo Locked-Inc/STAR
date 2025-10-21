@@ -2,7 +2,7 @@
 
 ## Introduction
 
-The PYNQ-ESP32 communication protocol is a binary protocol designed for efficient command and data exchange between the PYNQ board and ESP32 via UART. The protocol supports system commands, WiFi management, network operations, and OTA firmware updates.
+The PYNQ-ESP32 communication protocol is a binary protocol designed for efficient command and data exchange between the Raspberry Pi and ESP32 via UART. The protocol supports system commands, WiFi management, network operations, and OTA firmware updates.
 
 ## Protocol Characteristics
 

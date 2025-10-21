@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test hardware UART on PYNQ-Z2
+Test hardware UART on Raspberry Pi 5
 Uses PS UART1 on Arduino pins AR0 (TX) and AR1 (RX)
 
 Hardware connections:
@@ -122,7 +122,7 @@ def test_uart_send_only():
 
 if __name__ == "__main__":
     print("=" * 60)
-    print("PYNQ-Z2 Hardware UART Test (PS UART1)")
+    print("Raspberry Pi 5 Hardware UART Test (PS UART1)")
     print("=" * 60)
     print()
     print("Hardware Setup:")

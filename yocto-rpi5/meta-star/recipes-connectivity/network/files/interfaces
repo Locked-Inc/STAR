@@ -1,0 +1,18 @@
+# Network interfaces configuration for STAR robot
+
+# Loopback interface
+auto lo
+iface lo inet loopback
+
+# Ethernet interface - Static IP
+auto eth0
+iface eth0 inet static
+    address 192.168.2.100
+    netmask 255.255.255.0
+    gateway 192.168.2.1
+
+# WiFi interface - manual configuration
+# Uncomment and configure after first boot
+#auto wlan0
+#iface wlan0 inet dhcp
+#    wpa-conf /etc/wpa_supplicant/wpa_supplicant-wlan0.conf

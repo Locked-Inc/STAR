@@ -63,7 +63,7 @@ Free: ~3.9 MB (reserved for future)
 ### Update Process
 
 1. **Device boots** from `ota_0` partition (your current firmware)
-2. **Update triggered** (self-update or PYNQ-initiated)
+2. **Update triggered** (self-update or Raspberry Pi-initiated)
 3. **Download firmware** to `ota_1` partition **while still running**
 4. **Verify** downloaded firmware integrity
 5. **Mark `ota_1`** as bootable in `otadata` partition
@@ -89,7 +89,7 @@ idf.py set-target esp32
 
 # Configure board type
 idf.py menuconfig
-# Navigate to: PYNQ WiFi Bridge Configuration -> Board Type
+# Navigate to: STAR WiFi Bridge Configuration -> Board Type
 # Select: ESP32-WROOM-32 (4MB flash)
 
 # Build
@@ -109,7 +109,7 @@ idf.py set-target esp32s3
 
 # Configure board type
 idf.py menuconfig
-# Navigate to: PYNQ WiFi Bridge Configuration -> Board Type
+# Navigate to: STAR WiFi Bridge Configuration -> Board Type
 # Select: ESP32-S3-WROOM-1-N16 (16MB flash)
 
 # Build
@@ -179,7 +179,7 @@ idf.py flash
 | Partition tables | [x] Complete | Both 4MB and 16MB layouts |
 | OTA infrastructure | [PENDING] Pending | Need to add `esp_https_ota` component |
 | Self-update code | [PENDING] Pending | Periodic version checking |
-| PYNQ-initiated OTA | [PENDING] Pending | Add CMD_OTA_UPDATE to protocol |
+| Raspberry Pi-initiated OTA | [PENDING] Pending | Add CMD_OTA_UPDATE to protocol |
 | Version tracking | [PENDING] Pending | Server API for version management |
 
 ## Space Budget
@@ -217,7 +217,7 @@ The 16MB production board includes an 8 MB SPIFFS partition for:
 
 - [STATS] **Logs**: Persistent logging for debugging
 - [CONFIG] **Configuration**: JSON config files
-- [MAP] **Maps**: SLAM map data from PYNQ
+- [MAP] **Maps**: SLAM map data from Raspberry Pi
 - [IMAGE] **Images**: Cached camera frames
 - [TELEMETRY] **Telemetry**: Sensor data buffering
 

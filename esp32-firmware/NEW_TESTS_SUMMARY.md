@@ -7,7 +7,7 @@ Successfully implemented comprehensive C test suites for all ESP32 firmware prot
 ## Test Files Created
 
 ### 1. `test_http_handler.c` - HTTP Command Tests
-**Location:** `components/pynq_wifi_bridge/test/test_http_handler.c`
+**Location:** `components/star_wifi_bridge/test/test_http_handler.c`
 **Test Count:** 35 tests
 
 #### HTTP GET Tests (15 tests):
@@ -54,7 +54,7 @@ Successfully implemented comprehensive C test suites for all ESP32 firmware prot
 ---
 
 ### 2. `test_tcp_handler.c` - TCP Command Tests
-**Location:** `components/pynq_wifi_bridge/test/test_tcp_handler.c`
+**Location:** `components/star_wifi_bridge/test/test_tcp_handler.c`
 **Test Count:** 40 tests
 
 #### TCP Connect Tests (12 tests):
@@ -108,7 +108,7 @@ Successfully implemented comprehensive C test suites for all ESP32 firmware prot
 ---
 
 ### 3. `test_wifi_handler.c` - WiFi Command Tests
-**Location:** `components/pynq_wifi_bridge/test/test_wifi_handler.c`
+**Location:** `components/star_wifi_bridge/test/test_wifi_handler.c`
 **Test Count:** 50 tests
 
 #### WiFi Connect Tests (15 tests):
@@ -169,7 +169,7 @@ Successfully implemented comprehensive C test suites for all ESP32 firmware prot
 ---
 
 ### 4. `test_system_handler.c` - System Command Tests
-**Location:** `components/pynq_wifi_bridge/test/test_system_handler.c`
+**Location:** `components/star_wifi_bridge/test/test_system_handler.c`
 **Test Count:** 35 tests
 
 #### PING Tests (12 tests):
@@ -270,7 +270,7 @@ All error codes comprehensively tested:
 ## Integration
 
 ### Build System Integration
-**File Modified:** `components/pynq_wifi_bridge/test/CMakeLists.txt`
+**File Modified:** `components/star_wifi_bridge/test/CMakeLists.txt`
 
 Added new test files:
 ```cmake
@@ -284,7 +284,7 @@ idf_component_register(SRCS "test_protocol.c"
                             "test_wifi_handler.c"         # NEW
                             "test_system_handler.c"       # NEW
                        INCLUDE_DIRS "."
-                       REQUIRES star_test pynq_wifi_bridge star_bus)
+                       REQUIRES star_test star_wifi_bridge star_bus)
 ```
 
 ### Test Application Integration
@@ -457,7 +457,7 @@ idf.py build
 idf.py flash monitor
 
 # Run specific component tests (if needed)
-cd ../components/pynq_wifi_bridge
+cd ../components/star_wifi_bridge
 idf.py build test
 ```
 
@@ -519,7 +519,7 @@ Success rate: 100%
 ## Test Organization
 
 ```
-components/pynq_wifi_bridge/test/
+components/star_wifi_bridge/test/
 +-- CMakeLists.txt                    (updated)
 +-- test_protocol.c                   (existing - 35 tests)
 +-- test_transport.c                  (existing)

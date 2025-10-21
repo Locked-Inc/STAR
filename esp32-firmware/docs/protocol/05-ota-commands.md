@@ -1,6 +1,6 @@
 # OTA Update Commands
 
-OTA (Over-The-Air) update commands provide firmware update capabilities for the ESP32. These commands allow the PYNQ board to check for updates, initiate firmware downloads, and monitor update progress.
+OTA (Over-The-Air) update commands provide firmware update capabilities for the ESP32. These commands allow the Raspberry Pi to check for updates, initiate firmware downloads, and monitor update progress.
 
 ## Command Summary
 

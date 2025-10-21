@@ -1,82 +1,63 @@
-# STAR Robot - Zynq Development Documentation
+# STAR Robot - Development Documentation
 
-This directory contains comprehensive guides for developing with the Zynq-7000 FPGA/ARM SoC for the STAR robotics project.
-
-## Documentation Index
-
-### 1. [Zynq Architecture: GPIO and I2C Guide](./zynq-architecture-gpio-i2c.md)
-**Understanding how FPGA and Linux work together**
-
-Covers:
-- How PS (ARM) and PL (FPGA) interact
-- Three methods to access GPIO pins
-- Two methods to access I2C
-- Pin assignment and device tree configuration
-- Complete workflow from Vivado to Linux drivers
-
-**Read this first if you're wondering:** "How do I control a GPIO pin or use I2C?"
+This directory contains comprehensive guides for developing the STAR robotics project with Raspberry Pi 5.
 
 ---
 
-### 2. [Data Persistence and Development Workflow](./data-persistence-guide.md)
-**What persists, what resets, and how to develop**
+## Current Platform Documentation
+
+### [RPi5 Current] [Raspberry Pi 5 Setup Guide](../raspberry-pi-5-setup-guide.md)
+**Complete setup guide for Raspberry Pi 5**
 
 Covers:
-- What's volatile vs persistent on Zynq
-- SD card as persistent storage
-- Developing directly on the board vs baking into image
-- Creating systemd services that persist
-- Daily development workflow
+- OS installation (Raspberry Pi OS)
+- Initial configuration
+- Network setup (WiFi/Ethernet)
+- Installing required packages
+- Hardware interface testing
+- Performance tuning
 
-**Read this first if you're wondering:** "Can I develop on the board and save changes, or do I need to rebuild the image every time?"
+**Read this first** for setting up the Raspberry Pi 5.
 
 ---
 
-### 3. [FPGA Programming Guide](./fpga-programming-guide.md)
-**Complete guide to FPGA bitstream workflow**
+### [RPi5 Current] [Hardware Specifications](./hardware-specifications.md)
+**Complete hardware specification for the STAR robot**
 
 Covers:
-- FPGA is volatile (SRAM-based), not flash
-- Where bitstreams are actually stored (SD card)
-- Boot sequence and when FPGA gets configured
-- Three methods to update your FPGA design
-- Complete example from SystemVerilog to running hardware
-
-**Read this first if you're wondering:** "How do I program the FPGA and does it persist?"
+- Raspberry Pi 5 specifications
+- SICK TiM561 Lidar
+- USB cameras
+- ESP32 WiFi bridge (optional)
+- Power requirements
+- Bill of materials
 
 ---
 
-### 4. [ROS on Zynq Integration Guide](./ros-on-zynq-guide.md)
-**Complete guide to using ROS with Zynq hardware**
+### [RPi5 Current] [Hardware Testing Guide](./hardware-testing-guide.md)
+**Step-by-step hardware verification procedures**
 
 Covers:
-- ROS architecture basics
-- How ROS nodes access hardware (GPIO, I2C, FPGA)
-- Complete C++ and Python examples
-- Lidar integration with ROS
-- Package structure and build system
-- Launch files and systemd services
-
-**Read this first if you're wondering:** "How does ROS work with the hardware?"
+- USB webcam testing
+- UART communication
+- GPIO testing
+- I2C bus verification
+- Network connectivity
 
 ---
 
-### 5. [PYNQ Image Customization Guide](./pynq-image-customization.md)
-**How to add/remove features from the base image**
+### [RPi5 Current] [ESP32 WiFi Setup](../esp32-wifi-setup.md)
+**Optional ESP32 WiFi bridge setup**
 
 Covers:
-- Package system (STAGE1-4)
-- Current packages in STAR-Z2 image
-- How to remove Jupyter Notebook
-- How to add ROS support
-- Creating custom packages
-- Build time considerations
-
-**Read this first if you're wondering:** "What's installed in my image and how do I customize it?"
+- ESP32 to Raspberry Pi 5 connection
+- UART configuration
+- ESP-IDF setup
+- Communication protocol
 
 ---
 
-### 6. [SICK TiM561 ROS2 Setup Guide](./sick-tim561-ros2-setup.md)
+### [RPi5 Current] [SICK TiM561 ROS2 Setup Guide](./sick-tim561-ros2-setup.md)
 **Complete setup guide for integrating the SICK TiM561 lidar with ROS2**
 
 Covers:
@@ -86,117 +67,103 @@ Covers:
 - RViz2 visualization setup
 - SLAM examples (Hector SLAM, SLAM Toolbox, Cartographer)
 - Data recording and playback
-- Advanced features (multi-sensor, transforms, services)
 - Integration with STAR robot
 
-**Read this first if you're wondering:** "How do I get my SICK TiM561 lidar working with ROS2?"
-
-### 7. [Lidar Visualization Options](./lidar-visualization-options.md)
-**Three approaches to displaying lidar point cloud data**
-
-Covers:
-- Offboard visualization (laptop + RViz) - RECOMMENDED
-- FPGA-accelerated rendering (advanced)
-- Software rendering (not practical)
-- Complete ROS visualization setup
-- Why standard robotics uses base stations
-
-**Read this first if you're wondering:** "How do I visualize the lidar data?"
+**Read this for lidar setup** - most content is platform-agnostic.
 
 ---
 
-## Quick Reference
+### [RPi5 Current] [Voltage Levels and Safety](./voltage-levels-safety.md)
+**Critical safety information for GPIO connections**
 
-### Architecture Overview
+Covers:
+- Raspberry Pi 5 GPIO voltage levels (3.3V)
+- Safe connections to ESP32 and other peripherals
+- What NOT to connect to avoid damage
+
+---
+
+## Quick Reference (Raspberry Pi 5)
+
+### Platform Overview
 ```
-Zynq-7000 = PS (ARM + Linux) + PL (FPGA)
-                     ↕
-                 AXI Bus
+Raspberry Pi 5 = ARM Cortex-A76 Quad-Core @ 2.4GHz
+                 + 4GB/8GB RAM
+                 + Built-in WiFi/Bluetooth/Ethernet
+                 + 40-pin GPIO header
 ```
 
-### Storage Persistence
+### Storage and Persistence
 | What | Persists? |
 |------|-----------|
 | Files on SD card | ✅ YES |
-| FPGA configuration | ❌ NO (reloads from SD card on boot) |
-| systemd services | ✅ YES (stored on SD card) |
-| ROS packages | ✅ YES (if installed to SD card) |
+| Installed packages | ✅ YES |
+| systemd services | ✅ YES |
+| User data | ✅ YES |
 
 ### Development Workflow
 ```
-1. Edit code on board (SSH) or laptop
-2. Test immediately
-3. Changes persist on SD card
-4. Once stable, bake into image for clean deployment
-```
-
-### FPGA Workflow
-```
-Laptop: Vivado → Bitstream (.bit) + XSA
-        ↓
-Board:  Copy .bit → Load with PYNQ Overlay
-        OR
-        Bake into BOOT.BIN for boot-time loading
+1. SSH into Raspberry Pi 5
+2. Edit code directly or via git
+3. Test immediately
+4. Changes persist automatically
+5. Use systemd for auto-start services
 ```
 
 ### ROS Workflow
 ```
-Robot (Zynq): ROS nodes publish sensor data
-                    ↓ (WiFi/Ethernet)
+Robot (Raspberry Pi 5): ROS nodes publish sensor data
+                             ↓ (WiFi/Ethernet)
 Laptop: RViz subscribes and visualizes
 ```
 
-## Common Questions
+---
 
-**Q: Do I need to rebuild the image every time I change code?**
-A: No! Develop directly on the board via SSH. Changes persist on SD card.
+## Common Questions (Raspberry Pi 5)
 
-**Q: Does the FPGA lose its configuration on reboot?**
-A: Yes, but it automatically reloads from SD card (BOOT.BIN) on boot.
+**Q: Do I need to rebuild an image every time I change code?**
+A: No! Develop directly on the Raspberry Pi via SSH. Use standard Raspberry Pi OS.
 
-**Q: Can I use GPIO pins?**
-A: Yes! Three ways: PS GPIO (MIO), EMIO, or PL GPIO. See zynq-architecture-gpio-i2c.md
+**Q: How do I use GPIO pins?**
+A: Use standard Raspberry Pi GPIO libraries (gpiozero, RPi.GPIO, lgpio). See hardware-testing-guide.md
+
+**Q: Can I use the Zynq/FPGA features?**
+A: No - Raspberry Pi 5 does not have FPGA. We're using pure software approach which is sufficient for this project.
 
 **Q: Should I visualize lidar on the board or laptop?**
-A: Laptop (RViz). See lidar-visualization-options.md for why.
+A: Laptop (RViz). Use the Pi for data processing, laptop for visualization.
 
-**Q: How do I remove Jupyter and add ROS?**
-A: See pynq-image-customization.md for complete instructions.
+**Q: Do I need the ESP32?**
+A: No - Raspberry Pi 5 has built-in WiFi. ESP32 is optional for additional features.
 
-**Q: Where do I configure which peripherals (I2C, GPIO) are available?**
-A: In Vivado when creating the hardware design (XSA file). See zynq-architecture-gpio-i2c.md
+**Q: How do I install ROS 2?**
+A: See sick-tim561-ros2-setup.md - though full ROS 2 on Raspberry Pi OS requires some configuration.
 
-## Getting Started Checklist
+---
 
-- [ ] Read zynq-architecture-gpio-i2c.md to understand the hardware
-- [ ] Read data-persistence-guide.md to understand development workflow
-- [ ] Finish current build (running now)
-- [ ] Boot the board and SSH in
-- [ ] Test GPIO/I2C based on examples
-- [ ] Create Vivado project for your hardware needs
-- [ ] Decide if you want to customize image (remove Jupyter, add ROS)
-- [ ] Set up ROS on laptop for visualization
+## Getting Started Checklist (Raspberry Pi 5)
 
-## Build Status
+- [ ] Read raspberry-pi-5-setup-guide.md
+- [ ] Flash Raspberry Pi OS to SD card
+- [ ] Boot the Raspberry Pi 5 and configure network
+- [ ] SSH into the board
+- [ ] Test hardware interfaces (USB, GPIO, UART, I2C)
+- [ ] Install required software (OpenCV, Java, etc.)
+- [ ] Connect and test SICK TiM561 lidar
+- [ ] Set up ROS 2 if needed for SLAM
 
-Current build started: 2025-10-14
-Flags: `REBUILD_PYNQ_ROOTFS=1 REBUILD_PYNQ_SDIST=1`
+---
 
-First build is slowest (building cross-compiler, rootfs).
-Subsequent builds will be much faster.
+## Platform Information
 
-## Related Files
+**Current Platform**: Raspberry Pi 5 (Broadcom BCM2712, ARM Cortex-A76 quad-core)
+**OS**: Raspberry Pi OS (64-bit)
 
-- **Board spec**: `../board-config/STAR-Z2/STAR-Z2.spec`
-- **PYNQ packages**: `../pynq-image/PYNQ/sdbuild/packages/`
-- **ARM config**: `../pynq-image/PYNQ/sdbuild/ubuntu/jammy/arm/config`
+---
 
 ## Need Help?
 
-All documentation is self-contained in these markdown files. They include:
-- Conceptual explanations
-- Complete code examples
-- Step-by-step procedures
-- Common pitfalls and solutions
-
-Start with the guide that matches your immediate question, then explore related guides as needed.
+- For Raspberry Pi 5 setup: See `../raspberry-pi-5-setup-guide.md`
+- For hardware specs: See `./hardware-specifications.md`
+- For testing: See `./hardware-testing-guide.md`
+- For lidar: See `./sick-tim561-ros2-setup.md`

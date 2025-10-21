@@ -12,10 +12,10 @@ Since we don't have a second UART adapter, we'll test by:
 This confirms the pins work for future ESP32 connection.
 """
 
-from pynq import GPIO
+import RPi.GPIO as GPIO
 import time
 
-# 40-pin header GPIO mapping on PYNQ-Z2
+# 40-pin header GPIO mapping on Raspberry Pi 5
 # These map to MIO pins on the Zynq PS
 # Pin 8 (TXD/GPIO14) and Pin 10 (RXD/GPIO15)
 
@@ -116,7 +116,7 @@ def test_uart_pattern(pin_num):
 
 def main():
     print("\n" + "=" * 60)
-    print("PYNQ-Z2 40-Pin Header GPIO Test")
+    print("Raspberry Pi 5 40-Pin Header GPIO Test")
     print("=" * 60)
     print()
     print("This script tests GPIO pins that can be used for UART")
