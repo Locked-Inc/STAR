@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test PMOD A Connector on PYNQ-Z2
+Test PMOD A Connector on Raspberry Pi 5
 
 PMOD A has 8 pins (2 rows of 4):
   Pin 1-4 (top row)
@@ -22,7 +22,7 @@ import os
 import sys
 import time
 
-# PMOD A pin mappings on PYNQ-Z2
+# PMOD A pin mappings on Raspberry Pi 5
 # These map to specific FPGA pins that route to GPIO
 PMOD_A_PINS = {
     'PIN1': None,  # Actual GPIO numbers depend on bitstream

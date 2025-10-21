@@ -37,7 +37,7 @@ Covers:
 - Why this design is efficient
 
 ### [04-status-monitoring.md](04-status-monitoring.md)
-**Question:** How will the PYNQ know if the ESP has been updated or if the update failed? And if the update failed, how would the PYNQ know what type of failure it was?
+**Question:** How will the Raspberry Pi know if the ESP has been updated or if the update failed? And if the update failed, how would the Raspberry Pi know what type of failure it was?
 
 Covers:
 - Status request/response protocol
@@ -62,7 +62,7 @@ Covers:
 
 ## Quick Navigation
 
-### For PYNQ Developers
+### For Raspberry Pi Developers
 1. Start with [Making Requests](02-making-requests.md) to learn the protocol
 2. Read [Status Monitoring](04-status-monitoring.md) to track updates
 3. Reference [SHA256 Verification](03-sha256-verification.md) for security details
@@ -79,16 +79,16 @@ Covers:
 
 ## Related Files
 
-- **Implementation:** `components/pynq_wifi_bridge/pynq_ota_manager.c`
-- **API:** `components/pynq_wifi_bridge/include/pynq_ota_manager.h`
-- **Protocol:** `components/pynq_wifi_bridge/include/pynq_wifi_protocol.h`
-- **Tests:** `components/pynq_wifi_bridge/test/test_ota_*.c`
+- **Implementation:** `components/star_wifi_bridge/pynq_ota_manager.c`
+- **API:** `components/star_wifi_bridge/include/pynq_ota_manager.h`
+- **Protocol:** `components/star_wifi_bridge/include/pynq_wifi_protocol.h`
+- **Tests:** `components/star_wifi_bridge/test/test_ota_*.c`
 - **Configuration:** `main/Kconfig.projbuild`
 - **Main Docs:** `OTA_IMPLEMENTATION.md`, `OTA_IMPROVEMENTS.md`
 
 ## Common Use Cases
 
-### Update ESP32 from PYNQ with Hash Verification
+### Update ESP32 from Raspberry Pi with Hash Verification
 See: [02-making-requests.md - Example 2](02-making-requests.md#example-2-secure-update-with-sha256-verification)
 
 ### Roll Back to Previous Version

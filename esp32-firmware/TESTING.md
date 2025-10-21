@@ -383,7 +383,7 @@ jobs:
   - Shareable pins
   - Validation logic
 
-- **pynq_wifi_bridge/protocol**: 20+ unit tests
+- **star_wifi_bridge/protocol**: 20+ unit tests
   - Packet structure
   - Command codes
   - Payload encoding

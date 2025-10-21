@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test PMOD B Connector on PYNQ-Z2
+Test PMOD B Connector on Raspberry Pi 5
 
 PMOD B has same pinout as PMOD A:
   Pin 1-4 (top row)

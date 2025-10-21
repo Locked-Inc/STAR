@@ -1,0 +1,29 @@
+# Yocto build artifacts - DO NOT COMMIT
+
+# Main build directory
+build/
+
+# Downloaded sources (can be huge)
+downloads/
+
+# Shared state cache
+sstate-cache/
+
+# Cloned layers (users will clone these)
+poky/
+meta-openembedded/
+meta-raspberrypi/
+meta-ros/
+
+# Build temp files
+*.pyc
+*.swp
+*~
+
+# Editor files
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db

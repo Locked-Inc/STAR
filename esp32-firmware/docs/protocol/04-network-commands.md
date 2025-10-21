@@ -1,6 +1,6 @@
 # Network and HTTP Commands
 
-Network commands provide HTTP requests and TCP socket functionality for the ESP32. These commands enable the PYNQ board to perform web requests and establish TCP connections through the ESP32's WiFi interface.
+Network commands provide HTTP requests and TCP socket functionality for the ESP32. These commands enable the Raspberry Pi to perform web requests and establish TCP connections through the ESP32's WiFi interface.
 
 ## Implementation Status
 
@@ -62,7 +62,7 @@ Perform an HTTP GET request to retrieve data from a web server.
 
 ### Current Implementation Status
 
-The command handler exists in `/home/bsikar/Documents/git/STAR/esp32-firmware/components/pynq_wifi_bridge/pynq_wifi_handler.c` (lines 174-191) but only logs a warning and returns an error:
+The command handler exists in `/home/bsikar/Documents/git/STAR/esp32-firmware/components/star_wifi_bridge/pynq_wifi_handler.c` (lines 174-191) but only logs a warning and returns an error:
 
 ```c
 static void handle_cmd_http_get(protocol_packet_t* packet)
@@ -256,7 +256,7 @@ if __name__ == "__main__":
         print("="*60)
         print("The ESP32 firmware (v0.1.0) does not yet implement HTTP GET.")
         print("See firmware handler at:")
-        print("  components/pynq_wifi_bridge/pynq_wifi_handler.c:174-191")
+        print("  components/star_wifi_bridge/pynq_wifi_handler.c:174-191")
         print("\nTo implement HTTP GET, you need to:")
         print("  1. Add esp_http_client component to build")
         print("  2. Implement HTTP client logic in handler")
@@ -488,7 +488,7 @@ if __name__ == "__main__":
         print("="*60)
         print("The ESP32 firmware (v0.1.0) does not yet implement HTTP POST.")
         print("See firmware handler at:")
-        print("  components/pynq_wifi_bridge/pynq_wifi_handler.c:197-210")
+        print("  components/star_wifi_bridge/pynq_wifi_handler.c:197-210")
         print("="*60)
     elif response['success']:
         print(f"\n[OK] HTTP POST successful!")
@@ -699,7 +699,7 @@ The HTTP commands require the ESP-IDF HTTP client component. Here's what needs t
 Add the HTTP client component dependency:
 
 ```cmake
-# components/pynq_wifi_bridge/CMakeLists.txt
+# components/star_wifi_bridge/CMakeLists.txt
 idf_component_register(
     SRCS "pynq_wifi_handler.c" "pynq_wifi_manager.c" "pynq_wifi_protocol.c"
     INCLUDE_DIRS "include"

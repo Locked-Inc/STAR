@@ -10,7 +10,7 @@ Recommended pins on PMOD connectors:
 This is slower than hardware UART but works with any GPIO pins.
 """
 
-from pynq import GPIO
+import RPi.GPIO as GPIO
 import time
 
 # We'll discover available pins first
@@ -22,7 +22,7 @@ def find_available_gpios():
     # Check /sys/class/gpio for exported pins
     gpio_base = "/sys/class/gpio"
 
-    # Common GPIO numbers on PYNQ-Z2 (MIO and EMIO)
+    # Common GPIO numbers on Raspberry Pi 5 (MIO and EMIO)
     # MIO: 0-53 (PS pins, some used by peripherals)
     # EMIO: 54-117 (Extended MIO)
 
@@ -71,7 +71,7 @@ def software_uart_send(gpio_pin, data, baud_rate=9600):
 def test_software_uart():
     """Test software UART implementation"""
     print("=" * 60)
-    print("PYNQ-Z2 Software UART Test (GPIO Bit-Banging)")
+    print("Raspberry Pi 5 Software UART Test (GPIO Bit-Banging)")
     print("=" * 60)
     print()
 

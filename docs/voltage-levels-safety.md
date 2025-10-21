@@ -1,38 +1,38 @@
-# PYNQ-Z2 Voltage Levels and Safety Guide
+# Raspberry Pi 5 Voltage Levels and Safety Guide
 
 ## ⚠️ CRITICAL: ALL GPIO PINS ARE 3.3V ONLY!
 
-The Zynq-7000 SoC operates at **3.3V logic levels** for all I/O pins.
+The Raspberry Pi 5 operates at **3.3V logic levels** for all GPIO pins.
 
 **DO NOT connect 5V signals directly to any GPIO pin - this will damage the chip!**
 
 ---
 
-## Voltage Summary by Connector
+## Voltage Summary
 
-| Connector | GPIO Logic Level | 5V Available? | Notes |
+| Interface | GPIO Logic Level | 5V Available? | Notes |
 |-----------|-----------------|---------------|-------|
-| **40-Pin Header** | 3.3V | Yes (pins 2,4) | GPIO NOT 5V tolerant! |
-| **Arduino Shield** | 3.3V | No | NOT compatible with 5V Arduino shields! |
-| **PMOD A** | 3.3V | No | Standard PMOD spec is 3.3V |
-| **PMOD B** | 3.3V | No | Standard PMOD spec is 3.3V |
+| **40-Pin GPIO Header** | 3.3V | Yes (pins 2,4) | GPIO NOT 5V tolerant! |
+| **USB Ports** | USB standard | Yes | Isolated, safe |
+| **Ethernet** | Isolated | No | Safe connection |
 
 ---
 
-## 40-Pin Raspberry Pi Header (J2)
+## 40-Pin GPIO Header
 
 ### Power Pins:
-- **Pin 1, 17**: 3.3V output (~500mA max) ✅
-- **Pin 2, 4**: 5V output (from USB or barrel jack) ✅
+- **Pin 1, 17**: 3.3V output (~300mA max from GPIO header) ✅
+- **Pin 2, 4**: 5V output (from USB-C power supply) ✅
 - **Pins 6, 9, 14, 20, 25, 30, 34, 39**: GND
 
 ### GPIO Pins:
 - **ALL GPIO**: 3.3V logic ONLY! ⚠️
-- **NOT 5V tolerant** - will damage Zynq if 5V applied
+- **NOT 5V tolerant** - will damage Raspberry Pi if 5V applied
+- **Maximum current**: 16mA per pin recommended, 50mA absolute maximum
 
 ### Safe Connections:
 ✅ ESP32 (3.3V logic) - **SAFE**
-✅ Raspberry Pi peripherals (3.3V) - **SAFE**
+✅ Standard Raspberry Pi HATs (3.3V) - **SAFE**
 ✅ Most modern sensors (3.3V) - **SAFE**
 ✅ 3.3V UART adapters (FTDI, CP2102 set to 3.3V mode) - **SAFE**
 
@@ -40,21 +40,16 @@ The Zynq-7000 SoC operates at **3.3V logic levels** for all I/O pins.
 ❌ 5V Arduino signals - **WILL DAMAGE CHIP**
 ❌ 5V UART adapters without level shifter - **WILL DAMAGE CHIP**
 ❌ 5V I2C devices without level shifter - **WILL DAMAGE CHIP**
+❌ Old Arduino shields (5V) - **WILL DAMAGE CHIP**
 
 ---
-
-## Arduino Shield (J1)
-
-### Power:
-- **No 5V pin on this connector!**
-- **3.3V only** for all pins
 
 ### GPIO:
 - **ALL Arduino digital pins**: 3.3V logic
 - **NOT compatible with standard 5V Arduino shields!**
 
 ### Important:
-The PYNQ-Z2 Arduino connector uses **3.3V logic**, unlike standard Arduinos which use 5V.
+The Raspberry Pi 5 Arduino connector uses **3.3V logic**, unlike standard Arduinos which use 5V.
 
 **Arduino shields designed for 5V will NOT work safely!**
 
@@ -95,12 +90,12 @@ Pin 1-4 (top row):    Pin 5-8 (bottom row):
 
 ## ESP32 Connection (Your Use Case)
 
-ESP32 is **FULLY COMPATIBLE** with PYNQ-Z2! Both use 3.3V logic.
+ESP32 is **FULLY COMPATIBLE** with Raspberry Pi 5! Both use 3.3V logic.
 
 ### Recommended Connection: 40-Pin Header
 
 ```
-PYNQ-Z2 40-Pin    ESP32
+Raspberry Pi 5 40-Pin    ESP32
 ────────────────  ─────────
 Pin 8  (TXD)  ->  RX (GPIO3)
 Pin 10 (RXD)  <-  TX (GPIO1)
@@ -111,7 +106,7 @@ Pin 1  (3.3V) ->  3.3V (if powering ESP32)
 ### Alternative: Arduino Shield
 
 ```
-PYNQ-Z2 Arduino   ESP32
+Raspberry Pi 5 Arduino   ESP32
 ────────────────  ─────────
 AR0 (TX)      ->  RX
 AR1 (RX)      <-  TX
@@ -137,7 +132,7 @@ Most USB-UART adapters have a jumper or switch:
 
 ### Adapter Pinout:
 ```
-USB-UART Adapter    PYNQ-Z2
+USB-UART Adapter    Raspberry Pi 5
 ────────────────    ───────────
 RX  (input)     <-  TXD (output)
 TX  (output)    ->  RXD (input)
@@ -167,7 +162,7 @@ VCC (DO NOT CONNECT unless powering external device)
 - USB power to ESP32
 - Separate 3.3V regulator
 
-**Option 2**: From PYNQ (only for testing)
+**Option 2**: From Raspberry Pi (only for testing)
 - Use 40-pin Pin 1 (3.3V)
 - **Only** if ESP32 WiFi is disabled or low power mode
 - Monitor current draw
@@ -185,7 +180,7 @@ If you must connect 5V devices, use bidirectional level shifters:
 
 ### Wiring with Level Shifter:
 ```
-PYNQ-Z2       Level         5V Device
+Raspberry Pi 5       Level         5V Device
 (3.3V)        Shifter       (5V)
 ─────────     ───────       ─────────
 GPIO  ---->   LV -> HV  --> Device Input
@@ -254,7 +249,7 @@ GND   ------> GND   <----- GND
 
 ```
 ╔══════════════════════════════════════════════════════╗
-║       PYNQ-Z2 VOLTAGE SAFETY CARD                   ║
+║       Raspberry Pi 5 VOLTAGE SAFETY CARD                   ║
 ╠══════════════════════════════════════════════════════╣
 ║                                                      ║
 ║  ALL GPIO PINS: 3.3V LOGIC ONLY                     ║

@@ -1,4 +1,4 @@
-# esp32-firmware/components/pynq_wifi_bridge/CMakeLists.txt
+# esp32-firmware/components/star_wifi_bridge/CMakeLists.txt
 
 idf_component_register(SRCS "pynq_wifi_protocol.c"
                             "pynq_wifi_transport.c"

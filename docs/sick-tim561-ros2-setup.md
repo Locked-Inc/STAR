@@ -1,6 +1,6 @@
 # SICK TiM561 ROS2 Setup Guide for STAR Robot
 
-Complete step-by-step guide for integrating the SICK TiM561 2D Lidar with ROS2 on the PYNQ-Z2 board.
+Complete step-by-step guide for integrating the SICK TiM561 2D Lidar with ROS2 on the Raspberry Pi 5 board.
 
 **Source:** Research compilation from SICK AG documentation, ROS2 documentation, and community resources.
 
@@ -22,7 +22,7 @@ The SICK TiM561 is a 2D laser scanner that connects via Ethernet and integrates 
 
 ### Step 1: Connect the Sensor
 
-1. Connect the TiM561 to PYNQ-Z2 via Ethernet cable (direct or through switch/router)
+1. Connect the TiM561 to Raspberry Pi 5 via Ethernet cable (direct or through switch/router)
 2. **Default sensor IP address:** `192.168.0.1`
 3. **Default port:** `2112` (TCP)
 4. Power the sensor with 24V external supply
@@ -31,19 +31,19 @@ The SICK TiM561 is a 2D laser scanner that connects via Ethernet and integrates 
 
 **Option A: Direct Connection**
 ```
-PYNQ-Z2 Ethernet <--Cable--> TiM561
+Raspberry Pi 5 Ethernet <--Cable--> TiM561
 ```
 
 **Option B: Through Switch (Recommended)**
 ```
-PYNQ-Z2 <---> Ethernet Switch <---> TiM561
+Raspberry Pi 5 <---> Ethernet Switch <---> TiM561
                     |
                     └---> Development Laptop (for RViz)
 ```
 
-### Step 2: Configure PYNQ-Z2 Network Interface
+### Step 2: Configure Raspberry Pi 5 Network Interface
 
-The PYNQ-Z2 needs a static IP in the same subnet as the sensor.
+The Raspberry Pi 5 needs a static IP in the same subnet as the sensor.
 
 **Method 1: Temporary Configuration (Testing)**
 ```bash
@@ -609,7 +609,7 @@ sudo apt install python3-colcon-common-extensions
 
 ### Custom Launch File for STAR Robot
 
-Create `/home/xilinx/star_ws/src/star_robot/launch/lidar.launch.py`:
+Create `/home/pi/star_ws/src/star_robot/launch/lidar.launch.py`:
 
 ```python
 from launch import LaunchDescription
@@ -664,7 +664,7 @@ After=network.target
 
 [Service]
 Type=simple
-User=xilinx
+User=pi
 Environment="ROS_DOMAIN_ID=0"
 ExecStart=/bin/bash -c "source /opt/ros/humble/setup.bash && ros2 launch sick_scan_xd sick_tim_5xx.launch.py hostname:=192.168.0.1"
 Restart=on-failure
@@ -729,7 +729,7 @@ sudo systemctl status star-lidar.service
 1. **Test lidar with current image** (connect and verify data)
 2. **During image customization:** Install ROS2 + sick_scan_xd
 3. **Integrate with SLAM:** Choose SLAM Toolbox for production
-4. **FPGA acceleration:** Move SLAM computations to FPGA (Phase 4)
+4. **GPU acceleration:** Move SLAM computations to FPGA (Phase 4)
 5. **Full autonomy:** Integrate with navigation stack (Nav2)
 
 All components are well-documented and actively maintained by SICK AG!

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test 40-Pin Raspberry Pi Header (J2) on PYNQ-Z2
+Test 40-Pin Raspberry Pi Header (J2) on Raspberry Pi 5
 
 The 40-pin header provides:
 - I2C (pins 3, 5)
@@ -111,7 +111,7 @@ def test_uart_40pin():
     print()
 
     # The 40-pin UART typically maps to a PS UART
-    # On PYNQ-Z2, this is usually UART0 or UART1
+    # On Raspberry Pi 5, this is usually UART0 or UART1
     # Also check for USB-UART adapter for testing
     uart_devices = [
         '/dev/ttyUSB0',  # USB-UART adapter (for testing connections)

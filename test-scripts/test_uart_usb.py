@@ -189,7 +189,7 @@ def test_external(uart, device):
     print()
 
     messages = [
-        b"Hello from PYNQ-Z2!\n",
+        b"Hello from Raspberry Pi 5!\n",
         b"USB-UART test\n",
         b"Can you read this?\n",
         b"Send data back!\n",

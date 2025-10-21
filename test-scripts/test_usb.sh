@@ -1,9 +1,9 @@
 #!/bin/bash
-# Test USB ports on PYNQ-Z2
+# Test USB ports on Raspberry Pi 5
 # No internet connection needed - just checks what's connected
 
 echo "=========================================="
-echo "PYNQ-Z2 USB Port Test"
+echo "Raspberry Pi 5 USB Port Test"
 echo "=========================================="
 echo ""
 
