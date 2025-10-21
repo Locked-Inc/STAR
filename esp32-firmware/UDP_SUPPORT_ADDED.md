@@ -119,7 +119,7 @@ payload = struct.pack('<B', socket_id)
 ## C Test Suite
 
 ### File: `test_udp_handler.c`
-**Location:** `components/pynq_wifi_bridge/test/test_udp_handler.c`
+**Location:** `components/star_wifi_bridge/test/test_udp_handler.c`
 **Test Count:** 47 comprehensive tests
 
 ### Test Breakdown:
@@ -222,13 +222,13 @@ python test_udp_commands.py /dev/ttyUSB0
 ### Updated Files:
 
 #### 1. Protocol Header
-**File:** `components/pynq_wifi_bridge/include/pynq_wifi_protocol.h`
+**File:** `components/star_wifi_bridge/include/pynq_wifi_protocol.h`
 - Added 3 UDP command IDs
 - Added 4 UDP payload structures
 - Documented UDP-specific features
 
 #### 2. Test CMakeLists
-**File:** `components/pynq_wifi_bridge/test/CMakeLists.txt`
+**File:** `components/star_wifi_bridge/test/CMakeLists.txt`
 - Added `test_udp_handler.c` to build system
 
 ## Usage Examples

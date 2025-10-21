@@ -4,8 +4,8 @@
 
 STAR (Simultaneous Tracking And Robotics) is a sophisticated robotics project centered around a LiDAR SLAM capable robot. The project is composed of several key modules:
 
-- **Hardware (`Schematic/`):** The core of the robot is a PYNQ-Z2 board (Xilinx Zynq-7020 SoC), with hardware designs managed in KiCad.
-- **Embedded Linux (`pynq-image-build/`):** A custom Linux image for the PYNQ-Z2 is built using the Yocto Project. This image includes ROS support for future LiDAR SLAM integration.
+- **Hardware (`Schematic/`):** The core of the robot is a Raspberry Pi 5, with hardware designs managed in KiCad.
+- **Operating System:** Raspberry Pi OS (64-bit) running on Raspberry Pi 5. This system includes ROS support for LiDAR SLAM integration.
 - **Handheld Controller (`HandheldController/`):** An Android application built with Kotlin and Jetpack Compose, designed to run on a Retroid Pocket 2S for remote control.
 - **Robot Gateway (`RobotGateway/`):** A Spring Boot and Kotlin application that runs on the robot, acting as a bridge between the handheld controller and the robot's systems.
 - **Server Backend (`ServerBackend/`):** A Spring Boot and Kotlin backend for collecting and storing data from the robot, such as sensor readings, video, and telemetry.
@@ -27,10 +27,10 @@ STAR (Simultaneous Tracking And Robotics) is a sophisticated robotics project ce
 - **Build:** `./gradlew build`
 - **Run:** `./gradlew bootRun`
 
-### PYNQ-Z2 Linux Image
+### Raspberry Pi 5 Setup
 
-- **Setup:** Follow the instructions in `pynq-image-build/build-server-setup.md` to prepare a Linux build host.
-- **Build:** The build is orchestrated by the scripts in the `pynq-image-build` directory. See the `pynq-image-build/README.md` for the detailed process.
+- **Setup:** Follow the instructions in `raspberry-pi-5-setup-guide.md` to prepare and configure the Raspberry Pi 5.
+- **OS:** Use Raspberry Pi OS (64-bit) Lite or Desktop. Flash using Raspberry Pi Imager.
 
 ## Development Conventions
 

@@ -239,7 +239,7 @@ if __name__ == "__main__":
 Configure via `idf.py menuconfig`:
 
 ```
-PYNQ WiFi Bridge Configuration
+STAR WiFi Bridge Configuration
 +-> OTA Update Configuration
 |   +-> OTA Update URL
 |   +-> OTA Version Check URL
@@ -426,7 +426,7 @@ idf.py -p /dev/ttyUSB0 monitor
 idf.py test
 
 # Run specific test component
-cd components/pynq_wifi_bridge
+cd components/star_wifi_bridge
 idf.py test
 
 # Run Python integration tests
@@ -446,11 +446,11 @@ See [Protocol Overview - Protocol Extension](protocol/01-overview.md#protocol-ex
 - [PARTITIONS.md](../PARTITIONS.md) - Flash partition layout
 
 ### Source Code
-- **Protocol**: `components/pynq_wifi_bridge/include/pynq_wifi_protocol.h`
-- **Handlers**: `components/pynq_wifi_bridge/pynq_wifi_handler.c`
-- **OTA Manager**: `components/pynq_wifi_bridge/pynq_ota_manager.c`
-- **WiFi Manager**: `components/pynq_wifi_bridge/pynq_wifi_manager.c`
-- **Tests**: `components/pynq_wifi_bridge/test/`
+- **Protocol**: `components/star_wifi_bridge/include/pynq_wifi_protocol.h`
+- **Handlers**: `components/star_wifi_bridge/pynq_wifi_handler.c`
+- **OTA Manager**: `components/star_wifi_bridge/pynq_ota_manager.c`
+- **WiFi Manager**: `components/star_wifi_bridge/pynq_wifi_manager.c`
+- **Tests**: `components/star_wifi_bridge/test/`
 
 ### External Resources
 - [ESP-IDF Programming Guide](https://docs.espressif.com/projects/esp-idf/)

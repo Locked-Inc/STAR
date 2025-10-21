@@ -263,7 +263,7 @@ static bool verify_sha256(esp_https_ota_handle_t ota_handle, const char* expecte
 |    +-> Next OTA will overwrite ota_1       |
 |    +-> No reboot happens                   |
 |                                             |
-| 5. PYNQ sees state = OTA_FAILED             |
+| 5. Raspberry Pi sees state = OTA_FAILED             |
 |    +-> Can retry with correct hash          |
 |                                             |
 +---------------------------------------------+

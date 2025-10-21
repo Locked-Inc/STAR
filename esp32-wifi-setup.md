@@ -1,18 +1,23 @@
-# ESP32 WiFi Setup for PYNQ-Z2
+# ESP32 WiFi Bridge Setup for Raspberry Pi 5
 
 ## Overview
 
-This guide documents the process of setting up an ESP32-WROOM-32 as a WiFi adapter for the PYNQ-Z2 board using ESP-Hosted.
+This guide documents the process of setting up an ESP32-WROOM-32 as an optional WiFi bridge/controller for the Raspberry Pi 5.
+
+**Note**: The Raspberry Pi 5 has built-in WiFi, so the ESP32 is optional. It can be used for:
+- Additional wireless control channel
+- Motor control relay
+- Backup communication
+- Custom wireless features
 
 **Board**: ESP32-WROOM-32
-**Solution**: ESP-Hosted (Official Espressif)
-**Connection**: UART or SPI (configurable via Kconfig)
-**Result**: PYNQ-Z2 will have `wlan0` interface for WiFi
+**Connection**: UART (GPIO 14/15 on Raspberry Pi 5)
+**Communication**: Custom serial protocol at 115200 baud
 
 ## Prerequisites
 
 - ESP32-WROOM-32 development board
-- PYNQ-Z2 board (already set up)
+- Raspberry Pi 5 (already set up)
 - Jumper wires for GPIO connections
 - USB cable for ESP32 programming
 - Linux laptop for development (Ubuntu 24.04)
@@ -77,11 +82,57 @@ echo 'alias get_idf=". ~/esp/esp-idf/export.sh"' >> ~/.bashrc
 
 ## Phase 3: Hardware Connection
 
-(To be completed)
+### Physical Wiring
 
-## Phase 4: PYNQ-Z2 Linux Driver Setup
+Connect the ESP32 to the Raspberry Pi 5 40-pin GPIO header:
 
-(To be completed)
+```
+Raspberry Pi 5          ESP32-WROOM-32
+────────────────        ──────────────
+Pin 8 (GPIO 14 TX)  ->  RX (GPIO3)
+Pin 10 (GPIO 15 RX) <-  TX (GPIO1)
+Pin 6 (GND)         --  GND
+Pin 1 (3.3V)*       ->  3.3V (optional)
+```
+
+*Note: For reliable WiFi operation, consider using a separate 3.3V power supply for the ESP32.
+
+### Enable UART on Raspberry Pi 5
+
+```bash
+ssh pi@star-robot.local
+
+# Enable serial hardware
+sudo raspi-config
+# Interface Options -> Serial Port
+# Login shell: No
+# Serial hardware: Yes
+
+sudo reboot
+```
+
+### Verify Connection
+
+```bash
+# Check that UART device exists
+ls -l /dev/ttyAMA0
+
+# Test with minicom
+sudo apt install -y minicom
+sudo minicom -D /dev/ttyAMA0 -b 115200
+```
+
+## Phase 4: Raspberry Pi 5 Communication Setup
+
+### Install Python Serial Library
+
+```bash
+sudo apt install -y python3-serial
+```
+
+### Test Communication
+
+Create a simple test script on the Raspberry Pi 5 to communicate with the ESP32.
 
 ## Phase 5: WiFi Configuration & Testing
 
@@ -93,6 +144,7 @@ echo 'alias get_idf=". ~/esp/esp-idf/export.sh"' >> ~/.bashrc
 
 ## References
 
-- [ESP-Hosted GitHub](https://github.com/espressif/esp-hosted)
 - [ESP-IDF Documentation](https://docs.espressif.com/projects/esp-idf/en/latest/)
-- [PYNQ-Z2 Setup Guide](pynq-z2-setup-guide.md)
+- [Raspberry Pi 5 Setup Guide](raspberry-pi-5-setup-guide.md)
+- [Raspberry Pi GPIO Pinout](https://pinout.xyz/)
+- [ESP32 Datasheet](https://www.espressif.com/en/products/socs/esp32)

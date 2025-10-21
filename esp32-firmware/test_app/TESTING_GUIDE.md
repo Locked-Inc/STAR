@@ -12,7 +12,7 @@ The STAR project has **100 comprehensive tests** organized in a dedicated test a
 |-----------|-------|----------|
 | **star_error_handler** | 30 | Initialization, error recording, retry logic, state management, edge cases |
 | **star_pin_validator** | 35 | Pin registration, sharing, validation, conflict detection, cleanup |
-| **pynq_wifi_bridge/protocol** | 35 | Packet creation, parsing, response handling, transport layer |
+| **star_wifi_bridge/protocol** | 35 | Packet creation, parsing, response handling, transport layer |
 | **Total** | **100** | Complete firmware component coverage |
 
 ## Testing Framework: STAR_TEST
@@ -79,7 +79,7 @@ components/
 |   +-- test/                    # Placeholder (tests moved to test_app)
 +-- star_pin_validator/
 |   +-- test/                    # Placeholder (tests moved to test_app)
-+-- pynq_wifi_bridge/
++-- star_wifi_bridge/
     +-- test/                    # Placeholder (tests moved to test_app)
 ```
 
@@ -148,7 +148,7 @@ idf_component_register(
     PRIV_REQUIRES star_test
                   star_error_handler
                   star_pin_validator
-                  pynq_wifi_bridge
+                  star_wifi_bridge
                   esp_driver_gpio
                   your_component            # Add your component
 )

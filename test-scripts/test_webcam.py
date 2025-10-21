@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test USB webcam on PYNQ-Z2
+Test USB webcam on Raspberry Pi 5
 
 This script:
 1. Detects available video devices
@@ -29,7 +29,7 @@ def test_camera(device_path='/dev/video0'):
     """Test camera capture and save images"""
 
     print("=" * 60)
-    print("PYNQ-Z2 USB Webcam Test")
+    print("Raspberry Pi 5 USB Webcam Test")
     print("=" * 60)
     print()
 
@@ -102,7 +102,7 @@ def test_camera(device_path='/dev/video0'):
         ret, frame = cap.read()
 
     # Capture and save test images
-    test_dir = "/home/xilinx/webcam_test"
+    test_dir = "/home/pi/webcam_test"
     os.makedirs(test_dir, exist_ok=True)
 
     num_test_frames = 5
@@ -142,7 +142,7 @@ def test_camera(device_path='/dev/video0'):
         print()
         print("💡 Next steps:")
         print("   - View images: ls -lh " + test_dir)
-        print("   - Transfer to laptop: scp xilinx@192.168.2.99:" + test_dir + "/*.jpg .")
+        print("   - Transfer to laptop: scp pi@star-robot.local:" + test_dir + "/*.jpg .")
         print("   - Use for person detection (TensorFlow Lite)")
         return True
     else:

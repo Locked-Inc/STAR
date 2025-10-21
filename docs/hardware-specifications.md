@@ -6,19 +6,23 @@ Complete hardware specification for the STAR autonomous robot platform.
 
 ## Core Computing Platform
 
-### PYNQ-Z2 Development Board (STAR-Z2)
+### Raspberry Pi 5 (STAR Main Board)
 
 **Processor:**
-- **SoC**: Xilinx Zynq-7020
-- **ARM CPU**: Dual-core ARM Cortex-A9 @ 650 MHz
-- **FPGA**: Artix-7 FPGA (85K logic cells)
-- **RAM**: 512 MB DDR3
-- **Storage**: MicroSD card (28.9 GB tested, expandable)
+- **SoC**: Broadcom BCM2712
+- **ARM CPU**: Quad-core ARM Cortex-A76 @ 2.4 GHz
+- **GPU**: VideoCore VII
+- **RAM**: 4GB or 8GB LPDDR4X (8GB recommended)
+- **Storage**: MicroSD card (32GB+ recommended)
 
 **Key Features:**
-- PS-PL communication via AXI bus
-- Programmable logic for hardware acceleration
-- Low-power embedded Linux platform
+- Dual 4Kp60 HDMI output
+- 2 × USB 3.0, 2 × USB 2.0
+- Gigabit Ethernet with PoE+ support (via HAT)
+- Dual-band 802.11ac WiFi, Bluetooth 5.0/BLE
+- 40-pin GPIO header (Raspberry Pi compatible)
+- PCIe 2.0 x1 interface
+- Significantly faster than Raspberry Pi 4 (~2-3x performance)
 
 ---
 
@@ -41,9 +45,9 @@ Complete hardware specification for the STAR autonomous robot platform.
 - **Power**: 24V DC (typically via external power supply)
 - **Protection**: IP65 rated
 
-**Connection to PYNQ-Z2:**
+**Connection to Raspberry Pi 5:**
 ```
-TiM561 Ethernet Port <-> Ethernet Switch/Router <-> PYNQ-Z2 Ethernet
+TiM561 Ethernet Port <-> Ethernet Switch/Router <-> Raspberry Pi 5 Ethernet
 ```
 
 **ROS 2 Driver:**
@@ -81,9 +85,9 @@ TiM561 Ethernet Port <-> Ethernet Switch/Router <-> PYNQ-Z2 Ethernet
 - **Power**: USB bus-powered
 - **Device**: `/dev/video0` on Linux
 
-**Connection to PYNQ-Z2:**
+**Connection to Raspberry Pi 5:**
 ```
-USB Camera <-> PYNQ-Z2 USB Host Port
+USB Camera <-> Raspberry Pi 5 USB 3.0 or USB 2.0 Port
 ```
 
 **Software Stack:**
@@ -115,20 +119,20 @@ USB Camera <-> PYNQ-Z2 USB Host Port
 - **Bluetooth**: BLE 4.2 (not used in this project)
 - **GPIO**: 34 programmable pins
 - **UART**: 3 hardware UARTs
-- **I/O Voltage**: 3.3V ⚠️ (compatible with PYNQ-Z2)
+- **I/O Voltage**: 3.3V ⚠️ (compatible with Raspberry Pi 5)
 
-**Connection to PYNQ-Z2:**
+**Connection to Raspberry Pi 5:**
 ```
-PYNQ-Z2 40-Pin Header          ESP32
+Raspberry Pi 5 40-Pin Header   ESP32
 ────────────────────────       ─────────
-Pin 8  (UART1 TX)          ->  RX (GPIO3)
-Pin 10 (UART1 RX)          <-  TX (GPIO1)
+Pin 8  (GPIO 14 / UART TX) ->  RX (GPIO3)
+Pin 10 (GPIO 15 / UART RX) <-  TX (GPIO1)
 Pin 6  (GND)               --  GND
 Pin 1  (3.3V) [optional]   ->  3.3V
 ```
 
 **Communication:**
-- **Primary**: UART at 115200 baud (after UART1 enabled)
+- **Primary**: UART at 115200 baud (GPIO 14/15 on Raspberry Pi)
 - **Protocol**: Custom serial protocol or ROS serial
 - **Backup**: External USB-UART adapter (temporary)
 
@@ -160,23 +164,33 @@ From ESP32 to motor drivers (not specified yet):
 
 ### Ethernet
 
-**Interface**: 10/100 Mbps Ethernet (on PYNQ-Z2)
+**Interface**: Gigabit Ethernet (on Raspberry Pi 5)
 **Connector**: RJ45
 
 **Use Cases:**
-1. **Development**: SSH access (192.168.2.99)
+1. **Development**: SSH access
 2. **SICK TiM561**: Lidar data via Ethernet
 3. **ROS 2 DDS**: Multi-machine ROS communication
 4. **Internet**: Package installation, updates
 
 **Topology:**
 ```
-PYNQ-Z2 ─┬─> Router/Switch ─> Development Laptop (RViz)
-         │
-         └─> SICK TiM561 Lidar
+Raspberry Pi 5 ─┬─> Router/Switch ─> Development Laptop (RViz)
+                │
+                └─> SICK TiM561 Lidar
 ```
 
-### WiFi (via ESP32)
+### WiFi (Built-in + ESP32)
+
+**Built-in WiFi (Raspberry Pi 5):**
+- Dual-band 802.11ac WiFi
+- Can be used for network connectivity
+- Bluetooth 5.0/BLE available
+
+**ESP32 WiFi Bridge (Optional):**
+- For additional wireless features
+- Motor control relay
+- Backup communication channel
 
 **Use Cases:**
 - Remote control interface
@@ -188,10 +202,11 @@ PYNQ-Z2 ─┬─> Router/Switch ─> Development Laptop (RViz)
 
 ## Power Requirements
 
-### PYNQ-Z2 Board
-- **Input**: 5V DC via micro USB or barrel jack
-- **Current**: ~2A typical, 2.5A max
-- **Power**: 10-12.5W
+### Raspberry Pi 5
+- **Input**: 5V DC via USB-C (official power supply recommended)
+- **Current**: 5A max (27W official power supply)
+- **Power**: 12-27W (depending on peripherals and load)
+- **Note**: Raspberry Pi 5 has higher power requirements than previous models
 
 ### SICK TiM561 Lidar
 - **Input**: 24V DC (external power supply required)
@@ -202,14 +217,14 @@ PYNQ-Z2 ─┬─> Router/Switch ─> Development Laptop (RViz)
 - **Power**: USB bus-powered (500 mA @ 5V max)
 - **Typical**: 200-300 mA
 
-### ESP32
-- **Power**: 3.3V from PYNQ-Z2 or separate supply
+### ESP32 (if used)
+- **Power**: 3.3V from Raspberry Pi 5 or separate supply
 - **Current**: 80 mA typical, 300 mA peak (WiFi active)
-- **Recommendation**: Separate 3.3V regulator for reliable WiFi
+- **Recommendation**: Separate 3.3V regulator for reliable WiFi operation
 
 ### Total System Power
-- **Minimum**: ~20W (board + lidar + peripherals)
-- **Recommended**: 25W power budget with margin
+- **Minimum**: ~30W (board + lidar + peripherals)
+- **Recommended**: 40W power budget with margin for peaks and accessories
 
 ---
 
@@ -219,10 +234,10 @@ PYNQ-Z2 ─┬─> Router/Switch ─> Development Laptop (RViz)
 |-----------|---------|--------|------------|
 | **Ethernet** | Lidar data | SICK TiM561 | RJ45 |
 | **Ethernet** | SSH/Development | Laptop | RJ45 |
-| **USB** | Camera | USB Webcam | USB-A port |
-| **USB** | Debug UART | FTDI adapter (temp) | USB-A port |
-| **40-pin GPIO** | ESP32 control | ESP32 module | UART1 pins 8/10 |
-| **MicroSD** | Boot/Storage | SD card (28.9 GB) | MicroSD slot |
+| **USB 3.0** | Camera | USB Webcam | USB-A port |
+| **USB 2.0** | Debug UART | FTDI adapter (temp) | USB-A port |
+| **40-pin GPIO** | ESP32 control | ESP32 module | UART pins 8/10 |
+| **MicroSD** | Boot/Storage | SD card (32GB+) | MicroSD slot |
 
 ---
 
@@ -232,13 +247,13 @@ PYNQ-Z2 ─┬─> Router/Switch ─> Development Laptop (RViz)
 
 | Component | Logic Level | Safe? |
 |-----------|-------------|-------|
-| PYNQ-Z2 GPIO | 3.3V | ⚠️ NOT 5V tolerant! |
+| Raspberry Pi 5 GPIO | 3.3V | ⚠️ NOT 5V tolerant! |
 | ESP32 GPIO | 3.3V | ✅ Compatible |
 | SICK TiM561 | Ethernet (isolated) | ✅ Safe |
 | USB Camera | USB (isolated) | ✅ Safe |
 | FTDI Adapter | 3.3V mode required | ⚠️ Check jumper! |
 
-**All GPIO pins on PYNQ-Z2 are 3.3V only - connecting 5V will damage the chip!**
+**All GPIO pins on Raspberry Pi 5 are 3.3V only - connecting 5V will damage the chip!**
 
 See `voltage-levels-safety.md` for complete safety guide.
 
@@ -246,21 +261,30 @@ See `voltage-levels-safety.md` for complete safety guide.
 
 ## Expansion Options
 
-### Arduino Shield Connector
-- **Compatibility**: 3.3V Arduino shields only (not 5V!)
-- **Pins**: Digital 0-13, Analog 0-5
-- **Current Use**: Reserved for future expansion
-
-### PMOD Connectors (A & B)
-- **Voltage**: 3.3V
-- **Pins**: 8 per connector (signal + power)
-- **Protocol**: GPIO, I2C, SPI (requires FPGA bitstream)
-- **Current Use**: Available for sensors/peripherals
+### 40-Pin GPIO Header
+- **Compatibility**: Standard Raspberry Pi HAT compatible
+- **Voltage**: 3.3V I/O (NOT 5V tolerant!)
+- **Pins**: 28 GPIO pins available
+- **Power**: 5V and 3.3V power rails available
+- **Protocols**: UART, I2C, SPI, PWM
+- **Current Use**: ESP32 connection, future HAT expansion
 
 ### I2C Buses
-- **Available**: 2 buses (`/dev/i2c-0`, `/dev/i2c-1`)
+- **Available**: Multiple I2C buses (`/dev/i2c-1`, `/dev/i2c-11`, etc.)
 - **Voltage**: 3.3V
+- **Speed**: Standard (100kHz), Fast (400kHz), Fast-plus (1MHz)
 - **Use**: Additional sensors (IMU, compass, etc.)
+
+### SPI Interface
+- **Available**: SPI0, SPI1 (via GPIO header)
+- **Voltage**: 3.3V
+- **Speed**: Up to 125 MHz
+- **Use**: High-speed peripherals
+
+### PCIe Interface
+- **Version**: PCIe 2.0 x1
+- **Speed**: Up to 5 GT/s
+- **Use**: NVMe SSDs, AI accelerators (via adapter)
 
 ---
 
@@ -282,10 +306,11 @@ See `voltage-levels-safety.md` for complete safety guide.
 - Serial communication libraries
 - Custom firmware (in `esp-firmware/` directory)
 
-### FPGA
-- Vivado (for bitstream generation)
-- PYNQ Python library
-- Custom AXI IP cores for acceleration
+### System Software
+- Raspberry Pi OS (64-bit)
+- Python 3.11+
+- OpenCV for computer vision
+- Standard Linux tools and libraries
 
 ---
 
@@ -306,29 +331,31 @@ See `voltage-levels-safety.md` for complete safety guide.
 - **Command Latency**: <10ms
 - **Update Rate**: 50 Hz motor control
 
-### FPGA Acceleration
-- **Target**: 5-10x speedup for SLAM algorithms
-- **Latency**: <5ms for critical operations
+### CPU Performance
+- **ARM Cortex-A76**: Significantly faster than Cortex-A9 (Raspberry Pi 5)
+- **Multi-threading**: Quad-core for parallel processing
+- **Optional**: PCIe AI accelerator for neural network inference
 
 ---
 
 ## Current Hardware Status
 
-### ✅ Tested & Working:
-- PYNQ-Z2 board (booting, SSH, peripherals)
-- USB ports (FTDI adapter detected)
-- Ethernet connectivity
+### ✅ Tested & Working (with Raspberry Pi 5):
+- Raspberry Pi 5 (booting, SSH, peripherals)
+- USB 3.0 and USB 2.0 ports
+- Ethernet connectivity (Gigabit)
+- Built-in WiFi and Bluetooth
 - I2C buses available
 - SD card storage
 
 ### 📋 Ready to Connect:
 - SICK TiM561 Lidar (Ethernet - just plug in)
 - USB Camera (USB - just plug in)
-- ESP32 (needs UART1 enabled in software)
+- ESP32 (connect to GPIO header UART pins)
 
 ### ⚠️ Needs Configuration:
-- UART1 for ESP32 (device tree modification)
-- WiFi network setup (via ESP32)
+- Serial UART for ESP32 (enable via raspi-config)
+- WiFi network setup (built-in or via ESP32)
 - Motor drivers (specification TBD)
 
 ---
@@ -350,9 +377,10 @@ See `voltage-levels-safety.md` for complete safety guide.
 - ROS Driver: https://github.com/SICKAG/sick_scan_xd
 - Manual: Available from SICK AG
 
-### PYNQ-Z2
-- Board Info: https://www.tulembedded.com/FPGA/ProductsPYNQ-Z2.html
-- Documentation: https://pynq.readthedocs.io/
+### Raspberry Pi 5
+- Board Info: https://www.raspberrypi.com/products/raspberry-pi-5/
+- Documentation: https://www.raspberrypi.com/documentation/
+- GPIO Pinout: https://pinout.xyz/
 
 ### ESP32
 - Manufacturer: https://www.espressif.com/en/products/socs/esp32
@@ -364,17 +392,18 @@ See `voltage-levels-safety.md` for complete safety guide.
 
 | Item | Quantity | Notes |
 |------|----------|-------|
-| PYNQ-Z2 Board | 1 | Core platform |
+| Raspberry Pi 5 (8GB) | 1 | Core platform |
+| Official RPi 5 Power Supply | 1 | 5V 5A USB-C (27W) |
+| Active Cooler (RPi 5) | 1 | Recommended for cooling |
 | SICK TiM561 Lidar | 1 | 2D laser scanner |
 | USB Webcam | 1 | Logitech C270 or compatible |
-| ESP32 Module | 1 | WROOM-32 or compatible |
-| MicroSD Card | 1 | 32 GB minimum |
+| ESP32 Module | 1 | WROOM-32 or compatible (optional) |
+| MicroSD Card (64GB) | 1 | Class 10 or UHS-I |
 | Ethernet Cable | 2 | For lidar and development |
 | FTDI USB-UART | 1 | FT232RL (testing/debug) |
 | 24V Power Supply | 1 | For SICK TiM561 |
-| 5V Power Supply | 1 | For PYNQ-Z2 (2.5A min) |
 | Jumper Wires | Set | For ESP32 connection |
 | Motor Drivers | TBD | Specification needed |
 | Chassis/Frame | TBD | Mechanical design |
 
-**Total Estimated Cost**: ~$500-800 (excluding motors/chassis)
+**Total Estimated Cost**: ~$500-850 (excluding motors/chassis)

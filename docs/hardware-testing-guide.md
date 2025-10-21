@@ -1,24 +1,24 @@
-# PYNQ-Z2 Hardware Testing Guide
+# Raspberry Pi 5 Hardware Testing Guide
 
 ## Quick Hardware Test Procedure
 
-After successfully booting your STAR-Z2 board, follow these tests to verify all hardware interfaces work correctly.
+After successfully booting your Raspberry Pi 5, follow these tests to verify all hardware interfaces work correctly.
 
 ---
 
 ## Test 1: USB Webcam
 
 ### Setup
-1. Connect USB webcam to any USB port on PYNQ-Z2
-2. SSH into board: `ssh xilinx@192.168.2.99`
+1. Connect USB webcam to any USB port on Raspberry Pi 5
+2. SSH into board: `ssh pi@star-robot.local` (or use the IP address)
 
 ### Run Test Script
 
 ```bash
 # Copy test script to board
 exit  # Exit SSH first
-scp ~/Documents/git/STAR/test_webcam.py xilinx@192.168.2.99:~/
-ssh xilinx@192.168.2.99
+scp ~/Documents/git/STAR/test-scripts/test_webcam.py pi@star-robot.local:~/
+ssh pi@star-robot.local
 
 # Install OpenCV if needed
 sudo apt update
@@ -46,7 +46,7 @@ Bus 001 Device 002: ID 046d:0825 Logitech, Inc. Webcam C270
    FPS: 30.0
 
 📸 Capturing test frames...
-   ✅ Frame 1/5: /home/xilinx/webcam_test/test_frame_000.jpg
+   ✅ Frame 1/5: /home/pi/webcam_test/test_frame_000.jpg
    ...
 
 ✅ Camera test PASSED!
@@ -59,7 +59,7 @@ ls -lh ~/webcam_test/
 
 # Copy to your laptop to view
 exit
-scp xilinx@192.168.2.99:~/webcam_test/*.jpg ~/Downloads/
+scp pi@star-robot.local:~/webcam_test/*.jpg ~/Downloads/
 ```
 
 ### Troubleshooting
@@ -69,46 +69,57 @@ scp xilinx@192.168.2.99:~/webcam_test/*.jpg ~/Downloads/
 
 ---
 
-## Test 2: UART (Hardware - PS UART1)
+## Test 2: UART (Hardware Serial)
 
 ### Recommended Method: Hardware UART
-Uses Arduino shield pins AR0 (TX) and AR1 (RX).
+Uses GPIO header pins 8 (TX) and 10 (RX).
 
 ### Physical Connections
 
-**Arduino Shield Connector (J1):**
-- **AR0 (TX)**: Pin 0 on digital header
-- **AR1 (RX)**: Pin 1 on digital header
-- **GND**: Any ground pin
+**40-Pin GPIO Header:**
+- **Pin 8 (GPIO 14 / UART TX)**: UART transmit
+- **Pin 10 (GPIO 15 / UART RX)**: UART receive
+- **Pin 6 (GND)**: Ground
 
-**For loopback test:** Connect AR0 to AR1 with jumper wire
+**For loopback test:** Connect Pin 8 to Pin 10 with jumper wire
 
 **For ESP32 connection:**
-- AR0 (TX) → ESP32 RX
-- AR1 (RX) → ESP32 TX
-- GND → GND
+- Pin 8 (TX) → ESP32 RX (GPIO3)
+- Pin 10 (RX) → ESP32 TX (GPIO1)
+- Pin 6 (GND) → GND
+
+### Enable Serial Port
+
+First, enable the serial port in `raspi-config`:
+```bash
+sudo raspi-config
+# Navigate to: Interface Options -> Serial Port
+# Serial login shell: No
+# Serial hardware: Yes
+sudo reboot
+```
 
 ### Run Test
 
 ```bash
 # Copy test script
-scp ~/Documents/git/STAR/test_uart_hardware.py xilinx@192.168.2.99:~/
-ssh xilinx@192.168.2.99
+scp ~/Documents/git/STAR/test-scripts/test_uart_hardware.py pi@star-robot.local:~/
+ssh pi@star-robot.local
 
 # Install pyserial
 sudo apt install -y python3-serial
 
 # Check available UART devices
-ls -l /dev/ttyPS*
-# Should show: /dev/ttyPS0 (console) and /dev/ttyPS1 (if available)
+ls -l /dev/ttyAMA*
+# Should show: /dev/ttyAMA0 (primary UART)
 
-# Run test
+# Run test (modify script to use /dev/ttyAMA0)
 python3 ~/test_uart_hardware.py
 ```
 
 ### Expected Output (with loopback)
 ```
-✅ Opened /dev/ttyPS1 at 115200 baud
+✅ Opened /dev/ttyAMA0 at 115200 baud
 
 📤 Sending test messages...
    Sent: Hello UART!
@@ -118,40 +129,58 @@ python3 ~/test_uart_hardware.py
    ✅ Received: Testing 123
 ```
 
-### If /dev/ttyPS1 doesn't exist
+### If /dev/ttyAMA0 doesn't exist
 
-UART1 might not be enabled in the device tree. Two options:
+UART might not be enabled. Options:
 
-**Option A: Use USB-to-Serial adapter**
+**Option A: Enable via raspi-config** (recommended)
+- Run `sudo raspi-config`
+- Navigate to Interface Options -> Serial Port
+- Disable serial login shell, enable serial hardware
+
+**Option B: Use USB-to-Serial adapter**
 - Connect USB-to-Serial adapter to USB port
 - Will show up as `/dev/ttyUSB0`
 - Modify script to use `/dev/ttyUSB0`
 
-**Option B: Use GPIO Software UART** (see below)
-
 ---
 
-## Test 3: UART (Software - GPIO Bit-Banging)
+## Test 3: GPIO (General Purpose)
 
-If hardware UART isn't available, use software UART with any GPIO pins.
+Raspberry Pi 5 has many GPIO pins available for various uses.
 
-### Recommended GPIO Pins
-- **TX**: GPIO 54 (EMIO[0])
-- **RX**: GPIO 55 (EMIO[1])
+### Simple LED Blink Test
 
-These are extended MIO pins not used by other peripherals.
+Connect an LED (with 220Ω resistor) between GPIO 17 and GND to test.
 
 ### Run Test
 
 ```bash
-scp ~/Documents/git/STAR/test_uart_gpio.py xilinx@192.168.2.99:~/
-ssh xilinx@192.168.2.99
+ssh pi@star-robot.local
 
-# Simple GPIO toggle test first
-python3 ~/test_uart_gpio.py simple
+# Install GPIO library
+sudo apt install -y python3-lgpio python3-rpi-lgpio
 
-# Full software UART test
-python3 ~/test_uart_gpio.py
+# Test GPIO
+python3
+```
+
+```python
+from gpiozero import LED
+from time import sleep
+
+# Use GPIO 17 (Pin 11)
+led = LED(17)
+
+# Blink 10 times
+for i in range(10):
+    led.on()
+    print(f"LED ON {i+1}/10")
+    sleep(0.5)
+    led.off()
+    sleep(0.5)
+
+print("Test complete!")
 ```
 
 ### Expected Output
@@ -209,13 +238,14 @@ sudo i2cdetect -y 0
 
 If you have I2C devices connected, they'll show up as hex addresses.
 
-### Test with PYNQ (if devices available)
+### Test with Python (if devices available)
 
 ```python
-from pynq import MMIO
+import smbus
 import time
 
 # Example: Read from I2C device at address 0x50
+bus = smbus.SMBus(1)
 # Implement based on your specific I2C hardware
 ```
 
@@ -314,24 +344,23 @@ After running all tests, you should have verified:
 
 ---
 
-## What's Installed Currently
+## What's Installed on Raspberry Pi 5
 
-### ✅ Working:
-- Ubuntu 22.04 Jammy ARM
-- Linux kernel 5.15.19-xilinx-v2022.1
-- PYNQ 3.0.1 library
-- Python 3.10
-- NumPy, SciPy, OpenCV
-- Jupyter Notebook (to be removed)
-- Java 8 (to be upgraded to 17)
+### ✅ Default on Raspberry Pi OS:
+- Raspberry Pi OS (64-bit) Bookworm
+- Linux kernel 6.1+ (Raspberry Pi optimized)
+- Python 3.11+
+- Standard Linux utilities
 - SSH, networking
+- Built-in WiFi and Bluetooth drivers
 
-### ❌ Not Installed (To Add):
-- Java 17 / Gradle / Kotlin
-- ESP-IDF toolchain
-- ROS 2 Humble
-- TensorFlow Lite
-- SICK lidar drivers
+### ❌ To Be Installed for STAR:
+- Java 17 / Gradle / Kotlin (for Robot Gateway)
+- OpenCV (cv2 for Python)
+- ROS 2 Humble (for SLAM)
+- TensorFlow Lite (for vision AI)
+- SICK lidar drivers (sick_scan_xd)
+- ESP-IDF toolchain (for ESP32 development)
 
 ---
 
@@ -340,26 +369,30 @@ After running all tests, you should have verified:
 Once all hardware tests pass:
 
 1. **Document any issues** found with specific pins/peripherals
-2. **Plan ESP32 integration** (which pins to use for UART)
-3. **Proceed with image customization** following `/home/bsikar/Documents/git/STAR/docs/customization-game-plan.md`
+2. **Plan ESP32 integration** (connect to GPIO UART pins)
+3. **Install required software** for robot operation
+4. **Configure ROS 2** for SLAM and sensor integration
+5. **Test SICK TiM561** lidar connection
 
 ---
 
 ## Quick Reference: Pin Mappings
 
-### Arduino Shield (J1)
-- AR0 (Digital 0): UART1 TX / GPIO
-- AR1 (Digital 1): UART1 RX / GPIO
-- AR2-AR13: Additional digital I/O
+### 40-Pin GPIO Header (Raspberry Pi 5)
+- **Pin 1**: 3.3V power
+- **Pin 2, 4**: 5V power
+- **Pin 6, 9, 14, 20, 25, 30, 34, 39**: Ground
+- **Pin 8 (GPIO 14)**: UART TX
+- **Pin 10 (GPIO 15)**: UART RX
+- **Pin 3 (GPIO 2), Pin 5 (GPIO 3)**: I2C SDA/SCL
+- **Pin 19, 21, 23**: SPI MOSI, MISO, SCLK
+- **Remaining pins**: General GPIO (see pinout.xyz for full details)
 
-### 40-Pin Raspberry Pi Header (J2)
-- For ESP32 connection
-- I2C, SPI, UART, GPIO available
-- Check STAR-Z2 schematic for exact pinout
-
-### PMOD Connectors
-- PMOD A/B: 8 GPIO pins each
-- Good for custom peripherals
+### For ESP32 Connection
+- Pin 8 (GPIO 14 / UART TX) → ESP32 RX
+- Pin 10 (GPIO 15 / UART RX) → ESP32 TX
+- Pin 6 (GND) → ESP32 GND
+- Pin 1 (3.3V) → ESP32 VCC (optional, can use separate power)
 
 ---
 

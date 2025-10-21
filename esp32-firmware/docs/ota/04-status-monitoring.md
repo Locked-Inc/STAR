@@ -1,6 +1,6 @@
 # OTA Status Monitoring and Failure Detection
 
-## Question: How will the PYNQ know if the ESP has been updated or if the update failed? And if the update failed, how would the PYNQ know what type of failure it was?
+## Question: How will the Raspberry Pi know if the ESP has been updated or if the update failed? And if the update failed, how would the Raspberry Pi know what type of failure it was?
 
 PYNQ monitors the update by polling the ESP32's status using the **CMD_OTA_GET_STATUS (0x2A)** command.
 
@@ -436,7 +436,7 @@ success = complete_ota_workflow(
 
 ## Summary
 
-### How PYNQ Knows Update Status
+### How Raspberry Pi Knows Update Status
 
 1. **Poll with CMD_OTA_GET_STATUS (0x2A)** every 1 second
 2. **Check state field**:
@@ -446,7 +446,7 @@ success = complete_ota_workflow(
    - `COMPLETE` (5) = Success!
    - `FAILED` (6) = Failed!
 
-### How PYNQ Detects Failure Type
+### How Raspberry Pi Detects Failure Type
 
 **Current method:**
 - State becomes `FAILED`

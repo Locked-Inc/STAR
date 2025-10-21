@@ -133,8 +133,8 @@ idf.py menuconfig
 ```
 
 Key configuration options:
-- **PYNQ WiFi Bridge Configuration** → OTA Update Configuration
-- **PYNQ WiFi Bridge Configuration** → WiFi Configuration
+- **STAR WiFi Bridge Configuration** → OTA Update Configuration
+- **STAR WiFi Bridge Configuration** → WiFi Configuration
 - **Partition Table** → Custom partition table (already configured)
 
 ### 3. Build the Firmware
@@ -179,7 +179,7 @@ For ESP32-S3 with 16MB flash:
 ```bash
 idf.py set-target esp32s3
 idf.py menuconfig
-# Navigate to: PYNQ WiFi Bridge Configuration → Board Type
+# Navigate to: STAR WiFi Bridge Configuration → Board Type
 # Select: ESP32-S3-WROOM-1-N16
 idf.py build
 ```
@@ -236,7 +236,7 @@ dmesg | tail -20
 source ~/esp/esp-idf/export.sh
 
 # 2. Make code changes
-vim components/pynq_wifi_bridge/pynq_wifi_handler.c
+vim components/star_wifi_bridge/pynq_wifi_handler.c
 
 # 3. Build
 idf.py build
@@ -266,7 +266,7 @@ esp32-firmware/
 ├── sdkconfig.defaults          # Default ESP-IDF configuration
 ├── main/                       # Main application
 ├── components/                 # Custom components
-│   ├── pynq_wifi_bridge/      # PYNQ-ESP32 protocol implementation
+│   ├── star_wifi_bridge/      # WiFi bridge protocol implementation
 │   ├── star_bus/              # STAR bus communication
 │   ├── star_bms_bq7850/       # Battery management system
 │   ├── star_error_handler/    # Error handling
@@ -333,7 +333,7 @@ sudo chmod 666 /dev/ttyUSB0
 **Solution**: Use menuconfig to select correct board type:
 ```bash
 idf.py menuconfig
-# Navigate to: PYNQ WiFi Bridge Configuration → Board Type
+# Navigate to: STAR WiFi Bridge Configuration → Board Type
 ```
 
 ## Additional Resources

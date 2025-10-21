@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Test Arduino Shield Connector (J1) on PYNQ-Z2
+Test Arduino Shield Connector (J1) on Raspberry Pi 5
 
 Arduino Digital Pins (via EMIO):
 - AR0 (Digital 0): UART TX / GPIO
@@ -22,7 +22,7 @@ import sys
 import time
 
 # Arduino pins map to these GPIOs
-# These are EMIO pins on PYNQ-Z2
+# These are EMIO pins on Raspberry Pi 5
 ARDUINO_PINS = {
     'AR0': 0,   # Will determine actual GPIO number
     'AR1': 1,
@@ -144,7 +144,7 @@ def test_gpio_arduino():
 
 if __name__ == "__main__":
     print("\n" + "=" * 60)
-    print("PYNQ-Z2 Arduino Shield Test")
+    print("Raspberry Pi 5 Arduino Shield Test")
     print("=" * 60)
     print()
 

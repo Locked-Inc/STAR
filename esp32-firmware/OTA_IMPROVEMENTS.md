@@ -10,25 +10,25 @@ The ESP32 OTA (Over-The-Air) update system has been significantly enhanced with 
 
 Added menu **"OTA Update Configuration"** with the following options:
 
-- **CONFIG_PYNQ_OTA_UPDATE_URL** - Firmware download URL
+- **CONFIG_STAR_OTA_UPDATE_URL** - Firmware download URL
   - Default: `https://robot-backend.com/api/esp32/firmware.bin`
 
-- **CONFIG_PYNQ_OTA_VERSION_CHECK_URL** - Version check API endpoint
+- **CONFIG_STAR_OTA_VERSION_CHECK_URL** - Version check API endpoint
   - Default: `https://robot-backend.com/api/esp32/version`
   - Expected JSON format: `{"version": "X.Y.Z", "url": "...", "sha256": "...", ...}`
 
-- **CONFIG_PYNQ_OTA_AUTO_UPDATE** - Enable automatic updates
+- **CONFIG_STAR_OTA_AUTO_UPDATE** - Enable automatic updates
   - Default: `n` (disabled - manual updates only)
 
-- **CONFIG_PYNQ_OTA_CHECK_INTERVAL_MS** - Auto-check interval
+- **CONFIG_STAR_OTA_CHECK_INTERVAL_MS** - Auto-check interval
   - Default: `3600000` (1 hour)
   - Range: 60000-86400000 ms (1 min - 24 hours)
-  - Only enabled if `CONFIG_PYNQ_OTA_AUTO_UPDATE` is set
+  - Only enabled if `CONFIG_STAR_OTA_AUTO_UPDATE` is set
 
-- **CONFIG_PYNQ_OTA_AUTO_REBOOT** - Auto-reboot after update
+- **CONFIG_STAR_OTA_AUTO_REBOOT** - Auto-reboot after update
   - Default: `y` (enabled)
 
-- **CONFIG_PYNQ_OTA_HTTPS_CERT_VERIFICATION** - Enable TLS certificate validation
+- **CONFIG_STAR_OTA_HTTPS_CERT_VERIFICATION** - Enable TLS certificate validation
   - Default: `n` (disabled for testing)
 
 ### 2. Updated Protocol (`pynq_wifi_protocol.h:144-148`)
@@ -104,14 +104,14 @@ Created two test files with 60+ tests total:
 
 ### 8. Updated Build Configuration
 
-Modified `components/pynq_wifi_bridge/CMakeLists.txt`:
+Modified `components/star_wifi_bridge/CMakeLists.txt`:
 - Added `json` dependency for cJSON
 - Added `mbedtls` dependency for SHA256
 - Added `esp_http_client` for version checking
 
 ## Usage
 
-### From PYNQ (Python)
+### From Raspberry Pi (Python)
 
 **Basic OTA Update (no hash verification):**
 ```python
@@ -183,7 +183,7 @@ Response: Binary firmware file (.bin)
 ```bash
 idf.py menuconfig
 
-# Navigate to: PYNQ WiFi Bridge Configuration -> OTA Update Configuration
+# Navigate to: STAR WiFi Bridge Configuration -> OTA Update Configuration
 
 # Set your backend URLs:
 OTA Update URL: https://your-server.com/api/esp32/firmware.bin
@@ -211,7 +211,7 @@ OTA Version Check URL: https://your-server.com/api/esp32/version
 
 ## How SHA256 Verification Works
 
-1. **PYNQ** sends OTA command with firmware URL and expected SHA256 hash
+1. **Raspberry Pi** sends OTA command with firmware URL and expected SHA256 hash
 2. **ESP32** downloads firmware to OTA partition (while still running!)
 3. **After download**, ESP32 reads the downloaded data from flash
 4. **Calculates** SHA256 hash of the downloaded firmware using mbedtls
@@ -224,7 +224,7 @@ OTA Version Check URL: https://your-server.com/api/esp32/version
 By default, the OTA system only allows upgrading to newer versions. This prevents accidental rollbacks.
 
 **To allow downgrade:**
-1. PYNQ sets `allow_downgrade = 1` in the OTA start command
+1. Raspberry Pi sets `allow_downgrade = 1` in the OTA start command
 2. ESP32 skips version comparison check
 3. Firmware is installed regardless of version numbers
 4. Useful for:
@@ -270,19 +270,19 @@ Expected output:
 ## Files Modified/Created
 
 ### Created:
-- `components/pynq_wifi_bridge/test/test_ota_manager.c` (35 tests)
-- `components/pynq_wifi_bridge/test/test_ota_handler.c` (25 tests)
+- `components/star_wifi_bridge/test/test_ota_manager.c` (35 tests)
+- `components/star_wifi_bridge/test/test_ota_handler.c` (25 tests)
 - `esp32-firmware/OTA_IMPROVEMENTS.md` (this file)
 
 ### Modified:
 - `main/Kconfig.projbuild` - Added OTA configuration menu
 - `main/main.c` - Updated to use Kconfig settings
-- `components/pynq_wifi_bridge/include/pynq_ota_manager.h` - Added verified update API
-- `components/pynq_wifi_bridge/include/pynq_wifi_protocol.h` - Extended OTA payload
-- `components/pynq_wifi_bridge/pynq_ota_manager.c` - Implemented all features
-- `components/pynq_wifi_bridge/pynq_wifi_handler.c` - Updated command handler
-- `components/pynq_wifi_bridge/CMakeLists.txt` - Added dependencies
-- `components/pynq_wifi_bridge/test/CMakeLists.txt` - Added OTA test files
+- `components/star_wifi_bridge/include/pynq_ota_manager.h` - Added verified update API
+- `components/star_wifi_bridge/include/pynq_wifi_protocol.h` - Extended OTA payload
+- `components/star_wifi_bridge/pynq_ota_manager.c` - Implemented all features
+- `components/star_wifi_bridge/pynq_wifi_handler.c` - Updated command handler
+- `components/star_wifi_bridge/CMakeLists.txt` - Added dependencies
+- `components/star_wifi_bridge/test/CMakeLists.txt` - Added OTA test files
 
 ## Next Steps
 
