@@ -48,14 +48,14 @@ echo ""
 # 1. Check .gitmodules
 echo "1. Checking .gitmodules..."
 if [ -f ".gitmodules" ]; then
-    if grep -q "meta-java" .gitmodules; then
-        success "meta-java layer configured in .gitmodules"
+    if grep -q "meta-openjdk-temurin" .gitmodules; then
+        success "meta-openjdk-temurin layer configured in .gitmodules"
     else
-        error "meta-java layer missing from .gitmodules"
+        error "meta-openjdk-temurin layer missing from .gitmodules"
     fi
 
     if grep -q "scarthgap" .gitmodules; then
-        success "Using Yocto Scarthgap (5.0 LTS) branch"
+        success "Using Yocto Scarthgap (5.0) branch"
     else
         warning "Yocto branch not set to scarthgap"
     fi
@@ -67,16 +67,16 @@ fi
 echo ""
 echo "2. Checking scripts/init-build.sh..."
 if [ -f "scripts/init-build.sh" ]; then
-    if grep -q "meta-java" scripts/init-build.sh; then
-        success "meta-java layer clone code present in init-build.sh"
+    if grep -q "meta-openjdk-temurin" scripts/init-build.sh; then
+        success "meta-openjdk-temurin layer clone code present in init-build.sh"
     else
-        error "meta-java layer clone code missing from init-build.sh"
+        error "meta-openjdk-temurin layer clone code missing from init-build.sh"
     fi
 
-    if grep -q "META_JAVA_COMMIT" scripts/init-build.sh; then
-        success "META_JAVA_COMMIT variable defined"
+    if grep -q "META_TEMURIN_COMMIT" scripts/init-build.sh; then
+        success "META_TEMURIN_COMMIT variable defined"
     else
-        error "META_JAVA_COMMIT variable missing"
+        error "META_TEMURIN_COMMIT variable missing"
     fi
 
     if bash -n scripts/init-build.sh 2>/dev/null; then
@@ -92,10 +92,10 @@ fi
 echo ""
 echo "3. Checking setup-environment.sh..."
 if [ -f "setup-environment.sh" ]; then
-    if grep -q "meta-java" setup-environment.sh; then
-        success "meta-java layer referenced in setup-environment.sh"
+    if grep -q "meta-openjdk-temurin" setup-environment.sh; then
+        success "meta-openjdk-temurin layer referenced in setup-environment.sh"
     else
-        error "meta-java layer not in bblayers.conf template"
+        error "meta-openjdk-temurin layer not in bblayers.conf template"
     fi
 
     if bash -n setup-environment.sh 2>/dev/null; then
@@ -112,16 +112,16 @@ echo ""
 echo "4. Checking packagegroup-star-ros2.bb..."
 RECIPE="meta-star/recipes-core/packagegroups/packagegroup-star-ros2.bb"
 if [ -f "$RECIPE" ]; then
-    if grep -q "openjdk-21" "$RECIPE"; then
-        success "OpenJDK 21 package included"
+    if grep -q "openjdk-17-jre" "$RECIPE"; then
+        success "OpenJDK 17 JRE package included (from meta-openjdk-temurin)"
     else
-        error "OpenJDK 21 package not found in recipe"
+        error "openjdk-17-jre package not found in recipe"
     fi
 
-    if grep -q "openjdk-21-jre" "$RECIPE"; then
-        success "OpenJDK 21 JRE package included"
+    if grep -q "meta-openjdk-temurin" "$RECIPE"; then
+        success "Recipe references meta-openjdk-temurin layer"
     else
-        warning "OpenJDK 21 JRE package not found (optional)"
+        warning "Recipe doesn't mention meta-openjdk-temurin (optional)"
     fi
 
     if grep -q "Kotlin" "$RECIPE" || grep -q "Java" "$RECIPE"; then

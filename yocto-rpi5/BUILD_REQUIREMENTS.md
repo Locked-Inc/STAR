@@ -147,8 +147,8 @@ This image includes the following modern components:
 - **SSH Server**: dropbear (lightweight)
 
 ### Development Stack
-- **Java**: OpenJDK 21 (LTS) - Latest Java LTS release
-- **Kotlin**: Compatible with OpenJDK 21 (install runtime separately)
+- **Java**: OpenJDK 17 JRE (LTS) - Eclipse Temurin binaries (supported until 2029)
+- **Kotlin**: Compatible with all modern Kotlin versions (2.0+, 1.9+, 1.8+)
 - **Python**: 3.12+ (included with ROS2)
 - **ROS2**: Jazzy (latest ROS2 LTS release)
 
@@ -202,14 +202,14 @@ ssh root@192.168.2.100 "java -jar /opt/star/your-app.jar"
 
 ## Kotlin Version Compatibility
 
-OpenJDK 21 supports all modern Kotlin versions:
+OpenJDK 17 supports all modern Kotlin versions:
 
 | Kotlin Version | Status | Notes |
 |----------------|--------|-------|
-| Kotlin 2.0+ | RECOMMENDED | Latest features, best performance |
-| Kotlin 1.9.x | Supported | Stable, well-tested |
-| Kotlin 1.8.x | Supported | Older but compatible |
-| Kotlin 1.7.x and below | Legacy | May work but not recommended |
+| Kotlin 2.0+ | RECOMMENDED | Latest features, K2 compiler, best performance |
+| Kotlin 1.9.x | Supported | Stable, production-ready, well-tested |
+| Kotlin 1.8.x | Supported | Conservative choice, fully compatible |
+| Kotlin 1.7.x and below | Legacy | Older versions, update recommended |
 
 ## Troubleshooting
 
@@ -340,7 +340,8 @@ ssh root@<pi-ip-address>
 
 # Verify Java
 java -version
-# Expected: openjdk version "21.0.x"
+# Expected: openjdk version "17.0.x"
+# Expected: OpenJDK Runtime Environment Temurin-17.0.x
 
 # Verify Python
 python3 --version
@@ -351,11 +352,9 @@ source /opt/ros/jazzy/setup.bash
 ros2 --version
 # Expected: ros2 cli version 0.x.x
 
-# Test Java compilation
-echo 'public class Hello { public static void main(String[] args) { System.out.println("Hello from Java 21!"); } }' > Hello.java
-javac Hello.java
-java Hello
-# Expected: "Hello from Java 21!"
+# Test Java (note: JRE only, no javac compiler)
+# Deploy a pre-compiled JAR and run it
+java -jar your-app.jar
 ```
 
 ## Support
@@ -376,8 +375,8 @@ Minimum viable build environment:
 - Required system packages installed
 
 The build will produce a modern, minimal Raspberry Pi 5 image with:
-- OpenJDK 21 (latest LTS Java)
-- Full Kotlin support
+- OpenJDK 17 JRE (LTS - Eclipse Temurin binaries)
+- Full Kotlin 2.0+ support
 - ROS2 Jazzy
 - Python 3.12+
 - Optimized for robotics development

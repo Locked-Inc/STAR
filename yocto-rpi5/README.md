@@ -5,7 +5,7 @@ Ultra-minimal, debloated headless Linux system for Raspberry Pi 5 using Yocto Pr
 ## What You Get
 
 A modern, optimized system with:
-- **Java**: OpenJDK 21 (LTS) - Latest Java with full Kotlin support
+- **Java**: OpenJDK 17 (LTS) - Modern Java with full Kotlin 2.0+ support
 - **ROS2**: Jazzy (latest LTS) - For robotics integration
 - **Python**: 3.12+ - Modern Python with ROS2
 - **Init**: systemd (reliable, well-supported)
@@ -257,9 +257,10 @@ Once you have the system booting:
 2. **Configure WiFi** - For wireless access
 3. **Verify Java and Kotlin** - Modern Java is pre-installed:
    - See [Java & Kotlin Setup Guide](JAVA_KOTLIN_SETUP.md)
-   - Includes OpenJDK 21 (LTS)
-   - Full Kotlin support (2.0+)
+   - Includes OpenJDK 17 JRE (LTS, supported until 2029)
+   - Full Kotlin support (2.0+, 1.9+, 1.8+)
    - Ready for ROS2 integration
+   - Upgrade options to OpenJDK 21 available
 
 4. **Check Build Requirements** - Before building the image:
    - See [Build Requirements](BUILD_REQUIREMENTS.md)

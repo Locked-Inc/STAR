@@ -52,7 +52,7 @@ BBLAYERS ?= " \\
   ${SCRIPT_DIR}/meta-openembedded/meta-python \\
   ${SCRIPT_DIR}/meta-openembedded/meta-networking \\
   ${SCRIPT_DIR}/meta-raspberrypi \\
-  ${SCRIPT_DIR}/meta-java \\
+  ${SCRIPT_DIR}/meta-openjdk-temurin \\
   ${SCRIPT_DIR}/meta-star \\
   "
 EOF

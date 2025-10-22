@@ -4,43 +4,83 @@
 
 The STAR Raspberry Pi 5 image now includes **modern Java and Kotlin support**:
 
-- **OpenJDK 21** (Latest Java LTS release - April 2024)
-- **Full Kotlin compatibility** (supports Kotlin 2.0+)
+- **OpenJDK 17 JRE** (LTS - supported until September 2029)
+- **Full Kotlin compatibility** (supports Kotlin 2.0+, 1.9+, 1.8+)
 - **ROS2 Jazzy** for robotics integration
 - **Python 3.12+** for scripting
+- **Pre-built binaries** from Eclipse Temurin for fast deployment
 
 ## What's Included
 
 ### Java Runtime
-- **OpenJDK 21 JRE**: Runtime environment for executing Java applications
-- **OpenJDK 21 JDK**: Full development kit including compiler (javac)
+- **OpenJDK 17 JRE**: Java Runtime Environment for executing Java applications
+- **Eclipse Temurin binaries**: High-quality, TCK-certified OpenJDK builds
 - **ARM64 optimized**: Native performance on Raspberry Pi 5
+- **No compilation required**: Uses pre-built binaries for faster image builds
 
-### Meta-Java Layer
-The build now includes the `meta-java` layer from the Yocto Project:
-- Branch: `scarthgap` (Yocto 5.0 LTS)
-- Source: https://git.yoctoproject.org/meta-java
-- Provides: Modern OpenJDK recipes and Java tooling
+### meta-openjdk-temurin Layer
+The build uses the `meta-openjdk-temurin` layer:
+- Branch: `scarthgap` (Yocto 5.0)
+- Source: https://github.com/lucimber/meta-openjdk-temurin
+- Provides: Pre-built Eclipse Temurin JRE binaries
+- Available versions: JRE 8, 11, 17, 21
+- Default: **OpenJDK 17 JRE** (excellent balance of modern features and stability)
 
-## Why OpenJDK 21?
+## Why OpenJDK 17?
 
-OpenJDK 21 is the latest Long-Term Support (LTS) release:
-- **Released**: September 2023
-- **Support**: Until September 2031 (8 years)
-- **Features**: Virtual threads, pattern matching, records, sealed classes
-- **Performance**: Significant improvements over Java 8/11/17
-- **Kotlin**: Fully compatible with all modern Kotlin versions (1.9+, 2.0+)
+OpenJDK 17 is a Long-Term Support (LTS) release:
+- **Released**: September 2021
+- **Support**: Until September 2029 (8+ years)
+- **Features**: Records, sealed classes, pattern matching, text blocks, enhanced switch
+- **Performance**: Significant improvements over Java 8/11
+- **Kotlin**: Fully compatible with all modern Kotlin versions (1.8+, 1.9+, 2.0+)
+- **Stability**: Battle-tested, widely adopted in production
 
 ## Kotlin Compatibility
 
-OpenJDK 21 supports all modern Kotlin versions:
+OpenJDK 17 supports all modern Kotlin versions:
 
 | Kotlin Version | Compatibility | Recommended For |
 |----------------|---------------|-----------------|
-| Kotlin 2.0.x | EXCELLENT | New projects, latest features |
-| Kotlin 1.9.x | EXCELLENT | Production, stable |
-| Kotlin 1.8.x | GOOD | Legacy projects |
-| Kotlin 1.7.x and below | LIMITED | Not recommended |
+| Kotlin 2.0.x | EXCELLENT | New projects, K2 compiler, latest features |
+| Kotlin 1.9.x | EXCELLENT | Production, stable, well-tested |
+| Kotlin 1.8.x | EXCELLENT | Legacy projects, conservative choice |
+| Kotlin 1.7.x and below | GOOD | Older projects (update recommended) |
+
+## Upgrading to OpenJDK 21 (Optional)
+
+If you need Java 21 features, you can upgrade:
+
+### Option 1: Change build configuration
+
+Edit `yocto-rpi5/meta-star/recipes-core/packagegroups/packagegroup-star-ros2.bb`:
+
+```bitbake
+# Change from:
+openjdk-17-jre \
+
+# To:
+openjdk-21-jre \
+```
+
+Then rebuild the image.
+
+### Option 2: Install at runtime
+
+After the Pi is running:
+
+```bash
+# Using SDKMAN (recommended)
+curl -s "https://get.sdkman.io" | bash
+source "$HOME/.sdkman/bin/sdkman-init.sh"
+sdk install java 21.0.5-tem
+
+# Or download manually
+cd /opt
+wget https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.5%2B11/OpenJDK21U-jre_aarch64_linux_hotspot_21.0.5_11.tar.gz
+tar xzf OpenJDK21U-jre_aarch64_linux_hotspot_21.0.5_11.tar.gz
+echo 'export PATH="/opt/jdk-21.0.5+11/bin:$PATH"' >> ~/.bashrc
+```
 
 ## Build Configuration
 
@@ -48,7 +88,7 @@ The image is configured with:
 
 ### Layers (bblayers.conf)
 ```
-meta-java                      # OpenJDK 21 recipes
+meta-openjdk-temurin           # Eclipse Temurin JRE binaries
 meta-oe                        # OpenEmbedded core
 meta-python                    # Python support
 meta-networking                # Network utilities
@@ -58,8 +98,7 @@ meta-star                      # Custom STAR configuration
 
 ### Packages (packagegroup-star-ros2.bb)
 ```
-openjdk-21                    # Java Development Kit
-openjdk-21-jre               # Java Runtime Environment
+openjdk-17-jre               # Java 17 Runtime Environment
 ros-base                      # ROS2 Jazzy
 python3                       # Python 3.12+
 ```
@@ -76,13 +115,9 @@ ssh root@<pi-ip>
 # Check Java version
 java -version
 # Expected output:
-# openjdk version "21.0.x" ...
-# OpenJDK Runtime Environment ...
-# OpenJDK 64-Bit Server VM ...
-
-# Check Java compiler
-javac -version
-# Expected: javac 21.0.x
+# openjdk version "17.0.x" ...
+# OpenJDK Runtime Environment Temurin-17.0.x ...
+# OpenJDK 64-Bit Server VM Temurin-17.0.x ...
 ```
 
 ### Run a Java Application
@@ -91,20 +126,28 @@ javac -version
 # Create a simple test
 echo 'public class Test {
     public static void main(String[] args) {
-        System.out.println("Java 21 on Raspberry Pi 5!");
+        System.out.println("Java 17 on Raspberry Pi 5!");
         System.out.println("Available processors: " +
             Runtime.getRuntime().availableProcessors());
+
+        // Java 17 feature: Text blocks
+        var message = """
+            Multi-line text blocks
+            are awesome in Java 17!
+            """;
+        System.out.println(message);
     }
 }' > Test.java
 
-# Compile
-javac Test.java
+# Compile (note: JRE doesn't include javac)
+# You'll need to compile on your development machine
+# or install full JDK separately
 
-# Run
+# Run pre-compiled class
 java Test
 ```
 
-### Deploy Pre-built JAR Files
+### Deploy Pre-built JAR Files (Recommended)
 
 The recommended approach for embedded systems:
 
@@ -122,32 +165,7 @@ ssh root@192.168.2.100 "java -jar /opt/star/your-app.jar"
 
 ## Kotlin Development
 
-### Option 1: Install Kotlin on Raspberry Pi (for development)
-
-Using SDKMAN (recommended):
-```bash
-# On the Raspberry Pi
-curl -s "https://get.sdkman.io" | bash
-source "$HOME/.sdkman/bin/sdkman-init.sh"
-
-# Install Kotlin
-sdk install kotlin
-
-# Verify
-kotlin -version
-# Expected: Kotlin version 2.x.x
-```
-
-Manual installation:
-```bash
-cd /opt
-wget https://github.com/JetBrains/kotlin/releases/download/v2.0.20/kotlin-compiler-2.0.20.zip
-unzip kotlin-compiler-2.0.20.zip
-echo 'export PATH="/opt/kotlinc/bin:$PATH"' >> ~/.bashrc
-source ~/.bashrc
-```
-
-### Option 2: Develop on Host, Deploy to Pi (recommended)
+### Option 1: Develop on Host, Deploy to Pi (RECOMMENDED)
 
 **Best practice for embedded systems:**
 
@@ -160,7 +178,7 @@ gradle init --type kotlin-application
 # Or use existing project
 ```
 
-2. **Configure build.gradle.kts** for fat JAR:
+2. **Configure build.gradle.kts** for Java 17 and fat JAR:
 
 ```kotlin
 plugins {
@@ -179,6 +197,10 @@ repositories {
 dependencies {
     implementation(kotlin("stdlib"))
     // Add your dependencies
+}
+
+kotlin {
+    jvmToolchain(17)  // Target Java 17
 }
 
 application {
@@ -207,50 +229,87 @@ scp build/libs/star-robot.jar root@192.168.2.100:/opt/star/
 ssh root@192.168.2.100 "java -jar /opt/star/star-robot.jar"
 ```
 
+### Option 2: Install Kotlin Compiler on Pi (for development/testing)
+
+Using SDKMAN (recommended):
+```bash
+# On the Raspberry Pi
+curl -s "https://get.sdkman.io" | bash
+source "$HOME/.sdkman/bin/sdkman-init.sh"
+
+# Install Kotlin
+sdk install kotlin
+
+# Verify
+kotlin -version
+# Expected: Kotlin version 2.x.x
+```
+
+Manual installation:
+```bash
+cd /opt
+wget https://github.com/JetBrains/kotlin/releases/download/v2.0.20/kotlin-compiler-2.0.20.zip
+unzip kotlin-compiler-2.0.20.zip
+echo 'export PATH="/opt/kotlinc/bin:$PATH"' >> ~/.bashrc
+source ~/.bashrc
+```
+
 ## Example: Kotlin Robot Controller
 
-Create a simple robot controller:
+Create a simple robot controller using Java 17 features:
 
 **RobotController.kt**:
 ```kotlin
 package com.star.robot
 
 import java.net.ServerSocket
-import java.io.BufferedReader
-import java.io.PrintWriter
+import java.util.concurrent.Executors
 
 class RobotController(private val port: Int = 8080) {
+
     fun start() {
         println("Starting robot controller on port $port...")
         println("Java version: ${System.getProperty("java.version")}")
         println("Kotlin version: ${KotlinVersion.CURRENT}")
 
+        // Java 17 feature: Virtual threads (if using Java 21)
+        val executor = Executors.newVirtualThreadPerTaskExecutor()
+
         ServerSocket(port).use { serverSocket ->
             println("Robot controller ready. Waiting for connections...")
 
             while (true) {
-                serverSocket.accept().use { client ->
-                    println("Client connected: ${client.inetAddress}")
+                val client = serverSocket.accept()
 
-                    val input = client.getInputStream().bufferedReader()
-                    val output = PrintWriter(client.getOutputStream(), true)
-
-                    input.lineSequence().forEach { command ->
-                        println("Received command: $command")
-
-                        val response = when (command.uppercase()) {
-                            "FORWARD" -> handleForward()
-                            "BACKWARD" -> handleBackward()
-                            "LEFT" -> handleLeft()
-                            "RIGHT" -> handleRight()
-                            "STOP" -> handleStop()
-                            "STATUS" -> getStatus()
-                            else -> "ERROR: Unknown command"
-                        }
-
-                        output.println(response)
-                    }
+                // Handle each client in a separate thread
+                executor.submit {
+                    handleClient(client)
                 }
+            }
+        }
+    }
+
+    private fun handleClient(client: java.net.Socket) {
+        client.use {
+            println("Client connected: ${client.inetAddress}")
+
+            val input = client.getInputStream().bufferedReader()
+            val output = java.io.PrintWriter(client.getOutputStream(), true)
+
+            input.lineSequence().forEach { command ->
+                println("Received command: $command")
+
+                val response = when (command.uppercase()) {
+                    "FORWARD" -> handleForward()
+                    "BACKWARD" -> handleBackward()
+                    "LEFT" -> handleLeft()
+                    "RIGHT" -> handleRight()
+                    "STOP" -> handleStop()
+                    "STATUS" -> getStatus()
+                    else -> "ERROR: Unknown command"
+                }
+
+                output.println(response)
             }
         }
     }
@@ -260,7 +319,13 @@ class RobotController(private val port: Int = 8080) {
     private fun handleLeft() = "Turning left"
     private fun handleRight() = "Turning right"
     private fun handleStop() = "Stopped"
-    private fun getStatus() = "Robot OK - Java ${System.getProperty("java.version")}"
+    private fun getStatus() = """
+        Robot Status:
+        - Java: ${System.getProperty("java.version")}
+        - Kotlin: ${KotlinVersion.CURRENT}
+        - Memory: ${Runtime.getRuntime().freeMemory() / 1024 / 1024} MB free
+        - Processors: ${Runtime.getRuntime().availableProcessors()}
+        """.trimIndent()
 }
 
 fun main() {
@@ -293,25 +358,6 @@ telnet 192.168.2.100 8080
 
 You can combine Kotlin/Java with ROS2:
 
-### Using ROS2 Java Bindings (Advanced)
-
-```kotlin
-// Example: Subscribe to ROS2 topic and control robot
-import org.ros2.rcljava.RCLJava
-import org.ros2.rcljava.node.Node
-// ... ROS2 Java bindings
-
-fun main() {
-    RCLJava.init()
-
-    val node = RCLJava.createNode("kotlin_robot_controller")
-
-    // Subscribe to movement commands
-    // Publish sensor data
-    // ... ROS2 integration code
-}
-```
-
 ### Using Process Execution (Simple)
 
 ```kotlin
@@ -319,11 +365,21 @@ fun main() {
 import java.lang.ProcessBuilder
 
 fun publishToROS2(topic: String, message: String) {
-    ProcessBuilder(
+    val command = listOf(
         "bash", "-c",
         "source /opt/ros/jazzy/setup.bash && " +
         "ros2 topic pub $topic std_msgs/msg/String \"data: '$message'\""
-    ).start()
+    )
+
+    ProcessBuilder(command)
+        .redirectOutput(ProcessBuilder.Redirect.INHERIT)
+        .redirectError(ProcessBuilder.Redirect.INHERIT)
+        .start()
+        .waitFor()
+}
+
+fun main() {
+    publishToROS2("/robot/commands", "FORWARD")
 }
 ```
 
@@ -338,13 +394,13 @@ java -Xmx512m -Xms256m -jar your-app.jar
 # Use G1GC for better latency
 java -XX:+UseG1GC -Xmx512m -jar your-app.jar
 
-# Enable virtual threads (Java 21 feature)
-java -XX:+UnlockExperimentalVMOptions -Xmx512m -jar your-app.jar
+# Optimize for container/embedded environments
+java -XX:+UseContainerSupport -Xmx512m -jar your-app.jar
 ```
 
 ### Memory Usage
 
-Typical memory footprint:
+Typical memory footprint with OpenJDK 17:
 - **JVM overhead**: 50-100 MB
 - **Simple application**: 100-200 MB total
 - **Complex application**: 200-500 MB total
@@ -359,12 +415,11 @@ Raspberry Pi 5 has 4-8 GB RAM, so this is acceptable.
 # Check if Java is installed
 which java
 
-# Check package
-opkg list-installed | grep openjdk
+# Check version
+java -version
 
-# If missing, reinstall
-opkg update
-opkg install openjdk-21
+# If missing, Java wasn't included in build
+# Verify packagegroup-star-ros2 includes openjdk-17-jre
 ```
 
 ### OutOfMemoryError
@@ -379,36 +434,41 @@ free -h
 
 ### Kotlin Version Mismatch
 
-Make sure your development machine uses a compatible Kotlin version:
+Make sure your development machine targets Java 17:
 
 ```kotlin
 // In build.gradle.kts
-kotlin("jvm") version "2.0.20"  // Use same version as Pi
-
-// Target JVM 21
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(17)  // Must match Pi's Java version
 }
 ```
 
-## Build System Integration
+### No javac Compiler
 
-The image is built using:
+The image includes **JRE only** (not full JDK):
+- **Compile** on your development machine
+- **Run** pre-compiled JAR on Pi
 
-1. **Yocto Scarthgap (5.0 LTS)**
-   - Long-term support until 2026
-   - Stable, well-tested
-   - ARM64 optimized
+To add full JDK (adds ~200MB):
+```bash
+# At runtime via SDKMAN
+sdk install java 17.0.x-tem
 
-2. **meta-java Layer**
-   - Official Yocto Java support
-   - OpenJDK 21 recipes
-   - ARM-native compilation
+# Or rebuild image with full JDK recipe (if available)
+```
 
-3. **meta-raspberrypi Layer**
-   - Raspberry Pi 5 BSP
-   - Hardware-specific optimizations
-   - Boot firmware
+## Available Java Versions
+
+meta-openjdk-temurin provides multiple Java versions:
+
+| Version | Package Name | LTS | Support Until | Status |
+|---------|-------------|-----|---------------|--------|
+| Java 8 | openjdk-8-jre | Yes | December 2030 | Legacy |
+| Java 11 | openjdk-11-jre | Yes | October 2027 | Stable |
+| **Java 17** | **openjdk-17-jre** | **Yes** | **September 2029** | **Default** |
+| Java 21 | openjdk-21-jre | Yes | September 2031 | Latest |
+
+**Recommendation**: Stick with Java 17 unless you need specific Java 21 features.
 
 ## Development Workflow
 
@@ -422,7 +482,8 @@ Recommended workflow:
 │  - IntelliJ IDEA / VS Code  │
 │  - Kotlin/Java development  │
 │  - Gradle builds            │
-│  - Testing                  │
+│  - Unit testing             │
+│  - Java 17 JDK              │
 └──────────────┬──────────────┘
                │ scp/rsync
                ▼
@@ -430,10 +491,11 @@ Recommended workflow:
 │  Raspberry Pi 5             │
 │  (STAR Robot)               │
 │                             │
-│  - OpenJDK 21               │
+│  - OpenJDK 17 JRE           │
 │  - ROS2 Jazzy               │
 │  - Robot control            │
 │  - Sensor integration       │
+│  - Runtime only             │
 └─────────────────────────────┘
 ```
 
@@ -449,19 +511,21 @@ Recommended workflow:
 ## Resources
 
 - **Kotlin Documentation**: https://kotlinlang.org/docs/home.html
-- **Java 21 Features**: https://openjdk.org/projects/jdk/21/
+- **Java 17 Features**: https://openjdk.org/projects/jdk/17/
+- **Eclipse Temurin**: https://adoptium.net/
 - **ROS2 Documentation**: https://docs.ros.org/en/jazzy/
 - **Yocto Project**: https://docs.yoctoproject.org/
-- **meta-java Layer**: https://git.yoctoproject.org/meta-java/
+- **meta-openjdk-temurin**: https://github.com/lucimber/meta-openjdk-temurin
 
 ## Summary
 
 Your STAR Raspberry Pi 5 image now has:
 
-- **Modern Java**: OpenJDK 21 (LTS, supported until 2031)
-- **Full Kotlin Support**: Compatible with Kotlin 2.0+
+- **Modern Java**: OpenJDK 17 JRE (LTS, supported until 2029)
+- **Full Kotlin Support**: Compatible with Kotlin 2.0+, 1.9+, 1.8+
 - **ROS2 Integration**: Jazzy release for robotics
-- **Production Ready**: Optimized for embedded ARM64
+- **Production Ready**: Optimized Eclipse Temurin binaries for ARM64
 - **Easy Development**: Build on host, deploy to Pi
+- **Upgrade Path**: Can easily upgrade to Java 21 if needed
 
 Build amazing robotics applications with modern languages!
