@@ -1,10 +1,10 @@
-SUMMARY = "ROS2 packages for STAR robot"
-DESCRIPTION = "ROS2 Jazzy for robotics development"
+SUMMARY = "ROS2 and Java packages for STAR robot"
+DESCRIPTION = "ROS2 Jazzy and OpenJDK 21 for robotics development with Kotlin support"
 LICENSE = "MIT"
 
 inherit packagegroup
 
-# Core ROS2 packages
+# Core ROS2 and Java packages
 RDEPENDS:${PN} = " \
     ros-base \
     ros-core \
@@ -15,6 +15,8 @@ RDEPENDS:${PN} = " \
     wget \
     ca-certificates \
     tar \
+    openjdk-21 \
+    openjdk-21-jre \
 "
 
 # Optional but recommended tools

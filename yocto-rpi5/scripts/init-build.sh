@@ -18,6 +18,7 @@ YOCTO_BRANCH="scarthgap"
 POKY_COMMIT=""
 META_OE_COMMIT=""
 META_RPI_COMMIT=""
+META_JAVA_COMMIT=""
 
 echo "========================================="
 echo "STAR Yocto Build Initialization"
@@ -40,7 +41,7 @@ if [ -d ".git" ] && [ -f ".gitmodules" ]; then
     echo "✓ Submodules initialized"
 
     # Verify submodules are present
-    if [ ! -d "poky/.git" ] || [ ! -d "meta-openembedded/.git" ] || [ ! -d "meta-raspberrypi/.git" ]; then
+    if [ ! -d "poky/.git" ] || [ ! -d "meta-openembedded/.git" ] || [ ! -d "meta-raspberrypi/.git" ] || [ ! -d "meta-java/.git" ]; then
         echo "⚠️  Warning: Some submodules failed to initialize"
         echo "Falling back to direct cloning..."
         USE_SUBMODULES=false
@@ -97,6 +98,20 @@ if [ "$USE_SUBMODULES" = false ]; then
     else
         echo "✓ meta-raspberrypi already exists"
     fi
+
+    # Clone meta-java (for OpenJDK 21 support)
+    if [ ! -d "meta-java" ]; then
+        echo "Cloning meta-java..."
+        git clone -b ${YOCTO_BRANCH} https://git.yoctoproject.org/meta-java
+        if [ -n "$META_JAVA_COMMIT" ]; then
+            cd meta-java && git checkout $META_JAVA_COMMIT && cd ..
+            echo "✓ meta-java cloned and pinned to ${META_JAVA_COMMIT}"
+        else
+            echo "✓ meta-java cloned"
+        fi
+    else
+        echo "✓ meta-java already exists"
+    fi
 fi
 
 # Note: For runit, we'll use recipes directly in meta-star
@@ -111,6 +126,7 @@ echo "Layers ready:"
 echo "  - poky (Yocto reference)"
 echo "  - meta-openembedded"
 echo "  - meta-raspberrypi"
+echo "  - meta-java (OpenJDK 21 support)"
 
 if [ "$USE_SUBMODULES" = true ]; then
     echo ""

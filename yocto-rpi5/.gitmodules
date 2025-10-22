@@ -12,3 +12,8 @@
 	path = meta-raspberrypi
 	url = https://github.com/agherzan/meta-raspberrypi.git
 	branch = scarthgap
+
+[submodule "meta-java"]
+	path = meta-java
+	url = https://git.yoctoproject.org/meta-java
+	branch = scarthgap

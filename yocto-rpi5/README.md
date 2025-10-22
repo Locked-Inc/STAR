@@ -4,14 +4,17 @@ Ultra-minimal, debloated headless Linux system for Raspberry Pi 5 using Yocto Pr
 
 ## What You Get
 
-A bare-bones system with:
-- **Init**: runit (minimal service supervision)
+A modern, optimized system with:
+- **Java**: OpenJDK 21 (LTS) - Latest Java with full Kotlin support
+- **ROS2**: Jazzy (latest LTS) - For robotics integration
+- **Python**: 3.12+ - Modern Python with ROS2
+- **Init**: systemd (reliable, well-supported)
 - **SSH**: dropbear (lightweight remote access)
 - **Network**: WiFi + Ethernet support
 - **Package Manager**: opkg (for adding packages later)
 - **Shell**: busybox
-- **Size**: ~100-200MB root filesystem
-- **No GUI, no bloat, just essentials**
+- **Size**: ~500MB-1GB root filesystem (includes Java + ROS2)
+- **Optimized for robotics development with modern languages**
 
 ## Quick Start
 
@@ -248,16 +251,23 @@ Build system for creating custom Linux distributions. Think "compile your own De
 
 ## Next Steps
 
-Once you have the minimal system booting:
+Once you have the system booting:
 
 1. **Set root password** - Critical for security
 2. **Configure WiFi** - For wireless access
-3. **Add ROS2 and Java** (Optional) - For robotics development:
-   - See [ROS2 and Java Setup Guide](docs/ROS2_JAVA_SETUP.md)
-   - Adds ROS2 Jazzy and OpenJDK 21
-   - Enables LiDAR integration with SICK TIM561
+3. **Verify Java and Kotlin** - Modern Java is pre-installed:
+   - See [Java & Kotlin Setup Guide](JAVA_KOTLIN_SETUP.md)
+   - Includes OpenJDK 21 (LTS)
+   - Full Kotlin support (2.0+)
+   - Ready for ROS2 integration
 
-4. **Add packages incrementally** - Start with what you need for STAR robot:
+4. **Check Build Requirements** - Before building the image:
+   - See [Build Requirements](BUILD_REQUIREMENTS.md)
+   - OS requirements (Ubuntu 22.04 LTS recommended)
+   - Hardware requirements (8GB RAM, 150GB disk minimum)
+   - System dependencies and configuration
+
+5. **Add packages incrementally** - Start with what you need for STAR robot:
    - `python3` - For scripts (included with ROS2)
    - `i2c-tools` - Already included
    - `can-utils` - For CAN bus
