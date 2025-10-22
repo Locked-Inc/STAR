@@ -2721,6 +2721,12 @@
 		(uuid "cf0ff081-707f-4ec0-9947-69f32776fbc7")
 	)
 	(junction
+		(at 290.83 187.96)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "ded2f59e-7108-4f4d-9d77-fe899f553583")
+	)
+	(junction
 		(at 236.22 146.05)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -2789,6 +2795,16 @@
 	(no_connect
 		(at 201.93 125.73)
 		(uuid "edf5ea2d-009e-4866-870c-1fa6642b33c1")
+	)
+	(wire
+		(pts
+			(xy 290.83 187.96) (xy 278.13 187.96)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0345d859-1bf6-4964-84a7-f0bf3eb493d6")
 	)
 	(wire
 		(pts
@@ -3242,6 +3258,16 @@
 	)
 	(wire
 		(pts
+			(xy 151.13 271.78) (xy 137.16 271.78)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3bee9bc1-f64f-422b-ac4e-d72167cb6f9c")
+	)
+	(wire
+		(pts
 			(xy 236.22 160.02) (xy 236.22 187.96)
 		)
 		(stroke
@@ -3482,7 +3508,7 @@
 	)
 	(wire
 		(pts
-			(xy 293.37 187.96) (xy 278.13 187.96)
+			(xy 293.37 187.96) (xy 290.83 187.96)
 		)
 		(stroke
 			(width 0)
@@ -4102,6 +4128,16 @@
 	)
 	(wire
 		(pts
+			(xy 151.13 269.24) (xy 137.16 269.24)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b6e0a600-d8b0-4264-8daa-ef79139783f3")
+	)
+	(wire
+		(pts
 			(xy 133.35 123.19) (xy 133.35 135.89)
 		)
 		(stroke
@@ -4590,6 +4626,16 @@
 		)
 		(uuid "fc878a88-293f-46fe-9296-2c7308f26c8a")
 	)
+	(label "PD_SDA"
+		(at 151.13 271.78 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "0695f9bc-1b97-4764-b26f-3e34bc0cb3c0")
+	)
 	(label "PD_VAC"
 		(at 124.46 138.43 0)
 		(effects
@@ -4619,6 +4665,16 @@
 			(justify left bottom)
 		)
 		(uuid "26e1a962-59e4-4576-9780-ab98ebe407df")
+	)
+	(label "PD_SCL"
+		(at 151.13 269.24 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "2bf95e84-a45b-4769-8afc-251d8165de97")
 	)
 	(label "AFE_PACK+"
 		(at 184.15 214.63 180)
@@ -7343,6 +7399,74 @@
 		)
 	)
 	(symbol
+		(lib_id "Connector_Generic:Conn_01x02")
+		(at 132.08 271.78 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(uuid "330dfbc1-5151-478b-9b3d-eeee20d978ad")
+		(property "Reference" "J5"
+			(at 132.08 266.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Conn_01x02"
+			(at 132.08 265.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" "Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical"
+			(at 132.08 271.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 132.08 271.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 132.08 271.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "c8b25698-2bd6-4656-bf8e-6869a3e478dc")
+		)
+		(pin "2"
+			(uuid "889f2c5d-ba20-497e-81eb-f0017bcd66df")
+		)
+		(instances
+			(project "STAR_BUCK_BOOST_CHARGER"
+				(path "/2b61cf08-f402-4bad-af9c-e2f369608e9d"
+					(reference "J5")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:C")
 		(at 328.93 156.21 0)
 		(unit 1)
@@ -8573,6 +8697,73 @@
 			(project "STAR_BUCK_BOOST_CHARGER"
 				(path "/2b61cf08-f402-4bad-af9c-e2f369608e9d"
 					(reference "C17")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 290.83 187.96 0)
+		(mirror y)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "4680e90b-2dbc-4b4b-9936-991b043b5504")
+		(property "Reference" "#PWR014"
+			(at 290.83 194.31 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 288.798 191.516 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 290.83 187.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 290.83 187.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 290.83 187.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "cb973f5b-d10c-495a-8cff-2e296b85412f")
+		)
+		(instances
+			(project "STAR_BUCK_BOOST_CHARGER"
+				(path "/2b61cf08-f402-4bad-af9c-e2f369608e9d"
+					(reference "#PWR014")
 					(unit 1)
 				)
 			)
