@@ -1,0 +1,24 @@
+# STAR Robot WiFi Configuration Template
+# Copy this file to wpa_supplicant.conf and edit with your WiFi credentials
+# Then run: wpa_supplicant -B -i wlan0 -c /etc/wpa_supplicant/wpa_supplicant.conf
+
+ctrl_interface=/var/run/wpa_supplicant
+ctrl_interface_group=0
+update_config=1
+country=US
+
+# Example WPA/WPA2 network configuration
+# Uncomment and edit the following lines with your WiFi credentials:
+#network={
+#    ssid="YOUR_WIFI_SSID"
+#    psk="YOUR_WIFI_PASSWORD"
+#    key_mgmt=WPA-PSK
+#    priority=1
+#}
+
+# Example open network (no password)
+#network={
+#    ssid="YOUR_OPEN_NETWORK"
+#    key_mgmt=NONE
+#    priority=0
+#}
