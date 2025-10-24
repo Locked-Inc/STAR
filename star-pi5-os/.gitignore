@@ -1,0 +1,14 @@
+# Buildroot
+buildroot-*/
+dl/
+output/
+
+# Temporary files
+*.tar.gz
+*.tar.bz2
+*.zip
+*.img
+
+# Build artifacts
+.config.old
+.auto.deps
