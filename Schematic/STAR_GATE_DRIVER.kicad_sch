@@ -4,6 +4,12 @@
 	(generator_version "9.0")
 	(uuid "b093d17b-3f16-40e3-b68a-97d9cd4b2df5")
 	(paper "A4")
+	(title_block
+		(title "High Side Gate Driver")
+		(company "Locked Inc.")
+		(comment 1 "From slusc16b")
+		(comment 2 "From slva729 VDDCP was picked")
+	)
 	(lib_symbols
 		(symbol "61200621621:6120XX21621_61200621621"
 			(pin_names
@@ -1973,6 +1979,16 @@
 	)
 	(wire
 		(pts
+			(xy 72.39 139.7) (xy 93.98 139.7)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ab22f7c4-52f5-4aad-bf19-3aaed358d969")
+	)
+	(wire
+		(pts
 			(xy 91.44 80.01) (xy 91.44 82.55)
 		)
 		(stroke
@@ -2090,16 +2106,6 @@
 			(type default)
 		)
 		(uuid "d87ef4e2-1aed-4fbf-81ec-61a14cd78165")
-	)
-	(wire
-		(pts
-			(xy 73.66 139.7) (xy 93.98 139.7)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "da4aa1f5-5df7-459c-a1d9-87cccf789e73")
 	)
 	(wire
 		(pts
@@ -2373,126 +2379,247 @@
 		)
 		(uuid "e9274844-ccea-41ee-adf5-c6496851bd69")
 	)
-	(hierarchical_label "FUEL_GUAGE_PMON_EN"
-		(shape input)
-		(at 69.85 156.21 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "26935e27-c1a7-41ca-a736-a2d73184cacd")
-	)
-	(hierarchical_label "AFE_PCHG"
-		(shape output)
-		(at 73.66 139.7 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "4194bb34-5604-4f88-888e-a417aa1267ba")
-	)
-	(hierarchical_label "AFE_CHG"
-		(shape output)
-		(at 124.46 139.7 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "4b471698-fe7b-4ab7-a4df-9272402f05dd")
-	)
-	(hierarchical_label "AFE_CHG_EN"
-		(shape output)
-		(at 72.39 134.62 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "6c7f27b0-951c-4cce-9c69-66f161742664")
-	)
-	(hierarchical_label "FUEL_GUAGE_CP_EN"
-		(shape input)
-		(at 69.85 158.75 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "95327abe-ec51-4083-b6de-29ae1ac4b8e3")
-	)
-	(hierarchical_label "FUEL_GUAGE_PACKDIV"
-		(shape input)
-		(at 129.54 156.21 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "9eb8b7e6-932d-4328-9b3e-acfa07fba600")
-	)
-	(hierarchical_label "AFE_PACK+"
-		(shape output)
-		(at 124.46 134.62 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "aad13c85-d908-447c-bc30-6aa8aacd8d66")
-	)
-	(hierarchical_label "AFE_DSG"
-		(shape output)
-		(at 124.46 137.16 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "b991ab8b-bab7-4158-aed4-0554b453402e")
-	)
-	(hierarchical_label "AFE_DSG_EN"
-		(shape output)
-		(at 124.46 132.08 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "d3be7c9a-4c40-4eb3-b7f3-30bfe5e416da")
-	)
-	(hierarchical_label "FUEL_GUAGE_PCHG_EN"
+	(global_label "FUEL_GUAGE_PCHG_EN"
 		(shape input)
 		(at 129.54 153.67 0)
+		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify left)
 		)
-		(uuid "f8827875-bc96-4aad-aede-fa614d725fc7")
+		(uuid "21360391-21e8-4afb-931c-1509131cb8ed")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 153.7523 153.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
 	)
-	(hierarchical_label "AFE_BATT+"
+	(global_label "AFE_PACK+"
 		(shape output)
-		(at 72.39 137.16 180)
+		(at 124.46 134.62 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "3c1cd691-ab84-4744-849b-d20008d76689")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 138.21 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "FUEL_GUAGE_CP_EN"
+		(shape input)
+		(at 69.85 158.75 180)
+		(fields_autoplaced yes)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify right)
 		)
-		(uuid "fe048825-ddbc-4110-a618-07d502bfdd73")
+		(uuid "4fb09c51-feed-4a43-82f1-87c958adcc0f")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 48.2382 158.75 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "AFE_BATT+"
+		(shape output)
+		(at 72.39 137.16 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "675e435b-189a-4b3e-9ad0-3248c6e7e370")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 59.2448 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "AFE_PCHG"
+		(shape output)
+		(at 72.39 139.7 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "85866d8c-2702-41a6-9b87-a0f23e8a278e")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 59.9705 139.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "FUEL_GUAGE_PMON_EN"
+		(shape input)
+		(at 69.85 156.21 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "a7862c1c-122e-4374-a70b-11c772e7c436")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 45.3958 156.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "AFE_CHG_EN"
+		(shape output)
+		(at 72.39 134.62 180)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right)
+		)
+		(uuid "aa5cad9d-943a-4fae-a412-f01e89f2748b")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 57.7934 134.62 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "AFE_CHG"
+		(shape output)
+		(at 124.46 139.7 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "ac7bd31c-8dee-4f76-a146-e106d9402caa")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 135.6095 139.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "AFE_DSG"
+		(shape output)
+		(at 124.46 137.16 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "b698b527-63c5-4702-b2b5-900c3616c2ac")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 135.4885 137.16 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "FUEL_GUAGE_PACKDIV"
+		(shape input)
+		(at 129.54 156.21 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "c7b0f105-ccc5-44d7-ad56-684f42e5c1e4")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 153.0267 156.21 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
+	)
+	(global_label "AFE_DSG_EN"
+		(shape output)
+		(at 124.46 132.08 0)
+		(fields_autoplaced yes)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left)
+		)
+		(uuid "cf1e220d-f29d-494d-9250-5864eb54f7db")
+		(property "Intersheetrefs" "${INTERSHEET_REFS}"
+			(at 138.9356 132.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+				(hide yes)
+			)
+		)
 	)
 	(symbol
 		(lib_id "PCM_4ms_Power-symbol:PWR_FLAG")
