@@ -1,0 +1,9 @@
+Manufacturer=Phoenix Contact
+PartNumber=1028585
+PartCategory=Connector
+PackageCategory=Other
+PinCount=5
+Version=2.2
+Released=2023-06-16 06:58:04
+Downloaded=2025-10-27 18:29:32
+3D=N
