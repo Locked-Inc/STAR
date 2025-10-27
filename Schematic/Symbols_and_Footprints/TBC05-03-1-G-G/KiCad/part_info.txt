@@ -1,0 +1,9 @@
+Manufacturer=GCT (GLOBAL CONNECTOR TECHNOLOGY)
+PartNumber=TBC05-03-1-G-G
+PartCategory=Connector
+PackageCategory=Other
+PinCount=3
+Version=1.2
+Released=2025-04-07 08:53:07
+Downloaded=2025-10-27 19:14:46
+3D=Y

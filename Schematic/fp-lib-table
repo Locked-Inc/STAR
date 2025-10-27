@@ -76,4 +76,7 @@
   (lib (name "T527T226M025ATE100")(type "KiCad")(uri "${KIPRJMOD}/Symbols_and_Footprints/T527T226M025ATE100/KiCad")(options "")(descr ""))
   (lib (name "T521B106M025ATE100")(type "KiCad")(uri "${KIPRJMOD}/Symbols_and_Footprints/T521B106M025ATE100/KiCad")(options "")(descr ""))
   (lib (name "865080343007")(type "KiCad")(uri "${KIPRJMOD}/Symbols_and_Footprints/865080343007/KiCad")(options "")(descr ""))
+  (lib (name "TBC05-03-1-G-G")(type "KiCad")(uri "${KIPRJMOD}/Symbols_and_Footprints/TBC05-03-1-G-G/KiCad")(options "")(descr ""))
+  (lib (name "1663964")(type "KiCad")(uri "${KIPRJMOD}/Symbols_and_Footprints/1663964/KiCad")(options "")(descr ""))
+  (lib (name "KiCad")(type "KiCad")(uri "${KIPRJMOD}/Symbols_and_Footprints/1028585/KiCad")(options "")(descr ""))
 )
