@@ -345,54 +345,44 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "FDD4141:FDD4141"
-			(pin_names
+		(symbol "Device:C"
+			(pin_numbers
 				(hide yes)
+			)
+			(pin_names
+				(offset 0.254)
 			)
 			(exclude_from_sim no)
 			(in_bom yes)
 			(on_board yes)
-			(property "Reference" "Q"
-				(at 11.43 3.81 0)
+			(property "Reference" "C"
+				(at 0.635 2.54 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
-					(justify left top)
-					(hide yes)
+					(justify left)
 				)
 			)
-			(property "Value" "FDD4141"
-				(at 11.43 1.27 0)
+			(property "Value" "C"
+				(at 0.635 -2.54 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
-					(justify left top)
-					(hide yes)
+					(justify left)
 				)
 			)
-			(property "Footprint" "FQD1N80TM"
-				(at 11.43 -98.73 0)
+			(property "Footprint" ""
+				(at 0.9652 -3.81 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
-					(justify left top)
 					(hide yes)
 				)
 			)
-			(property "Datasheet" "https://www.onsemi.com/pub/Collateral/FDD4141-D.PDF"
-				(at 11.43 -198.73 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" "RoHS Compliant ; High performance trench technology for extremely low RDS(on) ; Maximum RDS(on) = 12.3m at VGS = -10V, ID = -12.7A ; Maximum RDS(on) = 18.0m at VGS = -4.5V, ID = -10.4A"
+			(property "Datasheet" "~"
 				(at 0 0 0)
 				(effects
 					(font
@@ -401,63 +391,40 @@
 					(hide yes)
 				)
 			)
-			(property "Height" "2.39"
-				(at 11.43 -398.73 0)
+			(property "Description" "Unpolarized capacitor"
+				(at 0 0 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
-					(justify left top)
 					(hide yes)
 				)
 			)
-			(property "Mouser Part Number" "512-FDD4141"
-				(at 11.43 -498.73 0)
+			(property "ki_keywords" "cap capacitor"
+				(at 0 0 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
-					(justify left top)
 					(hide yes)
 				)
 			)
-			(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/onsemi-Fairchild/FDD4141?qs=uX8DSVXMAZECDZwLcfL3Uw%3D%3D"
-				(at 11.43 -598.73 0)
+			(property "ki_fp_filters" "C_*"
+				(at 0 0 0)
 				(effects
 					(font
 						(size 1.27 1.27)
 					)
-					(justify left top)
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Name" "onsemi"
-				(at 11.43 -698.73 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Manufacturer_Part_Number" "FDD4141"
-				(at 11.43 -798.73 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(symbol "FDD4141_0_1"
+			(symbol "C_0_1"
 				(polyline
 					(pts
-						(xy -2.286 1.905) (xy -2.286 -1.905)
+						(xy -2.032 0.762) (xy 2.032 0.762)
 					)
 					(stroke
-						(width 0.254)
+						(width 0.508)
 						(type default)
 					)
 					(fill
@@ -466,151 +433,10 @@
 				)
 				(polyline
 					(pts
-						(xy -2.286 0) (xy -5.08 0)
+						(xy -2.032 -0.762) (xy 2.032 -0.762)
 					)
 					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -1.778 2.286) (xy -1.778 1.27)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -1.778 1.778) (xy 0.762 1.778) (xy 0.762 -1.778) (xy -1.778 -1.778)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -1.778 0.508) (xy -1.778 -0.508)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -1.778 -1.27) (xy -1.778 -2.286)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center -0.889 0)
-					(radius 2.794)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -0.254 0) (xy -1.27 0.381) (xy -1.27 -0.381) (xy -0.254 0)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type outline)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 2.54) (xy 0 1.778)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 0 1.778)
-					(radius 0.254)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type outline)
-					)
-				)
-				(circle
-					(center 0 -1.778)
-					(radius 0.254)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type outline)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 -2.54) (xy 0 0) (xy -1.778 0)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0.254 -0.508) (xy 0.381 -0.381) (xy 1.143 -0.381) (xy 1.27 -0.254)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0.762 -0.381) (xy 0.381 0.254) (xy 1.143 0.254) (xy 0.762 -0.381)
-					)
-					(stroke
-						(width 0)
+						(width 0.508)
 						(type default)
 					)
 					(fill
@@ -618,11 +444,11 @@
 					)
 				)
 			)
-			(symbol "FDD4141_1_1"
-				(pin input line
-					(at -7.62 0 0)
-					(length 2.54)
-					(name "G"
+			(symbol "C_1_1"
+				(pin passive line
+					(at 0 3.81 270)
+					(length 2.794)
+					(name "~"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -638,9 +464,9 @@
 					)
 				)
 				(pin passive line
-					(at 0 5.08 270)
-					(length 2.54)
-					(name "D"
+					(at 0 -3.81 90)
+					(length 2.794)
+					(name "~"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -648,24 +474,6 @@
 						)
 					)
 					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 -5.08 90)
-					(length 2.54)
-					(name "S"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -846,6 +654,338 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "ZXMP10A13FTA:ZXMP10A13FTA"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "Q"
+				(at 6.35 4.572 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+			)
+			(property "Value" "ZXMP10A13FTA"
+				(at 6.35 2.032 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+			)
+			(property "Footprint" "SOT96P240X110-3N"
+				(at 11.43 -98.73 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "https://4donline.ihs.com/images/VipMasterIC/IC/DIOD/DIOD-S-A0002238180/DIOD-S-A0002238180-1.pdf?hkey=6D3A4C79FDBF58556ACFDE234799DDF0"
+				(at 11.43 -198.73 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+					(hide yes)
+				)
+			)
+			(property "Description" "100V P-CHANNEL ENHANCEMENT MODE MOSFET"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Height" "1.1"
+				(at 11.43 -398.73 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+					(hide yes)
+				)
+			)
+			(property "Mouser Part Number" "522-ZXMP10A13FTA"
+				(at 11.43 -498.73 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+					(hide yes)
+				)
+			)
+			(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Diodes-Incorporated/ZXMP10A13FTA?qs=4zh0VFflF2ED5l%2FE78e7YQ%3D%3D"
+				(at 11.43 -598.73 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+					(hide yes)
+				)
+			)
+			(property "Manufacturer_Name" "Diodes Incorporated"
+				(at 11.43 -698.73 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+					(hide yes)
+				)
+			)
+			(property "Manufacturer_Part_Number" "ZXMP10A13FTA"
+				(at 11.43 -798.73 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+					(hide yes)
+				)
+			)
+			(symbol "ZXMP10A13FTA_0_1"
+				(polyline
+					(pts
+						(xy 0.254 1.905) (xy 0.254 -1.905)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.254 0) (xy -2.54 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.762 2.286) (xy 0.762 1.27)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.762 1.778) (xy 3.302 1.778) (xy 3.302 -1.778) (xy 0.762 -1.778)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.762 0.508) (xy 0.762 -0.508)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 0.762 -1.27) (xy 0.762 -2.286)
+					)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 1.651 0)
+					(radius 2.794)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 2.286 0) (xy 1.27 0.381) (xy 1.27 -0.381) (xy 2.286 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy 2.54 2.54) (xy 2.54 1.778)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(circle
+					(center 2.54 1.778)
+					(radius 0.254)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(circle
+					(center 2.54 -1.778)
+					(radius 0.254)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type outline)
+					)
+				)
+				(polyline
+					(pts
+						(xy 2.54 -2.54) (xy 2.54 0) (xy 0.762 0)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 2.794 -0.508) (xy 2.921 -0.381) (xy 3.683 -0.381) (xy 3.81 -0.254)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(polyline
+					(pts
+						(xy 3.302 -0.381) (xy 2.921 0.254) (xy 3.683 0.254) (xy 3.302 -0.381)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "ZXMP10A13FTA_1_1"
+				(pin input line
+					(at -5.08 0 0)
+					(length 2.54)
+					(name "G"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 2.54 5.08 270)
+					(length 2.54)
+					(name "D"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at 2.54 -5.08 90)
+					(length 2.54)
+					(name "S"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "power:GND"
 			(power)
 			(pin_numbers
@@ -995,16 +1135,6 @@
 	)
 	(wire
 		(pts
-			(xy 50.8 64.77) (xy 80.01 64.77)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1189d37e-9dbc-4a39-a28f-222a46d5915a")
-	)
-	(wire
-		(pts
 			(xy 93.98 88.9) (xy 96.52 88.9)
 		)
 		(stroke
@@ -1085,13 +1215,23 @@
 	)
 	(wire
 		(pts
-			(xy 67.31 85.09) (xy 91.44 85.09)
+			(xy 45.72 64.77) (xy 80.01 64.77)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "a248fef5-29f1-4ae3-b4dc-9e8b9f71640a")
+		(uuid "7d45008d-3e56-4d0e-9173-719efc4c8244")
+	)
+	(wire
+		(pts
+			(xy 35.56 64.77) (xy 38.1 64.77)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "af770638-4c3e-4573-8629-d9dda9d1bd9e")
 	)
 	(wire
 		(pts
@@ -1122,6 +1262,16 @@
 			(type default)
 		)
 		(uuid "dd473b6d-3eed-4c71-b3b5-f1856b2be552")
+	)
+	(wire
+		(pts
+			(xy 67.31 77.47) (xy 95.25 77.47)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "e0ebd724-2701-4ce6-899d-557b2e29597b")
 	)
 	(label "PORT_3_TO_LIDAR_4_NC"
 		(at 50.8 67.31 0)
@@ -1194,16 +1344,6 @@
 		(uuid "ebc4954e-42e6-43e8-8f7e-11dcbe3a8dd9")
 	)
 	(label "PORT_1_TO_LIDAR_2_SYNC"
-		(at 91.44 85.09 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "ec449ec0-9e0c-454b-b30a-583a051b6921")
-	)
-	(label "PORT_1_TO_LIDAR_2_SYNC"
 		(at 96.52 104.14 180)
 		(effects
 			(font
@@ -1212,6 +1352,16 @@
 			(justify right bottom)
 		)
 		(uuid "f224d6c5-a3b7-44b4-a177-187047928a6d")
+	)
+	(label "PORT_1_TO_LIDAR_2_SYNC"
+		(at 95.25 77.47 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "f5ae8ff5-4954-451b-9882-1a58c6a2608e")
 	)
 	(symbol
 		(lib_id "power:GND")
@@ -1279,45 +1429,33 @@
 		)
 	)
 	(symbol
-		(lib_id "FDD4141:FDD4141")
-		(at 101.6 88.9 90)
+		(lib_id "ZXMP10A13FTA:ZXMP10A13FTA")
+		(at 101.6 86.36 90)
 		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "4e5b0ae2-cbbb-4332-b808-7693fda1d9aa")
+		(uuid "5a247fa3-237b-42eb-906c-c485372a162e")
 		(property "Reference" "Q1"
-			(at 105.664 83.566 90)
+			(at 102.87 84.074 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left top)
 			)
 		)
-		(property "Value" "FDD4141"
-			(at 106.172 91.186 90)
+		(property "Value" "ZXMP10A13FTA"
+			(at 101.346 91.948 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify left top)
 			)
 		)
-		(property "Footprint" "FDD4141:FQD1N80TM"
-			(at 200.33 100.33 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "https://www.onsemi.com/pub/Collateral/FDD4141-D.PDF"
-			(at 300.33 100.33 0)
+		(property "Footprint" "ZXMP10A13FTA:SOT96P240X110-3N"
+			(at 200.33 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1326,17 +1464,8 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "RoHS Compliant ; High performance trench technology for extremely low RDS(on) ; Maximum RDS(on) = 12.3m at VGS = -10V, ID = -12.7A ; Maximum RDS(on) = 18.0m at VGS = -4.5V, ID = -10.4A"
-			(at 101.6 88.9 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Height" "2.39"
-			(at 500.33 100.33 0)
+		(property "Datasheet" "https://4donline.ihs.com/images/VipMasterIC/IC/DIOD/DIOD-S-A0002238180/DIOD-S-A0002238180-1.pdf?hkey=6D3A4C79FDBF58556ACFDE234799DDF0"
+			(at 300.33 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1345,8 +1474,17 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "512-FDD4141"
-			(at 600.33 100.33 0)
+		(property "Description" "100V P-CHANNEL ENHANCEMENT MODE MOSFET"
+			(at 101.6 86.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Height" "1.1"
+			(at 500.33 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1355,8 +1493,8 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/onsemi-Fairchild/FDD4141?qs=uX8DSVXMAZECDZwLcfL3Uw%3D%3D"
-			(at 700.33 100.33 0)
+		(property "Mouser Part Number" "522-ZXMP10A13FTA"
+			(at 600.33 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1365,8 +1503,8 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "onsemi"
-			(at 800.33 100.33 0)
+		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Diodes-Incorporated/ZXMP10A13FTA?qs=4zh0VFflF2ED5l%2FE78e7YQ%3D%3D"
+			(at 700.33 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1375,8 +1513,8 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "FDD4141"
-			(at 900.33 100.33 0)
+		(property "Manufacturer_Name" "Diodes Incorporated"
+			(at 800.33 97.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1385,8 +1523,18 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" "https://www.digikey.com/short/8qfz40v0"
-			(at 101.6 88.9 90)
+		(property "Manufacturer_Part_Number" "ZXMP10A13FTA"
+			(at 900.33 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/short/wmq34b83"
+			(at 101.6 86.36 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1394,8 +1542,8 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "4518-FDD4141CT-ND"
-			(at 101.6 88.9 90)
+		(property "DigiKey Part Number" "ZXMP10A13FCT-ND"
+			(at 101.6 86.36 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1403,8 +1551,8 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Price per Unit" "1.00"
-			(at 101.6 88.9 90)
+		(property "DigiKey Price per Unit" "0.76"
+			(at 101.6 86.36 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1412,8 +1560,8 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "FDD4141"
-			(at 101.6 88.9 90)
+		(property "Manufactaurer Part Number" "ZXMP10A13FTA"
+			(at 101.6 86.36 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1421,8 +1569,8 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://mou.sr/4cz83fZ"
-			(at 101.6 88.9 90)
+		(property "Mouser Link" "https://mou.sr/3VB9ofX"
+			(at 101.6 86.36 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1430,23 +1578,23 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Price per Unit" "1.45"
-			(at 101.6 88.9 90)
+		(property "Mouser Price per Unit" "0.72"
+			(at 101.6 86.36 90)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
 				(hide yes)
 			)
-		)
-		(pin "3"
-			(uuid "dab97cdc-b5ba-4198-ab0c-9147c1606ed2")
-		)
-		(pin "2"
-			(uuid "3ab722d3-db38-4949-bdf6-e56220ca837f")
 		)
 		(pin "1"
-			(uuid "15c621cb-326e-4afb-94ea-25b76079760e")
+			(uuid "409bb06b-36da-4558-a74b-234bb9e065f8")
+		)
+		(pin "2"
+			(uuid "b10987d9-f0d7-4cd3-8b38-93d63adbbf64")
+		)
+		(pin "3"
+			(uuid "4d5611fa-62c2-4f38-bf16-f48bb84a510e")
 		)
 		(instances
 			(project "STAR_LIDAR_BREAKOUT"
@@ -1459,15 +1607,15 @@
 	)
 	(symbol
 		(lib_id "TBC05-03-1-G-G:TBC05-03-1-G-G")
-		(at 67.31 85.09 180)
+		(at 67.31 82.55 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
 		(uuid "72d23d93-ed20-410f-b3e7-26c0e9d13ea4")
-		(property "Reference" "J2"
-			(at 61.214 76.454 0)
+		(property "Reference" "J1"
+			(at 61.214 73.914 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1475,7 +1623,7 @@
 			)
 		)
 		(property "Value" "TBC05-03-1-G-G"
-			(at 57.15 88.9 0)
+			(at 57.15 86.36 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1483,7 +1631,7 @@
 			)
 		)
 		(property "Footprint" "TBC05031GG"
-			(at 50.8 -9.83 0)
+			(at 50.8 -12.37 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1493,7 +1641,7 @@
 			)
 		)
 		(property "Datasheet" "https://gct.co/connector/tbc05"
-			(at 50.8 -109.83 0)
+			(at 50.8 -112.37 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1503,7 +1651,7 @@
 			)
 		)
 		(property "Description" "3 Position Wire to Board Terminal Block Horizontal with Board 0.100\" (2.54mm) Through Hole"
-			(at 67.31 85.09 0)
+			(at 67.31 82.55 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1512,7 +1660,7 @@
 			)
 		)
 		(property "Height" "8.8"
-			(at 50.8 -309.83 0)
+			(at 50.8 -312.37 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1522,7 +1670,7 @@
 			)
 		)
 		(property "Mouser Part Number" "640-TBC05-03-1-G-G"
-			(at 50.8 -409.83 0)
+			(at 50.8 -412.37 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1532,7 +1680,7 @@
 			)
 		)
 		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/GCT/TBC05-03-1-G-G?qs=bN4HulGPsrGLlfJySn%252B4uw%3D%3D"
-			(at 50.8 -509.83 0)
+			(at 50.8 -512.37 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1542,7 +1690,7 @@
 			)
 		)
 		(property "Manufacturer_Name" "GCT (GLOBAL CONNECTOR TECHNOLOGY)"
-			(at 50.8 -609.83 0)
+			(at 50.8 -612.37 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1552,7 +1700,7 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" "TBC05-03-1-G-G"
-			(at 50.8 -709.83 0)
+			(at 50.8 -712.37 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -1571,9 +1719,692 @@
 			(uuid "fd16087e-28f9-4b3b-b68c-c1e92c26f2cb")
 		)
 		(instances
-			(project ""
+			(project "STAR_LIDAR_BREAKOUT"
 				(path "/35604fa4-f65b-48e7-9d1c-bf45c0eff62e"
-					(reference "J2")
+					(reference "J1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 35.56 64.77 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "739070a6-d002-4f87-aee1-dce7612fe744")
+		(property "Reference" "#PWR01"
+			(at 29.21 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 30.988 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 35.56 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 35.56 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 35.56 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "8e9b9949-d3a2-4550-a423-674ebbadb8f3")
+		)
+		(instances
+			(project "STAR_LIDAR_BREAKOUT"
+				(path "/35604fa4-f65b-48e7-9d1c-bf45c0eff62e"
+					(reference "#PWR01")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Device:C")
+		(at 41.91 64.77 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "97834cad-a4bd-40b7-b7b8-8cdec63f78c7")
+		(property "Reference" "C1"
+			(at 40.64 63.754 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "100n"
+			(at 48.006 63.754 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder"
+			(at 45.72 63.8048 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 41.91 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Unpolarized capacitor"
+			(at 41.91 64.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Display" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JLCPCB ID" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "LCSC Part" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "A_MAX" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "BALL_COLUMNS" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "BALL_ROWS" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "BODY_DIAMETER" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "B_MAX" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "B_MIN" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "B_NOM" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "D2_NOM" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DMAX" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DMIN" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DNOM" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "D_MAX" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "D_MIN" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "D_NOM" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "E2_NOM" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "EMAX" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "EMIN" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "ENOM" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "E_MAX" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "E_MIN" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "E_NOM" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "IPC" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "JEDEC" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "L_MAX" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "L_MIN" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "L_NOM" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "PACKAGE_TYPE" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "PARTEV" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "PINS" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "PIN_COLUMNS" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "PIN_COUNT_D" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "PIN_COUNT_E" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "THERMAL_PAD" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "VACANCIES" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Supplier" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Device" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Sim.Pins" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "SNAPEDA_PACKAGE_ID" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Availability" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Check_prices" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description_1" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MANUFACTURER" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MAXIMUM_PACKAGE_HEIGHT" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MF" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "MP" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "PARTREV" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Package" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Part Number" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "STANDARD" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "SnapEDA_Link" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Specifications" ""
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/short/mnn51wf5"
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "311-1779-1-ND"
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3KIvj2i"
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "603-CC603JRX7R9BB104"
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "0.10"
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.10"
+			(at 41.91 64.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "caa8a605-88b7-4223-aacc-daca689e0e16")
+		)
+		(pin "2"
+			(uuid "10263b48-cf5d-45c4-af3e-47a24833c12c")
+		)
+		(instances
+			(project "STAR_LIDAR_BREAKOUT"
+				(path "/35604fa4-f65b-48e7-9d1c-bf45c0eff62e"
+					(reference "C1")
 					(unit 1)
 				)
 			)
@@ -1704,7 +2535,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "c1a5380e-9495-486e-b470-bb11253500bf")
-		(property "Reference" "J1"
+		(property "Reference" "J2"
 			(at 94.488 58.674 0)
 			(effects
 				(font
@@ -1817,7 +2648,7 @@
 		(instances
 			(project ""
 				(path "/35604fa4-f65b-48e7-9d1c-bf45c0eff62e"
-					(reference "J1")
+					(reference "J2")
 					(unit 1)
 				)
 			)
