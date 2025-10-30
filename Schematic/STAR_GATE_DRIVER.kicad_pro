@@ -473,6 +473,33 @@
         "via_diameter": 0.6,
         "via_drill": 0.3,
         "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "AFE",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 2,
+        "schematic_color": "rgb(63, 214, 255)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "FUEL_GUAGE",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 0,
+        "schematic_color": "rgb(255, 132, 219)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "GND",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 1,
+        "schematic_color": "rgb(52, 95, 132)",
+        "wire_width": 6
       }
     ],
     "meta": {
@@ -480,7 +507,20 @@
     },
     "net_colors": null,
     "netclass_assignments": null,
-    "netclass_patterns": []
+    "netclass_patterns": [
+      {
+        "netclass": "AFE",
+        "pattern": "AFE*"
+      },
+      {
+        "netclass": "GND",
+        "pattern": "*GND"
+      },
+      {
+        "netclass": "FUEL_GUAGE",
+        "pattern": "FUEL*"
+      }
+    ]
   },
   "pcbnew": {
     "last_paths": {

@@ -6,6 +6,8 @@
 	(paper "A4")
 	(title_block
 		(title "High Side Gate Driver")
+		(date "2025-10-29")
+		(rev "1.0.0")
 		(company "Locked Inc.")
 		(comment 1 "From slusc16b")
 		(comment 2 "From slva729 VDDCP was picked")
@@ -1357,6 +1359,113 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Mechanical:MountingHole_Pad"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 1.016)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom no)
+			(on_board yes)
+			(property "Reference" "H"
+				(at 0 6.35 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "MountingHole_Pad"
+				(at 0 4.445 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Mounting Hole with connection"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "mounting hole"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "MountingHole*Pad*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "MountingHole_Pad_0_1"
+				(circle
+					(center 0 1.27)
+					(radius 1.27)
+					(stroke
+						(width 1.27)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "MountingHole_Pad_1_1"
+				(pin input line
+					(at 0 -2.54 90)
+					(length 2.54)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "PCM_4ms_Power-symbol:PWR_FLAG"
 			(power)
 			(pin_numbers
@@ -1604,6 +1713,12 @@
 		(uuid "225886bd-eed0-4bc1-b57d-a72639033f66")
 	)
 	(junction
+		(at 26.67 190.5)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "83d21f63-85f2-4d0e-809d-450a16f71bfb")
+	)
+	(junction
 		(at 110.49 82.55)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -1626,6 +1741,18 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "c43d25aa-f2f3-4c85-802e-b1024fc0a6c0")
+	)
+	(junction
+		(at 41.91 190.5)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "f0a71ac0-a041-4e8d-ab91-714d5f708b80")
+	)
+	(junction
+		(at 57.15 190.5)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "f7a0e599-bc75-4e8c-bb56-4d6bba3b5346")
 	)
 	(wire
 		(pts
@@ -1666,6 +1793,16 @@
 			(type default)
 		)
 		(uuid "0c216fc6-3e3e-4e92-a62c-5d9eb967c6f7")
+	)
+	(wire
+		(pts
+			(xy 57.15 189.23) (xy 57.15 190.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "10d2cb24-ccae-4893-ab8d-3c62969839ad")
 	)
 	(wire
 		(pts
@@ -1859,6 +1996,16 @@
 	)
 	(wire
 		(pts
+			(xy 41.91 189.23) (xy 41.91 190.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "575f4b7f-7751-4ae9-be2b-616cf3fb1e3d")
+	)
+	(wire
+		(pts
 			(xy 105.41 96.52) (xy 128.27 96.52)
 		)
 		(stroke
@@ -1889,6 +2036,16 @@
 	)
 	(wire
 		(pts
+			(xy 41.91 190.5) (xy 57.15 190.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "73788a11-5c11-4bd0-9149-4c12b7616e50")
+	)
+	(wire
+		(pts
 			(xy 129.54 156.21) (xy 104.14 156.21)
 		)
 		(stroke
@@ -1899,6 +2056,16 @@
 	)
 	(wire
 		(pts
+			(xy 26.67 190.5) (xy 26.67 191.77)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "778b253c-d2a0-472f-a5f4-87e05350df71")
+	)
+	(wire
+		(pts
 			(xy 154.94 69.85) (xy 189.23 69.85)
 		)
 		(stroke
@@ -1906,6 +2073,26 @@
 			(type default)
 		)
 		(uuid "821c2d50-f813-484f-86b1-f56e81f00dad")
+	)
+	(wire
+		(pts
+			(xy 26.67 189.23) (xy 26.67 190.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "82d042d5-270e-454d-83ac-595f486dcded")
+	)
+	(wire
+		(pts
+			(xy 26.67 190.5) (xy 41.91 190.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "9337ec22-1c77-438d-bc5c-89d626d2e69e")
 	)
 	(wire
 		(pts
@@ -2069,6 +2256,16 @@
 	)
 	(wire
 		(pts
+			(xy 57.15 190.5) (xy 72.39 190.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c6edad46-8464-4588-b446-2ca18dbf0f0e")
+	)
+	(wire
+		(pts
 			(xy 140.97 76.2) (xy 144.78 76.2)
 		)
 		(stroke
@@ -2126,6 +2323,16 @@
 			(type default)
 		)
 		(uuid "ec0c5502-d7f8-4bfa-95d9-559b96718bc8")
+	)
+	(wire
+		(pts
+			(xy 72.39 189.23) (xy 72.39 190.5)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "f334f9f3-c80d-439e-8094-12d8c40e7cf7")
 	)
 	(wire
 		(pts
@@ -2622,6 +2829,73 @@
 		)
 	)
 	(symbol
+		(lib_id "Mechanical:MountingHole_Pad")
+		(at 57.15 186.69 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "01a3840b-c45b-4b51-9867-1025b7e6fd54")
+		(property "Reference" "MH3"
+			(at 59.69 184.1499 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "2mm5 Via"
+			(at 59.69 186.6899 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_2.5mm_Pad_Via"
+			(at 57.15 186.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 57.15 186.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Mounting Hole with connection"
+			(at 57.15 186.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "1e6c25a4-252b-4d3b-a2b1-3ceb76ef8c2a")
+		)
+		(instances
+			(project "STAR_GATE_DRIVER"
+				(path "/b093d17b-3f16-40e3-b68a-97d9cd4b2df5"
+					(reference "MH3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "PCM_4ms_Power-symbol:PWR_FLAG")
 		(at 96.52 71.12 270)
 		(unit 1)
@@ -2646,6 +2920,7 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
+				(hide yes)
 			)
 		)
 		(property "Footprint" ""
@@ -2682,6 +2957,73 @@
 			(project "GATE_DRIVER"
 				(path "/b093d17b-3f16-40e3-b68a-97d9cd4b2df5"
 					(reference "#FLG01")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Mechanical:MountingHole_Pad")
+		(at 26.67 186.69 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "1739ea38-4740-4962-8087-6bb2745bc19b")
+		(property "Reference" "MH1"
+			(at 29.21 184.1499 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "2mm5 Via"
+			(at 29.21 186.6899 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_2.5mm_Pad_Via"
+			(at 26.67 186.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 26.67 186.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Mounting Hole with connection"
+			(at 26.67 186.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "ef6dfcda-a62e-4bc3-88f3-66dcb9923a27")
+		)
+		(instances
+			(project ""
+				(path "/b093d17b-3f16-40e3-b68a-97d9cd4b2df5"
+					(reference "MH1")
 					(unit 1)
 				)
 			)
@@ -5956,6 +6298,7 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
+				(hide yes)
 			)
 		)
 		(property "Footprint" ""
@@ -6748,6 +7091,73 @@
 		)
 	)
 	(symbol
+		(lib_id "Mechanical:MountingHole_Pad")
+		(at 72.39 186.69 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "88855d1b-8bbf-46f3-9f4f-427e366a6d1e")
+		(property "Reference" "MH4"
+			(at 74.93 184.1499 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "2mm5 Via"
+			(at 74.93 186.6899 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_2.5mm_Pad_Via"
+			(at 72.39 186.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 72.39 186.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Mounting Hole with connection"
+			(at 72.39 186.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "d05a07b2-aef5-4883-85ad-59fa58aad2f7")
+		)
+		(instances
+			(project "STAR_GATE_DRIVER"
+				(path "/b093d17b-3f16-40e3-b68a-97d9cd4b2df5"
+					(reference "MH4")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "PCM_4ms_Power-symbol:PWR_FLAG")
 		(at 124.46 82.55 180)
 		(unit 1)
@@ -6772,6 +7182,7 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
+				(hide yes)
 			)
 		)
 		(property "Footprint" ""
@@ -6808,6 +7219,72 @@
 			(project "GATE_DRIVER"
 				(path "/b093d17b-3f16-40e3-b68a-97d9cd4b2df5"
 					(reference "#FLG02")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 26.67 191.77 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "a95eb6b6-5fbe-439a-a7e2-5e39806c2e86")
+		(property "Reference" "#PWR07"
+			(at 26.67 198.12 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 28.702 195.072 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 26.67 191.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 26.67 191.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 26.67 191.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "ab0745ed-942c-4558-b388-9870c219d48f")
+		)
+		(instances
+			(project "STAR_GATE_DRIVER"
+				(path "/b093d17b-3f16-40e3-b68a-97d9cd4b2df5"
+					(reference "#PWR07")
 					(unit 1)
 				)
 			)
@@ -7501,6 +7978,73 @@
 			(project "GATE_DRIVER"
 				(path "/b093d17b-3f16-40e3-b68a-97d9cd4b2df5"
 					(reference "J1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Mechanical:MountingHole_Pad")
+		(at 41.91 186.69 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "c28294c7-b33a-469a-802c-46c336ed9751")
+		(property "Reference" "MH2"
+			(at 44.45 184.1499 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "2mm5 Via"
+			(at 44.45 186.6899 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_2.5mm_Pad_Via"
+			(at 41.91 186.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 41.91 186.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Mounting Hole with connection"
+			(at 41.91 186.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "ae8f3e08-9a7e-42d8-98fa-95a9c4c8effe")
+		)
+		(instances
+			(project "STAR_GATE_DRIVER"
+				(path "/b093d17b-3f16-40e3-b68a-97d9cd4b2df5"
+					(reference "MH2")
 					(unit 1)
 				)
 			)
