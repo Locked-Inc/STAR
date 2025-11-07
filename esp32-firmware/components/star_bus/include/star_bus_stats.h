@@ -282,7 +282,9 @@ esp_err_t star_bus_stats_to_json(const star_bus_stats_t* stats, char* buffer, si
  */
 #define STAR_STATS_CONFIG_DEFAULT()                                                                \
   {                                                                                                \
-    .collect_timing = true, .collect_errors = true, .collect_utilization = true,                   \
+    .collect_timing         = true,                                                                \
+    .collect_errors         = true,                                                                \
+    .collect_utilization    = true,                                                                \
     .auto_reset_on_overflow = false,                                                               \
   }
 
@@ -291,7 +293,9 @@ esp_err_t star_bus_stats_to_json(const star_bus_stats_t* stats, char* buffer, si
  */
 #define STAR_STATS_CONFIG_MINIMAL()                                                                \
   {                                                                                                \
-    .collect_timing = false, .collect_errors = true, .collect_utilization = false,                 \
+    .collect_timing         = false,                                                               \
+    .collect_errors         = true,                                                                \
+    .collect_utilization    = false,                                                               \
     .auto_reset_on_overflow = false,                                                               \
   }
 
