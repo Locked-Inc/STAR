@@ -4,6 +4,12 @@
 	(generator_version "9.0")
 	(uuid "ca1a5300-a097-400d-a75e-2552b2209d6a")
 	(paper "A3")
+	(title_block
+		(title "Motor Driver")
+		(date "2025-11-04")
+		(rev "1.0.0")
+		(company "Locked Inc.")
+	)
 	(lib_symbols
 		(symbol "1017491:1017491"
 			(exclude_from_sim no)
@@ -2877,6 +2883,107 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "power:PWR_FLAG"
+			(power)
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "#FLG"
+				(at 0 1.905 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Value" "PWR_FLAG"
+				(at 0 3.81 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Special symbol for telling ERC where power comes from"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "flag power"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "PWR_FLAG_0_0"
+				(pin power_out line
+					(at 0 0 90)
+					(length 0)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(symbol "PWR_FLAG_0_1"
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 1.27) (xy -1.016 1.905) (xy 0 2.54) (xy 1.016 1.905) (xy 0 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 	)
 	(text "Input has to be 5V, output has to be 3V3"
 		(exclude_from_sim no)
@@ -3561,7 +3668,7 @@
 	)
 	(wire
 		(pts
-			(xy 386.08 205.74) (xy 364.49 205.74)
+			(xy 378.46 205.74) (xy 364.49 205.74)
 		)
 		(stroke
 			(width 0)
@@ -4531,16 +4638,6 @@
 	)
 	(wire
 		(pts
-			(xy 63.5 74.93) (xy 90.17 74.93)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "42a81c07-ab6f-48d1-a03b-11711b694391")
-	)
-	(wire
-		(pts
 			(xy 63.5 190.5) (xy 66.04 190.5)
 		)
 		(stroke
@@ -4961,7 +5058,7 @@
 	)
 	(wire
 		(pts
-			(xy 327.66 208.28) (xy 339.09 208.28)
+			(xy 316.23 208.28) (xy 339.09 208.28)
 		)
 		(stroke
 			(width 0)
@@ -5101,7 +5198,7 @@
 	)
 	(wire
 		(pts
-			(xy 387.35 218.44) (xy 365.76 218.44)
+			(xy 379.73 218.44) (xy 365.76 218.44)
 		)
 		(stroke
 			(width 0)
@@ -6108,6 +6205,16 @@
 			(type default)
 		)
 		(uuid "a99462eb-ea42-4511-9bd5-c1114cda123b")
+	)
+	(wire
+		(pts
+			(xy 63.5 74.93) (xy 90.17 74.93)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "aa4279f5-1946-40bf-b84c-3df07378afd3")
 	)
 	(wire
 		(pts
@@ -7141,7 +7248,7 @@
 	)
 	(wire
 		(pts
-			(xy 328.93 220.98) (xy 340.36 220.98)
+			(xy 317.5 220.98) (xy 340.36 220.98)
 		)
 		(stroke
 			(width 0)
@@ -7696,7 +7803,7 @@
 		)
 		(uuid "15fcb50c-e15c-4934-bf54-89afc82abdc4")
 	)
-	(label "MOTOR4_TERMINAL2"
+	(label "MOTOR4_TERMINAL1"
 		(at 316.23 231.14 0)
 		(effects
 			(font
@@ -7805,16 +7912,6 @@
 			(justify left bottom)
 		)
 		(uuid "2a6eab90-a011-4190-aac7-c8f3a92ff1ee")
-	)
-	(label "P6V0_BUCK"
-		(at 387.35 218.44 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "2b2d92e3-b543-4d6e-979a-3f58299f8221")
 	)
 	(label "MOTOR4_TERMINAL1"
 		(at 316.23 233.68 0)
@@ -7945,6 +8042,16 @@
 			(justify right bottom)
 		)
 		(uuid "529571e9-c84f-49f5-bea5-60b0022046dd")
+	)
+	(label "P5V0_BUCK"
+		(at 316.23 208.28 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "5465bbd4-0bf2-4a55-a31f-c2b64e5a41ee")
 	)
 	(label "P6V0_BUCK"
 		(at 139.7 175.26 180)
@@ -8156,7 +8263,7 @@
 		)
 		(uuid "7e893982-cb81-4208-b8dc-c4a865012ecc")
 	)
-	(label "MOTOR3_TERMINAL1"
+	(label "MOTOR3_TERMINAL2"
 		(at 387.35 246.38 180)
 		(effects
 			(font
@@ -8266,7 +8373,17 @@
 		)
 		(uuid "8bf46250-17d2-493a-aab3-c939efa4adb3")
 	)
-	(label "MOTOR3_TERMINAL2"
+	(label "P6V0_BUCK"
+		(at 317.5 220.98 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "8c025893-d7dc-4d7c-b6b7-2c794c10e750")
+	)
+	(label "MOTOR3_TERMINAL1"
 		(at 316.23 243.84 0)
 		(effects
 			(font
@@ -8586,7 +8703,7 @@
 		)
 		(uuid "dec3dd94-7131-4888-8eb6-56c4f59686b1")
 	)
-	(label "MOTOR4_TERMINAL1"
+	(label "MOTOR4_TERMINAL2"
 		(at 387.35 233.68 180)
 		(effects
 			(font
@@ -8615,16 +8732,6 @@
 			(justify left bottom)
 		)
 		(uuid "e25b6064-6431-489e-8f5f-63d9a88e34d6")
-	)
-	(label "P5V0_BUCK"
-		(at 386.08 205.74 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "e2ee9330-5ae6-466b-8fe9-4ed592f0f2e6")
 	)
 	(label "MOTOR3_PH_IN2"
 		(at 346.71 129.54 0)
@@ -8756,171 +8863,6 @@
 		)
 		(uuid "ffa42d07-41ab-4dcf-9c30-2d81f0d2e6b8")
 	)
-	(hierarchical_label "MOTOR4_TERMINAL2"
-		(shape input)
-		(at 316.23 231.14 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "007d1482-1d8c-4043-ae89-2db3e0269016")
-	)
-	(hierarchical_label "MOTOR1_TERMINAL2"
-		(shape output)
-		(at 311.15 186.69 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "0a3ffc20-06ac-4d66-9901-5839dfe13d83")
-	)
-	(hierarchical_label "P3V3_BUCK"
-		(shape input)
-		(at 228.6 140.97 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "1c83fbc4-764c-4fd8-9765-782fdabd1892")
-	)
-	(hierarchical_label "MOTOR4_nFAULT"
-		(shape output)
-		(at 313.69 171.45 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "1d9d3ee3-093f-4476-9633-a81a8aeab13d")
-	)
-	(hierarchical_label "ENCODER2_OUTPUT1"
-		(shape output)
-		(at 369.57 189.23 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "20e0d2d0-89e6-4ba7-9009-4cf57003bc8f")
-	)
-	(hierarchical_label "MOTOR4_IPROPI"
-		(shape output)
-		(at 367.03 171.45 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "2e04cf83-400f-4748-99ef-a91158f4fe02")
-	)
-	(hierarchical_label "MOTOR2_nFAULT"
-		(shape output)
-		(at 313.69 166.37 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "3337c788-6c22-48c4-a25c-53388e2b995f")
-	)
-	(hierarchical_label "MOTOR1_TERMINAL1"
-		(shape output)
-		(at 311.15 184.15 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "3521d71c-580b-4e0d-b4fd-7d54b2baf136")
-	)
-	(hierarchical_label "MOTOR2_TERMINAL1"
-		(shape output)
-		(at 311.15 189.23 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "380051a2-36ef-49e6-971f-ebb78b3189a5")
-	)
-	(hierarchical_label "P5V0_BUCK"
-		(shape input)
-		(at 316.23 205.74 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "3c81e871-53dd-43b1-ba47-60d3167a2519")
-	)
-	(hierarchical_label "MOTOR4_EN_IN1"
-		(shape input)
-		(at 314.96 132.08 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "4cc0e29a-27f8-4d3b-a4e5-6341ebed3f0c")
-	)
-	(hierarchical_label "SPI_COPI"
-		(shape input)
-		(at 228.6 143.51 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "58a275db-5931-43cb-8347-f570e4decf40")
-	)
-	(hierarchical_label "MOTOR1_IPROPI"
-		(shape output)
-		(at 367.03 163.83 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "6736ed5a-ed06-4182-ac33-a3b6f81507b7")
-	)
-	(hierarchical_label "MOTOR3_TERMINAL2"
-		(shape input)
-		(at 316.23 243.84 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "715be697-2a32-46dd-a24a-5d31be64840e")
-	)
-	(hierarchical_label "MOTOR3_nCS"
-		(shape input)
-		(at 278.13 160.02 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "73c2afd1-0d01-4d5d-8986-349acd47bfcc")
-	)
 	(hierarchical_label "SPI_CIPO"
 		(shape input)
 		(at 138.43 33.02 0)
@@ -8932,204 +8874,6 @@
 		)
 		(uuid "7930eda1-de6b-4119-abec-77fa5abd6de9")
 	)
-	(hierarchical_label "MOTOR2_IPROPI"
-		(shape output)
-		(at 367.03 166.37 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "8019c277-aa78-412b-8fcf-7fa0a3f68d38")
-	)
-	(hierarchical_label "ENCODER1_OUTPUT2"
-		(shape output)
-		(at 369.57 186.69 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "8e6f88b3-102d-4b19-8a26-58ff57d7bf89")
-	)
-	(hierarchical_label "SPI_CIPO"
-		(shape input)
-		(at 278.13 143.51 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "9199005a-1f4b-472b-91cc-6c0a72edd124")
-	)
-	(hierarchical_label "MOTOR1_EN_IN1"
-		(shape input)
-		(at 314.96 124.46 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "91a00ee3-9448-4a7b-86db-ef6fa50808ca")
-	)
-	(hierarchical_label "MOTOR3_TERMINAL1"
-		(shape input)
-		(at 316.23 246.38 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "9cc70772-02f6-4ca8-8aee-bd5734bf28c2")
-	)
-	(hierarchical_label "ENCODER2_OUTPUT2"
-		(shape output)
-		(at 369.57 191.77 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "9ff4b401-19a7-4072-aac9-ee8183c7d453")
-	)
-	(hierarchical_label "MOTOR4_nCS"
-		(shape input)
-		(at 228.6 160.02 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "a0534443-b58b-48e7-9aef-e425c8bfd450")
-	)
-	(hierarchical_label "MOTOR2_PH_IN2"
-		(shape input)
-		(at 364.49 127 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "a6f044dc-38c4-43d0-be47-01992bf6b376")
-	)
-	(hierarchical_label "MOTOR3_nFAULT"
-		(shape output)
-		(at 313.69 168.91 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "a90c7f8d-39cf-4af7-8dfe-1496659fa2ef")
-	)
-	(hierarchical_label "MOTOR1_nCS"
-		(shape input)
-		(at 228.6 157.48 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "ac1027df-1f02-4407-9780-77ea6d2b5b85")
-	)
-	(hierarchical_label "P6V0_BUCK"
-		(shape input)
-		(at 317.5 218.44 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "ae109015-7c72-48de-b791-1e688a5b022b")
-	)
-	(hierarchical_label "MOTOR4_TERMINAL1"
-		(shape input)
-		(at 316.23 233.68 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "ae56e326-227b-420c-9c78-deb851e7264b")
-	)
-	(hierarchical_label "SPI_SCLK"
-		(shape input)
-		(at 278.13 140.97 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "b0b19838-144e-421f-ae69-6d7fc63aa577")
-	)
-	(hierarchical_label "MOTOR2_nCS"
-		(shape input)
-		(at 278.13 157.48 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "b7a2deb0-3071-4ffb-89f0-99f5a1f6adfb")
-	)
-	(hierarchical_label "MOTOR3_PH_IN2"
-		(shape input)
-		(at 364.49 129.54 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "b90fd5e6-4b01-4203-9967-3b673f31b7dd")
-	)
-	(hierarchical_label "MOTOR2_EN_IN1"
-		(shape input)
-		(at 314.96 127 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "bb3ae07e-0f5a-484f-9642-2962ebbb3f32")
-	)
-	(hierarchical_label "MOTOR1_PH_IN2"
-		(shape input)
-		(at 364.49 124.46 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "bf9e7d5c-601e-48fe-9098-ab45fbeabd47")
-	)
-	(hierarchical_label "MOTOR2_TERMINAL2"
-		(shape output)
-		(at 311.15 191.77 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "cae383a4-ecfd-486f-8573-96c68abbaca4")
-	)
 	(hierarchical_label "SPI_COPI"
 		(shape output)
 		(at 138.43 35.56 0)
@@ -9140,61 +8884,6 @@
 			(justify left)
 		)
 		(uuid "cb26beed-ae10-4a03-b14f-1ec0c5ee84e6")
-	)
-	(hierarchical_label "MOTOR1_nFAULT"
-		(shape output)
-		(at 313.69 163.83 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "ce9f36aa-281f-447b-93d3-a381c4e226c6")
-	)
-	(hierarchical_label "MOTOR3_IPROPI"
-		(shape output)
-		(at 367.03 168.91 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "e1a1f727-8f99-4aff-b0fa-e1ba90dd4859")
-	)
-	(hierarchical_label "MOTOR3_EN_IN1"
-		(shape input)
-		(at 314.96 129.54 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "e271fab6-838e-4b0c-ac18-785373a9e5f1")
-	)
-	(hierarchical_label "ENCODER1_OUTPUT1"
-		(shape output)
-		(at 369.57 184.15 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "e3fef1e3-aec7-473f-b7f6-0c0e1a57ff14")
-	)
-	(hierarchical_label "MOTOR4_PH_IN2"
-		(shape input)
-		(at 364.49 132.08 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "ea83113c-46b0-4de4-8afe-ee9c2eec7c77")
 	)
 	(symbol
 		(lib_id "power:GND")
@@ -13352,6 +13041,72 @@
 			(project "STAR_MOTOR_DRIVER"
 				(path "/ca1a5300-a097-400d-a75e-2552b2209d6a"
 					(reference "J10")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 379.73 218.44 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "2ced5b80-674d-42f9-a6a3-93d416b31300")
+		(property "Reference" "#PWR024"
+			(at 386.08 218.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 382.778 218.44 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 379.73 218.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 379.73 218.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 379.73 218.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "1f1a4874-7d63-4f00-9152-901cb1a3f67c")
+		)
+		(instances
+			(project "STAR_MOTOR_DRIVER"
+				(path "/ca1a5300-a097-400d-a75e-2552b2209d6a"
+					(reference "#PWR024")
 					(unit 1)
 				)
 			)
@@ -22039,16 +21794,17 @@
 		)
 	)
 	(symbol
-		(lib_id "power:GND")
-		(at 327.66 208.28 270)
+		(lib_id "power:PWR_FLAG")
+		(at 316.23 205.74 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "68e4f889-07ee-41c3-9d0d-230b94c7dfac")
-		(property "Reference" "#PWR023"
-			(at 321.31 208.28 0)
+		(fields_autoplaced yes)
+		(uuid "6f9a0c5c-b364-47f6-afd9-da1c6edfcf01")
+		(property "Reference" "#FLG02"
+			(at 316.23 203.835 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -22056,17 +21812,17 @@
 				(hide yes)
 			)
 		)
-		(property "Value" "GND"
-			(at 324.612 208.28 90)
+		(property "Value" "PWR_FLAG"
+			(at 316.23 200.66 0)
 			(effects
 				(font
 					(size 1.27 1.27)
 				)
-				(justify right)
+				(hide yes)
 			)
 		)
 		(property "Footprint" ""
-			(at 327.66 208.28 0)
+			(at 316.23 205.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -22074,8 +21830,8 @@
 				(hide yes)
 			)
 		)
-		(property "Datasheet" ""
-			(at 327.66 208.28 0)
+		(property "Datasheet" "~"
+			(at 316.23 205.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -22083,8 +21839,8 @@
 				(hide yes)
 			)
 		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 327.66 208.28 0)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 316.23 205.74 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -22093,12 +21849,12 @@
 			)
 		)
 		(pin "1"
-			(uuid "dedaf515-8323-4166-8307-a6d05189299d")
+			(uuid "13f1d02f-f18c-4b61-a552-08c798e34b4b")
 		)
 		(instances
-			(project "STAR_MOTOR_DRIVER"
+			(project ""
 				(path "/ca1a5300-a097-400d-a75e-2552b2209d6a"
-					(reference "#PWR023")
+					(reference "#FLG02")
 					(unit 1)
 				)
 			)
@@ -24070,72 +23826,6 @@
 			(project "STAR_MOTOR_DRIVER"
 				(path "/ca1a5300-a097-400d-a75e-2552b2209d6a"
 					(reference "#PWR03")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 328.93 220.98 270)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "8b3241c8-2be5-4fbf-9064-7ffdf1a31bc8")
-		(property "Reference" "#PWR024"
-			(at 322.58 220.98 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 325.882 220.98 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" ""
-			(at 328.93 220.98 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 328.93 220.98 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 328.93 220.98 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "225a156e-80f1-498b-8806-6390b08e804a")
-		)
-		(instances
-			(project "STAR_MOTOR_DRIVER"
-				(path "/ca1a5300-a097-400d-a75e-2552b2209d6a"
-					(reference "#PWR024")
 					(unit 1)
 				)
 			)
@@ -27692,6 +27382,73 @@
 		)
 	)
 	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 228.6 140.97 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "b7325629-0fc5-49d8-90a7-6623cb8cb08f")
+		(property "Reference" "#FLG01"
+			(at 228.6 139.065 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 228.6 135.89 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at 228.6 140.97 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 228.6 140.97 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 228.6 140.97 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "2c242dfd-f14f-48ba-a030-f9c82ab45ee5")
+		)
+		(instances
+			(project ""
+				(path "/ca1a5300-a097-400d-a75e-2552b2209d6a"
+					(reference "#FLG01")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
 		(at 295.91 68.58 0)
 		(unit 1)
@@ -29066,6 +28823,139 @@
 			(project "STAR_MOTOR_DRIVER"
 				(path "/ca1a5300-a097-400d-a75e-2552b2209d6a"
 					(reference "#PWR022")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 317.5 218.44 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "c2b25ef3-7c12-4643-ab3e-fb1dbfc8380b")
+		(property "Reference" "#FLG03"
+			(at 317.5 216.535 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 317.5 213.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at 317.5 218.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 317.5 218.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 317.5 218.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "95d7b0b7-a471-4b1c-a066-775540b5570d")
+		)
+		(instances
+			(project ""
+				(path "/ca1a5300-a097-400d-a75e-2552b2209d6a"
+					(reference "#FLG03")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 378.46 205.74 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "c5f418c4-3a6b-450c-87f4-9a67d1ce3d98")
+		(property "Reference" "#PWR023"
+			(at 384.81 205.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 381.508 205.74 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 378.46 205.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 378.46 205.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 378.46 205.74 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "b2ecf8b2-c8bc-4159-aa06-0aff8e4f7f0d")
+		)
+		(instances
+			(project "STAR_MOTOR_DRIVER"
+				(path "/ca1a5300-a097-400d-a75e-2552b2209d6a"
+					(reference "#PWR023")
 					(unit 1)
 				)
 			)
