@@ -226,7 +226,48 @@
     "equivalence_files": []
   },
   "erc": {
-    "erc_exclusions": [],
+    "erc_exclusions": [
+      [
+        "footprint_link_issues|1054100|1955800|df96f9ec-cad8-48bc-b793-d43f8c240c92|00000000-0000-0000-0000-000000000000|||",
+        ""
+      ],
+      [
+        "footprint_link_issues|1054100|2095500|80212069-e85a-4403-bc6b-f1e4e32596fd|00000000-0000-0000-0000-000000000000|||",
+        ""
+      ],
+      [
+        "footprint_link_issues|3479800|2070100|da8b1a0c-977b-4813-b4f6-53149b76b82e|00000000-0000-0000-0000-000000000000|||",
+        ""
+      ],
+      [
+        "lib_symbol_issues|368300|1143000|0fa6e367-e4d4-4c32-9fd1-320622cbd0dd|00000000-0000-0000-0000-000000000000|||",
+        ""
+      ],
+      [
+        "pin_to_pin|368300|1143000|96098d88-cdd4-44b3-8cdc-39ad9d58618b|d10dc63a-f9ff-4510-92a9-8d9828dc05cc|/777bf89e-445d-4eda-a311-618bb436bcfd|/777bf89e-445d-4eda-a311-618bb436bcfd|/777bf89e-445d-4eda-a311-618bb436bcfd",
+        ""
+      ],
+      [
+        "pin_to_pin|368300|1168400|9dc12f36-ff99-4973-bdad-ff9b8d636e12|3ac01224-c176-4abd-b246-4be05c7f3093|/777bf89e-445d-4eda-a311-618bb436bcfd|/777bf89e-445d-4eda-a311-618bb436bcfd|/777bf89e-445d-4eda-a311-618bb436bcfd",
+        ""
+      ],
+      [
+        "pin_to_pin|368300|1193800|d1aaeaaa-e718-4d7a-a1a6-eb3a4d1cedf9|f6cf3957-4997-4565-9f2e-03d0b93596e9|/777bf89e-445d-4eda-a311-618bb436bcfd|/777bf89e-445d-4eda-a311-618bb436bcfd|/777bf89e-445d-4eda-a311-618bb436bcfd",
+        ""
+      ],
+      [
+        "pin_to_pin|774700|1168400|7c21ac10-3f73-401e-bcb7-1c9a9a99cec0|00726cdb-920c-4ce2-971d-34076e68fbc5|/777bf89e-445d-4eda-a311-618bb436bcfd|/777bf89e-445d-4eda-a311-618bb436bcfd|/777bf89e-445d-4eda-a311-618bb436bcfd",
+        ""
+      ],
+      [
+        "pin_to_pin|774700|1193800|1e9c5b8b-06fc-4cd8-a2ed-d3a562f1ea0c|8c9c86b6-eaab-4a9c-8f9f-9c8d0e7427de|/777bf89e-445d-4eda-a311-618bb436bcfd|/777bf89e-445d-4eda-a311-618bb436bcfd|/777bf89e-445d-4eda-a311-618bb436bcfd",
+        ""
+      ],
+      [
+        "pin_to_pin|774700|1219200|12956810-70c3-4795-88bf-cc5a58238ec3|7b0c0c1a-d62f-4840-af5b-23de32c1a166|/777bf89e-445d-4eda-a311-618bb436bcfd|/777bf89e-445d-4eda-a311-618bb436bcfd|/777bf89e-445d-4eda-a311-618bb436bcfd",
+        ""
+      ]
+    ],
     "meta": {
       "version": 0
     },
@@ -451,7 +492,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "USB-C.kicad_pro",
+    "filename": "STAR_USB-C.kicad_pro",
     "version": 3
   },
   "net_settings": {
@@ -473,6 +514,33 @@
         "via_diameter": 0.6,
         "via_drill": 0.3,
         "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "BUCK",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 1,
+        "schematic_color": "rgb(30, 106, 255)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "GND",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 2,
+        "schematic_color": "rgb(30, 8, 10)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "USB-C",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 0,
+        "schematic_color": "rgb(255, 94, 58)",
+        "wire_width": 6
       }
     ],
     "meta": {
@@ -480,7 +548,20 @@
     },
     "net_colors": null,
     "netclass_assignments": null,
-    "netclass_patterns": []
+    "netclass_patterns": [
+      {
+        "netclass": "BUCK",
+        "pattern": "/BUCK*"
+      },
+      {
+        "netclass": "GND",
+        "pattern": "GND"
+      },
+      {
+        "netclass": "USB-C",
+        "pattern": "/USB*"
+      }
+    ]
   },
   "pcbnew": {
     "last_paths": {
