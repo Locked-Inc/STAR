@@ -284,9 +284,17 @@ void star_bus_i2c_peripheral_print_stats(const char*                        bus_
  */
 #define STAR_I2C_PERIPHERAL_CONFIG_DEFAULT()                                                       \
   {                                                                                                \
-    .address = 0x00, .addr_mode = STAR_I2C_ADDR_7BIT, .on_read = NULL, .on_write = NULL,           \
-    .on_error = NULL, .context = NULL, .rx_buffer_size = 256, .tx_buffer_size = 256,               \
-    .timeout_ms = 1000, .enable_general_call = false, .enable_10bit_addr = false,                  \
+    .address             = 0x00,                                                                   \
+    .addr_mode           = STAR_I2C_ADDR_7BIT,                                                     \
+    .on_read             = NULL,                                                                   \
+    .on_write            = NULL,                                                                   \
+    .on_error            = NULL,                                                                   \
+    .context             = NULL,                                                                   \
+    .rx_buffer_size      = 256,                                                                    \
+    .tx_buffer_size      = 256,                                                                    \
+    .timeout_ms          = 1000,                                                                   \
+    .enable_general_call = false,                                                                  \
+    .enable_10bit_addr   = false,                                                                  \
   }
 
 /**

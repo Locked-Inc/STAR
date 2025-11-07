@@ -359,8 +359,10 @@ esp_err_t star_batch_clear(star_batch_handle_t handle);
  */
 #define STAR_BATCH_CONFIG_DEFAULT()                                                                \
   {                                                                                                \
-    .timeout_ms = STAR_BATCH_DEFAULT_TIMEOUT_MS, .mode = STAR_BATCH_MODE_SEQUENTIAL,               \
-    .rollback_on_error = false, .stop_on_error = true,                                             \
+    .timeout_ms        = STAR_BATCH_DEFAULT_TIMEOUT_MS,                                            \
+    .mode              = STAR_BATCH_MODE_SEQUENTIAL,                                               \
+    .rollback_on_error = false,                                                                    \
+    .stop_on_error     = true,                                                                     \
   }
 
 #ifdef __cplusplus
