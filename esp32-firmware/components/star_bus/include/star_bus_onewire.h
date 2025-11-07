@@ -410,8 +410,11 @@ void star_bus_onewire_print_stats(const char* bus_name, const star_onewire_stats
  */
 #define STAR_ONEWIRE_CONFIG_DEFAULT()                                                              \
   {                                                                                                \
-    .gpio_pin = GPIO_NUM_NC, .speed = STAR_ONEWIRE_SPEED_STANDARD, .use_parasitic_power = false,   \
-    .use_strong_pullup = false, .search_timeout_ms = 5000,                                         \
+    .gpio_pin            = GPIO_NUM_NC,                                                            \
+    .speed               = STAR_ONEWIRE_SPEED_STANDARD,                                            \
+    .use_parasitic_power = false,                                                                  \
+    .use_strong_pullup   = false,                                                                  \
+    .search_timeout_ms   = 5000,                                                                   \
   }
 
 /**

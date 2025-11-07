@@ -370,12 +370,25 @@ void star_bus_uart_print_stats(const char* bus_name, const star_uart_stats_t* st
  */
 #define STAR_UART_CONFIG_DEFAULT()                                                                 \
   {                                                                                                \
-    .port = UART_NUM_1, .baud_rate = 115200, .data_bits = STAR_UART_DATA_8_BITS,                   \
-    .stop_bits = STAR_UART_STOP_1_BIT, .parity = STAR_UART_PARITY_NONE,                            \
-    .flow_ctrl = STAR_UART_FLOW_CTRL_NONE, .mode = STAR_UART_MODE_UART, .tx_pin = GPIO_NUM_NC,     \
-    .rx_pin = GPIO_NUM_NC, .rts_pin = GPIO_NUM_NC, .cts_pin = GPIO_NUM_NC, .rx_buffer_size = 1024, \
-    .tx_buffer_size = 1024, .event_callback = NULL, .event_context = NULL, .event_queue_size = 10, \
-    .use_ref_tick = false, .rx_thresh = 120, .tx_thresh = 10,                                      \
+    .port             = UART_NUM_1,                                                                \
+    .baud_rate        = 115200,                                                                    \
+    .data_bits        = STAR_UART_DATA_8_BITS,                                                     \
+    .stop_bits        = STAR_UART_STOP_1_BIT,                                                      \
+    .parity           = STAR_UART_PARITY_NONE,                                                     \
+    .flow_ctrl        = STAR_UART_FLOW_CTRL_NONE,                                                  \
+    .mode             = STAR_UART_MODE_UART,                                                       \
+    .tx_pin           = GPIO_NUM_NC,                                                               \
+    .rx_pin           = GPIO_NUM_NC,                                                               \
+    .rts_pin          = GPIO_NUM_NC,                                                               \
+    .cts_pin          = GPIO_NUM_NC,                                                               \
+    .rx_buffer_size   = 1024,                                                                      \
+    .tx_buffer_size   = 1024,                                                                      \
+    .event_callback   = NULL,                                                                      \
+    .event_context    = NULL,                                                                      \
+    .event_queue_size = 10,                                                                        \
+    .use_ref_tick     = false,                                                                     \
+    .rx_thresh        = 120,                                                                       \
+    .tx_thresh        = 10,                                                                        \
   }
 
 /**

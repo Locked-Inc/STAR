@@ -15,7 +15,7 @@
 
 # Default settings
 CHECK_ONLY=false
-FILE_TYPES=("*.c" "*.cpp" "*.h" "*.hpp")
+FILE_TYPES=("*.c" "*.cc" "*.cpp" "*.h" "*.hpp")
 EXCLUDE_DIRS=("build" "managed_components" ".clang_format_backups")
 BACKUP_DIR=".clang_format_backups/clang_format_backup_$(date +%Y%m%d%H%M%S)"
 VALIDATE_CONFIG=true
