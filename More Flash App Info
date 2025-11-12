@@ -1,0 +1,318 @@
+ STAR FlashManager - Full-Stack Hardware Development Platform
+
+ Architecture (Projectum-style)
+
+ ┌─────────────────────────────────────────────────────────────┐
+ │  Coder Workspace                                            │
+ │  ┌────────────────────┐      ┌──────────────────────────┐  │
+ │  │ FlashManager       │      │ FlashManager Frontend    │  │
+ │  │ Backend            │◄─────┤ (React + Apollo)         │  │
+ │  │ (Spring Boot +     │      │ http://localhost:5174    │  │
+ │  │  GraphQL + PgSQL)  │      └──────────────────────────┘  │
+ │  │ Port 8081          │                                     │
+ │  └────────┬───────────┘                                     │
+ │           │ GraphQL API + WebSocket Subscriptions          │
+ └───────────┼─────────────────────────────────────────────────┘
+             │
+             │ GraphQL (JWT auth)
+             ↓
+ ┌─────────────────────────────────────────────────────────────┐
+ │  Local Machine (Mac/Windows/Linux)                          │
+ │  ┌──────────────────────────────────────────────────────┐  │
+ │  │  FlashAgent (Rust)                                    │  │
+ │  │  - Polls for flash jobs                              │  │
+ │  │  - Downloads binaries                                │  │
+ │  │  - Flashes USB devices                               │  │
+ │  └────────┬─────────────────────────────────────────────┘  │
+ │           ↓                                                  │
+ │  ┌────────────────────────────────────────────────────────┐ │
+ │  │  USB Hardware: ESP32, Pi5 SD Card, Android Device     │ │
+ │  └────────────────────────────────────────────────────────┘ │
+ └─────────────────────────────────────────────────────────────┘
+
+ Components to Build
+
+ 1. FlashManager Backend (Spring Boot + Kotlin)
+
+ Location: STAR/FlashManager/backend/
+
+ Tech Stack (mirrors Projectum):
+ - Kotlin 1.8.22 + JVM 17
+ - Spring Boot 3.1.5
+ - Spring GraphQL (primary API)
+ - PostgreSQL 15 + JPA/Hibernate
+ - Spring Security + JWT (jjwt)
+ - Flyway migrations
+ - Gradle Kotlin DSL
+
+ Entities (JPA):
+ - User - Web UI users
+ - Device - Registered local devices (agents)
+ - BuildJob - ESP32/Pi5/Android/backend builds
+ - FlashJob - Flash operations queue
+ - BuildLog - Build output logs
+ - FlashHistory - Completed flash operations
+
+ GraphQL Schema (key operations):
+ # Queries
+ devices: [Device!]!
+ buildJobs(status: JobStatus): [BuildJob!]!
+ flashJobs(status: JobStatus): [FlashJob!]!
+ buildLogs(buildJobId: ID!): [BuildLog!]!
+
+ # Mutations (Web UI)
+ triggerBuild(component: Component!, branch: String): BuildJob!
+ createFlashJob(buildJobId: ID!, deviceId: ID!): FlashJob!
+ registerDevice(name: String!): DeviceRegistration!
+
+ # Mutations (Agent)
+ deviceLogin(apiKey: String!): AuthPayload!
+ pollFlashJobs: [FlashJob!]!
+ updateFlashStatus(jobId: ID!, status: JobStatus!, message: String): FlashJob!
+
+ # Subscriptions (Real-time)
+ buildLogStream(buildJobId: ID!): BuildLog!
+ flashJobUpdated(deviceId: ID!): FlashJob!
+ deviceStatusChanged: Device!
+
+ Services:
+ - BuildService - Triggers builds (ESP32, Pi5, Android, backends)
+ - FlashJobService - Manages flash job queue
+ - DeviceService - Device registration and status
+ - BinaryStorageService - Stores compiled binaries
+ - BuildLogService - Streams build output
+
+ Controllers:
+ - GraphQL resolvers (primary)
+ - REST endpoint for binary downloads (streaming large files)
+
+ 2. FlashManager Frontend (React + TypeScript)
+
+ Location: STAR/FlashManager/frontend/
+
+ Tech Stack (mirrors Projectum):
+ - React 19.1.1 + TypeScript
+ - Vite 7.1.7
+ - Apollo Client 4.0.7 (GraphQL + subscriptions)
+ - Redux Toolkit 2.9.0 (auth state)
+ - Tailwind CSS 3.4.17
+ - Recharts (build statistics)
+
+ Pages:
+ - /login - User authentication
+ - /dashboard - Overview (active builds, devices, flash queue)
+ - /builds - Build management and history
+ - /builds/:id/logs - Real-time build log viewer
+ - /flash - Flash job queue and history
+ - /devices - Device management and registration
+
+ Key Components:
+ - BuildTrigger - Select component and trigger build
+ - BuildLogViewer - Real-time streaming logs (GraphQL subscription)
+ - FlashJobQueue - Drag-and-drop flash job creation
+ - DeviceStatus - Live device connection status
+ - FlashHistory - Historical flash operations
+
+ GraphQL Integration:
+ - Apollo Client setup (same as Projectum)
+ - GraphQL-WS for subscriptions
+ - Optimistic updates for better UX
+
+ 3. Local Flash Agent (Rust)
+
+ Location: STAR/FlashAgent/
+
+ Features:
+ - Cross-platform binary (Mac, Windows, Linux)
+ - GraphQL client (reqwest + graphql_client)
+ - JWT authentication
+ - Device registration on first run
+ - Poll-based flash job checking (every 5s)
+ - Binary download and caching
+ - Hardware detection (serialport-rs)
+ - Flash implementations:
+   - ESP32: esptool.py wrapper
+   - Pi5 SD: dd wrapper (requires sudo)
+   - Android: adb install wrapper
+ - Status reporting to backend
+ - Local config file (~/.star-flash-agent.toml)
+
+ CLI Interface:
+ flash-agent register              # Register device with backend
+ flash-agent start                 # Start polling daemon
+ flash-agent status                # Show connection status
+ flash-agent devices               # List local USB devices
+ flash-agent config                # View/edit configuration
+
+ 4. Coder Template
+
+ Location: STAR/.coder/coder.yaml
+
+ Base Image: Custom Dockerfile with:
+ - Ubuntu 22.04
+ - ESP-IDF v5.5.1
+ - Buildroot 2025.02
+ - Android SDK + Gradle
+ - JDK 17 + Gradle
+ - Node.js 20 + npm
+ - Rust toolchain
+ - PostgreSQL client tools
+
+ Startup Scripts:
+ - Start PostgreSQL container
+ - Start FlashManager backend (port 8081)
+ - Start FlashManager frontend (port 5174)
+ - Display access URLs and setup instructions
+
+ 5. Database Schema
+
+ Migrations: backend/src/main/resources/db/migration/
+
+ V1__initial_schema.sql:
+   - users (id, email, password_hash, role)
+   - devices (id, name, api_key_hash, last_seen, status)
+   - build_jobs (id, component, status, created_at, completed_at)
+   - flash_jobs (id, build_job_id, device_id, status, created_at)
+   - build_logs (id, build_job_id, timestamp, line, level)
+   - flash_history (id, flash_job_id, result, duration, error_message)
+
+ Project Structure
+
+ STAR/
+ ├── FlashManager/
+ │   ├── backend/                         # Spring Boot backend
+ │   │   ├── src/main/kotlin/com/star/flashmanager/
+ │   │   │   ├── controllers/
+ │   │   │   ├── domain/entities/
+ │   │   │   ├── graphql/resolvers/
+ │   │   │   ├── repositories/
+ │   │   │   ├── services/
+ │   │   │   ├── security/
+ │   │   │   └── config/
+ │   │   ├── src/main/resources/
+ │   │   │   ├── graphql/schema.graphqls
+ │   │   │   ├── db/migration/
+ │   │   │   └── application.yml
+ │   │   ├── build.gradle.kts
+ │   │   └── README.md
+ │   │
+ │   ├── frontend/                        # React frontend
+ │   │   ├── src/
+ │   │   │   ├── pages/
+ │   │   │   ├── components/
+ │   │   │   ├── graphql/
+ │   │   │   ├── services/apollo/
+ │   │   │   ├── store/
+ │   │   │   └── types/
+ │   │   ├── package.json
+ │   │   └── README.md
+ │   │
+ │   └── docker-compose.yml               # PostgreSQL for development
+ │
+ ├── FlashAgent/                          # Rust local agent
+ │   ├── src/
+ │   │   ├── main.rs
+ │   │   ├── graphql/
+ │   │   ├── auth.rs
+ │   │   ├── poller.rs
+ │   │   ├── flasher.rs
+ │   │   ├── devices.rs
+ │   │   └── config.rs
+ │   ├── Cargo.toml
+ │   └── README.md
+ │
+ ├── .coder/
+ │   ├── coder.yaml                       # Coder template
+ │   └── images/
+ │       └── Dockerfile                   # Custom dev image
+ │
+ └── docs/
+     ├── FLASH_MANAGER.md                 # Overall architecture
+     ├── AGENT_SETUP.md                   # Agent installation
+     └── DEVELOPMENT.md                   # Development guide
+
+ Implementation Plan
+
+ Phase 1: Backend Foundation (8-10 hours)
+
+ 1. Create Spring Boot project structure
+ 2. Configure PostgreSQL + Flyway
+ 3. Create JPA entities (User, Device, BuildJob, FlashJob, etc.)
+ 4. Set up Spring Security + JWT
+ 5. Create repositories and basic services
+
+ Phase 2: GraphQL API (6-8 hours)
+
+ 6. Define GraphQL schema
+ 7. Implement query resolvers
+ 8. Implement mutation resolvers
+ 9. Set up WebSocket subscriptions
+ 10. Add authentication to GraphQL context
+
+ Phase 3: Build System Integration (8-10 hours)
+
+ 11. Implement BuildService (trigger builds)
+ 12. ESP32 build integration (idf.py wrapper)
+ 13. Pi5 build integration (Buildroot wrapper)
+ 14. Android build integration (Gradle wrapper)
+ 15. Build log streaming (real-time)
+ 16. Binary storage and serving
+
+ Phase 4: Frontend (10-12 hours)
+
+ 17. Create React app with Vite
+ 18. Set up Apollo Client + GraphQL
+ 19. Implement authentication flow
+ 20. Build Dashboard page
+ 21. Build Management page
+ 22. Real-time Log Viewer
+ 23. Flash Job Queue
+ 24. Device Management
+
+ Phase 5: Flash Agent (12-15 hours)
+
+ 25. Create Rust project structure
+ 26. Implement GraphQL client
+ 27. JWT authentication flow
+ 28. Device registration
+ 29. Polling mechanism
+ 30. Binary download and caching
+ 31. ESP32 flashing (esptool.py)
+ 32. Pi5 SD flashing (dd command)
+ 33. Android flashing (adb)
+ 34. Status reporting
+ 35. Cross-platform builds (Mac/Windows/Linux)
+
+ Phase 6: Coder Template (4-6 hours)
+
+ 36. Create Dockerfile with all toolchains
+ 37. Write coder.yaml configuration
+ 38. Startup scripts (PostgreSQL, backend, frontend)
+ 39. Environment variable configuration
+ 40. Documentation and setup guides
+
+ Phase 7: Testing & Polish (6-8 hours)
+
+ 41. End-to-end testing
+ 42. Cross-platform agent testing
+ 43. Error handling and edge cases
+ 44. Documentation
+ 45. Demo video/guide
+
+ Total Estimated Effort: 54-69 hours
+
+ Key Features
+
+ ✅ Full-stack web app (Spring Boot + React)
+ ✅ GraphQL API with real-time subscriptions
+ ✅ JWT authentication for agents
+ ✅ Real-time build log streaming
+ ✅ Device management and registration
+ ✅ Flash job queue with history
+ ✅ Cross-platform Rust agent
+ ✅ Poll-based security (no incoming connections)
+ ✅ All STAR components supported (ESP32, Pi5, Android, backends)
+ ✅ PostgreSQL database with migrations
+ ✅ Professional UI with Tailwind CSS
+
+ This matches the Projectum architecture and quality!

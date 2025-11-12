@@ -1,0 +1,113 @@
+build:
+  maxIssues: 0
+
+config:
+  validation: true
+  warningsAsErrors: false
+
+console-reports:
+  active: true
+
+output-reports:
+  active: true
+
+comments:
+  active: true
+
+complexity:
+  active: true
+  CyclomaticComplexMethod:
+    active: true
+    threshold: 15
+  LongMethod:
+    active: true
+    threshold: 80
+  LongParameterList:
+    active: true
+    functionThreshold: 8
+    constructorThreshold: 9
+    ignoreDefaultParameters: true
+  TooManyFunctions:
+    active: true
+    thresholdInFiles: 15
+    thresholdInClasses: 15
+    thresholdInInterfaces: 15
+  LargeClass:
+    active: true
+    threshold: 800
+  NestedBlockDepth:
+    active: true
+    threshold: 5
+
+coroutines:
+  active: true
+
+empty-blocks:
+  active: true
+
+exceptions:
+  active: true
+  TooGenericExceptionCaught:
+    active: true
+    exceptionNames:
+      - 'ArrayIndexOutOfBoundsException'
+      - 'Error'
+      - 'Exception'
+      - 'IllegalMonitorStateException'
+      - 'IndexOutOfBoundsException'
+      - 'NullPointerException'
+      - 'RuntimeException'
+      - 'Throwable'
+    allowedExceptionNameRegex: '_'
+  SwallowedException:
+    active: true
+    ignoredExceptionTypes:
+      - 'InterruptedException'
+      - 'MalformedURLException'
+      - 'NumberFormatException'
+      - 'ParseException'
+    allowedExceptionNameRegex: '_'
+
+naming:
+  active: true
+
+performance:
+  active: true
+
+potential-bugs:
+  active: true
+  ImplicitDefaultLocale:
+    active: false
+
+style:
+  active: true
+  MagicNumber:
+    active: true
+    ignoreNumbers: ['-1', '0', '0.1', '0.5', '1', '2', '3', '10', '24', '32', '50', '60', '100', '150', '200', '800', '1000', '1024', '1500', '2000', '8192']
+    ignoreHashCodeFunction: true
+    ignorePropertyDeclaration: true
+    ignoreAnnotation: true
+    ignoreEnums: true
+    ignoreConstantDeclaration: true
+    ignoreCompanionObjectPropertyDeclaration: true
+  ReturnCount:
+    active: true
+    max: 4
+    excludedFunctions: ["equals"]
+  MaxLineLength:
+    active: true
+    maxLineLength: 140
+  WildcardImport:
+    active: true
+    excludeImports:
+      - 'java.util.*'
+      - 'io.mockk.*'
+      - 'org.junit.jupiter.api.*'
+      - 'org.junit.jupiter.api.Assertions.*'
+      - 'com.locked.domain.entities.*'
+      - 'com.locked.domain.enums.*'
+      - 'com.locked.repositories.*'
+  UseCheckOrError:
+    active: true
+  UseRequire:
+    active: true
