@@ -1,0 +1,105 @@
+scalar DateTime
+scalar Long
+
+enum UserRole {
+    USER
+    ADMIN
+}
+
+enum DeviceStatus {
+    ONLINE
+    OFFLINE
+    BUSY
+}
+
+enum Platform {
+    MAC
+    WINDOWS
+    LINUX
+    WSL2
+}
+
+enum DeviceCapability {
+    ESP32
+    PI5
+    ANDROID
+}
+
+enum Component {
+    ESP32_FIRMWARE
+    PI5_OS
+    ANDROID_APP
+    ROBOT_GATEWAY
+    SERVER_BACKEND
+}
+
+enum JobStatus {
+    PENDING
+    RUNNING
+    COMPLETED
+    FAILED
+    CANCELLED
+}
+
+enum FlashResult {
+    SUCCESS
+    FAILED
+    TIMEOUT
+}
+
+type Device {
+    id: ID!
+    name: String!
+    userId: ID!
+    status: DeviceStatus!
+    lastSeen: DateTime
+    platform: Platform!
+    capabilities: [DeviceCapability!]!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+type FlashJob {
+    id: ID!
+    targetDevice: String!
+    status: JobStatus!
+    priority: Int!
+    claimedAt: DateTime
+    completedAt: DateTime
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    device: Device!
+    buildJob: BuildJob!
+}
+
+type BuildJob {
+    id: ID!
+    component: Component!
+    branch: String!
+    status: JobStatus!
+    binaryPath: String
+    createdAt: DateTime!
+}
+
+type AuthPayload {
+    accessToken: String!
+    refreshToken: String!
+    device: Device
+}
+
+type Query {
+    pollFlashJobs: [FlashJob!]!
+}
+
+type Mutation {
+    deviceLogin(apiKey: String!): AuthPayload!
+    claimFlashJob(flashJobId: ID!): FlashJob!
+    updateFlashStatus(flashJobId: ID!, status: JobStatus!): FlashJob!
+    completeFlashJob(
+        flashJobId: ID!
+        success: Boolean!
+        duration: Long!
+        errorMessage: String
+    ): FlashJob!
+    updateDeviceHeartbeat: Device!
+}
