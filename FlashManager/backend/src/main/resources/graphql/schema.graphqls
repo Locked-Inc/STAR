@@ -1,0 +1,260 @@
+scalar DateTime
+scalar Long
+
+# ============================================================================
+# Types
+# ============================================================================
+
+type User {
+    id: ID!
+    email: String!
+    role: UserRole!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+type Device {
+    id: ID!
+    name: String!
+    userId: ID!
+    user: User!
+    status: DeviceStatus!
+    lastSeen: DateTime
+    platform: Platform!
+    capabilities: [DeviceCapability!]!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+type BuildJob {
+    id: ID!
+    component: Component!
+    branch: String!
+    status: JobStatus!
+    triggeredBy: User!
+    startedAt: DateTime
+    completedAt: DateTime
+    binaryPath: String
+    binarySize: Long
+    buildDuration: Long
+    exitCode: Int
+    logs: [BuildLog!]!
+    createdAt: DateTime!
+    updatedAt: DateTime!
+}
+
+type BuildLog {
+    id: ID!
+    buildJobId: ID!
+    timestamp: DateTime!
+    line: String!
+    level: LogLevel!
+}
+
+type FlashJob {
+    id: ID!
+    buildJob: BuildJob!
+    device: Device!
+    targetDevice: String!
+    status: JobStatus!
+    priority: Int!
+    claimedAt: DateTime
+    completedAt: DateTime
+    createdAt: DateTime!
+    updatedAt: DateTime!
+    history: FlashHistory
+}
+
+type FlashHistory {
+    id: ID!
+    flashJob: FlashJob!
+    result: FlashResult!
+    duration: Long!
+    errorMessage: String
+    flashOutput: String
+    createdAt: DateTime!
+}
+
+type DeviceRegistration {
+    device: Device!
+    apiKey: String!
+}
+
+type AuthPayload {
+    accessToken: String!
+    refreshToken: String!
+    user: User
+    device: Device
+}
+
+# ============================================================================
+# Enums
+# ============================================================================
+
+enum UserRole {
+    USER
+    ADMIN
+}
+
+enum DeviceStatus {
+    ONLINE
+    OFFLINE
+    BUSY
+}
+
+enum Platform {
+    MAC
+    WINDOWS
+    LINUX
+    WSL2
+}
+
+enum DeviceCapability {
+    ESP32
+    PI5
+    ANDROID
+}
+
+enum Component {
+    ESP32_FIRMWARE
+    PI5_OS
+    ANDROID_APP
+    ROBOT_GATEWAY
+    SERVER_BACKEND
+}
+
+enum JobStatus {
+    PENDING
+    RUNNING
+    COMPLETED
+    FAILED
+    CANCELLED
+}
+
+enum LogLevel {
+    INFO
+    WARN
+    ERROR
+    DEBUG
+}
+
+enum FlashResult {
+    SUCCESS
+    FAILED
+    TIMEOUT
+}
+
+# ============================================================================
+# Inputs
+# ============================================================================
+
+input RegisterInput {
+    email: String!
+    password: String!
+}
+
+input LoginInput {
+    email: String!
+    password: String!
+}
+
+input RegisterDeviceInput {
+    name: String!
+    platform: Platform!
+    capabilities: [DeviceCapability!]!
+}
+
+input TriggerBuildInput {
+    component: Component!
+    branch: String
+}
+
+input CreateFlashJobInput {
+    buildJobId: ID!
+    deviceId: ID!
+    targetDevice: String!
+    priority: Int
+}
+
+# ============================================================================
+# Queries
+# ============================================================================
+
+type Query {
+    # User queries
+    me: User!
+    users: [User!]!
+    user(id: ID!): User
+
+    # Device queries
+    devices: [Device!]!
+    device(id: ID!): Device
+    myDevices: [Device!]!
+
+    # Build queries
+    buildJobs(status: JobStatus, component: Component, limit: Int): [BuildJob!]!
+    buildJob(id: ID!): BuildJob
+    buildLogs(buildJobId: ID!, limit: Int, offset: Int): [BuildLog!]!
+
+    # Flash queries
+    flashJobs(status: JobStatus, deviceId: ID, limit: Int): [FlashJob!]!
+    flashJob(id: ID!): FlashJob
+    flashHistory(limit: Int): [FlashHistory!]!
+
+    # Agent queries (authenticated as device)
+    pollFlashJobs: [FlashJob!]!
+}
+
+# ============================================================================
+# Mutations
+# ============================================================================
+
+type Mutation {
+    # Authentication
+    register(input: RegisterInput!): AuthPayload!
+    login(input: LoginInput!): AuthPayload!
+    refreshToken(refreshToken: String!): AuthPayload!
+
+    # Device management
+    registerDevice(input: RegisterDeviceInput!): DeviceRegistration!
+    updateDeviceStatus(deviceId: ID!, status: DeviceStatus!): Device!
+    deleteDevice(deviceId: ID!): Boolean!
+
+    # Build management
+    triggerBuild(input: TriggerBuildInput!): BuildJob!
+    cancelBuild(buildJobId: ID!): Boolean!
+
+    # Flash management
+    createFlashJob(input: CreateFlashJobInput!): FlashJob!
+    cancelFlashJob(flashJobId: ID!): Boolean!
+
+    # Agent mutations (authenticated as device)
+    deviceLogin(apiKey: String!): AuthPayload!
+    claimFlashJob(flashJobId: ID!): FlashJob!
+    updateFlashStatus(flashJobId: ID!, status: JobStatus!): FlashJob!
+    completeFlashJob(
+        flashJobId: ID!
+        success: Boolean!
+        duration: Long!
+        errorMessage: String
+    ): FlashJob!
+    updateDeviceHeartbeat: Device!
+}
+
+# ============================================================================
+# Subscriptions
+# ============================================================================
+
+type Subscription {
+    # Build log streaming
+    buildLogStream(buildJobId: ID!): BuildLog!
+
+    # Flash job updates for a specific device
+    flashJobUpdated(deviceId: ID!): FlashJob!
+
+    # Device status changes
+    deviceStatusChanged: Device!
+
+    # Build job status changes
+    buildJobUpdated(buildJobId: ID!): BuildJob!
+}
