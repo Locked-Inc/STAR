@@ -1,493 +1,446 @@
 # FlashManager Coder Template
 
-Complete Coder workspace template for STAR FlashManager development with all required toolchains.
+Complete development environment for STAR FlashManager - a remote build system for embedded devices with local hardware flashing capabilities.
 
 ## Overview
 
-This Coder template provides a fully-configured development environment with:
+This Coder template provides a fully-configured workspace with all the tools needed for embedded systems development across multiple platforms:
 
-- **ESP-IDF v5.1.2** for ESP32 firmware development
-- **Android SDK 33** with command-line tools and platform-tools
-- **Gradle 8.5** for Android and Spring Boot builds
-- **Rust (stable)** for flash agent development
-- **Node.js 18** with npm for frontend development
-- **PostgreSQL 15** for database
-- **Java 17** (OpenJDK) for Spring Boot
-- **Python 3** with esptool for ESP32 flashing
+- **ESP32 Firmware** - ESP-IDF v5.1.2 toolchain
+- **Raspberry Pi 5 OS** - Buildroot and flashing tools
+- **Android Applications** - Android SDK 33 with build tools
+- **Spring Boot Backend** - Kotlin/Java 17 with Gradle 8.5
+- **React Frontend** - Node.js 18 with Vite
+- **Rust Flash Agent** - Local device flashing service
+- **PostgreSQL Database** - Isolated database per workspace
 
-## Architecture
+## Features
 
-This template uses **Terraform with Docker provider** (not Kubernetes). The template provisions:
-
-1. **Docker Network**: Isolated network per workspace
-2. **PostgreSQL Container**: Database sidecar for FlashManager
-3. **Development Container**: Main workspace with all build tools
-4. **Persistent Volume**: Workspace data persists across restarts
-5. **Coder Agent**: Manages workspace lifecycle and apps
+✅ **Complete Build Environment** - All toolchains pre-configured
+✅ **Isolated PostgreSQL** - Dedicated database per workspace
+✅ **Auto-Setup** - GitHub authentication and repository cloning
+✅ **Persistent Storage** - Workspace data survives restarts
+✅ **Coder Apps** - Access services via web UI
+✅ **JetBrains Gateway** - Open in IntelliJ or WebStorm
 
 ## Quick Start
 
-### 1. Build Docker Image
+### 1. Create Workspace
 
-**Important**: Build the development image BEFORE uploading the template.
-
-```bash
-cd /home/coder/Projectum/STAR/FlashManager/.coder
-
-# Option A: Build locally (for testing)
-./build-and-push.sh
-
-# Option B: Build and push to registry (recommended for production)
-REGISTRY=your-registry.com ./build-and-push.sh
-```
-
-This creates the `flashmanager-dev:latest` image with all build tools.
-
-**If using a registry:**
-Edit `main.tf` and update the image name:
-```hcl
-resource "docker_image" "flashmanager_dev" {
-  name = "your-registry.com/flashmanager-dev:latest"
-}
-```
-
-### 2. Upload Template to Coder
-
-```bash
-# From this directory
-cd /home/coder/Projectum/STAR/FlashManager/.coder
-
-# Option 1: Via Coder CLI
-coder templates push flashmanager-dev
-
-# Option 2: Via Coder UI
-# 1. Go to Templates → Create Template
-# 2. Upload main.tf file
-# 3. Name it "flashmanager-dev"
-```
-
-### 3. Create Workspace from Template
-
-1. Go to Coder dashboard → Create Workspace
-2. Select "flashmanager-dev" template
+1. Go to Coder Dashboard → **Create Workspace**
+2. Select **"flashmanager-dev"** template
 3. Configure parameters:
    - **GitHub Token** (optional): For automatic HTTPS authentication
    - **GitHub Username** (optional): Your GitHub username
-   - **Auto-clone**: Enable to auto-clone repositories
-   - **Auto-start**: Enable to auto-start services
-4. Click "Create Workspace"
+   - **Auto-clone**: ✅ Enable to automatically clone repositories
+   - **Auto-start**: ⬜ Enable to start services automatically
+4. Click **Create Workspace**
 
-### 4. Wait for Initialization
+### 2. Wait for Setup
 
-The workspace will:
-- Pull the pre-built Docker image
-- Start PostgreSQL container
-- Run setup-flashmanager.sh script
-- Clone repositories (if enabled)
-- Install dependencies
-- Build flash agent
+First-time workspace creation takes **~10-15 minutes** to install:
+- ESP-IDF toolchain
+- Android SDK
+- Rust compiler
+- Gradle build system
+- Node.js and npm
+- All system dependencies
 
-This takes ~3-5 minutes (much faster with pre-built image!).
+**Subsequent starts** take only **~30 seconds** (tools persist in workspace volume)
 
-### 5. Access Your Workspace
+### 3. Access Your Workspace
 
-**Via Coder Apps (in UI):**
-- **Frontend**: Click "FlashManager Frontend" app
-- **Backend**: Click "FlashManager Backend" app
-- **GraphQL**: Click "GraphQL API" app
-- **JetBrains Gateway**: Click to open in IntelliJ/WebStorm
+**Via Coder Apps (recommended):**
+- 🌐 **FlashManager Frontend** - Click to open web UI
+- 🔧 **FlashManager Backend** - API server
+- 📊 **GraphQL API** - Interactive GraphQL playground
+- 💻 **JetBrains Gateway** - Open in IDE
 
 **Via Terminal:**
 ```bash
-# Via Coder CLI
+# SSH into workspace
 coder ssh flashmanager-workspace
 
 # Or use VS Code with Coder extension
-# Or access via browser at workspace URL
 ```
 
 ## Workspace Structure
 
 ```
-/workspace/
-└── STAR/
-    ├── FlashManager/       # Main FlashManager application
-    │   ├── backend/        # Spring Boot backend
-    │   ├── frontend/       # React frontend
-    │   ├── agent/          # Rust flash agent
-    │   └── artifacts/      # Build artifacts storage
-    ├── ESP32/              # ESP32 firmware repository (clone manually)
-    ├── Pi5/                # Raspberry Pi 5 OS repository (clone manually)
-    ├── Android/            # Android app repository (clone manually)
-    └── Backends/           # Backend services (clone manually)
+/workspace/STAR/
+├── FlashManager/          # Main application
+│   ├── backend/          # Spring Boot API (Kotlin)
+│   ├── frontend/         # React UI (TypeScript)
+│   ├── agent/            # Flash agent (Rust)
+│   └── artifacts/        # Build output storage
+├── ESP32/                # ESP32 firmware repos (clone manually)
+├── Pi5/                  # Raspberry Pi 5 repos (clone manually)
+├── Android/              # Android app repos (clone manually)
+└── Backends/             # Backend service repos (clone manually)
 ```
 
-## Development Commands
+## Development Workflow
 
-### Quick Start Commands
+### Start Backend & Frontend
 
 ```bash
-# Start backend
+# Terminal 1: Start backend
 flashmanager-backend
 
-# Start frontend (in new terminal)
+# Terminal 2: Start frontend
 flashmanager-frontend
+```
 
-# Start agent (after getting API key from UI)
+Access the application:
+- **Frontend**: http://localhost:5174
+- **Backend API**: http://localhost:8081/api/v1
+- **GraphQL**: http://localhost:8081/api/v1/graphql
+
+### Register Device & Start Agent
+
+1. Open frontend at http://localhost:5174
+2. Register your device and copy the API key
+3. Start the flash agent:
+
+```bash
 flashmanager-agent YOUR_API_KEY
 ```
 
-### Helper Scripts
+The agent connects to the backend and enables remote flashing to local hardware.
 
-All scripts available in `/usr/local/bin/`:
+## Development Commands
+
+### Quick Commands
 
 | Command | Description |
 |---------|-------------|
-| `flashmanager-backend` | Start Spring Boot backend |
-| `flashmanager-frontend` | Start React dev server |
-| `flashmanager-agent KEY` | Start flash agent |
-| `flash-esp32 BIN PORT` | Flash ESP32 device |
-| `flash-pi5 IMG DEV` | Flash Pi5 SD card |
-| `flash-android APK` | Install Android APK |
+| `flashmanager-backend` | Start Spring Boot backend server |
+| `flashmanager-frontend` | Start React dev server with Vite |
+| `flashmanager-agent <KEY>` | Start flash agent (requires API key) |
+| `flash-esp32 <binary> <port>` | Flash ESP32 device |
+| `flash-pi5 <image> <device>` | Flash Raspberry Pi 5 SD card |
+| `flash-android <apk>` | Install Android APK via adb |
 
 ### Shell Aliases
 
-Added to `~/.bashrc`:
+Convenient shortcuts (available after terminal restart):
 
 ```bash
 # FlashManager shortcuts
-fm-backend         # Start backend
-fm-frontend        # Start frontend
-fm-agent          # Start agent
-fm-cd             # cd to FlashManager
-fm-logs-backend   # View backend logs
-fm-logs-frontend  # View frontend logs
+fm-backend              # Start backend
+fm-frontend             # Start frontend
+fm-agent               # Start agent with key
+fm-cd                  # cd to FlashManager directory
+fm-logs-backend        # View backend logs
+fm-logs-frontend       # View frontend logs
 
-# STAR project shortcuts
-star-cd           # cd to STAR root
-esp32-cd          # cd to ESP32
-pi5-cd            # cd to Pi5
-android-cd        # cd to Android
-backends-cd       # cd to Backends
+# STAR repository shortcuts
+star-cd                # cd to STAR root
+esp32-cd              # cd to ESP32 directory
+pi5-cd                # cd to Pi5 directory
+android-cd            # cd to Android directory
+backends-cd           # cd to Backends directory
 ```
 
-## Environment Variables
+## Building Firmware
 
-### Workspace Variables
-
-Set by template automatically:
+### ESP32 Firmware
 
 ```bash
-WORKSPACE_ID          # Unique workspace identifier
-POSTGRES_HOST         # PostgreSQL hostname
-DATABASE_URL          # JDBC connection string
-DATABASE_USERNAME     # Database user
-DATABASE_PASSWORD     # Database password
-WORKSPACE_DIR         # /workspace
-STAR_DIR              # /workspace/STAR
-FLASHMANAGER_DIR      # /workspace/STAR/FlashManager
+esp32-cd
+cd your-esp32-project
+
+# Build firmware
+idf.py build
+
+# Flash to device (USB serial)
+flash-esp32 build/firmware.bin /dev/ttyUSB0
+
+# Or use idf.py directly
+idf.py flash -p /dev/ttyUSB0
+idf.py monitor  # View serial output
 ```
 
-### User-Provided Variables
-
-Via template parameters:
+### Raspberry Pi 5 Images
 
 ```bash
-GITHUB_TOKEN          # GitHub PAT for HTTPS auth
-GITHUB_USER           # GitHub username
-AUTO_CLONE            # Auto-clone repos flag
-AUTO_START_SERVICES   # Auto-start backend/frontend
+pi5-cd
+cd your-pi5-project
+
+# Build image (example with Buildroot)
+make
+
+# Flash to SD card (⚠️ DANGEROUS - will erase device!)
+flash-pi5 output/images/sdcard.img /dev/sdb
+
+# Verify device first!
+lsblk  # Check which device is your SD card
 ```
 
-## Database Configuration
+### Android APKs
 
-PostgreSQL is automatically configured with:
+```bash
+android-cd
+cd your-android-project
 
-- **Host**: Container name (e.g., `coder-user-workspace-postgres`)
+# Build debug APK
+./gradlew assembleDebug
+
+# Install to connected device
+flash-android app/build/outputs/apk/debug/app-debug.apk
+
+# Or use adb directly
+adb devices  # List connected devices
+adb install -r app-debug.apk
+```
+
+## Database Access
+
+PostgreSQL is automatically configured for each workspace:
+
+**Connection Details:**
+- **Host**: `coder-<user>-<workspace>-postgres`
 - **Port**: `5432`
 - **Database**: `flashmanager`
 - **User**: `flashmanager`
 - **Password**: `flashmanager123`
-- **Connection**: Accessible from workspace via Docker network
 
-The backend's `.env` file is auto-generated with correct connection details.
-
-## Build Tools
-
-### ESP-IDF (ESP32)
-
+**Connect via psql:**
 ```bash
-# Source environment
-. /opt/esp-idf/export.sh
-
-# Or it's already in ~/.bashrc
-esp32-cd
-idf.py build
-idf.py flash -p /dev/ttyUSB0
+psql -h $POSTGRES_HOST -U flashmanager -d flashmanager
 ```
 
-### Android SDK
+The backend's `.env` file is auto-configured with correct database connection details.
+
+## Environment Variables
+
+### Auto-Configured
+
+These are set automatically by the template:
 
 ```bash
-android-cd
-./gradlew assembleDebug
-adb install app/build/outputs/apk/debug/app-debug.apk
+WORKSPACE_ID           # Unique workspace identifier
+POSTGRES_HOST          # PostgreSQL container name
+DATABASE_URL           # JDBC connection string
+DATABASE_USERNAME      # flashmanager
+DATABASE_PASSWORD      # flashmanager123
+WORKSPACE_DIR          # /workspace
+STAR_DIR               # /workspace/STAR
+FLASHMANAGER_DIR       # /workspace/STAR/FlashManager
 ```
 
-### Rust Agent
+### Development Tools
+
+These are added to `~/.bashrc` during setup:
 
 ```bash
-fm-cd
-cd agent
-cargo build --release
-./target/release/flashmanager-agent --api-key YOUR_KEY
+# ESP-IDF
+export IDF_PATH=$HOME/esp-idf
+export IDF_TOOLS_PATH=$HOME/.espressif
+
+# Android SDK
+export ANDROID_HOME=$HOME/android-sdk
+export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin
+export PATH=$PATH:$ANDROID_HOME/platform-tools
+
+# Rust
+source $HOME/.cargo/env
+
+# Gradle
+export GRADLE_HOME=/opt/gradle
+export PATH=$PATH:$GRADLE_HOME/bin
+
+# Node.js (via nvm)
+export NVM_DIR="$HOME/.nvm"
+[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 ```
 
 ## Coder Apps
 
-The template exposes these applications in the Coder UI:
+The template exposes these applications in the Coder web UI:
 
-### 1. FlashManager Backend
-- **URL**: `http://localhost:8081`
+### FlashManager Frontend
+- **URL**: http://localhost:5174
+- **Description**: React web interface for managing builds and devices
+- **Health Check**: Automatic with 30s interval
+
+### FlashManager Backend
+- **URL**: http://localhost:8081
+- **Description**: Spring Boot REST API and GraphQL server
 - **Health Check**: GraphQL endpoint
-- **Auto-start**: If enabled in parameters
 
-### 2. FlashManager Frontend
-- **URL**: `http://localhost:5174`
-- **Health Check**: Root endpoint
-- **Auto-start**: If enabled in parameters
+### GraphQL API
+- **URL**: http://localhost:8081/api/v1/graphql
+- **Description**: Interactive GraphQL playground (GraphiQL)
+- **WebSocket**: Enabled for GraphQL subscriptions
 
-### 3. GraphQL API
-- **URL**: `http://localhost:8081/api/v1/graphql`
-- **GraphiQL**: Interactive GraphQL playground
-- **WebSocket**: For subscriptions
-
-### 4. JetBrains Gateway
-- Opens IntelliJ IDEA, WebStorm, or other JetBrains IDE
-- Connects directly to workspace
-- Opens at `/workspace` directory
-
-## Persistent Storage
-
-Data persists across workspace stops/starts:
-
-- **Workspace volume**: `/workspace` directory
-  - All code and project files
-  - Node modules, Cargo builds
-  - Gradle cache
-- **PostgreSQL volume**: Database data
-  - Database persists across restarts
-  - Survives workspace rebuilds
-
-## Template Parameters
-
-| Parameter | Description | Default | Mutable |
-|-----------|-------------|---------|---------|
-| `github_token` | GitHub PAT for auto-auth | `""` | Yes |
-| `github_username` | GitHub username | owner name | Yes |
-| `auto_clone` | Auto-clone repositories | `true` | No |
-| `auto_start_services` | Auto-start backend/frontend | `false` | Yes |
+### JetBrains Gateway
+- **Description**: Opens IntelliJ IDEA, WebStorm, or other JetBrains IDE
+- **Working Directory**: `/workspace`
 
 ## Troubleshooting
 
-### PostgreSQL not ready
+### Services Won't Start
 
+**Check if services are running:**
 ```bash
-# Check if PostgreSQL container is running
-docker ps | grep postgres
+# Check backend
+curl http://localhost:8081/api/v1/graphql
 
-# Check PostgreSQL logs
-docker logs coder-USER-WORKSPACE-postgres
+# Check frontend
+curl http://localhost:5174
 
-# Test connection manually
-pg_isready -h coder-USER-WORKSPACE-postgres -U flashmanager
+# View logs
+fm-logs-backend
+fm-logs-frontend
 ```
 
-### Services not starting
+**Common issues:**
+- Port already in use → Stop conflicting process
+- Database not ready → Wait for PostgreSQL to start
+- Build failed → Check logs for compilation errors
+
+### PostgreSQL Connection Failed
 
 ```bash
-# Check auto-start logs
-cat /tmp/flashmanager-backend.log
-cat /tmp/flashmanager-frontend.log
+# Test database connection
+pg_isready -h $POSTGRES_HOST -U flashmanager
 
-# Check if PIDs exist
-cat /tmp/flashmanager-backend.pid
-cat /tmp/flashmanager-frontend.pid
+# View PostgreSQL logs
+docker logs $(docker ps | grep postgres | awk '{print $1}')
 
-# Start manually
-flashmanager-backend
-flashmanager-frontend
+# Verify environment variables
+echo $POSTGRES_HOST
+echo $DATABASE_URL
 ```
 
-### Build fails
-
-```bash
-# Backend build
-fm-cd
-cd backend
-./gradlew clean build
-
-# Frontend build
-cd frontend
-rm -rf node_modules
-npm install
-
-# Agent build
-cd agent
-cargo clean
-cargo build --release
-```
-
-### ESP-IDF not found
+### ESP-IDF Not Found
 
 ```bash
 # Manually source ESP-IDF
-. /opt/esp-idf/export.sh
+. $HOME/esp-idf/export.sh
 
-# Or restart terminal (already in .bashrc)
+# Or restart terminal (it's in .bashrc)
+exec bash
+
+# Verify installation
+idf.py --version
 ```
 
-### Can't clone repositories
+### Build Tools Missing
+
+All tools persist in the workspace volume at `/home/coder/`.
+
+If tools are missing after a rebuild:
+```bash
+# Check tool installations
+which gradle   # /opt/gradle/bin/gradle
+which node     # ~/.nvm/versions/node/v18.x.x/bin/node
+which rustc    # ~/.cargo/bin/rustc
+which idf.py   # ~/esp-idf/tools/idf.py
+
+# Reinstall if needed (rare)
+# Restart workspace with --build flag
+```
+
+### GitHub Clone Failed
 
 **With HTTPS:**
 - Ensure GitHub token has `repo` scope
-- Check token in template parameters
-- Try manual clone: `git clone https://TOKEN@github.com/ORG/REPO.git`
+- Verify token in workspace parameters
+- Try manual clone:
+  ```bash
+  cd /workspace/STAR
+  git clone https://github.com/YOUR_ORG/FlashManager.git
+  ```
 
 **With SSH:**
-- Add SSH key to GitHub: `cat ~/.ssh/id_rsa.pub`
-- GitHub Settings → SSH and GPG keys → New SSH key
-- Test: `ssh -T git@github.com`
-
-## Customization
-
-### Changing Repository URLs
-
-Edit `setup-flashmanager.sh` and update:
-
-```bash
-GIT_CLONE_URL_FLASHMANAGER="https://github.com/YOUR_ORG/FlashManager.git"
-GIT_CLONE_URL_ESP32="https://github.com/YOUR_ORG/ESP32.git"
-# ... etc
-```
-
-### Adding More Tools
-
-Edit `Dockerfile` in `build-context/`:
-
-```dockerfile
-RUN apt-get update && apt-get install -y \
-    your-package-here
-```
-
-Then rebuild template:
-
-```bash
-coder templates push flashmanager-dev
-```
-
-### Changing Ports
-
-Edit `main.tf` coder_app resources:
-
-```hcl
-resource "coder_app" "backend" {
-  url = "http://localhost:YOUR_PORT"
-}
-```
-
-### Adding Environment Variables
-
-Edit `main.tf` workspace container env:
-
-```hcl
-env = [
-  "YOUR_VAR=your_value",
-  # ...
-]
-```
-
-## Template Maintenance
-
-### Updating Template
-
-```bash
-# Make changes to main.tf or setup scripts
-# Push updated template
-coder templates push flashmanager-dev
-
-# Rebuild existing workspaces
-coder restart YOUR_WORKSPACE --build
-```
-
-### Version Management
-
-```bash
-# List template versions
-coder templates versions list flashmanager-dev
-
-# Rollback to previous version
-coder templates versions activate flashmanager-dev VERSION_ID
-```
-
-## CI/CD Integration
-
-### Building Docker Image in CI
-
-```yaml
-# .github/workflows/build-coder-template.yml
-name: Build Coder Template
-on:
-  push:
-    paths:
-      - '.coder/**'
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Build Docker image
-        run: |
-          cd .coder/build-context
-          docker build -t flashmanager-dev:${{ github.sha }} .
-      - name: Push to registry
-        run: |
-          docker tag flashmanager-dev:${{ github.sha }} registry.example.com/flashmanager-dev:latest
-          docker push registry.example.com/flashmanager-dev:latest
-```
-
-### Auto-Deploy Template
-
-```bash
-# Update main.tf to use registry image
-resource "docker_image" "flashmanager_dev" {
-  name = "registry.example.com/flashmanager-dev:latest"
-}
-```
+- Add SSH key to GitHub:
+  ```bash
+  cat ~/.ssh/id_rsa.pub
+  # Copy and add to GitHub Settings → SSH Keys
+  ```
+- Test SSH connection:
+  ```bash
+  ssh -T git@github.com
+  ```
 
 ## Performance Tips
 
-- Use SSD-backed persistent volumes for best performance
-- Allocate at least 4GB RAM, 8GB recommended
-- 2 CPU cores minimum, 4 recommended for builds
-- First-time workspace creation takes ~10 minutes
-- Subsequent starts take ~30 seconds
+- **RAM**: Allocate at least 8GB (ESP-IDF and Android SDK are memory-intensive)
+- **CPU**: 4 cores minimum, 8 recommended for parallel builds
+- **Storage**: Use SSD-backed volumes for best performance
+- **Network**: Good internet connection needed for first-time setup
+- **Persistence**: Keep workspace volume to avoid reinstalling tools
+
+## Template Configuration
+
+### Workspace Parameters
+
+| Parameter | Description | Default | Required |
+|-----------|-------------|---------|----------|
+| `github_token` | GitHub Personal Access Token | `""` | No |
+| `github_username` | Your GitHub username | workspace owner | No |
+| `auto_clone` | Auto-clone FlashManager repo | `true` | No |
+| `auto_start_services` | Auto-start backend/frontend | `false` | No |
+
+### Persistent Storage
+
+Data persists across workspace stops/starts/rebuilds:
+
+- **Workspace Volume** (`/workspace/`):
+  - All code and project files
+  - ESP-IDF installation (~500MB)
+  - Android SDK (~2GB)
+  - Rust toolchain (~1GB)
+  - Node modules, Cargo builds, Gradle cache
+
+- **PostgreSQL Volume**:
+  - Database data survives workspace rebuilds
+  - Automatic backups recommended for production
 
 ## Security Considerations
 
-- JWT secrets are auto-generated on first run
-- PostgreSQL password should be changed in production
-- GitHub tokens stored in Coder secrets (encrypted)
-- No services exposed to external network by default
-- Docker socket access restricted to user
+- 🔒 JWT secrets are auto-generated on first run
+- 🔒 PostgreSQL password in `.env` (change for production)
+- 🔒 GitHub tokens stored in Coder (encrypted)
+- 🔒 Services not exposed externally by default
+- 🔒 Workspace isolation via Docker networks
 
-## Support & Additional Resources
+**Production Recommendations:**
+- Use strong database passwords
+- Enable TLS for backend API
+- Restrict Coder workspace access
+- Regular database backups
+- Keep dependencies updated
 
-- **Main README**: See `/workspace/STAR/FlashManager/README.md`
-- **Architecture**: See `/workspace/STAR/FlashManager/ARCHITECTURE.md`
-- **Deployment**: See `/workspace/STAR/FlashManager/DEPLOYMENT.md`
-- **Workspace Info**: `cat /workspace/workspace-info.md`
+## Tool Versions
+
+| Tool | Version | Path |
+|------|---------|------|
+| ESP-IDF | v5.1.2 | `~/esp-idf` |
+| Android SDK | API 33 | `~/android-sdk` |
+| Gradle | 8.5 | `/opt/gradle` |
+| Rust | stable | `~/.cargo` |
+| Node.js | 18.x | `~/.nvm` |
+| Java | OpenJDK 17 | `/usr/lib/jvm/java-17-openjdk-amd64` |
+| PostgreSQL | 15 | Container |
+
+## Support
+
+**Documentation:**
+- Main README: `/workspace/STAR/FlashManager/README.md`
+- Architecture docs: `/workspace/STAR/FlashManager/ARCHITECTURE.md`
+- Workspace info: `/workspace/workspace-info.md`
+
+**Common Resources:**
+- ESP-IDF docs: https://docs.espressif.com/projects/esp-idf/en/v5.1.2/
+- Android SDK: https://developer.android.com/studio/command-line
+- Rust book: https://doc.rust-lang.org/book/
+
+**Coder Resources:**
+- Coder docs: https://coder.com/docs
+- Template docs: https://coder.com/docs/templates
 
 ## License
 
