@@ -1,11 +1,15 @@
-# FlashManager Development Template v1
+# FlashManager Development Template v2
 # STAR Build & Flash System - Remote compilation with local hardware flashing
+#
+# Simplified approach using standard Coder base image (no custom Docker image needed)
+#
 # Features:
 # - Complete embedded development environment (ESP-IDF, Android SDK, Rust)
 # - Isolated PostgreSQL database per workspace
 # - Auto-setup with GitHub authentication
 # - Spring Boot + React + Rust full-stack development
 # - Build tools: ESP32, Pi5, Android, Backend services
+# - Tools installed during workspace startup (10-15 min first time, persists in volume)
 
 terraform {
   required_providers {
@@ -112,10 +116,10 @@ resource "docker_container" "postgres" {
 # Development workspace - the main container with all build tools
 resource "docker_container" "workspace" {
   count = data.coder_workspace.me.start_count
-  image = docker_image.flashmanager_dev.image_id
+  image = "codercom/enterprise-base:ubuntu"
   name  = "coder-${data.coder_workspace_owner.me.name}-${lower(data.coder_workspace.me.name)}-workspace"
 
-  entrypoint = ["sh", "-c", coder_agent.main.init_script]
+  entrypoint = ["sh", "-c", "${coder_agent.main.init_script}"]
 
   env = [
     "CODER_AGENT_TOKEN=${coder_agent.main.token}",
@@ -179,22 +183,6 @@ resource "docker_volume" "workspace_data" {
   }
 }
 
-# FlashManager dev image
-# IMPORTANT: Build and push this image BEFORE using the template:
-#   cd .coder && ./build-and-push.sh
-# Or push to registry:
-#   REGISTRY=your-registry.com ./build-and-push.sh
-# Then update the image name below to match your registry
-resource "docker_image" "flashmanager_dev" {
-  name = "flashmanager-dev:latest"
-
-  # For local development: pulls or uses locally built image
-  keep_locally = false
-
-  # To use a registry image, change to:
-  # name = "your-registry.com/flashmanager-dev:latest"
-}
-
 # Local values for consistent naming
 locals {
   postgres_name = "coder-${data.coder_workspace_owner.me.name}-${lower(data.coder_workspace.me.name)}-postgres"
@@ -214,6 +202,102 @@ resource "coder_agent" "main" {
     echo "🚀 FlashManager Development Workspace"
     echo "=================================================="
 
+    # Install essential development tools
+    echo "📦 Installing development dependencies..."
+    sudo apt-get update
+    sudo apt-get install -y \
+      build-essential \
+      cmake \
+      git \
+      curl \
+      wget \
+      unzip \
+      vim \
+      nano \
+      python3 \
+      python3-pip \
+      python3-venv \
+      libncurses5-dev \
+      bc \
+      rsync \
+      cpio \
+      openjdk-17-jdk \
+      postgresql-client \
+      tree \
+      jq \
+      htop \
+      tmux \
+      lsof \
+      netcat-openbsd
+
+    # Install Node.js 18 via NVM
+    echo "📦 Installing Node.js 18..."
+    timeout 300 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash || echo "⚠️ NVM installation timeout"
+    export NVM_DIR="$HOME/.nvm"
+    [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+    nvm install 18
+    nvm use 18
+    nvm alias default 18
+
+    # Add Node to PATH in bashrc
+    echo 'export NVM_DIR="$HOME/.nvm"' >> ~/.bashrc
+    echo '[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"' >> ~/.bashrc
+
+    # Install ESP-IDF (ESP32 toolchain)
+    echo "🔧 Installing ESP-IDF for ESP32 development..."
+    export IDF_PATH=/home/coder/esp-idf
+    export IDF_TOOLS_PATH=/home/coder/.espressif
+
+    git clone --recursive --depth 1 --branch v5.1.2 \
+      https://github.com/espressif/esp-idf.git $IDF_PATH
+    cd $IDF_PATH
+    ./install.sh esp32
+    # Note: esptool is installed by ESP-IDF's install.sh
+
+    echo 'export IDF_PATH=$HOME/esp-idf' >> ~/.bashrc
+    echo 'export IDF_TOOLS_PATH=$HOME/.espressif' >> ~/.bashrc
+    echo '. $IDF_PATH/export.sh' >> ~/.bashrc
+
+    # Install Android SDK Command Line Tools
+    echo "🤖 Installing Android SDK..."
+    export ANDROID_HOME=/home/coder/android-sdk
+    mkdir -p $ANDROID_HOME/cmdline-tools
+    cd $ANDROID_HOME/cmdline-tools
+    wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
+    unzip -q commandlinetools-linux-9477386_latest.zip
+    mv cmdline-tools latest
+    rm commandlinetools-linux-9477386_latest.zip
+    yes | latest/bin/sdkmanager --licenses || true
+    latest/bin/sdkmanager "platform-tools" "platforms;android-33" "build-tools;33.0.1"
+
+    echo 'export ANDROID_HOME=$HOME/android-sdk' >> ~/.bashrc
+    echo 'export PATH=$PATH:$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools' >> ~/.bashrc
+
+    # Install Rust for flash agent
+    echo "🦀 Installing Rust..."
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    source $HOME/.cargo/env
+    rustup default stable
+
+    echo 'source $HOME/.cargo/env' >> ~/.bashrc
+
+    # Install Gradle
+    echo "🏗️ Installing Gradle..."
+    cd /tmp
+    wget -q https://services.gradle.org/distributions/gradle-8.5-bin.zip
+    unzip -q gradle-8.5-bin.zip
+    sudo mv gradle-8.5 /opt/gradle
+    rm gradle-8.5-bin.zip
+
+    echo 'export GRADLE_HOME=/opt/gradle' >> ~/.bashrc
+    echo 'export PATH=$PATH:$GRADLE_HOME/bin' >> ~/.bashrc
+    export PATH=$PATH:/opt/gradle/bin
+
+    # Create STAR directory structure
+    echo "📁 Creating workspace structure..."
+    mkdir -p /workspace/STAR/{FlashManager,ESP32,Pi5,Android,Backends}
+    mkdir -p /workspace/STAR/FlashManager/artifacts
+
     # Wait for PostgreSQL to be ready
     echo "⏳ Waiting for PostgreSQL..."
     timeout=60
@@ -229,13 +313,15 @@ resource "coder_agent" "main" {
     done
     echo "✅ PostgreSQL: Connected"
 
-    # Run setup script
-    if [ -f /workspace/STAR/FlashManager/.coder/setup-flashmanager.sh ]; then
-      echo "🔧 Running FlashManager setup..."
-      bash /workspace/STAR/FlashManager/.coder/setup-flashmanager.sh
-    else
-      echo "⚠️ Setup script not found, skipping..."
-    fi
+    # Run setup script if it exists (after cloning repo)
+    cd /workspace
+    cat > /tmp/setup-flashmanager.sh << 'SETUP_EOF'
+${file("${path.module}/setup-flashmanager.sh")}
+SETUP_EOF
+    chmod +x /tmp/setup-flashmanager.sh
+
+    echo "🔧 Running FlashManager setup..."
+    /tmp/setup-flashmanager.sh
 
     # Create workspace info
     cat > /workspace/workspace-info.md << 'INFO_EOF'
