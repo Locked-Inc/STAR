@@ -368,3 +368,4 @@ cython_debug/
 # PyPI configuration file
 .pypirc
 
+.claude/settings.local.json
