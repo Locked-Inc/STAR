@@ -79,4 +79,5 @@
   (lib (name "TBC05-03-1-G-G")(type "KiCad")(uri "${KIPRJMOD}/Symbols_and_Footprints/TBC05-03-1-G-G/KiCad")(options "")(descr ""))
   (lib (name "1663964")(type "KiCad")(uri "${KIPRJMOD}/Symbols_and_Footprints/1663964/KiCad")(options "")(descr ""))
   (lib (name "KiCad")(type "KiCad")(uri "${KIPRJMOD}/Symbols_and_Footprints/1028585/KiCad")(options "")(descr ""))
+  (lib (name "B6B_XH_A-2")(type "KiCad")(uri "${KIPRJMOD}/Symbols_and_Footprints/B6B_XH_A-2")(options "")(descr ""))
 )
