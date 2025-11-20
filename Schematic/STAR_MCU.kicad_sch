@@ -6297,7 +6297,7 @@
 		)
 		(uuid "dbfa4a93-36a5-4313-8a7d-833043c45908")
 	)
-	(text "Fuel Guage"
+	(text "Fuel Gauge"
 		(exclude_from_sim no)
 		(at 310.134 242.062 0)
 		(effects
