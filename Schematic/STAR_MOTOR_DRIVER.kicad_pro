@@ -52,7 +52,12 @@
         }
       },
       "diff_pair_dimensions": [],
-      "drc_exclusions": [],
+      "drc_exclusions": [
+        [
+          "unconnected_items|260129000|87210000|F.Cu|4|40cbd74a-cbc5-47aa-9eb9-80d0f95300be|a0374d15-e17e-4e67-b119-db33829086fd",
+          "It is clearly connected"
+        ]
+      ],
       "meta": {
         "version": 2
       },
@@ -430,7 +435,7 @@
       "no_connect_dangling": "warning",
       "pin_not_connected": "error",
       "pin_not_driven": "error",
-      "pin_to_pin": "warning",
+      "pin_to_pin": "error",
       "power_pin_not_driven": "error",
       "same_local_global_label": "warning",
       "similar_label_and_power": "warning",
@@ -475,41 +480,59 @@
         "wire_width": 6
       },
       {
+        "name": "Encoder",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 2,
+        "schematic_color": "rgb(3, 255, 0)"
+      },
+      {
         "line_style": 0,
         "name": "GND",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 5,
+        "priority": 8,
         "schematic_color": "rgb(0, 0, 0)"
-      },
-      {
-        "name": "MCU",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 0,
-        "schematic_color": "rgb(255, 153, 0)"
       },
       {
         "name": "MOTOR1",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 4,
+        "priority": 7,
         "schematic_color": "rgb(255, 0, 0)"
       },
       {
         "name": "MOTOR2",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 3,
+        "priority": 6,
         "schematic_color": "rgb(132, 132, 0)"
       },
       {
         "name": "MOTOR3",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 2,
+        "priority": 5,
         "schematic_color": "rgb(0, 194, 0)"
       },
       {
         "name": "MOTOR4",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 1,
+        "priority": 4,
         "schematic_color": "rgb(0, 0, 255)"
+      },
+      {
+        "name": "P3V3",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 1,
+        "schematic_color": "rgb(255, 143, 114)"
+      },
+      {
+        "name": "P6V0",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 0,
+        "schematic_color": "rgb(180, 37, 255)"
+      },
+      {
+        "name": "SPI",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 3,
+        "schematic_color": "rgb(6, 201, 255)"
       }
     ],
     "meta": {
@@ -524,23 +547,35 @@
       },
       {
         "netclass": "MOTOR1",
-        "pattern": "/MOTOR1*"
+        "pattern": "/*MOTOR1*"
       },
       {
         "netclass": "MOTOR2",
-        "pattern": "/MOTOR2*"
+        "pattern": "/*MOTOR2*"
       },
       {
         "netclass": "MOTOR3",
-        "pattern": "/MOTOR3*"
+        "pattern": "/*MOTOR3*"
       },
       {
         "netclass": "MOTOR4",
-        "pattern": "/MOTOR4*"
+        "pattern": "/*MOTOR4*"
       },
       {
-        "netclass": "MCU",
-        "pattern": "/MCU*"
+        "netclass": "SPI",
+        "pattern": "/MCU_SPI*"
+      },
+      {
+        "netclass": "P3V3",
+        "pattern": "/P3V3*"
+      },
+      {
+        "netclass": "P6V0",
+        "pattern": "/P6V0*"
+      },
+      {
+        "netclass": "Encoder",
+        "pattern": "/*ENCODER*"
       }
     ]
   },
