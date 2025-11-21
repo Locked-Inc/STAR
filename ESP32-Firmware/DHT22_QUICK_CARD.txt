@@ -1,0 +1,277 @@
+╔════════════════════════════════════════════════════════════════════════════╗
+║                  DHT22 (AM2302) - QUICK REFERENCE CARD                      ║
+║                         ESP32-IDF C Driver Implementation                    ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+┌─ PROTOCOL TIMING ─────────────────────────────────────────────────────────┐
+│                                                                            │
+│  MCU Initialization:                                                       │
+│    Pull LOW:     1-10ms minimum (use 1ms)                                 │
+│    Release HIGH: 20-40μs                                                   │
+│                                                                            │
+│  Sensor Response:                                                          │
+│    Pull LOW:     80μs                                                      │
+│    Release HIGH: 80μs                                                      │
+│                                                                            │
+│  Data Bits (40 total):                                                     │
+│    Start:        50μs LOW (both 0 and 1)                                  │
+│    Bit 0:        26-28μs HIGH                                             │
+│    Bit 1:        ~70μs HIGH                                               │
+│                                                                            │
+│  Sampling:       2000ms minimum between reads (HARD LIMIT)                │
+│  Duration:       ~5-6 milliseconds total                                  │
+│                                                                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ 40-BIT DATA FORMAT ──────────────────────────────────────────────────────┐
+│                                                                            │
+│  ┌─────────┬─────────┬──────────┬──────────┬──────────┐                  │
+│  │ Byte 0  │ Byte 1  │ Byte 2   │ Byte 3   │ Byte 4   │                  │
+│  │ RH High │ RH Low  │ Tmp High │ Tmp Low  │ Checksum │                  │
+│  └─────────┴─────────┴──────────┴──────────┴──────────┘                  │
+│                                                                            │
+│  RH  = ((B0 << 8) | B1) / 10.0          → 0.0 to 100.0%                │
+│  Tmp = (int16_t)((B2 << 8) | B3) / 10.0 → -40 to +80°C                 │
+│  CHK = (B0 + B1 + B2 + B3) & 0xFF       → Validate                      │
+│                                                                            │
+│  CRITICAL: Use int16_t for temperature (two's complement)                │
+│                                                                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ CRITICAL SECTIONS & INTERRUPTS ──────────────────────────────────────────┐
+│                                                                            │
+│  // Disable interrupts during timing-sensitive code                       │
+│  portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;                         │
+│  portENTER_CRITICAL(&mux);                                                │
+│  {                                                                         │
+│    // Timing code here (pull low, wait, read bits)                       │
+│    // Interrupts disabled on this core                                    │
+│  }                                                                         │
+│  portEXIT_CRITICAL(&mux);                                                 │
+│                                                                            │
+│  Cost: ~10ms interrupt latency (acceptable for 2-second sampling)         │
+│                                                                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ CYCLE COUNTER TIMING (CPU @ 240MHz) ─────────────────────────────────────┐
+│                                                                            │
+│  #include "xtensa/hal.h"                                                  │
+│  #define CPU_FREQ_MHZ 240                                                │
+│  #define CYCLES_PER_US (CPU_FREQ_MHZ)                                   │
+│                                                                            │
+│  uint32_t start = xthal_get_ccount();  // Get cycle counter              │
+│  // ... wait for something ...                                            │
+│  uint32_t elapsed_cycles = xthal_get_ccount() - start;                  │
+│  uint32_t elapsed_us = elapsed_cycles / CYCLES_PER_US;  // Convert      │
+│                                                                            │
+│  Note: 1 cycle = 4.17ns, xthal_get_ccount() overhead ≈ 50 cycles        │
+│                                                                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ BIT VALUE DETERMINATION ─────────────────────────────────────────────────┐
+│                                                                            │
+│  Conservative thresholds (account for WiFi jitter):                       │
+│                                                                            │
+│    Bit 0 range:  18-36μs  (nominal: 22-30μs)                            │
+│    Bit 1 range:  60-85μs  (nominal: 68-75μs)                            │
+│    Separation:   20+μs                                                    │
+│                                                                            │
+│  // Determine bit value                                                    │
+│  if (pulse_us >= 60) {                                                    │
+│    bit = 1;  // HIGH pulse = 1                                           │
+│  } else if (pulse_us <= 36) {                                             │
+│    bit = 0;  // LOW pulse = 0                                            │
+│  } else {                                                                  │
+│    return ERROR;  // Timing error                                        │
+│  }                                                                         │
+│                                                                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ CHECKSUM VALIDATION ─────────────────────────────────────────────────────┐
+│                                                                            │
+│  // Calculate expected checksum                                            │
+│  uint8_t expected = (data[0] + data[1] + data[2] + data[3]) & 0xFF;     │
+│                                                                            │
+│  // Validate                                                               │
+│  if (expected != data[4]) {                                               │
+│    // Error: data corrupted                                              │
+│    return ESP_ERR_INVALID_CRC;                                            │
+│  }                                                                         │
+│                                                                            │
+│  Note: Checksum uses only last 8 bits (overflow ignored)                 │
+│                                                                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ SAMPLING INTERVAL ENFORCEMENT ───────────────────────────────────────────┐
+│                                                                            │
+│  #define MIN_INTERVAL_MS 2000                                            │
+│                                                                            │
+│  static uint32_t last_read_ms = 0;                                        │
+│                                                                            │
+│  uint32_t now = esp_timer_get_time() / 1000;  // Convert to ms          │
+│  if ((now - last_read_ms) < MIN_INTERVAL_MS) {                           │
+│    return ESP_ERR_INVALID_STATE;  // Too fast!                          │
+│  }                                                                         │
+│  last_read_ms = now;                                                      │
+│                                                                            │
+│  // Then call dht22_read()                                                │
+│                                                                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ TIMEOUT PROTECTION ──────────────────────────────────────────────────────┐
+│                                                                            │
+│  #define TIMEOUT_US 250000  // 250ms maximum                             │
+│  #define CYCLES_PER_US 240                                               │
+│                                                                            │
+│  uint32_t start = xthal_get_ccount();                                    │
+│  uint32_t max_cycles = TIMEOUT_US * CYCLES_PER_US;                      │
+│                                                                            │
+│  while (gpio_get_level(pin) == EXPECTED) {                               │
+│    if ((xthal_get_ccount() - start) > max_cycles) {                     │
+│      return ESP_ERR_TIMEOUT;  // Safety exit                            │
+│    }                                                                       │
+│  }                                                                         │
+│                                                                            │
+│  Note: Never use iteration count for timeout (platform dependent)        │
+│        Always use cycle counter for reliable timing                      │
+│                                                                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ DATA VALIDATION (RANGE CHECKS) ──────────────────────────────────────────┐
+│                                                                            │
+│  // Temperature: -40 to +80°C                                             │
+│  if (temperature < -40.0f || temperature > 80.0f) {                      │
+│    return ESP_ERR_INVALID_RESPONSE;                                       │
+│  }                                                                         │
+│                                                                            │
+│  // Humidity: 0 to 100%                                                   │
+│  if (humidity < 0.0f || humidity > 100.0f) {                             │
+│    return ESP_ERR_INVALID_RESPONSE;                                       │
+│  }                                                                         │
+│                                                                            │
+│  // Rate-of-change check (optional but effective)                         │
+│  if (fabs(temp - last_temp) > 50.0f) {                                   │
+│    return ESP_ERR_INVALID_RESPONSE;  // Impossible jump                 │
+│  }                                                                         │
+│                                                                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ GPIO INITIALIZATION ─────────────────────────────────────────────────────┐
+│                                                                            │
+│  gpio_config_t io_conf = {                                                │
+│    .pin_bit_mask = (1ULL << GPIO_NUM_4),  // Use GPIO 4                  │
+│    .mode = GPIO_MODE_INPUT,                                               │
+│    .pull_up_en = GPIO_PULLUP_ENABLE,      // 1k pull-up                  │
+│    .pull_down_en = GPIO_PULLDOWN_DISABLE,                                │
+│    .intr_type = GPIO_INTR_DISABLE,        // No interrupts               │
+│  };                                                                        │
+│  gpio_config(&io_conf);                                                   │
+│                                                                            │
+│  Wiring:                                                                   │
+│    VCC ──[1kΩ]── GPIO_NUM_4 ──── DHT22 DATA                             │
+│    GND ──────────────────────── DHT22 GND                                │
+│                                                                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ ERROR CODES ─────────────────────────────────────────────────────────────┐
+│                                                                            │
+│  ESP_OK                    Success                                        │
+│  ESP_ERR_INVALID_ARG       Bad function arguments                        │
+│  ESP_ERR_INVALID_SIZE      Buffer too small                              │
+│  ESP_ERR_INVALID_STATE     Sampling too fast (< 2 seconds)              │
+│  ESP_ERR_INVALID_RESPONSE  Sensor not responding                        │
+│  ESP_ERR_INVALID_CRC       Checksum validation failed                    │
+│  ESP_ERR_TIMEOUT           Read timeout exceeded                        │
+│                                                                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ COMMON MISTAKES & FIXES ─────────────────────────────────────────────────┐
+│                                                                            │
+│  MISTAKE #1: Wrong temperature handling                                   │
+│    WRONG: if (data[2] & 0x80) temp = -(data[2] & 0x7F);  // Sign-mag   │
+│    RIGHT: int16_t t = (int16_t)((data[2]<<8)|data[3]); t/=10.0;         │
+│                                                                            │
+│  MISTAKE #2: No critical section                                          │
+│    WRONG: while (gpio_get_level(pin) == 0) count++;                     │
+│    RIGHT: portENTER_CRITICAL(&mux); { ... } portEXIT_CRITICAL(&mux);   │
+│                                                                            │
+│  MISTAKE #3: Reading too fast                                             │
+│    WRONG: for (i=0; i<100; i++) dht22_read();                            │
+│    RIGHT: vTaskDelay(2000/portTICK_PERIOD_MS); dht22_read();            │
+│                                                                            │
+│  MISTAKE #4: No checksum validation                                       │
+│    WRONG: dht22_read(data); use data directly                            │
+│    RIGHT: if (checksum_valid(data)) { use data }                        │
+│                                                                            │
+│  MISTAKE #5: No timeout protection                                        │
+│    WRONG: while (gpio_get_level(pin) == 0) count++;  // INFINITE!      │
+│    RIGHT: Use cycle counter with max limit                              │
+│                                                                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ FREERTOS TASK PATTERN ───────────────────────────────────────────────────┐
+│                                                                            │
+│  void dht22_task(void *param) {                                           │
+│    dht22_t sensor;                                                        │
+│    dht22_init(&sensor, GPIO_NUM_4);                                       │
+│                                                                            │
+│    while (1) {                                                             │
+│      if (dht22_read(&sensor) == ESP_OK) {                                 │
+│        ESP_LOGI(TAG, "T=%.1f°C, RH=%.1f%%",                             │
+│                 sensor.temperature, sensor.humidity);                     │
+│      } else {                                                              │
+│        ESP_LOGE(TAG, "DHT22 read failed");                               │
+│      }                                                                     │
+│      vTaskDelay(3000 / portTICK_PERIOD_MS);  // 3s (safety margin)       │
+│    }                                                                       │
+│  }                                                                         │
+│                                                                            │
+│  xTaskCreate(dht22_task, "dht22", 4096, NULL, 5, NULL);                 │
+│                                                                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ PERFORMANCE TARGETS ─────────────────────────────────────────────────────┐
+│                                                                            │
+│  Read time:              5-10ms (including validation)                    │
+│  Task blocked:           ~10ms maximum per read                           │
+│  WiFi latency impact:    5-10ms (acceptable)                             │
+│  GPIO latency impact:    <5ms (other GPIO unaffected long-term)         │
+│  Sampling rate:          0.5 Hz (2 second minimum)                       │
+│  Interrupt disabled:     ~10ms per read                                  │
+│  CPU overhead:           0.5% (2 second sampling)                        │
+│  Success rate:           98-99% (with proper error handling)             │
+│                                                                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─ WIRING DIAGRAM ──────────────────────────────────────────────────────────┐
+│                                                                            │
+│         DHT22 (AM2302) Pinout:                                            │
+│         ┌─────────┐                                                        │
+│    VCC ─┤  1  [4] ├─ (Not used)                                         │
+│   DATA ─┤  2  [3] ├─ GND                                                 │
+│         └─────────┘                                                        │
+│                                                                            │
+│         ESP32 Connections:                                                │
+│         VCC (3.3V) ──[1kΩ pull-up]── GPIO4 ── DHT22 Data                │
+│         GND ─────────────────────────────────── DHT22 GND                │
+│                                                                            │
+│         Pull-up resistor: 1kΩ (between VCC and data line)                │
+│                                                                            │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+╔════════════════════════════════════════════════════════════════════════════╗
+║  REMEMBER:                                                                 ║
+║  1. Use int16_t for negative temperature (two's complement)               ║
+║  2. Disable interrupts during timing-critical code                        ║
+║  3. Enforce 2-second minimum sampling interval                            ║
+║  4. Always validate checksum                                              ║
+║  5. Use cycle counter for timeout protection, not loops                   ║
+║  6. Implement range checks and rate-of-change detection                   ║
+║  7. Test with WiFi enabled (highest interrupt jitter)                     ║
+╚════════════════════════════════════════════════════════════════════════════╝
+
+Document location: C:\Users\sikar\CLionProjects\untitled\
+Complete reference: DHT22_TECHNICAL_SPECIFICATION.md
+Security details: DHT22_SECURITY_AND_ADVANCED.md
+Testing guide: DHT22_TESTING_AND_VALIDATION.c
+Navigation: DHT22_RESEARCH_INDEX.md

@@ -1,0 +1,127 @@
+cmake_minimum_required(VERSION 3.5)
+
+# HC-SR04 Ultrasonic Sensor Driver for ESP32
+# ============================================
+#
+# This CMakeLists.txt builds the HC-SR04 driver library and examples
+#
+# Usage:
+#   mkdir build
+#   cd build
+#   cmake ..
+#   make
+#
+
+project(HC_SR04_Driver)
+
+# Set C standard
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED ON)
+
+# Find ESP-IDF components (if using ESP-IDF)
+set(COMPONENTS driver freertos)
+
+# Source files for the driver library
+set(DRIVER_SOURCES
+    hc_sr04.c
+)
+
+set(DRIVER_HEADERS
+    hc_sr04.h
+)
+
+# Create the driver library
+add_library(hc_sr04 ${DRIVER_SOURCES})
+
+# Include directories
+target_include_directories(hc_sr04
+    PUBLIC
+        ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+# Set compiler flags
+if(MSVC)
+    target_compile_options(hc_sr04 PRIVATE /W4 /WX)
+else()
+    target_compile_options(hc_sr04 PRIVATE
+        -Wall
+        -Wextra
+        -Werror
+        -Wformat=2
+        -Wunused
+        -Wstrict-aliasing
+        -Wshadow
+        -Wconversion
+        -pedantic
+    )
+endif()
+
+# Add optimization flags for release builds
+if(CMAKE_BUILD_TYPE MATCHES Release)
+    target_compile_options(hc_sr04 PRIVATE -O2)
+else()
+    target_compile_options(hc_sr04 PRIVATE -O0 -g)
+endif()
+
+# Link against FreeRTOS and driver libraries (ESP-IDF)
+if(TARGET freertos)
+    target_link_libraries(hc_sr04 PUBLIC freertos)
+endif()
+
+if(TARGET driver)
+    target_link_libraries(hc_sr04 PUBLIC driver)
+endif()
+
+# Create example executable
+add_executable(hc_sr04_example
+    hc_sr04_example.c
+)
+
+target_link_libraries(hc_sr04_example PRIVATE hc_sr04)
+
+# Optional: Create test executable (if test framework available)
+if(ENABLE_TESTING)
+    enable_testing()
+
+    # Add test files
+    add_executable(hc_sr04_tests
+        # Test source files would go here
+        # hc_sr04_tests.c
+    )
+
+    target_link_libraries(hc_sr04_tests PRIVATE hc_sr04)
+
+    add_test(NAME HC_SR04_Tests COMMAND hc_sr04_tests)
+endif()
+
+# Installation targets
+install(TARGETS hc_sr04
+    LIBRARY DESTINATION lib
+    ARCHIVE DESTINATION lib
+)
+
+install(FILES ${DRIVER_HEADERS}
+    DESTINATION include/hc_sr04
+)
+
+# Documentation
+install(FILES
+    HC-SR04_TECHNICAL_REFERENCE.md
+    HC-SR04_SECURITY_AND_TESTING.md
+    HC-SR04_QUICK_REFERENCE.md
+    HC-SR04_TIMING_DIAGRAMS.txt
+    DESTINATION doc/hc_sr04
+)
+
+# Print configuration summary
+message(STATUS "HC-SR04 Driver Configuration:")
+message(STATUS "  Build type: ${CMAKE_BUILD_TYPE}")
+message(STATUS "  C Standard: ${CMAKE_C_STANDARD}")
+message(STATUS "  Testing: ${ENABLE_TESTING}")
+message(STATUS "")
+message(STATUS "Targets:")
+message(STATUS "  - hc_sr04 (library)")
+message(STATUS "  - hc_sr04_example (executable)")
+if(ENABLE_TESTING)
+    message(STATUS "  - hc_sr04_tests (test executable)")
+endif()
