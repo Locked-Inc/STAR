@@ -1,0 +1,493 @@
+================================================================================
+HC-SR04 Ultrasonic Sensor - Detailed Timing Diagrams
+================================================================================
+
+================================================================================
+1. TRIGGER SIGNAL TIMING DIAGRAM
+================================================================================
+
+Time (microseconds):
+    0      5      10     15     20     25     30     35     40     45
+    |      |      |      |      |      |      |      |      |      |
+TRIG
+    +---------+                                                        <- GPIO 5V
+    |         |
+    |         |-- 10 μs wide pulse
+    |         |
+    +---------+                                                        <- GPIO 0V
+    ^   ^
+    |   |
+    |   +-- Trigger pulse ends (falling edge)
+    |
+    +------ Trigger pulse starts (rising edge)
+
+Setup:  Trig at 0V for 5+ μs before pulse
+Pulse:  10 μs at 5V (minimum required)
+Duty:   20 ms minimum cycle recommended
+
+
+================================================================================
+2. ECHO RESPONSE TIMING SEQUENCE
+================================================================================
+
+Time (milliseconds):
+    |0      |1      |2      |3      |4      |5      |6      |...
+TRIG:  ___      ___      ___      ___      ___      ___      ___
+       | |      | |      | |      | |      | |      | |      | |
+       |_|      |_|      |_|      |_|      |_|      |_|      |_|
+       (10μs)   (10μs)   (10μs)   (10μs)   (10μs)   (10μs)   (10μs)
+
+
+ECHO:        ____________________________________________
+             |                                            |
+             | <- 200-300 μs delay from trigger        |
+             |   (module processing time)                |
+             |                                            |
+             +---- Pulse duration proportional to distance
+                   (150 μs to 25 ms)
+
+              Rising edge           Falling edge
+              detected by ISR       detected by ISR
+              |                     |
+              v                     v
+
+ECHO:                      ________________
+(distance ~100cm =         |                |
+ ~5800 μs echo)            |                |
+                           |________________|
+                           <---- 5800 μs --->
+
+
+Measurement cycle: 60+ ms recommended between triggers
+
+
+================================================================================
+3. TIMING DIAGRAM WITH ECHO PULSE VARIATIONS
+================================================================================
+
+Distance = 10 cm  (~580 μs echo):
+TRIG: _____
+      |   |
+      |___|___
+
+ECHO:        ___________________
+             |                   |
+             |___________________|
+             |<-- 580 μs -->|
+
+
+Distance = 50 cm  (~2900 μs echo):
+TRIG: _____
+      |   |
+      |___|___
+
+ECHO:        ____________________________________
+             |                                    |
+             |____________________________________|
+             |<----- 2900 μs ----->|
+
+
+Distance = 100 cm  (~5800 μs echo):
+TRIG: _____
+      |   |
+      |___|___
+
+ECHO:        ____________________________________________________________
+             |                                                            |
+             |____________________________________________________________|
+             |<---------- 5800 μs ----------->|
+
+
+Distance = 200 cm  (~11600 μs echo):
+TRIG: _____
+      |   |
+      |___|___
+
+ECHO:        ________________________________________________________________
+             |                                                                |
+             |________________________________________________________________|
+             |<---------- 11600 μs ----------->|
+
+
+Distance = 400 cm  (~23200 μs echo):
+TRIG: _____
+      |   |
+      |___|___
+
+ECHO:        _____________________________________________________________________
+             |                                                                     |
+             |_____________________________________________________________________|
+             |<---------- 23200 μs ----------->|
+
+
+================================================================================
+4. COMPLETE MEASUREMENT CYCLE TIMING
+================================================================================
+
+      Time --->
+
+Step 1: Setup Phase (5 μs)
+    TRIG: ____________________
+         (holding low)
+         |<-- 5 μs ->|
+
+Step 2: Trigger Pulse (10 μs)
+    TRIG: ____  _______________
+         |  |  |
+         |__|__|
+         |<10μs>|
+
+Step 3: Cleanup Phase (5 μs)
+    TRIG: __________________  _____
+                           |  |
+                           |__|
+                              |<-- 5 μs ->|
+
+Step 4: Sensor Processing (200-300 μs)
+    TRIG: _______________________________________
+
+    ECHO: ________________
+                          (sensor internal processing)
+
+Step 5: Echo Pulse (150 μs to 25 ms depending on distance)
+    ECHO: _______________________  ___________________________
+                                  |                           |
+                                  |___________________________|
+                                  |<-- Echo width (μs) -->|
+
+Step 6: Waiting for next cycle (45+ ms to reach 60 ms total)
+    TRIG: ___________________________________________________________  _____
+
+    ECHO: ________________________________________________________________
+
+         |<--- Total cycle: 60+ ms recommended --->|
+
+
+================================================================================
+5. GPIO EDGE DETECTION FOR ISR
+================================================================================
+
+Rising Edge Detection (Echo starts):
+    ECHO: ___________
+              ___
+             |   <- Rising edge detected
+             |    trigger ISR
+         ____|
+
+         Timestamp captured at this point
+
+Falling Edge Detection (Echo ends):
+    ECHO: ___________________________
+         |                           |
+         |                       ____|
+         |                       |   <- Falling edge detected
+         |_______________________|    trigger ISR
+
+         Pulse width = falling_edge_timestamp - rising_edge_timestamp
+
+
+Edge Detection Timing (with typical ESP32):
+
+    GPIO: ___|‾‾‾‾‾‾‾‾‾|___
+           ↑           ↑
+           |           |
+           |           +-- Interrupt latency: 2-10 μs (ESP32 typical)
+           |               ISR executes and captures timestamp
+           |
+           +-- Physical edge: <1 μs rise/fall time
+
+
+ISR Execution Timeline:
+
+    Event: Edge detected on ECHO pin
+           |
+           v
+    Interrupt Request Asserted (hardware)
+           |
+           v (2-10 μs latency)
+    ISR Handler Entry
+           |
+           v
+    Read esp_timer_get_time() (atomic operation)
+           |
+           v
+    atomic_store(&timestamp, time_value)
+           |
+           v
+    Determine if rising or falling edge
+           |
+           v
+    Update GPIO interrupt type if needed
+           |
+           v
+    Return from ISR
+           |
+           v
+    Resume interrupted task
+
+
+================================================================================
+6. TIMEOUT SCENARIOS
+================================================================================
+
+No Echo Received (timeout = 30 ms):
+
+    TRIG: _____
+         |   |
+         |___|_____________________________________
+
+    ECHO: (no response)
+         _____________________________________________
+                                                    ↑
+                                                    |
+                                              30 ms timeout occurs
+                                              Return HC_SR04_ERR_TIMEOUT
+
+
+Object Partially Out of Range:
+
+    First measurement (object at 350 cm):
+    ECHO: ________________  ____________________
+         |                |
+         |________________|  <- ~20300 μs (valid)
+
+    Second measurement (object moves beyond 400 cm):
+    ECHO: (timeout - no echo at all)
+         _____________________________________________
+                                              ↑
+                                              30 ms timeout
+
+
+Multiple Echo Pulses (reflections):
+
+    Direct echo (primary):
+    ECHO: ________________  ______
+         |                |
+         |________________|  <- Captured by driver
+
+    Reflected echo (from distant surface):
+
+         Later pulse detected but ignored
+         (ISR already disabled after first echo complete)
+
+    Time:
+         |<-- ~5800 μs -->|
+                          |<-- ~15000 μs from direct echo -->|
+                                                   |__________|
+
+
+================================================================================
+7. TEMPERATURE COMPENSATION EFFECT ON TIMING
+================================================================================
+
+Same physical distance (100 cm actual) at different temperatures:
+
+At 0°C (slow sound: 331.4 m/s):
+    ECHO: ________________  _______________________
+         |                |
+         |_________________|  <- ~5930 μs (slower speed -> longer time)
+         |<-- ~5930 μs -->|
+
+At 20°C (reference: 343.2 m/s):
+    ECHO: ________________  ____________________
+         |                |
+         |________________|  <- ~5800 μs (reference)
+         |<-- ~5800 μs -->|
+
+At 40°C (fast sound: 355.0 m/s):
+    ECHO: ________________  __________________
+         |                |
+         |________________|  <- ~5672 μs (faster speed -> shorter time)
+         |<-- ~5672 μs -->|
+
+
+Without compensation:
+    0°C:  distance = 5930 / 58 = 102.2 cm (ERROR: +2.2 cm)
+    20°C: distance = 5800 / 58 = 100.0 cm (CORRECT)
+    40°C: distance = 5672 / 58 = 97.8 cm (ERROR: -2.2 cm)
+
+With temperature compensation:
+    0°C:  distance = 102.2 × (343.2/331.4) = 105.5 → 100.0 cm (CORRECTED)
+    20°C: distance = 100.0 cm (REFERENCE)
+    40°C: distance = 97.8 × (343.2/355.0) = 94.5 → 100.0 cm (CORRECTED)
+
+
+================================================================================
+8. JITTER AND NOISE EFFECTS
+================================================================================
+
+Clean Echo (ideal):
+
+    Echo Width: 5800 μs
+
+    |5800|
+    ECHO: ______________________________
+         |                            |
+         |____________________________|
+         Precise edges
+
+
+With Electrical Noise (real-world):
+
+    Measured 5803 μs
+
+    |5800|
+    ECHO: ____||_____________________||_||
+         |    ||                    ||  ||
+         |____|                    |    |___
+         |       |
+         +-- Noise glitches on edges
+             (usually <100 ns)
+
+    Result without filtering: ±3-4 cm variation
+
+
+With Median Filter (5 measurements):
+
+    Raw measurements: 5798, 5805, 5800, 5802, 5799
+    Sorted:          5798, 5799, 5800, 5802, 5805
+    Median:          5800
+
+    Result: Much more stable ±1 cm
+
+
+================================================================================
+9. INTERRUPT TIMING WITH FREERTOS (ESP32)
+================================================================================
+
+Context:
+    Main task performing other work
+    (possibly with WiFi active)
+
+Event Timeline:
+
+    Time    Event
+    ----    -----
+    0 μs    GPIO rising edge occurs (ECHO pin)
+
+    0-10 μs Interrupt request queued
+            (2-10 μs typical latency)
+            (50-100 μs if WiFi active)
+
+    10 μs   ISR handler begins execution
+            esp_timer_get_time() called
+
+    11 μs   Timestamp stored atomically
+            atomic_store(&echo_timestamp, 10000)
+
+    12 μs   ISR completes, returns to main task
+
+    ...
+
+    5800 μs GPIO falling edge occurs
+
+    5800-5810 μs ISR handler executes again
+               Calculate pulse width: 5800 - 10 = 5790 μs
+               Store result: atomic_store(&echo_width, 5790)
+
+    Error introduced: ~10 μs from first ISR entry = ~0.17 mm
+    (Acceptable - well within 3 mm accuracy)
+
+
+================================================================================
+10. CRITICAL SECTION TIMING
+================================================================================
+
+Measurement Operation:
+
+    portDISABLE_INTERRUPTS()  <- All interrupts disabled
+    |
+    v
+    Read GPIO state            <- <1 μs
+    Get timestamp              <- <1 μs
+    Store timestamp            <- <1 μs
+    |
+    Total time inside critical section: ~3 μs
+    |
+    v
+    portENABLE_INTERRUPTS()    <- Interrupts re-enabled
+
+Effect on system:
+    - Any pending interrupts delayed by ~3 μs
+    - Tasks may be delayed waiting for ISR
+    - WiFi performance may decrease by <1%
+    - Acceptable trade-off for measurement accuracy
+
+
+================================================================================
+11. MEASUREMENT CYCLE WITH RECOMMENDED DELAYS
+================================================================================
+
+Actual timing for single measurement:
+
+Phase 1: GPIO Setup
+         Time: 5 μs
+
+Phase 2: Trigger Pulse
+         Time: 10 μs
+
+Phase 3: Sensor Processing
+         Time: ~200-300 μs
+
+Phase 4: Echo Pulse Reception
+         Time: ~150 μs to 25 ms (depending on distance)
+
+         At 100 cm: ~5800 μs
+
+Phase 5: Software Processing
+         Time: ~100 μs (calculation, validation)
+
+Total measurement time for 100 cm: ~6.2 ms
+
+Recommended waiting time: 60 ms
+Actual time used: 6.2 ms
+Remaining time (unused): 53.8 ms
+
+This provides:
+- Time for multiple tasks to execute
+- Time for other interrupts to run
+- Margin for WiFi stack
+- Prevention of cross-talk between multiple sensors
+
+
+================================================================================
+12. MULTIPLE SENSOR STAGGERING
+================================================================================
+
+Without staggering (PROBLEMATIC):
+
+Sensor 1: TRIG |_|
+          ECHO:    |________|
+
+Sensor 2: TRIG |_|
+          ECHO:    |________|
+
+Sensor 3: TRIG |_|
+          ECHO:    |________|
+
+Problem: All sensors trigger simultaneously
+         All echo pulses overlap
+         Cannot distinguish which echo belongs to which trigger
+
+
+With staggering (CORRECT):
+
+Sensor 1: TRIG |_|__________|_|__________|_|
+          ECHO:    |_____|               |_____|
+
+Sensor 2: TRIG  _____|_|__________|_|________
+          ECHO:      |_____|               |_____|
+
+Sensor 3: TRIG  ________|_|__________|_|
+          ECHO:           |_____|               |_____|
+
+Method:
+Trigger each sensor with 10+ ms delay
+Allows echo to complete before next trigger
+Safe separation of measurement pulses
+Each sensor can be read independently
+
+
+================================================================================
+End of Timing Diagrams
+================================================================================
