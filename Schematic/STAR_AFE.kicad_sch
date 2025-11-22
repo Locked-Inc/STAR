@@ -4,6 +4,16 @@
 	(generator_version "9.0")
 	(uuid "83b158e3-f3a2-4f7d-a64a-cfcc36efd74b")
 	(paper "A3")
+	(title_block
+		(title "AFE")
+		(date "2025-11-22")
+		(rev "1.0.0.0")
+		(company "Locked Inc.")
+		(comment 1 "A few errors worth looking at? unsure if a big deal or not")
+		(comment 2 "Otherwise, colors are pretty i think")
+		(comment 3 "and didnt notice anything wrong with my review")
+		(comment 4 "i am a fat fuckin chud tho so who knows")
+	)
 	(lib_symbols
 		(symbol "1017491:1017491"
 			(exclude_from_sim no)
@@ -6558,13 +6568,13 @@
 	(junction
 		(at 265.43 238.76)
 		(diameter 0)
-		(color 0 0 0 0)
+		(color 34 190 28 1)
 		(uuid "052c9160-e526-45db-bb07-6c32281b628e")
 	)
 	(junction
 		(at 276.86 201.93)
 		(diameter 0)
-		(color 0 0 0 0)
+		(color 34 190 28 1)
 		(uuid "06606306-70ab-46f4-983a-9c1f6666adc4")
 	)
 	(junction
@@ -6630,13 +6640,13 @@
 	(junction
 		(at 156.21 232.41)
 		(diameter 0)
-		(color 0 0 0 0)
+		(color 255 46 44 1)
 		(uuid "2afad1f1-641b-4d79-bcf6-722a61fc6068")
 	)
 	(junction
 		(at 260.35 99.06)
 		(diameter 0)
-		(color 0 0 0 0)
+		(color 186 0 255 1)
 		(uuid "2bfeb9db-c983-4879-b381-c562d8cfa873")
 	)
 	(junction
@@ -6648,7 +6658,7 @@
 	(junction
 		(at 241.3 201.93)
 		(diameter 0)
-		(color 0 0 0 0)
+		(color 34 190 28 1)
 		(uuid "2e4fc892-a075-41d5-882a-a914b459adad")
 	)
 	(junction
@@ -6678,7 +6688,7 @@
 	(junction
 		(at 156.21 208.28)
 		(diameter 0)
-		(color 0 0 0 0)
+		(color 255 46 44 1)
 		(uuid "40d9535b-b2ab-4ba5-a503-ffbec070d5b3")
 	)
 	(junction
@@ -6702,7 +6712,7 @@
 	(junction
 		(at 260.35 104.14)
 		(diameter 0)
-		(color 0 0 0 0)
+		(color 186 0 255 1)
 		(uuid "4e1df167-5787-40ea-86e2-430c15cceb88")
 	)
 	(junction
@@ -6720,7 +6730,7 @@
 	(junction
 		(at 238.76 201.93)
 		(diameter 0)
-		(color 0 0 0 0)
+		(color 34 190 28 1)
 		(uuid "52dc6645-ff7e-4bb0-86a9-bed75718a2d7")
 	)
 	(junction
@@ -6746,6 +6756,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "5cafc580-24d7-4ffd-b2eb-32439a001651")
+	)
+	(junction
+		(at 153.67 154.94)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "63c67bfa-a95a-47a1-8277-5265cc2b2f94")
 	)
 	(junction
 		(at 243.84 184.15)
@@ -6774,7 +6790,7 @@
 	(junction
 		(at 246.38 201.93)
 		(diameter 0)
-		(color 0 0 0 0)
+		(color 34 190 28 1)
 		(uuid "7b99c563-e19b-45ea-a58d-3827aace5af6")
 	)
 	(junction
@@ -6840,19 +6856,19 @@
 	(junction
 		(at 265.43 201.93)
 		(diameter 0)
-		(color 0 0 0 0)
+		(color 34 190 28 1)
 		(uuid "9d677ac1-1b01-42cf-afb9-56479c03f803")
 	)
 	(junction
 		(at 265.43 232.41)
 		(diameter 0)
-		(color 0 0 0 0)
+		(color 34 190 28 1)
 		(uuid "9d7db650-b705-4674-87a1-56ab9c41813a")
 	)
 	(junction
 		(at 156.21 238.76)
 		(diameter 0)
-		(color 0 0 0 0)
+		(color 255 46 44 1)
 		(uuid "9fd6d1ea-9a98-4c02-9675-1a8ffc71c127")
 	)
 	(junction
@@ -6860,12 +6876,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "a334669d-309a-4832-8f30-d089c24ebb1a")
-	)
-	(junction
-		(at 153.67 154.94)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "a41693de-81f0-4c3b-86ac-4b6a239e8824")
 	)
 	(junction
 		(at 284.48 111.76)
@@ -6954,7 +6964,7 @@
 	(junction
 		(at 243.84 201.93)
 		(diameter 0)
-		(color 0 0 0 0)
+		(color 34 190 28 1)
 		(uuid "dd7183e4-9e6f-4627-9a3a-74be3e44f53d")
 	)
 	(junction
@@ -6966,7 +6976,7 @@
 	(junction
 		(at 156.21 201.93)
 		(diameter 0)
-		(color 0 0 0 0)
+		(color 255 46 44 1)
 		(uuid "e4823432-6000-4f24-b41f-3e2a368b3da0")
 	)
 	(junction
@@ -6978,7 +6988,7 @@
 	(junction
 		(at 317.5 109.22)
 		(diameter 0)
-		(color 0 0 0 0)
+		(color 222 143 0 1)
 		(uuid "e7c12160-01ed-4a24-b192-98e351063210")
 	)
 	(junction
@@ -7036,6 +7046,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 222 143 0 1)
 		)
 		(uuid "0048bb08-21f5-44c0-8af5-c4347e1f5f09")
 	)
@@ -7076,6 +7087,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 255 46 44 1)
 		)
 		(uuid "04b31349-3d01-45c8-8dcc-529aad1fa86e")
 	)
@@ -7146,6 +7158,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 222 143 0 1)
 		)
 		(uuid "0a98f58f-3a34-4cd9-9055-e2cc2998cfe6")
 	)
@@ -7196,6 +7209,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 255 46 44 1)
 		)
 		(uuid "0fd0049c-4f19-4a5d-baaf-d99651cbc56b")
 	)
@@ -7246,6 +7260,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 255 46 44 1)
 		)
 		(uuid "12df576e-e5e1-4826-a348-03a785d798fe")
 	)
@@ -7276,6 +7291,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 34 190 28 1)
 		)
 		(uuid "14827e50-48d5-4d5b-8d3a-ac0580e9f844")
 	)
@@ -7306,6 +7322,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 38 194 203 1)
 		)
 		(uuid "18458e0a-c7a4-4017-a3c3-0f621997a616")
 	)
@@ -7316,6 +7333,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 34 190 28 1)
 		)
 		(uuid "1862ed15-8fc8-4829-8acb-1ca050d90b77")
 	)
@@ -7496,6 +7514,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 34 190 28 1)
 		)
 		(uuid "2c141bec-3e87-4482-83d6-6bd36f9e20ae")
 	)
@@ -7516,6 +7535,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 34 190 28 1)
 		)
 		(uuid "2e4b372f-5e15-4a1b-b5b3-07dae35ceb52")
 	)
@@ -7736,6 +7756,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 34 190 28 1)
 		)
 		(uuid "412eef92-d87e-42cc-aa18-4ebae3407351")
 	)
@@ -7906,6 +7927,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 222 143 0 1)
 		)
 		(uuid "50418301-d090-4e19-88b6-c2f1b11d7a4f")
 	)
@@ -7971,16 +7993,6 @@
 	)
 	(wire
 		(pts
-			(xy 304.8 233.68) (xy 327.66 233.68)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "54bf6482-041b-43f8-b39a-ff74f3518d4e")
-	)
-	(wire
-		(pts
 			(xy 194.31 232.41) (xy 204.47 232.41)
 		)
 		(stroke
@@ -8006,18 +8018,9 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 255 46 44 1)
 		)
 		(uuid "57dca06d-afd8-494f-a08a-9193472a35e3")
-	)
-	(wire
-		(pts
-			(xy 299.72 217.17) (xy 327.66 217.17)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "5b699ea8-e896-4dd4-99c0-f126c27e09b0")
 	)
 	(wire
 		(pts
@@ -8071,6 +8074,16 @@
 	)
 	(wire
 		(pts
+			(xy 304.8 238.76) (xy 327.66 238.76)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "61c5667d-7b74-45ab-a784-116f6cb3ffdb")
+	)
+	(wire
+		(pts
 			(xy 337.82 214.63) (xy 370.84 214.63)
 		)
 		(stroke
@@ -8086,6 +8099,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 38 194 203 1)
 		)
 		(uuid "62302d45-de28-445d-96de-b926cdf29110")
 	)
@@ -8116,6 +8130,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 38 194 203 1)
 		)
 		(uuid "65656950-99aa-4a24-9c71-caa8401e8525")
 	)
@@ -8246,6 +8261,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 222 143 0 1)
 		)
 		(uuid "70812d30-d4cb-4539-a158-d371a24f16a0")
 	)
@@ -8256,6 +8272,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 222 143 0 1)
 		)
 		(uuid "709a5fd9-b7bb-44c0-bfd1-e1672293b875")
 	)
@@ -8286,6 +8303,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 38 194 203 1)
 		)
 		(uuid "717e37fc-a29e-4044-8b76-9da93fd20c70")
 	)
@@ -8366,6 +8384,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 38 194 203 1)
 		)
 		(uuid "76bb09c6-2cd6-4566-98b8-efabf1235225")
 	)
@@ -8396,6 +8415,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 34 190 28 1)
 		)
 		(uuid "772b8e72-7217-49ee-b349-f27b7a571855")
 	)
@@ -8406,6 +8426,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 255 46 44 1)
 		)
 		(uuid "7793ac89-fe58-4e59-9496-0a129c082713")
 	)
@@ -8416,6 +8437,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 255 46 44 1)
 		)
 		(uuid "789a3292-8046-41c8-a92d-312217a3c00d")
 	)
@@ -8546,6 +8568,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 34 190 28 1)
 		)
 		(uuid "817f2180-e392-4c54-8da7-45a2194f0fb1")
 	)
@@ -8558,6 +8581,16 @@
 			(type default)
 		)
 		(uuid "82b4d772-4460-4251-b6c8-c27086098de4")
+	)
+	(wire
+		(pts
+			(xy 304.8 233.68) (xy 327.66 233.68)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "8310dfc4-397c-4e38-9aa5-233a8c7eaa96")
 	)
 	(wire
 		(pts
@@ -8636,6 +8669,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 34 190 28 1)
 		)
 		(uuid "87a74f6c-fd36-41ae-8f7c-62690fb6e4e6")
 	)
@@ -8676,6 +8710,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 34 190 28 1)
 		)
 		(uuid "89ed8688-3e94-42e2-8c18-d2b972d9dcce")
 	)
@@ -8736,6 +8771,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 34 190 28 1)
 		)
 		(uuid "8dd0a0bf-fa77-45f3-8e66-f1f38cf81785")
 	)
@@ -8771,21 +8807,12 @@
 	)
 	(wire
 		(pts
-			(xy 304.8 238.76) (xy 327.66 238.76)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "8f572748-e4f0-4379-b326-342380120166")
-	)
-	(wire
-		(pts
 			(xy 264.16 106.68) (xy 260.35 106.68)
 		)
 		(stroke
 			(width 0)
 			(type default)
+			(color 186 0 255 1)
 		)
 		(uuid "8fb8e1a2-762b-48dc-8990-939b6877d017")
 	)
@@ -8936,6 +8963,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 186 0 255 1)
 		)
 		(uuid "9a453415-48e4-48d8-9b4f-c412b89a282e")
 	)
@@ -8996,6 +9024,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 34 190 28 1)
 		)
 		(uuid "9e1c3ae8-cb24-46c7-96ed-e6a62c32371e")
 	)
@@ -9058,6 +9087,16 @@
 			(type default)
 		)
 		(uuid "a20de83f-c0db-4e93-8b8a-18a7f2e6fa0a")
+	)
+	(wire
+		(pts
+			(xy 153.67 154.94) (xy 162.56 154.94)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a219e20e-89a2-4028-97ce-475c8d58a2ef")
 	)
 	(wire
 		(pts
@@ -9156,6 +9195,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 186 0 255 1)
 		)
 		(uuid "a96bbd67-43d5-46a9-aede-106bfd90b233")
 	)
@@ -9166,6 +9206,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 38 194 203 1)
 		)
 		(uuid "a9739467-5564-45fa-a17e-176ecee82e25")
 	)
@@ -9196,6 +9237,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 34 190 28 1)
 		)
 		(uuid "aefc3d47-6523-4bf7-9e7f-4dfd07ecd6d7")
 	)
@@ -9216,6 +9258,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 34 190 28 1)
 		)
 		(uuid "b1d24b44-04ca-4ef2-ada2-7451d7d90544")
 	)
@@ -9256,8 +9299,19 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 186 0 255 1)
 		)
 		(uuid "b45e36f1-948e-469e-9a11-7bf212131457")
+	)
+	(wire
+		(pts
+			(xy 299.72 217.17) (xy 327.66 217.17)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b5769be8-047b-4a8f-babd-f7108c27e26f")
 	)
 	(wire
 		(pts
@@ -9396,6 +9450,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 186 0 255 1)
 		)
 		(uuid "c01b15fc-61fb-4cfd-9aa1-1291cca1319d")
 	)
@@ -9406,6 +9461,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 255 46 44 1)
 		)
 		(uuid "c05561e4-24c0-4141-a816-fccb4e6cff2c")
 	)
@@ -9416,6 +9472,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 38 194 203 1)
 		)
 		(uuid "c1006173-57be-463b-b8da-797e8cab1dac")
 	)
@@ -9436,6 +9493,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 255 46 44 1)
 		)
 		(uuid "c3d9d2d4-b1a1-4fda-ad45-05bd37a8de18")
 	)
@@ -9446,6 +9504,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 34 190 28 1)
 		)
 		(uuid "c3e3777b-6b08-4893-b97a-caddc3c3f4d3")
 	)
@@ -9616,6 +9675,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 38 194 203 1)
 		)
 		(uuid "d342ecf3-8fde-449c-b5f7-c71832bfe406")
 	)
@@ -9661,11 +9721,22 @@
 	)
 	(wire
 		(pts
+			(xy 304.8 236.22) (xy 327.66 236.22)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d6c9c1d8-8416-4a83-9967-5679ba2cc8c9")
+	)
+	(wire
+		(pts
 			(xy 204.47 210.82) (xy 204.47 208.28)
 		)
 		(stroke
 			(width 0)
 			(type default)
+			(color 38 194 203 1)
 		)
 		(uuid "d6f255a1-4cd5-4d90-b9f5-195289de0a11")
 	)
@@ -9696,6 +9767,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 34 190 28 1)
 		)
 		(uuid "d9d30b5c-1c6e-44fc-aea5-9b76e705789b")
 	)
@@ -9736,6 +9808,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 38 194 203 1)
 		)
 		(uuid "dd501d43-8c37-4f3a-8497-8bf6a9769375")
 	)
@@ -9796,18 +9869,9 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 34 190 28 1)
 		)
 		(uuid "e0f9873e-cf4a-4ed1-9ca0-88cc1441bdde")
-	)
-	(wire
-		(pts
-			(xy 153.67 154.94) (xy 162.56 154.94)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e11b6de7-87ca-459c-a4d1-322c85ddbe65")
 	)
 	(wire
 		(pts
@@ -9816,6 +9880,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 34 190 28 1)
 		)
 		(uuid "e1effc38-e2a2-4fa6-8248-f662cb4dece2")
 	)
@@ -9846,18 +9911,9 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 255 46 44 1)
 		)
 		(uuid "e3f856e7-05f3-410c-9eff-66140b6cdd85")
-	)
-	(wire
-		(pts
-			(xy 304.8 236.22) (xy 327.66 236.22)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e496441f-f399-4b0b-9c67-5a11bb2b2827")
 	)
 	(wire
 		(pts
@@ -9876,6 +9932,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 38 194 203 1)
 		)
 		(uuid "e7de1e7f-1c58-45b4-906f-55a3146a874f")
 	)
@@ -9891,7 +9948,7 @@
 	)
 	(wire
 		(pts
-			(xy 153.67 154.94) (xy 153.67 156.21)
+			(xy 153.67 154.94) (xy 153.67 157.48)
 		)
 		(stroke
 			(width 0)
@@ -9936,6 +9993,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 186 0 255 1)
 		)
 		(uuid "ede2d711-8d28-43c0-b828-d884c8480e47")
 	)
@@ -10026,6 +10084,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 255 46 44 1)
 		)
 		(uuid "f57e7461-7781-468e-861d-26aadaa87ca0")
 	)
@@ -10076,6 +10135,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 38 194 203 1)
 		)
 		(uuid "f89ac6f1-e5f1-4664-af1e-9dca92cba077")
 	)
@@ -10096,6 +10156,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 34 190 28 1)
 		)
 		(uuid "fc3b761f-e852-4aae-99d6-e964ff4efa47")
 	)
@@ -10166,6 +10227,7 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 186 0 255 1)
 		)
 		(uuid "fef16770-5b38-421b-b9f2-2a5f1902350e")
 	)
@@ -10176,11 +10238,12 @@
 		(stroke
 			(width 0)
 			(type default)
+			(color 255 46 44 1)
 		)
 		(uuid "ff71e961-fcad-4b60-be77-9f8440d54d34")
 	)
-	(label "FUEL_GUAGE_SCL"
-		(at 361.95 233.68 180)
+	(label "FUEL_GAUGE_SCL"
+		(at 373.38 233.68 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10190,12 +10253,12 @@
 		(uuid "0aaa235f-da73-478f-9e20-f348646f16bb")
 	)
 	(label "PACK+"
-		(at 368.3 147.32 0)
+		(at 377.19 147.32 180)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify right bottom)
 		)
 		(uuid "0ce2cf76-493d-402a-95ce-f0d73ee33883")
 	)
@@ -10241,7 +10304,7 @@
 		)
 		(uuid "1b20fdb3-d716-49a3-b500-034867f5ce5b")
 	)
-	(label "FUEL_GUAGE_SDA"
+	(label "FUEL_GAUGE_SDA"
 		(at 251.46 91.44 180)
 		(effects
 			(font
@@ -10252,12 +10315,12 @@
 		(uuid "2359e57d-b346-4b51-83b0-de120ff790e2")
 	)
 	(label "PACK+"
-		(at 368.3 132.08 0)
+		(at 378.46 132.08 180)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify right bottom)
 		)
 		(uuid "2556e666-45f7-4e63-9edb-5973ce4b7697")
 	)
@@ -10302,7 +10365,7 @@
 		(uuid "30308e21-d94f-4d18-aa4c-3a7f562ed124")
 	)
 	(label "GATE_DRIVER_DSG_EN"
-		(at 360.68 212.09 180)
+		(at 370.84 212.09 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10361,8 +10424,8 @@
 		)
 		(uuid "4a47a35e-8cb7-4f85-abdb-c3bd1152c724")
 	)
-	(label "FUEL_GUAGE_C3"
-		(at 308.61 236.22 0)
+	(label "FUEL_GAUGE_C3"
+		(at 304.8 236.22 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10392,7 +10455,7 @@
 		(uuid "5908753e-72f7-4b8a-b8be-989cd028619e")
 	)
 	(label "GATE_DRIVER_BATT+"
-		(at 306.07 217.17 0)
+		(at 299.72 217.17 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10412,7 +10475,7 @@
 		)
 		(uuid "5d9e683e-57a8-4b32-928e-2f378471690a")
 	)
-	(label "FUEL_GUAGE_SCL"
+	(label "FUEL_GAUGE_SCL"
 		(at 265.43 93.98 180)
 		(effects
 			(font
@@ -10503,7 +10566,7 @@
 		)
 		(uuid "94794ecb-372b-44ff-816c-48318a0553e8")
 	)
-	(label "FUEL_GUAGE_CAP1"
+	(label "FUEL_GAUGE_CAP1"
 		(at 264.16 149.86 180)
 		(effects
 			(font
@@ -10514,7 +10577,7 @@
 		(uuid "a3c043d3-5b86-4f18-9f16-7e7887f29c6a")
 	)
 	(label "GATE_DRIVER_PCHG"
-		(at 306.07 219.71 0)
+		(at 300.99 219.71 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10523,7 +10586,7 @@
 		)
 		(uuid "a5cff9ad-66f0-4170-a0c2-d0c2f5b2ae36")
 	)
-	(label "FUEL_GUAGE_ALERT"
+	(label "FUEL_GAUGE_ALERT"
 		(at 294.64 106.68 180)
 		(effects
 			(font
@@ -10533,8 +10596,8 @@
 		)
 		(uuid "a8e8d104-ac8a-4c5a-b326-1d123acd2932")
 	)
-	(label "FUEL_GUAGE_REGOUT"
-		(at 361.95 236.22 180)
+	(label "FUEL_GAUGE_REGOUT"
+		(at 373.38 236.22 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10543,8 +10606,8 @@
 		)
 		(uuid "a9e973a5-e1e5-4919-8245-1a5ecb81f52f")
 	)
-	(label "FUEL_GUAGE_SDA"
-		(at 308.61 233.68 0)
+	(label "FUEL_GAUGE_SDA"
+		(at 304.8 233.68 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10646,7 +10709,7 @@
 		(uuid "c08cafd5-dfbc-4e3c-bf9c-485bb4f1c5ae")
 	)
 	(label "GATE_DRIVER_DSG"
-		(at 360.68 217.17 180)
+		(at 370.84 217.17 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10675,8 +10738,8 @@
 		)
 		(uuid "c580cf38-0f08-4c8e-9dca-60feb2c12bba")
 	)
-	(label "FUEL_GUAGE_CAP1"
-		(at 361.95 231.14 180)
+	(label "FUEL_GAUGE_CAP1"
+		(at 373.38 231.14 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10685,8 +10748,8 @@
 		)
 		(uuid "c5b02c95-4271-4c0c-bc7d-4492b0fe5d05")
 	)
-	(label "FUEL_GUAGE_ALERT"
-		(at 308.61 238.76 0)
+	(label "FUEL_GAUGE_ALERT"
+		(at 304.8 238.76 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10715,7 +10778,7 @@
 		)
 		(uuid "ccca6dad-dacb-4ba2-9597-294604425b46")
 	)
-	(label "FUEL_GUAGE_REGOUT"
+	(label "FUEL_GAUGE_REGOUT"
 		(at 215.9 71.12 0)
 		(effects
 			(font
@@ -10726,7 +10789,7 @@
 		(uuid "cd24a65d-e1ce-450c-90d8-b650cbea148b")
 	)
 	(label "GATE_DRIVER_CHG_EN"
-		(at 306.07 214.63 0)
+		(at 299.72 214.63 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10756,7 +10819,7 @@
 		)
 		(uuid "d97505ac-dfe3-4157-9b90-b83587e67e09")
 	)
-	(label "FUEL_GUAGE_C3"
+	(label "FUEL_GAUGE_C3"
 		(at 109.22 67.31 0)
 		(effects
 			(font
@@ -10797,7 +10860,7 @@
 		(uuid "f2f4c9c4-41f2-47e9-bd6d-93dc32f192bc")
 	)
 	(label "GATE_DRIVER_CHG"
-		(at 360.68 219.71 180)
+		(at 370.84 219.71 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10807,7 +10870,7 @@
 		(uuid "f4b8b7a5-fed9-4195-b3c1-3a0c9843751f")
 	)
 	(label "GATE_DRIVER_PACK+"
-		(at 360.68 214.63 180)
+		(at 370.84 214.63 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -10826,237 +10889,6 @@
 			(justify left bottom)
 		)
 		(uuid "fab879b5-80e8-4d4b-93e2-ea5bda3e6846")
-	)
-	(hierarchical_label "GATE_DRIVER_DSG"
-		(shape output)
-		(at 370.84 217.17 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "29d66ade-cff5-4a79-920e-d02e82ab9a22")
-	)
-	(hierarchical_label "GATE_DRIVER_CHG"
-		(shape output)
-		(at 370.84 219.71 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "2d1f145b-dc34-4910-841e-dfc8b6f55596")
-	)
-	(hierarchical_label "FUEL_GUAGE_SCL"
-		(shape output)
-		(at 373.38 233.68 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "3de2f7e8-3ca4-434f-b4d5-c86afcb3e7be")
-	)
-	(hierarchical_label "BUCK_BOOST_PACK+"
-		(shape output)
-		(at 378.46 132.08 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "5bb2930c-350d-4a52-9999-95304c03ca76")
-	)
-	(hierarchical_label "GATE_DRIVER_PACK+"
-		(shape output)
-		(at 370.84 214.63 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "5c45bb3d-17f0-44c8-9a07-7fd2c834517b")
-	)
-	(hierarchical_label "FUEL_GUAGE_CAP1"
-		(shape output)
-		(at 373.38 231.14 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "60f76ad5-9b52-4009-8d40-3411bbec29c5")
-	)
-	(hierarchical_label "C0"
-		(shape input)
-		(at 43.18 168.91 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "6a3fb864-4957-4f51-b760-58050cf534e4")
-	)
-	(hierarchical_label "6V_BUCK_PACK+"
-		(shape output)
-		(at 377.19 147.32 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "7b3a9186-fdb1-4bd3-a7f7-012ff42faccd")
-	)
-	(hierarchical_label "GATE_DRIVER_DSG_EN"
-		(shape output)
-		(at 370.84 212.09 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "97126f7a-43d2-48bd-a797-806674310966")
-	)
-	(hierarchical_label "BATT-"
-		(shape input)
-		(at 43.18 171.45 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "9eb4127c-3ed6-4b2f-bbb0-6f1c477eb9fe")
-	)
-	(hierarchical_label "GATE_DRIVER_BATT+"
-		(shape output)
-		(at 299.72 217.17 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "a248e6a9-e20c-4410-a022-db71f7f6338e")
-	)
-	(hierarchical_label "FUEL_GUAGE_SDA"
-		(shape output)
-		(at 304.8 233.68 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "a5957cbc-233a-4995-a7b4-3e387f969c8e")
-	)
-	(hierarchical_label "C1"
-		(shape input)
-		(at 43.18 166.37 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "a5b3807d-84ba-48c8-845d-52fbe4a14f89")
-	)
-	(hierarchical_label "GATE_DRIVER_PCHG"
-		(shape output)
-		(at 300.99 219.71 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "ab681d03-c27b-4bdb-b0e3-ba30ad66b75f")
-	)
-	(hierarchical_label "FUEL_GUAGE_ALERT"
-		(shape output)
-		(at 304.8 238.76 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "af1ef4c1-3d97-4fbe-bf35-80d48432ec2b")
-	)
-	(hierarchical_label "BATT+"
-		(shape input)
-		(at 43.18 158.75 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "b82bc3b6-dc36-413b-9dd6-c9420f3228c7")
-	)
-	(hierarchical_label "C3"
-		(shape input)
-		(at 43.18 161.29 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "c77ea19d-0e22-4b29-a80f-c5164e961531")
-	)
-	(hierarchical_label "FUEL_GUAGE_REGOUT"
-		(shape output)
-		(at 373.38 236.22 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "dfdecabd-def1-4bfd-9836-fab7fcff942f")
-	)
-	(hierarchical_label "C2"
-		(shape input)
-		(at 43.18 163.83 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "ede70571-3583-485d-be7c-f1c174ed542b")
-	)
-	(hierarchical_label "FUEL_GUAGE_C3"
-		(shape output)
-		(at 304.8 236.22 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "f4384be4-2c42-4eec-9d97-a34e9bafca2b")
-	)
-	(hierarchical_label "GATE_DRIVER_CHG_EN"
-		(shape output)
-		(at 299.72 214.63 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "f875a146-0456-4d82-95ed-c6998c5f5515")
 	)
 	(symbol
 		(lib_id "V5N3202HM3-I:V5N3202HM3_I")
@@ -40790,7 +40622,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 153.67 156.21 0)
+		(at 153.67 157.48 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -40798,7 +40630,7 @@
 		(dnp no)
 		(uuid "c5f33df1-e856-454a-9746-23f6ef0f9a35")
 		(property "Reference" "#PWR01"
-			(at 153.67 162.56 0)
+			(at 153.67 163.83 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -40807,7 +40639,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 155.702 159.766 0)
+			(at 155.702 161.036 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -40816,7 +40648,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 153.67 156.21 0)
+			(at 153.67 157.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -40825,7 +40657,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 153.67 156.21 0)
+			(at 153.67 157.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -40834,7 +40666,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 153.67 156.21 0)
+			(at 153.67 157.48 0)
 			(effects
 				(font
 					(size 1.27 1.27)
