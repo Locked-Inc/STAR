@@ -1,0 +1,16 @@
+{
+    "name": "star_sensor_sick_tim561",
+    "version": "1.0.0",
+    "description": "SICK TiM561 2D LiDAR scanner driver with TCP/IP COLA protocol",
+    "keywords": ["esp32", "lidar", "sick", "tim561", "ethernet", "tcp"],
+    "license": "MIT",
+    "frameworks": ["espidf"],
+    "platforms": ["espressif32"],
+    "dependencies": {
+        "star_error_handler": "*"
+    },
+    "build": {
+        "srcDir": "src",
+        "includeDir": "include"
+    }
+}
