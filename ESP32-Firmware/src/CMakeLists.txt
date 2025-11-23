@@ -11,5 +11,5 @@ endif()
 idf_component_register(
     SRCS ${app_sources}
     INCLUDE_DIRS "."
-    REQUIRES nvs_flash log
+    REQUIRES nvs_flash log driver esp_wifi esp_http_server esp_event
 )

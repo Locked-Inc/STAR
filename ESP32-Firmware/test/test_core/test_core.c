@@ -241,7 +241,7 @@ void test_pin_interface_shared_pins(void)
 
 void test_star_core_version(void)
 {
-  const char* version = star_core_version();
+  const char * version = star_core_version();
   TEST_ASSERT_NOT_NULL(version);
   TEST_ASSERT_TRUE(strlen(version) > 0);
 }
@@ -295,7 +295,7 @@ void test_pin_interface_is_valid_with_incomplete(void)
 
 void test_iface_record_error_macro_with_null(void)
 {
-  star_error_interface_t* null_iface = NULL;
+  star_error_interface_t * null_iface = NULL;
   esp_err_t result = STAR_IFACE_RECORD_ERROR(null_iface, ESP_FAIL, "Test");
   TEST_ASSERT_EQUAL(ESP_FAIL, result);
 }
@@ -307,7 +307,7 @@ void test_iface_record_error_macro_with_valid(void)
 
   star_error_interface_t iface;
   error_handler_get_interface(&iface, &handler);
-  star_error_interface_t* iface_ptr = &iface;
+  star_error_interface_t * iface_ptr = &iface;
 
   esp_err_t result = STAR_IFACE_RECORD_ERROR(iface_ptr, ESP_ERR_TIMEOUT, "Test error");
   TEST_ASSERT_EQUAL(ESP_ERR_TIMEOUT, result);
@@ -317,35 +317,35 @@ void test_iface_record_error_macro_with_valid(void)
 
 void test_iface_can_retry_macro_with_null(void)
 {
-  star_error_interface_t* null_iface = NULL;
+  star_error_interface_t * null_iface = NULL;
   bool can_retry = STAR_IFACE_CAN_RETRY(null_iface);
   TEST_ASSERT_FALSE(can_retry);
 }
 
 void test_iface_reset_state_macro_with_null(void)
 {
-  star_error_interface_t* null_iface = NULL;
+  star_error_interface_t * null_iface = NULL;
   esp_err_t result = STAR_IFACE_RESET_STATE(null_iface);
   TEST_ASSERT_EQUAL(ESP_OK, result);
 }
 
 void test_iface_register_pin_macro_with_null(void)
 {
-  star_pin_interface_t* null_iface = NULL;
+  star_pin_interface_t * null_iface = NULL;
   esp_err_t result = STAR_IFACE_REGISTER_PIN(null_iface, 10, "Test", false);
   TEST_ASSERT_EQUAL(ESP_OK, result);
 }
 
 void test_iface_unregister_pin_macro_with_null(void)
 {
-  star_pin_interface_t* null_iface = NULL;
+  star_pin_interface_t * null_iface = NULL;
   esp_err_t result = STAR_IFACE_UNREGISTER_PIN(null_iface, 10, "Test");
   TEST_ASSERT_EQUAL(ESP_OK, result);
 }
 
 void test_iface_validate_pins_macro_with_null(void)
 {
-  star_pin_interface_t* null_iface = NULL;
+  star_pin_interface_t * null_iface = NULL;
   esp_err_t result = STAR_IFACE_VALIDATE_PINS(null_iface);
   TEST_ASSERT_EQUAL(ESP_OK, result);
 }
@@ -354,7 +354,7 @@ void test_iface_register_pin_macro_with_valid(void)
 {
   star_pin_interface_t iface;
   pin_validator_get_interface(&iface);
-  star_pin_interface_t* iface_ptr = &iface;
+  star_pin_interface_t * iface_ptr = &iface;
 
   esp_err_t result = STAR_IFACE_REGISTER_PIN(iface_ptr, 11, "Macro test", false);
   TEST_ASSERT_EQUAL(ESP_OK, result);
