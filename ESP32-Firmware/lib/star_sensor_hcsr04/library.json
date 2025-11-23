@@ -1,0 +1,16 @@
+{
+    "name": "star_sensor_hcsr04",
+    "version": "1.0.0",
+    "description": "HC-SR04 ultrasonic distance sensor driver with ISR-based timing",
+    "keywords": ["esp32", "ultrasonic", "distance", "hcsr04", "gpio"],
+    "license": "MIT",
+    "frameworks": ["espidf"],
+    "platforms": ["espressif32"],
+    "dependencies": {
+        "star_error_handler": "*"
+    },
+    "build": {
+        "srcDir": "src",
+        "includeDir": "include"
+    }
+}

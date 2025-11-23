@@ -1,0 +1,16 @@
+{
+    "name": "star_error_handler",
+    "version": "1.0.0",
+    "description": "Error recording, retry logic with exponential backoff, recovery functions",
+    "keywords": ["esp32", "error", "handler", "retry"],
+    "license": "MIT",
+    "frameworks": ["espidf"],
+    "platforms": ["espressif32"],
+    "dependencies": {
+        "star_core": "*"
+    },
+    "build": {
+        "srcDir": "src",
+        "includeDir": "include"
+    }
+}

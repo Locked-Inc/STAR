@@ -1,0 +1,16 @@
+{
+    "name": "star_sensor_mq135",
+    "version": "1.0.0",
+    "description": "MQ135 air quality gas sensor driver with ADC and calibration support",
+    "keywords": ["esp32", "air-quality", "gas", "mq135", "adc", "co2"],
+    "license": "MIT",
+    "frameworks": ["espidf"],
+    "platforms": ["espressif32"],
+    "dependencies": {
+        "star_error_handler": "*"
+    },
+    "build": {
+        "srcDir": "src",
+        "includeDir": "include"
+    }
+}
