@@ -17,9 +17,9 @@
 #include "driver/gpio.h"
 
 /* Thread safety test globals */
-static star_bus_manager_t* g_shared_manager = NULL;
-static volatile int g_thread_errors = 0;
-static volatile int g_tasks_completed = 0;
+static star_bus_manager_t *s_shared_manager = NULL;
+static volatile int s_thread_errors = 0;
+static volatile int s_tasks_completed = 0;
 
 void setUp(void) {}
 void tearDown(void) {
@@ -78,21 +78,21 @@ void test_manager_deinit_null_pointer(void)
 
 void test_bus_type_string_i2c(void)
 {
-  const char* str = star_bus_type_to_string(k_star_bus_type_i2c);
+  const char * str = star_bus_type_to_string(k_star_bus_type_i2c);
   TEST_ASSERT_NOT_NULL(str);
   TEST_ASSERT_EQUAL_STRING("I2C", str);
 }
 
 void test_bus_type_string_spi(void)
 {
-  const char* str = star_bus_type_to_string(k_star_bus_type_spi);
+  const char * str = star_bus_type_to_string(k_star_bus_type_spi);
   TEST_ASSERT_NOT_NULL(str);
   TEST_ASSERT_EQUAL_STRING("SPI", str);
 }
 
 void test_bus_type_string_none(void)
 {
-  const char* str = star_bus_type_to_string(k_star_bus_type_none);
+  const char * str = star_bus_type_to_string(k_star_bus_type_none);
   TEST_ASSERT_NOT_NULL(str);
 }
 
@@ -100,7 +100,7 @@ void test_bus_type_string_none(void)
 
 void test_find_bus_null_manager(void)
 {
-  star_bus_config_t* config = star_bus_manager_find_bus(NULL, "test");
+  star_bus_config_t * config = star_bus_manager_find_bus(NULL, "test");
   TEST_ASSERT_NULL(config);
 }
 
@@ -109,7 +109,7 @@ void test_find_bus_null_name(void)
   star_bus_manager_t manager;
   star_bus_manager_init(&manager, "TestMgr", NULL, NULL);
 
-  star_bus_config_t* config = star_bus_manager_find_bus(&manager, NULL);
+  star_bus_config_t * config = star_bus_manager_find_bus(&manager, NULL);
   TEST_ASSERT_NULL(config);
 
   star_bus_manager_deinit(&manager);
@@ -120,7 +120,7 @@ void test_find_bus_not_found(void)
   star_bus_manager_t manager;
   star_bus_manager_init(&manager, "TestMgr", NULL, NULL);
 
-  star_bus_config_t* config = star_bus_manager_find_bus(&manager, "nonexistent");
+  star_bus_config_t * config = star_bus_manager_find_bus(&manager, "nonexistent");
   TEST_ASSERT_NULL(config);
 
   star_bus_manager_deinit(&manager);
@@ -185,7 +185,7 @@ void test_manager_buses_initially_null(void)
 
 void test_create_i2c_config(void)
 {
-  star_bus_config_t* config = star_bus_config_create_i2c(
+  star_bus_config_t * config = star_bus_config_create_i2c(
     "TestI2C",
     I2C_NUM_0,
     0x50,
@@ -206,7 +206,7 @@ void test_create_i2c_config(void)
 
 void test_create_i2c_config_null_name(void)
 {
-  star_bus_config_t* config = star_bus_config_create_i2c(
+  star_bus_config_t * config = star_bus_config_create_i2c(
     NULL,
     I2C_NUM_0,
     0x50,
@@ -227,7 +227,7 @@ void test_create_spi_device_config(void)
     .queue_size = 7,
   };
 
-  star_bus_config_t* config = star_bus_config_create_spi_device(
+  star_bus_config_t * config = star_bus_config_create_spi_device(
     "TestSPI",
     SPI2_HOST,
     GPIO_NUM_23,  /* COPI */
@@ -248,7 +248,7 @@ void test_create_spi_device_config(void)
 
 void test_create_spi_device_null_dev_cfg(void)
 {
-  star_bus_config_t* config = star_bus_config_create_spi_device(
+  star_bus_config_t * config = star_bus_config_create_spi_device(
     "TestSPI",
     SPI2_HOST,
     GPIO_NUM_23,
@@ -265,7 +265,7 @@ void test_create_spi_device_null_dev_cfg(void)
 
 void test_add_bus_null_manager(void)
 {
-  star_bus_config_t* config = star_bus_config_create_i2c(
+  star_bus_config_t * config = star_bus_config_create_i2c(
     "TestI2C", I2C_NUM_0, 0x50, GPIO_NUM_21, GPIO_NUM_22, 100000);
 
   esp_err_t result = star_bus_manager_add_bus(NULL, config);
@@ -343,14 +343,14 @@ void test_destroy_null_config(void)
 
 void test_bus_type_string_invalid(void)
 {
-  const char* str = star_bus_type_to_string((star_bus_type_t)999);
+  const char * str = star_bus_type_to_string((star_bus_type_t)999);
   TEST_ASSERT_NOT_NULL(str);
   /* Should return something like "Unknown" */
 }
 
 /* with_bus API Tests */
 
-static esp_err_t test_callback_simple(star_bus_config_t* bus, void* user_ctx)
+static esp_err_t test_callback_simple(star_bus_config_t * bus, void * user_ctx)
 {
   (void)user_ctx;
   if (bus == NULL) {
@@ -359,9 +359,9 @@ static esp_err_t test_callback_simple(star_bus_config_t* bus, void* user_ctx)
   return ESP_OK;
 }
 
-static esp_err_t test_callback_read_name(star_bus_config_t* bus, void* user_ctx)
+static esp_err_t test_callback_read_name(star_bus_config_t * bus, void * user_ctx)
 {
-  char* name_out = (char*)user_ctx;
+  char * name_out = (char *)user_ctx;
   if (bus && bus->name && name_out) {
     strcpy(name_out, bus->name);
     return ESP_OK;
@@ -414,7 +414,7 @@ void test_with_bus_found_and_callback_invoked(void)
   star_bus_manager_init(&manager, "TestMgr", NULL, NULL);
 
   /* Add a bus */
-  star_bus_config_t* config = star_bus_config_create_i2c(
+  star_bus_config_t * config = star_bus_config_create_i2c(
     "TestI2C", I2C_NUM_0, 0x50, GPIO_NUM_21, GPIO_NUM_22, 100000);
   star_bus_manager_add_bus(&manager, config);
 
@@ -429,18 +429,18 @@ void test_with_bus_found_and_callback_invoked(void)
 
 /* Thread Safety Tests */
 
-static void concurrent_find_task(void* arg)
+static void concurrent_find_task(void * arg)
 {
   (void)arg;
 
   for (int i = 0; i < 20; i++) {
-    star_bus_config_t* found = star_bus_manager_find_bus(g_shared_manager, "SharedBus");
+    star_bus_config_t * found = star_bus_manager_find_bus(s_shared_manager, "SharedBus");
     if (found == NULL) {
       /* Bus not found is OK during concurrent add/remove */
     }
     vTaskDelay(pdMS_TO_TICKS(1));
   }
-  g_tasks_completed++;
+  s_tasks_completed++;
   vTaskDelete(NULL);
 }
 
@@ -448,12 +448,12 @@ void test_concurrent_find_bus(void)
 {
   star_bus_manager_t manager;
   star_bus_manager_init(&manager, "TestMgr", NULL, NULL);
-  g_shared_manager = &manager;
-  g_thread_errors = 0;
-  g_tasks_completed = 0;
+  s_shared_manager = &manager;
+  s_thread_errors = 0;
+  s_tasks_completed = 0;
 
   /* Add a bus to find */
-  star_bus_config_t* config = star_bus_config_create_i2c(
+  star_bus_config_t * config = star_bus_config_create_i2c(
     "SharedBus", I2C_NUM_0, 0x50, GPIO_NUM_21, GPIO_NUM_22, 100000);
   star_bus_manager_add_bus(&manager, config);
 
@@ -463,17 +463,17 @@ void test_concurrent_find_bus(void)
   xTaskCreate(concurrent_find_task, "f3", 2048, NULL, 5, NULL);
 
   /* Wait for tasks to complete */
-  while (g_tasks_completed < 3) {
+  while (s_tasks_completed < 3) {
     vTaskDelay(pdMS_TO_TICKS(10));
   }
 
-  TEST_ASSERT_EQUAL(0, g_thread_errors);
+  TEST_ASSERT_EQUAL(0, s_thread_errors);
 
-  g_shared_manager = NULL;
+  s_shared_manager = NULL;
   star_bus_manager_deinit(&manager);
 }
 
-static esp_err_t with_bus_increment_callback(star_bus_config_t* bus, void* user_ctx)
+static esp_err_t with_bus_increment_callback(star_bus_config_t * bus, void * user_ctx)
 {
   (void)bus;
   int* counter = (int*)user_ctx;
@@ -481,19 +481,19 @@ static esp_err_t with_bus_increment_callback(star_bus_config_t* bus, void* user_
   return ESP_OK;
 }
 
-static void concurrent_with_bus_task(void* arg)
+static void concurrent_with_bus_task(void * arg)
 {
   int* counter = (int*)arg;
 
   for (int i = 0; i < 10; i++) {
-    esp_err_t result = star_bus_manager_with_bus(g_shared_manager, "SharedBus",
+    esp_err_t result = star_bus_manager_with_bus(s_shared_manager, "SharedBus",
                                                   with_bus_increment_callback, counter);
     if (result != ESP_OK && result != ESP_ERR_NOT_FOUND) {
-      g_thread_errors++;
+      s_thread_errors++;
     }
     vTaskDelay(pdMS_TO_TICKS(1));
   }
-  g_tasks_completed++;
+  s_tasks_completed++;
   vTaskDelete(NULL);
 }
 
@@ -501,12 +501,12 @@ void test_concurrent_with_bus(void)
 {
   star_bus_manager_t manager;
   star_bus_manager_init(&manager, "TestMgr", NULL, NULL);
-  g_shared_manager = &manager;
-  g_thread_errors = 0;
-  g_tasks_completed = 0;
+  s_shared_manager = &manager;
+  s_thread_errors = 0;
+  s_tasks_completed = 0;
 
   /* Add a bus */
-  star_bus_config_t* config = star_bus_config_create_i2c(
+  star_bus_config_t * config = star_bus_config_create_i2c(
     "SharedBus", I2C_NUM_0, 0x50, GPIO_NUM_21, GPIO_NUM_22, 100000);
   star_bus_manager_add_bus(&manager, config);
 
@@ -515,24 +515,24 @@ void test_concurrent_with_bus(void)
   callback_counter = 0;
 
   /* Spawn multiple tasks that use with_bus concurrently */
-  xTaskCreate(concurrent_with_bus_task, "w1", 2048, (void*)&callback_counter, 5, NULL);
-  xTaskCreate(concurrent_with_bus_task, "w2", 2048, (void*)&callback_counter, 5, NULL);
-  xTaskCreate(concurrent_with_bus_task, "w3", 2048, (void*)&callback_counter, 5, NULL);
+  xTaskCreate(concurrent_with_bus_task, "w1", 2048, (void *)&callback_counter, 5, NULL);
+  xTaskCreate(concurrent_with_bus_task, "w2", 2048, (void *)&callback_counter, 5, NULL);
+  xTaskCreate(concurrent_with_bus_task, "w3", 2048, (void *)&callback_counter, 5, NULL);
 
   /* Wait for tasks to complete */
-  while (g_tasks_completed < 3) {
+  while (s_tasks_completed < 3) {
     vTaskDelay(pdMS_TO_TICKS(10));
   }
 
-  TEST_ASSERT_EQUAL(0, g_thread_errors);
+  TEST_ASSERT_EQUAL(0, s_thread_errors);
   /* Each of 3 tasks calls callback 10 times = 30 total */
   TEST_ASSERT_EQUAL(30, callback_counter);
 
-  g_shared_manager = NULL;
+  s_shared_manager = NULL;
   star_bus_manager_deinit(&manager);
 }
 
-static void concurrent_add_remove_task(void* arg)
+static void concurrent_add_remove_task(void * arg)
 {
   int task_id = (int)(intptr_t)arg;
   char name[32];
@@ -541,26 +541,26 @@ static void concurrent_add_remove_task(void* arg)
     snprintf(name, sizeof(name), "Bus_%d_%d", task_id, i);
 
     /* Create and add a bus */
-    star_bus_config_t* config = star_bus_config_create_i2c(
+    star_bus_config_t * config = star_bus_config_create_i2c(
       name, I2C_NUM_0, 0x50, GPIO_NUM_21, GPIO_NUM_22, 100000);
 
     if (config != NULL) {
-      esp_err_t result = star_bus_manager_add_bus(g_shared_manager, config);
+      esp_err_t result = star_bus_manager_add_bus(s_shared_manager, config);
       if (result != ESP_OK && result != ESP_ERR_INVALID_STATE) {
         star_bus_config_destroy(config);
-        g_thread_errors++;
+        s_thread_errors++;
       } else if (result == ESP_OK) {
         /* Try to remove the bus we just added */
         vTaskDelay(pdMS_TO_TICKS(1));
-        result = star_bus_manager_remove_bus(g_shared_manager, name);
+        result = star_bus_manager_remove_bus(s_shared_manager, name);
         if (result != ESP_OK && result != ESP_ERR_NOT_FOUND) {
-          g_thread_errors++;
+          s_thread_errors++;
         }
       }
     }
     vTaskDelay(pdMS_TO_TICKS(1));
   }
-  g_tasks_completed++;
+  s_tasks_completed++;
   vTaskDelete(NULL);
 }
 
@@ -568,23 +568,23 @@ void test_concurrent_add_remove(void)
 {
   star_bus_manager_t manager;
   star_bus_manager_init(&manager, "TestMgr", NULL, NULL);
-  g_shared_manager = &manager;
-  g_thread_errors = 0;
-  g_tasks_completed = 0;
+  s_shared_manager = &manager;
+  s_thread_errors = 0;
+  s_tasks_completed = 0;
 
   /* Spawn multiple tasks that add and remove buses */
-  xTaskCreate(concurrent_add_remove_task, "ar1", 4096, (void*)1, 5, NULL);
-  xTaskCreate(concurrent_add_remove_task, "ar2", 4096, (void*)2, 5, NULL);
-  xTaskCreate(concurrent_add_remove_task, "ar3", 4096, (void*)3, 5, NULL);
+  xTaskCreate(concurrent_add_remove_task, "ar1", 4096, (void *)1, 5, NULL);
+  xTaskCreate(concurrent_add_remove_task, "ar2", 4096, (void *)2, 5, NULL);
+  xTaskCreate(concurrent_add_remove_task, "ar3", 4096, (void *)3, 5, NULL);
 
   /* Wait for tasks to complete */
-  while (g_tasks_completed < 3) {
+  while (s_tasks_completed < 3) {
     vTaskDelay(pdMS_TO_TICKS(10));
   }
 
-  TEST_ASSERT_EQUAL(0, g_thread_errors);
+  TEST_ASSERT_EQUAL(0, s_thread_errors);
 
-  g_shared_manager = NULL;
+  s_shared_manager = NULL;
   star_bus_manager_deinit(&manager);
 }
 
