@@ -1,2 +1,4 @@
 .pio
+build_logs/
+compile_commands.json
 sdkconfig.*
