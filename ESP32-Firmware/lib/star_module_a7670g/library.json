@@ -1,0 +1,16 @@
+{
+    "name": "star_module_a7670g",
+    "version": "1.0.0",
+    "description": "A7670G 4G LTE CAT-1 module driver with AT commands, TCP/IP, MQTT, SMS, GPS",
+    "keywords": ["esp32", "4g", "lte", "a7670g", "uart", "at-commands", "iot"],
+    "license": "MIT",
+    "frameworks": ["espidf"],
+    "platforms": ["espressif32"],
+    "dependencies": {
+        "star_error_handler": "*"
+    },
+    "build": {
+        "srcDir": "src",
+        "includeDir": "include"
+    }
+}
