@@ -482,7 +482,7 @@
         "microvia_drill": 0.1,
         "name": "3v3 V",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 1,
+        "priority": 2,
         "schematic_color": "rgb(107, 203, 57)",
         "track_width": 0.781437,
         "via_diameter": 0.6,
@@ -496,7 +496,7 @@
         "microvia_drill": 0.1,
         "name": "5v0 V",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 0,
+        "priority": 1,
         "schematic_color": "rgb(209, 23, 38)",
         "track_width": 0.781437,
         "via_diameter": 0.6,
@@ -510,9 +510,21 @@
         "microvia_drill": 0.1,
         "name": "Ground",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 2,
+        "priority": 3,
         "schematic_color": "rgb(0, 0, 0)",
         "track_width": 0.781437,
+        "via_diameter": 0.6,
+        "via_drill": 0.3
+      },
+      {
+        "clearance": 0.2,
+        "microvia_diameter": 0.3,
+        "microvia_drill": 0.1,
+        "name": "Switch",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 0,
+        "schematic_color": "rgb(45, 40, 255)",
+        "track_width": 0.25,
         "via_diameter": 0.6,
         "via_drill": 0.3
       }
@@ -534,6 +546,10 @@
       {
         "netclass": "Ground",
         "pattern": "GND"
+      },
+      {
+        "netclass": "Switch",
+        "pattern": "/Switch"
       }
     ]
   },
