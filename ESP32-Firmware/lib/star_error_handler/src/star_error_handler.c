@@ -4,6 +4,7 @@
 
 #include <inttypes.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "esp_log.h"
@@ -33,12 +34,10 @@ esp_err_t error_handler_init(error_handler_t* handler,
   }
 
   /* Initialize struct members first */
-  handler->max_retries = max_retries;
-  handler->base_retry_delay =
-    base_retry_delay > 0 ? base_retry_delay : 100;
-  handler->max_retry_delay     = max_retry_delay > handler->base_retry_delay
-                                   ? max_retry_delay
-                                   : handler->base_retry_delay;
+  handler->max_retries      = max_retries;
+  handler->base_retry_delay = base_retry_delay > 0 ? base_retry_delay : 100;
+  handler->max_retry_delay =
+    max_retry_delay > handler->base_retry_delay ? max_retry_delay : handler->base_retry_delay;
   handler->current_retry_delay = handler->base_retry_delay;
   handler->reset_fn            = reset_fn;
   handler->reset_context       = reset_context;
@@ -79,7 +78,7 @@ void error_handler_deinit(error_handler_t* handler)
   handler->mutex = NULL;
 
   /* Clear reset function pointers to prevent use-after-free */
-  handler->reset_fn = NULL;
+  handler->reset_fn      = NULL;
   handler->reset_context = NULL;
 
   /* Give back the mutex before deleting (required by FreeRTOS) */
@@ -137,7 +136,7 @@ esp_err_t error_handler_record_error(error_handler_t* handler,
     retry_count_to_log           = 0;
   } else if (handler->current_retry < handler->max_retries) {
     handler->current_retry++;
-    retry_count_to_log = handler->current_retry;
+    retry_count_to_log    = handler->current_retry;
     uint64_t new_delay_64 = (uint64_t)handler->current_retry_delay * 2;
     if (new_delay_64 > handler->max_retry_delay) {
       handler->current_retry_delay = handler->max_retry_delay;
@@ -148,7 +147,7 @@ esp_err_t error_handler_record_error(error_handler_t* handler,
     }
     ESP_LOGI(TAG, "Backoff: Next retry delay: %" PRIu32 " ms", handler->current_retry_delay);
   } else {
-    retry_count_to_log = handler->max_retries;
+    retry_count_to_log           = handler->max_retries;
     handler->current_retry_delay = handler->max_retry_delay;
     ESP_LOGI(TAG, "Backoff: Next retry delay: %" PRIu32 " ms", handler->current_retry_delay);
   }
@@ -183,7 +182,7 @@ esp_err_t error_handler_record_error(error_handler_t* handler,
 
     /* Capture reset function and context while holding mutex */
     esp_err_t (*reset_fn_local)(void* context) = handler->reset_fn;
-    void* reset_context_local = handler->reset_context;
+    void* reset_context_local                  = handler->reset_context;
 
     if (reset_fn_local != NULL) {
       ESP_LOGI(TAG, "Reset Attempt: Attempting reset function after max retries...");
@@ -300,11 +299,11 @@ esp_err_t error_handler_reset_state(error_handler_t* handler)
 /* --- Interface Adapter Functions --- */
 
 static esp_err_t priv_iface_record_error(void*       ctx,
-                                    esp_err_t   error,
-                                    const char* message,
-                                    const char* file,
-                                    int         line,
-                                    const char* func)
+                                         esp_err_t   error,
+                                         const char* message,
+                                         const char* file,
+                                         int         line,
+                                         const char* func)
 {
   error_handler_t* handler = (error_handler_t*)ctx;
   return error_handler_record_error(handler, error, message, file, line, func);
@@ -342,4 +341,108 @@ void error_handler_get_interface(star_error_interface_t* iface, error_handler_t*
   iface->can_retry    = priv_iface_can_retry;
   iface->reset_state  = priv_iface_reset_state;
   iface->ctx          = handler;
+}
+
+/* --- Factory Functions --- */
+
+error_handler_t* error_handler_create_default(void)
+{
+  /* Default parameters: 3 retries, 100ms base delay, 5000ms max delay, no reset function */
+  return error_handler_create_custom(3, 100, 5000, NULL, NULL);
+}
+
+error_handler_t* error_handler_create_custom(uint32_t max_retries,
+                                             uint32_t base_retry_delay,
+                                             uint32_t max_retry_delay,
+                                             esp_err_t (*reset_fn)(void* context),
+                                             void* reset_context)
+{
+  /* Allocate memory for error handler */
+  error_handler_t* handler = (error_handler_t*)malloc(sizeof(error_handler_t));
+  if (handler == NULL) {
+    ESP_LOGE(TAG, "Factory Error: Failed to allocate memory for error handler");
+    return NULL;
+  }
+
+  /* Zero-initialize to ensure clean state */
+  memset(handler, 0, sizeof(error_handler_t));
+
+  /* Initialize the error handler */
+  esp_err_t ret = error_handler_init(handler,
+                                     max_retries,
+                                     base_retry_delay,
+                                     max_retry_delay,
+                                     reset_fn,
+                                     reset_context);
+  if (ret != ESP_OK) {
+    ESP_LOGE(TAG, "Factory Error: Failed to initialize error handler: %s", esp_err_to_name(ret));
+    free(handler);
+    return NULL;
+  }
+
+  ESP_LOGI(
+    TAG,
+    "Factory Success: Created error handler (retries=%lu, base_delay=%lums, max_delay=%lums)",
+    (unsigned long)max_retries,
+    (unsigned long)base_retry_delay,
+    (unsigned long)max_retry_delay);
+
+  return handler;
+}
+
+void error_handler_destroy_default(error_handler_t* handler)
+{
+  if (handler == NULL) {
+    return; /* Safe no-op for NULL pointer */
+  }
+
+  /* Deinitialize (releases mutex) */
+  error_handler_deinit(handler);
+
+  /* Free the allocated memory */
+  free(handler);
+
+  ESP_LOGD(TAG, "Factory Destroy: Error handler destroyed and memory freed");
+}
+
+star_error_interface_t* star_error_interface_create_default(void)
+{
+  /* Create default error handler */
+  error_handler_t* handler = error_handler_create_default();
+  if (handler == NULL) {
+    ESP_LOGE(TAG, "Failed to create default error handler");
+    return NULL;
+  }
+
+  /* Allocate interface structure */
+  star_error_interface_t* iface = (star_error_interface_t*)malloc(sizeof(star_error_interface_t));
+  if (iface == NULL) {
+    ESP_LOGE(TAG, "Failed to allocate error interface");
+    error_handler_destroy_default(handler);
+    return NULL;
+  }
+
+  /* Populate interface */
+  error_handler_get_interface(iface, handler);
+
+  ESP_LOGD(TAG, "Created default error interface");
+  return iface;
+}
+
+void star_error_interface_destroy(star_error_interface_t* iface)
+{
+  if (iface == NULL) {
+    return; /* Safe no-op for NULL pointer */
+  }
+
+  /* Extract the error handler from the context */
+  error_handler_t* handler = (error_handler_t*)iface->ctx;
+
+  /* Destroy the error handler */
+  error_handler_destroy_default(handler);
+
+  /* Free the interface */
+  free(iface);
+
+  ESP_LOGD(TAG, "Destroyed error interface");
 }

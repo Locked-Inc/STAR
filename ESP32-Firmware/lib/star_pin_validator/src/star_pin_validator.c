@@ -100,7 +100,11 @@ esp_err_t star_register_pin(gpio_num_t gpio_num, const char* desc, bool can_be_s
     return ESP_ERR_INVALID_STATE;
   }
 
-  ESP_LOGD(s_TAG, "Registering pin %d, desc: '%s', can_be_shared: %d", gpio_num, desc, can_be_shared);
+  ESP_LOGD(s_TAG,
+           "Registering pin %d, desc: '%s', can_be_shared: %d",
+           gpio_num,
+           desc,
+           can_be_shared);
 
   s_g_pin_validator.initialized = true;
 
@@ -387,7 +391,7 @@ esp_err_t star_free_pin_validator(void)
       s_TAG,
       "Attempting to free validator, but mutex was NULL (already freed or never initialized?)");
     s_g_pin_validator.initialized = false;
-    s_g_is_freeing = false;
+    s_g_is_freeing                = false;
     return ESP_OK;
   }
 
@@ -490,4 +494,39 @@ void pin_validator_get_interface(star_pin_interface_t* iface)
   iface->unregister_pin = iface_unregister_pin;
   iface->validate       = iface_validate;
   iface->ctx            = NULL; /* Global validator, no context needed */
+}
+
+bool star_pin_validator_is_initialized(void)
+{
+  /* Quick check without mutex for common case */
+  if (s_g_pin_validator.mutex == NULL) {
+    return false; /* Not even mutex created, definitely not initialized */
+  }
+
+  /* Check if freeing is in progress */
+  if (s_g_is_freeing) {
+    return false;
+  }
+
+  /* Take mutex to safely read initialized flag */
+  SemaphoreHandle_t mutex = s_g_pin_validator.mutex;
+  if (mutex == NULL) {
+    return false;
+  }
+
+  if (xSemaphoreTake(mutex, pdMS_TO_TICKS(100)) != pdTRUE) {
+    ESP_LOGW(s_TAG, "Failed to acquire mutex for is_initialized check");
+    return false; /* Assume not initialized if can't check safely */
+  }
+
+  /* Re-check mutex validity after acquisition */
+  if (s_g_pin_validator.mutex == NULL || s_g_is_freeing) {
+    xSemaphoreGive(mutex);
+    return false;
+  }
+
+  bool is_init = s_g_pin_validator.initialized;
+  xSemaphoreGive(mutex);
+
+  return is_init;
 }

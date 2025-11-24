@@ -3,12 +3,15 @@
 #ifndef STAR_SENSOR_BNO055_BMP280_H
 #define STAR_SENSOR_BNO055_BMP280_H
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+
 #include <esp_err.h>
 #include <stdbool.h>
 #include <stdint.h>
 
 #include "star_bus_manager.h"
-#include "star_error_handler.h"
+#include "star_error_interface.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -40,22 +43,22 @@ extern "C" {
 #define BMP280_I2C_ADDR (0x76)
 
 typedef enum {
-  BNO055_POWER_MODE_NORMAL = 0x00,
-  BNO055_POWER_MODE_LOW = 0x01,
+  BNO055_POWER_MODE_NORMAL  = 0x00,
+  BNO055_POWER_MODE_LOW     = 0x01,
   BNO055_POWER_MODE_SUSPEND = 0x02,
 } bno055_power_mode_t;
 
 typedef enum {
-  BNO055_OP_MODE_CONFIG = 0x00,
-  BNO055_OP_MODE_ACCONLY = 0x01,
-  BNO055_OP_MODE_MAGONLY = 0x02,
-  BNO055_OP_MODE_GYROONLY = 0x03,
-  BNO055_OP_MODE_ACCMAG = 0x04,
-  BNO055_OP_MODE_ACCGYRO = 0x05,
-  BNO055_OP_MODE_MAGGYRO = 0x06,
-  BNO055_OP_MODE_AMG = 0x07,
+  BNO055_OP_MODE_CONFIG       = 0x00,
+  BNO055_OP_MODE_ACCONLY      = 0x01,
+  BNO055_OP_MODE_MAGONLY      = 0x02,
+  BNO055_OP_MODE_GYROONLY     = 0x03,
+  BNO055_OP_MODE_ACCMAG       = 0x04,
+  BNO055_OP_MODE_ACCGYRO      = 0x05,
+  BNO055_OP_MODE_MAGGYRO      = 0x06,
+  BNO055_OP_MODE_AMG          = 0x07,
   BNO055_OP_MODE_NDOF_FMC_OFF = 0x0B,
-  BNO055_OP_MODE_NDOF = 0x0C,  // 9-DOF sensor fusion
+  BNO055_OP_MODE_NDOF         = 0x0C, // 9-DOF sensor fusion
 } bno055_op_mode_t;
 
 typedef struct {
@@ -72,9 +75,9 @@ typedef struct {
 } quaternion_t;
 
 typedef struct {
-  float heading;  // Yaw (0-359.99°)
-  float roll;     // Roll (-180 to +180°)
-  float pitch;    // Pitch (-90 to +90°)
+  float heading; // Yaw (0-359.99°)
+  float roll;    // Roll (-180 to +180°)
+  float pitch;   // Pitch (-90 to +90°)
 } euler_t;
 
 typedef struct {
@@ -85,17 +88,17 @@ typedef struct {
 } calibration_status_t;
 
 typedef struct {
-  vec3_t         accelerometer;   // m/s² (raw)
-  vec3_t         gyroscope;       // dps (raw)
-  vec3_t         magnetometer;    // μT (raw)
-  vec3_t         linear_accel;    // m/s² (gravity compensated)
-  vec3_t         gravity;         // m/s²
-  quaternion_t   quaternion;      // Unit quaternion
-  euler_t        euler;           // Euler angles
-  int8_t         temperature_c;   // BNO055 temperature
-  float          pressure_pa;     // BMP280 pressure in pascals
-  float          altitude_m;      // Calculated altitude
-  float          bmp_temp_c;      // BMP280 temperature
+  vec3_t               accelerometer; // m/s² (raw)
+  vec3_t               gyroscope;     // dps (raw)
+  vec3_t               magnetometer;  // μT (raw)
+  vec3_t               linear_accel;  // m/s² (gravity compensated)
+  vec3_t               gravity;       // m/s²
+  quaternion_t         quaternion;    // Unit quaternion
+  euler_t              euler;         // Euler angles
+  int8_t               temperature_c; // BNO055 temperature
+  float                pressure_pa;   // BMP280 pressure in pascals
+  float                altitude_m;    // Calculated altitude
+  float                bmp_temp_c;    // BMP280 temperature
   calibration_status_t calibration;
 } imu_10dof_data_t;
 
@@ -107,14 +110,22 @@ typedef struct {
   bno055_op_mode_t    operation_mode;
 } imu_10dof_config_t;
 
+/**
+ * @brief 10-DOF IMU device handle
+ *
+ * Maintains state for BNO055 + BMP280 sensor fusion.
+ * Thread-safe: All operations are protected by an internal mutex.
+ */
 typedef struct imu_10dof_handle {
-  star_bus_manager_t* manager;
-  const char*         bus_name;
-  uint8_t             bno055_addr;
-  uint8_t             bmp280_addr;
-  error_handler_t     error_handler;
-  bool                initialized;
-  bno055_op_mode_t    operation_mode;
+  star_bus_manager_t*     manager;            /**< Pointer to bus manager */
+  const char*             bus_name;           /**< Name of I2C bus */
+  uint8_t                 bno055_addr;        /**< BNO055 I2C address */
+  uint8_t                 bmp280_addr;        /**< BMP280 I2C address */
+  star_error_interface_t* error_iface;        /**< Injected error interface (NULL = default) */
+  SemaphoreHandle_t       mutex;              /**< Mutex for thread-safe operations */
+  bool                    initialized;        /**< Initialization state */
+  bool                    owns_error_handler; /**< True if we created default error handler */
+  bno055_op_mode_t        operation_mode;     /**< BNO055 operation mode */
   // BMP280 calibration data
   uint16_t dig_T1;
   int16_t  dig_T2;
@@ -128,18 +139,28 @@ typedef struct imu_10dof_handle {
   int16_t  dig_P7;
   int16_t  dig_P8;
   int16_t  dig_P9;
-  int32_t  t_fine;  // Temperature compensation value
+  int32_t  t_fine; /**< Temperature compensation value */
 } imu_10dof_handle_t;
 
 /**
- * @brief Initialize 10-DOF IMU
+ * @brief Initialize 10-DOF IMU (BNO055 + BMP280)
  *
- * @param[out] handle Pointer to handle structure
- * @param[in]  config Device configuration
+ * Performs device detection, calibration loading, and initialization.
+ * Thread-safe: Creates an internal mutex for protecting handle state.
+ *
+ * @param[out] handle      Pointer to handle structure (must be allocated by caller)
+ * @param[in]  error_iface Error interface for error handling (NULL = create default internally)
+ * @param[in]  config      Device configuration
  *
  * @return ESP_OK on success, error code otherwise
+ *
+ * @note The handle must be deinitialized with star_sensor_imu_10dof_deinit() when done
+ * @note If error_iface is NULL, a default error handler will be created internally
+ * @note All operations after init are protected by mutex for thread safety
  */
-esp_err_t star_sensor_imu_10dof_init(imu_10dof_handle_t* handle, const imu_10dof_config_t* config);
+esp_err_t star_sensor_imu_10dof_init(imu_10dof_handle_t*       handle,
+                                     star_error_interface_t*   error_iface,
+                                     const imu_10dof_config_t* config);
 
 /**
  * @brief Deinitialize 10-DOF IMU
@@ -169,7 +190,7 @@ esp_err_t star_sensor_imu_10dof_read(const imu_10dof_handle_t* handle, imu_10dof
  * @return ESP_OK on success, error code otherwise
  */
 esp_err_t star_sensor_imu_10dof_get_calibration(const imu_10dof_handle_t* handle,
-                                                 calibration_status_t*     status);
+                                                calibration_status_t*     status);
 
 /**
  * @brief Check if system is fully calibrated

@@ -26,8 +26,8 @@ typedef struct {
   char               bus_name[32];
   star_uart_config_t config;
   star_uart_stats_t  stats;
-  SemaphoreHandle_t  stats_mutex;      /**< Mutex for stats access */
-  SemaphoreHandle_t  ops_mutex;        /**< Mutex for operation access */
+  SemaphoreHandle_t  stats_mutex; /**< Mutex for stats access */
+  SemaphoreHandle_t  ops_mutex;   /**< Mutex for operation access */
   bool               initialized;
   QueueHandle_t      event_queue;
   TaskHandle_t       event_task;
@@ -215,9 +215,9 @@ esp_err_t star_bus_uart_init(star_bus_manager_t*       manager,
     .flow_ctrl           = (uart_hw_flowcontrol_t)config->flow_ctrl,
     .rx_flow_ctrl_thresh = config->rx_thresh,
 #if CONFIG_IDF_TARGET_ESP32
-    .source_clk          = config->use_ref_tick ? UART_SCLK_REF_TICK : UART_SCLK_DEFAULT,
+    .source_clk = config->use_ref_tick ? UART_SCLK_REF_TICK : UART_SCLK_DEFAULT,
 #else
-    .source_clk          = UART_SCLK_DEFAULT,
+    .source_clk = UART_SCLK_DEFAULT,
 #endif
   };
 

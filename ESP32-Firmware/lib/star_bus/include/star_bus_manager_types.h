@@ -32,8 +32,9 @@ typedef struct star_bus_config {
 
   /* Union to hold protocol-specific configuration */
   union {
-    star_i2c_bus_config_t i2c; /**< I2C-specific configuration */
-    star_spi_bus_config_t spi; /**< SPI-specific configuration */
+    star_i2c_bus_config_t  i2c;  /**< I2C-specific configuration */
+    star_spi_bus_config_t  spi;  /**< SPI-specific configuration */
+    star_gpio_bus_config_t gpio; /**< GPIO-specific configuration */
     /* Add other bus types here */
   } proto;
 
@@ -47,9 +48,9 @@ typedef struct star_bus_config {
  * of bus/device configurations.
  */
 typedef struct star_bus_manager {
-  star_bus_config_t* buses;      /**< Linked list head of bus configurations */
-  SemaphoreHandle_t  mutex;      /**< Mutex for thread-safe access to the list */
-  const char*        tag;        /**< Tag used for logging by this manager instance */
+  star_bus_config_t*      buses;       /**< Linked list head of bus configurations */
+  SemaphoreHandle_t       mutex;       /**< Mutex for thread-safe access to the list */
+  const char*             tag;         /**< Tag used for logging by this manager instance */
   star_error_interface_t* error_iface; /**< Error handler interface (injected dependency) */
   star_pin_interface_t*   pin_iface;   /**< Pin validator interface (injected dependency) */
   /* Track initialized SPI hosts and device count per host */

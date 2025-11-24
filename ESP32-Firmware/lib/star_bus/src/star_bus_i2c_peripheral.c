@@ -314,7 +314,10 @@ esp_err_t star_bus_i2c_peripheral_enable(star_bus_manager_t*                 man
   state->enabled = true;
   memset(&state->stats, 0, sizeof(star_i2c_peripheral_stats_t));
 
-  ESP_LOGI(s_TAG, "I2C peripheral enabled on bus '%s' at address 0x%02x", bus_name, config->address);
+  ESP_LOGI(s_TAG,
+           "I2C peripheral enabled on bus '%s' at address 0x%02x",
+           bus_name,
+           config->address);
 
   return ESP_OK;
 }

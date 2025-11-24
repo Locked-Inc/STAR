@@ -5,11 +5,15 @@
 #include <esp_log.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include "star_bus_smbus.h"
+#include "star_error_handler.h"
 
 static const char* s_TAG = "bq7850";
+
+#define BQ7850_MUTEX_TIMEOUT_MS (1000)
 
 /* --- Internal Helper Functions --- */
 
@@ -21,10 +25,10 @@ static const char* s_TAG = "bq7850";
  * 2. Read result from 0x00
  */
 static esp_err_t priv_bq7850_manufacturer_access(star_bus_manager_t* manager,
-                                            const char*         bus_name,
-                                            uint8_t             addr,
-                                            uint16_t            subcmd,
-                                            uint16_t*           result)
+                                                 const char*         bus_name,
+                                                 uint8_t             addr,
+                                                 uint16_t            subcmd,
+                                                 uint16_t*           result)
 {
   esp_err_t ret;
 
@@ -57,10 +61,10 @@ static esp_err_t priv_bq7850_manufacturer_access(star_bus_manager_t* manager,
  * @brief Read cell voltage via manufacturer access subcommand
  */
 static esp_err_t priv_bq7850_read_cell_voltage_internal(star_bus_manager_t* manager,
-                                                   const char*         bus_name,
-                                                   uint8_t             addr,
-                                                   uint8_t             cell_index,
-                                                   uint16_t*           voltage_mv)
+                                                        const char*         bus_name,
+                                                        uint8_t             addr,
+                                                        uint8_t             cell_index,
+                                                        uint16_t*           voltage_mv)
 {
   if (cell_index >= BQ7850_MAX_CELLS) {
     return ESP_ERR_INVALID_ARG;
@@ -72,12 +76,14 @@ static esp_err_t priv_bq7850_read_cell_voltage_internal(star_bus_manager_t* mana
 
 /* --- Core Functions --- */
 
-esp_err_t star_bms_bq7850_init(bq7850_handle_t*       handle,
-                               star_bus_manager_t*    manager,
-                               const char*            bus_name,
-                               const bq7850_config_t* config)
+esp_err_t star_bms_bq7850_init(bq7850_handle_t*        handle,
+                               star_bus_manager_t*     manager,
+                               const char*             bus_name,
+                               star_error_interface_t* error_iface,
+                               const bq7850_config_t*  config)
 {
   if (handle == NULL || manager == NULL || bus_name == NULL || config == NULL) {
+    ESP_LOGE(s_TAG, "NULL parameter in init");
     return ESP_ERR_INVALID_ARG;
   }
 
@@ -96,16 +102,41 @@ esp_err_t star_bms_bq7850_init(bq7850_handle_t*       handle,
   handle->smbus_addr = config->smbus_addr;
   memcpy(&handle->config, config, sizeof(bq7850_config_t));
 
-  /* Initialize error handler with BMS-specific parameters */
-  esp_err_t ret = error_handler_init(&handle->error_handler,
-                                     3,     /* max_retries */
-                                     50,    /* base_retry_delay (ms) - longer for BMS */
-                                     200,   /* max_retry_delay (ms) */
-                                     NULL,  /* no reset function */
-                                     NULL); /* no reset context */
-  if (ret != ESP_OK) {
-    ESP_LOGE(s_TAG, "Failed to initialize error handler: %s", esp_err_to_name(ret));
-    return ret;
+  /* Create mutex first */
+  handle->mutex = xSemaphoreCreateMutex();
+  if (handle->mutex == NULL) {
+    ESP_LOGE(s_TAG, "Failed to create mutex");
+    return ESP_ERR_NO_MEM;
+  }
+
+  /* Handle error interface injection */
+  if (error_iface == NULL) {
+    /* Create default error handler internally */
+    error_handler_t* default_handler = error_handler_create_default();
+    if (default_handler == NULL) {
+      ESP_LOGE(s_TAG, "Failed to create default error handler");
+      vSemaphoreDelete(handle->mutex);
+      handle->mutex = NULL;
+      return ESP_ERR_NO_MEM;
+    }
+
+    /* Allocate and store the interface */
+    handle->error_iface = (star_error_interface_t*)malloc(sizeof(star_error_interface_t));
+    if (handle->error_iface == NULL) {
+      ESP_LOGE(s_TAG, "Failed to allocate error interface");
+      error_handler_destroy_default(default_handler);
+      vSemaphoreDelete(handle->mutex);
+      handle->mutex = NULL;
+      return ESP_ERR_NO_MEM;
+    }
+
+    error_handler_get_interface(handle->error_iface, default_handler);
+    handle->owns_error_handler = true;
+    ESP_LOGI(s_TAG, "Created default error handler internally");
+  } else {
+    handle->error_iface        = error_iface;
+    handle->owns_error_handler = false;
+    ESP_LOGI(s_TAG, "Using injected error interface");
   }
 
   ESP_LOGI(s_TAG,
@@ -114,16 +145,22 @@ esp_err_t star_bms_bq7850_init(bq7850_handle_t*       handle,
            config->smbus_addr);
 
   /* Verify device communication by reading device type */
-  uint16_t device_type = 0;
-  ret                  = priv_bq7850_manufacturer_access(manager,
-                                   bus_name,
-                                   config->smbus_addr,
-                                   BQ7850_SUBCMD_DEVICE_TYPE,
-                                   &device_type);
+  uint16_t  device_type = 0;
+  esp_err_t ret         = priv_bq7850_manufacturer_access(manager,
+                                                  bus_name,
+                                                  config->smbus_addr,
+                                                  BQ7850_SUBCMD_DEVICE_TYPE,
+                                                  &device_type);
 
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to communicate with BQ7850: %s", esp_err_to_name(ret));
-    error_handler_deinit(&handle->error_handler);
+    if (handle->owns_error_handler && handle->error_iface != NULL) {
+      error_handler_t* handler_ptr = (error_handler_t*)handle->error_iface->ctx;
+      error_handler_destroy_default(handler_ptr);
+      free(handle->error_iface);
+    }
+    vSemaphoreDelete(handle->mutex);
+    handle->mutex = NULL;
     return ret;
   }
 
@@ -132,10 +169,10 @@ esp_err_t star_bms_bq7850_init(bq7850_handle_t*       handle,
   /* Read firmware version */
   uint16_t fw_version = 0;
   ret                 = priv_bq7850_manufacturer_access(manager,
-                                   bus_name,
-                                   config->smbus_addr,
-                                   BQ7850_SUBCMD_FW_VERSION,
-                                   &fw_version);
+                                        bus_name,
+                                        config->smbus_addr,
+                                        BQ7850_SUBCMD_FW_VERSION,
+                                        &fw_version);
   if (ret == ESP_OK) {
     ESP_LOGI(s_TAG, "Firmware version: 0x%04X", fw_version);
   }
@@ -145,29 +182,56 @@ esp_err_t star_bms_bq7850_init(bq7850_handle_t*       handle,
   ret = star_smbus_read_word(manager, bus_name, config->smbus_addr, BQ7850_CMD_VOLTAGE, &voltage);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to read pack voltage: %s", esp_err_to_name(ret));
-    error_handler_deinit(&handle->error_handler);
+    if (handle->owns_error_handler && handle->error_iface != NULL) {
+      error_handler_t* handler_ptr = (error_handler_t*)handle->error_iface->ctx;
+      error_handler_destroy_default(handler_ptr);
+      free(handle->error_iface);
+    }
+    vSemaphoreDelete(handle->mutex);
+    handle->mutex = NULL;
     return ret;
   }
 
-  ESP_LOGI(s_TAG, "BQ7850 initialization successful, pack voltage: %d mV", voltage);
+  handle->initialized = true;
+  ESP_LOGI(s_TAG,
+           "BQ7850 initialization successful (thread-safe with mutex), pack voltage: %d mV",
+           voltage);
 
   return ESP_OK;
 }
 
 esp_err_t star_bms_bq7850_deinit(bq7850_handle_t* handle)
 {
-  if (handle == NULL) {
+  if (handle == NULL || !handle->initialized) {
     return ESP_ERR_INVALID_ARG;
   }
 
-  ESP_LOGI(s_TAG, "Deinitializing BQ7850 BMS handle");
+  /* Acquire mutex before cleanup */
+  SemaphoreHandle_t mutex = handle->mutex;
+  if (mutex != NULL && xSemaphoreTake(mutex, pdMS_TO_TICKS(BQ7850_MUTEX_TIMEOUT_MS)) != pdTRUE) {
+    ESP_LOGW(s_TAG, "Failed to acquire mutex for deinit, continuing anyway");
+  }
 
-  /* Deinitialize error handler */
-  error_handler_deinit(&handle->error_handler);
+  /* Clean up error handler if we own it */
+  if (handle->owns_error_handler && handle->error_iface != NULL) {
+    error_handler_t* error_handler = (error_handler_t*)handle->error_iface->ctx;
+    error_handler_destroy_default(error_handler);
+    free(handle->error_iface);
+    handle->error_iface = NULL;
+    ESP_LOGI(s_TAG, "Destroyed internally-owned error handler");
+  }
 
-  /* Clear handle */
-  memset(handle, 0, sizeof(bq7850_handle_t));
+  /* Clear handle fields */
+  handle->initialized = false;
+  handle->mutex       = NULL;
 
+  /* Release and delete mutex */
+  if (mutex != NULL) {
+    xSemaphoreGive(mutex);
+    vSemaphoreDelete(mutex);
+  }
+
+  ESP_LOGI(s_TAG, "BQ7850 BMS deinitialized");
   return ESP_OK;
 }
 
@@ -186,30 +250,30 @@ esp_err_t star_bms_bq7850_get_device_info(const bq7850_handle_t* handle, bq7850_
 
   /* Read device type */
   ret = priv_bq7850_manufacturer_access(manager,
-                                   bus_name,
-                                   addr,
-                                   BQ7850_SUBCMD_DEVICE_TYPE,
-                                   &info->device_type);
+                                        bus_name,
+                                        addr,
+                                        BQ7850_SUBCMD_DEVICE_TYPE,
+                                        &info->device_type);
   if (ret != ESP_OK) {
     return ret;
   }
 
   /* Read firmware version */
   ret = priv_bq7850_manufacturer_access(manager,
-                                   bus_name,
-                                   addr,
-                                   BQ7850_SUBCMD_FW_VERSION,
-                                   &info->fw_version);
+                                        bus_name,
+                                        addr,
+                                        BQ7850_SUBCMD_FW_VERSION,
+                                        &info->fw_version);
   if (ret != ESP_OK) {
     return ret;
   }
 
   /* Read hardware version */
   ret = priv_bq7850_manufacturer_access(manager,
-                                   bus_name,
-                                   addr,
-                                   BQ7850_SUBCMD_HW_VERSION,
-                                   &info->hw_version);
+                                        bus_name,
+                                        addr,
+                                        BQ7850_SUBCMD_HW_VERSION,
+                                        &info->hw_version);
   if (ret != ESP_OK) {
     return ret;
   }
@@ -276,10 +340,10 @@ esp_err_t star_bms_bq7850_reset(const bq7850_handle_t* handle)
   ESP_LOGW(s_TAG, "Issuing software reset to BQ7850");
 
   esp_err_t ret = priv_bq7850_manufacturer_access(handle->manager,
-                                             handle->bus_name,
-                                             handle->smbus_addr,
-                                             BQ7850_SUBCMD_DEVICE_RESET,
-                                             NULL);
+                                                  handle->bus_name,
+                                                  handle->smbus_addr,
+                                                  BQ7850_SUBCMD_DEVICE_RESET,
+                                                  NULL);
 
   if (ret == ESP_OK) {
     /* Device takes ~1 second to reset */
@@ -307,7 +371,8 @@ esp_err_t star_bms_bq7850_read_cells(const bq7850_handle_t* handle, bq7850_cell_
 
   /* Read individual cell voltages */
   for (uint8_t i = 0; i < BQ7850_MAX_CELLS; i++) {
-    ret = priv_bq7850_read_cell_voltage_internal(manager, bus_name, addr, i, &cell_data->cell_mv[i]);
+    ret =
+      priv_bq7850_read_cell_voltage_internal(manager, bus_name, addr, i, &cell_data->cell_mv[i]);
 
     if (ret == ESP_OK && cell_data->cell_mv[i] > 0) {
       cell_data->valid_cells++;
@@ -339,10 +404,10 @@ esp_err_t star_bms_bq7850_read_cell_voltage(const bq7850_handle_t* handle,
   }
 
   return priv_bq7850_read_cell_voltage_internal(handle->manager,
-                                           handle->bus_name,
-                                           handle->smbus_addr,
-                                           cell_index,
-                                           voltage_mv);
+                                                handle->bus_name,
+                                                handle->smbus_addr,
+                                                cell_index,
+                                                voltage_mv);
 }
 
 esp_err_t star_bms_bq7850_read_pack_voltage(const bq7850_handle_t* handle, uint16_t* voltage_mv)
@@ -692,28 +757,28 @@ esp_err_t star_bms_bq7850_read_protection(const bq7850_handle_t* handle,
 
   /* Read protection thresholds via manufacturer access */
   ret = priv_bq7850_manufacturer_access(manager,
-                                   bus_name,
-                                   addr,
-                                   BQ7850_SUBCMD_PROTECTION_OV_THRESH,
-                                   &protection->overvoltage_mv);
+                                        bus_name,
+                                        addr,
+                                        BQ7850_SUBCMD_PROTECTION_OV_THRESH,
+                                        &protection->overvoltage_mv);
   if (ret != ESP_OK) {
     ESP_LOGW(s_TAG, "Failed to read OV threshold: %s", esp_err_to_name(ret));
   }
 
   ret = priv_bq7850_manufacturer_access(manager,
-                                   bus_name,
-                                   addr,
-                                   BQ7850_SUBCMD_PROTECTION_UV_THRESH,
-                                   &protection->undervoltage_mv);
+                                        bus_name,
+                                        addr,
+                                        BQ7850_SUBCMD_PROTECTION_UV_THRESH,
+                                        &protection->undervoltage_mv);
   if (ret != ESP_OK) {
     ESP_LOGW(s_TAG, "Failed to read UV threshold: %s", esp_err_to_name(ret));
   }
 
   ret = priv_bq7850_manufacturer_access(manager,
-                                   bus_name,
-                                   addr,
-                                   BQ7850_SUBCMD_PROTECTION_OC_THRESH,
-                                   &protection->overcharge_ma);
+                                        bus_name,
+                                        addr,
+                                        BQ7850_SUBCMD_PROTECTION_OC_THRESH,
+                                        &protection->overcharge_ma);
   if (ret != ESP_OK) {
     ESP_LOGW(s_TAG, "Failed to read OC threshold: %s", esp_err_to_name(ret));
   }
@@ -736,8 +801,11 @@ esp_err_t star_bms_bq7850_write_protection(const bq7850_handle_t*     handle,
   ESP_LOGW(s_TAG, "Writing protection thresholds (device must be unsealed)");
 
   /* Write protection thresholds via manufacturer access */
-  ret =
-    priv_bq7850_manufacturer_access(manager, bus_name, addr, BQ7850_SUBCMD_PROTECTION_OV_THRESH, NULL);
+  ret = priv_bq7850_manufacturer_access(manager,
+                                        bus_name,
+                                        addr,
+                                        BQ7850_SUBCMD_PROTECTION_OV_THRESH,
+                                        NULL);
   if (ret == ESP_OK) {
     ret = star_smbus_write_word(manager,
                                 bus_name,

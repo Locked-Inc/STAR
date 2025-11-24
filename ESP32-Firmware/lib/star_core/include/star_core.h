@@ -48,8 +48,7 @@ static inline bool star_pin_interface_is_valid(const star_pin_interface_t* iface
  * @brief Convenience macro to check if retry is possible through interface
  * Returns false if interface is NULL or invalid
  */
-#define STAR_IFACE_CAN_RETRY(iface)                                                                \
-  ((iface)->can_retry ? (iface)->can_retry((iface)->ctx) : false)
+#define STAR_IFACE_CAN_RETRY(iface) ((iface)->can_retry ? (iface)->can_retry((iface)->ctx) : false)
 
 /**
  * @brief Convenience macro to reset error state through interface
@@ -63,16 +62,14 @@ static inline bool star_pin_interface_is_valid(const star_pin_interface_t* iface
  * Returns ESP_OK if interface is NULL (no-op)
  */
 #define STAR_IFACE_REGISTER_PIN(iface, pin, desc, shared)                                          \
-  ((iface)->register_pin ? (iface)->register_pin((iface)->ctx, (pin), (desc), (shared))             \
-                         : ESP_OK)
+  ((iface)->register_pin ? (iface)->register_pin((iface)->ctx, (pin), (desc), (shared)) : ESP_OK)
 
 /**
  * @brief Convenience macro to unregister a pin through interface
  * Returns ESP_OK if interface is NULL (no-op)
  */
 #define STAR_IFACE_UNREGISTER_PIN(iface, pin, desc)                                                \
-  ((iface)->unregister_pin ? (iface)->unregister_pin((iface)->ctx, (pin), (desc))                   \
-                           : ESP_OK)
+  ((iface)->unregister_pin ? (iface)->unregister_pin((iface)->ctx, (pin), (desc)) : ESP_OK)
 
 /**
  * @brief Convenience macro to validate pins through interface
