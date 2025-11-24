@@ -130,12 +130,66 @@ typedef struct star_gpio_ops {
  * a traditional communication bus (I2C/SPI).
  */
 typedef struct star_gpio_bus_config {
-  gpio_num_t            pins[8];       /**< Array of GPIO pins managed by this bus (up to 8) */
+  gpio_num_t*           pins;          /**< Dynamically allocated array of GPIO pins */
   uint8_t               pin_count;     /**< Number of pins in use */
   star_gpio_callbacks_t callbacks;     /**< User-provided callback functions */
   star_gpio_ops_t       ops;           /**< Operation function pointers (defaults provided) */
   bool                  isr_installed; /**< True if ISR service is installed */
 } star_gpio_bus_config_t;
+
+/**
+ * @brief DHT22 sensor model enumeration
+ */
+typedef enum {
+  k_star_dht22_model_dht22  = 0, /**< DHT22/AM2302 (default) */
+  k_star_dht22_model_dht11  = 1, /**< DHT11 (lower precision) */
+  k_star_dht22_model_am2301 = 2, /**< AM2301 (wired version) */
+} star_dht22_model_t;
+
+/* Forward declarations for DHT22 types */
+struct star_dht22_data;
+
+/**
+ * @brief DHT22 callback functions structure.
+ */
+typedef struct star_dht22_callbacks {
+  void (*on_read_complete)(const char*                   bus_name,
+                           const struct star_dht22_data* data,
+                           void* ctx); /**< Optional: Called after successful read */
+  void (*on_error)(const char* bus_name,
+                   esp_err_t   error,
+                   void*       ctx); /**< Optional: Called on read error */
+} star_dht22_callbacks_t;
+
+/**
+ * @brief DHT22 operation functions structure.
+ */
+typedef struct star_dht22_ops {
+  esp_err_t (*read)(const struct star_bus_config* config,
+                    struct star_dht22_data*       data); /**< Read function pointer */
+} star_dht22_ops_t;
+
+/**
+ * @brief DHT22 bus configuration structure (part of star_bus_config_t).
+ *
+ * Manages a DHT22/DHT11/AM2301 temperature and humidity sensor using
+ * a proprietary single-wire protocol. This protocol is NOT compatible
+ * with Dallas 1-Wire.
+ *
+ * Protocol characteristics:
+ * - Single bidirectional data line
+ * - Host-initiated communication
+ * - 40-bit data format (16-bit humidity + 16-bit temp + 8-bit checksum)
+ * - Minimum 2 seconds between readings
+ */
+typedef struct star_dht22_bus_config {
+  gpio_num_t             gpio_pin;        /**< GPIO pin for data line */
+  star_dht22_model_t     model;           /**< Sensor model (DHT22, DHT11, AM2301) */
+  uint32_t               start_low_ms;    /**< Start signal low duration (ms), default 18 */
+  uint32_t               read_timeout_ms; /**< Read timeout (ms), default 100 */
+  star_dht22_callbacks_t callbacks;       /**< User-provided callback functions */
+  star_dht22_ops_t       ops;             /**< Operation function pointers (defaults provided) */
+} star_dht22_bus_config_t;
 
 #ifdef __cplusplus
 }
