@@ -228,6 +228,86 @@
   "erc": {
     "erc_exclusions": [
       [
+        "footprint_link_issues|3657600|1320800|d7ce3d8c-d5a4-458d-9bde-2bfdec870d19|00000000-0000-0000-0000-000000000000|||",
+        ""
+      ],
+      [
+        "footprint_link_issues|3657600|1473200|13a49d6a-05de-4bbf-8692-8ccd6c079806|00000000-0000-0000-0000-000000000000|||",
+        ""
+      ],
+      [
+        "lib_symbol_issues|1041400|1231900|47d7623c-3440-464a-babb-bb25826d34d7|00000000-0000-0000-0000-000000000000|||",
+        ""
+      ],
+      [
+        "lib_symbol_issues|1041400|723900|7711a5b4-31c4-4ff3-acda-c72b48be209c|00000000-0000-0000-0000-000000000000|||",
+        ""
+      ],
+      [
+        "lib_symbol_issues|1041400|977900|cea6ea57-36ea-4feb-92cd-1c99f59f88ed|00000000-0000-0000-0000-000000000000|||",
+        ""
+      ],
+      [
+        "lib_symbol_issues|1206500|1092200|bc46cd12-deb5-44a4-b274-527b8fdd94d2|00000000-0000-0000-0000-000000000000|||",
+        ""
+      ],
+      [
+        "lib_symbol_issues|1206500|1346200|356e9021-4b0b-4a58-9f87-5dc2a3805de0|00000000-0000-0000-0000-000000000000|||",
+        ""
+      ],
+      [
+        "lib_symbol_issues|1206500|838200|d64ae54f-705f-40c2-9d30-24d6317dcb51|00000000-0000-0000-0000-000000000000|||",
+        ""
+      ],
+      [
+        "lib_symbol_issues|1422400|533400|878dd720-9fe4-4d01-b45c-28632a2cf0e8|00000000-0000-0000-0000-000000000000|||",
+        ""
+      ],
+      [
+        "lib_symbol_issues|2781300|876300|3e7d8225-5c20-4030-be9a-7f455c6929d2|00000000-0000-0000-0000-000000000000|||",
+        ""
+      ],
+      [
+        "lib_symbol_mismatch|1371600|2019300|92fc9c1f-e758-467f-9e1a-1f7f87bd9fdb|00000000-0000-0000-0000-000000000000|||",
+        ""
+      ],
+      [
+        "lib_symbol_mismatch|3048000|2019300|6ebbedde-21b2-4720-b141-64510eec7290|00000000-0000-0000-0000-000000000000|||",
+        ""
+      ],
+      [
+        "lib_symbol_mismatch|3327400|2146300|ba7ab5bd-23ca-4ff7-8a14-a6e0a771e5c8|00000000-0000-0000-0000-000000000000|||",
+        ""
+      ],
+      [
+        "lib_symbol_mismatch|3327400|2336800|f26b57dd-0110-4f67-ba43-e09f71dea257|00000000-0000-0000-0000-000000000000|||",
+        ""
+      ],
+      [
+        "multiple_net_names|1816100|1638300|1550d2e6-4d3e-456e-bdf4-9a0bcb64c43c|b414fdb0-1c8c-4b8d-8971-33101a1ff500|/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b|/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b|/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b",
+        ""
+      ],
+      [
+        "multiple_net_names|2032000|711200|a9e973a5-e1e5-4919-8245-1a5ecb81f52f|261d8062-9853-463b-b873-b0b675917822|/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b|/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b|/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b",
+        ""
+      ],
+      [
+        "multiple_net_names|2159000|1638300|c08cafd5-dfbc-4e3c-bf9c-485bb4f1c5ae|4775cf6a-f5fb-4fd9-8dff-c33a2244f5a3|/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b|/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b|/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b",
+        ""
+      ],
+      [
+        "multiple_net_names|2997200|2171700|aa9e1ebb-834e-42e7-a246-1e94b64fd8f1|5b6b450d-58f3-40c1-bc3d-96550b2b9db1|/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b|/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b|/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b",
+        ""
+      ],
+      [
+        "multiple_net_names|3048000|2362200|48e172dc-2fe1-42d1-aaed-88098a21718e|5576fde8-abc4-4fb3-823f-242a65568dbc|/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b|/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b|/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b",
+        ""
+      ],
+      [
+        "multiple_net_names|3314700|1473200|4a47a35e-8cb7-4f85-abdb-c3bd1152c724|907326fd-f963-479f-be77-cceac3df1c06|/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b|/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b|/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b",
+        ""
+      ],
+      [
         "pin_to_pin|2387600|1841500|5efc83ea-6794-4cc9-802b-6d94f9598d18|2410ae59-cd75-4f9d-9afc-4f9ec7ed588d|/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b|/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b|/83b158e3-f3a2-4f7d-a64a-cfcc36efd74b",
         ""
       ],
@@ -512,7 +592,7 @@
         "line_style": 0,
         "name": "C0-2",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 1,
+        "priority": 2,
         "schematic_color": "rgb(222, 143, 0)",
         "wire_width": 6
       },
@@ -521,7 +601,7 @@
         "line_style": 0,
         "name": "FUEL GAUGE",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 3,
+        "priority": 4,
         "schematic_color": "rgb(186, 0, 255)",
         "wire_width": 6
       },
@@ -530,7 +610,7 @@
         "line_style": 0,
         "name": "GATE",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 2,
+        "priority": 3,
         "schematic_color": "rgb(38, 194, 203)",
         "wire_width": 6
       },
@@ -539,7 +619,7 @@
         "line_style": 0,
         "name": "GND",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 7,
+        "priority": 8,
         "schematic_color": "rgb(0, 0, 0)",
         "wire_width": 6
       },
@@ -548,7 +628,7 @@
         "line_style": 0,
         "name": "REGSRC",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 4,
+        "priority": 5,
         "schematic_color": "rgb(76, 79, 255)",
         "wire_width": 6
       },
@@ -557,7 +637,7 @@
         "line_style": 0,
         "name": "SRN",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 5,
+        "priority": 6,
         "schematic_color": "rgb(255, 46, 44)",
         "wire_width": 6
       },
@@ -566,8 +646,16 @@
         "line_style": 0,
         "name": "SRP",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 6,
+        "priority": 7,
         "schematic_color": "rgb(34, 190, 28)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "name": "TS1",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 0,
+        "schematic_color": "rgb(96, 123, 97)",
         "wire_width": 6
       },
       {
@@ -575,7 +663,7 @@
         "line_style": 0,
         "name": "VC",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 0,
+        "priority": 1,
         "schematic_color": "rgb(150, 0, 147)",
         "wire_width": 6
       }
@@ -635,7 +723,7 @@
         "pattern": "/V*"
       },
       {
-        "netclass": "C0-2",
+        "netclass": "TS1",
         "pattern": "/TS1"
       }
     ]
