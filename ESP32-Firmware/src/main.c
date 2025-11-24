@@ -32,7 +32,7 @@ static const char* s_DHT22TAG = "DHT22";
 void app_main(void)
 {
   /* I am using 2 HC-SR04 Sensors, one for "Left" and one for "Right", in the actual project, we will have 7.
-     * This is a POC for a software demo. For accurate data collection, speed of light needs sound correction.
+     * This is a POC for a software demo. For accurate data collection, speed of sound needs correction with temperature.
      * In this example a DHT-22 will be used. However, for the actual project <TBD: TODO, find a sensor> will be used>.
      */
 
