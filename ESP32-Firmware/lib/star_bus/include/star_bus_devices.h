@@ -19,6 +19,171 @@ extern "C" {
  * This module provides high-level APIs for interacting with common I2C sensors
  * and peripherals. All functions use the star_bus_manager to communicate with
  * devices by their configured bus name.
+ *
+ * Example Usage:
+ * @code
+ * // === BMP280 Pressure/Temperature Sensor ===
+ *
+ * #include "star_bus_devices.h"
+ * #include "star_bus_manager.h"
+ *
+ * // Create I2C bus for BMP280
+ * star_bus_config_t* bmp_bus = star_bus_config_create_i2c(
+ *     "bmp280", I2C_NUM_0, BMP280_DEFAULT_ADDR,
+ *     GPIO_NUM_21, GPIO_NUM_22, 400000);
+ * star_bus_manager_add_bus(&bus_manager, bmp_bus);
+ *
+ * // Initialize BMP280 (reads calibration data)
+ * bmp280_config_t bmp_config = {0};
+ * esp_err_t ret = star_bus_bmp280_init(&bus_manager, "bmp280", &bmp_config);
+ *
+ * // Configure oversampling and mode
+ * bmp_config.oversampling_temp = 2;  // x2 oversampling
+ * bmp_config.oversampling_pres = 4;  // x8 oversampling
+ * bmp_config.mode = 3;               // Normal mode
+ * star_bus_bmp280_configure(&bus_manager, "bmp280", &bmp_config);
+ *
+ * // Read temperature and pressure
+ * float temperature, pressure;
+ * star_bus_bmp280_read_temperature(&bus_manager, "bmp280", &bmp_config, &temperature);
+ * star_bus_bmp280_read_pressure(&bus_manager, "bmp280", &bmp_config, &pressure);
+ * ESP_LOGI(TAG, "Temp: %.2f C, Pressure: %.2f Pa", temperature, pressure);
+ *
+ *
+ * // === MPU6050 6-Axis IMU ===
+ *
+ * // Create I2C bus for MPU6050
+ * star_bus_config_t* imu_bus = star_bus_config_create_i2c(
+ *     "mpu6050", I2C_NUM_0, MPU6050_DEFAULT_ADDR,
+ *     GPIO_NUM_21, GPIO_NUM_22, 400000);
+ * star_bus_manager_add_bus(&bus_manager, imu_bus);
+ *
+ * // Initialize MPU6050
+ * ret = star_bus_mpu6050_init(&bus_manager, "mpu6050");
+ *
+ * // Configure ranges
+ * mpu6050_config_t mpu_config = {
+ *     .accel_range = 1,      // +/- 4g
+ *     .gyro_range = 1,       // +/- 500 deg/s
+ *     .dlpf_mode = 3,        // Low-pass filter
+ *     .sample_rate_div = 9   // 100Hz sample rate
+ * };
+ * star_bus_mpu6050_configure(&bus_manager, "mpu6050", &mpu_config);
+ *
+ * // Read all sensor data
+ * mpu6050_data_t mpu_data;
+ * star_bus_mpu6050_read_all(&bus_manager, "mpu6050", &mpu_data);
+ * ESP_LOGI(TAG, "Accel: X=%d Y=%d Z=%d", mpu_data.accel_x, mpu_data.accel_y, mpu_data.accel_z);
+ * ESP_LOGI(TAG, "Gyro: X=%d Y=%d Z=%d", mpu_data.gyro_x, mpu_data.gyro_y, mpu_data.gyro_z);
+ *
+ *
+ * // === SSD1306 OLED Display ===
+ *
+ * // Create I2C bus for OLED
+ * star_bus_config_t* oled_bus = star_bus_config_create_i2c(
+ *     "oled", I2C_NUM_0, SSD1306_DEFAULT_ADDR,
+ *     GPIO_NUM_21, GPIO_NUM_22, 400000);
+ * star_bus_manager_add_bus(&bus_manager, oled_bus);
+ *
+ * // Initialize 128x64 OLED
+ * star_bus_ssd1306_init(&bus_manager, "oled", 128, 64);
+ *
+ * // Clear display
+ * star_bus_ssd1306_clear(&bus_manager, "oled");
+ *
+ * // Update display with framebuffer
+ * uint8_t framebuffer[128 * 64 / 8];  // 1 bit per pixel
+ * memset(framebuffer, 0xFF, sizeof(framebuffer));  // All pixels on
+ * star_bus_ssd1306_update(&bus_manager, "oled", framebuffer, sizeof(framebuffer));
+ *
+ *
+ * // === ADS1115 16-bit ADC ===
+ *
+ * star_bus_config_t* adc_bus = star_bus_config_create_i2c(
+ *     "adc", I2C_NUM_0, ADS1115_DEFAULT_ADDR,
+ *     GPIO_NUM_21, GPIO_NUM_22, 400000);
+ * star_bus_manager_add_bus(&bus_manager, adc_bus);
+ *
+ * star_bus_ads1115_init(&bus_manager, "adc");
+ *
+ * // Configure for single-ended input on AIN0, +/- 4.096V range
+ * ads1115_config_t adc_config = {
+ *     .mux = 4,        // AIN0 vs GND
+ *     .gain = 1,       // +/- 4.096V
+ *     .mode = 1,       // Single-shot
+ *     .data_rate = 4   // 128 SPS
+ * };
+ * star_bus_ads1115_configure(&bus_manager, "adc", &adc_config);
+ *
+ * // Read conversion
+ * int16_t adc_value;
+ * star_bus_ads1115_read(&bus_manager, "adc", &adc_value);
+ * float voltage = (adc_value / 32768.0f) * 4.096f;
+ * ESP_LOGI(TAG, "ADC: %d (%.3f V)", adc_value, voltage);
+ *
+ *
+ * // === PCF8574 I/O Expander ===
+ *
+ * star_bus_config_t* io_bus = star_bus_config_create_i2c(
+ *     "io_expander", I2C_NUM_0, PCF8574_DEFAULT_ADDR,
+ *     GPIO_NUM_21, GPIO_NUM_22, 100000);
+ * star_bus_manager_add_bus(&bus_manager, io_bus);
+ *
+ * // Write outputs (0 = low, 1 = high/input)
+ * star_bus_pcf8574_write(&bus_manager, "io_expander", 0xF0);  // Lower 4 low, upper 4 high
+ *
+ * // Read inputs
+ * uint8_t inputs;
+ * star_bus_pcf8574_read(&bus_manager, "io_expander", &inputs);
+ * ESP_LOGI(TAG, "IO state: 0x%02X", inputs);
+ *
+ *
+ * // === AT24C256 EEPROM ===
+ *
+ * star_bus_config_t* eeprom_bus = star_bus_config_create_i2c(
+ *     "eeprom", I2C_NUM_0, AT24C256_DEFAULT_ADDR,
+ *     GPIO_NUM_21, GPIO_NUM_22, 100000);
+ * star_bus_manager_add_bus(&bus_manager, eeprom_bus);
+ *
+ * // Write data to EEPROM
+ * uint8_t write_data[] = {0x12, 0x34, 0x56, 0x78};
+ * star_bus_at24c256_write(&bus_manager, "eeprom", 0x0000, write_data, sizeof(write_data));
+ * vTaskDelay(pdMS_TO_TICKS(10));  // Write cycle time
+ *
+ * // Read data from EEPROM
+ * uint8_t read_data[4];
+ * star_bus_at24c256_read(&bus_manager, "eeprom", 0x0000, read_data, sizeof(read_data));
+ *
+ *
+ * // === DS3231 RTC ===
+ *
+ * star_bus_config_t* rtc_bus = star_bus_config_create_i2c(
+ *     "rtc", I2C_NUM_0, DS3231_DEFAULT_ADDR,
+ *     GPIO_NUM_21, GPIO_NUM_22, 100000);
+ * star_bus_manager_add_bus(&bus_manager, rtc_bus);
+ *
+ * star_bus_ds3231_init(&bus_manager, "rtc");
+ *
+ * // Set time
+ * ds3231_time_t set_time = {
+ *     .year = 24, .month = 6, .date = 15,
+ *     .day = 6,   // Saturday
+ *     .hour = 14, .minute = 30, .second = 0
+ * };
+ * star_bus_ds3231_set_time(&bus_manager, "rtc", &set_time);
+ *
+ * // Read time
+ * ds3231_time_t read_time;
+ * star_bus_ds3231_get_time(&bus_manager, "rtc", &read_time);
+ * ESP_LOGI(TAG, "Time: 20%02d-%02d-%02d %02d:%02d:%02d",
+ *          read_time.year, read_time.month, read_time.date,
+ *          read_time.hour, read_time.minute, read_time.second);
+ *
+ * // Read temperature from RTC's internal sensor
+ * float rtc_temp;
+ * star_bus_ds3231_get_temperature(&bus_manager, "rtc", &rtc_temp);
+ * ESP_LOGI(TAG, "RTC temperature: %.2f C", rtc_temp);
+ * @endcode
  */
 
 /* --- BMP280 Pressure/Temperature Sensor --- */

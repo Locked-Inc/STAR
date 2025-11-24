@@ -35,6 +35,138 @@ extern "C" {
  * - Debugging communication issues
  * - Quality assurance testing
  * - Resource usage analysis
+ *
+ * Example Usage:
+ * @code
+ * // === Enable Statistics Collection ===
+ *
+ * #include "star_bus_stats.h"
+ * #include "star_bus_manager.h"
+ *
+ * // Enable stats with default config
+ * star_stats_config_t stats_cfg = STAR_STATS_CONFIG_DEFAULT();
+ * esp_err_t ret = star_bus_stats_enable(&bus_manager, "imu_i2c", &stats_cfg);
+ * if (ret == ESP_OK) {
+ *     ESP_LOGI(TAG, "Statistics collection enabled");
+ * }
+ *
+ * // Enable with minimal config (counters only, less overhead)
+ * star_stats_config_t minimal_cfg = STAR_STATS_CONFIG_MINIMAL();
+ * star_bus_stats_enable(&bus_manager, "sensor_i2c", &minimal_cfg);
+ *
+ *
+ * // === Get Current Statistics ===
+ *
+ * star_bus_stats_t stats;
+ * ret = star_bus_stats_get(&bus_manager, "imu_i2c", &stats);
+ * if (ret == ESP_OK) {
+ *     ESP_LOGI(TAG, "Total operations: %llu", stats.total_operations);
+ *     ESP_LOGI(TAG, "Reads: %llu, Writes: %llu", stats.read_operations, stats.write_operations);
+ *     ESP_LOGI(TAG, "Bytes read: %llu, written: %llu", stats.bytes_read, stats.bytes_written);
+ *     ESP_LOGI(TAG, "Failed: %llu", stats.failed_operations);
+ *     ESP_LOGI(TAG, "Timing (us): min=%lu, max=%lu, avg=%lu",
+ *              stats.min_operation_time_us, stats.max_operation_time_us, stats.avg_operation_time_us);
+ * }
+ *
+ *
+ * // === Analyze Statistics ===
+ *
+ * // Calculate error rate
+ * float error_rate = star_bus_stats_error_rate(&stats);
+ * ESP_LOGI(TAG, "Error rate: %.2f%%", error_rate);
+ *
+ * // Calculate bus utilization
+ * float utilization = star_bus_stats_utilization(&stats);
+ * ESP_LOGI(TAG, "Bus utilization: %.2f%%", utilization);
+ *
+ * // Calculate throughput
+ * uint32_t throughput = star_bus_stats_throughput(&stats);
+ * ESP_LOGI(TAG, "Throughput: %lu bytes/sec", throughput);
+ *
+ * // Calculate operations per second
+ * uint32_t ops_sec = star_bus_stats_ops_per_second(&stats);
+ * ESP_LOGI(TAG, "Operations: %lu ops/sec", ops_sec);
+ *
+ *
+ * // === Snapshot for Differential Analysis ===
+ *
+ * // Take snapshot before test
+ * star_stats_snapshot_t snapshot;
+ * star_bus_stats_snapshot(&bus_manager, "imu_i2c", &snapshot);
+ *
+ * // Run some operations...
+ * for (int i = 0; i < 1000; i++) {
+ *     star_bus_i2c_read(&bus_manager, "imu_i2c", buffer, 6, 0x3B, NULL);
+ * }
+ *
+ * // Calculate difference
+ * star_bus_stats_t diff;
+ * star_bus_stats_diff(&bus_manager, "imu_i2c", &snapshot, &diff);
+ *
+ * ESP_LOGI(TAG, "Test results: %llu ops, %llu bytes, avg %lu us",
+ *          diff.total_operations, diff.bytes_read, diff.avg_operation_time_us);
+ *
+ *
+ * // === Reset Statistics ===
+ *
+ * // Reset single bus
+ * star_bus_stats_reset(&bus_manager, "imu_i2c");
+ *
+ * // Reset all buses
+ * star_bus_stats_reset_all(&bus_manager);
+ *
+ *
+ * // === Print Statistics ===
+ *
+ * // Print stats for one bus
+ * star_bus_stats_get(&bus_manager, "imu_i2c", &stats);
+ * star_bus_stats_print("imu_i2c", &stats);
+ *
+ * // Print stats for all buses
+ * star_bus_stats_print_all(&bus_manager);
+ *
+ *
+ * // === Export as JSON ===
+ *
+ * char json_buffer[512];
+ * ret = star_bus_stats_to_json(&stats, json_buffer, sizeof(json_buffer));
+ * if (ret == ESP_OK) {
+ *     ESP_LOGI(TAG, "Stats JSON: %s", json_buffer);
+ *     // Send to server, save to file, etc.
+ * }
+ *
+ *
+ * // === Periodic Monitoring Task ===
+ *
+ * void stats_monitor_task(void* arg) {
+ *     star_bus_manager_t* manager = (star_bus_manager_t*)arg;
+ *
+ *     while (1) {
+ *         star_bus_stats_t stats;
+ *         if (star_bus_stats_get(manager, "imu_i2c", &stats) == ESP_OK) {
+ *             float error_rate = star_bus_stats_error_rate(&stats);
+ *             if (error_rate > 5.0f) {
+ *                 ESP_LOGW(TAG, "High error rate: %.2f%%", error_rate);
+ *             }
+ *         }
+ *         vTaskDelay(pdMS_TO_TICKS(10000));  // Check every 10 seconds
+ *     }
+ * }
+ *
+ *
+ * // === Check if Statistics Enabled ===
+ *
+ * bool enabled;
+ * star_bus_stats_is_enabled(&bus_manager, "imu_i2c", &enabled);
+ * if (enabled) {
+ *     ESP_LOGI(TAG, "Stats collection is active");
+ * }
+ *
+ *
+ * // === Disable Statistics ===
+ *
+ * star_bus_stats_disable(&bus_manager, "imu_i2c");
+ * @endcode
  */
 
 /* --- Types --- */

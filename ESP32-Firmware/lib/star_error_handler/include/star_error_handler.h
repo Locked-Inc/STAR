@@ -13,6 +13,120 @@
 extern "C" {
 #endif
 
+/**
+ * @file star_error_handler.h
+ * @brief Error handling with retry logic and exponential backoff
+ *
+ * This module provides a concrete implementation of the error interface with
+ * automatic retry management, exponential backoff delays, and optional reset
+ * function callbacks. It's designed for robust error recovery in embedded systems.
+ *
+ * Key Features:
+ * - Configurable max retries and backoff delays
+ * - Exponential backoff between retries
+ * - Optional custom reset function for recovery
+ * - Thread-safe with mutex protection
+ * - Can be wrapped in star_error_interface_t for dependency injection
+ *
+ * Example Usage:
+ * @code
+ * // === Basic Error Handler ===
+ *
+ * #include "star_error_handler.h"
+ *
+ * // Create error handler with custom parameters
+ * error_handler_t error_handler;
+ * esp_err_t ret = error_handler_init(
+ *     &error_handler,
+ *     3,       // max_retries: 3 attempts before giving up
+ *     100,     // base_retry_delay: 100ms initial delay
+ *     5000,    // max_retry_delay: 5 second maximum delay
+ *     NULL,    // reset_fn: no custom reset function
+ *     NULL     // reset_context: no context needed
+ * );
+ *
+ * // Use the RECORD_ERROR macro for convenient error logging
+ * if (i2c_operation() != ESP_OK) {
+ *     RECORD_ERROR(&error_handler, ESP_ERR_TIMEOUT, "I2C timeout");
+ * }
+ *
+ * // Check if retry is possible
+ * while (error_handler_can_retry(&error_handler)) {
+ *     if (i2c_operation() == ESP_OK) {
+ *         error_handler_reset_state(&error_handler);  // Success! Clear error state
+ *         break;
+ *     }
+ *     RECORD_ERROR(&error_handler, ESP_ERR_TIMEOUT, "I2C retry failed");
+ * }
+ *
+ * // Cleanup
+ * error_handler_deinit(&error_handler);
+ *
+ *
+ * // === With Custom Reset Function ===
+ *
+ * // Define a reset function for recovery
+ * esp_err_t my_reset_function(void* context) {
+ *     my_device_t* device = (my_device_t*)context;
+ *     ESP_LOGI(TAG, "Resetting device...");
+ *     return device_hard_reset(device);
+ * }
+ *
+ * my_device_t my_device;
+ * error_handler_t handler_with_reset;
+ * error_handler_init(
+ *     &handler_with_reset,
+ *     5,        // 5 retries
+ *     200,      // 200ms base delay
+ *     10000,    // 10 second max delay
+ *     my_reset_function,
+ *     &my_device
+ * );
+ *
+ * // When error is recorded, reset function is called automatically
+ * RECORD_ERROR(&handler_with_reset, ESP_FAIL, "Device communication failed");
+ *
+ *
+ * // === Using Default Error Handler (Simplified) ===
+ *
+ * // Create with sensible defaults (3 retries, 100ms base, 5000ms max)
+ * error_handler_t* default_handler = error_handler_create_default();
+ * if (default_handler != NULL) {
+ *     // Use the handler...
+ *     RECORD_ERROR(default_handler, ESP_ERR_INVALID_STATE, "Unexpected state");
+ *
+ *     // Destroy when done
+ *     error_handler_destroy_default(default_handler);
+ * }
+ *
+ *
+ * // === Creating Interface for Dependency Injection ===
+ *
+ * // Create error handler
+ * error_handler_t error_handler;
+ * error_handler_init(&error_handler, 3, 100, 5000, NULL, NULL);
+ *
+ * // Get interface wrapper for DIP pattern
+ * star_error_interface_t error_iface;
+ * error_handler_get_interface(&error_iface, &error_handler);
+ *
+ * // Inject into bus manager (or other components)
+ * star_bus_manager_init(&bus_manager, "main", &error_iface, &pin_iface);
+ *
+ *
+ * // === Convenience Interface Creation ===
+ *
+ * // One-liner to create allocated interface with default handler
+ * star_error_interface_t* iface = star_error_interface_create_default();
+ *
+ * // Use with components...
+ * star_bus_manager_init(&bus_manager, "main", iface, NULL);
+ *
+ * // Cleanup
+ * star_error_interface_destroy(iface);
+ * @endcode
+ */
+
 /* --- Macros --- */
 
 /**

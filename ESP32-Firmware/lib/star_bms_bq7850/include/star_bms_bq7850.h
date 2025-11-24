@@ -30,6 +30,229 @@ extern "C" {
  * - Protection (OV, UV, OC, OT, UT)
  * - Coulomb counting
  * - SMBus communication
+ *
+ * Example Usage:
+ * @code
+ * // === Basic Setup ===
+ *
+ * #include "star_bms_bq7850.h"
+ * #include "star_bus_manager.h"
+ * #include "star_bus_config.h"
+ *
+ * // 1. Setup bus manager (see star_bus_manager.h for full setup)
+ * star_bus_manager_t bus_manager;
+ * star_bus_manager_init(&bus_manager, "main", &error_iface, &pin_iface);
+ *
+ * // 2. Create I2C/SMBus for BQ7850
+ * star_bus_config_t* bms_bus = star_bus_config_create_i2c(
+ *     "bms_smbus",
+ *     I2C_NUM_0,
+ *     BQ7850_DEFAULT_ADDR,    // 0x08
+ *     GPIO_NUM_21,            // SDA
+ *     GPIO_NUM_22,            // SCL
+ *     100000                  // 100kHz (SMBus standard)
+ * );
+ * star_bus_manager_add_bus(&bus_manager, bms_bus);
+ *
+ * // 3. Configure and initialize BMS
+ * bq7850_handle_t bms;
+ * bq7850_config_t config = {
+ *     .num_cells = 4,               // 4S battery pack
+ *     .num_temp = 2,                // 2 temperature sensors
+ *     .smbus_addr = BQ7850_DEFAULT_ADDR,
+ *     .design_capacity = 5000,      // 5000 mAh
+ *     .design_voltage = 14800       // 14.8V (4S * 3.7V)
+ * };
+ *
+ * esp_err_t ret = star_bms_bq7850_init(
+ *     &bms,
+ *     &bus_manager,
+ *     "bms_smbus",
+ *     NULL,                   // Use default error handler
+ *     &config
+ * );
+ *
+ * if (ret != ESP_OK) {
+ *     ESP_LOGE(TAG, "Failed to init BMS: %s", esp_err_to_name(ret));
+ *     return;
+ * }
+ *
+ *
+ * // === Read Device Information ===
+ *
+ * bq7850_device_info_t info;
+ * ret = star_bms_bq7850_get_device_info(&bms, &info);
+ * if (ret == ESP_OK) {
+ *     ESP_LOGI(TAG, "Device: %s by %s", info.device_name, info.manufacturer);
+ *     ESP_LOGI(TAG, "FW: %d, HW: %d, Serial: %lu",
+ *              info.fw_version, info.hw_version, info.serial_number);
+ *     ESP_LOGI(TAG, "Chemistry: %s", info.chemistry);
+ * }
+ *
+ *
+ * // === Read Complete Battery State ===
+ *
+ * bq7850_battery_state_t state;
+ * ret = star_bms_bq7850_read_battery_state(&bms, &state);
+ * if (ret == ESP_OK) {
+ *     // Cell voltages
+ *     for (int i = 0; i < state.cells.valid_cells; i++) {
+ *         ESP_LOGI(TAG, "Cell %d: %d mV", i + 1, state.cells.cell_mv[i]);
+ *     }
+ *     ESP_LOGI(TAG, "Pack voltage: %d mV", state.cells.pack_mv);
+ *
+ *     // Temperature
+ *     ESP_LOGI(TAG, "Temperature: %.1f°C",
+ *              state.temps.avg_temp_c / 10.0f);
+ *
+ *     // Current and power
+ *     ESP_LOGI(TAG, "Current: %d mA, Power: %ld mW",
+ *              state.current.current_ma, state.current.power_mw);
+ *
+ *     // State of charge
+ *     ESP_LOGI(TAG, "SOC: %d%% (%d/%d mAh), Cycles: %d",
+ *              state.soc.relative_soc,
+ *              state.soc.remaining_capacity_mah,
+ *              state.soc.full_capacity_mah,
+ *              state.soc.cycle_count);
+ *
+ *     // Status
+ *     ESP_LOGI(TAG, "Status: %s%s%s",
+ *              state.status.charging ? "Charging " : "",
+ *              state.status.discharging ? "Discharging " : "",
+ *              state.status.fully_charged ? "Full" : "");
+ * }
+ *
+ *
+ * // === Read Cell Voltages ===
+ *
+ * bq7850_cell_data_t cells;
+ * star_bms_bq7850_read_cells(&bms, &cells);
+ *
+ * // Find min/max cell
+ * uint16_t min_mv = 65535, max_mv = 0;
+ * for (int i = 0; i < cells.valid_cells; i++) {
+ *     if (cells.cell_mv[i] < min_mv) min_mv = cells.cell_mv[i];
+ *     if (cells.cell_mv[i] > max_mv) max_mv = cells.cell_mv[i];
+ * }
+ * ESP_LOGI(TAG, "Cell delta: %d mV (min=%d, max=%d)",
+ *          max_mv - min_mv, min_mv, max_mv);
+ *
+ * // Read single cell
+ * uint16_t cell1_mv;
+ * star_bms_bq7850_read_cell_voltage(&bms, 0, &cell1_mv);
+ *
+ *
+ * // === Read Temperature ===
+ *
+ * bq7850_temp_data_t temps;
+ * star_bms_bq7850_read_temperatures(&bms, &temps);
+ * for (int i = 0; i < temps.valid_sensors; i++) {
+ *     float temp_c = temps.temp_c[i] / 10.0f;
+ *     ESP_LOGI(TAG, "Temp sensor %d: %.1f°C", i + 1, temp_c);
+ * }
+ *
+ *
+ * // === Read Current ===
+ *
+ * bq7850_current_data_t current;
+ * star_bms_bq7850_read_current(&bms, &current);
+ * ESP_LOGI(TAG, "Instant: %d mA, Average: %d mA",
+ *          current.current_ma, current.avg_current_ma);
+ * ESP_LOGI(TAG, "Power: %ld mW", current.power_mw);
+ *
+ *
+ * // === Read State of Charge ===
+ *
+ * bq7850_soc_data_t soc;
+ * star_bms_bq7850_read_soc(&bms, &soc);
+ * ESP_LOGI(TAG, "Relative SOC: %d%%", soc.relative_soc);
+ * ESP_LOGI(TAG, "Absolute SOC: %d%%", soc.absolute_soc);
+ * ESP_LOGI(TAG, "Capacity: %d/%d mAh", soc.remaining_capacity_mah, soc.full_capacity_mah);
+ *
+ *
+ * // === Check Status and Faults ===
+ *
+ * bq7850_status_t status;
+ * star_bms_bq7850_read_status(&bms, &status);
+ *
+ * if (star_bms_bq7850_is_fault_active(&status)) {
+ *     ESP_LOGW(TAG, "Battery fault active!");
+ *
+ *     char status_str[256];
+ *     star_bms_bq7850_status_to_string(&status, status_str, sizeof(status_str));
+ *     ESP_LOGW(TAG, "Status: %s", status_str);
+ * }
+ *
+ *
+ * // === Cell Balancing ===
+ *
+ * // Enable balancing on cells 1, 2, 3 (bitmask)
+ * star_bms_bq7850_enable_cell_balancing(&bms, 0x0007);
+ *
+ * // Check which cells are balancing
+ * uint16_t balancing_mask;
+ * star_bms_bq7850_get_balancing_status(&bms, &balancing_mask);
+ * ESP_LOGI(TAG, "Balancing cells: 0x%04X", balancing_mask);
+ *
+ * // Disable balancing
+ * star_bms_bq7850_disable_cell_balancing(&bms);
+ *
+ *
+ * // === Protection Thresholds ===
+ *
+ * // Read current protection settings
+ * bq7850_protection_t protection;
+ * star_bms_bq7850_read_protection(&bms, &protection);
+ * ESP_LOGI(TAG, "OV: %d mV, UV: %d mV",
+ *          protection.overvoltage_mv, protection.undervoltage_mv);
+ *
+ * // Modify protection (requires unsealed device)
+ * // protection.overvoltage_mv = 4200;
+ * // protection.undervoltage_mv = 2800;
+ * // star_bms_bq7850_write_protection(&bms, &protection);
+ *
+ *
+ * // === FET Control ===
+ *
+ * // Enable charging and discharging
+ * star_bms_bq7850_control_fets(&bms, true, true);
+ *
+ * // Disable discharging (safe storage mode)
+ * star_bms_bq7850_control_fets(&bms, true, false);
+ *
+ * // Disable all (emergency stop)
+ * star_bms_bq7850_control_fets(&bms, false, false);
+ *
+ *
+ * // === Monitoring Task ===
+ *
+ * void bms_monitor_task(void* arg) {
+ *     bq7850_handle_t* bms = (bq7850_handle_t*)arg;
+ *     bq7850_battery_state_t state;
+ *
+ *     while (1) {
+ *         if (star_bms_bq7850_read_battery_state(bms, &state) == ESP_OK) {
+ *             // Check for low battery
+ *             if (state.soc.relative_soc < 10) {
+ *                 ESP_LOGW(TAG, "Low battery: %d%%", state.soc.relative_soc);
+ *             }
+ *
+ *             // Check for faults
+ *             if (state.status.fault_active) {
+ *                 ESP_LOGE(TAG, "Battery fault!");
+ *             }
+ *         }
+ *         vTaskDelay(pdMS_TO_TICKS(1000));  // Check every second
+ *     }
+ * }
+ *
+ *
+ * // === Cleanup ===
+ *
+ * star_bms_bq7850_deinit(&bms);
+ * star_bus_manager_remove_bus(&bus_manager, "bms_smbus");
+ * @endcode
  */
 
 /* --- Constants --- */
