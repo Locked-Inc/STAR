@@ -217,11 +217,7 @@ static esp_err_t priv_i2c_execute_with_retry(const star_bus_config_t* config,
   esp_err_t ret = i2c_master_cmd_begin(port, cmd, pdMS_TO_TICKS(I2C_TIMEOUT_MS));
 
   if (ret != ESP_OK) {
-    ESP_LOGE(s_TAG,
-             "%s '%s': Error %s",
-             operation_name,
-             config->name,
-             esp_err_to_name(ret));
+    ESP_LOGE(s_TAG, "%s '%s': Error %s", operation_name, config->name, esp_err_to_name(ret));
   }
 
   return ret;
@@ -670,7 +666,11 @@ static esp_err_t priv_star_bus_i2c_read_raw(const star_bus_config_t* config,
   /* Success path */
   i2c_cmd_link_delete(cmd);
   cmd = NULL; /* Prevent double delete in fail path */
-  ESP_LOGD(s_TAG, "Read Raw Success: %zu bytes from '%s' (Addr 0x%02X)", len, config->name, address);
+  ESP_LOGD(s_TAG,
+           "Read Raw Success: %zu bytes from '%s' (Addr 0x%02X)",
+           len,
+           config->name,
+           address);
   if (bytes_read) {
     *bytes_read = len;
   }

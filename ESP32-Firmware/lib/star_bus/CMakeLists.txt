@@ -5,6 +5,7 @@ idf_component_register(
         "src/star_bus_config.c"
         "src/star_bus_debug.c"
         "src/star_bus_devices.c"
+        "src/star_bus_gpio.c"
         "src/star_bus_helpers.c"
         "src/star_bus_i2c.c"
         "src/star_bus_i2c_dma.c"

@@ -3,12 +3,15 @@
 #ifndef STAR_BMS_BQ7850_H
 #define STAR_BMS_BQ7850_H
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+
 #include <esp_err.h>
 #include <stdbool.h>
 #include <stdint.h>
 
 #include "star_bus_manager.h"
-#include "star_error_handler.h"
+#include "star_error_interface.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -231,14 +234,17 @@ typedef struct {
  * @brief BQ7850 device handle
  *
  * Maintains state and error handling for BMS operations.
- * This structure should be initialized once and reused for all operations.
+ * Thread-safe: All operations are protected by an internal mutex.
  */
 typedef struct bq7850_handle {
-  star_bus_manager_t* manager;       /**< Pointer to bus manager */
-  const char*         bus_name;      /**< Name of I2C/SMBus for this device */
-  uint8_t             smbus_addr;    /**< SMBus device address */
-  bq7850_config_t     config;        /**< Device configuration */
-  error_handler_t     error_handler; /**< Error handler with retry logic */
+  star_bus_manager_t*     manager;            /**< Pointer to bus manager */
+  const char*             bus_name;           /**< Name of I2C/SMBus for this device */
+  uint8_t                 smbus_addr;         /**< SMBus device address */
+  bq7850_config_t         config;             /**< Device configuration */
+  star_error_interface_t* error_iface;        /**< Injected error interface (NULL = default) */
+  SemaphoreHandle_t       mutex;              /**< Mutex for thread-safe operations */
+  bool                    initialized;        /**< Initialization state */
+  bool                    owns_error_handler; /**< True if we created default error handler */
 } bq7850_handle_t;
 
 /* --- Core Functions --- */
@@ -247,21 +253,25 @@ typedef struct bq7850_handle {
  * @brief Create and initialize BQ7850 BMS device handle
  *
  * Performs device detection, reads configuration, and verifies communication.
- * Creates a handle that maintains state and error tracking across operations.
+ * Thread-safe: Creates an internal mutex for protecting handle state.
  *
- * @param[out] handle    Pointer to handle structure (must be allocated by caller)
- * @param[in]  manager   Pointer to initialized bus manager
- * @param[in]  bus_name  Name of I2C/SMBus configured for this device
- * @param[in]  config    Device configuration
+ * @param[out] handle      Pointer to handle structure (must be allocated by caller)
+ * @param[in]  manager     Pointer to initialized bus manager
+ * @param[in]  bus_name    Name of I2C/SMBus configured for this device
+ * @param[in]  error_iface Error interface for error handling (NULL = create default internally)
+ * @param[in]  config      Device configuration
  *
  * @return ESP_OK on success, error code otherwise
  *
  * @note The handle must be deinitialized with star_bms_bq7850_deinit() when done
+ * @note If error_iface is NULL, a default error handler will be created internally
+ * @note All operations after init are protected by mutex for thread safety
  */
-esp_err_t star_bms_bq7850_init(bq7850_handle_t*       handle,
-                               star_bus_manager_t*    manager,
-                               const char*            bus_name,
-                               const bq7850_config_t* config);
+esp_err_t star_bms_bq7850_init(bq7850_handle_t*        handle,
+                               star_bus_manager_t*     manager,
+                               const char*             bus_name,
+                               star_error_interface_t* error_iface,
+                               const bq7850_config_t*  config);
 
 /**
  * @brief Deinitialize BQ7850 BMS device handle

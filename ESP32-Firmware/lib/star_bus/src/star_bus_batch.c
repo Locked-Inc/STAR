@@ -143,7 +143,10 @@ esp_err_t star_batch_create(star_bus_manager_t*        manager,
 
   *handle = (star_batch_handle_t)ctx;
 
-  ESP_LOGD(s_TAG, "Batch created: mode=%d, timeout=%" PRIu32 " ms", config->mode, config->timeout_ms);
+  ESP_LOGD(s_TAG,
+           "Batch created: mode=%d, timeout=%" PRIu32 " ms",
+           config->mode,
+           config->timeout_ms);
 
   return ESP_OK;
 }

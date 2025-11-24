@@ -2,6 +2,7 @@
 
 #include "star_bus_config.h"
 
+#include "star_bus_gpio.h"
 #include "star_bus_i2c.h"
 #include "star_bus_spi.h"
 #include "star_bus_spi_peripheral.h"
@@ -201,6 +202,51 @@ star_bus_config_t* star_bus_config_create_spi_peripheral(const char*       name,
   return config;
 }
 
+star_bus_config_t*
+star_bus_config_create_gpio(const char* name, const gpio_num_t pins[], uint8_t pin_count)
+{
+  ESP_RETURN_ON_FALSE(pins, NULL, s_TAG, "Pins array is NULL");
+  ESP_RETURN_ON_FALSE(pin_count > 0 && pin_count <= 8,
+                      NULL,
+                      s_TAG,
+                      "Invalid pin count: %d (must be 1-8)",
+                      pin_count);
+
+  star_bus_config_t* config = priv_star_bus_config_create_common(name, k_star_bus_type_gpio);
+  ESP_RETURN_ON_FALSE(config,
+                      NULL,
+                      s_TAG,
+                      "Failed to create common config for %s",
+                      name ? name : "NULL");
+
+  /* Configure GPIO-specific parameters */
+  config->proto.gpio.pin_count     = pin_count;
+  config->proto.gpio.isr_installed = false;
+
+  /* Copy pin numbers */
+  for (uint8_t i = 0; i < pin_count; ++i) {
+    config->proto.gpio.pins[i] = pins[i];
+  }
+
+  /* Clear unused pin slots */
+  for (uint8_t i = pin_count; i < 8; ++i) {
+    config->proto.gpio.pins[i] = GPIO_NUM_NC;
+  }
+
+  /* Initialize callbacks to NULL */
+  memset(&config->proto.gpio.callbacks, 0, sizeof(star_gpio_callbacks_t));
+
+  /* Initialize default operations */
+  star_bus_gpio_init_default_ops(&config->proto.gpio.ops);
+
+  ESP_LOGI(s_TAG, "Created GPIO bus config '%s' with %d pins", name, pin_count);
+  for (uint8_t i = 0; i < pin_count; ++i) {
+    ESP_LOGI(s_TAG, "  Pin[%d]: GPIO%d", i, pins[i]);
+  }
+
+  return config;
+}
+
 esp_err_t star_bus_config_destroy(star_bus_config_t* config)
 {
   ESP_RETURN_ON_FALSE(config, ESP_ERR_INVALID_ARG, s_TAG, "Config pointer is NULL");
@@ -373,6 +419,19 @@ esp_err_t star_bus_config_init(star_bus_config_t* config, star_bus_manager_t* ma
       }
       break;
 
+    case k_star_bus_type_gpio:
+      /* Initialize GPIO bus - pins are configured on-demand via gpio_configure */
+      ESP_LOGI(s_TAG,
+               "Initializing GPIO bus '%s' with %d pins",
+               bus_name,
+               config->proto.gpio.pin_count);
+
+      /* GPIO initialization is minimal - actual pin configuration happens on first use */
+      /* No driver installation needed for GPIO unlike I2C/SPI */
+
+      ESP_LOGI(s_TAG, "GPIO bus '%s' ready (pins will be configured on-demand)", bus_name);
+      break;
+
     default:
       ESP_LOGE(s_TAG, "Unsupported bus type for initialization: %d", config->type);
       ret = ESP_ERR_NOT_SUPPORTED;
@@ -433,7 +492,10 @@ esp_err_t star_bus_config_deinit(star_bus_config_t* config)
         ret = spi_slave_free(config->proto.spi.host);
       } else {
         /* SPI Controller Mode - Remove device */
-        ESP_LOGI(s_TAG, "Deinitializing SPI device '%s' (Host %d)", bus_name, config->proto.spi.host);
+        ESP_LOGI(s_TAG,
+                 "Deinitializing SPI device '%s' (Host %d)",
+                 bus_name,
+                 config->proto.spi.host);
         if (config->handle) {
           ret            = spi_bus_remove_device((spi_device_handle_t)config->handle);
           config->handle = NULL;
@@ -442,6 +504,33 @@ esp_err_t star_bus_config_deinit(star_bus_config_t* config)
           ret = ESP_OK;
         }
       }
+      break;
+
+    case k_star_bus_type_gpio:
+      /* Deinitialize GPIO bus */
+      ESP_LOGI(s_TAG, "Deinitializing GPIO bus '%s'", bus_name);
+
+      /* Remove ISR handlers for all pins if ISR service was installed */
+      if (config->proto.gpio.isr_installed) {
+        for (uint8_t i = 0; i < config->proto.gpio.pin_count; ++i) {
+          gpio_num_t pin = config->proto.gpio.pins[i];
+          if (pin != GPIO_NUM_NC) {
+            /* Try to remove ISR handler, ignore errors if not set */
+            gpio_isr_handler_remove(pin);
+          }
+        }
+        /* Note: We don't uninstall ISR service as it might be shared with other GPIO buses */
+      }
+
+      /* Reset all pins to input with pull-down (safe default state) */
+      for (uint8_t i = 0; i < config->proto.gpio.pin_count; ++i) {
+        gpio_num_t pin = config->proto.gpio.pins[i];
+        if (pin != GPIO_NUM_NC) {
+          gpio_reset_pin(pin);
+        }
+      }
+
+      ret = ESP_OK;
       break;
 
     default:

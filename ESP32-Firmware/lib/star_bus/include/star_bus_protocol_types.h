@@ -104,6 +104,39 @@ typedef struct star_spi_bus_config {
 
 } star_spi_bus_config_t;
 
+/**
+ * @brief GPIO callback functions structure.
+ */
+typedef struct star_gpio_callbacks {
+  star_gpio_state_change_cb_t on_state_change; /**< Optional: Called after GPIO state changes */
+  star_gpio_error_cb_t        on_error;        /**< Optional: Called on GPIO operation error */
+} star_gpio_callbacks_t;
+
+/**
+ * @brief GPIO operation functions structure.
+ */
+typedef struct star_gpio_ops {
+  star_gpio_configure_fn_t     configure;     /**< Configure function pointer (mode, pull) */
+  star_gpio_write_fn_t         write;         /**< Write function pointer (set level) */
+  star_gpio_read_fn_t          read;          /**< Read function pointer (get level) */
+  star_gpio_set_interrupt_fn_t set_interrupt; /**< Set interrupt function pointer */
+} star_gpio_ops_t;
+
+/**
+ * @brief GPIO bus configuration structure (part of star_bus_config_t).
+ *
+ * Manages a collection of GPIO pins as a logical "bus" for device control.
+ * Useful for sensors like HC-SR04 that use GPIO pins directly rather than
+ * a traditional communication bus (I2C/SPI).
+ */
+typedef struct star_gpio_bus_config {
+  gpio_num_t            pins[8];       /**< Array of GPIO pins managed by this bus (up to 8) */
+  uint8_t               pin_count;     /**< Number of pins in use */
+  star_gpio_callbacks_t callbacks;     /**< User-provided callback functions */
+  star_gpio_ops_t       ops;           /**< Operation function pointers (defaults provided) */
+  bool                  isr_installed; /**< True if ISR service is installed */
+} star_gpio_bus_config_t;
+
 #ifdef __cplusplus
 }
 #endif
