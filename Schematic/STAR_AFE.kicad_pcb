@@ -3083,11 +3083,11 @@
 	(footprint "CSD19531Q5AT:CSD19531Q5AT"
 		(layer "F.Cu")
 		(uuid "08bef5b9-7517-43e5-86de-5c48b9677682")
-		(at 111.7815 96.615)
+		(at 98.25 104.75)
 		(descr "DQJ (CSD19531Q5AT)")
 		(tags "MOSFET (N-Channel)")
 		(property "Reference" "Q7"
-			(at 0 0 0)
+			(at -0.2815 4.385 0)
 			(layer "F.SilkS")
 			(uuid "e76dc5d4-acce-4c1b-91f1-ed55bb81ae38")
 			(effects
@@ -5049,11 +5049,11 @@
 	(footprint "CSD19531Q5AT:CSD19531Q5AT"
 		(layer "F.Cu")
 		(uuid "0d22b712-f525-4127-8d5b-6a5058cfae2b")
-		(at 111.7815 88.615)
+		(at 98.064 95.25)
 		(descr "DQJ (CSD19531Q5AT)")
 		(tags "MOSFET (N-Channel)")
 		(property "Reference" "Q5"
-			(at 0 0 0)
+			(at -0.0315 4.385 0)
 			(layer "F.SilkS")
 			(uuid "beec2f70-8151-4b0c-97eb-ada500cb5eea")
 			(effects
@@ -5487,7 +5487,7 @@
 		(descr "DPAK3 (TO−252 3 LD) CASE 369AS ISSUE O_1")
 		(tags "MOSFET (P-Channel)")
 		(property "Reference" "Q9"
-			(at 0 2.525 0)
+			(at 0.0875 10.385 0)
 			(layer "F.SilkS")
 			(uuid "76c2cebd-1adf-45f1-a98e-edc8830c8646")
 			(effects
@@ -8589,11 +8589,11 @@
 	(footprint "SML-D12Y1WT86:LEDC1608X55N"
 		(layer "F.Cu")
 		(uuid "1db966be-74c5-41a6-a8af-0539ef3ba14f")
-		(at 138.4725 107.815)
+		(at 138.5 106.75)
 		(descr "1608 (0603) _1")
 		(tags "LED")
 		(property "Reference" "D12"
-			(at 0 0 0)
+			(at 0 1.75 0)
 			(layer "F.SilkS")
 			(uuid "74be5b4b-4a6e-4274-a93e-5abab50e6500")
 			(effects
@@ -13555,7 +13555,7 @@
 	(footprint "ZXMP10A13FTA:SOT96P240X110-3N"
 		(layer "F.Cu")
 		(uuid "32f7d3c4-cd4e-4cdf-aedf-2a565bb38f8e")
-		(at 168.3325 72.49)
+		(at 169.7 72.5)
 		(descr "ZXMP10A13FTA")
 		(tags "MOSFET (P-Channel)")
 		(property "Reference" "Q6"
@@ -18577,7 +18577,7 @@
 		(descr "612 (3831 Metric)")
 		(tags "Resistor")
 		(property "Reference" "R19"
-			(at 0 0 0)
+			(at -0.0675 -3.94 0)
 			(layer "F.SilkS")
 			(uuid "05bc8a41-8883-4991-8054-46d7f3db3275")
 			(effects
@@ -19932,7 +19932,7 @@
 		(uuid "4a9e9087-1a4a-4276-96ea-e03a053465ad")
 		(at 126.4875 113.79)
 		(property "Reference" "J5"
-			(at -12.54 -2.561 0)
+			(at -10.2375 -0.29 0)
 			(layer "F.SilkS")
 			(uuid "85fbbd24-b373-4f0b-9092-d30495244120")
 			(effects
@@ -20509,7 +20509,7 @@
 		(descr "3568-1")
 		(tags "Undefined or Miscellaneous")
 		(property "Reference" "F2"
-			(at 4.96 -1.7 0)
+			(at 4.7925 3.84 0)
 			(layer "F.SilkS")
 			(uuid "e725d0e1-8214-4923-90b4-1a5bbbf525c7")
 			(effects
@@ -22860,11 +22860,11 @@
 	(footprint "DDZ5V6ASF-7:SODFL2512X75N"
 		(layer "F.Cu")
 		(uuid "636f6938-b0c0-41b1-b887-ef55e7e0f2ba")
-		(at 142.9225 101.715)
+		(at 149 99)
 		(descr "SOD323F")
 		(tags "Zener Diode")
 		(property "Reference" "D5"
-			(at 0 0 0)
+			(at 0 1.75 0)
 			(layer "F.SilkS")
 			(uuid "eb06d917-9c7d-4cc1-bd4e-fdfda171187e")
 			(effects
@@ -29035,11 +29035,11 @@
 	(footprint "SML-D12Y1WT86:LEDC1608X55N"
 		(layer "F.Cu")
 		(uuid "81dc8aeb-35b0-41e6-bb01-b1722792de01")
-		(at 138.4725 104.915)
+		(at 138.5 102.75)
 		(descr "1608 (0603) _1")
 		(tags "LED")
 		(property "Reference" "D3"
-			(at 0 0 0)
+			(at 0 2 0)
 			(layer "F.SilkS")
 			(uuid "4221ce26-dbae-4966-92fe-187ae1daa7c2")
 			(effects
@@ -32319,11 +32319,11 @@
 	(footprint "NTCGS163JX103DT7:THRMC1608X90N"
 		(layer "F.Cu")
 		(uuid "8cc236af-df6a-4494-bc82-564da8f54fec")
-		(at 142.7225 107.04)
+		(at 142.75 106.5)
 		(descr "1608")
 		(tags "Thermistor")
 		(property "Reference" "TH1"
-			(at 0 0 0)
+			(at 0.0275 1.71 0)
 			(layer "F.SilkS")
 			(uuid "9ffb5113-871c-48c0-9665-dec4bc1244c8")
 			(effects
@@ -32636,11 +32636,11 @@
 	(footprint "SML-D12Y1WT86:LEDC1608X55N"
 		(layer "F.Cu")
 		(uuid "8f64ff0c-0cce-4801-a542-e0daa626e46f")
-		(at 138.4725 102.015)
+		(at 138.75 99)
 		(descr "1608 (0603) _1")
 		(tags "LED")
 		(property "Reference" "D2"
-			(at 0 0 0)
+			(at 0 1.75 0)
 			(layer "F.SilkS")
 			(uuid "7322e148-80cb-4311-b1fc-efcef513ccd7")
 			(effects
@@ -36295,7 +36295,7 @@
 		(descr "SOD-123F")
 		(tags "Diode")
 		(property "Reference" "D7"
-			(at 0 0 0)
+			(at -0.1425 2.01 0)
 			(layer "F.SilkS")
 			(uuid "236b9449-a29b-4ad8-b4c5-cbb6ad25d8fc")
 			(effects
@@ -40293,11 +40293,11 @@
 	(footprint "SML-D12Y1WT86:LEDC1608X55N"
 		(layer "F.Cu")
 		(uuid "a36ea9c7-aa26-40f7-99df-f4de54802593")
-		(at 138.4725 99.115)
+		(at 154.35 97.5)
 		(descr "1608 (0603) _1")
 		(tags "LED")
 		(property "Reference" "D1"
-			(at 0 0 0)
+			(at -0.1 1.75 0)
 			(layer "F.SilkS")
 			(uuid "669f6e8b-ea20-4f45-bc8d-459d9d9ec648")
 			(effects
@@ -41308,7 +41308,7 @@
 		(descr "1017491")
 		(tags "Connector")
 		(property "Reference" "J7"
-			(at 0 0 0)
+			(at 2.4275 -3.89 0)
 			(layer "F.SilkS")
 			(uuid "50b68ea3-1d29-4d90-9209-9cf9de7fe6f6")
 			(effects
@@ -41629,7 +41629,7 @@
 		(descr "1017491")
 		(tags "Connector")
 		(property "Reference" "J6"
-			(at 0 0 0)
+			(at 1.7475 -3.89 0)
 			(layer "F.SilkS")
 			(uuid "f4347050-6847-4321-bb1f-4e0072cc2edb")
 			(effects
@@ -43268,7 +43268,7 @@
 		(descr "3568-1")
 		(tags "Undefined or Miscellaneous")
 		(property "Reference" "F1"
-			(at 4.96 -1.7 0)
+			(at 5.0425 -7.08 0)
 			(layer "F.SilkS")
 			(uuid "80ff25b6-09ba-43eb-841e-6ed0c7475c10")
 			(effects
@@ -53081,7 +53081,7 @@
 		(descr "SOD323F")
 		(tags "Zener Diode")
 		(property "Reference" "D4"
-			(at 0 0 0)
+			(at -0.1725 1.735 0)
 			(layer "F.SilkS")
 			(uuid "b6fee218-5340-4638-9a5d-2472a1e0bb9e")
 			(effects
@@ -54084,7 +54084,7 @@
 		(descr "1017495")
 		(tags "Connector")
 		(property "Reference" "J1"
-			(at 0 0 0)
+			(at -6.1025 4.91 0)
 			(layer "F.SilkS")
 			(uuid "2d8e786e-6ad9-4c88-b424-613108c1def3")
 			(effects
@@ -55546,11 +55546,11 @@
 	(footprint "DDZ5V6ASF-7:SODFL2512X75N"
 		(layer "F.Cu")
 		(uuid "dc0076a6-6465-4960-987f-bd0d49e69349")
-		(at 142.9225 104.415)
+		(at 143 103)
 		(descr "SOD323F")
 		(tags "Zener Diode")
 		(property "Reference" "D6"
-			(at 0 0 0)
+			(at -0.1725 1.585 0)
 			(layer "F.SilkS")
 			(uuid "e70da4f9-5a9a-4cb8-bfb3-238ca810afb8")
 			(effects
@@ -57506,7 +57506,7 @@
 		(descr "SMT(4.2x3.2)")
 		(tags "Switch")
 		(property "Reference" "S1"
-			(at -0.23333 -0.0507 0)
+			(at -0.06687 -0.015 0)
 			(layer "F.SilkS")
 			(uuid "d9005718-722e-4990-9971-b0df7a939dea")
 			(effects
@@ -59826,7 +59826,7 @@
 		(uuid "e241dcc7-e8b1-499e-8b63-dcaff072fec4")
 		(at 126.4875 103.09)
 		(property "Reference" "J4"
-			(at -12.54 -2.561 0)
+			(at -9.9875 -0.34 0)
 			(layer "F.SilkS")
 			(uuid "ad345952-3798-430b-98db-6e49516da778")
 			(effects
@@ -61681,11 +61681,11 @@
 	(footprint "CSD19531Q5AT:CSD19531Q5AT"
 		(layer "F.Cu")
 		(uuid "ef0d59fc-f402-48d5-8545-b4d3caa2e2db")
-		(at 111.7815 104.615)
+		(at 108 104.5)
 		(descr "DQJ (CSD19531Q5AT)")
 		(tags "MOSFET (N-Channel)")
 		(property "Reference" "Q8"
-			(at 0 0 0)
+			(at -0.25 4.5 0)
 			(layer "F.SilkS")
 			(uuid "8afcd622-6e26-46aa-88f0-b7bf7e6ea8f4")
 			(effects
@@ -66022,7 +66022,7 @@
 		(descr "DQJ (CSD19531Q5AT)")
 		(tags "MOSFET (N-Channel)")
 		(property "Reference" "Q4"
-			(at 0 0 0)
+			(at -0.2815 4.635 0)
 			(layer "F.SilkS")
 			(uuid "432e8197-443d-4668-82eb-602bba34c31f")
 			(effects
@@ -66456,7 +66456,7 @@
 		(descr "TSSOP, 20 Pin (JEDEC MO-153 Var AC https://www.jedec.org/document_search?search_api_views_fulltext=MO-153), generated with kicad-footprint-generator ipc_gullwing_generator.py")
 		(tags "TSSOP SO")
 		(property "Reference" "U1"
-			(at -0.1125 0.125 0)
+			(at 0.1375 -4.125 0)
 			(layer "F.SilkS")
 			(uuid "3097a384-aac3-41ba-a464-c14c0e43ab89")
 			(effects
