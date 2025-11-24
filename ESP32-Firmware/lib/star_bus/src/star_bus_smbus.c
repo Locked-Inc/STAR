@@ -281,7 +281,10 @@ esp_err_t star_smbus_block_read(star_bus_manager_t* manager,
   }
 
   if (max_length < STAR_SMBUS_MAX_BLOCK_SIZE) {
-    ESP_LOGE(s_TAG, "Buffer too small: %d (should be >= %d)", max_length, STAR_SMBUS_MAX_BLOCK_SIZE);
+    ESP_LOGE(s_TAG,
+             "Buffer too small: %d (should be >= %d)",
+             max_length,
+             STAR_SMBUS_MAX_BLOCK_SIZE);
     return ESP_ERR_INVALID_ARG;
   }
 

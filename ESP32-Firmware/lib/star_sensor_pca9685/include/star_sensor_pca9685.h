@@ -3,12 +3,16 @@
 #ifndef STAR_SENSOR_PCA9685_H
 #define STAR_SENSOR_PCA9685_H
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+
 #include <esp_err.h>
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "soc/gpio_num.h"
 #include "star_bus_manager.h"
-#include "star_error_handler.h"
+#include "star_error_interface.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -53,21 +57,21 @@ extern "C" {
 
 /* --- Register Map --- */
 
-#define PCA9685_REG_MODE1 (0x00)       /**< Mode register 1 */
-#define PCA9685_REG_MODE2 (0x01)       /**< Mode register 2 */
-#define PCA9685_REG_SUBADR1 (0x02)     /**< I2C sub-address 1 */
-#define PCA9685_REG_SUBADR2 (0x03)     /**< I2C sub-address 2 */
-#define PCA9685_REG_SUBADR3 (0x04)     /**< I2C sub-address 3 */
-#define PCA9685_REG_ALLCALLADR (0x05)  /**< All-call I2C address */
-#define PCA9685_REG_LED0_ON_L (0x06)   /**< LED0 output ON time, low byte */
-#define PCA9685_REG_LED0_ON_H (0x07)   /**< LED0 output ON time, high byte */
-#define PCA9685_REG_LED0_OFF_L (0x08)  /**< LED0 output OFF time, low byte */
-#define PCA9685_REG_LED0_OFF_H (0x09)  /**< LED0 output OFF time, high byte */
+#define PCA9685_REG_MODE1 (0x00)         /**< Mode register 1 */
+#define PCA9685_REG_MODE2 (0x01)         /**< Mode register 2 */
+#define PCA9685_REG_SUBADR1 (0x02)       /**< I2C sub-address 1 */
+#define PCA9685_REG_SUBADR2 (0x03)       /**< I2C sub-address 2 */
+#define PCA9685_REG_SUBADR3 (0x04)       /**< I2C sub-address 3 */
+#define PCA9685_REG_ALLCALLADR (0x05)    /**< All-call I2C address */
+#define PCA9685_REG_LED0_ON_L (0x06)     /**< LED0 output ON time, low byte */
+#define PCA9685_REG_LED0_ON_H (0x07)     /**< LED0 output ON time, high byte */
+#define PCA9685_REG_LED0_OFF_L (0x08)    /**< LED0 output OFF time, low byte */
+#define PCA9685_REG_LED0_OFF_H (0x09)    /**< LED0 output OFF time, high byte */
 #define PCA9685_REG_ALL_LED_ON_L (0xFA)  /**< All LED ON time, low byte */
 #define PCA9685_REG_ALL_LED_ON_H (0xFB)  /**< All LED ON time, high byte */
 #define PCA9685_REG_ALL_LED_OFF_L (0xFC) /**< All LED OFF time, low byte */
 #define PCA9685_REG_ALL_LED_OFF_H (0xFD) /**< All LED OFF time, high byte */
-#define PCA9685_REG_PRESCALE (0xFE)    /**< Prescaler for PWM output frequency */
+#define PCA9685_REG_PRESCALE (0xFE)      /**< Prescaler for PWM output frequency */
 
 /* --- MODE1 Register Bits --- */
 
@@ -82,16 +86,16 @@ extern "C" {
 
 /* --- MODE2 Register Bits --- */
 
-#define PCA9685_MODE2_INVRT (1 << 4)   /**< Output logic state inverted */
-#define PCA9685_MODE2_OCH (1 << 3)     /**< Outputs change on STOP command */
-#define PCA9685_MODE2_OUTDRV (1 << 2)  /**< Totem pole (1) or open-drain (0) */
-#define PCA9685_MODE2_OUTNE1 (1 << 1)  /**< Output enable bit 1 */
-#define PCA9685_MODE2_OUTNE0 (1 << 0)  /**< Output enable bit 0 */
+#define PCA9685_MODE2_INVRT (1 << 4)  /**< Output logic state inverted */
+#define PCA9685_MODE2_OCH (1 << 3)    /**< Outputs change on STOP command */
+#define PCA9685_MODE2_OUTDRV (1 << 2) /**< Totem pole (1) or open-drain (0) */
+#define PCA9685_MODE2_OUTNE1 (1 << 1) /**< Output enable bit 1 */
+#define PCA9685_MODE2_OUTNE0 (1 << 0) /**< Output enable bit 0 */
 
 /* --- Special Values --- */
 
-#define PCA9685_LED_FULL_ON (1 << 4)   /**< LED full ON (in ON_H register) */
-#define PCA9685_LED_FULL_OFF (1 << 4)  /**< LED full OFF (in OFF_H register) */
+#define PCA9685_LED_FULL_ON (1 << 4)  /**< LED full ON (in ON_H register) */
+#define PCA9685_LED_FULL_OFF (1 << 4) /**< LED full OFF (in OFF_H register) */
 
 /* --- Types --- */
 
@@ -107,11 +111,11 @@ typedef enum {
  * @brief PCA9685 device configuration
  */
 typedef struct {
-  uint8_t  i2c_addr;      /**< I2C device address (default 0x40) */
-  uint16_t pwm_freq;      /**< PWM frequency in Hz (24-1526) */
-  pca9685_output_mode_t output_mode; /**< Output driver mode */
-  bool     ext_clock;     /**< Use external clock source */
-  bool     invert_output; /**< Invert output logic state */
+  uint8_t               i2c_addr;      /**< I2C device address (default 0x40) */
+  uint16_t              pwm_freq;      /**< PWM frequency in Hz (24-1526) */
+  pca9685_output_mode_t output_mode;   /**< Output driver mode */
+  bool                  ext_clock;     /**< Use external clock source */
+  bool                  invert_output; /**< Invert output logic state */
 } pca9685_config_t;
 
 /**
@@ -127,15 +131,21 @@ typedef struct {
  *
  * Maintains state and error handling for PWM operations.
  * This structure should be initialized once and reused for all operations.
+ * Thread-safe: All operations are protected by an internal mutex.
  */
 typedef struct pca9685_handle {
-  star_bus_manager_t* manager;       /**< Pointer to bus manager */
-  const char*         bus_name;      /**< Name of I2C bus for this device */
-  uint8_t             i2c_addr;      /**< I2C device address */
-  pca9685_config_t    config;        /**< Device configuration */
-  error_handler_t     error_handler; /**< Error handler with retry logic */
-  bool                initialized;   /**< Initialization state */
-  uint8_t             prescale;      /**< Current prescale value */
+  star_bus_manager_t* manager;  /**< Pointer to bus manager */
+  const char*         bus_name; /**< Name of I2C bus for this device */
+  uint8_t             i2c_addr; /**< I2C device address */
+  pca9685_config_t    config;   /**< Device configuration */
+  star_error_interface_t*
+    error_iface;            /**< Injected error interface (NULL = default created internally) */
+  SemaphoreHandle_t mutex;  /**< Mutex for thread-safe operations */
+  gpio_num_t        oe_pin; /**< Output Enable pin (GPIO_NUM_NC if not used) */
+  bool              oe_active_low;      /**< True if OE pin is active-low */
+  bool              initialized;        /**< Initialization state */
+  bool              owns_error_handler; /**< True if we created default error handler internally */
+  uint8_t           prescale;           /**< Current prescale value */
 } pca9685_handle_t;
 
 /* --- Core Functions --- */
@@ -145,19 +155,28 @@ typedef struct pca9685_handle {
  *
  * Performs device detection, configuration, and initialization.
  * Creates a handle that maintains state and error tracking across operations.
+ * Thread-safe: Creates an internal mutex for protecting handle state.
  *
- * @param[out] handle    Pointer to handle structure (must be allocated by caller)
- * @param[in]  manager   Pointer to initialized bus manager
- * @param[in]  bus_name  Name of I2C bus configured for this device
- * @param[in]  config    Device configuration
+ * @param[out] handle         Pointer to handle structure (must be allocated by caller)
+ * @param[in]  manager        Pointer to initialized bus manager
+ * @param[in]  bus_name       Name of I2C bus configured for this device
+ * @param[in]  error_iface    Error interface for error handling (NULL = create default internally)
+ * @param[in]  oe_pin         Output Enable GPIO pin (GPIO_NUM_NC if not used)
+ * @param[in]  oe_active_low  True if OE pin is active-low (outputs enabled when pin is LOW)
+ * @param[in]  config         Device configuration
  *
  * @return ESP_OK on success, error code otherwise
  *
  * @note The handle must be deinitialized with star_sensor_pca9685_deinit() when done
+ * @note If error_iface is NULL, a default error handler will be created internally
+ * @note All operations after init are protected by mutex for thread safety
  */
 esp_err_t star_sensor_pca9685_init(pca9685_handle_t*       handle,
                                    star_bus_manager_t*     manager,
                                    const char*             bus_name,
+                                   star_error_interface_t* error_iface,
+                                   gpio_num_t              oe_pin,
+                                   bool                    oe_active_low,
                                    const pca9685_config_t* config);
 
 /**
@@ -219,8 +238,8 @@ esp_err_t star_sensor_pca9685_get_frequency(const pca9685_handle_t* handle, uint
  * @return ESP_OK on success, ESP_ERR_INVALID_ARG if channel >= 16
  */
 esp_err_t star_sensor_pca9685_set_duty_cycle(const pca9685_handle_t* handle,
-                                              uint8_t                 channel,
-                                              float                   duty_percent);
+                                             uint8_t                 channel,
+                                             float                   duty_percent);
 
 /**
  * @brief Set PWM values directly for a channel
@@ -252,9 +271,9 @@ esp_err_t star_sensor_pca9685_set_pwm(const pca9685_handle_t* handle,
  * @return ESP_OK on success, ESP_ERR_INVALID_ARG if parameters invalid
  */
 esp_err_t star_sensor_pca9685_set_duty_with_phase(const pca9685_handle_t* handle,
-                                                   uint8_t                 channel,
-                                                   float                   duty_percent,
-                                                   float                   phase_percent);
+                                                  uint8_t                 channel,
+                                                  float                   duty_percent,
+                                                  float                   phase_percent);
 
 /**
  * @brief Get PWM values for a channel
@@ -300,7 +319,7 @@ esp_err_t star_sensor_pca9685_set_channel_off(const pca9685_handle_t* handle, ui
  * @return ESP_OK on success, error code otherwise
  */
 esp_err_t star_sensor_pca9685_set_all_duty_cycle(const pca9685_handle_t* handle,
-                                                  float                   duty_percent);
+                                                 float                   duty_percent);
 
 /* --- Helper Functions --- */
 
@@ -333,6 +352,63 @@ esp_err_t star_sensor_pca9685_prescale_to_freq(uint8_t prescale, uint16_t* freq_
  * @return ESP_OK on success, error code otherwise
  */
 esp_err_t star_sensor_pca9685_sleep(pca9685_handle_t* handle, bool sleep);
+
+/* --- Output Enable Pin Control --- */
+
+/**
+ * @brief Enable PWM outputs via OE pin
+ *
+ * If OE pin was configured during init, this enables all PWM outputs.
+ * For active-low OE pins, this sets the pin LOW.
+ * For active-high OE pins, this sets the pin HIGH.
+ *
+ * @param[in] handle Pointer to initialized handle
+ *
+ * @return ESP_OK on success, ESP_ERR_INVALID_STATE if OE pin not configured
+ *
+ * @note This is a no-op if oe_pin was set to GPIO_NUM_NC during init
+ */
+esp_err_t star_sensor_pca9685_output_enable(const pca9685_handle_t* handle);
+
+/**
+ * @brief Disable PWM outputs via OE pin
+ *
+ * If OE pin was configured during init, this disables all PWM outputs.
+ * For active-low OE pins, this sets the pin HIGH.
+ * For active-high OE pins, this sets the pin LOW.
+ *
+ * @param[in] handle Pointer to initialized handle
+ *
+ * @return ESP_OK on success, ESP_ERR_INVALID_STATE if OE pin not configured
+ *
+ * @note This is a no-op if oe_pin was set to GPIO_NUM_NC during init
+ */
+esp_err_t star_sensor_pca9685_output_disable(const pca9685_handle_t* handle);
+
+/* --- Servo Control Convenience Functions --- */
+
+/**
+ * @brief Set servo position by angle
+ *
+ * Convenience function that converts servo angle (0-180°) to PWM values
+ * using the star_servo library and sets the channel output.
+ *
+ * Standard servo mapping:
+ * - 0° = 1.0ms pulse width
+ * - 90° = 1.5ms pulse width (center)
+ * - 180° = 2.0ms pulse width
+ *
+ * @param[in] handle  Pointer to initialized handle
+ * @param[in] channel Channel number (0-15)
+ * @param[in] angle   Servo angle in degrees (0-180)
+ *
+ * @return ESP_OK on success, ESP_ERR_INVALID_ARG if channel >= 16
+ *
+ * @note This function internally uses star_servo_angle_to_count() for conversion
+ * @note Angles outside 0-180 range are automatically clamped
+ */
+esp_err_t
+star_sensor_pca9685_set_servo_angle(const pca9685_handle_t* handle, uint8_t channel, uint8_t angle);
 
 #ifdef __cplusplus
 }

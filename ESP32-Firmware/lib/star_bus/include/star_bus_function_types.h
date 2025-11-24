@@ -28,6 +28,12 @@ typedef void (*star_i2c_error_cb_t)(const star_bus_event_t* event, esp_err_t err
 typedef void (*star_spi_transfer_complete_cb_t)(const star_bus_event_t* event, void* user_ctx);
 typedef void (*star_spi_error_cb_t)(const star_bus_event_t* event, esp_err_t error, void* user_ctx);
 
+/* GPIO Callback Function Types */
+typedef void (*star_gpio_state_change_cb_t)(const star_bus_event_t* event, void* user_ctx);
+typedef void (*star_gpio_error_cb_t)(const star_bus_event_t* event,
+                                     esp_err_t               error,
+                                     void*                   user_ctx);
+
 /* --- Operation Function Types --- */
 
 /* I2C Operation Function Types */
@@ -127,6 +133,58 @@ typedef esp_err_t (*star_spi_transfer_fn_t)(const star_bus_config_t* config,
                                             void*                    rx_buffer,
                                             size_t                   len,
                                             uint32_t                 user_flags);
+
+/* GPIO Operation Function Types */
+
+/**
+ * @brief Function pointer type for configuring a GPIO pin (mode, pull-up/down).
+ * @param config Pointer to the initialized GPIO bus configuration.
+ * @param pin GPIO pin number to configure.
+ * @param mode GPIO mode (input, output, etc.).
+ * @param pull GPIO pull mode (pull-up, pull-down, floating).
+ * @return ESP_OK on success, error code otherwise.
+ */
+typedef esp_err_t (*star_gpio_configure_fn_t)(const star_bus_config_t* config,
+                                              gpio_num_t               pin,
+                                              gpio_mode_t              mode,
+                                              gpio_pull_mode_t         pull);
+
+/**
+ * @brief Function pointer type for writing (setting output level) to a GPIO pin.
+ * @param config Pointer to the initialized GPIO bus configuration.
+ * @param pin GPIO pin number to write.
+ * @param level Level to set (0 = low, 1 = high).
+ * @return ESP_OK on success, error code otherwise.
+ */
+typedef esp_err_t (*star_gpio_write_fn_t)(const star_bus_config_t* config,
+                                          gpio_num_t               pin,
+                                          uint32_t                 level);
+
+/**
+ * @brief Function pointer type for reading (getting input level) from a GPIO pin.
+ * @param config Pointer to the initialized GPIO bus configuration.
+ * @param pin GPIO pin number to read.
+ * @param level Pointer to store the read level (0 = low, 1 = high).
+ * @return ESP_OK on success, error code otherwise.
+ */
+typedef esp_err_t (*star_gpio_read_fn_t)(const star_bus_config_t* config,
+                                         gpio_num_t               pin,
+                                         uint32_t*                level);
+
+/**
+ * @brief Function pointer type for setting up GPIO interrupt.
+ * @param config Pointer to the initialized GPIO bus configuration.
+ * @param pin GPIO pin number to configure interrupt for.
+ * @param intr_type Interrupt type (rising edge, falling edge, etc.).
+ * @param isr_handler ISR handler function. Can be NULL to disable interrupt.
+ * @param args Arguments to pass to ISR handler. Can be NULL.
+ * @return ESP_OK on success, error code otherwise.
+ */
+typedef esp_err_t (*star_gpio_set_interrupt_fn_t)(const star_bus_config_t* config,
+                                                  gpio_num_t               pin,
+                                                  gpio_int_type_t          intr_type,
+                                                  gpio_isr_t               isr_handler,
+                                                  void*                    args);
 
 #ifdef __cplusplus
 }

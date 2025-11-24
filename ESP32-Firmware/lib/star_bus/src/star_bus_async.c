@@ -141,7 +141,7 @@ static async_state_t* priv_get_async_state(const char* bus_name)
     memset(state, 0, sizeof(async_state_t));
     strncpy(state->bus_name, bus_name, sizeof(state->bus_name) - 1);
     state->bus_name[sizeof(state->bus_name) - 1] = '\0';
-    state->queue_mutex = xSemaphoreCreateMutex();
+    state->queue_mutex                           = xSemaphoreCreateMutex();
     if (state->queue_mutex == NULL) {
       ESP_LOGE(s_TAG, "Failed to create queue mutex for bus '%s'", bus_name);
       xSemaphoreGive(g_global_mutex);

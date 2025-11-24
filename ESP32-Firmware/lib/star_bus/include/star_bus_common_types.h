@@ -30,6 +30,7 @@ typedef enum {
   k_star_bus_type_none, /**< No bus type specified */
   k_star_bus_type_i2c,  /**< I2C bus */
   k_star_bus_type_spi,  /**< SPI bus */
+  k_star_bus_type_gpio, /**< GPIO bus */
   /* Add other types like UART, CAN if needed */
   k_star_bus_type_count, /**< Number of bus types */
 } star_bus_type_t;
