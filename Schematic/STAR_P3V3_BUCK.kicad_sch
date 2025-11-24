@@ -2362,6 +2362,16 @@
 	)
 	(wire
 		(pts
+			(xy 148.59 106.68) (xy 157.48 106.68)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "065fdb7b-f3a5-40a9-8e35-62407d23b86e")
+	)
+	(wire
+		(pts
 			(xy 88.9 111.76) (xy 88.9 127)
 		)
 		(stroke
@@ -2422,7 +2432,7 @@
 	)
 	(wire
 		(pts
-			(xy 168.91 106.68) (xy 161.29 106.68)
+			(xy 168.91 106.68) (xy 165.1 106.68)
 		)
 		(stroke
 			(width 0)
@@ -2499,16 +2509,6 @@
 			(type default)
 		)
 		(uuid "28ad3abc-f48d-471d-87ea-ad60df78e7e8")
-	)
-	(wire
-		(pts
-			(xy 153.67 106.68) (xy 148.59 106.68)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "2c881184-933d-4174-b2ea-2cd8d3e7fe5d")
 	)
 	(wire
 		(pts
@@ -2592,7 +2592,7 @@
 	)
 	(wire
 		(pts
-			(xy 110.49 95.25) (xy 151.13 95.25)
+			(xy 110.49 95.25) (xy 149.86 95.25)
 		)
 		(stroke
 			(width 0)
@@ -2732,7 +2732,7 @@
 	)
 	(wire
 		(pts
-			(xy 151.13 109.22) (xy 148.59 109.22)
+			(xy 149.86 109.22) (xy 148.59 109.22)
 		)
 		(stroke
 			(width 0)
@@ -2912,7 +2912,7 @@
 	)
 	(wire
 		(pts
-			(xy 151.13 95.25) (xy 151.13 109.22)
+			(xy 149.86 95.25) (xy 149.86 109.22)
 		)
 		(stroke
 			(width 0)
@@ -3299,6 +3299,16 @@
 			(justify left bottom)
 		)
 		(uuid "11c4987c-6174-479e-8386-1949e5393b89")
+	)
+	(label "Switch"
+		(at 156.21 106.68 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "46786060-cd89-47c4-8b4a-c7a502bf28b8")
 	)
 	(label "P3V3_BUCK"
 		(at 213.36 124.46 180)
@@ -5323,7 +5333,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 38.1 170.688 0)
+			(at 40.132 171.196 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5438,7 +5448,7 @@
 	)
 	(symbol
 		(lib_id "VLS6045EX-1R0N:VLS6045EX-1R0N")
-		(at 157.48 105.41 270)
+		(at 161.29 105.41 270)
 		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
@@ -5447,7 +5457,7 @@
 		(dnp no)
 		(uuid "5101eb40-d59e-41b7-8f32-d3c2275504e8")
 		(property "Reference" "L1"
-			(at 152.146 106.426 90)
+			(at 155.956 106.426 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5456,7 +5466,7 @@
 			)
 		)
 		(property "Value" "VLS6045EX-1R0N"
-			(at 153.416 108.712 90)
+			(at 157.226 108.712 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5465,7 +5475,7 @@
 			)
 		)
 		(property "Footprint" "VLS6045EX-1R0N:VLS6045"
-			(at 61.29 88.9 0)
+			(at 65.1 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5475,7 +5485,7 @@
 			)
 		)
 		(property "Datasheet" "https://product.tdk.com/system/files/dam/doc/product/inductor/inductor/smd/catalog/inductor_commercial_power_vls6045ex_en.pdf"
-			(at -38.71 88.9 0)
+			(at -34.9 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5485,7 +5495,7 @@
 			)
 		)
 		(property "Description" "TDK VLS-EX Series Type 6045 Shielded Wire-wound SMD Inductor with a Ferrite Core, 1 uH Wire-Wound 6A Idc"
-			(at 157.48 105.41 0)
+			(at 161.29 105.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5494,7 +5504,7 @@
 			)
 		)
 		(property "Height" ""
-			(at -238.71 88.9 0)
+			(at -234.9 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5504,7 +5514,7 @@
 			)
 		)
 		(property "Mouser Part Number" "810-VLS6045EX-1R0N"
-			(at -338.71 88.9 0)
+			(at -334.9 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5514,7 +5524,7 @@
 			)
 		)
 		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/TDK/VLS6045EX-1R0N?qs=oF%2FSscNnLpDlW9ckgKzTfw%3D%3D"
-			(at -438.71 88.9 0)
+			(at -434.9 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5524,7 +5534,7 @@
 			)
 		)
 		(property "Manufacturer_Name" "TDK"
-			(at -538.71 88.9 0)
+			(at -534.9 88.9 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5534,7 +5544,7 @@
 			)
 		)
 		(property "DigiKey Link" "https://www.digikey.com/short/22cnz1nr"
-			(at 157.48 105.41 0)
+			(at 161.29 105.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5543,7 +5553,7 @@
 			)
 		)
 		(property "DigiKey Part Number" "445-173043-1-ND"
-			(at 157.48 105.41 0)
+			(at 161.29 105.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5552,7 +5562,7 @@
 			)
 		)
 		(property "DigiKey Price per Unit" "0.34"
-			(at 157.48 105.41 0)
+			(at 161.29 105.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5561,7 +5571,7 @@
 			)
 		)
 		(property "Manufactaurer Part Number" "VLS6045EX-1R0N"
-			(at 157.48 105.41 0)
+			(at 161.29 105.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5570,7 +5580,7 @@
 			)
 		)
 		(property "Mouser Link" "https://mou.sr/4nnQzsg"
-			(at 157.48 105.41 0)
+			(at 161.29 105.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -5579,7 +5589,7 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.30"
-			(at 157.48 105.41 0)
+			(at 161.29 105.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)
