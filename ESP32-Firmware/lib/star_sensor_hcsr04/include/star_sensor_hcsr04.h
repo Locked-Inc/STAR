@@ -35,7 +35,7 @@ extern "C" {
  * - Timeout protection (prevents hanging)
  *
  * Hardware Connections:
- * - VCC: 5V (sensor needs 5V, but echo is 5V tolerant on most ESP32)
+ * - VCC: 3v3
  * - GND: Ground
  * - TRIG: GPIO output (10us pulse triggers measurement)
  * - ECHO: GPIO input (pulse width proportional to distance)
