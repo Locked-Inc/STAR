@@ -14,6 +14,160 @@ extern "C" {
 #include "esp_err.h"
 #include "star_bus_types.h"
 
+/**
+ * @file star_bus_config.h
+ * @brief Bus configuration creation and lifecycle management
+ *
+ * This module provides factory functions for creating bus configurations for
+ * different protocols (I2C, SPI, GPIO, DHT22). Each configuration represents
+ * a communication channel that can be added to the bus manager.
+ *
+ * Key Features:
+ * - Factory functions for I2C, SPI, GPIO, and DHT22 configurations
+ * - Automatic driver initialization via star_bus_config_init()
+ * - Resource cleanup via star_bus_config_destroy()
+ * - Support for multiple devices on shared buses
+ *
+ * Example Usage:
+ * @code
+ * // === Creating I2C Bus Configuration ===
+ *
+ * #include "star_bus_config.h"
+ * #include "star_bus_manager.h"
+ *
+ * // Create I2C config for MPU6050 IMU sensor
+ * star_bus_config_t* imu_bus = star_bus_config_create_i2c(
+ *     "imu_i2c",           // Unique bus name
+ *     I2C_NUM_0,           // I2C port (0 or 1)
+ *     0x68,                // MPU6050 I2C address
+ *     GPIO_NUM_21,         // SDA pin
+ *     GPIO_NUM_22,         // SCL pin
+ *     400000               // 400kHz fast mode
+ * );
+ *
+ * if (imu_bus == NULL) {
+ *     ESP_LOGE(TAG, "Failed to create I2C config");
+ *     return;
+ * }
+ *
+ * // Add to bus manager (initializes the I2C driver)
+ * star_bus_manager_add_bus(&bus_manager, imu_bus);
+ *
+ *
+ * // === Creating Multiple I2C Devices on Same Port ===
+ *
+ * // Same I2C port, different device addresses
+ * star_bus_config_t* accel_bus = star_bus_config_create_i2c(
+ *     "accel_i2c", I2C_NUM_0, 0x1D, GPIO_NUM_21, GPIO_NUM_22, 400000);
+ * star_bus_config_t* mag_bus = star_bus_config_create_i2c(
+ *     "mag_i2c", I2C_NUM_0, 0x1E, GPIO_NUM_21, GPIO_NUM_22, 400000);
+ *
+ * star_bus_manager_add_bus(&bus_manager, accel_bus);
+ * star_bus_manager_add_bus(&bus_manager, mag_bus);
+ *
+ *
+ * // === Creating SPI Device Configuration ===
+ *
+ * // Configure SPI device interface
+ * spi_device_interface_config_t spi_dev_cfg = {
+ *     .clock_speed_hz = 10 * 1000 * 1000,  // 10 MHz
+ *     .mode = 0,                            // SPI mode 0
+ *     .spics_io_num = GPIO_NUM_5,           // CS pin
+ *     .queue_size = 7,                      // Transaction queue size
+ *     .pre_cb = NULL,                       // Pre-transfer callback
+ *     .post_cb = NULL,                      // Post-transfer callback
+ * };
+ *
+ * star_bus_config_t* lcd_bus = star_bus_config_create_spi_device(
+ *     "lcd_spi",           // Unique bus name
+ *     SPI2_HOST,           // SPI host (SPI2 or SPI3)
+ *     GPIO_NUM_23,         // COPI (MOSI) pin
+ *     GPIO_NUM_19,         // CIPO (MISO) pin (-1 if not used)
+ *     GPIO_NUM_18,         // SCLK pin
+ *     SPI_DMA_CH_AUTO,     // DMA channel (auto-select)
+ *     &spi_dev_cfg         // Device configuration
+ * );
+ *
+ * star_bus_manager_add_bus(&bus_manager, lcd_bus);
+ *
+ *
+ * // === Creating SPI Peripheral (Slave) Configuration ===
+ *
+ * // Configure ESP32 as SPI slave device
+ * star_bus_config_t* slave_bus = star_bus_config_create_spi_peripheral(
+ *     "spi_slave",         // Unique bus name
+ *     SPI2_HOST,           // SPI host
+ *     GPIO_NUM_23,         // COPI pin
+ *     GPIO_NUM_19,         // CIPO pin
+ *     GPIO_NUM_18,         // SCLK pin
+ *     GPIO_NUM_5,          // CS pin
+ *     3,                   // Transaction queue size
+ *     0                    // SPI mode 0
+ * );
+ *
+ * star_bus_manager_add_bus(&bus_manager, slave_bus);
+ *
+ *
+ * // === Creating GPIO Bus Configuration ===
+ *
+ * // Create GPIO bus for sensor pins
+ * gpio_num_t sensor_pins[] = {GPIO_NUM_4, GPIO_NUM_5, GPIO_NUM_18};
+ * star_bus_config_t* gpio_bus = star_bus_config_create_gpio(
+ *     "sensor_gpio",       // Unique bus name
+ *     sensor_pins,         // Array of GPIO pins
+ *     3                    // Number of pins
+ * );
+ *
+ * star_bus_manager_add_bus(&bus_manager, gpio_bus);
+ *
+ *
+ * // === Creating DHT22 Bus Configuration ===
+ *
+ * // Create DHT22 temperature/humidity sensor bus
+ * star_bus_config_t* dht_bus = star_bus_config_create_dht22(
+ *     "dht22_indoor",          // Unique bus name
+ *     GPIO_NUM_4,              // Data pin
+ *     k_star_dht22_model_dht22, // Sensor model
+ *     18,                      // Start signal low duration (ms)
+ *     100                      // Read timeout (ms)
+ * );
+ *
+ * star_bus_manager_add_bus(&bus_manager, dht_bus);
+ *
+ *
+ * // === Manual Initialization (Advanced) ===
+ *
+ * // If not using bus manager, you can manually init/deinit
+ * star_bus_config_t* manual_bus = star_bus_config_create_i2c(
+ *     "manual_i2c", I2C_NUM_1, 0x50, GPIO_NUM_25, GPIO_NUM_26, 100000);
+ *
+ * // Initialize the driver
+ * esp_err_t ret = star_bus_config_init(manual_bus, &bus_manager);
+ * if (ret != ESP_OK) {
+ *     ESP_LOGE(TAG, "Failed to init bus: %s", esp_err_to_name(ret));
+ *     star_bus_config_destroy(manual_bus);
+ *     return;
+ * }
+ *
+ * // Use the bus...
+ *
+ * // Deinitialize driver (but keep config)
+ * star_bus_config_deinit(manual_bus);
+ *
+ * // Destroy config and free memory
+ * star_bus_config_destroy(manual_bus);
+ *
+ *
+ * // === Cleanup ===
+ *
+ * // Remove bus from manager (deinitializes driver)
+ * star_bus_manager_remove_bus(&bus_manager, "imu_i2c");
+ *
+ * // Destroy the configuration (frees memory)
+ * star_bus_config_destroy(imu_bus);
+ * @endcode
+ */
+
 /* --- Forward declaration needed for the function signature --- */
 struct star_bus_manager;
 
@@ -140,13 +294,39 @@ esp_err_t star_bus_config_deinit(star_bus_config_t* config);
  * Useful for sensors that use direct GPIO control (e.g., HC-SR04 ultrasonic sensor).
  * The GPIO pins will be configured when star_bus_config_init is called.
  *
+ * The pins array is copied internally using dynamic allocation, so the caller's
+ * array does not need to persist after this call.
+ *
  * @param[in] name      Unique name for this GPIO bus instance (e.g., "HCSR04_GPIO"). Must be non-NULL.
  * @param[in] pins      Array of GPIO pin numbers to manage. Must be non-NULL.
- * @param[in] pin_count Number of pins in the array (max 8).
+ * @param[in] pin_count Number of pins in the array (must be >= 1).
  * @return star_bus_config_t* Pointer to the created configuration, or NULL on failure. Must be destroyed via star_bus_config_destroy.
  */
 star_bus_config_t*
 star_bus_config_create_gpio(const char* name, const gpio_num_t pins[], uint8_t pin_count);
+
+/**
+ * @brief Create a new DHT22 bus configuration.
+ *
+ * Configures parameters for a DHT22/DHT11/AM2301 temperature and humidity sensor
+ * using a proprietary single-wire protocol. This protocol is NOT compatible with
+ * Dallas 1-Wire protocol.
+ *
+ * The DHT22 sensor requires minimum 2 seconds between readings. The driver
+ * automatically caches readings and returns cached data if called more frequently.
+ *
+ * @param[in] name           Unique name for this DHT22 bus instance (e.g., "dht22_indoor"). Must be non-NULL.
+ * @param[in] gpio_pin       GPIO pin number for the data line.
+ * @param[in] model          Sensor model (k_star_dht22_model_dht22, k_star_dht22_model_dht11, or k_star_dht22_model_am2301).
+ * @param[in] start_low_ms   Start signal low duration in milliseconds (18ms typical for DHT22, 20ms for DHT11).
+ * @param[in] read_timeout_ms Read timeout in milliseconds (100ms default).
+ * @return star_bus_config_t* Pointer to the created configuration, or NULL on failure. Must be destroyed via star_bus_config_destroy.
+ */
+star_bus_config_t* star_bus_config_create_dht22(const char*        name,
+                                                gpio_num_t         gpio_pin,
+                                                star_dht22_model_t model,
+                                                uint32_t           start_low_ms,
+                                                uint32_t           read_timeout_ms);
 
 #ifdef __cplusplus
 }

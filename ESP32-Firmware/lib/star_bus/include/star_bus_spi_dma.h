@@ -37,6 +37,160 @@ extern "C" {
  * - DMA buffers must be in DMA-capable memory
  * - 4-byte alignment requirement
  * - Maximum single transfer: 4092 bytes
+ *
+ * Example Usage:
+ * @code
+ * // === Setup DMA for SPI Bus ===
+ *
+ * #include "star_bus_spi_dma.h"
+ * #include "star_bus_manager.h"
+ *
+ * // Configure DMA for an SPI bus
+ * star_spi_dma_config_t dma_config = {
+ *     .enabled = true,
+ *     .min_transfer_size = STAR_SPI_DMA_MIN_SIZE,
+ *     .dma_channel = 1
+ * };
+ * star_bus_spi_configure_dma(&bus_manager, "flash_bus", &dma_config);
+ *
+ *
+ * // === Allocate DMA-Capable Buffers ===
+ *
+ * // Allocate DMA-capable buffers for SPI transfers
+ * size_t buffer_size = 4096;  // Max DMA transfer
+ * uint8_t* tx_buffer = (uint8_t*)star_spi_dma_malloc(buffer_size);
+ * uint8_t* rx_buffer = (uint8_t*)star_spi_dma_malloc(buffer_size);
+ *
+ * if (tx_buffer == NULL || rx_buffer == NULL) {
+ *     ESP_LOGE(TAG, "Failed to allocate DMA buffers");
+ *     return ESP_ERR_NO_MEM;
+ * }
+ *
+ * // Verify buffers are DMA-capable
+ * assert(star_spi_is_dma_capable(tx_buffer, buffer_size));
+ * assert(star_spi_is_dma_capable(rx_buffer, buffer_size));
+ *
+ *
+ * // === DMA Transmit to Display ===
+ *
+ * // Send framebuffer to LCD display using DMA
+ * #define LCD_WIDTH 320
+ * #define LCD_HEIGHT 240
+ * #define PIXEL_SIZE 2  // RGB565
+ *
+ * // Fill with solid color
+ * uint16_t* pixels = (uint16_t*)tx_buffer;
+ * for (int i = 0; i < buffer_size / PIXEL_SIZE; i++) {
+ *     pixels[i] = 0xF800;  // Red in RGB565
+ * }
+ *
+ * // Transmit to display (blocking)
+ * esp_err_t ret = star_bus_spi_transmit_dma(
+ *     &bus_manager,
+ *     "lcd_bus",
+ *     tx_buffer,
+ *     buffer_size,
+ *     NULL,    // NULL = blocking
+ *     NULL
+ * );
+ *
+ *
+ * // === DMA Receive from Flash ===
+ *
+ * // Read data from SPI flash using DMA
+ * ret = star_bus_spi_receive_dma(
+ *     &bus_manager,
+ *     "flash_bus",
+ *     rx_buffer,
+ *     buffer_size,
+ *     NULL,    // NULL = blocking
+ *     NULL
+ * );
+ * if (ret == ESP_OK) {
+ *     ESP_LOGI(TAG, "Read %d bytes from flash", buffer_size);
+ * }
+ *
+ *
+ * // === Full-Duplex DMA Transceive ===
+ *
+ * // Perform full-duplex SPI communication (send and receive simultaneously)
+ * memset(tx_buffer, 0xFF, buffer_size);  // Dummy bytes for read
+ * tx_buffer[0] = 0x03;  // Read command
+ * tx_buffer[1] = 0x00;  // Address high
+ * tx_buffer[2] = 0x00;  // Address mid
+ * tx_buffer[3] = 0x00;  // Address low
+ *
+ * ret = star_bus_spi_transceive_dma(
+ *     &bus_manager,
+ *     "flash_bus",
+ *     tx_buffer,
+ *     rx_buffer,
+ *     buffer_size,
+ *     NULL,
+ *     NULL
+ * );
+ *
+ * // Data starts at rx_buffer[4] (after command + address)
+ * ESP_LOGI(TAG, "Flash data: 0x%02X 0x%02X 0x%02X...",
+ *          rx_buffer[4], rx_buffer[5], rx_buffer[6]);
+ *
+ *
+ * // === Async DMA with Callback ===
+ *
+ * typedef struct {
+ *     SemaphoreHandle_t done_sem;
+ *     esp_err_t result;
+ * } dma_context_t;
+ *
+ * void spi_dma_callback(esp_err_t result, void* context) {
+ *     dma_context_t* ctx = (dma_context_t*)context;
+ *     ctx->result = result;
+ *     xSemaphoreGive(ctx->done_sem);
+ * }
+ *
+ * // Setup async context
+ * dma_context_t ctx = {
+ *     .done_sem = xSemaphoreCreateBinary(),
+ *     .result = ESP_FAIL
+ * };
+ *
+ * // Start async transfer
+ * ret = star_bus_spi_transmit_dma(
+ *     &bus_manager,
+ *     "lcd_bus",
+ *     tx_buffer,
+ *     buffer_size,
+ *     spi_dma_callback,
+ *     &ctx
+ * );
+ *
+ * // Do other work while DMA runs
+ * process_other_tasks();
+ *
+ * // Wait for completion
+ * if (xSemaphoreTake(ctx.done_sem, pdMS_TO_TICKS(1000)) == pdTRUE) {
+ *     if (ctx.result == ESP_OK) {
+ *         ESP_LOGI(TAG, "Async DMA completed");
+ *     }
+ * }
+ * vSemaphoreDelete(ctx.done_sem);
+ *
+ *
+ * // === Get DMA Statistics ===
+ *
+ * uint32_t dma_transfers;
+ * uint64_t dma_bytes;
+ * star_bus_spi_get_dma_stats(&bus_manager, "lcd_bus",
+ *                             &dma_transfers, &dma_bytes);
+ * ESP_LOGI(TAG, "LCD DMA: %lu transfers, %llu bytes",
+ *          dma_transfers, dma_bytes);
+ *
+ *
+ * // === Cleanup ===
+ *
+ * star_spi_dma_free(tx_buffer);
+ * star_spi_dma_free(rx_buffer);
+ * @endcode
  */
 
 /* --- Constants --- */

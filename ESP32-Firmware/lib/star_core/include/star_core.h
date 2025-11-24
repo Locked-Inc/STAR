@@ -4,6 +4,134 @@
  *
  * This header provides all interface definitions and validation utilities
  * for the STAR firmware's dependency inversion system.
+ *
+ * Example Usage:
+ * @code
+ * // === Include All Core Interfaces ===
+ *
+ * #include "star_core.h"  // Includes star_error_interface.h and star_pin_interface.h
+ *
+ *
+ * // === Get Library Version ===
+ *
+ * const char* version = star_core_version();
+ * ESP_LOGI(TAG, "STAR Core version: %s", version);
+ *
+ *
+ * // === Validate Interfaces Before Use ===
+ *
+ * star_error_interface_t error_iface;
+ * error_handler_get_interface(&error_iface, &error_handler);
+ *
+ * // Check if error interface is valid (all function pointers set)
+ * if (star_error_interface_is_valid(&error_iface)) {
+ *     ESP_LOGI(TAG, "Error interface is valid");
+ * } else {
+ *     ESP_LOGE(TAG, "Error interface is incomplete");
+ *     return ESP_ERR_INVALID_STATE;
+ * }
+ *
+ * star_pin_interface_t pin_iface;
+ * pin_validator_get_interface(&pin_iface);
+ *
+ * // Check if pin interface is valid
+ * if (star_pin_interface_is_valid(&pin_iface)) {
+ *     ESP_LOGI(TAG, "Pin interface is valid");
+ * }
+ *
+ *
+ * // === Using Convenience Macros ===
+ *
+ * // Check if retry is possible (safely handles NULL)
+ * if (STAR_IFACE_CAN_RETRY(&error_iface)) {
+ *     ESP_LOGI(TAG, "Retry is possible");
+ *     // Attempt retry...
+ * }
+ *
+ * // Reset error state
+ * esp_err_t ret = STAR_IFACE_RESET_STATE(&error_iface);
+ *
+ * // Register a GPIO pin
+ * ret = STAR_IFACE_REGISTER_PIN(&pin_iface, GPIO_NUM_21, "I2C SDA", true);
+ * ret = STAR_IFACE_REGISTER_PIN(&pin_iface, GPIO_NUM_22, "I2C SCL", true);
+ *
+ * // Unregister a pin when no longer needed
+ * ret = STAR_IFACE_UNREGISTER_PIN(&pin_iface, GPIO_NUM_21, "I2C SDA");
+ *
+ * // Validate all registered pins for conflicts
+ * ret = STAR_IFACE_VALIDATE_PINS(&pin_iface);
+ * if (ret != ESP_OK) {
+ *     ESP_LOGE(TAG, "Pin conflict detected!");
+ * }
+ *
+ *
+ * // === NULL-Safe Macro Usage ===
+ *
+ * // All STAR_IFACE_* macros safely handle NULL interfaces
+ * star_error_interface_t* maybe_null = NULL;
+ *
+ * // This won't crash - returns false for NULL
+ * bool can_retry = STAR_IFACE_CAN_RETRY(maybe_null);
+ *
+ * // This won't crash - returns ESP_OK for NULL (no-op)
+ * ret = STAR_IFACE_RESET_STATE(maybe_null);
+ *
+ *
+ * // === Typical Initialization Pattern ===
+ *
+ * esp_err_t init_system(void) {
+ *     // Create error handler
+ *     error_handler_t error_handler;
+ *     error_handler_init(&error_handler, 3, 100, 5000, NULL, NULL);
+ *
+ *     // Get error interface
+ *     star_error_interface_t error_iface;
+ *     error_handler_get_interface(&error_iface, &error_handler);
+ *
+ *     // Validate before use
+ *     if (!star_error_interface_is_valid(&error_iface)) {
+ *         return ESP_ERR_INVALID_STATE;
+ *     }
+ *
+ *     // Get pin interface
+ *     star_pin_interface_t pin_iface;
+ *     pin_validator_get_interface(&pin_iface);
+ *
+ *     // Validate before use
+ *     if (!star_pin_interface_is_valid(&pin_iface)) {
+ *         return ESP_ERR_INVALID_STATE;
+ *     }
+ *
+ *     // Initialize bus manager with validated interfaces
+ *     star_bus_manager_t bus_manager;
+ *     esp_err_t ret = star_bus_manager_init(&bus_manager, "main",
+ *                                            &error_iface, &pin_iface);
+ *     return ret;
+ * }
+ *
+ *
+ * // === Using STAR_IFACE_RECORD_ERROR ===
+ *
+ * // Record error through interface (from star_error_interface.h)
+ * esp_err_t perform_operation(star_error_interface_t* error_iface) {
+ *     esp_err_t ret = some_function();
+ *
+ *     if (ret != ESP_OK) {
+ *         // Record error with file/line/function info
+ *         STAR_IFACE_RECORD_ERROR(error_iface, ret, "Operation failed");
+ *
+ *         // Check if we should retry
+ *         if (STAR_IFACE_CAN_RETRY(error_iface)) {
+ *             // Retry logic...
+ *             ret = some_function();
+ *             if (ret == ESP_OK) {
+ *                 STAR_IFACE_RESET_STATE(error_iface);
+ *             }
+ *         }
+ *     }
+ *     return ret;
+ * }
+ * @endcode
  */
 
 #ifndef STAR_CORE_H
