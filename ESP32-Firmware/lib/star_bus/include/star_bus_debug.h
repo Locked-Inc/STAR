@@ -19,6 +19,159 @@ extern "C" {
  *
  * This module provides tools for debugging I2C bus issues, scanning for devices,
  * monitoring transactions, and diagnosing communication problems.
+ *
+ * Example Usage:
+ * @code
+ * // === Scan I2C Bus for Devices ===
+ *
+ * #include "star_bus_debug.h"
+ * #include "star_bus_manager.h"
+ *
+ * // Print scan results to console (simplest approach)
+ * star_bus_debug_print_scan(&bus_manager, "sensor_bus");
+ * // Output:
+ * //   I2C Scan on bus 'sensor_bus':
+ * //   Found device at address 0x68 (MPU6050/DS3231)
+ * //   Found device at address 0x76 (BMP280)
+ * //   Scan complete: 2 devices found
+ *
+ * // Or get device addresses programmatically
+ * uint8_t devices[16];
+ * size_t num_found;
+ * esp_err_t ret = star_bus_debug_scan_i2c(
+ *     &bus_manager,
+ *     "sensor_bus",
+ *     NULL,        // No callback
+ *     NULL,
+ *     devices,     // Array to store addresses
+ *     16,          // Max devices
+ *     &num_found
+ * );
+ * for (size_t i = 0; i < num_found; i++) {
+ *     ESP_LOGI(TAG, "Device at 0x%02X", devices[i]);
+ * }
+ *
+ *
+ * // === Scan with Callback ===
+ *
+ * void device_found_callback(uint8_t address, void* user_data) {
+ *     int* count = (int*)user_data;
+ *     ESP_LOGI(TAG, "Found device #%d at 0x%02X", ++(*count), address);
+ * }
+ *
+ * int device_count = 0;
+ * star_bus_debug_scan_i2c(&bus_manager, "sensor_bus",
+ *                          device_found_callback, &device_count,
+ *                          NULL, 0, NULL);
+ *
+ *
+ * // === Print Bus Information ===
+ *
+ * // Print info about all configured buses
+ * star_bus_debug_print_buses(&bus_manager);
+ *
+ * // Print detailed info about specific bus
+ * star_bus_debug_print_bus_info(&bus_manager, "sensor_bus");
+ *
+ *
+ * // === Register Operations for Debugging ===
+ *
+ * // Read a single register
+ * star_bus_debug_read_reg(&bus_manager, "imu_bus", 0x75);
+ * // Output: Register 0x75 = 0x68 (WHO_AM_I)
+ *
+ * // Write a register value
+ * star_bus_debug_write_reg(&bus_manager, "imu_bus", 0x6B, 0x00);
+ * // Output: Wrote 0x00 to register 0x6B
+ *
+ * // Dump multiple registers (hex dump)
+ * star_bus_debug_dump_regs(&bus_manager, "imu_bus", 0x00, 32);
+ * // Output:
+ * //   Register dump from 0x00 (32 bytes):
+ * //   00: 00 00 00 00 00 00 00 00  ........
+ * //   08: 00 00 00 00 00 00 00 00  ........
+ * //   ...
+ *
+ *
+ * // === Transaction Logging ===
+ *
+ * // Create a transaction log buffer
+ * #define LOG_SIZE 100
+ * star_bus_transaction_log_t log_buffer[LOG_SIZE];
+ * star_bus_transaction_logger_t logger;
+ *
+ * star_bus_debug_logger_init(&logger, log_buffer, LOG_SIZE, true);
+ * star_bus_debug_logger_set_enabled(&logger, true);
+ *
+ * // ... perform bus operations ...
+ * // Manually log transactions (or integrate into bus operations)
+ * star_bus_debug_logger_log(&logger,
+ *     0,        // bus_index
+ *     0x68,     // device address
+ *     0x3B,     // register address
+ *     14,       // data length
+ *     false,    // is_write (false = read)
+ *     true,     // success
+ *     ESP_OK    // error code
+ * );
+ *
+ * // Print all logged transactions
+ * star_bus_debug_logger_print(&logger);
+ *
+ * // Get specific entry
+ * star_bus_transaction_log_t entry;
+ * star_bus_debug_logger_get_entry(&logger, 0, &entry);
+ * ESP_LOGI(TAG, "Entry 0: addr=0x%02X, reg=0x%02X, %s",
+ *          entry.address, entry.reg_addr,
+ *          entry.is_write ? "WRITE" : "READ");
+ *
+ * // Clear log
+ * star_bus_debug_logger_clear(&logger);
+ *
+ *
+ * // === Error Statistics ===
+ *
+ * star_bus_error_stats_t stats;
+ * star_bus_debug_stats_init(&stats);
+ *
+ * // Record transaction results
+ * star_bus_debug_stats_record(&stats, true, ESP_OK);       // Success
+ * star_bus_debug_stats_record(&stats, false, ESP_ERR_TIMEOUT);  // Failure
+ *
+ * // Print statistics
+ * star_bus_debug_stats_print(&stats);
+ * // Output:
+ * //   Bus Statistics:
+ * //   Total transactions: 2
+ * //   Failed transactions: 1 (50.0%)
+ * //   Timeout errors: 1
+ * //   NACK errors: 0
+ * //   Bus errors: 0
+ *
+ * // Reset statistics
+ * star_bus_debug_stats_reset(&stats);
+ *
+ *
+ * // === Diagnostic Tests ===
+ *
+ * // Test if bus is functioning correctly
+ * ret = star_bus_debug_test_bus(&bus_manager, "sensor_bus");
+ * if (ret == ESP_OK) {
+ *     ESP_LOGI(TAG, "Bus test passed");
+ * }
+ *
+ * // Test device connectivity
+ * ret = star_bus_debug_test_device(&bus_manager, "imu_bus");
+ * if (ret == ESP_OK) {
+ *     ESP_LOGI(TAG, "Device responds to address");
+ * }
+ *
+ * // Test register read/write (use with caution - writes to device!)
+ * ret = star_bus_debug_test_reg_rw(&bus_manager, "config_bus", 0x10, 0xAA);
+ * if (ret == ESP_OK) {
+ *     ESP_LOGI(TAG, "Register R/W test passed");
+ * }
+ * @endcode
  */
 
 /* --- I2C Bus Scanning --- */

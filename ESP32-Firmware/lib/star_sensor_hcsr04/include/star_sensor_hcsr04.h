@@ -22,12 +22,128 @@ extern "C" {
  * @file star_sensor_hcsr04.h
  * @brief HC-SR04 ultrasonic distance sensor driver
  *
- * This driver provides interface to the HC-SR04 ultrasonic sensor.
- * It supports:
- * - Distance measurement (2-400 cm)
- * - Temperature compensation
- * - Timeout protection
- * - ISR-based echo timing
+ * This driver provides an interface to the HC-SR04 ultrasonic distance sensor.
+ * It uses ISR-based timing for accurate echo pulse measurement and supports
+ * temperature compensation for improved accuracy.
+ *
+ * Key Features:
+ * - Distance measurement range: 2-400 cm
+ * - Temperature compensation for speed of sound
+ * - ISR-based echo timing for accuracy
+ * - Blocking and non-blocking measurement modes
+ * - Thread-safe with mutex protection
+ * - Timeout protection (prevents hanging)
+ *
+ * Hardware Connections:
+ * - VCC: 5V (sensor needs 5V, but echo is 5V tolerant on most ESP32)
+ * - GND: Ground
+ * - TRIG: GPIO output (10us pulse triggers measurement)
+ * - ECHO: GPIO input (pulse width proportional to distance)
+ *
+ * Example Usage:
+ * @code
+ * // === Basic Setup with Bus Manager ===
+ *
+ * #include "star_sensor_hcsr04.h"
+ * #include "star_bus_manager.h"
+ * #include "star_bus_config.h"
+ *
+ * // 1. Setup bus manager (see star_bus_manager.h for full setup)
+ * star_bus_manager_t bus_manager;
+ * star_bus_manager_init(&bus_manager, "main", &error_iface, &pin_iface);
+ *
+ * // 2. Create GPIO bus for the sensor pins
+ * gpio_num_t hcsr04_pins[] = {GPIO_NUM_5, GPIO_NUM_18};  // Trigger, Echo
+ * star_bus_config_t* gpio_bus = star_bus_config_create_gpio(
+ *     "hcsr04_gpio", hcsr04_pins, 2);
+ * star_bus_manager_add_bus(&bus_manager, gpio_bus);
+ *
+ * // 3. Initialize HC-SR04 sensor
+ * hcsr04_handle_t sensor;
+ * hcsr04_config_t config = {
+ *     .trigger_pin = GPIO_NUM_5,
+ *     .echo_pin = GPIO_NUM_18,
+ *     .temperature_c = 25.0f  // Room temperature for speed of sound
+ * };
+ *
+ * esp_err_t ret = star_sensor_hcsr04_init(
+ *     &sensor,
+ *     &bus_manager,
+ *     "hcsr04_gpio",
+ *     NULL,              // Use default error handler
+ *     &config
+ * );
+ *
+ * if (ret != ESP_OK) {
+ *     ESP_LOGE(TAG, "Failed to init HC-SR04: %s", esp_err_to_name(ret));
+ *     return;
+ * }
+ *
+ *
+ * // === Reading Distance (Blocking) ===
+ *
+ * float distance_cm;
+ * ret = star_sensor_hcsr04_read_distance(&sensor, &distance_cm);
+ * if (ret == ESP_OK) {
+ *     ESP_LOGI(TAG, "Distance: %.2f cm", distance_cm);
+ * } else if (ret == HCSR04_ERR_TIMEOUT) {
+ *     ESP_LOGW(TAG, "No echo received (object too far or not present)");
+ * } else if (ret == HCSR04_ERR_OUT_OF_RANGE_MAX) {
+ *     ESP_LOGW(TAG, "Object beyond 400cm range");
+ * }
+ *
+ *
+ * // === Non-Blocking Measurement ===
+ *
+ * // Trigger measurement
+ * star_sensor_hcsr04_trigger(&sensor);
+ *
+ * // Do other work...
+ * process_other_sensors();
+ *
+ * // Check if measurement complete
+ * bool complete;
+ * star_sensor_hcsr04_is_complete(&sensor, &complete);
+ * if (complete) {
+ *     star_sensor_hcsr04_get_result(&sensor, &distance_cm);
+ *     ESP_LOGI(TAG, "Distance: %.2f cm", distance_cm);
+ * }
+ *
+ *
+ * // === Temperature Compensation ===
+ *
+ * // Update temperature from external sensor (e.g., DHT22)
+ * star_dht22_data_t dht_data;
+ * star_bus_dht22_read(&bus_manager, "dht22", &dht_data);
+ * star_sensor_hcsr04_set_temperature(&sensor, dht_data.temperature_c);
+ *
+ * // Subsequent readings will use corrected speed of sound
+ * star_sensor_hcsr04_read_distance(&sensor, &distance_cm);
+ *
+ *
+ * // === Multiple Sensors ===
+ *
+ * hcsr04_handle_t left_sensor, right_sensor;
+ *
+ * hcsr04_config_t left_config = {
+ *     .trigger_pin = GPIO_NUM_5, .echo_pin = GPIO_NUM_18, .temperature_c = 25.0f};
+ * hcsr04_config_t right_config = {
+ *     .trigger_pin = GPIO_NUM_19, .echo_pin = GPIO_NUM_21, .temperature_c = 25.0f};
+ *
+ * star_sensor_hcsr04_init(&left_sensor, &bus_manager, "gpio_bus", NULL, &left_config);
+ * star_sensor_hcsr04_init(&right_sensor, &bus_manager, "gpio_bus", NULL, &right_config);
+ *
+ * // Read from each
+ * float left_dist, right_dist;
+ * star_sensor_hcsr04_read_distance(&left_sensor, &left_dist);
+ * star_sensor_hcsr04_read_distance(&right_sensor, &right_dist);
+ *
+ *
+ * // === Cleanup ===
+ *
+ * star_sensor_hcsr04_deinit(&sensor);
+ * star_bus_manager_remove_bus(&bus_manager, "hcsr04_gpio");
+ * @endcode
  */
 
 #define HCSR04_MIN_DISTANCE_CM (2)

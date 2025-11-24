@@ -14,6 +14,107 @@ extern "C" {
 #include "esp_err.h"
 #include "star_bus_types.h"
 
+/**
+ * @file star_bus_i2c.h
+ * @brief I2C bus operations through the unified bus manager
+ *
+ * This module provides I2C read/write operations that work through the bus manager.
+ * All operations find the bus configuration by name and use the configured I2C port
+ * and device address.
+ *
+ * Key Features:
+ * - Register-based read/write operations
+ * - Raw read operations (no register address)
+ * - Command byte writes
+ * - Thread-safe through bus manager mutex
+ *
+ * Example Usage:
+ * @code
+ * // === Setup (see star_bus_manager.h for full setup) ===
+ *
+ * // Create I2C bus configuration for MPU6050
+ * star_bus_config_t* imu_bus = star_bus_config_create_i2c(
+ *     "imu_i2c",         // Unique bus name
+ *     I2C_NUM_0,         // I2C port
+ *     0x68,              // MPU6050 address
+ *     GPIO_NUM_21,       // SDA
+ *     GPIO_NUM_22,       // SCL
+ *     400000             // 400kHz fast mode
+ * );
+ * star_bus_manager_add_bus(&bus_manager, imu_bus);
+ *
+ *
+ * // === Reading from a Register ===
+ *
+ * // Read WHO_AM_I register (0x75) from MPU6050
+ * uint8_t who_am_i;
+ * size_t bytes_read;
+ * esp_err_t ret = star_bus_i2c_read(
+ *     &bus_manager,
+ *     "imu_i2c",         // Bus name
+ *     &who_am_i,         // Data buffer
+ *     1,                 // Read 1 byte
+ *     0x75,              // Register address (WHO_AM_I)
+ *     &bytes_read        // Optional: bytes actually read
+ * );
+ * if (ret == ESP_OK) {
+ *     ESP_LOGI(TAG, "WHO_AM_I: 0x%02X", who_am_i);
+ * }
+ *
+ * // Read 6 bytes of accelerometer data (registers 0x3B-0x40)
+ * uint8_t accel_data[6];
+ * star_bus_i2c_read(&bus_manager, "imu_i2c", accel_data, 6, 0x3B, NULL);
+ *
+ *
+ * // === Writing to a Register ===
+ *
+ * // Write to power management register (wake up device)
+ * uint8_t pwr_mgmt = 0x00;  // Clear sleep bit
+ * size_t bytes_written;
+ * star_bus_i2c_write(
+ *     &bus_manager,
+ *     "imu_i2c",
+ *     &pwr_mgmt,         // Data to write
+ *     1,                 // Write 1 byte
+ *     0x6B,              // Register address (PWR_MGMT_1)
+ *     &bytes_written     // Optional: bytes actually written
+ * );
+ *
+ * // Configure accelerometer range
+ * uint8_t accel_config = 0x08;  // +/- 4g range
+ * star_bus_i2c_write(&bus_manager, "imu_i2c", &accel_config, 1, 0x1C, NULL);
+ *
+ *
+ * // === Writing a Command Byte ===
+ *
+ * // Some devices accept single-byte commands without register address
+ * star_bus_i2c_write_command(&bus_manager, "lcd_i2c", 0x01);  // Clear display
+ *
+ *
+ * // === Raw Read (No Register Address) ===
+ *
+ * // Some devices send data continuously without register addressing
+ * uint8_t raw_buffer[16];
+ * star_bus_i2c_read_raw(&bus_manager, "sensor_i2c", raw_buffer, 16, &bytes_read);
+ *
+ *
+ * // === Multiple Devices on Same I2C Port ===
+ *
+ * // Create separate bus configs for each device (same port, different addresses)
+ * star_bus_config_t* accel_bus = star_bus_config_create_i2c(
+ *     "accel_i2c", I2C_NUM_0, 0x1D, GPIO_NUM_21, GPIO_NUM_22, 400000);
+ * star_bus_config_t* mag_bus = star_bus_config_create_i2c(
+ *     "mag_i2c", I2C_NUM_0, 0x1E, GPIO_NUM_21, GPIO_NUM_22, 400000);
+ *
+ * star_bus_manager_add_bus(&bus_manager, accel_bus);
+ * star_bus_manager_add_bus(&bus_manager, mag_bus);
+ *
+ * // Read from each device by name
+ * star_bus_i2c_read(&bus_manager, "accel_i2c", accel_data, 6, 0x32, NULL);
+ * star_bus_i2c_read(&bus_manager, "mag_i2c", mag_data, 6, 0x03, NULL);
+ * @endcode
+ */
+
 /* --- Public Functions --- */
 
 /**

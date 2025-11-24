@@ -42,6 +42,203 @@ extern "C" {
  * - Multi-sensor data acquisition
  * - High-throughput data logging
  * - Real-time control systems
+ *
+ * Example Usage:
+ * @code
+ * // === Basic Async I2C Read with Callback ===
+ *
+ * #include "star_bus_async.h"
+ * #include "star_bus_manager.h"
+ *
+ * // Callback function for async completion
+ * void sensor_read_complete(star_async_handle_t handle,
+ *                           star_async_status_t status,
+ *                           esp_err_t result,
+ *                           void* context) {
+ *     uint8_t* sensor_data = (uint8_t*)context;
+ *
+ *     if (status == STAR_ASYNC_STATUS_COMPLETE && result == ESP_OK) {
+ *         ESP_LOGI(TAG, "Sensor data: %02X %02X", sensor_data[0], sensor_data[1]);
+ *     } else if (status == STAR_ASYNC_STATUS_TIMEOUT) {
+ *         ESP_LOGW(TAG, "Sensor read timed out");
+ *     } else {
+ *         ESP_LOGE(TAG, "Sensor read failed: %s", esp_err_to_name(result));
+ *     }
+ *
+ *     // Free handle when done
+ *     star_async_free_handle(handle);
+ * }
+ *
+ * // Start async read
+ * static uint8_t sensor_buffer[6];
+ * star_async_config_t async_cfg = {
+ *     .timeout_ms = 1000,
+ *     .callback = sensor_read_complete,
+ *     .context = sensor_buffer,
+ *     .priority = 0
+ * };
+ *
+ * star_async_handle_t handle;
+ * esp_err_t ret = star_bus_i2c_read_async(
+ *     &bus_manager,
+ *     "imu_i2c",
+ *     sensor_buffer,
+ *     6,               // Read 6 bytes
+ *     0x3B,            // Accel data register
+ *     &async_cfg,
+ *     &handle
+ * );
+ *
+ * if (ret != ESP_OK) {
+ *     ESP_LOGE(TAG, "Failed to start async read");
+ * }
+ * // Callback will be invoked when operation completes
+ *
+ *
+ * // === Async I2C Write ===
+ *
+ * uint8_t config_data[] = {0x00};  // Wake up MPU6050
+ * star_async_config_t write_cfg = {
+ *     .timeout_ms = 500,
+ *     .callback = config_complete_callback,
+ *     .context = NULL,
+ *     .priority = 0
+ * };
+ *
+ * star_bus_i2c_write_async(
+ *     &bus_manager,
+ *     "imu_i2c",
+ *     config_data,
+ *     1,
+ *     0x6B,            // PWR_MGMT_1 register
+ *     &write_cfg,
+ *     NULL             // Don't need handle
+ * );
+ *
+ *
+ * // === Async SPI Operations ===
+ *
+ * // Async SPI transmit
+ * uint8_t lcd_command[] = {0x2C};  // Write RAM
+ * star_bus_spi_transmit_async(
+ *     &bus_manager,
+ *     "lcd_spi",
+ *     lcd_command,
+ *     1,
+ *     &async_cfg,
+ *     NULL
+ * );
+ *
+ * // Async SPI receive
+ * static uint8_t flash_id[4];
+ * star_bus_spi_receive_async(
+ *     &bus_manager,
+ *     "flash_spi",
+ *     flash_id,
+ *     4,
+ *     &async_cfg,
+ *     &handle
+ * );
+ *
+ * // Async full-duplex SPI
+ * static uint8_t tx_buf[8], rx_buf[8];
+ * star_bus_spi_transceive_async(
+ *     &bus_manager,
+ *     "flash_spi",
+ *     tx_buf,
+ *     rx_buf,
+ *     8,
+ *     &async_cfg,
+ *     &handle
+ * );
+ *
+ *
+ * // === Wait for Async Operation ===
+ *
+ * // Start operation
+ * star_async_handle_t op_handle;
+ * star_bus_i2c_read_async(&bus_manager, "sensor_i2c", buffer, 2, 0x00, &async_cfg, &op_handle);
+ *
+ * // Do other work while operation runs...
+ * process_ui_events();
+ *
+ * // Now wait for completion (with timeout)
+ * ret = star_async_wait(op_handle, 2000);
+ * if (ret == ESP_OK) {
+ *     ESP_LOGI(TAG, "Operation completed");
+ * }
+ *
+ * // Check status
+ * star_async_status_t status = star_async_get_status(op_handle);
+ * if (status == STAR_ASYNC_STATUS_COMPLETE) {
+ *     // Process data
+ * }
+ *
+ * star_async_free_handle(op_handle);
+ *
+ *
+ * // === Cancel Pending Operation ===
+ *
+ * star_async_handle_t cancel_handle;
+ * star_bus_i2c_read_async(&bus_manager, "slow_sensor", buffer, 100, 0x00, &async_cfg, &cancel_handle);
+ *
+ * // Changed our mind - cancel it
+ * ret = star_async_cancel(cancel_handle);
+ * if (ret == ESP_OK) {
+ *     ESP_LOGI(TAG, "Operation cancelled");
+ * }
+ * // Callback will be invoked with STAR_ASYNC_STATUS_CANCELLED
+ *
+ *
+ * // === Event Group Integration ===
+ *
+ * #define SENSOR_COMPLETE_BIT (1 << 0)
+ * #define SENSOR_ERROR_BIT    (1 << 1)
+ *
+ * EventGroupHandle_t sensor_events = xEventGroupCreate();
+ *
+ * star_async_handle_t event_handle;
+ * star_bus_i2c_read_async(&bus_manager, "sensor_i2c", buffer, 6, 0x00, &async_cfg, &event_handle);
+ *
+ * // Set event bits on completion
+ * star_async_set_event_bits(event_handle, sensor_events, SENSOR_COMPLETE_BIT, SENSOR_ERROR_BIT);
+ *
+ * // Wait on event group (can wait for multiple operations)
+ * EventBits_t bits = xEventGroupWaitBits(
+ *     sensor_events,
+ *     SENSOR_COMPLETE_BIT | SENSOR_ERROR_BIT,
+ *     pdTRUE,   // Clear bits on exit
+ *     pdFALSE,  // Wait for any bit
+ *     pdMS_TO_TICKS(5000)
+ * );
+ *
+ * if (bits & SENSOR_COMPLETE_BIT) {
+ *     ESP_LOGI(TAG, "Sensor read complete");
+ * }
+ *
+ *
+ * // === Concurrent Multi-Sensor Reads ===
+ *
+ * // Start multiple async operations in parallel
+ * static uint8_t accel_data[6], gyro_data[6], mag_data[6];
+ *
+ * star_bus_i2c_read_async(&bus_manager, "accel_i2c", accel_data, 6, 0x32, &async_cfg, NULL);
+ * star_bus_i2c_read_async(&bus_manager, "gyro_i2c", gyro_data, 6, 0x43, &async_cfg, NULL);
+ * star_bus_i2c_read_async(&bus_manager, "mag_i2c", mag_data, 6, 0x03, &async_cfg, NULL);
+ *
+ * // All three reads happen concurrently!
+ * // Callbacks will be invoked as each completes
+ *
+ *
+ * // === Get Async Statistics ===
+ *
+ * uint32_t pending;
+ * uint64_t completed, failed, cancelled;
+ *
+ * star_async_get_stats(&bus_manager, "imu_i2c", &pending, &completed, &failed, &cancelled);
+ * ESP_LOGI(TAG, "I2C stats: pending=%lu, completed=%llu, failed=%llu",
+ *          pending, completed, failed);
+ * @endcode
  */
 
 /* --- Constants --- */

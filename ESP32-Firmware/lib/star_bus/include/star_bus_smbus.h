@@ -26,6 +26,170 @@ extern "C" {
  * - Packet Error Checking (PEC) support
  * - Timeout requirements (25-35ms)
  * - Clock stretching limits
+ *
+ * Example Usage:
+ * @code
+ * // === Setup (see star_bus_manager.h for full setup) ===
+ *
+ * #include "star_bus_smbus.h"
+ * #include "star_bus_manager.h"
+ * #include "star_bus_config.h"
+ *
+ * // Create I2C bus for SMBus device (e.g., battery management IC)
+ * star_bus_config_t* bms_bus = star_bus_config_create_i2c(
+ *     "bms_smbus", I2C_NUM_0, 0x0B, GPIO_NUM_21, GPIO_NUM_22, 100000);
+ * star_bus_manager_add_bus(&bus_manager, bms_bus);
+ *
+ *
+ * // === Quick Command (Device Polling) ===
+ *
+ * // Check if device is present
+ * esp_err_t ret = star_smbus_quick_command(&bus_manager, "bms_smbus", 0x0B, true);
+ * if (ret == ESP_OK) {
+ *     ESP_LOGI(TAG, "BMS device present");
+ * }
+ *
+ *
+ * // === Send/Receive Byte (No Command Code) ===
+ *
+ * // Send a control byte
+ * star_smbus_send_byte(&bus_manager, "bms_smbus", 0x0B, 0x01);
+ *
+ * // Receive a status byte
+ * uint8_t status;
+ * star_smbus_receive_byte(&bus_manager, "bms_smbus", 0x0B, &status);
+ * ESP_LOGI(TAG, "Device status: 0x%02X", status);
+ *
+ *
+ * // === Read/Write Byte (With Command Code) ===
+ *
+ * // Read battery state of charge (command 0x0D)
+ * uint8_t soc;
+ * ret = star_smbus_read_byte(&bus_manager, "bms_smbus", 0x0B, 0x0D, &soc);
+ * if (ret == ESP_OK) {
+ *     ESP_LOGI(TAG, "State of Charge: %d%%", soc);
+ * }
+ *
+ * // Write configuration register
+ * star_smbus_write_byte(&bus_manager, "bms_smbus", 0x0B, 0x00, 0x80);
+ *
+ *
+ * // === Read/Write Word (16-bit values) ===
+ *
+ * // Read battery voltage (command 0x09, returns millivolts)
+ * uint16_t voltage_mv;
+ * ret = star_smbus_read_word(&bus_manager, "bms_smbus", 0x0B, 0x09, &voltage_mv);
+ * if (ret == ESP_OK) {
+ *     ESP_LOGI(TAG, "Battery voltage: %d mV", voltage_mv);
+ * }
+ *
+ * // Read battery current (command 0x0A, returns milliamps, signed)
+ * uint16_t current_ma;
+ * star_smbus_read_word(&bus_manager, "bms_smbus", 0x0B, 0x0A, &current_ma);
+ * int16_t signed_current = (int16_t)current_ma;
+ * ESP_LOGI(TAG, "Current: %d mA", signed_current);
+ *
+ * // Write a 16-bit value
+ * star_smbus_write_word(&bus_manager, "bms_smbus", 0x0B, 0x15, 0x1234);
+ *
+ *
+ * // === Process Call (Atomic Write-Read) ===
+ *
+ * // Send a command and get processed response atomically
+ * uint16_t request = 0x1234;
+ * uint16_t response;
+ * ret = star_smbus_process_call(
+ *     &bus_manager,
+ *     "bms_smbus",
+ *     0x0B,
+ *     0x44,       // Process call command
+ *     request,
+ *     &response
+ * );
+ * ESP_LOGI(TAG, "Process call: 0x%04X -> 0x%04X", request, response);
+ *
+ *
+ * // === Block Write (Multi-Byte Write) ===
+ *
+ * // Write configuration block
+ * uint8_t config_data[] = {0x01, 0x02, 0x03, 0x04, 0x05};
+ * ret = star_smbus_block_write(
+ *     &bus_manager,
+ *     "bms_smbus",
+ *     0x0B,
+ *     0x20,           // Config command
+ *     config_data,
+ *     sizeof(config_data)  // Max 32 bytes
+ * );
+ *
+ *
+ * // === Block Read (Multi-Byte Read) ===
+ *
+ * // Read manufacturer name
+ * uint8_t name_buffer[32];
+ * uint8_t name_length;
+ * ret = star_smbus_block_read(
+ *     &bus_manager,
+ *     "bms_smbus",
+ *     0x0B,
+ *     0x20,           // Manufacturer name command
+ *     name_buffer,
+ *     sizeof(name_buffer),
+ *     &name_length
+ * );
+ * if (ret == ESP_OK) {
+ *     name_buffer[name_length] = '\0';
+ *     ESP_LOGI(TAG, "Manufacturer: %s", name_buffer);
+ * }
+ *
+ *
+ * // === Block Process Call (Atomic Block Write-Read) ===
+ *
+ * uint8_t cmd_data[] = {0xAA, 0xBB};
+ * uint8_t response_data[32];
+ * uint8_t response_len;
+ *
+ * ret = star_smbus_block_process_call(
+ *     &bus_manager,
+ *     "bms_smbus",
+ *     0x0B,
+ *     0x50,           // Block process command
+ *     cmd_data,
+ *     sizeof(cmd_data),
+ *     response_data,
+ *     sizeof(response_data),
+ *     &response_len
+ * );
+ *
+ *
+ * // === PEC (Packet Error Checking) ===
+ *
+ * // Calculate CRC for packet validation
+ * uint8_t packet[] = {0x16, 0x09, 0x17, 0x0C, 0x80};  // Addr, Cmd, Data
+ * uint8_t pec = star_smbus_calculate_pec(packet, sizeof(packet), 0);
+ * ESP_LOGI(TAG, "Calculated PEC: 0x%02X", pec);
+ *
+ *
+ * // === Reading Battery Management Data ===
+ *
+ * // Common SMBus battery commands (SBS specification)
+ * uint16_t temp_k, full_cap, remain_cap, run_time;
+ *
+ * star_smbus_read_word(&bus_manager, "bms_smbus", 0x0B, 0x08, &temp_k);       // Temperature (0.1K)
+ * star_smbus_read_word(&bus_manager, "bms_smbus", 0x0B, 0x10, &full_cap);     // Full capacity (mAh)
+ * star_smbus_read_word(&bus_manager, "bms_smbus", 0x0B, 0x0F, &remain_cap);   // Remaining (mAh)
+ * star_smbus_read_word(&bus_manager, "bms_smbus", 0x0B, 0x11, &run_time);     // Run time (minutes)
+ *
+ * float temp_c = (temp_k / 10.0f) - 273.15f;
+ * ESP_LOGI(TAG, "Battery: %.1f°C, %d/%d mAh, %d min remaining",
+ *          temp_c, remain_cap, full_cap, run_time);
+ *
+ *
+ * // === Cleanup ===
+ *
+ * star_bus_manager_remove_bus(&bus_manager, "bms_smbus");
+ * star_bus_config_destroy(bms_bus);
+ * @endcode
  */
 
 /* --- Constants --- */
