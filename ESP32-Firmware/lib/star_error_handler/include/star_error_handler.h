@@ -147,6 +147,73 @@ esp_err_t error_handler_reset_state(error_handler_t* handler);
  */
 void error_handler_get_interface(star_error_interface_t* iface, error_handler_t* handler);
 
+/**
+ * @brief Create and initialize a default error handler with sensible defaults.
+ *
+ * Allocates and initializes a new error handler with default parameters:
+ * - Max retries: 3
+ * - Base retry delay: 100ms
+ * - Max retry delay: 5000ms
+ * - No reset function
+ *
+ * The returned error handler must be freed by the caller using error_handler_destroy_default().
+ * Use this when you need a simple error handler without custom configuration.
+ *
+ * @return Pointer to newly created error handler, or NULL on allocation or initialization failure.
+ */
+error_handler_t* error_handler_create_default(void);
+
+/**
+ * @brief Create and initialize an error handler with custom configuration.
+ *
+ * Allocates and initializes a new error handler with the provided parameters.
+ * The returned error handler must be freed by the caller using error_handler_destroy_default().
+ *
+ * @param[in] max_retries      Maximum number of retry attempts before permanent failure
+ * @param[in] base_retry_delay Initial delay between retries (ms)
+ * @param[in] max_retry_delay  Maximum retry delay (ms) after exponential backoff
+ * @param[in] reset_fn         Optional reset function to attempt recovery (can be NULL)
+ * @param[in] reset_context    Context passed to reset function when called (can be NULL)
+ * @return Pointer to newly created error handler, or NULL on allocation or initialization failure.
+ */
+error_handler_t* error_handler_create_custom(uint32_t max_retries,
+                                             uint32_t base_retry_delay,
+                                             uint32_t max_retry_delay,
+                                             esp_err_t (*reset_fn)(void* context),
+                                             void* reset_context);
+
+/**
+ * @brief Destroy an error handler created by error_handler_create_default() or
+ * error_handler_create_custom().
+ *
+ * Deinitializes the error handler (releases mutex) and frees the allocated memory.
+ * Safe to call with NULL pointer (no-op).
+ *
+ * @param[in] handler Pointer to the error handler to destroy. Will be invalid after this call.
+ */
+void error_handler_destroy_default(error_handler_t* handler);
+
+/**
+ * @brief Create and allocate a default error interface with internal error handler.
+ *
+ * This helper function encapsulates the common pattern of creating a default error handler
+ * and wrapping it in an allocated star_error_interface_t. The caller owns the returned
+ * interface and must free it using star_error_interface_destroy().
+ *
+ * @return Pointer to newly allocated error interface, or NULL on allocation/initialization failure.
+ */
+star_error_interface_t* star_error_interface_create_default(void);
+
+/**
+ * @brief Destroy an error interface created by star_error_interface_create_default().
+ *
+ * Destroys the internal error handler and frees the interface memory.
+ * Safe to call with NULL pointer (no-op).
+ *
+ * @param[in] iface Pointer to the error interface to destroy. Will be invalid after this call.
+ */
+void star_error_interface_destroy(star_error_interface_t* iface);
+
 #ifdef __cplusplus
 }
 #endif

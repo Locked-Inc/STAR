@@ -56,7 +56,10 @@ esp_err_t star_bus_bmp280_init(const star_bus_manager_t* manager,
   esp_err_t ret =
     star_bus_i2c_read(manager, bus_name, &chip_id, 1, BMP280_REG_CHIP_ID, &bytes_read);
   if (ret != ESP_OK || chip_id != BMP280_CHIP_ID) {
-    ESP_LOGE(s_TAG, "BMP280 init failed: chip_id=0x%02X (expected 0x%02X)", chip_id, BMP280_CHIP_ID);
+    ESP_LOGE(s_TAG,
+             "BMP280 init failed: chip_id=0x%02X (expected 0x%02X)",
+             chip_id,
+             BMP280_CHIP_ID);
     return ESP_ERR_NOT_FOUND;
   }
 

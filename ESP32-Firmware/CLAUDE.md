@@ -17,9 +17,6 @@ pio run -e esp32_wroom
 
 # Build for ESP32-S3
 pio run -e esp32s3
-
-# Build specific example (e.g., MPU6050)
-pio run -e example_146_mpu6050_basic
 ```
 
 ### Upload
@@ -29,21 +26,6 @@ pio run -e esp32_wroom --target upload
 
 # Upload to ESP32-S3
 pio run -e esp32s3 --target upload
-```
-
-### Testing
-```bash
-# Build all tests (without uploading/running)
-pio test -e esp32_wroom_test --without-uploading --without-testing
-
-# Run tests on hardware
-pio test -e esp32_wroom_test
-
-# Run specific test suite
-pio test --filter test_bus
-
-# Run tests with verbose output
-pio test -v
 ```
 
 ### Monitoring
@@ -457,21 +439,12 @@ lib/
 ├── star_error_handler/  # Error handling with retry logic
 ├── star_pin_validator/  # GPIO conflict detection
 ├── star_bus/            # Unified bus abstraction
-├── star_sensor_*/       # Sensor drivers (MPU6050, DHT22, BH1750, etc.)
-├── star_module_*/       # Communication modules (A7670G, etc.)
-├── star_bms_bq7850/     # Battery management system
-└── star_camera_*/       # Camera drivers
+├── star_sensor_*/       # Sensor drivers (MPU6050, HCSR04, PCA9685, BNO055_BMP280, etc.)
+├── star_module_*/       # Communication modules
+└── star_bms_bq7850/     # Battery management system
 
 src/
 └── main.c               # Application entry point
-
-test/
-├── test_bus/            # Bus layer tests
-├── test_sensor_*/       # Sensor driver tests
-└── test_integration/    # Integration tests
-
-examples/
-└── NNN_*.c              # 300+ working examples (001-305)
 
 partitions/
 ├── partitions_4mb.csv   # ESP32-WROOM partition table
@@ -504,24 +477,6 @@ lib/star_component/
 - Default UART: TX=43, RX=44
 
 **Note:** These are configurable via build flags in `platformio.ini`
-
-## Examples
-
-The `examples/` directory contains 300+ working examples demonstrating every feature. Examples are numbered by category:
-
-- 001-040: I2C operations
-- 041-060: SPI operations
-- 061-075: UART operations
-- 076-085: SMBus protocol
-- 086-099: OneWire protocol
-- 101-117: BMS operations
-- 121-145: Advanced bus features (async, batch, performance)
-- 146-305: Sensor drivers and integration examples
-
-To build an example:
-```bash
-pio run -e example_146_mpu6050_basic
-```
 
 ## Common Patterns
 
@@ -562,24 +517,6 @@ mpu6050_data_t data;
 star_sensor_mpu6050_read(&imu, &data);
 ```
 
-## Testing Strategy
-
-### Unit Tests
-- Located in `test/test_*/` directories
-- Use Unity test framework
-- Mock interfaces for isolated component testing
-
-### Integration Tests
-- Located in `test/test_integration/`
-- Test component interactions
-- Run on actual hardware
-
-### Hardware Tests
-Build and upload tests to hardware:
-```bash
-pio test -e esp32_wroom_test
-```
-
 ## Adding New Components
 
 ### Adding a Sensor Driver
@@ -603,10 +540,6 @@ pio test -e esp32_wroom_test
    } newsensor_config_t;
    ```
 
-4. Add tests in `test/test_sensor_newsensor/`
-
-5. Create example in `examples/XXX_newsensor_basic.c`
-
 ### Adding a Bus Protocol
 
 1. Add protocol header in `lib/star_bus/include/star_bus_newprotocol.h`
@@ -614,10 +547,6 @@ pio test -e esp32_wroom_test
 2. Implement protocol in `lib/star_bus/src/star_bus_newprotocol.c`
 
 3. Add configuration creation function in `star_bus_config.h/c`
-
-4. Add comprehensive tests
-
-5. Create examples demonstrating the protocol
 
 ## Error Handling
 
@@ -640,3 +569,253 @@ star_validate_pins();  // Checks all registered pins for conflicts
 ```
 
 The pin validator tracks GPIO assignments and prevents conflicts between different peripherals.
+
+## DIP Pattern vs HAL Pattern
+
+The STAR framework now provides two distinct approaches for using sensor/actuator drivers:
+
+### 1. DIP Pattern (Direct Driver Usage)
+
+**Use when:** You need maximum control, custom error handling, or are building complex systems.
+
+**Characteristics:**
+- Manual dependency injection
+- Explicit bus manager and error handler setup
+- Thread-safe with mutex protection (1000ms timeout)
+- Maximum flexibility and testability
+
+**Example:**
+```c
+// Create error handler
+error_handler_t error_handler;
+error_handler_init(&error_handler, 3, 100, 5000, NULL, NULL);
+
+// Get interfaces
+star_error_interface_t error_iface;
+star_pin_interface_t pin_iface;
+error_handler_get_interface(&error_iface, &error_handler);
+pin_validator_get_interface(&pin_iface);
+
+// Initialize bus manager
+star_bus_manager_t bus_manager;
+star_bus_manager_init(&bus_manager, "main", &error_iface, &pin_iface);
+
+// Create and add I2C bus
+star_bus_config_t* i2c_bus = star_bus_config_create_i2c(
+    "sensor_bus", I2C_NUM_0, 0x68, GPIO_NUM_21, GPIO_NUM_22, 400000);
+star_bus_manager_add_bus(&bus_manager, i2c_bus);
+
+// Initialize sensor (NULL error_iface creates default internally)
+mpu6050_handle_t imu;
+mpu6050_config_t cfg = {0};
+star_sensor_mpu6050_init(&imu, &bus_manager, "sensor_bus", &error_iface, &cfg);
+
+// Use sensor
+mpu6050_data_t data;
+star_sensor_mpu6050_read(&imu, &data);
+
+// Cleanup
+star_sensor_mpu6050_deinit(&imu);
+star_bus_manager_remove_bus(&bus_manager, "sensor_bus");
+star_bus_config_destroy(i2c_bus);
+star_bus_manager_deinit(&bus_manager);
+error_handler_deinit(&error_handler);
+```
+
+### 2. HAL Pattern (Convenience Layer)
+
+**Use when:** You need simple, quick setup for single-device applications.
+
+**Characteristics:**
+- Automatic dependency setup (no manual DIP)
+- Single function initialization
+- Internal bus manager and error handler
+- Simplified API surface
+
+**Example:**
+```c
+// Initialize MPU6050 HAL (all setup automatic)
+star_hal_mpu6050_handle_t hal_imu;
+star_hal_mpu6050_config_t hal_config = {
+    .sda_pin = GPIO_NUM_21,
+    .scl_pin = GPIO_NUM_22,
+    .i2c_freq = 400000,
+    .i2c_addr = 0x68
+};
+star_hal_mpu6050_init(&hal_imu, &hal_config);
+
+// Use sensor (same data types as DIP)
+mpu6050_data_t data;
+star_hal_mpu6050_read(&hal_imu, &data);
+
+// Cleanup (frees all internal resources)
+star_hal_mpu6050_deinit(&hal_imu);
+```
+
+### When to Use Each Pattern
+
+| Scenario | Recommended Pattern |
+|----------|-------------------|
+| Simple single-sensor application | **HAL** |
+| Multiple sensors on same bus | **DIP** |
+| Custom error handling needed | **DIP** |
+| Quick prototyping | **HAL** |
+| Production system with logging | **DIP** |
+| Unit testing with mocks | **DIP** |
+| Educational/example code | **HAL** |
+| Complex multi-bus system | **DIP** |
+
+## Thread Safety
+
+All sensor drivers are thread-safe with mutex protection:
+
+**Standard mutex timeout:** 1000ms (configurable via `*_MUTEX_TIMEOUT_MS`)
+
+**Protected operations:**
+- Driver initialization (`init`)
+- Driver deinitialization (`deinit`)
+- State-modifying operations (e.g., `set_mode`, `set_temperature`)
+
+**Non-protected operations:**
+- Read operations (use `const` handle pointers)
+
+**Example of thread-safe state modification:**
+```c
+// From star_sensor_mpu6050.c
+esp_err_t star_sensor_mpu6050_set_accel_range(mpu6050_handle_t* handle, mpu6050_accel_range_t range)
+{
+  if (handle == NULL || !handle->initialized) {
+    return ESP_ERR_INVALID_STATE;
+  }
+
+  // Acquire mutex
+  SemaphoreHandle_t mutex = handle->mutex;
+  if (mutex == NULL || xSemaphoreTake(mutex, pdMS_TO_TICKS(MPU6050_MUTEX_TIMEOUT_MS)) != pdTRUE) {
+    ESP_LOGE(s_TAG, "Failed to acquire mutex");
+    return ESP_ERR_TIMEOUT;
+  }
+
+  // Re-check after mutex acquisition
+  if (!handle->initialized || handle->mutex == NULL) {
+    xSemaphoreGive(mutex);
+    return ESP_ERR_INVALID_STATE;
+  }
+
+  // Perform operation
+  esp_err_t ret = /* ... */;
+
+  xSemaphoreGive(mutex);
+  return ret;
+}
+```
+
+## Error Handler Injection Pattern
+
+All sensor drivers support optional error handler injection:
+
+**NULL error_iface:** Creates default error handler internally (owned by driver)
+**Non-NULL error_iface:** Uses injected error handler (not owned by driver)
+
+**Example with NULL (automatic):**
+```c
+mpu6050_handle_t imu;
+mpu6050_config_t cfg = {0};
+star_sensor_mpu6050_init(&imu, &bus_manager, "sensor_bus", NULL, &cfg);
+// Driver creates and owns default error handler internally
+```
+
+**Example with custom error handler:**
+```c
+// Create custom error handler
+error_handler_t my_handler;
+error_handler_init(&my_handler, 5, 200, 10000, reset_callback, reset_ctx);
+
+// Get interface
+star_error_interface_t my_error_iface;
+error_handler_get_interface(&my_error_iface, &my_handler);
+
+// Inject into driver
+mpu6050_handle_t imu;
+mpu6050_config_t cfg = {0};
+star_sensor_mpu6050_init(&imu, &bus_manager, "sensor_bus", &my_error_iface, &cfg);
+
+// Cleanup (driver does NOT own error handler)
+star_sensor_mpu6050_deinit(&imu);
+error_handler_deinit(&my_handler);
+```
+
+## Available Libraries
+
+### Core Infrastructure
+- **star_core** - Abstract interfaces (error_interface, pin_interface)
+- **star_error_handler** - Error handling with retry logic
+- **star_pin_validator** - GPIO conflict detection
+- **star_bus** - Unified bus abstraction (I2C, SPI, UART, GPIO, OneWire, SMBus)
+
+### Sensor/Actuator Drivers (DIP Pattern)
+- **star_sensor_pca9685** - 16-channel PWM controller
+- **star_sensor_mpu6050** - 6-axis IMU
+- **star_sensor_hcsr04** - Ultrasonic distance sensor
+- **star_sensor_bno055_bmp280** - 10-DOF IMU (9-axis + pressure)
+- **star_bms_bq7850** - Battery management system
+
+### Convenience Libraries
+- **star_servo** - Stateless servo angle calculations (no dependencies)
+
+### HAL Libraries (Convenience Pattern)
+- **star_hal_pca9685** - PCA9685 with automatic setup
+- **star_hal_mpu6050** - MPU6050 with automatic setup
+- **star_hal_hcsr04** - HC-SR04 with automatic setup
+- **star_hal_bno055_bmp280** - 10-DOF IMU with automatic setup
+- **star_hal_bq7850** - BQ7850 BMS with automatic setup
+
+## GPIO Bus Usage Pattern
+
+The HC-SR04 driver demonstrates the GPIO bus pattern:
+
+```c
+// Initialize bus manager with GPIO bus
+star_bus_config_t* gpio_bus = star_bus_config_create_gpio("gpio_bus");
+star_bus_manager_add_bus(&bus_manager, gpio_bus);
+
+// Configure pins through GPIO bus
+hcsr04_handle_t sensor;
+hcsr04_config_t config = {
+    .trigger_pin = GPIO_NUM_5,
+    .echo_pin = GPIO_NUM_18,
+    .temperature_c = 25.0f
+};
+star_sensor_hcsr04_init(&sensor, &bus_manager, "gpio_bus", &error_iface, &config);
+
+// Driver uses GPIO bus for pin operations internally
+float distance_cm;
+star_sensor_hcsr04_read_distance(&sensor, &distance_cm);
+```
+
+## Servo Control with star_servo
+
+The `star_servo` library provides stateless calculations:
+
+```c
+#include "star_servo.h"
+#include "star_sensor_pca9685.h"
+
+// Calculate PWM count for angle
+uint16_t count = star_servo_angle_to_count(90);  // Center position
+
+// Set servo via PCA9685
+star_sensor_pca9685_set_pwm(&pca_handle, 0, 0, count);
+
+// Or use HAL convenience function
+star_hal_pca9685_set_servo_angle(&hal_handle, 0, 90);
+```
+
+**star_servo functions:**
+- `star_servo_angle_to_count()` - Convert degrees to PCA9685 count
+- `star_servo_pulse_to_count()` - Convert microseconds to PCA9685 count
+- `star_servo_angle_to_pulse()` - Convert degrees to microseconds
+- `star_servo_pulse_to_angle()` - Convert microseconds to degrees
+- `star_servo_get_center_count()` - Get count for 90° (1.5ms)
+- `star_servo_get_min_count()` - Get count for 0° (1.0ms)
+- `star_servo_get_max_count()` - Get count for 180° (2.0ms)
+

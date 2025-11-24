@@ -72,4 +72,14 @@ esp_err_t star_free_pin_validator(void);
  */
 void pin_validator_get_interface(star_pin_interface_t* iface);
 
+/**
+ * @brief Check if the pin validator is initialized (thread-safe).
+ *
+ * This function safely checks the initialized flag by acquiring the mutex.
+ * Useful for components that want to verify validator state before operations.
+ *
+ * @return true if initialized, false otherwise or if mutex unavailable
+ */
+bool star_pin_validator_is_initialized(void);
+
 #endif /* STAR_PIN_VALIDATOR_H */

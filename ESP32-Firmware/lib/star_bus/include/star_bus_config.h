@@ -133,6 +133,21 @@ star_bus_config_t* star_bus_config_create_spi_peripheral(const char*       name,
  */
 esp_err_t star_bus_config_deinit(star_bus_config_t* config);
 
+/**
+ * @brief Create a new GPIO bus configuration.
+ *
+ * Configures parameters for GPIO pin control as a logical "bus".
+ * Useful for sensors that use direct GPIO control (e.g., HC-SR04 ultrasonic sensor).
+ * The GPIO pins will be configured when star_bus_config_init is called.
+ *
+ * @param[in] name      Unique name for this GPIO bus instance (e.g., "HCSR04_GPIO"). Must be non-NULL.
+ * @param[in] pins      Array of GPIO pin numbers to manage. Must be non-NULL.
+ * @param[in] pin_count Number of pins in the array (max 8).
+ * @return star_bus_config_t* Pointer to the created configuration, or NULL on failure. Must be destroyed via star_bus_config_destroy.
+ */
+star_bus_config_t*
+star_bus_config_create_gpio(const char* name, const gpio_num_t pins[], uint8_t pin_count);
+
 #ifdef __cplusplus
 }
 #endif

@@ -3,12 +3,16 @@
 #ifndef STAR_SENSOR_HCSR04_H
 #define STAR_SENSOR_HCSR04_H
 
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+
 #include <esp_err.h>
+#include <star_bus_manager.h>
+#include <star_error_interface.h>
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "driver/gpio.h"
-#include "star_error_handler.h"
+#include "hal/gpio_types.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -29,7 +33,7 @@ extern "C" {
 #define HCSR04_MIN_DISTANCE_CM (2)
 #define HCSR04_MAX_DISTANCE_CM (400)
 #define HCSR04_SPEED_OF_SOUND_CM_US (0.0343f)
-#define HCSR04_TIMEOUT_US (23200)  // Max echo time for 400cm
+#define HCSR04_TIMEOUT_US (23200) // Max echo time for 400cm
 
 typedef enum {
   HCSR04_OK = 0,
@@ -43,30 +47,55 @@ typedef enum {
 typedef struct {
   gpio_num_t trigger_pin;
   gpio_num_t echo_pin;
-  float      temperature_c;  // For speed of sound correction
+  float      temperature_c; // For speed of sound correction
 } hcsr04_config_t;
 
+/**
+ * @brief HC-SR04 device handle
+ *
+ * Maintains state for ultrasonic distance measurements.
+ * Thread-safe: All operations are protected by an internal mutex.
+ */
 typedef struct hcsr04_handle {
-  gpio_num_t        trigger_pin;
-  gpio_num_t        echo_pin;
-  float             temperature_c;
-  error_handler_t   error_handler;
-  bool              initialized;
-  volatile uint32_t echo_start_time;
-  volatile uint32_t echo_end_time;
-  volatile bool     measurement_complete;
-  volatile bool     timeout_occurred;
+  star_bus_manager_t*     manager;              /**< Pointer to bus manager */
+  const char*             bus_name;             /**< Name of GPIO bus */
+  gpio_num_t              trigger_pin;          /**< Trigger GPIO pin */
+  gpio_num_t              echo_pin;             /**< Echo GPIO pin */
+  float                   temperature_c;        /**< Temperature for compensation */
+  star_error_interface_t* error_iface;          /**< Injected error interface (NULL = default) */
+  SemaphoreHandle_t       mutex;                /**< Mutex for thread-safe operations */
+  bool                    initialized;          /**< Initialization state */
+  bool                    owns_error_handler;   /**< True if we created default error handler */
+  volatile uint32_t       echo_start_time;      /**< ISR: Echo pulse start time (us) */
+  volatile uint32_t       echo_end_time;        /**< ISR: Echo pulse end time (us) */
+  volatile bool           measurement_complete; /**< ISR: Measurement done flag */
+  volatile bool           timeout_occurred;     /**< ISR: Timeout flag */
 } hcsr04_handle_t;
 
 /**
  * @brief Initialize HC-SR04 sensor
  *
- * @param[out] handle Pointer to handle structure
- * @param[in]  config Device configuration
+ * Configures GPIO pins through the GPIO bus manager and sets up ISR for echo timing.
+ * Thread-safe: Creates an internal mutex for protecting handle state.
+ *
+ * @param[out] handle      Pointer to handle structure (must be allocated by caller)
+ * @param[in]  manager     Pointer to initialized bus manager
+ * @param[in]  bus_name    Name of GPIO bus that manages trigger and echo pins
+ * @param[in]  error_iface Error interface for error handling (NULL = create default internally)
+ * @param[in]  config      Device configuration
  *
  * @return ESP_OK on success, error code otherwise
+ *
+ * @note The handle must be deinitialized with star_sensor_hcsr04_deinit() when done
+ * @note If error_iface is NULL, a default error handler will be created internally
+ * @note GPIO bus must already manage both trigger_pin and echo_pin
+ * @note All operations after init are protected by mutex for thread safety
  */
-esp_err_t star_sensor_hcsr04_init(hcsr04_handle_t* handle, const hcsr04_config_t* config);
+esp_err_t star_sensor_hcsr04_init(hcsr04_handle_t*        handle,
+                                  star_bus_manager_t*     manager,
+                                  const char*             bus_name,
+                                  star_error_interface_t* error_iface,
+                                  const hcsr04_config_t*  config);
 
 /**
  * @brief Deinitialize HC-SR04 sensor

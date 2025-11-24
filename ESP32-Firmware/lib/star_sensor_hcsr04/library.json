@@ -7,6 +7,8 @@
     "frameworks": ["espidf"],
     "platforms": ["espressif32"],
     "dependencies": {
+        "star_bus": "*",
+        "star_core": "*",
         "star_error_handler": "*"
     },
     "build": {
