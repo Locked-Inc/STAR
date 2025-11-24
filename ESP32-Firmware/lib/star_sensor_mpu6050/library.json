@@ -1,0 +1,18 @@
+{
+    "name": "star_sensor_mpu6050",
+    "version": "1.0.0",
+    "description": "MPU6050 6-axis IMU driver with FIFO support",
+    "keywords": ["esp32", "imu", "accelerometer", "gyroscope", "mpu6050", "i2c"],
+    "license": "MIT",
+    "frameworks": ["espidf"],
+    "platforms": ["espressif32"],
+    "dependencies": {
+        "star_bus": "*",
+        "star_core": "*",
+        "star_error_handler": "*"
+    },
+    "build": {
+        "srcDir": "src",
+        "includeDir": "include"
+    }
+}
