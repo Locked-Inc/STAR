@@ -1,6 +1,6 @@
-// TODO: Add PCA9685 To this to move servo motors
-
 #include <esp_log.h>
+#include <freertos/FreeRTOS.h>
+#include <freertos/task.h>
 
 #include "star_bus_common_types.h"
 #include "star_bus_config.h"
@@ -13,27 +13,37 @@
 #include "star_pin_interface.h"
 #include "star_pin_validator.h"
 #include "star_sensor_hcsr04.h"
+#include "star_sensor_pca9685.h"
 
 /* Hardware Config */
 #define NUM_HCSR04 (2)
 #define HCSR04_MAX_DISTANCE_CM (400)
 
-// Left Sensor
-#define HCSR04_LEFT    (0)
+/* Left Sensor */
+#define HCSR04_LEFT (0)
 #define GPIO_LEFT_TRIG (GPIO_NUM_18)
 #define GPIO_LEFT_ECHO (GPIO_NUM_19)
 
-// Right Sensor
-#define HCSR04_RIGHT    (1)
+/* Right Sensor */
+#define HCSR04_RIGHT (1)
 #define GPIO_RIGHT_TRIG (GPIO_NUM_21)
 #define GPIO_RIGHT_ECHO (GPIO_NUM_22)
 
-// DHT22 Pin (out)
+/* DHT22 Pin (out) */
 #define GPIO_DHT22_PIN (GPIO_NUM_5)
 
-static const char* s_TAG      = "POC Demo";
-static const char* s_DHT22_TAG = "DHT-22";
-static const char* s_HCSR04_TAG = "HC-SR04";
+/* PCA9685 */
+#define GPIO_PCA9685_I2C_SDA (GPIO_NUM_21)
+#define GPIO_PCA9685_I2C_SCL (GPIO_NUM_22)
+#define PCA9685_I2C_FREQUENCY (400000)
+#define PCA9685_I2C_NUM (I2C_NUM_0)
+#define PCA9685_PWM_FREQUENCY_kHZ (50)
+#define GPIO_PCA9685_OE (GPIO_NUM_15)
+
+static const char* s_TAG         = "POC Demo";
+static const char* s_DHT22_TAG   = "DHT-22";
+static const char* s_HCSR04_TAG  = "HC-SR04";
+static const char* s_PCA9685_TAG = "PCA9685";
 
 void app_main(void)
 {
@@ -82,7 +92,7 @@ void app_main(void)
 
   /* Read temperature from DHT22 for sound speed correction */
   star_dht22_data_t dht22_data;
-  ret          = star_bus_dht22_read(&bus_manager, s_DHT22_TAG, &dht22_data); // TODO: Move this to a Task
+  ret = star_bus_dht22_read(&bus_manager, s_DHT22_TAG, &dht22_data); // TODO: Move this to a Task
   float temp_c = 25.0f; /* Default temperature if read fails */
   if (ret == ESP_OK && dht22_data.checksum_valid) {
     temp_c = dht22_data.temperature_c;
@@ -94,21 +104,72 @@ void app_main(void)
     ESP_LOGW(s_TAG, "DHT22 read failed, using default temperature %.1f C", temp_c);
   }
 
-  hcsr04_config_t hcsr04_config[NUM_HCSR04] = {{GPIO_LEFT_TRIG, GPIO_LEFT_ECHO, temp_c},
-                                               {GPIO_RIGHT_TRIG, GPIO_RIGHT_ECHO, temp_c}};
-  hcsr04_handle_t hcsr04_handle;
-  float hcsr04_data[NUM_HCSR04];
+  /* Set up HCSR-04 */
+  const hcsr04_config_t hcsr04_config[NUM_HCSR04] = {{GPIO_LEFT_TRIG, GPIO_LEFT_ECHO, temp_c},
+                                                     {GPIO_RIGHT_TRIG, GPIO_RIGHT_ECHO, temp_c}};
+  hcsr04_handle_t       hcsr04_handles[NUM_HCSR04];
+  float                 hcsr04_data[NUM_HCSR04];
+
   for (uint8_t i = 0; i < NUM_HCSR04; i++) {
-    star_sensor_hcsr04_init(&hcsr04_handle, &bus_manager, s_HCSR04_TAG, error_iface, &hcsr04_config[i]);
+    ret = star_sensor_hcsr04_init(&hcsr04_handles[i],
+                                  &bus_manager,
+                                  s_HCSR04_TAG,
+                                  error_iface,
+                                  &hcsr04_config[i]);
+    if (ret != ESP_OK) {
+      ESP_LOGE(s_TAG, "Failed to init HCSR04 sensor %d: %s", i, esp_err_to_name(ret));
+    }
   }
+
+  /* Set up PCA9685 */
+  star_bus_config_t* pwm_bus = star_bus_config_create_i2c(s_PCA9685_TAG,
+                                                          PCA9685_I2C_NUM,
+                                                          PCA9685_DEFAULT_ADDR,
+                                                          GPIO_PCA9685_I2C_SDA,
+                                                          GPIO_PCA9685_I2C_SCL,
+                                                          PCA9685_I2C_FREQUENCY);
+  star_bus_manager_add_bus(&bus_manager, pwm_bus);
+
+  pca9685_handle_t pca9685_handle;
+  pca9685_config_t pca9685_config = {.i2c_addr      = PCA9685_DEFAULT_ADDR,
+                                     .pwm_freq      = PCA9685_PWM_FREQUENCY_kHZ,
+                                     .output_mode   = PCA9685_OUTPUT_TOTEM_POLE,
+                                     .ext_clock     = false,
+                                     .invert_output = false};
+  ret                             = star_sensor_pca9685_init(&pca9685_handle,
+                                 &bus_manager,
+                                 s_PCA9685_TAG,
+                                 error_iface,
+                                 GPIO_PCA9685_OE,
+                                 false,
+                                 &pca9685_config);
+
+  if (ret != ESP_OK) {
+    ESP_LOGE(s_TAG, "Failed to init PCA9685: %s", esp_err_to_name(ret));
+    star_bus_manager_deinit(&bus_manager);
+    star_error_interface_destroy(error_iface);
+    return;
+  }
+
+  ESP_LOGI(s_TAG, "PCA9685 initialized successfully");
 
   while (1) {
     for (uint8_t i = 0; i < NUM_HCSR04; i++) {
-      star_sensor_hcsr04_read_distance(&hcsr04_handle, &hcsr04_data[i]);
+      ret = star_sensor_hcsr04_read_distance(&hcsr04_handles[i], &hcsr04_data[i]);
 
-      if (hcsr04_data[i] >= HCSR04_MAX_DISTANCE_CM) {
-        // TODO: Move Servo Motor
+      if (ret == ESP_OK) {
+        ESP_LOGI(s_TAG, "Sensor %d distance: %.1f cm", i, hcsr04_data[i]);
+
+        if (hcsr04_data[i] >= HCSR04_MAX_DISTANCE_CM) {
+          star_sensor_pca9685_set_channel_off(&pca9685_handle, i);
+        } else {
+          /* Set LED brightness based on distance (closer = brighter) */
+          float duty_percent = 100.0f * (1.0f - (hcsr04_data[i] / HCSR04_MAX_DISTANCE_CM));
+          star_sensor_pca9685_set_duty_cycle(&pca9685_handle, i, duty_percent);
+        }
       }
     }
+
+    vTaskDelay(pdMS_TO_TICKS(100));
   }
 }
