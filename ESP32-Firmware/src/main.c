@@ -26,8 +26,8 @@
 
 /* Right Sensor */
 #define HCSR04_RIGHT (1)
-#define GPIO_RIGHT_TRIG (GPIO_NUM_21)
-#define GPIO_RIGHT_ECHO (GPIO_NUM_22)
+#define GPIO_RIGHT_TRIG (GPIO_NUM_4)
+#define GPIO_RIGHT_ECHO (GPIO_NUM_2)
 
 /* DHT22 Pin (out) */
 #define GPIO_DHT22_PIN (GPIO_NUM_5)
@@ -97,14 +97,33 @@ void app_main(void)
   if (ret == ESP_OK && dht22_data.checksum_valid) {
     temp_c = dht22_data.temperature_c;
     ESP_LOGI(s_TAG,
-             "DHT22 Temperature: %.1f C, Humidity: %.1f %%",
+             "DHT-22 Temperature: %.1f C, Humidity: %.1f %%",
              dht22_data.temperature_c,
              dht22_data.humidity_percent);
   } else {
-    ESP_LOGW(s_TAG, "DHT22 read failed, using default temperature %.1f C", temp_c);
+    ESP_LOGW(s_TAG, "DHT-22 read failed, using default temperature %.1f C", temp_c);
   }
 
   /* Set up HCSR-04 */
+  /* First create a GPIO bus for the HC-SR04 sensors */
+  gpio_num_t hcsr04_pins[] = {GPIO_LEFT_TRIG, GPIO_LEFT_ECHO, GPIO_RIGHT_TRIG, GPIO_RIGHT_ECHO};
+  star_bus_config_t* hcsr04_gpio_bus =
+      star_bus_config_create_gpio(s_HCSR04_TAG, hcsr04_pins, sizeof(hcsr04_pins) / sizeof(hcsr04_pins[0]));
+  if (hcsr04_gpio_bus == NULL) {
+    ESP_LOGE(s_TAG, "Failed to create GPIO bus for HC-SR04");
+    star_bus_manager_deinit(&bus_manager);
+    star_error_interface_destroy(error_iface);
+    return;
+  }
+  ret = star_bus_manager_add_bus(&bus_manager, hcsr04_gpio_bus);
+  if (ret != ESP_OK) {
+    ESP_LOGE(s_TAG, "Failed to add GPIO bus for HC-SR04: %s", esp_err_to_name(ret));
+    star_bus_config_destroy(hcsr04_gpio_bus);
+    star_bus_manager_deinit(&bus_manager);
+    star_error_interface_destroy(error_iface);
+    return;
+  }
+
   const hcsr04_config_t hcsr04_config[NUM_HCSR04] = {{GPIO_LEFT_TRIG, GPIO_LEFT_ECHO, temp_c},
                                                      {GPIO_RIGHT_TRIG, GPIO_RIGHT_ECHO, temp_c}};
   hcsr04_handle_t       hcsr04_handles[NUM_HCSR04];
@@ -117,7 +136,7 @@ void app_main(void)
                                   error_iface,
                                   &hcsr04_config[i]);
     if (ret != ESP_OK) {
-      ESP_LOGE(s_TAG, "Failed to init HCSR04 sensor %d: %s", i, esp_err_to_name(ret));
+      ESP_LOGE(s_TAG, "Failed to init HC-SR04 sensor %d: %s", i, esp_err_to_name(ret));
     }
   }
 
@@ -127,7 +146,7 @@ void app_main(void)
                                                           PCA9685_DEFAULT_ADDR,
                                                           GPIO_PCA9685_I2C_SDA,
                                                           GPIO_PCA9685_I2C_SCL,
-                                                          PCA9685_I2C_FREQUENCY);
+                                                         PCA9685_I2C_FREQUENCY);
   star_bus_manager_add_bus(&bus_manager, pwm_bus);
 
   pca9685_handle_t pca9685_handle;
