@@ -6044,7 +6044,7 @@
 			(uuid "d5d2c5fa-4a1b-4c3f-b0ca-4dfa43010d38")
 			(effects
 				(font
-					(size 0.8 0.8)
+					(size 1 1)
 					(thickness 0.15)
 				)
 			)
@@ -6599,8 +6599,8 @@
 			(uuid "c8410cc5-e040-47e1-beb8-9faa9b6e8fe6")
 			(effects
 				(font
-					(size 1.27 1.27)
-					(thickness 0.254)
+					(size 1 1)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -7907,7 +7907,7 @@
 		(descr "Capacitor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC-7351 nominal with elongated pad for handsoldering. (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf, https://docs.google.com/spreadsheets/d/1BsfQQcO9C6DZCsRaXUlFlo91Tg2WpOkGARC1WS5S8t0/edit?usp=sharing), generated with kicad-footprint-generator")
 		(tags "capacitor handsolder")
 		(property "Reference" "C4"
-			(at 0 -1.68 180)
+			(at 0.3625 -1.5 180)
 			(layer "F.SilkS")
 			(uuid "d59c8e06-77c8-430e-8d8c-45d5bac5f29a")
 			(effects
@@ -8899,13 +8899,13 @@
 		(descr "REF0038A_2024")
 		(tags "Integrated Circuit")
 		(property "Reference" "U2"
-			(at 6 2.5 0)
+			(at 5.075 1.175 0)
 			(layer "F.SilkS")
 			(uuid "aa9c9d25-31f7-410d-aeb9-389a379fbdf0")
 			(effects
 				(font
-					(size 1.27 1.27)
-					(thickness 0.254)
+					(size 1 1)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -12519,8 +12519,8 @@
 			(uuid "da682902-b367-4faa-94aa-9ae85fc3edbe")
 			(effects
 				(font
-					(size 1.27 1.27)
-					(thickness 0.254)
+					(size 1 1)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -13068,13 +13068,13 @@
 		(descr "WESURGE_0603134")
 		(tags "Varistor")
 		(property "Reference" "D2"
-			(at 1.75 -2.25 180)
+			(at 1.1 -1.875 180)
 			(layer "F.SilkS")
 			(uuid "96bbb269-1434-4c16-ab7d-c83076b3aad8")
 			(effects
 				(font
-					(size 1.27 1.27)
-					(thickness 0.254)
+					(size 1 1)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -19799,7 +19799,7 @@
 		(descr "Through hole straight pin header, 1x03, 2.54mm pitch, single row")
 		(tags "Through hole pin header THT 1x03 2.54mm single row")
 		(property "Reference" "J3"
-			(at 0 -2.38 0)
+			(at -2.575 5.68 0)
 			(layer "F.SilkS")
 			(uuid "38259c32-4941-435f-a21e-d791ff75c194")
 			(effects
@@ -21055,7 +21055,7 @@
 		(descr "Through hole straight pin header, 1x02, 2.54mm pitch, single row")
 		(tags "Through hole pin header THT 1x02 2.54mm single row")
 		(property "Reference" "J5"
-			(at 0 5.775 0)
+			(at 2.575 2.675 0)
 			(layer "F.SilkS")
 			(uuid "0a899145-7d67-429f-aca1-cae933691e53")
 			(effects
@@ -22501,13 +22501,13 @@
 		(descr "DRV0006A")
 		(tags "Integrated Circuit")
 		(property "Reference" "U3"
-			(at -4 0 180)
+			(at -0.15 2.025 180)
 			(layer "F.SilkS")
 			(uuid "0862de49-9799-4433-925a-e5a95492b8c2")
 			(effects
 				(font
-					(size 1.27 1.27)
-					(thickness 0.254)
+					(size 1 1)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -24681,7 +24681,7 @@
 		(descr "Capacitor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC-7351 nominal with elongated pad for handsoldering. (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf, https://docs.google.com/spreadsheets/d/1BsfQQcO9C6DZCsRaXUlFlo91Tg2WpOkGARC1WS5S8t0/edit?usp=sharing), generated with kicad-footprint-generator")
 		(tags "capacitor handsolder")
 		(property "Reference" "C6"
-			(at 2.75 -0.75 0)
+			(at 2.875 0.05 0)
 			(layer "F.SilkS")
 			(uuid "59bb708a-6588-44f3-ada5-dc5f5ca33575")
 			(effects
@@ -28649,7 +28649,7 @@
 		(descr "Resistor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC-7351 nominal with elongated pad for handsoldering. (Body size source: IPC-SM-782 page 72, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "resistor handsolder")
 		(property "Reference" "R7"
-			(at 0.25 -1.5 0)
+			(at -2.625 0.025 0)
 			(layer "F.SilkS")
 			(uuid "66853180-69b3-45d3-85ea-e1988ec73f3e")
 			(effects
@@ -29829,14 +29829,13 @@
 		(descr "CAT24C512WI-GT3")
 		(tags "Integrated Circuit")
 		(property "Reference" "U1"
-			(at -2.5 -4.25 180)
+			(at -2.5 -4.25 0)
 			(layer "F.SilkS")
-			(hide yes)
 			(uuid "82c668c1-d8cc-4f3d-99ab-14be80b2a1a3")
 			(effects
 				(font
-					(size 1.27 1.27)
-					(thickness 0.254)
+					(size 1 1)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -31844,7 +31843,7 @@
 		(descr "Capacitor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC-7351 nominal with elongated pad for handsoldering. (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf, https://docs.google.com/spreadsheets/d/1BsfQQcO9C6DZCsRaXUlFlo91Tg2WpOkGARC1WS5S8t0/edit?usp=sharing), generated with kicad-footprint-generator")
 		(tags "capacitor handsolder")
 		(property "Reference" "C25"
-			(at 0.5 -2 270)
+			(at -0.2 -1.875 270)
 			(layer "F.SilkS")
 			(uuid "4255f49c-ac30-4ddb-8e18-26ad1e57d301")
 			(effects
@@ -32836,7 +32835,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC-7351 nominal with elongated pad for handsoldering. (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor handsolder")
 		(property "Reference" "C24"
-			(at 0.5 1.5 270)
+			(at -0.025 -1.425 270)
 			(layer "F.SilkS")
 			(uuid "e4faee0a-2af2-4d24-898b-96d535190794")
 			(effects
@@ -34029,7 +34028,7 @@
 		(descr "Through hole straight pin header, 1x04, 2.54mm pitch, single row")
 		(tags "Through hole pin header THT 1x04 2.54mm single row")
 		(property "Reference" "J6"
-			(at 1.15 -2.13 180)
+			(at 2.75 -0.75 180)
 			(layer "F.SilkS")
 			(uuid "995ff2ad-6a7b-4378-be7e-4ea4694e5959")
 			(effects
@@ -35491,7 +35490,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC-7351 nominal with elongated pad for handsoldering. (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor handsolder")
 		(property "Reference" "C5"
-			(at 0.01 -1.29 0)
+			(at -2.575 -0.05 0)
 			(layer "F.SilkS")
 			(uuid "31de70a3-b3ce-4a06-b905-f343a460b419")
 			(effects
@@ -37480,8 +37479,8 @@
 			(uuid "2c59e6d8-8515-414a-9aa4-66ca5eab3975")
 			(effects
 				(font
-					(size 1.27 1.27)
-					(thickness 0.254)
+					(size 1 1)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -37796,13 +37795,13 @@
 		(descr "WESURGE_0603134")
 		(tags "Varistor")
 		(property "Reference" "D1"
-			(at 1.75 2.25 180)
+			(at 1.125 1.9 180)
 			(layer "F.SilkS")
 			(uuid "65d4e2e3-834e-4769-a6ba-1369f4f2927d")
 			(effects
 				(font
-					(size 1.27 1.27)
-					(thickness 0.254)
+					(size 1 1)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -39268,7 +39267,7 @@
 		(descr "Capacitor SMD 0603 (1608 Metric), square (rectangular) end terminal, IPC-7351 nominal with elongated pad for handsoldering. (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf), generated with kicad-footprint-generator")
 		(tags "capacitor handsolder")
 		(property "Reference" "C8"
-			(at 2.6 -0.75 0)
+			(at 2.675 -0.025 0)
 			(layer "F.SilkS")
 			(uuid "3fd029a8-c7f1-4962-8a7a-abfdbfb07c2c")
 			(effects
@@ -42244,7 +42243,7 @@
 		(descr "Capacitor SMD 0805 (2012 Metric), square (rectangular) end terminal, IPC-7351 nominal with elongated pad for handsoldering. (Body size source: IPC-SM-782 page 76, https://www.pcb-3d.com/wordpress/wp-content/uploads/ipc-sm-782a_amendment_1_and_2.pdf, https://docs.google.com/spreadsheets/d/1BsfQQcO9C6DZCsRaXUlFlo91Tg2WpOkGARC1WS5S8t0/edit?usp=sharing), generated with kicad-footprint-generator")
 		(tags "capacitor handsolder")
 		(property "Reference" "C7"
-			(at 3 -0.75 0)
+			(at 3 -0.05 0)
 			(layer "F.SilkS")
 			(uuid "5699cfc8-43b4-4bb7-b097-e5a58cda8d22")
 			(effects
@@ -45342,13 +45341,13 @@
 		)
 	)
 	(gr_text "USB-C\nLocked Inc.\nV1.0.0"
-		(at 132.25 110.25 0)
+		(at 132.8 111.45 0)
 		(layer "F.SilkS")
 		(uuid "c5c0b2af-6004-4a6b-9079-df55c79f2d10")
 		(effects
 			(font
 				(size 1 1)
-				(thickness 0.1)
+				(thickness 0.15)
 			)
 			(justify left bottom)
 		)
