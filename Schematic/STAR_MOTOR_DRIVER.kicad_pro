@@ -52,12 +52,7 @@
         }
       },
       "diff_pair_dimensions": [],
-      "drc_exclusions": [
-        [
-          "unconnected_items|260129000|87210000|F.Cu|4|40cbd74a-cbc5-47aa-9eb9-80d0f95300be|a0374d15-e17e-4e67-b119-db33829086fd",
-          "It is clearly connected"
-        ]
-      ],
+      "drc_exclusions": [],
       "meta": {
         "version": 2
       },
