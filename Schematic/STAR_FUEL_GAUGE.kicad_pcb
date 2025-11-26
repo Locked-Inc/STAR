@@ -1037,7 +1037,7 @@
 		(property ki_fp_filters "TO-???* *_Diode_* *SingleDiode* D_*")
 		(path "/62932bbb-638f-4e9f-be2f-652a4d0cd042")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -1.55 -0.625)
@@ -2026,7 +2026,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/e56258d2-dc9e-45d9-a726-0482b84c7a5e")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.254724 0.5225)
@@ -2222,7 +2222,7 @@
 		)
 		(path "/cc792c26-2ca6-46bd-9fb5-afdea0803c15")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start -7.74 -4.525)
@@ -2869,7 +2869,7 @@
 		(property ki_fp_filters "SO*3.9x4.9mm*P1.27mm*")
 		(path "/650f8073-36f3-4300-bdc4-54384229ef68")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -2.06 -2.56)
@@ -3231,7 +3231,7 @@
 		)
 		(path "/7338d1be-dd94-4d8f-a0cf-7eb6742f7c8c")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start -7.74 -4.525)
@@ -3784,7 +3784,7 @@
 		)
 		(path "/f26b57dd-0110-4f67-ba43-e09f71dea257")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr through_hole)
 		(fp_line
 			(start -9.01 -4.525)
@@ -5038,7 +5038,7 @@
 		(property ki_fp_filters "Connector*:*_1x??_*")
 		(path "/e9f88543-50be-443d-b68d-05661fd65175")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr through_hole exclude_from_bom)
 		(fp_line
 			(start -1.38 -1.38)
@@ -5404,7 +5404,7 @@
 		(property ki_fp_filters "TSSOP*4.4x7.8mm*P0.5mm*")
 		(path "/cde88ba8-5d45-4711-a0ff-94aff920fe87")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -2.31 -4.01)
@@ -6783,7 +6783,7 @@
 		(property ki_fp_filters "LED_D5.0mm_Clear LED_D5.0mm_Horizontal_O1.27mm_Z3.0mm LED_D5.0mm_Horizontal_O3.81mm_Z3.0mm LED_D5.0mm_Horizontal_O6.35mm_Z3.0mm")
 		(path "/06d862e0-5c95-4a6d-9b59-39d7355e09d2")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -1.6 -0.825)
@@ -7780,7 +7780,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/f6934860-6c69-4903-a077-8955ad01ec7e")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.254724 -0.5225)
@@ -8773,7 +8773,7 @@
 		(property ki_fp_filters "LED_D5.0mm_Clear LED_D5.0mm_Horizontal_O1.27mm_Z3.0mm LED_D5.0mm_Horizontal_O3.81mm_Z3.0mm LED_D5.0mm_Horizontal_O6.35mm_Z3.0mm")
 		(path "/dd873a25-5e9e-49ad-b203-938c10cde89e")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -1.6 -0.825)
@@ -9770,7 +9770,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/c6bb2615-29fe-45c9-aeb1-d8b272ef10e1")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.254724 -0.5225)
@@ -10749,7 +10749,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/ef046f3e-e354-4e51-b615-463b5dbc087b")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.254724 -0.5225)
@@ -11741,7 +11741,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/d2bd0fb8-46ba-4a1c-9694-24cd1631a40e")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.254724 -0.5225)
@@ -12733,7 +12733,7 @@
 		(property ki_fp_filters "C_*")
 		(path "/8f20ef8a-89c0-4a0a-8ecf-fbba7d488285")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.261252 -0.735)
@@ -13725,7 +13725,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/5732b90a-601b-42e0-995f-4315eb010916")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.254724 0.5225)
@@ -14704,7 +14704,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/cb52cc17-daab-42f7-a59d-08886822c688")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.254724 0.5225)
@@ -15696,7 +15696,7 @@
 		(property ki_fp_filters "C_*")
 		(path "/7fc74002-2ba8-446b-a1fc-fac51ba15df8")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.146267 0.51)
@@ -16675,7 +16675,7 @@
 		)
 		(path "/2a144d5d-7dbb-45f8-b998-098090442804")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start 0.075 1.46)
@@ -17717,7 +17717,7 @@
 		(property ki_fp_filters "LED_D5.0mm_Clear LED_D5.0mm_Horizontal_O1.27mm_Z3.0mm LED_D5.0mm_Horizontal_O3.81mm_Z3.0mm LED_D5.0mm_Horizontal_O6.35mm_Z3.0mm")
 		(path "/e21b0945-4126-49e0-9dc1-9b51dd6cc09a")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -1.6 -0.825)
@@ -18714,7 +18714,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/b56a821c-e1b2-4af5-82a7-d96d5da214ad")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.254724 -0.5225)
@@ -19706,7 +19706,7 @@
 		(property ki_fp_filters "C_*")
 		(path "/b3e2713d-1120-458b-b2e1-e08ad74cf134")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.146267 -0.51)
@@ -20699,7 +20699,7 @@
 		(property ki_fp_filters "TO-???* *_Diode_* *SingleDiode* D_*")
 		(path "/13baaf77-352f-4590-8fb2-1aacdfc2ba3f")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -1.55 -0.625)
@@ -21701,7 +21701,7 @@
 		(property ki_fp_filters "C_*")
 		(path "/0465de23-79c1-4d61-899b-308b330ccd66")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.146267 0.51)
@@ -22043,7 +22043,7 @@
 		)
 		(path "/e55f6e69-264f-4522-8b5f-0b6582998b19")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -2.1 -1.6)
@@ -23045,7 +23045,7 @@
 		(property ki_fp_filters "LED_D5.0mm_Clear LED_D5.0mm_Horizontal_O1.27mm_Z3.0mm LED_D5.0mm_Horizontal_O3.81mm_Z3.0mm LED_D5.0mm_Horizontal_O6.35mm_Z3.0mm")
 		(path "/ee9b7a2e-00ec-4862-81ca-01ff91403638")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -1.6 -0.825)
@@ -24042,7 +24042,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/e7d91287-fcd7-4a66-a68b-b89cf8c0f18d")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.254724 -0.5225)
@@ -25034,7 +25034,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/c58060dc-c3fa-40ae-9765-77fe452328d0")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.254724 0.5225)
@@ -26183,7 +26183,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/17e05366-146b-4931-af17-33ed71344a7d")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.254724 -0.5225)
@@ -27162,7 +27162,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/0d41c560-d49d-4286-b349-eacdca478c18")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.254724 0.5225)
@@ -28311,7 +28311,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/c171a122-b78b-427c-a69f-0349e040a9b9")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.254724 0.5225)
@@ -29304,7 +29304,7 @@
 		(property ki_fp_filters "LED_D5.0mm_Clear LED_D5.0mm_Horizontal_O1.27mm_Z3.0mm LED_D5.0mm_Horizontal_O3.81mm_Z3.0mm LED_D5.0mm_Horizontal_O6.35mm_Z3.0mm")
 		(path "/222f907a-7668-43c3-bacc-1b14a6e13f98")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -1.6 -0.825)
@@ -30314,7 +30314,7 @@
 		(property ki_fp_filters "C_*")
 		(path "/de14cca0-491b-4786-bb9f-2397eef7dc07")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.146267 -0.51)
@@ -31463,7 +31463,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/7340c2a0-da5a-4c15-9fd2-736e65ff1373")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.254724 -0.5225)
@@ -32442,7 +32442,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/59e54d03-1ae9-4cbd-8f72-90fa0286a3b6")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.254724 -0.5225)
@@ -33434,7 +33434,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/82aabd78-d592-4968-b30a-6b98f91129ab")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.254724 -0.5225)
@@ -33828,7 +33828,7 @@
 		(property ki_fp_filters "Connector*:*_1x??_*")
 		(path "/04de4743-1ce4-4378-902a-6516dc53cbb8")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr through_hole exclude_from_bom)
 		(fp_line
 			(start -1.38 -1.38)
@@ -34883,7 +34883,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/92c40ab1-ce49-4a7a-bfe3-ea929469445b")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.254724 -0.5225)
@@ -35875,7 +35875,7 @@
 		(property ki_fp_filters "C_*")
 		(path "/c13dd541-0b2c-4a05-990d-09e1a3b4cf4f")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.146267 -0.51)
@@ -36074,7 +36074,7 @@
 		(property ki_fp_filters "Connector*:*_1x??_*")
 		(path "/b1941ecf-36fd-4600-b5bb-98c0290fe303")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr through_hole exclude_from_bom)
 		(fp_line
 			(start -1.38 -1.38)
@@ -36418,7 +36418,7 @@
 		(property ki_fp_filters "SOT?23*")
 		(path "/fdcf9acb-8c39-49d7-a6a6-5cc083da9eda")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.76 -1.56)
@@ -37055,7 +37055,7 @@
 		)
 		(path "/3af7b5a6-ffd3-46ad-b318-91e830ad3f55")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start 2.25 -1)
@@ -38173,7 +38173,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/c09641ce-76e7-4aff-a399-45c19f7ad8f1")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.254724 0.5225)
@@ -39165,7 +39165,7 @@
 		(property ki_fp_filters "C_*")
 		(path "/090856a4-68ce-4dfa-a61b-81acdfbd562c")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.146267 -0.51)
@@ -40144,7 +40144,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/f2b26f4a-9874-4a82-8093-edb7f254bd56")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.254724 0.5225)
@@ -40486,7 +40486,7 @@
 		)
 		(path "/746db5e9-e6cb-47cb-a29e-9da61837b255")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start 0.15 1.45)
@@ -40734,7 +40734,7 @@
 		(property ki_fp_filters "Connector*:*_1x??_*")
 		(path "/6047c1e0-0d9e-4ad2-9be5-69babeb665f8")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr through_hole exclude_from_bom)
 		(fp_line
 			(start 1.38 1.27)
@@ -41299,7 +41299,7 @@
 		)
 		(path "/88c17d16-3dbb-44c8-9d78-b2cd48b6050b")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -2.25 1)
@@ -42260,7 +42260,7 @@
 		(property ki_fp_filters "R_*")
 		(path "/7333f761-f2de-4f0b-a50e-dfff303a3db0")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.254724 0.5225)
@@ -43252,7 +43252,7 @@
 		(property ki_fp_filters "C_*")
 		(path "/a7d5af7b-be2c-4985-80a6-6354100d0c7c")
 		(sheetname "/")
-		(sheetfile "STAR_FUEL_GUAGE.kicad_sch")
+		(sheetfile "STAR_FUEL_GAUGE.kicad_sch")
 		(attr smd)
 		(fp_line
 			(start -0.146267 -0.51)

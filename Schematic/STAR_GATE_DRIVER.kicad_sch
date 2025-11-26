@@ -2191,7 +2191,7 @@
 		)
 		(uuid "32c0ce64-0b80-451b-9cd0-21c0ed9f87e2")
 	)
-	(label "FUEL_GUAGE_PMON_EN"
+	(label "FUEL_GAUGE_PMON_EN"
 		(at 105.41 106.68 0)
 		(effects
 			(font
@@ -2201,7 +2201,7 @@
 		)
 		(uuid "485f06df-b079-4a19-976e-3774eaa97f6f")
 	)
-	(label "FUEL_GUAGE_PMON_EN"
+	(label "FUEL_GAUGE_PMON_EN"
 		(at 69.85 156.21 0)
 		(effects
 			(font
@@ -2242,7 +2242,7 @@
 		)
 		(uuid "6a0617ed-031e-43b8-b7df-c6e81d85c371")
 	)
-	(label "FUEL_GUAGE_PACKDIV"
+	(label "FUEL_GAUGE_PACKDIV"
 		(at 129.54 156.21 180)
 		(effects
 			(font
@@ -2262,7 +2262,7 @@
 		)
 		(uuid "8200fa8a-b57a-4488-90d4-16b1b4fc950c")
 	)
-	(label "FUEL_GUAGE_PCHG_EN"
+	(label "FUEL_GAUGE_PCHG_EN"
 		(at 105.41 104.14 0)
 		(effects
 			(font
@@ -2272,7 +2272,7 @@
 		)
 		(uuid "a67459fb-754d-48ad-a8b7-d8e3266b6ef5")
 	)
-	(label "FUEL_GUAGE_PACKDIV"
+	(label "FUEL_GAUGE_PACKDIV"
 		(at 177.8 106.68 180)
 		(effects
 			(font
@@ -2343,7 +2343,7 @@
 		)
 		(uuid "cf6d0b89-3a37-4537-8ce6-a9b2699a0d59")
 	)
-	(label "FUEL_GUAGE_PCHG_EN"
+	(label "FUEL_GAUGE_PCHG_EN"
 		(at 129.54 153.67 180)
 		(effects
 			(font
@@ -2353,7 +2353,7 @@
 		)
 		(uuid "d554e307-c8b2-4b8b-8642-a026ac2fa5fd")
 	)
-	(label "FUEL_GUAGE_CP_EN"
+	(label "FUEL_GAUGE_CP_EN"
 		(at 69.85 158.75 0)
 		(effects
 			(font
@@ -2363,7 +2363,7 @@
 		)
 		(uuid "e21176cc-7c5d-446c-9e82-3584585a63c0")
 	)
-	(label "FUEL_GUAGE_CP_EN"
+	(label "FUEL_GAUGE_CP_EN"
 		(at 105.41 99.06 0)
 		(effects
 			(font
@@ -2373,7 +2373,7 @@
 		)
 		(uuid "e9274844-ccea-41ee-adf5-c6496851bd69")
 	)
-	(hierarchical_label "FUEL_GUAGE_PMON_EN"
+	(hierarchical_label "FUEL_GAUGE_PMON_EN"
 		(shape input)
 		(at 69.85 156.21 180)
 		(effects
@@ -2417,7 +2417,7 @@
 		)
 		(uuid "6c7f27b0-951c-4cce-9c69-66f161742664")
 	)
-	(hierarchical_label "FUEL_GUAGE_CP_EN"
+	(hierarchical_label "FUEL_GAUGE_CP_EN"
 		(shape input)
 		(at 69.85 158.75 180)
 		(effects
@@ -2428,7 +2428,7 @@
 		)
 		(uuid "95327abe-ec51-4083-b6de-29ae1ac4b8e3")
 	)
-	(hierarchical_label "FUEL_GUAGE_PACKDIV"
+	(hierarchical_label "FUEL_GAUGE_PACKDIV"
 		(shape input)
 		(at 129.54 156.21 0)
 		(effects
@@ -2472,7 +2472,7 @@
 		)
 		(uuid "d3be7c9a-4c40-4eb3-b7f3-30bfe5e416da")
 	)
-	(hierarchical_label "FUEL_GUAGE_PCHG_EN"
+	(hierarchical_label "FUEL_GAUGE_PCHG_EN"
 		(shape input)
 		(at 129.54 153.67 0)
 		(effects

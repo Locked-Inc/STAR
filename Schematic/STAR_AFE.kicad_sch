@@ -10179,7 +10179,7 @@
 		)
 		(uuid "ff71e961-fcad-4b60-be77-9f8440d54d34")
 	)
-	(label "FUEL_GUAGE_SCL"
+	(label "FUEL_GAUGE_SCL"
 		(at 361.95 233.68 180)
 		(effects
 			(font
@@ -10241,7 +10241,7 @@
 		)
 		(uuid "1b20fdb3-d716-49a3-b500-034867f5ce5b")
 	)
-	(label "FUEL_GUAGE_SDA"
+	(label "FUEL_GAUGE_SDA"
 		(at 251.46 91.44 180)
 		(effects
 			(font
@@ -10361,7 +10361,7 @@
 		)
 		(uuid "4a47a35e-8cb7-4f85-abdb-c3bd1152c724")
 	)
-	(label "FUEL_GUAGE_C3"
+	(label "FUEL_GAUGE_C3"
 		(at 308.61 236.22 0)
 		(effects
 			(font
@@ -10412,7 +10412,7 @@
 		)
 		(uuid "5d9e683e-57a8-4b32-928e-2f378471690a")
 	)
-	(label "FUEL_GUAGE_SCL"
+	(label "FUEL_GAUGE_SCL"
 		(at 265.43 93.98 180)
 		(effects
 			(font
@@ -10503,7 +10503,7 @@
 		)
 		(uuid "94794ecb-372b-44ff-816c-48318a0553e8")
 	)
-	(label "FUEL_GUAGE_CAP1"
+	(label "FUEL_GAUGE_CAP1"
 		(at 264.16 149.86 180)
 		(effects
 			(font
@@ -10523,7 +10523,7 @@
 		)
 		(uuid "a5cff9ad-66f0-4170-a0c2-d0c2f5b2ae36")
 	)
-	(label "FUEL_GUAGE_ALERT"
+	(label "FUEL_GAUGE_ALERT"
 		(at 294.64 106.68 180)
 		(effects
 			(font
@@ -10533,7 +10533,7 @@
 		)
 		(uuid "a8e8d104-ac8a-4c5a-b326-1d123acd2932")
 	)
-	(label "FUEL_GUAGE_REGOUT"
+	(label "FUEL_GAUGE_REGOUT"
 		(at 361.95 236.22 180)
 		(effects
 			(font
@@ -10543,7 +10543,7 @@
 		)
 		(uuid "a9e973a5-e1e5-4919-8245-1a5ecb81f52f")
 	)
-	(label "FUEL_GUAGE_SDA"
+	(label "FUEL_GAUGE_SDA"
 		(at 308.61 233.68 0)
 		(effects
 			(font
@@ -10675,7 +10675,7 @@
 		)
 		(uuid "c580cf38-0f08-4c8e-9dca-60feb2c12bba")
 	)
-	(label "FUEL_GUAGE_CAP1"
+	(label "FUEL_GAUGE_CAP1"
 		(at 361.95 231.14 180)
 		(effects
 			(font
@@ -10685,7 +10685,7 @@
 		)
 		(uuid "c5b02c95-4271-4c0c-bc7d-4492b0fe5d05")
 	)
-	(label "FUEL_GUAGE_ALERT"
+	(label "FUEL_GAUGE_ALERT"
 		(at 308.61 238.76 0)
 		(effects
 			(font
@@ -10715,7 +10715,7 @@
 		)
 		(uuid "ccca6dad-dacb-4ba2-9597-294604425b46")
 	)
-	(label "FUEL_GUAGE_REGOUT"
+	(label "FUEL_GAUGE_REGOUT"
 		(at 215.9 71.12 0)
 		(effects
 			(font
@@ -10756,7 +10756,7 @@
 		)
 		(uuid "d97505ac-dfe3-4157-9b90-b83587e67e09")
 	)
-	(label "FUEL_GUAGE_C3"
+	(label "FUEL_GAUGE_C3"
 		(at 109.22 67.31 0)
 		(effects
 			(font
@@ -10849,7 +10849,7 @@
 		)
 		(uuid "2d1f145b-dc34-4910-841e-dfc8b6f55596")
 	)
-	(hierarchical_label "FUEL_GUAGE_SCL"
+	(hierarchical_label "FUEL_GAUGE_SCL"
 		(shape output)
 		(at 373.38 233.68 0)
 		(effects
@@ -10882,7 +10882,7 @@
 		)
 		(uuid "5c45bb3d-17f0-44c8-9a07-7fd2c834517b")
 	)
-	(hierarchical_label "FUEL_GUAGE_CAP1"
+	(hierarchical_label "FUEL_GAUGE_CAP1"
 		(shape output)
 		(at 373.38 231.14 0)
 		(effects
@@ -10948,7 +10948,7 @@
 		)
 		(uuid "a248e6a9-e20c-4410-a022-db71f7f6338e")
 	)
-	(hierarchical_label "FUEL_GUAGE_SDA"
+	(hierarchical_label "FUEL_GAUGE_SDA"
 		(shape output)
 		(at 304.8 233.68 180)
 		(effects
@@ -10981,7 +10981,7 @@
 		)
 		(uuid "ab681d03-c27b-4bdb-b0e3-ba30ad66b75f")
 	)
-	(hierarchical_label "FUEL_GUAGE_ALERT"
+	(hierarchical_label "FUEL_GAUGE_ALERT"
 		(shape output)
 		(at 304.8 238.76 180)
 		(effects
@@ -11014,7 +11014,7 @@
 		)
 		(uuid "c77ea19d-0e22-4b29-a80f-c5164e961531")
 	)
-	(hierarchical_label "FUEL_GUAGE_REGOUT"
+	(hierarchical_label "FUEL_GAUGE_REGOUT"
 		(shape output)
 		(at 373.38 236.22 0)
 		(effects
@@ -11036,7 +11036,7 @@
 		)
 		(uuid "ede70571-3583-485d-be7c-f1c174ed542b")
 	)
-	(hierarchical_label "FUEL_GUAGE_C3"
+	(hierarchical_label "FUEL_GAUGE_C3"
 		(shape output)
 		(at 304.8 236.22 180)
 		(effects
