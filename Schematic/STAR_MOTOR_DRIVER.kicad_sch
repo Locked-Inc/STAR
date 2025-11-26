@@ -4,12 +4,24 @@
 	(generator_version "9.0")
 	(uuid "ca1a5300-a097-400d-a75e-2552b2209d6a")
 	(paper "A3")
+<<<<<<< Updated upstream
 	(title_block
 		(title "Motor Driver")
 		(date "2025-11-04")
 		(rev "1.1.1")
 		(company "Locked Inc.")
 	)
+=======
+<<<<<<< Updated upstream
+=======
+	(title_block
+		(title "Motor Driver")
+		(date "2025-11-04")
+		(rev "1.1.2")
+		(company "Locked Inc.")
+	)
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 	(lib_symbols
 		(symbol "1017491:1017491"
 			(exclude_from_sim no)
@@ -10787,13 +10799,33 @@
 				(type solid)
 			)
 		)
+<<<<<<< Updated upstream
 		(column_widths 27.94 27.94)
 		(row_heights 2.54 2.54 2.54 2.54 2.54 2.54 2.54 2.54 2.54)
+=======
+<<<<<<< Updated upstream
+		(column_widths 26.67 57.15)
+		(row_heights 3.81 3.81 3.81 3.81 3.81 3.81)
+>>>>>>> Stashed changes
 		(cells
 			(table_cell "RED"
 				(exclude_from_sim no)
+<<<<<<< Updated upstream
 				(at 229.87 15.24 0)
 				(size 27.94 2.54)
+=======
+				(at 238.76 15.24 0)
+				(size 26.67 3.81)
+=======
+		(column_widths 27.94 27.94)
+		(row_heights 2.54 2.54 2.54 2.54 2.54 2.54)
+		(cells
+			(table_cell "PIN 1"
+				(exclude_from_sim no)
+				(at 297.18 22.86 0)
+				(size 27.94 2.54)
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 				(margins 0.9525 0.9525 0.9525 0.9525)
 				(span 1 1)
 				(fill
@@ -10807,10 +10839,24 @@
 				)
 				(uuid "ba4b3d0c-3335-482a-a130-9e358f218879")
 			)
+<<<<<<< Updated upstream
 			(table_cell "MOTOR1"
 				(exclude_from_sim no)
 				(at 257.81 15.24 0)
 				(size 27.94 2.54)
+=======
+<<<<<<< Updated upstream
+			(table_cell "motor power (connects to one motor terminal)"
+				(exclude_from_sim no)
+				(at 265.43 15.24 0)
+				(size 57.15 3.81)
+=======
+			(table_cell "MOTOR-"
+				(exclude_from_sim no)
+				(at 325.12 22.86 0)
+				(size 27.94 2.54)
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 				(margins 0.9525 0.9525 0.9525 0.9525)
 				(span 1 1)
 				(fill
@@ -10824,10 +10870,24 @@
 				)
 				(uuid "727f7c26-081c-4044-9e08-d9268a2ec94c")
 			)
+<<<<<<< Updated upstream
 			(table_cell "GOLD"
 				(exclude_from_sim no)
 				(at 229.87 17.78 0)
 				(size 27.94 2.54)
+=======
+<<<<<<< Updated upstream
+			(table_cell "(2) Black"
+				(exclude_from_sim no)
+				(at 238.76 19.05 0)
+				(size 26.67 3.81)
+=======
+			(table_cell "PIN 2"
+				(exclude_from_sim no)
+				(at 297.18 25.4 0)
+				(size 27.94 2.54)
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 				(margins 0.9525 0.9525 0.9525 0.9525)
 				(span 1 1)
 				(fill
@@ -10841,10 +10901,24 @@
 				)
 				(uuid "ca25727c-d4eb-4d59-bd3f-a1392c6a97e2")
 			)
+<<<<<<< Updated upstream
 			(table_cell "MOTOR2"
 				(exclude_from_sim no)
 				(at 257.81 17.78 0)
 				(size 27.94 2.54)
+=======
+<<<<<<< Updated upstream
+			(table_cell "motor power (connects to the other motor terminal)"
+				(exclude_from_sim no)
+				(at 265.43 19.05 0)
+				(size 57.15 3.81)
+=======
+			(table_cell "ENCODER-"
+				(exclude_from_sim no)
+				(at 325.12 25.4 0)
+				(size 27.94 2.54)
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 				(margins 0.9525 0.9525 0.9525 0.9525)
 				(span 1 1)
 				(fill
@@ -10858,10 +10932,24 @@
 				)
 				(uuid "ac113269-54cf-4ce3-b305-3cb00aaea6ad")
 			)
+<<<<<<< Updated upstream
 			(table_cell "DARKER GREEN"
 				(exclude_from_sim no)
 				(at 229.87 20.32 0)
 				(size 27.94 2.54)
+=======
+<<<<<<< Updated upstream
+			(table_cell "(3) Green"
+				(exclude_from_sim no)
+				(at 238.76 22.86 0)
+				(size 26.67 3.81)
+=======
+			(table_cell "PIN 3"
+				(exclude_from_sim no)
+				(at 297.18 27.94 0)
+				(size 27.94 2.54)
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 				(margins 0.9525 0.9525 0.9525 0.9525)
 				(span 1 1)
 				(fill
@@ -10875,10 +10963,24 @@
 				)
 				(uuid "2b366890-0561-4f5d-a13e-f997600938cd")
 			)
+<<<<<<< Updated upstream
 			(table_cell "MOTOR3"
 				(exclude_from_sim no)
 				(at 257.81 20.32 0)
 				(size 27.94 2.54)
+=======
+<<<<<<< Updated upstream
+			(table_cell "encoder GND"
+				(exclude_from_sim no)
+				(at 265.43 22.86 0)
+				(size 57.15 3.81)
+=======
+			(table_cell "ENCODER A PHASE"
+				(exclude_from_sim no)
+				(at 325.12 27.94 0)
+				(size 27.94 2.54)
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 				(margins 0.9525 0.9525 0.9525 0.9525)
 				(span 1 1)
 				(fill
@@ -10892,10 +10994,24 @@
 				)
 				(uuid "48849f52-5697-4499-9b45-14daf7435da6")
 			)
+<<<<<<< Updated upstream
 			(table_cell "BLUE"
 				(exclude_from_sim no)
 				(at 229.87 22.86 0)
 				(size 27.94 2.54)
+=======
+<<<<<<< Updated upstream
+			(table_cell "(4) Blue"
+				(exclude_from_sim no)
+				(at 238.76 26.67 0)
+				(size 26.67 3.81)
+=======
+			(table_cell "PIN 4"
+				(exclude_from_sim no)
+				(at 297.18 30.48 0)
+				(size 27.94 2.54)
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 				(margins 0.9525 0.9525 0.9525 0.9525)
 				(span 1 1)
 				(fill
@@ -10909,10 +11025,24 @@
 				)
 				(uuid "615151dd-006e-4a8e-805e-92690b0703eb")
 			)
+<<<<<<< Updated upstream
 			(table_cell "MOTOR4"
 				(exclude_from_sim no)
 				(at 257.81 22.86 0)
 				(size 27.94 2.54)
+=======
+<<<<<<< Updated upstream
+			(table_cell "encoder Vcc (3.5 - 20 V)"
+				(exclude_from_sim no)
+				(at 265.43 26.67 0)
+				(size 57.15 3.81)
+=======
+			(table_cell "ENCODER B PHASE"
+				(exclude_from_sim no)
+				(at 325.12 30.48 0)
+				(size 27.94 2.54)
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 				(margins 0.9525 0.9525 0.9525 0.9525)
 				(span 1 1)
 				(fill
@@ -10926,10 +11056,24 @@
 				)
 				(uuid "05d41a5d-71fe-41cb-af80-ef48d2b053fd")
 			)
+<<<<<<< Updated upstream
 			(table_cell "ORANGE"
 				(exclude_from_sim no)
 				(at 229.87 25.4 0)
 				(size 27.94 2.54)
+=======
+<<<<<<< Updated upstream
+			(table_cell "(5) Yellow"
+				(exclude_from_sim no)
+				(at 238.76 30.48 0)
+				(size 26.67 3.81)
+=======
+			(table_cell "PIN 5"
+				(exclude_from_sim no)
+				(at 297.18 33.02 0)
+				(size 27.94 2.54)
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 				(margins 0.9525 0.9525 0.9525 0.9525)
 				(span 1 1)
 				(fill
@@ -10943,10 +11087,24 @@
 				)
 				(uuid "3da3867e-1e8a-4607-938b-8108727327ae")
 			)
+<<<<<<< Updated upstream
 			(table_cell "3V0_BUCK"
 				(exclude_from_sim no)
 				(at 257.81 25.4 0)
 				(size 27.94 2.54)
+=======
+<<<<<<< Updated upstream
+			(table_cell "encoder A output"
+				(exclude_from_sim no)
+				(at 265.43 30.48 0)
+				(size 57.15 3.81)
+=======
+			(table_cell "ENCODER+ (3V3/5V)"
+				(exclude_from_sim no)
+				(at 325.12 33.02 0)
+				(size 27.94 2.54)
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 				(margins 0.9525 0.9525 0.9525 0.9525)
 				(span 1 1)
 				(fill
@@ -10960,10 +11118,24 @@
 				)
 				(uuid "8a7cdd90-690d-4786-8b40-8ac33c8b613b")
 			)
+<<<<<<< Updated upstream
 			(table_cell "PURPLE"
 				(exclude_from_sim no)
 				(at 229.87 27.94 0)
 				(size 27.94 2.54)
+=======
+<<<<<<< Updated upstream
+			(table_cell "(6) White"
+				(exclude_from_sim no)
+				(at 238.76 34.29 0)
+				(size 26.67 3.81)
+=======
+			(table_cell "PIN 6"
+				(exclude_from_sim no)
+				(at 297.18 35.56 0)
+				(size 27.94 2.54)
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 				(margins 0.9525 0.9525 0.9525 0.9525)
 				(span 1 1)
 				(fill
@@ -10977,10 +11149,24 @@
 				)
 				(uuid "cb2ee9c4-379e-4836-8ba5-9f790dd11665")
 			)
+<<<<<<< Updated upstream
 			(table_cell "6V0_BUCK"
 				(exclude_from_sim no)
 				(at 257.81 27.94 0)
 				(size 27.94 2.54)
+=======
+<<<<<<< Updated upstream
+			(table_cell "encoder B output"
+				(exclude_from_sim no)
+				(at 265.43 34.29 0)
+				(size 57.15 3.81)
+=======
+			(table_cell "MOTOR+"
+				(exclude_from_sim no)
+				(at 325.12 35.56 0)
+				(size 27.94 2.54)
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 				(margins 0.9525 0.9525 0.9525 0.9525)
 				(span 1 1)
 				(fill
@@ -10992,6 +11178,7 @@
 					)
 					(justify left top)
 				)
+<<<<<<< Updated upstream
 				(uuid "dbd109e2-5350-433e-b272-0523f7e966ab")
 			)
 			(table_cell "LIGHTER GREEN"
@@ -11095,6 +11282,13 @@
 					(justify left top)
 				)
 				(uuid "882726a2-1cc6-4832-973c-c4ce8b5bd4ea")
+=======
+<<<<<<< Updated upstream
+				(uuid "3c44b903-fad6-4c88-a490-978331929bdb")
+=======
+				(uuid "dbd109e2-5350-433e-b272-0523f7e966ab")
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 			)
 		)
 	)
@@ -15327,7 +15521,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" "https://www.digikey.com/short/p5zddvc9"
+		(property "DigiKey Link" "https://www.digikey.com/short/1cbvdfmq"
 			(at 168.91 245.11 0)
 			(effects
 				(font
@@ -15336,7 +15530,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "P1.69KDBCT-ND"
+		(property "DigiKey Part Number" "P3.16KDBCT-ND"
 			(at 168.91 245.11 0)
 			(effects
 				(font
@@ -15345,7 +15539,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "ERA-3AEB1691V"
+		(property "Manufactaurer Part Number" "ERA-3AEB3161V"
 			(at 168.91 245.11 0)
 			(effects
 				(font
@@ -15354,7 +15548,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://mou.sr/42AecpD"
+		(property "Mouser Link" "https://mou.sr/49ZljME"
 			(at 168.91 245.11 0)
 			(effects
 				(font
@@ -15363,7 +15557,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "667-ERA-3AEB1691V"
+		(property "Mouser Part Number" "667-ERA-3AEB3161V"
 			(at 168.91 245.11 0)
 			(effects
 				(font
@@ -22539,7 +22733,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" "https://www.digikey.com/short/p5zddvc9"
+		(property "DigiKey Link" "https://www.digikey.com/short/1cbvdfmq"
 			(at 168.91 49.53 0)
 			(effects
 				(font
@@ -22548,7 +22742,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "P1.69KDBCT-ND"
+		(property "DigiKey Part Number" "P3.16KDBCT-ND"
 			(at 168.91 49.53 0)
 			(effects
 				(font
@@ -22566,7 +22760,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "ERA-3AEB1691V"
+		(property "Manufactaurer Part Number" "ERA-3AEB3161V"
 			(at 168.91 49.53 0)
 			(effects
 				(font
@@ -22575,7 +22769,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://mou.sr/42AecpD"
+		(property "Mouser Link" "https://mou.sr/49ZljME"
 			(at 168.91 49.53 0)
 			(effects
 				(font
@@ -22584,7 +22778,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "667-ERA-3AEB1691V"
+		(property "Mouser Part Number" "667-ERA-3AEB3161V"
 			(at 168.91 49.53 0)
 			(effects
 				(font
@@ -29964,7 +30158,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" "https://www.digikey.com/short/p5zddvc9"
+		(property "DigiKey Link" "https://www.digikey.com/short/1cbvdfmq"
 			(at 168.91 118.11 0)
 			(effects
 				(font
@@ -29973,7 +30167,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "P1.69KDBCT-ND"
+		(property "DigiKey Part Number" "P3.16KDBCT-ND"
 			(at 168.91 118.11 0)
 			(effects
 				(font
@@ -29982,7 +30176,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "ERA-3AEB1691V"
+		(property "Manufactaurer Part Number" "ERA-3AEB3161V"
 			(at 168.91 118.11 0)
 			(effects
 				(font
@@ -29991,7 +30185,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://mou.sr/42AecpD"
+		(property "Mouser Link" "https://mou.sr/49ZljME"
 			(at 168.91 118.11 0)
 			(effects
 				(font
@@ -30000,7 +30194,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "667-ERA-3AEB1691V"
+		(property "Mouser Part Number" "667-ERA-3AEB3161V"
 			(at 168.91 118.11 0)
 			(effects
 				(font
@@ -30571,7 +30765,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Link" "https://www.digikey.com/short/p5zddvc9"
+		(property "DigiKey Link" "https://www.digikey.com/short/1cbvdfmq"
 			(at 168.91 176.53 0)
 			(effects
 				(font
@@ -30580,7 +30774,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "P1.69KDBCT-ND"
+		(property "DigiKey Part Number" "P3.16KDBCT-ND"
 			(at 168.91 176.53 0)
 			(effects
 				(font
@@ -30598,7 +30792,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "ERA-3AEB1691V"
+		(property "Manufactaurer Part Number" "ERA-3AEB3161V"
 			(at 168.91 176.53 0)
 			(effects
 				(font
@@ -30607,7 +30801,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://mou.sr/42AecpD"
+		(property "Mouser Link" "https://mou.sr/49ZljME"
 			(at 168.91 176.53 0)
 			(effects
 				(font
@@ -30616,7 +30810,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "667-ERA-3AEB1691V"
+		(property "Mouser Part Number" "667-ERA-3AEB3161V"
 			(at 168.91 176.53 0)
 			(effects
 				(font
