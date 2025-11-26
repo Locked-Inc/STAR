@@ -226,7 +226,12 @@
     "equivalence_files": []
   },
   "erc": {
-    "erc_exclusions": [],
+    "erc_exclusions": [
+      [
+        "power_pin_not_driven|596900|1828800|57a0afd2-b40c-40ec-9f87-97575e3cc3ec|00000000-0000-0000-0000-000000000000|/e95fb06c-0cf8-41c5-94d7-05cee231f8fb|/e95fb06c-0cf8-41c5-94d7-05cee231f8fb|",
+        "GND"
+      ]
+    ],
     "meta": {
       "version": 0
     },
@@ -473,6 +478,24 @@
         "via_diameter": 0.6,
         "via_drill": 0.3,
         "wire_width": 6
+      },
+      {
+        "name": "AFE",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 0,
+        "schematic_color": "rgb(0, 0, 255)"
+      },
+      {
+        "name": "Gate Driver",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 1,
+        "schematic_color": "rgb(0, 194, 0)"
+      },
+      {
+        "name": "MCU",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 2,
+        "schematic_color": "rgb(255, 0, 0)"
       }
     ],
     "meta": {
@@ -480,7 +503,20 @@
     },
     "net_colors": null,
     "netclass_assignments": null,
-    "netclass_patterns": []
+    "netclass_patterns": [
+      {
+        "netclass": "MCU",
+        "pattern": "/MCU*"
+      },
+      {
+        "netclass": "Gate Driver",
+        "pattern": "/GATE*"
+      },
+      {
+        "netclass": "AFE",
+        "pattern": "/AFE*"
+      }
+    ]
   },
   "pcbnew": {
     "last_paths": {
@@ -597,6 +633,14 @@
       "version": 1
     },
     "net_format_name": "",
+    "ngspice": {
+      "fix_include_paths": true,
+      "meta": {
+        "version": 0
+      },
+      "model_mode": 4,
+      "workbook_filename": ""
+    },
     "page_layout_descr_file": "",
     "plot_directory": "",
     "space_save_all_events": true,
