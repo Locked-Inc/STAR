@@ -74,7 +74,7 @@ static i2c_dma_state_t* get_dma_state(i2c_port_t port)
 /**
  * @brief Check if transfer should use DMA
  */
-static bool priv_should_use_dma(const i2c_dma_state_t* state, size_t length)
+static bool internal_should_use_dma(const i2c_dma_state_t* state, size_t length)
 {
   if (state == NULL || !state->config.enabled) {
     return false;
@@ -229,7 +229,7 @@ esp_err_t star_bus_i2c_write_dma(star_bus_manager_t*     manager,
   }
 
   /* Check if DMA should be used */
-  bool use_dma = priv_should_use_dma(state, length);
+  bool use_dma = internal_should_use_dma(state, length);
 
   if (!use_dma) {
     /* Fall back to standard I2C write */
@@ -315,7 +315,7 @@ esp_err_t star_bus_i2c_read_dma(star_bus_manager_t*     manager,
   }
 
   /* Check if DMA should be used */
-  bool use_dma = priv_should_use_dma(state, length);
+  bool use_dma = internal_should_use_dma(state, length);
 
   if (!use_dma) {
     /* Fall back to standard I2C read */

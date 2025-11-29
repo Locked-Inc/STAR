@@ -58,7 +58,7 @@ static portMUX_TYPE      g_dht22_init_spinlock                = portMUX_INITIALI
 /**
  * @brief Initialize DHT22 global mutex (thread-safe)
  */
-static esp_err_t priv_init_dht22_mutex(void)
+static esp_err_t internal_init_dht22_mutex(void)
 {
   if (g_dht22_mutex != NULL) {
     return ESP_OK;
@@ -82,7 +82,7 @@ static esp_err_t priv_init_dht22_mutex(void)
 /**
  * @brief Get DHT22 state for a bus (must be called with mutex held)
  */
-static dht22_state_t* get_dht22_state_internal(const char* bus_name, bool create)
+static dht22_state_t* internal_get_dht22_state(const char* bus_name, bool create)
 {
   for (uint8_t i = 0; i < g_num_dht22_states; i++) {
     if (strcmp(g_dht22_states[i].bus_name, bus_name) == 0) {
@@ -107,7 +107,7 @@ static dht22_state_t* get_dht22_state_internal(const char* bus_name, bool create
  */
 static dht22_state_t* get_dht22_state(const char* bus_name, bool create)
 {
-  if (priv_init_dht22_mutex() != ESP_OK) {
+  if (internal_init_dht22_mutex() != ESP_OK) {
     return NULL;
   }
 
@@ -116,7 +116,7 @@ static dht22_state_t* get_dht22_state(const char* bus_name, bool create)
     return NULL;
   }
 
-  dht22_state_t* state = get_dht22_state_internal(bus_name, create);
+  dht22_state_t* state = internal_get_dht22_state(bus_name, create);
 
   xSemaphoreGive(g_dht22_mutex);
   return state;

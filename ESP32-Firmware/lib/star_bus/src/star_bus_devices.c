@@ -16,7 +16,7 @@ static const char* s_TAG = "star_bus_devices";
 /**
  * @brief Convert BCD to decimal
  */
-static uint8_t priv_bcd_to_dec(uint8_t bcd)
+static uint8_t internal_bcd_to_dec(uint8_t bcd)
 {
   return (bcd >> 4) * 10 + (bcd & 0x0F);
 }
@@ -24,7 +24,7 @@ static uint8_t priv_bcd_to_dec(uint8_t bcd)
 /**
  * @brief Convert decimal to BCD
  */
-static uint8_t priv_dec_to_bcd(uint8_t dec)
+static uint8_t internal_dec_to_bcd(uint8_t dec)
 {
   return ((dec / 10) << 4) | (dec % 10);
 }
@@ -713,13 +713,13 @@ esp_err_t star_bus_ds3231_set_time(const star_bus_manager_t* manager,
 
   // Convert to BCD and write
   uint8_t time_data[7] = {
-    priv_dec_to_bcd(time->second),
-    priv_dec_to_bcd(time->minute),
-    priv_dec_to_bcd(time->hour),
-    priv_dec_to_bcd(time->day),
-    priv_dec_to_bcd(time->date),
-    priv_dec_to_bcd(time->month),
-    priv_dec_to_bcd(time->year),
+    internal_dec_to_bcd(time->second),
+    internal_dec_to_bcd(time->minute),
+    internal_dec_to_bcd(time->hour),
+    internal_dec_to_bcd(time->day),
+    internal_dec_to_bcd(time->date),
+    internal_dec_to_bcd(time->month),
+    internal_dec_to_bcd(time->year),
   };
 
   size_t    bytes_written;
@@ -760,13 +760,13 @@ esp_err_t star_bus_ds3231_get_time(const star_bus_manager_t* manager,
   }
 
   // Convert from BCD
-  time->second = priv_bcd_to_dec(time_data[0] & 0x7F);
-  time->minute = priv_bcd_to_dec(time_data[1] & 0x7F);
-  time->hour   = priv_bcd_to_dec(time_data[2] & 0x3F);
-  time->day    = priv_bcd_to_dec(time_data[3] & 0x07);
-  time->date   = priv_bcd_to_dec(time_data[4] & 0x3F);
-  time->month  = priv_bcd_to_dec(time_data[5] & 0x1F);
-  time->year   = priv_bcd_to_dec(time_data[6]);
+  time->second = internal_bcd_to_dec(time_data[0] & 0x7F);
+  time->minute = internal_bcd_to_dec(time_data[1] & 0x7F);
+  time->hour   = internal_bcd_to_dec(time_data[2] & 0x3F);
+  time->day    = internal_bcd_to_dec(time_data[3] & 0x07);
+  time->date   = internal_bcd_to_dec(time_data[4] & 0x3F);
+  time->month  = internal_bcd_to_dec(time_data[5] & 0x1F);
+  time->year   = internal_bcd_to_dec(time_data[6]);
 
   return ESP_OK;
 }

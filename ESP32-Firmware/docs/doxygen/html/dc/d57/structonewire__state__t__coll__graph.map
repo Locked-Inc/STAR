@@ -1,0 +1,7 @@
+<map id="onewire_state_t" name="onewire_state_t">
+<area shape="rect" id="Node000001" title="1&#45;Wire bus state" alt="" coords="107,102,220,128"/>
+<area shape="rect" id="Node000002" href="$df/db2/structstar__onewire__config__t.html" title="1&#45;Wire bus configuration" alt="" coords="5,5,154,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="101,40,155,101,150,102,99,45"/>
+<area shape="rect" id="Node000003" href="$de/dd3/structstar__onewire__stats__t.html" title="1&#45;Wire bus statistics" alt="" coords="178,5,320,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="231,42,176,104,173,99,225,43"/>
+</map>

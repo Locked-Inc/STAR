@@ -1,0 +1,13 @@
+<map id="bq7850_battery_state_t" name="bq7850_battery_state_t">
+<area shape="rect" id="Node000001" title="BQ7850 complete battery state." alt="" coords="255,112,412,138"/>
+<area shape="rect" id="Node000002" href="$d2/dde/structbq7850__cell__data__t.html" title="BQ7850 cell voltage data." alt="" coords="15,5,149,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="153,33,232,61,277,85,316,111,310,111,274,90,230,66,153,38"/>
+<area shape="rect" id="Node000003" href="$df/d6a/structbq7850__temp__data__t.html" title="BQ7850 temperature data." alt="" coords="11,59,153,84"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="168,85,231,98,279,111,274,112,230,103,168,90"/>
+<area shape="rect" id="Node000004" href="$d2/d17/structbq7850__current__data__t.html" title="BQ7850 current and power data." alt="" coords="5,112,159,138"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="174,122,257,124,252,126,175,127"/>
+<area shape="rect" id="Node000005" href="$da/de4/structbq7850__soc__data__t.html" title="BQ7850 state of charge data." alt="" coords="15,165,149,191"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="164,163,230,151,290,137,285,139,231,156,165,169"/>
+<area shape="rect" id="Node000006" href="$dd/daf/structbq7850__status__t.html" title="BQ7850 status flags." alt="" coords="23,219,141,244"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="155,213,230,188,276,162,313,139,317,137,279,167,232,193,157,219"/>
+</map>

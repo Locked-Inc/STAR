@@ -1,0 +1,36 @@
+<map id="star_bus_dht22_init_default_ops" name="star_bus_dht22_init_default_ops">
+<area shape="rect" id="Node000001" title="Initialize default DHT22 operations function pointers." alt="" coords="5,308,140,349"/>
+<area shape="rect" id="Node000002" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a5c65480966d51bd711746a7be6199438" title="Default read operation implementation." alt="" coords="188,316,319,341"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="139,326,175,327,170,330,141,331"/>
+<area shape="rect" id="Node000003" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#ad84a1750c76d3cacd25aa7711b5fbdb5" title="Get DHT22 state for a bus (thread&#45;safe)." alt="" coords="394,78,509,104"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="264,313,428,116,433,115,268,317"/>
+<area shape="rect" id="Node000006" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a0cefc084690818ee196b34da74bcf4e4" title="Read raw data from DHT22 sensor." alt="" coords="398,258,505,284"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="300,312,392,288,387,290,301,317"/>
+<area shape="rect" id="Node000015" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a2b6eb006720d74c12343fee2c65b6d01" title="Calculate checksum from raw data." alt="" coords="367,308,536,349"/>
+<area shape="poly" id="edge15_Node000002_Node000015" title=" " alt="" coords="319,326,354,328,349,329,320,331"/>
+<area shape="rect" id="Node000016" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a5f2659d313c7223f531d49a3584d84a3" title="Convert raw temperature to Celsius." alt="" coords="382,373,521,414"/>
+<area shape="poly" id="edge16_Node000002_Node000016" title=" " alt="" coords="295,339,376,368,371,368,295,344"/>
+<area shape="rect" id="Node000017" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#ab03f05ea4c39d5883e95b0db468a5a92" title="Convert raw humidity to percentage." alt="" coords="382,439,521,479"/>
+<area shape="poly" id="edge17_Node000002_Node000017" title=" " alt="" coords="268,339,311,380,368,423,380,432,375,431,366,428,308,384,266,344"/>
+<area shape="rect" id="Node000004" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a15fbe86b35253f8620cdba249493f6fa" title="Get DHT22 state for a bus (must be called with mutex held)." alt="" coords="584,5,712,46"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="491,75,572,50,568,53,494,80"/>
+<area shape="rect" id="Node000005" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a9cd874b0290191f0e8a2200e9a727f58" title="Initialize DHT22 global mutex (thread&#45;safe)." alt="" coords="585,71,711,111"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="508,88,572,90,567,92,510,94"/>
+<area shape="rect" id="Node000007" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#ada0028be4bd29beb995c4990d33a0dff" title="Delay in microseconds." alt="" coords="611,136,685,161"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="466,255,516,215,583,170,599,165,595,167,586,175,519,219,469,260"/>
+<area shape="rect" id="Node000008" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#af3c6d2f2ae3b906ff2590c579ae42e8f" title="Set GPIO output high." alt="" coords="610,185,686,210"/>
+<area shape="poly" id="edge7_Node000006_Node000008" title=" " alt="" coords="488,255,600,215,595,218,490,260"/>
+<area shape="rect" id="Node000009" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a40df8a338e77a732f53aca4fa72d5192" title="Set GPIO output low." alt="" coords="612,234,684,260"/>
+<area shape="poly" id="edge8_Node000006_Node000009" title=" " alt="" coords="505,262,599,252,594,254,506,267"/>
+<area shape="rect" id="Node000010" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#ac56257b5f48f81efe2392e6e28b8393a" title="Set GPIO to input mode." alt="" coords="595,284,701,309"/>
+<area shape="poly" id="edge9_Node000006_Node000010" title=" " alt="" coords="505,275,582,287,577,288,506,281"/>
+<area shape="rect" id="Node000011" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a2c233a46f4a9bf09057e07a1243c2dea" title="Set GPIO to output mode." alt="" coords="591,333,705,358"/>
+<area shape="poly" id="edge10_Node000006_Node000011" title=" " alt="" coords="503,282,537,294,585,319,599,327,593,327,583,324,535,299,503,287"/>
+<area shape="rect" id="Node000012" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#ac0af9cb9d464422a719e1e0bb987d80f" title="Wait for GPIO level change and measure duration." alt="" coords="593,382,703,408"/>
+<area shape="poly" id="edge11_Node000006_Node000012" title=" " alt="" coords="506,278,538,294,555,313,563,332,571,351,586,369,592,375,586,374,583,373,566,354,558,334,551,316,535,298,505,283"/>
+<area shape="rect" id="Node000014" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a6068135097f7705a28bda46fb88640d2" title="Wait for GPIO to reach expected level with timeout." alt="" coords="597,432,699,457"/>
+<area shape="poly" id="edge13_Node000006_Node000014" title=" " alt="" coords="505,276,523,284,538,294,551,310,559,326,564,357,568,388,574,403,586,419,589,423,584,422,582,422,570,406,563,390,558,358,554,328,547,313,535,298,521,288,505,282"/>
+<area shape="rect" id="Node000013" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a71842e7ab86cba68432d023f022556d5" title="Read GPIO input." alt="" coords="760,408,837,433"/>
+<area shape="poly" id="edge12_Node000012_Node000013" title=" " alt="" coords="703,402,747,411,741,411,703,407"/>
+<area shape="poly" id="edge14_Node000014_Node000013" title=" " alt="" coords="699,434,742,429,747,429,700,439"/>
+</map>

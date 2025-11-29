@@ -88,7 +88,7 @@ static esp_err_t pca9685_set_mode1_bits(pca9685_handle_t* handle, uint8_t bits, 
  * @brief Internal frequency setting (no initialization check, caller must hold mutex if needed)
  * @note This function is used during init and by the public set_frequency function
  */
-static esp_err_t pca9685_set_frequency_internal(pca9685_handle_t* handle, uint16_t freq_hz)
+static esp_err_t internal_pca9685_set_frequency(pca9685_handle_t* handle, uint16_t freq_hz)
 {
   uint8_t   prescale;
   esp_err_t ret = star_sensor_pca9685_calculate_prescale(freq_hz, &prescale);
@@ -337,7 +337,7 @@ esp_err_t star_sensor_pca9685_init(pca9685_handle_t*       handle,
   vTaskDelay(pdMS_TO_TICKS(1)); // Wait for oscillator
 
   // Set PWM frequency using internal function (no initialized check needed during init)
-  ret = pca9685_set_frequency_internal(handle, config->pwm_freq);
+  ret = internal_pca9685_set_frequency(handle, config->pwm_freq);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to set frequency: %s", esp_err_to_name(ret));
     if (oe_pin != GPIO_NUM_NC) {
@@ -493,7 +493,7 @@ esp_err_t star_sensor_pca9685_set_frequency(pca9685_handle_t* handle, uint16_t f
     return ESP_ERR_INVALID_STATE;
   }
 
-  esp_err_t ret = pca9685_set_frequency_internal(handle, freq_hz);
+  esp_err_t ret = internal_pca9685_set_frequency(handle, freq_hz);
 
   xSemaphoreGive(mutex);
   return ret;

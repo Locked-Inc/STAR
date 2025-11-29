@@ -1,0 +1,28 @@
+<map id="lib/star_error_handler/src/star_error_handler.c" name="lib/star_error_handler/src/star_error_handler.c">
+<area shape="rect" id="Node000001" title=" " alt="" coords="470,5,631,46"/>
+<area shape="rect" id="Node000002" href="$d4/d59/star__error__handler_8h.html" title="Error handling with retry logic and exponential backoff." alt="" coords="216,94,351,120"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="481,48,341,92,339,87,486,45"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="375,94,454,120"/>
+<area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="519,45,449,88,447,84,514,48"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="478,94,538,120"/>
+<area shape="poly" id="edge10_Node000001_Node000010" title=" " alt="" coords="542,45,523,82,520,78,538,48"/>
+<area shape="rect" id="Node000011" title=" " alt="" coords="561,94,625,120"/>
+<area shape="poly" id="edge11_Node000001_Node000011" title=" " alt="" coords="562,44,582,81,577,79,560,49"/>
+<area shape="rect" id="Node000012" title=" " alt="" coords="649,94,713,120"/>
+<area shape="poly" id="edge12_Node000001_Node000012" title=" " alt="" coords="583,44,651,86,645,86,583,49"/>
+<area shape="rect" id="Node000013" title=" " alt="" coords="737,94,814,120"/>
+<area shape="poly" id="edge13_Node000001_Node000013" title=" " alt="" coords="607,44,729,88,724,89,606,49"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,168,149,193"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="247,122,128,165,125,160,250,118"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="173,168,296,193"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="278,118,253,157,249,153,273,122"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="301,241,376,267"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="290,118,310,167,332,228,327,226,305,169,287,122"/>
+<area shape="rect" id="Node000006" href="$df/d84/star__error__interface_8h.html" title="Error handler interface for dependency inversion." alt="" coords="370,168,514,193"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="311,118,404,161,399,161,310,123"/>
+<area shape="poly" id="edge8_Node000006_Node000005" title=" " alt="" coords="427,193,369,235,367,230,422,195"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="402,241,477,267"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="444,192,443,228,439,224,440,195"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="501,241,565,267"/>
+<area shape="poly" id="edge7_Node000006_Node000008" title=" " alt="" coords="459,191,509,232,504,231,457,196"/>
+</map>

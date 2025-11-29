@@ -1,0 +1,14 @@
+<map id="pca9685_set_mode1_bits" name="pca9685_set_mode1_bits">
+<area shape="rect" id="Node000001" title="Set MODE1 register bits." alt="" coords="5,31,175,56"/>
+<area shape="rect" id="Node000002" href="$d3/df7/star__sensor__pca9685_8c.html#ab5d665b77448f8328bad9d4c61c0d47c" title="Read from PCA9685 register." alt="" coords="224,5,352,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="175,30,212,28,206,29,176,35"/>
+<area shape="rect" id="Node000005" href="$d3/df7/star__sensor__pca9685_8c.html#a7fb4749ccca6d7ff1b791faaba3c5e3a" title="Write to PCA9685 register with validation." alt="" coords="223,55,353,80"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="175,51,210,58,204,58,175,56"/>
+<area shape="rect" id="Node000003" href="$dd/d1a/star__bus__i2c_8c.html#a2e9b9baf8a0f8d00a2080963a7efd62f" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="402,5,530,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="352,16,390,18,384,18,352,21"/>
+<area shape="rect" id="Node000004" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="579,31,764,56"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="530,23,566,30,561,30,530,29"/>
+<area shape="rect" id="Node000006" href="$dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="401,55,531,80"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="354,65,388,67,382,68,354,70"/>
+<area shape="poly" id="edge6_Node000006_Node000004" title=" " alt="" coords="531,57,561,56,566,56,532,63"/>
+</map>

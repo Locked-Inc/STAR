@@ -1,0 +1,5 @@
+<map id="star_bus_i2c_peripheral_get_last_write" name="star_bus_i2c_peripheral_get_last_write">
+<area shape="rect" id="Node000001" title="Get last received data." alt="" coords="5,5,164,46"/>
+<area shape="rect" id="Node000002" href="$d5/d06/star__bus__i2c__peripheral_8c.html#a501a3f667c641db510d4f13247860593" title="Get peripheral state for a bus." alt="" coords="212,13,350,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="164,23,199,25,194,26,164,28"/>
+</map>

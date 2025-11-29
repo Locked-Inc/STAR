@@ -1,0 +1,5 @@
+<map id="star_bus_stats_reset" name="star_bus_stats_reset">
+<area shape="rect" id="Node000001" title="Reset statistics for a bus." alt="" coords="217,5,360,31"/>
+<area shape="rect" id="Node000002" href="$dd/d61/star__bus__stats_8c.html#a49f4af6a9701e3abc8bdf0c75aa90ed4" title="Reset statistics for all buses." alt="" coords="5,5,169,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="198,18,169,21,169,16,204,18"/>
+</map>

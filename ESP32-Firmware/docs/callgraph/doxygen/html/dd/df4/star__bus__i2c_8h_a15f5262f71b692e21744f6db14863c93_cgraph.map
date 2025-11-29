@@ -1,0 +1,16 @@
+<map id="star_bus_i2c_init_default_ops" name="star_bus_i2c_init_default_ops">
+<area shape="rect" id="Node000001" title="Initialize default I2C operations function pointers within a config structure. Typically called inter..." alt="" coords="5,96,199,122"/>
+<area shape="rect" id="Node000002" href="$dd/d1a/star__bus__i2c_8c.html#a2ed146dbb9a5f30ee01819a81b0b47b1" title=" " alt="" coords="247,5,423,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="128,93,182,68,246,41,271,35,266,37,248,46,184,72,131,98"/>
+<area shape="rect" id="Node000004" href="$dd/d1a/star__bus__i2c_8c.html#a09fee6de37fa8b8191710c82b45ac5a8" title=" " alt="" coords="263,55,407,96"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="195,93,250,87,245,89,197,98"/>
+<area shape="rect" id="Node000005" href="$dd/d1a/star__bus__i2c_8c.html#a1a89aff7a2f1bb9b0305fc8c12241449" title=" " alt="" coords="263,120,407,161"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="199,119,250,128,245,130,199,125"/>
+<area shape="rect" id="Node000006" href="$dd/d1a/star__bus__i2c_8c.html#ab5867dbfce4b222fe85953f70550bf92" title=" " alt="" coords="263,186,407,226"/>
+<area shape="poly" id="edge7_Node000001_Node000006" title=" " alt="" coords="133,120,248,170,266,180,261,180,246,175,132,125"/>
+<area shape="rect" id="Node000003" href="$dd/d1a/star__bus__i2c_8c.html#ae97ed3cdd76465fa41c8c0b05976c396" title="Helper: Execute I2C command with retry logic." alt="" coords="471,88,611,129"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="389,29,424,41,497,80,491,80,422,46,389,34"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="407,84,458,95,453,95,408,90"/>
+<area shape="poly" id="edge6_Node000005_Node000003" title=" " alt="" coords="407,127,458,122,453,123,408,132"/>
+<area shape="poly" id="edge8_Node000006_Node000003" title=" " alt="" coords="393,183,422,170,489,138,494,136,424,175,395,188"/>
+</map>
