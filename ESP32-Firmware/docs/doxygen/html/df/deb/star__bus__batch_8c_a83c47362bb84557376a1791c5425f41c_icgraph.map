@@ -1,0 +1,5 @@
+<map id="internal_execute_operation" name="internal_execute_operation">
+<area shape="rect" id="Node000001" title="Execute a single batch operation." alt="" coords="189,5,365,31"/>
+<area shape="rect" id="Node000002" href="$df/deb/star__bus__batch_8c.html#a80ab7c681dec605acb5a862cabe5fe4e" title="Execute all operations in the batch." alt="" coords="5,5,141,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="171,18,141,21,141,16,176,18"/>
+</map>

@@ -1,0 +1,9 @@
+<map id="star_bus_stats_print" name="star_bus_stats_print">
+<area shape="rect" id="Node000001" title="Print statistics to console." alt="" coords="5,55,145,80"/>
+<area shape="rect" id="Node000002" href="$dd/d61/star__bus__stats_8c.html#a67071d1e588e819bccdb57b7bab246ec" title="Calculate error rate (percentage)." alt="" coords="196,5,365,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="131,51,211,34,207,37,133,57"/>
+<area shape="rect" id="Node000003" href="$dd/d61/star__bus__stats_8c.html#ac12bf1971bea53404caf0a6a0146ab22" title="Calculate average throughput (bytes per second)." alt="" coords="193,55,368,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="145,65,179,67,174,68,145,70"/>
+<area shape="rect" id="Node000004" href="$dd/d61/star__bus__stats_8c.html#a3868d462a9b7f37588da77ea3e7e8490" title="Calculate bus utilization (percentage)." alt="" coords="196,104,365,130"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="132,78,211,99,206,101,131,84"/>
+</map>

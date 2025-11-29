@@ -1,0 +1,5 @@
+<map id="star_bus_onewire_read_bytes" name="star_bus_onewire_read_bytes">
+<area shape="rect" id="Node000001" title="Read multiple bytes." alt="" coords="238,5,393,46"/>
+<area shape="rect" id="Node000002" href="$d9/dd6/star__bus__onewire_8c.html#a585e54933529b5a71ee8f22332692285" title="Read ROM from single device on bus." alt="" coords="5,13,190,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="220,26,190,28,190,23,225,25"/>
+</map>

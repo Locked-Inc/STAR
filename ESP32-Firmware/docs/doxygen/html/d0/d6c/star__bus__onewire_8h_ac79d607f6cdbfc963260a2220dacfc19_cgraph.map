@@ -1,0 +1,17 @@
+<map id="star_bus_onewire_reset" name="star_bus_onewire_reset">
+<area shape="rect" id="Node000001" title="Send reset pulse and detect device presence." alt="" coords="5,104,165,130"/>
+<area shape="rect" id="Node000002" href="$d9/dd6/star__bus__onewire_8c.html#ada0028be4bd29beb995c4990d33a0dff" title="Delay in microseconds." alt="" coords="240,5,313,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="105,101,153,72,211,40,228,35,223,38,214,45,155,76,108,106"/>
+<area shape="rect" id="Node000003" href="$d9/dd6/star__bus__onewire_8c.html#abd369d093b733ae101fd35f6c77d547e" title="Get 1&#45;Wire state for a bus (thread&#45;safe)." alt="" coords="213,55,340,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="137,101,211,83,207,86,139,106"/>
+<area shape="rect" id="Node000006" href="$d9/dd6/star__bus__onewire_8c.html#af3c6d2f2ae3b906ff2590c579ae42e8f" title="Set GPIO output high (release for pull&#45;up)." alt="" coords="238,104,314,130"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="165,114,225,116,220,118,166,119"/>
+<area shape="rect" id="Node000007" href="$d9/dd6/star__bus__onewire_8c.html#a40df8a338e77a732f53aca4fa72d5192" title="Set GPIO output low." alt="" coords="240,153,312,179"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="138,128,227,152,223,154,138,133"/>
+<area shape="rect" id="Node000008" href="$d9/dd6/star__bus__onewire_8c.html#a71842e7ab86cba68432d023f022556d5" title="Read GPIO input." alt="" coords="238,203,315,228"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="107,127,155,157,214,189,226,197,221,196,211,194,153,162,106,133"/>
+<area shape="rect" id="Node000004" href="$d9/dd6/star__bus__onewire_8c.html#a6c8bae48bd94e7b3e444422799916a4d" title="Get 1&#45;Wire state for a bus (must be called with mutex held)." alt="" coords="388,15,528,56"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="340,54,375,50,370,51,341,59"/>
+<area shape="rect" id="Node000005" href="$d9/dd6/star__bus__onewire_8c.html#a1ca358f311abcb5bb498c6df68b556c6" title="Initialize 1&#45;Wire global mutex (thread&#45;safe)." alt="" coords="388,80,528,121"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="340,76,376,85,371,86,341,82"/>
+</map>

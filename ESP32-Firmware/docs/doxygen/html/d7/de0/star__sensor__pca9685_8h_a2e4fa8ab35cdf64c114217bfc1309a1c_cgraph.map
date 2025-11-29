@@ -1,0 +1,20 @@
+<map id="star_sensor_pca9685_set_servo_angle" name="star_sensor_pca9685_set_servo_angle">
+<area shape="rect" id="Node000001" title="Set servo position by angle." alt="" coords="5,52,151,93"/>
+<area shape="rect" id="Node000002" href="$d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="199,8,344,49"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="150,54,186,47,181,50,152,59"/>
+<area shape="rect" id="Node000005" href="$d3/d75/star__servo_8c.html#a104148a95f986eac12fabe6d01d4c87d" title="Calculate PCA9685 count value from angle (0&#45;180 degrees)." alt="" coords="202,84,340,125"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="150,82,189,90,184,92,151,87"/>
+<area shape="rect" id="Node000003" href="$dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="396,5,526,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="344,22,383,22,378,23,345,27"/>
+<area shape="rect" id="Node000004" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="578,5,763,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="526,16,566,18,560,19,527,21"/>
+<area shape="rect" id="Node000006" href="$d3/d75/star__servo_8c.html#af22dfa33d50a10394cc1a93fef7dc3d6" title=" " alt="" coords="623,85,718,111"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="340,95,392,92,507,90,611,95,605,96,507,95,392,97,341,100"/>
+<area shape="rect" id="Node000007" href="$d3/d75/star__servo_8c.html#a945216ed2b1e8a5850cfd0d8113e1451" title="Calculate pulse width in microseconds from angle (0&#45;180 degrees)." alt="" coords="392,106,530,146"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="341,110,379,116,374,117,341,115"/>
+<area shape="rect" id="Node000008" href="$d3/d75/star__servo_8c.html#a8cd577679d2d29a34ae03d3cec95c3b1" title="Calculate PCA9685 count value from pulse width in microseconds." alt="" coords="392,171,530,212"/>
+<area shape="poly" id="edge8_Node000005_Node000008" title=" " alt="" coords="319,123,404,164,399,165,317,128"/>
+<area shape="poly" id="edge7_Node000007_Node000006" title=" " alt="" coords="530,114,611,106,606,107,531,120"/>
+<area shape="rect" id="Node000009" href="$d3/d75/star__servo_8c.html#a8833486138de9335152a50c11dfa8693" title=" " alt="" coords="623,179,718,204"/>
+<area shape="poly" id="edge9_Node000008_Node000009" title=" " alt="" coords="531,189,611,191,605,192,531,194"/>
+</map>

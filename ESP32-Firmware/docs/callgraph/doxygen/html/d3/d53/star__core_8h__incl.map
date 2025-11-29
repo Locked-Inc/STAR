@@ -1,0 +1,16 @@
+<map id="lib/star_core/include/star_core.h" name="lib/star_core/include/star_core.h">
+<area shape="rect" id="Node000001" title="Unified header for star_core interfaces." alt="" coords="90,5,228,46"/>
+<area shape="rect" id="Node000002" href="$df/d84/star__error__interface_8h.html" title="Error handler interface for dependency inversion." alt="" coords="5,94,150,120"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="137,48,103,85,99,81,141,44"/>
+<area shape="rect" id="Node000006" href="$da/d58/star__pin__interface_8h.html" title="Pin validator interface for dependency inversion." alt="" coords="174,94,309,120"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="180,44,220,83,215,83,179,49"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="30,168,104,193"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="78,118,73,153,68,151,74,122"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="128,168,192,193"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="92,118,137,157,132,158,91,123"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="216,168,291,193"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="108,118,212,160,207,163,107,123"/>
+<area shape="poly" id="edge6_Node000006_Node000003" title=" " alt="" coords="214,121,112,164,110,159,209,119"/>
+<area shape="poly" id="edge7_Node000006_Node000004" title=" " alt="" coords="230,119,187,160,184,155,225,121"/>
+<area shape="poly" id="edge8_Node000006_Node000005" title=" " alt="" coords="245,118,251,153,247,151,242,122"/>
+</map>

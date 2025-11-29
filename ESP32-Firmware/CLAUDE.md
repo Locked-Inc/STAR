@@ -34,6 +34,98 @@ pio run -e esp32s3 --target upload
 pio device monitor
 ```
 
+## Call Graph Generation
+
+The STAR firmware includes comprehensive tooling for generating call graphs and execution flow diagrams to help understand the codebase architecture and execution paths.
+
+### Prerequisites
+
+Install the required tools for call graph generation:
+
+```bash
+# macOS (using Homebrew)
+brew install cflow doxygen graphviz
+
+# Ubuntu/Debian
+sudo apt-get install cflow doxygen graphviz
+
+# For Egypt tool (manual installation)
+curl -O https://www.gson.org/egypt/download/egypt-1.11.tar.gz
+tar -xzf egypt-1.11.tar.gz
+cp egypt-1.11/egypt ./
+chmod +x egypt
+```
+
+### Generate All Call Graphs
+
+Use the automated script to generate comprehensive call graphs:
+
+```bash
+# Generate all call graph types
+./scripts/generate_callgraph.sh
+```
+
+This script generates:
+- **GNU cflow** text-based call graphs
+- **Egypt** visual call graphs from compiled RTL dumps
+- **Doxygen** documentation with interactive call/caller graphs
+
+### Manual Generation
+
+#### GNU cflow (Source-based Analysis)
+```bash
+# Forward call graph from app_main
+cflow --main=app_main src/main.c lib/star_*/src/*.c > forward_callgraph.txt
+
+# Reverse call graph (show callers)
+cflow -r --main=app_main src/main.c lib/star_*/src/*.c > reverse_callgraph.txt
+```
+
+#### Egypt (Binary Analysis)
+```bash
+# Build with RTL dump flags (already configured in platformio.ini)
+pio run -e esp32_wroom
+
+# Generate DOT format call graph
+find . -name "*.expand" -path "*/src/*" -o -name "*.expand" -path "*/star_*/*" | ./egypt > callgraph.dot
+
+# Convert to visual formats
+dot -Tpng callgraph.dot -o callgraph.png
+dot -Tsvg callgraph.dot -o callgraph.svg
+```
+
+#### Doxygen (Documentation with Call Graphs)
+```bash
+# Generate comprehensive documentation
+doxygen Doxyfile
+
+# Open documentation
+open docs/doxygen/html/index.html
+```
+
+### Output Location
+
+All generated call graphs are stored in `docs/callgraph/`:
+- `cflow/` - Text-based GNU cflow output
+- `visual/` - Visual call graphs (generated from cflow analysis)
+- `doxygen/` - Interactive HTML documentation
+
+### Understanding the Call Graphs
+
+The call graphs reveal the STAR firmware's key architectural patterns:
+
+1. **Dependency Injection Flow**: `app_main()` → interface creation → component initialization
+2. **Bus Abstraction**: Sensor drivers → `star_bus_manager` → protocol implementations
+3. **Error Handling**: Centralized error interface with retry logic
+4. **Resource Management**: Pin validation and bus lifecycle management
+
+### Integration with IDEs
+
+The generated documentation and call graphs can be integrated with various development tools:
+- **VS Code**: Use the generated HTML documentation as a reference
+- **CLion**: Import DOT files for visualization
+- **Vim/Neovim**: Use text-based cflow output for quick reference
+
 ## Architecture
 
 ### SOLID Principles
@@ -425,6 +517,10 @@ star_sensor_mpu6050_read(&imu, &data);
    - Functions and variables: `snake_case`
    - Macros and constants: `SCREAMING_SNAKE_CASE`
    - Types: `snake_case_t` suffix
+   - Static functions: `internal_` prefix (file-scoped only)
+   - Private non-static functions: `priv_` prefix (cross-file within module)
+   - Static variables: `s_` prefix
+   - Global variables: `g_` prefix (avoid when possible)
 
 5. **Documentation**
    - Use Doxygen-compatible comments

@@ -77,7 +77,7 @@ static const uint8_t crc8_table[256] = {
 /**
  * @brief Initialize 1-Wire global mutex (thread-safe)
  */
-static esp_err_t priv_init_onewire_mutex(void)
+static esp_err_t internal_init_onewire_mutex(void)
 {
   /* Quick check without lock for common case */
   if (g_onewire_mutex != NULL) {
@@ -104,7 +104,7 @@ static esp_err_t priv_init_onewire_mutex(void)
 /**
  * @brief Get 1-Wire state for a bus (must be called with mutex held)
  */
-static onewire_state_t* get_onewire_state_internal(const char* bus_name, bool create)
+static onewire_state_t* internal_get_onewire_state(const char* bus_name, bool create)
 {
   for (uint8_t i = 0; i < g_num_onewire_states; i++) {
     if (strcmp(g_onewire_states[i].bus_name, bus_name) == 0) {
@@ -129,7 +129,7 @@ static onewire_state_t* get_onewire_state_internal(const char* bus_name, bool cr
  */
 static onewire_state_t* get_onewire_state(const char* bus_name, bool create)
 {
-  if (priv_init_onewire_mutex() != ESP_OK) {
+  if (internal_init_onewire_mutex() != ESP_OK) {
     return NULL;
   }
 
@@ -138,7 +138,7 @@ static onewire_state_t* get_onewire_state(const char* bus_name, bool create)
     return NULL;
   }
 
-  onewire_state_t* state = get_onewire_state_internal(bus_name, create);
+  onewire_state_t* state = internal_get_onewire_state(bus_name, create);
 
   xSemaphoreGive(g_onewire_mutex);
   return state;

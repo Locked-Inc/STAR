@@ -72,7 +72,7 @@ static spi_dma_state_t* get_spi_dma_state(spi_host_device_t host)
 /**
  * @brief Check if transfer should use DMA
  */
-static bool priv_should_use_spi_dma(const spi_dma_state_t* state, size_t length)
+static bool internal_should_use_spi_dma(const spi_dma_state_t* state, size_t length)
 {
   if (state == NULL || !state->config.enabled) {
     return false;
@@ -217,7 +217,7 @@ esp_err_t star_bus_spi_transmit_dma(star_bus_manager_t*     manager,
     return ESP_ERR_INVALID_STATE;
   }
 
-  bool use_dma = priv_should_use_spi_dma(state, length);
+  bool use_dma = internal_should_use_spi_dma(state, length);
 
   if (!use_dma) {
     ESP_LOGD(s_TAG, "Using standard SPI transmit (length=%zu)", length);
@@ -286,7 +286,7 @@ esp_err_t star_bus_spi_receive_dma(star_bus_manager_t*     manager,
     return ESP_ERR_INVALID_STATE;
   }
 
-  bool use_dma = priv_should_use_spi_dma(state, length);
+  bool use_dma = internal_should_use_spi_dma(state, length);
 
   if (!use_dma) {
     ESP_LOGD(s_TAG, "Using standard SPI receive (length=%zu)", length);
@@ -356,7 +356,7 @@ esp_err_t star_bus_spi_transceive_dma(star_bus_manager_t*     manager,
     return ESP_ERR_INVALID_STATE;
   }
 
-  bool use_dma = priv_should_use_spi_dma(state, length);
+  bool use_dma = internal_should_use_spi_dma(state, length);
 
   if (!use_dma) {
     ESP_LOGD(s_TAG, "Using standard SPI transceive (length=%zu)", length);

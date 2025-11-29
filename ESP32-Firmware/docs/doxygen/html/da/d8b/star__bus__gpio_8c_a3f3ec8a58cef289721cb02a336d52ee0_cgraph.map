@@ -1,0 +1,5 @@
+<map id="star_bus_gpio_configure" name="star_bus_gpio_configure">
+<area shape="rect" id="Node000001" title="Configure a GPIO pin (set mode, pull&#45;up/down) via bus manager." alt="" coords="5,5,168,31"/>
+<area shape="rect" id="Node000002" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="216,5,400,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="168,16,203,18,197,18,168,21"/>
+</map>

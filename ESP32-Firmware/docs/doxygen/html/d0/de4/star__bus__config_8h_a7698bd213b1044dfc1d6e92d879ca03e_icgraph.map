@@ -1,0 +1,14 @@
+<map id="star_bus_config_deinit" name="star_bus_config_deinit">
+<area shape="rect" id="Node000001" title="Deinitialize the bus/device associated with this configuration." alt="" coords="596,56,748,82"/>
+<area shape="rect" id="Node000002" href="$de/d98/star__bus__config_8c.html#a194581e2eb82227a022f04b9057db839" title="Destroy a bus configuration and free all associated resources." alt="" coords="385,56,548,82"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="578,69,549,71,549,66,583,69"/>
+<area shape="rect" id="Node000003" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="423,49,383,34,336,21,267,12,197,10,84,16,82,11,197,5,268,7,338,16,385,29,429,49"/>
+<area shape="rect" id="Node000004" href="$d7/d60/star__bus__manager_8c.html#a238abc1b4d0e4b98520e4227ec121b42" title="Deinitialize the bus manager and all managed I2C bus configurations." alt="" coords="151,31,317,56"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="367,59,318,55,317,50,372,58"/>
+<area shape="rect" id="Node000005" href="$d7/d60/star__bus__manager_8c.html#aa440431606d8a33fb394b4225db51f93" title="Remove an I2C bus configuration from the manager and destroy it." alt="" coords="131,80,337,106"/>
+<area shape="poly" id="edge5_Node000002_Node000005" title=" " alt="" coords="367,79,338,85,337,80,373,78"/>
+<area shape="rect" id="Node000006" href="$d1/d50/star__bus__helpers_8c.html#a88cdd0738dfec53d37d49f977c9d989c" title="Quick setup: I2C master with automatic defaults." alt="" coords="148,129,320,155"/>
+<area shape="poly" id="edge6_Node000002_Node000006" title=" " alt="" coords="423,87,338,121,299,131,297,126,336,116,418,88"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="133,32,84,26,83,21,138,29"/>
+</map>

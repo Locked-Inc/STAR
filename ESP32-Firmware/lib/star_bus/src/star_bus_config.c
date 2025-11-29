@@ -26,10 +26,10 @@ static const char* s_TAG = "BusConfig";
 
 /* --- Private Function Prototypes --- */
 
-static void priv_star_bus_config_cleanup(star_bus_config_t* config);
+static void internal_star_bus_config_cleanup(star_bus_config_t* config);
 
-static star_bus_config_t* priv_star_bus_config_create_common(const char*     name,
-                                                             star_bus_type_t type);
+static star_bus_config_t* internal_star_bus_config_create_common(const char*     name,
+                                                                 star_bus_type_t type);
 
 /* --- Public Functions --- */
 
@@ -40,7 +40,7 @@ star_bus_config_t* star_bus_config_create_i2c(const char* name,
                                               gpio_num_t  scl_pin,
                                               uint32_t    clk_speed)
 {
-  star_bus_config_t* config = priv_star_bus_config_create_common(name, k_star_bus_type_i2c);
+  star_bus_config_t* config = internal_star_bus_config_create_common(name, k_star_bus_type_i2c);
   ESP_RETURN_ON_FALSE(config,
                       NULL,
                       s_TAG,
@@ -90,7 +90,7 @@ star_bus_config_t* star_bus_config_create_spi_device(const char*                
                       "Invalid SPI host number: %d",
                       host);
 
-  star_bus_config_t* config = priv_star_bus_config_create_common(name, k_star_bus_type_spi);
+  star_bus_config_t* config = internal_star_bus_config_create_common(name, k_star_bus_type_spi);
   ESP_RETURN_ON_FALSE(config,
                       NULL,
                       s_TAG,
@@ -162,7 +162,7 @@ star_bus_config_t* star_bus_config_create_spi_peripheral(const char*       name,
                       queue_size);
   ESP_RETURN_ON_FALSE(mode <= 3, NULL, s_TAG, "Invalid SPI mode: %d (must be 0-3)", mode);
 
-  star_bus_config_t* config = priv_star_bus_config_create_common(name, k_star_bus_type_spi);
+  star_bus_config_t* config = internal_star_bus_config_create_common(name, k_star_bus_type_spi);
   ESP_RETURN_ON_FALSE(config,
                       NULL,
                       s_TAG,
@@ -209,7 +209,7 @@ star_bus_config_create_gpio(const char* name, const gpio_num_t pins[], uint8_t p
   ESP_RETURN_ON_FALSE(pins, NULL, s_TAG, "Pins array is NULL");
   ESP_RETURN_ON_FALSE(pin_count > 0, NULL, s_TAG, "Pin count must be at least 1");
 
-  star_bus_config_t* config = priv_star_bus_config_create_common(name, k_star_bus_type_gpio);
+  star_bus_config_t* config = internal_star_bus_config_create_common(name, k_star_bus_type_gpio);
   ESP_RETURN_ON_FALSE(config,
                       NULL,
                       s_TAG,
@@ -220,7 +220,7 @@ star_bus_config_create_gpio(const char* name, const gpio_num_t pins[], uint8_t p
   gpio_num_t* pins_copy = (gpio_num_t*)malloc(pin_count * sizeof(gpio_num_t));
   if (pins_copy == NULL) {
     ESP_LOGE(s_TAG, "Failed to allocate memory for GPIO pins array");
-    priv_star_bus_config_cleanup(config);
+    internal_star_bus_config_cleanup(config);
     return NULL;
   }
 
@@ -254,7 +254,7 @@ star_bus_config_t* star_bus_config_create_dht22(const char*        name,
 {
   ESP_RETURN_ON_FALSE(gpio_pin >= 0, NULL, s_TAG, "Invalid GPIO pin");
 
-  star_bus_config_t* config = priv_star_bus_config_create_common(name, k_star_bus_type_dht22);
+  star_bus_config_t* config = internal_star_bus_config_create_common(name, k_star_bus_type_dht22);
   ESP_RETURN_ON_FALSE(config,
                       NULL,
                       s_TAG,
@@ -310,7 +310,7 @@ esp_err_t star_bus_config_destroy(star_bus_config_t* config)
   /* The manager checks if the bus needs to be freed based on device count */
 
   /* Clean up and free the configuration */
-  priv_star_bus_config_cleanup(config);
+  internal_star_bus_config_cleanup(config);
 
   /* IMPORTANT: After this call, the config pointer is invalid. */
   return ESP_OK;
@@ -653,7 +653,7 @@ esp_err_t star_bus_config_deinit(star_bus_config_t* config)
  *        Does NOT deinitialize the hardware/driver.
  * @param[in] config Pointer to the bus configuration to clean up.
  */
-static void priv_star_bus_config_cleanup(star_bus_config_t* config)
+static void internal_star_bus_config_cleanup(star_bus_config_t* config)
 {
   if (config == NULL) {
     return;
@@ -688,7 +688,8 @@ static void priv_star_bus_config_cleanup(star_bus_config_t* config)
  * @param[in] type Type of the bus.
  * @return star_bus_config_t* Pointer to the created configuration, or NULL on failure.
  */
-static star_bus_config_t* priv_star_bus_config_create_common(const char* name, star_bus_type_t type)
+static star_bus_config_t* internal_star_bus_config_create_common(const char*     name,
+                                                                 star_bus_type_t type)
 {
   /* Name validation */
   if (name == NULL) {

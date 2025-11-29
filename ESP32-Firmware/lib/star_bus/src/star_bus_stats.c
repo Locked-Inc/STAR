@@ -41,7 +41,7 @@ static portMUX_TYPE      g_stats_init_spinlock           = portMUX_INITIALIZER_U
 /**
  * @brief Initialize stats global mutex (thread-safe)
  */
-static esp_err_t priv_init_stats_mutex(void)
+static esp_err_t internal_init_stats_mutex(void)
 {
   /* Quick check without lock for common case */
   if (g_stats_mutex != NULL) {
@@ -68,7 +68,7 @@ static esp_err_t priv_init_stats_mutex(void)
 /**
  * @brief Get or create statistics state for a bus (must be called with mutex held)
  */
-static stats_state_t* get_stats_state_internal(const char* bus_name, bool create)
+static stats_state_t* internal_get_stats_state(const char* bus_name, bool create)
 {
   /* Search for existing state */
   for (uint8_t i = 0; i < g_num_stats_states; i++) {
@@ -97,7 +97,7 @@ static stats_state_t* get_stats_state_internal(const char* bus_name, bool create
  */
 static stats_state_t* get_stats_state(const char* bus_name, bool create)
 {
-  if (priv_init_stats_mutex() != ESP_OK) {
+  if (internal_init_stats_mutex() != ESP_OK) {
     return NULL;
   }
 
@@ -106,7 +106,7 @@ static stats_state_t* get_stats_state(const char* bus_name, bool create)
     return NULL;
   }
 
-  stats_state_t* state = get_stats_state_internal(bus_name, create);
+  stats_state_t* state = internal_get_stats_state(bus_name, create);
 
   xSemaphoreGive(g_stats_mutex);
   return state;

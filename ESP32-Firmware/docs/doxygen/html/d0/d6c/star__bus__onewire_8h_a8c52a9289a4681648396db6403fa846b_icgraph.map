@@ -1,0 +1,15 @@
+<map id="star_bus_onewire_bytes_to_rom" name="star_bus_onewire_bytes_to_rom">
+<area shape="rect" id="Node000001" title="Convert byte array to ROM." alt="" coords="472,103,634,143"/>
+<area shape="rect" id="Node000002" href="$d2/de5/star__bus__onewire__peripheral_8c.html#a62f2636d7b1d2248773b56947b0852ba" title="Calculate and set ROM CRC." alt="" coords="268,61,396,86"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="454,102,393,90,393,84,459,101"/>
+<area shape="rect" id="Node000005" href="$d9/dd6/star__bus__onewire_8c.html#a585e54933529b5a71ee8f22332692285" title="Read ROM from single device on bus." alt="" coords="240,110,424,136"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="454,123,425,126,424,120,459,123"/>
+<area shape="rect" id="Node000006" href="$d9/dd6/star__bus__onewire_8c.html#a9e824a2a3393b3059ede24129d9f59f7" title="Search for all devices on the bus." alt="" coords="247,160,416,185"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="459,144,393,162,392,156,454,145"/>
+<area shape="rect" id="Node000003" href="$d2/de5/star__bus__onewire__peripheral_8c.html#a79f4d0af0a89c0a884ff815880c2d264" title="Enable 1&#45;Wire peripheral mode." alt="" coords="5,5,192,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="251,59,192,48,192,42,256,57"/>
+<area shape="rect" id="Node000004" href="$d2/de5/star__bus__onewire__peripheral_8c.html#a5522a701d9c094bfd3ec23e0d2500dcb" title="Update peripheral ROM code." alt="" coords="5,71,192,111"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="250,80,193,87,192,81,255,79"/>
+<area shape="rect" id="Node000007" href="$d9/dd6/star__bus__onewire_8c.html#a77482610444b896ddb6f74aa04b44b1c" title="Search for devices with active alarms." alt="" coords="14,152,183,193"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="229,173,184,175,184,170,234,172"/>
+</map>
