@@ -1,0 +1,9 @@
+<map id="internal_bq7850_read_cell_voltage" name="internal_bq7850_read_cell_voltage">
+<area shape="rect" id="Node000001" title="Read cell voltage via manufacturer access subcommand." alt="" coords="414,39,558,79"/>
+<area shape="rect" id="Node000002" href="$d2/d58/star__bms__bq7850_8c.html#a60fbc7943a9017cb235890abd5d177c2" title="Read single cell voltage." alt="" coords="210,5,366,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="396,44,367,42,367,36,401,44"/>
+<area shape="rect" id="Node000003" href="$d2/d58/star__bms__bq7850_8c.html#ae6be6b56d85f086df6e8852d62e63d05" title="Read all cell voltages." alt="" coords="210,71,366,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="401,73,367,81,366,76,396,73"/>
+<area shape="rect" id="Node000004" href="$d2/d58/star__bms__bq7850_8c.html#a0d22297192ffaac26fd6fb5b6b77c3f7" title="Read complete battery state." alt="" coords="5,71,162,111"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="191,91,162,94,162,88,197,91"/>
+</map>

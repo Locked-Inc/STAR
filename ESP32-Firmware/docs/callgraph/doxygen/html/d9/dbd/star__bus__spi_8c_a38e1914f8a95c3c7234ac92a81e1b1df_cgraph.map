@@ -1,0 +1,5 @@
+<map id="star_bus_spi_receive" name="star_bus_spi_receive">
+<area shape="rect" id="Node000001" title="Receive data from an SPI device specified by a bus configuration." alt="" coords="5,5,150,31"/>
+<area shape="rect" id="Node000002" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="198,5,382,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="150,16,184,18,179,18,150,21"/>
+</map>

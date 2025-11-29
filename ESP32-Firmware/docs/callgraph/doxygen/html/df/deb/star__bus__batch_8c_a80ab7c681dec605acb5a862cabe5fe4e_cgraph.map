@@ -1,0 +1,30 @@
+<map id="star_batch_execute" name="star_batch_execute">
+<area shape="rect" id="Node000001" title="Execute all operations in the batch." alt="" coords="5,136,141,162"/>
+<area shape="rect" id="Node000002" href="$df/deb/star__bus__batch_8c.html#a83c47362bb84557376a1791c5425f41c" title="Execute a single batch operation." alt="" coords="189,136,365,162"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="140,147,175,148,171,150,142,152"/>
+<area shape="rect" id="Node000003" href="$dd/d1a/star__bus__i2c_8c.html#a2e9b9baf8a0f8d00a2080963a7efd62f" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="634,20,762,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="285,134,304,108,333,76,370,45,412,21,468,7,526,3,582,6,634,16,629,17,582,12,526,8,469,12,414,26,373,49,337,80,309,112,289,138"/>
+<area shape="rect" id="Node000005" href="$dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="633,135,763,161"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="365,146,620,147,615,149,366,151"/>
+<area shape="rect" id="Node000006" href="$d9/dbd/star__bus__spi_8c.html#a38e1914f8a95c3c7234ac92a81e1b1df" title="Receive data from an SPI device specified by a bus configuration." alt="" coords="419,187,563,213"/>
+<area shape="poly" id="edge6_Node000002_Node000006" title=" " alt="" coords="334,160,422,182,416,183,334,165"/>
+<area shape="rect" id="Node000007" href="$d9/dbd/star__bus__spi_8c.html#ad0df93f1e1b403e0e8e0e48ca8822588" title="Perform a full&#45;duplex transfer with an SPI device specified by a bus configuration." alt="" coords="418,236,564,262"/>
+<area shape="poly" id="edge8_Node000002_Node000007" title=" " alt="" coords="299,160,351,191,414,223,430,231,424,230,412,228,348,195,298,165"/>
+<area shape="rect" id="Node000008" href="$d9/dbd/star__bus__spi_8c.html#a2859c4d77d02b6bd5f567366a465e11d" title="Transmit data to an SPI device specified by a bus configuration." alt="" coords="623,287,773,313"/>
+<area shape="poly" id="edge10_Node000002_Node000008" title=" " alt="" coords="288,160,338,217,374,248,414,272,462,288,512,298,562,303,611,306,605,306,561,308,511,304,460,294,412,277,370,252,334,221,286,165"/>
+<area shape="rect" id="Node000009" href="$d3/df5/star__bus__smbus_8c.html#a66c94dc0a7eb2893f78e8b887d6d0b4d" title="SMBus Read Byte." alt="" coords="414,36,568,62"/>
+<area shape="poly" id="edge12_Node000002_Node000009" title=" " alt="" coords="297,134,348,103,412,71,429,66,425,69,414,76,351,108,300,138"/>
+<area shape="rect" id="Node000011" href="$d3/df5/star__bus__smbus_8c.html#a4150488512abf781bf193c6bdb9d20a0" title="SMBus Write Byte." alt="" coords="413,86,569,111"/>
+<area shape="poly" id="edge15_Node000002_Node000011" title=" " alt="" coords="333,133,421,114,416,116,335,138"/>
+<area shape="rect" id="Node000004" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="827,186,1011,211"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="754,44,780,56,817,83,850,114,901,174,896,173,847,118,814,87,777,61,753,49"/>
+<area shape="poly" id="edge5_Node000005_Node000004" title=" " alt="" coords="757,159,847,182,842,182,757,164"/>
+<area shape="poly" id="edge7_Node000006_Node000004" title=" " alt="" coords="563,197,814,198,808,199,564,202"/>
+<area shape="poly" id="edge9_Node000007_Node000004" title=" " alt="" coords="564,238,814,211,808,211,565,243"/>
+<area shape="poly" id="edge11_Node000008_Node000004" title=" " alt="" coords="734,284,778,265,876,219,881,218,780,270,735,289"/>
+<area shape="poly" id="edge14_Node000009_Node000003" title=" " alt="" coords="567,41,622,38,617,40,569,46"/>
+<area shape="rect" id="Node000010" href="$d3/df5/star__bus__smbus_8c.html#a028e8362b8c772d39dee59e24c15439b" title="Validate common parameters for SMBus operations." alt="" coords="617,70,779,111"/>
+<area shape="poly" id="edge13_Node000009_Node000010" title=" " alt="" coords="559,60,604,71,599,72,559,65"/>
+<area shape="poly" id="edge17_Node000011_Node000005" title=" " alt="" coords="548,109,629,131,624,131,548,115"/>
+<area shape="poly" id="edge16_Node000011_Node000010" title=" " alt="" coords="569,93,604,94,599,95,570,98"/>
+</map>

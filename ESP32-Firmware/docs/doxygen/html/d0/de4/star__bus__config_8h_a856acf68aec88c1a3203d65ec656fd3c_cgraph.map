@@ -1,0 +1,17 @@
+<map id="star_bus_config_create_gpio" name="star_bus_config_create_gpio">
+<area shape="rect" id="Node000001" title="Create a new GPIO bus configuration." alt="" coords="5,78,193,104"/>
+<area shape="rect" id="Node000002" href="$de/d98/star__bus__config_8c.html#a83c2bd0044ce80e0be65ebba3c1a3cc1" title="Clean up and free memory for a bus configuration structure. Does NOT deinitialize the hardware/driver..." alt="" coords="241,5,403,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="144,75,237,49,234,53,147,80"/>
+<area shape="rect" id="Node000003" href="$de/d98/star__bus__config_8c.html#a15ff256a9a257629ad970a5359136a59" title="Create a generic bus configuration structure and allocate memory." alt="" coords="241,71,403,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="192,88,227,90,222,92,194,94"/>
+<area shape="rect" id="Node000004" href="$da/d8b/star__bus__gpio_8c.html#a0fff90f319ba2507d0e6fdce4620278c" title="Initialize default GPIO operations function pointers within a config structure. Typically called inte..." alt="" coords="259,136,385,177"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="145,102,246,132,242,135,145,107"/>
+<area shape="rect" id="Node000005" href="$da/d8b/star__bus__gpio_8c.html#a398e64268b55afc72df387ad1a1c7fc1" title="Default implementation for configuring a GPIO pin." alt="" coords="451,65,602,90"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="373,133,402,121,450,99,464,97,469,95,452,104,404,125,375,138"/>
+<area shape="rect" id="Node000006" href="$da/d8b/star__bus__gpio_8c.html#af20ab080c3ac32e57c9e9d3d0df681e7" title="Default implementation for reading from a GPIO pin." alt="" coords="465,114,588,140"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="385,145,452,137,447,139,386,150"/>
+<area shape="rect" id="Node000007" href="$da/d8b/star__bus__gpio_8c.html#a861d4619ac157b0e282ff0f22340a050" title="Default implementation for setting GPIO interrupt." alt="" coords="464,164,589,205"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="385,162,452,174,446,174,385,168"/>
+<area shape="rect" id="Node000008" href="$da/d8b/star__bus__gpio_8c.html#af2724ae0d0a1260cb6dbaf5853470a5f" title="Default implementation for writing to a GPIO pin." alt="" coords="464,229,590,254"/>
+<area shape="poly" id="edge7_Node000004_Node000008" title=" " alt="" coords="365,175,452,214,472,224,466,223,450,219,364,180"/>
+</map>

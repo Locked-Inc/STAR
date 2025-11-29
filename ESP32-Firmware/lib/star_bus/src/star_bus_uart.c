@@ -46,7 +46,7 @@ static portMUX_TYPE      g_uart_init_spinlock          = portMUX_INITIALIZER_UNL
 /**
  * @brief Initialize UART global mutex (thread-safe)
  */
-static esp_err_t priv_init_uart_mutex(void)
+static esp_err_t internal_init_uart_mutex(void)
 {
   /* Quick check without lock for common case */
   if (g_uart_mutex != NULL) {
@@ -73,7 +73,7 @@ static esp_err_t priv_init_uart_mutex(void)
 /**
  * @brief Get UART state for a bus (must be called with mutex held)
  */
-static uart_state_t* get_uart_state_internal(const char* bus_name, bool create)
+static uart_state_t* internal_get_uart_state(const char* bus_name, bool create)
 {
   for (uint8_t i = 0; i < g_num_uart_states; i++) {
     if (strcmp(g_uart_states[i].bus_name, bus_name) == 0) {
@@ -114,7 +114,7 @@ static uart_state_t* get_uart_state_internal(const char* bus_name, bool create)
  */
 static uart_state_t* get_uart_state(const char* bus_name, bool create)
 {
-  if (priv_init_uart_mutex() != ESP_OK) {
+  if (internal_init_uart_mutex() != ESP_OK) {
     return NULL;
   }
 
@@ -123,7 +123,7 @@ static uart_state_t* get_uart_state(const char* bus_name, bool create)
     return NULL;
   }
 
-  uart_state_t* state = get_uart_state_internal(bus_name, create);
+  uart_state_t* state = internal_get_uart_state(bus_name, create);
 
   xSemaphoreGive(g_uart_mutex);
   return state;
@@ -132,7 +132,7 @@ static uart_state_t* get_uart_state(const char* bus_name, bool create)
 /**
  * @brief Event task for processing UART events
  */
-static void priv_uart_event_task(void* param)
+static void internal_uart_event_task(void* param)
 {
   uart_state_t* state = (uart_state_t*)param;
   uart_event_t  event;
@@ -261,7 +261,7 @@ esp_err_t star_bus_uart_init(star_bus_manager_t*       manager,
   if (config->event_callback != NULL && config->event_queue_size > 0) {
     state->event_task_running = true;
     BaseType_t task_result =
-      xTaskCreate(priv_uart_event_task, "uart_event", 4096, state, 5, &state->event_task);
+      xTaskCreate(internal_uart_event_task, "uart_event", 4096, state, 5, &state->event_task);
     if (task_result != pdPASS) {
       ESP_LOGE(s_TAG, "Failed to create event task");
       uart_driver_delete(config->port);

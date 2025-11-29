@@ -36,7 +36,7 @@ typedef struct {
 /**
  * @brief Execute a single batch operation
  */
-static esp_err_t priv_execute_operation(batch_context_t* ctx, uint32_t index)
+static esp_err_t internal_execute_operation(batch_context_t* ctx, uint32_t index)
 {
   if (ctx == NULL || index >= ctx->operation_count) {
     return ESP_ERR_INVALID_ARG;
@@ -445,7 +445,7 @@ esp_err_t star_batch_execute(star_batch_handle_t handle, star_batch_stats_t* sta
 
   /* Execute operations sequentially */
   for (uint32_t i = 0; i < ctx->operation_count; i++) {
-    esp_err_t result = priv_execute_operation(ctx, i);
+    esp_err_t result = internal_execute_operation(ctx, i);
 
     if (result == ESP_OK) {
       succeeded++;

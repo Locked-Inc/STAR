@@ -1,0 +1,29 @@
+<map id="star_bms_bq7850_get_device_info" name="star_bms_bq7850_get_device_info">
+<area shape="rect" id="Node000001" title="Read device information from BQ7850." alt="" coords="5,112,155,153"/>
+<area shape="rect" id="Node000002" href="$d2/d58/star__bms__bq7850_8c.html#aa9056151568739c998b9ccf957fee277" title="Execute manufacturer access command." alt="" coords="203,112,398,153"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="154,130,189,132,185,134,156,135"/>
+<area shape="rect" id="Node000003" href="$d3/df5/star__bus__smbus_8c.html#a06fee6f34cc0d8a110deb97775bb6e6a" title="SMBus Read Word." alt="" coords="448,177,604,203"/>
+<area shape="poly" id="edge16_Node000001_Node000003" title=" " alt="" coords="152,151,203,162,322,177,435,187,429,188,322,182,202,167,152,156"/>
+<area shape="rect" id="Node000009" href="$d3/df5/star__bus__smbus_8c.html#a416c6cdf6379a197a9b018603a3e73e8" title="SMBus Block Read." alt="" coords="446,63,605,88"/>
+<area shape="poly" id="edge10_Node000001_Node000009" title=" " alt="" coords="151,109,202,98,321,83,433,77,428,79,321,89,203,103,153,114"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="383,151,460,173,455,173,383,156"/>
+<area shape="rect" id="Node000007" href="$d3/df5/star__bus__smbus_8c.html#ae35a870d8984311e9af9966d3be33bac" title="SMBus Write Word." alt="" coords="446,120,605,146"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="398,130,433,132,428,133,398,135"/>
+<area shape="rect" id="Node000004" href="$d3/df5/star__bus__smbus_8c.html#a028e8362b8c772d39dee59e24c15439b" title="Validate common parameters for SMBus operations." alt="" coords="653,170,815,210"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="604,188,640,190,635,190,604,193"/>
+<area shape="rect" id="Node000005" href="$dd/d1a/star__bus__i2c_8c.html#a2e9b9baf8a0f8d00a2080963a7efd62f" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="670,235,798,260"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="576,201,673,230,667,230,575,206"/>
+<area shape="rect" id="Node000006" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="863,92,1047,118"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="787,232,813,220,847,198,879,174,928,130,933,128,882,178,850,203,816,225,788,237"/>
+<area shape="poly" id="edge7_Node000007_Node000004" title=" " alt="" coords="575,144,646,165,640,165,575,149"/>
+<area shape="rect" id="Node000008" href="$dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="669,120,799,146"/>
+<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="606,130,656,133,650,133,606,135"/>
+<area shape="poly" id="edge9_Node000008_Node000006" title=" " alt="" coords="799,122,850,118,845,119,800,127"/>
+<area shape="poly" id="edge11_Node000009_Node000004" title=" " alt="" coords="570,86,607,105,622,119,631,131,641,144,655,156,662,163,657,162,652,160,637,147,627,134,618,122,604,110,569,92"/>
+<area shape="rect" id="Node000010" href="$dd/d1a/star__bus__i2c_8c.html#a6b73d11538cb25e07de224584c54ec49" title="Read raw bytes from an I2C device specified by a bus configuration. Does not send a register address ..." alt="" coords="656,5,812,31"/>
+<area shape="poly" id="edge12_Node000009_Node000010" title=" " alt="" coords="574,60,672,35,667,36,576,65"/>
+<area shape="rect" id="Node000011" href="$dd/d1a/star__bus__i2c_8c.html#ab5fd7179899b9f4229f103484481be3e" title="Write a single command byte to an I2C device specified by a bus configuration. No register address or..." alt="" coords="669,55,799,96"/>
+<area shape="poly" id="edge14_Node000009_Node000011" title=" " alt="" coords="606,73,656,75,650,76,606,78"/>
+<area shape="poly" id="edge13_Node000010_Node000006" title=" " alt="" coords="780,29,816,41,915,85,909,85,814,46,780,34"/>
+<area shape="poly" id="edge15_Node000011_Node000006" title=" " alt="" coords="800,81,850,90,845,91,800,87"/>
+</map>

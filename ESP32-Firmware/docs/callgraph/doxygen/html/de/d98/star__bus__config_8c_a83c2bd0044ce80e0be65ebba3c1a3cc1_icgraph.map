@@ -1,0 +1,17 @@
+<map id="internal_star_bus_config_cleanup" name="internal_star_bus_config_cleanup">
+<area shape="rect" id="Node000001" title="Clean up and free memory for a bus configuration structure. Does NOT deinitialize the hardware/driver..." alt="" coords="620,48,783,89"/>
+<area shape="rect" id="Node000002" href="$de/d98/star__bus__config_8c.html#a856acf68aec88c1a3203d65ec656fd3c" title="Create a new GPIO bus configuration." alt="" coords="385,5,572,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="603,47,539,34,539,29,608,47"/>
+<area shape="rect" id="Node000004" href="$de/d98/star__bus__config_8c.html#a194581e2eb82227a022f04b9057db839" title="Destroy a bus configuration and free all associated resources." alt="" coords="397,80,560,106"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="602,80,561,87,560,81,608,79"/>
+<area shape="rect" id="Node000003" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,29,83,55"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="367,16,254,18,131,26,85,34,82,30,130,21,254,12,372,13"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="392,77,337,70,197,55,84,47,83,42,197,50,337,65,398,76"/>
+<area shape="rect" id="Node000005" href="$d7/d60/star__bus__manager_8c.html#a238abc1b4d0e4b98520e4227ec121b42" title="Deinitialize the bus manager and all managed I2C bus configurations." alt="" coords="151,80,317,106"/>
+<area shape="poly" id="edge5_Node000004_Node000005" title=" " alt="" coords="379,93,318,95,317,90,384,92"/>
+<area shape="rect" id="Node000006" href="$d7/d60/star__bus__manager_8c.html#aa440431606d8a33fb394b4225db51f93" title="Remove an I2C bus configuration from the manager and destroy it." alt="" coords="131,129,337,155"/>
+<area shape="poly" id="edge7_Node000004_Node000006" title=" " alt="" coords="394,110,302,131,301,126,399,109"/>
+<area shape="rect" id="Node000007" href="$d1/d50/star__bus__helpers_8c.html#a88cdd0738dfec53d37d49f977c9d989c" title="Quick setup: I2C master with automatic defaults." alt="" coords="148,179,320,204"/>
+<area shape="poly" id="edge8_Node000004_Node000007" title=" " alt="" coords="446,113,395,144,338,170,304,181,303,175,336,165,393,139,441,115"/>
+<area shape="poly" id="edge6_Node000005_Node000003" title=" " alt="" coords="166,77,83,55,83,50,170,74"/>
+</map>

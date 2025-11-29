@@ -7,13 +7,13 @@ This directory contains test scripts for verifying hardware interfaces on the Ra
 ### Copy all scripts to board:
 ```bash
 cd ~/Documents/git/STAR/test-scripts
-scp *.py *.sh star:~/test-scripts/
+scp *.py *.sh root@star-robot.local:~/test-scripts/
 ```
 
 ### Or copy individually:
 ```bash
-scp test_uart_usb.py star:~/
-scp test_40pin_header.py star:~/
+scp test_uart_usb.py root@star-robot.local:~/
+scp test_40pin_header.py root@star-robot.local:~/
 # etc.
 ```
 
@@ -168,8 +168,8 @@ Once you find working UART, connect ESP32 and test communication.
 
 ### Permission Denied
 ```bash
-# Add user to dialout group
-sudo usermod -a -G dialout xilinx
+# Add user to dialout group (if using non-root user)
+sudo usermod -a -G dialout pi
 
 # Or run with sudo
 sudo python3 ~/test_uart_usb.py
@@ -215,8 +215,8 @@ See `../docs/voltage-levels-safety.md` for complete safety guide.
 
 - `../docs/hardware-testing-guide.md` - Complete testing procedures
 - `../docs/voltage-levels-safety.md` - Voltage safety reference
-- `../docs/customization-game-plan.md` - Software requirements
-- `../pynq-z2-setup-guide.md` - Board setup guide
+- `../docs/README.md` - Documentation overview
+- `../star-pi5-os/README.md` - Custom OS setup guide
 
 ---
 
@@ -224,7 +224,7 @@ See `../docs/voltage-levels-safety.md` for complete safety guide.
 
 | Task | Command |
 |------|---------|
-| Copy all scripts | `scp *.py *.sh star:~/` |
+| Copy all scripts | `scp *.py *.sh root@star-robot.local:~/` |
 | List USB devices | `lsusb` |
 | List serial ports | `ls -l /dev/ttyUSB* /dev/ttyPS*` |
 | Check kernel messages | `dmesg \| tail` |

@@ -1,0 +1,5 @@
+<map id="star_bus_stats_ops_per_second" name="star_bus_stats_ops_per_second">
+<area shape="rect" id="Node000001" title="Calculate operations per second." alt="" coords="210,5,345,46"/>
+<area shape="rect" id="Node000002" href="$dd/d61/star__bus__stats_8c.html#a85d985e4e0b4ac2ad093ea012abb21d8" title="Format statistics as JSON string." alt="" coords="5,13,162,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="191,26,162,28,162,23,196,25"/>
+</map>

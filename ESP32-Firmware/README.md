@@ -12,8 +12,8 @@ A modular, production-ready embedded firmware framework implementing Dependency 
 
 ```bash
 # Clone repository
-git clone <repository-url>
-cd star-firmware
+git clone https://github.com/Locked-Inc/STAR.git
+cd STAR/ESP32-Firmware
 
 # Build for ESP32-WROOM
 pio run -e esp32_wroom

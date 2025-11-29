@@ -1,0 +1,9 @@
+<map id="calculate_rom_crc" name="calculate_rom_crc">
+<area shape="rect" id="Node000001" title="Calculate and set ROM CRC." alt="" coords="5,70,133,96"/>
+<area shape="rect" id="Node000002" href="$d9/dd6/star__bus__onewire_8c.html#a8c52a9289a4681648396db6403fa846b" title="Convert byte array to ROM." alt="" coords="181,5,343,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="114,67,179,49,174,53,116,72"/>
+<area shape="rect" id="Node000003" href="$d9/dd6/star__bus__onewire_8c.html#a0614bd985521b976c6780650032e24a1" title="Calculate CRC&#45;8 for data." alt="" coords="184,70,340,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="133,80,171,82,166,84,134,86"/>
+<area shape="rect" id="Node000004" href="$d9/dd6/star__bus__onewire_8c.html#a1962811d14103b4c8378203616cacd0c" title="Convert ROM to byte array." alt="" coords="186,120,338,161"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="115,94,179,114,174,116,115,99"/>
+</map>

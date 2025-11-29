@@ -108,7 +108,9 @@ void app_main(void)
   /* First create a GPIO bus for the HC-SR04 sensors */
   gpio_num_t hcsr04_pins[] = {GPIO_LEFT_TRIG, GPIO_LEFT_ECHO, GPIO_RIGHT_TRIG, GPIO_RIGHT_ECHO};
   star_bus_config_t* hcsr04_gpio_bus =
-      star_bus_config_create_gpio(s_HCSR04_TAG, hcsr04_pins, sizeof(hcsr04_pins) / sizeof(hcsr04_pins[0]));
+    star_bus_config_create_gpio(s_HCSR04_TAG,
+                                hcsr04_pins,
+                                sizeof(hcsr04_pins) / sizeof(hcsr04_pins[0]));
   if (hcsr04_gpio_bus == NULL) {
     ESP_LOGE(s_TAG, "Failed to create GPIO bus for HC-SR04");
     star_bus_manager_deinit(&bus_manager);
@@ -146,7 +148,7 @@ void app_main(void)
                                                           PCA9685_DEFAULT_ADDR,
                                                           GPIO_PCA9685_I2C_SDA,
                                                           GPIO_PCA9685_I2C_SCL,
-                                                         PCA9685_I2C_FREQUENCY);
+                                                          PCA9685_I2C_FREQUENCY);
   star_bus_manager_add_bus(&bus_manager, pwm_bus);
 
   pca9685_handle_t pca9685_handle;
