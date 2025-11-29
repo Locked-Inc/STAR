@@ -1,0 +1,11 @@
+<map id="star_bus_i2c_peripheral_enable" name="star_bus_i2c_peripheral_enable">
+<area shape="rect" id="Node000001" title="Enable I2C peripheral mode on a bus." alt="" coords="5,47,164,88"/>
+<area shape="rect" id="Node000002" href="$d5/d06/star__bus__i2c__peripheral_8c.html#a501a3f667c641db510d4f13247860593" title="Get peripheral state for a bus." alt="" coords="238,5,376,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="163,47,234,34,229,36,165,53"/>
+<area shape="rect" id="Node000003" href="$d5/d06/star__bus__i2c__peripheral_8c.html#a2bba9f39f875b46d7a48f392ada097d3" title="Get I2C port number from bus name." alt="" coords="237,55,378,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="164,65,224,67,219,68,164,70"/>
+<area shape="rect" id="Node000004" href="$d5/d06/star__bus__i2c__peripheral_8c.html#ac5942152ec46a7a84a7521988e7a1765" title="Start peripheral task." alt="" coords="212,104,403,130"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="164,82,234,100,229,101,164,88"/>
+<area shape="rect" id="Node000005" href="$d5/d06/star__bus__i2c__peripheral_8c.html#aecef533631b582fe65727dd24a62c8cf" title="Peripheral task &#45; handles I2C slave communication." alt="" coords="451,104,609,130"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="403,114,438,117,433,117,403,119"/>
+</map>

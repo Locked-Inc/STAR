@@ -1,0 +1,25 @@
+var structimu__10dof__handle =
+[
+    [ "bmp280_addr", "df/d20/structimu__10dof__handle.html#a1b190a77fe177b30dd5b29e349d443a5", null ],
+    [ "bno055_addr", "df/d20/structimu__10dof__handle.html#af4acdf9da82b729b1c63e7df50b5c23a", null ],
+    [ "bus_name", "df/d20/structimu__10dof__handle.html#a11edb59f3d8c6b02b409081143ae1044", null ],
+    [ "dig_P1", "df/d20/structimu__10dof__handle.html#a59f4d26efc2f10b349469c1c87de827f", null ],
+    [ "dig_P2", "df/d20/structimu__10dof__handle.html#aaca68afe527c94480c8e584995a7eac0", null ],
+    [ "dig_P3", "df/d20/structimu__10dof__handle.html#a773f4e3f44e4d3bb831c68dae94b10cf", null ],
+    [ "dig_P4", "df/d20/structimu__10dof__handle.html#ab2fac855a51e2f77cc2d2d0c7b54248d", null ],
+    [ "dig_P5", "df/d20/structimu__10dof__handle.html#a6442013f10893c78eab1d86439c05252", null ],
+    [ "dig_P6", "df/d20/structimu__10dof__handle.html#a0f178ff419097f0a08515d1af405c4ed", null ],
+    [ "dig_P7", "df/d20/structimu__10dof__handle.html#a7b18c32f161495e6f0b88e44b3524064", null ],
+    [ "dig_P8", "df/d20/structimu__10dof__handle.html#af16acb8abfc0ffa9e13ca99ea8961fac", null ],
+    [ "dig_P9", "df/d20/structimu__10dof__handle.html#ab26686e1ddcebc5d23b6ec73425b5c91", null ],
+    [ "dig_T1", "df/d20/structimu__10dof__handle.html#a2ea80e56f1bd39ff688a32706f7e5425", null ],
+    [ "dig_T2", "df/d20/structimu__10dof__handle.html#aa7d6ace263ba3a345303f8be9c48d2ae", null ],
+    [ "dig_T3", "df/d20/structimu__10dof__handle.html#aca35c9b89c8a47816e0ba9620523cac9", null ],
+    [ "error_iface", "df/d20/structimu__10dof__handle.html#aefc101af3f57a741cc32d615057121c2", null ],
+    [ "initialized", "df/d20/structimu__10dof__handle.html#a43ba6b7538033a33475554bdc08311fd", null ],
+    [ "manager", "df/d20/structimu__10dof__handle.html#a6ea5ccae5ed88097b6105e4782890755", null ],
+    [ "mutex", "df/d20/structimu__10dof__handle.html#aa59246aab19d36c965df1e1d72b0333e", null ],
+    [ "operation_mode", "df/d20/structimu__10dof__handle.html#a178ddd50627c27eb158331f15bb34677", null ],
+    [ "owns_error_handler", "df/d20/structimu__10dof__handle.html#a54d28e57b6c8ee5b6ca5d8bbbd7ef26a", null ],
+    [ "t_fine", "df/d20/structimu__10dof__handle.html#ae7700c9fa0c565f95f0d3c6c4b68f202", null ]
+];

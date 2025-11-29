@@ -19,24 +19,25 @@ static const char* s_TAG = "BusI2C";
 
 /* --- Private Function Prototypes (Default Ops) --- */
 
-static esp_err_t priv_star_bus_i2c_write(const star_bus_config_t* config,
-                                         const uint8_t*           data,
-                                         size_t                   len,
-                                         uint8_t                  reg_addr,
-                                         size_t*                  bytes_written);
+static esp_err_t internal_star_bus_i2c_write(const star_bus_config_t* config,
+                                             const uint8_t*           data,
+                                             size_t                   len,
+                                             uint8_t                  reg_addr,
+                                             size_t*                  bytes_written);
 
-static esp_err_t priv_star_bus_i2c_read(const star_bus_config_t* config,
-                                        uint8_t*                 data,
-                                        size_t                   len,
-                                        uint8_t                  reg_addr,
-                                        size_t*                  bytes_read);
-
-static esp_err_t priv_star_bus_i2c_write_command(const star_bus_config_t* config, uint8_t command);
-
-static esp_err_t priv_star_bus_i2c_read_raw(const star_bus_config_t* config,
+static esp_err_t internal_star_bus_i2c_read(const star_bus_config_t* config,
                                             uint8_t*                 data,
                                             size_t                   len,
+                                            uint8_t                  reg_addr,
                                             size_t*                  bytes_read);
+
+static esp_err_t internal_star_bus_i2c_write_command(const star_bus_config_t* config,
+                                                     uint8_t                  command);
+
+static esp_err_t internal_star_bus_i2c_read_raw(const star_bus_config_t* config,
+                                                uint8_t*                 data,
+                                                size_t                   len,
+                                                size_t*                  bytes_read);
 
 /**
  * @brief Helper: Execute I2C command with retry logic
@@ -51,10 +52,10 @@ static esp_err_t priv_star_bus_i2c_read_raw(const star_bus_config_t* config,
  * @param[in] operation_name Name of operation for logging
  * @return esp_err_t Final result after retries
  */
-static esp_err_t priv_i2c_execute_with_retry(const star_bus_config_t* config,
-                                             i2c_port_t               port,
-                                             i2c_cmd_handle_t         cmd,
-                                             const char*              operation_name);
+static esp_err_t internal_i2c_execute_with_retry(const star_bus_config_t* config,
+                                                 i2c_port_t               port,
+                                                 i2c_cmd_handle_t         cmd,
+                                                 const char*              operation_name);
 
 /* --- Public Functions --- */
 
@@ -64,10 +65,10 @@ void star_bus_i2c_init_default_ops(star_i2c_ops_t* ops)
     ESP_LOGE(s_TAG, "Cannot initialize NULL ops pointer");
     return;
   }
-  ops->write         = priv_star_bus_i2c_write;
-  ops->read          = priv_star_bus_i2c_read;
-  ops->write_command = priv_star_bus_i2c_write_command;
-  ops->read_raw      = priv_star_bus_i2c_read_raw;
+  ops->write         = internal_star_bus_i2c_write;
+  ops->read          = internal_star_bus_i2c_read;
+  ops->write_command = internal_star_bus_i2c_write_command;
+  ops->read_raw      = internal_star_bus_i2c_read_raw;
   ESP_LOGD(s_TAG, "Default I2C operations initialized");
 }
 
@@ -209,10 +210,10 @@ esp_err_t star_bus_i2c_read_raw(const star_bus_manager_t* manager,
  * Note: Retry logic has been removed as error handling is now done at the manager level
  * through the injected error_iface. This function performs a single attempt.
  */
-static esp_err_t priv_i2c_execute_with_retry(const star_bus_config_t* config,
-                                             i2c_port_t               port,
-                                             i2c_cmd_handle_t         cmd,
-                                             const char*              operation_name)
+static esp_err_t internal_i2c_execute_with_retry(const star_bus_config_t* config,
+                                                 i2c_port_t               port,
+                                                 i2c_cmd_handle_t         cmd,
+                                                 const char*              operation_name)
 {
   esp_err_t ret = i2c_master_cmd_begin(port, cmd, pdMS_TO_TICKS(I2C_TIMEOUT_MS));
 
@@ -223,11 +224,11 @@ static esp_err_t priv_i2c_execute_with_retry(const star_bus_config_t* config,
   return ret;
 }
 
-static esp_err_t priv_star_bus_i2c_write(const star_bus_config_t* config,
-                                         const uint8_t*           data,
-                                         size_t                   len,
-                                         uint8_t                  reg_addr,
-                                         size_t*                  bytes_written)
+static esp_err_t internal_star_bus_i2c_write(const star_bus_config_t* config,
+                                             const uint8_t*           data,
+                                             size_t                   len,
+                                             uint8_t                  reg_addr,
+                                             size_t*                  bytes_written)
 {
   /* Basic validation (config, data assumed non-NULL, len > 0 by caller) */
   ESP_RETURN_ON_FALSE(config->initialized,
@@ -292,7 +293,7 @@ static esp_err_t priv_star_bus_i2c_write(const star_bus_config_t* config,
                     esp_err_to_name(ret));
 
   /* Execute with retry logic */
-  ret = priv_i2c_execute_with_retry(config, port, cmd, "Write");
+  ret = internal_i2c_execute_with_retry(config, port, cmd, "Write");
   ESP_GOTO_ON_ERROR(ret, write_fail, s_TAG, "Write '%s': CMD failed after retries", config->name);
 
   /* Success path */
@@ -340,11 +341,11 @@ write_fail:
   return ret;
 }
 
-static esp_err_t priv_star_bus_i2c_read(const star_bus_config_t* config,
-                                        uint8_t*                 data,
-                                        size_t                   len,
-                                        uint8_t                  reg_addr,
-                                        size_t*                  bytes_read)
+static esp_err_t internal_star_bus_i2c_read(const star_bus_config_t* config,
+                                            uint8_t*                 data,
+                                            size_t                   len,
+                                            uint8_t                  reg_addr,
+                                            size_t*                  bytes_read)
 {
   /* Basic validation (config, data assumed non-NULL, len > 0 by caller) */
   ESP_RETURN_ON_FALSE(config->initialized,
@@ -436,7 +437,7 @@ static esp_err_t priv_star_bus_i2c_read(const star_bus_config_t* config,
                     esp_err_to_name(ret));
 
   /* Execute with retry logic */
-  ret = priv_i2c_execute_with_retry(config, port, cmd, "Read");
+  ret = internal_i2c_execute_with_retry(config, port, cmd, "Read");
   ESP_GOTO_ON_ERROR(ret, read_fail, s_TAG, "Read '%s': CMD failed after retries", config->name);
 
   /* Success path */
@@ -482,7 +483,8 @@ read_fail:
   return ret;
 }
 
-static esp_err_t priv_star_bus_i2c_write_command(const star_bus_config_t* config, uint8_t command)
+static esp_err_t internal_star_bus_i2c_write_command(const star_bus_config_t* config,
+                                                     uint8_t                  command)
 {
   /* Basic validation (config assumed non-NULL by caller) */
   ESP_RETURN_ON_FALSE(config->initialized,
@@ -538,7 +540,7 @@ static esp_err_t priv_star_bus_i2c_write_command(const star_bus_config_t* config
                     esp_err_to_name(ret));
 
   /* Execute with retry logic */
-  ret = priv_i2c_execute_with_retry(config, port, cmd, "WriteCmd");
+  ret = internal_i2c_execute_with_retry(config, port, cmd, "WriteCmd");
   ESP_GOTO_ON_ERROR(ret,
                     write_cmd_fail,
                     s_TAG,
@@ -586,10 +588,10 @@ write_cmd_fail:
   return ret;
 }
 
-static esp_err_t priv_star_bus_i2c_read_raw(const star_bus_config_t* config,
-                                            uint8_t*                 data,
-                                            size_t                   len,
-                                            size_t*                  bytes_read)
+static esp_err_t internal_star_bus_i2c_read_raw(const star_bus_config_t* config,
+                                                uint8_t*                 data,
+                                                size_t                   len,
+                                                size_t*                  bytes_read)
 {
   /* Basic validation (config, data assumed non-NULL, len > 0 by caller) */
   ESP_RETURN_ON_FALSE(config->initialized,
@@ -656,7 +658,7 @@ static esp_err_t priv_star_bus_i2c_read_raw(const star_bus_config_t* config,
                     esp_err_to_name(ret));
 
   /* Execute with retry logic */
-  ret = priv_i2c_execute_with_retry(config, port, cmd, "ReadRaw");
+  ret = internal_i2c_execute_with_retry(config, port, cmd, "ReadRaw");
   ESP_GOTO_ON_ERROR(ret,
                     read_raw_fail,
                     s_TAG,

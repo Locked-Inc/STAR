@@ -18,21 +18,21 @@ static const char* s_TAG = "BusSPIPeripheral";
 
 /* --- Private Function Prototypes (Default Ops) --- */
 
-static esp_err_t priv_star_bus_spi_peripheral_receive(const star_bus_config_t* config,
-                                                      void*                    rx_buffer,
-                                                      size_t                   len,
-                                                      uint32_t                 timeout_ms);
+static esp_err_t internal_star_bus_spi_peripheral_receive(const star_bus_config_t* config,
+                                                          void*                    rx_buffer,
+                                                          size_t                   len,
+                                                          uint32_t                 timeout_ms);
 
-static esp_err_t priv_star_bus_spi_peripheral_transmit(const star_bus_config_t* config,
-                                                       const void*              tx_buffer,
-                                                       size_t                   len,
-                                                       uint32_t                 timeout_ms);
+static esp_err_t internal_star_bus_spi_peripheral_transmit(const star_bus_config_t* config,
+                                                           const void*              tx_buffer,
+                                                           size_t                   len,
+                                                           uint32_t                 timeout_ms);
 
-static esp_err_t priv_star_bus_spi_peripheral_transceive(const star_bus_config_t* config,
-                                                         const void*              tx_buffer,
-                                                         void*                    rx_buffer,
-                                                         size_t                   len,
-                                                         uint32_t                 timeout_ms);
+static esp_err_t internal_star_bus_spi_peripheral_transceive(const star_bus_config_t* config,
+                                                             const void*              tx_buffer,
+                                                             void*                    rx_buffer,
+                                                             size_t                   len,
+                                                             uint32_t                 timeout_ms);
 
 /* --- Public Functions --- */
 
@@ -45,9 +45,9 @@ void star_bus_spi_peripheral_init_default_ops(star_spi_ops_t* ops)
 
   /* Note: SPI peripheral uses different operations than controller mode
    * We reuse the same function pointers but with different implementations */
-  ops->transmit = (star_spi_transmit_fn_t)priv_star_bus_spi_peripheral_transmit;
-  ops->receive  = (star_spi_receive_fn_t)priv_star_bus_spi_peripheral_receive;
-  ops->transfer = (star_spi_transfer_fn_t)priv_star_bus_spi_peripheral_transceive;
+  ops->transmit = (star_spi_transmit_fn_t)internal_star_bus_spi_peripheral_transmit;
+  ops->receive  = (star_spi_receive_fn_t)internal_star_bus_spi_peripheral_receive;
+  ops->transfer = (star_spi_transfer_fn_t)internal_star_bus_spi_peripheral_transceive;
 
   ESP_LOGD(s_TAG, "Default SPI peripheral operations initialized");
 }
@@ -77,7 +77,7 @@ esp_err_t star_bus_spi_peripheral_receive(const star_bus_manager_t* manager,
                       "No receive op for '%s'",
                       name);
 
-  return priv_star_bus_spi_peripheral_receive(bus_config, rx_buffer, len, timeout_ms);
+  return internal_star_bus_spi_peripheral_receive(bus_config, rx_buffer, len, timeout_ms);
 }
 
 esp_err_t star_bus_spi_peripheral_transmit(const star_bus_manager_t* manager,
@@ -105,7 +105,7 @@ esp_err_t star_bus_spi_peripheral_transmit(const star_bus_manager_t* manager,
                       "No transmit op for '%s'",
                       name);
 
-  return priv_star_bus_spi_peripheral_transmit(bus_config, tx_buffer, len, timeout_ms);
+  return internal_star_bus_spi_peripheral_transmit(bus_config, tx_buffer, len, timeout_ms);
 }
 
 esp_err_t star_bus_spi_peripheral_transceive(const star_bus_manager_t* manager,
@@ -135,15 +135,19 @@ esp_err_t star_bus_spi_peripheral_transceive(const star_bus_manager_t* manager,
                       "No transfer op for '%s'",
                       name);
 
-  return priv_star_bus_spi_peripheral_transceive(bus_config, tx_buffer, rx_buffer, len, timeout_ms);
+  return internal_star_bus_spi_peripheral_transceive(bus_config,
+                                                     tx_buffer,
+                                                     rx_buffer,
+                                                     len,
+                                                     timeout_ms);
 }
 
 /* --- Private Functions (Default Ops Implementations) --- */
 
-static esp_err_t priv_star_bus_spi_peripheral_receive(const star_bus_config_t* config,
-                                                      void*                    rx_buffer,
-                                                      size_t                   len,
-                                                      uint32_t                 timeout_ms)
+static esp_err_t internal_star_bus_spi_peripheral_receive(const star_bus_config_t* config,
+                                                          void*                    rx_buffer,
+                                                          size_t                   len,
+                                                          uint32_t                 timeout_ms)
 {
   ESP_RETURN_ON_FALSE(config->initialized,
                       ESP_ERR_INVALID_STATE,
@@ -199,10 +203,10 @@ static esp_err_t priv_star_bus_spi_peripheral_receive(const star_bus_config_t* c
   return ESP_OK;
 }
 
-static esp_err_t priv_star_bus_spi_peripheral_transmit(const star_bus_config_t* config,
-                                                       const void*              tx_buffer,
-                                                       size_t                   len,
-                                                       uint32_t                 timeout_ms)
+static esp_err_t internal_star_bus_spi_peripheral_transmit(const star_bus_config_t* config,
+                                                           const void*              tx_buffer,
+                                                           size_t                   len,
+                                                           uint32_t                 timeout_ms)
 {
   ESP_RETURN_ON_FALSE(config->initialized,
                       ESP_ERR_INVALID_STATE,
@@ -258,11 +262,11 @@ static esp_err_t priv_star_bus_spi_peripheral_transmit(const star_bus_config_t* 
   return ESP_OK;
 }
 
-static esp_err_t priv_star_bus_spi_peripheral_transceive(const star_bus_config_t* config,
-                                                         const void*              tx_buffer,
-                                                         void*                    rx_buffer,
-                                                         size_t                   len,
-                                                         uint32_t                 timeout_ms)
+static esp_err_t internal_star_bus_spi_peripheral_transceive(const star_bus_config_t* config,
+                                                             const void*              tx_buffer,
+                                                             void*                    rx_buffer,
+                                                             size_t                   len,
+                                                             uint32_t                 timeout_ms)
 {
   ESP_RETURN_ON_FALSE(config->initialized,
                       ESP_ERR_INVALID_STATE,

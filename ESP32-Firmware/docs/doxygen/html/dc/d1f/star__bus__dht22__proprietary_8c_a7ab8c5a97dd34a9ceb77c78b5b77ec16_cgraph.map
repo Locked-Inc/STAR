@@ -1,0 +1,9 @@
+<map id="star_bus_dht22_get_stats" name="star_bus_dht22_get_stats">
+<area shape="rect" id="Node000001" title="Get DHT22 bus statistics." alt="" coords="5,39,141,79"/>
+<area shape="rect" id="Node000002" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#ad84a1750c76d3cacd25aa7711b5fbdb5" title="Get DHT22 state for a bus (thread&#45;safe)." alt="" coords="189,46,303,72"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="141,56,176,58,171,60,141,62"/>
+<area shape="rect" id="Node000003" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a15fbe86b35253f8620cdba249493f6fa" title="Get DHT22 state for a bus (must be called with mutex held)." alt="" coords="351,5,478,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="303,45,339,41,333,42,304,50"/>
+<area shape="rect" id="Node000004" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a9cd874b0290191f0e8a2200e9a727f58" title="Initialize DHT22 global mutex (thread&#45;safe)." alt="" coords="352,71,478,111"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="304,67,339,76,333,76,303,72"/>
+</map>

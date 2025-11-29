@@ -1,0 +1,28 @@
+var structasync__operation =
+[
+    [ "addr", "d1/d8d/structasync__operation.html#ac81045880d67e580c7526023b32163f9", null ],
+    [ "bus_name", "d1/d8d/structasync__operation.html#a5ffcc6cc5988c538d89db36ec419d0c1", null ],
+    [ "callback", "d1/d8d/structasync__operation.html#ac763da1afe81c448a464f6f517115c35", null ],
+    [ "command", "d1/d8d/structasync__operation.html#ac1960fb73b7425361379a9e01fff6d17", null ],
+    [ "complete_bit", "d1/d8d/structasync__operation.html#abb0abe83b9cc7f40806eba7d08f01e94", null ],
+    [ "data", "d1/d8d/structasync__operation.html#a868b443edb0020ccf11a7855a243628b", null ],
+    [ "error_bit", "d1/d8d/structasync__operation.html#ac557d1974d0be54eb5314de45e95a8b9", null ],
+    [ "event_group", "d1/d8d/structasync__operation.html#a9a22f45bff7801d37502a6d2a8b03060", null ],
+    [ "i2c", "d1/d8d/structasync__operation.html#a4ba14d54174b15194fb43fb840431673", null ],
+    [ "length", "d1/d8d/structasync__operation.html#a04bf2cdc533d8674c8b6cfc4800ff396", null ],
+    [ "manager", "d1/d8d/structasync__operation.html#a2bca3c3df78253f037081521a2628628", null ],
+    [ "next", "d1/d8d/structasync__operation.html#ae995c315048dbd1649b1b234f59da423", null ],
+    [ "params", "d1/d8d/structasync__operation.html#a285a862309a13be77ac6fa469b8c763d", null ],
+    [ "priority", "d1/d8d/structasync__operation.html#aa8ee87b6714775693ad14463203a9b0b", null ],
+    [ "result", "d1/d8d/structasync__operation.html#a278ef6b5cb9a63ed3043d6dc10298eb1", null ],
+    [ "rx_data", "d1/d8d/structasync__operation.html#a7394c66d8678e5d6cc116fbea21b93a9", null ],
+    [ "smbus", "d1/d8d/structasync__operation.html#a5e727f924b7112dedcd52d246955ce70", null ],
+    [ "spi", "d1/d8d/structasync__operation.html#a7f96d2a112a1a09e31131a3d8382b900", null ],
+    [ "start_tick", "d1/d8d/structasync__operation.html#a5789dec0733674288bf67ea44f58777f", null ],
+    [ "status", "d1/d8d/structasync__operation.html#ae0c57bf95248f4409184ae3c81ce17b1", null ],
+    [ "timeout_ms", "d1/d8d/structasync__operation.html#a36760b22926a77417807a186180b6171", null ],
+    [ "tx_data", "d1/d8d/structasync__operation.html#a111fb9b9fed0bce3ceea3057949fc6b7", null ],
+    [ "type", "d1/d8d/structasync__operation.html#a5cbddb6e2ea6def9458d4ec3b75d1f75", null ],
+    [ "user_context", "d1/d8d/structasync__operation.html#a7e20a1050ddb84d78fb47807efc418c3", null ],
+    [ "wait_semaphore", "d1/d8d/structasync__operation.html#add6000b2b739150f72fe00596cf1edf5", null ]
+];

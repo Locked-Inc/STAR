@@ -1,0 +1,7 @@
+<map id="error_handler_create_default" name="error_handler_create_default">
+<area shape="rect" id="Node000001" title="Create and initialize a default error handler with sensible defaults." alt="" coords="5,5,145,46"/>
+<area shape="rect" id="Node000002" href="$d7/d82/star__error__handler_8c.html#a4fbf7f5d1c862bd91f3ece2812b45b03" title="Create and initialize an error handler with custom configuration." alt="" coords="193,5,332,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="145,23,180,25,175,26,145,28"/>
+<area shape="rect" id="Node000003" href="$d7/d82/star__error__handler_8c.html#a331853a63aa2729d5a2a368c72aff6f2" title="Initialize an error handler." alt="" coords="380,13,500,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="332,23,367,26,362,26,332,28"/>
+</map>

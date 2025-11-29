@@ -1,0 +1,7 @@
+<map id="star_sensor_imu_10dof_get_calibration" name="star_sensor_imu_10dof_get_calibration">
+<area shape="rect" id="Node000001" title="Get calibration status." alt="" coords="242,35,398,75"/>
+<area shape="rect" id="Node000002" href="$d1/dfc/star__sensor__bno055__bmp280_8c.html#a990d4e7c3b3283d36a148ec59dbd85cf" title="Check if system is fully calibrated." alt="" coords="21,5,178,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="223,43,178,39,178,33,229,42"/>
+<area shape="rect" id="Node000003" href="$d1/dfc/star__sensor__bno055__bmp280_8c.html#afc8770c3ef4fdfe8ab3f18b3e3b5bd46" title="Read all sensor data." alt="" coords="5,70,194,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="224,67,194,74,194,68,229,67"/>
+</map>

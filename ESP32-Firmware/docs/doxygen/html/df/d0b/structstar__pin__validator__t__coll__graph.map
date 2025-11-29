@@ -1,0 +1,5 @@
+<map id="star_pin_validator_t" name="star_pin_validator_t">
+<area shape="rect" id="Node000001" title="The main validator containing all pin usage information." alt="" coords="5,102,140,128"/>
+<area shape="rect" id="Node000002" href="$d4/dd5/structstar__pin__info__t.html" title="Info for each GPIO pin." alt="" coords="19,5,126,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="75,45,75,102,70,101,70,48"/>
+</map>

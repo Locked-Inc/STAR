@@ -1,0 +1,12 @@
+<map id="star_smbus_block_read" name="star_smbus_block_read">
+<area shape="rect" id="Node000001" title="SMBus Block Read." alt="" coords="5,70,165,96"/>
+<area shape="rect" id="Node000002" href="$d3/df5/star__bus__smbus_8c.html#a028e8362b8c772d39dee59e24c15439b" title="Validate common parameters for SMBus operations." alt="" coords="213,5,374,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="134,67,205,49,200,52,135,72"/>
+<area shape="rect" id="Node000003" href="$dd/d1a/star__bus__i2c_8c.html#a6b73d11538cb25e07de224584c54ec49" title="Read raw bytes from an I2C device specified by a bus configuration. Does not send a register address ..." alt="" coords="216,70,371,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="165,80,203,82,198,84,166,86"/>
+<area shape="rect" id="Node000005" href="$dd/d1a/star__bus__i2c_8c.html#ab5fd7179899b9f4229f103484481be3e" title="Write a single command byte to an I2C device specified by a bus configuration. No register address or..." alt="" coords="228,120,358,161"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="135,94,216,117,211,119,134,99"/>
+<area shape="rect" id="Node000004" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="422,100,606,125"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="372,91,409,98,404,98,372,96"/>
+<area shape="poly" id="edge5_Node000005_Node000004" title=" " alt="" coords="359,129,404,126,409,126,359,135"/>
+</map>

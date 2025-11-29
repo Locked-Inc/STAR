@@ -1,0 +1,7 @@
+<map id="star_bus_debug_print_bus_info" name="star_bus_debug_print_bus_info">
+<area shape="rect" id="Node000001" title="Print detailed information about a specific bus." alt="" coords="5,23,151,64"/>
+<area shape="rect" id="Node000002" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="199,5,383,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="151,32,185,30,180,32,152,37"/>
+<area shape="rect" id="Node000003" href="$d7/d27/star__bus__types_8c.html#afa900f53de82aaa97ea08d9b3d5a4a6d" title="Convert bus type to string." alt="" coords="211,55,371,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="151,49,198,56,192,57,151,54"/>
+</map>

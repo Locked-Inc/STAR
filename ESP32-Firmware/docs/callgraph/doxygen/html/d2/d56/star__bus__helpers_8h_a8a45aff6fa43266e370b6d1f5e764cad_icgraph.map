@@ -1,0 +1,5 @@
+<map id="star_bus_config_i2c_fast" name="star_bus_config_i2c_fast">
+<area shape="rect" id="Node000001" title="Create I2C config for fast mode (400 kHz)." alt="" coords="226,5,392,31"/>
+<area shape="rect" id="Node000002" href="$d1/d50/star__bus__helpers_8c.html#a88cdd0738dfec53d37d49f977c9d989c" title="Quick setup: I2C master with automatic defaults." alt="" coords="5,5,178,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="207,18,178,21,178,16,212,18"/>
+</map>

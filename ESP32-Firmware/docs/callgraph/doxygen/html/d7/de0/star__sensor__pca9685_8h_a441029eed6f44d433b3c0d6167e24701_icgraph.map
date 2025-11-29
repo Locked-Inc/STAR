@@ -1,0 +1,5 @@
+<map id="star_sensor_pca9685_prescale_to_freq" name="star_sensor_pca9685_prescale_to_freq">
+<area shape="rect" id="Node000001" title="Convert prescale value to frequency." alt="" coords="199,5,344,46"/>
+<area shape="rect" id="Node000002" href="$d3/df7/star__sensor__pca9685_8c.html#a360aec2b034221ff3286cdf344b2e66e" title="Get current PWM frequency." alt="" coords="5,5,151,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="181,26,151,28,151,23,186,25"/>
+</map>

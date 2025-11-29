@@ -23,11 +23,11 @@ static const char* s_TAG = "Bus Manager";
 /**
  * @brief Helper to register a single pin via the interface
  */
-static esp_err_t priv_register_bus_pin(star_pin_interface_t* pin_iface,
-                                       gpio_num_t            pin,
-                                       const char*           bus_name,
-                                       const char*           usage,
-                                       bool                  can_be_shared)
+static esp_err_t internal_register_bus_pin(star_pin_interface_t* pin_iface,
+                                           gpio_num_t            pin,
+                                           const char*           bus_name,
+                                           const char*           usage,
+                                           bool                  can_be_shared)
 {
   if (pin < 0 || pin >= GPIO_NUM_MAX) {
     return ESP_OK; /* Not an error, pin is not used */
@@ -47,10 +47,10 @@ static esp_err_t priv_register_bus_pin(star_pin_interface_t* pin_iface,
 /**
  * @brief Helper to unregister a single pin via the interface
  */
-static esp_err_t priv_unregister_bus_pin(star_pin_interface_t* pin_iface,
-                                         gpio_num_t            pin,
-                                         const char*           bus_name,
-                                         const char*           usage)
+static esp_err_t internal_unregister_bus_pin(star_pin_interface_t* pin_iface,
+                                             gpio_num_t            pin,
+                                             const char*           bus_name,
+                                             const char*           usage)
 {
   if (pin < 0 || pin >= GPIO_NUM_MAX) {
     return ESP_OK; /* Not an error, pin was not used */
@@ -70,8 +70,8 @@ static esp_err_t priv_unregister_bus_pin(star_pin_interface_t* pin_iface,
 /**
  * @brief Register all pins for a single bus configuration
  */
-static esp_err_t priv_register_config_pins(star_pin_interface_t*    pin_iface,
-                                           const star_bus_config_t* config)
+static esp_err_t internal_register_config_pins(star_pin_interface_t*    pin_iface,
+                                               const star_bus_config_t* config)
 {
   if (!config || !config->name) {
     return ESP_ERR_INVALID_ARG;
@@ -82,20 +82,20 @@ static esp_err_t priv_register_config_pins(star_pin_interface_t*    pin_iface,
 
   switch (config->type) {
     case k_star_bus_type_i2c:
-      ret = priv_register_bus_pin(pin_iface,
-                                  config->proto.i2c.config.sda_io_num,
-                                  config->name,
-                                  "I2C SDA",
-                                  true); /* I2C pins can be shared */
+      ret = internal_register_bus_pin(pin_iface,
+                                      config->proto.i2c.config.sda_io_num,
+                                      config->name,
+                                      "I2C SDA",
+                                      true); /* I2C pins can be shared */
       if (ret != ESP_OK && first_error == ESP_OK) {
         first_error = ret;
       }
 
-      ret = priv_register_bus_pin(pin_iface,
-                                  config->proto.i2c.config.scl_io_num,
-                                  config->name,
-                                  "I2C SCL",
-                                  true); /* I2C pins can be shared */
+      ret = internal_register_bus_pin(pin_iface,
+                                      config->proto.i2c.config.scl_io_num,
+                                      config->name,
+                                      "I2C SCL",
+                                      true); /* I2C pins can be shared */
       if (ret != ESP_OK && first_error == ESP_OK) {
         first_error = ret;
       }
@@ -103,38 +103,38 @@ static esp_err_t priv_register_config_pins(star_pin_interface_t*    pin_iface,
 
     case k_star_bus_type_spi:
       /* SPI bus pins (shared across devices on same host) */
-      ret = priv_register_bus_pin(pin_iface,
-                                  config->proto.spi.copi_io_num,
-                                  config->name,
-                                  "SPI COPI",
-                                  true);
+      ret = internal_register_bus_pin(pin_iface,
+                                      config->proto.spi.copi_io_num,
+                                      config->name,
+                                      "SPI COPI",
+                                      true);
       if (ret != ESP_OK && first_error == ESP_OK) {
         first_error = ret;
       }
 
-      ret = priv_register_bus_pin(pin_iface,
-                                  config->proto.spi.cipo_io_num,
-                                  config->name,
-                                  "SPI CIPO",
-                                  true);
+      ret = internal_register_bus_pin(pin_iface,
+                                      config->proto.spi.cipo_io_num,
+                                      config->name,
+                                      "SPI CIPO",
+                                      true);
       if (ret != ESP_OK && first_error == ESP_OK) {
         first_error = ret;
       }
 
-      ret = priv_register_bus_pin(pin_iface,
-                                  config->proto.spi.sclk_io_num,
-                                  config->name,
-                                  "SPI SCLK",
-                                  true);
+      ret = internal_register_bus_pin(pin_iface,
+                                      config->proto.spi.sclk_io_num,
+                                      config->name,
+                                      "SPI SCLK",
+                                      true);
       if (ret != ESP_OK && first_error == ESP_OK)
         first_error = ret;
 
       /* SPI CS pin is device-specific and NOT shared */
-      ret = priv_register_bus_pin(pin_iface,
-                                  config->proto.spi.dev_cfg.spics_io_num,
-                                  config->name,
-                                  "SPI CS",
-                                  false); /* CS is not shareable */
+      ret = internal_register_bus_pin(pin_iface,
+                                      config->proto.spi.dev_cfg.spics_io_num,
+                                      config->name,
+                                      "SPI CS",
+                                      false); /* CS is not shareable */
       if (ret != ESP_OK && first_error == ESP_OK)
         first_error = ret;
       break;
@@ -144,11 +144,11 @@ static esp_err_t priv_register_config_pins(star_pin_interface_t*    pin_iface,
       for (uint8_t i = 0; i < config->proto.gpio.pin_count; ++i) {
         char usage[16];
         snprintf(usage, sizeof(usage), "GPIO[%d]", i);
-        ret = priv_register_bus_pin(pin_iface,
-                                    config->proto.gpio.pins[i],
-                                    config->name,
-                                    usage,
-                                    false); /* GPIO pins are NOT shareable */
+        ret = internal_register_bus_pin(pin_iface,
+                                        config->proto.gpio.pins[i],
+                                        config->name,
+                                        usage,
+                                        false); /* GPIO pins are NOT shareable */
         if (ret != ESP_OK && first_error == ESP_OK) {
           first_error = ret;
         }
@@ -166,8 +166,8 @@ static esp_err_t priv_register_config_pins(star_pin_interface_t*    pin_iface,
 /**
  * @brief Unregister all pins for a single bus configuration
  */
-static esp_err_t priv_unregister_config_pins(star_pin_interface_t*    pin_iface,
-                                             const star_bus_config_t* config)
+static esp_err_t internal_unregister_config_pins(star_pin_interface_t*    pin_iface,
+                                                 const star_bus_config_t* config)
 {
   if (!config || !config->name) {
     return ESP_ERR_INVALID_ARG;
@@ -178,41 +178,47 @@ static esp_err_t priv_unregister_config_pins(star_pin_interface_t*    pin_iface,
 
   switch (config->type) {
     case k_star_bus_type_i2c:
-      ret = priv_unregister_bus_pin(pin_iface,
-                                    config->proto.i2c.config.sda_io_num,
-                                    config->name,
-                                    "I2C SDA");
+      ret = internal_unregister_bus_pin(pin_iface,
+                                        config->proto.i2c.config.sda_io_num,
+                                        config->name,
+                                        "I2C SDA");
       if (ret != ESP_OK && first_error == ESP_OK)
         first_error = ret;
 
-      ret = priv_unregister_bus_pin(pin_iface,
-                                    config->proto.i2c.config.scl_io_num,
-                                    config->name,
-                                    "I2C SCL");
+      ret = internal_unregister_bus_pin(pin_iface,
+                                        config->proto.i2c.config.scl_io_num,
+                                        config->name,
+                                        "I2C SCL");
       if (ret != ESP_OK && first_error == ESP_OK)
         first_error = ret;
       break;
 
     case k_star_bus_type_spi:
-      ret =
-        priv_unregister_bus_pin(pin_iface, config->proto.spi.copi_io_num, config->name, "SPI COPI");
+      ret = internal_unregister_bus_pin(pin_iface,
+                                        config->proto.spi.copi_io_num,
+                                        config->name,
+                                        "SPI COPI");
       if (ret != ESP_OK && first_error == ESP_OK)
         first_error = ret;
 
-      ret =
-        priv_unregister_bus_pin(pin_iface, config->proto.spi.cipo_io_num, config->name, "SPI CIPO");
+      ret = internal_unregister_bus_pin(pin_iface,
+                                        config->proto.spi.cipo_io_num,
+                                        config->name,
+                                        "SPI CIPO");
       if (ret != ESP_OK && first_error == ESP_OK)
         first_error = ret;
 
-      ret =
-        priv_unregister_bus_pin(pin_iface, config->proto.spi.sclk_io_num, config->name, "SPI SCLK");
+      ret = internal_unregister_bus_pin(pin_iface,
+                                        config->proto.spi.sclk_io_num,
+                                        config->name,
+                                        "SPI SCLK");
       if (ret != ESP_OK && first_error == ESP_OK)
         first_error = ret;
 
-      ret = priv_unregister_bus_pin(pin_iface,
-                                    config->proto.spi.dev_cfg.spics_io_num,
-                                    config->name,
-                                    "SPI CS");
+      ret = internal_unregister_bus_pin(pin_iface,
+                                        config->proto.spi.dev_cfg.spics_io_num,
+                                        config->name,
+                                        "SPI CS");
       if (ret != ESP_OK && first_error == ESP_OK)
         first_error = ret;
       break;
@@ -221,7 +227,8 @@ static esp_err_t priv_unregister_config_pins(star_pin_interface_t*    pin_iface,
       for (uint8_t i = 0; i < config->proto.gpio.pin_count; ++i) {
         char usage[16];
         snprintf(usage, sizeof(usage), "GPIO[%d]", i);
-        ret = priv_unregister_bus_pin(pin_iface, config->proto.gpio.pins[i], config->name, usage);
+        ret =
+          internal_unregister_bus_pin(pin_iface, config->proto.gpio.pins[i], config->name, usage);
         if (ret != ESP_OK && first_error == ESP_OK) {
           first_error = ret;
         }
@@ -352,7 +359,7 @@ esp_err_t star_bus_manager_add_bus(star_bus_manager_t* manager, star_bus_config_
            star_bus_type_to_string(config->type));
 
   /* Register pins with pin validator */
-  esp_err_t pin_reg_ret = priv_register_config_pins(manager->pin_iface, config);
+  esp_err_t pin_reg_ret = internal_register_config_pins(manager->pin_iface, config);
   if (pin_reg_ret != ESP_OK) {
     ESP_LOGW(manager->tag,
              "Failed to register pins for bus '%s': %s (bus still added)",
@@ -513,7 +520,7 @@ esp_err_t star_bus_manager_remove_bus(star_bus_manager_t* manager, const char* n
   }
 
   /* Unregister pins while still holding mutex */
-  esp_err_t pin_unreg_ret = priv_unregister_config_pins(manager->pin_iface, to_remove);
+  esp_err_t pin_unreg_ret = internal_unregister_config_pins(manager->pin_iface, to_remove);
   if (pin_unreg_ret != ESP_OK) {
     ESP_LOGW(manager->tag,
              "Failed to unregister pins for bus '%s': %s",
@@ -590,7 +597,7 @@ esp_err_t star_bus_manager_deinit(star_bus_manager_t* manager)
     const char* current_name = curr->name ? curr->name : "UNKNOWN"; /* Save name for logging */
 
     /* Unregister pins before destroying */
-    esp_err_t pin_unreg_ret = priv_unregister_config_pins(manager->pin_iface, curr);
+    esp_err_t pin_unreg_ret = internal_unregister_config_pins(manager->pin_iface, curr);
     if (pin_unreg_ret != ESP_OK) {
       ESP_LOGW(manager->tag,
                "Failed to unregister pins for bus '%s' during deinit: %s",

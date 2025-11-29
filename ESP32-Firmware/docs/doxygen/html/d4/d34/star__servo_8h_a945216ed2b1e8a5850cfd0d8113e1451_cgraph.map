@@ -1,0 +1,5 @@
+<map id="star_servo_angle_to_pulse" name="star_servo_angle_to_pulse">
+<area shape="rect" id="Node000001" title="Calculate pulse width in microseconds from angle (0&#45;180 degrees)." alt="" coords="5,5,144,46"/>
+<area shape="rect" id="Node000002" href="$d3/d75/star__servo_8c.html#af22dfa33d50a10394cc1a93fef7dc3d6" title=" " alt="" coords="192,13,286,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="144,23,178,25,173,26,144,28"/>
+</map>

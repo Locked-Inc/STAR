@@ -1,0 +1,7 @@
+<map id="star_bus_bmp280_read_temperature" name="star_bus_bmp280_read_temperature">
+<area shape="rect" id="Node000001" title="Read temperature from BMP280." alt="" coords="5,5,162,46"/>
+<area shape="rect" id="Node000002" href="$dd/d1a/star__bus__i2c_8c.html#a2e9b9baf8a0f8d00a2080963a7efd62f" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="210,13,337,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="162,23,197,25,191,26,162,28"/>
+<area shape="rect" id="Node000003" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="385,13,569,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="337,23,372,26,367,26,337,28"/>
+</map>

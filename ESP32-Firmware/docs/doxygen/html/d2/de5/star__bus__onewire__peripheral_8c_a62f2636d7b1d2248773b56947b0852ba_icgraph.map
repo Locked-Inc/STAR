@@ -1,0 +1,7 @@
+<map id="calculate_rom_crc" name="calculate_rom_crc">
+<area shape="rect" id="Node000001" title="Calculate and set ROM CRC." alt="" coords="240,46,367,72"/>
+<area shape="rect" id="Node000002" href="$d2/de5/star__bus__onewire__peripheral_8c.html#a79f4d0af0a89c0a884ff815880c2d264" title="Enable 1&#45;Wire peripheral mode." alt="" coords="5,5,192,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="221,47,192,44,192,38,227,46"/>
+<area shape="rect" id="Node000003" href="$d2/de5/star__bus__onewire__peripheral_8c.html#a5522a701d9c094bfd3ec23e0d2500dcb" title="Update peripheral ROM code." alt="" coords="5,71,192,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="221,72,192,79,192,74,227,71"/>
+</map>

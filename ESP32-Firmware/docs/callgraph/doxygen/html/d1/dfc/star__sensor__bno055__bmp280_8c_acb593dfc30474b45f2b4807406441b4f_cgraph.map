@@ -1,0 +1,7 @@
+<map id="star_sensor_imu_10dof_deinit" name="star_sensor_imu_10dof_deinit">
+<area shape="rect" id="Node000001" title="Deinitialize 10&#45;DOF IMU." alt="" coords="5,5,162,46"/>
+<area shape="rect" id="Node000002" href="$d7/d82/star__error__handler_8c.html#a1632e40ebb7509611a0513c0e6bdbb46" title="Destroy an error handler created by error_handler_create_default() or error_handler_create_custom()." alt="" coords="210,5,356,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="162,23,196,25,191,26,162,28"/>
+<area shape="rect" id="Node000003" href="$d7/d82/star__error__handler_8c.html#a3a7dedd3275ece0e7f6029a11464c27d" title="Deinitialize an error handler and release resources." alt="" coords="404,13,538,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="356,23,391,26,386,26,357,28"/>
+</map>

@@ -1,0 +1,32 @@
+<map id="lib/star_bus/include/star_bus_i2c.h" name="lib/star_bus/include/star_bus_i2c.h">
+<area shape="rect" id="Node000001" title="I2C bus operations through the unified bus manager." alt="" coords="750,5,883,46"/>
+<area shape="rect" id="Node000002" href="$dd/d95/star__bus__smbus_8h.html" title="SMBus (System Management Bus) protocol implementation over I2C." alt="" coords="250,102,383,142"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="731,37,579,62,402,97,376,103,375,98,401,91,579,57,737,36"/>
+<area shape="rect" id="Node000004" href="$d4/db0/star__bus__async_8c.html" title=" " alt="" coords="5,198,142,238"/>
+<area shape="poly" id="edge6_Node000001_Node000004" title=" " alt="" coords="731,32,611,42,467,55,333,73,279,84,238,96,195,119,155,146,94,199,90,195,151,142,192,114,237,92,278,79,332,68,467,50,610,37,736,31"/>
+<area shape="rect" id="Node000005" href="$df/deb/star__bus__batch_8c.html" title=" " alt="" coords="352,198,488,238"/>
+<area shape="poly" id="edge7_Node000001_Node000005" title=" " alt="" coords="731,36,591,60,526,76,483,96,461,119,445,146,426,199,422,195,440,144,457,116,480,92,524,71,589,55,736,34"/>
+<area shape="rect" id="Node000006" href="$d3/df5/star__bus__smbus_8c.html" title=" " alt="" coords="512,198,648,238"/>
+<area shape="poly" id="edge13_Node000001_Node000006" title=" " alt="" coords="732,33,666,43,595,55,535,73,513,84,498,96,491,109,489,120,499,148,518,175,545,198,540,196,514,179,494,151,484,121,486,107,494,92,510,79,533,68,594,50,665,38,737,32"/>
+<area shape="rect" id="Node000007" href="$de/d98/star__bus__config_8c.html" title=" " alt="" coords="508,102,644,142"/>
+<area shape="poly" id="edge8_Node000001_Node000007" title=" " alt="" coords="754,51,627,103,626,98,749,53"/>
+<area shape="rect" id="Node000008" href="$df/df6/star__bus__debug_8c.html" title=" " alt="" coords="668,102,804,142"/>
+<area shape="poly" id="edge9_Node000001_Node000008" title=" " alt="" coords="792,56,754,103,751,99,788,59"/>
+<area shape="rect" id="Node000009" href="$d6/d0b/star__bus__devices_8c.html" title=" " alt="" coords="828,102,964,142"/>
+<area shape="poly" id="edge10_Node000001_Node000009" title=" " alt="" coords="843,55,882,102,877,100,841,60"/>
+<area shape="rect" id="Node000010" href="$dd/d1a/star__bus__i2c_8c.html" title=" " alt="" coords="988,102,1124,142"/>
+<area shape="poly" id="edge11_Node000001_Node000010" title=" " alt="" coords="881,49,1009,101,1003,101,880,55"/>
+<area shape="rect" id="Node000011" href="$de/db1/star__bus__i2c__dma_8c.html" title=" " alt="" coords="1148,102,1284,142"/>
+<area shape="poly" id="edge12_Node000001_Node000011" title=" " alt="" coords="899,39,1012,62,1137,91,1162,101,1157,101,1135,97,1011,67,898,44"/>
+<area shape="rect" id="Node000012" href="$d1/dfc/star__sensor__bno055__bmp280_8c.html" title=" " alt="" coords="1308,94,1476,150"/>
+<area shape="poly" id="edge14_Node000001_Node000012" title=" " alt="" coords="898,32,1082,55,1297,91,1310,97,1305,96,1296,97,1081,60,898,38"/>
+<area shape="rect" id="Node000013" href="$d7/df2/star__sensor__mpu6050_8c.html" title=" " alt="" coords="1500,102,1687,142"/>
+<area shape="poly" id="edge15_Node000001_Node000013" title=" " alt="" coords="899,29,1162,49,1325,67,1489,91,1524,101,1519,101,1488,97,1325,72,1162,54,899,34"/>
+<area shape="rect" id="Node000014" href="$d3/df7/star__sensor__pca9685_8c.html" title=" " alt="" coords="1710,102,1893,142"/>
+<area shape="poly" id="edge16_Node000001_Node000014" title=" " alt="" coords="898,26,1048,31,1248,42,1473,61,1699,91,1735,101,1730,101,1698,97,1472,67,1247,47,1048,36,898,31"/>
+<area shape="rect" id="Node000003" href="$d2/d58/star__bms__bq7850_8c.html" title=" " alt="" coords="166,198,328,238"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="295,154,263,199,260,195,290,156"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="253,150,125,200,123,195,250,146"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="350,150,401,198,396,197,348,155"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="386,145,528,197,522,197,385,150"/>
+</map>
