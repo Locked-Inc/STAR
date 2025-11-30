@@ -18,21 +18,21 @@ static const char* s_TAG = "BusSPI";
 
 /* --- Private Function Prototypes (Default Ops) --- */
 
-static esp_err_t priv_star_bus_spi_transmit(const star_bus_config_t* config,
-                                            const void*              tx_buffer,
-                                            size_t                   len,
-                                            uint32_t                 user_flags);
+static esp_err_t internal_star_bus_spi_transmit(const star_bus_config_t* config,
+                                                const void*              tx_buffer,
+                                                size_t                   len,
+                                                uint32_t                 user_flags);
 
-static esp_err_t priv_star_bus_spi_receive(const star_bus_config_t* config,
-                                           void*                    rx_buffer,
-                                           size_t                   len,
-                                           uint32_t                 user_flags);
+static esp_err_t internal_star_bus_spi_receive(const star_bus_config_t* config,
+                                               void*                    rx_buffer,
+                                               size_t                   len,
+                                               uint32_t                 user_flags);
 
-static esp_err_t priv_star_bus_spi_transfer(const star_bus_config_t* config,
-                                            const void*              tx_buffer,
-                                            void*                    rx_buffer,
-                                            size_t                   len,
-                                            uint32_t                 user_flags);
+static esp_err_t internal_star_bus_spi_transfer(const star_bus_config_t* config,
+                                                const void*              tx_buffer,
+                                                void*                    rx_buffer,
+                                                size_t                   len,
+                                                uint32_t                 user_flags);
 
 /* --- Public Functions --- */
 
@@ -42,9 +42,9 @@ void star_bus_spi_init_default_ops(star_spi_ops_t* ops)
     ESP_LOGE(s_TAG, "Cannot initialize NULL ops pointer");
     return;
   }
-  ops->transmit = priv_star_bus_spi_transmit;
-  ops->receive  = priv_star_bus_spi_receive;
-  ops->transfer = priv_star_bus_spi_transfer;
+  ops->transmit = internal_star_bus_spi_transmit;
+  ops->receive  = internal_star_bus_spi_receive;
+  ops->transfer = internal_star_bus_spi_transfer;
   ESP_LOGD(s_TAG, "Default SPI operations initialized");
 }
 
@@ -137,10 +137,10 @@ esp_err_t star_bus_spi_transfer(const star_bus_manager_t* manager,
 /* --- Private Functions (Default Ops Implementations) --- */
 
 /* Default implementation using queued transactions */
-static esp_err_t priv_star_bus_spi_transmit(const star_bus_config_t* config,
-                                            const void*              tx_buffer,
-                                            size_t                   len,
-                                            uint32_t                 user_flags)
+static esp_err_t internal_star_bus_spi_transmit(const star_bus_config_t* config,
+                                                const void*              tx_buffer,
+                                                size_t                   len,
+                                                uint32_t                 user_flags)
 {
   ESP_RETURN_ON_FALSE(config->initialized,
                       ESP_ERR_INVALID_STATE,
@@ -205,10 +205,10 @@ static esp_err_t priv_star_bus_spi_transmit(const star_bus_config_t* config,
   return ret;
 }
 
-static esp_err_t priv_star_bus_spi_receive(const star_bus_config_t* config,
-                                           void*                    rx_buffer,
-                                           size_t                   len,
-                                           uint32_t                 user_flags)
+static esp_err_t internal_star_bus_spi_receive(const star_bus_config_t* config,
+                                               void*                    rx_buffer,
+                                               size_t                   len,
+                                               uint32_t                 user_flags)
 {
   ESP_RETURN_ON_FALSE(config->initialized,
                       ESP_ERR_INVALID_STATE,
@@ -269,11 +269,11 @@ static esp_err_t priv_star_bus_spi_receive(const star_bus_config_t* config,
   return ret;
 }
 
-static esp_err_t priv_star_bus_spi_transfer(const star_bus_config_t* config,
-                                            const void*              tx_buffer,
-                                            void*                    rx_buffer,
-                                            size_t                   len,
-                                            uint32_t                 user_flags)
+static esp_err_t internal_star_bus_spi_transfer(const star_bus_config_t* config,
+                                                const void*              tx_buffer,
+                                                void*                    rx_buffer,
+                                                size_t                   len,
+                                                uint32_t                 user_flags)
 {
   ESP_RETURN_ON_FALSE(config->initialized,
                       ESP_ERR_INVALID_STATE,

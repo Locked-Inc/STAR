@@ -1,0 +1,5 @@
+<map id="internal_register_config_pins" name="internal_register_config_pins">
+<area shape="rect" id="Node000001" title="Register all pins for a single bus configuration." alt="" coords="5,5,192,31"/>
+<area shape="rect" id="Node000002" href="$d7/d60/star__bus__manager_8c.html#a6b8851ddf6b54116c5b540fd4ef6e947" title="Helper to register a single pin via the interface." alt="" coords="240,5,405,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="192,16,227,18,222,18,192,21"/>
+</map>

@@ -1,0 +1,13 @@
+<map id="star_bus_manager_remove_bus" name="star_bus_manager_remove_bus">
+<area shape="rect" id="Node000001" title="Remove an I2C bus configuration from the manager and destroy it." alt="" coords="5,50,212,76"/>
+<area shape="rect" id="Node000002" href="$d7/d60/star__bus__manager_8c.html#a908af8666d49aae610fd2ccc0a635133" title="Unregister all pins for a single bus configuration." alt="" coords="278,9,405,50"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="202,47,265,40,260,42,203,52"/>
+<area shape="rect" id="Node000004" href="$de/d98/star__bus__config_8c.html#a194581e2eb82227a022f04b9057db839" title="Destroy a bus configuration and free all associated resources." alt="" coords="260,78,423,104"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="212,73,247,79,241,80,212,78"/>
+<area shape="rect" id="Node000003" href="$d7/d60/star__bus__manager_8c.html#a845821b70a8f6075660c7cd45a2548bb" title="Helper to unregister a single pin via the interface." alt="" coords="488,5,616,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="405,26,476,27,470,28,405,31"/>
+<area shape="rect" id="Node000005" href="$de/d98/star__bus__config_8c.html#a83c2bd0044ce80e0be65ebba3c1a3cc1" title="Clean up and free memory for a bus configuration structure. Does NOT deinitialize the hardware/driver..." alt="" coords="471,71,633,111"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="423,88,458,91,453,91,423,94"/>
+<area shape="rect" id="Node000006" href="$de/d98/star__bus__config_8c.html#a7698bd213b1044dfc1d6e92d879ca03e" title="Deinitialize the bus/device associated with this configuration." alt="" coords="476,136,628,161"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="392,102,490,131,485,131,391,107"/>
+</map>

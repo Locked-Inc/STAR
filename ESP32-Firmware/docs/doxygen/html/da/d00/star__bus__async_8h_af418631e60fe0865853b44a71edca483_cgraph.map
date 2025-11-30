@@ -1,0 +1,40 @@
+<map id="star_smbus_read_byte_async" name="star_smbus_read_byte_async">
+<area shape="rect" id="Node000001" title="Async SMBus read byte operation." alt="" coords="5,129,159,169"/>
+<area shape="rect" id="Node000002" href="$d4/db0/star__bus__async_8c.html#a549b398e0cdf937b43dafb08eff30015" title="Enqueue an async operation." alt="" coords="207,79,386,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="158,126,233,107,229,111,160,131"/>
+<area shape="rect" id="Node000003" href="$d4/db0/star__bus__async_8c.html#ad533332fcb303302a416c723c43bbe0c" title="Ensure worker task is running (thread&#45;safe)." alt="" coords="219,129,374,169"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="158,146,206,148,201,150,160,151"/>
+<area shape="rect" id="Node000015" href="$d4/db0/star__bus__async_8c.html#adb88694a49558c9b48bd63f224128c06" title="Get or create async state for a bus." alt="" coords="231,194,362,235"/>
+<area shape="poly" id="edge21_Node000001_Node000015" title=" " alt="" coords="151,167,219,189,214,191,151,172"/>
+<area shape="rect" id="Node000004" href="$d4/db0/star__bus__async_8c.html#a4d0d2de1a960495058f92a453f2ed8b5" title="Worker task for processing async operations." alt="" coords="434,136,617,162"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="374,146,421,148,416,150,375,152"/>
+<area shape="rect" id="Node000005" href="$d4/db0/star__bus__async_8c.html#a01ee3f118825590cceebdbca4fd6807a" title="Execute an async operation." alt="" coords="665,136,842,162"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="618,146,652,149,647,149,618,152"/>
+<area shape="rect" id="Node000006" href="$dd/d1a/star__bus__i2c_8c.html#a2e9b9baf8a0f8d00a2080963a7efd62f" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="1111,21,1238,47"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="762,134,781,108,810,76,846,45,889,21,945,7,1004,3,1060,7,1112,17,1107,18,1060,12,1004,8,946,12,891,26,849,49,814,80,785,112,765,138"/>
+<area shape="rect" id="Node000008" href="$dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="1110,136,1240,162"/>
+<area shape="poly" id="edge7_Node000005_Node000008" title=" " alt="" coords="842,146,1097,149,1092,149,842,152"/>
+<area shape="rect" id="Node000009" href="$d9/dbd/star__bus__spi_8c.html#a38e1914f8a95c3c7234ac92a81e1b1df" title="Receive data from an SPI device specified by a bus configuration." alt="" coords="1102,185,1247,211"/>
+<area shape="poly" id="edge9_Node000005_Node000009" title=" " alt="" coords="842,157,1090,188,1084,188,842,162"/>
+<area shape="rect" id="Node000010" href="$d9/dbd/star__bus__spi_8c.html#ad0df93f1e1b403e0e8e0e48ca8822588" title="Perform a full&#45;duplex transfer with an SPI device specified by a bus configuration." alt="" coords="895,237,1041,263"/>
+<area shape="poly" id="edge11_Node000005_Node000010" title=" " alt="" coords="780,160,891,216,921,231,916,231,889,221,779,165"/>
+<area shape="rect" id="Node000011" href="$d9/dbd/star__bus__spi_8c.html#a2859c4d77d02b6bd5f567366a465e11d" title="Transmit data to an SPI device specified by a bus configuration." alt="" coords="893,287,1042,312"/>
+<area shape="poly" id="edge13_Node000005_Node000011" title=" " alt="" coords="766,160,817,215,852,246,891,273,901,281,896,280,888,278,849,250,813,219,764,165"/>
+<area shape="rect" id="Node000012" href="$d3/df5/star__bus__smbus_8c.html#a66c94dc0a7eb2893f78e8b887d6d0b4d" title="SMBus Read Byte." alt="" coords="891,36,1044,62"/>
+<area shape="poly" id="edge15_Node000005_Node000012" title=" " alt="" coords="774,133,825,103,889,71,901,68,906,67,891,75,827,107,776,138"/>
+<area shape="rect" id="Node000014" href="$d3/df5/star__bus__smbus_8c.html#a4150488512abf781bf193c6bdb9d20a0" title="SMBus Write Byte." alt="" coords="890,85,1046,111"/>
+<area shape="poly" id="edge18_Node000005_Node000014" title=" " alt="" coords="810,133,893,116,898,115,812,138"/>
+<area shape="rect" id="Node000007" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="1303,185,1488,211"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="1230,45,1257,57,1294,84,1327,114,1378,174,1373,172,1323,118,1290,88,1254,62,1230,50"/>
+<area shape="poly" id="edge8_Node000008_Node000007" title=" " alt="" coords="1236,160,1322,182,1317,181,1235,165"/>
+<area shape="poly" id="edge10_Node000009_Node000007" title=" " alt="" coords="1247,196,1290,198,1285,198,1248,201"/>
+<area shape="poly" id="edge12_Node000010_Node000007" title=" " alt="" coords="1041,243,1255,221,1310,215,1315,214,1256,226,1041,248"/>
+<area shape="poly" id="edge14_Node000011_Node000007" title=" " alt="" coords="1042,286,1144,269,1255,244,1343,218,1348,217,1256,249,1145,274,1043,292"/>
+<area shape="poly" id="edge17_Node000012_Node000006" title=" " alt="" coords="1044,41,1098,39,1093,40,1045,46"/>
+<area shape="rect" id="Node000013" href="$d3/df5/star__bus__smbus_8c.html#a028e8362b8c772d39dee59e24c15439b" title="Validate common parameters for SMBus operations." alt="" coords="1094,71,1255,112"/>
+<area shape="poly" id="edge16_Node000012_Node000013" title=" " alt="" coords="1034,60,1081,72,1076,72,1034,65"/>
+<area shape="poly" id="edge20_Node000014_Node000008" title=" " alt="" coords="1023,109,1107,132,1102,132,1023,114"/>
+<area shape="poly" id="edge19_Node000014_Node000013" title=" " alt="" coords="1046,93,1081,94,1076,95,1047,98"/>
+<area shape="rect" id="Node000016" href="$d4/db0/star__bus__async_8c.html#a707d67f86355b50c44e02c53addac8f3" title="Initialize global async state (thread&#45;safe)." alt="" coords="462,194,590,235"/>
+<area shape="poly" id="edge22_Node000015_Node000016" title=" " alt="" coords="362,212,448,214,443,215,362,217"/>
+</map>

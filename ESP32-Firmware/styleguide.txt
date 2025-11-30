@@ -1190,7 +1190,23 @@ Example of `const` and Passing by Reference:
 
 - **Static Functions**: Use `static` for private functions that are only used within a single source file. Public functions should be declared in header files and follow the naming conventions.
 
-- **Exposed Private Functions**: Use the `priv_` prefix for functions that cannot be static but are intended for internal use only.
+- **Static Function Naming**: Use the `internal_` prefix for static functions that are truly internal to the file. This creates semantic clarity and makes it immediately obvious that the function is file-scoped only.
+
+Example:
+
+.. code-block:: c
+
+    static esp_err_t internal_init_state(void)
+    {
+      /* File-scoped initialization logic */
+    }
+
+    static void internal_cleanup_resources(void)
+    {
+      /* File-scoped cleanup logic */
+    }
+
+- **Exposed Private Functions**: Use the `priv_` prefix for functions that cannot be static but are intended for internal use only (used across multiple files within a module).
 
 - **Return NULL for Failed Pointer Functions**: For functions that return pointers, use `NULL` to indicate failure.
 
@@ -1227,7 +1243,9 @@ Functions that are exposed publicly in headers should follow the return value co
 
 - Always use `static` for functions not exposed in the header files.
 
-- Use the `priv_` prefix for private functions that cannot be made `static`.
+- Use the `internal_` prefix for static functions that are truly internal to the file.
+
+- Use the `priv_` prefix for private functions that cannot be made `static` but are used across files within a module.
 
 - Use `NULL` for failed pointer returns.
 

@@ -1,0 +1,13 @@
+<map id="star_bus_config_create_spi_peripheral" name="star_bus_config_create_spi_peripheral">
+<area shape="rect" id="Node000001" title="Create a new SPI peripheral (slave) configuration." alt="" coords="5,39,162,79"/>
+<area shape="rect" id="Node000002" href="$de/d98/star__bus__config_8c.html#a15ff256a9a257629ad970a5359136a59" title="Create a generic bus configuration structure and allocate memory." alt="" coords="210,5,372,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="161,44,197,40,192,42,163,49"/>
+<area shape="rect" id="Node000003" href="$d4/d34/star__bus__spi__peripheral_8c.html#a2345e4ad6acf2f73b394513fe38340da" title="Initialize default SPI peripheral operations function pointers within a config structure...." alt="" coords="212,71,370,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="162,68,199,76,194,77,163,74"/>
+<area shape="rect" id="Node000004" href="$d4/d34/star__bus__spi__peripheral_8c.html#a3170d6b62a04e8ea00c269919ba7780f" title=" " alt="" coords="424,5,568,46"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="356,68,412,52,417,51,357,73"/>
+<area shape="rect" id="Node000005" href="$d4/d34/star__bus__spi__peripheral_8c.html#ad6d24dd1d07c287cc8f7cec40573f12f" title=" " alt="" coords="420,71,571,111"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="370,88,407,91,402,91,371,94"/>
+<area shape="rect" id="Node000006" href="$d4/d34/star__bus__spi__peripheral_8c.html#af3daadb82934d79dbd87fc6fadd27659" title=" " alt="" coords="424,136,568,177"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="357,109,418,131,412,131,356,114"/>
+</map>

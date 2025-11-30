@@ -1,0 +1,14 @@
+<map id="star_bus_onewire_write_bit" name="star_bus_onewire_write_bit">
+<area shape="rect" id="Node000001" title="Write a single bit." alt="" coords="693,38,873,64"/>
+<area shape="rect" id="Node000002" href="$d9/dd6/star__bus__onewire_8c.html#a9e824a2a3393b3059ede24129d9f59f7" title="Search for all devices on the bus." alt="" coords="230,13,400,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="675,46,400,33,400,28,680,44"/>
+<area shape="rect" id="Node000004" href="$d9/dd6/star__bus__onewire_8c.html#ae88febdda5fbab30605093333a32d45c" title="Write a byte." alt="" coords="455,64,645,89"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="675,63,646,69,646,63,680,62"/>
+<area shape="rect" id="Node000003" href="$d9/dd6/star__bus__onewire_8c.html#a77482610444b896ddb6f74aa04b44b1c" title="Search for devices with active alarms." alt="" coords="5,5,175,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="212,27,176,28,174,23,217,25"/>
+<area shape="poly" id="edge5_Node000004_Node000002" title=" " alt="" coords="470,60,378,42,378,36,475,59"/>
+<area shape="rect" id="Node000005" href="$d9/dd6/star__bus__onewire_8c.html#a585e54933529b5a71ee8f22332692285" title="Read ROM from single device on bus." alt="" coords="223,62,407,88"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="437,76,408,78,407,73,442,75"/>
+<area shape="rect" id="Node000006" href="$d9/dd6/star__bus__onewire_8c.html#adee9b5236bf808b50ec63f3bec1eb695" title="Write multiple bytes." alt="" coords="236,112,394,153"/>
+<area shape="poly" id="edge6_Node000004_Node000006" title=" " alt="" coords="481,93,395,116,394,111,476,94"/>
+</map>

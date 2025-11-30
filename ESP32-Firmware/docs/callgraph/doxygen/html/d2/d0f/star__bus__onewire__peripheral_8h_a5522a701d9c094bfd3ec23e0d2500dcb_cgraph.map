@@ -1,0 +1,13 @@
+<map id="star_bus_onewire_peripheral_set_rom" name="star_bus_onewire_peripheral_set_rom">
+<area shape="rect" id="Node000001" title="Update peripheral ROM code." alt="" coords="5,88,192,129"/>
+<area shape="rect" id="Node000002" href="$d2/de5/star__bus__onewire__peripheral_8c.html#a62f2636d7b1d2248773b56947b0852ba" title="Calculate and set ROM CRC." alt="" coords="245,70,372,96"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="192,94,232,92,227,93,193,100"/>
+<area shape="rect" id="Node000006" href="$d2/de5/star__bus__onewire__peripheral_8c.html#a501a3f667c641db510d4f13247860593" title="Get peripheral state for a bus." alt="" coords="240,120,378,145"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="192,116,227,122,221,123,192,122"/>
+<area shape="rect" id="Node000003" href="$d9/dd6/star__bus__onewire_8c.html#a8c52a9289a4681648396db6403fa846b" title="Convert byte array to ROM." alt="" coords="426,5,588,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="355,67,417,52,422,50,357,72"/>
+<area shape="rect" id="Node000004" href="$d9/dd6/star__bus__onewire_8c.html#a0614bd985521b976c6780650032e24a1" title="Calculate CRC&#45;8 for data." alt="" coords="430,70,585,96"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="373,80,416,83,411,83,373,86"/>
+<area shape="rect" id="Node000005" href="$d9/dd6/star__bus__onewire_8c.html#a1962811d14103b4c8378203616cacd0c" title="Convert ROM to byte array." alt="" coords="431,120,583,161"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="356,94,423,115,417,115,356,99"/>
+</map>

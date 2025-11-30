@@ -37,6 +37,177 @@ extern "C" {
  * - Euler angles (heading, roll, pitch)
  * - Linear acceleration (gravity-compensated)
  * - Automatic calibration
+ *
+ * Example Usage:
+ * @code
+ * // === Basic Setup ===
+ *
+ * #include "star_sensor_bno055_bmp280.h"
+ * #include "star_bus_manager.h"
+ * #include "star_bus_config.h"
+ *
+ * // 1. Setup bus manager (see star_bus_manager.h for full setup)
+ * star_bus_manager_t bus_manager;
+ * star_bus_manager_init(&bus_manager, "main", &error_iface, &pin_iface);
+ *
+ * // 2. Create I2C bus for sensors (both BNO055 and BMP280 on same bus)
+ * star_bus_config_t* imu_bus = star_bus_config_create_i2c(
+ *     "imu_i2c",
+ *     I2C_NUM_0,
+ *     BNO055_I2C_ADDR,        // 0x28 (or 0x29 if ADR pin high)
+ *     GPIO_NUM_21,            // SDA
+ *     GPIO_NUM_22,            // SCL
+ *     400000                  // 400kHz
+ * );
+ * star_bus_manager_add_bus(&bus_manager, imu_bus);
+ *
+ * // 3. Configure and initialize 10-DOF IMU
+ * imu_10dof_handle_t imu;
+ * imu_10dof_config_t config = {
+ *     .manager = &bus_manager,
+ *     .bus_name = "imu_i2c",
+ *     .bno055_addr = BNO055_I2C_ADDR,   // 0x28
+ *     .bmp280_addr = BMP280_I2C_ADDR,   // 0x76
+ *     .operation_mode = BNO055_OP_MODE_NDOF  // Full 9-DOF fusion
+ * };
+ *
+ * esp_err_t ret = star_sensor_imu_10dof_init(&imu, NULL, &config);
+ * if (ret != ESP_OK) {
+ *     ESP_LOGE(TAG, "Failed to init 10-DOF IMU: %s", esp_err_to_name(ret));
+ *     return;
+ * }
+ *
+ *
+ * // === Reading All Sensor Data ===
+ *
+ * imu_10dof_data_t data;
+ * ret = star_sensor_imu_10dof_read(&imu, &data);
+ * if (ret == ESP_OK) {
+ *     // Euler angles (heading/yaw, roll, pitch)
+ *     ESP_LOGI(TAG, "Heading: %.1f°, Roll: %.1f°, Pitch: %.1f°",
+ *              data.euler.heading, data.euler.roll, data.euler.pitch);
+ *
+ *     // Quaternion (for 3D orientation)
+ *     ESP_LOGI(TAG, "Quaternion: w=%d, x=%d, y=%d, z=%d",
+ *              data.quaternion.w, data.quaternion.x,
+ *              data.quaternion.y, data.quaternion.z);
+ *
+ *     // Linear acceleration (gravity removed)
+ *     ESP_LOGI(TAG, "Linear Accel: X=%d, Y=%d, Z=%d",
+ *              data.linear_accel.x, data.linear_accel.y, data.linear_accel.z);
+ *
+ *     // Gravity vector
+ *     ESP_LOGI(TAG, "Gravity: X=%d, Y=%d, Z=%d",
+ *              data.gravity.x, data.gravity.y, data.gravity.z);
+ *
+ *     // Raw sensor data
+ *     ESP_LOGI(TAG, "Accel: X=%d, Y=%d, Z=%d",
+ *              data.accelerometer.x, data.accelerometer.y, data.accelerometer.z);
+ *     ESP_LOGI(TAG, "Gyro: X=%d, Y=%d, Z=%d",
+ *              data.gyroscope.x, data.gyroscope.y, data.gyroscope.z);
+ *     ESP_LOGI(TAG, "Mag: X=%d, Y=%d, Z=%d",
+ *              data.magnetometer.x, data.magnetometer.y, data.magnetometer.z);
+ *
+ *     // BMP280 pressure and altitude
+ *     ESP_LOGI(TAG, "Pressure: %.2f Pa, Altitude: %.2f m",
+ *              data.pressure_pa, data.altitude_m);
+ *
+ *     // Temperature (from both sensors)
+ *     ESP_LOGI(TAG, "BNO055 temp: %d°C, BMP280 temp: %.2f°C",
+ *              data.temperature_c, data.bmp_temp_c);
+ *
+ *     // Calibration status
+ *     ESP_LOGI(TAG, "Calibration: sys=%d, gyro=%d, accel=%d, mag=%d",
+ *              data.calibration.sys, data.calibration.gyro,
+ *              data.calibration.accel, data.calibration.mag);
+ * }
+ *
+ *
+ * // === Calibration Status ===
+ *
+ * // Check if system is fully calibrated
+ * bool calibrated;
+ * star_sensor_imu_10dof_is_calibrated(&imu, &calibrated);
+ * if (calibrated) {
+ *     ESP_LOGI(TAG, "IMU fully calibrated!");
+ * }
+ *
+ * // Get detailed calibration status (0-3 for each sensor)
+ * calibration_status_t cal_status;
+ * star_sensor_imu_10dof_get_calibration(&imu, &cal_status);
+ * ESP_LOGI(TAG, "Cal levels: System=%d, Gyro=%d, Accel=%d, Mag=%d",
+ *          cal_status.sys, cal_status.gyro, cal_status.accel, cal_status.mag);
+ *
+ * // Wait for calibration (BNO055 auto-calibrates)
+ * while (!calibrated) {
+ *     star_sensor_imu_10dof_is_calibrated(&imu, &calibrated);
+ *     star_sensor_imu_10dof_get_calibration(&imu, &cal_status);
+ *     ESP_LOGI(TAG, "Calibrating... sys=%d, gyro=%d, accel=%d, mag=%d",
+ *              cal_status.sys, cal_status.gyro, cal_status.accel, cal_status.mag);
+ *     vTaskDelay(pdMS_TO_TICKS(500));
+ * }
+ *
+ *
+ * // === Operation Modes ===
+ *
+ * // NDOF mode - Full 9-DOF sensor fusion (default)
+ * star_sensor_imu_10dof_set_mode(&imu, BNO055_OP_MODE_NDOF);
+ *
+ * // IMU mode - Accel + Gyro only (no magnetometer)
+ * star_sensor_imu_10dof_set_mode(&imu, BNO055_OP_MODE_ACCGYRO);
+ *
+ * // Config mode - For configuration changes
+ * star_sensor_imu_10dof_set_mode(&imu, BNO055_OP_MODE_CONFIG);
+ *
+ * // Available modes:
+ * // - BNO055_OP_MODE_CONFIG:       Configuration mode
+ * // - BNO055_OP_MODE_ACCONLY:      Accelerometer only
+ * // - BNO055_OP_MODE_MAGONLY:      Magnetometer only
+ * // - BNO055_OP_MODE_GYROONLY:     Gyroscope only
+ * // - BNO055_OP_MODE_ACCMAG:       Accel + Mag
+ * // - BNO055_OP_MODE_ACCGYRO:      Accel + Gyro
+ * // - BNO055_OP_MODE_MAGGYRO:      Mag + Gyro
+ * // - BNO055_OP_MODE_AMG:          All sensors, no fusion
+ * // - BNO055_OP_MODE_NDOF_FMC_OFF: 9-DOF fusion, mag cal off
+ * // - BNO055_OP_MODE_NDOF:         9-DOF fusion (recommended)
+ *
+ *
+ * // === Reset BNO055 ===
+ *
+ * star_sensor_imu_10dof_reset_bno055(&imu);
+ * vTaskDelay(pdMS_TO_TICKS(650));  // Wait for reset complete
+ *
+ *
+ * // === Continuous Reading Task ===
+ *
+ * void imu_task(void* arg) {
+ *     imu_10dof_handle_t* imu = (imu_10dof_handle_t*)arg;
+ *     imu_10dof_data_t data;
+ *
+ *     while (1) {
+ *         if (star_sensor_imu_10dof_read(imu, &data) == ESP_OK) {
+ *             // Use euler angles for orientation
+ *             float heading = data.euler.heading;
+ *             float roll = data.euler.roll;
+ *             float pitch = data.euler.pitch;
+ *
+ *             // Use altitude for height
+ *             float altitude = data.altitude_m;
+ *
+ *             // Process data...
+ *         }
+ *         vTaskDelay(pdMS_TO_TICKS(20));  // 50Hz update rate
+ *     }
+ * }
+ *
+ * xTaskCreate(imu_task, "imu_task", 4096, &imu, 5, NULL);
+ *
+ *
+ * // === Cleanup ===
+ *
+ * star_sensor_imu_10dof_deinit(&imu);
+ * star_bus_manager_remove_bus(&bus_manager, "imu_i2c");
+ * @endcode
  */
 
 #define BNO055_I2C_ADDR (0x28)
