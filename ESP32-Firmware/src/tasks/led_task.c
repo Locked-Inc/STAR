@@ -6,7 +6,7 @@
 #include "../include/system_config.h"
 #include "../modules/include/shared_data.h"
 
-static const char* s_TAG = TAG_LEDS;
+static const char* s_TAG = STAR_SYSTEM_TAG_LEDS;
 
 /* Task context - single instance per system */
 static led_task_context_t s_task_context          = {0};
@@ -17,7 +17,7 @@ static bool               s_g_context_initialized = false;
 static esp_err_t internal_update_led_from_sensor_data(led_task_context_t*  ctx,
                                                       const sensor_data_t* sensor_data)
 {
-  if (!VALIDATE_SENSOR_INDEX(sensor_data->sensor_index)) {
+  if (!STAR_SYSTEM_VALIDATE_SENSOR_INDEX(sensor_data->sensor_index)) {
     ESP_LOGE(s_TAG, "Invalid sensor index: %d", sensor_data->sensor_index);
     return ESP_ERR_INVALID_ARG;
   }
@@ -29,11 +29,11 @@ static esp_err_t internal_update_led_from_sensor_data(led_task_context_t*  ctx,
                                          (led_index_t)sensor_data->sensor_index,
                                          sensor_data->distance_cm);
     if (ret == ESP_OK) {
-      const char* sensor_name = (sensor_data->sensor_index == HCSR04_LEFT) ? "Left" : "Right";
+      const char* sensor_name = (sensor_data->sensor_index == STAR_SYSTEM_HCSR04_LEFT) ? "Left" : "Right";
 
       rgb_color_t color = led_controller_distance_to_color(sensor_data->distance_cm);
-      if (color.red > LED_OFF_THRESHOLD || color.green > LED_OFF_THRESHOLD ||
-          color.blue > LED_OFF_THRESHOLD) {
+      if (color.red > STAR_SYSTEM_LED_OFF_THRESHOLD || color.green > STAR_SYSTEM_LED_OFF_THRESHOLD ||
+          color.blue > STAR_SYSTEM_LED_OFF_THRESHOLD) {
         ESP_LOGI(s_TAG,
                  "%s LED: R=%.1f%% G=%.1f%% B=%.1f%% (%.1fcm)",
                  sensor_name,
@@ -46,13 +46,13 @@ static esp_err_t internal_update_led_from_sensor_data(led_task_context_t*  ctx,
                  "%s LED: OFF (%.1fcm > %.0fcm)",
                  sensor_name,
                  sensor_data->distance_cm,
-                 LED_COLOR_DISTANCE_MAX);
+                 STAR_SYSTEM_LED_COLOR_DISTANCE_MAX);
       }
     }
   } else {
     ret = led_controller_turn_off(&ctx->led_controller, (led_index_t)sensor_data->sensor_index);
     if (ret == ESP_OK) {
-      const char* sensor_name = (sensor_data->sensor_index == HCSR04_LEFT) ? "Left" : "Right";
+      const char* sensor_name = (sensor_data->sensor_index == STAR_SYSTEM_HCSR04_LEFT) ? "Left" : "Right";
       ESP_LOGI(s_TAG, "%s LED: OFF (sensor error)", sensor_name);
     }
   }
@@ -91,12 +91,12 @@ static void internal_process_sensor_data_queue(led_task_context_t* ctx)
 
 static void internal_update_leds_from_latest_readings(led_task_context_t* ctx)
 {
-  for (uint8_t i = 0; i < NUM_HCSR04; i++) {
+  for (uint8_t i = 0; i < STAR_SYSTEM_NUM_HCSR04; i++) {
     sensor_data_t sensor_data;
     if (shared_data_get_sensor_reading(i, &sensor_data)) {
       uint32_t age_ms = shared_data_get_uptime_ms() - sensor_data.timestamp_ms;
 
-      if (age_ms > (TASK_INTERVAL_SENSORS * 5)) {
+      if (age_ms > (STAR_SYSTEM_TASK_INTERVAL_SENSORS * 5)) {
         ESP_LOGW(s_TAG, "Sensor %d data too old (%lums), turning LED off", i, age_ms);
         led_controller_turn_off(&ctx->led_controller, (led_index_t)i);
       } else {
@@ -112,7 +112,7 @@ static void internal_led_task_loop(void* parameter)
 {
   led_task_context_t* ctx = (led_task_context_t*)parameter;
 
-  ESP_LOGI(s_TAG, "LED display task started (interval: %dms)", TASK_INTERVAL_LEDS);
+  ESP_LOGI(s_TAG, "LED display task started (interval: %dms)", STAR_SYSTEM_TASK_INTERVAL_LEDS);
 
   TickType_t last_wake_time = xTaskGetTickCount();
 
@@ -132,7 +132,7 @@ static void internal_led_task_loop(void* parameter)
       ESP_LOGW(s_TAG, "LED controller not initialized, skipping update");
     }
 
-    vTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(TASK_INTERVAL_LEDS));
+    vTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(STAR_SYSTEM_TASK_INTERVAL_LEDS));
   }
 
   ESP_LOGI(s_TAG, "LED display task ending");
@@ -173,9 +173,9 @@ esp_err_t led_task_start(const pca9685_handle_t* pca_handle)
 
   BaseType_t task_ret = xTaskCreate(internal_led_task_loop,
                                     "led_task",
-                                    TASK_STACK_SIZE_LEDS,
+                                    STAR_SYSTEM_TASK_STACK_SIZE_LEDS,
                                     &s_task_context,
-                                    TASK_PRIORITY_LEDS,
+                                    STAR_SYSTEM_TASK_PRIORITY_LEDS,
                                     &s_task_context.task_handle);
 
   if (task_ret != pdPASS) {
@@ -257,7 +257,7 @@ esp_err_t led_task_manual_update(uint8_t sensor_index, float distance_cm)
     return ESP_ERR_INVALID_STATE;
   }
 
-  if (!VALIDATE_SENSOR_INDEX(sensor_index)) {
+  if (!STAR_SYSTEM_VALIDATE_SENSOR_INDEX(sensor_index)) {
     ESP_LOGE(s_TAG, "Invalid sensor index: %d", sensor_index);
     return ESP_ERR_INVALID_ARG;
   }
