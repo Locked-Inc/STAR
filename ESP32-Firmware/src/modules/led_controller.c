@@ -6,7 +6,7 @@
 #include <math.h>
 #include <string.h>
 
-static const char* s_TAG = TAG_LED_CTRL;
+static const char* s_TAG = STAR_SYSTEM_TAG_LED_CTRL;
 
 /* ========== Private Functions ========== */
 
@@ -15,7 +15,7 @@ static float internal_scale_pwm_for_color(float original_percent, float min_pwm)
   // Ultra-smooth PWM scaling with no discrete jumps
   
   // Use an extremely low threshold for near-seamless transitions
-  if (original_percent <= LED_OFF_THRESHOLD) {
+  if (original_percent <= STAR_SYSTEM_LED_OFF_THRESHOLD) {
     return 0.0f;  // True off state
   }
   
@@ -28,15 +28,15 @@ static float internal_scale_pwm_for_color(float original_percent, float min_pwm)
   float gamma_corrected = powf(normalized, 2.2f);
   
   // Map to safe PWM range with smooth interpolation
-  float pwm_range = MAX_PWM_ALL - min_pwm;
+  float pwm_range = STAR_SYSTEM_MAX_PWM_ALL - min_pwm;
   float scaled = min_pwm + (gamma_corrected * pwm_range);
   
   // Ensure we stay within safe bounds
-  scaled = fmaxf(min_pwm, fminf(MAX_PWM_ALL, scaled));
+  scaled = fmaxf(min_pwm, fminf(STAR_SYSTEM_MAX_PWM_ALL, scaled));
   
   // Enhanced debug logging for PWM analysis
   ESP_LOGI(s_TAG, "PWM: %.3f%% -> γ:%.3f -> %.2f%% (range: %.1f-%.1f)",
-           original_percent, gamma_corrected, scaled, min_pwm, MAX_PWM_ALL);
+           original_percent, gamma_corrected, scaled, min_pwm, STAR_SYSTEM_MAX_PWM_ALL);
   
   return scaled;
 }
@@ -45,8 +45,8 @@ static esp_err_t internal_set_rgb_channels(const pca9685_handle_t* pca_handle,
                                            led_index_t             led_index,
                                            const rgb_color_t*      color)
 {
-  if (!VALIDATE_PWM_PERCENT(color->red) || !VALIDATE_PWM_PERCENT(color->green) ||
-      !VALIDATE_PWM_PERCENT(color->blue)) {
+  if (!STAR_SYSTEM_VALIDATE_PWM_PERCENT(color->red) || !STAR_SYSTEM_VALIDATE_PWM_PERCENT(color->green) ||
+      !STAR_SYSTEM_VALIDATE_PWM_PERCENT(color->blue)) {
     ESP_LOGE(s_TAG,
              "Invalid PWM values: R=%.1f G=%.1f B=%.1f",
              color->red,
@@ -60,9 +60,9 @@ static esp_err_t internal_set_rgb_channels(const pca9685_handle_t* pca_handle,
   uint8_t green_channel = base_channel + 1;
   uint8_t blue_channel  = base_channel + 2;
 
-  float scaled_red   = internal_scale_pwm_for_color(color->red, MIN_PWM_RED);
-  float scaled_green = internal_scale_pwm_for_color(color->green, MIN_PWM_GREEN);
-  float scaled_blue  = internal_scale_pwm_for_color(color->blue, MIN_PWM_BLUE);
+  float scaled_red   = internal_scale_pwm_for_color(color->red, STAR_SYSTEM_MIN_PWM_RED);
+  float scaled_green = internal_scale_pwm_for_color(color->green, STAR_SYSTEM_MIN_PWM_GREEN);
+  float scaled_blue  = internal_scale_pwm_for_color(color->blue, STAR_SYSTEM_MIN_PWM_BLUE);
 
   esp_err_t ret = ESP_OK;
 
@@ -154,7 +154,7 @@ void led_controller_deinit(led_controller_t* controller)
     return;
   }
 
-  if (xSemaphoreTake(controller->mutex, pdMS_TO_TICKS(MUTEX_TIMEOUT_MS)) == pdTRUE) {
+  if (xSemaphoreTake(controller->mutex, pdMS_TO_TICKS(STAR_SYSTEM_MUTEX_TIMEOUT_MS)) == pdTRUE) {
     led_controller_turn_off_all(controller);
     controller->initialized = false;
     controller->pca_handle  = NULL;
@@ -174,19 +174,19 @@ rgb_color_t led_controller_distance_to_color(float distance_cm)
   rgb_color_t color = {0.0f, 0.0f, 0.0f};
 
   // Handle invalid distances gracefully
-  if (!VALIDATE_DISTANCE(distance_cm)) {
+  if (!STAR_SYSTEM_VALIDATE_DISTANCE(distance_cm)) {
     return color;  // Return off for invalid readings
   }
   
   // Turn off LEDs for distances beyond maximum range
-  if (distance_cm > LED_COLOR_DISTANCE_MAX) {
+  if (distance_cm > STAR_SYSTEM_LED_COLOR_DISTANCE_MAX) {
     return color;  // Return off color
   }
 
   // CONFIGURABLE DISTANCE RANGE MAPPING
   // Ultra-smooth mapping with configurable min/max distances
-  float min_distance = LED_COLOR_DISTANCE_MIN * LED_COLOR_EXTENSION_FACTOR;
-  float max_distance = LED_COLOR_DISTANCE_MAX;
+  float min_distance = STAR_SYSTEM_LED_COLOR_DISTANCE_MIN * STAR_SYSTEM_LED_COLOR_EXTENSION_FACTOR;
+  float max_distance = STAR_SYSTEM_LED_COLOR_DISTANCE_MAX;
   
   // Handle edge case where min might equal max
   if (max_distance <= min_distance) {
@@ -228,9 +228,9 @@ rgb_color_t led_controller_distance_to_color(float distance_cm)
   
   // Configurable brightness boost for safety warning at close range
   float close_boost = 0.0f;
-  if (t < LED_COLOR_CLOSE_BOOST_THRESHOLD) {
+  if (t < STAR_SYSTEM_LED_COLOR_CLOSE_BOOST_THRESHOLD) {
     // Smooth exponential boost for close distances
-    float close_factor = 1.0f - (t / LED_COLOR_CLOSE_BOOST_THRESHOLD);
+    float close_factor = 1.0f - (t / STAR_SYSTEM_LED_COLOR_CLOSE_BOOST_THRESHOLD);
     close_boost = 0.3f * close_factor * close_factor;  // Quadratic falloff
   }
   
@@ -241,7 +241,7 @@ rgb_color_t led_controller_distance_to_color(float distance_cm)
   
   // Enhanced debug logging showing configurable range
   ESP_LOGI(s_TAG, "Range[%.1f-%.1f]cm: %.2fcm -> Eff: %.2fcm, t=%.4f, HSV(%.2f,%.2f,%.2f) -> RGB(%.2f,%.2f,%.2f)",
-           LED_COLOR_DISTANCE_MIN, LED_COLOR_DISTANCE_MAX, distance_cm, effective_distance, t, 
+           STAR_SYSTEM_LED_COLOR_DISTANCE_MIN, STAR_SYSTEM_LED_COLOR_DISTANCE_MAX, distance_cm, effective_distance, t, 
            hsv.hue, hsv.saturation, hsv.value, color.red, color.green, color.blue);
   
   return color;
@@ -261,7 +261,7 @@ esp_err_t led_controller_set_rgb(led_controller_t*  controller,
     return ESP_ERR_INVALID_ARG;
   }
 
-  if (xSemaphoreTake(controller->mutex, pdMS_TO_TICKS(MUTEX_TIMEOUT_MS)) != pdTRUE) {
+  if (xSemaphoreTake(controller->mutex, pdMS_TO_TICKS(STAR_SYSTEM_MUTEX_TIMEOUT_MS)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to acquire mutex for LED %d", led_index);
     return ESP_ERR_TIMEOUT;
   }
@@ -281,7 +281,7 @@ esp_err_t led_controller_update_distance(led_controller_t* controller,
                                          led_index_t       led_index,
                                          float             distance_cm)
 {
-  if (!VALIDATE_DISTANCE(distance_cm) && distance_cm <= LED_COLOR_DISTANCE_MAX) {
+  if (!STAR_SYSTEM_VALIDATE_DISTANCE(distance_cm) && distance_cm <= STAR_SYSTEM_LED_COLOR_DISTANCE_MAX) {
     ESP_LOGW(s_TAG, "Distance out of valid range: %.1f cm", distance_cm);
   }
 

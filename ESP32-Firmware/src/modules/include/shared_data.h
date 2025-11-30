@@ -45,7 +45,7 @@ typedef enum {
 } system_state_t;
 
 typedef struct {
-  uint32_t       sensor_read_failures[NUM_HCSR04];
+  uint32_t       sensor_read_failures[STAR_SYSTEM_NUM_HCSR04];
   uint32_t       temperature_read_failures;
   uint32_t       led_update_failures;
   uint32_t       total_sensor_reads;
@@ -80,7 +80,7 @@ typedef struct {
   bool  temperature_available;
 
   /* Latest sensor readings */
-  sensor_data_t latest_sensors[NUM_HCSR04];
+  sensor_data_t latest_sensors[STAR_SYSTEM_NUM_HCSR04];
 
   /* System initialization flag */
   bool system_ready;
@@ -119,7 +119,7 @@ shared_context_t* shared_data_get_context(void);
 /**
  * @brief Update system health statistics
  * 
- * @param sensor_index Sensor that had a failure (or NUM_HCSR04 for temperature)
+ * @param sensor_index Sensor that had a failure (or STAR_SYSTEM_NUM_HCSR04 for temperature)
  * @param success True if operation succeeded, false if failed
  */
 void shared_data_update_health(uint8_t sensor_index, bool success);

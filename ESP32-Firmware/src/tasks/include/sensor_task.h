@@ -21,7 +21,7 @@ typedef struct {
   star_error_interface_t* error_iface;
   const char*             bus_name;
   TaskHandle_t            task_handle;
-  hcsr04_handle_t         sensor_handles[NUM_HCSR04];
+  hcsr04_handle_t         sensor_handles[STAR_SYSTEM_NUM_HCSR04];
   bool                    task_running;
   bool                    sensors_initialized;
 } sensor_task_context_t;

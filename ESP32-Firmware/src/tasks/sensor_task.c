@@ -6,7 +6,7 @@
 #include "../include/system_config.h"
 #include "../modules/include/shared_data.h"
 
-static const char* s_TAG = TAG_SENSORS;
+static const char* s_TAG = STAR_SYSTEM_TAG_SENSORS;
 
 /* Task context - single instance per system */
 static sensor_task_context_t s_task_context          = {0};
@@ -16,13 +16,13 @@ static bool                  s_g_context_initialized = false;
 
 static esp_err_t internal_init_sensors(sensor_task_context_t* ctx)
 {
-  const hcsr04_config_t sensor_configs[NUM_HCSR04] = {
-    {GPIO_LEFT_TRIG, GPIO_LEFT_ECHO, DEFAULT_TEMPERATURE_C},
-    {GPIO_RIGHT_TRIG, GPIO_RIGHT_ECHO, DEFAULT_TEMPERATURE_C}};
+  const hcsr04_config_t sensor_configs[STAR_SYSTEM_NUM_HCSR04] = {
+    {STAR_SYSTEM_GPIO_LEFT_TRIG, STAR_SYSTEM_GPIO_LEFT_ECHO, STAR_SYSTEM_DEFAULT_TEMPERATURE_C},
+    {STAR_SYSTEM_GPIO_RIGHT_TRIG, STAR_SYSTEM_GPIO_RIGHT_ECHO, STAR_SYSTEM_DEFAULT_TEMPERATURE_C}};
 
   esp_err_t ret = ESP_OK;
 
-  for (uint8_t i = 0; i < NUM_HCSR04; i++) {
+  for (uint8_t i = 0; i < STAR_SYSTEM_NUM_HCSR04; i++) {
     esp_err_t init_ret = star_sensor_hcsr04_init(&ctx->sensor_handles[i],
                                                  ctx->bus_manager,
                                                  ctx->bus_name,
@@ -41,7 +41,7 @@ static esp_err_t internal_init_sensors(sensor_task_context_t* ctx)
 
   if (ret == ESP_OK) {
     ctx->sensors_initialized = true;
-    ESP_LOGI(s_TAG, "All %d HC-SR04 sensors initialized successfully", NUM_HCSR04);
+    ESP_LOGI(s_TAG, "All %d HC-SR04 sensors initialized successfully", STAR_SYSTEM_NUM_HCSR04);
   }
 
   return ret;
@@ -53,7 +53,7 @@ static void internal_deinit_sensors(sensor_task_context_t* ctx)
     return;
   }
 
-  for (uint8_t i = 0; i < NUM_HCSR04; i++) {
+  for (uint8_t i = 0; i < STAR_SYSTEM_NUM_HCSR04; i++) {
     star_sensor_hcsr04_deinit(&ctx->sensor_handles[i]);
   }
 
@@ -63,7 +63,7 @@ static void internal_deinit_sensors(sensor_task_context_t* ctx)
 
 static esp_err_t internal_read_single_sensor(sensor_task_context_t* ctx, uint8_t sensor_index)
 {
-  if (!VALIDATE_SENSOR_INDEX(sensor_index)) {
+  if (!STAR_SYSTEM_VALIDATE_SENSOR_INDEX(sensor_index)) {
     return ESP_ERR_INVALID_ARG;
   }
 
@@ -85,7 +85,7 @@ static esp_err_t internal_read_single_sensor(sensor_task_context_t* ctx, uint8_t
   }
 
   if (read_result == ESP_OK) {
-    const char* sensor_name = (sensor_index == HCSR04_LEFT) ? "Left" : "Right";
+    const char* sensor_name = (sensor_index == STAR_SYSTEM_HCSR04_LEFT) ? "Left" : "Right";
     ESP_LOGI(s_TAG, "%s sensor: %.1f cm", sensor_name, distance_cm);
   } else {
     ESP_LOGE(s_TAG, "Failed to read sensor %d: %s", sensor_index, esp_err_to_name(read_result));
@@ -103,20 +103,20 @@ static void internal_sensor_task_loop(void* parameter)
   while (ctx->task_running) {
     TickType_t start_time = xTaskGetTickCount();
 
-    for (uint8_t i = 0; i < NUM_HCSR04; i++) {
+    for (uint8_t i = 0; i < STAR_SYSTEM_NUM_HCSR04; i++) {
       if (!ctx->task_running) {
         break;
       }
 
       internal_read_single_sensor(ctx, i);
 
-      if (i < NUM_HCSR04 - 1) {
+      if (i < STAR_SYSTEM_NUM_HCSR04 - 1) {
         vTaskDelay(pdMS_TO_TICKS(20));
       }
     }
 
     TickType_t elapsed       = xTaskGetTickCount() - start_time;
-    TickType_t target_period = pdMS_TO_TICKS(TASK_INTERVAL_SENSORS);
+    TickType_t target_period = pdMS_TO_TICKS(STAR_SYSTEM_TASK_INTERVAL_SENSORS);
 
     if (elapsed < target_period) {
       vTaskDelay(target_period - elapsed);
@@ -162,9 +162,9 @@ esp_err_t sensor_task_start(star_bus_manager_t*     bus_manager,
 
   BaseType_t task_ret = xTaskCreate(internal_sensor_task_loop,
                                     "sensor_task",
-                                    TASK_STACK_SIZE_SENSORS,
+                                    STAR_SYSTEM_TASK_STACK_SIZE_SENSORS,
                                     &s_task_context,
-                                    TASK_PRIORITY_SENSORS,
+                                    STAR_SYSTEM_TASK_PRIORITY_SENSORS,
                                     &s_task_context.task_handle);
 
   if (task_ret != pdPASS) {
@@ -227,14 +227,14 @@ esp_err_t sensor_task_update_temperature(float temperature_c)
     return ESP_ERR_INVALID_STATE;
   }
 
-  if (!VALIDATE_TEMPERATURE(temperature_c)) {
+  if (!STAR_SYSTEM_VALIDATE_TEMPERATURE(temperature_c)) {
     ESP_LOGE(s_TAG, "Invalid temperature: %.1f°C", temperature_c);
     return ESP_ERR_INVALID_ARG;
   }
 
   esp_err_t ret = ESP_OK;
 
-  for (uint8_t i = 0; i < NUM_HCSR04; i++) {
+  for (uint8_t i = 0; i < STAR_SYSTEM_NUM_HCSR04; i++) {
     esp_err_t update_ret =
       star_sensor_hcsr04_set_temperature(&s_task_context.sensor_handles[i], temperature_c);
     if (update_ret != ESP_OK) {
