@@ -27,7 +27,7 @@ typedef struct {
   float value;      // 0.0 - 1.0 (brightness)
 } hsv_color_t;
 
-typedef enum { LED_INDEX_LEFT = 0, LED_INDEX_RIGHT = 1, LED_INDEX_MAX = NUM_HCSR04 } led_index_t;
+typedef enum { LED_INDEX_LEFT = 0, LED_INDEX_RIGHT = 1, LED_INDEX_MAX = STAR_SYSTEM_NUM_HCSR04 } led_index_t;
 
 typedef struct {
   const pca9685_handle_t* pca_handle;
