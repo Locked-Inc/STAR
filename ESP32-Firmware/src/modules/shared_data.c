@@ -25,11 +25,11 @@ static void init_shared_context(shared_context_t* ctx)
 
   init_health_data(&ctx->health_data);
   ctx->system_state          = SYSTEM_STATE_INITIALIZING;
-  ctx->current_temperature_c = DEFAULT_TEMPERATURE_C;
+  ctx->current_temperature_c = STAR_SYSTEM_DEFAULT_TEMPERATURE_C;
   ctx->temperature_available = false;
   ctx->system_ready          = false;
 
-  for (uint8_t i = 0; i < NUM_HCSR04; i++) {
+  for (uint8_t i = 0; i < STAR_SYSTEM_NUM_HCSR04; i++) {
     ctx->latest_sensors[i].sensor_index = i;
     ctx->latest_sensors[i].is_valid     = false;
   }
@@ -47,14 +47,14 @@ esp_err_t shared_data_init(void)
   init_shared_context(&s_g_global_context);
 
   s_g_global_context.sensor_data_queue =
-    xQueueCreate(SENSOR_DATA_QUEUE_SIZE, sizeof(sensor_data_t));
+    xQueueCreate(STAR_SYSTEM_SENSOR_DATA_QUEUE_SIZE, sizeof(sensor_data_t));
   if (s_g_global_context.sensor_data_queue == NULL) {
     ESP_LOGE(s_TAG, "Failed to create sensor data queue");
     return ESP_ERR_NO_MEM;
   }
 
   s_g_global_context.temperature_data_queue =
-    xQueueCreate(TEMPERATURE_QUEUE_SIZE, sizeof(temperature_data_t));
+    xQueueCreate(STAR_SYSTEM_TEMPERATURE_QUEUE_SIZE, sizeof(temperature_data_t));
   if (s_g_global_context.temperature_data_queue == NULL) {
     ESP_LOGE(s_TAG, "Failed to create temperature data queue");
     vQueueDelete(s_g_global_context.sensor_data_queue);
@@ -141,13 +141,13 @@ void shared_data_update_health(uint8_t sensor_index, bool success)
     return;
   }
 
-  if (xSemaphoreTake(s_g_global_context.health_mutex, pdMS_TO_TICKS(MUTEX_TIMEOUT_MS)) == pdTRUE) {
-    if (sensor_index < NUM_HCSR04) {
+  if (xSemaphoreTake(s_g_global_context.health_mutex, pdMS_TO_TICKS(STAR_SYSTEM_MUTEX_TIMEOUT_MS)) == pdTRUE) {
+    if (sensor_index < STAR_SYSTEM_NUM_HCSR04) {
       s_g_global_context.health_data.total_sensor_reads++;
       if (!success) {
         s_g_global_context.health_data.sensor_read_failures[sensor_index]++;
       }
-    } else if (sensor_index == NUM_HCSR04) {
+    } else if (sensor_index == STAR_SYSTEM_NUM_HCSR04) {
       s_g_global_context.health_data.total_temperature_reads++;
       if (!success) {
         s_g_global_context.health_data.temperature_read_failures++;
@@ -168,7 +168,7 @@ system_state_t shared_data_get_system_state(void)
 
   system_state_t state = SYSTEM_STATE_FAULT;
 
-  if (xSemaphoreTake(s_g_global_context.state_mutex, pdMS_TO_TICKS(MUTEX_TIMEOUT_MS)) == pdTRUE) {
+  if (xSemaphoreTake(s_g_global_context.state_mutex, pdMS_TO_TICKS(STAR_SYSTEM_MUTEX_TIMEOUT_MS)) == pdTRUE) {
     state = s_g_global_context.system_state;
     xSemaphoreGive(s_g_global_context.state_mutex);
   }
@@ -182,7 +182,7 @@ void shared_data_set_system_state(system_state_t state)
     return;
   }
 
-  if (xSemaphoreTake(s_g_global_context.state_mutex, pdMS_TO_TICKS(MUTEX_TIMEOUT_MS)) == pdTRUE) {
+  if (xSemaphoreTake(s_g_global_context.state_mutex, pdMS_TO_TICKS(STAR_SYSTEM_MUTEX_TIMEOUT_MS)) == pdTRUE) {
     if (s_g_global_context.system_state != state) {
       ESP_LOGI(s_TAG, "System state changed: %d -> %d", s_g_global_context.system_state, state);
       s_g_global_context.system_state              = state;
@@ -200,7 +200,7 @@ bool shared_data_get_temperature(float* temperature_c)
 
   bool available = false;
 
-  if (xSemaphoreTake(s_g_global_context.state_mutex, pdMS_TO_TICKS(MUTEX_TIMEOUT_MS)) == pdTRUE) {
+  if (xSemaphoreTake(s_g_global_context.state_mutex, pdMS_TO_TICKS(STAR_SYSTEM_MUTEX_TIMEOUT_MS)) == pdTRUE) {
     *temperature_c = s_g_global_context.current_temperature_c;
     available      = s_g_global_context.temperature_available;
     xSemaphoreGive(s_g_global_context.state_mutex);
@@ -215,8 +215,8 @@ void shared_data_set_temperature(float temperature_c, bool valid)
     return;
   }
 
-  if (xSemaphoreTake(s_g_global_context.state_mutex, pdMS_TO_TICKS(MUTEX_TIMEOUT_MS)) == pdTRUE) {
-    if (valid && VALIDATE_TEMPERATURE(temperature_c)) {
+  if (xSemaphoreTake(s_g_global_context.state_mutex, pdMS_TO_TICKS(STAR_SYSTEM_MUTEX_TIMEOUT_MS)) == pdTRUE) {
+    if (valid && STAR_SYSTEM_VALIDATE_TEMPERATURE(temperature_c)) {
       s_g_global_context.current_temperature_c = temperature_c;
       s_g_global_context.temperature_available = true;
     } else if (!valid) {
@@ -228,13 +228,13 @@ void shared_data_set_temperature(float temperature_c, bool valid)
 
 bool shared_data_get_sensor_reading(uint8_t sensor_index, sensor_data_t* data)
 {
-  if (!s_g_context_initialized || data == NULL || !VALIDATE_SENSOR_INDEX(sensor_index)) {
+  if (!s_g_context_initialized || data == NULL || !STAR_SYSTEM_VALIDATE_SENSOR_INDEX(sensor_index)) {
     return false;
   }
 
   bool valid = false;
 
-  if (xSemaphoreTake(s_g_global_context.state_mutex, pdMS_TO_TICKS(MUTEX_TIMEOUT_MS)) == pdTRUE) {
+  if (xSemaphoreTake(s_g_global_context.state_mutex, pdMS_TO_TICKS(STAR_SYSTEM_MUTEX_TIMEOUT_MS)) == pdTRUE) {
     *data = s_g_global_context.latest_sensors[sensor_index];
     valid = data->is_valid;
     xSemaphoreGive(s_g_global_context.state_mutex);
@@ -245,11 +245,11 @@ bool shared_data_get_sensor_reading(uint8_t sensor_index, sensor_data_t* data)
 
 void shared_data_set_sensor_reading(uint8_t sensor_index, const sensor_data_t* data)
 {
-  if (!s_g_context_initialized || data == NULL || !VALIDATE_SENSOR_INDEX(sensor_index)) {
+  if (!s_g_context_initialized || data == NULL || !STAR_SYSTEM_VALIDATE_SENSOR_INDEX(sensor_index)) {
     return;
   }
 
-  if (xSemaphoreTake(s_g_global_context.state_mutex, pdMS_TO_TICKS(MUTEX_TIMEOUT_MS)) == pdTRUE) {
+  if (xSemaphoreTake(s_g_global_context.state_mutex, pdMS_TO_TICKS(STAR_SYSTEM_MUTEX_TIMEOUT_MS)) == pdTRUE) {
     s_g_global_context.latest_sensors[sensor_index] = *data;
     xSemaphoreGive(s_g_global_context.state_mutex);
   }
@@ -262,7 +262,7 @@ shared_data_create_sensor_data(uint8_t sensor_index, float distance_cm, esp_err_
                         .distance_cm  = distance_cm,
                         .read_result  = result,
                         .timestamp_ms = shared_data_get_uptime_ms(),
-                        .is_valid     = (result == ESP_OK && VALIDATE_DISTANCE(distance_cm))};
+                        .is_valid     = (result == ESP_OK && STAR_SYSTEM_VALIDATE_DISTANCE(distance_cm))};
   return data;
 }
 
@@ -276,7 +276,7 @@ temperature_data_t shared_data_create_temperature_data(float     temperature_c,
     .humidity_percent = humidity_percent,
     .read_result      = result,
     .timestamp_ms     = shared_data_get_uptime_ms(),
-    .is_valid         = (result == ESP_OK && checksum_valid && VALIDATE_TEMPERATURE(temperature_c)),
+    .is_valid         = (result == ESP_OK && checksum_valid && STAR_SYSTEM_VALIDATE_TEMPERATURE(temperature_c)),
     .checksum_valid   = checksum_valid};
   return data;
 }
@@ -296,7 +296,7 @@ bool shared_data_is_system_ready(void)
   }
 
   bool ready = false;
-  if (xSemaphoreTake(s_g_global_context.state_mutex, pdMS_TO_TICKS(MUTEX_TIMEOUT_MS)) == pdTRUE) {
+  if (xSemaphoreTake(s_g_global_context.state_mutex, pdMS_TO_TICKS(STAR_SYSTEM_MUTEX_TIMEOUT_MS)) == pdTRUE) {
     ready = s_g_global_context.system_ready;
     xSemaphoreGive(s_g_global_context.state_mutex);
   }
@@ -310,7 +310,7 @@ void shared_data_mark_system_ready(void)
     return;
   }
 
-  if (xSemaphoreTake(s_g_global_context.state_mutex, pdMS_TO_TICKS(MUTEX_TIMEOUT_MS)) == pdTRUE) {
+  if (xSemaphoreTake(s_g_global_context.state_mutex, pdMS_TO_TICKS(STAR_SYSTEM_MUTEX_TIMEOUT_MS)) == pdTRUE) {
     s_g_global_context.system_ready = true;
     if (s_g_global_context.system_state == SYSTEM_STATE_INITIALIZING) {
       s_g_global_context.system_state              = SYSTEM_STATE_RUNNING;

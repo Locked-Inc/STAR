@@ -10,7 +10,7 @@
 #include "include/led_task.h"
 #include "include/sensor_task.h"
 
-static const char* s_TAG = TAG_WATCHDOG;
+static const char* s_TAG = STAR_SYSTEM_TAG_WATCHDOG;
 
 /* Task context - single instance per system */
 static watchdog_task_context_t s_task_context          = {0};
@@ -30,8 +30,8 @@ static watchdog_health_level_t internal_assess_sensor_health(void)
   uint32_t temp_failures   = 0;
   uint32_t temp_reads      = 0;
 
-  if (xSemaphoreTake(shared_ctx->health_mutex, pdMS_TO_TICKS(MUTEX_TIMEOUT_MS)) == pdTRUE) {
-    for (uint8_t i = 0; i < NUM_HCSR04; i++) {
+  if (xSemaphoreTake(shared_ctx->health_mutex, pdMS_TO_TICKS(STAR_SYSTEM_MUTEX_TIMEOUT_MS)) == pdTRUE) {
+    for (uint8_t i = 0; i < STAR_SYSTEM_NUM_HCSR04; i++) {
       hcsr04_failures += shared_ctx->health_data.sensor_read_failures[i];
     }
     temp_failures = shared_ctx->health_data.temperature_read_failures;
@@ -49,10 +49,10 @@ static watchdog_health_level_t internal_assess_sensor_health(void)
   if (hcsr04_reads > 0) {
     float hcsr04_failure_rate = (float)hcsr04_failures / hcsr04_reads;
     
-    if (hcsr04_failure_rate > SENSOR_FAILURE_RATE_CRITICAL) {
+    if (hcsr04_failure_rate > STAR_SYSTEM_SENSOR_FAILURE_RATE_CRITICAL) {
       ESP_LOGE(s_TAG, "Critical HC-SR04 failure rate: %.1f%%", hcsr04_failure_rate * 100);
       hcsr04_health = WATCHDOG_HEALTH_CRITICAL;
-    } else if (hcsr04_failure_rate > SENSOR_FAILURE_RATE_DEGRADED) {
+    } else if (hcsr04_failure_rate > STAR_SYSTEM_SENSOR_FAILURE_RATE_DEGRADED) {
       ESP_LOGW(s_TAG, "Elevated HC-SR04 failure rate: %.1f%%", hcsr04_failure_rate * 100);
       hcsr04_health = WATCHDOG_HEALTH_DEGRADED;
     } else {
@@ -184,8 +184,8 @@ static esp_err_t internal_take_recovery_action(watchdog_health_level_t health_le
       ESP_LOGE(s_TAG, "System fault - initiating system restart");
       shared_data_set_system_state(SYSTEM_STATE_FAULT);
 
-      ESP_LOGE(s_TAG, "System restart in %d ms...", SYSTEM_RESTART_DELAY_MS);
-      vTaskDelay(pdMS_TO_TICKS(SYSTEM_RESTART_DELAY_MS));
+      ESP_LOGE(s_TAG, "System restart in %d ms...", STAR_SYSTEM_RESTART_DELAY_MS);
+      vTaskDelay(pdMS_TO_TICKS(STAR_SYSTEM_RESTART_DELAY_MS));
       esp_restart();
       break;
 
@@ -208,7 +208,7 @@ static void internal_watchdog_task_loop(void* parameter)
 {
   watchdog_task_context_t* ctx = (watchdog_task_context_t*)parameter;
 
-  ESP_LOGI(s_TAG, "System watchdog task started (interval: %dms)", TASK_INTERVAL_WATCHDOG);
+  ESP_LOGI(s_TAG, "System watchdog task started (interval: %dms)", STAR_SYSTEM_TASK_INTERVAL_WATCHDOG);
 
   TickType_t last_wake_time = xTaskGetTickCount();
 
@@ -224,7 +224,7 @@ static void internal_watchdog_task_loop(void* parameter)
       ESP_LOGI(s_TAG, "Health check %lu: System healthy", ctx->health_checks_performed);
     }
 
-    if (ctx->health_checks_performed % HEALTH_CHECK_LOG_INTERVAL == 0) {
+    if (ctx->health_checks_performed % STAR_SYSTEM_HEALTH_CHECK_LOG_INTERVAL == 0) {
       uint32_t uptime = shared_data_get_uptime_ms();
       ESP_LOGI(s_TAG,
                "Watchdog status - uptime: %lu ms, checks: %lu, recoveries: %lu",
@@ -233,7 +233,7 @@ static void internal_watchdog_task_loop(void* parameter)
                ctx->recovery_actions_taken);
     }
 
-    vTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(TASK_INTERVAL_WATCHDOG));
+    vTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(STAR_SYSTEM_TASK_INTERVAL_WATCHDOG));
   }
 
   ESP_LOGI(s_TAG, "System watchdog task ending");
@@ -259,9 +259,9 @@ esp_err_t watchdog_task_start(void)
 
   BaseType_t task_ret = xTaskCreate(internal_watchdog_task_loop,
                                     "watchdog_task",
-                                    TASK_STACK_SIZE_WATCHDOG,
+                                    STAR_SYSTEM_TASK_STACK_SIZE_WATCHDOG,
                                     &s_task_context,
-                                    TASK_PRIORITY_WATCHDOG,
+                                    STAR_SYSTEM_TASK_PRIORITY_WATCHDOG,
                                     &s_task_context.task_handle);
 
   if (task_ret != pdPASS) {

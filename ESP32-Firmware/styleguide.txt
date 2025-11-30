@@ -2084,6 +2084,30 @@ In this project, **macros** should be used sparingly and only when absolutely ne
 
   #define maxBufferSize 1024
 
+- **Follow PROJECT_MODULE_NAME Naming Convention**: All macros must follow the format `{PROJECT}_{MODULE}_{NAME}` to ensure clear organization and prevent naming conflicts across the codebase.
+
+  - **PROJECT**: Always "STAR" for this project
+  - **MODULE**: Indicates the functional area (SYSTEM, GPIO, PWM, SENSOR, etc.)
+  - **NAME**: Descriptive name of the actual constant or configuration
+
+  Correct Examples:
+
+  .. code-block:: c
+
+    #define STAR_SYSTEM_LED0_RED_PORT     GPIO_NUM_2
+    #define STAR_SYSTEM_DISTANCE_VERY_FAR 1000
+    #define STAR_GPIO_DEFAULT_MODE        GPIO_MODE_OUTPUT
+    #define STAR_PWM_DEFAULT_FREQUENCY    1000
+    #define STAR_SENSOR_TIMEOUT_MS        5000
+
+  Incorrect Examples:
+
+  .. code-block:: c
+
+    #define LED0_RED_PORT     GPIO_NUM_2   /* Missing PROJECT and MODULE */
+    #define DISTANCE_VERY_FAR 1000         /* Missing PROJECT and MODULE */
+    #define DEFAULT_MODE      GPIO_MODE_OUTPUT  /* Too generic, missing prefixes */
+
 - **Always Use Parentheses Around Macro Arguments**: When defining macros that take arguments, always use parentheses around both the arguments and the macro body to avoid unexpected behavior due to operator precedence.
 
   Correct Example:
@@ -2211,6 +2235,8 @@ Use macros when other options such as `const` or `inline` functions are not viab
 - Prefer `const`, `inline` functions, and enums over macros when possible.
 
 - Use all uppercase for macro names with underscores to separate words.
+
+- Follow the `STAR_MODULE_NAME` naming convention for all project macros.
 
 - Always enclose macro arguments in parentheses and use blocks for multi-statement macros.
 
