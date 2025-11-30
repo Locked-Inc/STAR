@@ -28,11 +28,12 @@ var searchData=
   ['gpio_25',['gpio',['../d2/d8d/structstar__bus__config.html#aceb134bb7f77d8e983a8a4bd20b85cce',1,'star_bus_config']]],
   ['gpio_5fpin_26',['gpio_pin',['../dd/dfe/structstar__dht22__config__t.html#ac20876d7a756e57a1ffec43eb3a25040',1,'star_dht22_config_t::gpio_pin'],['../df/db2/structstar__onewire__config__t.html#ad22858e5a8a3b217d7006e3dbff0df0b',1,'star_onewire_config_t::gpio_pin'],['../dc/da7/structstar__dht22__bus__config.html#a1b2efbcde3c2f27bd7cc913cdc3fb0cb',1,'star_dht22_bus_config::gpio_pin'],['../d9/df1/structperipheral__state__t.html#a7e4b16e749b28d3727163496a4c55314',1,'peripheral_state_t::gpio_pin']]],
   ['gravity_27',['gravity',['../df/d38/structimu__10dof__data__t.html#a6ea2486bf97734a852eb230250bead20',1,'imu_10dof_data_t']]],
-  ['gyro_28',['gyro',['../d1/dfd/structcalibration__status__t.html#a81a578c39a8e5fb0b7f2740054c32acb',1,'calibration_status_t']]],
-  ['gyro_5frange_29',['gyro_range',['../d7/d19/structmpu6050__config__t.html#a0a3fa85b9a998b78abf92a9d35579461',1,'mpu6050_config_t::gyro_range'],['../d7/d19/structmpu6050__config__t.html#a40dc63b802932c7e7cae761782f58a66',1,'mpu6050_config_t::gyro_range']]],
-  ['gyro_5fsensitivity_30',['gyro_sensitivity',['../d4/d09/structmpu6050__handle.html#a4a3ab65aa319b9fa24d40bc2802c8bda',1,'mpu6050_handle']]],
-  ['gyro_5fx_31',['gyro_x',['../d8/d62/structmpu6050__data__t.html#a32455ee632cb9db1bf2122fc5901e5eb',1,'mpu6050_data_t']]],
-  ['gyro_5fy_32',['gyro_y',['../d8/d62/structmpu6050__data__t.html#a2ce0dccba66e17eb0b6779a17390d71f',1,'mpu6050_data_t']]],
-  ['gyro_5fz_33',['gyro_z',['../d8/d62/structmpu6050__data__t.html#a8cc54392844ec4b093aa00ac34255c99',1,'mpu6050_data_t']]],
-  ['gyroscope_34',['gyroscope',['../df/d38/structimu__10dof__data__t.html#a7450e75d0eab29d508838cab52ef2fde',1,'imu_10dof_data_t']]]
+  ['green_28',['green',['../d0/d62/structrgb__color__t.html#a6753147580a9f2d88d1541f6c87beb04',1,'rgb_color_t']]],
+  ['gyro_29',['gyro',['../d1/dfd/structcalibration__status__t.html#a81a578c39a8e5fb0b7f2740054c32acb',1,'calibration_status_t']]],
+  ['gyro_5frange_30',['gyro_range',['../d7/d19/structmpu6050__config__t.html#a0a3fa85b9a998b78abf92a9d35579461',1,'mpu6050_config_t::gyro_range'],['../d7/d19/structmpu6050__config__t.html#a40dc63b802932c7e7cae761782f58a66',1,'mpu6050_config_t::gyro_range']]],
+  ['gyro_5fsensitivity_31',['gyro_sensitivity',['../d4/d09/structmpu6050__handle.html#a4a3ab65aa319b9fa24d40bc2802c8bda',1,'mpu6050_handle']]],
+  ['gyro_5fx_32',['gyro_x',['../d8/d62/structmpu6050__data__t.html#a32455ee632cb9db1bf2122fc5901e5eb',1,'mpu6050_data_t']]],
+  ['gyro_5fy_33',['gyro_y',['../d8/d62/structmpu6050__data__t.html#a2ce0dccba66e17eb0b6779a17390d71f',1,'mpu6050_data_t']]],
+  ['gyro_5fz_34',['gyro_z',['../d8/d62/structmpu6050__data__t.html#a8cc54392844ec4b093aa00ac34255c99',1,'mpu6050_data_t']]],
+  ['gyroscope_35',['gyroscope',['../df/d38/structimu__10dof__data__t.html#a7450e75d0eab29d508838cab52ef2fde',1,'imu_10dof_data_t']]]
 ];
