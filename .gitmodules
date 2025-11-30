@@ -1,3 +1,3 @@
-[submodule "ESP32-Firmware/UI-Demo"]
-	path = ESP32-Firmware/UI-Demo
+[submodule "UI-Demo"]
+	path = UI-Demo
 	url = git@github.com:Locked-Inc/UI-Demo.git
