@@ -1,0 +1,11 @@
+<map id="star_bms_bq7850_read_temperature" name="star_bms_bq7850_read_temperature">
+<area shape="rect" id="Node000001" title="Read pack temperature." alt="" coords="5,35,162,75"/>
+<area shape="rect" id="Node000002" href="$d3/df5/star__bus__smbus_8c.html#a06fee6f34cc0d8a110deb97775bb6e6a" title="SMBus Read Word." alt="" coords="210,42,366,68"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="162,52,197,55,192,55,162,58"/>
+<area shape="rect" id="Node000003" href="$d3/df5/star__bus__smbus_8c.html#a028e8362b8c772d39dee59e24c15439b" title="Validate common parameters for SMBus operations." alt="" coords="414,5,575,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="366,41,401,39,396,40,367,47"/>
+<area shape="rect" id="Node000004" href="$dd/d1a/star__bus__i2c_8c.html#a2e9b9baf8a0f8d00a2080963a7efd62f" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="431,70,558,96"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="366,63,418,72,413,72,366,68"/>
+<area shape="rect" id="Node000005" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="623,70,808,96"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="558,80,610,83,605,83,559,86"/>
+</map>

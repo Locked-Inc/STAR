@@ -1,0 +1,7 @@
+<map id="iface_register_pin" name="iface_register_pin">
+<area shape="rect" id="Node000001" title="Adapter function for register_pin interface." alt="" coords="5,5,129,31"/>
+<area shape="rect" id="Node000002" href="$d2/dad/star__pin__validator_8c.html#a8eace335a8befbd45cc9d4725a523dc7" title="Register a pin on the validator." alt="" coords="177,5,294,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="129,16,163,18,158,18,129,21"/>
+<area shape="rect" id="Node000003" href="$d2/dad/star__pin__validator_8c.html#a4583345fc8acffd3934cbdc1572cd030" title="Initialize mutex if not already initialized (thread&#45;safe)." alt="" coords="342,5,423,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="294,16,329,18,324,18,294,21"/>
+</map>

@@ -1,0 +1,13 @@
+<map id="star_sensor_pca9685_set_pwm" name="star_sensor_pca9685_set_pwm">
+<area shape="rect" id="Node000001" title="Set PWM values directly for a channel." alt="" coords="515,71,661,111"/>
+<area shape="rect" id="Node000002" href="$d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="319,5,464,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="508,65,455,49,455,44,513,65"/>
+<area shape="rect" id="Node000005" href="$d3/df7/star__sensor__pca9685_8c.html#a878d81208cf78305ab5ed17716e33bf9" title="Set PWM duty cycle with phase shift." alt="" coords="316,71,467,111"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="497,91,468,94,467,88,503,91"/>
+<area shape="rect" id="Node000006" href="$d3/df7/star__sensor__pca9685_8c.html#a2e4fa8ab35cdf64c114217bfc1309a1c" title="Set servo position by angle." alt="" coords="319,136,464,177"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="513,116,456,138,454,133,508,117"/>
+<area shape="rect" id="Node000003" href="$d0/d29/main_8c.html#a641c94ad0bf8146674fdfb9caa6722fe" title=" " alt="" coords="131,13,268,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="301,26,269,28,268,23,306,25"/>
+<area shape="rect" id="Node000004" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,13,83,38"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="113,27,84,28,82,23,117,24"/>
+</map>

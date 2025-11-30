@@ -1,0 +1,9 @@
+<map id="internal_should_use_spi_dma" name="internal_should_use_spi_dma">
+<area shape="rect" id="Node000001" title="Check if transfer should use DMA." alt="" coords="248,47,384,88"/>
+<area shape="rect" id="Node000002" href="$dc/d0c/star__bus__spi__dma_8c.html#aeb458f8a3f35813285e422041ee4a086" title="Receive data via SPI using DMA." alt="" coords="14,5,191,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="230,49,161,34,161,29,235,47"/>
+<area shape="rect" id="Node000003" href="$dc/d0c/star__bus__spi__dma_8c.html#adf3123b20b78dd55e9349ccbaae6794b" title="Perform full&#45;duplex SPI transceive using DMA." alt="" coords="5,55,200,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="229,68,200,70,200,65,235,67"/>
+<area shape="rect" id="Node000004" href="$dc/d0c/star__bus__spi__dma_8c.html#a48e6bc6331dd5601e1d327d5adb6eefd" title="Transmit data via SPI using DMA." alt="" coords="12,104,193,130"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="235,86,162,106,161,101,230,87"/>
+</map>

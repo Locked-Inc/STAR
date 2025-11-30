@@ -298,24 +298,24 @@ esp_err_t error_handler_reset_state(error_handler_t* handler)
 
 /* --- Interface Adapter Functions --- */
 
-static esp_err_t priv_iface_record_error(void*       ctx,
-                                         esp_err_t   error,
-                                         const char* message,
-                                         const char* file,
-                                         int         line,
-                                         const char* func)
+static esp_err_t internal_iface_record_error(void*       ctx,
+                                             esp_err_t   error,
+                                             const char* message,
+                                             const char* file,
+                                             int         line,
+                                             const char* func)
 {
   error_handler_t* handler = (error_handler_t*)ctx;
   return error_handler_record_error(handler, error, message, file, line, func);
 }
 
-static bool priv_iface_can_retry(void* ctx)
+static bool internal_iface_can_retry(void* ctx)
 {
   error_handler_t* handler = (error_handler_t*)ctx;
   return error_handler_can_retry(handler);
 }
 
-static esp_err_t priv_iface_reset_state(void* ctx)
+static esp_err_t internal_iface_reset_state(void* ctx)
 {
   error_handler_t* handler = (error_handler_t*)ctx;
   return error_handler_reset_state(handler);
@@ -337,9 +337,9 @@ void error_handler_get_interface(star_error_interface_t* iface, error_handler_t*
     return;
   }
 
-  iface->record_error = priv_iface_record_error;
-  iface->can_retry    = priv_iface_can_retry;
-  iface->reset_state  = priv_iface_reset_state;
+  iface->record_error = internal_iface_record_error;
+  iface->can_retry    = internal_iface_can_retry;
+  iface->reset_state  = internal_iface_reset_state;
   iface->ctx          = handler;
 }
 

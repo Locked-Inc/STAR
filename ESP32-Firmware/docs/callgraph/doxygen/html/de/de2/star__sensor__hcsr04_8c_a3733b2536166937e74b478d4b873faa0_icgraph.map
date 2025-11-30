@@ -1,0 +1,7 @@
+<map id="star_sensor_hcsr04_trigger" name="star_sensor_hcsr04_trigger">
+<area shape="rect" id="Node000001" title="Trigger measurement (non&#45;blocking)." alt="" coords="314,5,449,46"/>
+<area shape="rect" id="Node000002" href="$de/de2/star__sensor__hcsr04_8c.html#a104064b944a69649fe3bc16a186bcd4a" title="Trigger measurement and read distance." alt="" coords="131,5,266,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="296,26,266,28,266,23,301,26"/>
+<area shape="rect" id="Node000003" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,13,83,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="112,26,83,28,83,23,118,25"/>
+</map>

@@ -1,0 +1,9 @@
+<map id="lib/star_bus/include/star_bus_dht22_proprietary.h" name="lib/star_bus/include/star_bus_dht22_proprietary.h">
+<area shape="rect" id="Node000001" title="DHT22 (AM2302) proprietary single&#45;wire protocol implementation." alt="" coords="152,5,344,46"/>
+<area shape="rect" id="Node000002" href="$de/d98/star__bus__config_8c.html" title=" " alt="" coords="5,94,142,135"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="197,53,114,96,112,91,192,54"/>
+<area shape="rect" id="Node000003" href="$dc/d1f/star__bus__dht22__proprietary_8c.html" title=" " alt="" coords="166,94,331,135"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="250,60,250,95,246,92,246,64"/>
+<area shape="rect" id="Node000004" href="$d0/d29/main_8c.html" title=" " alt="" coords="355,102,437,127"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="296,52,378,101,373,101,294,57"/>
+</map>

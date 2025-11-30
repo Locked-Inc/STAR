@@ -1,357 +1,300 @@
-/**
- * @file main.c
- * @brief Multi-Directional HCSR04 Distance Sensors to PCA9685 Servo Control
- *
- * This example demonstrates using multiple HC-SR04 ultrasonic distance sensors
- * to control servo motors via the PCA9685 PWM driver. Each sensor monitors a
- * different direction and controls its own dedicated servo.
- *
- * Hardware Setup (Platform-Specific):
- * - 4x HC-SR04 sensors (Front, Back, Left, Right)
- * - PCA9685: I2C PWM controller at address 0x40
- * - 4x Servos: Connected to PCA9685 channels 0-3
- *
- * Platform-Specific GPIO Pins:
- *
- * ESP32-WROOM:
- * - I2C: SDA=GPIO21, SCL=GPIO22
- * - Front HC-SR04: Trigger=GPIO23, Echo=GPIO22 (repurposed)
- * - Back HC-SR04: Trigger=GPIO19, Echo=GPIO18
- * - Left HC-SR04: Trigger=GPIO5, Echo=GPIO17
- * - Right HC-SR04: Trigger=GPIO16, Echo=GPIO4
- *
- * ESP32-S3:
- * - I2C: SDA=GPIO8, SCL=GPIO9
- * - Front HC-SR04: Trigger=GPIO1, Echo=GPIO2
- * - Back HC-SR04: Trigger=GPIO3, Echo=GPIO4
- * - Left HC-SR04: Trigger=GPIO5, Echo=GPIO6
- * - Right HC-SR04: Trigger=GPIO7, Echo=GPIO15
- *
- * Behavior:
- * - Each sensor measures distance continuously (10-400cm range)
- * - Distance is mapped to servo angle: 10cm → 0°, 400cm → 180°
- * - All servos update concurrently every 200ms
- */
-
 #include <esp_log.h>
 #include <freertos/FreeRTOS.h>
 #include <freertos/task.h>
-#include <star_bus_config.h>
-#include <star_bus_manager.h>
-#include <star_error_handler.h>
-#include <star_error_interface.h>
-#include <star_pin_validator.h>
-#include <star_sensor_hcsr04.h>
-#include <star_sensor_pca9685.h>
 
-/* Static file-scope TAG for logging */
-static const char* s_TAG = "multi_hcsr04";
+#include "star_bus_common_types.h"
+#include "star_bus_config.h"
+#include "star_bus_dht22_proprietary.h"
+#include "star_bus_gpio.h"
+#include "star_bus_manager.h"
+#include "star_bus_manager_types.h"
+#include "star_error_handler.h"
+#include "star_error_interface.h"
+#include "star_pin_interface.h"
+#include "star_pin_validator.h"
+#include "star_sensor_hcsr04.h"
+#include "star_sensor_pca9685.h"
 
-/* ========== Platform-Specific Pin Definitions ========== */
+/* Hardware Config */
+#define NUM_HCSR04 (2)
+#define HCSR04_MAX_DISTANCE_CM (400)
 
-/* I2C pins - platform-specific via build flags */
-#if defined(CONFIG_STAR_BOARD_ESP32_WROOM_32)
-#define I2C_SDA_PIN (GPIO_NUM_21)
-#define I2C_SCL_PIN (GPIO_NUM_22)
-/* Front sensor */
-#define HCSR04_FRONT_TRIG (GPIO_NUM_23)
-#define HCSR04_FRONT_ECHO (GPIO_NUM_22)
-/* Back sensor */
-#define HCSR04_BACK_TRIG (GPIO_NUM_19)
-#define HCSR04_BACK_ECHO (GPIO_NUM_18)
-/* Left sensor */
-#define HCSR04_LEFT_TRIG (GPIO_NUM_5)
-#define HCSR04_LEFT_ECHO (GPIO_NUM_17)
-/* Right sensor */
-#define HCSR04_RIGHT_TRIG (GPIO_NUM_16)
-#define HCSR04_RIGHT_ECHO (GPIO_NUM_4)
-#elif defined(CONFIG_STAR_BOARD_ESP32_S3_WROOM_1_N16)
-#define I2C_SDA_PIN (GPIO_NUM_8)
-#define I2C_SCL_PIN (GPIO_NUM_9)
-/* Front sensor */
-#define HCSR04_FRONT_TRIG (GPIO_NUM_1)
-#define HCSR04_FRONT_ECHO (GPIO_NUM_2)
-/* Back sensor */
-#define HCSR04_BACK_TRIG (GPIO_NUM_3)
-#define HCSR04_BACK_ECHO (GPIO_NUM_4)
-/* Left sensor */
-#define HCSR04_LEFT_TRIG (GPIO_NUM_5)
-#define HCSR04_LEFT_ECHO (GPIO_NUM_6)
-/* Right sensor */
-#define HCSR04_RIGHT_TRIG (GPIO_NUM_7)
-#define HCSR04_RIGHT_ECHO (GPIO_NUM_15)
-#else
-#error                                                                                             \
-  "Unsupported platform - define CONFIG_STAR_BOARD_ESP32_WROOM_32 or CONFIG_STAR_BOARD_ESP32_S3_WROOM_1_N16"
-#endif
+/* Left Sensor */
+#define HCSR04_LEFT (0)
+#define GPIO_LEFT_TRIG (GPIO_NUM_18)
+#define GPIO_LEFT_ECHO (GPIO_NUM_19)
 
-/* PCA9685 configuration */
-#define PCA9685_I2C_ADDR (0x40)
-#define PCA9685_PWM_FREQ (50)       /* 50Hz for standard servos */
-#define PCA9685_I2C_CLK_HZ (100000) /* 100kHz I2C clock */
+/* Right Sensor */
+#define HCSR04_RIGHT (1)
+#define GPIO_RIGHT_TRIG (GPIO_NUM_4)
+#define GPIO_RIGHT_ECHO (GPIO_NUM_2)
 
-/* Servo channel assignments */
-#define SERVO_CHANNEL_FRONT (0)
-#define SERVO_CHANNEL_BACK (1)
-#define SERVO_CHANNEL_LEFT (2)
-#define SERVO_CHANNEL_RIGHT (3)
+/* DHT22 Pin (out) */
+#define GPIO_DHT22_PIN (GPIO_NUM_5)
 
-/* Distance to angle mapping parameters */
-#define MIN_DISTANCE_CM (10.0f)
-#define MAX_DISTANCE_CM (400.0f)
-#define MIN_ANGLE (0)
-#define MAX_ANGLE (180)
+/* PCA9685 */
+#define GPIO_PCA9685_I2C_SDA (GPIO_NUM_21)
+#define GPIO_PCA9685_I2C_SCL (GPIO_NUM_22)
+#define PCA9685_I2C_FREQUENCY (400000)
+#define PCA9685_I2C_NUM (I2C_NUM_0)
+#define PCA9685_PWM_FREQUENCY_kHZ (50)
+#define GPIO_PCA9685_OE (GPIO_NUM_15)
 
-/* Update rate */
-#define UPDATE_INTERVAL_MS (200)
+/* RGB LED Channel Mappings */
+#define LED_LEFT_RED (0)
+#define LED_LEFT_GREEN (1)
+#define LED_LEFT_BLUE (2)
+#define LED_RIGHT_RED (3)
+#define LED_RIGHT_GREEN (4)
+#define LED_RIGHT_BLUE (5)
 
-/* Number of sensors/servos */
-#define NUM_SENSORS (4)
+/* Distance Ranges (in cm) */
+#define DISTANCE_VERY_CLOSE (10.0f) /* < 10cm: Bright Red */
+#define DISTANCE_CLOSE (25.0f)      /* 10-25cm: Red to Yellow */
+#define DISTANCE_MEDIUM (50.0f)     /* 25-50cm: Yellow to Green */
+#define DISTANCE_FAR (100.0f)       /* 50-100cm: Green to Blue */
+#define DISTANCE_VERY_FAR (200.0f)  /* 100-200cm: Blue */
+                                    /* > 200cm: LEDs off */
 
-/* Sensor direction enumeration */
-typedef enum {
-  SENSOR_FRONT = 0,
-  SENSOR_BACK  = 1,
-  SENSOR_LEFT  = 2,
-  SENSOR_RIGHT = 3
-} sensor_direction_t;
+static const char* s_TAG         = "POC Demo";
+static const char* s_DHT22_TAG   = "DHT-22";
+static const char* s_HCSR04_TAG  = "HC-SR04";
+static const char* s_PCA9685_TAG = "PCA9685";
 
-/* Sensor configuration structure */
+/* PWM scaling - adjust these values as needed (lower = brighter, higher = dimmer) */
+#define MIN_PWM_RED (45.0f)   /* Red LED minimum PWM */
+#define MIN_PWM_GREEN (45.0f) /* Green LED minimum PWM */
+#define MIN_PWM_BLUE (45.0f)  /* Blue LED minimum PWM */
+#define MAX_PWM_ALL (100.0f)  /* Maximum PWM for all colors */
+
 typedef struct {
-  const char*     name;
-  gpio_num_t      trigger_pin;
-  gpio_num_t      echo_pin;
-  uint8_t         servo_channel;
-  hcsr04_handle_t handle;
-} sensor_config_t;
+  float red;
+  float green;
+  float blue;
+} rgb_color_t;
 
-/**
- * @brief Map distance reading to servo angle (application-specific logic)
- *
- * @param[in] distance_cm Distance in centimeters (10-400cm)
- * @return Servo angle (0-180 degrees)
- */
-static uint8_t map_distance_to_angle(float distance_cm)
+static float internal_scale_pwm_for_color(float original_percent, float min_pwm)
 {
-  float clamped = distance_cm;
-
-  /* Clamp distance to valid range */
-  if (clamped < MIN_DISTANCE_CM) {
-    clamped = MIN_DISTANCE_CM;
+  if (original_percent <= 0.1f) {
+    return 0.0f;
   }
-  if (clamped > MAX_DISTANCE_CM) {
-    clamped = MAX_DISTANCE_CM;
+  return min_pwm + (original_percent / 100.0f) * (MAX_PWM_ALL - min_pwm);
+}
+
+static void
+internal_set_rgb_led(const pca9685_handle_t* handle, uint8_t led_index, const rgb_color_t* color)
+{
+  uint8_t red_channel   = led_index * 3 + 0;
+  uint8_t green_channel = led_index * 3 + 1;
+  uint8_t blue_channel  = led_index * 3 + 2;
+
+  float scaled_red   = internal_scale_pwm_for_color(color->red, MIN_PWM_RED);
+  float scaled_green = internal_scale_pwm_for_color(color->green, MIN_PWM_GREEN);
+  float scaled_blue  = internal_scale_pwm_for_color(color->blue, MIN_PWM_BLUE);
+
+  star_sensor_pca9685_set_duty_cycle(handle, red_channel, scaled_red);
+  star_sensor_pca9685_set_duty_cycle(handle, green_channel, scaled_green);
+  star_sensor_pca9685_set_duty_cycle(handle, blue_channel, scaled_blue);
+}
+
+static rgb_color_t internal_distance_to_rgb(float distance_cm)
+{
+  rgb_color_t color = {0.0f, 0.0f, 0.0f};
+
+  if (distance_cm > DISTANCE_VERY_FAR) {
+    return color;
   }
 
-  /* Linear mapping: closer objects → smaller angles */
-  float   normalized = (clamped - MIN_DISTANCE_CM) / (MAX_DISTANCE_CM - MIN_DISTANCE_CM);
-  uint8_t angle      = (uint8_t)((normalized * (MAX_ANGLE - MIN_ANGLE)) + MIN_ANGLE);
+  float brightness_factor = 1.0f;
 
-  return angle;
+  if (distance_cm < DISTANCE_VERY_CLOSE) {
+    color.red         = 100.0f;
+    brightness_factor = 1.0f;
+  } else if (distance_cm < DISTANCE_CLOSE) {
+    float ratio = (distance_cm - DISTANCE_VERY_CLOSE) / (DISTANCE_CLOSE - DISTANCE_VERY_CLOSE);
+    color.red   = 100.0f;
+    color.green = ratio * 100.0f;
+    brightness_factor = 1.0f - (ratio * 0.3f);
+  } else if (distance_cm < DISTANCE_MEDIUM) {
+    float ratio       = (distance_cm - DISTANCE_CLOSE) / (DISTANCE_MEDIUM - DISTANCE_CLOSE);
+    color.red         = (1.0f - ratio) * 100.0f;
+    color.green       = 100.0f;
+    brightness_factor = 0.7f - (ratio * 0.2f);
+  } else if (distance_cm < DISTANCE_FAR) {
+    float ratio       = (distance_cm - DISTANCE_MEDIUM) / (DISTANCE_FAR - DISTANCE_MEDIUM);
+    color.green       = (1.0f - ratio) * 100.0f;
+    color.blue        = ratio * 100.0f;
+    brightness_factor = 0.5f - (ratio * 0.2f);
+  } else if (distance_cm <= DISTANCE_VERY_FAR) {
+    color.blue        = 100.0f;
+    float ratio       = (distance_cm - DISTANCE_FAR) / (DISTANCE_VERY_FAR - DISTANCE_FAR);
+    brightness_factor = 0.3f - (ratio * 0.2f);
+  }
+
+  color.red *= brightness_factor;
+  color.green *= brightness_factor;
+  color.blue *= brightness_factor;
+
+  return color;
 }
 
 void app_main(void)
 {
+  /* I am using 2 HC-SR04 Sensors, one for "Left" and one for "Right", in the actual project, we will have 7.
+     * This is a POC for a software demo. For accurate data collection, speed of sound needs correction with temperature.
+     * In this example a DHT-22 will be used. However, for the actual project we will use DS18B20 with OneWire
+     */
+
   esp_err_t ret;
 
-  ESP_LOGI(s_TAG, "=== Multi-Directional HCSR04 to PCA9685 Servo Control ===");
-  ESP_LOGI(s_TAG, "4-sensor obstacle avoidance system");
+  ESP_LOGI(s_TAG, "Starting POC Demo");
 
-  /* ========== Setup Bus Manager ========== */
-
-  /* Get pin validator interface */
+  /* First we need to set up the pin validator */
   star_pin_interface_t pin_iface;
   pin_validator_get_interface(&pin_iface);
 
-  /* Create error interface using helper */
+  /* Now set up the error interface */
   star_error_interface_t* error_iface = star_error_interface_create_default();
   if (error_iface == NULL) {
     ESP_LOGE(s_TAG, "Failed to create error interface");
     return;
   }
 
-  /* Initialize bus manager */
+  /* Setup bus manager */
   star_bus_manager_t bus_manager;
   ret = star_bus_manager_init(&bus_manager, "main_bus_mgr", error_iface, &pin_iface);
   if (ret != ESP_OK) {
-    ESP_LOGE(s_TAG, "Bus manager init failed: %s", esp_err_to_name(ret));
+    ESP_LOGE(s_TAG, "Failed to init bus manager: %s", esp_err_to_name(ret));
     star_error_interface_destroy(error_iface);
     return;
   }
 
-  /* ========== Setup Sensor Configurations ========== */
+  /* Setup DHT-22 using proprietary single-wire protocol */
+  ESP_LOGI(s_TAG, "Setting up DHT22 on GPIO %d", GPIO_DHT22_PIN);
 
-  sensor_config_t sensors[NUM_SENSORS] = {{.name          = "Front",
-                                           .trigger_pin   = HCSR04_FRONT_TRIG,
-                                           .echo_pin      = HCSR04_FRONT_ECHO,
-                                           .servo_channel = SERVO_CHANNEL_FRONT},
-                                          {.name          = "Back",
-                                           .trigger_pin   = HCSR04_BACK_TRIG,
-                                           .echo_pin      = HCSR04_BACK_ECHO,
-                                           .servo_channel = SERVO_CHANNEL_BACK},
-                                          {.name          = "Left",
-                                           .trigger_pin   = HCSR04_LEFT_TRIG,
-                                           .echo_pin      = HCSR04_LEFT_ECHO,
-                                           .servo_channel = SERVO_CHANNEL_LEFT},
-                                          {.name          = "Right",
-                                           .trigger_pin   = HCSR04_RIGHT_TRIG,
-                                           .echo_pin      = HCSR04_RIGHT_ECHO,
-                                           .servo_channel = SERVO_CHANNEL_RIGHT}};
+  star_dht22_config_t dht22_config = STAR_DHT22_CONFIG_DEFAULT();
+  dht22_config.gpio_pin            = GPIO_DHT22_PIN;
 
-  /* ========== Setup HCSR04 Sensors ========== */
+  ret = star_bus_dht22_init(&bus_manager, s_DHT22_TAG, &dht22_config);
+  if (ret != ESP_OK) {
+    ESP_LOGE(s_TAG, "Failed to init DHT22: %s", esp_err_to_name(ret));
+    star_bus_manager_deinit(&bus_manager);
+    star_error_interface_destroy(error_iface);
+    return;
+  }
 
-  for (int i = 0; i < NUM_SENSORS; i++) {
-    /* Create GPIO bus for each sensor */
-    gpio_num_t sensor_pins[] = {sensors[i].trigger_pin, sensors[i].echo_pin};
-    char       bus_name[32];
-    snprintf(bus_name, sizeof(bus_name), "hcsr04_%s_gpio", sensors[i].name);
-
-    star_bus_config_t* sensor_bus = star_bus_config_create_gpio(bus_name, sensor_pins, 2);
-    if (sensor_bus == NULL) {
-      ESP_LOGE(s_TAG, "Failed to create %s sensor bus config", sensors[i].name);
-      goto cleanup_bus_mgr;
-    }
-
-    ret = star_bus_manager_add_bus(&bus_manager, sensor_bus);
-    if (ret != ESP_OK) {
-      ESP_LOGE(s_TAG, "Failed to add %s sensor bus: %s", sensors[i].name, esp_err_to_name(ret));
-      star_bus_config_destroy(sensor_bus);
-      goto cleanup_bus_mgr;
-    }
-
-    /* Initialize sensor */
-    hcsr04_config_t hcsr04_cfg = {
-      .trigger_pin   = sensors[i].trigger_pin,
-      .echo_pin      = sensors[i].echo_pin,
-      .temperature_c = 20.0f /* Room temperature for speed of sound calculation */
-    };
-
-    ret =
-      star_sensor_hcsr04_init(&sensors[i].handle, &bus_manager, bus_name, error_iface, &hcsr04_cfg);
-    if (ret != ESP_OK) {
-      ESP_LOGE(s_TAG, "%s HCSR04 init failed: %s", sensors[i].name, esp_err_to_name(ret));
-      goto cleanup_bus_mgr;
-    }
-
+  /* Read temperature from DHT22 for sound speed correction */
+  star_dht22_data_t dht22_data;
+  ret = star_bus_dht22_read(&bus_manager, s_DHT22_TAG, &dht22_data); // TODO: Move this to a Task
+  float temp_c = 25.0f; /* Default temperature if read fails */
+  if (ret == ESP_OK && dht22_data.checksum_valid) {
+    temp_c = dht22_data.temperature_c;
     ESP_LOGI(s_TAG,
-             "✓ %s HCSR04 initialized (Trig: GPIO%d, Echo: GPIO%d)",
-             sensors[i].name,
-             sensors[i].trigger_pin,
-             sensors[i].echo_pin);
+             "DHT-22 Temperature: %.1f C, Humidity: %.1f %%",
+             dht22_data.temperature_c,
+             dht22_data.humidity_percent);
+  } else {
+    ESP_LOGW(s_TAG, "DHT-22 read failed, using default temperature %.1f C", temp_c);
   }
 
-  /* ========== Setup PCA9685 Servo Controller ========== */
-
-  /* Create I2C bus for PCA9685 */
-  star_bus_config_t* i2c_bus = star_bus_config_create_i2c("pca9685_i2c",
-                                                          I2C_NUM_0,
-                                                          PCA9685_I2C_ADDR,
-                                                          I2C_SDA_PIN,
-                                                          I2C_SCL_PIN,
-                                                          PCA9685_I2C_CLK_HZ);
-  if (i2c_bus == NULL) {
-    ESP_LOGE(s_TAG, "Failed to create I2C bus config");
-    goto cleanup_bus_mgr;
+  /* Set up HCSR-04 */
+  /* First create a GPIO bus for the HC-SR04 sensors */
+  gpio_num_t hcsr04_pins[] = {GPIO_LEFT_TRIG, GPIO_LEFT_ECHO, GPIO_RIGHT_TRIG, GPIO_RIGHT_ECHO};
+  star_bus_config_t* hcsr04_gpio_bus =
+    star_bus_config_create_gpio(s_HCSR04_TAG,
+                                hcsr04_pins,
+                                sizeof(hcsr04_pins) / sizeof(hcsr04_pins[0]));
+  if (hcsr04_gpio_bus == NULL) {
+    ESP_LOGE(s_TAG, "Failed to create GPIO bus for HC-SR04");
+    star_bus_manager_deinit(&bus_manager);
+    star_error_interface_destroy(error_iface);
+    return;
   }
-
-  ret = star_bus_manager_add_bus(&bus_manager, i2c_bus);
+  ret = star_bus_manager_add_bus(&bus_manager, hcsr04_gpio_bus);
   if (ret != ESP_OK) {
-    ESP_LOGE(s_TAG, "Failed to add I2C bus: %s", esp_err_to_name(ret));
-    star_bus_config_destroy(i2c_bus);
-    goto cleanup_bus_mgr;
+    ESP_LOGE(s_TAG, "Failed to add GPIO bus for HC-SR04: %s", esp_err_to_name(ret));
+    star_bus_config_destroy(hcsr04_gpio_bus);
+    star_bus_manager_deinit(&bus_manager);
+    star_error_interface_destroy(error_iface);
+    return;
   }
 
-  /* Initialize PCA9685 */
-  pca9685_handle_t servo_controller;
-  pca9685_config_t pca9685_cfg = {.i2c_addr      = PCA9685_I2C_ADDR,
-                                  .pwm_freq      = PCA9685_PWM_FREQ,
-                                  .output_mode   = PCA9685_OUTPUT_TOTEM_POLE,
-                                  .ext_clock     = false,
-                                  .invert_output = false};
+  const hcsr04_config_t hcsr04_config[NUM_HCSR04] = {{GPIO_LEFT_TRIG, GPIO_LEFT_ECHO, temp_c},
+                                                     {GPIO_RIGHT_TRIG, GPIO_RIGHT_ECHO, temp_c}};
+  hcsr04_handle_t       hcsr04_handles[NUM_HCSR04];
+  float                 hcsr04_data[NUM_HCSR04];
 
-  ret = star_sensor_pca9685_init(&servo_controller,
+  for (uint8_t i = 0; i < NUM_HCSR04; i++) {
+    ret = star_sensor_hcsr04_init(&hcsr04_handles[i],
+                                  &bus_manager,
+                                  s_HCSR04_TAG,
+                                  error_iface,
+                                  &hcsr04_config[i]);
+    if (ret != ESP_OK) {
+      ESP_LOGE(s_TAG, "Failed to init HC-SR04 sensor %d: %s", i, esp_err_to_name(ret));
+    }
+  }
+
+  /* Set up PCA9685 */
+  star_bus_config_t* pwm_bus = star_bus_config_create_i2c(s_PCA9685_TAG,
+                                                          PCA9685_I2C_NUM,
+                                                          PCA9685_DEFAULT_ADDR,
+                                                          GPIO_PCA9685_I2C_SDA,
+                                                          GPIO_PCA9685_I2C_SCL,
+                                                          PCA9685_I2C_FREQUENCY);
+  star_bus_manager_add_bus(&bus_manager, pwm_bus);
+
+  pca9685_handle_t pca9685_handle;
+  pca9685_config_t pca9685_config = {.i2c_addr      = PCA9685_DEFAULT_ADDR,
+                                     .pwm_freq      = PCA9685_PWM_FREQUENCY_kHZ,
+                                     .output_mode   = PCA9685_OUTPUT_TOTEM_POLE,
+                                     .ext_clock     = false,
+                                     .invert_output = false};
+  ret                             = star_sensor_pca9685_init(&pca9685_handle,
                                  &bus_manager,
-                                 "pca9685_i2c",
+                                 s_PCA9685_TAG,
                                  error_iface,
-                                 GPIO_NUM_NC, /* No output enable pin */
-                                 false,       /* OE active low (not used) */
-                                 &pca9685_cfg);
+                                 GPIO_PCA9685_OE,
+                                 false,
+                                 &pca9685_config);
+
   if (ret != ESP_OK) {
-    ESP_LOGE(s_TAG, "PCA9685 init failed: %s", esp_err_to_name(ret));
-    goto cleanup_bus_mgr;
+    ESP_LOGE(s_TAG, "Failed to init PCA9685: %s", esp_err_to_name(ret));
+    star_bus_manager_deinit(&bus_manager);
+    star_error_interface_destroy(error_iface);
+    return;
   }
 
-  ESP_LOGI(s_TAG,
-           "✓ PCA9685 initialized (I2C: 0x%02X, PWM: %dHz)",
-           PCA9685_I2C_ADDR,
-           PCA9685_PWM_FREQ);
-  ESP_LOGI(s_TAG, "✓ 4 Servos on channels 0-3 ready");
-
-  /* ========== Main Control Loop ========== */
-
-  ESP_LOGI(s_TAG, "Starting multi-sensor control loop...");
-  ESP_LOGI(s_TAG,
-           "Distance range: %.0f-%.0fcm → Angle range: %d-%d°",
-           MIN_DISTANCE_CM,
-           MAX_DISTANCE_CM,
-           MIN_ANGLE,
-           MAX_ANGLE);
-
-  uint32_t loop_count = 0;
+  ESP_LOGI(s_TAG, "PCA9685 initialized successfully");
 
   while (1) {
-    /* Read all sensors and update servos */
-    for (int i = 0; i < NUM_SENSORS; i++) {
-      float distance_cm;
-      ret = star_sensor_hcsr04_read_distance(&sensors[i].handle, &distance_cm);
+    for (uint8_t i = 0; i < NUM_HCSR04; i++) {
+      ret = star_sensor_hcsr04_read_distance(&hcsr04_handles[i], &hcsr04_data[i]);
 
       if (ret == ESP_OK) {
-        /* Valid reading - process it */
-        uint8_t target_angle = map_distance_to_angle(distance_cm);
+        const char* sensor_name = (i == HCSR04_LEFT) ? "Left" : "Right";
+        ESP_LOGI(s_TAG, "%s sensor distance: %.1f cm", sensor_name, hcsr04_data[i]);
 
-        /* Set servo position using library function */
-        ret = star_sensor_pca9685_set_servo_angle(&servo_controller,
-                                                  sensors[i].servo_channel,
-                                                  target_angle);
-        if (ret != ESP_OK) {
-          ESP_LOGW(s_TAG,
-                   "%s: Failed to set servo angle: %s",
-                   sensors[i].name,
-                   esp_err_to_name(ret));
+        rgb_color_t color = internal_distance_to_rgb(hcsr04_data[i]);
+        internal_set_rgb_led(&pca9685_handle, i, &color);
+
+        if (color.red > 0.1f || color.green > 0.1f || color.blue > 0.1f) {
+          ESP_LOGI(s_TAG,
+                   "%s LED: R=%.1f%%, G=%.1f%%, B=%.1f%%",
+                   sensor_name,
+                   color.red,
+                   color.green,
+                   color.blue);
         } else {
-          /* Log every 10th successful update to avoid spam */
-          if ((loop_count % 10) == 0) {
-            ESP_LOGI(s_TAG,
-                     "%s: %.1fcm → %d° (ch%d)",
-                     sensors[i].name,
-                     distance_cm,
-                     target_angle,
-                     sensors[i].servo_channel);
-          }
+          ESP_LOGI(s_TAG, "%s LED: OFF (distance > %.0fcm)", sensor_name, DISTANCE_VERY_FAR);
         }
       } else {
-        /* Sensor read failed - log warning but continue */
-        if ((loop_count % 10) == 0) {
-          ESP_LOGW(s_TAG, "%s: Sensor read failed: %s", sensors[i].name, esp_err_to_name(ret));
-        }
+        ESP_LOGW(s_TAG, "Failed to read sensor %d: %s", i, esp_err_to_name(ret));
+        rgb_color_t off_color = {0.0f, 0.0f, 0.0f};
+        internal_set_rgb_led(&pca9685_handle, i, &off_color);
       }
     }
 
-    loop_count++;
-    vTaskDelay(pdMS_TO_TICKS(UPDATE_INTERVAL_MS));
+    vTaskDelay(pdMS_TO_TICKS(200));
   }
-
-  /* ========== Cleanup (unreachable in this example) ========== */
-
-  star_sensor_pca9685_deinit(&servo_controller);
-
-  for (int i = 0; i < NUM_SENSORS; i++) {
-    star_sensor_hcsr04_deinit(&sensors[i].handle);
-  }
-
-cleanup_bus_mgr:
-  star_bus_manager_deinit(&bus_manager);
-  star_error_interface_destroy(error_iface);
-
-  ESP_LOGI(s_TAG, "Example terminated");
 }

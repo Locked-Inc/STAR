@@ -32,9 +32,10 @@ typedef struct star_bus_config {
 
   /* Union to hold protocol-specific configuration */
   union {
-    star_i2c_bus_config_t  i2c;  /**< I2C-specific configuration */
-    star_spi_bus_config_t  spi;  /**< SPI-specific configuration */
-    star_gpio_bus_config_t gpio; /**< GPIO-specific configuration */
+    star_i2c_bus_config_t   i2c;   /**< I2C-specific configuration */
+    star_spi_bus_config_t   spi;   /**< SPI-specific configuration */
+    star_gpio_bus_config_t  gpio;  /**< GPIO-specific configuration */
+    star_dht22_bus_config_t dht22; /**< DHT22-specific configuration */
     /* Add other bus types here */
   } proto;
 

@@ -1,0 +1,5 @@
+<map id="star_bus_uart_write" name="star_bus_uart_write">
+<area shape="rect" id="Node000001" title="Write data to UART." alt="" coords="189,13,324,38"/>
+<area shape="rect" id="Node000002" href="$da/d14/star__bus__uart_8c.html#abae3753139e2d5156c057ee6c20af41b" title="Write string to UART (null&#45;terminated)." alt="" coords="5,5,141,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="170,26,141,28,141,23,176,25"/>
+</map>

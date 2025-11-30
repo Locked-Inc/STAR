@@ -23,12 +23,11 @@ LiDAR + Stereo Cameras
 
 ## Modules
 
-- **`android-app/`**: Controller app for Retroid Pocket 2S
-- **`robot-gateway/`**: Java gateway running on robot
-- **`server-backend/`**: Data collection server
-- **`esp32-firmware/`**: ESP32 WiFi bridge firmware (optional)
-- **`Schematic/`**: Hardware design files (KiCad)
-- **`docs/`**: Documentation and guides
+- **`ESP32-Firmware/`**: ESP32 sensor and actuator framework (STAR Firmware)
+- **`star-pi5-os/`**: Custom Buildroot-based OS for Raspberry Pi 5
+- **`Schematic/`**: Hardware design files (KiCad) and PCB layouts
+- **`docs/`**: Documentation and setup guides
+- **`test-scripts/`**: Hardware testing scripts for Raspberry Pi 5
 
 ## Features
 
@@ -50,21 +49,24 @@ This project was developed and tested on:
 
 ### Setup Raspberry Pi 5
 ```bash
-# Flash Raspberry Pi OS to SD card using Raspberry Pi Imager
-# See raspberry-pi-5-setup-guide.md for complete steps
-# Boot Raspberry Pi 5 and install required software
+cd star-pi5-os
+make build
+# Flash custom OS image to SD card
+# See star-pi5-os/README.md for complete build and setup instructions
 ```
 
-### Controller Setup
+### ESP32 Firmware Development
 ```bash
-cd android-app
-./gradlew assembleDebug
-# Install APK on Retroid Pocket 2S
+cd ESP32-Firmware
+pio run -e esp32_wroom  # or esp32s3
+pio run -e esp32_wroom --target upload
+# See ESP32-Firmware/README.md for complete development guide
 ```
 
 ### Robot Operation
-1. Boot Raspberry Pi 5 with configured SD card
-2. Connect LiDAR and cameras
-3. Start robot gateway software
-4. Use handheld controller for manual operation
-5. Run SLAM for autonomous mapping
+1. Boot Raspberry Pi 5 with STAR custom OS
+2. Connect TiM561 LiDAR via Ethernet
+3. Connect dual CSI cameras for stereo vision
+4. Deploy robot gateway Java application
+5. Use ROS2 for SLAM and computer vision
+6. Access robot via SSH at star-robot.local

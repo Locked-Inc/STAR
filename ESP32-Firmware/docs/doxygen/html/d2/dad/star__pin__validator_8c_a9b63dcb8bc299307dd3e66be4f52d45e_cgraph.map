@@ -1,0 +1,5 @@
+<map id="star_free_pin_validator" name="star_free_pin_validator">
+<area shape="rect" id="Node000001" title="Free the pin validator resources." alt="" coords="5,5,158,31"/>
+<area shape="rect" id="Node000002" href="$d2/dad/star__pin__validator_8c.html#a4583345fc8acffd3934cbdc1572cd030" title="Initialize mutex if not already initialized (thread&#45;safe)." alt="" coords="206,5,287,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="158,16,193,18,187,18,158,21"/>
+</map>

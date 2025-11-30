@@ -38,6 +38,145 @@ extern "C" {
  * - DMA buffers must be in DMA-capable memory
  * - Minimum transfer size for DMA efficiency
  * - Hardware-dependent maximum transfer size
+ *
+ * Example Usage:
+ * @code
+ * // === Setup DMA for I2C Bus ===
+ *
+ * #include "star_bus_i2c_dma.h"
+ * #include "star_bus_manager.h"
+ *
+ * // Configure DMA for an I2C bus
+ * star_i2c_dma_config_t dma_config = {
+ *     .enabled = true,
+ *     .min_transfer_size = STAR_I2C_DMA_MIN_SIZE,
+ *     .dma_channel = 0
+ * };
+ * star_bus_i2c_configure_dma(&bus_manager, "eeprom_bus", &dma_config);
+ *
+ *
+ * // === Allocate DMA-Capable Buffers ===
+ *
+ * // Allocate a DMA-capable buffer for large transfers
+ * size_t buffer_size = 1024;
+ * uint8_t* dma_buffer = (uint8_t*)star_i2c_dma_malloc(buffer_size);
+ * if (dma_buffer == NULL) {
+ *     ESP_LOGE(TAG, "Failed to allocate DMA buffer");
+ *     return ESP_ERR_NO_MEM;
+ * }
+ *
+ * // Check if buffer is DMA-capable
+ * if (star_i2c_is_dma_capable(dma_buffer, buffer_size)) {
+ *     ESP_LOGI(TAG, "Buffer is DMA-capable");
+ * }
+ *
+ *
+ * // === Blocking DMA Write ===
+ *
+ * // Write 1KB of data to EEPROM using DMA (blocking)
+ * memset(dma_buffer, 0xAA, buffer_size);
+ * esp_err_t ret = star_bus_i2c_write_dma(
+ *     &bus_manager,
+ *     "eeprom_bus",
+ *     dma_buffer,
+ *     buffer_size,
+ *     0x00,    // Command/register address
+ *     NULL,    // NULL callback = blocking
+ *     NULL
+ * );
+ * if (ret == ESP_OK) {
+ *     ESP_LOGI(TAG, "DMA write completed");
+ * }
+ *
+ *
+ * // === Blocking DMA Read ===
+ *
+ * // Read 1KB of data from EEPROM using DMA (blocking)
+ * ret = star_bus_i2c_read_dma(
+ *     &bus_manager,
+ *     "eeprom_bus",
+ *     dma_buffer,
+ *     buffer_size,
+ *     0x00,    // Command/register address
+ *     NULL,    // NULL callback = blocking
+ *     NULL
+ * );
+ * if (ret == ESP_OK) {
+ *     ESP_LOGI(TAG, "DMA read completed, first byte: 0x%02X", dma_buffer[0]);
+ * }
+ *
+ *
+ * // === Asynchronous DMA Transfer with Callback ===
+ *
+ * // Callback function for async DMA completion
+ * void dma_complete_callback(esp_err_t result, void* context) {
+ *     bool* transfer_done = (bool*)context;
+ *     if (result == ESP_OK) {
+ *         ESP_LOGI(TAG, "Async DMA transfer completed successfully");
+ *     } else {
+ *         ESP_LOGE(TAG, "Async DMA transfer failed: %s", esp_err_to_name(result));
+ *     }
+ *     *transfer_done = true;
+ * }
+ *
+ * // Start async DMA write
+ * volatile bool transfer_done = false;
+ * ret = star_bus_i2c_write_dma(
+ *     &bus_manager,
+ *     "eeprom_bus",
+ *     dma_buffer,
+ *     buffer_size,
+ *     0x00,
+ *     dma_complete_callback,
+ *     (void*)&transfer_done
+ * );
+ *
+ * // Do other work while DMA runs in background
+ * while (!transfer_done) {
+ *     // Process other tasks
+ *     vTaskDelay(pdMS_TO_TICKS(1));
+ * }
+ *
+ *
+ * // === Get DMA Statistics ===
+ *
+ * uint32_t dma_transfers;
+ * uint64_t dma_bytes;
+ * ret = star_bus_i2c_get_dma_stats(&bus_manager, "eeprom_bus",
+ *                                   &dma_transfers, &dma_bytes);
+ * if (ret == ESP_OK) {
+ *     ESP_LOGI(TAG, "DMA stats: %lu transfers, %llu bytes",
+ *              dma_transfers, dma_bytes);
+ * }
+ *
+ *
+ * // === Reading Large Sensor Data ===
+ *
+ * // Example: Read IMU FIFO buffer with DMA
+ * #define IMU_FIFO_SIZE 512
+ * uint8_t* fifo_buffer = (uint8_t*)star_i2c_dma_malloc(IMU_FIFO_SIZE);
+ *
+ * ret = star_bus_i2c_read_dma(
+ *     &bus_manager,
+ *     "imu_bus",
+ *     fifo_buffer,
+ *     IMU_FIFO_SIZE,
+ *     0x74,    // FIFO register address
+ *     NULL,
+ *     NULL
+ * );
+ *
+ * // Process FIFO data
+ * for (int i = 0; i < IMU_FIFO_SIZE; i += 12) {
+ *     // Each sample: 6 bytes accel + 6 bytes gyro
+ *     int16_t ax = (fifo_buffer[i] << 8) | fifo_buffer[i+1];
+ *     // ... process sample
+ * }
+ *
+ * // Cleanup
+ * star_i2c_dma_free(fifo_buffer);
+ * star_i2c_dma_free(dma_buffer);
+ * @endcode
  */
 
 /* --- Constants --- */

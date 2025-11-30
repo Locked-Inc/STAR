@@ -1,0 +1,7 @@
+<map id="star_bus_debug_scan_i2c" name="star_bus_debug_scan_i2c">
+<area shape="rect" id="Node000001" title="Scan I2C bus for devices." alt="" coords="234,31,406,56"/>
+<area shape="rect" id="Node000002" href="$df/df6/star__bus__debug_8c.html#a3c13a030e00fcf861207395aca80c387" title="Print I2C scan results to console." alt="" coords="5,5,186,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="216,32,186,31,186,26,221,32"/>
+<area shape="rect" id="Node000003" href="$df/df6/star__bus__debug_8c.html#a2437e69ee35e4a0ebb80b25b733772f4" title="Test I2C bus communication." alt="" coords="10,55,181,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="216,55,182,61,181,56,221,54"/>
+</map>

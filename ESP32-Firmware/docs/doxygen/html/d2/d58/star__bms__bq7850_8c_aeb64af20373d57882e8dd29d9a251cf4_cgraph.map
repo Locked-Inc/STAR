@@ -1,0 +1,11 @@
+<map id="star_bms_bq7850_control_fets" name="star_bms_bq7850_control_fets">
+<area shape="rect" id="Node000001" title="Control charge/discharge FETs." alt="" coords="5,42,205,68"/>
+<area shape="rect" id="Node000002" href="$d3/df5/star__bus__smbus_8c.html#ae35a870d8984311e9af9966d3be33bac" title="SMBus Write Word." alt="" coords="253,42,412,68"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="205,52,239,55,234,55,205,58"/>
+<area shape="rect" id="Node000003" href="$d3/df5/star__bus__smbus_8c.html#a028e8362b8c772d39dee59e24c15439b" title="Validate common parameters for SMBus operations." alt="" coords="460,5,621,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="412,41,442,40,447,39,413,46"/>
+<area shape="rect" id="Node000004" href="$dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="476,70,606,96"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="413,63,462,72,457,72,412,68"/>
+<area shape="rect" id="Node000005" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="669,70,854,96"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="606,80,657,83,651,83,606,86"/>
+</map>

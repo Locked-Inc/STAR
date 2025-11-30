@@ -76,7 +76,7 @@ static peripheral_state_t* get_peripheral_state(const char* bus_name, bool creat
 /**
  * @brief Get I2C port number from bus name
  */
-static esp_err_t priv_get_i2c_port(const char* bus_name, i2c_port_t* port)
+static esp_err_t internal_get_i2c_port(const char* bus_name, i2c_port_t* port)
 {
   if (bus_name == NULL || port == NULL) {
     return ESP_ERR_INVALID_ARG;
@@ -97,7 +97,7 @@ static esp_err_t priv_get_i2c_port(const char* bus_name, i2c_port_t* port)
 /**
  * @brief Peripheral task - handles I2C slave communication
  */
-static void priv_peripheral_task(void* param)
+static void internal_peripheral_task(void* param)
 {
   peripheral_state_t* state = (peripheral_state_t*)param;
 
@@ -160,7 +160,7 @@ static void priv_peripheral_task(void* param)
 /**
  * @brief Start peripheral task
  */
-static esp_err_t priv_start_peripheral_task(peripheral_state_t* state)
+static esp_err_t internal_start_peripheral_task(peripheral_state_t* state)
 {
   if (state->task_running) {
     return ESP_OK; /* Already running */
@@ -169,7 +169,7 @@ static esp_err_t priv_start_peripheral_task(peripheral_state_t* state)
   state->task_running = true;
 
   BaseType_t result =
-    xTaskCreate(priv_peripheral_task, "i2c_periph", 4096, state, 5, &state->task_handle);
+    xTaskCreate(internal_peripheral_task, "i2c_periph", 4096, state, 5, &state->task_handle);
 
   if (result != pdPASS) {
     state->task_running = false;
@@ -182,7 +182,7 @@ static esp_err_t priv_start_peripheral_task(peripheral_state_t* state)
 /**
  * @brief Stop peripheral task
  */
-static void priv_stop_peripheral_task(peripheral_state_t* state)
+static void internal_stop_peripheral_task(peripheral_state_t* state)
 {
   if (!state->task_running) {
     return;
@@ -235,7 +235,7 @@ esp_err_t star_bus_i2c_peripheral_enable(star_bus_manager_t*                 man
   }
 
   /* Get I2C port number */
-  esp_err_t result = priv_get_i2c_port(bus_name, &state->port);
+  esp_err_t result = internal_get_i2c_port(bus_name, &state->port);
   if (result != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to get I2C port for bus '%s'", bus_name);
     return result;
@@ -301,7 +301,7 @@ esp_err_t star_bus_i2c_peripheral_enable(star_bus_manager_t*                 man
   }
 
   /* Start peripheral task */
-  result = priv_start_peripheral_task(state);
+  result = internal_start_peripheral_task(state);
   if (result != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to start peripheral task");
     i2c_driver_delete(state->port);
@@ -334,7 +334,7 @@ esp_err_t star_bus_i2c_peripheral_disable(star_bus_manager_t* manager, const cha
   }
 
   /* Stop peripheral task */
-  priv_stop_peripheral_task(state);
+  internal_stop_peripheral_task(state);
 
   /* Delete I2C driver */
   i2c_driver_delete(state->port);

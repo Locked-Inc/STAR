@@ -84,6 +84,84 @@ static esp_err_t pca9685_set_mode1_bits(pca9685_handle_t* handle, uint8_t bits, 
                            mode1);
 }
 
+/**
+ * @brief Internal frequency setting (no initialization check, caller must hold mutex if needed)
+ * @note This function is used during init and by the public set_frequency function
+ */
+static esp_err_t internal_pca9685_set_frequency(pca9685_handle_t* handle, uint16_t freq_hz)
+{
+  uint8_t   prescale;
+  esp_err_t ret = star_sensor_pca9685_calculate_prescale(freq_hz, &prescale);
+  if (ret != ESP_OK) {
+    return ret;
+  }
+
+  // Device must be in sleep mode to change prescale
+  uint8_t old_mode1;
+  ret = pca9685_read_reg(handle->manager,
+                         handle->bus_name,
+                         handle->i2c_addr,
+                         PCA9685_REG_MODE1,
+                         &old_mode1);
+  if (ret != ESP_OK) {
+    ESP_LOGE(s_TAG, "Failed to read MODE1: %s", esp_err_to_name(ret));
+    return ret;
+  }
+
+  // Set sleep bit
+  uint8_t sleep_mode = (old_mode1 & ~PCA9685_MODE1_RESTART) | PCA9685_MODE1_SLEEP;
+  ret                = pca9685_write_reg(handle->manager,
+                          handle->bus_name,
+                          handle->i2c_addr,
+                          PCA9685_REG_MODE1,
+                          sleep_mode);
+  if (ret != ESP_OK) {
+    ESP_LOGE(s_TAG, "Failed to enter sleep mode: %s", esp_err_to_name(ret));
+    return ret;
+  }
+
+  // Write prescale
+  ret = pca9685_write_reg(handle->manager,
+                          handle->bus_name,
+                          handle->i2c_addr,
+                          PCA9685_REG_PRESCALE,
+                          prescale);
+  if (ret != ESP_OK) {
+    ESP_LOGE(s_TAG, "Failed to write prescale: %s", esp_err_to_name(ret));
+    return ret;
+  }
+
+  // Restore old mode (wake up)
+  ret = pca9685_write_reg(handle->manager,
+                          handle->bus_name,
+                          handle->i2c_addr,
+                          PCA9685_REG_MODE1,
+                          old_mode1);
+  if (ret != ESP_OK) {
+    ESP_LOGE(s_TAG, "Failed to restore MODE1: %s", esp_err_to_name(ret));
+    return ret;
+  }
+
+  vTaskDelay(pdMS_TO_TICKS(1)); // Wait for oscillator
+
+  // Restart if needed
+  if (old_mode1 & PCA9685_MODE1_RESTART) {
+    ret = pca9685_write_reg(handle->manager,
+                            handle->bus_name,
+                            handle->i2c_addr,
+                            PCA9685_REG_MODE1,
+                            old_mode1 | PCA9685_MODE1_RESTART);
+    if (ret != ESP_OK) {
+      ESP_LOGW(s_TAG, "Failed to restart: %s", esp_err_to_name(ret));
+    }
+  }
+
+  handle->prescale = prescale;
+  ESP_LOGI(s_TAG, "Set frequency to %d Hz (prescale=%d)", freq_hz, prescale);
+
+  return ESP_OK;
+}
+
 /* --- Core Functions --- */
 
 esp_err_t star_sensor_pca9685_init(pca9685_handle_t*       handle,
@@ -258,8 +336,8 @@ esp_err_t star_sensor_pca9685_init(pca9685_handle_t*       handle,
 
   vTaskDelay(pdMS_TO_TICKS(1)); // Wait for oscillator
 
-  // Set PWM frequency (this handles mutex internally)
-  ret = star_sensor_pca9685_set_frequency(handle, config->pwm_freq);
+  // Set PWM frequency using internal function (no initialized check needed during init)
+  ret = internal_pca9685_set_frequency(handle, config->pwm_freq);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to set frequency: %s", esp_err_to_name(ret));
     if (oe_pin != GPIO_NUM_NC) {
@@ -415,82 +493,10 @@ esp_err_t star_sensor_pca9685_set_frequency(pca9685_handle_t* handle, uint16_t f
     return ESP_ERR_INVALID_STATE;
   }
 
-  uint8_t   prescale;
-  esp_err_t ret = star_sensor_pca9685_calculate_prescale(freq_hz, &prescale);
-  if (ret != ESP_OK) {
-    xSemaphoreGive(mutex);
-    return ret;
-  }
-
-  // Device must be in sleep mode to change prescale
-  uint8_t old_mode1;
-  ret = pca9685_read_reg(handle->manager,
-                         handle->bus_name,
-                         handle->i2c_addr,
-                         PCA9685_REG_MODE1,
-                         &old_mode1);
-  if (ret != ESP_OK) {
-    ESP_LOGE(s_TAG, "Failed to read MODE1: %s", esp_err_to_name(ret));
-    xSemaphoreGive(mutex);
-    return ret;
-  }
-
-  // Set sleep bit
-  uint8_t sleep_mode = (old_mode1 & ~PCA9685_MODE1_RESTART) | PCA9685_MODE1_SLEEP;
-  ret                = pca9685_write_reg(handle->manager,
-                          handle->bus_name,
-                          handle->i2c_addr,
-                          PCA9685_REG_MODE1,
-                          sleep_mode);
-  if (ret != ESP_OK) {
-    ESP_LOGE(s_TAG, "Failed to enter sleep mode: %s", esp_err_to_name(ret));
-    xSemaphoreGive(mutex);
-    return ret;
-  }
-
-  // Write prescale
-  ret = pca9685_write_reg(handle->manager,
-                          handle->bus_name,
-                          handle->i2c_addr,
-                          PCA9685_REG_PRESCALE,
-                          prescale);
-  if (ret != ESP_OK) {
-    ESP_LOGE(s_TAG, "Failed to write prescale: %s", esp_err_to_name(ret));
-    xSemaphoreGive(mutex);
-    return ret;
-  }
-
-  // Restore old mode (wake up)
-  ret = pca9685_write_reg(handle->manager,
-                          handle->bus_name,
-                          handle->i2c_addr,
-                          PCA9685_REG_MODE1,
-                          old_mode1);
-  if (ret != ESP_OK) {
-    ESP_LOGE(s_TAG, "Failed to restore MODE1: %s", esp_err_to_name(ret));
-    xSemaphoreGive(mutex);
-    return ret;
-  }
-
-  vTaskDelay(pdMS_TO_TICKS(1)); // Wait for oscillator
-
-  // Restart if needed
-  if (old_mode1 & PCA9685_MODE1_RESTART) {
-    ret = pca9685_write_reg(handle->manager,
-                            handle->bus_name,
-                            handle->i2c_addr,
-                            PCA9685_REG_MODE1,
-                            old_mode1 | PCA9685_MODE1_RESTART);
-    if (ret != ESP_OK) {
-      ESP_LOGW(s_TAG, "Failed to restart: %s", esp_err_to_name(ret));
-    }
-  }
-
-  handle->prescale = prescale;
-  ESP_LOGI(s_TAG, "Set frequency to %d Hz (prescale=%d)", freq_hz, prescale);
+  esp_err_t ret = internal_pca9685_set_frequency(handle, freq_hz);
 
   xSemaphoreGive(mutex);
-  return ESP_OK;
+  return ret;
 }
 
 esp_err_t star_sensor_pca9685_get_frequency(const pca9685_handle_t* handle, uint16_t* freq_hz)

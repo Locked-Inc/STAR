@@ -1,0 +1,5 @@
+<map id="measure_pulse" name="measure_pulse">
+<area shape="rect" id="Node000001" title="Wait for GPIO level change and measure duration." alt="" coords="5,5,115,31"/>
+<area shape="rect" id="Node000002" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a71842e7ab86cba68432d023f022556d5" title="Read GPIO input." alt="" coords="163,5,240,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="115,16,150,18,145,18,115,21"/>
+</map>

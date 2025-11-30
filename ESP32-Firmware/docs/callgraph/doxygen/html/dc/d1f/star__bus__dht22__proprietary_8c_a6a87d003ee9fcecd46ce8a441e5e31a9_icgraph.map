@@ -1,0 +1,5 @@
+<map id="star_bus_dht22_init_default_ops" name="star_bus_dht22_init_default_ops">
+<area shape="rect" id="Node000001" title="Initialize default DHT22 operations function pointers." alt="" coords="210,5,344,46"/>
+<area shape="rect" id="Node000002" href="$de/d98/star__bus__config_8c.html#a7527fb91e8de839add326b305c63bcad" title="Create a new DHT22 bus configuration." alt="" coords="5,5,162,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="191,26,162,28,162,23,197,25"/>
+</map>
