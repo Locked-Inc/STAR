@@ -5,5 +5,7 @@ var searchData=
   ['hcsr04_5ferr_5fout_5fof_5frange_5fmax_2',['HCSR04_ERR_OUT_OF_RANGE_MAX',['../d2/dda/star__sensor__hcsr04_8h.html#af7bca5e9cc30776256ca05fbb7f5d335ae4a13245c6113c03f2091ea4442048e6',1,'star_sensor_hcsr04.h']]],
   ['hcsr04_5ferr_5fout_5fof_5frange_5fmin_3',['HCSR04_ERR_OUT_OF_RANGE_MIN',['../d2/dda/star__sensor__hcsr04_8h.html#af7bca5e9cc30776256ca05fbb7f5d335aa1f14602f53e28d20db37e5c2a5375a2',1,'star_sensor_hcsr04.h']]],
   ['hcsr04_5ferr_5ftimeout_4',['HCSR04_ERR_TIMEOUT',['../d2/dda/star__sensor__hcsr04_8h.html#af7bca5e9cc30776256ca05fbb7f5d335a7525c4322bd6ba9b8851136f720ba17f',1,'star_sensor_hcsr04.h']]],
-  ['hcsr04_5fok_5',['HCSR04_OK',['../d2/dda/star__sensor__hcsr04_8h.html#af7bca5e9cc30776256ca05fbb7f5d335a54cbeb83023f5e22d0f86d839ad3e312',1,'star_sensor_hcsr04.h']]]
+  ['hcsr04_5fleft_5',['HCSR04_LEFT',['../d4/d7e/system__config_8h.html#af60ef736234a6d9a91cdf60a0e0d4253a4d5a76fd1a127f16f63b4210e9017469',1,'system_config.h']]],
+  ['hcsr04_5fok_6',['HCSR04_OK',['../d2/dda/star__sensor__hcsr04_8h.html#af7bca5e9cc30776256ca05fbb7f5d335a54cbeb83023f5e22d0f86d839ad3e312',1,'star_sensor_hcsr04.h']]],
+  ['hcsr04_5fright_7',['HCSR04_RIGHT',['../d4/d7e/system__config_8h.html#af60ef736234a6d9a91cdf60a0e0d4253a0bca0193a83198736a913142c0377ccb',1,'system_config.h']]]
 ];
