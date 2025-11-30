@@ -248,6 +248,10 @@ Include dependency graph for main.c:</div>
 </div>
 <p><a href="../../d0/d29/main_8c_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:rgb_5Fcolor_5Ft" id="r_rgb_5Fcolor_5Ft"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d0/d62/structrgb__color__t.html">rgb_color_t</a></td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-define-members" class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
 <tr class="memitem:abe51ed145c2858598025162d43318512" id="r_abe51ed145c2858598025162d43318512"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abe51ed145c2858598025162d43318512">NUM_HCSR04</a>&#160;&#160;&#160;(2)</td></tr>
@@ -265,9 +269,27 @@ Macros</h2></td></tr>
 <tr class="memitem:ab49a88b2ac5c0d557cbe3e64ea508a0a" id="r_ab49a88b2ac5c0d557cbe3e64ea508a0a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab49a88b2ac5c0d557cbe3e64ea508a0a">PCA9685_I2C_NUM</a>&#160;&#160;&#160;(I2C_NUM_0)</td></tr>
 <tr class="memitem:ab0448968b99180d9341a8712d9c1bffb" id="r_ab0448968b99180d9341a8712d9c1bffb"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab0448968b99180d9341a8712d9c1bffb">PCA9685_PWM_FREQUENCY_kHZ</a>&#160;&#160;&#160;(50)</td></tr>
 <tr class="memitem:acadbb167aea28069508612a56627a491" id="r_acadbb167aea28069508612a56627a491"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acadbb167aea28069508612a56627a491">GPIO_PCA9685_OE</a>&#160;&#160;&#160;(GPIO_NUM_15)</td></tr>
+<tr class="memitem:a2932fc1a20cac1ba79318df1a56cfc2c" id="r_a2932fc1a20cac1ba79318df1a56cfc2c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2932fc1a20cac1ba79318df1a56cfc2c">LED_LEFT_RED</a>&#160;&#160;&#160;(0)</td></tr>
+<tr class="memitem:a7fecfc28aa5044bff3b66785e57f1195" id="r_a7fecfc28aa5044bff3b66785e57f1195"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7fecfc28aa5044bff3b66785e57f1195">LED_LEFT_GREEN</a>&#160;&#160;&#160;(1)</td></tr>
+<tr class="memitem:aac4614ba69ae143215692b8e562e6b16" id="r_aac4614ba69ae143215692b8e562e6b16"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aac4614ba69ae143215692b8e562e6b16">LED_LEFT_BLUE</a>&#160;&#160;&#160;(2)</td></tr>
+<tr class="memitem:abd9db700dedcd5609c99d5a910eb7850" id="r_abd9db700dedcd5609c99d5a910eb7850"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abd9db700dedcd5609c99d5a910eb7850">LED_RIGHT_RED</a>&#160;&#160;&#160;(3)</td></tr>
+<tr class="memitem:a26e96a282183950eb6d529a99e03bac9" id="r_a26e96a282183950eb6d529a99e03bac9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a26e96a282183950eb6d529a99e03bac9">LED_RIGHT_GREEN</a>&#160;&#160;&#160;(4)</td></tr>
+<tr class="memitem:a0d323b0daac6ea2add293787b8355915" id="r_a0d323b0daac6ea2add293787b8355915"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0d323b0daac6ea2add293787b8355915">LED_RIGHT_BLUE</a>&#160;&#160;&#160;(5)</td></tr>
+<tr class="memitem:ad981f5db3c206e7d3c468ac3c7625dc2" id="r_ad981f5db3c206e7d3c468ac3c7625dc2"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad981f5db3c206e7d3c468ac3c7625dc2">DISTANCE_VERY_CLOSE</a>&#160;&#160;&#160;(10.0f) /* &lt; 10cm: Bright Red */</td></tr>
+<tr class="memitem:a6dc4f00a4f7a0a40aa0355466afca236" id="r_a6dc4f00a4f7a0a40aa0355466afca236"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6dc4f00a4f7a0a40aa0355466afca236">DISTANCE_CLOSE</a>&#160;&#160;&#160;(25.0f)      /* 10-25cm: Red to Yellow */</td></tr>
+<tr class="memitem:abfcc8f8c5d97fb1e9da1f5a9fa176523" id="r_abfcc8f8c5d97fb1e9da1f5a9fa176523"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abfcc8f8c5d97fb1e9da1f5a9fa176523">DISTANCE_MEDIUM</a>&#160;&#160;&#160;(50.0f)     /* 25-50cm: Yellow to Green */</td></tr>
+<tr class="memitem:a3876e6df230abf21362f00103a4bc9d3" id="r_a3876e6df230abf21362f00103a4bc9d3"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3876e6df230abf21362f00103a4bc9d3">DISTANCE_FAR</a>&#160;&#160;&#160;(100.0f)       /* 50-100cm: Green to Blue */</td></tr>
+<tr class="memitem:a4c0e2ccbfb187954f23f8f0aa40be819" id="r_a4c0e2ccbfb187954f23f8f0aa40be819"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4c0e2ccbfb187954f23f8f0aa40be819">DISTANCE_VERY_FAR</a>&#160;&#160;&#160;(200.0f)  /* 100-200cm: Blue */</td></tr>
+<tr class="memitem:a3a95e1515014a425c1552b61b39fad47" id="r_a3a95e1515014a425c1552b61b39fad47"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3a95e1515014a425c1552b61b39fad47">MIN_PWM_RED</a>&#160;&#160;&#160;(45.0f)   /* Red LED minimum PWM */</td></tr>
+<tr class="memitem:ac59aa795bb6c390a54d2534a8870fd65" id="r_ac59aa795bb6c390a54d2534a8870fd65"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac59aa795bb6c390a54d2534a8870fd65">MIN_PWM_GREEN</a>&#160;&#160;&#160;(45.0f) /* Green LED minimum PWM */</td></tr>
+<tr class="memitem:a8e27981c5cb987933b67fc30b5bb3c8b" id="r_a8e27981c5cb987933b67fc30b5bb3c8b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8e27981c5cb987933b67fc30b5bb3c8b">MIN_PWM_BLUE</a>&#160;&#160;&#160;(45.0f)  /* Blue LED minimum PWM */</td></tr>
+<tr class="memitem:af7833713f9566c622edc4f2d16f19ade" id="r_af7833713f9566c622edc4f2d16f19ade"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af7833713f9566c622edc4f2d16f19ade">MAX_PWM_ALL</a>&#160;&#160;&#160;(100.0f)  /* Maximum PWM for all colors */</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:a7b7ebe952969637b30a7a358d7c3d92c" id="r_a7b7ebe952969637b30a7a358d7c3d92c"><td class="memItemLeft" align="right" valign="top">static float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7b7ebe952969637b30a7a358d7c3d92c">internal_scale_pwm_for_color</a> (float original_percent, float min_pwm)</td></tr>
+<tr class="memitem:a641c94ad0bf8146674fdfb9caa6722fe" id="r_a641c94ad0bf8146674fdfb9caa6722fe"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a641c94ad0bf8146674fdfb9caa6722fe">internal_set_rgb_led</a> (const <a class="el" href="../../d7/de0/star__sensor__pca9685_8h.html#afa905e4d6a39f212e4ebdc4a4524a368">pca9685_handle_t</a> *handle, uint8_t led_index, const <a class="el" href="../../d0/d62/structrgb__color__t.html">rgb_color_t</a> *color)</td></tr>
+<tr class="memitem:ad9158b347dcf081a0318d5f2448fcaea" id="r_ad9158b347dcf081a0318d5f2448fcaea"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="../../d0/d62/structrgb__color__t.html">rgb_color_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad9158b347dcf081a0318d5f2448fcaea">internal_distance_to_rgb</a> (float distance_cm)</td></tr>
 <tr class="memitem:a630544a7f0a2cc40d8a7fefab7e2fe70" id="r_a630544a7f0a2cc40d8a7fefab7e2fe70"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a630544a7f0a2cc40d8a7fefab7e2fe70">app_main</a> (void)</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-var-members" class="groupheader"><a id="var-members" name="var-members"></a>
@@ -278,6 +300,96 @@ Variables</h2></td></tr>
 <tr class="memitem:ab8a259688b1d2b8183961bf5b14b0763" id="r_ab8a259688b1d2b8183961bf5b14b0763"><td class="memItemLeft" align="right" valign="top">static const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab8a259688b1d2b8183961bf5b14b0763">s_PCA9685_TAG</a> = &quot;PCA9685&quot;</td></tr>
 </table>
 <a name="doc-define-members" id="doc-define-members"></a><h2 id="header-doc-define-members" class="groupheader">Macro Definition Documentation</h2>
+<a id="a6dc4f00a4f7a0a40aa0355466afca236" name="a6dc4f00a4f7a0a40aa0355466afca236"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6dc4f00a4f7a0a40aa0355466afca236">&#9670;&#160;</a></span>DISTANCE_CLOSE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define DISTANCE_CLOSE&#160;&#160;&#160;(25.0f)      /* 10-25cm: Red to Yellow */</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00053">53</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00100">internal_distance_to_rgb()</a>.</p>
+
+</div>
+</div>
+<a id="a3876e6df230abf21362f00103a4bc9d3" name="a3876e6df230abf21362f00103a4bc9d3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3876e6df230abf21362f00103a4bc9d3">&#9670;&#160;</a></span>DISTANCE_FAR</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define DISTANCE_FAR&#160;&#160;&#160;(100.0f)       /* 50-100cm: Green to Blue */</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00055">55</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00100">internal_distance_to_rgb()</a>.</p>
+
+</div>
+</div>
+<a id="abfcc8f8c5d97fb1e9da1f5a9fa176523" name="abfcc8f8c5d97fb1e9da1f5a9fa176523"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abfcc8f8c5d97fb1e9da1f5a9fa176523">&#9670;&#160;</a></span>DISTANCE_MEDIUM</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define DISTANCE_MEDIUM&#160;&#160;&#160;(50.0f)     /* 25-50cm: Yellow to Green */</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00054">54</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00100">internal_distance_to_rgb()</a>.</p>
+
+</div>
+</div>
+<a id="ad981f5db3c206e7d3c468ac3c7625dc2" name="ad981f5db3c206e7d3c468ac3c7625dc2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad981f5db3c206e7d3c468ac3c7625dc2">&#9670;&#160;</a></span>DISTANCE_VERY_CLOSE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define DISTANCE_VERY_CLOSE&#160;&#160;&#160;(10.0f) /* &lt; 10cm: Bright Red */</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00052">52</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00100">internal_distance_to_rgb()</a>.</p>
+
+</div>
+</div>
+<a id="a4c0e2ccbfb187954f23f8f0aa40be819" name="a4c0e2ccbfb187954f23f8f0aa40be819"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4c0e2ccbfb187954f23f8f0aa40be819">&#9670;&#160;</a></span>DISTANCE_VERY_FAR</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define DISTANCE_VERY_FAR&#160;&#160;&#160;(200.0f)  /* 100-200cm: Blue */</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00056">56</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00141">app_main()</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00100">internal_distance_to_rgb()</a>.</p>
+
+</div>
+</div>
 <a id="a99561ac01098f90d8999f23905c71bc0" name="a99561ac01098f90d8999f23905c71bc0"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a99561ac01098f90d8999f23905c71bc0">&#9670;&#160;</a></span>GPIO_DHT22_PIN</h2>
 
@@ -292,7 +404,7 @@ Variables</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00033">33</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00048">app_main()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00141">app_main()</a>.</p>
 
 </div>
 </div>
@@ -310,7 +422,7 @@ Variables</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00025">25</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00048">app_main()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00141">app_main()</a>.</p>
 
 </div>
 </div>
@@ -328,7 +440,7 @@ Variables</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00024">24</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00048">app_main()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00141">app_main()</a>.</p>
 
 </div>
 </div>
@@ -346,7 +458,7 @@ Variables</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00037">37</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00048">app_main()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00141">app_main()</a>.</p>
 
 </div>
 </div>
@@ -364,7 +476,7 @@ Variables</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00036">36</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00048">app_main()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00141">app_main()</a>.</p>
 
 </div>
 </div>
@@ -382,7 +494,7 @@ Variables</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00041">41</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00048">app_main()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00141">app_main()</a>.</p>
 
 </div>
 </div>
@@ -400,7 +512,7 @@ Variables</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00030">30</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00048">app_main()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00141">app_main()</a>.</p>
 
 </div>
 </div>
@@ -418,7 +530,7 @@ Variables</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00029">29</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00048">app_main()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00141">app_main()</a>.</p>
 
 </div>
 </div>
@@ -436,6 +548,8 @@ Variables</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00023">23</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
 
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00141">app_main()</a>.</p>
+
 </div>
 </div>
 <a id="a6a698c77b2268dbb0665970121cad686" name="a6a698c77b2268dbb0665970121cad686"></a>
@@ -452,7 +566,7 @@ Variables</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00020">20</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00048">app_main()</a>, and <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00252">star_sensor_hcsr04_calculate_distance()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00252">star_sensor_hcsr04_calculate_distance()</a>.</p>
 
 </div>
 </div>
@@ -472,6 +586,174 @@ Variables</h2></td></tr>
 
 </div>
 </div>
+<a id="aac4614ba69ae143215692b8e562e6b16" name="aac4614ba69ae143215692b8e562e6b16"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aac4614ba69ae143215692b8e562e6b16">&#9670;&#160;</a></span>LED_LEFT_BLUE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define LED_LEFT_BLUE&#160;&#160;&#160;(2)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00046">46</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
+
+</div>
+</div>
+<a id="a7fecfc28aa5044bff3b66785e57f1195" name="a7fecfc28aa5044bff3b66785e57f1195"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7fecfc28aa5044bff3b66785e57f1195">&#9670;&#160;</a></span>LED_LEFT_GREEN</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define LED_LEFT_GREEN&#160;&#160;&#160;(1)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00045">45</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
+
+</div>
+</div>
+<a id="a2932fc1a20cac1ba79318df1a56cfc2c" name="a2932fc1a20cac1ba79318df1a56cfc2c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2932fc1a20cac1ba79318df1a56cfc2c">&#9670;&#160;</a></span>LED_LEFT_RED</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define LED_LEFT_RED&#160;&#160;&#160;(0)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00044">44</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
+
+</div>
+</div>
+<a id="a0d323b0daac6ea2add293787b8355915" name="a0d323b0daac6ea2add293787b8355915"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0d323b0daac6ea2add293787b8355915">&#9670;&#160;</a></span>LED_RIGHT_BLUE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define LED_RIGHT_BLUE&#160;&#160;&#160;(5)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00049">49</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
+
+</div>
+</div>
+<a id="a26e96a282183950eb6d529a99e03bac9" name="a26e96a282183950eb6d529a99e03bac9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a26e96a282183950eb6d529a99e03bac9">&#9670;&#160;</a></span>LED_RIGHT_GREEN</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define LED_RIGHT_GREEN&#160;&#160;&#160;(4)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00048">48</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
+
+</div>
+</div>
+<a id="abd9db700dedcd5609c99d5a910eb7850" name="abd9db700dedcd5609c99d5a910eb7850"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abd9db700dedcd5609c99d5a910eb7850">&#9670;&#160;</a></span>LED_RIGHT_RED</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define LED_RIGHT_RED&#160;&#160;&#160;(3)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00047">47</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
+
+</div>
+</div>
+<a id="af7833713f9566c622edc4f2d16f19ade" name="af7833713f9566c622edc4f2d16f19ade"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af7833713f9566c622edc4f2d16f19ade">&#9670;&#160;</a></span>MAX_PWM_ALL</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define MAX_PWM_ALL&#160;&#160;&#160;(100.0f)  /* Maximum PWM for all colors */</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00068">68</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00076">internal_scale_pwm_for_color()</a>.</p>
+
+</div>
+</div>
+<a id="a8e27981c5cb987933b67fc30b5bb3c8b" name="a8e27981c5cb987933b67fc30b5bb3c8b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8e27981c5cb987933b67fc30b5bb3c8b">&#9670;&#160;</a></span>MIN_PWM_BLUE</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define MIN_PWM_BLUE&#160;&#160;&#160;(45.0f)  /* Blue LED minimum PWM */</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00067">67</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00085">internal_set_rgb_led()</a>.</p>
+
+</div>
+</div>
+<a id="ac59aa795bb6c390a54d2534a8870fd65" name="ac59aa795bb6c390a54d2534a8870fd65"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac59aa795bb6c390a54d2534a8870fd65">&#9670;&#160;</a></span>MIN_PWM_GREEN</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define MIN_PWM_GREEN&#160;&#160;&#160;(45.0f) /* Green LED minimum PWM */</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00066">66</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00085">internal_set_rgb_led()</a>.</p>
+
+</div>
+</div>
+<a id="a3a95e1515014a425c1552b61b39fad47" name="a3a95e1515014a425c1552b61b39fad47"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3a95e1515014a425c1552b61b39fad47">&#9670;&#160;</a></span>MIN_PWM_RED</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define MIN_PWM_RED&#160;&#160;&#160;(45.0f)   /* Red LED minimum PWM */</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00065">65</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00085">internal_set_rgb_led()</a>.</p>
+
+</div>
+</div>
 <a id="abe51ed145c2858598025162d43318512" name="abe51ed145c2858598025162d43318512"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#abe51ed145c2858598025162d43318512">&#9670;&#160;</a></span>NUM_HCSR04</h2>
 
@@ -486,7 +768,7 @@ Variables</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00019">19</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00048">app_main()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00141">app_main()</a>.</p>
 
 </div>
 </div>
@@ -504,7 +786,7 @@ Variables</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00038">38</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00048">app_main()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00141">app_main()</a>.</p>
 
 </div>
 </div>
@@ -522,7 +804,7 @@ Variables</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00039">39</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00048">app_main()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00141">app_main()</a>.</p>
 
 </div>
 </div>
@@ -540,7 +822,7 @@ Variables</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00040">40</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00048">app_main()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00141">app_main()</a>.</p>
 
 </div>
 </div>
@@ -560,130 +842,284 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00048">48</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00141">141</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00168">star_dht22_data::checksum_valid</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00033">GPIO_DHT22_PIN</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00025">GPIO_LEFT_ECHO</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00024">GPIO_LEFT_TRIG</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00037">GPIO_PCA9685_I2C_SCL</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00036">GPIO_PCA9685_I2C_SDA</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00041">GPIO_PCA9685_OE</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00153">star_dht22_config_t::gpio_pin</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">GPIO_RIGHT_ECHO</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00029">GPIO_RIGHT_TRIG</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00020">HCSR04_MAX_DISTANCE_CM</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00163">star_dht22_data::humidity_percent</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00019">NUM_HCSR04</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00205">PCA9685_DEFAULT_ADDR</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00038">PCA9685_I2C_FREQUENCY</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00039">PCA9685_I2C_NUM</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00274">PCA9685_OUTPUT_TOTEM_POLE</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00040">PCA9685_PWM_FREQUENCY_kHZ</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00487">pin_validator_get_interface()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00044">s_DHT22_TAG</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00045">s_HCSR04_TAG</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00046">s_PCA9685_TAG</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00043">s_TAG</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00207">star_bus_config_create_gpio()</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00036">star_bus_config_create_i2c()</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00291">star_bus_config_destroy()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00344">star_bus_dht22_init()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00432">star_bus_dht22_read()</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00293">star_bus_manager_add_bus()</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00566">star_bus_manager_deinit()</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00248">star_bus_manager_init()</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00411">STAR_DHT22_CONFIG_DEFAULT</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00408">star_error_interface_create_default()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00432">star_error_interface_destroy()</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00034">star_sensor_hcsr04_init()</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00312">star_sensor_hcsr04_read_distance()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00167">star_sensor_pca9685_init()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00675">star_sensor_pca9685_set_channel_off()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00574">star_sensor_pca9685_set_duty_cycle()</a>, and <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00164">star_dht22_data::temperature_c</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d29/main_8c_source.html#l00073">rgb_color_t::blue</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00168">star_dht22_data::checksum_valid</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00056">DISTANCE_VERY_FAR</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00033">GPIO_DHT22_PIN</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00025">GPIO_LEFT_ECHO</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00024">GPIO_LEFT_TRIG</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00037">GPIO_PCA9685_I2C_SCL</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00036">GPIO_PCA9685_I2C_SDA</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00041">GPIO_PCA9685_OE</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00153">star_dht22_config_t::gpio_pin</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">GPIO_RIGHT_ECHO</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00029">GPIO_RIGHT_TRIG</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00072">rgb_color_t::green</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00023">HCSR04_LEFT</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00163">star_dht22_data::humidity_percent</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00100">internal_distance_to_rgb()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00085">internal_set_rgb_led()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00019">NUM_HCSR04</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00205">PCA9685_DEFAULT_ADDR</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00038">PCA9685_I2C_FREQUENCY</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00039">PCA9685_I2C_NUM</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00274">PCA9685_OUTPUT_TOTEM_POLE</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00040">PCA9685_PWM_FREQUENCY_kHZ</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00487">pin_validator_get_interface()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00071">rgb_color_t::red</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00060">s_DHT22_TAG</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00061">s_HCSR04_TAG</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00062">s_PCA9685_TAG</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00059">s_TAG</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00207">star_bus_config_create_gpio()</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00036">star_bus_config_create_i2c()</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00291">star_bus_config_destroy()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00344">star_bus_dht22_init()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00432">star_bus_dht22_read()</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00293">star_bus_manager_add_bus()</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00566">star_bus_manager_deinit()</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00248">star_bus_manager_init()</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00411">STAR_DHT22_CONFIG_DEFAULT</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00408">star_error_interface_create_default()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00432">star_error_interface_destroy()</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00034">star_sensor_hcsr04_init()</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00312">star_sensor_hcsr04_read_distance()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00167">star_sensor_pca9685_init()</a>, and <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00164">star_dht22_data::temperature_c</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d0/d29/main_8c_a630544a7f0a2cc40d8a7fefab7e2fe70_cgraph.png" border="0" usemap="#ad0/d29/main_8c_a630544a7f0a2cc40d8a7fefab7e2fe70_cgraph" loading="lazy" alt=""/></div>
 <map name="ad0/d29/main_8c_a630544a7f0a2cc40d8a7fefab7e2fe70_cgraph" id="ad0/d29/main_8c_a630544a7f0a2cc40d8a7fefab7e2fe70_cgraph">
-<area shape="rect" title=" " alt="" coords="5,916,83,942"/>
-<area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#a13730ef0e296c0ffeea5d60b7f04d9cf" title="Create an interface adapter for the pin validator." alt="" coords="136,80,312,106"/>
-<area shape="poly" title=" " alt="" coords="43,916,52,792,69,592,95,383,111,296,128,232,143,199,162,167,202,115,201,120,166,170,148,201,133,234,116,297,100,384,75,593,57,792,49,916"/>
-<area shape="rect" href="../../de/d98/star__bus__config_8c.html#a856acf68aec88c1a3203d65ec656fd3c" title="Create a new GPIO bus configuration." alt="" coords="131,245,318,271"/>
-<area shape="poly" title=" " alt="" coords="43,915,49,804,62,628,74,535,88,447,106,374,128,321,150,296,180,277,177,281,154,300,133,324,111,375,93,448,79,535,68,629,54,804,48,916"/>
-<area shape="rect" href="../../de/d98/star__bus__config_8c.html#ae2c74c07526c11cc15773c858681f8d4" title="Create a new I2C bus/device configuration." alt="" coords="134,335,314,360"/>
-<area shape="poly" title=" " alt="" coords="43,916,47,813,60,653,71,568,86,491,105,426,116,400,129,380,148,366,146,370,133,384,121,403,110,428,91,492,76,569,65,653,53,813,48,916"/>
-<area shape="rect" href="../../de/d98/star__bus__config_8c.html#a194581e2eb82227a022f04b9057db839" title="Destroy a bus configuration and free all associated resources." alt="" coords="381,384,544,410"/>
-<area shape="poly" title=" " alt="" coords="43,916,46,819,58,671,69,594,84,523,103,465,115,443,129,427,157,406,188,390,222,380,257,374,326,372,391,379,386,383,326,377,258,379,223,385,190,395,160,410,133,431,120,446,108,468,89,524,74,594,64,671,52,819,48,916"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#aea453f5595346f56e5018f91516f4a77" title="Initialize DHT22 bus." alt="" coords="157,795,292,820"/>
-<area shape="poly" title=" " alt="" coords="63,914,193,827,190,832,67,917"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#aca1c661507907f9a75543f43e1d7164c" title="Read temperature and humidity from DHT22 sensor." alt="" coords="153,667,296,692"/>
-<area shape="poly" title=" " alt="" coords="49,915,81,855,129,781,163,738,200,701,198,706,167,741,133,784,86,858,54,917"/>
-<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a3a0dc80007e321a8697c399e0f0bf559" title="Add a new I2C bus/device configuration to the manager." alt="" coords="132,891,316,916"/>
-<area shape="poly" title=" " alt="" coords="81,922,119,917,115,921,85,925"/>
-<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a238abc1b4d0e4b98520e4227ec121b42" title="Deinitialize the bus manager and all managed I2C bus configurations." alt="" coords="141,441,308,467"/>
-<area shape="poly" title=" " alt="" coords="46,915,77,806,128,653,169,557,210,479,208,484,174,559,133,655,82,807,51,916"/>
-<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a2623a57b97d09ed1a3b0a0c012cd6119" title="Initialize an I2C bus manager instance." alt="" coords="148,940,300,966"/>
-<area shape="poly" title=" " alt="" coords="82,932,135,939,131,942,85,936"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a0c603b415b63ee1bd6bf532b5f315716" title="Create and allocate a default error interface with internal error handler." alt="" coords="158,1227,291,1268"/>
-<area shape="poly" title=" " alt="" coords="45,940,51,992,62,1064,73,1104,88,1143,107,1180,133,1212,146,1224,141,1226,129,1216,103,1183,83,1145,68,1105,57,1065,46,993,45,945"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#aec5a90e8436436a2317a7c5e8b24414f" title="Destroy an error interface created by star_error_interface_create_default()." alt="" coords="158,1162,291,1202"/>
-<area shape="poly" title=" " alt="" coords="46,939,55,981,69,1037,94,1096,112,1124,132,1148,147,1160,142,1161,129,1152,107,1127,90,1099,64,1038,50,982,47,945"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#afd5878b21fda797877bd29036adcbd58" title="Initialize HC&#45;SR04 sensor." alt="" coords="145,1316,304,1342"/>
-<area shape="poly" title=" " alt="" coords="45,940,49,1001,59,1089,69,1138,84,1187,105,1235,133,1278,149,1294,170,1308,165,1310,146,1298,129,1281,101,1237,79,1189,64,1139,53,1090,43,1001,45,945"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a104064b944a69649fe3bc16a186bcd4a" title="Trigger measurement and read distance." alt="" coords="157,1542,292,1582"/>
-<area shape="poly" title=" " alt="" coords="47,939,75,1108,100,1230,133,1353,170,1449,208,1528,202,1528,165,1451,128,1355,95,1231,70,1109,47,945"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="140,1112,309,1138"/>
-<area shape="poly" title=" " alt="" coords="53,939,88,986,133,1040,197,1101,192,1103,129,1044,84,989,55,945"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#aa3d1da24c7bb491c6b2338cb6e1e1619" title="Set channel to full OFF (0% duty cycle)." alt="" coords="616,1620,761,1661"/>
-<area shape="poly" title=" " alt="" coords="45,939,48,1065,57,1261,67,1365,82,1460,104,1539,117,1570,133,1592,155,1615,180,1634,236,1663,297,1680,362,1688,427,1688,491,1683,599,1666,604,1665,491,1688,428,1694,362,1693,296,1685,234,1668,177,1639,152,1619,129,1596,113,1572,99,1541,77,1462,62,1365,52,1262,43,1065,45,945"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="152,990,297,1030"/>
-<area shape="poly" title=" " alt="" coords="65,940,132,976,146,982,141,985,129,981,67,945"/>
-<area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#acae8e3a477362b1b5413e878d31738bf" title="Adapter function for register_pin interface." alt="" coords="401,104,524,130"/>
-<area shape="poly" title=" " alt="" coords="312,100,388,107,384,111,315,104"/>
-<area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#afae88fbbf79a18a7785317791efeb3d9" title="Adapter function for unregister_pin interface." alt="" coords="394,5,531,31"/>
-<area shape="poly" title=" " alt="" coords="258,78,365,40,392,33,388,37,367,45,262,81"/>
-<area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#a60f41f737709bc866a5de20157a75964" title="Adapter function for validate interface." alt="" coords="412,55,513,80"/>
-<area shape="poly" title=" " alt="" coords="311,81,398,73,394,76,315,85"/>
-<area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#a8eace335a8befbd45cc9d4725a523dc7" title="Register a pin on the validator." alt="" coords="630,104,747,130"/>
-<area shape="poly" title=" " alt="" coords="524,115,616,115,612,118,526,119"/>
-<area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#a70f90038a8f90485f5ce3ba0df581403" title="Unregister a pin from the validator." alt="" coords="623,5,754,31"/>
-<area shape="poly" title=" " alt="" coords="530,16,610,17,605,20,533,20"/>
-<area shape="rect" href="../../de/d98/star__bus__config_8c.html#a83c2bd0044ce80e0be65ebba3c1a3cc1" title="Clean up and free memory for a bus configuration structure. Does NOT deinitialize the hardware/driver..." alt="" coords="607,236,770,277"/>
-<area shape="poly" title=" " alt="" coords="244,243,298,214,331,200,365,190,419,180,463,176,506,179,560,190,604,205,645,227,640,229,602,210,559,195,505,185,463,181,420,185,367,195,333,205,300,219,249,247"/>
-<area shape="rect" href="../../de/d98/star__bus__config_8c.html#a15ff256a9a257629ad970a5359136a59" title="Create a generic bus configuration structure and allocate memory." alt="" coords="382,270,544,310"/>
-<area shape="poly" title=" " alt="" coords="317,269,368,276,364,279,320,273"/>
-<area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html#a0fff90f319ba2507d0e6fdce4620278c" title="Initialize default GPIO operations function pointers within a config structure. Typically called inte..." alt="" coords="400,204,526,245"/>
-<area shape="poly" title=" " alt="" coords="317,243,386,234,382,238,320,247"/>
-<area shape="poly" title=" " alt="" coords="279,332,368,311,365,315,283,336"/>
-<area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#a15f5262f71b692e21744f6db14863c93" title="Initialize default I2C operations function pointers within a config structure. Typically called inter..." alt="" coords="366,335,559,360"/>
-<area shape="poly" title=" " alt="" coords="313,345,353,346,349,349,317,350"/>
-<area shape="poly" title=" " alt="" coords="532,381,558,370,587,352,614,331,661,287,658,291,617,335,590,357,561,375,536,385"/>
-<area shape="rect" href="../../de/d98/star__bus__config_8c.html#a7698bd213b1044dfc1d6e92d879ca03e" title="Deinitialize the bus/device associated with this configuration." alt="" coords="613,384,764,410"/>
-<area shape="poly" title=" " alt="" coords="543,395,599,395,595,398,546,399"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ad84a1750c76d3cacd25aa7711b5fbdb5" title="Get DHT22 state for a bus (thread&#45;safe)." alt="" coords="406,744,520,770"/>
-<area shape="poly" title=" " alt="" coords="287,792,392,770,388,774,290,796"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#af3c6d2f2ae3b906ff2590c579ae42e8f" title="Set GPIO output high." alt="" coords="650,745,727,771"/>
-<area shape="poly" title=" " alt="" coords="290,802,416,794,559,780,638,768,633,771,560,785,416,799,293,807"/>
-<area shape="poly" title=" " alt="" coords="257,690,367,730,393,739,388,741,365,735,259,695"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a0cefc084690818ee196b34da74bcf4e4" title="Read raw data from DHT22 sensor." alt="" coords="410,695,516,720"/>
-<area shape="poly" title=" " alt="" coords="294,685,396,698,392,701,297,690"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a2b6eb006720d74c12343fee2c65b6d01" title="Calculate checksum from raw data." alt="" coords="378,499,547,540"/>
-<area shape="poly" title=" " alt="" coords="235,665,288,610,324,578,365,551,379,545,376,549,367,555,328,583,291,614,239,667"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a5f2659d313c7223f531d49a3584d84a3" title="Convert raw temperature to Celsius." alt="" coords="394,565,532,605"/>
-<area shape="poly" title=" " alt="" coords="253,664,365,616,387,609,383,613,367,621,256,668"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ab03f05ea4c39d5883e95b0db468a5a92" title="Convert raw humidity to percentage." alt="" coords="394,630,532,671"/>
-<area shape="poly" title=" " alt="" coords="294,669,380,659,376,662,297,673"/>
-<area shape="poly" title=" " alt="" coords="515,717,638,745,633,748,517,722"/>
-<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a1ca47ab4ab3f7448d603776d092e4a24" title="Register all pins for a single bus configuration." alt="" coords="370,947,556,972"/>
-<area shape="poly" title=" " alt="" coords="281,914,392,941,387,944,283,919"/>
-<area shape="rect" href="../../de/d98/star__bus__config_8c.html#aab1f2b4c0cdc21f5d37c1a376cb2a672" title="Initialize the bus/device associated with this configuration." alt="" coords="394,845,531,871"/>
-<area shape="poly" title=" " alt="" coords="294,888,381,872,377,876,297,892"/>
-<area shape="rect" href="../../d7/d27/star__bus__types_8c.html#afa900f53de82aaa97ea08d9b3d5a4a6d" title="Convert bus type to string." alt="" coords="608,871,769,896"/>
-<area shape="poly" title=" " alt="" coords="316,897,594,886,591,889,318,902"/>
-<area shape="poly" title=" " alt="" coords="531,863,595,872,590,874,533,868"/>
-<area shape="poly" title=" " alt="" coords="279,439,393,412,390,416,283,443"/>
-<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a908af8666d49aae610fd2ccc0a635133" title="Unregister all pins for a single bus configuration." alt="" coords="399,434,526,475"/>
-<area shape="poly" title=" " alt="" coords="307,452,386,452,382,456,310,456"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a37c70fed0d10c260212eb781ca4e5862" title="Create and initialize a default error handler with sensible defaults." alt="" coords="393,1227,532,1268"/>
-<area shape="poly" title=" " alt="" coords="290,1245,379,1246,375,1249,292,1250"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a1632e40ebb7509611a0513c0e6bdbb46" title="Destroy an error handler created by error_handler_create_default() or error_handler_create_custom()." alt="" coords="390,1162,536,1202"/>
-<area shape="poly" title=" " alt="" coords="290,1227,376,1205,372,1208,293,1232"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#adb10b93a13ce155a3e5c2aa2f4b2d543" title="Create an interface adapter for the error handler." alt="" coords="374,1292,552,1318"/>
-<area shape="poly" title=" " alt="" coords="291,1261,394,1287,389,1289,292,1266"/>
-<area shape="poly" title=" " alt="" coords="290,1180,376,1181,371,1184,292,1185"/>
-<area shape="poly" title=" " alt="" coords="262,1313,365,1277,386,1272,382,1275,367,1282,265,1318"/>
-<area shape="poly" title=" " alt="" coords="257,1313,287,1298,316,1278,331,1261,339,1245,348,1229,364,1213,378,1207,374,1211,368,1218,352,1233,344,1248,335,1264,320,1281,290,1302,260,1318"/>
-<area shape="poly" title=" " alt="" coords="303,1318,360,1314,356,1317,305,1323"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a4f8ff4902257222e26b990280abd431b" title=" " alt="" coords="380,1391,545,1416"/>
-<area shape="poly" title=" " alt="" coords="260,1340,367,1377,392,1386,387,1387,365,1382,260,1345"/>
-<area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html#a3f3ec8a58cef289721cb02a336d52ee0" title="Configure a GPIO pin (set mode, pull&#45;up/down) via bus manager." alt="" coords="382,1492,544,1518"/>
-<area shape="poly" title=" " alt="" coords="235,1339,288,1402,325,1439,367,1471,396,1486,390,1487,365,1475,322,1443,284,1406,235,1345"/>
-<area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html#a0679661e113801bc35156c4f23304e70" title="Configure GPIO interrupt for a pin via bus manager." alt="" coords="372,1341,553,1367"/>
-<area shape="poly" title=" " alt="" coords="303,1335,359,1342,354,1344,305,1340"/>
-<area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html#a7272db26c004de64a1586bc7311eabdb" title="Set the output level of a GPIO pin via bus manager." alt="" coords="620,1528,757,1554"/>
-<area shape="poly" title=" " alt="" coords="241,1340,295,1383,330,1406,367,1426,419,1446,462,1454,506,1461,560,1477,652,1520,647,1521,558,1482,505,1467,461,1459,418,1451,365,1431,327,1411,292,1387,240,1345"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a7eec5ddd99bce9137e1e9d8a7d6ac780" title="Get measurement result (non&#45;blocking)." alt="" coords="395,1542,530,1582"/>
-<area shape="poly" title=" " alt="" coords="292,1560,382,1561,377,1563,293,1565"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a3733b2536166937e74b478d4b873faa0" title="Trigger measurement (non&#45;blocking)." alt="" coords="395,1607,530,1648"/>
-<area shape="poly" title=" " alt="" coords="293,1578,383,1605,377,1605,292,1583"/>
-<area shape="poly" title=" " alt="" coords="525,1604,558,1592,640,1561,645,1560,560,1597,526,1609"/>
-<area shape="poly" title=" " alt="" coords="294,1136,320,1148,336,1164,345,1181,353,1197,368,1212,382,1222,377,1223,364,1216,348,1200,340,1183,332,1167,316,1152,295,1141"/>
-<area shape="poly" title=" " alt="" coords="280,1136,377,1160,372,1162,282,1141"/>
-<area shape="poly" title=" " alt="" coords="300,1136,320,1148,333,1165,341,1181,345,1215,348,1247,355,1262,368,1278,374,1284,369,1284,364,1281,350,1265,343,1248,339,1215,336,1183,329,1167,316,1152,301,1141"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a49863dd18b6c011a0162743d0e1dd4d4" title="Internal frequency setting (no initialization check, caller must hold mutex if needed)." alt="" coords="390,1047,535,1088"/>
-<area shape="poly" title=" " alt="" coords="279,1109,377,1087,373,1090,282,1114"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a7fb4749ccca6d7ff1b791faaba3c5e3a" title="Write to PCA9685 register with validation." alt="" coords="623,1097,754,1123"/>
-<area shape="poly" title=" " alt="" coords="308,1120,610,1111,606,1115,310,1125"/>
-<area shape="poly" title=" " alt="" coords="535,1079,611,1094,606,1096,536,1084"/>
-<area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="818,1097,948,1123"/>
-<area shape="poly" title=" " alt="" coords="753,1108,805,1109,800,1111,755,1113"/>
-<area shape="poly" title=" " alt="" coords="719,1617,744,1594,767,1565,796,1508,820,1448,838,1386,852,1325,870,1216,879,1141,882,1136,875,1217,858,1327,843,1387,825,1449,801,1510,772,1568,748,1598,721,1622"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="616,1018,761,1058"/>
-<area shape="poly" title=" " alt="" coords="297,1012,602,1031,598,1035,298,1017"/>
-<area shape="poly" title=" " alt="" coords="745,1056,835,1091,829,1092,746,1062"/>
+<area shape="rect" title=" " alt="" coords="5,849,83,874"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ad9158b347dcf081a0318d5f2448fcaea" title=" " alt="" coords="143,58,306,84"/>
+<area shape="poly" title=" " alt="" coords="43,848,51,698,68,457,80,333,94,224,110,140,119,111,128,93,133,91,131,96,133,97,124,113,115,141,99,225,85,334,73,458,56,698,49,848"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#a641c94ad0bf8146674fdfb9caa6722fe" title=" " alt="" coords="156,108,293,133"/>
+<area shape="poly" title=" " alt="" coords="43,848,48,728,62,536,73,433,88,337,106,255,128,196,154,164,187,139,185,144,158,168,133,199,111,257,93,338,79,434,68,536,54,728,48,848"/>
+<area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#a13730ef0e296c0ffeea5d60b7f04d9cf" title="Create an interface adapter for the pin validator." alt="" coords="136,210,312,236"/>
+<area shape="poly" title=" " alt="" coords="43,848,47,774,60,653,85,509,104,435,128,365,144,331,163,299,203,245,201,250,167,302,149,333,133,367,109,437,90,510,65,654,52,774,48,849"/>
+<area shape="rect" href="../../de/d98/star__bus__config_8c.html#a856acf68aec88c1a3203d65ec656fd3c" title="Create a new GPIO bus configuration." alt="" coords="131,378,318,404"/>
+<area shape="poly" title=" " alt="" coords="44,848,53,769,71,651,96,532,112,484,128,449,150,427,178,409,175,414,153,431,133,453,117,486,102,534,76,652,59,770,49,849"/>
+<area shape="rect" href="../../de/d98/star__bus__config_8c.html#ae2c74c07526c11cc15773c858681f8d4" title="Create a new I2C bus/device configuration." alt="" coords="134,464,314,489"/>
+<area shape="poly" title=" " alt="" coords="44,848,54,778,71,677,96,577,112,537,129,509,150,494,147,499,133,513,116,539,102,578,77,678,59,779,50,849"/>
+<area shape="rect" href="../../de/d98/star__bus__config_8c.html#a194581e2eb82227a022f04b9057db839" title="Destroy a bus configuration and free all associated resources." alt="" coords="381,513,544,538"/>
+<area shape="poly" title=" " alt="" coords="44,848,54,785,72,697,97,611,112,578,129,556,157,536,188,522,220,512,254,506,320,503,383,508,379,512,320,508,254,511,221,517,189,527,160,541,132,560,116,581,102,613,77,698,59,786,50,849"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#aea453f5595346f56e5018f91516f4a77" title="Initialize DHT22 bus." alt="" coords="157,873,292,898"/>
+<area shape="poly" title=" " alt="" coords="81,865,144,873,140,876,85,869"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#aca1c661507907f9a75543f43e1d7164c" title="Read temperature and humidity from DHT22 sensor." alt="" coords="153,796,296,821"/>
+<area shape="poly" title=" " alt="" coords="81,849,166,824,163,828,85,852"/>
+<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a3a0dc80007e321a8697c399e0f0bf559" title="Add a new I2C bus/device configuration to the manager." alt="" coords="132,974,316,1000"/>
+<area shape="poly" title=" " alt="" coords="64,873,194,964,189,966,65,878"/>
+<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a238abc1b4d0e4b98520e4227ec121b42" title="Deinitialize the bus manager and all managed I2C bus configurations." alt="" coords="141,570,308,596"/>
+<area shape="poly" title=" " alt="" coords="51,847,207,607,206,612,56,849"/>
+<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a2623a57b97d09ed1a3b0a0c012cd6119" title="Initialize an I2C bus manager instance." alt="" coords="148,1024,300,1049"/>
+<area shape="poly" title=" " alt="" coords="49,872,61,903,78,940,101,978,132,1010,138,1015,133,1017,129,1014,97,981,73,942,56,905,49,878"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a0c603b415b63ee1bd6bf532b5f315716" title="Create and allocate a default error interface with internal error handler." alt="" coords="158,1357,291,1398"/>
+<area shape="poly" title=" " alt="" coords="46,872,56,965,71,1102,82,1173,96,1239,113,1294,133,1332,149,1348,144,1349,129,1335,108,1296,91,1241,77,1174,66,1102,50,966,46,878"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#aec5a90e8436436a2317a7c5e8b24414f" title="Destroy an error interface created by star_error_interface_create_default()." alt="" coords="158,1281,291,1322"/>
+<area shape="poly" title=" " alt="" coords="46,872,57,953,74,1069,99,1185,115,1231,133,1263,147,1276,142,1277,129,1266,110,1234,94,1187,69,1070,52,954,47,877"/>
+<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#afd5878b21fda797877bd29036adcbd58" title="Initialize HC&#45;SR04 sensor." alt="" coords="145,1226,304,1252"/>
+<area shape="poly" title=" " alt="" coords="50,872,86,953,133,1061,211,1212,206,1213,128,1063,81,955,51,878"/>
+<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a104064b944a69649fe3bc16a186bcd4a" title="Trigger measurement and read distance." alt="" coords="157,1553,292,1594"/>
+<area shape="poly" title=" " alt="" coords="46,872,56,988,72,1166,97,1350,114,1426,133,1480,156,1514,185,1543,180,1544,152,1517,128,1483,109,1427,92,1351,66,1166,51,988,46,878"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="140,1444,309,1469"/>
+<area shape="poly" title=" " alt="" coords="46,872,54,977,67,1136,79,1220,93,1298,111,1363,133,1408,147,1423,166,1436,160,1437,144,1427,128,1411,106,1365,88,1299,73,1221,62,1137,48,977,46,877"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#a7b7ebe952969637b30a7a358d7c3d92c" title=" " alt="" coords="394,71,531,111"/>
+<area shape="poly" title=" " alt="" coords="291,110,381,99,377,103,295,114"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="390,5,535,46"/>
+<area shape="poly" title=" " alt="" coords="289,105,317,94,341,76,365,57,381,50,378,55,367,61,344,80,319,99,293,109"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="616,5,761,46"/>
+<area shape="poly" title=" " alt="" coords="534,23,602,24,598,27,537,28"/>
+<area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#acae8e3a477362b1b5413e878d31738bf" title="Adapter function for register_pin interface." alt="" coords="401,136,524,161"/>
+<area shape="poly" title=" " alt="" coords="258,208,365,170,392,164,388,167,367,175,262,211"/>
+<area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#afae88fbbf79a18a7785317791efeb3d9" title="Adapter function for unregister_pin interface." alt="" coords="394,185,531,210"/>
+<area shape="poly" title=" " alt="" coords="311,212,380,205,377,208,315,216"/>
+<area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#a60f41f737709bc866a5de20157a75964" title="Adapter function for validate interface." alt="" coords="412,234,513,260"/>
+<area shape="poly" title=" " alt="" coords="312,230,398,239,394,242,315,234"/>
+<area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#a8eace335a8befbd45cc9d4725a523dc7" title="Register a pin on the validator." alt="" coords="630,136,747,161"/>
+<area shape="poly" title=" " alt="" coords="524,146,616,147,612,150,526,151"/>
+<area shape="rect" href="../../de/d98/star__bus__config_8c.html#a83c2bd0044ce80e0be65ebba3c1a3cc1" title="Clean up and free memory for a bus configuration structure. Does NOT deinitialize the hardware/driver..." alt="" coords="607,395,770,435"/>
+<area shape="poly" title=" " alt="" coords="317,382,434,378,560,384,594,390,590,393,559,390,434,383,320,386"/>
+<area shape="rect" href="../../de/d98/star__bus__config_8c.html#a15ff256a9a257629ad970a5359136a59" title="Create a generic bus configuration structure and allocate memory." alt="" coords="382,399,544,439"/>
+<area shape="poly" title=" " alt="" coords="317,400,368,406,364,409,320,404"/>
+<area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html#a0fff90f319ba2507d0e6fdce4620278c" title="Initialize default GPIO operations function pointers within a config structure. Typically called inte..." alt="" coords="400,284,526,325"/>
+<area shape="poly" title=" " alt="" coords="260,376,392,328,389,333,264,380"/>
+<area shape="poly" title=" " alt="" coords="279,461,368,440,365,444,283,465"/>
+<area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#a15f5262f71b692e21744f6db14863c93" title="Initialize default I2C operations function pointers within a config structure. Typically called inter..." alt="" coords="366,464,559,489"/>
+<area shape="poly" title=" " alt="" coords="314,474,353,475,349,478,317,478"/>
+<area shape="poly" title=" " alt="" coords="528,510,558,499,607,473,652,443,649,447,609,477,560,504,532,514"/>
+<area shape="rect" href="../../de/d98/star__bus__config_8c.html#a7698bd213b1044dfc1d6e92d879ca03e" title="Deinitialize the bus/device associated with this configuration." alt="" coords="613,513,764,538"/>
+<area shape="poly" title=" " alt="" coords="543,523,599,524,595,527,546,528"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ad84a1750c76d3cacd25aa7711b5fbdb5" title="Get DHT22 state for a bus (thread&#45;safe)." alt="" coords="406,873,520,898"/>
+<area shape="poly" title=" " alt="" coords="291,883,392,884,388,887,293,888"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#af3c6d2f2ae3b906ff2590c579ae42e8f" title="Set GPIO output high." alt="" coords="650,874,727,900"/>
+<area shape="poly" title=" " alt="" coords="286,897,366,908,463,914,559,908,638,897,633,900,560,914,463,920,366,914,288,902"/>
+<area shape="poly" title=" " alt="" coords="257,819,367,859,393,868,388,870,365,864,259,824"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a0cefc084690818ee196b34da74bcf4e4" title="Read raw data from DHT22 sensor." alt="" coords="410,824,516,849"/>
+<area shape="poly" title=" " alt="" coords="295,814,396,827,392,830,297,819"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a2b6eb006720d74c12343fee2c65b6d01" title="Calculate checksum from raw data." alt="" coords="378,693,547,734"/>
+<area shape="poly" title=" " alt="" coords="253,793,365,745,387,738,383,742,367,749,256,797"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a5f2659d313c7223f531d49a3584d84a3" title="Convert raw temperature to Celsius." alt="" coords="394,759,532,799"/>
+<area shape="poly" title=" " alt="" coords="294,797,380,788,376,791,297,802"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ab03f05ea4c39d5883e95b0db468a5a92" title="Convert raw humidity to percentage." alt="" coords="394,628,532,669"/>
+<area shape="poly" title=" " alt="" coords="235,794,288,739,324,707,365,679,381,673,377,677,367,684,328,712,291,743,239,796"/>
+<area shape="poly" title=" " alt="" coords="516,846,638,874,633,876,517,851"/>
+<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a1ca47ab4ab3f7448d603776d092e4a24" title="Register all pins for a single bus configuration." alt="" coords="370,974,556,1000"/>
+<area shape="poly" title=" " alt="" coords="316,985,356,985,352,989,318,989"/>
+<area shape="rect" href="../../de/d98/star__bus__config_8c.html#aab1f2b4c0cdc21f5d37c1a376cb2a672" title="Initialize the bus/device associated with this configuration." alt="" coords="394,1076,531,1101"/>
+<area shape="poly" title=" " alt="" coords="293,998,319,1009,335,1020,344,1032,353,1043,367,1054,396,1069,391,1071,365,1059,350,1047,340,1035,331,1024,317,1013,295,1003"/>
+<area shape="rect" href="../../d7/d27/star__bus__types_8c.html#afa900f53de82aaa97ea08d9b3d5a4a6d" title="Convert bus type to string." alt="" coords="608,1050,769,1076"/>
+<area shape="poly" title=" " alt="" coords="297,998,366,1010,595,1047,591,1050,366,1015,300,1003"/>
+<area shape="poly" title=" " alt="" coords="530,1078,595,1072,591,1075,533,1083"/>
+<area shape="poly" title=" " alt="" coords="279,568,393,541,390,545,283,572"/>
+<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a908af8666d49aae610fd2ccc0a635133" title="Unregister all pins for a single bus configuration." alt="" coords="399,563,526,603"/>
+<area shape="poly" title=" " alt="" coords="307,581,386,581,381,585,310,585"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a37c70fed0d10c260212eb781ca4e5862" title="Create and initialize a default error handler with sensible defaults." alt="" coords="393,1439,532,1479"/>
+<area shape="poly" title=" " alt="" coords="284,1396,367,1424,387,1433,382,1434,365,1430,285,1401"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a1632e40ebb7509611a0513c0e6bdbb46" title="Destroy an error handler created by error_handler_create_default() or error_handler_create_custom()." alt="" coords="390,1324,536,1365"/>
+<area shape="poly" title=" " alt="" coords="290,1366,376,1355,372,1358,292,1371"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#adb10b93a13ce155a3e5c2aa2f4b2d543" title="Create an interface adapter for the error handler." alt="" coords="374,1389,552,1414"/>
+<area shape="poly" title=" " alt="" coords="291,1382,361,1390,356,1392,292,1387"/>
+<area shape="poly" title=" " alt="" coords="291,1311,376,1327,372,1330,292,1316"/>
+<area shape="poly" title=" " alt="" coords="292,1250,320,1268,335,1288,342,1308,345,1348,347,1387,354,1406,368,1425,382,1438,377,1438,364,1429,349,1409,342,1388,339,1348,337,1309,330,1291,316,1272,293,1255"/>
+<area shape="poly" title=" " alt="" coords="275,1250,319,1267,344,1285,367,1303,391,1317,386,1318,365,1308,341,1290,317,1272,276,1255"/>
+<area shape="poly" title=" " alt="" coords="289,1250,320,1268,332,1281,339,1295,344,1323,350,1349,356,1362,368,1374,375,1381,370,1381,364,1378,352,1365,345,1351,339,1324,334,1297,327,1284,316,1272,290,1255"/>
+<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a4f8ff4902257222e26b990280abd431b" title=" " alt="" coords="380,1174,545,1200"/>
+<area shape="poly" title=" " alt="" coords="285,1223,388,1202,384,1205,288,1228"/>
+<area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html#a3f3ec8a58cef289721cb02a336d52ee0" title="Configure a GPIO pin (set mode, pull&#45;up/down) via bus manager." alt="" coords="382,1224,544,1249"/>
+<area shape="poly" title=" " alt="" coords="303,1236,369,1236,364,1239,305,1241"/>
+<area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html#a0679661e113801bc35156c4f23304e70" title="Configure GPIO interrupt for a pin via bus manager." alt="" coords="372,1125,553,1150"/>
+<area shape="poly" title=" " alt="" coords="244,1224,298,1192,365,1159,386,1154,382,1157,367,1164,300,1196,248,1228"/>
+<area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html#a7272db26c004de64a1586bc7311eabdb" title="Set the output level of a GPIO pin via bus manager." alt="" coords="620,1504,757,1529"/>
+<area shape="poly" title=" " alt="" coords="301,1250,458,1281,524,1297,561,1310,584,1329,604,1351,639,1399,664,1448,681,1490,676,1488,659,1450,634,1402,600,1354,580,1333,558,1315,522,1302,456,1286,302,1255"/>
+<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a7eec5ddd99bce9137e1e9d8a7d6ac780" title="Get measurement result (non&#45;blocking)." alt="" coords="395,1684,530,1725"/>
+<area shape="poly" title=" " alt="" coords="252,1592,304,1630,367,1669,383,1678,378,1677,365,1673,301,1635,251,1597"/>
+<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a3733b2536166937e74b478d4b873faa0" title="Trigger measurement (non&#45;blocking)." alt="" coords="395,1553,530,1594"/>
+<area shape="poly" title=" " alt="" coords="292,1571,382,1573,377,1575,293,1576"/>
+<area shape="poly" title=" " alt="" coords="530,1554,623,1533,618,1534,532,1559"/>
+<area shape="poly" title=" " alt="" coords="309,1455,380,1457,375,1459,310,1460"/>
+<area shape="poly" title=" " alt="" coords="253,1441,317,1407,340,1390,365,1374,380,1369,376,1372,367,1379,343,1395,319,1412,256,1445"/>
+<area shape="poly" title=" " alt="" coords="282,1441,391,1417,387,1420,284,1445"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a49863dd18b6c011a0162743d0e1dd4d4" title="Internal frequency setting (no initialization check, caller must hold mutex if needed)." alt="" coords="390,1619,535,1659"/>
+<area shape="poly" title=" " alt="" coords="242,1467,280,1500,320,1540,334,1558,342,1574,352,1589,368,1604,380,1613,374,1612,364,1608,348,1592,338,1577,329,1561,316,1543,276,1503,242,1472"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a7fb4749ccca6d7ff1b791faaba3c5e3a" title="Write to PCA9685 register with validation." alt="" coords="623,1561,754,1586"/>
+<area shape="poly" title=" " alt="" coords="279,1467,621,1555,617,1558,278,1472"/>
+<area shape="poly" title=" " alt="" coords="535,1616,624,1592,629,1591,536,1621"/>
+</map>
+</div>
+
+</div>
+</div>
+<a id="ad9158b347dcf081a0318d5f2448fcaea" name="ad9158b347dcf081a0318d5f2448fcaea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad9158b347dcf081a0318d5f2448fcaea">&#9670;&#160;</a></span>internal_distance_to_rgb()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../d0/d62/structrgb__color__t.html">rgb_color_t</a> internal_distance_to_rgb </td>
+          <td>(</td>
+          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>distance_cm</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00100">100</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
+
+<p class="reference">References <a class="el" href="../../d0/d29/main_8c_source.html#l00073">rgb_color_t::blue</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00053">DISTANCE_CLOSE</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00055">DISTANCE_FAR</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00054">DISTANCE_MEDIUM</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00052">DISTANCE_VERY_CLOSE</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00056">DISTANCE_VERY_FAR</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00072">rgb_color_t::green</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00071">rgb_color_t::red</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00141">app_main()</a>.</p>
+<div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="../../d0/d29/main_8c_ad9158b347dcf081a0318d5f2448fcaea_icgraph.png" border="0" usemap="#ad0/d29/main_8c_ad9158b347dcf081a0318d5f2448fcaea_icgraph" loading="lazy" alt=""/></div>
+<map name="ad0/d29/main_8c_ad9158b347dcf081a0318d5f2448fcaea_icgraph" id="ad0/d29/main_8c_ad9158b347dcf081a0318d5f2448fcaea_icgraph">
+<area shape="rect" title=" " alt="" coords="131,5,293,31"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
+<area shape="poly" title=" " alt="" coords="113,19,83,21,83,16,118,18"/>
+</map>
+</div>
+
+</div>
+</div>
+<a id="a7b7ebe952969637b30a7a358d7c3d92c" name="a7b7ebe952969637b30a7a358d7c3d92c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7b7ebe952969637b30a7a358d7c3d92c">&#9670;&#160;</a></span>internal_scale_pwm_for_color()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">float internal_scale_pwm_for_color </td>
+          <td>(</td>
+          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>original_percent</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>min_pwm</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00076">76</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
+
+<p class="reference">References <a class="el" href="../../d0/d29/main_8c_source.html#l00068">MAX_PWM_ALL</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00085">internal_set_rgb_led()</a>.</p>
+<div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="../../d0/d29/main_8c_a7b7ebe952969637b30a7a358d7c3d92c_icgraph.png" border="0" usemap="#ad0/d29/main_8c_a7b7ebe952969637b30a7a358d7c3d92c_icgraph" loading="lazy" alt=""/></div>
+<map name="ad0/d29/main_8c_a7b7ebe952969637b30a7a358d7c3d92c_icgraph" id="ad0/d29/main_8c_a7b7ebe952969637b30a7a358d7c3d92c_icgraph">
+<area shape="rect" title=" " alt="" coords="316,5,452,46"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#a641c94ad0bf8146674fdfb9caa6722fe" title=" " alt="" coords="131,13,268,38"/>
+<area shape="poly" title=" " alt="" coords="298,26,268,28,268,23,303,26"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,13,83,38"/>
+<area shape="poly" title=" " alt="" coords="112,26,83,28,83,23,118,25"/>
+</map>
+</div>
+
+</div>
+</div>
+<a id="a641c94ad0bf8146674fdfb9caa6722fe" name="a641c94ad0bf8146674fdfb9caa6722fe"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a641c94ad0bf8146674fdfb9caa6722fe">&#9670;&#160;</a></span>internal_set_rgb_led()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void internal_set_rgb_led </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="../../d7/de0/star__sensor__pca9685_8h.html#afa905e4d6a39f212e4ebdc4a4524a368">pca9685_handle_t</a> *</td>          <td class="paramname"><span class="paramname"><em>handle</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t</td>          <td class="paramname"><span class="paramname"><em>led_index</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const <a class="el" href="../../d0/d62/structrgb__color__t.html">rgb_color_t</a> *</td>          <td class="paramname"><span class="paramname"><em>color</em></span>&#160;)</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00085">85</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
+
+<p class="reference">References <a class="el" href="../../d0/d29/main_8c_source.html#l00073">rgb_color_t::blue</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00072">rgb_color_t::green</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00076">internal_scale_pwm_for_color()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00067">MIN_PWM_BLUE</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00066">MIN_PWM_GREEN</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00065">MIN_PWM_RED</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00071">rgb_color_t::red</a>, and <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00574">star_sensor_pca9685_set_duty_cycle()</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00141">app_main()</a>.</p>
+<div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="../../d0/d29/main_8c_a641c94ad0bf8146674fdfb9caa6722fe_cgraph.png" border="0" usemap="#ad0/d29/main_8c_a641c94ad0bf8146674fdfb9caa6722fe_cgraph" loading="lazy" alt=""/></div>
+<map name="ad0/d29/main_8c_a641c94ad0bf8146674fdfb9caa6722fe_cgraph" id="ad0/d29/main_8c_a641c94ad0bf8146674fdfb9caa6722fe_cgraph">
+<area shape="rect" title=" " alt="" coords="5,46,143,72"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#a7b7ebe952969637b30a7a358d7c3d92c" title=" " alt="" coords="195,5,332,46"/>
+<area shape="poly" title=" " alt="" coords="143,44,183,39,178,41,144,49"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="191,71,336,111"/>
+<area shape="poly" title=" " alt="" coords="143,68,178,76,172,76,143,73"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="384,71,529,111"/>
+<area shape="poly" title=" " alt="" coords="336,88,371,91,366,91,336,94"/>
+<area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="577,78,708,104"/>
+<area shape="poly" title=" " alt="" coords="530,88,565,91,560,91,530,94"/>
+<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="756,78,940,104"/>
+<area shape="poly" title=" " alt="" coords="708,88,742,91,737,91,708,94"/>
+</map>
+</div>
+<div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="../../d0/d29/main_8c_a641c94ad0bf8146674fdfb9caa6722fe_icgraph.png" border="0" usemap="#ad0/d29/main_8c_a641c94ad0bf8146674fdfb9caa6722fe_icgraph" loading="lazy" alt=""/></div>
+<map name="ad0/d29/main_8c_a641c94ad0bf8146674fdfb9caa6722fe_icgraph" id="ad0/d29/main_8c_a641c94ad0bf8146674fdfb9caa6722fe_icgraph">
+<area shape="rect" title=" " alt="" coords="131,5,268,31"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
+<area shape="poly" title=" " alt="" coords="112,19,83,21,83,16,118,18"/>
 </map>
 </div>
 
@@ -710,9 +1146,9 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00044">44</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00060">60</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00048">app_main()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00141">app_main()</a>.</p>
 
 </div>
 </div>
@@ -736,9 +1172,9 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00045">45</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00061">61</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00048">app_main()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00141">app_main()</a>.</p>
 
 </div>
 </div>
@@ -762,9 +1198,9 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00046">46</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00062">62</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00048">app_main()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00141">app_main()</a>.</p>
 
 </div>
 </div>
@@ -788,9 +1224,9 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00043">43</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d29/main_8c_source.html#l00059">59</a> of file <a class="el" href="../../d0/d29/main_8c_source.html">main.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00048">app_main()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00108">get_dht22_state()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00130">get_onewire_state()</a>, <a class="el" href="../../dd/d61/star__bus__stats_8c_source.html#l00098">get_stats_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00115">get_uart_state()</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00021">gpio_configure_default()</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00130">gpio_read_default()</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00175">gpio_set_interrupt_default()</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00081">gpio_write_default()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00025">init_mutex()</a>, <a class="el" href="../../d4/db0/star__bus__async_8c_source.html#l00299">internal_async_worker_task()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00027">internal_bq7850_manufacturer_access()</a>, <a class="el" href="../../d4/db0/star__bus__async_8c_source.html#l00163">internal_enqueue_operation()</a>, <a class="el" href="../../d4/db0/star__bus__async_8c_source.html#l00354">internal_ensure_worker_running()</a>, <a class="el" href="../../d4/db0/star__bus__async_8c_source.html#l00198">internal_execute_operation()</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00039">internal_execute_operation()</a>, <a class="el" href="../../d4/db0/star__bus__async_8c_source.html#l00119">internal_get_async_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00076">internal_get_uart_state()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00213">internal_i2c_execute_with_retry()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00061">internal_init_dht22_mutex()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00080">internal_init_onewire_mutex()</a>, <a class="el" href="../../dd/d61/star__bus__stats_8c_source.html#l00044">internal_init_stats_mutex()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00049">internal_init_uart_mutex()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00091">internal_pca9685_set_frequency()</a>, <a class="el" href="../../d5/d06/star__bus__i2c__peripheral_8c_source.html#l00100">internal_peripheral_task()</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00073">internal_register_config_pins()</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00691">internal_star_bus_config_create_common()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00344">internal_star_bus_i2c_read()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00591">internal_star_bus_i2c_read_raw()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00227">internal_star_bus_i2c_write()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00486">internal_star_bus_i2c_write_command()</a>, <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00147">internal_star_bus_spi_peripheral_receive()</a>, <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00265">internal_star_bus_spi_peripheral_transceive()</a>, <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00206">internal_star_bus_spi_peripheral_transmit()</a>, <a class="el" href="../../d9/dbd/star__bus__spi_8c_source.html#l00208">internal_star_bus_spi_receive()</a>, <a class="el" href="../../d9/dbd/star__bus__spi_8c_source.html#l00272">internal_star_bus_spi_transfer()</a>, <a class="el" href="../../d9/dbd/star__bus__spi_8c_source.html#l00140">internal_star_bus_spi_transmit()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00135">internal_uart_event_task()</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00169">internal_unregister_config_pins()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00024">internal_validate_smbus_params()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00229">read_raw_data()</a>, <a class="el" href="../../d4/db0/star__bus__async_8c_source.html#l00619">star_async_get_stats()</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00397">star_batch_add_delay()</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00203">star_batch_add_i2c_read()</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00172">star_batch_add_i2c_write()</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00329">star_batch_add_smbus_read_byte()</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00360">star_batch_add_smbus_write_byte()</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00265">star_batch_add_spi_receive()</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00296">star_batch_add_spi_transfer()</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00234">star_batch_add_spi_transmit()</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00125">star_batch_create()</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00421">star_batch_execute()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00833">star_bms_bq7850_control_fets()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00203">star_bms_bq7850_deinit()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00713">star_bms_bq7850_disable_cell_balancing()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00698">star_bms_bq7850_enable_cell_balancing()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00079">star_bms_bq7850_init()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00656">star_bms_bq7850_read_battery_state()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00359">star_bms_bq7850_read_cells()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00489">star_bms_bq7850_read_current()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00743">star_bms_bq7850_read_protection()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00540">star_bms_bq7850_read_soc()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00599">star_bms_bq7850_read_status()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00334">star_bms_bq7850_reset()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00788">star_bms_bq7850_write_protection()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00508">star_bus_ads1115_configure()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00489">star_bus_ads1115_init()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00546">star_bus_ads1115_read()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00648">star_bus_at24c256_read()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00606">star_bus_at24c256_write()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00100">star_bus_bmp280_configure()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00045">star_bus_bmp280_init()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00171">star_bus_bmp280_read_pressure()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00135">star_bus_bmp280_read_temperature()</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00249">star_bus_config_create_dht22()</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00207">star_bus_config_create_gpio()</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00036">star_bus_config_create_i2c()</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00078">star_bus_config_create_spi_device()</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00144">star_bus_config_create_spi_peripheral()</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00541">star_bus_config_deinit()</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00291">star_bus_config_destroy()</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00330">star_bus_config_init()</a>, <a class="el" href="../../df/df6/star__bus__debug_8c_source.html#l00208">star_bus_debug_dump_regs()</a>, <a class="el" href="../../df/df6/star__bus__debug_8c_source.html#l00338">star_bus_debug_logger_print()</a>, <a class="el" href="../../df/df6/star__bus__debug_8c_source.html#l00135">star_bus_debug_print_bus_info()</a>, <a class="el" href="../../df/df6/star__bus__debug_8c_source.html#l00095">star_bus_debug_print_buses()</a>, <a class="el" href="../../df/df6/star__bus__debug_8c_source.html#l00168">star_bus_debug_read_reg()</a>, <a class="el" href="../../df/df6/star__bus__debug_8c_source.html#l00019">star_bus_debug_scan_i2c()</a>, <a class="el" href="../../df/df6/star__bus__debug_8c_source.html#l00446">star_bus_debug_stats_print()</a>, <a class="el" href="../../df/df6/star__bus__debug_8c_source.html#l00488">star_bus_debug_test_bus()</a>, <a class="el" href="../../df/df6/star__bus__debug_8c_source.html#l00524">star_bus_debug_test_device()</a>, <a class="el" href="../../df/df6/star__bus__debug_8c_source.html#l00548">star_bus_debug_test_reg_rw()</a>, <a class="el" href="../../df/df6/star__bus__debug_8c_source.html#l00187">star_bus_debug_write_reg()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00398">star_bus_dht22_deinit()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00344">star_bus_dht22_init()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00419">star_bus_dht22_init_default_ops()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00432">star_bus_dht22_read()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00625">star_bus_dht22_reset_stats()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00774">star_bus_ds3231_get_temperature()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00744">star_bus_ds3231_get_time()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00686">star_bus_ds3231_init()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00706">star_bus_ds3231_set_time()</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00279">star_bus_gpio_configure()</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00264">star_bus_gpio_init_default_ops()</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00328">star_bus_gpio_read()</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00353">star_bus_gpio_set_interrupt()</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00304">star_bus_gpio_write()</a>, <a class="el" href="../../de/db1/star__bus__i2c__dma_8c_source.html#l00138">star_bus_i2c_configure_dma()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00062">star_bus_i2c_init_default_ops()</a>, <a class="el" href="../../d5/d06/star__bus__i2c__peripheral_8c_source.html#l00325">star_bus_i2c_peripheral_disable()</a>, <a class="el" href="../../d5/d06/star__bus__i2c__peripheral_8c_source.html#l00203">star_bus_i2c_peripheral_enable()</a>, <a class="el" href="../../d5/d06/star__bus__i2c__peripheral_8c_source.html#l00456">star_bus_i2c_peripheral_reset_stats()</a>, <a class="el" href="../../d5/d06/star__bus__i2c__peripheral_8c_source.html#l00375">star_bus_i2c_peripheral_set_response()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00111">star_bus_i2c_read()</a>, <a class="el" href="../../de/db1/star__bus__i2c__dma_8c_source.html#l00291">star_bus_i2c_read_dma()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00170">star_bus_i2c_read_raw()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00075">star_bus_i2c_write()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00148">star_bus_i2c_write_command()</a>, <a class="el" href="../../de/db1/star__bus__i2c__dma_8c_source.html#l00205">star_bus_i2c_write_dma()</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00293">star_bus_manager_add_bus()</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00566">star_bus_manager_deinit()</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00248">star_bus_manager_init()</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00683">star_bus_manager_register_all_pins()</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00445">star_bus_manager_remove_bus()</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00404">star_bus_manager_with_bus()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00261">star_bus_mpu6050_configure()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00227">star_bus_mpu6050_init()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00326">star_bus_mpu6050_read_all()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00235">star_bus_onewire_deinit()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00181">star_bus_onewire_init()</a>, <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00136">star_bus_onewire_peripheral_disable()</a>, <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00086">star_bus_onewire_peripheral_enable()</a>, <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00253">star_bus_onewire_peripheral_reset_stats()</a>, <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00215">star_bus_onewire_peripheral_set_alarm()</a>, <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00172">star_bus_onewire_peripheral_set_rom()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00735">star_bus_onewire_reset_stats()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00525">star_bus_onewire_search()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00587">star_bus_pcf8574_read()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00569">star_bus_pcf8574_write()</a>, <a class="el" href="../../d1/d50/star__bus__helpers_8c_source.html#l00100">star_bus_quick_setup_i2c()</a>, <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00066">star_bus_smbus_peripheral_disable()</a>, <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00041">star_bus_smbus_peripheral_enable()</a>, <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00132">star_bus_smbus_peripheral_reset_stats()</a>, <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00097">star_bus_smbus_peripheral_send_alert()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00135">star_bus_spi_configure_dma()</a>, <a class="el" href="../../d9/dbd/star__bus__spi_8c_source.html#l00039">star_bus_spi_init_default_ops()</a>, <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00039">star_bus_spi_peripheral_init_default_ops()</a>, <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00055">star_bus_spi_peripheral_receive()</a>, <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00111">star_bus_spi_peripheral_transceive()</a>, <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00083">star_bus_spi_peripheral_transmit()</a>, <a class="el" href="../../d9/dbd/star__bus__spi_8c_source.html#l00080">star_bus_spi_receive()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00266">star_bus_spi_receive_dma()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00335">star_bus_spi_transceive_dma()</a>, <a class="el" href="../../d9/dbd/star__bus__spi_8c_source.html#l00108">star_bus_spi_transfer()</a>, <a class="el" href="../../d9/dbd/star__bus__spi_8c_source.html#l00051">star_bus_spi_transmit()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00197">star_bus_spi_transmit_dma()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00426">star_bus_ssd1306_clear()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00375">star_bus_ssd1306_init()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00464">star_bus_ssd1306_update()</a>, <a class="el" href="../../dd/d61/star__bus__stats_8c_source.html#l00149">star_bus_stats_disable()</a>, <a class="el" href="../../dd/d61/star__bus__stats_8c_source.html#l00117">star_bus_stats_enable()</a>, <a class="el" href="../../dd/d61/star__bus__stats_8c_source.html#l00201">star_bus_stats_reset()</a>, <a class="el" href="../../dd/d61/star__bus__stats_8c_source.html#l00232">star_bus_stats_reset_all()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00283">star_bus_uart_deinit()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00658">star_bus_uart_get_stats()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00186">star_bus_uart_init()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00380">star_bus_uart_read()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00684">star_bus_uart_reset_stats()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00330">star_bus_uart_write()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00367">star_free_pin_validator()</a>, <a class="el" href="../../de/db1/star__bus__i2c__dma_8c_source.html#l00096">star_i2c_dma_malloc()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00499">star_pin_validator_is_initialized()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00051">star_register_pin()</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00165">star_sensor_hcsr04_deinit()</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00280">star_sensor_hcsr04_get_result()</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00034">star_sensor_hcsr04_init()</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00312">star_sensor_hcsr04_read_distance()</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00339">star_sensor_hcsr04_set_temperature()</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00203">star_sensor_hcsr04_trigger()</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00279">star_sensor_imu_10dof_deinit()</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00047">star_sensor_imu_10dof_init()</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00314">star_sensor_imu_10dof_read()</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00506">star_sensor_imu_10dof_reset_bno055()</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00472">star_sensor_imu_10dof_set_mode()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00228">star_sensor_mpu6050_deinit()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00489">star_sensor_mpu6050_fifo_enable()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00599">star_sensor_mpu6050_fifo_get_count()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00638">star_sensor_mpu6050_fifo_read()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00558">star_sensor_mpu6050_fifo_reset()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00076">star_sensor_mpu6050_init()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00288">star_sensor_mpu6050_read_accel_raw()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00432">star_sensor_mpu6050_read_all()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00324">star_sensor_mpu6050_read_gyro_raw()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00398">star_sensor_mpu6050_read_temperature()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00669">star_sensor_mpu6050_set_sleep()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00428">star_sensor_pca9685_calculate_prescale()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00362">star_sensor_pca9685_deinit()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00167">star_sensor_pca9685_init()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00792">star_sensor_pca9685_output_disable()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00754">star_sensor_pca9685_output_enable()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00407">star_sensor_pca9685_reset()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00477">star_sensor_pca9685_set_frequency()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00523">star_sensor_pca9685_set_pwm()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00833">star_sensor_pca9685_set_servo_angle()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00727">star_sensor_pca9685_sleep()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00320">star_smbus_block_process_call()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00263">star_smbus_block_read()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00231">star_smbus_block_write()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00188">star_smbus_process_call()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00114">star_smbus_read_byte()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00157">star_smbus_read_word()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00078">star_smbus_receive_byte()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00094">star_spi_dma_malloc()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00181">star_unregister_pin()</a>, and <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00289">star_validate_pins()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00141">app_main()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00108">get_dht22_state()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00130">get_onewire_state()</a>, <a class="el" href="../../dd/d61/star__bus__stats_8c_source.html#l00098">get_stats_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00115">get_uart_state()</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00021">gpio_configure_default()</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00130">gpio_read_default()</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00175">gpio_set_interrupt_default()</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00081">gpio_write_default()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00025">init_mutex()</a>, <a class="el" href="../../d4/db0/star__bus__async_8c_source.html#l00299">internal_async_worker_task()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00027">internal_bq7850_manufacturer_access()</a>, <a class="el" href="../../d4/db0/star__bus__async_8c_source.html#l00163">internal_enqueue_operation()</a>, <a class="el" href="../../d4/db0/star__bus__async_8c_source.html#l00354">internal_ensure_worker_running()</a>, <a class="el" href="../../d4/db0/star__bus__async_8c_source.html#l00198">internal_execute_operation()</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00039">internal_execute_operation()</a>, <a class="el" href="../../d4/db0/star__bus__async_8c_source.html#l00119">internal_get_async_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00076">internal_get_uart_state()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00213">internal_i2c_execute_with_retry()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00061">internal_init_dht22_mutex()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00080">internal_init_onewire_mutex()</a>, <a class="el" href="../../dd/d61/star__bus__stats_8c_source.html#l00044">internal_init_stats_mutex()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00049">internal_init_uart_mutex()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00091">internal_pca9685_set_frequency()</a>, <a class="el" href="../../d5/d06/star__bus__i2c__peripheral_8c_source.html#l00100">internal_peripheral_task()</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00073">internal_register_config_pins()</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00691">internal_star_bus_config_create_common()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00344">internal_star_bus_i2c_read()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00591">internal_star_bus_i2c_read_raw()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00227">internal_star_bus_i2c_write()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00486">internal_star_bus_i2c_write_command()</a>, <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00147">internal_star_bus_spi_peripheral_receive()</a>, <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00265">internal_star_bus_spi_peripheral_transceive()</a>, <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00206">internal_star_bus_spi_peripheral_transmit()</a>, <a class="el" href="../../d9/dbd/star__bus__spi_8c_source.html#l00208">internal_star_bus_spi_receive()</a>, <a class="el" href="../../d9/dbd/star__bus__spi_8c_source.html#l00272">internal_star_bus_spi_transfer()</a>, <a class="el" href="../../d9/dbd/star__bus__spi_8c_source.html#l00140">internal_star_bus_spi_transmit()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00135">internal_uart_event_task()</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00169">internal_unregister_config_pins()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00024">internal_validate_smbus_params()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00229">read_raw_data()</a>, <a class="el" href="../../d4/db0/star__bus__async_8c_source.html#l00619">star_async_get_stats()</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00397">star_batch_add_delay()</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00203">star_batch_add_i2c_read()</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00172">star_batch_add_i2c_write()</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00329">star_batch_add_smbus_read_byte()</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00360">star_batch_add_smbus_write_byte()</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00265">star_batch_add_spi_receive()</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00296">star_batch_add_spi_transfer()</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00234">star_batch_add_spi_transmit()</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00125">star_batch_create()</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00421">star_batch_execute()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00833">star_bms_bq7850_control_fets()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00203">star_bms_bq7850_deinit()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00713">star_bms_bq7850_disable_cell_balancing()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00698">star_bms_bq7850_enable_cell_balancing()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00079">star_bms_bq7850_init()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00656">star_bms_bq7850_read_battery_state()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00359">star_bms_bq7850_read_cells()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00489">star_bms_bq7850_read_current()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00743">star_bms_bq7850_read_protection()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00540">star_bms_bq7850_read_soc()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00599">star_bms_bq7850_read_status()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00334">star_bms_bq7850_reset()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00788">star_bms_bq7850_write_protection()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00508">star_bus_ads1115_configure()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00489">star_bus_ads1115_init()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00546">star_bus_ads1115_read()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00648">star_bus_at24c256_read()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00606">star_bus_at24c256_write()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00100">star_bus_bmp280_configure()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00045">star_bus_bmp280_init()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00171">star_bus_bmp280_read_pressure()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00135">star_bus_bmp280_read_temperature()</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00249">star_bus_config_create_dht22()</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00207">star_bus_config_create_gpio()</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00036">star_bus_config_create_i2c()</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00078">star_bus_config_create_spi_device()</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00144">star_bus_config_create_spi_peripheral()</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00541">star_bus_config_deinit()</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00291">star_bus_config_destroy()</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00330">star_bus_config_init()</a>, <a class="el" href="../../df/df6/star__bus__debug_8c_source.html#l00208">star_bus_debug_dump_regs()</a>, <a class="el" href="../../df/df6/star__bus__debug_8c_source.html#l00338">star_bus_debug_logger_print()</a>, <a class="el" href="../../df/df6/star__bus__debug_8c_source.html#l00135">star_bus_debug_print_bus_info()</a>, <a class="el" href="../../df/df6/star__bus__debug_8c_source.html#l00095">star_bus_debug_print_buses()</a>, <a class="el" href="../../df/df6/star__bus__debug_8c_source.html#l00168">star_bus_debug_read_reg()</a>, <a class="el" href="../../df/df6/star__bus__debug_8c_source.html#l00019">star_bus_debug_scan_i2c()</a>, <a class="el" href="../../df/df6/star__bus__debug_8c_source.html#l00446">star_bus_debug_stats_print()</a>, <a class="el" href="../../df/df6/star__bus__debug_8c_source.html#l00488">star_bus_debug_test_bus()</a>, <a class="el" href="../../df/df6/star__bus__debug_8c_source.html#l00524">star_bus_debug_test_device()</a>, <a class="el" href="../../df/df6/star__bus__debug_8c_source.html#l00548">star_bus_debug_test_reg_rw()</a>, <a class="el" href="../../df/df6/star__bus__debug_8c_source.html#l00187">star_bus_debug_write_reg()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00398">star_bus_dht22_deinit()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00344">star_bus_dht22_init()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00419">star_bus_dht22_init_default_ops()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00432">star_bus_dht22_read()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00625">star_bus_dht22_reset_stats()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00774">star_bus_ds3231_get_temperature()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00744">star_bus_ds3231_get_time()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00686">star_bus_ds3231_init()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00706">star_bus_ds3231_set_time()</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00279">star_bus_gpio_configure()</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00264">star_bus_gpio_init_default_ops()</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00328">star_bus_gpio_read()</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00353">star_bus_gpio_set_interrupt()</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00304">star_bus_gpio_write()</a>, <a class="el" href="../../de/db1/star__bus__i2c__dma_8c_source.html#l00138">star_bus_i2c_configure_dma()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00062">star_bus_i2c_init_default_ops()</a>, <a class="el" href="../../d5/d06/star__bus__i2c__peripheral_8c_source.html#l00325">star_bus_i2c_peripheral_disable()</a>, <a class="el" href="../../d5/d06/star__bus__i2c__peripheral_8c_source.html#l00203">star_bus_i2c_peripheral_enable()</a>, <a class="el" href="../../d5/d06/star__bus__i2c__peripheral_8c_source.html#l00456">star_bus_i2c_peripheral_reset_stats()</a>, <a class="el" href="../../d5/d06/star__bus__i2c__peripheral_8c_source.html#l00375">star_bus_i2c_peripheral_set_response()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00111">star_bus_i2c_read()</a>, <a class="el" href="../../de/db1/star__bus__i2c__dma_8c_source.html#l00291">star_bus_i2c_read_dma()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00170">star_bus_i2c_read_raw()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00075">star_bus_i2c_write()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00148">star_bus_i2c_write_command()</a>, <a class="el" href="../../de/db1/star__bus__i2c__dma_8c_source.html#l00205">star_bus_i2c_write_dma()</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00293">star_bus_manager_add_bus()</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00566">star_bus_manager_deinit()</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00248">star_bus_manager_init()</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00683">star_bus_manager_register_all_pins()</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00445">star_bus_manager_remove_bus()</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00404">star_bus_manager_with_bus()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00261">star_bus_mpu6050_configure()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00227">star_bus_mpu6050_init()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00326">star_bus_mpu6050_read_all()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00235">star_bus_onewire_deinit()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00181">star_bus_onewire_init()</a>, <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00136">star_bus_onewire_peripheral_disable()</a>, <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00086">star_bus_onewire_peripheral_enable()</a>, <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00253">star_bus_onewire_peripheral_reset_stats()</a>, <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00215">star_bus_onewire_peripheral_set_alarm()</a>, <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00172">star_bus_onewire_peripheral_set_rom()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00735">star_bus_onewire_reset_stats()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00525">star_bus_onewire_search()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00587">star_bus_pcf8574_read()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00569">star_bus_pcf8574_write()</a>, <a class="el" href="../../d1/d50/star__bus__helpers_8c_source.html#l00100">star_bus_quick_setup_i2c()</a>, <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00066">star_bus_smbus_peripheral_disable()</a>, <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00041">star_bus_smbus_peripheral_enable()</a>, <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00132">star_bus_smbus_peripheral_reset_stats()</a>, <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00097">star_bus_smbus_peripheral_send_alert()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00135">star_bus_spi_configure_dma()</a>, <a class="el" href="../../d9/dbd/star__bus__spi_8c_source.html#l00039">star_bus_spi_init_default_ops()</a>, <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00039">star_bus_spi_peripheral_init_default_ops()</a>, <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00055">star_bus_spi_peripheral_receive()</a>, <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00111">star_bus_spi_peripheral_transceive()</a>, <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00083">star_bus_spi_peripheral_transmit()</a>, <a class="el" href="../../d9/dbd/star__bus__spi_8c_source.html#l00080">star_bus_spi_receive()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00266">star_bus_spi_receive_dma()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00335">star_bus_spi_transceive_dma()</a>, <a class="el" href="../../d9/dbd/star__bus__spi_8c_source.html#l00108">star_bus_spi_transfer()</a>, <a class="el" href="../../d9/dbd/star__bus__spi_8c_source.html#l00051">star_bus_spi_transmit()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00197">star_bus_spi_transmit_dma()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00426">star_bus_ssd1306_clear()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00375">star_bus_ssd1306_init()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00464">star_bus_ssd1306_update()</a>, <a class="el" href="../../dd/d61/star__bus__stats_8c_source.html#l00149">star_bus_stats_disable()</a>, <a class="el" href="../../dd/d61/star__bus__stats_8c_source.html#l00117">star_bus_stats_enable()</a>, <a class="el" href="../../dd/d61/star__bus__stats_8c_source.html#l00201">star_bus_stats_reset()</a>, <a class="el" href="../../dd/d61/star__bus__stats_8c_source.html#l00232">star_bus_stats_reset_all()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00283">star_bus_uart_deinit()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00658">star_bus_uart_get_stats()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00186">star_bus_uart_init()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00380">star_bus_uart_read()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00684">star_bus_uart_reset_stats()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00330">star_bus_uart_write()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00367">star_free_pin_validator()</a>, <a class="el" href="../../de/db1/star__bus__i2c__dma_8c_source.html#l00096">star_i2c_dma_malloc()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00499">star_pin_validator_is_initialized()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00051">star_register_pin()</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00165">star_sensor_hcsr04_deinit()</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00280">star_sensor_hcsr04_get_result()</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00034">star_sensor_hcsr04_init()</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00312">star_sensor_hcsr04_read_distance()</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00339">star_sensor_hcsr04_set_temperature()</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00203">star_sensor_hcsr04_trigger()</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00279">star_sensor_imu_10dof_deinit()</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00047">star_sensor_imu_10dof_init()</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00314">star_sensor_imu_10dof_read()</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00506">star_sensor_imu_10dof_reset_bno055()</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00472">star_sensor_imu_10dof_set_mode()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00228">star_sensor_mpu6050_deinit()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00489">star_sensor_mpu6050_fifo_enable()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00599">star_sensor_mpu6050_fifo_get_count()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00638">star_sensor_mpu6050_fifo_read()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00558">star_sensor_mpu6050_fifo_reset()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00076">star_sensor_mpu6050_init()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00288">star_sensor_mpu6050_read_accel_raw()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00432">star_sensor_mpu6050_read_all()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00324">star_sensor_mpu6050_read_gyro_raw()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00398">star_sensor_mpu6050_read_temperature()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00669">star_sensor_mpu6050_set_sleep()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00428">star_sensor_pca9685_calculate_prescale()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00362">star_sensor_pca9685_deinit()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00167">star_sensor_pca9685_init()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00792">star_sensor_pca9685_output_disable()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00754">star_sensor_pca9685_output_enable()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00407">star_sensor_pca9685_reset()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00477">star_sensor_pca9685_set_frequency()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00523">star_sensor_pca9685_set_pwm()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00833">star_sensor_pca9685_set_servo_angle()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00727">star_sensor_pca9685_sleep()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00320">star_smbus_block_process_call()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00263">star_smbus_block_read()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00231">star_smbus_block_write()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00188">star_smbus_process_call()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00114">star_smbus_read_byte()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00157">star_smbus_read_word()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00078">star_smbus_receive_byte()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00094">star_spi_dma_malloc()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00181">star_unregister_pin()</a>, and <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00289">star_validate_pins()</a>.</p>
 
 </div>
 </div>

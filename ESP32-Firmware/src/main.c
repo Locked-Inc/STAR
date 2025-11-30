@@ -40,10 +40,103 @@
 #define PCA9685_PWM_FREQUENCY_kHZ (50)
 #define GPIO_PCA9685_OE (GPIO_NUM_15)
 
+/* RGB LED Channel Mappings */
+#define LED_LEFT_RED (0)
+#define LED_LEFT_GREEN (1)
+#define LED_LEFT_BLUE (2)
+#define LED_RIGHT_RED (3)
+#define LED_RIGHT_GREEN (4)
+#define LED_RIGHT_BLUE (5)
+
+/* Distance Ranges (in cm) */
+#define DISTANCE_VERY_CLOSE (10.0f) /* < 10cm: Bright Red */
+#define DISTANCE_CLOSE (25.0f)      /* 10-25cm: Red to Yellow */
+#define DISTANCE_MEDIUM (50.0f)     /* 25-50cm: Yellow to Green */
+#define DISTANCE_FAR (100.0f)       /* 50-100cm: Green to Blue */
+#define DISTANCE_VERY_FAR (200.0f)  /* 100-200cm: Blue */
+                                    /* > 200cm: LEDs off */
+
 static const char* s_TAG         = "POC Demo";
 static const char* s_DHT22_TAG   = "DHT-22";
 static const char* s_HCSR04_TAG  = "HC-SR04";
 static const char* s_PCA9685_TAG = "PCA9685";
+
+/* PWM scaling - adjust these values as needed (lower = brighter, higher = dimmer) */
+#define MIN_PWM_RED (45.0f)   /* Red LED minimum PWM */
+#define MIN_PWM_GREEN (45.0f) /* Green LED minimum PWM */
+#define MIN_PWM_BLUE (45.0f)  /* Blue LED minimum PWM */
+#define MAX_PWM_ALL (100.0f)  /* Maximum PWM for all colors */
+
+typedef struct {
+  float red;
+  float green;
+  float blue;
+} rgb_color_t;
+
+static float internal_scale_pwm_for_color(float original_percent, float min_pwm)
+{
+  if (original_percent <= 0.1f) {
+    return 0.0f;
+  }
+  return min_pwm + (original_percent / 100.0f) * (MAX_PWM_ALL - min_pwm);
+}
+
+static void
+internal_set_rgb_led(const pca9685_handle_t* handle, uint8_t led_index, const rgb_color_t* color)
+{
+  uint8_t red_channel   = led_index * 3 + 0;
+  uint8_t green_channel = led_index * 3 + 1;
+  uint8_t blue_channel  = led_index * 3 + 2;
+
+  float scaled_red   = internal_scale_pwm_for_color(color->red, MIN_PWM_RED);
+  float scaled_green = internal_scale_pwm_for_color(color->green, MIN_PWM_GREEN);
+  float scaled_blue  = internal_scale_pwm_for_color(color->blue, MIN_PWM_BLUE);
+
+  star_sensor_pca9685_set_duty_cycle(handle, red_channel, scaled_red);
+  star_sensor_pca9685_set_duty_cycle(handle, green_channel, scaled_green);
+  star_sensor_pca9685_set_duty_cycle(handle, blue_channel, scaled_blue);
+}
+
+static rgb_color_t internal_distance_to_rgb(float distance_cm)
+{
+  rgb_color_t color = {0.0f, 0.0f, 0.0f};
+
+  if (distance_cm > DISTANCE_VERY_FAR) {
+    return color;
+  }
+
+  float brightness_factor = 1.0f;
+
+  if (distance_cm < DISTANCE_VERY_CLOSE) {
+    color.red         = 100.0f;
+    brightness_factor = 1.0f;
+  } else if (distance_cm < DISTANCE_CLOSE) {
+    float ratio = (distance_cm - DISTANCE_VERY_CLOSE) / (DISTANCE_CLOSE - DISTANCE_VERY_CLOSE);
+    color.red   = 100.0f;
+    color.green = ratio * 100.0f;
+    brightness_factor = 1.0f - (ratio * 0.3f);
+  } else if (distance_cm < DISTANCE_MEDIUM) {
+    float ratio       = (distance_cm - DISTANCE_CLOSE) / (DISTANCE_MEDIUM - DISTANCE_CLOSE);
+    color.red         = (1.0f - ratio) * 100.0f;
+    color.green       = 100.0f;
+    brightness_factor = 0.7f - (ratio * 0.2f);
+  } else if (distance_cm < DISTANCE_FAR) {
+    float ratio       = (distance_cm - DISTANCE_MEDIUM) / (DISTANCE_FAR - DISTANCE_MEDIUM);
+    color.green       = (1.0f - ratio) * 100.0f;
+    color.blue        = ratio * 100.0f;
+    brightness_factor = 0.5f - (ratio * 0.2f);
+  } else if (distance_cm <= DISTANCE_VERY_FAR) {
+    color.blue        = 100.0f;
+    float ratio       = (distance_cm - DISTANCE_FAR) / (DISTANCE_VERY_FAR - DISTANCE_FAR);
+    brightness_factor = 0.3f - (ratio * 0.2f);
+  }
+
+  color.red *= brightness_factor;
+  color.green *= brightness_factor;
+  color.blue *= brightness_factor;
+
+  return color;
+}
 
 void app_main(void)
 {
@@ -179,18 +272,29 @@ void app_main(void)
       ret = star_sensor_hcsr04_read_distance(&hcsr04_handles[i], &hcsr04_data[i]);
 
       if (ret == ESP_OK) {
-        ESP_LOGI(s_TAG, "Sensor %d distance: %.1f cm", i, hcsr04_data[i]);
+        const char* sensor_name = (i == HCSR04_LEFT) ? "Left" : "Right";
+        ESP_LOGI(s_TAG, "%s sensor distance: %.1f cm", sensor_name, hcsr04_data[i]);
 
-        if (hcsr04_data[i] >= HCSR04_MAX_DISTANCE_CM) {
-          star_sensor_pca9685_set_channel_off(&pca9685_handle, i);
+        rgb_color_t color = internal_distance_to_rgb(hcsr04_data[i]);
+        internal_set_rgb_led(&pca9685_handle, i, &color);
+
+        if (color.red > 0.1f || color.green > 0.1f || color.blue > 0.1f) {
+          ESP_LOGI(s_TAG,
+                   "%s LED: R=%.1f%%, G=%.1f%%, B=%.1f%%",
+                   sensor_name,
+                   color.red,
+                   color.green,
+                   color.blue);
         } else {
-          /* Set LED brightness based on distance (closer = brighter) */
-          float duty_percent = 100.0f * (1.0f - (hcsr04_data[i] / HCSR04_MAX_DISTANCE_CM));
-          star_sensor_pca9685_set_duty_cycle(&pca9685_handle, i, duty_percent);
+          ESP_LOGI(s_TAG, "%s LED: OFF (distance > %.0fcm)", sensor_name, DISTANCE_VERY_FAR);
         }
+      } else {
+        ESP_LOGW(s_TAG, "Failed to read sensor %d: %s", i, esp_err_to_name(ret));
+        rgb_color_t off_color = {0.0f, 0.0f, 0.0f};
+        internal_set_rgb_led(&pca9685_handle, i, &off_color);
       }
     }
 
-    vTaskDelay(pdMS_TO_TICKS(100));
+    vTaskDelay(pdMS_TO_TICKS(200));
   }
 }
