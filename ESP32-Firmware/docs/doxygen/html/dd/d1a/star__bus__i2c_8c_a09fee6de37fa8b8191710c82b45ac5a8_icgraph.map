@@ -1,0 +1,17 @@
+<map id="internal_star_bus_i2c_read_raw" name="internal_star_bus_i2c_read_raw">
+<area shape="rect" id="Node000001" title=" " alt="" coords="910,76,1054,117"/>
+<area shape="rect" id="Node000002" href="$dd/d1a/star__bus__i2c_8c.html#a15f5262f71b692e21744f6db14863c93" title="Initialize default I2C operations function pointers within a config structure. Typically called inter..." alt="" coords="668,84,862,110"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="891,97,862,99,862,94,897,97"/>
+<area shape="rect" id="Node000003" href="$de/d98/star__bus__config_8c.html#ae2c74c07526c11cc15773c858681f8d4" title="Create a new I2C bus/device configuration." alt="" coords="440,84,620,110"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="650,97,621,99,620,94,655,97"/>
+<area shape="rect" id="Node000004" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="270,5,348,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="481,78,391,45,348,31,348,26,393,40,486,77"/>
+<area shape="rect" id="Node000005" href="$d1/d50/star__bus__helpers_8c.html#a8a45aff6fa43266e370b6d1f5e764cad" title="Create I2C config for fast mode (400 kHz)." alt="" coords="226,55,392,80"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="422,83,393,81,392,76,428,83"/>
+<area shape="rect" id="Node000007" href="$d1/d50/star__bus__helpers_8c.html#a605d3a80ed172746a7f8563c45473181" title="Create I2C config for fast mode plus (1 MHz)." alt="" coords="240,104,378,145"/>
+<area shape="poly" id="edge6_Node000003_Node000007" title=" " alt="" coords="422,111,378,119,377,114,427,110"/>
+<area shape="rect" id="Node000008" href="$d1/d50/star__bus__helpers_8c.html#a49977b9bdf148ec39503fa5340f96fc3" title="Create I2C config for standard mode (100 kHz)." alt="" coords="240,170,378,210"/>
+<area shape="poly" id="edge7_Node000003_Node000008" title=" " alt="" coords="488,116,393,159,363,172,361,167,391,154,482,117"/>
+<area shape="rect" id="Node000006" href="$d1/d50/star__bus__helpers_8c.html#a88cdd0738dfec53d37d49f977c9d989c" title="Quick setup: I2C master with automatic defaults." alt="" coords="5,55,178,80"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="207,69,179,70,177,65,212,66"/>
+</map>

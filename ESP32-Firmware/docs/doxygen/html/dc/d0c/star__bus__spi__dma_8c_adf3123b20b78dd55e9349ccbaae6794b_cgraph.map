@@ -1,0 +1,16 @@
+<map id="star_bus_spi_transceive_dma" name="star_bus_spi_transceive_dma">
+<area shape="rect" id="Node000001" title="Perform full&#45;duplex SPI transceive using DMA." alt="" coords="5,112,200,138"/>
+<area shape="rect" id="Node000002" href="$dc/d0c/star__bus__spi__dma_8c.html#ae6f3f7193babc100dd9a817ee1ebbdc5" title="Get DMA state for an SPI host." alt="" coords="266,5,398,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="122,109,177,75,247,40,265,35,260,38,249,45,180,80,125,114"/>
+<area shape="rect" id="Node000003" href="$dc/d0c/star__bus__spi__dma_8c.html#af5ad74578aa070f6c9b52f995459590d" title="Get SPI host from bus name." alt="" coords="254,55,410,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="156,109,265,83,261,86,158,114"/>
+<area shape="rect" id="Node000005" href="$dc/d0c/star__bus__spi__dma_8c.html#aee06ddc77f2184cc24ee84b885ddbbcf" title="Check if transfer should use DMA." alt="" coords="264,104,400,145"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="199,122,250,124,245,126,200,127"/>
+<area shape="rect" id="Node000006" href="$d9/dbd/star__bus__spi_8c.html#ad0df93f1e1b403e0e8e0e48ca8822588" title="Perform a full&#45;duplex transfer with an SPI device specified by a bus configuration." alt="" coords="259,169,405,195"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="157,136,265,164,260,166,157,141"/>
+<area shape="rect" id="Node000007" href="$dc/d0c/star__bus__spi__dma_8c.html#ae0812860368e24030307d3df5b78b2d5" title="Check if a buffer is DMA&#45;capable." alt="" coords="248,219,416,244"/>
+<area shape="poly" id="edge7_Node000001_Node000007" title=" " alt="" coords="124,136,180,170,249,205,265,214,260,213,247,210,177,174,123,141"/>
+<area shape="rect" id="Node000004" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="464,112,648,138"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="385,78,491,107,486,108,385,84"/>
+<area shape="poly" id="edge6_Node000006_Node000004" title=" " alt="" coords="385,166,486,143,491,142,386,171"/>
+</map>

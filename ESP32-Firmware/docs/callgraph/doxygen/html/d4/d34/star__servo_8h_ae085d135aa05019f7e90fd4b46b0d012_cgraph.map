@@ -1,0 +1,7 @@
+<map id="star_servo_get_max_count" name="star_servo_get_max_count">
+<area shape="rect" id="Node000001" title="Calculate PCA9685 count for servo maximum position (180 degrees)." alt="" coords="5,5,145,46"/>
+<area shape="rect" id="Node000002" href="$d3/d75/star__servo_8c.html#a8cd577679d2d29a34ae03d3cec95c3b1" title="Calculate PCA9685 count value from pulse width in microseconds." alt="" coords="193,5,331,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="145,23,180,25,175,26,145,28"/>
+<area shape="rect" id="Node000003" href="$d3/d75/star__servo_8c.html#a8833486138de9335152a50c11dfa8693" title=" " alt="" coords="379,13,473,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="331,23,366,26,360,26,331,28"/>
+</map>

@@ -1,0 +1,7 @@
+<map id="lib/star_pin_validator/include/star_pin_validator.h" name="lib/star_pin_validator/include/star_pin_validator.h">
+<area shape="rect" id="Node000001" title="GPIO pin conflict detection and tracking." alt="" coords="66,5,248,46"/>
+<area shape="rect" id="Node000002" href="$d2/dad/star__pin__validator_8c.html" title=" " alt="" coords="5,94,165,135"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="133,57,103,96,99,92,129,59"/>
+<area shape="rect" id="Node000003" href="$d0/d29/main_8c.html" title=" " alt="" coords="189,102,272,127"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="185,56,223,101,218,101,182,60"/>
+</map>

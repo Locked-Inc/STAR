@@ -1,0 +1,5 @@
+<map id="internal_unregister_config_pins" name="internal_unregister_config_pins">
+<area shape="rect" id="Node000001" title="Unregister all pins for a single bus configuration." alt="" coords="5,5,133,46"/>
+<area shape="rect" id="Node000002" href="$d7/d60/star__bus__manager_8c.html#a845821b70a8f6075660c7cd45a2548bb" title="Helper to unregister a single pin via the interface." alt="" coords="181,5,308,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="133,23,168,25,163,26,133,28"/>
+</map>

@@ -1,0 +1,656 @@
+app_main() <void app_main (void) at src/main.c:140>:
+    esp_err_t()
+    ESP_LOGI()
+    pin_validator_get_interface() <void pin_validator_get_interface (star_pin_interface_t *iface) at lib/star_pin_validator/src/star_pin_validator.c:487>:
+        iface_register_pin() <esp_err_t iface_register_pin (void *ctx, int pin, const char *description, bool shared) at lib/star_pin_validator/src/star_pin_validator.c:463>:
+            star_register_pin() <esp_err_t star_register_pin (gpio_num_t gpio_num, const char *desc, bool can_be_shared) at lib/star_pin_validator/src/star_pin_validator.c:51>:
+                esp_err_t()
+                ESP_LOGE()
+                strnlen()
+                init_mutex() <esp_err_t init_mutex (void) at lib/star_pin_validator/src/star_pin_validator.c:25>:
+                    portENTER_CRITICAL()
+                    xSemaphoreCreateMutex()
+                    portEXIT_CRITICAL()
+                    ESP_LOGE()
+                    ESP_LOGD()
+                xSemaphoreTake()
+                xSemaphoreGive()
+                ESP_LOGD()
+                malloc()
+                realloc()
+                strlen()
+                strcpy()
+        iface_unregister_pin() <esp_err_t iface_unregister_pin (void *ctx, int pin, const char *description) at lib/star_pin_validator/src/star_pin_validator.c:472>:
+            star_unregister_pin() <esp_err_t star_unregister_pin (gpio_num_t gpio_num, const char *desc) at lib/star_pin_validator/src/star_pin_validator.c:181>:
+                esp_err_t()
+                ESP_LOGE()
+                init_mutex() <esp_err_t init_mutex (void) at lib/star_pin_validator/src/star_pin_validator.c:25>:
+                    portENTER_CRITICAL()
+                    xSemaphoreCreateMutex()
+                    portEXIT_CRITICAL()
+                    ESP_LOGE()
+                    ESP_LOGD()
+                xSemaphoreTake()
+                xSemaphoreGive()
+                ESP_LOGD()
+                strcmp()
+                free()
+                realloc()
+        iface_validate() <esp_err_t iface_validate (void *ctx) at lib/star_pin_validator/src/star_pin_validator.c:481>:
+            star_validate_pins() <esp_err_t star_validate_pins (void) at lib/star_pin_validator/src/star_pin_validator.c:289>:
+                esp_err_t()
+                ESP_LOGE()
+                init_mutex() <esp_err_t init_mutex (void) at lib/star_pin_validator/src/star_pin_validator.c:25>:
+                    portENTER_CRITICAL()
+                    xSemaphoreCreateMutex()
+                    portEXIT_CRITICAL()
+                    ESP_LOGE()
+                    ESP_LOGD()
+                xSemaphoreTake()
+                xSemaphoreGive()
+                ESP_LOGI()
+                ESP_LOGW()
+                ESP_LOGD()
+    star_error_interface_create_default() <star_error_interface_t *star_error_interface_create_default (void) at lib/star_error_handler/src/star_error_handler.c:408>:
+        error_handler_create_default() <error_handler_t *error_handler_create_default (void) at lib/star_error_handler/src/star_error_handler.c:348>:
+            error_handler_create_custom() <error_handler_t *error_handler_create_custom (uint32_t max_retries, uint32_t base_retry_delay, uint32_t max_retry_delay, esp_err_t (*reset_fn) (void *context), void *reset_context) at lib/star_error_handler/src/star_error_handler.c:354>:
+                malloc()
+                ESP_LOGE()
+                memset()
+                error_handler_init() <esp_err_t error_handler_init (error_handler_t *handler, uint32_t max_retries, uint32_t base_retry_delay, uint32_t max_retry_delay, esp_err_t (*reset_fn) (void *context), void *reset_context) at lib/star_error_handler/src/star_error_handler.c:17>:
+                    ESP_LOGE()
+                    xSemaphoreCreateMutex()
+                esp_err_to_name()
+                free()
+                ESP_LOGI()
+        ESP_LOGE()
+        malloc()
+        error_handler_destroy_default() <void error_handler_destroy_default (error_handler_t *handler) at lib/star_error_handler/src/star_error_handler.c:393>:
+            error_handler_deinit() <void error_handler_deinit (error_handler_t *handler) at lib/star_error_handler/src/star_error_handler.c:59>:
+                xSemaphoreTake()
+                pdMS_TO_TICKS()
+                ESP_LOGE()
+                xSemaphoreGive()
+                vSemaphoreDelete()
+            free()
+            ESP_LOGD()
+        error_handler_get_interface() <void error_handler_get_interface (star_error_interface_t *iface, error_handler_t *handler) at lib/star_error_handler/src/star_error_handler.c:324>:
+            ESP_LOGE()
+            internal_iface_record_error() <esp_err_t internal_iface_record_error (void *ctx, esp_err_t error, const char *message, const char *file, int line, const char *func) at lib/star_error_handler/src/star_error_handler.c:301>:
+                error_handler_record_error() <esp_err_t error_handler_record_error (error_handler_t *handler, esp_err_t error, const char *description, const char *file, int32_t line, const char *func) at lib/star_error_handler/src/star_error_handler.c:92>:
+                    ESP_LOGE()
+                    xSemaphoreTake()
+                    xSemaphoreGive()
+                    ESP_LOGI()
+                    snprintf()
+                    esp_err_to_name()
+                    esp_err_t()
+                    reset_fn_local()
+                    pdMS_TO_TICKS()
+                    ESP_LOGW()
+            internal_iface_can_retry() <bool internal_iface_can_retry (void *ctx) at lib/star_error_handler/src/star_error_handler.c:312>:
+                error_handler_can_retry() <bool error_handler_can_retry (error_handler_t *handler) at lib/star_error_handler/src/star_error_handler.c:235>:
+                    ESP_LOGE()
+                    xSemaphoreTake()
+                    xSemaphoreGive()
+            internal_iface_reset_state() <esp_err_t internal_iface_reset_state (void *ctx) at lib/star_error_handler/src/star_error_handler.c:318>:
+                error_handler_reset_state() <esp_err_t error_handler_reset_state (error_handler_t *handler) at lib/star_error_handler/src/star_error_handler.c:264>:
+                    ESP_LOGE()
+                    xSemaphoreTake()
+                    xSemaphoreGive()
+                    ESP_LOGI()
+        ESP_LOGD()
+    ESP_LOGE()
+    star_bus_manager_init() <esp_err_t star_bus_manager_init (star_bus_manager_t *manager, const char *tag, star_error_interface_t *error_iface, star_pin_interface_t *pin_iface) at lib/star_bus/src/star_bus_manager.c:248>:
+        ESP_RETURN_ON_FALSE()
+        strlen()
+        strdup()
+        xSemaphoreCreateMutex()
+        ESP_LOGE()
+        free()
+        ESP_LOGI()
+    esp_err_to_name()
+    star_error_interface_destroy() <void star_error_interface_destroy (star_error_interface_t *iface) at lib/star_error_handler/src/star_error_handler.c:432>:
+        error_handler_destroy_default() <void error_handler_destroy_default (error_handler_t *handler) at lib/star_error_handler/src/star_error_handler.c:393>:
+            error_handler_deinit() <void error_handler_deinit (error_handler_t *handler) at lib/star_error_handler/src/star_error_handler.c:59>:
+                xSemaphoreTake()
+                pdMS_TO_TICKS()
+                ESP_LOGE()
+                xSemaphoreGive()
+                vSemaphoreDelete()
+            free()
+            ESP_LOGD()
+        free()
+        ESP_LOGD()
+    STAR_DHT22_CONFIG_DEFAULT()
+    star_bus_dht22_init() <esp_err_t star_bus_dht22_init (star_bus_manager_t *manager, const char *bus_name, const star_dht22_config_t *config) at lib/star_bus/src/star_bus_dht22_proprietary.c:344>:
+        ESP_LOGE()
+        get_dht22_state() <dht22_state_t *get_dht22_state (const char *bus_name, bool create) at lib/star_bus/src/star_bus_dht22_proprietary.c:108>:
+            internal_init_dht22_mutex() <esp_err_t internal_init_dht22_mutex (void) at lib/star_bus/src/star_bus_dht22_proprietary.c:61>:
+                portENTER_CRITICAL()
+                xSemaphoreCreateMutex()
+                portEXIT_CRITICAL()
+                ESP_LOGE()
+            xSemaphoreTake()
+            ESP_LOGE()
+            internal_get_dht22_state() <dht22_state_t *internal_get_dht22_state (const char *bus_name, bool create) at lib/star_bus/src/star_bus_dht22_proprietary.c:85>:
+                strcmp()
+                memset()
+                strncpy()
+            xSemaphoreGive()
+        memcpy()
+        memset()
+        esp_err_t()
+        gpio_config()
+        esp_err_to_name()
+        gpio_high() <inline void gpio_high (gpio_num_t pin) at lib/star_bus/src/star_bus_dht22_proprietary.c:144>:
+            gpio_set_level()
+        ESP_LOGI()
+    star_bus_manager_deinit() <esp_err_t star_bus_manager_deinit (star_bus_manager_t *manager) at lib/star_bus/src/star_bus_manager.c:566>:
+        ESP_RETURN_ON_FALSE()
+        xSemaphoreTake()
+        pdMS_TO_TICKS()
+        ESP_LOGE()
+        ESP_LOGW()
+        esp_err_t()
+        ESP_LOGI()
+        internal_unregister_config_pins() <esp_err_t internal_unregister_config_pins (star_pin_interface_t *pin_iface, const star_bus_config_t *config) at lib/star_bus/src/star_bus_manager.c:169>:
+            esp_err_t()
+            internal_unregister_bus_pin() <esp_err_t internal_unregister_bus_pin (star_pin_interface_t *pin_iface, gpio_num_t pin, const char *bus_name, const char *usage) at lib/star_bus/src/star_bus_manager.c:50>:
+                snprintf()
+            snprintf()
+            ESP_LOGD()
+        esp_err_to_name()
+        star_bus_config_destroy() <esp_err_t star_bus_config_destroy (star_bus_config_t *config) at lib/star_bus/src/star_bus_config.c:291>:
+            ESP_RETURN_ON_FALSE()
+            esp_err_t()
+            star_bus_config_deinit() <esp_err_t star_bus_config_deinit (star_bus_config_t *config) at lib/star_bus/src/star_bus_config.c:541>:
+                ESP_RETURN_ON_FALSE()
+                esp_err_t()
+                ESP_LOGI()
+                i2c_driver_delete()
+                spi_slave_free()
+                spi_bus_remove_device()
+                ESP_LOGW()
+                gpio_isr_handler_remove()
+                gpio_reset_pin()
+                ESP_LOGE()
+                esp_err_to_name()
+            ESP_LOGE()
+            esp_err_to_name()
+            ESP_LOGI()
+            internal_star_bus_config_cleanup() <void internal_star_bus_config_cleanup (star_bus_config_t *config) at lib/star_bus/src/star_bus_config.c:656>:
+                free()
+        spi_bus_free()
+        free()
+        xSemaphoreGive()
+        vSemaphoreDelete()
+    star_bus_dht22_read() <esp_err_t star_bus_dht22_read (star_bus_manager_t *manager, const char *bus_name, star_dht22_data_t *data) at lib/star_bus/src/star_bus_dht22_proprietary.c:432>:
+        get_dht22_state() <dht22_state_t *get_dht22_state (const char *bus_name, bool create) at lib/star_bus/src/star_bus_dht22_proprietary.c:108>:
+            internal_init_dht22_mutex() <esp_err_t internal_init_dht22_mutex (void) at lib/star_bus/src/star_bus_dht22_proprietary.c:61>:
+                portENTER_CRITICAL()
+                xSemaphoreCreateMutex()
+                portEXIT_CRITICAL()
+                ESP_LOGE()
+            xSemaphoreTake()
+            ESP_LOGE()
+            internal_get_dht22_state() <dht22_state_t *internal_get_dht22_state (const char *bus_name, bool create) at lib/star_bus/src/star_bus_dht22_proprietary.c:85>:
+                strcmp()
+                memset()
+                strncpy()
+            xSemaphoreGive()
+        esp_timer_get_time()
+        memcpy()
+        ESP_LOGD()
+        esp_err_t()
+        read_raw_data() <esp_err_t read_raw_data (dht22_state_t *state, uint8_t data[DHT22_DATA_BYTES]) at lib/star_bus/src/star_bus_dht22_proprietary.c:229>:
+            portENTER_CRITICAL()
+            gpio_set_output() <inline void gpio_set_output (gpio_num_t pin) at lib/star_bus/src/star_bus_dht22_proprietary.c:160>:
+                gpio_set_direction()
+            gpio_low() <inline void gpio_low (gpio_num_t pin) at lib/star_bus/src/star_bus_dht22_proprietary.c:136>:
+                gpio_set_level()
+            delay_us() <inline void delay_us (uint32_t us) at lib/star_bus/src/star_bus_dht22_proprietary.c:128>:
+                ets_delay_us()
+            gpio_high() <inline void gpio_high (gpio_num_t pin) at lib/star_bus/src/star_bus_dht22_proprietary.c:144>:
+                gpio_set_level()
+            gpio_set_input() <inline void gpio_set_input (gpio_num_t pin) at lib/star_bus/src/star_bus_dht22_proprietary.c:168>:
+                gpio_set_direction()
+            wait_for_level() <int32_t wait_for_level (gpio_num_t pin, int expected_level, uint32_t timeout_us) at lib/star_bus/src/star_bus_dht22_proprietary.c:182>:
+                esp_timer_get_time()
+                gpio_read() <inline int gpio_read (gpio_num_t pin) at lib/star_bus/src/star_bus_dht22_proprietary.c:152>:
+                    gpio_get_level()
+            portEXIT_CRITICAL()
+            ESP_LOGD()
+            memset()
+        esp_err_to_name()
+        star_bus_dht22_calculate_checksum() <uint8_t star_bus_dht22_calculate_checksum (uint16_t raw_humidity, uint16_t raw_temperature) at lib/star_bus/src/star_bus_dht22_proprietary.c:717>:
+        star_bus_dht22_raw_to_humidity() <float star_bus_dht22_raw_to_humidity (uint16_t raw_value, star_dht22_model_t model) at lib/star_bus/src/star_bus_dht22_proprietary.c:694>:
+        star_bus_dht22_raw_to_celsius() <float star_bus_dht22_raw_to_celsius (uint16_t raw_value, star_dht22_model_t model) at lib/star_bus/src/star_bus_dht22_proprietary.c:675>:
+    ESP_LOGW()
+    star_bus_config_create_gpio() <star_bus_config_t *star_bus_config_create_gpio (const char *name, const gpio_num_t pins[], uint8_t pin_count) at lib/star_bus/src/star_bus_config.c:207>:
+        ESP_RETURN_ON_FALSE()
+        internal_star_bus_config_create_common() <star_bus_config_t *internal_star_bus_config_create_common (const char *name, star_bus_type_t type) at lib/star_bus/src/star_bus_config.c:691>:
+            ESP_LOGE()
+            malloc()
+            memset()
+            strdup()
+            free()
+        malloc()
+        ESP_LOGE()
+        internal_star_bus_config_cleanup() <void internal_star_bus_config_cleanup (star_bus_config_t *config) at lib/star_bus/src/star_bus_config.c:656>:
+            free()
+        memcpy()
+        memset()
+        star_bus_gpio_init_default_ops() <void star_bus_gpio_init_default_ops (star_gpio_ops_t *ops) at lib/star_bus/src/star_bus_gpio.c:264>:
+            ESP_LOGE()
+            gpio_configure_default() <esp_err_t gpio_configure_default (const star_bus_config_t *config, gpio_num_t pin, gpio_mode_t mode, gpio_pull_mode_t pull) at lib/star_bus/src/star_bus_gpio.c:21>:
+                ESP_RETURN_ON_FALSE()
+                esp_err_t()
+                gpio_config()
+                ESP_RETURN_ON_ERROR()
+                ESP_LOGD()
+            gpio_write_default() <esp_err_t gpio_write_default (const star_bus_config_t *config, gpio_num_t pin, uint32_t level) at lib/star_bus/src/star_bus_gpio.c:81>:
+                ESP_RETURN_ON_FALSE()
+                esp_err_t()
+                gpio_set_level()
+                ESP_RETURN_ON_ERROR()
+                ESP_LOGV()
+            gpio_read_default() <esp_err_t gpio_read_default (const star_bus_config_t *config, gpio_num_t pin, uint32_t *level) at lib/star_bus/src/star_bus_gpio.c:130>:
+                ESP_RETURN_ON_FALSE()
+                gpio_get_level()
+                ESP_LOGV()
+            gpio_set_interrupt_default() <esp_err_t gpio_set_interrupt_default (const star_bus_config_t *config, gpio_num_t pin, gpio_int_type_t intr_type, gpio_isr_t isr_handler, void *args) at lib/star_bus/src/star_bus_gpio.c:175>:
+                ESP_RETURN_ON_FALSE()
+                esp_err_t()
+                gpio_install_isr_service()
+                ESP_LOGD()
+                ESP_RETURN_ON_ERROR()
+                gpio_set_intr_type()
+                gpio_isr_handler_remove()
+                ESP_LOGW()
+                esp_err_to_name()
+                gpio_isr_handler_add()
+            ESP_LOGD()
+        ESP_LOGI()
+    star_bus_manager_add_bus() <esp_err_t star_bus_manager_add_bus (star_bus_manager_t *manager, star_bus_config_t *config) at lib/star_bus/src/star_bus_manager.c:293>:
+        ESP_RETURN_ON_FALSE()
+        strlen()
+        esp_err_t()
+        xSemaphoreTake()
+        pdMS_TO_TICKS()
+        ESP_LOGE()
+        strcmp()
+        star_bus_config_init() <esp_err_t star_bus_config_init (star_bus_config_t *config, star_bus_manager_t *manager) at lib/star_bus/src/star_bus_config.c:330>:
+            ESP_RETURN_ON_FALSE()
+            esp_err_t()
+            ESP_LOGI()
+            i2c_param_config()
+            ESP_GOTO_ON_ERROR()
+            esp_err_to_name()
+            i2c_driver_install()
+            spi_slave_initialize()
+            spi_bus_initialize()
+            ESP_LOGD()
+            spi_bus_add_device()
+            gpio_config()
+            gpio_set_level()
+            ESP_LOGE()
+            star_bus_type_to_string() <const char *star_bus_type_to_string (star_bus_type_t type) at lib/star_bus/src/star_bus_types.c:7>:
+        esp_err_to_name()
+        ESP_LOGI()
+        star_bus_type_to_string() <const char *star_bus_type_to_string (star_bus_type_t type) at lib/star_bus/src/star_bus_types.c:7>:
+        internal_register_config_pins() <esp_err_t internal_register_config_pins (star_pin_interface_t *pin_iface, const star_bus_config_t *config) at lib/star_bus/src/star_bus_manager.c:73>:
+            esp_err_t()
+            internal_register_bus_pin() <esp_err_t internal_register_bus_pin (star_pin_interface_t *pin_iface, gpio_num_t pin, const char *bus_name, const char *usage, bool can_be_shared) at lib/star_bus/src/star_bus_manager.c:26>:
+                snprintf()
+            snprintf()
+            ESP_LOGD()
+        ESP_LOGW()
+        ESP_LOGD()
+        xSemaphoreGive()
+    star_bus_config_destroy() <esp_err_t star_bus_config_destroy (star_bus_config_t *config) at lib/star_bus/src/star_bus_config.c:291>:
+        ESP_RETURN_ON_FALSE()
+        esp_err_t()
+        star_bus_config_deinit() <esp_err_t star_bus_config_deinit (star_bus_config_t *config) at lib/star_bus/src/star_bus_config.c:541>:
+            ESP_RETURN_ON_FALSE()
+            esp_err_t()
+            ESP_LOGI()
+            i2c_driver_delete()
+            spi_slave_free()
+            spi_bus_remove_device()
+            ESP_LOGW()
+            gpio_isr_handler_remove()
+            gpio_reset_pin()
+            ESP_LOGE()
+            esp_err_to_name()
+        ESP_LOGE()
+        esp_err_to_name()
+        ESP_LOGI()
+        internal_star_bus_config_cleanup() <void internal_star_bus_config_cleanup (star_bus_config_t *config) at lib/star_bus/src/star_bus_config.c:656>:
+            free()
+    star_sensor_hcsr04_init() <esp_err_t star_sensor_hcsr04_init (hcsr04_handle_t *handle, star_bus_manager_t *manager, const char *bus_name, star_error_interface_t *error_iface, const hcsr04_config_t *config) at lib/star_sensor_hcsr04/src/star_sensor_hcsr04.c:34>:
+        ESP_LOGE()
+        memset()
+        xSemaphoreCreateMutex()
+        error_handler_create_default() <error_handler_t *error_handler_create_default (void) at lib/star_error_handler/src/star_error_handler.c:348>:
+            error_handler_create_custom() <error_handler_t *error_handler_create_custom (uint32_t max_retries, uint32_t base_retry_delay, uint32_t max_retry_delay, esp_err_t (*reset_fn) (void *context), void *reset_context) at lib/star_error_handler/src/star_error_handler.c:354>:
+                malloc()
+                ESP_LOGE()
+                memset()
+                error_handler_init() <esp_err_t error_handler_init (error_handler_t *handler, uint32_t max_retries, uint32_t base_retry_delay, uint32_t max_retry_delay, esp_err_t (*reset_fn) (void *context), void *reset_context) at lib/star_error_handler/src/star_error_handler.c:17>:
+                    ESP_LOGE()
+                    xSemaphoreCreateMutex()
+                esp_err_to_name()
+                free()
+                ESP_LOGI()
+        vSemaphoreDelete()
+        malloc()
+        error_handler_destroy_default() <void error_handler_destroy_default (error_handler_t *handler) at lib/star_error_handler/src/star_error_handler.c:393>:
+            error_handler_deinit() <void error_handler_deinit (error_handler_t *handler) at lib/star_error_handler/src/star_error_handler.c:59>:
+                xSemaphoreTake()
+                pdMS_TO_TICKS()
+                ESP_LOGE()
+                xSemaphoreGive()
+                vSemaphoreDelete()
+            free()
+            ESP_LOGD()
+        error_handler_get_interface() <void error_handler_get_interface (star_error_interface_t *iface, error_handler_t *handler) at lib/star_error_handler/src/star_error_handler.c:324>:
+            ESP_LOGE()
+            internal_iface_record_error() <esp_err_t internal_iface_record_error (void *ctx, esp_err_t error, const char *message, const char *file, int line, const char *func) at lib/star_error_handler/src/star_error_handler.c:301>:
+                error_handler_record_error() <esp_err_t error_handler_record_error (error_handler_t *handler, esp_err_t error, const char *description, const char *file, int32_t line, const char *func) at lib/star_error_handler/src/star_error_handler.c:92>:
+                    ESP_LOGE()
+                    xSemaphoreTake()
+                    xSemaphoreGive()
+                    ESP_LOGI()
+                    snprintf()
+                    esp_err_to_name()
+                    esp_err_t()
+                    reset_fn_local()
+                    pdMS_TO_TICKS()
+                    ESP_LOGW()
+            internal_iface_can_retry() <bool internal_iface_can_retry (void *ctx) at lib/star_error_handler/src/star_error_handler.c:312>:
+                error_handler_can_retry() <bool error_handler_can_retry (error_handler_t *handler) at lib/star_error_handler/src/star_error_handler.c:235>:
+                    ESP_LOGE()
+                    xSemaphoreTake()
+                    xSemaphoreGive()
+            internal_iface_reset_state() <esp_err_t internal_iface_reset_state (void *ctx) at lib/star_error_handler/src/star_error_handler.c:318>:
+                error_handler_reset_state() <esp_err_t error_handler_reset_state (error_handler_t *handler) at lib/star_error_handler/src/star_error_handler.c:264>:
+                    ESP_LOGE()
+                    xSemaphoreTake()
+                    xSemaphoreGive()
+                    ESP_LOGI()
+        ESP_LOGI()
+        esp_err_t()
+        star_bus_gpio_configure() <esp_err_t star_bus_gpio_configure (const star_bus_manager_t *manager, const char *name, gpio_num_t pin, gpio_mode_t mode, gpio_pull_mode_t pull) at lib/star_bus/src/star_bus_gpio.c:279>:
+            ESP_RETURN_ON_FALSE()
+            star_bus_manager_find_bus() <star_bus_config_t *star_bus_manager_find_bus (const star_bus_manager_t *manager, const char *name) at lib/star_bus/src/star_bus_manager.c:378>:
+                strlen()
+                xSemaphoreTake()
+                pdMS_TO_TICKS()
+                ESP_LOGE()
+                strcmp()
+                xSemaphoreGive()
+        esp_err_to_name()
+        free()
+        star_bus_gpio_write() <esp_err_t star_bus_gpio_write (const star_bus_manager_t *manager, const char *name, gpio_num_t pin, uint32_t level) at lib/star_bus/src/star_bus_gpio.c:304>:
+            ESP_RETURN_ON_FALSE()
+            star_bus_manager_find_bus() <star_bus_config_t *star_bus_manager_find_bus (const star_bus_manager_t *manager, const char *name) at lib/star_bus/src/star_bus_manager.c:378>:
+                strlen()
+                xSemaphoreTake()
+                pdMS_TO_TICKS()
+                ESP_LOGE()
+                strcmp()
+                xSemaphoreGive()
+        star_bus_gpio_set_interrupt() <esp_err_t star_bus_gpio_set_interrupt (const star_bus_manager_t *manager, const char *name, gpio_num_t pin, gpio_int_type_t intr_type, gpio_isr_t isr_handler, void *args) at lib/star_bus/src/star_bus_gpio.c:353>:
+            ESP_RETURN_ON_FALSE()
+            star_bus_manager_find_bus() <star_bus_config_t *star_bus_manager_find_bus (const star_bus_manager_t *manager, const char *name) at lib/star_bus/src/star_bus_manager.c:378>:
+                strlen()
+                xSemaphoreTake()
+                pdMS_TO_TICKS()
+                ESP_LOGE()
+                strcmp()
+                xSemaphoreGive()
+        hcsr04_echo_isr_handler() <void IRAM_ATTR hcsr04_echo_isr_handler (void *arg) at lib/star_sensor_hcsr04/src/star_sensor_hcsr04.c:19>:
+            gpio_get_level()
+            esp_timer_get_time()
+    star_bus_config_create_i2c() <star_bus_config_t *star_bus_config_create_i2c (const char *name, i2c_port_t port, uint8_t address, gpio_num_t sda_pin, gpio_num_t scl_pin, uint32_t clk_speed) at lib/star_bus/src/star_bus_config.c:36>:
+        internal_star_bus_config_create_common() <star_bus_config_t *internal_star_bus_config_create_common (const char *name, star_bus_type_t type) at lib/star_bus/src/star_bus_config.c:691>:
+            ESP_LOGE()
+            malloc()
+            memset()
+            strdup()
+            free()
+        ESP_RETURN_ON_FALSE()
+        memset()
+        star_bus_i2c_init_default_ops() <void star_bus_i2c_init_default_ops (star_i2c_ops_t *ops) at lib/star_bus/src/star_bus_i2c.c:62>:
+            ESP_LOGE()
+            internal_star_bus_i2c_write() <esp_err_t internal_star_bus_i2c_write (const star_bus_config_t *config, const uint8_t *data, size_t len, uint8_t reg_addr, size_t *bytes_written) at lib/star_bus/src/star_bus_i2c.c:227>:
+                ESP_RETURN_ON_FALSE()
+                esp_err_t()
+                i2c_cmd_link_create()
+                i2c_master_start()
+                ESP_GOTO_ON_ERROR()
+                esp_err_to_name()
+                i2c_master_write_byte()
+                i2c_master_write()
+                i2c_master_stop()
+                internal_i2c_execute_with_retry() <esp_err_t internal_i2c_execute_with_retry (const star_bus_config_t *config, i2c_port_t port, i2c_cmd_handle_t cmd, const char *operation_name) at lib/star_bus/src/star_bus_i2c.c:213>:
+                    esp_err_t()
+                    i2c_master_cmd_begin()
+                    pdMS_TO_TICKS()
+                    ESP_LOGE()
+                    esp_err_to_name()
+                i2c_cmd_link_delete()
+                ESP_LOGD()
+                ESP_LOGE()
+            internal_star_bus_i2c_read() <esp_err_t internal_star_bus_i2c_read (const star_bus_config_t *config, uint8_t *data, size_t len, uint8_t reg_addr, size_t *bytes_read) at lib/star_bus/src/star_bus_i2c.c:344>:
+                ESP_RETURN_ON_FALSE()
+                esp_err_t()
+                i2c_cmd_link_create()
+                i2c_master_start()
+                ESP_GOTO_ON_ERROR()
+                esp_err_to_name()
+                i2c_master_write_byte()
+                i2c_master_read()
+                i2c_master_read_byte()
+                i2c_master_stop()
+                internal_i2c_execute_with_retry() <esp_err_t internal_i2c_execute_with_retry (const star_bus_config_t *config, i2c_port_t port, i2c_cmd_handle_t cmd, const char *operation_name) at lib/star_bus/src/star_bus_i2c.c:213>:
+                    esp_err_t()
+                    i2c_master_cmd_begin()
+                    pdMS_TO_TICKS()
+                    ESP_LOGE()
+                    esp_err_to_name()
+                i2c_cmd_link_delete()
+                ESP_LOGD()
+                ESP_LOGE()
+            internal_star_bus_i2c_write_command() <esp_err_t internal_star_bus_i2c_write_command (const star_bus_config_t *config, uint8_t command) at lib/star_bus/src/star_bus_i2c.c:486>:
+                ESP_RETURN_ON_FALSE()
+                esp_err_t()
+                i2c_cmd_link_create()
+                i2c_master_start()
+                ESP_GOTO_ON_ERROR()
+                esp_err_to_name()
+                i2c_master_write_byte()
+                i2c_master_stop()
+                internal_i2c_execute_with_retry() <esp_err_t internal_i2c_execute_with_retry (const star_bus_config_t *config, i2c_port_t port, i2c_cmd_handle_t cmd, const char *operation_name) at lib/star_bus/src/star_bus_i2c.c:213>:
+                    esp_err_t()
+                    i2c_master_cmd_begin()
+                    pdMS_TO_TICKS()
+                    ESP_LOGE()
+                    esp_err_to_name()
+                i2c_cmd_link_delete()
+                ESP_LOGD()
+                ESP_LOGE()
+            internal_star_bus_i2c_read_raw() <esp_err_t internal_star_bus_i2c_read_raw (const star_bus_config_t *config, uint8_t *data, size_t len, size_t *bytes_read) at lib/star_bus/src/star_bus_i2c.c:591>:
+                ESP_RETURN_ON_FALSE()
+                esp_err_t()
+                i2c_cmd_link_create()
+                i2c_master_start()
+                ESP_GOTO_ON_ERROR()
+                esp_err_to_name()
+                i2c_master_write_byte()
+                i2c_master_read()
+                i2c_master_read_byte()
+                i2c_master_stop()
+                internal_i2c_execute_with_retry() <esp_err_t internal_i2c_execute_with_retry (const star_bus_config_t *config, i2c_port_t port, i2c_cmd_handle_t cmd, const char *operation_name) at lib/star_bus/src/star_bus_i2c.c:213>:
+                    esp_err_t()
+                    i2c_master_cmd_begin()
+                    pdMS_TO_TICKS()
+                    ESP_LOGE()
+                    esp_err_to_name()
+                i2c_cmd_link_delete()
+                ESP_LOGD()
+                ESP_LOGE()
+            ESP_LOGD()
+        ESP_LOGI()
+    star_sensor_pca9685_init() <esp_err_t star_sensor_pca9685_init (pca9685_handle_t *handle, star_bus_manager_t *manager, const char *bus_name, star_error_interface_t *error_iface, gpio_num_t oe_pin, bool oe_active_low, const pca9685_config_t *config) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:167>:
+        ESP_LOGE()
+        memset()
+        memcpy()
+        xSemaphoreCreateMutex()
+        error_handler_create_default() <error_handler_t *error_handler_create_default (void) at lib/star_error_handler/src/star_error_handler.c:348>:
+            error_handler_create_custom() <error_handler_t *error_handler_create_custom (uint32_t max_retries, uint32_t base_retry_delay, uint32_t max_retry_delay, esp_err_t (*reset_fn) (void *context), void *reset_context) at lib/star_error_handler/src/star_error_handler.c:354>:
+                malloc()
+                ESP_LOGE()
+                memset()
+                error_handler_init() <esp_err_t error_handler_init (error_handler_t *handler, uint32_t max_retries, uint32_t base_retry_delay, uint32_t max_retry_delay, esp_err_t (*reset_fn) (void *context), void *reset_context) at lib/star_error_handler/src/star_error_handler.c:17>:
+                    ESP_LOGE()
+                    xSemaphoreCreateMutex()
+                esp_err_to_name()
+                free()
+                ESP_LOGI()
+        vSemaphoreDelete()
+        malloc()
+        error_handler_destroy_default() <void error_handler_destroy_default (error_handler_t *handler) at lib/star_error_handler/src/star_error_handler.c:393>:
+            error_handler_deinit() <void error_handler_deinit (error_handler_t *handler) at lib/star_error_handler/src/star_error_handler.c:59>:
+                xSemaphoreTake()
+                pdMS_TO_TICKS()
+                ESP_LOGE()
+                xSemaphoreGive()
+                vSemaphoreDelete()
+            free()
+            ESP_LOGD()
+        error_handler_get_interface() <void error_handler_get_interface (star_error_interface_t *iface, error_handler_t *handler) at lib/star_error_handler/src/star_error_handler.c:324>:
+            ESP_LOGE()
+            internal_iface_record_error() <esp_err_t internal_iface_record_error (void *ctx, esp_err_t error, const char *message, const char *file, int line, const char *func) at lib/star_error_handler/src/star_error_handler.c:301>:
+                error_handler_record_error() <esp_err_t error_handler_record_error (error_handler_t *handler, esp_err_t error, const char *description, const char *file, int32_t line, const char *func) at lib/star_error_handler/src/star_error_handler.c:92>:
+                    ESP_LOGE()
+                    xSemaphoreTake()
+                    xSemaphoreGive()
+                    ESP_LOGI()
+                    snprintf()
+                    esp_err_to_name()
+                    esp_err_t()
+                    reset_fn_local()
+                    pdMS_TO_TICKS()
+                    ESP_LOGW()
+            internal_iface_can_retry() <bool internal_iface_can_retry (void *ctx) at lib/star_error_handler/src/star_error_handler.c:312>:
+                error_handler_can_retry() <bool error_handler_can_retry (error_handler_t *handler) at lib/star_error_handler/src/star_error_handler.c:235>:
+                    ESP_LOGE()
+                    xSemaphoreTake()
+                    xSemaphoreGive()
+            internal_iface_reset_state() <esp_err_t internal_iface_reset_state (void *ctx) at lib/star_error_handler/src/star_error_handler.c:318>:
+                error_handler_reset_state() <esp_err_t error_handler_reset_state (error_handler_t *handler) at lib/star_error_handler/src/star_error_handler.c:264>:
+                    ESP_LOGE()
+                    xSemaphoreTake()
+                    xSemaphoreGive()
+                    ESP_LOGI()
+        ESP_LOGI()
+        esp_err_t()
+        gpio_config()
+        esp_err_to_name()
+        free()
+        gpio_set_level()
+        pca9685_write_reg() <esp_err_t pca9685_write_reg (star_bus_manager_t *manager, const char *bus_name, uint8_t addr, uint8_t reg, uint8_t value) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:26>:
+            star_bus_i2c_write() <esp_err_t star_bus_i2c_write (const star_bus_manager_t *manager, const char *name, const uint8_t *data, size_t len, uint8_t reg_addr, size_t *bytes_written) at lib/star_bus/src/star_bus_i2c.c:75>:
+                ESP_RETURN_ON_FALSE()
+                star_bus_manager_find_bus() <star_bus_config_t *star_bus_manager_find_bus (const star_bus_manager_t *manager, const char *name) at lib/star_bus/src/star_bus_manager.c:378>:
+                    strlen()
+                    xSemaphoreTake()
+                    pdMS_TO_TICKS()
+                    ESP_LOGE()
+                    strcmp()
+                    xSemaphoreGive()
+        gpio_reset_pin()
+        vTaskDelay()
+        pdMS_TO_TICKS()
+        internal_pca9685_set_frequency() <esp_err_t internal_pca9685_set_frequency (pca9685_handle_t *handle, uint16_t freq_hz) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:91>:
+            esp_err_t()
+            star_sensor_pca9685_calculate_prescale() <esp_err_t star_sensor_pca9685_calculate_prescale (uint16_t freq_hz, uint8_t *prescale) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:428>:
+                ESP_LOGE()
+                roundf()
+                ESP_LOGD()
+            pca9685_read_reg() <esp_err_t pca9685_read_reg (star_bus_manager_t *manager, const char *bus_name, uint8_t addr, uint8_t reg, uint8_t *value) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:42>:
+                star_bus_i2c_read() <esp_err_t star_bus_i2c_read (const star_bus_manager_t *manager, const char *name, uint8_t *data, size_t len, uint8_t reg_addr, size_t *bytes_read) at lib/star_bus/src/star_bus_i2c.c:111>:
+                    ESP_RETURN_ON_FALSE()
+                    star_bus_manager_find_bus() <star_bus_config_t *star_bus_manager_find_bus (const star_bus_manager_t *manager, const char *name) at lib/star_bus/src/star_bus_manager.c:378>:
+                        strlen()
+                        xSemaphoreTake()
+                        pdMS_TO_TICKS()
+                        ESP_LOGE()
+                        strcmp()
+                        xSemaphoreGive()
+            ESP_LOGE()
+            esp_err_to_name()
+            pca9685_write_reg() <esp_err_t pca9685_write_reg (star_bus_manager_t *manager, const char *bus_name, uint8_t addr, uint8_t reg, uint8_t value) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:26>:
+                star_bus_i2c_write() <esp_err_t star_bus_i2c_write (const star_bus_manager_t *manager, const char *name, const uint8_t *data, size_t len, uint8_t reg_addr, size_t *bytes_written) at lib/star_bus/src/star_bus_i2c.c:75>:
+                    ESP_RETURN_ON_FALSE()
+                    star_bus_manager_find_bus() <star_bus_config_t *star_bus_manager_find_bus (const star_bus_manager_t *manager, const char *name) at lib/star_bus/src/star_bus_manager.c:378>:
+                        strlen()
+                        xSemaphoreTake()
+                        pdMS_TO_TICKS()
+                        ESP_LOGE()
+                        strcmp()
+                        xSemaphoreGive()
+            vTaskDelay()
+            pdMS_TO_TICKS()
+            ESP_LOGW()
+            ESP_LOGI()
+    star_sensor_hcsr04_read_distance() <esp_err_t star_sensor_hcsr04_read_distance (hcsr04_handle_t *handle, float *distance_cm) at lib/star_sensor_hcsr04/src/star_sensor_hcsr04.c:312>:
+        esp_err_t()
+        star_sensor_hcsr04_trigger() <esp_err_t star_sensor_hcsr04_trigger (hcsr04_handle_t *handle) at lib/star_sensor_hcsr04/src/star_sensor_hcsr04.c:203>:
+            xSemaphoreTake()
+            pdMS_TO_TICKS()
+            ESP_LOGE()
+            xSemaphoreGive()
+            esp_err_t()
+            star_bus_gpio_write() <esp_err_t star_bus_gpio_write (const star_bus_manager_t *manager, const char *name, gpio_num_t pin, uint32_t level) at lib/star_bus/src/star_bus_gpio.c:304>:
+                ESP_RETURN_ON_FALSE()
+                star_bus_manager_find_bus() <star_bus_config_t *star_bus_manager_find_bus (const star_bus_manager_t *manager, const char *name) at lib/star_bus/src/star_bus_manager.c:378>:
+                    strlen()
+                    xSemaphoreTake()
+                    pdMS_TO_TICKS()
+                    ESP_LOGE()
+                    strcmp()
+                    xSemaphoreGive()
+            esp_rom_delay_us()
+        esp_timer_get_time()
+        ESP_LOGW()
+        vTaskDelay()
+        pdMS_TO_TICKS()
+        star_sensor_hcsr04_get_result() <esp_err_t star_sensor_hcsr04_get_result (hcsr04_handle_t *handle, float *distance_cm) at lib/star_sensor_hcsr04/src/star_sensor_hcsr04.c:280>:
+            ESP_LOGE()
+            esp_err_t()
+            star_sensor_hcsr04_calculate_distance() <esp_err_t star_sensor_hcsr04_calculate_distance (uint32_t echo_time_us, float temperature_c, float *distance_cm) at lib/star_sensor_hcsr04/src/star_sensor_hcsr04.c:252>:
+            ESP_LOGD()
+            ESP_LOGW()
+    internal_distance_to_rgb() <rgb_color_t internal_distance_to_rgb (float distance_cm) at src/main.c:99>:
+    internal_set_rgb_led() <void internal_set_rgb_led (const pca9685_handle_t *handle, uint8_t led_index, const rgb_color_t *color) at src/main.c:84>:
+        internal_scale_pwm_for_color() <float internal_scale_pwm_for_color (float original_percent, float min_pwm) at src/main.c:76>:
+        star_sensor_pca9685_set_duty_cycle() <esp_err_t star_sensor_pca9685_set_duty_cycle (const pca9685_handle_t *handle, uint8_t channel, float duty_percent) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:574>:
+            star_sensor_pca9685_set_pwm() <esp_err_t star_sensor_pca9685_set_pwm (const pca9685_handle_t *handle, uint8_t channel, uint16_t on_time, uint16_t off_time) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:523>:
+                ESP_LOGE()
+                esp_err_t()
+                star_bus_i2c_write() <esp_err_t star_bus_i2c_write (const star_bus_manager_t *manager, const char *name, const uint8_t *data, size_t len, uint8_t reg_addr, size_t *bytes_written) at lib/star_bus/src/star_bus_i2c.c:75>:
+                    ESP_RETURN_ON_FALSE()
+                    star_bus_manager_find_bus() <star_bus_config_t *star_bus_manager_find_bus (const star_bus_manager_t *manager, const char *name) at lib/star_bus/src/star_bus_manager.c:378>:
+                        strlen()
+                        xSemaphoreTake()
+                        pdMS_TO_TICKS()
+                        ESP_LOGE()
+                        strcmp()
+                        xSemaphoreGive()
+                esp_err_to_name()
+                ESP_LOGD()
+    vTaskDelay()
+    pdMS_TO_TICKS()

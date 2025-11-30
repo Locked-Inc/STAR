@@ -1,0 +1,41 @@
+<map id="star_bus_quick_setup_i2c" name="star_bus_quick_setup_i2c">
+<area shape="rect" id="Node000001" title="Quick setup: I2C master with automatic defaults." alt="" coords="5,120,178,145"/>
+<area shape="rect" id="Node000002" href="$de/d98/star__bus__config_8c.html#a194581e2eb82227a022f04b9057db839" title="Destroy a bus configuration and free all associated resources." alt="" coords="236,70,400,96"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="153,116,243,98,239,101,155,121"/>
+<area shape="rect" id="Node000005" href="$d1/d50/star__bus__helpers_8c.html#a8a45aff6fa43266e370b6d1f5e764cad" title="Create I2C config for fast mode (400 kHz)." alt="" coords="235,120,401,145"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="177,130,221,131,216,133,179,135"/>
+<area shape="rect" id="Node000014" href="$d7/d60/star__bus__manager_8c.html#a3a0dc80007e321a8697c399e0f0bf559" title="Add a new I2C bus/device configuration to the manager." alt="" coords="226,193,410,218"/>
+<area shape="poly" id="edge16_Node000001_Node000014" title=" " alt="" coords="134,143,263,186,259,189,134,148"/>
+<area shape="rect" id="Node000003" href="$de/d98/star__bus__config_8c.html#a83c2bd0044ce80e0be65ebba3c1a3cc1" title="Clean up and free memory for a bus configuration structure. Does NOT deinitialize the hardware/driver..." alt="" coords="470,5,632,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="372,67,457,48,452,50,374,72"/>
+<area shape="rect" id="Node000004" href="$de/d98/star__bus__config_8c.html#a7698bd213b1044dfc1d6e92d879ca03e" title="Deinitialize the bus/device associated with this configuration." alt="" coords="476,70,627,96"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="399,80,463,82,457,84,400,86"/>
+<area shape="rect" id="Node000006" href="$de/d98/star__bus__config_8c.html#ae2c74c07526c11cc15773c858681f8d4" title="Create a new I2C bus/device configuration." alt="" coords="461,120,641,145"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="401,130,448,132,443,133,402,135"/>
+<area shape="rect" id="Node000007" href="$de/d98/star__bus__config_8c.html#a15ff256a9a257629ad970a5359136a59" title="Create a generic bus configuration structure and allocate memory." alt="" coords="708,55,870,95"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="607,116,695,98,690,99,608,121"/>
+<area shape="rect" id="Node000008" href="$dd/d1a/star__bus__i2c_8c.html#a15f5262f71b692e21744f6db14863c93" title="Initialize default I2C operations function pointers within a config structure. Typically called inter..." alt="" coords="692,120,886,145"/>
+<area shape="poly" id="edge7_Node000006_Node000008" title=" " alt="" coords="641,130,679,132,674,133,642,135"/>
+<area shape="rect" id="Node000009" href="$dd/d1a/star__bus__i2c_8c.html#a2ed146dbb9a5f30ee01819a81b0b47b1" title=" " alt="" coords="934,30,1110,56"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="855,116,884,105,898,95,908,86,918,76,932,66,946,62,951,61,935,71,921,80,912,90,902,100,887,109,857,121"/>
+<area shape="rect" id="Node000011" href="$dd/d1a/star__bus__i2c_8c.html#a09fee6de37fa8b8191710c82b45ac5a8" title=" " alt="" coords="950,80,1094,121"/>
+<area shape="poly" id="edge10_Node000008_Node000011" title=" " alt="" coords="886,116,937,112,932,113,886,122"/>
+<area shape="rect" id="Node000012" href="$dd/d1a/star__bus__i2c_8c.html#a1a89aff7a2f1bb9b0305fc8c12241449" title=" " alt="" coords="950,145,1094,186"/>
+<area shape="poly" id="edge12_Node000008_Node000012" title=" " alt="" coords="883,143,937,153,932,153,883,148"/>
+<area shape="rect" id="Node000013" href="$dd/d1a/star__bus__i2c_8c.html#ab5867dbfce4b222fe85953f70550bf92" title=" " alt="" coords="950,211,1094,251"/>
+<area shape="poly" id="edge14_Node000008_Node000013" title=" " alt="" coords="860,143,887,154,902,164,912,175,921,185,935,195,947,204,942,203,932,200,918,189,908,178,899,168,884,159,860,148"/>
+<area shape="rect" id="Node000010" href="$dd/d1a/star__bus__i2c_8c.html#ae97ed3cdd76465fa41c8c0b05976c396" title="Helper: Execute I2C command with retry logic." alt="" coords="1158,113,1298,154"/>
+<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="1076,54,1111,66,1184,105,1178,105,1109,71,1076,59"/>
+<area shape="poly" id="edge11_Node000011_Node000010" title=" " alt="" coords="1094,109,1145,120,1140,120,1094,115"/>
+<area shape="poly" id="edge13_Node000012_Node000010" title=" " alt="" coords="1094,152,1140,147,1145,147,1095,157"/>
+<area shape="poly" id="edge15_Node000013_Node000010" title=" " alt="" coords="1080,207,1109,195,1176,163,1181,161,1111,200,1082,213"/>
+<area shape="rect" id="Node000015" href="$d7/d60/star__bus__manager_8c.html#a1ca47ab4ab3f7448d603776d092e4a24" title="Register all pins for a single bus configuration." alt="" coords="458,169,644,194"/>
+<area shape="poly" id="edge17_Node000014_Node000015" title=" " alt="" coords="410,194,445,192,440,193,411,199"/>
+<area shape="rect" id="Node000017" href="$de/d98/star__bus__config_8c.html#aab1f2b4c0cdc21f5d37c1a376cb2a672" title="Initialize the bus/device associated with this configuration." alt="" coords="482,218,620,244"/>
+<area shape="poly" id="edge19_Node000014_Node000017" title=" " alt="" coords="410,213,470,222,464,222,410,218"/>
+<area shape="rect" id="Node000018" href="$d7/d27/star__bus__types_8c.html#afa900f53de82aaa97ea08d9b3d5a4a6d" title="Convert bus type to string." alt="" coords="709,244,869,269"/>
+<area shape="poly" id="edge21_Node000014_Node000018" title=" " alt="" coords="348,217,399,237,459,254,519,261,580,265,691,265,696,265,580,270,518,267,457,259,397,242,347,222"/>
+<area shape="rect" id="Node000016" href="$d7/d60/star__bus__manager_8c.html#a6b8851ddf6b54116c5b540fd4ef6e947" title="Helper to register a single pin via the interface." alt="" coords="706,169,872,194"/>
+<area shape="poly" id="edge18_Node000015_Node000016" title=" " alt="" coords="645,179,694,181,688,182,645,184"/>
+<area shape="poly" id="edge20_Node000017_Node000018" title=" " alt="" coords="620,236,696,246,690,246,620,241"/>
+</map>

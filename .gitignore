@@ -38,7 +38,7 @@ local.properties
 **/build/
 **/cache/
 **/.vscode/
-**/compiled_comands.json
+**/compile_commands.json
 
 *.zip
 

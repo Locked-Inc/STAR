@@ -1,0 +1,7 @@
+<map id="uart_state_t" name="uart_state_t">
+<area shape="rect" id="Node000001" title="UART bus state." alt="" coords="96,102,186,128"/>
+<area shape="rect" id="Node000002" href="$d9/d90/structstar__uart__config__t.html" title="UART configuration." alt="" coords="5,5,131,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="88,41,134,101,129,102,85,45"/>
+<area shape="rect" id="Node000003" href="$d2/dc8/structstar__uart__stats__t.html" title="UART statistics." alt="" coords="155,5,274,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="199,42,153,103,149,99,194,44"/>
+</map>

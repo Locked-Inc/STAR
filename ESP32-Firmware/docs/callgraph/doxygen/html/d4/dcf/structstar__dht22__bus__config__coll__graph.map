@@ -1,0 +1,7 @@
+<map id="star_dht22_bus_config" name="star_dht22_bus_config">
+<area shape="rect" id="Node000001" title="DHT22 bus configuration structure (part of star_bus_config_t)." alt="" coords="77,102,230,128"/>
+<area shape="rect" id="Node000002" href="$dc/d56/structstar__dht22__callbacks.html" title="DHT22 callback functions structure." alt="" coords="5,5,150,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="98,41,146,101,141,102,95,45"/>
+<area shape="rect" id="Node000003" href="$dc/dd2/structstar__dht22__ops.html" title="DHT22 operation functions structure." alt="" coords="174,5,285,31"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="218,43,196,80,170,104,168,99,191,76,214,46"/>
+</map>

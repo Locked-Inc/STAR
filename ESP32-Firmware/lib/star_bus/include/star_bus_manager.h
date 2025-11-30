@@ -10,6 +10,115 @@ extern "C" {
 #include "esp_err.h"
 #include "star_bus_manager_types.h"
 
+/**
+ * @file star_bus_manager.h
+ * @brief Unified bus manager for I2C, SPI, GPIO, and other bus protocols
+ *
+ * The bus manager provides a central registry for managing multiple bus configurations.
+ * It supports dependency injection of error handlers and pin validators for loose coupling.
+ *
+ * Key Features:
+ * - Thread-safe bus management with mutex protection
+ * - Support for multiple bus types (I2C, SPI, GPIO, DHT22, etc.)
+ * - Automatic pin registration and conflict detection
+ * - Safe bus access via callback pattern (prevents use-after-free)
+ *
+ * Example Usage:
+ * @code
+ * // === Basic Bus Manager Setup ===
+ *
+ * #include "star_bus_manager.h"
+ * #include "star_bus_config.h"
+ * #include "star_bus_i2c.h"
+ * #include "star_error_handler.h"
+ * #include "star_pin_validator.h"
+ *
+ * // 1. Create error handler and pin validator interfaces
+ * error_handler_t error_handler;
+ * error_handler_init(&error_handler, 3, 100, 5000, NULL, NULL);
+ *
+ * star_error_interface_t error_iface;
+ * star_pin_interface_t pin_iface;
+ * error_handler_get_interface(&error_iface, &error_handler);
+ * pin_validator_get_interface(&pin_iface);
+ *
+ * // 2. Initialize bus manager with dependency injection
+ * star_bus_manager_t bus_manager;
+ * esp_err_t ret = star_bus_manager_init(&bus_manager, "main", &error_iface, &pin_iface);
+ * if (ret != ESP_OK) {
+ *     ESP_LOGE(TAG, "Failed to init bus manager: %s", esp_err_to_name(ret));
+ *     return;
+ * }
+ *
+ * // 3. Create and add an I2C bus configuration
+ * star_bus_config_t* i2c_bus = star_bus_config_create_i2c(
+ *     "sensor_i2c",      // Bus name
+ *     I2C_NUM_0,         // I2C port
+ *     0x68,              // Device address (MPU6050)
+ *     GPIO_NUM_21,       // SDA pin
+ *     GPIO_NUM_22,       // SCL pin
+ *     400000             // Clock speed (400kHz)
+ * );
+ * star_bus_manager_add_bus(&bus_manager, i2c_bus);
+ *
+ * // 4. Create and add an SPI bus configuration
+ * spi_device_interface_config_t spi_dev_cfg = {
+ *     .clock_speed_hz = 1000000,
+ *     .mode = 0,
+ *     .spics_io_num = GPIO_NUM_5,
+ *     .queue_size = 7,
+ * };
+ * star_bus_config_t* spi_bus = star_bus_config_create_spi_device(
+ *     "flash_spi",       // Bus name
+ *     SPI2_HOST,         // SPI host
+ *     GPIO_NUM_23,       // COPI (MOSI)
+ *     GPIO_NUM_19,       // CIPO (MISO)
+ *     GPIO_NUM_18,       // SCLK
+ *     SPI_DMA_CH_AUTO,   // DMA channel
+ *     &spi_dev_cfg
+ * );
+ * star_bus_manager_add_bus(&bus_manager, spi_bus);
+ *
+ * // 5. Use the buses through protocol-specific functions
+ * uint8_t reg_data[2];
+ * star_bus_i2c_read(&bus_manager, "sensor_i2c", reg_data, 2, 0x3B, NULL);
+ *
+ *
+ * // === Safe Bus Access Pattern ===
+ *
+ * // Use star_bus_manager_with_bus() for safe access (prevents use-after-free)
+ * esp_err_t my_callback(star_bus_config_t* bus, void* ctx) {
+ *     // Safely access bus while mutex is held
+ *     ESP_LOGI(TAG, "Bus type: %s", star_bus_type_to_string(bus->type));
+ *     return ESP_OK;
+ * }
+ *
+ * star_bus_manager_with_bus(&bus_manager, "sensor_i2c", my_callback, NULL);
+ *
+ *
+ * // === Pin Registration for Conflict Detection ===
+ *
+ * // Callback to register pins with your tracking system
+ * esp_err_t register_pin_cb(gpio_num_t pin, const char* bus, const char* usage, void* ctx) {
+ *     ESP_LOGI(TAG, "Registering pin %d for %s (%s)", pin, bus, usage);
+ *     return star_register_pin(pin, usage, false);
+ * }
+ *
+ * star_bus_manager_register_all_pins(&bus_manager, register_pin_cb, NULL);
+ * star_validate_pins();  // Check for conflicts
+ *
+ *
+ * // === Cleanup ===
+ *
+ * // Remove specific bus
+ * star_bus_manager_remove_bus(&bus_manager, "sensor_i2c");
+ *
+ * // Or deinit all (removes all buses and cleans up)
+ * star_bus_manager_deinit(&bus_manager);
+ * error_handler_deinit(&error_handler);
+ * @endcode
+ */
+
 /* --- Public Functions --- */
 
 /**

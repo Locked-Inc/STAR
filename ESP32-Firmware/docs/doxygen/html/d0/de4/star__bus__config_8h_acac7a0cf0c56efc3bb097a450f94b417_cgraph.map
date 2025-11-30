@@ -1,0 +1,5 @@
+<map id="star_bus_config_init" name="star_bus_config_init">
+<area shape="rect" id="Node000001" title="Initialize the bus/device associated with this configuration." alt="" coords="5,5,143,31"/>
+<area shape="rect" id="Node000002" href="$d7/d27/star__bus__types_8c.html#afa900f53de82aaa97ea08d9b3d5a4a6d" title="Convert bus type to string." alt="" coords="191,5,351,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="143,16,178,18,173,18,143,21"/>
+</map>

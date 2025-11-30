@@ -17,6 +17,146 @@
 extern "C" {
 #endif
 
+/**
+ * @file star_sensor_mpu6050.h
+ * @brief MPU6050 6-axis IMU driver (3-axis accelerometer + 3-axis gyroscope)
+ *
+ * This driver provides an interface to the InvenSense MPU6050 6-DoF IMU sensor.
+ * It supports reading accelerometer, gyroscope, and temperature data with
+ * configurable ranges and digital low-pass filter settings.
+ *
+ * Key Features:
+ * - 3-axis accelerometer (±2g, ±4g, ±8g, ±16g ranges)
+ * - 3-axis gyroscope (±250, ±500, ±1000, ±2000 °/s ranges)
+ * - On-chip temperature sensor
+ * - Configurable digital low-pass filter (DLPF)
+ * - Hardware FIFO buffer support
+ * - Sleep mode for power saving
+ * - Thread-safe with mutex protection
+ *
+ * Example Usage:
+ * @code
+ * // === Basic Setup ===
+ *
+ * #include "star_sensor_mpu6050.h"
+ * #include "star_bus_manager.h"
+ * #include "star_bus_config.h"
+ *
+ * // 1. Setup bus manager (see star_bus_manager.h for full setup)
+ * star_bus_manager_t bus_manager;
+ * star_bus_manager_init(&bus_manager, "main", &error_iface, &pin_iface);
+ *
+ * // 2. Create I2C bus for MPU6050
+ * star_bus_config_t* i2c_bus = star_bus_config_create_i2c(
+ *     "imu_i2c",
+ *     I2C_NUM_0,
+ *     MPU6050_I2C_ADDR_LOW,   // 0x68 (AD0 pin low)
+ *     GPIO_NUM_21,            // SDA
+ *     GPIO_NUM_22,            // SCL
+ *     400000                  // 400kHz fast mode
+ * );
+ * star_bus_manager_add_bus(&bus_manager, i2c_bus);
+ *
+ * // 3. Configure and initialize MPU6050
+ * mpu6050_handle_t imu;
+ * mpu6050_config_t config = {
+ *     .i2c_addr = MPU6050_I2C_ADDR_LOW,
+ *     .accel_range = MPU6050_ACCEL_RANGE_4G,   // ±4g
+ *     .gyro_range = MPU6050_GYRO_RANGE_500,    // ±500 °/s
+ *     .dlpf = MPU6050_DLPF_44HZ,               // 44Hz low-pass filter
+ *     .sample_rate_div = 9,                    // 100Hz sample rate
+ *     .enable_fifo = false
+ * };
+ *
+ * esp_err_t ret = star_sensor_mpu6050_init(
+ *     &imu,
+ *     &bus_manager,
+ *     "imu_i2c",
+ *     NULL,           // Use default error handler
+ *     &config
+ * );
+ *
+ * if (ret != ESP_OK) {
+ *     ESP_LOGE(TAG, "Failed to init MPU6050: %s", esp_err_to_name(ret));
+ *     return;
+ * }
+ *
+ *
+ * // === Reading Sensor Data ===
+ *
+ * // Read all data at once
+ * mpu6050_accel_t accel;
+ * mpu6050_gyro_t gyro;
+ * float temperature;
+ *
+ * ret = star_sensor_mpu6050_read_all(&imu, &accel, &gyro, &temperature);
+ * if (ret == ESP_OK) {
+ *     ESP_LOGI(TAG, "Accel: X=%.2fg Y=%.2fg Z=%.2fg",
+ *              accel.x_g, accel.y_g, accel.z_g);
+ *     ESP_LOGI(TAG, "Gyro: X=%.1f°/s Y=%.1f°/s Z=%.1f°/s",
+ *              gyro.x_dps, gyro.y_dps, gyro.z_dps);
+ *     ESP_LOGI(TAG, "Temperature: %.1f°C", temperature);
+ * }
+ *
+ * // Or read individual components
+ * star_sensor_mpu6050_read_accel(&imu, &accel);
+ * star_sensor_mpu6050_read_gyro(&imu, &gyro);
+ * star_sensor_mpu6050_read_temperature(&imu, &temperature);
+ *
+ *
+ * // === Reading Raw Data ===
+ *
+ * // For custom processing, read raw 16-bit values
+ * mpu6050_raw_accel_t raw_accel;
+ * mpu6050_raw_gyro_t raw_gyro;
+ *
+ * star_sensor_mpu6050_read_accel_raw(&imu, &raw_accel);
+ * star_sensor_mpu6050_read_gyro_raw(&imu, &raw_gyro);
+ *
+ * // Convert manually if needed
+ * float ax = raw_accel.x / 8192.0f;  // For ±4g range
+ *
+ *
+ * // === Using FIFO Buffer ===
+ *
+ * // Enable FIFO for burst reading
+ * star_sensor_mpu6050_fifo_enable(&imu, true);
+ *
+ * // Wait for data to accumulate...
+ * vTaskDelay(pdMS_TO_TICKS(100));
+ *
+ * // Check FIFO count
+ * uint16_t fifo_count;
+ * star_sensor_mpu6050_fifo_get_count(&imu, &fifo_count);
+ * ESP_LOGI(TAG, "FIFO has %d bytes", fifo_count);
+ *
+ * // Read FIFO data
+ * uint8_t fifo_data[512];
+ * star_sensor_mpu6050_fifo_read(&imu, fifo_data, fifo_count);
+ *
+ * // Reset FIFO when done
+ * star_sensor_mpu6050_fifo_reset(&imu);
+ *
+ *
+ * // === Power Management ===
+ *
+ * // Put device to sleep to save power
+ * star_sensor_mpu6050_set_sleep(&imu, true);
+ *
+ * // Wake up when needed
+ * star_sensor_mpu6050_set_sleep(&imu, false);
+ *
+ * // Reset device to defaults
+ * star_sensor_mpu6050_reset(&imu);
+ *
+ *
+ * // === Cleanup ===
+ *
+ * star_sensor_mpu6050_deinit(&imu);
+ * star_bus_manager_remove_bus(&bus_manager, "imu_i2c");
+ * @endcode
+ */
+
 #define MPU6050_I2C_ADDR_LOW (0x68)
 #define MPU6050_I2C_ADDR_HIGH (0x69)
 #define MPU6050_WHO_AM_I_VAL (0x68)
