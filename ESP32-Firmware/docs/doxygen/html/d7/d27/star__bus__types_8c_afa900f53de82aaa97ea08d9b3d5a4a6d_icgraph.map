@@ -1,18 +1,20 @@
 <map id="star_bus_type_to_string" name="star_bus_type_to_string">
-<area shape="rect" id="Node000001" title="Convert bus type to string." alt="" coords="684,113,845,139"/>
-<area shape="rect" id="Node000002" href="$de/d98/star__bus__config_8c.html#aab1f2b4c0cdc21f5d37c1a376cb2a672" title="Initialize the bus/device associated with this configuration." alt="" coords="478,5,616,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="728,104,685,80,635,53,590,34,590,29,637,48,688,75,734,105"/>
-<area shape="rect" id="Node000003" href="$d7/d60/star__bus__manager_8c.html#a3a0dc80007e321a8697c399e0f0bf559" title="Add a new I2C bus/device configuration to the manager." alt="" coords="226,31,410,56"/>
-<area shape="poly" id="edge7_Node000001_Node000003" title=" " alt="" coords="697,109,636,97,518,75,411,59,410,53,519,70,637,92,702,109"/>
-<area shape="rect" id="Node000006" href="$df/df6/star__bus__debug_8c.html#a3754d878be7ba118c2b673725c4b47bd" title="Print detailed information about a specific bus." alt="" coords="474,106,620,146"/>
-<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="666,127,621,129,620,124,671,126"/>
-<area shape="rect" id="Node000007" href="$df/df6/star__bus__debug_8c.html#a363d2146889df4100a53fd7f698709dc" title="Print information about all configured buses." alt="" coords="474,171,620,212"/>
-<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="707,143,618,173,617,168,702,145"/>
-<area shape="rect" id="Node000008" href="$d7/d60/star__bus__manager_8c.html#ad3ad5ac9f78399d475aeea127ad5f641" title="Iterates through all I2C buses/devices managed by the manager and calls a user&#45;provided function to r..." alt="" coords="458,236,636,277"/>
-<area shape="poly" id="edge8_Node000001_Node000008" title=" " alt="" coords="740,149,693,189,638,226,611,238,610,233,635,221,690,185,735,151"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="461,28,411,36,410,31,466,26"/>
-<area shape="rect" id="Node000004" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="53,5,130,31"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="209,33,131,25,130,20,213,30"/>
-<area shape="rect" id="Node000005" href="$d1/d50/star__bus__helpers_8c.html#a88cdd0738dfec53d37d49f977c9d989c" title="Quick setup: I2C master with automatic defaults." alt="" coords="5,55,178,80"/>
-<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="208,56,179,61,177,56,213,53"/>
+<area shape="rect" id="Node000001" title="Convert bus type to string." alt="" coords="810,125,970,150"/>
+<area shape="rect" id="Node000002" href="$de/d98/star__bus__config_8c.html#aab1f2b4c0cdc21f5d37c1a376cb2a672" title="Initialize the bus/device associated with this configuration." alt="" coords="604,17,741,42"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="854,116,811,91,761,64,715,46,716,40,763,59,813,86,859,116"/>
+<area shape="rect" id="Node000003" href="$d7/d60/star__bus__manager_8c.html#a3a0dc80007e321a8697c399e0f0bf559" title="Add a new I2C bus/device configuration to the manager." alt="" coords="351,42,535,68"/>
+<area shape="poly" id="edge8_Node000001_Node000003" title=" " alt="" coords="822,120,761,108,644,87,536,70,536,65,645,82,762,103,827,120"/>
+<area shape="rect" id="Node000007" href="$df/df6/star__bus__debug_8c.html#a3754d878be7ba118c2b673725c4b47bd" title="Print detailed information about a specific bus." alt="" coords="600,117,745,158"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="791,138,746,140,745,135,797,137"/>
+<area shape="rect" id="Node000008" href="$df/df6/star__bus__debug_8c.html#a363d2146889df4100a53fd7f698709dc" title="Print information about all configured buses." alt="" coords="600,183,745,223"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="833,155,743,185,742,179,828,156"/>
+<area shape="rect" id="Node000009" href="$d7/d60/star__bus__manager_8c.html#ad3ad5ac9f78399d475aeea127ad5f641" title="Iterates through all I2C buses/devices managed by the manager and calls a user&#45;provided function to r..." alt="" coords="583,248,762,289"/>
+<area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="865,160,819,200,763,237,737,250,735,245,760,233,816,196,860,162"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="586,40,537,47,535,42,592,38"/>
+<area shape="rect" id="Node000004" href="$d0/d29/main_8c.html#a22e093826d5fa58b80533860973051a9" title=" " alt="" coords="153,5,281,46"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="334,42,282,37,281,31,339,40"/>
+<area shape="rect" id="Node000006" href="$d1/d50/star__bus__helpers_8c.html#a88cdd0738dfec53d37d49f977c9d989c" title="Quick setup: I2C master with automatic defaults." alt="" coords="131,70,303,96"/>
+<area shape="poly" id="edge5_Node000003_Node000006" title=" " alt="" coords="333,69,305,75,303,70,338,67"/>
+<area shape="rect" id="Node000005" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,13,83,38"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="135,27,84,28,82,23,139,24"/>
 </map>

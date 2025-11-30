@@ -588,6 +588,11 @@ esp_err_t star_sensor_pca9685_set_duty_cycle(const pca9685_handle_t* handle,
 
   // Convert to 12-bit value
   uint16_t duty_value = (uint16_t)((duty_percent / 100.0f) * PCA9685_PWM_RESOLUTION);
+  
+  // Safety clamp to prevent PWM overflow (4096 > 4095 causes system crash)
+  if (duty_value >= PCA9685_PWM_RESOLUTION) {
+    duty_value = PCA9685_PWM_RESOLUTION - 1;
+  }
 
   // Set on_time to 0 for no phase shift
   return star_sensor_pca9685_set_pwm(handle, channel, 0, duty_value);

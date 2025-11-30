@@ -1,9 +1,11 @@
 <map id="gpio_set_interrupt_default" name="gpio_set_interrupt_default">
-<area shape="rect" id="Node000001" title="Default implementation for setting GPIO interrupt." alt="" coords="540,5,665,46"/>
-<area shape="rect" id="Node000002" href="$da/d8b/star__bus__gpio_8c.html#a0fff90f319ba2507d0e6fdce4620278c" title="Initialize default GPIO operations function pointers within a config structure. Typically called inte..." alt="" coords="366,5,492,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="522,26,493,28,493,23,528,26"/>
-<area shape="rect" id="Node000003" href="$de/d98/star__bus__config_8c.html#a856acf68aec88c1a3203d65ec656fd3c" title="Create a new GPIO bus configuration." alt="" coords="131,13,318,38"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="348,26,319,28,319,23,353,26"/>
-<area shape="rect" id="Node000004" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,13,83,38"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="112,26,83,28,83,23,118,25"/>
+<area shape="rect" id="Node000001" title="Default implementation for setting GPIO interrupt." alt="" coords="717,5,841,46"/>
+<area shape="rect" id="Node000002" href="$da/d8b/star__bus__gpio_8c.html#a0fff90f319ba2507d0e6fdce4620278c" title="Initialize default GPIO operations function pointers within a config structure. Typically called inte..." alt="" coords="542,5,669,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="699,26,669,28,669,23,704,26"/>
+<area shape="rect" id="Node000003" href="$de/d98/star__bus__config_8c.html#a856acf68aec88c1a3203d65ec656fd3c" title="Create a new GPIO bus configuration." alt="" coords="307,13,494,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="524,26,495,28,495,23,530,26"/>
+<area shape="rect" id="Node000004" href="$d0/d29/main_8c.html#a22e093826d5fa58b80533860973051a9" title=" " alt="" coords="131,5,259,46"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="289,26,260,28,260,23,294,26"/>
+<area shape="rect" id="Node000005" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,13,83,38"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="112,26,83,28,83,23,118,25"/>
 </map>

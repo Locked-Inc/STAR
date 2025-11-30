@@ -323,6 +323,7 @@ esp_err_t star_sensor_hcsr04_read_distance(hcsr04_handle_t* handle, float* dista
   // Wait for measurement with timeout
   uint32_t start_time = (uint32_t)esp_timer_get_time();
   uint32_t timeout_ms = 60; // Max time for 400cm measurement + margin
+  uint32_t yield_counter = 0;
 
   while (!handle->measurement_complete) {
     uint32_t elapsed = ((uint32_t)esp_timer_get_time() - start_time) / 1000;
@@ -330,7 +331,25 @@ esp_err_t star_sensor_hcsr04_read_distance(hcsr04_handle_t* handle, float* dista
       ESP_LOGW(s_TAG, "Measurement timeout");
       return HCSR04_ERR_TIMEOUT;
     }
-    vTaskDelay(pdMS_TO_TICKS(1));
+    
+    /* Aggressive yielding strategy to prevent watchdog timeout */
+    if (elapsed < 2) {
+      /* First 2ms: very short delays with frequent yields */
+      yield_counter++;
+      if (yield_counter >= 10) {  /* Yield every 10 iterations */
+        yield_counter = 0;
+        taskYIELD();
+      } else {
+        esp_rom_delay_us(10);  /* Very short delay */
+      }
+    } else if (elapsed < 10) {
+      /* 2-10ms: slightly longer delays but still responsive */
+      taskYIELD();  /* Always yield in this range */
+      esp_rom_delay_us(50);
+    } else {
+      /* After 10ms: use vTaskDelay for better scheduling */
+      vTaskDelay(1);
+    }
   }
 
   return star_sensor_hcsr04_get_result(handle, distance_cm);

@@ -17,6 +17,7 @@ var annotated_dup =
     [ "bq7850_temp_data_t", "df/d6a/structbq7850__temp__data__t.html", "df/d6a/structbq7850__temp__data__t" ],
     [ "calibration_status_t", "d1/dfd/structcalibration__status__t.html", "d1/dfd/structcalibration__status__t" ],
     [ "dht22_state_t", "db/d5e/structdht22__state__t.html", "db/d5e/structdht22__state__t" ],
+    [ "dht22_task_context_t", "db/d05/structdht22__task__context__t.html", "db/d05/structdht22__task__context__t" ],
     [ "dma_transfer_context_t", "d7/d4a/structdma__transfer__context__t.html", "d7/d4a/structdma__transfer__context__t" ],
     [ "ds3231_time_t", "dc/d99/structds3231__time__t.html", "dc/d99/structds3231__time__t" ],
     [ "error_handler", "d6/d7d/structerror__handler.html", "d6/d7d/structerror__handler" ],
@@ -27,6 +28,8 @@ var annotated_dup =
     [ "imu_10dof_config_t", "d7/dc9/structimu__10dof__config__t.html", "d7/dc9/structimu__10dof__config__t" ],
     [ "imu_10dof_data_t", "df/d38/structimu__10dof__data__t.html", "df/d38/structimu__10dof__data__t" ],
     [ "imu_10dof_handle", "df/d20/structimu__10dof__handle.html", "df/d20/structimu__10dof__handle" ],
+    [ "led_controller_t", "d4/d32/structled__controller__t.html", "d4/d32/structled__controller__t" ],
+    [ "led_task_context_t", "d9/dc8/structled__task__context__t.html", "d9/dc8/structled__task__context__t" ],
     [ "mpu6050_accel_t", "d8/d38/structmpu6050__accel__t.html", "d8/d38/structmpu6050__accel__t" ],
     [ "mpu6050_config_t", "d7/d19/structmpu6050__config__t.html", "d7/d19/structmpu6050__config__t" ],
     [ "mpu6050_data_t", "d8/d62/structmpu6050__data__t.html", "d8/d62/structmpu6050__data__t" ],
@@ -41,6 +44,9 @@ var annotated_dup =
     [ "peripheral_state_t", "d9/df1/structperipheral__state__t.html", "d9/df1/structperipheral__state__t" ],
     [ "quaternion_t", "de/de3/structquaternion__t.html", "de/de3/structquaternion__t" ],
     [ "rgb_color_t", "d0/d62/structrgb__color__t.html", "d0/d62/structrgb__color__t" ],
+    [ "sensor_data_t", "d2/d06/structsensor__data__t.html", "d2/d06/structsensor__data__t" ],
+    [ "sensor_task_context_t", "dc/d8f/structsensor__task__context__t.html", "dc/d8f/structsensor__task__context__t" ],
+    [ "shared_context_t", "d0/d3c/structshared__context__t.html", "d0/d3c/structshared__context__t" ],
     [ "smbus_peripheral_state_t", "d6/dd4/structsmbus__peripheral__state__t.html", "d6/dd4/structsmbus__peripheral__state__t" ],
     [ "spi_dma_state_t", "dd/d41/structspi__dma__state__t.html", "dd/d41/structspi__dma__state__t" ],
     [ "spi_dma_transfer_context_t", "d3/d7b/structspi__dma__transfer__context__t.html", "d3/d7b/structspi__dma__transfer__context__t" ],
@@ -91,6 +97,9 @@ var annotated_dup =
     [ "star_uart_config_t", "d9/d90/structstar__uart__config__t.html", "d9/d90/structstar__uart__config__t" ],
     [ "star_uart_stats_t", "d2/dc8/structstar__uart__stats__t.html", "d2/dc8/structstar__uart__stats__t" ],
     [ "stats_state_t", "da/da9/structstats__state__t.html", "da/da9/structstats__state__t" ],
+    [ "system_health_t", "d6/d1e/structsystem__health__t.html", "d6/d1e/structsystem__health__t" ],
+    [ "temperature_data_t", "dc/ddd/structtemperature__data__t.html", "dc/ddd/structtemperature__data__t" ],
     [ "uart_state_t", "d8/dfe/structuart__state__t.html", "d8/dfe/structuart__state__t" ],
-    [ "vec3_t", "d3/d7c/structvec3__t.html", "d3/d7c/structvec3__t" ]
+    [ "vec3_t", "d3/d7c/structvec3__t.html", "d3/d7c/structvec3__t" ],
+    [ "watchdog_task_context_t", "d9/d90/structwatchdog__task__context__t.html", "d9/d90/structwatchdog__task__context__t" ]
 ];

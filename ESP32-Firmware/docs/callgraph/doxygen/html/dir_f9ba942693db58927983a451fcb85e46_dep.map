@@ -1,13 +1,13 @@
 <map id="lib/star_sensor_hcsr04/src" name="lib/star_sensor_hcsr04/src">
 <area shape="rect" id="node1" href="dir_81a0d26884fd1e7530d1efcbe6eabbc4.html" title="include" alt="" coords="77,126,139,152"/>
 <area shape="rect" id="node2" href="dir_f9ba942693db58927983a451fcb85e46.html" title="src" alt="" coords="102,52,141,78"/>
-<area shape="poly" id="edge3" href="dir_000017_000006.html" alt="" coords="121,76,115,112,111,109,117,80"/>
-<area shape="rect" id="edge3-headlabel" href="dir_000017_000006.html" title="1" alt="" coords="118,102,125,117"/>
+<area shape="poly" id="edge3" href="dir_000021_000006.html" alt="" coords="121,76,115,112,111,109,117,80"/>
+<area shape="rect" id="edge3-headlabel" href="dir_000021_000006.html" title="1" alt="" coords="118,102,125,117"/>
 <area shape="rect" id="node3" href="dir_64451d11afc5ea229c8e913978f37e05.html" title="star_error_handler" alt="" coords="163,126,288,152"/>
-<area shape="poly" id="edge1" href="dir_000017_000025.html" alt="" coords="140,76,198,116,193,118,138,81"/>
-<area shape="rect" id="edge1-headlabel" href="dir_000017_000025.html" title="1" alt="" coords="194,101,201,116"/>
+<area shape="poly" id="edge1" href="dir_000021_000029.html" alt="" coords="140,76,198,116,193,118,138,81"/>
+<area shape="rect" id="edge1-headlabel" href="dir_000021_000029.html" title="1" alt="" coords="194,101,201,116"/>
 <area shape="rect" id="node4" href="dir_774db3e6968bc89556f133d9c4a2e213.html" title="star_bus" alt="" coords="312,126,384,152"/>
-<area shape="poly" id="edge2" href="dir_000017_000023.html" alt="" coords="142,70,299,120,295,123,141,75"/>
-<area shape="rect" id="edge2-headlabel" href="dir_000017_000023.html" title="1" alt="" coords="293,105,300,120"/>
+<area shape="poly" id="edge2" href="dir_000021_000027.html" alt="" coords="142,70,299,120,295,123,141,75"/>
+<area shape="rect" id="edge2-headlabel" href="dir_000021_000027.html" title="1" alt="" coords="293,105,300,120"/>
 <area shape="rect" id="clust1" href="dir_84cdb2ce99bf02bd48d014a988607bcf.html" title="star_sensor_hcsr04" alt="" coords="16,16,152,162"/>
 </map>
