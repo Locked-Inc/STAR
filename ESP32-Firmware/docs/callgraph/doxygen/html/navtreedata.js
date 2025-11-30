@@ -51,15 +51,15 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"d1/dfc/star__sensor__bno055__bmp280_8c.html#a722083a7cb967139e04c4e0e722895f8",
-"d2/dae/structstar__i2c__peripheral__config__t.html#a598f88a2b67b38045a070a839841d0b0",
-"d4/d07/structpca9685__handle.html#af2f938b16dfd13560e06a39b519508f1",
-"d6/d0b/star__bus__devices_8c.html#aebaaa3a881c14f54c1aa44a1504ada38",
-"d7/de0/star__sensor__pca9685_8h.html#a9e6f5122f0c6163346e0fb4db6455b77",
-"d9/df1/structperipheral__state__t.html#ad29316356cfe75f6c7f9a8361f0136c5",
-"dc/d66/structstar__onewire__peripheral__stats__t.html#af06b74c9b29da149091fb06a043d1f63",
-"de/d18/star__bus__batch_8h.html#a7570f328a4386d850435ded1e5e007cca60da669da85fc259e583ae6efd29ade5",
-"functions_h.html"
+"d1/dd1/star__bus__dht22__proprietary_8h_source.html",
+"d2/dad/star__pin__validator_8c.html#a13730ef0e296c0ffeea5d60b7f04d9cf",
+"d3/df7/star__sensor__pca9685_8c.html#a7fb4749ccca6d7ff1b791faaba3c5e3a",
+"d6/d0b/star__bus__devices_8c.html#a999e3dd103132afd3cd1856f477f2dbd",
+"d7/de0/star__sensor__pca9685_8h.html#a53b0a52921eab5dcc670f998245ac7fd",
+"d9/deb/star__bus__stats_8h.html#a6c60e48889adc75b7996e2f30ad4cdf4",
+"dc/d1f/star__bus__dht22__proprietary_8c.html#af3c6d2f2ae3b906ff2590c579ae42e8f",
+"dd/dfe/structstar__dht22__config__t.html#ac20876d7a756e57a1ffec43eb3a25040",
+"dir_96b3180c22a2a6c40add1a1eccda84a4.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronization';
