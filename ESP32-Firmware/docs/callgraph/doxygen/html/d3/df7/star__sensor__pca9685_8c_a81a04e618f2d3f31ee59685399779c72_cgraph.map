@@ -1,0 +1,9 @@
+<map id="star_sensor_pca9685_set_duty_cycle" name="star_sensor_pca9685_set_duty_cycle">
+<area shape="rect" id="Node000001" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="5,5,151,46"/>
+<area shape="rect" id="Node000002" href="$d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="199,5,344,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="151,23,186,25,180,26,151,28"/>
+<area shape="rect" id="Node000003" href="$dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="392,13,522,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="344,23,380,26,374,26,345,28"/>
+<area shape="rect" id="Node000004" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="570,13,755,38"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="523,23,557,26,552,26,523,28"/>
+</map>

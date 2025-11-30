@@ -21,7 +21,7 @@ static const char* s_TAG = "STAR_SMBUS";
 /**
  * @brief Validate common parameters for SMBus operations
  */
-static esp_err_t priv_validate_smbus_params(star_bus_manager_t* manager, const char* bus_name)
+static esp_err_t internal_validate_smbus_params(star_bus_manager_t* manager, const char* bus_name)
 {
   if (manager == NULL) {
     ESP_LOGE(s_TAG, "Manager is NULL");
@@ -48,7 +48,7 @@ esp_err_t star_smbus_quick_command(star_bus_manager_t* manager,
 {
   (void)addr; /* Address comes from bus config */
 
-  esp_err_t result = priv_validate_smbus_params(manager, bus_name);
+  esp_err_t result = internal_validate_smbus_params(manager, bus_name);
   if (result != ESP_OK) {
     return result;
   }
@@ -67,7 +67,7 @@ star_smbus_send_byte(star_bus_manager_t* manager, const char* bus_name, uint8_t 
 {
   (void)addr; /* Address comes from bus config */
 
-  esp_err_t result = priv_validate_smbus_params(manager, bus_name);
+  esp_err_t result = internal_validate_smbus_params(manager, bus_name);
   if (result != ESP_OK) {
     return result;
   }
@@ -82,7 +82,7 @@ esp_err_t star_smbus_receive_byte(star_bus_manager_t* manager,
 {
   (void)addr; /* Address comes from bus config */
 
-  esp_err_t result = priv_validate_smbus_params(manager, bus_name);
+  esp_err_t result = internal_validate_smbus_params(manager, bus_name);
   if (result != ESP_OK) {
     return result;
   }
@@ -103,7 +103,7 @@ esp_err_t star_smbus_write_byte(star_bus_manager_t* manager,
 {
   (void)addr; /* Address comes from bus config */
 
-  esp_err_t result = priv_validate_smbus_params(manager, bus_name);
+  esp_err_t result = internal_validate_smbus_params(manager, bus_name);
   if (result != ESP_OK) {
     return result;
   }
@@ -119,7 +119,7 @@ esp_err_t star_smbus_read_byte(star_bus_manager_t* manager,
 {
   (void)addr; /* Address comes from bus config */
 
-  esp_err_t result = priv_validate_smbus_params(manager, bus_name);
+  esp_err_t result = internal_validate_smbus_params(manager, bus_name);
   if (result != ESP_OK) {
     return result;
   }
@@ -140,7 +140,7 @@ esp_err_t star_smbus_write_word(star_bus_manager_t* manager,
 {
   (void)addr; /* Address comes from bus config */
 
-  esp_err_t result = priv_validate_smbus_params(manager, bus_name);
+  esp_err_t result = internal_validate_smbus_params(manager, bus_name);
   if (result != ESP_OK) {
     return result;
   }
@@ -162,7 +162,7 @@ esp_err_t star_smbus_read_word(star_bus_manager_t* manager,
 {
   (void)addr; /* Address comes from bus config */
 
-  esp_err_t result = priv_validate_smbus_params(manager, bus_name);
+  esp_err_t result = internal_validate_smbus_params(manager, bus_name);
   if (result != ESP_OK) {
     return result;
   }
@@ -194,7 +194,7 @@ esp_err_t star_smbus_process_call(star_bus_manager_t* manager,
 {
   (void)addr; /* Address comes from bus config */
 
-  esp_err_t result = priv_validate_smbus_params(manager, bus_name);
+  esp_err_t result = internal_validate_smbus_params(manager, bus_name);
   if (result != ESP_OK) {
     return result;
   }
@@ -237,7 +237,7 @@ esp_err_t star_smbus_block_write(star_bus_manager_t* manager,
 {
   (void)addr; /* Address comes from bus config */
 
-  esp_err_t result = priv_validate_smbus_params(manager, bus_name);
+  esp_err_t result = internal_validate_smbus_params(manager, bus_name);
   if (result != ESP_OK) {
     return result;
   }
@@ -270,7 +270,7 @@ esp_err_t star_smbus_block_read(star_bus_manager_t* manager,
 {
   (void)addr; /* Address comes from bus config */
 
-  esp_err_t result = priv_validate_smbus_params(manager, bus_name);
+  esp_err_t result = internal_validate_smbus_params(manager, bus_name);
   if (result != ESP_OK) {
     return result;
   }
@@ -329,7 +329,7 @@ esp_err_t star_smbus_block_process_call(star_bus_manager_t* manager,
 {
   (void)addr; /* Address comes from bus config */
 
-  esp_err_t result = priv_validate_smbus_params(manager, bus_name);
+  esp_err_t result = internal_validate_smbus_params(manager, bus_name);
   if (result != ESP_OK) {
     return result;
   }

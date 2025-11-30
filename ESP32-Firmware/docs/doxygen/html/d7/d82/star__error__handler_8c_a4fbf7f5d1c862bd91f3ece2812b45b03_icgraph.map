@@ -1,0 +1,21 @@
+<map id="error_handler_create_custom" name="error_handler_create_custom">
+<area shape="rect" id="Node000001" title="Create and initialize an error handler with custom configuration." alt="" coords="642,96,782,137"/>
+<area shape="rect" id="Node000002" href="$d7/d82/star__error__handler_8c.html#a37c70fed0d10c260212eb781ca4e5862" title="Create and initialize a default error handler with sensible defaults." alt="" coords="455,96,594,137"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="624,117,595,119,595,114,630,117"/>
+<area shape="rect" id="Node000003" href="$d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="243,5,391,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="481,87,446,66,406,45,378,34,378,29,408,40,449,61,487,87"/>
+<area shape="rect" id="Node000004" href="$d7/d82/star__error__handler_8c.html#a0c603b415b63ee1bd6bf532b5f315716" title="Create and allocate a default error interface with internal error handler." alt="" coords="250,203,384,244"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="485,145,408,194,382,205,381,200,406,189,480,147"/>
+<area shape="rect" id="Node000007" href="$de/de2/star__sensor__hcsr04_8c.html#afd5878b21fda797877bd29036adcbd58" title="Initialize HC&#45;SR04 sensor." alt="" coords="237,104,396,130"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="437,117,397,119,397,114,442,116"/>
+<area shape="rect" id="Node000008" href="$d1/dfc/star__sensor__bno055__bmp280_8c.html#a722083a7cb967139e04c4e0e722895f8" title="Initialize 10&#45;DOF IMU (BNO055 + BMP280)." alt="" coords="227,153,407,179"/>
+<area shape="poly" id="edge8_Node000002_Node000008" title=" " alt="" coords="438,137,375,155,374,150,443,136"/>
+<area shape="rect" id="Node000009" href="$d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="232,55,402,80"/>
+<area shape="poly" id="edge9_Node000002_Node000009" title=" " alt="" coords="437,97,374,84,374,78,443,96"/>
+<area shape="rect" id="Node000005" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="53,104,131,130"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="237,197,226,194,164,162,114,133,115,127,166,157,228,189,242,197"/>
+<area shape="rect" id="Node000006" href="$d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="5,211,179,236"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="232,224,179,226,179,221,238,223"/>
+<area shape="poly" id="edge7_Node000007_Node000005" title=" " alt="" coords="219,118,131,119,130,114,224,115"/>
+<area shape="poly" id="edge10_Node000009_Node000005" title=" " alt="" coords="238,86,132,111,130,106,242,82"/>
+</map>

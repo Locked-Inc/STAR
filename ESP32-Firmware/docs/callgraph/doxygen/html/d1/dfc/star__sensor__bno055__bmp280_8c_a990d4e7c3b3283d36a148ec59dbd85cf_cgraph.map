@@ -1,0 +1,9 @@
+<map id="star_sensor_imu_10dof_is_calibrated" name="star_sensor_imu_10dof_is_calibrated">
+<area shape="rect" id="Node000001" title="Check if system is fully calibrated." alt="" coords="5,5,162,46"/>
+<area shape="rect" id="Node000002" href="$d1/dfc/star__sensor__bno055__bmp280_8c.html#a893fd4d35167ed7247d3172edcecb600" title="Get calibration status." alt="" coords="210,5,366,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="162,23,197,25,192,26,162,28"/>
+<area shape="rect" id="Node000003" href="$dd/d1a/star__bus__i2c_8c.html#a2e9b9baf8a0f8d00a2080963a7efd62f" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="414,13,541,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="366,23,401,26,396,26,366,28"/>
+<area shape="rect" id="Node000004" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="589,13,774,38"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="542,23,576,26,571,26,542,28"/>
+</map>

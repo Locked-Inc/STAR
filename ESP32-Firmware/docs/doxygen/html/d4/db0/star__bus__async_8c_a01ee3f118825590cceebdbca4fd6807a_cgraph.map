@@ -1,0 +1,28 @@
+<map id="internal_execute_operation" name="internal_execute_operation">
+<area shape="rect" id="Node000001" title="Execute an async operation." alt="" coords="5,136,182,162"/>
+<area shape="rect" id="Node000002" href="$dd/d1a/star__bus__i2c_8c.html#a2e9b9baf8a0f8d00a2080963a7efd62f" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="451,20,578,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="101,134,121,108,150,76,186,45,229,21,285,7,343,3,399,6,450,16,445,17,398,12,343,8,286,12,231,26,189,49,154,80,125,112,106,137"/>
+<area shape="rect" id="Node000004" href="$dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="450,135,580,161"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="182,146,436,146,433,150,182,151"/>
+<area shape="rect" id="Node000005" href="$d9/dbd/star__bus__spi_8c.html#a38e1914f8a95c3c7234ac92a81e1b1df" title="Receive data from an SPI device specified by a bus configuration." alt="" coords="236,187,380,213"/>
+<area shape="poly" id="edge5_Node000001_Node000005" title=" " alt="" coords="151,160,238,182,233,184,151,165"/>
+<area shape="rect" id="Node000006" href="$d9/dbd/star__bus__spi_8c.html#ad0df93f1e1b403e0e8e0e48ca8822588" title="Perform a full&#45;duplex transfer with an SPI device specified by a bus configuration." alt="" coords="235,236,381,262"/>
+<area shape="poly" id="edge7_Node000001_Node000006" title=" " alt="" coords="115,160,167,191,231,223,246,231,241,231,229,228,165,195,115,165"/>
+<area shape="rect" id="Node000007" href="$d9/dbd/star__bus__spi_8c.html#a2859c4d77d02b6bd5f567366a465e11d" title="Transmit data to an SPI device specified by a bus configuration." alt="" coords="440,287,589,313"/>
+<area shape="poly" id="edge9_Node000001_Node000007" title=" " alt="" coords="105,160,155,217,190,248,231,272,278,288,329,298,378,303,427,306,422,306,378,308,328,304,277,294,229,277,187,252,151,221,103,165"/>
+<area shape="rect" id="Node000008" href="$d3/df5/star__bus__smbus_8c.html#a66c94dc0a7eb2893f78e8b887d6d0b4d" title="SMBus Read Byte." alt="" coords="231,36,384,62"/>
+<area shape="poly" id="edge11_Node000001_Node000008" title=" " alt="" coords="113,134,165,103,229,71,246,66,241,69,231,76,167,108,117,138"/>
+<area shape="rect" id="Node000010" href="$d3/df5/star__bus__smbus_8c.html#a4150488512abf781bf193c6bdb9d20a0" title="SMBus Write Byte." alt="" coords="230,86,386,111"/>
+<area shape="poly" id="edge14_Node000001_Node000010" title=" " alt="" coords="150,133,238,114,234,117,152,138"/>
+<area shape="rect" id="Node000003" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="643,186,828,211"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="570,44,597,56,634,83,667,114,718,174,713,173,663,118,630,87,594,61,570,49"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="574,159,664,181,659,182,574,164"/>
+<area shape="poly" id="edge6_Node000005_Node000003" title=" " alt="" coords="380,197,630,198,625,200,380,202"/>
+<area shape="poly" id="edge8_Node000006_Node000003" title=" " alt="" coords="381,238,630,211,625,212,382,243"/>
+<area shape="poly" id="edge10_Node000007_Node000003" title=" " alt="" coords="550,284,594,265,693,219,698,218,596,270,552,289"/>
+<area shape="poly" id="edge13_Node000008_Node000002" title=" " alt="" coords="384,41,438,38,433,40,385,46"/>
+<area shape="rect" id="Node000009" href="$d3/df5/star__bus__smbus_8c.html#a028e8362b8c772d39dee59e24c15439b" title="Validate common parameters for SMBus operations." alt="" coords="434,70,595,111"/>
+<area shape="poly" id="edge12_Node000008_Node000009" title=" " alt="" coords="375,60,421,71,416,72,376,65"/>
+<area shape="poly" id="edge16_Node000010_Node000004" title=" " alt="" coords="365,109,446,130,440,131,365,115"/>
+<area shape="poly" id="edge15_Node000010_Node000009" title=" " alt="" coords="386,93,421,93,416,95,387,98"/>
+</map>

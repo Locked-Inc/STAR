@@ -11,7 +11,7 @@
 #include "star_bus_config.h"
 #include "star_bus_manager.h"
 
-static const char* TAG = "STAR_BUS_GPIO";
+static const char* s_TAG = "STAR_BUS_GPIO";
 
 /* --- Default GPIO Operation Implementations --- */
 
@@ -23,14 +23,14 @@ static esp_err_t gpio_configure_default(const star_bus_config_t* config,
                                         gpio_mode_t              mode,
                                         gpio_pull_mode_t         pull)
 {
-  ESP_RETURN_ON_FALSE(config, ESP_ERR_INVALID_ARG, TAG, "Config is NULL");
+  ESP_RETURN_ON_FALSE(config, ESP_ERR_INVALID_ARG, s_TAG, "Config is NULL");
   ESP_RETURN_ON_FALSE(config->type == k_star_bus_type_gpio,
                       ESP_ERR_INVALID_ARG,
-                      TAG,
+                      s_TAG,
                       "Config is not GPIO type");
   ESP_RETURN_ON_FALSE(config->initialized,
                       ESP_ERR_INVALID_STATE,
-                      TAG,
+                      s_TAG,
                       "GPIO bus '%s' not initialized",
                       config->name);
 
@@ -46,7 +46,7 @@ static esp_err_t gpio_configure_default(const star_bus_config_t* config,
 
   ESP_RETURN_ON_FALSE(pin_found,
                       ESP_ERR_INVALID_ARG,
-                      TAG,
+                      s_TAG,
                       "Pin %d not managed by GPIO bus '%s'",
                       pin,
                       config->name);
@@ -64,9 +64,9 @@ static esp_err_t gpio_configure_default(const star_bus_config_t* config,
   };
 
   esp_err_t ret = gpio_config(&io_conf);
-  ESP_RETURN_ON_ERROR(ret, TAG, "Failed to configure GPIO pin %d on bus '%s'", pin, config->name);
+  ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to configure GPIO pin %d on bus '%s'", pin, config->name);
 
-  ESP_LOGD(TAG,
+  ESP_LOGD(s_TAG,
            "Configured GPIO pin %d on bus '%s' (mode=%d, pull=%d)",
            pin,
            config->name,
@@ -80,14 +80,14 @@ static esp_err_t gpio_configure_default(const star_bus_config_t* config,
  */
 static esp_err_t gpio_write_default(const star_bus_config_t* config, gpio_num_t pin, uint32_t level)
 {
-  ESP_RETURN_ON_FALSE(config, ESP_ERR_INVALID_ARG, TAG, "Config is NULL");
+  ESP_RETURN_ON_FALSE(config, ESP_ERR_INVALID_ARG, s_TAG, "Config is NULL");
   ESP_RETURN_ON_FALSE(config->type == k_star_bus_type_gpio,
                       ESP_ERR_INVALID_ARG,
-                      TAG,
+                      s_TAG,
                       "Config is not GPIO type");
   ESP_RETURN_ON_FALSE(config->initialized,
                       ESP_ERR_INVALID_STATE,
-                      TAG,
+                      s_TAG,
                       "GPIO bus '%s' not initialized",
                       config->name);
 
@@ -103,20 +103,20 @@ static esp_err_t gpio_write_default(const star_bus_config_t* config, gpio_num_t 
 
   ESP_RETURN_ON_FALSE(pin_found,
                       ESP_ERR_INVALID_ARG,
-                      TAG,
+                      s_TAG,
                       "Pin %d not managed by GPIO bus '%s'",
                       pin,
                       config->name);
 
   esp_err_t ret = gpio_set_level(pin, level);
   ESP_RETURN_ON_ERROR(ret,
-                      TAG,
+                      s_TAG,
                       "Failed to write level %lu to GPIO pin %d on bus '%s'",
                       (unsigned long)level,
                       pin,
                       config->name);
 
-  ESP_LOGV(TAG,
+  ESP_LOGV(s_TAG,
            "Wrote level %lu to GPIO pin %d on bus '%s'",
            (unsigned long)level,
            pin,
@@ -129,15 +129,15 @@ static esp_err_t gpio_write_default(const star_bus_config_t* config, gpio_num_t 
  */
 static esp_err_t gpio_read_default(const star_bus_config_t* config, gpio_num_t pin, uint32_t* level)
 {
-  ESP_RETURN_ON_FALSE(config, ESP_ERR_INVALID_ARG, TAG, "Config is NULL");
-  ESP_RETURN_ON_FALSE(level, ESP_ERR_INVALID_ARG, TAG, "Level pointer is NULL");
+  ESP_RETURN_ON_FALSE(config, ESP_ERR_INVALID_ARG, s_TAG, "Config is NULL");
+  ESP_RETURN_ON_FALSE(level, ESP_ERR_INVALID_ARG, s_TAG, "Level pointer is NULL");
   ESP_RETURN_ON_FALSE(config->type == k_star_bus_type_gpio,
                       ESP_ERR_INVALID_ARG,
-                      TAG,
+                      s_TAG,
                       "Config is not GPIO type");
   ESP_RETURN_ON_FALSE(config->initialized,
                       ESP_ERR_INVALID_STATE,
-                      TAG,
+                      s_TAG,
                       "GPIO bus '%s' not initialized",
                       config->name);
 
@@ -153,7 +153,7 @@ static esp_err_t gpio_read_default(const star_bus_config_t* config, gpio_num_t p
 
   ESP_RETURN_ON_FALSE(pin_found,
                       ESP_ERR_INVALID_ARG,
-                      TAG,
+                      s_TAG,
                       "Pin %d not managed by GPIO bus '%s'",
                       pin,
                       config->name);
@@ -161,7 +161,7 @@ static esp_err_t gpio_read_default(const star_bus_config_t* config, gpio_num_t p
   int read_level = gpio_get_level(pin);
   *level         = (uint32_t)read_level;
 
-  ESP_LOGV(TAG,
+  ESP_LOGV(s_TAG,
            "Read level %lu from GPIO pin %d on bus '%s'",
            (unsigned long)*level,
            pin,
@@ -178,14 +178,14 @@ static esp_err_t gpio_set_interrupt_default(const star_bus_config_t* config,
                                             gpio_isr_t               isr_handler,
                                             void*                    args)
 {
-  ESP_RETURN_ON_FALSE(config, ESP_ERR_INVALID_ARG, TAG, "Config is NULL");
+  ESP_RETURN_ON_FALSE(config, ESP_ERR_INVALID_ARG, s_TAG, "Config is NULL");
   ESP_RETURN_ON_FALSE(config->type == k_star_bus_type_gpio,
                       ESP_ERR_INVALID_ARG,
-                      TAG,
+                      s_TAG,
                       "Config is not GPIO type");
   ESP_RETURN_ON_FALSE(config->initialized,
                       ESP_ERR_INVALID_STATE,
-                      TAG,
+                      s_TAG,
                       "GPIO bus '%s' not initialized",
                       config->name);
 
@@ -201,7 +201,7 @@ static esp_err_t gpio_set_interrupt_default(const star_bus_config_t* config,
 
   ESP_RETURN_ON_FALSE(pin_found,
                       ESP_ERR_INVALID_ARG,
-                      TAG,
+                      s_TAG,
                       "Pin %d not managed by GPIO bus '%s'",
                       pin,
                       config->name);
@@ -215,10 +215,10 @@ static esp_err_t gpio_set_interrupt_default(const star_bus_config_t* config,
       /* ESP_ERR_INVALID_STATE means service already installed (by another bus or component) */
       gpio_cfg->isr_installed = true;
       ret                     = ESP_OK;
-      ESP_LOGD(TAG, "GPIO ISR service installed for bus '%s'", config->name);
+      ESP_LOGD(s_TAG, "GPIO ISR service installed for bus '%s'", config->name);
     } else {
       ESP_RETURN_ON_ERROR(ret,
-                          TAG,
+                          s_TAG,
                           "Failed to install GPIO ISR service for bus '%s'",
                           config->name);
     }
@@ -227,7 +227,7 @@ static esp_err_t gpio_set_interrupt_default(const star_bus_config_t* config,
   /* Set interrupt type */
   ret = gpio_set_intr_type(pin, intr_type);
   ESP_RETURN_ON_ERROR(ret,
-                      TAG,
+                      s_TAG,
                       "Failed to set interrupt type for GPIO pin %d on bus '%s'",
                       pin,
                       config->name);
@@ -237,21 +237,21 @@ static esp_err_t gpio_set_interrupt_default(const star_bus_config_t* config,
     ret = gpio_isr_handler_remove(pin);
     /* Ignore error if handler doesn't exist */
     if (ret != ESP_OK && ret != ESP_ERR_INVALID_STATE) {
-      ESP_LOGW(TAG, "Failed to remove ISR handler for pin %d: %s", pin, esp_err_to_name(ret));
+      ESP_LOGW(s_TAG, "Failed to remove ISR handler for pin %d: %s", pin, esp_err_to_name(ret));
     }
-    ESP_LOGD(TAG, "Disabled interrupt for GPIO pin %d on bus '%s'", pin, config->name);
+    ESP_LOGD(s_TAG, "Disabled interrupt for GPIO pin %d on bus '%s'", pin, config->name);
     return ESP_OK;
   }
 
   /* Add ISR handler */
   ret = gpio_isr_handler_add(pin, isr_handler, args);
   ESP_RETURN_ON_ERROR(ret,
-                      TAG,
+                      s_TAG,
                       "Failed to add ISR handler for GPIO pin %d on bus '%s'",
                       pin,
                       config->name);
 
-  ESP_LOGD(TAG,
+  ESP_LOGD(s_TAG,
            "Set interrupt (type=%d) for GPIO pin %d on bus '%s'",
            intr_type,
            pin,
@@ -264,7 +264,7 @@ static esp_err_t gpio_set_interrupt_default(const star_bus_config_t* config,
 void star_bus_gpio_init_default_ops(star_gpio_ops_t* ops)
 {
   if (!ops) {
-    ESP_LOGE(TAG, "Cannot init default GPIO ops: ops pointer is NULL");
+    ESP_LOGE(s_TAG, "Cannot init default GPIO ops: ops pointer is NULL");
     return;
   }
 
@@ -273,7 +273,7 @@ void star_bus_gpio_init_default_ops(star_gpio_ops_t* ops)
   ops->read          = gpio_read_default;
   ops->set_interrupt = gpio_set_interrupt_default;
 
-  ESP_LOGD(TAG, "GPIO default operations initialized");
+  ESP_LOGD(s_TAG, "GPIO default operations initialized");
 }
 
 esp_err_t star_bus_gpio_configure(const star_bus_manager_t* manager,
@@ -282,19 +282,19 @@ esp_err_t star_bus_gpio_configure(const star_bus_manager_t* manager,
                                   gpio_mode_t               mode,
                                   gpio_pull_mode_t          pull)
 {
-  ESP_RETURN_ON_FALSE(manager, ESP_ERR_INVALID_ARG, TAG, "Manager is NULL");
-  ESP_RETURN_ON_FALSE(name, ESP_ERR_INVALID_ARG, TAG, "Bus name is NULL");
+  ESP_RETURN_ON_FALSE(manager, ESP_ERR_INVALID_ARG, s_TAG, "Manager is NULL");
+  ESP_RETURN_ON_FALSE(name, ESP_ERR_INVALID_ARG, s_TAG, "Bus name is NULL");
 
   star_bus_config_t* config = star_bus_manager_find_bus(manager, name);
-  ESP_RETURN_ON_FALSE(config, ESP_ERR_NOT_FOUND, TAG, "GPIO bus '%s' not found", name);
+  ESP_RETURN_ON_FALSE(config, ESP_ERR_NOT_FOUND, s_TAG, "GPIO bus '%s' not found", name);
   ESP_RETURN_ON_FALSE(config->type == k_star_bus_type_gpio,
                       ESP_ERR_INVALID_ARG,
-                      TAG,
+                      s_TAG,
                       "Bus '%s' is not GPIO type",
                       name);
   ESP_RETURN_ON_FALSE(config->proto.gpio.ops.configure,
                       ESP_ERR_INVALID_STATE,
-                      TAG,
+                      s_TAG,
                       "GPIO configure operation not set for bus '%s'",
                       name);
 
@@ -306,19 +306,19 @@ esp_err_t star_bus_gpio_write(const star_bus_manager_t* manager,
                               gpio_num_t                pin,
                               uint32_t                  level)
 {
-  ESP_RETURN_ON_FALSE(manager, ESP_ERR_INVALID_ARG, TAG, "Manager is NULL");
-  ESP_RETURN_ON_FALSE(name, ESP_ERR_INVALID_ARG, TAG, "Bus name is NULL");
+  ESP_RETURN_ON_FALSE(manager, ESP_ERR_INVALID_ARG, s_TAG, "Manager is NULL");
+  ESP_RETURN_ON_FALSE(name, ESP_ERR_INVALID_ARG, s_TAG, "Bus name is NULL");
 
   star_bus_config_t* config = star_bus_manager_find_bus(manager, name);
-  ESP_RETURN_ON_FALSE(config, ESP_ERR_NOT_FOUND, TAG, "GPIO bus '%s' not found", name);
+  ESP_RETURN_ON_FALSE(config, ESP_ERR_NOT_FOUND, s_TAG, "GPIO bus '%s' not found", name);
   ESP_RETURN_ON_FALSE(config->type == k_star_bus_type_gpio,
                       ESP_ERR_INVALID_ARG,
-                      TAG,
+                      s_TAG,
                       "Bus '%s' is not GPIO type",
                       name);
   ESP_RETURN_ON_FALSE(config->proto.gpio.ops.write,
                       ESP_ERR_INVALID_STATE,
-                      TAG,
+                      s_TAG,
                       "GPIO write operation not set for bus '%s'",
                       name);
 
@@ -330,20 +330,20 @@ esp_err_t star_bus_gpio_read(const star_bus_manager_t* manager,
                              gpio_num_t                pin,
                              uint32_t*                 level)
 {
-  ESP_RETURN_ON_FALSE(manager, ESP_ERR_INVALID_ARG, TAG, "Manager is NULL");
-  ESP_RETURN_ON_FALSE(name, ESP_ERR_INVALID_ARG, TAG, "Bus name is NULL");
-  ESP_RETURN_ON_FALSE(level, ESP_ERR_INVALID_ARG, TAG, "Level pointer is NULL");
+  ESP_RETURN_ON_FALSE(manager, ESP_ERR_INVALID_ARG, s_TAG, "Manager is NULL");
+  ESP_RETURN_ON_FALSE(name, ESP_ERR_INVALID_ARG, s_TAG, "Bus name is NULL");
+  ESP_RETURN_ON_FALSE(level, ESP_ERR_INVALID_ARG, s_TAG, "Level pointer is NULL");
 
   star_bus_config_t* config = star_bus_manager_find_bus(manager, name);
-  ESP_RETURN_ON_FALSE(config, ESP_ERR_NOT_FOUND, TAG, "GPIO bus '%s' not found", name);
+  ESP_RETURN_ON_FALSE(config, ESP_ERR_NOT_FOUND, s_TAG, "GPIO bus '%s' not found", name);
   ESP_RETURN_ON_FALSE(config->type == k_star_bus_type_gpio,
                       ESP_ERR_INVALID_ARG,
-                      TAG,
+                      s_TAG,
                       "Bus '%s' is not GPIO type",
                       name);
   ESP_RETURN_ON_FALSE(config->proto.gpio.ops.read,
                       ESP_ERR_INVALID_STATE,
-                      TAG,
+                      s_TAG,
                       "GPIO read operation not set for bus '%s'",
                       name);
 
@@ -357,19 +357,19 @@ esp_err_t star_bus_gpio_set_interrupt(const star_bus_manager_t* manager,
                                       gpio_isr_t                isr_handler,
                                       void*                     args)
 {
-  ESP_RETURN_ON_FALSE(manager, ESP_ERR_INVALID_ARG, TAG, "Manager is NULL");
-  ESP_RETURN_ON_FALSE(name, ESP_ERR_INVALID_ARG, TAG, "Bus name is NULL");
+  ESP_RETURN_ON_FALSE(manager, ESP_ERR_INVALID_ARG, s_TAG, "Manager is NULL");
+  ESP_RETURN_ON_FALSE(name, ESP_ERR_INVALID_ARG, s_TAG, "Bus name is NULL");
 
   star_bus_config_t* config = star_bus_manager_find_bus(manager, name);
-  ESP_RETURN_ON_FALSE(config, ESP_ERR_NOT_FOUND, TAG, "GPIO bus '%s' not found", name);
+  ESP_RETURN_ON_FALSE(config, ESP_ERR_NOT_FOUND, s_TAG, "GPIO bus '%s' not found", name);
   ESP_RETURN_ON_FALSE(config->type == k_star_bus_type_gpio,
                       ESP_ERR_INVALID_ARG,
-                      TAG,
+                      s_TAG,
                       "Bus '%s' is not GPIO type",
                       name);
   ESP_RETURN_ON_FALSE(config->proto.gpio.ops.set_interrupt,
                       ESP_ERR_INVALID_STATE,
-                      TAG,
+                      s_TAG,
                       "GPIO set_interrupt operation not set for bus '%s'",
                       name);
 

@@ -1,0 +1,9 @@
+<map id="star_bus_i2c_configure_dma" name="star_bus_i2c_configure_dma">
+<area shape="rect" id="Node000001" title="Configure DMA for an I2C bus." alt="" coords="5,31,193,56"/>
+<area shape="rect" id="Node000002" href="$de/db1/star__bus__i2c__dma_8c.html#abce2b5b120915d2ce7140985aadf0330" title="Get DMA state for an I2C port." alt="" coords="264,5,371,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="193,30,251,26,246,27,193,35"/>
+<area shape="rect" id="Node000003" href="$de/db1/star__bus__i2c__dma_8c.html#af0f084ab5473e55d9c3158b9293c6f86" title="Get I2C port number from bus name." alt="" coords="241,55,394,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="193,51,228,57,223,58,193,56"/>
+<area shape="rect" id="Node000004" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="442,55,626,80"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="394,65,429,67,424,68,394,70"/>
+</map>

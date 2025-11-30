@@ -1,0 +1,5 @@
+<map id="star_smbus_block_read" name="star_smbus_block_read">
+<area shape="rect" id="Node000001" title="SMBus Block Read." alt="" coords="203,13,362,38"/>
+<area shape="rect" id="Node000002" href="$d2/d58/star__bms__bq7850_8c.html#a7aebeaeb09bb7ef8ea7d83c7f888b778" title="Read device information from BQ7850." alt="" coords="5,5,155,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="184,26,155,28,155,23,190,25"/>
+</map>

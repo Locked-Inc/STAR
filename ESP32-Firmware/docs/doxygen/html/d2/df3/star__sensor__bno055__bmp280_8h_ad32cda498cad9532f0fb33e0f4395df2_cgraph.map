@@ -1,0 +1,7 @@
+<map id="star_sensor_imu_10dof_reset_bno055" name="star_sensor_imu_10dof_reset_bno055">
+<area shape="rect" id="Node000001" title="Reset BNO055 sensor." alt="" coords="5,5,162,46"/>
+<area shape="rect" id="Node000002" href="$dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="210,13,340,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="162,23,197,25,191,26,162,28"/>
+<area shape="rect" id="Node000003" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="388,13,572,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="340,23,375,26,369,26,340,28"/>
+</map>

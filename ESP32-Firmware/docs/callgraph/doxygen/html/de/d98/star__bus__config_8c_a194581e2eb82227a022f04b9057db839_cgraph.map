@@ -1,0 +1,7 @@
+<map id="star_bus_config_destroy" name="star_bus_config_destroy">
+<area shape="rect" id="Node000001" title="Destroy a bus configuration and free all associated resources." alt="" coords="5,42,169,68"/>
+<area shape="rect" id="Node000002" href="$de/d98/star__bus__config_8c.html#a83c2bd0044ce80e0be65ebba3c1a3cc1" title="Clean up and free memory for a bus configuration structure. Does NOT deinitialize the hardware/driver..." alt="" coords="217,5,379,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="168,41,204,38,199,40,169,46"/>
+<area shape="rect" id="Node000003" href="$de/d98/star__bus__config_8c.html#a7698bd213b1044dfc1d6e92d879ca03e" title="Deinitialize the bus/device associated with this configuration." alt="" coords="222,70,374,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="169,63,209,71,204,71,169,68"/>
+</map>

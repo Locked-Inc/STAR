@@ -1,0 +1,7 @@
+<map id="internal_peripheral_task" name="internal_peripheral_task">
+<area shape="rect" id="Node000001" title="Peripheral task &#45; handles I2C slave communication." alt="" coords="451,13,609,38"/>
+<area shape="rect" id="Node000002" href="$d5/d06/star__bus__i2c__peripheral_8c.html#ac5942152ec46a7a84a7521988e7a1765" title="Start peripheral task." alt="" coords="212,13,403,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="433,26,404,28,404,23,438,26"/>
+<area shape="rect" id="Node000003" href="$d5/d06/star__bus__i2c__peripheral_8c.html#adbac316da6f5b4eef2592a3be22d860a" title="Enable I2C peripheral mode on a bus." alt="" coords="5,5,164,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="193,26,164,28,164,23,199,25"/>
+</map>

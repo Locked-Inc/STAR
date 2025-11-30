@@ -1,0 +1,5 @@
+<map id="star_unregister_pin" name="star_unregister_pin">
+<area shape="rect" id="Node000001" title="Unregister a pin from the validator." alt="" coords="5,5,137,31"/>
+<area shape="rect" id="Node000002" href="$d2/dad/star__pin__validator_8c.html#a4583345fc8acffd3934cbdc1572cd030" title="Initialize mutex if not already initialized (thread&#45;safe)." alt="" coords="185,5,266,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="137,16,172,18,166,18,137,21"/>
+</map>

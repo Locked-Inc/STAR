@@ -1,0 +1,5 @@
+<map id="star_servo_angle_to_count" name="star_servo_angle_to_count">
+<area shape="rect" id="Node000001" title="Calculate PCA9685 count value from angle (0&#45;180 degrees)." alt="" coords="199,5,337,46"/>
+<area shape="rect" id="Node000002" href="$d3/df7/star__sensor__pca9685_8c.html#a2e4fa8ab35cdf64c114217bfc1309a1c" title="Set servo position by angle." alt="" coords="5,5,151,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="181,26,151,28,151,23,186,25"/>
+</map>

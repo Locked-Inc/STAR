@@ -1,0 +1,27 @@
+var star__sensor__pca9685_8c =
+[
+    [ "PCA9685_MUTEX_TIMEOUT_MS", "d3/df7/star__sensor__pca9685_8c.html#af4188b89c375461ca3aa7582a07fb3d7", null ],
+    [ "internal_pca9685_set_frequency", "d3/df7/star__sensor__pca9685_8c.html#a49863dd18b6c011a0162743d0e1dd4d4", null ],
+    [ "pca9685_read_reg", "d3/df7/star__sensor__pca9685_8c.html#ab5d665b77448f8328bad9d4c61c0d47c", null ],
+    [ "pca9685_set_mode1_bits", "d3/df7/star__sensor__pca9685_8c.html#a91eaab882e26ad08fb58448b532e4bd7", null ],
+    [ "pca9685_write_reg", "d3/df7/star__sensor__pca9685_8c.html#a7fb4749ccca6d7ff1b791faaba3c5e3a", null ],
+    [ "star_sensor_pca9685_calculate_prescale", "d3/df7/star__sensor__pca9685_8c.html#a5ad3e5ba04fe061a85c9b16487bb9fef", null ],
+    [ "star_sensor_pca9685_deinit", "d3/df7/star__sensor__pca9685_8c.html#abf4b004f9ee13b89446c5f5b268ebcf6", null ],
+    [ "star_sensor_pca9685_get_frequency", "d3/df7/star__sensor__pca9685_8c.html#a360aec2b034221ff3286cdf344b2e66e", null ],
+    [ "star_sensor_pca9685_get_pwm", "d3/df7/star__sensor__pca9685_8c.html#a65433046e8d58c4706d62deb8ab8afa8", null ],
+    [ "star_sensor_pca9685_init", "d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5", null ],
+    [ "star_sensor_pca9685_output_disable", "d3/df7/star__sensor__pca9685_8c.html#a7eacea0c415a6be2d5b217b750897680", null ],
+    [ "star_sensor_pca9685_output_enable", "d3/df7/star__sensor__pca9685_8c.html#a79e549dd61b3ed28b3ea964fed19aa43", null ],
+    [ "star_sensor_pca9685_prescale_to_freq", "d3/df7/star__sensor__pca9685_8c.html#a441029eed6f44d433b3c0d6167e24701", null ],
+    [ "star_sensor_pca9685_reset", "d3/df7/star__sensor__pca9685_8c.html#a1f319c0974d76c124b4cf481499baf6e", null ],
+    [ "star_sensor_pca9685_set_all_duty_cycle", "d3/df7/star__sensor__pca9685_8c.html#a789c0169f804c7414d2b3bca6c3a2874", null ],
+    [ "star_sensor_pca9685_set_channel_off", "d3/df7/star__sensor__pca9685_8c.html#aa3d1da24c7bb491c6b2338cb6e1e1619", null ],
+    [ "star_sensor_pca9685_set_channel_on", "d3/df7/star__sensor__pca9685_8c.html#a5f5355afaff4a28ea61ddf9a98e956dc", null ],
+    [ "star_sensor_pca9685_set_duty_cycle", "d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72", null ],
+    [ "star_sensor_pca9685_set_duty_with_phase", "d3/df7/star__sensor__pca9685_8c.html#a878d81208cf78305ab5ed17716e33bf9", null ],
+    [ "star_sensor_pca9685_set_frequency", "d3/df7/star__sensor__pca9685_8c.html#ab168813c0ee1ff5d7458a8fc52ba68f2", null ],
+    [ "star_sensor_pca9685_set_pwm", "d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead", null ],
+    [ "star_sensor_pca9685_set_servo_angle", "d3/df7/star__sensor__pca9685_8c.html#a2e4fa8ab35cdf64c114217bfc1309a1c", null ],
+    [ "star_sensor_pca9685_sleep", "d3/df7/star__sensor__pca9685_8c.html#a5e27834a91ab6b25fca8a01bdb8f9274", null ],
+    [ "s_TAG", "d3/df7/star__sensor__pca9685_8c.html#a999e3dd103132afd3cd1856f477f2dbd", null ]
+];

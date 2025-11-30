@@ -30,6 +30,173 @@ extern "C" {
  * - Phase-shifted outputs
  * - All-call and sub-address support
  * - Open-drain and totem-pole outputs
+ *
+ * Example Usage:
+ * @code
+ * // === Basic Setup ===
+ *
+ * #include "star_sensor_pca9685.h"
+ * #include "star_bus_manager.h"
+ * #include "star_bus_config.h"
+ *
+ * // 1. Setup bus manager (see star_bus_manager.h for full setup)
+ * star_bus_manager_t bus_manager;
+ * star_bus_manager_init(&bus_manager, "main", &error_iface, &pin_iface);
+ *
+ * // 2. Create I2C bus for PCA9685
+ * star_bus_config_t* pwm_bus = star_bus_config_create_i2c(
+ *     "pwm_i2c",
+ *     I2C_NUM_0,
+ *     PCA9685_DEFAULT_ADDR,   // 0x40
+ *     GPIO_NUM_21,            // SDA
+ *     GPIO_NUM_22,            // SCL
+ *     400000                  // 400kHz
+ * );
+ * star_bus_manager_add_bus(&bus_manager, pwm_bus);
+ *
+ * // 3. Configure and initialize PCA9685
+ * pca9685_handle_t pwm;
+ * pca9685_config_t config = {
+ *     .i2c_addr = PCA9685_DEFAULT_ADDR,
+ *     .pwm_freq = 50,                      // 50Hz for servos
+ *     .output_mode = PCA9685_OUTPUT_TOTEM_POLE,
+ *     .ext_clock = false,
+ *     .invert_output = false
+ * };
+ *
+ * esp_err_t ret = star_sensor_pca9685_init(
+ *     &pwm,
+ *     &bus_manager,
+ *     "pwm_i2c",
+ *     NULL,               // Use default error handler
+ *     GPIO_NUM_NC,        // No OE pin (or use GPIO_NUM_X)
+ *     false,              // OE active low
+ *     &config
+ * );
+ *
+ * if (ret != ESP_OK) {
+ *     ESP_LOGE(TAG, "Failed to init PCA9685: %s", esp_err_to_name(ret));
+ *     return;
+ * }
+ *
+ *
+ * // === LED Dimming (Duty Cycle) ===
+ *
+ * // Set LED brightness as duty cycle percentage
+ * star_sensor_pca9685_set_duty_cycle(&pwm, 0, 50.0f);   // Channel 0 at 50%
+ * star_sensor_pca9685_set_duty_cycle(&pwm, 1, 25.0f);   // Channel 1 at 25%
+ * star_sensor_pca9685_set_duty_cycle(&pwm, 2, 100.0f);  // Channel 2 at 100%
+ *
+ * // Fade LED
+ * for (float duty = 0; duty <= 100; duty += 1) {
+ *     star_sensor_pca9685_set_duty_cycle(&pwm, 0, duty);
+ *     vTaskDelay(pdMS_TO_TICKS(10));
+ * }
+ *
+ * // Turn channel fully on/off
+ * star_sensor_pca9685_set_channel_on(&pwm, 3);   // 100% on
+ * star_sensor_pca9685_set_channel_off(&pwm, 4);  // 0% off
+ *
+ * // Set all channels at once
+ * star_sensor_pca9685_set_all_duty_cycle(&pwm, 75.0f);  // All at 75%
+ *
+ *
+ * // === Direct PWM Control ===
+ *
+ * // Set raw PWM on/off times (0-4095)
+ * star_sensor_pca9685_set_pwm(&pwm, 5, 0, 2048);     // 50% duty, starts at 0
+ * star_sensor_pca9685_set_pwm(&pwm, 6, 1024, 3072);  // 50% duty, phase shifted
+ *
+ * // Get current PWM values
+ * uint16_t on_time, off_time;
+ * star_sensor_pca9685_get_pwm(&pwm, 5, &on_time, &off_time);
+ * ESP_LOGI(TAG, "Channel 5: ON=%d, OFF=%d", on_time, off_time);
+ *
+ *
+ * // === Phase-Shifted PWM ===
+ *
+ * // Useful for reducing power supply spikes with multiple motors
+ * star_sensor_pca9685_set_duty_with_phase(&pwm, 0, 50.0f, 0.0f);    // No phase shift
+ * star_sensor_pca9685_set_duty_with_phase(&pwm, 1, 50.0f, 25.0f);   // 25% phase shift
+ * star_sensor_pca9685_set_duty_with_phase(&pwm, 2, 50.0f, 50.0f);   // 50% phase shift
+ * star_sensor_pca9685_set_duty_with_phase(&pwm, 3, 50.0f, 75.0f);   // 75% phase shift
+ *
+ *
+ * // === Servo Control ===
+ *
+ * // Set frequency for servos (50Hz typical)
+ * star_sensor_pca9685_set_frequency(&pwm, 50);
+ *
+ * // Control servo by angle (0-180 degrees)
+ * star_sensor_pca9685_set_servo_angle(&pwm, 0, 90);   // Center position
+ * star_sensor_pca9685_set_servo_angle(&pwm, 0, 0);    // Min position
+ * star_sensor_pca9685_set_servo_angle(&pwm, 0, 180);  // Max position
+ *
+ * // Sweep servo
+ * for (int angle = 0; angle <= 180; angle++) {
+ *     star_sensor_pca9685_set_servo_angle(&pwm, 0, angle);
+ *     vTaskDelay(pdMS_TO_TICKS(15));
+ * }
+ *
+ *
+ * // === Frequency Configuration ===
+ *
+ * // Set PWM frequency (24-1526 Hz)
+ * star_sensor_pca9685_set_frequency(&pwm, 1000);  // 1kHz for LEDs
+ *
+ * // Get current frequency
+ * uint16_t freq_hz;
+ * star_sensor_pca9685_get_frequency(&pwm, &freq_hz);
+ * ESP_LOGI(TAG, "Current frequency: %d Hz", freq_hz);
+ *
+ * // Calculate prescale for custom frequency
+ * uint8_t prescale;
+ * star_sensor_pca9685_calculate_prescale(200, &prescale);
+ * ESP_LOGI(TAG, "Prescale for 200Hz: %d", prescale);
+ *
+ *
+ * // === Output Enable Pin Control ===
+ *
+ * // If OE pin was configured during init:
+ * star_sensor_pca9685_output_enable(&pwm);   // Enable all outputs
+ * star_sensor_pca9685_output_disable(&pwm);  // Disable all outputs (safe state)
+ *
+ *
+ * // === Power Management ===
+ *
+ * // Put device to sleep (low power)
+ * star_sensor_pca9685_sleep(&pwm, true);
+ *
+ * // Wake up
+ * star_sensor_pca9685_sleep(&pwm, false);
+ *
+ * // Software reset
+ * star_sensor_pca9685_reset(&pwm);
+ *
+ *
+ * // === Multiple PCA9685 Boards ===
+ *
+ * // Use different I2C addresses (set via A0-A5 pins on board)
+ * star_bus_config_t* pwm_bus2 = star_bus_config_create_i2c(
+ *     "pwm2_i2c", I2C_NUM_0, 0x41, GPIO_NUM_21, GPIO_NUM_22, 400000);
+ * star_bus_manager_add_bus(&bus_manager, pwm_bus2);
+ *
+ * pca9685_handle_t pwm2;
+ * pca9685_config_t config2 = config;
+ * config2.i2c_addr = 0x41;  // Different address
+ *
+ * star_sensor_pca9685_init(&pwm2, &bus_manager, "pwm2_i2c", NULL, GPIO_NUM_NC, false, &config2);
+ *
+ * // Now you have 32 PWM channels total!
+ * star_sensor_pca9685_set_duty_cycle(&pwm, 0, 50.0f);   // First board
+ * star_sensor_pca9685_set_duty_cycle(&pwm2, 0, 50.0f);  // Second board
+ *
+ *
+ * // === Cleanup ===
+ *
+ * star_sensor_pca9685_deinit(&pwm);
+ * star_bus_manager_remove_bus(&bus_manager, "pwm_i2c");
+ * @endcode
  */
 
 /* --- Constants --- */

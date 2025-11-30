@@ -95,7 +95,7 @@ static portMUX_TYPE      g_init_spinlock           = portMUX_INITIALIZER_UNLOCKE
 /**
  * @brief Initialize global async state (thread-safe)
  */
-static void priv_init_global_state(void)
+static void internal_init_global_state(void)
 {
   /* Quick check without lock for common case */
   if (g_global_mutex != NULL) {
@@ -116,9 +116,9 @@ static void priv_init_global_state(void)
 /**
  * @brief Get or create async state for a bus
  */
-static async_state_t* priv_get_async_state(const char* bus_name)
+static async_state_t* internal_get_async_state(const char* bus_name)
 {
-  priv_init_global_state();
+  internal_init_global_state();
 
   if (g_global_mutex == NULL) {
     ESP_LOGE(s_TAG, "Global mutex not initialized");
@@ -160,7 +160,7 @@ static async_state_t* priv_get_async_state(const char* bus_name)
 /**
  * @brief Enqueue an async operation
  */
-static esp_err_t priv_enqueue_operation(async_state_t* state, async_operation_t* op)
+static esp_err_t internal_enqueue_operation(async_state_t* state, async_operation_t* op)
 {
   if (state == NULL || op == NULL) {
     return ESP_ERR_INVALID_ARG;
@@ -195,7 +195,7 @@ static esp_err_t priv_enqueue_operation(async_state_t* state, async_operation_t*
 /**
  * @brief Execute an async operation
  */
-static void priv_execute_operation(async_operation_t* op)
+static void internal_execute_operation(async_operation_t* op)
 {
   if (op == NULL) {
     return;
@@ -296,7 +296,7 @@ static void priv_execute_operation(async_operation_t* op)
 /**
  * @brief Worker task for processing async operations
  */
-static void priv_async_worker_task(void* param)
+static void internal_async_worker_task(void* param)
 {
   async_state_t* state = (async_state_t*)param;
 
@@ -328,7 +328,7 @@ static void priv_async_worker_task(void* param)
         /* Don't execute, callback was already invoked during cancel */
       } else {
         /* Execute the operation */
-        priv_execute_operation(op);
+        internal_execute_operation(op);
 
         /* Update statistics */
         if (op->status == STAR_ASYNC_STATUS_COMPLETE) {
@@ -351,7 +351,7 @@ static void priv_async_worker_task(void* param)
 /**
  * @brief Ensure worker task is running (thread-safe)
  */
-static esp_err_t priv_ensure_worker_running(async_state_t* state)
+static esp_err_t internal_ensure_worker_running(async_state_t* state)
 {
   if (state == NULL) {
     return ESP_ERR_INVALID_ARG;
@@ -375,7 +375,7 @@ static esp_err_t priv_ensure_worker_running(async_state_t* state)
     state->worker_running = true;
 
     BaseType_t created =
-      xTaskCreate(priv_async_worker_task, "async_worker", 4096, state, 5, &state->worker_task);
+      xTaskCreate(internal_async_worker_task, "async_worker", 4096, state, 5, &state->worker_task);
 
     if (created != pdPASS) {
       state->worker_running = false;
@@ -403,12 +403,12 @@ esp_err_t star_bus_i2c_write_async(star_bus_manager_t*        manager,
     return ESP_ERR_INVALID_ARG;
   }
 
-  async_state_t* state = priv_get_async_state(bus_name);
+  async_state_t* state = internal_get_async_state(bus_name);
   if (state == NULL) {
     return ESP_ERR_NO_MEM;
   }
 
-  esp_err_t result = priv_ensure_worker_running(state);
+  esp_err_t result = internal_ensure_worker_running(state);
   if (result != ESP_OK) {
     return result;
   }
@@ -435,7 +435,7 @@ esp_err_t star_bus_i2c_write_async(star_bus_manager_t*        manager,
   op->params.i2c.length  = length;
   op->params.i2c.command = command;
 
-  result = priv_enqueue_operation(state, op);
+  result = internal_enqueue_operation(state, op);
   if (result != ESP_OK) {
     free(op);
     return result;
@@ -461,12 +461,12 @@ esp_err_t star_bus_i2c_read_async(star_bus_manager_t*        manager,
     return ESP_ERR_INVALID_ARG;
   }
 
-  async_state_t* state = priv_get_async_state(bus_name);
+  async_state_t* state = internal_get_async_state(bus_name);
   if (state == NULL) {
     return ESP_ERR_NO_MEM;
   }
 
-  esp_err_t result = priv_ensure_worker_running(state);
+  esp_err_t result = internal_ensure_worker_running(state);
   if (result != ESP_OK) {
     return result;
   }
@@ -492,7 +492,7 @@ esp_err_t star_bus_i2c_read_async(star_bus_manager_t*        manager,
   op->params.i2c.length  = length;
   op->params.i2c.command = command;
 
-  result = priv_enqueue_operation(state, op);
+  result = internal_enqueue_operation(state, op);
   if (result != ESP_OK) {
     free(op);
     return result;
@@ -627,7 +627,7 @@ esp_err_t star_async_get_stats(const star_bus_manager_t* manager,
     return ESP_ERR_INVALID_ARG;
   }
 
-  async_state_t* state = priv_get_async_state(bus_name);
+  async_state_t* state = internal_get_async_state(bus_name);
   if (state == NULL) {
     return ESP_ERR_NOT_FOUND;
   }
@@ -673,12 +673,12 @@ esp_err_t star_bus_spi_transmit_async(star_bus_manager_t*        manager,
     return ESP_ERR_INVALID_ARG;
   }
 
-  async_state_t* state = priv_get_async_state(bus_name);
+  async_state_t* state = internal_get_async_state(bus_name);
   if (state == NULL) {
     return ESP_ERR_NO_MEM;
   }
 
-  esp_err_t result = priv_ensure_worker_running(state);
+  esp_err_t result = internal_ensure_worker_running(state);
   if (result != ESP_OK) {
     return result;
   }
@@ -703,7 +703,7 @@ esp_err_t star_bus_spi_transmit_async(star_bus_manager_t*        manager,
   op->params.spi.tx_data = (uint8_t*)data;
   op->params.spi.length  = length;
 
-  result = priv_enqueue_operation(state, op);
+  result = internal_enqueue_operation(state, op);
   if (result != ESP_OK) {
     free(op);
     return result;
@@ -728,12 +728,12 @@ esp_err_t star_bus_spi_receive_async(star_bus_manager_t*        manager,
     return ESP_ERR_INVALID_ARG;
   }
 
-  async_state_t* state = priv_get_async_state(bus_name);
+  async_state_t* state = internal_get_async_state(bus_name);
   if (state == NULL) {
     return ESP_ERR_NO_MEM;
   }
 
-  esp_err_t result = priv_ensure_worker_running(state);
+  esp_err_t result = internal_ensure_worker_running(state);
   if (result != ESP_OK) {
     return result;
   }
@@ -758,7 +758,7 @@ esp_err_t star_bus_spi_receive_async(star_bus_manager_t*        manager,
   op->params.spi.rx_data = data;
   op->params.spi.length  = length;
 
-  result = priv_enqueue_operation(state, op);
+  result = internal_enqueue_operation(state, op);
   if (result != ESP_OK) {
     free(op);
     return result;
@@ -784,12 +784,12 @@ esp_err_t star_bus_spi_transceive_async(star_bus_manager_t*        manager,
     return ESP_ERR_INVALID_ARG;
   }
 
-  async_state_t* state = priv_get_async_state(bus_name);
+  async_state_t* state = internal_get_async_state(bus_name);
   if (state == NULL) {
     return ESP_ERR_NO_MEM;
   }
 
-  esp_err_t result = priv_ensure_worker_running(state);
+  esp_err_t result = internal_ensure_worker_running(state);
   if (result != ESP_OK) {
     return result;
   }
@@ -815,7 +815,7 @@ esp_err_t star_bus_spi_transceive_async(star_bus_manager_t*        manager,
   op->params.spi.rx_data = rx_data;
   op->params.spi.length  = length;
 
-  result = priv_enqueue_operation(state, op);
+  result = internal_enqueue_operation(state, op);
   if (result != ESP_OK) {
     free(op);
     return result;
@@ -843,12 +843,12 @@ esp_err_t star_smbus_read_byte_async(star_bus_manager_t*        manager,
     return ESP_ERR_INVALID_ARG;
   }
 
-  async_state_t* state = priv_get_async_state(bus_name);
+  async_state_t* state = internal_get_async_state(bus_name);
   if (state == NULL) {
     return ESP_ERR_NO_MEM;
   }
 
-  esp_err_t result = priv_ensure_worker_running(state);
+  esp_err_t result = internal_ensure_worker_running(state);
   if (result != ESP_OK) {
     return result;
   }
@@ -874,7 +874,7 @@ esp_err_t star_smbus_read_byte_async(star_bus_manager_t*        manager,
   op->params.smbus.command = command;
   op->params.smbus.data    = data;
 
-  result = priv_enqueue_operation(state, op);
+  result = internal_enqueue_operation(state, op);
   if (result != ESP_OK) {
     free(op);
     return result;
@@ -899,12 +899,12 @@ esp_err_t star_smbus_write_byte_async(star_bus_manager_t*        manager,
     return ESP_ERR_INVALID_ARG;
   }
 
-  async_state_t* state = priv_get_async_state(bus_name);
+  async_state_t* state = internal_get_async_state(bus_name);
   if (state == NULL) {
     return ESP_ERR_NO_MEM;
   }
 
-  esp_err_t result = priv_ensure_worker_running(state);
+  esp_err_t result = internal_ensure_worker_running(state);
   if (result != ESP_OK) {
     return result;
   }
@@ -937,7 +937,7 @@ esp_err_t star_smbus_write_byte_async(star_bus_manager_t*        manager,
   op->params.smbus.command = command;
   *op->params.smbus.data   = data;
 
-  result = priv_enqueue_operation(state, op);
+  result = internal_enqueue_operation(state, op);
   if (result != ESP_OK) {
     free(op->params.smbus.data);
     free(op);

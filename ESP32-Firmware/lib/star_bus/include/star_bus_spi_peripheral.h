@@ -14,6 +14,147 @@ extern "C" {
 #include "esp_err.h"
 #include "star_bus_types.h"
 
+/**
+ * @file star_bus_spi_peripheral.h
+ * @brief SPI peripheral (slave) mode operations
+ *
+ * This module allows the ESP32 to act as an SPI peripheral (slave) device,
+ * receiving commands and data from an external SPI controller (master).
+ *
+ * Example Usage:
+ * @code
+ * // === Setup ESP32 as SPI Peripheral ===
+ *
+ * #include "star_bus_spi_peripheral.h"
+ * #include "star_bus_manager.h"
+ * #include "star_bus_config.h"
+ *
+ * // Create SPI peripheral bus configuration
+ * // Note: Use star_bus_config_create_spi_peripheral() from star_bus_config.h
+ * star_bus_config_t* spi_periph = star_bus_config_create_spi_peripheral(
+ *     "spi_slave",
+ *     SPI2_HOST,
+ *     GPIO_NUM_23,  // COPI (data in from controller)
+ *     GPIO_NUM_19,  // CIPO (data out to controller)
+ *     GPIO_NUM_18,  // SCLK
+ *     GPIO_NUM_5    // CS
+ * );
+ * star_bus_manager_add_bus(&bus_manager, spi_periph);
+ *
+ *
+ * // === Receive Data from Controller ===
+ *
+ * uint8_t rx_buffer[64];
+ * esp_err_t ret = star_bus_spi_peripheral_receive(
+ *     &bus_manager,
+ *     "spi_slave",
+ *     rx_buffer,
+ *     sizeof(rx_buffer),
+ *     5000  // 5 second timeout
+ * );
+ *
+ * if (ret == ESP_OK) {
+ *     ESP_LOGI(TAG, "Received %d bytes from controller", sizeof(rx_buffer));
+ *     // Process received data
+ * } else if (ret == ESP_ERR_TIMEOUT) {
+ *     ESP_LOGW(TAG, "No data received within timeout");
+ * }
+ *
+ *
+ * // === Transmit Data to Controller ===
+ *
+ * uint8_t tx_buffer[64];
+ * memset(tx_buffer, 0xAA, sizeof(tx_buffer));  // Prepare response data
+ *
+ * ret = star_bus_spi_peripheral_transmit(
+ *     &bus_manager,
+ *     "spi_slave",
+ *     tx_buffer,
+ *     sizeof(tx_buffer),
+ *     5000  // 5 second timeout
+ * );
+ *
+ * if (ret == ESP_OK) {
+ *     ESP_LOGI(TAG, "Data queued for transmission");
+ * }
+ *
+ *
+ * // === Full-Duplex Transceive ===
+ *
+ * // Simultaneously receive and transmit (most common usage)
+ * uint8_t tx_data[32] = {0};
+ * uint8_t rx_data[32] = {0};
+ *
+ * // Prepare response before controller initiates transaction
+ * tx_data[0] = 0x01;  // Status byte
+ * tx_data[1] = 0x23;  // Sensor data
+ *
+ * ret = star_bus_spi_peripheral_transceive(
+ *     &bus_manager,
+ *     "spi_slave",
+ *     tx_data,      // Data to send to controller
+ *     rx_data,      // Data received from controller
+ *     32,           // Transfer length
+ *     portMAX_DELAY // Wait indefinitely
+ * );
+ *
+ * if (ret == ESP_OK) {
+ *     ESP_LOGI(TAG, "Transaction complete");
+ *     ESP_LOGI(TAG, "Received command: 0x%02X", rx_data[0]);
+ *     // Process command from controller
+ * }
+ *
+ *
+ * // === Command/Response Pattern ===
+ *
+ * // Typical pattern: receive command, send response
+ * void spi_peripheral_task(void* arg) {
+ *     uint8_t cmd_buffer[4];
+ *     uint8_t resp_buffer[64];
+ *
+ *     while (1) {
+ *         // Wait for command from controller
+ *         esp_err_t ret = star_bus_spi_peripheral_receive(
+ *             &bus_manager, "spi_slave",
+ *             cmd_buffer, sizeof(cmd_buffer),
+ *             portMAX_DELAY
+ *         );
+ *
+ *         if (ret == ESP_OK) {
+ *             // Parse command
+ *             uint8_t cmd = cmd_buffer[0];
+ *
+ *             // Prepare response based on command
+ *             switch (cmd) {
+ *                 case 0x01:  // Read sensor
+ *                     resp_buffer[0] = 0xAA;  // Sensor value
+ *                     break;
+ *                 case 0x02:  // Read status
+ *                     resp_buffer[0] = 0x00;  // OK status
+ *                     break;
+ *                 default:
+ *                     resp_buffer[0] = 0xFF;  // Unknown command
+ *             }
+ *
+ *             // Send response
+ *             star_bus_spi_peripheral_transmit(
+ *                 &bus_manager, "spi_slave",
+ *                 resp_buffer, 1, 1000
+ *             );
+ *         }
+ *     }
+ * }
+ *
+ *
+ * // === Initialize Default Operations ===
+ *
+ * // If creating custom SPI peripheral operations
+ * star_spi_ops_t custom_ops;
+ * star_bus_spi_peripheral_init_default_ops(&custom_ops);
+ * // Now custom_ops has default implementations
+ * @endcode
+ */
+
 /* --- SPI Pin Naming: COPI/CIPO (OSHWA Standard) --- */
 /* This component uses OSHWA (Open Source Hardware Association) standard SPI terminology:
  * - COPI (Controller Out, Peripheral In): Data line where the controller sends data to the peripheral

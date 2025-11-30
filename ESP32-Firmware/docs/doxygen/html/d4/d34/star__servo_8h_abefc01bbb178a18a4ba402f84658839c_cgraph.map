@@ -1,0 +1,7 @@
+<map id="star_servo_get_center_count" name="star_servo_get_center_count">
+<area shape="rect" id="Node000001" title="Calculate PCA9685 count for servo center position (90 degrees)." alt="" coords="5,5,156,46"/>
+<area shape="rect" id="Node000002" href="$d3/d75/star__servo_8c.html#a8cd577679d2d29a34ae03d3cec95c3b1" title="Calculate PCA9685 count value from pulse width in microseconds." alt="" coords="204,5,342,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="156,23,191,25,185,26,156,28"/>
+<area shape="rect" id="Node000003" href="$d3/d75/star__servo_8c.html#a8833486138de9335152a50c11dfa8693" title=" " alt="" coords="390,13,484,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="342,23,377,26,371,26,342,28"/>
+</map>
