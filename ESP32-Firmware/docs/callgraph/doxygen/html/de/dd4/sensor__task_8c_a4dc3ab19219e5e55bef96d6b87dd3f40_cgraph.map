@@ -1,0 +1,28 @@
+<map id="internal_sensor_task_loop" name="internal_sensor_task_loop">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,128,178,153"/>
+<area shape="rect" id="Node000002" href="$de/dd4/sensor__task_8c.html#a488619c3bee2d4f6131ad9018c99b9e6" title=" " alt="" coords="226,120,362,161"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="177,138,212,139,207,141,179,143"/>
+<area shape="rect" id="Node000003" href="$db/d0d/shared__data_8c.html#aef605fe99717bfe3c659cafaa2daa6cd" title="Create sensor data structure." alt="" coords="426,5,561,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="318,117,359,86,409,55,421,52,417,54,411,60,363,91,321,122"/>
+<area shape="rect" id="Node000005" href="$db/d0d/shared__data_8c.html#acf829b11efe6efde5ff9c9a1798b05c9" title="Get pointer to global shared context." alt="" coords="410,70,577,96"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="362,118,434,100,429,102,363,123"/>
+<area shape="rect" id="Node000006" href="$db/d0d/shared__data_8c.html#aed8f87a5d63be77502bf0aec58f829a7" title="Update sensor reading." alt="" coords="412,120,575,161"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="362,138,399,140,394,141,363,143"/>
+<area shape="rect" id="Node000007" href="$db/d0d/shared__data_8c.html#a75fe9693d2b770652fe4b4e67986202a" title="Update system health statistics." alt="" coords="424,185,563,226"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="358,159,418,180,412,180,358,164"/>
+<area shape="rect" id="Node000008" href="$de/de2/star__sensor__hcsr04_8c.html#a104064b944a69649fe3bc16a186bcd4a" title="Trigger measurement and read distance." alt="" coords="426,251,561,291"/>
+<area shape="poly" id="edge8_Node000002_Node000008" title=" " alt="" coords="316,159,359,197,411,235,423,244,418,243,409,240,356,201,315,164"/>
+<area shape="rect" id="Node000004" href="$db/d0d/shared__data_8c.html#a3bdf4ea7cbcd1af874c68f1da508ae3b" title="Get system uptime in milliseconds." alt="" coords="625,89,814,114"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="557,44,667,83,662,84,556,49"/>
+<area shape="poly" id="edge7_Node000007_Node000004" title=" " alt="" coords="548,182,576,170,677,123,682,121,578,175,549,187"/>
+<area shape="rect" id="Node000009" href="$de/de2/star__sensor__hcsr04_8c.html#a7eec5ddd99bce9137e1e9d8a7d6ac780" title="Get measurement result (non&#45;blocking)." alt="" coords="652,213,787,254"/>
+<area shape="poly" id="edge9_Node000008_Node000009" title=" " alt="" coords="562,257,634,248,639,247,562,262"/>
+<area shape="rect" id="Node000011" href="$de/de2/star__sensor__hcsr04_8c.html#a3733b2536166937e74b478d4b873faa0" title="Trigger measurement (non&#45;blocking)." alt="" coords="652,279,787,319"/>
+<area shape="poly" id="edge11_Node000008_Node000011" title=" " alt="" coords="562,277,639,289,634,289,562,282"/>
+<area shape="rect" id="Node000010" href="$de/de2/star__sensor__hcsr04_8c.html#abf589bd5a636689a8cdcb1e6778765ce" title="Calculate distance with temperature compensation." alt="" coords="862,213,998,254"/>
+<area shape="poly" id="edge10_Node000009_Node000010" title=" " alt="" coords="787,231,850,234,844,234,787,236"/>
+<area shape="rect" id="Node000012" href="$da/d8b/star__bus__gpio_8c.html#a7272db26c004de64a1586bc7311eabdb" title="Set the output level of a GPIO pin via bus manager." alt="" coords="862,286,999,312"/>
+<area shape="poly" id="edge12_Node000011_Node000012" title=" " alt="" coords="787,296,848,299,843,299,787,302"/>
+<area shape="rect" id="Node000013" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="1047,286,1231,312"/>
+<area shape="poly" id="edge13_Node000012_Node000013" title=" " alt="" coords="999,296,1034,299,1029,299,999,302"/>
+</map>

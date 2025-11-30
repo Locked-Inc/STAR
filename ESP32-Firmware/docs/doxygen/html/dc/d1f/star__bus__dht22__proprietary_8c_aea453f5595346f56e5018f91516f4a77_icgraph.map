@@ -1,5 +1,14 @@
 <map id="star_bus_dht22_init" name="star_bus_dht22_init">
-<area shape="rect" id="Node000001" title="Initialize DHT22 bus." alt="" coords="131,5,265,31"/>
-<area shape="rect" id="Node000002" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="112,19,83,21,83,16,118,18"/>
+<area shape="rect" id="Node000001" title="Initialize DHT22 bus." alt="" coords="666,42,800,68"/>
+<area shape="rect" id="Node000002" href="$d0/d29/main_8c.html#a22e093826d5fa58b80533860973051a9" title=" " alt="" coords="315,5,443,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="647,49,444,34,444,28,653,48"/>
+<area shape="rect" id="Node000004" href="$d0/d9c/dht22__task_8c.html#af2aa5f90212b8ec0353f88ceeaec9c05" title=" " alt="" coords="491,68,618,93"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="653,67,619,74,618,69,647,67"/>
+<area shape="rect" id="Node000003" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,42,83,68"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="299,35,83,54,83,49,300,30"/>
+<area shape="rect" id="Node000005" href="$d0/d9c/dht22__task_8c.html#a9d856aeaa4dfc864b2d6446139430971" title="Initialize DHT22 monitoring task." alt="" coords="320,70,438,96"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="473,82,439,85,439,79,478,81"/>
+<area shape="rect" id="Node000006" href="$d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,68,267,93"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="302,82,267,84,267,79,307,82"/>
+<area shape="poly" id="edge6_Node000006_Node000003" title=" " alt="" coords="113,67,83,64,83,59,118,66"/>
 </map>
