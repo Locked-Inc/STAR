@@ -24,20 +24,20 @@
 <area shape="poly" id="edge45_Node000001_Node000098" title=" " alt="" coords="560,1354,543,1400,516,1454,478,1509,456,1533,431,1555,412,1566,409,1561,427,1551,452,1530,474,1505,511,1451,538,1398,557,1358"/>
 <area shape="rect" id="Node000107" href="$dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="273,488,404,514"/>
 <area shape="poly" id="edge46_Node000001_Node000107" title=" " alt="" coords="564,1300,555,1142,533,909,515,789,492,679,463,589,446,554,427,528,405,512,403,507,431,524,450,551,468,587,497,678,521,788,538,909,561,1141,569,1301"/>
-<area shape="rect" id="Node000136" href="$dd/d1a/star__bus__i2c_8c.html#ab5fd7179899b9f4229f103484481be3e" title="Write a single command byte to an I2C device specified by a bus configuration. No register address or..." alt="" coords="273,1614,404,1654"/>
-<area shape="poly" id="edge52_Node000001_Node000136" title=" " alt="" coords="563,1354,548,1409,521,1475,483,1544,458,1576,431,1604,405,1620,403,1616,427,1600,454,1572,478,1541,516,1473,543,1407,560,1359"/>
-<area shape="rect" id="Node000140" href="$d4/d34/star__bus__spi__peripheral_8c.html#a3ccbd2706237d383f19bab2320109c0b" title="Receive data from the SPI controller (this device acts as peripheral)." alt="" coords="259,1679,418,1720"/>
-<area shape="poly" id="edge53_Node000001_Node000140" title=" " alt="" coords="565,1355,554,1421,529,1504,511,1548,489,1591,463,1632,431,1668,413,1681,411,1676,427,1664,458,1629,485,1588,507,1546,524,1502,549,1420,562,1360"/>
-<area shape="rect" id="Node000141" href="$d4/d34/star__bus__spi__peripheral_8c.html#a2e6951544874012fcfcc4c1779286837" title="Perform a full&#45;duplex transaction (receive and transmit simultaneously)." alt="" coords="259,1744,418,1785"/>
-<area shape="poly" id="edge54_Node000001_Node000141" title=" " alt="" coords="568,1355,560,1431,538,1531,520,1585,497,1638,467,1689,431,1733,414,1746,412,1742,427,1730,463,1686,492,1636,515,1583,533,1530,555,1430,565,1359"/>
-<area shape="rect" id="Node000142" href="$d4/d34/star__bus__spi__peripheral_8c.html#a8a6fa2b9bc1aab92c0bc8b412a0b51e3" title="Transmit data to the SPI controller (this device acts as peripheral)." alt="" coords="259,1810,418,1850"/>
-<area shape="poly" id="edge55_Node000001_Node000142" title=" " alt="" coords="569,1355,565,1442,558,1498,546,1559,528,1623,504,1686,472,1745,431,1799,415,1812,412,1807,427,1795,467,1743,499,1684,523,1621,540,1558,552,1497,560,1441,566,1359"/>
-<area shape="rect" id="Node000143" href="$d9/dbd/star__bus__spi_8c.html#a38e1914f8a95c3c7234ac92a81e1b1df" title="Receive data from an SPI device specified by a bus configuration." alt="" coords="266,335,410,360"/>
-<area shape="poly" id="edge56_Node000001_Node000143" title=" " alt="" coords="565,1300,560,1116,553,983,542,838,525,693,500,560,485,502,468,450,449,408,427,376,412,363,410,358,431,372,453,405,473,448,490,500,506,559,530,692,547,837,559,982,566,1116,570,1301"/>
-<area shape="rect" id="Node000144" href="$d9/dbd/star__bus__spi_8c.html#ad0df93f1e1b403e0e8e0e48ca8822588" title="Perform a full&#45;duplex transfer with an SPI device specified by a bus configuration." alt="" coords="265,387,412,412"/>
-<area shape="poly" id="edge60_Node000001_Node000144" title=" " alt="" coords="565,1300,559,1125,551,999,539,862,522,725,498,600,483,545,467,496,448,457,427,427,413,414,411,409,431,423,452,454,471,494,488,543,503,598,527,724,545,861,557,998,564,1124,570,1301"/>
-<area shape="rect" id="Node000145" href="$d9/dbd/star__bus__spi_8c.html#a2859c4d77d02b6bd5f567366a465e11d" title="Transmit data to an SPI device specified by a bus configuration." alt="" coords="264,437,413,463"/>
-<area shape="poly" id="edge64_Node000001_Node000145" title=" " alt="" coords="565,1300,557,1133,536,886,519,757,495,640,465,543,447,505,427,477,414,466,413,461,431,474,451,503,470,541,500,638,524,756,542,885,563,1133,570,1301"/>
+<area shape="rect" id="Node000137" href="$dd/d1a/star__bus__i2c_8c.html#ab5fd7179899b9f4229f103484481be3e" title="Write a single command byte to an I2C device specified by a bus configuration. No register address or..." alt="" coords="273,1614,404,1654"/>
+<area shape="poly" id="edge52_Node000001_Node000137" title=" " alt="" coords="563,1354,548,1409,521,1475,483,1544,458,1576,431,1604,405,1620,403,1616,427,1600,454,1572,478,1541,516,1473,543,1407,560,1359"/>
+<area shape="rect" id="Node000141" href="$d4/d34/star__bus__spi__peripheral_8c.html#a3ccbd2706237d383f19bab2320109c0b" title="Receive data from the SPI controller (this device acts as peripheral)." alt="" coords="259,1679,418,1720"/>
+<area shape="poly" id="edge53_Node000001_Node000141" title=" " alt="" coords="565,1355,554,1421,529,1504,511,1548,489,1591,463,1632,431,1668,413,1681,411,1676,427,1664,458,1629,485,1588,507,1546,524,1502,549,1420,562,1360"/>
+<area shape="rect" id="Node000142" href="$d4/d34/star__bus__spi__peripheral_8c.html#a2e6951544874012fcfcc4c1779286837" title="Perform a full&#45;duplex transaction (receive and transmit simultaneously)." alt="" coords="259,1744,418,1785"/>
+<area shape="poly" id="edge54_Node000001_Node000142" title=" " alt="" coords="568,1355,560,1431,538,1531,520,1585,497,1638,467,1689,431,1733,414,1746,412,1742,427,1730,463,1686,492,1636,515,1583,533,1530,555,1430,565,1359"/>
+<area shape="rect" id="Node000143" href="$d4/d34/star__bus__spi__peripheral_8c.html#a8a6fa2b9bc1aab92c0bc8b412a0b51e3" title="Transmit data to the SPI controller (this device acts as peripheral)." alt="" coords="259,1810,418,1850"/>
+<area shape="poly" id="edge55_Node000001_Node000143" title=" " alt="" coords="569,1355,565,1442,558,1498,546,1559,528,1623,504,1686,472,1745,431,1799,415,1812,412,1807,427,1795,467,1743,499,1684,523,1621,540,1558,552,1497,560,1441,566,1359"/>
+<area shape="rect" id="Node000144" href="$d9/dbd/star__bus__spi_8c.html#a38e1914f8a95c3c7234ac92a81e1b1df" title="Receive data from an SPI device specified by a bus configuration." alt="" coords="266,335,410,360"/>
+<area shape="poly" id="edge56_Node000001_Node000144" title=" " alt="" coords="565,1300,560,1116,553,983,542,838,525,693,500,560,485,502,468,450,449,408,427,376,412,363,410,358,431,372,453,405,473,448,490,500,506,559,530,692,547,837,559,982,566,1116,570,1301"/>
+<area shape="rect" id="Node000145" href="$d9/dbd/star__bus__spi_8c.html#ad0df93f1e1b403e0e8e0e48ca8822588" title="Perform a full&#45;duplex transfer with an SPI device specified by a bus configuration." alt="" coords="265,387,412,412"/>
+<area shape="poly" id="edge60_Node000001_Node000145" title=" " alt="" coords="565,1300,559,1125,551,999,539,862,522,725,498,600,483,545,467,496,448,457,427,427,413,414,411,409,431,423,452,454,471,494,488,543,503,598,527,724,545,861,557,998,564,1124,570,1301"/>
+<area shape="rect" id="Node000146" href="$d9/dbd/star__bus__spi_8c.html#a2859c4d77d02b6bd5f567366a465e11d" title="Transmit data to an SPI device specified by a bus configuration." alt="" coords="264,437,413,463"/>
+<area shape="poly" id="edge64_Node000001_Node000146" title=" " alt="" coords="565,1300,557,1133,536,886,519,757,495,640,465,543,447,505,427,477,414,466,413,461,431,474,451,503,470,541,500,638,524,756,542,885,563,1133,570,1301"/>
 <area shape="rect" id="Node000003" href="$de/db1/star__bus__i2c__dma_8c.html#a6b855b521472180ea51924f88c3afab0" title="Configure DMA for an I2C bus." alt="" coords="9,5,196,31"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="314,146,265,95,233,69,198,46,173,34,170,29,201,41,236,64,269,92,319,145"/>
 <area shape="rect" id="Node000004" href="$de/db1/star__bus__i2c__dma_8c.html#af1375702a7c2a42b22862336f6ac75b6" title="Get DMA configuration for an I2C bus." alt="" coords="26,55,179,96"/>
@@ -107,13 +107,13 @@
 <area shape="poly" id="edge48_Node000107_Node000038" title=" " alt="" coords="256,483,246,478,230,463,221,449,213,435,198,422,179,411,176,407,201,417,217,431,226,446,234,460,249,473,261,480"/>
 <area shape="poly" id="edge49_Node000107_Node000060" title=" " alt="" coords="258,520,249,528,238,541,231,553,226,580,221,608,213,622,201,636,176,652,172,649,198,632,209,619,215,606,221,579,226,552,234,538,246,524,261,516"/>
 <area shape="poly" id="edge51_Node000107_Node000064" title=" " alt="" coords="257,520,250,528,234,549,227,569,227,612,226,656,218,678,202,700,183,713,178,710,198,696,213,676,221,655,221,612,222,568,229,546,246,524,260,515"/>
-<area shape="poly" id="edge59_Node000143_Node000012" title=" " alt="" coords="302,327,254,300,199,274,169,263,166,259,201,269,257,296,306,325"/>
-<area shape="poly" id="edge57_Node000143_Node000028" title=" " alt="" coords="249,349,193,349,189,345,252,345"/>
-<area shape="poly" id="edge58_Node000143_Node000038" title=" " alt="" coords="255,366,171,384,167,380,258,362"/>
-<area shape="poly" id="edge63_Node000144_Node000013" title=" " alt="" coords="251,418,175,433,171,429,255,414"/>
-<area shape="poly" id="edge61_Node000144_Node000028" title=" " alt="" coords="262,384,164,362,161,357,266,381"/>
-<area shape="poly" id="edge62_Node000144_Node000038" title=" " alt="" coords="247,400,193,399,189,395,251,396"/>
-<area shape="poly" id="edge67_Node000145_Node000014" title=" " alt="" coords="249,468,177,483,173,479,253,464"/>
-<area shape="poly" id="edge65_Node000145_Node000028" title=" " alt="" coords="256,432,246,427,230,413,222,399,213,385,198,372,179,362,176,357,201,368,217,382,226,396,235,410,249,423,261,430"/>
-<area shape="poly" id="edge66_Node000145_Node000038" title=" " alt="" coords="263,435,162,411,160,407,267,432"/>
+<area shape="poly" id="edge59_Node000144_Node000012" title=" " alt="" coords="302,327,254,300,199,274,169,263,166,259,201,269,257,296,306,325"/>
+<area shape="poly" id="edge57_Node000144_Node000028" title=" " alt="" coords="249,349,193,349,189,345,252,345"/>
+<area shape="poly" id="edge58_Node000144_Node000038" title=" " alt="" coords="255,366,171,384,167,380,258,362"/>
+<area shape="poly" id="edge63_Node000145_Node000013" title=" " alt="" coords="251,418,175,433,171,429,255,414"/>
+<area shape="poly" id="edge61_Node000145_Node000028" title=" " alt="" coords="262,384,164,362,161,357,266,381"/>
+<area shape="poly" id="edge62_Node000145_Node000038" title=" " alt="" coords="247,400,193,399,189,395,251,396"/>
+<area shape="poly" id="edge67_Node000146_Node000014" title=" " alt="" coords="249,468,177,483,173,479,253,464"/>
+<area shape="poly" id="edge65_Node000146_Node000028" title=" " alt="" coords="256,432,246,427,230,413,222,399,213,385,198,372,179,362,176,357,201,368,217,382,226,396,235,410,249,423,261,430"/>
+<area shape="poly" id="edge66_Node000146_Node000038" title=" " alt="" coords="263,435,162,411,160,407,267,432"/>
 </map>

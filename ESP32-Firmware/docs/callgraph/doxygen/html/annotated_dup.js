@@ -40,6 +40,7 @@ var annotated_dup =
     [ "pca9685_pwm_t", "dc/d6c/structpca9685__pwm__t.html", "dc/d6c/structpca9685__pwm__t" ],
     [ "peripheral_state_t", "d9/df1/structperipheral__state__t.html", "d9/df1/structperipheral__state__t" ],
     [ "quaternion_t", "de/de3/structquaternion__t.html", "de/de3/structquaternion__t" ],
+    [ "rgb_color_t", "d0/d62/structrgb__color__t.html", "d0/d62/structrgb__color__t" ],
     [ "smbus_peripheral_state_t", "d6/dd4/structsmbus__peripheral__state__t.html", "d6/dd4/structsmbus__peripheral__state__t" ],
     [ "spi_dma_state_t", "dd/d41/structspi__dma__state__t.html", "dd/d41/structspi__dma__state__t" ],
     [ "spi_dma_transfer_context_t", "d3/d7b/structspi__dma__transfer__context__t.html", "d3/d7b/structspi__dma__transfer__context__t" ],

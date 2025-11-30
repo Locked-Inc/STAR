@@ -1,4 +1,4 @@
-app_main() <void app_main (void) at src/main.c:48>:
+app_main() <void app_main (void) at src/main.c:140>:
     esp_err_t()
     ESP_LOGI()
     pin_validator_get_interface() <void pin_validator_get_interface (star_pin_interface_t *iface) at lib/star_pin_validator/src/star_pin_validator.c:487>:
@@ -634,30 +634,23 @@ app_main() <void app_main (void) at src/main.c:48>:
             star_sensor_hcsr04_calculate_distance() <esp_err_t star_sensor_hcsr04_calculate_distance (uint32_t echo_time_us, float temperature_c, float *distance_cm) at lib/star_sensor_hcsr04/src/star_sensor_hcsr04.c:252>:
             ESP_LOGD()
             ESP_LOGW()
-    star_sensor_pca9685_set_channel_off() <esp_err_t star_sensor_pca9685_set_channel_off (const pca9685_handle_t *handle, uint8_t channel) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:675>:
-        star_bus_i2c_write() <esp_err_t star_bus_i2c_write (const star_bus_manager_t *manager, const char *name, const uint8_t *data, size_t len, uint8_t reg_addr, size_t *bytes_written) at lib/star_bus/src/star_bus_i2c.c:75>:
-            ESP_RETURN_ON_FALSE()
-            star_bus_manager_find_bus() <star_bus_config_t *star_bus_manager_find_bus (const star_bus_manager_t *manager, const char *name) at lib/star_bus/src/star_bus_manager.c:378>:
-                strlen()
-                xSemaphoreTake()
-                pdMS_TO_TICKS()
+    internal_distance_to_rgb() <rgb_color_t internal_distance_to_rgb (float distance_cm) at src/main.c:99>:
+    internal_set_rgb_led() <void internal_set_rgb_led (const pca9685_handle_t *handle, uint8_t led_index, const rgb_color_t *color) at src/main.c:84>:
+        internal_scale_pwm_for_color() <float internal_scale_pwm_for_color (float original_percent, float min_pwm) at src/main.c:76>:
+        star_sensor_pca9685_set_duty_cycle() <esp_err_t star_sensor_pca9685_set_duty_cycle (const pca9685_handle_t *handle, uint8_t channel, float duty_percent) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:574>:
+            star_sensor_pca9685_set_pwm() <esp_err_t star_sensor_pca9685_set_pwm (const pca9685_handle_t *handle, uint8_t channel, uint16_t on_time, uint16_t off_time) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:523>:
                 ESP_LOGE()
-                strcmp()
-                xSemaphoreGive()
-    star_sensor_pca9685_set_duty_cycle() <esp_err_t star_sensor_pca9685_set_duty_cycle (const pca9685_handle_t *handle, uint8_t channel, float duty_percent) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:574>:
-        star_sensor_pca9685_set_pwm() <esp_err_t star_sensor_pca9685_set_pwm (const pca9685_handle_t *handle, uint8_t channel, uint16_t on_time, uint16_t off_time) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:523>:
-            ESP_LOGE()
-            esp_err_t()
-            star_bus_i2c_write() <esp_err_t star_bus_i2c_write (const star_bus_manager_t *manager, const char *name, const uint8_t *data, size_t len, uint8_t reg_addr, size_t *bytes_written) at lib/star_bus/src/star_bus_i2c.c:75>:
-                ESP_RETURN_ON_FALSE()
-                star_bus_manager_find_bus() <star_bus_config_t *star_bus_manager_find_bus (const star_bus_manager_t *manager, const char *name) at lib/star_bus/src/star_bus_manager.c:378>:
-                    strlen()
-                    xSemaphoreTake()
-                    pdMS_TO_TICKS()
-                    ESP_LOGE()
-                    strcmp()
-                    xSemaphoreGive()
-            esp_err_to_name()
-            ESP_LOGD()
+                esp_err_t()
+                star_bus_i2c_write() <esp_err_t star_bus_i2c_write (const star_bus_manager_t *manager, const char *name, const uint8_t *data, size_t len, uint8_t reg_addr, size_t *bytes_written) at lib/star_bus/src/star_bus_i2c.c:75>:
+                    ESP_RETURN_ON_FALSE()
+                    star_bus_manager_find_bus() <star_bus_config_t *star_bus_manager_find_bus (const star_bus_manager_t *manager, const char *name) at lib/star_bus/src/star_bus_manager.c:378>:
+                        strlen()
+                        xSemaphoreTake()
+                        pdMS_TO_TICKS()
+                        ESP_LOGE()
+                        strcmp()
+                        xSemaphoreGive()
+                esp_err_to_name()
+                ESP_LOGD()
     vTaskDelay()
     pdMS_TO_TICKS()
