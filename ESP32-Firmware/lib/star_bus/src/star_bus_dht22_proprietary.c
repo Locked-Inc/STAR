@@ -183,11 +183,24 @@ static int32_t wait_for_level(gpio_num_t pin, int expected_level, uint32_t timeo
 {
   int64_t start = esp_timer_get_time();
   int64_t elapsed;
+  uint32_t yield_count = 0;
 
   while (gpio_read(pin) != expected_level) {
     elapsed = esp_timer_get_time() - start;
     if (elapsed > timeout_us) {
       return -1;
+    }
+    
+    /* Aggressive yielding to prevent watchdog timeout */
+    yield_count++;
+    if (yield_count >= 50) {  /* Yield every 50 iterations */
+      yield_count = 0;
+      /* For very short timeouts, use taskYIELD, for longer ones allow a brief delay */
+      if (timeout_us < 200) {
+        taskYIELD();
+      } else {
+        vTaskDelay(0);  /* Minimal delay but ensures other tasks run */
+      }
     }
   }
 
@@ -207,11 +220,24 @@ static int32_t measure_pulse(gpio_num_t pin, int current_level, uint32_t timeout
 {
   int64_t start = esp_timer_get_time();
   int64_t elapsed;
+  uint32_t yield_count = 0;
 
   while (gpio_read(pin) == current_level) {
     elapsed = esp_timer_get_time() - start;
     if (elapsed > timeout_us) {
       return -1;
+    }
+    
+    /* Aggressive yielding to prevent watchdog timeout */
+    yield_count++;
+    if (yield_count >= 50) {  /* Yield every 50 iterations */
+      yield_count = 0;
+      /* For very short timeouts, use taskYIELD, for longer ones allow a brief delay */
+      if (timeout_us < 200) {
+        taskYIELD();
+      } else {
+        vTaskDelay(0);  /* Minimal delay but ensures other tasks run */
+      }
     }
   }
 
@@ -232,11 +258,10 @@ static esp_err_t read_raw_data(dht22_state_t* state, uint8_t data[DHT22_DATA_BYT
   uint32_t   start_low_us = state->config.start_low_ms * 1000;
   uint32_t   timeout_us   = state->config.read_timeout_ms * 1000;
 
-  /* Disable interrupts for timing-critical section */
+  /* Step 1: Send start signal (only this part needs critical section) */
   portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
   portENTER_CRITICAL(&mux);
-
-  /* Step 1: Send start signal */
+  
   /* Pull low for at least 1ms (we use 18ms by default) */
   gpio_set_output(pin);
   gpio_low(pin);
@@ -248,35 +273,40 @@ static esp_err_t read_raw_data(dht22_state_t* state, uint8_t data[DHT22_DATA_BYT
 
   /* Step 2: Switch to input and wait for sensor response */
   gpio_set_input(pin);
+  
+  /* Exit critical section - sensor response can be read without it */
+  portEXIT_CRITICAL(&mux);
 
   /* Wait for sensor to pull low (response start) */
   if (wait_for_level(pin, 0, timeout_us) < 0) {
-    portEXIT_CRITICAL(&mux);
     ESP_LOGD(s_TAG, "No response from sensor (wait for low)");
     return ESP_ERR_TIMEOUT;
   }
 
   /* Wait for sensor to pull high (response end of low pulse ~80us) */
   if (wait_for_level(pin, 1, TIMING_RESPONSE_LOW_US + 50) < 0) {
-    portEXIT_CRITICAL(&mux);
     ESP_LOGD(s_TAG, "No response from sensor (wait for high)");
     return ESP_ERR_TIMEOUT;
   }
 
   /* Wait for sensor to pull low (start of first data bit) */
   if (wait_for_level(pin, 0, TIMING_RESPONSE_HIGH_US + 50) < 0) {
-    portEXIT_CRITICAL(&mux);
     ESP_LOGD(s_TAG, "No response from sensor (wait for data start)");
     return ESP_ERR_TIMEOUT;
   }
 
   /* Step 3: Read 40 bits of data */
   memset(data, 0, DHT22_DATA_BYTES);
-
+  
+  /* Use short critical sections only for the most timing-sensitive parts */
   for (int i = 0; i < DHT22_DATA_BITS; i++) {
+    /* Yield periodically to prevent watchdog */
+    if (i % 8 == 0 && i > 0) {
+      taskYIELD();
+    }
+    
     /* Wait for high (end of bit start pulse ~50us) */
     if (wait_for_level(pin, 1, TIMING_BIT_START_US + 30) < 0) {
-      portEXIT_CRITICAL(&mux);
       ESP_LOGD(s_TAG, "Timeout waiting for bit %d high", i);
       return ESP_ERR_TIMEOUT;
     }
@@ -284,7 +314,6 @@ static esp_err_t read_raw_data(dht22_state_t* state, uint8_t data[DHT22_DATA_BYT
     /* Measure high pulse duration to determine bit value */
     int32_t high_duration = measure_pulse(pin, 1, TIMING_BIT_1_HIGH_US + 30);
     if (high_duration < 0) {
-      portEXIT_CRITICAL(&mux);
       ESP_LOGD(s_TAG, "Timeout measuring bit %d", i);
       return ESP_ERR_TIMEOUT;
     }
@@ -294,8 +323,6 @@ static esp_err_t read_raw_data(dht22_state_t* state, uint8_t data[DHT22_DATA_BYT
       data[i / 8] |= (1 << (7 - (i % 8)));
     }
   }
-
-  portEXIT_CRITICAL(&mux);
 
   return ESP_OK;
 }

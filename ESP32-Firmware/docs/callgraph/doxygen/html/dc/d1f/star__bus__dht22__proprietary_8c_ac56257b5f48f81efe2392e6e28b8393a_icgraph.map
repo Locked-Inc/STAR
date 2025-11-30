@@ -1,23 +1,31 @@
 <map id="gpio_set_input" name="gpio_set_input">
-<area shape="rect" id="Node000001" title="Set GPIO to input mode." alt="" coords="827,110,932,136"/>
-<area shape="rect" id="Node000002" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a0cefc084690818ee196b34da74bcf4e4" title="Read raw data from DHT22 sensor." alt="" coords="649,81,756,106"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="809,112,756,105,756,100,814,112"/>
-<area shape="rect" id="Node000011" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#aec99dc6d2a01015bbb5da6ed3899e400" title="Check if sensor is present and responding." alt="" coords="626,131,779,171"/>
-<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="809,134,779,142,779,136,814,133"/>
-<area shape="rect" id="Node000003" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a5c65480966d51bd711746a7be6199438" title="Default read operation implementation." alt="" coords="442,42,573,68"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="632,81,574,71,573,65,637,80"/>
-<area shape="rect" id="Node000006" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#aca1c661507907f9a75543f43e1d7164c" title="Read temperature and humidity from DHT22 sensor." alt="" coords="436,120,578,145"/>
-<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="632,108,576,121,575,116,637,106"/>
-<area shape="rect" id="Node000004" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a6a87d003ee9fcecd46ce8a441e5e31a9" title="Initialize default DHT22 operations function pointers." alt="" coords="232,5,366,46"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="424,44,367,38,366,32,429,43"/>
-<area shape="rect" id="Node000005" href="$de/d98/star__bus__config_8c.html#a7527fb91e8de839add326b305c63bcad" title="Create a new DHT22 bus configuration." alt="" coords="5,5,162,46"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="214,27,163,28,161,23,218,24"/>
-<area shape="rect" id="Node000007" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="260,70,338,96"/>
-<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="432,116,338,95,338,89,438,115"/>
-<area shape="rect" id="Node000008" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a61224e348fb2cc17147ea4cc22f86b77" title="Force a fresh read from sensor." alt="" coords="210,120,388,145"/>
-<area shape="poly" id="edge7_Node000006_Node000008" title=" " alt="" coords="418,133,389,135,388,130,423,132"/>
-<area shape="rect" id="Node000009" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#ab95c5e1edf83515d67eb7c2ece418e5d" title="Read humidity only (uses cached temperature)." alt="" coords="228,169,370,210"/>
-<area shape="poly" id="edge8_Node000006_Node000009" title=" " alt="" coords="440,151,371,173,370,168,446,149"/>
-<area shape="rect" id="Node000010" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#ad41466be879cb1a0684b3f3edfa8bf73" title="Read temperature only (uses cached humidity)." alt="" coords="228,235,370,275"/>
-<area shape="poly" id="edge9_Node000006_Node000010" title=" " alt="" coords="482,155,440,191,389,224,363,237,361,232,387,219,436,187,477,157"/>
+<area shape="rect" id="Node000001" title="Set GPIO to input mode." alt="" coords="1312,110,1417,136"/>
+<area shape="rect" id="Node000002" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a0cefc084690818ee196b34da74bcf4e4" title="Read raw data from DHT22 sensor." alt="" coords="1134,81,1241,106"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1294,112,1241,105,1241,100,1299,112"/>
+<area shape="rect" id="Node000015" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#aec99dc6d2a01015bbb5da6ed3899e400" title="Check if sensor is present and responding." alt="" coords="1111,131,1264,171"/>
+<area shape="poly" id="edge14_Node000001_Node000015" title=" " alt="" coords="1299,133,1264,142,1264,136,1294,134"/>
+<area shape="rect" id="Node000003" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a5c65480966d51bd711746a7be6199438" title="Default read operation implementation." alt="" coords="926,42,1058,68"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="1117,80,1058,71,1058,65,1122,80"/>
+<area shape="rect" id="Node000006" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#aca1c661507907f9a75543f43e1d7164c" title="Read temperature and humidity from DHT22 sensor." alt="" coords="921,120,1063,145"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="1122,107,1061,122,1060,116,1117,108"/>
+<area shape="rect" id="Node000004" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a6a87d003ee9fcecd46ce8a441e5e31a9" title="Initialize default DHT22 operations function pointers." alt="" coords="717,5,851,46"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="909,44,852,38,851,32,914,43"/>
+<area shape="rect" id="Node000005" href="$de/d98/star__bus__config_8c.html#a7527fb91e8de839add326b305c63bcad" title="Create a new DHT22 bus configuration." alt="" coords="486,5,642,46"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="699,26,643,28,642,23,704,25"/>
+<area shape="rect" id="Node000007" href="$d0/d9c/dht22__task_8c.html#a7b3a87af67c2b24b1f0e83e307e2715b" title=" " alt="" coords="717,70,851,96"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="917,115,841,99,841,94,923,115"/>
+<area shape="rect" id="Node000012" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a61224e348fb2cc17147ea4cc22f86b77" title="Force a fresh read from sensor." alt="" coords="695,120,873,145"/>
+<area shape="poly" id="edge11_Node000006_Node000012" title=" " alt="" coords="903,133,874,135,873,130,908,132"/>
+<area shape="rect" id="Node000013" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#ab95c5e1edf83515d67eb7c2ece418e5d" title="Read humidity only (uses cached temperature)." alt="" coords="713,169,855,210"/>
+<area shape="poly" id="edge12_Node000006_Node000013" title=" " alt="" coords="931,149,856,173,855,168,925,150"/>
+<area shape="rect" id="Node000014" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#ad41466be879cb1a0684b3f3edfa8bf73" title="Read temperature only (uses cached humidity)." alt="" coords="713,235,855,275"/>
+<area shape="poly" id="edge13_Node000006_Node000014" title=" " alt="" coords="967,155,925,191,874,224,848,237,846,231,872,219,921,187,962,157"/>
+<area shape="rect" id="Node000008" href="$d0/d9c/dht22__task_8c.html#ab28598715bb940c2458d04d337037432" title=" " alt="" coords="481,70,647,96"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="698,83,647,86,647,80,704,83"/>
+<area shape="rect" id="Node000009" href="$d0/d9c/dht22__task_8c.html#a9d856aeaa4dfc864b2d6446139430971" title="Initialize DHT22 monitoring task." alt="" coords="315,70,433,96"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="463,84,434,86,433,80,469,82"/>
+<area shape="rect" id="Node000010" href="$d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,70,267,96"/>
+<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="297,84,268,86,267,80,302,82"/>
+<area shape="rect" id="Node000011" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,70,83,96"/>
+<area shape="poly" id="edge10_Node000010_Node000011" title=" " alt="" coords="113,85,84,85,82,81,117,81"/>
 </map>

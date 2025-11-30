@@ -1,0 +1,15 @@
+<map id="led_controller_set_rgb" name="led_controller_set_rgb">
+<area shape="rect" id="Node000001" title="Set RGB LED color." alt="" coords="5,46,154,72"/>
+<area shape="rect" id="Node000002" href="$d2/dc9/led__controller_8c.html#a055f40aef481cb67e15eca4d09028a61" title=" " alt="" coords="202,46,374,72"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="154,56,188,58,183,60,154,62"/>
+<area shape="rect" id="Node000003" href="$d2/dc9/led__controller_8c.html#a7b7ebe952969637b30a7a358d7c3d92c" title=" " alt="" coords="426,5,563,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="371,43,414,39,409,40,372,48"/>
+<area shape="rect" id="Node000004" href="$d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="422,71,567,111"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="375,70,410,77,404,77,374,75"/>
+<area shape="rect" id="Node000005" href="$d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="615,71,761,111"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="567,88,602,91,597,91,568,94"/>
+<area shape="rect" id="Node000006" href="$dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="809,78,939,104"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="761,88,796,91,791,91,761,94"/>
+<area shape="rect" id="Node000007" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="987,78,1171,104"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="939,88,974,91,968,91,939,94"/>
+</map>

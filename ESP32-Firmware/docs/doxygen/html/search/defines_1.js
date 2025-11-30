@@ -94,5 +94,8 @@ var searchData=
   ['bq7850_5fsubcmd_5fprotection_5fuv_5fthresh_91',['BQ7850_SUBCMD_PROTECTION_UV_THRESH',['../d2/d63/star__bms__bq7850_8h.html#ae3ed6f81a87cfe7eea0474f8eb69246d',1,'star_bms_bq7850.h']]],
   ['bq7850_5fsubcmd_5freset_92',['BQ7850_SUBCMD_RESET',['../d2/d63/star__bms__bq7850_8h.html#abf41174c8f331734cf3ee8f42b039861',1,'star_bms_bq7850.h']]],
   ['bq7850_5fsubcmd_5fseal_93',['BQ7850_SUBCMD_SEAL',['../d2/d63/star__bms__bq7850_8h.html#aab3ca2561a7fd419c62e400b60c3f198',1,'star_bms_bq7850.h']]],
-  ['bq7850_5fsubcmd_5ftemp_5fsensor_5fbase_94',['BQ7850_SUBCMD_TEMP_SENSOR_BASE',['../d2/d63/star__bms__bq7850_8h.html#ab27093b4a936f7222bbef755c30e79cc',1,'star_bms_bq7850.h']]]
+  ['bq7850_5fsubcmd_5ftemp_5fsensor_5fbase_94',['BQ7850_SUBCMD_TEMP_SENSOR_BASE',['../d2/d63/star__bms__bq7850_8h.html#ab27093b4a936f7222bbef755c30e79cc',1,'star_bms_bq7850.h']]],
+  ['bus_5fname_5fdht22_95',['BUS_NAME_DHT22',['../d4/d7e/system__config_8h.html#a2205186113120cfabba16a22ae44118c',1,'system_config.h']]],
+  ['bus_5fname_5fhcsr04_96',['BUS_NAME_HCSR04',['../d4/d7e/system__config_8h.html#a8bd4e0609f09cb6221b8418405560919',1,'system_config.h']]],
+  ['bus_5fname_5fpca9685_97',['BUS_NAME_PCA9685',['../d4/d7e/system__config_8h.html#a46e5877e1b84482abcf0d8ee4bc18498',1,'system_config.h']]]
 ];
