@@ -17521,8 +17521,8 @@
 			(uuid "38037ecd-ecbc-46df-aa24-6640261f01b8")
 			(effects
 				(font
-					(size 1.27 1.27)
-					(thickness 0.254)
+					(size 1 1)
+					(thickness 0.15)
 				)
 			)
 		)
@@ -45301,6 +45301,30 @@
 		(layer "Edge.Cuts")
 		(uuid "d22a79bd-656e-4e48-91ed-a7362d4a9e0b")
 	)
+	(gr_text "Buck Boost"
+		(at 109.99 67.07 270)
+		(layer "F.SilkS")
+		(uuid "101eb9c4-a05e-44b9-b6fd-621c53f48241")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "5V0 Buck"
+		(at 145.08 92.06 0)
+		(layer "F.SilkS")
+		(uuid "1cd83a57-6499-4162-bec1-5dc15707b37c")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+			(justify left bottom)
+		)
+	)
 	(gr_text "5V0"
 		(at 138.54 102.58 90)
 		(layer "F.SilkS")
@@ -45310,6 +45334,30 @@
 				(size 1.27 1.27)
 				(thickness 0.254)
 				(bold yes)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "PD I2C"
+		(at 129.29 75.58 0)
+		(layer "F.SilkS")
+		(uuid "347672d9-e4f3-4032-b160-c107eae77e1c")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "PD DBG"
+		(at 108.08 78.76 270)
+		(layer "F.SilkS")
+		(uuid "577b0f57-cc0d-4cfa-a449-10026c2a10ec")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
 			)
 			(justify left bottom)
 		)
@@ -45340,14 +45388,27 @@
 			(justify left bottom)
 		)
 	)
+	(gr_text "Buck Boost"
+		(at 80.72 68.98 0)
+		(layer "F.SilkS")
+		(uuid "ba39c862-dcb7-467c-b308-e5a60f7bdcd9")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+			(justify left bottom)
+		)
+	)
 	(gr_text "USB-C\nLocked Inc.\nV1.0.0"
 		(at 132.8 111.45 0)
 		(layer "F.SilkS")
 		(uuid "c5c0b2af-6004-4a6b-9079-df55c79f2d10")
 		(effects
 			(font
-				(size 1 1)
-				(thickness 0.15)
+				(size 1.27 1.27)
+				(thickness 0.254)
+				(bold yes)
 			)
 			(justify left bottom)
 		)
@@ -45361,6 +45422,18 @@
 				(size 1.27 1.27)
 				(thickness 0.254)
 				(bold yes)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "3V3 Buck"
+		(at 152.28 86.7 90)
+		(layer "F.SilkS")
+		(uuid "ecd3e1ce-02b3-41c0-8e26-7829020fd49f")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
 			)
 			(justify left bottom)
 		)

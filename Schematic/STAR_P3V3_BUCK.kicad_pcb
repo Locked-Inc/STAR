@@ -11050,21 +11050,47 @@
 		(layer "Edge.Cuts")
 		(uuid "0590d2b1-8287-4783-b5e2-bb8325a948aa")
 	)
+	(gr_text "5V Buck"
+		(at 150.57 83.7 0)
+		(layer "F.SilkS")
+		(uuid "215e182f-c719-4164-83f7-2c8de363b48a")
+		(effects
+			(font
+				(size 1 1)
+				(thickness 0.15)
+			)
+			(justify left bottom)
+		)
+	)
 	(gr_text "5V"
 		(at 160.275 72.35 90)
 		(layer "F.SilkS")
 		(uuid "28746368-6308-4c3b-a45a-7f6274550813")
 		(effects
 			(font
-				(size 1 1)
-				(thickness 0.15)
+				(size 1.27 1.27)
+				(thickness 0.254)
+				(bold yes)
 			)
 		)
 	)
 	(gr_text "3V3 Buck\nLocked Inc\nV1.0.0"
-		(at 164.725 81.9 0)
+		(at 166.17 84.88 0)
 		(layer "F.SilkS")
 		(uuid "509de095-1ae6-4d1b-8084-b9feab4ab4eb")
+		(effects
+			(font
+				(size 1.27 1.27)
+				(thickness 0.254)
+				(bold yes)
+			)
+			(justify left bottom)
+		)
+	)
+	(gr_text "MCU"
+		(at 187.82 65.18 90)
+		(layer "F.SilkS")
+		(uuid "5e492ef6-83f3-4ba4-8a23-8ffcb117dd02")
 		(effects
 			(font
 				(size 1 1)
@@ -11079,9 +11105,22 @@
 		(uuid "c68b90a0-19e3-490d-9c32-177cc6cb72f7")
 		(effects
 			(font
+				(size 1.27 1.27)
+				(thickness 0.254)
+				(bold yes)
+			)
+		)
+	)
+	(gr_text "USB-C"
+		(at 174.06 41.13 0)
+		(layer "F.SilkS")
+		(uuid "e5a8c194-c147-4beb-8b68-5439075168f9")
+		(effects
+			(font
 				(size 1 1)
 				(thickness 0.15)
 			)
+			(justify left bottom)
 		)
 	)
 	(segment
