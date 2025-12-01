@@ -93,16 +93,21 @@ $(function(){initNavTree('d3/d75/star__servo_8c.html','../../',''); });
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &quot;<a class="el" href="../../d4/d34/star__servo_8h_source.html">star_servo.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d7/de9/star__servo__constants_8h_source.html">star_servo_constants.h</a>&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for star_servo.c:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d2/d4e/star__servo_8c__incl.png" border="0" usemap="#alib_2star__servo_2src_2star__servo_8c" loading="lazy" alt=""/></div>
 <map name="alib_2star__servo_2src_2star__servo_8c" id="alib_2star__servo_2src_2star__servo_8c">
-<area shape="rect" title=" " alt="" coords="5,5,127,46"/>
-<area shape="rect" href="../../d4/d34/star__servo_8h.html" title="Stateless servo angle calculation library." alt="" coords="19,94,113,120"/>
-<area shape="poly" title=" " alt="" coords="67,44,69,79,63,78,65,49"/>
-<area shape="rect" title=" " alt="" coords="34,168,98,193"/>
-<area shape="poly" title=" " alt="" coords="68,118,69,153,63,151,64,122"/>
+<area shape="rect" title=" " alt="" coords="33,5,154,46"/>
+<area shape="rect" href="../../d4/d34/star__servo_8h.html" title="Stateless servo angle calculation library." alt="" coords="5,94,99,120"/>
+<area shape="poly" title=" " alt="" coords="82,49,68,81,63,79,84,44"/>
+<area shape="rect" href="../../d7/de9/star__servo__constants_8h.html" title="Type&#45;safe constants for servo control." alt="" coords="57,168,215,193"/>
+<area shape="poly" title=" " alt="" coords="100,44,131,152,126,152,97,48"/>
+<area shape="rect" title=" " alt="" coords="45,241,110,267"/>
+<area shape="poly" title=" " alt="" coords="49,117,46,153,48,193,63,228,58,228,43,194,40,153,48,123"/>
+<area shape="poly" title=" " alt="" coords="67,118,113,156,108,158,66,123"/>
+<area shape="poly" title=" " alt="" coords="129,192,99,231,95,227,124,195"/>
 </map>
 </div>
 </div>
@@ -151,11 +156,21 @@ Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00007">7</a> of file <a class="el" href="../../d3/d75/star__servo_8c_source.html">star_servo.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00008">8</a> of file <a class="el" href="../../d3/d75/star__servo_8c_source.html">star_servo.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d4/d34/star__servo_8h_source.html#l00174">SERVO_ANGLE_MAX</a>, and <a class="el" href="../../d4/d34/star__servo_8h_source.html#l00173">SERVO_ANGLE_MIN</a>.</p>
+<p class="reference">References <a class="el" href="../../d7/de9/star__servo__constants_8h_source.html#l00040">star_servo_angle_t::max</a>, <a class="el" href="../../d7/de9/star__servo__constants_8h_source.html#l00038">star_servo_angle_t::min</a>, and <a class="el" href="../../de/d5e/star__servo__constants_8c_source.html#l00042">star_servo_get_angle_constants()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00069">star_servo_angle_to_count()</a>, <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00031">star_servo_angle_to_pulse()</a>, and <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00043">star_servo_pulse_to_angle()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00082">star_servo_angle_to_count()</a>, <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00034">star_servo_angle_to_pulse()</a>, and <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00050">star_servo_pulse_to_angle()</a>.</p>
+<div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="../../d3/d75/star__servo_8c_af22dfa33d50a10394cc1a93fef7dc3d6_cgraph.png" border="0" usemap="#ad3/d75/star__servo_8c_af22dfa33d50a10394cc1a93fef7dc3d6_cgraph" loading="lazy" alt=""/></div>
+<map name="ad3/d75/star__servo_8c_af22dfa33d50a10394cc1a93fef7dc3d6_cgraph" id="ad3/d75/star__servo_8c_af22dfa33d50a10394cc1a93fef7dc3d6_cgraph">
+<area shape="rect" title=" " alt="" coords="5,13,100,38"/>
+<area shape="rect" href="../../de/d5e/star__servo__constants_8c.html#a1fd2bd5c8eb02e8d5c3bcc32c5841e82" title="Get standard servo angle constants." alt="" coords="148,5,293,46"/>
+<area shape="poly" title=" " alt="" coords="100,23,135,25,130,26,100,28"/>
+</map>
+</div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -199,11 +214,21 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00018">18</a> of file <a class="el" href="../../d3/d75/star__servo_8c_source.html">star_servo.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00020">20</a> of file <a class="el" href="../../d3/d75/star__servo_8c_source.html">star_servo.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d4/d34/star__servo_8h_source.html#l00169">SERVO_PULSE_MAX_US</a>, and <a class="el" href="../../d4/d34/star__servo_8h_source.html#l00168">SERVO_PULSE_MIN_US</a>.</p>
+<p class="reference">References <a class="el" href="../../d7/de9/star__servo__constants_8h_source.html#l00029">star_servo_pulse_t::max_us</a>, <a class="el" href="../../d7/de9/star__servo__constants_8h_source.html#l00027">star_servo_pulse_t::min_us</a>, and <a class="el" href="../../de/d5e/star__servo__constants_8c_source.html#l00037">star_servo_get_pulse_constants()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00043">star_servo_pulse_to_angle()</a>, and <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00054">star_servo_pulse_to_count()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00050">star_servo_pulse_to_angle()</a>, and <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00065">star_servo_pulse_to_count()</a>.</p>
+<div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="../../d3/d75/star__servo_8c_a8833486138de9335152a50c11dfa8693_cgraph.png" border="0" usemap="#ad3/d75/star__servo_8c_a8833486138de9335152a50c11dfa8693_cgraph" loading="lazy" alt=""/></div>
+<map name="ad3/d75/star__servo_8c_a8833486138de9335152a50c11dfa8693_cgraph" id="ad3/d75/star__servo_8c_a8833486138de9335152a50c11dfa8693_cgraph">
+<area shape="rect" title=" " alt="" coords="5,13,100,38"/>
+<area shape="rect" href="../../de/d5e/star__servo__constants_8c.html#a6172bfbd55bee59f475ff5a82d17fb5a" title="Get standard servo pulse timing constants." alt="" coords="148,5,293,46"/>
+<area shape="poly" title=" " alt="" coords="100,23,135,25,130,26,100,28"/>
+</map>
+</div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -261,26 +286,34 @@ Here is the caller graph for this function:</div>
 <dd>
 Angles outside 0-180 are clamped to valid range </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00069">69</a> of file <a class="el" href="../../d3/d75/star__servo_8c_source.html">star_servo.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00082">82</a> of file <a class="el" href="../../d3/d75/star__servo_8c_source.html">star_servo.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00007">clamp_angle()</a>, <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00031">star_servo_angle_to_pulse()</a>, and <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00054">star_servo_pulse_to_count()</a>.</p>
+<p class="reference">References <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00008">clamp_angle()</a>, <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00034">star_servo_angle_to_pulse()</a>, and <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00065">star_servo_pulse_to_count()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00833">star_sensor_pca9685_set_servo_angle()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00839">star_sensor_pca9685_set_servo_angle()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d3/d75/star__servo_8c_a104148a95f986eac12fabe6d01d4c87d_cgraph.png" border="0" usemap="#ad3/d75/star__servo_8c_a104148a95f986eac12fabe6d01d4c87d_cgraph" loading="lazy" alt=""/></div>
 <map name="ad3/d75/star__servo_8c_a104148a95f986eac12fabe6d01d4c87d_cgraph" id="ad3/d75/star__servo_8c_a104148a95f986eac12fabe6d01d4c87d_cgraph">
-<area shape="rect" title="Calculate PCA9685 count value from angle (0&#45;180 degrees)." alt="" coords="5,26,144,66"/>
-<area shape="rect" href="../../d3/d75/star__servo_8c.html#af22dfa33d50a10394cc1a93fef7dc3d6" title=" " alt="" coords="378,5,472,31"/>
-<area shape="poly" title=" " alt="" coords="139,23,191,12,261,8,330,12,365,15,360,16,330,17,261,13,192,17,140,28"/>
-<area shape="rect" href="../../d3/d75/star__servo_8c.html#a945216ed2b1e8a5850cfd0d8113e1451" title="Calculate pulse width in microseconds from angle (0&#45;180 degrees)." alt="" coords="192,26,330,66"/>
-<area shape="poly" title=" " alt="" coords="144,44,178,45,173,47,145,49"/>
-<area shape="rect" href="../../d3/d75/star__servo_8c.html#a8cd577679d2d29a34ae03d3cec95c3b1" title="Calculate PCA9685 count value from pulse width in microseconds." alt="" coords="192,91,330,132"/>
-<area shape="poly" title=" " alt="" coords="135,64,189,85,184,86,134,70"/>
-<area shape="poly" title=" " alt="" coords="330,32,365,28,360,29,331,37"/>
-<area shape="rect" href="../../d3/d75/star__servo_8c.html#a8833486138de9335152a50c11dfa8693" title=" " alt="" coords="378,99,472,124"/>
-<area shape="poly" title=" " alt="" coords="330,109,365,111,359,112,330,114"/>
+<area shape="rect" title="Calculate PCA9685 count value from angle (0&#45;180 degrees)." alt="" coords="5,59,144,99"/>
+<area shape="rect" href="../../d3/d75/star__servo_8c.html#af22dfa33d50a10394cc1a93fef7dc3d6" title=" " alt="" coords="416,13,511,38"/>
+<area shape="poly" title=" " alt="" coords="142,56,191,44,302,31,403,26,398,28,303,36,192,50,144,60"/>
+<area shape="rect" href="../../d3/d75/star__servo_8c.html#a945216ed2b1e8a5850cfd0d8113e1451" title="Calculate pulse width in microseconds from angle (0&#45;180 degrees)." alt="" coords="192,59,330,99"/>
+<area shape="poly" title=" " alt="" coords="143,76,178,78,173,80,145,82"/>
+<area shape="rect" href="../../d3/d75/star__servo_8c.html#a8cd577679d2d29a34ae03d3cec95c3b1" title="Calculate PCA9685 count value from pulse width in microseconds." alt="" coords="192,124,330,165"/>
+<area shape="poly" title=" " alt="" coords="134,97,189,117,184,119,134,103"/>
+<area shape="rect" href="../../de/d5e/star__servo__constants_8c.html#a1fd2bd5c8eb02e8d5c3bcc32c5841e82" title="Get standard servo angle constants." alt="" coords="597,5,743,46"/>
+<area shape="poly" title=" " alt="" coords="511,23,584,25,579,26,512,28"/>
+<area shape="poly" title=" " alt="" coords="330,58,405,41,400,43,331,63"/>
+<area shape="rect" href="../../de/d5e/star__servo__constants_8c.html#a12c23bf5fc24b4395a13b69edddd66c6" title="Get the default servo constants." alt="" coords="378,66,549,92"/>
+<area shape="poly" title=" " alt="" coords="330,76,365,78,360,80,331,82"/>
+<area shape="rect" href="../../d3/d75/star__servo_8c.html#a8833486138de9335152a50c11dfa8693" title=" " alt="" coords="416,124,511,149"/>
+<area shape="poly" title=" " alt="" coords="330,139,404,138,399,139,331,144"/>
+<area shape="rect" href="../../de/d5e/star__servo__constants_8c.html#aac9dc61d7318ec5bada03bfc02ae18b6" title="Get PCA9685 controller constants." alt="" coords="382,173,545,214"/>
+<area shape="poly" title=" " alt="" coords="331,159,369,170,364,170,330,164"/>
+<area shape="rect" href="../../de/d5e/star__servo__constants_8c.html#a6172bfbd55bee59f475ff5a82d17fb5a" title="Get standard servo pulse timing constants." alt="" coords="597,116,743,157"/>
+<area shape="poly" title=" " alt="" coords="511,134,584,136,579,137,511,139"/>
 </map>
 </div>
 <div class="dynheader">
@@ -328,19 +361,23 @@ Here is the caller graph for this function:</div>
 <dd>
 Angles outside 0-180 are clamped to valid range </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00031">31</a> of file <a class="el" href="../../d3/d75/star__servo_8c_source.html">star_servo.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00034">34</a> of file <a class="el" href="../../d3/d75/star__servo_8c_source.html">star_servo.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00007">clamp_angle()</a>, <a class="el" href="../../d4/d34/star__servo_8h_source.html#l00174">SERVO_ANGLE_MAX</a>, <a class="el" href="../../d4/d34/star__servo_8h_source.html#l00169">SERVO_PULSE_MAX_US</a>, and <a class="el" href="../../d4/d34/star__servo_8h_source.html#l00168">SERVO_PULSE_MIN_US</a>.</p>
+<p class="reference">References <a class="el" href="../../d7/de9/star__servo__constants_8h_source.html#l00062">star_servo_constants_t::angle</a>, <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00008">clamp_angle()</a>, <a class="el" href="../../d7/de9/star__servo__constants_8h_source.html#l00040">star_servo_angle_t::max</a>, <a class="el" href="../../d7/de9/star__servo__constants_8h_source.html#l00029">star_servo_pulse_t::max_us</a>, <a class="el" href="../../d7/de9/star__servo__constants_8h_source.html#l00027">star_servo_pulse_t::min_us</a>, <a class="el" href="../../d7/de9/star__servo__constants_8h_source.html#l00061">star_servo_constants_t::pulse</a>, and <a class="el" href="../../de/d5e/star__servo__constants_8c_source.html#l00032">star_servo_get_constants()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00069">star_servo_angle_to_count()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00082">star_servo_angle_to_count()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d3/d75/star__servo_8c_a945216ed2b1e8a5850cfd0d8113e1451_cgraph.png" border="0" usemap="#ad3/d75/star__servo_8c_a945216ed2b1e8a5850cfd0d8113e1451_cgraph" loading="lazy" alt=""/></div>
 <map name="ad3/d75/star__servo_8c_a945216ed2b1e8a5850cfd0d8113e1451_cgraph" id="ad3/d75/star__servo_8c_a945216ed2b1e8a5850cfd0d8113e1451_cgraph">
-<area shape="rect" title="Calculate pulse width in microseconds from angle (0&#45;180 degrees)." alt="" coords="5,5,144,46"/>
-<area shape="rect" href="../../d3/d75/star__servo_8c.html#af22dfa33d50a10394cc1a93fef7dc3d6" title=" " alt="" coords="192,13,286,38"/>
-<area shape="poly" title=" " alt="" coords="144,23,178,25,173,26,144,28"/>
+<area shape="rect" title="Calculate pulse width in microseconds from angle (0&#45;180 degrees)." alt="" coords="5,31,144,71"/>
+<area shape="rect" href="../../d3/d75/star__servo_8c.html#af22dfa33d50a10394cc1a93fef7dc3d6" title=" " alt="" coords="230,13,324,38"/>
+<area shape="poly" title=" " alt="" coords="144,40,218,33,213,34,145,45"/>
+<area shape="rect" href="../../de/d5e/star__servo__constants_8c.html#a12c23bf5fc24b4395a13b69edddd66c6" title="Get the default servo constants." alt="" coords="192,62,363,88"/>
+<area shape="poly" title=" " alt="" coords="144,57,179,63,173,63,144,62"/>
+<area shape="rect" href="../../de/d5e/star__servo__constants_8c.html#a1fd2bd5c8eb02e8d5c3bcc32c5841e82" title="Get standard servo angle constants." alt="" coords="411,5,556,46"/>
+<area shape="poly" title=" " alt="" coords="325,23,398,25,393,26,325,28"/>
 </map>
 </div>
 <div class="dynheader">
@@ -377,19 +414,24 @@ Here is the caller graph for this function:</div>
 <dl class="section return"><dt>Returns</dt><dd>PCA9685 count value for 1.5ms pulse (~307)</dd></dl>
 <dl class="section note"><dt>Note</dt><dd>This is a pure calculation function with no side effects </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00078">78</a> of file <a class="el" href="../../d3/d75/star__servo_8c_source.html">star_servo.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00091">91</a> of file <a class="el" href="../../d3/d75/star__servo_8c_source.html">star_servo.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d4/d34/star__servo_8h_source.html#l00170">SERVO_PULSE_CENTER_US</a>, and <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00054">star_servo_pulse_to_count()</a>.</p>
+<p class="reference">References <a class="el" href="../../d7/de9/star__servo__constants_8h_source.html#l00028">star_servo_pulse_t::center_us</a>, <a class="el" href="../../de/d5e/star__servo__constants_8c_source.html#l00037">star_servo_get_pulse_constants()</a>, and <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00065">star_servo_pulse_to_count()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d3/d75/star__servo_8c_abefc01bbb178a18a4ba402f84658839c_cgraph.png" border="0" usemap="#ad3/d75/star__servo_8c_abefc01bbb178a18a4ba402f84658839c_cgraph" loading="lazy" alt=""/></div>
 <map name="ad3/d75/star__servo_8c_abefc01bbb178a18a4ba402f84658839c_cgraph" id="ad3/d75/star__servo_8c_abefc01bbb178a18a4ba402f84658839c_cgraph">
-<area shape="rect" title="Calculate PCA9685 count for servo center position (90 degrees)." alt="" coords="5,5,156,46"/>
-<area shape="rect" href="../../d3/d75/star__servo_8c.html#a8cd577679d2d29a34ae03d3cec95c3b1" title="Calculate PCA9685 count value from pulse width in microseconds." alt="" coords="204,5,342,46"/>
-<area shape="poly" title=" " alt="" coords="156,23,191,25,185,26,156,28"/>
-<area shape="rect" href="../../d3/d75/star__servo_8c.html#a8833486138de9335152a50c11dfa8693" title=" " alt="" coords="390,13,484,38"/>
-<area shape="poly" title=" " alt="" coords="342,23,377,26,371,26,342,28"/>
+<area shape="rect" title="Calculate PCA9685 count for servo center position (90 degrees)." alt="" coords="5,9,156,50"/>
+<area shape="rect" href="../../de/d5e/star__servo__constants_8c.html#a6172bfbd55bee59f475ff5a82d17fb5a" title="Get standard servo pulse timing constants." alt="" coords="601,5,747,46"/>
+<area shape="poly" title=" " alt="" coords="155,24,204,23,586,22,585,27,204,28,156,29"/>
+<area shape="rect" href="../../d3/d75/star__servo_8c.html#a8cd577679d2d29a34ae03d3cec95c3b1" title="Calculate PCA9685 count value from pulse width in microseconds." alt="" coords="204,37,342,78"/>
+<area shape="poly" title=" " alt="" coords="156,38,191,45,186,46,157,43"/>
+<area shape="rect" href="../../d3/d75/star__servo_8c.html#a8833486138de9335152a50c11dfa8693" title=" " alt="" coords="424,38,519,64"/>
+<area shape="poly" title=" " alt="" coords="342,53,412,53,406,53,342,58"/>
+<area shape="rect" href="../../de/d5e/star__servo__constants_8c.html#aac9dc61d7318ec5bada03bfc02ae18b6" title="Get PCA9685 controller constants." alt="" coords="390,88,553,129"/>
+<area shape="poly" title=" " alt="" coords="342,73,378,84,372,84,342,78"/>
+<area shape="poly" title=" " alt="" coords="519,42,589,36,583,37,520,48"/>
 </map>
 </div>
 
@@ -414,19 +456,24 @@ Here is the call graph for this function:</div>
 <dl class="section return"><dt>Returns</dt><dd>PCA9685 count value for 2.0ms pulse (~410)</dd></dl>
 <dl class="section note"><dt>Note</dt><dd>This is a pure calculation function with no side effects </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00088">88</a> of file <a class="el" href="../../d3/d75/star__servo_8c_source.html">star_servo.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00103">103</a> of file <a class="el" href="../../d3/d75/star__servo_8c_source.html">star_servo.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d4/d34/star__servo_8h_source.html#l00169">SERVO_PULSE_MAX_US</a>, and <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00054">star_servo_pulse_to_count()</a>.</p>
+<p class="reference">References <a class="el" href="../../d7/de9/star__servo__constants_8h_source.html#l00029">star_servo_pulse_t::max_us</a>, <a class="el" href="../../de/d5e/star__servo__constants_8c_source.html#l00037">star_servo_get_pulse_constants()</a>, and <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00065">star_servo_pulse_to_count()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d3/d75/star__servo_8c_ae085d135aa05019f7e90fd4b46b0d012_cgraph.png" border="0" usemap="#ad3/d75/star__servo_8c_ae085d135aa05019f7e90fd4b46b0d012_cgraph" loading="lazy" alt=""/></div>
 <map name="ad3/d75/star__servo_8c_ae085d135aa05019f7e90fd4b46b0d012_cgraph" id="ad3/d75/star__servo_8c_ae085d135aa05019f7e90fd4b46b0d012_cgraph">
-<area shape="rect" title="Calculate PCA9685 count for servo maximum position (180 degrees)." alt="" coords="5,5,145,46"/>
-<area shape="rect" href="../../d3/d75/star__servo_8c.html#a8cd577679d2d29a34ae03d3cec95c3b1" title="Calculate PCA9685 count value from pulse width in microseconds." alt="" coords="193,5,331,46"/>
-<area shape="poly" title=" " alt="" coords="145,23,180,25,175,26,145,28"/>
-<area shape="rect" href="../../d3/d75/star__servo_8c.html#a8833486138de9335152a50c11dfa8693" title=" " alt="" coords="379,13,473,38"/>
-<area shape="poly" title=" " alt="" coords="331,23,366,26,360,26,331,28"/>
+<area shape="rect" title="Calculate PCA9685 count for servo maximum position (180 degrees)." alt="" coords="5,9,145,50"/>
+<area shape="rect" href="../../de/d5e/star__servo__constants_8c.html#a6172bfbd55bee59f475ff5a82d17fb5a" title="Get standard servo pulse timing constants." alt="" coords="590,5,736,46"/>
+<area shape="poly" title=" " alt="" coords="145,24,193,23,575,22,574,27,193,28,146,30"/>
+<area shape="rect" href="../../d3/d75/star__servo_8c.html#a8cd577679d2d29a34ae03d3cec95c3b1" title="Calculate PCA9685 count value from pulse width in microseconds." alt="" coords="193,37,331,78"/>
+<area shape="poly" title=" " alt="" coords="145,37,180,44,175,46,145,43"/>
+<area shape="rect" href="../../d3/d75/star__servo_8c.html#a8833486138de9335152a50c11dfa8693" title=" " alt="" coords="414,38,508,64"/>
+<area shape="poly" title=" " alt="" coords="331,53,401,53,395,53,331,58"/>
+<area shape="rect" href="../../de/d5e/star__servo__constants_8c.html#aac9dc61d7318ec5bada03bfc02ae18b6" title="Get PCA9685 controller constants." alt="" coords="379,88,542,129"/>
+<area shape="poly" title=" " alt="" coords="331,73,367,84,361,84,331,78"/>
+<area shape="poly" title=" " alt="" coords="508,42,578,36,572,37,509,48"/>
 </map>
 </div>
 
@@ -451,19 +498,24 @@ Here is the call graph for this function:</div>
 <dl class="section return"><dt>Returns</dt><dd>PCA9685 count value for 1.0ms pulse (~205)</dd></dl>
 <dl class="section note"><dt>Note</dt><dd>This is a pure calculation function with no side effects </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00083">83</a> of file <a class="el" href="../../d3/d75/star__servo_8c_source.html">star_servo.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00097">97</a> of file <a class="el" href="../../d3/d75/star__servo_8c_source.html">star_servo.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d4/d34/star__servo_8h_source.html#l00168">SERVO_PULSE_MIN_US</a>, and <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00054">star_servo_pulse_to_count()</a>.</p>
+<p class="reference">References <a class="el" href="../../d7/de9/star__servo__constants_8h_source.html#l00027">star_servo_pulse_t::min_us</a>, <a class="el" href="../../de/d5e/star__servo__constants_8c_source.html#l00037">star_servo_get_pulse_constants()</a>, and <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00065">star_servo_pulse_to_count()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d3/d75/star__servo_8c_a627d6c14f03faae93eff06dbc50de0fd_cgraph.png" border="0" usemap="#ad3/d75/star__servo_8c_a627d6c14f03faae93eff06dbc50de0fd_cgraph" loading="lazy" alt=""/></div>
 <map name="ad3/d75/star__servo_8c_a627d6c14f03faae93eff06dbc50de0fd_cgraph" id="ad3/d75/star__servo_8c_a627d6c14f03faae93eff06dbc50de0fd_cgraph">
-<area shape="rect" title="Calculate PCA9685 count for servo minimum position (0 degrees)." alt="" coords="5,5,141,46"/>
-<area shape="rect" href="../../d3/d75/star__servo_8c.html#a8cd577679d2d29a34ae03d3cec95c3b1" title="Calculate PCA9685 count value from pulse width in microseconds." alt="" coords="189,5,327,46"/>
-<area shape="poly" title=" " alt="" coords="141,23,176,25,171,26,141,28"/>
-<area shape="rect" href="../../d3/d75/star__servo_8c.html#a8833486138de9335152a50c11dfa8693" title=" " alt="" coords="375,13,469,38"/>
-<area shape="poly" title=" " alt="" coords="327,23,362,26,356,26,327,28"/>
+<area shape="rect" title="Calculate PCA9685 count for servo minimum position (0 degrees)." alt="" coords="5,9,141,50"/>
+<area shape="rect" href="../../de/d5e/star__servo__constants_8c.html#a6172bfbd55bee59f475ff5a82d17fb5a" title="Get standard servo pulse timing constants." alt="" coords="586,5,732,46"/>
+<area shape="poly" title=" " alt="" coords="140,24,189,23,571,22,570,27,189,28,141,30"/>
+<area shape="rect" href="../../d3/d75/star__servo_8c.html#a8cd577679d2d29a34ae03d3cec95c3b1" title="Calculate PCA9685 count value from pulse width in microseconds." alt="" coords="189,37,327,78"/>
+<area shape="poly" title=" " alt="" coords="141,37,176,44,171,46,141,43"/>
+<area shape="rect" href="../../d3/d75/star__servo_8c.html#a8833486138de9335152a50c11dfa8693" title=" " alt="" coords="410,38,504,64"/>
+<area shape="poly" title=" " alt="" coords="327,53,397,53,391,53,327,58"/>
+<area shape="rect" href="../../de/d5e/star__servo__constants_8c.html#aac9dc61d7318ec5bada03bfc02ae18b6" title="Get PCA9685 controller constants." alt="" coords="375,88,538,129"/>
+<area shape="poly" title=" " alt="" coords="327,73,363,84,357,84,327,78"/>
+<area shape="poly" title=" " alt="" coords="504,42,574,36,568,37,505,48"/>
 </map>
 </div>
 
@@ -497,19 +549,25 @@ Here is the call graph for this function:</div>
 <dd>
 Pulse widths outside range are clamped </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00043">43</a> of file <a class="el" href="../../d3/d75/star__servo_8c_source.html">star_servo.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00050">50</a> of file <a class="el" href="../../d3/d75/star__servo_8c_source.html">star_servo.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00007">clamp_angle()</a>, <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00018">clamp_pulse()</a>, <a class="el" href="../../d4/d34/star__servo_8h_source.html#l00174">SERVO_ANGLE_MAX</a>, <a class="el" href="../../d4/d34/star__servo_8h_source.html#l00169">SERVO_PULSE_MAX_US</a>, and <a class="el" href="../../d4/d34/star__servo_8h_source.html#l00168">SERVO_PULSE_MIN_US</a>.</p>
+<p class="reference">References <a class="el" href="../../d7/de9/star__servo__constants_8h_source.html#l00062">star_servo_constants_t::angle</a>, <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00008">clamp_angle()</a>, <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00020">clamp_pulse()</a>, <a class="el" href="../../d7/de9/star__servo__constants_8h_source.html#l00040">star_servo_angle_t::max</a>, <a class="el" href="../../d7/de9/star__servo__constants_8h_source.html#l00029">star_servo_pulse_t::max_us</a>, <a class="el" href="../../d7/de9/star__servo__constants_8h_source.html#l00027">star_servo_pulse_t::min_us</a>, <a class="el" href="../../d7/de9/star__servo__constants_8h_source.html#l00061">star_servo_constants_t::pulse</a>, and <a class="el" href="../../de/d5e/star__servo__constants_8c_source.html#l00032">star_servo_get_constants()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d3/d75/star__servo_8c_aaad82cea060488fe7f6816dd5f821934_cgraph.png" border="0" usemap="#ad3/d75/star__servo_8c_aaad82cea060488fe7f6816dd5f821934_cgraph" loading="lazy" alt=""/></div>
 <map name="ad3/d75/star__servo_8c_aaad82cea060488fe7f6816dd5f821934_cgraph" id="ad3/d75/star__servo_8c_aaad82cea060488fe7f6816dd5f821934_cgraph">
-<area shape="rect" title="Calculate angle from pulse width in microseconds." alt="" coords="5,23,144,64"/>
-<area shape="rect" href="../../d3/d75/star__servo_8c.html#af22dfa33d50a10394cc1a93fef7dc3d6" title=" " alt="" coords="192,5,286,31"/>
-<area shape="poly" title=" " alt="" coords="143,30,179,27,174,28,144,35"/>
-<area shape="rect" href="../../d3/d75/star__servo_8c.html#a8833486138de9335152a50c11dfa8693" title=" " alt="" coords="192,55,286,80"/>
-<area shape="poly" title=" " alt="" coords="144,51,179,58,173,59,144,56"/>
+<area shape="rect" title="Calculate angle from pulse width in microseconds." alt="" coords="5,67,144,107"/>
+<area shape="rect" href="../../d3/d75/star__servo_8c.html#af22dfa33d50a10394cc1a93fef7dc3d6" title=" " alt="" coords="230,17,324,42"/>
+<area shape="poly" title=" " alt="" coords="143,65,218,46,213,48,145,70"/>
+<area shape="rect" href="../../d3/d75/star__servo_8c.html#a8833486138de9335152a50c11dfa8693" title=" " alt="" coords="230,74,324,100"/>
+<area shape="poly" title=" " alt="" coords="144,84,218,86,213,88,144,90"/>
+<area shape="rect" href="../../de/d5e/star__servo__constants_8c.html#a12c23bf5fc24b4395a13b69edddd66c6" title="Get the default servo constants." alt="" coords="192,124,363,149"/>
+<area shape="poly" title=" " alt="" coords="144,101,210,119,205,120,144,106"/>
+<area shape="rect" href="../../de/d5e/star__servo__constants_8c.html#a1fd2bd5c8eb02e8d5c3bcc32c5841e82" title="Get standard servo angle constants." alt="" coords="411,5,556,46"/>
+<area shape="poly" title=" " alt="" coords="325,26,398,27,393,28,325,31"/>
+<area shape="rect" href="../../de/d5e/star__servo__constants_8c.html#a6172bfbd55bee59f475ff5a82d17fb5a" title="Get standard servo pulse timing constants." alt="" coords="411,71,556,111"/>
+<area shape="poly" title=" " alt="" coords="325,85,398,89,393,90,325,91"/>
 </map>
 </div>
 
@@ -543,19 +601,23 @@ Here is the call graph for this function:</div>
 <dd>
 Pulse widths are clamped to prevent overflow </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00054">54</a> of file <a class="el" href="../../d3/d75/star__servo_8c_source.html">star_servo.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00065">65</a> of file <a class="el" href="../../d3/d75/star__servo_8c_source.html">star_servo.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00018">clamp_pulse()</a>, <a class="el" href="../../d4/d34/star__servo_8h_source.html#l00178">PCA9685_MAX_COUNT</a>, and <a class="el" href="../../d4/d34/star__servo_8h_source.html#l00180">PCA9685_PERIOD_US</a>.</p>
+<p class="reference">References <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00020">clamp_pulse()</a>, <a class="el" href="../../d7/de9/star__servo__constants_8h_source.html#l00050">star_servo_pca9685_t::max_count</a>, <a class="el" href="../../d7/de9/star__servo__constants_8h_source.html#l00052">star_servo_pca9685_t::period_us</a>, and <a class="el" href="../../de/d5e/star__servo__constants_8c_source.html#l00047">star_servo_get_pca9685_constants()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00069">star_servo_angle_to_count()</a>, <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00078">star_servo_get_center_count()</a>, <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00088">star_servo_get_max_count()</a>, and <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00083">star_servo_get_min_count()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00082">star_servo_angle_to_count()</a>, <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00091">star_servo_get_center_count()</a>, <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00103">star_servo_get_max_count()</a>, and <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00097">star_servo_get_min_count()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d3/d75/star__servo_8c_a8cd577679d2d29a34ae03d3cec95c3b1_cgraph.png" border="0" usemap="#ad3/d75/star__servo_8c_a8cd577679d2d29a34ae03d3cec95c3b1_cgraph" loading="lazy" alt=""/></div>
 <map name="ad3/d75/star__servo_8c_a8cd577679d2d29a34ae03d3cec95c3b1_cgraph" id="ad3/d75/star__servo_8c_a8cd577679d2d29a34ae03d3cec95c3b1_cgraph">
-<area shape="rect" title="Calculate PCA9685 count value from pulse width in microseconds." alt="" coords="5,5,144,46"/>
-<area shape="rect" href="../../d3/d75/star__servo_8c.html#a8833486138de9335152a50c11dfa8693" title=" " alt="" coords="192,13,286,38"/>
-<area shape="poly" title=" " alt="" coords="144,23,178,25,173,26,144,28"/>
+<area shape="rect" title="Calculate PCA9685 count value from pulse width in microseconds." alt="" coords="5,35,144,75"/>
+<area shape="rect" href="../../d3/d75/star__servo_8c.html#a8833486138de9335152a50c11dfa8693" title=" " alt="" coords="226,13,320,38"/>
+<area shape="poly" title=" " alt="" coords="143,42,213,34,208,36,144,47"/>
+<area shape="rect" href="../../de/d5e/star__servo__constants_8c.html#aac9dc61d7318ec5bada03bfc02ae18b6" title="Get PCA9685 controller constants." alt="" coords="192,63,355,103"/>
+<area shape="poly" title=" " alt="" coords="144,62,179,69,174,70,144,67"/>
+<area shape="rect" href="../../de/d5e/star__servo__constants_8c.html#a6172bfbd55bee59f475ff5a82d17fb5a" title="Get standard servo pulse timing constants." alt="" coords="403,5,548,46"/>
+<area shape="poly" title=" " alt="" coords="321,23,390,25,385,26,321,28"/>
 </map>
 </div>
 <div class="dynheader">

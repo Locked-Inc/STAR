@@ -100,6 +100,7 @@ $(function(){initNavTree('d7/de0/star__sensor__pca9685_8h.html','../../',''); })
 <code>#include &lt;esp_err.h&gt;</code><br />
 <code>#include &lt;stdbool.h&gt;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
+<code>#include &quot;<a class="el" href="../../d9/ddd/pca9685__constants_8h_source.html">pca9685_constants.h</a>&quot;</code><br />
 <code>#include &quot;soc/gpio_num.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d6/dcc/star__bus__manager_8h_source.html">star_bus_manager.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../df/d84/star__error__interface_8h_source.html">star_error_interface.h</a>&quot;</code><br />
@@ -108,73 +109,76 @@ Include dependency graph for star_sensor_pca9685.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d4/ddb/star__sensor__pca9685_8h__incl.png" border="0" usemap="#alib_2star__sensor__pca9685_2include_2star__sensor__pca9685_8h" loading="lazy" alt=""/></div>
 <map name="alib_2star__sensor__pca9685_2include_2star__sensor__pca9685_8h" id="alib_2star__sensor__pca9685_2include_2star__sensor__pca9685_8h">
-<area shape="rect" title="PCA9685 16&#45;channel 12&#45;bit PWM driver." alt="" coords="403,5,608,46"/>
-<area shape="rect" title=" " alt="" coords="94,241,237,267"/>
-<area shape="poly" title=" " alt="" coords="460,48,364,100,308,133,254,170,218,201,188,231,184,228,214,197,250,166,305,128,362,95,464,45"/>
-<area shape="rect" title=" " alt="" coords="414,241,536,267"/>
-<area shape="poly" title=" " alt="" coords="504,45,481,227,476,225,501,49"/>
-<area shape="rect" title=" " alt="" coords="226,536,300,562"/>
-<area shape="poly" title=" " alt="" coords="400,32,313,40,218,52,136,70,105,82,83,96,67,114,60,132,59,179,59,403,63,429,74,451,91,471,112,488,162,515,213,535,208,536,159,520,109,493,87,475,69,454,58,430,53,403,53,179,55,131,63,111,80,92,103,77,135,65,218,47,312,35,404,29"/>
-<area shape="rect" title=" " alt="" coords="655,536,729,562"/>
-<area shape="poly" title=" " alt="" coords="608,42,656,62,677,75,697,92,712,113,720,132,723,179,723,256,720,331,714,406,698,522,694,519,708,405,715,331,717,255,717,179,715,133,708,115,693,96,674,80,653,66,609,47"/>
-<area shape="rect" title=" " alt="" coords="888,536,952,562"/>
-<area shape="poly" title=" " alt="" coords="608,29,870,43,1028,55,1186,71,1331,91,1452,115,1498,128,1534,143,1557,160,1565,179,1565,256,1560,302,1546,344,1523,381,1492,413,1456,441,1415,465,1370,485,1322,501,1222,526,1124,540,1036,548,968,550,968,545,1036,543,1123,535,1221,521,1320,496,1368,480,1413,460,1453,436,1489,409,1518,378,1541,342,1555,301,1560,255,1560,180,1553,164,1531,148,1497,133,1450,120,1331,96,1185,76,1027,61,870,49,609,34"/>
-<area shape="rect" title=" " alt="" coords="569,94,682,120"/>
-<area shape="poly" title=" " alt="" coords="535,44,597,85,592,86,535,49"/>
-<area shape="rect" href="../../d6/dcc/star__bus__manager_8h.html" title="Unified bus manager for I2C, SPI, GPIO, and other bus protocols." alt="" coords="94,94,232,120"/>
-<area shape="poly" title=" " alt="" coords="418,49,232,92,229,88,421,45"/>
-<area shape="rect" href="../../df/d84/star__error__interface_8h.html" title="Error handler interface for dependency inversion." alt="" coords="460,462,604,488"/>
-<area shape="poly" title=" " alt="" coords="512,44,533,130,551,241,553,299,550,356,539,448,535,445,545,356,548,299,545,242,528,131,510,49"/>
-<area shape="poly" title=" " alt="" coords="130,122,94,142,53,171,35,188,21,208,11,229,8,253,8,403,9,429,13,450,22,467,39,486,79,513,124,530,169,540,213,547,208,547,168,545,122,535,76,517,36,490,17,470,8,451,3,430,3,403,3,253,6,228,16,205,31,185,50,166,91,138,133,118"/>
-<area shape="rect" href="../../d0/d84/star__bus__manager__types_8h.html" title=" " alt="" coords="264,168,442,193"/>
-<area shape="poly" title=" " alt="" coords="195,118,309,160,304,163,195,123"/>
-<area shape="poly" title=" " alt="" coords="320,196,213,238,210,233,323,192"/>
-<area shape="poly" title=" " alt="" coords="374,191,443,232,438,234,374,197"/>
-<area shape="rect" href="../../dd/d40/star__bus__common__types_8h.html" title=" " alt="" coords="831,462,1009,488"/>
-<area shape="poly" title=" " alt="" coords="358,191,375,228,388,248,403,265,454,304,509,339,567,368,627,393,741,432,839,459,834,459,739,437,625,398,565,373,507,343,451,309,400,269,383,251,371,231,357,197"/>
-<area shape="rect" href="../../dd/d9d/star__bus__protocol__types_8h.html" title=" " alt="" coords="837,241,1011,267"/>
-<area shape="poly" title=" " alt="" coords="443,190,824,238,820,242,443,196"/>
-<area shape="poly" title=" " alt="" coords="353,192,353,227,360,266,390,324,430,375,471,418,508,453,503,452,468,422,426,379,386,326,355,268,347,228,350,196"/>
-<area shape="rect" href="../../da/d58/star__pin__interface_8h.html" title="Pin validator interface for dependency inversion." alt="" coords="300,462,436,488"/>
-<area shape="poly" title=" " alt="" coords="341,192,324,216,309,242,294,290,289,329,293,367,309,413,322,434,340,453,334,452,318,437,304,415,288,368,283,328,289,288,304,240,319,213,338,196"/>
-<area shape="poly" title=" " alt="" coords="831,489,316,544,315,539,830,484"/>
-<area shape="poly" title=" " alt="" coords="884,488,745,534,744,529,879,489"/>
-<area shape="poly" title=" " alt="" coords="922,486,922,522,918,518,918,490"/>
-<area shape="rect" title=" " alt="" coords="1211,536,1304,562"/>
-<area shape="poly" title=" " alt="" coords="978,486,1199,535,1194,535,977,491"/>
-<area shape="rect" title=" " alt="" coords="1420,536,1551,562"/>
-<area shape="poly" title=" " alt="" coords="1010,485,1407,537,1402,537,1009,490"/>
-<area shape="poly" title=" " alt="" coords="850,268,706,299,529,342,444,369,368,398,308,430,285,447,269,464,262,477,259,491,259,522,254,519,253,491,257,475,265,461,282,443,305,426,366,394,442,364,528,337,705,294,855,267"/>
-<area shape="poly" title=" " alt="" coords="900,267,847,297,784,339,752,366,723,395,697,428,676,463,672,477,672,492,680,523,676,520,667,493,667,477,671,461,692,425,719,392,749,362,781,335,845,293,895,269"/>
-<area shape="poly" title=" " alt="" coords="916,266,882,316,844,387,832,419,821,463,818,476,821,487,845,512,876,533,871,532,841,517,816,489,813,476,816,462,827,418,839,385,878,314,911,269"/>
-<area shape="poly" title=" " alt="" coords="916,266,901,290,889,316,889,340,894,375,914,449,909,446,889,377,883,341,884,314,896,287,912,269"/>
-<area shape="poly" title=" " alt="" coords="1012,254,1089,264,1171,286,1211,303,1249,325,1281,353,1308,387,1315,405,1318,423,1312,461,1297,496,1278,526,1275,521,1292,493,1307,459,1313,423,1310,406,1303,390,1277,357,1245,330,1209,308,1170,291,1088,269,1012,259"/>
-<area shape="poly" title=" " alt="" coords="1011,256,1070,261,1135,272,1202,288,1266,313,1324,343,1365,373,1401,410,1442,461,1462,491,1477,523,1472,521,1458,494,1438,464,1397,414,1361,377,1321,347,1264,317,1201,293,1134,277,1070,267,1012,261"/>
-<area shape="rect" title=" " alt="" coords="1033,462,1119,488"/>
-<area shape="poly" title=" " alt="" coords="1011,265,1053,283,1071,297,1086,314,1100,347,1102,384,1097,419,1088,450,1085,446,1092,418,1097,383,1095,348,1082,316,1068,300,1050,288,1010,270"/>
-<area shape="rect" href="../../db/d78/star__bus__event__types_8h.html" title=" " alt="" coords="1112,389,1272,414"/>
-<area shape="poly" title=" " alt="" coords="1009,265,1071,283,1101,296,1130,313,1160,342,1182,376,1177,374,1156,345,1126,317,1099,301,1069,288,1009,270"/>
-<area shape="rect" href="../../d0/da6/star__bus__function__types_8h.html" title=" " alt="" coords="898,315,1072,341"/>
-<area shape="poly" title=" " alt="" coords="935,265,968,304,962,302,933,270"/>
-<area shape="poly" title=" " alt="" coords="1190,413,1169,453,1152,474,1132,490,1110,498,1072,506,967,521,745,545,744,540,966,516,1072,501,1108,493,1129,486,1149,470,1165,450,1185,416"/>
-<area shape="poly" title=" " alt="" coords="1195,413,1194,451,1188,472,1177,490,1162,501,1141,510,1086,526,968,545,968,540,1085,521,1139,505,1159,496,1173,486,1183,470,1189,450,1191,416"/>
-<area shape="poly" title=" " alt="" coords="1148,414,982,460,981,455,1143,415"/>
-<area shape="poly" title=" " alt="" coords="1201,413,1228,461,1251,523,1246,520,1223,463,1198,417"/>
-<area shape="poly" title=" " alt="" coords="1217,412,1450,529,1444,528,1216,418"/>
-<area shape="poly" title=" " alt="" coords="1175,414,1109,457,1107,452,1170,416"/>
-<area shape="poly" title=" " alt="" coords="895,335,745,351,564,376,477,393,398,413,334,437,290,464,280,476,273,491,266,522,262,519,268,489,275,474,286,460,332,432,396,408,475,387,563,370,745,346,901,334"/>
-<area shape="poly" title=" " alt="" coords="972,341,721,529,719,524,967,342"/>
-<area shape="poly" title=" " alt="" coords="1073,332,1136,339,1199,350,1252,365,1272,375,1286,387,1291,401,1286,415,1261,456,1226,487,1184,511,1139,528,1092,539,1046,547,968,551,967,546,1045,541,1091,534,1137,523,1182,506,1223,483,1257,452,1282,413,1286,401,1282,390,1269,380,1250,370,1197,355,1135,344,1073,337"/>
-<area shape="poly" title=" " alt="" coords="982,340,933,450,930,446,978,342"/>
-<area shape="poly" title=" " alt="" coords="1073,330,1128,336,1187,347,1248,363,1307,386,1357,417,1402,454,1469,525,1464,523,1398,458,1354,421,1304,391,1247,368,1186,352,1127,342,1073,336"/>
-<area shape="poly" title=" " alt="" coords="994,339,1063,450,1058,448,991,343"/>
-<area shape="poly" title=" " alt="" coords="1021,339,1145,383,1140,383,1020,344"/>
-<area shape="poly" title=" " alt="" coords="489,488,315,536,314,531,484,489"/>
-<area shape="poly" title=" " alt="" coords="560,486,654,530,648,529,559,491"/>
-<area shape="poly" title=" " alt="" coords="599,486,875,539,870,539,598,491"/>
-<area shape="poly" title=" " alt="" coords="353,488,294,529,292,525,348,489"/>
-<area shape="poly" title=" " alt="" coords="424,486,642,536,637,536,423,491"/>
-<area shape="poly" title=" " alt="" coords="436,484,448,485,874,540,870,543,448,491,436,489"/>
+<area shape="rect" title="PCA9685 16&#45;channel 12&#45;bit PWM driver." alt="" coords="281,5,487,46"/>
+<area shape="rect" title=" " alt="" coords="315,241,458,267"/>
+<area shape="poly" title=" " alt="" coords="346,49,324,69,305,95,302,107,305,119,317,150,333,180,369,229,363,229,329,182,312,152,300,120,297,107,300,93,320,65,350,45"/>
+<area shape="rect" title=" " alt="" coords="483,241,605,267"/>
+<area shape="poly" title=" " alt="" coords="413,44,442,66,467,92,497,148,535,228,530,227,492,150,463,96,438,70,414,49"/>
+<area shape="rect" title=" " alt="" coords="430,536,504,562"/>
+<area shape="poly" title=" " alt="" coords="283,49,194,72,104,102,65,120,35,139,15,159,8,180,8,403,11,417,20,431,54,456,104,478,165,497,300,524,417,542,411,542,299,529,164,502,102,483,51,461,16,434,6,419,3,403,3,179,10,156,32,134,63,115,102,97,193,67,286,45"/>
+<area shape="rect" title=" " alt="" coords="1087,536,1161,562"/>
+<area shape="poly" title=" " alt="" coords="487,26,788,37,974,47,1161,62,1335,81,1480,106,1536,121,1578,138,1606,157,1613,168,1616,179,1616,403,1612,420,1602,436,1585,450,1564,464,1509,486,1443,505,1299,532,1177,546,1177,541,1298,526,1442,500,1508,481,1562,459,1582,446,1598,433,1607,418,1611,403,1611,179,1609,170,1602,161,1576,143,1534,126,1478,112,1335,86,1161,67,973,52,788,42,488,32"/>
+<area shape="rect" title=" " alt="" coords="809,536,874,562"/>
+<area shape="poly" title=" " alt="" coords="338,49,304,71,268,100,240,136,232,157,229,179,229,329,234,350,247,370,268,389,296,408,369,441,457,470,551,494,645,514,796,541,791,541,644,519,550,499,455,475,367,446,294,412,265,394,243,374,229,352,224,329,224,179,227,156,235,134,264,96,301,66,342,45"/>
+<area shape="rect" href="../../d9/ddd/pca9685__constants_8h.html" title="Type&#45;safe constants for PCA9685 16&#45;channel 12&#45;bit PWM controller." alt="" coords="43,168,189,193"/>
+<area shape="poly" title=" " alt="" coords="313,48,262,69,209,96,170,126,138,158,134,155,167,122,207,92,260,64,317,45"/>
+<area shape="rect" title=" " alt="" coords="529,94,642,120"/>
+<area shape="poly" title=" " alt="" coords="434,44,543,87,538,89,435,49"/>
+<area shape="rect" href="../../d6/dcc/star__bus__manager_8h.html" title="Unified bus manager for I2C, SPI, GPIO, and other bus protocols." alt="" coords="315,94,453,120"/>
+<area shape="poly" title=" " alt="" coords="385,44,387,79,381,78,383,49"/>
+<area shape="rect" href="../../df/d84/star__error__interface_8h.html" title="Error handler interface for dependency inversion." alt="" coords="714,462,859,488"/>
+<area shape="poly" title=" " alt="" coords="486,26,573,37,616,47,657,62,692,82,721,108,740,140,747,179,747,329,750,362,757,393,777,449,772,447,752,395,744,362,741,329,741,179,735,142,717,111,689,86,654,67,614,52,572,42,488,31"/>
+<area shape="poly" title=" " alt="" coords="121,191,139,250,146,288,149,326,149,402,154,413,169,425,227,448,311,469,412,489,627,521,796,543,791,543,626,526,411,494,310,474,225,453,167,430,150,417,144,403,144,327,141,288,134,251,120,196"/>
+<area shape="poly" title=" " alt="" coords="375,118,349,155,318,204,291,263,283,294,280,327,280,403,284,427,293,448,308,467,327,484,371,511,418,533,412,532,369,516,324,489,304,471,289,451,278,428,275,403,275,326,278,293,286,261,313,201,345,152,372,122"/>
+<area shape="rect" href="../../d0/d84/star__bus__manager__types_8h.html" title=" " alt="" coords="528,168,706,193"/>
+<area shape="poly" title=" " alt="" coords="423,118,566,162,561,164,424,123"/>
+<area shape="poly" title=" " alt="" coords="576,195,441,239,439,234,581,193"/>
+<area shape="poly" title=" " alt="" coords="607,192,569,233,565,228,603,195"/>
+<area shape="rect" href="../../dd/d40/star__bus__common__types_8h.html" title=" " alt="" coords="1035,462,1213,488"/>
+<area shape="poly" title=" " alt="" coords="639,191,1093,453,1088,455,637,196"/>
+<area shape="rect" href="../../dd/d9d/star__bus__protocol__types_8h.html" title=" " alt="" coords="1056,241,1230,267"/>
+<area shape="poly" title=" " alt="" coords="707,191,1042,238,1037,240,707,197"/>
+<area shape="poly" title=" " alt="" coords="622,191,660,288,690,351,727,413,763,453,758,451,723,416,685,354,655,290,620,196"/>
+<area shape="rect" href="../../da/d58/star__pin__interface_8h.html" title="Pin validator interface for dependency inversion." alt="" coords="555,462,690,488"/>
+<area shape="poly" title=" " alt="" coords="620,192,625,448,620,446,615,195"/>
+<area shape="poly" title=" " alt="" coords="1036,488,520,544,519,539,1032,484"/>
+<area shape="poly" title=" " alt="" coords="1126,486,1126,522,1122,518,1122,490"/>
+<area shape="poly" title=" " alt="" coords="1079,488,889,538,888,533,1073,489"/>
+<area shape="rect" title=" " alt="" coords="1668,536,1761,562"/>
+<area shape="poly" title=" " alt="" coords="1214,485,1656,540,1651,540,1214,490"/>
+<area shape="rect" title=" " alt="" coords="1472,536,1603,562"/>
+<area shape="poly" title=" " alt="" coords="1195,486,1459,534,1454,534,1194,491"/>
+<area shape="poly" title=" " alt="" coords="1076,268,882,316,763,350,645,391,570,419,541,435,509,464,489,493,476,523,472,519,484,490,505,461,538,431,568,414,643,386,761,345,881,310,1081,267"/>
+<area shape="poly" title=" " alt="" coords="1134,266,1109,301,1077,347,1047,402,1025,463,1022,476,1025,487,1046,511,1075,531,1070,530,1043,515,1020,489,1017,476,1020,462,1042,400,1073,344,1105,297,1130,269"/>
+<area shape="poly" title=" " alt="" coords="1130,266,1075,317,955,434,864,527,862,522,952,430,1072,313,1126,269"/>
+<area shape="poly" title=" " alt="" coords="1135,266,1120,290,1108,316,1103,351,1104,386,1117,449,1112,446,1099,387,1097,350,1103,314,1115,287,1130,269"/>
+<area shape="poly" title=" " alt="" coords="1230,253,1295,257,1367,267,1441,285,1512,313,1546,333,1578,358,1633,415,1675,473,1704,523,1699,521,1671,476,1629,419,1574,362,1543,337,1510,317,1439,290,1366,273,1294,263,1230,258"/>
+<area shape="poly" title=" " alt="" coords="1230,254,1313,263,1404,285,1449,302,1492,324,1531,352,1565,387,1580,412,1586,435,1585,460,1577,489,1558,526,1555,521,1572,487,1579,459,1581,436,1575,414,1561,390,1528,356,1490,329,1447,307,1403,290,1312,268,1231,259"/>
+<area shape="rect" title=" " alt="" coords="1288,462,1373,488"/>
+<area shape="poly" title=" " alt="" coords="1221,265,1267,283,1287,296,1305,313,1323,345,1333,381,1337,417,1335,448,1332,445,1331,417,1328,382,1318,348,1301,317,1284,301,1264,288,1221,270"/>
+<area shape="rect" href="../../db/d78/star__bus__event__types_8h.html" title=" " alt="" coords="1365,389,1526,414"/>
+<area shape="poly" title=" " alt="" coords="1210,265,1279,284,1348,313,1392,343,1427,378,1422,377,1388,347,1345,317,1277,289,1210,270"/>
+<area shape="rect" href="../../d0/da6/star__bus__function__types_8h.html" title=" " alt="" coords="1117,315,1291,341"/>
+<area shape="poly" title=" " alt="" coords="1154,265,1186,304,1181,302,1152,270"/>
+<area shape="poly" title=" " alt="" coords="1449,413,1449,451,1443,472,1431,490,1413,503,1387,513,1320,530,1244,541,1177,547,1176,542,1244,535,1319,524,1385,508,1410,498,1427,486,1438,470,1443,450,1445,417"/>
+<area shape="poly" title=" " alt="" coords="1443,413,1423,454,1407,474,1387,490,1358,500,1308,509,1168,525,889,547,889,542,1168,520,1307,504,1356,495,1384,486,1403,470,1419,451,1439,416"/>
+<area shape="poly" title=" " alt="" coords="1393,415,1194,461,1193,456,1388,415"/>
+<area shape="poly" title=" " alt="" coords="1469,412,1681,528,1676,528,1467,417"/>
+<area shape="poly" title=" " alt="" coords="1454,412,1524,524,1519,522,1452,417"/>
+<area shape="poly" title=" " alt="" coords="1428,414,1364,456,1362,451,1423,416"/>
+<area shape="poly" title=" " alt="" coords="1114,330,997,340,850,360,771,377,693,400,616,429,544,465,510,493,484,525,481,520,506,489,541,460,614,424,691,395,770,372,849,355,997,335,1119,329"/>
+<area shape="poly" title=" " alt="" coords="1212,339,1225,368,1236,406,1239,449,1236,470,1228,489,1205,515,1176,533,1174,528,1202,511,1223,487,1231,468,1234,448,1231,407,1220,370,1209,344"/>
+<area shape="poly" title=" " alt="" coords="1187,341,875,530,873,525,1181,342"/>
+<area shape="poly" title=" " alt="" coords="1200,340,1140,451,1136,447,1195,342"/>
+<area shape="poly" title=" " alt="" coords="1291,330,1363,336,1436,346,1499,363,1523,374,1539,387,1549,402,1556,419,1560,456,1556,491,1548,523,1545,519,1551,491,1555,456,1551,421,1545,405,1535,390,1520,378,1497,368,1435,351,1362,341,1292,335"/>
+<area shape="poly" title=" " alt="" coords="1215,339,1313,451,1308,450,1213,343"/>
+<area shape="poly" title=" " alt="" coords="1245,339,1393,384,1387,384,1245,344"/>
+<area shape="poly" title=" " alt="" coords="735,488,519,539,518,533,729,489"/>
+<area shape="poly" title=" " alt="" coords="845,486,1074,537,1069,536,844,491"/>
+<area shape="poly" title=" " alt="" coords="797,486,825,525,821,523,795,491"/>
+<area shape="poly" title=" " alt="" coords="599,488,508,532,506,527,594,489"/>
+<area shape="poly" title=" " alt="" coords="691,484,703,485,1074,540,1069,540,702,491,691,489"/>
+<area shape="poly" title=" " alt="" coords="660,486,797,532,792,532,659,491"/>
 </map>
 </div>
 </div><div class="textblock"><div class="dynheader">
@@ -213,46 +217,6 @@ Classes</h2></td></tr>
 <tr class="memitem:pca9685_5Fhandle" id="r_pca9685_5Fhandle"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d07/structpca9685__handle.html">pca9685_handle</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">PCA9685 device handle.  <a href="../../d4/d07/structpca9685__handle.html#details">More...</a><br /></td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-define-members" class="groupheader"><a id="define-members" name="define-members"></a>
-Macros</h2></td></tr>
-<tr class="memitem:ad8f666f49e3646c6d46e9f5771b7afba" id="r_ad8f666f49e3646c6d46e9f5771b7afba"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad8f666f49e3646c6d46e9f5771b7afba">PCA9685_DEFAULT_ADDR</a>&#160;&#160;&#160;(0x40)</td></tr>
-<tr class="memitem:a28b9196e164399b535405071aa9fa45c" id="r_a28b9196e164399b535405071aa9fa45c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a28b9196e164399b535405071aa9fa45c">PCA9685_ALLCALL_ADDR</a>&#160;&#160;&#160;(0x70)</td></tr>
-<tr class="memitem:adc1135fd0e3f85a9eca52cc26ff7148b" id="r_adc1135fd0e3f85a9eca52cc26ff7148b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adc1135fd0e3f85a9eca52cc26ff7148b">PCA9685_NUM_CHANNELS</a>&#160;&#160;&#160;(16)</td></tr>
-<tr class="memitem:a9cefe4676a84997849f04fa8c1642251" id="r_a9cefe4676a84997849f04fa8c1642251"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9cefe4676a84997849f04fa8c1642251">PCA9685_PWM_RESOLUTION</a>&#160;&#160;&#160;(4096)</td></tr>
-<tr class="memitem:af7e7b549fff39f4221b5eeab3ef17f34" id="r_af7e7b549fff39f4221b5eeab3ef17f34"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af7e7b549fff39f4221b5eeab3ef17f34">PCA9685_MIN_FREQ</a>&#160;&#160;&#160;(24)</td></tr>
-<tr class="memitem:ae4a95baec3f8b401262e0c94cefa83aa" id="r_ae4a95baec3f8b401262e0c94cefa83aa"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae4a95baec3f8b401262e0c94cefa83aa">PCA9685_MAX_FREQ</a>&#160;&#160;&#160;(1526)</td></tr>
-<tr class="memitem:a65f10a2aeccc04a3c0aab8f729619d37" id="r_a65f10a2aeccc04a3c0aab8f729619d37"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a65f10a2aeccc04a3c0aab8f729619d37">PCA9685_OSCILLATOR_FREQ</a>&#160;&#160;&#160;(25000000)</td></tr>
-<tr class="memitem:a82820ff83c1fd597861374d9beffcf05" id="r_a82820ff83c1fd597861374d9beffcf05"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a82820ff83c1fd597861374d9beffcf05">PCA9685_REG_MODE1</a>&#160;&#160;&#160;(0x00)</td></tr>
-<tr class="memitem:a70cf4411f341c0bcfd3e9342a4af0f54" id="r_a70cf4411f341c0bcfd3e9342a4af0f54"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a70cf4411f341c0bcfd3e9342a4af0f54">PCA9685_REG_MODE2</a>&#160;&#160;&#160;(0x01)</td></tr>
-<tr class="memitem:a74780dea84c5db56104a90a219449d0d" id="r_a74780dea84c5db56104a90a219449d0d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a74780dea84c5db56104a90a219449d0d">PCA9685_REG_SUBADR1</a>&#160;&#160;&#160;(0x02)</td></tr>
-<tr class="memitem:a9e6f5122f0c6163346e0fb4db6455b77" id="r_a9e6f5122f0c6163346e0fb4db6455b77"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9e6f5122f0c6163346e0fb4db6455b77">PCA9685_REG_SUBADR2</a>&#160;&#160;&#160;(0x03)</td></tr>
-<tr class="memitem:a159e7bdf3c61f3a918f8cfa334a850b2" id="r_a159e7bdf3c61f3a918f8cfa334a850b2"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a159e7bdf3c61f3a918f8cfa334a850b2">PCA9685_REG_SUBADR3</a>&#160;&#160;&#160;(0x04)</td></tr>
-<tr class="memitem:ae89603a7de126241781026ab3f95a543" id="r_ae89603a7de126241781026ab3f95a543"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae89603a7de126241781026ab3f95a543">PCA9685_REG_ALLCALLADR</a>&#160;&#160;&#160;(0x05)</td></tr>
-<tr class="memitem:ac212eb6e0601752c9baf0cc2f566109a" id="r_ac212eb6e0601752c9baf0cc2f566109a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac212eb6e0601752c9baf0cc2f566109a">PCA9685_REG_LED0_ON_L</a>&#160;&#160;&#160;(0x06)</td></tr>
-<tr class="memitem:aa7f3675e80f5a47dd2a572efcc99da9a" id="r_aa7f3675e80f5a47dd2a572efcc99da9a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa7f3675e80f5a47dd2a572efcc99da9a">PCA9685_REG_LED0_ON_H</a>&#160;&#160;&#160;(0x07)</td></tr>
-<tr class="memitem:a53b0a52921eab5dcc670f998245ac7fd" id="r_a53b0a52921eab5dcc670f998245ac7fd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a53b0a52921eab5dcc670f998245ac7fd">PCA9685_REG_LED0_OFF_L</a>&#160;&#160;&#160;(0x08)</td></tr>
-<tr class="memitem:aa1c286a737885a174feb69467a0bd993" id="r_aa1c286a737885a174feb69467a0bd993"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa1c286a737885a174feb69467a0bd993">PCA9685_REG_LED0_OFF_H</a>&#160;&#160;&#160;(0x09)</td></tr>
-<tr class="memitem:a6590ff7e34c75c73ef9615495cd5a507" id="r_a6590ff7e34c75c73ef9615495cd5a507"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6590ff7e34c75c73ef9615495cd5a507">PCA9685_REG_ALL_LED_ON_L</a>&#160;&#160;&#160;(0xFA)</td></tr>
-<tr class="memitem:a9a74767a9bb779b15a3e51cd88f58903" id="r_a9a74767a9bb779b15a3e51cd88f58903"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9a74767a9bb779b15a3e51cd88f58903">PCA9685_REG_ALL_LED_ON_H</a>&#160;&#160;&#160;(0xFB)</td></tr>
-<tr class="memitem:aa62579ed4707ee6da04c18b79906fc0e" id="r_aa62579ed4707ee6da04c18b79906fc0e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa62579ed4707ee6da04c18b79906fc0e">PCA9685_REG_ALL_LED_OFF_L</a>&#160;&#160;&#160;(0xFC)</td></tr>
-<tr class="memitem:aeacb93b0641c1632828dae987eeb0db6" id="r_aeacb93b0641c1632828dae987eeb0db6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aeacb93b0641c1632828dae987eeb0db6">PCA9685_REG_ALL_LED_OFF_H</a>&#160;&#160;&#160;(0xFD)</td></tr>
-<tr class="memitem:ac23fd1476370ab953d2437a58a60b08f" id="r_ac23fd1476370ab953d2437a58a60b08f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac23fd1476370ab953d2437a58a60b08f">PCA9685_REG_PRESCALE</a>&#160;&#160;&#160;(0xFE)</td></tr>
-<tr class="memitem:acc7e2fd093f5c2d53b39f5a99d0d4308" id="r_acc7e2fd093f5c2d53b39f5a99d0d4308"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acc7e2fd093f5c2d53b39f5a99d0d4308">PCA9685_MODE1_RESTART</a>&#160;&#160;&#160;(1 &lt;&lt; 7)</td></tr>
-<tr class="memitem:ab5d45f72d44f9823c8ecd8f020dc3dfa" id="r_ab5d45f72d44f9823c8ecd8f020dc3dfa"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab5d45f72d44f9823c8ecd8f020dc3dfa">PCA9685_MODE1_EXTCLK</a>&#160;&#160;&#160;(1 &lt;&lt; 6)</td></tr>
-<tr class="memitem:afb8e02b836c5427aab5b8ffcd39271d4" id="r_afb8e02b836c5427aab5b8ffcd39271d4"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afb8e02b836c5427aab5b8ffcd39271d4">PCA9685_MODE1_AI</a>&#160;&#160;&#160;(1 &lt;&lt; 5)</td></tr>
-<tr class="memitem:a5fc87b2b0f19488969f31f7cda1d74db" id="r_a5fc87b2b0f19488969f31f7cda1d74db"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5fc87b2b0f19488969f31f7cda1d74db">PCA9685_MODE1_SLEEP</a>&#160;&#160;&#160;(1 &lt;&lt; 4)</td></tr>
-<tr class="memitem:ac33d14f4aa61d3bb99f9f93238b7e14d" id="r_ac33d14f4aa61d3bb99f9f93238b7e14d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac33d14f4aa61d3bb99f9f93238b7e14d">PCA9685_MODE1_SUB1</a>&#160;&#160;&#160;(1 &lt;&lt; 3)</td></tr>
-<tr class="memitem:af8b22a3b767c5ace66b23e83395db5c7" id="r_af8b22a3b767c5ace66b23e83395db5c7"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af8b22a3b767c5ace66b23e83395db5c7">PCA9685_MODE1_SUB2</a>&#160;&#160;&#160;(1 &lt;&lt; 2)</td></tr>
-<tr class="memitem:aa119139a41b9123d9564320f994e24ea" id="r_aa119139a41b9123d9564320f994e24ea"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa119139a41b9123d9564320f994e24ea">PCA9685_MODE1_SUB3</a>&#160;&#160;&#160;(1 &lt;&lt; 1)</td></tr>
-<tr class="memitem:a0a1b679752f9ddbb92562ec2043a278b" id="r_a0a1b679752f9ddbb92562ec2043a278b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0a1b679752f9ddbb92562ec2043a278b">PCA9685_MODE1_ALLCALL</a>&#160;&#160;&#160;(1 &lt;&lt; 0)</td></tr>
-<tr class="memitem:aa52be73457414c27bc1b954af0a6bd33" id="r_aa52be73457414c27bc1b954af0a6bd33"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa52be73457414c27bc1b954af0a6bd33">PCA9685_MODE2_INVRT</a>&#160;&#160;&#160;(1 &lt;&lt; 4)</td></tr>
-<tr class="memitem:ac550f4a49dab76de6f547c7bf14b9e9b" id="r_ac550f4a49dab76de6f547c7bf14b9e9b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac550f4a49dab76de6f547c7bf14b9e9b">PCA9685_MODE2_OCH</a>&#160;&#160;&#160;(1 &lt;&lt; 3)</td></tr>
-<tr class="memitem:a015feeb9e0ead6518633b4fe213ee206" id="r_a015feeb9e0ead6518633b4fe213ee206"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a015feeb9e0ead6518633b4fe213ee206">PCA9685_MODE2_OUTDRV</a>&#160;&#160;&#160;(1 &lt;&lt; 2)</td></tr>
-<tr class="memitem:a069534f6509dddee916934d5af81b4f3" id="r_a069534f6509dddee916934d5af81b4f3"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a069534f6509dddee916934d5af81b4f3">PCA9685_MODE2_OUTNE1</a>&#160;&#160;&#160;(1 &lt;&lt; 1)</td></tr>
-<tr class="memitem:a1d0f07c2738d627305bebf73cb8b57fd" id="r_a1d0f07c2738d627305bebf73cb8b57fd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1d0f07c2738d627305bebf73cb8b57fd">PCA9685_MODE2_OUTNE0</a>&#160;&#160;&#160;(1 &lt;&lt; 0)</td></tr>
-<tr class="memitem:ae017d818f46f0d6eabfedd9d15770f14" id="r_ae017d818f46f0d6eabfedd9d15770f14"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae017d818f46f0d6eabfedd9d15770f14">PCA9685_LED_FULL_ON</a>&#160;&#160;&#160;(1 &lt;&lt; 4)</td></tr>
-<tr class="memitem:adba46b60b25fe8e399894dcfc9f385a2" id="r_adba46b60b25fe8e399894dcfc9f385a2"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adba46b60b25fe8e399894dcfc9f385a2">PCA9685_LED_FULL_OFF</a>&#160;&#160;&#160;(1 &lt;&lt; 4)</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-typedef-members" class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
 <tr class="memitem:afa905e4d6a39f212e4ebdc4a4524a368" id="r_afa905e4d6a39f212e4ebdc4a4524a368"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="../../d4/d07/structpca9685__handle.html">pca9685_handle</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afa905e4d6a39f212e4ebdc4a4524a368">pca9685_handle_t</a></td></tr>
@@ -260,8 +224,8 @@ Typedefs</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-enum-members" class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:a63da43132626bb15352c8b2869354b48" id="r_a63da43132626bb15352c8b2869354b48"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a63da43132626bb15352c8b2869354b48">pca9685_output_mode_t</a> { <a class="el" href="#a63da43132626bb15352c8b2869354b48ab308c81a9286f197ff792cbcd4438dc9">PCA9685_OUTPUT_OPEN_DRAIN</a> = 0
-, <a class="el" href="#a63da43132626bb15352c8b2869354b48a43c679868da12becdac4ad1ac99d3ea1">PCA9685_OUTPUT_TOTEM_POLE</a> = 1
+<tr class="memitem:a63da43132626bb15352c8b2869354b48" id="r_a63da43132626bb15352c8b2869354b48"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a63da43132626bb15352c8b2869354b48">pca9685_output_mode_t</a> { <a class="el" href="#a63da43132626bb15352c8b2869354b48a7a770a074f122918eb3cebb55cf828e1">k_pca9685_output_open_drain</a> = 0
+, <a class="el" href="#a63da43132626bb15352c8b2869354b48ace7c778ca0667f2518ec216a2a1559d3">k_pca9685_output_totem_pole</a> = 1
  }</td></tr>
 <tr class="memdesc:a63da43132626bb15352c8b2869354b48"><td class="mdescLeft">&#160;</td><td class="mdescRight">Output driver mode.  <a href="#a63da43132626bb15352c8b2869354b48">More...</a><br /></td></tr>
 </table><table class="memberdecls">
@@ -273,8 +237,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:abf4b004f9ee13b89446c5f5b268ebcf6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deinitialize PCA9685 PWM controller handle.  <br /></td></tr>
 <tr class="memitem:a1f319c0974d76c124b4cf481499baf6e" id="r_a1f319c0974d76c124b4cf481499baf6e"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1f319c0974d76c124b4cf481499baf6e">star_sensor_pca9685_reset</a> (const <a class="el" href="#afa905e4d6a39f212e4ebdc4a4524a368">pca9685_handle_t</a> *handle)</td></tr>
 <tr class="memdesc:a1f319c0974d76c124b4cf481499baf6e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Software reset of PCA9685.  <br /></td></tr>
-<tr class="memitem:ab168813c0ee1ff5d7458a8fc52ba68f2" id="r_ab168813c0ee1ff5d7458a8fc52ba68f2"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab168813c0ee1ff5d7458a8fc52ba68f2">star_sensor_pca9685_set_frequency</a> (<a class="el" href="#afa905e4d6a39f212e4ebdc4a4524a368">pca9685_handle_t</a> *handle, uint16_t freq_hz)</td></tr>
-<tr class="memdesc:ab168813c0ee1ff5d7458a8fc52ba68f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set PWM frequency.  <br /></td></tr>
+<tr class="memitem:ab6df7f67b80a359b6368bc660c14084a" id="r_ab6df7f67b80a359b6368bc660c14084a"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab6df7f67b80a359b6368bc660c14084a">star_sensor_pca9685_set_frequency</a> (<a class="el" href="#afa905e4d6a39f212e4ebdc4a4524a368">pca9685_handle_t</a> *const handle, const uint16_t freq_hz)</td></tr>
+<tr class="memdesc:ab6df7f67b80a359b6368bc660c14084a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set PWM frequency.  <br /></td></tr>
 <tr class="memitem:a360aec2b034221ff3286cdf344b2e66e" id="r_a360aec2b034221ff3286cdf344b2e66e"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a360aec2b034221ff3286cdf344b2e66e">star_sensor_pca9685_get_frequency</a> (const <a class="el" href="#afa905e4d6a39f212e4ebdc4a4524a368">pca9685_handle_t</a> *handle, uint16_t *freq_hz)</td></tr>
 <tr class="memdesc:a360aec2b034221ff3286cdf344b2e66e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get current PWM frequency.  <br /></td></tr>
 <tr class="memitem:a81a04e618f2d3f31ee59685399779c72" id="r_a81a04e618f2d3f31ee59685399779c72"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a81a04e618f2d3f31ee59685399779c72">star_sensor_pca9685_set_duty_cycle</a> (const <a class="el" href="#afa905e4d6a39f212e4ebdc4a4524a368">pca9685_handle_t</a> *handle, uint8_t channel, float duty_percent)</td></tr>
@@ -295,8 +259,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:a5ad3e5ba04fe061a85c9b16487bb9fef"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate prescale value for desired frequency.  <br /></td></tr>
 <tr class="memitem:a441029eed6f44d433b3c0d6167e24701" id="r_a441029eed6f44d433b3c0d6167e24701"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a441029eed6f44d433b3c0d6167e24701">star_sensor_pca9685_prescale_to_freq</a> (uint8_t prescale, uint16_t *freq_hz)</td></tr>
 <tr class="memdesc:a441029eed6f44d433b3c0d6167e24701"><td class="mdescLeft">&#160;</td><td class="mdescRight">Convert prescale value to frequency.  <br /></td></tr>
-<tr class="memitem:a5e27834a91ab6b25fca8a01bdb8f9274" id="r_a5e27834a91ab6b25fca8a01bdb8f9274"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5e27834a91ab6b25fca8a01bdb8f9274">star_sensor_pca9685_sleep</a> (<a class="el" href="#afa905e4d6a39f212e4ebdc4a4524a368">pca9685_handle_t</a> *handle, bool sleep)</td></tr>
-<tr class="memdesc:a5e27834a91ab6b25fca8a01bdb8f9274"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sleep/wake device.  <br /></td></tr>
+<tr class="memitem:a8967db4fc39ffbcbadb10919f9d20dae" id="r_a8967db4fc39ffbcbadb10919f9d20dae"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8967db4fc39ffbcbadb10919f9d20dae">star_sensor_pca9685_sleep</a> (<a class="el" href="#afa905e4d6a39f212e4ebdc4a4524a368">pca9685_handle_t</a> *const handle, const bool sleep)</td></tr>
+<tr class="memdesc:a8967db4fc39ffbcbadb10919f9d20dae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sleep/wake device.  <br /></td></tr>
 <tr class="memitem:a79e549dd61b3ed28b3ea964fed19aa43" id="r_a79e549dd61b3ed28b3ea964fed19aa43"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a79e549dd61b3ed28b3ea964fed19aa43">star_sensor_pca9685_output_enable</a> (const <a class="el" href="#afa905e4d6a39f212e4ebdc4a4524a368">pca9685_handle_t</a> *handle)</td></tr>
 <tr class="memdesc:a79e549dd61b3ed28b3ea964fed19aa43"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enable PWM outputs via OE pin.  <br /></td></tr>
 <tr class="memitem:a7eacea0c415a6be2d5b217b750897680" id="r_a7eacea0c415a6be2d5b217b750897680"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7eacea0c415a6be2d5b217b750897680">star_sensor_pca9685_output_disable</a> (const <a class="el" href="#afa905e4d6a39f212e4ebdc4a4524a368">pca9685_handle_t</a> *handle)</td></tr>
@@ -328,7 +292,7 @@ Functions</h2></td></tr>
 <div class="line"><a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a>* pwm_bus = <a class="code hl_function" href="../../d0/de4/star__bus__config_8h.html#ae2c74c07526c11cc15773c858681f8d4">star_bus_config_create_i2c</a>(</div>
 <div class="line">    <span class="stringliteral">&quot;pwm_i2c&quot;</span>,</div>
 <div class="line">    I2C_NUM_0,</div>
-<div class="line">    <a class="code hl_define" href="#ad8f666f49e3646c6d46e9f5771b7afba">PCA9685_DEFAULT_ADDR</a>,   <span class="comment">// 0x40</span></div>
+<div class="line">    0x40,                   <span class="comment">// Default PCA9685 address</span></div>
 <div class="line">    GPIO_NUM_21,            <span class="comment">// SDA</span></div>
 <div class="line">    GPIO_NUM_22,            <span class="comment">// SCL</span></div>
 <div class="line">    400000                  <span class="comment">// 400kHz</span></div>
@@ -338,9 +302,9 @@ Functions</h2></td></tr>
 <div class="line"><span class="comment">// 3. Configure and initialize PCA9685</span></div>
 <div class="line"><a class="code hl_typedef" href="#afa905e4d6a39f212e4ebdc4a4524a368">pca9685_handle_t</a> pwm;</div>
 <div class="line"><a class="code hl_struct" href="../../d9/d98/structpca9685__config__t.html">pca9685_config_t</a> config = {</div>
-<div class="line">    .i2c_addr = <a class="code hl_define" href="#ad8f666f49e3646c6d46e9f5771b7afba">PCA9685_DEFAULT_ADDR</a>,</div>
+<div class="line">    .i2c_addr = 0x40,                     <span class="comment">// Default PCA9685 address</span></div>
 <div class="line">    .pwm_freq = 50,                      <span class="comment">// 50Hz for servos</span></div>
-<div class="line">    .output_mode = <a class="code hl_enumvalue" href="#a63da43132626bb15352c8b2869354b48a43c679868da12becdac4ad1ac99d3ea1">PCA9685_OUTPUT_TOTEM_POLE</a>,</div>
+<div class="line">    .output_mode = <a class="code hl_enumvalue" href="#a63da43132626bb15352c8b2869354b48ace7c778ca0667f2518ec216a2a1559d3">k_pca9685_output_totem_pole</a>,</div>
 <div class="line">    .ext_clock = <span class="keyword">false</span>,</div>
 <div class="line">    .invert_output = <span class="keyword">false</span></div>
 <div class="line">};</div>
@@ -406,7 +370,7 @@ Functions</h2></td></tr>
 <div class="line"><span class="comment">// === Servo Control ===</span></div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// Set frequency for servos (50Hz typical)</span></div>
-<div class="line"><a class="code hl_function" href="#ab168813c0ee1ff5d7458a8fc52ba68f2">star_sensor_pca9685_set_frequency</a>(&amp;pwm, 50);</div>
+<div class="line"><a class="code hl_function" href="#ab6df7f67b80a359b6368bc660c14084a">star_sensor_pca9685_set_frequency</a>(&amp;pwm, 50);</div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// Control servo by angle (0-180 degrees)</span></div>
 <div class="line"><a class="code hl_function" href="#a2e4fa8ab35cdf64c114217bfc1309a1c">star_sensor_pca9685_set_servo_angle</a>(&amp;pwm, 0, 90);   <span class="comment">// Center position</span></div>
@@ -423,7 +387,7 @@ Functions</h2></td></tr>
 <div class="line"><span class="comment">// === Frequency Configuration ===</span></div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// Set PWM frequency (24-1526 Hz)</span></div>
-<div class="line"><a class="code hl_function" href="#ab168813c0ee1ff5d7458a8fc52ba68f2">star_sensor_pca9685_set_frequency</a>(&amp;pwm, 1000);  <span class="comment">// 1kHz for LEDs</span></div>
+<div class="line"><a class="code hl_function" href="#ab6df7f67b80a359b6368bc660c14084a">star_sensor_pca9685_set_frequency</a>(&amp;pwm, 1000);  <span class="comment">// 1kHz for LEDs</span></div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// Get current frequency</span></div>
 <div class="line">uint16_t freq_hz;</div>
@@ -446,10 +410,10 @@ Functions</h2></td></tr>
 <div class="line"><span class="comment">// === Power Management ===</span></div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// Put device to sleep (low power)</span></div>
-<div class="line"><a class="code hl_function" href="#a5e27834a91ab6b25fca8a01bdb8f9274">star_sensor_pca9685_sleep</a>(&amp;pwm, <span class="keyword">true</span>);</div>
+<div class="line"><a class="code hl_function" href="#a8967db4fc39ffbcbadb10919f9d20dae">star_sensor_pca9685_sleep</a>(&amp;pwm, <span class="keyword">true</span>);</div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// Wake up</span></div>
-<div class="line"><a class="code hl_function" href="#a5e27834a91ab6b25fca8a01bdb8f9274">star_sensor_pca9685_sleep</a>(&amp;pwm, <span class="keyword">false</span>);</div>
+<div class="line"><a class="code hl_function" href="#a8967db4fc39ffbcbadb10919f9d20dae">star_sensor_pca9685_sleep</a>(&amp;pwm, <span class="keyword">false</span>);</div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// Software reset</span></div>
 <div class="line"><a class="code hl_function" href="#a1f319c0974d76c124b4cf481499baf6e">star_sensor_pca9685_reset</a>(&amp;pwm);</div>
@@ -487,701 +451,30 @@ Functions</h2></td></tr>
 <div class="ttc" id="astar__bus__manager_8h_html_aa440431606d8a33fb394b4225db51f93"><div class="ttname"><a href="../../d6/dcc/star__bus__manager_8h.html#aa440431606d8a33fb394b4225db51f93">star_bus_manager_remove_bus</a></div><div class="ttdeci">esp_err_t star_bus_manager_remove_bus(star_bus_manager_t *manager, const char *name)</div><div class="ttdoc">Remove an I2C bus configuration from the manager and destroy it.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d60/star__bus__manager_8c_source.html#l00445">star_bus_manager.c:445</a></div></div>
 <div class="ttc" id="astar__error__handler_8c_html_afc3d101f633a076cc1ca84b85b6224b2"><div class="ttname"><a href="../../d7/d82/star__error__handler_8c.html#afc3d101f633a076cc1ca84b85b6224b2">TAG</a></div><div class="ttdeci">#define TAG</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d82/star__error__handler_8c_source.html#l00012">star_error_handler.c:12</a></div></div>
 <div class="ttc" id="astar__sensor__pca9685_8h_html"><div class="ttname"><a href="../../d7/de0/star__sensor__pca9685_8h.html">star_sensor_pca9685.h</a></div><div class="ttdoc">PCA9685 16-channel 12-bit PWM driver.</div></div>
-<div class="ttc" id="astar__sensor__pca9685_8h_html_a1f319c0974d76c124b4cf481499baf6e"><div class="ttname"><a href="#a1f319c0974d76c124b4cf481499baf6e">star_sensor_pca9685_reset</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_reset(const pca9685_handle_t *handle)</div><div class="ttdoc">Software reset of PCA9685.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00407">star_sensor_pca9685.c:407</a></div></div>
-<div class="ttc" id="astar__sensor__pca9685_8h_html_a2e4fa8ab35cdf64c114217bfc1309a1c"><div class="ttname"><a href="#a2e4fa8ab35cdf64c114217bfc1309a1c">star_sensor_pca9685_set_servo_angle</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_set_servo_angle(const pca9685_handle_t *handle, uint8_t channel, uint8_t angle)</div><div class="ttdoc">Set servo position by angle.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00833">star_sensor_pca9685.c:833</a></div></div>
-<div class="ttc" id="astar__sensor__pca9685_8h_html_a360aec2b034221ff3286cdf344b2e66e"><div class="ttname"><a href="#a360aec2b034221ff3286cdf344b2e66e">star_sensor_pca9685_get_frequency</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_get_frequency(const pca9685_handle_t *handle, uint16_t *freq_hz)</div><div class="ttdoc">Get current PWM frequency.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00502">star_sensor_pca9685.c:502</a></div></div>
-<div class="ttc" id="astar__sensor__pca9685_8h_html_a5193eb272443efc36a05aab03cf8bead"><div class="ttname"><a href="#a5193eb272443efc36a05aab03cf8bead">star_sensor_pca9685_set_pwm</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_set_pwm(const pca9685_handle_t *handle, uint8_t channel, uint16_t on_time, uint16_t off_time)</div><div class="ttdoc">Set PWM values directly for a channel.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00523">star_sensor_pca9685.c:523</a></div></div>
-<div class="ttc" id="astar__sensor__pca9685_8h_html_a5ad3e5ba04fe061a85c9b16487bb9fef"><div class="ttname"><a href="#a5ad3e5ba04fe061a85c9b16487bb9fef">star_sensor_pca9685_calculate_prescale</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_calculate_prescale(uint16_t freq_hz, uint8_t *prescale)</div><div class="ttdoc">Calculate prescale value for desired frequency.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00428">star_sensor_pca9685.c:428</a></div></div>
-<div class="ttc" id="astar__sensor__pca9685_8h_html_a5e27834a91ab6b25fca8a01bdb8f9274"><div class="ttname"><a href="#a5e27834a91ab6b25fca8a01bdb8f9274">star_sensor_pca9685_sleep</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_sleep(pca9685_handle_t *handle, bool sleep)</div><div class="ttdoc">Sleep/wake device.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00727">star_sensor_pca9685.c:727</a></div></div>
-<div class="ttc" id="astar__sensor__pca9685_8h_html_a5f5355afaff4a28ea61ddf9a98e956dc"><div class="ttname"><a href="#a5f5355afaff4a28ea61ddf9a98e956dc">star_sensor_pca9685_set_channel_on</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_set_channel_on(const pca9685_handle_t *handle, uint8_t channel)</div><div class="ttdoc">Set channel to full ON (100% duty cycle, no PWM).</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00657">star_sensor_pca9685.c:657</a></div></div>
-<div class="ttc" id="astar__sensor__pca9685_8h_html_a63da43132626bb15352c8b2869354b48a43c679868da12becdac4ad1ac99d3ea1"><div class="ttname"><a href="#a63da43132626bb15352c8b2869354b48a43c679868da12becdac4ad1ac99d3ea1">PCA9685_OUTPUT_TOTEM_POLE</a></div><div class="ttdeci">@ PCA9685_OUTPUT_TOTEM_POLE</div><div class="ttdef"><b>Definition</b> <a href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00274">star_sensor_pca9685.h:274</a></div></div>
-<div class="ttc" id="astar__sensor__pca9685_8h_html_a65433046e8d58c4706d62deb8ab8afa8"><div class="ttname"><a href="#a65433046e8d58c4706d62deb8ab8afa8">star_sensor_pca9685_get_pwm</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_get_pwm(const pca9685_handle_t *handle, uint8_t channel, uint16_t *on_time, uint16_t *off_time)</div><div class="ttdoc">Get PWM values for a channel.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00629">star_sensor_pca9685.c:629</a></div></div>
-<div class="ttc" id="astar__sensor__pca9685_8h_html_a789c0169f804c7414d2b3bca6c3a2874"><div class="ttname"><a href="#a789c0169f804c7414d2b3bca6c3a2874">star_sensor_pca9685_set_all_duty_cycle</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_set_all_duty_cycle(const pca9685_handle_t *handle, float duty_percent)</div><div class="ttdoc">Set all channels to same duty cycle.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00693">star_sensor_pca9685.c:693</a></div></div>
-<div class="ttc" id="astar__sensor__pca9685_8h_html_a79e549dd61b3ed28b3ea964fed19aa43"><div class="ttname"><a href="#a79e549dd61b3ed28b3ea964fed19aa43">star_sensor_pca9685_output_enable</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_output_enable(const pca9685_handle_t *handle)</div><div class="ttdoc">Enable PWM outputs via OE pin.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00754">star_sensor_pca9685.c:754</a></div></div>
-<div class="ttc" id="astar__sensor__pca9685_8h_html_a7cb8d557fd6b5d97d3f4ce4148347af5"><div class="ttname"><a href="#a7cb8d557fd6b5d97d3f4ce4148347af5">star_sensor_pca9685_init</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_init(pca9685_handle_t *handle, star_bus_manager_t *manager, const char *bus_name, star_error_interface_t *error_iface, gpio_num_t oe_pin, bool oe_active_low, const pca9685_config_t *config)</div><div class="ttdoc">Create and initialize PCA9685 PWM controller handle.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00167">star_sensor_pca9685.c:167</a></div></div>
-<div class="ttc" id="astar__sensor__pca9685_8h_html_a7eacea0c415a6be2d5b217b750897680"><div class="ttname"><a href="#a7eacea0c415a6be2d5b217b750897680">star_sensor_pca9685_output_disable</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_output_disable(const pca9685_handle_t *handle)</div><div class="ttdoc">Disable PWM outputs via OE pin.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00792">star_sensor_pca9685.c:792</a></div></div>
-<div class="ttc" id="astar__sensor__pca9685_8h_html_a81a04e618f2d3f31ee59685399779c72"><div class="ttname"><a href="#a81a04e618f2d3f31ee59685399779c72">star_sensor_pca9685_set_duty_cycle</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_set_duty_cycle(const pca9685_handle_t *handle, uint8_t channel, float duty_percent)</div><div class="ttdoc">Set PWM duty cycle for a channel (0-100%).</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00574">star_sensor_pca9685.c:574</a></div></div>
-<div class="ttc" id="astar__sensor__pca9685_8h_html_a878d81208cf78305ab5ed17716e33bf9"><div class="ttname"><a href="#a878d81208cf78305ab5ed17716e33bf9">star_sensor_pca9685_set_duty_with_phase</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_set_duty_with_phase(const pca9685_handle_t *handle, uint8_t channel, float duty_percent, float phase_percent)</div><div class="ttdoc">Set PWM duty cycle with phase shift.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00596">star_sensor_pca9685.c:596</a></div></div>
-<div class="ttc" id="astar__sensor__pca9685_8h_html_aa3d1da24c7bb491c6b2338cb6e1e1619"><div class="ttname"><a href="#aa3d1da24c7bb491c6b2338cb6e1e1619">star_sensor_pca9685_set_channel_off</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_set_channel_off(const pca9685_handle_t *handle, uint8_t channel)</div><div class="ttdoc">Set channel to full OFF (0% duty cycle).</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00675">star_sensor_pca9685.c:675</a></div></div>
-<div class="ttc" id="astar__sensor__pca9685_8h_html_ab168813c0ee1ff5d7458a8fc52ba68f2"><div class="ttname"><a href="#ab168813c0ee1ff5d7458a8fc52ba68f2">star_sensor_pca9685_set_frequency</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_set_frequency(pca9685_handle_t *handle, uint16_t freq_hz)</div><div class="ttdoc">Set PWM frequency.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00477">star_sensor_pca9685.c:477</a></div></div>
-<div class="ttc" id="astar__sensor__pca9685_8h_html_abf4b004f9ee13b89446c5f5b268ebcf6"><div class="ttname"><a href="#abf4b004f9ee13b89446c5f5b268ebcf6">star_sensor_pca9685_deinit</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_deinit(pca9685_handle_t *handle)</div><div class="ttdoc">Deinitialize PCA9685 PWM controller handle.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00362">star_sensor_pca9685.c:362</a></div></div>
-<div class="ttc" id="astar__sensor__pca9685_8h_html_ad8f666f49e3646c6d46e9f5771b7afba"><div class="ttname"><a href="#ad8f666f49e3646c6d46e9f5771b7afba">PCA9685_DEFAULT_ADDR</a></div><div class="ttdeci">#define PCA9685_DEFAULT_ADDR</div><div class="ttdef"><b>Definition</b> <a href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00205">star_sensor_pca9685.h:205</a></div></div>
+<div class="ttc" id="astar__sensor__pca9685_8h_html_a1f319c0974d76c124b4cf481499baf6e"><div class="ttname"><a href="#a1f319c0974d76c124b4cf481499baf6e">star_sensor_pca9685_reset</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_reset(const pca9685_handle_t *handle)</div><div class="ttdoc">Software reset of PCA9685.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00414">star_sensor_pca9685.c:414</a></div></div>
+<div class="ttc" id="astar__sensor__pca9685_8h_html_a2e4fa8ab35cdf64c114217bfc1309a1c"><div class="ttname"><a href="#a2e4fa8ab35cdf64c114217bfc1309a1c">star_sensor_pca9685_set_servo_angle</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_set_servo_angle(const pca9685_handle_t *handle, uint8_t channel, uint8_t angle)</div><div class="ttdoc">Set servo position by angle.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00861">star_sensor_pca9685.c:861</a></div></div>
+<div class="ttc" id="astar__sensor__pca9685_8h_html_a360aec2b034221ff3286cdf344b2e66e"><div class="ttname"><a href="#a360aec2b034221ff3286cdf344b2e66e">star_sensor_pca9685_get_frequency</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_get_frequency(const pca9685_handle_t *handle, uint16_t *freq_hz)</div><div class="ttdoc">Get current PWM frequency.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00512">star_sensor_pca9685.c:512</a></div></div>
+<div class="ttc" id="astar__sensor__pca9685_8h_html_a5193eb272443efc36a05aab03cf8bead"><div class="ttname"><a href="#a5193eb272443efc36a05aab03cf8bead">star_sensor_pca9685_set_pwm</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_set_pwm(const pca9685_handle_t *handle, uint8_t channel, uint16_t on_time, uint16_t off_time)</div><div class="ttdoc">Set PWM values directly for a channel.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00533">star_sensor_pca9685.c:533</a></div></div>
+<div class="ttc" id="astar__sensor__pca9685_8h_html_a5ad3e5ba04fe061a85c9b16487bb9fef"><div class="ttname"><a href="#a5ad3e5ba04fe061a85c9b16487bb9fef">star_sensor_pca9685_calculate_prescale</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_calculate_prescale(uint16_t freq_hz, uint8_t *prescale)</div><div class="ttdoc">Calculate prescale value for desired frequency.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00435">star_sensor_pca9685.c:435</a></div></div>
+<div class="ttc" id="astar__sensor__pca9685_8h_html_a5f5355afaff4a28ea61ddf9a98e956dc"><div class="ttname"><a href="#a5f5355afaff4a28ea61ddf9a98e956dc">star_sensor_pca9685_set_channel_on</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_set_channel_on(const pca9685_handle_t *handle, uint8_t channel)</div><div class="ttdoc">Set channel to full ON (100% duty cycle, no PWM).</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00681">star_sensor_pca9685.c:681</a></div></div>
+<div class="ttc" id="astar__sensor__pca9685_8h_html_a63da43132626bb15352c8b2869354b48ace7c778ca0667f2518ec216a2a1559d3"><div class="ttname"><a href="#a63da43132626bb15352c8b2869354b48ace7c778ca0667f2518ec216a2a1559d3">k_pca9685_output_totem_pole</a></div><div class="ttdeci">@ k_pca9685_output_totem_pole</div><div class="ttdef"><b>Definition</b> <a href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00210">star_sensor_pca9685.h:210</a></div></div>
+<div class="ttc" id="astar__sensor__pca9685_8h_html_a65433046e8d58c4706d62deb8ab8afa8"><div class="ttname"><a href="#a65433046e8d58c4706d62deb8ab8afa8">star_sensor_pca9685_get_pwm</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_get_pwm(const pca9685_handle_t *handle, uint8_t channel, uint16_t *on_time, uint16_t *off_time)</div><div class="ttdoc">Get PWM values for a channel.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00652">star_sensor_pca9685.c:652</a></div></div>
+<div class="ttc" id="astar__sensor__pca9685_8h_html_a789c0169f804c7414d2b3bca6c3a2874"><div class="ttname"><a href="#a789c0169f804c7414d2b3bca6c3a2874">star_sensor_pca9685_set_all_duty_cycle</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_set_all_duty_cycle(const pca9685_handle_t *handle, float duty_percent)</div><div class="ttdoc">Set all channels to same duty cycle.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00717">star_sensor_pca9685.c:717</a></div></div>
+<div class="ttc" id="astar__sensor__pca9685_8h_html_a79e549dd61b3ed28b3ea964fed19aa43"><div class="ttname"><a href="#a79e549dd61b3ed28b3ea964fed19aa43">star_sensor_pca9685_output_enable</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_output_enable(const pca9685_handle_t *handle)</div><div class="ttdoc">Enable PWM outputs via OE pin.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00780">star_sensor_pca9685.c:780</a></div></div>
+<div class="ttc" id="astar__sensor__pca9685_8h_html_a7cb8d557fd6b5d97d3f4ce4148347af5"><div class="ttname"><a href="#a7cb8d557fd6b5d97d3f4ce4148347af5">star_sensor_pca9685_init</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_init(pca9685_handle_t *handle, star_bus_manager_t *manager, const char *bus_name, star_error_interface_t *error_iface, gpio_num_t oe_pin, bool oe_active_low, const pca9685_config_t *config)</div><div class="ttdoc">Create and initialize PCA9685 PWM controller handle.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00171">star_sensor_pca9685.c:171</a></div></div>
+<div class="ttc" id="astar__sensor__pca9685_8h_html_a7eacea0c415a6be2d5b217b750897680"><div class="ttname"><a href="#a7eacea0c415a6be2d5b217b750897680">star_sensor_pca9685_output_disable</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_output_disable(const pca9685_handle_t *handle)</div><div class="ttdoc">Disable PWM outputs via OE pin.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00819">star_sensor_pca9685.c:819</a></div></div>
+<div class="ttc" id="astar__sensor__pca9685_8h_html_a81a04e618f2d3f31ee59685399779c72"><div class="ttname"><a href="#a81a04e618f2d3f31ee59685399779c72">star_sensor_pca9685_set_duty_cycle</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_set_duty_cycle(const pca9685_handle_t *handle, uint8_t channel, float duty_percent)</div><div class="ttdoc">Set PWM duty cycle for a channel (0-100%).</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00589">star_sensor_pca9685.c:589</a></div></div>
+<div class="ttc" id="astar__sensor__pca9685_8h_html_a878d81208cf78305ab5ed17716e33bf9"><div class="ttname"><a href="#a878d81208cf78305ab5ed17716e33bf9">star_sensor_pca9685_set_duty_with_phase</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_set_duty_with_phase(const pca9685_handle_t *handle, uint8_t channel, float duty_percent, float phase_percent)</div><div class="ttdoc">Set PWM duty cycle with phase shift.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00617">star_sensor_pca9685.c:617</a></div></div>
+<div class="ttc" id="astar__sensor__pca9685_8h_html_a8967db4fc39ffbcbadb10919f9d20dae"><div class="ttname"><a href="#a8967db4fc39ffbcbadb10919f9d20dae">star_sensor_pca9685_sleep</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_sleep(pca9685_handle_t *const handle, const bool sleep)</div><div class="ttdoc">Sleep/wake device.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00752">star_sensor_pca9685.c:752</a></div></div>
+<div class="ttc" id="astar__sensor__pca9685_8h_html_aa3d1da24c7bb491c6b2338cb6e1e1619"><div class="ttname"><a href="#aa3d1da24c7bb491c6b2338cb6e1e1619">star_sensor_pca9685_set_channel_off</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_set_channel_off(const pca9685_handle_t *handle, uint8_t channel)</div><div class="ttdoc">Set channel to full OFF (0% duty cycle).</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00699">star_sensor_pca9685.c:699</a></div></div>
+<div class="ttc" id="astar__sensor__pca9685_8h_html_ab6df7f67b80a359b6368bc660c14084a"><div class="ttname"><a href="#ab6df7f67b80a359b6368bc660c14084a">star_sensor_pca9685_set_frequency</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_set_frequency(pca9685_handle_t *const handle, const uint16_t freq_hz)</div><div class="ttdoc">Set PWM frequency.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00486">star_sensor_pca9685.c:486</a></div></div>
+<div class="ttc" id="astar__sensor__pca9685_8h_html_abf4b004f9ee13b89446c5f5b268ebcf6"><div class="ttname"><a href="#abf4b004f9ee13b89446c5f5b268ebcf6">star_sensor_pca9685_deinit</a></div><div class="ttdeci">esp_err_t star_sensor_pca9685_deinit(pca9685_handle_t *handle)</div><div class="ttdoc">Deinitialize PCA9685 PWM controller handle.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00368">star_sensor_pca9685.c:368</a></div></div>
 <div class="ttc" id="astar__sensor__pca9685_8h_html_afa905e4d6a39f212e4ebdc4a4524a368"><div class="ttname"><a href="#afa905e4d6a39f212e4ebdc4a4524a368">pca9685_handle_t</a></div><div class="ttdeci">struct pca9685_handle pca9685_handle_t</div><div class="ttdoc">PCA9685 device handle.</div></div>
-<div class="ttc" id="astructpca9685__config__t_html"><div class="ttname"><a href="../../d9/d98/structpca9685__config__t.html">pca9685_config_t</a></div><div class="ttdoc">PCA9685 device configuration.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00280">star_sensor_pca9685.h:280</a></div></div>
-<div class="ttc" id="astructpca9685__config__t_html_a8c4e196835ec00df1385a167cffabb69"><div class="ttname"><a href="../../d9/d98/structpca9685__config__t.html#a8c4e196835ec00df1385a167cffabb69">pca9685_config_t::i2c_addr</a></div><div class="ttdeci">uint8_t i2c_addr</div><div class="ttdef"><b>Definition</b> <a href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00281">star_sensor_pca9685.h:281</a></div></div>
+<div class="ttc" id="astructpca9685__config__t_html"><div class="ttname"><a href="../../d9/d98/structpca9685__config__t.html">pca9685_config_t</a></div><div class="ttdoc">PCA9685 device configuration.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00216">star_sensor_pca9685.h:216</a></div></div>
+<div class="ttc" id="astructpca9685__config__t_html_a8c4e196835ec00df1385a167cffabb69"><div class="ttname"><a href="../../d9/d98/structpca9685__config__t.html#a8c4e196835ec00df1385a167cffabb69">pca9685_config_t::i2c_addr</a></div><div class="ttdeci">uint8_t i2c_addr</div><div class="ttdef"><b>Definition</b> <a href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00217">star_sensor_pca9685.h:217</a></div></div>
 </div><!-- fragment --> 
 <p class="definition">Definition in file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-</div><a name="doc-define-members" id="doc-define-members"></a><h2 id="header-doc-define-members" class="groupheader">Macro Definition Documentation</h2>
-<a id="a28b9196e164399b535405071aa9fa45c" name="a28b9196e164399b535405071aa9fa45c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a28b9196e164399b535405071aa9fa45c">&#9670;&#160;</a></span>PCA9685_ALLCALL_ADDR</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_ALLCALL_ADDR&#160;&#160;&#160;(0x70)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>PCA9685 all-call address </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00208">208</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-</div>
-</div>
-<a id="ad8f666f49e3646c6d46e9f5771b7afba" name="ad8f666f49e3646c6d46e9f5771b7afba"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad8f666f49e3646c6d46e9f5771b7afba">&#9670;&#160;</a></span>PCA9685_DEFAULT_ADDR</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_DEFAULT_ADDR&#160;&#160;&#160;(0x40)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>PCA9685 default I2C address </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00205">205</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00024">initialize_hardware_buses()</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00082">initialize_pca9685()</a>.</p>
-
-</div>
-</div>
-<a id="adba46b60b25fe8e399894dcfc9f385a2" name="adba46b60b25fe8e399894dcfc9f385a2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adba46b60b25fe8e399894dcfc9f385a2">&#9670;&#160;</a></span>PCA9685_LED_FULL_OFF</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_LED_FULL_OFF&#160;&#160;&#160;(1 &lt;&lt; 4)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>LED full OFF (in OFF_H register) </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00265">265</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00675">star_sensor_pca9685_set_channel_off()</a>.</p>
-
-</div>
-</div>
-<a id="ae017d818f46f0d6eabfedd9d15770f14" name="ae017d818f46f0d6eabfedd9d15770f14"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae017d818f46f0d6eabfedd9d15770f14">&#9670;&#160;</a></span>PCA9685_LED_FULL_ON</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_LED_FULL_ON&#160;&#160;&#160;(1 &lt;&lt; 4)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>LED full ON (in ON_H register) </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00264">264</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00657">star_sensor_pca9685_set_channel_on()</a>.</p>
-
-</div>
-</div>
-<a id="ae4a95baec3f8b401262e0c94cefa83aa" name="ae4a95baec3f8b401262e0c94cefa83aa"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae4a95baec3f8b401262e0c94cefa83aa">&#9670;&#160;</a></span>PCA9685_MAX_FREQ</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_MAX_FREQ&#160;&#160;&#160;(1526)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Maximum PWM frequency (Hz) </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00220">220</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00428">star_sensor_pca9685_calculate_prescale()</a>, and <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00167">star_sensor_pca9685_init()</a>.</p>
-
-</div>
-</div>
-<a id="af7e7b549fff39f4221b5eeab3ef17f34" name="af7e7b549fff39f4221b5eeab3ef17f34"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af7e7b549fff39f4221b5eeab3ef17f34">&#9670;&#160;</a></span>PCA9685_MIN_FREQ</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_MIN_FREQ&#160;&#160;&#160;(24)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Minimum PWM frequency (Hz) </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00217">217</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00428">star_sensor_pca9685_calculate_prescale()</a>, and <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00167">star_sensor_pca9685_init()</a>.</p>
-
-</div>
-</div>
-<a id="afb8e02b836c5427aab5b8ffcd39271d4" name="afb8e02b836c5427aab5b8ffcd39271d4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afb8e02b836c5427aab5b8ffcd39271d4">&#9670;&#160;</a></span>PCA9685_MODE1_AI</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_MODE1_AI&#160;&#160;&#160;(1 &lt;&lt; 5)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Auto-increment enabled </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00247">247</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00167">star_sensor_pca9685_init()</a>.</p>
-
-</div>
-</div>
-<a id="a0a1b679752f9ddbb92562ec2043a278b" name="a0a1b679752f9ddbb92562ec2043a278b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0a1b679752f9ddbb92562ec2043a278b">&#9670;&#160;</a></span>PCA9685_MODE1_ALLCALL</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_MODE1_ALLCALL&#160;&#160;&#160;(1 &lt;&lt; 0)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Respond to all-call address </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00252">252</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00167">star_sensor_pca9685_init()</a>.</p>
-
-</div>
-</div>
-<a id="ab5d45f72d44f9823c8ecd8f020dc3dfa" name="ab5d45f72d44f9823c8ecd8f020dc3dfa"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab5d45f72d44f9823c8ecd8f020dc3dfa">&#9670;&#160;</a></span>PCA9685_MODE1_EXTCLK</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_MODE1_EXTCLK&#160;&#160;&#160;(1 &lt;&lt; 6)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Use external clock </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00246">246</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00167">star_sensor_pca9685_init()</a>.</p>
-
-</div>
-</div>
-<a id="acc7e2fd093f5c2d53b39f5a99d0d4308" name="acc7e2fd093f5c2d53b39f5a99d0d4308"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acc7e2fd093f5c2d53b39f5a99d0d4308">&#9670;&#160;</a></span>PCA9685_MODE1_RESTART</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_MODE1_RESTART&#160;&#160;&#160;(1 &lt;&lt; 7)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Restart enabled </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00245">245</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00091">internal_pca9685_set_frequency()</a>.</p>
-
-</div>
-</div>
-<a id="a5fc87b2b0f19488969f31f7cda1d74db" name="a5fc87b2b0f19488969f31f7cda1d74db"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5fc87b2b0f19488969f31f7cda1d74db">&#9670;&#160;</a></span>PCA9685_MODE1_SLEEP</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_MODE1_SLEEP&#160;&#160;&#160;(1 &lt;&lt; 4)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Low power mode </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00248">248</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00091">internal_pca9685_set_frequency()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00362">star_sensor_pca9685_deinit()</a>, and <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00727">star_sensor_pca9685_sleep()</a>.</p>
-
-</div>
-</div>
-<a id="ac33d14f4aa61d3bb99f9f93238b7e14d" name="ac33d14f4aa61d3bb99f9f93238b7e14d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac33d14f4aa61d3bb99f9f93238b7e14d">&#9670;&#160;</a></span>PCA9685_MODE1_SUB1</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_MODE1_SUB1&#160;&#160;&#160;(1 &lt;&lt; 3)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Respond to sub-address 1 </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00249">249</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-</div>
-</div>
-<a id="af8b22a3b767c5ace66b23e83395db5c7" name="af8b22a3b767c5ace66b23e83395db5c7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af8b22a3b767c5ace66b23e83395db5c7">&#9670;&#160;</a></span>PCA9685_MODE1_SUB2</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_MODE1_SUB2&#160;&#160;&#160;(1 &lt;&lt; 2)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Respond to sub-address 2 </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00250">250</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-</div>
-</div>
-<a id="aa119139a41b9123d9564320f994e24ea" name="aa119139a41b9123d9564320f994e24ea"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa119139a41b9123d9564320f994e24ea">&#9670;&#160;</a></span>PCA9685_MODE1_SUB3</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_MODE1_SUB3&#160;&#160;&#160;(1 &lt;&lt; 1)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Respond to sub-address 3 </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00251">251</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-</div>
-</div>
-<a id="aa52be73457414c27bc1b954af0a6bd33" name="aa52be73457414c27bc1b954af0a6bd33"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa52be73457414c27bc1b954af0a6bd33">&#9670;&#160;</a></span>PCA9685_MODE2_INVRT</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_MODE2_INVRT&#160;&#160;&#160;(1 &lt;&lt; 4)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Output logic state inverted </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00256">256</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00167">star_sensor_pca9685_init()</a>.</p>
-
-</div>
-</div>
-<a id="ac550f4a49dab76de6f547c7bf14b9e9b" name="ac550f4a49dab76de6f547c7bf14b9e9b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac550f4a49dab76de6f547c7bf14b9e9b">&#9670;&#160;</a></span>PCA9685_MODE2_OCH</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_MODE2_OCH&#160;&#160;&#160;(1 &lt;&lt; 3)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Outputs change on STOP command </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00257">257</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-</div>
-</div>
-<a id="a015feeb9e0ead6518633b4fe213ee206" name="a015feeb9e0ead6518633b4fe213ee206"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a015feeb9e0ead6518633b4fe213ee206">&#9670;&#160;</a></span>PCA9685_MODE2_OUTDRV</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_MODE2_OUTDRV&#160;&#160;&#160;(1 &lt;&lt; 2)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Totem pole (1) or open-drain (0) </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00258">258</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00167">star_sensor_pca9685_init()</a>.</p>
-
-</div>
-</div>
-<a id="a1d0f07c2738d627305bebf73cb8b57fd" name="a1d0f07c2738d627305bebf73cb8b57fd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1d0f07c2738d627305bebf73cb8b57fd">&#9670;&#160;</a></span>PCA9685_MODE2_OUTNE0</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_MODE2_OUTNE0&#160;&#160;&#160;(1 &lt;&lt; 0)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Output enable bit 0 </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00260">260</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-</div>
-</div>
-<a id="a069534f6509dddee916934d5af81b4f3" name="a069534f6509dddee916934d5af81b4f3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a069534f6509dddee916934d5af81b4f3">&#9670;&#160;</a></span>PCA9685_MODE2_OUTNE1</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_MODE2_OUTNE1&#160;&#160;&#160;(1 &lt;&lt; 1)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Output enable bit 1 </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00259">259</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-</div>
-</div>
-<a id="adc1135fd0e3f85a9eca52cc26ff7148b" name="adc1135fd0e3f85a9eca52cc26ff7148b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adc1135fd0e3f85a9eca52cc26ff7148b">&#9670;&#160;</a></span>PCA9685_NUM_CHANNELS</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_NUM_CHANNELS&#160;&#160;&#160;(16)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Number of PWM channels </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00211">211</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00629">star_sensor_pca9685_get_pwm()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00675">star_sensor_pca9685_set_channel_off()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00657">star_sensor_pca9685_set_channel_on()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00523">star_sensor_pca9685_set_pwm()</a>, and <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00833">star_sensor_pca9685_set_servo_angle()</a>.</p>
-
-</div>
-</div>
-<a id="a65f10a2aeccc04a3c0aab8f729619d37" name="a65f10a2aeccc04a3c0aab8f729619d37"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a65f10a2aeccc04a3c0aab8f729619d37">&#9670;&#160;</a></span>PCA9685_OSCILLATOR_FREQ</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_OSCILLATOR_FREQ&#160;&#160;&#160;(25000000)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Internal oscillator frequency (Hz) </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00223">223</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00428">star_sensor_pca9685_calculate_prescale()</a>, and <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00461">star_sensor_pca9685_prescale_to_freq()</a>.</p>
-
-</div>
-</div>
-<a id="a9cefe4676a84997849f04fa8c1642251" name="a9cefe4676a84997849f04fa8c1642251"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9cefe4676a84997849f04fa8c1642251">&#9670;&#160;</a></span>PCA9685_PWM_RESOLUTION</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_PWM_RESOLUTION&#160;&#160;&#160;(4096)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>PWM resolution (12-bit) </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00214">214</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00693">star_sensor_pca9685_set_all_duty_cycle()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00574">star_sensor_pca9685_set_duty_cycle()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00596">star_sensor_pca9685_set_duty_with_phase()</a>, and <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00523">star_sensor_pca9685_set_pwm()</a>.</p>
-
-</div>
-</div>
-<a id="aeacb93b0641c1632828dae987eeb0db6" name="aeacb93b0641c1632828dae987eeb0db6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aeacb93b0641c1632828dae987eeb0db6">&#9670;&#160;</a></span>PCA9685_REG_ALL_LED_OFF_H</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_REG_ALL_LED_OFF_H&#160;&#160;&#160;(0xFD)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>All LED OFF time, high byte </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00240">240</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-</div>
-</div>
-<a id="aa62579ed4707ee6da04c18b79906fc0e" name="aa62579ed4707ee6da04c18b79906fc0e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa62579ed4707ee6da04c18b79906fc0e">&#9670;&#160;</a></span>PCA9685_REG_ALL_LED_OFF_L</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_REG_ALL_LED_OFF_L&#160;&#160;&#160;(0xFC)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>All LED OFF time, low byte </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00239">239</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-</div>
-</div>
-<a id="a9a74767a9bb779b15a3e51cd88f58903" name="a9a74767a9bb779b15a3e51cd88f58903"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9a74767a9bb779b15a3e51cd88f58903">&#9670;&#160;</a></span>PCA9685_REG_ALL_LED_ON_H</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_REG_ALL_LED_ON_H&#160;&#160;&#160;(0xFB)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>All LED ON time, high byte </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00238">238</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-</div>
-</div>
-<a id="a6590ff7e34c75c73ef9615495cd5a507" name="a6590ff7e34c75c73ef9615495cd5a507"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6590ff7e34c75c73ef9615495cd5a507">&#9670;&#160;</a></span>PCA9685_REG_ALL_LED_ON_L</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_REG_ALL_LED_ON_L&#160;&#160;&#160;(0xFA)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>All LED ON time, low byte </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00237">237</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00693">star_sensor_pca9685_set_all_duty_cycle()</a>.</p>
-
-</div>
-</div>
-<a id="ae89603a7de126241781026ab3f95a543" name="ae89603a7de126241781026ab3f95a543"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae89603a7de126241781026ab3f95a543">&#9670;&#160;</a></span>PCA9685_REG_ALLCALLADR</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_REG_ALLCALLADR&#160;&#160;&#160;(0x05)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>All-call I2C address </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00232">232</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-</div>
-</div>
-<a id="aa1c286a737885a174feb69467a0bd993" name="aa1c286a737885a174feb69467a0bd993"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa1c286a737885a174feb69467a0bd993">&#9670;&#160;</a></span>PCA9685_REG_LED0_OFF_H</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_REG_LED0_OFF_H&#160;&#160;&#160;(0x09)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>LED0 output OFF time, high byte </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00236">236</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-</div>
-</div>
-<a id="a53b0a52921eab5dcc670f998245ac7fd" name="a53b0a52921eab5dcc670f998245ac7fd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a53b0a52921eab5dcc670f998245ac7fd">&#9670;&#160;</a></span>PCA9685_REG_LED0_OFF_L</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_REG_LED0_OFF_L&#160;&#160;&#160;(0x08)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>LED0 output OFF time, low byte </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00235">235</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-</div>
-</div>
-<a id="aa7f3675e80f5a47dd2a572efcc99da9a" name="aa7f3675e80f5a47dd2a572efcc99da9a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa7f3675e80f5a47dd2a572efcc99da9a">&#9670;&#160;</a></span>PCA9685_REG_LED0_ON_H</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_REG_LED0_ON_H&#160;&#160;&#160;(0x07)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>LED0 output ON time, high byte </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00234">234</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-</div>
-</div>
-<a id="ac212eb6e0601752c9baf0cc2f566109a" name="ac212eb6e0601752c9baf0cc2f566109a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac212eb6e0601752c9baf0cc2f566109a">&#9670;&#160;</a></span>PCA9685_REG_LED0_ON_L</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_REG_LED0_ON_L&#160;&#160;&#160;(0x06)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>LED0 output ON time, low byte </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00233">233</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00629">star_sensor_pca9685_get_pwm()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00675">star_sensor_pca9685_set_channel_off()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00657">star_sensor_pca9685_set_channel_on()</a>, and <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00523">star_sensor_pca9685_set_pwm()</a>.</p>
-
-</div>
-</div>
-<a id="a82820ff83c1fd597861374d9beffcf05" name="a82820ff83c1fd597861374d9beffcf05"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a82820ff83c1fd597861374d9beffcf05">&#9670;&#160;</a></span>PCA9685_REG_MODE1</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_REG_MODE1&#160;&#160;&#160;(0x00)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Mode register 1 </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00227">227</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00091">internal_pca9685_set_frequency()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00058">pca9685_set_mode1_bits()</a>, and <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00167">star_sensor_pca9685_init()</a>.</p>
-
-</div>
-</div>
-<a id="a70cf4411f341c0bcfd3e9342a4af0f54" name="a70cf4411f341c0bcfd3e9342a4af0f54"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a70cf4411f341c0bcfd3e9342a4af0f54">&#9670;&#160;</a></span>PCA9685_REG_MODE2</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_REG_MODE2&#160;&#160;&#160;(0x01)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Mode register 2 </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00228">228</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00167">star_sensor_pca9685_init()</a>.</p>
-
-</div>
-</div>
-<a id="ac23fd1476370ab953d2437a58a60b08f" name="ac23fd1476370ab953d2437a58a60b08f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac23fd1476370ab953d2437a58a60b08f">&#9670;&#160;</a></span>PCA9685_REG_PRESCALE</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_REG_PRESCALE&#160;&#160;&#160;(0xFE)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Prescaler for PWM output frequency </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00241">241</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00091">internal_pca9685_set_frequency()</a>, and <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00502">star_sensor_pca9685_get_frequency()</a>.</p>
-
-</div>
-</div>
-<a id="a74780dea84c5db56104a90a219449d0d" name="a74780dea84c5db56104a90a219449d0d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a74780dea84c5db56104a90a219449d0d">&#9670;&#160;</a></span>PCA9685_REG_SUBADR1</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_REG_SUBADR1&#160;&#160;&#160;(0x02)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>I2C sub-address 1 </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00229">229</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-</div>
-</div>
-<a id="a9e6f5122f0c6163346e0fb4db6455b77" name="a9e6f5122f0c6163346e0fb4db6455b77"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9e6f5122f0c6163346e0fb4db6455b77">&#9670;&#160;</a></span>PCA9685_REG_SUBADR2</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_REG_SUBADR2&#160;&#160;&#160;(0x03)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>I2C sub-address 2 </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00230">230</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-</div>
-</div>
-<a id="a159e7bdf3c61f3a918f8cfa334a850b2" name="a159e7bdf3c61f3a918f8cfa334a850b2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a159e7bdf3c61f3a918f8cfa334a850b2">&#9670;&#160;</a></span>PCA9685_REG_SUBADR3</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_REG_SUBADR3&#160;&#160;&#160;(0x04)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>I2C sub-address 3 </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00231">231</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
-
-</div>
-</div>
-<a name="doc-typedef-members" id="doc-typedef-members"></a><h2 id="header-doc-typedef-members" class="groupheader">Typedef Documentation</h2>
+</div><a name="doc-typedef-members" id="doc-typedef-members"></a><h2 id="header-doc-typedef-members" class="groupheader">Typedef Documentation</h2>
 <a id="afa905e4d6a39f212e4ebdc4a4524a368" name="afa905e4d6a39f212e4ebdc4a4524a368"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#afa905e4d6a39f212e4ebdc4a4524a368">&#9670;&#160;</a></span>pca9685_handle_t</h2>
 
@@ -1214,13 +507,13 @@ Functions</h2></td></tr>
 
 <p>Output driver mode. </p>
 <table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a63da43132626bb15352c8b2869354b48ab308c81a9286f197ff792cbcd4438dc9" name="a63da43132626bb15352c8b2869354b48ab308c81a9286f197ff792cbcd4438dc9"></a>PCA9685_OUTPUT_OPEN_DRAIN&#160;</td><td class="fielddoc"><p>Open-drain (requires pull-up) </p>
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a63da43132626bb15352c8b2869354b48a7a770a074f122918eb3cebb55cf828e1" name="a63da43132626bb15352c8b2869354b48a7a770a074f122918eb3cebb55cf828e1"></a>k_pca9685_output_open_drain&#160;</td><td class="fielddoc"><p>Open-drain (requires pull-up) </p>
 </td></tr>
-<tr><td class="fieldname"><a id="a63da43132626bb15352c8b2869354b48a43c679868da12becdac4ad1ac99d3ea1" name="a63da43132626bb15352c8b2869354b48a43c679868da12becdac4ad1ac99d3ea1"></a>PCA9685_OUTPUT_TOTEM_POLE&#160;</td><td class="fielddoc"><p>Totem pole (push-pull) </p>
+<tr><td class="fieldname"><a id="a63da43132626bb15352c8b2869354b48ace7c778ca0667f2518ec216a2a1559d3" name="a63da43132626bb15352c8b2869354b48ace7c778ca0667f2518ec216a2a1559d3"></a>k_pca9685_output_totem_pole&#160;</td><td class="fielddoc"><p>Totem pole (push-pull) </p>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00272">272</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00208">208</a> of file <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html">star_sensor_pca9685.h</a>.</p>
 
 </div>
 </div>
@@ -1254,24 +547,24 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, ESP_ERR_INVALID_ARG if frequency out of range </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00428">428</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00435">435</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00220">PCA9685_MAX_FREQ</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00217">PCA9685_MIN_FREQ</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00223">PCA9685_OSCILLATOR_FREQ</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d7f/pca9685__constants_8c_source.html#l00014">pca9685_hardware_limits</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00091">internal_pca9685_set_frequency()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00093">internal_pca9685_set_frequency()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d7/de0/star__sensor__pca9685_8h_a5ad3e5ba04fe061a85c9b16487bb9fef_icgraph.png" border="0" usemap="#ad7/de0/star__sensor__pca9685_8h_a5ad3e5ba04fe061a85c9b16487bb9fef_icgraph" loading="lazy" alt=""/></div>
 <map name="ad7/de0/star__sensor__pca9685_8h_a5ad3e5ba04fe061a85c9b16487bb9fef_icgraph" id="ad7/de0/star__sensor__pca9685_8h_a5ad3e5ba04fe061a85c9b16487bb9fef_icgraph">
 <area shape="rect" title="Calculate prescale value for desired frequency." alt="" coords="713,27,858,68"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a49863dd18b6c011a0162743d0e1dd4d4" title="Internal frequency setting (no initialization check, caller must hold mutex if needed)." alt="" coords="520,27,665,68"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#af172ec2771522a913b761463c8d4828f" title="Internal frequency setting (no initialization check, caller must hold mutex if needed)." alt="" coords="520,27,665,68"/>
 <area shape="poly" title=" " alt="" coords="694,48,665,50,665,45,699,47"/>
 <area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="303,5,472,31"/>
 <area shape="poly" title=" " alt="" coords="502,35,473,33,473,28,508,35"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#ab168813c0ee1ff5d7458a8fc52ba68f2" title="Set PWM frequency." alt="" coords="315,55,460,96"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#ab6df7f67b80a359b6368bc660c14084a" title="Set PWM frequency." alt="" coords="315,55,460,96"/>
 <area shape="poly" title=" " alt="" coords="508,59,461,68,461,63,502,60"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a6d8aaa1fd0c0b11d2cd6f883afb2763c" title=" " alt="" coords="131,5,255,31"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ad6745a540d038c1266117bbcc686713b" title=" " alt="" coords="131,5,255,31"/>
 <area shape="poly" title=" " alt="" coords="285,19,256,21,255,16,290,18"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
 <area shape="poly" title=" " alt="" coords="113,19,84,21,83,16,118,17"/>
@@ -1305,11 +598,11 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00362">362</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00368">368</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00166">star_error_interface::ctx</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00393">error_handler_destroy_default()</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00309">pca9685_handle::error_iface</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00313">pca9685_handle::initialized</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00310">pca9685_handle::mutex</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00311">pca9685_handle::oe_pin</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00314">pca9685_handle::owns_error_handler</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00248">PCA9685_MODE1_SLEEP</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00019">PCA9685_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00058">pca9685_set_mode1_bits()</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00166">star_error_interface::ctx</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00393">error_handler_destroy_default()</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00245">pca9685_handle::error_iface</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00249">pca9685_handle::initialized</a>, <a class="el" href="../../d9/ddd/pca9685__constants_8h_source.html#l00086">k_pca9685_mode1_sleep_mask</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00246">pca9685_handle::mutex</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00247">pca9685_handle::oe_pin</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00250">pca9685_handle::owns_error_handler</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00060">pca9685_set_mode1_bits()</a>, <a class="el" href="../../d0/d7f/pca9685__constants_8c_source.html#l00025">pca9685_timing</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00152">app_main()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00158">app_main()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1318,13 +611,13 @@ Here is the call graph for this function:</div>
 <area shape="rect" title="Deinitialize PCA9685 PWM controller handle." alt="" coords="5,35,151,75"/>
 <area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a1632e40ebb7509611a0513c0e6bdbb46" title="Destroy an error handler created by error_handler_create_default() or error_handler_create_custom()." alt="" coords="210,5,356,46"/>
 <area shape="poly" title=" " alt="" coords="150,42,197,37,192,39,152,47"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a91eaab882e26ad08fb58448b532e4bd7" title="Set MODE1 register bits." alt="" coords="199,70,368,96"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#ad672ac0514a17e7b1b4d4d9cd9c93c58" title="Set MODE1 register bits." alt="" coords="199,70,368,96"/>
 <area shape="poly" title=" " alt="" coords="151,62,185,69,180,70,151,68"/>
 <area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a3a7dedd3275ece0e7f6029a11464c27d" title="Deinitialize an error handler and release resources." alt="" coords="416,13,550,38"/>
 <area shape="poly" title=" " alt="" coords="357,23,403,25,398,26,357,28"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#ab5d665b77448f8328bad9d4c61c0d47c" title="Read from PCA9685 register." alt="" coords="420,66,547,92"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#aa890b42646d44f6b5a11c603658f0afa" title="Read from PCA9685 register." alt="" coords="420,66,547,92"/>
 <area shape="poly" title=" " alt="" coords="368,79,407,80,401,81,368,84"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a7fb4749ccca6d7ff1b791faaba3c5e3a" title="Write to PCA9685 register with validation." alt="" coords="418,116,548,141"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a8e1f1170d3e10e9e1db7beb8f6b12da2" title="Write to PCA9685 register with validation." alt="" coords="418,116,548,141"/>
 <area shape="poly" title=" " alt="" coords="344,94,411,112,406,112,343,99"/>
 <area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#a2e9b9baf8a0f8d00a2080963a7efd62f" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="600,66,727,92"/>
 <area shape="poly" title=" " alt="" coords="547,76,587,79,582,79,547,82"/>
@@ -1377,16 +670,16 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00502">502</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00512">512</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00305">pca9685_handle::bus_name</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00306">pca9685_handle::i2c_addr</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00313">pca9685_handle::initialized</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00304">pca9685_handle::manager</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00042">pca9685_read_reg()</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00241">PCA9685_REG_PRESCALE</a>, and <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00461">star_sensor_pca9685_prescale_to_freq()</a>.</p>
+<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00241">pca9685_handle::bus_name</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00242">pca9685_handle::i2c_addr</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00249">pca9685_handle::initialized</a>, <a class="el" href="../../d9/ddd/pca9685__constants_8h_source.html#l00064">k_pca9685_reg_prescale</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00240">pca9685_handle::manager</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00043">pca9685_read_reg()</a>, and <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00470">star_sensor_pca9685_prescale_to_freq()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d7/de0/star__sensor__pca9685_8h_a360aec2b034221ff3286cdf344b2e66e_cgraph.png" border="0" usemap="#ad7/de0/star__sensor__pca9685_8h_a360aec2b034221ff3286cdf344b2e66e_cgraph" loading="lazy" alt=""/></div>
 <map name="ad7/de0/star__sensor__pca9685_8h_a360aec2b034221ff3286cdf344b2e66e_cgraph" id="ad7/de0/star__sensor__pca9685_8h_a360aec2b034221ff3286cdf344b2e66e_cgraph">
 <area shape="rect" title="Get current PWM frequency." alt="" coords="5,27,151,68"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#ab5d665b77448f8328bad9d4c61c0d47c" title="Read from PCA9685 register." alt="" coords="208,5,335,31"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#aa890b42646d44f6b5a11c603658f0afa" title="Read from PCA9685 register." alt="" coords="208,5,335,31"/>
 <area shape="poly" title=" " alt="" coords="150,34,195,29,190,31,151,39"/>
 <area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a441029eed6f44d433b3c0d6167e24701" title="Convert prescale value to frequency." alt="" coords="199,55,344,96"/>
 <area shape="poly" title=" " alt="" coords="151,55,186,62,180,63,151,61"/>
@@ -1440,9 +733,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00629">629</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00652">652</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00305">pca9685_handle::bus_name</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00313">pca9685_handle::initialized</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00304">pca9685_handle::manager</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00211">PCA9685_NUM_CHANNELS</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00233">PCA9685_REG_LED0_ON_L</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00111">star_bus_i2c_read()</a>.</p>
+<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00241">pca9685_handle::bus_name</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00249">pca9685_handle::initialized</a>, <a class="el" href="../../d9/ddd/pca9685__constants_8h_source.html#l00054">k_pca9685_reg_led0_on_l</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00240">pca9685_handle::manager</a>, <a class="el" href="../../d0/d7f/pca9685__constants_8c_source.html#l00014">pca9685_hardware_limits</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00111">star_bus_i2c_read()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1523,11 +816,11 @@ If error_iface is NULL, a default error handler will be created internally </dd>
 <dd>
 All operations after init are protected by mutex for thread safety </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00167">167</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00171">171</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00305">pca9685_handle::bus_name</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00307">pca9685_handle::config</a>, <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00166">star_error_interface::ctx</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00348">error_handler_create_default()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00393">error_handler_destroy_default()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00324">error_handler_get_interface()</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00309">pca9685_handle::error_iface</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00284">pca9685_config_t::ext_clock</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00281">pca9685_config_t::i2c_addr</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00306">pca9685_handle::i2c_addr</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00313">pca9685_handle::initialized</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00091">internal_pca9685_set_frequency()</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00285">pca9685_config_t::invert_output</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00304">pca9685_handle::manager</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00310">pca9685_handle::mutex</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00312">pca9685_handle::oe_active_low</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00311">pca9685_handle::oe_pin</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00283">pca9685_config_t::output_mode</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00314">pca9685_handle::owns_error_handler</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00220">PCA9685_MAX_FREQ</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00217">PCA9685_MIN_FREQ</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00247">PCA9685_MODE1_AI</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00252">PCA9685_MODE1_ALLCALL</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00246">PCA9685_MODE1_EXTCLK</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00256">PCA9685_MODE2_INVRT</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00258">PCA9685_MODE2_OUTDRV</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00274">PCA9685_OUTPUT_TOTEM_POLE</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00227">PCA9685_REG_MODE1</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00228">PCA9685_REG_MODE2</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00026">pca9685_write_reg()</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00282">pca9685_config_t::pwm_freq</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00241">pca9685_handle::bus_name</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00243">pca9685_handle::config</a>, <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00166">star_error_interface::ctx</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00348">error_handler_create_default()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00393">error_handler_destroy_default()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00324">error_handler_get_interface()</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00245">pca9685_handle::error_iface</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00220">pca9685_config_t::ext_clock</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00217">pca9685_config_t::i2c_addr</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00242">pca9685_handle::i2c_addr</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00249">pca9685_handle::initialized</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00093">internal_pca9685_set_frequency()</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00221">pca9685_config_t::invert_output</a>, <a class="el" href="../../d9/ddd/pca9685__constants_8h_source.html#l00085">k_pca9685_mode1_ai_mask</a>, <a class="el" href="../../d9/ddd/pca9685__constants_8h_source.html#l00090">k_pca9685_mode1_allcall_mask</a>, <a class="el" href="../../d9/ddd/pca9685__constants_8h_source.html#l00084">k_pca9685_mode1_extclk_mask</a>, <a class="el" href="../../d9/ddd/pca9685__constants_8h_source.html#l00106">k_pca9685_mode2_invrt_mask</a>, <a class="el" href="../../d9/ddd/pca9685__constants_8h_source.html#l00108">k_pca9685_mode2_outdrv_mask</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00210">k_pca9685_output_totem_pole</a>, <a class="el" href="../../d9/ddd/pca9685__constants_8h_source.html#l00048">k_pca9685_reg_mode1</a>, <a class="el" href="../../d9/ddd/pca9685__constants_8h_source.html#l00049">k_pca9685_reg_mode2</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00240">pca9685_handle::manager</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00246">pca9685_handle::mutex</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00248">pca9685_handle::oe_active_low</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00247">pca9685_handle::oe_pin</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00219">pca9685_config_t::output_mode</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00250">pca9685_handle::owns_error_handler</a>, <a class="el" href="../../d0/d7f/pca9685__constants_8c_source.html#l00014">pca9685_hardware_limits</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00027">pca9685_write_reg()</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00218">pca9685_config_t::pwm_freq</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00082">initialize_pca9685()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00091">initialize_pca9685()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1540,9 +833,9 @@ Here is the call graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="124,190,245,144,241,149,127,195"/>
 <area shape="rect" href="../../d7/d82/star__error__handler_8c.html#adb10b93a13ce155a3e5c2aa2f4b2d543" title="Create an interface adapter for the error handler." alt="" coords="223,193,401,218"/>
 <area shape="poly" title=" " alt="" coords="174,203,209,204,205,207,176,208"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a49863dd18b6c011a0162743d0e1dd4d4" title="Internal frequency setting (no initialization check, caller must hold mutex if needed)." alt="" coords="240,323,384,363"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#af172ec2771522a913b761463c8d4828f" title="Internal frequency setting (no initialization check, caller must hold mutex if needed)." alt="" coords="240,323,384,363"/>
 <area shape="poly" title=" " alt="" coords="113,216,267,313,263,316,112,222"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a7fb4749ccca6d7ff1b791faaba3c5e3a" title="Write to PCA9685 register with validation." alt="" coords="456,430,587,456"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a8e1f1170d3e10e9e1db7beb8f6b12da2" title="Write to PCA9685 register with validation." alt="" coords="456,430,587,456"/>
 <area shape="poly" title=" " alt="" coords="98,216,117,250,144,292,180,336,224,373,277,400,334,418,390,430,444,439,439,439,389,435,332,423,275,404,221,377,176,340,140,295,112,252,97,221"/>
 <area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a4fbf7f5d1c862bd91f3ece2812b45b03" title="Create and initialize an error handler with custom configuration." alt="" coords="452,5,591,46"/>
 <area shape="poly" title=" " alt="" coords="381,33,439,30,434,33,383,38"/>
@@ -1562,7 +855,7 @@ Here is the call graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="592,203,639,205,633,206,593,208"/>
 <area shape="rect" href="../../d7/d82/star__error__handler_8c.html#adcd860e401f2ab4c5c907c87fdbba7d0" title="Reset the error handler state." alt="" coords="655,251,787,291"/>
 <area shape="poly" title=" " alt="" coords="589,268,642,271,637,271,589,274"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#ab5d665b77448f8328bad9d4c61c0d47c" title="Read from PCA9685 register." alt="" coords="458,316,585,341"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#aa890b42646d44f6b5a11c603658f0afa" title="Read from PCA9685 register." alt="" coords="458,316,585,341"/>
 <area shape="poly" title=" " alt="" coords="384,335,445,333,440,334,385,341"/>
 <area shape="poly" title=" " alt="" coords="348,361,450,415,467,425,462,424,448,420,347,367"/>
 <area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a5ad3e5ba04fe061a85c9b16487bb9fef" title="Calculate prescale value for desired frequency." alt="" coords="449,365,594,406"/>
@@ -1582,7 +875,7 @@ Here is the caller graph for this function:</div>
 <div class="center"><img src="../../d7/de0/star__sensor__pca9685_8h_a7cb8d557fd6b5d97d3f4ce4148347af5_icgraph.png" border="0" usemap="#ad7/de0/star__sensor__pca9685_8h_a7cb8d557fd6b5d97d3f4ce4148347af5_icgraph" loading="lazy" alt=""/></div>
 <map name="ad7/de0/star__sensor__pca9685_8h_a7cb8d557fd6b5d97d3f4ce4148347af5_icgraph" id="ad7/de0/star__sensor__pca9685_8h_a7cb8d557fd6b5d97d3f4ce4148347af5_icgraph">
 <area shape="rect" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="303,5,472,31"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a6d8aaa1fd0c0b11d2cd6f883afb2763c" title=" " alt="" coords="131,5,255,31"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ad6745a540d038c1266117bbcc686713b" title=" " alt="" coords="131,5,255,31"/>
 <area shape="poly" title=" " alt="" coords="285,18,256,21,256,16,290,18"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
 <area shape="poly" title=" " alt="" coords="113,19,83,21,83,16,118,18"/>
@@ -1617,9 +910,9 @@ Here is the caller graph for this function:</div>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, ESP_ERR_INVALID_STATE if OE pin not configured</dd></dl>
 <dl class="section note"><dt>Note</dt><dd>This is a no-op if oe_pin was set to GPIO_NUM_NC during init </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00792">792</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00819">819</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00313">pca9685_handle::initialized</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00310">pca9685_handle::mutex</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00312">pca9685_handle::oe_active_low</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00311">pca9685_handle::oe_pin</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00019">PCA9685_MUTEX_TIMEOUT_MS</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00249">pca9685_handle::initialized</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00246">pca9685_handle::mutex</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00248">pca9685_handle::oe_active_low</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00247">pca9685_handle::oe_pin</a>, <a class="el" href="../../d0/d7f/pca9685__constants_8c_source.html#l00025">pca9685_timing</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
 
 </div>
 </div>
@@ -1649,9 +942,9 @@ Here is the caller graph for this function:</div>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, ESP_ERR_INVALID_STATE if OE pin not configured</dd></dl>
 <dl class="section note"><dt>Note</dt><dd>This is a no-op if oe_pin was set to GPIO_NUM_NC during init </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00754">754</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00780">780</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00313">pca9685_handle::initialized</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00310">pca9685_handle::mutex</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00312">pca9685_handle::oe_active_low</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00311">pca9685_handle::oe_pin</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00019">PCA9685_MUTEX_TIMEOUT_MS</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00249">pca9685_handle::initialized</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00246">pca9685_handle::mutex</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00248">pca9685_handle::oe_active_low</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00247">pca9685_handle::oe_pin</a>, <a class="el" href="../../d0/d7f/pca9685__constants_8c_source.html#l00025">pca9685_timing</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
 
 </div>
 </div>
@@ -1684,11 +977,11 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00461">461</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00470">470</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00223">PCA9685_OSCILLATOR_FREQ</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d7f/pca9685__constants_8c_source.html#l00014">pca9685_hardware_limits</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00502">star_sensor_pca9685_get_frequency()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00512">star_sensor_pca9685_get_frequency()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -1727,9 +1020,9 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00407">407</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00414">414</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00305">pca9685_handle::bus_name</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00313">pca9685_handle::initialized</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00304">pca9685_handle::manager</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00148">star_bus_i2c_write_command()</a>.</p>
+<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00241">pca9685_handle::bus_name</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00249">pca9685_handle::initialized</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00240">pca9685_handle::manager</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00148">star_bus_i2c_write_command()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1774,9 +1067,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00693">693</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00717">717</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00305">pca9685_handle::bus_name</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00313">pca9685_handle::initialized</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00304">pca9685_handle::manager</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00214">PCA9685_PWM_RESOLUTION</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00237">PCA9685_REG_ALL_LED_ON_L</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00075">star_bus_i2c_write()</a>.</p>
+<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00241">pca9685_handle::bus_name</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00249">pca9685_handle::initialized</a>, <a class="el" href="../../d9/ddd/pca9685__constants_8h_source.html#l00060">k_pca9685_reg_all_led_on_l</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00240">pca9685_handle::manager</a>, <a class="el" href="../../d0/d7f/pca9685__constants_8c_source.html#l00014">pca9685_hardware_limits</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00075">star_bus_i2c_write()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1821,9 +1114,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00675">675</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00699">699</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00305">pca9685_handle::bus_name</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00313">pca9685_handle::initialized</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00304">pca9685_handle::manager</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00265">PCA9685_LED_FULL_OFF</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00211">PCA9685_NUM_CHANNELS</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00233">PCA9685_REG_LED0_ON_L</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00075">star_bus_i2c_write()</a>.</p>
+<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00241">pca9685_handle::bus_name</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00249">pca9685_handle::initialized</a>, <a class="el" href="../../d9/ddd/pca9685__constants_8h_source.html#l00118">k_pca9685_pwm_full_off_flag</a>, <a class="el" href="../../d9/ddd/pca9685__constants_8h_source.html#l00054">k_pca9685_reg_led0_on_l</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00240">pca9685_handle::manager</a>, <a class="el" href="../../d0/d7f/pca9685__constants_8c_source.html#l00014">pca9685_hardware_limits</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00075">star_bus_i2c_write()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1868,9 +1161,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00657">657</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00681">681</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00305">pca9685_handle::bus_name</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00313">pca9685_handle::initialized</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00304">pca9685_handle::manager</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00264">PCA9685_LED_FULL_ON</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00211">PCA9685_NUM_CHANNELS</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00233">PCA9685_REG_LED0_ON_L</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00075">star_bus_i2c_write()</a>.</p>
+<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00241">pca9685_handle::bus_name</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00249">pca9685_handle::initialized</a>, <a class="el" href="../../d9/ddd/pca9685__constants_8h_source.html#l00117">k_pca9685_pwm_full_on_flag</a>, <a class="el" href="../../d9/ddd/pca9685__constants_8h_source.html#l00054">k_pca9685_reg_led0_on_l</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00240">pca9685_handle::manager</a>, <a class="el" href="../../d0/d7f/pca9685__constants_8c_source.html#l00014">pca9685_hardware_limits</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00075">star_bus_i2c_write()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1921,11 +1214,11 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, ESP_ERR_INVALID_ARG if channel &gt;= 16 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00574">574</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00589">589</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00313">pca9685_handle::initialized</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00214">PCA9685_PWM_RESOLUTION</a>, and <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00523">star_sensor_pca9685_set_pwm()</a>.</p>
+<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00249">pca9685_handle::initialized</a>, <a class="el" href="../../d0/d7f/pca9685__constants_8c_source.html#l00014">pca9685_hardware_limits</a>, and <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00533">star_sensor_pca9685_set_pwm()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00019">internal_set_rgb_channels()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00049">internal_set_rgb_channels()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1948,35 +1241,35 @@ Here is the caller graph for this function:</div>
 <area shape="rect" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="1982,263,2127,304"/>
 <area shape="rect" href="../../d2/dc9/led__controller_8c.html#a055f40aef481cb67e15eca4d09028a61" title=" " alt="" coords="1761,271,1934,296"/>
 <area shape="poly" title=" " alt="" coords="1963,284,1934,286,1934,281,1969,283"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#ac65666d46afe64b998d889b066bed529" title="Set RGB LED color." alt="" coords="1565,271,1713,296"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a076c2165b5b3484a7208445ff9a1c86d" title="Set RGB LED color." alt="" coords="1565,271,1713,296"/>
 <area shape="poly" title=" " alt="" coords="1743,284,1714,286,1714,281,1748,283"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a73349b12790da0a90e8918735b11ab10" title="Turn off specific LED." alt="" coords="1368,241,1517,267"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a105d937217c622b9872eeeeeb4823b33" title="Turn off specific LED." alt="" coords="1368,241,1517,267"/>
 <area shape="poly" title=" " alt="" coords="1547,270,1517,268,1517,263,1552,270"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a7845556a1b6df08561a0ffe60da13f0f" title="Update LED based on distance measurement." alt="" coords="1370,291,1514,332"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a3bc9057e69b2a21032f72cb91d54d249" title="Update LED based on distance measurement." alt="" coords="1370,291,1514,332"/>
 <area shape="poly" title=" " alt="" coords="1552,296,1515,304,1514,299,1547,296"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html#a4e35506eb493450e65a1e8f8a5d9d4ac" title=" " alt="" coords="1170,262,1304,302"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a1a400922bf8466136467222b9ec209be" title=" " alt="" coords="1170,262,1304,302"/>
 <area shape="poly" title=" " alt="" coords="1355,266,1305,276,1304,270,1349,267"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html#ae254e94283d7484aede3cb5b30445402" title=" " alt="" coords="950,218,1099,258"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a9815a89f029b7233e7cd0e8cf0450144" title=" " alt="" coords="950,218,1099,258"/>
 <area shape="poly" title=" " alt="" coords="1350,251,1100,244,1100,238,1355,251"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a4ef6b466f7b5477b96ef6f47a5cf8455" title="Turn off all LEDs." alt="" coords="1173,122,1301,162"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a6743c205855240c57225c021e88e3d95" title="Turn off all LEDs." alt="" coords="1173,122,1301,162"/>
 <area shape="poly" title=" " alt="" coords="1401,233,1276,166,1277,160,1406,234"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html#a5194367958f3659ffd8b28d049adc5fe" title="Manually trigger LED update for specific sensor." alt="" coords="1154,327,1320,352"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#ac530e05df69535a16f3f76ec3e63458d" title="Manually trigger LED update for specific sensor." alt="" coords="1154,327,1320,352"/>
 <area shape="poly" title=" " alt="" coords="1384,272,1369,282,1345,299,1321,317,1291,329,1290,323,1318,312,1342,295,1366,277,1379,274"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html#a6aa0cce3c297a4cce6b0b752e3ded0e0" title=" " alt="" coords="944,283,1106,324"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a5ed102fd8f8fe04d25422aeea7b89fd0" title=" " alt="" coords="944,283,1106,324"/>
 <area shape="poly" title=" " alt="" coords="1158,290,1106,298,1106,293,1152,291"/>
 <area shape="poly" title=" " alt="" coords="1152,265,1100,256,1100,251,1158,265"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html#a45beb0a71113d5832f1e960aa8533481" title=" " alt="" coords="744,225,894,251"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a61e20b7b3d53c0fe3f3e30ab709564fd" title=" " alt="" coords="744,225,894,251"/>
 <area shape="poly" title=" " alt="" coords="941,278,862,254,862,249,947,278"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html#a838ffd5c036cecef703d7a73e0a193fd" title="Initialize LED display task." alt="" coords="548,171,652,196"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a9d18fbbcd8adbccf0f8d2288e901f77c" title="Initialize LED display task." alt="" coords="548,171,652,196"/>
 <area shape="poly" title=" " alt="" coords="747,221,652,199,652,194,753,221"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,120,267,146"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,120,267,146"/>
 <area shape="poly" title=" " alt="" coords="530,181,430,175,315,161,255,149,254,144,315,156,430,169,535,179"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,120,83,146"/>
 <area shape="poly" title=" " alt="" coords="113,135,84,135,82,130,117,131"/>
 <area shape="poly" title=" " alt="" coords="932,238,895,241,894,236,937,238"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a401de17207482b2f692cd97add113e49" title="Deinitialize LED controller." alt="" coords="751,120,887,146"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a4041166ed835cbf20470b38d1c76eaf4" title="Deinitialize LED controller." alt="" coords="751,120,887,146"/>
 <area shape="poly" title=" " alt="" coords="1155,141,888,137,887,132,1161,140"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#aa31e14fc30c8e35caffef7dad530d4eb" title="Initialize LED controller." alt="" coords="758,169,880,195"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#aeae7615c8b32711083f0cd898653aa63" title="Initialize LED controller." alt="" coords="758,169,880,195"/>
 <area shape="poly" title=" " alt="" coords="1155,150,881,179,880,174,1161,149"/>
 <area shape="rect" href="../../d0/d81/led__task_8c.html#a70a98116b168f38ec6863cf5d9b2e7df" title="Turn off all LEDs immediately." alt="" coords="943,64,1106,90"/>
 <area shape="poly" title=" " alt="" coords="1156,118,1069,93,1069,88,1161,118"/>
@@ -1985,9 +1278,9 @@ Here is the caller graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="733,134,438,135,437,130,737,132"/>
 <area shape="poly" title=" " alt="" coords="317,134,268,135,267,130,322,132"/>
 <area shape="poly" title=" " alt="" coords="739,183,652,186,652,181,745,182"/>
-<area shape="rect" href="../../dc/d96/watchdog__task_8c.html#a57d1e1b0912c3b15d4a2102e2d036d09" title=" " alt="" coords="743,55,895,96"/>
+<area shape="rect" href="../../dc/d96/watchdog__task_8c.html#ab8e8a05882a22d389871b901749f34a0" title=" " alt="" coords="743,55,895,96"/>
 <area shape="poly" title=" " alt="" coords="925,77,896,79,895,73,930,76"/>
-<area shape="rect" href="../../dc/d96/watchdog__task_8c.html#a8486e8e6f170a4d179157051b1510c61" title=" " alt="" coords="505,5,695,31"/>
+<area shape="rect" href="../../dc/d96/watchdog__task_8c.html#a914a83d91bb924807d2c34ddb767e056" title=" " alt="" coords="505,5,695,31"/>
 <area shape="poly" title=" " alt="" coords="725,52,652,34,652,29,730,51"/>
 <area shape="rect" href="../../dc/d96/watchdog__task_8c.html#a3952d706fb7b287213a32d8ab6d39444" title="Force immediate system health check." alt="" coords="527,55,673,96"/>
 <area shape="poly" title=" " alt="" coords="725,76,674,78,673,73,730,75"/>
@@ -2042,9 +1335,9 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, ESP_ERR_INVALID_ARG if parameters invalid </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00596">596</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00617">617</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00313">pca9685_handle::initialized</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00214">PCA9685_PWM_RESOLUTION</a>, and <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00523">star_sensor_pca9685_set_pwm()</a>.</p>
+<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00249">pca9685_handle::initialized</a>, <a class="el" href="../../d0/d7f/pca9685__constants_8c_source.html#l00014">pca9685_hardware_limits</a>, and <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00533">star_sensor_pca9685_set_pwm()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2062,8 +1355,8 @@ Here is the call graph for this function:</div>
 
 </div>
 </div>
-<a id="ab168813c0ee1ff5d7458a8fc52ba68f2" name="ab168813c0ee1ff5d7458a8fc52ba68f2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab168813c0ee1ff5d7458a8fc52ba68f2">&#9670;&#160;</a></span>star_sensor_pca9685_set_frequency()</h2>
+<a id="ab6df7f67b80a359b6368bc660c14084a" name="ab6df7f67b80a359b6368bc660c14084a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab6df7f67b80a359b6368bc660c14084a">&#9670;&#160;</a></span>star_sensor_pca9685_set_frequency()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -2071,12 +1364,12 @@ Here is the call graph for this function:</div>
         <tr>
           <td class="memname">esp_err_t star_sensor_pca9685_set_frequency </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="#afa905e4d6a39f212e4ebdc4a4524a368">pca9685_handle_t</a> *</td>          <td class="paramname"><span class="paramname"><em>handle</em></span>, </td>
+          <td class="paramtype"><a class="el" href="#afa905e4d6a39f212e4ebdc4a4524a368">pca9685_handle_t</a> *const</td>          <td class="paramname"><span class="paramname"><em>handle</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint16_t</td>          <td class="paramname"><span class="paramname"><em>freq_hz</em></span>&#160;)</td>
+          <td class="paramtype">const uint16_t</td>          <td class="paramname"><span class="paramname"><em>freq_hz</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -2092,20 +1385,20 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, ESP_ERR_INVALID_ARG if frequency out of range </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00477">477</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00486">486</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00313">pca9685_handle::initialized</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00091">internal_pca9685_set_frequency()</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00310">pca9685_handle::mutex</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00019">PCA9685_MUTEX_TIMEOUT_MS</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00249">pca9685_handle::initialized</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00093">internal_pca9685_set_frequency()</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00246">pca9685_handle::mutex</a>, <a class="el" href="../../d0/d7f/pca9685__constants_8c_source.html#l00025">pca9685_timing</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d7/de0/star__sensor__pca9685_8h_ab168813c0ee1ff5d7458a8fc52ba68f2_cgraph.png" border="0" usemap="#ad7/de0/star__sensor__pca9685_8h_ab168813c0ee1ff5d7458a8fc52ba68f2_cgraph" loading="lazy" alt=""/></div>
-<map name="ad7/de0/star__sensor__pca9685_8h_ab168813c0ee1ff5d7458a8fc52ba68f2_cgraph" id="ad7/de0/star__sensor__pca9685_8h_ab168813c0ee1ff5d7458a8fc52ba68f2_cgraph">
+<div class="center"><img src="../../d7/de0/star__sensor__pca9685_8h_ab6df7f67b80a359b6368bc660c14084a_cgraph.png" border="0" usemap="#ad7/de0/star__sensor__pca9685_8h_ab6df7f67b80a359b6368bc660c14084a_cgraph" loading="lazy" alt=""/></div>
+<map name="ad7/de0/star__sensor__pca9685_8h_ab6df7f67b80a359b6368bc660c14084a_cgraph" id="ad7/de0/star__sensor__pca9685_8h_ab6df7f67b80a359b6368bc660c14084a_cgraph">
 <area shape="rect" title="Set PWM frequency." alt="" coords="5,47,151,88"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a49863dd18b6c011a0162743d0e1dd4d4" title="Internal frequency setting (no initialization check, caller must hold mutex if needed)." alt="" coords="199,47,343,88"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#af172ec2771522a913b761463c8d4828f" title="Internal frequency setting (no initialization check, caller must hold mutex if needed)." alt="" coords="199,47,343,88"/>
 <area shape="poly" title=" " alt="" coords="151,65,185,67,180,68,152,70"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#ab5d665b77448f8328bad9d4c61c0d47c" title="Read from PCA9685 register." alt="" coords="400,5,527,31"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#aa890b42646d44f6b5a11c603658f0afa" title="Read from PCA9685 register." alt="" coords="400,5,527,31"/>
 <area shape="poly" title=" " alt="" coords="343,46,399,35,394,36,344,52"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a7fb4749ccca6d7ff1b791faaba3c5e3a" title="Write to PCA9685 register with validation." alt="" coords="398,55,529,80"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a8e1f1170d3e10e9e1db7beb8f6b12da2" title="Write to PCA9685 register with validation." alt="" coords="398,55,529,80"/>
 <area shape="poly" title=" " alt="" coords="343,65,386,67,380,68,344,70"/>
 <area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a5ad3e5ba04fe061a85c9b16487bb9fef" title="Calculate prescale value for desired frequency." alt="" coords="391,104,536,145"/>
 <area shape="poly" title=" " alt="" coords="342,86,381,100,376,99,341,91"/>
@@ -2167,11 +1460,11 @@ Here is the call graph for this function:</div>
 </ul>
 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00523">523</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00533">533</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00305">pca9685_handle::bus_name</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00313">pca9685_handle::initialized</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00304">pca9685_handle::manager</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00211">PCA9685_NUM_CHANNELS</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00214">PCA9685_PWM_RESOLUTION</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00233">PCA9685_REG_LED0_ON_L</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00075">star_bus_i2c_write()</a>.</p>
+<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00241">pca9685_handle::bus_name</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00249">pca9685_handle::initialized</a>, <a class="el" href="../../d9/ddd/pca9685__constants_8h_source.html#l00054">k_pca9685_reg_led0_on_l</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00240">pca9685_handle::manager</a>, <a class="el" href="../../d0/d7f/pca9685__constants_8c_source.html#l00014">pca9685_hardware_limits</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00075">star_bus_i2c_write()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00574">star_sensor_pca9685_set_duty_cycle()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00596">star_sensor_pca9685_set_duty_with_phase()</a>, and <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00833">star_sensor_pca9685_set_servo_angle()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00589">star_sensor_pca9685_set_duty_cycle()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00617">star_sensor_pca9685_set_duty_with_phase()</a>, and <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00861">star_sensor_pca9685_set_servo_angle()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2198,35 +1491,35 @@ Here is the caller graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="2179,374,2121,396,2120,391,2173,375"/>
 <area shape="rect" href="../../d2/dc9/led__controller_8c.html#a055f40aef481cb67e15eca4d09028a61" title=" " alt="" coords="1761,271,1934,296"/>
 <area shape="poly" title=" " alt="" coords="1966,284,1934,286,1934,281,1972,283"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#ac65666d46afe64b998d889b066bed529" title="Set RGB LED color." alt="" coords="1565,271,1713,296"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a076c2165b5b3484a7208445ff9a1c86d" title="Set RGB LED color." alt="" coords="1565,271,1713,296"/>
 <area shape="poly" title=" " alt="" coords="1743,284,1714,286,1713,281,1748,283"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a73349b12790da0a90e8918735b11ab10" title="Turn off specific LED." alt="" coords="1368,241,1517,267"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a105d937217c622b9872eeeeeb4823b33" title="Turn off specific LED." alt="" coords="1368,241,1517,267"/>
 <area shape="poly" title=" " alt="" coords="1547,270,1517,268,1517,263,1552,270"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a7845556a1b6df08561a0ffe60da13f0f" title="Update LED based on distance measurement." alt="" coords="1370,291,1514,332"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a3bc9057e69b2a21032f72cb91d54d249" title="Update LED based on distance measurement." alt="" coords="1370,291,1514,332"/>
 <area shape="poly" title=" " alt="" coords="1552,296,1515,304,1514,299,1547,297"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html#a4e35506eb493450e65a1e8f8a5d9d4ac" title=" " alt="" coords="1170,262,1304,302"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a1a400922bf8466136467222b9ec209be" title=" " alt="" coords="1170,262,1304,302"/>
 <area shape="poly" title=" " alt="" coords="1355,266,1305,276,1304,270,1349,267"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html#ae254e94283d7484aede3cb5b30445402" title=" " alt="" coords="950,218,1099,258"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a9815a89f029b7233e7cd0e8cf0450144" title=" " alt="" coords="950,218,1099,258"/>
 <area shape="poly" title=" " alt="" coords="1350,251,1100,244,1100,238,1355,250"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a4ef6b466f7b5477b96ef6f47a5cf8455" title="Turn off all LEDs." alt="" coords="1173,122,1301,162"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a6743c205855240c57225c021e88e3d95" title="Turn off all LEDs." alt="" coords="1173,122,1301,162"/>
 <area shape="poly" title=" " alt="" coords="1401,233,1276,166,1277,160,1406,234"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html#a5194367958f3659ffd8b28d049adc5fe" title="Manually trigger LED update for specific sensor." alt="" coords="1154,327,1320,352"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#ac530e05df69535a16f3f76ec3e63458d" title="Manually trigger LED update for specific sensor." alt="" coords="1154,327,1320,352"/>
 <area shape="poly" title=" " alt="" coords="1384,272,1369,282,1345,299,1321,317,1291,329,1290,323,1318,312,1342,295,1366,277,1379,274"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html#a6aa0cce3c297a4cce6b0b752e3ded0e0" title=" " alt="" coords="944,283,1106,324"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a5ed102fd8f8fe04d25422aeea7b89fd0" title=" " alt="" coords="944,283,1106,324"/>
 <area shape="poly" title=" " alt="" coords="1152,291,1107,298,1106,293,1158,290"/>
 <area shape="poly" title=" " alt="" coords="1152,265,1100,256,1100,251,1158,265"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html#a45beb0a71113d5832f1e960aa8533481" title=" " alt="" coords="744,225,894,251"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a61e20b7b3d53c0fe3f3e30ab709564fd" title=" " alt="" coords="744,225,894,251"/>
 <area shape="poly" title=" " alt="" coords="941,278,862,254,862,249,947,278"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html#a838ffd5c036cecef703d7a73e0a193fd" title="Initialize LED display task." alt="" coords="548,171,652,196"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a9d18fbbcd8adbccf0f8d2288e901f77c" title="Initialize LED display task." alt="" coords="548,171,652,196"/>
 <area shape="poly" title=" " alt="" coords="747,221,652,199,652,194,753,221"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,120,267,146"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,120,267,146"/>
 <area shape="poly" title=" " alt="" coords="530,181,430,175,315,161,255,149,254,144,315,156,430,169,535,179"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,120,83,146"/>
 <area shape="poly" title=" " alt="" coords="113,135,84,135,82,131,117,131"/>
 <area shape="poly" title=" " alt="" coords="932,238,895,241,894,236,937,238"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a401de17207482b2f692cd97add113e49" title="Deinitialize LED controller." alt="" coords="751,120,887,146"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a4041166ed835cbf20470b38d1c76eaf4" title="Deinitialize LED controller." alt="" coords="751,120,887,146"/>
 <area shape="poly" title=" " alt="" coords="1155,141,888,137,887,132,1161,140"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#aa31e14fc30c8e35caffef7dad530d4eb" title="Initialize LED controller." alt="" coords="758,169,880,195"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#aeae7615c8b32711083f0cd898653aa63" title="Initialize LED controller." alt="" coords="758,169,880,195"/>
 <area shape="poly" title=" " alt="" coords="1155,150,881,179,880,174,1161,149"/>
 <area shape="rect" href="../../d0/d81/led__task_8c.html#a70a98116b168f38ec6863cf5d9b2e7df" title="Turn off all LEDs immediately." alt="" coords="943,64,1106,90"/>
 <area shape="poly" title=" " alt="" coords="1156,118,1069,93,1069,88,1161,118"/>
@@ -2235,9 +1528,9 @@ Here is the caller graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="733,134,438,135,437,130,737,131"/>
 <area shape="poly" title=" " alt="" coords="317,134,268,135,267,130,322,132"/>
 <area shape="poly" title=" " alt="" coords="739,183,652,186,652,181,745,182"/>
-<area shape="rect" href="../../dc/d96/watchdog__task_8c.html#a57d1e1b0912c3b15d4a2102e2d036d09" title=" " alt="" coords="743,55,895,96"/>
+<area shape="rect" href="../../dc/d96/watchdog__task_8c.html#ab8e8a05882a22d389871b901749f34a0" title=" " alt="" coords="743,55,895,96"/>
 <area shape="poly" title=" " alt="" coords="925,77,896,79,895,73,930,76"/>
-<area shape="rect" href="../../dc/d96/watchdog__task_8c.html#a8486e8e6f170a4d179157051b1510c61" title=" " alt="" coords="505,5,695,31"/>
+<area shape="rect" href="../../dc/d96/watchdog__task_8c.html#a914a83d91bb924807d2c34ddb767e056" title=" " alt="" coords="505,5,695,31"/>
 <area shape="poly" title=" " alt="" coords="725,52,652,34,652,29,730,51"/>
 <area shape="rect" href="../../dc/d96/watchdog__task_8c.html#a3952d706fb7b287213a32d8ab6d39444" title="Force immediate system health check." alt="" coords="527,55,673,96"/>
 <area shape="poly" title=" " alt="" coords="725,76,674,78,673,73,730,75"/>
@@ -2295,9 +1588,9 @@ Here is the caller graph for this function:</div>
 <dd>
 Angles outside 0-180 range are automatically clamped </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00833">833</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00861">861</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00313">pca9685_handle::initialized</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00211">PCA9685_NUM_CHANNELS</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00523">star_sensor_pca9685_set_pwm()</a>, and <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00069">star_servo_angle_to_count()</a>.</p>
+<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00249">pca9685_handle::initialized</a>, <a class="el" href="../../d0/d7f/pca9685__constants_8c_source.html#l00014">pca9685_hardware_limits</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00533">star_sensor_pca9685_set_pwm()</a>, and <a class="el" href="../../d3/d75/star__servo_8c_source.html#l00082">star_servo_angle_to_count()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2307,27 +1600,35 @@ Here is the call graph for this function:</div>
 <area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="199,8,344,49"/>
 <area shape="poly" title=" " alt="" coords="150,54,186,47,181,50,152,59"/>
 <area shape="rect" href="../../d3/d75/star__servo_8c.html#a104148a95f986eac12fabe6d01d4c87d" title="Calculate PCA9685 count value from angle (0&#45;180 degrees)." alt="" coords="202,84,340,125"/>
-<area shape="poly" title=" " alt="" coords="150,82,189,90,184,92,151,87"/>
+<area shape="poly" title=" " alt="" coords="150,82,189,90,184,92,152,87"/>
 <area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="396,5,526,31"/>
-<area shape="poly" title=" " alt="" coords="344,22,383,22,378,23,345,27"/>
+<area shape="poly" title=" " alt="" coords="344,22,383,22,378,24,345,27"/>
 <area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="578,5,763,31"/>
 <area shape="poly" title=" " alt="" coords="526,16,566,18,560,19,527,21"/>
-<area shape="rect" href="../../d3/d75/star__servo_8c.html#af22dfa33d50a10394cc1a93fef7dc3d6" title=" " alt="" coords="623,85,718,111"/>
-<area shape="poly" title=" " alt="" coords="340,95,392,92,507,90,611,95,605,96,507,95,392,97,341,100"/>
+<area shape="rect" href="../../d3/d75/star__servo_8c.html#af22dfa33d50a10394cc1a93fef7dc3d6" title=" " alt="" coords="623,60,718,86"/>
+<area shape="poly" title=" " alt="" coords="340,96,392,92,610,76,606,78,392,97,341,101"/>
 <area shape="rect" href="../../d3/d75/star__servo_8c.html#a945216ed2b1e8a5850cfd0d8113e1451" title="Calculate pulse width in microseconds from angle (0&#45;180 degrees)." alt="" coords="392,106,530,146"/>
-<area shape="poly" title=" " alt="" coords="341,110,379,116,374,117,341,115"/>
+<area shape="poly" title=" " alt="" coords="340,110,379,116,374,117,341,115"/>
 <area shape="rect" href="../../d3/d75/star__servo_8c.html#a8cd577679d2d29a34ae03d3cec95c3b1" title="Calculate PCA9685 count value from pulse width in microseconds." alt="" coords="392,171,530,212"/>
-<area shape="poly" title=" " alt="" coords="319,123,404,164,399,165,317,128"/>
-<area shape="poly" title=" " alt="" coords="530,114,611,106,606,107,531,120"/>
-<area shape="rect" href="../../d3/d75/star__servo_8c.html#a8833486138de9335152a50c11dfa8693" title=" " alt="" coords="623,179,718,204"/>
-<area shape="poly" title=" " alt="" coords="531,189,611,191,605,192,531,194"/>
+<area shape="poly" title=" " alt="" coords="318,123,404,164,399,165,318,128"/>
+<area shape="rect" href="../../de/d5e/star__servo__constants_8c.html#a1fd2bd5c8eb02e8d5c3bcc32c5841e82" title="Get standard servo angle constants." alt="" coords="811,52,956,93"/>
+<area shape="poly" title=" " alt="" coords="718,70,798,72,792,73,718,75"/>
+<area shape="poly" title=" " alt="" coords="530,106,611,88,606,89,531,111"/>
+<area shape="rect" href="../../de/d5e/star__servo__constants_8c.html#a12c23bf5fc24b4395a13b69edddd66c6" title="Get the default servo constants." alt="" coords="585,113,756,139"/>
+<area shape="poly" title=" " alt="" coords="530,124,572,126,567,127,531,129"/>
+<area shape="rect" href="../../d3/d75/star__servo_8c.html#a8833486138de9335152a50c11dfa8693" title=" " alt="" coords="623,171,718,196"/>
+<area shape="poly" title=" " alt="" coords="531,186,610,186,605,186,531,192"/>
+<area shape="rect" href="../../de/d5e/star__servo__constants_8c.html#aac9dc61d7318ec5bada03bfc02ae18b6" title="Get PCA9685 controller constants." alt="" coords="589,220,752,261"/>
+<area shape="poly" title=" " alt="" coords="531,205,576,218,571,218,531,210"/>
+<area shape="rect" href="../../de/d5e/star__servo__constants_8c.html#a6172bfbd55bee59f475ff5a82d17fb5a" title="Get standard servo pulse timing constants." alt="" coords="811,163,956,204"/>
+<area shape="poly" title=" " alt="" coords="718,181,798,183,792,184,718,186"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="a5e27834a91ab6b25fca8a01bdb8f9274" name="a5e27834a91ab6b25fca8a01bdb8f9274"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5e27834a91ab6b25fca8a01bdb8f9274">&#9670;&#160;</a></span>star_sensor_pca9685_sleep()</h2>
+<a id="a8967db4fc39ffbcbadb10919f9d20dae" name="a8967db4fc39ffbcbadb10919f9d20dae"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8967db4fc39ffbcbadb10919f9d20dae">&#9670;&#160;</a></span>star_sensor_pca9685_sleep()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -2335,12 +1636,12 @@ Here is the call graph for this function:</div>
         <tr>
           <td class="memname">esp_err_t star_sensor_pca9685_sleep </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="#afa905e4d6a39f212e4ebdc4a4524a368">pca9685_handle_t</a> *</td>          <td class="paramname"><span class="paramname"><em>handle</em></span>, </td>
+          <td class="paramtype"><a class="el" href="#afa905e4d6a39f212e4ebdc4a4524a368">pca9685_handle_t</a> *const</td>          <td class="paramname"><span class="paramname"><em>handle</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>sleep</em></span>&#160;)</td>
+          <td class="paramtype">const bool</td>          <td class="paramname"><span class="paramname"><em>sleep</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -2355,20 +1656,20 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00727">727</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00752">752</a> of file <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html">star_sensor_pca9685.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00313">pca9685_handle::initialized</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00310">pca9685_handle::mutex</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00248">PCA9685_MODE1_SLEEP</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00019">PCA9685_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00058">pca9685_set_mode1_bits()</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00249">pca9685_handle::initialized</a>, <a class="el" href="../../d9/ddd/pca9685__constants_8h_source.html#l00086">k_pca9685_mode1_sleep_mask</a>, <a class="el" href="../../d7/de0/star__sensor__pca9685_8h_source.html#l00246">pca9685_handle::mutex</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00060">pca9685_set_mode1_bits()</a>, <a class="el" href="../../d0/d7f/pca9685__constants_8c_source.html#l00025">pca9685_timing</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d7/de0/star__sensor__pca9685_8h_a5e27834a91ab6b25fca8a01bdb8f9274_cgraph.png" border="0" usemap="#ad7/de0/star__sensor__pca9685_8h_a5e27834a91ab6b25fca8a01bdb8f9274_cgraph" loading="lazy" alt=""/></div>
-<map name="ad7/de0/star__sensor__pca9685_8h_a5e27834a91ab6b25fca8a01bdb8f9274_cgraph" id="ad7/de0/star__sensor__pca9685_8h_a5e27834a91ab6b25fca8a01bdb8f9274_cgraph">
+<div class="center"><img src="../../d7/de0/star__sensor__pca9685_8h_a8967db4fc39ffbcbadb10919f9d20dae_cgraph.png" border="0" usemap="#ad7/de0/star__sensor__pca9685_8h_a8967db4fc39ffbcbadb10919f9d20dae_cgraph" loading="lazy" alt=""/></div>
+<map name="ad7/de0/star__sensor__pca9685_8h_a8967db4fc39ffbcbadb10919f9d20dae_cgraph" id="ad7/de0/star__sensor__pca9685_8h_a8967db4fc39ffbcbadb10919f9d20dae_cgraph">
 <area shape="rect" title="Sleep/wake device." alt="" coords="5,23,151,64"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a91eaab882e26ad08fb58448b532e4bd7" title="Set MODE1 register bits." alt="" coords="199,31,368,56"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#ad672ac0514a17e7b1b4d4d9cd9c93c58" title="Set MODE1 register bits." alt="" coords="199,31,368,56"/>
 <area shape="poly" title=" " alt="" coords="151,41,185,43,180,44,151,46"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#ab5d665b77448f8328bad9d4c61c0d47c" title="Read from PCA9685 register." alt="" coords="418,5,545,31"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#aa890b42646d44f6b5a11c603658f0afa" title="Read from PCA9685 register." alt="" coords="418,5,545,31"/>
 <area shape="poly" title=" " alt="" coords="368,30,405,28,400,29,369,35"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a7fb4749ccca6d7ff1b791faaba3c5e3a" title="Write to PCA9685 register with validation." alt="" coords="416,55,546,80"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a8e1f1170d3e10e9e1db7beb8f6b12da2" title="Write to PCA9685 register with validation." alt="" coords="416,55,546,80"/>
 <area shape="poly" title=" " alt="" coords="369,51,403,58,398,58,368,56"/>
 <area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#a2e9b9baf8a0f8d00a2080963a7efd62f" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="596,5,723,31"/>
 <area shape="poly" title=" " alt="" coords="545,16,583,18,578,18,546,21"/>

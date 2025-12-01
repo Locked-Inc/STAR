@@ -1,0 +1,7 @@
+<map id="sensor_task_update_temperature" name="sensor_task_update_temperature">
+<area shape="rect" id="Node000001" title="Update temperature for sound speed correction." alt="" coords="5,35,144,75"/>
+<area shape="rect" id="Node000002" href="$de/de2/star__sensor__hcsr04_8c.html#a98a96e56a9e83ceb44df24d730698884" title="Set temperature for compensation." alt="" coords="210,5,345,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="144,42,197,37,192,38,145,48"/>
+<area shape="rect" id="Node000003" href="$d4/d7e/system__config_8h.html#ae1333c5306d999ad9d292b11465114c2" title="Validate temperature reading." alt="" coords="192,70,363,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="144,62,179,69,174,69,144,67"/>
+</map>

@@ -1,9 +1,17 @@
 var searchData=
 [
-  ['hcsr04_5fmax_5fdistance_5fcm_0',['HCSR04_MAX_DISTANCE_CM',['../d2/dda/star__sensor__hcsr04_8h.html#a6a698c77b2268dbb0665970121cad686',1,'star_sensor_hcsr04.h']]],
-  ['hcsr04_5fmin_5fdistance_5fcm_1',['HCSR04_MIN_DISTANCE_CM',['../d2/dda/star__sensor__hcsr04_8h.html#a4bf2b40390344288564d99ef728b75fb',1,'star_sensor_hcsr04.h']]],
-  ['hcsr04_5fmutex_5ftimeout_5fms_2',['HCSR04_MUTEX_TIMEOUT_MS',['../de/de2/star__sensor__hcsr04_8c.html#a5757e8444b74bfc9a38f731c1b7566c4',1,'star_sensor_hcsr04.c']]],
-  ['hcsr04_5fspeed_5fof_5fsound_5fcm_5fus_3',['HCSR04_SPEED_OF_SOUND_CM_US',['../d2/dda/star__sensor__hcsr04_8h.html#aedcf1b5f3935baf21462134b2d8d4b05',1,'star_sensor_hcsr04.h']]],
-  ['hcsr04_5ftimeout_5fus_4',['HCSR04_TIMEOUT_US',['../d2/dda/star__sensor__hcsr04_8h.html#af17790c01d157074cf23919a35bb0ff9',1,'star_sensor_hcsr04.h']]],
-  ['health_5fcheck_5flog_5finterval_5',['HEALTH_CHECK_LOG_INTERVAL',['../d4/d7e/system__config_8h.html#acaf7735898c4fff9edfe233deb46cf0a',1,'system_config.h']]]
+  ['max_5fbuses_0',['MAX_BUSES',['../d4/db0/star__bus__async_8c.html#a71478560014bace34a1ebdeab8875365',1,'star_bus_async.c']]],
+  ['max_5fonewire_5fbuses_1',['MAX_ONEWIRE_BUSES',['../d9/dd6/star__bus__onewire_8c.html#ae0d9187df544911f5197c012a2857c2a',1,'star_bus_onewire.c']]],
+  ['max_5fperipheral_5fbuses_2',['MAX_PERIPHERAL_BUSES',['../d5/d06/star__bus__i2c__peripheral_8c.html#a4b8ca70f43a1081fe98fdbaabdf54505',1,'MAX_PERIPHERAL_BUSES:&#160;star_bus_i2c_peripheral.c'],['../d2/de5/star__bus__onewire__peripheral_8c.html#a4b8ca70f43a1081fe98fdbaabdf54505',1,'MAX_PERIPHERAL_BUSES:&#160;star_bus_onewire_peripheral.c'],['../d9/d75/star__bus__smbus__peripheral_8c.html#a4b8ca70f43a1081fe98fdbaabdf54505',1,'MAX_PERIPHERAL_BUSES:&#160;star_bus_smbus_peripheral.c']]],
+  ['max_5fstats_5fbuses_3',['MAX_STATS_BUSES',['../dd/d61/star__bus__stats_8c.html#aebb876aaba752ac9163e2c9ab230b289',1,'star_bus_stats.c']]],
+  ['max_5fuart_5fbuses_4',['MAX_UART_BUSES',['../da/d14/star__bus__uart_8c.html#a11b888642a72e2a9213f6fde22164575',1,'star_bus_uart.c']]],
+  ['mpu6050_5fmutex_5ftimeout_5fms_5',['MPU6050_MUTEX_TIMEOUT_MS',['../d7/df2/star__sensor__mpu6050_8c.html#aabea375f2c69267b434e47667aa7d094',1,'star_sensor_mpu6050.c']]],
+  ['mpu6050_5freg_5faccel_5fconfig_6',['MPU6050_REG_ACCEL_CONFIG',['../d6/d0b/star__bus__devices_8c.html#a35e7929d2f47c186b37c0c14f7e2f748',1,'star_bus_devices.c']]],
+  ['mpu6050_5freg_5faccel_5fxout_5fh_7',['MPU6050_REG_ACCEL_XOUT_H',['../d6/d0b/star__bus__devices_8c.html#a261db4cdf256b4353a24192e98b9844e',1,'star_bus_devices.c']]],
+  ['mpu6050_5freg_5fconfig_8',['MPU6050_REG_CONFIG',['../d6/d0b/star__bus__devices_8c.html#a29b84c38e3819ab3ef2194f87acc0265',1,'star_bus_devices.c']]],
+  ['mpu6050_5freg_5fgyro_5fconfig_9',['MPU6050_REG_GYRO_CONFIG',['../d6/d0b/star__bus__devices_8c.html#aa6047e49a54fa8813bd415c98a889455',1,'star_bus_devices.c']]],
+  ['mpu6050_5freg_5fpwr_5fmgmt_5f1_10',['MPU6050_REG_PWR_MGMT_1',['../d6/d0b/star__bus__devices_8c.html#aeeaa101e6be02c7e3c7b74a08c3f0ab2',1,'star_bus_devices.c']]],
+  ['mpu6050_5freg_5fsmplrt_5fdiv_11',['MPU6050_REG_SMPLRT_DIV',['../d6/d0b/star__bus__devices_8c.html#a7295cab687a78a749c9304953af72bbe',1,'star_bus_devices.c']]],
+  ['mpu6050_5freg_5fwho_5fam_5fi_12',['MPU6050_REG_WHO_AM_I',['../d6/d0b/star__bus__devices_8c.html#a1a7574ee53e6dc1754c8d7ddb64d2faf',1,'star_bus_devices.c']]],
+  ['mpu6050_5fwho_5fam_5fi_13',['MPU6050_WHO_AM_I',['../d6/d0b/star__bus__devices_8c.html#aaec612b81685da5fe63800de760c618e',1,'star_bus_devices.c']]]
 ];

@@ -5,6 +5,8 @@
 
 #include <stdint.h>
 
+#include "star_servo_constants.h"
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -163,21 +165,6 @@ extern "C" {
  * // PCA9685_PERIOD_US = 20000
  * @endcode
  */
-
-/** Default servo pulse width range (microseconds) */
-#define SERVO_PULSE_MIN_US (1000)
-#define SERVO_PULSE_MAX_US (2000)
-#define SERVO_PULSE_CENTER_US (1500)
-
-/** Default servo angle range (degrees) */
-#define SERVO_ANGLE_MIN (0)
-#define SERVO_ANGLE_MAX (180)
-#define SERVO_ANGLE_CENTER (90)
-
-/** PCA9685 at 50Hz has 4096 steps per 20ms period */
-#define PCA9685_MAX_COUNT (4096)
-#define PCA9685_FREQ_HZ (50)
-#define PCA9685_PERIOD_US (20000)
 
 /**
  * @brief Calculate PCA9685 count value from angle (0-180 degrees)

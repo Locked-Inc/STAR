@@ -11,41 +11,41 @@
 #include "star_bus_i2c.h"
 #include "star_error_handler.h"
 
-static const char* s_TAG = "mpu6050";
+static const char* const s_TAG = "mpu6050";
 
 #define MPU6050_MUTEX_TIMEOUT_MS (1000)
 
-static esp_err_t mpu6050_write_reg(star_bus_manager_t* manager,
-                                   const char*         bus_name,
-                                   uint8_t             addr,
-                                   uint8_t             reg,
-                                   uint8_t             value)
+static esp_err_t mpu6050_write_reg(star_bus_manager_t* const manager,
+                                   const char* const         bus_name,
+                                   const uint8_t             addr,
+                                   const uint8_t             reg,
+                                   const uint8_t             value)
 {
   return star_bus_i2c_write(manager, bus_name, &value, 1, reg, NULL);
 }
 
-static esp_err_t mpu6050_read_reg(star_bus_manager_t* manager,
-                                  const char*         bus_name,
-                                  uint8_t             addr,
-                                  uint8_t             reg,
-                                  uint8_t*            value)
+static esp_err_t mpu6050_read_reg(star_bus_manager_t* const manager,
+                                  const char* const         bus_name,
+                                  const uint8_t             addr,
+                                  const uint8_t             reg,
+                                  uint8_t* const            value)
 {
   return star_bus_i2c_read(manager, bus_name, value, 1, reg, NULL);
 }
 
-static void get_accel_sensitivity(mpu6050_accel_range_t range, float* sensitivity)
+static void get_accel_sensitivity(const mpu6050_accel_range_t range, float* const sensitivity)
 {
   switch (range) {
-    case MPU6050_ACCEL_RANGE_2G:
+    case k_mpu6050_accel_range_2g:
       *sensitivity = 16384.0f;
       break;
-    case MPU6050_ACCEL_RANGE_4G:
+    case k_mpu6050_accel_range_4g:
       *sensitivity = 8192.0f;
       break;
-    case MPU6050_ACCEL_RANGE_8G:
+    case k_mpu6050_accel_range_8g:
       *sensitivity = 4096.0f;
       break;
-    case MPU6050_ACCEL_RANGE_16G:
+    case k_mpu6050_accel_range_16g:
       *sensitivity = 2048.0f;
       break;
     default:
@@ -53,19 +53,19 @@ static void get_accel_sensitivity(mpu6050_accel_range_t range, float* sensitivit
   }
 }
 
-static void get_gyro_sensitivity(mpu6050_gyro_range_t range, float* sensitivity)
+static void get_gyro_sensitivity(const mpu6050_gyro_range_t range, float* const sensitivity)
 {
   switch (range) {
-    case MPU6050_GYRO_RANGE_250:
+    case k_mpu6050_gyro_range_250:
       *sensitivity = 131.0f;
       break;
-    case MPU6050_GYRO_RANGE_500:
+    case k_mpu6050_gyro_range_500:
       *sensitivity = 65.5f;
       break;
-    case MPU6050_GYRO_RANGE_1000:
+    case k_mpu6050_gyro_range_1000:
       *sensitivity = 32.8f;
       break;
-    case MPU6050_GYRO_RANGE_2000:
+    case k_mpu6050_gyro_range_2000:
       *sensitivity = 16.4f;
       break;
     default:
@@ -93,7 +93,7 @@ esp_err_t star_sensor_mpu6050_init(mpu6050_handle_t*       handle,
   get_accel_sensitivity(config->accel_range, &handle->accel_sensitivity);
   get_gyro_sensitivity(config->gyro_range, &handle->gyro_sensitivity);
 
-  // Create mutex first
+  /* Create mutex first */
   handle->mutex = xSemaphoreCreateMutex();
   if (handle->mutex == NULL) {
     ESP_LOGE(s_TAG, "Failed to create mutex");
@@ -119,9 +119,9 @@ esp_err_t star_sensor_mpu6050_init(mpu6050_handle_t*       handle,
 
   ESP_LOGI(s_TAG, "Initializing MPU6050 on bus '%s' at address 0x%02X", bus_name, config->i2c_addr);
 
-  uint8_t   who_am_i;
-  esp_err_t ret =
-    mpu6050_read_reg(manager, bus_name, config->i2c_addr, MPU6050_REG_WHO_AM_I, &who_am_i);
+  uint8_t         who_am_i;
+  const esp_err_t ret =
+    mpu6050_read_reg(manager, bus_name, config->i2c_addr, k_mpu6050_reg_who_am_i, &who_am_i);
   if (ret != ESP_OK || who_am_i != MPU6050_WHO_AM_I_VAL) {
     ESP_LOGE(s_TAG, "Failed to detect MPU6050 (who_am_i=0x%02X)", who_am_i);
     if (handle->owns_error_handler) {
@@ -145,7 +145,7 @@ esp_err_t star_sensor_mpu6050_init(mpu6050_handle_t*       handle,
 
   vTaskDelay(pdMS_TO_TICKS(100));
 
-  ret = mpu6050_write_reg(manager, bus_name, config->i2c_addr, MPU6050_REG_PWR_MGMT_1, 0x01);
+  ret = mpu6050_write_reg(manager, bus_name, config->i2c_addr, k_mpu6050_reg_pwr_mgmt_1, 0x01);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to set clock source: %s", esp_err_to_name(ret));
     if (handle->owns_error_handler) {
@@ -156,9 +156,9 @@ esp_err_t star_sensor_mpu6050_init(mpu6050_handle_t*       handle,
     return ret;
   }
 
-  uint8_t gyro_config = (config->gyro_range & 0x03) << 3;
+  const uint8_t gyro_config = (config->gyro_range & 0x03) << 3;
   ret =
-    mpu6050_write_reg(manager, bus_name, config->i2c_addr, MPU6050_REG_GYRO_CONFIG, gyro_config);
+    mpu6050_write_reg(manager, bus_name, config->i2c_addr, k_mpu6050_reg_gyro_config, gyro_config);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to configure gyro: %s", esp_err_to_name(ret));
     if (handle->owns_error_handler) {
@@ -169,9 +169,12 @@ esp_err_t star_sensor_mpu6050_init(mpu6050_handle_t*       handle,
     return ret;
   }
 
-  uint8_t accel_config = (config->accel_range & 0x03) << 3;
-  ret =
-    mpu6050_write_reg(manager, bus_name, config->i2c_addr, MPU6050_REG_ACCEL_CONFIG, accel_config);
+  const uint8_t accel_config = (config->accel_range & 0x03) << 3;
+  ret                        = mpu6050_write_reg(manager,
+                          bus_name,
+                          config->i2c_addr,
+                          k_mpu6050_reg_accel_config,
+                          accel_config);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to configure accel: %s", esp_err_to_name(ret));
     if (handle->owns_error_handler) {
@@ -182,8 +185,11 @@ esp_err_t star_sensor_mpu6050_init(mpu6050_handle_t*       handle,
     return ret;
   }
 
-  ret =
-    mpu6050_write_reg(manager, bus_name, config->i2c_addr, MPU6050_REG_CONFIG, config->dlpf & 0x07);
+  ret = mpu6050_write_reg(manager,
+                          bus_name,
+                          config->i2c_addr,
+                          k_mpu6050_reg_config,
+                          config->dlpf & 0x07);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to configure DLPF: %s", esp_err_to_name(ret));
     if (handle->owns_error_handler && handle->error_iface != NULL) {
@@ -199,7 +205,7 @@ esp_err_t star_sensor_mpu6050_init(mpu6050_handle_t*       handle,
   ret = mpu6050_write_reg(manager,
                           bus_name,
                           config->i2c_addr,
-                          MPU6050_REG_SMPLRT_DIV,
+                          k_mpu6050_reg_smplrt_div,
                           config->sample_rate_div);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to configure sample rate: %s", esp_err_to_name(ret));
@@ -232,7 +238,7 @@ esp_err_t star_sensor_mpu6050_deinit(mpu6050_handle_t* handle)
   }
 
   // Acquire mutex before cleanup
-  SemaphoreHandle_t mutex = handle->mutex;
+  const SemaphoreHandle_t mutex = handle->mutex;
   if (mutex != NULL && xSemaphoreTake(mutex, pdMS_TO_TICKS(MPU6050_MUTEX_TIMEOUT_MS)) != pdTRUE) {
     ESP_LOGW(s_TAG, "Failed to acquire mutex for deinit, continuing anyway");
   }
@@ -242,13 +248,13 @@ esp_err_t star_sensor_mpu6050_deinit(mpu6050_handle_t* handle)
   if (mpu6050_read_reg(handle->manager,
                        handle->bus_name,
                        handle->i2c_addr,
-                       MPU6050_REG_PWR_MGMT_1,
+                       k_mpu6050_reg_pwr_mgmt_1,
                        &pwr_mgmt) == ESP_OK) {
     pwr_mgmt |= MPU6050_PWR1_SLEEP;
     mpu6050_write_reg(handle->manager,
                       handle->bus_name,
                       handle->i2c_addr,
-                      MPU6050_REG_PWR_MGMT_1,
+                      k_mpu6050_reg_pwr_mgmt_1,
                       pwr_mgmt);
   }
 
@@ -281,7 +287,7 @@ esp_err_t star_sensor_mpu6050_reset(const mpu6050_handle_t* handle)
   return mpu6050_write_reg(handle->manager,
                            handle->bus_name,
                            handle->i2c_addr,
-                           MPU6050_REG_PWR_MGMT_1,
+                           k_mpu6050_reg_pwr_mgmt_1,
                            MPU6050_PWR1_DEVICE_RESET);
 }
 
@@ -293,7 +299,7 @@ esp_err_t star_sensor_mpu6050_read_accel_raw(const mpu6050_handle_t* handle,
   }
 
   // Acquire mutex for thread-safe read
-  SemaphoreHandle_t mutex = handle->mutex;
+  const SemaphoreHandle_t mutex = handle->mutex;
   if (mutex == NULL || xSemaphoreTake(mutex, pdMS_TO_TICKS(MPU6050_MUTEX_TIMEOUT_MS)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to acquire mutex for read_accel_raw");
     return ESP_ERR_TIMEOUT;
@@ -305,9 +311,9 @@ esp_err_t star_sensor_mpu6050_read_accel_raw(const mpu6050_handle_t* handle,
     return ESP_ERR_INVALID_STATE;
   }
 
-  uint8_t   reg = MPU6050_REG_ACCEL_XOUT_H;
-  uint8_t   data[6];
-  esp_err_t ret = star_bus_i2c_read(handle->manager, handle->bus_name, data, 6, reg, NULL);
+  const uint8_t   reg = k_mpu6050_reg_accel_xout_h;
+  uint8_t         data[6];
+  const esp_err_t ret = star_bus_i2c_read(handle->manager, handle->bus_name, data, 6, reg, NULL);
   if (ret != ESP_OK) {
     xSemaphoreGive(mutex);
     return ret;
@@ -329,7 +335,7 @@ esp_err_t star_sensor_mpu6050_read_gyro_raw(const mpu6050_handle_t* handle,
   }
 
   // Acquire mutex for thread-safe read
-  SemaphoreHandle_t mutex = handle->mutex;
+  const SemaphoreHandle_t mutex = handle->mutex;
   if (mutex == NULL || xSemaphoreTake(mutex, pdMS_TO_TICKS(MPU6050_MUTEX_TIMEOUT_MS)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to acquire mutex for read_gyro_raw");
     return ESP_ERR_TIMEOUT;
@@ -341,9 +347,9 @@ esp_err_t star_sensor_mpu6050_read_gyro_raw(const mpu6050_handle_t* handle,
     return ESP_ERR_INVALID_STATE;
   }
 
-  uint8_t   reg = MPU6050_REG_GYRO_XOUT_H;
-  uint8_t   data[6];
-  esp_err_t ret = star_bus_i2c_read(handle->manager, handle->bus_name, data, 6, reg, NULL);
+  uint8_t         reg = k_mpu6050_reg_gyro_xout_h;
+  uint8_t         data[6];
+  const esp_err_t ret = star_bus_i2c_read(handle->manager, handle->bus_name, data, 6, reg, NULL);
   if (ret != ESP_OK) {
     xSemaphoreGive(mutex);
     return ret;
@@ -357,14 +363,15 @@ esp_err_t star_sensor_mpu6050_read_gyro_raw(const mpu6050_handle_t* handle,
   return ESP_OK;
 }
 
-esp_err_t star_sensor_mpu6050_read_accel(const mpu6050_handle_t* handle, mpu6050_accel_t* accel)
+esp_err_t star_sensor_mpu6050_read_accel(const mpu6050_handle_t* handle,
+                                         mpu6050_accel_t* const  accel)
 {
   if (handle == NULL || accel == NULL || !handle->initialized) {
     return ESP_ERR_INVALID_ARG;
   }
 
   mpu6050_raw_accel_t raw;
-  esp_err_t           ret = star_sensor_mpu6050_read_accel_raw(handle, &raw);
+  const esp_err_t     ret = star_sensor_mpu6050_read_accel_raw(handle, &raw);
   if (ret != ESP_OK) {
     return ret;
   }
@@ -376,14 +383,14 @@ esp_err_t star_sensor_mpu6050_read_accel(const mpu6050_handle_t* handle, mpu6050
   return ESP_OK;
 }
 
-esp_err_t star_sensor_mpu6050_read_gyro(const mpu6050_handle_t* handle, mpu6050_gyro_t* gyro)
+esp_err_t star_sensor_mpu6050_read_gyro(const mpu6050_handle_t* handle, mpu6050_gyro_t* const gyro)
 {
   if (handle == NULL || gyro == NULL || !handle->initialized) {
     return ESP_ERR_INVALID_ARG;
   }
 
   mpu6050_raw_gyro_t raw;
-  esp_err_t          ret = star_sensor_mpu6050_read_gyro_raw(handle, &raw);
+  const esp_err_t    ret = star_sensor_mpu6050_read_gyro_raw(handle, &raw);
   if (ret != ESP_OK) {
     return ret;
   }
@@ -395,14 +402,14 @@ esp_err_t star_sensor_mpu6050_read_gyro(const mpu6050_handle_t* handle, mpu6050_
   return ESP_OK;
 }
 
-esp_err_t star_sensor_mpu6050_read_temperature(const mpu6050_handle_t* handle, float* temp_c)
+esp_err_t star_sensor_mpu6050_read_temperature(const mpu6050_handle_t* handle, float* const temp_c)
 {
   if (handle == NULL || temp_c == NULL || !handle->initialized) {
     return ESP_ERR_INVALID_ARG;
   }
 
   // Acquire mutex for thread-safe read
-  SemaphoreHandle_t mutex = handle->mutex;
+  const SemaphoreHandle_t mutex = handle->mutex;
   if (mutex == NULL || xSemaphoreTake(mutex, pdMS_TO_TICKS(MPU6050_MUTEX_TIMEOUT_MS)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to acquire mutex for read_temperature");
     return ESP_ERR_TIMEOUT;
@@ -414,32 +421,32 @@ esp_err_t star_sensor_mpu6050_read_temperature(const mpu6050_handle_t* handle, f
     return ESP_ERR_INVALID_STATE;
   }
 
-  uint8_t   reg = MPU6050_REG_TEMP_OUT_H;
-  uint8_t   data[2];
-  esp_err_t ret = star_bus_i2c_read(handle->manager, handle->bus_name, data, 2, reg, NULL);
+  const uint8_t reg = k_mpu6050_reg_temp_out_h;
+  uint8_t       data[2];
+  esp_err_t     ret = star_bus_i2c_read(handle->manager, handle->bus_name, data, 2, reg, NULL);
   if (ret != ESP_OK) {
     xSemaphoreGive(mutex);
     return ret;
   }
 
-  int16_t temp_raw = (int16_t)((data[0] << 8) | data[1]);
-  *temp_c          = (float)temp_raw / 340.0f + 36.53f;
+  const int16_t temp_raw = (int16_t)((data[0] << 8) | data[1]);
+  *temp_c                = (float)temp_raw / 340.0f + 36.53f;
 
   xSemaphoreGive(mutex);
   return ESP_OK;
 }
 
 esp_err_t star_sensor_mpu6050_read_all(const mpu6050_handle_t* handle,
-                                       mpu6050_accel_t*        accel,
-                                       mpu6050_gyro_t*         gyro,
-                                       float*                  temp_c)
+                                       mpu6050_accel_t* const  accel,
+                                       mpu6050_gyro_t* const   gyro,
+                                       float* const            temp_c)
 {
   if (handle == NULL || !handle->initialized) {
     return ESP_ERR_INVALID_ARG;
   }
 
   // Acquire mutex for thread-safe read
-  SemaphoreHandle_t mutex = handle->mutex;
+  const SemaphoreHandle_t mutex = handle->mutex;
   if (mutex == NULL || xSemaphoreTake(mutex, pdMS_TO_TICKS(MPU6050_MUTEX_TIMEOUT_MS)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to acquire mutex for read_all");
     return ESP_ERR_TIMEOUT;
@@ -451,49 +458,49 @@ esp_err_t star_sensor_mpu6050_read_all(const mpu6050_handle_t* handle,
     return ESP_ERR_INVALID_STATE;
   }
 
-  uint8_t   reg = MPU6050_REG_ACCEL_XOUT_H;
-  uint8_t   data[14];
-  esp_err_t ret = star_bus_i2c_read(handle->manager, handle->bus_name, data, 14, reg, NULL);
+  const uint8_t reg = k_mpu6050_reg_accel_xout_h;
+  uint8_t       data[14];
+  esp_err_t     ret = star_bus_i2c_read(handle->manager, handle->bus_name, data, 14, reg, NULL);
   if (ret != ESP_OK) {
     xSemaphoreGive(mutex);
     return ret;
   }
 
   if (accel != NULL) {
-    int16_t ax = (int16_t)((data[0] << 8) | data[1]);
-    int16_t ay = (int16_t)((data[2] << 8) | data[3]);
-    int16_t az = (int16_t)((data[4] << 8) | data[5]);
-    accel->x_g = (float)ax / handle->accel_sensitivity;
-    accel->y_g = (float)ay / handle->accel_sensitivity;
-    accel->z_g = (float)az / handle->accel_sensitivity;
+    const int16_t ax = (int16_t)((data[0] << 8) | data[1]);
+    const int16_t ay = (int16_t)((data[2] << 8) | data[3]);
+    const int16_t az = (int16_t)((data[4] << 8) | data[5]);
+    accel->x_g       = (float)ax / handle->accel_sensitivity;
+    accel->y_g       = (float)ay / handle->accel_sensitivity;
+    accel->z_g       = (float)az / handle->accel_sensitivity;
   }
 
   if (temp_c != NULL) {
-    int16_t temp_raw = (int16_t)((data[6] << 8) | data[7]);
-    *temp_c          = (float)temp_raw / 340.0f + 36.53f;
+    const int16_t temp_raw = (int16_t)((data[6] << 8) | data[7]);
+    *temp_c                = (float)temp_raw / 340.0f + 36.53f;
   }
 
   if (gyro != NULL) {
-    int16_t gx  = (int16_t)((data[8] << 8) | data[9]);
-    int16_t gy  = (int16_t)((data[10] << 8) | data[11]);
-    int16_t gz  = (int16_t)((data[12] << 8) | data[13]);
-    gyro->x_dps = (float)gx / handle->gyro_sensitivity;
-    gyro->y_dps = (float)gy / handle->gyro_sensitivity;
-    gyro->z_dps = (float)gz / handle->gyro_sensitivity;
+    const int16_t gx = (int16_t)((data[8] << 8) | data[9]);
+    const int16_t gy = (int16_t)((data[10] << 8) | data[11]);
+    const int16_t gz = (int16_t)((data[12] << 8) | data[13]);
+    gyro->x_dps      = (float)gx / handle->gyro_sensitivity;
+    gyro->y_dps      = (float)gy / handle->gyro_sensitivity;
+    gyro->z_dps      = (float)gz / handle->gyro_sensitivity;
   }
 
   xSemaphoreGive(mutex);
   return ESP_OK;
 }
 
-esp_err_t star_sensor_mpu6050_fifo_enable(mpu6050_handle_t* handle, bool enable)
+esp_err_t star_sensor_mpu6050_fifo_enable(mpu6050_handle_t* const handle, const bool enable)
 {
   if (handle == NULL || !handle->initialized) {
     return ESP_ERR_INVALID_STATE;
   }
 
   // Acquire mutex
-  SemaphoreHandle_t mutex = handle->mutex;
+  const SemaphoreHandle_t mutex = handle->mutex;
   if (mutex == NULL || xSemaphoreTake(mutex, pdMS_TO_TICKS(MPU6050_MUTEX_TIMEOUT_MS)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to acquire mutex for fifo_enable");
     return ESP_ERR_TIMEOUT;
@@ -507,12 +514,12 @@ esp_err_t star_sensor_mpu6050_fifo_enable(mpu6050_handle_t* handle, bool enable)
 
   esp_err_t ret;
   if (enable) {
-    uint8_t fifo_en =
+    const uint8_t fifo_en =
       MPU6050_FIFO_EN_ACCEL | MPU6050_FIFO_EN_XG | MPU6050_FIFO_EN_YG | MPU6050_FIFO_EN_ZG;
     ret = mpu6050_write_reg(handle->manager,
                             handle->bus_name,
                             handle->i2c_addr,
-                            MPU6050_REG_FIFO_EN,
+                            k_mpu6050_reg_fifo_en,
                             fifo_en);
     if (ret != ESP_OK) {
       xSemaphoreGive(mutex);
@@ -522,7 +529,7 @@ esp_err_t star_sensor_mpu6050_fifo_enable(mpu6050_handle_t* handle, bool enable)
     ret = mpu6050_write_reg(handle->manager,
                             handle->bus_name,
                             handle->i2c_addr,
-                            MPU6050_REG_USER_CTRL,
+                            k_mpu6050_reg_user_ctrl,
                             MPU6050_USERCTRL_FIFO_EN);
     if (ret != ESP_OK) {
       xSemaphoreGive(mutex);
@@ -532,7 +539,7 @@ esp_err_t star_sensor_mpu6050_fifo_enable(mpu6050_handle_t* handle, bool enable)
     ret = mpu6050_write_reg(handle->manager,
                             handle->bus_name,
                             handle->i2c_addr,
-                            MPU6050_REG_USER_CTRL,
+                            k_mpu6050_reg_user_ctrl,
                             0);
     if (ret != ESP_OK) {
       xSemaphoreGive(mutex);
@@ -542,7 +549,7 @@ esp_err_t star_sensor_mpu6050_fifo_enable(mpu6050_handle_t* handle, bool enable)
     ret = mpu6050_write_reg(handle->manager,
                             handle->bus_name,
                             handle->i2c_addr,
-                            MPU6050_REG_FIFO_EN,
+                            k_mpu6050_reg_fifo_en,
                             0);
     if (ret != ESP_OK) {
       xSemaphoreGive(mutex);
@@ -562,7 +569,7 @@ esp_err_t star_sensor_mpu6050_fifo_reset(const mpu6050_handle_t* handle)
   }
 
   // Acquire mutex for thread-safe FIFO reset
-  SemaphoreHandle_t mutex = handle->mutex;
+  const SemaphoreHandle_t mutex = handle->mutex;
   if (mutex == NULL || xSemaphoreTake(mutex, pdMS_TO_TICKS(MPU6050_MUTEX_TIMEOUT_MS)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to acquire mutex for fifo_reset");
     return ESP_ERR_TIMEOUT;
@@ -578,7 +585,7 @@ esp_err_t star_sensor_mpu6050_fifo_reset(const mpu6050_handle_t* handle)
   esp_err_t ret = mpu6050_read_reg(handle->manager,
                                    handle->bus_name,
                                    handle->i2c_addr,
-                                   MPU6050_REG_USER_CTRL,
+                                   k_mpu6050_reg_user_ctrl,
                                    &user_ctrl);
   if (ret != ESP_OK) {
     xSemaphoreGive(mutex);
@@ -589,21 +596,21 @@ esp_err_t star_sensor_mpu6050_fifo_reset(const mpu6050_handle_t* handle)
   ret = mpu6050_write_reg(handle->manager,
                           handle->bus_name,
                           handle->i2c_addr,
-                          MPU6050_REG_USER_CTRL,
+                          k_mpu6050_reg_user_ctrl,
                           user_ctrl);
 
   xSemaphoreGive(mutex);
   return ret;
 }
 
-esp_err_t star_sensor_mpu6050_fifo_get_count(const mpu6050_handle_t* handle, uint16_t* count)
+esp_err_t star_sensor_mpu6050_fifo_get_count(const mpu6050_handle_t* handle, uint16_t* const count)
 {
   if (handle == NULL || count == NULL || !handle->initialized) {
     return ESP_ERR_INVALID_ARG;
   }
 
   // Acquire mutex for thread-safe FIFO count read
-  SemaphoreHandle_t mutex = handle->mutex;
+  const SemaphoreHandle_t mutex = handle->mutex;
   if (mutex == NULL || xSemaphoreTake(mutex, pdMS_TO_TICKS(MPU6050_MUTEX_TIMEOUT_MS)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to acquire mutex for fifo_get_count");
     return ESP_ERR_TIMEOUT;
@@ -615,9 +622,9 @@ esp_err_t star_sensor_mpu6050_fifo_get_count(const mpu6050_handle_t* handle, uin
     return ESP_ERR_INVALID_STATE;
   }
 
-  uint8_t   reg = MPU6050_REG_FIFO_COUNT_H;
-  uint8_t   data[2];
-  esp_err_t ret = star_bus_i2c_read(handle->manager, handle->bus_name, data, 2, reg, NULL);
+  const uint8_t reg = k_mpu6050_reg_fifo_count_h;
+  uint8_t       data[2];
+  esp_err_t     ret = star_bus_i2c_read(handle->manager, handle->bus_name, data, 2, reg, NULL);
   if (ret != ESP_OK) {
     xSemaphoreGive(mutex);
     return ret;
@@ -635,7 +642,9 @@ esp_err_t star_sensor_mpu6050_fifo_get_count(const mpu6050_handle_t* handle, uin
   return ESP_OK;
 }
 
-esp_err_t star_sensor_mpu6050_fifo_read(const mpu6050_handle_t* handle, uint8_t* data, uint16_t len)
+esp_err_t star_sensor_mpu6050_fifo_read(const mpu6050_handle_t* handle,
+                                        uint8_t* const          data,
+                                        const uint16_t          len)
 {
   if (handle == NULL || data == NULL || !handle->initialized) {
     return ESP_ERR_INVALID_ARG;
@@ -647,7 +656,7 @@ esp_err_t star_sensor_mpu6050_fifo_read(const mpu6050_handle_t* handle, uint8_t*
   }
 
   // Acquire mutex for thread-safe FIFO read
-  SemaphoreHandle_t mutex = handle->mutex;
+  const SemaphoreHandle_t mutex = handle->mutex;
   if (mutex == NULL || xSemaphoreTake(mutex, pdMS_TO_TICKS(MPU6050_MUTEX_TIMEOUT_MS)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to acquire mutex for fifo_read");
     return ESP_ERR_TIMEOUT;
@@ -659,21 +668,21 @@ esp_err_t star_sensor_mpu6050_fifo_read(const mpu6050_handle_t* handle, uint8_t*
     return ESP_ERR_INVALID_STATE;
   }
 
-  uint8_t   reg = MPU6050_REG_FIFO_R_W;
-  esp_err_t ret = star_bus_i2c_read(handle->manager, handle->bus_name, data, len, reg, NULL);
+  const uint8_t   reg = k_mpu6050_reg_fifo_r_w;
+  const esp_err_t ret = star_bus_i2c_read(handle->manager, handle->bus_name, data, len, reg, NULL);
 
   xSemaphoreGive(mutex);
   return ret;
 }
 
-esp_err_t star_sensor_mpu6050_set_sleep(mpu6050_handle_t* handle, bool sleep)
+esp_err_t star_sensor_mpu6050_set_sleep(mpu6050_handle_t* const handle, const bool sleep)
 {
   if (handle == NULL || !handle->initialized) {
     return ESP_ERR_INVALID_STATE;
   }
 
   // Acquire mutex
-  SemaphoreHandle_t mutex = handle->mutex;
+  const SemaphoreHandle_t mutex = handle->mutex;
   if (mutex == NULL || xSemaphoreTake(mutex, pdMS_TO_TICKS(MPU6050_MUTEX_TIMEOUT_MS)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to acquire mutex for set_sleep");
     return ESP_ERR_TIMEOUT;
@@ -689,7 +698,7 @@ esp_err_t star_sensor_mpu6050_set_sleep(mpu6050_handle_t* handle, bool sleep)
   esp_err_t ret = mpu6050_read_reg(handle->manager,
                                    handle->bus_name,
                                    handle->i2c_addr,
-                                   MPU6050_REG_PWR_MGMT_1,
+                                   k_mpu6050_reg_pwr_mgmt_1,
                                    &pwr_mgmt);
   if (ret != ESP_OK) {
     xSemaphoreGive(mutex);
@@ -705,7 +714,7 @@ esp_err_t star_sensor_mpu6050_set_sleep(mpu6050_handle_t* handle, bool sleep)
   ret = mpu6050_write_reg(handle->manager,
                           handle->bus_name,
                           handle->i2c_addr,
-                          MPU6050_REG_PWR_MGMT_1,
+                          k_mpu6050_reg_pwr_mgmt_1,
                           pwr_mgmt);
 
   xSemaphoreGive(mutex);

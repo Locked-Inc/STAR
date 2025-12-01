@@ -93,115 +93,120 @@ $(function(){initNavTree('d0/d81/led__task_8c.html','../../',''); });
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &quot;<a class="el" href="../../d3/dd0/led__task_8h_source.html">include/led_task.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../d5/d74/shared__data_8h_source.html">../modules/include/shared_data.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../d4/d7e/system__config_8h_source.html">../include/system_config.h</a>&quot;</code><br />
 <code>#include &lt;esp_log.h&gt;</code><br />
 <code>#include &lt;string.h&gt;</code><br />
+<code>#include &quot;<a class="el" href="../../d4/d7e/system__config_8h_source.html">../include/system_config.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d5/d74/shared__data_8h_source.html">../modules/include/shared_data.h</a>&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for led_task.c:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d5/db3/led__task_8c__incl.png" border="0" usemap="#asrc_2tasks_2led__task_8c" loading="lazy" alt=""/></div>
 <map name="asrc_2tasks_2led__task_8c" id="asrc_2tasks_2led__task_8c">
-<area shape="rect" title=" " alt="" coords="1693,5,1832,31"/>
-<area shape="rect" href="../../d3/dd0/led__task_8h.html" title=" " alt="" coords="1026,79,1152,105"/>
-<area shape="poly" title=" " alt="" coords="1690,28,1169,85,1167,80,1695,26"/>
-<area shape="rect" href="../../d4/d7e/system__config_8h.html" title=" " alt="" coords="1643,477,1776,518"/>
-<area shape="poly" title=" " alt="" coords="1764,29,1765,172,1765,329,1762,366,1753,403,1728,465,1725,461,1748,401,1757,365,1760,329,1760,172,1761,33"/>
-<area shape="rect" href="../../d5/d74/shared__data_8h.html" title=" " alt="" coords="1395,389,1522,429"/>
-<area shape="poly" title=" " alt="" coords="1758,30,1731,92,1719,131,1715,172,1715,256,1710,285,1697,311,1678,333,1654,352,1597,379,1538,397,1537,392,1595,374,1651,347,1675,329,1693,308,1705,284,1709,255,1709,172,1714,130,1726,90,1754,33"/>
-<area shape="rect" title=" " alt="" coords="1800,79,1877,105"/>
-<area shape="poly" title=" " alt="" coords="1776,29,1818,69,1812,68,1775,34"/>
-<area shape="rect" title=" " alt="" coords="1901,79,1966,105"/>
-<area shape="poly" title=" " alt="" coords="1792,29,1893,73,1888,73,1792,34"/>
-<area shape="rect" title=" " alt="" coords="196,787,270,813"/>
-<area shape="poly" title=" " alt="" coords="1023,97,768,113,601,125,429,142,267,163,133,189,80,203,41,219,16,236,10,244,8,253,8,654,13,682,25,706,45,727,69,744,126,771,183,789,178,790,124,776,66,749,41,731,21,709,8,684,3,654,3,253,5,242,12,232,38,214,79,198,131,183,266,158,428,137,600,120,768,107,1028,95"/>
-<area shape="rect" title=" " alt="" coords="646,485,789,510"/>
-<area shape="poly" title=" " alt="" coords="1153,103,1194,121,1212,134,1226,151,1234,173,1226,195,1184,255,1132,307,1073,352,1010,391,947,422,886,448,782,483,781,478,884,443,945,417,1008,386,1070,348,1128,303,1180,251,1222,192,1228,173,1222,154,1208,138,1191,125,1153,108"/>
-<area shape="rect" title=" " alt="" coords="893,160,998,186"/>
-<area shape="poly" title=" " alt="" coords="1065,106,982,155,979,150,1070,104"/>
-<area shape="rect" href="../../d7/de0/star__sensor__pca9685_8h.html" title="PCA9685 16&#45;channel 12&#45;bit PWM driver." alt="" coords="594,241,750,267"/>
-<area shape="poly" title=" " alt="" coords="1086,103,1059,151,1038,175,1012,196,968,213,906,227,767,246,765,241,905,222,967,208,1009,191,1034,171,1055,148,1082,107"/>
-<area shape="rect" href="../../d3/d15/led__controller_8h.html" title=" " alt="" coords="1073,153,1212,193"/>
-<area shape="poly" title=" " alt="" coords="1098,102,1124,140,1118,139,1097,108"/>
-<area shape="poly" title=" " alt="" coords="591,262,452,277,372,288,292,304,221,323,162,347,140,360,123,375,113,391,109,408,109,654,112,674,118,692,140,726,170,755,201,779,196,778,166,759,136,730,113,695,106,675,104,654,104,407,108,389,119,371,137,356,160,342,219,318,291,298,371,283,451,271,596,259"/>
-<area shape="poly" title=" " alt="" coords="716,265,756,284,774,297,790,313,801,332,804,349,805,388,809,410,805,430,784,458,758,479,755,474,780,454,800,428,804,410,800,389,799,350,796,334,786,317,771,301,753,288,716,270"/>
-<area shape="rect" title=" " alt="" coords="448,485,570,510"/>
-<area shape="poly" title=" " alt="" coords="666,265,528,473,524,470,662,269"/>
-<area shape="rect" title=" " alt="" coords="1368,787,1442,813"/>
-<area shape="poly" title=" " alt="" coords="750,254,938,261,1054,269,1173,281,1289,298,1393,320,1478,350,1511,367,1537,387,1570,429,1588,472,1590,515,1580,558,1561,602,1534,647,1467,741,1432,779,1430,774,1463,737,1529,644,1556,600,1575,556,1585,514,1582,473,1566,432,1533,391,1508,372,1476,355,1392,326,1288,303,1173,286,1053,274,938,266,751,259"/>
-<area shape="rect" title=" " alt="" coords="706,787,771,813"/>
-<area shape="poly" title=" " alt="" coords="591,268,501,289,463,302,438,317,422,337,415,357,413,408,413,580,416,611,423,636,435,656,451,673,493,703,547,737,582,756,620,771,694,792,689,791,619,776,580,761,544,741,490,708,447,677,431,659,418,638,411,612,408,580,408,408,409,356,417,335,434,313,460,297,500,284,596,265"/>
-<area shape="rect" title=" " alt="" coords="662,315,775,341"/>
-<area shape="poly" title=" " alt="" coords="680,265,705,302,700,302,679,270"/>
-<area shape="rect" href="../../d6/dcc/star__bus__manager_8h.html" title="Unified bus manager for I2C, SPI, GPIO, and other bus protocols." alt="" coords="448,315,586,341"/>
-<area shape="poly" title=" " alt="" coords="644,269,559,310,556,306,648,266"/>
-<area shape="rect" href="../../df/d84/star__error__interface_8h.html" title="Error handler interface for dependency inversion." alt="" coords="557,713,702,739"/>
-<area shape="poly" title=" " alt="" coords="591,265,477,285,427,300,394,317,375,337,366,357,363,379,363,408,363,499,369,538,385,573,410,605,440,632,475,656,511,676,579,708,574,707,508,681,472,660,437,636,406,608,381,576,364,540,357,499,357,408,358,379,361,355,371,334,390,313,425,295,476,280,596,262"/>
-<area shape="poly" title=" " alt="" coords="507,339,455,396,382,482,342,535,305,592,272,652,245,714,238,743,235,773,231,770,233,743,240,712,267,650,300,589,338,532,377,479,451,392,503,343"/>
-<area shape="rect" href="../../d0/d84/star__bus__manager__types_8h.html" title=" " alt="" coords="612,396,790,422"/>
-<area shape="poly" title=" " alt="" coords="546,339,662,389,657,390,546,344"/>
-<area shape="poly" title=" " alt="" coords="705,420,715,471,710,469,702,425"/>
-<area shape="poly" title=" " alt="" coords="672,424,551,480,549,476,677,421"/>
-<area shape="rect" href="../../dd/d40/star__bus__common__types_8h.html" title=" " alt="" coords="1139,713,1317,739"/>
-<area shape="poly" title=" " alt="" coords="791,413,881,421,979,434,1066,452,1101,463,1127,475,1171,509,1198,544,1217,585,1233,639,1237,669,1235,700,1231,696,1232,670,1228,640,1212,587,1194,547,1167,513,1124,480,1099,467,1065,457,978,439,881,427,791,419"/>
-<area shape="rect" href="../../dd/d9d/star__bus__protocol__types_8h.html" title=" " alt="" coords="940,485,1114,510"/>
-<area shape="poly" title=" " alt="" coords="747,420,969,480,964,481,747,425"/>
-<area shape="poly" title=" " alt="" coords="685,421,658,447,636,479,626,507,620,537,616,598,619,654,626,699,621,697,614,655,610,598,614,536,621,506,631,476,654,443,681,424"/>
-<area shape="rect" href="../../da/d58/star__pin__interface_8h.html" title="Pin validator interface for dependency inversion." alt="" coords="347,713,482,739"/>
-<area shape="poly" title=" " alt="" coords="613,424,511,447,466,462,438,479,403,522,394,542,388,563,386,609,395,665,405,700,400,698,389,666,381,609,383,562,389,540,399,519,434,475,464,457,509,442,618,421"/>
-<area shape="poly" title=" " alt="" coords="1139,737,286,797,286,792,1138,731"/>
-<area shape="poly" title=" " alt="" coords="1259,737,1364,781,1359,780,1258,742"/>
-<area shape="poly" title=" " alt="" coords="1147,740,786,794,786,789,1142,740"/>
-<area shape="rect" title=" " alt="" coords="1488,787,1581,813"/>
-<area shape="poly" title=" " alt="" coords="1281,737,1476,784,1471,784,1280,742"/>
-<area shape="rect" title=" " alt="" coords="1073,787,1204,813"/>
-<area shape="poly" title=" " alt="" coords="1215,739,1167,780,1165,775,1210,740"/>
-<area shape="poly" title=" " alt="" coords="955,512,842,537,713,569,588,597,489,617,443,630,397,649,347,677,292,715,266,744,246,775,243,771,262,741,289,711,345,672,395,644,442,625,488,612,587,592,711,563,841,532,960,510"/>
-<area shape="poly" title=" " alt="" coords="1078,508,1149,530,1223,564,1271,595,1305,626,1333,663,1364,712,1396,774,1391,772,1359,715,1328,666,1301,629,1268,599,1220,568,1147,535,1078,514"/>
-<area shape="poly" title=" " alt="" coords="936,507,877,518,814,530,761,547,742,557,729,568,722,582,718,604,719,660,727,720,735,773,731,770,721,721,714,660,713,603,717,581,725,564,739,552,759,542,812,525,876,512,941,506"/>
-<area shape="poly" title=" " alt="" coords="1051,508,1087,529,1130,558,1173,594,1209,638,1222,668,1228,699,1224,696,1217,669,1204,641,1169,598,1127,562,1084,533,1050,514"/>
-<area shape="poly" title=" " alt="" coords="1097,508,1178,530,1221,545,1261,564,1341,614,1413,673,1473,729,1516,776,1511,774,1469,733,1410,677,1338,619,1259,568,1219,550,1176,535,1097,514"/>
-<area shape="poly" title=" " alt="" coords="1064,508,1129,535,1205,577,1243,604,1278,636,1309,672,1332,712,1336,731,1333,747,1322,760,1307,771,1267,786,1220,795,1219,790,1265,781,1305,766,1319,756,1328,745,1331,731,1327,714,1304,675,1275,639,1240,608,1203,581,1127,540,1064,514"/>
-<area shape="rect" title=" " alt="" coords="776,713,861,739"/>
-<area shape="poly" title=" " alt="" coords="936,509,882,520,825,532,778,548,760,557,749,568,735,591,732,614,737,637,749,664,764,686,785,705,780,704,760,689,744,667,732,639,727,614,730,590,745,564,757,553,775,543,824,527,881,514,942,508"/>
-<area shape="rect" href="../../db/d78/star__bus__event__types_8h.html" title=" " alt="" coords="1005,640,1166,665"/>
-<area shape="poly" title=" " alt="" coords="1035,509,1065,565,1082,626,1078,623,1060,567,1033,513"/>
-<area shape="rect" href="../../d0/da6/star__bus__function__types_8h.html" title=" " alt="" coords="877,566,1051,592"/>
-<area shape="poly" title=" " alt="" coords="1019,510,985,556,982,551,1015,512"/>
-<area shape="poly" title=" " alt="" coords="1089,664,1102,701,1113,721,1128,737,1168,755,1227,770,1355,793,1350,793,1226,775,1166,760,1125,741,1109,724,1097,704,1086,668"/>
-<area shape="poly" title=" " alt="" coords="1067,665,1000,703,918,741,850,767,787,787,786,782,848,762,916,737,998,698,1062,667"/>
-<area shape="poly" title=" " alt="" coords="1110,663,1193,706,1187,706,1109,668"/>
-<area shape="poly" title=" " alt="" coords="1146,663,1234,683,1330,711,1420,744,1498,781,1493,780,1418,749,1329,716,1233,689,1146,669"/>
-<area shape="poly" title=" " alt="" coords="1084,664,1080,700,1081,719,1085,738,1097,758,1113,778,1108,776,1093,761,1080,740,1075,720,1075,700,1080,668"/>
-<area shape="poly" title=" " alt="" coords="1043,665,877,712,876,707,1037,666"/>
-<area shape="poly" title=" " alt="" coords="874,586,764,600,626,623,552,640,478,660,405,686,336,716,291,745,256,778,253,773,288,741,333,711,403,681,477,655,551,634,625,618,763,595,879,585"/>
-<area shape="poly" title=" " alt="" coords="1038,590,1121,609,1208,637,1273,668,1331,711,1363,742,1390,776,1385,774,1359,746,1328,715,1270,673,1206,642,1120,614,1038,595"/>
-<area shape="poly" title=" " alt="" coords="962,591,933,662,908,704,875,741,832,770,786,789,785,783,829,765,872,737,904,700,929,659,958,594"/>
-<area shape="poly" title=" " alt="" coords="1052,587,1117,605,1150,619,1179,638,1205,666,1221,700,1216,698,1200,669,1176,642,1147,624,1116,610,1052,592"/>
-<area shape="poly" title=" " alt="" coords="968,590,978,625,996,664,1022,698,1052,728,1110,778,1105,777,1048,732,1018,701,991,667,973,627,965,594"/>
-<area shape="poly" title=" " alt="" coords="953,591,901,642,841,704,838,699,897,638,948,593"/>
-<area shape="poly" title=" " alt="" coords="985,590,1054,632,1049,631,984,595"/>
-<area shape="poly" title=" " alt="" coords="564,741,286,792,285,787,560,738"/>
-<area shape="poly" title=" " alt="" coords="702,731,1355,792,1351,795,702,737"/>
-<area shape="poly" title=" " alt="" coords="649,737,710,779,705,778,647,742"/>
-<area shape="poly" title=" " alt="" coords="387,739,279,783,278,778,381,740"/>
-<area shape="poly" title=" " alt="" coords="483,731,546,736,1013,770,1355,795,1350,795,1013,776,545,742,483,736"/>
-<area shape="poly" title=" " alt="" coords="470,737,694,788,689,789,470,742"/>
-<area shape="poly" title=" " alt="" coords="1070,186,1011,196,817,207,494,228,330,244,191,265,136,278,94,293,67,309,61,318,59,327,59,654,62,677,71,697,84,716,101,732,141,759,184,781,179,782,139,764,97,736,80,719,66,700,57,678,53,654,53,326,56,316,64,306,92,288,134,273,190,260,330,238,493,222,817,202,1010,191,1075,184"/>
-<area shape="poly" title=" " alt="" coords="1070,191,1055,196,766,242,765,237,1054,191,1075,189"/>
-<area shape="poly" title=" " alt="" coords="1212,173,1288,179,1379,190,1479,209,1578,238,1626,257,1670,279,1710,304,1745,334,1775,368,1797,406,1811,449,1816,496,1816,654,1813,663,1804,671,1774,689,1678,726,1560,761,1458,788,1457,783,1559,756,1676,721,1772,684,1801,667,1808,660,1811,653,1811,496,1806,450,1792,408,1770,371,1742,338,1707,309,1667,283,1623,261,1576,243,1478,214,1378,195,1287,184,1213,179"/>
-<area shape="poly" title=" " alt="" coords="1213,187,1283,207,1364,234,1449,269,1529,313,1577,348,1621,389,1688,466,1683,465,1617,393,1574,353,1527,317,1447,274,1362,239,1281,212,1213,193"/>
-<area shape="poly" title=" " alt="" coords="1714,516,1720,562,1719,620,1708,683,1696,713,1679,741,1662,758,1641,772,1597,790,1595,785,1639,767,1659,754,1675,737,1691,711,1703,682,1714,620,1714,562,1711,520"/>
-<area shape="poly" title=" " alt="" coords="1640,507,1530,521,1191,530,983,542,908,553,882,560,867,568,844,596,830,631,823,667,820,700,816,696,817,666,824,630,839,594,864,564,881,555,907,548,983,537,1191,524,1529,515,1645,506"/>
-<area shape="poly" title=" " alt="" coords="1392,415,1186,438,1057,456,929,480,865,499,802,521,675,550,574,567,526,577,477,591,422,612,359,642,305,671,285,689,264,715,249,743,240,773,236,770,244,741,259,712,281,685,302,667,356,637,420,607,475,586,525,572,573,562,674,544,801,515,864,494,927,475,1056,450,1186,432,1397,414"/>
-<area shape="poly" title=" " alt="" coords="1392,427,1376,432,1217,451,1092,457,968,463,808,480,785,484,784,479,808,475,967,457,1092,452,1217,446,1376,427,1397,425"/>
-<area shape="poly" title=" " alt="" coords="1392,415,1068,439,852,457,634,480,587,486,585,481,633,475,852,452,1068,434,1397,413"/>
-<area shape="poly" title=" " alt="" coords="1489,427,1514,449,1532,476,1536,497,1532,519,1510,595,1480,667,1422,776,1419,772,1475,665,1505,593,1527,517,1531,497,1527,478,1510,452,1488,432"/>
-<area shape="poly" title=" " alt="" coords="1516,427,1641,472,1635,472,1515,433"/>
-<area shape="rect" title=" " alt="" coords="1402,485,1518,510"/>
-<area shape="poly" title=" " alt="" coords="1461,428,1462,471,1457,468,1457,432"/>
-<area shape="rect" title=" " alt="" coords="1321,485,1378,510"/>
-<area shape="poly" title=" " alt="" coords="1436,429,1377,478,1375,473,1431,431"/>
+<area shape="rect" title=" " alt="" coords="1556,5,1695,31"/>
+<area shape="rect" href="../../d3/dd0/led__task_8h.html" title=" " alt="" coords="1437,79,1563,105"/>
+<area shape="poly" title=" " alt="" coords="1606,30,1536,73,1533,69,1602,33"/>
+<area shape="rect" href="../../d4/d7e/system__config_8h.html" title=" " alt="" coords="216,625,349,665"/>
+<area shape="poly" title=" " alt="" coords="1553,21,1240,29,1032,38,816,51,614,70,444,96,378,113,328,131,297,151,289,161,287,172,287,492,286,610,281,609,281,491,281,171,284,159,293,147,326,126,377,107,443,91,613,65,816,46,1031,33,1240,24,1558,19"/>
+<area shape="rect" title=" " alt="" coords="1587,79,1664,105"/>
+<area shape="poly" title=" " alt="" coords="1627,29,1628,65,1623,62,1624,33"/>
+<area shape="rect" title=" " alt="" coords="1688,79,1752,105"/>
+<area shape="poly" title=" " alt="" coords="1642,29,1695,70,1689,69,1641,34"/>
+<area shape="rect" href="../../d5/d74/shared__data_8h.html" title=" " alt="" coords="1992,389,2120,429"/>
+<area shape="poly" title=" " alt="" coords="1695,20,1846,32,1934,42,2021,57,2101,77,2167,101,2193,116,2212,133,2225,151,2229,171,2229,256,2227,278,2219,298,2193,333,2158,362,2121,384,2119,379,2155,358,2189,330,2214,296,2221,276,2224,255,2224,172,2220,153,2208,136,2190,121,2165,106,2100,82,2020,62,1933,48,1845,37,1696,25"/>
+<area shape="rect" title=" " alt="" coords="1647,787,1721,813"/>
+<area shape="poly" title=" " alt="" coords="1563,102,1754,143,1872,173,1991,209,2102,251,2193,298,2229,324,2256,350,2274,378,2280,407,2280,647,2275,667,2262,686,2241,703,2214,718,2145,743,2062,763,1972,777,1883,788,1737,799,1737,794,1882,783,1971,772,2061,757,2144,738,2212,713,2238,699,2258,683,2270,665,2275,646,2275,408,2269,380,2252,354,2226,328,2191,303,2099,256,1989,214,1870,178,1753,148,1564,107"/>
+<area shape="rect" title=" " alt="" coords="1723,477,1866,503"/>
+<area shape="poly" title=" " alt="" coords="1538,103,1612,129,1695,165,1733,186,1764,207,1785,230,1793,252,1793,329,1796,463,1791,460,1788,329,1788,253,1781,233,1761,211,1730,190,1693,170,1610,134,1538,108"/>
+<area shape="rect" title=" " alt="" coords="1194,160,1299,186"/>
+<area shape="poly" title=" " alt="" coords="1459,106,1301,158,1299,153,1463,104"/>
+<area shape="rect" href="../../d3/d15/led__controller_8h.html" title=" " alt="" coords="1324,153,1463,193"/>
+<area shape="poly" title=" " alt="" coords="1486,104,1433,146,1430,141,1482,106"/>
+<area shape="rect" href="../../d7/de0/star__sensor__pca9685_8h.html" title="PCA9685 16&#45;channel 12&#45;bit PWM driver." alt="" coords="1315,241,1472,267"/>
+<area shape="poly" title=" " alt="" coords="1501,103,1496,147,1489,171,1477,195,1456,218,1432,235,1430,231,1453,214,1472,192,1484,169,1491,145,1498,107"/>
+<area shape="poly" title=" " alt="" coords="1463,176,1604,190,1685,201,1766,216,1840,236,1900,260,1924,274,1942,290,1953,307,1957,326,1957,647,1951,681,1934,711,1908,735,1876,755,1841,770,1804,781,1737,795,1736,790,1803,776,1839,765,1874,750,1905,731,1930,708,1946,680,1952,646,1952,327,1948,309,1938,293,1921,279,1898,265,1838,241,1765,222,1684,206,1603,195,1464,181"/>
+<area shape="rect" title=" " alt="" coords="1066,787,1140,813"/>
+<area shape="poly" title=" " alt="" coords="1338,195,1280,221,1213,252,1154,285,1133,301,1120,316,1112,342,1107,389,1102,522,1104,773,1100,770,1097,522,1102,389,1107,341,1115,314,1130,297,1151,281,1210,247,1277,216,1343,193"/>
+<area shape="poly" title=" " alt="" coords="1321,192,1312,196,1239,203,1114,210,783,229,616,244,473,265,416,278,373,293,346,309,340,318,337,327,337,492,334,524,326,557,303,612,299,609,321,555,329,524,332,491,332,326,335,315,343,305,371,288,415,273,472,260,615,239,783,224,1114,204,1239,198,1312,191,1326,190"/>
+<area shape="poly" title=" " alt="" coords="1395,192,1396,227,1391,224,1392,196"/>
+<area shape="poly" title=" " alt="" coords="342,663,467,700,615,736,737,757,858,773,1053,795,1047,795,857,779,736,763,614,742,466,706,342,668"/>
+<area shape="rect" title=" " alt="" coords="111,787,204,813"/>
+<area shape="poly" title=" " alt="" coords="248,664,218,689,191,715,175,743,165,774,161,770,171,741,187,712,214,684,244,667"/>
+<area shape="rect" title=" " alt="" coords="651,713,736,739"/>
+<area shape="poly" title=" " alt="" coords="350,656,638,712,633,715,349,662"/>
+<area shape="rect" title=" " alt="" coords="378,787,443,813"/>
+<area shape="poly" title=" " alt="" coords="281,664,281,702,285,720,293,738,307,754,325,767,366,788,361,787,322,771,304,758,288,740,280,722,276,702,278,668"/>
+<area shape="poly" title=" " alt="" coords="1467,265,1524,283,1552,296,1578,313,1596,330,1607,346,1626,387,1648,431,1663,477,1677,560,1685,644,1687,773,1683,770,1679,644,1672,561,1657,478,1643,433,1622,390,1603,349,1592,333,1574,317,1549,301,1522,288,1467,270"/>
+<area shape="poly" title=" " alt="" coords="1472,260,1605,279,1665,294,1706,313,1727,339,1750,379,1787,464,1782,462,1745,381,1723,342,1702,317,1663,299,1604,285,1472,265"/>
+<area shape="poly" title=" " alt="" coords="1378,266,1349,292,1318,324,1293,363,1285,385,1283,408,1283,565,1278,588,1265,614,1223,673,1172,732,1127,778,1125,774,1168,728,1219,670,1260,611,1273,586,1277,565,1277,408,1280,384,1288,361,1314,321,1345,288,1373,269"/>
+<area shape="poly" title=" " alt="" coords="1312,257,986,264,772,272,550,285,343,305,169,331,102,347,51,366,19,386,11,397,8,408,8,646,11,659,18,672,48,696,91,718,145,738,263,769,366,791,360,791,261,774,143,743,89,723,45,701,14,675,6,661,3,647,3,407,6,394,15,382,48,361,100,342,168,326,342,299,550,280,771,267,986,259,1317,255"/>
+<area shape="rect" title=" " alt="" coords="1526,477,1648,503"/>
+<area shape="poly" title=" " alt="" coords="1441,265,1486,282,1534,307,1576,341,1593,363,1605,388,1609,407,1609,427,1600,465,1596,461,1604,427,1604,408,1600,390,1588,366,1572,345,1531,311,1484,286,1441,270"/>
+<area shape="rect" title=" " alt="" coords="1129,315,1242,341"/>
+<area shape="poly" title=" " alt="" coords="1356,268,1236,312,1234,307,1361,267"/>
+<area shape="rect" href="../../d6/dcc/star__bus__manager_8h.html" title="Unified bus manager for I2C, SPI, GPIO, and other bus protocols." alt="" coords="1388,315,1526,341"/>
+<area shape="poly" title=" " alt="" coords="1405,265,1439,304,1434,303,1403,270"/>
+<area shape="rect" href="../../df/d84/star__error__interface_8h.html" title="Error handler interface for dependency inversion." alt="" coords="1216,713,1360,739"/>
+<area shape="poly" title=" " alt="" coords="1387,266,1354,327,1339,366,1333,408,1333,565,1330,602,1322,639,1301,701,1298,697,1317,638,1325,602,1328,565,1328,407,1334,365,1349,325,1383,269"/>
+<area shape="rect" href="../../d9/ddd/pca9685__constants_8h.html" title="Type&#45;safe constants for PCA9685 16&#45;channel 12&#45;bit PWM controller." alt="" coords="43,551,189,577"/>
+<area shape="poly" title=" " alt="" coords="1332,269,1118,318,573,449,178,549,177,544,572,444,1117,312,1337,267"/>
+<area shape="poly" title=" " alt="" coords="1497,339,1533,358,1548,371,1561,387,1567,409,1561,430,1550,446,1538,456,1525,464,1516,478,1513,490,1516,502,1529,544,1547,585,1588,662,1631,726,1667,776,1662,774,1627,730,1584,664,1542,587,1524,546,1511,504,1508,490,1511,476,1522,460,1534,451,1547,443,1556,428,1562,409,1556,390,1545,375,1530,362,1496,344"/>
+<area shape="rect" href="../../d0/d84/star__bus__manager__types_8h.html" title=" " alt="" coords="1368,396,1546,422"/>
+<area shape="poly" title=" " alt="" coords="1459,339,1460,382,1455,379,1456,343"/>
+<area shape="poly" title=" " alt="" coords="1509,420,1731,473,1725,473,1509,425"/>
+<area shape="poly" title=" " alt="" coords="1477,420,1557,469,1551,469,1476,425"/>
+<area shape="rect" href="../../dd/d40/star__bus__common__types_8h.html" title=" " alt="" coords="811,713,989,739"/>
+<area shape="poly" title=" " alt="" coords="1438,422,936,708,933,703,1433,423"/>
+<area shape="rect" href="../../dd/d9d/star__bus__protocol__types_8h.html" title=" " alt="" coords="697,477,871,503"/>
+<area shape="poly" title=" " alt="" coords="1365,422,887,479,886,474,1370,420"/>
+<area shape="poly" title=" " alt="" coords="1456,421,1422,527,1391,598,1351,667,1316,706,1314,701,1347,664,1386,596,1417,525,1452,424"/>
+<area shape="rect" href="../../da/d58/star__pin__interface_8h.html" title="Pin validator interface for dependency inversion." alt="" coords="1384,713,1520,739"/>
+<area shape="poly" title=" " alt="" coords="1459,421,1455,699,1450,696,1455,424"/>
+<area shape="poly" title=" " alt="" coords="990,733,1634,793,1629,794,989,738"/>
+<area shape="poly" title=" " alt="" coords="935,737,1056,782,1051,781,934,742"/>
+<area shape="poly" title=" " alt="" coords="811,739,220,795,219,790,810,733"/>
+<area shape="poly" title=" " alt="" coords="819,740,458,794,458,789,814,739"/>
+<area shape="rect" title=" " alt="" coords="602,787,734,813"/>
+<area shape="poly" title=" " alt="" coords="863,739,722,785,721,779,858,740"/>
+<area shape="poly" title=" " alt="" coords="828,501,1001,548,1090,571,1166,587,1297,610,1360,624,1425,644,1497,672,1580,711,1627,742,1665,777,1660,776,1623,746,1577,716,1495,677,1423,649,1358,630,1296,616,1165,592,1088,576,999,554,828,506"/>
+<area shape="poly" title=" " alt="" coords="865,501,921,519,947,532,971,549,997,574,1020,602,1056,664,1082,724,1098,773,1093,771,1077,726,1052,666,1015,605,993,578,968,553,944,537,918,524,865,506"/>
+<area shape="poly" title=" " alt="" coords="694,502,570,522,424,548,355,565,292,583,241,604,206,627,192,642,181,659,167,698,160,738,158,773,154,770,155,737,162,697,176,657,188,639,202,623,239,599,290,578,353,560,423,543,569,516,699,500"/>
+<area shape="poly" title=" " alt="" coords="778,502,750,552,721,631,701,700,698,697,716,630,746,550,774,505"/>
+<area shape="poly" title=" " alt="" coords="695,505,625,524,553,553,504,584,472,617,449,659,429,714,416,774,412,770,424,713,444,656,468,614,501,580,551,549,624,519,700,503"/>
+<area shape="poly" title=" " alt="" coords="872,501,914,519,932,532,948,550,957,568,961,589,955,630,939,669,920,702,917,698,935,667,950,629,955,589,952,570,943,552,929,536,911,524,872,506"/>
+<area shape="poly" title=" " alt="" coords="715,505,665,522,609,546,556,580,534,601,516,626,507,649,509,670,520,692,536,713,582,749,631,780,626,779,579,754,533,716,515,695,504,672,502,648,511,623,530,598,553,576,606,541,663,517,720,503"/>
+<area shape="rect" href="../../db/d78/star__bus__event__types_8h.html" title=" " alt="" coords="525,632,686,658"/>
+<area shape="poly" title=" " alt="" coords="769,502,706,553,629,623,626,619,702,549,765,505"/>
+<area shape="rect" href="../../d0/da6/star__bus__function__types_8h.html" title=" " alt="" coords="760,551,934,577"/>
+<area shape="poly" title=" " alt="" coords="795,501,829,540,823,538,794,506"/>
+<area shape="poly" title=" " alt="" coords="607,656,616,698,625,719,640,737,671,753,715,767,827,784,949,793,1052,798,1047,798,949,798,827,790,713,772,669,758,637,741,621,722,611,699,604,660"/>
+<area shape="poly" title=" " alt="" coords="571,661,208,784,206,779,569,656"/>
+<area shape="poly" title=" " alt="" coords="620,656,671,703,666,702,618,661"/>
+<area shape="poly" title=" " alt="" coords="593,658,439,780,436,775,587,659"/>
+<area shape="poly" title=" " alt="" coords="651,656,843,709,837,709,650,661"/>
+<area shape="poly" title=" " alt="" coords="602,657,592,696,592,717,597,738,613,759,634,779,629,778,609,763,592,740,586,718,587,695,598,660"/>
+<area shape="poly" title=" " alt="" coords="885,575,1028,617,1211,663,1302,676,1373,680,1444,688,1533,711,1601,742,1657,778,1652,777,1598,746,1531,716,1444,693,1373,686,1301,682,1210,668,1026,622,884,580"/>
+<area shape="poly" title=" " alt="" coords="861,575,1081,776,1076,776,859,579"/>
+<area shape="poly" title=" " alt="" coords="838,576,717,704,714,700,833,578"/>
+<area shape="poly" title=" " alt="" coords="757,573,619,594,557,609,515,627,480,659,454,699,434,739,420,774,417,770,429,736,449,696,476,656,512,622,555,604,618,589,762,572"/>
+<area shape="poly" title=" " alt="" coords="852,575,894,700,889,698,849,579"/>
+<area shape="poly" title=" " alt="" coords="844,576,810,651,783,697,750,741,727,762,703,781,701,776,724,758,746,737,779,694,806,648,840,579"/>
+<area shape="poly" title=" " alt="" coords="812,576,657,630,656,624,807,578"/>
+<area shape="poly" title=" " alt="" coords="1356,737,1635,789,1629,789,1355,742"/>
+<area shape="poly" title=" " alt="" coords="1259,739,1149,784,1148,778,1254,740"/>
+<area shape="poly" title=" " alt="" coords="1216,736,458,797,458,792,1215,731"/>
+<area shape="poly" title=" " alt="" coords="1492,737,1635,783,1629,782,1491,742"/>
+<area shape="poly" title=" " alt="" coords="1395,739,1155,791,1154,785,1390,740"/>
+<area shape="poly" title=" " alt="" coords="1387,737,1372,742,1153,761,982,771,591,790,458,798,458,793,591,784,982,765,1153,756,1372,736,1381,738"/>
+<area shape="poly" title=" " alt="" coords="125,574,183,650,227,696,276,737,320,762,366,783,361,783,318,767,273,741,223,700,179,653,123,580"/>
+<area shape="poly" title=" " alt="" coords="2121,424,2165,445,2185,459,2203,476,2219,496,2226,516,2229,562,2229,647,2225,666,2213,683,2195,699,2170,713,2109,738,2034,757,1952,773,1871,784,1737,798,1737,792,1871,779,1951,767,2032,752,2107,732,2168,708,2192,695,2209,680,2220,663,2224,646,2224,563,2221,517,2214,499,2199,479,2182,463,2162,449,2120,429"/>
+<area shape="poly" title=" " alt="" coords="1994,429,1850,475,1849,470,1989,430"/>
+<area shape="poly" title=" " alt="" coords="2036,429,1957,494,1838,579,1767,625,1692,668,1613,708,1533,742,1431,771,1326,788,1231,797,1155,801,1155,796,1230,792,1325,783,1429,765,1531,736,1611,703,1689,664,1765,620,1835,575,1954,489,2031,431"/>
+<area shape="poly" title=" " alt="" coords="1989,413,1292,443,909,462,686,480,608,492,548,505,490,523,419,553,365,584,319,617,316,613,362,579,416,549,488,518,547,499,607,487,685,475,908,457,1292,438,1994,412"/>
+<area shape="poly" title=" " alt="" coords="1989,422,1663,479,1663,473,1994,421"/>
+<area shape="rect" title=" " alt="" coords="1992,477,2107,503"/>
+<area shape="poly" title=" " alt="" coords="2056,428,2054,464,2050,460,2053,432"/>
+<area shape="rect" title=" " alt="" coords="2131,477,2189,503"/>
+<area shape="poly" title=" " alt="" coords="2082,427,2134,468,2129,467,2081,432"/>
 </map>
 </div>
 </div>
@@ -209,20 +214,20 @@ Include dependency graph for led_task.c:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a4e35506eb493450e65a1e8f8a5d9d4ac" id="r_a4e35506eb493450e65a1e8f8a5d9d4ac"><td class="memItemLeft" align="right" valign="top">static esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4e35506eb493450e65a1e8f8a5d9d4ac">internal_update_led_from_sensor_data</a> (<a class="el" href="../../d9/dc8/structled__task__context__t.html">led_task_context_t</a> *ctx, const <a class="el" href="../../d2/d06/structsensor__data__t.html">sensor_data_t</a> *sensor_data)</td></tr>
-<tr class="memitem:a6aa0cce3c297a4cce6b0b752e3ded0e0" id="r_a6aa0cce3c297a4cce6b0b752e3ded0e0"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6aa0cce3c297a4cce6b0b752e3ded0e0">internal_process_sensor_data_queue</a> (<a class="el" href="../../d9/dc8/structled__task__context__t.html">led_task_context_t</a> *ctx)</td></tr>
-<tr class="memitem:ae254e94283d7484aede3cb5b30445402" id="r_ae254e94283d7484aede3cb5b30445402"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae254e94283d7484aede3cb5b30445402">internal_update_leds_from_latest_readings</a> (<a class="el" href="../../d9/dc8/structled__task__context__t.html">led_task_context_t</a> *ctx)</td></tr>
-<tr class="memitem:a45beb0a71113d5832f1e960aa8533481" id="r_a45beb0a71113d5832f1e960aa8533481"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a45beb0a71113d5832f1e960aa8533481">internal_led_task_loop</a> (void *parameter)</td></tr>
-<tr class="memitem:a838ffd5c036cecef703d7a73e0a193fd" id="r_a838ffd5c036cecef703d7a73e0a193fd"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a838ffd5c036cecef703d7a73e0a193fd">led_task_start</a> (const <a class="el" href="../../d7/de0/star__sensor__pca9685_8h.html#afa905e4d6a39f212e4ebdc4a4524a368">pca9685_handle_t</a> *pca_handle)</td></tr>
-<tr class="memdesc:a838ffd5c036cecef703d7a73e0a193fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize LED display task.  <br /></td></tr>
+<tr class="memitem:a1a400922bf8466136467222b9ec209be" id="r_a1a400922bf8466136467222b9ec209be"><td class="memItemLeft" align="right" valign="top">static esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1a400922bf8466136467222b9ec209be">internal_update_led_from_sensor_data</a> (<a class="el" href="../../d9/dc8/structled__task__context__t.html">led_task_context_t</a> *const ctx, const <a class="el" href="../../d2/d06/structsensor__data__t.html">sensor_data_t</a> *const sensor_data)</td></tr>
+<tr class="memitem:a5ed102fd8f8fe04d25422aeea7b89fd0" id="r_a5ed102fd8f8fe04d25422aeea7b89fd0"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5ed102fd8f8fe04d25422aeea7b89fd0">internal_process_sensor_data_queue</a> (<a class="el" href="../../d9/dc8/structled__task__context__t.html">led_task_context_t</a> *const ctx)</td></tr>
+<tr class="memitem:a9815a89f029b7233e7cd0e8cf0450144" id="r_a9815a89f029b7233e7cd0e8cf0450144"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9815a89f029b7233e7cd0e8cf0450144">internal_update_leds_from_latest_readings</a> (<a class="el" href="../../d9/dc8/structled__task__context__t.html">led_task_context_t</a> *const ctx)</td></tr>
+<tr class="memitem:a61e20b7b3d53c0fe3f3e30ab709564fd" id="r_a61e20b7b3d53c0fe3f3e30ab709564fd"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a61e20b7b3d53c0fe3f3e30ab709564fd">internal_led_task_loop</a> (void *const parameter)</td></tr>
+<tr class="memitem:a9d18fbbcd8adbccf0f8d2288e901f77c" id="r_a9d18fbbcd8adbccf0f8d2288e901f77c"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9d18fbbcd8adbccf0f8d2288e901f77c">led_task_start</a> (const <a class="el" href="../../d7/de0/star__sensor__pca9685_8h.html#afa905e4d6a39f212e4ebdc4a4524a368">pca9685_handle_t</a> *const pca_handle)</td></tr>
+<tr class="memdesc:a9d18fbbcd8adbccf0f8d2288e901f77c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize LED display task.  <br /></td></tr>
 <tr class="memitem:a28b03bd16ef898607267014458e3724d" id="r_a28b03bd16ef898607267014458e3724d"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a28b03bd16ef898607267014458e3724d">led_task_stop</a> (void)</td></tr>
 <tr class="memdesc:a28b03bd16ef898607267014458e3724d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stop LED display task.  <br /></td></tr>
 <tr class="memitem:a1f77a84b84db33bc9e8bb3ef9339fc33" id="r_a1f77a84b84db33bc9e8bb3ef9339fc33"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1f77a84b84db33bc9e8bb3ef9339fc33">led_task_is_running</a> (void)</td></tr>
 <tr class="memdesc:a1f77a84b84db33bc9e8bb3ef9339fc33"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if LED task is running.  <br /></td></tr>
 <tr class="memitem:ad507402d7349d3677181f90f99032b06" id="r_ad507402d7349d3677181f90f99032b06"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad507402d7349d3677181f90f99032b06">led_task_get_stats</a> (uint32_t *update_failures, uint32_t *successful_updates)</td></tr>
 <tr class="memdesc:ad507402d7349d3677181f90f99032b06"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get LED task performance statistics.  <br /></td></tr>
-<tr class="memitem:a5194367958f3659ffd8b28d049adc5fe" id="r_a5194367958f3659ffd8b28d049adc5fe"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5194367958f3659ffd8b28d049adc5fe">led_task_manual_update</a> (uint8_t sensor_index, float distance_cm)</td></tr>
-<tr class="memdesc:a5194367958f3659ffd8b28d049adc5fe"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manually trigger LED update for specific sensor.  <br /></td></tr>
+<tr class="memitem:ac530e05df69535a16f3f76ec3e63458d" id="r_ac530e05df69535a16f3f76ec3e63458d"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac530e05df69535a16f3f76ec3e63458d">led_task_manual_update</a> (const uint8_t sensor_index, const float distance_cm)</td></tr>
+<tr class="memdesc:ac530e05df69535a16f3f76ec3e63458d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Manually trigger LED update for specific sensor.  <br /></td></tr>
 <tr class="memitem:a70a98116b168f38ec6863cf5d9b2e7df" id="r_a70a98116b168f38ec6863cf5d9b2e7df"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a70a98116b168f38ec6863cf5d9b2e7df">led_task_emergency_off</a> (void)</td></tr>
 <tr class="memdesc:a70a98116b168f38ec6863cf5d9b2e7df"><td class="mdescLeft">&#160;</td><td class="mdescRight">Turn off all LEDs immediately.  <br /></td></tr>
 </table><table class="memberdecls">
@@ -233,8 +238,8 @@ Variables</h2></td></tr>
 <tr class="memitem:ad05d2a0c27e73eccfd01b0d4ecd10a42" id="r_ad05d2a0c27e73eccfd01b0d4ecd10a42"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad05d2a0c27e73eccfd01b0d4ecd10a42">s_g_context_initialized</a> = false</td></tr>
 </table>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
-<a id="a45beb0a71113d5832f1e960aa8533481" name="a45beb0a71113d5832f1e960aa8533481"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a45beb0a71113d5832f1e960aa8533481">&#9670;&#160;</a></span>internal_led_task_loop()</h2>
+<a id="a61e20b7b3d53c0fe3f3e30ab709564fd" name="a61e20b7b3d53c0fe3f3e30ab709564fd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a61e20b7b3d53c0fe3f3e30ab709564fd">&#9670;&#160;</a></span>internal_led_task_loop()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -245,7 +250,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">void internal_led_task_loop </td>
           <td>(</td>
-          <td class="paramtype">void *</td>          <td class="paramname"><span class="paramname"><em>parameter</em></span></td><td>)</td>
+          <td class="paramtype">void *const</td>          <td class="paramname"><span class="paramname"><em>parameter</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -256,65 +261,75 @@ Variables</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d81/led__task_8c_source.html#l00090">90</a> of file <a class="el" href="../../d0/d81/led__task_8c_source.html">led_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d81/led__task_8c_source.html#l00111">111</a> of file <a class="el" href="../../d0/d81/led__task_8c_source.html">led_task.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d0/d81/led__task_8c_source.html#l00058">internal_process_sensor_data_queue()</a>, <a class="el" href="../../d0/d81/led__task_8c_source.html#l00071">internal_update_leds_from_latest_readings()</a>, <a class="el" href="../../d3/dd0/led__task_8h_source.html#l00021">led_task_context_t::leds_initialized</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00114">shared_data_get_context()</a>, <a class="el" href="../../d3/dd0/led__task_8h_source.html#l00019">led_task_context_t::task_handle</a>, <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00093">TASK_INTERVAL_LEDS</a>, and <a class="el" href="../../d3/dd0/led__task_8h_source.html#l00020">led_task_context_t::task_running</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d81/led__task_8c_source.html#l00070">internal_process_sensor_data_queue()</a>, <a class="el" href="../../d0/d81/led__task_8c_source.html#l00092">internal_update_leds_from_latest_readings()</a>, <a class="el" href="../../d3/dd0/led__task_8h_source.html#l00022">led_task_context_t::leds_initialized</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00061">shared_context_t::sensor_data_queue</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00117">shared_data_get_context()</a>, <a class="el" href="../../d3/dff/system__config_8c_source.html#l00035">STAR_SYSTEM_CONFIG</a>, <a class="el" href="../../d3/dd0/led__task_8h_source.html#l00020">led_task_context_t::task_handle</a>, and <a class="el" href="../../d3/dd0/led__task_8h_source.html#l00021">led_task_context_t::task_running</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d81/led__task_8c_source.html#l00119">led_task_start()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d81/led__task_8c_source.html#l00145">led_task_start()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d0/d81/led__task_8c_a45beb0a71113d5832f1e960aa8533481_cgraph.png" border="0" usemap="#ad0/d81/led__task_8c_a45beb0a71113d5832f1e960aa8533481_cgraph" loading="lazy" alt=""/></div>
-<map name="ad0/d81/led__task_8c_a45beb0a71113d5832f1e960aa8533481_cgraph" id="ad0/d81/led__task_8c_a45beb0a71113d5832f1e960aa8533481_cgraph">
-<area shape="rect" title=" " alt="" coords="5,63,156,88"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html#a6aa0cce3c297a4cce6b0b752e3ded0e0" title=" " alt="" coords="204,55,366,96"/>
-<area shape="poly" title=" " alt="" coords="155,73,190,74,186,77,157,78"/>
-<area shape="rect" href="../../db/d0d/shared__data_8c.html#acf829b11efe6efde5ff9c9a1798b05c9" title="Get pointer to global shared context." alt="" coords="424,5,592,31"/>
-<area shape="poly" title=" " alt="" coords="124,60,203,41,309,27,411,21,406,23,310,32,204,46,127,64"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html#ae254e94283d7484aede3cb5b30445402" title=" " alt="" coords="210,120,360,161"/>
-<area shape="poly" title=" " alt="" coords="123,86,207,114,202,117,123,92"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html#a4e35506eb493450e65a1e8f8a5d9d4ac" title=" " alt="" coords="442,55,575,96"/>
-<area shape="poly" title=" " alt="" coords="366,73,428,75,423,76,367,78"/>
-<area shape="poly" title=" " alt="" coords="366,52,443,34,438,37,367,57"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a73db6a6b8b56f7fc6580517593f99827" title="Convert distance measurement to RGB color." alt="" coords="848,12,1002,53"/>
-<area shape="poly" title=" " alt="" coords="575,55,650,41,744,32,835,32,829,33,744,38,651,46,576,60"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a73349b12790da0a90e8918735b11ab10" title="Turn off specific LED." alt="" coords="650,120,800,146"/>
-<area shape="poly" title=" " alt="" coords="575,90,661,115,656,116,575,96"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a7845556a1b6df08561a0ffe60da13f0f" title="Update LED based on distance measurement." alt="" coords="653,55,797,96"/>
-<area shape="poly" title=" " alt="" coords="575,73,640,75,635,76,575,78"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#ac65666d46afe64b998d889b066bed529" title="Set RGB LED color." alt="" coords="851,92,999,118"/>
-<area shape="poly" title=" " alt="" coords="800,120,838,117,833,118,801,125"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a055f40aef481cb67e15eca4d09028a61" title=" " alt="" coords="1050,92,1222,118"/>
-<area shape="poly" title=" " alt="" coords="999,102,1037,105,1032,105,999,107"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a7b7ebe952969637b30a7a358d7c3d92c" title=" " alt="" coords="1275,51,1411,92"/>
-<area shape="poly" title=" " alt="" coords="1220,89,1257,85,1262,85,1220,94"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="1270,116,1416,157"/>
-<area shape="poly" title=" " alt="" coords="1223,116,1258,123,1253,123,1223,121"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="1464,116,1609,157"/>
-<area shape="poly" title=" " alt="" coords="1416,134,1451,137,1445,137,1416,139"/>
-<area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="1657,124,1787,150"/>
-<area shape="poly" title=" " alt="" coords="1609,134,1645,137,1639,137,1610,139"/>
-<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="1835,124,2020,150"/>
-<area shape="poly" title=" " alt="" coords="1788,134,1822,137,1817,137,1788,139"/>
-<area shape="poly" title=" " alt="" coords="797,57,835,52,830,53,798,63"/>
-<area shape="poly" title=" " alt="" coords="797,83,838,92,833,92,798,89"/>
-<area shape="poly" title=" " alt="" coords="356,117,430,98,425,100,357,123"/>
-<area shape="poly" title=" " alt="" coords="360,137,637,133,632,136,360,142"/>
-<area shape="rect" href="../../db/d0d/shared__data_8c.html#a921b6f2942e0e7d01d9cc0a3ae1a9c5f" title="Get latest sensor reading." alt="" coords="426,170,590,210"/>
-<area shape="poly" title=" " alt="" coords="360,155,414,169,409,169,360,160"/>
-<area shape="rect" href="../../db/d0d/shared__data_8c.html#a3bdf4ea7cbcd1af874c68f1da508ae3b" title="Get system uptime in milliseconds." alt="" coords="414,235,602,260"/>
-<area shape="poly" title=" " alt="" coords="314,159,361,190,415,220,435,230,430,229,413,225,358,195,313,164"/>
+<div class="center"><img src="../../d0/d81/led__task_8c_a61e20b7b3d53c0fe3f3e30ab709564fd_cgraph.png" border="0" usemap="#ad0/d81/led__task_8c_a61e20b7b3d53c0fe3f3e30ab709564fd_cgraph" loading="lazy" alt=""/></div>
+<map name="ad0/d81/led__task_8c_a61e20b7b3d53c0fe3f3e30ab709564fd_cgraph" id="ad0/d81/led__task_8c_a61e20b7b3d53c0fe3f3e30ab709564fd_cgraph">
+<area shape="rect" title=" " alt="" coords="5,189,156,214"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a5ed102fd8f8fe04d25422aeea7b89fd0" title=" " alt="" coords="204,181,366,222"/>
+<area shape="poly" title=" " alt="" coords="155,199,191,201,185,202,156,204"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#acf829b11efe6efde5ff9c9a1798b05c9" title="Get pointer to global shared context." alt="" coords="424,246,592,272"/>
+<area shape="poly" title=" " alt="" coords="126,212,204,231,310,245,412,255,406,255,309,250,203,236,125,218"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a9815a89f029b7233e7cd0e8cf0450144" title=" " alt="" coords="210,116,360,157"/>
+<area shape="poly" title=" " alt="" coords="122,186,207,160,202,164,124,191"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a1a400922bf8466136467222b9ec209be" title=" " alt="" coords="442,181,575,222"/>
+<area shape="poly" title=" " alt="" coords="366,199,429,201,423,202,367,204"/>
+<area shape="poly" title=" " alt="" coords="367,220,443,242,438,242,366,225"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#aa9bce675e112120c36bb4886aa7928aa" title="Convert distance measurement to RGB color using smooth HSV gradient." alt="" coords="848,215,1002,255"/>
+<area shape="poly" title=" " alt="" coords="575,204,835,227,830,228,575,210"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a105d937217c622b9872eeeeeb4823b33" title="Turn off specific LED." alt="" coords="650,42,800,68"/>
+<area shape="poly" title=" " alt="" coords="574,183,601,168,617,146,624,124,631,101,648,78,654,77,659,74,652,82,636,104,629,126,622,149,604,172,576,188"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a3bc9057e69b2a21032f72cb91d54d249" title="Update LED based on distance measurement." alt="" coords="653,157,797,198"/>
+<area shape="poly" title=" " alt="" coords="575,192,640,187,635,188,575,197"/>
+<area shape="rect" href="../../d4/d7e/system__config_8h.html#aee59613b222c590cb8080f4f732f758f" title="Validate sensor index." alt="" coords="654,92,796,133"/>
+<area shape="poly" title=" " alt="" coords="573,178,601,167,649,143,661,140,666,139,651,148,603,172,575,183"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a05e24a1e741cb4693bbe6f9d4a3d5e28" title="Convert HSV color to RGB color." alt="" coords="1073,215,1199,255"/>
+<area shape="poly" title=" " alt="" coords="1002,232,1060,235,1055,235,1002,238"/>
+<area shape="rect" href="../../d4/d7e/system__config_8h.html#a27d7155fa342a21a9e7dc287b32d3cde" title="Validate distance measurement." alt="" coords="1060,165,1212,190"/>
+<area shape="poly" title=" " alt="" coords="1002,212,1069,196,1074,195,1003,217"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a076c2165b5b3484a7208445ff9a1c86d" title="Set RGB LED color." alt="" coords="851,78,999,104"/>
+<area shape="poly" title=" " alt="" coords="800,66,838,75,833,75,800,71"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a055f40aef481cb67e15eca4d09028a61" title=" " alt="" coords="1050,78,1222,104"/>
+<area shape="poly" title=" " alt="" coords="999,88,1037,91,1032,91,999,94"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#ac94f191b849645c0630d6594f91c32b0" title=" " alt="" coords="1292,5,1429,46"/>
+<area shape="poly" title=" " alt="" coords="1182,75,1275,50,1280,49,1184,80"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="1288,71,1433,111"/>
+<area shape="poly" title=" " alt="" coords="1222,88,1275,91,1269,91,1223,94"/>
+<area shape="rect" href="../../d4/d7e/system__config_8h.html#a048d7fce3116a990c5536e18eed4a61b" title="Validate PWM percentage." alt="" coords="1270,136,1451,161"/>
+<area shape="poly" title=" " alt="" coords="1190,102,1295,131,1290,131,1189,107"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="1499,71,1644,111"/>
+<area shape="poly" title=" " alt="" coords="1433,88,1486,91,1481,91,1434,94"/>
+<area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="1692,78,1822,104"/>
+<area shape="poly" title=" " alt="" coords="1644,88,1680,91,1674,91,1645,94"/>
+<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="1870,78,2055,104"/>
+<area shape="poly" title=" " alt="" coords="1822,88,1857,91,1852,91,1823,94"/>
+<area shape="poly" title=" " alt="" coords="798,196,840,210,834,210,797,201"/>
+<area shape="poly" title=" " alt="" coords="797,175,1048,177,1042,178,798,180"/>
+<area shape="poly" title=" " alt="" coords="773,154,877,111,882,110,775,159"/>
+<area shape="poly" title=" " alt="" coords="357,155,430,178,424,178,356,160"/>
+<area shape="poly" title=" " alt="" coords="308,113,354,80,383,64,413,52,470,41,528,36,584,36,638,42,632,43,584,41,528,41,471,46,415,58,385,69,357,84,311,118"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#a1db0e8429be801019cbef073929b2f29" title="Get latest sensor reading." alt="" coords="426,67,590,107"/>
+<area shape="poly" title=" " alt="" coords="359,117,414,107,409,109,360,122"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#a3bdf4ea7cbcd1af874c68f1da508ae3b" title="Get system uptime in milliseconds." alt="" coords="414,132,602,157"/>
+<area shape="poly" title=" " alt="" coords="359,136,401,140,396,141,360,142"/>
+<area shape="poly" title=" " alt="" coords="590,94,641,102,636,103,591,99"/>
 </map>
 </div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d0/d81/led__task_8c_a45beb0a71113d5832f1e960aa8533481_icgraph.png" border="0" usemap="#ad0/d81/led__task_8c_a45beb0a71113d5832f1e960aa8533481_icgraph" loading="lazy" alt=""/></div>
-<map name="ad0/d81/led__task_8c_a45beb0a71113d5832f1e960aa8533481_icgraph" id="ad0/d81/led__task_8c_a45beb0a71113d5832f1e960aa8533481_icgraph">
+<div class="center"><img src="../../d0/d81/led__task_8c_a61e20b7b3d53c0fe3f3e30ab709564fd_icgraph.png" border="0" usemap="#ad0/d81/led__task_8c_a61e20b7b3d53c0fe3f3e30ab709564fd_icgraph" loading="lazy" alt=""/></div>
+<map name="ad0/d81/led__task_8c_a61e20b7b3d53c0fe3f3e30ab709564fd_icgraph" id="ad0/d81/led__task_8c_a61e20b7b3d53c0fe3f3e30ab709564fd_icgraph">
 <area shape="rect" title=" " alt="" coords="466,5,617,31"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html#a838ffd5c036cecef703d7a73e0a193fd" title="Initialize LED display task." alt="" coords="315,5,418,31"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a9d18fbbcd8adbccf0f8d2288e901f77c" title="Initialize LED display task." alt="" coords="315,5,418,31"/>
 <area shape="poly" title=" " alt="" coords="448,18,419,21,419,16,454,18"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,5,267,31"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,5,267,31"/>
 <area shape="poly" title=" " alt="" coords="297,18,268,21,268,16,302,18"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
 <area shape="poly" title=" " alt="" coords="112,19,83,21,83,16,118,18"/>
@@ -323,8 +338,8 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="a6aa0cce3c297a4cce6b0b752e3ded0e0" name="a6aa0cce3c297a4cce6b0b752e3ded0e0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6aa0cce3c297a4cce6b0b752e3ded0e0">&#9670;&#160;</a></span>internal_process_sensor_data_queue()</h2>
+<a id="a5ed102fd8f8fe04d25422aeea7b89fd0" name="a5ed102fd8f8fe04d25422aeea7b89fd0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5ed102fd8f8fe04d25422aeea7b89fd0">&#9670;&#160;</a></span>internal_process_sensor_data_queue()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -335,7 +350,7 @@ Here is the caller graph for this function:</div>
         <tr>
           <td class="memname">void internal_process_sensor_data_queue </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d9/dc8/structled__task__context__t.html">led_task_context_t</a> *</td>          <td class="paramname"><span class="paramname"><em>ctx</em></span></td><td>)</td>
+          <td class="paramtype"><a class="el" href="../../d9/dc8/structled__task__context__t.html">led_task_context_t</a> *const</td>          <td class="paramname"><span class="paramname"><em>ctx</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -346,56 +361,65 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d81/led__task_8c_source.html#l00058">58</a> of file <a class="el" href="../../d0/d81/led__task_8c_source.html">led_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d81/led__task_8c_source.html#l00070">70</a> of file <a class="el" href="../../d0/d81/led__task_8c_source.html">led_task.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d0/d81/led__task_8c_source.html#l00015">internal_update_led_from_sensor_data()</a>, <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00060">shared_context_t::sensor_data_queue</a>, and <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00114">shared_data_get_context()</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d81/led__task_8c_source.html#l00017">internal_update_led_from_sensor_data()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00061">shared_context_t::sensor_data_queue</a>, and <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00117">shared_data_get_context()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d81/led__task_8c_source.html#l00090">internal_led_task_loop()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d81/led__task_8c_source.html#l00111">internal_led_task_loop()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d0/d81/led__task_8c_a6aa0cce3c297a4cce6b0b752e3ded0e0_cgraph.png" border="0" usemap="#ad0/d81/led__task_8c_a6aa0cce3c297a4cce6b0b752e3ded0e0_cgraph" loading="lazy" alt=""/></div>
-<map name="ad0/d81/led__task_8c_a6aa0cce3c297a4cce6b0b752e3ded0e0_cgraph" id="ad0/d81/led__task_8c_a6aa0cce3c297a4cce6b0b752e3ded0e0_cgraph">
-<area shape="rect" title=" " alt="" coords="5,77,168,118"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html#a4e35506eb493450e65a1e8f8a5d9d4ac" title=" " alt="" coords="233,48,366,89"/>
-<area shape="poly" title=" " alt="" coords="167,84,220,79,214,80,168,89"/>
-<area shape="rect" href="../../db/d0d/shared__data_8c.html#acf829b11efe6efde5ff9c9a1798b05c9" title="Get pointer to global shared context." alt="" coords="216,113,383,138"/>
-<area shape="poly" title=" " alt="" coords="168,106,203,112,197,113,168,111"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a73db6a6b8b56f7fc6580517593f99827" title="Convert distance measurement to RGB color." alt="" coords="628,5,783,46"/>
-<area shape="poly" title=" " alt="" coords="366,47,431,34,524,25,615,24,610,25,525,30,431,39,367,52"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a73349b12790da0a90e8918735b11ab10" title="Turn off specific LED." alt="" coords="431,113,580,138"/>
-<area shape="poly" title=" " alt="" coords="367,84,445,108,440,108,366,89"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a7845556a1b6df08561a0ffe60da13f0f" title="Update LED based on distance measurement." alt="" coords="434,48,578,89"/>
-<area shape="poly" title=" " alt="" coords="366,66,421,68,415,69,366,71"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#ac65666d46afe64b998d889b066bed529" title="Set RGB LED color." alt="" coords="631,85,780,110"/>
-<area shape="poly" title=" " alt="" coords="581,113,613,110,619,110,581,118"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a055f40aef481cb67e15eca4d09028a61" title=" " alt="" coords="831,85,1003,110"/>
-<area shape="poly" title=" " alt="" coords="780,95,818,98,812,98,780,100"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a7b7ebe952969637b30a7a358d7c3d92c" title=" " alt="" coords="1056,44,1192,85"/>
-<area shape="poly" title=" " alt="" coords="1000,82,1038,78,1043,77,1001,87"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="1051,109,1196,150"/>
-<area shape="poly" title=" " alt="" coords="1004,108,1039,116,1033,116,1003,114"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="1244,109,1390,150"/>
-<area shape="poly" title=" " alt="" coords="1197,127,1231,130,1226,130,1197,132"/>
-<area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="1438,117,1568,142"/>
-<area shape="poly" title=" " alt="" coords="1390,127,1425,130,1420,130,1390,132"/>
-<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="1616,117,1800,142"/>
-<area shape="poly" title=" " alt="" coords="1568,127,1603,130,1597,130,1568,132"/>
-<area shape="poly" title=" " alt="" coords="578,50,610,46,616,45,579,56"/>
-<area shape="poly" title=" " alt="" coords="578,76,619,85,614,85,578,82"/>
+<div class="center"><img src="../../d0/d81/led__task_8c_a5ed102fd8f8fe04d25422aeea7b89fd0_cgraph.png" border="0" usemap="#ad0/d81/led__task_8c_a5ed102fd8f8fe04d25422aeea7b89fd0_cgraph" loading="lazy" alt=""/></div>
+<map name="ad0/d81/led__task_8c_a5ed102fd8f8fe04d25422aeea7b89fd0_cgraph" id="ad0/d81/led__task_8c_a5ed102fd8f8fe04d25422aeea7b89fd0_cgraph">
+<area shape="rect" title=" " alt="" coords="5,183,168,223"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a1a400922bf8466136467222b9ec209be" title=" " alt="" coords="233,153,366,194"/>
+<area shape="poly" title=" " alt="" coords="167,189,219,184,215,186,169,194"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#acf829b11efe6efde5ff9c9a1798b05c9" title="Get pointer to global shared context." alt="" coords="216,218,383,244"/>
+<area shape="poly" title=" " alt="" coords="168,211,203,217,197,218,168,216"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#aa9bce675e112120c36bb4886aa7928aa" title="Convert distance measurement to RGB color using smooth HSV gradient." alt="" coords="628,181,783,222"/>
+<area shape="poly" title=" " alt="" coords="366,176,615,194,610,196,366,181"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a105d937217c622b9872eeeeeb4823b33" title="Turn off specific LED." alt="" coords="431,74,580,100"/>
+<area shape="poly" title=" " alt="" coords="341,150,430,110,451,104,446,106,432,115,343,155"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a3bc9057e69b2a21032f72cb91d54d249" title="Update LED based on distance measurement." alt="" coords="434,124,578,165"/>
+<area shape="poly" title=" " alt="" coords="366,162,420,156,415,157,367,167"/>
+<area shape="rect" href="../../d4/d7e/system__config_8h.html#aee59613b222c590cb8080f4f732f758f" title="Validate sensor index." alt="" coords="435,239,576,279"/>
+<area shape="poly" title=" " alt="" coords="356,192,384,203,447,232,442,232,382,208,355,197"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a05e24a1e741cb4693bbe6f9d4a3d5e28" title="Convert HSV color to RGB color." alt="" coords="854,181,980,222"/>
+<area shape="poly" title=" " alt="" coords="783,199,841,202,836,202,783,204"/>
+<area shape="rect" href="../../d4/d7e/system__config_8h.html#a27d7155fa342a21a9e7dc287b32d3cde" title="Validate distance measurement." alt="" coords="841,132,992,157"/>
+<area shape="poly" title=" " alt="" coords="782,178,849,162,855,161,783,183"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a076c2165b5b3484a7208445ff9a1c86d" title="Set RGB LED color." alt="" coords="631,78,780,104"/>
+<area shape="poly" title=" " alt="" coords="581,86,619,89,613,90,581,91"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a055f40aef481cb67e15eca4d09028a61" title=" " alt="" coords="831,78,1003,104"/>
+<area shape="poly" title=" " alt="" coords="780,88,818,91,812,91,780,94"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#ac94f191b849645c0630d6594f91c32b0" title=" " alt="" coords="1073,5,1209,46"/>
+<area shape="poly" title=" " alt="" coords="963,75,1056,50,1061,49,964,80"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="1068,71,1214,111"/>
+<area shape="poly" title=" " alt="" coords="1003,88,1055,91,1050,91,1003,94"/>
+<area shape="rect" href="../../d4/d7e/system__config_8h.html#a048d7fce3116a990c5536e18eed4a61b" title="Validate PWM percentage." alt="" coords="1051,136,1231,161"/>
+<area shape="poly" title=" " alt="" coords="970,102,1076,131,1070,131,970,107"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="1279,71,1425,111"/>
+<area shape="poly" title=" " alt="" coords="1214,88,1267,91,1261,91,1214,94"/>
+<area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="1473,78,1603,104"/>
+<area shape="poly" title=" " alt="" coords="1425,88,1460,91,1455,91,1425,94"/>
+<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="1651,78,1835,104"/>
+<area shape="poly" title=" " alt="" coords="1603,88,1638,91,1632,91,1603,94"/>
+<area shape="poly" title=" " alt="" coords="578,162,620,177,615,176,578,168"/>
+<area shape="poly" title=" " alt="" coords="578,142,828,144,823,145,578,147"/>
+<area shape="poly" title=" " alt="" coords="577,123,637,109,643,108,579,128"/>
 </map>
 </div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d0/d81/led__task_8c_a6aa0cce3c297a4cce6b0b752e3ded0e0_icgraph.png" border="0" usemap="#ad0/d81/led__task_8c_a6aa0cce3c297a4cce6b0b752e3ded0e0_icgraph" loading="lazy" alt=""/></div>
-<map name="ad0/d81/led__task_8c_a6aa0cce3c297a4cce6b0b752e3ded0e0_icgraph" id="ad0/d81/led__task_8c_a6aa0cce3c297a4cce6b0b752e3ded0e0_icgraph">
+<div class="center"><img src="../../d0/d81/led__task_8c_a5ed102fd8f8fe04d25422aeea7b89fd0_icgraph.png" border="0" usemap="#ad0/d81/led__task_8c_a5ed102fd8f8fe04d25422aeea7b89fd0_icgraph" loading="lazy" alt=""/></div>
+<map name="ad0/d81/led__task_8c_a5ed102fd8f8fe04d25422aeea7b89fd0_icgraph" id="ad0/d81/led__task_8c_a5ed102fd8f8fe04d25422aeea7b89fd0_icgraph">
 <area shape="rect" title=" " alt="" coords="665,5,827,46"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html#a45beb0a71113d5832f1e960aa8533481" title=" " alt="" coords="466,13,617,38"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a61e20b7b3d53c0fe3f3e30ab709564fd" title=" " alt="" coords="466,13,617,38"/>
 <area shape="poly" title=" " alt="" coords="646,26,617,28,617,23,652,26"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html#a838ffd5c036cecef703d7a73e0a193fd" title="Initialize LED display task." alt="" coords="315,13,418,38"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a9d18fbbcd8adbccf0f8d2288e901f77c" title="Initialize LED display task." alt="" coords="315,13,418,38"/>
 <area shape="poly" title=" " alt="" coords="448,26,419,28,419,23,454,26"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,13,267,38"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,13,267,38"/>
 <area shape="poly" title=" " alt="" coords="297,26,268,28,268,23,302,26"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,13,83,38"/>
 <area shape="poly" title=" " alt="" coords="112,26,83,28,83,23,118,25"/>
@@ -404,8 +428,8 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="a4e35506eb493450e65a1e8f8a5d9d4ac" name="a4e35506eb493450e65a1e8f8a5d9d4ac"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4e35506eb493450e65a1e8f8a5d9d4ac">&#9670;&#160;</a></span>internal_update_led_from_sensor_data()</h2>
+<a id="a1a400922bf8466136467222b9ec209be" name="a1a400922bf8466136467222b9ec209be"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1a400922bf8466136467222b9ec209be">&#9670;&#160;</a></span>internal_update_led_from_sensor_data()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -416,12 +440,12 @@ Here is the caller graph for this function:</div>
         <tr>
           <td class="memname">esp_err_t internal_update_led_from_sensor_data </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d9/dc8/structled__task__context__t.html">led_task_context_t</a> *</td>          <td class="paramname"><span class="paramname"><em>ctx</em></span>, </td>
+          <td class="paramtype"><a class="el" href="../../d9/dc8/structled__task__context__t.html">led_task_context_t</a> *const</td>          <td class="paramname"><span class="paramname"><em>ctx</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const <a class="el" href="../../d2/d06/structsensor__data__t.html">sensor_data_t</a> *</td>          <td class="paramname"><span class="paramname"><em>sensor_data</em></span>&#160;)</td>
+          <td class="paramtype">const <a class="el" href="../../d2/d06/structsensor__data__t.html">sensor_data_t</a> *const</td>          <td class="paramname"><span class="paramname"><em>sensor_data</em></span>&#160;)</td>
         </tr>
       </table>
   </td>
@@ -431,56 +455,65 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d81/led__task_8c_source.html#l00015">15</a> of file <a class="el" href="../../d0/d81/led__task_8c_source.html">led_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d81/led__task_8c_source.html#l00017">17</a> of file <a class="el" href="../../d0/d81/led__task_8c_source.html">led_task.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d3/d15/led__controller_8h_source.html#l00020">rgb_color_t::blue</a>, <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00022">sensor_data_t::distance_cm</a>, <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00062">DISTANCE_VERY_FAR</a>, <a class="el" href="../../d3/d15/led__controller_8h_source.html#l00019">rgb_color_t::green</a>, <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00020">HCSR04_LEFT</a>, <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00025">sensor_data_t::is_valid</a>, <a class="el" href="../../d3/dd0/led__task_8h_source.html#l00018">led_task_context_t::led_controller</a>, <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00104">led_controller_distance_to_color()</a>, <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00187">led_controller_turn_off()</a>, <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00175">led_controller_update_distance()</a>, <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00074">LED_OFF_THRESHOLD</a>, <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00023">sensor_data_t::read_result</a>, <a class="el" href="../../d3/d15/led__controller_8h_source.html#l00018">rgb_color_t::red</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00021">sensor_data_t::sensor_index</a>, <a class="el" href="../../d3/dd0/led__task_8h_source.html#l00023">led_task_context_t::successful_updates</a>, <a class="el" href="../../d3/dd0/led__task_8h_source.html#l00022">led_task_context_t::update_failures</a>, and <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00147">VALIDATE_SENSOR_INDEX</a>.</p>
+<p class="reference">References <a class="el" href="../../d3/d15/led__controller_8h_source.html#l00058">rgb_color_t::blue</a>, <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00023">sensor_data_t::distance_cm</a>, <a class="el" href="../../d3/d15/led__controller_8h_source.html#l00057">rgb_color_t::green</a>, <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00026">sensor_data_t::is_valid</a>, <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00254">k_star_system_hcsr04_left</a>, <a class="el" href="../../d3/dd0/led__task_8h_source.html#l00019">led_task_context_t::led_controller</a>, <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00172">led_controller_distance_to_color()</a>, <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00292">led_controller_turn_off()</a>, <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00280">led_controller_update_distance()</a>, <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00024">sensor_data_t::read_result</a>, <a class="el" href="../../d3/d15/led__controller_8h_source.html#l00056">rgb_color_t::red</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00022">sensor_data_t::sensor_index</a>, <a class="el" href="../../d3/dff/system__config_8c_source.html#l00035">STAR_SYSTEM_CONFIG</a>, <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00196">star_validate_sensor_index()</a>, <a class="el" href="../../d3/dd0/led__task_8h_source.html#l00024">led_task_context_t::successful_updates</a>, and <a class="el" href="../../d3/dd0/led__task_8h_source.html#l00023">led_task_context_t::update_failures</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d81/led__task_8c_source.html#l00058">internal_process_sensor_data_queue()</a>, and <a class="el" href="../../d0/d81/led__task_8c_source.html#l00071">internal_update_leds_from_latest_readings()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d81/led__task_8c_source.html#l00070">internal_process_sensor_data_queue()</a>, and <a class="el" href="../../d0/d81/led__task_8c_source.html#l00092">internal_update_leds_from_latest_readings()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d0/d81/led__task_8c_a4e35506eb493450e65a1e8f8a5d9d4ac_cgraph.png" border="0" usemap="#ad0/d81/led__task_8c_a4e35506eb493450e65a1e8f8a5d9d4ac_cgraph" loading="lazy" alt=""/></div>
-<map name="ad0/d81/led__task_8c_a4e35506eb493450e65a1e8f8a5d9d4ac_cgraph" id="ad0/d81/led__task_8c_a4e35506eb493450e65a1e8f8a5d9d4ac_cgraph">
-<area shape="rect" title=" " alt="" coords="5,48,139,89"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a73db6a6b8b56f7fc6580517593f99827" title="Convert distance measurement to RGB color." alt="" coords="384,5,538,46"/>
-<area shape="poly" title=" " alt="" coords="137,45,186,34,280,24,371,23,366,25,280,29,187,39,138,50"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a73349b12790da0a90e8918735b11ab10" title="Turn off specific LED." alt="" coords="187,113,336,138"/>
-<area shape="poly" title=" " alt="" coords="139,86,204,107,199,108,139,91"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a7845556a1b6df08561a0ffe60da13f0f" title="Update LED based on distance measurement." alt="" coords="189,48,334,89"/>
-<area shape="poly" title=" " alt="" coords="139,66,176,67,171,69,140,71"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#ac65666d46afe64b998d889b066bed529" title="Set RGB LED color." alt="" coords="387,85,535,110"/>
-<area shape="poly" title=" " alt="" coords="336,113,369,111,374,110,337,118"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a055f40aef481cb67e15eca4d09028a61" title=" " alt="" coords="586,85,759,110"/>
-<area shape="poly" title=" " alt="" coords="535,95,573,98,568,98,536,100"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a7b7ebe952969637b30a7a358d7c3d92c" title=" " alt="" coords="811,44,948,85"/>
-<area shape="poly" title=" " alt="" coords="756,82,793,78,799,77,757,87"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="807,109,952,150"/>
-<area shape="poly" title=" " alt="" coords="759,108,794,116,789,116,759,114"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="1000,109,1145,150"/>
-<area shape="poly" title=" " alt="" coords="952,127,987,130,982,130,952,132"/>
-<area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="1193,117,1324,142"/>
-<area shape="poly" title=" " alt="" coords="1146,127,1181,130,1176,130,1146,132"/>
-<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="1372,117,1556,142"/>
-<area shape="poly" title=" " alt="" coords="1324,127,1358,130,1353,130,1324,132"/>
-<area shape="poly" title=" " alt="" coords="333,50,371,45,366,46,334,56"/>
-<area shape="poly" title=" " alt="" coords="334,76,375,84,369,85,334,82"/>
+<div class="center"><img src="../../d0/d81/led__task_8c_a1a400922bf8466136467222b9ec209be_cgraph.png" border="0" usemap="#ad0/d81/led__task_8c_a1a400922bf8466136467222b9ec209be_cgraph" loading="lazy" alt=""/></div>
+<map name="ad0/d81/led__task_8c_a1a400922bf8466136467222b9ec209be_cgraph" id="ad0/d81/led__task_8c_a1a400922bf8466136467222b9ec209be_cgraph">
+<area shape="rect" title=" " alt="" coords="5,153,139,194"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#aa9bce675e112120c36bb4886aa7928aa" title="Convert distance measurement to RGB color using smooth HSV gradient." alt="" coords="384,181,538,222"/>
+<area shape="poly" title=" " alt="" coords="139,176,370,193,367,197,139,181"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a105d937217c622b9872eeeeeb4823b33" title="Turn off specific LED." alt="" coords="187,74,336,100"/>
+<area shape="poly" title=" " alt="" coords="107,151,186,110,206,104,201,107,188,115,110,155"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a3bc9057e69b2a21032f72cb91d54d249" title="Update LED based on distance measurement." alt="" coords="189,124,334,165"/>
+<area shape="poly" title=" " alt="" coords="138,161,177,157,172,159,140,166"/>
+<area shape="rect" href="../../d4/d7e/system__config_8h.html#aee59613b222c590cb8080f4f732f758f" title="Validate sensor index." alt="" coords="191,239,332,279"/>
+<area shape="poly" title=" " alt="" coords="120,192,203,231,198,233,118,197"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a05e24a1e741cb4693bbe6f9d4a3d5e28" title="Convert HSV color to RGB color." alt="" coords="609,181,736,222"/>
+<area shape="poly" title=" " alt="" coords="538,199,597,201,591,202,539,204"/>
+<area shape="rect" href="../../d4/d7e/system__config_8h.html#a27d7155fa342a21a9e7dc287b32d3cde" title="Validate distance measurement." alt="" coords="597,132,748,157"/>
+<area shape="poly" title=" " alt="" coords="538,178,605,162,610,161,539,183"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a076c2165b5b3484a7208445ff9a1c86d" title="Set RGB LED color." alt="" coords="387,78,535,104"/>
+<area shape="poly" title=" " alt="" coords="336,86,374,88,369,90,337,91"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a055f40aef481cb67e15eca4d09028a61" title=" " alt="" coords="586,78,759,104"/>
+<area shape="poly" title=" " alt="" coords="535,88,573,91,568,91,536,94"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#ac94f191b849645c0630d6594f91c32b0" title=" " alt="" coords="829,5,965,46"/>
+<area shape="poly" title=" " alt="" coords="718,75,811,50,816,49,720,80"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="824,71,970,111"/>
+<area shape="poly" title=" " alt="" coords="759,88,811,91,806,91,759,94"/>
+<area shape="rect" href="../../d4/d7e/system__config_8h.html#a048d7fce3116a990c5536e18eed4a61b" title="Validate PWM percentage." alt="" coords="807,136,987,161"/>
+<area shape="poly" title=" " alt="" coords="726,102,831,131,826,131,726,107"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="1035,71,1180,111"/>
+<area shape="poly" title=" " alt="" coords="970,88,1022,91,1017,91,970,94"/>
+<area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="1228,78,1359,104"/>
+<area shape="poly" title=" " alt="" coords="1181,88,1216,91,1211,91,1181,94"/>
+<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="1407,78,1591,104"/>
+<area shape="poly" title=" " alt="" coords="1359,88,1393,91,1388,91,1359,94"/>
+<area shape="poly" title=" " alt="" coords="334,162,376,176,371,177,334,168"/>
+<area shape="poly" title=" " alt="" coords="334,142,584,143,579,146,334,147"/>
+<area shape="poly" title=" " alt="" coords="333,123,398,107,393,109,335,128"/>
 </map>
 </div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d0/d81/led__task_8c_a4e35506eb493450e65a1e8f8a5d9d4ac_icgraph.png" border="0" usemap="#ad0/d81/led__task_8c_a4e35506eb493450e65a1e8f8a5d9d4ac_icgraph" loading="lazy" alt=""/></div>
-<map name="ad0/d81/led__task_8c_a4e35506eb493450e65a1e8f8a5d9d4ac_icgraph" id="ad0/d81/led__task_8c_a4e35506eb493450e65a1e8f8a5d9d4ac_icgraph">
+<div class="center"><img src="../../d0/d81/led__task_8c_a1a400922bf8466136467222b9ec209be_icgraph.png" border="0" usemap="#ad0/d81/led__task_8c_a1a400922bf8466136467222b9ec209be_icgraph" loading="lazy" alt=""/></div>
+<map name="ad0/d81/led__task_8c_a1a400922bf8466136467222b9ec209be_icgraph" id="ad0/d81/led__task_8c_a1a400922bf8466136467222b9ec209be_icgraph">
 <area shape="rect" title=" " alt="" coords="875,39,1008,79"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html#a6aa0cce3c297a4cce6b0b752e3ded0e0" title=" " alt="" coords="665,5,827,46"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a5ed102fd8f8fe04d25422aeea7b89fd0" title=" " alt="" coords="665,5,827,46"/>
 <area shape="poly" title=" " alt="" coords="857,45,827,42,828,37,862,45"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html#ae254e94283d7484aede3cb5b30445402" title=" " alt="" coords="671,71,820,111"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a9815a89f029b7233e7cd0e8cf0450144" title=" " alt="" coords="671,71,820,111"/>
 <area shape="poly" title=" " alt="" coords="862,72,821,81,821,76,857,73"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html#a45beb0a71113d5832f1e960aa8533481" title=" " alt="" coords="466,46,617,72"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a61e20b7b3d53c0fe3f3e30ab709564fd" title=" " alt="" coords="466,46,617,72"/>
 <area shape="poly" title=" " alt="" coords="652,41,617,49,617,44,647,42"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html#a838ffd5c036cecef703d7a73e0a193fd" title="Initialize LED display task." alt="" coords="315,46,418,72"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a9d18fbbcd8adbccf0f8d2288e901f77c" title="Initialize LED display task." alt="" coords="315,46,418,72"/>
 <area shape="poly" title=" " alt="" coords="448,59,419,62,418,56,454,59"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,46,267,72"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,46,267,72"/>
 <area shape="poly" title=" " alt="" coords="297,59,268,62,267,56,302,59"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,46,83,72"/>
 <area shape="poly" title=" " alt="" coords="113,60,83,62,82,56,117,58"/>
@@ -490,8 +523,8 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="ae254e94283d7484aede3cb5b30445402" name="ae254e94283d7484aede3cb5b30445402"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae254e94283d7484aede3cb5b30445402">&#9670;&#160;</a></span>internal_update_leds_from_latest_readings()</h2>
+<a id="a9815a89f029b7233e7cd0e8cf0450144" name="a9815a89f029b7233e7cd0e8cf0450144"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9815a89f029b7233e7cd0e8cf0450144">&#9670;&#160;</a></span>internal_update_leds_from_latest_readings()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -502,7 +535,7 @@ Here is the caller graph for this function:</div>
         <tr>
           <td class="memname">void internal_update_leds_from_latest_readings </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../d9/dc8/structled__task__context__t.html">led_task_context_t</a> *</td>          <td class="paramname"><span class="paramname"><em>ctx</em></span></td><td>)</td>
+          <td class="paramtype"><a class="el" href="../../d9/dc8/structled__task__context__t.html">led_task_context_t</a> *const</td>          <td class="paramname"><span class="paramname"><em>ctx</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -513,59 +546,69 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d81/led__task_8c_source.html#l00071">71</a> of file <a class="el" href="../../d0/d81/led__task_8c_source.html">led_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d81/led__task_8c_source.html#l00092">92</a> of file <a class="el" href="../../d0/d81/led__task_8c_source.html">led_task.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d0/d81/led__task_8c_source.html#l00015">internal_update_led_from_sensor_data()</a>, <a class="el" href="../../d3/dd0/led__task_8h_source.html#l00018">led_task_context_t::led_controller</a>, <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00187">led_controller_turn_off()</a>, <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00016">NUM_HCSR04</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00214">shared_data_get_sensor_reading()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00273">shared_data_get_uptime_ms()</a>, <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00092">TASK_INTERVAL_SENSORS</a>, and <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00024">sensor_data_t::timestamp_ms</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d81/led__task_8c_source.html#l00017">internal_update_led_from_sensor_data()</a>, <a class="el" href="../../d3/dd0/led__task_8h_source.html#l00019">led_task_context_t::led_controller</a>, <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00292">led_controller_turn_off()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00229">shared_data_get_sensor_reading()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00284">shared_data_get_uptime_ms()</a>, <a class="el" href="../../d3/dff/system__config_8c_source.html#l00035">STAR_SYSTEM_CONFIG</a>, and <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00025">sensor_data_t::timestamp_ms</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d81/led__task_8c_source.html#l00090">internal_led_task_loop()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d81/led__task_8c_source.html#l00111">internal_led_task_loop()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d0/d81/led__task_8c_ae254e94283d7484aede3cb5b30445402_cgraph.png" border="0" usemap="#ad0/d81/led__task_8c_ae254e94283d7484aede3cb5b30445402_cgraph" loading="lazy" alt=""/></div>
-<map name="ad0/d81/led__task_8c_ae254e94283d7484aede3cb5b30445402_cgraph" id="ad0/d81/led__task_8c_ae254e94283d7484aede3cb5b30445402_cgraph">
-<area shape="rect" title=" " alt="" coords="5,135,155,175"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html#a4e35506eb493450e65a1e8f8a5d9d4ac" title=" " alt="" coords="230,48,364,89"/>
-<area shape="poly" title=" " alt="" coords="132,132,232,93,228,97,134,136"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a73349b12790da0a90e8918735b11ab10" title="Turn off specific LED." alt="" coords="439,113,588,138"/>
-<area shape="poly" title=" " alt="" coords="155,147,425,129,423,134,155,153"/>
-<area shape="rect" href="../../db/d0d/shared__data_8c.html#a921b6f2942e0e7d01d9cc0a3ae1a9c5f" title="Get latest sensor reading." alt="" coords="215,163,378,203"/>
-<area shape="poly" title=" " alt="" coords="155,162,202,170,197,171,155,167"/>
-<area shape="rect" href="../../db/d0d/shared__data_8c.html#a3bdf4ea7cbcd1af874c68f1da508ae3b" title="Get system uptime in milliseconds." alt="" coords="203,228,391,253"/>
-<area shape="poly" title=" " alt="" coords="119,173,204,213,228,223,222,223,202,217,118,178"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a73db6a6b8b56f7fc6580517593f99827" title="Convert distance measurement to RGB color." alt="" coords="636,5,791,46"/>
-<area shape="poly" title=" " alt="" coords="363,48,439,34,532,25,623,24,618,26,533,31,439,39,365,53"/>
-<area shape="poly" title=" " alt="" coords="364,83,450,108,445,109,364,89"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a7845556a1b6df08561a0ffe60da13f0f" title="Update LED based on distance measurement." alt="" coords="442,48,586,89"/>
-<area shape="poly" title=" " alt="" coords="363,66,429,68,423,69,364,71"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#ac65666d46afe64b998d889b066bed529" title="Set RGB LED color." alt="" coords="639,85,788,110"/>
-<area shape="poly" title=" " alt="" coords="588,113,627,110,621,111,589,118"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a055f40aef481cb67e15eca4d09028a61" title=" " alt="" coords="839,85,1011,110"/>
-<area shape="poly" title=" " alt="" coords="788,95,826,97,820,98,788,100"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a7b7ebe952969637b30a7a358d7c3d92c" title=" " alt="" coords="1064,44,1200,85"/>
-<area shape="poly" title=" " alt="" coords="1008,82,1051,77,1046,78,1009,87"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="1059,109,1204,150"/>
-<area shape="poly" title=" " alt="" coords="1012,108,1047,116,1041,116,1012,114"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="1252,109,1398,150"/>
-<area shape="poly" title=" " alt="" coords="1204,127,1239,130,1234,130,1205,132"/>
-<area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="1446,117,1576,142"/>
-<area shape="poly" title=" " alt="" coords="1398,127,1433,130,1428,130,1398,132"/>
-<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="1624,117,1808,142"/>
-<area shape="poly" title=" " alt="" coords="1576,127,1611,130,1605,130,1576,132"/>
-<area shape="poly" title=" " alt="" coords="585,50,624,45,618,46,587,56"/>
-<area shape="poly" title=" " alt="" coords="586,76,627,84,622,85,586,82"/>
+<div class="center"><img src="../../d0/d81/led__task_8c_a9815a89f029b7233e7cd0e8cf0450144_cgraph.png" border="0" usemap="#ad0/d81/led__task_8c_a9815a89f029b7233e7cd0e8cf0450144_cgraph" loading="lazy" alt=""/></div>
+<map name="ad0/d81/led__task_8c_a9815a89f029b7233e7cd0e8cf0450144_cgraph" id="ad0/d81/led__task_8c_a9815a89f029b7233e7cd0e8cf0450144_cgraph">
+<area shape="rect" title=" " alt="" coords="5,181,155,222"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a1a400922bf8466136467222b9ec209be" title=" " alt="" coords="230,148,364,189"/>
+<area shape="poly" title=" " alt="" coords="154,188,217,180,213,182,156,193"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a105d937217c622b9872eeeeeb4823b33" title="Turn off specific LED." alt="" coords="439,74,588,100"/>
+<area shape="poly" title=" " alt="" coords="111,179,153,155,202,134,258,118,316,105,426,92,421,94,317,111,259,123,204,139,156,160,114,183"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#a1db0e8429be801019cbef073929b2f29" title="Get latest sensor reading." alt="" coords="215,213,378,254"/>
+<area shape="poly" title=" " alt="" coords="155,210,202,219,197,220,155,215"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#a3bdf4ea7cbcd1af874c68f1da508ae3b" title="Get system uptime in milliseconds." alt="" coords="203,278,391,304"/>
+<area shape="poly" title=" " alt="" coords="116,220,158,242,204,263,227,273,222,273,202,268,156,247,116,225"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#aa9bce675e112120c36bb4886aa7928aa" title="Convert distance measurement to RGB color using smooth HSV gradient." alt="" coords="636,181,791,222"/>
+<area shape="poly" title=" " alt="" coords="364,171,623,193,618,195,364,176"/>
+<area shape="poly" title=" " alt="" coords="348,145,438,110,461,104,456,106,440,115,350,150"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a3bc9057e69b2a21032f72cb91d54d249" title="Update LED based on distance measurement." alt="" coords="442,124,586,165"/>
+<area shape="poly" title=" " alt="" coords="363,158,429,153,423,155,364,164"/>
+<area shape="rect" href="../../d4/d7e/system__config_8h.html#aee59613b222c590cb8080f4f732f758f" title="Validate sensor index." alt="" coords="443,239,584,279"/>
+<area shape="poly" title=" " alt="" coords="359,187,392,199,460,232,454,231,390,204,359,192"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a05e24a1e741cb4693bbe6f9d4a3d5e28" title="Convert HSV color to RGB color." alt="" coords="862,181,988,222"/>
+<area shape="poly" title=" " alt="" coords="791,199,849,201,844,202,791,204"/>
+<area shape="rect" href="../../d4/d7e/system__config_8h.html#a27d7155fa342a21a9e7dc287b32d3cde" title="Validate distance measurement." alt="" coords="849,132,1000,157"/>
+<area shape="poly" title=" " alt="" coords="790,178,857,162,863,161,791,183"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a076c2165b5b3484a7208445ff9a1c86d" title="Set RGB LED color." alt="" coords="639,78,788,104"/>
+<area shape="poly" title=" " alt="" coords="589,86,627,89,621,90,589,91"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a055f40aef481cb67e15eca4d09028a61" title=" " alt="" coords="839,78,1011,104"/>
+<area shape="poly" title=" " alt="" coords="787,88,826,91,820,91,788,94"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#ac94f191b849645c0630d6594f91c32b0" title=" " alt="" coords="1081,5,1217,46"/>
+<area shape="poly" title=" " alt="" coords="971,75,1064,50,1069,49,972,80"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="1076,71,1222,111"/>
+<area shape="poly" title=" " alt="" coords="1011,88,1063,91,1058,91,1011,94"/>
+<area shape="rect" href="../../d4/d7e/system__config_8h.html#a048d7fce3116a990c5536e18eed4a61b" title="Validate PWM percentage." alt="" coords="1059,136,1239,161"/>
+<area shape="poly" title=" " alt="" coords="978,102,1084,131,1078,131,978,107"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="1287,71,1433,111"/>
+<area shape="poly" title=" " alt="" coords="1222,88,1275,91,1269,91,1222,94"/>
+<area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="1481,78,1611,104"/>
+<area shape="poly" title=" " alt="" coords="1433,88,1468,91,1463,91,1433,94"/>
+<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="1659,78,1843,104"/>
+<area shape="poly" title=" " alt="" coords="1611,88,1646,91,1640,91,1611,94"/>
+<area shape="poly" title=" " alt="" coords="586,162,628,177,623,177,586,168"/>
+<area shape="poly" title=" " alt="" coords="586,142,836,144,831,145,586,147"/>
+<area shape="poly" title=" " alt="" coords="585,123,651,108,645,109,587,128"/>
+<area shape="poly" title=" " alt="" coords="379,241,430,249,425,249,379,246"/>
 </map>
 </div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d0/d81/led__task_8c_ae254e94283d7484aede3cb5b30445402_icgraph.png" border="0" usemap="#ad0/d81/led__task_8c_ae254e94283d7484aede3cb5b30445402_icgraph" loading="lazy" alt=""/></div>
-<map name="ad0/d81/led__task_8c_ae254e94283d7484aede3cb5b30445402_icgraph" id="ad0/d81/led__task_8c_ae254e94283d7484aede3cb5b30445402_icgraph">
+<div class="center"><img src="../../d0/d81/led__task_8c_a9815a89f029b7233e7cd0e8cf0450144_icgraph.png" border="0" usemap="#ad0/d81/led__task_8c_a9815a89f029b7233e7cd0e8cf0450144_icgraph" loading="lazy" alt=""/></div>
+<map name="ad0/d81/led__task_8c_a9815a89f029b7233e7cd0e8cf0450144_icgraph" id="ad0/d81/led__task_8c_a9815a89f029b7233e7cd0e8cf0450144_icgraph">
 <area shape="rect" title=" " alt="" coords="665,5,814,46"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html#a45beb0a71113d5832f1e960aa8533481" title=" " alt="" coords="466,13,617,38"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a61e20b7b3d53c0fe3f3e30ab709564fd" title=" " alt="" coords="466,13,617,38"/>
 <area shape="poly" title=" " alt="" coords="646,26,617,28,617,23,652,26"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html#a838ffd5c036cecef703d7a73e0a193fd" title="Initialize LED display task." alt="" coords="315,13,418,38"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a9d18fbbcd8adbccf0f8d2288e901f77c" title="Initialize LED display task." alt="" coords="315,13,418,38"/>
 <area shape="poly" title=" " alt="" coords="448,26,419,28,419,23,454,26"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,13,267,38"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,13,267,38"/>
 <area shape="poly" title=" " alt="" coords="297,26,268,28,268,23,302,26"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,13,83,38"/>
 <area shape="poly" title=" " alt="" coords="112,26,83,28,83,23,118,25"/>
@@ -593,35 +636,37 @@ Here is the caller graph for this function:</div>
 <p>Emergency function to turn off all LEDs regardless of sensor readings.</p>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d81/led__task_8c_source.html#l00260">260</a> of file <a class="el" href="../../d0/d81/led__task_8c_source.html">led_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d81/led__task_8c_source.html#l00286">286</a> of file <a class="el" href="../../d0/d81/led__task_8c_source.html">led_task.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00193">led_controller_turn_off_all()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00010">s_g_context_initialized</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, and <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00012">s_task_context</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00298">led_controller_turn_off_all()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00011">s_g_context_initialized</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00014">s_task_context</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00124">internal_take_recovery_action()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00173">internal_take_recovery_action()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d0/d81/led__task_8c_a70a98116b168f38ec6863cf5d9b2e7df_cgraph.png" border="0" usemap="#ad0/d81/led__task_8c_a70a98116b168f38ec6863cf5d9b2e7df_cgraph" loading="lazy" alt=""/></div>
 <map name="ad0/d81/led__task_8c_a70a98116b168f38ec6863cf5d9b2e7df_cgraph" id="ad0/d81/led__task_8c_a70a98116b168f38ec6863cf5d9b2e7df_cgraph">
-<area shape="rect" title="Turn off all LEDs immediately." alt="" coords="5,46,169,72"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a4ef6b466f7b5477b96ef6f47a5cf8455" title="Turn off all LEDs." alt="" coords="217,39,344,79"/>
-<area shape="poly" title=" " alt="" coords="169,56,204,58,199,60,169,62"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a73349b12790da0a90e8918735b11ab10" title="Turn off specific LED." alt="" coords="392,46,541,72"/>
-<area shape="poly" title=" " alt="" coords="344,56,379,59,374,59,345,62"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#ac65666d46afe64b998d889b066bed529" title="Set RGB LED color." alt="" coords="589,46,738,72"/>
-<area shape="poly" title=" " alt="" coords="542,56,577,59,571,59,542,62"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a055f40aef481cb67e15eca4d09028a61" title=" " alt="" coords="786,46,958,72"/>
-<area shape="poly" title=" " alt="" coords="738,56,773,59,767,59,738,62"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a7b7ebe952969637b30a7a358d7c3d92c" title=" " alt="" coords="1010,5,1147,46"/>
-<area shape="poly" title=" " alt="" coords="955,43,993,39,998,39,956,48"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="1006,71,1151,111"/>
-<area shape="poly" title=" " alt="" coords="959,70,994,78,988,77,958,75"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="1199,71,1345,111"/>
-<area shape="poly" title=" " alt="" coords="1152,88,1186,91,1181,91,1152,94"/>
-<area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="1393,78,1523,104"/>
-<area shape="poly" title=" " alt="" coords="1345,88,1380,91,1375,91,1345,94"/>
-<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="1571,78,1755,104"/>
-<area shape="poly" title=" " alt="" coords="1523,88,1558,91,1552,91,1523,94"/>
+<area shape="rect" title="Turn off all LEDs immediately." alt="" coords="5,78,169,104"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a6743c205855240c57225c021e88e3d95" title="Turn off all LEDs." alt="" coords="217,71,344,111"/>
+<area shape="poly" title=" " alt="" coords="169,88,204,90,199,92,170,94"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a105d937217c622b9872eeeeeb4823b33" title="Turn off specific LED." alt="" coords="392,78,541,104"/>
+<area shape="poly" title=" " alt="" coords="344,88,379,91,374,91,345,94"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a076c2165b5b3484a7208445ff9a1c86d" title="Set RGB LED color." alt="" coords="589,78,738,104"/>
+<area shape="poly" title=" " alt="" coords="542,88,577,91,571,91,542,94"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a055f40aef481cb67e15eca4d09028a61" title=" " alt="" coords="786,78,958,104"/>
+<area shape="poly" title=" " alt="" coords="738,88,773,91,767,91,738,94"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#ac94f191b849645c0630d6594f91c32b0" title=" " alt="" coords="1028,5,1164,46"/>
+<area shape="poly" title=" " alt="" coords="918,75,1011,50,1016,49,919,80"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="1024,71,1169,111"/>
+<area shape="poly" title=" " alt="" coords="958,88,1010,91,1005,91,958,94"/>
+<area shape="rect" href="../../d4/d7e/system__config_8h.html#a048d7fce3116a990c5536e18eed4a61b" title="Validate PWM percentage." alt="" coords="1006,136,1186,161"/>
+<area shape="poly" title=" " alt="" coords="925,102,1031,131,1025,131,925,107"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="1234,71,1380,111"/>
+<area shape="poly" title=" " alt="" coords="1169,88,1222,91,1216,91,1169,94"/>
+<area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="1428,78,1558,104"/>
+<area shape="poly" title=" " alt="" coords="1380,88,1415,91,1410,91,1380,94"/>
+<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="1606,78,1790,104"/>
+<area shape="poly" title=" " alt="" coords="1558,88,1593,91,1587,91,1558,94"/>
 </map>
 </div>
 <div class="dynheader">
@@ -630,15 +675,15 @@ Here is the caller graph for this function:</div>
 <div class="center"><img src="../../d0/d81/led__task_8c_a70a98116b168f38ec6863cf5d9b2e7df_icgraph.png" border="0" usemap="#ad0/d81/led__task_8c_a70a98116b168f38ec6863cf5d9b2e7df_icgraph" loading="lazy" alt=""/></div>
 <map name="ad0/d81/led__task_8c_a70a98116b168f38ec6863cf5d9b2e7df_icgraph" id="ad0/d81/led__task_8c_a70a98116b168f38ec6863cf5d9b2e7df_icgraph">
 <area shape="rect" title="Turn off all LEDs immediately." alt="" coords="943,35,1106,60"/>
-<area shape="rect" href="../../dc/d96/watchdog__task_8c.html#a57d1e1b0912c3b15d4a2102e2d036d09" title=" " alt="" coords="743,27,895,68"/>
+<area shape="rect" href="../../dc/d96/watchdog__task_8c.html#ab8e8a05882a22d389871b901749f34a0" title=" " alt="" coords="743,27,895,68"/>
 <area shape="poly" title=" " alt="" coords="925,48,896,50,895,45,930,47"/>
-<area shape="rect" href="../../dc/d96/watchdog__task_8c.html#a8486e8e6f170a4d179157051b1510c61" title=" " alt="" coords="505,5,695,31"/>
+<area shape="rect" href="../../dc/d96/watchdog__task_8c.html#a914a83d91bb924807d2c34ddb767e056" title=" " alt="" coords="505,5,695,31"/>
 <area shape="poly" title=" " alt="" coords="725,35,695,34,695,28,730,35"/>
 <area shape="rect" href="../../dc/d96/watchdog__task_8c.html#a3952d706fb7b287213a32d8ab6d39444" title="Force immediate system health check." alt="" coords="527,55,673,96"/>
 <area shape="poly" title=" " alt="" coords="730,59,674,69,673,64,725,59"/>
 <area shape="rect" href="../../dc/d96/watchdog__task_8c.html#a1047c0564b9275f58ba51b089d9c5377" title="Start the system watchdog task." alt="" coords="315,5,457,31"/>
 <area shape="poly" title=" " alt="" coords="487,18,458,21,457,16,492,18"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,5,267,31"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,5,267,31"/>
 <area shape="poly" title=" " alt="" coords="297,19,268,21,267,16,302,18"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
 <area shape="poly" title=" " alt="" coords="113,19,84,21,82,16,117,17"/>
@@ -677,9 +722,9 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if statistics are available </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d81/led__task_8c_source.html#l00217">217</a> of file <a class="el" href="../../d0/d81/led__task_8c_source.html">led_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d81/led__task_8c_source.html#l00242">242</a> of file <a class="el" href="../../d0/d81/led__task_8c_source.html">led_task.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00010">s_g_context_initialized</a>, and <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00012">s_task_context</a>.</p>
+<p class="reference">References <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00011">s_g_context_initialized</a>, and <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00014">s_task_context</a>.</p>
 
 </div>
 </div>
@@ -701,11 +746,11 @@ Here is the caller graph for this function:</div>
 <p>Check if LED task is running. </p>
 <dl class="section return"><dt>Returns</dt><dd>true if task is active and managing LEDs </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d81/led__task_8c_source.html#l00211">211</a> of file <a class="el" href="../../d0/d81/led__task_8c_source.html">led_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d81/led__task_8c_source.html#l00236">236</a> of file <a class="el" href="../../d0/d81/led__task_8c_source.html">led_task.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00010">s_g_context_initialized</a>, and <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00012">s_task_context</a>.</p>
+<p class="reference">References <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00011">s_g_context_initialized</a>, and <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00014">s_task_context</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00063">internal_assess_task_health()</a>, and <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00124">internal_take_recovery_action()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00106">internal_assess_task_health()</a>, and <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00173">internal_take_recovery_action()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -714,17 +759,17 @@ Here is the caller graph for this function:</div>
 <area shape="rect" title="Check if LED task is running." alt="" coords="1140,46,1277,72"/>
 <area shape="rect" href="../../dc/d96/watchdog__task_8c.html#aa70f8b2d9159bc50f150e81ed3da1edd" title=" " alt="" coords="948,8,1092,49"/>
 <area shape="poly" title=" " alt="" coords="1122,45,1093,43,1093,37,1128,46"/>
-<area shape="rect" href="../../dc/d96/watchdog__task_8c.html#a57d1e1b0912c3b15d4a2102e2d036d09" title=" " alt="" coords="745,71,898,111"/>
+<area shape="rect" href="../../dc/d96/watchdog__task_8c.html#ab8e8a05882a22d389871b901749f34a0" title=" " alt="" coords="745,71,898,111"/>
 <area shape="poly" title=" " alt="" coords="1127,66,898,87,898,82,1122,66"/>
 <area shape="rect" href="../../dc/d96/watchdog__task_8c.html#acc127e75275d2f65ba4158f4c0ea8821" title=" " alt="" coords="743,5,900,46"/>
 <area shape="poly" title=" " alt="" coords="930,27,901,29,901,24,935,27"/>
-<area shape="rect" href="../../dc/d96/watchdog__task_8c.html#a8486e8e6f170a4d179157051b1510c61" title=" " alt="" coords="505,16,695,41"/>
+<area shape="rect" href="../../dc/d96/watchdog__task_8c.html#a914a83d91bb924807d2c34ddb767e056" title=" " alt="" coords="505,16,695,41"/>
 <area shape="poly" title=" " alt="" coords="724,27,695,30,695,25,730,27"/>
 <area shape="rect" href="../../dc/d96/watchdog__task_8c.html#a3952d706fb7b287213a32d8ab6d39444" title="Force immediate system health check." alt="" coords="527,67,673,107"/>
 <area shape="poly" title=" " alt="" coords="733,50,674,70,673,64,728,51"/>
 <area shape="rect" href="../../dc/d96/watchdog__task_8c.html#a1047c0564b9275f58ba51b089d9c5377" title="Start the system watchdog task." alt="" coords="315,16,457,41"/>
 <area shape="poly" title=" " alt="" coords="487,29,458,31,457,26,492,28"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,16,267,41"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,16,267,41"/>
 <area shape="poly" title=" " alt="" coords="297,29,268,31,267,26,302,28"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,16,83,41"/>
 <area shape="poly" title=" " alt="" coords="113,30,84,31,82,26,117,27"/>
@@ -735,8 +780,8 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="a5194367958f3659ffd8b28d049adc5fe" name="a5194367958f3659ffd8b28d049adc5fe"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5194367958f3659ffd8b28d049adc5fe">&#9670;&#160;</a></span>led_task_manual_update()</h2>
+<a id="ac530e05df69535a16f3f76ec3e63458d" name="ac530e05df69535a16f3f76ec3e63458d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac530e05df69535a16f3f76ec3e63458d">&#9670;&#160;</a></span>led_task_manual_update()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -744,12 +789,12 @@ Here is the caller graph for this function:</div>
         <tr>
           <td class="memname">esp_err_t led_task_manual_update </td>
           <td>(</td>
-          <td class="paramtype">uint8_t</td>          <td class="paramname"><span class="paramname"><em>sensor_index</em></span>, </td>
+          <td class="paramtype">const uint8_t</td>          <td class="paramname"><span class="paramname"><em>sensor_index</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>distance_cm</em></span>&#160;)</td>
+          <td class="paramtype">const float</td>          <td class="paramname"><span class="paramname"><em>distance_cm</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -765,43 +810,52 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d81/led__task_8c_source.html#l00228">228</a> of file <a class="el" href="../../d0/d81/led__task_8c_source.html">led_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d81/led__task_8c_source.html#l00253">253</a> of file <a class="el" href="../../d0/d81/led__task_8c_source.html">led_task.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00187">led_controller_turn_off()</a>, <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00175">led_controller_update_distance()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00010">s_g_context_initialized</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00012">s_task_context</a>, and <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00147">VALIDATE_SENSOR_INDEX</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00292">led_controller_turn_off()</a>, <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00280">led_controller_update_distance()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00011">s_g_context_initialized</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00014">s_task_context</a>, and <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00196">star_validate_sensor_index()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d0/d81/led__task_8c_a5194367958f3659ffd8b28d049adc5fe_cgraph.png" border="0" usemap="#ad0/d81/led__task_8c_a5194367958f3659ffd8b28d049adc5fe_cgraph" loading="lazy" alt=""/></div>
-<map name="ad0/d81/led__task_8c_a5194367958f3659ffd8b28d049adc5fe_cgraph" id="ad0/d81/led__task_8c_a5194367958f3659ffd8b28d049adc5fe_cgraph">
-<area shape="rect" title="Manually trigger LED update for specific sensor." alt="" coords="5,76,171,101"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a73349b12790da0a90e8918735b11ab10" title="Turn off specific LED." alt="" coords="219,46,368,72"/>
-<area shape="poly" title=" " alt="" coords="171,74,206,71,201,73,172,79"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a7845556a1b6df08561a0ffe60da13f0f" title="Update LED based on distance measurement." alt="" coords="221,96,366,137"/>
-<area shape="poly" title=" " alt="" coords="171,97,209,104,203,105,171,102"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#ac65666d46afe64b998d889b066bed529" title="Set RGB LED color." alt="" coords="419,46,567,72"/>
-<area shape="poly" title=" " alt="" coords="368,56,406,59,401,59,369,62"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a055f40aef481cb67e15eca4d09028a61" title=" " alt="" coords="618,46,791,72"/>
-<area shape="poly" title=" " alt="" coords="567,56,605,59,600,59,568,62"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a7b7ebe952969637b30a7a358d7c3d92c" title=" " alt="" coords="843,5,980,46"/>
-<area shape="poly" title=" " alt="" coords="788,43,825,39,831,39,789,48"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="839,71,984,111"/>
-<area shape="poly" title=" " alt="" coords="791,70,826,78,821,77,791,75"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="1032,71,1177,111"/>
-<area shape="poly" title=" " alt="" coords="984,88,1019,91,1014,91,984,94"/>
-<area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="1225,78,1356,104"/>
-<area shape="poly" title=" " alt="" coords="1178,88,1213,91,1208,91,1178,94"/>
-<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="1404,78,1588,104"/>
-<area shape="poly" title=" " alt="" coords="1356,88,1390,91,1385,91,1356,94"/>
-<area shape="poly" title=" " alt="" coords="365,93,429,77,434,76,366,98"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a73db6a6b8b56f7fc6580517593f99827" title="Convert distance measurement to RGB color." alt="" coords="416,96,570,137"/>
-<area shape="poly" title=" " alt="" coords="366,114,403,116,398,116,366,119"/>
+<div class="center"><img src="../../d0/d81/led__task_8c_ac530e05df69535a16f3f76ec3e63458d_cgraph.png" border="0" usemap="#ad0/d81/led__task_8c_ac530e05df69535a16f3f76ec3e63458d_cgraph" loading="lazy" alt=""/></div>
+<map name="ad0/d81/led__task_8c_ac530e05df69535a16f3f76ec3e63458d_cgraph" id="ad0/d81/led__task_8c_ac530e05df69535a16f3f76ec3e63458d_cgraph">
+<area shape="rect" title="Manually trigger LED update for specific sensor." alt="" coords="5,136,171,161"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a105d937217c622b9872eeeeeb4823b33" title="Turn off specific LED." alt="" coords="219,78,368,104"/>
+<area shape="poly" title=" " alt="" coords="136,132,232,107,228,110,138,137"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a3bc9057e69b2a21032f72cb91d54d249" title="Update LED based on distance measurement." alt="" coords="221,128,366,169"/>
+<area shape="poly" title=" " alt="" coords="171,146,208,148,203,149,172,151"/>
+<area shape="rect" href="../../d4/d7e/system__config_8h.html#aee59613b222c590cb8080f4f732f758f" title="Validate sensor index." alt="" coords="223,193,364,234"/>
+<area shape="poly" title=" " alt="" coords="131,159,215,187,210,189,131,164"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a076c2165b5b3484a7208445ff9a1c86d" title="Set RGB LED color." alt="" coords="419,78,567,104"/>
+<area shape="poly" title=" " alt="" coords="368,88,406,90,401,92,369,94"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a055f40aef481cb67e15eca4d09028a61" title=" " alt="" coords="618,78,791,104"/>
+<area shape="poly" title=" " alt="" coords="567,88,605,91,600,91,568,94"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#ac94f191b849645c0630d6594f91c32b0" title=" " alt="" coords="861,5,997,46"/>
+<area shape="poly" title=" " alt="" coords="751,75,843,50,848,49,752,80"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="856,71,1002,111"/>
+<area shape="poly" title=" " alt="" coords="791,88,843,91,838,91,791,94"/>
+<area shape="rect" href="../../d4/d7e/system__config_8h.html#a048d7fce3116a990c5536e18eed4a61b" title="Validate PWM percentage." alt="" coords="839,136,1019,161"/>
+<area shape="poly" title=" " alt="" coords="758,102,863,131,858,131,758,107"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="1067,71,1212,111"/>
+<area shape="poly" title=" " alt="" coords="1002,88,1054,91,1049,91,1002,94"/>
+<area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="1260,78,1391,104"/>
+<area shape="poly" title=" " alt="" coords="1213,88,1248,91,1243,91,1213,94"/>
+<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="1439,78,1623,104"/>
+<area shape="poly" title=" " alt="" coords="1391,88,1425,91,1420,91,1391,94"/>
+<area shape="poly" title=" " alt="" coords="365,125,434,108,429,109,367,130"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#aa9bce675e112120c36bb4886aa7928aa" title="Convert distance measurement to RGB color using smooth HSV gradient." alt="" coords="416,128,570,169"/>
+<area shape="poly" title=" " alt="" coords="366,146,403,148,398,149,366,151"/>
+<area shape="rect" href="../../d4/d7e/system__config_8h.html#a27d7155fa342a21a9e7dc287b32d3cde" title="Validate distance measurement." alt="" coords="629,193,780,218"/>
+<area shape="poly" title=" " alt="" coords="366,167,416,178,518,191,616,202,611,202,518,197,416,183,366,172"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a05e24a1e741cb4693bbe6f9d4a3d5e28" title="Convert HSV color to RGB color." alt="" coords="641,128,768,169"/>
+<area shape="poly" title=" " alt="" coords="570,146,629,148,623,149,571,151"/>
+<area shape="poly" title=" " alt="" coords="571,167,642,188,637,188,570,172"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="a838ffd5c036cecef703d7a73e0a193fd" name="a838ffd5c036cecef703d7a73e0a193fd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a838ffd5c036cecef703d7a73e0a193fd">&#9670;&#160;</a></span>led_task_start()</h2>
+<a id="a9d18fbbcd8adbccf0f8d2288e901f77c" name="a9d18fbbcd8adbccf0f8d2288e901f77c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9d18fbbcd8adbccf0f8d2288e901f77c">&#9670;&#160;</a></span>led_task_start()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -825,74 +879,84 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d81/led__task_8c_source.html#l00119">119</a> of file <a class="el" href="../../d0/d81/led__task_8c_source.html">led_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d81/led__task_8c_source.html#l00145">145</a> of file <a class="el" href="../../d0/d81/led__task_8c_source.html">led_task.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d0/d81/led__task_8c_source.html#l00090">internal_led_task_loop()</a>, <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00083">led_controller_deinit()</a>, <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00055">led_controller_init()</a>, <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00070">shared_context_t::leds_task_handle</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00010">s_g_context_initialized</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00012">s_task_context</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00114">shared_data_get_context()</a>, <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00081">TASK_PRIORITY_LEDS</a>, and <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00087">TASK_STACK_SIZE_LEDS</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d81/led__task_8c_source.html#l00111">internal_led_task_loop()</a>, <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00151">led_controller_deinit()</a>, <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00123">led_controller_init()</a>, <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00071">shared_context_t::leds_task_handle</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00011">s_g_context_initialized</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00014">s_task_context</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00117">shared_data_get_context()</a>, and <a class="el" href="../../d3/dff/system__config_8c_source.html#l00035">STAR_SYSTEM_CONFIG</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00111">start_system_tasks()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00115">start_system_tasks()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d0/d81/led__task_8c_a838ffd5c036cecef703d7a73e0a193fd_cgraph.png" border="0" usemap="#ad0/d81/led__task_8c_a838ffd5c036cecef703d7a73e0a193fd_cgraph" loading="lazy" alt=""/></div>
-<map name="ad0/d81/led__task_8c_a838ffd5c036cecef703d7a73e0a193fd_cgraph" id="ad0/d81/led__task_8c_a838ffd5c036cecef703d7a73e0a193fd_cgraph">
-<area shape="rect" title="Initialize LED display task." alt="" coords="5,108,109,134"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html#a45beb0a71113d5832f1e960aa8533481" title=" " alt="" coords="157,79,307,104"/>
-<area shape="poly" title=" " alt="" coords="108,110,144,105,139,108,110,115"/>
-<area shape="rect" href="../../db/d0d/shared__data_8c.html#acf829b11efe6efde5ff9c9a1798b05c9" title="Get pointer to global shared context." alt="" coords="576,5,743,31"/>
-<area shape="poly" title=" " alt="" coords="77,106,113,84,156,64,253,29,355,12,400,7,436,8,517,12,563,14,558,16,517,17,436,13,401,13,355,17,254,34,158,69,116,89,81,109"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a401de17207482b2f692cd97add113e49" title="Deinitialize LED controller." alt="" coords="164,189,300,215"/>
-<area shape="poly" title=" " alt="" coords="84,132,158,168,187,182,182,183,156,173,84,137"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#aa31e14fc30c8e35caffef7dad530d4eb" title="Initialize LED controller." alt="" coords="171,132,293,158"/>
-<area shape="poly" title=" " alt="" coords="108,125,158,133,153,136,110,130"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html#a6aa0cce3c297a4cce6b0b752e3ded0e0" title=" " alt="" coords="355,55,517,96"/>
-<area shape="poly" title=" " alt="" coords="306,83,342,82,337,84,308,88"/>
-<area shape="poly" title=" " alt="" coords="259,76,303,57,354,41,460,24,563,18,558,20,461,29,356,46,305,62,262,80"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html#ae254e94283d7484aede3cb5b30445402" title=" " alt="" coords="362,121,511,161"/>
-<area shape="poly" title=" " alt="" coords="288,102,349,118,343,120,288,108"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html#a4e35506eb493450e65a1e8f8a5d9d4ac" title=" " alt="" coords="593,55,726,96"/>
-<area shape="poly" title=" " alt="" coords="517,73,580,75,575,76,518,78"/>
-<area shape="poly" title=" " alt="" coords="517,52,594,35,589,36,519,57"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a73db6a6b8b56f7fc6580517593f99827" title="Convert distance measurement to RGB color." alt="" coords="999,91,1153,132"/>
-<area shape="poly" title=" " alt="" coords="726,79,986,103,981,104,726,84"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a73349b12790da0a90e8918735b11ab10" title="Turn off specific LED." alt="" coords="802,199,951,224"/>
-<area shape="poly" title=" " alt="" coords="727,92,755,107,771,121,781,134,790,148,803,163,840,191,835,190,800,167,785,151,776,137,767,124,752,111,726,97"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a7845556a1b6df08561a0ffe60da13f0f" title="Update LED based on distance measurement." alt="" coords="804,113,948,153"/>
-<area shape="poly" title=" " alt="" coords="726,90,792,110,787,110,726,96"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#ac65666d46afe64b998d889b066bed529" title="Set RGB LED color." alt="" coords="1002,171,1150,196"/>
-<area shape="poly" title=" " alt="" coords="951,198,984,196,989,196,952,204"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a055f40aef481cb67e15eca4d09028a61" title=" " alt="" coords="1201,171,1374,196"/>
-<area shape="poly" title=" " alt="" coords="1150,181,1188,183,1183,184,1151,186"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a7b7ebe952969637b30a7a358d7c3d92c" title=" " alt="" coords="1426,130,1562,170"/>
-<area shape="poly" title=" " alt="" coords="1371,167,1408,164,1414,163,1372,173"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="1422,195,1567,236"/>
-<area shape="poly" title=" " alt="" coords="1374,194,1409,202,1404,202,1374,200"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="1615,195,1760,236"/>
-<area shape="poly" title=" " alt="" coords="1567,213,1602,215,1597,216,1567,218"/>
-<area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="1808,203,1939,228"/>
-<area shape="poly" title=" " alt="" coords="1761,213,1796,215,1791,216,1761,218"/>
-<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="1987,203,2171,228"/>
-<area shape="poly" title=" " alt="" coords="1939,213,1973,215,1968,216,1939,218"/>
-<area shape="poly" title=" " alt="" coords="948,122,986,121,981,122,949,128"/>
-<area shape="poly" title=" " alt="" coords="949,148,1010,166,1005,166,949,154"/>
-<area shape="poly" title=" " alt="" coords="507,117,581,98,576,100,509,123"/>
-<area shape="poly" title=" " alt="" coords="496,159,519,172,534,186,542,199,551,211,566,221,597,232,630,238,696,242,759,236,812,229,817,228,760,241,696,247,629,243,596,237,564,226,548,215,538,202,529,189,516,176,495,164"/>
-<area shape="rect" href="../../db/d0d/shared__data_8c.html#a921b6f2942e0e7d01d9cc0a3ae1a9c5f" title="Get latest sensor reading." alt="" coords="578,121,741,161"/>
-<area shape="poly" title=" " alt="" coords="511,138,565,140,560,141,511,143"/>
-<area shape="rect" href="../../db/d0d/shared__data_8c.html#a3bdf4ea7cbcd1af874c68f1da508ae3b" title="Get system uptime in milliseconds." alt="" coords="565,185,754,211"/>
-<area shape="poly" title=" " alt="" coords="511,157,594,181,589,181,511,163"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a4ef6b466f7b5477b96ef6f47a5cf8455" title="Turn off all LEDs." alt="" coords="372,186,500,226"/>
-<area shape="poly" title=" " alt="" coords="300,201,359,204,354,205,301,206"/>
-<area shape="poly" title=" " alt="" coords="471,224,515,247,566,265,618,275,659,279,701,275,753,265,799,250,838,233,843,231,801,255,754,270,702,280,659,284,617,280,565,270,513,252,470,229"/>
-<area shape="poly" title=" " alt="" coords="278,156,360,182,355,183,277,161"/>
+<div class="center"><img src="../../d0/d81/led__task_8c_a9d18fbbcd8adbccf0f8d2288e901f77c_cgraph.png" border="0" usemap="#ad0/d81/led__task_8c_a9d18fbbcd8adbccf0f8d2288e901f77c_cgraph" loading="lazy" alt=""/></div>
+<map name="ad0/d81/led__task_8c_a9d18fbbcd8adbccf0f8d2288e901f77c_cgraph" id="ad0/d81/led__task_8c_a9d18fbbcd8adbccf0f8d2288e901f77c_cgraph">
+<area shape="rect" title="Initialize LED display task." alt="" coords="5,116,109,141"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a61e20b7b3d53c0fe3f3e30ab709564fd" title=" " alt="" coords="157,86,307,112"/>
+<area shape="poly" title=" " alt="" coords="108,117,144,113,139,116,110,122"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#acf829b11efe6efde5ff9c9a1798b05c9" title="Get pointer to global shared context." alt="" coords="576,13,743,38"/>
+<area shape="poly" title=" " alt="" coords="77,113,113,92,156,71,253,37,355,19,400,15,436,15,517,19,563,22,558,23,517,24,436,20,401,20,355,24,254,42,158,76,116,96,81,117"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a4041166ed835cbf20470b38d1c76eaf4" title="Deinitialize LED controller." alt="" coords="164,197,300,222"/>
+<area shape="poly" title=" " alt="" coords="84,139,158,175,187,190,182,191,156,180,84,144"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#aeae7615c8b32711083f0cd898653aa63" title="Initialize LED controller." alt="" coords="171,140,293,165"/>
+<area shape="poly" title=" " alt="" coords="108,133,158,141,153,143,110,138"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a5ed102fd8f8fe04d25422aeea7b89fd0" title=" " alt="" coords="355,63,517,103"/>
+<area shape="poly" title=" " alt="" coords="306,91,342,90,337,91,308,96"/>
+<area shape="poly" title=" " alt="" coords="259,83,303,65,354,48,460,31,563,26,558,28,461,36,356,54,305,70,262,88"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a9815a89f029b7233e7cd0e8cf0450144" title=" " alt="" coords="362,128,511,169"/>
+<area shape="poly" title=" " alt="" coords="288,110,349,126,343,127,288,115"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a1a400922bf8466136467222b9ec209be" title=" " alt="" coords="593,63,726,103"/>
+<area shape="poly" title=" " alt="" coords="517,80,580,82,575,84,518,86"/>
+<area shape="poly" title=" " alt="" coords="517,60,594,42,589,44,519,65"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#aa9bce675e112120c36bb4886aa7928aa" title="Convert distance measurement to RGB color using smooth HSV gradient." alt="" coords="999,5,1153,46"/>
+<area shape="poly" title=" " alt="" coords="726,64,801,48,895,36,986,31,981,32,895,42,802,54,727,69"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a105d937217c622b9872eeeeeb4823b33" title="Turn off specific LED." alt="" coords="802,218,951,244"/>
+<area shape="poly" title=" " alt="" coords="727,99,755,114,772,130,781,146,790,161,804,178,841,210,836,209,800,182,785,164,776,148,768,133,752,118,726,104"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a3bc9057e69b2a21032f72cb91d54d249" title="Update LED based on distance measurement." alt="" coords="804,63,948,103"/>
+<area shape="poly" title=" " alt="" coords="726,80,791,83,786,83,727,86"/>
+<area shape="rect" href="../../d4/d7e/system__config_8h.html#aee59613b222c590cb8080f4f732f758f" title="Validate sensor index." alt="" coords="806,128,947,169"/>
+<area shape="poly" title=" " alt="" coords="726,100,795,123,789,123,726,106"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a05e24a1e741cb4693bbe6f9d4a3d5e28" title="Convert HSV color to RGB color." alt="" coords="1224,5,1351,46"/>
+<area shape="poly" title=" " alt="" coords="1153,23,1212,25,1206,26,1154,28"/>
+<area shape="rect" href="../../d4/d7e/system__config_8h.html#a27d7155fa342a21a9e7dc287b32d3cde" title="Validate distance measurement." alt="" coords="1212,70,1363,96"/>
+<area shape="poly" title=" " alt="" coords="1154,44,1225,66,1220,66,1153,49"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a076c2165b5b3484a7208445ff9a1c86d" title="Set RGB LED color." alt="" coords="1002,157,1150,182"/>
+<area shape="poly" title=" " alt="" coords="920,215,1015,188,1020,187,921,220"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a055f40aef481cb67e15eca4d09028a61" title=" " alt="" coords="1201,157,1374,182"/>
+<area shape="poly" title=" " alt="" coords="1150,167,1188,170,1183,170,1151,172"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#ac94f191b849645c0630d6594f91c32b0" title=" " alt="" coords="1444,84,1580,125"/>
+<area shape="poly" title=" " alt="" coords="1334,154,1426,129,1432,128,1335,159"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="1439,149,1584,190"/>
+<area shape="poly" title=" " alt="" coords="1374,167,1426,170,1421,170,1374,172"/>
+<area shape="rect" href="../../d4/d7e/system__config_8h.html#a048d7fce3116a990c5536e18eed4a61b" title="Validate PWM percentage." alt="" coords="1422,214,1602,240"/>
+<area shape="poly" title=" " alt="" coords="1341,180,1446,210,1441,210,1341,186"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="1650,149,1795,190"/>
+<area shape="poly" title=" " alt="" coords="1585,167,1637,170,1632,170,1585,172"/>
+<area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="1843,157,1974,182"/>
+<area shape="poly" title=" " alt="" coords="1796,167,1831,170,1826,170,1796,172"/>
+<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="2022,157,2206,182"/>
+<area shape="poly" title=" " alt="" coords="1974,167,2008,170,2003,170,1974,172"/>
+<area shape="poly" title=" " alt="" coords="948,60,986,51,991,50,950,65"/>
+<area shape="poly" title=" " alt="" coords="949,80,1199,83,1194,83,949,86"/>
+<area shape="poly" title=" " alt="" coords="926,101,1033,150,1028,150,925,107"/>
+<area shape="poly" title=" " alt="" coords="507,125,581,106,576,107,509,130"/>
+<area shape="poly" title=" " alt="" coords="496,167,519,180,534,193,542,207,551,219,566,229,625,246,686,252,746,250,796,247,802,247,746,256,686,257,624,251,564,233,548,223,538,210,529,197,516,184,495,172"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#a1db0e8429be801019cbef073929b2f29" title="Get latest sensor reading." alt="" coords="578,128,741,169"/>
+<area shape="poly" title=" " alt="" coords="511,146,565,148,560,149,511,151"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#a3bdf4ea7cbcd1af874c68f1da508ae3b" title="Get system uptime in milliseconds." alt="" coords="565,193,754,218"/>
+<area shape="poly" title=" " alt="" coords="511,165,594,188,589,188,511,170"/>
+<area shape="poly" title=" " alt="" coords="742,146,793,148,787,149,742,151"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a6743c205855240c57225c021e88e3d95" title="Turn off all LEDs." alt="" coords="372,193,500,234"/>
+<area shape="poly" title=" " alt="" coords="300,208,359,212,354,213,301,214"/>
+<area shape="poly" title=" " alt="" coords="471,232,515,255,566,272,618,282,659,285,701,281,753,272,794,262,830,251,835,250,796,267,754,278,701,286,659,290,617,288,565,278,513,260,470,237"/>
+<area shape="poly" title=" " alt="" coords="278,163,360,190,355,191,277,168"/>
 </map>
 </div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d0/d81/led__task_8c_a838ffd5c036cecef703d7a73e0a193fd_icgraph.png" border="0" usemap="#ad0/d81/led__task_8c_a838ffd5c036cecef703d7a73e0a193fd_icgraph" loading="lazy" alt=""/></div>
-<map name="ad0/d81/led__task_8c_a838ffd5c036cecef703d7a73e0a193fd_icgraph" id="ad0/d81/led__task_8c_a838ffd5c036cecef703d7a73e0a193fd_icgraph">
+<div class="center"><img src="../../d0/d81/led__task_8c_a9d18fbbcd8adbccf0f8d2288e901f77c_icgraph.png" border="0" usemap="#ad0/d81/led__task_8c_a9d18fbbcd8adbccf0f8d2288e901f77c_icgraph" loading="lazy" alt=""/></div>
+<map name="ad0/d81/led__task_8c_a9d18fbbcd8adbccf0f8d2288e901f77c_icgraph" id="ad0/d81/led__task_8c_a9d18fbbcd8adbccf0f8d2288e901f77c_icgraph">
 <area shape="rect" title="Initialize LED display task." alt="" coords="315,5,418,31"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,5,267,31"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,5,267,31"/>
 <area shape="poly" title=" " alt="" coords="297,18,268,21,268,16,302,18"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
 <area shape="poly" title=" " alt="" coords="112,19,83,21,83,16,118,18"/>
@@ -920,39 +984,41 @@ Here is the caller graph for this function:</div>
 <p>Cleanly shuts down the LED task and turns off all LEDs.</p>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d81/led__task_8c_source.html#l00173">173</a> of file <a class="el" href="../../d0/d81/led__task_8c_source.html">led_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d81/led__task_8c_source.html#l00199">199</a> of file <a class="el" href="../../d0/d81/led__task_8c_source.html">led_task.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00083">led_controller_deinit()</a>, <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00070">shared_context_t::leds_task_handle</a>, <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00128">NOTIFICATION_TIMEOUT_MS</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00010">s_g_context_initialized</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00012">s_task_context</a>, and <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00114">shared_data_get_context()</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00151">led_controller_deinit()</a>, <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00071">shared_context_t::leds_task_handle</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00011">s_g_context_initialized</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00014">s_task_context</a>, and <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00117">shared_data_get_context()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00111">start_system_tasks()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00115">start_system_tasks()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d0/d81/led__task_8c_a28b03bd16ef898607267014458e3724d_cgraph.png" border="0" usemap="#ad0/d81/led__task_8c_a28b03bd16ef898607267014458e3724d_cgraph" loading="lazy" alt=""/></div>
 <map name="ad0/d81/led__task_8c_a28b03bd16ef898607267014458e3724d_cgraph" id="ad0/d81/led__task_8c_a28b03bd16ef898607267014458e3724d_cgraph">
-<area shape="rect" title="Stop LED display task." alt="" coords="5,72,108,97"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a401de17207482b2f692cd97add113e49" title="Deinitialize LED controller." alt="" coords="171,46,308,72"/>
-<area shape="poly" title=" " alt="" coords="107,75,158,70,153,72,109,80"/>
-<area shape="rect" href="../../db/d0d/shared__data_8c.html#acf829b11efe6efde5ff9c9a1798b05c9" title="Get pointer to global shared context." alt="" coords="156,96,323,121"/>
-<area shape="poly" title=" " alt="" coords="108,88,143,95,138,96,108,94"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a4ef6b466f7b5477b96ef6f47a5cf8455" title="Turn off all LEDs." alt="" coords="371,39,498,79"/>
-<area shape="poly" title=" " alt="" coords="308,56,359,59,353,59,308,62"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a73349b12790da0a90e8918735b11ab10" title="Turn off specific LED." alt="" coords="546,46,696,72"/>
-<area shape="poly" title=" " alt="" coords="499,56,533,59,528,59,499,62"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#ac65666d46afe64b998d889b066bed529" title="Set RGB LED color." alt="" coords="744,46,892,72"/>
-<area shape="poly" title=" " alt="" coords="696,56,731,59,726,59,696,62"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a055f40aef481cb67e15eca4d09028a61" title=" " alt="" coords="940,46,1112,72"/>
-<area shape="poly" title=" " alt="" coords="892,56,927,59,922,59,892,62"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a7b7ebe952969637b30a7a358d7c3d92c" title=" " alt="" coords="1165,5,1301,46"/>
-<area shape="poly" title=" " alt="" coords="1110,43,1147,39,1152,39,1110,48"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="1160,71,1306,111"/>
-<area shape="poly" title=" " alt="" coords="1113,70,1148,78,1143,77,1113,75"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="1354,71,1499,111"/>
-<area shape="poly" title=" " alt="" coords="1306,88,1341,91,1335,91,1306,94"/>
-<area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="1547,78,1677,104"/>
-<area shape="poly" title=" " alt="" coords="1500,88,1535,91,1529,91,1500,94"/>
-<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="1725,78,1910,104"/>
-<area shape="poly" title=" " alt="" coords="1678,88,1712,91,1707,91,1678,94"/>
+<area shape="rect" title="Stop LED display task." alt="" coords="5,104,108,129"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a4041166ed835cbf20470b38d1c76eaf4" title="Deinitialize LED controller." alt="" coords="171,78,308,104"/>
+<area shape="poly" title=" " alt="" coords="107,107,158,101,153,104,109,112"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#acf829b11efe6efde5ff9c9a1798b05c9" title="Get pointer to global shared context." alt="" coords="156,128,323,153"/>
+<area shape="poly" title=" " alt="" coords="108,120,143,127,138,128,108,126"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a6743c205855240c57225c021e88e3d95" title="Turn off all LEDs." alt="" coords="371,71,498,111"/>
+<area shape="poly" title=" " alt="" coords="308,88,359,91,353,91,308,94"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a105d937217c622b9872eeeeeb4823b33" title="Turn off specific LED." alt="" coords="546,78,696,104"/>
+<area shape="poly" title=" " alt="" coords="499,88,533,91,528,91,499,94"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a076c2165b5b3484a7208445ff9a1c86d" title="Set RGB LED color." alt="" coords="744,78,892,104"/>
+<area shape="poly" title=" " alt="" coords="696,88,731,91,726,91,696,94"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a055f40aef481cb67e15eca4d09028a61" title=" " alt="" coords="940,78,1112,104"/>
+<area shape="poly" title=" " alt="" coords="892,88,927,91,922,91,892,94"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#ac94f191b849645c0630d6594f91c32b0" title=" " alt="" coords="1182,5,1319,46"/>
+<area shape="poly" title=" " alt="" coords="1072,75,1165,50,1170,49,1073,80"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="1178,71,1323,111"/>
+<area shape="poly" title=" " alt="" coords="1112,88,1165,91,1159,91,1113,94"/>
+<area shape="rect" href="../../d4/d7e/system__config_8h.html#a048d7fce3116a990c5536e18eed4a61b" title="Validate PWM percentage." alt="" coords="1160,136,1341,161"/>
+<area shape="poly" title=" " alt="" coords="1080,102,1185,131,1180,131,1079,107"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="1389,71,1534,111"/>
+<area shape="poly" title=" " alt="" coords="1323,88,1376,91,1371,91,1324,94"/>
+<area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="1582,78,1712,104"/>
+<area shape="poly" title=" " alt="" coords="1534,88,1570,91,1564,91,1535,94"/>
+<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="1760,78,1945,104"/>
+<area shape="poly" title=" " alt="" coords="1713,88,1747,91,1742,91,1713,94"/>
 </map>
 </div>
 <div class="dynheader">
@@ -961,7 +1027,7 @@ Here is the caller graph for this function:</div>
 <div class="center"><img src="../../d0/d81/led__task_8c_a28b03bd16ef898607267014458e3724d_icgraph.png" border="0" usemap="#ad0/d81/led__task_8c_a28b03bd16ef898607267014458e3724d_icgraph" loading="lazy" alt=""/></div>
 <map name="ad0/d81/led__task_8c_a28b03bd16ef898607267014458e3724d_icgraph" id="ad0/d81/led__task_8c_a28b03bd16ef898607267014458e3724d_icgraph">
 <area shape="rect" title="Stop LED display task." alt="" coords="315,5,417,31"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,5,267,31"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,5,267,31"/>
 <area shape="poly" title=" " alt="" coords="297,18,267,21,267,16,302,18"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
 <area shape="poly" title=" " alt="" coords="112,19,83,21,83,16,118,18"/>
@@ -991,7 +1057,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d81/led__task_8c_source.html#l00011">11</a> of file <a class="el" href="../../d0/d81/led__task_8c_source.html">led_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d81/led__task_8c_source.html#l00013">13</a> of file <a class="el" href="../../d0/d81/led__task_8c_source.html">led_task.c</a>.</p>
 
 </div>
 </div>
@@ -1015,7 +1081,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d81/led__task_8c_source.html#l00007">7</a> of file <a class="el" href="../../d0/d81/led__task_8c_source.html">led_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d81/led__task_8c_source.html#l00009">9</a> of file <a class="el" href="../../d0/d81/led__task_8c_source.html">led_task.c</a>.</p>
 
 </div>
 </div>
@@ -1039,7 +1105,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d81/led__task_8c_source.html#l00010">10</a> of file <a class="el" href="../../d0/d81/led__task_8c_source.html">led_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d81/led__task_8c_source.html#l00012">12</a> of file <a class="el" href="../../d0/d81/led__task_8c_source.html">led_task.c</a>.</p>
 
 </div>
 </div>

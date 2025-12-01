@@ -23,10 +23,15 @@ var searchData=
   ['last_5fwrite_5flength_20',['last_write_length',['../d9/df1/structperipheral__state__t.html#a07291bdc405bd4c5326be8a97cca27db',1,'peripheral_state_t']]],
   ['latest_5fsensors_21',['latest_sensors',['../d0/d3c/structshared__context__t.html#aafc61f77231805b94c59d9b497698330',1,'shared_context_t']]],
   ['led_5fcontroller_22',['led_controller',['../d9/dc8/structled__task__context__t.html#aa34940eaf09c6748c8aafdc20bcf9022',1,'led_task_context_t']]],
-  ['led_5fupdate_5ffailures_23',['led_update_failures',['../d6/d1e/structsystem__health__t.html#a2427bf93b531a872eb45f78527529f8a',1,'system_health_t']]],
-  ['leds_5finitialized_24',['leds_initialized',['../d9/dc8/structled__task__context__t.html#a98e609e958c18e465ffa76578f2c9284',1,'led_task_context_t']]],
-  ['leds_5ftask_5fhandle_25',['leds_task_handle',['../d0/d3c/structshared__context__t.html#aec78bdb643e89ee0bdfc637908b7737a',1,'shared_context_t']]],
-  ['len_26',['len',['../d2/d88/structstar__i2c__event__data.html#a45f24d7656b95723ccccc4cecd9ab531',1,'star_i2c_event_data']]],
-  ['length_27',['length',['../d9/db0/structstar__batch__operation__t.html#a91a60fdfb8ebc81bc74df181efa27d9a',1,'star_batch_operation_t::length'],['../d6/df9/structstar__bus__transaction__log__t.html#a220abe55924813d3fcb1eeac8e6b1309',1,'star_bus_transaction_log_t::length'],['../d1/d8d/structasync__operation.html#a04bf2cdc533d8674c8b6cfc4800ff396',1,'async_operation::length']]],
-  ['linear_5faccel_28',['linear_accel',['../df/d38/structimu__10dof__data__t.html#a4518a86826a1b8cc36202901139083e2',1,'imu_10dof_data_t']]]
+  ['led_5fctrl_23',['led_ctrl',['../d5/da8/structstar__log__tags__t.html#a2098528609c47a0e116e74611ecab860',1,'star_log_tags_t']]],
+  ['led_5fupdate_5ffailures_24',['led_update_failures',['../d6/d1e/structsystem__health__t.html#a2427bf93b531a872eb45f78527529f8a',1,'system_health_t']]],
+  ['leds_25',['leds',['../de/df9/structstar__tasks__config__t.html#a7ba947602bd24da7379fd7280cd86453',1,'star_tasks_config_t::leds'],['../d5/da8/structstar__log__tags__t.html#a53a20816dfb52e79c79adc5d4947f47a',1,'star_log_tags_t::leds']]],
+  ['leds_5finitialized_26',['leds_initialized',['../d9/dc8/structled__task__context__t.html#a98e609e958c18e465ffa76578f2c9284',1,'led_task_context_t']]],
+  ['leds_5ftask_5fhandle_27',['leds_task_handle',['../d0/d3c/structshared__context__t.html#aec78bdb643e89ee0bdfc637908b7737a',1,'shared_context_t']]],
+  ['left_5fecho_28',['left_echo',['../d8/dfc/structstar__gpio__config__t.html#a4c473f3e0cdddf939540325f4623304e',1,'star_gpio_config_t']]],
+  ['left_5ftrig_29',['left_trig',['../d8/dfc/structstar__gpio__config__t.html#abd1583d0327358cfb1aea7b8ef612fff',1,'star_gpio_config_t']]],
+  ['len_30',['len',['../d2/d88/structstar__i2c__event__data.html#a45f24d7656b95723ccccc4cecd9ab531',1,'star_i2c_event_data']]],
+  ['length_31',['length',['../d9/db0/structstar__batch__operation__t.html#a91a60fdfb8ebc81bc74df181efa27d9a',1,'star_batch_operation_t::length'],['../d6/df9/structstar__bus__transaction__log__t.html#a220abe55924813d3fcb1eeac8e6b1309',1,'star_bus_transaction_log_t::length'],['../d1/d8d/structasync__operation.html#a04bf2cdc533d8674c8b6cfc4800ff396',1,'async_operation::length']]],
+  ['linear_5faccel_32',['linear_accel',['../df/d38/structimu__10dof__data__t.html#a4518a86826a1b8cc36202901139083e2',1,'imu_10dof_data_t']]],
+  ['log_5ftags_33',['log_tags',['../db/d30/structstar__system__config.html#ae3eec9ec01bb70d9d8934e6ec4c3c1a1',1,'star_system_config']]]
 ];

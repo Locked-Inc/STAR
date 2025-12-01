@@ -94,16 +94,22 @@ $(function(){initNavTree('d4/d7e/system__config_8h.html','../../',''); });
 <div class="contents">
 <div class="textblock"><code>#include &lt;driver/gpio.h&gt;</code><br />
 <code>#include &lt;driver/i2c.h&gt;</code><br />
+<code>#include &lt;stdbool.h&gt;</code><br />
+<code>#include &lt;stdint.h&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for system_config.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d0/d9b/system__config_8h__incl.png" border="0" usemap="#asrc_2include_2system__config_8h" loading="lazy" alt=""/></div>
 <map name="asrc_2include_2system__config_8h" id="asrc_2include_2system__config_8h">
-<area shape="rect" title=" " alt="" coords="42,5,173,46"/>
+<area shape="rect" title=" " alt="" coords="151,5,282,46"/>
 <area shape="rect" title=" " alt="" coords="5,94,98,120"/>
-<area shape="poly" title=" " alt="" coords="96,45,71,83,67,79,91,48"/>
+<area shape="poly" title=" " alt="" coords="178,48,92,89,89,85,173,45"/>
 <area shape="rect" title=" " alt="" coords="122,94,208,120"/>
-<area shape="poly" title=" " alt="" coords="123,44,150,81,144,81,120,49"/>
+<area shape="poly" title=" " alt="" coords="206,45,183,83,180,79,202,48"/>
+<area shape="rect" title=" " alt="" coords="232,94,306,120"/>
+<area shape="poly" title=" " alt="" coords="231,44,255,81,250,80,228,49"/>
+<area shape="rect" title=" " alt="" coords="330,94,394,120"/>
+<area shape="poly" title=" " alt="" coords="254,44,330,86,324,87,252,49"/>
 </map>
 </div>
 </div><div class="textblock"><div class="dynheader">
@@ -111,1277 +117,161 @@ This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d3/da7/system__config_8h__dep__incl.png" border="0" usemap="#asrc_2include_2system__config_8hdep" loading="lazy" alt=""/></div>
 <map name="asrc_2include_2system__config_8hdep" id="asrc_2include_2system__config_8hdep">
-<area shape="rect" title=" " alt="" coords="424,5,555,46"/>
-<area shape="rect" href="../../d0/d29/main_8c.html" title=" " alt="" coords="211,279,293,304"/>
-<area shape="poly" title=" " alt="" coords="406,28,316,39,265,48,213,63,162,83,115,109,73,143,40,184,25,217,25,229,28,238,46,251,73,259,142,263,174,264,199,269,222,278,216,278,198,274,174,270,142,268,72,264,43,256,24,241,20,230,20,216,35,181,70,139,112,105,160,78,211,58,264,43,316,33,410,26"/>
-<area shape="rect" href="../../d3/d15/led__controller_8h.html" title=" " alt="" coords="238,94,375,135"/>
-<area shape="poly" title=" " alt="" coords="432,54,349,96,347,91,437,52"/>
-<area shape="rect" href="../../d0/d81/led__task_8c.html" title=" " alt="" coords="48,279,187,304"/>
-<area shape="poly" title=" " alt="" coords="406,34,321,44,225,57,139,74,105,85,80,96,44,123,18,152,11,167,8,184,10,202,18,222,31,240,48,255,86,277,82,280,45,259,27,243,14,225,5,204,3,184,6,166,13,149,40,119,77,92,103,80,138,69,224,51,320,39,411,32"/>
-<area shape="rect" href="../../dc/d96/watchdog__task_8c.html" title=" " alt="" coords="318,271,453,312"/>
-<area shape="poly" title=" " alt="" coords="479,60,395,273,391,269,474,61"/>
-<area shape="rect" href="../../d5/d74/shared__data_8h.html" title=" " alt="" coords="474,183,611,223"/>
-<area shape="poly" title=" " alt="" coords="501,59,539,183,534,181,498,63"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html" title=" " alt="" coords="638,279,792,304"/>
-<area shape="poly" title=" " alt="" coords="570,39,634,57,701,85,733,104,764,126,790,152,813,181,820,203,813,225,800,243,783,259,746,281,745,276,780,254,796,240,808,222,815,203,808,184,787,155,760,130,730,108,699,90,632,62,570,44"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html" title=" " alt="" coords="815,279,977,304"/>
-<area shape="poly" title=" " alt="" coords="570,31,617,39,666,51,715,68,761,92,788,112,812,136,851,189,878,240,894,280,889,277,874,243,846,192,808,139,785,116,759,96,713,73,664,56,616,44,571,36"/>
-<area shape="rect" href="../../de/dfe/sensor__task_8h.html" title=" " alt="" coords="636,183,799,223"/>
-<area shape="poly" title=" " alt="" coords="527,53,695,182,689,182,525,58"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html" title=" " alt="" coords="215,190,398,216"/>
-<area shape="poly" title=" " alt="" coords="308,148,309,191,304,189,305,152"/>
-<area shape="rect" href="../../d3/dd0/led__task_8h.html" title=" " alt="" coords="49,183,191,223"/>
-<area shape="poly" title=" " alt="" coords="248,143,163,185,161,180,253,140"/>
-<area shape="poly" title=" " alt="" coords="164,230,236,278,231,279,162,235"/>
-<area shape="poly" title=" " alt="" coords="121,237,120,280,115,278,117,241"/>
-<area shape="poly" title=" " alt="" coords="195,226,327,270,322,272,194,231"/>
-<area shape="poly" title=" " alt="" coords="462,226,306,274,285,281,284,276,305,269,457,227"/>
-<area shape="poly" title=" " alt="" coords="460,222,199,274,169,281,167,276,198,269,459,217"/>
-<area shape="poly" title=" " alt="" coords="496,230,422,273,420,268,491,232"/>
-<area shape="rect" href="../../db/d0d/shared__data_8c.html" title=" " alt="" coords="478,271,613,312"/>
-<area shape="poly" title=" " alt="" coords="546,237,547,273,543,269,542,241"/>
-<area shape="poly" title=" " alt="" coords="596,228,693,279,688,278,595,233"/>
-<area shape="poly" title=" " alt="" coords="627,222,849,278,843,278,626,227"/>
-<area shape="poly" title=" " alt="" coords="618,224,531,239,461,246,392,256,306,274,283,281,282,276,305,269,391,250,460,241,531,234,623,223"/>
-<area shape="poly" title=" " alt="" coords="630,227,454,275,453,270,624,228"/>
-<area shape="poly" title=" " alt="" coords="718,237,717,280,713,277,714,241"/>
-<area shape="poly" title=" " alt="" coords="772,228,874,279,868,278,771,233"/>
+<area shape="rect" title=" " alt="" coords="502,5,634,46"/>
+<area shape="rect" href="../../d0/d29/main_8c.html" title=" " alt="" coords="239,279,321,304"/>
+<area shape="poly" title=" " alt="" coords="540,55,503,96,448,163,423,192,387,225,344,257,304,281,302,276,341,252,384,221,419,188,444,159,499,92,536,58"/>
+<area shape="rect" href="../../d3/d15/led__controller_8h.html" title=" " alt="" coords="213,94,350,135"/>
+<area shape="poly" title=" " alt="" coords="486,52,348,96,346,91,491,50"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html" title=" " alt="" coords="25,279,164,304"/>
+<area shape="poly" title=" " alt="" coords="485,38,361,59,216,89,148,109,89,131,43,156,26,170,14,184,8,203,15,222,26,239,40,254,73,277,68,279,36,258,21,243,10,224,3,203,10,181,22,166,40,152,87,126,147,103,215,84,360,53,490,35"/>
+<area shape="rect" href="../../dc/d96/watchdog__task_8c.html" title=" " alt="" coords="346,271,481,312"/>
+<area shape="poly" title=" " alt="" coords="552,59,427,273,423,269,546,60"/>
+<area shape="rect" href="../../d5/d74/shared__data_8h.html" title=" " alt="" coords="499,183,637,223"/>
+<area shape="poly" title=" " alt="" coords="570,60,570,183,566,181,566,63"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html" title=" " alt="" coords="666,279,820,304"/>
+<area shape="poly" title=" " alt="" coords="649,47,700,68,753,96,801,134,821,156,839,181,845,203,839,225,826,243,809,259,773,281,771,276,806,254,822,240,834,222,840,203,834,184,817,160,797,138,750,101,698,72,648,52"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html" title=" " alt="" coords="843,279,1005,304"/>
+<area shape="poly" title=" " alt="" coords="649,36,722,56,758,72,792,92,818,113,841,137,879,190,906,241,922,280,917,277,901,243,874,193,837,141,814,117,789,96,756,77,720,61,649,41"/>
+<area shape="rect" href="../../d3/dff/system__config_8c.html" title="Global system configuration instance." alt="" coords="949,102,1088,127"/>
+<area shape="poly" title=" " alt="" coords="650,39,931,91,967,101,961,101,930,97,649,44"/>
+<area shape="rect" href="../../de/dfe/sensor__task_8h.html" title=" " alt="" coords="661,183,824,223"/>
+<area shape="poly" title=" " alt="" coords="599,55,726,182,721,182,597,60"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html" title=" " alt="" coords="190,190,373,216"/>
+<area shape="poly" title=" " alt="" coords="283,148,284,191,279,189,280,152"/>
+<area shape="rect" href="../../d3/dd0/led__task_8h.html" title=" " alt="" coords="24,183,165,223"/>
+<area shape="poly" title=" " alt="" coords="223,143,138,185,136,180,227,140"/>
+<area shape="poly" title=" " alt="" coords="151,228,257,277,252,279,150,233"/>
+<area shape="poly" title=" " alt="" coords="97,237,97,279,92,278,93,241"/>
+<area shape="poly" title=" " alt="" coords="180,225,347,270,343,273,180,230"/>
+<area shape="poly" title=" " alt="" coords="487,227,334,274,313,281,312,276,333,269,482,227"/>
+<area shape="poly" title=" " alt="" coords="485,222,162,281,161,276,484,217"/>
+<area shape="poly" title=" " alt="" coords="523,230,449,273,447,268,517,232"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html" title=" " alt="" coords="506,271,641,312"/>
+<area shape="poly" title=" " alt="" coords="572,237,574,273,570,269,568,241"/>
+<area shape="poly" title=" " alt="" coords="622,228,721,279,716,278,620,233"/>
+<area shape="poly" title=" " alt="" coords="652,222,877,278,872,278,652,227"/>
+<area shape="poly" title=" " alt="" coords="649,223,558,239,488,247,419,256,334,274,311,281,310,276,333,269,418,250,487,241,557,234,644,224"/>
+<area shape="poly" title=" " alt="" coords="655,228,482,275,481,270,650,228"/>
+<area shape="poly" title=" " alt="" coords="745,237,745,280,741,277,741,241"/>
+<area shape="poly" title=" " alt="" coords="798,228,901,279,896,278,797,233"/>
 </map>
 </div>
 </div>
 <p><a href="../../d4/d7e/system__config_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-nested-classes" class="groupheader"><a id="nested-classes" name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:star_5Fgpio_5Fconfig_5Ft" id="r_star_5Fgpio_5Fconfig_5Ft"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/dfc/structstar__gpio__config__t.html">star_gpio_config_t</a></td></tr>
+<tr class="memitem:star_5Fpca9685_5Fconfig_5Ft" id="r_star_5Fpca9685_5Fconfig_5Ft"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d9/d92/structstar__pca9685__config__t.html">star_pca9685_config_t</a></td></tr>
+<tr class="memitem:star_5Fdistance_5Fconfig_5Ft" id="r_star_5Fdistance_5Fconfig_5Ft"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d4/d63/structstar__distance__config__t.html">star_distance_config_t</a></td></tr>
+<tr class="memitem:star_5Fpwm_5Fconfig_5Ft" id="r_star_5Fpwm_5Fconfig_5Ft"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d8/d18/structstar__pwm__config__t.html">star_pwm_config_t</a></td></tr>
+<tr class="memitem:star_5Ftask_5Fconfig_5Ft" id="r_star_5Ftask_5Fconfig_5Ft"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d9e/structstar__task__config__t.html">star_task_config_t</a></td></tr>
+<tr class="memitem:star_5Ftasks_5Fconfig_5Ft" id="r_star_5Ftasks_5Fconfig_5Ft"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../de/df9/structstar__tasks__config__t.html">star_tasks_config_t</a></td></tr>
+<tr class="memitem:star_5Fhealth_5Fconfig_5Ft" id="r_star_5Fhealth_5Fconfig_5Ft"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/d6c/structstar__health__config__t.html">star_health_config_t</a></td></tr>
+<tr class="memitem:star_5Ffreertos_5Fconfig_5Ft" id="r_star_5Ffreertos_5Fconfig_5Ft"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d1/d92/structstar__freertos__config__t.html">star_freertos_config_t</a></td></tr>
+<tr class="memitem:star_5Fbus_5Fnames_5Ft" id="r_star_5Fbus_5Fnames_5Ft"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d8d/structstar__bus__names__t.html">star_bus_names_t</a></td></tr>
+<tr class="memitem:star_5Flog_5Ftags_5Ft" id="r_star_5Flog_5Ftags_5Ft"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d5/da8/structstar__log__tags__t.html">star_log_tags_t</a></td></tr>
+<tr class="memitem:star_5Fsystem_5Fconfig" id="r_star_5Fsystem_5Fconfig"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../db/d30/structstar__system__config.html">star_system_config</a></td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-define-members" class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:abe51ed145c2858598025162d43318512" id="r_abe51ed145c2858598025162d43318512"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abe51ed145c2858598025162d43318512">NUM_HCSR04</a>&#160;&#160;&#160;(2)</td></tr>
-<tr class="memitem:a09ab563d294e90542df5e3a2ea297e72" id="r_a09ab563d294e90542df5e3a2ea297e72"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a09ab563d294e90542df5e3a2ea297e72">GPIO_LEFT_TRIG</a>&#160;&#160;&#160;(GPIO_NUM_18)</td></tr>
-<tr class="memitem:aac3382cd08846ce9be5268d7e5a8369e" id="r_aac3382cd08846ce9be5268d7e5a8369e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aac3382cd08846ce9be5268d7e5a8369e">GPIO_LEFT_ECHO</a>&#160;&#160;&#160;(GPIO_NUM_19)</td></tr>
-<tr class="memitem:af38610ff8b3f5dbc91966f2375d085dd" id="r_af38610ff8b3f5dbc91966f2375d085dd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af38610ff8b3f5dbc91966f2375d085dd">GPIO_RIGHT_TRIG</a>&#160;&#160;&#160;(GPIO_NUM_4)</td></tr>
-<tr class="memitem:a8a785cca9036d008a7db53108f3f5717" id="r_a8a785cca9036d008a7db53108f3f5717"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8a785cca9036d008a7db53108f3f5717">GPIO_RIGHT_ECHO</a>&#160;&#160;&#160;(GPIO_NUM_2)</td></tr>
-<tr class="memitem:a99561ac01098f90d8999f23905c71bc0" id="r_a99561ac01098f90d8999f23905c71bc0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a99561ac01098f90d8999f23905c71bc0">GPIO_DHT22_PIN</a>&#160;&#160;&#160;(GPIO_NUM_5)</td></tr>
-<tr class="memitem:a0b025e8d23da1b00cf7241c87d875f00" id="r_a0b025e8d23da1b00cf7241c87d875f00"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0b025e8d23da1b00cf7241c87d875f00">GPIO_PCA9685_I2C_SDA</a>&#160;&#160;&#160;(GPIO_NUM_21)</td></tr>
-<tr class="memitem:a06e8038e270d51d60db4bac2d50f6287" id="r_a06e8038e270d51d60db4bac2d50f6287"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a06e8038e270d51d60db4bac2d50f6287">GPIO_PCA9685_I2C_SCL</a>&#160;&#160;&#160;(GPIO_NUM_22)</td></tr>
-<tr class="memitem:acadbb167aea28069508612a56627a491" id="r_acadbb167aea28069508612a56627a491"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acadbb167aea28069508612a56627a491">GPIO_PCA9685_OE</a>&#160;&#160;&#160;(GPIO_NUM_15)</td></tr>
-<tr class="memitem:a96b3804dad54b251f8e6253590a897e0" id="r_a96b3804dad54b251f8e6253590a897e0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a96b3804dad54b251f8e6253590a897e0">PCA9685_I2C_FREQUENCY</a>&#160;&#160;&#160;(400000)</td></tr>
-<tr class="memitem:ab49a88b2ac5c0d557cbe3e64ea508a0a" id="r_ab49a88b2ac5c0d557cbe3e64ea508a0a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab49a88b2ac5c0d557cbe3e64ea508a0a">PCA9685_I2C_NUM</a>&#160;&#160;&#160;(I2C_NUM_0)</td></tr>
-<tr class="memitem:ab0448968b99180d9341a8712d9c1bffb" id="r_ab0448968b99180d9341a8712d9c1bffb"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab0448968b99180d9341a8712d9c1bffb">PCA9685_PWM_FREQUENCY_kHZ</a>&#160;&#160;&#160;(50)</td></tr>
-<tr class="memitem:a2932fc1a20cac1ba79318df1a56cfc2c" id="r_a2932fc1a20cac1ba79318df1a56cfc2c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2932fc1a20cac1ba79318df1a56cfc2c">LED_LEFT_RED</a>&#160;&#160;&#160;(0)</td></tr>
-<tr class="memitem:a7fecfc28aa5044bff3b66785e57f1195" id="r_a7fecfc28aa5044bff3b66785e57f1195"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7fecfc28aa5044bff3b66785e57f1195">LED_LEFT_GREEN</a>&#160;&#160;&#160;(1)</td></tr>
-<tr class="memitem:aac4614ba69ae143215692b8e562e6b16" id="r_aac4614ba69ae143215692b8e562e6b16"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aac4614ba69ae143215692b8e562e6b16">LED_LEFT_BLUE</a>&#160;&#160;&#160;(2)</td></tr>
-<tr class="memitem:abd9db700dedcd5609c99d5a910eb7850" id="r_abd9db700dedcd5609c99d5a910eb7850"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abd9db700dedcd5609c99d5a910eb7850">LED_RIGHT_RED</a>&#160;&#160;&#160;(3)</td></tr>
-<tr class="memitem:a26e96a282183950eb6d529a99e03bac9" id="r_a26e96a282183950eb6d529a99e03bac9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a26e96a282183950eb6d529a99e03bac9">LED_RIGHT_GREEN</a>&#160;&#160;&#160;(4)</td></tr>
-<tr class="memitem:a0d323b0daac6ea2add293787b8355915" id="r_a0d323b0daac6ea2add293787b8355915"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0d323b0daac6ea2add293787b8355915">LED_RIGHT_BLUE</a>&#160;&#160;&#160;(5)</td></tr>
-<tr class="memitem:ad981f5db3c206e7d3c468ac3c7625dc2" id="r_ad981f5db3c206e7d3c468ac3c7625dc2"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad981f5db3c206e7d3c468ac3c7625dc2">DISTANCE_VERY_CLOSE</a>&#160;&#160;&#160;(10.0f)   /* &lt; 10cm: Bright Red */</td></tr>
-<tr class="memitem:a6dc4f00a4f7a0a40aa0355466afca236" id="r_a6dc4f00a4f7a0a40aa0355466afca236"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6dc4f00a4f7a0a40aa0355466afca236">DISTANCE_CLOSE</a>&#160;&#160;&#160;(25.0f)        /* 10-25cm: Red to Yellow */</td></tr>
-<tr class="memitem:abfcc8f8c5d97fb1e9da1f5a9fa176523" id="r_abfcc8f8c5d97fb1e9da1f5a9fa176523"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abfcc8f8c5d97fb1e9da1f5a9fa176523">DISTANCE_MEDIUM</a>&#160;&#160;&#160;(50.0f)       /* 25-50cm: Yellow to Green */</td></tr>
-<tr class="memitem:a3876e6df230abf21362f00103a4bc9d3" id="r_a3876e6df230abf21362f00103a4bc9d3"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3876e6df230abf21362f00103a4bc9d3">DISTANCE_FAR</a>&#160;&#160;&#160;(100.0f)         /* 50-100cm: Green to Blue */</td></tr>
-<tr class="memitem:a4c0e2ccbfb187954f23f8f0aa40be819" id="r_a4c0e2ccbfb187954f23f8f0aa40be819"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4c0e2ccbfb187954f23f8f0aa40be819">DISTANCE_VERY_FAR</a>&#160;&#160;&#160;(200.0f)    /* 100-200cm: Blue */</td></tr>
-<tr class="memitem:a3a95e1515014a425c1552b61b39fad47" id="r_a3a95e1515014a425c1552b61b39fad47"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3a95e1515014a425c1552b61b39fad47">MIN_PWM_RED</a>&#160;&#160;&#160;(45.0f)     /* Red LED minimum PWM */</td></tr>
-<tr class="memitem:ac59aa795bb6c390a54d2534a8870fd65" id="r_ac59aa795bb6c390a54d2534a8870fd65"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac59aa795bb6c390a54d2534a8870fd65">MIN_PWM_GREEN</a>&#160;&#160;&#160;(45.0f)   /* Green LED minimum PWM */</td></tr>
-<tr class="memitem:a8e27981c5cb987933b67fc30b5bb3c8b" id="r_a8e27981c5cb987933b67fc30b5bb3c8b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8e27981c5cb987933b67fc30b5bb3c8b">MIN_PWM_BLUE</a>&#160;&#160;&#160;(45.0f)    /* Blue LED minimum PWM */</td></tr>
-<tr class="memitem:af7833713f9566c622edc4f2d16f19ade" id="r_af7833713f9566c622edc4f2d16f19ade"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af7833713f9566c622edc4f2d16f19ade">MAX_PWM_ALL</a>&#160;&#160;&#160;(100.0f)    /* Maximum PWM for all colors */</td></tr>
-<tr class="memitem:a2c3b615a74905d74f469e6624b3c3a63" id="r_a2c3b615a74905d74f469e6624b3c3a63"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2c3b615a74905d74f469e6624b3c3a63">LED_OFF_THRESHOLD</a>&#160;&#160;&#160;(0.1f)</td></tr>
-<tr class="memitem:ac1c4f4f830e9f5e212f0dbb7788fd17b" id="r_ac1c4f4f830e9f5e212f0dbb7788fd17b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac1c4f4f830e9f5e212f0dbb7788fd17b">TASK_PRIORITY_DHT22</a>&#160;&#160;&#160;(2)</td></tr>
-<tr class="memitem:a83c55a5b259919394de953e925e644ef" id="r_a83c55a5b259919394de953e925e644ef"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a83c55a5b259919394de953e925e644ef">TASK_PRIORITY_SENSORS</a>&#160;&#160;&#160;(3)</td></tr>
-<tr class="memitem:a236372627a12d5e456c260196d50f48f" id="r_a236372627a12d5e456c260196d50f48f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a236372627a12d5e456c260196d50f48f">TASK_PRIORITY_LEDS</a>&#160;&#160;&#160;(1)</td></tr>
-<tr class="memitem:a603727a1ac2eaff391982078bd354de5" id="r_a603727a1ac2eaff391982078bd354de5"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a603727a1ac2eaff391982078bd354de5">TASK_PRIORITY_WATCHDOG</a>&#160;&#160;&#160;(4)</td></tr>
-<tr class="memitem:a90b07fd0473d6fbea26622cc948f846c" id="r_a90b07fd0473d6fbea26622cc948f846c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a90b07fd0473d6fbea26622cc948f846c">TASK_STACK_SIZE_DHT22</a>&#160;&#160;&#160;(2048)</td></tr>
-<tr class="memitem:a6b8c2bc9bc194ff6b128a431cb6030e1" id="r_a6b8c2bc9bc194ff6b128a431cb6030e1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6b8c2bc9bc194ff6b128a431cb6030e1">TASK_STACK_SIZE_SENSORS</a>&#160;&#160;&#160;(3072)</td></tr>
-<tr class="memitem:a88356ae2a492fb0474df56b4146a880d" id="r_a88356ae2a492fb0474df56b4146a880d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a88356ae2a492fb0474df56b4146a880d">TASK_STACK_SIZE_LEDS</a>&#160;&#160;&#160;(2048)</td></tr>
-<tr class="memitem:a877df42665acaed2b37f4882346fdf55" id="r_a877df42665acaed2b37f4882346fdf55"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a877df42665acaed2b37f4882346fdf55">TASK_STACK_SIZE_WATCHDOG</a>&#160;&#160;&#160;(1024)</td></tr>
-<tr class="memitem:a6bd4806ddfbd7bdf4ecfd880bf14e0d9" id="r_a6bd4806ddfbd7bdf4ecfd880bf14e0d9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6bd4806ddfbd7bdf4ecfd880bf14e0d9">TASK_INTERVAL_DHT22</a>&#160;&#160;&#160;(30000)      /* Read temperature every 30 seconds */</td></tr>
-<tr class="memitem:a85a57da7e728953e4fb402dcfaef5816" id="r_a85a57da7e728953e4fb402dcfaef5816"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a85a57da7e728953e4fb402dcfaef5816">TASK_INTERVAL_SENSORS</a>&#160;&#160;&#160;(200)      /* Read distance sensors every 200ms */</td></tr>
-<tr class="memitem:a4da6bab892eec87db0e1c690baeaa9ab" id="r_a4da6bab892eec87db0e1c690baeaa9ab"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4da6bab892eec87db0e1c690baeaa9ab">TASK_INTERVAL_LEDS</a>&#160;&#160;&#160;(50)          /* Update LEDs every 50ms */</td></tr>
-<tr class="memitem:a54435f69f17d1dc6bb7012f32362099c" id="r_a54435f69f17d1dc6bb7012f32362099c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a54435f69f17d1dc6bb7012f32362099c">TASK_INTERVAL_WATCHDOG</a>&#160;&#160;&#160;(1000)    /* Check system health every 1 second */</td></tr>
-<tr class="memitem:a97c4d5d52aaf2586de9c3481daef1457" id="r_a97c4d5d52aaf2586de9c3481daef1457"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a97c4d5d52aaf2586de9c3481daef1457">MAX_SENSOR_FAILURES</a>&#160;&#160;&#160;(5)</td></tr>
-<tr class="memitem:a89751b31a2b27a71f72b7f0bed8e8c62" id="r_a89751b31a2b27a71f72b7f0bed8e8c62"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a89751b31a2b27a71f72b7f0bed8e8c62">DEFAULT_TEMPERATURE_C</a>&#160;&#160;&#160;(25.0f)</td></tr>
-<tr class="memitem:a6c5a807702cf5b628cc7c216f4294d0f" id="r_a6c5a807702cf5b628cc7c216f4294d0f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6c5a807702cf5b628cc7c216f4294d0f">SYSTEM_RESTART_DELAY_MS</a>&#160;&#160;&#160;(5000)</td></tr>
-<tr class="memitem:ab7faaeee79440a4f188eaafabdd030e0" id="r_ab7faaeee79440a4f188eaafabdd030e0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab7faaeee79440a4f188eaafabdd030e0">SENSOR_FAILURE_RATE_DEGRADED</a>&#160;&#160;&#160;(0.2f)   /* 20% failure rate = degraded */</td></tr>
-<tr class="memitem:a591dd78c6a38c5fa4a7d76f07066b175" id="r_a591dd78c6a38c5fa4a7d76f07066b175"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a591dd78c6a38c5fa4a7d76f07066b175">SENSOR_FAILURE_RATE_CRITICAL</a>&#160;&#160;&#160;(0.5f)   /* 50% failure rate = critical */</td></tr>
-<tr class="memitem:ade8545806609910091443ba1524d021f" id="r_ade8545806609910091443ba1524d021f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ade8545806609910091443ba1524d021f">TASK_UNRESPONSIVE_THRESHOLD_MS</a>&#160;&#160;&#160;(30000)  /* 30 seconds */</td></tr>
-<tr class="memitem:acaf7735898c4fff9edfe233deb46cf0a" id="r_acaf7735898c4fff9edfe233deb46cf0a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acaf7735898c4fff9edfe233deb46cf0a">HEALTH_CHECK_LOG_INTERVAL</a>&#160;&#160;&#160;(60)  /* Log health every 60 checks */</td></tr>
-<tr class="memitem:a141a05d6adc78a4e05bd0deff59578e7" id="r_a141a05d6adc78a4e05bd0deff59578e7"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a141a05d6adc78a4e05bd0deff59578e7">MAIN_LOOP_LOG_INTERVAL</a>&#160;&#160;&#160;(100)    /* Log main status every 100 iterations */</td></tr>
-<tr class="memitem:a8e06c4f17a4ddff32e42e1d55da80e6e" id="r_a8e06c4f17a4ddff32e42e1d55da80e6e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8e06c4f17a4ddff32e42e1d55da80e6e">SENSOR_DATA_QUEUE_SIZE</a>&#160;&#160;&#160;(4)</td></tr>
-<tr class="memitem:adc2eab8c3c33a477077121bd050473e6" id="r_adc2eab8c3c33a477077121bd050473e6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adc2eab8c3c33a477077121bd050473e6">TEMPERATURE_QUEUE_SIZE</a>&#160;&#160;&#160;(2)</td></tr>
-<tr class="memitem:aece97957b709ee30b030cecb02b143f8" id="r_aece97957b709ee30b030cecb02b143f8"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aece97957b709ee30b030cecb02b143f8">MUTEX_TIMEOUT_MS</a>&#160;&#160;&#160;(1000)</td></tr>
-<tr class="memitem:a53fe152df14dfe77dc4918f758df26c9" id="r_a53fe152df14dfe77dc4918f758df26c9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a53fe152df14dfe77dc4918f758df26c9">NOTIFICATION_TIMEOUT_MS</a>&#160;&#160;&#160;(5000)</td></tr>
-<tr class="memitem:a2205186113120cfabba16a22ae44118c" id="r_a2205186113120cfabba16a22ae44118c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2205186113120cfabba16a22ae44118c">BUS_NAME_DHT22</a>&#160;&#160;&#160;&quot;dht22_bus&quot;</td></tr>
-<tr class="memitem:a8bd4e0609f09cb6221b8418405560919" id="r_a8bd4e0609f09cb6221b8418405560919"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8bd4e0609f09cb6221b8418405560919">BUS_NAME_HCSR04</a>&#160;&#160;&#160;&quot;hcsr04_bus&quot;</td></tr>
-<tr class="memitem:a46e5877e1b84482abcf0d8ee4bc18498" id="r_a46e5877e1b84482abcf0d8ee4bc18498"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a46e5877e1b84482abcf0d8ee4bc18498">BUS_NAME_PCA9685</a>&#160;&#160;&#160;&quot;pca9685_bus&quot;</td></tr>
-<tr class="memitem:a24f416177d0421fce89cd9cba660b3b5" id="r_a24f416177d0421fce89cd9cba660b3b5"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a24f416177d0421fce89cd9cba660b3b5">TAG_MAIN</a>&#160;&#160;&#160;&quot;MAIN&quot;</td></tr>
-<tr class="memitem:a25e3da6650ced2b93189fa8fcb4417c9" id="r_a25e3da6650ced2b93189fa8fcb4417c9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a25e3da6650ced2b93189fa8fcb4417c9">TAG_DHT22</a>&#160;&#160;&#160;&quot;DHT22_TASK&quot;</td></tr>
-<tr class="memitem:acac2edfaee2b2be1a63d472317de92fc" id="r_acac2edfaee2b2be1a63d472317de92fc"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acac2edfaee2b2be1a63d472317de92fc">TAG_SENSORS</a>&#160;&#160;&#160;&quot;SENSORS_TASK&quot;</td></tr>
-<tr class="memitem:a5c3e982bbed42b091b23bb02da0aab9d" id="r_a5c3e982bbed42b091b23bb02da0aab9d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5c3e982bbed42b091b23bb02da0aab9d">TAG_LEDS</a>&#160;&#160;&#160;&quot;LEDS_TASK&quot;</td></tr>
-<tr class="memitem:abd468f391dcdcc84e65a23f6b558121d" id="r_abd468f391dcdcc84e65a23f6b558121d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abd468f391dcdcc84e65a23f6b558121d">TAG_WATCHDOG</a>&#160;&#160;&#160;&quot;WATCHDOG_TASK&quot;</td></tr>
-<tr class="memitem:a750560a199527392204473a5452c98c9" id="r_a750560a199527392204473a5452c98c9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a750560a199527392204473a5452c98c9">TAG_LED_CTRL</a>&#160;&#160;&#160;&quot;LED_CTRL&quot;</td></tr>
-<tr class="memitem:a37132988d8b89d415a310990a5294e0d" id="r_a37132988d8b89d415a310990a5294e0d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a37132988d8b89d415a310990a5294e0d">VALIDATE_SENSOR_INDEX</a>(idx)</td></tr>
-<tr class="memitem:a6b217b36c61fd1528c93c876a5f084a5" id="r_a6b217b36c61fd1528c93c876a5f084a5"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6b217b36c61fd1528c93c876a5f084a5">VALIDATE_DISTANCE</a>(dist)</td></tr>
-<tr class="memitem:a1acf26d0dbd99e6153f49d0065ce187e" id="r_a1acf26d0dbd99e6153f49d0065ce187e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1acf26d0dbd99e6153f49d0065ce187e">VALIDATE_TEMPERATURE</a>(temp)</td></tr>
-<tr class="memitem:ad49eca23faf1e461b440425a68481db1" id="r_ad49eca23faf1e461b440425a68481db1"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad49eca23faf1e461b440425a68481db1">VALIDATE_PWM_PERCENT</a>(pwm)</td></tr>
+<tr class="memitem:a1946661eb143f560b4f734e633216522" id="r_a1946661eb143f560b4f734e633216522"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1946661eb143f560b4f734e633216522">STAR_SYSTEM_HCSR04_SENSOR_COUNT</a>&#160;&#160;&#160;(2)</td></tr>
+<tr class="memdesc:a1946661eb143f560b4f734e633216522"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of HC-SR04 ultrasonic sensors in the system.  <br /></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-typedef-members" class="groupheader"><a id="typedef-members" name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:a39a4af1c5fa08a6bce83117ab1d8c779" id="r_a39a4af1c5fa08a6bce83117ab1d8c779"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="../../db/d30/structstar__system__config.html">star_system_config</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a39a4af1c5fa08a6bce83117ab1d8c779">star_system_config_t</a></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-enum-members" class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:af60ef736234a6d9a91cdf60a0e0d4253" id="r_af60ef736234a6d9a91cdf60a0e0d4253"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af60ef736234a6d9a91cdf60a0e0d4253">hcsr04_sensor_index_t</a> { <a class="el" href="#af60ef736234a6d9a91cdf60a0e0d4253a4d5a76fd1a127f16f63b4210e9017469">HCSR04_LEFT</a> = 0
-, <a class="el" href="#af60ef736234a6d9a91cdf60a0e0d4253a0bca0193a83198736a913142c0377ccb">HCSR04_RIGHT</a> = 1
+<tr class="memitem:a08304fc7e8cdb4b4e5498e41bcab499c" id="r_a08304fc7e8cdb4b4e5498e41bcab499c"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a08304fc7e8cdb4b4e5498e41bcab499c">star_task_priority_t</a> { <a class="el" href="#a08304fc7e8cdb4b4e5498e41bcab499cac6500e65ce022c4ea3f2595a3a8a18c1">k_star_task_priority_leds</a> = 1
+, <a class="el" href="#a08304fc7e8cdb4b4e5498e41bcab499ca6bf83d9b967430662859fb8328fcfa9d">k_star_task_priority_dht22</a> = 2
+, <a class="el" href="#a08304fc7e8cdb4b4e5498e41bcab499ca3a45268b4ec9bd9379813ffcfaf241c3">k_star_task_priority_sensors</a> = 3
+, <a class="el" href="#a08304fc7e8cdb4b4e5498e41bcab499caa003294a35b5228dc533922f5337a659">k_star_task_priority_watchdog</a> = 4
  }</td></tr>
+<tr class="memitem:ac331bcadfa89e4c377ee4e7fcce9ec92" id="r_ac331bcadfa89e4c377ee4e7fcce9ec92"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac331bcadfa89e4c377ee4e7fcce9ec92">star_led_channel_t</a> { <br />
+&#160;&#160;<a class="el" href="#ac331bcadfa89e4c377ee4e7fcce9ec92a94f34e51e885e03eb83d7c0f4b402467">k_star_led_channel_left_red</a> = 0
+, <a class="el" href="#ac331bcadfa89e4c377ee4e7fcce9ec92a974c881ddfecff4d40775acf469fea50">k_star_led_channel_left_green</a> = 1
+, <a class="el" href="#ac331bcadfa89e4c377ee4e7fcce9ec92a9e1644cfbfc6494fd81c1eadd1e08cf6">k_star_led_channel_left_blue</a> = 2
+, <a class="el" href="#ac331bcadfa89e4c377ee4e7fcce9ec92adea6faf75152f2e01251b6a8404113d3">k_star_led_channel_right_red</a> = 3
+, <br />
+&#160;&#160;<a class="el" href="#ac331bcadfa89e4c377ee4e7fcce9ec92af3af87b339926c362cf7c74774b3b055">k_star_led_channel_right_green</a> = 4
+, <a class="el" href="#ac331bcadfa89e4c377ee4e7fcce9ec92a87baa7e9392f4373e4737f133e7af814">k_star_led_channel_right_blue</a> = 5
+, <a class="el" href="#ac331bcadfa89e4c377ee4e7fcce9ec92af0b4329b0d285a63a74d792994e7013c">k_star_led_channel_max</a> = 6
+<br />
+ }</td></tr>
+<tr class="memitem:a96c6e0528ea62fb58c3df3ce0a997a02" id="r_a96c6e0528ea62fb58c3df3ce0a997a02"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a96c6e0528ea62fb58c3df3ce0a997a02">star_health_status_t</a> { <a class="el" href="#a96c6e0528ea62fb58c3df3ce0a997a02af1f04125ead1285dcfed05a763b5468a">k_star_health_status_ok</a>
+, <a class="el" href="#a96c6e0528ea62fb58c3df3ce0a997a02af9d640787d951e39e3a84130917db330">k_star_health_status_degraded</a>
+, <a class="el" href="#a96c6e0528ea62fb58c3df3ce0a997a02a22b836398153b12319c014938cf93127">k_star_health_status_critical</a>
+ }</td></tr>
+<tr class="memitem:af60ef736234a6d9a91cdf60a0e0d4253" id="r_af60ef736234a6d9a91cdf60a0e0d4253"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af60ef736234a6d9a91cdf60a0e0d4253">hcsr04_sensor_index_t</a> { <a class="el" href="#af60ef736234a6d9a91cdf60a0e0d4253ad54cd5bc9f2b8b7686a0f1b10b916890">k_star_system_hcsr04_left</a> = 0
+, <a class="el" href="#af60ef736234a6d9a91cdf60a0e0d4253aa1d0b9967e9f6d2db28483fec8922bb5">k_star_system_hcsr04_right</a> = 1
+ }</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
+Functions</h2></td></tr>
+<tr class="memitem:aee59613b222c590cb8080f4f732f758f" id="r_aee59613b222c590cb8080f4f732f758f"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aee59613b222c590cb8080f4f732f758f">star_validate_sensor_index</a> (uint32_t idx)</td></tr>
+<tr class="memdesc:aee59613b222c590cb8080f4f732f758f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Validate sensor index.  <br /></td></tr>
+<tr class="memitem:a27d7155fa342a21a9e7dc287b32d3cde" id="r_a27d7155fa342a21a9e7dc287b32d3cde"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a27d7155fa342a21a9e7dc287b32d3cde">star_validate_distance</a> (float distance)</td></tr>
+<tr class="memdesc:a27d7155fa342a21a9e7dc287b32d3cde"><td class="mdescLeft">&#160;</td><td class="mdescRight">Validate distance measurement.  <br /></td></tr>
+<tr class="memitem:ae1333c5306d999ad9d292b11465114c2" id="r_ae1333c5306d999ad9d292b11465114c2"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae1333c5306d999ad9d292b11465114c2">star_validate_temperature</a> (float temperature)</td></tr>
+<tr class="memdesc:ae1333c5306d999ad9d292b11465114c2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Validate temperature reading.  <br /></td></tr>
+<tr class="memitem:a048d7fce3116a990c5536e18eed4a61b" id="r_a048d7fce3116a990c5536e18eed4a61b"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a048d7fce3116a990c5536e18eed4a61b">star_validate_pwm_percent</a> (float pwm)</td></tr>
+<tr class="memdesc:a048d7fce3116a990c5536e18eed4a61b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Validate PWM percentage.  <br /></td></tr>
+<tr class="memitem:af555f5228263d9c924736a9ba882cf48" id="r_af555f5228263d9c924736a9ba882cf48"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="../../db/d9e/structstar__task__config__t.html">star_task_config_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af555f5228263d9c924736a9ba882cf48">star_get_task_config_by_priority</a> (<a class="el" href="#a08304fc7e8cdb4b4e5498e41bcab499c">star_task_priority_t</a> priority)</td></tr>
+<tr class="memdesc:af555f5228263d9c924736a9ba882cf48"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get task configuration by priority.  <br /></td></tr>
+<tr class="memitem:ac3ed22e1af62d157a35793691355a7cc" id="r_ac3ed22e1af62d157a35793691355a7cc"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac3ed22e1af62d157a35793691355a7cc">star_is_valid_led_channel</a> (<a class="el" href="#ac331bcadfa89e4c377ee4e7fcce9ec92">star_led_channel_t</a> channel)</td></tr>
+<tr class="memdesc:ac3ed22e1af62d157a35793691355a7cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if LED channel is valid.  <br /></td></tr>
+<tr class="memitem:a155f7280814c9b55f4dfbf4d620a0a9a" id="r_a155f7280814c9b55f4dfbf4d620a0a9a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="#a96c6e0528ea62fb58c3df3ce0a997a02">star_health_status_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a155f7280814c9b55f4dfbf4d620a0a9a">star_get_health_status</a> (const float failure_rate)</td></tr>
+<tr class="memdesc:a155f7280814c9b55f4dfbf4d620a0a9a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get health status based on failure rate.  <br /></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-var-members" class="groupheader"><a id="var-members" name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:afd1eb56635a99dae47ddfaf1cb273e02" id="r_afd1eb56635a99dae47ddfaf1cb273e02"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="#a39a4af1c5fa08a6bce83117ab1d8c779">star_system_config_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afd1eb56635a99dae47ddfaf1cb273e02">STAR_SYSTEM_CONFIG</a></td></tr>
+<tr class="memdesc:afd1eb56635a99dae47ddfaf1cb273e02"><td class="mdescLeft">&#160;</td><td class="mdescRight">Master system configuration.  <br /></td></tr>
+<tr class="memitem:ae3347570a854cc5abc049cec8c9fa9d6" id="r_ae3347570a854cc5abc049cec8c9fa9d6"><td class="memItemLeft" align="right" valign="top">static const float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae3347570a854cc5abc049cec8c9fa9d6">s_star_distance_min_cm</a> = 0.0f</td></tr>
+<tr class="memitem:a6dce634f49a82a8daa467e60306d72b5" id="r_a6dce634f49a82a8daa467e60306d72b5"><td class="memItemLeft" align="right" valign="top">static const float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6dce634f49a82a8daa467e60306d72b5">s_star_distance_max_cm</a> = 400.0f</td></tr>
+<tr class="memitem:af5c4ba26efafce2dabbd754122d36d42" id="r_af5c4ba26efafce2dabbd754122d36d42"><td class="memItemLeft" align="right" valign="top">static const float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af5c4ba26efafce2dabbd754122d36d42">s_star_temperature_min_c</a> = -40.0f</td></tr>
+<tr class="memitem:a44c869491091b8c0e55d084a270c5e90" id="r_a44c869491091b8c0e55d084a270c5e90"><td class="memItemLeft" align="right" valign="top">static const float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a44c869491091b8c0e55d084a270c5e90">s_star_temperature_max_c</a> = 80.0f</td></tr>
+<tr class="memitem:a78ee0277ced0253bb869263be53fca02" id="r_a78ee0277ced0253bb869263be53fca02"><td class="memItemLeft" align="right" valign="top">static const float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a78ee0277ced0253bb869263be53fca02">s_star_pwm_min_percent</a> = 0.0f</td></tr>
+<tr class="memitem:a28d08c357b439e95bd8d05ddf93042d6" id="r_a28d08c357b439e95bd8d05ddf93042d6"><td class="memItemLeft" align="right" valign="top">static const float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a28d08c357b439e95bd8d05ddf93042d6">s_star_pwm_max_percent</a> = 100.0f</td></tr>
 </table>
 <a name="doc-define-members" id="doc-define-members"></a><h2 id="header-doc-define-members" class="groupheader">Macro Definition Documentation</h2>
-<a id="a2205186113120cfabba16a22ae44118c" name="a2205186113120cfabba16a22ae44118c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2205186113120cfabba16a22ae44118c">&#9670;&#160;</a></span>BUS_NAME_DHT22</h2>
+<a id="a1946661eb143f560b4f734e633216522" name="a1946661eb143f560b4f734e633216522"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1946661eb143f560b4f734e633216522">&#9670;&#160;</a></span>STAR_SYSTEM_HCSR04_SENSOR_COUNT</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define BUS_NAME_DHT22&#160;&#160;&#160;&quot;dht22_bus&quot;</td>
+          <td class="memname">#define STAR_SYSTEM_HCSR04_SENSOR_COUNT&#160;&#160;&#160;(2)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00132">132</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
+<p>Number of HC-SR04 ultrasonic sensors in the system. </p>
+<p>This macro provides compile-time access to the sensor count for array sizing. IMPORTANT: This value must match STAR_SYSTEM_CONFIG.num_hcsr04_sensors in <a class="el" href="../../d3/dff/system__config_8c.html" title="Global system configuration instance.">system_config.c</a> </p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00024">initialize_hardware_buses()</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00111">start_system_tasks()</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00173">173</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
 
-</div>
-</div>
-<a id="a8bd4e0609f09cb6221b8418405560919" name="a8bd4e0609f09cb6221b8418405560919"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8bd4e0609f09cb6221b8418405560919">&#9670;&#160;</a></span>BUS_NAME_HCSR04</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define BUS_NAME_HCSR04&#160;&#160;&#160;&quot;hcsr04_bus&quot;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00133">133</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00024">initialize_hardware_buses()</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00111">start_system_tasks()</a>.</p>
-
-</div>
-</div>
-<a id="a46e5877e1b84482abcf0d8ee4bc18498" name="a46e5877e1b84482abcf0d8ee4bc18498"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a46e5877e1b84482abcf0d8ee4bc18498">&#9670;&#160;</a></span>BUS_NAME_PCA9685</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define BUS_NAME_PCA9685&#160;&#160;&#160;&quot;pca9685_bus&quot;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00134">134</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00024">initialize_hardware_buses()</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00082">initialize_pca9685()</a>.</p>
-
-</div>
-</div>
-<a id="a89751b31a2b27a71f72b7f0bed8e8c62" name="a89751b31a2b27a71f72b7f0bed8e8c62"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a89751b31a2b27a71f72b7f0bed8e8c62">&#9670;&#160;</a></span>DEFAULT_TEMPERATURE_C</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define DEFAULT_TEMPERATURE_C&#160;&#160;&#160;(25.0f)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00102">102</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00126">dht22_task_start()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00021">init_shared_context()</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00017">internal_init_dht22()</a>, and <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00015">internal_init_sensors()</a>.</p>
-
-</div>
-</div>
-<a id="a6dc4f00a4f7a0a40aa0355466afca236" name="a6dc4f00a4f7a0a40aa0355466afca236"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6dc4f00a4f7a0a40aa0355466afca236">&#9670;&#160;</a></span>DISTANCE_CLOSE</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define DISTANCE_CLOSE&#160;&#160;&#160;(25.0f)        /* 10-25cm: Red to Yellow */</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00059">59</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00104">led_controller_distance_to_color()</a>.</p>
-
-</div>
-</div>
-<a id="a3876e6df230abf21362f00103a4bc9d3" name="a3876e6df230abf21362f00103a4bc9d3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3876e6df230abf21362f00103a4bc9d3">&#9670;&#160;</a></span>DISTANCE_FAR</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define DISTANCE_FAR&#160;&#160;&#160;(100.0f)         /* 50-100cm: Green to Blue */</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00061">61</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00104">led_controller_distance_to_color()</a>.</p>
-
-</div>
-</div>
-<a id="abfcc8f8c5d97fb1e9da1f5a9fa176523" name="abfcc8f8c5d97fb1e9da1f5a9fa176523"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abfcc8f8c5d97fb1e9da1f5a9fa176523">&#9670;&#160;</a></span>DISTANCE_MEDIUM</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define DISTANCE_MEDIUM&#160;&#160;&#160;(50.0f)       /* 25-50cm: Yellow to Green */</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00060">60</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00104">led_controller_distance_to_color()</a>.</p>
-
-</div>
-</div>
-<a id="ad981f5db3c206e7d3c468ac3c7625dc2" name="ad981f5db3c206e7d3c468ac3c7625dc2"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad981f5db3c206e7d3c468ac3c7625dc2">&#9670;&#160;</a></span>DISTANCE_VERY_CLOSE</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define DISTANCE_VERY_CLOSE&#160;&#160;&#160;(10.0f)   /* &lt; 10cm: Bright Red */</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00058">58</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00104">led_controller_distance_to_color()</a>.</p>
-
-</div>
-</div>
-<a id="a4c0e2ccbfb187954f23f8f0aa40be819" name="a4c0e2ccbfb187954f23f8f0aa40be819"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4c0e2ccbfb187954f23f8f0aa40be819">&#9670;&#160;</a></span>DISTANCE_VERY_FAR</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define DISTANCE_VERY_FAR&#160;&#160;&#160;(200.0f)    /* 100-200cm: Blue */</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00062">62</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d0/d81/led__task_8c_source.html#l00015">internal_update_led_from_sensor_data()</a>, <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00104">led_controller_distance_to_color()</a>, and <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00175">led_controller_update_distance()</a>.</p>
-
-</div>
-</div>
-<a id="a99561ac01098f90d8999f23905c71bc0" name="a99561ac01098f90d8999f23905c71bc0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a99561ac01098f90d8999f23905c71bc0">&#9670;&#160;</a></span>GPIO_DHT22_PIN</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define GPIO_DHT22_PIN&#160;&#160;&#160;(GPIO_NUM_5)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00033">33</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00024">initialize_hardware_buses()</a>, and <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00017">internal_init_dht22()</a>.</p>
-
-</div>
-</div>
-<a id="aac3382cd08846ce9be5268d7e5a8369e" name="aac3382cd08846ce9be5268d7e5a8369e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aac3382cd08846ce9be5268d7e5a8369e">&#9670;&#160;</a></span>GPIO_LEFT_ECHO</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define GPIO_LEFT_ECHO&#160;&#160;&#160;(GPIO_NUM_19)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00026">26</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00024">initialize_hardware_buses()</a>, and <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00015">internal_init_sensors()</a>.</p>
-
-</div>
-</div>
-<a id="a09ab563d294e90542df5e3a2ea297e72" name="a09ab563d294e90542df5e3a2ea297e72"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a09ab563d294e90542df5e3a2ea297e72">&#9670;&#160;</a></span>GPIO_LEFT_TRIG</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define GPIO_LEFT_TRIG&#160;&#160;&#160;(GPIO_NUM_18)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00025">25</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00024">initialize_hardware_buses()</a>, and <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00015">internal_init_sensors()</a>.</p>
-
-</div>
-</div>
-<a id="a06e8038e270d51d60db4bac2d50f6287" name="a06e8038e270d51d60db4bac2d50f6287"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a06e8038e270d51d60db4bac2d50f6287">&#9670;&#160;</a></span>GPIO_PCA9685_I2C_SCL</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define GPIO_PCA9685_I2C_SCL&#160;&#160;&#160;(GPIO_NUM_22)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00037">37</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00024">initialize_hardware_buses()</a>.</p>
-
-</div>
-</div>
-<a id="a0b025e8d23da1b00cf7241c87d875f00" name="a0b025e8d23da1b00cf7241c87d875f00"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0b025e8d23da1b00cf7241c87d875f00">&#9670;&#160;</a></span>GPIO_PCA9685_I2C_SDA</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define GPIO_PCA9685_I2C_SDA&#160;&#160;&#160;(GPIO_NUM_21)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00036">36</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00024">initialize_hardware_buses()</a>.</p>
-
-</div>
-</div>
-<a id="acadbb167aea28069508612a56627a491" name="acadbb167aea28069508612a56627a491"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acadbb167aea28069508612a56627a491">&#9670;&#160;</a></span>GPIO_PCA9685_OE</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define GPIO_PCA9685_OE&#160;&#160;&#160;(GPIO_NUM_15)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00038">38</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00082">initialize_pca9685()</a>.</p>
-
-</div>
-</div>
-<a id="a8a785cca9036d008a7db53108f3f5717" name="a8a785cca9036d008a7db53108f3f5717"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8a785cca9036d008a7db53108f3f5717">&#9670;&#160;</a></span>GPIO_RIGHT_ECHO</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define GPIO_RIGHT_ECHO&#160;&#160;&#160;(GPIO_NUM_2)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00030">30</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00024">initialize_hardware_buses()</a>, and <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00015">internal_init_sensors()</a>.</p>
-
-</div>
-</div>
-<a id="af38610ff8b3f5dbc91966f2375d085dd" name="af38610ff8b3f5dbc91966f2375d085dd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af38610ff8b3f5dbc91966f2375d085dd">&#9670;&#160;</a></span>GPIO_RIGHT_TRIG</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define GPIO_RIGHT_TRIG&#160;&#160;&#160;(GPIO_NUM_4)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00029">29</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00024">initialize_hardware_buses()</a>, and <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00015">internal_init_sensors()</a>.</p>
-
-</div>
-</div>
-<a id="acaf7735898c4fff9edfe233deb46cf0a" name="acaf7735898c4fff9edfe233deb46cf0a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acaf7735898c4fff9edfe233deb46cf0a">&#9670;&#160;</a></span>HEALTH_CHECK_LOG_INTERVAL</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define HEALTH_CHECK_LOG_INTERVAL&#160;&#160;&#160;(60)  /* Log health every 60 checks */</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00115">115</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00168">internal_watchdog_task_loop()</a>.</p>
-
-</div>
-</div>
-<a id="aac4614ba69ae143215692b8e562e6b16" name="aac4614ba69ae143215692b8e562e6b16"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aac4614ba69ae143215692b8e562e6b16">&#9670;&#160;</a></span>LED_LEFT_BLUE</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define LED_LEFT_BLUE&#160;&#160;&#160;(2)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00048">48</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-</div>
-</div>
-<a id="a7fecfc28aa5044bff3b66785e57f1195" name="a7fecfc28aa5044bff3b66785e57f1195"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7fecfc28aa5044bff3b66785e57f1195">&#9670;&#160;</a></span>LED_LEFT_GREEN</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define LED_LEFT_GREEN&#160;&#160;&#160;(1)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00047">47</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-</div>
-</div>
-<a id="a2932fc1a20cac1ba79318df1a56cfc2c" name="a2932fc1a20cac1ba79318df1a56cfc2c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2932fc1a20cac1ba79318df1a56cfc2c">&#9670;&#160;</a></span>LED_LEFT_RED</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define LED_LEFT_RED&#160;&#160;&#160;(0)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00046">46</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-</div>
-</div>
-<a id="a2c3b615a74905d74f469e6624b3c3a63" name="a2c3b615a74905d74f469e6624b3c3a63"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2c3b615a74905d74f469e6624b3c3a63">&#9670;&#160;</a></span>LED_OFF_THRESHOLD</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define LED_OFF_THRESHOLD&#160;&#160;&#160;(0.1f)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00074">74</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00011">internal_scale_pwm_for_color()</a>, and <a class="el" href="../../d0/d81/led__task_8c_source.html#l00015">internal_update_led_from_sensor_data()</a>.</p>
-
-</div>
-</div>
-<a id="a0d323b0daac6ea2add293787b8355915" name="a0d323b0daac6ea2add293787b8355915"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0d323b0daac6ea2add293787b8355915">&#9670;&#160;</a></span>LED_RIGHT_BLUE</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define LED_RIGHT_BLUE&#160;&#160;&#160;(5)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00053">53</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-</div>
-</div>
-<a id="a26e96a282183950eb6d529a99e03bac9" name="a26e96a282183950eb6d529a99e03bac9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a26e96a282183950eb6d529a99e03bac9">&#9670;&#160;</a></span>LED_RIGHT_GREEN</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define LED_RIGHT_GREEN&#160;&#160;&#160;(4)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00052">52</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-</div>
-</div>
-<a id="abd9db700dedcd5609c99d5a910eb7850" name="abd9db700dedcd5609c99d5a910eb7850"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abd9db700dedcd5609c99d5a910eb7850">&#9670;&#160;</a></span>LED_RIGHT_RED</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define LED_RIGHT_RED&#160;&#160;&#160;(3)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00051">51</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-</div>
-</div>
-<a id="a141a05d6adc78a4e05bd0deff59578e7" name="a141a05d6adc78a4e05bd0deff59578e7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a141a05d6adc78a4e05bd0deff59578e7">&#9670;&#160;</a></span>MAIN_LOOP_LOG_INTERVAL</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define MAIN_LOOP_LOG_INTERVAL&#160;&#160;&#160;(100)    /* Log main status every 100 iterations */</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00116">116</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-</div>
-</div>
-<a id="af7833713f9566c622edc4f2d16f19ade" name="af7833713f9566c622edc4f2d16f19ade"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af7833713f9566c622edc4f2d16f19ade">&#9670;&#160;</a></span>MAX_PWM_ALL</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define MAX_PWM_ALL&#160;&#160;&#160;(100.0f)    /* Maximum PWM for all colors */</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00071">71</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00011">internal_scale_pwm_for_color()</a>.</p>
-
-</div>
-</div>
-<a id="a97c4d5d52aaf2586de9c3481daef1457" name="a97c4d5d52aaf2586de9c3481daef1457"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a97c4d5d52aaf2586de9c3481daef1457">&#9670;&#160;</a></span>MAX_SENSOR_FAILURES</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define MAX_SENSOR_FAILURES&#160;&#160;&#160;(5)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00099">99</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00048">internal_read_dht22()</a>.</p>
-
-</div>
-</div>
-<a id="a8e27981c5cb987933b67fc30b5bb3c8b" name="a8e27981c5cb987933b67fc30b5bb3c8b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8e27981c5cb987933b67fc30b5bb3c8b">&#9670;&#160;</a></span>MIN_PWM_BLUE</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define MIN_PWM_BLUE&#160;&#160;&#160;(45.0f)    /* Blue LED minimum PWM */</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00070">70</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00019">internal_set_rgb_channels()</a>.</p>
-
-</div>
-</div>
-<a id="ac59aa795bb6c390a54d2534a8870fd65" name="ac59aa795bb6c390a54d2534a8870fd65"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac59aa795bb6c390a54d2534a8870fd65">&#9670;&#160;</a></span>MIN_PWM_GREEN</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define MIN_PWM_GREEN&#160;&#160;&#160;(45.0f)   /* Green LED minimum PWM */</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00069">69</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00019">internal_set_rgb_channels()</a>.</p>
-
-</div>
-</div>
-<a id="a3a95e1515014a425c1552b61b39fad47" name="a3a95e1515014a425c1552b61b39fad47"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3a95e1515014a425c1552b61b39fad47">&#9670;&#160;</a></span>MIN_PWM_RED</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define MIN_PWM_RED&#160;&#160;&#160;(45.0f)     /* Red LED minimum PWM */</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00068">68</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00019">internal_set_rgb_channels()</a>.</p>
-
-</div>
-</div>
-<a id="aece97957b709ee30b030cecb02b143f8" name="aece97957b709ee30b030cecb02b143f8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aece97957b709ee30b030cecb02b143f8">&#9670;&#160;</a></span>MUTEX_TIMEOUT_MS</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define MUTEX_TIMEOUT_MS&#160;&#160;&#160;(1000)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00125">125</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00020">internal_assess_sensor_health()</a>, <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00083">led_controller_deinit()</a>, <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00145">led_controller_set_rgb()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00214">shared_data_get_sensor_reading()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00148">shared_data_get_system_state()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00180">shared_data_get_temperature()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00281">shared_data_is_system_ready()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00296">shared_data_mark_system_ready()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00231">shared_data_set_sensor_reading()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00164">shared_data_set_system_state()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00197">shared_data_set_temperature()</a>, and <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00123">shared_data_update_health()</a>.</p>
-
-</div>
-</div>
-<a id="a53fe152df14dfe77dc4918f758df26c9" name="a53fe152df14dfe77dc4918f758df26c9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a53fe152df14dfe77dc4918f758df26c9">&#9670;&#160;</a></span>NOTIFICATION_TIMEOUT_MS</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define NOTIFICATION_TIMEOUT_MS&#160;&#160;&#160;(5000)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00128">128</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00180">dht22_task_stop()</a>, <a class="el" href="../../d0/d81/led__task_8c_source.html#l00173">led_task_stop()</a>, <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00186">sensor_task_stop()</a>, and <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00243">watchdog_task_stop()</a>.</p>
-
-</div>
-</div>
-<a id="abe51ed145c2858598025162d43318512" name="abe51ed145c2858598025162d43318512"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abe51ed145c2858598025162d43318512">&#9670;&#160;</a></span>NUM_HCSR04</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define NUM_HCSR04&#160;&#160;&#160;(2)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00016">16</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00152">app_main()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00021">init_shared_context()</a>, <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00020">internal_assess_sensor_health()</a>, <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00049">internal_deinit_sensors()</a>, <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00015">internal_init_sensors()</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00048">internal_read_dht22()</a>, <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00095">internal_sensor_task_loop()</a>, <a class="el" href="../../d0/d81/led__task_8c_source.html#l00071">internal_update_leds_from_latest_readings()</a>, <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00224">sensor_task_update_temperature()</a>, and <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00123">shared_data_update_health()</a>.</p>
-
-</div>
-</div>
-<a id="a96b3804dad54b251f8e6253590a897e0" name="a96b3804dad54b251f8e6253590a897e0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a96b3804dad54b251f8e6253590a897e0">&#9670;&#160;</a></span>PCA9685_I2C_FREQUENCY</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_I2C_FREQUENCY&#160;&#160;&#160;(400000)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00039">39</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00024">initialize_hardware_buses()</a>.</p>
-
-</div>
-</div>
-<a id="ab49a88b2ac5c0d557cbe3e64ea508a0a" name="ab49a88b2ac5c0d557cbe3e64ea508a0a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab49a88b2ac5c0d557cbe3e64ea508a0a">&#9670;&#160;</a></span>PCA9685_I2C_NUM</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_I2C_NUM&#160;&#160;&#160;(I2C_NUM_0)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00040">40</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00024">initialize_hardware_buses()</a>.</p>
-
-</div>
-</div>
-<a id="ab0448968b99180d9341a8712d9c1bffb" name="ab0448968b99180d9341a8712d9c1bffb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab0448968b99180d9341a8712d9c1bffb">&#9670;&#160;</a></span>PCA9685_PWM_FREQUENCY_kHZ</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define PCA9685_PWM_FREQUENCY_kHZ&#160;&#160;&#160;(50)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00041">41</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00082">initialize_pca9685()</a>.</p>
-
-</div>
-</div>
-<a id="a8e06c4f17a4ddff32e42e1d55da80e6e" name="a8e06c4f17a4ddff32e42e1d55da80e6e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8e06c4f17a4ddff32e42e1d55da80e6e">&#9670;&#160;</a></span>SENSOR_DATA_QUEUE_SIZE</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define SENSOR_DATA_QUEUE_SIZE&#160;&#160;&#160;(4)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00121">121</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00039">shared_data_init()</a>.</p>
-
-</div>
-</div>
-<a id="a591dd78c6a38c5fa4a7d76f07066b175" name="a591dd78c6a38c5fa4a7d76f07066b175"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a591dd78c6a38c5fa4a7d76f07066b175">&#9670;&#160;</a></span>SENSOR_FAILURE_RATE_CRITICAL</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define SENSOR_FAILURE_RATE_CRITICAL&#160;&#160;&#160;(0.5f)   /* 50% failure rate = critical */</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00109">109</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00020">internal_assess_sensor_health()</a>.</p>
-
-</div>
-</div>
-<a id="ab7faaeee79440a4f188eaafabdd030e0" name="ab7faaeee79440a4f188eaafabdd030e0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab7faaeee79440a4f188eaafabdd030e0">&#9670;&#160;</a></span>SENSOR_FAILURE_RATE_DEGRADED</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define SENSOR_FAILURE_RATE_DEGRADED&#160;&#160;&#160;(0.2f)   /* 20% failure rate = degraded */</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00108">108</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00020">internal_assess_sensor_health()</a>.</p>
-
-</div>
-</div>
-<a id="a6c5a807702cf5b628cc7c216f4294d0f" name="a6c5a807702cf5b628cc7c216f4294d0f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6c5a807702cf5b628cc7c216f4294d0f">&#9670;&#160;</a></span>SYSTEM_RESTART_DELAY_MS</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define SYSTEM_RESTART_DELAY_MS&#160;&#160;&#160;(5000)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00105">105</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00124">internal_take_recovery_action()</a>.</p>
-
-</div>
-</div>
-<a id="a25e3da6650ced2b93189fa8fcb4417c9" name="a25e3da6650ced2b93189fa8fcb4417c9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a25e3da6650ced2b93189fa8fcb4417c9">&#9670;&#160;</a></span>TAG_DHT22</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define TAG_DHT22&#160;&#160;&#160;&quot;DHT22_TASK&quot;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00139">139</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-</div>
-</div>
-<a id="a750560a199527392204473a5452c98c9" name="a750560a199527392204473a5452c98c9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a750560a199527392204473a5452c98c9">&#9670;&#160;</a></span>TAG_LED_CTRL</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define TAG_LED_CTRL&#160;&#160;&#160;&quot;LED_CTRL&quot;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00143">143</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-</div>
-</div>
-<a id="a5c3e982bbed42b091b23bb02da0aab9d" name="a5c3e982bbed42b091b23bb02da0aab9d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5c3e982bbed42b091b23bb02da0aab9d">&#9670;&#160;</a></span>TAG_LEDS</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define TAG_LEDS&#160;&#160;&#160;&quot;LEDS_TASK&quot;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00141">141</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-</div>
-</div>
-<a id="a24f416177d0421fce89cd9cba660b3b5" name="a24f416177d0421fce89cd9cba660b3b5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a24f416177d0421fce89cd9cba660b3b5">&#9670;&#160;</a></span>TAG_MAIN</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define TAG_MAIN&#160;&#160;&#160;&quot;MAIN&quot;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00138">138</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-</div>
-</div>
-<a id="acac2edfaee2b2be1a63d472317de92fc" name="acac2edfaee2b2be1a63d472317de92fc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acac2edfaee2b2be1a63d472317de92fc">&#9670;&#160;</a></span>TAG_SENSORS</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define TAG_SENSORS&#160;&#160;&#160;&quot;SENSORS_TASK&quot;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00140">140</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-</div>
-</div>
-<a id="abd468f391dcdcc84e65a23f6b558121d" name="abd468f391dcdcc84e65a23f6b558121d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abd468f391dcdcc84e65a23f6b558121d">&#9670;&#160;</a></span>TAG_WATCHDOG</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define TAG_WATCHDOG&#160;&#160;&#160;&quot;WATCHDOG_TASK&quot;</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00142">142</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-</div>
-</div>
-<a id="a6bd4806ddfbd7bdf4ecfd880bf14e0d9" name="a6bd4806ddfbd7bdf4ecfd880bf14e0d9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6bd4806ddfbd7bdf4ecfd880bf14e0d9">&#9670;&#160;</a></span>TASK_INTERVAL_DHT22</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define TASK_INTERVAL_DHT22&#160;&#160;&#160;(30000)      /* Read temperature every 30 seconds */</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00091">91</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00152">app_main()</a>, and <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00101">internal_dht22_task_loop()</a>.</p>
-
-</div>
-</div>
-<a id="a4da6bab892eec87db0e1c690baeaa9ab" name="a4da6bab892eec87db0e1c690baeaa9ab"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4da6bab892eec87db0e1c690baeaa9ab">&#9670;&#160;</a></span>TASK_INTERVAL_LEDS</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define TASK_INTERVAL_LEDS&#160;&#160;&#160;(50)          /* Update LEDs every 50ms */</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00093">93</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00152">app_main()</a>, and <a class="el" href="../../d0/d81/led__task_8c_source.html#l00090">internal_led_task_loop()</a>.</p>
-
-</div>
-</div>
-<a id="a85a57da7e728953e4fb402dcfaef5816" name="a85a57da7e728953e4fb402dcfaef5816"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a85a57da7e728953e4fb402dcfaef5816">&#9670;&#160;</a></span>TASK_INTERVAL_SENSORS</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define TASK_INTERVAL_SENSORS&#160;&#160;&#160;(200)      /* Read distance sensors every 200ms */</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00092">92</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00152">app_main()</a>, <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00095">internal_sensor_task_loop()</a>, and <a class="el" href="../../d0/d81/led__task_8c_source.html#l00071">internal_update_leds_from_latest_readings()</a>.</p>
-
-</div>
-</div>
-<a id="a54435f69f17d1dc6bb7012f32362099c" name="a54435f69f17d1dc6bb7012f32362099c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a54435f69f17d1dc6bb7012f32362099c">&#9670;&#160;</a></span>TASK_INTERVAL_WATCHDOG</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define TASK_INTERVAL_WATCHDOG&#160;&#160;&#160;(1000)    /* Check system health every 1 second */</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00094">94</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00152">app_main()</a>, and <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00168">internal_watchdog_task_loop()</a>.</p>
-
-</div>
-</div>
-<a id="ac1c4f4f830e9f5e212f0dbb7788fd17b" name="ac1c4f4f830e9f5e212f0dbb7788fd17b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac1c4f4f830e9f5e212f0dbb7788fd17b">&#9670;&#160;</a></span>TASK_PRIORITY_DHT22</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define TASK_PRIORITY_DHT22&#160;&#160;&#160;(2)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00079">79</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00126">dht22_task_start()</a>.</p>
-
-</div>
-</div>
-<a id="a236372627a12d5e456c260196d50f48f" name="a236372627a12d5e456c260196d50f48f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a236372627a12d5e456c260196d50f48f">&#9670;&#160;</a></span>TASK_PRIORITY_LEDS</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define TASK_PRIORITY_LEDS&#160;&#160;&#160;(1)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00081">81</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d0/d81/led__task_8c_source.html#l00119">led_task_start()</a>.</p>
-
-</div>
-</div>
-<a id="a83c55a5b259919394de953e925e644ef" name="a83c55a5b259919394de953e925e644ef"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a83c55a5b259919394de953e925e644ef">&#9670;&#160;</a></span>TASK_PRIORITY_SENSORS</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define TASK_PRIORITY_SENSORS&#160;&#160;&#160;(3)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00080">80</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00131">sensor_task_start()</a>.</p>
-
-</div>
-</div>
-<a id="a603727a1ac2eaff391982078bd354de5" name="a603727a1ac2eaff391982078bd354de5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a603727a1ac2eaff391982078bd354de5">&#9670;&#160;</a></span>TASK_PRIORITY_WATCHDOG</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define TASK_PRIORITY_WATCHDOG&#160;&#160;&#160;(4)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00082">82</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00205">watchdog_task_start()</a>.</p>
-
-</div>
-</div>
-<a id="a90b07fd0473d6fbea26622cc948f846c" name="a90b07fd0473d6fbea26622cc948f846c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a90b07fd0473d6fbea26622cc948f846c">&#9670;&#160;</a></span>TASK_STACK_SIZE_DHT22</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define TASK_STACK_SIZE_DHT22&#160;&#160;&#160;(2048)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00085">85</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00126">dht22_task_start()</a>.</p>
-
-</div>
-</div>
-<a id="a88356ae2a492fb0474df56b4146a880d" name="a88356ae2a492fb0474df56b4146a880d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a88356ae2a492fb0474df56b4146a880d">&#9670;&#160;</a></span>TASK_STACK_SIZE_LEDS</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define TASK_STACK_SIZE_LEDS&#160;&#160;&#160;(2048)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00087">87</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d0/d81/led__task_8c_source.html#l00119">led_task_start()</a>.</p>
-
-</div>
-</div>
-<a id="a6b8c2bc9bc194ff6b128a431cb6030e1" name="a6b8c2bc9bc194ff6b128a431cb6030e1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6b8c2bc9bc194ff6b128a431cb6030e1">&#9670;&#160;</a></span>TASK_STACK_SIZE_SENSORS</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define TASK_STACK_SIZE_SENSORS&#160;&#160;&#160;(3072)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00086">86</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00131">sensor_task_start()</a>.</p>
-
-</div>
-</div>
-<a id="a877df42665acaed2b37f4882346fdf55" name="a877df42665acaed2b37f4882346fdf55"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a877df42665acaed2b37f4882346fdf55">&#9670;&#160;</a></span>TASK_STACK_SIZE_WATCHDOG</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define TASK_STACK_SIZE_WATCHDOG&#160;&#160;&#160;(1024)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00088">88</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00205">watchdog_task_start()</a>.</p>
-
-</div>
-</div>
-<a id="ade8545806609910091443ba1524d021f" name="ade8545806609910091443ba1524d021f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ade8545806609910091443ba1524d021f">&#9670;&#160;</a></span>TASK_UNRESPONSIVE_THRESHOLD_MS</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define TASK_UNRESPONSIVE_THRESHOLD_MS&#160;&#160;&#160;(30000)  /* 30 seconds */</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00112">112</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-</div>
-</div>
-<a id="adc2eab8c3c33a477077121bd050473e6" name="adc2eab8c3c33a477077121bd050473e6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adc2eab8c3c33a477077121bd050473e6">&#9670;&#160;</a></span>TEMPERATURE_QUEUE_SIZE</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define TEMPERATURE_QUEUE_SIZE&#160;&#160;&#160;(2)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00122">122</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00039">shared_data_init()</a>.</p>
-
-</div>
-</div>
-<a id="a6b217b36c61fd1528c93c876a5f084a5" name="a6b217b36c61fd1528c93c876a5f084a5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6b217b36c61fd1528c93c876a5f084a5">&#9670;&#160;</a></span>VALIDATE_DISTANCE</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define VALIDATE_DISTANCE</td>
-          <td>(</td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>dist</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line">((dist) &gt;= 0.0f &amp;&amp; (dist) &lt;= 400.0f)</div>
-</div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00148">148</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00104">led_controller_distance_to_color()</a>, <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00175">led_controller_update_distance()</a>, and <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00243">shared_data_create_sensor_data()</a>.</p>
-
-</div>
-</div>
-<a id="ad49eca23faf1e461b440425a68481db1" name="ad49eca23faf1e461b440425a68481db1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad49eca23faf1e461b440425a68481db1">&#9670;&#160;</a></span>VALIDATE_PWM_PERCENT</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define VALIDATE_PWM_PERCENT</td>
-          <td>(</td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>pwm</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line">((pwm) &gt;= 0.0f &amp;&amp; (pwm) &lt;= 100.0f)</div>
-</div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00150">150</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00019">internal_set_rgb_channels()</a>.</p>
-
-</div>
-</div>
-<a id="a37132988d8b89d415a310990a5294e0d" name="a37132988d8b89d415a310990a5294e0d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a37132988d8b89d415a310990a5294e0d">&#9670;&#160;</a></span>VALIDATE_SENSOR_INDEX</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define VALIDATE_SENSOR_INDEX</td>
-          <td>(</td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>idx</em></span></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line">((idx) &lt; <a class="code hl_define" href="#abe51ed145c2858598025162d43318512">NUM_HCSR04</a>)</div>
-<div class="ttc" id="asystem__config_8h_html_abe51ed145c2858598025162d43318512"><div class="ttname"><a href="#abe51ed145c2858598025162d43318512">NUM_HCSR04</a></div><div class="ttdeci">#define NUM_HCSR04</div><div class="ttdef"><b>Definition</b> <a href="../../d4/d7e/system__config_8h_source.html#l00016">system_config.h:16</a></div></div>
-</div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00147">147</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00063">internal_read_single_sensor()</a>, <a class="el" href="../../d0/d81/led__task_8c_source.html#l00015">internal_update_led_from_sensor_data()</a>, <a class="el" href="../../d0/d81/led__task_8c_source.html#l00228">led_task_manual_update()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00214">shared_data_get_sensor_reading()</a>, and <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00231">shared_data_set_sensor_reading()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00025">internal_init_sensors()</a>.</p>
 
 </div>
 </div>
-<a id="a1acf26d0dbd99e6153f49d0065ce187e" name="a1acf26d0dbd99e6153f49d0065ce187e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1acf26d0dbd99e6153f49d0065ce187e">&#9670;&#160;</a></span>VALIDATE_TEMPERATURE</h2>
+<a name="doc-typedef-members" id="doc-typedef-members"></a><h2 id="header-doc-typedef-members" class="groupheader">Typedef Documentation</h2>
+<a id="a39a4af1c5fa08a6bce83117ab1d8c779" name="a39a4af1c5fa08a6bce83117ab1d8c779"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a39a4af1c5fa08a6bce83117ab1d8c779">&#9670;&#160;</a></span>star_system_config_t</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define VALIDATE_TEMPERATURE</td>
-          <td>(</td>
-          <td class="paramtype"></td>          <td class="paramname"><span class="paramname"><em>temp</em></span></td><td>)</td>
-          <td></td>
+          <td class="memname">typedef struct <a class="el" href="../../db/d30/structstar__system__config.html">star_system_config</a> <a class="el" href="#a39a4af1c5fa08a6bce83117ab1d8c779">star_system_config_t</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line">((temp) &gt;= -40.0f &amp;&amp; (temp) &lt;= 80.0f)</div>
-</div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00149">149</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00224">sensor_task_update_temperature()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00257">shared_data_create_temperature_data()</a>, and <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00197">shared_data_set_temperature()</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00019">19</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
 
 </div>
 </div>
@@ -1398,11 +288,693 @@ Enumerations</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="af60ef736234a6d9a91cdf60a0e0d4253a4d5a76fd1a127f16f63b4210e9017469" name="af60ef736234a6d9a91cdf60a0e0d4253a4d5a76fd1a127f16f63b4210e9017469"></a>HCSR04_LEFT&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="af60ef736234a6d9a91cdf60a0e0d4253a0bca0193a83198736a913142c0377ccb" name="af60ef736234a6d9a91cdf60a0e0d4253a0bca0193a83198736a913142c0377ccb"></a>HCSR04_RIGHT&#160;</td><td class="fielddoc"></td></tr>
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="af60ef736234a6d9a91cdf60a0e0d4253ad54cd5bc9f2b8b7686a0f1b10b916890" name="af60ef736234a6d9a91cdf60a0e0d4253ad54cd5bc9f2b8b7686a0f1b10b916890"></a>k_star_system_hcsr04_left&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="af60ef736234a6d9a91cdf60a0e0d4253aa1d0b9967e9f6d2db28483fec8922bb5" name="af60ef736234a6d9a91cdf60a0e0d4253aa1d0b9967e9f6d2db28483fec8922bb5"></a>k_star_system_hcsr04_right&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00019">19</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00257">257</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
+
+</div>
+</div>
+<a id="a96c6e0528ea62fb58c3df3ce0a997a02" name="a96c6e0528ea62fb58c3df3ce0a997a02"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a96c6e0528ea62fb58c3df3ce0a997a02">&#9670;&#160;</a></span>star_health_status_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="#a96c6e0528ea62fb58c3df3ce0a997a02">star_health_status_t</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a96c6e0528ea62fb58c3df3ce0a997a02af1f04125ead1285dcfed05a763b5468a" name="a96c6e0528ea62fb58c3df3ce0a997a02af1f04125ead1285dcfed05a763b5468a"></a>k_star_health_status_ok&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a96c6e0528ea62fb58c3df3ce0a997a02af9d640787d951e39e3a84130917db330" name="a96c6e0528ea62fb58c3df3ce0a997a02af9d640787d951e39e3a84130917db330"></a>k_star_health_status_degraded&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a96c6e0528ea62fb58c3df3ce0a997a02a22b836398153b12319c014938cf93127" name="a96c6e0528ea62fb58c3df3ce0a997a02a22b836398153b12319c014938cf93127"></a>k_star_health_status_critical&#160;</td><td class="fielddoc"></td></tr>
+</table>
+
+<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00043">43</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
+
+</div>
+</div>
+<a id="ac331bcadfa89e4c377ee4e7fcce9ec92" name="ac331bcadfa89e4c377ee4e7fcce9ec92"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac331bcadfa89e4c377ee4e7fcce9ec92">&#9670;&#160;</a></span>star_led_channel_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="#ac331bcadfa89e4c377ee4e7fcce9ec92">star_led_channel_t</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ac331bcadfa89e4c377ee4e7fcce9ec92a94f34e51e885e03eb83d7c0f4b402467" name="ac331bcadfa89e4c377ee4e7fcce9ec92a94f34e51e885e03eb83d7c0f4b402467"></a>k_star_led_channel_left_red&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ac331bcadfa89e4c377ee4e7fcce9ec92a974c881ddfecff4d40775acf469fea50" name="ac331bcadfa89e4c377ee4e7fcce9ec92a974c881ddfecff4d40775acf469fea50"></a>k_star_led_channel_left_green&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ac331bcadfa89e4c377ee4e7fcce9ec92a9e1644cfbfc6494fd81c1eadd1e08cf6" name="ac331bcadfa89e4c377ee4e7fcce9ec92a9e1644cfbfc6494fd81c1eadd1e08cf6"></a>k_star_led_channel_left_blue&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ac331bcadfa89e4c377ee4e7fcce9ec92adea6faf75152f2e01251b6a8404113d3" name="ac331bcadfa89e4c377ee4e7fcce9ec92adea6faf75152f2e01251b6a8404113d3"></a>k_star_led_channel_right_red&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ac331bcadfa89e4c377ee4e7fcce9ec92af3af87b339926c362cf7c74774b3b055" name="ac331bcadfa89e4c377ee4e7fcce9ec92af3af87b339926c362cf7c74774b3b055"></a>k_star_led_channel_right_green&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ac331bcadfa89e4c377ee4e7fcce9ec92a87baa7e9392f4373e4737f133e7af814" name="ac331bcadfa89e4c377ee4e7fcce9ec92a87baa7e9392f4373e4737f133e7af814"></a>k_star_led_channel_right_blue&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ac331bcadfa89e4c377ee4e7fcce9ec92af0b4329b0d285a63a74d792994e7013c" name="ac331bcadfa89e4c377ee4e7fcce9ec92af0b4329b0d285a63a74d792994e7013c"></a>k_star_led_channel_max&#160;</td><td class="fielddoc"></td></tr>
+</table>
+
+<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00032">32</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
+
+</div>
+</div>
+<a id="a08304fc7e8cdb4b4e5498e41bcab499c" name="a08304fc7e8cdb4b4e5498e41bcab499c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a08304fc7e8cdb4b4e5498e41bcab499c">&#9670;&#160;</a></span>star_task_priority_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="#a08304fc7e8cdb4b4e5498e41bcab499c">star_task_priority_t</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a08304fc7e8cdb4b4e5498e41bcab499cac6500e65ce022c4ea3f2595a3a8a18c1" name="a08304fc7e8cdb4b4e5498e41bcab499cac6500e65ce022c4ea3f2595a3a8a18c1"></a>k_star_task_priority_leds&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a08304fc7e8cdb4b4e5498e41bcab499ca6bf83d9b967430662859fb8328fcfa9d" name="a08304fc7e8cdb4b4e5498e41bcab499ca6bf83d9b967430662859fb8328fcfa9d"></a>k_star_task_priority_dht22&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a08304fc7e8cdb4b4e5498e41bcab499ca3a45268b4ec9bd9379813ffcfaf241c3" name="a08304fc7e8cdb4b4e5498e41bcab499ca3a45268b4ec9bd9379813ffcfaf241c3"></a>k_star_task_priority_sensors&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a08304fc7e8cdb4b4e5498e41bcab499caa003294a35b5228dc533922f5337a659" name="a08304fc7e8cdb4b4e5498e41bcab499caa003294a35b5228dc533922f5337a659"></a>k_star_task_priority_watchdog&#160;</td><td class="fielddoc"></td></tr>
+</table>
+
+<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00024">24</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
+
+</div>
+</div>
+<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
+<a id="a155f7280814c9b55f4dfbf4d620a0a9a" name="a155f7280814c9b55f4dfbf4d620a0a9a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a155f7280814c9b55f4dfbf4d620a0a9a">&#9670;&#160;</a></span>star_get_health_status()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="#a96c6e0528ea62fb58c3df3ce0a997a02">star_health_status_t</a> star_get_health_status </td>
+          <td>(</td>
+          <td class="paramtype">const float</td>          <td class="paramname"><span class="paramname"><em>failure_rate</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get health status based on failure rate. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">failure_rate</td><td>Current failure rate (0.0 to 1.0) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Health status enum </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="../../d3/dff/system__config_8c_source.html#l00173">173</a> of file <a class="el" href="../../d3/dff/system__config_8c_source.html">system_config.c</a>.</p>
+
+<p class="reference">References <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00046">k_star_health_status_critical</a>, <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00045">k_star_health_status_degraded</a>, <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00044">k_star_health_status_ok</a>, and <a class="el" href="../../d3/dff/system__config_8c_source.html#l00035">STAR_SYSTEM_CONFIG</a>.</p>
+
+</div>
+</div>
+<a id="af555f5228263d9c924736a9ba882cf48" name="af555f5228263d9c924736a9ba882cf48"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af555f5228263d9c924736a9ba882cf48">&#9670;&#160;</a></span>star_get_task_config_by_priority()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="../../db/d9e/structstar__task__config__t.html">star_task_config_t</a> * star_get_task_config_by_priority </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="#a08304fc7e8cdb4b4e5498e41bcab499c">star_task_priority_t</a></td>          <td class="paramname"><span class="paramname"><em>priority</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get task configuration by priority. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">priority</td><td>Task priority enum value </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Pointer to task configuration or NULL if not found </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="../../d3/dff/system__config_8c_source.html#l00142">142</a> of file <a class="el" href="../../d3/dff/system__config_8c_source.html">system_config.c</a>.</p>
+
+<p class="reference">References <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00026">k_star_task_priority_dht22</a>, <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00025">k_star_task_priority_leds</a>, <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00027">k_star_task_priority_sensors</a>, <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00028">k_star_task_priority_watchdog</a>, and <a class="el" href="../../d3/dff/system__config_8c_source.html#l00035">STAR_SYSTEM_CONFIG</a>.</p>
+
+</div>
+</div>
+<a id="ac3ed22e1af62d157a35793691355a7cc" name="ac3ed22e1af62d157a35793691355a7cc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac3ed22e1af62d157a35793691355a7cc">&#9670;&#160;</a></span>star_is_valid_led_channel()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool star_is_valid_led_channel </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="#ac331bcadfa89e4c377ee4e7fcce9ec92">star_led_channel_t</a></td>          <td class="paramname"><span class="paramname"><em>channel</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Check if LED channel is valid. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">channel</td><td>LED channel enum value </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if valid, false otherwise </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="../../d3/dff/system__config_8c_source.html#l00163">163</a> of file <a class="el" href="../../d3/dff/system__config_8c_source.html">system_config.c</a>.</p>
+
+<p class="reference">References <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00033">k_star_led_channel_left_red</a>, and <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00039">k_star_led_channel_max</a>.</p>
+
+</div>
+</div>
+<a id="a27d7155fa342a21a9e7dc287b32d3cde" name="a27d7155fa342a21a9e7dc287b32d3cde"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a27d7155fa342a21a9e7dc287b32d3cde">&#9670;&#160;</a></span>star_validate_distance()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool star_validate_distance </td>
+          <td>(</td>
+          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>distance</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Validate distance measurement. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">distance</td><td>Distance in cm </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if valid, false otherwise </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00206">206</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
+
+<p class="reference">References <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00179">s_star_distance_max_cm</a>, and <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00178">s_star_distance_min_cm</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00198">led_controller_distance_to_color()</a>, <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00324">led_controller_update_distance()</a>, and <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00266">shared_data_create_sensor_data()</a>.</p>
+<div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="../../d4/d7e/system__config_8h_a27d7155fa342a21a9e7dc287b32d3cde_icgraph.png" border="0" usemap="#ad4/d7e/system__config_8h_a27d7155fa342a21a9e7dc287b32d3cde_icgraph" loading="lazy" alt=""/></div>
+<map name="ad4/d7e/system__config_8h_a27d7155fa342a21a9e7dc287b32d3cde_icgraph" id="ad4/d7e/system__config_8h_a27d7155fa342a21a9e7dc287b32d3cde_icgraph">
+<area shape="rect" title="Validate distance measurement." alt="" coords="1490,73,1641,98"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#aa9bce675e112120c36bb4886aa7928aa" title="Convert distance measurement to RGB color using smooth HSV gradient." alt="" coords="1288,8,1442,49"/>
+<area shape="poly" title=" " alt="" coords="1501,68,1438,52,1439,47,1506,68"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a3bc9057e69b2a21032f72cb91d54d249" title="Update LED based on distance measurement." alt="" coords="1095,63,1240,103"/>
+<area shape="poly" title=" " alt="" coords="1472,85,1240,86,1240,81,1477,85"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#ae9bc5dadf1065234388f4dd58c8b3e98" title="Create sensor data structure." alt="" coords="1297,124,1432,165"/>
+<area shape="poly" title=" " alt="" coords="1507,103,1433,127,1432,122,1502,104"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a1a400922bf8466136467222b9ec209be" title=" " alt="" coords="894,5,1028,46"/>
+<area shape="poly" title=" " alt="" coords="1270,28,1028,29,1028,23,1275,27"/>
+<area shape="poly" title=" " alt="" coords="1277,53,1240,66,1239,60,1272,54"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a5ed102fd8f8fe04d25422aeea7b89fd0" title=" " alt="" coords="665,5,827,46"/>
+<area shape="poly" title=" " alt="" coords="876,26,828,28,827,23,882,25"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a9815a89f029b7233e7cd0e8cf0450144" title=" " alt="" coords="671,71,820,111"/>
+<area shape="poly" title=" " alt="" coords="883,50,816,73,815,67,877,51"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a61e20b7b3d53c0fe3f3e30ab709564fd" title=" " alt="" coords="466,78,617,104"/>
+<area shape="poly" title=" " alt="" coords="668,51,585,80,584,75,663,52"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a9d18fbbcd8adbccf0f8d2288e901f77c" title="Initialize LED display task." alt="" coords="315,80,418,105"/>
+<area shape="poly" title=" " alt="" coords="448,92,419,95,418,89,454,91"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,106,267,132"/>
+<area shape="poly" title=" " alt="" coords="297,103,268,111,267,105,302,102"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,106,83,132"/>
+<area shape="poly" title=" " alt="" coords="113,120,83,122,83,116,117,118"/>
+<area shape="poly" title=" " alt="" coords="653,91,617,94,617,88,658,91"/>
+<area shape="poly" title=" " alt="" coords="1078,59,1028,47,1028,42,1083,59"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#ac530e05df69535a16f3f76ec3e63458d" title="Manually trigger LED update for specific sensor." alt="" coords="878,70,1044,96"/>
+<area shape="poly" title=" " alt="" coords="1077,83,1044,86,1044,80,1082,83"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a1ea224ad4e9ad60c90644c2688e8d946" title=" " alt="" coords="1099,128,1236,169"/>
+<area shape="poly" title=" " alt="" coords="1284,146,1236,150,1236,144,1279,146"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afde0408db6c60f5c886dc0dc13a88ed5" title=" " alt="" coords="875,136,1047,161"/>
+<area shape="poly" title=" " alt="" coords="1081,148,1048,151,1048,146,1086,148"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="479,134,604,160"/>
+<area shape="poly" title=" " alt="" coords="857,148,604,150,604,145,862,148"/>
+<area shape="poly" title=" " alt="" coords="460,141,267,127,268,122,465,140"/>
+</map>
+</div>
+
+</div>
+</div>
+<a id="a048d7fce3116a990c5536e18eed4a61b" name="a048d7fce3116a990c5536e18eed4a61b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a048d7fce3116a990c5536e18eed4a61b">&#9670;&#160;</a></span>star_validate_pwm_percent()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool star_validate_pwm_percent </td>
+          <td>(</td>
+          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>pwm</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Validate PWM percentage. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">pwm</td><td>PWM value in percent </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if valid, false otherwise </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00226">226</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
+
+<p class="reference">References <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00187">s_star_pwm_max_percent</a>, and <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00186">s_star_pwm_min_percent</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00049">internal_set_rgb_channels()</a>.</p>
+<div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="../../d4/d7e/system__config_8h_a048d7fce3116a990c5536e18eed4a61b_icgraph.png" border="0" usemap="#ad4/d7e/system__config_8h_a048d7fce3116a990c5536e18eed4a61b_icgraph" loading="lazy" alt=""/></div>
+<map name="ad4/d7e/system__config_8h_a048d7fce3116a990c5536e18eed4a61b_icgraph" id="ad4/d7e/system__config_8h_a048d7fce3116a990c5536e18eed4a61b_icgraph">
+<area shape="rect" title="Validate PWM percentage." alt="" coords="1982,271,2162,296"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a055f40aef481cb67e15eca4d09028a61" title=" " alt="" coords="1761,271,1934,296"/>
+<area shape="poly" title=" " alt="" coords="1964,284,1934,286,1934,281,1969,283"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a076c2165b5b3484a7208445ff9a1c86d" title="Set RGB LED color." alt="" coords="1565,271,1713,296"/>
+<area shape="poly" title=" " alt="" coords="1743,284,1714,286,1714,281,1748,283"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a105d937217c622b9872eeeeeb4823b33" title="Turn off specific LED." alt="" coords="1368,241,1517,267"/>
+<area shape="poly" title=" " alt="" coords="1547,270,1517,268,1517,263,1552,270"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a3bc9057e69b2a21032f72cb91d54d249" title="Update LED based on distance measurement." alt="" coords="1370,291,1514,332"/>
+<area shape="poly" title=" " alt="" coords="1552,296,1515,304,1514,299,1547,296"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a1a400922bf8466136467222b9ec209be" title=" " alt="" coords="1170,262,1304,302"/>
+<area shape="poly" title=" " alt="" coords="1355,266,1305,276,1304,270,1349,267"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a9815a89f029b7233e7cd0e8cf0450144" title=" " alt="" coords="950,218,1099,258"/>
+<area shape="poly" title=" " alt="" coords="1350,251,1100,244,1100,238,1355,251"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a6743c205855240c57225c021e88e3d95" title="Turn off all LEDs." alt="" coords="1173,122,1301,162"/>
+<area shape="poly" title=" " alt="" coords="1401,233,1276,166,1277,160,1406,234"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#ac530e05df69535a16f3f76ec3e63458d" title="Manually trigger LED update for specific sensor." alt="" coords="1154,327,1320,352"/>
+<area shape="poly" title=" " alt="" coords="1384,272,1369,282,1345,299,1321,317,1291,329,1290,323,1318,312,1342,295,1366,277,1379,274"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a5ed102fd8f8fe04d25422aeea7b89fd0" title=" " alt="" coords="944,283,1106,324"/>
+<area shape="poly" title=" " alt="" coords="1158,290,1106,298,1106,293,1152,291"/>
+<area shape="poly" title=" " alt="" coords="1152,265,1100,256,1100,251,1158,265"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a61e20b7b3d53c0fe3f3e30ab709564fd" title=" " alt="" coords="744,225,894,251"/>
+<area shape="poly" title=" " alt="" coords="941,278,862,254,862,249,947,278"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a9d18fbbcd8adbccf0f8d2288e901f77c" title="Initialize LED display task." alt="" coords="548,171,652,196"/>
+<area shape="poly" title=" " alt="" coords="747,221,652,199,652,194,753,221"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,120,267,146"/>
+<area shape="poly" title=" " alt="" coords="530,181,430,175,315,161,255,149,254,144,315,156,430,169,535,179"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,120,83,146"/>
+<area shape="poly" title=" " alt="" coords="113,135,84,135,82,130,117,131"/>
+<area shape="poly" title=" " alt="" coords="932,238,895,241,894,236,937,238"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a4041166ed835cbf20470b38d1c76eaf4" title="Deinitialize LED controller." alt="" coords="751,120,887,146"/>
+<area shape="poly" title=" " alt="" coords="1155,141,888,137,887,132,1161,140"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#aeae7615c8b32711083f0cd898653aa63" title="Initialize LED controller." alt="" coords="758,169,880,195"/>
+<area shape="poly" title=" " alt="" coords="1155,150,881,179,880,174,1161,149"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a70a98116b168f38ec6863cf5d9b2e7df" title="Turn off all LEDs immediately." alt="" coords="943,64,1106,90"/>
+<area shape="poly" title=" " alt="" coords="1156,118,1069,93,1069,88,1161,118"/>
+<area shape="poly" title=" " alt="" coords="743,150,653,174,652,169,748,149"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a28b03bd16ef898607267014458e3724d" title="Stop LED display task." alt="" coords="335,120,437,146"/>
+<area shape="poly" title=" " alt="" coords="733,134,438,135,437,130,737,132"/>
+<area shape="poly" title=" " alt="" coords="317,134,268,135,267,130,322,132"/>
+<area shape="poly" title=" " alt="" coords="739,183,652,186,652,181,745,182"/>
+<area shape="rect" href="../../dc/d96/watchdog__task_8c.html#ab8e8a05882a22d389871b901749f34a0" title=" " alt="" coords="743,55,895,96"/>
+<area shape="poly" title=" " alt="" coords="925,77,896,79,895,73,930,76"/>
+<area shape="rect" href="../../dc/d96/watchdog__task_8c.html#a914a83d91bb924807d2c34ddb767e056" title=" " alt="" coords="505,5,695,31"/>
+<area shape="poly" title=" " alt="" coords="725,52,652,34,652,29,730,51"/>
+<area shape="rect" href="../../dc/d96/watchdog__task_8c.html#a3952d706fb7b287213a32d8ab6d39444" title="Force immediate system health check." alt="" coords="527,55,673,96"/>
+<area shape="poly" title=" " alt="" coords="725,76,674,78,673,73,730,75"/>
+<area shape="rect" href="../../dc/d96/watchdog__task_8c.html#a1047c0564b9275f58ba51b089d9c5377" title="Start the system watchdog task." alt="" coords="315,39,457,64"/>
+<area shape="poly" title=" " alt="" coords="496,35,458,43,457,38,501,33"/>
+<area shape="poly" title=" " alt="" coords="339,73,232,122,229,117,343,69"/>
+<area shape="poly" title=" " alt="" coords="1352,299,1304,294,1304,289,1357,299"/>
+<area shape="poly" title=" " alt="" coords="1357,323,1320,331,1320,326,1352,324"/>
+</map>
+</div>
+
+</div>
+</div>
+<a id="aee59613b222c590cb8080f4f732f758f" name="aee59613b222c590cb8080f4f732f758f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aee59613b222c590cb8080f4f732f758f">&#9670;&#160;</a></span>star_validate_sensor_index()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool star_validate_sensor_index </td>
+          <td>(</td>
+          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>idx</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Validate sensor index. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">idx</td><td>Sensor index to validate </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if valid, false otherwise </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00196">196</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
+
+<p class="reference">References <a class="el" href="../../d3/dff/system__config_8c_source.html#l00035">STAR_SYSTEM_CONFIG</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00079">internal_read_single_sensor()</a>, <a class="el" href="../../d0/d81/led__task_8c_source.html#l00017">internal_update_led_from_sensor_data()</a>, <a class="el" href="../../d0/d81/led__task_8c_source.html#l00258">led_task_manual_update()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00235">shared_data_get_sensor_reading()</a>, and <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00253">shared_data_set_sensor_reading()</a>.</p>
+<div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="../../d4/d7e/system__config_8h_aee59613b222c590cb8080f4f732f758f_icgraph.png" border="0" usemap="#ad4/d7e/system__config_8h_aee59613b222c590cb8080f4f732f758f_icgraph" loading="lazy" alt=""/></div>
+<map name="ad4/d7e/system__config_8h_aee59613b222c590cb8080f4f732f758f_icgraph" id="ad4/d7e/system__config_8h_aee59613b222c590cb8080f4f732f758f_icgraph">
+<area shape="rect" title="Validate sensor index." alt="" coords="1132,113,1274,154"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a1ea224ad4e9ad60c90644c2688e8d946" title=" " alt="" coords="722,63,858,103"/>
+<area shape="poly" title=" " alt="" coords="1114,114,1084,111,965,97,859,89,858,84,965,92,1085,106,1120,114"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a1a400922bf8466136467222b9ec209be" title=" " alt="" coords="935,236,1068,277"/>
+<area shape="poly" title=" " alt="" coords="1169,163,1130,196,1086,225,1060,238,1059,233,1083,221,1127,192,1164,165"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#ac530e05df69535a16f3f76ec3e63458d" title="Manually trigger LED update for specific sensor." alt="" coords="919,121,1084,146"/>
+<area shape="poly" title=" " alt="" coords="1115,134,1085,136,1085,131,1120,133"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#a1db0e8429be801019cbef073929b2f29" title="Get latest sensor reading." alt="" coords="920,171,1083,211"/>
+<area shape="poly" title=" " alt="" coords="1120,157,1076,173,1075,167,1115,158"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#a8cebc34f8a3a8d68bc364c0b4f61a29d" title="Update sensor reading." alt="" coords="920,5,1083,46"/>
+<area shape="poly" title=" " alt="" coords="1153,105,1083,67,1049,49,1049,44,1086,62,1158,105"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afde0408db6c60f5c886dc0dc13a88ed5" title=" " alt="" coords="488,78,661,104"/>
+<area shape="poly" title=" " alt="" coords="703,87,661,90,661,85,709,86"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="315,85,440,110"/>
+<area shape="poly" title=" " alt="" coords="470,95,441,98,440,93,476,94"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,125,267,150"/>
+<area shape="poly" title=" " alt="" coords="300,115,260,127,259,122,305,113"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,125,83,150"/>
+<area shape="poly" title=" " alt="" coords="113,139,84,140,82,135,117,136"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a5ed102fd8f8fe04d25422aeea7b89fd0" title=" " alt="" coords="709,236,871,277"/>
+<area shape="poly" title=" " alt="" coords="917,256,872,259,872,254,923,256"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a9815a89f029b7233e7cd0e8cf0450144" title=" " alt="" coords="715,171,864,211"/>
+<area shape="poly" title=" " alt="" coords="917,231,858,215,859,209,923,232"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a61e20b7b3d53c0fe3f3e30ab709564fd" title=" " alt="" coords="499,178,650,204"/>
+<area shape="poly" title=" " alt="" coords="703,231,619,207,620,202,709,231"/>
+<area shape="rect" href="../../d0/d81/led__task_8c.html#a9d18fbbcd8adbccf0f8d2288e901f77c" title="Initialize LED display task." alt="" coords="326,149,429,174"/>
+<area shape="poly" title=" " alt="" coords="482,178,430,172,430,167,487,177"/>
+<area shape="poly" title=" " alt="" coords="308,153,268,149,267,144,313,152"/>
+<area shape="poly" title=" " alt="" coords="697,191,650,194,650,188,702,191"/>
+<area shape="poly" title=" " alt="" coords="901,191,865,194,865,188,907,191"/>
+<area shape="poly" title=" " alt="" coords="912,50,859,67,858,62,907,51"/>
+</map>
+</div>
+
+</div>
+</div>
+<a id="ae1333c5306d999ad9d292b11465114c2" name="ae1333c5306d999ad9d292b11465114c2"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae1333c5306d999ad9d292b11465114c2">&#9670;&#160;</a></span>star_validate_temperature()</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">bool star_validate_temperature </td>
+          <td>(</td>
+          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>temperature</em></span></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel inline">inline</span><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Validate temperature reading. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">temperature</td><td>Temperature in Celsius </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if valid, false otherwise </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00216">216</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
+
+<p class="reference">References <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00183">s_star_temperature_max_c</a>, and <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00182">s_star_temperature_min_c</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00239">sensor_task_update_temperature()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00279">shared_data_create_temperature_data()</a>, and <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00217">shared_data_set_temperature()</a>.</p>
+<div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="../../d4/d7e/system__config_8h_ae1333c5306d999ad9d292b11465114c2_icgraph.png" border="0" usemap="#ad4/d7e/system__config_8h_ae1333c5306d999ad9d292b11465114c2_icgraph" loading="lazy" alt=""/></div>
+<map name="ad4/d7e/system__config_8h_ae1333c5306d999ad9d292b11465114c2_icgraph" id="ad4/d7e/system__config_8h_ae1333c5306d999ad9d292b11465114c2_icgraph">
+<area shape="rect" title="Validate temperature reading." alt="" coords="1118,78,1290,104"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a94ca5e663b3388b7dddc4169818e4745" title="Update temperature for sound speed correction." alt="" coords="904,5,1043,46"/>
+<area shape="poly" title=" " alt="" coords="1139,73,1043,48,1043,43,1144,74"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#a3995c9b95b6f83c65b7e55700c240a46" title="Create temperature data structure." alt="" coords="906,71,1041,111"/>
+<area shape="poly" title=" " alt="" coords="1100,91,1042,94,1042,88,1106,91"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#adbcb3df569fd80605c33af86cd27cfdf" title="Update current temperature." alt="" coords="877,136,1070,161"/>
+<area shape="poly" title=" " alt="" coords="1137,108,1029,138,1028,132,1132,108"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#acf0cd8b6c7894c00402a62a6c72d659b" title=" " alt="" coords="695,78,829,104"/>
+<area shape="poly" title=" " alt="" coords="894,51,807,80,806,75,889,52"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a7c98847a5751aa53f1d5d8ba86b6df8e" title=" " alt="" coords="481,78,647,104"/>
+<area shape="poly" title=" " alt="" coords="677,91,647,94,647,88,682,91"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#ad5fc3ca549615b42dcfbb1926e7e5cb0" title="Initialize DHT22 monitoring task." alt="" coords="315,78,433,104"/>
+<area shape="poly" title=" " alt="" coords="463,91,434,94,434,88,469,91"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,78,267,104"/>
+<area shape="poly" title=" " alt="" coords="297,91,268,94,267,88,302,91"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,78,83,104"/>
+<area shape="poly" title=" " alt="" coords="113,92,84,94,82,88,117,90"/>
+<area shape="poly" title=" " alt="" coords="888,91,830,94,830,88,893,91"/>
+<area shape="poly" title=" " alt="" coords="904,131,876,126,810,107,811,102,878,120,909,131"/>
+</map>
+</div>
+
+</div>
+</div>
+<a name="doc-var-members" id="doc-var-members"></a><h2 id="header-doc-var-members" class="groupheader">Variable Documentation</h2>
+<a id="a6dce634f49a82a8daa467e60306d72b5" name="a6dce634f49a82a8daa467e60306d72b5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6dce634f49a82a8daa467e60306d72b5">&#9670;&#160;</a></span>s_star_distance_max_cm</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const float s_star_distance_max_cm = 400.0f</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Maximum valid distance in centimeters </p>
+
+<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00179">179</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00206">star_validate_distance()</a>.</p>
+
+</div>
+</div>
+<a id="ae3347570a854cc5abc049cec8c9fa9d6" name="ae3347570a854cc5abc049cec8c9fa9d6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ae3347570a854cc5abc049cec8c9fa9d6">&#9670;&#160;</a></span>s_star_distance_min_cm</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const float s_star_distance_min_cm = 0.0f</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Minimum valid distance in centimeters </p>
+
+<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00178">178</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00206">star_validate_distance()</a>.</p>
+
+</div>
+</div>
+<a id="a28d08c357b439e95bd8d05ddf93042d6" name="a28d08c357b439e95bd8d05ddf93042d6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a28d08c357b439e95bd8d05ddf93042d6">&#9670;&#160;</a></span>s_star_pwm_max_percent</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const float s_star_pwm_max_percent = 100.0f</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Maximum valid PWM percentage </p>
+
+<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00187">187</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00226">star_validate_pwm_percent()</a>.</p>
+
+</div>
+</div>
+<a id="a78ee0277ced0253bb869263be53fca02" name="a78ee0277ced0253bb869263be53fca02"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a78ee0277ced0253bb869263be53fca02">&#9670;&#160;</a></span>s_star_pwm_min_percent</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const float s_star_pwm_min_percent = 0.0f</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Minimum valid PWM percentage </p>
+
+<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00186">186</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00226">star_validate_pwm_percent()</a>.</p>
+
+</div>
+</div>
+<a id="a44c869491091b8c0e55d084a270c5e90" name="a44c869491091b8c0e55d084a270c5e90"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a44c869491091b8c0e55d084a270c5e90">&#9670;&#160;</a></span>s_star_temperature_max_c</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const float s_star_temperature_max_c = 80.0f</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Maximum valid temperature in Celsius </p>
+
+<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00183">183</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00216">star_validate_temperature()</a>.</p>
+
+</div>
+</div>
+<a id="af5c4ba26efafce2dabbd754122d36d42" name="af5c4ba26efafce2dabbd754122d36d42"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af5c4ba26efafce2dabbd754122d36d42">&#9670;&#160;</a></span>s_star_temperature_min_c</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const float s_star_temperature_min_c = -40.0f</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+<p>Minimum valid temperature in Celsius </p>
+
+<p class="definition">Definition at line <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00182">182</a> of file <a class="el" href="../../d4/d7e/system__config_8h_source.html">system_config.h</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00216">star_validate_temperature()</a>.</p>
+
+</div>
+</div>
+<a id="afd1eb56635a99dae47ddfaf1cb273e02" name="afd1eb56635a99dae47ddfaf1cb273e02"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#afd1eb56635a99dae47ddfaf1cb273e02">&#9670;&#160;</a></span>STAR_SYSTEM_CONFIG</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const <a class="el" href="#a39a4af1c5fa08a6bce83117ab1d8c779">star_system_config_t</a> STAR_SYSTEM_CONFIG</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel extern">extern</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Master system configuration. </p>
+<p>This const structure contains all system configuration in a type-safe, organized manner. Access configuration through this structure instead of using legacy macros.</p>
+<p>Example usage: </p><div class="fragment"><div class="line"><span class="comment">// Access GPIO pin</span></div>
+<div class="line">gpio_num_t trig_pin = <a class="code hl_variable" href="#afd1eb56635a99dae47ddfaf1cb273e02">STAR_SYSTEM_CONFIG</a>.gpio.left_trig;</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Access task configuration</span></div>
+<div class="line">uint32_t stack_size = <a class="code hl_variable" href="#afd1eb56635a99dae47ddfaf1cb273e02">STAR_SYSTEM_CONFIG</a>.tasks.sensors.stack_size;</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Access PWM configuration</span></div>
+<div class="line"><span class="keywordtype">float</span> max_pwm = <a class="code hl_variable" href="#afd1eb56635a99dae47ddfaf1cb273e02">STAR_SYSTEM_CONFIG</a>.pwm.max_pwm_all;</div>
+<div class="ttc" id="asystem__config_8h_html_afd1eb56635a99dae47ddfaf1cb273e02"><div class="ttname"><a href="#afd1eb56635a99dae47ddfaf1cb273e02">STAR_SYSTEM_CONFIG</a></div><div class="ttdeci">const star_system_config_t STAR_SYSTEM_CONFIG</div><div class="ttdoc">Master system configuration.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/dff/system__config_8c_source.html#l00035">system_config.c:35</a></div></div>
+</div><!-- fragment --> 
+<p class="definition">Definition at line <a class="el" href="../../d3/dff/system__config_8c_source.html#l00035">35</a> of file <a class="el" href="../../d3/dff/system__config_8c_source.html">system_config.c</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00158">app_main()</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00135">dht22_task_start()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00022">init_shared_context()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00033">initialize_hardware_buses()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00091">initialize_pca9685()</a>, <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00032">internal_assess_sensor_health()</a>, <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00065">internal_deinit_sensors()</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00108">internal_dht22_task_loop()</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00019">internal_init_dht22()</a>, <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00025">internal_init_sensors()</a>, <a class="el" href="../../d0/d81/led__task_8c_source.html#l00114">internal_led_task_loop()</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00050">internal_read_dht22()</a>, <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00013">internal_scale_pwm_for_color()</a>, <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00113">internal_sensor_task_loop()</a>, <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00049">internal_set_rgb_channels()</a>, <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00188">internal_take_recovery_action()</a>, <a class="el" href="../../d0/d81/led__task_8c_source.html#l00017">internal_update_led_from_sensor_data()</a>, <a class="el" href="../../d0/d81/led__task_8c_source.html#l00095">internal_update_leds_from_latest_readings()</a>, <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00232">internal_watchdog_task_loop()</a>, <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00176">led_controller_deinit()</a>, <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00198">led_controller_distance_to_color()</a>, <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00293">led_controller_set_rgb()</a>, <a class="el" href="../../d2/dc9/led__controller_8c_source.html#l00324">led_controller_update_distance()</a>, <a class="el" href="../../d0/d81/led__task_8c_source.html#l00150">led_task_start()</a>, <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00149">sensor_task_start()</a>, <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00239">sensor_task_update_temperature()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00235">shared_data_get_sensor_reading()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00165">shared_data_get_system_state()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00199">shared_data_get_temperature()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00040">shared_data_init()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00302">shared_data_is_system_ready()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00318">shared_data_mark_system_ready()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00253">shared_data_set_sensor_reading()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00182">shared_data_set_system_state()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00217">shared_data_set_temperature()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00139">shared_data_update_health()</a>, <a class="el" href="../../d3/dff/system__config_8c_source.html#l00173">star_get_health_status()</a>, <a class="el" href="../../d3/dff/system__config_8c_source.html#l00142">star_get_task_config_by_priority()</a>, <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00196">star_validate_sensor_index()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00118">start_system_tasks()</a>, and <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00273">watchdog_task_start()</a>.</p>
 
 </div>
 </div>

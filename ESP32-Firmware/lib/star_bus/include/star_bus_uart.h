@@ -67,47 +67,47 @@ extern "C" {
  * @brief UART data bits
  */
 typedef enum {
-  STAR_UART_DATA_5_BITS = UART_DATA_5_BITS, /**< 5 data bits */
-  STAR_UART_DATA_6_BITS = UART_DATA_6_BITS, /**< 6 data bits */
-  STAR_UART_DATA_7_BITS = UART_DATA_7_BITS, /**< 7 data bits */
-  STAR_UART_DATA_8_BITS = UART_DATA_8_BITS, /**< 8 data bits (default) */
+  k_star_uart_data_5_bits = UART_DATA_5_BITS, /**< 5 data bits */
+  k_star_uart_data_6_bits = UART_DATA_6_BITS, /**< 6 data bits */
+  k_star_uart_data_7_bits = UART_DATA_7_BITS, /**< 7 data bits */
+  k_star_uart_data_8_bits = UART_DATA_8_BITS, /**< 8 data bits (default) */
 } star_uart_data_bits_t;
 
 /**
  * @brief UART stop bits
  */
 typedef enum {
-  STAR_UART_STOP_1_BIT    = UART_STOP_BITS_1,   /**< 1 stop bit (default) */
-  STAR_UART_STOP_1_5_BITS = UART_STOP_BITS_1_5, /**< 1.5 stop bits */
-  STAR_UART_STOP_2_BITS   = UART_STOP_BITS_2,   /**< 2 stop bits */
+  k_star_uart_stop_1_bit    = UART_STOP_BITS_1,   /**< 1 stop bit (default) */
+  k_star_uart_stop_1_5_bits = UART_STOP_BITS_1_5, /**< 1.5 stop bits */
+  k_star_uart_stop_2_bits   = UART_STOP_BITS_2,   /**< 2 stop bits */
 } star_uart_stop_bits_t;
 
 /**
  * @brief UART parity
  */
 typedef enum {
-  STAR_UART_PARITY_NONE = UART_PARITY_DISABLE, /**< No parity (default) */
-  STAR_UART_PARITY_EVEN = UART_PARITY_EVEN,    /**< Even parity */
-  STAR_UART_PARITY_ODD  = UART_PARITY_ODD,     /**< Odd parity */
+  k_star_uart_parity_none = UART_PARITY_DISABLE, /**< No parity (default) */
+  k_star_uart_parity_even = UART_PARITY_EVEN,    /**< Even parity */
+  k_star_uart_parity_odd  = UART_PARITY_ODD,     /**< Odd parity */
 } star_uart_parity_t;
 
 /**
  * @brief UART flow control
  */
 typedef enum {
-  STAR_UART_FLOW_CTRL_NONE    = UART_HW_FLOWCTRL_DISABLE, /**< No flow control */
-  STAR_UART_FLOW_CTRL_RTS     = UART_HW_FLOWCTRL_RTS,     /**< RTS only */
-  STAR_UART_FLOW_CTRL_CTS     = UART_HW_FLOWCTRL_CTS,     /**< CTS only */
-  STAR_UART_FLOW_CTRL_RTS_CTS = UART_HW_FLOWCTRL_CTS_RTS, /**< RTS/CTS */
+  k_star_uart_flow_ctrl_none    = UART_HW_FLOWCTRL_DISABLE, /**< No flow control */
+  k_star_uart_flow_ctrl_rts     = UART_HW_FLOWCTRL_RTS,     /**< RTS only */
+  k_star_uart_flow_ctrl_cts     = UART_HW_FLOWCTRL_CTS,     /**< CTS only */
+  k_star_uart_flow_ctrl_rts_cts = UART_HW_FLOWCTRL_CTS_RTS, /**< RTS/CTS */
 } star_uart_flow_ctrl_t;
 
 /**
  * @brief UART mode
  */
 typedef enum {
-  STAR_UART_MODE_UART  = UART_MODE_UART,              /**< Standard UART */
-  STAR_UART_MODE_RS485 = UART_MODE_RS485_HALF_DUPLEX, /**< RS-485 half duplex */
-  STAR_UART_MODE_IRDA  = UART_MODE_IRDA,              /**< IrDA mode */
+  k_star_uart_mode_uart  = UART_MODE_UART,              /**< Standard UART */
+  k_star_uart_mode_rs485 = UART_MODE_RS485_HALF_DUPLEX, /**< RS-485 half duplex */
+  k_star_uart_mode_irda  = UART_MODE_IRDA,              /**< IrDA mode */
 } star_uart_mode_t;
 
 /**

@@ -2,11 +2,11 @@
 <area shape="rect" id="Node000001" title="Configure GPIO interrupt for a pin via bus manager." alt="" coords="884,5,1065,31"/>
 <area shape="rect" id="Node000002" href="$de/de2/star__sensor__hcsr04_8c.html#afd5878b21fda797877bd29036adcbd58" title="Initialize HC&#45;SR04 sensor." alt="" coords="677,5,836,31"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="866,18,837,21,837,16,871,18"/>
-<area shape="rect" id="Node000003" href="$de/dd4/sensor__task_8c.html#a3cf1fffcdac34c405d12dc3b509c2deb" title=" " alt="" coords="488,5,629,31"/>
+<area shape="rect" id="Node000003" href="$de/dd4/sensor__task_8c.html#afa22a6110eba0db527b95b8e2ce3a746" title=" " alt="" coords="488,5,629,31"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="658,18,629,21,629,16,664,18"/>
-<area shape="rect" id="Node000004" href="$de/dd4/sensor__task_8c.html#abe04d0ff61d729ca1b86be8e3108bbf5" title="Initialize sensor management task." alt="" coords="315,5,440,31"/>
+<area shape="rect" id="Node000004" href="$de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="315,5,440,31"/>
 <area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="470,18,441,21,441,16,475,18"/>
-<area shape="rect" id="Node000005" href="$d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,5,267,31"/>
+<area shape="rect" id="Node000005" href="$d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,5,267,31"/>
 <area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="297,18,268,21,267,16,302,18"/>
 <area shape="rect" id="Node000006" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
 <area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="112,19,83,21,83,16,118,18"/>

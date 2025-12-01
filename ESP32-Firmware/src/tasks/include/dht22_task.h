@@ -34,7 +34,7 @@ typedef struct {
  * @param bus_name Name of bus for DHT22 sensor
  * @return esp_err_t ESP_OK on success
  */
-esp_err_t dht22_task_start(star_bus_manager_t* bus_manager, const char* bus_name);
+esp_err_t dht22_task_start(star_bus_manager_t* bus_manager, const char* const bus_name);
 
 /**
  * @brief Stop DHT22 monitoring task

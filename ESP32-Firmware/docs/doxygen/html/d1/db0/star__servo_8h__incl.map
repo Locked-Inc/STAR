@@ -1,5 +1,8 @@
 <map id="lib/star_servo/include/star_servo.h" name="lib/star_servo/include/star_servo.h">
 <area shape="rect" id="Node000001" title="Stateless servo angle calculation library." alt="" coords="5,5,150,46"/>
-<area shape="rect" id="Node000002" title=" " alt="" coords="45,94,110,120"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="79,44,80,79,75,78,76,48"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="45,168,110,193"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="63,49,50,81,47,100,48,119,63,154,58,154,43,120,41,100,45,80,65,44"/>
+<area shape="rect" id="Node000003" href="$d7/de9/star__servo__constants_8h.html" title="Type&#45;safe constants for servo control." alt="" coords="58,94,215,120"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="93,44,121,81,116,82,91,49"/>
+<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="129,119,99,158,95,154,124,121"/>
 </map>

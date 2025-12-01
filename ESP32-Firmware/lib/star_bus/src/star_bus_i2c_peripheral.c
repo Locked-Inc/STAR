@@ -215,7 +215,7 @@ esp_err_t star_bus_i2c_peripheral_enable(star_bus_manager_t*                 man
   }
 
   /* Validate address */
-  if (config->addr_mode == STAR_I2C_ADDR_7BIT) {
+  if (config->addr_mode == k_star_i2c_addr_7bit) {
     if (!STAR_I2C_ADDR_7BIT_VALID(config->address)) {
       ESP_LOGE(s_TAG, "Invalid 7-bit address: 0x%02x", config->address);
       return ESP_ERR_INVALID_ARG;

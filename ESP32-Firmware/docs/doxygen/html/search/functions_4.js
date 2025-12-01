@@ -1,9 +1,9 @@
 var searchData=
 [
-  ['get_5faccel_5fsensitivity_0',['get_accel_sensitivity',['../d7/df2/star__sensor__mpu6050_8c.html#afbd04ebaa481e189f717f9d161f6e9cc',1,'star_sensor_mpu6050.c']]],
+  ['get_5faccel_5fsensitivity_0',['get_accel_sensitivity',['../d7/df2/star__sensor__mpu6050_8c.html#a2e3e07e034c2b511e660d31c7aa5f7e6',1,'star_sensor_mpu6050.c']]],
   ['get_5fdht22_5fstate_1',['get_dht22_state',['../dc/d1f/star__bus__dht22__proprietary_8c.html#ad84a1750c76d3cacd25aa7711b5fbdb5',1,'star_bus_dht22_proprietary.c']]],
   ['get_5fdma_5fstate_2',['get_dma_state',['../de/db1/star__bus__i2c__dma_8c.html#abce2b5b120915d2ce7140985aadf0330',1,'star_bus_i2c_dma.c']]],
-  ['get_5fgyro_5fsensitivity_3',['get_gyro_sensitivity',['../d7/df2/star__sensor__mpu6050_8c.html#a03b6df4c87bd77dd382627243bae9a79',1,'star_sensor_mpu6050.c']]],
+  ['get_5fgyro_5fsensitivity_3',['get_gyro_sensitivity',['../d7/df2/star__sensor__mpu6050_8c.html#a0f56dfe1c02082f4e5192a2de3a342a1',1,'star_sensor_mpu6050.c']]],
   ['get_5fi2c_5fport_5ffrom_5fbus_4',['get_i2c_port_from_bus',['../de/db1/star__bus__i2c__dma_8c.html#af0f084ab5473e55d9c3158b9293c6f86',1,'star_bus_i2c_dma.c']]],
   ['get_5fonewire_5fstate_5',['get_onewire_state',['../d9/dd6/star__bus__onewire_8c.html#abd369d093b733ae101fd35f6c77d547e',1,'star_bus_onewire.c']]],
   ['get_5fperipheral_5fstate_6',['get_peripheral_state',['../d5/d06/star__bus__i2c__peripheral_8c.html#a501a3f667c641db510d4f13247860593',1,'get_peripheral_state(const char *bus_name, bool create):&#160;star_bus_i2c_peripheral.c'],['../d2/de5/star__bus__onewire__peripheral_8c.html#a501a3f667c641db510d4f13247860593',1,'get_peripheral_state(const char *bus_name, bool create):&#160;star_bus_onewire_peripheral.c'],['../d9/d75/star__bus__smbus__peripheral_8c.html#ae941a0035bebc8312929d3211f89f9d4',1,'get_peripheral_state(const char *bus_name, bool create):&#160;star_bus_smbus_peripheral.c']]],

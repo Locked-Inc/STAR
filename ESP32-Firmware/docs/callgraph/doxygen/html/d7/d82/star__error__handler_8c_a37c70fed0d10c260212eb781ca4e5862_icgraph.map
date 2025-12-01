@@ -4,24 +4,23 @@
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="970,101,933,73,889,46,860,34,860,29,891,41,936,69,976,102"/>
 <area shape="rect" id="Node000003" href="$d7/d82/star__error__handler_8c.html#a0c603b415b63ee1bd6bf532b5f315716" title="Create and allocate a default error interface with internal error handler." alt="" coords="733,55,866,96"/>
 <area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="920,109,867,97,867,91,925,110"/>
-<area shape="rect" id="Node000006" href="$de/de2/star__sensor__hcsr04_8c.html#afd5878b21fda797877bd29036adcbd58" title="Initialize HC&#45;SR04 sensor." alt="" coords="720,120,880,146"/>
-<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="920,133,880,135,880,130,925,133"/>
+<area shape="rect" id="Node000005" href="$de/de2/star__sensor__hcsr04_8c.html#afd5878b21fda797877bd29036adcbd58" title="Initialize HC&#45;SR04 sensor." alt="" coords="720,120,880,146"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="920,133,880,135,880,130,925,133"/>
 <area shape="rect" id="Node000010" href="$d1/dfc/star__sensor__bno055__bmp280_8c.html#a722083a7cb967139e04c4e0e722895f8" title="Initialize 10&#45;DOF IMU (BNO055 + BMP280)." alt="" coords="710,169,890,195"/>
-<area shape="poly" id="edge10_Node000001_Node000010" title=" " alt="" coords="926,152,858,171,857,166,920,153"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="926,152,858,171,857,166,920,153"/>
 <area shape="rect" id="Node000011" href="$d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="715,219,884,244"/>
-<area shape="poly" id="edge11_Node000001_Node000011" title=" " alt="" coords="970,162,932,188,891,210,861,221,860,215,889,205,929,184,964,163"/>
-<area shape="rect" id="Node000004" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,141,83,167"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="715,74,609,77,489,82,309,99,131,131,84,144,82,139,130,126,308,93,488,77,609,72,720,73"/>
-<area shape="rect" id="Node000005" href="$d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="488,92,662,118"/>
-<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="715,87,662,96,661,91,721,86"/>
-<area shape="rect" id="Node000007" href="$de/dd4/sensor__task_8c.html#a3cf1fffcdac34c405d12dc3b509c2deb" title=" " alt="" coords="505,141,645,167"/>
-<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="702,142,646,150,645,145,707,142"/>
-<area shape="rect" id="Node000008" href="$de/dd4/sensor__task_8c.html#abe04d0ff61d729ca1b86be8e3108bbf5" title="Initialize sensor management task." alt="" coords="315,141,440,167"/>
-<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="487,154,441,157,441,152,492,154"/>
-<area shape="rect" id="Node000009" href="$d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,141,267,167"/>
-<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="297,155,268,157,267,152,302,154"/>
-<area shape="poly" id="edge9_Node000009_Node000004" title=" " alt="" coords="113,156,84,157,82,152,117,153"/>
-<area shape="rect" id="Node000012" href="$d0/d29/main_8c.html#a6d8aaa1fd0c0b11d2cd6f883afb2763c" title=" " alt="" coords="316,193,440,219"/>
-<area shape="poly" id="edge12_Node000011_Node000012" title=" " alt="" coords="697,226,440,213,440,207,702,225"/>
-<area shape="poly" id="edge13_Node000012_Node000004" title=" " alt="" coords="297,202,218,196,130,182,83,170,83,164,131,177,218,191,303,201"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="970,162,932,188,891,210,861,221,860,215,889,205,929,184,964,163"/>
+<area shape="rect" id="Node000004" href="$d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="488,63,662,88"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="715,76,662,78,662,73,721,75"/>
+<area shape="rect" id="Node000006" href="$de/dd4/sensor__task_8c.html#afa22a6110eba0db527b95b8e2ce3a746" title=" " alt="" coords="505,144,645,170"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="702,143,646,152,645,147,707,143"/>
+<area shape="rect" id="Node000007" href="$de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="315,145,440,171"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="487,158,441,160,441,155,492,157"/>
+<area shape="rect" id="Node000008" href="$d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,147,267,172"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="297,159,268,162,267,156,302,158"/>
+<area shape="rect" id="Node000009" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,175,83,200"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="113,176,84,183,82,178,118,173"/>
+<area shape="rect" id="Node000012" href="$d0/d29/main_8c.html#ad6745a540d038c1266117bbcc686713b" title=" " alt="" coords="316,205,440,231"/>
+<area shape="poly" id="edge11_Node000011_Node000012" title=" " alt="" coords="697,229,440,223,440,217,702,228"/>
+<area shape="poly" id="edge12_Node000012_Node000009" title=" " alt="" coords="299,214,83,194,83,188,301,209"/>
 </map>

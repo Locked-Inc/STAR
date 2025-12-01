@@ -2,7 +2,7 @@
 <area shape="rect" id="Node000001" title="Deinitialize the bus/device associated with this configuration." alt="" coords="596,96,748,121"/>
 <area shape="rect" id="Node000002" href="$de/d98/star__bus__config_8c.html#a194581e2eb82227a022f04b9057db839" title="Destroy a bus configuration and free all associated resources." alt="" coords="385,96,548,121"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="578,109,549,111,549,106,583,108"/>
-<area shape="rect" id="Node000003" href="$d0/d29/main_8c.html#a22e093826d5fa58b80533860973051a9" title=" " alt="" coords="170,5,298,46"/>
+<area shape="rect" id="Node000003" href="$d0/d29/main_8c.html#a06b72c3ee71e25fc9eac1ce50d7b08de" title=" " alt="" coords="170,5,298,46"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="417,90,336,60,298,47,298,42,338,55,422,89"/>
 <area shape="rect" id="Node000005" href="$d7/d60/star__bus__manager_8c.html#a238abc1b4d0e4b98520e4227ec121b42" title="Deinitialize the bus manager and all managed I2C bus configurations." alt="" coords="151,70,317,96"/>
 <area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="367,98,318,95,317,89,372,97"/>

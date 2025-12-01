@@ -1,0 +1,15 @@
+<map id="star_servo_get_pca9685_constants" name="star_servo_get_pca9685_constants">
+<area shape="rect" id="Node000001" title="Get PCA9685 controller constants." alt="" coords="583,104,747,145"/>
+<area shape="rect" id="Node000002" href="$d3/d75/star__servo_8c.html#a8cd577679d2d29a34ae03d3cec95c3b1" title="Calculate PCA9685 count value from pulse width in microseconds." alt="" coords="397,104,535,145"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="565,125,536,127,535,122,570,124"/>
+<area shape="rect" id="Node000003" href="$d3/d75/star__servo_8c.html#a104148a95f986eac12fabe6d01d4c87d" title="Calculate PCA9685 count value from angle (0&#45;180 degrees)." alt="" coords="205,5,343,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="414,96,348,61,323,49,323,44,350,57,420,96"/>
+<area shape="rect" id="Node000005" href="$d3/d75/star__servo_8c.html#abefc01bbb178a18a4ba402f84658839c" title="Calculate PCA9685 count for servo center position (90 degrees)." alt="" coords="199,71,349,111"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="379,110,349,107,349,101,384,109"/>
+<area shape="rect" id="Node000006" href="$d3/d75/star__servo_8c.html#ae085d135aa05019f7e90fd4b46b0d012" title="Calculate PCA9685 count for servo maximum position (180 degrees)." alt="" coords="204,136,344,177"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="379,139,344,147,343,142,384,138"/>
+<area shape="rect" id="Node000007" href="$d3/d75/star__servo_8c.html#a627d6c14f03faae93eff06dbc50de0fd" title="Calculate PCA9685 count for servo minimum position (0 degrees)." alt="" coords="206,201,342,242"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="418,152,350,191,324,203,322,198,348,186,413,153"/>
+<area shape="rect" id="Node000004" href="$d3/df7/star__sensor__pca9685_8c.html#a2e4fa8ab35cdf64c114217bfc1309a1c" title="Set servo position by angle." alt="" coords="5,5,151,46"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="187,27,152,28,150,23,191,24"/>
+</map>

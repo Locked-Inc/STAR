@@ -1,7 +1,13 @@
 <map id="star_servo_pulse_to_angle" name="star_servo_pulse_to_angle">
-<area shape="rect" id="Node000001" title="Calculate angle from pulse width in microseconds." alt="" coords="5,23,144,64"/>
-<area shape="rect" id="Node000002" href="$d3/d75/star__servo_8c.html#af22dfa33d50a10394cc1a93fef7dc3d6" title=" " alt="" coords="192,5,286,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="143,30,179,27,174,28,144,35"/>
-<area shape="rect" id="Node000003" href="$d3/d75/star__servo_8c.html#a8833486138de9335152a50c11dfa8693" title=" " alt="" coords="192,55,286,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="144,51,179,58,173,59,144,56"/>
+<area shape="rect" id="Node000001" title="Calculate angle from pulse width in microseconds." alt="" coords="5,67,144,107"/>
+<area shape="rect" id="Node000002" href="$d3/d75/star__servo_8c.html#af22dfa33d50a10394cc1a93fef7dc3d6" title=" " alt="" coords="230,17,324,42"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="143,65,218,46,213,48,145,70"/>
+<area shape="rect" id="Node000004" href="$d3/d75/star__servo_8c.html#a8833486138de9335152a50c11dfa8693" title=" " alt="" coords="230,74,324,100"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="144,84,218,86,213,88,144,90"/>
+<area shape="rect" id="Node000006" href="$de/d5e/star__servo__constants_8c.html#a12c23bf5fc24b4395a13b69edddd66c6" title="Get the default servo constants." alt="" coords="192,124,363,149"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="144,101,210,119,205,120,144,106"/>
+<area shape="rect" id="Node000003" href="$de/d5e/star__servo__constants_8c.html#a1fd2bd5c8eb02e8d5c3bcc32c5841e82" title="Get standard servo angle constants." alt="" coords="411,5,556,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="325,26,398,27,393,28,325,31"/>
+<area shape="rect" id="Node000005" href="$de/d5e/star__servo__constants_8c.html#a6172bfbd55bee59f475ff5a82d17fb5a" title="Get standard servo pulse timing constants." alt="" coords="411,71,556,111"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="325,85,398,89,393,90,325,91"/>
 </map>

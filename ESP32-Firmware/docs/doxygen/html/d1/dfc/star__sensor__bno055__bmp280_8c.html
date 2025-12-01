@@ -99,6 +99,7 @@ $(function(){initNavTree('d1/dfc/star__sensor__bno055__bmp280_8c.html','../../',
 <code>#include &lt;math.h&gt;</code><br />
 <code>#include &lt;stdlib.h&gt;</code><br />
 <code>#include &lt;string.h&gt;</code><br />
+<code>#include &quot;<a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html">bno055_bmp280_constants.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../dd/df4/star__bus__i2c_8h_source.html">star_bus_i2c.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d4/d59/star__error__handler_8h_source.html">star_error_handler.h</a>&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
@@ -106,133 +107,110 @@ Include dependency graph for star_sensor_bno055_bmp280.c:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d1/da5/star__sensor__bno055__bmp280_8c__incl.png" border="0" usemap="#alib_2star__sensor__bno055__bmp280_2src_2star__sensor__bno055__bmp280_8c" loading="lazy" alt=""/></div>
 <map name="alib_2star__sensor__bno055__bmp280_2src_2star__sensor__bno055__bmp280_8c" id="alib_2star__sensor__bno055__bmp280_2src_2star__sensor__bno055__bmp280_8c">
-<area shape="rect" title=" " alt="" coords="306,5,475,61"/>
-<area shape="rect" href="../../d2/df3/star__sensor__bno055__bmp280_8h.html" title="BNO055 + BMP280 10&#45;DOF IMU driver." alt="" coords="622,109,760,150"/>
-<area shape="poly" title=" " alt="" coords="475,58,616,103,611,105,476,64"/>
+<area shape="rect" title=" " alt="" coords="1740,5,1908,61"/>
+<area shape="rect" href="../../d2/df3/star__sensor__bno055__bmp280_8h.html" title="BNO055 + BMP280 10&#45;DOF IMU driver." alt="" coords="408,109,546,150"/>
+<area shape="poly" title=" " alt="" coords="1738,43,563,125,562,119,1740,38"/>
 <area shape="rect" title=" " alt="" coords="43,345,186,371"/>
-<area shape="poly" title=" " alt="" coords="304,46,245,58,184,71,133,89,114,100,102,111,87,136,79,165,76,195,78,226,90,284,106,331,101,331,85,286,72,227,71,195,74,164,82,134,98,107,111,95,131,84,183,66,244,52,308,43"/>
-<area shape="rect" title=" " alt="" coords="128,116,205,142"/>
-<area shape="poly" title=" " alt="" coords="324,64,211,112,208,108,328,59"/>
-<area shape="rect" title=" " alt="" coords="230,116,335,142"/>
-<area shape="poly" title=" " alt="" coords="358,64,310,108,305,105,361,59"/>
-<area shape="rect" title=" " alt="" coords="360,116,421,142"/>
-<area shape="poly" title=" " alt="" coords="391,59,393,102,388,100,390,64"/>
-<area shape="rect" title=" " alt="" coords="446,116,509,142"/>
-<area shape="poly" title=" " alt="" coords="416,59,459,105,454,106,416,64"/>
-<area shape="rect" title=" " alt="" coords="533,116,598,142"/>
-<area shape="poly" title=" " alt="" coords="441,59,532,108,527,110,441,64"/>
-<area shape="rect" href="../../dd/df4/star__bus__i2c_8h.html" title="I2C bus operations through the unified bus manager." alt="" coords="894,116,1000,142"/>
-<area shape="poly" title=" " alt="" coords="475,46,880,115,876,118,475,51"/>
-<area shape="rect" href="../../d4/d59/star__error__handler_8h.html" title="Error handling with retry logic and exponential backoff." alt="" coords="179,271,314,297"/>
-<area shape="poly" title=" " alt="" coords="304,48,250,59,194,73,146,90,129,100,118,111,108,131,109,151,117,172,131,193,171,231,215,262,210,264,168,235,127,196,112,175,103,152,103,130,114,107,126,96,144,86,192,68,249,54,308,44"/>
-<area shape="poly" title=" " alt="" coords="619,150,349,220,227,254,168,274,143,301,127,332,122,330,139,298,165,269,225,249,348,215,623,146"/>
+<area shape="poly" title=" " alt="" coords="1737,36,1415,44,979,57,764,67,574,79,428,94,377,102,344,111,281,142,237,175,200,216,157,273,139,302,126,331,121,329,134,300,152,270,196,213,233,171,278,137,342,107,376,97,427,88,574,74,764,61,979,52,1415,39,1742,35"/>
+<area shape="rect" title=" " alt="" coords="1824,116,1901,142"/>
+<area shape="poly" title=" " alt="" coords="1836,59,1855,104,1850,101,1834,64"/>
+<area shape="rect" title=" " alt="" coords="1926,116,2031,142"/>
+<area shape="poly" title=" " alt="" coords="1869,59,1949,108,1943,108,1868,64"/>
+<area shape="rect" title=" " alt="" coords="2056,116,2117,142"/>
+<area shape="poly" title=" " alt="" coords="1909,59,2045,107,2049,110,2044,110,2043,111,1909,64"/>
+<area shape="rect" title=" " alt="" coords="2142,116,2205,142"/>
+<area shape="poly" title=" " alt="" coords="1909,48,2015,73,2130,106,2136,110,2131,110,2129,112,2014,78,1909,54"/>
+<area shape="rect" title=" " alt="" coords="2229,116,2294,142"/>
+<area shape="poly" title=" " alt="" coords="1908,42,2055,67,2137,85,2218,106,2225,111,2219,110,2217,112,2136,90,2054,72,1909,48"/>
+<area shape="rect" href="../../d6/d8e/bno055__bmp280__constants_8h.html" title=" " alt="" coords="1843,419,2034,444"/>
+<area shape="poly" title=" " alt="" coords="1818,59,1812,103,1815,149,1837,225,1867,297,1899,359,1926,407,1921,405,1895,361,1863,299,1832,227,1809,150,1807,103,1815,63"/>
+<area shape="rect" href="../../dd/df4/star__bus__i2c_8h.html" title="I2C bus operations through the unified bus manager." alt="" coords="1587,116,1693,142"/>
+<area shape="poly" title=" " alt="" coords="1773,61,1678,112,1676,107,1768,63"/>
+<area shape="rect" href="../../d4/d59/star__error__handler_8h.html" title="Error handling with retry logic and exponential backoff." alt="" coords="200,271,336,297"/>
+<area shape="poly" title=" " alt="" coords="1737,35,1424,41,1004,51,797,61,615,73,476,90,428,100,397,111,356,142,323,182,298,223,281,258,276,256,293,220,319,179,353,138,395,107,427,95,475,85,615,68,797,55,1004,46,1424,35,1742,34"/>
+<area shape="poly" title=" " alt="" coords="419,152,310,201,248,234,190,273,158,303,133,334,129,331,154,300,186,269,245,230,308,196,423,148"/>
 <area shape="rect" title=" " alt="" coords="312,345,434,371"/>
-<area shape="poly" title=" " alt="" coords="644,152,556,200,503,234,455,273,395,335,391,331,452,269,500,229,553,195,648,149"/>
-<area shape="rect" title=" " alt="" coords="446,640,520,665"/>
-<area shape="poly" title=" " alt="" coords="619,148,610,152,504,166,398,168,296,168,203,170,162,175,124,184,91,196,62,214,39,238,22,269,12,308,8,357,8,506,11,521,20,535,56,561,108,584,172,602,312,629,433,646,427,647,311,634,170,607,106,589,53,566,17,539,6,523,3,507,3,356,6,308,17,267,35,235,59,210,88,192,122,179,161,170,203,165,296,162,398,163,503,160,609,147,623,146"/>
-<area shape="rect" title=" " alt="" coords="1112,640,1186,665"/>
-<area shape="poly" title=" " alt="" coords="725,148,799,195,889,263,925,296,967,343,1024,419,1073,499,1140,627,1135,625,1069,501,1020,422,963,347,922,300,886,267,796,200,725,153"/>
-<area shape="rect" title=" " alt="" coords="940,640,1004,665"/>
-<area shape="poly" title=" " alt="" coords="721,148,749,169,774,196,859,382,964,626,958,625,854,384,770,199,746,173,721,153"/>
-<area shape="rect" href="../../d6/dcc/star__bus__manager_8h.html" title="Unified bus manager for I2C, SPI, GPIO, and other bus protocols." alt="" coords="622,198,760,223"/>
-<area shape="poly" title=" " alt="" coords="692,148,693,183,688,181,689,152"/>
-<area shape="rect" href="../../df/d84/star__error__interface_8h.html" title="Error handler interface for dependency inversion." alt="" coords="501,419,646,444"/>
-<area shape="poly" title=" " alt="" coords="659,149,633,173,612,199,590,252,578,309,574,361,574,404,569,402,569,361,573,308,585,251,607,196,629,169,655,152"/>
-<area shape="poly" title=" " alt="" coords="619,222,562,241,532,255,506,273,465,345,426,420,410,467,400,507,401,545,416,590,430,612,450,631,445,630,426,615,411,593,395,546,395,506,405,466,422,418,460,343,502,270,530,251,560,236,624,220"/>
+<area shape="poly" title=" " alt="" coords="447,152,427,173,408,199,393,232,384,267,376,331,371,329,379,266,388,230,403,196,423,169,451,148"/>
+<area shape="rect" title=" " alt="" coords="536,640,610,665"/>
+<area shape="poly" title=" " alt="" coords="406,140,290,159,158,188,99,207,51,230,19,255,11,269,8,283,8,506,12,524,24,541,42,556,67,570,132,594,211,612,296,626,381,636,523,649,518,649,380,641,295,631,209,617,130,599,65,575,39,560,20,544,7,527,3,507,3,283,6,267,15,252,48,225,97,202,157,183,289,154,410,137"/>
+<area shape="rect" title=" " alt="" coords="899,640,973,665"/>
+<area shape="poly" title=" " alt="" coords="467,148,454,185,451,204,452,223,470,289,490,339,517,386,557,443,591,491,619,527,653,558,701,589,747,611,796,626,887,646,881,646,794,631,745,616,699,594,649,562,615,531,586,494,552,446,513,389,485,341,465,291,447,224,445,204,449,183,464,153"/>
+<area shape="rect" title=" " alt="" coords="1461,640,1526,665"/>
+<area shape="poly" title=" " alt="" coords="547,129,846,138,1042,147,1244,161,1434,180,1593,206,1655,222,1702,239,1733,259,1741,271,1744,283,1744,433,1745,481,1742,521,1730,556,1702,594,1665,621,1623,638,1580,648,1541,653,1541,648,1579,643,1621,633,1663,616,1698,590,1726,554,1737,520,1739,481,1739,433,1739,283,1736,273,1729,263,1700,244,1653,227,1591,211,1433,186,1243,166,1041,152,845,143,548,134"/>
+<area shape="rect" href="../../d6/dcc/star__bus__manager_8h.html" title="Unified bus manager for I2C, SPI, GPIO, and other bus protocols." alt="" coords="462,198,600,223"/>
+<area shape="poly" title=" " alt="" coords="491,147,517,185,511,185,490,153"/>
+<area shape="rect" href="../../df/d84/star__error__interface_8h.html" title="Error handler interface for dependency inversion." alt="" coords="704,492,848,518"/>
+<area shape="poly" title=" " alt="" coords="546,129,634,137,681,147,726,161,766,181,799,207,821,241,827,261,829,283,829,359,826,393,817,426,792,481,789,477,812,424,821,392,824,359,824,283,822,262,816,243,795,211,764,185,724,166,679,152,633,143,547,134"/>
+<area shape="poly" title=" " alt="" coords="524,222,489,286,468,330,449,380,435,433,429,488,435,541,443,566,456,590,469,606,485,619,524,640,519,639,482,623,465,610,451,593,438,568,430,542,424,488,430,432,444,378,463,327,485,283,521,226"/>
 <area shape="rect" href="../../d0/d84/star__bus__manager__types_8h.html" title=" " alt="" coords="611,271,789,297"/>
-<area shape="poly" title=" " alt="" coords="693,221,699,257,694,255,691,226"/>
+<area shape="poly" title=" " alt="" coords="559,221,660,264,654,265,559,227"/>
 <area shape="poly" title=" " alt="" coords="609,299,202,349,201,343,611,294"/>
 <area shape="poly" title=" " alt="" coords="642,299,444,344,443,339,647,296"/>
-<area shape="rect" href="../../dd/d40/star__bus__common__types_8h.html" title=" " alt="" coords="1187,566,1365,592"/>
-<area shape="poly" title=" " alt="" coords="724,295,1241,558,1236,560,723,300"/>
-<area shape="rect" href="../../dd/d9d/star__bus__protocol__types_8h.html" title=" " alt="" coords="1186,345,1360,371"/>
-<area shape="poly" title=" " alt="" coords="790,294,1173,343,1168,345,790,299"/>
-<area shape="poly" title=" " alt="" coords="692,296,596,409,592,405,687,299"/>
-<area shape="rect" href="../../da/d58/star__pin__interface_8h.html" title="Pin validator interface for dependency inversion." alt="" coords="672,566,808,592"/>
-<area shape="poly" title=" " alt="" coords="704,295,739,552,734,550,700,299"/>
-<area shape="poly" title=" " alt="" coords="1187,591,535,649,535,644,1186,586"/>
-<area shape="poly" title=" " alt="" coords="1257,592,1185,634,1183,629,1252,593"/>
-<area shape="poly" title=" " alt="" coords="1227,592,1020,643,1019,638,1221,593"/>
-<area shape="rect" title=" " alt="" coords="1508,640,1601,665"/>
-<area shape="poly" title=" " alt="" coords="1324,590,1496,636,1491,635,1323,595"/>
-<area shape="rect" title=" " alt="" coords="1633,640,1764,665"/>
-<area shape="poly" title=" " alt="" coords="1348,590,1620,638,1615,637,1348,595"/>
-<area shape="poly" title=" " alt="" coords="1201,372,1084,399,929,439,758,495,673,530,592,568,545,599,506,632,504,627,542,595,589,564,671,525,756,490,927,434,1083,394,1206,371"/>
-<area shape="poly" title=" " alt="" coords="1269,369,1228,453,1177,567,1158,627,1154,623,1172,565,1223,450,1265,373"/>
-<area shape="poly" title=" " alt="" coords="1264,370,996,631,994,627,1259,372"/>
-<area shape="poly" title=" " alt="" coords="1275,369,1278,552,1273,549,1272,373"/>
-<area shape="poly" title=" " alt="" coords="1285,368,1353,442,1534,629,1529,628,1349,446,1283,373"/>
-<area shape="poly" title=" " alt="" coords="1361,357,1431,362,1510,372,1593,389,1673,416,1733,443,1779,470,1797,487,1814,508,1844,565,1847,578,1846,591,1832,611,1808,626,1779,637,1778,632,1806,621,1828,607,1841,589,1842,579,1839,567,1810,511,1794,491,1775,474,1731,447,1671,421,1592,395,1509,377,1430,367,1361,363"/>
-<area shape="rect" title=" " alt="" coords="1744,566,1829,592"/>
-<area shape="poly" title=" " alt="" coords="1361,358,1450,368,1551,390,1603,407,1653,429,1701,457,1743,490,1766,520,1780,553,1776,550,1761,522,1739,494,1698,461,1651,434,1601,412,1550,395,1449,373,1361,364"/>
-<area shape="rect" href="../../db/d78/star__bus__event__types_8h.html" title=" " alt="" coords="1490,492,1651,518"/>
-<area shape="poly" title=" " alt="" coords="1361,366,1471,385,1518,399,1550,417,1560,430,1567,446,1573,479,1568,476,1562,447,1556,433,1546,421,1516,404,1470,390,1361,371"/>
-<area shape="rect" href="../../d0/da6/star__bus__function__types_8h.html" title=" " alt="" coords="1362,419,1536,444"/>
-<area shape="poly" title=" " alt="" coords="1304,369,1408,413,1403,412,1303,374"/>
-<area shape="poly" title=" " alt="" coords="1563,518,1526,557,1501,578,1473,594,1403,621,1329,638,1260,648,1203,652,1202,647,1260,643,1328,633,1401,616,1471,589,1498,573,1522,554,1558,520"/>
-<area shape="poly" title=" " alt="" coords="1551,518,1475,558,1427,577,1378,594,1307,609,1208,625,1019,649,1019,643,1207,619,1306,604,1377,589,1426,572,1473,553,1546,519"/>
-<area shape="poly" title=" " alt="" coords="1523,518,1341,565,1340,559,1518,519"/>
-<area shape="poly" title=" " alt="" coords="1574,516,1578,551,1576,592,1567,627,1563,623,1571,591,1572,551,1571,520"/>
-<area shape="poly" title=" " alt="" coords="1582,516,1680,629,1675,627,1580,521"/>
-<area shape="poly" title=" " alt="" coords="1608,516,1738,561,1733,560,1607,521"/>
-<area shape="poly" title=" " alt="" coords="1359,440,1225,456,1049,481,854,518,756,541,661,569,582,600,517,634,515,629,580,595,659,563,754,536,853,512,1048,476,1224,451,1364,439"/>
-<area shape="poly" title=" " alt="" coords="1449,443,1444,475,1431,516,1410,558,1379,594,1337,620,1291,638,1244,648,1202,653,1202,647,1243,643,1289,633,1335,616,1376,590,1405,555,1426,514,1438,474,1445,447"/>
-<area shape="poly" title=" " alt="" coords="1426,445,1013,636,1011,630,1420,445"/>
-<area shape="poly" title=" " alt="" coords="1438,444,1303,558,1301,554,1433,446"/>
-<area shape="poly" title=" " alt="" coords="1537,434,1571,441,1605,452,1637,468,1665,491,1685,522,1697,558,1702,594,1702,626,1698,623,1697,594,1692,559,1681,524,1661,494,1634,472,1603,457,1570,446,1537,439"/>
-<area shape="poly" title=" " alt="" coords="1537,438,1623,455,1667,470,1708,490,1745,519,1773,554,1768,552,1741,523,1705,495,1665,475,1621,460,1537,443"/>
-<area shape="poly" title=" " alt="" coords="1470,442,1539,484,1534,484,1469,447"/>
-<area shape="poly" title=" " alt="" coords="560,443,537,467,517,494,503,527,494,562,486,626,481,622,489,561,498,525,512,491,533,463,555,446"/>
-<area shape="poly" title=" " alt="" coords="606,442,1106,632,1101,635,605,447"/>
-<area shape="poly" title=" " alt="" coords="577,442,588,474,604,514,628,555,644,574,662,589,681,600,709,609,779,625,927,647,922,647,779,631,707,615,679,605,658,594,640,578,624,558,599,516,583,476,575,447"/>
-<area shape="poly" title=" " alt="" coords="699,592,535,639,534,634,694,593"/>
-<area shape="poly" title=" " alt="" coords="808,589,1100,642,1094,642,808,595"/>
-<area shape="poly" title=" " alt="" coords="780,590,928,637,922,637,779,595"/>
-<area shape="poly" title=" " alt="" coords="930,141,861,184,773,226,723,240,683,244,644,251,623,260,600,274,559,305,531,335,511,371,492,419,479,475,474,531,476,583,480,625,476,622,471,583,469,531,473,474,487,418,506,369,527,332,555,301,597,269,621,255,642,246,682,239,722,234,771,221,859,179,925,144"/>
-<area shape="poly" title=" " alt="" coords="948,140,949,283,949,506,955,570,967,626,962,623,950,571,944,507,944,283,945,145"/>
-<area shape="poly" title=" " alt="" coords="1000,131,1230,145,1535,174,1681,195,1803,219,1851,233,1888,248,1911,264,1920,282,1920,433,1917,454,1910,474,1887,509,1856,538,1824,560,1822,555,1852,534,1883,506,1906,472,1912,453,1915,433,1915,283,1907,268,1885,252,1849,238,1802,224,1680,200,1535,180,1229,151,1001,136"/>
-<area shape="rect" href="../../d7/d7c/star__bus__types_8h.html" title=" " alt="" coords="1131,198,1253,223"/>
-<area shape="poly" title=" " alt="" coords="984,140,1142,192,1137,193,984,145"/>
-<area shape="poly" title=" " alt="" coords="1128,222,799,271,798,266,1133,220"/>
-<area shape="poly" title=" " alt="" coords="1190,222,1176,288,1173,329,1177,370,1194,423,1217,473,1262,554,1257,552,1212,476,1189,425,1172,371,1168,329,1171,287,1186,226"/>
-<area shape="poly" title=" " alt="" coords="1200,221,1262,332,1257,331,1198,226"/>
-<area shape="poly" title=" " alt="" coords="1252,221,1331,244,1422,282,1467,308,1509,339,1547,375,1577,417,1583,432,1585,448,1581,479,1577,476,1580,448,1578,433,1572,420,1543,379,1506,343,1464,313,1420,287,1329,249,1252,227"/>
-<area shape="poly" title=" " alt="" coords="1211,221,1285,272,1374,343,1433,408,1428,406,1370,347,1282,276,1210,227"/>
-<area shape="poly" title=" " alt="" coords="223,300,152,339,148,335,226,295"/>
-<area shape="poly" title=" " alt="" coords="268,295,341,336,336,338,268,300"/>
-<area shape="poly" title=" " alt="" coords="245,295,234,355,227,430,227,506,232,538,248,564,271,586,300,604,333,619,367,629,433,645,428,645,365,635,331,624,298,609,268,591,244,568,227,540,221,507,221,430,229,354,242,300"/>
-<area shape="poly" title=" " alt="" coords="251,295,270,333,284,352,302,369,345,393,393,409,441,420,489,428,483,429,440,425,391,414,343,398,298,373,280,356,266,336,250,300"/>
+<area shape="rect" href="../../dd/d40/star__bus__common__types_8h.html" title=" " alt="" coords="1126,566,1304,592"/>
+<area shape="poly" title=" " alt="" coords="710,295,749,338,809,397,884,461,926,491,969,516,1039,543,1112,564,1107,563,1037,548,967,520,923,495,881,466,805,401,745,341,709,300"/>
+<area shape="rect" href="../../dd/d9d/star__bus__protocol__types_8h.html" title=" " alt="" coords="1109,345,1283,371"/>
+<area shape="poly" title=" " alt="" coords="785,295,1099,341,1094,343,785,300"/>
+<area shape="poly" title=" " alt="" coords="706,295,770,479,764,477,703,299"/>
+<area shape="rect" href="../../da/d58/star__pin__interface_8h.html" title="Pin validator interface for dependency inversion." alt="" coords="712,566,848,592"/>
+<area shape="poly" title=" " alt="" coords="697,296,687,337,677,393,677,457,683,488,694,517,713,539,738,559,733,558,709,543,690,519,678,489,671,457,672,393,682,336,694,300"/>
+<area shape="poly" title=" " alt="" coords="1128,590,626,648,626,643,1122,590"/>
+<area shape="poly" title=" " alt="" coords="1170,592,989,641,988,635,1165,593"/>
+<area shape="poly" title=" " alt="" coords="1262,590,1449,639,1444,639,1262,595"/>
+<area shape="rect" title=" " alt="" coords="1168,640,1261,665"/>
+<area shape="poly" title=" " alt="" coords="1217,590,1217,626,1213,622,1213,594"/>
+<area shape="rect" title=" " alt="" coords="1669,640,1800,665"/>
+<area shape="poly" title=" " alt="" coords="1304,590,1656,640,1651,640,1303,595"/>
+<area shape="poly" title=" " alt="" coords="1106,368,1018,384,911,408,799,444,745,468,693,495,657,523,627,559,603,595,586,628,583,623,599,592,623,555,653,519,691,490,742,463,797,439,910,403,1017,379,1111,367"/>
+<area shape="poly" title=" " alt="" coords="1183,370,1129,421,1077,477,1028,535,955,629,952,625,1024,532,1073,473,1125,417,1178,372"/>
+<area shape="poly" title=" " alt="" coords="1284,362,1385,379,1442,394,1499,414,1554,440,1604,474,1647,515,1681,565,1686,586,1681,603,1666,617,1646,628,1594,643,1541,651,1541,645,1593,638,1644,623,1663,613,1676,600,1681,585,1676,567,1643,518,1601,478,1551,445,1497,419,1440,399,1384,384,1284,368"/>
+<area shape="poly" title=" " alt="" coords="1198,369,1204,444,1214,552,1209,549,1199,445,1195,373"/>
+<area shape="poly" title=" " alt="" coords="1187,370,1157,411,1123,466,1111,497,1104,529,1105,561,1116,590,1136,614,1164,634,1159,632,1133,618,1111,593,1100,562,1099,529,1105,496,1118,464,1152,408,1183,372"/>
+<area shape="poly" title=" " alt="" coords="1284,357,1345,362,1413,373,1484,390,1550,416,1605,446,1644,476,1676,513,1710,565,1724,594,1732,626,1728,623,1719,596,1706,567,1672,516,1640,480,1602,450,1548,421,1482,395,1412,378,1344,368,1284,363"/>
+<area shape="rect" title=" " alt="" coords="1581,566,1667,592"/>
+<area shape="poly" title=" " alt="" coords="1259,369,1337,388,1420,416,1487,447,1547,490,1580,521,1608,555,1603,553,1576,525,1544,494,1484,452,1418,421,1336,393,1259,374"/>
+<area shape="rect" href="../../db/d78/star__bus__event__types_8h.html" title=" " alt="" coords="1290,492,1451,518"/>
+<area shape="poly" title=" " alt="" coords="1198,369,1205,406,1212,425,1223,443,1255,468,1294,487,1289,487,1253,472,1219,446,1207,428,1200,407,1195,373"/>
+<area shape="rect" href="../../d0/da6/star__bus__function__types_8h.html" title=" " alt="" coords="1233,419,1407,444"/>
+<area shape="poly" title=" " alt="" coords="1218,369,1289,411,1283,410,1217,374"/>
+<area shape="poly" title=" " alt="" coords="1369,517,1351,557,1336,577,1317,594,1291,606,1256,617,1167,633,1071,644,988,651,988,646,1070,639,1166,628,1255,612,1289,601,1315,589,1333,574,1347,554,1365,520"/>
+<area shape="poly" title=" " alt="" coords="1382,516,1476,629,1471,627,1380,521"/>
+<area shape="poly" title=" " alt="" coords="1347,518,1256,562,1254,557,1342,519"/>
+<area shape="poly" title=" " alt="" coords="1374,516,1376,554,1372,575,1362,593,1344,611,1323,625,1277,644,1276,638,1321,621,1341,607,1358,590,1367,573,1371,553,1371,520"/>
+<area shape="poly" title=" " alt="" coords="1398,516,1570,589,1687,634,1682,634,1568,594,1397,521"/>
+<area shape="poly" title=" " alt="" coords="1414,516,1569,562,1564,561,1413,521"/>
+<area shape="poly" title=" " alt="" coords="1250,444,958,501,808,535,747,552,701,568,656,595,603,633,601,628,653,591,699,564,745,547,806,530,957,496,1244,445"/>
+<area shape="poly" title=" " alt="" coords="1301,445,971,634,969,629,1296,445"/>
+<area shape="poly" title=" " alt="" coords="1384,442,1427,460,1448,474,1465,491,1483,523,1494,559,1498,594,1497,626,1493,622,1492,595,1488,560,1478,525,1461,494,1444,478,1425,465,1383,448"/>
+<area shape="poly" title=" " alt="" coords="1314,443,1234,555,1231,551,1309,446"/>
+<area shape="poly" title=" " alt="" coords="1403,442,1469,458,1543,482,1615,517,1649,539,1681,564,1706,594,1725,627,1720,625,1702,597,1677,568,1646,543,1613,521,1541,487,1468,463,1403,448"/>
+<area shape="poly" title=" " alt="" coords="1373,442,1439,462,1508,490,1559,521,1602,557,1597,555,1556,526,1505,495,1437,467,1373,448"/>
+<area shape="poly" title=" " alt="" coords="1329,442,1356,481,1351,479,1327,447"/>
+<area shape="poly" title=" " alt="" coords="747,518,703,541,658,568,622,599,593,630,591,626,619,595,654,564,700,536,742,519"/>
+<area shape="poly" title=" " alt="" coords="796,516,862,564,920,629,915,627,858,568,795,521"/>
+<area shape="poly" title=" " alt="" coords="819,516,951,551,1114,589,1297,621,1448,645,1443,645,1296,627,1113,594,949,556,819,521"/>
+<area shape="poly" title=" " alt="" coords="748,592,623,637,622,632,742,593"/>
+<area shape="poly" title=" " alt="" coords="807,590,898,633,893,632,806,595"/>
+<area shape="poly" title=" " alt="" coords="848,584,1448,646,1443,647,848,590"/>
+<area shape="poly" title=" " alt="" coords="1939,443,1932,480,1914,519,1895,546,1876,565,1855,579,1825,594,1750,621,1673,639,1601,649,1541,653,1541,648,1600,643,1672,634,1749,616,1823,589,1852,575,1873,561,1891,543,1910,517,1927,478,1935,447"/>
+<area shape="poly" title=" " alt="" coords="1584,135,1356,153,1042,183,888,202,754,223,653,248,620,260,601,273,586,299,576,337,570,385,567,438,569,543,573,626,569,623,563,544,562,438,565,385,571,336,581,297,597,270,618,256,652,242,753,218,887,197,1042,178,1356,148,1589,133"/>
+<area shape="poly" title=" " alt="" coords="1683,140,1727,161,1747,177,1762,196,1778,232,1792,281,1801,337,1807,397,1808,457,1804,512,1793,559,1775,593,1759,606,1736,617,1674,634,1604,644,1541,651,1541,645,1603,639,1673,628,1734,612,1757,602,1771,590,1788,557,1798,511,1803,457,1802,397,1796,338,1787,282,1773,234,1758,199,1743,181,1724,166,1683,145"/>
+<area shape="poly" title=" " alt="" coords="1642,140,1643,283,1643,433,1639,496,1631,552,1627,549,1634,496,1637,433,1637,283,1638,145"/>
+<area shape="rect" href="../../d7/d7c/star__bus__types_8h.html" title=" " alt="" coords="1215,198,1337,223"/>
+<area shape="poly" title=" " alt="" coords="1584,143,1348,196,1346,191,1589,141"/>
+<area shape="poly" title=" " alt="" coords="1212,220,805,273,804,267,1217,218"/>
+<area shape="poly" title=" " alt="" coords="1248,223,1210,244,1169,270,1130,304,1113,324,1100,346,1091,375,1092,404,1100,434,1114,463,1152,515,1191,556,1186,555,1148,518,1109,465,1095,436,1086,405,1086,374,1095,344,1109,321,1126,301,1166,266,1208,240,1243,225"/>
+<area shape="poly" title=" " alt="" coords="1272,222,1212,333,1208,329,1267,225"/>
+<area shape="poly" title=" " alt="" coords="1289,221,1320,253,1357,299,1394,355,1421,418,1424,432,1421,445,1411,465,1396,483,1394,479,1406,463,1416,443,1419,432,1416,419,1389,358,1353,302,1316,257,1288,226"/>
+<area shape="poly" title=" " alt="" coords="1280,221,1317,405,1312,403,1277,226"/>
+<area shape="poly" title=" " alt="" coords="240,300,156,340,153,336,244,295"/>
+<area shape="poly" title=" " alt="" coords="286,295,345,335,340,337,286,300"/>
+<area shape="poly" title=" " alt="" coords="263,295,241,355,231,392,227,430,227,506,229,528,235,548,245,565,258,581,293,606,336,624,384,636,433,644,523,652,518,652,432,649,383,642,335,629,291,610,255,585,241,568,230,550,224,530,221,507,221,430,226,391,236,353,260,300"/>
+<area shape="poly" title=" " alt="" coords="270,295,280,333,289,352,302,369,345,402,393,430,444,452,496,469,599,490,691,502,686,503,598,496,495,474,442,457,390,434,342,407,298,373,284,355,275,334,268,300"/>
 </map>
 </div>
 </div>
 <p><a href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-define-members" class="groupheader"><a id="define-members" name="define-members"></a>
-Macros</h2></td></tr>
-<tr class="memitem:ac3292730a4f4def20479cd80928de303" id="r_ac3292730a4f4def20479cd80928de303"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac3292730a4f4def20479cd80928de303">IMU_10DOF_MUTEX_TIMEOUT_MS</a>&#160;&#160;&#160;(1000)</td></tr>
-<tr class="memitem:a4a8aa16c6eaa6ef0c0f29afc79ed9df6" id="r_a4a8aa16c6eaa6ef0c0f29afc79ed9df6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4a8aa16c6eaa6ef0c0f29afc79ed9df6">BNO055_REG_CHIP_ID</a>&#160;&#160;&#160;(0x00)</td></tr>
-<tr class="memitem:a5bd6fca3eb8d0f326013d4a437daefd9" id="r_a5bd6fca3eb8d0f326013d4a437daefd9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5bd6fca3eb8d0f326013d4a437daefd9">BNO055_REG_OPR_MODE</a>&#160;&#160;&#160;(0x3D)</td></tr>
-<tr class="memitem:ab34b257ebf53ef947d9964fd44753ee5" id="r_ab34b257ebf53ef947d9964fd44753ee5"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab34b257ebf53ef947d9964fd44753ee5">BNO055_REG_PWR_MODE</a>&#160;&#160;&#160;(0x3E)</td></tr>
-<tr class="memitem:afb25f414f0e34729e8fbb339c96d10fe" id="r_afb25f414f0e34729e8fbb339c96d10fe"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afb25f414f0e34729e8fbb339c96d10fe">BNO055_REG_SYS_TRIGGER</a>&#160;&#160;&#160;(0x3F)</td></tr>
-<tr class="memitem:afdfc0fd9e901fefcda4a905cb62162b0" id="r_afdfc0fd9e901fefcda4a905cb62162b0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afdfc0fd9e901fefcda4a905cb62162b0">BNO055_REG_CALIB_STAT</a>&#160;&#160;&#160;(0x35)</td></tr>
-<tr class="memitem:aa935a5f94957d565c059346f63fed7e6" id="r_aa935a5f94957d565c059346f63fed7e6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa935a5f94957d565c059346f63fed7e6">BNO055_REG_QUA_DATA_W_LSB</a>&#160;&#160;&#160;(0x20)</td></tr>
-<tr class="memitem:aeffa91b3c07bc81ba2cd3324458545be" id="r_aeffa91b3c07bc81ba2cd3324458545be"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aeffa91b3c07bc81ba2cd3324458545be">BNO055_REG_EUL_HEADING_LSB</a>&#160;&#160;&#160;(0x1A)</td></tr>
-<tr class="memitem:a0b088ab08b2660392b9d18f6b7f1cea5" id="r_a0b088ab08b2660392b9d18f6b7f1cea5"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0b088ab08b2660392b9d18f6b7f1cea5">BNO055_REG_ACC_DATA_X_LSB</a>&#160;&#160;&#160;(0x08)</td></tr>
-<tr class="memitem:a5bdbdc481f8c12bea8e2c7dd73db0212" id="r_a5bdbdc481f8c12bea8e2c7dd73db0212"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5bdbdc481f8c12bea8e2c7dd73db0212">BNO055_REG_GYR_DATA_X_LSB</a>&#160;&#160;&#160;(0x14)</td></tr>
-<tr class="memitem:a018a1d1ca9c66400b51d3e2b0df6786d" id="r_a018a1d1ca9c66400b51d3e2b0df6786d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a018a1d1ca9c66400b51d3e2b0df6786d">BNO055_REG_MAG_DATA_X_LSB</a>&#160;&#160;&#160;(0x0E)</td></tr>
-<tr class="memitem:a02c858e2d532a9f1c2a2573d13f93602" id="r_a02c858e2d532a9f1c2a2573d13f93602"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a02c858e2d532a9f1c2a2573d13f93602">BNO055_REG_LIA_DATA_X_LSB</a>&#160;&#160;&#160;(0x28)</td></tr>
-<tr class="memitem:ae4e69ecca9ae5a508fde3ed05c0f7205" id="r_ae4e69ecca9ae5a508fde3ed05c0f7205"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae4e69ecca9ae5a508fde3ed05c0f7205">BNO055_REG_GRV_DATA_X_LSB</a>&#160;&#160;&#160;(0x2E)</td></tr>
-<tr class="memitem:a1aeb7bd8b3c8543e731cce6e7887d54e" id="r_a1aeb7bd8b3c8543e731cce6e7887d54e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1aeb7bd8b3c8543e731cce6e7887d54e">BNO055_REG_TEMP</a>&#160;&#160;&#160;(0x34)</td></tr>
-<tr class="memitem:a43668ede8a049c550212b9195a3e0c3f" id="r_a43668ede8a049c550212b9195a3e0c3f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a43668ede8a049c550212b9195a3e0c3f">BMP280_REG_CHIP_ID</a>&#160;&#160;&#160;(0xD0)</td></tr>
-<tr class="memitem:ac7b0712eb91fb4c21e488cf9d1177dbb" id="r_ac7b0712eb91fb4c21e488cf9d1177dbb"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac7b0712eb91fb4c21e488cf9d1177dbb">BMP280_REG_CTRL_MEAS</a>&#160;&#160;&#160;(0xF4)</td></tr>
-<tr class="memitem:a45694d6e3967184999c884d88a76178e" id="r_a45694d6e3967184999c884d88a76178e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a45694d6e3967184999c884d88a76178e">BMP280_REG_CONFIG</a>&#160;&#160;&#160;(0xF5)</td></tr>
-<tr class="memitem:afa572b770b46ca3553cf4ed2de98d7f4" id="r_afa572b770b46ca3553cf4ed2de98d7f4"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afa572b770b46ca3553cf4ed2de98d7f4">BMP280_REG_PRESS_MSB</a>&#160;&#160;&#160;(0xF7)</td></tr>
-<tr class="memitem:a2cd2723c469cf7c1dfcdbd953593c474" id="r_a2cd2723c469cf7c1dfcdbd953593c474"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2cd2723c469cf7c1dfcdbd953593c474">BMP280_REG_TEMP_MSB</a>&#160;&#160;&#160;(0xFA)</td></tr>
-<tr class="memitem:a65a9992fffa84159e9def0767496d73d" id="r_a65a9992fffa84159e9def0767496d73d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a65a9992fffa84159e9def0767496d73d">BMP280_REG_CALIB00</a>&#160;&#160;&#160;(0x88)</td></tr>
-<tr class="memitem:ab926ae2528c9f69cc9e069bbac99a90a" id="r_ab926ae2528c9f69cc9e069bbac99a90a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab926ae2528c9f69cc9e069bbac99a90a">BNO055_CHIP_ID_VALUE</a>&#160;&#160;&#160;(0xA0)</td></tr>
-<tr class="memitem:ab236115fca232a3539d7ed07ec1a2214" id="r_ab236115fca232a3539d7ed07ec1a2214"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab236115fca232a3539d7ed07ec1a2214">BMP280_CHIP_ID_VALUE</a>&#160;&#160;&#160;(0x58)</td></tr>
-<tr class="memitem:a7c5035ff6775507d3f2f70eb26ef00d7" id="r_a7c5035ff6775507d3f2f70eb26ef00d7"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7c5035ff6775507d3f2f70eb26ef00d7">SEA_LEVEL_PRESSURE_PA</a>&#160;&#160;&#160;(101325.0f)</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a722083a7cb967139e04c4e0e722895f8" id="r_a722083a7cb967139e04c4e0e722895f8"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a722083a7cb967139e04c4e0e722895f8">star_sensor_imu_10dof_init</a> (<a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h.html#a8e14763bd39b3ecda85d3b79f800b7ad">imu_10dof_handle_t</a> *handle, <a class="el" href="../../df/d84/star__error__interface_8h.html#a45a01bbdc613ba6c69401890e9eccbee">star_error_interface_t</a> *error_iface, const <a class="el" href="../../d7/dc9/structimu__10dof__config__t.html">imu_10dof_config_t</a> *config)</td></tr>
@@ -253,402 +231,11 @@ Functions</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 id="header-var-members" class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
 <tr class="memitem:a999e3dd103132afd3cd1856f477f2dbd" id="r_a999e3dd103132afd3cd1856f477f2dbd"><td class="memItemLeft" align="right" valign="top">static const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a999e3dd103132afd3cd1856f477f2dbd">s_TAG</a> = &quot;imu10dof&quot;</td></tr>
+<tr class="memitem:adb4b306c3d8374b0b5f3c3e42f52fa56" id="r_adb4b306c3d8374b0b5f3c3e42f52fa56"><td class="memItemLeft" align="right" valign="top">static const uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adb4b306c3d8374b0b5f3c3e42f52fa56">IMU_10DOF_MUTEX_TIMEOUT_MS</a> = 1000</td></tr>
+<tr class="memitem:aa03657eb7ff8b14d063be83b7c61a9b1" id="r_aa03657eb7ff8b14d063be83b7c61a9b1"><td class="memItemLeft" align="right" valign="top">static const uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa03657eb7ff8b14d063be83b7c61a9b1">BNO055_CHIP_ID_VALUE</a> = 0xA0</td></tr>
+<tr class="memitem:a2a25a2c83a8f5758aaddfb5f993d523c" id="r_a2a25a2c83a8f5758aaddfb5f993d523c"><td class="memItemLeft" align="right" valign="top">static const uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2a25a2c83a8f5758aaddfb5f993d523c">BMP280_CHIP_ID_VALUE</a> = 0x58</td></tr>
+<tr class="memitem:acc987be28a6aed78a170b3bd57c043d7" id="r_acc987be28a6aed78a170b3bd57c043d7"><td class="memItemLeft" align="right" valign="top">static const float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acc987be28a6aed78a170b3bd57c043d7">SEA_LEVEL_PRESSURE_PA</a> = 101325.0f</td></tr>
 </table>
-<a name="doc-define-members" id="doc-define-members"></a><h2 id="header-doc-define-members" class="groupheader">Macro Definition Documentation</h2>
-<a id="ab236115fca232a3539d7ed07ec1a2214" name="ab236115fca232a3539d7ed07ec1a2214"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab236115fca232a3539d7ed07ec1a2214">&#9670;&#160;</a></span>BMP280_CHIP_ID_VALUE</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define BMP280_CHIP_ID_VALUE&#160;&#160;&#160;(0x58)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00043">43</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00047">star_sensor_imu_10dof_init()</a>.</p>
-
-</div>
-</div>
-<a id="a65a9992fffa84159e9def0767496d73d" name="a65a9992fffa84159e9def0767496d73d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a65a9992fffa84159e9def0767496d73d">&#9670;&#160;</a></span>BMP280_REG_CALIB00</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define BMP280_REG_CALIB00&#160;&#160;&#160;(0x88)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00040">40</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00047">star_sensor_imu_10dof_init()</a>.</p>
-
-</div>
-</div>
-<a id="a43668ede8a049c550212b9195a3e0c3f" name="a43668ede8a049c550212b9195a3e0c3f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a43668ede8a049c550212b9195a3e0c3f">&#9670;&#160;</a></span>BMP280_REG_CHIP_ID</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define BMP280_REG_CHIP_ID&#160;&#160;&#160;(0xD0)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00035">35</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
-
-</div>
-</div>
-<a id="a45694d6e3967184999c884d88a76178e" name="a45694d6e3967184999c884d88a76178e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a45694d6e3967184999c884d88a76178e">&#9670;&#160;</a></span>BMP280_REG_CONFIG</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define BMP280_REG_CONFIG&#160;&#160;&#160;(0xF5)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00037">37</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
-
-</div>
-</div>
-<a id="ac7b0712eb91fb4c21e488cf9d1177dbb" name="ac7b0712eb91fb4c21e488cf9d1177dbb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac7b0712eb91fb4c21e488cf9d1177dbb">&#9670;&#160;</a></span>BMP280_REG_CTRL_MEAS</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define BMP280_REG_CTRL_MEAS&#160;&#160;&#160;(0xF4)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00036">36</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
-
-</div>
-</div>
-<a id="afa572b770b46ca3553cf4ed2de98d7f4" name="afa572b770b46ca3553cf4ed2de98d7f4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afa572b770b46ca3553cf4ed2de98d7f4">&#9670;&#160;</a></span>BMP280_REG_PRESS_MSB</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define BMP280_REG_PRESS_MSB&#160;&#160;&#160;(0xF7)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00038">38</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
-
-</div>
-</div>
-<a id="a2cd2723c469cf7c1dfcdbd953593c474" name="a2cd2723c469cf7c1dfcdbd953593c474"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2cd2723c469cf7c1dfcdbd953593c474">&#9670;&#160;</a></span>BMP280_REG_TEMP_MSB</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define BMP280_REG_TEMP_MSB&#160;&#160;&#160;(0xFA)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00039">39</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
-
-</div>
-</div>
-<a id="ab926ae2528c9f69cc9e069bbac99a90a" name="ab926ae2528c9f69cc9e069bbac99a90a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab926ae2528c9f69cc9e069bbac99a90a">&#9670;&#160;</a></span>BNO055_CHIP_ID_VALUE</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define BNO055_CHIP_ID_VALUE&#160;&#160;&#160;(0xA0)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00042">42</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00047">star_sensor_imu_10dof_init()</a>.</p>
-
-</div>
-</div>
-<a id="a0b088ab08b2660392b9d18f6b7f1cea5" name="a0b088ab08b2660392b9d18f6b7f1cea5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0b088ab08b2660392b9d18f6b7f1cea5">&#9670;&#160;</a></span>BNO055_REG_ACC_DATA_X_LSB</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define BNO055_REG_ACC_DATA_X_LSB&#160;&#160;&#160;(0x08)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00027">27</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00314">star_sensor_imu_10dof_read()</a>.</p>
-
-</div>
-</div>
-<a id="afdfc0fd9e901fefcda4a905cb62162b0" name="afdfc0fd9e901fefcda4a905cb62162b0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afdfc0fd9e901fefcda4a905cb62162b0">&#9670;&#160;</a></span>BNO055_REG_CALIB_STAT</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define BNO055_REG_CALIB_STAT&#160;&#160;&#160;(0x35)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00024">24</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00429">star_sensor_imu_10dof_get_calibration()</a>.</p>
-
-</div>
-</div>
-<a id="a4a8aa16c6eaa6ef0c0f29afc79ed9df6" name="a4a8aa16c6eaa6ef0c0f29afc79ed9df6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4a8aa16c6eaa6ef0c0f29afc79ed9df6">&#9670;&#160;</a></span>BNO055_REG_CHIP_ID</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define BNO055_REG_CHIP_ID&#160;&#160;&#160;(0x00)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00020">20</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00047">star_sensor_imu_10dof_init()</a>.</p>
-
-</div>
-</div>
-<a id="aeffa91b3c07bc81ba2cd3324458545be" name="aeffa91b3c07bc81ba2cd3324458545be"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aeffa91b3c07bc81ba2cd3324458545be">&#9670;&#160;</a></span>BNO055_REG_EUL_HEADING_LSB</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define BNO055_REG_EUL_HEADING_LSB&#160;&#160;&#160;(0x1A)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00026">26</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00314">star_sensor_imu_10dof_read()</a>.</p>
-
-</div>
-</div>
-<a id="ae4e69ecca9ae5a508fde3ed05c0f7205" name="ae4e69ecca9ae5a508fde3ed05c0f7205"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae4e69ecca9ae5a508fde3ed05c0f7205">&#9670;&#160;</a></span>BNO055_REG_GRV_DATA_X_LSB</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define BNO055_REG_GRV_DATA_X_LSB&#160;&#160;&#160;(0x2E)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00031">31</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
-
-</div>
-</div>
-<a id="a5bdbdc481f8c12bea8e2c7dd73db0212" name="a5bdbdc481f8c12bea8e2c7dd73db0212"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5bdbdc481f8c12bea8e2c7dd73db0212">&#9670;&#160;</a></span>BNO055_REG_GYR_DATA_X_LSB</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define BNO055_REG_GYR_DATA_X_LSB&#160;&#160;&#160;(0x14)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00028">28</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
-
-</div>
-</div>
-<a id="a02c858e2d532a9f1c2a2573d13f93602" name="a02c858e2d532a9f1c2a2573d13f93602"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a02c858e2d532a9f1c2a2573d13f93602">&#9670;&#160;</a></span>BNO055_REG_LIA_DATA_X_LSB</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define BNO055_REG_LIA_DATA_X_LSB&#160;&#160;&#160;(0x28)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00030">30</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
-
-</div>
-</div>
-<a id="a018a1d1ca9c66400b51d3e2b0df6786d" name="a018a1d1ca9c66400b51d3e2b0df6786d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a018a1d1ca9c66400b51d3e2b0df6786d">&#9670;&#160;</a></span>BNO055_REG_MAG_DATA_X_LSB</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define BNO055_REG_MAG_DATA_X_LSB&#160;&#160;&#160;(0x0E)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00029">29</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
-
-</div>
-</div>
-<a id="a5bd6fca3eb8d0f326013d4a437daefd9" name="a5bd6fca3eb8d0f326013d4a437daefd9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5bd6fca3eb8d0f326013d4a437daefd9">&#9670;&#160;</a></span>BNO055_REG_OPR_MODE</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define BNO055_REG_OPR_MODE&#160;&#160;&#160;(0x3D)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00021">21</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00047">star_sensor_imu_10dof_init()</a>, and <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00472">star_sensor_imu_10dof_set_mode()</a>.</p>
-
-</div>
-</div>
-<a id="ab34b257ebf53ef947d9964fd44753ee5" name="ab34b257ebf53ef947d9964fd44753ee5"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab34b257ebf53ef947d9964fd44753ee5">&#9670;&#160;</a></span>BNO055_REG_PWR_MODE</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define BNO055_REG_PWR_MODE&#160;&#160;&#160;(0x3E)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00022">22</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00047">star_sensor_imu_10dof_init()</a>.</p>
-
-</div>
-</div>
-<a id="aa935a5f94957d565c059346f63fed7e6" name="aa935a5f94957d565c059346f63fed7e6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa935a5f94957d565c059346f63fed7e6">&#9670;&#160;</a></span>BNO055_REG_QUA_DATA_W_LSB</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define BNO055_REG_QUA_DATA_W_LSB&#160;&#160;&#160;(0x20)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00025">25</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00314">star_sensor_imu_10dof_read()</a>.</p>
-
-</div>
-</div>
-<a id="afb25f414f0e34729e8fbb339c96d10fe" name="afb25f414f0e34729e8fbb339c96d10fe"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afb25f414f0e34729e8fbb339c96d10fe">&#9670;&#160;</a></span>BNO055_REG_SYS_TRIGGER</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define BNO055_REG_SYS_TRIGGER&#160;&#160;&#160;(0x3F)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00023">23</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00047">star_sensor_imu_10dof_init()</a>, and <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00506">star_sensor_imu_10dof_reset_bno055()</a>.</p>
-
-</div>
-</div>
-<a id="a1aeb7bd8b3c8543e731cce6e7887d54e" name="a1aeb7bd8b3c8543e731cce6e7887d54e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1aeb7bd8b3c8543e731cce6e7887d54e">&#9670;&#160;</a></span>BNO055_REG_TEMP</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define BNO055_REG_TEMP&#160;&#160;&#160;(0x34)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00032">32</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
-
-</div>
-</div>
-<a id="ac3292730a4f4def20479cd80928de303" name="ac3292730a4f4def20479cd80928de303"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac3292730a4f4def20479cd80928de303">&#9670;&#160;</a></span>IMU_10DOF_MUTEX_TIMEOUT_MS</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define IMU_10DOF_MUTEX_TIMEOUT_MS&#160;&#160;&#160;(1000)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00017">17</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00279">star_sensor_imu_10dof_deinit()</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00314">star_sensor_imu_10dof_read()</a>, and <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00472">star_sensor_imu_10dof_set_mode()</a>.</p>
-
-</div>
-</div>
-<a id="a7c5035ff6775507d3f2f70eb26ef00d7" name="a7c5035ff6775507d3f2f70eb26ef00d7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7c5035ff6775507d3f2f70eb26ef00d7">&#9670;&#160;</a></span>SEA_LEVEL_PRESSURE_PA</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define SEA_LEVEL_PRESSURE_PA&#160;&#160;&#160;(101325.0f)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00045">45</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00314">star_sensor_imu_10dof_read()</a>.</p>
-
-</div>
-</div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
 <a id="acb593dfc30474b45f2b4807406441b4f" name="acb593dfc30474b45f2b4807406441b4f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#acb593dfc30474b45f2b4807406441b4f">&#9670;&#160;</a></span>star_sensor_imu_10dof_deinit()</h2>
@@ -674,9 +261,9 @@ Variables</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00279">279</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00292">292</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00166">star_error_interface::ctx</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00393">error_handler_destroy_default()</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00295">imu_10dof_handle::error_iface</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00017">IMU_10DOF_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00297">imu_10dof_handle::initialized</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00296">imu_10dof_handle::mutex</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00298">imu_10dof_handle::owns_error_handler</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00166">star_error_interface::ctx</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00393">error_handler_destroy_default()</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00295">imu_10dof_handle::error_iface</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00019">IMU_10DOF_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00297">imu_10dof_handle::initialized</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00296">imu_10dof_handle::mutex</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00298">imu_10dof_handle::owns_error_handler</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -721,11 +308,11 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00429">429</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00442">442</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00257">calibration_status_t::accel</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00024">BNO055_REG_CALIB_STAT</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00292">imu_10dof_handle::bus_name</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00256">calibration_status_t::gyro</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00297">imu_10dof_handle::initialized</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00258">calibration_status_t::mag</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00291">imu_10dof_handle::manager</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00111">star_bus_i2c_read()</a>, and <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00255">calibration_status_t::sys</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00257">calibration_status_t::accel</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00292">imu_10dof_handle::bus_name</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00256">calibration_status_t::gyro</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00297">imu_10dof_handle::initialized</a>, <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00027">k_bno055_reg_calib_stat</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00258">calibration_status_t::mag</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00291">imu_10dof_handle::manager</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00111">star_bus_i2c_read()</a>, and <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00255">calibration_status_t::sys</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00455">star_sensor_imu_10dof_is_calibrated()</a>, and <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00314">star_sensor_imu_10dof_read()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00468">star_sensor_imu_10dof_is_calibrated()</a>, and <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00327">star_sensor_imu_10dof_read()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -794,9 +381,9 @@ If error_iface is NULL, a default error handler will be created internally </dd>
 <dd>
 All operations after init are protected by mutex for thread safety </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00047">47</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00031">31</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00280">imu_10dof_config_t::bmp280_addr</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00294">imu_10dof_handle::bmp280_addr</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00043">BMP280_CHIP_ID_VALUE</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00040">BMP280_REG_CALIB00</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00034">BMP280_REG_CHIP_ID</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00037">BMP280_REG_CTRL_MEAS</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00279">imu_10dof_config_t::bno055_addr</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00293">imu_10dof_handle::bno055_addr</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00042">BNO055_CHIP_ID_VALUE</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00223">BNO055_OP_MODE_CONFIG</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00217">BNO055_POWER_MODE_NORMAL</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00020">BNO055_REG_CHIP_ID</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00021">BNO055_REG_OPR_MODE</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00022">BNO055_REG_PWR_MODE</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00023">BNO055_REG_SYS_TRIGGER</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00278">imu_10dof_config_t::bus_name</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00292">imu_10dof_handle::bus_name</a>, <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00166">star_error_interface::ctx</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00304">imu_10dof_handle::dig_P1</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00305">imu_10dof_handle::dig_P2</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00306">imu_10dof_handle::dig_P3</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00307">imu_10dof_handle::dig_P4</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00308">imu_10dof_handle::dig_P5</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00309">imu_10dof_handle::dig_P6</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00310">imu_10dof_handle::dig_P7</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00311">imu_10dof_handle::dig_P8</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00312">imu_10dof_handle::dig_P9</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00301">imu_10dof_handle::dig_T1</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00302">imu_10dof_handle::dig_T2</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00303">imu_10dof_handle::dig_T3</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00348">error_handler_create_default()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00393">error_handler_destroy_default()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00324">error_handler_get_interface()</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00295">imu_10dof_handle::error_iface</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00297">imu_10dof_handle::initialized</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00277">imu_10dof_config_t::manager</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00291">imu_10dof_handle::manager</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00296">imu_10dof_handle::mutex</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00281">imu_10dof_config_t::operation_mode</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00299">imu_10dof_handle::operation_mode</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00298">imu_10dof_handle::owns_error_handler</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00111">star_bus_i2c_read()</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00075">star_bus_i2c_write()</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00280">imu_10dof_config_t::bmp280_addr</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00294">imu_10dof_handle::bmp280_addr</a>, <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00099">BMP280_CHIP_ID_VALUE</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00279">imu_10dof_config_t::bno055_addr</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00293">imu_10dof_handle::bno055_addr</a>, <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00098">BNO055_CHIP_ID_VALUE</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00278">imu_10dof_config_t::bus_name</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00292">imu_10dof_handle::bus_name</a>, <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00166">star_error_interface::ctx</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00304">imu_10dof_handle::dig_P1</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00305">imu_10dof_handle::dig_P2</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00306">imu_10dof_handle::dig_P3</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00307">imu_10dof_handle::dig_P4</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00308">imu_10dof_handle::dig_P5</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00309">imu_10dof_handle::dig_P6</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00310">imu_10dof_handle::dig_P7</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00311">imu_10dof_handle::dig_P8</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00312">imu_10dof_handle::dig_P9</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00301">imu_10dof_handle::dig_T1</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00302">imu_10dof_handle::dig_T2</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00303">imu_10dof_handle::dig_T3</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00348">error_handler_create_default()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00393">error_handler_destroy_default()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00324">error_handler_get_interface()</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00295">imu_10dof_handle::error_iface</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00297">imu_10dof_handle::initialized</a>, <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00059">k_bmp280_reg_calib00</a>, <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00060">k_bmp280_reg_chip_id</a>, <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00063">k_bmp280_reg_ctrl_meas</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00223">k_bno055_op_mode_config</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00217">k_bno055_power_mode_normal</a>, <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00018">k_bno055_reg_chip_id</a>, <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00028">k_bno055_reg_opr_mode</a>, <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00029">k_bno055_reg_pwr_mode</a>, <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00030">k_bno055_reg_sys_trigger</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00277">imu_10dof_config_t::manager</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00291">imu_10dof_handle::manager</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00296">imu_10dof_handle::mutex</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00281">imu_10dof_config_t::operation_mode</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00299">imu_10dof_handle::operation_mode</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00298">imu_10dof_handle::owns_error_handler</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00111">star_bus_i2c_read()</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00075">star_bus_i2c_write()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -868,9 +455,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00455">455</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00468">468</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00257">calibration_status_t::accel</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00256">calibration_status_t::gyro</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00297">imu_10dof_handle::initialized</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00258">calibration_status_t::mag</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00429">star_sensor_imu_10dof_get_calibration()</a>, and <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00255">calibration_status_t::sys</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00257">calibration_status_t::accel</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00256">calibration_status_t::gyro</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00297">imu_10dof_handle::initialized</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00258">calibration_status_t::mag</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00442">star_sensor_imu_10dof_get_calibration()</a>, and <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00255">calibration_status_t::sys</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -917,9 +504,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00314">314</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00327">327</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00262">imu_10dof_data_t::accelerometer</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00271">imu_10dof_data_t::altitude_m</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00039">BMP280_REG_PRESS_MSB</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00272">imu_10dof_data_t::bmp_temp_c</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00027">BNO055_REG_ACC_DATA_X_LSB</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00026">BNO055_REG_EUL_HEADING_LSB</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00025">BNO055_REG_QUA_DATA_W_LSB</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00292">imu_10dof_handle::bus_name</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00273">imu_10dof_data_t::calibration</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00304">imu_10dof_handle::dig_P1</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00305">imu_10dof_handle::dig_P2</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00306">imu_10dof_handle::dig_P3</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00307">imu_10dof_handle::dig_P4</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00308">imu_10dof_handle::dig_P5</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00309">imu_10dof_handle::dig_P6</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00310">imu_10dof_handle::dig_P7</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00311">imu_10dof_handle::dig_P8</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00312">imu_10dof_handle::dig_P9</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00301">imu_10dof_handle::dig_T1</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00302">imu_10dof_handle::dig_T2</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00303">imu_10dof_handle::dig_T3</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00268">imu_10dof_data_t::euler</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00249">euler_t::heading</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00017">IMU_10DOF_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00297">imu_10dof_handle::initialized</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00291">imu_10dof_handle::manager</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00296">imu_10dof_handle::mutex</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00251">euler_t::pitch</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00270">imu_10dof_data_t::pressure_pa</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00267">imu_10dof_data_t::quaternion</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00250">euler_t::roll</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00045">SEA_LEVEL_PRESSURE_PA</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00111">star_bus_i2c_read()</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00429">star_sensor_imu_10dof_get_calibration()</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00242">quaternion_t::w</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00243">quaternion_t::x</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00236">vec3_t::x</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00244">quaternion_t::y</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00237">vec3_t::y</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00245">quaternion_t::z</a>, and <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00238">vec3_t::z</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00262">imu_10dof_data_t::accelerometer</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00271">imu_10dof_data_t::altitude_m</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00272">imu_10dof_data_t::bmp_temp_c</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00292">imu_10dof_handle::bus_name</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00273">imu_10dof_data_t::calibration</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00304">imu_10dof_handle::dig_P1</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00305">imu_10dof_handle::dig_P2</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00306">imu_10dof_handle::dig_P3</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00307">imu_10dof_handle::dig_P4</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00308">imu_10dof_handle::dig_P5</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00309">imu_10dof_handle::dig_P6</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00310">imu_10dof_handle::dig_P7</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00311">imu_10dof_handle::dig_P8</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00312">imu_10dof_handle::dig_P9</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00301">imu_10dof_handle::dig_T1</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00302">imu_10dof_handle::dig_T2</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00303">imu_10dof_handle::dig_T3</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00268">imu_10dof_data_t::euler</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00249">euler_t::heading</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00019">IMU_10DOF_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00297">imu_10dof_handle::initialized</a>, <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00065">k_bmp280_reg_press_msb</a>, <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00019">k_bno055_reg_acc_data_x_lsb</a>, <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00022">k_bno055_reg_eul_heading_lsb</a>, <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00023">k_bno055_reg_qua_data_w_lsb</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00291">imu_10dof_handle::manager</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00296">imu_10dof_handle::mutex</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00251">euler_t::pitch</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00270">imu_10dof_data_t::pressure_pa</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00267">imu_10dof_data_t::quaternion</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00250">euler_t::roll</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00029">SEA_LEVEL_PRESSURE_PA</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00111">star_bus_i2c_read()</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00442">star_sensor_imu_10dof_get_calibration()</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00242">quaternion_t::w</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00243">quaternion_t::x</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00236">vec3_t::x</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00244">quaternion_t::y</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00237">vec3_t::y</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00245">quaternion_t::z</a>, and <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00238">vec3_t::z</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -962,9 +549,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00506">506</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00523">523</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00023">BNO055_REG_SYS_TRIGGER</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00292">imu_10dof_handle::bus_name</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00297">imu_10dof_handle::initialized</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00291">imu_10dof_handle::manager</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00075">star_bus_i2c_write()</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00292">imu_10dof_handle::bus_name</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00297">imu_10dof_handle::initialized</a>, <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00030">k_bno055_reg_sys_trigger</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00291">imu_10dof_handle::manager</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00075">star_bus_i2c_write()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1009,9 +596,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00472">472</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00485">485</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00021">BNO055_REG_OPR_MODE</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00292">imu_10dof_handle::bus_name</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00017">IMU_10DOF_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00297">imu_10dof_handle::initialized</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00291">imu_10dof_handle::manager</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00296">imu_10dof_handle::mutex</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00299">imu_10dof_handle::operation_mode</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00075">star_bus_i2c_write()</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00292">imu_10dof_handle::bus_name</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00019">IMU_10DOF_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00297">imu_10dof_handle::initialized</a>, <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00028">k_bno055_reg_opr_mode</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00291">imu_10dof_handle::manager</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00296">imu_10dof_handle::mutex</a>, <a class="el" href="../../d2/df3/star__sensor__bno055__bmp280_8h_source.html#l00299">imu_10dof_handle::operation_mode</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00075">star_bus_i2c_write()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1028,6 +615,80 @@ Here is the call graph for this function:</div>
 </div>
 </div>
 <a name="doc-var-members" id="doc-var-members"></a><h2 id="header-doc-var-members" class="groupheader">Variable Documentation</h2>
+<a id="a2a25a2c83a8f5758aaddfb5f993d523c" name="a2a25a2c83a8f5758aaddfb5f993d523c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2a25a2c83a8f5758aaddfb5f993d523c">&#9670;&#160;</a></span>BMP280_CHIP_ID_VALUE</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const uint8_t BMP280_CHIP_ID_VALUE = 0x58</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00026">26</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
+
+</div>
+</div>
+<a id="aa03657eb7ff8b14d063be83b7c61a9b1" name="aa03657eb7ff8b14d063be83b7c61a9b1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa03657eb7ff8b14d063be83b7c61a9b1">&#9670;&#160;</a></span>BNO055_CHIP_ID_VALUE</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const uint8_t BNO055_CHIP_ID_VALUE = 0xA0</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00025">25</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
+
+</div>
+</div>
+<a id="adb4b306c3d8374b0b5f3c3e42f52fa56" name="adb4b306c3d8374b0b5f3c3e42f52fa56"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#adb4b306c3d8374b0b5f3c3e42f52fa56">&#9670;&#160;</a></span>IMU_10DOF_MUTEX_TIMEOUT_MS</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const uint32_t IMU_10DOF_MUTEX_TIMEOUT_MS = 1000</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00019">19</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00292">star_sensor_imu_10dof_deinit()</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00327">star_sensor_imu_10dof_read()</a>, and <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00485">star_sensor_imu_10dof_set_mode()</a>.</p>
+
+</div>
+</div>
 <a id="a999e3dd103132afd3cd1856f477f2dbd" name="a999e3dd103132afd3cd1856f477f2dbd"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a999e3dd103132afd3cd1856f477f2dbd">&#9670;&#160;</a></span>s_TAG</h2>
 
@@ -1048,7 +709,33 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00015">15</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00016">16</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
+
+</div>
+</div>
+<a id="acc987be28a6aed78a170b3bd57c043d7" name="acc987be28a6aed78a170b3bd57c043d7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acc987be28a6aed78a170b3bd57c043d7">&#9670;&#160;</a></span>SEA_LEVEL_PRESSURE_PA</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const float SEA_LEVEL_PRESSURE_PA = 101325.0f</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00029">29</a> of file <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html">star_sensor_bno055_bmp280.c</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00327">star_sensor_imu_10dof_read()</a>.</p>
 
 </div>
 </div>

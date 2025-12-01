@@ -1,51 +1,61 @@
 <map id="led_task_start" name="led_task_start">
-<area shape="rect" id="Node000001" title="Initialize LED display task." alt="" coords="5,108,109,134"/>
-<area shape="rect" id="Node000002" href="$d0/d81/led__task_8c.html#a45beb0a71113d5832f1e960aa8533481" title=" " alt="" coords="157,79,307,104"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="108,110,144,105,139,108,110,115"/>
-<area shape="rect" id="Node000015" href="$db/d0d/shared__data_8c.html#acf829b11efe6efde5ff9c9a1798b05c9" title="Get pointer to global shared context." alt="" coords="576,5,743,31"/>
-<area shape="poly" id="edge28_Node000001_Node000015" title=" " alt="" coords="77,106,113,84,156,64,253,29,355,12,400,7,436,8,517,12,563,14,558,16,517,17,436,13,401,13,355,17,254,34,158,69,116,89,81,109"/>
-<area shape="rect" id="Node000019" href="$d2/dc9/led__controller_8c.html#a401de17207482b2f692cd97add113e49" title="Deinitialize LED controller." alt="" coords="164,189,300,215"/>
-<area shape="poly" id="edge23_Node000001_Node000019" title=" " alt="" coords="84,132,158,168,187,182,182,183,156,173,84,137"/>
-<area shape="rect" id="Node000021" href="$d2/dc9/led__controller_8c.html#aa31e14fc30c8e35caffef7dad530d4eb" title="Initialize LED controller." alt="" coords="171,132,293,158"/>
-<area shape="poly" id="edge26_Node000001_Node000021" title=" " alt="" coords="108,125,158,133,153,136,110,130"/>
-<area shape="rect" id="Node000003" href="$d0/d81/led__task_8c.html#a6aa0cce3c297a4cce6b0b752e3ded0e0" title=" " alt="" coords="355,55,517,96"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="306,83,342,82,337,84,308,88"/>
-<area shape="poly" id="edge22_Node000002_Node000015" title=" " alt="" coords="259,76,303,57,354,41,460,24,563,18,558,20,461,29,356,46,305,62,262,80"/>
-<area shape="rect" id="Node000016" href="$d0/d81/led__task_8c.html#ae254e94283d7484aede3cb5b30445402" title=" " alt="" coords="362,121,511,161"/>
-<area shape="poly" id="edge17_Node000002_Node000016" title=" " alt="" coords="288,102,349,118,343,120,288,108"/>
-<area shape="rect" id="Node000004" href="$d0/d81/led__task_8c.html#a4e35506eb493450e65a1e8f8a5d9d4ac" title=" " alt="" coords="593,55,726,96"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="517,73,580,75,575,76,518,78"/>
-<area shape="poly" id="edge16_Node000003_Node000015" title=" " alt="" coords="517,52,594,35,589,36,519,57"/>
-<area shape="rect" id="Node000005" href="$d2/dc9/led__controller_8c.html#a73db6a6b8b56f7fc6580517593f99827" title="Convert distance measurement to RGB color." alt="" coords="999,91,1153,132"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="726,79,986,103,981,104,726,84"/>
-<area shape="rect" id="Node000006" href="$d2/dc9/led__controller_8c.html#a73349b12790da0a90e8918735b11ab10" title="Turn off specific LED." alt="" coords="802,199,951,224"/>
-<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="727,92,755,107,771,121,781,134,790,148,803,163,840,191,835,190,800,167,785,151,776,137,767,124,752,111,726,97"/>
-<area shape="rect" id="Node000014" href="$d2/dc9/led__controller_8c.html#a7845556a1b6df08561a0ffe60da13f0f" title="Update LED based on distance measurement." alt="" coords="804,113,948,153"/>
-<area shape="poly" id="edge13_Node000004_Node000014" title=" " alt="" coords="726,90,792,110,787,110,726,96"/>
-<area shape="rect" id="Node000007" href="$d2/dc9/led__controller_8c.html#ac65666d46afe64b998d889b066bed529" title="Set RGB LED color." alt="" coords="1002,171,1150,196"/>
-<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="951,198,984,196,989,196,952,204"/>
-<area shape="rect" id="Node000008" href="$d2/dc9/led__controller_8c.html#a055f40aef481cb67e15eca4d09028a61" title=" " alt="" coords="1201,171,1374,196"/>
-<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="1150,181,1188,183,1183,184,1151,186"/>
-<area shape="rect" id="Node000009" href="$d2/dc9/led__controller_8c.html#a7b7ebe952969637b30a7a358d7c3d92c" title=" " alt="" coords="1426,130,1562,170"/>
-<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="1371,167,1408,164,1414,163,1372,173"/>
-<area shape="rect" id="Node000010" href="$d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="1422,195,1567,236"/>
-<area shape="poly" id="edge9_Node000008_Node000010" title=" " alt="" coords="1374,194,1409,202,1404,202,1374,200"/>
-<area shape="rect" id="Node000011" href="$d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="1615,195,1760,236"/>
-<area shape="poly" id="edge10_Node000010_Node000011" title=" " alt="" coords="1567,213,1602,215,1597,216,1567,218"/>
-<area shape="rect" id="Node000012" href="$dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="1808,203,1939,228"/>
-<area shape="poly" id="edge11_Node000011_Node000012" title=" " alt="" coords="1761,213,1796,215,1791,216,1761,218"/>
-<area shape="rect" id="Node000013" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="1987,203,2171,228"/>
-<area shape="poly" id="edge12_Node000012_Node000013" title=" " alt="" coords="1939,213,1973,215,1968,216,1939,218"/>
-<area shape="poly" id="edge14_Node000014_Node000005" title=" " alt="" coords="948,122,986,121,981,122,949,128"/>
-<area shape="poly" id="edge15_Node000014_Node000007" title=" " alt="" coords="949,148,1010,166,1005,166,949,154"/>
-<area shape="poly" id="edge18_Node000016_Node000004" title=" " alt="" coords="507,117,581,98,576,100,509,123"/>
-<area shape="poly" id="edge19_Node000016_Node000006" title=" " alt="" coords="496,159,519,172,534,186,542,199,551,211,566,221,597,232,630,238,696,242,759,236,812,229,817,228,760,241,696,247,629,243,596,237,564,226,548,215,538,202,529,189,516,176,495,164"/>
-<area shape="rect" id="Node000017" href="$db/d0d/shared__data_8c.html#a921b6f2942e0e7d01d9cc0a3ae1a9c5f" title="Get latest sensor reading." alt="" coords="578,121,741,161"/>
-<area shape="poly" id="edge20_Node000016_Node000017" title=" " alt="" coords="511,138,565,140,560,141,511,143"/>
-<area shape="rect" id="Node000018" href="$db/d0d/shared__data_8c.html#a3bdf4ea7cbcd1af874c68f1da508ae3b" title="Get system uptime in milliseconds." alt="" coords="565,185,754,211"/>
-<area shape="poly" id="edge21_Node000016_Node000018" title=" " alt="" coords="511,157,594,181,589,181,511,163"/>
-<area shape="rect" id="Node000020" href="$d2/dc9/led__controller_8c.html#a4ef6b466f7b5477b96ef6f47a5cf8455" title="Turn off all LEDs." alt="" coords="372,186,500,226"/>
-<area shape="poly" id="edge24_Node000019_Node000020" title=" " alt="" coords="300,201,359,204,354,205,301,206"/>
-<area shape="poly" id="edge25_Node000020_Node000006" title=" " alt="" coords="471,224,515,247,566,265,618,275,659,279,701,275,753,265,799,250,838,233,843,231,801,255,754,270,702,280,659,284,617,280,565,270,513,252,470,229"/>
-<area shape="poly" id="edge27_Node000021_Node000020" title=" " alt="" coords="278,156,360,182,355,183,277,161"/>
+<area shape="rect" id="Node000001" title="Initialize LED display task." alt="" coords="5,116,109,141"/>
+<area shape="rect" id="Node000002" href="$d0/d81/led__task_8c.html#a61e20b7b3d53c0fe3f3e30ab709564fd" title=" " alt="" coords="157,86,307,112"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="108,117,144,113,139,116,110,122"/>
+<area shape="rect" id="Node000019" href="$db/d0d/shared__data_8c.html#acf829b11efe6efde5ff9c9a1798b05c9" title="Get pointer to global shared context." alt="" coords="576,13,743,38"/>
+<area shape="poly" id="edge34_Node000001_Node000019" title=" " alt="" coords="77,113,113,92,156,71,253,37,355,19,400,15,436,15,517,19,563,22,558,23,517,24,436,20,401,20,355,24,254,42,158,76,116,96,81,117"/>
+<area shape="rect" id="Node000023" href="$d2/dc9/led__controller_8c.html#a4041166ed835cbf20470b38d1c76eaf4" title="Deinitialize LED controller." alt="" coords="164,197,300,222"/>
+<area shape="poly" id="edge29_Node000001_Node000023" title=" " alt="" coords="84,139,158,175,187,190,182,191,156,180,84,144"/>
+<area shape="rect" id="Node000025" href="$d2/dc9/led__controller_8c.html#aeae7615c8b32711083f0cd898653aa63" title="Initialize LED controller." alt="" coords="171,140,293,165"/>
+<area shape="poly" id="edge32_Node000001_Node000025" title=" " alt="" coords="108,133,158,141,153,143,110,138"/>
+<area shape="rect" id="Node000003" href="$d0/d81/led__task_8c.html#a5ed102fd8f8fe04d25422aeea7b89fd0" title=" " alt="" coords="355,63,517,103"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="306,91,342,90,337,91,308,96"/>
+<area shape="poly" id="edge28_Node000002_Node000019" title=" " alt="" coords="259,83,303,65,354,48,460,31,563,26,558,28,461,36,356,54,305,70,262,88"/>
+<area shape="rect" id="Node000020" href="$d0/d81/led__task_8c.html#a9815a89f029b7233e7cd0e8cf0450144" title=" " alt="" coords="362,128,511,169"/>
+<area shape="poly" id="edge22_Node000002_Node000020" title=" " alt="" coords="288,110,349,126,343,127,288,115"/>
+<area shape="rect" id="Node000004" href="$d0/d81/led__task_8c.html#a1a400922bf8466136467222b9ec209be" title=" " alt="" coords="593,63,726,103"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="517,80,580,82,575,84,518,86"/>
+<area shape="poly" id="edge21_Node000003_Node000019" title=" " alt="" coords="517,60,594,42,589,44,519,65"/>
+<area shape="rect" id="Node000005" href="$d2/dc9/led__controller_8c.html#aa9bce675e112120c36bb4886aa7928aa" title="Convert distance measurement to RGB color using smooth HSV gradient." alt="" coords="999,5,1153,46"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="726,64,801,48,895,36,986,31,981,32,895,42,802,54,727,69"/>
+<area shape="rect" id="Node000008" href="$d2/dc9/led__controller_8c.html#a105d937217c622b9872eeeeeb4823b33" title="Turn off specific LED." alt="" coords="802,218,951,244"/>
+<area shape="poly" id="edge7_Node000004_Node000008" title=" " alt="" coords="727,99,755,114,772,130,781,146,790,161,804,178,841,210,836,209,800,182,785,164,776,148,768,133,752,118,726,104"/>
+<area shape="rect" id="Node000017" href="$d2/dc9/led__controller_8c.html#a3bc9057e69b2a21032f72cb91d54d249" title="Update LED based on distance measurement." alt="" coords="804,63,948,103"/>
+<area shape="poly" id="edge16_Node000004_Node000017" title=" " alt="" coords="726,80,791,83,786,83,727,86"/>
+<area shape="rect" id="Node000018" href="$d4/d7e/system__config_8h.html#aee59613b222c590cb8080f4f732f758f" title="Validate sensor index." alt="" coords="806,128,947,169"/>
+<area shape="poly" id="edge20_Node000004_Node000018" title=" " alt="" coords="726,100,795,123,789,123,726,106"/>
+<area shape="rect" id="Node000006" href="$d2/dc9/led__controller_8c.html#a05e24a1e741cb4693bbe6f9d4a3d5e28" title="Convert HSV color to RGB color." alt="" coords="1224,5,1351,46"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="1153,23,1212,25,1206,26,1154,28"/>
+<area shape="rect" id="Node000007" href="$d4/d7e/system__config_8h.html#a27d7155fa342a21a9e7dc287b32d3cde" title="Validate distance measurement." alt="" coords="1212,70,1363,96"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="1154,44,1225,66,1220,66,1153,49"/>
+<area shape="rect" id="Node000009" href="$d2/dc9/led__controller_8c.html#a076c2165b5b3484a7208445ff9a1c86d" title="Set RGB LED color." alt="" coords="1002,157,1150,182"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="920,215,1015,188,1020,187,921,220"/>
+<area shape="rect" id="Node000010" href="$d2/dc9/led__controller_8c.html#a055f40aef481cb67e15eca4d09028a61" title=" " alt="" coords="1201,157,1374,182"/>
+<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="1150,167,1188,170,1183,170,1151,172"/>
+<area shape="rect" id="Node000011" href="$d2/dc9/led__controller_8c.html#ac94f191b849645c0630d6594f91c32b0" title=" " alt="" coords="1444,84,1580,125"/>
+<area shape="poly" id="edge10_Node000010_Node000011" title=" " alt="" coords="1334,154,1426,129,1432,128,1335,159"/>
+<area shape="rect" id="Node000012" href="$d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="1439,149,1584,190"/>
+<area shape="poly" id="edge11_Node000010_Node000012" title=" " alt="" coords="1374,167,1426,170,1421,170,1374,172"/>
+<area shape="rect" id="Node000016" href="$d4/d7e/system__config_8h.html#a048d7fce3116a990c5536e18eed4a61b" title="Validate PWM percentage." alt="" coords="1422,214,1602,240"/>
+<area shape="poly" id="edge15_Node000010_Node000016" title=" " alt="" coords="1341,180,1446,210,1441,210,1341,186"/>
+<area shape="rect" id="Node000013" href="$d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="1650,149,1795,190"/>
+<area shape="poly" id="edge12_Node000012_Node000013" title=" " alt="" coords="1585,167,1637,170,1632,170,1585,172"/>
+<area shape="rect" id="Node000014" href="$dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="1843,157,1974,182"/>
+<area shape="poly" id="edge13_Node000013_Node000014" title=" " alt="" coords="1796,167,1831,170,1826,170,1796,172"/>
+<area shape="rect" id="Node000015" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="2022,157,2206,182"/>
+<area shape="poly" id="edge14_Node000014_Node000015" title=" " alt="" coords="1974,167,2008,170,2003,170,1974,172"/>
+<area shape="poly" id="edge17_Node000017_Node000005" title=" " alt="" coords="948,60,986,51,991,50,950,65"/>
+<area shape="poly" id="edge19_Node000017_Node000007" title=" " alt="" coords="949,80,1199,83,1194,83,949,86"/>
+<area shape="poly" id="edge18_Node000017_Node000009" title=" " alt="" coords="926,101,1033,150,1028,150,925,107"/>
+<area shape="poly" id="edge23_Node000020_Node000004" title=" " alt="" coords="507,125,581,106,576,107,509,130"/>
+<area shape="poly" id="edge24_Node000020_Node000008" title=" " alt="" coords="496,167,519,180,534,193,542,207,551,219,566,229,625,246,686,252,746,250,796,247,802,247,746,256,686,257,624,251,564,233,548,223,538,210,529,197,516,184,495,172"/>
+<area shape="rect" id="Node000021" href="$db/d0d/shared__data_8c.html#a1db0e8429be801019cbef073929b2f29" title="Get latest sensor reading." alt="" coords="578,128,741,169"/>
+<area shape="poly" id="edge25_Node000020_Node000021" title=" " alt="" coords="511,146,565,148,560,149,511,151"/>
+<area shape="rect" id="Node000022" href="$db/d0d/shared__data_8c.html#a3bdf4ea7cbcd1af874c68f1da508ae3b" title="Get system uptime in milliseconds." alt="" coords="565,193,754,218"/>
+<area shape="poly" id="edge27_Node000020_Node000022" title=" " alt="" coords="511,165,594,188,589,188,511,170"/>
+<area shape="poly" id="edge26_Node000021_Node000018" title=" " alt="" coords="742,146,793,148,787,149,742,151"/>
+<area shape="rect" id="Node000024" href="$d2/dc9/led__controller_8c.html#a6743c205855240c57225c021e88e3d95" title="Turn off all LEDs." alt="" coords="372,193,500,234"/>
+<area shape="poly" id="edge30_Node000023_Node000024" title=" " alt="" coords="300,208,359,212,354,213,301,214"/>
+<area shape="poly" id="edge31_Node000024_Node000008" title=" " alt="" coords="471,232,515,255,566,272,618,282,659,285,701,281,753,272,794,262,830,251,835,250,796,267,754,278,701,286,659,290,617,288,565,278,513,260,470,237"/>
+<area shape="poly" id="edge33_Node000025_Node000024" title=" " alt="" coords="278,163,360,190,355,191,277,168"/>
 </map>

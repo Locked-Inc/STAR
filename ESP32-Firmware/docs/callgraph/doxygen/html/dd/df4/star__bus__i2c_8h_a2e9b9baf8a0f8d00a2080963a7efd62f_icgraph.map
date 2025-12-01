@@ -4,9 +4,9 @@
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="772,1040,768,906,753,715,739,618,720,530,695,459,679,433,663,414,643,405,615,400,541,403,459,416,389,432,385,428,458,411,541,398,615,395,645,400,666,410,684,430,699,457,725,528,744,617,758,714,773,905,777,1042"/>
 <area shape="rect" id="Node000012" href="$df/deb/star__bus__batch_8c.html#a83c47362bb84557376a1791c5425f41c" title="Execute a single batch operation." alt="" coords="246,852,422,877"/>
 <area shape="poly" id="edge3_Node000001_Node000012" title=" " alt="" coords="765,1094,751,1128,729,1162,701,1195,666,1220,615,1242,570,1251,549,1250,526,1245,478,1220,437,1184,404,1139,379,1090,361,1038,348,988,340,943,336,880,336,875,345,942,354,987,366,1037,384,1087,409,1136,441,1180,482,1215,528,1240,549,1245,570,1246,613,1237,663,1215,697,1191,725,1159,746,1126,762,1099"/>
-<area shape="rect" id="Node000014" href="$d7/df2/star__sensor__mpu6050_8c.html#a22fe40a03094a07d6b03c6de6d121688" title=" " alt="" coords="506,136,638,161"/>
+<area shape="rect" id="Node000014" href="$d7/df2/star__sensor__mpu6050_8c.html#a95ee574609f3f096d184820df2e58182" title=" " alt="" coords="506,136,638,161"/>
 <area shape="poly" id="edge5_Node000001_Node000014" title=" " alt="" coords="772,1041,768,921,753,736,739,630,720,519,695,408,662,301,644,260,622,221,584,164,584,159,626,218,649,258,667,299,700,407,725,518,745,629,758,736,773,921,777,1042"/>
-<area shape="rect" id="Node000019" href="$d3/df7/star__sensor__pca9685_8c.html#ab5d665b77448f8328bad9d4c61c0d47c" title="Read from PCA9685 register." alt="" coords="508,313,636,338"/>
+<area shape="rect" id="Node000019" href="$d3/df7/star__sensor__pca9685_8c.html#aa890b42646d44f6b5a11c603658f0afa" title="Read from PCA9685 register." alt="" coords="508,313,636,338"/>
 <area shape="poly" id="edge10_Node000001_Node000019" title=" " alt="" coords="771,1041,764,902,745,702,731,599,713,504,690,425,677,394,662,370,644,353,625,342,623,337,648,349,666,367,681,391,695,423,718,503,736,598,751,702,769,902,776,1042"/>
 <area shape="rect" id="Node000029" href="$d6/d0b/star__bus__devices_8c.html#a1f8bc705525b751fa39e633673388063" title="Initialize ADS1115 ADC." alt="" coords="497,474,647,500"/>
 <area shape="poly" id="edge14_Node000001_Node000029" title=" " alt="" coords="770,1041,761,927,741,768,727,687,709,613,687,553,662,513,649,501,647,496,666,509,692,551,714,612,732,686,746,767,766,926,776,1042"/>
@@ -42,17 +42,17 @@
 <area shape="poly" id="edge32_Node000001_Node000045" title=" " alt="" coords="773,1095,764,1193,743,1319,728,1382,711,1439,690,1485,666,1514,627,1536,583,1544,539,1541,494,1530,451,1515,412,1497,356,1463,355,1458,414,1492,453,1510,495,1525,539,1536,583,1538,625,1531,663,1510,685,1482,706,1437,723,1381,737,1318,758,1192,771,1100"/>
 <area shape="rect" id="Node000046" href="$d1/dfc/star__sensor__bno055__bmp280_8c.html#a722083a7cb967139e04c4e0e722895f8" title="Initialize 10&#45;DOF IMU (BNO055 + BMP280)." alt="" coords="482,1345,662,1370"/>
 <area shape="poly" id="edge31_Node000001_Node000046" title=" " alt="" coords="772,1096,763,1149,744,1213,712,1278,691,1308,666,1334,647,1346,644,1342,663,1330,687,1305,708,1275,739,1211,758,1148,770,1100"/>
-<area shape="rect" id="Node000047" href="$d7/df2/star__sensor__mpu6050_8c.html#acd1b051122b1d43b3207faa6734ce061" title=" " alt="" coords="498,1395,647,1435"/>
+<area shape="rect" id="Node000047" href="$d7/df2/star__sensor__mpu6050_8c.html#a90480ddcc483904e3c57303a5171918b" title=" " alt="" coords="498,1395,647,1435"/>
 <area shape="poly" id="edge33_Node000001_Node000047" title=" " alt="" coords="774,1096,767,1158,749,1234,735,1274,717,1314,694,1352,666,1385,649,1398,646,1394,662,1381,690,1349,712,1312,730,1272,744,1232,762,1157,772,1101"/>
-<area shape="rect" id="Node000048" href="$d7/df2/star__sensor__mpu6050_8c.html#ac5546d5b808dbc10376beb12448aaed8" title=" " alt="" coords="498,1460,647,1501"/>
+<area shape="rect" id="Node000048" href="$d7/df2/star__sensor__mpu6050_8c.html#af9f9dcb9bcb06a111d8217773b6176fb" title=" " alt="" coords="498,1460,647,1501"/>
 <area shape="poly" id="edge34_Node000001_Node000048" title=" " alt="" coords="776,1096,773,1168,757,1261,743,1311,724,1361,698,1407,666,1449,649,1462,645,1459,662,1445,694,1404,719,1358,738,1309,752,1260,767,1167,774,1101"/>
 <area shape="rect" id="Node000049" href="$d7/df2/star__sensor__mpu6050_8c.html#a6827825e12a3662c9c1616cbaf84701a" title=" " alt="" coords="498,1640,647,1681"/>
 <area shape="poly" id="edge35_Node000001_Node000049" title=" " alt="" coords="774,1096,765,1213,744,1371,730,1451,712,1525,691,1586,666,1629,649,1643,646,1639,662,1625,686,1584,707,1524,725,1450,739,1370,760,1212,772,1101"/>
-<area shape="rect" id="Node000051" href="$d7/df2/star__sensor__mpu6050_8c.html#acd9d531a27f49d36d8ad04ee442c4399" title=" " alt="" coords="498,1575,647,1615"/>
+<area shape="rect" id="Node000051" href="$d7/df2/star__sensor__mpu6050_8c.html#a4433795137c77129e52ed5ac303819c0" title=" " alt="" coords="498,1575,647,1615"/>
 <area shape="poly" id="edge37_Node000001_Node000051" title=" " alt="" coords="773,1096,761,1199,739,1336,707,1468,688,1521,666,1558,645,1576,641,1572,662,1555,683,1519,702,1467,734,1335,756,1199,771,1101"/>
 <area shape="rect" id="Node000052" href="$d7/df2/star__sensor__mpu6050_8c.html#a17b378af6ddb0fc22860e22c9349c953" title=" " alt="" coords="498,1836,647,1877"/>
 <area shape="poly" id="edge38_Node000001_Node000052" title=" " alt="" coords="775,1095,772,1247,756,1464,742,1576,723,1679,698,1765,683,1799,666,1825,649,1840,646,1835,662,1821,679,1796,693,1763,718,1678,737,1575,751,1463,767,1247,773,1100"/>
-<area shape="rect" id="Node000054" href="$d7/df2/star__sensor__mpu6050_8c.html#a6320e2f54ab20eb5d10eecd711032111" title=" " alt="" coords="498,1705,647,1746"/>
+<area shape="rect" id="Node000054" href="$d7/df2/star__sensor__mpu6050_8c.html#a560473d6ca210b13f020dff2b568608c" title=" " alt="" coords="498,1705,647,1746"/>
 <area shape="poly" id="edge40_Node000001_Node000054" title=" " alt="" coords="774,1096,767,1224,748,1402,734,1493,716,1577,693,1646,681,1673,666,1694,649,1709,646,1705,662,1691,676,1670,689,1644,711,1575,729,1492,743,1401,762,1224,772,1100"/>
 <area shape="rect" id="Node000055" href="$d3/df7/star__sensor__pca9685_8c.html#a65433046e8d58c4706d62deb8ab8afa8" title="Get PWM values for a channel." alt="" coords="500,1771,645,1811"/>
 <area shape="poly" id="edge41_Node000001_Node000055" title=" " alt="" coords="775,1096,770,1236,752,1433,738,1535,719,1628,696,1705,682,1736,666,1759,647,1775,644,1771,662,1756,677,1733,691,1703,714,1627,733,1534,747,1432,764,1235,773,1100"/>
@@ -70,20 +70,20 @@
 <area shape="poly" id="edge7_Node000014_Node000016" title=" " alt="" coords="499,133,411,111,408,107,503,130"/>
 <area shape="rect" id="Node000017" href="$d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="248,136,421,161"/>
 <area shape="poly" id="edge8_Node000014_Node000017" title=" " alt="" coords="489,150,423,150,420,146,493,147"/>
-<area shape="rect" id="Node000018" href="$d7/df2/star__sensor__mpu6050_8c.html#a26a2221a6e7e888b7779a68eb0c1cc04" title=" " alt="" coords="260,185,409,226"/>
+<area shape="rect" id="Node000018" href="$d7/df2/star__sensor__mpu6050_8c.html#a13b17febbf0058089731826f5e129100" title=" " alt="" coords="260,185,409,226"/>
 <area shape="poly" id="edge9_Node000014_Node000018" title=" " alt="" coords="499,167,411,190,408,186,503,163"/>
-<area shape="rect" id="Node000020" href="$d3/df7/star__sensor__pca9685_8c.html#a49863dd18b6c011a0162743d0e1dd4d4" title="Internal frequency setting (no initialization check, caller must hold mutex if needed)." alt="" coords="262,365,406,406"/>
+<area shape="rect" id="Node000020" href="$d3/df7/star__sensor__pca9685_8c.html#af172ec2771522a913b761463c8d4828f" title="Internal frequency setting (no initialization check, caller must hold mutex if needed)." alt="" coords="262,365,406,406"/>
 <area shape="poly" id="edge11_Node000019_Node000020" title=" " alt="" coords="501,345,409,369,405,366,505,341"/>
-<area shape="rect" id="Node000025" href="$d3/df7/star__sensor__pca9685_8c.html#a91eaab882e26ad08fb58448b532e4bd7" title="Set MODE1 register bits." alt="" coords="250,250,419,276"/>
+<area shape="rect" id="Node000025" href="$d3/df7/star__sensor__pca9685_8c.html#ad672ac0514a17e7b1b4d4d9cd9c93c58" title="Set MODE1 register bits." alt="" coords="250,250,419,276"/>
 <area shape="poly" id="edge12_Node000019_Node000025" title=" " alt="" coords="505,310,431,291,389,279,386,274,433,286,509,307"/>
 <area shape="rect" id="Node000028" href="$d3/df7/star__sensor__pca9685_8c.html#a360aec2b034221ff3286cdf344b2e66e" title="Get current PWM frequency." alt="" coords="262,300,407,341"/>
 <area shape="poly" id="edge13_Node000019_Node000028" title=" " alt="" coords="491,326,409,324,406,320,496,322"/>
 <area shape="rect" id="Node000044" href="$d1/dfc/star__sensor__bno055__bmp280_8c.html#a990d4e7c3b3283d36a148ec59dbd85cf" title="Check if system is fully calibrated." alt="" coords="256,1280,412,1321"/>
 <area shape="poly" id="edge29_Node000043_Node000044" title=" " alt="" coords="477,1302,414,1303,412,1298,481,1299"/>
 <area shape="poly" id="edge30_Node000043_Node000045" title=" " alt="" coords="488,1329,481,1335,442,1359,406,1387,351,1435,347,1432,402,1383,439,1355,479,1330,491,1326"/>
-<area shape="rect" id="Node000050" href="$d7/df2/star__sensor__mpu6050_8c.html#aeae03191c4d73ddf2ce669de706cf5b0" title=" " alt="" coords="260,1640,409,1681"/>
+<area shape="rect" id="Node000050" href="$d7/df2/star__sensor__mpu6050_8c.html#acf7c055ab733728deb0165192d3efc65" title=" " alt="" coords="260,1640,409,1681"/>
 <area shape="poly" id="edge36_Node000049_Node000050" title=" " alt="" coords="480,1662,411,1663,409,1658,484,1659"/>
-<area shape="rect" id="Node000053" href="$d7/df2/star__sensor__mpu6050_8c.html#a69c5e6f06d448bb24490cc174701034e" title=" " alt="" coords="260,1723,409,1763"/>
+<area shape="rect" id="Node000053" href="$d7/df2/star__sensor__mpu6050_8c.html#a57220afed4d707a382ed62361d57880c" title=" " alt="" coords="260,1723,409,1763"/>
 <area shape="poly" id="edge39_Node000052_Node000053" title=" " alt="" coords="489,1829,478,1825,454,1804,431,1784,397,1767,396,1761,433,1779,458,1800,482,1821,494,1829"/>
 <area shape="poly" id="edge43_Node000056_Node000002" title=" " alt="" coords="478,441,425,443,421,439,482,438"/>
 <area shape="poly" id="edge44_Node000056_Node000012" title=" " alt="" coords="481,462,482,464,441,510,409,563,384,620,366,678,345,783,339,852,334,851,340,782,361,677,379,618,404,561,437,507,478,460,484,457"/>
