@@ -2103,6 +2103,18 @@
 		)
 		(uuid a92c696c-39b4-4445-9ba5-0fda9792e6b9)
 	)
+	(rectangle
+		(start 31.75 154.94)
+		(end 88.9 173.99)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid f9052019-03c8-42a6-8cb9-f2080f576e72)
+	)
 	(text "3V3 Buck"
 		(exclude_from_sim no)
 		(at 144.272 89.916 0)
@@ -2125,7 +2137,7 @@
 		)
 		(uuid "6902229b-6703-4b89-93db-82aaf6cf2faf")
 	)
-	(text "INPUT"
+	(text "5V Buck"
 		(exclude_from_sim no)
 		(at 84.328 144.78 0)
 		(effects
