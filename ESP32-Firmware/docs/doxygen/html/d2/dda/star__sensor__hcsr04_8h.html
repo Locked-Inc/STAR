@@ -103,78 +103,82 @@ $(function(){initNavTree('d2/dda/star__sensor__hcsr04_8h.html','../../',''); });
 <code>#include &lt;stdbool.h&gt;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
 <code>#include &quot;hal/gpio_types.h&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d9/d6c/star__sensor__hcsr04__constants_8h_source.html">star_sensor_hcsr04_constants.h</a>&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for star_sensor_hcsr04.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d6/d0e/star__sensor__hcsr04_8h__incl.png" border="0" usemap="#alib_2star__sensor__hcsr04_2include_2star__sensor__hcsr04_8h" loading="lazy" alt=""/></div>
 <map name="alib_2star__sensor__hcsr04_2include_2star__sensor__hcsr04_8h" id="alib_2star__sensor__hcsr04_2include_2star__sensor__hcsr04_8h">
-<area shape="rect" title="HC&#45;SR04 ultrasonic distance sensor driver." alt="" coords="800,5,995,46"/>
-<area shape="rect" title=" " alt="" coords="118,241,261,267"/>
-<area shape="poly" title=" " alt="" coords="797,35,578,59,472,76,397,96,341,126,290,163,246,200,213,232,209,228,242,196,286,158,339,121,395,92,471,71,578,54,802,33"/>
-<area shape="rect" title=" " alt="" coords="286,241,408,267"/>
-<area shape="poly" title=" " alt="" coords="797,31,699,39,590,51,492,70,455,82,427,96,399,125,378,159,364,195,355,227,350,225,359,194,373,157,395,121,424,92,453,77,491,65,589,46,699,34,802,29"/>
-<area shape="rect" title=" " alt="" coords="195,536,270,562"/>
-<area shape="poly" title=" " alt="" coords="797,35,584,56,330,87,214,106,119,129,82,141,55,154,38,167,32,180,32,403,36,428,47,451,63,470,84,487,132,514,183,534,178,535,130,519,81,492,60,474,43,453,31,430,27,403,27,179,34,163,52,149,80,136,117,124,213,101,329,82,583,51,802,33"/>
-<area shape="rect" href="../../d6/dcc/star__bus__manager_8h.html" title="Unified bus manager for I2C, SPI, GPIO, and other bus protocols." alt="" coords="438,94,576,120"/>
-<area shape="poly" title=" " alt="" coords="798,48,583,93,581,88,802,45"/>
-<area shape="rect" title=" " alt="" coords="811,536,886,562"/>
-<area shape="poly" title=" " alt="" coords="996,27,1049,34,1106,46,1163,65,1215,92,1242,109,1263,127,1276,149,1280,179,1280,403,1279,451,1271,471,1254,490,1228,506,1190,518,1094,536,990,545,902,549,901,544,990,540,1094,530,1189,513,1225,501,1251,486,1267,468,1274,450,1275,403,1275,179,1271,150,1259,130,1239,114,1212,96,1160,70,1105,51,1048,39,996,33"/>
-<area shape="rect" title=" " alt="" coords="1136,536,1201,562"/>
-<area shape="poly" title=" " alt="" coords="996,32,1129,49,1271,77,1334,96,1385,119,1419,146,1429,162,1432,179,1432,403,1426,437,1409,466,1384,489,1352,507,1318,522,1282,532,1216,545,1216,540,1281,527,1316,517,1350,503,1380,485,1405,462,1421,435,1427,403,1427,179,1424,164,1415,150,1382,123,1332,101,1270,82,1128,54,996,38"/>
-<area shape="rect" href="../../df/d84/star__error__interface_8h.html" title="Error handler interface for dependency inversion." alt="" coords="1096,462,1241,488"/>
-<area shape="poly" title=" " alt="" coords="995,29,1073,42,1112,54,1149,69,1181,88,1207,113,1224,143,1230,179,1230,256,1225,311,1213,364,1182,450,1178,446,1207,363,1219,310,1224,255,1224,179,1219,145,1202,116,1178,92,1147,73,1111,59,1072,48,996,35"/>
-<area shape="rect" title=" " alt="" coords="1468,94,1584,120"/>
-<area shape="poly" title=" " alt="" coords="996,35,1449,91,1455,94,1450,95,1448,97,996,41"/>
-<area shape="poly" title=" " alt="" coords="435,110,357,119,312,127,266,140,221,157,178,179,140,208,108,243,98,261,91,279,88,318,97,357,114,397,137,435,163,469,211,525,206,525,159,473,133,438,109,400,92,359,83,318,86,278,93,258,104,240,136,204,175,175,218,152,264,134,311,122,356,114,440,107"/>
-<area shape="rect" href="../../d0/d84/star__bus__manager__types_8h.html" title=" " alt="" coords="418,168,596,193"/>
-<area shape="poly" title=" " alt="" coords="508,118,510,153,505,151,506,122"/>
-<area shape="poly" title=" " alt="" coords="451,196,259,240,257,235,455,192"/>
-<area shape="poly" title=" " alt="" coords="478,195,389,237,387,232,482,192"/>
-<area shape="rect" href="../../dd/d40/star__bus__common__types_8h.html" title=" " alt="" coords="371,462,550,488"/>
-<area shape="poly" title=" " alt="" coords="500,192,486,217,474,242,458,289,451,327,449,365,452,414,457,449,452,446,447,415,444,365,445,326,453,288,469,240,481,214,496,196"/>
-<area shape="rect" href="../../dd/d9d/star__bus__protocol__types_8h.html" title=" " alt="" coords="483,241,657,267"/>
-<area shape="poly" title=" " alt="" coords="518,191,552,230,546,229,517,196"/>
-<area shape="poly" title=" " alt="" coords="557,191,630,212,709,239,836,294,957,354,1138,454,1132,454,955,359,833,299,707,244,629,217,557,197"/>
-<area shape="rect" href="../../da/d58/star__pin__interface_8h.html" title="Pin validator interface for dependency inversion." alt="" coords="886,462,1021,488"/>
-<area shape="poly" title=" " alt="" coords="548,191,607,212,670,239,752,290,828,348,890,405,935,452,930,450,887,409,824,352,749,294,667,244,605,217,548,197"/>
-<area shape="poly" title=" " alt="" coords="424,488,285,534,284,529,419,489"/>
-<area shape="rect" title=" " alt="" coords="414,536,507,562"/>
-<area shape="poly" title=" " alt="" coords="462,486,462,522,458,519,459,490"/>
-<area shape="rect" title=" " alt="" coords="28,536,159,562"/>
-<area shape="poly" title=" " alt="" coords="398,491,171,535,170,530,397,486"/>
-<area shape="poly" title=" " alt="" coords="527,486,798,538,793,538,526,491"/>
-<area shape="poly" title=" " alt="" coords="550,483,1122,541,1119,545,550,488"/>
-<area shape="poly" title=" " alt="" coords="534,269,492,290,446,317,384,369,329,427,251,525,247,521,325,423,381,365,443,313,490,285,538,266"/>
-<area shape="poly" title=" " alt="" coords="557,266,506,318,481,352,463,389,458,419,458,448,454,445,453,418,458,388,477,349,502,314,552,269"/>
-<area shape="poly" title=" " alt="" coords="550,266,505,298,451,341,399,397,378,429,362,463,358,475,361,487,382,510,410,530,405,529,379,514,357,489,353,475,357,461,373,426,395,394,447,337,502,294,546,269"/>
-<area shape="poly" title=" " alt="" coords="512,269,391,301,238,346,164,373,98,402,46,433,13,464,9,481,17,497,33,513,55,527,51,530,30,517,13,500,4,481,9,461,43,428,96,397,162,368,236,341,389,296,517,266"/>
-<area shape="poly" title=" " alt="" coords="646,265,700,283,726,296,749,313,771,336,790,362,819,419,837,475,847,523,842,520,832,477,814,421,786,365,767,339,745,317,723,301,698,288,646,270"/>
-<area shape="poly" title=" " alt="" coords="657,264,819,289,913,307,1009,330,1099,356,1177,387,1238,421,1261,441,1276,461,1280,473,1279,485,1266,505,1243,522,1216,535,1214,530,1240,517,1262,502,1274,484,1275,474,1271,464,1257,444,1235,426,1175,391,1097,361,1007,335,912,313,818,294,657,269"/>
-<area shape="rect" title=" " alt="" coords="726,462,811,488"/>
-<area shape="poly" title=" " alt="" coords="635,265,682,283,703,296,722,313,744,345,758,381,766,416,769,448,765,445,761,417,753,382,739,347,718,317,700,301,679,288,635,270"/>
-<area shape="rect" href="../../db/d78/star__bus__event__types_8h.html" title=" " alt="" coords="491,389,651,414"/>
-<area shape="poly" title=" " alt="" coords="558,266,531,301,524,320,526,340,535,359,549,378,544,377,531,362,520,341,519,319,527,298,553,269"/>
-<area shape="rect" href="../../d0/da6/star__bus__function__types_8h.html" title=" " alt="" coords="535,315,709,341"/>
-<area shape="poly" title=" " alt="" coords="579,265,607,303,601,302,578,270"/>
-<area shape="poly" title=" " alt="" coords="555,414,493,456,491,451,550,416"/>
-<area shape="poly" title=" " alt="" coords="575,413,576,450,572,470,564,489,541,514,512,532,510,527,537,510,560,487,567,469,571,449,571,417"/>
-<area shape="poly" title=" " alt="" coords="529,414,360,465,145,533,144,528,358,460,524,416"/>
-<area shape="poly" title=" " alt="" coords="583,412,621,449,671,486,735,514,799,536,794,536,733,519,668,490,617,453,581,417"/>
-<area shape="poly" title=" " alt="" coords="652,400,733,404,830,413,934,431,1035,460,1084,487,1142,528,1137,526,1081,491,1033,465,933,436,830,419,733,409,652,405"/>
-<area shape="poly" title=" " alt="" coords="605,412,723,457,718,457,604,418"/>
-<area shape="poly" title=" " alt="" coords="578,342,523,364,462,391,403,425,347,463,260,529,257,524,344,458,400,421,459,386,521,359,583,340"/>
-<area shape="poly" title=" " alt="" coords="562,340,517,362,498,374,481,390,467,418,462,449,458,445,462,416,477,387,494,370,515,357,557,342"/>
-<area shape="poly" title=" " alt="" coords="566,342,495,364,413,391,332,426,252,464,129,530,126,526,250,459,329,421,411,386,493,359,571,340"/>
-<area shape="poly" title=" " alt="" coords="632,339,665,387,679,416,687,441,696,463,716,486,755,513,799,534,794,533,752,518,712,490,692,465,682,442,674,418,661,390,630,344"/>
-<area shape="poly" title=" " alt="" coords="709,332,851,345,1015,369,1093,386,1162,406,1217,431,1239,445,1255,461,1260,471,1261,481,1252,500,1233,517,1210,531,1208,526,1230,512,1247,497,1256,480,1255,472,1250,464,1235,449,1215,436,1160,411,1092,391,1014,374,851,350,710,337"/>
-<area shape="poly" title=" " alt="" coords="644,339,676,360,709,387,735,417,756,450,751,448,731,421,705,391,673,364,643,344"/>
-<area shape="poly" title=" " alt="" coords="616,339,590,378,587,374,611,342"/>
-<area shape="poly" title=" " alt="" coords="1098,483,1034,491,285,546,285,541,1034,485,1093,483"/>
-<area shape="poly" title=" " alt="" coords="1116,488,901,539,900,533,1111,489"/>
-<area shape="poly" title=" " alt="" coords="1170,486,1170,522,1166,518,1167,490"/>
-<area shape="poly" title=" " alt="" coords="886,486,285,545,285,540,886,481"/>
-<area shape="poly" title=" " alt="" coords="938,488,880,529,878,524,933,489"/>
-<area shape="poly" title=" " alt="" coords="991,486,1124,532,1119,532,990,491"/>
+<area shape="rect" title="HC&#45;SR04 ultrasonic distance sensor driver." alt="" coords="1296,5,1491,46"/>
+<area shape="rect" title=" " alt="" coords="1066,256,1209,282"/>
+<area shape="poly" title=" " alt="" coords="1375,45,1162,248,1159,244,1370,47"/>
+<area shape="rect" title=" " alt="" coords="1234,256,1356,282"/>
+<area shape="poly" title=" " alt="" coords="1388,45,1307,244,1303,240,1383,48"/>
+<area shape="rect" title=" " alt="" coords="222,551,296,577"/>
+<area shape="poly" title=" " alt="" coords="1293,29,960,39,748,49,532,63,330,83,163,110,98,127,49,145,18,165,11,176,8,187,8,418,13,449,28,475,51,497,79,514,144,540,209,556,204,557,143,545,77,519,48,501,24,478,8,451,3,418,3,186,6,174,14,162,47,140,96,122,162,105,330,78,531,58,748,43,960,34,1298,27"/>
+<area shape="rect" href="../../d6/dcc/star__bus__manager_8h.html" title="Unified bus manager for I2C, SPI, GPIO, and other bus protocols." alt="" coords="942,94,1080,120"/>
+<area shape="poly" title=" " alt="" coords="1295,47,1086,93,1084,88,1300,46"/>
+<area shape="rect" title=" " alt="" coords="888,551,962,577"/>
+<area shape="poly" title=" " alt="" coords="1405,44,1432,107,1442,146,1447,187,1447,344,1443,380,1432,412,1414,441,1392,465,1364,486,1333,504,1261,532,1184,550,1107,560,978,566,978,561,1106,555,1183,545,1260,527,1330,500,1361,482,1388,461,1410,437,1427,410,1438,379,1441,344,1441,187,1437,147,1427,109,1403,49"/>
+<area shape="rect" title=" " alt="" coords="1322,551,1387,577"/>
+<area shape="poly" title=" " alt="" coords="1423,44,1447,66,1465,93,1497,184,1504,223,1506,260,1503,298,1494,338,1465,430,1449,464,1428,495,1382,543,1380,538,1424,491,1445,461,1460,428,1489,336,1497,297,1501,260,1499,224,1492,185,1460,95,1443,69,1422,49"/>
+<area shape="rect" href="../../df/d84/star__error__interface_8h.html" title="Error handler interface for dependency inversion." alt="" coords="1122,477,1267,503"/>
+<area shape="poly" title=" " alt="" coords="1395,45,1396,187,1396,344,1392,369,1382,392,1367,411,1348,429,1304,456,1257,475,1256,470,1301,451,1345,424,1363,408,1378,389,1387,368,1391,344,1391,187,1392,49"/>
+<area shape="rect" title=" " alt="" coords="1590,94,1706,120"/>
+<area shape="poly" title=" " alt="" coords="1457,44,1597,89,1591,89,1457,49"/>
+<area shape="rect" href="../../d9/d6c/star__sensor__hcsr04__constants_8h.html" title="Type&#45;safe constants for HC&#45;SR04 ultrasonic sensor." alt="" coords="1539,168,1674,208"/>
+<area shape="poly" title=" " alt="" coords="1439,44,1481,65,1522,92,1555,122,1585,156,1579,155,1552,126,1518,96,1478,70,1439,49"/>
+<area shape="poly" title=" " alt="" coords="938,114,710,133,416,165,278,186,164,210,120,224,86,238,66,253,59,268,59,418,63,443,73,466,90,485,110,502,159,529,209,549,204,550,157,534,107,507,86,489,69,468,57,445,53,418,53,267,61,250,84,234,118,219,163,205,277,180,416,159,710,128,943,111"/>
+<area shape="rect" href="../../d0/d84/star__bus__manager__types_8h.html" title=" " alt="" coords="922,175,1100,201"/>
+<area shape="poly" title=" " alt="" coords="1012,118,1013,161,1008,158,1009,122"/>
+<area shape="poly" title=" " alt="" coords="1030,199,1108,248,1102,248,1029,204"/>
+<area shape="poly" title=" " alt="" coords="1055,199,1239,251,1234,252,1054,204"/>
+<area shape="rect" href="../../dd/d40/star__bus__common__types_8h.html" title=" " alt="" coords="347,477,525,503"/>
+<area shape="poly" title=" " alt="" coords="918,193,820,202,709,214,609,232,570,244,541,259,518,279,498,303,469,360,451,416,441,463,437,460,446,415,464,357,494,300,514,275,539,254,568,239,607,227,708,208,819,197,924,192"/>
+<area shape="rect" href="../../dd/d9d/star__bus__protocol__types_8h.html" title=" " alt="" coords="552,256,726,282"/>
+<area shape="poly" title=" " alt="" coords="951,202,712,255,710,250,956,200"/>
+<area shape="poly" title=" " alt="" coords="1017,199,1056,281,1121,384,1179,466,1174,464,1117,387,1051,283,1014,203"/>
+<area shape="rect" href="../../da/d58/star__pin__interface_8h.html" title="Pin validator interface for dependency inversion." alt="" coords="963,477,1098,503"/>
+<area shape="poly" title=" " alt="" coords="1012,199,1012,256,1012,282,1020,381,1029,463,1025,460,1015,382,1007,282,1007,256,1009,203"/>
+<area shape="poly" title=" " alt="" coords="409,503,304,547,302,542,403,504"/>
+<area shape="rect" title=" " alt="" coords="380,551,473,577"/>
+<area shape="poly" title=" " alt="" coords="436,501,432,537,428,534,432,505"/>
+<area shape="rect" title=" " alt="" coords="497,551,628,577"/>
+<area shape="poly" title=" " alt="" coords="458,501,531,543,525,543,457,506"/>
+<area shape="poly" title=" " alt="" coords="520,501,876,554,870,556,519,506"/>
+<area shape="poly" title=" " alt="" coords="526,496,1307,556,1306,561,526,501"/>
+<area shape="poly" title=" " alt="" coords="548,280,475,300,437,314,401,332,374,352,350,377,312,433,285,490,268,538,264,534,280,488,307,431,346,374,371,348,399,328,435,309,474,295,553,278"/>
+<area shape="poly" title=" " alt="" coords="623,281,558,334,520,368,485,405,465,435,449,465,445,461,460,432,481,402,516,364,554,329,619,284"/>
+<area shape="poly" title=" " alt="" coords="572,284,511,304,445,332,400,363,365,405,327,453,320,476,322,488,328,502,348,525,376,545,371,544,345,529,323,504,316,489,315,475,322,451,361,402,397,359,443,328,509,299,577,282"/>
+<area shape="poly" title=" " alt="" coords="598,284,538,310,463,350,426,376,391,406,361,440,337,478,333,491,337,501,355,511,391,522,489,547,483,547,390,527,353,516,333,505,328,491,332,476,356,437,387,402,422,372,460,346,536,305,603,281"/>
+<area shape="poly" title=" " alt="" coords="724,280,779,298,805,311,828,328,851,351,870,377,898,434,915,490,924,538,920,534,910,492,893,436,865,380,847,354,825,332,802,316,777,303,724,285"/>
+<area shape="poly" title=" " alt="" coords="701,280,912,327,1043,361,1173,401,1225,415,1269,423,1307,440,1326,454,1345,476,1357,505,1359,538,1355,534,1352,507,1340,479,1322,458,1305,444,1267,428,1224,420,1171,406,1041,366,911,332,701,285"/>
+<area shape="rect" title=" " alt="" coords="803,477,888,503"/>
+<area shape="poly" title=" " alt="" coords="713,280,761,298,783,311,802,328,823,360,837,396,844,431,847,463,843,460,839,432,832,397,819,362,798,332,780,316,758,303,713,285"/>
+<area shape="rect" href="../../db/d78/star__bus__event__types_8h.html" title=" " alt="" coords="574,404,735,429"/>
+<area shape="poly" title=" " alt="" coords="629,281,609,316,603,336,605,355,616,375,631,394,626,393,612,378,600,356,598,335,604,314,625,284"/>
+<area shape="rect" href="../../d0/da6/star__bus__function__types_8h.html" title=" " alt="" coords="614,330,788,356"/>
+<area shape="poly" title=" " alt="" coords="650,280,683,318,678,318,648,285"/>
+<area shape="poly" title=" " alt="" coords="620,429,489,475,487,469,615,431"/>
+<area shape="poly" title=" " alt="" coords="642,429,596,466,539,505,466,546,464,541,536,501,593,462,637,431"/>
+<area shape="poly" title=" " alt="" coords="656,428,650,465,634,504,616,526,595,544,593,539,613,522,630,502,645,463,652,432"/>
+<area shape="poly" title=" " alt="" coords="665,427,700,463,748,501,812,530,876,552,871,551,810,535,745,505,697,467,663,432"/>
+<area shape="poly" title=" " alt="" coords="735,416,869,419,1027,428,1176,446,1235,459,1280,475,1299,488,1316,503,1343,539,1338,537,1313,507,1296,492,1277,480,1234,464,1175,451,1027,434,869,424,735,421"/>
+<area shape="poly" title=" " alt="" coords="687,427,801,472,796,471,687,433"/>
+<area shape="poly" title=" " alt="" coords="630,357,566,375,489,400,409,434,371,455,336,479,304,510,277,541,274,537,300,506,333,475,369,451,407,429,487,395,564,370,635,356"/>
+<area shape="poly" title=" " alt="" coords="638,357,580,377,520,406,484,435,455,468,452,463,480,432,517,401,578,372,643,355"/>
+<area shape="poly" title=" " alt="" coords="637,355,596,376,579,389,565,405,552,437,548,472,551,506,557,538,552,535,546,507,543,472,546,436,560,402,575,385,593,372,632,357"/>
+<area shape="poly" title=" " alt="" coords="713,354,749,402,762,431,768,455,775,478,793,501,831,529,876,550,871,549,829,534,789,505,770,480,763,457,757,433,744,405,711,359"/>
+<area shape="poly" title=" " alt="" coords="789,351,923,369,1077,396,1152,412,1219,431,1275,452,1315,475,1338,504,1351,538,1346,535,1333,506,1312,479,1273,457,1218,436,1151,418,1076,401,922,374,789,356"/>
+<area shape="poly" title=" " alt="" coords="725,354,759,374,793,402,817,432,835,464,830,462,812,435,789,406,756,379,724,359"/>
+<area shape="poly" title=" " alt="" coords="696,354,672,393,669,388,691,357"/>
+<area shape="poly" title=" " alt="" coords="1125,502,1111,506,902,523,740,532,577,539,368,554,311,559,311,554,368,548,577,534,739,526,902,518,1110,500,1119,502"/>
+<area shape="poly" title=" " alt="" coords="1152,503,978,551,977,546,1146,504"/>
+<area shape="poly" title=" " alt="" coords="1222,501,1316,545,1311,544,1221,506"/>
+<area shape="poly" title=" " alt="" coords="963,500,368,554,311,559,311,554,368,548,962,495"/>
+<area shape="poly" title=" " alt="" coords="1015,503,957,544,955,539,1010,504"/>
+<area shape="poly" title=" " alt="" coords="1086,501,1310,552,1305,552,1086,506"/>
+<area shape="poly" title=" " alt="" coords="1604,207,1592,268,1585,342,1585,418,1580,448,1566,474,1545,496,1519,515,1459,541,1402,557,1402,552,1458,536,1516,510,1541,492,1562,471,1575,447,1580,418,1580,341,1587,268,1600,211"/>
 </map>
 </div>
 </div><div class="textblock"><div class="dynheader">
@@ -206,13 +210,6 @@ Classes</h2></td></tr>
 <tr class="memitem:hcsr04_5Fhandle" id="r_hcsr04_5Fhandle"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../d2/dbb/structhcsr04__handle.html">hcsr04_handle</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">HC-SR04 device handle.  <a href="../../d2/dbb/structhcsr04__handle.html#details">More...</a><br /></td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-define-members" class="groupheader"><a id="define-members" name="define-members"></a>
-Macros</h2></td></tr>
-<tr class="memitem:a4bf2b40390344288564d99ef728b75fb" id="r_a4bf2b40390344288564d99ef728b75fb"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4bf2b40390344288564d99ef728b75fb">HCSR04_MIN_DISTANCE_CM</a>&#160;&#160;&#160;(2)</td></tr>
-<tr class="memitem:a6a698c77b2268dbb0665970121cad686" id="r_a6a698c77b2268dbb0665970121cad686"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6a698c77b2268dbb0665970121cad686">HCSR04_MAX_DISTANCE_CM</a>&#160;&#160;&#160;(400)</td></tr>
-<tr class="memitem:aedcf1b5f3935baf21462134b2d8d4b05" id="r_aedcf1b5f3935baf21462134b2d8d4b05"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aedcf1b5f3935baf21462134b2d8d4b05">HCSR04_SPEED_OF_SOUND_CM_US</a>&#160;&#160;&#160;(0.0343f)</td></tr>
-<tr class="memitem:af17790c01d157074cf23919a35bb0ff9" id="r_af17790c01d157074cf23919a35bb0ff9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af17790c01d157074cf23919a35bb0ff9">HCSR04_TIMEOUT_US</a>&#160;&#160;&#160;(23200)</td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-typedef-members" class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
 <tr class="memitem:ad9511961a9bbcf8661cfcdf028632a5a" id="r_ad9511961a9bbcf8661cfcdf028632a5a"><td class="memItemLeft" align="right" valign="top">typedef struct <a class="el" href="../../d2/dbb/structhcsr04__handle.html">hcsr04_handle</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad9511961a9bbcf8661cfcdf028632a5a">hcsr04_handle_t</a></td></tr>
@@ -221,13 +218,13 @@ Typedefs</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 id="header-enum-members" class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
 <tr class="memitem:af7bca5e9cc30776256ca05fbb7f5d335" id="r_af7bca5e9cc30776256ca05fbb7f5d335"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af7bca5e9cc30776256ca05fbb7f5d335">hcsr04_error_t</a> { <br />
-&#160;&#160;<a class="el" href="#af7bca5e9cc30776256ca05fbb7f5d335a54cbeb83023f5e22d0f86d839ad3e312">HCSR04_OK</a> = 0
-, <a class="el" href="#af7bca5e9cc30776256ca05fbb7f5d335a7525c4322bd6ba9b8851136f720ba17f">HCSR04_ERR_TIMEOUT</a>
-, <a class="el" href="#af7bca5e9cc30776256ca05fbb7f5d335aa1f14602f53e28d20db37e5c2a5375a2">HCSR04_ERR_OUT_OF_RANGE_MIN</a>
-, <a class="el" href="#af7bca5e9cc30776256ca05fbb7f5d335ae4a13245c6113c03f2091ea4442048e6">HCSR04_ERR_OUT_OF_RANGE_MAX</a>
+&#160;&#160;<a class="el" href="#af7bca5e9cc30776256ca05fbb7f5d335a2eed0ee5e961cff22019f4e42e800352">k_hcsr04_ok</a> = 0
+, <a class="el" href="#af7bca5e9cc30776256ca05fbb7f5d335a1debc31908d148386db3bca5c9a30d0a">k_hcsr04_err_timeout</a>
+, <a class="el" href="#af7bca5e9cc30776256ca05fbb7f5d335a5eade49a354b1ae7a6af41011e060c67">k_hcsr04_err_out_of_range_min</a>
+, <a class="el" href="#af7bca5e9cc30776256ca05fbb7f5d335a222b73494e1d0b571443aead3b0c5298">k_hcsr04_err_out_of_range_max</a>
 , <br />
-&#160;&#160;<a class="el" href="#af7bca5e9cc30776256ca05fbb7f5d335ac0e430bee5cf346b68b1b95519a31dd4">HCSR04_ERR_INVALID_PULSE</a>
-, <a class="el" href="#af7bca5e9cc30776256ca05fbb7f5d335afbae811fa998e1f94204bb1e7f6b0f63">HCSR04_ERR_NOT_READY</a>
+&#160;&#160;<a class="el" href="#af7bca5e9cc30776256ca05fbb7f5d335a2b10708f6708573544ca0147a5c61fb0">k_hcsr04_err_invalid_pulse</a>
+, <a class="el" href="#af7bca5e9cc30776256ca05fbb7f5d335a9f4bc372116ca1aa37743f96c93c626e">k_hcsr04_err_not_ready</a>
 <br />
  }</td></tr>
 </table><table class="memberdecls">
@@ -237,18 +234,18 @@ Functions</h2></td></tr>
 <tr class="memdesc:afd5878b21fda797877bd29036adcbd58"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize HC-SR04 sensor.  <br /></td></tr>
 <tr class="memitem:a47cb2059d503f6428dc165b881c6f79f" id="r_a47cb2059d503f6428dc165b881c6f79f"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a47cb2059d503f6428dc165b881c6f79f">star_sensor_hcsr04_deinit</a> (<a class="el" href="#ad9511961a9bbcf8661cfcdf028632a5a">hcsr04_handle_t</a> *handle)</td></tr>
 <tr class="memdesc:a47cb2059d503f6428dc165b881c6f79f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deinitialize HC-SR04 sensor.  <br /></td></tr>
-<tr class="memitem:a104064b944a69649fe3bc16a186bcd4a" id="r_a104064b944a69649fe3bc16a186bcd4a"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a104064b944a69649fe3bc16a186bcd4a">star_sensor_hcsr04_read_distance</a> (<a class="el" href="#ad9511961a9bbcf8661cfcdf028632a5a">hcsr04_handle_t</a> *handle, float *distance_cm)</td></tr>
-<tr class="memdesc:a104064b944a69649fe3bc16a186bcd4a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Trigger measurement and read distance.  <br /></td></tr>
-<tr class="memitem:a3733b2536166937e74b478d4b873faa0" id="r_a3733b2536166937e74b478d4b873faa0"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3733b2536166937e74b478d4b873faa0">star_sensor_hcsr04_trigger</a> (<a class="el" href="#ad9511961a9bbcf8661cfcdf028632a5a">hcsr04_handle_t</a> *handle)</td></tr>
-<tr class="memdesc:a3733b2536166937e74b478d4b873faa0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Trigger measurement (non-blocking).  <br /></td></tr>
+<tr class="memitem:a0d4ae739014a4258b50c3a8bc6e3be78" id="r_a0d4ae739014a4258b50c3a8bc6e3be78"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0d4ae739014a4258b50c3a8bc6e3be78">star_sensor_hcsr04_read_distance</a> (<a class="el" href="#ad9511961a9bbcf8661cfcdf028632a5a">hcsr04_handle_t</a> *const handle, float *const distance_cm)</td></tr>
+<tr class="memdesc:a0d4ae739014a4258b50c3a8bc6e3be78"><td class="mdescLeft">&#160;</td><td class="mdescRight">Trigger measurement and read distance.  <br /></td></tr>
+<tr class="memitem:a69a5f2fb8f4f0e300d199d3462d2c28f" id="r_a69a5f2fb8f4f0e300d199d3462d2c28f"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a69a5f2fb8f4f0e300d199d3462d2c28f">star_sensor_hcsr04_trigger</a> (<a class="el" href="#ad9511961a9bbcf8661cfcdf028632a5a">hcsr04_handle_t</a> *const handle)</td></tr>
+<tr class="memdesc:a69a5f2fb8f4f0e300d199d3462d2c28f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Trigger measurement (non-blocking).  <br /></td></tr>
 <tr class="memitem:acb5389ce3d9cfdc78c1170755922489e" id="r_acb5389ce3d9cfdc78c1170755922489e"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acb5389ce3d9cfdc78c1170755922489e">star_sensor_hcsr04_is_complete</a> (const <a class="el" href="#ad9511961a9bbcf8661cfcdf028632a5a">hcsr04_handle_t</a> *handle, bool *complete)</td></tr>
 <tr class="memdesc:acb5389ce3d9cfdc78c1170755922489e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if measurement is complete.  <br /></td></tr>
-<tr class="memitem:a7eec5ddd99bce9137e1e9d8a7d6ac780" id="r_a7eec5ddd99bce9137e1e9d8a7d6ac780"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7eec5ddd99bce9137e1e9d8a7d6ac780">star_sensor_hcsr04_get_result</a> (<a class="el" href="#ad9511961a9bbcf8661cfcdf028632a5a">hcsr04_handle_t</a> *handle, float *distance_cm)</td></tr>
-<tr class="memdesc:a7eec5ddd99bce9137e1e9d8a7d6ac780"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get measurement result (non-blocking).  <br /></td></tr>
-<tr class="memitem:a2e85c932ed841039293042898baf93b7" id="r_a2e85c932ed841039293042898baf93b7"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2e85c932ed841039293042898baf93b7">star_sensor_hcsr04_set_temperature</a> (<a class="el" href="#ad9511961a9bbcf8661cfcdf028632a5a">hcsr04_handle_t</a> *handle, float temperature_c)</td></tr>
-<tr class="memdesc:a2e85c932ed841039293042898baf93b7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set temperature for compensation.  <br /></td></tr>
-<tr class="memitem:abf589bd5a636689a8cdcb1e6778765ce" id="r_abf589bd5a636689a8cdcb1e6778765ce"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abf589bd5a636689a8cdcb1e6778765ce">star_sensor_hcsr04_calculate_distance</a> (uint32_t echo_time_us, float temperature_c, float *distance_cm)</td></tr>
-<tr class="memdesc:abf589bd5a636689a8cdcb1e6778765ce"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate distance with temperature compensation.  <br /></td></tr>
+<tr class="memitem:a80427acd575009fe291a5a838a191e4e" id="r_a80427acd575009fe291a5a838a191e4e"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a80427acd575009fe291a5a838a191e4e">star_sensor_hcsr04_get_result</a> (<a class="el" href="#ad9511961a9bbcf8661cfcdf028632a5a">hcsr04_handle_t</a> *const handle, float *const distance_cm)</td></tr>
+<tr class="memdesc:a80427acd575009fe291a5a838a191e4e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get measurement result (non-blocking).  <br /></td></tr>
+<tr class="memitem:a98a96e56a9e83ceb44df24d730698884" id="r_a98a96e56a9e83ceb44df24d730698884"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a98a96e56a9e83ceb44df24d730698884">star_sensor_hcsr04_set_temperature</a> (<a class="el" href="#ad9511961a9bbcf8661cfcdf028632a5a">hcsr04_handle_t</a> *const handle, const float temperature_c)</td></tr>
+<tr class="memdesc:a98a96e56a9e83ceb44df24d730698884"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set temperature for compensation.  <br /></td></tr>
+<tr class="memitem:a10c4496e7b44e139e9fd4b902df1c888" id="r_a10c4496e7b44e139e9fd4b902df1c888"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a10c4496e7b44e139e9fd4b902df1c888">star_sensor_hcsr04_calculate_distance</a> (const uint32_t echo_time_us, const float temperature_c, float *const distance_cm)</td></tr>
+<tr class="memdesc:a10c4496e7b44e139e9fd4b902df1c888"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate distance with temperature compensation.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>HC-SR04 ultrasonic distance sensor driver. </p>
@@ -280,7 +277,7 @@ Functions</h2></td></tr>
 <div class="line"><span class="comment">// 2. Create GPIO bus for the sensor pins</span></div>
 <div class="line">gpio_num_t hcsr04_pins[] = {GPIO_NUM_5, GPIO_NUM_18};  <span class="comment">// Trigger, Echo</span></div>
 <div class="line"><a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a>* gpio_bus = <a class="code hl_function" href="../../d0/de4/star__bus__config_8h.html#a856acf68aec88c1a3203d65ec656fd3c">star_bus_config_create_gpio</a>(</div>
-<div class="line">    <span class="stringliteral">&quot;hcsr04_gpio&quot;</span>, hcsr04_pins, 2);</div>
+<div class="line">    <span class="stringliteral">&quot;hcsr04_gpio&quot;</span>, hcsr04_pins, 2);  <span class="comment">// 2 pins total</span></div>
 <div class="line"><a class="code hl_function" href="../../d6/dcc/star__bus__manager_8h.html#a3a0dc80007e321a8697c399e0f0bf559">star_bus_manager_add_bus</a>(&amp;bus_manager, gpio_bus);</div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// 3. Initialize HC-SR04 sensor</span></div>
@@ -308,12 +305,12 @@ Functions</h2></td></tr>
 <div class="line"><span class="comment">// === Reading Distance (Blocking) ===</span></div>
 <div class="line"> </div>
 <div class="line"><span class="keywordtype">float</span> distance_cm;</div>
-<div class="line">ret = <a class="code hl_function" href="#a104064b944a69649fe3bc16a186bcd4a">star_sensor_hcsr04_read_distance</a>(&amp;sensor, &amp;distance_cm);</div>
+<div class="line">ret = <a class="code hl_function" href="#a0d4ae739014a4258b50c3a8bc6e3be78">star_sensor_hcsr04_read_distance</a>(&amp;sensor, &amp;distance_cm);</div>
 <div class="line"><span class="keywordflow">if</span> (ret == ESP_OK) {</div>
 <div class="line">    ESP_LOGI(<a class="code hl_define" href="../../d7/d82/star__error__handler_8c.html#afc3d101f633a076cc1ca84b85b6224b2">TAG</a>, <span class="stringliteral">&quot;Distance: %.2f cm&quot;</span>, distance_cm);</div>
-<div class="line">} <span class="keywordflow">else</span> <span class="keywordflow">if</span> (ret == <a class="code hl_enumvalue" href="#af7bca5e9cc30776256ca05fbb7f5d335a7525c4322bd6ba9b8851136f720ba17f">HCSR04_ERR_TIMEOUT</a>) {</div>
+<div class="line">} <span class="keywordflow">else</span> <span class="keywordflow">if</span> (ret == HCSR04_ERR_TIMEOUT) {</div>
 <div class="line">    ESP_LOGW(<a class="code hl_define" href="../../d7/d82/star__error__handler_8c.html#afc3d101f633a076cc1ca84b85b6224b2">TAG</a>, <span class="stringliteral">&quot;No echo received (object too far or not present)&quot;</span>);</div>
-<div class="line">} <span class="keywordflow">else</span> <span class="keywordflow">if</span> (ret == <a class="code hl_enumvalue" href="#af7bca5e9cc30776256ca05fbb7f5d335ae4a13245c6113c03f2091ea4442048e6">HCSR04_ERR_OUT_OF_RANGE_MAX</a>) {</div>
+<div class="line">} <span class="keywordflow">else</span> <span class="keywordflow">if</span> (ret == HCSR04_ERR_OUT_OF_RANGE_MAX) {</div>
 <div class="line">    ESP_LOGW(<a class="code hl_define" href="../../d7/d82/star__error__handler_8c.html#afc3d101f633a076cc1ca84b85b6224b2">TAG</a>, <span class="stringliteral">&quot;Object beyond 400cm range&quot;</span>);</div>
 <div class="line">}</div>
 <div class="line"> </div>
@@ -321,7 +318,7 @@ Functions</h2></td></tr>
 <div class="line"><span class="comment">// === Non-Blocking Measurement ===</span></div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// Trigger measurement</span></div>
-<div class="line"><a class="code hl_function" href="#a3733b2536166937e74b478d4b873faa0">star_sensor_hcsr04_trigger</a>(&amp;sensor);</div>
+<div class="line"><a class="code hl_function" href="#a69a5f2fb8f4f0e300d199d3462d2c28f">star_sensor_hcsr04_trigger</a>(&amp;sensor);</div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// Do other work...</span></div>
 <div class="line">process_other_sensors();</div>
@@ -330,7 +327,7 @@ Functions</h2></td></tr>
 <div class="line"><span class="keywordtype">bool</span> complete;</div>
 <div class="line"><a class="code hl_function" href="#acb5389ce3d9cfdc78c1170755922489e">star_sensor_hcsr04_is_complete</a>(&amp;sensor, &amp;complete);</div>
 <div class="line"><span class="keywordflow">if</span> (complete) {</div>
-<div class="line">    <a class="code hl_function" href="#a7eec5ddd99bce9137e1e9d8a7d6ac780">star_sensor_hcsr04_get_result</a>(&amp;sensor, &amp;distance_cm);</div>
+<div class="line">    <a class="code hl_function" href="#a80427acd575009fe291a5a838a191e4e">star_sensor_hcsr04_get_result</a>(&amp;sensor, &amp;distance_cm);</div>
 <div class="line">    ESP_LOGI(<a class="code hl_define" href="../../d7/d82/star__error__handler_8c.html#afc3d101f633a076cc1ca84b85b6224b2">TAG</a>, <span class="stringliteral">&quot;Distance: %.2f cm&quot;</span>, distance_cm);</div>
 <div class="line">}</div>
 <div class="line"> </div>
@@ -340,10 +337,10 @@ Functions</h2></td></tr>
 <div class="line"><span class="comment">// Update temperature from external sensor (e.g., DHT22)</span></div>
 <div class="line"><a class="code hl_typedef" href="../../d1/dd1/star__bus__dht22__proprietary_8h.html#a3688e138f6f62c577570b399fa513896">star_dht22_data_t</a> dht_data;</div>
 <div class="line"><a class="code hl_function" href="../../d1/dd1/star__bus__dht22__proprietary_8h.html#aca1c661507907f9a75543f43e1d7164c">star_bus_dht22_read</a>(&amp;bus_manager, <span class="stringliteral">&quot;dht22&quot;</span>, &amp;dht_data);</div>
-<div class="line"><a class="code hl_function" href="#a2e85c932ed841039293042898baf93b7">star_sensor_hcsr04_set_temperature</a>(&amp;sensor, dht_data.<a class="code hl_variable" href="../../d2/dd9/structstar__dht22__data.html#a6366bc635a2df693ff90587b18889ab5">temperature_c</a>);</div>
+<div class="line"><a class="code hl_function" href="#a98a96e56a9e83ceb44df24d730698884">star_sensor_hcsr04_set_temperature</a>(&amp;sensor, dht_data.<a class="code hl_variable" href="../../d2/dd9/structstar__dht22__data.html#a6366bc635a2df693ff90587b18889ab5">temperature_c</a>);</div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// Subsequent readings will use corrected speed of sound</span></div>
-<div class="line"><a class="code hl_function" href="#a104064b944a69649fe3bc16a186bcd4a">star_sensor_hcsr04_read_distance</a>(&amp;sensor, &amp;distance_cm);</div>
+<div class="line"><a class="code hl_function" href="#a0d4ae739014a4258b50c3a8bc6e3be78">star_sensor_hcsr04_read_distance</a>(&amp;sensor, &amp;distance_cm);</div>
 <div class="line"> </div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// === Multiple Sensors ===</span></div>
@@ -360,8 +357,8 @@ Functions</h2></td></tr>
 <div class="line"> </div>
 <div class="line"><span class="comment">// Read from each</span></div>
 <div class="line"><span class="keywordtype">float</span> left_dist, right_dist;</div>
-<div class="line"><a class="code hl_function" href="#a104064b944a69649fe3bc16a186bcd4a">star_sensor_hcsr04_read_distance</a>(&amp;left_sensor, &amp;left_dist);</div>
-<div class="line"><a class="code hl_function" href="#a104064b944a69649fe3bc16a186bcd4a">star_sensor_hcsr04_read_distance</a>(&amp;right_sensor, &amp;right_dist);</div>
+<div class="line"><a class="code hl_function" href="#a0d4ae739014a4258b50c3a8bc6e3be78">star_sensor_hcsr04_read_distance</a>(&amp;left_sensor, &amp;left_dist);</div>
+<div class="line"><a class="code hl_function" href="#a0d4ae739014a4258b50c3a8bc6e3be78">star_sensor_hcsr04_read_distance</a>(&amp;right_sensor, &amp;right_dist);</div>
 <div class="line"> </div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// === Cleanup ===</span></div>
@@ -373,99 +370,26 @@ Functions</h2></td></tr>
 <div class="ttc" id="astar__bus__config_8h_html"><div class="ttname"><a href="../../d0/de4/star__bus__config_8h.html">star_bus_config.h</a></div><div class="ttdoc">Bus configuration creation and lifecycle management.</div></div>
 <div class="ttc" id="astar__bus__config_8h_html_a856acf68aec88c1a3203d65ec656fd3c"><div class="ttname"><a href="../../d0/de4/star__bus__config_8h.html#a856acf68aec88c1a3203d65ec656fd3c">star_bus_config_create_gpio</a></div><div class="ttdeci">star_bus_config_t * star_bus_config_create_gpio(const char *name, const gpio_num_t pins[], uint8_t pin_count)</div><div class="ttdoc">Create a new GPIO bus configuration.</div><div class="ttdef"><b>Definition</b> <a href="../../de/d98/star__bus__config_8c_source.html#l00207">star_bus_config.c:207</a></div></div>
 <div class="ttc" id="astar__bus__dht22__proprietary_8h_html_a3688e138f6f62c577570b399fa513896"><div class="ttname"><a href="../../d1/dd1/star__bus__dht22__proprietary_8h.html#a3688e138f6f62c577570b399fa513896">star_dht22_data_t</a></div><div class="ttdeci">struct star_dht22_data star_dht22_data_t</div><div class="ttdoc">DHT22 sensor reading data.</div></div>
-<div class="ttc" id="astar__bus__dht22__proprietary_8h_html_aca1c661507907f9a75543f43e1d7164c"><div class="ttname"><a href="../../d1/dd1/star__bus__dht22__proprietary_8h.html#aca1c661507907f9a75543f43e1d7164c">star_bus_dht22_read</a></div><div class="ttdeci">esp_err_t star_bus_dht22_read(star_bus_manager_t *manager, const char *bus_name, star_dht22_data_t *data)</div><div class="ttdoc">Read temperature and humidity from DHT22 sensor.</div><div class="ttdef"><b>Definition</b> <a href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00432">star_bus_dht22_proprietary.c:432</a></div></div>
+<div class="ttc" id="astar__bus__dht22__proprietary_8h_html_aca1c661507907f9a75543f43e1d7164c"><div class="ttname"><a href="../../d1/dd1/star__bus__dht22__proprietary_8h.html#aca1c661507907f9a75543f43e1d7164c">star_bus_dht22_read</a></div><div class="ttdeci">esp_err_t star_bus_dht22_read(star_bus_manager_t *manager, const char *bus_name, star_dht22_data_t *data)</div><div class="ttdoc">Read temperature and humidity from DHT22 sensor.</div><div class="ttdef"><b>Definition</b> <a href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00459">star_bus_dht22_proprietary.c:459</a></div></div>
 <div class="ttc" id="astar__bus__manager_8h_html"><div class="ttname"><a href="../../d6/dcc/star__bus__manager_8h.html">star_bus_manager.h</a></div><div class="ttdoc">Unified bus manager for I2C, SPI, GPIO, and other bus protocols.</div></div>
 <div class="ttc" id="astar__bus__manager_8h_html_a2623a57b97d09ed1a3b0a0c012cd6119"><div class="ttname"><a href="../../d6/dcc/star__bus__manager_8h.html#a2623a57b97d09ed1a3b0a0c012cd6119">star_bus_manager_init</a></div><div class="ttdeci">esp_err_t star_bus_manager_init(star_bus_manager_t *manager, const char *tag, star_error_interface_t *error_iface, star_pin_interface_t *pin_iface)</div><div class="ttdoc">Initialize an I2C bus manager instance.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d60/star__bus__manager_8c_source.html#l00248">star_bus_manager.c:248</a></div></div>
 <div class="ttc" id="astar__bus__manager_8h_html_a3a0dc80007e321a8697c399e0f0bf559"><div class="ttname"><a href="../../d6/dcc/star__bus__manager_8h.html#a3a0dc80007e321a8697c399e0f0bf559">star_bus_manager_add_bus</a></div><div class="ttdeci">esp_err_t star_bus_manager_add_bus(star_bus_manager_t *manager, star_bus_config_t *config)</div><div class="ttdoc">Add a new I2C bus/device configuration to the manager.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d60/star__bus__manager_8c_source.html#l00293">star_bus_manager.c:293</a></div></div>
 <div class="ttc" id="astar__bus__manager_8h_html_aa440431606d8a33fb394b4225db51f93"><div class="ttname"><a href="../../d6/dcc/star__bus__manager_8h.html#aa440431606d8a33fb394b4225db51f93">star_bus_manager_remove_bus</a></div><div class="ttdeci">esp_err_t star_bus_manager_remove_bus(star_bus_manager_t *manager, const char *name)</div><div class="ttdoc">Remove an I2C bus configuration from the manager and destroy it.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d60/star__bus__manager_8c_source.html#l00445">star_bus_manager.c:445</a></div></div>
 <div class="ttc" id="astar__error__handler_8c_html_afc3d101f633a076cc1ca84b85b6224b2"><div class="ttname"><a href="../../d7/d82/star__error__handler_8c.html#afc3d101f633a076cc1ca84b85b6224b2">TAG</a></div><div class="ttdeci">#define TAG</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d82/star__error__handler_8c_source.html#l00012">star_error_handler.c:12</a></div></div>
 <div class="ttc" id="astar__sensor__hcsr04_8h_html"><div class="ttname"><a href="../../d2/dda/star__sensor__hcsr04_8h.html">star_sensor_hcsr04.h</a></div><div class="ttdoc">HC-SR04 ultrasonic distance sensor driver.</div></div>
-<div class="ttc" id="astar__sensor__hcsr04_8h_html_a104064b944a69649fe3bc16a186bcd4a"><div class="ttname"><a href="#a104064b944a69649fe3bc16a186bcd4a">star_sensor_hcsr04_read_distance</a></div><div class="ttdeci">esp_err_t star_sensor_hcsr04_read_distance(hcsr04_handle_t *handle, float *distance_cm)</div><div class="ttdoc">Trigger measurement and read distance.</div><div class="ttdef"><b>Definition</b> <a href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00312">star_sensor_hcsr04.c:312</a></div></div>
-<div class="ttc" id="astar__sensor__hcsr04_8h_html_a2e85c932ed841039293042898baf93b7"><div class="ttname"><a href="#a2e85c932ed841039293042898baf93b7">star_sensor_hcsr04_set_temperature</a></div><div class="ttdeci">esp_err_t star_sensor_hcsr04_set_temperature(hcsr04_handle_t *handle, float temperature_c)</div><div class="ttdoc">Set temperature for compensation.</div><div class="ttdef"><b>Definition</b> <a href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00339">star_sensor_hcsr04.c:339</a></div></div>
-<div class="ttc" id="astar__sensor__hcsr04_8h_html_a3733b2536166937e74b478d4b873faa0"><div class="ttname"><a href="#a3733b2536166937e74b478d4b873faa0">star_sensor_hcsr04_trigger</a></div><div class="ttdeci">esp_err_t star_sensor_hcsr04_trigger(hcsr04_handle_t *handle)</div><div class="ttdoc">Trigger measurement (non-blocking).</div><div class="ttdef"><b>Definition</b> <a href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00203">star_sensor_hcsr04.c:203</a></div></div>
-<div class="ttc" id="astar__sensor__hcsr04_8h_html_a47cb2059d503f6428dc165b881c6f79f"><div class="ttname"><a href="#a47cb2059d503f6428dc165b881c6f79f">star_sensor_hcsr04_deinit</a></div><div class="ttdeci">esp_err_t star_sensor_hcsr04_deinit(hcsr04_handle_t *handle)</div><div class="ttdoc">Deinitialize HC-SR04 sensor.</div><div class="ttdef"><b>Definition</b> <a href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00165">star_sensor_hcsr04.c:165</a></div></div>
-<div class="ttc" id="astar__sensor__hcsr04_8h_html_a7eec5ddd99bce9137e1e9d8a7d6ac780"><div class="ttname"><a href="#a7eec5ddd99bce9137e1e9d8a7d6ac780">star_sensor_hcsr04_get_result</a></div><div class="ttdeci">esp_err_t star_sensor_hcsr04_get_result(hcsr04_handle_t *handle, float *distance_cm)</div><div class="ttdoc">Get measurement result (non-blocking).</div><div class="ttdef"><b>Definition</b> <a href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00280">star_sensor_hcsr04.c:280</a></div></div>
-<div class="ttc" id="astar__sensor__hcsr04_8h_html_acb5389ce3d9cfdc78c1170755922489e"><div class="ttname"><a href="#acb5389ce3d9cfdc78c1170755922489e">star_sensor_hcsr04_is_complete</a></div><div class="ttdeci">esp_err_t star_sensor_hcsr04_is_complete(const hcsr04_handle_t *handle, bool *complete)</div><div class="ttdoc">Check if measurement is complete.</div><div class="ttdef"><b>Definition</b> <a href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00242">star_sensor_hcsr04.c:242</a></div></div>
+<div class="ttc" id="astar__sensor__hcsr04_8h_html_a0d4ae739014a4258b50c3a8bc6e3be78"><div class="ttname"><a href="#a0d4ae739014a4258b50c3a8bc6e3be78">star_sensor_hcsr04_read_distance</a></div><div class="ttdeci">esp_err_t star_sensor_hcsr04_read_distance(hcsr04_handle_t *const handle, float *const distance_cm)</div><div class="ttdoc">Trigger measurement and read distance.</div><div class="ttdef"><b>Definition</b> <a href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00314">star_sensor_hcsr04.c:314</a></div></div>
+<div class="ttc" id="astar__sensor__hcsr04_8h_html_a47cb2059d503f6428dc165b881c6f79f"><div class="ttname"><a href="#a47cb2059d503f6428dc165b881c6f79f">star_sensor_hcsr04_deinit</a></div><div class="ttdeci">esp_err_t star_sensor_hcsr04_deinit(hcsr04_handle_t *handle)</div><div class="ttdoc">Deinitialize HC-SR04 sensor.</div><div class="ttdef"><b>Definition</b> <a href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00167">star_sensor_hcsr04.c:167</a></div></div>
+<div class="ttc" id="astar__sensor__hcsr04_8h_html_a69a5f2fb8f4f0e300d199d3462d2c28f"><div class="ttname"><a href="#a69a5f2fb8f4f0e300d199d3462d2c28f">star_sensor_hcsr04_trigger</a></div><div class="ttdeci">esp_err_t star_sensor_hcsr04_trigger(hcsr04_handle_t *const handle)</div><div class="ttdoc">Trigger measurement (non-blocking).</div><div class="ttdef"><b>Definition</b> <a href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00205">star_sensor_hcsr04.c:205</a></div></div>
+<div class="ttc" id="astar__sensor__hcsr04_8h_html_a80427acd575009fe291a5a838a191e4e"><div class="ttname"><a href="#a80427acd575009fe291a5a838a191e4e">star_sensor_hcsr04_get_result</a></div><div class="ttdeci">esp_err_t star_sensor_hcsr04_get_result(hcsr04_handle_t *const handle, float *const distance_cm)</div><div class="ttdoc">Get measurement result (non-blocking).</div><div class="ttdef"><b>Definition</b> <a href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00282">star_sensor_hcsr04.c:282</a></div></div>
+<div class="ttc" id="astar__sensor__hcsr04_8h_html_a98a96e56a9e83ceb44df24d730698884"><div class="ttname"><a href="#a98a96e56a9e83ceb44df24d730698884">star_sensor_hcsr04_set_temperature</a></div><div class="ttdeci">esp_err_t star_sensor_hcsr04_set_temperature(hcsr04_handle_t *const handle, const float temperature_c)</div><div class="ttdoc">Set temperature for compensation.</div><div class="ttdef"><b>Definition</b> <a href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00360">star_sensor_hcsr04.c:360</a></div></div>
+<div class="ttc" id="astar__sensor__hcsr04_8h_html_acb5389ce3d9cfdc78c1170755922489e"><div class="ttname"><a href="#acb5389ce3d9cfdc78c1170755922489e">star_sensor_hcsr04_is_complete</a></div><div class="ttdeci">esp_err_t star_sensor_hcsr04_is_complete(const hcsr04_handle_t *handle, bool *complete)</div><div class="ttdoc">Check if measurement is complete.</div><div class="ttdef"><b>Definition</b> <a href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00244">star_sensor_hcsr04.c:244</a></div></div>
 <div class="ttc" id="astar__sensor__hcsr04_8h_html_ad9511961a9bbcf8661cfcdf028632a5a"><div class="ttname"><a href="#ad9511961a9bbcf8661cfcdf028632a5a">hcsr04_handle_t</a></div><div class="ttdeci">struct hcsr04_handle hcsr04_handle_t</div><div class="ttdoc">HC-SR04 device handle.</div></div>
-<div class="ttc" id="astar__sensor__hcsr04_8h_html_af7bca5e9cc30776256ca05fbb7f5d335a7525c4322bd6ba9b8851136f720ba17f"><div class="ttname"><a href="#af7bca5e9cc30776256ca05fbb7f5d335a7525c4322bd6ba9b8851136f720ba17f">HCSR04_ERR_TIMEOUT</a></div><div class="ttdeci">@ HCSR04_ERR_TIMEOUT</div><div class="ttdef"><b>Definition</b> <a href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00156">star_sensor_hcsr04.h:156</a></div></div>
-<div class="ttc" id="astar__sensor__hcsr04_8h_html_af7bca5e9cc30776256ca05fbb7f5d335ae4a13245c6113c03f2091ea4442048e6"><div class="ttname"><a href="#af7bca5e9cc30776256ca05fbb7f5d335ae4a13245c6113c03f2091ea4442048e6">HCSR04_ERR_OUT_OF_RANGE_MAX</a></div><div class="ttdeci">@ HCSR04_ERR_OUT_OF_RANGE_MAX</div><div class="ttdef"><b>Definition</b> <a href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00158">star_sensor_hcsr04.h:158</a></div></div>
-<div class="ttc" id="astar__sensor__hcsr04_8h_html_afd5878b21fda797877bd29036adcbd58"><div class="ttname"><a href="#afd5878b21fda797877bd29036adcbd58">star_sensor_hcsr04_init</a></div><div class="ttdeci">esp_err_t star_sensor_hcsr04_init(hcsr04_handle_t *handle, star_bus_manager_t *manager, const char *bus_name, star_error_interface_t *error_iface, const hcsr04_config_t *config)</div><div class="ttdoc">Initialize HC-SR04 sensor.</div><div class="ttdef"><b>Definition</b> <a href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00034">star_sensor_hcsr04.c:34</a></div></div>
-<div class="ttc" id="astructhcsr04__config__t_html"><div class="ttname"><a href="../../d5/d59/structhcsr04__config__t.html">hcsr04_config_t</a></div><div class="ttdef"><b>Definition</b> <a href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00163">star_sensor_hcsr04.h:163</a></div></div>
+<div class="ttc" id="astar__sensor__hcsr04_8h_html_afd5878b21fda797877bd29036adcbd58"><div class="ttname"><a href="#afd5878b21fda797877bd29036adcbd58">star_sensor_hcsr04_init</a></div><div class="ttdeci">esp_err_t star_sensor_hcsr04_init(hcsr04_handle_t *handle, star_bus_manager_t *manager, const char *bus_name, star_error_interface_t *error_iface, const hcsr04_config_t *config)</div><div class="ttdoc">Initialize HC-SR04 sensor.</div><div class="ttdef"><b>Definition</b> <a href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00036">star_sensor_hcsr04.c:36</a></div></div>
+<div class="ttc" id="astructhcsr04__config__t_html"><div class="ttname"><a href="../../d5/d59/structhcsr04__config__t.html">hcsr04_config_t</a></div><div class="ttdef"><b>Definition</b> <a href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00159">star_sensor_hcsr04.h:159</a></div></div>
 <div class="ttc" id="astructstar__dht22__data_html_a6366bc635a2df693ff90587b18889ab5"><div class="ttname"><a href="../../d2/dd9/structstar__dht22__data.html#a6366bc635a2df693ff90587b18889ab5">star_dht22_data::temperature_c</a></div><div class="ttdeci">float temperature_c</div><div class="ttdef"><b>Definition</b> <a href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00164">star_bus_dht22_proprietary.h:164</a></div></div>
 </div><!-- fragment --> 
 <p class="definition">Definition in file <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html">star_sensor_hcsr04.h</a>.</p>
-</div><a name="doc-define-members" id="doc-define-members"></a><h2 id="header-doc-define-members" class="groupheader">Macro Definition Documentation</h2>
-<a id="a6a698c77b2268dbb0665970121cad686" name="a6a698c77b2268dbb0665970121cad686"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6a698c77b2268dbb0665970121cad686">&#9670;&#160;</a></span>HCSR04_MAX_DISTANCE_CM</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define HCSR04_MAX_DISTANCE_CM&#160;&#160;&#160;(400)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00150">150</a> of file <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html">star_sensor_hcsr04.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00252">star_sensor_hcsr04_calculate_distance()</a>.</p>
-
-</div>
-</div>
-<a id="a4bf2b40390344288564d99ef728b75fb" name="a4bf2b40390344288564d99ef728b75fb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4bf2b40390344288564d99ef728b75fb">&#9670;&#160;</a></span>HCSR04_MIN_DISTANCE_CM</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define HCSR04_MIN_DISTANCE_CM&#160;&#160;&#160;(2)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00149">149</a> of file <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html">star_sensor_hcsr04.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00252">star_sensor_hcsr04_calculate_distance()</a>.</p>
-
-</div>
-</div>
-<a id="aedcf1b5f3935baf21462134b2d8d4b05" name="aedcf1b5f3935baf21462134b2d8d4b05"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aedcf1b5f3935baf21462134b2d8d4b05">&#9670;&#160;</a></span>HCSR04_SPEED_OF_SOUND_CM_US</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define HCSR04_SPEED_OF_SOUND_CM_US&#160;&#160;&#160;(0.0343f)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00151">151</a> of file <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html">star_sensor_hcsr04.h</a>.</p>
-
-</div>
-</div>
-<a id="af17790c01d157074cf23919a35bb0ff9" name="af17790c01d157074cf23919a35bb0ff9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af17790c01d157074cf23919a35bb0ff9">&#9670;&#160;</a></span>HCSR04_TIMEOUT_US</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define HCSR04_TIMEOUT_US&#160;&#160;&#160;(23200)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00152">152</a> of file <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html">star_sensor_hcsr04.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00252">star_sensor_hcsr04_calculate_distance()</a>.</p>
-
-</div>
-</div>
-<a name="doc-typedef-members" id="doc-typedef-members"></a><h2 id="header-doc-typedef-members" class="groupheader">Typedef Documentation</h2>
+</div><a name="doc-typedef-members" id="doc-typedef-members"></a><h2 id="header-doc-typedef-members" class="groupheader">Typedef Documentation</h2>
 <a id="ad9511961a9bbcf8661cfcdf028632a5a" name="ad9511961a9bbcf8661cfcdf028632a5a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ad9511961a9bbcf8661cfcdf028632a5a">&#9670;&#160;</a></span>hcsr04_handle_t</h2>
 
@@ -496,21 +420,21 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="af7bca5e9cc30776256ca05fbb7f5d335a54cbeb83023f5e22d0f86d839ad3e312" name="af7bca5e9cc30776256ca05fbb7f5d335a54cbeb83023f5e22d0f86d839ad3e312"></a>HCSR04_OK&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="af7bca5e9cc30776256ca05fbb7f5d335a7525c4322bd6ba9b8851136f720ba17f" name="af7bca5e9cc30776256ca05fbb7f5d335a7525c4322bd6ba9b8851136f720ba17f"></a>HCSR04_ERR_TIMEOUT&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="af7bca5e9cc30776256ca05fbb7f5d335aa1f14602f53e28d20db37e5c2a5375a2" name="af7bca5e9cc30776256ca05fbb7f5d335aa1f14602f53e28d20db37e5c2a5375a2"></a>HCSR04_ERR_OUT_OF_RANGE_MIN&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="af7bca5e9cc30776256ca05fbb7f5d335ae4a13245c6113c03f2091ea4442048e6" name="af7bca5e9cc30776256ca05fbb7f5d335ae4a13245c6113c03f2091ea4442048e6"></a>HCSR04_ERR_OUT_OF_RANGE_MAX&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="af7bca5e9cc30776256ca05fbb7f5d335ac0e430bee5cf346b68b1b95519a31dd4" name="af7bca5e9cc30776256ca05fbb7f5d335ac0e430bee5cf346b68b1b95519a31dd4"></a>HCSR04_ERR_INVALID_PULSE&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="af7bca5e9cc30776256ca05fbb7f5d335afbae811fa998e1f94204bb1e7f6b0f63" name="af7bca5e9cc30776256ca05fbb7f5d335afbae811fa998e1f94204bb1e7f6b0f63"></a>HCSR04_ERR_NOT_READY&#160;</td><td class="fielddoc"></td></tr>
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="af7bca5e9cc30776256ca05fbb7f5d335a2eed0ee5e961cff22019f4e42e800352" name="af7bca5e9cc30776256ca05fbb7f5d335a2eed0ee5e961cff22019f4e42e800352"></a>k_hcsr04_ok&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="af7bca5e9cc30776256ca05fbb7f5d335a1debc31908d148386db3bca5c9a30d0a" name="af7bca5e9cc30776256ca05fbb7f5d335a1debc31908d148386db3bca5c9a30d0a"></a>k_hcsr04_err_timeout&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="af7bca5e9cc30776256ca05fbb7f5d335a5eade49a354b1ae7a6af41011e060c67" name="af7bca5e9cc30776256ca05fbb7f5d335a5eade49a354b1ae7a6af41011e060c67"></a>k_hcsr04_err_out_of_range_min&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="af7bca5e9cc30776256ca05fbb7f5d335a222b73494e1d0b571443aead3b0c5298" name="af7bca5e9cc30776256ca05fbb7f5d335a222b73494e1d0b571443aead3b0c5298"></a>k_hcsr04_err_out_of_range_max&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="af7bca5e9cc30776256ca05fbb7f5d335a2b10708f6708573544ca0147a5c61fb0" name="af7bca5e9cc30776256ca05fbb7f5d335a2b10708f6708573544ca0147a5c61fb0"></a>k_hcsr04_err_invalid_pulse&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="af7bca5e9cc30776256ca05fbb7f5d335a9f4bc372116ca1aa37743f96c93c626e" name="af7bca5e9cc30776256ca05fbb7f5d335a9f4bc372116ca1aa37743f96c93c626e"></a>k_hcsr04_err_not_ready&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00154">154</a> of file <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html">star_sensor_hcsr04.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00150">150</a> of file <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html">star_sensor_hcsr04.h</a>.</p>
 
 </div>
 </div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
-<a id="abf589bd5a636689a8cdcb1e6778765ce" name="abf589bd5a636689a8cdcb1e6778765ce"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#abf589bd5a636689a8cdcb1e6778765ce">&#9670;&#160;</a></span>star_sensor_hcsr04_calculate_distance()</h2>
+<a id="a10c4496e7b44e139e9fd4b902df1c888" name="a10c4496e7b44e139e9fd4b902df1c888"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a10c4496e7b44e139e9fd4b902df1c888">&#9670;&#160;</a></span>star_sensor_hcsr04_calculate_distance()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -518,17 +442,17 @@ Functions</h2></td></tr>
         <tr>
           <td class="memname">esp_err_t star_sensor_hcsr04_calculate_distance </td>
           <td>(</td>
-          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>echo_time_us</em></span>, </td>
+          <td class="paramtype">const uint32_t</td>          <td class="paramname"><span class="paramname"><em>echo_time_us</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>temperature_c</em></span>, </td>
+          <td class="paramtype">const float</td>          <td class="paramname"><span class="paramname"><em>temperature_c</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">float *</td>          <td class="paramname"><span class="paramname"><em>distance_cm</em></span>&#160;)</td>
+          <td class="paramtype">float *const</td>          <td class="paramname"><span class="paramname"><em>distance_cm</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -544,28 +468,28 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00252">252</a> of file <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html">star_sensor_hcsr04.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00254">254</a> of file <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html">star_sensor_hcsr04.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00159">HCSR04_ERR_INVALID_PULSE</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00158">HCSR04_ERR_OUT_OF_RANGE_MAX</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00157">HCSR04_ERR_OUT_OF_RANGE_MIN</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00150">HCSR04_MAX_DISTANCE_CM</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00149">HCSR04_MIN_DISTANCE_CM</a>, and <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00152">HCSR04_TIMEOUT_US</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00155">k_hcsr04_err_invalid_pulse</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00154">k_hcsr04_err_out_of_range_max</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00153">k_hcsr04_err_out_of_range_min</a>, <a class="el" href="../../d0/d58/star__sensor__hcsr04__constants_8c_source.html#l00007">STAR_HCSR04_MAX_DISTANCE_CM</a>, <a class="el" href="../../d0/d58/star__sensor__hcsr04__constants_8c_source.html#l00006">STAR_HCSR04_MIN_DISTANCE_CM</a>, and <a class="el" href="../../d0/d58/star__sensor__hcsr04__constants_8c_source.html#l00009">STAR_HCSR04_TIMEOUT_US</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00280">star_sensor_hcsr04_get_result()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00282">star_sensor_hcsr04_get_result()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d2/dda/star__sensor__hcsr04_8h_abf589bd5a636689a8cdcb1e6778765ce_icgraph.png" border="0" usemap="#ad2/dda/star__sensor__hcsr04_8h_abf589bd5a636689a8cdcb1e6778765ce_icgraph" loading="lazy" alt=""/></div>
-<map name="ad2/dda/star__sensor__hcsr04_8h_abf589bd5a636689a8cdcb1e6778765ce_icgraph" id="ad2/dda/star__sensor__hcsr04_8h_abf589bd5a636689a8cdcb1e6778765ce_icgraph">
+<div class="center"><img src="../../d2/dda/star__sensor__hcsr04_8h_a10c4496e7b44e139e9fd4b902df1c888_icgraph.png" border="0" usemap="#ad2/dda/star__sensor__hcsr04_8h_a10c4496e7b44e139e9fd4b902df1c888_icgraph" loading="lazy" alt=""/></div>
+<map name="ad2/dda/star__sensor__hcsr04_8h_a10c4496e7b44e139e9fd4b902df1c888_icgraph" id="ad2/dda/star__sensor__hcsr04_8h_a10c4496e7b44e139e9fd4b902df1c888_icgraph">
 <area shape="rect" title="Calculate distance with temperature compensation." alt="" coords="1260,5,1396,46"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a7eec5ddd99bce9137e1e9d8a7d6ac780" title="Get measurement result (non&#45;blocking)." alt="" coords="1076,5,1212,46"/>
+<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a80427acd575009fe291a5a838a191e4e" title="Get measurement result (non&#45;blocking)." alt="" coords="1076,5,1212,46"/>
 <area shape="poly" title=" " alt="" coords="1241,26,1212,28,1212,23,1246,26"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a104064b944a69649fe3bc16a186bcd4a" title="Trigger measurement and read distance." alt="" coords="893,5,1028,46"/>
+<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a0d4ae739014a4258b50c3a8bc6e3be78" title="Trigger measurement and read distance." alt="" coords="893,5,1028,46"/>
 <area shape="poly" title=" " alt="" coords="1058,26,1029,28,1028,23,1063,26"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a488619c3bee2d4f6131ad9018c99b9e6" title=" " alt="" coords="709,5,845,46"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a1ea224ad4e9ad60c90644c2688e8d946" title=" " alt="" coords="709,5,845,46"/>
 <area shape="poly" title=" " alt="" coords="874,26,845,28,845,23,880,26"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a4dc3ab19219e5e55bef96d6b87dd3f40" title=" " alt="" coords="488,13,661,38"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afde0408db6c60f5c886dc0dc13a88ed5" title=" " alt="" coords="488,13,661,38"/>
 <area shape="poly" title=" " alt="" coords="691,26,661,28,661,23,696,26"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#abe04d0ff61d729ca1b86be8e3108bbf5" title="Initialize sensor management task." alt="" coords="315,13,440,38"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="315,13,440,38"/>
 <area shape="poly" title=" " alt="" coords="470,26,441,28,441,23,475,26"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,13,267,38"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,13,267,38"/>
 <area shape="poly" title=" " alt="" coords="297,26,268,28,267,23,302,26"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,13,83,38"/>
 <area shape="poly" title=" " alt="" coords="112,26,83,28,83,23,118,25"/>
@@ -598,11 +522,11 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00165">165</a> of file <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html">star_sensor_hcsr04.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00167">167</a> of file <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html">star_sensor_hcsr04.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00166">star_error_interface::ctx</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00179">hcsr04_handle::echo_pin</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00393">error_handler_destroy_default()</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00181">hcsr04_handle::error_iface</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00017">HCSR04_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00183">hcsr04_handle::initialized</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00182">hcsr04_handle::mutex</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00184">hcsr04_handle::owns_error_handler</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00166">star_error_interface::ctx</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00175">hcsr04_handle::echo_pin</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00393">error_handler_destroy_default()</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00177">hcsr04_handle::error_iface</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00019">HCSR04_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00179">hcsr04_handle::initialized</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00178">hcsr04_handle::mutex</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00180">hcsr04_handle::owns_error_handler</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00049">internal_deinit_sensors()</a>, and <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00015">internal_init_sensors()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00065">internal_deinit_sensors()</a>, and <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00025">internal_init_sensors()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -621,15 +545,15 @@ Here is the caller graph for this function:</div>
 <div class="center"><img src="../../d2/dda/star__sensor__hcsr04_8h_a47cb2059d503f6428dc165b881c6f79f_icgraph.png" border="0" usemap="#ad2/dda/star__sensor__hcsr04_8h_a47cb2059d503f6428dc165b881c6f79f_icgraph" loading="lazy" alt=""/></div>
 <map name="ad2/dda/star__sensor__hcsr04_8h_a47cb2059d503f6428dc165b881c6f79f_icgraph" id="ad2/dda/star__sensor__hcsr04_8h_a47cb2059d503f6428dc165b881c6f79f_icgraph">
 <area shape="rect" title="Deinitialize HC&#45;SR04 sensor." alt="" coords="691,23,826,64"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac6fa7fb2607a2cf5c34667e3b461bacb" title=" " alt="" coords="488,55,643,80"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a50bf939b7ee7d05f4a59c83f74bbc8d7" title=" " alt="" coords="488,55,643,80"/>
 <area shape="poly" title=" " alt="" coords="678,54,643,61,643,55,673,54"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a3cf1fffcdac34c405d12dc3b509c2deb" title=" " alt="" coords="495,5,636,31"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afa22a6110eba0db527b95b8e2ce3a746" title=" " alt="" coords="495,5,636,31"/>
 <area shape="poly" title=" " alt="" coords="673,33,636,30,636,25,678,33"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#abe04d0ff61d729ca1b86be8e3108bbf5" title="Initialize sensor management task." alt="" coords="315,5,440,31"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="315,5,440,31"/>
 <area shape="poly" title=" " alt="" coords="496,50,429,34,430,29,502,50"/>
 <area shape="rect" href="../../de/dd4/sensor__task_8c.html#a28fe4002be0e81d2cf72876adc92445b" title="Stop sensor management task." alt="" coords="316,55,440,80"/>
 <area shape="poly" title=" " alt="" coords="470,68,440,70,440,65,475,67"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,31,267,56"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,31,267,56"/>
 <area shape="poly" title=" " alt="" coords="297,30,268,36,267,31,302,29"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,31,83,56"/>
 <area shape="poly" title=" " alt="" coords="113,44,83,46,83,41,118,43"/>
@@ -640,8 +564,8 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="a7eec5ddd99bce9137e1e9d8a7d6ac780" name="a7eec5ddd99bce9137e1e9d8a7d6ac780"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7eec5ddd99bce9137e1e9d8a7d6ac780">&#9670;&#160;</a></span>star_sensor_hcsr04_get_result()</h2>
+<a id="a80427acd575009fe291a5a838a191e4e" name="a80427acd575009fe291a5a838a191e4e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a80427acd575009fe291a5a838a191e4e">&#9670;&#160;</a></span>star_sensor_hcsr04_get_result()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -649,12 +573,12 @@ Here is the caller graph for this function:</div>
         <tr>
           <td class="memname">esp_err_t star_sensor_hcsr04_get_result </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="#ad9511961a9bbcf8661cfcdf028632a5a">hcsr04_handle_t</a> *</td>          <td class="paramname"><span class="paramname"><em>handle</em></span>, </td>
+          <td class="paramtype"><a class="el" href="#ad9511961a9bbcf8661cfcdf028632a5a">hcsr04_handle_t</a> *const</td>          <td class="paramname"><span class="paramname"><em>handle</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">float *</td>          <td class="paramname"><span class="paramname"><em>distance_cm</em></span>&#160;)</td>
+          <td class="paramtype">float *const</td>          <td class="paramname"><span class="paramname"><em>distance_cm</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -669,16 +593,16 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, HCSR04_ERR_NOT_READY if not complete </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00280">280</a> of file <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html">star_sensor_hcsr04.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00282">282</a> of file <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html">star_sensor_hcsr04.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00186">hcsr04_handle::echo_end_time</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00185">hcsr04_handle::echo_start_time</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00159">HCSR04_ERR_INVALID_PULSE</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00160">HCSR04_ERR_NOT_READY</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00183">hcsr04_handle::initialized</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00187">hcsr04_handle::measurement_complete</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00252">star_sensor_hcsr04_calculate_distance()</a>, and <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00180">hcsr04_handle::temperature_c</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00182">hcsr04_handle::echo_end_time</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00181">hcsr04_handle::echo_start_time</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00179">hcsr04_handle::initialized</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00155">k_hcsr04_err_invalid_pulse</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00156">k_hcsr04_err_not_ready</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00183">hcsr04_handle::measurement_complete</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00254">star_sensor_hcsr04_calculate_distance()</a>, and <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00176">hcsr04_handle::temperature_c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00312">star_sensor_hcsr04_read_distance()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00314">star_sensor_hcsr04_read_distance()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d2/dda/star__sensor__hcsr04_8h_a7eec5ddd99bce9137e1e9d8a7d6ac780_cgraph.png" border="0" usemap="#ad2/dda/star__sensor__hcsr04_8h_a7eec5ddd99bce9137e1e9d8a7d6ac780_cgraph" loading="lazy" alt=""/></div>
-<map name="ad2/dda/star__sensor__hcsr04_8h_a7eec5ddd99bce9137e1e9d8a7d6ac780_cgraph" id="ad2/dda/star__sensor__hcsr04_8h_a7eec5ddd99bce9137e1e9d8a7d6ac780_cgraph">
+<div class="center"><img src="../../d2/dda/star__sensor__hcsr04_8h_a80427acd575009fe291a5a838a191e4e_cgraph.png" border="0" usemap="#ad2/dda/star__sensor__hcsr04_8h_a80427acd575009fe291a5a838a191e4e_cgraph" loading="lazy" alt=""/></div>
+<map name="ad2/dda/star__sensor__hcsr04_8h_a80427acd575009fe291a5a838a191e4e_cgraph" id="ad2/dda/star__sensor__hcsr04_8h_a80427acd575009fe291a5a838a191e4e_cgraph">
 <area shape="rect" title="Get measurement result (non&#45;blocking)." alt="" coords="5,5,141,46"/>
 <area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#abf589bd5a636689a8cdcb1e6778765ce" title="Calculate distance with temperature compensation." alt="" coords="189,5,325,46"/>
 <area shape="poly" title=" " alt="" coords="141,23,176,25,170,26,141,28"/>
@@ -687,18 +611,18 @@ Here is the call graph for this function:</div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d2/dda/star__sensor__hcsr04_8h_a7eec5ddd99bce9137e1e9d8a7d6ac780_icgraph.png" border="0" usemap="#ad2/dda/star__sensor__hcsr04_8h_a7eec5ddd99bce9137e1e9d8a7d6ac780_icgraph" loading="lazy" alt=""/></div>
-<map name="ad2/dda/star__sensor__hcsr04_8h_a7eec5ddd99bce9137e1e9d8a7d6ac780_icgraph" id="ad2/dda/star__sensor__hcsr04_8h_a7eec5ddd99bce9137e1e9d8a7d6ac780_icgraph">
+<div class="center"><img src="../../d2/dda/star__sensor__hcsr04_8h_a80427acd575009fe291a5a838a191e4e_icgraph.png" border="0" usemap="#ad2/dda/star__sensor__hcsr04_8h_a80427acd575009fe291a5a838a191e4e_icgraph" loading="lazy" alt=""/></div>
+<map name="ad2/dda/star__sensor__hcsr04_8h_a80427acd575009fe291a5a838a191e4e_icgraph" id="ad2/dda/star__sensor__hcsr04_8h_a80427acd575009fe291a5a838a191e4e_icgraph">
 <area shape="rect" title="Get measurement result (non&#45;blocking)." alt="" coords="1076,5,1212,46"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a104064b944a69649fe3bc16a186bcd4a" title="Trigger measurement and read distance." alt="" coords="893,5,1028,46"/>
+<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a0d4ae739014a4258b50c3a8bc6e3be78" title="Trigger measurement and read distance." alt="" coords="893,5,1028,46"/>
 <area shape="poly" title=" " alt="" coords="1058,26,1029,28,1028,23,1063,26"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a488619c3bee2d4f6131ad9018c99b9e6" title=" " alt="" coords="709,5,845,46"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a1ea224ad4e9ad60c90644c2688e8d946" title=" " alt="" coords="709,5,845,46"/>
 <area shape="poly" title=" " alt="" coords="874,26,845,28,845,23,880,26"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a4dc3ab19219e5e55bef96d6b87dd3f40" title=" " alt="" coords="488,13,661,38"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afde0408db6c60f5c886dc0dc13a88ed5" title=" " alt="" coords="488,13,661,38"/>
 <area shape="poly" title=" " alt="" coords="691,26,661,28,661,23,696,26"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#abe04d0ff61d729ca1b86be8e3108bbf5" title="Initialize sensor management task." alt="" coords="315,13,440,38"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="315,13,440,38"/>
 <area shape="poly" title=" " alt="" coords="470,26,441,28,441,23,475,26"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,13,267,38"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,13,267,38"/>
 <area shape="poly" title=" " alt="" coords="297,26,268,28,267,23,302,26"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,13,83,38"/>
 <area shape="poly" title=" " alt="" coords="112,26,83,28,83,23,118,25"/>
@@ -762,11 +686,11 @@ GPIO bus must already manage both trigger_pin and echo_pin </dd>
 <dd>
 All operations after init are protected by mutex for thread safety </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00034">34</a> of file <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html">star_sensor_hcsr04.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00036">36</a> of file <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html">star_sensor_hcsr04.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00177">hcsr04_handle::bus_name</a>, <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00166">star_error_interface::ctx</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00165">hcsr04_config_t::echo_pin</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00179">hcsr04_handle::echo_pin</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00348">error_handler_create_default()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00393">error_handler_destroy_default()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00324">error_handler_get_interface()</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00181">hcsr04_handle::error_iface</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00019">hcsr04_echo_isr_handler()</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00183">hcsr04_handle::initialized</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00176">hcsr04_handle::manager</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00182">hcsr04_handle::mutex</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00184">hcsr04_handle::owns_error_handler</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00279">star_bus_gpio_configure()</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00353">star_bus_gpio_set_interrupt()</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00304">star_bus_gpio_write()</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00166">hcsr04_config_t::temperature_c</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00180">hcsr04_handle::temperature_c</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00164">hcsr04_config_t::trigger_pin</a>, and <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00178">hcsr04_handle::trigger_pin</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00173">hcsr04_handle::bus_name</a>, <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00166">star_error_interface::ctx</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00161">hcsr04_config_t::echo_pin</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00175">hcsr04_handle::echo_pin</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00348">error_handler_create_default()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00393">error_handler_destroy_default()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00324">error_handler_get_interface()</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00177">hcsr04_handle::error_iface</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00021">hcsr04_echo_isr_handler()</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00179">hcsr04_handle::initialized</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00172">hcsr04_handle::manager</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00178">hcsr04_handle::mutex</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00180">hcsr04_handle::owns_error_handler</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00279">star_bus_gpio_configure()</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00353">star_bus_gpio_set_interrupt()</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00304">star_bus_gpio_write()</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00162">hcsr04_config_t::temperature_c</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00176">hcsr04_handle::temperature_c</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00160">hcsr04_config_t::trigger_pin</a>, and <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00174">hcsr04_handle::trigger_pin</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00015">internal_init_sensors()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00025">internal_init_sensors()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -779,7 +703,7 @@ Here is the call graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="107,210,211,149,251,129,247,133,214,153,110,214"/>
 <area shape="rect" href="../../d7/d82/star__error__handler_8c.html#adb10b93a13ce155a3e5c2aa2f4b2d543" title="Create an interface adapter for the error handler." alt="" coords="214,164,392,189"/>
 <area shape="poly" title=" " alt="" coords="144,210,230,191,226,195,146,215"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a4f8ff4902257222e26b990280abd431b" title=" " alt="" coords="221,213,386,238"/>
+<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#ac0e2c4b44b57bde90dad84d3178fe834" title=" " alt="" coords="221,213,386,238"/>
 <area shape="poly" title=" " alt="" coords="164,223,208,224,203,227,166,228"/>
 <area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html#a3f3ec8a58cef289721cb02a336d52ee0" title="Configure a GPIO pin (set mode, pull&#45;up/down) via bus manager." alt="" coords="222,262,384,288"/>
 <area shape="poly" title=" " alt="" coords="145,236,231,257,226,259,145,242"/>
@@ -817,11 +741,11 @@ Here is the caller graph for this function:</div>
 <div class="center"><img src="../../d2/dda/star__sensor__hcsr04_8h_afd5878b21fda797877bd29036adcbd58_icgraph.png" border="0" usemap="#ad2/dda/star__sensor__hcsr04_8h_afd5878b21fda797877bd29036adcbd58_icgraph" loading="lazy" alt=""/></div>
 <map name="ad2/dda/star__sensor__hcsr04_8h_afd5878b21fda797877bd29036adcbd58_icgraph" id="ad2/dda/star__sensor__hcsr04_8h_afd5878b21fda797877bd29036adcbd58_icgraph">
 <area shape="rect" title="Initialize HC&#45;SR04 sensor." alt="" coords="677,5,836,31"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a3cf1fffcdac34c405d12dc3b509c2deb" title=" " alt="" coords="488,5,629,31"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afa22a6110eba0db527b95b8e2ce3a746" title=" " alt="" coords="488,5,629,31"/>
 <area shape="poly" title=" " alt="" coords="658,18,629,21,629,16,664,18"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#abe04d0ff61d729ca1b86be8e3108bbf5" title="Initialize sensor management task." alt="" coords="315,5,440,31"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="315,5,440,31"/>
 <area shape="poly" title=" " alt="" coords="470,18,441,21,441,16,475,18"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,5,267,31"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,5,267,31"/>
 <area shape="poly" title=" " alt="" coords="297,18,268,21,267,16,302,18"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
 <area shape="poly" title=" " alt="" coords="112,19,83,21,83,16,118,18"/>
@@ -859,14 +783,14 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00242">242</a> of file <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html">star_sensor_hcsr04.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00244">244</a> of file <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html">star_sensor_hcsr04.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00183">hcsr04_handle::initialized</a>, and <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00187">hcsr04_handle::measurement_complete</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00179">hcsr04_handle::initialized</a>, and <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00183">hcsr04_handle::measurement_complete</a>.</p>
 
 </div>
 </div>
-<a id="a104064b944a69649fe3bc16a186bcd4a" name="a104064b944a69649fe3bc16a186bcd4a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a104064b944a69649fe3bc16a186bcd4a">&#9670;&#160;</a></span>star_sensor_hcsr04_read_distance()</h2>
+<a id="a0d4ae739014a4258b50c3a8bc6e3be78" name="a0d4ae739014a4258b50c3a8bc6e3be78"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0d4ae739014a4258b50c3a8bc6e3be78">&#9670;&#160;</a></span>star_sensor_hcsr04_read_distance()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -874,12 +798,12 @@ Here is the caller graph for this function:</div>
         <tr>
           <td class="memname">esp_err_t star_sensor_hcsr04_read_distance </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="#ad9511961a9bbcf8661cfcdf028632a5a">hcsr04_handle_t</a> *</td>          <td class="paramname"><span class="paramname"><em>handle</em></span>, </td>
+          <td class="paramtype"><a class="el" href="#ad9511961a9bbcf8661cfcdf028632a5a">hcsr04_handle_t</a> *const</td>          <td class="paramname"><span class="paramname"><em>handle</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">float *</td>          <td class="paramname"><span class="paramname"><em>distance_cm</em></span>&#160;)</td>
+          <td class="paramtype">float *const</td>          <td class="paramname"><span class="paramname"><em>distance_cm</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -894,20 +818,20 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, HCSR04_ERR_* on measurement error </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00312">312</a> of file <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html">star_sensor_hcsr04.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00314">314</a> of file <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html">star_sensor_hcsr04.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00156">HCSR04_ERR_TIMEOUT</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00183">hcsr04_handle::initialized</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00187">hcsr04_handle::measurement_complete</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00280">star_sensor_hcsr04_get_result()</a>, and <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00203">star_sensor_hcsr04_trigger()</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00179">hcsr04_handle::initialized</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00152">k_hcsr04_err_timeout</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00183">hcsr04_handle::measurement_complete</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00282">star_sensor_hcsr04_get_result()</a>, and <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00205">star_sensor_hcsr04_trigger()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00063">internal_read_single_sensor()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00079">internal_read_single_sensor()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d2/dda/star__sensor__hcsr04_8h_a104064b944a69649fe3bc16a186bcd4a_cgraph.png" border="0" usemap="#ad2/dda/star__sensor__hcsr04_8h_a104064b944a69649fe3bc16a186bcd4a_cgraph" loading="lazy" alt=""/></div>
-<map name="ad2/dda/star__sensor__hcsr04_8h_a104064b944a69649fe3bc16a186bcd4a_cgraph" id="ad2/dda/star__sensor__hcsr04_8h_a104064b944a69649fe3bc16a186bcd4a_cgraph">
+<div class="center"><img src="../../d2/dda/star__sensor__hcsr04_8h_a0d4ae739014a4258b50c3a8bc6e3be78_cgraph.png" border="0" usemap="#ad2/dda/star__sensor__hcsr04_8h_a0d4ae739014a4258b50c3a8bc6e3be78_cgraph" loading="lazy" alt=""/></div>
+<map name="ad2/dda/star__sensor__hcsr04_8h_a0d4ae739014a4258b50c3a8bc6e3be78_cgraph" id="ad2/dda/star__sensor__hcsr04_8h_a0d4ae739014a4258b50c3a8bc6e3be78_cgraph">
 <area shape="rect" title="Trigger measurement and read distance." alt="" coords="5,39,141,79"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a7eec5ddd99bce9137e1e9d8a7d6ac780" title="Get measurement result (non&#45;blocking)." alt="" coords="189,5,324,46"/>
+<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a80427acd575009fe291a5a838a191e4e" title="Get measurement result (non&#45;blocking)." alt="" coords="189,5,324,46"/>
 <area shape="poly" title=" " alt="" coords="140,44,176,40,171,42,142,49"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a3733b2536166937e74b478d4b873faa0" title="Trigger measurement (non&#45;blocking)." alt="" coords="189,71,324,111"/>
+<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a69a5f2fb8f4f0e300d199d3462d2c28f" title="Trigger measurement (non&#45;blocking)." alt="" coords="189,71,324,111"/>
 <area shape="poly" title=" " alt="" coords="141,68,176,76,171,77,141,73"/>
 <area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#abf589bd5a636689a8cdcb1e6778765ce" title="Calculate distance with temperature compensation." alt="" coords="372,5,509,46"/>
 <area shape="poly" title=" " alt="" coords="324,23,360,25,354,26,325,28"/>
@@ -920,16 +844,16 @@ Here is the call graph for this function:</div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d2/dda/star__sensor__hcsr04_8h_a104064b944a69649fe3bc16a186bcd4a_icgraph.png" border="0" usemap="#ad2/dda/star__sensor__hcsr04_8h_a104064b944a69649fe3bc16a186bcd4a_icgraph" loading="lazy" alt=""/></div>
-<map name="ad2/dda/star__sensor__hcsr04_8h_a104064b944a69649fe3bc16a186bcd4a_icgraph" id="ad2/dda/star__sensor__hcsr04_8h_a104064b944a69649fe3bc16a186bcd4a_icgraph">
+<div class="center"><img src="../../d2/dda/star__sensor__hcsr04_8h_a0d4ae739014a4258b50c3a8bc6e3be78_icgraph.png" border="0" usemap="#ad2/dda/star__sensor__hcsr04_8h_a0d4ae739014a4258b50c3a8bc6e3be78_icgraph" loading="lazy" alt=""/></div>
+<map name="ad2/dda/star__sensor__hcsr04_8h_a0d4ae739014a4258b50c3a8bc6e3be78_icgraph" id="ad2/dda/star__sensor__hcsr04_8h_a0d4ae739014a4258b50c3a8bc6e3be78_icgraph">
 <area shape="rect" title="Trigger measurement and read distance." alt="" coords="893,5,1028,46"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a488619c3bee2d4f6131ad9018c99b9e6" title=" " alt="" coords="709,5,845,46"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a1ea224ad4e9ad60c90644c2688e8d946" title=" " alt="" coords="709,5,845,46"/>
 <area shape="poly" title=" " alt="" coords="874,26,845,28,845,23,880,26"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a4dc3ab19219e5e55bef96d6b87dd3f40" title=" " alt="" coords="488,13,661,38"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afde0408db6c60f5c886dc0dc13a88ed5" title=" " alt="" coords="488,13,661,38"/>
 <area shape="poly" title=" " alt="" coords="691,26,661,28,661,23,696,26"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#abe04d0ff61d729ca1b86be8e3108bbf5" title="Initialize sensor management task." alt="" coords="315,13,440,38"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="315,13,440,38"/>
 <area shape="poly" title=" " alt="" coords="470,26,441,28,441,23,475,26"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,13,267,38"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,13,267,38"/>
 <area shape="poly" title=" " alt="" coords="297,26,268,28,267,23,302,26"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,13,83,38"/>
 <area shape="poly" title=" " alt="" coords="112,26,83,28,83,23,118,25"/>
@@ -938,8 +862,8 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="a2e85c932ed841039293042898baf93b7" name="a2e85c932ed841039293042898baf93b7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2e85c932ed841039293042898baf93b7">&#9670;&#160;</a></span>star_sensor_hcsr04_set_temperature()</h2>
+<a id="a98a96e56a9e83ceb44df24d730698884" name="a98a96e56a9e83ceb44df24d730698884"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a98a96e56a9e83ceb44df24d730698884">&#9670;&#160;</a></span>star_sensor_hcsr04_set_temperature()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -947,12 +871,12 @@ Here is the caller graph for this function:</div>
         <tr>
           <td class="memname">esp_err_t star_sensor_hcsr04_set_temperature </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="#ad9511961a9bbcf8661cfcdf028632a5a">hcsr04_handle_t</a> *</td>          <td class="paramname"><span class="paramname"><em>handle</em></span>, </td>
+          <td class="paramtype"><a class="el" href="#ad9511961a9bbcf8661cfcdf028632a5a">hcsr04_handle_t</a> *const</td>          <td class="paramname"><span class="paramname"><em>handle</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">float</td>          <td class="paramname"><span class="paramname"><em>temperature_c</em></span>&#160;)</td>
+          <td class="paramtype">const float</td>          <td class="paramname"><span class="paramname"><em>temperature_c</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -967,26 +891,26 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00339">339</a> of file <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html">star_sensor_hcsr04.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00360">360</a> of file <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html">star_sensor_hcsr04.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00017">HCSR04_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00183">hcsr04_handle::initialized</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00182">hcsr04_handle::mutex</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, and <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00180">hcsr04_handle::temperature_c</a>.</p>
+<p class="reference">References <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00019">HCSR04_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00179">hcsr04_handle::initialized</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00178">hcsr04_handle::mutex</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00176">hcsr04_handle::temperature_c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00224">sensor_task_update_temperature()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00239">sensor_task_update_temperature()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d2/dda/star__sensor__hcsr04_8h_a2e85c932ed841039293042898baf93b7_icgraph.png" border="0" usemap="#ad2/dda/star__sensor__hcsr04_8h_a2e85c932ed841039293042898baf93b7_icgraph" loading="lazy" alt=""/></div>
-<map name="ad2/dda/star__sensor__hcsr04_8h_a2e85c932ed841039293042898baf93b7_icgraph" id="ad2/dda/star__sensor__hcsr04_8h_a2e85c932ed841039293042898baf93b7_icgraph">
+<div class="center"><img src="../../d2/dda/star__sensor__hcsr04_8h_a98a96e56a9e83ceb44df24d730698884_icgraph.png" border="0" usemap="#ad2/dda/star__sensor__hcsr04_8h_a98a96e56a9e83ceb44df24d730698884_icgraph" loading="lazy" alt=""/></div>
+<map name="ad2/dda/star__sensor__hcsr04_8h_a98a96e56a9e83ceb44df24d730698884_icgraph" id="ad2/dda/star__sensor__hcsr04_8h_a98a96e56a9e83ceb44df24d730698884_icgraph">
 <area shape="rect" title="Set temperature for compensation." alt="" coords="1063,5,1199,46"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a18d3355004199a30ef5025ab6b3ce093" title="Update temperature for sound speed correction." alt="" coords="877,5,1015,46"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a94ca5e663b3388b7dddc4169818e4745" title="Update temperature for sound speed correction." alt="" coords="877,5,1015,46"/>
 <area shape="poly" title=" " alt="" coords="1045,26,1016,28,1015,23,1050,26"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a7b3a87af67c2b24b1f0e83e307e2715b" title=" " alt="" coords="695,13,829,38"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#acf0cd8b6c7894c00402a62a6c72d659b" title=" " alt="" coords="695,13,829,38"/>
 <area shape="poly" title=" " alt="" coords="859,26,829,28,829,23,864,26"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#ab28598715bb940c2458d04d337037432" title=" " alt="" coords="481,13,647,38"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a7c98847a5751aa53f1d5d8ba86b6df8e" title=" " alt="" coords="481,13,647,38"/>
 <area shape="poly" title=" " alt="" coords="677,26,647,28,647,23,682,26"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a9d856aeaa4dfc864b2d6446139430971" title="Initialize DHT22 monitoring task." alt="" coords="315,13,433,38"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#ad5fc3ca549615b42dcfbb1926e7e5cb0" title="Initialize DHT22 monitoring task." alt="" coords="315,13,433,38"/>
 <area shape="poly" title=" " alt="" coords="463,26,434,28,434,23,469,26"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,13,267,38"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,13,267,38"/>
 <area shape="poly" title=" " alt="" coords="297,26,268,28,267,23,302,26"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,13,83,38"/>
 <area shape="poly" title=" " alt="" coords="112,26,83,28,83,23,118,25"/>
@@ -995,8 +919,8 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="a3733b2536166937e74b478d4b873faa0" name="a3733b2536166937e74b478d4b873faa0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3733b2536166937e74b478d4b873faa0">&#9670;&#160;</a></span>star_sensor_hcsr04_trigger()</h2>
+<a id="a69a5f2fb8f4f0e300d199d3462d2c28f" name="a69a5f2fb8f4f0e300d199d3462d2c28f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a69a5f2fb8f4f0e300d199d3462d2c28f">&#9670;&#160;</a></span>star_sensor_hcsr04_trigger()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1004,7 +928,7 @@ Here is the caller graph for this function:</div>
         <tr>
           <td class="memname">esp_err_t star_sensor_hcsr04_trigger </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="#ad9511961a9bbcf8661cfcdf028632a5a">hcsr04_handle_t</a> *</td>          <td class="paramname"><span class="paramname"><em>handle</em></span></td><td>)</td>
+          <td class="paramtype"><a class="el" href="#ad9511961a9bbcf8661cfcdf028632a5a">hcsr04_handle_t</a> *const</td>          <td class="paramname"><span class="paramname"><em>handle</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -1019,16 +943,16 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00203">203</a> of file <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html">star_sensor_hcsr04.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00205">205</a> of file <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html">star_sensor_hcsr04.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00177">hcsr04_handle::bus_name</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00186">hcsr04_handle::echo_end_time</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00185">hcsr04_handle::echo_start_time</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00017">HCSR04_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00183">hcsr04_handle::initialized</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00176">hcsr04_handle::manager</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00187">hcsr04_handle::measurement_complete</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00182">hcsr04_handle::mutex</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00304">star_bus_gpio_write()</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00188">hcsr04_handle::timeout_occurred</a>, and <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00178">hcsr04_handle::trigger_pin</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00173">hcsr04_handle::bus_name</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00182">hcsr04_handle::echo_end_time</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00181">hcsr04_handle::echo_start_time</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00019">HCSR04_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00179">hcsr04_handle::initialized</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00172">hcsr04_handle::manager</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00183">hcsr04_handle::measurement_complete</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00178">hcsr04_handle::mutex</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00304">star_bus_gpio_write()</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00184">hcsr04_handle::timeout_occurred</a>, and <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00174">hcsr04_handle::trigger_pin</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00312">star_sensor_hcsr04_read_distance()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00314">star_sensor_hcsr04_read_distance()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d2/dda/star__sensor__hcsr04_8h_a3733b2536166937e74b478d4b873faa0_cgraph.png" border="0" usemap="#ad2/dda/star__sensor__hcsr04_8h_a3733b2536166937e74b478d4b873faa0_cgraph" loading="lazy" alt=""/></div>
-<map name="ad2/dda/star__sensor__hcsr04_8h_a3733b2536166937e74b478d4b873faa0_cgraph" id="ad2/dda/star__sensor__hcsr04_8h_a3733b2536166937e74b478d4b873faa0_cgraph">
+<div class="center"><img src="../../d2/dda/star__sensor__hcsr04_8h_a69a5f2fb8f4f0e300d199d3462d2c28f_cgraph.png" border="0" usemap="#ad2/dda/star__sensor__hcsr04_8h_a69a5f2fb8f4f0e300d199d3462d2c28f_cgraph" loading="lazy" alt=""/></div>
+<map name="ad2/dda/star__sensor__hcsr04_8h_a69a5f2fb8f4f0e300d199d3462d2c28f_cgraph" id="ad2/dda/star__sensor__hcsr04_8h_a69a5f2fb8f4f0e300d199d3462d2c28f_cgraph">
 <area shape="rect" title="Trigger measurement (non&#45;blocking)." alt="" coords="5,5,141,46"/>
 <area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html#a7272db26c004de64a1586bc7311eabdb" title="Set the output level of a GPIO pin via bus manager." alt="" coords="189,13,326,38"/>
 <area shape="poly" title=" " alt="" coords="141,23,176,25,170,26,141,28"/>
@@ -1039,18 +963,18 @@ Here is the call graph for this function:</div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d2/dda/star__sensor__hcsr04_8h_a3733b2536166937e74b478d4b873faa0_icgraph.png" border="0" usemap="#ad2/dda/star__sensor__hcsr04_8h_a3733b2536166937e74b478d4b873faa0_icgraph" loading="lazy" alt=""/></div>
-<map name="ad2/dda/star__sensor__hcsr04_8h_a3733b2536166937e74b478d4b873faa0_icgraph" id="ad2/dda/star__sensor__hcsr04_8h_a3733b2536166937e74b478d4b873faa0_icgraph">
+<div class="center"><img src="../../d2/dda/star__sensor__hcsr04_8h_a69a5f2fb8f4f0e300d199d3462d2c28f_icgraph.png" border="0" usemap="#ad2/dda/star__sensor__hcsr04_8h_a69a5f2fb8f4f0e300d199d3462d2c28f_icgraph" loading="lazy" alt=""/></div>
+<map name="ad2/dda/star__sensor__hcsr04_8h_a69a5f2fb8f4f0e300d199d3462d2c28f_icgraph" id="ad2/dda/star__sensor__hcsr04_8h_a69a5f2fb8f4f0e300d199d3462d2c28f_icgraph">
 <area shape="rect" title="Trigger measurement (non&#45;blocking)." alt="" coords="1076,5,1212,46"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a104064b944a69649fe3bc16a186bcd4a" title="Trigger measurement and read distance." alt="" coords="893,5,1028,46"/>
+<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a0d4ae739014a4258b50c3a8bc6e3be78" title="Trigger measurement and read distance." alt="" coords="893,5,1028,46"/>
 <area shape="poly" title=" " alt="" coords="1058,26,1029,28,1028,23,1063,26"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a488619c3bee2d4f6131ad9018c99b9e6" title=" " alt="" coords="709,5,845,46"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a1ea224ad4e9ad60c90644c2688e8d946" title=" " alt="" coords="709,5,845,46"/>
 <area shape="poly" title=" " alt="" coords="874,26,845,28,845,23,880,26"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a4dc3ab19219e5e55bef96d6b87dd3f40" title=" " alt="" coords="488,13,661,38"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afde0408db6c60f5c886dc0dc13a88ed5" title=" " alt="" coords="488,13,661,38"/>
 <area shape="poly" title=" " alt="" coords="691,26,661,28,661,23,696,26"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#abe04d0ff61d729ca1b86be8e3108bbf5" title="Initialize sensor management task." alt="" coords="315,13,440,38"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="315,13,440,38"/>
 <area shape="poly" title=" " alt="" coords="470,26,441,28,441,23,475,26"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,13,267,38"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,13,267,38"/>
 <area shape="poly" title=" " alt="" coords="297,26,268,28,267,23,302,26"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,13,83,38"/>
 <area shape="poly" title=" " alt="" coords="112,26,83,28,83,23,118,25"/>

@@ -33,5 +33,6 @@ var searchData=
   ['event_5ftask_30',['event_task',['../d8/dfe/structuart__state__t.html#a8423b8e2ed3622afdb9a08d7368ab097',1,'uart_state_t']]],
   ['event_5ftask_5frunning_31',['event_task_running',['../d8/dfe/structuart__state__t.html#aafa9793e49b4db9b08518991694fbffb',1,'uart_state_t']]],
   ['executed_32',['executed',['../d6/d50/structbatch__context__t.html#a6bff1cc4c8c58f832091564109507327',1,'batch_context_t']]],
-  ['ext_5fclock_33',['ext_clock',['../d9/d98/structpca9685__config__t.html#aecfb7d8055ea8092d7a8a43de81f3f51',1,'pca9685_config_t']]]
+  ['ext_5fclock_33',['ext_clock',['../d9/d98/structpca9685__config__t.html#aecfb7d8055ea8092d7a8a43de81f3f51',1,'pca9685_config_t']]],
+  ['extension_5ffactor_34',['extension_factor',['../d4/d63/structstar__distance__config__t.html#a421d1c4f02c2e1fc45f8e594bad478d8',1,'star_distance_config_t']]]
 ];

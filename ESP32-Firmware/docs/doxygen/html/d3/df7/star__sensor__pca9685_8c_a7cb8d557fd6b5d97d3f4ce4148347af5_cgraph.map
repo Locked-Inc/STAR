@@ -6,9 +6,9 @@
 <area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="124,190,245,144,241,149,127,195"/>
 <area shape="rect" id="Node000007" href="$d7/d82/star__error__handler_8c.html#adb10b93a13ce155a3e5c2aa2f4b2d543" title="Create an interface adapter for the error handler." alt="" coords="223,193,401,218"/>
 <area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="174,203,209,204,205,207,176,208"/>
-<area shape="rect" id="Node000014" href="$d3/df7/star__sensor__pca9685_8c.html#a49863dd18b6c011a0162743d0e1dd4d4" title="Internal frequency setting (no initialization check, caller must hold mutex if needed)." alt="" coords="240,323,384,363"/>
+<area shape="rect" id="Node000014" href="$d3/df7/star__sensor__pca9685_8c.html#af172ec2771522a913b761463c8d4828f" title="Internal frequency setting (no initialization check, caller must hold mutex if needed)." alt="" coords="240,323,384,363"/>
 <area shape="poly" id="edge13_Node000001_Node000014" title=" " alt="" coords="113,216,267,313,263,316,112,222"/>
-<area shape="rect" id="Node000018" href="$d3/df7/star__sensor__pca9685_8c.html#a7fb4749ccca6d7ff1b791faaba3c5e3a" title="Write to PCA9685 register with validation." alt="" coords="456,430,587,456"/>
+<area shape="rect" id="Node000018" href="$d3/df7/star__sensor__pca9685_8c.html#a8e1f1170d3e10e9e1db7beb8f6b12da2" title="Write to PCA9685 register with validation." alt="" coords="456,430,587,456"/>
 <area shape="poly" id="edge21_Node000001_Node000018" title=" " alt="" coords="98,216,117,250,144,292,180,336,224,373,277,400,334,418,390,430,444,439,439,439,389,435,332,423,275,404,221,377,176,340,140,295,112,252,97,221"/>
 <area shape="rect" id="Node000003" href="$d7/d82/star__error__handler_8c.html#a4fbf7f5d1c862bd91f3ece2812b45b03" title="Create and initialize an error handler with custom configuration." alt="" coords="452,5,591,46"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="381,33,439,30,434,33,383,38"/>
@@ -28,7 +28,7 @@
 <area shape="poly" id="edge10_Node000010_Node000011" title=" " alt="" coords="592,203,639,205,633,206,593,208"/>
 <area shape="rect" id="Node000013" href="$d7/d82/star__error__handler_8c.html#adcd860e401f2ab4c5c907c87fdbba7d0" title="Reset the error handler state." alt="" coords="655,251,787,291"/>
 <area shape="poly" id="edge12_Node000012_Node000013" title=" " alt="" coords="589,268,642,271,637,271,589,274"/>
-<area shape="rect" id="Node000015" href="$d3/df7/star__sensor__pca9685_8c.html#ab5d665b77448f8328bad9d4c61c0d47c" title="Read from PCA9685 register." alt="" coords="458,316,585,341"/>
+<area shape="rect" id="Node000015" href="$d3/df7/star__sensor__pca9685_8c.html#aa890b42646d44f6b5a11c603658f0afa" title="Read from PCA9685 register." alt="" coords="458,316,585,341"/>
 <area shape="poly" id="edge14_Node000014_Node000015" title=" " alt="" coords="384,335,445,333,440,334,385,341"/>
 <area shape="poly" id="edge17_Node000014_Node000018" title=" " alt="" coords="348,361,450,415,467,425,462,424,448,420,347,367"/>
 <area shape="rect" id="Node000020" href="$d3/df7/star__sensor__pca9685_8c.html#a5ad3e5ba04fe061a85c9b16487bb9fef" title="Calculate prescale value for desired frequency." alt="" coords="449,365,594,406"/>

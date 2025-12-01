@@ -1,4 +1,4 @@
-app_main() <void app_main (void) at src/main.c:152>:
+app_main() <void app_main (void) at src/main.c:155>:
     ESP_LOGI()
     esp_err_t()
     shared_data_init()
@@ -55,56 +55,52 @@ app_main() <void app_main (void) at src/main.c:152>:
                 ESP_LOGI()
                 ESP_LOGW()
                 ESP_LOGD()
-    star_error_interface_create_default() <star_error_interface_t *star_error_interface_create_default (void) at lib/star_error_handler/src/star_error_handler.c:408>:
-        error_handler_create_default() <error_handler_t *error_handler_create_default (void) at lib/star_error_handler/src/star_error_handler.c:348>:
-            error_handler_create_custom() <error_handler_t *error_handler_create_custom (uint32_t max_retries, uint32_t base_retry_delay, uint32_t max_retry_delay, esp_err_t (*reset_fn) (void *context), void *reset_context) at lib/star_error_handler/src/star_error_handler.c:354>:
-                malloc()
-                ESP_LOGE()
-                memset()
-                error_handler_init() <esp_err_t error_handler_init (error_handler_t *handler, uint32_t max_retries, uint32_t base_retry_delay, uint32_t max_retry_delay, esp_err_t (*reset_fn) (void *context), void *reset_context) at lib/star_error_handler/src/star_error_handler.c:17>:
-                    ESP_LOGE()
-                    xSemaphoreCreateMutex()
-                esp_err_to_name()
-                free()
-                ESP_LOGI()
-        ESP_LOGE()
+    error_handler_create_custom() <error_handler_t *error_handler_create_custom (uint32_t max_retries, uint32_t base_retry_delay, uint32_t max_retry_delay, esp_err_t (*reset_fn) (void *context), void *reset_context) at lib/star_error_handler/src/star_error_handler.c:354>:
         malloc()
-        error_handler_destroy_default() <void error_handler_destroy_default (error_handler_t *handler) at lib/star_error_handler/src/star_error_handler.c:393>:
-            error_handler_deinit() <void error_handler_deinit (error_handler_t *handler) at lib/star_error_handler/src/star_error_handler.c:59>:
-                xSemaphoreTake()
-                pdMS_TO_TICKS()
-                ESP_LOGE()
-                xSemaphoreGive()
-                vSemaphoreDelete()
-            free()
-            ESP_LOGD()
-        error_handler_get_interface() <void error_handler_get_interface (star_error_interface_t *iface, error_handler_t *handler) at lib/star_error_handler/src/star_error_handler.c:324>:
+        ESP_LOGE()
+        memset()
+        error_handler_init() <esp_err_t error_handler_init (error_handler_t *handler, uint32_t max_retries, uint32_t base_retry_delay, uint32_t max_retry_delay, esp_err_t (*reset_fn) (void *context), void *reset_context) at lib/star_error_handler/src/star_error_handler.c:17>:
             ESP_LOGE()
-            internal_iface_record_error() <esp_err_t internal_iface_record_error (void *ctx, esp_err_t error, const char *message, const char *file, int line, const char *func) at lib/star_error_handler/src/star_error_handler.c:301>:
-                error_handler_record_error() <esp_err_t error_handler_record_error (error_handler_t *handler, esp_err_t error, const char *description, const char *file, int32_t line, const char *func) at lib/star_error_handler/src/star_error_handler.c:92>:
-                    ESP_LOGE()
-                    xSemaphoreTake()
-                    xSemaphoreGive()
-                    ESP_LOGI()
-                    snprintf()
-                    esp_err_to_name()
-                    esp_err_t()
-                    reset_fn_local()
-                    pdMS_TO_TICKS()
-                    ESP_LOGW()
-            internal_iface_can_retry() <bool internal_iface_can_retry (void *ctx) at lib/star_error_handler/src/star_error_handler.c:312>:
-                error_handler_can_retry() <bool error_handler_can_retry (error_handler_t *handler) at lib/star_error_handler/src/star_error_handler.c:235>:
-                    ESP_LOGE()
-                    xSemaphoreTake()
-                    xSemaphoreGive()
-            internal_iface_reset_state() <esp_err_t internal_iface_reset_state (void *ctx) at lib/star_error_handler/src/star_error_handler.c:318>:
-                error_handler_reset_state() <esp_err_t error_handler_reset_state (error_handler_t *handler) at lib/star_error_handler/src/star_error_handler.c:264>:
-                    ESP_LOGE()
-                    xSemaphoreTake()
-                    xSemaphoreGive()
-                    ESP_LOGI()
-        ESP_LOGD()
+            xSemaphoreCreateMutex()
+        esp_err_to_name()
+        free()
+        ESP_LOGI()
     shared_data_deinit()
+    malloc()
+    error_handler_destroy_default() <void error_handler_destroy_default (error_handler_t *handler) at lib/star_error_handler/src/star_error_handler.c:393>:
+        error_handler_deinit() <void error_handler_deinit (error_handler_t *handler) at lib/star_error_handler/src/star_error_handler.c:59>:
+            xSemaphoreTake()
+            pdMS_TO_TICKS()
+            ESP_LOGE()
+            xSemaphoreGive()
+            vSemaphoreDelete()
+        free()
+        ESP_LOGD()
+    error_handler_get_interface() <void error_handler_get_interface (star_error_interface_t *iface, error_handler_t *handler) at lib/star_error_handler/src/star_error_handler.c:324>:
+        ESP_LOGE()
+        internal_iface_record_error() <esp_err_t internal_iface_record_error (void *ctx, esp_err_t error, const char *message, const char *file, int line, const char *func) at lib/star_error_handler/src/star_error_handler.c:301>:
+            error_handler_record_error() <esp_err_t error_handler_record_error (error_handler_t *handler, esp_err_t error, const char *description, const char *file, int32_t line, const char *func) at lib/star_error_handler/src/star_error_handler.c:92>:
+                ESP_LOGE()
+                xSemaphoreTake()
+                xSemaphoreGive()
+                ESP_LOGI()
+                snprintf()
+                esp_err_to_name()
+                esp_err_t()
+                reset_fn_local()
+                pdMS_TO_TICKS()
+                ESP_LOGW()
+        internal_iface_can_retry() <bool internal_iface_can_retry (void *ctx) at lib/star_error_handler/src/star_error_handler.c:312>:
+            error_handler_can_retry() <bool error_handler_can_retry (error_handler_t *handler) at lib/star_error_handler/src/star_error_handler.c:235>:
+                ESP_LOGE()
+                xSemaphoreTake()
+                xSemaphoreGive()
+        internal_iface_reset_state() <esp_err_t internal_iface_reset_state (void *ctx) at lib/star_error_handler/src/star_error_handler.c:318>:
+            error_handler_reset_state() <esp_err_t error_handler_reset_state (error_handler_t *handler) at lib/star_error_handler/src/star_error_handler.c:264>:
+                ESP_LOGE()
+                xSemaphoreTake()
+                xSemaphoreGive()
+                ESP_LOGI()
     star_bus_manager_init() <esp_err_t star_bus_manager_init (star_bus_manager_t *manager, const char *tag, star_error_interface_t *error_iface, star_pin_interface_t *pin_iface) at lib/star_bus/src/star_bus_manager.c:248>:
         ESP_RETURN_ON_FALSE()
         strlen()
@@ -113,23 +109,12 @@ app_main() <void app_main (void) at src/main.c:152>:
         ESP_LOGE()
         free()
         ESP_LOGI()
-    star_error_interface_destroy() <void star_error_interface_destroy (star_error_interface_t *iface) at lib/star_error_handler/src/star_error_handler.c:432>:
-        error_handler_destroy_default() <void error_handler_destroy_default (error_handler_t *handler) at lib/star_error_handler/src/star_error_handler.c:393>:
-            error_handler_deinit() <void error_handler_deinit (error_handler_t *handler) at lib/star_error_handler/src/star_error_handler.c:59>:
-                xSemaphoreTake()
-                pdMS_TO_TICKS()
-                ESP_LOGE()
-                xSemaphoreGive()
-                vSemaphoreDelete()
-            free()
-            ESP_LOGD()
-        free()
-        ESP_LOGD()
-    initialize_hardware_buses() <esp_err_t initialize_hardware_buses (star_bus_manager_t *bus_manager) at src/main.c:24>:
+    free()
+    initialize_hardware_buses() <esp_err_t initialize_hardware_buses (star_bus_manager_t *const bus_manager) at src/main.c:33>:
         esp_err_t()
         ESP_LOGI()
         STAR_DHT22_CONFIG_DEFAULT()
-        star_bus_dht22_init() <esp_err_t star_bus_dht22_init (star_bus_manager_t *manager, const char *bus_name, const star_dht22_config_t *config) at lib/star_bus/src/star_bus_dht22_proprietary.c:344>:
+        star_bus_dht22_init() <esp_err_t star_bus_dht22_init (star_bus_manager_t *manager, const char *bus_name, const star_dht22_config_t *config) at lib/star_bus/src/star_bus_dht22_proprietary.c:371>:
             ESP_LOGE()
             get_dht22_state() <dht22_state_t *get_dht22_state (const char *bus_name, bool create) at lib/star_bus/src/star_bus_dht22_proprietary.c:108>:
                 internal_init_dht22_mutex() <esp_err_t internal_init_dht22_mutex (void) at lib/star_bus/src/star_bus_dht22_proprietary.c:61>:
@@ -384,9 +369,9 @@ app_main() <void app_main (void) at src/main.c:152>:
         free()
         xSemaphoreGive()
         vSemaphoreDelete()
-    initialize_pca9685() <esp_err_t initialize_pca9685 (star_bus_manager_t *bus_manager, star_error_interface_t *error_iface, pca9685_handle_t *pca_handle) at src/main.c:82>:
+    initialize_pca9685() <esp_err_t initialize_pca9685 (star_bus_manager_t *const bus_manager, star_error_interface_t *const error_iface, pca9685_handle_t *const pca_handle) at src/main.c:88>:
         esp_err_t()
-        star_sensor_pca9685_init() <esp_err_t star_sensor_pca9685_init (pca9685_handle_t *handle, star_bus_manager_t *manager, const char *bus_name, star_error_interface_t *error_iface, gpio_num_t oe_pin, bool oe_active_low, const pca9685_config_t *config) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:167>:
+        star_sensor_pca9685_init() <esp_err_t star_sensor_pca9685_init (pca9685_handle_t *handle, star_bus_manager_t *manager, const char *bus_name, star_error_interface_t *error_iface, gpio_num_t oe_pin, bool oe_active_low, const pca9685_config_t *config) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:168>:
             ESP_LOGE()
             memset()
             memcpy()
@@ -444,7 +429,7 @@ app_main() <void app_main (void) at src/main.c:152>:
             esp_err_to_name()
             free()
             gpio_set_level()
-            pca9685_write_reg() <esp_err_t pca9685_write_reg (star_bus_manager_t *manager, const char *bus_name, uint8_t addr, uint8_t reg, uint8_t value) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:26>:
+            pca9685_write_reg() <esp_err_t pca9685_write_reg (star_bus_manager_t *const manager, const char *const bus_name, const uint8_t addr, const uint8_t reg, const uint8_t value) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:27>:
                 star_bus_i2c_write() <esp_err_t star_bus_i2c_write (const star_bus_manager_t *manager, const char *name, const uint8_t *data, size_t len, uint8_t reg_addr, size_t *bytes_written) at lib/star_bus/src/star_bus_i2c.c:75>:
                     ESP_RETURN_ON_FALSE()
                     star_bus_manager_find_bus() <star_bus_config_t *star_bus_manager_find_bus (const star_bus_manager_t *manager, const char *name) at lib/star_bus/src/star_bus_manager.c:378>:
@@ -457,13 +442,13 @@ app_main() <void app_main (void) at src/main.c:152>:
             gpio_reset_pin()
             vTaskDelay()
             pdMS_TO_TICKS()
-            internal_pca9685_set_frequency() <esp_err_t internal_pca9685_set_frequency (pca9685_handle_t *handle, uint16_t freq_hz) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:91>:
+            internal_pca9685_set_frequency() <esp_err_t internal_pca9685_set_frequency (pca9685_handle_t *const handle, const uint16_t freq_hz) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:92>:
                 esp_err_t()
-                star_sensor_pca9685_calculate_prescale() <esp_err_t star_sensor_pca9685_calculate_prescale (uint16_t freq_hz, uint8_t *prescale) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:428>:
+                star_sensor_pca9685_calculate_prescale() <esp_err_t star_sensor_pca9685_calculate_prescale (uint16_t freq_hz, uint8_t *prescale) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:429>:
                     ESP_LOGE()
                     roundf()
                     ESP_LOGD()
-                pca9685_read_reg() <esp_err_t pca9685_read_reg (star_bus_manager_t *manager, const char *bus_name, uint8_t addr, uint8_t reg, uint8_t *value) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:42>:
+                pca9685_read_reg() <esp_err_t pca9685_read_reg (star_bus_manager_t *const manager, const char *const bus_name, const uint8_t addr, const uint8_t reg, uint8_t *const value) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:43>:
                     star_bus_i2c_read() <esp_err_t star_bus_i2c_read (const star_bus_manager_t *manager, const char *name, uint8_t *data, size_t len, uint8_t reg_addr, size_t *bytes_read) at lib/star_bus/src/star_bus_i2c.c:111>:
                         ESP_RETURN_ON_FALSE()
                         star_bus_manager_find_bus() <star_bus_config_t *star_bus_manager_find_bus (const star_bus_manager_t *manager, const char *name) at lib/star_bus/src/star_bus_manager.c:378>:
@@ -475,7 +460,7 @@ app_main() <void app_main (void) at src/main.c:152>:
                             xSemaphoreGive()
                 ESP_LOGE()
                 esp_err_to_name()
-                pca9685_write_reg() <esp_err_t pca9685_write_reg (star_bus_manager_t *manager, const char *bus_name, uint8_t addr, uint8_t reg, uint8_t value) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:26>:
+                pca9685_write_reg() <esp_err_t pca9685_write_reg (star_bus_manager_t *const manager, const char *const bus_name, const uint8_t addr, const uint8_t reg, const uint8_t value) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:27>:
                     star_bus_i2c_write() <esp_err_t star_bus_i2c_write (const star_bus_manager_t *manager, const char *name, const uint8_t *data, size_t len, uint8_t reg_addr, size_t *bytes_written) at lib/star_bus/src/star_bus_i2c.c:75>:
                         ESP_RETURN_ON_FALSE()
                         star_bus_manager_find_bus() <star_bus_config_t *star_bus_manager_find_bus (const star_bus_manager_t *manager, const char *name) at lib/star_bus/src/star_bus_manager.c:378>:
@@ -492,7 +477,7 @@ app_main() <void app_main (void) at src/main.c:152>:
         ESP_LOGE()
         esp_err_to_name()
         ESP_LOGI()
-    start_system_tasks() <esp_err_t start_system_tasks (star_bus_manager_t *bus_manager, star_error_interface_t *error_iface, const pca9685_handle_t *pca_handle) at src/main.c:111>:
+    start_system_tasks() <esp_err_t start_system_tasks (star_bus_manager_t *const bus_manager, star_error_interface_t *const error_iface, const pca9685_handle_t *pca_handle) at src/main.c:115>:
         esp_err_t()
         dht22_task_start()
         ESP_LOGE()
@@ -504,14 +489,14 @@ app_main() <void app_main (void) at src/main.c:152>:
         watchdog_task_start()
         led_task_stop()
         ESP_LOGI()
-    star_sensor_pca9685_deinit() <esp_err_t star_sensor_pca9685_deinit (pca9685_handle_t *handle) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:362>:
+    star_sensor_pca9685_deinit() <esp_err_t star_sensor_pca9685_deinit (pca9685_handle_t *handle) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:363>:
         ESP_LOGI()
         xSemaphoreTake()
         pdMS_TO_TICKS()
         ESP_LOGW()
-        pca9685_set_mode1_bits() <esp_err_t pca9685_set_mode1_bits (pca9685_handle_t *handle, uint8_t bits, bool set) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:58>:
+        pca9685_set_mode1_bits() <esp_err_t pca9685_set_mode1_bits (pca9685_handle_t *const handle, const uint8_t bits, const bool set) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:59>:
             esp_err_t()
-            pca9685_read_reg() <esp_err_t pca9685_read_reg (star_bus_manager_t *manager, const char *bus_name, uint8_t addr, uint8_t reg, uint8_t *value) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:42>:
+            pca9685_read_reg() <esp_err_t pca9685_read_reg (star_bus_manager_t *const manager, const char *const bus_name, const uint8_t addr, const uint8_t reg, uint8_t *const value) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:43>:
                 star_bus_i2c_read() <esp_err_t star_bus_i2c_read (const star_bus_manager_t *manager, const char *name, uint8_t *data, size_t len, uint8_t reg_addr, size_t *bytes_read) at lib/star_bus/src/star_bus_i2c.c:111>:
                     ESP_RETURN_ON_FALSE()
                     star_bus_manager_find_bus() <star_bus_config_t *star_bus_manager_find_bus (const star_bus_manager_t *manager, const char *name) at lib/star_bus/src/star_bus_manager.c:378>:
@@ -521,7 +506,7 @@ app_main() <void app_main (void) at src/main.c:152>:
                         ESP_LOGE()
                         strcmp()
                         xSemaphoreGive()
-            pca9685_write_reg() <esp_err_t pca9685_write_reg (star_bus_manager_t *manager, const char *bus_name, uint8_t addr, uint8_t reg, uint8_t value) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:26>:
+            pca9685_write_reg() <esp_err_t pca9685_write_reg (star_bus_manager_t *const manager, const char *const bus_name, const uint8_t addr, const uint8_t reg, const uint8_t value) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:27>:
                 star_bus_i2c_write() <esp_err_t star_bus_i2c_write (const star_bus_manager_t *manager, const char *name, const uint8_t *data, size_t len, uint8_t reg_addr, size_t *bytes_written) at lib/star_bus/src/star_bus_i2c.c:75>:
                     ESP_RETURN_ON_FALSE()
                     star_bus_manager_find_bus() <star_bus_config_t *star_bus_manager_find_bus (const star_bus_manager_t *manager, const char *name) at lib/star_bus/src/star_bus_manager.c:378>:
@@ -545,3 +530,5 @@ app_main() <void app_main (void) at src/main.c:152>:
         xSemaphoreGive()
         vSemaphoreDelete()
     shared_data_mark_system_ready()
+    vTaskDelay()
+    pdMS_TO_TICKS()

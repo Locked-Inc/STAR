@@ -1,9 +1,7 @@
 <map id="star_error_interface_destroy" name="star_error_interface_destroy">
-<area shape="rect" id="Node000001" title="Destroy an error interface created by star_error_interface_create_default()." alt="" coords="227,55,360,96"/>
-<area shape="rect" id="Node000002" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="53,5,131,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="210,54,131,32,131,26,214,51"/>
-<area shape="rect" id="Node000003" href="$d7/df2/star__sensor__mpu6050_8c.html#ae98f107b4b0856a04b0613f630f4f7f1" title=" " alt="" coords="17,55,167,96"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="209,76,167,78,167,73,214,75"/>
-<area shape="rect" id="Node000004" href="$d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="5,120,179,146"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="214,98,141,122,139,117,209,99"/>
+<area shape="rect" id="Node000001" title="Destroy an error interface created by star_error_interface_create_default()." alt="" coords="227,35,360,75"/>
+<area shape="rect" id="Node000002" href="$d7/df2/star__sensor__mpu6050_8c.html#ae98f107b4b0856a04b0613f630f4f7f1" title=" " alt="" coords="17,5,167,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="209,44,167,39,167,34,214,43"/>
+<area shape="rect" id="Node000003" href="$d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="5,70,179,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="209,67,179,74,179,68,214,66"/>
 </map>

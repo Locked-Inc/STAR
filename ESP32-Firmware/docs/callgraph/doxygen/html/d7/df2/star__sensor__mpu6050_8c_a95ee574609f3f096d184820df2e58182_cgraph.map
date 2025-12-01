@@ -1,0 +1,7 @@
+<map id="mpu6050_read_reg" name="mpu6050_read_reg">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,137,31"/>
+<area shape="rect" id="Node000002" href="$dd/d1a/star__bus__i2c_8c.html#a2e9b9baf8a0f8d00a2080963a7efd62f" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="185,5,312,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="137,16,172,18,167,18,137,21"/>
+<area shape="rect" id="Node000003" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="360,5,544,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="312,16,347,18,342,18,312,21"/>
+</map>

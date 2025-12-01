@@ -3,147 +3,260 @@
 
 #include <driver/gpio.h>
 #include <driver/i2c.h>
+#include <stdbool.h>
+#include <stdint.h>
 
 /*
  * System Configuration Header
  * Centralizes all hardware configuration, timing parameters, and system constants
  * Following STAR embedded best practices for maintainable configuration
+ *
+ * This header provides type-safe configuration using structs, enums, and const variables.
+ * Access all system configuration through the STAR_SYSTEM_CONFIG global struct.
  */
 
-/* ========== Hardware Configuration ========== */
+/* Forward declarations */
+typedef struct star_system_config star_system_config_t;
 
-/* HC-SR04 Ultrasonic Sensors */
-#define STAR_SYSTEM_NUM_HCSR04 (2)
+/* ========== Enums for Type Safety ========== */
 
-/* Sensor Array Indices */
-typedef enum { STAR_SYSTEM_HCSR04_LEFT = 0, STAR_SYSTEM_HCSR04_RIGHT = 1 } hcsr04_sensor_index_t;
+/* Task Priorities */
+typedef enum {
+  k_star_task_priority_leds     = 1,
+  k_star_task_priority_dht22    = 2,
+  k_star_task_priority_sensors  = 3,
+  k_star_task_priority_watchdog = 4
+} star_task_priority_t;
 
-/* Left Sensor Pins */
-#define STAR_SYSTEM_GPIO_LEFT_TRIG (GPIO_NUM_18)
-#define STAR_SYSTEM_GPIO_LEFT_ECHO (GPIO_NUM_19)
+/* LED Channel Mappings */
+typedef enum {
+  k_star_led_channel_left_red    = 0,
+  k_star_led_channel_left_green  = 1,
+  k_star_led_channel_left_blue   = 2,
+  k_star_led_channel_right_red   = 3,
+  k_star_led_channel_right_green = 4,
+  k_star_led_channel_right_blue  = 5,
+  k_star_led_channel_max         = 6
+} star_led_channel_t;
 
-/* Right Sensor Pins */
-#define STAR_SYSTEM_GPIO_RIGHT_TRIG (GPIO_NUM_4)
-#define STAR_SYSTEM_GPIO_RIGHT_ECHO (GPIO_NUM_23)
+/* System Health Status */
+typedef enum {
+  k_star_health_status_ok,
+  k_star_health_status_degraded,
+  k_star_health_status_critical
+} star_health_status_t;
 
-/* DHT22 Temperature/Humidity Sensor */
-#define STAR_SYSTEM_GPIO_DHT22_PIN (GPIO_NUM_5)
+/* ========== Configuration Structures ========== */
 
-/* PCA9685 PWM Controller */
-#define STAR_SYSTEM_GPIO_PCA9685_I2C_SDA (GPIO_NUM_21)
-#define STAR_SYSTEM_GPIO_PCA9685_I2C_SCL (GPIO_NUM_22)
-#define STAR_SYSTEM_GPIO_PCA9685_OE (GPIO_NUM_15)
-#define STAR_SYSTEM_PCA9685_I2C_ADDR (0x40)
-#define STAR_SYSTEM_PCA9685_I2C_FREQUENCY (400000)
-#define STAR_SYSTEM_PCA9685_I2C_NUM (I2C_NUM_0)
-#define STAR_SYSTEM_PCA9685_PWM_FREQUENCY_kHZ (50)
+/* GPIO Pin Configuration */
+typedef struct {
+  /* HC-SR04 Sensors */
+  const gpio_num_t left_trig;
+  const gpio_num_t left_echo;
+  const gpio_num_t right_trig;
+  const gpio_num_t right_echo;
 
-/* ========== RGB LED Channel Mappings ========== */
+  /* DHT22 Sensor */
+  const gpio_num_t dht22_data;
 
-/* Left LED Channels */
-#define STAR_SYSTEM_LED_LEFT_RED (0)
-#define STAR_SYSTEM_LED_LEFT_GREEN (1)
-#define STAR_SYSTEM_LED_LEFT_BLUE (2)
+  /* PCA9685 I2C */
+  const gpio_num_t pca9685_sda;
+  const gpio_num_t pca9685_scl;
+  const gpio_num_t pca9685_oe;
+} star_gpio_config_t;
 
-/* Right LED Channels */
-#define STAR_SYSTEM_LED_RIGHT_RED (3)
-#define STAR_SYSTEM_LED_RIGHT_GREEN (4)
-#define STAR_SYSTEM_LED_RIGHT_BLUE (5)
+/* PCA9685 Configuration */
+typedef struct {
+  const uint8_t    i2c_addr;
+  const uint32_t   i2c_frequency;
+  const i2c_port_t i2c_port;
+  const uint32_t   pwm_frequency_hz;
+} star_pca9685_config_t;
 
-/* ========== Distance Sensing Parameters ========== */
-#define STAR_SYSTEM_LED_COLOR_DISTANCE_MIN (5.0f)   /* Minimum distance for color mapping (cm) */
-#define STAR_SYSTEM_LED_COLOR_DISTANCE_MAX (100.0f)  /* Maximum distance for color mapping (cm) */
+/* Distance Sensing Configuration */
+typedef struct {
+  const float min_distance_cm;
+  const float max_distance_cm;
+  const float extension_factor;
+  const float close_boost_threshold;
+} star_distance_config_t;
 
-/* Advanced Range Control (optional fine-tuning) */
-#define STAR_SYSTEM_LED_COLOR_EXTENSION_FACTOR (0.7f) /* Extend min range by this factor for ultra-smooth transitions */
-#define STAR_SYSTEM_LED_COLOR_CLOSE_BOOST_THRESHOLD (0.25f) /* Fraction of range for brightness boost (0.0-1.0) */
+/* PWM Configuration */
+typedef struct {
+  const float min_pwm_red;
+  const float min_pwm_green;
+  const float min_pwm_blue;
+  const float max_pwm_all;
+  const float off_threshold;
+} star_pwm_config_t;
 
-/* ========== LED PWM Configuration ========== */
+/* Task Configuration */
+typedef struct {
+  const char*                name;
+  const uint32_t             stack_size;
+  const star_task_priority_t priority;
+  const uint32_t             interval_ms;
+} star_task_config_t;
 
-/* PWM scaling parameters (lower = brighter, higher = dimmer) */
-/* Safe range without current limiting resistors: 5-75% PWM */
-#define STAR_SYSTEM_MIN_PWM_RED (5.0f)    /* Red LED minimum PWM (very dim) */
-#define STAR_SYSTEM_MIN_PWM_GREEN (5.0f)  /* Green LED minimum PWM (very dim) */
-#define STAR_SYSTEM_MIN_PWM_BLUE (5.0f)   /* Blue LED minimum PWM (very dim) */
-#define STAR_SYSTEM_MAX_PWM_ALL (75.0f)   /* Maximum PWM for all colors (safe without resistors) */
+/* Task Set Configuration */
+typedef struct {
+  const star_task_config_t dht22;
+  const star_task_config_t sensors;
+  const star_task_config_t leds;
+  const star_task_config_t watchdog;
+} star_tasks_config_t;
 
-/* LED brightness threshold for "off" detection - much lower for smooth gradients */
-#define STAR_SYSTEM_LED_OFF_THRESHOLD (0.001f)  /* 0.001% threshold for nearly seamless transitions */
+/* System Health Configuration */
+typedef struct {
+  const uint32_t max_sensor_failures;
+  const float    default_temperature_c;
+  const uint32_t restart_delay_ms;
+  const float    failure_rate_degraded;
+  const float    failure_rate_critical;
+  const uint32_t task_unresponsive_threshold_ms;
+  const uint32_t health_check_log_interval;
+  const uint32_t main_loop_log_interval;
+} star_health_config_t;
 
-/* ========== Task Configuration ========== */
+/* FreeRTOS Configuration */
+typedef struct {
+  const uint32_t sensor_data_queue_size;
+  const uint32_t temperature_queue_size;
+  const uint32_t mutex_timeout_ms;
+  const uint32_t notification_timeout_ms;
+} star_freertos_config_t;
 
-/* Task priorities (higher number = higher priority) */
-#define STAR_SYSTEM_TASK_PRIORITY_DHT22 (2)
-#define STAR_SYSTEM_TASK_PRIORITY_SENSORS (3)
-#define STAR_SYSTEM_TASK_PRIORITY_LEDS (1)
-#define STAR_SYSTEM_TASK_PRIORITY_WATCHDOG (4)
+/* Bus Names Configuration */
+typedef struct {
+  const char* const dht22;
+  const char* const hcsr04;
+  const char* const pca9685;
+} star_bus_names_t;
 
-/* Task stack sizes (in words, not bytes) */
-#define STAR_SYSTEM_TASK_STACK_SIZE_DHT22 (2048)
-#define STAR_SYSTEM_TASK_STACK_SIZE_SENSORS (3072)
-#define STAR_SYSTEM_TASK_STACK_SIZE_LEDS (4096)  /* Increased for error handling and logging */
-#define STAR_SYSTEM_TASK_STACK_SIZE_WATCHDOG (3072)
+/* Logging Tags Configuration */
+typedef struct {
+  const char* const main;
+  const char* const dht22;
+  const char* const sensors;
+  const char* const leds;
+  const char* const watchdog;
+  const char* const led_ctrl;
+} star_log_tags_t;
 
-/* Task timing intervals (in milliseconds) */
-#define STAR_SYSTEM_TASK_INTERVAL_DHT22 (30000)   /* Read temperature every 30 seconds */
-#define STAR_SYSTEM_TASK_INTERVAL_SENSORS (50)    /* Read distance sensors every 50ms */
-#define STAR_SYSTEM_TASK_INTERVAL_LEDS (50)       /* Update LEDs every 50ms */
-#define STAR_SYSTEM_TASK_INTERVAL_WATCHDOG (1000) /* Check system health every 1 second */
+/* Master Configuration Structure */
+struct star_system_config {
+  const star_gpio_config_t     gpio;
+  const star_pca9685_config_t  pca9685;
+  const star_distance_config_t distance;
+  const star_pwm_config_t      pwm;
+  const star_tasks_config_t    tasks;
+  const star_health_config_t   health;
+  const star_freertos_config_t freertos;
+  const star_bus_names_t       bus_names;
+  const star_log_tags_t        log_tags;
+  const uint32_t               num_hcsr04_sensors;
+};
 
-/* ========== System Health Parameters ========== */
+/* ========== Global Configuration Instance ========== */
 
-/* Maximum consecutive sensor read failures before recovery action */
-#define STAR_SYSTEM_MAX_SENSOR_FAILURES (5)
+/* Type-safe global configuration - use this in new code */
+extern const star_system_config_t STAR_SYSTEM_CONFIG;
 
-/* Temperature sensor default fallback value */
-#define STAR_SYSTEM_DEFAULT_TEMPERATURE_C (25.0f)
+/* ========== Array Size Macros ========== */
 
-/* Watchdog timeout for system restart (in milliseconds) */
-#define STAR_SYSTEM_RESTART_DELAY_MS (5000)
+/**
+ * @brief Number of HC-SR04 ultrasonic sensors in the system
+ * 
+ * This macro provides compile-time access to the sensor count for array sizing.
+ * IMPORTANT: This value must match STAR_SYSTEM_CONFIG.num_hcsr04_sensors in system_config.c
+ */
+#define STAR_SYSTEM_HCSR04_SENSOR_COUNT (2)
 
-/* Health monitoring thresholds */
-#define STAR_SYSTEM_SENSOR_FAILURE_RATE_DEGRADED (0.4f) /* 40% failure rate = degraded */
-#define STAR_SYSTEM_SENSOR_FAILURE_RATE_CRITICAL (0.7f) /* 70% failure rate = critical */
+/* ========== Validation Constants ========== */
 
-/* Task response timeout thresholds */
-#define STAR_SYSTEM_TASK_UNRESPONSIVE_THRESHOLD_MS (30000) /* 30 seconds */
+/* Distance validation limits (cm) */
+static const float s_star_distance_min_cm = 0.0f;   /**< Minimum valid distance in centimeters */
+static const float s_star_distance_max_cm = 400.0f; /**< Maximum valid distance in centimeters */
 
-/* System monitoring intervals */
-#define STAR_SYSTEM_HEALTH_CHECK_LOG_INTERVAL (60) /* Log health every 60 checks */
-#define STAR_SYSTEM_MAIN_LOOP_LOG_INTERVAL (100)   /* Log main status every 100 iterations */
+/* Temperature validation limits (Celsius) */
+static const float s_star_temperature_min_c = -40.0f; /**< Minimum valid temperature in Celsius */
+static const float s_star_temperature_max_c = 80.0f;  /**< Maximum valid temperature in Celsius */
 
-/* ========== FreeRTOS Configuration ========== */
+/* PWM validation limits (percent) */
+static const float s_star_pwm_min_percent = 0.0f;   /**< Minimum valid PWM percentage */
+static const float s_star_pwm_max_percent = 100.0f; /**< Maximum valid PWM percentage */
 
-/* Queue sizes for inter-task communication */
-#define STAR_SYSTEM_SENSOR_DATA_QUEUE_SIZE (16)  // Increased from 4 to handle sensor burst
-#define STAR_SYSTEM_TEMPERATURE_QUEUE_SIZE (4)   // Increased from 2
+/* ========== Inline Validation Functions ========== */
 
-/* Mutex timeouts (in milliseconds) */
-#define STAR_SYSTEM_MUTEX_TIMEOUT_MS (1000)
+/**
+ * @brief Validate sensor index
+ * @param idx Sensor index to validate
+ * @return true if valid, false otherwise
+ */
+static inline bool star_validate_sensor_index(uint32_t idx)
+{
+  return idx < STAR_SYSTEM_CONFIG.num_hcsr04_sensors;
+}
 
-/* Notification timeouts (in milliseconds) */
-#define STAR_SYSTEM_NOTIFICATION_TIMEOUT_MS (5000)
+/**
+ * @brief Validate distance measurement
+ * @param distance Distance in cm
+ * @return true if valid, false otherwise
+ */
+static inline bool star_validate_distance(float distance)
+{
+  return (distance >= s_star_distance_min_cm && distance <= s_star_distance_max_cm);
+}
 
-/* ========== Bus Names ========== */
+/**
+ * @brief Validate temperature reading
+ * @param temperature Temperature in Celsius
+ * @return true if valid, false otherwise
+ */
+static inline bool star_validate_temperature(float temperature)
+{
+  return (temperature >= s_star_temperature_min_c && temperature <= s_star_temperature_max_c);
+}
 
-#define STAR_SYSTEM_BUS_NAME_DHT22 "dht22_bus"
-#define STAR_SYSTEM_BUS_NAME_HCSR04 "hcsr04_bus"
-#define STAR_SYSTEM_BUS_NAME_PCA9685 "pca9685_bus"
+/**
+ * @brief Validate PWM percentage
+ * @param pwm PWM value in percent
+ * @return true if valid, false otherwise
+ */
+static inline bool star_validate_pwm_percent(float pwm)
+{
+  return (pwm >= s_star_pwm_min_percent && pwm <= s_star_pwm_max_percent);
+}
 
-/* ========== Logging Tags ========== */
+/* ========== Helper Function Declarations ========== */
 
-#define STAR_SYSTEM_TAG_MAIN "MAIN"
-#define STAR_SYSTEM_TAG_DHT22 "DHT22_TASK"
-#define STAR_SYSTEM_TAG_SENSORS "SENSORS_TASK"
-#define STAR_SYSTEM_TAG_LEDS "LEDS_TASK"
-#define STAR_SYSTEM_TAG_WATCHDOG "WATCHDOG_TASK"
-#define STAR_SYSTEM_TAG_LED_CTRL "LED_CTRL"
+/**
+ * @brief Get task configuration by priority
+ * @param priority Task priority enum value
+ * @return Pointer to task configuration or NULL if not found
+ */
+const star_task_config_t* star_get_task_config_by_priority(star_task_priority_t priority);
 
-/* ========== Validation Macros ========== */
+/**
+ * @brief Check if LED channel is valid
+ * @param channel LED channel enum value
+ * @return true if valid, false otherwise
+ */
+bool star_is_valid_led_channel(star_led_channel_t channel);
 
-#define STAR_SYSTEM_VALIDATE_SENSOR_INDEX(idx) ((idx) < STAR_SYSTEM_NUM_HCSR04)
-#define STAR_SYSTEM_VALIDATE_DISTANCE(dist) ((dist) >= 0.0f && (dist) <= 400.0f)
-#define STAR_SYSTEM_VALIDATE_TEMPERATURE(temp) ((temp) >= -40.0f && (temp) <= 80.0f)
-#define STAR_SYSTEM_VALIDATE_PWM_PERCENT(pwm) ((pwm) >= 0.0f && (pwm) <= 100.0f)
+/**
+ * @brief Get health status based on failure rate
+ * @param failure_rate Current failure rate (0.0 to 1.0)
+ * @return Health status enum
+ */
+star_health_status_t star_get_health_status(const float failure_rate);
+
+/* ========== Sensor Array Indices ========== */
+
+/* HC-SR04 sensor indices for array access */
+typedef enum {
+  k_star_system_hcsr04_left  = 0,
+  k_star_system_hcsr04_right = 1
+} hcsr04_sensor_index_t;
 
 #endif /* SYSTEM_CONFIG_H */

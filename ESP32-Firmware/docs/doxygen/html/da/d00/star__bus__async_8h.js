@@ -6,21 +6,21 @@ var star__bus__async_8h =
     [ "star_async_callback_t", "da/d00/star__bus__async_8h.html#ab3f784292ce800ed26b715b1b3bba911", null ],
     [ "star_async_handle_t", "da/d00/star__bus__async_8h.html#ab1ebca19d24a86431a176b7051ac608f", null ],
     [ "star_async_op_type_t", "da/d00/star__bus__async_8h.html#a17eccf4723230d4da8bc7aab1b51f49f", [
-      [ "STAR_ASYNC_OP_I2C_READ", "da/d00/star__bus__async_8h.html#a17eccf4723230d4da8bc7aab1b51f49fa37369ba2979963011559d84583363ca4", null ],
-      [ "STAR_ASYNC_OP_I2C_WRITE", "da/d00/star__bus__async_8h.html#a17eccf4723230d4da8bc7aab1b51f49fa3ac21f21708c57591cb57bac2f8af451", null ],
-      [ "STAR_ASYNC_OP_SPI_TRANSMIT", "da/d00/star__bus__async_8h.html#a17eccf4723230d4da8bc7aab1b51f49fa2e73260542fd2766f506f1c998821142", null ],
-      [ "STAR_ASYNC_OP_SPI_RECEIVE", "da/d00/star__bus__async_8h.html#a17eccf4723230d4da8bc7aab1b51f49fa15e95f6dac2d8e7ddf97ef42a1d77d7d", null ],
-      [ "STAR_ASYNC_OP_SPI_TRANSCEIVE", "da/d00/star__bus__async_8h.html#a17eccf4723230d4da8bc7aab1b51f49fa623575159f88397a466281a6257cfea5", null ],
-      [ "STAR_ASYNC_OP_SMBUS_READ", "da/d00/star__bus__async_8h.html#a17eccf4723230d4da8bc7aab1b51f49fa6e4627727ec58172cbdabb9d3d328122", null ],
-      [ "STAR_ASYNC_OP_SMBUS_WRITE", "da/d00/star__bus__async_8h.html#a17eccf4723230d4da8bc7aab1b51f49faf36619b52bed924a01b848f66aa7d943", null ]
+      [ "k_star_async_op_i2c_read", "da/d00/star__bus__async_8h.html#a17eccf4723230d4da8bc7aab1b51f49fa65398774459a7078f2a5912dd6a61cb7", null ],
+      [ "k_star_async_op_i2c_write", "da/d00/star__bus__async_8h.html#a17eccf4723230d4da8bc7aab1b51f49faf146e1e40e8210d9a27243b44418a5c7", null ],
+      [ "k_star_async_op_spi_transmit", "da/d00/star__bus__async_8h.html#a17eccf4723230d4da8bc7aab1b51f49fa5252d7b5300a4cb64f5e277083a40a60", null ],
+      [ "k_star_async_op_spi_receive", "da/d00/star__bus__async_8h.html#a17eccf4723230d4da8bc7aab1b51f49fa6b04e5d8e89fe8396e7d2ecd7044427e", null ],
+      [ "k_star_async_op_spi_transceive", "da/d00/star__bus__async_8h.html#a17eccf4723230d4da8bc7aab1b51f49fa4ce41b5f65204ea6a1bdd84fcaee7528", null ],
+      [ "k_star_async_op_smbus_read", "da/d00/star__bus__async_8h.html#a17eccf4723230d4da8bc7aab1b51f49fa8819b9fb90c7795d7c5421914d3545f4", null ],
+      [ "k_star_async_op_smbus_write", "da/d00/star__bus__async_8h.html#a17eccf4723230d4da8bc7aab1b51f49fa07e95b7d27db9c4ff1ca696c1d71100d", null ]
     ] ],
     [ "star_async_status_t", "da/d00/star__bus__async_8h.html#ae82e007d3633edced3dcbc2225a27f15", [
-      [ "STAR_ASYNC_STATUS_PENDING", "da/d00/star__bus__async_8h.html#ae82e007d3633edced3dcbc2225a27f15a869e182780ad41982f883233e4dc765b", null ],
-      [ "STAR_ASYNC_STATUS_RUNNING", "da/d00/star__bus__async_8h.html#ae82e007d3633edced3dcbc2225a27f15ac3d30a67ea5bdfb1dd829b9c4efa2183", null ],
-      [ "STAR_ASYNC_STATUS_COMPLETE", "da/d00/star__bus__async_8h.html#ae82e007d3633edced3dcbc2225a27f15aa2ec23d249f1194ac7e28b8b772ef0f5", null ],
-      [ "STAR_ASYNC_STATUS_ERROR", "da/d00/star__bus__async_8h.html#ae82e007d3633edced3dcbc2225a27f15ac0c0764016b4dd67d80769e7d078e3dc", null ],
-      [ "STAR_ASYNC_STATUS_TIMEOUT", "da/d00/star__bus__async_8h.html#ae82e007d3633edced3dcbc2225a27f15ace82de455fee08fc75409f81a784610d", null ],
-      [ "STAR_ASYNC_STATUS_CANCELLED", "da/d00/star__bus__async_8h.html#ae82e007d3633edced3dcbc2225a27f15a6cdf14fe487527761be2a76c516c6150", null ]
+      [ "k_star_async_status_pending", "da/d00/star__bus__async_8h.html#ae82e007d3633edced3dcbc2225a27f15a8002db394bf3f20a968819d642d13aac", null ],
+      [ "k_star_async_status_running", "da/d00/star__bus__async_8h.html#ae82e007d3633edced3dcbc2225a27f15a273bf416ad4cb129e866c975e1a66f9a", null ],
+      [ "k_star_async_status_complete", "da/d00/star__bus__async_8h.html#ae82e007d3633edced3dcbc2225a27f15a34c8376c3be3b07e68556bd9b84528e8", null ],
+      [ "k_star_async_status_error", "da/d00/star__bus__async_8h.html#ae82e007d3633edced3dcbc2225a27f15aad3f09bb18394b43c0803a1cb2352eca", null ],
+      [ "k_star_async_status_timeout", "da/d00/star__bus__async_8h.html#ae82e007d3633edced3dcbc2225a27f15a803f2237fabc0b6c784c39f2259dcf75", null ],
+      [ "k_star_async_status_cancelled", "da/d00/star__bus__async_8h.html#ae82e007d3633edced3dcbc2225a27f15a693ed65594736af7ab4f7aa894b7dbac", null ]
     ] ],
     [ "star_async_cancel", "da/d00/star__bus__async_8h.html#a1c57a63112b10ed5aaaf4b6290868838", null ],
     [ "star_async_free_handle", "da/d00/star__bus__async_8h.html#ae8d5cc127eb5e7165d84592001d0abfb", null ],

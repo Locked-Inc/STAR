@@ -72,7 +72,7 @@ bool led_task_get_stats(uint32_t* update_failures, uint32_t* successful_updates)
  * @param distance_cm Distance to display (or negative for LED off)
  * @return esp_err_t ESP_OK on success
  */
-esp_err_t led_task_manual_update(uint8_t sensor_index, float distance_cm);
+esp_err_t led_task_manual_update(const uint8_t sensor_index, const float distance_cm);
 
 /**
  * @brief Turn off all LEDs immediately

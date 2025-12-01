@@ -8,18 +8,18 @@ var star__bus__batch_8h =
     [ "STAR_BATCH_MAX_OPERATIONS", "de/d18/star__bus__batch_8h.html#a3994703788817ef5837c77783c6dfcd3", null ],
     [ "star_batch_handle_t", "de/d18/star__bus__batch_8h.html#a13a1ac948f0436812bf37babc5228878", null ],
     [ "star_batch_mode_t", "de/d18/star__bus__batch_8h.html#a15ee3d0b98981174c6db3f21b3fbe352", [
-      [ "STAR_BATCH_MODE_SEQUENTIAL", "de/d18/star__bus__batch_8h.html#a15ee3d0b98981174c6db3f21b3fbe352a096a1cb129504e5024c689431ef152bd", null ],
-      [ "STAR_BATCH_MODE_PARALLEL", "de/d18/star__bus__batch_8h.html#a15ee3d0b98981174c6db3f21b3fbe352a4b001fd486f2a70a3990f2bbe6af8501", null ]
+      [ "k_star_batch_mode_sequential", "de/d18/star__bus__batch_8h.html#a15ee3d0b98981174c6db3f21b3fbe352ab2f825f5a3677b26351ac991152ae628", null ],
+      [ "k_star_batch_mode_parallel", "de/d18/star__bus__batch_8h.html#a15ee3d0b98981174c6db3f21b3fbe352afa7a47f6ee0be1230be1bf9ae827f056", null ]
     ] ],
     [ "star_batch_op_type_t", "de/d18/star__bus__batch_8h.html#a7570f328a4386d850435ded1e5e007cc", [
-      [ "STAR_BATCH_OP_I2C_READ", "de/d18/star__bus__batch_8h.html#a7570f328a4386d850435ded1e5e007cca708cd99ed6179b5e5004ed44fedcdb5d", null ],
-      [ "STAR_BATCH_OP_I2C_WRITE", "de/d18/star__bus__batch_8h.html#a7570f328a4386d850435ded1e5e007cca3808543a8aacd0f221d44fed2676bd7a", null ],
-      [ "STAR_BATCH_OP_SPI_TRANSMIT", "de/d18/star__bus__batch_8h.html#a7570f328a4386d850435ded1e5e007ccae9c8acf64a1b67045ed4f5235a0df6b9", null ],
-      [ "STAR_BATCH_OP_SPI_RECEIVE", "de/d18/star__bus__batch_8h.html#a7570f328a4386d850435ded1e5e007ccac0e35505ca2ed27961eb2564e9927ee1", null ],
-      [ "STAR_BATCH_OP_SPI_TRANSFER", "de/d18/star__bus__batch_8h.html#a7570f328a4386d850435ded1e5e007cca57482354049cef3e56445b774085a667", null ],
-      [ "STAR_BATCH_OP_SMBUS_READ_BYTE", "de/d18/star__bus__batch_8h.html#a7570f328a4386d850435ded1e5e007cca086f72cf066196f7f1c35150865b1832", null ],
-      [ "STAR_BATCH_OP_SMBUS_WRITE_BYTE", "de/d18/star__bus__batch_8h.html#a7570f328a4386d850435ded1e5e007cca60da669da85fc259e583ae6efd29ade5", null ],
-      [ "STAR_BATCH_OP_DELAY", "de/d18/star__bus__batch_8h.html#a7570f328a4386d850435ded1e5e007cca93b2ce2646f11a86dbaac7c6baf608a9", null ]
+      [ "k_star_batch_op_i2c_read", "de/d18/star__bus__batch_8h.html#a7570f328a4386d850435ded1e5e007cca4e92a175a1309354050092217952abe1", null ],
+      [ "k_star_batch_op_i2c_write", "de/d18/star__bus__batch_8h.html#a7570f328a4386d850435ded1e5e007ccac02ae214a33de77a23d3bdf58c7a92c7", null ],
+      [ "k_star_batch_op_spi_transmit", "de/d18/star__bus__batch_8h.html#a7570f328a4386d850435ded1e5e007ccad1468b2041800948fb12adc13180d99c", null ],
+      [ "k_star_batch_op_spi_receive", "de/d18/star__bus__batch_8h.html#a7570f328a4386d850435ded1e5e007cca3c29b3906f0203208fcf37725d83da97", null ],
+      [ "k_star_batch_op_spi_transfer", "de/d18/star__bus__batch_8h.html#a7570f328a4386d850435ded1e5e007cca078d5916548d96d6506333623df7c07b", null ],
+      [ "k_star_batch_op_smbus_read_byte", "de/d18/star__bus__batch_8h.html#a7570f328a4386d850435ded1e5e007ccafde999e45917584391e7d990e2de6ffe", null ],
+      [ "k_star_batch_op_smbus_write_byte", "de/d18/star__bus__batch_8h.html#a7570f328a4386d850435ded1e5e007cca03d3f8d60392430ac20eec20bd300763", null ],
+      [ "k_star_batch_op_delay", "de/d18/star__bus__batch_8h.html#a7570f328a4386d850435ded1e5e007ccaf5f911b5f9b634976b47fbbcc6bf89e0", null ]
     ] ],
     [ "star_batch_add_delay", "de/d18/star__bus__batch_8h.html#a187f474f878a385ddee198d25940a19c", null ],
     [ "star_batch_add_i2c_read", "de/d18/star__bus__batch_8h.html#a9ac4808b440871d04cdc217cd20dff2c", null ],

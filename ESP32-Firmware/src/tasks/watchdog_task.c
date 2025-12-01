@@ -10,7 +10,18 @@
 #include "include/led_task.h"
 #include "include/sensor_task.h"
 
-static const char* s_TAG = STAR_SYSTEM_TAG_WATCHDOG;
+static const char* s_TAG = "WATCHDOG_TASK"; /* Use STAR_SYSTEM_CONFIG.log_tags.watchdog */
+
+/* ========== Watchdog Task Constants ========== */
+
+/* Health Check Constants */
+static const float s_watchdog_temp_complete_failure_rate =
+  1.0f; /**< Complete failure rate threshold */
+static const float s_watchdog_temp_mostly_failing_rate = 0.8f; /**< Mostly failing rate threshold */
+static const float s_watchdog_percent_multiplier       = 100.0f; /**< Convert rate to percentage */
+
+/* Timing Constants */
+static const uint32_t s_watchdog_recovery_delay_ms = 100; /**< Recovery delay in milliseconds */
 
 /* Task context - single instance per system */
 static watchdog_task_context_t s_task_context          = {0};
@@ -22,7 +33,7 @@ static watchdog_health_level_t internal_assess_sensor_health(void)
 {
   shared_context_t* shared_ctx = shared_data_get_context();
   if (shared_ctx == NULL) {
-    return WATCHDOG_HEALTH_FAULT;
+    return k_watchdog_health_fault;
   }
 
   uint32_t hcsr04_failures = 0;
@@ -30,67 +41,81 @@ static watchdog_health_level_t internal_assess_sensor_health(void)
   uint32_t temp_failures   = 0;
   uint32_t temp_reads      = 0;
 
-  if (xSemaphoreTake(shared_ctx->health_mutex, pdMS_TO_TICKS(STAR_SYSTEM_MUTEX_TIMEOUT_MS)) == pdTRUE) {
-    for (uint8_t i = 0; i < STAR_SYSTEM_NUM_HCSR04; i++) {
+  if (xSemaphoreTake(shared_ctx->health_mutex,
+                     pdMS_TO_TICKS(STAR_SYSTEM_CONFIG.freertos.mutex_timeout_ms)) == pdTRUE) {
+    for (uint8_t i = 0; i < STAR_SYSTEM_CONFIG.num_hcsr04_sensors; i++) {
       hcsr04_failures += shared_ctx->health_data.sensor_read_failures[i];
     }
     temp_failures = shared_ctx->health_data.temperature_read_failures;
-    hcsr04_reads = shared_ctx->health_data.total_sensor_reads;
-    temp_reads = shared_ctx->health_data.total_temperature_reads;
+    hcsr04_reads  = shared_ctx->health_data.total_sensor_reads;
+    temp_reads    = shared_ctx->health_data.total_temperature_reads;
 
     xSemaphoreGive(shared_ctx->health_mutex);
   } else {
     ESP_LOGE(s_TAG, "Failed to acquire health mutex for sensor assessment");
-    return WATCHDOG_HEALTH_FAULT;
+    return k_watchdog_health_fault;
   }
 
-  // Assess HC-SR04 sensors (critical for operation)
-  watchdog_health_level_t hcsr04_health = WATCHDOG_HEALTH_GOOD;
+  /* Assess HC-SR04 sensors (critical for operation) */
+  watchdog_health_level_t hcsr04_health = k_watchdog_health_good;
   if (hcsr04_reads > 0) {
-    float hcsr04_failure_rate = (float)hcsr04_failures / hcsr04_reads;
-    
-    if (hcsr04_failure_rate > STAR_SYSTEM_SENSOR_FAILURE_RATE_CRITICAL) {
-      ESP_LOGE(s_TAG, "Critical HC-SR04 failure rate: %.1f%%", hcsr04_failure_rate * 100);
-      hcsr04_health = WATCHDOG_HEALTH_CRITICAL;
-    } else if (hcsr04_failure_rate > STAR_SYSTEM_SENSOR_FAILURE_RATE_DEGRADED) {
-      ESP_LOGW(s_TAG, "Elevated HC-SR04 failure rate: %.1f%%", hcsr04_failure_rate * 100);
-      hcsr04_health = WATCHDOG_HEALTH_DEGRADED;
+    const float hcsr04_failure_rate = (float)hcsr04_failures / hcsr04_reads;
+
+    if (hcsr04_failure_rate > STAR_SYSTEM_CONFIG.health.failure_rate_critical) {
+      ESP_LOGE(s_TAG,
+               "Critical HC-SR04 failure rate: %.1f%%",
+               hcsr04_failure_rate * s_watchdog_percent_multiplier);
+      hcsr04_health = k_watchdog_health_critical;
+    } else if (hcsr04_failure_rate > STAR_SYSTEM_CONFIG.health.failure_rate_degraded) {
+      ESP_LOGW(s_TAG,
+               "Elevated HC-SR04 failure rate: %.1f%%",
+               hcsr04_failure_rate * s_watchdog_percent_multiplier);
+      hcsr04_health = k_watchdog_health_degraded;
     } else {
-      ESP_LOGI(s_TAG, "HC-SR04 health good: %.1f%% failure rate", hcsr04_failure_rate * 100);
+      ESP_LOGI(s_TAG,
+               "HC-SR04 health good: %.1f%% failure rate",
+               hcsr04_failure_rate * s_watchdog_percent_multiplier);
     }
   } else {
     ESP_LOGW(s_TAG, "No HC-SR04 readings available for health assessment");
-    hcsr04_health = WATCHDOG_HEALTH_DEGRADED;
+    hcsr04_health = k_watchdog_health_degraded;
   }
 
   // Assess DHT22 sensor (optional - more tolerant)
-  watchdog_health_level_t temp_health = WATCHDOG_HEALTH_GOOD;
+  watchdog_health_level_t temp_health = k_watchdog_health_good;
   if (temp_reads > 0) {
-    float temp_failure_rate = (float)temp_failures / temp_reads;
-    
-    // DHT22 is optional - only flag as critical if it was working then failed
-    if (temp_failure_rate == 1.0f) {
-      ESP_LOGD(s_TAG, "DHT22 completely failed (likely not connected): %.1f%%", temp_failure_rate * 100);
-      // Don't degrade system for completely failed optional sensor
-    } else if (temp_failure_rate > 0.8f) {
-      ESP_LOGW(s_TAG, "DHT22 mostly failing: %.1f%%", temp_failure_rate * 100);
-      temp_health = WATCHDOG_HEALTH_DEGRADED;
+    const float temp_failure_rate = (float)temp_failures / temp_reads;
+
+    /* DHT22 is optional - only flag as critical if it was working then failed */
+    if (temp_failure_rate == s_watchdog_temp_complete_failure_rate) {
+      ESP_LOGD(s_TAG,
+               "DHT22 completely failed (likely not connected): %.1f%%",
+               temp_failure_rate * s_watchdog_percent_multiplier);
+      /* Don't degrade system for completely failed optional sensor */
+    } else if (temp_failure_rate > s_watchdog_temp_mostly_failing_rate) {
+      ESP_LOGW(s_TAG,
+               "DHT22 mostly failing: %.1f%%",
+               temp_failure_rate * s_watchdog_percent_multiplier);
+      temp_health = k_watchdog_health_degraded;
     } else {
-      ESP_LOGI(s_TAG, "DHT22 health good: %.1f%% failure rate", temp_failure_rate * 100);
+      ESP_LOGI(s_TAG,
+               "DHT22 health good: %.1f%% failure rate",
+               temp_failure_rate * s_watchdog_percent_multiplier);
     }
   } else {
     ESP_LOGD(s_TAG, "No DHT22 readings (sensor likely not connected)");
   }
 
-  // Overall health is the worst of the critical sensors (HC-SR04)
-  // DHT22 can degrade but shouldn't cause critical state if not connected
-  if (hcsr04_health == WATCHDOG_HEALTH_CRITICAL) {
-    return WATCHDOG_HEALTH_CRITICAL;
-  } else if (hcsr04_health == WATCHDOG_HEALTH_DEGRADED || temp_health == WATCHDOG_HEALTH_DEGRADED) {
-    return WATCHDOG_HEALTH_DEGRADED;
+  /* Overall health is the worst of the critical sensors (HC-SR04) */
+  /* DHT22 can degrade but shouldn't cause critical state if not connected */
+  if (hcsr04_health == k_watchdog_health_critical) {
+    return k_watchdog_health_critical;
+  } else if (hcsr04_health == k_watchdog_health_degraded ||
+             temp_health == k_watchdog_health_degraded) {
+    return k_watchdog_health_degraded;
   }
 
-  return WATCHDOG_HEALTH_GOOD;
+  return k_watchdog_health_good;
 }
 
 static watchdog_health_level_t internal_assess_task_health(void)
@@ -98,7 +123,7 @@ static watchdog_health_level_t internal_assess_task_health(void)
   bool     critical_tasks_running = true;
   uint32_t optional_task_failures = 0;
 
-  // Critical tasks that must be running for system operation
+  /* Critical tasks that must be running for system operation */
   if (!sensor_task_is_running()) {
     ESP_LOGE(s_TAG, "Sensor task not running - CRITICAL");
     critical_tasks_running = false;
@@ -109,46 +134,46 @@ static watchdog_health_level_t internal_assess_task_health(void)
     critical_tasks_running = false;
   }
 
-  // Optional tasks (DHT22 can fail if sensor not connected)
+  /* Optional tasks (DHT22 can fail if sensor not connected) */
   if (!dht22_task_is_running()) {
     ESP_LOGD(s_TAG, "DHT22 task not running (sensor may not be connected)");
     optional_task_failures++;
   }
 
   if (!critical_tasks_running) {
-    return WATCHDOG_HEALTH_CRITICAL;
+    return k_watchdog_health_critical;
   }
-  
-  // Optional task failures don't degrade system health if sensor isn't connected
-  // The DHT22 task should handle sensor failures gracefully and keep running
-  
-  return WATCHDOG_HEALTH_GOOD;
+
+  /* Optional task failures don't degrade system health if sensor isn't connected */
+  /* The DHT22 task should handle sensor failures gracefully and keep running */
+
+  return k_watchdog_health_good;
 }
 
 static watchdog_health_level_t internal_assess_system_state(void)
 {
-  system_state_t current_state = shared_data_get_system_state();
+  const system_state_t current_state = shared_data_get_system_state();
 
   switch (current_state) {
-    case SYSTEM_STATE_RUNNING:
-      return WATCHDOG_HEALTH_GOOD;
-    case SYSTEM_STATE_ERROR_RECOVERY:
-      return WATCHDOG_HEALTH_DEGRADED;
-    case SYSTEM_STATE_INITIALIZING:
-      return WATCHDOG_HEALTH_DEGRADED;
-    case SYSTEM_STATE_FAULT:
+    case k_system_state_running:
+      return k_watchdog_health_good;
+    case k_system_state_error_recovery:
+      return k_watchdog_health_degraded;
+    case k_system_state_initializing:
+      return k_watchdog_health_degraded;
+    case k_system_state_fault:
     default:
-      return WATCHDOG_HEALTH_FAULT;
+      return k_watchdog_health_fault;
   }
 }
 
 static watchdog_health_level_t internal_assess_overall_health(void)
 {
-  watchdog_health_level_t sensor_health = internal_assess_sensor_health();
-  watchdog_health_level_t task_health   = internal_assess_task_health();
-  watchdog_health_level_t state_health  = internal_assess_system_state();
+  const watchdog_health_level_t sensor_health = internal_assess_sensor_health();
+  const watchdog_health_level_t task_health   = internal_assess_task_health();
+  const watchdog_health_level_t state_health  = internal_assess_system_state();
 
-  watchdog_health_level_t worst_health = WATCHDOG_HEALTH_GOOD;
+  watchdog_health_level_t worst_health = k_watchdog_health_good;
 
   if (sensor_health > worst_health)
     worst_health = sensor_health;
@@ -160,39 +185,39 @@ static watchdog_health_level_t internal_assess_overall_health(void)
   return worst_health;
 }
 
-static esp_err_t internal_take_recovery_action(watchdog_health_level_t health_level)
+static esp_err_t internal_take_recovery_action(const watchdog_health_level_t health_level)
 {
   esp_err_t ret = ESP_OK;
   s_task_context.recovery_actions_taken++;
 
   switch (health_level) {
-    case WATCHDOG_HEALTH_DEGRADED:
+    case k_watchdog_health_degraded:
       ESP_LOGW(s_TAG, "System degraded - logging detailed health status");
-      shared_data_set_system_state(SYSTEM_STATE_ERROR_RECOVERY);
+      shared_data_set_system_state(k_system_state_error_recovery);
       break;
 
-    case WATCHDOG_HEALTH_CRITICAL:
+    case k_watchdog_health_critical:
       ESP_LOGE(s_TAG, "System critical - attempting emergency LED shutdown");
-      shared_data_set_system_state(SYSTEM_STATE_ERROR_RECOVERY);
+      shared_data_set_system_state(k_system_state_error_recovery);
 
       if (led_task_is_running()) {
         led_task_emergency_off();
       }
       break;
 
-    case WATCHDOG_HEALTH_FAULT:
+    case k_watchdog_health_fault:
       ESP_LOGE(s_TAG, "System fault - initiating system restart");
-      shared_data_set_system_state(SYSTEM_STATE_FAULT);
+      shared_data_set_system_state(k_system_state_fault);
 
-      ESP_LOGE(s_TAG, "System restart in %d ms...", STAR_SYSTEM_RESTART_DELAY_MS);
-      vTaskDelay(pdMS_TO_TICKS(STAR_SYSTEM_RESTART_DELAY_MS));
+      ESP_LOGE(s_TAG, "System restart in %d ms...", STAR_SYSTEM_CONFIG.health.restart_delay_ms);
+      vTaskDelay(pdMS_TO_TICKS(STAR_SYSTEM_CONFIG.health.restart_delay_ms));
       esp_restart();
       break;
 
-    case WATCHDOG_HEALTH_GOOD:
-      if (shared_data_get_system_state() == SYSTEM_STATE_ERROR_RECOVERY) {
+    case k_watchdog_health_good:
+      if (shared_data_get_system_state() == k_system_state_error_recovery) {
         ESP_LOGI(s_TAG, "System recovered - returning to normal operation");
-        shared_data_set_system_state(SYSTEM_STATE_RUNNING);
+        shared_data_set_system_state(k_system_state_running);
       }
       break;
 
@@ -204,28 +229,30 @@ static esp_err_t internal_take_recovery_action(watchdog_health_level_t health_le
   return ret;
 }
 
-static void internal_watchdog_task_loop(void* parameter)
+static void internal_watchdog_task_loop(void* const parameter)
 {
-  watchdog_task_context_t* ctx = (watchdog_task_context_t*)parameter;
+  watchdog_task_context_t* const ctx = (watchdog_task_context_t*)parameter;
 
-  ESP_LOGI(s_TAG, "System watchdog task started (interval: %dms)", STAR_SYSTEM_TASK_INTERVAL_WATCHDOG);
+  ESP_LOGI(s_TAG,
+           "System watchdog task started (interval: %dms)",
+           STAR_SYSTEM_CONFIG.tasks.watchdog.interval_ms);
 
   TickType_t last_wake_time = xTaskGetTickCount();
 
   while (ctx->task_running) {
-    watchdog_health_level_t current_health = internal_assess_overall_health();
-    ctx->last_health_level                 = current_health;
+    const watchdog_health_level_t current_health = internal_assess_overall_health();
+    ctx->last_health_level                       = current_health;
     ctx->health_checks_performed++;
 
-    if (current_health != WATCHDOG_HEALTH_GOOD) {
+    if (current_health != k_watchdog_health_good) {
       ESP_LOGW(s_TAG, "Health check %lu: Level %d", ctx->health_checks_performed, current_health);
       internal_take_recovery_action(current_health);
     } else {
       ESP_LOGI(s_TAG, "Health check %lu: System healthy", ctx->health_checks_performed);
     }
 
-    if (ctx->health_checks_performed % STAR_SYSTEM_HEALTH_CHECK_LOG_INTERVAL == 0) {
-      uint32_t uptime = shared_data_get_uptime_ms();
+    if (ctx->health_checks_performed % STAR_SYSTEM_CONFIG.health.health_check_log_interval == 0) {
+      const uint32_t uptime = shared_data_get_uptime_ms();
       ESP_LOGI(s_TAG,
                "Watchdog status - uptime: %lu ms, checks: %lu, recoveries: %lu",
                uptime,
@@ -233,7 +260,7 @@ static void internal_watchdog_task_loop(void* parameter)
                ctx->recovery_actions_taken);
     }
 
-    vTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(STAR_SYSTEM_TASK_INTERVAL_WATCHDOG));
+    vTaskDelayUntil(&last_wake_time, pdMS_TO_TICKS(STAR_SYSTEM_CONFIG.tasks.watchdog.interval_ms));
   }
 
   ESP_LOGI(s_TAG, "System watchdog task ending");
@@ -255,14 +282,14 @@ esp_err_t watchdog_task_start(void)
   s_task_context.task_running            = true;
   s_task_context.health_checks_performed = 0;
   s_task_context.recovery_actions_taken  = 0;
-  s_task_context.last_health_level       = WATCHDOG_HEALTH_GOOD;
+  s_task_context.last_health_level       = k_watchdog_health_good;
 
-  BaseType_t task_ret = xTaskCreate(internal_watchdog_task_loop,
-                                    "watchdog_task",
-                                    STAR_SYSTEM_TASK_STACK_SIZE_WATCHDOG,
-                                    &s_task_context,
-                                    STAR_SYSTEM_TASK_PRIORITY_WATCHDOG,
-                                    &s_task_context.task_handle);
+  const BaseType_t task_ret = xTaskCreate(internal_watchdog_task_loop,
+                                          STAR_SYSTEM_CONFIG.tasks.watchdog.name,
+                                          STAR_SYSTEM_CONFIG.tasks.watchdog.stack_size,
+                                          &s_task_context,
+                                          STAR_SYSTEM_CONFIG.tasks.watchdog.priority,
+                                          &s_task_context.task_handle);
 
   if (task_ret != pdPASS) {
     ESP_LOGE(s_TAG, "Failed to create watchdog task");
@@ -293,7 +320,7 @@ esp_err_t watchdog_task_stop(void)
   s_task_context.task_running = false;
 
   if (s_task_context.task_handle != NULL) {
-    vTaskDelay(pdMS_TO_TICKS(100));
+    vTaskDelay(pdMS_TO_TICKS(s_watchdog_recovery_delay_ms));
   }
 
   shared_context_t* shared_ctx = shared_data_get_context();
@@ -338,12 +365,12 @@ watchdog_health_level_t watchdog_task_force_health_check(void)
 {
   if (!s_g_context_initialized) {
     ESP_LOGE(s_TAG, "Watchdog task not initialized");
-    return WATCHDOG_HEALTH_FAULT;
+    return k_watchdog_health_fault;
   }
 
-  watchdog_health_level_t health = internal_assess_overall_health();
+  const watchdog_health_level_t health = internal_assess_overall_health();
 
-  if (health != WATCHDOG_HEALTH_GOOD) {
+  if (health != k_watchdog_health_good) {
     ESP_LOGW(s_TAG, "Forced health check: Level %d", health);
     internal_take_recovery_action(health);
   }
@@ -351,7 +378,8 @@ watchdog_health_level_t watchdog_task_force_health_check(void)
   return health;
 }
 
-esp_err_t watchdog_task_register_task(TaskHandle_t task_handle, uint32_t max_response_time_ms)
+esp_err_t watchdog_task_register_task(const TaskHandle_t task_handle,
+                                      const uint32_t     max_response_time_ms)
 {
   if (!s_g_context_initialized || task_handle == NULL) {
     return ESP_ERR_INVALID_ARG;

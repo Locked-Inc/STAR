@@ -70,8 +70,8 @@ extern "C" {
  * @brief I2C peripheral address mode
  */
 typedef enum {
-  STAR_I2C_ADDR_7BIT  = 0, /**< 7-bit addressing (default) */
-  STAR_I2C_ADDR_10BIT = 1, /**< 10-bit addressing */
+  k_star_i2c_addr_7bit  = 0, /**< 7-bit addressing (default) */
+  k_star_i2c_addr_10bit = 1, /**< 10-bit addressing */
 } star_i2c_addr_mode_t;
 
 /**

@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['watchdog_5ftask_2ec_0',['watchdog_task.c',['../dc/d96/watchdog__task_8c.html',1,'']]],
-  ['watchdog_5ftask_2eh_1',['watchdog_task.h',['../d3/d26/watchdog__task_8h.html',1,'']]]
+  ['pca9685_5fconstants_2ec_0',['pca9685_constants.c',['../d0/d7f/pca9685__constants_8c.html',1,'']]],
+  ['pca9685_5fconstants_2eh_1',['pca9685_constants.h',['../d9/ddd/pca9685__constants_8h.html',1,'']]]
 ];

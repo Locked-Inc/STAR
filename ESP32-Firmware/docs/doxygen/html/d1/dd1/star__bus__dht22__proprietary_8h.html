@@ -355,17 +355,17 @@ Functions</h2></td></tr>
 <div class="line">printf(<span class="stringliteral">&quot;Success rate: %.1f%%\n&quot;</span>,</div>
 <div class="line">       (<span class="keywordtype">float</span>)stats.<a class="code hl_variable" href="../../de/d56/structstar__dht22__stats__t.html#a6a887f71f387536db13cf6568efb6f32">successful_reads</a> / stats.<a class="code hl_variable" href="../../de/d56/structstar__dht22__stats__t.html#a7285f122521d974fdb5ad40e7c817a99">total_reads</a> * 100.0f);</div>
 <div class="ttc" id="astar__bus__common__types_8h_html_a129dc23a884803fefe3727fe95ab91d7"><div class="ttname"><a href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a></div><div class="ttdeci">struct star_bus_manager star_bus_manager_t</div><div class="ttdef"><b>Definition</b> <a href="../../dd/d40/star__bus__common__types_8h_source.html#l00022">star_bus_common_types.h:22</a></div></div>
-<div class="ttc" id="astar__bus__dht22__proprietary_8h_html_a33090880255f8b20c0f8cd7245dc7468"><div class="ttname"><a href="#a33090880255f8b20c0f8cd7245dc7468">star_bus_dht22_deinit</a></div><div class="ttdeci">esp_err_t star_bus_dht22_deinit(star_bus_manager_t *manager, const char *bus_name)</div><div class="ttdoc">Deinitialize DHT22 bus.</div><div class="ttdef"><b>Definition</b> <a href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00398">star_bus_dht22_proprietary.c:398</a></div></div>
+<div class="ttc" id="astar__bus__dht22__proprietary_8h_html_a33090880255f8b20c0f8cd7245dc7468"><div class="ttname"><a href="#a33090880255f8b20c0f8cd7245dc7468">star_bus_dht22_deinit</a></div><div class="ttdeci">esp_err_t star_bus_dht22_deinit(star_bus_manager_t *manager, const char *bus_name)</div><div class="ttdoc">Deinitialize DHT22 bus.</div><div class="ttdef"><b>Definition</b> <a href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00425">star_bus_dht22_proprietary.c:425</a></div></div>
 <div class="ttc" id="astar__bus__dht22__proprietary_8h_html_a333afae7ac8aa0dae0dc0bf3f774934b"><div class="ttname"><a href="#a333afae7ac8aa0dae0dc0bf3f774934b">STAR_DHT22_CONFIG_DEFAULT</a></div><div class="ttdeci">#define STAR_DHT22_CONFIG_DEFAULT()</div><div class="ttdoc">Create default DHT22 configuration.</div><div class="ttdef"><b>Definition</b> <a href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00411">star_bus_dht22_proprietary.h:411</a></div></div>
 <div class="ttc" id="astar__bus__dht22__proprietary_8h_html_a3688e138f6f62c577570b399fa513896"><div class="ttname"><a href="#a3688e138f6f62c577570b399fa513896">star_dht22_data_t</a></div><div class="ttdeci">struct star_dht22_data star_dht22_data_t</div><div class="ttdoc">DHT22 sensor reading data.</div></div>
-<div class="ttc" id="astar__bus__dht22__proprietary_8h_html_a409ebce00ab709fdab4f3634a6838b80"><div class="ttname"><a href="#a409ebce00ab709fdab4f3634a6838b80">star_bus_dht22_calculate_dew_point</a></div><div class="ttdeci">float star_bus_dht22_calculate_dew_point(float temperature, float humidity)</div><div class="ttdoc">Calculate dew point.</div><div class="ttdef"><b>Definition</b> <a href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00750">star_bus_dht22_proprietary.c:750</a></div></div>
+<div class="ttc" id="astar__bus__dht22__proprietary_8h_html_a409ebce00ab709fdab4f3634a6838b80"><div class="ttname"><a href="#a409ebce00ab709fdab4f3634a6838b80">star_bus_dht22_calculate_dew_point</a></div><div class="ttdeci">float star_bus_dht22_calculate_dew_point(float temperature, float humidity)</div><div class="ttdoc">Calculate dew point.</div><div class="ttdef"><b>Definition</b> <a href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00777">star_bus_dht22_proprietary.c:777</a></div></div>
 <div class="ttc" id="astar__bus__dht22__proprietary_8h_html_a6141ae03c5b78e68e0984e7466d51d28"><div class="ttname"><a href="#a6141ae03c5b78e68e0984e7466d51d28">star_bus_dht22_celsius_to_fahrenheit</a></div><div class="ttdeci">static float star_bus_dht22_celsius_to_fahrenheit(float celsius)</div><div class="ttdoc">Convert Celsius to Fahrenheit.</div><div class="ttdef"><b>Definition</b> <a href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00377">star_bus_dht22_proprietary.h:377</a></div></div>
-<div class="ttc" id="astar__bus__dht22__proprietary_8h_html_a7ab8c5a97dd34a9ceb77c78b5b77ec16"><div class="ttname"><a href="#a7ab8c5a97dd34a9ceb77c78b5b77ec16">star_bus_dht22_get_stats</a></div><div class="ttdeci">esp_err_t star_bus_dht22_get_stats(const star_bus_manager_t *manager, const char *bus_name, star_dht22_stats_t *stats)</div><div class="ttdoc">Get DHT22 bus statistics.</div><div class="ttdef"><b>Definition</b> <a href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00607">star_bus_dht22_proprietary.c:607</a></div></div>
-<div class="ttc" id="astar__bus__dht22__proprietary_8h_html_a7ccafb4fc93dbe049ec257e633772cef"><div class="ttname"><a href="#a7ccafb4fc93dbe049ec257e633772cef">star_bus_dht22_print_stats</a></div><div class="ttdeci">void star_bus_dht22_print_stats(const char *bus_name, const star_dht22_stats_t *stats)</div><div class="ttdoc">Print DHT22 statistics.</div><div class="ttdef"><b>Definition</b> <a href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00643">star_bus_dht22_proprietary.c:643</a></div></div>
-<div class="ttc" id="astar__bus__dht22__proprietary_8h_html_aca1c661507907f9a75543f43e1d7164c"><div class="ttname"><a href="#aca1c661507907f9a75543f43e1d7164c">star_bus_dht22_read</a></div><div class="ttdeci">esp_err_t star_bus_dht22_read(star_bus_manager_t *manager, const char *bus_name, star_dht22_data_t *data)</div><div class="ttdoc">Read temperature and humidity from DHT22 sensor.</div><div class="ttdef"><b>Definition</b> <a href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00432">star_bus_dht22_proprietary.c:432</a></div></div>
-<div class="ttc" id="astar__bus__dht22__proprietary_8h_html_aea453f5595346f56e5018f91516f4a77"><div class="ttname"><a href="#aea453f5595346f56e5018f91516f4a77">star_bus_dht22_init</a></div><div class="ttdeci">esp_err_t star_bus_dht22_init(star_bus_manager_t *manager, const char *bus_name, const star_dht22_config_t *config)</div><div class="ttdoc">Initialize DHT22 bus.</div><div class="ttdef"><b>Definition</b> <a href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00344">star_bus_dht22_proprietary.c:344</a></div></div>
+<div class="ttc" id="astar__bus__dht22__proprietary_8h_html_a7ab8c5a97dd34a9ceb77c78b5b77ec16"><div class="ttname"><a href="#a7ab8c5a97dd34a9ceb77c78b5b77ec16">star_bus_dht22_get_stats</a></div><div class="ttdeci">esp_err_t star_bus_dht22_get_stats(const star_bus_manager_t *manager, const char *bus_name, star_dht22_stats_t *stats)</div><div class="ttdoc">Get DHT22 bus statistics.</div><div class="ttdef"><b>Definition</b> <a href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00634">star_bus_dht22_proprietary.c:634</a></div></div>
+<div class="ttc" id="astar__bus__dht22__proprietary_8h_html_a7ccafb4fc93dbe049ec257e633772cef"><div class="ttname"><a href="#a7ccafb4fc93dbe049ec257e633772cef">star_bus_dht22_print_stats</a></div><div class="ttdeci">void star_bus_dht22_print_stats(const char *bus_name, const star_dht22_stats_t *stats)</div><div class="ttdoc">Print DHT22 statistics.</div><div class="ttdef"><b>Definition</b> <a href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00670">star_bus_dht22_proprietary.c:670</a></div></div>
+<div class="ttc" id="astar__bus__dht22__proprietary_8h_html_aca1c661507907f9a75543f43e1d7164c"><div class="ttname"><a href="#aca1c661507907f9a75543f43e1d7164c">star_bus_dht22_read</a></div><div class="ttdeci">esp_err_t star_bus_dht22_read(star_bus_manager_t *manager, const char *bus_name, star_dht22_data_t *data)</div><div class="ttdoc">Read temperature and humidity from DHT22 sensor.</div><div class="ttdef"><b>Definition</b> <a href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00459">star_bus_dht22_proprietary.c:459</a></div></div>
+<div class="ttc" id="astar__bus__dht22__proprietary_8h_html_aea453f5595346f56e5018f91516f4a77"><div class="ttname"><a href="#aea453f5595346f56e5018f91516f4a77">star_bus_dht22_init</a></div><div class="ttdeci">esp_err_t star_bus_dht22_init(star_bus_manager_t *manager, const char *bus_name, const star_dht22_config_t *config)</div><div class="ttdoc">Initialize DHT22 bus.</div><div class="ttdef"><b>Definition</b> <a href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00371">star_bus_dht22_proprietary.c:371</a></div></div>
 <div class="ttc" id="astar__bus__dht22__proprietary_8h_html_af216493ec96fe9a0afab36a3baec160f"><div class="ttname"><a href="#af216493ec96fe9a0afab36a3baec160f">STAR_DHT11_CONFIG_DEFAULT</a></div><div class="ttdeci">#define STAR_DHT11_CONFIG_DEFAULT()</div><div class="ttdoc">Create DHT11 configuration (for DHT11 sensors).</div><div class="ttdef"><b>Definition</b> <a href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00422">star_bus_dht22_proprietary.h:422</a></div></div>
-<div class="ttc" id="astar__bus__dht22__proprietary_8h_html_af55bc41ea6246d1b9f8e5ba9b2e8bca6"><div class="ttname"><a href="#af55bc41ea6246d1b9f8e5ba9b2e8bca6">star_bus_dht22_calculate_heat_index</a></div><div class="ttdeci">float star_bus_dht22_calculate_heat_index(float temperature, float humidity)</div><div class="ttdoc">Calculate heat index (apparent temperature).</div><div class="ttdef"><b>Definition</b> <a href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00723">star_bus_dht22_proprietary.c:723</a></div></div>
+<div class="ttc" id="astar__bus__dht22__proprietary_8h_html_af55bc41ea6246d1b9f8e5ba9b2e8bca6"><div class="ttname"><a href="#af55bc41ea6246d1b9f8e5ba9b2e8bca6">star_bus_dht22_calculate_heat_index</a></div><div class="ttdeci">float star_bus_dht22_calculate_heat_index(float temperature, float humidity)</div><div class="ttdoc">Calculate heat index (apparent temperature).</div><div class="ttdef"><b>Definition</b> <a href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00750">star_bus_dht22_proprietary.c:750</a></div></div>
 <div class="ttc" id="astar__bus__manager_8h_html_a238abc1b4d0e4b98520e4227ec121b42"><div class="ttname"><a href="../../d6/dcc/star__bus__manager_8h.html#a238abc1b4d0e4b98520e4227ec121b42">star_bus_manager_deinit</a></div><div class="ttdeci">esp_err_t star_bus_manager_deinit(star_bus_manager_t *manager)</div><div class="ttdoc">Deinitialize the bus manager and all managed I2C bus configurations.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d60/star__bus__manager_8c_source.html#l00566">star_bus_manager.c:566</a></div></div>
 <div class="ttc" id="astar__bus__manager_8h_html_a2623a57b97d09ed1a3b0a0c012cd6119"><div class="ttname"><a href="../../d6/dcc/star__bus__manager_8h.html#a2623a57b97d09ed1a3b0a0c012cd6119">star_bus_manager_init</a></div><div class="ttdeci">esp_err_t star_bus_manager_init(star_bus_manager_t *manager, const char *tag, star_error_interface_t *error_iface, star_pin_interface_t *pin_iface)</div><div class="ttdoc">Initialize an I2C bus manager instance.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d60/star__bus__manager_8c_source.html#l00248">star_bus_manager.c:248</a></div></div>
 <div class="ttc" id="astar__error__handler_8h_html_a331853a63aa2729d5a2a368c72aff6f2"><div class="ttname"><a href="../../d4/d59/star__error__handler_8h.html#a331853a63aa2729d5a2a368c72aff6f2">error_handler_init</a></div><div class="ttdeci">esp_err_t error_handler_init(error_handler_t *handler, uint32_t max_retries, uint32_t base_retry_delay, uint32_t max_retry_delay, esp_err_t(*reset_fn)(void *context), void *reset_context)</div><div class="ttdoc">Initialize an error handler.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d82/star__error__handler_8c_source.html#l00017">star_error_handler.c:17</a></div></div>
@@ -443,7 +443,7 @@ Functions</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00411">411</a> of file <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html">star_bus_dht22_proprietary.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00024">initialize_hardware_buses()</a>, and <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00017">internal_init_dht22()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00033">initialize_hardware_buses()</a>, and <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00019">internal_init_dht22()</a>.</p>
 
 </div>
 </div>
@@ -481,7 +481,7 @@ Functions</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00133">133</a> of file <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html">star_bus_dht22_proprietary.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00432">star_bus_dht22_read()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00459">star_bus_dht22_read()</a>.</p>
 
 </div>
 </div>
@@ -566,9 +566,9 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Expected checksum value </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00717">717</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00744">744</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00306">dht22_read_default()</a>, and <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00432">star_bus_dht22_read()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00333">dht22_read_default()</a>, and <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00459">star_bus_dht22_read()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -583,7 +583,7 @@ Here is the caller graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="909,44,852,38,851,32,914,43"/>
 <area shape="rect" href="../../de/d98/star__bus__config_8c.html#a7527fb91e8de839add326b305c63bcad" title="Create a new DHT22 bus configuration." alt="" coords="486,5,642,46"/>
 <area shape="poly" title=" " alt="" coords="699,26,643,28,642,23,704,25"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a7b3a87af67c2b24b1f0e83e307e2715b" title=" " alt="" coords="717,70,851,96"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#acf0cd8b6c7894c00402a62a6c72d659b" title=" " alt="" coords="717,70,851,96"/>
 <area shape="poly" title=" " alt="" coords="917,115,841,99,841,94,923,115"/>
 <area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a61224e348fb2cc17147ea4cc22f86b77" title="Force a fresh read from sensor." alt="" coords="695,120,873,145"/>
 <area shape="poly" title=" " alt="" coords="903,133,874,135,873,130,908,132"/>
@@ -591,11 +591,11 @@ Here is the caller graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="931,149,856,173,855,168,925,150"/>
 <area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ad41466be879cb1a0684b3f3edfa8bf73" title="Read temperature only (uses cached humidity)." alt="" coords="713,235,855,275"/>
 <area shape="poly" title=" " alt="" coords="967,155,925,191,874,224,848,237,846,231,872,219,921,187,962,157"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#ab28598715bb940c2458d04d337037432" title=" " alt="" coords="481,70,647,96"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a7c98847a5751aa53f1d5d8ba86b6df8e" title=" " alt="" coords="481,70,647,96"/>
 <area shape="poly" title=" " alt="" coords="698,83,647,86,647,80,704,83"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a9d856aeaa4dfc864b2d6446139430971" title="Initialize DHT22 monitoring task." alt="" coords="315,70,433,96"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#ad5fc3ca549615b42dcfbb1926e7e5cb0" title="Initialize DHT22 monitoring task." alt="" coords="315,70,433,96"/>
 <area shape="poly" title=" " alt="" coords="463,84,434,86,433,80,469,82"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,70,267,96"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,70,267,96"/>
 <area shape="poly" title=" " alt="" coords="297,84,268,86,267,80,302,82"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,70,83,96"/>
 <area shape="poly" title=" " alt="" coords="113,85,84,85,82,81,117,81"/>
@@ -634,7 +634,7 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Dew point in Celsius </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00750">750</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00777">777</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
 
 </div>
 </div>
@@ -668,7 +668,7 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Heat index in Celsius </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00723">723</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00750">750</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
 
 <p class="reference">References <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00377">star_bus_dht22_celsius_to_fahrenheit()</a>.</p>
 <div class="dynheader">
@@ -718,7 +718,7 @@ Here is the call graph for this function:</div>
 
 <p class="definition">Definition at line <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00377">377</a> of file <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html">star_bus_dht22_proprietary.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00723">star_bus_dht22_calculate_heat_index()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00750">star_bus_dht22_calculate_heat_index()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -768,7 +768,7 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00567">567</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00594">594</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
 
 <p class="reference">References <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00042">dht22_state_t::config</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00128">delay_us()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00108">get_dht22_state()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00144">gpio_high()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00136">gpio_low()</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00153">star_dht22_config_t::gpio_pin</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00168">gpio_set_input()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00160">gpio_set_output()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00045">dht22_state_t::initialized</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00155">star_dht22_config_t::start_low_ms</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00022">TIMING_START_HIGH_US</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00029">TIMING_TIMEOUT_US</a>, and <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00182">wait_for_level()</a>.</p>
 <div class="dynheader">
@@ -831,11 +831,11 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00398">398</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00425">425</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00042">dht22_state_t::config</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00108">get_dht22_state()</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00153">star_dht22_config_t::gpio_pin</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00045">dht22_state_t::initialized</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00042">dht22_state_t::config</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00108">get_dht22_state()</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00153">star_dht22_config_t::gpio_pin</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00045">dht22_state_t::initialized</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00037">internal_deinit_dht22()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00039">internal_deinit_dht22()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -856,13 +856,13 @@ Here is the caller graph for this function:</div>
 <div class="center"><img src="../../d1/dd1/star__bus__dht22__proprietary_8h_a33090880255f8b20c0f8cd7245dc7468_icgraph.png" border="0" usemap="#ad1/dd1/star__bus__dht22__proprietary_8h_a33090880255f8b20c0f8cd7245dc7468_icgraph" loading="lazy" alt=""/></div>
 <map name="ad1/dd1/star__bus__dht22__proprietary_8h_a33090880255f8b20c0f8cd7245dc7468_icgraph" id="ad1/dd1/star__bus__dht22__proprietary_8h_a33090880255f8b20c0f8cd7245dc7468_icgraph">
 <area shape="rect" title="Deinitialize DHT22 bus." alt="" coords="670,31,818,56"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a8f42bf8aaed1ac21e66e803756f2b046" title=" " alt="" coords="481,31,622,56"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a6fa67c3a449b474ee2110da2b31278c8" title=" " alt="" coords="481,31,622,56"/>
 <area shape="poly" title=" " alt="" coords="651,44,622,46,622,41,657,43"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a9d856aeaa4dfc864b2d6446139430971" title="Initialize DHT22 monitoring task." alt="" coords="315,5,433,31"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#ad5fc3ca549615b42dcfbb1926e7e5cb0" title="Initialize DHT22 monitoring task." alt="" coords="315,5,433,31"/>
 <area shape="poly" title=" " alt="" coords="464,31,434,29,434,24,469,31"/>
 <area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a8128cca1924c2cd16b8f1979d4b45199" title="Stop DHT22 monitoring task." alt="" coords="316,55,433,80"/>
 <area shape="poly" title=" " alt="" coords="469,55,434,62,433,57,463,55"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,31,267,56"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,31,267,56"/>
 <area shape="poly" title=" " alt="" coords="297,29,268,36,267,31,302,29"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,31,83,56"/>
 <area shape="poly" title=" " alt="" coords="113,44,83,46,83,41,118,43"/>
@@ -908,9 +908,9 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00547">547</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00574">574</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00108">get_dht22_state()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00045">dht22_state_t::initialized</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00046">dht22_state_t::last_read_time_us</a>, and <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00432">star_bus_dht22_read()</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00108">get_dht22_state()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00045">dht22_state_t::initialized</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00046">dht22_state_t::last_read_time_us</a>, and <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00459">star_bus_dht22_read()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -991,7 +991,7 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00607">607</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00634">634</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
 
 <p class="reference">References <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00108">get_dht22_state()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00045">dht22_state_t::initialized</a>, and <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00043">dht22_state_t::stats</a>.</p>
 <div class="dynheader">
@@ -1046,11 +1046,11 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00344">344</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00371">371</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00042">dht22_state_t::config</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00108">get_dht22_state()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00144">gpio_high()</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00153">star_dht22_config_t::gpio_pin</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00045">dht22_state_t::initialized</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00044">dht22_state_t::last_data</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00046">dht22_state_t::last_read_time_us</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00154">star_dht22_config_t::model</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, and <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00043">dht22_state_t::stats</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00042">dht22_state_t::config</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00108">get_dht22_state()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00144">gpio_high()</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00153">star_dht22_config_t::gpio_pin</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00045">dht22_state_t::initialized</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00044">dht22_state_t::last_data</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00046">dht22_state_t::last_read_time_us</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00154">star_dht22_config_t::model</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00043">dht22_state_t::stats</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00024">initialize_hardware_buses()</a>, and <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00017">internal_init_dht22()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00033">initialize_hardware_buses()</a>, and <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00019">internal_init_dht22()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1073,15 +1073,15 @@ Here is the caller graph for this function:</div>
 <div class="center"><img src="../../d1/dd1/star__bus__dht22__proprietary_8h_aea453f5595346f56e5018f91516f4a77_icgraph.png" border="0" usemap="#ad1/dd1/star__bus__dht22__proprietary_8h_aea453f5595346f56e5018f91516f4a77_icgraph" loading="lazy" alt=""/></div>
 <map name="ad1/dd1/star__bus__dht22__proprietary_8h_aea453f5595346f56e5018f91516f4a77_icgraph" id="ad1/dd1/star__bus__dht22__proprietary_8h_aea453f5595346f56e5018f91516f4a77_icgraph">
 <area shape="rect" title="Initialize DHT22 bus." alt="" coords="666,42,800,68"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a22e093826d5fa58b80533860973051a9" title=" " alt="" coords="315,5,443,46"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#a06b72c3ee71e25fc9eac1ce50d7b08de" title=" " alt="" coords="315,5,443,46"/>
 <area shape="poly" title=" " alt="" coords="647,49,444,34,444,28,653,48"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#af2aa5f90212b8ec0353f88ceeaec9c05" title=" " alt="" coords="491,68,618,93"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a133c28d824e59d67b34c1e1b7f91f430" title=" " alt="" coords="491,68,618,93"/>
 <area shape="poly" title=" " alt="" coords="653,67,619,74,618,69,647,67"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,42,83,68"/>
 <area shape="poly" title=" " alt="" coords="299,35,83,54,83,49,300,30"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a9d856aeaa4dfc864b2d6446139430971" title="Initialize DHT22 monitoring task." alt="" coords="320,70,438,96"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#ad5fc3ca549615b42dcfbb1926e7e5cb0" title="Initialize DHT22 monitoring task." alt="" coords="320,70,438,96"/>
 <area shape="poly" title=" " alt="" coords="473,82,439,85,439,79,478,81"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,68,267,93"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,68,267,93"/>
 <area shape="poly" title=" " alt="" coords="302,82,267,84,267,79,307,82"/>
 <area shape="poly" title=" " alt="" coords="113,67,83,64,83,59,118,66"/>
 </map>
@@ -1112,9 +1112,9 @@ Here is the caller graph for this function:</div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00419">419</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00446">446</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00306">dht22_read_default()</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00168">star_dht22_ops::read</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00333">dht22_read_default()</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00168">star_dht22_ops::read</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00249">star_bus_config_create_dht22()</a>.</p>
 <div class="dynheader">
@@ -1199,7 +1199,7 @@ Here is the caller graph for this function:</div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00643">643</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00670">670</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
 
 <p class="reference">References <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00179">star_dht22_stats_t::checksum_errors</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00178">star_dht22_stats_t::failed_reads</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00183">star_dht22_stats_t::last_humidity</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00182">star_dht22_stats_t::last_read_time_us</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00184">star_dht22_stats_t::last_temperature</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00181">star_dht22_stats_t::no_response_errors</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00177">star_dht22_stats_t::successful_reads</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00180">star_dht22_stats_t::timeout_errors</a>, and <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00176">star_dht22_stats_t::total_reads</a>.</p>
 
@@ -1234,11 +1234,11 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Temperature in Celsius </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00675">675</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00702">702</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
 
 <p class="reference">References <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00145">k_star_dht22_model_dht11</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00306">dht22_read_default()</a>, and <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00432">star_bus_dht22_read()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00333">dht22_read_default()</a>, and <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00459">star_bus_dht22_read()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -1253,7 +1253,7 @@ Here is the caller graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="909,44,852,38,851,32,914,43"/>
 <area shape="rect" href="../../de/d98/star__bus__config_8c.html#a7527fb91e8de839add326b305c63bcad" title="Create a new DHT22 bus configuration." alt="" coords="486,5,642,46"/>
 <area shape="poly" title=" " alt="" coords="699,26,643,28,642,23,704,25"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a7b3a87af67c2b24b1f0e83e307e2715b" title=" " alt="" coords="717,70,851,96"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#acf0cd8b6c7894c00402a62a6c72d659b" title=" " alt="" coords="717,70,851,96"/>
 <area shape="poly" title=" " alt="" coords="917,115,841,99,841,94,923,115"/>
 <area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a61224e348fb2cc17147ea4cc22f86b77" title="Force a fresh read from sensor." alt="" coords="695,120,873,145"/>
 <area shape="poly" title=" " alt="" coords="903,133,874,135,873,130,908,132"/>
@@ -1261,11 +1261,11 @@ Here is the caller graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="931,149,856,173,855,168,925,150"/>
 <area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ad41466be879cb1a0684b3f3edfa8bf73" title="Read temperature only (uses cached humidity)." alt="" coords="713,235,855,275"/>
 <area shape="poly" title=" " alt="" coords="967,155,925,191,874,224,848,237,846,231,872,219,921,187,962,157"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#ab28598715bb940c2458d04d337037432" title=" " alt="" coords="481,70,647,96"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a7c98847a5751aa53f1d5d8ba86b6df8e" title=" " alt="" coords="481,70,647,96"/>
 <area shape="poly" title=" " alt="" coords="698,83,647,86,647,80,704,83"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a9d856aeaa4dfc864b2d6446139430971" title="Initialize DHT22 monitoring task." alt="" coords="315,70,433,96"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#ad5fc3ca549615b42dcfbb1926e7e5cb0" title="Initialize DHT22 monitoring task." alt="" coords="315,70,433,96"/>
 <area shape="poly" title=" " alt="" coords="463,84,434,86,433,80,469,82"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,70,267,96"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,70,267,96"/>
 <area shape="poly" title=" " alt="" coords="297,84,268,86,267,80,302,82"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,70,83,96"/>
 <area shape="poly" title=" " alt="" coords="113,85,84,85,82,81,117,81"/>
@@ -1303,11 +1303,11 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Humidity percentage (0-100) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00694">694</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00721">721</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
 
 <p class="reference">References <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00145">k_star_dht22_model_dht11</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00306">dht22_read_default()</a>, and <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00432">star_bus_dht22_read()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00333">dht22_read_default()</a>, and <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00459">star_bus_dht22_read()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -1322,7 +1322,7 @@ Here is the caller graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="909,44,852,38,851,32,914,43"/>
 <area shape="rect" href="../../de/d98/star__bus__config_8c.html#a7527fb91e8de839add326b305c63bcad" title="Create a new DHT22 bus configuration." alt="" coords="486,5,642,46"/>
 <area shape="poly" title=" " alt="" coords="699,26,643,28,642,23,704,25"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a7b3a87af67c2b24b1f0e83e307e2715b" title=" " alt="" coords="717,70,851,96"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#acf0cd8b6c7894c00402a62a6c72d659b" title=" " alt="" coords="717,70,851,96"/>
 <area shape="poly" title=" " alt="" coords="917,115,841,99,841,94,923,115"/>
 <area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a61224e348fb2cc17147ea4cc22f86b77" title="Force a fresh read from sensor." alt="" coords="695,120,873,145"/>
 <area shape="poly" title=" " alt="" coords="903,133,874,135,873,130,908,132"/>
@@ -1330,11 +1330,11 @@ Here is the caller graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="931,149,856,173,855,168,925,150"/>
 <area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ad41466be879cb1a0684b3f3edfa8bf73" title="Read temperature only (uses cached humidity)." alt="" coords="713,235,855,275"/>
 <area shape="poly" title=" " alt="" coords="967,155,925,191,874,224,848,237,846,231,872,219,921,187,962,157"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#ab28598715bb940c2458d04d337037432" title=" " alt="" coords="481,70,647,96"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a7c98847a5751aa53f1d5d8ba86b6df8e" title=" " alt="" coords="481,70,647,96"/>
 <area shape="poly" title=" " alt="" coords="698,83,647,86,647,80,704,83"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a9d856aeaa4dfc864b2d6446139430971" title="Initialize DHT22 monitoring task." alt="" coords="315,70,433,96"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#ad5fc3ca549615b42dcfbb1926e7e5cb0" title="Initialize DHT22 monitoring task." alt="" coords="315,70,433,96"/>
 <area shape="poly" title=" " alt="" coords="463,84,434,86,433,80,469,82"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,70,267,96"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,70,267,96"/>
 <area shape="poly" title=" " alt="" coords="297,84,268,86,267,80,302,82"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,70,83,96"/>
 <area shape="poly" title=" " alt="" coords="113,85,84,85,82,81,117,81"/>
@@ -1386,11 +1386,11 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, ESP_ERR_TIMEOUT if sensor didn't respond, ESP_ERR_INVALID_CRC if checksum failed, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00432">432</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00459">459</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00167">star_dht22_data::checksum</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00179">star_dht22_stats_t::checksum_errors</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00168">star_dht22_data::checksum_valid</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00042">dht22_state_t::config</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00033">DHT22_DATA_BYTES</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00178">star_dht22_stats_t::failed_reads</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00108">get_dht22_state()</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00163">star_dht22_data::humidity_percent</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00045">dht22_state_t::initialized</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00044">dht22_state_t::last_data</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00183">star_dht22_stats_t::last_humidity</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00046">dht22_state_t::last_read_time_us</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00182">star_dht22_stats_t::last_read_time_us</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00185">star_dht22_stats_t::last_read_timestamp_us</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00184">star_dht22_stats_t::last_temperature</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00154">star_dht22_config_t::model</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00181">star_dht22_stats_t::no_response_errors</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00165">star_dht22_data::raw_humidity</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00166">star_dht22_data::raw_temperature</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00229">read_raw_data()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00717">star_bus_dht22_calculate_checksum()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00675">star_bus_dht22_raw_to_celsius()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00694">star_bus_dht22_raw_to_humidity()</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00133">STAR_DHT22_MIN_INTERVAL_MS</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00043">dht22_state_t::stats</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00177">star_dht22_stats_t::successful_reads</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00164">star_dht22_data::temperature_c</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00180">star_dht22_stats_t::timeout_errors</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00169">star_dht22_data::timestamp_us</a>, and <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00176">star_dht22_stats_t::total_reads</a>.</p>
+<p class="reference">References <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00167">star_dht22_data::checksum</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00179">star_dht22_stats_t::checksum_errors</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00168">star_dht22_data::checksum_valid</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00042">dht22_state_t::config</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00033">DHT22_DATA_BYTES</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00178">star_dht22_stats_t::failed_reads</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00108">get_dht22_state()</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00163">star_dht22_data::humidity_percent</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00045">dht22_state_t::initialized</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00044">dht22_state_t::last_data</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00183">star_dht22_stats_t::last_humidity</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00046">dht22_state_t::last_read_time_us</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00182">star_dht22_stats_t::last_read_time_us</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00185">star_dht22_stats_t::last_read_timestamp_us</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00184">star_dht22_stats_t::last_temperature</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00154">star_dht22_config_t::model</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00181">star_dht22_stats_t::no_response_errors</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00165">star_dht22_data::raw_humidity</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00166">star_dht22_data::raw_temperature</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00255">read_raw_data()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00744">star_bus_dht22_calculate_checksum()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00702">star_bus_dht22_raw_to_celsius()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00721">star_bus_dht22_raw_to_humidity()</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00133">STAR_DHT22_MIN_INTERVAL_MS</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00043">dht22_state_t::stats</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00177">star_dht22_stats_t::successful_reads</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00164">star_dht22_data::temperature_c</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00180">star_dht22_stats_t::timeout_errors</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00169">star_dht22_data::timestamp_us</a>, and <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00176">star_dht22_stats_t::total_reads</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00048">internal_read_dht22()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00547">star_bus_dht22_force_read()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00533">star_bus_dht22_read_humidity()</a>, and <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00516">star_bus_dht22_read_temperature()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00050">internal_read_dht22()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00574">star_bus_dht22_force_read()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00560">star_bus_dht22_read_humidity()</a>, and <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00543">star_bus_dht22_read_temperature()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1436,7 +1436,7 @@ Here is the caller graph for this function:</div>
 <div class="center"><img src="../../d1/dd1/star__bus__dht22__proprietary_8h_aca1c661507907f9a75543f43e1d7164c_icgraph.png" border="0" usemap="#ad1/dd1/star__bus__dht22__proprietary_8h_aca1c661507907f9a75543f43e1d7164c_icgraph" loading="lazy" alt=""/></div>
 <map name="ad1/dd1/star__bus__dht22__proprietary_8h_aca1c661507907f9a75543f43e1d7164c_icgraph" id="ad1/dd1/star__bus__dht22__proprietary_8h_aca1c661507907f9a75543f43e1d7164c_icgraph">
 <area shape="rect" title="Read temperature and humidity from DHT22 sensor." alt="" coords="921,84,1063,110"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a7b3a87af67c2b24b1f0e83e307e2715b" title=" " alt="" coords="717,5,851,31"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#acf0cd8b6c7894c00402a62a6c72d659b" title=" " alt="" coords="717,5,851,31"/>
 <area shape="poly" title=" " alt="" coords="949,77,872,45,840,34,840,29,874,40,955,77"/>
 <area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a61224e348fb2cc17147ea4cc22f86b77" title="Force a fresh read from sensor." alt="" coords="695,55,873,80"/>
 <area shape="poly" title=" " alt="" coords="903,85,874,83,874,77,908,85"/>
@@ -1444,11 +1444,11 @@ Here is the caller graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="908,108,856,118,855,113,903,109"/>
 <area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ad41466be879cb1a0684b3f3edfa8bf73" title="Read temperature only (uses cached humidity)." alt="" coords="713,170,855,210"/>
 <area shape="poly" title=" " alt="" coords="956,117,874,159,844,172,843,167,872,154,951,118"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#ab28598715bb940c2458d04d337037432" title=" " alt="" coords="481,5,647,31"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a7c98847a5751aa53f1d5d8ba86b6df8e" title=" " alt="" coords="481,5,647,31"/>
 <area shape="poly" title=" " alt="" coords="698,19,647,21,647,16,704,18"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a9d856aeaa4dfc864b2d6446139430971" title="Initialize DHT22 monitoring task." alt="" coords="315,5,433,31"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#ad5fc3ca549615b42dcfbb1926e7e5cb0" title="Initialize DHT22 monitoring task." alt="" coords="315,5,433,31"/>
 <area shape="poly" title=" " alt="" coords="463,19,434,21,433,16,469,18"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,5,267,31"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,5,267,31"/>
 <area shape="poly" title=" " alt="" coords="297,19,268,21,267,16,302,17"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
 <area shape="poly" title=" " alt="" coords="113,20,84,21,82,16,117,17"/>
@@ -1492,9 +1492,9 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00533">533</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00560">560</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00163">star_dht22_data::humidity_percent</a>, and <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00432">star_bus_dht22_read()</a>.</p>
+<p class="reference">References <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00163">star_dht22_data::humidity_percent</a>, and <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00459">star_bus_dht22_read()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1574,9 +1574,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00516">516</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00543">543</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00432">star_bus_dht22_read()</a>, and <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00164">star_dht22_data::temperature_c</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00459">star_bus_dht22_read()</a>, and <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00164">star_dht22_data::temperature_c</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1650,9 +1650,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00625">625</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00652">652</a> of file <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html">star_bus_dht22_proprietary.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00108">get_dht22_state()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00045">dht22_state_t::initialized</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, and <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00043">dht22_state_t::stats</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00108">get_dht22_state()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00045">dht22_state_t::initialized</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00043">dht22_state_t::stats</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">

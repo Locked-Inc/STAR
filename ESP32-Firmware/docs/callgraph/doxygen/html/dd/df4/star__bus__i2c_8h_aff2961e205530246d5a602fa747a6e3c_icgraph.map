@@ -4,9 +4,9 @@
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1003,1086,996,965,979,796,964,711,946,634,922,572,908,550,893,533,872,523,841,518,762,520,674,533,597,549,594,545,673,528,761,515,842,513,874,518,896,529,912,546,927,570,951,632,970,710,984,796,1002,965,1008,1088"/>
 <area shape="rect" id="Node000012" href="$df/deb/star__bus__batch_8c.html#a83c47362bb84557376a1791c5425f41c" title="Execute a single batch operation." alt="" coords="452,1110,628,1136"/>
 <area shape="poly" id="edge4_Node000001_Node000012" title=" " alt="" coords="1006,1141,998,1249,978,1393,963,1465,945,1529,923,1581,910,1601,896,1616,870,1635,843,1648,817,1656,792,1659,766,1656,740,1647,686,1616,670,1601,656,1580,629,1525,606,1456,586,1380,556,1233,542,1139,543,1134,561,1232,591,1379,611,1454,634,1523,660,1577,674,1597,689,1612,742,1643,767,1650,792,1653,816,1651,841,1643,867,1630,893,1612,906,1598,918,1579,940,1528,958,1463,972,1392,992,1249,1003,1146"/>
-<area shape="rect" id="Node000014" href="$d7/df2/star__sensor__mpu6050_8c.html#ad2b82a94ebbe65324c37febc5ebee644" title=" " alt="" coords="724,209,858,234"/>
+<area shape="rect" id="Node000014" href="$d7/df2/star__sensor__mpu6050_8c.html#a94e36964d8af4357ede57221c09af8bd" title=" " alt="" coords="724,209,858,234"/>
 <area shape="poly" id="edge6_Node000001_Node000014" title=" " alt="" coords="1003,1086,994,978,976,813,943,619,920,520,892,424,870,367,844,314,801,237,801,232,848,311,875,365,897,422,925,518,948,618,981,812,1000,977,1008,1087"/>
-<area shape="rect" id="Node000021" href="$d3/df7/star__sensor__pca9685_8c.html#a7fb4749ccca6d7ff1b791faaba3c5e3a" title="Write to PCA9685 register with validation." alt="" coords="726,436,856,461"/>
+<area shape="rect" id="Node000021" href="$d3/df7/star__sensor__pca9685_8c.html#a8e1f1170d3e10e9e1db7beb8f6b12da2" title="Write to PCA9685 register with validation." alt="" coords="726,436,856,461"/>
 <area shape="poly" id="edge15_Node000001_Node000021" title=" " alt="" coords="1003,1086,994,960,974,781,960,689,941,605,919,536,906,509,893,489,876,474,857,464,856,459,879,470,897,485,911,507,924,534,946,604,965,688,979,780,999,959,1008,1087"/>
 <area shape="rect" id="Node000030" href="$d6/d0b/star__bus__devices_8c.html#a4993839e0d44e271fdfe11069a04aba3" title="Configure ADS1115 ADC." alt="" coords="698,593,884,618"/>
 <area shape="poly" id="edge20_Node000001_Node000030" title=" " alt="" coords="1001,1086,989,986,968,848,953,779,936,717,915,666,893,631,881,622,880,617,897,628,920,663,941,715,958,778,973,847,995,985,1006,1088"/>
@@ -66,7 +66,7 @@
 <area shape="poly" id="edge5_Node000012_Node000013" title=" " alt="" coords="434,1125,370,1125,367,1121,438,1121"/>
 <area shape="rect" id="Node000015" href="$d7/df2/star__sensor__mpu6050_8c.html#ae98f107b4b0856a04b0613f630f4f7f1" title=" " alt="" coords="465,71,614,111"/>
 <area shape="poly" id="edge7_Node000014_Node000015" title=" " alt="" coords="758,200,704,164,638,127,611,114,609,110,641,122,707,160,763,199"/>
-<area shape="rect" id="Node000016" href="$d7/df2/star__sensor__mpu6050_8c.html#a30d0b4f5a7970ebe377dd3212e30ad9f" title=" " alt="" coords="465,201,614,242"/>
+<area shape="rect" id="Node000016" href="$d7/df2/star__sensor__mpu6050_8c.html#add78abc1a61bf4b3ee31366a06d00618" title=" " alt="" coords="465,201,614,242"/>
 <area shape="poly" id="edge8_Node000014_Node000016" title=" " alt="" coords="707,223,616,224,613,219,711,220"/>
 <area shape="rect" id="Node000017" href="$d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="214,209,387,234"/>
 <area shape="poly" id="edge11_Node000014_Node000017" title=" " alt="" coords="762,247,711,288,676,307,640,322,585,336,539,341,494,336,439,322,400,304,365,281,315,238,314,233,368,277,403,300,441,316,495,331,539,336,584,331,639,316,674,302,708,283,765,243"/>
@@ -74,15 +74,15 @@
 <area shape="poly" id="edge10_Node000014_Node000018" title=" " alt="" coords="722,241,617,270,613,266,726,237"/>
 <area shape="rect" id="Node000019" href="$d7/df2/star__sensor__mpu6050_8c.html#a21f554f7976fc44c5e783cb7746549b2" title=" " alt="" coords="465,136,614,177"/>
 <area shape="poly" id="edge12_Node000014_Node000019" title=" " alt="" coords="722,206,616,178,614,173,726,203"/>
-<area shape="rect" id="Node000020" href="$d7/df2/star__sensor__mpu6050_8c.html#a26a2221a6e7e888b7779a68eb0c1cc04" title=" " alt="" coords="465,5,614,46"/>
+<area shape="rect" id="Node000020" href="$d7/df2/star__sensor__mpu6050_8c.html#a13b17febbf0058089731826f5e129100" title=" " alt="" coords="465,5,614,46"/>
 <area shape="poly" id="edge14_Node000014_Node000020" title=" " alt="" coords="769,196,716,130,679,93,638,61,616,49,614,44,641,57,682,89,720,126,775,195"/>
 <area shape="poly" id="edge9_Node000016_Node000017" title=" " alt="" coords="448,223,389,224,386,220,452,220"/>
 <area shape="poly" id="edge13_Node000019_Node000017" title=" " alt="" coords="448,183,352,210,349,206,452,179"/>
-<area shape="rect" id="Node000022" href="$d3/df7/star__sensor__pca9685_8c.html#a49863dd18b6c011a0162743d0e1dd4d4" title="Internal frequency setting (no initialization check, caller must hold mutex if needed)." alt="" coords="468,483,612,523"/>
+<area shape="rect" id="Node000022" href="$d3/df7/star__sensor__pca9685_8c.html#af172ec2771522a913b761463c8d4828f" title="Internal frequency setting (no initialization check, caller must hold mutex if needed)." alt="" coords="468,483,612,523"/>
 <area shape="poly" id="edge16_Node000021_Node000022" title=" " alt="" coords="712,467,614,489,611,485,716,463"/>
 <area shape="rect" id="Node000023" href="$d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="216,462,385,488"/>
 <area shape="poly" id="edge19_Node000021_Node000023" title=" " alt="" coords="709,455,387,473,384,468,712,451"/>
-<area shape="rect" id="Node000027" href="$d3/df7/star__sensor__pca9685_8c.html#a91eaab882e26ad08fb58448b532e4bd7" title="Set MODE1 register bits." alt="" coords="455,382,624,408"/>
+<area shape="rect" id="Node000027" href="$d3/df7/star__sensor__pca9685_8c.html#ad672ac0514a17e7b1b4d4d9cd9c93c58" title="Set MODE1 register bits." alt="" coords="455,382,624,408"/>
 <area shape="poly" id="edge18_Node000021_Node000027" title=" " alt="" coords="710,433,605,411,603,406,715,430"/>
 <area shape="poly" id="edge17_Node000022_Node000023" title=" " alt="" coords="450,494,387,487,384,483,455,491"/>
 <area shape="rect" id="Node000050" href="$d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="467,1792,612,1833"/>

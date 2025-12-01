@@ -1,0 +1,13 @@
+<map id="src/system_config.c" name="src/system_config.c">
+<area shape="rect" id="Node000001" title="Global system configuration instance." alt="" coords="147,5,286,31"/>
+<area shape="rect" id="Node000002" href="$d4/d7e/system__config_8h.html" title=" " alt="" coords="136,79,298,105"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="218,29,219,64,214,62,215,33"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,153,98,178"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="190,107,95,149,92,144,187,103"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="122,153,208,178"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="211,104,184,142,181,138,206,106"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="232,153,306,178"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="227,103,254,141,248,139,224,107"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="330,153,394,178"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="242,103,326,145,321,146,241,108"/>
+</map>

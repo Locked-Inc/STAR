@@ -181,8 +181,8 @@ static inline void gpio_set_input(gpio_num_t pin)
  */
 static int32_t wait_for_level(gpio_num_t pin, int expected_level, uint32_t timeout_us)
 {
-  int64_t start = esp_timer_get_time();
-  int64_t elapsed;
+  int64_t  start = esp_timer_get_time();
+  int64_t  elapsed;
   uint32_t yield_count = 0;
 
   while (gpio_read(pin) != expected_level) {
@@ -190,16 +190,16 @@ static int32_t wait_for_level(gpio_num_t pin, int expected_level, uint32_t timeo
     if (elapsed > timeout_us) {
       return -1;
     }
-    
+
     /* Aggressive yielding to prevent watchdog timeout */
     yield_count++;
-    if (yield_count >= 50) {  /* Yield every 50 iterations */
+    if (yield_count >= 50) { /* Yield every 50 iterations */
       yield_count = 0;
       /* For very short timeouts, use taskYIELD, for longer ones allow a brief delay */
       if (timeout_us < 200) {
         taskYIELD();
       } else {
-        vTaskDelay(0);  /* Minimal delay but ensures other tasks run */
+        vTaskDelay(0); /* Minimal delay but ensures other tasks run */
       }
     }
   }
@@ -218,8 +218,8 @@ static int32_t wait_for_level(gpio_num_t pin, int expected_level, uint32_t timeo
  */
 static int32_t measure_pulse(gpio_num_t pin, int current_level, uint32_t timeout_us)
 {
-  int64_t start = esp_timer_get_time();
-  int64_t elapsed;
+  int64_t  start = esp_timer_get_time();
+  int64_t  elapsed;
   uint32_t yield_count = 0;
 
   while (gpio_read(pin) == current_level) {
@@ -227,16 +227,16 @@ static int32_t measure_pulse(gpio_num_t pin, int current_level, uint32_t timeout
     if (elapsed > timeout_us) {
       return -1;
     }
-    
+
     /* Aggressive yielding to prevent watchdog timeout */
     yield_count++;
-    if (yield_count >= 50) {  /* Yield every 50 iterations */
+    if (yield_count >= 50) { /* Yield every 50 iterations */
       yield_count = 0;
       /* For very short timeouts, use taskYIELD, for longer ones allow a brief delay */
       if (timeout_us < 200) {
         taskYIELD();
       } else {
-        vTaskDelay(0);  /* Minimal delay but ensures other tasks run */
+        vTaskDelay(0); /* Minimal delay but ensures other tasks run */
       }
     }
   }
@@ -261,7 +261,7 @@ static esp_err_t read_raw_data(dht22_state_t* state, uint8_t data[DHT22_DATA_BYT
   /* Step 1: Send start signal (only this part needs critical section) */
   portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
   portENTER_CRITICAL(&mux);
-  
+
   /* Pull low for at least 1ms (we use 18ms by default) */
   gpio_set_output(pin);
   gpio_low(pin);
@@ -273,7 +273,7 @@ static esp_err_t read_raw_data(dht22_state_t* state, uint8_t data[DHT22_DATA_BYT
 
   /* Step 2: Switch to input and wait for sensor response */
   gpio_set_input(pin);
-  
+
   /* Exit critical section - sensor response can be read without it */
   portEXIT_CRITICAL(&mux);
 
@@ -297,14 +297,14 @@ static esp_err_t read_raw_data(dht22_state_t* state, uint8_t data[DHT22_DATA_BYT
 
   /* Step 3: Read 40 bits of data */
   memset(data, 0, DHT22_DATA_BYTES);
-  
+
   /* Use short critical sections only for the most timing-sensitive parts */
   for (int i = 0; i < DHT22_DATA_BITS; i++) {
     /* Yield periodically to prevent watchdog */
     if (i % 8 == 0 && i > 0) {
       taskYIELD();
     }
-    
+
     /* Wait for high (end of bit start pulse ~50us) */
     if (wait_for_level(pin, 1, TIMING_BIT_START_US + 30) < 0) {
       ESP_LOGD(s_TAG, "Timeout waiting for bit %d high", i);

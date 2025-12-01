@@ -1,5 +1,9 @@
 <map id="star_servo_angle_to_pulse" name="star_servo_angle_to_pulse">
-<area shape="rect" id="Node000001" title="Calculate pulse width in microseconds from angle (0&#45;180 degrees)." alt="" coords="5,5,144,46"/>
-<area shape="rect" id="Node000002" href="$d3/d75/star__servo_8c.html#af22dfa33d50a10394cc1a93fef7dc3d6" title=" " alt="" coords="192,13,286,38"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="144,23,178,25,173,26,144,28"/>
+<area shape="rect" id="Node000001" title="Calculate pulse width in microseconds from angle (0&#45;180 degrees)." alt="" coords="5,31,144,71"/>
+<area shape="rect" id="Node000002" href="$d3/d75/star__servo_8c.html#af22dfa33d50a10394cc1a93fef7dc3d6" title=" " alt="" coords="230,13,324,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="144,40,218,33,213,34,145,45"/>
+<area shape="rect" id="Node000004" href="$de/d5e/star__servo__constants_8c.html#a12c23bf5fc24b4395a13b69edddd66c6" title="Get the default servo constants." alt="" coords="192,62,363,88"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="144,57,179,63,173,63,144,62"/>
+<area shape="rect" id="Node000003" href="$de/d5e/star__servo__constants_8c.html#a1fd2bd5c8eb02e8d5c3bcc32c5841e82" title="Get standard servo angle constants." alt="" coords="411,5,556,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="325,23,398,25,393,26,325,28"/>
 </map>

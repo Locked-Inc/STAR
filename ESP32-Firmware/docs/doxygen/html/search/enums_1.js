@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['hcsr04_5ferror_5ft_0',['hcsr04_error_t',['../d2/dda/star__sensor__hcsr04_8h.html#af7bca5e9cc30776256ca05fbb7f5d335',1,'star_sensor_hcsr04.h']]],
-  ['hcsr04_5fsensor_5findex_5ft_1',['hcsr04_sensor_index_t',['../d4/d7e/system__config_8h.html#af60ef736234a6d9a91cdf60a0e0d4253',1,'system_config.h']]]
+  ['dht_5fsensor_5ftype_5ft_0',['dht_sensor_type_t',['../da/de8/star__bus__dht22__constants_8h.html#a2485cf54a6175eaa0bd4bdda8316e5ae',1,'star_bus_dht22_constants.h']]],
+  ['ds18b20_5fcmd_5ft_1',['ds18b20_cmd_t',['../db/dbf/star__bus__onewire__constants_8h.html#add46b9e64e98895681f648451ee67f65',1,'star_bus_onewire_constants.h']]]
 ];

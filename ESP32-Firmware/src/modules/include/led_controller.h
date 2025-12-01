@@ -13,6 +13,45 @@
  * Follows STAR framework patterns with proper error handling
  */
 
+/* ========== Constants ========== */
+
+/* Color and PWM Constants */
+static const float s_led_gamma_correction_factor =
+  2.2f; /**< Gamma correction for perceptual brightness */
+static const float s_led_normalize_percent = 100.0f; /**< Convert percentage to 0.0-1.0 range */
+static const float s_led_rgb_max_percent   = 100.0f; /**< Maximum RGB color percentage */
+
+/* HSV to RGB Conversion Constants */
+static const float s_led_hue_max_degrees    = 360.0f; /**< Maximum hue value in degrees */
+static const float s_led_hue_sector_size    = 60.0f;  /**< Size of each hue sector in degrees */
+static const float s_led_hue_sector_double  = 2.0f;   /**< Double sector size for calculations */
+static const float s_led_hsv_saturation_max = 1.0f;   /**< Maximum saturation value */
+static const float s_led_hsv_value_max      = 1.0f;   /**< Maximum value (brightness) */
+
+/* HSV Hue Sector Boundaries (degrees) */
+static const float s_led_hue_sector_1 = 60.0f;  /**< Red to Yellow boundary */
+static const float s_led_hue_sector_2 = 120.0f; /**< Yellow to Green boundary */
+static const float s_led_hue_sector_3 = 180.0f; /**< Green to Cyan boundary */
+static const float s_led_hue_sector_4 = 240.0f; /**< Cyan to Blue boundary */
+static const float s_led_hue_sector_5 = 300.0f; /**< Blue to Magenta boundary */
+
+/* Distance to Color Gradient Constants */
+static const float s_led_distance_range_min_offset =
+  1.0f; /**< Minimum range offset to prevent division by zero */
+static const float s_led_distance_smooth_factor  = 3.0f;   /**< Exponential smoothing factor */
+static const float s_led_gradient_max_hue        = 240.0f; /**< Blue hue (end of rainbow) */
+static const float s_led_brightness_curve_factor = 3.0f;   /**< Brightness curve smoothing factor */
+static const float s_led_brightness_power_factor = 2.0f;   /**< Power for brightness curve */
+static const float s_led_close_boost_factor      = 0.3f;   /**< Boost factor for close objects */
+static const float s_led_brightness_min          = 0.4f;   /**< Minimum brightness value */
+static const float s_led_brightness_max          = 1.0f;   /**< Maximum brightness value */
+
+/* LED Hardware Constants */
+static const uint8_t s_led_channels_per_rgb     = 3; /**< Number of channels per RGB LED */
+static const uint8_t s_led_channel_offset_red   = 0; /**< Red channel offset */
+static const uint8_t s_led_channel_offset_green = 1; /**< Green channel offset */
+static const uint8_t s_led_channel_offset_blue  = 2; /**< Blue channel offset */
+
 /* ========== Data Types ========== */
 
 typedef struct {
@@ -22,12 +61,12 @@ typedef struct {
 } rgb_color_t;
 
 typedef struct {
-  float hue;        // 0.0 - 360.0 degrees
-  float saturation; // 0.0 - 1.0
-  float value;      // 0.0 - 1.0 (brightness)
+  float hue;        /* 0.0 - 360.0 degrees */
+  float saturation; /* 0.0 - 1.0 */
+  float value;      /* 0.0 - 1.0 (brightness) */
 } hsv_color_t;
 
-typedef enum { LED_INDEX_LEFT = 0, LED_INDEX_RIGHT = 1, LED_INDEX_MAX = STAR_SYSTEM_NUM_HCSR04 } led_index_t;
+typedef enum { k_led_index_left = 0, k_led_index_right = 1, k_led_index_max = 2 } led_index_t;
 
 typedef struct {
   const pca9685_handle_t* pca_handle;
@@ -67,7 +106,7 @@ rgb_color_t led_controller_hsv_to_rgb(const hsv_color_t* hsv);
  * @param distance_cm Distance in centimeters
  * @return rgb_color_t Corresponding RGB color values (0-100%)
  */
-rgb_color_t led_controller_distance_to_color(float distance_cm);
+rgb_color_t led_controller_distance_to_color(const float distance_cm);
 
 /**
  * @brief Set RGB LED color
@@ -78,7 +117,7 @@ rgb_color_t led_controller_distance_to_color(float distance_cm);
  * @return esp_err_t ESP_OK on success
  */
 esp_err_t led_controller_set_rgb(led_controller_t*  controller,
-                                 led_index_t        led_index,
+                                 const led_index_t  led_index,
                                  const rgb_color_t* color);
 
 /**
@@ -90,8 +129,8 @@ esp_err_t led_controller_set_rgb(led_controller_t*  controller,
  * @return esp_err_t ESP_OK on success
  */
 esp_err_t led_controller_update_distance(led_controller_t* controller,
-                                         led_index_t       led_index,
-                                         float             distance_cm);
+                                         const led_index_t led_index,
+                                         const float       distance_cm);
 
 /**
  * @brief Turn off specific LED
@@ -100,7 +139,7 @@ esp_err_t led_controller_update_distance(led_controller_t* controller,
  * @param led_index LED index (left/right)
  * @return esp_err_t ESP_OK on success
  */
-esp_err_t led_controller_turn_off(led_controller_t* controller, led_index_t led_index);
+esp_err_t led_controller_turn_off(led_controller_t* controller, const led_index_t led_index);
 
 /**
  * @brief Turn off all LEDs

@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['dht22_5ftask_2ec_0',['dht22_task.c',['../d0/d9c/dht22__task_8c.html',1,'']]],
-  ['dht22_5ftask_2eh_1',['dht22_task.h',['../df/db9/dht22__task_8h.html',1,'']]]
+  ['bno055_5fbmp280_5fconstants_2eh_0',['bno055_bmp280_constants.h',['../d6/d8e/bno055__bmp280__constants_8h.html',1,'']]]
 ];
