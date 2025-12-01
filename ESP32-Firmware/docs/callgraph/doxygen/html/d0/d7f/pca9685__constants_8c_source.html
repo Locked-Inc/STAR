@@ -100,23 +100,23 @@ $(function(){initNavTree('d0/d7f/pca9685__constants_8c_source.html','../../','')
 <div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="comment">/* Hardware limits definition */</span></div>
 <div class="foldopen" id="foldopen00014" data-start="{" data-end="};">
 <div class="line"><a id="l00014" name="l00014"></a><span class="lineno"><a class="line" href="../../d9/ddd/pca9685__constants_8h.html#ab899e47ce6c74fa766a3a62af06d194e">   14</a></span><span class="keyword">const</span> <a class="code hl_struct" href="../../d3/dc6/structpca9685__hardware__limits__t.html">pca9685_hardware_limits_t</a> <a class="code hl_variable" href="../../d9/ddd/pca9685__constants_8h.html#ab899e47ce6c74fa766a3a62af06d194e">pca9685_hardware_limits</a> = {</div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>    .num_channels      = 16,       <span class="comment">/* 16 PWM channels */</span></div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>    .pwm_resolution    = 4096,     <span class="comment">/* 12-bit resolution */</span></div>
-<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>    .min_frequency_hz  = 24,       <span class="comment">/* Minimum PWM frequency */</span></div>
-<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>    .max_frequency_hz  = 1526,     <span class="comment">/* Maximum PWM frequency */</span></div>
-<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>    .oscillator_freq_hz = 25000000,<span class="comment">/* 25 MHz internal oscillator */</span></div>
-<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>    .min_prescale      = 3,        <span class="comment">/* Minimum prescale value for max frequency */</span></div>
-<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>    .max_prescale      = 255       <span class="comment">/* Maximum prescale value for min frequency */</span></div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>  .num_channels       = 16,       <span class="comment">/* 16 PWM channels */</span></div>
+<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span>  .pwm_resolution     = 4096,     <span class="comment">/* 12-bit resolution */</span></div>
+<div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>  .min_frequency_hz   = 24,       <span class="comment">/* Minimum PWM frequency */</span></div>
+<div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span>  .max_frequency_hz   = 1526,     <span class="comment">/* Maximum PWM frequency */</span></div>
+<div class="line"><a id="l00019" name="l00019"></a><span class="lineno">   19</span>  .oscillator_freq_hz = 25000000, <span class="comment">/* 25 MHz internal oscillator */</span></div>
+<div class="line"><a id="l00020" name="l00020"></a><span class="lineno">   20</span>  .min_prescale       = 3,        <span class="comment">/* Minimum prescale value for max frequency */</span></div>
+<div class="line"><a id="l00021" name="l00021"></a><span class="lineno">   21</span>  .max_prescale       = 255       <span class="comment">/* Maximum prescale value for min frequency */</span></div>
 <div class="line"><a id="l00022" name="l00022"></a><span class="lineno">   22</span>};</div>
 </div>
 <div class="line"><a id="l00023" name="l00023"></a><span class="lineno">   23</span> </div>
 <div class="line"><a id="l00024" name="l00024"></a><span class="lineno">   24</span><span class="comment">/* Timing constants definition */</span></div>
 <div class="foldopen" id="foldopen00025" data-start="{" data-end="};">
 <div class="line"><a id="l00025" name="l00025"></a><span class="lineno"><a class="line" href="../../d9/ddd/pca9685__constants_8h.html#a65cd6b98179bb22e8fcfae0a9763ad0e">   25</a></span><span class="keyword">const</span> <a class="code hl_struct" href="../../d4/dc6/structpca9685__timing__constants__t.html">pca9685_timing_constants_t</a> <a class="code hl_variable" href="../../d9/ddd/pca9685__constants_8h.html#a65cd6b98179bb22e8fcfae0a9763ad0e">pca9685_timing</a> = {</div>
-<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>    .mutex_timeout_ms     = 1000,  <span class="comment">/* 1 second mutex timeout */</span></div>
-<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>    .reset_delay_us       = 500,   <span class="comment">/* 500us after reset command */</span></div>
-<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>    .wake_delay_us        = 500,   <span class="comment">/* 500us after wake from sleep */</span></div>
-<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>    .mode_switch_delay_us = 100    <span class="comment">/* 100us after mode change */</span></div>
+<div class="line"><a id="l00026" name="l00026"></a><span class="lineno">   26</span>  .mutex_timeout_ms     = 1000, <span class="comment">/* 1 second mutex timeout */</span></div>
+<div class="line"><a id="l00027" name="l00027"></a><span class="lineno">   27</span>  .reset_delay_us       = 500,  <span class="comment">/* 500us after reset command */</span></div>
+<div class="line"><a id="l00028" name="l00028"></a><span class="lineno">   28</span>  .wake_delay_us        = 500,  <span class="comment">/* 500us after wake from sleep */</span></div>
+<div class="line"><a id="l00029" name="l00029"></a><span class="lineno">   29</span>  .mode_switch_delay_us = 100   <span class="comment">/* 100us after mode change */</span></div>
 <div class="line"><a id="l00030" name="l00030"></a><span class="lineno">   30</span>};</div>
 </div>
 <div class="ttc" id="apca9685__constants_8h_html"><div class="ttname"><a href="../../d9/ddd/pca9685__constants_8h.html">pca9685_constants.h</a></div><div class="ttdoc">Type-safe constants for PCA9685 16-channel 12-bit PWM controller.</div></div>

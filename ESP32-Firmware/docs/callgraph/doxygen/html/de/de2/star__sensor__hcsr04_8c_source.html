@@ -95,17 +95,17 @@ $(function(){initNavTree('de/de2/star__sensor__hcsr04_8c_source.html','../../','
 <a href="../../de/de2/star__sensor__hcsr04_8c.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="comment">/* lib/star_sensor_hcsr04/src/star_sensor_hcsr04.c */</span></div>
 <div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span> </div>
 <div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#include &quot;<a class="code" href="../../d2/dda/star__sensor__hcsr04_8h.html">star_sensor_hcsr04.h</a>&quot;</span></div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#include &quot;<a class="code" href="../../d9/d6c/star__sensor__hcsr04__constants_8h.html">star_sensor_hcsr04_constants.h</a>&quot;</span></div>
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span> </div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#include &lt;esp_log.h&gt;</span></div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &lt;esp_timer.h&gt;</span></div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &lt;freertos/FreeRTOS.h&gt;</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#include &lt;freertos/task.h&gt;</span></div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="preprocessor">#include &lt;stdlib.h&gt;</span></div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span><span class="preprocessor">#include &lt;string.h&gt;</span></div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span> </div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="preprocessor">#include &quot;<a class="code" href="../../d9/d5b/star__bus__gpio_8h.html">star_bus_gpio.h</a>&quot;</span></div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="preprocessor">#include &quot;<a class="code" href="../../d4/d59/star__error__handler_8h.html">star_error_handler.h</a>&quot;</span></div>
+<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span> </div>
+<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span><span class="preprocessor">#include &lt;esp_log.h&gt;</span></div>
+<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#include &lt;esp_timer.h&gt;</span></div>
+<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="preprocessor">#include &lt;freertos/FreeRTOS.h&gt;</span></div>
+<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#include &lt;freertos/task.h&gt;</span></div>
+<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span><span class="preprocessor">#include &lt;stdlib.h&gt;</span></div>
+<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="preprocessor">#include &lt;string.h&gt;</span></div>
+<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span> </div>
+<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="preprocessor">#include &quot;<a class="code" href="../../d9/d5b/star__bus__gpio_8h.html">star_bus_gpio.h</a>&quot;</span></div>
+<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="preprocessor">#include &quot;<a class="code" href="../../d4/d59/star__error__handler_8h.html">star_error_handler.h</a>&quot;</span></div>
+<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="preprocessor">#include &quot;<a class="code" href="../../d9/d6c/star__sensor__hcsr04__constants_8h.html">star_sensor_hcsr04_constants.h</a>&quot;</span></div>
 <div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span> </div>
 <div class="line"><a id="l00016" name="l00016"></a><span class="lineno"><a class="line" href="../../de/de2/star__sensor__hcsr04_8c.html#a0ef4cd21b66ec96ecc491ff1bafab645">   16</a></span><span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> <a class="code hl_variable" href="../../d0/d29/main_8c.html#a999e3dd103132afd3cd1856f477f2dbd">s_TAG</a> = <span class="stringliteral">&quot;hcsr04&quot;</span>;</div>
 <div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span> </div>
@@ -432,9 +432,9 @@ $(function(){initNavTree('de/de2/star__sensor__hcsr04_8c_source.html','../../','
 <div class="line"><a id="l00323" name="l00323"></a><span class="lineno">  323</span>  }</div>
 <div class="line"><a id="l00324" name="l00324"></a><span class="lineno">  324</span> </div>
 <div class="line"><a id="l00325" name="l00325"></a><span class="lineno">  325</span>  <span class="comment">// Wait for measurement with timeout</span></div>
-<div class="line"><a id="l00326" name="l00326"></a><span class="lineno">  326</span>  <span class="keyword">const</span> uint32_t start_time = (uint32_t)esp_timer_get_time();</div>
-<div class="line"><a id="l00327" name="l00327"></a><span class="lineno">  327</span>  <span class="keyword">const</span> uint32_t timeout_ms = 60; <span class="comment">// Max time for 400cm measurement + margin</span></div>
-<div class="line"><a id="l00328" name="l00328"></a><span class="lineno">  328</span>  uint32_t yield_counter = 0;</div>
+<div class="line"><a id="l00326" name="l00326"></a><span class="lineno">  326</span>  <span class="keyword">const</span> uint32_t start_time    = (uint32_t)esp_timer_get_time();</div>
+<div class="line"><a id="l00327" name="l00327"></a><span class="lineno">  327</span>  <span class="keyword">const</span> uint32_t timeout_ms    = 60; <span class="comment">// Max time for 400cm measurement + margin</span></div>
+<div class="line"><a id="l00328" name="l00328"></a><span class="lineno">  328</span>  uint32_t       yield_counter = 0;</div>
 <div class="line"><a id="l00329" name="l00329"></a><span class="lineno">  329</span> </div>
 <div class="line"><a id="l00330" name="l00330"></a><span class="lineno">  330</span>  <span class="keywordflow">while</span> (!handle-&gt;<a class="code hl_variable" href="../../d2/dbb/structhcsr04__handle.html#a2d81c9aa45417ede57778a43e9845ace">measurement_complete</a>) {</div>
 <div class="line"><a id="l00331" name="l00331"></a><span class="lineno">  331</span>    <span class="keyword">const</span> uint32_t elapsed = ((uint32_t)esp_timer_get_time() - start_time) / 1000;</div>
@@ -442,20 +442,20 @@ $(function(){initNavTree('de/de2/star__sensor__hcsr04_8c_source.html','../../','
 <div class="line"><a id="l00333" name="l00333"></a><span class="lineno">  333</span>      ESP_LOGW(<a class="code hl_variable" href="../../d0/d29/main_8c.html#a999e3dd103132afd3cd1856f477f2dbd">s_TAG</a>, <span class="stringliteral">&quot;Measurement timeout&quot;</span>);</div>
 <div class="line"><a id="l00334" name="l00334"></a><span class="lineno">  334</span>      <span class="keywordflow">return</span> <a class="code hl_enumvalue" href="../../d2/dda/star__sensor__hcsr04_8h.html#af7bca5e9cc30776256ca05fbb7f5d335a1debc31908d148386db3bca5c9a30d0a">k_hcsr04_err_timeout</a>;</div>
 <div class="line"><a id="l00335" name="l00335"></a><span class="lineno">  335</span>    }</div>
-<div class="line"><a id="l00336" name="l00336"></a><span class="lineno">  336</span>    </div>
+<div class="line"><a id="l00336" name="l00336"></a><span class="lineno">  336</span> </div>
 <div class="line"><a id="l00337" name="l00337"></a><span class="lineno">  337</span>    <span class="comment">/* Aggressive yielding strategy to prevent watchdog timeout */</span></div>
 <div class="line"><a id="l00338" name="l00338"></a><span class="lineno">  338</span>    <span class="keywordflow">if</span> (elapsed &lt; 2) {</div>
 <div class="line"><a id="l00339" name="l00339"></a><span class="lineno">  339</span>      <span class="comment">/* First 2ms: very short delays with frequent yields */</span></div>
 <div class="line"><a id="l00340" name="l00340"></a><span class="lineno">  340</span>      yield_counter++;</div>
-<div class="line"><a id="l00341" name="l00341"></a><span class="lineno">  341</span>      <span class="keywordflow">if</span> (yield_counter &gt;= 10) {  <span class="comment">/* Yield every 10 iterations */</span></div>
+<div class="line"><a id="l00341" name="l00341"></a><span class="lineno">  341</span>      <span class="keywordflow">if</span> (yield_counter &gt;= 10) { <span class="comment">/* Yield every 10 iterations */</span></div>
 <div class="line"><a id="l00342" name="l00342"></a><span class="lineno">  342</span>        yield_counter = 0;</div>
 <div class="line"><a id="l00343" name="l00343"></a><span class="lineno">  343</span>        taskYIELD();</div>
 <div class="line"><a id="l00344" name="l00344"></a><span class="lineno">  344</span>      } <span class="keywordflow">else</span> {</div>
-<div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span>        esp_rom_delay_us(10);  <span class="comment">/* Very short delay */</span></div>
+<div class="line"><a id="l00345" name="l00345"></a><span class="lineno">  345</span>        esp_rom_delay_us(10); <span class="comment">/* Very short delay */</span></div>
 <div class="line"><a id="l00346" name="l00346"></a><span class="lineno">  346</span>      }</div>
 <div class="line"><a id="l00347" name="l00347"></a><span class="lineno">  347</span>    } <span class="keywordflow">else</span> <span class="keywordflow">if</span> (elapsed &lt; 10) {</div>
 <div class="line"><a id="l00348" name="l00348"></a><span class="lineno">  348</span>      <span class="comment">/* 2-10ms: slightly longer delays but still responsive */</span></div>
-<div class="line"><a id="l00349" name="l00349"></a><span class="lineno">  349</span>      taskYIELD();  <span class="comment">/* Always yield in this range */</span></div>
+<div class="line"><a id="l00349" name="l00349"></a><span class="lineno">  349</span>      taskYIELD(); <span class="comment">/* Always yield in this range */</span></div>
 <div class="line"><a id="l00350" name="l00350"></a><span class="lineno">  350</span>      esp_rom_delay_us(50);</div>
 <div class="line"><a id="l00351" name="l00351"></a><span class="lineno">  351</span>    } <span class="keywordflow">else</span> {</div>
 <div class="line"><a id="l00352" name="l00352"></a><span class="lineno">  352</span>      <span class="comment">/* After 10ms: use vTaskDelay for better scheduling */</span></div>
@@ -468,34 +468,35 @@ $(function(){initNavTree('de/de2/star__sensor__hcsr04_8c_source.html','../../','
 </div>
 <div class="line"><a id="l00359" name="l00359"></a><span class="lineno">  359</span> </div>
 <div class="foldopen" id="foldopen00360" data-start="{" data-end="}">
-<div class="line"><a id="l00360" name="l00360"></a><span class="lineno"><a class="line" href="../../d2/dda/star__sensor__hcsr04_8h.html#a98a96e56a9e83ceb44df24d730698884">  360</a></span>esp_err_t <a class="code hl_function" href="../../de/de2/star__sensor__hcsr04_8c.html#a98a96e56a9e83ceb44df24d730698884">star_sensor_hcsr04_set_temperature</a>(<a class="code hl_typedef" href="../../d2/dda/star__sensor__hcsr04_8h.html#ad9511961a9bbcf8661cfcdf028632a5a">hcsr04_handle_t</a>* <span class="keyword">const</span> handle, <span class="keyword">const</span> <span class="keywordtype">float</span> temperature_c)</div>
-<div class="line"><a id="l00361" name="l00361"></a><span class="lineno">  361</span>{</div>
-<div class="line"><a id="l00362" name="l00362"></a><span class="lineno">  362</span>  <span class="keywordflow">if</span> (handle == NULL || !handle-&gt;<a class="code hl_variable" href="../../d2/dbb/structhcsr04__handle.html#a7cea3650a22fed925851f75db578b7c0">initialized</a>) {</div>
-<div class="line"><a id="l00363" name="l00363"></a><span class="lineno">  363</span>    <span class="keywordflow">return</span> ESP_ERR_INVALID_STATE;</div>
-<div class="line"><a id="l00364" name="l00364"></a><span class="lineno">  364</span>  }</div>
-<div class="line"><a id="l00365" name="l00365"></a><span class="lineno">  365</span> </div>
-<div class="line"><a id="l00366" name="l00366"></a><span class="lineno">  366</span>  <span class="comment">// Acquire mutex</span></div>
-<div class="line"><a id="l00367" name="l00367"></a><span class="lineno">  367</span>  <span class="keyword">const</span> SemaphoreHandle_t mutex = handle-&gt;<a class="code hl_variable" href="../../d2/dbb/structhcsr04__handle.html#aa2b1335db90f99cba60bff2f252b5803">mutex</a>;</div>
-<div class="line"><a id="l00368" name="l00368"></a><span class="lineno">  368</span>  <span class="keywordflow">if</span> (mutex == NULL || xSemaphoreTake(mutex, pdMS_TO_TICKS(<a class="code hl_variable" href="../../de/de2/star__sensor__hcsr04_8c.html#ae5873225d448acea9859d245f2c7cee4">HCSR04_MUTEX_TIMEOUT_MS</a>)) != pdTRUE) {</div>
-<div class="line"><a id="l00369" name="l00369"></a><span class="lineno">  369</span>    ESP_LOGE(<a class="code hl_variable" href="../../d0/d29/main_8c.html#a999e3dd103132afd3cd1856f477f2dbd">s_TAG</a>, <span class="stringliteral">&quot;Failed to acquire mutex for set_temperature&quot;</span>);</div>
-<div class="line"><a id="l00370" name="l00370"></a><span class="lineno">  370</span>    <span class="keywordflow">return</span> ESP_ERR_TIMEOUT;</div>
-<div class="line"><a id="l00371" name="l00371"></a><span class="lineno">  371</span>  }</div>
-<div class="line"><a id="l00372" name="l00372"></a><span class="lineno">  372</span> </div>
-<div class="line"><a id="l00373" name="l00373"></a><span class="lineno">  373</span>  <span class="comment">// Re-check after mutex acquisition</span></div>
-<div class="line"><a id="l00374" name="l00374"></a><span class="lineno">  374</span>  <span class="keywordflow">if</span> (!handle-&gt;<a class="code hl_variable" href="../../d2/dbb/structhcsr04__handle.html#a7cea3650a22fed925851f75db578b7c0">initialized</a> || handle-&gt;<a class="code hl_variable" href="../../d2/dbb/structhcsr04__handle.html#aa2b1335db90f99cba60bff2f252b5803">mutex</a> == NULL) {</div>
-<div class="line"><a id="l00375" name="l00375"></a><span class="lineno">  375</span>    xSemaphoreGive(mutex);</div>
-<div class="line"><a id="l00376" name="l00376"></a><span class="lineno">  376</span>    <span class="keywordflow">return</span> ESP_ERR_INVALID_STATE;</div>
-<div class="line"><a id="l00377" name="l00377"></a><span class="lineno">  377</span>  }</div>
-<div class="line"><a id="l00378" name="l00378"></a><span class="lineno">  378</span> </div>
-<div class="line"><a id="l00379" name="l00379"></a><span class="lineno">  379</span>  <span class="keywordflow">if</span> (temperature_c &lt; -40.0f || temperature_c &gt; 85.0f) {</div>
-<div class="line"><a id="l00380" name="l00380"></a><span class="lineno">  380</span>    ESP_LOGW(<a class="code hl_variable" href="../../d0/d29/main_8c.html#a999e3dd103132afd3cd1856f477f2dbd">s_TAG</a>, <span class="stringliteral">&quot;Temperature out of typical range: %.1f C&quot;</span>, temperature_c);</div>
-<div class="line"><a id="l00381" name="l00381"></a><span class="lineno">  381</span>  }</div>
-<div class="line"><a id="l00382" name="l00382"></a><span class="lineno">  382</span> </div>
-<div class="line"><a id="l00383" name="l00383"></a><span class="lineno">  383</span>  handle-&gt;<a class="code hl_variable" href="../../d2/dbb/structhcsr04__handle.html#a5ce98fe0460ba3ccc8a8dc683d319abb">temperature_c</a> = temperature_c;</div>
-<div class="line"><a id="l00384" name="l00384"></a><span class="lineno">  384</span> </div>
-<div class="line"><a id="l00385" name="l00385"></a><span class="lineno">  385</span>  xSemaphoreGive(mutex);</div>
-<div class="line"><a id="l00386" name="l00386"></a><span class="lineno">  386</span>  <span class="keywordflow">return</span> ESP_OK;</div>
-<div class="line"><a id="l00387" name="l00387"></a><span class="lineno">  387</span>}</div>
+<div class="line"><a id="l00360" name="l00360"></a><span class="lineno"><a class="line" href="../../d2/dda/star__sensor__hcsr04_8h.html#a98a96e56a9e83ceb44df24d730698884">  360</a></span>esp_err_t <a class="code hl_function" href="../../de/de2/star__sensor__hcsr04_8c.html#a98a96e56a9e83ceb44df24d730698884">star_sensor_hcsr04_set_temperature</a>(<a class="code hl_typedef" href="../../d2/dda/star__sensor__hcsr04_8h.html#ad9511961a9bbcf8661cfcdf028632a5a">hcsr04_handle_t</a>* <span class="keyword">const</span> handle,</div>
+<div class="line"><a id="l00361" name="l00361"></a><span class="lineno">  361</span>                                             <span class="keyword">const</span> <span class="keywordtype">float</span>            temperature_c)</div>
+<div class="line"><a id="l00362" name="l00362"></a><span class="lineno">  362</span>{</div>
+<div class="line"><a id="l00363" name="l00363"></a><span class="lineno">  363</span>  <span class="keywordflow">if</span> (handle == NULL || !handle-&gt;<a class="code hl_variable" href="../../d2/dbb/structhcsr04__handle.html#a7cea3650a22fed925851f75db578b7c0">initialized</a>) {</div>
+<div class="line"><a id="l00364" name="l00364"></a><span class="lineno">  364</span>    <span class="keywordflow">return</span> ESP_ERR_INVALID_STATE;</div>
+<div class="line"><a id="l00365" name="l00365"></a><span class="lineno">  365</span>  }</div>
+<div class="line"><a id="l00366" name="l00366"></a><span class="lineno">  366</span> </div>
+<div class="line"><a id="l00367" name="l00367"></a><span class="lineno">  367</span>  <span class="comment">// Acquire mutex</span></div>
+<div class="line"><a id="l00368" name="l00368"></a><span class="lineno">  368</span>  <span class="keyword">const</span> SemaphoreHandle_t mutex = handle-&gt;<a class="code hl_variable" href="../../d2/dbb/structhcsr04__handle.html#aa2b1335db90f99cba60bff2f252b5803">mutex</a>;</div>
+<div class="line"><a id="l00369" name="l00369"></a><span class="lineno">  369</span>  <span class="keywordflow">if</span> (mutex == NULL || xSemaphoreTake(mutex, pdMS_TO_TICKS(<a class="code hl_variable" href="../../de/de2/star__sensor__hcsr04_8c.html#ae5873225d448acea9859d245f2c7cee4">HCSR04_MUTEX_TIMEOUT_MS</a>)) != pdTRUE) {</div>
+<div class="line"><a id="l00370" name="l00370"></a><span class="lineno">  370</span>    ESP_LOGE(<a class="code hl_variable" href="../../d0/d29/main_8c.html#a999e3dd103132afd3cd1856f477f2dbd">s_TAG</a>, <span class="stringliteral">&quot;Failed to acquire mutex for set_temperature&quot;</span>);</div>
+<div class="line"><a id="l00371" name="l00371"></a><span class="lineno">  371</span>    <span class="keywordflow">return</span> ESP_ERR_TIMEOUT;</div>
+<div class="line"><a id="l00372" name="l00372"></a><span class="lineno">  372</span>  }</div>
+<div class="line"><a id="l00373" name="l00373"></a><span class="lineno">  373</span> </div>
+<div class="line"><a id="l00374" name="l00374"></a><span class="lineno">  374</span>  <span class="comment">// Re-check after mutex acquisition</span></div>
+<div class="line"><a id="l00375" name="l00375"></a><span class="lineno">  375</span>  <span class="keywordflow">if</span> (!handle-&gt;<a class="code hl_variable" href="../../d2/dbb/structhcsr04__handle.html#a7cea3650a22fed925851f75db578b7c0">initialized</a> || handle-&gt;<a class="code hl_variable" href="../../d2/dbb/structhcsr04__handle.html#aa2b1335db90f99cba60bff2f252b5803">mutex</a> == NULL) {</div>
+<div class="line"><a id="l00376" name="l00376"></a><span class="lineno">  376</span>    xSemaphoreGive(mutex);</div>
+<div class="line"><a id="l00377" name="l00377"></a><span class="lineno">  377</span>    <span class="keywordflow">return</span> ESP_ERR_INVALID_STATE;</div>
+<div class="line"><a id="l00378" name="l00378"></a><span class="lineno">  378</span>  }</div>
+<div class="line"><a id="l00379" name="l00379"></a><span class="lineno">  379</span> </div>
+<div class="line"><a id="l00380" name="l00380"></a><span class="lineno">  380</span>  <span class="keywordflow">if</span> (temperature_c &lt; -40.0f || temperature_c &gt; 85.0f) {</div>
+<div class="line"><a id="l00381" name="l00381"></a><span class="lineno">  381</span>    ESP_LOGW(<a class="code hl_variable" href="../../d0/d29/main_8c.html#a999e3dd103132afd3cd1856f477f2dbd">s_TAG</a>, <span class="stringliteral">&quot;Temperature out of typical range: %.1f C&quot;</span>, temperature_c);</div>
+<div class="line"><a id="l00382" name="l00382"></a><span class="lineno">  382</span>  }</div>
+<div class="line"><a id="l00383" name="l00383"></a><span class="lineno">  383</span> </div>
+<div class="line"><a id="l00384" name="l00384"></a><span class="lineno">  384</span>  handle-&gt;<a class="code hl_variable" href="../../d2/dbb/structhcsr04__handle.html#a5ce98fe0460ba3ccc8a8dc683d319abb">temperature_c</a> = temperature_c;</div>
+<div class="line"><a id="l00385" name="l00385"></a><span class="lineno">  385</span> </div>
+<div class="line"><a id="l00386" name="l00386"></a><span class="lineno">  386</span>  xSemaphoreGive(mutex);</div>
+<div class="line"><a id="l00387" name="l00387"></a><span class="lineno">  387</span>  <span class="keywordflow">return</span> ESP_OK;</div>
+<div class="line"><a id="l00388" name="l00388"></a><span class="lineno">  388</span>}</div>
 </div>
 <div class="ttc" id="amain_8c_html_a999e3dd103132afd3cd1856f477f2dbd"><div class="ttname"><a href="../../d0/d29/main_8c.html#a999e3dd103132afd3cd1856f477f2dbd">s_TAG</a></div><div class="ttdeci">static const char * s_TAG</div><div class="ttdef"><b>Definition</b> <a href="../../d0/d29/main_8c_source.html#l00031">main.c:31</a></div></div>
 <div class="ttc" id="astar__bus__common__types_8h_html_a129dc23a884803fefe3727fe95ab91d7"><div class="ttname"><a href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a></div><div class="ttdeci">struct star_bus_manager star_bus_manager_t</div><div class="ttdef"><b>Definition</b> <a href="../../dd/d40/star__bus__common__types_8h_source.html#l00022">star_bus_common_types.h:22</a></div></div>

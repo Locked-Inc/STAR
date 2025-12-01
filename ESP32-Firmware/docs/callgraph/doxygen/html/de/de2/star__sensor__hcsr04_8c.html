@@ -93,7 +93,6 @@ $(function(){initNavTree('de/de2/star__sensor__hcsr04_8c.html','../../',''); });
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &quot;<a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html">star_sensor_hcsr04.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../d9/d6c/star__sensor__hcsr04__constants_8h_source.html">star_sensor_hcsr04_constants.h</a>&quot;</code><br />
 <code>#include &lt;esp_log.h&gt;</code><br />
 <code>#include &lt;esp_timer.h&gt;</code><br />
 <code>#include &lt;freertos/FreeRTOS.h&gt;</code><br />
@@ -102,6 +101,7 @@ $(function(){initNavTree('de/de2/star__sensor__hcsr04_8c.html','../../',''); });
 <code>#include &lt;string.h&gt;</code><br />
 <code>#include &quot;<a class="el" href="../../d9/d5b/star__bus__gpio_8h_source.html">star_bus_gpio.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d4/d59/star__error__handler_8h_source.html">star_error_handler.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d9/d6c/star__sensor__hcsr04__constants_8h_source.html">star_sensor_hcsr04_constants.h</a>&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for star_sensor_hcsr04.c:</div>
 <div class="dyncontent">
@@ -382,7 +382,7 @@ Here is the caller graph for this function:</div>
 
 <p class="reference">References <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00166">star_error_interface::ctx</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00175">hcsr04_handle::echo_pin</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00393">error_handler_destroy_default()</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00177">hcsr04_handle::error_iface</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00019">HCSR04_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00179">hcsr04_handle::initialized</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00178">hcsr04_handle::mutex</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00180">hcsr04_handle::owns_error_handler</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00056">internal_deinit_sensors()</a>, and <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00023">internal_init_sensors()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00065">internal_deinit_sensors()</a>, and <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00025">internal_init_sensors()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -546,7 +546,7 @@ All operations after init are protected by mutex for thread safety </dd></dl>
 
 <p class="reference">References <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00173">hcsr04_handle::bus_name</a>, <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00166">star_error_interface::ctx</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00161">hcsr04_config_t::echo_pin</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00175">hcsr04_handle::echo_pin</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00348">error_handler_create_default()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00393">error_handler_destroy_default()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00324">error_handler_get_interface()</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00177">hcsr04_handle::error_iface</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00021">hcsr04_echo_isr_handler()</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00179">hcsr04_handle::initialized</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00172">hcsr04_handle::manager</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00178">hcsr04_handle::mutex</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00180">hcsr04_handle::owns_error_handler</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00279">star_bus_gpio_configure()</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00353">star_bus_gpio_set_interrupt()</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00304">star_bus_gpio_write()</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00162">hcsr04_config_t::temperature_c</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00176">hcsr04_handle::temperature_c</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00160">hcsr04_config_t::trigger_pin</a>, and <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00174">hcsr04_handle::trigger_pin</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00023">internal_init_sensors()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00025">internal_init_sensors()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -678,7 +678,7 @@ Here is the caller graph for this function:</div>
 
 <p class="reference">References <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00179">hcsr04_handle::initialized</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00152">k_hcsr04_err_timeout</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00183">hcsr04_handle::measurement_complete</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00282">star_sensor_hcsr04_get_result()</a>, and <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00205">star_sensor_hcsr04_trigger()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00070">internal_read_single_sensor()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00079">internal_read_single_sensor()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -751,7 +751,7 @@ Here is the caller graph for this function:</div>
 
 <p class="reference">References <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00019">HCSR04_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00179">hcsr04_handle::initialized</a>, <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00178">hcsr04_handle::mutex</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../d2/dda/star__sensor__hcsr04_8h_source.html#l00176">hcsr04_handle::temperature_c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00229">sensor_task_update_temperature()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00239">sensor_task_update_temperature()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
