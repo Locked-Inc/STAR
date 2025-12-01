@@ -1,0 +1,17 @@
+<map id="led_controller_set_rgb" name="led_controller_set_rgb">
+<area shape="rect" id="Node000001" title="Set RGB LED color." alt="" coords="5,78,154,104"/>
+<area shape="rect" id="Node000002" href="$d2/dc9/led__controller_8c.html#a055f40aef481cb67e15eca4d09028a61" title=" " alt="" coords="202,78,374,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="153,88,188,90,183,92,154,94"/>
+<area shape="rect" id="Node000003" href="$d2/dc9/led__controller_8c.html#ac94f191b849645c0630d6594f91c32b0" title=" " alt="" coords="444,5,580,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="334,75,427,50,432,49,335,80"/>
+<area shape="rect" id="Node000004" href="$d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="440,71,585,111"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="374,88,426,91,421,91,374,94"/>
+<area shape="rect" id="Node000008" href="$d4/d7e/system__config_8h.html#a048d7fce3116a990c5536e18eed4a61b" title="Validate PWM percentage." alt="" coords="422,136,602,161"/>
+<area shape="poly" id="edge7_Node000002_Node000008" title=" " alt="" coords="341,102,447,131,441,131,341,107"/>
+<area shape="rect" id="Node000005" href="$d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="650,71,796,111"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="585,88,638,91,632,91,585,94"/>
+<area shape="rect" id="Node000006" href="$dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="844,78,974,104"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="796,88,831,91,826,91,796,94"/>
+<area shape="rect" id="Node000007" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="1022,78,1206,104"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="974,88,1009,91,1003,91,974,94"/>
+</map>

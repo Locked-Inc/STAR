@@ -236,7 +236,7 @@ esp_err_t star_bus_uart_init(star_bus_manager_t*       manager,
   }
 
   /* Set mode if RS-485 */
-  if (config->mode == STAR_UART_MODE_RS485) {
+  if (config->mode == k_star_uart_mode_rs485) {
     result = uart_set_mode(config->port, (uart_mode_t)config->mode);
     if (result != ESP_OK) {
       ESP_LOGE(s_TAG, "Failed to set UART mode: %s", esp_err_to_name(result));

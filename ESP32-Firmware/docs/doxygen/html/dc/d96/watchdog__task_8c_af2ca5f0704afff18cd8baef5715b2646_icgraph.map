@@ -1,0 +1,15 @@
+<map id="internal_assess_system_state" name="internal_assess_system_state">
+<area shape="rect" id="Node000001" title=" " alt="" coords="948,27,1110,68"/>
+<area shape="rect" id="Node000002" href="$dc/d96/watchdog__task_8c.html#acc127e75275d2f65ba4158f4c0ea8821" title=" " alt="" coords="743,27,900,68"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="929,48,901,50,901,45,935,47"/>
+<area shape="rect" id="Node000003" href="$dc/d96/watchdog__task_8c.html#a914a83d91bb924807d2c34ddb767e056" title=" " alt="" coords="505,5,695,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="725,35,695,33,695,28,730,35"/>
+<area shape="rect" id="Node000007" href="$dc/d96/watchdog__task_8c.html#a3952d706fb7b287213a32d8ab6d39444" title="Force immediate system health check." alt="" coords="527,55,673,96"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="730,59,674,69,673,64,725,60"/>
+<area shape="rect" id="Node000004" href="$dc/d96/watchdog__task_8c.html#a1047c0564b9275f58ba51b089d9c5377" title="Start the system watchdog task." alt="" coords="315,5,457,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="487,18,458,21,457,16,492,18"/>
+<area shape="rect" id="Node000005" href="$d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,5,267,31"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="297,19,268,21,267,16,302,18"/>
+<area shape="rect" id="Node000006" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="113,19,84,21,82,16,117,17"/>
+</map>

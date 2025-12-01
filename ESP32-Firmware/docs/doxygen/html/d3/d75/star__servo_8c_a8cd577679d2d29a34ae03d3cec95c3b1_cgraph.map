@@ -1,5 +1,9 @@
 <map id="star_servo_pulse_to_count" name="star_servo_pulse_to_count">
-<area shape="rect" id="Node000001" title="Calculate PCA9685 count value from pulse width in microseconds." alt="" coords="5,5,144,46"/>
-<area shape="rect" id="Node000002" href="$d3/d75/star__servo_8c.html#a8833486138de9335152a50c11dfa8693" title=" " alt="" coords="192,13,286,38"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="144,23,178,25,173,26,144,28"/>
+<area shape="rect" id="Node000001" title="Calculate PCA9685 count value from pulse width in microseconds." alt="" coords="5,35,144,75"/>
+<area shape="rect" id="Node000002" href="$d3/d75/star__servo_8c.html#a8833486138de9335152a50c11dfa8693" title=" " alt="" coords="226,13,320,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="143,42,213,34,208,36,144,47"/>
+<area shape="rect" id="Node000004" href="$de/d5e/star__servo__constants_8c.html#aac9dc61d7318ec5bada03bfc02ae18b6" title="Get PCA9685 controller constants." alt="" coords="192,63,355,103"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="144,62,179,69,174,70,144,67"/>
+<area shape="rect" id="Node000003" href="$de/d5e/star__servo__constants_8c.html#a6172bfbd55bee59f475ff5a82d17fb5a" title="Get standard servo pulse timing constants." alt="" coords="403,5,548,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="321,23,390,25,385,26,321,28"/>
 </map>

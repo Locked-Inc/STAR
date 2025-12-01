@@ -1,0 +1,27 @@
+<map id="led_task_stop" name="led_task_stop">
+<area shape="rect" id="Node000001" title="Stop LED display task." alt="" coords="5,104,108,129"/>
+<area shape="rect" id="Node000002" href="$d2/dc9/led__controller_8c.html#a4041166ed835cbf20470b38d1c76eaf4" title="Deinitialize LED controller." alt="" coords="171,78,308,104"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="107,107,158,101,153,104,109,112"/>
+<area shape="rect" id="Node000013" href="$db/d0d/shared__data_8c.html#acf829b11efe6efde5ff9c9a1798b05c9" title="Get pointer to global shared context." alt="" coords="156,128,323,153"/>
+<area shape="poly" id="edge12_Node000001_Node000013" title=" " alt="" coords="108,120,143,127,138,128,108,126"/>
+<area shape="rect" id="Node000003" href="$d2/dc9/led__controller_8c.html#a6743c205855240c57225c021e88e3d95" title="Turn off all LEDs." alt="" coords="371,71,498,111"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="308,88,359,91,353,91,308,94"/>
+<area shape="rect" id="Node000004" href="$d2/dc9/led__controller_8c.html#a105d937217c622b9872eeeeeb4823b33" title="Turn off specific LED." alt="" coords="546,78,696,104"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="499,88,533,91,528,91,499,94"/>
+<area shape="rect" id="Node000005" href="$d2/dc9/led__controller_8c.html#a076c2165b5b3484a7208445ff9a1c86d" title="Set RGB LED color." alt="" coords="744,78,892,104"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="696,88,731,91,726,91,696,94"/>
+<area shape="rect" id="Node000006" href="$d2/dc9/led__controller_8c.html#a055f40aef481cb67e15eca4d09028a61" title=" " alt="" coords="940,78,1112,104"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="892,88,927,91,922,91,892,94"/>
+<area shape="rect" id="Node000007" href="$d2/dc9/led__controller_8c.html#ac94f191b849645c0630d6594f91c32b0" title=" " alt="" coords="1182,5,1319,46"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="1072,75,1165,50,1170,49,1073,80"/>
+<area shape="rect" id="Node000008" href="$d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="1178,71,1323,111"/>
+<area shape="poly" id="edge7_Node000006_Node000008" title=" " alt="" coords="1112,88,1165,91,1159,91,1113,94"/>
+<area shape="rect" id="Node000012" href="$d4/d7e/system__config_8h.html#a048d7fce3116a990c5536e18eed4a61b" title="Validate PWM percentage." alt="" coords="1160,136,1341,161"/>
+<area shape="poly" id="edge11_Node000006_Node000012" title=" " alt="" coords="1080,102,1185,131,1180,131,1079,107"/>
+<area shape="rect" id="Node000009" href="$d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="1389,71,1534,111"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="1323,88,1376,91,1371,91,1324,94"/>
+<area shape="rect" id="Node000010" href="$dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="1582,78,1712,104"/>
+<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="1534,88,1570,91,1564,91,1535,94"/>
+<area shape="rect" id="Node000011" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="1760,78,1945,104"/>
+<area shape="poly" id="edge10_Node000010_Node000011" title=" " alt="" coords="1713,88,1747,91,1742,91,1713,94"/>
+</map>

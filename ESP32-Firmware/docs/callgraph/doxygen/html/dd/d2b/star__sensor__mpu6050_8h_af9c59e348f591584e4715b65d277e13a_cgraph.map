@@ -1,8 +1,8 @@
 <map id="star_sensor_mpu6050_fifo_reset" name="star_sensor_mpu6050_fifo_reset">
 <area shape="rect" id="Node000001" title=" " alt="" coords="5,23,155,64"/>
-<area shape="rect" id="Node000002" href="$d7/df2/star__sensor__mpu6050_8c.html#a22fe40a03094a07d6b03c6de6d121688" title=" " alt="" coords="204,5,336,31"/>
+<area shape="rect" id="Node000002" href="$d7/df2/star__sensor__mpu6050_8c.html#a95ee574609f3f096d184820df2e58182" title=" " alt="" coords="204,5,336,31"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="155,31,191,28,186,30,156,36"/>
-<area shape="rect" id="Node000005" href="$d7/df2/star__sensor__mpu6050_8c.html#ad2b82a94ebbe65324c37febc5ebee644" title=" " alt="" coords="203,55,337,80"/>
+<area shape="rect" id="Node000005" href="$d7/df2/star__sensor__mpu6050_8c.html#a94e36964d8af4357ede57221c09af8bd" title=" " alt="" coords="203,55,337,80"/>
 <area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="155,50,190,57,185,57,155,56"/>
 <area shape="rect" id="Node000003" href="$dd/d1a/star__bus__i2c_8c.html#a2e9b9baf8a0f8d00a2080963a7efd62f" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="386,5,514,31"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="336,16,374,18,368,18,336,21"/>
