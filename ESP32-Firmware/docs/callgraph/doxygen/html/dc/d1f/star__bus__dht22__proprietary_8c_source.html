@@ -257,8 +257,8 @@ $(function(){initNavTree('dc/d1f/star__bus__dht22__proprietary_8c_source.html','
 <div class="foldopen" id="foldopen00182" data-start="{" data-end="}">
 <div class="line"><a id="l00182" name="l00182"></a><span class="lineno"><a class="line" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a6068135097f7705a28bda46fb88640d2">  182</a></span><span class="keyword">static</span> int32_t <a class="code hl_function" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a6068135097f7705a28bda46fb88640d2">wait_for_level</a>(gpio_num_t pin, <span class="keywordtype">int</span> expected_level, uint32_t timeout_us)</div>
 <div class="line"><a id="l00183" name="l00183"></a><span class="lineno">  183</span>{</div>
-<div class="line"><a id="l00184" name="l00184"></a><span class="lineno">  184</span>  int64_t start = esp_timer_get_time();</div>
-<div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span>  int64_t elapsed;</div>
+<div class="line"><a id="l00184" name="l00184"></a><span class="lineno">  184</span>  int64_t  start = esp_timer_get_time();</div>
+<div class="line"><a id="l00185" name="l00185"></a><span class="lineno">  185</span>  int64_t  elapsed;</div>
 <div class="line"><a id="l00186" name="l00186"></a><span class="lineno">  186</span>  uint32_t yield_count = 0;</div>
 <div class="line"><a id="l00187" name="l00187"></a><span class="lineno">  187</span> </div>
 <div class="line"><a id="l00188" name="l00188"></a><span class="lineno">  188</span>  <span class="keywordflow">while</span> (<a class="code hl_function" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a71842e7ab86cba68432d023f022556d5">gpio_read</a>(pin) != expected_level) {</div>
@@ -266,16 +266,16 @@ $(function(){initNavTree('dc/d1f/star__bus__dht22__proprietary_8c_source.html','
 <div class="line"><a id="l00190" name="l00190"></a><span class="lineno">  190</span>    <span class="keywordflow">if</span> (elapsed &gt; timeout_us) {</div>
 <div class="line"><a id="l00191" name="l00191"></a><span class="lineno">  191</span>      <span class="keywordflow">return</span> -1;</div>
 <div class="line"><a id="l00192" name="l00192"></a><span class="lineno">  192</span>    }</div>
-<div class="line"><a id="l00193" name="l00193"></a><span class="lineno">  193</span>    </div>
+<div class="line"><a id="l00193" name="l00193"></a><span class="lineno">  193</span> </div>
 <div class="line"><a id="l00194" name="l00194"></a><span class="lineno">  194</span>    <span class="comment">/* Aggressive yielding to prevent watchdog timeout */</span></div>
 <div class="line"><a id="l00195" name="l00195"></a><span class="lineno">  195</span>    yield_count++;</div>
-<div class="line"><a id="l00196" name="l00196"></a><span class="lineno">  196</span>    <span class="keywordflow">if</span> (yield_count &gt;= 50) {  <span class="comment">/* Yield every 50 iterations */</span></div>
+<div class="line"><a id="l00196" name="l00196"></a><span class="lineno">  196</span>    <span class="keywordflow">if</span> (yield_count &gt;= 50) { <span class="comment">/* Yield every 50 iterations */</span></div>
 <div class="line"><a id="l00197" name="l00197"></a><span class="lineno">  197</span>      yield_count = 0;</div>
 <div class="line"><a id="l00198" name="l00198"></a><span class="lineno">  198</span>      <span class="comment">/* For very short timeouts, use taskYIELD, for longer ones allow a brief delay */</span></div>
 <div class="line"><a id="l00199" name="l00199"></a><span class="lineno">  199</span>      <span class="keywordflow">if</span> (timeout_us &lt; 200) {</div>
 <div class="line"><a id="l00200" name="l00200"></a><span class="lineno">  200</span>        taskYIELD();</div>
 <div class="line"><a id="l00201" name="l00201"></a><span class="lineno">  201</span>      } <span class="keywordflow">else</span> {</div>
-<div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span>        vTaskDelay(0);  <span class="comment">/* Minimal delay but ensures other tasks run */</span></div>
+<div class="line"><a id="l00202" name="l00202"></a><span class="lineno">  202</span>        vTaskDelay(0); <span class="comment">/* Minimal delay but ensures other tasks run */</span></div>
 <div class="line"><a id="l00203" name="l00203"></a><span class="lineno">  203</span>      }</div>
 <div class="line"><a id="l00204" name="l00204"></a><span class="lineno">  204</span>    }</div>
 <div class="line"><a id="l00205" name="l00205"></a><span class="lineno">  205</span>  }</div>
@@ -287,8 +287,8 @@ $(function(){initNavTree('dc/d1f/star__bus__dht22__proprietary_8c_source.html','
 <div class="foldopen" id="foldopen00219" data-start="{" data-end="}">
 <div class="line"><a id="l00219" name="l00219"></a><span class="lineno"><a class="line" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ac0af9cb9d464422a719e1e0bb987d80f">  219</a></span><span class="keyword">static</span> int32_t <a class="code hl_function" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ac0af9cb9d464422a719e1e0bb987d80f">measure_pulse</a>(gpio_num_t pin, <span class="keywordtype">int</span> current_level, uint32_t timeout_us)</div>
 <div class="line"><a id="l00220" name="l00220"></a><span class="lineno">  220</span>{</div>
-<div class="line"><a id="l00221" name="l00221"></a><span class="lineno">  221</span>  int64_t start = esp_timer_get_time();</div>
-<div class="line"><a id="l00222" name="l00222"></a><span class="lineno">  222</span>  int64_t elapsed;</div>
+<div class="line"><a id="l00221" name="l00221"></a><span class="lineno">  221</span>  int64_t  start = esp_timer_get_time();</div>
+<div class="line"><a id="l00222" name="l00222"></a><span class="lineno">  222</span>  int64_t  elapsed;</div>
 <div class="line"><a id="l00223" name="l00223"></a><span class="lineno">  223</span>  uint32_t yield_count = 0;</div>
 <div class="line"><a id="l00224" name="l00224"></a><span class="lineno">  224</span> </div>
 <div class="line"><a id="l00225" name="l00225"></a><span class="lineno">  225</span>  <span class="keywordflow">while</span> (<a class="code hl_function" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a71842e7ab86cba68432d023f022556d5">gpio_read</a>(pin) == current_level) {</div>
@@ -296,16 +296,16 @@ $(function(){initNavTree('dc/d1f/star__bus__dht22__proprietary_8c_source.html','
 <div class="line"><a id="l00227" name="l00227"></a><span class="lineno">  227</span>    <span class="keywordflow">if</span> (elapsed &gt; timeout_us) {</div>
 <div class="line"><a id="l00228" name="l00228"></a><span class="lineno">  228</span>      <span class="keywordflow">return</span> -1;</div>
 <div class="line"><a id="l00229" name="l00229"></a><span class="lineno">  229</span>    }</div>
-<div class="line"><a id="l00230" name="l00230"></a><span class="lineno">  230</span>    </div>
+<div class="line"><a id="l00230" name="l00230"></a><span class="lineno">  230</span> </div>
 <div class="line"><a id="l00231" name="l00231"></a><span class="lineno">  231</span>    <span class="comment">/* Aggressive yielding to prevent watchdog timeout */</span></div>
 <div class="line"><a id="l00232" name="l00232"></a><span class="lineno">  232</span>    yield_count++;</div>
-<div class="line"><a id="l00233" name="l00233"></a><span class="lineno">  233</span>    <span class="keywordflow">if</span> (yield_count &gt;= 50) {  <span class="comment">/* Yield every 50 iterations */</span></div>
+<div class="line"><a id="l00233" name="l00233"></a><span class="lineno">  233</span>    <span class="keywordflow">if</span> (yield_count &gt;= 50) { <span class="comment">/* Yield every 50 iterations */</span></div>
 <div class="line"><a id="l00234" name="l00234"></a><span class="lineno">  234</span>      yield_count = 0;</div>
 <div class="line"><a id="l00235" name="l00235"></a><span class="lineno">  235</span>      <span class="comment">/* For very short timeouts, use taskYIELD, for longer ones allow a brief delay */</span></div>
 <div class="line"><a id="l00236" name="l00236"></a><span class="lineno">  236</span>      <span class="keywordflow">if</span> (timeout_us &lt; 200) {</div>
 <div class="line"><a id="l00237" name="l00237"></a><span class="lineno">  237</span>        taskYIELD();</div>
 <div class="line"><a id="l00238" name="l00238"></a><span class="lineno">  238</span>      } <span class="keywordflow">else</span> {</div>
-<div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span>        vTaskDelay(0);  <span class="comment">/* Minimal delay but ensures other tasks run */</span></div>
+<div class="line"><a id="l00239" name="l00239"></a><span class="lineno">  239</span>        vTaskDelay(0); <span class="comment">/* Minimal delay but ensures other tasks run */</span></div>
 <div class="line"><a id="l00240" name="l00240"></a><span class="lineno">  240</span>      }</div>
 <div class="line"><a id="l00241" name="l00241"></a><span class="lineno">  241</span>    }</div>
 <div class="line"><a id="l00242" name="l00242"></a><span class="lineno">  242</span>  }</div>
@@ -324,7 +324,7 @@ $(function(){initNavTree('dc/d1f/star__bus__dht22__proprietary_8c_source.html','
 <div class="line"><a id="l00261" name="l00261"></a><span class="lineno">  261</span>  <span class="comment">/* Step 1: Send start signal (only this part needs critical section) */</span></div>
 <div class="line"><a id="l00262" name="l00262"></a><span class="lineno">  262</span>  portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;</div>
 <div class="line"><a id="l00263" name="l00263"></a><span class="lineno">  263</span>  portENTER_CRITICAL(&amp;mux);</div>
-<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span>  </div>
+<div class="line"><a id="l00264" name="l00264"></a><span class="lineno">  264</span> </div>
 <div class="line"><a id="l00265" name="l00265"></a><span class="lineno">  265</span>  <span class="comment">/* Pull low for at least 1ms (we use 18ms by default) */</span></div>
 <div class="line"><a id="l00266" name="l00266"></a><span class="lineno">  266</span>  <a class="code hl_function" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a2c233a46f4a9bf09057e07a1243c2dea">gpio_set_output</a>(pin);</div>
 <div class="line"><a id="l00267" name="l00267"></a><span class="lineno">  267</span>  <a class="code hl_function" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a40df8a338e77a732f53aca4fa72d5192">gpio_low</a>(pin);</div>
@@ -336,7 +336,7 @@ $(function(){initNavTree('dc/d1f/star__bus__dht22__proprietary_8c_source.html','
 <div class="line"><a id="l00273" name="l00273"></a><span class="lineno">  273</span> </div>
 <div class="line"><a id="l00274" name="l00274"></a><span class="lineno">  274</span>  <span class="comment">/* Step 2: Switch to input and wait for sensor response */</span></div>
 <div class="line"><a id="l00275" name="l00275"></a><span class="lineno">  275</span>  <a class="code hl_function" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ac56257b5f48f81efe2392e6e28b8393a">gpio_set_input</a>(pin);</div>
-<div class="line"><a id="l00276" name="l00276"></a><span class="lineno">  276</span>  </div>
+<div class="line"><a id="l00276" name="l00276"></a><span class="lineno">  276</span> </div>
 <div class="line"><a id="l00277" name="l00277"></a><span class="lineno">  277</span>  <span class="comment">/* Exit critical section - sensor response can be read without it */</span></div>
 <div class="line"><a id="l00278" name="l00278"></a><span class="lineno">  278</span>  portEXIT_CRITICAL(&amp;mux);</div>
 <div class="line"><a id="l00279" name="l00279"></a><span class="lineno">  279</span> </div>
@@ -360,14 +360,14 @@ $(function(){initNavTree('dc/d1f/star__bus__dht22__proprietary_8c_source.html','
 <div class="line"><a id="l00297" name="l00297"></a><span class="lineno">  297</span> </div>
 <div class="line"><a id="l00298" name="l00298"></a><span class="lineno">  298</span>  <span class="comment">/* Step 3: Read 40 bits of data */</span></div>
 <div class="line"><a id="l00299" name="l00299"></a><span class="lineno">  299</span>  memset(data, 0, <a class="code hl_define" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a34085324815a5ee6d0fe3f306d8896a9">DHT22_DATA_BYTES</a>);</div>
-<div class="line"><a id="l00300" name="l00300"></a><span class="lineno">  300</span>  </div>
+<div class="line"><a id="l00300" name="l00300"></a><span class="lineno">  300</span> </div>
 <div class="line"><a id="l00301" name="l00301"></a><span class="lineno">  301</span>  <span class="comment">/* Use short critical sections only for the most timing-sensitive parts */</span></div>
 <div class="line"><a id="l00302" name="l00302"></a><span class="lineno">  302</span>  <span class="keywordflow">for</span> (<span class="keywordtype">int</span> i = 0; i &lt; <a class="code hl_define" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a8f9258a5fa509e7686d912b6315a4305">DHT22_DATA_BITS</a>; i++) {</div>
 <div class="line"><a id="l00303" name="l00303"></a><span class="lineno">  303</span>    <span class="comment">/* Yield periodically to prevent watchdog */</span></div>
 <div class="line"><a id="l00304" name="l00304"></a><span class="lineno">  304</span>    <span class="keywordflow">if</span> (i % 8 == 0 &amp;&amp; i &gt; 0) {</div>
 <div class="line"><a id="l00305" name="l00305"></a><span class="lineno">  305</span>      taskYIELD();</div>
 <div class="line"><a id="l00306" name="l00306"></a><span class="lineno">  306</span>    }</div>
-<div class="line"><a id="l00307" name="l00307"></a><span class="lineno">  307</span>    </div>
+<div class="line"><a id="l00307" name="l00307"></a><span class="lineno">  307</span> </div>
 <div class="line"><a id="l00308" name="l00308"></a><span class="lineno">  308</span>    <span class="comment">/* Wait for high (end of bit start pulse ~50us) */</span></div>
 <div class="line"><a id="l00309" name="l00309"></a><span class="lineno">  309</span>    <span class="keywordflow">if</span> (<a class="code hl_function" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a6068135097f7705a28bda46fb88640d2">wait_for_level</a>(pin, 1, <a class="code hl_define" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ad85c52152b8ece6e8fdf5f84b59c9281">TIMING_BIT_START_US</a> + 30) &lt; 0) {</div>
 <div class="line"><a id="l00310" name="l00310"></a><span class="lineno">  310</span>      ESP_LOGD(<a class="code hl_variable" href="../../d0/d29/main_8c.html#a999e3dd103132afd3cd1856f477f2dbd">s_TAG</a>, <span class="stringliteral">&quot;Timeout waiting for bit %d high&quot;</span>, i);</div>

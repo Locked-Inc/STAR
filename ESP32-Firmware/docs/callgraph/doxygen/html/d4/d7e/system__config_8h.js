@@ -32,9 +32,9 @@ var system__config_8h =
       [ "k_star_led_channel_max", "d4/d7e/system__config_8h.html#ac331bcadfa89e4c377ee4e7fcce9ec92af0b4329b0d285a63a74d792994e7013c", null ]
     ] ],
     [ "star_task_priority_t", "d4/d7e/system__config_8h.html#a08304fc7e8cdb4b4e5498e41bcab499c", [
-      [ "k_star_task_priority_leds", "d4/d7e/system__config_8h.html#a08304fc7e8cdb4b4e5498e41bcab499cac6500e65ce022c4ea3f2595a3a8a18c1", null ],
-      [ "k_star_task_priority_dht22", "d4/d7e/system__config_8h.html#a08304fc7e8cdb4b4e5498e41bcab499ca6bf83d9b967430662859fb8328fcfa9d", null ],
       [ "k_star_task_priority_sensors", "d4/d7e/system__config_8h.html#a08304fc7e8cdb4b4e5498e41bcab499ca3a45268b4ec9bd9379813ffcfaf241c3", null ],
+      [ "k_star_task_priority_dht22", "d4/d7e/system__config_8h.html#a08304fc7e8cdb4b4e5498e41bcab499ca6bf83d9b967430662859fb8328fcfa9d", null ],
+      [ "k_star_task_priority_leds", "d4/d7e/system__config_8h.html#a08304fc7e8cdb4b4e5498e41bcab499cac6500e65ce022c4ea3f2595a3a8a18c1", null ],
       [ "k_star_task_priority_watchdog", "d4/d7e/system__config_8h.html#a08304fc7e8cdb4b4e5498e41bcab499caa003294a35b5228dc533922f5337a659", null ]
     ] ],
     [ "star_get_health_status", "d4/d7e/system__config_8h.html#a155f7280814c9b55f4dfbf4d620a0a9a", null ],
