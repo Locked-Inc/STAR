@@ -106,7 +106,7 @@ $(function(){initNavTree('de/dd4/sensor__task_8c_source.html','../../',''); });
 <div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span> </div>
 <div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="comment">/* Timing Constants */</span></div>
 <div class="line"><a id="l00014" name="l00014"></a><span class="lineno"><a class="line" href="../../de/dd4/sensor__task_8c.html#ab48a1816f63a33ac8884b3f182c94625">   14</a></span><span class="keyword">static</span> <span class="keyword">const</span> uint32_t <a class="code hl_variable" href="../../de/dd4/sensor__task_8c.html#ab48a1816f63a33ac8884b3f182c94625">sensor_task_inter_sensor_delay_ms</a> =</div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>  20; </div>
+<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span>  5; </div>
 <div class="line"><a id="l00016" name="l00016"></a><span class="lineno"><a class="line" href="../../de/dd4/sensor__task_8c.html#a6555a0cdb575a5d82e6503a59ce14463">   16</a></span><span class="keyword">static</span> <span class="keyword">const</span> uint32_t <a class="code hl_variable" href="../../de/dd4/sensor__task_8c.html#a6555a0cdb575a5d82e6503a59ce14463">sensor_task_error_recovery_delay_ms</a> =</div>
 <div class="line"><a id="l00017" name="l00017"></a><span class="lineno">   17</span>  100; </div>
 <div class="line"><a id="l00018" name="l00018"></a><span class="lineno">   18</span> </div>
@@ -201,7 +201,7 @@ $(function(){initNavTree('de/dd4/sensor__task_8c_source.html','../../',''); });
 <div class="line"><a id="l00102" name="l00102"></a><span class="lineno">  102</span> </div>
 <div class="line"><a id="l00103" name="l00103"></a><span class="lineno">  103</span>  <span class="keywordflow">if</span> (read_result == ESP_OK) {</div>
 <div class="line"><a id="l00104" name="l00104"></a><span class="lineno">  104</span>    <span class="keyword">const</span> <span class="keywordtype">char</span>* <span class="keyword">const</span> sensor_name = (sensor_index == <a class="code hl_enumvalue" href="../../d4/d7e/system__config_8h.html#af60ef736234a6d9a91cdf60a0e0d4253ad54cd5bc9f2b8b7686a0f1b10b916890">k_star_system_hcsr04_left</a>) ? <span class="stringliteral">&quot;Left&quot;</span> : <span class="stringliteral">&quot;Right&quot;</span>;</div>
-<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>    ESP_LOGI(<a class="code hl_variable" href="../../d0/d29/main_8c.html#a999e3dd103132afd3cd1856f477f2dbd">s_TAG</a>, <span class="stringliteral">&quot;%s sensor: %.1f cm&quot;</span>, sensor_name, distance_cm);</div>
+<div class="line"><a id="l00105" name="l00105"></a><span class="lineno">  105</span>    ESP_LOGD(<a class="code hl_variable" href="../../d0/d29/main_8c.html#a999e3dd103132afd3cd1856f477f2dbd">s_TAG</a>, <span class="stringliteral">&quot;%s sensor: %.1f cm&quot;</span>, sensor_name, distance_cm);</div>
 <div class="line"><a id="l00106" name="l00106"></a><span class="lineno">  106</span>  } <span class="keywordflow">else</span> {</div>
 <div class="line"><a id="l00107" name="l00107"></a><span class="lineno">  107</span>    ESP_LOGE(<a class="code hl_variable" href="../../d0/d29/main_8c.html#a999e3dd103132afd3cd1856f477f2dbd">s_TAG</a>, <span class="stringliteral">&quot;Failed to read sensor %d: %s&quot;</span>, sensor_index, esp_err_to_name(read_result));</div>
 <div class="line"><a id="l00108" name="l00108"></a><span class="lineno">  108</span>  }</div>

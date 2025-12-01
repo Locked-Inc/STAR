@@ -12,7 +12,7 @@ static const char* s_TAG = "SENSORS_TASK"; /* Use STAR_SYSTEM_CONFIG.log_tags.se
 
 /* Timing Constants */
 static const uint32_t sensor_task_inter_sensor_delay_ms =
-  20; /**< Delay between sensor readings in milliseconds */
+  5; /**< Delay between sensor readings in milliseconds */
 static const uint32_t sensor_task_error_recovery_delay_ms =
   100; /**< Delay during error recovery in milliseconds */
 
@@ -102,7 +102,7 @@ static esp_err_t internal_read_single_sensor(sensor_task_context_t* const ctx,
 
   if (read_result == ESP_OK) {
     const char* const sensor_name = (sensor_index == k_star_system_hcsr04_left) ? "Left" : "Right";
-    ESP_LOGI(s_TAG, "%s sensor: %.1f cm", sensor_name, distance_cm);
+    ESP_LOGD(s_TAG, "%s sensor: %.1f cm", sensor_name, distance_cm);
   } else {
     ESP_LOGE(s_TAG, "Failed to read sensor %d: %s", sensor_index, esp_err_to_name(read_result));
   }
