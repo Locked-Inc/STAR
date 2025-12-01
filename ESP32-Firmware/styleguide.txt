@@ -2054,21 +2054,275 @@ Example:
 
 # Macros
 
-In this project, **macros** should be used sparingly and only when absolutely necessary. While macros can provide some flexibility, they can also make code harder to read, debug, and maintain due to their lack of type safety and visibility. Prefer `const` variables, `inline` functions, or enums wherever possible to avoid the downsides of macros.
+In this project, **macros** should be used sparingly and only when absolutely necessary. **Strongly prefer ALL type-safe alternatives over macros** to ensure type safety, debugging support, and maintainability. Macros are essentially text replacements that bypass the compiler's type checking and can introduce subtle bugs that are difficult to debug.
+
+**Preferred alternatives to macros (in order of preference):**
+1. **const variables** - for single constants
+2. **enums** - for related constants and named values  
+3. **structs** - for grouped configuration and data
+4. **unions** - for variant data types
+5. **inline functions** - for function-like behavior
+6. **typedef** - for type aliases
+
+**Key principle:** Macros should be the **LAST resort**, only used when none of these type-safe alternatives work.
+
+## Why Type-Safe Alternatives Are Preferred Over Macros
+
+**Type Safety**: All type-safe alternatives (`const` variables, enums, structs, unions, inline functions, typedef) have explicit types, allowing the compiler to catch type mismatches and perform proper type checking. Macros are simple text substitutions without any type information.
+
+**Debugging Support**: Type-safe alternatives appear in debugging symbols and can be inspected in debuggers. Macros are expanded during preprocessing and are not visible during debugging.
+
+**Scope Awareness**: Type-safe alternatives follow C scoping rules (file scope, function scope, block scope). Macros are globally visible once defined, potentially causing naming conflicts.
+
+**Compile-time Checking**: The compiler can verify type-safe alternative usage at compile time, while macro errors often only appear at the point of expansion.
+
+**IntelliSense/Autocompletion**: IDEs can provide better autocompletion and error checking for type-safe alternatives compared to macros.
 
 ## Guidelines
 
-- **Avoid Unnecessary Macros**: Always consider using `const`, `inline` functions, or enums before defining a macro. These alternatives offer type safety, debugging support, and better readability.
+Before writing any macro, **work through this hierarchy in order**:
 
-## Example of Using `const` Instead of a Macro
+1. **First Choice - Const Variables**: For single constants, always use `const` variables instead of macros. This provides type safety and debugging support.
+
+2. **Second Choice - Enums**: When you have multiple related constants or named values, group them in an enum rather than using multiple #define statements.
+
+3. **Third Choice - Structs**: For grouped configuration values or complex data, use structs (often with `const`) instead of multiple individual macros.
+
+4. **Fourth Choice - Unions**: For variant data types where you need different interpretations of the same memory, use unions instead of macros.
+
+5. **Fifth Choice - Inline Functions**: For function-like behavior with type checking, use inline functions instead of function-like macros.
+
+6. **Sixth Choice - Typedef**: For type aliases and improving code readability, use typedef instead of macros.
+
+7. **Last Resort - Macros**: Only use macros when none of the above type-safe alternatives can accomplish the task.
+
+## Type-Safe Alternatives to Macros - Complete Examples
+
+### Single Constants - Use `const` Variables
+
+**BAD (Macro):**
+.. code-block:: c
+
+    #define MAX_BUFFER_SIZE 1024
+    #define TIMEOUT_MS 5000
+    #define PI 3.14159f
+
+**GOOD (Const Variables):**
+.. code-block:: c
+
+    static const size_t MAX_BUFFER_SIZE = 1024;
+    static const uint32_t TIMEOUT_MS = 5000;
+    static const float PI = 3.14159f;
+
+### Related Constants - Use Enums
+
+**BAD (Multiple Macros):**
+.. code-block:: c
+
+    #define STATE_IDLE 0
+    #define STATE_RUNNING 1
+    #define STATE_ERROR 2
+    #define STATE_SHUTDOWN 3
+
+**GOOD (Enum):**
+.. code-block:: c
+
+    typedef enum {
+        STATE_IDLE = 0,
+        STATE_RUNNING,
+        STATE_ERROR,
+        STATE_SHUTDOWN
+    } system_state_t;
+
+### Configuration Groups - Use Const Structs
+
+**BAD (Multiple Macros):**
+.. code-block:: c
+
+    #define I2C_SDA_PIN GPIO_NUM_21
+    #define I2C_SCL_PIN GPIO_NUM_22
+    #define I2C_FREQUENCY 400000
+    #define I2C_ADDRESS 0x68
+
+**GOOD (Const Struct):**
+.. code-block:: c
+
+    typedef struct {
+        gpio_num_t sda_pin;
+        gpio_num_t scl_pin;
+        uint32_t frequency;
+        uint8_t address;
+    } i2c_config_t;
+
+    static const i2c_config_t DEFAULT_I2C_CONFIG = {
+        .sda_pin = GPIO_NUM_21,
+        .scl_pin = GPIO_NUM_22,
+        .frequency = 400000,
+        .address = 0x68
+    };
+
+### Variant Data Types - Use Unions
+
+**BAD (Multiple Macros):**
+.. code-block:: c
+
+    #define SENSOR_TYPE_TEMPERATURE 0x10
+    #define SENSOR_TYPE_HUMIDITY    0x20 
+    #define SENSOR_TYPE_PRESSURE    0x30
+    #define TEMP_SENSOR_DATA        temperature_value
+    #define HUMID_SENSOR_DATA       humidity_value
+    #define PRESS_SENSOR_DATA       pressure_value
+
+**GOOD (Union with Enum):**
+.. code-block:: c
+
+    typedef enum {
+        SENSOR_TYPE_TEMPERATURE = 0x10,
+        SENSOR_TYPE_HUMIDITY = 0x20,
+        SENSOR_TYPE_PRESSURE = 0x30
+    } sensor_type_t;
+
+    typedef union {
+        float temperature_value;
+        float humidity_value;
+        float pressure_value;
+    } sensor_data_t;
+
+    typedef struct {
+        sensor_type_t type;
+        sensor_data_t data;
+    } sensor_reading_t;
+
+### Function-like Behavior - Use Inline Functions
+
+**BAD (Function-like Macro):**
+.. code-block:: c
+
+    #define MAX(a, b) ((a) > (b) ? (a) : (b))
+    #define CLAMP(value, min, max) ((value) < (min) ? (min) : ((value) > (max) ? (max) : (value)))
+
+**GOOD (Inline Functions):**
+.. code-block:: c
+
+    static inline int max_int(int a, int b) {
+        return (a > b) ? a : b;
+    }
+
+    static inline float clamp_float(float value, float min, float max) {
+        if (value < min) return min;
+        if (value > max) return max;
+        return value;
+    }
+
+### Type Aliases - Use Typedef
+
+**BAD (Macro Type Aliases):**
+.. code-block:: c
+
+    #define pin_t gpio_num_t
+    #define handle_t void*
+    #define callback_func_t int (*)(void*, int)
+    #define status_code_t unsigned int
+
+**GOOD (Typedef):**
+.. code-block:: c
+
+    typedef gpio_num_t pin_t;
+    typedef void* handle_t;
+    typedef int (*callback_func_t)(void* context, int value);
+    typedef unsigned int status_code_t;
+
+## Benefits of Type-Safe Alternatives Over Macros
+
+### Type Safety Example (Multiple Alternatives)
 
 .. code-block:: c
 
-    /* Macro for a constant */
-    #define MAX_BUFFER_SIZE 1024
+    // BAD: Macros - no type checking
+    #define MAX_RETRY_COUNT 5
+    #define SENSOR_ADDRESS 0x68
+    #define DEVICE_STATE_ACTIVE 1
+    #define BUFFER_SIZE 1024
 
-    /* Preferred: Using const instead of macro */
-    const int max_buffer_size = 1024;
+    void function() {
+        // Compiler cannot catch these type mismatches
+        if (sensor_read(MAX_RETRY_COUNT) == SENSOR_ADDRESS) { /* Wrong! */ }
+        if (device_state == BUFFER_SIZE) { /* Wrong! */ }
+    }
+
+    // GOOD: Type-safe alternatives - compiler catches type errors
+    static const uint8_t MAX_RETRY_COUNT = 5;        // const variable
+    static const uint8_t SENSOR_ADDRESS = 0x68;      // const variable
+    
+    typedef enum {                                    // enum
+        DEVICE_STATE_IDLE = 0,
+        DEVICE_STATE_ACTIVE = 1,
+        DEVICE_STATE_ERROR = 2
+    } device_state_t;
+    
+    typedef size_t buffer_size_t;                     // typedef
+    static const buffer_size_t BUFFER_SIZE = 1024;   // const with typedef
+
+    void function() {
+        // Compiler will warn about type mismatches
+        if (sensor_read(MAX_RETRY_COUNT) == SENSOR_ADDRESS) { /* Compiler error */ }
+        if (device_state == BUFFER_SIZE) { /* Compiler error */ }
+    }
+
+### Debugging Example (Multiple Alternatives)
+
+.. code-block:: c
+
+    // BAD: Macros - invisible in debugger
+    #define BUFFER_SIZE 1024
+    #define CONNECTION_STATE_CONNECTED 2
+    #define max(a, b) ((a) > (b) ? (a) : (b))
+    
+    char buffer[BUFFER_SIZE];
+    int state = CONNECTION_STATE_CONNECTED;
+    int result = max(10, 20);
+    // In debugger: you see raw values with no trace of original symbols
+
+    // GOOD: Type-safe alternatives - all visible in debugger
+    static const size_t BUFFER_SIZE = 1024;           // const variable
+    
+    typedef enum {                                     // enum
+        CONNECTION_STATE_DISCONNECTED = 0,
+        CONNECTION_STATE_CONNECTING = 1,
+        CONNECTION_STATE_CONNECTED = 2
+    } connection_state_t;
+    
+    static inline int max_int(int a, int b) {          // inline function
+        return (a > b) ? a : b;
+    }
+    
+    char buffer[BUFFER_SIZE];
+    connection_state_t state = CONNECTION_STATE_CONNECTED;
+    int result = max_int(10, 20);
+    // In debugger: you can inspect all symbols, set breakpoints in inline functions, 
+    // and see meaningful enum names instead of raw values
+
+### Scope Safety Example
+
+.. code-block:: c
+
+    // BAD: Macro - global scope pollution
+    #define SIZE 100
+    void func1() { int array[SIZE]; }  // Works
+    void func2() { int different_array[SIZE]; }  // Unintended usage!
+
+    // GOOD: Const variable - proper scoping
+    static const size_t FUNC1_ARRAY_SIZE = 100;
+    void func1() { 
+        int array[FUNC1_ARRAY_SIZE]; 
+    }
+    void func2() { 
+        // FUNC1_ARRAY_SIZE not visible here - must define own constant
+        static const size_t FUNC2_ARRAY_SIZE = 200;
+        int different_array[FUNC2_ARRAY_SIZE]; 
+    }
+
+## When You Must Use Macros - Follow These Rules
 
 - **Use All Uppercase for Macro Names**: Macro names should be written in **all uppercase** to distinguish them from variables and functions. Use underscores (`_`) to separate words.
 
@@ -2201,11 +2455,11 @@ Incorrect Example:
     #define SWAP(a, b) int temp = a; a = b; b = temp;
     #define SQUARE(x) x * x
 
-## When to Use Macros
+## When Macros Are Actually Necessary
 
-Use macros when other options such as `const` or `inline` functions are not viable, such as:
+Macros should **only** be used when **ALL** type-safe alternatives (`const` variables, enums, structs, unions, inline functions, typedef) cannot accomplish the task. You must exhaust the complete hierarchy before resorting to macros. The legitimate use cases are:
 
-- **Conditional Compilation**: Macros can be useful for including or excluding code based on certain conditions, especially in cross-platform projects or for debugging.
+- **Conditional Compilation**: Code that needs to be included or excluded at compile time based on preprocessor conditions.
 
   Example:
 
@@ -2217,7 +2471,7 @@ Use macros when other options such as `const` or `inline` functions are not viab
   #define LOG(msg) ((void)0)
   #endif
 
-- **Header Guards**: Macros are essential for preventing multiple inclusions of header files.
+- **Header Guards**: Preventing multiple inclusions of header files (though `#pragma once` is often preferred).
 
   Example:
 
@@ -2226,15 +2480,53 @@ Use macros when other options such as `const` or `inline` functions are not viab
   #ifndef MY_HEADER_H
   #define MY_HEADER_H
 
-  /_ Header content _/
+  /* Header content */
 
-  #endif /_ MY_HEADER_H _/
+  #endif /* MY_HEADER_H */
+
+- **Function-like Macros with Special Requirements**: Only when you need features that functions cannot provide (like taking type names as parameters, or requiring compile-time evaluation that `inline` functions cannot guarantee).
+
+  Example:
+
+  .. code-block:: c
+
+  #define CONTAINER_OF(ptr, type, member) \
+      ((type *)((char *)(ptr) - offsetof(type, member)))
+
+- **Stringify Operations**: Converting tokens to strings.
+
+  Example:
+
+  .. code-block:: c
+
+  #define STR(x) #x
+  #define XSTR(x) STR(x)
+
+**Important**: If you find yourself wanting to use a macro, **STOP** and work through the complete hierarchy:
+1. Can I use a `const` variable? (for single constants)
+2. Can I use an `enum`? (for related constants) 
+3. Can I use a `struct`? (for grouped data)
+4. Can I use a `union`? (for variant types)
+5. Can I use an `inline` function? (for computations)
+6. Can I use a `typedef`? (for type aliases)
+
+Only if **ALL** of these fail should you consider a macro.
 
 ## General Guidelines
 
-- Prefer `const`, `inline` functions, and enums over macros when possible.
+- **ALWAYS prefer type-safe alternatives over macros** - This is the fundamental rule for type safety and debuggability.
 
-- Use all uppercase for macro names with underscores to separate words.
+- **Work through the complete hierarchy** before considering macros:
+  1. `const` variables for single constants
+  2. `enums` for related constants  
+  3. `structs` for grouped data
+  4. `unions` for variant types
+  5. `inline` functions for computations
+  6. `typedef` for type aliases
+
+- **Only use macros when absolutely necessary** - for conditional compilation, header guards, or special preprocessor operations that **cannot** be accomplished with any type-safe alternative.
+
+- Use all uppercase for macro names with underscores to separate words (when macros are unavoidable).
 
 - Follow the `STAR_MODULE_NAME` naming convention for all project macros.
 
@@ -2242,7 +2534,7 @@ Use macros when other options such as `const` or `inline` functions are not viab
 
 - Keep macros' scope limited and document their purpose clearly.
 
-- Use macros for conditional compilation and header guards where necessary.
+- **Before writing any macro, ask yourself: "Can I use a const variable, enum, struct, union, inline function, or typedef instead?"** - The answer should be "NO" to all of them.
 
 ## Style Note
 

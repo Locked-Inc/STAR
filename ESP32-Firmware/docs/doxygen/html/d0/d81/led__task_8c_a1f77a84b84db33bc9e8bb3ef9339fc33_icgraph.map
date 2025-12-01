@@ -2,17 +2,17 @@
 <area shape="rect" id="Node000001" title="Check if LED task is running." alt="" coords="1140,46,1277,72"/>
 <area shape="rect" id="Node000002" href="$dc/d96/watchdog__task_8c.html#aa70f8b2d9159bc50f150e81ed3da1edd" title=" " alt="" coords="948,8,1092,49"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1122,45,1093,43,1093,37,1128,46"/>
-<area shape="rect" id="Node000009" href="$dc/d96/watchdog__task_8c.html#a57d1e1b0912c3b15d4a2102e2d036d09" title=" " alt="" coords="745,71,898,111"/>
+<area shape="rect" id="Node000009" href="$dc/d96/watchdog__task_8c.html#ab8e8a05882a22d389871b901749f34a0" title=" " alt="" coords="745,71,898,111"/>
 <area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="1127,66,898,87,898,82,1122,66"/>
 <area shape="rect" id="Node000003" href="$dc/d96/watchdog__task_8c.html#acc127e75275d2f65ba4158f4c0ea8821" title=" " alt="" coords="743,5,900,46"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="930,27,901,29,901,24,935,27"/>
-<area shape="rect" id="Node000004" href="$dc/d96/watchdog__task_8c.html#a8486e8e6f170a4d179157051b1510c61" title=" " alt="" coords="505,16,695,41"/>
+<area shape="rect" id="Node000004" href="$dc/d96/watchdog__task_8c.html#a914a83d91bb924807d2c34ddb767e056" title=" " alt="" coords="505,16,695,41"/>
 <area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="724,27,695,30,695,25,730,27"/>
 <area shape="rect" id="Node000008" href="$dc/d96/watchdog__task_8c.html#a3952d706fb7b287213a32d8ab6d39444" title="Force immediate system health check." alt="" coords="527,67,673,107"/>
 <area shape="poly" id="edge7_Node000003_Node000008" title=" " alt="" coords="733,50,674,70,673,64,728,51"/>
 <area shape="rect" id="Node000005" href="$dc/d96/watchdog__task_8c.html#a1047c0564b9275f58ba51b089d9c5377" title="Start the system watchdog task." alt="" coords="315,16,457,41"/>
 <area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="487,29,458,31,457,26,492,28"/>
-<area shape="rect" id="Node000006" href="$d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,16,267,41"/>
+<area shape="rect" id="Node000006" href="$d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,16,267,41"/>
 <area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="297,29,268,31,267,26,302,28"/>
 <area shape="rect" id="Node000007" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,16,83,41"/>
 <area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="113,30,84,31,82,26,117,27"/>

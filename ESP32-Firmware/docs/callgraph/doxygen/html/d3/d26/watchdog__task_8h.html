@@ -133,10 +133,10 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-enum-members" class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
-<tr class="memitem:a71991bc463f59e45bff7d0974feda627" id="r_a71991bc463f59e45bff7d0974feda627"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a71991bc463f59e45bff7d0974feda627">watchdog_health_level_t</a> { <a class="el" href="#a71991bc463f59e45bff7d0974feda627ab95a7c562a3a1f92073b1fd346dc509a">WATCHDOG_HEALTH_GOOD</a>
-, <a class="el" href="#a71991bc463f59e45bff7d0974feda627a32645552119e43199f713215044002ba">WATCHDOG_HEALTH_DEGRADED</a>
-, <a class="el" href="#a71991bc463f59e45bff7d0974feda627ad5e77eee4bb8f59388b61ffd5729d657">WATCHDOG_HEALTH_CRITICAL</a>
-, <a class="el" href="#a71991bc463f59e45bff7d0974feda627ae28933d1d7e26ddc255b0fd0d100e6ec">WATCHDOG_HEALTH_FAULT</a>
+<tr class="memitem:a71991bc463f59e45bff7d0974feda627" id="r_a71991bc463f59e45bff7d0974feda627"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a71991bc463f59e45bff7d0974feda627">watchdog_health_level_t</a> { <a class="el" href="#a71991bc463f59e45bff7d0974feda627a49dd88ae0bfe4f17f81d3332db9f779b">k_watchdog_health_good</a>
+, <a class="el" href="#a71991bc463f59e45bff7d0974feda627a0f3ddb004d1e469c819685008d90ff6c">k_watchdog_health_degraded</a>
+, <a class="el" href="#a71991bc463f59e45bff7d0974feda627a45586257ad252f22f35ecdb5a9000178">k_watchdog_health_critical</a>
+, <a class="el" href="#a71991bc463f59e45bff7d0974feda627acf1f5a1d3ea65fe2c0f018f39b3238c2">k_watchdog_health_fault</a>
  }</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
@@ -151,8 +151,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:a278eb2bcac0bcd81c8bd97ec0b0cd184"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get watchdog task statistics.  <br /></td></tr>
 <tr class="memitem:a3952d706fb7b287213a32d8ab6d39444" id="r_a3952d706fb7b287213a32d8ab6d39444"><td class="memItemLeft" align="right" valign="top"><a class="el" href="#a71991bc463f59e45bff7d0974feda627">watchdog_health_level_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3952d706fb7b287213a32d8ab6d39444">watchdog_task_force_health_check</a> (void)</td></tr>
 <tr class="memdesc:a3952d706fb7b287213a32d8ab6d39444"><td class="mdescLeft">&#160;</td><td class="mdescRight">Force immediate system health check.  <br /></td></tr>
-<tr class="memitem:aceba219ae12aa4dd13276ffe9a8f5e17" id="r_aceba219ae12aa4dd13276ffe9a8f5e17"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aceba219ae12aa4dd13276ffe9a8f5e17">watchdog_task_register_task</a> (TaskHandle_t task_handle, uint32_t max_response_time_ms)</td></tr>
-<tr class="memdesc:aceba219ae12aa4dd13276ffe9a8f5e17"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register a task for health monitoring.  <br /></td></tr>
+<tr class="memitem:ab5bc8e9d7cff31aeb99f2440a78fe3a5" id="r_ab5bc8e9d7cff31aeb99f2440a78fe3a5"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab5bc8e9d7cff31aeb99f2440a78fe3a5">watchdog_task_register_task</a> (const TaskHandle_t task_handle, const uint32_t max_response_time_ms)</td></tr>
+<tr class="memdesc:ab5bc8e9d7cff31aeb99f2440a78fe3a5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register a task for health monitoring.  <br /></td></tr>
 </table>
 <a name="doc-enum-members" id="doc-enum-members"></a><h2 id="header-doc-enum-members" class="groupheader">Enumeration Type Documentation</h2>
 <a id="a71991bc463f59e45bff7d0974feda627" name="a71991bc463f59e45bff7d0974feda627"></a>
@@ -167,10 +167,10 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <table class="fieldtable">
-<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a71991bc463f59e45bff7d0974feda627ab95a7c562a3a1f92073b1fd346dc509a" name="a71991bc463f59e45bff7d0974feda627ab95a7c562a3a1f92073b1fd346dc509a"></a>WATCHDOG_HEALTH_GOOD&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a71991bc463f59e45bff7d0974feda627a32645552119e43199f713215044002ba" name="a71991bc463f59e45bff7d0974feda627a32645552119e43199f713215044002ba"></a>WATCHDOG_HEALTH_DEGRADED&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a71991bc463f59e45bff7d0974feda627ad5e77eee4bb8f59388b61ffd5729d657" name="a71991bc463f59e45bff7d0974feda627ad5e77eee4bb8f59388b61ffd5729d657"></a>WATCHDOG_HEALTH_CRITICAL&#160;</td><td class="fielddoc"></td></tr>
-<tr><td class="fieldname"><a id="a71991bc463f59e45bff7d0974feda627ae28933d1d7e26ddc255b0fd0d100e6ec" name="a71991bc463f59e45bff7d0974feda627ae28933d1d7e26ddc255b0fd0d100e6ec"></a>WATCHDOG_HEALTH_FAULT&#160;</td><td class="fielddoc"></td></tr>
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a71991bc463f59e45bff7d0974feda627a49dd88ae0bfe4f17f81d3332db9f779b" name="a71991bc463f59e45bff7d0974feda627a49dd88ae0bfe4f17f81d3332db9f779b"></a>k_watchdog_health_good&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a71991bc463f59e45bff7d0974feda627a0f3ddb004d1e469c819685008d90ff6c" name="a71991bc463f59e45bff7d0974feda627a0f3ddb004d1e469c819685008d90ff6c"></a>k_watchdog_health_degraded&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a71991bc463f59e45bff7d0974feda627a45586257ad252f22f35ecdb5a9000178" name="a71991bc463f59e45bff7d0974feda627a45586257ad252f22f35ecdb5a9000178"></a>k_watchdog_health_critical&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a71991bc463f59e45bff7d0974feda627acf1f5a1d3ea65fe2c0f018f39b3238c2" name="a71991bc463f59e45bff7d0974feda627acf1f5a1d3ea65fe2c0f018f39b3238c2"></a>k_watchdog_health_fault&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
 <p class="definition">Definition at line <a class="el" href="../../d3/d26/watchdog__task_8h_source.html#l00015">15</a> of file <a class="el" href="../../d3/d26/watchdog__task_8h_source.html">watchdog_task.h</a>.</p>
@@ -197,9 +197,9 @@ Functions</h2></td></tr>
 <p>Triggers an immediate health assessment and recovery action if needed.</p>
 <dl class="section return"><dt>Returns</dt><dd><a class="el" href="#a71991bc463f59e45bff7d0974feda627">watchdog_health_level_t</a> Current system health level </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00297">297</a> of file <a class="el" href="../../dc/d96/watchdog__task_8c_source.html">watchdog_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00347">347</a> of file <a class="el" href="../../dc/d96/watchdog__task_8c_source.html">watchdog_task.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00109">internal_assess_overall_health()</a>, <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00124">internal_take_recovery_action()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00010">s_g_context_initialized</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, <a class="el" href="../../d3/d26/watchdog__task_8h_source.html#l00019">WATCHDOG_HEALTH_FAULT</a>, and <a class="el" href="../../d3/d26/watchdog__task_8h_source.html#l00016">WATCHDOG_HEALTH_GOOD</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00155">internal_assess_overall_health()</a>, <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00173">internal_take_recovery_action()</a>, <a class="el" href="../../d3/d26/watchdog__task_8h_source.html#l00019">k_watchdog_health_fault</a>, <a class="el" href="../../d3/d26/watchdog__task_8h_source.html#l00016">k_watchdog_health_good</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00011">s_g_context_initialized</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -208,7 +208,7 @@ Here is the call graph for this function:</div>
 <area shape="rect" title="Force immediate system health check." alt="" coords="5,204,151,245"/>
 <area shape="rect" href="../../dc/d96/watchdog__task_8c.html#acc127e75275d2f65ba4158f4c0ea8821" title=" " alt="" coords="199,171,356,212"/>
 <area shape="poly" title=" " alt="" coords="150,210,186,206,181,209,152,215"/>
-<area shape="rect" href="../../dc/d96/watchdog__task_8c.html#a57d1e1b0912c3b15d4a2102e2d036d09" title=" " alt="" coords="409,268,561,309"/>
+<area shape="rect" href="../../dc/d96/watchdog__task_8c.html#ab8e8a05882a22d389871b901749f34a0" title=" " alt="" coords="409,268,561,309"/>
 <area shape="poly" title=" " alt="" coords="151,234,395,272,392,277,151,239"/>
 <area shape="rect" href="../../dc/d96/watchdog__task_8c.html#a8d6b0b512bec2e43cc4665141089a33b" title=" " alt="" coords="406,138,564,178"/>
 <area shape="poly" title=" " alt="" coords="355,176,393,172,388,174,357,181"/>
@@ -225,31 +225,33 @@ Here is the call graph for this function:</div>
 <area shape="rect" href="../../d0/d81/led__task_8c.html#a1f77a84b84db33bc9e8bb3ef9339fc33" title="Check if LED task is running." alt="" coords="630,104,766,130"/>
 <area shape="poly" title=" " alt="" coords="557,90,617,102,612,103,558,96"/>
 <area shape="rect" href="../../de/dd4/sensor__task_8c.html#a6321c44c7b9351d3e2213eb27246312c" title="Check if sensor task is running." alt="" coords="619,5,777,31"/>
-<area shape="poly" title=" " alt="" coords="554,57,614,40,638,35,633,37,615,45,556,62"/>
+<area shape="poly" title=" " alt="" coords="554,57,614,40,638,35,633,37,615,45,557,62"/>
 <area shape="poly" title=" " alt="" coords="553,265,612,250,617,248,554,271"/>
 <area shape="poly" title=" " alt="" coords="549,266,564,254,576,239,582,226,587,197,592,168,600,153,612,139,615,140,620,137,616,143,604,156,597,170,592,198,587,227,580,242,568,257,551,270"/>
 <area shape="rect" href="../../d0/d81/led__task_8c.html#a70a98116b168f38ec6863cf5d9b2e7df" title="Turn off all LEDs immediately." alt="" coords="616,333,780,359"/>
 <area shape="poly" title=" " alt="" coords="562,307,636,329,631,329,562,312"/>
-<area shape="rect" href="../../db/d0d/shared__data_8c.html#afa9b2836ac5b4579f6f03de14c21acb0" title="Set system state." alt="" coords="614,268,782,309"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#a23648ab4af453796a9acc58b2fc309a8" title="Set system state." alt="" coords="614,268,782,309"/>
 <area shape="poly" title=" " alt="" coords="562,286,601,289,596,289,562,291"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a4ef6b466f7b5477b96ef6f47a5cf8455" title="Turn off all LEDs." alt="" coords="830,326,957,366"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a6743c205855240c57225c021e88e3d95" title="Turn off all LEDs." alt="" coords="830,326,957,366"/>
 <area shape="poly" title=" " alt="" coords="780,344,817,346,812,346,780,349"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a73349b12790da0a90e8918735b11ab10" title="Turn off specific LED." alt="" coords="1005,333,1154,359"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a105d937217c622b9872eeeeeb4823b33" title="Turn off specific LED." alt="" coords="1005,333,1154,359"/>
 <area shape="poly" title=" " alt="" coords="957,344,992,346,987,346,957,349"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#ac65666d46afe64b998d889b066bed529" title="Set RGB LED color." alt="" coords="1202,333,1351,359"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a076c2165b5b3484a7208445ff9a1c86d" title="Set RGB LED color." alt="" coords="1202,333,1351,359"/>
 <area shape="poly" title=" " alt="" coords="1155,344,1190,346,1184,346,1155,349"/>
 <area shape="rect" href="../../d2/dc9/led__controller_8c.html#a055f40aef481cb67e15eca4d09028a61" title=" " alt="" coords="1399,333,1571,359"/>
 <area shape="poly" title=" " alt="" coords="1351,344,1386,346,1380,346,1351,349"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a7b7ebe952969637b30a7a358d7c3d92c" title=" " alt="" coords="1624,292,1760,333"/>
-<area shape="poly" title=" " alt="" coords="1568,330,1606,327,1611,326,1569,335"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="1619,358,1764,398"/>
-<area shape="poly" title=" " alt="" coords="1572,357,1607,365,1601,364,1571,362"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="1812,358,1958,398"/>
-<area shape="poly" title=" " alt="" coords="1765,376,1799,378,1794,378,1765,381"/>
-<area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="2006,365,2136,391"/>
-<area shape="poly" title=" " alt="" coords="1958,376,1993,378,1988,378,1958,381"/>
-<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="2184,365,2368,391"/>
-<area shape="poly" title=" " alt="" coords="2136,376,2171,378,2165,378,2136,381"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#ac94f191b849645c0630d6594f91c32b0" title=" " alt="" coords="1641,260,1777,301"/>
+<area shape="poly" title=" " alt="" coords="1531,330,1624,305,1629,304,1532,335"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="1636,326,1782,366"/>
+<area shape="poly" title=" " alt="" coords="1571,344,1623,346,1618,346,1571,349"/>
+<area shape="rect" href="../../d4/d7e/system__config_8h.html#a048d7fce3116a990c5536e18eed4a61b" title="Validate PWM percentage." alt="" coords="1619,391,1799,416"/>
+<area shape="poly" title=" " alt="" coords="1538,357,1644,387,1638,386,1538,362"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="1847,326,1993,366"/>
+<area shape="poly" title=" " alt="" coords="1782,344,1835,346,1829,346,1782,349"/>
+<area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="2041,333,2171,359"/>
+<area shape="poly" title=" " alt="" coords="1993,344,2028,346,2023,346,1993,349"/>
+<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="2219,333,2403,359"/>
+<area shape="poly" title=" " alt="" coords="2171,344,2206,346,2200,346,2171,349"/>
 </map>
 </div>
 
@@ -291,9 +293,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if statistics are available </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00282">282</a> of file <a class="el" href="../../dc/d96/watchdog__task_8c_source.html">watchdog_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00332">332</a> of file <a class="el" href="../../dc/d96/watchdog__task_8c_source.html">watchdog_task.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00010">s_g_context_initialized</a>, and <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00012">s_task_context</a>.</p>
+<p class="reference">References <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00011">s_g_context_initialized</a>, and <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00014">s_task_context</a>.</p>
 
 </div>
 </div>
@@ -315,14 +317,14 @@ Here is the call graph for this function:</div>
 <p>Check if watchdog task is running. </p>
 <dl class="section return"><dt>Returns</dt><dd>true if task is active and monitoring system health </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00276">276</a> of file <a class="el" href="../../dc/d96/watchdog__task_8c_source.html">watchdog_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00326">326</a> of file <a class="el" href="../../dc/d96/watchdog__task_8c_source.html">watchdog_task.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00010">s_g_context_initialized</a>, and <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00012">s_task_context</a>.</p>
+<p class="reference">References <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00011">s_g_context_initialized</a>, and <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00014">s_task_context</a>.</p>
 
 </div>
 </div>
-<a id="aceba219ae12aa4dd13276ffe9a8f5e17" name="aceba219ae12aa4dd13276ffe9a8f5e17"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aceba219ae12aa4dd13276ffe9a8f5e17">&#9670;&#160;</a></span>watchdog_task_register_task()</h2>
+<a id="ab5bc8e9d7cff31aeb99f2440a78fe3a5" name="ab5bc8e9d7cff31aeb99f2440a78fe3a5"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab5bc8e9d7cff31aeb99f2440a78fe3a5">&#9670;&#160;</a></span>watchdog_task_register_task()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -330,12 +332,12 @@ Here is the call graph for this function:</div>
         <tr>
           <td class="memname">esp_err_t watchdog_task_register_task </td>
           <td>(</td>
-          <td class="paramtype">TaskHandle_t</td>          <td class="paramname"><span class="paramname"><em>task_handle</em></span>, </td>
+          <td class="paramtype">const TaskHandle_t</td>          <td class="paramname"><span class="paramname"><em>task_handle</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>max_response_time_ms</em></span>&#160;)</td>
+          <td class="paramtype">const uint32_t</td>          <td class="paramname"><span class="paramname"><em>max_response_time_ms</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -351,9 +353,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00314">314</a> of file <a class="el" href="../../dc/d96/watchdog__task_8c_source.html">watchdog_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00364">364</a> of file <a class="el" href="../../dc/d96/watchdog__task_8c_source.html">watchdog_task.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00010">s_g_context_initialized</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00011">s_g_context_initialized</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
 
 </div>
 </div>
@@ -376,24 +378,24 @@ Here is the call graph for this function:</div>
 <p>Creates and starts the FreeRTOS task for system health monitoring. The task will periodically check system health and take recovery actions when necessary.</p>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00205">205</a> of file <a class="el" href="../../dc/d96/watchdog__task_8c_source.html">watchdog_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00256">256</a> of file <a class="el" href="../../dc/d96/watchdog__task_8c_source.html">watchdog_task.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00168">internal_watchdog_task_loop()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00010">s_g_context_initialized</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00012">s_task_context</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00114">shared_data_get_context()</a>, <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00082">TASK_PRIORITY_WATCHDOG</a>, <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00088">TASK_STACK_SIZE_WATCHDOG</a>, <a class="el" href="../../d3/d26/watchdog__task_8h_source.html#l00016">WATCHDOG_HEALTH_GOOD</a>, and <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00071">shared_context_t::watchdog_task_handle</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00217">internal_watchdog_task_loop()</a>, <a class="el" href="../../d3/d26/watchdog__task_8h_source.html#l00016">k_watchdog_health_good</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00011">s_g_context_initialized</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00014">s_task_context</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00117">shared_data_get_context()</a>, <a class="el" href="../../d3/dff/system__config_8c_source.html#l00035">STAR_SYSTEM_CONFIG</a>, and <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00072">shared_context_t::watchdog_task_handle</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00111">start_system_tasks()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00115">start_system_tasks()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d3/d26/watchdog__task_8h_a1047c0564b9275f58ba51b089d9c5377_cgraph.png" border="0" usemap="#ad3/d26/watchdog__task_8h_a1047c0564b9275f58ba51b089d9c5377_cgraph" loading="lazy" alt=""/></div>
 <map name="ad3/d26/watchdog__task_8h_a1047c0564b9275f58ba51b089d9c5377_cgraph" id="ad3/d26/watchdog__task_8h_a1047c0564b9275f58ba51b089d9c5377_cgraph">
 <area shape="rect" title="Start the system watchdog task." alt="" coords="5,89,148,115"/>
-<area shape="rect" href="../../dc/d96/watchdog__task_8c.html#a8486e8e6f170a4d179157051b1510c61" title=" " alt="" coords="196,151,385,176"/>
+<area shape="rect" href="../../dc/d96/watchdog__task_8c.html#a914a83d91bb924807d2c34ddb767e056" title=" " alt="" coords="196,151,385,176"/>
 <area shape="poly" title=" " alt="" coords="124,113,230,144,226,147,125,118"/>
 <area shape="rect" href="../../db/d0d/shared__data_8c.html#acf829b11efe6efde5ff9c9a1798b05c9" title="Get pointer to global shared context." alt="" coords="880,5,1047,31"/>
 <area shape="poly" title=" " alt="" coords="148,91,379,65,669,36,867,23,862,25,670,41,380,70,149,96"/>
 <area shape="rect" href="../../dc/d96/watchdog__task_8c.html#acc127e75275d2f65ba4158f4c0ea8821" title=" " alt="" coords="448,115,606,156"/>
 <area shape="poly" title=" " alt="" coords="385,150,436,146,431,147,386,155"/>
-<area shape="rect" href="../../dc/d96/watchdog__task_8c.html#a57d1e1b0912c3b15d4a2102e2d036d09" title=" " alt="" coords="674,246,827,286"/>
+<area shape="rect" href="../../dc/d96/watchdog__task_8c.html#ab8e8a05882a22d389871b901749f34a0" title=" " alt="" coords="674,246,827,286"/>
 <area shape="poly" title=" " alt="" coords="385,171,499,189,622,216,689,240,684,240,621,221,498,194,386,177"/>
 <area shape="rect" href="../../db/d0d/shared__data_8c.html#a3bdf4ea7cbcd1af874c68f1da508ae3b" title="Get system uptime in milliseconds." alt="" coords="433,231,621,256"/>
 <area shape="poly" title=" " alt="" coords="331,174,475,224,469,226,331,180"/>
@@ -416,26 +418,28 @@ Here is the call graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="804,243,830,230,854,215,878,201,894,197,899,196,881,206,857,220,833,235,806,248"/>
 <area shape="rect" href="../../d0/d81/led__task_8c.html#a70a98116b168f38ec6863cf5d9b2e7df" title="Turn off all LEDs immediately." alt="" coords="882,280,1045,306"/>
 <area shape="poly" title=" " alt="" coords="827,273,869,281,863,281,827,278"/>
-<area shape="rect" href="../../db/d0d/shared__data_8c.html#afa9b2836ac5b4579f6f03de14c21acb0" title="Set system state." alt="" coords="880,330,1047,370"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#a23648ab4af453796a9acc58b2fc309a8" title="Set system state." alt="" coords="880,330,1047,370"/>
 <area shape="poly" title=" " alt="" coords="803,284,881,316,896,324,891,323,879,321,802,290"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a4ef6b466f7b5477b96ef6f47a5cf8455" title="Turn off all LEDs." alt="" coords="1095,272,1222,313"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a6743c205855240c57225c021e88e3d95" title="Turn off all LEDs." alt="" coords="1095,272,1222,313"/>
 <area shape="poly" title=" " alt="" coords="1045,290,1082,293,1077,293,1045,295"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a73349b12790da0a90e8918735b11ab10" title="Turn off specific LED." alt="" coords="1270,280,1420,306"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a105d937217c622b9872eeeeeb4823b33" title="Turn off specific LED." alt="" coords="1270,280,1420,306"/>
 <area shape="poly" title=" " alt="" coords="1223,290,1257,293,1252,293,1223,295"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#ac65666d46afe64b998d889b066bed529" title="Set RGB LED color." alt="" coords="1468,280,1616,306"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a076c2165b5b3484a7208445ff9a1c86d" title="Set RGB LED color." alt="" coords="1468,280,1616,306"/>
 <area shape="poly" title=" " alt="" coords="1420,290,1455,293,1450,293,1420,295"/>
 <area shape="rect" href="../../d2/dc9/led__controller_8c.html#a055f40aef481cb67e15eca4d09028a61" title=" " alt="" coords="1664,280,1836,306"/>
 <area shape="poly" title=" " alt="" coords="1616,290,1651,293,1646,293,1616,295"/>
-<area shape="rect" href="../../d2/dc9/led__controller_8c.html#a7b7ebe952969637b30a7a358d7c3d92c" title=" " alt="" coords="1889,239,2025,280"/>
-<area shape="poly" title=" " alt="" coords="1834,277,1871,273,1876,273,1834,282"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="1884,304,2030,345"/>
-<area shape="poly" title=" " alt="" coords="1837,304,1872,311,1867,311,1837,309"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="2078,304,2223,345"/>
-<area shape="poly" title=" " alt="" coords="2030,322,2065,325,2059,325,2030,327"/>
-<area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="2271,312,2401,338"/>
-<area shape="poly" title=" " alt="" coords="2224,322,2259,325,2253,325,2224,327"/>
-<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="2449,312,2634,338"/>
-<area shape="poly" title=" " alt="" coords="2402,322,2436,325,2431,325,2402,327"/>
+<area shape="rect" href="../../d2/dc9/led__controller_8c.html#ac94f191b849645c0630d6594f91c32b0" title=" " alt="" coords="1906,207,2043,248"/>
+<area shape="poly" title=" " alt="" coords="1796,277,1889,252,1894,251,1797,282"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="1902,272,2047,313"/>
+<area shape="poly" title=" " alt="" coords="1837,290,1889,293,1883,293,1837,295"/>
+<area shape="rect" href="../../d4/d7e/system__config_8h.html#a048d7fce3116a990c5536e18eed4a61b" title="Validate PWM percentage." alt="" coords="1884,337,2065,363"/>
+<area shape="poly" title=" " alt="" coords="1804,304,1909,333,1904,333,1803,309"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="2113,272,2258,313"/>
+<area shape="poly" title=" " alt="" coords="2047,290,2100,293,2095,293,2048,295"/>
+<area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="2306,280,2436,306"/>
+<area shape="poly" title=" " alt="" coords="2258,290,2294,293,2288,293,2259,295"/>
+<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="2484,280,2669,306"/>
+<area shape="poly" title=" " alt="" coords="2437,290,2471,293,2466,293,2437,295"/>
 </map>
 </div>
 <div class="dynheader">
@@ -444,7 +448,7 @@ Here is the caller graph for this function:</div>
 <div class="center"><img src="../../d3/d26/watchdog__task_8h_a1047c0564b9275f58ba51b089d9c5377_icgraph.png" border="0" usemap="#ad3/d26/watchdog__task_8h_a1047c0564b9275f58ba51b089d9c5377_icgraph" loading="lazy" alt=""/></div>
 <map name="ad3/d26/watchdog__task_8h_a1047c0564b9275f58ba51b089d9c5377_icgraph" id="ad3/d26/watchdog__task_8h_a1047c0564b9275f58ba51b089d9c5377_icgraph">
 <area shape="rect" title="Start the system watchdog task." alt="" coords="315,5,457,31"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,5,267,31"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,5,267,31"/>
 <area shape="poly" title=" " alt="" coords="297,18,267,21,267,16,302,18"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
 <area shape="poly" title=" " alt="" coords="112,19,83,21,83,16,118,18"/>
@@ -472,9 +476,9 @@ Here is the caller graph for this function:</div>
 <p>Cleanly shuts down the watchdog task.</p>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00243">243</a> of file <a class="el" href="../../dc/d96/watchdog__task_8c_source.html">watchdog_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00294">294</a> of file <a class="el" href="../../dc/d96/watchdog__task_8c_source.html">watchdog_task.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00128">NOTIFICATION_TIMEOUT_MS</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00010">s_g_context_initialized</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00012">s_task_context</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00114">shared_data_get_context()</a>, and <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00071">shared_context_t::watchdog_task_handle</a>.</p>
+<p class="reference">References <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00011">s_g_context_initialized</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00014">s_task_context</a>, <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00023">s_watchdog_recovery_delay_ms</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00117">shared_data_get_context()</a>, and <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00072">shared_context_t::watchdog_task_handle</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">

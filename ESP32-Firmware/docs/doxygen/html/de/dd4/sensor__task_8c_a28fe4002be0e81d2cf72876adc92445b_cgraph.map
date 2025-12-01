@@ -1,6 +1,6 @@
 <map id="sensor_task_stop" name="sensor_task_stop">
 <area shape="rect" id="Node000001" title="Stop sensor management task." alt="" coords="5,38,130,64"/>
-<area shape="rect" id="Node000002" href="$de/dd4/sensor__task_8c.html#ac6fa7fb2607a2cf5c34667e3b461bacb" title=" " alt="" coords="184,13,338,38"/>
+<area shape="rect" id="Node000002" href="$de/dd4/sensor__task_8c.html#a50bf939b7ee7d05f4a59c83f74bbc8d7" title=" " alt="" coords="184,13,338,38"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="129,40,171,37,166,38,130,46"/>
 <area shape="rect" id="Node000006" href="$db/d0d/shared__data_8c.html#acf829b11efe6efde5ff9c9a1798b05c9" title="Get pointer to global shared context." alt="" coords="178,62,345,88"/>
 <area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="130,56,165,62,160,63,130,61"/>

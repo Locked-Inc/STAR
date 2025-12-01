@@ -38,14 +38,15 @@ typedef struct {
 /* ========== System State Types ========== */
 
 typedef enum {
-  SYSTEM_STATE_INITIALIZING,
-  SYSTEM_STATE_RUNNING,
-  SYSTEM_STATE_ERROR_RECOVERY,
-  SYSTEM_STATE_FAULT
+  k_system_state_initializing,
+  k_system_state_running,
+  k_system_state_error_recovery,
+  k_system_state_fault
 } system_state_t;
 
 typedef struct {
-  uint32_t       sensor_read_failures[STAR_SYSTEM_NUM_HCSR04];
+  uint32_t
+    sensor_read_failures[STAR_SYSTEM_HCSR04_SENSOR_COUNT]; /* HC-SR04 sensor failure counts */
   uint32_t       temperature_read_failures;
   uint32_t       led_update_failures;
   uint32_t       total_sensor_reads;
@@ -79,8 +80,8 @@ typedef struct {
   float current_temperature_c;
   bool  temperature_available;
 
-  /* Latest sensor readings */
-  sensor_data_t latest_sensors[STAR_SYSTEM_NUM_HCSR04];
+  /* Latest sensor readings - HC-SR04 sensor count defined by STAR_SYSTEM_HCSR04_SENSOR_COUNT in system_config.h */
+  sensor_data_t latest_sensors[STAR_SYSTEM_HCSR04_SENSOR_COUNT]; /* HC-SR04 sensor data array */
 
   /* System initialization flag */
   bool system_ready;
@@ -122,7 +123,7 @@ shared_context_t* shared_data_get_context(void);
  * @param sensor_index Sensor that had a failure (or STAR_SYSTEM_NUM_HCSR04 for temperature)
  * @param success True if operation succeeded, false if failed
  */
-void shared_data_update_health(uint8_t sensor_index, bool success);
+void shared_data_update_health(const uint8_t sensor_index, const bool success);
 
 /**
  * @brief Get current system state
@@ -136,7 +137,7 @@ system_state_t shared_data_get_system_state(void);
  * 
  * @param state New system state to set
  */
-void shared_data_set_system_state(system_state_t state);
+void shared_data_set_system_state(const system_state_t state);
 
 /**
  * @brief Get current temperature for sound speed correction
@@ -152,7 +153,7 @@ bool shared_data_get_temperature(float* temperature_c);
  * @param temperature_c New temperature value
  * @param valid True if temperature reading is valid
  */
-void shared_data_set_temperature(float temperature_c, bool valid);
+void shared_data_set_temperature(const float temperature_c, const bool valid);
 
 /**
  * @brief Get latest sensor reading
@@ -161,7 +162,7 @@ void shared_data_set_temperature(float temperature_c, bool valid);
  * @param data Pointer to store sensor data
  * @return true if valid data is available
  */
-bool shared_data_get_sensor_reading(uint8_t sensor_index, sensor_data_t* data);
+bool shared_data_get_sensor_reading(const uint8_t sensor_index, sensor_data_t* data);
 
 /**
  * @brief Update sensor reading
@@ -169,7 +170,7 @@ bool shared_data_get_sensor_reading(uint8_t sensor_index, sensor_data_t* data);
  * @param sensor_index Sensor index
  * @param data New sensor data
  */
-void shared_data_set_sensor_reading(uint8_t sensor_index, const sensor_data_t* data);
+void shared_data_set_sensor_reading(const uint8_t sensor_index, const sensor_data_t* data);
 
 /* ========== Helper Functions ========== */
 
@@ -181,8 +182,9 @@ void shared_data_set_sensor_reading(uint8_t sensor_index, const sensor_data_t* d
  * @param result ESP error code
  * @return sensor_data_t Initialized sensor data structure
  */
-sensor_data_t
-shared_data_create_sensor_data(uint8_t sensor_index, float distance_cm, esp_err_t result);
+sensor_data_t shared_data_create_sensor_data(const uint8_t   sensor_index,
+                                             const float     distance_cm,
+                                             const esp_err_t result);
 
 /**
  * @brief Create temperature data structure
@@ -193,10 +195,10 @@ shared_data_create_sensor_data(uint8_t sensor_index, float distance_cm, esp_err_
  * @param checksum_valid DHT22 checksum validity
  * @return temperature_data_t Initialized temperature data structure
  */
-temperature_data_t shared_data_create_temperature_data(float     temperature_c,
-                                                       float     humidity_percent,
-                                                       esp_err_t result,
-                                                       bool      checksum_valid);
+temperature_data_t shared_data_create_temperature_data(const float     temperature_c,
+                                                       const float     humidity_percent,
+                                                       const esp_err_t result,
+                                                       const bool      checksum_valid);
 
 /**
  * @brief Get system uptime in milliseconds

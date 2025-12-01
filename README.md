@@ -7,12 +7,12 @@ STAR (Simultaneous Tracking And Robotics) is a LiDAR SLAM robot with remote cont
 - **Main Board**: Raspberry Pi 5
 - **LiDAR**: For mapping and navigation
 - **Cameras**: Stereo vision for depth perception
-- **Controller**: Handheld remote (Retroid Pocket 2S)
+- **Controller**: Handheld remote
 
 ## Software Architecture
 
 ```
-Handheld Controller (Retroid Pocket 2S)
+Handheld Controller
     ↓ [WiFi]
 Robot Gateway (Java/Spring Boot)
     ↓ [Commands & Telemetry]
@@ -34,16 +34,7 @@ LiDAR + Stereo Cameras
 - **LiDAR SLAM**: Real-time mapping and localization
 - **Computer Vision**: Object detection with stereo cameras
 - **Remote Control**: Handheld wireless controller
-- **Raspberry Pi OS**: Standard Raspberry Pi OS on Raspberry Pi 5
-
-## Development Environment
-
-This project was developed and tested on:
-- **OS**: Ubuntu 20.04.6 LTS (Focal Fossa)
-- **Kernel**: 5.15.0-139-generic
-- **CPU**: 12th Gen Intel(R) Core(TM) i7-1280P (20 cores)
-- **RAM**: 32GB
-- **Machine**: ThinkPad X13 Gen 3
+- **Operating System**: Custom Buildroot-based OS on Raspberry Pi 5
 
 ## Quick Start
 

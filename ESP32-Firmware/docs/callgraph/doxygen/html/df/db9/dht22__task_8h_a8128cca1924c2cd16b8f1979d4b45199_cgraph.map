@@ -1,6 +1,6 @@
 <map id="dht22_task_stop" name="dht22_task_stop">
 <area shape="rect" id="Node000001" title="Stop DHT22 monitoring task." alt="" coords="5,72,123,97"/>
-<area shape="rect" id="Node000002" href="$d0/d9c/dht22__task_8c.html#a8f42bf8aaed1ac21e66e803756f2b046" title=" " alt="" coords="184,46,324,72"/>
+<area shape="rect" id="Node000002" href="$d0/d9c/dht22__task_8c.html#a6fa67c3a449b474ee2110da2b31278c8" title=" " alt="" coords="184,46,324,72"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="123,74,171,70,166,71,124,79"/>
 <area shape="rect" id="Node000007" href="$db/d0d/shared__data_8c.html#acf829b11efe6efde5ff9c9a1798b05c9" title="Get pointer to global shared context." alt="" coords="171,96,338,121"/>
 <area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="123,89,158,96,153,96,123,94"/>

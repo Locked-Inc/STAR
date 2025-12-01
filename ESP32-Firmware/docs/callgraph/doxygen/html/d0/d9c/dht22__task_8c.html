@@ -93,127 +93,132 @@ $(function(){initNavTree('d0/d9c/dht22__task_8c.html','../../',''); });
 </div><!--header-->
 <div class="contents">
 <div class="textblock"><code>#include &quot;<a class="el" href="../../df/db9/dht22__task_8h_source.html">include/dht22_task.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../d5/d74/shared__data_8h_source.html">../modules/include/shared_data.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../d4/d7e/system__config_8h_source.html">../include/system_config.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../de/dfe/sensor__task_8h_source.html">include/sensor_task.h</a>&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html">star_bus_dht22_proprietary.h</a>&quot;</code><br />
 <code>#include &lt;esp_log.h&gt;</code><br />
 <code>#include &lt;string.h&gt;</code><br />
+<code>#include &quot;<a class="el" href="../../d4/d7e/system__config_8h_source.html">../include/system_config.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d5/d74/shared__data_8h_source.html">../modules/include/shared_data.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../de/dfe/sensor__task_8h_source.html">include/sensor_task.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html">star_bus_dht22_proprietary.h</a>&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for dht22_task.c:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../db/d69/dht22__task_8c__incl.png" border="0" usemap="#asrc_2tasks_2dht22__task_8c" loading="lazy" alt=""/></div>
 <map name="asrc_2tasks_2dht22__task_8c" id="asrc_2tasks_2dht22__task_8c">
-<area shape="rect" title=" " alt="" coords="1279,5,1433,31"/>
-<area shape="rect" href="../../df/db9/dht22__task_8h.html" title=" " alt="" coords="263,153,404,178"/>
-<area shape="poly" title=" " alt="" coords="1276,23,1006,41,836,58,664,82,513,115,388,150,385,145,511,110,664,76,835,52,1006,36,1281,21"/>
-<area shape="rect" href="../../d5/d74/shared__data_8h.html" title=" " alt="" coords="198,300,325,341"/>
-<area shape="poly" title=" " alt="" coords="1276,24,1025,39,698,64,540,81,404,102,304,127,271,140,253,154,239,185,236,219,241,254,250,286,245,285,236,255,230,220,233,184,249,151,269,136,302,122,403,97,540,76,697,58,1025,33,1281,22"/>
-<area shape="rect" href="../../d4/d7e/system__config_8h.html" title=" " alt="" coords="1995,389,2128,429"/>
-<area shape="poly" title=" " alt="" coords="1433,17,1609,22,1713,30,1817,42,1912,60,1990,86,2021,101,2044,120,2059,141,2064,164,2064,240,2063,375,2059,372,2059,240,2059,164,2054,143,2040,123,2018,106,1988,91,1910,65,1816,47,1712,35,1609,27,1434,22"/>
-<area shape="rect" href="../../de/dfe/sensor__task_8h.html" title=" " alt="" coords="676,79,825,105"/>
-<area shape="poly" title=" " alt="" coords="1276,30,841,83,840,77,1281,27"/>
-<area shape="rect" href="../../d1/dd1/star__bus__dht22__proprietary_8h.html" title="DHT22 (AM2302) proprietary single&#45;wire protocol implementation." alt="" coords="1262,153,1450,178"/>
-<area shape="poly" title=" " alt="" coords="1358,29,1358,139,1354,136,1354,34"/>
-<area shape="rect" title=" " alt="" coords="2099,79,2176,105"/>
-<area shape="poly" title=" " alt="" coords="1433,20,1719,38,1899,55,2080,76,2087,79,2081,80,2080,82,1899,60,1719,44,1434,26"/>
-<area shape="rect" title=" " alt="" coords="2200,79,2264,105"/>
-<area shape="poly" title=" " alt="" coords="1433,18,1572,21,1758,31,1969,48,2187,79,2182,79,1968,53,1757,36,1572,27,1434,23"/>
-<area shape="rect" title=" " alt="" coords="712,698,786,724"/>
-<area shape="poly" title=" " alt="" coords="311,181,266,212,204,259,138,319,109,354,84,390,70,415,62,437,59,489,59,565,64,587,79,607,103,625,134,640,217,666,316,684,423,696,528,703,699,710,694,710,528,708,422,701,315,689,215,671,132,645,100,629,75,611,59,589,53,565,53,489,57,436,65,413,79,387,105,350,135,316,200,255,263,208,314,177"/>
-<area shape="rect" title=" " alt="" coords="416,396,560,422"/>
-<area shape="poly" title=" " alt="" coords="332,176,332,213,334,232,340,251,364,293,395,330,429,361,460,387,455,387,425,365,392,334,360,296,335,253,329,233,327,213,330,182"/>
-<area shape="rect" title=" " alt="" coords="349,226,454,252"/>
-<area shape="poly" title=" " alt="" coords="344,176,382,215,377,215,345,181"/>
-<area shape="rect" href="../../d6/dcc/star__bus__manager_8h.html" title="Unified bus manager for I2C, SPI, GPIO, and other bus protocols." alt="" coords="580,226,718,252"/>
-<area shape="poly" title=" " alt="" coords="387,176,583,221,578,224,388,182"/>
-<area shape="poly" title=" " alt="" coords="645,250,617,318,605,362,600,408,600,565,601,591,606,611,615,629,631,648,663,674,700,695,695,694,660,678,627,652,611,632,601,613,596,592,595,565,595,408,600,361,612,316,641,254"/>
-<area shape="rect" href="../../d0/d84/star__bus__manager__types_8h.html" title=" " alt="" coords="824,308,1002,333"/>
-<area shape="poly" title=" " alt="" coords="690,250,861,302,856,303,690,255"/>
-<area shape="poly" title=" " alt="" coords="851,335,564,395,562,390,856,333"/>
-<area shape="rect" title=" " alt="" coords="686,396,808,422"/>
-<area shape="poly" title=" " alt="" coords="892,333,785,391,782,386,887,335"/>
-<area shape="rect" href="../../dd/d40/star__bus__common__types_8h.html" title=" " alt="" coords="1766,625,1944,650"/>
-<area shape="poly" title=" " alt="" coords="1002,319,1125,323,1278,333,1447,353,1532,368,1614,386,1677,402,1725,417,1771,439,1824,475,1863,507,1875,525,1887,550,1889,567,1887,583,1874,614,1871,610,1882,582,1884,567,1881,552,1871,527,1859,510,1821,479,1768,444,1723,422,1675,407,1613,391,1531,373,1446,358,1278,338,1125,328,1003,324"/>
-<area shape="rect" href="../../dd/d9d/star__bus__protocol__types_8h.html" title=" " alt="" coords="1428,396,1602,422"/>
-<area shape="poly" title=" " alt="" coords="998,331,1417,393,1412,394,998,336"/>
-<area shape="rect" href="../../df/d84/star__error__interface_8h.html" title="Error handler interface for dependency inversion." alt="" coords="1001,477,1146,503"/>
-<area shape="poly" title=" " alt="" coords="926,331,1054,466,1049,466,924,336"/>
-<area shape="rect" href="../../da/d58/star__pin__interface_8h.html" title="Pin validator interface for dependency inversion." alt="" coords="939,625,1074,650"/>
-<area shape="poly" title=" " alt="" coords="914,332,913,376,914,437,924,508,934,542,948,575,962,596,980,616,975,614,957,599,943,578,929,544,919,509,909,438,907,376,911,336"/>
-<area shape="poly" title=" " alt="" coords="1766,647,802,709,802,704,1765,642"/>
-<area shape="rect" title=" " alt="" coords="2188,698,2281,724"/>
-<area shape="poly" title=" " alt="" coords="1920,648,2176,698,2170,698,1919,654"/>
-<area shape="rect" title=" " alt="" coords="1902,698,2034,724"/>
-<area shape="poly" title=" " alt="" coords="1875,648,1938,690,1933,689,1873,653"/>
-<area shape="rect" title=" " alt="" coords="1176,698,1250,724"/>
-<area shape="poly" title=" " alt="" coords="1768,649,1266,707,1266,701,1762,649"/>
-<area shape="rect" title=" " alt="" coords="1620,698,1684,724"/>
-<area shape="poly" title=" " alt="" coords="1823,650,1700,696,1698,691,1818,651"/>
-<area shape="poly" title=" " alt="" coords="1463,422,1350,453,1201,497,1034,555,951,589,871,627,779,691,777,686,868,622,949,584,1032,550,1199,492,1349,448,1458,423"/>
-<area shape="poly" title=" " alt="" coords="1602,414,1672,428,1745,452,1780,470,1812,492,1841,518,1864,550,1869,564,1871,580,1866,612,1862,608,1866,580,1864,566,1859,552,1837,522,1809,496,1777,475,1743,457,1670,433,1602,420"/>
-<area shape="poly" title=" " alt="" coords="1602,415,1729,435,1799,452,1866,475,1971,525,2069,584,2152,641,2211,689,2206,688,2148,646,2066,588,1969,529,1864,480,1797,458,1728,441,1602,421"/>
-<area shape="poly" title=" " alt="" coords="1602,414,1711,434,1769,451,1824,475,1879,504,1921,533,1953,569,1983,624,1987,655,1980,686,1977,682,1982,655,1977,626,1949,572,1917,537,1876,509,1822,480,1767,456,1710,439,1602,419"/>
-<area shape="poly" title=" " alt="" coords="1495,421,1456,448,1415,479,1359,534,1308,592,1232,688,1229,683,1303,588,1355,530,1412,475,1453,444,1490,423"/>
-<area shape="poly" title=" " alt="" coords="1502,421,1457,464,1431,492,1407,522,1388,555,1378,587,1378,619,1384,634,1393,649,1406,660,1427,669,1483,685,1547,696,1607,706,1602,706,1546,702,1481,691,1425,674,1403,664,1389,652,1379,637,1373,620,1373,587,1384,553,1403,519,1427,488,1453,461,1497,423"/>
-<area shape="rect" title=" " alt="" coords="1403,625,1488,650"/>
-<area shape="poly" title=" " alt="" coords="1502,421,1478,448,1458,478,1448,512,1444,547,1444,611,1440,607,1439,547,1443,511,1454,476,1474,444,1497,424"/>
-<area shape="rect" href="../../db/d78/star__bus__event__types_8h.html" title=" " alt="" coords="1664,551,1824,577"/>
-<area shape="poly" title=" " alt="" coords="1587,420,1648,440,1678,456,1705,475,1726,504,1739,538,1735,535,1722,507,1701,479,1675,460,1646,445,1587,425"/>
-<area shape="rect" href="../../d0/da6/star__bus__function__types_8h.html" title=" " alt="" coords="1517,477,1691,503"/>
-<area shape="poly" title=" " alt="" coords="1529,420,1581,467,1576,466,1527,425"/>
-<area shape="poly" title=" " alt="" coords="1763,575,1826,617,1821,615,1762,580"/>
-<area shape="poly" title=" " alt="" coords="1789,575,1957,622,2184,693,2179,693,1955,627,1788,580"/>
-<area shape="poly" title=" " alt="" coords="1743,575,1742,613,1746,632,1755,649,1775,663,1808,675,1890,697,1884,697,1806,680,1773,667,1751,652,1741,634,1737,613,1740,579"/>
-<area shape="poly" title=" " alt="" coords="1723,577,1644,616,1545,653,1470,672,1394,688,1266,707,1266,701,1393,682,1469,667,1543,648,1642,611,1718,578"/>
-<area shape="poly" title=" " alt="" coords="1739,576,1669,687,1666,683,1734,578"/>
-<area shape="poly" title=" " alt="" coords="1696,577,1504,625,1503,620,1690,578"/>
-<area shape="poly" title=" " alt="" coords="1550,503,1190,579,1115,591,1057,598,1000,607,928,627,788,694,786,688,926,622,998,602,1056,593,1115,586,1189,574,1544,504"/>
-<area shape="poly" title=" " alt="" coords="1688,501,1777,521,1814,534,1838,549,1848,563,1854,578,1858,611,1854,608,1849,580,1843,565,1834,553,1811,538,1775,526,1688,506"/>
-<area shape="poly" title=" " alt="" coords="1692,499,1776,518,1820,531,1862,549,1918,577,1939,595,1958,623,1969,653,1971,685,1967,681,1964,654,1954,626,1935,599,1915,581,1860,553,1819,536,1775,523,1692,505"/>
-<area shape="poly" title=" " alt="" coords="1602,502,1590,535,1569,575,1540,617,1502,652,1473,669,1443,682,1380,701,1319,710,1266,713,1266,708,1318,705,1379,695,1441,677,1471,664,1498,648,1536,614,1565,572,1585,533,1598,505"/>
-<area shape="poly" title=" " alt="" coords="1608,501,1648,685,1644,682,1605,505"/>
-<area shape="poly" title=" " alt="" coords="1594,502,1471,616,1469,612,1589,504"/>
-<area shape="poly" title=" " alt="" coords="1628,501,1709,544,1704,543,1627,506"/>
-<area shape="poly" title=" " alt="" coords="1048,503,949,554,890,588,834,627,799,657,770,689,767,684,795,654,830,623,887,584,946,549,1043,504"/>
-<area shape="poly" title=" " alt="" coords="1077,501,1087,537,1104,575,1147,637,1192,688,1187,686,1143,641,1099,578,1082,538,1074,506"/>
-<area shape="poly" title=" " alt="" coords="1090,501,1196,571,1269,613,1348,648,1416,669,1486,685,1607,706,1601,705,1485,690,1414,674,1346,653,1267,617,1193,576,1089,506"/>
-<area shape="poly" title=" " alt="" coords="966,651,802,698,801,693,960,651"/>
-<area shape="poly" title=" " alt="" coords="1042,648,1167,693,1161,693,1041,654"/>
-<area shape="poly" title=" " alt="" coords="1075,644,1607,704,1601,705,1074,649"/>
-<area shape="poly" title=" " alt="" coords="276,339,305,388,325,437,331,489,331,565,333,578,341,591,371,615,416,636,471,654,592,683,699,703,694,703,591,688,469,660,414,641,368,619,337,594,328,580,325,565,325,489,319,438,300,390,275,344"/>
-<area shape="poly" title=" " alt="" coords="313,339,445,389,440,391,313,344"/>
-<area shape="poly" title=" " alt="" coords="325,330,672,392,668,396,325,336"/>
-<area shape="poly" title=" " alt="" coords="283,338,338,382,405,427,545,504,658,556,775,599,927,648,1052,679,1163,702,1158,702,1051,685,926,653,773,604,656,561,543,509,403,432,335,386,283,344"/>
-<area shape="rect" title=" " alt="" coords="93,396,208,422"/>
-<area shape="poly" title=" " alt="" coords="235,343,180,388,176,385,238,339"/>
-<area shape="rect" title=" " alt="" coords="233,396,290,422"/>
-<area shape="poly" title=" " alt="" coords="262,339,264,382,259,380,260,344"/>
-<area shape="poly" title=" " alt="" coords="325,322,1979,401,1978,406,325,327"/>
-<area shape="poly" title=" " alt="" coords="2103,427,2140,448,2179,476,2216,510,2246,550,2258,576,2262,599,2256,651,2247,686,2243,681,2251,650,2257,599,2253,577,2242,552,2212,513,2176,480,2137,453,2102,433"/>
-<area shape="poly" title=" " alt="" coords="1992,410,1873,415,1729,425,1659,433,1595,445,1543,460,1507,479,1492,501,1477,536,1454,612,1450,608,1472,534,1487,498,1504,475,1541,455,1594,440,1658,428,1729,419,1873,410,1997,410"/>
-<area shape="poly" title=" " alt="" coords="674,93,492,98,381,105,270,116,168,134,85,160,52,176,28,194,13,215,8,238,8,565,14,589,30,610,56,629,90,645,180,671,288,689,403,700,517,706,699,711,694,711,517,711,403,705,287,694,179,676,89,650,53,633,26,614,9,591,3,565,3,238,8,213,25,191,50,172,83,155,167,129,270,111,381,99,492,93,678,91"/>
-<area shape="poly" title=" " alt="" coords="721,107,641,154,593,188,550,228,525,265,508,306,498,347,493,382,488,379,493,346,503,305,521,262,546,225,590,184,638,149,726,104"/>
-<area shape="poly" title=" " alt="" coords="674,97,629,105,577,115,524,131,475,155,442,183,418,215,414,211,438,179,472,150,522,126,575,110,628,99,679,95"/>
-<area shape="poly" title=" " alt="" coords="744,103,668,215,664,212,740,107"/>
-<area shape="poly" title=" " alt="" coords="825,98,945,114,1076,141,1135,159,1183,181,1216,207,1225,222,1228,238,1228,322,1225,347,1216,371,1187,413,1149,447,1111,472,1109,467,1145,442,1183,409,1211,369,1220,346,1223,322,1223,238,1220,224,1212,211,1180,186,1133,164,1075,146,944,119,826,103"/>
-<area shape="poly" title=" " alt="" coords="825,94,1158,114,1334,130,1462,150,1544,173,1626,201,1782,264,1917,328,2016,382,2011,381,1915,333,1780,269,1624,206,1542,178,1461,155,1334,135,1157,119,826,99"/>
-<area shape="rect" href="../../d2/dda/star__sensor__hcsr04_8h.html" title="HC&#45;SR04 ultrasonic distance sensor driver." alt="" coords="779,153,925,178"/>
-<area shape="poly" title=" " alt="" coords="768,103,825,143,820,143,768,108"/>
-<area shape="poly" title=" " alt="" coords="837,177,810,202,783,228,726,292,684,347,670,375,659,407,653,444,651,489,651,565,658,602,676,635,699,664,724,689,719,688,695,667,671,638,653,603,645,565,645,489,648,444,654,406,665,373,680,344,722,288,779,224,807,198,833,180"/>
-<area shape="poly" title=" " alt="" coords="776,176,658,197,605,211,570,228,557,250,538,291,500,383,496,380,533,289,552,247,566,224,603,206,657,192,781,173"/>
-<area shape="poly" title=" " alt="" coords="815,180,699,223,697,218,820,178"/>
-<area shape="poly" title=" " alt="" coords="875,176,898,191,919,210,930,231,930,242,925,254,907,271,888,279,847,280,807,281,788,287,770,302,758,320,752,340,747,382,743,379,746,339,754,317,766,298,785,283,806,275,847,275,887,274,904,266,920,250,925,241,925,232,914,213,895,195,875,182"/>
-<area shape="poly" title=" " alt="" coords="880,176,916,195,955,222,991,256,1006,277,1017,299,1025,329,1023,356,1015,380,1004,403,994,425,986,448,985,473,992,502,1018,552,1049,584,1086,612,1132,648,1185,690,1180,689,1129,652,1083,616,1045,588,1014,555,987,504,979,474,981,447,989,423,1000,400,1010,378,1018,355,1019,330,1012,301,1001,279,987,260,951,226,913,200,880,182"/>
-<area shape="poly" title=" " alt="" coords="925,166,1007,172,1110,182,1229,201,1358,229,1491,268,1623,321,1687,353,1748,390,1805,430,1859,475,1910,518,1954,559,1969,580,1976,603,1973,627,1958,652,1940,666,1914,678,1845,694,1768,705,1699,710,1699,705,1767,700,1844,689,1912,673,1938,661,1954,649,1968,625,1971,603,1964,583,1950,562,1906,522,1856,479,1802,434,1745,394,1684,358,1621,326,1489,273,1356,234,1228,206,1109,188,1007,177,926,171"/>
-<area shape="poly" title=" " alt="" coords="925,170,957,177,988,188,1018,203,1043,225,1063,252,1077,282,1085,315,1089,349,1089,412,1081,464,1077,460,1083,412,1084,349,1080,316,1072,284,1059,254,1039,228,1015,208,986,193,955,182,926,175"/>
-<area shape="rect" title=" " alt="" coords="794,226,910,252"/>
-<area shape="poly" title=" " alt="" coords="853,176,854,212,850,209,851,181"/>
-<area shape="poly" title=" " alt="" coords="1296,180,1010,246,876,280,833,293,814,302,810,310,810,319,815,340,823,388,823,430,810,503,793,574,760,685,756,682,788,573,805,502,817,429,817,389,809,341,805,319,804,309,810,298,831,288,874,274,1009,241,1301,178"/>
-<area shape="poly" title=" " alt="" coords="1260,178,735,232,734,227,1264,175"/>
-<area shape="poly" title=" " alt="" coords="1450,169,1692,185,1985,214,2121,234,2233,258,2276,271,2309,285,2331,301,2339,318,2339,565,2331,603,2313,638,2289,667,2263,691,2261,686,2285,664,2308,635,2326,602,2333,565,2333,320,2327,304,2307,290,2274,276,2231,263,2120,239,1985,220,1692,191,1450,174"/>
-<area shape="poly" title=" " alt="" coords="1355,178,1223,685,1218,682,1350,180"/>
-<area shape="poly" title=" " alt="" coords="1448,176,1624,205,1834,250,1935,278,2024,310,2095,347,2122,366,2142,387,2164,424,2174,460,2173,495,2162,529,2144,562,2118,593,2087,624,2052,653,2025,667,1987,679,1890,696,1786,706,1700,711,1700,706,1786,701,1890,691,1985,674,2023,662,2049,648,2084,620,2114,590,2139,559,2157,527,2167,494,2168,461,2159,426,2138,390,2119,370,2092,351,2022,315,1933,283,1832,255,1623,210,1448,182"/>
+<area shape="rect" title=" " alt="" coords="1238,5,1392,31"/>
+<area shape="rect" href="../../df/db9/dht22__task_8h.html" title=" " alt="" coords="733,153,875,178"/>
+<area shape="poly" title=" " alt="" coords="1270,33,862,150,860,145,1274,30"/>
+<area shape="rect" title=" " alt="" coords="1573,79,1651,105"/>
+<area shape="poly" title=" " alt="" coords="1365,29,1561,77,1556,78,1366,34"/>
+<area shape="rect" title=" " alt="" coords="1674,79,1739,105"/>
+<area shape="poly" title=" " alt="" coords="1392,28,1515,48,1662,78,1657,79,1514,53,1393,33"/>
+<area shape="rect" href="../../d4/d7e/system__config_8h.html" title=" " alt="" coords="1376,551,1550,577"/>
+<area shape="poly" title=" " alt="" coords="1374,29,1428,46,1481,73,1504,91,1522,112,1534,136,1539,164,1539,403,1533,442,1519,480,1502,513,1483,541,1480,536,1497,511,1515,478,1528,441,1533,403,1533,164,1529,138,1518,115,1500,95,1478,77,1426,51,1375,34"/>
+<area shape="rect" href="../../d5/d74/shared__data_8h.html" title=" " alt="" coords="1108,300,1236,341"/>
+<area shape="poly" title=" " alt="" coords="1316,29,1313,96,1306,138,1292,179,1274,212,1252,242,1207,291,1204,287,1248,239,1269,209,1287,177,1301,137,1308,96,1313,33"/>
+<area shape="rect" href="../../de/dfe/sensor__task_8h.html" title=" " alt="" coords="730,79,878,105"/>
+<area shape="poly" title=" " alt="" coords="1235,32,894,81,893,75,1239,29"/>
+<area shape="rect" href="../../d1/dd1/star__bus__dht22__proprietary_8h.html" title="DHT22 (AM2302) proprietary single&#45;wire protocol implementation." alt="" coords="1090,153,1278,178"/>
+<area shape="poly" title=" " alt="" coords="1306,30,1207,143,1203,139,1302,33"/>
+<area shape="rect" title=" " alt="" coords="635,698,709,724"/>
+<area shape="poly" title=" " alt="" coords="792,177,696,254,661,275,627,290,568,309,541,320,516,336,492,358,470,390,461,412,456,433,456,455,460,477,477,521,505,562,539,601,576,635,643,690,638,689,572,639,535,605,501,565,472,523,455,479,451,456,451,433,456,410,466,387,488,354,513,331,538,316,566,304,626,285,658,270,693,250,787,181"/>
+<area shape="rect" title=" " alt="" coords="480,389,624,414"/>
+<area shape="poly" title=" " alt="" coords="798,177,774,214,741,254,668,315,582,381,579,377,665,311,737,250,770,211,794,180"/>
+<area shape="rect" title=" " alt="" coords="859,226,965,252"/>
+<area shape="poly" title=" " alt="" coords="822,176,883,217,878,217,822,182"/>
+<area shape="rect" href="../../d6/dcc/star__bus__manager_8h.html" title="Unified bus manager for I2C, SPI, GPIO, and other bus protocols." alt="" coords="544,226,682,252"/>
+<area shape="poly" title=" " alt="" coords="769,180,661,223,659,218,774,178"/>
+<area shape="poly" title=" " alt="" coords="546,254,458,281,408,300,360,325,317,355,282,391,259,433,253,456,251,481,251,565,253,578,261,591,291,615,337,636,392,655,514,683,622,703,617,703,513,688,390,660,335,641,289,620,257,595,248,580,245,565,245,481,248,455,254,431,278,387,313,351,357,320,406,295,456,276,550,251"/>
+<area shape="rect" href="../../d0/d84/star__bus__manager__types_8h.html" title=" " alt="" coords="792,308,970,333"/>
+<area shape="poly" title=" " alt="" coords="655,250,828,302,823,303,655,255"/>
+<area shape="poly" title=" " alt="" coords="828,335,618,387,617,382,833,333"/>
+<area shape="rect" title=" " alt="" coords="800,389,922,414"/>
+<area shape="poly" title=" " alt="" coords="880,332,870,375,866,372,877,336"/>
+<area shape="rect" href="../../dd/d40/star__bus__common__types_8h.html" title=" " alt="" coords="1891,625,2069,650"/>
+<area shape="poly" title=" " alt="" coords="971,327,1096,338,1253,344,1455,349,1656,360,1742,371,1810,386,1879,411,1907,425,1932,441,1952,460,1970,485,1986,514,2000,550,2002,582,1994,613,1990,608,1997,581,1995,552,1981,516,1966,487,1948,464,1928,445,1905,429,1877,416,1809,391,1741,376,1656,365,1455,354,1253,349,1096,343,971,333"/>
+<area shape="rect" href="../../dd/d9d/star__bus__protocol__types_8h.html" title=" " alt="" coords="1624,389,1798,414"/>
+<area shape="poly" title=" " alt="" coords="971,327,1611,389,1606,392,971,333"/>
+<area shape="rect" href="../../df/d84/star__error__interface_8h.html" title="Error handler interface for dependency inversion." alt="" coords="709,470,854,496"/>
+<area shape="poly" title=" " alt="" coords="856,332,819,358,803,373,790,390,781,422,780,456,775,453,775,421,786,387,799,369,816,353,851,335"/>
+<area shape="rect" href="../../da/d58/star__pin__interface_8h.html" title="Pin validator interface for dependency inversion." alt="" coords="963,625,1098,650"/>
+<area shape="poly" title=" " alt="" coords="893,331,916,357,937,387,967,447,993,509,1026,611,1021,608,988,511,962,450,932,390,912,360,892,336"/>
+<area shape="poly" title=" " alt="" coords="1891,646,724,710,724,704,1890,641"/>
+<area shape="rect" title=" " alt="" coords="2111,698,2204,724"/>
+<area shape="poly" title=" " alt="" coords="2011,648,2116,693,2111,692,2010,653"/>
+<area shape="rect" title=" " alt="" coords="1934,698,2066,724"/>
+<area shape="poly" title=" " alt="" coords="1985,648,1995,685,1990,682,1982,653"/>
+<area shape="rect" title=" " alt="" coords="1559,698,1633,724"/>
+<area shape="poly" title=" " alt="" coords="1917,651,1648,703,1648,698,1912,651"/>
+<area shape="rect" title=" " alt="" coords="1180,698,1244,724"/>
+<area shape="poly" title=" " alt="" coords="1893,647,1260,708,1260,703,1888,647"/>
+<area shape="poly" title=" " alt="" coords="1634,415,1529,438,1409,465,1262,504,1149,539,894,627,717,695,715,689,892,622,1148,534,1261,499,1407,460,1528,433,1639,414"/>
+<area shape="poly" title=" " alt="" coords="1766,412,1825,431,1885,460,1940,497,1960,518,1977,550,1985,580,1985,611,1981,607,1980,581,1972,552,1955,521,1937,501,1883,465,1823,436,1765,418"/>
+<area shape="poly" title=" " alt="" coords="1798,407,1890,425,1938,440,1984,460,2036,492,2071,526,2098,568,2126,624,2151,685,2146,682,2122,626,2094,571,2067,530,2033,496,1981,465,1936,445,1889,430,1798,413"/>
+<area shape="poly" title=" " alt="" coords="1784,412,1858,431,1933,460,1969,480,1996,498,2049,549,2099,596,2107,608,2111,621,2110,636,2104,652,2082,677,2054,694,2052,689,2078,672,2099,649,2105,634,2106,622,2102,610,2095,599,2045,553,1992,502,1967,484,1931,465,1856,436,1784,418"/>
+<area shape="poly" title=" " alt="" coords="1694,414,1665,438,1637,464,1614,494,1599,520,1585,546,1563,578,1550,592,1538,601,1527,611,1518,626,1515,638,1518,649,1535,671,1558,691,1553,689,1531,675,1514,652,1510,638,1514,624,1523,607,1534,597,1546,588,1559,575,1580,544,1594,517,1609,491,1633,461,1662,434,1689,416"/>
+<area shape="poly" title=" " alt="" coords="1661,414,1589,437,1504,466,1414,504,1328,553,1294,583,1265,619,1225,687,1222,682,1260,616,1290,579,1325,549,1411,500,1502,461,1588,432,1655,416"/>
+<area shape="rect" title=" " alt="" coords="1528,625,1613,650"/>
+<area shape="poly" title=" " alt="" coords="1702,413,1665,464,1635,520,1608,578,1587,614,1584,609,1603,575,1630,517,1660,461,1698,416"/>
+<area shape="rect" href="../../db/d78/star__bus__event__types_8h.html" title=" " alt="" coords="1776,551,1936,577"/>
+<area shape="poly" title=" " alt="" coords="1788,412,1829,430,1847,444,1862,461,1870,479,1873,499,1867,538,1863,534,1867,499,1865,481,1858,464,1844,448,1826,435,1787,418"/>
+<area shape="rect" href="../../d0/da6/star__bus__function__types_8h.html" title=" " alt="" coords="1674,470,1848,496"/>
+<area shape="poly" title=" " alt="" coords="1719,412,1748,458,1743,456,1717,417"/>
+<area shape="poly" title=" " alt="" coords="1878,575,1949,617,1943,616,1876,580"/>
+<area shape="poly" title=" " alt="" coords="1937,572,2010,590,2048,604,2083,622,2118,652,2144,686,2139,684,2114,655,2080,627,2046,609,2009,595,1936,577"/>
+<area shape="poly" title=" " alt="" coords="1858,575,1864,612,1870,631,1881,649,1908,673,1943,693,1937,692,1905,677,1877,652,1865,633,1859,613,1854,579"/>
+<area shape="poly" title=" " alt="" coords="1841,576,1721,653,1638,694,1637,689,1719,648,1836,578"/>
+<area shape="poly" title=" " alt="" coords="1832,577,1740,616,1626,653,1525,675,1423,691,1260,709,1259,704,1422,686,1524,669,1625,648,1739,611,1826,578"/>
+<area shape="poly" title=" " alt="" coords="1810,577,1629,624,1628,619,1805,578"/>
+<area shape="poly" title=" " alt="" coords="1678,496,1327,554,1137,582,1055,598,952,627,923,640,894,653,805,680,725,701,724,696,804,675,892,648,921,635,950,622,1054,593,1136,577,1326,548,1673,497"/>
+<area shape="poly" title=" " alt="" coords="1839,493,1897,514,1925,529,1950,549,1969,578,1978,612,1974,609,1964,581,1946,553,1922,534,1895,519,1838,499"/>
+<area shape="poly" title=" " alt="" coords="1849,491,1913,505,1979,530,2011,548,2039,569,2064,594,2084,624,2087,644,2078,663,2062,679,2041,693,2039,688,2058,675,2074,660,2082,643,2079,626,2060,597,2036,573,2008,552,1977,535,1912,510,1849,496"/>
+<area shape="poly" title=" " alt="" coords="1755,495,1615,688,1612,684,1750,497"/>
+<area shape="poly" title=" " alt="" coords="1671,493,1501,518,1421,534,1365,553,1336,576,1300,612,1232,689,1230,684,1296,608,1333,572,1363,549,1420,529,1501,513,1676,492"/>
+<area shape="poly" title=" " alt="" coords="1751,495,1658,579,1603,618,1601,613,1654,575,1746,497"/>
+<area shape="poly" title=" " alt="" coords="1777,493,1832,541,1827,540,1775,498"/>
+<area shape="poly" title=" " alt="" coords="776,495,744,552,706,626,682,686,679,682,702,624,740,550,772,498"/>
+<area shape="poly" title=" " alt="" coords="817,493,1029,563,1173,607,1321,648,1440,676,1546,700,1541,700,1439,681,1319,653,1171,612,1027,568,816,499"/>
+<area shape="poly" title=" " alt="" coords="791,493,816,526,852,568,899,611,952,648,1006,672,1063,688,1118,698,1167,707,1162,707,1117,704,1062,693,1004,677,949,653,896,615,849,571,812,529,789,498"/>
+<area shape="poly" title=" " alt="" coords="972,651,724,702,724,697,967,651"/>
+<area shape="poly" title=" " alt="" coords="1099,645,1118,648,1547,703,1541,704,1117,653,1099,651"/>
+<area shape="poly" title=" " alt="" coords="1062,648,1169,692,1164,692,1061,653"/>
+<area shape="poly" title=" " alt="" coords="1521,575,2098,697,2093,697,1520,580"/>
+<area shape="poly" title=" " alt="" coords="1462,575,1462,612,1466,631,1474,649,1489,665,1506,678,1547,698,1542,697,1504,682,1485,669,1470,652,1461,633,1457,612,1459,579"/>
+<area shape="poly" title=" " alt="" coords="1444,577,1247,693,1245,688,1439,578"/>
+<area shape="poly" title=" " alt="" coords="1482,575,1542,616,1537,615,1480,580"/>
+<area shape="poly" title=" " alt="" coords="1150,342,701,691,698,686,1144,341"/>
+<area shape="poly" title=" " alt="" coords="1106,331,640,392,639,387,1110,328"/>
+<area shape="poly" title=" " alt="" coords="1105,339,925,387,923,382,1111,337"/>
+<area shape="poly" title=" " alt="" coords="1236,322,1380,329,1562,342,1737,361,1809,372,1863,386,1910,404,1950,423,1983,445,2010,470,2033,500,2052,535,2069,576,2084,624,2088,638,2083,652,2060,664,2019,674,1900,691,1763,703,1649,710,1649,705,1763,697,1899,686,2018,669,2059,659,2079,649,2083,638,2079,625,2064,578,2048,537,2029,503,2006,474,1980,449,1947,428,1908,409,1862,391,1808,378,1737,366,1561,347,1380,334,1236,327"/>
+<area shape="poly" title=" " alt="" coords="1223,339,1267,360,1310,387,1339,414,1377,455,1446,540,1441,538,1373,459,1336,418,1306,391,1265,364,1223,344"/>
+<area shape="rect" title=" " alt="" coords="1098,389,1214,414"/>
+<area shape="poly" title=" " alt="" coords="1170,339,1164,375,1160,371,1166,343"/>
+<area shape="rect" title=" " alt="" coords="1238,389,1295,414"/>
+<area shape="poly" title=" " alt="" coords="1196,338,1243,379,1238,378,1195,344"/>
+<area shape="poly" title=" " alt="" coords="727,100,533,120,293,150,183,169,91,190,30,214,13,226,8,238,8,565,11,593,20,614,37,631,61,648,106,667,169,681,244,692,325,699,489,707,622,710,616,711,489,712,325,705,243,697,168,686,105,672,59,653,34,635,16,617,6,595,3,565,3,237,9,223,27,209,90,185,181,163,292,144,532,114,731,97"/>
+<area shape="poly" title=" " alt="" coords="734,107,684,123,628,147,575,182,553,203,534,228,526,245,522,264,522,304,530,342,542,375,537,373,525,343,517,304,516,263,521,243,530,225,549,200,572,177,625,142,683,118,739,104"/>
+<area shape="poly" title=" " alt="" coords="829,103,861,123,889,151,903,180,911,212,906,210,898,182,884,154,857,127,829,108"/>
+<area shape="poly" title=" " alt="" coords="785,107,723,155,641,219,638,214,720,151,789,104"/>
+<area shape="poly" title=" " alt="" coords="837,103,893,128,950,162,972,183,986,205,989,229,978,254,955,274,931,282,905,283,878,279,853,276,827,276,804,283,782,302,771,319,764,338,760,379,765,420,774,456,769,454,760,421,755,379,759,337,766,316,778,298,801,279,827,271,853,270,879,274,905,277,930,277,953,269,974,250,984,228,981,207,968,186,947,167,891,132,837,108"/>
+<area shape="poly" title=" " alt="" coords="849,103,938,130,1056,172,1185,228,1249,261,1309,298,1363,336,1383,357,1405,387,1426,425,1441,466,1460,537,1455,535,1436,468,1421,428,1400,390,1379,361,1360,340,1307,302,1246,266,1183,233,1054,177,937,135,849,108"/>
+<area shape="rect" href="../../d2/dda/star__sensor__hcsr04_8h.html" title="HC&#45;SR04 ultrasonic distance sensor driver." alt="" coords="272,153,418,178"/>
+<area shape="poly" title=" " alt="" coords="727,107,435,153,433,148,731,103"/>
+<area shape="poly" title=" " alt="" coords="270,178,166,198,120,212,90,228,72,248,62,268,59,290,59,319,59,565,59,592,63,613,72,631,89,648,118,659,170,669,319,686,621,706,617,709,318,691,169,675,116,664,87,653,67,634,57,614,54,592,53,565,53,319,54,290,57,266,67,246,86,224,118,207,164,193,273,174"/>
+<area shape="poly" title=" " alt="" coords="357,176,534,376,529,378,355,181"/>
+<area shape="poly" title=" " alt="" coords="390,176,555,221,551,223,391,182"/>
+<area shape="poly" title=" " alt="" coords="371,176,533,250,823,381,818,383,531,254,371,181"/>
+<area shape="poly" title=" " alt="" coords="416,176,847,249,936,256,1052,261,1166,272,1213,283,1249,298,1285,325,1306,356,1318,388,1323,422,1333,496,1345,535,1366,575,1384,597,1404,617,1451,650,1500,675,1546,695,1541,695,1498,680,1448,655,1401,621,1380,601,1362,578,1340,537,1328,497,1318,423,1313,390,1301,358,1281,329,1247,302,1212,288,1165,277,1052,266,936,261,846,255,417,182"/>
+<area shape="poly" title=" " alt="" coords="270,171,236,178,199,189,164,205,134,228,118,249,111,268,109,319,109,565,112,574,118,583,145,600,187,616,243,630,386,654,556,673,737,687,910,696,1167,709,1162,709,909,702,736,692,556,678,385,659,242,635,185,621,142,605,114,587,107,576,104,565,104,319,105,268,113,246,130,224,161,200,198,184,235,173,274,168"/>
+<area shape="poly" title=" " alt="" coords="348,176,361,223,383,287,399,322,418,355,442,386,470,412,508,431,564,446,696,471,691,472,563,451,506,436,466,417,438,390,414,358,394,324,378,289,356,225,347,182"/>
+<area shape="rect" title=" " alt="" coords="144,226,261,252"/>
+<area shape="poly" title=" " alt="" coords="319,181,242,221,239,217,323,177"/>
+<area shape="rect" href="../../d9/d6c/star__sensor__hcsr04__constants_8h.html" title="Type&#45;safe constants for HC&#45;SR04 ultrasonic sensor." alt="" coords="286,462,421,503"/>
+<area shape="poly" title=" " alt="" coords="343,177,333,227,324,321,326,362,333,414,342,448,337,447,328,415,321,362,319,320,328,226,340,181"/>
+<area shape="poly" title=" " alt="" coords="412,501,629,570,767,610,907,648,1047,678,1167,702,1162,702,1046,683,906,653,766,616,628,575,411,506"/>
+<area shape="poly" title=" " alt="" coords="1164,178,1092,217,1001,255,967,263,937,267,884,268,860,269,835,274,810,284,782,302,742,342,713,390,693,443,679,499,672,553,670,604,671,684,667,681,664,604,667,553,674,498,687,442,708,388,738,339,778,298,807,279,834,269,859,264,884,262,937,262,966,258,999,249,1090,212,1160,180"/>
+<area shape="poly" title=" " alt="" coords="1087,180,699,230,697,225,1092,177"/>
+<area shape="poly" title=" " alt="" coords="1278,168,1410,176,1577,190,1763,211,1953,241,2043,260,2129,282,2207,306,2275,334,2332,365,2376,400,2392,418,2404,438,2411,459,2413,481,2413,565,2408,597,2393,623,2371,646,2344,664,2281,690,2219,705,2218,699,2279,685,2342,659,2368,642,2389,620,2403,595,2408,565,2408,481,2406,461,2399,441,2387,422,2372,403,2329,369,2273,339,2205,311,2127,287,2042,265,1952,247,1762,216,1576,195,1409,181,1279,173"/>
+<area shape="poly" title=" " alt="" coords="1222,176,1467,249,1562,267,1690,280,1836,292,1988,308,2130,331,2193,346,2249,364,2296,386,2332,413,2355,444,2361,462,2363,481,2363,566,2356,580,2338,594,2274,618,2181,640,2069,660,1833,690,1649,708,1648,703,1832,685,2069,654,2180,635,2272,613,2335,589,2352,577,2357,565,2357,481,2355,463,2350,447,2328,417,2293,391,2247,369,2192,351,2129,336,1987,313,1836,297,1689,285,1561,272,1466,255,1222,182"/>
+<area shape="poly" title=" " alt="" coords="1177,177,1134,241,1098,301,1088,332,1084,357,1084,382,1089,414,1112,493,1142,570,1200,686,1195,684,1137,572,1107,495,1084,415,1079,382,1078,356,1083,330,1094,299,1129,238,1173,180"/>
 </map>
 </div>
 </div>
@@ -221,12 +226,12 @@ Include dependency graph for dht22_task.c:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:af2aa5f90212b8ec0353f88ceeaec9c05" id="r_af2aa5f90212b8ec0353f88ceeaec9c05"><td class="memItemLeft" align="right" valign="top">static esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af2aa5f90212b8ec0353f88ceeaec9c05">internal_init_dht22</a> (<a class="el" href="../../db/d05/structdht22__task__context__t.html">dht22_task_context_t</a> *ctx)</td></tr>
-<tr class="memitem:a8f42bf8aaed1ac21e66e803756f2b046" id="r_a8f42bf8aaed1ac21e66e803756f2b046"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8f42bf8aaed1ac21e66e803756f2b046">internal_deinit_dht22</a> (<a class="el" href="../../db/d05/structdht22__task__context__t.html">dht22_task_context_t</a> *ctx)</td></tr>
-<tr class="memitem:a7b3a87af67c2b24b1f0e83e307e2715b" id="r_a7b3a87af67c2b24b1f0e83e307e2715b"><td class="memItemLeft" align="right" valign="top">static esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7b3a87af67c2b24b1f0e83e307e2715b">internal_read_dht22</a> (<a class="el" href="../../db/d05/structdht22__task__context__t.html">dht22_task_context_t</a> *ctx)</td></tr>
-<tr class="memitem:ab28598715bb940c2458d04d337037432" id="r_ab28598715bb940c2458d04d337037432"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab28598715bb940c2458d04d337037432">internal_dht22_task_loop</a> (void *parameter)</td></tr>
-<tr class="memitem:a9d856aeaa4dfc864b2d6446139430971" id="r_a9d856aeaa4dfc864b2d6446139430971"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9d856aeaa4dfc864b2d6446139430971">dht22_task_start</a> (<a class="el" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a> *bus_manager, const char *bus_name)</td></tr>
-<tr class="memdesc:a9d856aeaa4dfc864b2d6446139430971"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize DHT22 monitoring task.  <br /></td></tr>
+<tr class="memitem:a133c28d824e59d67b34c1e1b7f91f430" id="r_a133c28d824e59d67b34c1e1b7f91f430"><td class="memItemLeft" align="right" valign="top">static esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a133c28d824e59d67b34c1e1b7f91f430">internal_init_dht22</a> (<a class="el" href="../../db/d05/structdht22__task__context__t.html">dht22_task_context_t</a> *const ctx)</td></tr>
+<tr class="memitem:a6fa67c3a449b474ee2110da2b31278c8" id="r_a6fa67c3a449b474ee2110da2b31278c8"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6fa67c3a449b474ee2110da2b31278c8">internal_deinit_dht22</a> (<a class="el" href="../../db/d05/structdht22__task__context__t.html">dht22_task_context_t</a> *const ctx)</td></tr>
+<tr class="memitem:acf0cd8b6c7894c00402a62a6c72d659b" id="r_acf0cd8b6c7894c00402a62a6c72d659b"><td class="memItemLeft" align="right" valign="top">static esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acf0cd8b6c7894c00402a62a6c72d659b">internal_read_dht22</a> (<a class="el" href="../../db/d05/structdht22__task__context__t.html">dht22_task_context_t</a> *const ctx)</td></tr>
+<tr class="memitem:a7c98847a5751aa53f1d5d8ba86b6df8e" id="r_a7c98847a5751aa53f1d5d8ba86b6df8e"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7c98847a5751aa53f1d5d8ba86b6df8e">internal_dht22_task_loop</a> (void *const parameter)</td></tr>
+<tr class="memitem:ad5fc3ca549615b42dcfbb1926e7e5cb0" id="r_ad5fc3ca549615b42dcfbb1926e7e5cb0"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad5fc3ca549615b42dcfbb1926e7e5cb0">dht22_task_start</a> (<a class="el" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a> *const bus_manager, const char *const bus_name)</td></tr>
+<tr class="memdesc:ad5fc3ca549615b42dcfbb1926e7e5cb0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize DHT22 monitoring task.  <br /></td></tr>
 <tr class="memitem:a8128cca1924c2cd16b8f1979d4b45199" id="r_a8128cca1924c2cd16b8f1979d4b45199"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8128cca1924c2cd16b8f1979d4b45199">dht22_task_stop</a> (void)</td></tr>
 <tr class="memdesc:a8128cca1924c2cd16b8f1979d4b45199"><td class="mdescLeft">&#160;</td><td class="mdescRight">Stop DHT22 monitoring task.  <br /></td></tr>
 <tr class="memitem:a1f6c9969c4344276c47fd4241d599ff0" id="r_a1f6c9969c4344276c47fd4241d599ff0"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1f6c9969c4344276c47fd4241d599ff0">dht22_task_is_running</a> (void)</td></tr>
@@ -273,9 +278,9 @@ Variables</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if statistics are available </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00228">228</a> of file <a class="el" href="../../d0/d9c/dht22__task_8c_source.html">dht22_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00231">231</a> of file <a class="el" href="../../d0/d9c/dht22__task_8c_source.html">dht22_task.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00010">s_g_context_initialized</a>, and <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00012">s_task_context</a>.</p>
+<p class="reference">References <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00011">s_g_context_initialized</a>, and <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00014">s_task_context</a>.</p>
 
 </div>
 </div>
@@ -304,9 +309,9 @@ Variables</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if a valid temperature is available </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00218">218</a> of file <a class="el" href="../../d0/d9c/dht22__task_8c_source.html">dht22_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00221">221</a> of file <a class="el" href="../../d0/d9c/dht22__task_8c_source.html">dht22_task.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00010">s_g_context_initialized</a>, and <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00012">s_task_context</a>.</p>
+<p class="reference">References <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00011">s_g_context_initialized</a>, and <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00014">s_task_context</a>.</p>
 
 </div>
 </div>
@@ -328,11 +333,11 @@ Variables</h2></td></tr>
 <p>Check if DHT22 task is running. </p>
 <dl class="section return"><dt>Returns</dt><dd>true if task is active and monitoring sensor </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00212">212</a> of file <a class="el" href="../../d0/d9c/dht22__task_8c_source.html">dht22_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00215">215</a> of file <a class="el" href="../../d0/d9c/dht22__task_8c_source.html">dht22_task.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00010">s_g_context_initialized</a>, and <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00012">s_task_context</a>.</p>
+<p class="reference">References <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00011">s_g_context_initialized</a>, and <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00014">s_task_context</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00063">internal_assess_task_health()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00106">internal_assess_task_health()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -343,13 +348,13 @@ Here is the caller graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="1122,48,1093,50,1093,45,1128,47"/>
 <area shape="rect" href="../../dc/d96/watchdog__task_8c.html#acc127e75275d2f65ba4158f4c0ea8821" title=" " alt="" coords="743,27,900,68"/>
 <area shape="poly" title=" " alt="" coords="930,48,901,50,901,45,935,47"/>
-<area shape="rect" href="../../dc/d96/watchdog__task_8c.html#a8486e8e6f170a4d179157051b1510c61" title=" " alt="" coords="505,5,695,31"/>
+<area shape="rect" href="../../dc/d96/watchdog__task_8c.html#a914a83d91bb924807d2c34ddb767e056" title=" " alt="" coords="505,5,695,31"/>
 <area shape="poly" title=" " alt="" coords="725,35,695,33,695,28,730,35"/>
 <area shape="rect" href="../../dc/d96/watchdog__task_8c.html#a3952d706fb7b287213a32d8ab6d39444" title="Force immediate system health check." alt="" coords="527,55,673,96"/>
 <area shape="poly" title=" " alt="" coords="730,59,674,69,673,64,725,60"/>
 <area shape="rect" href="../../dc/d96/watchdog__task_8c.html#a1047c0564b9275f58ba51b089d9c5377" title="Start the system watchdog task." alt="" coords="315,5,457,31"/>
 <area shape="poly" title=" " alt="" coords="487,18,458,21,457,16,492,18"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,5,267,31"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,5,267,31"/>
 <area shape="poly" title=" " alt="" coords="297,19,268,21,267,16,302,18"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
 <area shape="poly" title=" " alt="" coords="113,19,84,21,82,16,117,17"/>
@@ -358,8 +363,8 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="a9d856aeaa4dfc864b2d6446139430971" name="a9d856aeaa4dfc864b2d6446139430971"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a9d856aeaa4dfc864b2d6446139430971">&#9670;&#160;</a></span>dht22_task_start()</h2>
+<a id="ad5fc3ca549615b42dcfbb1926e7e5cb0" name="ad5fc3ca549615b42dcfbb1926e7e5cb0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad5fc3ca549615b42dcfbb1926e7e5cb0">&#9670;&#160;</a></span>dht22_task_start()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -372,7 +377,7 @@ Here is the caller graph for this function:</div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const char *</td>          <td class="paramname"><span class="paramname"><em>bus_name</em></span>&#160;)</td>
+          <td class="paramtype">const char *const</td>          <td class="paramname"><span class="paramname"><em>bus_name</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -388,90 +393,94 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00126">126</a> of file <a class="el" href="../../d0/d9c/dht22__task_8c_source.html">dht22_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00132">132</a> of file <a class="el" href="../../d0/d9c/dht22__task_8c_source.html">dht22_task.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00102">DEFAULT_TEMPERATURE_C</a>, <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00068">shared_context_t::dht22_task_handle</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00037">internal_deinit_dht22()</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00101">internal_dht22_task_loop()</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00017">internal_init_dht22()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00010">s_g_context_initialized</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00012">s_task_context</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00114">shared_data_get_context()</a>, <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00079">TASK_PRIORITY_DHT22</a>, and <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00085">TASK_STACK_SIZE_DHT22</a>.</p>
+<p class="reference">References <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00069">shared_context_t::dht22_task_handle</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00039">internal_deinit_dht22()</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00107">internal_dht22_task_loop()</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00019">internal_init_dht22()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00011">s_g_context_initialized</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00014">s_task_context</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00117">shared_data_get_context()</a>, and <a class="el" href="../../d3/dff/system__config_8c_source.html#l00035">STAR_SYSTEM_CONFIG</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00111">start_system_tasks()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00115">start_system_tasks()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d0/d9c/dht22__task_8c_a9d856aeaa4dfc864b2d6446139430971_cgraph.png" border="0" usemap="#ad0/d9c/dht22__task_8c_a9d856aeaa4dfc864b2d6446139430971_cgraph" loading="lazy" alt=""/></div>
-<map name="ad0/d9c/dht22__task_8c_a9d856aeaa4dfc864b2d6446139430971_cgraph" id="ad0/d9c/dht22__task_8c_a9d856aeaa4dfc864b2d6446139430971_cgraph">
-<area shape="rect" title="Initialize DHT22 monitoring task." alt="" coords="5,233,124,258"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a8f42bf8aaed1ac21e66e803756f2b046" title=" " alt="" coords="184,157,324,182"/>
-<area shape="poly" title=" " alt="" coords="89,230,171,193,193,186,189,190,173,197,93,234"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#ab28598715bb940c2458d04d337037432" title=" " alt="" coords="172,257,337,282"/>
-<area shape="poly" title=" " alt="" coords="123,251,158,256,154,259,125,256"/>
-<area shape="rect" href="../../db/d0d/shared__data_8c.html#acf829b11efe6efde5ff9c9a1798b05c9" title="Get pointer to global shared context." alt="" coords="594,477,762,502"/>
-<area shape="poly" title=" " alt="" coords="93,256,173,293,375,383,465,420,582,462,610,473,604,472,580,467,463,425,373,388,171,297,94,262"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#af2aa5f90212b8ec0353f88ceeaec9c05" title=" " alt="" coords="191,208,318,233"/>
-<area shape="poly" title=" " alt="" coords="123,235,178,229,174,233,125,240"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a33090880255f8b20c0f8cd7245dc7468" title="Deinitialize DHT22 bus." alt="" coords="385,92,533,117"/>
-<area shape="poly" title=" " alt="" coords="296,154,404,121,399,124,298,159"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ad84a1750c76d3cacd25aa7711b5fbdb5" title="Get DHT22 state for a bus (thread&#45;safe)." alt="" coords="860,34,974,60"/>
-<area shape="poly" title=" " alt="" coords="502,89,581,70,721,53,847,48,842,50,721,58,582,75,504,93"/>
+<div class="center"><img src="../../d0/d9c/dht22__task_8c_ad5fc3ca549615b42dcfbb1926e7e5cb0_cgraph.png" border="0" usemap="#ad0/d9c/dht22__task_8c_ad5fc3ca549615b42dcfbb1926e7e5cb0_cgraph" loading="lazy" alt=""/></div>
+<map name="ad0/d9c/dht22__task_8c_ad5fc3ca549615b42dcfbb1926e7e5cb0_cgraph" id="ad0/d9c/dht22__task_8c_ad5fc3ca549615b42dcfbb1926e7e5cb0_cgraph">
+<area shape="rect" title="Initialize DHT22 monitoring task." alt="" coords="5,388,124,413"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a6fa67c3a449b474ee2110da2b31278c8" title=" " alt="" coords="184,312,324,337"/>
+<area shape="poly" title=" " alt="" coords="89,385,171,347,193,341,189,344,173,352,93,389"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a7c98847a5751aa53f1d5d8ba86b6df8e" title=" " alt="" coords="172,412,337,437"/>
+<area shape="poly" title=" " alt="" coords="123,405,158,410,154,413,125,410"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#acf829b11efe6efde5ff9c9a1798b05c9" title="Get pointer to global shared context." alt="" coords="594,656,762,681"/>
+<area shape="poly" title=" " alt="" coords="90,411,290,514,433,580,582,640,607,651,602,650,580,646,431,585,288,519,89,416"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a133c28d824e59d67b34c1e1b7f91f430" title=" " alt="" coords="191,362,318,388"/>
+<area shape="poly" title=" " alt="" coords="123,390,178,384,174,387,125,395"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a33090880255f8b20c0f8cd7245dc7468" title="Deinitialize DHT22 bus." alt="" coords="385,185,533,210"/>
+<area shape="poly" title=" " alt="" coords="275,309,426,217,423,221,279,313"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ad84a1750c76d3cacd25aa7711b5fbdb5" title="Get DHT22 state for a bus (thread&#45;safe)." alt="" coords="860,97,974,122"/>
+<area shape="poly" title=" " alt="" coords="478,182,524,156,581,132,649,117,720,109,846,106,842,108,720,114,650,123,582,138,526,161,482,187"/>
 <area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a15fbe86b35253f8620cdba249493f6fa" title="Get DHT22 state for a bus (must be called with mutex held)." alt="" coords="1059,5,1186,46"/>
-<area shape="poly" title=" " alt="" coords="974,39,1046,33,1041,35,975,44"/>
+<area shape="poly" title=" " alt="" coords="950,94,1059,51,1054,54,952,99"/>
 <area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a9cd874b0290191f0e8a2200e9a727f58" title="Initialize DHT22 global mutex (thread&#45;safe)." alt="" coords="1060,71,1186,111"/>
-<area shape="poly" title=" " alt="" coords="974,56,1047,74,1041,75,974,62"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a7b3a87af67c2b24b1f0e83e307e2715b" title=" " alt="" coords="392,289,526,314"/>
-<area shape="poly" title=" " alt="" coords="337,280,379,288,374,289,338,285"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a18d3355004199a30ef5025ab6b3ce093" title="Update temperature for sound speed correction." alt="" coords="609,281,747,322"/>
-<area shape="poly" title=" " alt="" coords="526,299,596,301,591,302,527,304"/>
-<area shape="rect" href="../../db/d0d/shared__data_8c.html#aa9b69e0ebd197bd59ed54b5c0e0e52cb" title="Create temperature data structure." alt="" coords="610,347,746,387"/>
-<area shape="poly" title=" " alt="" coords="505,312,598,342,593,343,505,318"/>
-<area shape="poly" title=" " alt="" coords="471,312,583,462,593,471,588,469,580,466,469,317"/>
-<area shape="rect" href="../../db/d0d/shared__data_8c.html#ae2676e0ead5151dee19e747afd0b728e" title="Update current temperature." alt="" coords="581,182,775,208"/>
-<area shape="poly" title=" " alt="" coords="475,286,520,251,580,217,599,212,594,214,583,221,523,256,478,290"/>
-<area shape="rect" href="../../db/d0d/shared__data_8c.html#a75fe9693d2b770652fe4b4e67986202a" title="Update system health statistics." alt="" coords="609,412,747,453"/>
-<area shape="poly" title=" " alt="" coords="475,312,521,354,583,397,597,406,592,405,580,401,518,358,473,318"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#aca1c661507907f9a75543f43e1d7164c" title="Read temperature and humidity from DHT22 sensor." alt="" coords="607,232,749,257"/>
-<area shape="poly" title=" " alt="" coords="510,286,614,261,609,263,512,291"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a2e85c932ed841039293042898baf93b7" title="Set temperature for compensation." alt="" coords="849,380,984,421"/>
-<area shape="poly" title=" " alt="" coords="747,320,776,333,800,349,824,366,837,374,832,374,821,371,797,354,773,337,746,325"/>
-<area shape="rect" href="../../db/d0d/shared__data_8c.html#a3bdf4ea7cbcd1af874c68f1da508ae3b" title="Get system uptime in milliseconds." alt="" coords="823,445,1011,470"/>
-<area shape="poly" title=" " alt="" coords="746,385,776,398,800,414,824,430,843,440,838,439,821,435,797,419,773,403,745,390"/>
-<area shape="poly" title=" " alt="" coords="748,437,810,446,805,446,748,442"/>
-<area shape="poly" title=" " alt="" coords="748,232,773,218,791,196,799,174,805,149,821,121,850,91,880,70,884,68,853,95,825,125,810,151,804,175,796,199,776,222,750,237"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a0cefc084690818ee196b34da74bcf4e4" title="Read raw data from DHT22 sensor." alt="" coords="864,330,970,356"/>
-<area shape="poly" title=" " alt="" coords="748,255,776,267,791,280,801,292,810,304,824,315,851,330,846,329,821,320,806,308,797,295,788,283,773,272,748,260"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a2b6eb006720d74c12343fee2c65b6d01" title="Calculate checksum from raw data." alt="" coords="832,135,1002,175"/>
-<area shape="poly" title=" " alt="" coords="744,228,773,218,797,203,821,186,834,183,839,181,824,191,800,207,776,223,746,233"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a5f2659d313c7223f531d49a3584d84a3" title="Convert raw temperature to Celsius." alt="" coords="848,200,986,241"/>
-<area shape="poly" title=" " alt="" coords="749,235,835,228,829,229,750,240"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ab03f05ea4c39d5883e95b0db468a5a92" title="Convert raw humidity to percentage." alt="" coords="848,265,986,306"/>
-<area shape="poly" title=" " alt="" coords="749,254,835,271,829,271,750,259"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ada0028be4bd29beb995c4990d33a0dff" title="Delay in microseconds." alt="" coords="1086,204,1159,229"/>
-<area shape="poly" title=" " alt="" coords="970,333,990,326,1009,316,1026,298,1033,279,1041,259,1057,238,1069,233,1074,231,1061,242,1045,261,1038,281,1030,300,1013,320,993,331,971,339"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#af3c6d2f2ae3b906ff2590c579ae42e8f" title="Set GPIO output high." alt="" coords="1084,142,1161,168"/>
-<area shape="poly" title=" " alt="" coords="970,335,991,328,1009,316,1022,301,1029,286,1034,256,1039,224,1045,207,1057,189,1074,177,1078,175,1061,193,1050,209,1044,225,1040,257,1034,288,1026,304,1013,320,993,332,971,340"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a40df8a338e77a732f53aca4fa72d5192" title="Set GPIO output low." alt="" coords="1086,253,1159,278"/>
-<area shape="poly" title=" " alt="" coords="970,329,1010,315,1034,302,1058,287,1069,285,1074,283,1060,292,1037,306,1012,320,971,334"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ac56257b5f48f81efe2392e6e28b8393a" title="Set GPIO to input mode." alt="" coords="1070,302,1175,328"/>
-<area shape="poly" title=" " alt="" coords="970,333,1057,324,1052,325,971,338"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a2c233a46f4a9bf09057e07a1243c2dea" title="Set GPIO to output mode." alt="" coords="1066,352,1179,377"/>
-<area shape="poly" title=" " alt="" coords="970,346,1053,357,1048,357,971,351"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ac0af9cb9d464422a719e1e0bb987d80f" title="Wait for GPIO level change and measure duration." alt="" coords="1068,401,1177,426"/>
-<area shape="poly" title=" " alt="" coords="971,353,1012,366,1060,387,1074,395,1069,394,1058,392,1010,371,970,358"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a6068135097f7705a28bda46fb88640d2" title="Wait for GPIO to reach expected level with timeout." alt="" coords="1072,450,1173,476"/>
-<area shape="poly" title=" " alt="" coords="971,348,993,355,1013,366,1030,384,1038,402,1046,420,1061,437,1066,443,1061,442,1057,441,1041,423,1033,404,1025,387,1009,370,991,360,970,353"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a71842e7ab86cba68432d023f022556d5" title="Read GPIO input." alt="" coords="1234,426,1312,452"/>
-<area shape="poly" title=" " alt="" coords="1178,420,1221,430,1216,430,1178,426"/>
-<area shape="poly" title=" " alt="" coords="1174,452,1216,448,1222,447,1174,458"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#aea453f5595346f56e5018f91516f4a77" title="Initialize DHT22 bus." alt="" coords="611,85,745,110"/>
-<area shape="poly" title=" " alt="" coords="301,204,618,113,615,117,303,209"/>
-<area shape="poly" title=" " alt="" coords="741,82,846,61,842,63,743,87"/>
-<area shape="poly" title=" " alt="" coords="745,96,869,103,1011,120,1072,137,1067,138,1011,126,869,108,746,101"/>
+<area shape="poly" title=" " alt="" coords="973,102,1047,97,1042,99,975,107"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#acf0cd8b6c7894c00402a62a6c72d659b" title=" " alt="" coords="392,476,526,501"/>
+<area shape="poly" title=" " alt="" coords="298,435,404,470,399,471,298,440"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a94ca5e663b3388b7dddc4169818e4745" title="Update temperature for sound speed correction." alt="" coords="609,411,747,451"/>
+<area shape="poly" title=" " alt="" coords="510,472,596,452,591,454,512,477"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#a3995c9b95b6f83c65b7e55700c240a46" title="Create temperature data structure." alt="" coords="610,525,746,566"/>
+<area shape="poly" title=" " alt="" coords="511,499,598,524,593,524,511,504"/>
+<area shape="poly" title=" " alt="" coords="472,499,536,582,583,641,594,649,589,648,580,645,531,586,469,504"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#adbcb3df569fd80605c33af86cd27cfdf" title="Update current temperature." alt="" coords="581,476,775,501"/>
+<area shape="poly" title=" " alt="" coords="526,486,568,488,563,489,527,491"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#a47f0e051075a416c6ba8d608d931751b" title="Update system health statistics." alt="" coords="609,591,747,631"/>
+<area shape="poly" title=" " alt="" coords="476,499,523,537,583,575,597,585,592,584,580,580,520,541,475,504"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#aca1c661507907f9a75543f43e1d7164c" title="Read temperature and humidity from DHT22 sensor." alt="" coords="607,312,749,337"/>
+<area shape="poly" title=" " alt="" coords="477,473,645,347,650,345,480,477"/>
+<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a98a96e56a9e83ceb44df24d730698884" title="Set temperature for compensation." alt="" coords="849,468,984,509"/>
+<area shape="poly" title=" " alt="" coords="748,445,836,468,831,469,748,450"/>
+<area shape="rect" href="../../d4/d7e/system__config_8h.html#ae1333c5306d999ad9d292b11465114c2" title="Validate temperature reading." alt="" coords="831,533,1002,558"/>
+<area shape="poly" title=" " alt="" coords="748,446,776,461,792,476,801,491,809,505,824,518,836,527,831,526,821,523,805,508,796,493,788,479,773,465,747,451"/>
+<area shape="poly" title=" " alt="" coords="746,543,818,545,813,546,746,548"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#a3bdf4ea7cbcd1af874c68f1da508ae3b" title="Get system uptime in milliseconds." alt="" coords="823,590,1011,616"/>
+<area shape="poly" title=" " alt="" coords="746,559,848,586,843,586,746,564"/>
+<area shape="poly" title=" " alt="" coords="735,499,848,529,843,529,735,504"/>
+<area shape="poly" title=" " alt="" coords="747,606,810,606,804,607,748,611"/>
+<area shape="poly" title=" " alt="" coords="692,309,887,135,892,132,696,313"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a0cefc084690818ee196b34da74bcf4e4" title="Read raw data from DHT22 sensor." alt="" coords="864,222,970,248"/>
+<area shape="poly" title=" " alt="" coords="705,309,758,284,822,258,851,251,846,253,824,263,760,289,707,313"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a2b6eb006720d74c12343fee2c65b6d01" title="Calculate checksum from raw data." alt="" coords="832,272,1002,313"/>
+<area shape="poly" title=" " alt="" coords="749,312,820,305,815,306,750,317"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a5f2659d313c7223f531d49a3584d84a3" title="Convert raw temperature to Celsius." alt="" coords="848,337,986,378"/>
+<area shape="poly" title=" " alt="" coords="749,332,835,345,829,346,750,337"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ab03f05ea4c39d5883e95b0db468a5a92" title="Convert raw humidity to percentage." alt="" coords="848,403,986,443"/>
+<area shape="poly" title=" " alt="" coords="707,335,824,387,843,397,838,397,822,392,707,340"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ada0028be4bd29beb995c4990d33a0dff" title="Delay in microseconds." alt="" coords="1086,185,1159,210"/>
+<area shape="poly" title=" " alt="" coords="970,223,1074,206,1069,208,971,228"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#af3c6d2f2ae3b906ff2590c579ae42e8f" title="Set GPIO output high." alt="" coords="1084,136,1161,161"/>
+<area shape="poly" title=" " alt="" coords="946,219,1058,170,1074,166,1069,168,1060,175,948,224"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a40df8a338e77a732f53aca4fa72d5192" title="Set GPIO output low." alt="" coords="1086,234,1159,260"/>
+<area shape="poly" title=" " alt="" coords="970,235,1074,243,1069,245,971,241"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ac56257b5f48f81efe2392e6e28b8393a" title="Set GPIO to input mode." alt="" coords="1070,284,1175,309"/>
+<area shape="poly" title=" " alt="" coords="969,246,1012,258,1070,278,1065,278,1010,263,969,251"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a2c233a46f4a9bf09057e07a1243c2dea" title="Set GPIO to output mode." alt="" coords="1066,333,1179,358"/>
+<area shape="poly" title=" " alt="" coords="970,240,992,248,1013,258,1029,273,1038,289,1046,305,1061,320,1067,326,1062,325,1057,324,1042,308,1033,292,1025,277,1009,263,990,253,970,246"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ac0af9cb9d464422a719e1e0bb987d80f" title="Wait for GPIO level change and measure duration." alt="" coords="1068,382,1177,408"/>
+<area shape="poly" title=" " alt="" coords="970,238,993,246,1013,258,1025,272,1033,286,1038,314,1043,342,1050,356,1061,369,1064,374,1059,373,1057,373,1045,358,1038,344,1033,315,1028,288,1021,275,1009,262,991,251,970,243"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a6068135097f7705a28bda46fb88640d2" title="Wait for GPIO to reach expected level with timeout." alt="" coords="1072,432,1173,457"/>
+<area shape="poly" title=" " alt="" coords="971,237,993,245,1013,258,1029,279,1036,299,1039,339,1040,379,1047,399,1061,419,1063,423,1058,421,1057,422,1042,401,1035,380,1033,339,1031,300,1024,281,1009,262,991,250,971,242"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a71842e7ab86cba68432d023f022556d5" title="Read GPIO input." alt="" coords="1234,408,1312,433"/>
+<area shape="poly" title=" " alt="" coords="1178,402,1221,411,1216,411,1178,407"/>
+<area shape="poly" title=" " alt="" coords="1174,434,1222,428,1216,429,1174,439"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#aea453f5595346f56e5018f91516f4a77" title="Initialize DHT22 bus." alt="" coords="611,148,745,173"/>
+<area shape="poly" title=" " alt="" coords="303,359,336,347,425,305,511,259,646,180,641,184,513,263,427,310,338,352,306,364"/>
+<area shape="poly" title=" " alt="" coords="741,144,846,124,842,126,743,149"/>
+<area shape="poly" title=" " alt="" coords="745,156,1071,149,1067,151,746,161"/>
 </map>
 </div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d0/d9c/dht22__task_8c_a9d856aeaa4dfc864b2d6446139430971_icgraph.png" border="0" usemap="#ad0/d9c/dht22__task_8c_a9d856aeaa4dfc864b2d6446139430971_icgraph" loading="lazy" alt=""/></div>
-<map name="ad0/d9c/dht22__task_8c_a9d856aeaa4dfc864b2d6446139430971_icgraph" id="ad0/d9c/dht22__task_8c_a9d856aeaa4dfc864b2d6446139430971_icgraph">
+<div class="center"><img src="../../d0/d9c/dht22__task_8c_ad5fc3ca549615b42dcfbb1926e7e5cb0_icgraph.png" border="0" usemap="#ad0/d9c/dht22__task_8c_ad5fc3ca549615b42dcfbb1926e7e5cb0_icgraph" loading="lazy" alt=""/></div>
+<map name="ad0/d9c/dht22__task_8c_ad5fc3ca549615b42dcfbb1926e7e5cb0_icgraph" id="ad0/d9c/dht22__task_8c_ad5fc3ca549615b42dcfbb1926e7e5cb0_icgraph">
 <area shape="rect" title="Initialize DHT22 monitoring task." alt="" coords="315,5,433,31"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,5,267,31"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,5,267,31"/>
 <area shape="poly" title=" " alt="" coords="297,18,268,21,267,16,302,18"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
 <area shape="poly" title=" " alt="" coords="112,19,83,21,83,16,118,18"/>
@@ -499,18 +508,18 @@ Here is the caller graph for this function:</div>
 <p>Cleanly shuts down the DHT22 task and deinitializes the sensor.</p>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00180">180</a> of file <a class="el" href="../../d0/d9c/dht22__task_8c_source.html">dht22_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00186">186</a> of file <a class="el" href="../../d0/d9c/dht22__task_8c_source.html">dht22_task.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00068">shared_context_t::dht22_task_handle</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00037">internal_deinit_dht22()</a>, <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00128">NOTIFICATION_TIMEOUT_MS</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00010">s_g_context_initialized</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00012">s_task_context</a>, and <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00114">shared_data_get_context()</a>.</p>
+<p class="reference">References <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00069">shared_context_t::dht22_task_handle</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00039">internal_deinit_dht22()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00011">s_g_context_initialized</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00014">s_task_context</a>, and <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00117">shared_data_get_context()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00111">start_system_tasks()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00115">start_system_tasks()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d0/d9c/dht22__task_8c_a8128cca1924c2cd16b8f1979d4b45199_cgraph.png" border="0" usemap="#ad0/d9c/dht22__task_8c_a8128cca1924c2cd16b8f1979d4b45199_cgraph" loading="lazy" alt=""/></div>
 <map name="ad0/d9c/dht22__task_8c_a8128cca1924c2cd16b8f1979d4b45199_cgraph" id="ad0/d9c/dht22__task_8c_a8128cca1924c2cd16b8f1979d4b45199_cgraph">
 <area shape="rect" title="Stop DHT22 monitoring task." alt="" coords="5,72,123,97"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a8f42bf8aaed1ac21e66e803756f2b046" title=" " alt="" coords="184,46,324,72"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a6fa67c3a449b474ee2110da2b31278c8" title=" " alt="" coords="184,46,324,72"/>
 <area shape="poly" title=" " alt="" coords="123,74,171,70,166,71,124,79"/>
 <area shape="rect" href="../../db/d0d/shared__data_8c.html#acf829b11efe6efde5ff9c9a1798b05c9" title="Get pointer to global shared context." alt="" coords="171,96,338,121"/>
 <area shape="poly" title=" " alt="" coords="123,89,158,96,153,96,123,94"/>
@@ -530,7 +539,7 @@ Here is the caller graph for this function:</div>
 <div class="center"><img src="../../d0/d9c/dht22__task_8c_a8128cca1924c2cd16b8f1979d4b45199_icgraph.png" border="0" usemap="#ad0/d9c/dht22__task_8c_a8128cca1924c2cd16b8f1979d4b45199_icgraph" loading="lazy" alt=""/></div>
 <map name="ad0/d9c/dht22__task_8c_a8128cca1924c2cd16b8f1979d4b45199_icgraph" id="ad0/d9c/dht22__task_8c_a8128cca1924c2cd16b8f1979d4b45199_icgraph">
 <area shape="rect" title="Stop DHT22 monitoring task." alt="" coords="315,5,432,31"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,5,267,31"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,5,267,31"/>
 <area shape="poly" title=" " alt="" coords="297,18,268,21,268,16,302,18"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
 <area shape="poly" title=" " alt="" coords="112,19,83,21,83,16,118,18"/>
@@ -539,8 +548,8 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="a8f42bf8aaed1ac21e66e803756f2b046" name="a8f42bf8aaed1ac21e66e803756f2b046"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8f42bf8aaed1ac21e66e803756f2b046">&#9670;&#160;</a></span>internal_deinit_dht22()</h2>
+<a id="a6fa67c3a449b474ee2110da2b31278c8" name="a6fa67c3a449b474ee2110da2b31278c8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6fa67c3a449b474ee2110da2b31278c8">&#9670;&#160;</a></span>internal_deinit_dht22()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -551,7 +560,7 @@ Here is the caller graph for this function:</div>
         <tr>
           <td class="memname">void internal_deinit_dht22 </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../db/d05/structdht22__task__context__t.html">dht22_task_context_t</a> *</td>          <td class="paramname"><span class="paramname"><em>ctx</em></span></td><td>)</td>
+          <td class="paramtype"><a class="el" href="../../db/d05/structdht22__task__context__t.html">dht22_task_context_t</a> *const</td>          <td class="paramname"><span class="paramname"><em>ctx</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -562,16 +571,16 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00037">37</a> of file <a class="el" href="../../d0/d9c/dht22__task_8c_source.html">dht22_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00039">39</a> of file <a class="el" href="../../d0/d9c/dht22__task_8c_source.html">dht22_task.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../df/db9/dht22__task_8h_source.html#l00016">dht22_task_context_t::bus_manager</a>, <a class="el" href="../../df/db9/dht22__task_8h_source.html#l00017">dht22_task_context_t::bus_name</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, <a class="el" href="../../df/db9/dht22__task_8h_source.html#l00020">dht22_task_context_t::sensor_initialized</a>, and <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00398">star_bus_dht22_deinit()</a>.</p>
+<p class="reference">References <a class="el" href="../../df/db9/dht22__task_8h_source.html#l00017">dht22_task_context_t::bus_manager</a>, <a class="el" href="../../df/db9/dht22__task_8h_source.html#l00018">dht22_task_context_t::bus_name</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../df/db9/dht22__task_8h_source.html#l00021">dht22_task_context_t::sensor_initialized</a>, and <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00425">star_bus_dht22_deinit()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00126">dht22_task_start()</a>, and <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00180">dht22_task_stop()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00132">dht22_task_start()</a>, and <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00186">dht22_task_stop()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d0/d9c/dht22__task_8c_a8f42bf8aaed1ac21e66e803756f2b046_cgraph.png" border="0" usemap="#ad0/d9c/dht22__task_8c_a8f42bf8aaed1ac21e66e803756f2b046_cgraph" loading="lazy" alt=""/></div>
-<map name="ad0/d9c/dht22__task_8c_a8f42bf8aaed1ac21e66e803756f2b046_cgraph" id="ad0/d9c/dht22__task_8c_a8f42bf8aaed1ac21e66e803756f2b046_cgraph">
+<div class="center"><img src="../../d0/d9c/dht22__task_8c_a6fa67c3a449b474ee2110da2b31278c8_cgraph.png" border="0" usemap="#ad0/d9c/dht22__task_8c_a6fa67c3a449b474ee2110da2b31278c8_cgraph" loading="lazy" alt=""/></div>
+<map name="ad0/d9c/dht22__task_8c_a6fa67c3a449b474ee2110da2b31278c8_cgraph" id="ad0/d9c/dht22__task_8c_a6fa67c3a449b474ee2110da2b31278c8_cgraph">
 <area shape="rect" title=" " alt="" coords="5,46,146,72"/>
 <area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a33090880255f8b20c0f8cd7245dc7468" title="Deinitialize DHT22 bus." alt="" coords="194,46,342,72"/>
 <area shape="poly" title=" " alt="" coords="146,56,181,58,176,60,146,62"/>
@@ -586,14 +595,14 @@ Here is the call graph for this function:</div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d0/d9c/dht22__task_8c_a8f42bf8aaed1ac21e66e803756f2b046_icgraph.png" border="0" usemap="#ad0/d9c/dht22__task_8c_a8f42bf8aaed1ac21e66e803756f2b046_icgraph" loading="lazy" alt=""/></div>
-<map name="ad0/d9c/dht22__task_8c_a8f42bf8aaed1ac21e66e803756f2b046_icgraph" id="ad0/d9c/dht22__task_8c_a8f42bf8aaed1ac21e66e803756f2b046_icgraph">
+<div class="center"><img src="../../d0/d9c/dht22__task_8c_a6fa67c3a449b474ee2110da2b31278c8_icgraph.png" border="0" usemap="#ad0/d9c/dht22__task_8c_a6fa67c3a449b474ee2110da2b31278c8_icgraph" loading="lazy" alt=""/></div>
+<map name="ad0/d9c/dht22__task_8c_a6fa67c3a449b474ee2110da2b31278c8_icgraph" id="ad0/d9c/dht22__task_8c_a6fa67c3a449b474ee2110da2b31278c8_icgraph">
 <area shape="rect" title=" " alt="" coords="481,31,622,56"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a9d856aeaa4dfc864b2d6446139430971" title="Initialize DHT22 monitoring task." alt="" coords="315,5,433,31"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#ad5fc3ca549615b42dcfbb1926e7e5cb0" title="Initialize DHT22 monitoring task." alt="" coords="315,5,433,31"/>
 <area shape="poly" title=" " alt="" coords="464,31,434,29,434,24,469,31"/>
 <area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a8128cca1924c2cd16b8f1979d4b45199" title="Stop DHT22 monitoring task." alt="" coords="316,55,433,80"/>
 <area shape="poly" title=" " alt="" coords="469,55,434,62,433,57,463,55"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,31,267,56"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,31,267,56"/>
 <area shape="poly" title=" " alt="" coords="297,29,268,36,267,31,302,29"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,31,83,56"/>
 <area shape="poly" title=" " alt="" coords="113,44,83,46,83,41,118,43"/>
@@ -603,8 +612,8 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="ab28598715bb940c2458d04d337037432" name="ab28598715bb940c2458d04d337037432"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab28598715bb940c2458d04d337037432">&#9670;&#160;</a></span>internal_dht22_task_loop()</h2>
+<a id="a7c98847a5751aa53f1d5d8ba86b6df8e" name="a7c98847a5751aa53f1d5d8ba86b6df8e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a7c98847a5751aa53f1d5d8ba86b6df8e">&#9670;&#160;</a></span>internal_dht22_task_loop()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -615,7 +624,7 @@ Here is the caller graph for this function:</div>
         <tr>
           <td class="memname">void internal_dht22_task_loop </td>
           <td>(</td>
-          <td class="paramtype">void *</td>          <td class="paramname"><span class="paramname"><em>parameter</em></span></td><td>)</td>
+          <td class="paramtype">void *const</td>          <td class="paramname"><span class="paramname"><em>parameter</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -626,78 +635,82 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00101">101</a> of file <a class="el" href="../../d0/d9c/dht22__task_8c_source.html">dht22_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00107">107</a> of file <a class="el" href="../../d0/d9c/dht22__task_8c_source.html">dht22_task.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00048">internal_read_dht22()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, <a class="el" href="../../df/db9/dht22__task_8h_source.html#l00020">dht22_task_context_t::sensor_initialized</a>, <a class="el" href="../../df/db9/dht22__task_8h_source.html#l00018">dht22_task_context_t::task_handle</a>, <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00091">TASK_INTERVAL_DHT22</a>, and <a class="el" href="../../df/db9/dht22__task_8h_source.html#l00019">dht22_task_context_t::task_running</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00050">internal_read_dht22()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../df/db9/dht22__task_8h_source.html#l00021">dht22_task_context_t::sensor_initialized</a>, <a class="el" href="../../d3/dff/system__config_8c_source.html#l00035">STAR_SYSTEM_CONFIG</a>, <a class="el" href="../../df/db9/dht22__task_8h_source.html#l00019">dht22_task_context_t::task_handle</a>, and <a class="el" href="../../df/db9/dht22__task_8h_source.html#l00020">dht22_task_context_t::task_running</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00126">dht22_task_start()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00132">dht22_task_start()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d0/d9c/dht22__task_8c_ab28598715bb940c2458d04d337037432_cgraph.png" border="0" usemap="#ad0/d9c/dht22__task_8c_ab28598715bb940c2458d04d337037432_cgraph" loading="lazy" alt=""/></div>
-<map name="ad0/d9c/dht22__task_8c_ab28598715bb940c2458d04d337037432_cgraph" id="ad0/d9c/dht22__task_8c_ab28598715bb940c2458d04d337037432_cgraph">
-<area shape="rect" title=" " alt="" coords="5,161,171,186"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a7b3a87af67c2b24b1f0e83e307e2715b" title=" " alt="" coords="219,161,353,186"/>
-<area shape="poly" title=" " alt="" coords="170,171,206,172,201,175,172,176"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a18d3355004199a30ef5025ab6b3ce093" title="Update temperature for sound speed correction." alt="" coords="428,5,567,46"/>
-<area shape="poly" title=" " alt="" coords="295,159,337,110,367,81,400,57,416,50,412,53,402,61,370,86,341,113,299,162"/>
-<area shape="rect" href="../../db/d0d/shared__data_8c.html#aa9b69e0ebd197bd59ed54b5c0e0e52cb" title="Create temperature data structure." alt="" coords="430,71,565,111"/>
-<area shape="poly" title=" " alt="" coords="314,158,400,121,419,116,415,118,402,125,317,162"/>
-<area shape="rect" href="../../db/d0d/shared__data_8c.html#acf829b11efe6efde5ff9c9a1798b05c9" title="Get pointer to global shared context." alt="" coords="414,136,581,161"/>
-<area shape="poly" title=" " alt="" coords="352,163,401,159,396,161,354,168"/>
-<area shape="rect" href="../../db/d0d/shared__data_8c.html#ae2676e0ead5151dee19e747afd0b728e" title="Update current temperature." alt="" coords="401,185,594,210"/>
-<area shape="poly" title=" " alt="" coords="353,179,388,184,383,186,354,184"/>
-<area shape="rect" href="../../db/d0d/shared__data_8c.html#a75fe9693d2b770652fe4b4e67986202a" title="Update system health statistics." alt="" coords="428,235,567,275"/>
-<area shape="poly" title=" " alt="" coords="316,184,402,221,420,229,414,229,400,225,316,190"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#aca1c661507907f9a75543f43e1d7164c" title="Read temperature and humidity from DHT22 sensor." alt="" coords="426,310,569,336"/>
-<area shape="poly" title=" " alt="" coords="298,184,341,233,370,261,402,285,437,304,432,304,400,289,367,265,338,237,297,190"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a2e85c932ed841039293042898baf93b7" title="Set temperature for compensation." alt="" coords="669,5,804,46"/>
-<area shape="poly" title=" " alt="" coords="567,23,656,25,651,27,568,28"/>
-<area shape="rect" href="../../db/d0d/shared__data_8c.html#a3bdf4ea7cbcd1af874c68f1da508ae3b" title="Get system uptime in milliseconds." alt="" coords="642,78,831,104"/>
-<area shape="poly" title=" " alt="" coords="565,88,629,90,624,92,566,94"/>
-<area shape="poly" title=" " alt="" coords="566,238,593,221,604,208,610,195,615,168,621,140,628,126,641,113,643,114,648,111,644,117,633,129,626,142,620,169,615,197,608,211,596,225,569,242"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ad84a1750c76d3cacd25aa7711b5fbdb5" title="Get DHT22 state for a bus (thread&#45;safe)." alt="" coords="679,128,794,153"/>
-<area shape="poly" title=" " alt="" coords="546,307,593,285,630,256,663,224,714,167,719,164,667,228,633,260,596,289,548,312"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a0cefc084690818ee196b34da74bcf4e4" title="Read raw data from DHT22 sensor." alt="" coords="683,273,790,298"/>
-<area shape="poly" title=" " alt="" coords="569,309,670,296,665,297,570,315"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a2b6eb006720d74c12343fee2c65b6d01" title="Calculate checksum from raw data." alt="" coords="652,323,821,363"/>
-<area shape="poly" title=" " alt="" coords="569,326,639,334,634,335,569,332"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a5f2659d313c7223f531d49a3584d84a3" title="Convert raw temperature to Celsius." alt="" coords="667,388,806,429"/>
-<area shape="poly" title=" " alt="" coords="536,334,643,372,665,383,660,382,641,378,535,339"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ab03f05ea4c39d5883e95b0db468a5a92" title="Convert raw humidity to percentage." alt="" coords="667,453,806,494"/>
-<area shape="poly" title=" " alt="" coords="513,334,568,384,604,413,644,438,657,447,651,446,641,443,601,417,565,388,511,339"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a15fbe86b35253f8620cdba249493f6fa" title="Get DHT22 state for a bus (must be called with mutex held)." alt="" coords="879,44,1006,85"/>
-<area shape="poly" title=" " alt="" coords="793,125,830,114,890,91,885,93,832,119,795,130"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a9cd874b0290191f0e8a2200e9a727f58" title="Initialize DHT22 global mutex (thread&#45;safe)." alt="" coords="879,109,1006,150"/>
-<area shape="poly" title=" " alt="" coords="793,135,866,133,861,134,794,140"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ada0028be4bd29beb995c4990d33a0dff" title="Delay in microseconds." alt="" coords="906,174,979,200"/>
-<area shape="poly" title=" " alt="" coords="760,270,878,209,888,207,893,205,880,213,762,275"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#af3c6d2f2ae3b906ff2590c579ae42e8f" title="Set GPIO output high." alt="" coords="904,224,980,249"/>
-<area shape="poly" title=" " alt="" coords="789,270,892,248,886,250,791,276"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a40df8a338e77a732f53aca4fa72d5192" title="Set GPIO output low." alt="" coords="906,273,978,298"/>
-<area shape="poly" title=" " alt="" coords="790,283,894,285,888,286,790,288"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ac56257b5f48f81efe2392e6e28b8393a" title="Set GPIO to input mode." alt="" coords="890,322,995,348"/>
-<area shape="poly" title=" " alt="" coords="790,296,877,319,872,319,790,301"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a2c233a46f4a9bf09057e07a1243c2dea" title="Set GPIO to output mode." alt="" coords="886,372,999,397"/>
-<area shape="poly" title=" " alt="" coords="790,292,832,309,848,321,857,334,866,346,880,358,888,365,883,364,877,362,862,350,853,337,844,325,829,313,790,297"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ac0af9cb9d464422a719e1e0bb987d80f" title="Wait for GPIO level change and measure duration." alt="" coords="888,421,997,446"/>
-<area shape="poly" title=" " alt="" coords="790,289,813,297,832,309,844,321,851,334,858,359,864,384,881,408,884,413,879,412,877,411,859,386,853,360,846,336,840,324,829,313,810,302,790,294"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a6068135097f7705a28bda46fb88640d2" title="Wait for GPIO to reach expected level with timeout." alt="" coords="892,470,993,496"/>
-<area shape="poly" title=" " alt="" coords="790,288,813,296,832,309,847,328,855,347,858,384,861,421,867,439,881,457,883,462,878,460,877,461,863,441,856,422,853,384,850,348,843,330,829,313,811,301,790,293"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a71842e7ab86cba68432d023f022556d5" title="Read GPIO input." alt="" coords="1054,446,1131,472"/>
-<area shape="poly" title=" " alt="" coords="998,440,1041,450,1036,450,997,446"/>
-<area shape="poly" title=" " alt="" coords="993,472,1036,468,1041,467,994,478"/>
+<div class="center"><img src="../../d0/d9c/dht22__task_8c_a7c98847a5751aa53f1d5d8ba86b6df8e_cgraph.png" border="0" usemap="#ad0/d9c/dht22__task_8c_a7c98847a5751aa53f1d5d8ba86b6df8e_cgraph" loading="lazy" alt=""/></div>
+<map name="ad0/d9c/dht22__task_8c_a7c98847a5751aa53f1d5d8ba86b6df8e_cgraph" id="ad0/d9c/dht22__task_8c_a7c98847a5751aa53f1d5d8ba86b6df8e_cgraph">
+<area shape="rect" title=" " alt="" coords="5,149,171,174"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#acf0cd8b6c7894c00402a62a6c72d659b" title=" " alt="" coords="219,149,353,174"/>
+<area shape="poly" title=" " alt="" coords="169,159,206,160,202,163,173,164"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a94ca5e663b3388b7dddc4169818e4745" title="Update temperature for sound speed correction." alt="" coords="428,5,567,46"/>
+<area shape="poly" title=" " alt="" coords="296,147,339,102,368,77,400,55,416,49,412,53,402,60,371,82,343,106,301,150"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#a3995c9b95b6f83c65b7e55700c240a46" title="Create temperature data structure." alt="" coords="430,169,565,210"/>
+<area shape="poly" title=" " alt="" coords="352,168,417,177,412,180,354,173"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#acf829b11efe6efde5ff9c9a1798b05c9" title="Get pointer to global shared context." alt="" coords="414,120,581,145"/>
+<area shape="poly" title=" " alt="" coords="352,150,401,144,396,148,355,155"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#adbcb3df569fd80605c33af86cd27cfdf" title="Update current temperature." alt="" coords="401,70,594,96"/>
+<area shape="poly" title=" " alt="" coords="310,146,352,125,400,105,423,99,419,102,402,109,354,130,313,150"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#a47f0e051075a416c6ba8d608d931751b" title="Update system health statistics." alt="" coords="428,235,567,275"/>
+<area shape="poly" title=" " alt="" coords="310,172,402,219,421,228,416,230,400,224,311,178"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#aca1c661507907f9a75543f43e1d7164c" title="Read temperature and humidity from DHT22 sensor." alt="" coords="426,332,569,357"/>
+<area shape="poly" title=" " alt="" coords="297,172,342,225,403,285,459,323,453,324,399,289,338,228,297,178"/>
+<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a98a96e56a9e83ceb44df24d730698884" title="Set temperature for compensation." alt="" coords="669,5,804,46"/>
+<area shape="poly" title=" " alt="" coords="566,23,655,24,651,27,568,28"/>
+<area shape="rect" href="../../d4/d7e/system__config_8h.html#ae1333c5306d999ad9d292b11465114c2" title="Validate temperature reading." alt="" coords="651,70,822,96"/>
+<area shape="poly" title=" " alt="" coords="567,40,667,65,663,67,568,45"/>
+<area shape="poly" title=" " alt="" coords="564,167,593,155,702,102,698,106,595,160,567,171"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#a3bdf4ea7cbcd1af874c68f1da508ae3b" title="Get system uptime in milliseconds." alt="" coords="642,177,831,202"/>
+<area shape="poly" title=" " alt="" coords="564,187,629,189,624,191,566,192"/>
+<area shape="poly" title=" " alt="" coords="594,81,638,82,633,84,596,85"/>
+<area shape="poly" title=" " alt="" coords="566,234,642,212,673,206,668,208,643,218,568,238"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ad84a1750c76d3cacd25aa7711b5fbdb5" title="Get DHT22 state for a bus (thread&#45;safe)." alt="" coords="679,422,794,448"/>
+<area shape="poly" title=" " alt="" coords="525,355,579,381,643,407,669,417,663,418,641,412,577,386,525,360"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a0cefc084690818ee196b34da74bcf4e4" title="Read raw data from DHT22 sensor." alt="" coords="683,602,790,628"/>
+<area shape="poly" title=" " alt="" coords="512,355,717,590,711,591,510,360"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a2b6eb006720d74c12343fee2c65b6d01" title="Calculate checksum from raw data." alt="" coords="652,227,821,267"/>
+<area shape="poly" title=" " alt="" coords="526,329,641,278,663,272,659,274,643,283,529,333"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a5f2659d313c7223f531d49a3584d84a3" title="Convert raw temperature to Celsius." alt="" coords="667,292,806,333"/>
+<area shape="poly" title=" " alt="" coords="568,332,654,322,649,325,570,337"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ab03f05ea4c39d5883e95b0db468a5a92" title="Convert raw humidity to percentage." alt="" coords="667,357,806,398"/>
+<area shape="poly" title=" " alt="" coords="569,352,654,365,649,367,570,357"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a15fbe86b35253f8620cdba249493f6fa" title="Get DHT22 state for a bus (must be called with mutex held)." alt="" coords="879,415,1006,455"/>
+<area shape="poly" title=" " alt="" coords="793,432,866,434,861,436,794,438"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a9cd874b0290191f0e8a2200e9a727f58" title="Initialize DHT22 global mutex (thread&#45;safe)." alt="" coords="879,349,1006,390"/>
+<area shape="poly" title=" " alt="" coords="789,419,830,407,875,395,870,397,831,412,791,424"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ada0028be4bd29beb995c4990d33a0dff" title="Delay in microseconds." alt="" coords="906,578,979,604"/>
+<area shape="poly" title=" " alt="" coords="790,606,893,596,888,597,791,611"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#af3c6d2f2ae3b906ff2590c579ae42e8f" title="Set GPIO output high." alt="" coords="904,628,980,653"/>
+<area shape="poly" title=" " alt="" coords="790,619,891,634,886,634,790,624"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a40df8a338e77a732f53aca4fa72d5192" title="Set GPIO output low." alt="" coords="906,677,978,702"/>
+<area shape="poly" title=" " alt="" coords="775,626,894,672,889,671,774,631"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ac56257b5f48f81efe2392e6e28b8393a" title="Set GPIO to input mode." alt="" coords="890,726,995,752"/>
+<area shape="poly" title=" " alt="" coords="755,626,809,668,880,713,891,720,886,719,877,717,806,672,753,631"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a2c233a46f4a9bf09057e07a1243c2dea" title="Set GPIO to output mode." alt="" coords="886,776,999,801"/>
+<area shape="poly" title=" " alt="" coords="748,626,801,691,838,729,880,762,888,769,883,768,877,767,835,733,797,694,746,631"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ac0af9cb9d464422a719e1e0bb987d80f" title="Wait for GPIO level change and measure duration." alt="" coords="888,529,997,554"/>
+<area shape="poly" title=" " alt="" coords="774,599,887,561,892,559,776,604"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a6068135097f7705a28bda46fb88640d2" title="Wait for GPIO to reach expected level with timeout." alt="" coords="892,480,993,505"/>
+<area shape="poly" title=" " alt="" coords="753,599,806,559,877,514,886,513,891,511,880,519,809,563,755,604"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a71842e7ab86cba68432d023f022556d5" title="Read GPIO input." alt="" coords="1054,505,1131,530"/>
+<area shape="poly" title=" " alt="" coords="997,530,1041,526,1036,527,998,536"/>
+<area shape="poly" title=" " alt="" coords="994,498,1041,508,1036,509,994,504"/>
 </map>
 </div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d0/d9c/dht22__task_8c_ab28598715bb940c2458d04d337037432_icgraph.png" border="0" usemap="#ad0/d9c/dht22__task_8c_ab28598715bb940c2458d04d337037432_icgraph" loading="lazy" alt=""/></div>
-<map name="ad0/d9c/dht22__task_8c_ab28598715bb940c2458d04d337037432_icgraph" id="ad0/d9c/dht22__task_8c_ab28598715bb940c2458d04d337037432_icgraph">
+<div class="center"><img src="../../d0/d9c/dht22__task_8c_a7c98847a5751aa53f1d5d8ba86b6df8e_icgraph.png" border="0" usemap="#ad0/d9c/dht22__task_8c_a7c98847a5751aa53f1d5d8ba86b6df8e_icgraph" loading="lazy" alt=""/></div>
+<map name="ad0/d9c/dht22__task_8c_a7c98847a5751aa53f1d5d8ba86b6df8e_icgraph" id="ad0/d9c/dht22__task_8c_a7c98847a5751aa53f1d5d8ba86b6df8e_icgraph">
 <area shape="rect" title=" " alt="" coords="481,5,647,31"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a9d856aeaa4dfc864b2d6446139430971" title="Initialize DHT22 monitoring task." alt="" coords="315,5,433,31"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#ad5fc3ca549615b42dcfbb1926e7e5cb0" title="Initialize DHT22 monitoring task." alt="" coords="315,5,433,31"/>
 <area shape="poly" title=" " alt="" coords="463,18,434,21,434,16,469,18"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,5,267,31"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,5,267,31"/>
 <area shape="poly" title=" " alt="" coords="297,18,268,21,267,16,302,18"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
 <area shape="poly" title=" " alt="" coords="112,19,83,21,83,16,118,18"/>
@@ -706,8 +719,8 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="af2aa5f90212b8ec0353f88ceeaec9c05" name="af2aa5f90212b8ec0353f88ceeaec9c05"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af2aa5f90212b8ec0353f88ceeaec9c05">&#9670;&#160;</a></span>internal_init_dht22()</h2>
+<a id="a133c28d824e59d67b34c1e1b7f91f430" name="a133c28d824e59d67b34c1e1b7f91f430"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a133c28d824e59d67b34c1e1b7f91f430">&#9670;&#160;</a></span>internal_init_dht22()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -718,7 +731,7 @@ Here is the caller graph for this function:</div>
         <tr>
           <td class="memname">esp_err_t internal_init_dht22 </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../db/d05/structdht22__task__context__t.html">dht22_task_context_t</a> *</td>          <td class="paramname"><span class="paramname"><em>ctx</em></span></td><td>)</td>
+          <td class="paramtype"><a class="el" href="../../db/d05/structdht22__task__context__t.html">dht22_task_context_t</a> *const</td>          <td class="paramname"><span class="paramname"><em>ctx</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -729,16 +742,16 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00017">17</a> of file <a class="el" href="../../d0/d9c/dht22__task_8c_source.html">dht22_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00019">19</a> of file <a class="el" href="../../d0/d9c/dht22__task_8c_source.html">dht22_task.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../df/db9/dht22__task_8h_source.html#l00016">dht22_task_context_t::bus_manager</a>, <a class="el" href="../../df/db9/dht22__task_8h_source.html#l00017">dht22_task_context_t::bus_name</a>, <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00102">DEFAULT_TEMPERATURE_C</a>, <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00033">GPIO_DHT22_PIN</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00153">star_dht22_config_t::gpio_pin</a>, <a class="el" href="../../df/db9/dht22__task_8h_source.html#l00021">dht22_task_context_t::last_valid_temperature</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, <a class="el" href="../../df/db9/dht22__task_8h_source.html#l00020">dht22_task_context_t::sensor_initialized</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00344">star_bus_dht22_init()</a>, and <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00411">STAR_DHT22_CONFIG_DEFAULT</a>.</p>
+<p class="reference">References <a class="el" href="../../df/db9/dht22__task_8h_source.html#l00017">dht22_task_context_t::bus_manager</a>, <a class="el" href="../../df/db9/dht22__task_8h_source.html#l00018">dht22_task_context_t::bus_name</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00153">star_dht22_config_t::gpio_pin</a>, <a class="el" href="../../df/db9/dht22__task_8h_source.html#l00022">dht22_task_context_t::last_valid_temperature</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../df/db9/dht22__task_8h_source.html#l00021">dht22_task_context_t::sensor_initialized</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00371">star_bus_dht22_init()</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00411">STAR_DHT22_CONFIG_DEFAULT</a>, and <a class="el" href="../../d3/dff/system__config_8c_source.html#l00035">STAR_SYSTEM_CONFIG</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00126">dht22_task_start()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00132">dht22_task_start()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d0/d9c/dht22__task_8c_af2aa5f90212b8ec0353f88ceeaec9c05_cgraph.png" border="0" usemap="#ad0/d9c/dht22__task_8c_af2aa5f90212b8ec0353f88ceeaec9c05_cgraph" loading="lazy" alt=""/></div>
-<map name="ad0/d9c/dht22__task_8c_af2aa5f90212b8ec0353f88ceeaec9c05_cgraph" id="ad0/d9c/dht22__task_8c_af2aa5f90212b8ec0353f88ceeaec9c05_cgraph">
+<div class="center"><img src="../../d0/d9c/dht22__task_8c_a133c28d824e59d67b34c1e1b7f91f430_cgraph.png" border="0" usemap="#ad0/d9c/dht22__task_8c_a133c28d824e59d67b34c1e1b7f91f430_cgraph" loading="lazy" alt=""/></div>
+<map name="ad0/d9c/dht22__task_8c_a133c28d824e59d67b34c1e1b7f91f430_cgraph" id="ad0/d9c/dht22__task_8c_a133c28d824e59d67b34c1e1b7f91f430_cgraph">
 <area shape="rect" title=" " alt="" coords="5,70,132,96"/>
 <area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#aea453f5595346f56e5018f91516f4a77" title="Initialize DHT22 bus." alt="" coords="180,70,314,96"/>
 <area shape="poly" title=" " alt="" coords="132,80,167,83,162,83,133,86"/>
@@ -755,12 +768,12 @@ Here is the call graph for this function:</div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d0/d9c/dht22__task_8c_af2aa5f90212b8ec0353f88ceeaec9c05_icgraph.png" border="0" usemap="#ad0/d9c/dht22__task_8c_af2aa5f90212b8ec0353f88ceeaec9c05_icgraph" loading="lazy" alt=""/></div>
-<map name="ad0/d9c/dht22__task_8c_af2aa5f90212b8ec0353f88ceeaec9c05_icgraph" id="ad0/d9c/dht22__task_8c_af2aa5f90212b8ec0353f88ceeaec9c05_icgraph">
+<div class="center"><img src="../../d0/d9c/dht22__task_8c_a133c28d824e59d67b34c1e1b7f91f430_icgraph.png" border="0" usemap="#ad0/d9c/dht22__task_8c_a133c28d824e59d67b34c1e1b7f91f430_icgraph" loading="lazy" alt=""/></div>
+<map name="ad0/d9c/dht22__task_8c_a133c28d824e59d67b34c1e1b7f91f430_icgraph" id="ad0/d9c/dht22__task_8c_a133c28d824e59d67b34c1e1b7f91f430_icgraph">
 <area shape="rect" title=" " alt="" coords="481,5,608,31"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a9d856aeaa4dfc864b2d6446139430971" title="Initialize DHT22 monitoring task." alt="" coords="315,5,433,31"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#ad5fc3ca549615b42dcfbb1926e7e5cb0" title="Initialize DHT22 monitoring task." alt="" coords="315,5,433,31"/>
 <area shape="poly" title=" " alt="" coords="463,18,434,21,434,16,468,18"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,5,267,31"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,5,267,31"/>
 <area shape="poly" title=" " alt="" coords="297,18,268,21,267,16,302,18"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
 <area shape="poly" title=" " alt="" coords="112,19,83,21,83,16,118,18"/>
@@ -769,8 +782,8 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="a7b3a87af67c2b24b1f0e83e307e2715b" name="a7b3a87af67c2b24b1f0e83e307e2715b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7b3a87af67c2b24b1f0e83e307e2715b">&#9670;&#160;</a></span>internal_read_dht22()</h2>
+<a id="acf0cd8b6c7894c00402a62a6c72d659b" name="acf0cd8b6c7894c00402a62a6c72d659b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acf0cd8b6c7894c00402a62a6c72d659b">&#9670;&#160;</a></span>internal_read_dht22()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -781,7 +794,7 @@ Here is the caller graph for this function:</div>
         <tr>
           <td class="memname">esp_err_t internal_read_dht22 </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../db/d05/structdht22__task__context__t.html">dht22_task_context_t</a> *</td>          <td class="paramname"><span class="paramname"><em>ctx</em></span></td><td>)</td>
+          <td class="paramtype"><a class="el" href="../../db/d05/structdht22__task__context__t.html">dht22_task_context_t</a> *const</td>          <td class="paramname"><span class="paramname"><em>ctx</em></span></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -792,78 +805,82 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00048">48</a> of file <a class="el" href="../../d0/d9c/dht22__task_8c_source.html">dht22_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00050">50</a> of file <a class="el" href="../../d0/d9c/dht22__task_8c_source.html">dht22_task.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../df/db9/dht22__task_8h_source.html#l00016">dht22_task_context_t::bus_manager</a>, <a class="el" href="../../df/db9/dht22__task_8h_source.html#l00017">dht22_task_context_t::bus_name</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00168">star_dht22_data::checksum_valid</a>, <a class="el" href="../../df/db9/dht22__task_8h_source.html#l00022">dht22_task_context_t::consecutive_failures</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00163">star_dht22_data::humidity_percent</a>, <a class="el" href="../../df/db9/dht22__task_8h_source.html#l00021">dht22_task_context_t::last_valid_temperature</a>, <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00099">MAX_SENSOR_FAILURES</a>, <a class="el" href="../../d4/d7e/system__config_8h_source.html#l00016">NUM_HCSR04</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00022">s_TAG</a>, <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00224">sensor_task_update_temperature()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00257">shared_data_create_temperature_data()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00114">shared_data_get_context()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00197">shared_data_set_temperature()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00123">shared_data_update_health()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00432">star_bus_dht22_read()</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00164">star_dht22_data::temperature_c</a>, and <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00061">shared_context_t::temperature_data_queue</a>.</p>
+<p class="reference">References <a class="el" href="../../df/db9/dht22__task_8h_source.html#l00017">dht22_task_context_t::bus_manager</a>, <a class="el" href="../../df/db9/dht22__task_8h_source.html#l00018">dht22_task_context_t::bus_name</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00168">star_dht22_data::checksum_valid</a>, <a class="el" href="../../df/db9/dht22__task_8h_source.html#l00023">dht22_task_context_t::consecutive_failures</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00163">star_dht22_data::humidity_percent</a>, <a class="el" href="../../df/db9/dht22__task_8h_source.html#l00022">dht22_task_context_t::last_valid_temperature</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00229">sensor_task_update_temperature()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00269">shared_data_create_temperature_data()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00117">shared_data_get_context()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00212">shared_data_set_temperature()</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00138">shared_data_update_health()</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00459">star_bus_dht22_read()</a>, <a class="el" href="../../d3/dff/system__config_8c_source.html#l00035">STAR_SYSTEM_CONFIG</a>, <a class="el" href="../../d1/dd1/star__bus__dht22__proprietary_8h_source.html#l00164">star_dht22_data::temperature_c</a>, and <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00062">shared_context_t::temperature_data_queue</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00101">internal_dht22_task_loop()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00107">internal_dht22_task_loop()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d0/d9c/dht22__task_8c_a7b3a87af67c2b24b1f0e83e307e2715b_cgraph.png" border="0" usemap="#ad0/d9c/dht22__task_8c_a7b3a87af67c2b24b1f0e83e307e2715b_cgraph" loading="lazy" alt=""/></div>
-<map name="ad0/d9c/dht22__task_8c_a7b3a87af67c2b24b1f0e83e307e2715b_cgraph" id="ad0/d9c/dht22__task_8c_a7b3a87af67c2b24b1f0e83e307e2715b_cgraph">
-<area shape="rect" title=" " alt="" coords="5,161,140,186"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a18d3355004199a30ef5025ab6b3ce093" title="Update temperature for sound speed correction." alt="" coords="215,5,354,46"/>
-<area shape="poly" title=" " alt="" coords="81,159,124,110,153,81,186,57,202,50,199,54,189,61,157,86,127,113,86,162"/>
-<area shape="rect" href="../../db/d0d/shared__data_8c.html#aa9b69e0ebd197bd59ed54b5c0e0e52cb" title="Create temperature data structure." alt="" coords="217,71,352,111"/>
-<area shape="poly" title=" " alt="" coords="100,158,187,121,206,115,202,119,189,125,104,162"/>
-<area shape="rect" href="../../db/d0d/shared__data_8c.html#acf829b11efe6efde5ff9c9a1798b05c9" title="Get pointer to global shared context." alt="" coords="201,136,368,161"/>
-<area shape="poly" title=" " alt="" coords="139,163,187,158,183,162,141,168"/>
-<area shape="rect" href="../../db/d0d/shared__data_8c.html#ae2676e0ead5151dee19e747afd0b728e" title="Update current temperature." alt="" coords="188,185,381,210"/>
-<area shape="poly" title=" " alt="" coords="139,179,174,183,170,186,141,184"/>
-<area shape="rect" href="../../db/d0d/shared__data_8c.html#a75fe9693d2b770652fe4b4e67986202a" title="Update system health statistics." alt="" coords="215,235,354,275"/>
-<area shape="poly" title=" " alt="" coords="103,185,189,221,206,228,201,230,187,225,103,190"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#aca1c661507907f9a75543f43e1d7164c" title="Read temperature and humidity from DHT22 sensor." alt="" coords="213,310,356,336"/>
-<area shape="poly" title=" " alt="" coords="84,184,128,233,157,261,189,285,224,303,219,305,186,289,154,265,124,237,84,190"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a2e85c932ed841039293042898baf93b7" title="Set temperature for compensation." alt="" coords="456,5,591,46"/>
-<area shape="poly" title=" " alt="" coords="353,23,442,24,437,27,355,28"/>
-<area shape="rect" href="../../db/d0d/shared__data_8c.html#a3bdf4ea7cbcd1af874c68f1da508ae3b" title="Get system uptime in milliseconds." alt="" coords="429,78,617,104"/>
-<area shape="poly" title=" " alt="" coords="351,89,416,90,411,92,353,93"/>
-<area shape="poly" title=" " alt="" coords="353,238,379,221,390,208,397,195,402,168,408,140,415,126,427,113,434,111,430,114,431,117,419,129,413,142,407,169,402,197,395,211,383,225,356,242"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ad84a1750c76d3cacd25aa7711b5fbdb5" title="Get DHT22 state for a bus (thread&#45;safe)." alt="" coords="466,128,580,153"/>
-<area shape="poly" title=" " alt="" coords="333,307,380,285,416,256,450,224,501,168,505,164,454,228,420,260,382,289,335,312"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a0cefc084690818ee196b34da74bcf4e4" title="Read raw data from DHT22 sensor." alt="" coords="470,273,576,298"/>
-<area shape="poly" title=" " alt="" coords="355,309,457,295,452,297,357,314"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a2b6eb006720d74c12343fee2c65b6d01" title="Calculate checksum from raw data." alt="" coords="438,323,608,363"/>
-<area shape="poly" title=" " alt="" coords="356,326,426,334,421,335,356,332"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a5f2659d313c7223f531d49a3584d84a3" title="Convert raw temperature to Celsius." alt="" coords="454,388,592,429"/>
-<area shape="poly" title=" " alt="" coords="322,334,430,372,452,382,447,382,428,378,322,339"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ab03f05ea4c39d5883e95b0db468a5a92" title="Convert raw humidity to percentage." alt="" coords="454,453,592,494"/>
-<area shape="poly" title=" " alt="" coords="300,334,355,384,391,413,430,438,443,447,438,446,428,443,388,417,351,388,298,339"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a15fbe86b35253f8620cdba249493f6fa" title="Get DHT22 state for a bus (must be called with mutex held)." alt="" coords="665,44,793,85"/>
-<area shape="poly" title=" " alt="" coords="580,125,616,114,677,91,672,93,618,119,582,130"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a9cd874b0290191f0e8a2200e9a727f58" title="Initialize DHT22 global mutex (thread&#45;safe)." alt="" coords="666,109,792,150"/>
-<area shape="poly" title=" " alt="" coords="580,135,653,133,648,135,581,140"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ada0028be4bd29beb995c4990d33a0dff" title="Delay in microseconds." alt="" coords="692,174,766,200"/>
-<area shape="poly" title=" " alt="" coords="546,270,664,209,675,207,680,205,666,213,549,275"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#af3c6d2f2ae3b906ff2590c579ae42e8f" title="Set GPIO output high." alt="" coords="691,224,767,249"/>
-<area shape="poly" title=" " alt="" coords="576,270,678,248,673,250,578,276"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a40df8a338e77a732f53aca4fa72d5192" title="Set GPIO output low." alt="" coords="693,273,765,298"/>
-<area shape="poly" title=" " alt="" coords="576,283,680,285,675,286,577,288"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ac56257b5f48f81efe2392e6e28b8393a" title="Set GPIO to input mode." alt="" coords="676,322,782,348"/>
-<area shape="poly" title=" " alt="" coords="577,296,664,319,658,319,577,301"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a2c233a46f4a9bf09057e07a1243c2dea" title="Set GPIO to output mode." alt="" coords="672,372,786,397"/>
-<area shape="poly" title=" " alt="" coords="577,292,619,309,634,321,644,334,653,346,667,358,675,365,669,364,664,362,649,350,639,337,630,325,616,313,576,297"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ac0af9cb9d464422a719e1e0bb987d80f" title="Wait for GPIO level change and measure duration." alt="" coords="674,421,784,446"/>
-<area shape="poly" title=" " alt="" coords="577,289,599,297,619,309,631,321,638,334,645,359,650,384,667,408,671,413,666,412,663,411,646,386,639,360,633,336,627,324,616,313,597,302,577,294"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a6068135097f7705a28bda46fb88640d2" title="Wait for GPIO to reach expected level with timeout." alt="" coords="678,470,780,496"/>
-<area shape="poly" title=" " alt="" coords="577,288,600,296,619,309,634,328,642,347,645,384,647,421,654,439,667,457,669,461,664,460,663,461,649,441,642,422,640,384,637,348,630,330,616,313,597,301,577,293"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a71842e7ab86cba68432d023f022556d5" title="Read GPIO input." alt="" coords="841,446,918,472"/>
-<area shape="poly" title=" " alt="" coords="784,440,828,450,822,450,784,446"/>
-<area shape="poly" title=" " alt="" coords="780,472,823,468,828,467,781,478"/>
+<div class="center"><img src="../../d0/d9c/dht22__task_8c_acf0cd8b6c7894c00402a62a6c72d659b_cgraph.png" border="0" usemap="#ad0/d9c/dht22__task_8c_acf0cd8b6c7894c00402a62a6c72d659b_cgraph" loading="lazy" alt=""/></div>
+<map name="ad0/d9c/dht22__task_8c_acf0cd8b6c7894c00402a62a6c72d659b_cgraph" id="ad0/d9c/dht22__task_8c_acf0cd8b6c7894c00402a62a6c72d659b_cgraph">
+<area shape="rect" title=" " alt="" coords="5,149,140,174"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a94ca5e663b3388b7dddc4169818e4745" title="Update temperature for sound speed correction." alt="" coords="215,5,354,46"/>
+<area shape="poly" title=" " alt="" coords="83,147,126,102,155,77,186,55,202,49,199,53,189,60,158,82,129,106,87,150"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#a3995c9b95b6f83c65b7e55700c240a46" title="Create temperature data structure." alt="" coords="217,169,352,210"/>
+<area shape="poly" title=" " alt="" coords="139,168,203,177,199,180,141,173"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#acf829b11efe6efde5ff9c9a1798b05c9" title="Get pointer to global shared context." alt="" coords="201,120,368,145"/>
+<area shape="poly" title=" " alt="" coords="138,150,187,144,183,148,142,154"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#adbcb3df569fd80605c33af86cd27cfdf" title="Update current temperature." alt="" coords="188,70,381,96"/>
+<area shape="poly" title=" " alt="" coords="96,147,138,125,187,105,209,99,205,103,189,109,141,130,100,150"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#a47f0e051075a416c6ba8d608d931751b" title="Update system health statistics." alt="" coords="215,235,354,275"/>
+<area shape="poly" title=" " alt="" coords="96,173,189,219,207,228,203,230,187,224,98,178"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#aca1c661507907f9a75543f43e1d7164c" title="Read temperature and humidity from DHT22 sensor." alt="" coords="213,332,356,357"/>
+<area shape="poly" title=" " alt="" coords="83,172,128,225,189,285,245,323,240,325,186,289,124,228,84,178"/>
+<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a98a96e56a9e83ceb44df24d730698884" title="Set temperature for compensation." alt="" coords="456,5,591,46"/>
+<area shape="poly" title=" " alt="" coords="353,23,442,24,438,27,355,28"/>
+<area shape="rect" href="../../d4/d7e/system__config_8h.html#ae1333c5306d999ad9d292b11465114c2" title="Validate temperature reading." alt="" coords="438,70,609,96"/>
+<area shape="poly" title=" " alt="" coords="353,40,454,65,449,67,355,45"/>
+<area shape="poly" title=" " alt="" coords="351,167,380,155,488,102,485,106,382,160,354,171"/>
+<area shape="rect" href="../../db/d0d/shared__data_8c.html#a3bdf4ea7cbcd1af874c68f1da508ae3b" title="Get system uptime in milliseconds." alt="" coords="429,177,617,202"/>
+<area shape="poly" title=" " alt="" coords="351,187,416,188,411,191,353,192"/>
+<area shape="poly" title=" " alt="" coords="380,81,424,82,420,84,383,85"/>
+<area shape="poly" title=" " alt="" coords="352,234,428,212,460,206,455,209,430,218,355,238"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ad84a1750c76d3cacd25aa7711b5fbdb5" title="Get DHT22 state for a bus (thread&#45;safe)." alt="" coords="466,422,580,448"/>
+<area shape="poly" title=" " alt="" coords="311,355,366,381,430,407,455,417,450,418,428,412,364,386,312,360"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a0cefc084690818ee196b34da74bcf4e4" title="Read raw data from DHT22 sensor." alt="" coords="470,602,576,628"/>
+<area shape="poly" title=" " alt="" coords="299,355,503,590,498,591,296,360"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a2b6eb006720d74c12343fee2c65b6d01" title="Calculate checksum from raw data." alt="" coords="438,227,608,267"/>
+<area shape="poly" title=" " alt="" coords="312,329,428,278,450,271,446,275,430,283,315,333"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a5f2659d313c7223f531d49a3584d84a3" title="Convert raw temperature to Celsius." alt="" coords="454,292,592,333"/>
+<area shape="poly" title=" " alt="" coords="355,332,441,322,436,325,357,337"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ab03f05ea4c39d5883e95b0db468a5a92" title="Convert raw humidity to percentage." alt="" coords="454,357,592,398"/>
+<area shape="poly" title=" " alt="" coords="355,352,441,365,436,367,357,357"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a15fbe86b35253f8620cdba249493f6fa" title="Get DHT22 state for a bus (must be called with mutex held)." alt="" coords="665,415,793,455"/>
+<area shape="poly" title=" " alt="" coords="580,432,653,434,648,436,581,438"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a9cd874b0290191f0e8a2200e9a727f58" title="Initialize DHT22 global mutex (thread&#45;safe)." alt="" coords="666,349,792,390"/>
+<area shape="poly" title=" " alt="" coords="576,419,617,407,661,394,657,397,618,412,578,424"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ada0028be4bd29beb995c4990d33a0dff" title="Delay in microseconds." alt="" coords="692,578,766,604"/>
+<area shape="poly" title=" " alt="" coords="576,606,680,596,674,598,577,611"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#af3c6d2f2ae3b906ff2590c579ae42e8f" title="Set GPIO output high." alt="" coords="691,628,767,653"/>
+<area shape="poly" title=" " alt="" coords="577,619,678,633,673,634,577,624"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a40df8a338e77a732f53aca4fa72d5192" title="Set GPIO output low." alt="" coords="693,677,765,702"/>
+<area shape="poly" title=" " alt="" coords="561,626,681,671,675,672,560,631"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ac56257b5f48f81efe2392e6e28b8393a" title="Set GPIO to input mode." alt="" coords="676,726,782,752"/>
+<area shape="poly" title=" " alt="" coords="541,626,596,668,667,713,678,720,672,719,664,717,593,672,540,631"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a2c233a46f4a9bf09057e07a1243c2dea" title="Set GPIO to output mode." alt="" coords="672,776,786,801"/>
+<area shape="poly" title=" " alt="" coords="535,626,587,691,625,729,667,762,675,769,669,768,664,767,621,733,583,694,533,631"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ac0af9cb9d464422a719e1e0bb987d80f" title="Wait for GPIO level change and measure duration." alt="" coords="674,529,784,554"/>
+<area shape="poly" title=" " alt="" coords="561,599,674,561,679,559,563,604"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a6068135097f7705a28bda46fb88640d2" title="Wait for GPIO to reach expected level with timeout." alt="" coords="678,480,780,505"/>
+<area shape="poly" title=" " alt="" coords="539,599,593,559,664,514,673,513,677,510,667,519,596,563,542,604"/>
+<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a71842e7ab86cba68432d023f022556d5" title="Read GPIO input." alt="" coords="841,505,918,530"/>
+<area shape="poly" title=" " alt="" coords="783,530,828,526,823,527,785,536"/>
+<area shape="poly" title=" " alt="" coords="780,498,828,508,823,509,781,504"/>
 </map>
 </div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d0/d9c/dht22__task_8c_a7b3a87af67c2b24b1f0e83e307e2715b_icgraph.png" border="0" usemap="#ad0/d9c/dht22__task_8c_a7b3a87af67c2b24b1f0e83e307e2715b_icgraph" loading="lazy" alt=""/></div>
-<map name="ad0/d9c/dht22__task_8c_a7b3a87af67c2b24b1f0e83e307e2715b_icgraph" id="ad0/d9c/dht22__task_8c_a7b3a87af67c2b24b1f0e83e307e2715b_icgraph">
+<div class="center"><img src="../../d0/d9c/dht22__task_8c_acf0cd8b6c7894c00402a62a6c72d659b_icgraph.png" border="0" usemap="#ad0/d9c/dht22__task_8c_acf0cd8b6c7894c00402a62a6c72d659b_icgraph" loading="lazy" alt=""/></div>
+<map name="ad0/d9c/dht22__task_8c_acf0cd8b6c7894c00402a62a6c72d659b_icgraph" id="ad0/d9c/dht22__task_8c_acf0cd8b6c7894c00402a62a6c72d659b_icgraph">
 <area shape="rect" title=" " alt="" coords="695,5,829,31"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#ab28598715bb940c2458d04d337037432" title=" " alt="" coords="481,5,647,31"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a7c98847a5751aa53f1d5d8ba86b6df8e" title=" " alt="" coords="481,5,647,31"/>
 <area shape="poly" title=" " alt="" coords="677,18,647,21,647,16,682,18"/>
-<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#a9d856aeaa4dfc864b2d6446139430971" title="Initialize DHT22 monitoring task." alt="" coords="315,5,433,31"/>
+<area shape="rect" href="../../d0/d9c/dht22__task_8c.html#ad5fc3ca549615b42dcfbb1926e7e5cb0" title="Initialize DHT22 monitoring task." alt="" coords="315,5,433,31"/>
 <area shape="poly" title=" " alt="" coords="463,18,434,21,434,16,469,18"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,5,267,31"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,5,267,31"/>
 <area shape="poly" title=" " alt="" coords="297,18,268,21,267,16,302,18"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
 <area shape="poly" title=" " alt="" coords="112,19,83,21,83,16,118,18"/>
@@ -893,7 +910,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00013">13</a> of file <a class="el" href="../../d0/d9c/dht22__task_8c_source.html">dht22_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00015">15</a> of file <a class="el" href="../../d0/d9c/dht22__task_8c_source.html">dht22_task.c</a>.</p>
 
 </div>
 </div>
@@ -917,7 +934,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00009">9</a> of file <a class="el" href="../../d0/d9c/dht22__task_8c_source.html">dht22_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00011">11</a> of file <a class="el" href="../../d0/d9c/dht22__task_8c_source.html">dht22_task.c</a>.</p>
 
 </div>
 </div>
@@ -941,9 +958,9 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00012">12</a> of file <a class="el" href="../../d0/d9c/dht22__task_8c_source.html">dht22_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00014">14</a> of file <a class="el" href="../../d0/d9c/dht22__task_8c_source.html">dht22_task.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00228">dht22_task_get_health()</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00218">dht22_task_get_last_temperature()</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00212">dht22_task_is_running()</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00126">dht22_task_start()</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00180">dht22_task_stop()</a>, <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00124">internal_take_recovery_action()</a>, <a class="el" href="../../d0/d81/led__task_8c_source.html#l00260">led_task_emergency_off()</a>, <a class="el" href="../../d0/d81/led__task_8c_source.html#l00217">led_task_get_stats()</a>, <a class="el" href="../../d0/d81/led__task_8c_source.html#l00211">led_task_is_running()</a>, <a class="el" href="../../d0/d81/led__task_8c_source.html#l00228">led_task_manual_update()</a>, <a class="el" href="../../d0/d81/led__task_8c_source.html#l00119">led_task_start()</a>, <a class="el" href="../../d0/d81/led__task_8c_source.html#l00173">led_task_stop()</a>, <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00218">sensor_task_is_running()</a>, <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00131">sensor_task_start()</a>, <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00186">sensor_task_stop()</a>, <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00224">sensor_task_update_temperature()</a>, <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00282">watchdog_task_get_stats()</a>, <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00276">watchdog_task_is_running()</a>, <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00205">watchdog_task_start()</a>, and <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00243">watchdog_task_stop()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00231">dht22_task_get_health()</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00221">dht22_task_get_last_temperature()</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00215">dht22_task_is_running()</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00132">dht22_task_start()</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00186">dht22_task_stop()</a>, <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00173">internal_take_recovery_action()</a>, <a class="el" href="../../d0/d81/led__task_8c_source.html#l00286">led_task_emergency_off()</a>, <a class="el" href="../../d0/d81/led__task_8c_source.html#l00242">led_task_get_stats()</a>, <a class="el" href="../../d0/d81/led__task_8c_source.html#l00236">led_task_is_running()</a>, <a class="el" href="../../d0/d81/led__task_8c_source.html#l00253">led_task_manual_update()</a>, <a class="el" href="../../d0/d81/led__task_8c_source.html#l00145">led_task_start()</a>, <a class="el" href="../../d0/d81/led__task_8c_source.html#l00199">led_task_stop()</a>, <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00223">sensor_task_is_running()</a>, <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00139">sensor_task_start()</a>, <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00194">sensor_task_stop()</a>, <a class="el" href="../../de/dd4/sensor__task_8c_source.html#l00229">sensor_task_update_temperature()</a>, <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00332">watchdog_task_get_stats()</a>, <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00326">watchdog_task_is_running()</a>, <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00256">watchdog_task_start()</a>, and <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00294">watchdog_task_stop()</a>.</p>
 
 </div>
 </div>

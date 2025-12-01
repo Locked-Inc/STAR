@@ -1,0 +1,24 @@
+<map id="lib/star_sensor_pca9685/include/pca9685_constants.h" name="lib/star_sensor_pca9685/include/pca9685_constants.h">
+<area shape="rect" id="Node000001" title="Type&#45;safe constants for PCA9685 16&#45;channel 12&#45;bit PWM controller." alt="" coords="139,5,334,46"/>
+<area shape="rect" id="Node000002" href="$d7/de0/star__sensor__pca9685_8h.html" title="PCA9685 16&#45;channel 12&#45;bit PWM driver." alt="" coords="134,94,339,135"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="237,59,239,94,234,93,236,64"/>
+<area shape="rect" id="Node000003" href="$d3/df7/star__sensor__pca9685_8c.html" title=" " alt="" coords="5,183,188,223"/>
+<area shape="poly" id="edge12_Node000001_Node000003" title=" " alt="" coords="169,55,146,73,124,96,112,117,105,140,99,183,94,182,100,139,107,115,120,92,143,69,173,51"/>
+<area shape="rect" id="Node000010" href="$d0/d7f/pca9685__constants_8c.html" title="Implementation of type&#45;safe constants for PCA9685." alt="" coords="363,94,534,135"/>
+<area shape="poly" id="edge11_Node000001_Node000010" title=" " alt="" coords="298,49,403,92,398,94,299,55"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="190,145,130,184,126,180,193,141"/>
+<area shape="rect" id="Node000004" href="$d0/d29/main_8c.html" title=" " alt="" coords="274,368,356,393"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="233,148,233,226,239,270,252,311,274,342,300,367,295,366,270,345,247,313,234,271,228,227,230,152"/>
+<area shape="rect" id="Node000005" href="$d3/d15/led__controller_8h.html" title=" " alt="" coords="285,183,422,223"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="275,141,330,182,325,183,275,147"/>
+<area shape="rect" id="Node000007" href="$d3/dd0/led__task_8h.html" title=" " alt="" coords="470,271,611,312"/>
+<area shape="poly" id="edge10_Node000002_Node000007" title=" " alt="" coords="337,137,388,156,437,180,465,201,490,225,529,271,524,270,486,229,461,205,434,185,386,160,338,142"/>
+<area shape="rect" id="Node000006" href="$d2/dc9/led__controller_8c.html" title=" " alt="" coords="262,279,446,304"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="355,237,356,280,352,277,352,241"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="410,228,501,271,496,271,410,233"/>
+<area shape="poly" id="edge7_Node000007_Node000004" title=" " alt="" coords="478,317,347,370,346,364,473,318"/>
+<area shape="rect" id="Node000008" href="$d0/d81/led__task_8c.html" title=" " alt="" coords="390,368,529,393"/>
+<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="514,322,472,370,469,365,509,325"/>
+<area shape="rect" id="Node000009" href="$dc/d96/watchdog__task_8c.html" title=" " alt="" coords="553,360,688,401"/>
+<area shape="poly" id="edge9_Node000007_Node000009" title=" " alt="" coords="570,321,605,360,600,359,568,326"/>
+</map>
