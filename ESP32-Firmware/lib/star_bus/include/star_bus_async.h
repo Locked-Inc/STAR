@@ -264,25 +264,25 @@ typedef void* star_async_handle_t;
  * @brief Async operation type
  */
 typedef enum {
-  STAR_ASYNC_OP_I2C_READ,       /**< I2C read operation */
-  STAR_ASYNC_OP_I2C_WRITE,      /**< I2C write operation */
-  STAR_ASYNC_OP_SPI_TRANSMIT,   /**< SPI transmit operation */
-  STAR_ASYNC_OP_SPI_RECEIVE,    /**< SPI receive operation */
-  STAR_ASYNC_OP_SPI_TRANSCEIVE, /**< SPI transceive operation */
-  STAR_ASYNC_OP_SMBUS_READ,     /**< SMBus read operation */
-  STAR_ASYNC_OP_SMBUS_WRITE,    /**< SMBus write operation */
+  k_star_async_op_i2c_read,       /**< I2C read operation */
+  k_star_async_op_i2c_write,      /**< I2C write operation */
+  k_star_async_op_spi_transmit,   /**< SPI transmit operation */
+  k_star_async_op_spi_receive,    /**< SPI receive operation */
+  k_star_async_op_spi_transceive, /**< SPI transceive operation */
+  k_star_async_op_smbus_read,     /**< SMBus read operation */
+  k_star_async_op_smbus_write,    /**< SMBus write operation */
 } star_async_op_type_t;
 
 /**
  * @brief Async operation status
  */
 typedef enum {
-  STAR_ASYNC_STATUS_PENDING,   /**< Operation pending */
-  STAR_ASYNC_STATUS_RUNNING,   /**< Operation in progress */
-  STAR_ASYNC_STATUS_COMPLETE,  /**< Operation completed successfully */
-  STAR_ASYNC_STATUS_ERROR,     /**< Operation failed */
-  STAR_ASYNC_STATUS_TIMEOUT,   /**< Operation timed out */
-  STAR_ASYNC_STATUS_CANCELLED, /**< Operation was cancelled */
+  k_star_async_status_pending,   /**< Operation pending */
+  k_star_async_status_running,   /**< Operation in progress */
+  k_star_async_status_complete,  /**< Operation completed successfully */
+  k_star_async_status_error,     /**< Operation failed */
+  k_star_async_status_timeout,   /**< Operation timed out */
+  k_star_async_status_cancelled, /**< Operation was cancelled */
 } star_async_status_t;
 
 /**

@@ -2,13 +2,13 @@
 <area shape="rect" id="Node000001" title="Deinitialize PCA9685 PWM controller handle." alt="" coords="5,35,151,75"/>
 <area shape="rect" id="Node000002" href="$d7/d82/star__error__handler_8c.html#a1632e40ebb7509611a0513c0e6bdbb46" title="Destroy an error handler created by error_handler_create_default() or error_handler_create_custom()." alt="" coords="210,5,356,46"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="150,42,197,37,192,39,152,47"/>
-<area shape="rect" id="Node000004" href="$d3/df7/star__sensor__pca9685_8c.html#a91eaab882e26ad08fb58448b532e4bd7" title="Set MODE1 register bits." alt="" coords="199,70,368,96"/>
+<area shape="rect" id="Node000004" href="$d3/df7/star__sensor__pca9685_8c.html#ad672ac0514a17e7b1b4d4d9cd9c93c58" title="Set MODE1 register bits." alt="" coords="199,70,368,96"/>
 <area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="151,62,185,69,180,70,151,68"/>
 <area shape="rect" id="Node000003" href="$d7/d82/star__error__handler_8c.html#a3a7dedd3275ece0e7f6029a11464c27d" title="Deinitialize an error handler and release resources." alt="" coords="416,13,550,38"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="357,23,403,25,398,26,357,28"/>
-<area shape="rect" id="Node000005" href="$d3/df7/star__sensor__pca9685_8c.html#ab5d665b77448f8328bad9d4c61c0d47c" title="Read from PCA9685 register." alt="" coords="420,66,547,92"/>
+<area shape="rect" id="Node000005" href="$d3/df7/star__sensor__pca9685_8c.html#aa890b42646d44f6b5a11c603658f0afa" title="Read from PCA9685 register." alt="" coords="420,66,547,92"/>
 <area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="368,79,407,80,401,81,368,84"/>
-<area shape="rect" id="Node000008" href="$d3/df7/star__sensor__pca9685_8c.html#a7fb4749ccca6d7ff1b791faaba3c5e3a" title="Write to PCA9685 register with validation." alt="" coords="418,116,548,141"/>
+<area shape="rect" id="Node000008" href="$d3/df7/star__sensor__pca9685_8c.html#a8e1f1170d3e10e9e1db7beb8f6b12da2" title="Write to PCA9685 register with validation." alt="" coords="418,116,548,141"/>
 <area shape="poly" id="edge7_Node000004_Node000008" title=" " alt="" coords="344,94,411,112,406,112,343,99"/>
 <area shape="rect" id="Node000006" href="$dd/d1a/star__bus__i2c_8c.html#a2e9b9baf8a0f8d00a2080963a7efd62f" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="600,66,727,92"/>
 <area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="547,76,587,79,582,79,547,82"/>

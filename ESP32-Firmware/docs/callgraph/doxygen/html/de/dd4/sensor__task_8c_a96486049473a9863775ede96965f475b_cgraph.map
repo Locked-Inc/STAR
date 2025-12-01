@@ -1,0 +1,9 @@
+<map id="priv_deinit_sensors" name="priv_deinit_sensors">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,13,139,38"/>
+<area shape="rect" id="Node000002" href="$de/de2/star__sensor__hcsr04_8c.html#a47cb2059d503f6428dc165b881c6f79f" title="Deinitialize HC&#45;SR04 sensor." alt="" coords="187,5,322,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="139,23,174,25,169,26,139,28"/>
+<area shape="rect" id="Node000003" href="$d7/d82/star__error__handler_8c.html#a1632e40ebb7509611a0513c0e6bdbb46" title="Destroy an error handler created by error_handler_create_default() or error_handler_create_custom()." alt="" coords="370,5,516,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="322,23,357,26,352,26,322,28"/>
+<area shape="rect" id="Node000004" href="$d7/d82/star__error__handler_8c.html#a3a7dedd3275ece0e7f6029a11464c27d" title="Deinitialize an error handler and release resources." alt="" coords="564,13,699,38"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="517,23,551,26,546,26,517,28"/>
+</map>

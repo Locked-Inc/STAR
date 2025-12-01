@@ -61,9 +61,9 @@ extern "C" {
  * mpu6050_handle_t imu;
  * mpu6050_config_t config = {
  *     .i2c_addr = MPU6050_I2C_ADDR_LOW,
- *     .accel_range = MPU6050_ACCEL_RANGE_4G,   // ±4g
- *     .gyro_range = MPU6050_GYRO_RANGE_500,    // ±500 °/s
- *     .dlpf = MPU6050_DLPF_44HZ,               // 44Hz low-pass filter
+ *     .accel_range = k_mpu6050_accel_range_4g,   // ±4g
+ *     .gyro_range = k_mpu6050_gyro_range_500,    // ±500 °/s
+ *     .dlpf = k_mpu6050_dlpf_44hz,               // 44Hz low-pass filter
  *     .sample_rate_div = 9,                    // 100Hz sample rate
  *     .enable_fifo = false
  * };
@@ -157,72 +157,76 @@ extern "C" {
  * @endcode
  */
 
-#define MPU6050_I2C_ADDR_LOW (0x68)
-#define MPU6050_I2C_ADDR_HIGH (0x69)
-#define MPU6050_WHO_AM_I_VAL (0x68)
+/* Type-safe I2C addresses */
+static const uint8_t MPU6050_I2C_ADDR_LOW  = 0x68; /* AD0 pin pulled low */
+static const uint8_t MPU6050_I2C_ADDR_HIGH = 0x69; /* AD0 pin pulled high */
+static const uint8_t MPU6050_WHO_AM_I_VAL  = 0x68; /* Expected WHO_AM_I value */
 
-/* Register Map */
-#define MPU6050_REG_SELF_TEST_X (0x0D)
-#define MPU6050_REG_SMPLRT_DIV (0x19)
-#define MPU6050_REG_CONFIG (0x1A)
-#define MPU6050_REG_GYRO_CONFIG (0x1B)
-#define MPU6050_REG_ACCEL_CONFIG (0x1C)
-#define MPU6050_REG_FIFO_EN (0x23)
-#define MPU6050_REG_INT_ENABLE (0x38)
-#define MPU6050_REG_INT_STATUS (0x3A)
-#define MPU6050_REG_ACCEL_XOUT_H (0x3B)
-#define MPU6050_REG_TEMP_OUT_H (0x41)
-#define MPU6050_REG_GYRO_XOUT_H (0x43)
-#define MPU6050_REG_USER_CTRL (0x6A)
-#define MPU6050_REG_PWR_MGMT_1 (0x6B)
-#define MPU6050_REG_PWR_MGMT_2 (0x6C)
-#define MPU6050_REG_FIFO_COUNT_H (0x72)
-#define MPU6050_REG_FIFO_R_W (0x74)
-#define MPU6050_REG_WHO_AM_I (0x75)
+/* MPU6050 Register Map */
+typedef enum {
+  k_mpu6050_reg_self_test_x  = 0x0D,
+  k_mpu6050_reg_smplrt_div   = 0x19,
+  k_mpu6050_reg_config       = 0x1A,
+  k_mpu6050_reg_gyro_config  = 0x1B,
+  k_mpu6050_reg_accel_config = 0x1C,
+  k_mpu6050_reg_fifo_en      = 0x23,
+  k_mpu6050_reg_int_enable   = 0x38,
+  k_mpu6050_reg_int_status   = 0x3A,
+  k_mpu6050_reg_accel_xout_h = 0x3B,
+  k_mpu6050_reg_temp_out_h   = 0x41,
+  k_mpu6050_reg_gyro_xout_h  = 0x43,
+  k_mpu6050_reg_user_ctrl    = 0x6A,
+  k_mpu6050_reg_pwr_mgmt_1   = 0x6B,
+  k_mpu6050_reg_pwr_mgmt_2   = 0x6C,
+  k_mpu6050_reg_fifo_count_h = 0x72,
+  k_mpu6050_reg_fifo_r_w     = 0x74,
+  k_mpu6050_reg_who_am_i     = 0x75
+} mpu6050_register_t;
 
-/* Power Management */
-#define MPU6050_PWR1_DEVICE_RESET (1 << 7)
-#define MPU6050_PWR1_SLEEP (1 << 6)
-#define MPU6050_PWR1_CYCLE (1 << 5)
-#define MPU6050_PWR1_TEMP_DIS (1 << 3)
-#define MPU6050_PWR1_CLKSEL_MASK (0x07)
+/* Power Management constants */
+static const uint8_t MPU6050_PWR1_DEVICE_RESET = (1 << 7);
+static const uint8_t MPU6050_PWR1_SLEEP        = (1 << 6);
+static const uint8_t MPU6050_PWR1_CYCLE        = (1 << 5);
+static const uint8_t MPU6050_PWR1_TEMP_DIS     = (1 << 3);
+static const uint8_t MPU6050_PWR1_CLKSEL_MASK  = 0x07;
 
 /* FIFO Enable bits */
-#define MPU6050_FIFO_EN_TEMP (1 << 7)
-#define MPU6050_FIFO_EN_XG (1 << 6)
-#define MPU6050_FIFO_EN_YG (1 << 5)
-#define MPU6050_FIFO_EN_ZG (1 << 4)
-#define MPU6050_FIFO_EN_ACCEL (1 << 3)
+static const uint8_t MPU6050_FIFO_EN_TEMP  = (1 << 7);
+static const uint8_t MPU6050_FIFO_EN_XG    = (1 << 6);
+static const uint8_t MPU6050_FIFO_EN_YG    = (1 << 5);
+static const uint8_t MPU6050_FIFO_EN_ZG    = (1 << 4);
+static const uint8_t MPU6050_FIFO_EN_ACCEL = (1 << 3);
 
 /* User Control bits */
-#define MPU6050_USERCTRL_FIFO_EN (1 << 6)
-#define MPU6050_USERCTRL_FIFO_RESET (1 << 2)
-#define MPU6050_USERCTRL_SIG_COND_RESET (1 << 0)
+static const uint8_t MPU6050_USERCTRL_FIFO_EN        = (1 << 6);
+static const uint8_t MPU6050_USERCTRL_FIFO_RESET     = (1 << 2);
+static const uint8_t MPU6050_USERCTRL_SIG_COND_RESET = (1 << 0);
 
-#define MPU6050_FIFO_SIZE (1024)
+/* FIFO size constant */
+static const uint16_t MPU6050_FIFO_SIZE = 1024;
 
 typedef enum {
-  MPU6050_ACCEL_RANGE_2G  = 0,
-  MPU6050_ACCEL_RANGE_4G  = 1,
-  MPU6050_ACCEL_RANGE_8G  = 2,
-  MPU6050_ACCEL_RANGE_16G = 3
+  k_mpu6050_accel_range_2g  = 0,
+  k_mpu6050_accel_range_4g  = 1,
+  k_mpu6050_accel_range_8g  = 2,
+  k_mpu6050_accel_range_16g = 3
 } mpu6050_accel_range_t;
 
 typedef enum {
-  MPU6050_GYRO_RANGE_250  = 0,
-  MPU6050_GYRO_RANGE_500  = 1,
-  MPU6050_GYRO_RANGE_1000 = 2,
-  MPU6050_GYRO_RANGE_2000 = 3
+  k_mpu6050_gyro_range_250  = 0,
+  k_mpu6050_gyro_range_500  = 1,
+  k_mpu6050_gyro_range_1000 = 2,
+  k_mpu6050_gyro_range_2000 = 3
 } mpu6050_gyro_range_t;
 
 typedef enum {
-  MPU6050_DLPF_260HZ = 0,
-  MPU6050_DLPF_184HZ = 1,
-  MPU6050_DLPF_94HZ  = 2,
-  MPU6050_DLPF_44HZ  = 3,
-  MPU6050_DLPF_21HZ  = 4,
-  MPU6050_DLPF_10HZ  = 5,
-  MPU6050_DLPF_5HZ   = 6
+  k_mpu6050_dlpf_260hz = 0,
+  k_mpu6050_dlpf_184hz = 1,
+  k_mpu6050_dlpf_94hz  = 2,
+  k_mpu6050_dlpf_44hz  = 3,
+  k_mpu6050_dlpf_21hz  = 4,
+  k_mpu6050_dlpf_10hz  = 5,
+  k_mpu6050_dlpf_5hz   = 6
 } mpu6050_dlpf_t;
 
 typedef struct {
@@ -311,27 +315,29 @@ esp_err_t star_sensor_mpu6050_read_accel_raw(const mpu6050_handle_t* handle,
 esp_err_t star_sensor_mpu6050_read_gyro_raw(const mpu6050_handle_t* handle,
                                             mpu6050_raw_gyro_t*     gyro);
 
-esp_err_t star_sensor_mpu6050_read_accel(const mpu6050_handle_t* handle, mpu6050_accel_t* accel);
+esp_err_t star_sensor_mpu6050_read_accel(const mpu6050_handle_t* handle,
+                                         mpu6050_accel_t* const  accel);
 
-esp_err_t star_sensor_mpu6050_read_gyro(const mpu6050_handle_t* handle, mpu6050_gyro_t* gyro);
+esp_err_t star_sensor_mpu6050_read_gyro(const mpu6050_handle_t* handle, mpu6050_gyro_t* const gyro);
 
-esp_err_t star_sensor_mpu6050_read_temperature(const mpu6050_handle_t* handle, float* temp_c);
+esp_err_t star_sensor_mpu6050_read_temperature(const mpu6050_handle_t* handle, float* const temp_c);
 
 esp_err_t star_sensor_mpu6050_read_all(const mpu6050_handle_t* handle,
-                                       mpu6050_accel_t*        accel,
-                                       mpu6050_gyro_t*         gyro,
-                                       float*                  temp_c);
+                                       mpu6050_accel_t* const  accel,
+                                       mpu6050_gyro_t* const   gyro,
+                                       float* const            temp_c);
 
-esp_err_t star_sensor_mpu6050_fifo_enable(mpu6050_handle_t* handle, bool enable);
+esp_err_t star_sensor_mpu6050_fifo_enable(mpu6050_handle_t* const handle, const bool enable);
 
 esp_err_t star_sensor_mpu6050_fifo_reset(const mpu6050_handle_t* handle);
 
-esp_err_t star_sensor_mpu6050_fifo_get_count(const mpu6050_handle_t* handle, uint16_t* count);
+esp_err_t star_sensor_mpu6050_fifo_get_count(const mpu6050_handle_t* handle, uint16_t* const count);
 
-esp_err_t
-star_sensor_mpu6050_fifo_read(const mpu6050_handle_t* handle, uint8_t* data, uint16_t len);
+esp_err_t star_sensor_mpu6050_fifo_read(const mpu6050_handle_t* handle,
+                                        uint8_t* const          data,
+                                        const uint16_t          len);
 
-esp_err_t star_sensor_mpu6050_set_sleep(mpu6050_handle_t* handle, bool sleep);
+esp_err_t star_sensor_mpu6050_set_sleep(mpu6050_handle_t* const handle, const bool sleep);
 
 #ifdef __cplusplus
 }

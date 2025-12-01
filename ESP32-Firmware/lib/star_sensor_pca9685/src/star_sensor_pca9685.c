@@ -11,23 +11,24 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "pca9685_constants.h"
 #include "star_bus_i2c.h"
 #include "star_error_handler.h"
 
 static const char* s_TAG = "pca9685";
 
-#define PCA9685_MUTEX_TIMEOUT_MS (1000)
+/* Use timing constants from pca9685_constants.h instead of local macro */
 
 /* --- Internal Helper Functions --- */
 
 /**
  * @brief Write to PCA9685 register with validation
  */
-static esp_err_t pca9685_write_reg(star_bus_manager_t* manager,
-                                   const char*         bus_name,
-                                   uint8_t             addr,
-                                   uint8_t             reg,
-                                   uint8_t             value)
+static esp_err_t pca9685_write_reg(star_bus_manager_t* const manager,
+                                   const char* const         bus_name,
+                                   const uint8_t             addr,
+                                   const uint8_t             reg,
+                                   const uint8_t             value)
 {
   if (manager == NULL || bus_name == NULL) {
     return ESP_ERR_INVALID_ARG;
@@ -39,11 +40,11 @@ static esp_err_t pca9685_write_reg(star_bus_manager_t* manager,
 /**
  * @brief Read from PCA9685 register
  */
-static esp_err_t pca9685_read_reg(star_bus_manager_t* manager,
-                                  const char*         bus_name,
-                                  uint8_t             addr,
-                                  uint8_t             reg,
-                                  uint8_t*            value)
+static esp_err_t pca9685_read_reg(star_bus_manager_t* const manager,
+                                  const char* const         bus_name,
+                                  const uint8_t             addr,
+                                  const uint8_t             reg,
+                                  uint8_t* const            value)
 {
   if (manager == NULL || bus_name == NULL || value == NULL) {
     return ESP_ERR_INVALID_ARG;
@@ -55,7 +56,8 @@ static esp_err_t pca9685_read_reg(star_bus_manager_t* manager,
 /**
  * @brief Set MODE1 register bits
  */
-static esp_err_t pca9685_set_mode1_bits(pca9685_handle_t* handle, uint8_t bits, bool set)
+static esp_err_t
+pca9685_set_mode1_bits(pca9685_handle_t* const handle, const uint8_t bits, const bool set)
 {
   if (handle == NULL) {
     return ESP_ERR_INVALID_ARG;
@@ -65,7 +67,7 @@ static esp_err_t pca9685_set_mode1_bits(pca9685_handle_t* handle, uint8_t bits, 
   esp_err_t ret = pca9685_read_reg(handle->manager,
                                    handle->bus_name,
                                    handle->i2c_addr,
-                                   PCA9685_REG_MODE1,
+                                   (uint8_t)k_pca9685_reg_mode1,
                                    &mode1);
   if (ret != ESP_OK) {
     return ret;
@@ -80,7 +82,7 @@ static esp_err_t pca9685_set_mode1_bits(pca9685_handle_t* handle, uint8_t bits, 
   return pca9685_write_reg(handle->manager,
                            handle->bus_name,
                            handle->i2c_addr,
-                           PCA9685_REG_MODE1,
+                           (uint8_t)k_pca9685_reg_mode1,
                            mode1);
 }
 
@@ -88,7 +90,8 @@ static esp_err_t pca9685_set_mode1_bits(pca9685_handle_t* handle, uint8_t bits, 
  * @brief Internal frequency setting (no initialization check, caller must hold mutex if needed)
  * @note This function is used during init and by the public set_frequency function
  */
-static esp_err_t internal_pca9685_set_frequency(pca9685_handle_t* handle, uint16_t freq_hz)
+static esp_err_t internal_pca9685_set_frequency(pca9685_handle_t* const handle,
+                                                const uint16_t          freq_hz)
 {
   uint8_t   prescale;
   esp_err_t ret = star_sensor_pca9685_calculate_prescale(freq_hz, &prescale);
@@ -101,7 +104,7 @@ static esp_err_t internal_pca9685_set_frequency(pca9685_handle_t* handle, uint16
   ret = pca9685_read_reg(handle->manager,
                          handle->bus_name,
                          handle->i2c_addr,
-                         PCA9685_REG_MODE1,
+                         (uint8_t)k_pca9685_reg_mode1,
                          &old_mode1);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to read MODE1: %s", esp_err_to_name(ret));
@@ -109,11 +112,12 @@ static esp_err_t internal_pca9685_set_frequency(pca9685_handle_t* handle, uint16
   }
 
   // Set sleep bit
-  uint8_t sleep_mode = (old_mode1 & ~PCA9685_MODE1_RESTART) | PCA9685_MODE1_SLEEP;
-  ret                = pca9685_write_reg(handle->manager,
+  const uint8_t sleep_mode =
+    (old_mode1 & ~(uint8_t)k_pca9685_mode1_restart_mask) | (uint8_t)k_pca9685_mode1_sleep_mask;
+  ret = pca9685_write_reg(handle->manager,
                           handle->bus_name,
                           handle->i2c_addr,
-                          PCA9685_REG_MODE1,
+                          (uint8_t)k_pca9685_reg_mode1,
                           sleep_mode);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to enter sleep mode: %s", esp_err_to_name(ret));
@@ -124,7 +128,7 @@ static esp_err_t internal_pca9685_set_frequency(pca9685_handle_t* handle, uint16
   ret = pca9685_write_reg(handle->manager,
                           handle->bus_name,
                           handle->i2c_addr,
-                          PCA9685_REG_PRESCALE,
+                          (uint8_t)k_pca9685_reg_prescale,
                           prescale);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to write prescale: %s", esp_err_to_name(ret));
@@ -135,7 +139,7 @@ static esp_err_t internal_pca9685_set_frequency(pca9685_handle_t* handle, uint16
   ret = pca9685_write_reg(handle->manager,
                           handle->bus_name,
                           handle->i2c_addr,
-                          PCA9685_REG_MODE1,
+                          (uint8_t)k_pca9685_reg_mode1,
                           old_mode1);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to restore MODE1: %s", esp_err_to_name(ret));
@@ -145,12 +149,12 @@ static esp_err_t internal_pca9685_set_frequency(pca9685_handle_t* handle, uint16
   vTaskDelay(pdMS_TO_TICKS(1)); // Wait for oscillator
 
   // Restart if needed
-  if (old_mode1 & PCA9685_MODE1_RESTART) {
+  if (old_mode1 & (uint8_t)k_pca9685_mode1_restart_mask) {
     ret = pca9685_write_reg(handle->manager,
                             handle->bus_name,
                             handle->i2c_addr,
-                            PCA9685_REG_MODE1,
-                            old_mode1 | PCA9685_MODE1_RESTART);
+                            (uint8_t)k_pca9685_reg_mode1,
+                            old_mode1 | (uint8_t)k_pca9685_mode1_restart_mask);
     if (ret != ESP_OK) {
       ESP_LOGW(s_TAG, "Failed to restart: %s", esp_err_to_name(ret));
     }
@@ -178,12 +182,13 @@ esp_err_t star_sensor_pca9685_init(pca9685_handle_t*       handle,
   }
 
   // Validate frequency range
-  if (config->pwm_freq < PCA9685_MIN_FREQ || config->pwm_freq > PCA9685_MAX_FREQ) {
+  if (config->pwm_freq < pca9685_hardware_limits.min_frequency_hz ||
+      config->pwm_freq > pca9685_hardware_limits.max_frequency_hz) {
     ESP_LOGE(s_TAG,
              "Invalid frequency: %d Hz (valid range: %d-%d)",
              config->pwm_freq,
-             PCA9685_MIN_FREQ,
-             PCA9685_MAX_FREQ);
+             pca9685_hardware_limits.min_frequency_hz,
+             pca9685_hardware_limits.max_frequency_hz);
     return ESP_ERR_INVALID_ARG;
   }
 
@@ -256,7 +261,7 @@ esp_err_t star_sensor_pca9685_init(pca9685_handle_t*       handle,
     }
 
     // Start with outputs disabled
-    uint32_t disable_level = oe_active_low ? 1 : 0;
+    const uint32_t disable_level = oe_active_low ? 1 : 0;
     gpio_set_level(oe_pin, disable_level);
     ESP_LOGI(s_TAG,
              "OE pin GPIO%d configured (%s)",
@@ -269,7 +274,8 @@ esp_err_t star_sensor_pca9685_init(pca9685_handle_t*       handle,
   ESP_LOGI(s_TAG, "Initializing PCA9685 on bus '%s' at address 0x%02X", bus_name, config->i2c_addr);
 
   // Reset device
-  esp_err_t ret = pca9685_write_reg(manager, bus_name, config->i2c_addr, PCA9685_REG_MODE1, 0x00);
+  esp_err_t ret =
+    pca9685_write_reg(manager, bus_name, config->i2c_addr, (uint8_t)k_pca9685_reg_mode1, 0x00);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to reset device: %s", esp_err_to_name(ret));
     if (oe_pin != GPIO_NUM_NC) {
@@ -288,12 +294,12 @@ esp_err_t star_sensor_pca9685_init(pca9685_handle_t*       handle,
   vTaskDelay(pdMS_TO_TICKS(10)); // Wait for reset
 
   // Configure MODE1: Auto-increment enabled, respond to all-call
-  uint8_t mode1 = PCA9685_MODE1_AI | PCA9685_MODE1_ALLCALL;
+  uint8_t mode1 = (uint8_t)k_pca9685_mode1_ai_mask | (uint8_t)k_pca9685_mode1_allcall_mask;
   if (config->ext_clock) {
-    mode1 |= PCA9685_MODE1_EXTCLK;
+    mode1 |= (uint8_t)k_pca9685_mode1_extclk_mask;
   }
 
-  ret = pca9685_write_reg(manager, bus_name, config->i2c_addr, PCA9685_REG_MODE1, mode1);
+  ret = pca9685_write_reg(manager, bus_name, config->i2c_addr, (uint8_t)k_pca9685_reg_mode1, mode1);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to configure MODE1: %s", esp_err_to_name(ret));
     if (oe_pin != GPIO_NUM_NC) {
@@ -311,14 +317,14 @@ esp_err_t star_sensor_pca9685_init(pca9685_handle_t*       handle,
 
   // Configure MODE2
   uint8_t mode2 = 0;
-  if (config->output_mode == PCA9685_OUTPUT_TOTEM_POLE) {
-    mode2 |= PCA9685_MODE2_OUTDRV;
+  if (config->output_mode == k_pca9685_output_totem_pole) {
+    mode2 |= (uint8_t)k_pca9685_mode2_outdrv_mask;
   }
   if (config->invert_output) {
-    mode2 |= PCA9685_MODE2_INVRT;
+    mode2 |= (uint8_t)k_pca9685_mode2_invrt_mask;
   }
 
-  ret = pca9685_write_reg(manager, bus_name, config->i2c_addr, PCA9685_REG_MODE2, mode2);
+  ret = pca9685_write_reg(manager, bus_name, config->i2c_addr, (uint8_t)k_pca9685_reg_mode2, mode2);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to configure MODE2: %s", esp_err_to_name(ret));
     if (oe_pin != GPIO_NUM_NC) {
@@ -368,13 +374,14 @@ esp_err_t star_sensor_pca9685_deinit(pca9685_handle_t* handle)
   ESP_LOGI(s_TAG, "Deinitializing PCA9685");
 
   // Acquire mutex before cleanup
-  SemaphoreHandle_t mutex = handle->mutex;
-  if (mutex != NULL && xSemaphoreTake(mutex, pdMS_TO_TICKS(PCA9685_MUTEX_TIMEOUT_MS)) != pdTRUE) {
+  const SemaphoreHandle_t mutex = handle->mutex;
+  if (mutex != NULL &&
+      xSemaphoreTake(mutex, pdMS_TO_TICKS(pca9685_timing.mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGW(s_TAG, "Failed to acquire mutex for deinit, continuing anyway");
   }
 
   // Put device to sleep (no mutex needed here, we already hold it)
-  pca9685_set_mode1_bits(handle, PCA9685_MODE1_SLEEP, true);
+  pca9685_set_mode1_bits(handle, (uint8_t)k_pca9685_mode1_sleep_mask, true);
 
   // Reset OE pin if configured
   if (handle->oe_pin != GPIO_NUM_NC) {
@@ -431,18 +438,20 @@ esp_err_t star_sensor_pca9685_calculate_prescale(uint16_t freq_hz, uint8_t* pres
     return ESP_ERR_INVALID_ARG;
   }
 
-  if (freq_hz < PCA9685_MIN_FREQ || freq_hz > PCA9685_MAX_FREQ) {
+  if (freq_hz < pca9685_hardware_limits.min_frequency_hz ||
+      freq_hz > pca9685_hardware_limits.max_frequency_hz) {
     ESP_LOGE(s_TAG,
              "Frequency %d Hz out of range (%d-%d)",
              freq_hz,
-             PCA9685_MIN_FREQ,
-             PCA9685_MAX_FREQ);
+             pca9685_hardware_limits.min_frequency_hz,
+             pca9685_hardware_limits.max_frequency_hz);
     return ESP_ERR_INVALID_ARG;
   }
 
   // Calculate prescale: round((25MHz / (4096 * freq)) - 1)
   // Use floating point to prevent integer overflow
-  float prescale_f = roundf(((float)PCA9685_OSCILLATOR_FREQ / (4096.0f * freq_hz)) - 1.0f);
+  float prescale_f =
+    roundf(((float)pca9685_hardware_limits.oscillator_freq_hz / (4096.0f * freq_hz)) - 1.0f);
 
   // Clamp to valid range (3-255)
   if (prescale_f < 3.0f) {
@@ -469,20 +478,21 @@ esp_err_t star_sensor_pca9685_prescale_to_freq(uint8_t prescale, uint16_t* freq_
   }
 
   // Frequency = 25MHz / (4096 * (prescale + 1))
-  *freq_hz = (uint16_t)(PCA9685_OSCILLATOR_FREQ / (4096 * (prescale + 1)));
+  *freq_hz = (uint16_t)(pca9685_hardware_limits.oscillator_freq_hz / (4096 * (prescale + 1)));
 
   return ESP_OK;
 }
 
-esp_err_t star_sensor_pca9685_set_frequency(pca9685_handle_t* handle, uint16_t freq_hz)
+esp_err_t star_sensor_pca9685_set_frequency(pca9685_handle_t* const handle, const uint16_t freq_hz)
 {
   if (handle == NULL || !handle->initialized) {
     return ESP_ERR_INVALID_STATE;
   }
 
   // Acquire mutex
-  SemaphoreHandle_t mutex = handle->mutex;
-  if (mutex == NULL || xSemaphoreTake(mutex, pdMS_TO_TICKS(PCA9685_MUTEX_TIMEOUT_MS)) != pdTRUE) {
+  const SemaphoreHandle_t mutex = handle->mutex;
+  if (mutex == NULL ||
+      xSemaphoreTake(mutex, pdMS_TO_TICKS(pca9685_timing.mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to acquire mutex for set_frequency");
     return ESP_ERR_TIMEOUT;
   }
@@ -493,7 +503,7 @@ esp_err_t star_sensor_pca9685_set_frequency(pca9685_handle_t* handle, uint16_t f
     return ESP_ERR_INVALID_STATE;
   }
 
-  esp_err_t ret = internal_pca9685_set_frequency(handle, freq_hz);
+  const esp_err_t ret = internal_pca9685_set_frequency(handle, freq_hz);
 
   xSemaphoreGive(mutex);
   return ret;
@@ -505,12 +515,12 @@ esp_err_t star_sensor_pca9685_get_frequency(const pca9685_handle_t* handle, uint
     return ESP_ERR_INVALID_ARG;
   }
 
-  uint8_t   prescale;
-  esp_err_t ret = pca9685_read_reg(handle->manager,
-                                   handle->bus_name,
-                                   handle->i2c_addr,
-                                   PCA9685_REG_PRESCALE,
-                                   &prescale);
+  uint8_t         prescale;
+  const esp_err_t ret = pca9685_read_reg(handle->manager,
+                                         handle->bus_name,
+                                         handle->i2c_addr,
+                                         (uint8_t)k_pca9685_reg_prescale,
+                                         &prescale);
   if (ret != ESP_OK) {
     return ret;
   }
@@ -529,33 +539,38 @@ esp_err_t star_sensor_pca9685_set_pwm(const pca9685_handle_t* handle,
     return ESP_ERR_INVALID_STATE;
   }
 
-  if (channel >= PCA9685_NUM_CHANNELS) {
-    ESP_LOGE(s_TAG, "Invalid channel: %d (max %d)", channel, PCA9685_NUM_CHANNELS - 1);
+  if (channel >= pca9685_hardware_limits.num_channels) {
+    ESP_LOGE(s_TAG,
+             "Invalid channel: %d (max %d)",
+             channel,
+             pca9685_hardware_limits.num_channels - 1);
     return ESP_ERR_INVALID_ARG;
   }
 
   // Validate times are within 12-bit range
-  if (on_time >= PCA9685_PWM_RESOLUTION || off_time >= PCA9685_PWM_RESOLUTION) {
+  if (on_time >= pca9685_hardware_limits.pwm_resolution ||
+      off_time >= pca9685_hardware_limits.pwm_resolution) {
     ESP_LOGE(s_TAG,
              "PWM values out of range (0-%d): on=%d, off=%d",
-             PCA9685_PWM_RESOLUTION - 1,
+             pca9685_hardware_limits.pwm_resolution - 1,
              on_time,
              off_time);
     return ESP_ERR_INVALID_ARG;
   }
 
   // Calculate register address for this channel
-  uint8_t reg_base = PCA9685_REG_LED0_ON_L + (4 * channel);
+  const uint8_t reg_base = (uint8_t)k_pca9685_reg_led0_on_l + (4 * channel);
 
   // Write all 4 bytes at once using auto-increment
-  uint8_t data[4] = {
+  const uint8_t data[4] = {
     (uint8_t)(on_time & 0xFF),        // ON_L
     (uint8_t)((on_time >> 8) & 0x0F), // ON_H
     (uint8_t)(off_time & 0xFF),       // OFF_L
     (uint8_t)((off_time >> 8) & 0x0F) // OFF_H
   };
 
-  esp_err_t ret = star_bus_i2c_write(handle->manager, handle->bus_name, data, 4, reg_base, NULL);
+  const esp_err_t ret =
+    star_bus_i2c_write(handle->manager, handle->bus_name, data, 4, reg_base, NULL);
 
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to write PWM for channel %d: %s", channel, esp_err_to_name(ret));
@@ -565,7 +580,7 @@ esp_err_t star_sensor_pca9685_set_pwm(const pca9685_handle_t* handle,
              channel,
              on_time,
              off_time,
-             ((float)(off_time - on_time) / PCA9685_PWM_RESOLUTION) * 100.0f);
+             ((float)(off_time - on_time) / pca9685_hardware_limits.pwm_resolution) * 100.0f);
   }
 
   return ret;
@@ -587,7 +602,13 @@ esp_err_t star_sensor_pca9685_set_duty_cycle(const pca9685_handle_t* handle,
   }
 
   // Convert to 12-bit value
-  uint16_t duty_value = (uint16_t)((duty_percent / 100.0f) * PCA9685_PWM_RESOLUTION);
+  uint16_t duty_value =
+    (uint16_t)((duty_percent / 100.0f) * pca9685_hardware_limits.pwm_resolution);
+
+  // Safety clamp to prevent PWM overflow (4096 > 4095 causes system crash)
+  if (duty_value >= pca9685_hardware_limits.pwm_resolution) {
+    duty_value = pca9685_hardware_limits.pwm_resolution - 1;
+  }
 
   // Set on_time to 0 for no phase shift
   return star_sensor_pca9685_set_pwm(handle, channel, 0, duty_value);
@@ -617,11 +638,13 @@ esp_err_t star_sensor_pca9685_set_duty_with_phase(const pca9685_handle_t* handle
   }
 
   // Convert to 12-bit values
-  uint16_t on_time    = (uint16_t)((phase_percent / 100.0f) * PCA9685_PWM_RESOLUTION);
-  uint16_t duty_value = (uint16_t)((duty_percent / 100.0f) * PCA9685_PWM_RESOLUTION);
+  const uint16_t on_time =
+    (uint16_t)((phase_percent / 100.0f) * pca9685_hardware_limits.pwm_resolution);
+  const uint16_t duty_value =
+    (uint16_t)((duty_percent / 100.0f) * pca9685_hardware_limits.pwm_resolution);
 
   // Calculate off_time with wraparound handling
-  uint16_t off_time = (on_time + duty_value) % PCA9685_PWM_RESOLUTION;
+  const uint16_t off_time = (on_time + duty_value) % pca9685_hardware_limits.pwm_resolution;
 
   return star_sensor_pca9685_set_pwm(handle, channel, on_time, off_time);
 }
@@ -635,15 +658,16 @@ esp_err_t star_sensor_pca9685_get_pwm(const pca9685_handle_t* handle,
     return ESP_ERR_INVALID_ARG;
   }
 
-  if (channel >= PCA9685_NUM_CHANNELS) {
+  if (channel >= pca9685_hardware_limits.num_channels) {
     return ESP_ERR_INVALID_ARG;
   }
 
-  uint8_t reg_base = PCA9685_REG_LED0_ON_L + (4 * channel);
-  uint8_t data[4];
+  const uint8_t reg_base = (uint8_t)k_pca9685_reg_led0_on_l + (4 * channel);
+  uint8_t       data[4];
 
   // Read all 4 bytes
-  esp_err_t ret = star_bus_i2c_read(handle->manager, handle->bus_name, data, 4, reg_base, NULL);
+  const esp_err_t ret =
+    star_bus_i2c_read(handle->manager, handle->bus_name, data, 4, reg_base, NULL);
   if (ret != ESP_OK) {
     return ret;
   }
@@ -660,14 +684,14 @@ esp_err_t star_sensor_pca9685_set_channel_on(const pca9685_handle_t* handle, uin
     return ESP_ERR_INVALID_STATE;
   }
 
-  if (channel >= PCA9685_NUM_CHANNELS) {
+  if (channel >= pca9685_hardware_limits.num_channels) {
     return ESP_ERR_INVALID_ARG;
   }
 
-  uint8_t reg_base = PCA9685_REG_LED0_ON_L + (4 * channel);
+  uint8_t reg_base = (uint8_t)k_pca9685_reg_led0_on_l + (4 * channel);
 
   // Set full ON bit in ON_H register
-  uint8_t data[4] = {0x00, PCA9685_LED_FULL_ON, 0x00, 0x00};
+  const uint8_t data[4] = {0x00, (uint8_t)k_pca9685_pwm_full_on_flag, 0x00, 0x00};
 
   return star_bus_i2c_write(handle->manager, handle->bus_name, data, 4, reg_base, NULL);
 }
@@ -678,14 +702,14 @@ esp_err_t star_sensor_pca9685_set_channel_off(const pca9685_handle_t* handle, ui
     return ESP_ERR_INVALID_STATE;
   }
 
-  if (channel >= PCA9685_NUM_CHANNELS) {
+  if (channel >= pca9685_hardware_limits.num_channels) {
     return ESP_ERR_INVALID_ARG;
   }
 
-  uint8_t reg_base = PCA9685_REG_LED0_ON_L + (4 * channel);
+  uint8_t reg_base = (uint8_t)k_pca9685_reg_led0_on_l + (4 * channel);
 
   // Set full OFF bit in OFF_H register
-  uint8_t data[4] = {0x00, 0x00, 0x00, PCA9685_LED_FULL_OFF};
+  const uint8_t data[4] = {0x00, 0x00, 0x00, (uint8_t)k_pca9685_pwm_full_off_flag};
 
   return star_bus_i2c_write(handle->manager, handle->bus_name, data, 4, reg_base, NULL);
 }
@@ -704,10 +728,11 @@ esp_err_t star_sensor_pca9685_set_all_duty_cycle(const pca9685_handle_t* handle,
     duty_percent = 100.0f;
   }
 
-  uint16_t duty_value = (uint16_t)((duty_percent / 100.0f) * PCA9685_PWM_RESOLUTION);
+  const uint16_t duty_value =
+    (uint16_t)((duty_percent / 100.0f) * pca9685_hardware_limits.pwm_resolution);
 
   // Write to ALL_LED registers
-  uint8_t data[4] = {
+  const uint8_t data[4] = {
     0x00,                               // ALL_LED_ON_L
     0x00,                               // ALL_LED_ON_H
     (uint8_t)(duty_value & 0xFF),       // ALL_LED_OFF_L
@@ -718,21 +743,22 @@ esp_err_t star_sensor_pca9685_set_all_duty_cycle(const pca9685_handle_t* handle,
                             handle->bus_name,
                             data,
                             4,
-                            PCA9685_REG_ALL_LED_ON_L,
+                            (uint8_t)k_pca9685_reg_all_led_on_l,
                             NULL);
 }
 
 /* --- Helper Functions --- */
 
-esp_err_t star_sensor_pca9685_sleep(pca9685_handle_t* handle, bool sleep)
+esp_err_t star_sensor_pca9685_sleep(pca9685_handle_t* const handle, const bool sleep)
 {
   if (handle == NULL || !handle->initialized) {
     return ESP_ERR_INVALID_STATE;
   }
 
   // Acquire mutex
-  SemaphoreHandle_t mutex = handle->mutex;
-  if (mutex == NULL || xSemaphoreTake(mutex, pdMS_TO_TICKS(PCA9685_MUTEX_TIMEOUT_MS)) != pdTRUE) {
+  const SemaphoreHandle_t mutex = handle->mutex;
+  if (mutex == NULL ||
+      xSemaphoreTake(mutex, pdMS_TO_TICKS(pca9685_timing.mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to acquire mutex for sleep");
     return ESP_ERR_TIMEOUT;
   }
@@ -743,7 +769,7 @@ esp_err_t star_sensor_pca9685_sleep(pca9685_handle_t* handle, bool sleep)
     return ESP_ERR_INVALID_STATE;
   }
 
-  esp_err_t ret = pca9685_set_mode1_bits(handle, PCA9685_MODE1_SLEEP, sleep);
+  esp_err_t ret = pca9685_set_mode1_bits(handle, (uint8_t)k_pca9685_mode1_sleep_mask, sleep);
 
   xSemaphoreGive(mutex);
   return ret;
@@ -763,8 +789,9 @@ esp_err_t star_sensor_pca9685_output_enable(const pca9685_handle_t* handle)
   }
 
   // Acquire mutex
-  SemaphoreHandle_t mutex = handle->mutex;
-  if (mutex == NULL || xSemaphoreTake(mutex, pdMS_TO_TICKS(PCA9685_MUTEX_TIMEOUT_MS)) != pdTRUE) {
+  const SemaphoreHandle_t mutex = handle->mutex;
+  if (mutex == NULL ||
+      xSemaphoreTake(mutex, pdMS_TO_TICKS(pca9685_timing.mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to acquire mutex for output_enable");
     return ESP_ERR_TIMEOUT;
   }
@@ -776,8 +803,8 @@ esp_err_t star_sensor_pca9685_output_enable(const pca9685_handle_t* handle)
   }
 
   // Set OE pin to enable level (active-low: LOW enables, active-high: HIGH enables)
-  uint32_t  enable_level = handle->oe_active_low ? 0 : 1;
-  esp_err_t ret          = gpio_set_level(handle->oe_pin, enable_level);
+  const uint32_t  enable_level = handle->oe_active_low ? 0 : 1;
+  const esp_err_t ret          = gpio_set_level(handle->oe_pin, enable_level);
 
   if (ret == ESP_OK) {
     ESP_LOGI(s_TAG, "PWM outputs enabled via OE pin GPIO%d", handle->oe_pin);
@@ -801,8 +828,9 @@ esp_err_t star_sensor_pca9685_output_disable(const pca9685_handle_t* handle)
   }
 
   // Acquire mutex
-  SemaphoreHandle_t mutex = handle->mutex;
-  if (mutex == NULL || xSemaphoreTake(mutex, pdMS_TO_TICKS(PCA9685_MUTEX_TIMEOUT_MS)) != pdTRUE) {
+  const SemaphoreHandle_t mutex = handle->mutex;
+  if (mutex == NULL ||
+      xSemaphoreTake(mutex, pdMS_TO_TICKS(pca9685_timing.mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to acquire mutex for output_disable");
     return ESP_ERR_TIMEOUT;
   }
@@ -814,8 +842,8 @@ esp_err_t star_sensor_pca9685_output_disable(const pca9685_handle_t* handle)
   }
 
   // Set OE pin to disable level (active-low: HIGH disables, active-high: LOW disables)
-  uint32_t  disable_level = handle->oe_active_low ? 1 : 0;
-  esp_err_t ret           = gpio_set_level(handle->oe_pin, disable_level);
+  const uint32_t  disable_level = handle->oe_active_low ? 1 : 0;
+  const esp_err_t ret           = gpio_set_level(handle->oe_pin, disable_level);
 
   if (ret == ESP_OK) {
     ESP_LOGI(s_TAG, "PWM outputs disabled via OE pin GPIO%d", handle->oe_pin);
@@ -836,13 +864,16 @@ star_sensor_pca9685_set_servo_angle(const pca9685_handle_t* handle, uint8_t chan
     return ESP_ERR_INVALID_ARG;
   }
 
-  if (channel >= PCA9685_NUM_CHANNELS) {
-    ESP_LOGE(s_TAG, "Invalid channel %d (max %d)", channel, PCA9685_NUM_CHANNELS - 1);
+  if (channel >= pca9685_hardware_limits.num_channels) {
+    ESP_LOGE(s_TAG,
+             "Invalid channel %d (max %d)",
+             channel,
+             pca9685_hardware_limits.num_channels - 1);
     return ESP_ERR_INVALID_ARG;
   }
 
   /* Use star_servo library to convert angle to PWM count */
-  uint16_t pwm_count = star_servo_angle_to_count(angle);
+  const uint16_t pwm_count = star_servo_angle_to_count(angle);
 
   /* Set PWM with on_time=0 and off_time=count (standard for servos) */
   return star_sensor_pca9685_set_pwm(handle, channel, 0, pwm_count);

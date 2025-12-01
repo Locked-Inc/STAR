@@ -17,31 +17,31 @@ var star__bus__uart_8h =
     [ "STAR_UART_CONFIG_DEFAULT", "d6/dde/star__bus__uart_8h.html#a082ac9365c85e09d8cceadcfcb99ae9a", null ],
     [ "star_uart_event_cb_t", "d6/dde/star__bus__uart_8h.html#af75f5a1633f9b4851cbc5dabb2f91da3", null ],
     [ "star_uart_data_bits_t", "d6/dde/star__bus__uart_8h.html#a4cc246e32967c2df8cf0403455c99535", [
-      [ "STAR_UART_DATA_5_BITS", "d6/dde/star__bus__uart_8h.html#a4cc246e32967c2df8cf0403455c99535a840de3d13c36d65908c726d7c0b7b5a5", null ],
-      [ "STAR_UART_DATA_6_BITS", "d6/dde/star__bus__uart_8h.html#a4cc246e32967c2df8cf0403455c99535a2ffa790a44206956c44fe24abe2be5eb", null ],
-      [ "STAR_UART_DATA_7_BITS", "d6/dde/star__bus__uart_8h.html#a4cc246e32967c2df8cf0403455c99535a64d16c113f9eefa84fb0465b2e942161", null ],
-      [ "STAR_UART_DATA_8_BITS", "d6/dde/star__bus__uart_8h.html#a4cc246e32967c2df8cf0403455c99535ae9d1e5e7011d17698165d611818661f1", null ]
+      [ "k_star_uart_data_5_bits", "d6/dde/star__bus__uart_8h.html#a4cc246e32967c2df8cf0403455c99535a1d7b709db4ae89b4f633777e68ff7ea4", null ],
+      [ "k_star_uart_data_6_bits", "d6/dde/star__bus__uart_8h.html#a4cc246e32967c2df8cf0403455c99535a169eec807634a9a799deb2d16382e446", null ],
+      [ "k_star_uart_data_7_bits", "d6/dde/star__bus__uart_8h.html#a4cc246e32967c2df8cf0403455c99535a61b90e4aba52ef4d71705b086795cce1", null ],
+      [ "k_star_uart_data_8_bits", "d6/dde/star__bus__uart_8h.html#a4cc246e32967c2df8cf0403455c99535a3aa81143058aa21812fa3a2a129c31a0", null ]
     ] ],
     [ "star_uart_flow_ctrl_t", "d6/dde/star__bus__uart_8h.html#a5f57b638659e8b13be2a25bcfb5c166a", [
-      [ "STAR_UART_FLOW_CTRL_NONE", "d6/dde/star__bus__uart_8h.html#a5f57b638659e8b13be2a25bcfb5c166aa4e8e698d7e126c09aeebaafceb8c0dfd", null ],
-      [ "STAR_UART_FLOW_CTRL_RTS", "d6/dde/star__bus__uart_8h.html#a5f57b638659e8b13be2a25bcfb5c166aa02e65046b3a00d5e510949596329960e", null ],
-      [ "STAR_UART_FLOW_CTRL_CTS", "d6/dde/star__bus__uart_8h.html#a5f57b638659e8b13be2a25bcfb5c166aa3da6da0030bf1b29623cfa63d75d8f68", null ],
-      [ "STAR_UART_FLOW_CTRL_RTS_CTS", "d6/dde/star__bus__uart_8h.html#a5f57b638659e8b13be2a25bcfb5c166aa90b58b80c4054be07759d7ebc420b0cd", null ]
+      [ "k_star_uart_flow_ctrl_none", "d6/dde/star__bus__uart_8h.html#a5f57b638659e8b13be2a25bcfb5c166aa813b2fe7196c2ac4a9c5050c1a40ae2c", null ],
+      [ "k_star_uart_flow_ctrl_rts", "d6/dde/star__bus__uart_8h.html#a5f57b638659e8b13be2a25bcfb5c166aa0d40fd3c2d330ec596bda0fe6b2a5777", null ],
+      [ "k_star_uart_flow_ctrl_cts", "d6/dde/star__bus__uart_8h.html#a5f57b638659e8b13be2a25bcfb5c166aa12dc9f6e2dbc8b9be01b85dd2c2d5c8d", null ],
+      [ "k_star_uart_flow_ctrl_rts_cts", "d6/dde/star__bus__uart_8h.html#a5f57b638659e8b13be2a25bcfb5c166aaec3bb8c34b2bf3a518464bdbc25f776d", null ]
     ] ],
     [ "star_uart_mode_t", "d6/dde/star__bus__uart_8h.html#a72ef170094e1951b76b9f7654124455c", [
-      [ "STAR_UART_MODE_UART", "d6/dde/star__bus__uart_8h.html#a72ef170094e1951b76b9f7654124455ca34cf399aab2eed695446f4d653442963", null ],
-      [ "STAR_UART_MODE_RS485", "d6/dde/star__bus__uart_8h.html#a72ef170094e1951b76b9f7654124455ca456a4ceb49dbe0b5b029c411eb1e64c5", null ],
-      [ "STAR_UART_MODE_IRDA", "d6/dde/star__bus__uart_8h.html#a72ef170094e1951b76b9f7654124455ca64aa4de382fa4d79edd0e4589dbce2c5", null ]
+      [ "k_star_uart_mode_uart", "d6/dde/star__bus__uart_8h.html#a72ef170094e1951b76b9f7654124455ca8c1578e37cfe77b1e051bcb0bff53f87", null ],
+      [ "k_star_uart_mode_rs485", "d6/dde/star__bus__uart_8h.html#a72ef170094e1951b76b9f7654124455ca15a67e1e657f09aa0d91f55f08397637", null ],
+      [ "k_star_uart_mode_irda", "d6/dde/star__bus__uart_8h.html#a72ef170094e1951b76b9f7654124455cae8b8e46764bc59a53780246835e60b98", null ]
     ] ],
     [ "star_uart_parity_t", "d6/dde/star__bus__uart_8h.html#ae594b656baec80d829ef2cdd634e82ee", [
-      [ "STAR_UART_PARITY_NONE", "d6/dde/star__bus__uart_8h.html#ae594b656baec80d829ef2cdd634e82eea8ccae722c75a914e99745a42cbfe1340", null ],
-      [ "STAR_UART_PARITY_EVEN", "d6/dde/star__bus__uart_8h.html#ae594b656baec80d829ef2cdd634e82eea4ae5d6d777e8fd14b41d04f9a56547c7", null ],
-      [ "STAR_UART_PARITY_ODD", "d6/dde/star__bus__uart_8h.html#ae594b656baec80d829ef2cdd634e82eea7164ae5dccd95a91f1965138757e0b7f", null ]
+      [ "k_star_uart_parity_none", "d6/dde/star__bus__uart_8h.html#ae594b656baec80d829ef2cdd634e82eea668d7d26e4a7f2d7c3a49b63071a6f20", null ],
+      [ "k_star_uart_parity_even", "d6/dde/star__bus__uart_8h.html#ae594b656baec80d829ef2cdd634e82eeae3db19d077bccdd3a7341d73ca226337", null ],
+      [ "k_star_uart_parity_odd", "d6/dde/star__bus__uart_8h.html#ae594b656baec80d829ef2cdd634e82eea9a52bdcc08cc4c716d49f0b6d6d2e4e0", null ]
     ] ],
     [ "star_uart_stop_bits_t", "d6/dde/star__bus__uart_8h.html#a0f6d74cbfccb1b544e448a63e9b8213a", [
-      [ "STAR_UART_STOP_1_BIT", "d6/dde/star__bus__uart_8h.html#a0f6d74cbfccb1b544e448a63e9b8213aa8b59900572aa216b4540ace4701063bb", null ],
-      [ "STAR_UART_STOP_1_5_BITS", "d6/dde/star__bus__uart_8h.html#a0f6d74cbfccb1b544e448a63e9b8213aa963b37ce34b62853fe30c1cc88735fc1", null ],
-      [ "STAR_UART_STOP_2_BITS", "d6/dde/star__bus__uart_8h.html#a0f6d74cbfccb1b544e448a63e9b8213aa63c6ed9382cf45993eac6795f192c847", null ]
+      [ "k_star_uart_stop_1_bit", "d6/dde/star__bus__uart_8h.html#a0f6d74cbfccb1b544e448a63e9b8213aa5261f34ebceb3e31f0132c6a3e675607", null ],
+      [ "k_star_uart_stop_1_5_bits", "d6/dde/star__bus__uart_8h.html#a0f6d74cbfccb1b544e448a63e9b8213aaeb0ed6d6b78fdbbda78435359f24ad06", null ],
+      [ "k_star_uart_stop_2_bits", "d6/dde/star__bus__uart_8h.html#a0f6d74cbfccb1b544e448a63e9b8213aac4e667571bcc8e55741f9f4d09af64d7", null ]
     ] ],
     [ "star_bus_uart_clear_rx", "d6/dde/star__bus__uart_8h.html#ad4ca38a746b8b7621ffbba6acca1e4bf", null ],
     [ "star_bus_uart_deinit", "d6/dde/star__bus__uart_8h.html#a38bc12af250eec9b73de90664a616adc", null ],

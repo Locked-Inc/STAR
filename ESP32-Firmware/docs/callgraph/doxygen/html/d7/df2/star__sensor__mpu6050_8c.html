@@ -210,29 +210,29 @@ Macros</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:ad2b82a94ebbe65324c37febc5ebee644" id="r_ad2b82a94ebbe65324c37febc5ebee644"><td class="memItemLeft" align="right" valign="top">static esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad2b82a94ebbe65324c37febc5ebee644">mpu6050_write_reg</a> (<a class="el" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a> *manager, const char *bus_name, uint8_t addr, uint8_t reg, uint8_t value)</td></tr>
-<tr class="memitem:a22fe40a03094a07d6b03c6de6d121688" id="r_a22fe40a03094a07d6b03c6de6d121688"><td class="memItemLeft" align="right" valign="top">static esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a22fe40a03094a07d6b03c6de6d121688">mpu6050_read_reg</a> (<a class="el" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a> *manager, const char *bus_name, uint8_t addr, uint8_t reg, uint8_t *value)</td></tr>
-<tr class="memitem:afbd04ebaa481e189f717f9d161f6e9cc" id="r_afbd04ebaa481e189f717f9d161f6e9cc"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afbd04ebaa481e189f717f9d161f6e9cc">get_accel_sensitivity</a> (<a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#a23b716a7164564b8b86ab318a5c38499">mpu6050_accel_range_t</a> range, float *sensitivity)</td></tr>
-<tr class="memitem:a03b6df4c87bd77dd382627243bae9a79" id="r_a03b6df4c87bd77dd382627243bae9a79"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a03b6df4c87bd77dd382627243bae9a79">get_gyro_sensitivity</a> (<a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#a44d0fd4bf1507100e4b43cc60c14a16a">mpu6050_gyro_range_t</a> range, float *sensitivity)</td></tr>
+<tr class="memitem:a94e36964d8af4357ede57221c09af8bd" id="r_a94e36964d8af4357ede57221c09af8bd"><td class="memItemLeft" align="right" valign="top">static esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a94e36964d8af4357ede57221c09af8bd">mpu6050_write_reg</a> (<a class="el" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a> *const manager, const char *const bus_name, const uint8_t addr, const uint8_t reg, const uint8_t value)</td></tr>
+<tr class="memitem:a95ee574609f3f096d184820df2e58182" id="r_a95ee574609f3f096d184820df2e58182"><td class="memItemLeft" align="right" valign="top">static esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a95ee574609f3f096d184820df2e58182">mpu6050_read_reg</a> (<a class="el" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a> *const manager, const char *const bus_name, const uint8_t addr, const uint8_t reg, uint8_t *const value)</td></tr>
+<tr class="memitem:a2e3e07e034c2b511e660d31c7aa5f7e6" id="r_a2e3e07e034c2b511e660d31c7aa5f7e6"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2e3e07e034c2b511e660d31c7aa5f7e6">get_accel_sensitivity</a> (const <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#a23b716a7164564b8b86ab318a5c38499">mpu6050_accel_range_t</a> range, float *const sensitivity)</td></tr>
+<tr class="memitem:a0f56dfe1c02082f4e5192a2de3a342a1" id="r_a0f56dfe1c02082f4e5192a2de3a342a1"><td class="memItemLeft" align="right" valign="top">static void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0f56dfe1c02082f4e5192a2de3a342a1">get_gyro_sensitivity</a> (const <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#a44d0fd4bf1507100e4b43cc60c14a16a">mpu6050_gyro_range_t</a> range, float *const sensitivity)</td></tr>
 <tr class="memitem:a6dbaa7aa91b9b60c82941cdcb8ab125a" id="r_a6dbaa7aa91b9b60c82941cdcb8ab125a"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6dbaa7aa91b9b60c82941cdcb8ab125a">star_sensor_mpu6050_init</a> (<a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#ac037aec75b2ca75a25bc678f5d07c049">mpu6050_handle_t</a> *handle, <a class="el" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a> *manager, const char *bus_name, <a class="el" href="../../df/d84/star__error__interface_8h.html#a45a01bbdc613ba6c69401890e9eccbee">star_error_interface_t</a> *error_iface, const <a class="el" href="../../d7/d19/structmpu6050__config__t.html">mpu6050_config_t</a> *config)</td></tr>
 <tr class="memdesc:a6dbaa7aa91b9b60c82941cdcb8ab125a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize MPU6050 IMU sensor.  <br /></td></tr>
 <tr class="memitem:ae98f107b4b0856a04b0613f630f4f7f1" id="r_ae98f107b4b0856a04b0613f630f4f7f1"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae98f107b4b0856a04b0613f630f4f7f1">star_sensor_mpu6050_deinit</a> (<a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#ac037aec75b2ca75a25bc678f5d07c049">mpu6050_handle_t</a> *handle)</td></tr>
 <tr class="memitem:a21f554f7976fc44c5e783cb7746549b2" id="r_a21f554f7976fc44c5e783cb7746549b2"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a21f554f7976fc44c5e783cb7746549b2">star_sensor_mpu6050_reset</a> (const <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#ac037aec75b2ca75a25bc678f5d07c049">mpu6050_handle_t</a> *handle)</td></tr>
 <tr class="memitem:a6827825e12a3662c9c1616cbaf84701a" id="r_a6827825e12a3662c9c1616cbaf84701a"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6827825e12a3662c9c1616cbaf84701a">star_sensor_mpu6050_read_accel_raw</a> (const <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#ac037aec75b2ca75a25bc678f5d07c049">mpu6050_handle_t</a> *handle, <a class="el" href="../../d6/d8c/structmpu6050__raw__accel__t.html">mpu6050_raw_accel_t</a> *accel)</td></tr>
 <tr class="memitem:a17b378af6ddb0fc22860e22c9349c953" id="r_a17b378af6ddb0fc22860e22c9349c953"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a17b378af6ddb0fc22860e22c9349c953">star_sensor_mpu6050_read_gyro_raw</a> (const <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#ac037aec75b2ca75a25bc678f5d07c049">mpu6050_handle_t</a> *handle, <a class="el" href="../../d7/d1c/structmpu6050__raw__gyro__t.html">mpu6050_raw_gyro_t</a> *gyro)</td></tr>
-<tr class="memitem:aeae03191c4d73ddf2ce669de706cf5b0" id="r_aeae03191c4d73ddf2ce669de706cf5b0"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aeae03191c4d73ddf2ce669de706cf5b0">star_sensor_mpu6050_read_accel</a> (const <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#ac037aec75b2ca75a25bc678f5d07c049">mpu6050_handle_t</a> *handle, <a class="el" href="../../d8/d38/structmpu6050__accel__t.html">mpu6050_accel_t</a> *accel)</td></tr>
-<tr class="memitem:a69c5e6f06d448bb24490cc174701034e" id="r_a69c5e6f06d448bb24490cc174701034e"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a69c5e6f06d448bb24490cc174701034e">star_sensor_mpu6050_read_gyro</a> (const <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#ac037aec75b2ca75a25bc678f5d07c049">mpu6050_handle_t</a> *handle, <a class="el" href="../../d5/d80/structmpu6050__gyro__t.html">mpu6050_gyro_t</a> *gyro)</td></tr>
-<tr class="memitem:a6320e2f54ab20eb5d10eecd711032111" id="r_a6320e2f54ab20eb5d10eecd711032111"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6320e2f54ab20eb5d10eecd711032111">star_sensor_mpu6050_read_temperature</a> (const <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#ac037aec75b2ca75a25bc678f5d07c049">mpu6050_handle_t</a> *handle, float *temp_c)</td></tr>
-<tr class="memitem:acd9d531a27f49d36d8ad04ee442c4399" id="r_acd9d531a27f49d36d8ad04ee442c4399"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acd9d531a27f49d36d8ad04ee442c4399">star_sensor_mpu6050_read_all</a> (const <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#ac037aec75b2ca75a25bc678f5d07c049">mpu6050_handle_t</a> *handle, <a class="el" href="../../d8/d38/structmpu6050__accel__t.html">mpu6050_accel_t</a> *accel, <a class="el" href="../../d5/d80/structmpu6050__gyro__t.html">mpu6050_gyro_t</a> *gyro, float *temp_c)</td></tr>
-<tr class="memitem:a30d0b4f5a7970ebe377dd3212e30ad9f" id="r_a30d0b4f5a7970ebe377dd3212e30ad9f"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a30d0b4f5a7970ebe377dd3212e30ad9f">star_sensor_mpu6050_fifo_enable</a> (<a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#ac037aec75b2ca75a25bc678f5d07c049">mpu6050_handle_t</a> *handle, bool enable)</td></tr>
+<tr class="memitem:acf7c055ab733728deb0165192d3efc65" id="r_acf7c055ab733728deb0165192d3efc65"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acf7c055ab733728deb0165192d3efc65">star_sensor_mpu6050_read_accel</a> (const <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#ac037aec75b2ca75a25bc678f5d07c049">mpu6050_handle_t</a> *handle, <a class="el" href="../../d8/d38/structmpu6050__accel__t.html">mpu6050_accel_t</a> *const accel)</td></tr>
+<tr class="memitem:a57220afed4d707a382ed62361d57880c" id="r_a57220afed4d707a382ed62361d57880c"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a57220afed4d707a382ed62361d57880c">star_sensor_mpu6050_read_gyro</a> (const <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#ac037aec75b2ca75a25bc678f5d07c049">mpu6050_handle_t</a> *handle, <a class="el" href="../../d5/d80/structmpu6050__gyro__t.html">mpu6050_gyro_t</a> *const gyro)</td></tr>
+<tr class="memitem:a560473d6ca210b13f020dff2b568608c" id="r_a560473d6ca210b13f020dff2b568608c"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a560473d6ca210b13f020dff2b568608c">star_sensor_mpu6050_read_temperature</a> (const <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#ac037aec75b2ca75a25bc678f5d07c049">mpu6050_handle_t</a> *handle, float *const temp_c)</td></tr>
+<tr class="memitem:a4433795137c77129e52ed5ac303819c0" id="r_a4433795137c77129e52ed5ac303819c0"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4433795137c77129e52ed5ac303819c0">star_sensor_mpu6050_read_all</a> (const <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#ac037aec75b2ca75a25bc678f5d07c049">mpu6050_handle_t</a> *handle, <a class="el" href="../../d8/d38/structmpu6050__accel__t.html">mpu6050_accel_t</a> *const accel, <a class="el" href="../../d5/d80/structmpu6050__gyro__t.html">mpu6050_gyro_t</a> *const gyro, float *const temp_c)</td></tr>
+<tr class="memitem:add78abc1a61bf4b3ee31366a06d00618" id="r_add78abc1a61bf4b3ee31366a06d00618"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#add78abc1a61bf4b3ee31366a06d00618">star_sensor_mpu6050_fifo_enable</a> (<a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#ac037aec75b2ca75a25bc678f5d07c049">mpu6050_handle_t</a> *const handle, const bool enable)</td></tr>
 <tr class="memitem:af9c59e348f591584e4715b65d277e13a" id="r_af9c59e348f591584e4715b65d277e13a"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af9c59e348f591584e4715b65d277e13a">star_sensor_mpu6050_fifo_reset</a> (const <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#ac037aec75b2ca75a25bc678f5d07c049">mpu6050_handle_t</a> *handle)</td></tr>
-<tr class="memitem:acd1b051122b1d43b3207faa6734ce061" id="r_acd1b051122b1d43b3207faa6734ce061"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acd1b051122b1d43b3207faa6734ce061">star_sensor_mpu6050_fifo_get_count</a> (const <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#ac037aec75b2ca75a25bc678f5d07c049">mpu6050_handle_t</a> *handle, uint16_t *count)</td></tr>
-<tr class="memitem:ac5546d5b808dbc10376beb12448aaed8" id="r_ac5546d5b808dbc10376beb12448aaed8"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac5546d5b808dbc10376beb12448aaed8">star_sensor_mpu6050_fifo_read</a> (const <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#ac037aec75b2ca75a25bc678f5d07c049">mpu6050_handle_t</a> *handle, uint8_t *data, uint16_t len)</td></tr>
-<tr class="memitem:a26a2221a6e7e888b7779a68eb0c1cc04" id="r_a26a2221a6e7e888b7779a68eb0c1cc04"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a26a2221a6e7e888b7779a68eb0c1cc04">star_sensor_mpu6050_set_sleep</a> (<a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#ac037aec75b2ca75a25bc678f5d07c049">mpu6050_handle_t</a> *handle, bool sleep)</td></tr>
+<tr class="memitem:a90480ddcc483904e3c57303a5171918b" id="r_a90480ddcc483904e3c57303a5171918b"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a90480ddcc483904e3c57303a5171918b">star_sensor_mpu6050_fifo_get_count</a> (const <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#ac037aec75b2ca75a25bc678f5d07c049">mpu6050_handle_t</a> *handle, uint16_t *const count)</td></tr>
+<tr class="memitem:af9f9dcb9bcb06a111d8217773b6176fb" id="r_af9f9dcb9bcb06a111d8217773b6176fb"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af9f9dcb9bcb06a111d8217773b6176fb">star_sensor_mpu6050_fifo_read</a> (const <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#ac037aec75b2ca75a25bc678f5d07c049">mpu6050_handle_t</a> *handle, uint8_t *const data, const uint16_t len)</td></tr>
+<tr class="memitem:a13b17febbf0058089731826f5e129100" id="r_a13b17febbf0058089731826f5e129100"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a13b17febbf0058089731826f5e129100">star_sensor_mpu6050_set_sleep</a> (<a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#ac037aec75b2ca75a25bc678f5d07c049">mpu6050_handle_t</a> *const handle, const bool sleep)</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-var-members" class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:a999e3dd103132afd3cd1856f477f2dbd" id="r_a999e3dd103132afd3cd1856f477f2dbd"><td class="memItemLeft" align="right" valign="top">static const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a999e3dd103132afd3cd1856f477f2dbd">s_TAG</a> = &quot;mpu6050&quot;</td></tr>
+<tr class="memitem:a0ef4cd21b66ec96ecc491ff1bafab645" id="r_a0ef4cd21b66ec96ecc491ff1bafab645"><td class="memItemLeft" align="right" valign="top">static const char *const&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0ef4cd21b66ec96ecc491ff1bafab645">s_TAG</a> = &quot;mpu6050&quot;</td></tr>
 </table>
 <a name="doc-define-members" id="doc-define-members"></a><h2 id="header-doc-define-members" class="groupheader">Macro Definition Documentation</h2>
 <a id="aabea375f2c69267b434e47667aa7d094" name="aabea375f2c69267b434e47667aa7d094"></a>
@@ -249,13 +249,13 @@ Variables</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00016">16</a> of file <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html">star_sensor_mpu6050.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00228">star_sensor_mpu6050_deinit()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00489">star_sensor_mpu6050_fifo_enable()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00599">star_sensor_mpu6050_fifo_get_count()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00638">star_sensor_mpu6050_fifo_read()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00558">star_sensor_mpu6050_fifo_reset()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00288">star_sensor_mpu6050_read_accel_raw()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00432">star_sensor_mpu6050_read_all()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00324">star_sensor_mpu6050_read_gyro_raw()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00398">star_sensor_mpu6050_read_temperature()</a>, and <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00669">star_sensor_mpu6050_set_sleep()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00234">star_sensor_mpu6050_deinit()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00496">star_sensor_mpu6050_fifo_enable()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00606">star_sensor_mpu6050_fifo_get_count()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00645">star_sensor_mpu6050_fifo_read()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00565">star_sensor_mpu6050_fifo_reset()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00294">star_sensor_mpu6050_read_accel_raw()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00439">star_sensor_mpu6050_read_all()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00330">star_sensor_mpu6050_read_gyro_raw()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00405">star_sensor_mpu6050_read_temperature()</a>, and <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00678">star_sensor_mpu6050_set_sleep()</a>.</p>
 
 </div>
 </div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
-<a id="afbd04ebaa481e189f717f9d161f6e9cc" name="afbd04ebaa481e189f717f9d161f6e9cc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afbd04ebaa481e189f717f9d161f6e9cc">&#9670;&#160;</a></span>get_accel_sensitivity()</h2>
+<a id="a2e3e07e034c2b511e660d31c7aa5f7e6" name="a2e3e07e034c2b511e660d31c7aa5f7e6"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2e3e07e034c2b511e660d31c7aa5f7e6">&#9670;&#160;</a></span>get_accel_sensitivity()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -266,12 +266,12 @@ Variables</h2></td></tr>
         <tr>
           <td class="memname">void get_accel_sensitivity </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#a23b716a7164564b8b86ab318a5c38499">mpu6050_accel_range_t</a></td>          <td class="paramname"><span class="paramname"><em>range</em></span>, </td>
+          <td class="paramtype">const <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#a23b716a7164564b8b86ab318a5c38499">mpu6050_accel_range_t</a></td>          <td class="paramname"><span class="paramname"><em>range</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">float *</td>          <td class="paramname"><span class="paramname"><em>sensitivity</em></span>&#160;)</td>
+          <td class="paramtype">float *const</td>          <td class="paramname"><span class="paramname"><em>sensitivity</em></span>&#160;)</td>
         </tr>
       </table>
   </td>
@@ -283,14 +283,14 @@ Variables</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00036">36</a> of file <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html">star_sensor_mpu6050.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00208">MPU6050_ACCEL_RANGE_16G</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00205">MPU6050_ACCEL_RANGE_2G</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00206">MPU6050_ACCEL_RANGE_4G</a>, and <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00207">MPU6050_ACCEL_RANGE_8G</a>.</p>
+<p class="reference">References <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00212">k_mpu6050_accel_range_16g</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00209">k_mpu6050_accel_range_2g</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00210">k_mpu6050_accel_range_4g</a>, and <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00211">k_mpu6050_accel_range_8g</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00076">star_sensor_mpu6050_init()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_afbd04ebaa481e189f717f9d161f6e9cc_icgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_afbd04ebaa481e189f717f9d161f6e9cc_icgraph" loading="lazy" alt=""/></div>
-<map name="ad7/df2/star__sensor__mpu6050_8c_afbd04ebaa481e189f717f9d161f6e9cc_icgraph" id="ad7/df2/star__sensor__mpu6050_8c_afbd04ebaa481e189f717f9d161f6e9cc_icgraph">
+<div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_a2e3e07e034c2b511e660d31c7aa5f7e6_icgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_a2e3e07e034c2b511e660d31c7aa5f7e6_icgraph" loading="lazy" alt=""/></div>
+<map name="ad7/df2/star__sensor__mpu6050_8c_a2e3e07e034c2b511e660d31c7aa5f7e6_icgraph" id="ad7/df2/star__sensor__mpu6050_8c_a2e3e07e034c2b511e660d31c7aa5f7e6_icgraph">
 <area shape="rect" title=" " alt="" coords="227,5,370,31"/>
 <area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="5,5,179,31"/>
 <area shape="poly" title=" " alt="" coords="208,18,179,21,179,16,214,18"/>
@@ -299,8 +299,8 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="a03b6df4c87bd77dd382627243bae9a79" name="a03b6df4c87bd77dd382627243bae9a79"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a03b6df4c87bd77dd382627243bae9a79">&#9670;&#160;</a></span>get_gyro_sensitivity()</h2>
+<a id="a0f56dfe1c02082f4e5192a2de3a342a1" name="a0f56dfe1c02082f4e5192a2de3a342a1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0f56dfe1c02082f4e5192a2de3a342a1">&#9670;&#160;</a></span>get_gyro_sensitivity()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -311,12 +311,12 @@ Here is the caller graph for this function:</div>
         <tr>
           <td class="memname">void get_gyro_sensitivity </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#a44d0fd4bf1507100e4b43cc60c14a16a">mpu6050_gyro_range_t</a></td>          <td class="paramname"><span class="paramname"><em>range</em></span>, </td>
+          <td class="paramtype">const <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#a44d0fd4bf1507100e4b43cc60c14a16a">mpu6050_gyro_range_t</a></td>          <td class="paramname"><span class="paramname"><em>range</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">float *</td>          <td class="paramname"><span class="paramname"><em>sensitivity</em></span>&#160;)</td>
+          <td class="paramtype">float *const</td>          <td class="paramname"><span class="paramname"><em>sensitivity</em></span>&#160;)</td>
         </tr>
       </table>
   </td>
@@ -328,14 +328,14 @@ Here is the caller graph for this function:</div>
 
 <p class="definition">Definition at line <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00056">56</a> of file <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html">star_sensor_mpu6050.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00214">MPU6050_GYRO_RANGE_1000</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00215">MPU6050_GYRO_RANGE_2000</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00212">MPU6050_GYRO_RANGE_250</a>, and <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00213">MPU6050_GYRO_RANGE_500</a>.</p>
+<p class="reference">References <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00218">k_mpu6050_gyro_range_1000</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00219">k_mpu6050_gyro_range_2000</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00216">k_mpu6050_gyro_range_250</a>, and <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00217">k_mpu6050_gyro_range_500</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00076">star_sensor_mpu6050_init()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_a03b6df4c87bd77dd382627243bae9a79_icgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_a03b6df4c87bd77dd382627243bae9a79_icgraph" loading="lazy" alt=""/></div>
-<map name="ad7/df2/star__sensor__mpu6050_8c_a03b6df4c87bd77dd382627243bae9a79_icgraph" id="ad7/df2/star__sensor__mpu6050_8c_a03b6df4c87bd77dd382627243bae9a79_icgraph">
+<div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_a0f56dfe1c02082f4e5192a2de3a342a1_icgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_a0f56dfe1c02082f4e5192a2de3a342a1_icgraph" loading="lazy" alt=""/></div>
+<map name="ad7/df2/star__sensor__mpu6050_8c_a0f56dfe1c02082f4e5192a2de3a342a1_icgraph" id="ad7/df2/star__sensor__mpu6050_8c_a0f56dfe1c02082f4e5192a2de3a342a1_icgraph">
 <area shape="rect" title=" " alt="" coords="227,5,364,31"/>
 <area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="5,5,179,31"/>
 <area shape="poly" title=" " alt="" coords="208,18,179,21,179,16,214,18"/>
@@ -344,8 +344,8 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="a22fe40a03094a07d6b03c6de6d121688" name="a22fe40a03094a07d6b03c6de6d121688"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a22fe40a03094a07d6b03c6de6d121688">&#9670;&#160;</a></span>mpu6050_read_reg()</h2>
+<a id="a95ee574609f3f096d184820df2e58182" name="a95ee574609f3f096d184820df2e58182"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a95ee574609f3f096d184820df2e58182">&#9670;&#160;</a></span>mpu6050_read_reg()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -356,27 +356,27 @@ Here is the caller graph for this function:</div>
         <tr>
           <td class="memname">esp_err_t mpu6050_read_reg </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a> *</td>          <td class="paramname"><span class="paramname"><em>manager</em></span>, </td>
+          <td class="paramtype"><a class="el" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a> *const</td>          <td class="paramname"><span class="paramname"><em>manager</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const char *</td>          <td class="paramname"><span class="paramname"><em>bus_name</em></span>, </td>
+          <td class="paramtype">const char *const</td>          <td class="paramname"><span class="paramname"><em>bus_name</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint8_t</td>          <td class="paramname"><span class="paramname"><em>addr</em></span>, </td>
+          <td class="paramtype">const uint8_t</td>          <td class="paramname"><span class="paramname"><em>addr</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint8_t</td>          <td class="paramname"><span class="paramname"><em>reg</em></span>, </td>
+          <td class="paramtype">const uint8_t</td>          <td class="paramname"><span class="paramname"><em>reg</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint8_t *</td>          <td class="paramname"><span class="paramname"><em>value</em></span>&#160;)</td>
+          <td class="paramtype">uint8_t *const</td>          <td class="paramname"><span class="paramname"><em>value</em></span>&#160;)</td>
         </tr>
       </table>
   </td>
@@ -390,12 +390,12 @@ Here is the caller graph for this function:</div>
 
 <p class="reference">References <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00111">star_bus_i2c_read()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00228">star_sensor_mpu6050_deinit()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00558">star_sensor_mpu6050_fifo_reset()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00076">star_sensor_mpu6050_init()</a>, and <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00669">star_sensor_mpu6050_set_sleep()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00234">star_sensor_mpu6050_deinit()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00565">star_sensor_mpu6050_fifo_reset()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00076">star_sensor_mpu6050_init()</a>, and <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00678">star_sensor_mpu6050_set_sleep()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_a22fe40a03094a07d6b03c6de6d121688_cgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_a22fe40a03094a07d6b03c6de6d121688_cgraph" loading="lazy" alt=""/></div>
-<map name="ad7/df2/star__sensor__mpu6050_8c_a22fe40a03094a07d6b03c6de6d121688_cgraph" id="ad7/df2/star__sensor__mpu6050_8c_a22fe40a03094a07d6b03c6de6d121688_cgraph">
+<div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_a95ee574609f3f096d184820df2e58182_cgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_a95ee574609f3f096d184820df2e58182_cgraph" loading="lazy" alt=""/></div>
+<map name="ad7/df2/star__sensor__mpu6050_8c_a95ee574609f3f096d184820df2e58182_cgraph" id="ad7/df2/star__sensor__mpu6050_8c_a95ee574609f3f096d184820df2e58182_cgraph">
 <area shape="rect" title=" " alt="" coords="5,5,137,31"/>
 <area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#a2e9b9baf8a0f8d00a2080963a7efd62f" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="185,5,312,31"/>
 <area shape="poly" title=" " alt="" coords="137,16,172,18,167,18,137,21"/>
@@ -406,8 +406,8 @@ Here is the call graph for this function:</div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_a22fe40a03094a07d6b03c6de6d121688_icgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_a22fe40a03094a07d6b03c6de6d121688_icgraph" loading="lazy" alt=""/></div>
-<map name="ad7/df2/star__sensor__mpu6050_8c_a22fe40a03094a07d6b03c6de6d121688_icgraph" id="ad7/df2/star__sensor__mpu6050_8c_a22fe40a03094a07d6b03c6de6d121688_icgraph">
+<div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_a95ee574609f3f096d184820df2e58182_icgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_a95ee574609f3f096d184820df2e58182_icgraph" loading="lazy" alt=""/></div>
+<map name="ad7/df2/star__sensor__mpu6050_8c_a95ee574609f3f096d184820df2e58182_icgraph" id="ad7/df2/star__sensor__mpu6050_8c_a95ee574609f3f096d184820df2e58182_icgraph">
 <area shape="rect" title=" " alt="" coords="227,108,358,133"/>
 <area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#ae98f107b4b0856a04b0613f630f4f7f1" title=" " alt="" coords="17,5,167,46"/>
 <area shape="poly" title=" " alt="" coords="253,100,178,61,150,49,149,44,180,57,258,99"/>
@@ -415,15 +415,15 @@ Here is the caller graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="209,109,167,105,167,99,214,108"/>
 <area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="5,136,179,161"/>
 <area shape="poly" title=" " alt="" coords="209,133,180,139,178,134,214,131"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a26a2221a6e7e888b7779a68eb0c1cc04" title=" " alt="" coords="17,185,167,226"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a13b17febbf0058089731826f5e129100" title=" " alt="" coords="17,185,167,226"/>
 <area shape="poly" title=" " alt="" coords="253,140,180,176,152,187,150,182,178,171,248,141"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="ad2b82a94ebbe65324c37febc5ebee644" name="ad2b82a94ebbe65324c37febc5ebee644"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ad2b82a94ebbe65324c37febc5ebee644">&#9670;&#160;</a></span>mpu6050_write_reg()</h2>
+<a id="a94e36964d8af4357ede57221c09af8bd" name="a94e36964d8af4357ede57221c09af8bd"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a94e36964d8af4357ede57221c09af8bd">&#9670;&#160;</a></span>mpu6050_write_reg()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -434,27 +434,27 @@ Here is the caller graph for this function:</div>
         <tr>
           <td class="memname">esp_err_t mpu6050_write_reg </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a> *</td>          <td class="paramname"><span class="paramname"><em>manager</em></span>, </td>
+          <td class="paramtype"><a class="el" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a> *const</td>          <td class="paramname"><span class="paramname"><em>manager</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const char *</td>          <td class="paramname"><span class="paramname"><em>bus_name</em></span>, </td>
+          <td class="paramtype">const char *const</td>          <td class="paramname"><span class="paramname"><em>bus_name</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint8_t</td>          <td class="paramname"><span class="paramname"><em>addr</em></span>, </td>
+          <td class="paramtype">const uint8_t</td>          <td class="paramname"><span class="paramname"><em>addr</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint8_t</td>          <td class="paramname"><span class="paramname"><em>reg</em></span>, </td>
+          <td class="paramtype">const uint8_t</td>          <td class="paramname"><span class="paramname"><em>reg</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint8_t</td>          <td class="paramname"><span class="paramname"><em>value</em></span>&#160;)</td>
+          <td class="paramtype">const uint8_t</td>          <td class="paramname"><span class="paramname"><em>value</em></span>&#160;)</td>
         </tr>
       </table>
   </td>
@@ -468,12 +468,12 @@ Here is the caller graph for this function:</div>
 
 <p class="reference">References <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00075">star_bus_i2c_write()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00228">star_sensor_mpu6050_deinit()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00489">star_sensor_mpu6050_fifo_enable()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00558">star_sensor_mpu6050_fifo_reset()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00076">star_sensor_mpu6050_init()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00275">star_sensor_mpu6050_reset()</a>, and <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00669">star_sensor_mpu6050_set_sleep()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00234">star_sensor_mpu6050_deinit()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00496">star_sensor_mpu6050_fifo_enable()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00565">star_sensor_mpu6050_fifo_reset()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00076">star_sensor_mpu6050_init()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00281">star_sensor_mpu6050_reset()</a>, and <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00678">star_sensor_mpu6050_set_sleep()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_ad2b82a94ebbe65324c37febc5ebee644_cgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_ad2b82a94ebbe65324c37febc5ebee644_cgraph" loading="lazy" alt=""/></div>
-<map name="ad7/df2/star__sensor__mpu6050_8c_ad2b82a94ebbe65324c37febc5ebee644_cgraph" id="ad7/df2/star__sensor__mpu6050_8c_ad2b82a94ebbe65324c37febc5ebee644_cgraph">
+<div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_a94e36964d8af4357ede57221c09af8bd_cgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_a94e36964d8af4357ede57221c09af8bd_cgraph" loading="lazy" alt=""/></div>
+<map name="ad7/df2/star__sensor__mpu6050_8c_a94e36964d8af4357ede57221c09af8bd_cgraph" id="ad7/df2/star__sensor__mpu6050_8c_a94e36964d8af4357ede57221c09af8bd_cgraph">
 <area shape="rect" title=" " alt="" coords="5,5,140,31"/>
 <area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="188,5,318,31"/>
 <area shape="poly" title=" " alt="" coords="140,16,174,18,169,18,140,21"/>
@@ -484,12 +484,12 @@ Here is the call graph for this function:</div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_ad2b82a94ebbe65324c37febc5ebee644_icgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_ad2b82a94ebbe65324c37febc5ebee644_icgraph" loading="lazy" alt=""/></div>
-<map name="ad7/df2/star__sensor__mpu6050_8c_ad2b82a94ebbe65324c37febc5ebee644_icgraph" id="ad7/df2/star__sensor__mpu6050_8c_ad2b82a94ebbe65324c37febc5ebee644_icgraph">
+<div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_a94e36964d8af4357ede57221c09af8bd_icgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_a94e36964d8af4357ede57221c09af8bd_icgraph" loading="lazy" alt=""/></div>
+<map name="ad7/df2/star__sensor__mpu6050_8c_a94e36964d8af4357ede57221c09af8bd_icgraph" id="ad7/df2/star__sensor__mpu6050_8c_a94e36964d8af4357ede57221c09af8bd_icgraph">
 <area shape="rect" title=" " alt="" coords="424,165,558,190"/>
 <area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#ae98f107b4b0856a04b0613f630f4f7f1" title=" " alt="" coords="227,5,376,46"/>
 <area shape="poly" title=" " alt="" coords="468,152,428,108,374,61,355,49,355,44,378,57,431,104,473,153"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a30d0b4f5a7970ebe377dd3212e30ad9f" title=" " alt="" coords="227,71,376,111"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#add78abc1a61bf4b3ee31366a06d00618" title=" " alt="" coords="227,71,376,111"/>
 <area shape="poly" title=" " alt="" coords="445,159,348,115,348,109,450,157"/>
 <area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="5,136,179,161"/>
 <area shape="poly" title=" " alt="" coords="407,174,179,157,179,152,410,170"/>
@@ -497,7 +497,7 @@ Here is the caller graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="406,191,377,197,376,192,411,189"/>
 <area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a21f554f7976fc44c5e783cb7746549b2" title=" " alt="" coords="227,251,376,291"/>
 <area shape="poly" title=" " alt="" coords="455,197,377,240,351,253,349,248,375,235,450,199"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a26a2221a6e7e888b7779a68eb0c1cc04" title=" " alt="" coords="227,316,376,357"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a13b17febbf0058089731826f5e129100" title=" " alt="" coords="227,316,376,357"/>
 <area shape="poly" title=" " alt="" coords="474,202,433,254,406,281,378,305,357,318,355,313,374,301,403,277,429,251,469,204"/>
 <area shape="poly" title=" " alt="" coords="210,117,143,137,141,133,214,114"/>
 <area shape="poly" title=" " alt="" coords="235,243,225,240,161,200,111,164,111,159,164,195,228,235,240,243"/>
@@ -521,18 +521,18 @@ Here is the caller graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00228">228</a> of file <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html">star_sensor_mpu6050.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00234">234</a> of file <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html">star_sensor_mpu6050.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00269">mpu6050_handle::bus_name</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00272">mpu6050_handle::error_iface</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00270">mpu6050_handle::i2c_addr</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00274">mpu6050_handle::initialized</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00268">mpu6050_handle::manager</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00016">MPU6050_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00185">MPU6050_PWR1_SLEEP</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00027">mpu6050_read_reg()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00217">MPU6050_REG_PWR_MGMT_1</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00018">mpu6050_write_reg()</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00273">mpu6050_handle::mutex</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00275">mpu6050_handle::owns_error_handler</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00059">s_TAG</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00432">star_error_interface_destroy()</a>.</p>
+<p class="reference">References <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00273">mpu6050_handle::bus_name</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00276">mpu6050_handle::error_iface</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00274">mpu6050_handle::i2c_addr</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00278">mpu6050_handle::initialized</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00179">k_mpu6050_reg_pwr_mgmt_1</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00272">mpu6050_handle::manager</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00016">MPU6050_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00188">MPU6050_PWR1_SLEEP</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00027">mpu6050_read_reg()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00018">mpu6050_write_reg()</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00277">mpu6050_handle::mutex</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00279">mpu6050_handle::owns_error_handler</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00432">star_error_interface_destroy()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_ae98f107b4b0856a04b0613f630f4f7f1_cgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_ae98f107b4b0856a04b0613f630f4f7f1_cgraph" loading="lazy" alt=""/></div>
 <map name="ad7/df2/star__sensor__mpu6050_8c_ae98f107b4b0856a04b0613f630f4f7f1_cgraph" id="ad7/df2/star__sensor__mpu6050_8c_ae98f107b4b0856a04b0613f630f4f7f1_cgraph">
 <area shape="rect" title=" " alt="" coords="5,47,155,88"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a22fe40a03094a07d6b03c6de6d121688" title=" " alt="" coords="204,5,336,31"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a95ee574609f3f096d184820df2e58182" title=" " alt="" coords="204,5,336,31"/>
 <area shape="poly" title=" " alt="" coords="154,46,205,34,201,37,156,50"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#ad2b82a94ebbe65324c37febc5ebee644" title=" " alt="" coords="203,55,337,80"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a94e36964d8af4357ede57221c09af8bd" title=" " alt="" coords="203,55,337,80"/>
 <area shape="poly" title=" " alt="" coords="155,65,190,67,185,68,156,70"/>
 <area shape="rect" href="../../d7/d82/star__error__handler_8c.html#aec5a90e8436436a2317a7c5e8b24414f" title="Destroy an error interface created by star_error_interface_create_default()." alt="" coords="203,104,336,145"/>
 <area shape="poly" title=" " alt="" coords="150,86,191,100,186,101,149,91"/>
@@ -552,8 +552,8 @@ Here is the call graph for this function:</div>
 
 </div>
 </div>
-<a id="a30d0b4f5a7970ebe377dd3212e30ad9f" name="a30d0b4f5a7970ebe377dd3212e30ad9f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a30d0b4f5a7970ebe377dd3212e30ad9f">&#9670;&#160;</a></span>star_sensor_mpu6050_fifo_enable()</h2>
+<a id="add78abc1a61bf4b3ee31366a06d00618" name="add78abc1a61bf4b3ee31366a06d00618"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#add78abc1a61bf4b3ee31366a06d00618">&#9670;&#160;</a></span>star_sensor_mpu6050_fifo_enable()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -561,28 +561,28 @@ Here is the call graph for this function:</div>
         <tr>
           <td class="memname">esp_err_t star_sensor_mpu6050_fifo_enable </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#ac037aec75b2ca75a25bc678f5d07c049">mpu6050_handle_t</a> *</td>          <td class="paramname"><span class="paramname"><em>handle</em></span>, </td>
+          <td class="paramtype"><a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#ac037aec75b2ca75a25bc678f5d07c049">mpu6050_handle_t</a> *const</td>          <td class="paramname"><span class="paramname"><em>handle</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>enable</em></span>&#160;)</td>
+          <td class="paramtype">const bool</td>          <td class="paramname"><span class="paramname"><em>enable</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00489">489</a> of file <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html">star_sensor_mpu6050.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00496">496</a> of file <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html">star_sensor_mpu6050.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00269">mpu6050_handle::bus_name</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00271">mpu6050_handle::config</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00258">mpu6050_config_t::enable_fifo</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00270">mpu6050_handle::i2c_addr</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00274">mpu6050_handle::initialized</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00268">mpu6050_handle::manager</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00195">MPU6050_FIFO_EN_ACCEL</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00192">MPU6050_FIFO_EN_XG</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00193">MPU6050_FIFO_EN_YG</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00194">MPU6050_FIFO_EN_ZG</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00016">MPU6050_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00170">MPU6050_REG_FIFO_EN</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00176">MPU6050_REG_USER_CTRL</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00198">MPU6050_USERCTRL_FIFO_EN</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00018">mpu6050_write_reg()</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00273">mpu6050_handle::mutex</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00059">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00273">mpu6050_handle::bus_name</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00275">mpu6050_handle::config</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00262">mpu6050_config_t::enable_fifo</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00274">mpu6050_handle::i2c_addr</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00278">mpu6050_handle::initialized</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00172">k_mpu6050_reg_fifo_en</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00178">k_mpu6050_reg_user_ctrl</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00272">mpu6050_handle::manager</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00198">MPU6050_FIFO_EN_ACCEL</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00195">MPU6050_FIFO_EN_XG</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00196">MPU6050_FIFO_EN_YG</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00197">MPU6050_FIFO_EN_ZG</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00016">MPU6050_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00201">MPU6050_USERCTRL_FIFO_EN</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00018">mpu6050_write_reg()</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00277">mpu6050_handle::mutex</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00076">star_sensor_mpu6050_init()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_a30d0b4f5a7970ebe377dd3212e30ad9f_cgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_a30d0b4f5a7970ebe377dd3212e30ad9f_cgraph" loading="lazy" alt=""/></div>
-<map name="ad7/df2/star__sensor__mpu6050_8c_a30d0b4f5a7970ebe377dd3212e30ad9f_cgraph" id="ad7/df2/star__sensor__mpu6050_8c_a30d0b4f5a7970ebe377dd3212e30ad9f_cgraph">
+<div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_add78abc1a61bf4b3ee31366a06d00618_cgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_add78abc1a61bf4b3ee31366a06d00618_cgraph" loading="lazy" alt=""/></div>
+<map name="ad7/df2/star__sensor__mpu6050_8c_add78abc1a61bf4b3ee31366a06d00618_cgraph" id="ad7/df2/star__sensor__mpu6050_8c_add78abc1a61bf4b3ee31366a06d00618_cgraph">
 <area shape="rect" title=" " alt="" coords="5,5,155,46"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#ad2b82a94ebbe65324c37febc5ebee644" title=" " alt="" coords="203,13,337,38"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a94e36964d8af4357ede57221c09af8bd" title=" " alt="" coords="203,13,337,38"/>
 <area shape="poly" title=" " alt="" coords="155,23,190,25,184,26,155,28"/>
 <area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="385,13,515,38"/>
 <area shape="poly" title=" " alt="" coords="337,23,372,26,366,26,337,28"/>
@@ -593,8 +593,8 @@ Here is the call graph for this function:</div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_a30d0b4f5a7970ebe377dd3212e30ad9f_icgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_a30d0b4f5a7970ebe377dd3212e30ad9f_icgraph" loading="lazy" alt=""/></div>
-<map name="ad7/df2/star__sensor__mpu6050_8c_a30d0b4f5a7970ebe377dd3212e30ad9f_icgraph" id="ad7/df2/star__sensor__mpu6050_8c_a30d0b4f5a7970ebe377dd3212e30ad9f_icgraph">
+<div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_add78abc1a61bf4b3ee31366a06d00618_icgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_add78abc1a61bf4b3ee31366a06d00618_icgraph" loading="lazy" alt=""/></div>
+<map name="ad7/df2/star__sensor__mpu6050_8c_add78abc1a61bf4b3ee31366a06d00618_icgraph" id="ad7/df2/star__sensor__mpu6050_8c_add78abc1a61bf4b3ee31366a06d00618_icgraph">
 <area shape="rect" title=" " alt="" coords="227,5,376,46"/>
 <area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="5,13,179,38"/>
 <area shape="poly" title=" " alt="" coords="209,26,179,28,179,23,214,25"/>
@@ -603,8 +603,8 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="acd1b051122b1d43b3207faa6734ce061" name="acd1b051122b1d43b3207faa6734ce061"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acd1b051122b1d43b3207faa6734ce061">&#9670;&#160;</a></span>star_sensor_mpu6050_fifo_get_count()</h2>
+<a id="a90480ddcc483904e3c57303a5171918b" name="a90480ddcc483904e3c57303a5171918b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a90480ddcc483904e3c57303a5171918b">&#9670;&#160;</a></span>star_sensor_mpu6050_fifo_get_count()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -617,19 +617,19 @@ Here is the caller graph for this function:</div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint16_t *</td>          <td class="paramname"><span class="paramname"><em>count</em></span>&#160;)</td>
+          <td class="paramtype">uint16_t *const</td>          <td class="paramname"><span class="paramname"><em>count</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00599">599</a> of file <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html">star_sensor_mpu6050.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00606">606</a> of file <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html">star_sensor_mpu6050.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00269">mpu6050_handle::bus_name</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00274">mpu6050_handle::initialized</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00268">mpu6050_handle::manager</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00202">MPU6050_FIFO_SIZE</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00016">MPU6050_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00179">MPU6050_REG_FIFO_COUNT_H</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00273">mpu6050_handle::mutex</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00059">s_TAG</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00111">star_bus_i2c_read()</a>.</p>
+<p class="reference">References <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00273">mpu6050_handle::bus_name</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00278">mpu6050_handle::initialized</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00181">k_mpu6050_reg_fifo_count_h</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00272">mpu6050_handle::manager</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00206">MPU6050_FIFO_SIZE</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00016">MPU6050_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00277">mpu6050_handle::mutex</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00111">star_bus_i2c_read()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_acd1b051122b1d43b3207faa6734ce061_cgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_acd1b051122b1d43b3207faa6734ce061_cgraph" loading="lazy" alt=""/></div>
-<map name="ad7/df2/star__sensor__mpu6050_8c_acd1b051122b1d43b3207faa6734ce061_cgraph" id="ad7/df2/star__sensor__mpu6050_8c_acd1b051122b1d43b3207faa6734ce061_cgraph">
+<div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_a90480ddcc483904e3c57303a5171918b_cgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_a90480ddcc483904e3c57303a5171918b_cgraph" loading="lazy" alt=""/></div>
+<map name="ad7/df2/star__sensor__mpu6050_8c_a90480ddcc483904e3c57303a5171918b_cgraph" id="ad7/df2/star__sensor__mpu6050_8c_a90480ddcc483904e3c57303a5171918b_cgraph">
 <area shape="rect" title=" " alt="" coords="5,5,155,46"/>
 <area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#a2e9b9baf8a0f8d00a2080963a7efd62f" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="203,13,330,38"/>
 <area shape="poly" title=" " alt="" coords="155,23,190,25,185,26,155,28"/>
@@ -640,8 +640,8 @@ Here is the call graph for this function:</div>
 
 </div>
 </div>
-<a id="ac5546d5b808dbc10376beb12448aaed8" name="ac5546d5b808dbc10376beb12448aaed8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac5546d5b808dbc10376beb12448aaed8">&#9670;&#160;</a></span>star_sensor_mpu6050_fifo_read()</h2>
+<a id="af9f9dcb9bcb06a111d8217773b6176fb" name="af9f9dcb9bcb06a111d8217773b6176fb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af9f9dcb9bcb06a111d8217773b6176fb">&#9670;&#160;</a></span>star_sensor_mpu6050_fifo_read()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -654,24 +654,24 @@ Here is the call graph for this function:</div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint8_t *</td>          <td class="paramname"><span class="paramname"><em>data</em></span>, </td>
+          <td class="paramtype">uint8_t *const</td>          <td class="paramname"><span class="paramname"><em>data</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint16_t</td>          <td class="paramname"><span class="paramname"><em>len</em></span>&#160;)</td>
+          <td class="paramtype">const uint16_t</td>          <td class="paramname"><span class="paramname"><em>len</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00638">638</a> of file <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html">star_sensor_mpu6050.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00645">645</a> of file <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html">star_sensor_mpu6050.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00269">mpu6050_handle::bus_name</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00274">mpu6050_handle::initialized</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00268">mpu6050_handle::manager</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00202">MPU6050_FIFO_SIZE</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00016">MPU6050_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00180">MPU6050_REG_FIFO_R_W</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00273">mpu6050_handle::mutex</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00059">s_TAG</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00111">star_bus_i2c_read()</a>.</p>
+<p class="reference">References <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00273">mpu6050_handle::bus_name</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00278">mpu6050_handle::initialized</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00182">k_mpu6050_reg_fifo_r_w</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00272">mpu6050_handle::manager</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00206">MPU6050_FIFO_SIZE</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00016">MPU6050_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00277">mpu6050_handle::mutex</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00111">star_bus_i2c_read()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_ac5546d5b808dbc10376beb12448aaed8_cgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_ac5546d5b808dbc10376beb12448aaed8_cgraph" loading="lazy" alt=""/></div>
-<map name="ad7/df2/star__sensor__mpu6050_8c_ac5546d5b808dbc10376beb12448aaed8_cgraph" id="ad7/df2/star__sensor__mpu6050_8c_ac5546d5b808dbc10376beb12448aaed8_cgraph">
+<div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_af9f9dcb9bcb06a111d8217773b6176fb_cgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_af9f9dcb9bcb06a111d8217773b6176fb_cgraph" loading="lazy" alt=""/></div>
+<map name="ad7/df2/star__sensor__mpu6050_8c_af9f9dcb9bcb06a111d8217773b6176fb_cgraph" id="ad7/df2/star__sensor__mpu6050_8c_af9f9dcb9bcb06a111d8217773b6176fb_cgraph">
 <area shape="rect" title=" " alt="" coords="5,5,155,46"/>
 <area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#a2e9b9baf8a0f8d00a2080963a7efd62f" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="203,13,330,38"/>
 <area shape="poly" title=" " alt="" coords="155,23,190,25,185,26,155,28"/>
@@ -697,18 +697,18 @@ Here is the call graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00558">558</a> of file <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html">star_sensor_mpu6050.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00565">565</a> of file <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html">star_sensor_mpu6050.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00269">mpu6050_handle::bus_name</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00270">mpu6050_handle::i2c_addr</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00274">mpu6050_handle::initialized</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00268">mpu6050_handle::manager</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00016">MPU6050_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00027">mpu6050_read_reg()</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00176">MPU6050_REG_USER_CTRL</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00199">MPU6050_USERCTRL_FIFO_RESET</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00018">mpu6050_write_reg()</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00273">mpu6050_handle::mutex</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00059">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00273">mpu6050_handle::bus_name</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00274">mpu6050_handle::i2c_addr</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00278">mpu6050_handle::initialized</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00178">k_mpu6050_reg_user_ctrl</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00272">mpu6050_handle::manager</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00016">MPU6050_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00027">mpu6050_read_reg()</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00202">MPU6050_USERCTRL_FIFO_RESET</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00018">mpu6050_write_reg()</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00277">mpu6050_handle::mutex</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_af9c59e348f591584e4715b65d277e13a_cgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_af9c59e348f591584e4715b65d277e13a_cgraph" loading="lazy" alt=""/></div>
 <map name="ad7/df2/star__sensor__mpu6050_8c_af9c59e348f591584e4715b65d277e13a_cgraph" id="ad7/df2/star__sensor__mpu6050_8c_af9c59e348f591584e4715b65d277e13a_cgraph">
 <area shape="rect" title=" " alt="" coords="5,23,155,64"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a22fe40a03094a07d6b03c6de6d121688" title=" " alt="" coords="204,5,336,31"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a95ee574609f3f096d184820df2e58182" title=" " alt="" coords="204,5,336,31"/>
 <area shape="poly" title=" " alt="" coords="155,31,191,28,186,30,156,36"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#ad2b82a94ebbe65324c37febc5ebee644" title=" " alt="" coords="203,55,337,80"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a94e36964d8af4357ede57221c09af8bd" title=" " alt="" coords="203,55,337,80"/>
 <area shape="poly" title=" " alt="" coords="155,50,190,57,185,57,155,56"/>
 <area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#a2e9b9baf8a0f8d00a2080963a7efd62f" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="386,5,514,31"/>
 <area shape="poly" title=" " alt="" coords="336,16,374,18,368,18,336,21"/>
@@ -777,7 +777,7 @@ All operations after init are protected by mutex for thread safety </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00076">76</a> of file <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html">star_sensor_mpu6050.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d3/d53/star__bus__devices_8h_source.html#l00271">mpu6050_config_t::accel_range</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00276">mpu6050_handle::accel_sensitivity</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00269">mpu6050_handle::bus_name</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00271">mpu6050_handle::config</a>, <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00166">star_error_interface::ctx</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00256">mpu6050_config_t::dlpf</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00258">mpu6050_config_t::enable_fifo</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00393">error_handler_destroy_default()</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00272">mpu6050_handle::error_iface</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00036">get_accel_sensitivity()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00056">get_gyro_sensitivity()</a>, <a class="el" href="../../d3/d53/star__bus__devices_8h_source.html#l00273">mpu6050_config_t::gyro_range</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00277">mpu6050_handle::gyro_sensitivity</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00253">mpu6050_config_t::i2c_addr</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00270">mpu6050_handle::i2c_addr</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00274">mpu6050_handle::initialized</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00268">mpu6050_handle::manager</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00027">mpu6050_read_reg()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00219">MPU6050_REG_ACCEL_CONFIG</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00223">MPU6050_REG_CONFIG</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00218">MPU6050_REG_GYRO_CONFIG</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00217">MPU6050_REG_PWR_MGMT_1</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00222">MPU6050_REG_SMPLRT_DIV</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00221">MPU6050_REG_WHO_AM_I</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00162">MPU6050_WHO_AM_I_VAL</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00018">mpu6050_write_reg()</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00273">mpu6050_handle::mutex</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00275">mpu6050_handle::owns_error_handler</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00059">s_TAG</a>, <a class="el" href="../../d3/d53/star__bus__devices_8h_source.html#l00275">mpu6050_config_t::sample_rate_div</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00408">star_error_interface_create_default()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00432">star_error_interface_destroy()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00489">star_sensor_mpu6050_fifo_enable()</a>, and <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00275">star_sensor_mpu6050_reset()</a>.</p>
+<p class="reference">References <a class="el" href="../../d3/d53/star__bus__devices_8h_source.html#l00273">mpu6050_config_t::accel_range</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00280">mpu6050_handle::accel_sensitivity</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00273">mpu6050_handle::bus_name</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00275">mpu6050_handle::config</a>, <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00166">star_error_interface::ctx</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00260">mpu6050_config_t::dlpf</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00262">mpu6050_config_t::enable_fifo</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00393">error_handler_destroy_default()</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00276">mpu6050_handle::error_iface</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00036">get_accel_sensitivity()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00056">get_gyro_sensitivity()</a>, <a class="el" href="../../d3/d53/star__bus__devices_8h_source.html#l00275">mpu6050_config_t::gyro_range</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00281">mpu6050_handle::gyro_sensitivity</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00257">mpu6050_config_t::i2c_addr</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00274">mpu6050_handle::i2c_addr</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00278">mpu6050_handle::initialized</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00171">k_mpu6050_reg_accel_config</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00169">k_mpu6050_reg_config</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00170">k_mpu6050_reg_gyro_config</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00179">k_mpu6050_reg_pwr_mgmt_1</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00168">k_mpu6050_reg_smplrt_div</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00183">k_mpu6050_reg_who_am_i</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00272">mpu6050_handle::manager</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00027">mpu6050_read_reg()</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00163">MPU6050_WHO_AM_I_VAL</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00018">mpu6050_write_reg()</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00277">mpu6050_handle::mutex</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00279">mpu6050_handle::owns_error_handler</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d3/d53/star__bus__devices_8h_source.html#l00277">mpu6050_config_t::sample_rate_div</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00408">star_error_interface_create_default()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00432">star_error_interface_destroy()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00496">star_sensor_mpu6050_fifo_enable()</a>, and <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00281">star_sensor_mpu6050_reset()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -786,19 +786,19 @@ Here is the call graph for this function:</div>
 <area shape="rect" title="Initialize MPU6050 IMU sensor." alt="" coords="5,220,179,246"/>
 <area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a1632e40ebb7509611a0513c0e6bdbb46" title="Destroy an error handler created by error_handler_create_default() or error_handler_create_custom()." alt="" coords="440,24,586,65"/>
 <area shape="poly" title=" " alt="" coords="95,218,109,178,135,124,173,69,197,45,225,26,251,15,278,8,333,3,387,7,439,19,434,21,387,12,333,8,279,13,253,20,228,31,201,50,177,73,139,127,114,180,100,220"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#afbd04ebaa481e189f717f9d161f6e9cc" title=" " alt="" coords="230,171,373,196"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a2e3e07e034c2b511e660d31c7aa5f7e6" title=" " alt="" coords="230,171,373,196"/>
 <area shape="poly" title=" " alt="" coords="149,217,231,198,227,202,151,222"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a03b6df4c87bd77dd382627243bae9a79" title=" " alt="" coords="233,220,370,246"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a0f56dfe1c02082f4e5192a2de3a342a1" title=" " alt="" coords="233,220,370,246"/>
 <area shape="poly" title=" " alt="" coords="178,230,220,231,215,234,180,235"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a22fe40a03094a07d6b03c6de6d121688" title=" " alt="" coords="236,269,367,295"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a95ee574609f3f096d184820df2e58182" title=" " alt="" coords="236,269,367,295"/>
 <area shape="poly" title=" " alt="" coords="149,244,231,264,227,266,150,249"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#ad2b82a94ebbe65324c37febc5ebee644" title=" " alt="" coords="446,377,580,403"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a94e36964d8af4357ede57221c09af8bd" title=" " alt="" coords="446,377,580,403"/>
 <area shape="poly" title=" " alt="" coords="114,243,165,274,228,305,336,343,439,373,434,374,335,348,226,310,163,279,114,249"/>
 <area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a0c603b415b63ee1bd6bf532b5f315716" title="Create and allocate a default error interface with internal error handler." alt="" coords="235,106,368,146"/>
 <area shape="poly" title=" " alt="" coords="114,217,225,156,239,152,234,155,228,160,117,221"/>
 <area shape="rect" href="../../d7/d82/star__error__handler_8c.html#aec5a90e8436436a2317a7c5e8b24414f" title="Destroy an error interface created by star_error_interface_create_default()." alt="" coords="235,40,368,81"/>
 <area shape="poly" title=" " alt="" coords="101,218,151,159,186,124,225,92,236,87,232,91,228,96,190,128,155,162,106,221"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a30d0b4f5a7970ebe377dd3212e30ad9f" title=" " alt="" coords="227,370,376,410"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#add78abc1a61bf4b3ee31366a06d00618" title=" " alt="" coords="227,370,376,410"/>
 <area shape="poly" title=" " alt="" coords="106,243,159,293,228,349,246,362,240,362,225,354,155,297,106,249"/>
 <area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a21f554f7976fc44c5e783cb7746549b2" title=" " alt="" coords="227,435,376,476"/>
 <area shape="poly" title=" " alt="" coords="100,243,148,325,184,375,228,420,235,427,230,426,225,424,180,379,143,328,99,248"/>
@@ -840,8 +840,8 @@ Here is the call graph for this function:</div>
 
 </div>
 </div>
-<a id="aeae03191c4d73ddf2ce669de706cf5b0" name="aeae03191c4d73ddf2ce669de706cf5b0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aeae03191c4d73ddf2ce669de706cf5b0">&#9670;&#160;</a></span>star_sensor_mpu6050_read_accel()</h2>
+<a id="acf7c055ab733728deb0165192d3efc65" name="acf7c055ab733728deb0165192d3efc65"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acf7c055ab733728deb0165192d3efc65">&#9670;&#160;</a></span>star_sensor_mpu6050_read_accel()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -854,19 +854,19 @@ Here is the call graph for this function:</div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="../../d8/d38/structmpu6050__accel__t.html">mpu6050_accel_t</a> *</td>          <td class="paramname"><span class="paramname"><em>accel</em></span>&#160;)</td>
+          <td class="paramtype"><a class="el" href="../../d8/d38/structmpu6050__accel__t.html">mpu6050_accel_t</a> *const</td>          <td class="paramname"><span class="paramname"><em>accel</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00360">360</a> of file <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html">star_sensor_mpu6050.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00366">366</a> of file <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html">star_sensor_mpu6050.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00276">mpu6050_handle::accel_sensitivity</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00274">mpu6050_handle::initialized</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00288">star_sensor_mpu6050_read_accel_raw()</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00229">mpu6050_raw_accel_t::x</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00241">mpu6050_accel_t::x_g</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00230">mpu6050_raw_accel_t::y</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00242">mpu6050_accel_t::y_g</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00231">mpu6050_raw_accel_t::z</a>, and <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00243">mpu6050_accel_t::z_g</a>.</p>
+<p class="reference">References <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00280">mpu6050_handle::accel_sensitivity</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00278">mpu6050_handle::initialized</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00294">star_sensor_mpu6050_read_accel_raw()</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00233">mpu6050_raw_accel_t::x</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00245">mpu6050_accel_t::x_g</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00234">mpu6050_raw_accel_t::y</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00246">mpu6050_accel_t::y_g</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00235">mpu6050_raw_accel_t::z</a>, and <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00247">mpu6050_accel_t::z_g</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_aeae03191c4d73ddf2ce669de706cf5b0_cgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_aeae03191c4d73ddf2ce669de706cf5b0_cgraph" loading="lazy" alt=""/></div>
-<map name="ad7/df2/star__sensor__mpu6050_8c_aeae03191c4d73ddf2ce669de706cf5b0_cgraph" id="ad7/df2/star__sensor__mpu6050_8c_aeae03191c4d73ddf2ce669de706cf5b0_cgraph">
+<div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_acf7c055ab733728deb0165192d3efc65_cgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_acf7c055ab733728deb0165192d3efc65_cgraph" loading="lazy" alt=""/></div>
+<map name="ad7/df2/star__sensor__mpu6050_8c_acf7c055ab733728deb0165192d3efc65_cgraph" id="ad7/df2/star__sensor__mpu6050_8c_acf7c055ab733728deb0165192d3efc65_cgraph">
 <area shape="rect" title=" " alt="" coords="5,5,155,46"/>
 <area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a6827825e12a3662c9c1616cbaf84701a" title=" " alt="" coords="203,5,352,46"/>
 <area shape="poly" title=" " alt="" coords="155,23,190,25,185,26,155,28"/>
@@ -898,11 +898,11 @@ Here is the call graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00288">288</a> of file <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html">star_sensor_mpu6050.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00294">294</a> of file <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html">star_sensor_mpu6050.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00269">mpu6050_handle::bus_name</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00274">mpu6050_handle::initialized</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00268">mpu6050_handle::manager</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00016">MPU6050_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00220">MPU6050_REG_ACCEL_XOUT_H</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00273">mpu6050_handle::mutex</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00059">s_TAG</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00111">star_bus_i2c_read()</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00229">mpu6050_raw_accel_t::x</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00230">mpu6050_raw_accel_t::y</a>, and <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00231">mpu6050_raw_accel_t::z</a>.</p>
+<p class="reference">References <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00273">mpu6050_handle::bus_name</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00278">mpu6050_handle::initialized</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00175">k_mpu6050_reg_accel_xout_h</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00272">mpu6050_handle::manager</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00016">MPU6050_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00277">mpu6050_handle::mutex</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00111">star_bus_i2c_read()</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00233">mpu6050_raw_accel_t::x</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00234">mpu6050_raw_accel_t::y</a>, and <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00235">mpu6050_raw_accel_t::z</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00360">star_sensor_mpu6050_read_accel()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00366">star_sensor_mpu6050_read_accel()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -921,15 +921,15 @@ Here is the caller graph for this function:</div>
 <div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_a6827825e12a3662c9c1616cbaf84701a_icgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_a6827825e12a3662c9c1616cbaf84701a_icgraph" loading="lazy" alt=""/></div>
 <map name="ad7/df2/star__sensor__mpu6050_8c_a6827825e12a3662c9c1616cbaf84701a_icgraph" id="ad7/df2/star__sensor__mpu6050_8c_a6827825e12a3662c9c1616cbaf84701a_icgraph">
 <area shape="rect" title=" " alt="" coords="203,5,352,46"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#aeae03191c4d73ddf2ce669de706cf5b0" title=" " alt="" coords="5,5,155,46"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#acf7c055ab733728deb0165192d3efc65" title=" " alt="" coords="5,5,155,46"/>
 <area shape="poly" title=" " alt="" coords="185,26,155,28,155,23,190,25"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="acd9d531a27f49d36d8ad04ee442c4399" name="acd9d531a27f49d36d8ad04ee442c4399"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acd9d531a27f49d36d8ad04ee442c4399">&#9670;&#160;</a></span>star_sensor_mpu6050_read_all()</h2>
+<a id="a4433795137c77129e52ed5ac303819c0" name="a4433795137c77129e52ed5ac303819c0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a4433795137c77129e52ed5ac303819c0">&#9670;&#160;</a></span>star_sensor_mpu6050_read_all()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -942,29 +942,29 @@ Here is the caller graph for this function:</div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="../../d8/d38/structmpu6050__accel__t.html">mpu6050_accel_t</a> *</td>          <td class="paramname"><span class="paramname"><em>accel</em></span>, </td>
+          <td class="paramtype"><a class="el" href="../../d8/d38/structmpu6050__accel__t.html">mpu6050_accel_t</a> *const</td>          <td class="paramname"><span class="paramname"><em>accel</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="../../d5/d80/structmpu6050__gyro__t.html">mpu6050_gyro_t</a> *</td>          <td class="paramname"><span class="paramname"><em>gyro</em></span>, </td>
+          <td class="paramtype"><a class="el" href="../../d5/d80/structmpu6050__gyro__t.html">mpu6050_gyro_t</a> *const</td>          <td class="paramname"><span class="paramname"><em>gyro</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">float *</td>          <td class="paramname"><span class="paramname"><em>temp_c</em></span>&#160;)</td>
+          <td class="paramtype">float *const</td>          <td class="paramname"><span class="paramname"><em>temp_c</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00432">432</a> of file <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html">star_sensor_mpu6050.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00439">439</a> of file <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html">star_sensor_mpu6050.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00276">mpu6050_handle::accel_sensitivity</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00269">mpu6050_handle::bus_name</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00277">mpu6050_handle::gyro_sensitivity</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00274">mpu6050_handle::initialized</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00268">mpu6050_handle::manager</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00016">MPU6050_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00220">MPU6050_REG_ACCEL_XOUT_H</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00273">mpu6050_handle::mutex</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00059">s_TAG</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00111">star_bus_i2c_read()</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00247">mpu6050_gyro_t::x_dps</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00241">mpu6050_accel_t::x_g</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00248">mpu6050_gyro_t::y_dps</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00242">mpu6050_accel_t::y_g</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00249">mpu6050_gyro_t::z_dps</a>, and <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00243">mpu6050_accel_t::z_g</a>.</p>
+<p class="reference">References <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00280">mpu6050_handle::accel_sensitivity</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00273">mpu6050_handle::bus_name</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00281">mpu6050_handle::gyro_sensitivity</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00278">mpu6050_handle::initialized</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00175">k_mpu6050_reg_accel_xout_h</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00272">mpu6050_handle::manager</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00016">MPU6050_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00277">mpu6050_handle::mutex</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00111">star_bus_i2c_read()</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00251">mpu6050_gyro_t::x_dps</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00245">mpu6050_accel_t::x_g</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00252">mpu6050_gyro_t::y_dps</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00246">mpu6050_accel_t::y_g</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00253">mpu6050_gyro_t::z_dps</a>, and <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00247">mpu6050_accel_t::z_g</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_acd9d531a27f49d36d8ad04ee442c4399_cgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_acd9d531a27f49d36d8ad04ee442c4399_cgraph" loading="lazy" alt=""/></div>
-<map name="ad7/df2/star__sensor__mpu6050_8c_acd9d531a27f49d36d8ad04ee442c4399_cgraph" id="ad7/df2/star__sensor__mpu6050_8c_acd9d531a27f49d36d8ad04ee442c4399_cgraph">
+<div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_a4433795137c77129e52ed5ac303819c0_cgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_a4433795137c77129e52ed5ac303819c0_cgraph" loading="lazy" alt=""/></div>
+<map name="ad7/df2/star__sensor__mpu6050_8c_a4433795137c77129e52ed5ac303819c0_cgraph" id="ad7/df2/star__sensor__mpu6050_8c_a4433795137c77129e52ed5ac303819c0_cgraph">
 <area shape="rect" title=" " alt="" coords="5,5,155,46"/>
 <area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#a2e9b9baf8a0f8d00a2080963a7efd62f" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="203,13,330,38"/>
 <area shape="poly" title=" " alt="" coords="155,23,190,25,185,26,155,28"/>
@@ -975,8 +975,8 @@ Here is the call graph for this function:</div>
 
 </div>
 </div>
-<a id="a69c5e6f06d448bb24490cc174701034e" name="a69c5e6f06d448bb24490cc174701034e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a69c5e6f06d448bb24490cc174701034e">&#9670;&#160;</a></span>star_sensor_mpu6050_read_gyro()</h2>
+<a id="a57220afed4d707a382ed62361d57880c" name="a57220afed4d707a382ed62361d57880c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a57220afed4d707a382ed62361d57880c">&#9670;&#160;</a></span>star_sensor_mpu6050_read_gyro()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -989,19 +989,19 @@ Here is the call graph for this function:</div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="../../d5/d80/structmpu6050__gyro__t.html">mpu6050_gyro_t</a> *</td>          <td class="paramname"><span class="paramname"><em>gyro</em></span>&#160;)</td>
+          <td class="paramtype"><a class="el" href="../../d5/d80/structmpu6050__gyro__t.html">mpu6050_gyro_t</a> *const</td>          <td class="paramname"><span class="paramname"><em>gyro</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00379">379</a> of file <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html">star_sensor_mpu6050.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00386">386</a> of file <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html">star_sensor_mpu6050.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00277">mpu6050_handle::gyro_sensitivity</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00274">mpu6050_handle::initialized</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00324">star_sensor_mpu6050_read_gyro_raw()</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00235">mpu6050_raw_gyro_t::x</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00247">mpu6050_gyro_t::x_dps</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00236">mpu6050_raw_gyro_t::y</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00248">mpu6050_gyro_t::y_dps</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00237">mpu6050_raw_gyro_t::z</a>, and <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00249">mpu6050_gyro_t::z_dps</a>.</p>
+<p class="reference">References <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00281">mpu6050_handle::gyro_sensitivity</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00278">mpu6050_handle::initialized</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00330">star_sensor_mpu6050_read_gyro_raw()</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00239">mpu6050_raw_gyro_t::x</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00251">mpu6050_gyro_t::x_dps</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00240">mpu6050_raw_gyro_t::y</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00252">mpu6050_gyro_t::y_dps</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00241">mpu6050_raw_gyro_t::z</a>, and <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00253">mpu6050_gyro_t::z_dps</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_a69c5e6f06d448bb24490cc174701034e_cgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_a69c5e6f06d448bb24490cc174701034e_cgraph" loading="lazy" alt=""/></div>
-<map name="ad7/df2/star__sensor__mpu6050_8c_a69c5e6f06d448bb24490cc174701034e_cgraph" id="ad7/df2/star__sensor__mpu6050_8c_a69c5e6f06d448bb24490cc174701034e_cgraph">
+<div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_a57220afed4d707a382ed62361d57880c_cgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_a57220afed4d707a382ed62361d57880c_cgraph" loading="lazy" alt=""/></div>
+<map name="ad7/df2/star__sensor__mpu6050_8c_a57220afed4d707a382ed62361d57880c_cgraph" id="ad7/df2/star__sensor__mpu6050_8c_a57220afed4d707a382ed62361d57880c_cgraph">
 <area shape="rect" title=" " alt="" coords="5,5,155,46"/>
 <area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a17b378af6ddb0fc22860e22c9349c953" title=" " alt="" coords="203,5,352,46"/>
 <area shape="poly" title=" " alt="" coords="155,23,190,25,185,26,155,28"/>
@@ -1033,11 +1033,11 @@ Here is the call graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00324">324</a> of file <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html">star_sensor_mpu6050.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00330">330</a> of file <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html">star_sensor_mpu6050.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00269">mpu6050_handle::bus_name</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00274">mpu6050_handle::initialized</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00268">mpu6050_handle::manager</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00016">MPU6050_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00175">MPU6050_REG_GYRO_XOUT_H</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00273">mpu6050_handle::mutex</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00059">s_TAG</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00111">star_bus_i2c_read()</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00235">mpu6050_raw_gyro_t::x</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00236">mpu6050_raw_gyro_t::y</a>, and <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00237">mpu6050_raw_gyro_t::z</a>.</p>
+<p class="reference">References <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00273">mpu6050_handle::bus_name</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00278">mpu6050_handle::initialized</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00177">k_mpu6050_reg_gyro_xout_h</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00272">mpu6050_handle::manager</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00016">MPU6050_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00277">mpu6050_handle::mutex</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00111">star_bus_i2c_read()</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00239">mpu6050_raw_gyro_t::x</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00240">mpu6050_raw_gyro_t::y</a>, and <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00241">mpu6050_raw_gyro_t::z</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00379">star_sensor_mpu6050_read_gyro()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00386">star_sensor_mpu6050_read_gyro()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1056,15 +1056,15 @@ Here is the caller graph for this function:</div>
 <div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_a17b378af6ddb0fc22860e22c9349c953_icgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_a17b378af6ddb0fc22860e22c9349c953_icgraph" loading="lazy" alt=""/></div>
 <map name="ad7/df2/star__sensor__mpu6050_8c_a17b378af6ddb0fc22860e22c9349c953_icgraph" id="ad7/df2/star__sensor__mpu6050_8c_a17b378af6ddb0fc22860e22c9349c953_icgraph">
 <area shape="rect" title=" " alt="" coords="203,5,352,46"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a69c5e6f06d448bb24490cc174701034e" title=" " alt="" coords="5,5,155,46"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a57220afed4d707a382ed62361d57880c" title=" " alt="" coords="5,5,155,46"/>
 <area shape="poly" title=" " alt="" coords="185,26,155,28,155,23,190,25"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="a6320e2f54ab20eb5d10eecd711032111" name="a6320e2f54ab20eb5d10eecd711032111"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6320e2f54ab20eb5d10eecd711032111">&#9670;&#160;</a></span>star_sensor_mpu6050_read_temperature()</h2>
+<a id="a560473d6ca210b13f020dff2b568608c" name="a560473d6ca210b13f020dff2b568608c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a560473d6ca210b13f020dff2b568608c">&#9670;&#160;</a></span>star_sensor_mpu6050_read_temperature()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1077,19 +1077,19 @@ Here is the caller graph for this function:</div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">float *</td>          <td class="paramname"><span class="paramname"><em>temp_c</em></span>&#160;)</td>
+          <td class="paramtype">float *const</td>          <td class="paramname"><span class="paramname"><em>temp_c</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00398">398</a> of file <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html">star_sensor_mpu6050.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00405">405</a> of file <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html">star_sensor_mpu6050.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00269">mpu6050_handle::bus_name</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00274">mpu6050_handle::initialized</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00268">mpu6050_handle::manager</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00016">MPU6050_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00174">MPU6050_REG_TEMP_OUT_H</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00273">mpu6050_handle::mutex</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00059">s_TAG</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00111">star_bus_i2c_read()</a>.</p>
+<p class="reference">References <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00273">mpu6050_handle::bus_name</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00278">mpu6050_handle::initialized</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00176">k_mpu6050_reg_temp_out_h</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00272">mpu6050_handle::manager</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00016">MPU6050_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00277">mpu6050_handle::mutex</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00111">star_bus_i2c_read()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_a6320e2f54ab20eb5d10eecd711032111_cgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_a6320e2f54ab20eb5d10eecd711032111_cgraph" loading="lazy" alt=""/></div>
-<map name="ad7/df2/star__sensor__mpu6050_8c_a6320e2f54ab20eb5d10eecd711032111_cgraph" id="ad7/df2/star__sensor__mpu6050_8c_a6320e2f54ab20eb5d10eecd711032111_cgraph">
+<div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_a560473d6ca210b13f020dff2b568608c_cgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_a560473d6ca210b13f020dff2b568608c_cgraph" loading="lazy" alt=""/></div>
+<map name="ad7/df2/star__sensor__mpu6050_8c_a560473d6ca210b13f020dff2b568608c_cgraph" id="ad7/df2/star__sensor__mpu6050_8c_a560473d6ca210b13f020dff2b568608c_cgraph">
 <area shape="rect" title=" " alt="" coords="5,5,155,46"/>
 <area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#a2e9b9baf8a0f8d00a2080963a7efd62f" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="203,13,330,38"/>
 <area shape="poly" title=" " alt="" coords="155,23,190,25,185,26,155,28"/>
@@ -1115,9 +1115,9 @@ Here is the call graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00275">275</a> of file <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html">star_sensor_mpu6050.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00281">281</a> of file <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html">star_sensor_mpu6050.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00269">mpu6050_handle::bus_name</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00270">mpu6050_handle::i2c_addr</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00268">mpu6050_handle::manager</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00184">MPU6050_PWR1_DEVICE_RESET</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00217">MPU6050_REG_PWR_MGMT_1</a>, and <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00018">mpu6050_write_reg()</a>.</p>
+<p class="reference">References <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00273">mpu6050_handle::bus_name</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00274">mpu6050_handle::i2c_addr</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00179">k_mpu6050_reg_pwr_mgmt_1</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00272">mpu6050_handle::manager</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00187">MPU6050_PWR1_DEVICE_RESET</a>, and <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00018">mpu6050_write_reg()</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00076">star_sensor_mpu6050_init()</a>.</p>
 <div class="dynheader">
@@ -1126,7 +1126,7 @@ Here is the call graph for this function:</div>
 <div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_a21f554f7976fc44c5e783cb7746549b2_cgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_a21f554f7976fc44c5e783cb7746549b2_cgraph" loading="lazy" alt=""/></div>
 <map name="ad7/df2/star__sensor__mpu6050_8c_a21f554f7976fc44c5e783cb7746549b2_cgraph" id="ad7/df2/star__sensor__mpu6050_8c_a21f554f7976fc44c5e783cb7746549b2_cgraph">
 <area shape="rect" title=" " alt="" coords="5,5,155,46"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#ad2b82a94ebbe65324c37febc5ebee644" title=" " alt="" coords="203,13,337,38"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a94e36964d8af4357ede57221c09af8bd" title=" " alt="" coords="203,13,337,38"/>
 <area shape="poly" title=" " alt="" coords="155,23,190,25,184,26,155,28"/>
 <area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="385,13,515,38"/>
 <area shape="poly" title=" " alt="" coords="337,23,372,26,366,26,337,28"/>
@@ -1147,8 +1147,8 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="a26a2221a6e7e888b7779a68eb0c1cc04" name="a26a2221a6e7e888b7779a68eb0c1cc04"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a26a2221a6e7e888b7779a68eb0c1cc04">&#9670;&#160;</a></span>star_sensor_mpu6050_set_sleep()</h2>
+<a id="a13b17febbf0058089731826f5e129100" name="a13b17febbf0058089731826f5e129100"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a13b17febbf0058089731826f5e129100">&#9670;&#160;</a></span>star_sensor_mpu6050_set_sleep()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1156,28 +1156,28 @@ Here is the caller graph for this function:</div>
         <tr>
           <td class="memname">esp_err_t star_sensor_mpu6050_set_sleep </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#ac037aec75b2ca75a25bc678f5d07c049">mpu6050_handle_t</a> *</td>          <td class="paramname"><span class="paramname"><em>handle</em></span>, </td>
+          <td class="paramtype"><a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h.html#ac037aec75b2ca75a25bc678f5d07c049">mpu6050_handle_t</a> *const</td>          <td class="paramname"><span class="paramname"><em>handle</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>sleep</em></span>&#160;)</td>
+          <td class="paramtype">const bool</td>          <td class="paramname"><span class="paramname"><em>sleep</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00669">669</a> of file <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html">star_sensor_mpu6050.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00678">678</a> of file <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html">star_sensor_mpu6050.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00269">mpu6050_handle::bus_name</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00270">mpu6050_handle::i2c_addr</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00274">mpu6050_handle::initialized</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00268">mpu6050_handle::manager</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00016">MPU6050_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00185">MPU6050_PWR1_SLEEP</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00027">mpu6050_read_reg()</a>, <a class="el" href="../../d6/d0b/star__bus__devices_8c_source.html#l00217">MPU6050_REG_PWR_MGMT_1</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00018">mpu6050_write_reg()</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00273">mpu6050_handle::mutex</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00059">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00273">mpu6050_handle::bus_name</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00274">mpu6050_handle::i2c_addr</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00278">mpu6050_handle::initialized</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00179">k_mpu6050_reg_pwr_mgmt_1</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00272">mpu6050_handle::manager</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00016">MPU6050_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00188">MPU6050_PWR1_SLEEP</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00027">mpu6050_read_reg()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00018">mpu6050_write_reg()</a>, <a class="el" href="../../dd/d2b/star__sensor__mpu6050_8h_source.html#l00277">mpu6050_handle::mutex</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_a26a2221a6e7e888b7779a68eb0c1cc04_cgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_a26a2221a6e7e888b7779a68eb0c1cc04_cgraph" loading="lazy" alt=""/></div>
-<map name="ad7/df2/star__sensor__mpu6050_8c_a26a2221a6e7e888b7779a68eb0c1cc04_cgraph" id="ad7/df2/star__sensor__mpu6050_8c_a26a2221a6e7e888b7779a68eb0c1cc04_cgraph">
+<div class="center"><img src="../../d7/df2/star__sensor__mpu6050_8c_a13b17febbf0058089731826f5e129100_cgraph.png" border="0" usemap="#ad7/df2/star__sensor__mpu6050_8c_a13b17febbf0058089731826f5e129100_cgraph" loading="lazy" alt=""/></div>
+<map name="ad7/df2/star__sensor__mpu6050_8c_a13b17febbf0058089731826f5e129100_cgraph" id="ad7/df2/star__sensor__mpu6050_8c_a13b17febbf0058089731826f5e129100_cgraph">
 <area shape="rect" title=" " alt="" coords="5,23,155,64"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a22fe40a03094a07d6b03c6de6d121688" title=" " alt="" coords="204,5,336,31"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a95ee574609f3f096d184820df2e58182" title=" " alt="" coords="204,5,336,31"/>
 <area shape="poly" title=" " alt="" coords="155,31,191,28,186,30,156,36"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#ad2b82a94ebbe65324c37febc5ebee644" title=" " alt="" coords="203,55,337,80"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a94e36964d8af4357ede57221c09af8bd" title=" " alt="" coords="203,55,337,80"/>
 <area shape="poly" title=" " alt="" coords="155,50,190,57,185,57,155,56"/>
 <area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#a2e9b9baf8a0f8d00a2080963a7efd62f" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="386,5,514,31"/>
 <area shape="poly" title=" " alt="" coords="336,16,374,18,368,18,336,21"/>
@@ -1192,8 +1192,8 @@ Here is the call graph for this function:</div>
 </div>
 </div>
 <a name="doc-var-members" id="doc-var-members"></a><h2 id="header-doc-var-members" class="groupheader">Variable Documentation</h2>
-<a id="a999e3dd103132afd3cd1856f477f2dbd" name="a999e3dd103132afd3cd1856f477f2dbd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a999e3dd103132afd3cd1856f477f2dbd">&#9670;&#160;</a></span>s_TAG</h2>
+<a id="a0ef4cd21b66ec96ecc491ff1bafab645" name="a0ef4cd21b66ec96ecc491ff1bafab645"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0ef4cd21b66ec96ecc491ff1bafab645">&#9670;&#160;</a></span>s_TAG</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1202,7 +1202,7 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const char* s_TAG = &quot;mpu6050&quot;</td>
+          <td class="memname">const char* const s_TAG = &quot;mpu6050&quot;</td>
         </tr>
       </table>
   </td>

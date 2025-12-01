@@ -41,7 +41,7 @@ var NAVTREE =
         [ "Variables", "globals_vars.html", null ],
         [ "Typedefs", "globals_type.html", null ],
         [ "Enumerations", "globals_enum.html", null ],
-        [ "Enumerator", "globals_eval.html", null ],
+        [ "Enumerator", "globals_eval.html", "globals_eval" ],
         [ "Macros", "globals_defs.html", "globals_defs" ]
       ] ]
     ] ]
@@ -51,15 +51,17 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"d1/dd1/star__bus__dht22__proprietary_8h_source.html",
-"d2/dad/star__pin__validator_8c.html#a13730ef0e296c0ffeea5d60b7f04d9cf",
-"d3/df7/star__sensor__pca9685_8c.html#a7fb4749ccca6d7ff1b791faaba3c5e3a",
-"d6/d0b/star__bus__devices_8c.html#a999e3dd103132afd3cd1856f477f2dbd",
-"d7/de0/star__sensor__pca9685_8h.html#a53b0a52921eab5dcc670f998245ac7fd",
-"d9/deb/star__bus__stats_8h.html#a6c60e48889adc75b7996e2f30ad4cdf4",
-"dc/d1f/star__bus__dht22__proprietary_8c.html#af3c6d2f2ae3b906ff2590c579ae42e8f",
-"dd/dfe/structstar__dht22__config__t.html#ac20876d7a756e57a1ffec43eb3a25040",
-"dir_96b3180c22a2a6c40add1a1eccda84a4.html"
+"d1/da8/star__bus__debug_8h.html#accd60204fba06cb393615601f42dd3ec",
+"d2/d6c/structstar__health__config__t.html#abcce00c25f94b6b8e99be72de8922504",
+"d3/d32/structstar__bus__stats__t.html#ad003941a1189aeb163325209d24ddc04",
+"d4/d7e/system__config_8h.html#ac331bcadfa89e4c377ee4e7fcce9ec92",
+"d6/d29/structdht22__raw__data__t.html#a1c562c410a58972f8576fe92c752f61b",
+"d7/d82/star__error__handler_8c.html#a37c70fed0d10c260212eb781ca4e5862",
+"d9/dc8/structled__task__context__t.html#a75f02e095f7f1223001250096ea36dc3",
+"da/da9/structstats__state__t.html#ab57bec41e1d9a9358455265aadd9ccb9",
+"dc/d8f/structsensor__task__context__t.html#add04db12c40d0ce8030fd3e79b3054c2",
+"dd/df4/star__bus__i2c_8h.html#a2e9b9baf8a0f8d00a2080963a7efd62f",
+"df/deb/star__bus__batch_8c.html#a80ab7c681dec605acb5a862cabe5fe4e"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronization';
