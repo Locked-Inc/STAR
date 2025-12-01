@@ -11,21 +11,21 @@ var star__sensor__bno055__bmp280_8h =
     [ "BNO055_I2C_ADDR", "d2/df3/star__sensor__bno055__bmp280_8h.html#a495c8fe60d6f1ecaddd0b67a74786d8e", null ],
     [ "imu_10dof_handle_t", "d2/df3/star__sensor__bno055__bmp280_8h.html#a8e14763bd39b3ecda85d3b79f800b7ad", null ],
     [ "bno055_op_mode_t", "d2/df3/star__sensor__bno055__bmp280_8h.html#a97d803f1af9c4292f9437e6907b1aaf2", [
-      [ "BNO055_OP_MODE_CONFIG", "d2/df3/star__sensor__bno055__bmp280_8h.html#a97d803f1af9c4292f9437e6907b1aaf2abcee6f6639dfa425f87d565ebbb3c0dc", null ],
-      [ "BNO055_OP_MODE_ACCONLY", "d2/df3/star__sensor__bno055__bmp280_8h.html#a97d803f1af9c4292f9437e6907b1aaf2ade160a5ea62da2c250829601b58ec071", null ],
-      [ "BNO055_OP_MODE_MAGONLY", "d2/df3/star__sensor__bno055__bmp280_8h.html#a97d803f1af9c4292f9437e6907b1aaf2a7c6501ae4de6dd6b2fd93470d766f747", null ],
-      [ "BNO055_OP_MODE_GYROONLY", "d2/df3/star__sensor__bno055__bmp280_8h.html#a97d803f1af9c4292f9437e6907b1aaf2a4d6b5f8fe8cdcf950e70dd41578370ae", null ],
-      [ "BNO055_OP_MODE_ACCMAG", "d2/df3/star__sensor__bno055__bmp280_8h.html#a97d803f1af9c4292f9437e6907b1aaf2acbd2795f50e7b4e3d42814346167c58f", null ],
-      [ "BNO055_OP_MODE_ACCGYRO", "d2/df3/star__sensor__bno055__bmp280_8h.html#a97d803f1af9c4292f9437e6907b1aaf2ae4bbc2bdda802565c60cb576bf33d8cb", null ],
-      [ "BNO055_OP_MODE_MAGGYRO", "d2/df3/star__sensor__bno055__bmp280_8h.html#a97d803f1af9c4292f9437e6907b1aaf2a76b944f9c6c1afed2d544e2822e07948", null ],
-      [ "BNO055_OP_MODE_AMG", "d2/df3/star__sensor__bno055__bmp280_8h.html#a97d803f1af9c4292f9437e6907b1aaf2a6ba03b6f6aa3ff6968a6516c2e1fc217", null ],
-      [ "BNO055_OP_MODE_NDOF_FMC_OFF", "d2/df3/star__sensor__bno055__bmp280_8h.html#a97d803f1af9c4292f9437e6907b1aaf2a3f475c35123d5d7fea15516c01cdd4d1", null ],
-      [ "BNO055_OP_MODE_NDOF", "d2/df3/star__sensor__bno055__bmp280_8h.html#a97d803f1af9c4292f9437e6907b1aaf2a2bee473ff94dd8e3a1d2df876a7c43f3", null ]
+      [ "k_bno055_op_mode_config", "d2/df3/star__sensor__bno055__bmp280_8h.html#a97d803f1af9c4292f9437e6907b1aaf2a6d0dd289d21a2f764cb0477240205ca3", null ],
+      [ "k_bno055_op_mode_acconly", "d2/df3/star__sensor__bno055__bmp280_8h.html#a97d803f1af9c4292f9437e6907b1aaf2a274f32a6907cb3a659aaac2fb59b7995", null ],
+      [ "k_bno055_op_mode_magonly", "d2/df3/star__sensor__bno055__bmp280_8h.html#a97d803f1af9c4292f9437e6907b1aaf2a22bbb3a3ac5d6b1f1c273e5cb4f6d101", null ],
+      [ "k_bno055_op_mode_gyroonly", "d2/df3/star__sensor__bno055__bmp280_8h.html#a97d803f1af9c4292f9437e6907b1aaf2a04e47f29475c629b151b586f842b12b1", null ],
+      [ "k_bno055_op_mode_accmag", "d2/df3/star__sensor__bno055__bmp280_8h.html#a97d803f1af9c4292f9437e6907b1aaf2aa4f564f78c9b24bd95d97a8665cccf34", null ],
+      [ "k_bno055_op_mode_accgyro", "d2/df3/star__sensor__bno055__bmp280_8h.html#a97d803f1af9c4292f9437e6907b1aaf2afcd09620f4e863be653455475de8fcab", null ],
+      [ "k_bno055_op_mode_maggyro", "d2/df3/star__sensor__bno055__bmp280_8h.html#a97d803f1af9c4292f9437e6907b1aaf2a2ec194504976cce88cb41a9657dd2396", null ],
+      [ "k_bno055_op_mode_amg", "d2/df3/star__sensor__bno055__bmp280_8h.html#a97d803f1af9c4292f9437e6907b1aaf2ac347743e4ac5d0aff64ba5013be585a4", null ],
+      [ "k_bno055_op_mode_ndof_fmc_off", "d2/df3/star__sensor__bno055__bmp280_8h.html#a97d803f1af9c4292f9437e6907b1aaf2ac54f8092e43a2bf782698c877c83da96", null ],
+      [ "k_bno055_op_mode_ndof", "d2/df3/star__sensor__bno055__bmp280_8h.html#a97d803f1af9c4292f9437e6907b1aaf2a734dd12d6536e4d9b4793b6582d8e101", null ]
     ] ],
     [ "bno055_power_mode_t", "d2/df3/star__sensor__bno055__bmp280_8h.html#adecfc376b1a7d38de293fb14687cc72a", [
-      [ "BNO055_POWER_MODE_NORMAL", "d2/df3/star__sensor__bno055__bmp280_8h.html#adecfc376b1a7d38de293fb14687cc72aa1537c64436157e66ceb5a9d67e66a638", null ],
-      [ "BNO055_POWER_MODE_LOW", "d2/df3/star__sensor__bno055__bmp280_8h.html#adecfc376b1a7d38de293fb14687cc72aad4e21f3433cb0eedd88420ddbd41c51d", null ],
-      [ "BNO055_POWER_MODE_SUSPEND", "d2/df3/star__sensor__bno055__bmp280_8h.html#adecfc376b1a7d38de293fb14687cc72aa06df58118247c618d1c0b2fde9ef20cf", null ]
+      [ "k_bno055_power_mode_normal", "d2/df3/star__sensor__bno055__bmp280_8h.html#adecfc376b1a7d38de293fb14687cc72aad46244c045b4940b7cf46bbc06ec0ec3", null ],
+      [ "k_bno055_power_mode_low", "d2/df3/star__sensor__bno055__bmp280_8h.html#adecfc376b1a7d38de293fb14687cc72aa408865291cc4cf88fa152e6fa03f755b", null ],
+      [ "k_bno055_power_mode_suspend", "d2/df3/star__sensor__bno055__bmp280_8h.html#adecfc376b1a7d38de293fb14687cc72aa9073951a2fbd87eda24bde8721b70b98", null ]
     ] ],
     [ "star_sensor_imu_10dof_deinit", "d2/df3/star__sensor__bno055__bmp280_8h.html#acb593dfc30474b45f2b4807406441b4f", null ],
     [ "star_sensor_imu_10dof_get_calibration", "d2/df3/star__sensor__bno055__bmp280_8h.html#a893fd4d35167ed7247d3172edcecb600", null ],

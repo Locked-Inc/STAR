@@ -20,8 +20,8 @@ var star__bus__onewire_8h =
     [ "STAR_ONEWIRE_ROM_SIZE", "d0/d6c/star__bus__onewire_8h.html#a81db6354883063126b185e4613ec9375", null ],
     [ "star_onewire_rom_t", "d0/d6c/star__bus__onewire_8h.html#ad154590aa2e421193b3ab84ec31f5b64", null ],
     [ "star_onewire_speed_t", "d0/d6c/star__bus__onewire_8h.html#a280ca9da569dab4d61852a5220ba729c", [
-      [ "STAR_ONEWIRE_SPEED_STANDARD", "d0/d6c/star__bus__onewire_8h.html#a280ca9da569dab4d61852a5220ba729ca87a51d28fd98bc60b6b8cec29c4778b5", null ],
-      [ "STAR_ONEWIRE_SPEED_OVERDRIVE", "d0/d6c/star__bus__onewire_8h.html#a280ca9da569dab4d61852a5220ba729ca37eaf79021f5c2b574714861c7f573e4", null ]
+      [ "k_star_onewire_speed_standard", "d0/d6c/star__bus__onewire_8h.html#a280ca9da569dab4d61852a5220ba729ca7e95b8200f96bae66b19e5ffb73384fd", null ],
+      [ "k_star_onewire_speed_overdrive", "d0/d6c/star__bus__onewire_8h.html#a280ca9da569dab4d61852a5220ba729cacb6fa50e7bd92a80633d70960df04065", null ]
     ] ],
     [ "star_bus_onewire_bytes_to_rom", "d0/d6c/star__bus__onewire_8h.html#a8c52a9289a4681648396db6403fa846b", null ],
     [ "star_bus_onewire_crc16", "d0/d6c/star__bus__onewire_8h.html#acc9573a26c5035f42df143cd5576542b", null ],

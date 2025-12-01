@@ -1,0 +1,9 @@
+<map id="priv_init_health_data" name="priv_init_health_data">
+<area shape="rect" id="Node000001" title=" " alt="" coords="505,5,646,31"/>
+<area shape="rect" id="Node000002" href="$db/d0d/shared__data_8c.html#a729c6930d47ad19fe39a033f6c77cc37" title=" " alt="" coords="295,5,457,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="487,18,458,21,458,16,492,18"/>
+<area shape="rect" id="Node000003" href="$db/d0d/shared__data_8c.html#a6ed1290970cd157c513516e4bd885524" title="Initialize shared data context." alt="" coords="131,5,247,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="276,18,248,21,248,16,282,18"/>
+<area shape="rect" id="Node000004" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="112,19,83,21,83,16,118,18"/>
+</map>

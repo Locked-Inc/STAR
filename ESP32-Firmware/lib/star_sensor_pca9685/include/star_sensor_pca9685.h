@@ -10,6 +10,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "pca9685_constants.h" /* Type-safe constants */
 #include "soc/gpio_num.h"
 #include "star_bus_manager.h"
 #include "star_error_interface.h"
@@ -47,7 +48,7 @@ extern "C" {
  * star_bus_config_t* pwm_bus = star_bus_config_create_i2c(
  *     "pwm_i2c",
  *     I2C_NUM_0,
- *     PCA9685_DEFAULT_ADDR,   // 0x40
+ *     0x40,                   // Default PCA9685 address
  *     GPIO_NUM_21,            // SDA
  *     GPIO_NUM_22,            // SCL
  *     400000                  // 400kHz
@@ -57,9 +58,9 @@ extern "C" {
  * // 3. Configure and initialize PCA9685
  * pca9685_handle_t pwm;
  * pca9685_config_t config = {
- *     .i2c_addr = PCA9685_DEFAULT_ADDR,
+ *     .i2c_addr = 0x40,                     // Default PCA9685 address
  *     .pwm_freq = 50,                      // 50Hz for servos
- *     .output_mode = PCA9685_OUTPUT_TOTEM_POLE,
+ *     .output_mode = k_pca9685_output_totem_pole,
  *     .ext_clock = false,
  *     .invert_output = false
  * };
@@ -199,79 +200,14 @@ extern "C" {
  * @endcode
  */
 
-/* --- Constants --- */
-
-/** PCA9685 default I2C address */
-#define PCA9685_DEFAULT_ADDR (0x40)
-
-/** PCA9685 all-call address */
-#define PCA9685_ALLCALL_ADDR (0x70)
-
-/** Number of PWM channels */
-#define PCA9685_NUM_CHANNELS (16)
-
-/** PWM resolution (12-bit) */
-#define PCA9685_PWM_RESOLUTION (4096)
-
-/** Minimum PWM frequency (Hz) */
-#define PCA9685_MIN_FREQ (24)
-
-/** Maximum PWM frequency (Hz) */
-#define PCA9685_MAX_FREQ (1526)
-
-/** Internal oscillator frequency (Hz) */
-#define PCA9685_OSCILLATOR_FREQ (25000000)
-
-/* --- Register Map --- */
-
-#define PCA9685_REG_MODE1 (0x00)         /**< Mode register 1 */
-#define PCA9685_REG_MODE2 (0x01)         /**< Mode register 2 */
-#define PCA9685_REG_SUBADR1 (0x02)       /**< I2C sub-address 1 */
-#define PCA9685_REG_SUBADR2 (0x03)       /**< I2C sub-address 2 */
-#define PCA9685_REG_SUBADR3 (0x04)       /**< I2C sub-address 3 */
-#define PCA9685_REG_ALLCALLADR (0x05)    /**< All-call I2C address */
-#define PCA9685_REG_LED0_ON_L (0x06)     /**< LED0 output ON time, low byte */
-#define PCA9685_REG_LED0_ON_H (0x07)     /**< LED0 output ON time, high byte */
-#define PCA9685_REG_LED0_OFF_L (0x08)    /**< LED0 output OFF time, low byte */
-#define PCA9685_REG_LED0_OFF_H (0x09)    /**< LED0 output OFF time, high byte */
-#define PCA9685_REG_ALL_LED_ON_L (0xFA)  /**< All LED ON time, low byte */
-#define PCA9685_REG_ALL_LED_ON_H (0xFB)  /**< All LED ON time, high byte */
-#define PCA9685_REG_ALL_LED_OFF_L (0xFC) /**< All LED OFF time, low byte */
-#define PCA9685_REG_ALL_LED_OFF_H (0xFD) /**< All LED OFF time, high byte */
-#define PCA9685_REG_PRESCALE (0xFE)      /**< Prescaler for PWM output frequency */
-
-/* --- MODE1 Register Bits --- */
-
-#define PCA9685_MODE1_RESTART (1 << 7) /**< Restart enabled */
-#define PCA9685_MODE1_EXTCLK (1 << 6)  /**< Use external clock */
-#define PCA9685_MODE1_AI (1 << 5)      /**< Auto-increment enabled */
-#define PCA9685_MODE1_SLEEP (1 << 4)   /**< Low power mode */
-#define PCA9685_MODE1_SUB1 (1 << 3)    /**< Respond to sub-address 1 */
-#define PCA9685_MODE1_SUB2 (1 << 2)    /**< Respond to sub-address 2 */
-#define PCA9685_MODE1_SUB3 (1 << 1)    /**< Respond to sub-address 3 */
-#define PCA9685_MODE1_ALLCALL (1 << 0) /**< Respond to all-call address */
-
-/* --- MODE2 Register Bits --- */
-
-#define PCA9685_MODE2_INVRT (1 << 4)  /**< Output logic state inverted */
-#define PCA9685_MODE2_OCH (1 << 3)    /**< Outputs change on STOP command */
-#define PCA9685_MODE2_OUTDRV (1 << 2) /**< Totem pole (1) or open-drain (0) */
-#define PCA9685_MODE2_OUTNE1 (1 << 1) /**< Output enable bit 1 */
-#define PCA9685_MODE2_OUTNE0 (1 << 0) /**< Output enable bit 0 */
-
-/* --- Special Values --- */
-
-#define PCA9685_LED_FULL_ON (1 << 4)  /**< LED full ON (in ON_H register) */
-#define PCA9685_LED_FULL_OFF (1 << 4) /**< LED full OFF (in OFF_H register) */
-
 /* --- Types --- */
 
 /**
  * @brief Output driver mode
  */
 typedef enum {
-  PCA9685_OUTPUT_OPEN_DRAIN = 0, /**< Open-drain (requires pull-up) */
-  PCA9685_OUTPUT_TOTEM_POLE = 1  /**< Totem pole (push-pull) */
+  k_pca9685_output_open_drain = 0, /**< Open-drain (requires pull-up) */
+  k_pca9685_output_totem_pole = 1  /**< Totem pole (push-pull) */
 } pca9685_output_mode_t;
 
 /**
@@ -381,7 +317,7 @@ esp_err_t star_sensor_pca9685_reset(const pca9685_handle_t* handle);
  *
  * @return ESP_OK on success, ESP_ERR_INVALID_ARG if frequency out of range
  */
-esp_err_t star_sensor_pca9685_set_frequency(pca9685_handle_t* handle, uint16_t freq_hz);
+esp_err_t star_sensor_pca9685_set_frequency(pca9685_handle_t* const handle, const uint16_t freq_hz);
 
 /**
  * @brief Get current PWM frequency
@@ -518,7 +454,7 @@ esp_err_t star_sensor_pca9685_prescale_to_freq(uint8_t prescale, uint16_t* freq_
  *
  * @return ESP_OK on success, error code otherwise
  */
-esp_err_t star_sensor_pca9685_sleep(pca9685_handle_t* handle, bool sleep);
+esp_err_t star_sensor_pca9685_sleep(pca9685_handle_t* const handle, const bool sleep);
 
 /* --- Output Enable Pin Control --- */
 

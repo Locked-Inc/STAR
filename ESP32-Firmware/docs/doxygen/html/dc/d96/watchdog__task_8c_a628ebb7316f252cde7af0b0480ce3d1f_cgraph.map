@@ -1,0 +1,49 @@
+<map id="priv_watchdog_task_loop" name="priv_watchdog_task_loop">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,257,174,283"/>
+<area shape="rect" id="Node000002" href="$dc/d96/watchdog__task_8c.html#ab497c0827c9bd63244ad67d991f0de48" title=" " alt="" coords="248,156,384,197"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="122,254,252,201,249,206,124,259"/>
+<area shape="rect" id="Node000011" href="$dc/d96/watchdog__task_8c.html#a8da846745ed72aa509adcf180ee9e0ee" title=" " alt="" coords="475,268,606,309"/>
+<area shape="poly" id="edge10_Node000001_Node000011" title=" " alt="" coords="174,271,461,283,458,288,174,276"/>
+<area shape="rect" id="Node000023" href="$db/d0d/shared__data_8c.html#a3bdf4ea7cbcd1af874c68f1da508ae3b" title="Get system uptime in milliseconds." alt="" coords="222,308,410,334"/>
+<area shape="poly" id="edge24_Node000001_Node000023" title=" " alt="" coords="150,281,243,303,238,305,150,286"/>
+<area shape="rect" id="Node000003" href="$dc/d96/watchdog__task_8c.html#a8e25e7e4994cbcff27f968e54202bb26" title=" " alt="" coords="472,138,609,178"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="384,169,459,164,454,166,385,174"/>
+<area shape="rect" id="Node000005" href="$dc/d96/watchdog__task_8c.html#a9dae39e85035b53b0627249982222142" title=" " alt="" coords="470,203,611,244"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="384,188,457,205,452,206,385,194"/>
+<area shape="rect" id="Node000007" href="$dc/d96/watchdog__task_8c.html#a1fb5e664003212fcf4a0eceff284dace" title=" " alt="" coords="458,72,623,98"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="366,154,496,103,491,105,369,158"/>
+<area shape="rect" id="Node000004" href="$db/d0d/shared__data_8c.html#acf829b11efe6efde5ff9c9a1798b05c9" title="Get pointer to global shared context." alt="" coords="671,153,839,179"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="609,158,659,162,653,163,610,163"/>
+<area shape="rect" id="Node000006" href="$db/d0d/shared__data_8c.html#a0d3fe09686a4b3eae27ee84e27ce7e1e" title="Get current system state." alt="" coords="671,203,839,244"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="612,221,658,223,653,224,612,226"/>
+<area shape="rect" id="Node000008" href="$d0/d9c/dht22__task_8c.html#a1f6c9969c4344276c47fd4241d599ff0" title="Check if DHT22 task is running." alt="" coords="679,55,831,80"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="623,76,667,74,662,76,625,81"/>
+<area shape="rect" id="Node000009" href="$d0/d81/led__task_8c.html#a1f77a84b84db33bc9e8bb3ef9339fc33" title="Check if LED task is running." alt="" coords="687,104,823,130"/>
+<area shape="poly" id="edge8_Node000007_Node000009" title=" " alt="" coords="624,95,674,104,669,105,624,100"/>
+<area shape="rect" id="Node000010" href="$de/dd4/sensor__task_8c.html#a6321c44c7b9351d3e2213eb27246312c" title="Check if sensor task is running." alt="" coords="676,5,834,31"/>
+<area shape="poly" id="edge9_Node000007_Node000010" title=" " alt="" coords="580,69,671,40,695,35,690,37,672,45,583,74"/>
+<area shape="poly" id="edge22_Node000011_Node000006" title=" " alt="" coords="606,266,669,250,674,248,607,271"/>
+<area shape="poly" id="edge21_Node000011_Node000009" title=" " alt="" coords="606,266,621,254,633,240,639,226,644,197,649,168,657,153,669,139,672,139,677,137,673,143,661,156,654,170,649,198,644,227,637,242,625,257,608,270"/>
+<area shape="rect" id="Node000012" href="$d0/d81/led__task_8c.html#a70a98116b168f38ec6863cf5d9b2e7df" title="Turn off all LEDs immediately." alt="" coords="673,333,837,359"/>
+<area shape="poly" id="edge11_Node000011_Node000012" title=" " alt="" coords="607,304,692,329,687,329,606,309"/>
+<area shape="rect" id="Node000022" href="$db/d0d/shared__data_8c.html#afa9b2836ac5b4579f6f03de14c21acb0" title="Set system state." alt="" coords="671,268,839,309"/>
+<area shape="poly" id="edge23_Node000011_Node000022" title=" " alt="" coords="606,286,658,289,653,289,607,291"/>
+<area shape="rect" id="Node000013" href="$d2/dc9/led__controller_8c.html#a4ef6b466f7b5477b96ef6f47a5cf8455" title="Turn off all LEDs." alt="" coords="887,326,1014,366"/>
+<area shape="poly" id="edge12_Node000012_Node000013" title=" " alt="" coords="837,344,874,346,869,346,837,349"/>
+<area shape="rect" id="Node000014" href="$d2/dc9/led__controller_8c.html#a73349b12790da0a90e8918735b11ab10" title="Turn off specific LED." alt="" coords="1062,333,1211,359"/>
+<area shape="poly" id="edge13_Node000013_Node000014" title=" " alt="" coords="1014,344,1049,346,1044,346,1014,349"/>
+<area shape="rect" id="Node000015" href="$d2/dc9/led__controller_8c.html#ac65666d46afe64b998d889b066bed529" title="Set RGB LED color." alt="" coords="1259,333,1408,359"/>
+<area shape="poly" id="edge14_Node000014_Node000015" title=" " alt="" coords="1212,344,1247,346,1241,346,1212,349"/>
+<area shape="rect" id="Node000016" href="$d2/dc9/led__controller_8c.html#ab2b8d44e5bef9b741aa2f5a7df274e70" title=" " alt="" coords="1456,333,1607,359"/>
+<area shape="poly" id="edge15_Node000015_Node000016" title=" " alt="" coords="1408,344,1443,346,1437,346,1408,349"/>
+<area shape="rect" id="Node000017" href="$d2/dc9/led__controller_8c.html#abcab39d857f747923eea57ef24f881bf" title=" " alt="" coords="1659,292,1796,333"/>
+<area shape="poly" id="edge16_Node000016_Node000017" title=" " alt="" coords="1607,331,1641,327,1646,327,1608,336"/>
+<area shape="rect" id="Node000018" href="$d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="1655,358,1800,398"/>
+<area shape="poly" id="edge17_Node000016_Node000018" title=" " alt="" coords="1608,356,1642,364,1637,364,1607,361"/>
+<area shape="rect" id="Node000019" href="$d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="1848,358,1994,398"/>
+<area shape="poly" id="edge18_Node000018_Node000019" title=" " alt="" coords="1801,376,1835,378,1830,378,1801,381"/>
+<area shape="rect" id="Node000020" href="$dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="2042,365,2172,391"/>
+<area shape="poly" id="edge19_Node000019_Node000020" title=" " alt="" coords="1994,376,2029,378,2024,378,1994,381"/>
+<area shape="rect" id="Node000021" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="2220,365,2404,391"/>
+<area shape="poly" id="edge20_Node000020_Node000021" title=" " alt="" coords="2172,376,2207,378,2201,378,2172,381"/>
+</map>

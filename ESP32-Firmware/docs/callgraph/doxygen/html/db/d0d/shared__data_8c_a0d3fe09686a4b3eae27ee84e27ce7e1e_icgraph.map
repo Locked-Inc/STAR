@@ -1,0 +1,21 @@
+<map id="shared_data_get_system_state" name="shared_data_get_system_state">
+<area shape="rect" id="Node000001" title="Get current system state." alt="" coords="1158,39,1326,79"/>
+<area shape="rect" id="Node000002" href="$dc/d96/watchdog__task_8c.html#af2ca5f0704afff18cd8baef5715b2646" title=" " alt="" coords="948,8,1110,49"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1141,45,1111,43,1111,37,1146,45"/>
+<area shape="rect" id="Node000009" href="$dc/d96/watchdog__task_8c.html#ab8e8a05882a22d389871b901749f34a0" title=" " alt="" coords="745,71,898,111"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="1146,66,898,88,898,83,1140,67"/>
+<area shape="rect" id="Node000003" href="$dc/d96/watchdog__task_8c.html#acc127e75275d2f65ba4158f4c0ea8821" title=" " alt="" coords="743,5,900,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="929,27,901,29,900,24,935,27"/>
+<area shape="rect" id="Node000004" href="$dc/d96/watchdog__task_8c.html#a914a83d91bb924807d2c34ddb767e056" title=" " alt="" coords="505,16,695,41"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="724,27,695,30,695,25,730,27"/>
+<area shape="rect" id="Node000008" href="$dc/d96/watchdog__task_8c.html#a3952d706fb7b287213a32d8ab6d39444" title="Force immediate system health check." alt="" coords="527,67,673,107"/>
+<area shape="poly" id="edge7_Node000003_Node000008" title=" " alt="" coords="733,50,674,70,673,64,728,51"/>
+<area shape="rect" id="Node000005" href="$dc/d96/watchdog__task_8c.html#a1047c0564b9275f58ba51b089d9c5377" title="Start the system watchdog task." alt="" coords="315,16,457,41"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="487,29,458,31,457,26,492,28"/>
+<area shape="rect" id="Node000006" href="$d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,16,267,41"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="297,29,268,31,267,26,302,28"/>
+<area shape="rect" id="Node000007" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,16,83,41"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="113,30,84,31,82,26,117,27"/>
+<area shape="poly" id="edge9_Node000009_Node000004" title=" " alt="" coords="730,66,694,58,648,44,649,39,695,52,735,66"/>
+<area shape="poly" id="edge10_Node000009_Node000008" title=" " alt="" coords="727,89,673,91,673,86,732,89"/>
+</map>

@@ -1,0 +1,9 @@
+<map id="internal_assess_task_health" name="internal_assess_task_health">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,47,150,88"/>
+<area shape="rect" id="Node000002" href="$d0/d9c/dht22__task_8c.html#a1f6c9969c4344276c47fd4241d599ff0" title="Check if DHT22 task is running." alt="" coords="201,5,352,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="149,47,210,34,205,36,151,52"/>
+<area shape="rect" id="Node000003" href="$d0/d81/led__task_8c.html#a1f77a84b84db33bc9e8bb3ef9339fc33" title="Check if LED task is running." alt="" coords="209,55,345,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="149,65,196,67,191,68,150,70"/>
+<area shape="rect" id="Node000004" href="$de/dd4/sensor__task_8c.html#a6321c44c7b9351d3e2213eb27246312c" title="Check if sensor task is running." alt="" coords="198,104,356,130"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="150,83,210,99,205,100,150,88"/>
+</map>

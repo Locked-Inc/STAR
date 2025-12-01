@@ -188,8 +188,9 @@ extern "C" {
 
 /* --- BMP280 Pressure/Temperature Sensor --- */
 
-#define BMP280_DEFAULT_ADDR (0x76)
-#define BMP280_ALT_ADDR (0x77)
+/* Type-safe I2C addresses for BMP280 */
+static const uint8_t BMP280_DEFAULT_ADDR = 0x76;
+static const uint8_t BMP280_ALT_ADDR     = 0x77;
 
 /** BMP280 configuration structure */
 typedef struct {
@@ -263,8 +264,9 @@ esp_err_t star_bus_bmp280_read_pressure(const star_bus_manager_t* manager,
 
 /* --- MPU6050 6-Axis IMU --- */
 
-#define MPU6050_DEFAULT_ADDR (0x68)
-#define MPU6050_ALT_ADDR (0x69)
+/* Type-safe I2C addresses for MPU6050 */
+static const uint8_t MPU6050_DEFAULT_ADDR = 0x68;
+static const uint8_t MPU6050_ALT_ADDR     = 0x69;
 
 /** MPU6050 configuration structure */
 typedef struct {
@@ -318,8 +320,9 @@ esp_err_t star_bus_mpu6050_read_all(const star_bus_manager_t* manager,
 
 /* --- SSD1306 OLED Display --- */
 
-#define SSD1306_DEFAULT_ADDR (0x3C)
-#define SSD1306_ALT_ADDR (0x3D)
+/* Type-safe I2C addresses for SSD1306 */
+static const uint8_t SSD1306_DEFAULT_ADDR = 0x3C;
+static const uint8_t SSD1306_ALT_ADDR     = 0x3D;
 
 /**
  * @brief Initialize SSD1306 OLED display
@@ -357,7 +360,8 @@ esp_err_t star_bus_ssd1306_update(const star_bus_manager_t* manager,
 
 /* --- ADS1115 16-bit ADC --- */
 
-#define ADS1115_DEFAULT_ADDR (0x48)
+/* Type-safe I2C address for ADS1115 */
+static const uint8_t ADS1115_DEFAULT_ADDR = 0x48;
 
 /** ADS1115 configuration structure */
 typedef struct {
@@ -398,7 +402,8 @@ star_bus_ads1115_read(const star_bus_manager_t* manager, const char* bus_name, i
 
 /* --- PCF8574 8-bit I/O Expander --- */
 
-#define PCF8574_DEFAULT_ADDR (0x20)
+/* Type-safe I2C address for PCF8574 */
+static const uint8_t PCF8574_DEFAULT_ADDR = 0x20;
 
 /**
  * @brief Write byte to PCF8574 I/O expander
@@ -422,7 +427,8 @@ star_bus_pcf8574_read(const star_bus_manager_t* manager, const char* bus_name, u
 
 /* --- AT24C256 EEPROM --- */
 
-#define AT24C256_DEFAULT_ADDR (0x50)
+/* Type-safe I2C address for AT24C256 */
+static const uint8_t AT24C256_DEFAULT_ADDR = 0x50;
 
 /**
  * @brief Write data to AT24C256 EEPROM
@@ -456,7 +462,8 @@ esp_err_t star_bus_at24c256_read(const star_bus_manager_t* manager,
 
 /* --- DS3231 RTC --- */
 
-#define DS3231_DEFAULT_ADDR (0x68)
+/* Type-safe I2C address for DS3231 */
+static const uint8_t DS3231_DEFAULT_ADDR = 0x68;
 
 /** DS3231 time structure */
 typedef struct {

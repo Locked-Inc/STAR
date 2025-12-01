@@ -6,7 +6,7 @@
 <area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="107,210,211,149,251,129,247,133,214,153,110,214"/>
 <area shape="rect" id="Node000007" href="$d7/d82/star__error__handler_8c.html#adb10b93a13ce155a3e5c2aa2f4b2d543" title="Create an interface adapter for the error handler." alt="" coords="214,164,392,189"/>
 <area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="144,210,230,191,226,195,146,215"/>
-<area shape="rect" id="Node000014" href="$de/de2/star__sensor__hcsr04_8c.html#a4f8ff4902257222e26b990280abd431b" title=" " alt="" coords="221,213,386,238"/>
+<area shape="rect" id="Node000014" href="$de/de2/star__sensor__hcsr04_8c.html#ac0e2c4b44b57bde90dad84d3178fe834" title=" " alt="" coords="221,213,386,238"/>
 <area shape="poly" id="edge13_Node000001_Node000014" title=" " alt="" coords="164,223,208,224,203,227,166,228"/>
 <area shape="rect" id="Node000015" href="$da/d8b/star__bus__gpio_8c.html#a3f3ec8a58cef289721cb02a336d52ee0" title="Configure a GPIO pin (set mode, pull&#45;up/down) via bus manager." alt="" coords="222,262,384,288"/>
 <area shape="poly" id="edge14_Node000001_Node000015" title=" " alt="" coords="145,236,231,257,226,259,145,242"/>
