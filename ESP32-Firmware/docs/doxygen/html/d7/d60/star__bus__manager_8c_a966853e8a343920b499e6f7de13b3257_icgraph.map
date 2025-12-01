@@ -67,16 +67,16 @@
 <area shape="poly" id="edge20_Node000019_Node000020" title=" " alt="" coords="250,1452,249,1455,238,1466,232,1478,226,1504,220,1529,213,1542,201,1555,184,1565,181,1562,198,1551,209,1539,215,1528,221,1502,227,1476,234,1463,246,1451,253,1448"/>
 <area shape="poly" id="edge23_Node000026_Node000020" title=" " alt="" coords="249,1403,250,1405,236,1423,229,1441,226,1478,224,1517,217,1536,201,1555,185,1566,181,1563,198,1551,212,1533,219,1516,221,1478,223,1440,231,1420,246,1402,252,1399"/>
 <area shape="poly" id="edge25_Node000027_Node000020" title=" " alt="" coords="255,1499,249,1504,235,1516,226,1529,217,1542,201,1555,178,1566,175,1561,198,1551,213,1539,222,1526,231,1513,246,1500,259,1496"/>
-<area shape="rect" id="Node000028" href="$de/de2/star__sensor__hcsr04_8c.html#a3733b2536166937e74b478d4b873faa0" title="Trigger measurement (non&#45;blocking)." alt="" coords="35,1614,170,1654"/>
+<area shape="rect" id="Node000028" href="$de/de2/star__sensor__hcsr04_8c.html#a69a5f2fb8f4f0e300d199d3462d2c28f" title="Trigger measurement (non&#45;blocking)." alt="" coords="35,1614,170,1654"/>
 <area shape="poly" id="edge26_Node000027_Node000028" title=" " alt="" coords="254,1498,249,1504,238,1516,232,1527,226,1552,220,1578,213,1591,201,1604,172,1622,169,1618,198,1600,209,1588,215,1576,221,1551,227,1526,234,1513,246,1500,258,1494"/>
 <area shape="poly" id="edge43_Node000032_Node000006" title=" " alt="" coords="329,1010,245,577,240,537,240,501,243,438,241,409,235,381,221,353,198,323,183,311,181,306,202,319,226,350,240,380,247,409,248,438,245,501,245,536,250,576,334,1010"/>
 <area shape="rect" id="Node000033" href="$d4/db0/star__bus__async_8c.html#a01ee3f118825590cceebdbca4fd6807a" title="Execute an async operation." alt="" coords="14,333,191,359"/>
 <area shape="poly" id="edge28_Node000032_Node000033" title=" " alt="" coords="329,1010,258,648,219,458,197,372,187,362,185,357,202,369,224,457,264,647,334,1010"/>
 <area shape="rect" id="Node000043" href="$df/deb/star__bus__batch_8c.html#a83c47362bb84557376a1791c5425f41c" title="Execute a single batch operation." alt="" coords="14,383,191,408"/>
 <area shape="poly" id="edge29_Node000032_Node000043" title=" " alt="" coords="329,1010,263,680,224,505,208,447,198,421,187,411,185,406,202,418,213,446,229,504,268,679,334,1010"/>
-<area shape="rect" id="Node000045" href="$d7/df2/star__sensor__mpu6050_8c.html#a22fe40a03094a07d6b03c6de6d121688" title=" " alt="" coords="37,1317,168,1343"/>
+<area shape="rect" id="Node000045" href="$d7/df2/star__sensor__mpu6050_8c.html#a95ee574609f3f096d184820df2e58182" title=" " alt="" coords="37,1317,168,1343"/>
 <area shape="poly" id="edge30_Node000032_Node000045" title=" " alt="" coords="319,1067,287,1122,250,1190,238,1224,233,1253,224,1281,201,1308,171,1324,167,1321,198,1304,219,1278,228,1252,233,1223,245,1188,283,1119,321,1062"/>
-<area shape="rect" id="Node000050" href="$d3/df7/star__sensor__pca9685_8c.html#ab5d665b77448f8328bad9d4c61c0d47c" title="Read from PCA9685 register." alt="" coords="39,1367,166,1392"/>
+<area shape="rect" id="Node000050" href="$d3/df7/star__sensor__pca9685_8c.html#aa890b42646d44f6b5a11c603658f0afa" title="Read from PCA9685 register." alt="" coords="39,1367,166,1392"/>
 <area shape="poly" id="edge31_Node000032_Node000050" title=" " alt="" coords="318,1067,286,1122,250,1190,242,1215,238,1237,236,1279,229,1318,219,1337,201,1357,186,1369,168,1376,165,1372,183,1364,198,1354,214,1334,224,1316,230,1278,232,1237,237,1213,245,1188,281,1119,320,1062"/>
 <area shape="rect" id="Node000059" href="$d6/d0b/star__bus__devices_8c.html#a1f8bc705525b751fa39e633673388063" title="Initialize ADS1115 ADC." alt="" coords="27,1416,178,1442"/>
 <area shape="poly" id="edge32_Node000032_Node000059" title=" " alt="" coords="317,1066,285,1121,250,1190,241,1222,237,1251,238,1305,238,1330,234,1355,222,1380,201,1407,180,1421,176,1418,198,1403,218,1378,228,1353,233,1329,233,1305,232,1251,235,1221,245,1188,280,1118,320,1061"/>

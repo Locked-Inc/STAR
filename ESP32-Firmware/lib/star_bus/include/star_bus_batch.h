@@ -246,22 +246,22 @@ typedef void* star_batch_handle_t;
  * @brief Batch operation type
  */
 typedef enum {
-  STAR_BATCH_OP_I2C_READ,         /**< I2C read operation */
-  STAR_BATCH_OP_I2C_WRITE,        /**< I2C write operation */
-  STAR_BATCH_OP_SPI_TRANSMIT,     /**< SPI transmit operation */
-  STAR_BATCH_OP_SPI_RECEIVE,      /**< SPI receive operation */
-  STAR_BATCH_OP_SPI_TRANSFER,     /**< SPI transfer operation */
-  STAR_BATCH_OP_SMBUS_READ_BYTE,  /**< SMBus read byte */
-  STAR_BATCH_OP_SMBUS_WRITE_BYTE, /**< SMBus write byte */
-  STAR_BATCH_OP_DELAY,            /**< Delay operation (ms) */
+  k_star_batch_op_i2c_read,         /**< I2C read operation */
+  k_star_batch_op_i2c_write,        /**< I2C write operation */
+  k_star_batch_op_spi_transmit,     /**< SPI transmit operation */
+  k_star_batch_op_spi_receive,      /**< SPI receive operation */
+  k_star_batch_op_spi_transfer,     /**< SPI transfer operation */
+  k_star_batch_op_smbus_read_byte,  /**< SMBus read byte */
+  k_star_batch_op_smbus_write_byte, /**< SMBus write byte */
+  k_star_batch_op_delay,            /**< Delay operation (ms) */
 } star_batch_op_type_t;
 
 /**
  * @brief Batch execution mode
  */
 typedef enum {
-  STAR_BATCH_MODE_SEQUENTIAL, /**< Execute operations sequentially */
-  STAR_BATCH_MODE_PARALLEL,   /**< Execute operations in parallel (if possible) */
+  k_star_batch_mode_sequential, /**< Execute operations sequentially */
+  k_star_batch_mode_parallel,   /**< Execute operations in parallel (if possible) */
 } star_batch_mode_t;
 
 /**

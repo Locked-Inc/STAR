@@ -18,25 +18,38 @@
 #include "tasks/include/sensor_task.h"
 #include "tasks/include/watchdog_task.h"
 
-static const char* s_TAG = STAR_SYSTEM_TAG_MAIN;
+/* ========== Main Application Constants ========== */
 
-static esp_err_t initialize_hardware_buses(star_bus_manager_t* bus_manager)
+/* Error Handler Configuration for Fast LED Response */
+static const uint8_t  s_main_fast_error_retries    = 2;  /**< Fast retry count for LED operations */
+static const uint32_t s_main_fast_error_base_delay = 10; /**< Fast base delay in milliseconds */
+static const uint32_t s_main_fast_error_max_delay  = 50; /**< Fast maximum delay in milliseconds */
+
+/* Main Loop Configuration */
+static const uint32_t s_main_loop_sleep_ms = 10000; /**< Main loop sleep duration in milliseconds */
+
+static const char* s_TAG = "MAIN"; /* Use STAR_SYSTEM_CONFIG.log_tags.main */
+
+static esp_err_t initialize_hardware_buses(star_bus_manager_t* const bus_manager)
 {
   esp_err_t ret;
 
-  ESP_LOGI(s_TAG, "Setting up DHT22 on GPIO %d", STAR_SYSTEM_GPIO_DHT22_PIN);
+  ESP_LOGI(s_TAG, "Setting up DHT22 on GPIO %d", STAR_SYSTEM_CONFIG.gpio.dht22_data);
   star_dht22_config_t dht22_config = STAR_DHT22_CONFIG_DEFAULT();
-  dht22_config.gpio_pin            = STAR_SYSTEM_GPIO_DHT22_PIN;
+  dht22_config.gpio_pin            = STAR_SYSTEM_CONFIG.gpio.dht22_data;
 
-  ret = star_bus_dht22_init(bus_manager, STAR_SYSTEM_BUS_NAME_DHT22, &dht22_config);
+  ret = star_bus_dht22_init(bus_manager, STAR_SYSTEM_CONFIG.bus_names.dht22, &dht22_config);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to init DHT22: %s", esp_err_to_name(ret));
     return ret;
   }
 
-gpio_num_t hcsr04_pins[] = {STAR_SYSTEM_GPIO_LEFT_TRIG, STAR_SYSTEM_GPIO_LEFT_ECHO, STAR_SYSTEM_GPIO_RIGHT_TRIG, STAR_SYSTEM_GPIO_RIGHT_ECHO};
+  const gpio_num_t   hcsr04_pins[] = {STAR_SYSTEM_CONFIG.gpio.left_trig,
+                                      STAR_SYSTEM_CONFIG.gpio.left_echo,
+                                      STAR_SYSTEM_CONFIG.gpio.right_trig,
+                                      STAR_SYSTEM_CONFIG.gpio.right_echo};
   star_bus_config_t* hcsr04_gpio_bus =
-    star_bus_config_create_gpio(STAR_SYSTEM_BUS_NAME_HCSR04,
+    star_bus_config_create_gpio(STAR_SYSTEM_CONFIG.bus_names.hcsr04,
                                 hcsr04_pins,
                                 sizeof(hcsr04_pins) / sizeof(hcsr04_pins[0]));
 
@@ -52,12 +65,12 @@ gpio_num_t hcsr04_pins[] = {STAR_SYSTEM_GPIO_LEFT_TRIG, STAR_SYSTEM_GPIO_LEFT_EC
     return ret;
   }
 
-  star_bus_config_t* pwm_bus = star_bus_config_create_i2c(STAR_SYSTEM_BUS_NAME_PCA9685,
-                                                          STAR_SYSTEM_PCA9685_I2C_NUM,
-                                                          STAR_SYSTEM_PCA9685_I2C_ADDR,
-                                                          STAR_SYSTEM_GPIO_PCA9685_I2C_SDA,
-                                                          STAR_SYSTEM_GPIO_PCA9685_I2C_SCL,
-                                                          STAR_SYSTEM_PCA9685_I2C_FREQUENCY);
+  star_bus_config_t* pwm_bus = star_bus_config_create_i2c(STAR_SYSTEM_CONFIG.bus_names.pca9685,
+                                                          STAR_SYSTEM_CONFIG.pca9685.i2c_port,
+                                                          STAR_SYSTEM_CONFIG.pca9685.i2c_addr,
+                                                          STAR_SYSTEM_CONFIG.gpio.pca9685_sda,
+                                                          STAR_SYSTEM_CONFIG.gpio.pca9685_scl,
+                                                          STAR_SYSTEM_CONFIG.pca9685.i2c_frequency);
 
   if (pwm_bus == NULL) {
     ESP_LOGE(s_TAG, "Failed to create I2C bus for PCA9685");
@@ -75,21 +88,21 @@ gpio_num_t hcsr04_pins[] = {STAR_SYSTEM_GPIO_LEFT_TRIG, STAR_SYSTEM_GPIO_LEFT_EC
   return ESP_OK;
 }
 
-static esp_err_t initialize_pca9685(star_bus_manager_t*     bus_manager,
-                                    star_error_interface_t* error_iface,
-                                    pca9685_handle_t*       pca_handle)
+static esp_err_t initialize_pca9685(star_bus_manager_t* const     bus_manager,
+                                    star_error_interface_t* const error_iface,
+                                    pca9685_handle_t* const       pca_handle)
 {
-  pca9685_config_t pca9685_config = {.i2c_addr      = STAR_SYSTEM_PCA9685_I2C_ADDR,
-                                     .pwm_freq      = STAR_SYSTEM_PCA9685_PWM_FREQUENCY_kHZ,
-                                     .output_mode   = PCA9685_OUTPUT_TOTEM_POLE,
-                                     .ext_clock     = false,
-                                     .invert_output = false};
+  const pca9685_config_t pca9685_config = {.i2c_addr = STAR_SYSTEM_CONFIG.pca9685.i2c_addr,
+                                           .pwm_freq = STAR_SYSTEM_CONFIG.pca9685.pwm_frequency_hz,
+                                           .output_mode   = k_pca9685_output_totem_pole,
+                                           .ext_clock     = false,
+                                           .invert_output = false};
 
   esp_err_t ret = star_sensor_pca9685_init(pca_handle,
                                            bus_manager,
-                                           STAR_SYSTEM_BUS_NAME_PCA9685,
+                                           STAR_SYSTEM_CONFIG.bus_names.pca9685,
                                            error_iface,
-                                           STAR_SYSTEM_GPIO_PCA9685_OE,
+                                           STAR_SYSTEM_CONFIG.gpio.pca9685_oe,
                                            false,
                                            &pca9685_config);
 
@@ -102,19 +115,19 @@ static esp_err_t initialize_pca9685(star_bus_manager_t*     bus_manager,
   return ESP_OK;
 }
 
-static esp_err_t start_system_tasks(star_bus_manager_t*     bus_manager,
-                                    star_error_interface_t* error_iface,
-                                    const pca9685_handle_t* pca_handle)
+static esp_err_t start_system_tasks(star_bus_manager_t* const     bus_manager,
+                                    star_error_interface_t* const error_iface,
+                                    const pca9685_handle_t*       pca_handle)
 {
   esp_err_t ret;
 
-  ret = dht22_task_start(bus_manager, STAR_SYSTEM_BUS_NAME_DHT22);
+  ret = dht22_task_start(bus_manager, STAR_SYSTEM_CONFIG.bus_names.dht22);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to start DHT22 task: %s", esp_err_to_name(ret));
     return ret;
   }
 
-  ret = sensor_task_start(bus_manager, error_iface, STAR_SYSTEM_BUS_NAME_HCSR04);
+  ret = sensor_task_start(bus_manager, error_iface, STAR_SYSTEM_CONFIG.bus_names.hcsr04);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to start sensor task: %s", esp_err_to_name(ret));
     dht22_task_stop();
@@ -145,7 +158,9 @@ static esp_err_t start_system_tasks(star_bus_manager_t*     bus_manager,
 void app_main(void)
 {
   ESP_LOGI(s_TAG, "Starting STAR Firmware - Task-Based Architecture");
-  ESP_LOGI(s_TAG, "System: %d HC-SR04 sensors, DHT22 temperature, RGB LED feedback", STAR_SYSTEM_NUM_HCSR04);
+  ESP_LOGI(s_TAG,
+           "System: %d HC-SR04 sensors, DHT22 temperature, RGB LED feedback",
+           STAR_SYSTEM_CONFIG.num_hcsr04_sensors);
 
   esp_err_t ret = shared_data_init();
   if (ret != ESP_OK) {
@@ -153,21 +168,26 @@ void app_main(void)
     return;
   }
 
-  shared_data_set_system_state(SYSTEM_STATE_INITIALIZING);
+  shared_data_set_system_state(k_system_state_initializing);
 
   star_pin_interface_t pin_iface;
   pin_validator_get_interface(&pin_iface);
 
-  // Create fast-retry error handler for instant LED response
-  // Fast config: 2 retries, 10ms base delay, 50ms max delay (vs default 3 retries, 100ms base, 5000ms max)
-  error_handler_t* fast_error_handler = error_handler_create_custom(2, 10, 50, NULL, NULL);
+  /* Create fast-retry error handler for instant LED response */
+  /* Fast config: 2 retries, 10ms base delay, 50ms max delay (vs default 3 retries, 100ms base, 5000ms max) */
+  error_handler_t* fast_error_handler = error_handler_create_custom(s_main_fast_error_retries,
+                                                                    s_main_fast_error_base_delay,
+                                                                    s_main_fast_error_max_delay,
+                                                                    NULL,
+                                                                    NULL);
   if (fast_error_handler == NULL) {
     ESP_LOGE(s_TAG, "Failed to create fast error handler");
     shared_data_deinit();
     return;
   }
 
-  star_error_interface_t* error_iface = (star_error_interface_t*)malloc(sizeof(star_error_interface_t));
+  star_error_interface_t* error_iface =
+    (star_error_interface_t*)malloc(sizeof(star_error_interface_t));
   if (error_iface == NULL) {
     ESP_LOGE(s_TAG, "Failed to allocate error interface");
     error_handler_destroy_default(fast_error_handler);
@@ -223,16 +243,24 @@ void app_main(void)
   ESP_LOGI(s_TAG, "System initialization complete - all tasks are now running");
   ESP_LOGI(s_TAG, "Main task has completed initialization and will now exit");
   ESP_LOGI(s_TAG, "System is now fully managed by FreeRTOS tasks:");
-  ESP_LOGI(s_TAG, "  - DHT22 task: Temperature monitoring every %dms", STAR_SYSTEM_TASK_INTERVAL_DHT22);
-  ESP_LOGI(s_TAG, "  - Sensor task: Distance sensing every %dms", STAR_SYSTEM_TASK_INTERVAL_SENSORS);
-  ESP_LOGI(s_TAG, "  - LED task: Visual feedback every %dms", STAR_SYSTEM_TASK_INTERVAL_LEDS);
-  ESP_LOGI(s_TAG, "  - Watchdog task: Health monitoring every %dms", STAR_SYSTEM_TASK_INTERVAL_WATCHDOG);
+  ESP_LOGI(s_TAG,
+           "  - DHT22 task: Temperature monitoring every %dms",
+           STAR_SYSTEM_CONFIG.tasks.dht22.interval_ms);
+  ESP_LOGI(s_TAG,
+           "  - Sensor task: Distance sensing every %dms",
+           STAR_SYSTEM_CONFIG.tasks.sensors.interval_ms);
+  ESP_LOGI(s_TAG,
+           "  - LED task: Visual feedback every %dms",
+           STAR_SYSTEM_CONFIG.tasks.leds.interval_ms);
+  ESP_LOGI(s_TAG,
+           "  - Watchdog task: Health monitoring every %dms",
+           STAR_SYSTEM_CONFIG.tasks.watchdog.interval_ms);
 
   ESP_LOGI(s_TAG, "System ready - use watchdog for health monitoring and recovery");
-  
-  // Keep main task alive to prevent FreeRTOS handle corruption
-  // The system is now fully managed by the created tasks
+
+  /* Keep main task alive to prevent FreeRTOS handle corruption */
+  /* The system is now fully managed by the created tasks */
   while (1) {
-    vTaskDelay(pdMS_TO_TICKS(10000)); // Sleep for 10 seconds at a time
+    vTaskDelay(pdMS_TO_TICKS(s_main_loop_sleep_ms)); // Sleep for 10 seconds at a time
   }
 }

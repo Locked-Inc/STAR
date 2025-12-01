@@ -201,11 +201,11 @@ static void internal_execute_operation(async_operation_t* op)
     return;
   }
 
-  op->status       = STAR_ASYNC_STATUS_RUNNING;
+  op->status       = k_star_async_status_running;
   esp_err_t result = ESP_FAIL;
 
   switch (op->type) {
-    case STAR_ASYNC_OP_I2C_WRITE:
+    case k_star_async_op_i2c_write:
       result = star_bus_i2c_write(op->manager,
                                   op->bus_name,
                                   op->params.i2c.data,
@@ -214,7 +214,7 @@ static void internal_execute_operation(async_operation_t* op)
                                   NULL);
       break;
 
-    case STAR_ASYNC_OP_I2C_READ:
+    case k_star_async_op_i2c_read:
       result = star_bus_i2c_read(op->manager,
                                  op->bus_name,
                                  op->params.i2c.data,
@@ -223,7 +223,7 @@ static void internal_execute_operation(async_operation_t* op)
                                  NULL);
       break;
 
-    case STAR_ASYNC_OP_SPI_TRANSMIT:
+    case k_star_async_op_spi_transmit:
       result = star_bus_spi_transmit(op->manager,
                                      op->bus_name,
                                      op->params.spi.tx_data,
@@ -231,7 +231,7 @@ static void internal_execute_operation(async_operation_t* op)
                                      0);
       break;
 
-    case STAR_ASYNC_OP_SPI_RECEIVE:
+    case k_star_async_op_spi_receive:
       result = star_bus_spi_receive(op->manager,
                                     op->bus_name,
                                     op->params.spi.rx_data,
@@ -239,7 +239,7 @@ static void internal_execute_operation(async_operation_t* op)
                                     0);
       break;
 
-    case STAR_ASYNC_OP_SPI_TRANSCEIVE:
+    case k_star_async_op_spi_transceive:
       result = star_bus_spi_transfer(op->manager,
                                      op->bus_name,
                                      op->params.spi.tx_data,
@@ -248,7 +248,7 @@ static void internal_execute_operation(async_operation_t* op)
                                      0);
       break;
 
-    case STAR_ASYNC_OP_SMBUS_READ:
+    case k_star_async_op_smbus_read:
       result = star_smbus_read_byte(op->manager,
                                     op->bus_name,
                                     op->params.smbus.addr,
@@ -256,7 +256,7 @@ static void internal_execute_operation(async_operation_t* op)
                                     op->params.smbus.data);
       break;
 
-    case STAR_ASYNC_OP_SMBUS_WRITE:
+    case k_star_async_op_smbus_write:
       result = star_smbus_write_byte(op->manager,
                                      op->bus_name,
                                      op->params.smbus.addr,
@@ -271,7 +271,7 @@ static void internal_execute_operation(async_operation_t* op)
   }
 
   op->result = result;
-  op->status = (result == ESP_OK) ? STAR_ASYNC_STATUS_COMPLETE : STAR_ASYNC_STATUS_ERROR;
+  op->status = (result == ESP_OK) ? k_star_async_status_complete : k_star_async_status_error;
 
   /* Set event bits if configured */
   if (op->event_group != NULL) {
@@ -323,7 +323,7 @@ static void internal_async_worker_task(void* param)
 
     if (op != NULL) {
       /* Check if operation was cancelled while in queue */
-      if (op->status == STAR_ASYNC_STATUS_CANCELLED) {
+      if (op->status == k_star_async_status_cancelled) {
         state->cancelled_ops++;
         /* Don't execute, callback was already invoked during cancel */
       } else {
@@ -331,11 +331,11 @@ static void internal_async_worker_task(void* param)
         internal_execute_operation(op);
 
         /* Update statistics */
-        if (op->status == STAR_ASYNC_STATUS_COMPLETE) {
+        if (op->status == k_star_async_status_complete) {
           state->completed_ops++;
-        } else if (op->status == STAR_ASYNC_STATUS_ERROR) {
+        } else if (op->status == k_star_async_status_error) {
           state->failed_ops++;
-        } else if (op->status == STAR_ASYNC_STATUS_CANCELLED) {
+        } else if (op->status == k_star_async_status_cancelled) {
           state->cancelled_ops++;
         }
       }
@@ -421,8 +421,8 @@ esp_err_t star_bus_i2c_write_async(star_bus_manager_t*        manager,
 
   memset(op, 0, sizeof(async_operation_t));
 
-  op->type         = STAR_ASYNC_OP_I2C_WRITE;
-  op->status       = STAR_ASYNC_STATUS_PENDING;
+  op->type         = k_star_async_op_i2c_write;
+  op->status       = k_star_async_status_pending;
   op->callback     = config->callback;
   op->user_context = config->context;
   op->timeout_ms   = config->timeout_ms;
@@ -478,8 +478,8 @@ esp_err_t star_bus_i2c_read_async(star_bus_manager_t*        manager,
 
   memset(op, 0, sizeof(async_operation_t));
 
-  op->type         = STAR_ASYNC_OP_I2C_READ;
-  op->status       = STAR_ASYNC_STATUS_PENDING;
+  op->type         = k_star_async_op_i2c_read;
+  op->status       = k_star_async_status_pending;
   op->callback     = config->callback;
   op->user_context = config->context;
   op->timeout_ms   = config->timeout_ms;
@@ -508,7 +508,7 @@ esp_err_t star_bus_i2c_read_async(star_bus_manager_t*        manager,
 star_async_status_t star_async_get_status(star_async_handle_t handle)
 {
   if (handle == NULL) {
-    return STAR_ASYNC_STATUS_ERROR;
+    return k_star_async_status_error;
   }
 
   async_operation_t* op = (async_operation_t*)handle;
@@ -554,11 +554,11 @@ esp_err_t star_async_cancel(star_async_handle_t handle)
 
   async_operation_t* op = (async_operation_t*)handle;
 
-  if (op->status == STAR_ASYNC_STATUS_COMPLETE || op->status == STAR_ASYNC_STATUS_ERROR) {
+  if (op->status == k_star_async_status_complete || op->status == k_star_async_status_error) {
     return ESP_ERR_INVALID_STATE;
   }
 
-  op->status = STAR_ASYNC_STATUS_CANCELLED;
+  op->status = k_star_async_status_cancelled;
   op->result = ESP_ERR_INVALID_STATE;
 
   /* Invoke callback */
@@ -591,7 +591,7 @@ void star_async_free_handle(star_async_handle_t handle)
     }
 
     /* Free SMBus write data if allocated */
-    if (op->type == STAR_ASYNC_OP_SMBUS_WRITE && op->params.smbus.data != NULL) {
+    if (op->type == k_star_async_op_smbus_write && op->params.smbus.data != NULL) {
       free(op->params.smbus.data);
     }
 
@@ -690,8 +690,8 @@ esp_err_t star_bus_spi_transmit_async(star_bus_manager_t*        manager,
 
   memset(op, 0, sizeof(async_operation_t));
 
-  op->type         = STAR_ASYNC_OP_SPI_TRANSMIT;
-  op->status       = STAR_ASYNC_STATUS_PENDING;
+  op->type         = k_star_async_op_spi_transmit;
+  op->status       = k_star_async_status_pending;
   op->callback     = config->callback;
   op->user_context = config->context;
   op->timeout_ms   = config->timeout_ms;
@@ -745,8 +745,8 @@ esp_err_t star_bus_spi_receive_async(star_bus_manager_t*        manager,
 
   memset(op, 0, sizeof(async_operation_t));
 
-  op->type         = STAR_ASYNC_OP_SPI_RECEIVE;
-  op->status       = STAR_ASYNC_STATUS_PENDING;
+  op->type         = k_star_async_op_spi_receive;
+  op->status       = k_star_async_status_pending;
   op->callback     = config->callback;
   op->user_context = config->context;
   op->timeout_ms   = config->timeout_ms;
@@ -801,8 +801,8 @@ esp_err_t star_bus_spi_transceive_async(star_bus_manager_t*        manager,
 
   memset(op, 0, sizeof(async_operation_t));
 
-  op->type         = STAR_ASYNC_OP_SPI_TRANSCEIVE;
-  op->status       = STAR_ASYNC_STATUS_PENDING;
+  op->type         = k_star_async_op_spi_transceive;
+  op->status       = k_star_async_status_pending;
   op->callback     = config->callback;
   op->user_context = config->context;
   op->timeout_ms   = config->timeout_ms;
@@ -860,8 +860,8 @@ esp_err_t star_smbus_read_byte_async(star_bus_manager_t*        manager,
 
   memset(op, 0, sizeof(async_operation_t));
 
-  op->type         = STAR_ASYNC_OP_SMBUS_READ;
-  op->status       = STAR_ASYNC_STATUS_PENDING;
+  op->type         = k_star_async_op_smbus_read;
+  op->status       = k_star_async_status_pending;
   op->callback     = config->callback;
   op->user_context = config->context;
   op->timeout_ms   = config->timeout_ms;
@@ -916,8 +916,8 @@ esp_err_t star_smbus_write_byte_async(star_bus_manager_t*        manager,
 
   memset(op, 0, sizeof(async_operation_t));
 
-  op->type         = STAR_ASYNC_OP_SMBUS_WRITE;
-  op->status       = STAR_ASYNC_STATUS_PENDING;
+  op->type         = k_star_async_op_smbus_write;
+  op->status       = k_star_async_status_pending;
   op->callback     = config->callback;
   op->user_context = config->context;
   op->timeout_ms   = config->timeout_ms;

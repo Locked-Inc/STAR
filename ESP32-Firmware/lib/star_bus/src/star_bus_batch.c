@@ -46,7 +46,7 @@ static esp_err_t internal_execute_operation(batch_context_t* ctx, uint32_t index
   esp_err_t               result = ESP_FAIL;
 
   switch (op->type) {
-    case STAR_BATCH_OP_I2C_WRITE:
+    case k_star_batch_op_i2c_write:
       result = star_bus_i2c_write(ctx->manager,
                                   op->bus_name,
                                   op->params.i2c.data,
@@ -55,7 +55,7 @@ static esp_err_t internal_execute_operation(batch_context_t* ctx, uint32_t index
                                   NULL);
       break;
 
-    case STAR_BATCH_OP_I2C_READ:
+    case k_star_batch_op_i2c_read:
       result = star_bus_i2c_read(ctx->manager,
                                  op->bus_name,
                                  op->params.i2c.data,
@@ -64,7 +64,7 @@ static esp_err_t internal_execute_operation(batch_context_t* ctx, uint32_t index
                                  NULL);
       break;
 
-    case STAR_BATCH_OP_SPI_TRANSMIT:
+    case k_star_batch_op_spi_transmit:
       result = star_bus_spi_transmit(ctx->manager,
                                      op->bus_name,
                                      op->params.spi.tx_data,
@@ -72,7 +72,7 @@ static esp_err_t internal_execute_operation(batch_context_t* ctx, uint32_t index
                                      op->params.spi.flags);
       break;
 
-    case STAR_BATCH_OP_SPI_RECEIVE:
+    case k_star_batch_op_spi_receive:
       result = star_bus_spi_receive(ctx->manager,
                                     op->bus_name,
                                     op->params.spi.rx_data,
@@ -80,7 +80,7 @@ static esp_err_t internal_execute_operation(batch_context_t* ctx, uint32_t index
                                     op->params.spi.flags);
       break;
 
-    case STAR_BATCH_OP_SPI_TRANSFER:
+    case k_star_batch_op_spi_transfer:
       result = star_bus_spi_transfer(ctx->manager,
                                      op->bus_name,
                                      op->params.spi.tx_data,
@@ -89,7 +89,7 @@ static esp_err_t internal_execute_operation(batch_context_t* ctx, uint32_t index
                                      op->params.spi.flags);
       break;
 
-    case STAR_BATCH_OP_SMBUS_READ_BYTE:
+    case k_star_batch_op_smbus_read_byte:
       result = star_smbus_read_byte(ctx->manager,
                                     op->bus_name,
                                     op->params.smbus.addr,
@@ -97,7 +97,7 @@ static esp_err_t internal_execute_operation(batch_context_t* ctx, uint32_t index
                                     op->params.smbus.data);
       break;
 
-    case STAR_BATCH_OP_SMBUS_WRITE_BYTE:
+    case k_star_batch_op_smbus_write_byte:
       result = star_smbus_write_byte(ctx->manager,
                                      op->bus_name,
                                      op->params.smbus.addr,
@@ -105,7 +105,7 @@ static esp_err_t internal_execute_operation(batch_context_t* ctx, uint32_t index
                                      *op->params.smbus.data);
       break;
 
-    case STAR_BATCH_OP_DELAY:
+    case k_star_batch_op_delay:
       vTaskDelay(pdMS_TO_TICKS(op->params.delay.delay_ms));
       result = ESP_OK;
       break;
@@ -159,7 +159,7 @@ void star_batch_free(star_batch_handle_t handle)
     /* Free any allocated SMBus write data */
     for (uint32_t i = 0; i < ctx->operation_count; i++) {
       star_batch_operation_t* op = &ctx->operations[i];
-      if (op->type == STAR_BATCH_OP_SMBUS_WRITE_BYTE && op->params.smbus.data != NULL) {
+      if (op->type == k_star_batch_op_smbus_write_byte && op->params.smbus.data != NULL) {
         free(op->params.smbus.data);
         op->params.smbus.data = NULL;
       }
@@ -189,7 +189,7 @@ esp_err_t star_batch_add_i2c_write(star_batch_handle_t handle,
   star_batch_operation_t* op = &ctx->operations[ctx->operation_count];
   memset(op, 0, sizeof(star_batch_operation_t));
 
-  op->type               = STAR_BATCH_OP_I2C_WRITE;
+  op->type               = k_star_batch_op_i2c_write;
   op->bus_name           = bus_name;
   op->params.i2c.data    = (uint8_t*)data;
   op->params.i2c.length  = length;
@@ -220,7 +220,7 @@ esp_err_t star_batch_add_i2c_read(star_batch_handle_t handle,
   star_batch_operation_t* op = &ctx->operations[ctx->operation_count];
   memset(op, 0, sizeof(star_batch_operation_t));
 
-  op->type               = STAR_BATCH_OP_I2C_READ;
+  op->type               = k_star_batch_op_i2c_read;
   op->bus_name           = bus_name;
   op->params.i2c.data    = data;
   op->params.i2c.length  = length;
@@ -251,7 +251,7 @@ esp_err_t star_batch_add_spi_transmit(star_batch_handle_t handle,
   star_batch_operation_t* op = &ctx->operations[ctx->operation_count];
   memset(op, 0, sizeof(star_batch_operation_t));
 
-  op->type               = STAR_BATCH_OP_SPI_TRANSMIT;
+  op->type               = k_star_batch_op_spi_transmit;
   op->bus_name           = bus_name;
   op->params.spi.tx_data = data;
   op->params.spi.length  = length;
@@ -282,7 +282,7 @@ esp_err_t star_batch_add_spi_receive(star_batch_handle_t handle,
   star_batch_operation_t* op = &ctx->operations[ctx->operation_count];
   memset(op, 0, sizeof(star_batch_operation_t));
 
-  op->type               = STAR_BATCH_OP_SPI_RECEIVE;
+  op->type               = k_star_batch_op_spi_receive;
   op->bus_name           = bus_name;
   op->params.spi.rx_data = data;
   op->params.spi.length  = length;
@@ -314,7 +314,7 @@ esp_err_t star_batch_add_spi_transfer(star_batch_handle_t handle,
   star_batch_operation_t* op = &ctx->operations[ctx->operation_count];
   memset(op, 0, sizeof(star_batch_operation_t));
 
-  op->type               = STAR_BATCH_OP_SPI_TRANSFER;
+  op->type               = k_star_batch_op_spi_transfer;
   op->bus_name           = bus_name;
   op->params.spi.tx_data = tx_data;
   op->params.spi.rx_data = rx_data;
@@ -346,7 +346,7 @@ esp_err_t star_batch_add_smbus_read_byte(star_batch_handle_t handle,
   star_batch_operation_t* op = &ctx->operations[ctx->operation_count];
   memset(op, 0, sizeof(star_batch_operation_t));
 
-  op->type                 = STAR_BATCH_OP_SMBUS_READ_BYTE;
+  op->type                 = k_star_batch_op_smbus_read_byte;
   op->bus_name             = bus_name;
   op->params.smbus.addr    = addr;
   op->params.smbus.command = command;
@@ -377,7 +377,7 @@ esp_err_t star_batch_add_smbus_write_byte(star_batch_handle_t handle,
   star_batch_operation_t* op = &ctx->operations[ctx->operation_count];
   memset(op, 0, sizeof(star_batch_operation_t));
 
-  op->type                 = STAR_BATCH_OP_SMBUS_WRITE_BYTE;
+  op->type                 = k_star_batch_op_smbus_write_byte;
   op->bus_name             = bus_name;
   op->params.smbus.addr    = addr;
   op->params.smbus.command = command;
@@ -410,7 +410,7 @@ esp_err_t star_batch_add_delay(star_batch_handle_t handle, uint32_t delay_ms)
   star_batch_operation_t* op = &ctx->operations[ctx->operation_count];
   memset(op, 0, sizeof(star_batch_operation_t));
 
-  op->type                  = STAR_BATCH_OP_DELAY;
+  op->type                  = k_star_batch_op_delay;
   op->params.delay.delay_ms = delay_ms;
 
   ctx->operation_count++;
@@ -536,7 +536,7 @@ esp_err_t star_batch_clear(star_batch_handle_t handle)
 
   /* Free any allocated SMBus write data */
   for (uint32_t i = 0; i < ctx->operation_count; i++) {
-    if (ctx->operations[i].type == STAR_BATCH_OP_SMBUS_WRITE_BYTE &&
+    if (ctx->operations[i].type == k_star_batch_op_smbus_write_byte &&
         ctx->operations[i].params.smbus.data != NULL) {
       free(ctx->operations[i].params.smbus.data);
     }

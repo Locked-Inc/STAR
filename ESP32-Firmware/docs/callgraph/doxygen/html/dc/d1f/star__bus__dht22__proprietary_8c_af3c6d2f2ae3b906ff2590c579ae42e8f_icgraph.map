@@ -14,7 +14,7 @@
 <area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="919,44,862,38,861,32,924,43"/>
 <area shape="rect" id="Node000005" href="$de/d98/star__bus__config_8c.html#a7527fb91e8de839add326b305c63bcad" title="Create a new DHT22 bus configuration." alt="" coords="496,5,652,46"/>
 <area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="709,26,653,28,652,23,714,25"/>
-<area shape="rect" id="Node000007" href="$d0/d9c/dht22__task_8c.html#a7b3a87af67c2b24b1f0e83e307e2715b" title=" " alt="" coords="727,70,861,96"/>
+<area shape="rect" id="Node000007" href="$d0/d9c/dht22__task_8c.html#acf0cd8b6c7894c00402a62a6c72d659b" title=" " alt="" coords="727,70,861,96"/>
 <area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="959,142,882,109,850,99,850,94,884,105,965,142"/>
 <area shape="rect" id="Node000012" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a61224e348fb2cc17147ea4cc22f86b77" title="Force a fresh read from sensor." alt="" coords="705,120,883,145"/>
 <area shape="poly" id="edge11_Node000006_Node000012" title=" " alt="" coords="913,150,884,148,884,142,918,149"/>
@@ -22,17 +22,17 @@
 <area shape="poly" id="edge12_Node000006_Node000013" title=" " alt="" coords="913,174,866,183,865,177,918,173"/>
 <area shape="rect" id="Node000014" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#ad41466be879cb1a0684b3f3edfa8bf73" title="Read temperature only (uses cached humidity)." alt="" coords="723,235,865,275"/>
 <area shape="poly" id="edge13_Node000006_Node000014" title=" " alt="" coords="966,181,884,224,854,237,852,231,882,219,961,183"/>
-<area shape="rect" id="Node000008" href="$d0/d9c/dht22__task_8c.html#ab28598715bb940c2458d04d337037432" title=" " alt="" coords="491,133,657,158"/>
+<area shape="rect" id="Node000008" href="$d0/d9c/dht22__task_8c.html#a7c98847a5751aa53f1d5d8ba86b6df8e" title=" " alt="" coords="491,133,657,158"/>
 <area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="726,101,705,110,620,135,618,130,704,104,731,100"/>
-<area shape="rect" id="Node000009" href="$d0/d9c/dht22__task_8c.html#a9d856aeaa4dfc864b2d6446139430971" title="Initialize DHT22 monitoring task." alt="" coords="320,242,438,268"/>
+<area shape="rect" id="Node000009" href="$d0/d9c/dht22__task_8c.html#ad5fc3ca549615b42dcfbb1926e7e5cb0" title="Initialize DHT22 monitoring task." alt="" coords="320,242,438,268"/>
 <area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="538,166,405,244,403,239,533,167"/>
-<area shape="rect" id="Node000010" href="$d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,245,267,270"/>
+<area shape="rect" id="Node000010" href="$d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,245,267,270"/>
 <area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="302,257,267,259,267,254,307,256"/>
 <area shape="rect" id="Node000011" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,272,83,297"/>
 <area shape="poly" id="edge10_Node000010_Node000011" title=" " alt="" coords="113,273,84,280,82,275,118,271"/>
-<area shape="rect" id="Node000017" href="$d0/d29/main_8c.html#a22e093826d5fa58b80533860973051a9" title=" " alt="" coords="315,292,443,333"/>
+<area shape="rect" id="Node000017" href="$d0/d29/main_8c.html#a06b72c3ee71e25fc9eac1ce50d7b08de" title=" " alt="" coords="315,292,443,333"/>
 <area shape="poly" id="edge16_Node000016_Node000017" title=" " alt="" coords="708,312,444,315,444,310,714,312"/>
-<area shape="rect" id="Node000018" href="$d0/d9c/dht22__task_8c.html#af2aa5f90212b8ec0353f88ceeaec9c05" title=" " alt="" coords="511,245,637,270"/>
+<area shape="rect" id="Node000018" href="$d0/d9c/dht22__task_8c.html#a133c28d824e59d67b34c1e1b7f91f430" title=" " alt="" coords="511,245,637,270"/>
 <area shape="poly" id="edge18_Node000016_Node000018" title=" " alt="" coords="722,295,628,274,629,268,727,295"/>
 <area shape="poly" id="edge17_Node000017_Node000011" title=" " alt="" coords="299,308,83,290,83,285,300,303"/>
 <area shape="poly" id="edge19_Node000018_Node000009" title=" " alt="" coords="493,257,439,258,439,253,498,256"/>

@@ -68,7 +68,7 @@ extern "C" {
  *     .bus_name = "imu_i2c",
  *     .bno055_addr = BNO055_I2C_ADDR,   // 0x28
  *     .bmp280_addr = BMP280_I2C_ADDR,   // 0x76
- *     .operation_mode = BNO055_OP_MODE_NDOF  // Full 9-DOF fusion
+ *     .operation_mode = k_bno055_op_mode_ndof  // Full 9-DOF fusion
  * };
  *
  * esp_err_t ret = star_sensor_imu_10dof_init(&imu, NULL, &config);
@@ -151,25 +151,25 @@ extern "C" {
  * // === Operation Modes ===
  *
  * // NDOF mode - Full 9-DOF sensor fusion (default)
- * star_sensor_imu_10dof_set_mode(&imu, BNO055_OP_MODE_NDOF);
+ * star_sensor_imu_10dof_set_mode(&imu, k_bno055_op_mode_ndof);
  *
  * // IMU mode - Accel + Gyro only (no magnetometer)
- * star_sensor_imu_10dof_set_mode(&imu, BNO055_OP_MODE_ACCGYRO);
+ * star_sensor_imu_10dof_set_mode(&imu, k_bno055_op_mode_accgyro);
  *
  * // Config mode - For configuration changes
- * star_sensor_imu_10dof_set_mode(&imu, BNO055_OP_MODE_CONFIG);
+ * star_sensor_imu_10dof_set_mode(&imu, k_bno055_op_mode_config);
  *
  * // Available modes:
- * // - BNO055_OP_MODE_CONFIG:       Configuration mode
- * // - BNO055_OP_MODE_ACCONLY:      Accelerometer only
- * // - BNO055_OP_MODE_MAGONLY:      Magnetometer only
- * // - BNO055_OP_MODE_GYROONLY:     Gyroscope only
- * // - BNO055_OP_MODE_ACCMAG:       Accel + Mag
- * // - BNO055_OP_MODE_ACCGYRO:      Accel + Gyro
- * // - BNO055_OP_MODE_MAGGYRO:      Mag + Gyro
- * // - BNO055_OP_MODE_AMG:          All sensors, no fusion
- * // - BNO055_OP_MODE_NDOF_FMC_OFF: 9-DOF fusion, mag cal off
- * // - BNO055_OP_MODE_NDOF:         9-DOF fusion (recommended)
+ * // - k_bno055_op_mode_config:       Configuration mode
+ * // - k_bno055_op_mode_acconly:      Accelerometer only
+ * // - k_bno055_op_mode_magonly:      Magnetometer only
+ * // - k_bno055_op_mode_gyroonly:     Gyroscope only
+ * // - k_bno055_op_mode_accmag:       Accel + Mag
+ * // - k_bno055_op_mode_accgyro:      Accel + Gyro
+ * // - k_bno055_op_mode_maggyro:      Mag + Gyro
+ * // - k_bno055_op_mode_amg:          All sensors, no fusion
+ * // - k_bno055_op_mode_ndof_fmc_off: 9-DOF fusion, mag cal off
+ * // - k_bno055_op_mode_ndof:         9-DOF fusion (recommended)
  *
  *
  * // === Reset BNO055 ===
@@ -214,22 +214,22 @@ extern "C" {
 #define BMP280_I2C_ADDR (0x76)
 
 typedef enum {
-  BNO055_POWER_MODE_NORMAL  = 0x00,
-  BNO055_POWER_MODE_LOW     = 0x01,
-  BNO055_POWER_MODE_SUSPEND = 0x02,
+  k_bno055_power_mode_normal  = 0x00,
+  k_bno055_power_mode_low     = 0x01,
+  k_bno055_power_mode_suspend = 0x02,
 } bno055_power_mode_t;
 
 typedef enum {
-  BNO055_OP_MODE_CONFIG       = 0x00,
-  BNO055_OP_MODE_ACCONLY      = 0x01,
-  BNO055_OP_MODE_MAGONLY      = 0x02,
-  BNO055_OP_MODE_GYROONLY     = 0x03,
-  BNO055_OP_MODE_ACCMAG       = 0x04,
-  BNO055_OP_MODE_ACCGYRO      = 0x05,
-  BNO055_OP_MODE_MAGGYRO      = 0x06,
-  BNO055_OP_MODE_AMG          = 0x07,
-  BNO055_OP_MODE_NDOF_FMC_OFF = 0x0B,
-  BNO055_OP_MODE_NDOF         = 0x0C, // 9-DOF sensor fusion
+  k_bno055_op_mode_config       = 0x00,
+  k_bno055_op_mode_acconly      = 0x01,
+  k_bno055_op_mode_magonly      = 0x02,
+  k_bno055_op_mode_gyroonly     = 0x03,
+  k_bno055_op_mode_accmag       = 0x04,
+  k_bno055_op_mode_accgyro      = 0x05,
+  k_bno055_op_mode_maggyro      = 0x06,
+  k_bno055_op_mode_amg          = 0x07,
+  k_bno055_op_mode_ndof_fmc_off = 0x0B,
+  k_bno055_op_mode_ndof         = 0x0C, // 9-DOF sensor fusion
 } bno055_op_mode_t;
 
 typedef struct {

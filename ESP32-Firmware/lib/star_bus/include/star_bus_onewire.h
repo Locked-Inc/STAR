@@ -90,8 +90,8 @@ extern "C" {
  * @brief 1-Wire speed mode
  */
 typedef enum {
-  STAR_ONEWIRE_SPEED_STANDARD  = 0, /**< Standard speed (default) */
-  STAR_ONEWIRE_SPEED_OVERDRIVE = 1, /**< Overdrive speed (faster) */
+  k_star_onewire_speed_standard  = 0, /**< Standard speed (default) */
+  k_star_onewire_speed_overdrive = 1, /**< Overdrive speed (faster) */
 } star_onewire_speed_t;
 
 /**

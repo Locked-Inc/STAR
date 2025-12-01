@@ -22,31 +22,31 @@
 <area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="913,26,852,28,851,23,918,25"/>
 <area shape="rect" id="Node000005" href="$de/d98/star__bus__config_8c.html#a7527fb91e8de839add326b305c63bcad" title="Create a new DHT22 bus configuration." alt="" coords="486,5,642,46"/>
 <area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="699,26,643,28,642,23,704,25"/>
-<area shape="rect" id="Node000008" href="$d0/d9c/dht22__task_8c.html#a8f42bf8aaed1ac21e66e803756f2b046" title=" " alt="" coords="494,218,634,244"/>
+<area shape="rect" id="Node000008" href="$d0/d9c/dht22__task_8c.html#a6fa67c3a449b474ee2110da2b31278c8" title=" " alt="" coords="494,218,634,244"/>
 <area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="905,140,805,148,749,156,695,168,635,193,587,220,585,215,633,188,694,163,748,151,804,143,910,138"/>
-<area shape="rect" id="Node000009" href="$d0/d9c/dht22__task_8c.html#a9d856aeaa4dfc864b2d6446139430971" title="Initialize DHT22 monitoring task." alt="" coords="315,268,433,293"/>
+<area shape="rect" id="Node000009" href="$d0/d9c/dht22__task_8c.html#ad5fc3ca549615b42dcfbb1926e7e5cb0" title="Initialize DHT22 monitoring task." alt="" coords="315,268,433,293"/>
 <area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="494,249,427,269,426,264,499,247"/>
 <area shape="rect" id="Node000012" href="$d0/d9c/dht22__task_8c.html#a8128cca1924c2cd16b8f1979d4b45199" title="Stop DHT22 monitoring task." alt="" coords="316,218,433,244"/>
 <area shape="poly" id="edge11_Node000008_Node000012" title=" " alt="" coords="476,232,434,234,433,228,481,230"/>
-<area shape="rect" id="Node000010" href="$d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,268,267,293"/>
+<area shape="rect" id="Node000010" href="$d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,268,267,293"/>
 <area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="297,281,268,283,267,278,302,280"/>
 <area shape="rect" id="Node000011" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,318,83,344"/>
 <area shape="poly" id="edge10_Node000010_Node000011" title=" " alt="" coords="141,301,85,321,82,316,144,297"/>
 <area shape="poly" id="edge12_Node000012_Node000010" title=" " alt="" coords="309,250,248,269,246,264,314,247"/>
-<area shape="rect" id="Node000016" href="$d0/d29/main_8c.html#a22e093826d5fa58b80533860973051a9" title=" " alt="" coords="135,339,263,379"/>
+<area shape="rect" id="Node000016" href="$d0/d29/main_8c.html#a06b72c3ee71e25fc9eac1ce50d7b08de" title=" " alt="" coords="135,339,263,379"/>
 <area shape="poly" id="edge16_Node000015_Node000016" title=" " alt="" coords="700,414,263,368,263,363,702,409"/>
-<area shape="rect" id="Node000017" href="$d0/d9c/dht22__task_8c.html#af2aa5f90212b8ec0353f88ceeaec9c05" title=" " alt="" coords="501,326,627,352"/>
+<area shape="rect" id="Node000017" href="$d0/d9c/dht22__task_8c.html#a133c28d824e59d67b34c1e1b7f91f430" title=" " alt="" coords="501,326,627,352"/>
 <area shape="poly" id="edge18_Node000015_Node000017" title=" " alt="" coords="715,402,694,397,593,355,594,350,696,393,720,403"/>
 <area shape="poly" id="edge17_Node000016_Node000011" title=" " alt="" coords="117,346,83,341,82,335,122,343"/>
 <area shape="poly" id="edge19_Node000017_Node000009" title=" " alt="" coords="503,321,418,296,418,291,508,321"/>
 <area shape="poly" id="edge24_Node000018_Node000013" title=" " alt="" coords="922,225,841,207,841,202,928,225"/>
-<area shape="rect" id="Node000019" href="$d0/d9c/dht22__task_8c.html#a7b3a87af67c2b24b1f0e83e307e2715b" title=" " alt="" coords="717,228,851,253"/>
+<area shape="rect" id="Node000019" href="$d0/d9c/dht22__task_8c.html#acf0cd8b6c7894c00402a62a6c72d659b" title=" " alt="" coords="717,228,851,253"/>
 <area shape="poly" id="edge21_Node000018_Node000019" title=" " alt="" coords="908,241,852,243,851,238,913,241"/>
 <area shape="rect" id="Node000021" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#ab95c5e1edf83515d67eb7c2ece418e5d" title="Read humidity only (uses cached temperature)." alt="" coords="713,343,855,383"/>
 <area shape="poly" id="edge25_Node000018_Node000021" title=" " alt="" coords="944,260,923,276,908,290,899,303,890,317,875,332,852,345,850,340,871,328,886,314,895,300,904,286,919,272,939,262"/>
 <area shape="rect" id="Node000022" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#ad41466be879cb1a0684b3f3edfa8bf73" title="Read temperature only (uses cached humidity)." alt="" coords="713,277,855,318"/>
 <area shape="poly" id="edge26_Node000018_Node000022" title=" " alt="" coords="933,258,856,282,855,276,928,260"/>
-<area shape="rect" id="Node000020" href="$d0/d9c/dht22__task_8c.html#ab28598715bb940c2458d04d337037432" title=" " alt="" coords="481,268,647,293"/>
+<area shape="rect" id="Node000020" href="$d0/d9c/dht22__task_8c.html#a7c98847a5751aa53f1d5d8ba86b6df8e" title=" " alt="" coords="481,268,647,293"/>
 <area shape="poly" id="edge22_Node000019_Node000020" title=" " alt="" coords="699,256,639,269,638,264,704,255"/>
 <area shape="poly" id="edge23_Node000020_Node000009" title=" " alt="" coords="463,281,434,283,433,278,469,280"/>
 </map>

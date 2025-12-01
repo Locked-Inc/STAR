@@ -13,10 +13,10 @@
  */
 
 typedef enum {
-  WATCHDOG_HEALTH_GOOD,
-  WATCHDOG_HEALTH_DEGRADED,
-  WATCHDOG_HEALTH_CRITICAL,
-  WATCHDOG_HEALTH_FAULT
+  k_watchdog_health_good,
+  k_watchdog_health_degraded,
+  k_watchdog_health_critical,
+  k_watchdog_health_fault
 } watchdog_health_level_t;
 
 typedef struct {
@@ -86,6 +86,7 @@ watchdog_health_level_t watchdog_task_force_health_check(void);
  * @param max_response_time_ms Maximum expected response time
  * @return esp_err_t ESP_OK on success
  */
-esp_err_t watchdog_task_register_task(TaskHandle_t task_handle, uint32_t max_response_time_ms);
+esp_err_t watchdog_task_register_task(const TaskHandle_t task_handle,
+                                      const uint32_t     max_response_time_ms);
 
 #endif /* WATCHDOG_TASK_H */

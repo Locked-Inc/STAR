@@ -1,0 +1,20 @@
+<map id="lib/star_sensor_hcsr04/include/star_sensor_hcsr04_constants.h" name="lib/star_sensor_hcsr04/include/star_sensor_hcsr04_constants.h">
+<area shape="rect" id="Node000001" title="Type&#45;safe constants for HC&#45;SR04 ultrasonic sensor." alt="" coords="134,5,318,61"/>
+<area shape="rect" id="Node000002" href="$d2/dda/star__sensor__hcsr04_8h.html" title="HC&#45;SR04 ultrasonic distance sensor driver." alt="" coords="128,116,324,157"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="227,74,229,117,224,116,225,79"/>
+<area shape="rect" id="Node000003" href="$de/de2/star__sensor__hcsr04_8c.html" title=" " alt="" coords="5,213,178,253"/>
+<area shape="poly" id="edge8_Node000001_Node000003" title=" " alt="" coords="156,72,137,89,119,110,106,136,99,163,94,213,89,211,94,162,101,134,115,108,133,86,159,67"/>
+<area shape="rect" id="Node000009" href="$d0/d58/star__sensor__hcsr04__constants_8c.html" title=" " alt="" coords="348,109,510,165"/>
+<area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="294,66,377,108,372,109,294,71"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="184,168,121,214,118,210,188,164"/>
+<area shape="rect" id="Node000004" href="$de/dfe/sensor__task_8h.html" title=" " alt="" coords="202,213,365,253"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="247,168,274,213,269,212,245,173"/>
+<area shape="rect" id="Node000005" href="$d0/d29/main_8c.html" title=" " alt="" coords="9,309,91,334"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="217,262,84,311,82,306,215,257"/>
+<area shape="rect" id="Node000006" href="$d0/d9c/dht22__task_8c.html" title=" " alt="" coords="116,309,270,334"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="254,263,207,311,204,306,249,265"/>
+<area shape="rect" id="Node000007" href="$de/dd4/sensor__task_8c.html" title=" " alt="" coords="294,309,455,334"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="316,262,364,309,359,308,314,267"/>
+<area shape="rect" id="Node000008" href="$dc/d96/watchdog__task_8c.html" title=" " alt="" coords="478,301,614,342"/>
+<area shape="poly" id="edge7_Node000004_Node000008" title=" " alt="" coords="358,256,489,300,484,301,357,261"/>
+</map>
