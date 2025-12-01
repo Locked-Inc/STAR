@@ -71,7 +71,7 @@ const star_system_config_t STAR_SYSTEM_CONFIG = {
 
   /* Distance Sensing Configuration */
   .distance = {.min_distance_cm       = 5.0f,
-               .max_distance_cm       = 150.0f,
+               .max_distance_cm       = 50.0f,
                .extension_factor      = 0.7f,
                .close_boost_threshold = 0.25f},
 
