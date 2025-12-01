@@ -11,14 +11,16 @@
 
 #include "star_bus_gpio.h"
 #include "star_error_handler.h"
+#include "star_sensor_hcsr04_constants.h"
 
-static const char* s_TAG = "hcsr04";
+static const char* const s_TAG = "hcsr04";
 
-#define HCSR04_MUTEX_TIMEOUT_MS (1000)
+/* Use constant instead of macro for type safety */
+static const uint32_t HCSR04_MUTEX_TIMEOUT_MS = 1000;
 
-static void IRAM_ATTR hcsr04_echo_isr_handler(void* arg)
+static void IRAM_ATTR hcsr04_echo_isr_handler(void* const arg)
 {
-  hcsr04_handle_t* handle = (hcsr04_handle_t*)arg;
+  hcsr04_handle_t* const handle = (hcsr04_handle_t*)arg;
 
   if (gpio_get_level(handle->echo_pin)) {
     // Rising edge - start timing
@@ -169,7 +171,7 @@ esp_err_t star_sensor_hcsr04_deinit(hcsr04_handle_t* handle)
   }
 
   // Acquire mutex before cleanup
-  SemaphoreHandle_t mutex = handle->mutex;
+  const SemaphoreHandle_t mutex = handle->mutex;
   if (mutex != NULL && xSemaphoreTake(mutex, pdMS_TO_TICKS(HCSR04_MUTEX_TIMEOUT_MS)) != pdTRUE) {
     ESP_LOGW(s_TAG, "Failed to acquire mutex for deinit, continuing anyway");
   }
@@ -200,14 +202,14 @@ esp_err_t star_sensor_hcsr04_deinit(hcsr04_handle_t* handle)
   return ESP_OK;
 }
 
-esp_err_t star_sensor_hcsr04_trigger(hcsr04_handle_t* handle)
+esp_err_t star_sensor_hcsr04_trigger(hcsr04_handle_t* const handle)
 {
   if (handle == NULL || !handle->initialized) {
     return ESP_ERR_INVALID_STATE;
   }
 
   // Acquire mutex
-  SemaphoreHandle_t mutex = handle->mutex;
+  const SemaphoreHandle_t mutex = handle->mutex;
   if (mutex == NULL || xSemaphoreTake(mutex, pdMS_TO_TICKS(HCSR04_MUTEX_TIMEOUT_MS)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to acquire mutex for trigger");
     return ESP_ERR_TIMEOUT;
@@ -257,34 +259,34 @@ esp_err_t star_sensor_hcsr04_calculate_distance(uint32_t echo_time_us,
     return ESP_ERR_INVALID_ARG;
   }
 
-  if (echo_time_us < 116 || echo_time_us > HCSR04_TIMEOUT_US) {
-    return HCSR04_ERR_INVALID_PULSE;
+  if (echo_time_us < 116 || echo_time_us > STAR_HCSR04_TIMEOUT_US) {
+    return k_hcsr04_err_invalid_pulse;
   }
 
   // Speed of sound = 331.4 + 0.606 * T (m/s)
-  float speed_cm_us = (331.4f + 0.606f * temperature_c) / 10000.0f;
+  const float speed_cm_us = (331.4f + 0.606f * temperature_c) / 10000.0f;
 
   // Distance = (time * speed) / 2 (divide by 2 for round trip)
   *distance_cm = (echo_time_us * speed_cm_us) / 2.0f;
 
-  if (*distance_cm < HCSR04_MIN_DISTANCE_CM) {
-    return HCSR04_ERR_OUT_OF_RANGE_MIN;
+  if (*distance_cm < STAR_HCSR04_MIN_DISTANCE_CM) {
+    return k_hcsr04_err_out_of_range_min;
   }
-  if (*distance_cm > HCSR04_MAX_DISTANCE_CM) {
-    return HCSR04_ERR_OUT_OF_RANGE_MAX;
+  if (*distance_cm > STAR_HCSR04_MAX_DISTANCE_CM) {
+    return k_hcsr04_err_out_of_range_max;
   }
 
   return ESP_OK;
 }
 
-esp_err_t star_sensor_hcsr04_get_result(hcsr04_handle_t* handle, float* distance_cm)
+esp_err_t star_sensor_hcsr04_get_result(hcsr04_handle_t* const handle, float* const distance_cm)
 {
   if (handle == NULL || distance_cm == NULL || !handle->initialized) {
     return ESP_ERR_INVALID_ARG;
   }
 
   if (!handle->measurement_complete) {
-    return HCSR04_ERR_NOT_READY;
+    return k_hcsr04_err_not_ready;
   }
 
   if (handle->echo_end_time <= handle->echo_start_time) {
@@ -292,12 +294,12 @@ esp_err_t star_sensor_hcsr04_get_result(hcsr04_handle_t* handle, float* distance
              "Invalid timing: start=%lu, end=%lu",
              handle->echo_start_time,
              handle->echo_end_time);
-    return HCSR04_ERR_INVALID_PULSE;
+    return k_hcsr04_err_invalid_pulse;
   }
 
-  uint32_t echo_time = handle->echo_end_time - handle->echo_start_time;
+  const uint32_t echo_time = handle->echo_end_time - handle->echo_start_time;
 
-  esp_err_t ret =
+  const esp_err_t ret =
     star_sensor_hcsr04_calculate_distance(echo_time, handle->temperature_c, distance_cm);
 
   if (ret == ESP_OK) {
@@ -309,41 +311,61 @@ esp_err_t star_sensor_hcsr04_get_result(hcsr04_handle_t* handle, float* distance
   return ret;
 }
 
-esp_err_t star_sensor_hcsr04_read_distance(hcsr04_handle_t* handle, float* distance_cm)
+esp_err_t star_sensor_hcsr04_read_distance(hcsr04_handle_t* const handle, float* const distance_cm)
 {
   if (handle == NULL || distance_cm == NULL || !handle->initialized) {
     return ESP_ERR_INVALID_ARG;
   }
 
-  esp_err_t ret = star_sensor_hcsr04_trigger(handle);
+  const esp_err_t ret = star_sensor_hcsr04_trigger(handle);
   if (ret != ESP_OK) {
     return ret;
   }
 
   // Wait for measurement with timeout
-  uint32_t start_time = (uint32_t)esp_timer_get_time();
-  uint32_t timeout_ms = 60; // Max time for 400cm measurement + margin
+  const uint32_t start_time    = (uint32_t)esp_timer_get_time();
+  const uint32_t timeout_ms    = 60; // Max time for 400cm measurement + margin
+  uint32_t       yield_counter = 0;
 
   while (!handle->measurement_complete) {
-    uint32_t elapsed = ((uint32_t)esp_timer_get_time() - start_time) / 1000;
+    const uint32_t elapsed = ((uint32_t)esp_timer_get_time() - start_time) / 1000;
     if (elapsed > timeout_ms) {
       ESP_LOGW(s_TAG, "Measurement timeout");
-      return HCSR04_ERR_TIMEOUT;
+      return k_hcsr04_err_timeout;
     }
-    vTaskDelay(pdMS_TO_TICKS(1));
+
+    /* Aggressive yielding strategy to prevent watchdog timeout */
+    if (elapsed < 2) {
+      /* First 2ms: very short delays with frequent yields */
+      yield_counter++;
+      if (yield_counter >= 10) { /* Yield every 10 iterations */
+        yield_counter = 0;
+        taskYIELD();
+      } else {
+        esp_rom_delay_us(10); /* Very short delay */
+      }
+    } else if (elapsed < 10) {
+      /* 2-10ms: slightly longer delays but still responsive */
+      taskYIELD(); /* Always yield in this range */
+      esp_rom_delay_us(50);
+    } else {
+      /* After 10ms: use vTaskDelay for better scheduling */
+      vTaskDelay(1);
+    }
   }
 
   return star_sensor_hcsr04_get_result(handle, distance_cm);
 }
 
-esp_err_t star_sensor_hcsr04_set_temperature(hcsr04_handle_t* handle, float temperature_c)
+esp_err_t star_sensor_hcsr04_set_temperature(hcsr04_handle_t* const handle,
+                                             const float            temperature_c)
 {
   if (handle == NULL || !handle->initialized) {
     return ESP_ERR_INVALID_STATE;
   }
 
   // Acquire mutex
-  SemaphoreHandle_t mutex = handle->mutex;
+  const SemaphoreHandle_t mutex = handle->mutex;
   if (mutex == NULL || xSemaphoreTake(mutex, pdMS_TO_TICKS(HCSR04_MUTEX_TIMEOUT_MS)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to acquire mutex for set_temperature");
     return ESP_ERR_TIMEOUT;

@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['mpu6050_5faccel_5frange_5ft_0',['mpu6050_accel_range_t',['../dd/d2b/star__sensor__mpu6050_8h.html#a23b716a7164564b8b86ab318a5c38499',1,'star_sensor_mpu6050.h']]],
-  ['mpu6050_5fdlpf_5ft_1',['mpu6050_dlpf_t',['../dd/d2b/star__sensor__mpu6050_8h.html#a61b0729bd9b6ff44f5bdc67ca6479d59',1,'star_sensor_mpu6050.h']]],
-  ['mpu6050_5fgyro_5frange_5ft_2',['mpu6050_gyro_range_t',['../dd/d2b/star__sensor__mpu6050_8h.html#a44d0fd4bf1507100e4b43cc60c14a16a',1,'star_sensor_mpu6050.h']]]
+  ['hcsr04_5ferror_5ft_0',['hcsr04_error_t',['../d2/dda/star__sensor__hcsr04_8h.html#af7bca5e9cc30776256ca05fbb7f5d335',1,'star_sensor_hcsr04.h']]],
+  ['hcsr04_5fsensor_5findex_5ft_1',['hcsr04_sensor_index_t',['../d4/d7e/system__config_8h.html#af60ef736234a6d9a91cdf60a0e0d4253',1,'system_config.h']]]
 ];

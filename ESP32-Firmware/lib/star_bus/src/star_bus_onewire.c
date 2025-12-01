@@ -12,6 +12,8 @@
 #include <rom/ets_sys.h>
 #include <string.h>
 
+#include "star_bus_onewire_constants.h"
+
 /* --- Constants --- */
 
 static const char* s_TAG = "STAR_ONEWIRE";
@@ -430,10 +432,10 @@ esp_err_t star_bus_onewire_write_bytes(star_bus_manager_t* manager,
   /* Select device or skip ROM */
   if (rom == 0) {
     /* Skip ROM - address all devices */
-    result = star_bus_onewire_write_byte(manager, bus_name, STAR_ONEWIRE_CMD_SKIP_ROM);
+    result = star_bus_onewire_write_byte(manager, bus_name, (uint8_t)k_onewire_cmd_skip_rom);
   } else {
     /* Match ROM - address specific device */
-    result = star_bus_onewire_write_byte(manager, bus_name, STAR_ONEWIRE_CMD_MATCH_ROM);
+    result = star_bus_onewire_write_byte(manager, bus_name, (uint8_t)k_onewire_cmd_match_rom);
     if (result == ESP_OK) {
       uint8_t rom_bytes[8];
       star_bus_onewire_rom_to_bytes(rom, rom_bytes);
@@ -496,7 +498,7 @@ esp_err_t star_bus_onewire_read_rom(star_bus_manager_t* manager,
   }
 
   /* Send Read ROM command */
-  result = star_bus_onewire_write_byte(manager, bus_name, STAR_ONEWIRE_CMD_READ_ROM);
+  result = star_bus_onewire_write_byte(manager, bus_name, (uint8_t)k_onewire_cmd_read_rom);
   if (result != ESP_OK) {
     return result;
   }
@@ -556,7 +558,7 @@ esp_err_t star_bus_onewire_search(star_bus_manager_t* manager,
     }
 
     /* Send search command */
-    result = star_bus_onewire_write_byte(manager, bus_name, STAR_ONEWIRE_CMD_SEARCH_ROM);
+    result = star_bus_onewire_write_byte(manager, bus_name, (uint8_t)k_onewire_cmd_search_rom);
     if (result != ESP_OK) {
       break;
     }

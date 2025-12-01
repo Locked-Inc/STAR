@@ -13,6 +13,7 @@
 #include <stdint.h>
 
 #include "hal/gpio_types.h"
+#include "star_sensor_hcsr04_constants.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -55,7 +56,7 @@ extern "C" {
  * // 2. Create GPIO bus for the sensor pins
  * gpio_num_t hcsr04_pins[] = {GPIO_NUM_5, GPIO_NUM_18};  // Trigger, Echo
  * star_bus_config_t* gpio_bus = star_bus_config_create_gpio(
- *     "hcsr04_gpio", hcsr04_pins, 2);
+ *     "hcsr04_gpio", hcsr04_pins, 2);  // 2 pins total
  * star_bus_manager_add_bus(&bus_manager, gpio_bus);
  *
  * // 3. Initialize HC-SR04 sensor
@@ -146,18 +147,13 @@ extern "C" {
  * @endcode
  */
 
-#define HCSR04_MIN_DISTANCE_CM (2)
-#define HCSR04_MAX_DISTANCE_CM (400)
-#define HCSR04_SPEED_OF_SOUND_CM_US (0.0343f)
-#define HCSR04_TIMEOUT_US (23200) // Max echo time for 400cm
-
 typedef enum {
-  HCSR04_OK = 0,
-  HCSR04_ERR_TIMEOUT,
-  HCSR04_ERR_OUT_OF_RANGE_MIN,
-  HCSR04_ERR_OUT_OF_RANGE_MAX,
-  HCSR04_ERR_INVALID_PULSE,
-  HCSR04_ERR_NOT_READY,
+  k_hcsr04_ok = 0,
+  k_hcsr04_err_timeout,
+  k_hcsr04_err_out_of_range_min,
+  k_hcsr04_err_out_of_range_max,
+  k_hcsr04_err_invalid_pulse,
+  k_hcsr04_err_not_ready,
 } hcsr04_error_t;
 
 typedef struct {
@@ -230,7 +226,7 @@ esp_err_t star_sensor_hcsr04_deinit(hcsr04_handle_t* handle);
  *
  * @return ESP_OK on success, HCSR04_ERR_* on measurement error
  */
-esp_err_t star_sensor_hcsr04_read_distance(hcsr04_handle_t* handle, float* distance_cm);
+esp_err_t star_sensor_hcsr04_read_distance(hcsr04_handle_t* const handle, float* const distance_cm);
 
 /**
  * @brief Trigger measurement (non-blocking)
@@ -239,7 +235,7 @@ esp_err_t star_sensor_hcsr04_read_distance(hcsr04_handle_t* handle, float* dista
  *
  * @return ESP_OK on success, error code otherwise
  */
-esp_err_t star_sensor_hcsr04_trigger(hcsr04_handle_t* handle);
+esp_err_t star_sensor_hcsr04_trigger(hcsr04_handle_t* const handle);
 
 /**
  * @brief Check if measurement is complete
@@ -259,7 +255,7 @@ esp_err_t star_sensor_hcsr04_is_complete(const hcsr04_handle_t* handle, bool* co
  *
  * @return ESP_OK on success, HCSR04_ERR_NOT_READY if not complete
  */
-esp_err_t star_sensor_hcsr04_get_result(hcsr04_handle_t* handle, float* distance_cm);
+esp_err_t star_sensor_hcsr04_get_result(hcsr04_handle_t* const handle, float* const distance_cm);
 
 /**
  * @brief Set temperature for compensation
@@ -269,7 +265,8 @@ esp_err_t star_sensor_hcsr04_get_result(hcsr04_handle_t* handle, float* distance
  *
  * @return ESP_OK on success, error code otherwise
  */
-esp_err_t star_sensor_hcsr04_set_temperature(hcsr04_handle_t* handle, float temperature_c);
+esp_err_t star_sensor_hcsr04_set_temperature(hcsr04_handle_t* const handle,
+                                             const float            temperature_c);
 
 /**
  * @brief Calculate distance with temperature compensation
@@ -280,9 +277,9 @@ esp_err_t star_sensor_hcsr04_set_temperature(hcsr04_handle_t* handle, float temp
  *
  * @return ESP_OK on success, error code otherwise
  */
-esp_err_t star_sensor_hcsr04_calculate_distance(uint32_t echo_time_us,
-                                                float    temperature_c,
-                                                float*   distance_cm);
+esp_err_t star_sensor_hcsr04_calculate_distance(const uint32_t echo_time_us,
+                                                const float    temperature_c,
+                                                float* const   distance_cm);
 
 #ifdef __cplusplus
 }

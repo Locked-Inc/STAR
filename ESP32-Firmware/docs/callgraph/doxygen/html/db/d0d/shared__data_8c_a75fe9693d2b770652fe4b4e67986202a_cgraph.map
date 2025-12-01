@@ -1,0 +1,5 @@
+<map id="shared_data_update_health" name="shared_data_update_health">
+<area shape="rect" id="Node000001" title="Update system health statistics." alt="" coords="5,5,144,46"/>
+<area shape="rect" id="Node000002" href="$db/d0d/shared__data_8c.html#a3bdf4ea7cbcd1af874c68f1da508ae3b" title="Get system uptime in milliseconds." alt="" coords="192,13,380,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="144,23,178,25,173,26,144,28"/>
+</map>

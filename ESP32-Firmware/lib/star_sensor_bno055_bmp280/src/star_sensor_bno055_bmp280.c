@@ -9,40 +9,24 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "bno055_bmp280_constants.h"
 #include "star_bus_i2c.h"
 #include "star_error_handler.h"
 
 static const char* s_TAG = "imu10dof";
 
-#define IMU_10DOF_MUTEX_TIMEOUT_MS (1000)
+/* Use constant instead of macro for type safety */
+static const uint32_t IMU_10DOF_MUTEX_TIMEOUT_MS = 1000;
 
-// BNO055 Register addresses
-#define BNO055_REG_CHIP_ID (0x00)
-#define BNO055_REG_OPR_MODE (0x3D)
-#define BNO055_REG_PWR_MODE (0x3E)
-#define BNO055_REG_SYS_TRIGGER (0x3F)
-#define BNO055_REG_CALIB_STAT (0x35)
-#define BNO055_REG_QUA_DATA_W_LSB (0x20)
-#define BNO055_REG_EUL_HEADING_LSB (0x1A)
-#define BNO055_REG_ACC_DATA_X_LSB (0x08)
-#define BNO055_REG_GYR_DATA_X_LSB (0x14)
-#define BNO055_REG_MAG_DATA_X_LSB (0x0E)
-#define BNO055_REG_LIA_DATA_X_LSB (0x28)
-#define BNO055_REG_GRV_DATA_X_LSB (0x2E)
-#define BNO055_REG_TEMP (0x34)
+/* Register addresses and values now provided by type-safe constants */
+/* See bno055_bmp280_constants.h for k_bno055_reg_*, k_bmp280_reg_*, etc. */
 
-// BMP280 Register addresses
-#define BMP280_REG_CHIP_ID (0xD0)
-#define BMP280_REG_CTRL_MEAS (0xF4)
-#define BMP280_REG_CONFIG (0xF5)
-#define BMP280_REG_PRESS_MSB (0xF7)
-#define BMP280_REG_TEMP_MSB (0xFA)
-#define BMP280_REG_CALIB00 (0x88)
+/* Chip ID values */
+static const uint8_t BNO055_CHIP_ID_VALUE = 0xA0;
+static const uint8_t BMP280_CHIP_ID_VALUE = 0x58;
 
-#define BNO055_CHIP_ID_VALUE (0xA0)
-#define BMP280_CHIP_ID_VALUE (0x58)
-
-#define SEA_LEVEL_PRESSURE_PA (101325.0f)
+/* Sea level pressure constant */
+static const float SEA_LEVEL_PRESSURE_PA = 101325.0f;
 
 esp_err_t star_sensor_imu_10dof_init(imu_10dof_handle_t*       handle,
                                      star_error_interface_t*   error_iface,
@@ -104,8 +88,12 @@ esp_err_t star_sensor_imu_10dof_init(imu_10dof_handle_t*       handle,
 
   // Verify BNO055 chip ID
   uint8_t   chip_id;
-  esp_err_t ret =
-    star_bus_i2c_read(handle->manager, handle->bus_name, &chip_id, 1, BNO055_REG_CHIP_ID, NULL);
+  esp_err_t ret = star_bus_i2c_read(handle->manager,
+                                    handle->bus_name,
+                                    &chip_id,
+                                    1,
+                                    (uint8_t)k_bno055_reg_chip_id,
+                                    NULL);
   if (ret != ESP_OK || chip_id != BNO055_CHIP_ID_VALUE) {
     ESP_LOGE(s_TAG, "BNO055 not found (ID=0x%02X)", chip_id);
     if (handle->owns_error_handler && handle->error_iface != NULL) {
@@ -120,8 +108,12 @@ esp_err_t star_sensor_imu_10dof_init(imu_10dof_handle_t*       handle,
 
   // Reset BNO055
   uint8_t reset = 0x20;
-  ret =
-    star_bus_i2c_write(handle->manager, handle->bus_name, &reset, 1, BNO055_REG_SYS_TRIGGER, NULL);
+  ret           = star_bus_i2c_write(handle->manager,
+                           handle->bus_name,
+                           &reset,
+                           1,
+                           (uint8_t)k_bno055_reg_sys_trigger,
+                           NULL);
   if (ret != ESP_OK) {
     if (handle->owns_error_handler && handle->error_iface != NULL) {
       error_handler_t* handler_ptr = (error_handler_t*)handle->error_iface->ctx;
@@ -135,8 +127,13 @@ esp_err_t star_sensor_imu_10dof_init(imu_10dof_handle_t*       handle,
   vTaskDelay(pdMS_TO_TICKS(650)); // Wait for reset
 
   // Set to config mode
-  uint8_t mode = BNO055_OP_MODE_CONFIG;
-  ret = star_bus_i2c_write(handle->manager, handle->bus_name, &mode, 1, BNO055_REG_OPR_MODE, NULL);
+  uint8_t mode = k_bno055_op_mode_config;
+  ret          = star_bus_i2c_write(handle->manager,
+                           handle->bus_name,
+                           &mode,
+                           1,
+                           (uint8_t)k_bno055_reg_opr_mode,
+                           NULL);
   if (ret != ESP_OK) {
     if (handle->owns_error_handler && handle->error_iface != NULL) {
       error_handler_t* handler_ptr = (error_handler_t*)handle->error_iface->ctx;
@@ -150,8 +147,13 @@ esp_err_t star_sensor_imu_10dof_init(imu_10dof_handle_t*       handle,
   vTaskDelay(pdMS_TO_TICKS(25));
 
   // Set power mode to normal
-  uint8_t power = BNO055_POWER_MODE_NORMAL;
-  ret = star_bus_i2c_write(handle->manager, handle->bus_name, &power, 1, BNO055_REG_PWR_MODE, NULL);
+  uint8_t power = k_bno055_power_mode_normal;
+  ret           = star_bus_i2c_write(handle->manager,
+                           handle->bus_name,
+                           &power,
+                           1,
+                           (uint8_t)k_bno055_reg_pwr_mode,
+                           NULL);
   if (ret != ESP_OK) {
     if (handle->owns_error_handler && handle->error_iface != NULL) {
       error_handler_t* handler_ptr = (error_handler_t*)handle->error_iface->ctx;
@@ -165,7 +167,12 @@ esp_err_t star_sensor_imu_10dof_init(imu_10dof_handle_t*       handle,
 
   // Set operation mode
   mode = config->operation_mode;
-  ret  = star_bus_i2c_write(handle->manager, handle->bus_name, &mode, 1, BNO055_REG_OPR_MODE, NULL);
+  ret  = star_bus_i2c_write(handle->manager,
+                           handle->bus_name,
+                           &mode,
+                           1,
+                           (uint8_t)k_bno055_reg_opr_mode,
+                           NULL);
   if (ret != ESP_OK) {
     if (handle->owns_error_handler && handle->error_iface != NULL) {
       error_handler_t* handler_ptr = (error_handler_t*)handle->error_iface->ctx;
@@ -179,7 +186,8 @@ esp_err_t star_sensor_imu_10dof_init(imu_10dof_handle_t*       handle,
   vTaskDelay(pdMS_TO_TICKS(20));
 
   // Initialize BMP280
-  ret = star_bus_i2c_read(handle->manager, handle->bus_name, &chip_id, 1, BMP280_REG_CHIP_ID, NULL);
+  ret =
+    star_bus_i2c_read(handle->manager, handle->bus_name, &chip_id, 1, k_bmp280_reg_chip_id, NULL);
   if (ret != ESP_OK || chip_id != BMP280_CHIP_ID_VALUE) {
     ESP_LOGE(s_TAG, "BMP280 not found (ID=0x%02X)", chip_id);
     if (handle->owns_error_handler && handle->error_iface != NULL) {
@@ -194,8 +202,12 @@ esp_err_t star_sensor_imu_10dof_init(imu_10dof_handle_t*       handle,
 
   // Read BMP280 calibration data
   uint8_t calib_data[24];
-  ret =
-    star_bus_i2c_read(handle->manager, handle->bus_name, calib_data, 24, BMP280_REG_CALIB00, NULL);
+  ret = star_bus_i2c_read(handle->manager,
+                          handle->bus_name,
+                          calib_data,
+                          24,
+                          k_bmp280_reg_calib00,
+                          NULL);
   if (ret != ESP_OK) {
     if (handle->owns_error_handler && handle->error_iface != NULL) {
       error_handler_t* handler_ptr = (error_handler_t*)handle->error_iface->ctx;
@@ -258,7 +270,8 @@ esp_err_t star_sensor_imu_10dof_init(imu_10dof_handle_t*       handle,
 
   // Configure BMP280: normal mode, 16x oversampling
   uint8_t ctrl = 0xB7; // osrs_t=16, osrs_p=16, mode=normal
-  ret = star_bus_i2c_write(handle->manager, handle->bus_name, &ctrl, 1, BMP280_REG_CTRL_MEAS, NULL);
+  ret =
+    star_bus_i2c_write(handle->manager, handle->bus_name, &ctrl, 1, k_bmp280_reg_ctrl_meas, NULL);
   if (ret != ESP_OK) {
     if (handle->owns_error_handler && handle->error_iface != NULL) {
       error_handler_t* handler_ptr = (error_handler_t*)handle->error_iface->ctx;
@@ -339,7 +352,7 @@ esp_err_t star_sensor_imu_10dof_read(const imu_10dof_handle_t* handle, imu_10dof
                           handle->bus_name,
                           quat_data,
                           8,
-                          BNO055_REG_QUA_DATA_W_LSB,
+                          (uint8_t)k_bno055_reg_qua_data_w_lsb,
                           NULL);
   if (ret == ESP_OK) {
     data->quaternion.w = (int16_t)((quat_data[1] << 8) | quat_data[0]);
@@ -354,7 +367,7 @@ esp_err_t star_sensor_imu_10dof_read(const imu_10dof_handle_t* handle, imu_10dof
                           handle->bus_name,
                           euler_data,
                           6,
-                          BNO055_REG_EUL_HEADING_LSB,
+                          (uint8_t)k_bno055_reg_eul_heading_lsb,
                           NULL);
   if (ret == ESP_OK) {
     data->euler.heading = ((int16_t)((euler_data[1] << 8) | euler_data[0])) / 16.0f;
@@ -368,7 +381,7 @@ esp_err_t star_sensor_imu_10dof_read(const imu_10dof_handle_t* handle, imu_10dof
                           handle->bus_name,
                           acc_data,
                           6,
-                          BNO055_REG_ACC_DATA_X_LSB,
+                          (uint8_t)k_bno055_reg_acc_data_x_lsb,
                           NULL);
   if (ret == ESP_OK) {
     data->accelerometer.x = (int16_t)((acc_data[1] << 8) | acc_data[0]);
@@ -379,7 +392,7 @@ esp_err_t star_sensor_imu_10dof_read(const imu_10dof_handle_t* handle, imu_10dof
   // Read BMP280 pressure and temperature
   uint8_t bmp_data[6];
   ret =
-    star_bus_i2c_read(handle->manager, handle->bus_name, bmp_data, 6, BMP280_REG_PRESS_MSB, NULL);
+    star_bus_i2c_read(handle->manager, handle->bus_name, bmp_data, 6, k_bmp280_reg_press_msb, NULL);
   if (ret == ESP_OK) {
     int32_t adc_P = (bmp_data[0] << 12) | (bmp_data[1] << 4) | (bmp_data[2] >> 4);
     int32_t adc_T = (bmp_data[3] << 12) | (bmp_data[4] << 4) | (bmp_data[5] >> 4);
@@ -438,7 +451,7 @@ esp_err_t star_sensor_imu_10dof_get_calibration(const imu_10dof_handle_t* handle
                                     handle->bus_name,
                                     &calib_stat,
                                     1,
-                                    BNO055_REG_CALIB_STAT,
+                                    (uint8_t)k_bno055_reg_calib_stat,
                                     NULL);
   if (ret != ESP_OK) {
     return ret;
@@ -489,8 +502,12 @@ esp_err_t star_sensor_imu_10dof_set_mode(imu_10dof_handle_t* handle, bno055_op_m
   }
 
   uint8_t   mode_val = mode;
-  esp_err_t ret =
-    star_bus_i2c_write(handle->manager, handle->bus_name, &mode_val, 1, BNO055_REG_OPR_MODE, NULL);
+  esp_err_t ret      = star_bus_i2c_write(handle->manager,
+                                     handle->bus_name,
+                                     &mode_val,
+                                     1,
+                                     (uint8_t)k_bno055_reg_opr_mode,
+                                     NULL);
   if (ret != ESP_OK) {
     xSemaphoreGive(mutex);
     return ret;
@@ -510,8 +527,12 @@ esp_err_t star_sensor_imu_10dof_reset_bno055(imu_10dof_handle_t* handle)
   }
 
   uint8_t   reset = 0x20;
-  esp_err_t ret =
-    star_bus_i2c_write(handle->manager, handle->bus_name, &reset, 1, BNO055_REG_SYS_TRIGGER, NULL);
+  esp_err_t ret   = star_bus_i2c_write(handle->manager,
+                                     handle->bus_name,
+                                     &reset,
+                                     1,
+                                     (uint8_t)k_bno055_reg_sys_trigger,
+                                     NULL);
   if (ret != ESP_OK) {
     return ret;
   }

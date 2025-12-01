@@ -1,0 +1,7 @@
+<map id="led_controller_distance_to_color" name="led_controller_distance_to_color">
+<area shape="rect" id="Node000001" title="Convert distance measurement to RGB color using smooth HSV gradient." alt="" coords="5,35,160,75"/>
+<area shape="rect" id="Node000002" href="$d2/dc9/led__controller_8c.html#a05e24a1e741cb4693bbe6f9d4a3d5e28" title="Convert HSV color to RGB color." alt="" coords="220,5,346,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="159,41,207,36,202,38,160,46"/>
+<area shape="rect" id="Node000003" href="$d4/d7e/system__config_8h.html#a27d7155fa342a21a9e7dc287b32d3cde" title="Validate distance measurement." alt="" coords="208,70,359,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="160,63,195,70,189,70,160,68"/>
+</map>

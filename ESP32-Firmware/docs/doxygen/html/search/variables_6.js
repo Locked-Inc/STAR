@@ -25,7 +25,7 @@ var searchData=
   ['g_5fuart_5fmutex_22',['g_uart_mutex',['../da/d14/star__bus__uart_8c.html#a0729634ad3f3d04130a29eb4321fd40f',1,'star_bus_uart.c']]],
   ['g_5fuart_5fstates_23',['g_uart_states',['../da/d14/star__bus__uart_8c.html#a7c9897d9ce07d0c0f16dec06e849023d',1,'star_bus_uart.c']]],
   ['gain_24',['gain',['../de/db9/structads1115__config__t.html#ab1ef5171dfb255a58bc7dac3aa9198e2',1,'ads1115_config_t']]],
-  ['gpio_25',['gpio',['../d2/d8d/structstar__bus__config.html#aceb134bb7f77d8e983a8a4bd20b85cce',1,'star_bus_config']]],
+  ['gpio_25',['gpio',['../db/d30/structstar__system__config.html#a78929a7f23e4bda4ca756014bb48caae',1,'star_system_config::gpio'],['../d2/d8d/structstar__bus__config.html#aceb134bb7f77d8e983a8a4bd20b85cce',1,'star_bus_config::gpio']]],
   ['gpio_5fpin_26',['gpio_pin',['../dd/dfe/structstar__dht22__config__t.html#ac20876d7a756e57a1ffec43eb3a25040',1,'star_dht22_config_t::gpio_pin'],['../df/db2/structstar__onewire__config__t.html#ad22858e5a8a3b217d7006e3dbff0df0b',1,'star_onewire_config_t::gpio_pin'],['../dc/da7/structstar__dht22__bus__config.html#a1b2efbcde3c2f27bd7cc913cdc3fb0cb',1,'star_dht22_bus_config::gpio_pin'],['../d9/df1/structperipheral__state__t.html#a7e4b16e749b28d3727163496a4c55314',1,'peripheral_state_t::gpio_pin']]],
   ['gravity_27',['gravity',['../df/d38/structimu__10dof__data__t.html#a6ea2486bf97734a852eb230250bead20',1,'imu_10dof_data_t']]],
   ['green_28',['green',['../d0/d62/structrgb__color__t.html#a6753147580a9f2d88d1541f6c87beb04',1,'rgb_color_t']]],

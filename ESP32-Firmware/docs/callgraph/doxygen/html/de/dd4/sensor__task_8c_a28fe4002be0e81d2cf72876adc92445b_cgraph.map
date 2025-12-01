@@ -1,0 +1,13 @@
+<map id="sensor_task_stop" name="sensor_task_stop">
+<area shape="rect" id="Node000001" title="Stop sensor management task." alt="" coords="5,38,130,64"/>
+<area shape="rect" id="Node000002" href="$de/dd4/sensor__task_8c.html#a50bf939b7ee7d05f4a59c83f74bbc8d7" title=" " alt="" coords="184,13,338,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="129,40,171,37,166,38,130,46"/>
+<area shape="rect" id="Node000006" href="$db/d0d/shared__data_8c.html#acf829b11efe6efde5ff9c9a1798b05c9" title="Get pointer to global shared context." alt="" coords="178,62,345,88"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="130,56,165,62,160,63,130,61"/>
+<area shape="rect" id="Node000003" href="$de/de2/star__sensor__hcsr04_8c.html#a47cb2059d503f6428dc165b881c6f79f" title="Deinitialize HC&#45;SR04 sensor." alt="" coords="393,5,528,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="339,23,380,25,375,26,339,28"/>
+<area shape="rect" id="Node000004" href="$d7/d82/star__error__handler_8c.html#a1632e40ebb7509611a0513c0e6bdbb46" title="Destroy an error handler created by error_handler_create_default() or error_handler_create_custom()." alt="" coords="576,5,723,46"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="529,23,564,25,558,26,529,28"/>
+<area shape="rect" id="Node000005" href="$d7/d82/star__error__handler_8c.html#a3a7dedd3275ece0e7f6029a11464c27d" title="Deinitialize an error handler and release resources." alt="" coords="771,13,905,38"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="723,23,758,26,752,26,723,28"/>
+</map>
