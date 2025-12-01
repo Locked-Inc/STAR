@@ -36,7 +36,7 @@ static esp_err_t internal_update_led_from_sensor_data(led_task_context_t* const 
       if (color.red > STAR_SYSTEM_CONFIG.pwm.off_threshold ||
           color.green > STAR_SYSTEM_CONFIG.pwm.off_threshold ||
           color.blue > STAR_SYSTEM_CONFIG.pwm.off_threshold) {
-        ESP_LOGI(s_TAG,
+        ESP_LOGD(s_TAG,
                  "%s LED: R=%.1f%% G=%.1f%% B=%.1f%% (%.1fcm)",
                  sensor_name,
                  color.red,
@@ -44,7 +44,7 @@ static esp_err_t internal_update_led_from_sensor_data(led_task_context_t* const 
                  color.blue,
                  sensor_data->distance_cm);
       } else {
-        ESP_LOGI(s_TAG,
+        ESP_LOGD(s_TAG,
                  "%s LED: OFF (%.1fcm > %.0fcm)",
                  sensor_name,
                  sensor_data->distance_cm,
@@ -56,7 +56,7 @@ static esp_err_t internal_update_led_from_sensor_data(led_task_context_t* const 
     if (ret == ESP_OK) {
       const char* const sensor_name =
         (sensor_data->sensor_index == k_star_system_hcsr04_left) ? "Left" : "Right";
-      ESP_LOGI(s_TAG, "%s LED: OFF (sensor error)", sensor_name);
+      ESP_LOGD(s_TAG, "%s LED: OFF (sensor error)", sensor_name);
     }
   }
 

@@ -22,10 +22,10 @@ typedef struct star_system_config star_system_config_t;
 
 /* Task Priorities */
 typedef enum {
-  k_star_task_priority_leds     = 1,
-  k_star_task_priority_dht22    = 2,
-  k_star_task_priority_sensors  = 3,
-  k_star_task_priority_watchdog = 4
+  k_star_task_priority_sensors  = 1, /* Lowest - data collection */
+  k_star_task_priority_dht22    = 2, /* Low - optional sensor */
+  k_star_task_priority_leds     = 3, /* HIGH - user responsiveness */
+  k_star_task_priority_watchdog = 4  /* Highest - system safety */
 } star_task_priority_t;
 
 /* LED Channel Mappings */

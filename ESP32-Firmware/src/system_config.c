@@ -71,7 +71,7 @@ const star_system_config_t STAR_SYSTEM_CONFIG = {
 
   /* Distance Sensing Configuration */
   .distance = {.min_distance_cm       = 5.0f,
-               .max_distance_cm       = 100.0f,
+               .max_distance_cm       = 150.0f,
                .extension_factor      = 0.7f,
                .close_boost_threshold = 0.25f},
 
@@ -90,11 +90,11 @@ const star_system_config_t STAR_SYSTEM_CONFIG = {
             .sensors  = {.name        = "sensors_task",
                          .stack_size  = 3072,
                          .priority    = k_star_task_priority_sensors,
-                         .interval_ms = 50},
+                         .interval_ms = 30},
             .leds     = {.name        = "leds_task",
                          .stack_size  = 4096,
                          .priority    = k_star_task_priority_leds,
-                         .interval_ms = 50},
+                         .interval_ms = 15},
             .watchdog = {.name        = "watchdog_task",
                          .stack_size  = 3072,
                          .priority    = k_star_task_priority_watchdog,
@@ -111,7 +111,7 @@ const star_system_config_t STAR_SYSTEM_CONFIG = {
              .main_loop_log_interval         = 100},
 
   /* FreeRTOS Configuration */
-  .freertos = {.sensor_data_queue_size  = 16,
+  .freertos = {.sensor_data_queue_size  = 64,
                .temperature_queue_size  = 4,
                .mutex_timeout_ms        = 1000,
                .notification_timeout_ms = 5000},

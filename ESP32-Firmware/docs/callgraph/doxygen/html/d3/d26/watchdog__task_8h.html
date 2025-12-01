@@ -197,9 +197,9 @@ Functions</h2></td></tr>
 <p>Triggers an immediate health assessment and recovery action if needed.</p>
 <dl class="section return"><dt>Returns</dt><dd><a class="el" href="#a71991bc463f59e45bff7d0974feda627">watchdog_health_level_t</a> Current system health level </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00347">347</a> of file <a class="el" href="../../dc/d96/watchdog__task_8c_source.html">watchdog_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00364">364</a> of file <a class="el" href="../../dc/d96/watchdog__task_8c_source.html">watchdog_task.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00155">internal_assess_overall_health()</a>, <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00173">internal_take_recovery_action()</a>, <a class="el" href="../../d3/d26/watchdog__task_8h_source.html#l00019">k_watchdog_health_fault</a>, <a class="el" href="../../d3/d26/watchdog__task_8h_source.html#l00016">k_watchdog_health_good</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00011">s_g_context_initialized</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00170">internal_assess_overall_health()</a>, <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00188">internal_take_recovery_action()</a>, <a class="el" href="../../d3/d26/watchdog__task_8h_source.html#l00019">k_watchdog_health_fault</a>, <a class="el" href="../../d3/d26/watchdog__task_8h_source.html#l00016">k_watchdog_health_good</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00011">s_g_context_initialized</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -293,7 +293,7 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if statistics are available </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00332">332</a> of file <a class="el" href="../../dc/d96/watchdog__task_8c_source.html">watchdog_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00349">349</a> of file <a class="el" href="../../dc/d96/watchdog__task_8c_source.html">watchdog_task.c</a>.</p>
 
 <p class="reference">References <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00011">s_g_context_initialized</a>, and <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00014">s_task_context</a>.</p>
 
@@ -317,7 +317,7 @@ Here is the call graph for this function:</div>
 <p>Check if watchdog task is running. </p>
 <dl class="section return"><dt>Returns</dt><dd>true if task is active and monitoring system health </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00326">326</a> of file <a class="el" href="../../dc/d96/watchdog__task_8c_source.html">watchdog_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00343">343</a> of file <a class="el" href="../../dc/d96/watchdog__task_8c_source.html">watchdog_task.c</a>.</p>
 
 <p class="reference">References <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00011">s_g_context_initialized</a>, and <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00014">s_task_context</a>.</p>
 
@@ -353,7 +353,7 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00364">364</a> of file <a class="el" href="../../dc/d96/watchdog__task_8c_source.html">watchdog_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00381">381</a> of file <a class="el" href="../../dc/d96/watchdog__task_8c_source.html">watchdog_task.c</a>.</p>
 
 <p class="reference">References <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00011">s_g_context_initialized</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
 
@@ -378,11 +378,11 @@ Here is the call graph for this function:</div>
 <p>Creates and starts the FreeRTOS task for system health monitoring. The task will periodically check system health and take recovery actions when necessary.</p>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00256">256</a> of file <a class="el" href="../../dc/d96/watchdog__task_8c_source.html">watchdog_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00273">273</a> of file <a class="el" href="../../dc/d96/watchdog__task_8c_source.html">watchdog_task.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00217">internal_watchdog_task_loop()</a>, <a class="el" href="../../d3/d26/watchdog__task_8h_source.html#l00016">k_watchdog_health_good</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00011">s_g_context_initialized</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00014">s_task_context</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00117">shared_data_get_context()</a>, <a class="el" href="../../d3/dff/system__config_8c_source.html#l00035">STAR_SYSTEM_CONFIG</a>, and <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00072">shared_context_t::watchdog_task_handle</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00232">internal_watchdog_task_loop()</a>, <a class="el" href="../../d3/d26/watchdog__task_8h_source.html#l00016">k_watchdog_health_good</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00011">s_g_context_initialized</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00014">s_task_context</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00117">shared_data_get_context()</a>, <a class="el" href="../../d3/dff/system__config_8c_source.html#l00035">STAR_SYSTEM_CONFIG</a>, and <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00073">shared_context_t::watchdog_task_handle</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00115">start_system_tasks()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00118">start_system_tasks()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -476,9 +476,9 @@ Here is the caller graph for this function:</div>
 <p>Cleanly shuts down the watchdog task.</p>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00294">294</a> of file <a class="el" href="../../dc/d96/watchdog__task_8c_source.html">watchdog_task.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00311">311</a> of file <a class="el" href="../../dc/d96/watchdog__task_8c_source.html">watchdog_task.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00011">s_g_context_initialized</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00014">s_task_context</a>, <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00023">s_watchdog_recovery_delay_ms</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00117">shared_data_get_context()</a>, and <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00072">shared_context_t::watchdog_task_handle</a>.</p>
+<p class="reference">References <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00011">s_g_context_initialized</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d0/d9c/dht22__task_8c_source.html#l00014">s_task_context</a>, <a class="el" href="../../dc/d96/watchdog__task_8c_source.html#l00024">s_watchdog_recovery_delay_ms</a>, <a class="el" href="../../db/d0d/shared__data_8c_source.html#l00117">shared_data_get_context()</a>, and <a class="el" href="../../d5/d74/shared__data_8h_source.html#l00073">shared_context_t::watchdog_task_handle</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">

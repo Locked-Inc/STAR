@@ -1,4 +1,4 @@
-app_main() <void app_main (void) at src/main.c:155>:
+app_main() <void app_main (void) at src/main.c:158>:
     ESP_LOGI()
     esp_err_t()
     shared_data_init()
@@ -369,9 +369,9 @@ app_main() <void app_main (void) at src/main.c:155>:
         free()
         xSemaphoreGive()
         vSemaphoreDelete()
-    initialize_pca9685() <esp_err_t initialize_pca9685 (star_bus_manager_t *const bus_manager, star_error_interface_t *const error_iface, pca9685_handle_t *const pca_handle) at src/main.c:88>:
+    initialize_pca9685() <esp_err_t initialize_pca9685 (star_bus_manager_t *const bus_manager, star_error_interface_t *const error_iface, pca9685_handle_t *const pca_handle) at src/main.c:91>:
         esp_err_t()
-        star_sensor_pca9685_init() <esp_err_t star_sensor_pca9685_init (pca9685_handle_t *handle, star_bus_manager_t *manager, const char *bus_name, star_error_interface_t *error_iface, gpio_num_t oe_pin, bool oe_active_low, const pca9685_config_t *config) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:168>:
+        star_sensor_pca9685_init() <esp_err_t star_sensor_pca9685_init (pca9685_handle_t *handle, star_bus_manager_t *manager, const char *bus_name, star_error_interface_t *error_iface, gpio_num_t oe_pin, bool oe_active_low, const pca9685_config_t *config) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:171>:
             ESP_LOGE()
             memset()
             memcpy()
@@ -442,9 +442,9 @@ app_main() <void app_main (void) at src/main.c:155>:
             gpio_reset_pin()
             vTaskDelay()
             pdMS_TO_TICKS()
-            internal_pca9685_set_frequency() <esp_err_t internal_pca9685_set_frequency (pca9685_handle_t *const handle, const uint16_t freq_hz) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:92>:
+            internal_pca9685_set_frequency() <esp_err_t internal_pca9685_set_frequency (pca9685_handle_t *const handle, const uint16_t freq_hz) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:93>:
                 esp_err_t()
-                star_sensor_pca9685_calculate_prescale() <esp_err_t star_sensor_pca9685_calculate_prescale (uint16_t freq_hz, uint8_t *prescale) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:429>:
+                star_sensor_pca9685_calculate_prescale() <esp_err_t star_sensor_pca9685_calculate_prescale (uint16_t freq_hz, uint8_t *prescale) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:435>:
                     ESP_LOGE()
                     roundf()
                     ESP_LOGD()
@@ -477,7 +477,7 @@ app_main() <void app_main (void) at src/main.c:155>:
         ESP_LOGE()
         esp_err_to_name()
         ESP_LOGI()
-    start_system_tasks() <esp_err_t start_system_tasks (star_bus_manager_t *const bus_manager, star_error_interface_t *const error_iface, const pca9685_handle_t *pca_handle) at src/main.c:115>:
+    start_system_tasks() <esp_err_t start_system_tasks (star_bus_manager_t *const bus_manager, star_error_interface_t *const error_iface, const pca9685_handle_t *pca_handle) at src/main.c:118>:
         esp_err_t()
         dht22_task_start()
         ESP_LOGE()
@@ -489,12 +489,12 @@ app_main() <void app_main (void) at src/main.c:155>:
         watchdog_task_start()
         led_task_stop()
         ESP_LOGI()
-    star_sensor_pca9685_deinit() <esp_err_t star_sensor_pca9685_deinit (pca9685_handle_t *handle) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:363>:
+    star_sensor_pca9685_deinit() <esp_err_t star_sensor_pca9685_deinit (pca9685_handle_t *handle) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:368>:
         ESP_LOGI()
         xSemaphoreTake()
         pdMS_TO_TICKS()
         ESP_LOGW()
-        pca9685_set_mode1_bits() <esp_err_t pca9685_set_mode1_bits (pca9685_handle_t *const handle, const uint8_t bits, const bool set) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:59>:
+        pca9685_set_mode1_bits() <esp_err_t pca9685_set_mode1_bits (pca9685_handle_t *const handle, const uint8_t bits, const bool set) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:60>:
             esp_err_t()
             pca9685_read_reg() <esp_err_t pca9685_read_reg (star_bus_manager_t *const manager, const char *const bus_name, const uint8_t addr, const uint8_t reg, uint8_t *const value) at lib/star_sensor_pca9685/src/star_sensor_pca9685.c:43>:
                 star_bus_i2c_read() <esp_err_t star_bus_i2c_read (const star_bus_manager_t *manager, const char *name, uint8_t *data, size_t len, uint8_t reg_addr, size_t *bytes_read) at lib/star_bus/src/star_bus_i2c.c:111>:
