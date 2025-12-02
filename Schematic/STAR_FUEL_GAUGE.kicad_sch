@@ -4,6 +4,12 @@
 	(generator_version "9.0")
 	(uuid "e95fb06c-0cf8-41c5-94d7-05cee231f8fb")
 	(paper "A3")
+	(title_block
+		(title "Fuel Gauge")
+		(date "2025-12-01")
+		(rev "Version 1.1.0")
+		(company "Locked Inc.")
+	)
 	(lib_symbols
 		(symbol "61200621621:6120XX21621_61200621621"
 			(pin_names
@@ -2790,6 +2796,113 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Mechanical:MountingHole_Pad"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 1.016)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom no)
+			(on_board yes)
+			(property "Reference" "H"
+				(at 0 6.35 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "MountingHole_Pad"
+				(at 0 4.445 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Mounting Hole with connection"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "mounting hole"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "MountingHole*Pad*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "MountingHole_Pad_0_1"
+				(circle
+					(center 0 1.27)
+					(radius 1.27)
+					(stroke
+						(width 1.27)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "MountingHole_Pad_1_1"
+				(pin input line
+					(at 0 -2.54 90)
+					(length 2.54)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "PCM_SL_Devices:LED"
 			(exclude_from_sim no)
 			(in_bom yes)
@@ -3846,6 +3959,165 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "power:PWR_FLAG"
+			(power)
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 0)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "#FLG"
+				(at 0 1.905 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Value" "PWR_FLAG"
+				(at 0 3.81 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Special symbol for telling ERC where power comes from"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "flag power"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "PWR_FLAG_0_0"
+				(pin power_out line
+					(at 0 0 90)
+					(length 0)
+					(name "~"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(symbol "PWR_FLAG_0_1"
+				(polyline
+					(pts
+						(xy 0 0) (xy 0 1.27) (xy -1.016 1.905) (xy 0 2.54) (xy 1.016 1.905) (xy 0 1.27)
+					)
+					(stroke
+						(width 0)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
+	)
+	(rectangle
+		(start 110.49 212.09)
+		(end 179.07 251.46)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid 718c3369-f2fb-415a-8cd1-5263d1b331f3)
+	)
+	(rectangle
+		(start 181.61 215.9)
+		(end 236.22 250.19)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid 9f46612c-278b-4fb3-bb4b-68e9112eb13d)
+	)
+	(rectangle
+		(start 238.76 215.9)
+		(end 313.69 250.19)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid c880f05b-a137-48b0-a10f-efa8bd2ab109)
+	)
+	(rectangle
+		(start 43.18 226.06)
+		(end 107.95 251.46)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid dcbbd021-47c5-4dad-913e-16042883a9f7)
+	)
+	(text "AFE"
+		(exclude_from_sim no)
+		(at 142.494 243.84 0)
+		(effects
+			(font
+				(size 3.81 3.81)
+			)
+		)
+		(uuid "06e36b4f-9213-4fc8-a555-73e02003472e")
 	)
 	(text "from TIDA-00792"
 		(exclude_from_sim no)
@@ -3890,6 +4162,16 @@
 		)
 		(uuid "59bcb694-2fcb-4c59-afb5-418e0ee302ee")
 	)
+	(text "Gate Driver\n"
+		(exclude_from_sim no)
+		(at 278.892 245.364 0)
+		(effects
+			(font
+				(size 3.81 3.81)
+			)
+		)
+		(uuid "64574ab7-e4ae-4c64-a6f2-334c9b889176")
+	)
 	(text "EV2300-002\nNC   (4)\nSMBD (3)\nSMBC (2)\nGND  (1)"
 		(exclude_from_sim no)
 		(at 344.424 148.59 0)
@@ -3901,9 +4183,19 @@
 		)
 		(uuid "6815967d-178d-4694-bae5-1a16844b85d5")
 	)
+	(text "MCU\n"
+		(exclude_from_sim no)
+		(at 208.28 244.094 0)
+		(effects
+			(font
+				(size 3.81 3.81)
+			)
+		)
+		(uuid "6e273ec8-b284-46b6-82ad-79c407307955")
+	)
 	(text "3V3"
 		(exclude_from_sim no)
-		(at 386.588 131.572 0)
+		(at 385.064 130.302 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -3991,6 +4283,12 @@
 		(uuid "0a4f0f4d-3932-4aeb-9d3e-bccd7a62b7ec")
 	)
 	(junction
+		(at 132.08 220.98)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "0f564282-3849-4e60-85ef-19c103d22a0a")
+	)
+	(junction
 		(at 288.29 147.32)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4051,12 +4349,6 @@
 		(uuid "2ddfdbed-86fd-48b2-92d3-dfe7015df7a2")
 	)
 	(junction
-		(at 365.76 105.41)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "3ffa2dd5-1048-49d9-873f-9f284aa32a24")
-	)
-	(junction
 		(at 199.39 176.53)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -4115,6 +4407,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "59927e99-38f0-4427-878d-681868debe11")
+	)
+	(junction
+		(at 50.8 236.22)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "5a7c9cab-6d0c-4021-825b-be0c60cc9e8d")
 	)
 	(junction
 		(at 215.9 118.11)
@@ -4183,7 +4481,7 @@
 		(uuid "788c098c-8c95-4b8a-8c08-ad56e8bc819b")
 	)
 	(junction
-		(at 332.74 195.58)
+		(at 200.66 226.06)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "7acfa3c9-9480-4027-acd1-41bc6cc53bcc")
@@ -4199,6 +4497,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "92c41c7c-7e6b-406d-a93a-8caacd1f3469")
+	)
+	(junction
+		(at 379.73 105.41)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "938a0476-994e-49d9-87c2-3cad9f2ff0a7")
 	)
 	(junction
 		(at 205.74 176.53)
@@ -4237,10 +4541,22 @@
 		(uuid "ba4754ca-4964-4245-ada5-206196bd1301")
 	)
 	(junction
+		(at 66.04 236.22)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "c20f7bd4-03dc-4cd3-96ca-9f0738c95871")
+	)
+	(junction
 		(at 228.6 176.53)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "c38135a6-b34a-4ad4-a32c-02ee439e1139")
+	)
+	(junction
+		(at 80.01 236.22)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "c78b0dfd-5213-413c-b339-a102cd187e56")
 	)
 	(junction
 		(at 332.74 149.86)
@@ -4283,6 +4599,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "e2db1e6a-53bd-4c50-80c2-2a07ee2701cd")
+	)
+	(junction
+		(at 144.78 97.79)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "e998fd1c-ae9c-4168-92cc-104ea3433184")
 	)
 	(junction
 		(at 313.69 147.32)
@@ -4440,7 +4762,7 @@
 	)
 	(wire
 		(pts
-			(xy 59.69 190.5) (xy 69.85 190.5)
+			(xy 127 228.6) (xy 137.16 228.6)
 		)
 		(stroke
 			(width 0)
@@ -4530,6 +4852,16 @@
 	)
 	(wire
 		(pts
+			(xy 229.87 226.06) (xy 214.63 226.06)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "1b64c8b6-8107-4bb2-9814-461ac7b3e516")
+	)
+	(wire
+		(pts
 			(xy 215.9 113.03) (xy 215.9 118.11)
 		)
 		(stroke
@@ -4560,7 +4892,7 @@
 	)
 	(wire
 		(pts
-			(xy 93.98 190.5) (xy 80.01 190.5)
+			(xy 161.29 228.6) (xy 147.32 228.6)
 		)
 		(stroke
 			(width 0)
@@ -4800,6 +5132,16 @@
 	)
 	(wire
 		(pts
+			(xy 80.01 236.22) (xy 91.44 236.22)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "36800a54-5aa9-49ce-841a-653cd60496ef")
+	)
+	(wire
+		(pts
 			(xy 82.55 116.84) (xy 105.41 116.84)
 		)
 		(stroke
@@ -4990,7 +5332,7 @@
 	)
 	(wire
 		(pts
-			(xy 372.11 175.26) (xy 346.71 175.26)
+			(xy 308.61 227.33) (xy 283.21 227.33)
 		)
 		(stroke
 			(width 0)
@@ -5080,13 +5422,23 @@
 	)
 	(wire
 		(pts
-			(xy 144.78 151.13) (xy 144.78 152.4)
+			(xy 144.78 147.32) (xy 144.78 152.4)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "510a74b7-63e8-4685-8d59-5e0a4c567f90")
+	)
+	(wire
+		(pts
+			(xy 50.8 236.22) (xy 50.8 238.76)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "52649acb-064d-4e9b-a888-4768b56ccde5")
 	)
 	(wire
 		(pts
@@ -5210,7 +5562,7 @@
 	)
 	(wire
 		(pts
-			(xy 312.42 180.34) (xy 336.55 180.34)
+			(xy 241.3 232.41) (xy 273.05 232.41)
 		)
 		(stroke
 			(width 0)
@@ -5237,16 +5589,6 @@
 			(type default)
 		)
 		(uuid "67beff7e-f493-4240-b582-6989092fd55b")
-	)
-	(wire
-		(pts
-			(xy 346.71 193.04) (xy 361.95 193.04)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "67fac2d4-af5d-4492-839b-a4baed5e3239")
 	)
 	(wire
 		(pts
@@ -5280,13 +5622,23 @@
 	)
 	(wire
 		(pts
-			(xy 353.06 180.34) (xy 346.71 180.34)
+			(xy 289.56 232.41) (xy 283.21 232.41)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "6a8d111c-437f-49e2-8da2-1c33b0132e0b")
+	)
+	(wire
+		(pts
+			(xy 200.66 226.06) (xy 204.47 226.06)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6b8fa6f6-9dd0-4102-a1a4-fbe38e132389")
 	)
 	(wire
 		(pts
@@ -5400,16 +5752,6 @@
 	)
 	(wire
 		(pts
-			(xy 346.71 195.58) (xy 361.95 195.58)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "817b962e-4276-41f7-a67f-76b8622a1b8e")
-	)
-	(wire
-		(pts
 			(xy 63.5 116.84) (xy 74.93 116.84)
 		)
 		(stroke
@@ -5447,16 +5789,6 @@
 			(type default)
 		)
 		(uuid "84b45466-825d-410c-82f5-acb968ad0869")
-	)
-	(wire
-		(pts
-			(xy 336.55 195.58) (xy 332.74 195.58)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "85c7efd4-a2cd-461f-ae6a-f15679710c10")
 	)
 	(wire
 		(pts
@@ -5520,7 +5852,7 @@
 	)
 	(wire
 		(pts
-			(xy 59.69 182.88) (xy 69.85 182.88)
+			(xy 127 220.98) (xy 132.08 220.98)
 		)
 		(stroke
 			(width 0)
@@ -5540,7 +5872,7 @@
 	)
 	(wire
 		(pts
-			(xy 59.69 187.96) (xy 69.85 187.96)
+			(xy 127 226.06) (xy 137.16 226.06)
 		)
 		(stroke
 			(width 0)
@@ -5560,7 +5892,7 @@
 	)
 	(wire
 		(pts
-			(xy 332.74 195.58) (xy 332.74 198.12)
+			(xy 200.66 226.06) (xy 200.66 228.6)
 		)
 		(stroke
 			(width 0)
@@ -5577,6 +5909,16 @@
 			(type default)
 		)
 		(uuid "9246d0ab-3a04-4aab-a25c-11274cc19373")
+	)
+	(wire
+		(pts
+			(xy 185.42 226.06) (xy 200.66 226.06)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "93a5a3c2-fb5e-48cf-b8a1-34acf672efe2")
 	)
 	(wire
 		(pts
@@ -5640,7 +5982,7 @@
 	)
 	(wire
 		(pts
-			(xy 330.2 193.04) (xy 336.55 193.04)
+			(xy 198.12 223.52) (xy 204.47 223.52)
 		)
 		(stroke
 			(width 0)
@@ -5660,7 +6002,7 @@
 	)
 	(wire
 		(pts
-			(xy 80.01 185.42) (xy 93.98 185.42)
+			(xy 147.32 223.52) (xy 161.29 223.52)
 		)
 		(stroke
 			(width 0)
@@ -5700,13 +6042,23 @@
 	)
 	(wire
 		(pts
-			(xy 144.78 97.79) (xy 144.78 143.51)
+			(xy 144.78 97.79) (xy 144.78 139.7)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "a25f3977-430d-454c-a31a-4b00cd8f9d79")
+	)
+	(wire
+		(pts
+			(xy 132.08 220.98) (xy 137.16 220.98)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a44a80e4-e5b6-4ef9-94f0-24d6a4716bd3")
 	)
 	(wire
 		(pts
@@ -5740,7 +6092,7 @@
 	)
 	(wire
 		(pts
-			(xy 59.69 185.42) (xy 69.85 185.42)
+			(xy 127 223.52) (xy 137.16 223.52)
 		)
 		(stroke
 			(width 0)
@@ -5767,16 +6119,6 @@
 			(type default)
 		)
 		(uuid "ac466e2b-4641-4651-b292-126f0bb5094c")
-	)
-	(wire
-		(pts
-			(xy 365.76 97.79) (xy 365.76 105.41)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "adc0566a-3c9f-4273-8a2e-70cd7e289060")
 	)
 	(wire
 		(pts
@@ -5900,7 +6242,7 @@
 	)
 	(wire
 		(pts
-			(xy 80.01 187.96) (xy 93.98 187.96)
+			(xy 147.32 226.06) (xy 161.29 226.06)
 		)
 		(stroke
 			(width 0)
@@ -5977,6 +6319,16 @@
 			(type default)
 		)
 		(uuid "c8a60b84-4f30-4ec0-8626-178c2b36a527")
+	)
+	(wire
+		(pts
+			(xy 50.8 236.22) (xy 66.04 236.22)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "c93cdd71-7f00-4e9c-8750-3f44f6cc48da")
 	)
 	(wire
 		(pts
@@ -6070,7 +6422,7 @@
 	)
 	(wire
 		(pts
-			(xy 312.42 177.8) (xy 336.55 177.8)
+			(xy 241.3 229.87) (xy 273.05 229.87)
 		)
 		(stroke
 			(width 0)
@@ -6120,7 +6472,17 @@
 	)
 	(wire
 		(pts
-			(xy 372.11 177.8) (xy 346.71 177.8)
+			(xy 229.87 223.52) (xy 214.63 223.52)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "d78b6376-ffed-42e1-976d-6d308e820b23")
+	)
+	(wire
+		(pts
+			(xy 308.61 229.87) (xy 283.21 229.87)
 		)
 		(stroke
 			(width 0)
@@ -6200,17 +6562,7 @@
 	)
 	(wire
 		(pts
-			(xy 332.74 195.58) (xy 321.31 195.58)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "e4ab5f67-d615-4a0b-8c5a-642d636e98a3")
-	)
-	(wire
-		(pts
-			(xy 330.2 175.26) (xy 336.55 175.26)
+			(xy 266.7 227.33) (xy 273.05 227.33)
 		)
 		(stroke
 			(width 0)
@@ -6310,7 +6662,7 @@
 	)
 	(wire
 		(pts
-			(xy 332.74 198.12) (xy 336.55 198.12)
+			(xy 200.66 228.6) (xy 204.47 228.6)
 		)
 		(stroke
 			(width 0)
@@ -6410,7 +6762,7 @@
 	)
 	(wire
 		(pts
-			(xy 80.01 182.88) (xy 93.98 182.88)
+			(xy 147.32 220.98) (xy 161.29 220.98)
 		)
 		(stroke
 			(width 0)
@@ -6460,7 +6812,17 @@
 	)
 	(wire
 		(pts
-			(xy 353.06 198.12) (xy 346.71 198.12)
+			(xy 66.04 236.22) (xy 80.01 236.22)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "fcea5134-d29e-4498-a44d-802b6fbe27f2")
+	)
+	(wire
+		(pts
+			(xy 220.98 228.6) (xy 214.63 228.6)
 		)
 		(stroke
 			(width 0)
@@ -6469,7 +6831,7 @@
 		(uuid "fd035ca8-d39b-466e-b1d2-c201561b3781")
 	)
 	(label "AFE_CAP1"
-		(at 92.71 182.88 180)
+		(at 161.29 220.98 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -6509,7 +6871,7 @@
 		(uuid "22217e75-cf8f-4e9d-bf0b-f531374d5c4a")
 	)
 	(label "AFE_ALERT"
-		(at 59.69 190.5 0)
+		(at 127 228.6 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -6519,7 +6881,7 @@
 		(uuid "2d40b3a6-6e22-4a3d-8ec1-697c13459206")
 	)
 	(label "GATE_DRIVER_PACKDIV"
-		(at 372.11 177.8 180)
+		(at 308.61 229.87 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -6539,7 +6901,7 @@
 		(uuid "35898c16-1391-4ab1-8f2a-4edf4408a088")
 	)
 	(label "GATE_DRIVER_CP_EN"
-		(at 312.42 180.34 0)
+		(at 241.3 232.41 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -6559,7 +6921,7 @@
 		(uuid "3b34a813-095c-4c6b-9bb1-b7f8fd3319ba")
 	)
 	(label "GATE_DRIVER_PCHG_EN"
-		(at 372.11 175.26 180)
+		(at 308.61 227.33 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -6569,12 +6931,12 @@
 		(uuid "401390f2-9d30-4721-9614-2665878b6e3d")
 	)
 	(label "MCU_P3V3"
-		(at 365.76 97.79 270)
+		(at 365.76 105.41 0)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify right bottom)
+			(justify left bottom)
 		)
 		(uuid "48e35b68-51e3-44ab-be89-ae88e3e4c817")
 	)
@@ -6589,7 +6951,7 @@
 		(uuid "4b9ffad0-5950-4e80-b5aa-6d5594b0274e")
 	)
 	(label "AFE_SCL"
-		(at 92.71 185.42 180)
+		(at 161.29 223.52 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -6639,7 +7001,7 @@
 		(uuid "874a3e55-bec4-4e7c-b3f7-6bf4e1e705bc")
 	)
 	(label "AFE_C3"
-		(at 59.69 187.96 0)
+		(at 127 226.06 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -6649,12 +7011,12 @@
 		(uuid "8d3994d5-ad51-4767-83c4-726162bf9d8b")
 	)
 	(label "MCU_SMBC"
-		(at 346.71 193.04 0)
+		(at 229.87 223.52 180)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
-			(justify left bottom)
+			(justify right bottom)
 		)
 		(uuid "98e33f46-b106-43a8-b18e-70c0001ef80e")
 	)
@@ -6669,7 +7031,7 @@
 		(uuid "9b0e0801-5c1f-410a-89c6-75fa9116a331")
 	)
 	(label "GATE_DRIVER_PMON_EN"
-		(at 312.42 177.8 0)
+		(at 241.3 229.87 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -6699,27 +7061,27 @@
 		(uuid "bc05be13-a956-47e6-89c8-9597c8311bcb")
 	)
 	(label "MCU_SMBD"
-		(at 346.71 195.58 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "c347272b-a54b-4728-9052-9b4242aac8c8")
-	)
-	(label "MCU_P3V3"
-		(at 336.55 195.58 180)
+		(at 229.87 226.06 180)
 		(effects
 			(font
 				(size 1.27 1.27)
 			)
 			(justify right bottom)
 		)
+		(uuid "c347272b-a54b-4728-9052-9b4242aac8c8")
+	)
+	(label "MCU_P3V3"
+		(at 185.42 226.06 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
 		(uuid "c4d883af-d363-42a1-9e6d-35e41a822ca5")
 	)
 	(label "AFE_SDA"
-		(at 59.69 185.42 0)
+		(at 127 223.52 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -6749,7 +7111,7 @@
 		(uuid "f6fbd845-8f4f-423b-acc1-48792895d6da")
 	)
 	(label "AFE_REGOUT"
-		(at 92.71 187.96 180)
+		(at 161.29 226.06 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -6758,148 +7120,71 @@
 		)
 		(uuid "f9db8b3d-f0f8-48f5-b8d1-70aacfb32fb4")
 	)
-	(hierarchical_label "AFE_ALERT"
-		(shape input)
-		(at 59.69 190.5 180)
-		(effects
-			(font
-				(size 1.27 1.27)
+	(symbol
+		(lib_id "power:GND")
+		(at 50.8 238.76 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "02362460-4345-41b5-87d7-d15fdb2531fb")
+		(property "Reference" "#PWR012"
+			(at 50.8 245.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
 			)
-			(justify right)
 		)
-		(uuid "1b02e83d-3ff9-4f08-bf9d-a970e077eb31")
-	)
-	(hierarchical_label "GATE_DRIVER_CP_EN"
-		(shape output)
-		(at 312.42 180.34 180)
-		(effects
-			(font
-				(size 1.27 1.27)
+		(property "Value" "GND"
+			(at 50.8 243.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 			)
-			(justify right)
 		)
-		(uuid "2465b752-767a-4bf5-a129-598e8963bab0")
-	)
-	(hierarchical_label "MCU_SMBD"
-		(shape bidirectional)
-		(at 361.95 195.58 0)
-		(effects
-			(font
-				(size 1.27 1.27)
+		(property "Footprint" ""
+			(at 50.8 238.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
 			)
-			(justify left)
 		)
-		(uuid "4206be60-dea7-427c-9667-b0c8472a83e0")
-	)
-	(hierarchical_label "GATE_DRIVER_PMON_EN"
-		(shape output)
-		(at 312.42 177.8 180)
-		(effects
-			(font
-				(size 1.27 1.27)
+		(property "Datasheet" ""
+			(at 50.8 238.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
 			)
-			(justify right)
 		)
-		(uuid "5653eded-1595-481d-89aa-2e10169da630")
-	)
-	(hierarchical_label "GATE_DRIVER_PCHG_EN"
-		(shape output)
-		(at 372.11 175.26 0)
-		(effects
-			(font
-				(size 1.27 1.27)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 50.8 238.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
 			)
-			(justify left)
 		)
-		(uuid "74433d68-27d7-47e0-8e0b-863f6d9a2dd8")
-	)
-	(hierarchical_label "MCU_SMBC"
-		(shape bidirectional)
-		(at 361.95 193.04 0)
-		(effects
-			(font
-				(size 1.27 1.27)
+		(pin "1"
+			(uuid "6210b257-6b2a-4248-9c16-1f0d5253d15a")
+		)
+		(instances
+			(project ""
+				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
+					(reference "#PWR012")
+					(unit 1)
+				)
 			)
-			(justify left)
 		)
-		(uuid "938ead29-cc2a-44aa-8640-361440e7d76e")
-	)
-	(hierarchical_label "AFE_CAP1"
-		(shape input)
-		(at 93.98 182.88 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "968ba43a-0e4c-441b-b0e7-72422e12c869")
-	)
-	(hierarchical_label "GATE_DRIVER_PACKDIV"
-		(shape output)
-		(at 372.11 177.8 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "9b6d5330-6a9d-45f5-a925-757cd45bde3f")
-	)
-	(hierarchical_label "AFE_SCL"
-		(shape input)
-		(at 93.98 185.42 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "a83efc11-f60a-40e0-951b-2a8561c98d4d")
-	)
-	(hierarchical_label "AFE_REGOUT"
-		(shape input)
-		(at 93.98 187.96 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "bb7f9f53-9026-4543-be5b-54568fdce2a0")
-	)
-	(hierarchical_label "AFE_C3"
-		(shape input)
-		(at 59.69 187.96 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "d25b110a-c024-4b94-ad3d-46040814e02a")
-	)
-	(hierarchical_label "MCU_P3V3"
-		(shape input)
-		(at 321.31 195.58 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "e7ed3da4-f2ed-4ea7-a896-dbf953d195c2")
-	)
-	(hierarchical_label "AFE_SDA"
-		(shape input)
-		(at 59.69 185.42 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "f596f513-c460-41a4-9fad-3c02adcb01df")
 	)
 	(symbol
 		(lib_id "Device:C")
@@ -7511,7 +7796,7 @@
 			(uuid "3c82a95a-21f5-4fc2-b8e1-ce022463092f")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "C1")
 					(unit 1)
@@ -7720,7 +8005,7 @@
 			(uuid "c45cb75b-f112-4c25-b1ae-5aa002ce20c6")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "J2")
 					(unit 1)
@@ -8338,7 +8623,7 @@
 			(uuid "fce9a22a-af4d-45bb-b0a5-4e5f06f8908f")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "D4")
 					(unit 1)
@@ -8956,7 +9241,7 @@
 			(uuid "ff68a64d-7246-4188-8313-f4e9499198ab")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "C4")
 					(unit 1)
@@ -9563,7 +9848,7 @@
 			(uuid "61d69b6e-56be-4590-b59f-f41c3f1f1296")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "R11")
 					(unit 1)
@@ -9573,7 +9858,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 93.98 190.5 90)
+		(at 161.29 228.6 90)
 		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
@@ -9582,7 +9867,7 @@
 		(dnp no)
 		(uuid "12a7c5ab-6f92-4cdd-92d1-05435003b571")
 		(property "Reference" "#PWR03"
-			(at 100.33 190.5 0)
+			(at 167.64 228.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9591,7 +9876,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 98.806 190.5 90)
+			(at 166.116 228.6 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9599,7 +9884,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 93.98 190.5 0)
+			(at 161.29 228.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9608,7 +9893,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 93.98 190.5 0)
+			(at 161.29 228.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9617,7 +9902,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 93.98 190.5 0)
+			(at 161.29 228.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9629,7 +9914,7 @@
 			(uuid "d31926d8-0991-4eba-a88e-4e3947cffab0")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "#PWR03")
 					(unit 1)
@@ -9695,7 +9980,7 @@
 			(uuid "6ba9581f-6035-4ebe-9430-dd040a2caf09")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "#PWR06")
 					(unit 1)
@@ -10313,7 +10598,7 @@
 			(uuid "ed51ba27-82dc-47a7-97a3-d6a6234d7f0b")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "D7")
 					(unit 1)
@@ -10922,7 +11207,7 @@
 			(uuid "140d205c-ca8e-4ef9-be01-bfc7b5eb5c93")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "R7")
 					(unit 1)
@@ -10931,8 +11216,75 @@
 		)
 	)
 	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 132.08 220.98 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "1c55c468-7315-454c-a4e3-38d93ad8057f")
+		(property "Reference" "#FLG03"
+			(at 132.08 219.075 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 132.08 215.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at 132.08 220.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 132.08 220.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 132.08 220.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "084c3a42-b201-485b-9c4c-ac52e1ffa588")
+		)
+		(instances
+			(project "STAR_FUEL_GAUGE"
+				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
+					(reference "#FLG03")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "power:GND")
-		(at 353.06 198.12 90)
+		(at 220.98 228.6 90)
 		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
@@ -10941,7 +11293,7 @@
 		(dnp no)
 		(uuid "1f4ccbde-0947-4e9b-9dd2-f674607c9d67")
 		(property "Reference" "#PWR015"
-			(at 359.41 198.12 0)
+			(at 227.33 228.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10950,7 +11302,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 357.886 198.12 90)
+			(at 225.806 228.6 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10958,7 +11310,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 353.06 198.12 0)
+			(at 220.98 228.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10967,7 +11319,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 353.06 198.12 0)
+			(at 220.98 228.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10976,7 +11328,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 353.06 198.12 0)
+			(at 220.98 228.6 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10988,7 +11340,7 @@
 			(uuid "2a226267-bb2a-4449-b01b-14c06bb5e109")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "#PWR015")
 					(unit 1)
@@ -11606,9 +11958,76 @@
 			(uuid "80493e8f-6e45-4bcb-950a-a8aa3aea5955")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "D5")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Mechanical:MountingHole_Pad")
+		(at 91.44 233.68 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "255ef388-10bd-4e94-b7ec-ed5a1cd27639")
+		(property "Reference" "MP4"
+			(at 93.98 231.1399 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "M3 Via"
+			(at 93.98 233.6799 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
+			(at 91.44 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 91.44 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Mounting Hole with connection"
+			(at 91.44 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "3337aa65-1bd6-4860-8c24-cd5a8f8c3b67")
+		)
+		(instances
+			(project "STAR_FUEL_GAUGE"
+				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
+					(reference "MP4")
 					(unit 1)
 				)
 			)
@@ -12220,7 +12639,7 @@
 			(uuid "0692d036-76a6-494d-9aac-909b74a923b8")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "Q2")
 					(unit 1)
@@ -12511,9 +12930,143 @@
 			(uuid "ab3936fe-bea3-4772-806b-d964125bfe8c")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "D8")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 144.78 97.79 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "456a2408-559f-490b-819a-8e9a5a330c56")
+		(property "Reference" "#FLG02"
+			(at 144.78 95.885 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 144.78 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at 144.78 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 144.78 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 144.78 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "d654c66b-d26d-4b23-8077-754998621d64")
+		)
+		(instances
+			(project ""
+				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
+					(reference "#FLG02")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Mechanical:MountingHole_Pad")
+		(at 50.8 233.68 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "501d6abf-c402-4cd9-94ce-6153811fe35f")
+		(property "Reference" "MP2"
+			(at 53.34 231.1399 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "M3 Via"
+			(at 53.34 233.6799 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
+			(at 50.8 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 50.8 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Mounting Hole with connection"
+			(at 50.8 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "a17ac271-39cc-4e3a-a698-b85766014047")
+		)
+		(instances
+			(project ""
+				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
+					(reference "MP2")
 					(unit 1)
 				)
 			)
@@ -13127,7 +13680,7 @@
 			(uuid "2f78d08f-1d9f-4ba0-9b34-aa1fc39f5aee")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "R4")
 					(unit 1)
@@ -13137,7 +13690,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 330.2 193.04 270)
+		(at 198.12 223.52 270)
 		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
@@ -13146,7 +13699,7 @@
 		(dnp no)
 		(uuid "586a49bb-4920-46ce-b037-28bb9d11a6d7")
 		(property "Reference" "#PWR013"
-			(at 323.85 193.04 0)
+			(at 191.77 223.52 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13155,7 +13708,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 325.374 193.04 90)
+			(at 193.294 223.52 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13163,7 +13716,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 330.2 193.04 0)
+			(at 198.12 223.52 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13172,7 +13725,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 330.2 193.04 0)
+			(at 198.12 223.52 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13181,7 +13734,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 330.2 193.04 0)
+			(at 198.12 223.52 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13193,7 +13746,7 @@
 			(uuid "0c504182-b4f2-4119-9ec0-91bd0d80ad6a")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "#PWR013")
 					(unit 1)
@@ -13800,7 +14353,7 @@
 			(uuid "07402091-e0c4-4350-9702-5f2b3fb6161f")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "R12")
 					(unit 1)
@@ -13868,7 +14421,7 @@
 			(uuid "12180b69-44dc-4662-a25a-98c8054d44be")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "J3")
 					(unit 1)
@@ -14486,7 +15039,7 @@
 			(uuid "bb2ff75d-98ee-43bf-baef-12d122741e0f")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "D6")
 					(unit 1)
@@ -14636,7 +15189,7 @@
 			(uuid "7135e85a-fae3-4b8f-9ffa-a6aa5dff59eb")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "U2")
 					(unit 1)
@@ -14702,7 +15255,7 @@
 			(uuid "a7db5ee0-4498-4daf-bbb9-8646d540b0ea")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "#PWR05")
 					(unit 1)
@@ -14768,7 +15321,7 @@
 			(uuid "cd7d694b-07fa-4c11-a10e-6400628c04d1")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "#PWR02")
 					(unit 1)
@@ -14834,7 +15387,7 @@
 			(uuid "54c41b7e-11cc-47c0-9991-6edd5c1c246d")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "#PWR07")
 					(unit 1)
@@ -15450,7 +16003,7 @@
 			(uuid "c1208a56-4135-4570-bc9f-12deff2acdbd")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "R19")
 					(unit 1)
@@ -15460,7 +16013,7 @@
 	)
 	(symbol
 		(lib_id "61200621621:6120XX21621_61200621621")
-		(at 341.63 195.58 270)
+		(at 209.55 226.06 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -15468,7 +16021,7 @@
 		(dnp no)
 		(uuid "7338d1be-dd94-4d8f-a0cf-7eb6742f7c8c")
 		(property "Reference" "J6"
-			(at 343.154 189.23 90)
+			(at 211.074 219.71 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15476,7 +16029,7 @@
 			)
 		)
 		(property "Value" "6120XX21621_61200621621"
-			(at 341.884 201.93 90)
+			(at 209.804 232.41 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15484,7 +16037,7 @@
 			)
 		)
 		(property "Footprint" "61200621621:61200621621"
-			(at 341.63 195.58 0)
+			(at 209.55 226.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15494,7 +16047,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 341.63 195.58 0)
+			(at 209.55 226.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15503,7 +16056,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 341.63 195.58 0)
+			(at 209.55 226.06 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15530,7 +16083,7 @@
 			(uuid "76f0eb9a-b5a8-4e1d-ab16-a92548f2b8c4")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "J6")
 					(unit 1)
@@ -16139,7 +16692,7 @@
 			(uuid "9bcef274-1f3c-4004-bbe1-0cc5c51ad589")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "R14")
 					(unit 1)
@@ -16315,7 +16868,7 @@
 			(uuid "bac90b81-31a9-4468-a299-426978ce630b")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "Q1")
 					(unit 1)
@@ -16933,7 +17486,7 @@
 			(uuid "d9227726-d9ed-4277-8e74-e6a5a3520e76")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "C2")
 					(unit 1)
@@ -17000,7 +17553,7 @@
 			(uuid "5b9f8203-cba0-4e41-a7be-69c64d5b0827")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "#PWR010")
 					(unit 1)
@@ -17616,7 +18169,7 @@
 			(uuid "39b3af18-81c3-4ebc-b25d-d80e15dbba87")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "R2")
 					(unit 1)
@@ -17907,7 +18460,7 @@
 			(uuid "d687f5a8-c4e2-466f-8f8f-1e7c13344fac")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "D9")
 					(unit 1)
@@ -17917,7 +18470,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 353.06 180.34 90)
+		(at 289.56 232.41 90)
 		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
@@ -17926,7 +18479,7 @@
 		(dnp no)
 		(uuid "8d731d73-c873-4bc2-903a-31460cb19ae0")
 		(property "Reference" "#PWR014"
-			(at 359.41 180.34 0)
+			(at 295.91 232.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17935,7 +18488,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 357.886 180.34 90)
+			(at 294.386 232.41 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17943,7 +18496,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 353.06 180.34 0)
+			(at 289.56 232.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17952,7 +18505,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 353.06 180.34 0)
+			(at 289.56 232.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17961,7 +18514,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 353.06 180.34 0)
+			(at 289.56 232.41 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17973,7 +18526,7 @@
 			(uuid "70f1b0e7-2dcd-4461-a8b4-a96108b5c384")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "#PWR014")
 					(unit 1)
@@ -18591,7 +19144,7 @@
 			(uuid "f4c97f40-0310-46aa-8d74-8e9c25a7ecf7")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "C3")
 					(unit 1)
@@ -19198,7 +19751,7 @@
 			(uuid "704ad502-6518-4dc9-bbf9-b12cba326533")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "R6")
 					(unit 1)
@@ -19265,9 +19818,76 @@
 			(uuid "478d98dd-2c54-4468-a285-624f51e5d1b0")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "#PWR016")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Mechanical:MountingHole_Pad")
+		(at 80.01 233.68 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "a0c15cf3-0578-4aa9-a764-758f6e14e20d")
+		(property "Reference" "MP3"
+			(at 82.55 231.1399 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "M3 Via"
+			(at 82.55 233.6799 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
+			(at 80.01 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 80.01 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Mounting Hole with connection"
+			(at 80.01 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "3944b093-da4b-4cb4-8427-c4b6aa8b74be")
+		)
+		(instances
+			(project "STAR_FUEL_GAUGE"
+				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
+					(reference "MP3")
 					(unit 1)
 				)
 			)
@@ -19331,7 +19951,7 @@
 			(uuid "725a5d5c-650e-472a-ba20-fcf7972253f7")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "#PWR08")
 					(unit 1)
@@ -19949,7 +20569,7 @@
 			(uuid "877f8adc-94ea-45d8-ab30-f4baa4426e05")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "C7")
 					(unit 1)
@@ -20015,7 +20635,7 @@
 			(uuid "53e2d810-caab-4a46-94b9-71398b6e19d3")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "#PWR04")
 					(unit 1)
@@ -20084,7 +20704,7 @@
 			(uuid "41d40e58-5628-43a3-bf35-b87cc5074516")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "J4")
 					(unit 1)
@@ -20702,7 +21322,7 @@
 			(uuid "8960fdf5-9ecf-48d4-bc08-6f70a0efcf0c")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "C5")
 					(unit 1)
@@ -20712,7 +21332,7 @@
 	)
 	(symbol
 		(lib_id "Device:R")
-		(at 144.78 147.32 180)
+		(at 144.78 143.51 180)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -20720,7 +21340,7 @@
 		(dnp no)
 		(uuid "b56a821c-e1b2-4af5-82a7-d96d5da214ad")
 		(property "Reference" "R8"
-			(at 149.098 143.764 0)
+			(at 147.828 139.954 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20729,7 +21349,7 @@
 			)
 		)
 		(property "Value" "510k"
-			(at 150.368 150.876 0)
+			(at 150.368 147.066 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20738,7 +21358,7 @@
 			)
 		)
 		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
-			(at 146.558 147.32 90)
+			(at 146.558 143.51 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20747,7 +21367,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20756,7 +21376,7 @@
 			)
 		)
 		(property "Description" "Resistor"
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20765,7 +21385,7 @@
 			)
 		)
 		(property "Display" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20774,7 +21394,7 @@
 			)
 		)
 		(property "JLCPCB ID" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20783,7 +21403,7 @@
 			)
 		)
 		(property "LCSC Part" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20792,7 +21412,7 @@
 			)
 		)
 		(property "A_MAX" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20801,7 +21421,7 @@
 			)
 		)
 		(property "BALL_COLUMNS" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20810,7 +21430,7 @@
 			)
 		)
 		(property "BALL_ROWS" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20819,7 +21439,7 @@
 			)
 		)
 		(property "BODY_DIAMETER" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20828,7 +21448,7 @@
 			)
 		)
 		(property "B_MAX" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20837,7 +21457,7 @@
 			)
 		)
 		(property "B_MIN" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20846,7 +21466,7 @@
 			)
 		)
 		(property "B_NOM" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20855,7 +21475,7 @@
 			)
 		)
 		(property "D2_NOM" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20864,7 +21484,7 @@
 			)
 		)
 		(property "DMAX" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20873,7 +21493,7 @@
 			)
 		)
 		(property "DMIN" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20882,7 +21502,7 @@
 			)
 		)
 		(property "DNOM" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20891,7 +21511,7 @@
 			)
 		)
 		(property "D_MAX" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20900,7 +21520,7 @@
 			)
 		)
 		(property "D_MIN" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20909,7 +21529,7 @@
 			)
 		)
 		(property "D_NOM" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20918,7 +21538,7 @@
 			)
 		)
 		(property "E2_NOM" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20927,7 +21547,7 @@
 			)
 		)
 		(property "EMAX" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20936,7 +21556,7 @@
 			)
 		)
 		(property "EMIN" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20945,7 +21565,7 @@
 			)
 		)
 		(property "ENOM" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20954,7 +21574,7 @@
 			)
 		)
 		(property "E_MAX" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20963,7 +21583,7 @@
 			)
 		)
 		(property "E_MIN" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20972,7 +21592,7 @@
 			)
 		)
 		(property "E_NOM" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20981,7 +21601,7 @@
 			)
 		)
 		(property "IPC" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20990,7 +21610,7 @@
 			)
 		)
 		(property "JEDEC" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20999,7 +21619,7 @@
 			)
 		)
 		(property "L_MAX" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21008,7 +21628,7 @@
 			)
 		)
 		(property "L_MIN" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21017,7 +21637,7 @@
 			)
 		)
 		(property "L_NOM" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21026,7 +21646,7 @@
 			)
 		)
 		(property "PACKAGE_TYPE" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21035,7 +21655,7 @@
 			)
 		)
 		(property "PARTEV" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21044,7 +21664,7 @@
 			)
 		)
 		(property "PINS" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21053,7 +21673,7 @@
 			)
 		)
 		(property "PIN_COLUMNS" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21062,7 +21682,7 @@
 			)
 		)
 		(property "PIN_COUNT_D" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21071,7 +21691,7 @@
 			)
 		)
 		(property "PIN_COUNT_E" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21080,7 +21700,7 @@
 			)
 		)
 		(property "THERMAL_PAD" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21089,7 +21709,7 @@
 			)
 		)
 		(property "VACANCIES" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21098,7 +21718,7 @@
 			)
 		)
 		(property "Sim.Device" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21107,7 +21727,7 @@
 			)
 		)
 		(property "Sim.Pins" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21116,7 +21736,7 @@
 			)
 		)
 		(property "SNAPEDA_PACKAGE_ID" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21125,7 +21745,7 @@
 			)
 		)
 		(property "Availability" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21134,7 +21754,7 @@
 			)
 		)
 		(property "Check_prices" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21143,7 +21763,7 @@
 			)
 		)
 		(property "Description_1" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21152,7 +21772,7 @@
 			)
 		)
 		(property "MANUFACTURER" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21161,7 +21781,7 @@
 			)
 		)
 		(property "MAXIMUM_PACKAGE_HEIGHT" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21170,7 +21790,7 @@
 			)
 		)
 		(property "MF" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21179,7 +21799,7 @@
 			)
 		)
 		(property "MP" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21188,7 +21808,7 @@
 			)
 		)
 		(property "PARTREV" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21197,7 +21817,7 @@
 			)
 		)
 		(property "Package" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21206,7 +21826,7 @@
 			)
 		)
 		(property "Part Number" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21215,7 +21835,7 @@
 			)
 		)
 		(property "STANDARD" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21224,7 +21844,7 @@
 			)
 		)
 		(property "SnapEDA_Link" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21233,7 +21853,7 @@
 			)
 		)
 		(property "Specifications" ""
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21242,7 +21862,7 @@
 			)
 		)
 		(property "DigiKey Link" "https://www.digikey.com/short/80f52db5"
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21251,7 +21871,7 @@
 			)
 		)
 		(property "DigiKey Part Number" "541-510KGCT-ND"
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21260,7 +21880,7 @@
 			)
 		)
 		(property "DigiKey Price per Unit" "0.10"
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21269,7 +21889,7 @@
 			)
 		)
 		(property "Manufactaurer Part Number" "CRCW0603510KJNEA"
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21278,7 +21898,7 @@
 			)
 		)
 		(property "Mouser Link" "https://mou.sr/3Ip4Oy7"
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21287,7 +21907,7 @@
 			)
 		)
 		(property "Mouser Part Number" "71-CRCW0603J-510K-E3"
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21296,7 +21916,7 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.10"
-			(at 144.78 147.32 0)
+			(at 144.78 143.51 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21311,7 +21931,7 @@
 			(uuid "04ebb5b3-2ac5-441b-90ac-4c8edfdf469d")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "R8")
 					(unit 1)
@@ -21920,7 +22540,7 @@
 			(uuid "317b2d55-f92a-4eed-abfc-5be45b3e2359")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "R18")
 					(unit 1)
@@ -22538,7 +23158,7 @@
 			(uuid "97dd7e45-746e-4c0b-ad86-79ca9df1b030")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "C8")
 					(unit 1)
@@ -22556,7 +23176,7 @@
 		(dnp no)
 		(uuid "c171a122-b78b-427c-a69f-0349e040a9b9")
 		(property "Reference" "R3"
-			(at 79.248 95.504 0)
+			(at 78.232 95.504 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23147,7 +23767,7 @@
 			(uuid "ee593d09-dd53-4e7e-b155-c9cff92c3a64")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "R3")
 					(unit 1)
@@ -23157,7 +23777,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 59.69 182.88 270)
+		(at 127 220.98 270)
 		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
@@ -23166,7 +23786,7 @@
 		(dnp no)
 		(uuid "c4c3143d-331d-4001-956d-6ce7690e403f")
 		(property "Reference" "#PWR01"
-			(at 53.34 182.88 0)
+			(at 120.65 220.98 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23175,7 +23795,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 54.864 182.88 90)
+			(at 122.174 220.98 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23183,7 +23803,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 59.69 182.88 0)
+			(at 127 220.98 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23192,7 +23812,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 59.69 182.88 0)
+			(at 127 220.98 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23201,7 +23821,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 59.69 182.88 0)
+			(at 127 220.98 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23213,7 +23833,7 @@
 			(uuid "57a0afd2-b40c-40ec-9f87-97575e3cc3ec")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "#PWR01")
 					(unit 1)
@@ -23829,7 +24449,7 @@
 			(uuid "b1c2d88d-e143-4070-a683-7fb23aafb752")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "R1")
 					(unit 1)
@@ -24436,7 +25056,7 @@
 			(uuid "aa951e1d-459f-4bc8-bebb-4fe671a685cb")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "R16")
 					(unit 1)
@@ -25045,7 +25665,7 @@
 			(uuid "6f9d8481-0afc-4d28-a28d-9241be575d6e")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "R9")
 					(unit 1)
@@ -25111,7 +25731,7 @@
 			(uuid "21a4998f-5a46-4963-bf2c-2c972080191d")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "#PWR09")
 					(unit 1)
@@ -25121,7 +25741,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 330.2 175.26 270)
+		(at 266.7 227.33 270)
 		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
@@ -25130,7 +25750,7 @@
 		(dnp no)
 		(uuid "cc28800a-1618-4488-af39-65beddc08999")
 		(property "Reference" "#PWR011"
-			(at 323.85 175.26 0)
+			(at 260.35 227.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -25139,7 +25759,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 325.374 175.26 90)
+			(at 261.874 227.33 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -25147,7 +25767,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 330.2 175.26 0)
+			(at 266.7 227.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -25156,7 +25776,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 330.2 175.26 0)
+			(at 266.7 227.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -25165,7 +25785,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 330.2 175.26 0)
+			(at 266.7 227.33 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -25177,7 +25797,7 @@
 			(uuid "addfed05-de97-4bc1-bc1b-ee3b0d9417e5")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "#PWR011")
 					(unit 1)
@@ -25187,7 +25807,7 @@
 	)
 	(symbol
 		(lib_id "61200621621:6120XX21621_61200621621")
-		(at 341.63 177.8 270)
+		(at 278.13 229.87 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -25195,7 +25815,7 @@
 		(dnp no)
 		(uuid "cc792c26-2ca6-46bd-9fb5-afdea0803c15")
 		(property "Reference" "J5"
-			(at 343.154 171.45 90)
+			(at 279.654 223.52 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -25203,7 +25823,7 @@
 			)
 		)
 		(property "Value" "6120XX21621_61200621621"
-			(at 341.884 184.15 90)
+			(at 278.384 236.22 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -25211,7 +25831,7 @@
 			)
 		)
 		(property "Footprint" "61200621621:61200621621"
-			(at 341.63 177.8 0)
+			(at 278.13 229.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -25221,7 +25841,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 341.63 177.8 0)
+			(at 278.13 229.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -25230,7 +25850,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 341.63 177.8 0)
+			(at 278.13 229.87 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -25257,7 +25877,7 @@
 			(uuid "864f27ad-330e-4fab-9bd7-0018a41529c4")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "J5")
 					(unit 1)
@@ -25473,9 +26093,143 @@
 			(uuid "e7d0886a-f2c0-4dbd-b1cb-90003500d38a")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "U1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Mechanical:MountingHole_Pad")
+		(at 66.04 233.68 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "d0d29f6a-c826-49b2-9da1-3823aa5d5ca0")
+		(property "Reference" "MP1"
+			(at 68.58 231.1399 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "M3 Via"
+			(at 68.58 233.6799 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
+			(at 66.04 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 66.04 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Mounting Hole with connection"
+			(at 66.04 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "19ef723d-ae7a-4091-8557-53b26af2d6df")
+		)
+		(instances
+			(project "STAR_FUEL_GAUGE"
+				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
+					(reference "MP1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:PWR_FLAG")
+		(at 379.73 105.41 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "d1497dec-7e0e-45ba-bc2a-7b99f9970d29")
+		(property "Reference" "#FLG01"
+			(at 379.73 103.505 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 379.73 100.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at 379.73 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 379.73 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Special symbol for telling ERC where power comes from"
+			(at 379.73 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "6bc6c13b-1283-47dc-84cf-9033c8ca88be")
+		)
+		(instances
+			(project ""
+				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
+					(reference "#FLG01")
 					(unit 1)
 				)
 			)
@@ -26089,7 +26843,7 @@
 			(uuid "2e673a03-f7e9-4fde-80db-392f51b7c9ed")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "R20")
 					(unit 1)
@@ -26707,7 +27461,7 @@
 			(uuid "cba25606-a6b0-4e6f-be44-462d65b721cc")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "D2")
 					(unit 1)
@@ -27325,7 +28079,7 @@
 			(uuid "acf1beb5-8606-4ab0-b2d5-a4ef9ea5b9da")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "C6")
 					(unit 1)
@@ -27943,7 +28697,7 @@
 			(uuid "cefa943a-4aec-459e-9c2d-43b41436ab41")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "D1")
 					(unit 1)
@@ -28122,7 +28876,7 @@
 			(uuid "bd8db587-79c4-429f-b2a1-ead626944f00")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "S1")
 					(unit 1)
@@ -28729,7 +29483,7 @@
 			(uuid "1e67f45e-ea0c-4aff-9032-4ef8b605b740")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "R15")
 					(unit 1)
@@ -29336,7 +30090,7 @@
 			(uuid "3ed6499a-917a-4b4d-8ea7-b9c0f878312c")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "R10")
 					(unit 1)
@@ -29878,7 +30632,7 @@
 			(uuid "52381ef8-9ad3-4269-b192-c9e4c4f36b83")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "J7")
 					(unit 1)
@@ -30496,7 +31250,7 @@
 			(uuid "f7efb8b8-709c-453b-9625-7bd51802d17a")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "D3")
 					(unit 1)
@@ -31105,7 +31859,7 @@
 			(uuid "6c8617e8-b202-480d-80f9-1025693d7029")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "R5")
 					(unit 1)
@@ -31115,7 +31869,7 @@
 	)
 	(symbol
 		(lib_id "61200821621:6120XX21621_61200821621")
-		(at 74.93 185.42 270)
+		(at 142.24 223.52 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -31123,7 +31877,7 @@
 		(dnp no)
 		(uuid "f26b57dd-0110-4f67-ba43-e09f71dea257")
 		(property "Reference" "J1"
-			(at 76.454 179.324 90)
+			(at 143.764 217.424 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -31131,7 +31885,7 @@
 			)
 		)
 		(property "Value" "6120XX21621_61200821621"
-			(at 74.676 194.818 90)
+			(at 141.986 232.918 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -31139,7 +31893,7 @@
 			)
 		)
 		(property "Footprint" "61200821621:61200821621"
-			(at 74.93 185.42 0)
+			(at 142.24 223.52 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -31149,7 +31903,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 74.93 185.42 0)
+			(at 142.24 223.52 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -31158,7 +31912,7 @@
 			)
 		)
 		(property "Description" ""
-			(at 74.93 185.42 0)
+			(at 142.24 223.52 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -31191,7 +31945,7 @@
 			(uuid "914d1920-4ad8-4933-be0a-3cc4b43226fa")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "J1")
 					(unit 1)
@@ -31800,7 +32554,7 @@
 			(uuid "77d40549-95d2-4482-aba8-408d81d741e3")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "R17")
 					(unit 1)
@@ -32409,7 +33163,7 @@
 			(uuid "a8be1bcd-5aaf-4dfc-9b10-9b47b0aac4c1")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "R13")
 					(unit 1)
@@ -32548,7 +33302,7 @@
 			(uuid "24002bfe-9007-46d1-bbf8-afcf91a3ab68")
 		)
 		(instances
-			(project "STAR_FUEL_GUAGE"
+			(project "STAR_FUEL_GAUGE"
 				(path "/e95fb06c-0cf8-41c5-94d7-05cee231f8fb"
 					(reference "Q3")
 					(unit 1)
