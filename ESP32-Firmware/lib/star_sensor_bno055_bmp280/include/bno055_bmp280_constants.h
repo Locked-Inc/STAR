@@ -9,9 +9,12 @@
 extern "C" {
 #endif
 
-/* Type-safe I2C addresses */
-static const uint8_t BNO055_I2C_ADDR = 0x28;
-static const uint8_t BMP280_I2C_ADDR = 0x76;
+/* Type-safe I2C addresses
+ * Using enum for compile-time constant behavior in switch statements */
+enum {
+  k_bno055_i2c_addr = 0x28,
+  k_bmp280_i2c_addr = 0x76,
+};
 
 /* BNO055 Register Map */
 typedef enum {
@@ -94,12 +97,13 @@ typedef enum {
   k_bmp280_filter_x16 = 0x04
 } bmp280_filter_t;
 
-/* Chip ID Constants */
-static const uint8_t BNO055_CHIP_ID_VALUE = 0xA0;
-static const uint8_t BMP280_CHIP_ID_VALUE = 0x58;
-
-/* BNO055 System Trigger Constants */
-static const uint8_t BNO055_SYS_TRIGGER_RST = 0x20;
+/* Chip ID and System Trigger Constants
+ * Using enum for compile-time constant behavior */
+enum {
+  k_bno055_chip_id_value   = 0xA0,
+  k_bmp280_chip_id_value   = 0x58,
+  k_bno055_sys_trigger_rst = 0x20,
+};
 
 #ifdef __cplusplus
 }

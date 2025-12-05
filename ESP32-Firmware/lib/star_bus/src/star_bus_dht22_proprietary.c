@@ -17,20 +17,25 @@
 
 static const char* s_TAG = "STAR_DHT22";
 
-/* Timing parameters (microseconds) */
-#define TIMING_START_LOW_US (18000)  /* Start signal low duration (18ms) */
-#define TIMING_START_HIGH_US (40)    /* Start signal high duration */
-#define TIMING_RESPONSE_LOW_US (80)  /* Sensor response low duration */
-#define TIMING_RESPONSE_HIGH_US (80) /* Sensor response high duration */
-#define TIMING_BIT_START_US (50)     /* Bit start low duration */
-#define TIMING_BIT_0_HIGH_US (28)    /* Bit 0 high duration (26-28us) */
-#define TIMING_BIT_1_HIGH_US (70)    /* Bit 1 high duration (70us) */
-#define TIMING_BIT_THRESHOLD_US (40) /* Threshold to distinguish 0 from 1 */
-#define TIMING_TIMEOUT_US (100)      /* Timeout for waiting on signal change */
+/* Default mutex timeout in milliseconds to prevent infinite wait deadlocks */
+static const uint32_t s_dht22_mutex_timeout_ms = 5000;
 
-/* Data format */
-#define DHT22_DATA_BITS (40) /* Total bits: 16 humidity + 16 temp + 8 checksum */
-#define DHT22_DATA_BYTES (5) /* Total bytes */
+/* Timing parameters (microseconds) - use constants for type safety
+ * Some constants are defined for documentation purposes and future use.
+ * The __attribute__((unused)) suppresses warnings for intentionally unused constants. */
+static const uint32_t s_timing_start_low_us __attribute__((unused))     = 18000; /* Start signal low (18ms) */
+static const uint32_t s_timing_start_high_us                            = 40;    /* Start signal high */
+static const uint32_t s_timing_response_low_us                          = 80;    /* Sensor response low */
+static const uint32_t s_timing_response_high_us                         = 80;    /* Sensor response high */
+static const uint32_t s_timing_bit_start_us                             = 50;    /* Bit start low */
+static const uint32_t s_timing_bit_0_high_us __attribute__((unused))    = 28;    /* Bit 0 high (26-28us) */
+static const uint32_t s_timing_bit_1_high_us                            = 70;    /* Bit 1 high (70us) */
+static const uint32_t s_timing_bit_threshold_us                         = 40;    /* 0/1 threshold */
+static const uint32_t s_timing_timeout_us                               = 100;   /* Signal change timeout */
+
+/* Data format - use constants for type safety */
+static const uint32_t s_dht22_data_bits  = 40; /* Total bits: 16 humidity + 16 temp + 8 checksum */
+static const uint32_t s_dht22_data_bytes = 5;  /* Total bytes */
 
 /* --- Types --- */
 
@@ -111,7 +116,7 @@ static dht22_state_t* get_dht22_state(const char* bus_name, bool create)
     return NULL;
   }
 
-  if (xSemaphoreTake(g_dht22_mutex, portMAX_DELAY) != pdTRUE) {
+  if (xSemaphoreTake(g_dht22_mutex, pdMS_TO_TICKS(s_dht22_mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to take DHT22 mutex");
     return NULL;
   }
@@ -252,29 +257,47 @@ static int32_t measure_pulse(gpio_num_t pin, int current_level, uint32_t timeout
  *
  * @return ESP_OK on success, error code otherwise
  */
-static esp_err_t read_raw_data(dht22_state_t* state, uint8_t data[DHT22_DATA_BYTES])
+static esp_err_t read_raw_data(dht22_state_t* state, uint8_t data[s_dht22_data_bytes])
 {
   gpio_num_t pin          = state->config.gpio_pin;
   uint32_t   start_low_us = state->config.start_low_ms * 1000;
   uint32_t   timeout_us   = state->config.read_timeout_ms * 1000;
 
-  /* Step 1: Send start signal (only this part needs critical section) */
+  /*
+   * Step 1: Send start signal
+   *
+   * The DHT22 protocol requires:
+   * 1. Pull data line low for at least 1ms (we use 18ms by default)
+   * 2. Pull high for 20-40us
+   * 3. Switch to input mode
+   *
+   * The 18ms delay does NOT need to be in a critical section - only the
+   * transition timing between low->high->input is critical. Holding the
+   * critical section for 18ms would block interrupts and cause watchdog
+   * timeouts.
+   */
   portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
-  portENTER_CRITICAL(&mux);
 
-  /* Pull low for at least 1ms (we use 18ms by default) */
+  /* Enter critical section only for the GPIO mode change and initial pull low */
+  portENTER_CRITICAL(&mux);
   gpio_set_output(pin);
   gpio_low(pin);
+  portEXIT_CRITICAL(&mux);
+
+  /* Long delay OUTSIDE critical section - interrupts can fire during this time */
   delay_us(start_low_us);
 
-  /* Pull high for 20-40us */
+  /*
+   * Enter critical section for the timing-critical transition:
+   * Pull high for 20-40us, then switch to input mode.
+   * This transition timing is important for sensor to recognize the start signal.
+   */
+  portENTER_CRITICAL(&mux);
   gpio_high(pin);
-  delay_us(TIMING_START_HIGH_US);
+  delay_us(s_timing_start_high_us);
 
   /* Step 2: Switch to input and wait for sensor response */
   gpio_set_input(pin);
-
-  /* Exit critical section - sensor response can be read without it */
   portEXIT_CRITICAL(&mux);
 
   /* Wait for sensor to pull low (response start) */
@@ -284,42 +307,42 @@ static esp_err_t read_raw_data(dht22_state_t* state, uint8_t data[DHT22_DATA_BYT
   }
 
   /* Wait for sensor to pull high (response end of low pulse ~80us) */
-  if (wait_for_level(pin, 1, TIMING_RESPONSE_LOW_US + 50) < 0) {
+  if (wait_for_level(pin, 1, s_timing_response_low_us + 50) < 0) {
     ESP_LOGD(s_TAG, "No response from sensor (wait for high)");
     return ESP_ERR_TIMEOUT;
   }
 
   /* Wait for sensor to pull low (start of first data bit) */
-  if (wait_for_level(pin, 0, TIMING_RESPONSE_HIGH_US + 50) < 0) {
+  if (wait_for_level(pin, 0, s_timing_response_high_us + 50) < 0) {
     ESP_LOGD(s_TAG, "No response from sensor (wait for data start)");
     return ESP_ERR_TIMEOUT;
   }
 
   /* Step 3: Read 40 bits of data */
-  memset(data, 0, DHT22_DATA_BYTES);
+  memset(data, 0, s_dht22_data_bytes);
 
   /* Use short critical sections only for the most timing-sensitive parts */
-  for (int i = 0; i < DHT22_DATA_BITS; i++) {
+  for (int i = 0; i < s_dht22_data_bits; i++) {
     /* Yield periodically to prevent watchdog */
     if (i % 8 == 0 && i > 0) {
       taskYIELD();
     }
 
     /* Wait for high (end of bit start pulse ~50us) */
-    if (wait_for_level(pin, 1, TIMING_BIT_START_US + 30) < 0) {
+    if (wait_for_level(pin, 1, s_timing_bit_start_us + 30) < 0) {
       ESP_LOGD(s_TAG, "Timeout waiting for bit %d high", i);
       return ESP_ERR_TIMEOUT;
     }
 
     /* Measure high pulse duration to determine bit value */
-    int32_t high_duration = measure_pulse(pin, 1, TIMING_BIT_1_HIGH_US + 30);
+    int32_t high_duration = measure_pulse(pin, 1, s_timing_bit_1_high_us + 30);
     if (high_duration < 0) {
       ESP_LOGD(s_TAG, "Timeout measuring bit %d", i);
       return ESP_ERR_TIMEOUT;
     }
 
     /* Bit is 1 if high duration > threshold, 0 otherwise */
-    if (high_duration > TIMING_BIT_THRESHOLD_US) {
+    if (high_duration > s_timing_bit_threshold_us) {
       data[i / 8] |= (1 << (7 - (i % 8)));
     }
   }
@@ -342,7 +365,7 @@ static esp_err_t dht22_read_default(const star_bus_config_t* config, star_dht22_
     return ESP_ERR_INVALID_STATE;
   }
 
-  uint8_t   raw_data[DHT22_DATA_BYTES];
+  uint8_t   raw_data[s_dht22_data_bytes];
   esp_err_t ret = read_raw_data(state, raw_data);
   if (ret != ESP_OK) {
     return ret;
@@ -481,7 +504,7 @@ star_bus_dht22_read(star_bus_manager_t* manager, const char* bus_name, star_dht2
   state->stats.total_reads++;
   uint32_t start_time = esp_timer_get_time();
 
-  uint8_t   raw_data[DHT22_DATA_BYTES];
+  uint8_t   raw_data[s_dht22_data_bytes];
   esp_err_t ret = read_raw_data(state, raw_data);
 
   uint32_t read_time             = (uint32_t)(esp_timer_get_time() - start_time);
@@ -606,22 +629,27 @@ star_bus_dht22_check_presence(star_bus_manager_t* manager, const char* bus_name,
   uint32_t   start_low_us = state->config.start_low_ms * 1000;
 
   portMUX_TYPE mux = portMUX_INITIALIZER_UNLOCKED;
-  portENTER_CRITICAL(&mux);
 
-  /* Send start signal */
+  /* Enter critical section only for GPIO mode change and initial pull low */
+  portENTER_CRITICAL(&mux);
   gpio_set_output(pin);
   gpio_low(pin);
+  portEXIT_CRITICAL(&mux);
+
+  /* Long delay OUTSIDE critical section to avoid watchdog timeout */
   delay_us(start_low_us);
+
+  /* Enter critical section for timing-critical transition */
+  portENTER_CRITICAL(&mux);
   gpio_high(pin);
-  delay_us(TIMING_START_HIGH_US);
+  delay_us(s_timing_start_high_us);
 
   /* Switch to input and check for response */
   gpio_set_input(pin);
-
-  /* Wait for sensor to pull low */
-  *present = (wait_for_level(pin, 0, TIMING_TIMEOUT_US * 10) >= 0);
-
   portEXIT_CRITICAL(&mux);
+
+  /* Wait for sensor to pull low - outside critical section */
+  *present = (wait_for_level(pin, 0, s_timing_timeout_us * 10) >= 0);
 
   /* Release bus */
   gpio_set_output(pin);

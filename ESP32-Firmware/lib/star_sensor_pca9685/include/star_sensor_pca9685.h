@@ -3,15 +3,20 @@
 #ifndef STAR_SENSOR_PCA9685_H
 #define STAR_SENSOR_PCA9685_H
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/semphr.h"
-
-#include <esp_err.h>
+/* System headers */
 #include <stdbool.h>
 #include <stdint.h>
 
-#include "pca9685_constants.h" /* Type-safe constants */
+/* FreeRTOS headers */
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+
+/* ESP-IDF headers */
+#include "esp_err.h"
 #include "soc/gpio_num.h"
+
+/* Project headers */
+#include "pca9685_constants.h" /* Type-safe constants */
 #include "star_bus_manager.h"
 #include "star_error_interface.h"
 
@@ -110,7 +115,7 @@ extern "C" {
  *
  * // Get current PWM values
  * uint16_t on_time, off_time;
- * star_sensor_pca9685_get_pwm(&pwm, 5, &on_time, &off_time);
+ * star_sensor_pca9685_read_pwm(&pwm, 5, &on_time, &off_time);
  * ESP_LOGI(TAG, "Channel 5: ON=%d, OFF=%d", on_time, off_time);
  *
  *
@@ -147,7 +152,7 @@ extern "C" {
  *
  * // Get current frequency
  * uint16_t freq_hz;
- * star_sensor_pca9685_get_frequency(&pwm, &freq_hz);
+ * star_sensor_pca9685_read_frequency(&pwm, &freq_hz);
  * ESP_LOGI(TAG, "Current frequency: %d Hz", freq_hz);
  *
  * // Calculate prescale for custom frequency
@@ -302,7 +307,7 @@ esp_err_t star_sensor_pca9685_deinit(pca9685_handle_t* handle);
  *
  * @return ESP_OK on success, error code otherwise
  */
-esp_err_t star_sensor_pca9685_reset(const pca9685_handle_t* handle);
+esp_err_t star_sensor_pca9685_reset(pca9685_handle_t* handle);
 
 /* --- Frequency Configuration --- */
 
@@ -320,14 +325,17 @@ esp_err_t star_sensor_pca9685_reset(const pca9685_handle_t* handle);
 esp_err_t star_sensor_pca9685_set_frequency(pca9685_handle_t* const handle, const uint16_t freq_hz);
 
 /**
- * @brief Get current PWM frequency
+ * @brief Read current PWM frequency from hardware
+ *
+ * Reads the prescale register from the PCA9685 via I2C and converts
+ * it to frequency in Hz.
  *
  * @param[in]  handle   Pointer to initialized handle
  * @param[out] freq_hz  Current frequency in Hz
  *
  * @return ESP_OK on success, error code otherwise
  */
-esp_err_t star_sensor_pca9685_get_frequency(const pca9685_handle_t* handle, uint16_t* freq_hz);
+esp_err_t star_sensor_pca9685_read_frequency(const pca9685_handle_t* handle, uint16_t* freq_hz);
 
 /* --- PWM Control Functions --- */
 
@@ -379,7 +387,10 @@ esp_err_t star_sensor_pca9685_set_duty_with_phase(const pca9685_handle_t* handle
                                                   float                   phase_percent);
 
 /**
- * @brief Get PWM values for a channel
+ * @brief Read PWM values for a channel from hardware
+ *
+ * Reads the ON and OFF time registers for the specified channel
+ * via I2C.
  *
  * @param[in]  handle   Pointer to initialized handle
  * @param[in]  channel  Channel number (0-15)
@@ -388,10 +399,10 @@ esp_err_t star_sensor_pca9685_set_duty_with_phase(const pca9685_handle_t* handle
  *
  * @return ESP_OK on success, error code otherwise
  */
-esp_err_t star_sensor_pca9685_get_pwm(const pca9685_handle_t* handle,
-                                      uint8_t                 channel,
-                                      uint16_t*               on_time,
-                                      uint16_t*               off_time);
+esp_err_t star_sensor_pca9685_read_pwm(const pca9685_handle_t* handle,
+                                       uint8_t                 channel,
+                                       uint16_t*               on_time,
+                                       uint16_t*               off_time);
 
 /**
  * @brief Set channel to full ON (100% duty cycle, no PWM)
@@ -471,7 +482,7 @@ esp_err_t star_sensor_pca9685_sleep(pca9685_handle_t* const handle, const bool s
  *
  * @note This is a no-op if oe_pin was set to GPIO_NUM_NC during init
  */
-esp_err_t star_sensor_pca9685_output_enable(const pca9685_handle_t* handle);
+esp_err_t star_sensor_pca9685_output_enable(pca9685_handle_t* handle);
 
 /**
  * @brief Disable PWM outputs via OE pin
@@ -486,7 +497,7 @@ esp_err_t star_sensor_pca9685_output_enable(const pca9685_handle_t* handle);
  *
  * @note This is a no-op if oe_pin was set to GPIO_NUM_NC during init
  */
-esp_err_t star_sensor_pca9685_output_disable(const pca9685_handle_t* handle);
+esp_err_t star_sensor_pca9685_output_disable(pca9685_handle_t* handle);
 
 /* --- Servo Control Convenience Functions --- */
 

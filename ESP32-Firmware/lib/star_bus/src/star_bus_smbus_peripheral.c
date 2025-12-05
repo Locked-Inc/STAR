@@ -31,6 +31,7 @@ static smbus_peripheral_state_t* get_peripheral_state(const char* bus_name, bool
     smbus_peripheral_state_t* state = &g_peripheral_states[g_num_peripheral_states];
     memset(state, 0, sizeof(smbus_peripheral_state_t));
     strncpy(state->bus_name, bus_name, sizeof(state->bus_name) - 1);
+    state->bus_name[sizeof(state->bus_name) - 1] = '\0';
     g_num_peripheral_states++;
     return state;
   }

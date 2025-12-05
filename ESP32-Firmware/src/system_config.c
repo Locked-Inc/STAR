@@ -1,10 +1,9 @@
 /**
  * @file system_config.c
  * @brief Global system configuration instance
- * 
- * This file defines the master configuration structure that replaces
- * the legacy macros with type-safe alternatives following modern
- * embedded C best practices.
+ *
+ * This file defines the master configuration structure using type-safe
+ * constants following modern embedded C best practices.
  */
 
 #include "include/system_config.h"
@@ -15,11 +14,10 @@
 
 /**
  * @brief Master system configuration
- * 
+ *
  * This const structure contains all system configuration in a type-safe,
- * organized manner. Access configuration through this structure instead
- * of using legacy macros.
- * 
+ * organized manner.
+ *
  * Example usage:
  * @code
  * // Access GPIO pin

@@ -226,14 +226,18 @@ extern "C" {
 /* --- Constants --- */
 
 /**
- * @brief Maximum number of operations in a batch
+ * @brief Batch operation constants
+ *
+ * Using enum for type safety while maintaining compile-time constant behavior
+ * required for struct initializers and array sizes in C.
  */
-#define STAR_BATCH_MAX_OPERATIONS (16)
+enum {
+  /** Maximum number of operations in a batch */
+  STAR_BATCH_MAX_OPERATIONS = 16,
 
-/**
- * @brief Default timeout for batch operations (ms)
- */
-#define STAR_BATCH_DEFAULT_TIMEOUT_MS (5000)
+  /** Default timeout for batch operations (ms) */
+  STAR_BATCH_DEFAULT_TIMEOUT_MS = 5000,
+};
 
 /* --- Types --- */
 
@@ -339,9 +343,11 @@ esp_err_t star_batch_create(star_bus_manager_t*        manager,
  *
  * @param[in] handle Batch handle
  *
+ * @return ESP_OK on success, ESP_ERR_INVALID_ARG if handle is NULL
+ *
  * @note Call this after executing or if you want to discard the batch
  */
-void star_batch_free(star_batch_handle_t handle);
+esp_err_t star_batch_free(star_batch_handle_t handle);
 
 /* --- Adding Operations --- */
 

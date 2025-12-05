@@ -63,8 +63,8 @@ esp_err_t star_bus_debug_scan_i2c(const star_bus_manager_t* manager,
         callback(addr, user_data);
       }
 
-      // Store in devices_found array if provided
-      if (devices_found != NULL && found_count <= max_devices) {
+      // Store in devices_found array if provided (use < not <= to prevent overflow)
+      if (devices_found != NULL && found_count <= max_devices && found_count > 0) {
         devices_found[found_count - 1] = addr;
       }
 
@@ -236,13 +236,30 @@ esp_err_t star_bus_debug_dump_regs(const star_bus_manager_t* manager,
 
   // Print in rows of 16
   for (size_t i = 0; i < max_read; i += 16) {
-    char    line[128] = {0};
-    int32_t offset    = 0;
+    char   line[128] = {0};
+    size_t offset    = 0;
 
-    offset += snprintf(line + offset, sizeof(line) - offset, "  0x%02X: ", start_reg + i);
+    /* Safe snprintf with overflow protection */
+    if (offset < sizeof(line)) {
+      int written = snprintf(line + offset, sizeof(line) - offset, "  0x%02X: ", start_reg + i);
+      if (written > 0) {
+        offset += (size_t)written;
+        if (offset > sizeof(line)) {
+          offset = sizeof(line);
+        }
+      }
+    }
 
     for (size_t j = 0; j < 16 && (i + j) < max_read; j++) {
-      offset += snprintf(line + offset, sizeof(line) - offset, "%02X ", values[i + j]);
+      if (offset < sizeof(line)) {
+        int written = snprintf(line + offset, sizeof(line) - offset, "%02X ", values[i + j]);
+        if (written > 0) {
+          offset += (size_t)written;
+          if (offset > sizeof(line)) {
+            offset = sizeof(line);
+          }
+        }
+      }
     }
 
     ESP_LOGI(s_TAG, "%s", line);
