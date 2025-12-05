@@ -11,6 +11,9 @@
 
 #define TAG ("STAR ERROR HANDLER")
 
+/* Default mutex timeout in milliseconds to prevent infinite wait deadlocks */
+static const uint32_t s_error_handler_mutex_timeout_ms = 5000;
+
 /* --- Functions --- */
 
 /* clang-format off */
@@ -56,22 +59,22 @@ esp_err_t error_handler_init(error_handler_t* handler,
   return ESP_OK;
 }
 
-void error_handler_deinit(error_handler_t* handler)
+esp_err_t error_handler_deinit(error_handler_t* handler)
 {
   if (handler == NULL) {
-    return;
+    return ESP_ERR_INVALID_ARG;
   }
 
   SemaphoreHandle_t mutex_to_delete = handler->mutex;
   if (mutex_to_delete == NULL) {
-    return;
+    return ESP_ERR_INVALID_STATE;
   }
 
   /* Acquire mutex to ensure no other operation is in progress */
-  if (xSemaphoreTake(mutex_to_delete, pdMS_TO_TICKS(5000)) != pdTRUE) {
+  if (xSemaphoreTake(mutex_to_delete, pdMS_TO_TICKS(s_error_handler_mutex_timeout_ms)) != pdTRUE) {
     /* If we can't acquire mutex within timeout, do NOT proceed - another thread is using it */
     ESP_LOGE(TAG, "Deinit: Could not acquire mutex within timeout, aborting deinit");
-    return;
+    return ESP_ERR_TIMEOUT;
   }
 
   /* Set to NULL while holding mutex to prevent new operations from starting */
@@ -86,6 +89,8 @@ void error_handler_deinit(error_handler_t* handler)
 
   /* Now safe to delete */
   vSemaphoreDelete(mutex_to_delete);
+
+  return ESP_OK;
 }
 
 /* clang-format off */
@@ -115,7 +120,7 @@ esp_err_t error_handler_record_error(error_handler_t* handler,
     return ESP_ERR_INVALID_STATE;
   }
 
-  if (xSemaphoreTake(mutex, portMAX_DELAY) != pdTRUE) {
+  if (xSemaphoreTake(mutex, pdMS_TO_TICKS(s_error_handler_mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGE(TAG, "Mutex Timeout: Failed to acquire mutex in %s:%d", filename, line);
     return ESP_ERR_TIMEOUT;
   }
@@ -194,7 +199,7 @@ esp_err_t error_handler_record_error(error_handler_t* handler,
       recovery_result = reset_fn_local(reset_context_local);
 
       /* Re-acquire mutex - use the original captured mutex pointer */
-      if (xSemaphoreTake(mutex, pdMS_TO_TICKS(5000)) != pdTRUE) {
+      if (xSemaphoreTake(mutex, pdMS_TO_TICKS(s_error_handler_mutex_timeout_ms)) != pdTRUE) {
         ESP_LOGE(TAG, "Mutex Error: Failed to re-acquire mutex after reset attempt!");
         return ESP_ERR_TIMEOUT;
       }
@@ -246,7 +251,7 @@ bool error_handler_can_retry(error_handler_t* handler)
     return false;
   }
 
-  if (xSemaphoreTake(mutex, portMAX_DELAY) == pdTRUE) {
+  if (xSemaphoreTake(mutex, pdMS_TO_TICKS(s_error_handler_mutex_timeout_ms)) == pdTRUE) {
     /* Re-check mutex validity after acquisition */
     if (handler->mutex == NULL) {
       xSemaphoreGive(mutex);
@@ -274,7 +279,7 @@ esp_err_t error_handler_reset_state(error_handler_t* handler)
     return ESP_ERR_INVALID_STATE;
   }
 
-  if (xSemaphoreTake(mutex, portMAX_DELAY) == pdTRUE) {
+  if (xSemaphoreTake(mutex, pdMS_TO_TICKS(s_error_handler_mutex_timeout_ms)) == pdTRUE) {
     /* Re-check mutex validity after acquisition */
     if (handler->mutex == NULL) {
       xSemaphoreGive(mutex);
@@ -445,4 +450,25 @@ void star_error_interface_destroy(star_error_interface_t* iface)
   free(iface);
 
   ESP_LOGD(TAG, "Destroyed error interface");
+}
+
+void star_error_interface_cleanup(star_error_interface_t* error_iface, bool owns_handler)
+{
+  if (error_iface == NULL) {
+    return; /* Safe no-op for NULL pointer */
+  }
+
+  if (owns_handler) {
+    /* Extract and destroy the error handler from the context */
+    error_handler_t* handler = (error_handler_t*)error_iface->ctx;
+    if (handler != NULL) {
+      error_handler_destroy_default(handler);
+    }
+
+    /* Free the interface memory */
+    free(error_iface);
+
+    ESP_LOGD(TAG, "Cleaned up owned error interface");
+  }
+  /* If owns_handler is false, do nothing - caller manages the handler externally */
 }

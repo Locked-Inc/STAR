@@ -191,12 +191,15 @@ esp_err_t error_handler_init(error_handler_t* handler,
 /**
  * @brief Deinitialize an error handler and release resources.
  *
- * Deletes the mutex associated with the error handler. Safe to call even if
- * handler or mutex is NULL or already deinitialized.
+ * Deletes the mutex associated with the error handler after acquiring it
+ * to ensure no other operations are in progress.
  *
  * @param[in,out] handler Pointer to the error handler structure to deinitialize.
+ * @return ESP_OK if successful, ESP_ERR_INVALID_ARG if handler is NULL,
+ *         ESP_ERR_INVALID_STATE if mutex is NULL, ESP_ERR_TIMEOUT if mutex
+ *         could not be acquired within timeout.
  */
-void error_handler_deinit(error_handler_t* handler);
+esp_err_t error_handler_deinit(error_handler_t* handler);
 
 /**
  * @brief Record an error and manage retry/reset logic
@@ -327,6 +330,37 @@ star_error_interface_t* star_error_interface_create_default(void);
  * @param[in] iface Pointer to the error interface to destroy. Will be invalid after this call.
  */
 void star_error_interface_destroy(star_error_interface_t* iface);
+
+/**
+ * @brief Clean up an error interface that may own its handler
+ *
+ * This helper function consolidates the common cleanup pattern used across sensor drivers
+ * where an error interface may or may not own its underlying error handler. It handles
+ * both cases correctly, preventing code duplication.
+ *
+ * @param[in] error_iface Pointer to the error interface (can be NULL, safe no-op)
+ * @param[in] owns_handler Whether this interface owns the underlying handler
+ *
+ * @note If owns_handler is true, destroys the handler (via error_handler_destroy_default)
+ *       and frees the interface memory
+ * @note If owns_handler is false, does nothing (caller manages the handler externally)
+ * @note Safe to call with NULL error_iface (no-op)
+ *
+ * Example usage in sensor driver deinit:
+ * @code
+ * // OLD pattern (duplicated across many drivers):
+ * if (handle->owns_error_handler && handle->error_iface != NULL) {
+ *     error_handler_t* handler_ptr = (error_handler_t*)handle->error_iface->ctx;
+ *     error_handler_destroy_default(handler_ptr);
+ *     free(handle->error_iface);
+ * }
+ *
+ * // NEW pattern (single line):
+ * star_error_interface_cleanup(handle->error_iface, handle->owns_error_handler);
+ * handle->error_iface = NULL;
+ * @endcode
+ */
+void star_error_interface_cleanup(star_error_interface_t* error_iface, bool owns_handler);
 
 #ifdef __cplusplus
 }
