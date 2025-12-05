@@ -194,11 +194,19 @@ extern "C" {
 
 /* --- Constants --- */
 
-/** Maximum block transfer size per SMBus 2.0 specification */
-#define STAR_SMBUS_MAX_BLOCK_SIZE (32)
+/**
+ * @brief SMBus constants
+ *
+ * Using enum for type safety while maintaining compile-time constant behavior
+ * required for array sizes in C.
+ */
+enum {
+  /** Maximum block transfer size per SMBus 2.0 specification */
+  STAR_SMBUS_MAX_BLOCK_SIZE = 32,
 
-/** SMBus timeout in milliseconds (spec: 25-35ms) */
-#define STAR_SMBUS_TIMEOUT_MS (30)
+  /** SMBus timeout in milliseconds (spec: 25-35ms) */
+  STAR_SMBUS_TIMEOUT_MS = 30,
+};
 
 /* --- Types --- */
 

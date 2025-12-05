@@ -151,22 +151,26 @@ esp_err_t star_batch_create(star_bus_manager_t*        manager,
   return ESP_OK;
 }
 
-void star_batch_free(star_batch_handle_t handle)
+esp_err_t star_batch_free(star_batch_handle_t handle)
 {
-  if (handle != NULL) {
-    batch_context_t* ctx = (batch_context_t*)handle;
-
-    /* Free any allocated SMBus write data */
-    for (uint32_t i = 0; i < ctx->operation_count; i++) {
-      star_batch_operation_t* op = &ctx->operations[i];
-      if (op->type == k_star_batch_op_smbus_write_byte && op->params.smbus.data != NULL) {
-        free(op->params.smbus.data);
-        op->params.smbus.data = NULL;
-      }
-    }
-
-    free(ctx);
+  if (handle == NULL) {
+    return ESP_ERR_INVALID_ARG;
   }
+
+  batch_context_t* ctx = (batch_context_t*)handle;
+
+  /* Free any allocated SMBus write data */
+  for (uint32_t i = 0; i < ctx->operation_count; i++) {
+    star_batch_operation_t* op = &ctx->operations[i];
+    if (op->type == k_star_batch_op_smbus_write_byte && op->params.smbus.data != NULL) {
+      free(op->params.smbus.data);
+      op->params.smbus.data = NULL;
+    }
+  }
+
+  free(ctx);
+
+  return ESP_OK;
 }
 
 esp_err_t star_batch_add_i2c_write(star_batch_handle_t handle,

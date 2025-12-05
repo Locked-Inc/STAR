@@ -35,28 +35,28 @@ typedef struct {
 } dht22_timing_t;
 
 /* Standard DHT22 timing constants */
-static const dht22_timing_t DHT22_TIMING_STANDARD = {.start_low_us  = 18000, /* 18ms start signal */
-                                                     .start_high_us = 40,
-                                                     .response_low_us  = 80,
-                                                     .response_high_us = 80,
-                                                     .bit_start_us     = 50,
-                                                     .bit_0_high_us    = 28,
-                                                     .bit_1_high_us    = 70,
-                                                     .read_timeout_us =
-                                                       100000, /* 100ms total timeout */
-                                                     .bit_timeout_us = 100};
+static const dht22_timing_t s_dht22_timing_standard = {.start_low_us  = 18000, /* 18ms start signal */
+                                                       .start_high_us = 40,
+                                                       .response_low_us  = 80,
+                                                       .response_high_us = 80,
+                                                       .bit_start_us     = 50,
+                                                       .bit_0_high_us    = 28,
+                                                       .bit_1_high_us    = 70,
+                                                       .read_timeout_us =
+                                                         100000, /* 100ms total timeout */
+                                                       .bit_timeout_us = 100};
 
 /* DHT11 timing constants (compatible but different sensor) */
-static const dht22_timing_t DHT11_TIMING_STANDARD = {.start_low_us  = 18000, /* 18ms start signal */
-                                                     .start_high_us = 40,
-                                                     .response_low_us  = 80,
-                                                     .response_high_us = 80,
-                                                     .bit_start_us     = 50,
-                                                     .bit_0_high_us    = 28,
-                                                     .bit_1_high_us    = 70,
-                                                     .read_timeout_us =
-                                                       100000, /* 100ms total timeout */
-                                                     .bit_timeout_us = 100};
+static const dht22_timing_t s_dht11_timing_standard = {.start_low_us  = 18000, /* 18ms start signal */
+                                                       .start_high_us = 40,
+                                                       .response_low_us  = 80,
+                                                       .response_high_us = 80,
+                                                       .bit_start_us     = 50,
+                                                       .bit_0_high_us    = 28,
+                                                       .bit_1_high_us    = 70,
+                                                       .read_timeout_us =
+                                                         100000, /* 100ms total timeout */
+                                                       .bit_timeout_us = 100};
 
 /**
  * @brief DHT22 data structure
@@ -79,15 +79,15 @@ typedef enum {
 } dht_sensor_type_t;
 
 /* Minimum interval between readings (milliseconds) */
-static const uint32_t DHT22_MIN_INTERVAL_MS = 2000; /* 2 seconds */
-static const uint32_t DHT11_MIN_INTERVAL_MS = 1000; /* 1 second */
+static const uint32_t s_dht22_min_interval_ms = 2000; /* 2 seconds */
+static const uint32_t s_dht11_min_interval_ms = 1000; /* 1 second */
 
 /* Data frame size */
-static const uint8_t DHT22_DATA_BITS  = 40; /* 5 bytes * 8 bits */
-static const uint8_t DHT22_DATA_BYTES = 5;  /* Total bytes to read */
+static const uint8_t s_dht22_data_bits  = 40; /* 5 bytes * 8 bits */
+static const uint8_t s_dht22_data_bytes = 5;  /* Total bytes to read */
 
 /* Maximum retries for communication */
-static const uint8_t DHT22_MAX_RETRIES = 3;
+static const uint8_t s_dht22_max_retries = 3;
 
 /* Temperature and humidity ranges */
 typedef struct {
@@ -100,20 +100,20 @@ typedef struct {
 } dht_sensor_specs_t;
 
 /* DHT22 specifications */
-static const dht_sensor_specs_t DHT22_SPECS = {.temp_min_c        = -40.0f,
-                                               .temp_max_c        = 80.0f,
-                                               .humidity_min      = 0.0f,
-                                               .humidity_max      = 100.0f,
-                                               .temp_accuracy     = 0.5f,
-                                               .humidity_accuracy = 2.0f};
+static const dht_sensor_specs_t s_dht22_specs = {.temp_min_c        = -40.0f,
+                                                 .temp_max_c        = 80.0f,
+                                                 .humidity_min      = 0.0f,
+                                                 .humidity_max      = 100.0f,
+                                                 .temp_accuracy     = 0.5f,
+                                                 .humidity_accuracy = 2.0f};
 
 /* DHT11 specifications */
-static const dht_sensor_specs_t DHT11_SPECS = {.temp_min_c        = 0.0f,
-                                               .temp_max_c        = 50.0f,
-                                               .humidity_min      = 20.0f,
-                                               .humidity_max      = 80.0f,
-                                               .temp_accuracy     = 2.0f,
-                                               .humidity_accuracy = 5.0f};
+static const dht_sensor_specs_t s_dht11_specs = {.temp_min_c        = 0.0f,
+                                                 .temp_max_c        = 50.0f,
+                                                 .humidity_min      = 20.0f,
+                                                 .humidity_max      = 80.0f,
+                                                 .temp_accuracy     = 2.0f,
+                                                 .humidity_accuracy = 5.0f};
 
 #ifdef __cplusplus
 }

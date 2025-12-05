@@ -244,14 +244,21 @@ extern "C" {
 /* --- Constants --- */
 
 /**
- * @brief Maximum number of pending async operations per bus
+ * @brief Async operation constants
+ *
+ * Using enum for type safety while maintaining compile-time constant behavior
+ * required for struct initializers and array sizes in C.
  */
-#define STAR_ASYNC_MAX_PENDING (8)
+enum {
+  /** Maximum number of pending async operations per bus */
+  STAR_ASYNC_MAX_PENDING = 8,
 
-/**
- * @brief Default timeout for async operations (ms)
- */
-#define STAR_ASYNC_DEFAULT_TIMEOUT_MS (5000)
+  /** Default timeout for async operations (ms) */
+  STAR_ASYNC_DEFAULT_TIMEOUT_MS = 5000,
+
+  /** Special value for star_async_wait() to wait indefinitely */
+  STAR_ASYNC_WAIT_FOREVER = UINT32_MAX,
+};
 
 /* --- Types --- */
 
@@ -489,9 +496,13 @@ star_async_status_t star_async_get_status(star_async_handle_t handle);
  * Blocks until the operation completes or timeout expires.
  *
  * @param[in] handle     Handle to async operation
- * @param[in] timeout_ms Timeout in milliseconds (0 = wait forever)
+ * @param[in] timeout_ms Timeout in milliseconds:
+ *                       - 0 = no wait (immediate return, returns ESP_ERR_TIMEOUT if not ready)
+ *                       - STAR_ASYNC_WAIT_FOREVER = wait indefinitely
+ *                       - other = wait for specified milliseconds
  *
- * @return ESP_OK if operation completed successfully, error code otherwise
+ * @return ESP_OK if operation completed successfully, ESP_ERR_TIMEOUT if timeout
+ *         expired before completion, or other error code on failure
  *
  * @note Callback will still be invoked even when using this function
  */
@@ -525,10 +536,12 @@ esp_err_t star_async_get_result(star_async_handle_t handle, esp_err_t* result);
  *
  * @param[in] handle  Handle to async operation
  *
+ * @return ESP_OK on success, ESP_ERR_INVALID_ARG if handle is NULL
+ *
  * @note Only call after operation is complete
  * @note Not required if handle was NULL in start function
  */
-void star_async_free_handle(star_async_handle_t handle);
+esp_err_t star_async_free_handle(star_async_handle_t handle);
 
 /* --- Event Group Integration --- */
 

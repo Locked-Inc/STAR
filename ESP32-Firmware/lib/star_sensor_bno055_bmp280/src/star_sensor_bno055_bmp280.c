@@ -16,30 +16,29 @@
 static const char* s_TAG = "imu10dof";
 
 /* Use constant instead of macro for type safety */
-static const uint32_t IMU_10DOF_MUTEX_TIMEOUT_MS = 1000;
+static const uint32_t s_imu_10dof_mutex_timeout_ms = 1000;
 
-/* Register addresses and values now provided by type-safe constants */
-/* See bno055_bmp280_constants.h for k_bno055_reg_*, k_bmp280_reg_*, etc. */
-
-/* Chip ID values */
-static const uint8_t BNO055_CHIP_ID_VALUE = 0xA0;
-static const uint8_t BMP280_CHIP_ID_VALUE = 0x58;
+/* Register addresses, chip ID values, and other constants are now provided
+ * by type-safe constants in bno055_bmp280_constants.h (included via the header).
+ * See k_bno055_reg_*, k_bmp280_reg_*, k_bno055_chip_id_value, k_bmp280_chip_id_value, etc. */
 
 /* Sea level pressure constant */
-static const float SEA_LEVEL_PRESSURE_PA = 101325.0f;
+static const float s_sea_level_pressure_pa = 101325.0f;
 
 esp_err_t star_sensor_imu_10dof_init(imu_10dof_handle_t*       handle,
+                                     star_bus_manager_t*       manager,
+                                     const char*               bus_name,
                                      star_error_interface_t*   error_iface,
                                      const imu_10dof_config_t* config)
 {
-  if (handle == NULL || config == NULL || config->manager == NULL) {
+  if (handle == NULL || manager == NULL || config == NULL) {
     ESP_LOGE(s_TAG, "NULL parameter in init");
     return ESP_ERR_INVALID_ARG;
   }
 
   memset(handle, 0, sizeof(imu_10dof_handle_t));
-  handle->manager        = config->manager;
-  handle->bus_name       = config->bus_name;
+  handle->manager        = manager;
+  handle->bus_name       = bus_name;
   handle->bno055_addr    = config->bno055_addr;
   handle->bmp280_addr    = config->bmp280_addr;
   handle->operation_mode = config->operation_mode;
@@ -94,13 +93,10 @@ esp_err_t star_sensor_imu_10dof_init(imu_10dof_handle_t*       handle,
                                     1,
                                     (uint8_t)k_bno055_reg_chip_id,
                                     NULL);
-  if (ret != ESP_OK || chip_id != BNO055_CHIP_ID_VALUE) {
+  if (ret != ESP_OK || chip_id != k_bno055_chip_id_value) {
     ESP_LOGE(s_TAG, "BNO055 not found (ID=0x%02X)", chip_id);
-    if (handle->owns_error_handler && handle->error_iface != NULL) {
-      error_handler_t* handler_ptr = (error_handler_t*)handle->error_iface->ctx;
-      error_handler_destroy_default(handler_ptr);
-      free(handle->error_iface);
-    }
+    star_error_interface_cleanup(handle->error_iface, handle->owns_error_handler);
+    handle->error_iface = NULL;
     vSemaphoreDelete(handle->mutex);
     handle->mutex = NULL;
     return ESP_ERR_NOT_FOUND;
@@ -115,11 +111,8 @@ esp_err_t star_sensor_imu_10dof_init(imu_10dof_handle_t*       handle,
                            (uint8_t)k_bno055_reg_sys_trigger,
                            NULL);
   if (ret != ESP_OK) {
-    if (handle->owns_error_handler && handle->error_iface != NULL) {
-      error_handler_t* handler_ptr = (error_handler_t*)handle->error_iface->ctx;
-      error_handler_destroy_default(handler_ptr);
-      free(handle->error_iface);
-    }
+    star_error_interface_cleanup(handle->error_iface, handle->owns_error_handler);
+    handle->error_iface = NULL;
     vSemaphoreDelete(handle->mutex);
     handle->mutex = NULL;
     return ret;
@@ -135,11 +128,8 @@ esp_err_t star_sensor_imu_10dof_init(imu_10dof_handle_t*       handle,
                            (uint8_t)k_bno055_reg_opr_mode,
                            NULL);
   if (ret != ESP_OK) {
-    if (handle->owns_error_handler && handle->error_iface != NULL) {
-      error_handler_t* handler_ptr = (error_handler_t*)handle->error_iface->ctx;
-      error_handler_destroy_default(handler_ptr);
-      free(handle->error_iface);
-    }
+    star_error_interface_cleanup(handle->error_iface, handle->owns_error_handler);
+    handle->error_iface = NULL;
     vSemaphoreDelete(handle->mutex);
     handle->mutex = NULL;
     return ret;
@@ -155,11 +145,8 @@ esp_err_t star_sensor_imu_10dof_init(imu_10dof_handle_t*       handle,
                            (uint8_t)k_bno055_reg_pwr_mode,
                            NULL);
   if (ret != ESP_OK) {
-    if (handle->owns_error_handler && handle->error_iface != NULL) {
-      error_handler_t* handler_ptr = (error_handler_t*)handle->error_iface->ctx;
-      error_handler_destroy_default(handler_ptr);
-      free(handle->error_iface);
-    }
+    star_error_interface_cleanup(handle->error_iface, handle->owns_error_handler);
+    handle->error_iface = NULL;
     vSemaphoreDelete(handle->mutex);
     handle->mutex = NULL;
     return ret;
@@ -174,11 +161,8 @@ esp_err_t star_sensor_imu_10dof_init(imu_10dof_handle_t*       handle,
                            (uint8_t)k_bno055_reg_opr_mode,
                            NULL);
   if (ret != ESP_OK) {
-    if (handle->owns_error_handler && handle->error_iface != NULL) {
-      error_handler_t* handler_ptr = (error_handler_t*)handle->error_iface->ctx;
-      error_handler_destroy_default(handler_ptr);
-      free(handle->error_iface);
-    }
+    star_error_interface_cleanup(handle->error_iface, handle->owns_error_handler);
+    handle->error_iface = NULL;
     vSemaphoreDelete(handle->mutex);
     handle->mutex = NULL;
     return ret;
@@ -188,13 +172,10 @@ esp_err_t star_sensor_imu_10dof_init(imu_10dof_handle_t*       handle,
   // Initialize BMP280
   ret =
     star_bus_i2c_read(handle->manager, handle->bus_name, &chip_id, 1, k_bmp280_reg_chip_id, NULL);
-  if (ret != ESP_OK || chip_id != BMP280_CHIP_ID_VALUE) {
+  if (ret != ESP_OK || chip_id != k_bmp280_chip_id_value) {
     ESP_LOGE(s_TAG, "BMP280 not found (ID=0x%02X)", chip_id);
-    if (handle->owns_error_handler && handle->error_iface != NULL) {
-      error_handler_t* handler_ptr = (error_handler_t*)handle->error_iface->ctx;
-      error_handler_destroy_default(handler_ptr);
-      free(handle->error_iface);
-    }
+    star_error_interface_cleanup(handle->error_iface, handle->owns_error_handler);
+    handle->error_iface = NULL;
     vSemaphoreDelete(handle->mutex);
     handle->mutex = NULL;
     return ESP_ERR_NOT_FOUND;
@@ -209,11 +190,8 @@ esp_err_t star_sensor_imu_10dof_init(imu_10dof_handle_t*       handle,
                           k_bmp280_reg_calib00,
                           NULL);
   if (ret != ESP_OK) {
-    if (handle->owns_error_handler && handle->error_iface != NULL) {
-      error_handler_t* handler_ptr = (error_handler_t*)handle->error_iface->ctx;
-      error_handler_destroy_default(handler_ptr);
-      free(handle->error_iface);
-    }
+    star_error_interface_cleanup(handle->error_iface, handle->owns_error_handler);
+    handle->error_iface = NULL;
     vSemaphoreDelete(handle->mutex);
     handle->mutex = NULL;
     return ret;
@@ -238,11 +216,8 @@ esp_err_t star_sensor_imu_10dof_init(imu_10dof_handle_t*       handle,
              "Invalid BMP280 calibration: dig_T1=%u, dig_P1=%u",
              handle->dig_T1,
              handle->dig_P1);
-    if (handle->owns_error_handler && handle->error_iface != NULL) {
-      error_handler_t* handler_ptr = (error_handler_t*)handle->error_iface->ctx;
-      error_handler_destroy_default(handler_ptr);
-      free(handle->error_iface);
-    }
+    star_error_interface_cleanup(handle->error_iface, handle->owns_error_handler);
+    handle->error_iface = NULL;
     vSemaphoreDelete(handle->mutex);
     handle->mutex = NULL;
     return ESP_ERR_INVALID_RESPONSE;
@@ -258,11 +233,8 @@ esp_err_t star_sensor_imu_10dof_init(imu_10dof_handle_t*       handle,
   }
   if (all_ff) {
     ESP_LOGE(s_TAG, "BMP280 calibration read failure: all bytes 0xFF");
-    if (handle->owns_error_handler && handle->error_iface != NULL) {
-      error_handler_t* handler_ptr = (error_handler_t*)handle->error_iface->ctx;
-      error_handler_destroy_default(handler_ptr);
-      free(handle->error_iface);
-    }
+    star_error_interface_cleanup(handle->error_iface, handle->owns_error_handler);
+    handle->error_iface = NULL;
     vSemaphoreDelete(handle->mutex);
     handle->mutex = NULL;
     return ESP_ERR_INVALID_RESPONSE;
@@ -273,11 +245,8 @@ esp_err_t star_sensor_imu_10dof_init(imu_10dof_handle_t*       handle,
   ret =
     star_bus_i2c_write(handle->manager, handle->bus_name, &ctrl, 1, k_bmp280_reg_ctrl_meas, NULL);
   if (ret != ESP_OK) {
-    if (handle->owns_error_handler && handle->error_iface != NULL) {
-      error_handler_t* handler_ptr = (error_handler_t*)handle->error_iface->ctx;
-      error_handler_destroy_default(handler_ptr);
-      free(handle->error_iface);
-    }
+    star_error_interface_cleanup(handle->error_iface, handle->owns_error_handler);
+    handle->error_iface = NULL;
     vSemaphoreDelete(handle->mutex);
     handle->mutex = NULL;
     return ret;
@@ -297,16 +266,14 @@ esp_err_t star_sensor_imu_10dof_deinit(imu_10dof_handle_t* handle)
 
   // Acquire mutex before cleanup
   SemaphoreHandle_t mutex = handle->mutex;
-  if (mutex != NULL && xSemaphoreTake(mutex, pdMS_TO_TICKS(IMU_10DOF_MUTEX_TIMEOUT_MS)) != pdTRUE) {
+  if (mutex != NULL && xSemaphoreTake(mutex, pdMS_TO_TICKS(s_imu_10dof_mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGW(s_TAG, "Failed to acquire mutex for deinit, continuing anyway");
   }
 
   // Clean up error handler if we own it
-  if (handle->owns_error_handler && handle->error_iface != NULL) {
-    error_handler_t* error_handler = (error_handler_t*)handle->error_iface->ctx;
-    error_handler_destroy_default(error_handler);
-    free(handle->error_iface);
-    handle->error_iface = NULL;
+  star_error_interface_cleanup(handle->error_iface, handle->owns_error_handler);
+  handle->error_iface = NULL;
+  if (handle->owns_error_handler) {
     ESP_LOGI(s_TAG, "Destroyed internally-owned error handler");
   }
 
@@ -332,7 +299,7 @@ esp_err_t star_sensor_imu_10dof_read(const imu_10dof_handle_t* handle, imu_10dof
 
   // Acquire mutex for thread-safe read
   SemaphoreHandle_t mutex = handle->mutex;
-  if (mutex == NULL || xSemaphoreTake(mutex, pdMS_TO_TICKS(IMU_10DOF_MUTEX_TIMEOUT_MS)) != pdTRUE) {
+  if (mutex == NULL || xSemaphoreTake(mutex, pdMS_TO_TICKS(s_imu_10dof_mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to acquire mutex for read");
     return ESP_ERR_TIMEOUT;
   }
@@ -428,7 +395,7 @@ esp_err_t star_sensor_imu_10dof_read(const imu_10dof_handle_t* handle, imu_10dof
 
       // Calculate altitude
       data->altitude_m =
-        44330.0f * (1.0f - powf(data->pressure_pa / SEA_LEVEL_PRESSURE_PA, 0.1903f));
+        44330.0f * (1.0f - powf(data->pressure_pa / s_sea_level_pressure_pa, 0.1903f));
     }
   }
 
@@ -490,7 +457,7 @@ esp_err_t star_sensor_imu_10dof_set_mode(imu_10dof_handle_t* handle, bno055_op_m
 
   // Acquire mutex
   SemaphoreHandle_t mutex = handle->mutex;
-  if (mutex == NULL || xSemaphoreTake(mutex, pdMS_TO_TICKS(IMU_10DOF_MUTEX_TIMEOUT_MS)) != pdTRUE) {
+  if (mutex == NULL || xSemaphoreTake(mutex, pdMS_TO_TICKS(s_imu_10dof_mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to acquire mutex for set_mode");
     return ESP_ERR_TIMEOUT;
   }

@@ -4,6 +4,7 @@
 
 #include "freertos/FreeRTOS.h"
 
+#include <stdint.h>
 #include <string.h>
 
 #include "esp_check.h"
@@ -14,7 +15,10 @@
 /* --- Constants --- */
 
 static const char* s_TAG = "BusSPI";
-#define SPI_TIMEOUT_MS (1000) /* Default timeout for SPI operations (if polling) */
+
+/* Use constant instead of macro for type safety.
+ * Currently unused but defined for future polling mode support. */
+static const uint32_t s_spi_timeout_ms __attribute__((unused)) = 1000;
 
 /* --- Private Function Prototypes (Default Ops) --- */
 
@@ -153,12 +157,13 @@ static esp_err_t internal_star_bus_spi_transmit(const star_bus_config_t* config,
                       "SPI device '%s' handle is NULL",
                       config->name);
 
-  /* Check for integer overflow in length calculation */
-  ESP_RETURN_ON_FALSE(len <= SIZE_MAX / 8,
+  /* Check for overflow: length in bits must fit in uint32_t */
+  ESP_RETURN_ON_FALSE(len <= (UINT32_MAX / 8),
                       ESP_ERR_INVALID_ARG,
                       s_TAG,
-                      "SPI transmit length too large: %zu bytes",
-                      len);
+                      "SPI transmit length too large: %zu bytes (max: %lu)",
+                      len,
+                      (unsigned long)(UINT32_MAX / 8));
 
   spi_transaction_t trans;
   memset(&trans, 0, sizeof(trans));
@@ -221,12 +226,13 @@ static esp_err_t internal_star_bus_spi_receive(const star_bus_config_t* config,
                       "SPI device '%s' handle is NULL",
                       config->name);
 
-  /* Check for integer overflow in length calculation */
-  ESP_RETURN_ON_FALSE(len <= SIZE_MAX / 8,
+  /* Check for overflow: length in bits must fit in uint32_t */
+  ESP_RETURN_ON_FALSE(len <= (UINT32_MAX / 8),
                       ESP_ERR_INVALID_ARG,
                       s_TAG,
-                      "SPI receive length too large: %zu bytes",
-                      len);
+                      "SPI receive length too large: %zu bytes (max: %lu)",
+                      len,
+                      (unsigned long)(UINT32_MAX / 8));
 
   spi_transaction_t trans;
   memset(&trans, 0, sizeof(trans));
@@ -286,12 +292,13 @@ static esp_err_t internal_star_bus_spi_transfer(const star_bus_config_t* config,
                       "SPI device '%s' handle is NULL",
                       config->name);
 
-  /* Check for integer overflow in length calculation */
-  ESP_RETURN_ON_FALSE(len <= SIZE_MAX / 8,
+  /* Check for overflow: length in bits must fit in uint32_t */
+  ESP_RETURN_ON_FALSE(len <= (UINT32_MAX / 8),
                       ESP_ERR_INVALID_ARG,
                       s_TAG,
-                      "SPI transfer length too large: %zu bytes",
-                      len);
+                      "SPI transfer length too large: %zu bytes (max: %lu)",
+                      len,
+                      (unsigned long)(UINT32_MAX / 8));
 
   spi_transaction_t trans;
   memset(&trans, 0, sizeof(trans));

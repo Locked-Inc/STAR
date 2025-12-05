@@ -2408,6 +2408,16 @@
 		)
 		(uuid "39b79bff-0017-4d80-a4db-0d1a7708124c")
 	)
+	(text "*** THIS IS 5 to 20V output of this ***"
+		(exclude_from_sim no)
+		(at 375.92 135.636 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "7418fbc4-1546-47ed-9138-a86e8a886343")
+	)
 	(text "VSYS caps need 2A ripple support"
 		(exclude_from_sim no)
 		(at 293.624 124.206 0)
@@ -2417,6 +2427,16 @@
 			)
 		)
 		(uuid "a41c5a90-da26-4146-8a85-f7be54640fe0")
+	)
+	(text "*** THIS GOES TO P3V3 BUCK AND TO P5V0 BUCK ***"
+		(exclude_from_sim no)
+		(at 150.876 237.744 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+		)
+		(uuid "d07a5c5b-09b9-473d-b3a3-f354c5b08c85")
 	)
 	(text "D+/- Handled on \nTPS25751DREFR"
 		(exclude_from_sim no)
@@ -4686,7 +4706,7 @@
 		)
 		(uuid "30539c53-322f-4978-8b7b-c8d4303edebd")
 	)
-	(label "P5V0_BUCK_SYS"
+	(label "SYSTEM_VOLTAGE"
 		(at 353.06 135.89 180)
 		(effects
 			(font
@@ -4706,7 +4726,7 @@
 		)
 		(uuid "372bae83-0e09-4e32-a530-4f5710aa683d")
 	)
-	(label "P5V0_BUCK_SYS"
+	(label "SYSTEM_VOLTAGE"
 		(at 114.3 228.6 0)
 		(effects
 			(font
@@ -4746,7 +4766,7 @@
 		)
 		(uuid "4ca40d67-5250-43fc-a692-39c2ab944d36")
 	)
-	(label "P5V0_BUCK_SYS"
+	(label "SYSTEM_VOLTAGE"
 		(at 181.61 228.6 180)
 		(effects
 			(font
@@ -4968,7 +4988,7 @@
 		)
 		(uuid "a3ff3764-ce4d-449e-94cb-f45d91328811")
 	)
-	(hierarchical_label "P5V0_BUCK_SYS"
+	(hierarchical_label "SYSTEM_VOLTAGE"
 		(shape output)
 		(at 181.61 228.6 0)
 		(effects

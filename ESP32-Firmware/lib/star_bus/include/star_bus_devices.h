@@ -29,7 +29,7 @@ extern "C" {
  *
  * // Create I2C bus for BMP280
  * star_bus_config_t* bmp_bus = star_bus_config_create_i2c(
- *     "bmp280", I2C_NUM_0, BMP280_DEFAULT_ADDR,
+ *     "bmp280", I2C_NUM_0, s_bmp280_default_addr,
  *     GPIO_NUM_21, GPIO_NUM_22, 400000);
  * star_bus_manager_add_bus(&bus_manager, bmp_bus);
  *
@@ -54,7 +54,7 @@ extern "C" {
  *
  * // Create I2C bus for MPU6050
  * star_bus_config_t* imu_bus = star_bus_config_create_i2c(
- *     "mpu6050", I2C_NUM_0, MPU6050_DEFAULT_ADDR,
+ *     "mpu6050", I2C_NUM_0, s_mpu6050_default_addr,
  *     GPIO_NUM_21, GPIO_NUM_22, 400000);
  * star_bus_manager_add_bus(&bus_manager, imu_bus);
  *
@@ -81,7 +81,7 @@ extern "C" {
  *
  * // Create I2C bus for OLED
  * star_bus_config_t* oled_bus = star_bus_config_create_i2c(
- *     "oled", I2C_NUM_0, SSD1306_DEFAULT_ADDR,
+ *     "oled", I2C_NUM_0, s_ssd1306_default_addr,
  *     GPIO_NUM_21, GPIO_NUM_22, 400000);
  * star_bus_manager_add_bus(&bus_manager, oled_bus);
  *
@@ -100,7 +100,7 @@ extern "C" {
  * // === ADS1115 16-bit ADC ===
  *
  * star_bus_config_t* adc_bus = star_bus_config_create_i2c(
- *     "adc", I2C_NUM_0, ADS1115_DEFAULT_ADDR,
+ *     "adc", I2C_NUM_0, s_ads1115_default_addr,
  *     GPIO_NUM_21, GPIO_NUM_22, 400000);
  * star_bus_manager_add_bus(&bus_manager, adc_bus);
  *
@@ -125,7 +125,7 @@ extern "C" {
  * // === PCF8574 I/O Expander ===
  *
  * star_bus_config_t* io_bus = star_bus_config_create_i2c(
- *     "io_expander", I2C_NUM_0, PCF8574_DEFAULT_ADDR,
+ *     "io_expander", I2C_NUM_0, s_pcf8574_default_addr,
  *     GPIO_NUM_21, GPIO_NUM_22, 100000);
  * star_bus_manager_add_bus(&bus_manager, io_bus);
  *
@@ -141,7 +141,7 @@ extern "C" {
  * // === AT24C256 EEPROM ===
  *
  * star_bus_config_t* eeprom_bus = star_bus_config_create_i2c(
- *     "eeprom", I2C_NUM_0, AT24C256_DEFAULT_ADDR,
+ *     "eeprom", I2C_NUM_0, s_at24c256_default_addr,
  *     GPIO_NUM_21, GPIO_NUM_22, 100000);
  * star_bus_manager_add_bus(&bus_manager, eeprom_bus);
  *
@@ -158,7 +158,7 @@ extern "C" {
  * // === DS3231 RTC ===
  *
  * star_bus_config_t* rtc_bus = star_bus_config_create_i2c(
- *     "rtc", I2C_NUM_0, DS3231_DEFAULT_ADDR,
+ *     "rtc", I2C_NUM_0, s_ds3231_default_addr,
  *     GPIO_NUM_21, GPIO_NUM_22, 100000);
  * star_bus_manager_add_bus(&bus_manager, rtc_bus);
  *
@@ -189,8 +189,8 @@ extern "C" {
 /* --- BMP280 Pressure/Temperature Sensor --- */
 
 /* Type-safe I2C addresses for BMP280 */
-static const uint8_t BMP280_DEFAULT_ADDR = 0x76;
-static const uint8_t BMP280_ALT_ADDR     = 0x77;
+static const uint8_t s_bmp280_default_addr = 0x76;
+static const uint8_t s_bmp280_alt_addr     = 0x77;
 
 /** BMP280 configuration structure */
 typedef struct {
@@ -265,8 +265,8 @@ esp_err_t star_bus_bmp280_read_pressure(const star_bus_manager_t* manager,
 /* --- MPU6050 6-Axis IMU --- */
 
 /* Type-safe I2C addresses for MPU6050 */
-static const uint8_t MPU6050_DEFAULT_ADDR = 0x68;
-static const uint8_t MPU6050_ALT_ADDR     = 0x69;
+static const uint8_t s_mpu6050_default_addr = 0x68;
+static const uint8_t s_mpu6050_alt_addr     = 0x69;
 
 /** MPU6050 configuration structure */
 typedef struct {
@@ -321,8 +321,8 @@ esp_err_t star_bus_mpu6050_read_all(const star_bus_manager_t* manager,
 /* --- SSD1306 OLED Display --- */
 
 /* Type-safe I2C addresses for SSD1306 */
-static const uint8_t SSD1306_DEFAULT_ADDR = 0x3C;
-static const uint8_t SSD1306_ALT_ADDR     = 0x3D;
+static const uint8_t s_ssd1306_default_addr = 0x3C;
+static const uint8_t s_ssd1306_alt_addr     = 0x3D;
 
 /**
  * @brief Initialize SSD1306 OLED display
@@ -361,7 +361,7 @@ esp_err_t star_bus_ssd1306_update(const star_bus_manager_t* manager,
 /* --- ADS1115 16-bit ADC --- */
 
 /* Type-safe I2C address for ADS1115 */
-static const uint8_t ADS1115_DEFAULT_ADDR = 0x48;
+static const uint8_t s_ads1115_default_addr = 0x48;
 
 /** ADS1115 configuration structure */
 typedef struct {
@@ -403,7 +403,7 @@ star_bus_ads1115_read(const star_bus_manager_t* manager, const char* bus_name, i
 /* --- PCF8574 8-bit I/O Expander --- */
 
 /* Type-safe I2C address for PCF8574 */
-static const uint8_t PCF8574_DEFAULT_ADDR = 0x20;
+static const uint8_t s_pcf8574_default_addr = 0x20;
 
 /**
  * @brief Write byte to PCF8574 I/O expander
@@ -428,7 +428,7 @@ star_bus_pcf8574_read(const star_bus_manager_t* manager, const char* bus_name, u
 /* --- AT24C256 EEPROM --- */
 
 /* Type-safe I2C address for AT24C256 */
-static const uint8_t AT24C256_DEFAULT_ADDR = 0x50;
+static const uint8_t s_at24c256_default_addr = 0x50;
 
 /**
  * @brief Write data to AT24C256 EEPROM
@@ -463,7 +463,7 @@ esp_err_t star_bus_at24c256_read(const star_bus_manager_t* manager,
 /* --- DS3231 RTC --- */
 
 /* Type-safe I2C address for DS3231 */
-static const uint8_t DS3231_DEFAULT_ADDR = 0x68;
+static const uint8_t s_ds3231_default_addr = 0x68;
 
 /** DS3231 time structure */
 typedef struct {

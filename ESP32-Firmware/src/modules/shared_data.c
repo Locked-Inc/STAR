@@ -159,6 +159,8 @@ void shared_data_update_health(const uint8_t sensor_index, const bool success)
     s_g_global_context.health_data.uptime_ms = shared_data_get_uptime_ms();
 
     xSemaphoreGive(s_g_global_context.health_mutex);
+  } else {
+    ESP_LOGW(s_TAG, "Failed to acquire health mutex - update skipped");
   }
 }
 
@@ -174,6 +176,8 @@ system_state_t shared_data_get_system_state(void)
                      pdMS_TO_TICKS(STAR_SYSTEM_CONFIG.freertos.mutex_timeout_ms)) == pdTRUE) {
     state = s_g_global_context.system_state;
     xSemaphoreGive(s_g_global_context.state_mutex);
+  } else {
+    ESP_LOGW(s_TAG, "Failed to acquire state mutex in get_system_state");
   }
 
   return state;
@@ -193,6 +197,8 @@ void shared_data_set_system_state(const system_state_t state)
       s_g_global_context.health_data.current_state = state;
     }
     xSemaphoreGive(s_g_global_context.state_mutex);
+  } else {
+    ESP_LOGW(s_TAG, "Failed to acquire state mutex in set_system_state");
   }
 }
 
@@ -209,6 +215,8 @@ bool shared_data_get_temperature(float* const temperature_c)
     *temperature_c = s_g_global_context.current_temperature_c;
     available      = s_g_global_context.temperature_available;
     xSemaphoreGive(s_g_global_context.state_mutex);
+  } else {
+    ESP_LOGW(s_TAG, "Failed to acquire state mutex in get_temperature");
   }
 
   return available;
@@ -229,6 +237,8 @@ void shared_data_set_temperature(const float temperature_c, const bool valid)
       s_g_global_context.temperature_available = false;
     }
     xSemaphoreGive(s_g_global_context.state_mutex);
+  } else {
+    ESP_LOGW(s_TAG, "Failed to acquire state mutex in set_temperature");
   }
 }
 
@@ -245,6 +255,8 @@ bool shared_data_get_sensor_reading(const uint8_t sensor_index, sensor_data_t* c
     *data = s_g_global_context.latest_sensors[sensor_index];
     valid = data->is_valid;
     xSemaphoreGive(s_g_global_context.state_mutex);
+  } else {
+    ESP_LOGW(s_TAG, "Failed to acquire state mutex in get_sensor_reading");
   }
 
   return valid;
@@ -260,6 +272,8 @@ void shared_data_set_sensor_reading(const uint8_t sensor_index, const sensor_dat
                      pdMS_TO_TICKS(STAR_SYSTEM_CONFIG.freertos.mutex_timeout_ms)) == pdTRUE) {
     s_g_global_context.latest_sensors[sensor_index] = *data;
     xSemaphoreGive(s_g_global_context.state_mutex);
+  } else {
+    ESP_LOGW(s_TAG, "Failed to acquire state mutex in set_sensor_reading");
   }
 }
 
@@ -310,6 +324,8 @@ bool shared_data_is_system_ready(void)
                      pdMS_TO_TICKS(STAR_SYSTEM_CONFIG.freertos.mutex_timeout_ms)) == pdTRUE) {
     ready = s_g_global_context.system_ready;
     xSemaphoreGive(s_g_global_context.state_mutex);
+  } else {
+    ESP_LOGW(s_TAG, "Failed to acquire state mutex in is_system_ready");
   }
 
   return ready;
@@ -330,5 +346,7 @@ void shared_data_mark_system_ready(void)
       ESP_LOGI(s_TAG, "System marked as ready - entering RUNNING state");
     }
     xSemaphoreGive(s_g_global_context.state_mutex);
+  } else {
+    ESP_LOGW(s_TAG, "Failed to acquire state mutex in mark_system_ready");
   }
 }

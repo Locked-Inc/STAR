@@ -15,6 +15,9 @@
 
 static const char* s_TAG = "STAR_UART";
 
+/* Default mutex timeout in milliseconds to prevent infinite wait deadlocks */
+static const uint32_t s_uart_mutex_timeout_ms = 5000;
+
 #define MAX_UART_BUSES (3)
 
 /* --- Types --- */
@@ -40,6 +43,7 @@ static uart_state_t      g_uart_states[MAX_UART_BUSES] = {0};
 static uint8_t           g_num_uart_states             = 0;
 static SemaphoreHandle_t g_uart_mutex                  = NULL;
 static portMUX_TYPE      g_uart_init_spinlock          = portMUX_INITIALIZER_UNLOCKED;
+static portMUX_TYPE      g_uart_state_spinlock         = portMUX_INITIALIZER_UNLOCKED;
 
 /* --- Helper Functions --- */
 
@@ -72,17 +76,45 @@ static esp_err_t internal_init_uart_mutex(void)
 
 /**
  * @brief Get UART state for a bus (must be called with mutex held)
+ *
+ * Uses spinlock to protect access to global state array during iteration
+ * to prevent race conditions with concurrent array modifications.
  */
 static uart_state_t* internal_get_uart_state(const char* bus_name, bool create)
 {
-  for (uint8_t i = 0; i < g_num_uart_states; i++) {
+  uart_state_t* found_state = NULL;
+  uint8_t       current_count;
+  uint8_t       slot_index = 0;
+
+  /* Protect array read with spinlock */
+  portENTER_CRITICAL(&g_uart_state_spinlock);
+  current_count = g_num_uart_states;
+  for (uint8_t i = 0; i < current_count; i++) {
     if (strcmp(g_uart_states[i].bus_name, bus_name) == 0) {
-      return &g_uart_states[i];
+      found_state = &g_uart_states[i];
+      break;
     }
   }
+  portEXIT_CRITICAL(&g_uart_state_spinlock);
 
-  if (create && g_num_uart_states < MAX_UART_BUSES) {
-    uart_state_t* state = &g_uart_states[g_num_uart_states];
+  if (found_state != NULL) {
+    return found_state;
+  }
+
+  if (create) {
+    /* Check capacity and reserve slot under spinlock */
+    portENTER_CRITICAL(&g_uart_state_spinlock);
+    if (g_num_uart_states >= MAX_UART_BUSES) {
+      portEXIT_CRITICAL(&g_uart_state_spinlock);
+      return NULL;
+    }
+    slot_index = g_num_uart_states;
+    /* Increment count to reserve the slot */
+    g_num_uart_states++;
+    portEXIT_CRITICAL(&g_uart_state_spinlock);
+
+    /* Initialize the reserved slot outside spinlock (safe since slot is reserved) */
+    uart_state_t* state = &g_uart_states[slot_index];
     memset(state, 0, sizeof(uart_state_t));
     strncpy(state->bus_name, bus_name, sizeof(state->bus_name) - 1);
     state->bus_name[sizeof(state->bus_name) - 1] = '\0';
@@ -91,6 +123,10 @@ static uart_state_t* internal_get_uart_state(const char* bus_name, bool create)
     state->stats_mutex = xSemaphoreCreateMutex();
     if (state->stats_mutex == NULL) {
       ESP_LOGE(s_TAG, "Failed to create stats mutex for '%s'", bus_name);
+      /* Decrement count to release the slot */
+      portENTER_CRITICAL(&g_uart_state_spinlock);
+      g_num_uart_states--;
+      portEXIT_CRITICAL(&g_uart_state_spinlock);
       return NULL;
     }
 
@@ -99,10 +135,13 @@ static uart_state_t* internal_get_uart_state(const char* bus_name, bool create)
     if (state->ops_mutex == NULL) {
       ESP_LOGE(s_TAG, "Failed to create ops mutex for '%s'", bus_name);
       vSemaphoreDelete(state->stats_mutex);
+      /* Decrement count to release the slot */
+      portENTER_CRITICAL(&g_uart_state_spinlock);
+      g_num_uart_states--;
+      portEXIT_CRITICAL(&g_uart_state_spinlock);
       return NULL;
     }
 
-    g_num_uart_states++;
     return state;
   }
 
@@ -118,7 +157,7 @@ static uart_state_t* get_uart_state(const char* bus_name, bool create)
     return NULL;
   }
 
-  if (xSemaphoreTake(g_uart_mutex, portMAX_DELAY) != pdTRUE) {
+  if (xSemaphoreTake(g_uart_mutex, pdMS_TO_TICKS(s_uart_mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to take UART mutex");
     return NULL;
   }
@@ -142,7 +181,7 @@ static void internal_uart_event_task(void* param)
   while (state->event_task_running) {
     if (xQueueReceive(state->event_queue, &event, pdMS_TO_TICKS(100))) {
       /* Track errors in statistics (with mutex protection) */
-      if (xSemaphoreTake(state->stats_mutex, portMAX_DELAY) == pdTRUE) {
+      if (xSemaphoreTake(state->stats_mutex, pdMS_TO_TICKS(s_uart_mutex_timeout_ms)) == pdTRUE) {
         switch (event.type) {
           case UART_PARITY_ERR:
             state->stats.parity_errors++;
@@ -292,7 +331,7 @@ esp_err_t star_bus_uart_deinit(star_bus_manager_t* manager, const char* bus_name
   }
 
   /* Take operation mutex to prevent race with ongoing operations */
-  if (xSemaphoreTake(state->ops_mutex, portMAX_DELAY) != pdTRUE) {
+  if (xSemaphoreTake(state->ops_mutex, pdMS_TO_TICKS(s_uart_mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to take ops mutex for deinit '%s'", bus_name);
     return ESP_ERR_TIMEOUT;
   }
@@ -309,7 +348,7 @@ esp_err_t star_bus_uart_deinit(star_bus_manager_t* manager, const char* bus_name
     xSemaphoreGive(state->ops_mutex);
     vTaskDelay(pdMS_TO_TICKS(200)); /* Wait for task to exit */
     /* Re-acquire mutex */
-    if (xSemaphoreTake(state->ops_mutex, portMAX_DELAY) != pdTRUE) {
+    if (xSemaphoreTake(state->ops_mutex, pdMS_TO_TICKS(s_uart_mutex_timeout_ms)) != pdTRUE) {
       ESP_LOGE(s_TAG, "Failed to re-take ops mutex for deinit '%s'", bus_name);
       return ESP_ERR_TIMEOUT;
     }
@@ -342,7 +381,7 @@ esp_err_t star_bus_uart_write(star_bus_manager_t* manager,
   }
 
   /* Take operation mutex to prevent use-after-free */
-  if (xSemaphoreTake(state->ops_mutex, portMAX_DELAY) != pdTRUE) {
+  if (xSemaphoreTake(state->ops_mutex, pdMS_TO_TICKS(s_uart_mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to take ops mutex for '%s'", bus_name);
     return ESP_ERR_TIMEOUT;
   }
@@ -359,7 +398,7 @@ esp_err_t star_bus_uart_write(star_bus_manager_t* manager,
   uint32_t elapsed = (uint32_t)(esp_timer_get_time() - start_time);
 
   /* Update stats with mutex protection */
-  if (xSemaphoreTake(state->stats_mutex, portMAX_DELAY) == pdTRUE) {
+  if (xSemaphoreTake(state->stats_mutex, pdMS_TO_TICKS(s_uart_mutex_timeout_ms)) == pdTRUE) {
     state->stats.last_tx_time_us = elapsed;
     if (written >= 0) {
       state->stats.bytes_sent += written;
@@ -394,7 +433,7 @@ esp_err_t star_bus_uart_read(star_bus_manager_t* manager,
   }
 
   /* Take operation mutex to prevent use-after-free */
-  if (xSemaphoreTake(state->ops_mutex, portMAX_DELAY) != pdTRUE) {
+  if (xSemaphoreTake(state->ops_mutex, pdMS_TO_TICKS(s_uart_mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to take ops mutex for '%s'", bus_name);
     return ESP_ERR_TIMEOUT;
   }
@@ -411,7 +450,7 @@ esp_err_t star_bus_uart_read(star_bus_manager_t* manager,
   uint32_t elapsed = (uint32_t)(esp_timer_get_time() - start_time);
 
   /* Update stats with mutex protection */
-  if (xSemaphoreTake(state->stats_mutex, portMAX_DELAY) == pdTRUE) {
+  if (xSemaphoreTake(state->stats_mutex, pdMS_TO_TICKS(s_uart_mutex_timeout_ms)) == pdTRUE) {
     state->stats.last_rx_time_us = elapsed;
     if (read >= 0) {
       state->stats.bytes_received += read;
@@ -459,7 +498,7 @@ esp_err_t star_bus_uart_read_line(star_bus_manager_t* manager,
   }
 
   /* Verify initialized state under mutex protection */
-  if (xSemaphoreTake(state->ops_mutex, portMAX_DELAY) != pdTRUE) {
+  if (xSemaphoreTake(state->ops_mutex, pdMS_TO_TICKS(s_uart_mutex_timeout_ms)) != pdTRUE) {
     return ESP_ERR_TIMEOUT;
   }
 
@@ -517,7 +556,7 @@ esp_err_t star_bus_uart_get_available(const star_bus_manager_t* manager,
   }
 
   /* Take operation mutex to prevent use-after-free */
-  if (xSemaphoreTake(state->ops_mutex, portMAX_DELAY) != pdTRUE) {
+  if (xSemaphoreTake(state->ops_mutex, pdMS_TO_TICKS(s_uart_mutex_timeout_ms)) != pdTRUE) {
     return ESP_ERR_TIMEOUT;
   }
 
@@ -545,7 +584,7 @@ esp_err_t star_bus_uart_flush(star_bus_manager_t* manager, const char* bus_name)
   }
 
   /* Take operation mutex to prevent use-after-free */
-  if (xSemaphoreTake(state->ops_mutex, portMAX_DELAY) != pdTRUE) {
+  if (xSemaphoreTake(state->ops_mutex, pdMS_TO_TICKS(s_uart_mutex_timeout_ms)) != pdTRUE) {
     return ESP_ERR_TIMEOUT;
   }
 
@@ -573,7 +612,7 @@ esp_err_t star_bus_uart_clear_rx(star_bus_manager_t* manager, const char* bus_na
   }
 
   /* Take operation mutex to prevent use-after-free */
-  if (xSemaphoreTake(state->ops_mutex, portMAX_DELAY) != pdTRUE) {
+  if (xSemaphoreTake(state->ops_mutex, pdMS_TO_TICKS(s_uart_mutex_timeout_ms)) != pdTRUE) {
     return ESP_ERR_TIMEOUT;
   }
 
@@ -606,7 +645,7 @@ esp_err_t star_bus_uart_enable_pattern(star_bus_manager_t* manager,
   }
 
   /* Take operation mutex to prevent use-after-free */
-  if (xSemaphoreTake(state->ops_mutex, portMAX_DELAY) != pdTRUE) {
+  if (xSemaphoreTake(state->ops_mutex, pdMS_TO_TICKS(s_uart_mutex_timeout_ms)) != pdTRUE) {
     return ESP_ERR_TIMEOUT;
   }
 
@@ -639,7 +678,7 @@ esp_err_t star_bus_uart_disable_pattern(star_bus_manager_t* manager, const char*
   }
 
   /* Take operation mutex to prevent use-after-free */
-  if (xSemaphoreTake(state->ops_mutex, portMAX_DELAY) != pdTRUE) {
+  if (xSemaphoreTake(state->ops_mutex, pdMS_TO_TICKS(s_uart_mutex_timeout_ms)) != pdTRUE) {
     return ESP_ERR_TIMEOUT;
   }
 
@@ -669,7 +708,7 @@ esp_err_t star_bus_uart_get_stats(const star_bus_manager_t* manager,
   }
 
   /* Read stats with mutex protection */
-  if (xSemaphoreTake(state->stats_mutex, portMAX_DELAY) != pdTRUE) {
+  if (xSemaphoreTake(state->stats_mutex, pdMS_TO_TICKS(s_uart_mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to take stats mutex for '%s'", bus_name);
     return ESP_ERR_TIMEOUT;
   }
@@ -693,7 +732,7 @@ esp_err_t star_bus_uart_reset_stats(star_bus_manager_t* manager, const char* bus
   }
 
   /* Reset stats with mutex protection */
-  if (xSemaphoreTake(state->stats_mutex, portMAX_DELAY) != pdTRUE) {
+  if (xSemaphoreTake(state->stats_mutex, pdMS_TO_TICKS(s_uart_mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to take stats mutex for '%s'", bus_name);
     return ESP_ERR_TIMEOUT;
   }

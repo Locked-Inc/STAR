@@ -13,8 +13,8 @@ extern "C" {
  * @file star_servo_constants.h
  * @brief Type-safe constants for servo control
  *
- * This header provides type-safe structured constants for servo control,
- * replacing the legacy macro-based approach with proper encapsulation.
+ * This header provides type-safe structured constants for servo control
+ * with proper encapsulation.
  */
 
 /**
