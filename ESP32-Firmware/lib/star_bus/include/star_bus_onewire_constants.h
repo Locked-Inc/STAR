@@ -33,32 +33,32 @@ typedef struct {
 } onewire_timing_t;
 
 /* Standard speed OneWire timing constants */
-static const onewire_timing_t ONEWIRE_TIMING_STANDARD = {.reset_pulse_us     = 480,
-                                                         .presence_wait_us   = 70,
-                                                         .presence_sample_us = 410,
-                                                         .write_0_low_us     = 60,
-                                                         .write_1_low_us     = 6,
-                                                         .write_recovery_us  = 10,
-                                                         .read_low_us        = 6,
-                                                         .read_sample_us     = 9,
-                                                         .read_recovery_us   = 55};
+static const onewire_timing_t s_onewire_timing_standard = {.reset_pulse_us     = 480,
+                                                           .presence_wait_us   = 70,
+                                                           .presence_sample_us = 410,
+                                                           .write_0_low_us     = 60,
+                                                           .write_1_low_us     = 6,
+                                                           .write_recovery_us  = 10,
+                                                           .read_low_us        = 6,
+                                                           .read_sample_us     = 9,
+                                                           .read_recovery_us   = 55};
 
 /* Overdrive speed OneWire timing constants (for future use) */
-static const onewire_timing_t ONEWIRE_TIMING_OVERDRIVE = {.reset_pulse_us     = 70,
-                                                          .presence_wait_us   = 8,
-                                                          .presence_sample_us = 40,
-                                                          .write_0_low_us     = 8,
-                                                          .write_1_low_us     = 1,
-                                                          .write_recovery_us  = 1,
-                                                          .read_low_us        = 1,
-                                                          .read_sample_us     = 2,
-                                                          .read_recovery_us   = 7};
+static const onewire_timing_t s_onewire_timing_overdrive = {.reset_pulse_us     = 70,
+                                                            .presence_wait_us   = 8,
+                                                            .presence_sample_us = 40,
+                                                            .write_0_low_us     = 8,
+                                                            .write_1_low_us     = 1,
+                                                            .write_recovery_us  = 1,
+                                                            .read_low_us        = 1,
+                                                            .read_sample_us     = 2,
+                                                            .read_recovery_us   = 7};
 
 /* Maximum number of OneWire buses supported */
-static const uint8_t MAX_ONEWIRE_BUSES = 4;
+static const uint8_t s_max_onewire_buses = 4;
 
 /* Maximum number of OneWire peripheral buses supported */
-static const uint8_t MAX_PERIPHERAL_BUSES = 2;
+static const uint8_t s_max_peripheral_buses = 2;
 
 /* OneWire ROM commands */
 typedef enum {

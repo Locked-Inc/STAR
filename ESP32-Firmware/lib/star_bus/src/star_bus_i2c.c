@@ -15,7 +15,9 @@
 /* --- Constants --- */
 
 static const char* s_TAG = "BusI2C";
-#define I2C_TIMEOUT_MS (1000) /* Default timeout for I2C operations */
+
+/* Use constant instead of macro for type safety */
+static const uint32_t s_i2c_timeout_ms = 1000; /* Default timeout for I2C operations */
 
 /* --- Private Function Prototypes (Default Ops) --- */
 
@@ -215,7 +217,7 @@ static esp_err_t internal_i2c_execute_with_retry(const star_bus_config_t* config
                                                  i2c_cmd_handle_t         cmd,
                                                  const char*              operation_name)
 {
-  esp_err_t ret = i2c_master_cmd_begin(port, cmd, pdMS_TO_TICKS(I2C_TIMEOUT_MS));
+  esp_err_t ret = i2c_master_cmd_begin(port, cmd, pdMS_TO_TICKS(s_i2c_timeout_ms));
 
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "%s '%s': Error %s", operation_name, config->name, esp_err_to_name(ret));

@@ -3,13 +3,18 @@
 #ifndef STAR_BMS_BQ7850_H
 #define STAR_BMS_BQ7850_H
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/semphr.h"
-
-#include <esp_err.h>
+/* System headers */
 #include <stdbool.h>
 #include <stdint.h>
 
+/* FreeRTOS headers */
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+
+/* ESP-IDF headers */
+#include "esp_err.h"
+
+/* Project headers */
 #include "star_bus_manager.h"
 #include "star_error_interface.h"
 

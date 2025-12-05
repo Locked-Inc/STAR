@@ -13,7 +13,8 @@
 
 static const char* s_TAG = "bq7850";
 
-#define BQ7850_MUTEX_TIMEOUT_MS (1000)
+/* Use constant instead of macro for type safety */
+static const uint32_t s_bq7850_mutex_timeout_ms = 1000;
 
 /* --- Internal Helper Functions --- */
 
@@ -111,26 +112,14 @@ esp_err_t star_bms_bq7850_init(bq7850_handle_t*        handle,
 
   /* Handle error interface injection */
   if (error_iface == NULL) {
-    /* Create default error handler internally */
-    error_handler_t* default_handler = error_handler_create_default();
-    if (default_handler == NULL) {
-      ESP_LOGE(s_TAG, "Failed to create default error handler");
-      vSemaphoreDelete(handle->mutex);
-      handle->mutex = NULL;
-      return ESP_ERR_NO_MEM;
-    }
-
-    /* Allocate and store the interface */
-    handle->error_iface = (star_error_interface_t*)malloc(sizeof(star_error_interface_t));
+    /* Create default error interface (handles both handler and interface allocation) */
+    handle->error_iface = star_error_interface_create_default();
     if (handle->error_iface == NULL) {
-      ESP_LOGE(s_TAG, "Failed to allocate error interface");
-      error_handler_destroy_default(default_handler);
+      ESP_LOGE(s_TAG, "Failed to create default error interface");
       vSemaphoreDelete(handle->mutex);
       handle->mutex = NULL;
       return ESP_ERR_NO_MEM;
     }
-
-    error_handler_get_interface(handle->error_iface, default_handler);
     handle->owns_error_handler = true;
     ESP_LOGI(s_TAG, "Created default error handler internally");
   } else {
@@ -154,11 +143,8 @@ esp_err_t star_bms_bq7850_init(bq7850_handle_t*        handle,
 
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to communicate with BQ7850: %s", esp_err_to_name(ret));
-    if (handle->owns_error_handler && handle->error_iface != NULL) {
-      error_handler_t* handler_ptr = (error_handler_t*)handle->error_iface->ctx;
-      error_handler_destroy_default(handler_ptr);
-      free(handle->error_iface);
-    }
+    star_error_interface_cleanup(handle->error_iface, handle->owns_error_handler);
+    handle->error_iface = NULL;
     vSemaphoreDelete(handle->mutex);
     handle->mutex = NULL;
     return ret;
@@ -182,11 +168,8 @@ esp_err_t star_bms_bq7850_init(bq7850_handle_t*        handle,
   ret = star_smbus_read_word(manager, bus_name, config->smbus_addr, BQ7850_CMD_VOLTAGE, &voltage);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to read pack voltage: %s", esp_err_to_name(ret));
-    if (handle->owns_error_handler && handle->error_iface != NULL) {
-      error_handler_t* handler_ptr = (error_handler_t*)handle->error_iface->ctx;
-      error_handler_destroy_default(handler_ptr);
-      free(handle->error_iface);
-    }
+    star_error_interface_cleanup(handle->error_iface, handle->owns_error_handler);
+    handle->error_iface = NULL;
     vSemaphoreDelete(handle->mutex);
     handle->mutex = NULL;
     return ret;
@@ -208,16 +191,14 @@ esp_err_t star_bms_bq7850_deinit(bq7850_handle_t* handle)
 
   /* Acquire mutex before cleanup */
   SemaphoreHandle_t mutex = handle->mutex;
-  if (mutex != NULL && xSemaphoreTake(mutex, pdMS_TO_TICKS(BQ7850_MUTEX_TIMEOUT_MS)) != pdTRUE) {
+  if (mutex != NULL && xSemaphoreTake(mutex, pdMS_TO_TICKS(s_bq7850_mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGW(s_TAG, "Failed to acquire mutex for deinit, continuing anyway");
   }
 
   /* Clean up error handler if we own it */
-  if (handle->owns_error_handler && handle->error_iface != NULL) {
-    error_handler_t* error_handler = (error_handler_t*)handle->error_iface->ctx;
-    error_handler_destroy_default(error_handler);
-    free(handle->error_iface);
-    handle->error_iface = NULL;
+  star_error_interface_cleanup(handle->error_iface, handle->owns_error_handler);
+  handle->error_iface = NULL;
+  if (handle->owns_error_handler) {
     ESP_LOGI(s_TAG, "Destroyed internally-owned error handler");
   }
 
@@ -500,25 +481,22 @@ esp_err_t star_bms_bq7850_read_current(const bq7850_handle_t* handle,
 
   memset(current_data, 0, sizeof(bq7850_current_data_t));
 
-  /* Read instantaneous current (signed) */
-  ret = star_smbus_read_word(manager,
-                             bus_name,
-                             addr,
-                             BQ7850_CMD_CURRENT,
-                             (uint16_t*)&current_data->current_ma);
+  /* Read instantaneous current (signed) - use intermediate variable to avoid aliasing */
+  uint16_t current_raw = 0;
+  ret = star_smbus_read_word(manager, bus_name, addr, BQ7850_CMD_CURRENT, &current_raw);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to read current: %s", esp_err_to_name(ret));
     return ret;
   }
+  current_data->current_ma = (int16_t)current_raw;
 
-  /* Read average current */
-  ret = star_smbus_read_word(manager,
-                             bus_name,
-                             addr,
-                             BQ7850_CMD_AVERAGE_CURRENT,
-                             (uint16_t*)&current_data->avg_current_ma);
+  /* Read average current - use intermediate variable to avoid aliasing */
+  uint16_t avg_current_raw = 0;
+  ret = star_smbus_read_word(manager, bus_name, addr, BQ7850_CMD_AVERAGE_CURRENT, &avg_current_raw);
   if (ret != ESP_OK) {
     ESP_LOGW(s_TAG, "Failed to read average current: %s", esp_err_to_name(ret));
+  } else {
+    current_data->avg_current_ma = (int16_t)avg_current_raw;
   }
 
   /* Read voltage */
@@ -878,33 +856,49 @@ size_t star_bms_bq7850_status_to_string(const bq7850_status_t* status, char* buf
 
   size_t offset = 0;
 
-  offset += snprintf(buffer + offset, size - offset, "Battery Status: ");
+  /* Helper macro to safely append to buffer with overflow protection */
+#define SAFE_APPEND(fmt, ...)                                          \
+  do {                                                                 \
+    if (offset < size) {                                               \
+      int written = snprintf(buffer + offset, size - offset, fmt, ##__VA_ARGS__); \
+      if (written > 0) {                                               \
+        offset += (size_t)written;                                     \
+        if (offset > size) {                                           \
+          offset = size;                                               \
+        }                                                              \
+      }                                                                \
+    }                                                                  \
+  } while (0)
+
+  SAFE_APPEND("Battery Status: ");
 
   if (status->charging) {
-    offset += snprintf(buffer + offset, size - offset, "CHARGING ");
+    SAFE_APPEND("CHARGING ");
   }
   if (status->discharging) {
-    offset += snprintf(buffer + offset, size - offset, "DISCHARGING ");
+    SAFE_APPEND("DISCHARGING ");
   }
   if (status->fully_charged) {
-    offset += snprintf(buffer + offset, size - offset, "FULL ");
+    SAFE_APPEND("FULL ");
   }
 
   if (status->safety_status) {
-    offset += snprintf(buffer + offset, size - offset, "\nSafety: ");
+    SAFE_APPEND("\nSafety: ");
     if (status->safety_status & BQ7850_SAFETY_STATUS_CUV) {
-      offset += snprintf(buffer + offset, size - offset, "CUV ");
+      SAFE_APPEND("CUV ");
     }
     if (status->safety_status & BQ7850_SAFETY_STATUS_COV) {
-      offset += snprintf(buffer + offset, size - offset, "COV ");
+      SAFE_APPEND("COV ");
     }
     if (status->safety_status & BQ7850_SAFETY_STATUS_OCC) {
-      offset += snprintf(buffer + offset, size - offset, "OCC ");
+      SAFE_APPEND("OCC ");
     }
     if (status->safety_status & BQ7850_SAFETY_STATUS_OCD) {
-      offset += snprintf(buffer + offset, size - offset, "OCD ");
+      SAFE_APPEND("OCD ");
     }
   }
+
+#undef SAFE_APPEND
 
   return offset;
 }

@@ -15,6 +15,9 @@
 
 static const char* s_TAG = "STAR_STATS";
 
+/* Default mutex timeout in milliseconds to prevent infinite wait deadlocks */
+static const uint32_t s_stats_mutex_timeout_ms = 5000;
+
 /* --- Types --- */
 
 /**
@@ -101,7 +104,7 @@ static stats_state_t* get_stats_state(const char* bus_name, bool create)
     return NULL;
   }
 
-  if (xSemaphoreTake(g_stats_mutex, portMAX_DELAY) != pdTRUE) {
+  if (xSemaphoreTake(g_stats_mutex, pdMS_TO_TICKS(s_stats_mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to take stats mutex");
     return NULL;
   }
@@ -213,13 +216,15 @@ esp_err_t star_bus_stats_reset(star_bus_manager_t* manager, const char* bus_name
   star_stats_config_t config  = state->config;
   bool                enabled = state->enabled;
   char                name[32];
-  strncpy(name, state->bus_name, sizeof(name));
+  strncpy(name, state->bus_name, sizeof(name) - 1);
+  name[sizeof(name) - 1] = '\0';
 
   /* Reset statistics */
   memset(state, 0, sizeof(stats_state_t));
   state->config  = config;
   state->enabled = enabled;
-  strncpy(state->bus_name, name, sizeof(state->bus_name));
+  strncpy(state->bus_name, name, sizeof(state->bus_name) - 1);
+  state->bus_name[sizeof(state->bus_name) - 1] = '\0';
   state->stats.min_operation_time_us = UINT32_MAX;
   state->stats.stats_start_time_ms   = pdTICKS_TO_MS(xTaskGetTickCount());
   state->stats.last_reset_time_ms    = pdTICKS_TO_MS(xTaskGetTickCount());
@@ -260,6 +265,7 @@ esp_err_t star_bus_stats_snapshot(const star_bus_manager_t* manager,
   memcpy(&snapshot->stats, &state->stats, sizeof(star_bus_stats_t));
   snapshot->timestamp_ms = pdTICKS_TO_MS(xTaskGetTickCount());
   strncpy(snapshot->bus_name, bus_name, sizeof(snapshot->bus_name) - 1);
+  snapshot->bus_name[sizeof(snapshot->bus_name) - 1] = '\0';
 
   return ESP_OK;
 }

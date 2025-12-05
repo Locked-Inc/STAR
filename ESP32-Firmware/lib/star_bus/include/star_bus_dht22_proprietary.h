@@ -129,17 +129,25 @@ extern "C" {
 
 /* --- Constants --- */
 
-/** Minimum interval between readings (ms) - DHT22 spec requires 2 seconds */
-#define STAR_DHT22_MIN_INTERVAL_MS (2000)
+/**
+ * @brief DHT22 constants
+ *
+ * Using enum for type safety while maintaining compile-time constant behavior
+ * required for struct initializers and array sizes in C.
+ */
+enum {
+  /** Minimum interval between readings (ms) - DHT22 spec requires 2 seconds */
+  STAR_DHT22_MIN_INTERVAL_MS = 2000,
 
-/** Default start signal low time (ms) */
-#define STAR_DHT22_START_LOW_MS (18)
+  /** Default start signal low time (ms) */
+  STAR_DHT22_START_LOW_MS = 18,
 
-/** Default timeout for read operations (ms) */
-#define STAR_DHT22_READ_TIMEOUT_MS (100)
+  /** Default timeout for read operations (ms) */
+  STAR_DHT22_READ_TIMEOUT_MS = 100,
 
-/** Maximum number of DHT22 buses */
-#define STAR_DHT22_MAX_BUSES (8)
+  /** Maximum number of DHT22 buses */
+  STAR_DHT22_MAX_BUSES = 8,
+};
 
 /* --- Types --- */
 

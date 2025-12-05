@@ -9,6 +9,12 @@
 
 static const char* s_TAG = "pin_validator";
 
+/* Default mutex timeout in milliseconds to prevent infinite wait deadlocks */
+static const uint32_t s_pin_validator_mutex_timeout_ms = 5000;
+
+/* Short timeout for quick query operations */
+static const uint32_t s_pin_validator_query_timeout_ms = 100;
+
 /* Global validator instance */
 static star_pin_validator_t s_g_pin_validator = {0};
 
@@ -22,7 +28,7 @@ static volatile bool s_g_is_freeing = false;
  * @brief Initialize mutex if not already initialized (thread-safe)
  * @return ESP_OK if successful, otherwise an error code
  */
-static esp_err_t init_mutex(void)
+static esp_err_t internal_init_mutex(void)
 {
   /* Quick check without lock for common case */
   if (s_g_pin_validator.mutex != NULL) {
@@ -75,7 +81,7 @@ esp_err_t star_register_pin(gpio_num_t gpio_num, const char* desc, bool can_be_s
   }
 
   /* Initialize mutex if needed */
-  ret = init_mutex();
+  ret = internal_init_mutex();
   if (ret != ESP_OK) {
     return ret;
   }
@@ -88,7 +94,7 @@ esp_err_t star_register_pin(gpio_num_t gpio_num, const char* desc, bool can_be_s
   }
 
   /* Take mutex */
-  if (xSemaphoreTake(mutex, portMAX_DELAY) != pdTRUE) {
+  if (xSemaphoreTake(mutex, pdMS_TO_TICKS(s_pin_validator_mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to take pin validator mutex");
     return ESP_ERR_TIMEOUT;
   }
@@ -168,7 +174,9 @@ esp_err_t star_register_pin(gpio_num_t gpio_num, const char* desc, bool can_be_s
     return ESP_ERR_NO_MEM;
   }
 
-  strcpy(pin->users[pin->usage_count - 1], desc);
+  /* Use memcpy instead of strcpy for safety - length already validated */
+  const size_t desc_len = strlen(desc);
+  memcpy(pin->users[pin->usage_count - 1], desc, desc_len + 1);
 
   ESP_LOGD(s_TAG, "Pin %d registered successfully (usage count: %d)", gpio_num, pin->usage_count);
 
@@ -200,7 +208,7 @@ esp_err_t star_unregister_pin(gpio_num_t gpio_num, const char* desc)
   }
 
   /* Initialize mutex if needed */
-  ret = init_mutex();
+  ret = internal_init_mutex();
   if (ret != ESP_OK) {
     return ret;
   }
@@ -213,7 +221,7 @@ esp_err_t star_unregister_pin(gpio_num_t gpio_num, const char* desc)
   }
 
   /* Take mutex */
-  if (xSemaphoreTake(mutex, portMAX_DELAY) != pdTRUE) {
+  if (xSemaphoreTake(mutex, pdMS_TO_TICKS(s_pin_validator_mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to take pin validator mutex");
     return ESP_ERR_TIMEOUT;
   }
@@ -255,9 +263,11 @@ esp_err_t star_unregister_pin(gpio_num_t gpio_num, const char* desc)
   /* Free the description string */
   free(pin->users[found_index]);
 
-  /* Shift remaining entries down */
-  for (uint32_t i = found_index; i < pin->usage_count - 1; i++) {
-    pin->users[i] = pin->users[i + 1];
+  /* Shift remaining entries down (guard against underflow even though check above prevents it) */
+  if (pin->usage_count > 1) {
+    for (uint32_t i = (uint32_t)found_index; i < pin->usage_count - 1; i++) {
+      pin->users[i] = pin->users[i + 1];
+    }
   }
 
   /* Decrease usage count */
@@ -298,7 +308,7 @@ esp_err_t star_validate_pins(void)
   }
 
   /* Initialize mutex if needed */
-  ret = init_mutex();
+  ret = internal_init_mutex();
   if (ret != ESP_OK) {
     return ret;
   }
@@ -311,7 +321,7 @@ esp_err_t star_validate_pins(void)
   }
 
   /* Take mutex */
-  if (xSemaphoreTake(mutex, portMAX_DELAY) != pdTRUE) {
+  if (xSemaphoreTake(mutex, pdMS_TO_TICKS(s_pin_validator_mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to take pin validator mutex");
     return ESP_ERR_TIMEOUT;
   }
@@ -379,7 +389,7 @@ esp_err_t star_free_pin_validator(void)
   portEXIT_CRITICAL(&s_g_init_spinlock);
 
   /* Initialize mutex if needed */
-  ret = init_mutex();
+  ret = internal_init_mutex();
   if (ret != ESP_OK) {
     s_g_is_freeing = false;
     return ret;
@@ -396,7 +406,8 @@ esp_err_t star_free_pin_validator(void)
   }
 
   /* Take mutex */
-  if (xSemaphoreTake(s_g_pin_validator.mutex, portMAX_DELAY) != pdTRUE) {
+  if (xSemaphoreTake(s_g_pin_validator.mutex, pdMS_TO_TICKS(s_pin_validator_mutex_timeout_ms)) !=
+      pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to take pin validator mutex for free");
     s_g_is_freeing = false;
     return ESP_ERR_TIMEOUT;
@@ -514,7 +525,7 @@ bool star_pin_validator_is_initialized(void)
     return false;
   }
 
-  if (xSemaphoreTake(mutex, pdMS_TO_TICKS(100)) != pdTRUE) {
+  if (xSemaphoreTake(mutex, pdMS_TO_TICKS(s_pin_validator_query_timeout_ms)) != pdTRUE) {
     ESP_LOGW(s_TAG, "Failed to acquire mutex for is_initialized check");
     return false; /* Assume not initialized if can't check safely */
   }

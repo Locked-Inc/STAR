@@ -209,6 +209,22 @@ star_bus_config_create_gpio(const char* name, const gpio_num_t pins[], uint8_t p
   ESP_RETURN_ON_FALSE(pins, NULL, s_TAG, "Pins array is NULL");
   ESP_RETURN_ON_FALSE(pin_count > 0, NULL, s_TAG, "Pin count must be at least 1");
 
+  /* Validate pin_count doesn't exceed the maximum number of GPIO pins */
+  ESP_RETURN_ON_FALSE(pin_count <= GPIO_NUM_MAX,
+                      NULL,
+                      s_TAG,
+                      "Pin count %d exceeds maximum %d",
+                      pin_count,
+                      GPIO_NUM_MAX);
+
+  /* Validate each pin in the array is a valid GPIO number */
+  for (uint8_t i = 0; i < pin_count; ++i) {
+    if (pins[i] < 0 || pins[i] >= GPIO_NUM_MAX) {
+      ESP_LOGE(s_TAG, "Invalid GPIO pin at index %d: %d (valid range: 0-%d)", i, pins[i], GPIO_NUM_MAX - 1);
+      return NULL;
+    }
+  }
+
   star_bus_config_t* config = internal_star_bus_config_create_common(name, k_star_bus_type_gpio);
   ESP_RETURN_ON_FALSE(config,
                       NULL,

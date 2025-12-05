@@ -18,18 +18,24 @@
 
 static const char* s_TAG = "STAR_ONEWIRE";
 
-#define MAX_ONEWIRE_BUSES (4)
+enum { k_max_onewire_buses = 4 };
 
-/* Timing parameters (microseconds) - Standard Speed */
-#define TIMING_RESET_PULSE (480)
-#define TIMING_PRESENCE_WAIT (70)
-#define TIMING_PRESENCE_SAMPLE (410)
-#define TIMING_WRITE_0_LOW (60)
-#define TIMING_WRITE_1_LOW (6)
-#define TIMING_WRITE_RECOVERY (10)
-#define TIMING_READ_LOW (6)
-#define TIMING_READ_SAMPLE (9)
-#define TIMING_READ_RECOVERY (55)
+/* Mutex timeout in milliseconds */
+static const uint32_t s_onewire_mutex_timeout_ms = 5000;
+
+/* Timing parameters (microseconds) - Standard Speed
+ * Using enum for type safety with compile-time constant behavior */
+enum {
+  k_timing_reset_pulse     = 480,
+  k_timing_presence_wait   = 70,
+  k_timing_presence_sample = 410,
+  k_timing_write_0_low     = 60,
+  k_timing_write_1_low     = 6,
+  k_timing_write_recovery  = 10,
+  k_timing_read_low        = 6,
+  k_timing_read_sample     = 9,
+  k_timing_read_recovery   = 55,
+};
 
 /* --- Types --- */
 
@@ -51,7 +57,7 @@ typedef struct {
 
 /* --- Static Storage --- */
 
-static onewire_state_t   g_onewire_states[MAX_ONEWIRE_BUSES] = {0};
+static onewire_state_t   g_onewire_states[k_max_onewire_buses] = {0};
 static uint8_t           g_num_onewire_states                = 0;
 static SemaphoreHandle_t g_onewire_mutex                     = NULL;
 static portMUX_TYPE      g_onewire_init_spinlock             = portMUX_INITIALIZER_UNLOCKED;
@@ -106,7 +112,7 @@ static esp_err_t internal_init_onewire_mutex(void)
 /**
  * @brief Get 1-Wire state for a bus (must be called with mutex held)
  */
-static onewire_state_t* internal_get_onewire_state(const char* bus_name, bool create)
+static onewire_state_t* internal_internal_get_onewire_state_safe(const char* bus_name, bool create)
 {
   for (uint8_t i = 0; i < g_num_onewire_states; i++) {
     if (strcmp(g_onewire_states[i].bus_name, bus_name) == 0) {
@@ -114,7 +120,7 @@ static onewire_state_t* internal_get_onewire_state(const char* bus_name, bool cr
     }
   }
 
-  if (create && g_num_onewire_states < MAX_ONEWIRE_BUSES) {
+  if (create && g_num_onewire_states < k_max_onewire_buses) {
     onewire_state_t* state = &g_onewire_states[g_num_onewire_states];
     memset(state, 0, sizeof(onewire_state_t));
     strncpy(state->bus_name, bus_name, sizeof(state->bus_name) - 1);
@@ -129,18 +135,19 @@ static onewire_state_t* internal_get_onewire_state(const char* bus_name, bool cr
 /**
  * @brief Get 1-Wire state for a bus (thread-safe)
  */
-static onewire_state_t* get_onewire_state(const char* bus_name, bool create)
+static onewire_state_t* internal_get_onewire_state_safe(const char* bus_name, bool create)
 {
   if (internal_init_onewire_mutex() != ESP_OK) {
     return NULL;
   }
 
-  if (xSemaphoreTake(g_onewire_mutex, portMAX_DELAY) != pdTRUE) {
-    ESP_LOGE(s_TAG, "Failed to take 1-Wire mutex");
+  if (xSemaphoreTake(g_onewire_mutex, pdMS_TO_TICKS(s_onewire_mutex_timeout_ms)) != pdTRUE) {
+    ESP_LOGE(s_TAG, "Failed to take 1-Wire mutex (timeout after %lu ms)",
+             (unsigned long)s_onewire_mutex_timeout_ms);
     return NULL;
   }
 
-  onewire_state_t* state = internal_get_onewire_state(bus_name, create);
+  onewire_state_t* state = internal_internal_get_onewire_state_safe(bus_name, create);
 
   xSemaphoreGive(g_onewire_mutex);
   return state;
@@ -149,7 +156,7 @@ static onewire_state_t* get_onewire_state(const char* bus_name, bool create)
 /**
  * @brief Delay in microseconds
  */
-static inline void delay_us(uint32_t us)
+static inline void internal_delay_us(uint32_t us)
 {
   ets_delay_us(us);
 }
@@ -157,7 +164,7 @@ static inline void delay_us(uint32_t us)
 /**
  * @brief Set GPIO output low
  */
-static inline void gpio_low(gpio_num_t pin)
+static inline void internal_gpio_low(gpio_num_t pin)
 {
   gpio_set_level(pin, 0);
 }
@@ -165,7 +172,7 @@ static inline void gpio_low(gpio_num_t pin)
 /**
  * @brief Set GPIO output high (release for pull-up)
  */
-static inline void gpio_high(gpio_num_t pin)
+static inline void internal_gpio_high(gpio_num_t pin)
 {
   gpio_set_level(pin, 1);
 }
@@ -173,7 +180,7 @@ static inline void gpio_high(gpio_num_t pin)
 /**
  * @brief Read GPIO input
  */
-static inline int gpio_read(gpio_num_t pin)
+static inline int internal_gpio_read(gpio_num_t pin)
 {
   return gpio_get_level(pin);
 }
@@ -194,7 +201,7 @@ esp_err_t star_bus_onewire_init(star_bus_manager_t*          manager,
     return ESP_ERR_INVALID_ARG;
   }
 
-  onewire_state_t* state = get_onewire_state(bus_name, true);
+  onewire_state_t* state = internal_get_onewire_state_safe(bus_name, true);
   if (state == NULL) {
     ESP_LOGE(s_TAG, "Failed to create state for bus '%s'", bus_name);
     return ESP_ERR_NO_MEM;
@@ -219,7 +226,7 @@ esp_err_t star_bus_onewire_init(star_bus_manager_t*          manager,
   }
 
   /* Release bus (high) */
-  gpio_high(config->gpio_pin);
+  internal_gpio_high(config->gpio_pin);
 
   /* Reset search state */
   state->last_discrepancy        = 0;
@@ -240,7 +247,7 @@ esp_err_t star_bus_onewire_deinit(star_bus_manager_t* manager, const char* bus_n
     return ESP_ERR_INVALID_ARG;
   }
 
-  onewire_state_t* state = get_onewire_state(bus_name, false);
+  onewire_state_t* state = internal_get_onewire_state_safe(bus_name, false);
   if (state == NULL || !state->initialized) {
     return ESP_ERR_NOT_FOUND;
   }
@@ -261,7 +268,7 @@ esp_err_t star_bus_onewire_reset(star_bus_manager_t* manager, const char* bus_na
     return ESP_ERR_INVALID_ARG;
   }
 
-  onewire_state_t* state = get_onewire_state(bus_name, false);
+  onewire_state_t* state = internal_get_onewire_state_safe(bus_name, false);
   if (state == NULL || !state->initialized) {
     return ESP_ERR_NOT_FOUND;
   }
@@ -272,19 +279,19 @@ esp_err_t star_bus_onewire_reset(star_bus_manager_t* manager, const char* bus_na
   state->stats.total_resets++;
 
   /* Pull bus low for reset pulse */
-  gpio_low(pin);
-  delay_us(TIMING_RESET_PULSE);
+  internal_gpio_low(pin);
+  internal_delay_us(k_timing_reset_pulse);
 
   /* Release bus and wait for presence pulse */
-  gpio_high(pin);
-  delay_us(TIMING_PRESENCE_WAIT);
+  internal_gpio_high(pin);
+  internal_delay_us(k_timing_presence_wait);
 
   /* Sample bus for presence pulse (device pulls low) */
-  int32_t level = gpio_read(pin);
+  int32_t level = internal_gpio_read(pin);
   *present      = (level == 0);
 
   /* Wait for end of presence pulse */
-  delay_us(TIMING_PRESENCE_SAMPLE);
+  internal_delay_us(k_timing_presence_sample);
 
   uint32_t elapsed                    = (uint32_t)(esp_timer_get_time() - start_time);
   state->stats.last_operation_time_us = elapsed;
@@ -304,7 +311,7 @@ esp_err_t star_bus_onewire_write_bit(star_bus_manager_t* manager, const char* bu
     return ESP_ERR_INVALID_ARG;
   }
 
-  onewire_state_t* state = get_onewire_state(bus_name, false);
+  onewire_state_t* state = internal_get_onewire_state_safe(bus_name, false);
   if (state == NULL || !state->initialized) {
     return ESP_ERR_NOT_FOUND;
   }
@@ -313,16 +320,16 @@ esp_err_t star_bus_onewire_write_bit(star_bus_manager_t* manager, const char* bu
 
   if (bit & 1) {
     /* Write 1 */
-    gpio_low(pin);
-    delay_us(TIMING_WRITE_1_LOW);
-    gpio_high(pin);
-    delay_us(TIMING_WRITE_0_LOW - TIMING_WRITE_1_LOW + TIMING_WRITE_RECOVERY);
+    internal_gpio_low(pin);
+    internal_delay_us(k_timing_write_1_low);
+    internal_gpio_high(pin);
+    internal_delay_us(k_timing_write_0_low - k_timing_write_1_low + k_timing_write_recovery);
   } else {
     /* Write 0 */
-    gpio_low(pin);
-    delay_us(TIMING_WRITE_0_LOW);
-    gpio_high(pin);
-    delay_us(TIMING_WRITE_RECOVERY);
+    internal_gpio_low(pin);
+    internal_delay_us(k_timing_write_0_low);
+    internal_gpio_high(pin);
+    internal_delay_us(k_timing_write_recovery);
   }
 
   return ESP_OK;
@@ -334,7 +341,7 @@ esp_err_t star_bus_onewire_read_bit(star_bus_manager_t* manager, const char* bus
     return ESP_ERR_INVALID_ARG;
   }
 
-  onewire_state_t* state = get_onewire_state(bus_name, false);
+  onewire_state_t* state = internal_get_onewire_state_safe(bus_name, false);
   if (state == NULL || !state->initialized) {
     return ESP_ERR_NOT_FOUND;
   }
@@ -342,16 +349,16 @@ esp_err_t star_bus_onewire_read_bit(star_bus_manager_t* manager, const char* bus
   gpio_num_t pin = state->config.gpio_pin;
 
   /* Pull low to initiate read */
-  gpio_low(pin);
-  delay_us(TIMING_READ_LOW);
+  internal_gpio_low(pin);
+  internal_delay_us(k_timing_read_low);
 
   /* Release and sample */
-  gpio_high(pin);
-  delay_us(TIMING_READ_SAMPLE);
-  *bit = gpio_read(pin);
+  internal_gpio_high(pin);
+  internal_delay_us(k_timing_read_sample);
+  *bit = internal_gpio_read(pin);
 
   /* Wait for recovery */
-  delay_us(TIMING_READ_RECOVERY);
+  internal_delay_us(k_timing_read_recovery);
 
   return ESP_OK;
 }
@@ -363,7 +370,7 @@ star_bus_onewire_write_byte(star_bus_manager_t* manager, const char* bus_name, u
     return ESP_ERR_INVALID_ARG;
   }
 
-  onewire_state_t* state = get_onewire_state(bus_name, false);
+  onewire_state_t* state = internal_get_onewire_state_safe(bus_name, false);
   if (state == NULL || !state->initialized) {
     return ESP_ERR_NOT_FOUND;
   }
@@ -387,7 +394,7 @@ star_bus_onewire_read_byte(star_bus_manager_t* manager, const char* bus_name, ui
     return ESP_ERR_INVALID_ARG;
   }
 
-  onewire_state_t* state = get_onewire_state(bus_name, false);
+  onewire_state_t* state = internal_get_onewire_state_safe(bus_name, false);
   if (state == NULL || !state->initialized) {
     return ESP_ERR_NOT_FOUND;
   }
@@ -417,7 +424,7 @@ esp_err_t star_bus_onewire_write_bytes(star_bus_manager_t* manager,
     return ESP_ERR_INVALID_ARG;
   }
 
-  onewire_state_t* state = get_onewire_state(bus_name, false);
+  onewire_state_t* state = internal_get_onewire_state_safe(bus_name, false);
   if (state == NULL || !state->initialized) {
     return ESP_ERR_NOT_FOUND;
   }
@@ -514,7 +521,7 @@ esp_err_t star_bus_onewire_read_rom(star_bus_manager_t* manager,
 
   /* Verify CRC */
   if (!star_bus_onewire_verify_rom(*rom)) {
-    onewire_state_t* state = get_onewire_state(bus_name, false);
+    onewire_state_t* state = internal_get_onewire_state_safe(bus_name, false);
     if (state != NULL) {
       state->stats.crc_errors++;
     }
@@ -533,7 +540,7 @@ esp_err_t star_bus_onewire_search(star_bus_manager_t* manager,
     return ESP_ERR_INVALID_ARG;
   }
 
-  onewire_state_t* state = get_onewire_state(bus_name, false);
+  onewire_state_t* state = internal_get_onewire_state_safe(bus_name, false);
   if (state == NULL || !state->initialized) {
     return ESP_ERR_NOT_FOUND;
   }
@@ -724,7 +731,7 @@ esp_err_t star_bus_onewire_get_stats(const star_bus_manager_t* manager,
     return ESP_ERR_INVALID_ARG;
   }
 
-  onewire_state_t* state = get_onewire_state(bus_name, false);
+  onewire_state_t* state = internal_get_onewire_state_safe(bus_name, false);
   if (state == NULL || !state->initialized) {
     return ESP_ERR_NOT_FOUND;
   }
@@ -740,7 +747,7 @@ esp_err_t star_bus_onewire_reset_stats(star_bus_manager_t* manager, const char* 
     return ESP_ERR_INVALID_ARG;
   }
 
-  onewire_state_t* state = get_onewire_state(bus_name, false);
+  onewire_state_t* state = internal_get_onewire_state_safe(bus_name, false);
   if (state == NULL || !state->initialized) {
     return ESP_ERR_NOT_FOUND;
   }

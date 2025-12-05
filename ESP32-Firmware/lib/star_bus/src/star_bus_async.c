@@ -5,6 +5,7 @@
 #include <esp_log.h>
 #include <freertos/semphr.h>
 #include <freertos/task.h>
+#include <inttypes.h>
 #include <string.h>
 
 #include "star_bus_i2c.h"
@@ -15,13 +16,17 @@
 
 static const char* s_TAG = "STAR_ASYNC";
 
+/* Default mutex timeout in milliseconds to prevent infinite wait deadlocks */
+static const uint32_t s_async_mutex_timeout_ms = 5000;
+
 /* --- Types --- */
 
 /**
  * @brief Async operation context
  *
- * @note The timeout_ms field is stored but not currently enforced by the worker.
- *       Operations will run to completion regardless of timeout value.
+ * @note The timeout_ms field is enforced by the worker task. Operations that
+ *       exceed their timeout while waiting in the queue or during execution
+ *       will be completed with ESP_ERR_TIMEOUT.
  * @note The priority field is stored but FIFO ordering is used. Priority queue
  *       ordering is not currently implemented.
  */
@@ -31,9 +36,9 @@ typedef struct async_operation {
   esp_err_t             result;         /**< Operation result */
   star_async_callback_t callback;       /**< Completion callback */
   void*                 user_context;   /**< User context */
-  uint32_t              timeout_ms;     /**< Timeout (stored but not enforced) */
+  uint32_t              timeout_ms;     /**< Timeout in ms (0 = no timeout) */
   uint8_t               priority;       /**< Priority (stored, FIFO used) */
-  TickType_t            start_tick;     /**< Start time */
+  TickType_t            start_tick;     /**< Start time (when operation was enqueued) */
   EventGroupHandle_t    event_group;    /**< Optional event group */
   EventBits_t           complete_bit;   /**< Event bit for completion */
   EventBits_t           error_bit;      /**< Event bit for error */
@@ -48,18 +53,21 @@ typedef struct async_operation {
       uint8_t* data;
       size_t   length;
       uint8_t  command;
+      bool     owns_data; /**< True if data buffer is owned by operation */
     } i2c;
 
     struct {
       uint8_t* tx_data;
       uint8_t* rx_data;
       size_t   length;
+      bool     owns_tx_data; /**< True if tx_data buffer is owned by operation */
     } spi;
 
     struct {
       uint8_t  addr;
       uint8_t  command;
       uint8_t* data;
+      bool     owns_data; /**< True if data buffer is owned by operation */
     } smbus;
   } params;
 
@@ -91,6 +99,56 @@ static SemaphoreHandle_t g_global_mutex            = NULL;
 static portMUX_TYPE      g_init_spinlock           = portMUX_INITIALIZER_UNLOCKED;
 
 /* --- Helper Functions --- */
+
+/**
+ * @brief Check if an operation has exceeded its timeout
+ *
+ * @param op Pointer to the async operation
+ * @return true if the operation has timed out, false otherwise
+ */
+static bool internal_check_timeout(const async_operation_t* op)
+{
+  if (op == NULL || op->timeout_ms == 0) {
+    return false; /* No timeout configured */
+  }
+
+  TickType_t elapsed_ticks = xTaskGetTickCount() - op->start_tick;
+  TickType_t timeout_ticks = pdMS_TO_TICKS(op->timeout_ms);
+
+  return elapsed_ticks > timeout_ticks;
+}
+
+/**
+ * @brief Complete an operation with timeout error
+ *
+ * @param op Pointer to the async operation
+ */
+static void internal_complete_with_timeout(async_operation_t* op)
+{
+  if (op == NULL) {
+    return;
+  }
+
+  ESP_LOGW(s_TAG, "Operation timed out after %" PRIu32 "ms", op->timeout_ms);
+
+  op->result = ESP_ERR_TIMEOUT;
+  op->status = k_star_async_status_error;
+
+  /* Set event bits if configured */
+  if (op->event_group != NULL && op->error_bit != 0) {
+    xEventGroupSetBits(op->event_group, op->error_bit);
+  }
+
+  /* Signal wait semaphore if waiting */
+  if (op->wait_semaphore != NULL) {
+    xSemaphoreGive(op->wait_semaphore);
+  }
+
+  /* Invoke callback */
+  if (op->callback != NULL) {
+    op->callback((star_async_handle_t)op, op->status, op->result, op->user_context);
+  }
+}
 
 /**
  * @brief Initialize global async state (thread-safe)
@@ -125,7 +183,10 @@ static async_state_t* internal_get_async_state(const char* bus_name)
     return NULL;
   }
 
-  xSemaphoreTake(g_global_mutex, portMAX_DELAY);
+  if (xSemaphoreTake(g_global_mutex, pdMS_TO_TICKS(s_async_mutex_timeout_ms)) != pdTRUE) {
+    ESP_LOGE(s_TAG, "Failed to take global mutex");
+    return NULL;
+  }
 
   /* Search for existing state by bus name */
   for (uint8_t i = 0; i < g_num_async_states; i++) {
@@ -166,7 +227,10 @@ static esp_err_t internal_enqueue_operation(async_state_t* state, async_operatio
     return ESP_ERR_INVALID_ARG;
   }
 
-  xSemaphoreTake(state->queue_mutex, portMAX_DELAY);
+  if (xSemaphoreTake(state->queue_mutex, pdMS_TO_TICKS(s_async_mutex_timeout_ms)) != pdTRUE) {
+    ESP_LOGE(s_TAG, "Failed to take queue mutex for enqueue");
+    return ESP_ERR_TIMEOUT;
+  }
 
   if (state->pending_count >= (uint32_t)STAR_ASYNC_MAX_PENDING) {
     xSemaphoreGive(state->queue_mutex);
@@ -194,6 +258,10 @@ static esp_err_t internal_enqueue_operation(async_state_t* state, async_operatio
 
 /**
  * @brief Execute an async operation
+ *
+ * @note This function checks for timeout after the operation completes.
+ *       If the operation took longer than the configured timeout, the result
+ *       is overridden with ESP_ERR_TIMEOUT even if the operation succeeded.
  */
 static void internal_execute_operation(async_operation_t* op)
 {
@@ -270,6 +338,14 @@ static void internal_execute_operation(async_operation_t* op)
       break;
   }
 
+  /* Check if operation exceeded its timeout during execution */
+  if (internal_check_timeout(op)) {
+    ESP_LOGW(s_TAG,
+             "Operation exceeded timeout (%" PRIu32 "ms) during execution",
+             op->timeout_ms);
+    result = ESP_ERR_TIMEOUT;
+  }
+
   op->result = result;
   op->status = (result == ESP_OK) ? k_star_async_status_complete : k_star_async_status_error;
 
@@ -306,7 +382,11 @@ static void internal_async_worker_task(void* param)
     async_operation_t* op = NULL;
 
     /* Dequeue next operation */
-    xSemaphoreTake(state->queue_mutex, portMAX_DELAY);
+    if (xSemaphoreTake(state->queue_mutex, pdMS_TO_TICKS(s_async_mutex_timeout_ms)) != pdTRUE) {
+      ESP_LOGE(s_TAG, "Failed to take queue mutex in worker");
+      vTaskDelay(pdMS_TO_TICKS(10));
+      continue;
+    }
 
     if (state->pending_head != NULL) {
       op                  = state->pending_head;
@@ -326,6 +406,10 @@ static void internal_async_worker_task(void* param)
       if (op->status == k_star_async_status_cancelled) {
         state->cancelled_ops++;
         /* Don't execute, callback was already invoked during cancel */
+      } else if (internal_check_timeout(op)) {
+        /* Operation timed out while waiting in queue */
+        internal_complete_with_timeout(op);
+        state->failed_ops++;
       } else {
         /* Execute the operation */
         internal_execute_operation(op);
@@ -363,7 +447,7 @@ static esp_err_t internal_ensure_worker_running(async_state_t* state)
   }
 
   /* Use queue_mutex to prevent race condition */
-  if (xSemaphoreTake(state->queue_mutex, portMAX_DELAY) != pdTRUE) {
+  if (xSemaphoreTake(state->queue_mutex, pdMS_TO_TICKS(s_async_mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to take queue mutex for worker check");
     return ESP_ERR_TIMEOUT;
   }
@@ -430,13 +514,22 @@ esp_err_t star_bus_i2c_write_async(star_bus_manager_t*        manager,
   op->start_tick   = xTaskGetTickCount();
   op->manager      = manager;
   strncpy(op->bus_name, bus_name, sizeof(op->bus_name) - 1);
+  op->bus_name[sizeof(op->bus_name) - 1] = '\0';
 
-  op->params.i2c.data    = (uint8_t*)data;
-  op->params.i2c.length  = length;
-  op->params.i2c.command = command;
+  /* Allocate and copy user data to prevent use-after-free if user buffer goes out of scope */
+  op->params.i2c.data = (uint8_t*)malloc(length);
+  if (op->params.i2c.data == NULL) {
+    free(op);
+    return ESP_ERR_NO_MEM;
+  }
+  memcpy(op->params.i2c.data, data, length);
+  op->params.i2c.length    = length;
+  op->params.i2c.command   = command;
+  op->params.i2c.owns_data = true;
 
   result = internal_enqueue_operation(state, op);
   if (result != ESP_OK) {
+    free(op->params.i2c.data);
     free(op);
     return result;
   }
@@ -487,6 +580,7 @@ esp_err_t star_bus_i2c_read_async(star_bus_manager_t*        manager,
   op->start_tick   = xTaskGetTickCount();
   op->manager      = manager;
   strncpy(op->bus_name, bus_name, sizeof(op->bus_name) - 1);
+  op->bus_name[sizeof(op->bus_name) - 1] = '\0';
 
   op->params.i2c.data    = data;
   op->params.i2c.length  = length;
@@ -536,8 +630,20 @@ esp_err_t star_async_wait(star_async_handle_t handle, uint32_t timeout_ms)
     }
   }
 
-  /* Wait for completion */
-  TickType_t ticks = (timeout_ms == 0) ? portMAX_DELAY : pdMS_TO_TICKS(timeout_ms);
+  /* Wait for completion
+   * Timeout semantics:
+   *   0 = no wait (immediate return if not ready)
+   *   STAR_ASYNC_WAIT_FOREVER (UINT32_MAX) = wait indefinitely
+   *   other = wait for specified milliseconds
+   */
+  TickType_t ticks;
+  if (timeout_ms == 0) {
+    ticks = 0; /* No wait - immediate return */
+  } else if (timeout_ms == UINT32_MAX) {
+    ticks = portMAX_DELAY; /* Wait forever */
+  } else {
+    ticks = pdMS_TO_TICKS(timeout_ms);
+  }
 
   if (xSemaphoreTake(op->wait_semaphore, ticks) == pdTRUE) {
     return op->result;
@@ -581,22 +687,47 @@ esp_err_t star_async_get_result(star_async_handle_t handle, esp_err_t* result)
   return ESP_OK;
 }
 
-void star_async_free_handle(star_async_handle_t handle)
+esp_err_t star_async_free_handle(star_async_handle_t handle)
 {
-  if (handle != NULL) {
-    async_operation_t* op = (async_operation_t*)handle;
-
-    if (op->wait_semaphore != NULL) {
-      vSemaphoreDelete(op->wait_semaphore);
-    }
-
-    /* Free SMBus write data if allocated */
-    if (op->type == k_star_async_op_smbus_write && op->params.smbus.data != NULL) {
-      free(op->params.smbus.data);
-    }
-
-    free(op);
+  if (handle == NULL) {
+    return ESP_ERR_INVALID_ARG;
   }
+
+  async_operation_t* op = (async_operation_t*)handle;
+
+  if (op->wait_semaphore != NULL) {
+    vSemaphoreDelete(op->wait_semaphore);
+  }
+
+  /* Free owned data buffers based on operation type */
+  switch (op->type) {
+    case k_star_async_op_i2c_write:
+      if (op->params.i2c.owns_data && op->params.i2c.data != NULL) {
+        free(op->params.i2c.data);
+      }
+      break;
+
+    case k_star_async_op_spi_transmit:
+    case k_star_async_op_spi_transceive:
+      if (op->params.spi.owns_tx_data && op->params.spi.tx_data != NULL) {
+        free(op->params.spi.tx_data);
+      }
+      break;
+
+    case k_star_async_op_smbus_write:
+      if (op->params.smbus.owns_data && op->params.smbus.data != NULL) {
+        free(op->params.smbus.data);
+      }
+      break;
+
+    default:
+      /* No owned buffers for read operations */
+      break;
+  }
+
+  free(op);
+
+  return ESP_OK;
 }
 
 esp_err_t star_async_set_event_bits(star_async_handle_t handle,
@@ -633,7 +764,7 @@ esp_err_t star_async_get_stats(const star_bus_manager_t* manager,
   }
 
   /* Take mutex to read stats atomically */
-  if (xSemaphoreTake(state->queue_mutex, portMAX_DELAY) != pdTRUE) {
+  if (xSemaphoreTake(state->queue_mutex, pdMS_TO_TICKS(s_async_mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to take mutex for stats");
     return ESP_ERR_TIMEOUT;
   }
@@ -699,12 +830,21 @@ esp_err_t star_bus_spi_transmit_async(star_bus_manager_t*        manager,
   op->start_tick   = xTaskGetTickCount();
   op->manager      = manager;
   strncpy(op->bus_name, bus_name, sizeof(op->bus_name) - 1);
+  op->bus_name[sizeof(op->bus_name) - 1] = '\0';
 
-  op->params.spi.tx_data = (uint8_t*)data;
-  op->params.spi.length  = length;
+  /* Allocate and copy user data to prevent use-after-free if user buffer goes out of scope */
+  op->params.spi.tx_data = (uint8_t*)malloc(length);
+  if (op->params.spi.tx_data == NULL) {
+    free(op);
+    return ESP_ERR_NO_MEM;
+  }
+  memcpy(op->params.spi.tx_data, data, length);
+  op->params.spi.length       = length;
+  op->params.spi.owns_tx_data = true;
 
   result = internal_enqueue_operation(state, op);
   if (result != ESP_OK) {
+    free(op->params.spi.tx_data);
     free(op);
     return result;
   }
@@ -754,6 +894,7 @@ esp_err_t star_bus_spi_receive_async(star_bus_manager_t*        manager,
   op->start_tick   = xTaskGetTickCount();
   op->manager      = manager;
   strncpy(op->bus_name, bus_name, sizeof(op->bus_name) - 1);
+  op->bus_name[sizeof(op->bus_name) - 1] = '\0';
 
   op->params.spi.rx_data = data;
   op->params.spi.length  = length;
@@ -810,13 +951,23 @@ esp_err_t star_bus_spi_transceive_async(star_bus_manager_t*        manager,
   op->start_tick   = xTaskGetTickCount();
   op->manager      = manager;
   strncpy(op->bus_name, bus_name, sizeof(op->bus_name) - 1);
+  op->bus_name[sizeof(op->bus_name) - 1] = '\0';
 
-  op->params.spi.tx_data = (uint8_t*)tx_data;
-  op->params.spi.rx_data = rx_data;
-  op->params.spi.length  = length;
+  /* Allocate and copy tx_data to prevent use-after-free if user buffer goes out of scope */
+  /* Note: rx_data must remain valid as it is written to by the operation */
+  op->params.spi.tx_data = (uint8_t*)malloc(length);
+  if (op->params.spi.tx_data == NULL) {
+    free(op);
+    return ESP_ERR_NO_MEM;
+  }
+  memcpy(op->params.spi.tx_data, tx_data, length);
+  op->params.spi.rx_data      = rx_data;
+  op->params.spi.length       = length;
+  op->params.spi.owns_tx_data = true;
 
   result = internal_enqueue_operation(state, op);
   if (result != ESP_OK) {
+    free(op->params.spi.tx_data);
     free(op);
     return result;
   }
@@ -869,6 +1020,7 @@ esp_err_t star_smbus_read_byte_async(star_bus_manager_t*        manager,
   op->start_tick   = xTaskGetTickCount();
   op->manager      = manager;
   strncpy(op->bus_name, bus_name, sizeof(op->bus_name) - 1);
+  op->bus_name[sizeof(op->bus_name) - 1] = '\0';
 
   op->params.smbus.addr    = addr;
   op->params.smbus.command = command;
@@ -925,6 +1077,7 @@ esp_err_t star_smbus_write_byte_async(star_bus_manager_t*        manager,
   op->start_tick   = xTaskGetTickCount();
   op->manager      = manager;
   strncpy(op->bus_name, bus_name, sizeof(op->bus_name) - 1);
+  op->bus_name[sizeof(op->bus_name) - 1] = '\0';
 
   /* Allocate persistent storage for the data byte */
   op->params.smbus.data = (uint8_t*)malloc(sizeof(uint8_t));
@@ -933,9 +1086,10 @@ esp_err_t star_smbus_write_byte_async(star_bus_manager_t*        manager,
     return ESP_ERR_NO_MEM;
   }
 
-  op->params.smbus.addr    = addr;
-  op->params.smbus.command = command;
-  *op->params.smbus.data   = data;
+  op->params.smbus.addr      = addr;
+  op->params.smbus.command   = command;
+  *op->params.smbus.data     = data;
+  op->params.smbus.owns_data = true;
 
   result = internal_enqueue_operation(state, op);
   if (result != ESP_OK) {

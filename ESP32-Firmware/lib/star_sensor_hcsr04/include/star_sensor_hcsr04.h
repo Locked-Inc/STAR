@@ -3,16 +3,21 @@
 #ifndef STAR_SENSOR_HCSR04_H
 #define STAR_SENSOR_HCSR04_H
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/semphr.h"
-
-#include <esp_err.h>
-#include <star_bus_manager.h>
-#include <star_error_interface.h>
+/* System headers */
 #include <stdbool.h>
 #include <stdint.h>
 
+/* FreeRTOS headers */
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+
+/* ESP-IDF headers */
+#include "esp_err.h"
 #include "hal/gpio_types.h"
+
+/* Project headers */
+#include "star_bus_manager.h"
+#include "star_error_interface.h"
 #include "star_sensor_hcsr04_constants.h"
 
 #ifdef __cplusplus
@@ -255,7 +260,7 @@ esp_err_t star_sensor_hcsr04_is_complete(const hcsr04_handle_t* handle, bool* co
  *
  * @return ESP_OK on success, HCSR04_ERR_NOT_READY if not complete
  */
-esp_err_t star_sensor_hcsr04_get_result(hcsr04_handle_t* const handle, float* const distance_cm);
+esp_err_t star_sensor_hcsr04_get_result(const hcsr04_handle_t* handle, float* distance_cm);
 
 /**
  * @brief Set temperature for compensation

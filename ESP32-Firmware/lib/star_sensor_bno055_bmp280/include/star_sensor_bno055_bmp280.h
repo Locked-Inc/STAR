@@ -3,13 +3,19 @@
 #ifndef STAR_SENSOR_BNO055_BMP280_H
 #define STAR_SENSOR_BNO055_BMP280_H
 
-#include "freertos/FreeRTOS.h"
-#include "freertos/semphr.h"
-
-#include <esp_err.h>
+/* System headers */
 #include <stdbool.h>
 #include <stdint.h>
 
+/* FreeRTOS headers */
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+
+/* ESP-IDF headers */
+#include "esp_err.h"
+
+/* Project headers */
+#include "bno055_bmp280_constants.h"
 #include "star_bus_manager.h"
 #include "star_error_interface.h"
 
@@ -54,7 +60,7 @@ extern "C" {
  * star_bus_config_t* imu_bus = star_bus_config_create_i2c(
  *     "imu_i2c",
  *     I2C_NUM_0,
- *     BNO055_I2C_ADDR,        // 0x28 (or 0x29 if ADR pin high)
+ *     k_bno055_i2c_addr,      // 0x28 (or 0x29 if ADR pin high)
  *     GPIO_NUM_21,            // SDA
  *     GPIO_NUM_22,            // SCL
  *     400000                  // 400kHz
@@ -64,14 +70,12 @@ extern "C" {
  * // 3. Configure and initialize 10-DOF IMU
  * imu_10dof_handle_t imu;
  * imu_10dof_config_t config = {
- *     .manager = &bus_manager,
- *     .bus_name = "imu_i2c",
- *     .bno055_addr = BNO055_I2C_ADDR,   // 0x28
- *     .bmp280_addr = BMP280_I2C_ADDR,   // 0x76
+ *     .bno055_addr = k_bno055_i2c_addr, // 0x28
+ *     .bmp280_addr = k_bmp280_i2c_addr, // 0x76
  *     .operation_mode = k_bno055_op_mode_ndof  // Full 9-DOF fusion
  * };
  *
- * esp_err_t ret = star_sensor_imu_10dof_init(&imu, NULL, &config);
+ * esp_err_t ret = star_sensor_imu_10dof_init(&imu, &bus_manager, "imu_i2c", NULL, &config);
  * if (ret != ESP_OK) {
  *     ESP_LOGE(TAG, "Failed to init 10-DOF IMU: %s", esp_err_to_name(ret));
  *     return;
@@ -210,9 +214,6 @@ extern "C" {
  * @endcode
  */
 
-#define BNO055_I2C_ADDR (0x28)
-#define BMP280_I2C_ADDR (0x76)
-
 typedef enum {
   k_bno055_power_mode_normal  = 0x00,
   k_bno055_power_mode_low     = 0x01,
@@ -274,11 +275,9 @@ typedef struct {
 } imu_10dof_data_t;
 
 typedef struct {
-  star_bus_manager_t* manager;
-  const char*         bus_name;
-  uint8_t             bno055_addr;
-  uint8_t             bmp280_addr;
-  bno055_op_mode_t    operation_mode;
+  uint8_t          bno055_addr;
+  uint8_t          bmp280_addr;
+  bno055_op_mode_t operation_mode;
 } imu_10dof_config_t;
 
 /**
@@ -320,6 +319,8 @@ typedef struct imu_10dof_handle {
  * Thread-safe: Creates an internal mutex for protecting handle state.
  *
  * @param[out] handle      Pointer to handle structure (must be allocated by caller)
+ * @param[in]  manager     Pointer to bus manager
+ * @param[in]  bus_name    Name of the I2C bus to use
  * @param[in]  error_iface Error interface for error handling (NULL = create default internally)
  * @param[in]  config      Device configuration
  *
@@ -330,6 +331,8 @@ typedef struct imu_10dof_handle {
  * @note All operations after init are protected by mutex for thread safety
  */
 esp_err_t star_sensor_imu_10dof_init(imu_10dof_handle_t*       handle,
+                                     star_bus_manager_t*       manager,
+                                     const char*               bus_name,
                                      star_error_interface_t*   error_iface,
                                      const imu_10dof_config_t* config);
 

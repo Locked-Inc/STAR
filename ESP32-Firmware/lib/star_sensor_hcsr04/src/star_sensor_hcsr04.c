@@ -16,12 +16,16 @@
 static const char* const s_TAG = "hcsr04";
 
 /* Use constant instead of macro for type safety */
-static const uint32_t HCSR04_MUTEX_TIMEOUT_MS = 1000;
+static const uint32_t s_hcsr04_mutex_timeout_ms = 1000;
 
-static void IRAM_ATTR hcsr04_echo_isr_handler(void* const arg)
+/* Spinlock for ISR-to-task communication (protects echo timing variables) */
+portMUX_TYPE g_hcsr04_spinlock = portMUX_INITIALIZER_UNLOCKED;
+
+static void IRAM_ATTR internal_hcsr04_echo_isr_handler(void* const arg)
 {
   hcsr04_handle_t* const handle = (hcsr04_handle_t*)arg;
 
+  portENTER_CRITICAL_ISR(&g_hcsr04_spinlock);
   if (gpio_get_level(handle->echo_pin)) {
     // Rising edge - start timing
     handle->echo_start_time      = (uint32_t)esp_timer_get_time();
@@ -31,6 +35,7 @@ static void IRAM_ATTR hcsr04_echo_isr_handler(void* const arg)
     handle->echo_end_time        = (uint32_t)esp_timer_get_time();
     handle->measurement_complete = true;
   }
+  portEXIT_CRITICAL_ISR(&g_hcsr04_spinlock);
 }
 
 esp_err_t star_sensor_hcsr04_init(hcsr04_handle_t*        handle,
@@ -101,11 +106,8 @@ esp_err_t star_sensor_hcsr04_init(hcsr04_handle_t*        handle,
                                           GPIO_FLOATING);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to configure trigger pin: %s", esp_err_to_name(ret));
-    if (handle->owns_error_handler && handle->error_iface != NULL) {
-      error_handler_t* handler_ptr = (error_handler_t*)handle->error_iface->ctx;
-      error_handler_destroy_default(handler_ptr);
-      free(handle->error_iface);
-    }
+    star_error_interface_cleanup(handle->error_iface, handle->owns_error_handler);
+    handle->error_iface = NULL;
     vSemaphoreDelete(handle->mutex);
     handle->mutex = NULL;
     return ret;
@@ -115,11 +117,8 @@ esp_err_t star_sensor_hcsr04_init(hcsr04_handle_t*        handle,
   ret = star_bus_gpio_write(manager, bus_name, config->trigger_pin, 0);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to set trigger pin low: %s", esp_err_to_name(ret));
-    if (handle->owns_error_handler && handle->error_iface != NULL) {
-      error_handler_t* handler_ptr = (error_handler_t*)handle->error_iface->ctx;
-      error_handler_destroy_default(handler_ptr);
-      free(handle->error_iface);
-    }
+    star_error_interface_cleanup(handle->error_iface, handle->owns_error_handler);
+    handle->error_iface = NULL;
     vSemaphoreDelete(handle->mutex);
     handle->mutex = NULL;
     return ret;
@@ -130,11 +129,8 @@ esp_err_t star_sensor_hcsr04_init(hcsr04_handle_t*        handle,
     star_bus_gpio_configure(manager, bus_name, config->echo_pin, GPIO_MODE_INPUT, GPIO_FLOATING);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to configure echo pin: %s", esp_err_to_name(ret));
-    if (handle->owns_error_handler && handle->error_iface != NULL) {
-      error_handler_t* handler_ptr = (error_handler_t*)handle->error_iface->ctx;
-      error_handler_destroy_default(handler_ptr);
-      free(handle->error_iface);
-    }
+    star_error_interface_cleanup(handle->error_iface, handle->owns_error_handler);
+    handle->error_iface = NULL;
     vSemaphoreDelete(handle->mutex);
     handle->mutex = NULL;
     return ret;
@@ -145,15 +141,12 @@ esp_err_t star_sensor_hcsr04_init(hcsr04_handle_t*        handle,
                                     bus_name,
                                     config->echo_pin,
                                     GPIO_INTR_ANYEDGE,
-                                    hcsr04_echo_isr_handler,
+                                    internal_hcsr04_echo_isr_handler,
                                     (void*)handle);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to set interrupt: %s", esp_err_to_name(ret));
-    if (handle->owns_error_handler && handle->error_iface != NULL) {
-      error_handler_t* handler_ptr = (error_handler_t*)handle->error_iface->ctx;
-      error_handler_destroy_default(handler_ptr);
-      free(handle->error_iface);
-    }
+    star_error_interface_cleanup(handle->error_iface, handle->owns_error_handler);
+    handle->error_iface = NULL;
     vSemaphoreDelete(handle->mutex);
     handle->mutex = NULL;
     return ret;
@@ -172,7 +165,7 @@ esp_err_t star_sensor_hcsr04_deinit(hcsr04_handle_t* handle)
 
   // Acquire mutex before cleanup
   const SemaphoreHandle_t mutex = handle->mutex;
-  if (mutex != NULL && xSemaphoreTake(mutex, pdMS_TO_TICKS(HCSR04_MUTEX_TIMEOUT_MS)) != pdTRUE) {
+  if (mutex != NULL && xSemaphoreTake(mutex, pdMS_TO_TICKS(s_hcsr04_mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGW(s_TAG, "Failed to acquire mutex for deinit, continuing anyway");
   }
 
@@ -180,11 +173,9 @@ esp_err_t star_sensor_hcsr04_deinit(hcsr04_handle_t* handle)
   gpio_isr_handler_remove(handle->echo_pin);
 
   // Clean up error handler if we own it
-  if (handle->owns_error_handler && handle->error_iface != NULL) {
-    error_handler_t* error_handler = (error_handler_t*)handle->error_iface->ctx;
-    error_handler_destroy_default(error_handler);
-    free(handle->error_iface);
-    handle->error_iface = NULL;
+  star_error_interface_cleanup(handle->error_iface, handle->owns_error_handler);
+  handle->error_iface = NULL;
+  if (handle->owns_error_handler) {
     ESP_LOGI(s_TAG, "Destroyed internally-owned error handler");
   }
 
@@ -210,7 +201,7 @@ esp_err_t star_sensor_hcsr04_trigger(hcsr04_handle_t* const handle)
 
   // Acquire mutex
   const SemaphoreHandle_t mutex = handle->mutex;
-  if (mutex == NULL || xSemaphoreTake(mutex, pdMS_TO_TICKS(HCSR04_MUTEX_TIMEOUT_MS)) != pdTRUE) {
+  if (mutex == NULL || xSemaphoreTake(mutex, pdMS_TO_TICKS(s_hcsr04_mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to acquire mutex for trigger");
     return ESP_ERR_TIMEOUT;
   }
@@ -226,14 +217,14 @@ esp_err_t star_sensor_hcsr04_trigger(hcsr04_handle_t* const handle)
   handle->echo_start_time      = 0;
   handle->echo_end_time        = 0;
 
-  // Send 10us trigger pulse (use GPIO bus)
+  // Send trigger pulse (use GPIO bus)
   esp_err_t ret = star_bus_gpio_write(handle->manager, handle->bus_name, handle->trigger_pin, 0);
   if (ret == ESP_OK) {
-    esp_rom_delay_us(2);
+    esp_rom_delay_us(g_hcsr04_trigger_setup_us);
     ret = star_bus_gpio_write(handle->manager, handle->bus_name, handle->trigger_pin, 1);
   }
   if (ret == ESP_OK) {
-    esp_rom_delay_us(10);
+    esp_rom_delay_us(g_hcsr04_trigger_pulse_us);
     ret = star_bus_gpio_write(handle->manager, handle->bus_name, handle->trigger_pin, 0);
   }
 
@@ -247,7 +238,10 @@ esp_err_t star_sensor_hcsr04_is_complete(const hcsr04_handle_t* handle, bool* co
     return ESP_ERR_INVALID_ARG;
   }
 
+  portENTER_CRITICAL(&g_hcsr04_spinlock);
   *complete = handle->measurement_complete;
+  portEXIT_CRITICAL(&g_hcsr04_spinlock);
+
   return ESP_OK;
 }
 
@@ -259,7 +253,7 @@ esp_err_t star_sensor_hcsr04_calculate_distance(uint32_t echo_time_us,
     return ESP_ERR_INVALID_ARG;
   }
 
-  if (echo_time_us < 116 || echo_time_us > STAR_HCSR04_TIMEOUT_US) {
+  if (echo_time_us < 116 || echo_time_us > g_hcsr04_timeout_us) {
     return k_hcsr04_err_invalid_pulse;
   }
 
@@ -269,17 +263,17 @@ esp_err_t star_sensor_hcsr04_calculate_distance(uint32_t echo_time_us,
   // Distance = (time * speed) / 2 (divide by 2 for round trip)
   *distance_cm = (echo_time_us * speed_cm_us) / 2.0f;
 
-  if (*distance_cm < STAR_HCSR04_MIN_DISTANCE_CM) {
+  if (*distance_cm < g_hcsr04_min_distance_cm) {
     return k_hcsr04_err_out_of_range_min;
   }
-  if (*distance_cm > STAR_HCSR04_MAX_DISTANCE_CM) {
+  if (*distance_cm > g_hcsr04_max_distance_cm) {
     return k_hcsr04_err_out_of_range_max;
   }
 
   return ESP_OK;
 }
 
-esp_err_t star_sensor_hcsr04_get_result(hcsr04_handle_t* const handle, float* const distance_cm)
+esp_err_t star_sensor_hcsr04_get_result(const hcsr04_handle_t* handle, float* distance_cm)
 {
   if (handle == NULL || distance_cm == NULL || !handle->initialized) {
     return ESP_ERR_INVALID_ARG;
@@ -289,15 +283,30 @@ esp_err_t star_sensor_hcsr04_get_result(hcsr04_handle_t* const handle, float* co
     return k_hcsr04_err_not_ready;
   }
 
-  if (handle->echo_end_time <= handle->echo_start_time) {
-    ESP_LOGE(s_TAG,
-             "Invalid timing: start=%lu, end=%lu",
-             handle->echo_start_time,
-             handle->echo_end_time);
+  /* Atomically capture ISR-shared values to prevent race condition.
+   * Use critical section to ensure consistent read of start/end times.
+   * This prevents the ISR from modifying values between our reads. */
+  uint32_t start_time;
+  uint32_t end_time;
+  bool     complete;
+
+  portENTER_CRITICAL(&g_hcsr04_spinlock);
+  start_time = handle->echo_start_time;
+  end_time   = handle->echo_end_time;
+  complete   = handle->measurement_complete;
+  portEXIT_CRITICAL(&g_hcsr04_spinlock);
+
+  /* Re-check measurement_complete after atomic read */
+  if (!complete) {
+    return k_hcsr04_err_not_ready;
+  }
+
+  if (end_time <= start_time) {
+    ESP_LOGE(s_TAG, "Invalid timing: start=%lu, end=%lu", start_time, end_time);
     return k_hcsr04_err_invalid_pulse;
   }
 
-  const uint32_t echo_time = handle->echo_end_time - handle->echo_start_time;
+  const uint32_t echo_time = end_time - start_time;
 
   const esp_err_t ret =
     star_sensor_hcsr04_calculate_distance(echo_time, handle->temperature_c, distance_cm);
@@ -324,12 +333,17 @@ esp_err_t star_sensor_hcsr04_read_distance(hcsr04_handle_t* const handle, float*
 
   // Wait for measurement with timeout
   const uint32_t start_time    = (uint32_t)esp_timer_get_time();
-  const uint32_t timeout_ms    = 60; // Max time for 400cm measurement + margin
   uint32_t       yield_counter = 0;
+  bool           complete      = false;
 
-  while (!handle->measurement_complete) {
+  /* Read measurement_complete under spinlock to prevent TOCTOU race with ISR */
+  portENTER_CRITICAL(&g_hcsr04_spinlock);
+  complete = handle->measurement_complete;
+  portEXIT_CRITICAL(&g_hcsr04_spinlock);
+
+  while (!complete) {
     const uint32_t elapsed = ((uint32_t)esp_timer_get_time() - start_time) / 1000;
-    if (elapsed > timeout_ms) {
+    if (elapsed > g_hcsr04_measurement_timeout_ms) {
       ESP_LOGW(s_TAG, "Measurement timeout");
       return k_hcsr04_err_timeout;
     }
@@ -342,16 +356,21 @@ esp_err_t star_sensor_hcsr04_read_distance(hcsr04_handle_t* const handle, float*
         yield_counter = 0;
         taskYIELD();
       } else {
-        esp_rom_delay_us(10); /* Very short delay */
+        esp_rom_delay_us(g_hcsr04_poll_delay_short_us);
       }
     } else if (elapsed < 10) {
       /* 2-10ms: slightly longer delays but still responsive */
       taskYIELD(); /* Always yield in this range */
-      esp_rom_delay_us(50);
+      esp_rom_delay_us(g_hcsr04_poll_delay_med_us);
     } else {
       /* After 10ms: use vTaskDelay for better scheduling */
       vTaskDelay(1);
     }
+
+    /* Re-read measurement_complete under spinlock */
+    portENTER_CRITICAL(&g_hcsr04_spinlock);
+    complete = handle->measurement_complete;
+    portEXIT_CRITICAL(&g_hcsr04_spinlock);
   }
 
   return star_sensor_hcsr04_get_result(handle, distance_cm);
@@ -366,7 +385,7 @@ esp_err_t star_sensor_hcsr04_set_temperature(hcsr04_handle_t* const handle,
 
   // Acquire mutex
   const SemaphoreHandle_t mutex = handle->mutex;
-  if (mutex == NULL || xSemaphoreTake(mutex, pdMS_TO_TICKS(HCSR04_MUTEX_TIMEOUT_MS)) != pdTRUE) {
+  if (mutex == NULL || xSemaphoreTake(mutex, pdMS_TO_TICKS(s_hcsr04_mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to acquire mutex for set_temperature");
     return ESP_ERR_TIMEOUT;
   }
