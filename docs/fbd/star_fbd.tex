@@ -152,9 +152,8 @@
 \useasboundingbox (-15.5, -32.5) rectangle (21.0, 6.5);
 
 % ============================================================================
-% TITLE
+% TITLE (defined later after usbc node exists)
 % ============================================================================
-\node[font=\Huge\bfseries] at (0, 5) {STAR Functional Block Diagram};
 
 % ============================================================================
 % BUCK BOOST CHARGER (IC - Green)
@@ -698,6 +697,11 @@
 \node[port right] at ([xshift=-0.4cm, yshift=-0.2cm]usbc.east) {Raw Voltage};
 \node[port right] at ([xshift=-0.4cm, yshift=-0.6cm]usbc.east) {Power Comm};
 \node[port right] at ([xshift=-0.4cm, yshift=-1.0cm]usbc.east) {Ground};
+
+% ============================================================================
+% TITLE - centered, 0.4cm above the top line (usbc.north)
+% ============================================================================
+\node[font=\Huge\bfseries, anchor=south] at ([yshift=0.4cm]usbc.north -| 2.75,0) {STAR Functional Block Diagram};
 
 % ============================================================================
 % TEMPERATURE SENSOR (Sensor - Blue)
