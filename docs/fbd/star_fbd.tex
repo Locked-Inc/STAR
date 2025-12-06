@@ -207,7 +207,7 @@
 % SET BOUNDING BOX FIRST - this determines PDF size
 % Extra space on left and bottom for axis labels
 % ============================================================================
-\useasboundingbox (-15.8, -27.5) rectangle (21.4, 1.5);
+\useasboundingbox (-14.8, -27.5) rectangle (21.4, 1.5);
 
 % ============================================================================
 % TITLE (defined later after usbc node exists)
@@ -1556,45 +1556,45 @@
 \node[draw, thick, rectangle, minimum width=11cm, minimum height=4.1cm, anchor=north] (legendbox) at (legend_start) {};
 \node[anchor=north, font=\large\bfseries] at ([yshift=-0.2cm]legendbox.north) {Legend};
 
-% Line types - single column, compact spacing (centered)
-\node[anchor=west, font=\bfseries\small] at ([xshift=-4.4cm, yshift=1.1cm]legendbox.center) {Lines:};
-\draw[power line] ([xshift=-4.3cm, yshift=0.75cm]legendbox.center) -- ++(0.8cm,0) node[right, black, font=\small] {Power};
-\draw[ground line] ([xshift=-4.3cm, yshift=0.45cm]legendbox.center) -- ++(0.8cm,0) node[right, black, font=\small] {Ground};
-\draw[data line] ([xshift=-4.3cm, yshift=0.15cm]legendbox.center) -- ++(0.8cm,0) node[right, black, font=\small] {Signal};
-\draw[i2c line] ([xshift=-4.3cm, yshift=-0.15cm]legendbox.center) -- ++(0.8cm,0) node[right, black, font=\small] {I2C};
-\draw[spi line] ([xshift=-4.3cm, yshift=-0.45cm]legendbox.center) -- ++(0.8cm,0) node[right, black, font=\small] {SPI};
-\draw[pwm line] ([xshift=-4.3cm, yshift=-0.75cm]legendbox.center) -- ++(0.8cm,0) node[right, black, font=\small] {PWM};
-\draw[uart line] ([xshift=-4.3cm, yshift=-1.05cm]legendbox.center) -- ++(0.8cm,0) node[right, black, font=\small] {UART};
-\draw[wifi line] ([xshift=-4.3cm, yshift=-1.35cm]legendbox.center) -- ++(0.8cm,0) node[right, black, font=\small] {WiFi};
+% Line types - single column, evenly centered
+\node[anchor=west, font=\bfseries\small] at ([xshift=-4.6cm, yshift=1.1cm]legendbox.center) {Lines:};
+\draw[power line] ([xshift=-4.5cm, yshift=0.75cm]legendbox.center) -- ++(0.8cm,0) node[right, black, font=\small] {Power};
+\draw[ground line] ([xshift=-4.5cm, yshift=0.45cm]legendbox.center) -- ++(0.8cm,0) node[right, black, font=\small] {Ground};
+\draw[data line] ([xshift=-4.5cm, yshift=0.15cm]legendbox.center) -- ++(0.8cm,0) node[right, black, font=\small] {Signal};
+\draw[i2c line] ([xshift=-4.5cm, yshift=-0.15cm]legendbox.center) -- ++(0.8cm,0) node[right, black, font=\small] {I2C};
+\draw[spi line] ([xshift=-4.5cm, yshift=-0.45cm]legendbox.center) -- ++(0.8cm,0) node[right, black, font=\small] {SPI};
+\draw[pwm line] ([xshift=-4.5cm, yshift=-0.75cm]legendbox.center) -- ++(0.8cm,0) node[right, black, font=\small] {PWM};
+\draw[uart line] ([xshift=-4.5cm, yshift=-1.05cm]legendbox.center) -- ++(0.8cm,0) node[right, black, font=\small] {UART};
+\draw[wifi line] ([xshift=-4.5cm, yshift=-1.35cm]legendbox.center) -- ++(0.8cm,0) node[right, black, font=\small] {WiFi};
 
-% Block types - two columns, 6 items each (0.35cm spacing, centered)
-\node[anchor=west, font=\bfseries\small] at ([xshift=-1.9cm, yshift=1.1cm]legendbox.center) {Blocks:};
+% Block types - two columns, 6 items each (0.35cm spacing, evenly centered)
+\node[anchor=west, font=\bfseries\small] at ([xshift=-1.5cm, yshift=1.1cm]legendbox.center) {Blocks:};
 % Left column of blocks (6 items)
-\node[connector block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=-1.8cm, yshift=0.73cm]legendbox.center) {};
-\node[anchor=west, font=\small] at ([xshift=-0.85cm, yshift=0.73cm]legendbox.center) {Connector};
-\node[ic block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=-1.8cm, yshift=0.38cm]legendbox.center) {};
-\node[anchor=west, font=\small] at ([xshift=-0.85cm, yshift=0.38cm]legendbox.center) {Power IC};
-\node[battery ic block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=-1.8cm, yshift=0.03cm]legendbox.center) {};
-\node[anchor=west, font=\small] at ([xshift=-0.85cm, yshift=0.03cm]legendbox.center) {Battery IC};
-\node[motor ic block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=-1.8cm, yshift=-0.32cm]legendbox.center) {};
-\node[anchor=west, font=\small] at ([xshift=-0.85cm, yshift=-0.32cm]legendbox.center) {Motor IC};
-\node[external block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=-1.8cm, yshift=-0.67cm]legendbox.center) {};
-\node[anchor=west, font=\small] at ([xshift=-0.85cm, yshift=-0.67cm]legendbox.center) {External};
-\node[sensor block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=-1.8cm, yshift=-1.02cm]legendbox.center) {};
-\node[anchor=west, font=\small] at ([xshift=-0.85cm, yshift=-1.02cm]legendbox.center) {Sensor};
+\node[connector block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=-1.4cm, yshift=0.73cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=-0.45cm, yshift=0.73cm]legendbox.center) {Connector};
+\node[ic block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=-1.4cm, yshift=0.38cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=-0.45cm, yshift=0.38cm]legendbox.center) {Power IC};
+\node[battery ic block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=-1.4cm, yshift=0.03cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=-0.45cm, yshift=0.03cm]legendbox.center) {Battery IC};
+\node[motor ic block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=-1.4cm, yshift=-0.32cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=-0.45cm, yshift=-0.32cm]legendbox.center) {Motor IC};
+\node[external block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=-1.4cm, yshift=-0.67cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=-0.45cm, yshift=-0.67cm]legendbox.center) {External};
+\node[sensor block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=-1.4cm, yshift=-1.02cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=-0.45cm, yshift=-1.02cm]legendbox.center) {Sensor};
 % Right column of blocks (6 items)
-\node[module block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=1.5cm, yshift=0.73cm]legendbox.center) {};
-\node[anchor=west, font=\small] at ([xshift=2.45cm, yshift=0.73cm]legendbox.center) {Module};
-\node[sbc block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=1.5cm, yshift=0.38cm]legendbox.center) {};
-\node[anchor=west, font=\small] at ([xshift=2.45cm, yshift=0.38cm]legendbox.center) {SBC};
-\node[mcu block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=1.5cm, yshift=0.03cm]legendbox.center) {};
-\node[anchor=west, font=\small] at ([xshift=2.45cm, yshift=0.03cm]legendbox.center) {MCU};
-\node[button block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=1.5cm, yshift=-0.32cm]legendbox.center) {};
-\node[anchor=west, font=\small] at ([xshift=2.45cm, yshift=-0.32cm]legendbox.center) {Button};
-\node[actuator block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=1.5cm, yshift=-0.67cm]legendbox.center) {};
-\node[anchor=west, font=\small] at ([xshift=2.45cm, yshift=-0.67cm]legendbox.center) {Actuator};
-\node[cloud, draw=wificolor, fill=wificolor!10, thick, cloud puffs=8, cloud puff arc=120, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=1.5cm, yshift=-1.02cm]legendbox.center) {};
-\node[anchor=west, font=\small] at ([xshift=2.45cm, yshift=-1.02cm]legendbox.center) {Cloud};
+\node[module block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=1.9cm, yshift=0.73cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=2.85cm, yshift=0.73cm]legendbox.center) {Module};
+\node[sbc block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=1.9cm, yshift=0.38cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=2.85cm, yshift=0.38cm]legendbox.center) {SBC};
+\node[mcu block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=1.9cm, yshift=0.03cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=2.85cm, yshift=0.03cm]legendbox.center) {MCU};
+\node[button block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=1.9cm, yshift=-0.32cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=2.85cm, yshift=-0.32cm]legendbox.center) {Button};
+\node[actuator block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=1.9cm, yshift=-0.67cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=2.85cm, yshift=-0.67cm]legendbox.center) {Actuator};
+\node[cloud, draw=wificolor, fill=wificolor!10, thick, cloud puffs=8, cloud puff arc=120, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=1.9cm, yshift=-1.02cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=2.85cm, yshift=-1.02cm]legendbox.center) {Cloud};
 
 \end{tikzpicture}
 
