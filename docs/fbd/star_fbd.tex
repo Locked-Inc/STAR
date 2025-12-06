@@ -1484,27 +1484,29 @@
 \node[anchor=north, font=\large\bfseries] at ([yshift=-0.2cm]legendbox.north) {Legend};
 
 % Line types
-\node[anchor=west, font=\bfseries] at ([xshift=0.3cm, yshift=0.7cm]legendbox.west) {Lines:};
-\draw[power line] ([xshift=0.5cm, yshift=0.2cm]legendbox.west) -- ++(1.2cm,0) node[right, black] {Power};
-\draw[ground line] ([xshift=0.5cm, yshift=-0.3cm]legendbox.west) -- ++(1.2cm,0) node[right, black] {Ground};
-\draw[data line] ([xshift=0.5cm, yshift=-0.8cm]legendbox.west) -- ++(1.2cm,0) node[right, black] {Signal};
+\node[anchor=west, font=\bfseries] at ([xshift=0.3cm, yshift=1.1cm]legendbox.west) {Lines:};
+\draw[power line] ([xshift=0.5cm, yshift=0.6cm]legendbox.west) -- ++(1.2cm,0) node[right, black] {Power};
+\draw[ground line] ([xshift=0.5cm, yshift=0.1cm]legendbox.west) -- ++(1.2cm,0) node[right, black] {Ground};
+\draw[data line] ([xshift=0.5cm, yshift=-0.4cm]legendbox.west) -- ++(1.2cm,0) node[right, black] {Signal};
 
 % Block types
-\node[anchor=west, font=\bfseries] at ([xshift=0.5cm, yshift=0.7cm]legendbox.center) {Blocks:};
-\node[connector block, minimum width=1.2cm, minimum height=0.5cm, anchor=west] at ([xshift=0.7cm, yshift=0.2cm]legendbox.center) {};
-\node[anchor=west] at ([xshift=2.1cm, yshift=0.2cm]legendbox.center) {Connector};
-\node[ic block, minimum width=1.2cm, minimum height=0.5cm, anchor=west] at ([xshift=0.7cm, yshift=-0.4cm]legendbox.center) {};
-\node[anchor=west] at ([xshift=2.1cm, yshift=-0.4cm]legendbox.center) {IC};
-\node[external block, minimum width=1.2cm, minimum height=0.5cm, anchor=west] at ([xshift=0.7cm, yshift=-0.9cm]legendbox.center) {};
-\node[anchor=west] at ([xshift=2.1cm, yshift=-0.9cm]legendbox.center) {External};
-\node[sensor block, minimum width=1.2cm, minimum height=0.5cm, anchor=west] at ([xshift=0.7cm, yshift=-1.4cm]legendbox.center) {};
-\node[anchor=west] at ([xshift=2.1cm, yshift=-1.4cm]legendbox.center) {Sensor};
-\node[module block, minimum width=1.2cm, minimum height=0.5cm, anchor=west] at ([xshift=0.7cm, yshift=-1.9cm]legendbox.center) {};
-\node[anchor=west] at ([xshift=2.1cm, yshift=-1.9cm]legendbox.center) {Module};
-\node[sbc block, minimum width=1.2cm, minimum height=0.5cm, anchor=west] at ([xshift=0.7cm, yshift=-2.4cm]legendbox.center) {};
-\node[anchor=west] at ([xshift=2.1cm, yshift=-2.4cm]legendbox.center) {SBC};
-\node[mcu block, minimum width=1.2cm, minimum height=0.5cm, anchor=west] at ([xshift=0.7cm, yshift=-2.9cm]legendbox.center) {};
-\node[anchor=west] at ([xshift=2.1cm, yshift=-2.9cm]legendbox.center) {MCU};
+\node[anchor=west, font=\bfseries] at ([xshift=-2.3cm, yshift=1.1cm]legendbox.center) {Blocks:};
+% Left column
+\node[connector block, minimum width=1.2cm, minimum height=0.5cm, anchor=west] at ([xshift=-2.1cm, yshift=0.6cm]legendbox.center) {};
+\node[anchor=west] at ([xshift=-0.7cm, yshift=0.6cm]legendbox.center) {Connector};
+\node[ic block, minimum width=1.2cm, minimum height=0.5cm, anchor=west] at ([xshift=-2.1cm, yshift=0.1cm]legendbox.center) {};
+\node[anchor=west] at ([xshift=-0.7cm, yshift=0.1cm]legendbox.center) {IC};
+\node[external block, minimum width=1.2cm, minimum height=0.5cm, anchor=west] at ([xshift=-2.1cm, yshift=-0.4cm]legendbox.center) {};
+\node[anchor=west] at ([xshift=-0.7cm, yshift=-0.4cm]legendbox.center) {External};
+\node[sensor block, minimum width=1.2cm, minimum height=0.5cm, anchor=west] at ([xshift=-2.1cm, yshift=-0.9cm]legendbox.center) {};
+\node[anchor=west] at ([xshift=-0.7cm, yshift=-0.9cm]legendbox.center) {Sensor};
+% Right column
+\node[module block, minimum width=1.2cm, minimum height=0.5cm, anchor=west] at ([xshift=1.5cm, yshift=0.6cm]legendbox.center) {};
+\node[anchor=west] at ([xshift=2.9cm, yshift=0.6cm]legendbox.center) {Module};
+\node[sbc block, minimum width=1.2cm, minimum height=0.5cm, anchor=west] at ([xshift=1.5cm, yshift=0.1cm]legendbox.center) {};
+\node[anchor=west] at ([xshift=2.9cm, yshift=0.1cm]legendbox.center) {SBC};
+\node[mcu block, minimum width=1.2cm, minimum height=0.5cm, anchor=west] at ([xshift=1.5cm, yshift=-0.4cm]legendbox.center) {};
+\node[anchor=west] at ([xshift=2.9cm, yshift=-0.4cm]legendbox.center) {MCU};
 
 \end{tikzpicture}
 
