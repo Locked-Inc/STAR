@@ -2,7 +2,7 @@
 \usepackage{tikz}
 \usepackage{intcalc}
 \usepackage{color}
-\usetikzlibrary{shapes, arrows.meta, positioning, calc, backgrounds}
+\usetikzlibrary{shapes, shapes.symbols, arrows.meta, positioning, calc, backgrounds}
 
 \begin{document}
 
@@ -54,11 +54,16 @@
 \definecolor{externalcolor}{RGB}{128, 0, 128}   % Purple for external interfaces
 \definecolor{powercolor}{RGB}{255, 0, 0}        % Red for power
 \definecolor{groundcolor}{RGB}{0, 0, 0}         % Black for ground
-\definecolor{datacolor}{RGB}{0, 0, 255}         % Blue for data
+\definecolor{datacolor}{RGB}{0, 0, 255}         % Blue for data/signal
 \definecolor{sensorcolor}{RGB}{0, 128, 128}     % Teal for sensors
 \definecolor{modulecolor}{RGB}{112, 128, 144}   % Slate gray for modules
 \definecolor{sbccolor}{RGB}{178, 34, 34}        % Firebrick red for SBCs (Pi 5)
 \definecolor{mcucolor}{RGB}{0, 0, 139}          % Navy blue for MCUs (ESP32)
+\definecolor{i2ccolor}{RGB}{0, 160, 0}          % Green for I2C (SCL/SDA)
+\definecolor{spicolor}{RGB}{148, 0, 211}        % Violet for SPI
+\definecolor{pwmcolor}{RGB}{255, 140, 0}        % Dark orange for PWM
+\definecolor{uartcolor}{RGB}{0, 139, 139}       % Dark cyan for UART (TX/RX)
+\definecolor{wificolor}{RGB}{30, 144, 255}      % Dodger blue for WiFi
 
 \begin{tikzpicture}[
     % Base block style (not used directly, inherited by others)
@@ -142,6 +147,27 @@
     data line/.style={
         draw=datacolor,
         thick
+    },
+    i2c line/.style={
+        draw=i2ccolor,
+        thick
+    },
+    spi line/.style={
+        draw=spicolor,
+        thick
+    },
+    pwm line/.style={
+        draw=pwmcolor,
+        thick
+    },
+    uart line/.style={
+        draw=uartcolor,
+        thick
+    },
+    wifi line/.style={
+        draw=wificolor,
+        thick,
+        dashed
     }
 ]
 
@@ -327,9 +353,9 @@
 % USB-C to USB Port 2 (route left then down then right)
 \draw[data line] (lidar_usbc) -- ++(-0.8cm,0) |- (pi5_port2);
 % TX to RX
-\draw[data line] (lidar_tx) -- ++(-1.2cm,0) |- (pi5_rx);
+\draw[uart line] (lidar_tx) -- ++(-1.2cm,0) |- (pi5_rx);
 % RX to TX
-\draw[data line] (lidar_rx) -- ++(-1.6cm,0) |- (pi5_tx);
+\draw[uart line] (lidar_rx) -- ++(-1.6cm,0) |- (pi5_tx);
 
 % Title: 0.4cm from top
 \node[block title] at ([yshift=-0.4cm]iot4g.north) {4G IoT};
@@ -375,9 +401,9 @@
 % Right labels (N=3): Labels at 0.0, -0.4, -0.8 cm (SCL, SDA, Ground)
 % Bottom label (Ground) at -0.8cm = 0.4cm from bottom (height 2.4cm, center at 1.2cm)
 \node[port right] at ([xshift=-0.4cm, yshift=0.0cm]stereocameras.east) {SCL};
-\fill[datacolor] ([xshift=3.5cm, yshift=0.0cm]stereocameras.east) circle (3pt);
+\fill[datacolor] ([xshift=5.1cm, yshift=0.0cm]stereocameras.east) circle (3pt);
 \node[port right] at ([xshift=-0.4cm, yshift=-0.4cm]stereocameras.east) {SDA};
-\fill[datacolor] ([xshift=3.1cm, yshift=-0.4cm]stereocameras.east) circle (3pt);
+\fill[datacolor] ([xshift=4.7cm, yshift=-0.4cm]stereocameras.east) circle (3pt);
 \node[port right] at ([xshift=-0.4cm, yshift=-0.8cm]stereocameras.east) {Ground};
 \fill[groundcolor] ([xshift=0.4cm, yshift=-0.8cm]stereocameras.east) circle (3pt);
 
@@ -426,11 +452,11 @@
 \node[port left] at ([xshift=0.4cm, yshift=-2.0cm]motordriver.west) {Motor Voltage Out};
 
 % Connect ESP32 motor pins to Motor Driver (straight horizontal lines)
-\draw[data line] ([yshift=0.8cm]esp32.east) -- ([yshift=0.4cm]motordriver.west);
+\draw[spi line] ([yshift=0.8cm]esp32.east) -- ([yshift=0.4cm]motordriver.west);
 \draw[data line] ([yshift=0.4cm]esp32.east) -- ([yshift=0.0cm]motordriver.west);
-\draw[data line] ([yshift=0.0cm]esp32.east) -- ([yshift=-0.4cm]motordriver.west);
+\draw[pwm line] ([yshift=0.0cm]esp32.east) -- ([yshift=-0.4cm]motordriver.west);
 \draw[data line] ([yshift=-0.4cm]esp32.east) -- ([yshift=-0.8cm]motordriver.west);
-\draw[data line] ([yshift=-0.8cm]esp32.east) -- ([yshift=-1.2cm]motordriver.west);
+\draw[spi line] ([yshift=-0.8cm]esp32.east) -- ([yshift=-1.2cm]motordriver.west);
 
 % ============================================================================
 % SONAR SENSORS (Sensor - Teal) - 7 sensors stacked above motors
@@ -953,12 +979,12 @@
 % Fuel Gauge SDA (1.6cm)
 \coordinate (afe_fg_sda) at ([yshift=-0.2cm]afe.east);
 \coordinate (fg_fg_sda) at ([yshift=-0.2cm]fuelgauge.east);
-\draw[data line] (afe_fg_sda) -- ++(1.6cm,0) |- (fg_fg_sda);
+\draw[i2c line] (afe_fg_sda) -- ++(1.6cm,0) |- (fg_fg_sda);
 
 % Fuel Gauge SCL (2.0cm)
 \coordinate (afe_fg_scl) at ([yshift=-0.6cm]afe.east);
 \coordinate (fg_fg_scl) at ([yshift=0.2cm]fuelgauge.east);
-\draw[data line] (afe_fg_scl) -- ++(2.0cm,0) |- (fg_fg_scl);
+\draw[i2c line] (afe_fg_scl) -- ++(2.0cm,0) |- (fg_fg_scl);
 
 % Fuel Gauge Alert (2.4cm)
 \coordinate (afe_fg_alert) at ([yshift=-1.0cm]afe.east);
@@ -1110,7 +1136,7 @@
 % ============================================================================
 \coordinate (esp32_pi5_spi) at ([yshift=1.2cm]esp32.east);
 \coordinate (pi5_spi) at ([yshift=-1.8cm]pi5.east);
-\draw[data line] (esp32_pi5_spi) -- ++(0.5cm,0) |- (pi5_spi);
+\draw[spi line] (esp32_pi5_spi) -- ++(0.5cm,0) |- (pi5_spi);
 
 % ============================================================================
 % Pi5 Ground to Motor Driver Ground connection
@@ -1303,10 +1329,10 @@
 \coordinate (pi5_scl) at ([yshift=0.6cm]pi5.east);
 
 % Connect SCL - go right from stereo camera, down to pi5 scl level, then left to pi5
-\draw[data line] (stereocam_scl) -- ([xshift=3.5cm]stereocam_scl) -- ([xshift=3.5cm]stereocam_scl |- pi5_scl) -- (pi5_scl);
+\draw[data line] (stereocam_scl) -- ([xshift=5.1cm]stereocam_scl) -- ([xshift=5.1cm]stereocam_scl |- pi5_scl) -- (pi5_scl);
 
 % Connect SDA - go right from stereo camera, down to pi5 sda level, then left to pi5
-\draw[data line] (stereocam_sda) -- ([xshift=3.1cm]stereocam_sda) -- ([xshift=3.1cm]stereocam_sda |- pi5_sda) -- (pi5_sda);
+\draw[data line] (stereocam_sda) -- ([xshift=4.7cm]stereocam_sda) -- ([xshift=4.7cm]stereocam_sda |- pi5_sda) -- (pi5_sda);
 
 % ============================================================================
 % IMU Connections
@@ -1324,16 +1350,16 @@
 \coordinate (pi5_imu_int) at ([yshift=-0.2cm]pi5.east);
 
 % IMU Int to Pi5 IMU Int - route right, down to Pi5 level, left to Pi5
-\draw[data line] (imu_int) -- ([xshift=4.3cm]imu_int) -- ([xshift=4.3cm]imu_int |- pi5_imu_int) -- (pi5_imu_int);
+\draw[data line] (imu_int) -- ([xshift=5.9cm]imu_int) -- ([xshift=5.9cm]imu_int |- pi5_imu_int) -- (pi5_imu_int);
 
 % IMU Reset to Pi5 IMU Reset - route right, down to Pi5 level, left to Pi5
-\draw[data line] (imu_reset) -- ([xshift=3.9cm]imu_reset) -- ([xshift=3.9cm]imu_reset |- pi5_imu_reset) -- (pi5_imu_reset);
+\draw[data line] (imu_reset) -- ([xshift=5.5cm]imu_reset) -- ([xshift=5.5cm]imu_reset |- pi5_imu_reset) -- (pi5_imu_reset);
 
 % IMU SCL to Pi5 SCL bus (join with stereo camera SCL line)
-\draw[data line] (imu_scl) -- ([xshift=3.5cm]imu_scl) -- ([xshift=3.5cm]stereocam_scl);
+\draw[data line] (imu_scl) -- ([xshift=5.1cm]imu_scl) -- ([xshift=5.1cm]stereocam_scl);
 
 % IMU SDA to Pi5 SDA bus (join with stereo camera SDA line)
-\draw[data line] (imu_sda) -- ([xshift=3.1cm]imu_sda) -- ([xshift=3.1cm]stereocam_sda);
+\draw[data line] (imu_sda) -- ([xshift=4.7cm]imu_sda) -- ([xshift=4.7cm]stereocam_sda);
 
 % IMU Ground to ground bus (join at stereo camera/lidar ground junction)
 \coordinate (stereocam_gnd_junction) at (stereocam_ground -| lidar_gnd_step1);
@@ -1472,12 +1498,23 @@
 % ESP32 SMBD to Fuel Gauge SMBD (route left, down to x=-17, then up to fuel gauge)
 \coordinate (esp32_smbd) at ([yshift=-0.8cm]esp32.west);
 \coordinate (fg_smbd) at ([yshift=-0.2cm]fuelgauge.west);
-\draw[data line] (esp32_smbd) -- ++(-1.2cm,0) -- ++(0,-0.4cm) -| ([xshift=-2.0cm]fg_smbd) -- (fg_smbd);
+\draw[i2c line] (esp32_smbd) -- ++(-1.2cm,0) -- ++(0,-0.4cm) -| ([xshift=-2.0cm]fg_smbd) -- (fg_smbd);
 
 % ESP32 SMBC to Fuel Gauge SMBC (route left, down, then up to fuel gauge)
 \coordinate (esp32_smbc) at ([yshift=-1.2cm]esp32.west);
 \coordinate (fg_smbc) at ([yshift=0.2cm]fuelgauge.west);
-\draw[data line] (esp32_smbc) -- ++(-0.8cm,0) -- ++(0,-0.4cm) -| ([xshift=-2.4cm]fg_smbc) -- (fg_smbc);
+\draw[i2c line] (esp32_smbc) -- ++(-0.8cm,0) -- ++(0,-0.4cm) -| ([xshift=-2.4cm]fg_smbc) -- (fg_smbc);
+
+% ============================================================================
+% REMOTE SERVER (Cloud)
+% ============================================================================
+% Position cloud between IMU/Stereo Cameras and the vertical data lines
+\node[cloud, draw=wificolor, fill=wificolor!10, thick, cloud puffs=12, cloud puff arc=120,
+      minimum width=3cm, minimum height=2cm, anchor=west] (remoteserver) at ([xshift=1.0cm, yshift=-7cm]imu.east) {};
+\node[font=\small\bfseries, align=center] at (remoteserver.center) {Remote\\Server};
+
+% WiFi connection from 4G IoT antenna to Remote Server
+\draw[wifi line] (antenna.north) -- ++(0, 0.3cm) -| (remoteserver.south);
 
 % ============================================================================
 % LEGEND
@@ -1487,30 +1524,35 @@
 \node[draw, thick, rectangle, minimum width=11cm, minimum height=4.1cm, anchor=north] (legendbox) at (legend_start) {};
 \node[anchor=north, font=\large\bfseries] at ([yshift=-0.2cm]legendbox.north) {Legend};
 
-% Line types
-\node[anchor=west, font=\bfseries] at ([xshift=0.3cm, yshift=1.1cm]legendbox.west) {Lines:};
-\draw[power line] ([xshift=0.5cm, yshift=0.6cm]legendbox.west) -- ++(1.2cm,0) node[right, black] {Power};
-\draw[ground line] ([xshift=0.5cm, yshift=0.1cm]legendbox.west) -- ++(1.2cm,0) node[right, black] {Ground};
-\draw[data line] ([xshift=0.5cm, yshift=-0.4cm]legendbox.west) -- ++(1.2cm,0) node[right, black] {Signal};
+% Line types - single column, compact spacing
+\node[anchor=west, font=\bfseries\small] at ([xshift=0.2cm, yshift=1.1cm]legendbox.west) {Lines:};
+\draw[power line] ([xshift=0.3cm, yshift=0.75cm]legendbox.west) -- ++(0.8cm,0) node[right, black, font=\small] {Power};
+\draw[ground line] ([xshift=0.3cm, yshift=0.45cm]legendbox.west) -- ++(0.8cm,0) node[right, black, font=\small] {Ground};
+\draw[data line] ([xshift=0.3cm, yshift=0.15cm]legendbox.west) -- ++(0.8cm,0) node[right, black, font=\small] {Signal};
+\draw[i2c line] ([xshift=0.3cm, yshift=-0.15cm]legendbox.west) -- ++(0.8cm,0) node[right, black, font=\small] {I2C};
+\draw[spi line] ([xshift=0.3cm, yshift=-0.45cm]legendbox.west) -- ++(0.8cm,0) node[right, black, font=\small] {SPI};
+\draw[pwm line] ([xshift=0.3cm, yshift=-0.75cm]legendbox.west) -- ++(0.8cm,0) node[right, black, font=\small] {PWM};
+\draw[uart line] ([xshift=0.3cm, yshift=-1.05cm]legendbox.west) -- ++(0.8cm,0) node[right, black, font=\small] {UART};
+\draw[wifi line] ([xshift=0.3cm, yshift=-1.35cm]legendbox.west) -- ++(0.8cm,0) node[right, black, font=\small] {WiFi};
 
-% Block types
-\node[anchor=west, font=\bfseries] at ([xshift=-2.3cm, yshift=1.1cm]legendbox.center) {Blocks:};
-% Left column
-\node[connector block, minimum width=1.2cm, minimum height=0.5cm, anchor=west] at ([xshift=-2.1cm, yshift=0.6cm]legendbox.center) {};
-\node[anchor=west] at ([xshift=-0.7cm, yshift=0.6cm]legendbox.center) {Connector};
-\node[ic block, minimum width=1.2cm, minimum height=0.5cm, anchor=west] at ([xshift=-2.1cm, yshift=0.1cm]legendbox.center) {};
-\node[anchor=west] at ([xshift=-0.7cm, yshift=0.1cm]legendbox.center) {IC};
-\node[external block, minimum width=1.2cm, minimum height=0.5cm, anchor=west] at ([xshift=-2.1cm, yshift=-0.4cm]legendbox.center) {};
-\node[anchor=west] at ([xshift=-0.7cm, yshift=-0.4cm]legendbox.center) {External};
-\node[sensor block, minimum width=1.2cm, minimum height=0.5cm, anchor=west] at ([xshift=-2.1cm, yshift=-0.9cm]legendbox.center) {};
-\node[anchor=west] at ([xshift=-0.7cm, yshift=-0.9cm]legendbox.center) {Sensor};
-% Right column
-\node[module block, minimum width=1.2cm, minimum height=0.5cm, anchor=west] at ([xshift=1.5cm, yshift=0.6cm]legendbox.center) {};
-\node[anchor=west] at ([xshift=2.9cm, yshift=0.6cm]legendbox.center) {Module};
-\node[sbc block, minimum width=1.2cm, minimum height=0.5cm, anchor=west] at ([xshift=1.5cm, yshift=0.1cm]legendbox.center) {};
-\node[anchor=west] at ([xshift=2.9cm, yshift=0.1cm]legendbox.center) {SBC};
-\node[mcu block, minimum width=1.2cm, minimum height=0.5cm, anchor=west] at ([xshift=1.5cm, yshift=-0.4cm]legendbox.center) {};
-\node[anchor=west] at ([xshift=2.9cm, yshift=-0.4cm]legendbox.center) {MCU};
+% Block types - two columns, smaller blocks
+\node[anchor=west, font=\bfseries\small] at ([xshift=-2.4cm, yshift=1.1cm]legendbox.center) {Blocks:};
+% Left column of blocks
+\node[connector block, minimum width=0.9cm, minimum height=0.35cm, anchor=west] at ([xshift=-2.3cm, yshift=0.7cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=-1.2cm, yshift=0.7cm]legendbox.center) {Connector};
+\node[ic block, minimum width=0.9cm, minimum height=0.35cm, anchor=west] at ([xshift=-2.3cm, yshift=0.35cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=-1.2cm, yshift=0.35cm]legendbox.center) {IC};
+\node[external block, minimum width=0.9cm, minimum height=0.35cm, anchor=west] at ([xshift=-2.3cm, yshift=0.0cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=-1.2cm, yshift=0.0cm]legendbox.center) {External};
+\node[sensor block, minimum width=0.9cm, minimum height=0.35cm, anchor=west] at ([xshift=-2.3cm, yshift=-0.35cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=-1.2cm, yshift=-0.35cm]legendbox.center) {Sensor};
+% Right column of blocks
+\node[module block, minimum width=0.9cm, minimum height=0.35cm, anchor=west] at ([xshift=1.3cm, yshift=0.7cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=2.4cm, yshift=0.7cm]legendbox.center) {Module};
+\node[sbc block, minimum width=0.9cm, minimum height=0.35cm, anchor=west] at ([xshift=1.3cm, yshift=0.35cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=2.4cm, yshift=0.35cm]legendbox.center) {SBC};
+\node[mcu block, minimum width=0.9cm, minimum height=0.35cm, anchor=west] at ([xshift=1.3cm, yshift=0.0cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=2.4cm, yshift=0.0cm]legendbox.center) {MCU};
 
 \end{tikzpicture}
 
