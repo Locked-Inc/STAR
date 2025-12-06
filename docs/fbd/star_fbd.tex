@@ -50,11 +50,11 @@
 
 % Color definitions
 \definecolor{connectorcolor}{RGB}{255, 165, 0}  % Orange for connectors
-\definecolor{iccolor}{RGB}{0, 128, 0}           % Green for IC blocks
-\definecolor{externalcolor}{RGB}{128, 0, 128}   % Purple for external interfaces
-\definecolor{powercolor}{RGB}{255, 0, 0}        % Red for power
-\definecolor{groundcolor}{RGB}{0, 0, 0}         % Black for ground
-\definecolor{datacolor}{RGB}{0, 0, 255}         % Blue for data/signal
+\definecolor{iccolor}{RGB}{0, 128, 0}           % Green for Power IC blocks
+\definecolor{externalcolor}{RGB}{128, 0, 128}   % Purple for external power interfaces
+\definecolor{powercolor}{RGB}{255, 0, 0}        % Red for power lines
+\definecolor{groundcolor}{RGB}{0, 0, 0}         % Black for ground lines
+\definecolor{datacolor}{RGB}{0, 0, 255}         % Blue for data/signal lines
 \definecolor{sensorcolor}{RGB}{0, 128, 128}     % Teal for sensors
 \definecolor{modulecolor}{RGB}{112, 128, 144}   % Slate gray for modules
 \definecolor{sbccolor}{RGB}{178, 34, 34}        % Firebrick red for SBCs (Pi 5)
@@ -64,6 +64,10 @@
 \definecolor{pwmcolor}{RGB}{255, 140, 0}        % Dark orange for PWM
 \definecolor{uartcolor}{RGB}{0, 139, 139}       % Dark cyan for UART (TX/RX)
 \definecolor{wificolor}{RGB}{30, 144, 255}      % Dodger blue for WiFi
+\definecolor{batteryiccolor}{RGB}{139, 69, 19}  % Saddle brown for battery management ICs
+\definecolor{motoriccolor}{RGB}{0, 206, 209}    % Dark turquoise for motor driver ICs
+\definecolor{buttoncolor}{RGB}{255, 20, 147}    % Deep pink for buttons
+\definecolor{actuatorcolor}{RGB}{255, 215, 0}   % Gold for actuators/motors
 
 \begin{tikzpicture}[
     % Base block style (not used directly, inherited by others)
@@ -118,6 +122,34 @@
     mcu block/.style={
         draw=mcucolor,
         fill=mcucolor!10,
+        rectangle,
+        thick
+    },
+    % Battery IC blocks (dark goldenrod) - Fuel Gauge, Gate Driver, AFE
+    battery ic block/.style={
+        draw=batteryiccolor,
+        fill=batteryiccolor!10,
+        rectangle,
+        thick
+    },
+    % Motor IC blocks (steel blue) - Motor Driver
+    motor ic block/.style={
+        draw=motoriccolor,
+        fill=motoriccolor!10,
+        rectangle,
+        thick
+    },
+    % Button blocks (medium violet red) - Boot/Reset buttons
+    button block/.style={
+        draw=buttoncolor,
+        fill=buttoncolor!10,
+        rectangle,
+        thick
+    },
+    % Actuator blocks (dark olive green) - Motors
+    actuator block/.style={
+        draw=actuatorcolor,
+        fill=actuatorcolor!10,
         rectangle,
         thick
     },
@@ -389,7 +421,7 @@
 % max = 3 -> Height = 2.4cm
 % Stacked on top of LiDAR
 % ============================================================================
-\node[external block, minimum width=4.5cm, minimum height=2.4cm, anchor=south] (stereocameras) at ([yshift=0.4cm]lidar.north) {};
+\node[sensor block, minimum width=4.5cm, minimum height=2.4cm, anchor=south] (stereocameras) at ([yshift=0.4cm]lidar.north) {};
 
 % Title: 0.4cm from top
 \node[block title] at ([yshift=-0.4cm]stereocameras.north) {Stereo Cameras};
@@ -435,7 +467,7 @@
 % Left: 9 labels with 0.4cm spacing everywhere
 % Height = 4.8cm to fit 9 labels
 % ============================================================================
-\node[ic block, minimum width=4.5cm, minimum height=4.8cm, anchor=west] (motordriver) at ([xshift=1.7cm, yshift=0.4cm]esp32.east) {};
+\node[motor ic block, minimum width=4.5cm, minimum height=4.8cm, anchor=west] (motordriver) at ([xshift=1.7cm, yshift=0.4cm]esp32.east) {};
 
 % Title: 0.4cm from top
 \node[block title] at ([yshift=-0.4cm]motordriver.north) {Motor Driver};
@@ -525,28 +557,28 @@
 % Each has 3 labels: Input Voltage, Ground, Encoder Data (on top)
 % ============================================================================
 % Motor 4 (right) - anchor to motor driver's right side
-\node[external block, minimum width=3.2cm, minimum height=\blockheightthree, anchor=north west] (motor4) at ([yshift=-1.8cm]motordriver.south west) {};
+\node[actuator block, minimum width=3.2cm, minimum height=\blockheightthree, anchor=north west] (motor4) at ([yshift=-1.8cm]motordriver.south west) {};
 \node[block title] at ([yshift=-0.4cm]motor4.north) {Motor 4};
 \node[port left] at ([xshift=0.4cm, yshift=0.0cm]motor4.west) {Input Voltage};
 \node[port left] at ([xshift=0.4cm, yshift=-0.4cm]motor4.west) {Ground};
 \node[port left] at ([xshift=0.4cm, yshift=-0.8cm]motor4.west) {Encoder Data};
 
 % Motor 3
-\node[external block, minimum width=3.2cm, minimum height=\blockheightthree, anchor=north east] (motor3) at ([xshift=-1.6cm]motor4.north west) {};
+\node[actuator block, minimum width=3.2cm, minimum height=\blockheightthree, anchor=north east] (motor3) at ([xshift=-1.6cm]motor4.north west) {};
 \node[block title] at ([yshift=-0.4cm]motor3.north) {Motor 3};
 \node[port left] at ([xshift=0.4cm, yshift=0.0cm]motor3.west) {Input Voltage};
 \node[port left] at ([xshift=0.4cm, yshift=-0.4cm]motor3.west) {Ground};
 \node[port left] at ([xshift=0.4cm, yshift=-0.8cm]motor3.west) {Encoder Data};
 
 % Motor 2
-\node[external block, minimum width=3.2cm, minimum height=\blockheightthree, anchor=north east] (motor2) at ([xshift=-1.6cm]motor3.north west) {};
+\node[actuator block, minimum width=3.2cm, minimum height=\blockheightthree, anchor=north east] (motor2) at ([xshift=-1.6cm]motor3.north west) {};
 \node[block title] at ([yshift=-0.4cm]motor2.north) {Motor 2};
 \node[port left] at ([xshift=0.4cm, yshift=0.0cm]motor2.west) {Input Voltage};
 \node[port left] at ([xshift=0.4cm, yshift=-0.4cm]motor2.west) {Ground};
 \node[port left] at ([xshift=0.4cm, yshift=-0.8cm]motor2.west) {Encoder Data};
 
 % Motor 1 (left)
-\node[external block, minimum width=3.2cm, minimum height=\blockheightthree, anchor=north east] (motor1) at ([xshift=-1.6cm]motor2.north west) {};
+\node[actuator block, minimum width=3.2cm, minimum height=\blockheightthree, anchor=north east] (motor1) at ([xshift=-1.6cm]motor2.north west) {};
 \node[block title] at ([yshift=-0.4cm]motor1.north) {Motor 1};
 \node[port left] at ([xshift=0.4cm, yshift=0.0cm]motor1.west) {Input Voltage};
 \node[port left] at ([xshift=0.4cm, yshift=-0.4cm]motor1.west) {Ground};
@@ -659,7 +691,7 @@
 % Right: 2 labels -> Height = 1.2 + 2*0.4 = 2.0cm
 % Stacked under USB-C Debug Port with 0.4cm spacing
 % ============================================================================
-\node[external block, minimum width=5.0cm, minimum height=1.6cm, anchor=north east] (bootbutton) at ([yshift=-0.4cm]debugusbc.south east) {};
+\node[button block, minimum width=5.0cm, minimum height=1.6cm, anchor=north east] (bootbutton) at ([yshift=-0.4cm]debugusbc.south east) {};
 
 % Title: 0.4cm from top
 \node[block title] at ([yshift=-0.4cm]bootbutton.north) {Boot Button};
@@ -674,7 +706,7 @@
 % Right: 2 labels -> Height = 1.2 + 2*0.4 = 2.0cm
 % Stacked under Boot Button with 0.5cm spacing
 % ============================================================================
-\node[external block, minimum width=5.0cm, minimum height=1.6cm, anchor=north east] (resetbutton) at ([yshift=-0.4cm]bootbutton.south east) {};
+\node[button block, minimum width=5.0cm, minimum height=1.6cm, anchor=north east] (resetbutton) at ([yshift=-0.4cm]bootbutton.south east) {};
 
 % Title: 0.4cm from top
 \node[block title] at ([yshift=-0.4cm]resetbutton.north) {Reset Button};
@@ -750,7 +782,7 @@
 % FUEL GAUGE (IC - Green)
 % Below Temperature Sensor with 0.4cm spacing
 % ============================================================================
-\node[ic block, minimum width=5.985cm, minimum height=3.582cm, anchor=north] (fuelgauge) at ([yshift=-0.4cm]tempsensor.south) {};
+\node[battery ic block, minimum width=5.985cm, minimum height=3.582cm, anchor=north] (fuelgauge) at ([yshift=-0.4cm]tempsensor.south) {};
 
 % Title: 0.4cm from top
 \node[block title] at ([yshift=-0.4cm]fuelgauge.north) {Fuel Gauge};
@@ -774,7 +806,7 @@
 % BATTERY LIFE BUTTON (External - Purple)
 % Below Fuel Gauge with 0.4cm spacing
 % ============================================================================
-\node[external block, minimum width=5.5cm, minimum height=1.6cm, anchor=north] (batterybutton) at ([yshift=-0.4cm]fuelgauge.south) {};
+\node[button block, minimum width=5.5cm, minimum height=1.6cm, anchor=north] (batterybutton) at ([yshift=-0.4cm]fuelgauge.south) {};
 
 % Title: 0.4cm from top
 \node[block title] at ([yshift=-0.4cm]batterybutton.north) {Battery Button};
@@ -789,7 +821,7 @@
 % HIGH SIDE GATE DRIVER (IC - Green)
 % Below Battery Button with 0.4cm spacing
 % ============================================================================
-\node[ic block, minimum width=5.985cm, minimum height=3.2cm, anchor=north] (gatedriver) at ([yshift=-0.4cm]batterybutton.south) {};
+\node[battery ic block, minimum width=5.985cm, minimum height=3.2cm, anchor=north] (gatedriver) at ([yshift=-0.4cm]batterybutton.south) {};
 
 % Title: 0.4cm from top
 \node[block title] at ([yshift=-0.4cm]gatedriver.north) {High Side Gate Driver};
@@ -811,7 +843,7 @@
 % ANALOG FRONT END (IC - Green)
 % Below Gate Driver with 0.4cm spacing
 % ============================================================================
-\node[ic block, minimum width=5.985cm, minimum height=3.6cm, anchor=north] (afe) at ([yshift=-0.4cm]gatedriver.south) {};
+\node[battery ic block, minimum width=5.985cm, minimum height=3.6cm, anchor=north] (afe) at ([yshift=-0.4cm]gatedriver.south) {};
 
 % Title: 0.4cm from top
 \node[block title] at ([yshift=-0.4cm]afe.north) {Analog Front End};
@@ -1524,35 +1556,45 @@
 \node[draw, thick, rectangle, minimum width=11cm, minimum height=4.1cm, anchor=north] (legendbox) at (legend_start) {};
 \node[anchor=north, font=\large\bfseries] at ([yshift=-0.2cm]legendbox.north) {Legend};
 
-% Line types - single column, compact spacing
-\node[anchor=west, font=\bfseries\small] at ([xshift=0.2cm, yshift=1.1cm]legendbox.west) {Lines:};
-\draw[power line] ([xshift=0.3cm, yshift=0.75cm]legendbox.west) -- ++(0.8cm,0) node[right, black, font=\small] {Power};
-\draw[ground line] ([xshift=0.3cm, yshift=0.45cm]legendbox.west) -- ++(0.8cm,0) node[right, black, font=\small] {Ground};
-\draw[data line] ([xshift=0.3cm, yshift=0.15cm]legendbox.west) -- ++(0.8cm,0) node[right, black, font=\small] {Signal};
-\draw[i2c line] ([xshift=0.3cm, yshift=-0.15cm]legendbox.west) -- ++(0.8cm,0) node[right, black, font=\small] {I2C};
-\draw[spi line] ([xshift=0.3cm, yshift=-0.45cm]legendbox.west) -- ++(0.8cm,0) node[right, black, font=\small] {SPI};
-\draw[pwm line] ([xshift=0.3cm, yshift=-0.75cm]legendbox.west) -- ++(0.8cm,0) node[right, black, font=\small] {PWM};
-\draw[uart line] ([xshift=0.3cm, yshift=-1.05cm]legendbox.west) -- ++(0.8cm,0) node[right, black, font=\small] {UART};
-\draw[wifi line] ([xshift=0.3cm, yshift=-1.35cm]legendbox.west) -- ++(0.8cm,0) node[right, black, font=\small] {WiFi};
+% Line types - single column, compact spacing (centered)
+\node[anchor=west, font=\bfseries\small] at ([xshift=-4.4cm, yshift=1.1cm]legendbox.center) {Lines:};
+\draw[power line] ([xshift=-4.3cm, yshift=0.75cm]legendbox.center) -- ++(0.8cm,0) node[right, black, font=\small] {Power};
+\draw[ground line] ([xshift=-4.3cm, yshift=0.45cm]legendbox.center) -- ++(0.8cm,0) node[right, black, font=\small] {Ground};
+\draw[data line] ([xshift=-4.3cm, yshift=0.15cm]legendbox.center) -- ++(0.8cm,0) node[right, black, font=\small] {Signal};
+\draw[i2c line] ([xshift=-4.3cm, yshift=-0.15cm]legendbox.center) -- ++(0.8cm,0) node[right, black, font=\small] {I2C};
+\draw[spi line] ([xshift=-4.3cm, yshift=-0.45cm]legendbox.center) -- ++(0.8cm,0) node[right, black, font=\small] {SPI};
+\draw[pwm line] ([xshift=-4.3cm, yshift=-0.75cm]legendbox.center) -- ++(0.8cm,0) node[right, black, font=\small] {PWM};
+\draw[uart line] ([xshift=-4.3cm, yshift=-1.05cm]legendbox.center) -- ++(0.8cm,0) node[right, black, font=\small] {UART};
+\draw[wifi line] ([xshift=-4.3cm, yshift=-1.35cm]legendbox.center) -- ++(0.8cm,0) node[right, black, font=\small] {WiFi};
 
-% Block types - two columns, smaller blocks
-\node[anchor=west, font=\bfseries\small] at ([xshift=-2.4cm, yshift=1.1cm]legendbox.center) {Blocks:};
-% Left column of blocks
-\node[connector block, minimum width=0.9cm, minimum height=0.35cm, anchor=west] at ([xshift=-2.3cm, yshift=0.7cm]legendbox.center) {};
-\node[anchor=west, font=\small] at ([xshift=-1.2cm, yshift=0.7cm]legendbox.center) {Connector};
-\node[ic block, minimum width=0.9cm, minimum height=0.35cm, anchor=west] at ([xshift=-2.3cm, yshift=0.35cm]legendbox.center) {};
-\node[anchor=west, font=\small] at ([xshift=-1.2cm, yshift=0.35cm]legendbox.center) {IC};
-\node[external block, minimum width=0.9cm, minimum height=0.35cm, anchor=west] at ([xshift=-2.3cm, yshift=0.0cm]legendbox.center) {};
-\node[anchor=west, font=\small] at ([xshift=-1.2cm, yshift=0.0cm]legendbox.center) {External};
-\node[sensor block, minimum width=0.9cm, minimum height=0.35cm, anchor=west] at ([xshift=-2.3cm, yshift=-0.35cm]legendbox.center) {};
-\node[anchor=west, font=\small] at ([xshift=-1.2cm, yshift=-0.35cm]legendbox.center) {Sensor};
-% Right column of blocks
-\node[module block, minimum width=0.9cm, minimum height=0.35cm, anchor=west] at ([xshift=1.3cm, yshift=0.7cm]legendbox.center) {};
-\node[anchor=west, font=\small] at ([xshift=2.4cm, yshift=0.7cm]legendbox.center) {Module};
-\node[sbc block, minimum width=0.9cm, minimum height=0.35cm, anchor=west] at ([xshift=1.3cm, yshift=0.35cm]legendbox.center) {};
-\node[anchor=west, font=\small] at ([xshift=2.4cm, yshift=0.35cm]legendbox.center) {SBC};
-\node[mcu block, minimum width=0.9cm, minimum height=0.35cm, anchor=west] at ([xshift=1.3cm, yshift=0.0cm]legendbox.center) {};
-\node[anchor=west, font=\small] at ([xshift=2.4cm, yshift=0.0cm]legendbox.center) {MCU};
+% Block types - two columns, 6 items each (0.35cm spacing, centered)
+\node[anchor=west, font=\bfseries\small] at ([xshift=-1.9cm, yshift=1.1cm]legendbox.center) {Blocks:};
+% Left column of blocks (6 items)
+\node[connector block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=-1.8cm, yshift=0.73cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=-0.85cm, yshift=0.73cm]legendbox.center) {Connector};
+\node[ic block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=-1.8cm, yshift=0.38cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=-0.85cm, yshift=0.38cm]legendbox.center) {Power IC};
+\node[battery ic block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=-1.8cm, yshift=0.03cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=-0.85cm, yshift=0.03cm]legendbox.center) {Battery IC};
+\node[motor ic block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=-1.8cm, yshift=-0.32cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=-0.85cm, yshift=-0.32cm]legendbox.center) {Motor IC};
+\node[external block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=-1.8cm, yshift=-0.67cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=-0.85cm, yshift=-0.67cm]legendbox.center) {External};
+\node[sensor block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=-1.8cm, yshift=-1.02cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=-0.85cm, yshift=-1.02cm]legendbox.center) {Sensor};
+% Right column of blocks (6 items)
+\node[module block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=1.5cm, yshift=0.73cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=2.45cm, yshift=0.73cm]legendbox.center) {Module};
+\node[sbc block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=1.5cm, yshift=0.38cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=2.45cm, yshift=0.38cm]legendbox.center) {SBC};
+\node[mcu block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=1.5cm, yshift=0.03cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=2.45cm, yshift=0.03cm]legendbox.center) {MCU};
+\node[button block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=1.5cm, yshift=-0.32cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=2.45cm, yshift=-0.32cm]legendbox.center) {Button};
+\node[actuator block, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=1.5cm, yshift=-0.67cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=2.45cm, yshift=-0.67cm]legendbox.center) {Actuator};
+\node[cloud, draw=wificolor, fill=wificolor!10, thick, cloud puffs=8, cloud puff arc=120, minimum width=0.8cm, minimum height=0.3cm, anchor=west] at ([xshift=1.5cm, yshift=-1.02cm]legendbox.center) {};
+\node[anchor=west, font=\small] at ([xshift=2.45cm, yshift=-1.02cm]legendbox.center) {Cloud};
 
 \end{tikzpicture}
 
