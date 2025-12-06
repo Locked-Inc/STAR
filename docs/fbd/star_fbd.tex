@@ -371,12 +371,16 @@
 
 % Left label (N=1): 3V3 In aligned with Ground
 \node[port left] at ([xshift=0.4cm, yshift=0.0cm]stereocameras.west) {3V3 In};
+\fill[powercolor] ([xshift=-0.4cm, yshift=0.0cm]stereocameras.west) circle (3pt);
 
 % Right labels (N=3): Labels at 0.0, -0.4, -0.8 cm (SCL, SDA, Ground)
 % Bottom label (Ground) at -0.8cm = 0.4cm from bottom (height 2.4cm, center at 1.2cm)
 \node[port right] at ([xshift=-0.4cm, yshift=0.0cm]stereocameras.east) {SCL};
+\fill[datacolor] ([xshift=3.5cm, yshift=0.0cm]stereocameras.east) circle (3pt);
 \node[port right] at ([xshift=-0.4cm, yshift=-0.4cm]stereocameras.east) {SDA};
+\fill[datacolor] ([xshift=3.1cm, yshift=-0.4cm]stereocameras.east) circle (3pt);
 \node[port right] at ([xshift=-0.4cm, yshift=-0.8cm]stereocameras.east) {Ground};
+\fill[groundcolor] ([xshift=0.4cm, yshift=-0.8cm]stereocameras.east) circle (3pt);
 
 % ============================================================================
 % IMU (Module - Steel Blue)
@@ -384,13 +388,14 @@
 % max = 5 -> Height = 1.2 + 5*0.4 = 3.2cm
 % Stacked on top of Stereo Cameras
 % ============================================================================
-\node[module block, minimum width=4.5cm, minimum height=3.2cm, anchor=south] (imu) at ([yshift=0.5cm]stereocameras.north) {};
+\node[module block, minimum width=4.5cm, minimum height=3.2cm, anchor=south] (imu) at ([yshift=0.4cm]stereocameras.north) {};
 
 % Title: 0.4cm from top
 \node[block title] at ([yshift=-0.4cm]imu.north) {IMU};
 
 % Left labels (N=1): aligned with Int on right side
 \node[port left] at ([xshift=0.4cm, yshift=0.4cm]imu.west) {3V3 In};
+\fill[powercolor] ([xshift=-0.4cm, yshift=0.4cm]imu.west) circle (3pt);
 
 % Right labels (N=5): Int, Reset, SCL, SDA, Ground (top down)
 % Labels at: 0.4, 0.0, -0.4, -0.8, -1.2 cm
