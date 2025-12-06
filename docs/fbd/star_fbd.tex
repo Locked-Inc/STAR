@@ -261,10 +261,10 @@
 
 % ============================================================================
 % Pi 5 (SBC - Firebrick Red)
-% Left: 6, Right: 5 labels -> max = 6 -> Height = 1.2 + 6*0.4 = 3.6cm
+% Left: 5 labels, Right: 8 labels -> max = 8 -> Height = 1.2 + 8*0.4 = 4.4cm
 % Positioned where LiDAR used to be
 % ============================================================================
-\node[sbc block, minimum width=4.5cm, minimum height=3.6cm, anchor=south] (pi5) at ([xshift=1.6cm, yshift=1.1cm]esp32.north) {};
+\node[sbc block, minimum width=4.5cm, minimum height=4.4cm, anchor=south] (pi5) at ([xshift=1.6cm, yshift=1.1cm]esp32.north) {};
 
 % ============================================================================
 % 4G IoT (Module - Steel Blue)
@@ -282,30 +282,27 @@
 % ============================================================================
 \node[sensor block, minimum width=4.5cm, minimum height=2.4cm, anchor=south] (lidar) at ([yshift=0.4cm]iot4g.north) {};
 
-% ============================================================================
-% IMU (Module - Steel Blue)
-% Left: 2 labels (3V3 In, Ground), Right: 4 labels (SCL, Reset, Int, SDA)
-% max = 4 -> Height = 1.2 + 4*0.4 = 2.8cm
-% ============================================================================
-\node[module block, minimum width=4.5cm, minimum height=2.8cm, anchor=south] (imu) at ([yshift=20.5cm]lidar.north) {};
-
 % Title: 0.4cm from top
 \node[block title] at ([yshift=-0.4cm]pi5.north) {Pi 5};
 
-% Left labels (N=5): Labels at 0.6, 0.2, -0.2, -0.6, -1.0 cm
-\node[port left] at ([xshift=0.4cm, yshift=0.6cm]pi5.west) {USB Port 1};
-\node[port left] at ([xshift=0.4cm, yshift=0.2cm]pi5.west) {USB Power In};
-\node[port left] at ([xshift=0.4cm, yshift=-0.2cm]pi5.west) {USB Port 2};
-\node[port left] at ([xshift=0.4cm, yshift=-0.6cm]pi5.west) {RX};
-\node[port left] at ([xshift=0.4cm, yshift=-1.0cm]pi5.west) {TX};
+% Left labels (N=5): H/2 - 1.2 = 4.4/2 - 1.2 = 1.0cm, then 0.4cm apart
+% Labels at: 1.0, 0.6, 0.2, -0.2, -0.6 cm
+\node[port left] at ([xshift=0.4cm, yshift=1.0cm]pi5.west) {USB Port 1};
+\node[port left] at ([xshift=0.4cm, yshift=0.6cm]pi5.west) {USB Port 2};
+\node[port left] at ([xshift=0.4cm, yshift=0.2cm]pi5.west) {RX};
+\node[port left] at ([xshift=0.4cm, yshift=-0.2cm]pi5.west) {TX};
+\node[port left] at ([xshift=0.4cm, yshift=-0.6cm]pi5.west) {USB Power In};
 
-% Right labels (N=6): Labels at 0.6, 0.2, -0.2, -0.6, -1.0, -1.4 cm
-\node[port right] at ([xshift=-0.4cm, yshift=0.6cm]pi5.east) {SDA};
-\node[port right] at ([xshift=-0.4cm, yshift=0.2cm]pi5.east) {SCL};
-\node[port right] at ([xshift=-0.4cm, yshift=-0.2cm]pi5.east) {Trig Data};
-\node[port right] at ([xshift=-0.4cm, yshift=-0.6cm]pi5.east) {Echo Data};
-\node[port right] at ([xshift=-0.4cm, yshift=-1.0cm]pi5.east) {Ground};
-\node[port right] at ([xshift=-0.4cm, yshift=-1.4cm]pi5.east) {SPI};
+% Right labels (N=8): H/2 - 1.2 = 4.4/2 - 1.2 = 1.0cm, then 0.4cm apart
+% Labels at: 1.0, 0.6, 0.2, -0.2, -0.6, -1.0, -1.4, -1.8 cm
+\node[port right] at ([xshift=-0.4cm, yshift=1.0cm]pi5.east) {SDA};
+\node[port right] at ([xshift=-0.4cm, yshift=0.6cm]pi5.east) {SCL};
+\node[port right] at ([xshift=-0.4cm, yshift=0.2cm]pi5.east) {IMU Reset};
+\node[port right] at ([xshift=-0.4cm, yshift=-0.2cm]pi5.east) {IMU Int};
+\node[port right] at ([xshift=-0.4cm, yshift=-0.6cm]pi5.east) {Trig Data};
+\node[port right] at ([xshift=-0.4cm, yshift=-1.0cm]pi5.east) {Echo Data};
+\node[port right] at ([xshift=-0.4cm, yshift=-1.4cm]pi5.east) {Ground};
+\node[port right] at ([xshift=-0.4cm, yshift=-1.8cm]pi5.east) {SPI};
 
 % Title: 0.4cm from top
 \node[block title] at ([yshift=-0.4cm]lidar.north) {LiDAR};
@@ -324,9 +321,9 @@
 \coordinate (lidar_tx) at ([yshift=-0.4cm]lidar.west);
 \coordinate (lidar_usbc) at ([yshift=-0.8cm]lidar.west);
 \coordinate (lidar_ground_label) at ([yshift=-0.8cm]lidar.east);
-\coordinate (pi5_port2) at ([yshift=-0.2cm]pi5.west);
-\coordinate (pi5_rx) at ([yshift=-0.6cm]pi5.west);
-\coordinate (pi5_tx) at ([yshift=-1.0cm]pi5.west);
+\coordinate (pi5_port2) at ([yshift=0.6cm]pi5.west);
+\coordinate (pi5_rx) at ([yshift=0.2cm]pi5.west);
+\coordinate (pi5_tx) at ([yshift=-0.2cm]pi5.west);
 
 % USB-C to USB Port 2 (route left then down then right)
 \draw[data line] (lidar_usbc) -- ++(-0.8cm,0) |- (pi5_port2);
@@ -358,22 +355,8 @@
 
 % 4G IoT USB-C to Pi5 USB Port 1 connection
 \coordinate (iot4g_usbc) at ([yshift=-0.4cm]iot4g.west);
-\coordinate (pi5_port1) at ([yshift=0.6cm]pi5.west);
+\coordinate (pi5_port1) at ([yshift=1.0cm]pi5.west);
 \draw[data line] (iot4g_usbc) -- ++(-0.4cm,0) |- (pi5_port1);
-
-% Title: 0.4cm from top
-\node[block title] at ([yshift=-0.4cm]imu.north) {IMU};
-
-% Left labels (N=2): at 0.2, -0.6 to spread them out
-\node[port left] at ([xshift=0.4cm, yshift=0.2cm]imu.west) {3V3 In};
-\node[port left] at ([xshift=0.4cm, yshift=-0.6cm]imu.west) {Ground};
-
-% Right labels (N=4): H/2 - 1.2 = 1.4 - 1.2 = 0.2cm, then 0.4cm apart
-% Labels at: 0.2, -0.2, -0.6, -1.0 cm
-\node[port right] at ([xshift=-0.4cm, yshift=0.2cm]imu.east) {SCL};
-\node[port right] at ([xshift=-0.4cm, yshift=-0.2cm]imu.east) {Reset};
-\node[port right] at ([xshift=-0.4cm, yshift=-0.6cm]imu.east) {Int};
-\node[port right] at ([xshift=-0.4cm, yshift=-1.0cm]imu.east) {SDA};
 
 % ============================================================================
 % STEREO CAMERAS (External - Purple)
@@ -394,6 +377,28 @@
 \node[port right] at ([xshift=-0.4cm, yshift=0.0cm]stereocameras.east) {SCL};
 \node[port right] at ([xshift=-0.4cm, yshift=-0.4cm]stereocameras.east) {SDA};
 \node[port right] at ([xshift=-0.4cm, yshift=-0.8cm]stereocameras.east) {Ground};
+
+% ============================================================================
+% IMU (Module - Steel Blue)
+% Left: 2 labels (3V3 In, Ground), Right: 4 labels (SCL, Reset, Int, SDA)
+% max = 4 -> Height = 1.2 + 4*0.4 = 2.8cm
+% Stacked on top of Stereo Cameras
+% ============================================================================
+\node[module block, minimum width=4.5cm, minimum height=2.8cm, anchor=south] (imu) at ([yshift=0.5cm]stereocameras.north) {};
+
+% Title: 0.4cm from top
+\node[block title] at ([yshift=-0.4cm]imu.north) {IMU};
+
+% Left labels (N=2): at 0.2, -0.6 to spread them out
+\node[port left] at ([xshift=0.4cm, yshift=0.2cm]imu.west) {3V3 In};
+\node[port left] at ([xshift=0.4cm, yshift=-0.6cm]imu.west) {Ground};
+
+% Right labels (N=4): H/2 - 1.2 = 1.4 - 1.2 = 0.2cm, then 0.4cm apart
+% Labels at: 0.2, -0.2, -0.6, -1.0 cm
+\node[port right] at ([xshift=-0.4cm, yshift=0.2cm]imu.east) {SCL};
+\node[port right] at ([xshift=-0.4cm, yshift=-0.2cm]imu.east) {Reset};
+\node[port right] at ([xshift=-0.4cm, yshift=-0.6cm]imu.east) {Int};
+\node[port right] at ([xshift=-0.4cm, yshift=-1.0cm]imu.east) {SDA};
 
 % ============================================================================
 % MOTOR DRIVER (IC - Green)
@@ -1070,14 +1075,14 @@
 \draw[power line] (buck5v_out) -- ++(2.6cm,0) |- (pdctrl_5v_in);
 
 % 5V Buck output to LiDAR 5V In
-\coordinate (lidar_5v_in) at ([yshift=0.35cm]lidar.west);
-\coordinate (buck5v_lidar_junction) at ([xshift=2.6cm]buck5v_out);
-\draw[power line] (buck5v_out) -- (buck5v_lidar_junction) |- (lidar_5v_in);
+\coordinate (lidar_5v_in) at ([yshift=0.4cm]lidar.west);
+\coordinate (buck5v_lidar_junction) at ([xshift=2.6cm]buck5v_out |- lidar_5v_in);
+\draw[power line] (buck5v_lidar_junction) -- (lidar_5v_in);
 \fill[powercolor] (buck5v_lidar_junction) circle (3pt);
 
 % Pi5 USB Power In to Ext Power block
 % Pi5 is now on the left, so route: right from inputv, up above usbc, right past pdctrl, down to pi5 level
-\coordinate (pi5_usb_power_in) at ([yshift=0.2cm]pi5.west);
+\coordinate (pi5_usb_power_in) at ([yshift=-0.6cm]pi5.west);
 \coordinate (usbc_top_y) at ([yshift=0.4cm]usbc.north);
 \coordinate (ext_pwr_step0) at ([xshift=0.5cm]inputv.east);
 \coordinate (ext_pwr_step1) at (ext_pwr_step0 |- usbc_top_y);
@@ -1095,13 +1100,13 @@
 % ESP32 Pi5 SPI to Pi5 SPI connection
 % ============================================================================
 \coordinate (esp32_pi5_spi) at ([yshift=1.2cm]esp32.east);
-\coordinate (pi5_spi) at ([yshift=-1.4cm]pi5.east);
+\coordinate (pi5_spi) at ([yshift=-1.8cm]pi5.east);
 \draw[data line] (esp32_pi5_spi) -- ++(0.5cm,0) |- (pi5_spi);
 
 % ============================================================================
 % Pi5 Ground to Motor Driver Ground connection
 % ============================================================================
-\coordinate (pi5_ground) at ([yshift=-1.0cm]pi5.east);
+\coordinate (pi5_ground) at ([yshift=-1.4cm]pi5.east);
 % Go right to 0.4cm past motordriver.east, then down to motor ground bus level, then left to the bus
 \coordinate (pi5_gnd_step1) at ([xshift=0.8cm]motordriver.east |- pi5_ground);
 \coordinate (pi5_gnd_step2) at (pi5_gnd_step1 |- motor_gnd_bus_y);
@@ -1134,7 +1139,7 @@
 \coordinate (buck3v3_out_coord) at ([yshift=-0.2cm]buck3v3.east);
 \coordinate (stereocam_3v3_junction) at ([xshift=1.64cm]buck3v3_out_coord);
 % Route from stereocam left, down to the 3V3 buck output line
-\draw[power line] (stereocam_3v3_in) -- ++(-0.4cm,0) |- (stereocam_3v3_junction);
+\draw[power line] (stereocam_3v3_in) -- ++(-0.4cm,0) -| (stereocam_3v3_junction);
 \draw[power line] (buck3v3_out_coord) -- (stereocam_3v3_junction);
 \fill[powercolor] (stereocam_3v3_junction) circle (3pt);
 
@@ -1227,7 +1232,7 @@
 \draw[data line] (sonar1_trig -| trig_bus_x) -- (sonar7_trig -| trig_bus_x);
 
 % Connect Pi5 Trig Data to sonar trig bus
-\coordinate (pi5_trig) at ([yshift=-0.2cm]pi5.east);
+\coordinate (pi5_trig) at ([yshift=-0.6cm]pi5.east);
 \draw[data line] (pi5_trig) -- (pi5_trig -| trig_bus_x);
 \fill[datacolor] (pi5_trig -| trig_bus_x) circle (3pt);
 
@@ -1235,7 +1240,7 @@
 \draw[data line] (sonar1_echo -| echo_bus_x) -- (sonar7_echo -| echo_bus_x);
 
 % Connect Pi5 Echo Data to sonar echo bus
-\coordinate (pi5_echo) at ([yshift=-0.6cm]pi5.east);
+\coordinate (pi5_echo) at ([yshift=-1.0cm]pi5.east);
 \draw[data line] (pi5_echo) -- (pi5_echo -| echo_bus_x);
 
 % ============================================================================
@@ -1282,8 +1287,8 @@
 % ============================================================================
 \coordinate (stereocam_scl) at ([yshift=0.0cm]stereocameras.east);
 \coordinate (stereocam_sda) at ([yshift=-0.4cm]stereocameras.east);
-\coordinate (pi5_sda) at ([yshift=0.6cm]pi5.east);
-\coordinate (pi5_scl) at ([yshift=0.2cm]pi5.east);
+\coordinate (pi5_sda) at ([yshift=1.0cm]pi5.east);
+\coordinate (pi5_scl) at ([yshift=0.6cm]pi5.east);
 
 % Connect SCL - go right from stereo camera, down to pi5 scl level, then left to pi5
 \draw[data line] (stereocam_scl) -- ([xshift=3.7cm]stereocam_scl) -- ([xshift=3.7cm]stereocam_scl |- pi5_scl) -- (pi5_scl);
@@ -1458,43 +1463,6 @@
 \node[anchor=west] at ([xshift=2.1cm, yshift=-2.4cm]legendbox.center) {SBC};
 \node[mcu block, minimum width=1.2cm, minimum height=0.5cm, anchor=west] at ([xshift=0.7cm, yshift=-2.9cm]legendbox.center) {};
 \node[anchor=west] at ([xshift=2.1cm, yshift=-2.9cm]legendbox.center) {MCU};
-
-% ============================================================================
-% BACKGROUND GRID - fills the content bounding box exactly
-% Grid: x from -17 to 32, y from -33 to 6
-% Labels in margin area outside grid
-% ============================================================================
-
-% Draw grid in background layer
-\begin{scope}[on background layer]
-    % Draw grid with integer boundaries
-    \draw[step=0.1cm, gray!15, very thin] (-17, -32) grid (20, 6);
-    \draw[step=1cm, gray!30, thin] (-17, -32) grid (20, 6);
-
-    % Y-axis labels (left side) - 0.1 increments, angled
-    \foreach \y in {-320,-319,...,60} {
-        \pgfmathsetmacro{\yval}{\y/10}
-        \node[anchor=east, font=\tiny, gray!70, rotate=45, scale=0.25] at (-17.1, \yval) {\pgfmathprintnumber[fixed, precision=1]{\yval}};
-    }
-
-    % Y-axis labels (right side) - 0.1 increments, angled
-    \foreach \y in {-320,-319,...,60} {
-        \pgfmathsetmacro{\yval}{\y/10}
-        \node[anchor=west, font=\tiny, gray!70, rotate=-45, scale=0.25] at (20.1, \yval) {\pgfmathprintnumber[fixed, precision=1]{\yval}};
-    }
-
-    % X-axis labels (bottom) - 0.1 increments, angled
-    \foreach \x in {-170,-169,...,200} {
-        \pgfmathsetmacro{\xval}{\x/10}
-        \node[anchor=north east, font=\tiny, gray!70, rotate=45, scale=0.25] at (\xval, -32.1) {\pgfmathprintnumber[fixed, precision=1]{\xval}};
-    }
-
-    % X-axis labels (top) - 0.1 increments, angled
-    \foreach \x in {-170,-169,...,200} {
-        \pgfmathsetmacro{\xval}{\x/10}
-        \node[anchor=south west, font=\tiny, gray!70, rotate=45, scale=0.25] at (\xval, 6.1) {\pgfmathprintnumber[fixed, precision=1]{\xval}};
-    }
-\end{scope}
 
 \end{tikzpicture}
 
