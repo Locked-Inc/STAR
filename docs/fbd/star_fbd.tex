@@ -380,25 +380,25 @@
 
 % ============================================================================
 % IMU (Module - Steel Blue)
-% Left: 2 labels (3V3 In, Ground), Right: 4 labels (SCL, Reset, Int, SDA)
-% max = 4 -> Height = 1.2 + 4*0.4 = 2.8cm
+% Left: 1 label (3V3 In), Right: 5 labels (Int, Reset, SCL, SDA, Ground)
+% max = 5 -> Height = 1.2 + 5*0.4 = 3.2cm
 % Stacked on top of Stereo Cameras
 % ============================================================================
-\node[module block, minimum width=4.5cm, minimum height=2.8cm, anchor=south] (imu) at ([yshift=0.5cm]stereocameras.north) {};
+\node[module block, minimum width=4.5cm, minimum height=3.2cm, anchor=south] (imu) at ([yshift=0.5cm]stereocameras.north) {};
 
 % Title: 0.4cm from top
 \node[block title] at ([yshift=-0.4cm]imu.north) {IMU};
 
-% Left labels (N=2): at 0.2, -0.6 to spread them out
-\node[port left] at ([xshift=0.4cm, yshift=0.2cm]imu.west) {3V3 In};
-\node[port left] at ([xshift=0.4cm, yshift=-0.6cm]imu.west) {Ground};
+% Left labels (N=1): aligned with Int on right side
+\node[port left] at ([xshift=0.4cm, yshift=0.4cm]imu.west) {3V3 In};
 
-% Right labels (N=4): H/2 - 1.2 = 1.4 - 1.2 = 0.2cm, then 0.4cm apart
-% Labels at: 0.2, -0.2, -0.6, -1.0 cm
-\node[port right] at ([xshift=-0.4cm, yshift=0.2cm]imu.east) {SCL};
-\node[port right] at ([xshift=-0.4cm, yshift=-0.2cm]imu.east) {Reset};
-\node[port right] at ([xshift=-0.4cm, yshift=-0.6cm]imu.east) {Int};
-\node[port right] at ([xshift=-0.4cm, yshift=-1.0cm]imu.east) {SDA};
+% Right labels (N=5): Int, Reset, SCL, SDA, Ground (top down)
+% Labels at: 0.4, 0.0, -0.4, -0.8, -1.2 cm
+\node[port right] at ([xshift=-0.4cm, yshift=0.4cm]imu.east) {Int};
+\node[port right] at ([xshift=-0.4cm, yshift=0.0cm]imu.east) {Reset};
+\node[port right] at ([xshift=-0.4cm, yshift=-0.4cm]imu.east) {SCL};
+\node[port right] at ([xshift=-0.4cm, yshift=-0.8cm]imu.east) {SDA};
+\node[port right] at ([xshift=-0.4cm, yshift=-1.2cm]imu.east) {Ground};
 
 % ============================================================================
 % MOTOR DRIVER (IC - Green)
@@ -1277,10 +1277,13 @@
 % Vertical 3V3 bus line connecting all sonars (sonar1 at top to sonar7 at bottom)
 \draw[power line] (sonar1_3v3 -| pwr3v3_bus_x) -- (sonar7_3v3 -| pwr3v3_bus_x);
 
-% Connect sonar1 3V3 bus to Stereo Cameras 3V3 In (go left 0.4cm past stereo camera, then down)
-\coordinate (stereocam_3v3_corner) at ([xshift=-0.4cm]stereocam_3v3_in |- sonar1_3v3);
-\draw[power line] (sonar1_3v3 -| pwr3v3_bus_x) -- (stereocam_3v3_corner) -- (stereocam_3v3_corner |- stereocam_3v3_in) -- (stereocam_3v3_in);
-\fill[powercolor] (stereocam_3v3_corner |- stereocam_3v3_in) circle (3pt);
+% Connect sonar1 3V3 bus to Stereo Cameras 3V3 In (go up 0.4cm above IMU, then left, then down)
+\coordinate (imu_3v3_above) at ([yshift=0.4cm]imu.north);
+\coordinate (pwr3v3_vertical_x) at ([xshift=-0.4cm]imu.west);
+\coordinate (stereocam_3v3_corner) at (pwr3v3_vertical_x |- imu_3v3_above);
+% Route: sonar bus -> up to imu_3v3_above level -> left to stereocam_3v3_corner -> down to stereocam level -> right to stereocam
+\coordinate (sonar1_3v3_top) at (pwr3v3_bus_x |- imu_3v3_above);
+\draw[power line] (sonar1_3v3 -| pwr3v3_bus_x) -- (sonar1_3v3_top) -- (stereocam_3v3_corner) -- (pwr3v3_vertical_x |- stereocam_3v3_in) -- (stereocam_3v3_in);
 
 % ============================================================================
 % Stereo Cameras SCL/SDA to Pi5 SCL/SDA
@@ -1291,10 +1294,44 @@
 \coordinate (pi5_scl) at ([yshift=0.6cm]pi5.east);
 
 % Connect SCL - go right from stereo camera, down to pi5 scl level, then left to pi5
-\draw[data line] (stereocam_scl) -- ([xshift=3.7cm]stereocam_scl) -- ([xshift=3.7cm]stereocam_scl |- pi5_scl) -- (pi5_scl);
+\draw[data line] (stereocam_scl) -- ([xshift=3.5cm]stereocam_scl) -- ([xshift=3.5cm]stereocam_scl |- pi5_scl) -- (pi5_scl);
 
 % Connect SDA - go right from stereo camera, down to pi5 sda level, then left to pi5
-\draw[data line] (stereocam_sda) -- ([xshift=3.3cm]stereocam_sda) -- ([xshift=3.3cm]stereocam_sda |- pi5_sda) -- (pi5_sda);
+\draw[data line] (stereocam_sda) -- ([xshift=3.1cm]stereocam_sda) -- ([xshift=3.1cm]stereocam_sda |- pi5_sda) -- (pi5_sda);
+
+% ============================================================================
+% IMU Connections
+% ============================================================================
+% IMU port coordinates (right side: Int, Reset, SCL, SDA, Ground)
+\coordinate (imu_int) at ([yshift=0.4cm]imu.east);
+\coordinate (imu_reset) at ([yshift=0.0cm]imu.east);
+\coordinate (imu_scl) at ([yshift=-0.4cm]imu.east);
+\coordinate (imu_sda) at ([yshift=-0.8cm]imu.east);
+\coordinate (imu_gnd) at ([yshift=-1.2cm]imu.east);
+\coordinate (imu_3v3_in) at ([yshift=0.4cm]imu.west);
+
+% Pi5 IMU port coordinates
+\coordinate (pi5_imu_reset) at ([yshift=0.2cm]pi5.east);
+\coordinate (pi5_imu_int) at ([yshift=-0.2cm]pi5.east);
+
+% IMU Int to Pi5 IMU Int - route right, down to Pi5 level, left to Pi5
+\draw[data line] (imu_int) -- ([xshift=4.3cm]imu_int) -- ([xshift=4.3cm]imu_int |- pi5_imu_int) -- (pi5_imu_int);
+
+% IMU Reset to Pi5 IMU Reset - route right, down to Pi5 level, left to Pi5
+\draw[data line] (imu_reset) -- ([xshift=3.9cm]imu_reset) -- ([xshift=3.9cm]imu_reset |- pi5_imu_reset) -- (pi5_imu_reset);
+
+% IMU SCL to Pi5 SCL bus (join with stereo camera SCL line)
+\draw[data line] (imu_scl) -- ([xshift=3.5cm]imu_scl) -- ([xshift=3.5cm]stereocam_scl);
+
+% IMU SDA to Pi5 SDA bus (join with stereo camera SDA line)
+\draw[data line] (imu_sda) -- ([xshift=3.1cm]imu_sda) -- ([xshift=3.1cm]stereocam_sda);
+
+% IMU Ground to ground bus (join at stereo camera/lidar ground junction)
+\coordinate (stereocam_gnd_junction) at (stereocam_ground -| lidar_gnd_step1);
+\draw[ground line] (imu_gnd) -- (imu_gnd -| lidar_gnd_step1) -- (stereocam_gnd_junction);
+
+% IMU 3V3 In - connect to 3V3 power bus (go left, then up to horizontal line 0.4cm above IMU)
+\draw[power line] (imu_3v3_in) -- (pwr3v3_vertical_x |- imu_3v3_in) -- (stereocam_3v3_corner);
 
 % ============================================================================
 % I2C CONNECTIONS (SDA/SCL) - right side routing
