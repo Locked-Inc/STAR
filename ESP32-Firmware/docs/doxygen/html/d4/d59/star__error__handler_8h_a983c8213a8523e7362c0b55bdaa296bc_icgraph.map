@@ -1,0 +1,42 @@
+<map id="star_error_interface_cleanup" name="star_error_interface_cleanup">
+<area shape="rect" id="Node000001" title="Clean up an error interface that may own its handler." alt="" coords="928,248,1061,289"/>
+<area shape="rect" id="Node000002" href="$d2/d58/star__bms__bq7850_8c.html#a02709f23d96dc7f7c34b7a23f86888fc" title="Deinitialize BQ7850 BMS device handle." alt="" coords="709,5,871,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="983,232,969,190,948,139,918,88,900,64,878,44,863,34,863,29,882,40,903,61,923,85,953,136,974,188,988,234"/>
+<area shape="rect" id="Node000003" href="$d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="716,55,864,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="977,233,962,201,940,164,912,126,878,95,858,84,858,78,882,91,916,123,944,161,966,199,982,235"/>
+<area shape="rect" id="Node000004" href="$de/de2/star__sensor__hcsr04_8c.html#a47cb2059d503f6428dc165b881c6f79f" title="Deinitialize HC&#45;SR04 sensor." alt="" coords="722,104,858,145"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="965,236,927,197,879,159,858,148,858,143,881,155,930,193,970,237"/>
+<area shape="rect" id="Node000011" href="$de/de2/star__sensor__hcsr04_8c.html#afd5878b21fda797877bd29036adcbd58" title="Initialize HC&#45;SR04 sensor." alt="" coords="710,169,870,195"/>
+<area shape="poly" id="edge12_Node000001_Node000011" title=" " alt="" coords="944,240,879,210,845,198,845,193,881,205,949,241"/>
+<area shape="rect" id="Node000012" href="$d1/dfc/star__sensor__bno055__bmp280_8c.html#acb593dfc30474b45f2b4807406441b4f" title="Deinitialize 10&#45;DOF IMU." alt="" coords="712,219,868,260"/>
+<area shape="poly" id="edge14_Node000001_Node000012" title=" " alt="" coords="910,257,869,253,868,248,915,257"/>
+<area shape="rect" id="Node000013" href="$d1/dfc/star__sensor__bno055__bmp280_8c.html#abef5a4f32095d020c6dddc96d6bbdd5d" title="Initialize 10&#45;DOF IMU (BNO055 + BMP280)." alt="" coords="700,284,880,310"/>
+<area shape="poly" id="edge15_Node000001_Node000013" title=" " alt="" coords="910,281,881,287,880,282,915,279"/>
+<area shape="rect" id="Node000014" href="$d7/df2/star__sensor__mpu6050_8c.html#ae98f107b4b0856a04b0613f630f4f7f1" title="Deinitialize MPU6050 and release resources." alt="" coords="715,334,864,374"/>
+<area shape="poly" id="edge16_Node000001_Node000014" title=" " alt="" coords="940,295,881,325,852,336,851,331,879,320,935,297"/>
+<area shape="rect" id="Node000015" href="$d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="703,399,876,424"/>
+<area shape="poly" id="edge17_Node000001_Node000015" title=" " alt="" coords="972,300,933,347,908,370,881,388,855,401,853,396,879,384,905,365,929,344,967,303"/>
+<area shape="rect" id="Node000016" href="$d3/df7/star__sensor__pca9685_8c.html#abf4b004f9ee13b89446c5f5b268ebcf6" title="Deinitialize PCA9685 PWM controller handle." alt="" coords="131,435,276,476"/>
+<area shape="poly" id="edge18_Node000001_Node000016" title=" " alt="" coords="983,302,968,339,946,376,917,411,881,439,832,457,764,469,684,475,597,477,420,473,276,464,276,459,420,468,597,472,684,470,764,463,830,452,879,434,914,408,942,373,963,336,979,305"/>
+<area shape="rect" id="Node000017" href="$d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="705,500,874,526"/>
+<area shape="poly" id="edge20_Node000001_Node000017" title=" " alt="" coords="985,302,971,345,949,393,920,441,882,483,849,502,847,497,878,479,915,438,945,391,966,343,981,306"/>
+<area shape="rect" id="Node000005" href="$de/dd4/sensor__task_8c.html#a50bf939b7ee7d05f4a59c83f74bbc8d7" title=" " alt="" coords="497,116,652,142"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="704,127,653,130,652,125,709,126"/>
+<area shape="rect" id="Node000010" href="$de/dd4/sensor__task_8c.html#afa22a6110eba0db527b95b8e2ce3a746" title=" " alt="" coords="504,165,645,191"/>
+<area shape="poly" id="edge10_Node000004_Node000010" title=" " alt="" coords="705,146,630,167,629,162,710,144"/>
+<area shape="rect" id="Node000006" href="$de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="324,165,449,191"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="506,147,440,167,437,162,510,145"/>
+<area shape="rect" id="Node000009" href="$de/dd4/sensor__task_8c.html#a28fe4002be0e81d2cf72876adc92445b" title="Stop sensor management task." alt="" coords="324,116,449,142"/>
+<area shape="poly" id="edge8_Node000005_Node000009" title=" " alt="" coords="479,130,450,131,448,126,484,128"/>
+<area shape="rect" id="Node000007" href="$d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="135,165,272,191"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="306,179,273,181,271,176,311,177"/>
+<area shape="rect" id="Node000008" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,443,83,468"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="189,206,55,444,50,441,185,204"/>
+<area shape="poly" id="edge9_Node000009_Node000007" title=" " alt="" coords="320,148,255,167,253,162,324,145"/>
+<area shape="poly" id="edge11_Node000010_Node000006" title=" " alt="" coords="486,179,451,181,449,176,491,177"/>
+<area shape="poly" id="edge13_Node000011_Node000010" title=" " alt="" coords="692,181,646,182,645,177,697,180"/>
+<area shape="poly" id="edge19_Node000016_Node000008" title=" " alt="" coords="112,457,84,458,82,453,117,454"/>
+<area shape="rect" id="Node000018" href="$d0/d29/main_8c.html#ad6745a540d038c1266117bbcc686713b" title=" " alt="" coords="324,500,449,526"/>
+<area shape="poly" id="edge21_Node000017_Node000018" title=" " alt="" coords="687,513,449,515,449,510,692,513"/>
+<area shape="poly" id="edge22_Node000018_Node000008" title=" " alt="" coords="306,511,222,506,130,490,75,472,75,466,131,485,223,500,311,510"/>
+</map>

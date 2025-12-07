@@ -23,15 +23,17 @@ static const uint32_t s_dht22_mutex_timeout_ms = 5000;
 /* Timing parameters (microseconds) - use constants for type safety
  * Some constants are defined for documentation purposes and future use.
  * The __attribute__((unused)) suppresses warnings for intentionally unused constants. */
-static const uint32_t s_timing_start_low_us __attribute__((unused))     = 18000; /* Start signal low (18ms) */
-static const uint32_t s_timing_start_high_us                            = 40;    /* Start signal high */
-static const uint32_t s_timing_response_low_us                          = 80;    /* Sensor response low */
-static const uint32_t s_timing_response_high_us                         = 80;    /* Sensor response high */
-static const uint32_t s_timing_bit_start_us                             = 50;    /* Bit start low */
-static const uint32_t s_timing_bit_0_high_us __attribute__((unused))    = 28;    /* Bit 0 high (26-28us) */
-static const uint32_t s_timing_bit_1_high_us                            = 70;    /* Bit 1 high (70us) */
-static const uint32_t s_timing_bit_threshold_us                         = 40;    /* 0/1 threshold */
-static const uint32_t s_timing_timeout_us                               = 100;   /* Signal change timeout */
+static const uint32_t s_timing_start_low_us __attribute__((unused)) =
+  18000;                                              /* Start signal low (18ms) */
+static const uint32_t s_timing_start_high_us    = 40; /* Start signal high */
+static const uint32_t s_timing_response_low_us  = 80; /* Sensor response low */
+static const uint32_t s_timing_response_high_us = 80; /* Sensor response high */
+static const uint32_t s_timing_bit_start_us     = 50; /* Bit start low */
+static const uint32_t s_timing_bit_0_high_us __attribute__((unused)) =
+  28;                                                  /* Bit 0 high (26-28us) */
+static const uint32_t s_timing_bit_1_high_us    = 70;  /* Bit 1 high (70us) */
+static const uint32_t s_timing_bit_threshold_us = 40;  /* 0/1 threshold */
+static const uint32_t s_timing_timeout_us       = 100; /* Signal change timeout */
 
 /* Data format - use constants for type safety */
 static const uint32_t s_dht22_data_bits  = 40; /* Total bits: 16 humidity + 16 temp + 8 checksum */

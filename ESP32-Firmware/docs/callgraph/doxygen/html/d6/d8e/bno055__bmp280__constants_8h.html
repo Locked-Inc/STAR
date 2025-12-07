@@ -108,9 +108,12 @@ This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d3/dd0/bno055__bmp280__constants_8h__dep__incl.png" border="0" usemap="#alib_2star__sensor__bno055__bmp280_2include_2bno055__bmp280__constants_8hdep" loading="lazy" alt=""/></div>
 <map name="alib_2star__sensor__bno055__bmp280_2include_2bno055__bmp280__constants_8hdep" id="alib_2star__sensor__bno055__bmp280_2include_2bno055__bmp280__constants_8hdep">
-<area shape="rect" title=" " alt="" coords="7,5,172,61"/>
-<area shape="rect" href="../../d1/dfc/star__sensor__bno055__bmp280_8c.html" title=" " alt="" coords="5,109,174,165"/>
-<area shape="poly" title=" " alt="" coords="91,75,92,109,87,108,88,79"/>
+<area shape="rect" title=" " alt="" coords="85,5,250,61"/>
+<area shape="rect" href="../../d2/df3/star__sensor__bno055__bmp280_8h.html" title="BNO055 + BMP280 10&#45;DOF IMU driver." alt="" coords="5,109,197,165"/>
+<area shape="poly" title=" " alt="" coords="143,72,121,110,117,107,140,76"/>
+<area shape="rect" href="../../d1/dfc/star__sensor__bno055__bmp280_8c.html" title=" " alt="" coords="84,213,252,268"/>
+<area shape="poly" title=" " alt="" coords="195,72,212,108,216,137,212,165,202,191,189,214,185,210,197,189,206,164,211,137,206,110,194,77"/>
+<area shape="poly" title=" " alt="" coords="128,175,152,212,147,212,126,180"/>
 </map>
 </div>
 </div>
@@ -118,6 +121,9 @@ This graph shows which files directly or indirectly include this file:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-enum-members" class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
+<tr class="memitem:ab3204b12f98a918d03b34b19736de8aa" id="r_ab3204b12f98a918d03b34b19736de8aa"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <a class="el" href="#ab3204b12f98a918d03b34b19736de8aaad83bc2ecd836597bf9219bf30b7c8b22">k_bno055_i2c_addr</a> = 0x28
+, <a class="el" href="#ab3204b12f98a918d03b34b19736de8aaaaf646a43cf44e37175c8dfd7b9383076">k_bmp280_i2c_addr</a> = 0x76
+ }</td></tr>
 <tr class="memitem:a59e279407d125a285dd6b72550a9e801" id="r_a59e279407d125a285dd6b72550a9e801"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a59e279407d125a285dd6b72550a9e801">bno055_register_t</a> { <br />
 &#160;&#160;<a class="el" href="#a59e279407d125a285dd6b72550a9e801a00ee572f1dcc6a1de88552f01451ee0a">k_bno055_reg_chip_id</a> = 0x00
 , <a class="el" href="#a59e279407d125a285dd6b72550a9e801aea560c49b133171853e0f1fbe9d36c48">k_bno055_reg_acc_data_x_lsb</a> = 0x08
@@ -200,16 +206,53 @@ Enumerations</h2></td></tr>
 &#160;&#160;<a class="el" href="#a4aec235c8a52e06c89ce2584fd158b4fa535b693fb59c852beb6da23d8facf07b">k_bmp280_filter_x16</a> = 0x04
 <br />
  }</td></tr>
-</table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-var-members" class="groupheader"><a id="var-members" name="var-members"></a>
-Variables</h2></td></tr>
-<tr class="memitem:a724957d3e919af55e37546a79785f211" id="r_a724957d3e919af55e37546a79785f211"><td class="memItemLeft" align="right" valign="top">static const uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a724957d3e919af55e37546a79785f211">BNO055_I2C_ADDR</a> = 0x28</td></tr>
-<tr class="memitem:ac800b06addab29b190e15b8276eb487b" id="r_ac800b06addab29b190e15b8276eb487b"><td class="memItemLeft" align="right" valign="top">static const uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac800b06addab29b190e15b8276eb487b">BMP280_I2C_ADDR</a> = 0x76</td></tr>
-<tr class="memitem:aa03657eb7ff8b14d063be83b7c61a9b1" id="r_aa03657eb7ff8b14d063be83b7c61a9b1"><td class="memItemLeft" align="right" valign="top">static const uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa03657eb7ff8b14d063be83b7c61a9b1">BNO055_CHIP_ID_VALUE</a> = 0xA0</td></tr>
-<tr class="memitem:a2a25a2c83a8f5758aaddfb5f993d523c" id="r_a2a25a2c83a8f5758aaddfb5f993d523c"><td class="memItemLeft" align="right" valign="top">static const uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2a25a2c83a8f5758aaddfb5f993d523c">BMP280_CHIP_ID_VALUE</a> = 0x58</td></tr>
-<tr class="memitem:a52f1db86893fc9df9ceb1a1ec897d6eb" id="r_a52f1db86893fc9df9ceb1a1ec897d6eb"><td class="memItemLeft" align="right" valign="top">static const uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a52f1db86893fc9df9ceb1a1ec897d6eb">BNO055_SYS_TRIGGER_RST</a> = 0x20</td></tr>
+<tr class="memitem:a3f1de499f9668eb35e79645c3e367b79" id="r_a3f1de499f9668eb35e79645c3e367b79"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <a class="el" href="#a3f1de499f9668eb35e79645c3e367b79a91f90fc13ad54e36381b83d2f503c541">k_bno055_chip_id_value</a> = 0xA0
+, <a class="el" href="#a3f1de499f9668eb35e79645c3e367b79a61cf0df003b30fd104c3108dda8e90b3">k_bmp280_chip_id_value</a> = 0x58
+, <a class="el" href="#a3f1de499f9668eb35e79645c3e367b79a30c4ba71e14b576223a91cb0de7c68e1">k_bno055_sys_trigger_rst</a> = 0x20
+ }</td></tr>
 </table>
 <a name="doc-enum-members" id="doc-enum-members"></a><h2 id="header-doc-enum-members" class="groupheader">Enumeration Type Documentation</h2>
+<a id="a3f1de499f9668eb35e79645c3e367b79" name="a3f1de499f9668eb35e79645c3e367b79"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3f1de499f9668eb35e79645c3e367b79">&#9670;&#160;</a></span>anonymous enum</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">anonymous enum</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a3f1de499f9668eb35e79645c3e367b79a91f90fc13ad54e36381b83d2f503c541" name="a3f1de499f9668eb35e79645c3e367b79a91f90fc13ad54e36381b83d2f503c541"></a>k_bno055_chip_id_value&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a3f1de499f9668eb35e79645c3e367b79a61cf0df003b30fd104c3108dda8e90b3" name="a3f1de499f9668eb35e79645c3e367b79a61cf0df003b30fd104c3108dda8e90b3"></a>k_bmp280_chip_id_value&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="a3f1de499f9668eb35e79645c3e367b79a30c4ba71e14b576223a91cb0de7c68e1" name="a3f1de499f9668eb35e79645c3e367b79a30c4ba71e14b576223a91cb0de7c68e1"></a>k_bno055_sys_trigger_rst&#160;</td><td class="fielddoc"></td></tr>
+</table>
+
+<p class="definition">Definition at line <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00102">102</a> of file <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html">bno055_bmp280_constants.h</a>.</p>
+
+</div>
+</div>
+<a id="ab3204b12f98a918d03b34b19736de8aa" name="ab3204b12f98a918d03b34b19736de8aa"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ab3204b12f98a918d03b34b19736de8aa">&#9670;&#160;</a></span>anonymous enum</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">anonymous enum</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ab3204b12f98a918d03b34b19736de8aaad83bc2ecd836597bf9219bf30b7c8b22" name="ab3204b12f98a918d03b34b19736de8aaad83bc2ecd836597bf9219bf30b7c8b22"></a>k_bno055_i2c_addr&#160;</td><td class="fielddoc"></td></tr>
+<tr><td class="fieldname"><a id="ab3204b12f98a918d03b34b19736de8aaaaf646a43cf44e37175c8dfd7b9383076" name="ab3204b12f98a918d03b34b19736de8aaaaf646a43cf44e37175c8dfd7b9383076"></a>k_bmp280_i2c_addr&#160;</td><td class="fielddoc"></td></tr>
+</table>
+
+<p class="definition">Definition at line <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00014">14</a> of file <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html">bno055_bmp280_constants.h</a>.</p>
+
+</div>
+</div>
 <a id="a4aec235c8a52e06c89ce2584fd158b4f" name="a4aec235c8a52e06c89ce2584fd158b4f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a4aec235c8a52e06c89ce2584fd158b4f">&#9670;&#160;</a></span>bmp280_filter_t</h2>
 
@@ -229,7 +272,7 @@ Variables</h2></td></tr>
 <tr><td class="fieldname"><a id="a4aec235c8a52e06c89ce2584fd158b4fa535b693fb59c852beb6da23d8facf07b" name="a4aec235c8a52e06c89ce2584fd158b4fa535b693fb59c852beb6da23d8facf07b"></a>k_bmp280_filter_x16&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00089">89</a> of file <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html">bno055_bmp280_constants.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00092">92</a> of file <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html">bno055_bmp280_constants.h</a>.</p>
 
 </div>
 </div>
@@ -250,7 +293,7 @@ Variables</h2></td></tr>
 <tr><td class="fieldname"><a id="a591c10d85466fc2af5058a2af914635ea25a4f5673e200dd09773af61e99a417e" name="a591c10d85466fc2af5058a2af914635ea25a4f5673e200dd09773af61e99a417e"></a>k_bmp280_mode_normal&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00074">74</a> of file <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html">bno055_bmp280_constants.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00077">77</a> of file <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html">bno055_bmp280_constants.h</a>.</p>
 
 </div>
 </div>
@@ -274,7 +317,7 @@ Variables</h2></td></tr>
 <tr><td class="fieldname"><a id="ad674bdb9eb28622db9242d97bf57549bac9209cf2d0b65ad02686a18b9db2cdb0" name="ad674bdb9eb28622db9242d97bf57549bac9209cf2d0b65ad02686a18b9db2cdb0"></a>k_bmp280_oversample_x16&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00080">80</a> of file <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html">bno055_bmp280_constants.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00083">83</a> of file <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html">bno055_bmp280_constants.h</a>.</p>
 
 </div>
 </div>
@@ -304,7 +347,7 @@ Variables</h2></td></tr>
 <tr><td class="fieldname"><a id="a91d079e8630e7284c3e806dacadc1462a4796c4ccdb413a8fa1d8f69335c99640" name="a91d079e8630e7284c3e806dacadc1462a4796c4ccdb413a8fa1d8f69335c99640"></a>k_bmp280_reg_temp_xlsb&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00058">58</a> of file <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html">bno055_bmp280_constants.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00061">61</a> of file <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html">bno055_bmp280_constants.h</a>.</p>
 
 </div>
 </div>
@@ -335,7 +378,7 @@ Variables</h2></td></tr>
 <tr><td class="fieldname"><a id="a954d51cb5bd3bf62c7904f5893a5b3d0a1b4929dd727ad3a5abc0a3faea03c62d" name="a954d51cb5bd3bf62c7904f5893a5b3d0a1b4929dd727ad3a5abc0a3faea03c62d"></a>k_bno055_mode_ndof&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00034">34</a> of file <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html">bno055_bmp280_constants.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00037">37</a> of file <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html">bno055_bmp280_constants.h</a>.</p>
 
 </div>
 </div>
@@ -356,7 +399,7 @@ Variables</h2></td></tr>
 <tr><td class="fieldname"><a id="a729c8c278fc35522cf73f2502826fa74a9d7403a82262e469ad7d5ca84f6a1f26" name="a729c8c278fc35522cf73f2502826fa74a9d7403a82262e469ad7d5ca84f6a1f26"></a>k_bno055_pwr_mode_suspend&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00051">51</a> of file <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html">bno055_bmp280_constants.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00054">54</a> of file <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html">bno055_bmp280_constants.h</a>.</p>
 
 </div>
 </div>
@@ -387,132 +430,7 @@ Variables</h2></td></tr>
 <tr><td class="fieldname"><a id="a59e279407d125a285dd6b72550a9e801accc106f796792968122dbaf60d3aae3d" name="a59e279407d125a285dd6b72550a9e801accc106f796792968122dbaf60d3aae3d"></a>k_bno055_reg_sys_trigger&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00017">17</a> of file <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html">bno055_bmp280_constants.h</a>.</p>
-
-</div>
-</div>
-<a name="doc-var-members" id="doc-var-members"></a><h2 id="header-doc-var-members" class="groupheader">Variable Documentation</h2>
-<a id="a2a25a2c83a8f5758aaddfb5f993d523c" name="a2a25a2c83a8f5758aaddfb5f993d523c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2a25a2c83a8f5758aaddfb5f993d523c">&#9670;&#160;</a></span>BMP280_CHIP_ID_VALUE</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">const uint8_t BMP280_CHIP_ID_VALUE = 0x58</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00099">99</a> of file <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html">bno055_bmp280_constants.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00031">star_sensor_imu_10dof_init()</a>.</p>
-
-</div>
-</div>
-<a id="ac800b06addab29b190e15b8276eb487b" name="ac800b06addab29b190e15b8276eb487b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac800b06addab29b190e15b8276eb487b">&#9670;&#160;</a></span>BMP280_I2C_ADDR</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">const uint8_t BMP280_I2C_ADDR = 0x76</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00014">14</a> of file <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html">bno055_bmp280_constants.h</a>.</p>
-
-</div>
-</div>
-<a id="aa03657eb7ff8b14d063be83b7c61a9b1" name="aa03657eb7ff8b14d063be83b7c61a9b1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa03657eb7ff8b14d063be83b7c61a9b1">&#9670;&#160;</a></span>BNO055_CHIP_ID_VALUE</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">const uint8_t BNO055_CHIP_ID_VALUE = 0xA0</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00098">98</a> of file <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html">bno055_bmp280_constants.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00031">star_sensor_imu_10dof_init()</a>.</p>
-
-</div>
-</div>
-<a id="a724957d3e919af55e37546a79785f211" name="a724957d3e919af55e37546a79785f211"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a724957d3e919af55e37546a79785f211">&#9670;&#160;</a></span>BNO055_I2C_ADDR</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">const uint8_t BNO055_I2C_ADDR = 0x28</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00013">13</a> of file <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html">bno055_bmp280_constants.h</a>.</p>
-
-</div>
-</div>
-<a id="a52f1db86893fc9df9ceb1a1ec897d6eb" name="a52f1db86893fc9df9ceb1a1ec897d6eb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a52f1db86893fc9df9ceb1a1ec897d6eb">&#9670;&#160;</a></span>BNO055_SYS_TRIGGER_RST</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">const uint8_t BNO055_SYS_TRIGGER_RST = 0x20</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00102">102</a> of file <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html">bno055_bmp280_constants.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html#l00020">20</a> of file <a class="el" href="../../d6/d8e/bno055__bmp280__constants_8h_source.html">bno055_bmp280_constants.h</a>.</p>
 
 </div>
 </div>

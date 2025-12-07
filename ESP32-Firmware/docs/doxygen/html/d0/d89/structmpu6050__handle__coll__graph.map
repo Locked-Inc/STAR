@@ -45,6 +45,6 @@
 <area shape="poly" id="edge24_Node000002_Node000019" title=" " alt="" coords="638,45,659,49,821,73,816,75,658,54,639,50"/>
 <area shape="rect" id="Node000020" href="$d1/d3c/structstar__pin__interface.html" title="Pin validator interface &#45; abstract operations for pin management." alt="" coords="506,93,630,119"/>
 <area shape="poly" id="edge25_Node000002_Node000020" title=" " alt="" coords="644,108,716,108,791,102,843,93,839,95,792,108,717,113,646,113"/>
-<area shape="rect" id="Node000021" href="$d7/d19/structmpu6050__config__t.html" title=" " alt="" coords="820,120,947,145"/>
+<area shape="rect" id="Node000021" href="$d7/d19/structmpu6050__config__t.html" title="MPU6050 configuration structure." alt="" coords="820,120,947,145"/>
 <area shape="poly" id="edge26_Node000001_Node000021" title=" " alt="" coords="962,121,1038,106,1097,92,1093,94,1039,112,964,125"/>
 </map>

@@ -12,6 +12,8 @@ var structasync__operation =
     [ "length", "d1/d8d/structasync__operation.html#a04bf2cdc533d8674c8b6cfc4800ff396", null ],
     [ "manager", "d1/d8d/structasync__operation.html#a2bca3c3df78253f037081521a2628628", null ],
     [ "next", "d1/d8d/structasync__operation.html#ae995c315048dbd1649b1b234f59da423", null ],
+    [ "owns_data", "d1/d8d/structasync__operation.html#a7ab5a32bebae4a3fab07df0ce0d77f7c", null ],
+    [ "owns_tx_data", "d1/d8d/structasync__operation.html#a643f29e4f99955ecc2bc461592091bb1", null ],
     [ "params", "d1/d8d/structasync__operation.html#a285a862309a13be77ac6fa469b8c763d", null ],
     [ "priority", "d1/d8d/structasync__operation.html#aa8ee87b6714775693ad14463203a9b0b", null ],
     [ "result", "d1/d8d/structasync__operation.html#a278ef6b5cb9a63ed3043d6dc10298eb1", null ],

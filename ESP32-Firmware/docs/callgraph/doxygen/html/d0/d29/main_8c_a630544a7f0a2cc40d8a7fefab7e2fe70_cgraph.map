@@ -1,107 +1,108 @@
 <map id="app_main" name="app_main">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,481,83,507"/>
-<area shape="rect" id="Node000002" href="$d7/d82/star__error__handler_8c.html#a4fbf7f5d1c862bd91f3ece2812b45b03" title="Create and initialize an error handler with custom configuration." alt="" coords="150,12,290,53"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="44,481,53,401,70,281,95,162,111,113,129,79,152,59,150,64,133,82,116,116,100,163,75,282,58,401,49,481"/>
-<area shape="rect" id="Node000004" href="$d7/d82/star__error__handler_8c.html#a1632e40ebb7509611a0513c0e6bdbb46" title="Destroy an error handler created by error_handler_create_default() or error_handler_create_custom()." alt="" coords="616,127,762,168"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="45,480,54,419,72,332,97,248,112,215,129,193,154,183,198,174,323,161,602,148,598,152,323,166,199,179,156,188,132,198,116,218,102,249,77,333,60,420,50,481"/>
-<area shape="rect" id="Node000006" href="$d7/d82/star__error__handler_8c.html#adb10b93a13ce155a3e5c2aa2f4b2d543" title="Create an interface adapter for the error handler." alt="" coords="600,235,778,260"/>
-<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="48,480,76,421,99,388,129,359,164,340,211,322,331,293,464,271,586,256,582,260,464,276,332,298,212,327,166,344,132,363,103,391,80,424,53,482"/>
-<area shape="rect" id="Node000013" href="$d0/d29/main_8c.html#a06b72c3ee71e25fc9eac1ce50d7b08de" title=" " alt="" coords="156,444,284,485"/>
-<area shape="poly" id="edge12_Node000001_Node000013" title=" " alt="" coords="81,486,142,476,138,480,85,490"/>
-<area shape="rect" id="Node000041" href="$d0/d29/main_8c.html#ad6745a540d038c1266117bbcc686713b" title=" " alt="" coords="158,208,282,234"/>
-<area shape="poly" id="edge28_Node000001_Node000041" title=" " alt="" coords="43,481,49,438,62,376,88,310,106,279,129,251,147,239,145,243,133,255,110,282,92,312,67,378,54,439,49,481"/>
-<area shape="rect" id="Node000051" href="$d2/dad/star__pin__validator_8c.html#a13730ef0e296c0ffeea5d60b7f04d9cf" title="Create an interface adapter for the pin validator." alt="" coords="132,509,308,535"/>
-<area shape="poly" id="edge32_Node000001_Node000051" title=" " alt="" coords="81,498,122,505,118,508,84,502"/>
-<area shape="rect" id="Node000059" href="$db/d0d/shared__data_8c.html#a526fabc6460559565b8d0d335a52e8e4" title="Deinitialize shared data context." alt="" coords="155,559,285,584"/>
-<area shape="poly" id="edge36_Node000001_Node000059" title=" " alt="" coords="62,505,95,525,132,545,148,552,143,555,130,550,92,530,64,510"/>
-<area shape="rect" id="Node000060" href="$db/d0d/shared__data_8c.html#a6ed1290970cd157c513516e4bd885524" title="Initialize shared data context." alt="" coords="162,608,278,634"/>
-<area shape="poly" id="edge37_Node000001_Node000060" title=" " alt="" coords="52,505,85,550,107,574,132,595,149,604,144,606,129,599,103,578,81,553,53,510"/>
-<area shape="rect" id="Node000063" href="$db/d0d/shared__data_8c.html#a9d8c42ebca66c2f49f4287dc9a090766" title="Mark system as ready for operation." alt="" coords="131,658,309,698"/>
-<area shape="poly" id="edge39_Node000001_Node000063" title=" " alt="" coords="49,505,79,572,102,611,132,644,137,648,132,650,129,648,98,614,74,574,50,510"/>
-<area shape="rect" id="Node000064" href="$db/d0d/shared__data_8c.html#a23648ab4af453796a9acc58b2fc309a8" title="Set system state." alt="" coords="136,723,304,764"/>
-<area shape="poly" id="edge40_Node000001_Node000064" title=" " alt="" coords="47,505,56,546,71,600,95,657,112,684,133,708,138,713,132,715,129,712,108,688,91,660,66,601,51,547,47,510"/>
-<area shape="rect" id="Node000065" href="$d7/d60/star__bus__manager_8c.html#a238abc1b4d0e4b98520e4227ec121b42" title="Deinitialize the bus manager and all managed I2C bus configurations." alt="" coords="137,373,303,399"/>
-<area shape="poly" id="edge41_Node000001_Node000065" title=" " alt="" coords="60,479,129,431,179,404,176,409,132,435,65,482"/>
-<area shape="rect" id="Node000068" href="$d7/d60/star__bus__manager_8c.html#a2623a57b97d09ed1a3b0a0c012cd6119" title="Initialize an I2C bus manager instance." alt="" coords="144,788,296,814"/>
-<area shape="poly" id="edge44_Node000001_Node000068" title=" " alt="" coords="45,505,50,557,61,629,72,668,87,706,107,742,133,774,138,779,132,780,129,777,102,745,82,709,67,670,56,630,45,558,45,510"/>
-<area shape="rect" id="Node000069" href="$d3/df7/star__sensor__pca9685_8c.html#abf4b004f9ee13b89446c5f5b268ebcf6" title="Deinitialize PCA9685 PWM controller handle." alt="" coords="147,92,292,133"/>
-<area shape="poly" id="edge45_Node000001_Node000069" title=" " alt="" coords="42,481,43,423,52,336,63,287,78,238,100,192,129,150,141,140,139,145,133,153,104,194,83,240,68,288,57,336,48,423,47,481"/>
-<area shape="rect" id="Node000071" href="$d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="152,940,288,966"/>
-<area shape="poly" id="edge48_Node000001_Node000071" title=" " alt="" coords="47,505,74,640,98,733,133,825,165,881,200,927,194,928,161,884,128,827,93,734,69,641,47,510"/>
-<area shape="rect" id="Node000003" href="$d7/d82/star__error__handler_8c.html#a331853a63aa2729d5a2a368c72aff6f2" title="Initialize an error handler." alt="" coords="390,5,511,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="288,26,377,21,373,25,291,31"/>
-<area shape="rect" id="Node000005" href="$d7/d82/star__error__handler_8c.html#a3a7dedd3275ece0e7f6029a11464c27d" title="Deinitialize an error handler and release resources." alt="" coords="837,124,972,150"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="761,141,824,140,819,142,763,146"/>
-<area shape="rect" id="Node000007" href="$d7/d82/star__error__handler_8c.html#ab75fd15cd19b87cccc39e074b1de6ea7" title=" " alt="" coords="841,304,968,345"/>
-<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="750,258,787,269,848,297,843,298,785,274,752,264"/>
-<area shape="rect" id="Node000009" href="$d7/d82/star__error__handler_8c.html#ac6d32823473f15198e0768fc7dd77ea2" title=" " alt="" coords="834,174,975,214"/>
-<area shape="poly" id="edge8_Node000006_Node000009" title=" " alt="" coords="743,232,821,214,816,217,745,236"/>
-<area shape="rect" id="Node000011" href="$d7/d82/star__error__handler_8c.html#a901211322493d6630ce2a7e9bb9cf8a4" title=" " alt="" coords="837,239,972,280"/>
-<area shape="poly" id="edge10_Node000006_Node000011" title=" " alt="" coords="778,250,824,254,819,256,780,255"/>
-<area shape="rect" id="Node000008" href="$d7/d82/star__error__handler_8c.html#a079645c8c76bf328f63c7d7a9ecc1697" title="Check if a retry should be attempted." alt="" coords="1023,312,1180,338"/>
-<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="967,322,1010,324,1005,326,969,327"/>
-<area shape="rect" id="Node000010" href="$d7/d82/star__error__handler_8c.html#acb049bacf435c371692461a57f434d41" title="Record an error and manage retry/reset logic." alt="" coords="1032,174,1171,214"/>
-<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="974,192,1019,193,1014,195,976,197"/>
-<area shape="rect" id="Node000012" href="$d7/d82/star__error__handler_8c.html#adcd860e401f2ab4c5c907c87fdbba7d0" title="Reset the error handler state." alt="" coords="1036,239,1168,280"/>
-<area shape="poly" id="edge11_Node000011_Node000012" title=" " alt="" coords="971,257,1022,259,1017,260,973,262"/>
-<area shape="rect" id="Node000014" href="$de/d98/star__bus__config_8c.html#a856acf68aec88c1a3203d65ec656fd3c" title="Create a new GPIO bus configuration." alt="" coords="357,423,544,448"/>
-<area shape="poly" id="edge13_Node000013_Node000014" title=" " alt="" coords="283,455,344,448,340,451,286,459"/>
-<area shape="rect" id="Node000022" href="$de/d98/star__bus__config_8c.html#ae2c74c07526c11cc15773c858681f8d4" title="Create a new I2C bus/device configuration." alt="" coords="360,472,541,498"/>
-<area shape="poly" id="edge17_Node000013_Node000022" title=" " alt="" coords="283,468,347,474,343,477,285,473"/>
-<area shape="rect" id="Node000029" href="$de/d98/star__bus__config_8c.html#a194581e2eb82227a022f04b9057db839" title="Destroy a bus configuration and free all associated resources." alt="" coords="369,373,532,399"/>
-<area shape="poly" id="edge20_Node000013_Node000029" title=" " alt="" coords="267,442,356,408,380,402,376,405,358,413,270,446"/>
-<area shape="rect" id="Node000031" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#aea453f5595346f56e5018f91516f4a77" title="Initialize DHT22 bus." alt="" coords="384,521,518,547"/>
-<area shape="poly" id="edge23_Node000013_Node000031" title=" " alt="" coords="280,483,358,508,383,516,378,518,356,513,282,488"/>
-<area shape="rect" id="Node000036" href="$d7/d60/star__bus__manager_8c.html#a3a0dc80007e321a8697c399e0f0bf559" title="Add a new I2C bus/device configuration to the manager." alt="" coords="358,571,543,596"/>
-<area shape="poly" id="edge26_Node000013_Node000036" title=" " alt="" coords="284,480,311,495,326,511,335,527,343,543,359,557,366,563,361,564,355,562,339,546,330,530,322,514,307,499,285,485"/>
-<area shape="rect" id="Node000015" href="$de/d98/star__bus__config_8c.html#a83c2bd0044ce80e0be65ebba3c1a3cc1" title="Clean up and free memory for a bus configuration structure. Does NOT deinitialize the hardware/driver..." alt="" coords="608,334,770,374"/>
-<area shape="poly" id="edge14_Node000014_Node000015" title=" " alt="" coords="510,420,543,409,591,385,612,379,608,382,593,390,545,414,513,424"/>
-<area shape="rect" id="Node000016" href="$de/d98/star__bus__config_8c.html#a15ff256a9a257629ad970a5359136a59" title="Create a generic bus configuration structure and allocate memory." alt="" coords="608,464,770,505"/>
-<area shape="poly" id="edge15_Node000014_Node000016" title=" " alt="" coords="516,446,595,464,590,466,517,452"/>
-<area shape="rect" id="Node000017" href="$da/d8b/star__bus__gpio_8c.html#a0fff90f319ba2507d0e6fdce4620278c" title="Initialize default GPIO operations function pointers within a config structure. Typically called inte..." alt="" coords="626,399,752,440"/>
-<area shape="poly" id="edge16_Node000014_Node000017" title=" " alt="" coords="544,427,613,423,608,426,546,432"/>
-<area shape="poly" id="edge18_Node000022_Node000016" title=" " alt="" coords="540,482,594,484,590,486,542,487"/>
-<area shape="rect" id="Node000023" href="$dd/d1a/star__bus__i2c_8c.html#a15f5262f71b692e21744f6db14863c93" title="Initialize default I2C operations function pointers within a config structure. Typically called inter..." alt="" coords="592,529,786,555"/>
-<area shape="poly" id="edge19_Node000022_Node000023" title=" " alt="" coords="507,496,620,524,615,526,508,501"/>
-<area shape="poly" id="edge21_Node000029_Node000015" title=" " alt="" coords="531,373,594,366,590,369,534,378"/>
-<area shape="rect" id="Node000030" href="$de/d98/star__bus__config_8c.html#a7698bd213b1044dfc1d6e92d879ca03e" title="Deinitialize the bus/device associated with this configuration." alt="" coords="613,284,765,310"/>
-<area shape="poly" id="edge22_Node000029_Node000030" title=" " alt="" coords="513,371,543,358,557,349,566,340,576,330,591,320,610,314,606,317,594,325,580,334,570,343,560,353,546,363,516,375"/>
-<area shape="rect" id="Node000032" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#ad84a1750c76d3cacd25aa7711b5fbdb5" title="Get DHT22 state for a bus (thread&#45;safe)." alt="" coords="632,628,746,654"/>
-<area shape="poly" id="edge24_Node000031_Node000032" title=" " alt="" coords="518,543,546,556,562,571,571,586,579,601,594,615,619,628,614,629,591,619,575,604,566,589,558,574,543,560,519,549"/>
-<area shape="rect" id="Node000035" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#af3c6d2f2ae3b906ff2590c579ae42e8f" title="Set GPIO output high." alt="" coords="651,579,727,604"/>
-<area shape="poly" id="edge25_Node000031_Node000035" title=" " alt="" coords="507,545,638,578,633,580,508,550"/>
-<area shape="rect" id="Node000037" href="$d7/d60/star__bus__manager_8c.html#a1ca47ab4ab3f7448d603776d092e4a24" title="Register all pins for a single bus configuration." alt="" coords="596,677,782,703"/>
-<area shape="poly" id="edge27_Node000036_Node000037" title=" " alt="" coords="523,594,546,605,562,620,571,636,579,650,594,664,603,670,597,671,591,668,575,654,566,638,558,623,543,610,523,600"/>
-<area shape="rect" id="Node000042" href="$d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="366,208,535,234"/>
-<area shape="poly" id="edge29_Node000041_Node000042" title=" " alt="" coords="281,219,353,219,349,222,284,223"/>
-<area shape="poly" id="edge30_Node000042_Node000004" title=" " alt="" coords="494,205,608,171,604,175,497,210"/>
-<area shape="poly" id="edge31_Node000042_Node000006" title=" " alt="" coords="535,228,587,235,582,237,537,233"/>
-<area shape="rect" id="Node000052" href="$d2/dad/star__pin__validator_8c.html#acae8e3a477362b1b5413e878d31738bf" title="Adapter function for register_pin interface." alt="" coords="389,669,512,695"/>
-<area shape="poly" id="edge33_Node000051_Node000052" title=" " alt="" coords="292,533,311,544,323,558,330,573,336,602,340,630,347,643,359,656,377,669,372,670,355,660,343,646,335,632,330,603,325,575,319,561,307,548,293,538"/>
-<area shape="rect" id="Node000055" href="$d2/dad/star__pin__validator_8c.html#afae88fbbf79a18a7785317791efeb3d9" title="Adapter function for unregister_pin interface." alt="" coords="382,719,519,744"/>
-<area shape="poly" id="edge34_Node000051_Node000055" title=" " alt="" coords="294,533,311,544,327,565,334,586,336,627,337,667,344,686,359,706,371,716,365,716,355,709,339,689,332,668,330,627,329,587,322,567,307,548,295,538"/>
-<area shape="rect" id="Node000057" href="$d2/dad/star__pin__validator_8c.html#a60f41f737709bc866a5de20157a75964" title="Adapter function for validate interface." alt="" coords="400,620,501,646"/>
-<area shape="poly" id="edge35_Node000051_Node000057" title=" " alt="" coords="288,533,311,544,327,560,335,576,343,592,359,607,388,621,382,623,355,611,339,595,331,579,323,563,307,548,289,538"/>
-<area shape="rect" id="Node000061" href="$db/d0d/shared__data_8c.html#ae29202794acf587ca9a3ad09199b048f" title=" " alt="" coords="384,768,518,794"/>
-<area shape="poly" id="edge38_Node000060_Node000061" title=" " alt="" coords="278,627,311,644,323,658,330,673,335,701,341,729,347,742,359,755,372,765,367,766,355,759,343,745,335,731,330,702,325,674,319,661,307,648,279,632"/>
-<area shape="poly" id="edge43_Node000065_Node000029" title=" " alt="" coords="302,384,356,385,351,388,305,388"/>
-<area shape="rect" id="Node000066" href="$d7/d60/star__bus__manager_8c.html#a908af8666d49aae610fd2ccc0a635133" title="Unregister all pins for a single bus configuration." alt="" coords="387,308,514,349"/>
-<area shape="poly" id="edge42_Node000065_Node000066" title=" " alt="" coords="273,371,374,346,370,350,276,375"/>
-<area shape="poly" id="edge46_Node000069_Node000004" title=" " alt="" coords="291,97,411,84,478,84,545,92,589,103,633,120,628,122,588,108,544,97,478,90,411,90,295,101"/>
-<area shape="rect" id="Node000070" href="$d3/df7/star__sensor__pca9685_8c.html#ad672ac0514a17e7b1b4d4d9cd9c93c58" title="Set MODE1 register bits." alt="" coords="366,107,535,132"/>
-<area shape="poly" id="edge47_Node000069_Node000070" title=" " alt="" coords="291,113,353,115,349,118,294,117"/>
-<area shape="rect" id="Node000072" href="$d0/d9c/dht22__task_8c.html#ad5fc3ca549615b42dcfbb1926e7e5cb0" title="Initialize DHT22 monitoring task." alt="" coords="392,1015,510,1040"/>
-<area shape="poly" id="edge49_Node000071_Node000072" title=" " alt="" coords="255,964,358,1001,382,1010,377,1010,356,1006,254,969"/>
-<area shape="rect" id="Node000098" href="$d0/d9c/dht22__task_8c.html#a8128cca1924c2cd16b8f1979d4b45199" title="Stop DHT22 monitoring task." alt="" coords="392,1064,509,1090"/>
-<area shape="poly" id="edge50_Node000071_Node000098" title=" " alt="" coords="236,964,288,1007,322,1030,358,1050,380,1061,375,1061,356,1055,319,1035,285,1011,235,969"/>
-<area shape="rect" id="Node000099" href="$d0/d81/led__task_8c.html#a9d18fbbcd8adbccf0f8d2288e901f77c" title="Initialize LED display task." alt="" coords="399,1113,502,1139"/>
-<area shape="poly" id="edge51_Node000071_Node000099" title=" " alt="" coords="230,963,280,1030,316,1068,358,1100,386,1115,381,1114,356,1104,313,1072,276,1033,228,968"/>
-<area shape="rect" id="Node000120" href="$d0/d81/led__task_8c.html#a28b03bd16ef898607267014458e3724d" title="Stop LED display task." alt="" coords="400,817,502,843"/>
-<area shape="poly" id="edge52_Node000071_Node000120" title=" " alt="" coords="234,938,285,895,319,872,356,852,387,842,382,845,358,857,322,877,288,900,237,942"/>
-<area shape="rect" id="Node000121" href="$de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="388,867,513,892"/>
-<area shape="poly" id="edge53_Node000071_Node000121" title=" " alt="" coords="254,937,356,901,382,896,377,898,358,906,257,942"/>
-<area shape="rect" id="Node000138" href="$de/dd4/sensor__task_8c.html#a28fe4002be0e81d2cf72876adc92445b" title="Stop sensor management task." alt="" coords="388,916,513,942"/>
-<area shape="poly" id="edge54_Node000071_Node000138" title=" " alt="" coords="288,943,375,936,370,938,289,948"/>
-<area shape="rect" id="Node000139" href="$dc/d96/watchdog__task_8c.html#a1047c0564b9275f58ba51b089d9c5377" title="Start the system watchdog task." alt="" coords="380,965,522,991"/>
-<area shape="poly" id="edge55_Node000071_Node000139" title=" " alt="" coords="288,958,366,968,361,969,289,963"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,509,83,534"/>
+<area shape="rect" id="Node000002" href="$d7/d82/star__error__handler_8c.html#a4fbf7f5d1c862bd91f3ece2812b45b03" title="Create and initialize an error handler with custom configuration." alt="" coords="150,5,290,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="43,508,51,421,66,288,91,154,108,100,129,63,141,53,139,57,133,66,113,102,97,155,71,289,56,421,49,509"/>
+<area shape="rect" id="Node000004" href="$d7/d82/star__error__handler_8c.html#a1632e40ebb7509611a0513c0e6bdbb46" title="Destroy an error handler created by error_handler_create_default() or error_handler_create_custom()." alt="" coords="834,160,980,201"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="44,508,52,436,69,330,94,226,110,185,129,157,168,124,210,99,256,79,303,66,353,58,404,54,507,59,607,76,701,99,782,126,848,153,843,154,780,131,699,105,606,81,506,64,404,59,354,63,305,71,257,84,213,103,171,129,133,161,115,187,99,228,74,331,58,436,49,509"/>
+<area shape="rect" id="Node000006" href="$d7/d82/star__error__handler_8c.html#adb10b93a13ce155a3e5c2aa2f4b2d543" title="Create an interface adapter for the error handler." alt="" coords="600,286,778,312"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="48,508,76,449,99,415,129,386,182,353,240,328,300,309,362,297,423,289,481,285,587,287,582,290,481,290,423,294,363,302,302,314,242,333,185,358,132,390,103,419,80,452,53,509"/>
+<area shape="rect" id="Node000013" href="$d0/d29/main_8c.html#a06b72c3ee71e25fc9eac1ce50d7b08de" title=" " alt="" coords="156,472,284,513"/>
+<area shape="poly" id="edge12_Node000001_Node000013" title=" " alt="" coords="81,513,142,504,138,508,85,517"/>
+<area shape="rect" id="Node000041" href="$d0/d29/main_8c.html#ad6745a540d038c1266117bbcc686713b" title=" " alt="" coords="158,236,282,261"/>
+<area shape="poly" id="edge27_Node000001_Node000041" title=" " alt="" coords="43,508,49,465,62,404,88,337,106,306,129,278,147,266,145,271,133,282,110,309,92,340,67,405,54,466,49,509"/>
+<area shape="rect" id="Node000052" href="$d2/dad/star__pin__validator_8c.html#a13730ef0e296c0ffeea5d60b7f04d9cf" title="Create an interface adapter for the pin validator." alt="" coords="132,537,308,562"/>
+<area shape="poly" id="edge33_Node000001_Node000052" title=" " alt="" coords="81,526,122,532,118,535,84,530"/>
+<area shape="rect" id="Node000060" href="$db/d0d/shared__data_8c.html#a526fabc6460559565b8d0d335a52e8e4" title="Deinitialize shared data context." alt="" coords="155,586,285,612"/>
+<area shape="poly" id="edge37_Node000001_Node000060" title=" " alt="" coords="62,532,95,553,132,573,148,580,143,582,130,577,92,558,64,537"/>
+<area shape="rect" id="Node000061" href="$db/d0d/shared__data_8c.html#a6ed1290970cd157c513516e4bd885524" title="Initialize shared data context." alt="" coords="162,636,278,661"/>
+<area shape="poly" id="edge38_Node000001_Node000061" title=" " alt="" coords="52,532,85,577,107,602,132,622,149,632,144,634,129,627,103,605,81,581,53,538"/>
+<area shape="rect" id="Node000064" href="$db/d0d/shared__data_8c.html#a9d8c42ebca66c2f49f4287dc9a090766" title="Mark system as ready for operation." alt="" coords="131,685,309,726"/>
+<area shape="poly" id="edge40_Node000001_Node000064" title=" " alt="" coords="49,532,79,600,102,638,132,672,137,676,132,678,129,676,98,641,74,602,50,538"/>
+<area shape="rect" id="Node000065" href="$db/d0d/shared__data_8c.html#a23648ab4af453796a9acc58b2fc309a8" title="Set system state." alt="" coords="136,751,304,791"/>
+<area shape="poly" id="edge41_Node000001_Node000065" title=" " alt="" coords="47,532,56,573,71,627,95,685,112,712,133,736,138,741,132,742,129,740,108,715,91,687,66,629,51,574,47,538"/>
+<area shape="rect" id="Node000066" href="$d7/d60/star__bus__manager_8c.html#a238abc1b4d0e4b98520e4227ec121b42" title="Deinitialize the bus manager and all managed I2C bus configurations." alt="" coords="137,401,303,426"/>
+<area shape="poly" id="edge42_Node000001_Node000066" title=" " alt="" coords="60,507,129,458,179,432,176,436,132,463,65,510"/>
+<area shape="rect" id="Node000069" href="$d7/d60/star__bus__manager_8c.html#a2623a57b97d09ed1a3b0a0c012cd6119" title="Initialize an I2C bus manager instance." alt="" coords="144,816,296,841"/>
+<area shape="poly" id="edge45_Node000001_Node000069" title=" " alt="" coords="45,532,50,585,61,656,72,695,87,734,107,770,133,801,138,806,132,808,129,805,102,773,82,736,67,697,56,657,45,585,45,538"/>
+<area shape="rect" id="Node000070" href="$d3/df7/star__sensor__pca9685_8c.html#abf4b004f9ee13b89446c5f5b268ebcf6" title="Deinitialize PCA9685 PWM controller handle." alt="" coords="147,171,292,211"/>
+<area shape="poly" id="edge46_Node000001_Node000070" title=" " alt="" coords="42,508,45,456,56,380,66,338,81,296,102,256,129,221,136,217,134,221,133,225,106,259,86,298,71,339,61,381,50,457,48,508"/>
+<area shape="rect" id="Node000072" href="$d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="152,968,288,993"/>
+<area shape="poly" id="edge49_Node000001_Node000072" title=" " alt="" coords="47,532,74,667,98,760,133,853,165,908,200,955,194,956,161,911,128,855,93,762,69,668,47,538"/>
+<area shape="rect" id="Node000003" href="$d7/d82/star__error__handler_8c.html#a331853a63aa2729d5a2a368c72aff6f2" title="Initialize an error handler." alt="" coords="390,13,511,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="288,23,377,24,373,27,291,28"/>
+<area shape="rect" id="Node000005" href="$d7/d82/star__error__handler_8c.html#aaaf152f965c4c4e01c241f0801ce561a" title="Deinitialize an error handler and release resources." alt="" coords="1040,168,1174,193"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="979,178,1026,179,1021,181,981,183"/>
+<area shape="rect" id="Node000007" href="$d7/d82/star__error__handler_8c.html#ab75fd15cd19b87cccc39e074b1de6ea7" title=" " alt="" coords="844,291,970,331"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="778,301,831,306,826,308,779,306"/>
+<area shape="rect" id="Node000009" href="$d7/d82/star__error__handler_8c.html#ac6d32823473f15198e0768fc7dd77ea2" title=" " alt="" coords="836,356,978,397"/>
+<area shape="poly" id="edge8_Node000006_Node000009" title=" " alt="" coords="750,310,787,320,850,349,844,350,785,326,751,315"/>
+<area shape="rect" id="Node000011" href="$d7/d82/star__error__handler_8c.html#a901211322493d6630ce2a7e9bb9cf8a4" title=" " alt="" coords="840,225,974,266"/>
+<area shape="poly" id="edge10_Node000006_Node000011" title=" " alt="" coords="743,283,827,264,823,267,746,288"/>
+<area shape="rect" id="Node000008" href="$d7/d82/star__error__handler_8c.html#a079645c8c76bf328f63c7d7a9ecc1697" title="Check if a retry should be attempted." alt="" coords="1028,298,1185,324"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="970,308,1015,310,1010,312,971,314"/>
+<area shape="rect" id="Node000010" href="$d7/d82/star__error__handler_8c.html#acb049bacf435c371692461a57f434d41" title="Record an error and manage retry/reset logic." alt="" coords="1037,356,1176,397"/>
+<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="977,374,1024,375,1019,377,979,379"/>
+<area shape="rect" id="Node000012" href="$d7/d82/star__error__handler_8c.html#adcd860e401f2ab4c5c907c87fdbba7d0" title="Reset the error handler state." alt="" coords="1040,225,1173,266"/>
+<area shape="poly" id="edge11_Node000011_Node000012" title=" " alt="" coords="973,243,1027,245,1022,247,975,248"/>
+<area shape="rect" id="Node000014" href="$de/d98/star__bus__config_8c.html#a856acf68aec88c1a3203d65ec656fd3c" title="Create a new GPIO bus configuration." alt="" coords="357,549,544,574"/>
+<area shape="poly" id="edge13_Node000013_Node000014" title=" " alt="" coords="280,511,358,535,383,543,378,545,356,540,282,516"/>
+<area shape="rect" id="Node000022" href="$de/d98/star__bus__config_8c.html#ae2c74c07526c11cc15773c858681f8d4" title="Create a new I2C bus/device configuration." alt="" coords="360,500,541,525"/>
+<area shape="poly" id="edge17_Node000013_Node000022" title=" " alt="" coords="283,495,347,502,343,505,285,500"/>
+<area shape="rect" id="Node000029" href="$de/d98/star__bus__config_8c.html#a194581e2eb82227a022f04b9057db839" title="Destroy a bus configuration and free all associated resources." alt="" coords="369,401,532,426"/>
+<area shape="poly" id="edge20_Node000013_Node000029" title=" " alt="" coords="267,470,356,435,380,429,376,433,358,440,270,474"/>
+<area shape="rect" id="Node000031" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#aea453f5595346f56e5018f91516f4a77" title="Initialize DHT22 bus." alt="" coords="384,598,518,624"/>
+<area shape="poly" id="edge23_Node000013_Node000031" title=" " alt="" coords="284,508,311,522,326,539,335,555,343,570,359,585,372,593,367,595,355,589,339,574,330,557,322,542,307,526,285,513"/>
+<area shape="rect" id="Node000036" href="$d7/d60/star__bus__manager_8c.html#a3a0dc80007e321a8697c399e0f0bf559" title="Add a new I2C bus/device configuration to the manager." alt="" coords="358,450,543,476"/>
+<area shape="poly" id="edge26_Node000013_Node000036" title=" " alt="" coords="283,482,345,475,341,478,286,486"/>
+<area shape="rect" id="Node000015" href="$de/d98/star__bus__config_8c.html#a83c2bd0044ce80e0be65ebba3c1a3cc1" title="Clean up and free memory for a bus configuration structure. Does NOT deinitialize the hardware/driver..." alt="" coords="608,435,770,475"/>
+<area shape="poly" id="edge14_Node000014_Node000015" title=" " alt="" coords="519,546,543,535,557,524,566,512,576,499,591,486,604,481,600,484,594,491,580,503,571,515,561,528,546,540,522,550"/>
+<area shape="rect" id="Node000016" href="$de/d98/star__bus__config_8c.html#a15ff256a9a257629ad970a5359136a59" title="Create a generic bus configuration structure and allocate memory." alt="" coords="608,500,770,541"/>
+<area shape="poly" id="edge15_Node000014_Node000016" title=" " alt="" coords="527,546,595,536,591,538,530,551"/>
+<area shape="rect" id="Node000017" href="$da/d8b/star__bus__gpio_8c.html#a0fff90f319ba2507d0e6fdce4620278c" title="Initialize default GPIO operations function pointers within a config structure. Typically called inte..." alt="" coords="626,565,752,606"/>
+<area shape="poly" id="edge16_Node000014_Node000017" title=" " alt="" coords="544,569,613,577,608,579,546,574"/>
+<area shape="poly" id="edge18_Node000022_Node000016" title=" " alt="" coords="540,513,594,516,590,518,542,518"/>
+<area shape="rect" id="Node000023" href="$dd/d1a/star__bus__i2c_8c.html#a15f5262f71b692e21744f6db14863c93" title="Initialize default I2C operations function pointers within a config structure. Typically called inter..." alt="" coords="592,385,786,410"/>
+<area shape="poly" id="edge19_Node000022_Node000023" title=" " alt="" coords="522,497,543,486,558,471,566,455,574,437,591,421,604,416,600,419,594,425,579,440,571,457,562,474,546,490,525,501"/>
+<area shape="poly" id="edge21_Node000029_Node000015" title=" " alt="" coords="528,425,595,437,590,439,529,430"/>
+<area shape="rect" id="Node000030" href="$de/d98/star__bus__config_8c.html#a7698bd213b1044dfc1d6e92d879ca03e" title="Deinitialize the bus/device associated with this configuration." alt="" coords="613,336,765,361"/>
+<area shape="poly" id="edge22_Node000029_Node000030" title=" " alt="" coords="501,398,544,386,592,370,619,364,615,367,593,375,545,391,504,402"/>
+<area shape="rect" id="Node000032" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#ad84a1750c76d3cacd25aa7711b5fbdb5" title="Get DHT22 state for a bus (thread&#45;safe)." alt="" coords="632,680,746,705"/>
+<area shape="poly" id="edge24_Node000031_Node000032" title=" " alt="" coords="515,622,546,633,570,650,594,666,620,677,615,678,591,671,567,654,543,637,516,627"/>
+<area shape="rect" id="Node000035" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#af3c6d2f2ae3b906ff2590c579ae42e8f" title="Set GPIO output high." alt="" coords="651,630,727,656"/>
+<area shape="poly" id="edge25_Node000031_Node000035" title=" " alt="" coords="518,617,638,635,633,637,519,623"/>
+<area shape="rect" id="Node000042" href="$d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="366,236,535,261"/>
+<area shape="poly" id="edge28_Node000041_Node000042" title=" " alt="" coords="281,246,353,247,349,250,284,251"/>
+<area shape="poly" id="edge29_Node000042_Node000004" title=" " alt="" coords="535,246,655,239,720,232,785,220,844,205,840,208,786,226,721,237,655,244,537,250"/>
+<area shape="poly" id="edge30_Node000042_Node000006" title=" " alt="" coords="514,259,613,281,608,284,515,264"/>
+<area shape="rect" id="Node000051" href="$d7/d82/star__error__handler_8c.html#a983c8213a8523e7362c0b55bdaa296bc" title="Clean up an error interface that may own its handler." alt="" coords="622,171,756,211"/>
+<area shape="poly" id="edge31_Node000042_Node000051" title=" " alt="" coords="506,233,609,209,605,212,509,237"/>
+<area shape="poly" id="edge32_Node000051_Node000004" title=" " alt="" coords="755,185,821,183,816,186,757,190"/>
+<area shape="rect" id="Node000053" href="$d2/dad/star__pin__validator_8c.html#acae8e3a477362b1b5413e878d31738bf" title="Adapter function for register_pin interface." alt="" coords="389,746,512,772"/>
+<area shape="poly" id="edge34_Node000052_Node000053" title=" " alt="" coords="294,560,311,572,327,592,334,613,336,654,337,695,344,714,359,733,377,747,372,748,355,737,339,717,332,696,330,655,329,614,322,595,307,576,295,566"/>
+<area shape="rect" id="Node000056" href="$d2/dad/star__pin__validator_8c.html#afae88fbbf79a18a7785317791efeb3d9" title="Adapter function for unregister_pin interface." alt="" coords="382,648,519,673"/>
+<area shape="poly" id="edge35_Node000052_Node000056" title=" " alt="" coords="288,561,311,572,327,587,335,604,343,620,359,634,370,642,365,643,355,638,339,623,331,606,323,591,307,576,289,566"/>
+<area shape="rect" id="Node000058" href="$d2/dad/star__pin__validator_8c.html#a60f41f737709bc866a5de20157a75964" title="Adapter function for validate interface." alt="" coords="400,697,501,722"/>
+<area shape="poly" id="edge36_Node000052_Node000058" title=" " alt="" coords="292,560,311,572,323,586,330,600,336,629,340,657,347,671,359,684,388,700,382,702,355,688,343,674,335,659,330,630,325,602,319,589,307,576,293,566"/>
+<area shape="rect" id="Node000062" href="$db/d0d/shared__data_8c.html#ae29202794acf587ca9a3ad09199b048f" title=" " alt="" coords="384,796,518,821"/>
+<area shape="poly" id="edge39_Node000061_Node000062" title=" " alt="" coords="278,654,311,672,323,686,330,700,335,729,341,756,347,770,359,782,372,792,367,793,355,786,343,773,335,758,330,730,325,702,319,689,307,676,279,660"/>
+<area shape="poly" id="edge44_Node000066_Node000029" title=" " alt="" coords="302,411,356,412,351,415,305,416"/>
+<area shape="rect" id="Node000067" href="$d7/d60/star__bus__manager_8c.html#a908af8666d49aae610fd2ccc0a635133" title="Unregister all pins for a single bus configuration." alt="" coords="387,336,514,377"/>
+<area shape="poly" id="edge43_Node000066_Node000067" title=" " alt="" coords="273,398,374,374,370,378,276,402"/>
+<area shape="poly" id="edge48_Node000070_Node000051" title=" " alt="" coords="292,189,609,189,605,193,294,193"/>
+<area shape="rect" id="Node000071" href="$d3/df7/star__sensor__pca9685_8c.html#a26aba8511288f866884e1f5c7d663ee2" title="Set MODE1 register bits." alt="" coords="378,120,523,161"/>
+<area shape="poly" id="edge47_Node000070_Node000071" title=" " alt="" coords="291,173,365,158,361,161,294,177"/>
+<area shape="rect" id="Node000073" href="$d0/d9c/dht22__task_8c.html#ad5fc3ca549615b42dcfbb1926e7e5cb0" title="Initialize DHT22 monitoring task." alt="" coords="392,894,510,920"/>
+<area shape="poly" id="edge50_Node000072_Node000073" title=" " alt="" coords="254,964,356,928,382,923,377,926,358,934,257,969"/>
+<area shape="rect" id="Node000099" href="$d0/d9c/dht22__task_8c.html#a8128cca1924c2cd16b8f1979d4b45199" title="Stop DHT22 monitoring task." alt="" coords="392,944,509,969"/>
+<area shape="poly" id="edge51_Node000072_Node000099" title=" " alt="" coords="288,971,379,963,374,965,289,976"/>
+<area shape="rect" id="Node000100" href="$d0/d81/led__task_8c.html#a9d18fbbcd8adbccf0f8d2288e901f77c" title="Initialize LED display task." alt="" coords="399,993,502,1018"/>
+<area shape="poly" id="edge52_Node000072_Node000100" title=" " alt="" coords="288,985,386,997,381,999,289,990"/>
+<area shape="rect" id="Node000121" href="$d0/d81/led__task_8c.html#a28b03bd16ef898607267014458e3724d" title="Stop LED display task." alt="" coords="400,1042,502,1068"/>
+<area shape="poly" id="edge53_Node000072_Node000121" title=" " alt="" coords="255,991,358,1028,387,1039,382,1039,356,1034,254,996"/>
+<area shape="rect" id="Node000122" href="$de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="388,1092,513,1117"/>
+<area shape="poly" id="edge54_Node000072_Node000122" title=" " alt="" coords="236,991,288,1034,322,1058,358,1078,376,1087,371,1087,356,1083,319,1062,285,1038,235,996"/>
+<area shape="rect" id="Node000139" href="$de/dd4/sensor__task_8c.html#a28fe4002be0e81d2cf72876adc92445b" title="Stop sensor management task." alt="" coords="388,1141,513,1166"/>
+<area shape="poly" id="edge55_Node000072_Node000139" title=" " alt="" coords="230,991,280,1057,316,1095,358,1127,377,1139,371,1138,356,1132,313,1099,276,1061,228,996"/>
+<area shape="rect" id="Node000140" href="$dc/d96/watchdog__task_8c.html#a1047c0564b9275f58ba51b089d9c5377" title="Start the system watchdog task." alt="" coords="380,845,522,870"/>
+<area shape="poly" id="edge56_Node000072_Node000140" title=" " alt="" coords="234,965,285,923,319,899,356,879,373,875,368,877,358,884,322,904,288,927,237,969"/>
 </map>

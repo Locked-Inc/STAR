@@ -2,17 +2,17 @@
 <area shape="rect" id="Node000001" title="Set PWM frequency." alt="" coords="5,47,151,88"/>
 <area shape="rect" id="Node000002" href="$d3/df7/star__sensor__pca9685_8c.html#af172ec2771522a913b761463c8d4828f" title="Internal frequency setting (no initialization check, caller must hold mutex if needed)." alt="" coords="199,47,343,88"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="151,65,185,67,180,68,152,70"/>
-<area shape="rect" id="Node000003" href="$d3/df7/star__sensor__pca9685_8c.html#aa890b42646d44f6b5a11c603658f0afa" title="Read from PCA9685 register." alt="" coords="400,5,527,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="343,46,399,35,394,36,344,52"/>
-<area shape="rect" id="Node000006" href="$d3/df7/star__sensor__pca9685_8c.html#a8e1f1170d3e10e9e1db7beb8f6b12da2" title="Write to PCA9685 register with validation." alt="" coords="398,55,529,80"/>
-<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="343,65,386,67,380,68,344,70"/>
-<area shape="rect" id="Node000008" href="$d3/df7/star__sensor__pca9685_8c.html#a5ad3e5ba04fe061a85c9b16487bb9fef" title="Calculate prescale value for desired frequency." alt="" coords="391,104,536,145"/>
-<area shape="poly" id="edge8_Node000002_Node000008" title=" " alt="" coords="342,86,381,100,376,99,341,91"/>
-<area shape="rect" id="Node000004" href="$dd/d1a/star__bus__i2c_8c.html#a2e9b9baf8a0f8d00a2080963a7efd62f" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="586,5,713,31"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="527,16,573,18,567,19,528,21"/>
-<area shape="rect" id="Node000005" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="763,31,947,56"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="713,23,750,30,744,30,713,29"/>
-<area shape="rect" id="Node000007" href="$dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="584,55,715,80"/>
-<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="529,65,571,67,566,68,529,70"/>
-<area shape="poly" id="edge7_Node000007_Node000005" title=" " alt="" coords="715,57,750,56,744,56,715,63"/>
+<area shape="rect" id="Node000003" href="$d3/df7/star__sensor__pca9685_8c.html#a44e8cb61ed3955aec2b43914cea64860" title="Read from PCA9685 register." alt="" coords="392,5,569,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="343,48,411,34,406,36,344,53"/>
+<area shape="rect" id="Node000006" href="$d3/df7/star__sensor__pca9685_8c.html#a376ab174a0e3ec87903a05730cc84e71" title="Write to PCA9685 register with validation." alt="" coords="391,55,570,80"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="343,65,378,67,373,68,344,70"/>
+<area shape="rect" id="Node000008" href="$d3/df7/star__sensor__pca9685_8c.html#a5ad3e5ba04fe061a85c9b16487bb9fef" title="Calculate prescale value for desired frequency." alt="" coords="408,104,553,145"/>
+<area shape="poly" id="edge8_Node000002_Node000008" title=" " alt="" coords="344,85,396,101,391,101,343,90"/>
+<area shape="rect" id="Node000004" href="$dd/d1a/star__bus__i2c_8c.html#a2e9b9baf8a0f8d00a2080963a7efd62f" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="620,5,747,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="569,16,607,18,601,18,569,21"/>
+<area shape="rect" id="Node000005" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="797,31,981,56"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="747,23,784,30,778,30,747,29"/>
+<area shape="rect" id="Node000007" href="$dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="618,55,749,80"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="571,65,606,67,600,68,571,70"/>
+<area shape="poly" id="edge7_Node000007_Node000005" title=" " alt="" coords="749,57,778,56,784,56,749,63"/>
 </map>

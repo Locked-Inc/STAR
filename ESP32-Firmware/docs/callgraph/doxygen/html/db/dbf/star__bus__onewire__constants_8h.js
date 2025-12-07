@@ -25,8 +25,8 @@ var star__bus__onewire__constants_8h =
       [ "k_onewire_cmd_skip_rom", "db/dbf/star__bus__onewire__constants_8h.html#ae7cab31d85b2319b8da43a27045a3101acbd8cf7641438697874caafc1cd105b6", null ],
       [ "k_onewire_cmd_alarm_search", "db/dbf/star__bus__onewire__constants_8h.html#ae7cab31d85b2319b8da43a27045a3101a1b35ac2d52eff06963f13fc4495ef082", null ]
     ] ],
-    [ "MAX_ONEWIRE_BUSES", "db/dbf/star__bus__onewire__constants_8h.html#a89e75169819d799069a88cb87c15de4c", null ],
-    [ "MAX_PERIPHERAL_BUSES", "db/dbf/star__bus__onewire__constants_8h.html#ad2f446ff293f0f2c764c4d515e9a4af7", null ],
-    [ "ONEWIRE_TIMING_OVERDRIVE", "db/dbf/star__bus__onewire__constants_8h.html#ac57fcaa85fc7f10b00577001d554c724", null ],
-    [ "ONEWIRE_TIMING_STANDARD", "db/dbf/star__bus__onewire__constants_8h.html#a4616f7e266ea911b80df08081044812f", null ]
+    [ "s_max_onewire_buses", "db/dbf/star__bus__onewire__constants_8h.html#aa7bc2ba669fc7174bdece0b17830e1ec", null ],
+    [ "s_max_peripheral_buses", "db/dbf/star__bus__onewire__constants_8h.html#a8b9afaa36239f610197bc74662d265de", null ],
+    [ "s_onewire_timing_overdrive", "db/dbf/star__bus__onewire__constants_8h.html#a8990cb1ce396f9034bf1e70b346f0888", null ],
+    [ "s_onewire_timing_standard", "db/dbf/star__bus__onewire__constants_8h.html#a072793636313296657152f1f0a319951", null ]
 ];

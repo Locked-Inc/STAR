@@ -340,9 +340,7 @@ static void internal_execute_operation(async_operation_t* op)
 
   /* Check if operation exceeded its timeout during execution */
   if (internal_check_timeout(op)) {
-    ESP_LOGW(s_TAG,
-             "Operation exceeded timeout (%" PRIu32 "ms) during execution",
-             op->timeout_ms);
+    ESP_LOGW(s_TAG, "Operation exceeded timeout (%" PRIu32 "ms) during execution", op->timeout_ms);
     result = ESP_ERR_TIMEOUT;
   }
 

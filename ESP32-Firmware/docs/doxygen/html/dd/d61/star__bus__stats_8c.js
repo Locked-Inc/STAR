@@ -24,5 +24,6 @@ var star__bus__stats_8c =
     [ "g_stats_init_spinlock", "dd/d61/star__bus__stats_8c.html#a228b313a25164f10149c5b37eee1000d", null ],
     [ "g_stats_mutex", "dd/d61/star__bus__stats_8c.html#aafb918aaa46d8d412e7221dca12ec4a4", null ],
     [ "g_stats_states", "dd/d61/star__bus__stats_8c.html#a9640a426d4569c01147401a92601293c", null ],
+    [ "s_stats_mutex_timeout_ms", "dd/d61/star__bus__stats_8c.html#a95e79b4cb538e10f78e48603806ceb7c", null ],
     [ "s_TAG", "dd/d61/star__bus__stats_8c.html#a999e3dd103132afd3cd1856f477f2dbd", null ]
 ];

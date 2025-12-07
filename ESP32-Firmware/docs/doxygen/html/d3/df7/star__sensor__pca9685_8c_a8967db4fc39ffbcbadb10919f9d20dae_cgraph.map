@@ -1,16 +1,16 @@
 <map id="star_sensor_pca9685_sleep" name="star_sensor_pca9685_sleep">
 <area shape="rect" id="Node000001" title="Sleep/wake device." alt="" coords="5,23,151,64"/>
-<area shape="rect" id="Node000002" href="$d3/df7/star__sensor__pca9685_8c.html#ad672ac0514a17e7b1b4d4d9cd9c93c58" title="Set MODE1 register bits." alt="" coords="199,31,368,56"/>
+<area shape="rect" id="Node000002" href="$d3/df7/star__sensor__pca9685_8c.html#a26aba8511288f866884e1f5c7d663ee2" title="Set MODE1 register bits." alt="" coords="199,23,343,64"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="151,41,185,43,180,44,151,46"/>
-<area shape="rect" id="Node000003" href="$d3/df7/star__sensor__pca9685_8c.html#aa890b42646d44f6b5a11c603658f0afa" title="Read from PCA9685 register." alt="" coords="418,5,545,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="368,30,405,28,400,29,369,35"/>
-<area shape="rect" id="Node000006" href="$d3/df7/star__sensor__pca9685_8c.html#a8e1f1170d3e10e9e1db7beb8f6b12da2" title="Write to PCA9685 register with validation." alt="" coords="416,55,546,80"/>
-<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="369,51,403,58,398,58,368,56"/>
-<area shape="rect" id="Node000004" href="$dd/d1a/star__bus__i2c_8c.html#a2e9b9baf8a0f8d00a2080963a7efd62f" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="596,5,723,31"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="545,16,583,18,578,18,546,21"/>
-<area shape="rect" id="Node000005" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="773,31,957,56"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="723,23,760,30,754,30,723,29"/>
-<area shape="rect" id="Node000007" href="$dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="594,55,725,80"/>
-<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="547,65,581,67,576,68,547,70"/>
-<area shape="poly" id="edge7_Node000007_Node000005" title=" " alt="" coords="725,57,754,56,760,56,725,63"/>
+<area shape="rect" id="Node000003" href="$d3/df7/star__sensor__pca9685_8c.html#a44e8cb61ed3955aec2b43914cea64860" title="Read from PCA9685 register." alt="" coords="392,5,569,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="343,32,380,30,375,31,344,37"/>
+<area shape="rect" id="Node000006" href="$d3/df7/star__sensor__pca9685_8c.html#a376ab174a0e3ec87903a05730cc84e71" title="Write to PCA9685 register with validation." alt="" coords="391,55,570,80"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="344,49,378,55,373,55,343,54"/>
+<area shape="rect" id="Node000004" href="$dd/d1a/star__bus__i2c_8c.html#a2e9b9baf8a0f8d00a2080963a7efd62f" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="620,5,747,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="569,16,607,18,601,18,569,21"/>
+<area shape="rect" id="Node000005" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="797,31,981,56"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="747,23,784,30,778,30,747,29"/>
+<area shape="rect" id="Node000007" href="$dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="618,55,749,80"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="571,65,606,67,600,68,571,70"/>
+<area shape="poly" id="edge7_Node000007_Node000005" title=" " alt="" coords="749,57,778,56,784,56,749,63"/>
 </map>

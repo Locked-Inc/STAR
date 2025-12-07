@@ -1,0 +1,7 @@
+<map id="internal_get_onewire_state_safe" name="internal_get_onewire_state_safe">
+<area shape="rect" id="Node000001" title="Get 1&#45;Wire state for a bus (thread&#45;safe)." alt="" coords="5,39,146,79"/>
+<area shape="rect" id="Node000002" href="$d9/dd6/star__bus__onewire_8c.html#a1ca358f311abcb5bb498c6df68b556c6" title="Initialize 1&#45;Wire global mutex (thread&#45;safe)." alt="" coords="195,5,334,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="145,44,182,40,177,42,147,49"/>
+<area shape="rect" id="Node000003" href="$d9/dd6/star__bus__onewire_8c.html#aeaca1b0b2a8c0f56d9c5a0a68736af0a" title="Get 1&#45;Wire state for a bus (must be called with mutex held)." alt="" coords="194,71,335,111"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="146,68,182,76,176,77,146,74"/>
+</map>
