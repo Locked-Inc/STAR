@@ -4,8 +4,6 @@ var star__bus__batch_8h =
     [ "star_batch_operation_t", "d9/db0/structstar__batch__operation__t.html", "d9/db0/structstar__batch__operation__t" ],
     [ "star_batch_stats_t", "db/d4e/structstar__batch__stats__t.html", "db/d4e/structstar__batch__stats__t" ],
     [ "STAR_BATCH_CONFIG_DEFAULT", "de/d18/star__bus__batch_8h.html#ae2ffc52be68d4ce8433e4a5762ae4072", null ],
-    [ "STAR_BATCH_DEFAULT_TIMEOUT_MS", "de/d18/star__bus__batch_8h.html#a007d70d47a8f059f2119a2e2a82381cc", null ],
-    [ "STAR_BATCH_MAX_OPERATIONS", "de/d18/star__bus__batch_8h.html#a3994703788817ef5837c77783c6dfcd3", null ],
     [ "star_batch_handle_t", "de/d18/star__bus__batch_8h.html#a13a1ac948f0436812bf37babc5228878", null ],
     [ "star_batch_mode_t", "de/d18/star__bus__batch_8h.html#a15ee3d0b98981174c6db3f21b3fbe352", [
       [ "k_star_batch_mode_sequential", "de/d18/star__bus__batch_8h.html#a15ee3d0b98981174c6db3f21b3fbe352ab2f825f5a3677b26351ac991152ae628", null ],
@@ -32,7 +30,7 @@ var star__bus__batch_8h =
     [ "star_batch_clear", "de/d18/star__bus__batch_8h.html#a017f54844b511af85f04c4e459bac362", null ],
     [ "star_batch_create", "de/d18/star__bus__batch_8h.html#a6cf8eac885dbe55d7efffa0229b50e2e", null ],
     [ "star_batch_execute", "de/d18/star__bus__batch_8h.html#a80ab7c681dec605acb5a862cabe5fe4e", null ],
-    [ "star_batch_free", "de/d18/star__bus__batch_8h.html#a8ca0e41c8f942ad7b1d474cf1b5b3aca", null ],
+    [ "star_batch_free", "de/d18/star__bus__batch_8h.html#a358af22edefa7797ec9ef19bafb91027", null ],
     [ "star_batch_get_operation_count", "de/d18/star__bus__batch_8h.html#a6b0696e5b0c90b2bd8cebd83e8345f6f", null ],
     [ "star_batch_get_operation_result", "de/d18/star__bus__batch_8h.html#a3cd032b4f2687e052f740be24bf0b0a8", null ]
 ];

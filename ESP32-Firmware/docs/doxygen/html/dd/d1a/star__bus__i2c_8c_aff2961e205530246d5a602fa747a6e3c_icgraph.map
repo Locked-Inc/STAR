@@ -1,107 +1,107 @@
 <map id="star_bus_i2c_write" name="star_bus_i2c_write">
-<area shape="rect" id="Node000001" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="943,1102,1073,1128"/>
-<area shape="rect" id="Node000002" href="$d4/db0/star__bus__async_8c.html#a01ee3f118825590cceebdbca4fd6807a" title="Execute an async operation." alt="" coords="452,548,628,573"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1003,1086,996,965,979,796,964,711,946,634,922,572,908,550,893,533,872,523,841,518,762,520,674,533,597,549,594,545,673,528,761,515,842,513,874,518,896,529,912,546,927,570,951,632,970,710,984,796,1002,965,1008,1088"/>
-<area shape="rect" id="Node000012" href="$df/deb/star__bus__batch_8c.html#a83c47362bb84557376a1791c5425f41c" title="Execute a single batch operation." alt="" coords="452,1110,628,1136"/>
-<area shape="poly" id="edge4_Node000001_Node000012" title=" " alt="" coords="1006,1141,998,1249,978,1393,963,1465,945,1529,923,1581,910,1601,896,1616,870,1635,843,1648,817,1656,792,1659,766,1656,740,1647,686,1616,670,1601,656,1580,629,1525,606,1456,586,1380,556,1233,542,1139,543,1134,561,1232,591,1379,611,1454,634,1523,660,1577,674,1597,689,1612,742,1643,767,1650,792,1653,816,1651,841,1643,867,1630,893,1612,906,1598,918,1579,940,1528,958,1463,972,1392,992,1249,1003,1146"/>
-<area shape="rect" id="Node000014" href="$d7/df2/star__sensor__mpu6050_8c.html#a94e36964d8af4357ede57221c09af8bd" title=" " alt="" coords="724,209,858,234"/>
-<area shape="poly" id="edge6_Node000001_Node000014" title=" " alt="" coords="1003,1086,994,978,976,813,943,619,920,520,892,424,870,367,844,314,801,237,801,232,848,311,875,365,897,422,925,518,948,618,981,812,1000,977,1008,1087"/>
-<area shape="rect" id="Node000021" href="$d3/df7/star__sensor__pca9685_8c.html#a8e1f1170d3e10e9e1db7beb8f6b12da2" title="Write to PCA9685 register with validation." alt="" coords="726,436,856,461"/>
-<area shape="poly" id="edge15_Node000001_Node000021" title=" " alt="" coords="1003,1086,994,960,974,781,960,689,941,605,919,536,906,509,893,489,876,474,857,464,856,459,879,470,897,485,911,507,924,534,946,604,965,688,979,780,999,959,1008,1087"/>
-<area shape="rect" id="Node000030" href="$d6/d0b/star__bus__devices_8c.html#a4993839e0d44e271fdfe11069a04aba3" title="Configure ADS1115 ADC." alt="" coords="698,593,884,618"/>
-<area shape="poly" id="edge20_Node000001_Node000030" title=" " alt="" coords="1001,1086,989,986,968,848,953,779,936,717,915,666,893,631,881,622,880,617,897,628,920,663,941,715,958,778,973,847,995,985,1006,1088"/>
-<area shape="rect" id="Node000031" href="$d6/d0b/star__bus__devices_8c.html#af9785de65cc5f08bfeee9713e3dcc11d" title="Read data from AT24C256 EEPROM." alt="" coords="709,642,873,668"/>
-<area shape="poly" id="edge21_Node000001_Node000031" title=" " alt="" coords="1001,1086,987,995,964,873,950,811,933,756,914,711,893,681,873,667,872,662,897,677,918,708,938,754,955,810,970,872,992,994,1006,1088"/>
-<area shape="rect" id="Node000032" href="$d6/d0b/star__bus__devices_8c.html#ae022f772cd154d6502cc99944cd431fb" title="Write data to AT24C256 EEPROM." alt="" coords="708,692,874,717"/>
-<area shape="poly" id="edge22_Node000001_Node000032" title=" " alt="" coords="1005,1086,1002,1014,987,918,973,867,954,817,927,771,893,730,875,718,874,712,896,726,931,768,958,815,979,865,993,917,1007,1014,1010,1087"/>
-<area shape="rect" id="Node000033" href="$d6/d0b/star__bus__devices_8c.html#a5e6352db9d72f181d41f20a9a20816e4" title="Configure BMP280 operating mode and oversampling." alt="" coords="699,741,883,766"/>
-<area shape="poly" id="edge23_Node000001_Node000033" title=" " alt="" coords="1003,1086,997,1023,980,940,966,897,947,854,923,815,893,781,877,770,876,764,896,777,927,812,952,852,971,895,986,939,1002,1022,1008,1087"/>
-<area shape="rect" id="Node000034" href="$df/df6/star__bus__debug_8c.html#a5116fce5f7256f32830e4f8019c69a7f" title="Verify register read/write operation." alt="" coords="720,791,862,831"/>
-<area shape="poly" id="edge24_Node000001_Node000034" title=" " alt="" coords="1000,1086,990,1036,971,971,939,903,918,872,893,845,863,827,862,821,896,841,922,869,944,900,976,969,995,1035,1005,1088"/>
-<area shape="rect" id="Node000035" href="$df/df6/star__bus__debug_8c.html#a7e0773902965e8548fa890a88bd37752" title="Write register value." alt="" coords="704,855,878,881"/>
-<area shape="poly" id="edge25_Node000001_Node000035" title=" " alt="" coords="998,1087,986,1045,965,992,934,939,915,915,893,894,878,884,877,879,896,890,919,911,939,936,970,990,991,1043,1003,1088"/>
-<area shape="rect" id="Node000036" href="$d6/d0b/star__bus__devices_8c.html#a3747838d07db068959f18debab212bb3" title="Set DS3231 time." alt="" coords="702,905,880,930"/>
-<area shape="poly" id="edge26_Node000001_Node000036" title=" " alt="" coords="994,1087,979,1055,957,1015,929,976,893,944,876,934,875,929,896,939,933,973,962,1013,984,1052,999,1088"/>
-<area shape="rect" id="Node000037" href="$de/db1/star__bus__i2c__dma_8c.html#aae80743fb443e9a629270ccdb9e1eb8d" title="Write data to I2C device using DMA." alt="" coords="710,954,872,980"/>
-<area shape="poly" id="edge27_Node000001_Node000037" title=" " alt="" coords="988,1089,949,1040,923,1015,893,993,872,983,871,978,896,989,926,1011,953,1037,993,1089"/>
-<area shape="rect" id="Node000038" href="$d6/d0b/star__bus__devices_8c.html#ab5dc97bebd5648b5d0a67f833867b47c" title="Configure MPU6050 ranges and filters." alt="" coords="695,1003,887,1029"/>
-<area shape="poly" id="edge28_Node000001_Node000038" title=" " alt="" coords="976,1093,939,1067,894,1043,865,1032,864,1027,896,1038,942,1063,982,1092"/>
-<area shape="rect" id="Node000039" href="$d6/d0b/star__bus__devices_8c.html#a236149a5c7a9a1d096a573096bb6e249" title="Initialize MPU6050 IMU." alt="" coords="713,1053,869,1078"/>
-<area shape="poly" id="edge29_Node000001_Node000039" title=" " alt="" coords="931,1099,852,1082,850,1077,936,1097"/>
-<area shape="rect" id="Node000040" href="$d6/d0b/star__bus__devices_8c.html#a7922a5cd92ec2ab0b6d56baca9aefacc" title="Write byte to PCF8574 I/O expander." alt="" coords="711,1102,871,1128"/>
-<area shape="poly" id="edge30_Node000001_Node000040" title=" " alt="" coords="925,1116,872,1117,870,1113,930,1114"/>
-<area shape="rect" id="Node000041" href="$d6/d0b/star__bus__devices_8c.html#a40cc36be49fc368f3ef09815a9c474e8" title="Clear SSD1306 display." alt="" coords="710,1151,872,1177"/>
-<area shape="poly" id="edge31_Node000001_Node000041" title=" " alt="" coords="931,1133,852,1153,849,1149,936,1130"/>
-<area shape="rect" id="Node000042" href="$d6/d0b/star__bus__devices_8c.html#aad7a81d8809f99d443067dd8b881f843" title="Write framebuffer to SSD1306 display." alt="" coords="704,1201,878,1226"/>
-<area shape="poly" id="edge32_Node000001_Node000042" title=" " alt="" coords="977,1139,942,1167,896,1192,866,1202,863,1198,894,1187,939,1163,981,1136"/>
-<area shape="rect" id="Node000043" href="$d1/dfc/star__sensor__bno055__bmp280_8c.html#a722083a7cb967139e04c4e0e722895f8" title="Initialize 10&#45;DOF IMU (BNO055 + BMP280)." alt="" coords="701,1250,881,1276"/>
-<area shape="poly" id="edge33_Node000001_Node000043" title=" " alt="" coords="992,1139,953,1193,926,1219,896,1241,873,1252,870,1247,893,1237,923,1215,949,1190,989,1143"/>
-<area shape="rect" id="Node000044" href="$d1/dfc/star__sensor__bno055__bmp280_8c.html#ad32cda498cad9532f0fb33e0f4395df2" title="Reset BNO055 sensor." alt="" coords="713,1300,869,1341"/>
-<area shape="poly" id="edge34_Node000001_Node000044" title=" " alt="" coords="998,1140,983,1177,961,1216,932,1256,896,1290,871,1305,868,1301,893,1286,928,1253,956,1213,978,1174,995,1144"/>
-<area shape="rect" id="Node000045" href="$d1/dfc/star__sensor__bno055__bmp280_8c.html#aadaacdb97288273931f97f65cdf8f5f8" title="Set operation mode." alt="" coords="713,1365,869,1406"/>
-<area shape="poly" id="edge35_Node000001_Node000045" title=" " alt="" coords="1002,1140,991,1189,971,1245,939,1304,919,1331,896,1354,871,1370,868,1366,893,1350,915,1327,935,1301,966,1243,986,1187,1000,1145"/>
-<area shape="rect" id="Node000046" href="$d3/df7/star__sensor__pca9685_8c.html#a789c0169f804c7414d2b3bca6c3a2874" title="Set all channels to same duty cycle." alt="" coords="718,1431,864,1471"/>
-<area shape="poly" id="edge36_Node000001_Node000046" title=" " alt="" coords="1005,1141,998,1201,979,1275,965,1314,947,1352,924,1388,896,1420,866,1439,863,1435,893,1416,920,1385,942,1349,960,1312,974,1273,993,1200,1003,1146"/>
-<area shape="rect" id="Node000047" href="$d3/df7/star__sensor__pca9685_8c.html#aa3d1da24c7bb491c6b2338cb6e1e1619" title="Set channel to full OFF (0% duty cycle)." alt="" coords="718,1496,864,1537"/>
-<area shape="poly" id="edge37_Node000001_Node000047" title=" " alt="" coords="1007,1141,1004,1212,988,1303,974,1352,954,1400,929,1445,896,1485,866,1505,862,1501,893,1481,924,1442,949,1398,969,1350,983,1302,999,1211,1005,1146"/>
-<area shape="rect" id="Node000048" href="$d3/df7/star__sensor__pca9685_8c.html#a5f5355afaff4a28ea61ddf9a98e956dc" title="Set channel to full ON (100% duty cycle, no PWM)." alt="" coords="718,1561,864,1602"/>
-<area shape="poly" id="edge38_Node000001_Node000048" title=" " alt="" coords="1004,1141,991,1235,968,1356,936,1473,917,1518,897,1550,882,1562,865,1571,862,1566,879,1558,893,1547,913,1516,931,1471,963,1355,986,1234,1001,1146"/>
-<area shape="rect" id="Node000049" href="$d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="718,1825,864,1866"/>
-<area shape="poly" id="edge39_Node000001_Node000049" title=" " alt="" coords="1007,1141,1002,1284,985,1484,971,1588,952,1683,927,1761,913,1792,897,1815,882,1828,865,1837,863,1832,879,1824,893,1812,908,1789,922,1759,947,1681,965,1587,980,1484,997,1283,1005,1146"/>
-<area shape="rect" id="Node000073" href="$d3/df5/star__bus__smbus_8c.html#acebfaf2149e5be667ccc2c3303128019" title="SMBus Block Write&#45;Block Read Process Call." alt="" coords="687,1677,895,1702"/>
-<area shape="poly" id="edge43_Node000001_Node000073" title=" " alt="" coords="1006,1141,996,1255,976,1409,961,1488,943,1559,922,1619,897,1659,870,1678,867,1674,893,1656,917,1616,938,1558,956,1487,970,1408,991,1254,1003,1145"/>
-<area shape="rect" id="Node000074" href="$d3/df5/star__bus__smbus_8c.html#a5b3419e1efc2e09a4a145f51f1c52458" title="SMBus Block Write." alt="" coords="710,1726,872,1752"/>
-<area shape="poly" id="edge44_Node000001_Node000074" title=" " alt="" coords="1006,1141,1000,1266,981,1438,966,1526,948,1606,925,1672,911,1697,897,1717,874,1732,871,1728,893,1713,907,1694,920,1670,942,1605,961,1525,975,1438,994,1266,1004,1146"/>
-<area shape="rect" id="Node000075" href="$d3/df5/star__bus__smbus_8c.html#a880eddb5f6fe400ad1c9022cec7bc766" title="SMBus Process Call." alt="" coords="706,1776,876,1801"/>
-<area shape="poly" id="edge45_Node000001_Node000075" title=" " alt="" coords="1007,1141,1001,1275,984,1462,969,1557,951,1645,927,1717,912,1745,897,1766,878,1780,875,1775,893,1762,908,1742,922,1715,945,1644,964,1557,979,1461,996,1274,1004,1145"/>
-<area shape="rect" id="Node000076" href="$d3/df5/star__bus__smbus_8c.html#a4150488512abf781bf193c6bdb9d20a0" title="SMBus Write Byte." alt="" coords="713,544,869,569"/>
-<area shape="poly" id="edge46_Node000001_Node000076" title=" " alt="" coords="1002,1086,992,976,971,824,956,747,939,677,917,620,893,582,870,567,869,562,897,578,922,618,944,676,962,746,976,823,997,975,1007,1087"/>
-<area shape="rect" id="Node000077" href="$d3/df5/star__bus__smbus_8c.html#ae35a870d8984311e9af9966d3be33bac" title="SMBus Write Word." alt="" coords="711,2016,871,2041"/>
-<area shape="poly" id="edge49_Node000001_Node000077" title=" " alt="" coords="1008,1141,1007,1263,993,1448,979,1554,959,1664,932,1773,897,1879,877,1921,852,1960,806,2017,803,2013,847,1957,872,1918,892,1877,927,1772,954,1662,974,1553,988,1447,1002,1263,1006,1146"/>
-<area shape="rect" id="Node000003" href="$d4/db0/star__bus__async_8c.html#a4d0d2de1a960495058f92a453f2ed8b5" title="Worker task for processing async operations." alt="" coords="209,548,392,573"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="434,562,394,562,391,558,438,559"/>
-<area shape="rect" id="Node000004" href="$d4/db0/star__bus__async_8c.html#ad533332fcb303302a416c723c43bbe0c" title="Ensure worker task is running (thread&#45;safe)." alt="" coords="5,540,161,581"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="191,562,163,562,159,558,195,559"/>
-<area shape="rect" id="Node000013" href="$df/deb/star__bus__batch_8c.html#a80ab7c681dec605acb5a862cabe5fe4e" title="Execute all operations in the batch." alt="" coords="233,1110,368,1136"/>
-<area shape="poly" id="edge5_Node000012_Node000013" title=" " alt="" coords="434,1125,370,1125,367,1121,438,1121"/>
-<area shape="rect" id="Node000015" href="$d7/df2/star__sensor__mpu6050_8c.html#ae98f107b4b0856a04b0613f630f4f7f1" title=" " alt="" coords="465,71,614,111"/>
-<area shape="poly" id="edge7_Node000014_Node000015" title=" " alt="" coords="758,200,704,164,638,127,611,114,609,110,641,122,707,160,763,199"/>
-<area shape="rect" id="Node000016" href="$d7/df2/star__sensor__mpu6050_8c.html#add78abc1a61bf4b3ee31366a06d00618" title=" " alt="" coords="465,201,614,242"/>
-<area shape="poly" id="edge8_Node000014_Node000016" title=" " alt="" coords="707,223,616,224,613,219,711,220"/>
-<area shape="rect" id="Node000017" href="$d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="214,209,387,234"/>
-<area shape="poly" id="edge11_Node000014_Node000017" title=" " alt="" coords="762,247,711,288,676,307,640,322,585,336,539,341,494,336,439,322,400,304,365,281,315,238,314,233,368,277,403,300,441,316,495,331,539,336,584,331,639,316,674,302,708,283,765,243"/>
-<area shape="rect" id="Node000018" href="$d7/df2/star__sensor__mpu6050_8c.html#af9c59e348f591584e4715b65d277e13a" title=" " alt="" coords="465,267,614,307"/>
-<area shape="poly" id="edge10_Node000014_Node000018" title=" " alt="" coords="722,241,617,270,613,266,726,237"/>
-<area shape="rect" id="Node000019" href="$d7/df2/star__sensor__mpu6050_8c.html#a21f554f7976fc44c5e783cb7746549b2" title=" " alt="" coords="465,136,614,177"/>
-<area shape="poly" id="edge12_Node000014_Node000019" title=" " alt="" coords="722,206,616,178,614,173,726,203"/>
-<area shape="rect" id="Node000020" href="$d7/df2/star__sensor__mpu6050_8c.html#a13b17febbf0058089731826f5e129100" title=" " alt="" coords="465,5,614,46"/>
-<area shape="poly" id="edge14_Node000014_Node000020" title=" " alt="" coords="769,196,716,130,679,93,638,61,616,49,614,44,641,57,682,89,720,126,775,195"/>
-<area shape="poly" id="edge9_Node000016_Node000017" title=" " alt="" coords="448,223,389,224,386,220,452,220"/>
-<area shape="poly" id="edge13_Node000019_Node000017" title=" " alt="" coords="448,183,352,210,349,206,452,179"/>
-<area shape="rect" id="Node000022" href="$d3/df7/star__sensor__pca9685_8c.html#af172ec2771522a913b761463c8d4828f" title="Internal frequency setting (no initialization check, caller must hold mutex if needed)." alt="" coords="468,483,612,523"/>
-<area shape="poly" id="edge16_Node000021_Node000022" title=" " alt="" coords="712,467,614,489,611,485,716,463"/>
-<area shape="rect" id="Node000023" href="$d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="216,462,385,488"/>
-<area shape="poly" id="edge19_Node000021_Node000023" title=" " alt="" coords="709,455,387,473,384,468,712,451"/>
-<area shape="rect" id="Node000027" href="$d3/df7/star__sensor__pca9685_8c.html#ad672ac0514a17e7b1b4d4d9cd9c93c58" title="Set MODE1 register bits." alt="" coords="455,382,624,408"/>
-<area shape="poly" id="edge18_Node000021_Node000027" title=" " alt="" coords="710,433,605,411,603,406,715,430"/>
-<area shape="poly" id="edge17_Node000022_Node000023" title=" " alt="" coords="450,494,387,487,384,483,455,491"/>
-<area shape="rect" id="Node000050" href="$d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="467,1792,612,1833"/>
-<area shape="poly" id="edge40_Node000049_Node000050" title=" " alt="" coords="700,1835,613,1825,612,1819,705,1833"/>
-<area shape="rect" id="Node000071" href="$d3/df7/star__sensor__pca9685_8c.html#a878d81208cf78305ab5ed17716e33bf9" title="Set PWM duty cycle with phase shift." alt="" coords="464,1857,615,1898"/>
-<area shape="poly" id="edge41_Node000049_Node000071" title=" " alt="" coords="700,1858,616,1871,615,1865,705,1856"/>
-<area shape="rect" id="Node000072" href="$d3/df7/star__sensor__pca9685_8c.html#a2e4fa8ab35cdf64c114217bfc1309a1c" title="Set servo position by angle." alt="" coords="467,1727,612,1767"/>
-<area shape="poly" id="edge42_Node000049_Node000072" title=" " alt="" coords="701,1821,686,1816,662,1799,638,1783,611,1771,611,1765,641,1778,665,1795,689,1811,707,1821"/>
-<area shape="poly" id="edge47_Node000076_Node000002" title=" " alt="" coords="695,559,630,561,627,557,699,556"/>
-<area shape="poly" id="edge48_Node000076_Node000012" title=" " alt="" coords="697,574,689,582,675,600,661,624,635,686,611,763,591,847,561,1007,545,1111,540,1109,556,1006,586,845,606,762,630,684,656,621,670,597,685,578,700,569"/>
-<area shape="rect" id="Node000078" href="$d2/d58/star__bms__bq7850_8c.html#aa9056151568739c998b9ccf957fee277" title="Execute manufacturer access command." alt="" coords="442,1923,637,1963"/>
-<area shape="poly" id="edge50_Node000077_Node000078" title=" " alt="" coords="736,2010,638,1978,606,1967,606,1961,640,1972,741,2010"/>
-<area shape="rect" id="Node000088" href="$d2/d58/star__bms__bq7850_8c.html#ab14194a4cad45febb48718352688813d" title="Write protection thresholds." alt="" coords="221,2041,380,2082"/>
-<area shape="poly" id="edge55_Node000077_Node000088" title=" " alt="" coords="772,2053,717,2110,681,2137,640,2157,586,2174,540,2179,495,2173,439,2158,405,2143,372,2124,323,2085,324,2080,375,2120,407,2139,441,2152,496,2168,540,2173,584,2169,638,2153,678,2133,714,2106,767,2055"/>
-<area shape="rect" id="Node000089" href="$d2/d58/star__bms__bq7850_8c.html#aeb64af20373d57882e8dd29d9a251cf4" title="Control charge/discharge FETs." alt="" coords="440,1988,639,2013"/>
-<area shape="poly" id="edge52_Node000077_Node000089" title=" " alt="" coords="693,2018,640,2014,640,2009,698,2018"/>
-<area shape="rect" id="Node000090" href="$d2/d58/star__bms__bq7850_8c.html#abcbded89df9ff98462d0e088ad6c3693" title="Disable cell balancing." alt="" coords="454,2037,626,2078"/>
-<area shape="poly" id="edge53_Node000077_Node000090" title=" " alt="" coords="694,2040,627,2050,626,2045,699,2039"/>
-<area shape="rect" id="Node000091" href="$d2/d58/star__bms__bq7850_8c.html#afcf09922b2aaf11ff7c5a9653440026d" title="Enable cell balancing." alt="" coords="455,2103,624,2143"/>
-<area shape="poly" id="edge54_Node000077_Node000091" title=" " alt="" coords="747,2047,640,2092,605,2105,604,2099,638,2087,742,2048"/>
-<area shape="poly" id="edge51_Node000078_Node000088" title=" " alt="" coords="450,1970,441,1977,382,2010,331,2043,329,2039,379,2006,439,1973,455,1968"/>
+<area shape="rect" id="Node000001" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="739,1165,870,1191"/>
+<area shape="rect" id="Node000002" href="$d4/db0/star__bus__async_8c.html#a01ee3f118825590cceebdbca4fd6807a" title="Execute an async operation." alt="" coords="248,612,424,637"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="800,1149,793,1028,775,859,761,774,742,697,719,635,705,613,690,596,668,586,638,581,558,584,469,597,393,613,389,609,468,592,557,578,638,576,670,581,693,592,709,609,723,633,747,695,766,773,781,859,798,1028,805,1150"/>
+<area shape="rect" id="Node000012" href="$df/deb/star__bus__batch_8c.html#a83c47362bb84557376a1791c5425f41c" title="Execute a single batch operation." alt="" coords="248,1172,424,1197"/>
+<area shape="poly" id="edge3_Node000001_Node000012" title=" " alt="" coords="802,1204,794,1312,774,1456,760,1528,742,1592,720,1644,707,1664,693,1679,666,1698,640,1711,614,1719,588,1722,563,1719,536,1710,482,1679,467,1664,452,1643,426,1587,402,1518,382,1442,352,1295,339,1201,340,1195,357,1294,387,1441,408,1517,431,1585,457,1640,471,1660,486,1675,539,1706,564,1713,588,1716,613,1714,638,1706,663,1693,690,1675,703,1661,715,1642,737,1591,755,1526,769,1455,789,1312,800,1209"/>
+<area shape="rect" id="Node000014" href="$d7/df2/star__sensor__mpu6050_8c.html#a86e48ca92359fd817f545e653d688ad8" title=" " alt="" coords="496,210,679,236"/>
+<area shape="poly" id="edge5_Node000001_Node000014" title=" " alt="" coords="798,1149,787,1041,766,876,734,681,713,580,689,483,665,409,638,338,595,239,595,234,643,336,670,407,694,481,718,579,739,680,772,875,793,1041,803,1150"/>
+<area shape="rect" id="Node000022" href="$d3/df7/star__sensor__pca9685_8c.html#a376ab174a0e3ec87903a05730cc84e71" title="Write to PCA9685 register with validation." alt="" coords="498,494,677,520"/>
+<area shape="poly" id="edge15_Node000001_Node000022" title=" " alt="" coords="799,1149,790,1023,770,844,755,753,737,669,715,599,703,572,689,552,670,535,649,523,647,518,673,530,693,548,707,570,720,598,742,668,761,752,775,844,795,1023,804,1150"/>
+<area shape="rect" id="Node000031" href="$d6/d0b/star__bus__devices_8c.html#a4993839e0d44e271fdfe11069a04aba3" title="Configure ADS1115 ADC." alt="" coords="494,656,681,681"/>
+<area shape="poly" id="edge20_Node000001_Node000031" title=" " alt="" coords="798,1149,786,1049,764,911,750,842,732,780,712,729,689,694,678,685,677,680,693,691,717,726,737,778,755,841,770,910,791,1048,803,1150"/>
+<area shape="rect" id="Node000032" href="$d6/d0b/star__bus__devices_8c.html#af9785de65cc5f08bfeee9713e3dcc11d" title="Read data from AT24C256 EEPROM." alt="" coords="506,705,669,731"/>
+<area shape="poly" id="edge21_Node000001_Node000032" title=" " alt="" coords="797,1149,784,1058,761,936,746,874,729,819,710,774,689,744,670,730,669,725,693,740,715,771,734,817,751,873,766,935,789,1057,802,1150"/>
+<area shape="rect" id="Node000033" href="$d6/d0b/star__bus__devices_8c.html#ae022f772cd154d6502cc99944cd431fb" title="Write data to AT24C256 EEPROM." alt="" coords="504,754,671,780"/>
+<area shape="poly" id="edge22_Node000001_Node000033" title=" " alt="" coords="801,1149,798,1077,784,981,770,930,750,880,724,834,690,793,672,781,671,775,693,789,728,831,755,878,775,928,789,980,804,1077,807,1150"/>
+<area shape="rect" id="Node000034" href="$d6/d0b/star__bus__devices_8c.html#a5e6352db9d72f181d41f20a9a20816e4" title="Configure BMP280 operating mode and oversampling." alt="" coords="496,804,680,829"/>
+<area shape="poly" id="edge23_Node000001_Node000034" title=" " alt="" coords="800,1149,794,1086,777,1003,763,960,744,917,720,878,690,844,674,833,673,827,693,840,724,875,749,915,768,958,782,1002,799,1085,805,1150"/>
+<area shape="rect" id="Node000035" href="$df/df6/star__bus__debug_8c.html#a5116fce5f7256f32830e4f8019c69a7f" title="Verify register read/write operation." alt="" coords="516,854,659,894"/>
+<area shape="poly" id="edge24_Node000001_Node000035" title=" " alt="" coords="797,1149,787,1099,767,1034,736,966,715,935,690,908,660,890,659,884,693,904,719,932,740,963,772,1032,792,1098,802,1150"/>
+<area shape="rect" id="Node000036" href="$df/df6/star__bus__debug_8c.html#a7e0773902965e8548fa890a88bd37752" title="Write register value." alt="" coords="501,918,674,944"/>
+<area shape="poly" id="edge25_Node000001_Node000036" title=" " alt="" coords="795,1150,782,1108,762,1055,731,1002,712,978,690,957,675,947,673,942,693,953,716,974,736,999,766,1053,787,1106,800,1151"/>
+<area shape="rect" id="Node000037" href="$d6/d0b/star__bus__devices_8c.html#a3747838d07db068959f18debab212bb3" title="Set DS3231 time." alt="" coords="499,968,676,993"/>
+<area shape="poly" id="edge26_Node000001_Node000037" title=" " alt="" coords="791,1150,776,1118,754,1078,725,1039,690,1007,673,997,671,992,693,1002,729,1036,758,1076,780,1115,796,1151"/>
+<area shape="rect" id="Node000038" href="$de/db1/star__bus__i2c__dma_8c.html#aae80743fb443e9a629270ccdb9e1eb8d" title="Write data to I2C device using DMA." alt="" coords="506,1017,669,1043"/>
+<area shape="poly" id="edge27_Node000001_Node000038" title=" " alt="" coords="784,1152,746,1103,719,1078,690,1056,669,1046,667,1041,693,1052,723,1074,750,1100,790,1152"/>
+<area shape="rect" id="Node000039" href="$d6/d0b/star__bus__devices_8c.html#ab5dc97bebd5648b5d0a67f833867b47c" title="Configure MPU6050 ranges and filters." alt="" coords="492,1066,683,1092"/>
+<area shape="poly" id="edge28_Node000001_Node000039" title=" " alt="" coords="773,1156,736,1130,690,1106,662,1095,660,1090,692,1101,738,1126,778,1155"/>
+<area shape="rect" id="Node000040" href="$d6/d0b/star__bus__devices_8c.html#a236149a5c7a9a1d096a573096bb6e249" title="Initialize MPU6050 IMU." alt="" coords="510,1116,665,1141"/>
+<area shape="poly" id="edge29_Node000001_Node000040" title=" " alt="" coords="728,1162,648,1145,647,1140,732,1160"/>
+<area shape="rect" id="Node000041" href="$d6/d0b/star__bus__devices_8c.html#a7922a5cd92ec2ab0b6d56baca9aefacc" title="Write byte to PCF8574 I/O expander." alt="" coords="508,1165,667,1191"/>
+<area shape="poly" id="edge30_Node000001_Node000041" title=" " alt="" coords="722,1179,669,1180,667,1176,726,1177"/>
+<area shape="rect" id="Node000042" href="$d6/d0b/star__bus__devices_8c.html#a40cc36be49fc368f3ef09815a9c474e8" title="Clear SSD1306 display." alt="" coords="506,1214,669,1240"/>
+<area shape="poly" id="edge31_Node000001_Node000042" title=" " alt="" coords="728,1196,649,1216,646,1212,732,1193"/>
+<area shape="rect" id="Node000043" href="$d6/d0b/star__bus__devices_8c.html#aad7a81d8809f99d443067dd8b881f843" title="Write framebuffer to SSD1306 display." alt="" coords="501,1264,674,1289"/>
+<area shape="poly" id="edge32_Node000001_Node000043" title=" " alt="" coords="774,1202,738,1230,692,1255,663,1265,659,1261,690,1250,736,1226,778,1199"/>
+<area shape="rect" id="Node000044" href="$d1/dfc/star__sensor__bno055__bmp280_8c.html#abef5a4f32095d020c6dddc96d6bbdd5d" title="Initialize 10&#45;DOF IMU (BNO055 + BMP280)." alt="" coords="498,1313,678,1339"/>
+<area shape="poly" id="edge33_Node000001_Node000044" title=" " alt="" coords="785,1206,750,1256,723,1282,693,1304,670,1315,666,1311,690,1300,719,1278,746,1253,789,1202"/>
+<area shape="rect" id="Node000045" href="$d1/dfc/star__sensor__bno055__bmp280_8c.html#ad32cda498cad9532f0fb33e0f4395df2" title="Reset BNO055 sensor." alt="" coords="510,1363,666,1404"/>
+<area shape="poly" id="edge34_Node000001_Node000045" title=" " alt="" coords="794,1203,780,1240,757,1279,729,1319,693,1353,668,1368,664,1364,690,1349,724,1316,753,1276,775,1237,791,1207"/>
+<area shape="rect" id="Node000046" href="$d1/dfc/star__sensor__bno055__bmp280_8c.html#aadaacdb97288273931f97f65cdf8f5f8" title="Set operation mode." alt="" coords="510,1428,666,1469"/>
+<area shape="poly" id="edge35_Node000001_Node000046" title=" " alt="" coords="799,1203,788,1252,767,1308,736,1367,716,1394,693,1417,668,1433,665,1429,690,1413,712,1390,732,1364,762,1306,783,1250,797,1208"/>
+<area shape="rect" id="Node000047" href="$d3/df7/star__sensor__pca9685_8c.html#a789c0169f804c7414d2b3bca6c3a2874" title="Set all channels to same duty cycle." alt="" coords="515,1494,660,1534"/>
+<area shape="poly" id="edge36_Node000001_Node000047" title=" " alt="" coords="802,1204,795,1264,776,1338,762,1377,744,1415,721,1451,693,1483,663,1502,659,1498,690,1479,717,1448,739,1412,757,1375,771,1336,790,1263,800,1209"/>
+<area shape="rect" id="Node000048" href="$d3/df7/star__sensor__pca9685_8c.html#aa3d1da24c7bb491c6b2338cb6e1e1619" title="Set channel to full OFF (0% duty cycle)." alt="" coords="515,1559,660,1600"/>
+<area shape="poly" id="edge37_Node000001_Node000048" title=" " alt="" coords="804,1204,801,1275,785,1366,770,1415,751,1463,725,1508,693,1548,662,1568,659,1564,690,1544,721,1505,746,1461,765,1413,779,1365,795,1274,802,1209"/>
+<area shape="rect" id="Node000049" href="$d3/df7/star__sensor__pca9685_8c.html#a5f5355afaff4a28ea61ddf9a98e956dc" title="Set channel to full ON (100% duty cycle, no PWM)." alt="" coords="515,1624,660,1665"/>
+<area shape="poly" id="edge38_Node000001_Node000049" title=" " alt="" coords="801,1204,788,1298,765,1419,733,1536,714,1581,693,1613,679,1625,662,1634,659,1629,676,1621,689,1610,709,1579,728,1534,760,1418,783,1297,798,1209"/>
+<area shape="rect" id="Node000050" href="$d3/df7/star__sensor__pca9685_8c.html#a5193eb272443efc36a05aab03cf8bead" title="Set PWM values directly for a channel." alt="" coords="515,1888,660,1929"/>
+<area shape="poly" id="edge39_Node000001_Node000050" title=" " alt="" coords="804,1204,799,1347,782,1547,767,1651,748,1746,724,1824,710,1855,693,1878,679,1891,662,1900,659,1895,676,1887,689,1875,705,1852,719,1822,743,1744,762,1650,776,1547,794,1346,801,1209"/>
+<area shape="rect" id="Node000074" href="$d3/df5/star__bus__smbus_8c.html#acebfaf2149e5be667ccc2c3303128019" title="SMBus Block Write&#45;Block Read Process Call." alt="" coords="484,1740,691,1765"/>
+<area shape="poly" id="edge43_Node000001_Node000074" title=" " alt="" coords="802,1204,793,1318,772,1472,757,1551,740,1622,718,1682,693,1722,667,1741,663,1737,689,1719,713,1679,734,1621,752,1549,767,1471,788,1317,800,1208"/>
+<area shape="rect" id="Node000075" href="$d3/df5/star__bus__smbus_8c.html#a5b3419e1efc2e09a4a145f51f1c52458" title="SMBus Block Write." alt="" coords="506,1789,669,1815"/>
+<area shape="poly" id="edge44_Node000001_Node000075" title=" " alt="" coords="803,1204,796,1329,777,1501,763,1589,744,1669,721,1735,708,1760,693,1780,671,1795,668,1791,689,1776,703,1757,716,1733,739,1668,758,1588,772,1501,791,1329,801,1209"/>
+<area shape="rect" id="Node000076" href="$d3/df5/star__bus__smbus_8c.html#a880eddb5f6fe400ad1c9022cec7bc766" title="SMBus Process Call." alt="" coords="503,1838,672,1864"/>
+<area shape="poly" id="edge45_Node000001_Node000076" title=" " alt="" coords="803,1204,798,1338,780,1525,766,1620,747,1708,723,1780,709,1808,693,1829,674,1843,671,1839,689,1825,705,1805,718,1778,742,1707,761,1620,775,1524,793,1337,801,1208"/>
+<area shape="rect" id="Node000077" href="$d3/df5/star__bus__smbus_8c.html#a4150488512abf781bf193c6bdb9d20a0" title="SMBus Write Byte." alt="" coords="510,606,666,632"/>
+<area shape="poly" id="edge46_Node000001_Node000077" title=" " alt="" coords="799,1149,788,1039,768,887,753,810,735,740,714,683,689,645,667,630,665,625,693,641,719,681,740,739,758,809,773,886,794,1038,804,1150"/>
+<area shape="rect" id="Node000078" href="$d3/df5/star__bus__smbus_8c.html#ae35a870d8984311e9af9966d3be33bac" title="SMBus Write Word." alt="" coords="508,2076,667,2101"/>
+<area shape="poly" id="edge49_Node000001_Node000078" title=" " alt="" coords="805,1204,804,1326,790,1511,776,1617,757,1727,729,1836,694,1942,674,1983,649,2021,603,2077,600,2073,644,2018,669,1980,689,1940,724,1835,751,1726,771,1616,785,1510,799,1326,803,1209"/>
+<area shape="rect" id="Node000003" href="$d4/db0/star__bus__async_8c.html#a4d0d2de1a960495058f92a453f2ed8b5" title="Worker task for processing async operations." alt="" coords="5,612,189,637"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="231,626,191,627,187,623,235,623"/>
+<area shape="rect" id="Node000013" href="$df/deb/star__bus__batch_8c.html#a80ab7c681dec605acb5a862cabe5fe4e" title="Execute all operations in the batch." alt="" coords="29,1172,165,1197"/>
+<area shape="poly" id="edge4_Node000012_Node000013" title=" " alt="" coords="231,1186,167,1187,163,1183,235,1183"/>
+<area shape="rect" id="Node000015" href="$d7/df2/star__sensor__mpu6050_8c.html#ae98f107b4b0856a04b0613f630f4f7f1" title="Deinitialize MPU6050 and release resources." alt="" coords="262,367,411,408"/>
+<area shape="poly" id="edge6_Node000014_Node000015" title=" " alt="" coords="563,250,510,303,475,331,437,356,412,368,408,365,435,352,472,327,507,299,565,246"/>
+<area shape="rect" id="Node000016" href="$d7/df2/star__sensor__mpu6050_8c.html#add78abc1a61bf4b3ee31366a06d00618" title="Enable or disable the hardware FIFO buffer." alt="" coords="262,236,411,277"/>
+<area shape="poly" id="edge7_Node000014_Node000016" title=" " alt="" coords="479,239,413,249,410,245,482,236"/>
+<area shape="rect" id="Node000017" href="$d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="10,48,184,73"/>
+<area shape="poly" id="edge11_Node000014_Node000017" title=" " alt="" coords="572,196,553,157,523,110,483,65,460,46,435,31,395,17,353,9,310,9,268,13,190,30,132,49,128,46,189,24,267,7,310,3,354,4,397,11,437,26,463,42,487,61,527,107,557,155,578,196"/>
+<area shape="rect" id="Node000018" href="$d7/df2/star__sensor__mpu6050_8c.html#a90480ddcc483904e3c57303a5171918b" title="Get the number of bytes currently in the FIFO." alt="" coords="262,106,411,146"/>
+<area shape="poly" id="edge9_Node000014_Node000018" title=" " alt="" coords="541,205,435,162,403,149,401,145,437,157,545,203"/>
+<area shape="rect" id="Node000019" href="$d7/df2/star__sensor__mpu6050_8c.html#a0c1a46ca94cba3261278c3aa292358af" title="Reset the hardware FIFO buffer." alt="" coords="262,171,411,212"/>
+<area shape="poly" id="edge10_Node000014_Node000019" title=" " alt="" coords="478,211,413,203,410,199,483,208"/>
+<area shape="rect" id="Node000020" href="$d7/df2/star__sensor__mpu6050_8c.html#a6e3f3d67815ebdf02a63b538d83cd275" title="Perform software reset of the MPU6050." alt="" coords="262,40,411,81"/>
+<area shape="poly" id="edge12_Node000014_Node000020" title=" " alt="" coords="561,200,507,149,472,121,435,96,411,84,409,79,437,92,475,116,510,145,566,198"/>
+<area shape="rect" id="Node000021" href="$d7/df2/star__sensor__mpu6050_8c.html#a13b17febbf0058089731826f5e129100" title="Set device sleep mode." alt="" coords="262,302,411,342"/>
+<area shape="poly" id="edge14_Node000014_Node000021" title=" " alt="" coords="542,245,437,291,404,303,400,299,435,286,545,241"/>
+<area shape="poly" id="edge8_Node000016_Node000017" title=" " alt="" coords="245,231,235,225,191,188,153,146,107,76,105,71,157,143,195,185,238,221,250,229"/>
+<area shape="poly" id="edge13_Node000020_Node000017" title=" " alt="" coords="244,62,186,63,183,59,248,59"/>
+<area shape="rect" id="Node000023" href="$d3/df7/star__sensor__pca9685_8c.html#af172ec2771522a913b761463c8d4828f" title="Internal frequency setting (no initialization check, caller must hold mutex if needed)." alt="" coords="264,547,408,588"/>
+<area shape="poly" id="edge16_Node000022_Node000023" title=" " alt="" coords="514,526,411,552,407,548,517,522"/>
+<area shape="rect" id="Node000024" href="$d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="12,493,182,519"/>
+<area shape="poly" id="edge19_Node000022_Node000024" title=" " alt="" coords="527,491,483,481,436,473,336,464,237,473,186,482,141,494,137,491,185,477,236,467,336,459,436,467,485,476,532,488"/>
+<area shape="rect" id="Node000028" href="$d3/df7/star__sensor__pca9685_8c.html#a26aba8511288f866884e1f5c7d663ee2" title="Set MODE1 register bits." alt="" coords="264,482,408,522"/>
+<area shape="poly" id="edge18_Node000022_Node000028" title=" " alt="" coords="480,507,410,506,407,501,484,503"/>
+<area shape="poly" id="edge17_Node000023_Node000024" title=" " alt="" coords="247,547,152,522,149,517,252,544"/>
+<area shape="rect" id="Node000051" href="$d3/df7/star__sensor__pca9685_8c.html#a81a04e618f2d3f31ee59685399779c72" title="Set PWM duty cycle for a channel (0&#45;100%)." alt="" coords="264,1920,409,1961"/>
+<area shape="poly" id="edge40_Node000050_Node000051" title=" " alt="" coords="497,1921,410,1934,409,1929,502,1919"/>
+<area shape="rect" id="Node000072" href="$d3/df7/star__sensor__pca9685_8c.html#a878d81208cf78305ab5ed17716e33bf9" title="Set PWM duty cycle with phase shift." alt="" coords="261,1790,412,1830"/>
+<area shape="poly" id="edge41_Node000050_Node000072" title=" " alt="" coords="498,1884,483,1879,458,1862,435,1846,408,1834,407,1828,437,1841,461,1858,485,1874,503,1884"/>
+<area shape="rect" id="Node000073" href="$d3/df7/star__sensor__pca9685_8c.html#a2e4fa8ab35cdf64c114217bfc1309a1c" title="Set servo position by angle." alt="" coords="264,1855,409,1896"/>
+<area shape="poly" id="edge42_Node000050_Node000073" title=" " alt="" coords="497,1898,410,1888,409,1882,502,1896"/>
+<area shape="poly" id="edge47_Node000077_Node000002" title=" " alt="" coords="492,623,426,625,423,621,496,620"/>
+<area shape="poly" id="edge48_Node000077_Node000012" title=" " alt="" coords="494,637,486,645,471,663,457,686,431,749,408,825,388,909,358,1069,342,1172,337,1171,352,1068,383,908,403,824,426,747,453,684,467,660,482,641,497,632"/>
+<area shape="rect" id="Node000079" href="$d2/d58/star__bms__bq7850_8c.html#aa9056151568739c998b9ccf957fee277" title="Execute manufacturer access command." alt="" coords="239,1986,434,2026"/>
+<area shape="poly" id="edge50_Node000078_Node000079" title=" " alt="" coords="529,2071,400,2030,401,2024,534,2070"/>
+<area shape="rect" id="Node000089" href="$d2/d58/star__bms__bq7850_8c.html#ab14194a4cad45febb48718352688813d" title="Write protection thresholds." alt="" coords="17,2014,177,2054"/>
+<area shape="poly" id="edge55_Node000078_Node000089" title=" " alt="" coords="491,2080,177,2045,177,2040,494,2076"/>
+<area shape="rect" id="Node000090" href="$d2/d58/star__bms__bq7850_8c.html#aeb64af20373d57882e8dd29d9a251cf4" title="Control charge/discharge FETs." alt="" coords="237,2101,436,2127"/>
+<area shape="poly" id="edge52_Node000078_Node000090" title=" " alt="" coords="490,2099,437,2107,436,2101,495,2098"/>
+<area shape="rect" id="Node000091" href="$d2/d58/star__bms__bq7850_8c.html#abcbded89df9ff98462d0e088ad6c3693" title="Disable cell balancing." alt="" coords="250,2151,422,2192"/>
+<area shape="poly" id="edge53_Node000078_Node000091" title=" " alt="" coords="535,2106,437,2142,403,2153,401,2148,435,2137,530,2108"/>
+<area shape="rect" id="Node000092" href="$d2/d58/star__bms__bq7850_8c.html#afcf09922b2aaf11ff7c5a9653440026d" title="Enable cell balancing." alt="" coords="252,2216,421,2257"/>
+<area shape="poly" id="edge54_Node000078_Node000092" title=" " alt="" coords="563,2111,507,2160,437,2206,409,2218,408,2213,435,2201,504,2156,558,2113"/>
+<area shape="poly" id="edge51_Node000079_Node000089" title=" " alt="" coords="221,2021,178,2027,176,2022,225,2018"/>
 </map>

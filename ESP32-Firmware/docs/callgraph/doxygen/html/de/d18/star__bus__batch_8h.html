@@ -195,10 +195,6 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-define-members" class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:a3994703788817ef5837c77783c6dfcd3" id="r_a3994703788817ef5837c77783c6dfcd3"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3994703788817ef5837c77783c6dfcd3">STAR_BATCH_MAX_OPERATIONS</a>&#160;&#160;&#160;(16)</td></tr>
-<tr class="memdesc:a3994703788817ef5837c77783c6dfcd3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum number of operations in a batch.  <br /></td></tr>
-<tr class="memitem:a007d70d47a8f059f2119a2e2a82381cc" id="r_a007d70d47a8f059f2119a2e2a82381cc"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a007d70d47a8f059f2119a2e2a82381cc">STAR_BATCH_DEFAULT_TIMEOUT_MS</a>&#160;&#160;&#160;(5000)</td></tr>
-<tr class="memdesc:a007d70d47a8f059f2119a2e2a82381cc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default timeout for batch operations (ms).  <br /></td></tr>
 <tr class="memitem:ae2ffc52be68d4ce8433e4a5762ae4072" id="r_ae2ffc52be68d4ce8433e4a5762ae4072"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae2ffc52be68d4ce8433e4a5762ae4072">STAR_BATCH_CONFIG_DEFAULT</a>()</td></tr>
 <tr class="memdesc:ae2ffc52be68d4ce8433e4a5762ae4072"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create default batch configuration.  <br /></td></tr>
 </table><table class="memberdecls">
@@ -209,6 +205,10 @@ Typedefs</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-enum-members" class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
+<tr class="memitem:a26578c84c6ad2788b8d0646ab2cb5118" id="r_a26578c84c6ad2788b8d0646ab2cb5118"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <a class="el" href="#a26578c84c6ad2788b8d0646ab2cb5118ada4fd4da7e02572a1d59ed6987193500">STAR_BATCH_MAX_OPERATIONS</a> = 16
+, <a class="el" href="#a26578c84c6ad2788b8d0646ab2cb5118a2bb8e6e311b0b83670300343af2b16a0">STAR_BATCH_DEFAULT_TIMEOUT_MS</a> = 5000
+ }</td></tr>
+<tr class="memdesc:a26578c84c6ad2788b8d0646ab2cb5118"><td class="mdescLeft">&#160;</td><td class="mdescRight">Batch operation constants.  <a href="#a26578c84c6ad2788b8d0646ab2cb5118">More...</a><br /></td></tr>
 <tr class="memitem:a7570f328a4386d850435ded1e5e007cc" id="r_a7570f328a4386d850435ded1e5e007cc"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7570f328a4386d850435ded1e5e007cc">star_batch_op_type_t</a> { <br />
 &#160;&#160;<a class="el" href="#a7570f328a4386d850435ded1e5e007cca4e92a175a1309354050092217952abe1">k_star_batch_op_i2c_read</a>
 , <a class="el" href="#a7570f328a4386d850435ded1e5e007ccac02ae214a33de77a23d3bdf58c7a92c7">k_star_batch_op_i2c_write</a>
@@ -231,8 +231,8 @@ Enumerations</h2></td></tr>
 Functions</h2></td></tr>
 <tr class="memitem:a6cf8eac885dbe55d7efffa0229b50e2e" id="r_a6cf8eac885dbe55d7efffa0229b50e2e"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6cf8eac885dbe55d7efffa0229b50e2e">star_batch_create</a> (<a class="el" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a> *manager, const <a class="el" href="../../d2/d8f/structstar__batch__config__t.html">star_batch_config_t</a> *config, <a class="el" href="#a13a1ac948f0436812bf37babc5228878">star_batch_handle_t</a> *handle)</td></tr>
 <tr class="memdesc:a6cf8eac885dbe55d7efffa0229b50e2e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new batch transaction.  <br /></td></tr>
-<tr class="memitem:a8ca0e41c8f942ad7b1d474cf1b5b3aca" id="r_a8ca0e41c8f942ad7b1d474cf1b5b3aca"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8ca0e41c8f942ad7b1d474cf1b5b3aca">star_batch_free</a> (<a class="el" href="#a13a1ac948f0436812bf37babc5228878">star_batch_handle_t</a> handle)</td></tr>
-<tr class="memdesc:a8ca0e41c8f942ad7b1d474cf1b5b3aca"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free a batch transaction.  <br /></td></tr>
+<tr class="memitem:a358af22edefa7797ec9ef19bafb91027" id="r_a358af22edefa7797ec9ef19bafb91027"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a358af22edefa7797ec9ef19bafb91027">star_batch_free</a> (<a class="el" href="#a13a1ac948f0436812bf37babc5228878">star_batch_handle_t</a> handle)</td></tr>
+<tr class="memdesc:a358af22edefa7797ec9ef19bafb91027"><td class="mdescLeft">&#160;</td><td class="mdescRight">Free a batch transaction.  <br /></td></tr>
 <tr class="memitem:a5c52a8a6241106a28ffe789cbe03e8fd" id="r_a5c52a8a6241106a28ffe789cbe03e8fd"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5c52a8a6241106a28ffe789cbe03e8fd">star_batch_add_i2c_write</a> (<a class="el" href="#a13a1ac948f0436812bf37babc5228878">star_batch_handle_t</a> handle, const char *bus_name, const uint8_t *data, size_t length, uint8_t command)</td></tr>
 <tr class="memdesc:a5c52a8a6241106a28ffe789cbe03e8fd"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add an I2C write operation to the batch.  <br /></td></tr>
 <tr class="memitem:a9ac4808b440871d04cdc217cd20dff2c" id="r_a9ac4808b440871d04cdc217cd20dff2c"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9ac4808b440871d04cdc217cd20dff2c">star_batch_add_i2c_read</a> (<a class="el" href="#a13a1ac948f0436812bf37babc5228878">star_batch_handle_t</a> handle, const char *bus_name, uint8_t *data, size_t length, uint8_t command)</td></tr>
@@ -314,7 +314,7 @@ Functions</h2></td></tr>
 <div class="line">}</div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// Cleanup</span></div>
-<div class="line"><a class="code hl_function" href="#a8ca0e41c8f942ad7b1d474cf1b5b3aca">star_batch_free</a>(batch);</div>
+<div class="line"><a class="code hl_function" href="#a358af22edefa7797ec9ef19bafb91027">star_batch_free</a>(batch);</div>
 <div class="line"> </div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// === Device Initialization Sequence ===</span></div>
@@ -347,7 +347,7 @@ Functions</h2></td></tr>
 <div class="line">    ESP_LOGI(<a class="code hl_define" href="../../d7/d82/star__error__handler_8c.html#afc3d101f633a076cc1ca84b85b6224b2">TAG</a>, <span class="stringliteral">&quot;IMU initialized successfully&quot;</span>);</div>
 <div class="line">}</div>
 <div class="line"> </div>
-<div class="line"><a class="code hl_function" href="#a8ca0e41c8f942ad7b1d474cf1b5b3aca">star_batch_free</a>(init_batch);</div>
+<div class="line"><a class="code hl_function" href="#a358af22edefa7797ec9ef19bafb91027">star_batch_free</a>(init_batch);</div>
 <div class="line"> </div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// === Mixed I2C and SPI Batch ===</span></div>
@@ -368,7 +368,7 @@ Functions</h2></td></tr>
 <div class="line"><a class="code hl_function" href="#aa1ae74d3bf8f683440da0ea381161b1d">star_batch_add_spi_transfer</a>(mixed_batch, <span class="stringliteral">&quot;flash_spi&quot;</span>, tx_data, rx_data, 8, 0);</div>
 <div class="line"> </div>
 <div class="line"><a class="code hl_function" href="#a80ab7c681dec605acb5a862cabe5fe4e">star_batch_execute</a>(mixed_batch, &amp;stats);</div>
-<div class="line"><a class="code hl_function" href="#a8ca0e41c8f942ad7b1d474cf1b5b3aca">star_batch_free</a>(mixed_batch);</div>
+<div class="line"><a class="code hl_function" href="#a358af22edefa7797ec9ef19bafb91027">star_batch_free</a>(mixed_batch);</div>
 <div class="line"> </div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// === SMBus Operations in Batch ===</span></div>
@@ -383,7 +383,7 @@ Functions</h2></td></tr>
 <div class="line"> </div>
 <div class="line"><a class="code hl_function" href="#a80ab7c681dec605acb5a862cabe5fe4e">star_batch_execute</a>(smbus_batch, NULL);</div>
 <div class="line">ESP_LOGI(<a class="code hl_define" href="../../d7/d82/star__error__handler_8c.html#afc3d101f633a076cc1ca84b85b6224b2">TAG</a>, <span class="stringliteral">&quot;BMS status: 0x%02X, config: 0x%02X&quot;</span>, status_byte, config_byte);</div>
-<div class="line"><a class="code hl_function" href="#a8ca0e41c8f942ad7b1d474cf1b5b3aca">star_batch_free</a>(smbus_batch);</div>
+<div class="line"><a class="code hl_function" href="#a358af22edefa7797ec9ef19bafb91027">star_batch_free</a>(smbus_batch);</div>
 <div class="line"> </div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// === Error Handling and Individual Results ===</span></div>
@@ -414,7 +414,7 @@ Functions</h2></td></tr>
 <div class="line">    }</div>
 <div class="line">}</div>
 <div class="line"> </div>
-<div class="line"><a class="code hl_function" href="#a8ca0e41c8f942ad7b1d474cf1b5b3aca">star_batch_free</a>(err_batch);</div>
+<div class="line"><a class="code hl_function" href="#a358af22edefa7797ec9ef19bafb91027">star_batch_free</a>(err_batch);</div>
 <div class="line"> </div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// === Reusing Batches ===</span></div>
@@ -433,7 +433,7 @@ Functions</h2></td></tr>
 <div class="line"><a class="code hl_function" href="#a5c52a8a6241106a28ffe789cbe03e8fd">star_batch_add_i2c_write</a>(reuse_batch, <span class="stringliteral">&quot;sensor_i2c&quot;</span>, config, 2, 0x10);</div>
 <div class="line"><a class="code hl_function" href="#a80ab7c681dec605acb5a862cabe5fe4e">star_batch_execute</a>(reuse_batch, NULL);</div>
 <div class="line"> </div>
-<div class="line"><a class="code hl_function" href="#a8ca0e41c8f942ad7b1d474cf1b5b3aca">star_batch_free</a>(reuse_batch);</div>
+<div class="line"><a class="code hl_function" href="#a358af22edefa7797ec9ef19bafb91027">star_batch_free</a>(reuse_batch);</div>
 <div class="line"> </div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// === Continue on Error Mode ===</span></div>
@@ -457,31 +457,31 @@ Functions</h2></td></tr>
 <div class="line"><a class="code hl_function" href="#a80ab7c681dec605acb5a862cabe5fe4e">star_batch_execute</a>(robust_batch, &amp;stats);</div>
 <div class="line">ESP_LOGI(<a class="code hl_define" href="../../d7/d82/star__error__handler_8c.html#afc3d101f633a076cc1ca84b85b6224b2">TAG</a>, <span class="stringliteral">&quot;Read %lu/%lu sensors&quot;</span>, stats.<a class="code hl_variable" href="../../db/d4e/structstar__batch__stats__t.html#abeac0829485a3b9187cd47fac748bfff">operations_succeeded</a>, stats.<a class="code hl_variable" href="../../db/d4e/structstar__batch__stats__t.html#a3c6f8f48340800b3a1629ffdbe5332ef">operations_executed</a>);</div>
 <div class="line"> </div>
-<div class="line"><a class="code hl_function" href="#a8ca0e41c8f942ad7b1d474cf1b5b3aca">star_batch_free</a>(robust_batch);</div>
+<div class="line"><a class="code hl_function" href="#a358af22edefa7797ec9ef19bafb91027">star_batch_free</a>(robust_batch);</div>
 <div class="ttc" id="astar__bus__batch_8h_html"><div class="ttname"><a href="../../de/d18/star__bus__batch_8h.html">star_bus_batch.h</a></div><div class="ttdoc">Transaction batching for atomic multi-operation sequences.</div></div>
-<div class="ttc" id="astar__bus__batch_8h_html_a017f54844b511af85f04c4e459bac362"><div class="ttname"><a href="#a017f54844b511af85f04c4e459bac362">star_batch_clear</a></div><div class="ttdeci">esp_err_t star_batch_clear(star_batch_handle_t handle)</div><div class="ttdoc">Clear all operations from the batch.</div><div class="ttdef"><b>Definition</b> <a href="../../df/deb/star__bus__batch_8c_source.html#l00529">star_bus_batch.c:529</a></div></div>
-<div class="ttc" id="astar__bus__batch_8h_html_a13a1ac948f0436812bf37babc5228878"><div class="ttname"><a href="#a13a1ac948f0436812bf37babc5228878">star_batch_handle_t</a></div><div class="ttdeci">void * star_batch_handle_t</div><div class="ttdoc">Batch handle (opaque).</div><div class="ttdef"><b>Definition</b> <a href="../../de/d18/star__bus__batch_8h_source.html#l00243">star_bus_batch.h:243</a></div></div>
-<div class="ttc" id="astar__bus__batch_8h_html_a187f474f878a385ddee198d25940a19c"><div class="ttname"><a href="#a187f474f878a385ddee198d25940a19c">star_batch_add_delay</a></div><div class="ttdeci">esp_err_t star_batch_add_delay(star_batch_handle_t handle, uint32_t delay_ms)</div><div class="ttdoc">Add a delay operation to the batch.</div><div class="ttdef"><b>Definition</b> <a href="../../df/deb/star__bus__batch_8c_source.html#l00397">star_bus_batch.c:397</a></div></div>
-<div class="ttc" id="astar__bus__batch_8h_html_a2f5409e3ccdf8bbc60c14437d02c9508"><div class="ttname"><a href="#a2f5409e3ccdf8bbc60c14437d02c9508">star_batch_add_smbus_read_byte</a></div><div class="ttdeci">esp_err_t star_batch_add_smbus_read_byte(star_batch_handle_t handle, const char *bus_name, uint8_t addr, uint8_t command, uint8_t *data)</div><div class="ttdoc">Add an SMBus read byte operation to the batch.</div><div class="ttdef"><b>Definition</b> <a href="../../df/deb/star__bus__batch_8c_source.html#l00329">star_bus_batch.c:329</a></div></div>
-<div class="ttc" id="astar__bus__batch_8h_html_a3a1201881330caab00d81086718b48f5"><div class="ttname"><a href="#a3a1201881330caab00d81086718b48f5">star_batch_add_spi_transmit</a></div><div class="ttdeci">esp_err_t star_batch_add_spi_transmit(star_batch_handle_t handle, const char *bus_name, const uint8_t *data, size_t length, uint32_t flags)</div><div class="ttdoc">Add an SPI transmit operation to the batch.</div><div class="ttdef"><b>Definition</b> <a href="../../df/deb/star__bus__batch_8c_source.html#l00234">star_bus_batch.c:234</a></div></div>
-<div class="ttc" id="astar__bus__batch_8h_html_a3cd032b4f2687e052f740be24bf0b0a8"><div class="ttname"><a href="#a3cd032b4f2687e052f740be24bf0b0a8">star_batch_get_operation_result</a></div><div class="ttdeci">esp_err_t star_batch_get_operation_result(star_batch_handle_t handle, uint32_t index, esp_err_t *result)</div><div class="ttdoc">Get the result of a specific operation in the batch.</div><div class="ttdef"><b>Definition</b> <a href="../../df/deb/star__bus__batch_8c_source.html#l00497">star_bus_batch.c:497</a></div></div>
-<div class="ttc" id="astar__bus__batch_8h_html_a5c52a8a6241106a28ffe789cbe03e8fd"><div class="ttname"><a href="#a5c52a8a6241106a28ffe789cbe03e8fd">star_batch_add_i2c_write</a></div><div class="ttdeci">esp_err_t star_batch_add_i2c_write(star_batch_handle_t handle, const char *bus_name, const uint8_t *data, size_t length, uint8_t command)</div><div class="ttdoc">Add an I2C write operation to the batch.</div><div class="ttdef"><b>Definition</b> <a href="../../df/deb/star__bus__batch_8c_source.html#l00172">star_bus_batch.c:172</a></div></div>
-<div class="ttc" id="astar__bus__batch_8h_html_a6b0696e5b0c90b2bd8cebd83e8345f6f"><div class="ttname"><a href="#a6b0696e5b0c90b2bd8cebd83e8345f6f">star_batch_get_operation_count</a></div><div class="ttdeci">esp_err_t star_batch_get_operation_count(star_batch_handle_t handle, uint32_t *count)</div><div class="ttdoc">Get the number of operations in the batch.</div><div class="ttdef"><b>Definition</b> <a href="../../df/deb/star__bus__batch_8c_source.html#l00517">star_bus_batch.c:517</a></div></div>
+<div class="ttc" id="astar__bus__batch_8h_html_a017f54844b511af85f04c4e459bac362"><div class="ttname"><a href="#a017f54844b511af85f04c4e459bac362">star_batch_clear</a></div><div class="ttdeci">esp_err_t star_batch_clear(star_batch_handle_t handle)</div><div class="ttdoc">Clear all operations from the batch.</div><div class="ttdef"><b>Definition</b> <a href="../../df/deb/star__bus__batch_8c_source.html#l00533">star_bus_batch.c:533</a></div></div>
+<div class="ttc" id="astar__bus__batch_8h_html_a13a1ac948f0436812bf37babc5228878"><div class="ttname"><a href="#a13a1ac948f0436812bf37babc5228878">star_batch_handle_t</a></div><div class="ttdeci">void * star_batch_handle_t</div><div class="ttdoc">Batch handle (opaque).</div><div class="ttdef"><b>Definition</b> <a href="../../de/d18/star__bus__batch_8h_source.html#l00247">star_bus_batch.h:247</a></div></div>
+<div class="ttc" id="astar__bus__batch_8h_html_a187f474f878a385ddee198d25940a19c"><div class="ttname"><a href="#a187f474f878a385ddee198d25940a19c">star_batch_add_delay</a></div><div class="ttdeci">esp_err_t star_batch_add_delay(star_batch_handle_t handle, uint32_t delay_ms)</div><div class="ttdoc">Add a delay operation to the batch.</div><div class="ttdef"><b>Definition</b> <a href="../../df/deb/star__bus__batch_8c_source.html#l00401">star_bus_batch.c:401</a></div></div>
+<div class="ttc" id="astar__bus__batch_8h_html_a2f5409e3ccdf8bbc60c14437d02c9508"><div class="ttname"><a href="#a2f5409e3ccdf8bbc60c14437d02c9508">star_batch_add_smbus_read_byte</a></div><div class="ttdeci">esp_err_t star_batch_add_smbus_read_byte(star_batch_handle_t handle, const char *bus_name, uint8_t addr, uint8_t command, uint8_t *data)</div><div class="ttdoc">Add an SMBus read byte operation to the batch.</div><div class="ttdef"><b>Definition</b> <a href="../../df/deb/star__bus__batch_8c_source.html#l00333">star_bus_batch.c:333</a></div></div>
+<div class="ttc" id="astar__bus__batch_8h_html_a358af22edefa7797ec9ef19bafb91027"><div class="ttname"><a href="#a358af22edefa7797ec9ef19bafb91027">star_batch_free</a></div><div class="ttdeci">esp_err_t star_batch_free(star_batch_handle_t handle)</div><div class="ttdoc">Free a batch transaction.</div><div class="ttdef"><b>Definition</b> <a href="../../df/deb/star__bus__batch_8c_source.html#l00154">star_bus_batch.c:154</a></div></div>
+<div class="ttc" id="astar__bus__batch_8h_html_a3a1201881330caab00d81086718b48f5"><div class="ttname"><a href="#a3a1201881330caab00d81086718b48f5">star_batch_add_spi_transmit</a></div><div class="ttdeci">esp_err_t star_batch_add_spi_transmit(star_batch_handle_t handle, const char *bus_name, const uint8_t *data, size_t length, uint32_t flags)</div><div class="ttdoc">Add an SPI transmit operation to the batch.</div><div class="ttdef"><b>Definition</b> <a href="../../df/deb/star__bus__batch_8c_source.html#l00238">star_bus_batch.c:238</a></div></div>
+<div class="ttc" id="astar__bus__batch_8h_html_a3cd032b4f2687e052f740be24bf0b0a8"><div class="ttname"><a href="#a3cd032b4f2687e052f740be24bf0b0a8">star_batch_get_operation_result</a></div><div class="ttdeci">esp_err_t star_batch_get_operation_result(star_batch_handle_t handle, uint32_t index, esp_err_t *result)</div><div class="ttdoc">Get the result of a specific operation in the batch.</div><div class="ttdef"><b>Definition</b> <a href="../../df/deb/star__bus__batch_8c_source.html#l00501">star_bus_batch.c:501</a></div></div>
+<div class="ttc" id="astar__bus__batch_8h_html_a5c52a8a6241106a28ffe789cbe03e8fd"><div class="ttname"><a href="#a5c52a8a6241106a28ffe789cbe03e8fd">star_batch_add_i2c_write</a></div><div class="ttdeci">esp_err_t star_batch_add_i2c_write(star_batch_handle_t handle, const char *bus_name, const uint8_t *data, size_t length, uint8_t command)</div><div class="ttdoc">Add an I2C write operation to the batch.</div><div class="ttdef"><b>Definition</b> <a href="../../df/deb/star__bus__batch_8c_source.html#l00176">star_bus_batch.c:176</a></div></div>
+<div class="ttc" id="astar__bus__batch_8h_html_a6b0696e5b0c90b2bd8cebd83e8345f6f"><div class="ttname"><a href="#a6b0696e5b0c90b2bd8cebd83e8345f6f">star_batch_get_operation_count</a></div><div class="ttdeci">esp_err_t star_batch_get_operation_count(star_batch_handle_t handle, uint32_t *count)</div><div class="ttdoc">Get the number of operations in the batch.</div><div class="ttdef"><b>Definition</b> <a href="../../df/deb/star__bus__batch_8c_source.html#l00521">star_bus_batch.c:521</a></div></div>
 <div class="ttc" id="astar__bus__batch_8h_html_a6cf8eac885dbe55d7efffa0229b50e2e"><div class="ttname"><a href="#a6cf8eac885dbe55d7efffa0229b50e2e">star_batch_create</a></div><div class="ttdeci">esp_err_t star_batch_create(star_bus_manager_t *manager, const star_batch_config_t *config, star_batch_handle_t *handle)</div><div class="ttdoc">Create a new batch transaction.</div><div class="ttdef"><b>Definition</b> <a href="../../df/deb/star__bus__batch_8c_source.html#l00125">star_bus_batch.c:125</a></div></div>
-<div class="ttc" id="astar__bus__batch_8h_html_a80ab7c681dec605acb5a862cabe5fe4e"><div class="ttname"><a href="#a80ab7c681dec605acb5a862cabe5fe4e">star_batch_execute</a></div><div class="ttdeci">esp_err_t star_batch_execute(star_batch_handle_t handle, star_batch_stats_t *stats)</div><div class="ttdoc">Execute all operations in the batch.</div><div class="ttdef"><b>Definition</b> <a href="../../df/deb/star__bus__batch_8c_source.html#l00421">star_bus_batch.c:421</a></div></div>
-<div class="ttc" id="astar__bus__batch_8h_html_a8ca0e41c8f942ad7b1d474cf1b5b3aca"><div class="ttname"><a href="#a8ca0e41c8f942ad7b1d474cf1b5b3aca">star_batch_free</a></div><div class="ttdeci">void star_batch_free(star_batch_handle_t handle)</div><div class="ttdoc">Free a batch transaction.</div><div class="ttdef"><b>Definition</b> <a href="../../df/deb/star__bus__batch_8c_source.html#l00154">star_bus_batch.c:154</a></div></div>
-<div class="ttc" id="astar__bus__batch_8h_html_a9ac4808b440871d04cdc217cd20dff2c"><div class="ttname"><a href="#a9ac4808b440871d04cdc217cd20dff2c">star_batch_add_i2c_read</a></div><div class="ttdeci">esp_err_t star_batch_add_i2c_read(star_batch_handle_t handle, const char *bus_name, uint8_t *data, size_t length, uint8_t command)</div><div class="ttdoc">Add an I2C read operation to the batch.</div><div class="ttdef"><b>Definition</b> <a href="../../df/deb/star__bus__batch_8c_source.html#l00203">star_bus_batch.c:203</a></div></div>
-<div class="ttc" id="astar__bus__batch_8h_html_aa1ae74d3bf8f683440da0ea381161b1d"><div class="ttname"><a href="#aa1ae74d3bf8f683440da0ea381161b1d">star_batch_add_spi_transfer</a></div><div class="ttdeci">esp_err_t star_batch_add_spi_transfer(star_batch_handle_t handle, const char *bus_name, const uint8_t *tx_data, uint8_t *rx_data, size_t length, uint32_t flags)</div><div class="ttdoc">Add an SPI transfer operation to the batch.</div><div class="ttdef"><b>Definition</b> <a href="../../df/deb/star__bus__batch_8c_source.html#l00296">star_bus_batch.c:296</a></div></div>
-<div class="ttc" id="astar__bus__batch_8h_html_ae2ffc52be68d4ce8433e4a5762ae4072"><div class="ttname"><a href="#ae2ffc52be68d4ce8433e4a5762ae4072">STAR_BATCH_CONFIG_DEFAULT</a></div><div class="ttdeci">#define STAR_BATCH_CONFIG_DEFAULT()</div><div class="ttdoc">Create default batch configuration.</div><div class="ttdef"><b>Definition</b> <a href="../../de/d18/star__bus__batch_8h_source.html#l00543">star_bus_batch.h:543</a></div></div>
-<div class="ttc" id="astar__bus__batch_8h_html_afb21ef448d51300b3f1559a478fbed1d"><div class="ttname"><a href="#afb21ef448d51300b3f1559a478fbed1d">star_batch_add_smbus_write_byte</a></div><div class="ttdeci">esp_err_t star_batch_add_smbus_write_byte(star_batch_handle_t handle, const char *bus_name, uint8_t addr, uint8_t command, uint8_t data)</div><div class="ttdoc">Add an SMBus write byte operation to the batch.</div><div class="ttdef"><b>Definition</b> <a href="../../df/deb/star__bus__batch_8c_source.html#l00360">star_bus_batch.c:360</a></div></div>
+<div class="ttc" id="astar__bus__batch_8h_html_a80ab7c681dec605acb5a862cabe5fe4e"><div class="ttname"><a href="#a80ab7c681dec605acb5a862cabe5fe4e">star_batch_execute</a></div><div class="ttdeci">esp_err_t star_batch_execute(star_batch_handle_t handle, star_batch_stats_t *stats)</div><div class="ttdoc">Execute all operations in the batch.</div><div class="ttdef"><b>Definition</b> <a href="../../df/deb/star__bus__batch_8c_source.html#l00425">star_bus_batch.c:425</a></div></div>
+<div class="ttc" id="astar__bus__batch_8h_html_a9ac4808b440871d04cdc217cd20dff2c"><div class="ttname"><a href="#a9ac4808b440871d04cdc217cd20dff2c">star_batch_add_i2c_read</a></div><div class="ttdeci">esp_err_t star_batch_add_i2c_read(star_batch_handle_t handle, const char *bus_name, uint8_t *data, size_t length, uint8_t command)</div><div class="ttdoc">Add an I2C read operation to the batch.</div><div class="ttdef"><b>Definition</b> <a href="../../df/deb/star__bus__batch_8c_source.html#l00207">star_bus_batch.c:207</a></div></div>
+<div class="ttc" id="astar__bus__batch_8h_html_aa1ae74d3bf8f683440da0ea381161b1d"><div class="ttname"><a href="#aa1ae74d3bf8f683440da0ea381161b1d">star_batch_add_spi_transfer</a></div><div class="ttdeci">esp_err_t star_batch_add_spi_transfer(star_batch_handle_t handle, const char *bus_name, const uint8_t *tx_data, uint8_t *rx_data, size_t length, uint32_t flags)</div><div class="ttdoc">Add an SPI transfer operation to the batch.</div><div class="ttdef"><b>Definition</b> <a href="../../df/deb/star__bus__batch_8c_source.html#l00300">star_bus_batch.c:300</a></div></div>
+<div class="ttc" id="astar__bus__batch_8h_html_ae2ffc52be68d4ce8433e4a5762ae4072"><div class="ttname"><a href="#ae2ffc52be68d4ce8433e4a5762ae4072">STAR_BATCH_CONFIG_DEFAULT</a></div><div class="ttdeci">#define STAR_BATCH_CONFIG_DEFAULT()</div><div class="ttdoc">Create default batch configuration.</div><div class="ttdef"><b>Definition</b> <a href="../../de/d18/star__bus__batch_8h_source.html#l00549">star_bus_batch.h:549</a></div></div>
+<div class="ttc" id="astar__bus__batch_8h_html_afb21ef448d51300b3f1559a478fbed1d"><div class="ttname"><a href="#afb21ef448d51300b3f1559a478fbed1d">star_batch_add_smbus_write_byte</a></div><div class="ttdeci">esp_err_t star_batch_add_smbus_write_byte(star_batch_handle_t handle, const char *bus_name, uint8_t addr, uint8_t command, uint8_t data)</div><div class="ttdoc">Add an SMBus write byte operation to the batch.</div><div class="ttdef"><b>Definition</b> <a href="../../df/deb/star__bus__batch_8c_source.html#l00364">star_bus_batch.c:364</a></div></div>
 <div class="ttc" id="astar__bus__manager_8h_html"><div class="ttname"><a href="../../d6/dcc/star__bus__manager_8h.html">star_bus_manager.h</a></div><div class="ttdoc">Unified bus manager for I2C, SPI, GPIO, and other bus protocols.</div></div>
 <div class="ttc" id="astar__error__handler_8c_html_afc3d101f633a076cc1ca84b85b6224b2"><div class="ttname"><a href="../../d7/d82/star__error__handler_8c.html#afc3d101f633a076cc1ca84b85b6224b2">TAG</a></div><div class="ttdeci">#define TAG</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d82/star__error__handler_8c_source.html#l00012">star_error_handler.c:12</a></div></div>
-<div class="ttc" id="astructstar__batch__config__t_html"><div class="ttname"><a href="../../d2/d8f/structstar__batch__config__t.html">star_batch_config_t</a></div><div class="ttdoc">Batch configuration.</div><div class="ttdef"><b>Definition</b> <a href="../../de/d18/star__bus__batch_8h_source.html#l00270">star_bus_batch.h:270</a></div></div>
-<div class="ttc" id="astructstar__batch__stats__t_html"><div class="ttname"><a href="../../db/d4e/structstar__batch__stats__t.html">star_batch_stats_t</a></div><div class="ttdoc">Batch execution statistics.</div><div class="ttdef"><b>Definition</b> <a href="../../de/d18/star__bus__batch_8h_source.html#l00315">star_bus_batch.h:315</a></div></div>
-<div class="ttc" id="astructstar__batch__stats__t_html_a3c6f8f48340800b3a1629ffdbe5332ef"><div class="ttname"><a href="../../db/d4e/structstar__batch__stats__t.html#a3c6f8f48340800b3a1629ffdbe5332ef">star_batch_stats_t::operations_executed</a></div><div class="ttdeci">uint32_t operations_executed</div><div class="ttdef"><b>Definition</b> <a href="../../de/d18/star__bus__batch_8h_source.html#l00316">star_bus_batch.h:316</a></div></div>
-<div class="ttc" id="astructstar__batch__stats__t_html_a943376a9a58ce8961838c8a43d49abdf"><div class="ttname"><a href="../../db/d4e/structstar__batch__stats__t.html#a943376a9a58ce8961838c8a43d49abdf">star_batch_stats_t::operations_failed</a></div><div class="ttdeci">uint32_t operations_failed</div><div class="ttdef"><b>Definition</b> <a href="../../de/d18/star__bus__batch_8h_source.html#l00318">star_bus_batch.h:318</a></div></div>
-<div class="ttc" id="astructstar__batch__stats__t_html_ab32d950e9f8ab4481d120cbfa03ced8b"><div class="ttname"><a href="../../db/d4e/structstar__batch__stats__t.html#ab32d950e9f8ab4481d120cbfa03ced8b">star_batch_stats_t::total_time_ms</a></div><div class="ttdeci">uint32_t total_time_ms</div><div class="ttdef"><b>Definition</b> <a href="../../de/d18/star__bus__batch_8h_source.html#l00319">star_bus_batch.h:319</a></div></div>
-<div class="ttc" id="astructstar__batch__stats__t_html_abeac0829485a3b9187cd47fac748bfff"><div class="ttname"><a href="../../db/d4e/structstar__batch__stats__t.html#abeac0829485a3b9187cd47fac748bfff">star_batch_stats_t::operations_succeeded</a></div><div class="ttdeci">uint32_t operations_succeeded</div><div class="ttdef"><b>Definition</b> <a href="../../de/d18/star__bus__batch_8h_source.html#l00317">star_bus_batch.h:317</a></div></div>
+<div class="ttc" id="astructstar__batch__config__t_html"><div class="ttname"><a href="../../d2/d8f/structstar__batch__config__t.html">star_batch_config_t</a></div><div class="ttdoc">Batch configuration.</div><div class="ttdef"><b>Definition</b> <a href="../../de/d18/star__bus__batch_8h_source.html#l00274">star_bus_batch.h:274</a></div></div>
+<div class="ttc" id="astructstar__batch__stats__t_html"><div class="ttname"><a href="../../db/d4e/structstar__batch__stats__t.html">star_batch_stats_t</a></div><div class="ttdoc">Batch execution statistics.</div><div class="ttdef"><b>Definition</b> <a href="../../de/d18/star__bus__batch_8h_source.html#l00319">star_bus_batch.h:319</a></div></div>
+<div class="ttc" id="astructstar__batch__stats__t_html_a3c6f8f48340800b3a1629ffdbe5332ef"><div class="ttname"><a href="../../db/d4e/structstar__batch__stats__t.html#a3c6f8f48340800b3a1629ffdbe5332ef">star_batch_stats_t::operations_executed</a></div><div class="ttdeci">uint32_t operations_executed</div><div class="ttdef"><b>Definition</b> <a href="../../de/d18/star__bus__batch_8h_source.html#l00320">star_bus_batch.h:320</a></div></div>
+<div class="ttc" id="astructstar__batch__stats__t_html_a943376a9a58ce8961838c8a43d49abdf"><div class="ttname"><a href="../../db/d4e/structstar__batch__stats__t.html#a943376a9a58ce8961838c8a43d49abdf">star_batch_stats_t::operations_failed</a></div><div class="ttdeci">uint32_t operations_failed</div><div class="ttdef"><b>Definition</b> <a href="../../de/d18/star__bus__batch_8h_source.html#l00322">star_bus_batch.h:322</a></div></div>
+<div class="ttc" id="astructstar__batch__stats__t_html_ab32d950e9f8ab4481d120cbfa03ced8b"><div class="ttname"><a href="../../db/d4e/structstar__batch__stats__t.html#ab32d950e9f8ab4481d120cbfa03ced8b">star_batch_stats_t::total_time_ms</a></div><div class="ttdeci">uint32_t total_time_ms</div><div class="ttdef"><b>Definition</b> <a href="../../de/d18/star__bus__batch_8h_source.html#l00323">star_bus_batch.h:323</a></div></div>
+<div class="ttc" id="astructstar__batch__stats__t_html_abeac0829485a3b9187cd47fac748bfff"><div class="ttname"><a href="../../db/d4e/structstar__batch__stats__t.html#abeac0829485a3b9187cd47fac748bfff">star_batch_stats_t::operations_succeeded</a></div><div class="ttdeci">uint32_t operations_succeeded</div><div class="ttdef"><b>Definition</b> <a href="../../de/d18/star__bus__batch_8h_source.html#l00321">star_bus_batch.h:321</a></div></div>
 </div><!-- fragment --> 
 <p class="definition">Definition in file <a class="el" href="../../de/d18/star__bus__batch_8h_source.html">star_bus_batch.h</a>.</p>
 </div><a name="doc-define-members" id="doc-define-members"></a><h2 id="header-doc-define-members" class="groupheader">Macro Definition Documentation</h2>
@@ -500,54 +500,16 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <b>Value:</b><div class="fragment"><div class="line">  {                                                                                                \</div>
-<div class="line">    .timeout_ms        = <a class="code hl_define" href="#a007d70d47a8f059f2119a2e2a82381cc">STAR_BATCH_DEFAULT_TIMEOUT_MS</a>,                                            \</div>
+<div class="line">    .timeout_ms        = <a class="code hl_enumvalue" href="#a26578c84c6ad2788b8d0646ab2cb5118a2bb8e6e311b0b83670300343af2b16a0">STAR_BATCH_DEFAULT_TIMEOUT_MS</a>,                                            \</div>
 <div class="line">    .mode              = STAR_BATCH_MODE_SEQUENTIAL,                                               \</div>
 <div class="line">    .rollback_on_error = <span class="keyword">false</span>,                                                                    \</div>
 <div class="line">    .stop_on_error     = <span class="keyword">true</span>,                                                                     \</div>
 <div class="line">  }</div>
-<div class="ttc" id="astar__bus__batch_8h_html_a007d70d47a8f059f2119a2e2a82381cc"><div class="ttname"><a href="#a007d70d47a8f059f2119a2e2a82381cc">STAR_BATCH_DEFAULT_TIMEOUT_MS</a></div><div class="ttdeci">#define STAR_BATCH_DEFAULT_TIMEOUT_MS</div><div class="ttdoc">Default timeout for batch operations (ms).</div><div class="ttdef"><b>Definition</b> <a href="../../de/d18/star__bus__batch_8h_source.html#l00236">star_bus_batch.h:236</a></div></div>
+<div class="ttc" id="astar__bus__batch_8h_html_a26578c84c6ad2788b8d0646ab2cb5118a2bb8e6e311b0b83670300343af2b16a0"><div class="ttname"><a href="#a26578c84c6ad2788b8d0646ab2cb5118a2bb8e6e311b0b83670300343af2b16a0">STAR_BATCH_DEFAULT_TIMEOUT_MS</a></div><div class="ttdeci">@ STAR_BATCH_DEFAULT_TIMEOUT_MS</div><div class="ttdef"><b>Definition</b> <a href="../../de/d18/star__bus__batch_8h_source.html#l00239">star_bus_batch.h:239</a></div></div>
 </div><!-- fragment -->
 <p>Create default batch configuration. </p>
 
-<p class="definition">Definition at line <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00543">543</a> of file <a class="el" href="../../de/d18/star__bus__batch_8h_source.html">star_bus_batch.h</a>.</p>
-
-</div>
-</div>
-<a id="a007d70d47a8f059f2119a2e2a82381cc" name="a007d70d47a8f059f2119a2e2a82381cc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a007d70d47a8f059f2119a2e2a82381cc">&#9670;&#160;</a></span>STAR_BATCH_DEFAULT_TIMEOUT_MS</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define STAR_BATCH_DEFAULT_TIMEOUT_MS&#160;&#160;&#160;(5000)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Default timeout for batch operations (ms). </p>
-
-<p class="definition">Definition at line <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00236">236</a> of file <a class="el" href="../../de/d18/star__bus__batch_8h_source.html">star_bus_batch.h</a>.</p>
-
-</div>
-</div>
-<a id="a3994703788817ef5837c77783c6dfcd3" name="a3994703788817ef5837c77783c6dfcd3"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3994703788817ef5837c77783c6dfcd3">&#9670;&#160;</a></span>STAR_BATCH_MAX_OPERATIONS</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define STAR_BATCH_MAX_OPERATIONS&#160;&#160;&#160;(16)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Maximum number of operations in a batch. </p>
-
-<p class="definition">Definition at line <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00231">231</a> of file <a class="el" href="../../de/d18/star__bus__batch_8h_source.html">star_bus_batch.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00397">star_batch_add_delay()</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00203">star_batch_add_i2c_read()</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00172">star_batch_add_i2c_write()</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00329">star_batch_add_smbus_read_byte()</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00360">star_batch_add_smbus_write_byte()</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00265">star_batch_add_spi_receive()</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00296">star_batch_add_spi_transfer()</a>, and <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00234">star_batch_add_spi_transmit()</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00549">549</a> of file <a class="el" href="../../de/d18/star__bus__batch_8h_source.html">star_bus_batch.h</a>.</p>
 
 </div>
 </div>
@@ -566,11 +528,36 @@ Functions</h2></td></tr>
 
 <p>Batch handle (opaque). </p>
 
-<p class="definition">Definition at line <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00243">243</a> of file <a class="el" href="../../de/d18/star__bus__batch_8h_source.html">star_bus_batch.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00247">247</a> of file <a class="el" href="../../de/d18/star__bus__batch_8h_source.html">star_bus_batch.h</a>.</p>
 
 </div>
 </div>
 <a name="doc-enum-members" id="doc-enum-members"></a><h2 id="header-doc-enum-members" class="groupheader">Enumeration Type Documentation</h2>
+<a id="a26578c84c6ad2788b8d0646ab2cb5118" name="a26578c84c6ad2788b8d0646ab2cb5118"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a26578c84c6ad2788b8d0646ab2cb5118">&#9670;&#160;</a></span>anonymous enum</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">anonymous enum</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Batch operation constants. </p>
+<p>Using enum for type safety while maintaining compile-time constant behavior required for struct initializers and array sizes in C. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a26578c84c6ad2788b8d0646ab2cb5118ada4fd4da7e02572a1d59ed6987193500" name="a26578c84c6ad2788b8d0646ab2cb5118ada4fd4da7e02572a1d59ed6987193500"></a>STAR_BATCH_MAX_OPERATIONS&#160;</td><td class="fielddoc"><p>Maximum number of operations in a batch </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a26578c84c6ad2788b8d0646ab2cb5118a2bb8e6e311b0b83670300343af2b16a0" name="a26578c84c6ad2788b8d0646ab2cb5118a2bb8e6e311b0b83670300343af2b16a0"></a>STAR_BATCH_DEFAULT_TIMEOUT_MS&#160;</td><td class="fielddoc"><p>Default timeout for batch operations (ms) </p>
+</td></tr>
+</table>
+
+<p class="definition">Definition at line <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00234">234</a> of file <a class="el" href="../../de/d18/star__bus__batch_8h_source.html">star_bus_batch.h</a>.</p>
+
+</div>
+</div>
 <a id="a15ee3d0b98981174c6db3f21b3fbe352" name="a15ee3d0b98981174c6db3f21b3fbe352"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a15ee3d0b98981174c6db3f21b3fbe352">&#9670;&#160;</a></span>star_batch_mode_t</h2>
 
@@ -591,7 +578,7 @@ Functions</h2></td></tr>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00262">262</a> of file <a class="el" href="../../de/d18/star__bus__batch_8h_source.html">star_bus_batch.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00266">266</a> of file <a class="el" href="../../de/d18/star__bus__batch_8h_source.html">star_bus_batch.h</a>.</p>
 
 </div>
 </div>
@@ -627,7 +614,7 @@ Functions</h2></td></tr>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00248">248</a> of file <a class="el" href="../../de/d18/star__bus__batch_8h_source.html">star_bus_batch.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00252">252</a> of file <a class="el" href="../../de/d18/star__bus__batch_8h_source.html">star_bus_batch.h</a>.</p>
 
 </div>
 </div>
@@ -662,9 +649,9 @@ Functions</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise</dd></dl>
 <dl class="section note"><dt>Note</dt><dd>Useful for timing-sensitive sequences (e.g., device reset delays) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00397">397</a> of file <a class="el" href="../../df/deb/star__bus__batch_8c_source.html">star_bus_batch.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00401">401</a> of file <a class="el" href="../../df/deb/star__bus__batch_8c_source.html">star_bus_batch.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#a53f992980f490889635c0592211824e0">star_batch_operation_t::delay</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00305">star_batch_operation_t::delay_ms</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00256">k_star_batch_op_delay</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00028">batch_context_t::operation_count</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00027">batch_context_t::operations</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#a4b39b194191aa1b6689a5f28fa094ce0">star_batch_operation_t::params</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00231">STAR_BATCH_MAX_OPERATIONS</a>, and <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00281">star_batch_operation_t::type</a>.</p>
+<p class="reference">References <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#a1f7d6eb74efb381eb17b24e822ff6f29">star_batch_operation_t::delay</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00309">star_batch_operation_t::delay_ms</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00260">k_star_batch_op_delay</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00028">batch_context_t::operation_count</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00027">batch_context_t::operations</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#ad4dd675e851e85337c698ce8ca1aee13">star_batch_operation_t::params</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00236">STAR_BATCH_MAX_OPERATIONS</a>, and <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00285">star_batch_operation_t::type</a>.</p>
 
 </div>
 </div>
@@ -716,9 +703,9 @@ Functions</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise</dd></dl>
 <dl class="section note"><dt>Note</dt><dd>Data buffer must remain valid until batch is executed </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00203">203</a> of file <a class="el" href="../../df/deb/star__bus__batch_8c_source.html">star_bus_batch.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00207">207</a> of file <a class="el" href="../../df/deb/star__bus__batch_8c_source.html">star_bus_batch.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00282">star_batch_operation_t::bus_name</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00288">star_batch_operation_t::command</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00286">star_batch_operation_t::data</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#ad8444f13c730b0ce04683014a217f527">star_batch_operation_t::i2c</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00249">k_star_batch_op_i2c_read</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00287">star_batch_operation_t::length</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00028">batch_context_t::operation_count</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00027">batch_context_t::operations</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#a4b39b194191aa1b6689a5f28fa094ce0">star_batch_operation_t::params</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00231">STAR_BATCH_MAX_OPERATIONS</a>, and <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00281">star_batch_operation_t::type</a>.</p>
+<p class="reference">References <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00286">star_batch_operation_t::bus_name</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00292">star_batch_operation_t::command</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00290">star_batch_operation_t::data</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#a6a526b0861b1c561955a4aaa4d19a240">star_batch_operation_t::i2c</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00253">k_star_batch_op_i2c_read</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00291">star_batch_operation_t::length</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00028">batch_context_t::operation_count</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00027">batch_context_t::operations</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#ad4dd675e851e85337c698ce8ca1aee13">star_batch_operation_t::params</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00236">STAR_BATCH_MAX_OPERATIONS</a>, and <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00285">star_batch_operation_t::type</a>.</p>
 
 </div>
 </div>
@@ -770,9 +757,9 @@ Functions</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise</dd></dl>
 <dl class="section note"><dt>Note</dt><dd>Data buffer must remain valid until batch is executed </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00172">172</a> of file <a class="el" href="../../df/deb/star__bus__batch_8c_source.html">star_bus_batch.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00176">176</a> of file <a class="el" href="../../df/deb/star__bus__batch_8c_source.html">star_bus_batch.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00282">star_batch_operation_t::bus_name</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00288">star_batch_operation_t::command</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00286">star_batch_operation_t::data</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#ad8444f13c730b0ce04683014a217f527">star_batch_operation_t::i2c</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00250">k_star_batch_op_i2c_write</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00287">star_batch_operation_t::length</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00028">batch_context_t::operation_count</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00027">batch_context_t::operations</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#a4b39b194191aa1b6689a5f28fa094ce0">star_batch_operation_t::params</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00231">STAR_BATCH_MAX_OPERATIONS</a>, and <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00281">star_batch_operation_t::type</a>.</p>
+<p class="reference">References <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00286">star_batch_operation_t::bus_name</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00292">star_batch_operation_t::command</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00290">star_batch_operation_t::data</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#a6a526b0861b1c561955a4aaa4d19a240">star_batch_operation_t::i2c</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00254">k_star_batch_op_i2c_write</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00291">star_batch_operation_t::length</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00028">batch_context_t::operation_count</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00027">batch_context_t::operations</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#ad4dd675e851e85337c698ce8ca1aee13">star_batch_operation_t::params</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00236">STAR_BATCH_MAX_OPERATIONS</a>, and <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00285">star_batch_operation_t::type</a>.</p>
 
 </div>
 </div>
@@ -823,9 +810,9 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00329">329</a> of file <a class="el" href="../../df/deb/star__bus__batch_8c_source.html">star_bus_batch.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00333">333</a> of file <a class="el" href="../../df/deb/star__bus__batch_8c_source.html">star_bus_batch.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00299">star_batch_operation_t::addr</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00282">star_batch_operation_t::bus_name</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00288">star_batch_operation_t::command</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00286">star_batch_operation_t::data</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00254">k_star_batch_op_smbus_read_byte</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00028">batch_context_t::operation_count</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00027">batch_context_t::operations</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#a4b39b194191aa1b6689a5f28fa094ce0">star_batch_operation_t::params</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#a57af1c3620340c4ce9d9db327bfa0547">star_batch_operation_t::smbus</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00231">STAR_BATCH_MAX_OPERATIONS</a>, and <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00281">star_batch_operation_t::type</a>.</p>
+<p class="reference">References <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00303">star_batch_operation_t::addr</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00286">star_batch_operation_t::bus_name</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00292">star_batch_operation_t::command</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00290">star_batch_operation_t::data</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00258">k_star_batch_op_smbus_read_byte</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00028">batch_context_t::operation_count</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00027">batch_context_t::operations</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#ad4dd675e851e85337c698ce8ca1aee13">star_batch_operation_t::params</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#a519954d554fca3e20b937c463225f1b0">star_batch_operation_t::smbus</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00236">STAR_BATCH_MAX_OPERATIONS</a>, and <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00285">star_batch_operation_t::type</a>.</p>
 
 </div>
 </div>
@@ -876,9 +863,9 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00360">360</a> of file <a class="el" href="../../df/deb/star__bus__batch_8c_source.html">star_bus_batch.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00364">364</a> of file <a class="el" href="../../df/deb/star__bus__batch_8c_source.html">star_bus_batch.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00299">star_batch_operation_t::addr</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00282">star_batch_operation_t::bus_name</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00288">star_batch_operation_t::command</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00286">star_batch_operation_t::data</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00255">k_star_batch_op_smbus_write_byte</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00028">batch_context_t::operation_count</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00027">batch_context_t::operations</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#a4b39b194191aa1b6689a5f28fa094ce0">star_batch_operation_t::params</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#a57af1c3620340c4ce9d9db327bfa0547">star_batch_operation_t::smbus</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00231">STAR_BATCH_MAX_OPERATIONS</a>, and <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00281">star_batch_operation_t::type</a>.</p>
+<p class="reference">References <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00303">star_batch_operation_t::addr</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00286">star_batch_operation_t::bus_name</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00292">star_batch_operation_t::command</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00290">star_batch_operation_t::data</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00259">k_star_batch_op_smbus_write_byte</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00028">batch_context_t::operation_count</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00027">batch_context_t::operations</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#ad4dd675e851e85337c698ce8ca1aee13">star_batch_operation_t::params</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#a519954d554fca3e20b937c463225f1b0">star_batch_operation_t::smbus</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00236">STAR_BATCH_MAX_OPERATIONS</a>, and <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00285">star_batch_operation_t::type</a>.</p>
 
 </div>
 </div>
@@ -929,9 +916,9 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00265">265</a> of file <a class="el" href="../../df/deb/star__bus__batch_8c_source.html">star_bus_batch.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00269">269</a> of file <a class="el" href="../../df/deb/star__bus__batch_8c_source.html">star_bus_batch.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00282">star_batch_operation_t::bus_name</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00295">star_batch_operation_t::flags</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00252">k_star_batch_op_spi_receive</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00287">star_batch_operation_t::length</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00028">batch_context_t::operation_count</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00027">batch_context_t::operations</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#a4b39b194191aa1b6689a5f28fa094ce0">star_batch_operation_t::params</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00293">star_batch_operation_t::rx_data</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#a93c05dca35477d2524ea775bfc2b82c0">star_batch_operation_t::spi</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00231">STAR_BATCH_MAX_OPERATIONS</a>, and <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00281">star_batch_operation_t::type</a>.</p>
+<p class="reference">References <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00286">star_batch_operation_t::bus_name</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00299">star_batch_operation_t::flags</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00256">k_star_batch_op_spi_receive</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00291">star_batch_operation_t::length</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00028">batch_context_t::operation_count</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00027">batch_context_t::operations</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#ad4dd675e851e85337c698ce8ca1aee13">star_batch_operation_t::params</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00297">star_batch_operation_t::rx_data</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#a29b524f80c9de39e4b687f293b295159">star_batch_operation_t::spi</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00236">STAR_BATCH_MAX_OPERATIONS</a>, and <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00285">star_batch_operation_t::type</a>.</p>
 
 </div>
 </div>
@@ -988,9 +975,9 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00296">296</a> of file <a class="el" href="../../df/deb/star__bus__batch_8c_source.html">star_bus_batch.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00300">300</a> of file <a class="el" href="../../df/deb/star__bus__batch_8c_source.html">star_bus_batch.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00282">star_batch_operation_t::bus_name</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00295">star_batch_operation_t::flags</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00253">k_star_batch_op_spi_transfer</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00287">star_batch_operation_t::length</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00028">batch_context_t::operation_count</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00027">batch_context_t::operations</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#a4b39b194191aa1b6689a5f28fa094ce0">star_batch_operation_t::params</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00293">star_batch_operation_t::rx_data</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#a93c05dca35477d2524ea775bfc2b82c0">star_batch_operation_t::spi</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00231">STAR_BATCH_MAX_OPERATIONS</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00292">star_batch_operation_t::tx_data</a>, and <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00281">star_batch_operation_t::type</a>.</p>
+<p class="reference">References <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00286">star_batch_operation_t::bus_name</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00299">star_batch_operation_t::flags</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00257">k_star_batch_op_spi_transfer</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00291">star_batch_operation_t::length</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00028">batch_context_t::operation_count</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00027">batch_context_t::operations</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#ad4dd675e851e85337c698ce8ca1aee13">star_batch_operation_t::params</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00297">star_batch_operation_t::rx_data</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#a29b524f80c9de39e4b687f293b295159">star_batch_operation_t::spi</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00236">STAR_BATCH_MAX_OPERATIONS</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00296">star_batch_operation_t::tx_data</a>, and <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00285">star_batch_operation_t::type</a>.</p>
 
 </div>
 </div>
@@ -1041,9 +1028,9 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00234">234</a> of file <a class="el" href="../../df/deb/star__bus__batch_8c_source.html">star_bus_batch.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00238">238</a> of file <a class="el" href="../../df/deb/star__bus__batch_8c_source.html">star_bus_batch.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00282">star_batch_operation_t::bus_name</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00295">star_batch_operation_t::flags</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00251">k_star_batch_op_spi_transmit</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00287">star_batch_operation_t::length</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00028">batch_context_t::operation_count</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00027">batch_context_t::operations</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#a4b39b194191aa1b6689a5f28fa094ce0">star_batch_operation_t::params</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#a93c05dca35477d2524ea775bfc2b82c0">star_batch_operation_t::spi</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00231">STAR_BATCH_MAX_OPERATIONS</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00292">star_batch_operation_t::tx_data</a>, and <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00281">star_batch_operation_t::type</a>.</p>
+<p class="reference">References <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00286">star_batch_operation_t::bus_name</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00299">star_batch_operation_t::flags</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00255">k_star_batch_op_spi_transmit</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00291">star_batch_operation_t::length</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00028">batch_context_t::operation_count</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00027">batch_context_t::operations</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#ad4dd675e851e85337c698ce8ca1aee13">star_batch_operation_t::params</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#a29b524f80c9de39e4b687f293b295159">star_batch_operation_t::spi</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00236">STAR_BATCH_MAX_OPERATIONS</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00296">star_batch_operation_t::tx_data</a>, and <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00285">star_batch_operation_t::type</a>.</p>
 
 </div>
 </div>
@@ -1072,9 +1059,9 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00529">529</a> of file <a class="el" href="../../df/deb/star__bus__batch_8c_source.html">star_bus_batch.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00533">533</a> of file <a class="el" href="../../df/deb/star__bus__batch_8c_source.html">star_bus_batch.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00286">star_batch_operation_t::data</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00029">batch_context_t::executed</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00255">k_star_batch_op_smbus_write_byte</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00028">batch_context_t::operation_count</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00027">batch_context_t::operations</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#a4b39b194191aa1b6689a5f28fa094ce0">star_batch_operation_t::params</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#a57af1c3620340c4ce9d9db327bfa0547">star_batch_operation_t::smbus</a>, and <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00281">star_batch_operation_t::type</a>.</p>
+<p class="reference">References <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00290">star_batch_operation_t::data</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00029">batch_context_t::executed</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00259">k_star_batch_op_smbus_write_byte</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00028">batch_context_t::operation_count</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00027">batch_context_t::operations</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#ad4dd675e851e85337c698ce8ca1aee13">star_batch_operation_t::params</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#a519954d554fca3e20b937c463225f1b0">star_batch_operation_t::smbus</a>, and <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00285">star_batch_operation_t::type</a>.</p>
 
 </div>
 </div>
@@ -1115,7 +1102,7 @@ Functions</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00125">125</a> of file <a class="el" href="../../df/deb/star__bus__batch_8c_source.html">star_bus_batch.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00026">batch_context_t::config</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00025">batch_context_t::manager</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00272">star_batch_config_t::mode</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00271">star_batch_config_t::timeout_ms</a>.</p>
+<p class="reference">References <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00026">batch_context_t::config</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00025">batch_context_t::manager</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00276">star_batch_config_t::mode</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00275">star_batch_config_t::timeout_ms</a>.</p>
 
 </div>
 </div>
@@ -1150,9 +1137,9 @@ Functions</h2></td></tr>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK if all operations succeeded, error code of first failure otherwise</dd></dl>
 <dl class="section note"><dt>Note</dt><dd>Individual operation results can be checked via star_batch_get_operation_result </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00421">421</a> of file <a class="el" href="../../df/deb/star__bus__batch_8c_source.html">star_bus_batch.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00425">425</a> of file <a class="el" href="../../df/deb/star__bus__batch_8c_source.html">star_bus_batch.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00026">batch_context_t::config</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00031">batch_context_t::end_tick</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00029">batch_context_t::executed</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00039">internal_execute_operation()</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00028">batch_context_t::operation_count</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00316">star_batch_stats_t::operations_executed</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00318">star_batch_stats_t::operations_failed</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00317">star_batch_stats_t::operations_succeeded</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00030">batch_context_t::start_tick</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00274">star_batch_config_t::stop_on_error</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00271">star_batch_config_t::timeout_ms</a>, and <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00319">star_batch_stats_t::total_time_ms</a>.</p>
+<p class="reference">References <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00026">batch_context_t::config</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00031">batch_context_t::end_tick</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00029">batch_context_t::executed</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00039">internal_execute_operation()</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00028">batch_context_t::operation_count</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00320">star_batch_stats_t::operations_executed</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00322">star_batch_stats_t::operations_failed</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00321">star_batch_stats_t::operations_succeeded</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00030">batch_context_t::start_tick</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00278">star_batch_config_t::stop_on_error</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00275">star_batch_config_t::timeout_ms</a>, and <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00323">star_batch_stats_t::total_time_ms</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1191,14 +1178,14 @@ Here is the call graph for this function:</div>
 
 </div>
 </div>
-<a id="a8ca0e41c8f942ad7b1d474cf1b5b3aca" name="a8ca0e41c8f942ad7b1d474cf1b5b3aca"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8ca0e41c8f942ad7b1d474cf1b5b3aca">&#9670;&#160;</a></span>star_batch_free()</h2>
+<a id="a358af22edefa7797ec9ef19bafb91027" name="a358af22edefa7797ec9ef19bafb91027"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a358af22edefa7797ec9ef19bafb91027">&#9670;&#160;</a></span>star_batch_free()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void star_batch_free </td>
+          <td class="memname">esp_err_t star_batch_free </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="#a13a1ac948f0436812bf37babc5228878">star_batch_handle_t</a></td>          <td class="paramname"><span class="paramname"><em>handle</em></span></td><td>)</td>
           <td></td>
@@ -1213,11 +1200,12 @@ Here is the call graph for this function:</div>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, ESP_ERR_INVALID_ARG if handle is NULL</dd></dl>
 <dl class="section note"><dt>Note</dt><dd>Call this after executing or if you want to discard the batch </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00154">154</a> of file <a class="el" href="../../df/deb/star__bus__batch_8c_source.html">star_bus_batch.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00286">star_batch_operation_t::data</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00255">k_star_batch_op_smbus_write_byte</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00028">batch_context_t::operation_count</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00027">batch_context_t::operations</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#a4b39b194191aa1b6689a5f28fa094ce0">star_batch_operation_t::params</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#a57af1c3620340c4ce9d9db327bfa0547">star_batch_operation_t::smbus</a>, and <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00281">star_batch_operation_t::type</a>.</p>
+<p class="reference">References <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00290">star_batch_operation_t::data</a>, <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00259">k_star_batch_op_smbus_write_byte</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00028">batch_context_t::operation_count</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00027">batch_context_t::operations</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#ad4dd675e851e85337c698ce8ca1aee13">star_batch_operation_t::params</a>, <a class="el" href="../../d9/db0/structstar__batch__operation__t.html#a519954d554fca3e20b937c463225f1b0">star_batch_operation_t::smbus</a>, and <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00285">star_batch_operation_t::type</a>.</p>
 
 </div>
 </div>
@@ -1250,7 +1238,7 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00517">517</a> of file <a class="el" href="../../df/deb/star__bus__batch_8c_source.html">star_bus_batch.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00521">521</a> of file <a class="el" href="../../df/deb/star__bus__batch_8c_source.html">star_bus_batch.c</a>.</p>
 
 <p class="reference">References <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00028">batch_context_t::operation_count</a>.</p>
 
@@ -1292,9 +1280,9 @@ Here is the call graph for this function:</div>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK if result retrieved, error code otherwise</dd></dl>
 <dl class="section note"><dt>Note</dt><dd>Only valid after star_batch_execute has been called </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00497">497</a> of file <a class="el" href="../../df/deb/star__bus__batch_8c_source.html">star_bus_batch.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00501">501</a> of file <a class="el" href="../../df/deb/star__bus__batch_8c_source.html">star_bus_batch.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00029">batch_context_t::executed</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00028">batch_context_t::operation_count</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00027">batch_context_t::operations</a>, and <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00309">star_batch_operation_t::result</a>.</p>
+<p class="reference">References <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00029">batch_context_t::executed</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00028">batch_context_t::operation_count</a>, <a class="el" href="../../df/deb/star__bus__batch_8c_source.html#l00027">batch_context_t::operations</a>, and <a class="el" href="../../de/d18/star__bus__batch_8h_source.html#l00313">star_batch_operation_t::result</a>.</p>
 
 </div>
 </div>

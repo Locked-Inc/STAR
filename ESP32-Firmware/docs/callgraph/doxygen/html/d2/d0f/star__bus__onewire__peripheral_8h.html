@@ -262,7 +262,7 @@ Functions</h2></td></tr>
 <div class="line">config.<a class="code hl_variable" href="../../d5/d8f/structstar__onewire__peripheral__config__t.html#a5c15a1770275d48697b91578ed350611">rom_code</a> = 0x1234567890ABCD28ULL; <span class="comment">// DS18B20 family</span></div>
 <div class="line">config.<a class="code hl_variable" href="../../d5/d8f/structstar__onewire__peripheral__config__t.html#a5b94937c4314381ab21f975540738a56">on_read</a> = on_read;</div>
 <div class="line"><a class="code hl_function" href="#a79f4d0af0a89c0a884ff815880c2d264">star_bus_onewire_peripheral_enable</a>(manager, <span class="stringliteral">&quot;onewire0&quot;</span>, &amp;config);</div>
-<div class="ttc" id="astar__bus__onewire__peripheral_8h_html_a79f4d0af0a89c0a884ff815880c2d264"><div class="ttname"><a href="#a79f4d0af0a89c0a884ff815880c2d264">star_bus_onewire_peripheral_enable</a></div><div class="ttdeci">esp_err_t star_bus_onewire_peripheral_enable(star_bus_manager_t *manager, const char *bus_name, const star_onewire_peripheral_config_t *config)</div><div class="ttdoc">Enable 1-Wire peripheral mode.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00086">star_bus_onewire_peripheral.c:86</a></div></div>
+<div class="ttc" id="astar__bus__onewire__peripheral_8h_html_a79f4d0af0a89c0a884ff815880c2d264"><div class="ttname"><a href="#a79f4d0af0a89c0a884ff815880c2d264">star_bus_onewire_peripheral_enable</a></div><div class="ttdeci">esp_err_t star_bus_onewire_peripheral_enable(star_bus_manager_t *manager, const char *bus_name, const star_onewire_peripheral_config_t *config)</div><div class="ttdoc">Enable 1-Wire peripheral mode.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00087">star_bus_onewire_peripheral.c:87</a></div></div>
 <div class="ttc" id="astructstar__onewire__peripheral__config__t_html"><div class="ttname"><a href="../../d5/d8f/structstar__onewire__peripheral__config__t.html">star_onewire_peripheral_config_t</a></div><div class="ttdoc">1-Wire peripheral configuration</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d0f/star__bus__onewire__peripheral_8h_source.html#l00099">star_bus_onewire_peripheral.h:99</a></div></div>
 <div class="ttc" id="astructstar__onewire__peripheral__config__t_html_a5b94937c4314381ab21f975540738a56"><div class="ttname"><a href="../../d5/d8f/structstar__onewire__peripheral__config__t.html#a5b94937c4314381ab21f975540738a56">star_onewire_peripheral_config_t::on_read</a></div><div class="ttdeci">star_onewire_peripheral_read_cb_t on_read</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d0f/star__bus__onewire__peripheral_8h_source.html#l00104">star_bus_onewire_peripheral.h:104</a></div></div>
 <div class="ttc" id="astructstar__onewire__peripheral__config__t_html_a5c15a1770275d48697b91578ed350611"><div class="ttname"><a href="../../d5/d8f/structstar__onewire__peripheral__config__t.html#a5c15a1770275d48697b91578ed350611">star_onewire_peripheral_config_t::rom_code</a></div><div class="ttdeci">star_onewire_rom_t rom_code</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d0f/star__bus__onewire__peripheral_8h_source.html#l00100">star_bus_onewire_peripheral.h:100</a></div></div>
@@ -394,7 +394,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00136">136</a> of file <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html">star_bus_onewire_peripheral.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00137">137</a> of file <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html">star_bus_onewire_peripheral.c</a>.</p>
 
 <p class="reference">References <a class="el" href="../../d5/d06/star__bus__i2c__peripheral_8c_source.html#l00028">peripheral_state_t::enabled</a>, <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00048">get_peripheral_state()</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
 <div class="dynheader">
@@ -449,9 +449,9 @@ Here is the call graph for this function:</div>
 <dd>
 on_read and on_write callbacks are required </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00086">86</a> of file <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html">star_bus_onewire_peripheral.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00087">87</a> of file <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html">star_bus_onewire_peripheral.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00030">peripheral_state_t::alarm_active</a>, <a class="el" href="../../d2/d0f/star__bus__onewire__peripheral_8h_source.html#l00101">star_onewire_peripheral_config_t::auto_calculate_crc</a>, <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00070">calculate_rom_crc()</a>, <a class="el" href="../../d5/d06/star__bus__i2c__peripheral_8c_source.html#l00026">peripheral_state_t::config</a>, <a class="el" href="../../d5/d06/star__bus__i2c__peripheral_8c_source.html#l00028">peripheral_state_t::enabled</a>, <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00048">get_peripheral_state()</a>, <a class="el" href="../../d2/d0f/star__bus__onewire__peripheral_8h_source.html#l00104">star_onewire_peripheral_config_t::on_read</a>, <a class="el" href="../../d2/d0f/star__bus__onewire__peripheral_8h_source.html#l00105">star_onewire_peripheral_config_t::on_write</a>, <a class="el" href="../../d2/d0f/star__bus__onewire__peripheral_8h_source.html#l00100">star_onewire_peripheral_config_t::rom_code</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00680">star_bus_onewire_verify_rom()</a>, and <a class="el" href="../../d5/d06/star__bus__i2c__peripheral_8c_source.html#l00027">peripheral_state_t::stats</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00030">peripheral_state_t::alarm_active</a>, <a class="el" href="../../d2/d0f/star__bus__onewire__peripheral_8h_source.html#l00101">star_onewire_peripheral_config_t::auto_calculate_crc</a>, <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00071">calculate_rom_crc()</a>, <a class="el" href="../../d5/d06/star__bus__i2c__peripheral_8c_source.html#l00026">peripheral_state_t::config</a>, <a class="el" href="../../d5/d06/star__bus__i2c__peripheral_8c_source.html#l00028">peripheral_state_t::enabled</a>, <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00048">get_peripheral_state()</a>, <a class="el" href="../../d2/d0f/star__bus__onewire__peripheral_8h_source.html#l00104">star_onewire_peripheral_config_t::on_read</a>, <a class="el" href="../../d2/d0f/star__bus__onewire__peripheral_8h_source.html#l00105">star_onewire_peripheral_config_t::on_write</a>, <a class="el" href="../../d2/d0f/star__bus__onewire__peripheral_8h_source.html#l00100">star_onewire_peripheral_config_t::rom_code</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00688">star_bus_onewire_verify_rom()</a>, and <a class="el" href="../../d5/d06/star__bus__i2c__peripheral_8c_source.html#l00027">peripheral_state_t::stats</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -512,7 +512,7 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00197">197</a> of file <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html">star_bus_onewire_peripheral.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00198">198</a> of file <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html">star_bus_onewire_peripheral.c</a>.</p>
 
 <p class="reference">References <a class="el" href="../../d5/d06/star__bus__i2c__peripheral_8c_source.html#l00026">peripheral_state_t::config</a>, <a class="el" href="../../d5/d06/star__bus__i2c__peripheral_8c_source.html#l00028">peripheral_state_t::enabled</a>, and <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00048">get_peripheral_state()</a>.</p>
 <div class="dynheader">
@@ -563,7 +563,7 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00235">235</a> of file <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html">star_bus_onewire_peripheral.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00236">236</a> of file <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html">star_bus_onewire_peripheral.c</a>.</p>
 
 <p class="reference">References <a class="el" href="../../d5/d06/star__bus__i2c__peripheral_8c_source.html#l00028">peripheral_state_t::enabled</a>, <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00048">get_peripheral_state()</a>, and <a class="el" href="../../d5/d06/star__bus__i2c__peripheral_8c_source.html#l00027">peripheral_state_t::stats</a>.</p>
 <div class="dynheader">
@@ -614,7 +614,7 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00154">154</a> of file <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html">star_bus_onewire_peripheral.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00155">155</a> of file <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html">star_bus_onewire_peripheral.c</a>.</p>
 
 <p class="reference">References <a class="el" href="../../d5/d06/star__bus__i2c__peripheral_8c_source.html#l00028">peripheral_state_t::enabled</a>, and <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00048">get_peripheral_state()</a>.</p>
 <div class="dynheader">
@@ -658,7 +658,7 @@ Here is the call graph for this function:</div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00271">271</a> of file <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html">star_bus_onewire_peripheral.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00272">272</a> of file <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html">star_bus_onewire_peripheral.c</a>.</p>
 
 <p class="reference">References <a class="el" href="../../d2/d0f/star__bus__onewire__peripheral_8h_source.html#l00123">star_onewire_peripheral_stats_t::alarm_search_commands</a>, <a class="el" href="../../d2/d0f/star__bus__onewire__peripheral_8h_source.html#l00126">star_onewire_peripheral_stats_t::bytes_received</a>, <a class="el" href="../../d2/d0f/star__bus__onewire__peripheral_8h_source.html#l00125">star_onewire_peripheral_stats_t::bytes_sent</a>, <a class="el" href="../../d2/d0f/star__bus__onewire__peripheral_8h_source.html#l00127">star_onewire_peripheral_stats_t::callback_errors</a>, <a class="el" href="../../d2/d0f/star__bus__onewire__peripheral_8h_source.html#l00124">star_onewire_peripheral_stats_t::function_commands</a>, <a class="el" href="../../d2/d0f/star__bus__onewire__peripheral_8h_source.html#l00128">star_onewire_peripheral_stats_t::last_error</a>, <a class="el" href="../../d2/d0f/star__bus__onewire__peripheral_8h_source.html#l00120">star_onewire_peripheral_stats_t::match_rom_commands</a>, <a class="el" href="../../d2/d0f/star__bus__onewire__peripheral_8h_source.html#l00118">star_onewire_peripheral_stats_t::reset_pulses_detected</a>, <a class="el" href="../../d2/d0f/star__bus__onewire__peripheral_8h_source.html#l00119">star_onewire_peripheral_stats_t::rom_reads</a>, <a class="el" href="../../d2/d0f/star__bus__onewire__peripheral_8h_source.html#l00122">star_onewire_peripheral_stats_t::search_rom_commands</a>, and <a class="el" href="../../d2/d0f/star__bus__onewire__peripheral_8h_source.html#l00121">star_onewire_peripheral_stats_t::skip_rom_commands</a>.</p>
 
@@ -693,7 +693,7 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00253">253</a> of file <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html">star_bus_onewire_peripheral.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00254">254</a> of file <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html">star_bus_onewire_peripheral.c</a>.</p>
 
 <p class="reference">References <a class="el" href="../../d5/d06/star__bus__i2c__peripheral_8c_source.html#l00028">peripheral_state_t::enabled</a>, <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00048">get_peripheral_state()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../d5/d06/star__bus__i2c__peripheral_8c_source.html#l00027">peripheral_state_t::stats</a>.</p>
 <div class="dynheader">
@@ -745,7 +745,7 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00215">215</a> of file <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html">star_bus_onewire_peripheral.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00216">216</a> of file <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html">star_bus_onewire_peripheral.c</a>.</p>
 
 <p class="reference">References <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00030">peripheral_state_t::alarm_active</a>, <a class="el" href="../../d5/d06/star__bus__i2c__peripheral_8c_source.html#l00028">peripheral_state_t::enabled</a>, <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00048">get_peripheral_state()</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
 <div class="dynheader">
@@ -803,9 +803,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00172">172</a> of file <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html">star_bus_onewire_peripheral.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00173">173</a> of file <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html">star_bus_onewire_peripheral.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00070">calculate_rom_crc()</a>, <a class="el" href="../../d5/d06/star__bus__i2c__peripheral_8c_source.html#l00026">peripheral_state_t::config</a>, <a class="el" href="../../d5/d06/star__bus__i2c__peripheral_8c_source.html#l00028">peripheral_state_t::enabled</a>, <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00048">get_peripheral_state()</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00071">calculate_rom_crc()</a>, <a class="el" href="../../d5/d06/star__bus__i2c__peripheral_8c_source.html#l00026">peripheral_state_t::config</a>, <a class="el" href="../../d5/d06/star__bus__i2c__peripheral_8c_source.html#l00028">peripheral_state_t::enabled</a>, <a class="el" href="../../d2/de5/star__bus__onewire__peripheral_8c_source.html#l00048">get_peripheral_state()</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">

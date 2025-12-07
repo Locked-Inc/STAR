@@ -1,0 +1,31 @@
+<map id="internal_gpio_high" name="internal_gpio_high">
+<area shape="rect" id="Node000001" title="Set GPIO output high (release for pull&#45;up)." alt="" coords="921,83,1046,108"/>
+<area shape="rect" id="Node000002" href="$d9/dd6/star__bus__onewire_8c.html#a62f64f5066b1bf467cc7aec6786f41f4" title="Initialize 1&#45;Wire bus." alt="" coords="709,8,857,34"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="940,75,872,47,839,37,840,32,874,42,946,76"/>
+<area shape="rect" id="Node000003" href="$d9/dd6/star__bus__onewire_8c.html#a7f17f7f63e9d28846b205cb077fba679" title="Read a single bit." alt="" coords="695,57,871,83"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="903,86,872,84,871,79,908,86"/>
+<area shape="rect" id="Node000009" href="$d9/dd6/star__bus__onewire_8c.html#ac79d607f6cdbfc963260a2220dacfc19" title="Send reset pulse and detect device presence." alt="" coords="470,207,630,232"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="945,115,874,147,745,184,628,209,627,203,744,179,872,142,940,116"/>
+<area shape="rect" id="Node000011" href="$d9/dd6/star__bus__onewire_8c.html#a68eda1de47f3c405ce2f5819d72f1f9e" title="Write a single bit." alt="" coords="693,107,873,132"/>
+<area shape="poly" id="edge12_Node000001_Node000011" title=" " alt="" coords="903,105,874,111,873,106,908,104"/>
+<area shape="rect" id="Node000004" href="$d9/dd6/star__bus__onewire_8c.html#a9bdfb58e3d3e35760925323e30879968" title="Read a byte." alt="" coords="456,5,644,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="705,54,611,34,611,29,710,53"/>
+<area shape="rect" id="Node000007" href="$d9/dd6/star__bus__onewire_8c.html#a9e824a2a3393b3059ede24129d9f59f7" title="Search for all devices on the bus." alt="" coords="238,99,407,124"/>
+<area shape="poly" id="edge6_Node000003_Node000007" title=" " alt="" coords="677,79,455,99,408,104,407,99,455,94,682,77"/>
+<area shape="rect" id="Node000005" href="$d9/dd6/star__bus__onewire_8c.html#a5ba505f020f3b1de4f6ed6a4becc6108" title="Read multiple bytes." alt="" coords="245,15,400,56"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="438,27,401,32,400,27,443,26"/>
+<area shape="rect" id="Node000006" href="$d9/dd6/star__bus__onewire_8c.html#a585e54933529b5a71ee8f22332692285" title="Read ROM from single device on bus." alt="" coords="5,153,190,179"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="266,66,239,88,226,103,217,116,207,130,191,143,166,155,163,150,188,139,203,126,212,113,221,99,236,84,270,63"/>
+<area shape="rect" id="Node000008" href="$d9/dd6/star__bus__onewire_8c.html#a77482610444b896ddb6f74aa04b44b1c" title="Search for devices with active alarms." alt="" coords="13,88,182,129"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="219,111,183,112,182,107,224,109"/>
+<area shape="poly" id="edge9_Node000009_Node000006" title=" " alt="" coords="497,237,441,253,376,263,306,265,271,261,237,254,200,240,165,220,113,182,115,177,168,216,202,235,238,249,272,256,306,260,375,258,440,248,492,237"/>
+<area shape="poly" id="edge10_Node000009_Node000007" title=" " alt="" coords="468,201,454,198,389,162,340,127,341,122,392,158,456,193,473,202"/>
+<area shape="rect" id="Node000010" href="$d9/dd6/star__bus__onewire_8c.html#adee9b5236bf808b50ec63f3bec1eb695" title="Write multiple bytes." alt="" coords="243,199,402,240"/>
+<area shape="poly" id="edge11_Node000009_Node000010" title=" " alt="" coords="452,220,402,222,402,217,457,219"/>
+<area shape="poly" id="edge13_Node000011_Node000007" title=" " alt="" coords="676,119,408,116,407,110,680,117"/>
+<area shape="rect" id="Node000012" href="$d9/dd6/star__bus__onewire_8c.html#ae88febdda5fbab30605093333a32d45c" title="Write a byte." alt="" coords="455,157,645,183"/>
+<area shape="poly" id="edge14_Node000011_Node000012" title=" " alt="" coords="708,136,613,159,612,154,703,137"/>
+<area shape="poly" id="edge15_Node000012_Node000006" title=" " alt="" coords="438,172,190,170,190,164,441,167"/>
+<area shape="poly" id="edge16_Node000012_Node000007" title=" " alt="" coords="480,153,375,128,376,122,485,152"/>
+<area shape="poly" id="edge17_Node000012_Node000010" title=" " alt="" coords="475,186,403,205,402,200,470,187"/>
+</map>

@@ -1,47 +1,47 @@
 <map id="star_bus_onewire_search_alarms" name="star_bus_onewire_search_alarms">
-<area shape="rect" id="Node000001" title="Search for devices with active alarms." alt="" coords="5,161,175,202"/>
-<area shape="rect" id="Node000002" href="$d9/dd6/star__bus__onewire_8c.html#a9e824a2a3393b3059ede24129d9f59f7" title="Search for all devices on the bus." alt="" coords="223,169,392,194"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="174,179,210,180,205,183,176,184"/>
-<area shape="rect" id="Node000003" href="$d9/dd6/star__bus__onewire_8c.html#abd369d093b733ae101fd35f6c77d547e" title="Get 1&#45;Wire state for a bus (thread&#45;safe)." alt="" coords="907,45,1034,70"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="326,166,376,134,439,102,552,62,599,51,644,45,739,41,859,46,894,50,888,51,859,51,739,47,645,50,600,56,553,68,441,107,378,139,329,170"/>
-<area shape="rect" id="Node000006" href="$d9/dd6/star__bus__onewire_8c.html#a8c52a9289a4681648396db6403fa846b" title="Convert byte array to ROM." alt="" coords="454,269,617,310"/>
-<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="333,193,441,249,469,263,464,263,439,253,332,198"/>
-<area shape="rect" id="Node000007" href="$d9/dd6/star__bus__onewire_8c.html#a7f17f7f63e9d28846b205cb077fba679" title="Read a single bit." alt="" coords="681,144,857,169"/>
-<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="365,166,440,154,556,148,668,151,662,152,556,153,440,159,367,171"/>
-<area shape="rect" id="Node000012" href="$d9/dd6/star__bus__onewire_8c.html#ac79d607f6cdbfc963260a2220dacfc19" title="Send reset pulse and detect device presence." alt="" coords="689,94,849,120"/>
-<area shape="poly" id="edge12_Node000002_Node000012" title=" " alt="" coords="338,166,385,148,439,132,561,114,676,108,671,109,562,119,441,138,387,153,340,171"/>
-<area shape="rect" id="Node000013" href="$d9/dd6/star__bus__onewire_8c.html#adf13ab98285c498be6137bab53866b2a" title="Verify ROM code CRC." alt="" coords="440,334,631,360"/>
-<area shape="poly" id="edge18_Node000002_Node000013" title=" " alt="" coords="318,192,366,254,401,289,441,319,454,328,449,327,439,324,398,293,362,258,316,197"/>
-<area shape="rect" id="Node000016" href="$d9/dd6/star__bus__onewire_8c.html#a68eda1de47f3c405ce2f5819d72f1f9e" title="Write a single bit." alt="" coords="679,193,859,218"/>
-<area shape="poly" id="edge21_Node000002_Node000016" title=" " alt="" coords="366,192,440,204,556,210,666,211,661,212,556,215,440,210,366,198"/>
-<area shape="rect" id="Node000017" href="$d9/dd6/star__bus__onewire_8c.html#ae88febdda5fbab30605093333a32d45c" title="Write a byte." alt="" coords="440,169,631,194"/>
-<area shape="poly" id="edge26_Node000002_Node000017" title=" " alt="" coords="391,179,427,181,422,182,393,184"/>
-<area shape="rect" id="Node000004" href="$d9/dd6/star__bus__onewire_8c.html#a6c8bae48bd94e7b3e444422799916a4d" title="Get 1&#45;Wire state for a bus (must be called with mutex held)." alt="" coords="1082,5,1222,46"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="1034,44,1070,40,1064,41,1035,49"/>
-<area shape="rect" id="Node000005" href="$d9/dd6/star__bus__onewire_8c.html#a1ca358f311abcb5bb498c6df68b556c6" title="Initialize 1&#45;Wire global mutex (thread&#45;safe)." alt="" coords="1082,71,1222,111"/>
-<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="1034,67,1070,75,1065,76,1034,72"/>
-<area shape="poly" id="edge8_Node000007_Node000003" title=" " alt="" coords="835,140,857,130,872,118,881,106,890,93,905,80,911,79,916,76,908,84,894,96,885,109,876,122,860,135,837,145"/>
-<area shape="rect" id="Node000008" href="$d9/dd6/star__bus__onewire_8c.html#ada0028be4bd29beb995c4990d33a0dff" title="Delay in microseconds." alt="" coords="934,144,1007,169"/>
-<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="857,154,921,156,916,157,858,159"/>
-<area shape="rect" id="Node000009" href="$d9/dd6/star__bus__onewire_8c.html#af3c6d2f2ae3b906ff2590c579ae42e8f" title="Set GPIO output high (release for pull&#45;up)." alt="" coords="932,193,1008,218"/>
-<area shape="poly" id="edge9_Node000007_Node000009" title=" " alt="" coords="825,167,920,193,914,193,825,172"/>
-<area shape="rect" id="Node000010" href="$d9/dd6/star__bus__onewire_8c.html#a40df8a338e77a732f53aca4fa72d5192" title="Set GPIO output low." alt="" coords="934,242,1006,268"/>
-<area shape="poly" id="edge10_Node000007_Node000010" title=" " alt="" coords="836,167,860,178,876,191,885,204,894,216,908,229,923,239,917,238,905,233,890,220,881,207,872,194,857,183,835,172"/>
-<area shape="rect" id="Node000011" href="$d9/dd6/star__bus__onewire_8c.html#a71842e7ab86cba68432d023f022556d5" title="Read GPIO input." alt="" coords="932,94,1009,120"/>
-<area shape="poly" id="edge11_Node000007_Node000011" title=" " alt="" coords="824,140,919,119,914,121,825,145"/>
-<area shape="poly" id="edge14_Node000012_Node000003" title=" " alt="" coords="824,91,903,74,898,76,825,96"/>
-<area shape="poly" id="edge13_Node000012_Node000008" title=" " alt="" coords="825,118,922,144,916,144,825,123"/>
-<area shape="poly" id="edge15_Node000012_Node000009" title=" " alt="" coords="836,118,860,129,876,141,885,154,894,167,908,180,921,189,916,188,905,184,890,170,881,157,872,145,857,133,835,123"/>
-<area shape="poly" id="edge16_Node000012_Node000010" title=" " alt="" coords="842,118,860,129,872,141,880,154,886,180,892,205,898,217,908,229,923,241,918,240,905,233,894,220,887,207,881,181,875,156,868,145,857,133,841,123"/>
-<area shape="poly" id="edge17_Node000012_Node000011" title=" " alt="" coords="848,104,919,107,914,107,849,110"/>
-<area shape="rect" id="Node000014" href="$d9/dd6/star__bus__onewire_8c.html#a0614bd985521b976c6780650032e24a1" title="Calculate CRC&#45;8 for data." alt="" coords="691,362,847,388"/>
-<area shape="poly" id="edge19_Node000013_Node000014" title=" " alt="" coords="632,356,679,364,673,364,631,361"/>
-<area shape="rect" id="Node000015" href="$d9/dd6/star__bus__onewire_8c.html#a1962811d14103b4c8378203616cacd0c" title="Convert ROM to byte array." alt="" coords="693,297,845,338"/>
-<area shape="poly" id="edge20_Node000013_Node000015" title=" " alt="" coords="631,332,675,329,680,329,632,338"/>
-<area shape="poly" id="edge23_Node000016_Node000003" title=" " alt="" coords="841,190,857,180,868,168,875,156,881,132,887,106,894,93,905,80,907,80,912,78,909,84,898,96,892,108,886,133,880,158,872,171,860,184,843,195"/>
-<area shape="poly" id="edge22_Node000016_Node000008" title=" " alt="" coords="824,190,916,169,921,168,825,195"/>
-<area shape="poly" id="edge24_Node000016_Node000009" title=" " alt="" coords="859,203,920,205,914,206,859,208"/>
-<area shape="poly" id="edge25_Node000016_Node000010" title=" " alt="" coords="825,216,922,243,916,243,824,222"/>
-<area shape="poly" id="edge27_Node000017_Node000003" title=" " alt="" coords="549,166,602,122,639,98,678,79,733,64,789,55,894,53,889,54,789,60,734,69,680,84,641,103,605,126,552,171"/>
-<area shape="poly" id="edge28_Node000017_Node000016" title=" " alt="" coords="631,189,666,195,661,195,632,194"/>
+<area shape="rect" id="Node000001" title="Search for devices with active alarms." alt="" coords="5,169,175,210"/>
+<area shape="rect" id="Node000002" href="$d9/dd6/star__bus__onewire_8c.html#a9e824a2a3393b3059ede24129d9f59f7" title="Search for all devices on the bus." alt="" coords="223,177,392,202"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="174,187,210,188,205,191,176,192"/>
+<area shape="rect" id="Node000003" href="$d9/dd6/star__bus__onewire_8c.html#ae2fccd2ccf0204c4ae5e4ae370719b9a" title="Get 1&#45;Wire state for a bus (thread&#45;safe)." alt="" coords="907,37,1047,78"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="326,174,376,142,439,110,552,71,599,60,644,54,738,51,859,52,894,55,888,56,859,58,739,56,644,59,600,65,553,76,441,115,378,147,329,178"/>
+<area shape="rect" id="Node000006" href="$d9/dd6/star__bus__onewire_8c.html#a8c52a9289a4681648396db6403fa846b" title="Convert byte array to ROM." alt="" coords="454,277,617,318"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="333,201,441,257,469,271,464,271,439,261,332,206"/>
+<area shape="rect" id="Node000007" href="$d9/dd6/star__bus__onewire_8c.html#a7f17f7f63e9d28846b205cb077fba679" title="Read a single bit." alt="" coords="681,152,857,177"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="365,174,440,162,556,156,668,159,662,160,556,161,440,167,367,179"/>
+<area shape="rect" id="Node000012" href="$d9/dd6/star__bus__onewire_8c.html#ac79d607f6cdbfc963260a2220dacfc19" title="Send reset pulse and detect device presence." alt="" coords="689,102,849,128"/>
+<area shape="poly" id="edge12_Node000002_Node000012" title=" " alt="" coords="338,174,385,156,439,140,561,122,676,116,671,117,562,127,441,146,387,161,340,179"/>
+<area shape="rect" id="Node000013" href="$d9/dd6/star__bus__onewire_8c.html#adf13ab98285c498be6137bab53866b2a" title="Verify ROM code CRC." alt="" coords="440,342,631,368"/>
+<area shape="poly" id="edge18_Node000002_Node000013" title=" " alt="" coords="318,200,366,262,401,297,441,327,454,336,449,335,439,332,398,301,362,266,316,205"/>
+<area shape="rect" id="Node000016" href="$d9/dd6/star__bus__onewire_8c.html#a68eda1de47f3c405ce2f5819d72f1f9e" title="Write a single bit." alt="" coords="679,201,859,226"/>
+<area shape="poly" id="edge21_Node000002_Node000016" title=" " alt="" coords="366,200,440,212,556,218,666,219,661,220,556,223,440,218,366,206"/>
+<area shape="rect" id="Node000017" href="$d9/dd6/star__bus__onewire_8c.html#ae88febdda5fbab30605093333a32d45c" title="Write a byte." alt="" coords="440,177,631,202"/>
+<area shape="poly" id="edge26_Node000002_Node000017" title=" " alt="" coords="391,187,427,189,422,190,393,192"/>
+<area shape="rect" id="Node000004" href="$d9/dd6/star__bus__onewire_8c.html#a1ca358f311abcb5bb498c6df68b556c6" title="Initialize 1&#45;Wire global mutex (thread&#45;safe)." alt="" coords="1096,5,1235,46"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="1047,43,1083,39,1078,41,1048,48"/>
+<area shape="rect" id="Node000005" href="$d9/dd6/star__bus__onewire_8c.html#aeaca1b0b2a8c0f56d9c5a0a68736af0a" title="Get 1&#45;Wire state for a bus (must be called with mutex held)." alt="" coords="1095,71,1236,111"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="1047,67,1083,76,1078,76,1048,73"/>
+<area shape="poly" id="edge8_Node000007_Node000003" title=" " alt="" coords="835,148,857,138,872,126,881,114,890,101,905,88,909,88,914,85,908,92,894,105,885,117,876,130,860,143,837,153"/>
+<area shape="rect" id="Node000008" href="$d9/dd6/star__bus__onewire_8c.html#aa9ea579b78a4cd478c2ad813a5845871" title="Delay in microseconds." alt="" coords="916,152,1038,177"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="857,162,902,164,897,165,858,167"/>
+<area shape="rect" id="Node000009" href="$d9/dd6/star__bus__onewire_8c.html#ad63255b48501f7f398a53edeaf6eb9ce" title="Set GPIO output high (release for pull&#45;up)." alt="" coords="914,201,1040,226"/>
+<area shape="poly" id="edge9_Node000007_Node000009" title=" " alt="" coords="826,175,907,197,902,197,826,180"/>
+<area shape="rect" id="Node000010" href="$d9/dd6/star__bus__onewire_8c.html#a2aaa095c78afd087a3292adf5b587aa3" title="Set GPIO output low." alt="" coords="916,250,1038,276"/>
+<area shape="poly" id="edge10_Node000007_Node000010" title=" " alt="" coords="836,175,860,186,876,199,885,212,894,224,908,237,917,244,912,243,905,241,890,228,881,215,872,202,857,191,835,180"/>
+<area shape="rect" id="Node000011" href="$d9/dd6/star__bus__onewire_8c.html#a95b10449e89aa69b47b641529ed75edc" title="Read GPIO input." alt="" coords="914,102,1040,128"/>
+<area shape="poly" id="edge11_Node000007_Node000011" title=" " alt="" coords="826,148,907,131,902,133,827,153"/>
+<area shape="poly" id="edge14_Node000012_Node000003" title=" " alt="" coords="818,99,894,80,889,82,819,104"/>
+<area shape="poly" id="edge13_Node000012_Node000008" title=" " alt="" coords="826,126,907,147,902,148,826,131"/>
+<area shape="poly" id="edge15_Node000012_Node000009" title=" " alt="" coords="836,126,860,137,876,149,885,162,894,175,908,188,917,194,911,194,905,192,890,179,881,166,872,153,857,141,835,131"/>
+<area shape="poly" id="edge16_Node000012_Node000010" title=" " alt="" coords="842,126,860,137,872,149,879,162,886,188,891,213,898,225,909,237,912,242,907,241,905,241,893,228,886,215,880,189,874,164,868,153,857,141,841,131"/>
+<area shape="poly" id="edge17_Node000012_Node000011" title=" " alt="" coords="849,112,901,115,896,115,849,118"/>
+<area shape="rect" id="Node000014" href="$d9/dd6/star__bus__onewire_8c.html#a0614bd985521b976c6780650032e24a1" title="Calculate CRC&#45;8 for data." alt="" coords="691,370,847,396"/>
+<area shape="poly" id="edge19_Node000013_Node000014" title=" " alt="" coords="632,364,679,372,673,372,631,369"/>
+<area shape="rect" id="Node000015" href="$d9/dd6/star__bus__onewire_8c.html#a1962811d14103b4c8378203616cacd0c" title="Convert ROM to byte array." alt="" coords="693,305,845,346"/>
+<area shape="poly" id="edge20_Node000013_Node000015" title=" " alt="" coords="631,340,675,337,680,337,632,346"/>
+<area shape="poly" id="edge23_Node000016_Node000003" title=" " alt="" coords="841,198,857,188,868,176,875,165,881,140,887,114,905,88,906,89,911,86,909,91,892,117,886,141,880,167,872,179,860,192,843,203"/>
+<area shape="poly" id="edge22_Node000016_Node000008" title=" " alt="" coords="826,198,902,182,907,181,827,203"/>
+<area shape="poly" id="edge24_Node000016_Node000009" title=" " alt="" coords="859,211,901,213,896,214,859,216"/>
+<area shape="poly" id="edge25_Node000016_Node000010" title=" " alt="" coords="827,224,907,246,902,246,826,230"/>
+<area shape="poly" id="edge27_Node000017_Node000003" title=" " alt="" coords="549,174,602,130,639,106,678,87,732,71,788,61,893,55,888,56,788,66,733,76,680,92,641,111,606,134,552,179"/>
+<area shape="poly" id="edge28_Node000017_Node000016" title=" " alt="" coords="631,197,666,203,661,203,632,202"/>
 </map>

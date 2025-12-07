@@ -13,7 +13,7 @@ var star__bus__batch_8c =
     [ "star_batch_clear", "df/deb/star__bus__batch_8c.html#a017f54844b511af85f04c4e459bac362", null ],
     [ "star_batch_create", "df/deb/star__bus__batch_8c.html#a6cf8eac885dbe55d7efffa0229b50e2e", null ],
     [ "star_batch_execute", "df/deb/star__bus__batch_8c.html#a80ab7c681dec605acb5a862cabe5fe4e", null ],
-    [ "star_batch_free", "df/deb/star__bus__batch_8c.html#a8ca0e41c8f942ad7b1d474cf1b5b3aca", null ],
+    [ "star_batch_free", "df/deb/star__bus__batch_8c.html#a358af22edefa7797ec9ef19bafb91027", null ],
     [ "star_batch_get_operation_count", "df/deb/star__bus__batch_8c.html#a6b0696e5b0c90b2bd8cebd83e8345f6f", null ],
     [ "star_batch_get_operation_result", "df/deb/star__bus__batch_8c.html#a3cd032b4f2687e052f740be24bf0b0a8", null ],
     [ "s_TAG", "df/deb/star__bus__batch_8c.html#a999e3dd103132afd3cd1856f477f2dbd", null ]

@@ -95,11 +95,11 @@ $(function(){initNavTree('d2/d63/star__bms__bq7850_8h.html','../../',''); });
 
 <p>TI BQ7850 Battery Management System driver.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &quot;freertos/FreeRTOS.h&quot;</code><br />
-<code>#include &quot;freertos/semphr.h&quot;</code><br />
-<code>#include &lt;esp_err.h&gt;</code><br />
-<code>#include &lt;stdbool.h&gt;</code><br />
+<div class="textblock"><code>#include &lt;stdbool.h&gt;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
+<code>#include &quot;freertos/FreeRTOS.h&quot;</code><br />
+<code>#include &quot;freertos/semphr.h&quot;</code><br />
+<code>#include &quot;esp_err.h&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d6/dcc/star__bus__manager_8h_source.html">star_bus_manager.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../df/d84/star__error__interface_8h_source.html">star_error_interface.h</a>&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
@@ -108,16 +108,16 @@ Include dependency graph for star_bms_bq7850.h:</div>
 <div class="center"><img src="../../d3/df6/star__bms__bq7850_8h__incl.png" border="0" usemap="#alib_2star__bms__bq7850_2include_2star__bms__bq7850_8h" loading="lazy" alt=""/></div>
 <map name="alib_2star__bms__bq7850_2include_2star__bms__bq7850_8h" id="alib_2star__bms__bq7850_2include_2star__bms__bq7850_8h">
 <area shape="rect" title="TI BQ7850 Battery Management System driver." alt="" coords="385,5,570,46"/>
+<area shape="rect" title=" " alt="" coords="668,536,742,562"/>
+<area shape="poly" title=" " alt="" coords="530,44,573,65,614,95,631,112,645,132,654,155,657,179,657,403,661,436,670,468,693,524,688,521,665,469,656,437,652,403,652,179,649,156,640,135,627,116,610,99,571,70,531,49"/>
+<area shape="rect" title=" " alt="" coords="1017,536,1082,562"/>
+<area shape="poly" title=" " alt="" coords="569,27,850,39,1024,50,1200,65,1364,85,1499,110,1552,124,1592,140,1618,158,1626,168,1628,179,1628,329,1625,372,1616,408,1601,438,1580,461,1556,480,1526,493,1493,503,1457,510,1376,517,1287,520,1193,525,1097,538,1097,533,1193,520,1287,515,1376,512,1456,505,1492,498,1524,488,1553,475,1577,457,1596,435,1611,407,1620,372,1623,329,1623,179,1621,171,1615,162,1590,145,1550,129,1498,115,1363,90,1200,70,1024,55,850,44,570,32"/>
 <area shape="rect" title=" " alt="" coords="43,241,186,267"/>
 <area shape="poly" title=" " alt="" coords="383,48,327,69,271,96,228,128,190,164,134,230,130,227,186,160,225,124,268,92,325,64,387,45"/>
 <area shape="rect" title=" " alt="" coords="415,241,537,267"/>
 <area shape="poly" title=" " alt="" coords="479,44,479,226,474,225,476,49"/>
 <area shape="rect" title=" " alt="" coords="239,536,313,562"/>
 <area shape="poly" title=" " alt="" coords="383,40,268,59,144,88,90,107,47,129,18,153,11,166,8,179,8,403,14,436,30,463,55,485,86,503,121,517,157,528,226,542,221,543,156,533,119,522,84,508,52,490,26,466,9,437,3,403,3,179,6,164,14,149,44,124,88,102,143,83,267,54,387,36"/>
-<area shape="rect" title=" " alt="" coords="668,536,742,562"/>
-<area shape="poly" title=" " alt="" coords="530,44,573,65,614,95,631,112,645,132,654,155,657,179,657,403,661,436,670,468,693,524,688,521,665,469,656,437,652,403,652,179,649,156,640,135,627,116,610,99,571,70,531,49"/>
-<area shape="rect" title=" " alt="" coords="1017,536,1082,562"/>
-<area shape="poly" title=" " alt="" coords="569,27,850,39,1024,50,1200,65,1364,85,1499,110,1552,124,1592,140,1618,158,1626,168,1628,179,1628,329,1625,372,1616,408,1601,438,1580,461,1556,480,1526,493,1493,503,1457,510,1376,517,1287,520,1193,525,1097,538,1097,533,1193,520,1287,515,1376,512,1456,505,1492,498,1524,488,1553,475,1577,457,1596,435,1611,407,1620,372,1623,329,1623,179,1621,171,1615,162,1590,145,1550,129,1498,115,1363,90,1200,70,1024,55,850,44,570,32"/>
 <area shape="rect" href="../../d6/dcc/star__bus__manager_8h.html" title="Unified bus manager for I2C, SPI, GPIO, and other bus protocols." alt="" coords="282,94,420,120"/>
 <area shape="poly" title=" " alt="" coords="444,48,385,87,382,83,448,45"/>
 <area shape="rect" href="../../df/d84/star__error__interface_8h.html" title="Error handler interface for dependency inversion." alt="" coords="473,462,618,488"/>
@@ -129,49 +129,49 @@ Include dependency graph for star_bms_bq7850.h:</div>
 <area shape="poly" title=" " alt="" coords="372,191,444,233,439,234,372,197"/>
 <area shape="rect" href="../../dd/d40/star__bus__common__types_8h.html" title=" " alt="" coords="794,462,972,488"/>
 <area shape="poly" title=" " alt="" coords="356,191,375,228,388,248,404,265,453,303,506,336,561,365,617,391,724,430,815,458,810,458,723,435,615,395,559,370,503,341,450,307,401,269,384,251,370,231,355,196"/>
-<area shape="rect" href="../../dd/d9d/star__bus__protocol__types_8h.html" title=" " alt="" coords="1008,241,1182,267"/>
-<area shape="poly" title=" " alt="" coords="440,188,994,241,990,245,441,193"/>
+<area shape="rect" href="../../dd/d9d/star__bus__protocol__types_8h.html" title=" " alt="" coords="1009,241,1183,267"/>
+<area shape="poly" title=" " alt="" coords="440,188,995,241,992,245,440,193"/>
 <area shape="poly" title=" " alt="" coords="349,192,346,222,344,259,348,301,361,339,389,378,426,409,465,435,503,456,497,455,462,439,423,414,386,381,356,342,342,302,339,260,341,221,347,196"/>
 <area shape="rect" href="../../da/d58/star__pin__interface_8h.html" title="Pin validator interface for dependency inversion." alt="" coords="314,462,449,488"/>
 <area shape="poly" title=" " alt="" coords="340,192,324,216,310,242,296,290,289,329,293,368,310,413,326,435,347,454,342,453,322,438,306,416,288,369,284,329,291,289,306,240,319,213,337,196"/>
-<area shape="poly" title=" " alt="" coords="794,490,329,544,328,539,793,484"/>
 <area shape="poly" title=" " alt="" coords="855,488,750,532,749,527,850,489"/>
 <area shape="poly" title=" " alt="" coords="911,486,1010,530,1004,529,910,491"/>
+<area shape="poly" title=" " alt="" coords="794,490,329,544,328,539,793,484"/>
 <area shape="rect" title=" " alt="" coords="1260,536,1353,562"/>
 <area shape="poly" title=" " alt="" coords="962,486,1248,536,1242,536,962,491"/>
 <area shape="rect" title=" " alt="" coords="1105,536,1236,562"/>
 <area shape="poly" title=" " alt="" coords="932,486,1110,532,1104,532,931,491"/>
-<area shape="poly" title=" " alt="" coords="1005,262,885,278,730,301,562,338,478,363,397,391,329,416,304,433,281,464,273,492,273,522,268,519,267,491,276,461,300,430,326,412,395,386,476,357,560,333,729,296,884,272,1010,261"/>
-<area shape="poly" title=" " alt="" coords="1038,267,974,289,911,317,859,350,822,380,789,415,752,464,732,494,717,524,714,520,728,491,747,461,785,412,818,376,856,346,908,313,972,284,1033,268"/>
-<area shape="poly" title=" " alt="" coords="1137,265,1187,284,1237,313,1294,353,1343,394,1359,415,1367,439,1364,463,1349,490,1330,504,1304,514,1237,526,1097,539,1097,533,1236,520,1303,509,1328,499,1345,486,1359,462,1362,439,1354,418,1339,397,1291,357,1235,317,1185,289,1137,270"/>
-<area shape="poly" title=" " alt="" coords="1024,267,976,288,954,301,935,317,914,347,899,382,891,417,886,449,882,445,886,416,894,381,909,345,931,313,951,296,974,283,1019,268"/>
-<area shape="poly" title=" " alt="" coords="1181,265,1245,283,1277,296,1307,313,1329,329,1343,345,1368,387,1395,437,1399,461,1390,489,1373,513,1349,530,1347,525,1369,509,1386,487,1393,461,1390,439,1363,390,1339,348,1325,333,1304,317,1275,301,1244,288,1181,270"/>
+<area shape="poly" title=" " alt="" coords="1040,267,975,289,912,317,860,350,822,380,790,415,752,464,732,494,717,524,714,520,728,491,747,461,786,412,819,376,857,346,909,313,973,284,1034,268"/>
+<area shape="poly" title=" " alt="" coords="1138,265,1188,284,1237,313,1294,353,1343,394,1359,415,1367,439,1364,463,1349,490,1330,504,1304,514,1237,526,1097,539,1097,533,1236,520,1303,509,1328,499,1345,486,1359,462,1362,439,1354,418,1339,397,1291,357,1235,317,1186,289,1138,270"/>
+<area shape="poly" title=" " alt="" coords="1006,262,886,278,731,301,562,338,478,363,397,391,329,416,304,433,281,464,273,492,273,522,268,519,267,491,276,461,300,430,326,412,395,386,476,357,561,333,730,296,885,272,1011,261"/>
+<area shape="poly" title=" " alt="" coords="1026,267,977,288,956,301,937,317,915,347,900,382,892,417,886,449,883,445,886,416,895,381,910,345,933,313,953,296,975,283,1021,268"/>
+<area shape="poly" title=" " alt="" coords="1182,265,1245,283,1277,296,1307,313,1329,329,1343,345,1368,387,1395,437,1399,461,1390,489,1373,513,1349,530,1347,525,1369,509,1386,487,1393,461,1390,439,1363,390,1339,348,1325,333,1304,317,1275,301,1244,288,1181,270"/>
 <area shape="poly" title=" " alt="" coords="1165,265,1221,283,1248,296,1274,313,1312,346,1337,377,1355,413,1371,462,1374,476,1370,490,1352,504,1323,517,1252,536,1251,531,1321,511,1349,500,1366,486,1369,476,1365,463,1350,415,1333,380,1308,350,1270,317,1246,301,1219,288,1165,270"/>
 <area shape="rect" title=" " alt="" coords="1249,462,1335,488"/>
-<area shape="poly" title=" " alt="" coords="1122,265,1158,284,1200,311,1242,345,1277,387,1289,417,1294,448,1289,445,1284,418,1272,390,1238,349,1197,315,1156,289,1121,270"/>
+<area shape="poly" title=" " alt="" coords="1123,265,1159,284,1201,311,1242,346,1277,387,1289,417,1294,448,1289,445,1284,418,1272,390,1239,349,1198,315,1157,289,1122,270"/>
 <area shape="rect" href="../../db/d78/star__bus__event__types_8h.html" title=" " alt="" coords="1073,389,1234,414"/>
-<area shape="poly" title=" " alt="" coords="1104,265,1133,314,1151,375,1146,372,1128,316,1102,270"/>
-<area shape="rect" href="../../d0/da6/star__bus__function__types_8h.html" title=" " alt="" coords="945,315,1119,341"/>
-<area shape="poly" title=" " alt="" coords="1087,266,1054,305,1051,301,1082,269"/>
+<area shape="poly" title=" " alt="" coords="1106,265,1134,314,1151,375,1146,372,1130,316,1103,270"/>
+<area shape="rect" href="../../d0/da6/star__bus__function__types_8h.html" title=" " alt="" coords="946,315,1120,341"/>
+<area shape="poly" title=" " alt="" coords="1088,266,1055,305,1053,301,1083,269"/>
 <area shape="poly" title=" " alt="" coords="1136,414,1070,453,985,490,925,509,864,524,759,543,758,538,863,518,924,504,983,486,1067,448,1131,416"/>
 <area shape="poly" title=" " alt="" coords="1147,414,1068,525,1065,521,1142,416"/>
 <area shape="poly" title=" " alt="" coords="1110,414,944,460,943,455,1105,415"/>
 <area shape="poly" title=" " alt="" coords="1165,412,1239,486,1283,527,1278,525,1236,490,1163,417"/>
 <area shape="poly" title=" " alt="" coords="1157,413,1170,522,1165,519,1153,417"/>
 <area shape="poly" title=" " alt="" coords="1177,412,1257,455,1252,454,1176,417"/>
-<area shape="poly" title=" " alt="" coords="942,334,785,349,594,373,501,390,418,411,350,436,324,449,303,464,293,476,286,491,279,522,275,519,281,489,289,474,300,460,321,445,348,431,416,406,500,385,593,368,784,344,947,333"/>
-<area shape="poly" title=" " alt="" coords="1004,340,901,391,840,425,783,464,751,495,724,526,721,522,747,491,780,460,838,420,899,386,999,342"/>
-<area shape="poly" title=" " alt="" coords="1035,339,1049,522,1045,519,1031,343"/>
-<area shape="poly" title=" " alt="" coords="1022,340,907,453,905,449,1017,342"/>
-<area shape="poly" title=" " alt="" coords="1120,332,1185,344,1251,367,1282,384,1309,405,1332,431,1349,461,1353,476,1349,490,1333,503,1308,515,1245,534,1244,529,1306,510,1330,498,1344,486,1348,476,1344,463,1328,434,1306,409,1279,389,1249,372,1183,349,1119,337"/>
-<area shape="poly" title=" " alt="" coords="1120,335,1186,353,1218,368,1247,387,1271,415,1286,449,1282,446,1267,418,1244,391,1215,372,1184,358,1119,340"/>
-<area shape="poly" title=" " alt="" coords="1053,339,1122,381,1117,380,1052,344"/>
-<area shape="poly" title=" " alt="" coords="502,488,329,536,328,531,497,489"/>
+<area shape="poly" title=" " alt="" coords="1005,340,902,391,841,425,783,464,751,495,724,526,721,522,747,491,780,460,838,420,899,386,1000,342"/>
+<area shape="poly" title=" " alt="" coords="1036,339,1050,522,1045,519,1032,343"/>
+<area shape="poly" title=" " alt="" coords="943,334,786,349,594,373,501,390,418,411,350,436,324,449,303,464,293,476,286,491,279,522,275,519,281,489,289,474,300,460,321,445,348,431,417,406,500,385,593,368,785,344,948,333"/>
+<area shape="poly" title=" " alt="" coords="1023,340,907,454,905,449,1019,342"/>
+<area shape="poly" title=" " alt="" coords="1121,332,1186,345,1252,368,1282,385,1310,406,1332,431,1349,461,1353,476,1349,490,1333,503,1308,515,1245,534,1244,529,1306,510,1330,498,1344,486,1348,476,1344,463,1328,434,1306,409,1279,389,1249,373,1184,350,1121,337"/>
+<area shape="poly" title=" " alt="" coords="1121,335,1186,353,1218,368,1247,387,1271,415,1286,449,1282,447,1267,418,1244,391,1216,372,1184,358,1121,341"/>
+<area shape="poly" title=" " alt="" coords="1054,339,1123,381,1117,380,1053,344"/>
 <area shape="poly" title=" " alt="" coords="573,486,667,530,662,529,572,491"/>
 <area shape="poly" title=" " alt="" coords="618,484,1005,540,1000,541,618,489"/>
-<area shape="poly" title=" " alt="" coords="366,488,308,529,305,525,361,489"/>
+<area shape="poly" title=" " alt="" coords="502,488,329,536,328,531,497,489"/>
 <area shape="poly" title=" " alt="" coords="437,486,656,536,650,536,436,491"/>
 <area shape="poly" title=" " alt="" coords="449,484,462,485,770,519,1005,543,999,543,769,524,461,491,449,489"/>
+<area shape="poly" title=" " alt="" coords="366,488,308,529,305,525,361,489"/>
 </map>
 </div>
 </div><div class="textblock"><div class="dynheader">
@@ -561,25 +561,25 @@ Functions</h2></td></tr>
 <div class="line"><a class="code hl_function" href="#a02709f23d96dc7f7c34b7a23f86888fc">star_bms_bq7850_deinit</a>(&amp;bms);</div>
 <div class="line"><a class="code hl_function" href="../../d6/dcc/star__bus__manager_8h.html#aa440431606d8a33fb394b4225db51f93">star_bus_manager_remove_bus</a>(&amp;bus_manager, <span class="stringliteral">&quot;bms_smbus&quot;</span>);</div>
 <div class="ttc" id="astar__bms__bq7850_8h_html"><div class="ttname"><a href="../../d2/d63/star__bms__bq7850_8h.html">star_bms_bq7850.h</a></div><div class="ttdoc">TI BQ7850 Battery Management System driver.</div></div>
-<div class="ttc" id="astar__bms__bq7850_8h_html_a02709f23d96dc7f7c34b7a23f86888fc"><div class="ttname"><a href="#a02709f23d96dc7f7c34b7a23f86888fc">star_bms_bq7850_deinit</a></div><div class="ttdeci">esp_err_t star_bms_bq7850_deinit(bq7850_handle_t *handle)</div><div class="ttdoc">Deinitialize BQ7850 BMS device handle.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00203">star_bms_bq7850.c:203</a></div></div>
-<div class="ttc" id="astar__bms__bq7850_8h_html_a0d22297192ffaac26fd6fb5b6b77c3f7"><div class="ttname"><a href="#a0d22297192ffaac26fd6fb5b6b77c3f7">star_bms_bq7850_read_battery_state</a></div><div class="ttdeci">esp_err_t star_bms_bq7850_read_battery_state(const bq7850_handle_t *handle, bq7850_battery_state_t *state)</div><div class="ttdoc">Read complete battery state.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00656">star_bms_bq7850.c:656</a></div></div>
-<div class="ttc" id="astar__bms__bq7850_8h_html_a1bbee1247cef5042ba7f727c5381e15d"><div class="ttname"><a href="#a1bbee1247cef5042ba7f727c5381e15d">star_bms_bq7850_get_balancing_status</a></div><div class="ttdeci">esp_err_t star_bms_bq7850_get_balancing_status(const bq7850_handle_t *handle, uint16_t *active_mask)</div><div class="ttdoc">Get cell balancing status.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00728">star_bms_bq7850.c:728</a></div></div>
-<div class="ttc" id="astar__bms__bq7850_8h_html_a36b66a0f6445de1c6445641eb7b26537"><div class="ttname"><a href="#a36b66a0f6445de1c6445641eb7b26537">star_bms_bq7850_status_to_string</a></div><div class="ttdeci">size_t star_bms_bq7850_status_to_string(const bq7850_status_t *status, char *buffer, size_t size)</div><div class="ttdoc">Get human-readable status string.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00873">star_bms_bq7850.c:873</a></div></div>
+<div class="ttc" id="astar__bms__bq7850_8h_html_a02709f23d96dc7f7c34b7a23f86888fc"><div class="ttname"><a href="#a02709f23d96dc7f7c34b7a23f86888fc">star_bms_bq7850_deinit</a></div><div class="ttdeci">esp_err_t star_bms_bq7850_deinit(bq7850_handle_t *handle)</div><div class="ttdoc">Deinitialize BQ7850 BMS device handle.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00186">star_bms_bq7850.c:186</a></div></div>
+<div class="ttc" id="astar__bms__bq7850_8h_html_a0d22297192ffaac26fd6fb5b6b77c3f7"><div class="ttname"><a href="#a0d22297192ffaac26fd6fb5b6b77c3f7">star_bms_bq7850_read_battery_state</a></div><div class="ttdeci">esp_err_t star_bms_bq7850_read_battery_state(const bq7850_handle_t *handle, bq7850_battery_state_t *state)</div><div class="ttdoc">Read complete battery state.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00634">star_bms_bq7850.c:634</a></div></div>
+<div class="ttc" id="astar__bms__bq7850_8h_html_a1bbee1247cef5042ba7f727c5381e15d"><div class="ttname"><a href="#a1bbee1247cef5042ba7f727c5381e15d">star_bms_bq7850_get_balancing_status</a></div><div class="ttdeci">esp_err_t star_bms_bq7850_get_balancing_status(const bq7850_handle_t *handle, uint16_t *active_mask)</div><div class="ttdoc">Get cell balancing status.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00706">star_bms_bq7850.c:706</a></div></div>
+<div class="ttc" id="astar__bms__bq7850_8h_html_a36b66a0f6445de1c6445641eb7b26537"><div class="ttname"><a href="#a36b66a0f6445de1c6445641eb7b26537">star_bms_bq7850_status_to_string</a></div><div class="ttdeci">size_t star_bms_bq7850_status_to_string(const bq7850_status_t *status, char *buffer, size_t size)</div><div class="ttdoc">Get human-readable status string.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00851">star_bms_bq7850.c:851</a></div></div>
 <div class="ttc" id="astar__bms__bq7850_8h_html_a450e1107b37dc6f35e424dc7772544e2"><div class="ttname"><a href="#a450e1107b37dc6f35e424dc7772544e2">bq7850_handle_t</a></div><div class="ttdeci">struct bq7850_handle bq7850_handle_t</div><div class="ttdoc">BQ7850 device handle.</div></div>
-<div class="ttc" id="astar__bms__bq7850_8h_html_a4b748fe20f591b1b3799dceb247b1a5c"><div class="ttname"><a href="#a4b748fe20f591b1b3799dceb247b1a5c">star_bms_bq7850_init</a></div><div class="ttdeci">esp_err_t star_bms_bq7850_init(bq7850_handle_t *handle, star_bus_manager_t *manager, const char *bus_name, star_error_interface_t *error_iface, const bq7850_config_t *config)</div><div class="ttdoc">Create and initialize BQ7850 BMS device handle.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00079">star_bms_bq7850.c:79</a></div></div>
-<div class="ttc" id="astar__bms__bq7850_8h_html_a5870a81b9d89f403dc3489ff207a69e4"><div class="ttname"><a href="#a5870a81b9d89f403dc3489ff207a69e4">BQ7850_DEFAULT_ADDR</a></div><div class="ttdeci">#define BQ7850_DEFAULT_ADDR</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00261">star_bms_bq7850.h:261</a></div></div>
-<div class="ttc" id="astar__bms__bq7850_8h_html_a5a59ade472744947b6c1e479c89c0b16"><div class="ttname"><a href="#a5a59ade472744947b6c1e479c89c0b16">star_bms_bq7850_read_soc</a></div><div class="ttdeci">esp_err_t star_bms_bq7850_read_soc(const bq7850_handle_t *handle, bq7850_soc_data_t *soc_data)</div><div class="ttdoc">Read state of charge data.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00540">star_bms_bq7850.c:540</a></div></div>
-<div class="ttc" id="astar__bms__bq7850_8h_html_a60fbc7943a9017cb235890abd5d177c2"><div class="ttname"><a href="#a60fbc7943a9017cb235890abd5d177c2">star_bms_bq7850_read_cell_voltage</a></div><div class="ttdeci">esp_err_t star_bms_bq7850_read_cell_voltage(const bq7850_handle_t *handle, uint8_t cell_index, uint16_t *voltage_mv)</div><div class="ttdoc">Read single cell voltage.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00393">star_bms_bq7850.c:393</a></div></div>
-<div class="ttc" id="astar__bms__bq7850_8h_html_a7aebeaeb09bb7ef8ea7d83c7f888b778"><div class="ttname"><a href="#a7aebeaeb09bb7ef8ea7d83c7f888b778">star_bms_bq7850_get_device_info</a></div><div class="ttdeci">esp_err_t star_bms_bq7850_get_device_info(const bq7850_handle_t *handle, bq7850_device_info_t *info)</div><div class="ttdoc">Read device information from BQ7850.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00238">star_bms_bq7850.c:238</a></div></div>
-<div class="ttc" id="astar__bms__bq7850_8h_html_ab5ac19b0d05e17eb722d54ee491f6992"><div class="ttname"><a href="#ab5ac19b0d05e17eb722d54ee491f6992">star_bms_bq7850_is_fault_active</a></div><div class="ttdeci">bool star_bms_bq7850_is_fault_active(const bq7850_status_t *status)</div><div class="ttdoc">Check if any protection fault is active.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00864">star_bms_bq7850.c:864</a></div></div>
-<div class="ttc" id="astar__bms__bq7850_8h_html_abcbded89df9ff98462d0e088ad6c3693"><div class="ttname"><a href="#abcbded89df9ff98462d0e088ad6c3693">star_bms_bq7850_disable_cell_balancing</a></div><div class="ttdeci">esp_err_t star_bms_bq7850_disable_cell_balancing(const bq7850_handle_t *handle)</div><div class="ttdoc">Disable cell balancing.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00713">star_bms_bq7850.c:713</a></div></div>
-<div class="ttc" id="astar__bms__bq7850_8h_html_acab9b627f844ed87063713d187b806a0"><div class="ttname"><a href="#acab9b627f844ed87063713d187b806a0">star_bms_bq7850_read_temperatures</a></div><div class="ttdeci">esp_err_t star_bms_bq7850_read_temperatures(const bq7850_handle_t *handle, bq7850_temp_data_t *temp_data)</div><div class="ttdoc">Read all temperature sensors.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00427">star_bms_bq7850.c:427</a></div></div>
-<div class="ttc" id="astar__bms__bq7850_8h_html_adac0c080984d9314f1f1fac481f20fb3"><div class="ttname"><a href="#adac0c080984d9314f1f1fac481f20fb3">star_bms_bq7850_read_status</a></div><div class="ttdeci">esp_err_t star_bms_bq7850_read_status(const bq7850_handle_t *handle, bq7850_status_t *status)</div><div class="ttdoc">Read all status flags.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00599">star_bms_bq7850.c:599</a></div></div>
-<div class="ttc" id="astar__bms__bq7850_8h_html_ae6be6b56d85f086df6e8852d62e63d05"><div class="ttname"><a href="#ae6be6b56d85f086df6e8852d62e63d05">star_bms_bq7850_read_cells</a></div><div class="ttdeci">esp_err_t star_bms_bq7850_read_cells(const bq7850_handle_t *handle, bq7850_cell_data_t *cell_data)</div><div class="ttdoc">Read all cell voltages.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00359">star_bms_bq7850.c:359</a></div></div>
-<div class="ttc" id="astar__bms__bq7850_8h_html_aeb64af20373d57882e8dd29d9a251cf4"><div class="ttname"><a href="#aeb64af20373d57882e8dd29d9a251cf4">star_bms_bq7850_control_fets</a></div><div class="ttdeci">esp_err_t star_bms_bq7850_control_fets(const bq7850_handle_t *handle, bool charge_fet, bool discharge_fet)</div><div class="ttdoc">Control charge/discharge FETs.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00833">star_bms_bq7850.c:833</a></div></div>
-<div class="ttc" id="astar__bms__bq7850_8h_html_af6718c1de9a626cb3b0f6738f3f35836"><div class="ttname"><a href="#af6718c1de9a626cb3b0f6738f3f35836">star_bms_bq7850_read_current</a></div><div class="ttdeci">esp_err_t star_bms_bq7850_read_current(const bq7850_handle_t *handle, bq7850_current_data_t *current_data)</div><div class="ttdoc">Read current measurements.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00489">star_bms_bq7850.c:489</a></div></div>
-<div class="ttc" id="astar__bms__bq7850_8h_html_afcf09922b2aaf11ff7c5a9653440026d"><div class="ttname"><a href="#afcf09922b2aaf11ff7c5a9653440026d">star_bms_bq7850_enable_cell_balancing</a></div><div class="ttdeci">esp_err_t star_bms_bq7850_enable_cell_balancing(const bq7850_handle_t *handle, uint16_t cell_mask)</div><div class="ttdoc">Enable cell balancing.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00698">star_bms_bq7850.c:698</a></div></div>
-<div class="ttc" id="astar__bms__bq7850_8h_html_afd0ffaa80c738dcccbcc04aca730326c"><div class="ttname"><a href="#afd0ffaa80c738dcccbcc04aca730326c">star_bms_bq7850_read_protection</a></div><div class="ttdeci">esp_err_t star_bms_bq7850_read_protection(const bq7850_handle_t *handle, bq7850_protection_t *protection)</div><div class="ttdoc">Read protection thresholds.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00743">star_bms_bq7850.c:743</a></div></div>
+<div class="ttc" id="astar__bms__bq7850_8h_html_a4b748fe20f591b1b3799dceb247b1a5c"><div class="ttname"><a href="#a4b748fe20f591b1b3799dceb247b1a5c">star_bms_bq7850_init</a></div><div class="ttdeci">esp_err_t star_bms_bq7850_init(bq7850_handle_t *handle, star_bus_manager_t *manager, const char *bus_name, star_error_interface_t *error_iface, const bq7850_config_t *config)</div><div class="ttdoc">Create and initialize BQ7850 BMS device handle.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00080">star_bms_bq7850.c:80</a></div></div>
+<div class="ttc" id="astar__bms__bq7850_8h_html_a5870a81b9d89f403dc3489ff207a69e4"><div class="ttname"><a href="#a5870a81b9d89f403dc3489ff207a69e4">BQ7850_DEFAULT_ADDR</a></div><div class="ttdeci">#define BQ7850_DEFAULT_ADDR</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00266">star_bms_bq7850.h:266</a></div></div>
+<div class="ttc" id="astar__bms__bq7850_8h_html_a5a59ade472744947b6c1e479c89c0b16"><div class="ttname"><a href="#a5a59ade472744947b6c1e479c89c0b16">star_bms_bq7850_read_soc</a></div><div class="ttdeci">esp_err_t star_bms_bq7850_read_soc(const bq7850_handle_t *handle, bq7850_soc_data_t *soc_data)</div><div class="ttdoc">Read state of charge data.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00518">star_bms_bq7850.c:518</a></div></div>
+<div class="ttc" id="astar__bms__bq7850_8h_html_a60fbc7943a9017cb235890abd5d177c2"><div class="ttname"><a href="#a60fbc7943a9017cb235890abd5d177c2">star_bms_bq7850_read_cell_voltage</a></div><div class="ttdeci">esp_err_t star_bms_bq7850_read_cell_voltage(const bq7850_handle_t *handle, uint8_t cell_index, uint16_t *voltage_mv)</div><div class="ttdoc">Read single cell voltage.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00374">star_bms_bq7850.c:374</a></div></div>
+<div class="ttc" id="astar__bms__bq7850_8h_html_a7aebeaeb09bb7ef8ea7d83c7f888b778"><div class="ttname"><a href="#a7aebeaeb09bb7ef8ea7d83c7f888b778">star_bms_bq7850_get_device_info</a></div><div class="ttdeci">esp_err_t star_bms_bq7850_get_device_info(const bq7850_handle_t *handle, bq7850_device_info_t *info)</div><div class="ttdoc">Read device information from BQ7850.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00219">star_bms_bq7850.c:219</a></div></div>
+<div class="ttc" id="astar__bms__bq7850_8h_html_ab5ac19b0d05e17eb722d54ee491f6992"><div class="ttname"><a href="#ab5ac19b0d05e17eb722d54ee491f6992">star_bms_bq7850_is_fault_active</a></div><div class="ttdeci">bool star_bms_bq7850_is_fault_active(const bq7850_status_t *status)</div><div class="ttdoc">Check if any protection fault is active.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00842">star_bms_bq7850.c:842</a></div></div>
+<div class="ttc" id="astar__bms__bq7850_8h_html_abcbded89df9ff98462d0e088ad6c3693"><div class="ttname"><a href="#abcbded89df9ff98462d0e088ad6c3693">star_bms_bq7850_disable_cell_balancing</a></div><div class="ttdeci">esp_err_t star_bms_bq7850_disable_cell_balancing(const bq7850_handle_t *handle)</div><div class="ttdoc">Disable cell balancing.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00691">star_bms_bq7850.c:691</a></div></div>
+<div class="ttc" id="astar__bms__bq7850_8h_html_acab9b627f844ed87063713d187b806a0"><div class="ttname"><a href="#acab9b627f844ed87063713d187b806a0">star_bms_bq7850_read_temperatures</a></div><div class="ttdeci">esp_err_t star_bms_bq7850_read_temperatures(const bq7850_handle_t *handle, bq7850_temp_data_t *temp_data)</div><div class="ttdoc">Read all temperature sensors.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00408">star_bms_bq7850.c:408</a></div></div>
+<div class="ttc" id="astar__bms__bq7850_8h_html_adac0c080984d9314f1f1fac481f20fb3"><div class="ttname"><a href="#adac0c080984d9314f1f1fac481f20fb3">star_bms_bq7850_read_status</a></div><div class="ttdeci">esp_err_t star_bms_bq7850_read_status(const bq7850_handle_t *handle, bq7850_status_t *status)</div><div class="ttdoc">Read all status flags.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00577">star_bms_bq7850.c:577</a></div></div>
+<div class="ttc" id="astar__bms__bq7850_8h_html_ae6be6b56d85f086df6e8852d62e63d05"><div class="ttname"><a href="#ae6be6b56d85f086df6e8852d62e63d05">star_bms_bq7850_read_cells</a></div><div class="ttdeci">esp_err_t star_bms_bq7850_read_cells(const bq7850_handle_t *handle, bq7850_cell_data_t *cell_data)</div><div class="ttdoc">Read all cell voltages.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00340">star_bms_bq7850.c:340</a></div></div>
+<div class="ttc" id="astar__bms__bq7850_8h_html_aeb64af20373d57882e8dd29d9a251cf4"><div class="ttname"><a href="#aeb64af20373d57882e8dd29d9a251cf4">star_bms_bq7850_control_fets</a></div><div class="ttdeci">esp_err_t star_bms_bq7850_control_fets(const bq7850_handle_t *handle, bool charge_fet, bool discharge_fet)</div><div class="ttdoc">Control charge/discharge FETs.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00811">star_bms_bq7850.c:811</a></div></div>
+<div class="ttc" id="astar__bms__bq7850_8h_html_af6718c1de9a626cb3b0f6738f3f35836"><div class="ttname"><a href="#af6718c1de9a626cb3b0f6738f3f35836">star_bms_bq7850_read_current</a></div><div class="ttdeci">esp_err_t star_bms_bq7850_read_current(const bq7850_handle_t *handle, bq7850_current_data_t *current_data)</div><div class="ttdoc">Read current measurements.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00470">star_bms_bq7850.c:470</a></div></div>
+<div class="ttc" id="astar__bms__bq7850_8h_html_afcf09922b2aaf11ff7c5a9653440026d"><div class="ttname"><a href="#afcf09922b2aaf11ff7c5a9653440026d">star_bms_bq7850_enable_cell_balancing</a></div><div class="ttdeci">esp_err_t star_bms_bq7850_enable_cell_balancing(const bq7850_handle_t *handle, uint16_t cell_mask)</div><div class="ttdoc">Enable cell balancing.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00676">star_bms_bq7850.c:676</a></div></div>
+<div class="ttc" id="astar__bms__bq7850_8h_html_afd0ffaa80c738dcccbcc04aca730326c"><div class="ttname"><a href="#afd0ffaa80c738dcccbcc04aca730326c">star_bms_bq7850_read_protection</a></div><div class="ttdeci">esp_err_t star_bms_bq7850_read_protection(const bq7850_handle_t *handle, bq7850_protection_t *protection)</div><div class="ttdoc">Read protection thresholds.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00721">star_bms_bq7850.c:721</a></div></div>
 <div class="ttc" id="astar__bus__common__types_8h_html_a129dc23a884803fefe3727fe95ab91d7"><div class="ttname"><a href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a></div><div class="ttdeci">struct star_bus_manager star_bus_manager_t</div><div class="ttdef"><b>Definition</b> <a href="../../dd/d40/star__bus__common__types_8h_source.html#l00022">star_bus_common_types.h:22</a></div></div>
 <div class="ttc" id="astar__bus__common__types_8h_html_ad802dda67d7518bd4022e4a9498fa542"><div class="ttname"><a href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a></div><div class="ttdeci">struct star_bus_config star_bus_config_t</div><div class="ttdef"><b>Definition</b> <a href="../../dd/d40/star__bus__common__types_8h_source.html#l00020">star_bus_common_types.h:20</a></div></div>
 <div class="ttc" id="astar__bus__config_8h_html"><div class="ttname"><a href="../../d0/de4/star__bus__config_8h.html">star_bus_config.h</a></div><div class="ttdoc">Bus configuration creation and lifecycle management.</div></div>
@@ -589,46 +589,46 @@ Functions</h2></td></tr>
 <div class="ttc" id="astar__bus__manager_8h_html_a3a0dc80007e321a8697c399e0f0bf559"><div class="ttname"><a href="../../d6/dcc/star__bus__manager_8h.html#a3a0dc80007e321a8697c399e0f0bf559">star_bus_manager_add_bus</a></div><div class="ttdeci">esp_err_t star_bus_manager_add_bus(star_bus_manager_t *manager, star_bus_config_t *config)</div><div class="ttdoc">Add a new I2C bus/device configuration to the manager.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d60/star__bus__manager_8c_source.html#l00293">star_bus_manager.c:293</a></div></div>
 <div class="ttc" id="astar__bus__manager_8h_html_aa440431606d8a33fb394b4225db51f93"><div class="ttname"><a href="../../d6/dcc/star__bus__manager_8h.html#aa440431606d8a33fb394b4225db51f93">star_bus_manager_remove_bus</a></div><div class="ttdeci">esp_err_t star_bus_manager_remove_bus(star_bus_manager_t *manager, const char *name)</div><div class="ttdoc">Remove an I2C bus configuration from the manager and destroy it.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d60/star__bus__manager_8c_source.html#l00445">star_bus_manager.c:445</a></div></div>
 <div class="ttc" id="astar__error__handler_8c_html_afc3d101f633a076cc1ca84b85b6224b2"><div class="ttname"><a href="../../d7/d82/star__error__handler_8c.html#afc3d101f633a076cc1ca84b85b6224b2">TAG</a></div><div class="ttdeci">#define TAG</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d82/star__error__handler_8c_source.html#l00012">star_error_handler.c:12</a></div></div>
-<div class="ttc" id="astructbq7850__battery__state__t_html"><div class="ttname"><a href="../../d7/db3/structbq7850__battery__state__t.html">bq7850_battery_state_t</a></div><div class="ttdoc">BQ7850 complete battery state.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00435">star_bms_bq7850.h:435</a></div></div>
-<div class="ttc" id="astructbq7850__battery__state__t_html_a4c80f2ca1c5b876251c3376f43a31e33"><div class="ttname"><a href="../../d7/db3/structbq7850__battery__state__t.html#a4c80f2ca1c5b876251c3376f43a31e33">bq7850_battery_state_t::soc</a></div><div class="ttdeci">bq7850_soc_data_t soc</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00439">star_bms_bq7850.h:439</a></div></div>
-<div class="ttc" id="astructbq7850__battery__state__t_html_a89cb49b04779a8be2734a821ffff7d73"><div class="ttname"><a href="../../d7/db3/structbq7850__battery__state__t.html#a89cb49b04779a8be2734a821ffff7d73">bq7850_battery_state_t::temps</a></div><div class="ttdeci">bq7850_temp_data_t temps</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00437">star_bms_bq7850.h:437</a></div></div>
-<div class="ttc" id="astructbq7850__battery__state__t_html_aec29798de44742d410f9d1a63792c0a3"><div class="ttname"><a href="../../d7/db3/structbq7850__battery__state__t.html#aec29798de44742d410f9d1a63792c0a3">bq7850_battery_state_t::status</a></div><div class="ttdeci">bq7850_status_t status</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00440">star_bms_bq7850.h:440</a></div></div>
-<div class="ttc" id="astructbq7850__battery__state__t_html_afa9ecbd944951cc56e33f90a6518e960"><div class="ttname"><a href="../../d7/db3/structbq7850__battery__state__t.html#afa9ecbd944951cc56e33f90a6518e960">bq7850_battery_state_t::current</a></div><div class="ttdeci">bq7850_current_data_t current</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00438">star_bms_bq7850.h:438</a></div></div>
-<div class="ttc" id="astructbq7850__battery__state__t_html_afdcfa528ca8c4edc79447d6876ecd3ef"><div class="ttname"><a href="../../d7/db3/structbq7850__battery__state__t.html#afdcfa528ca8c4edc79447d6876ecd3ef">bq7850_battery_state_t::cells</a></div><div class="ttdeci">bq7850_cell_data_t cells</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00436">star_bms_bq7850.h:436</a></div></div>
-<div class="ttc" id="astructbq7850__cell__data__t_html"><div class="ttname"><a href="../../d2/dde/structbq7850__cell__data__t.html">bq7850_cell_data_t</a></div><div class="ttdoc">BQ7850 cell voltage data.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00370">star_bms_bq7850.h:370</a></div></div>
-<div class="ttc" id="astructbq7850__cell__data__t_html_a48a37b85accd02959fa0c16de2bd59c6"><div class="ttname"><a href="../../d2/dde/structbq7850__cell__data__t.html#a48a37b85accd02959fa0c16de2bd59c6">bq7850_cell_data_t::cell_mv</a></div><div class="ttdeci">uint16_t cell_mv[(16)]</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00371">star_bms_bq7850.h:371</a></div></div>
-<div class="ttc" id="astructbq7850__cell__data__t_html_a9c557e5d2e9e2585deac05b63dbb1efd"><div class="ttname"><a href="../../d2/dde/structbq7850__cell__data__t.html#a9c557e5d2e9e2585deac05b63dbb1efd">bq7850_cell_data_t::valid_cells</a></div><div class="ttdeci">uint8_t valid_cells</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00372">star_bms_bq7850.h:372</a></div></div>
-<div class="ttc" id="astructbq7850__cell__data__t_html_ae996ba6a190db0467a9ff98daa969537"><div class="ttname"><a href="../../d2/dde/structbq7850__cell__data__t.html#ae996ba6a190db0467a9ff98daa969537">bq7850_cell_data_t::pack_mv</a></div><div class="ttdeci">uint16_t pack_mv</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00373">star_bms_bq7850.h:373</a></div></div>
-<div class="ttc" id="astructbq7850__config__t_html"><div class="ttname"><a href="../../dc/d28/structbq7850__config__t.html">bq7850_config_t</a></div><div class="ttdoc">BQ7850 device configuration.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00359">star_bms_bq7850.h:359</a></div></div>
-<div class="ttc" id="astructbq7850__current__data__t_html"><div class="ttname"><a href="../../d2/d17/structbq7850__current__data__t.html">bq7850_current_data_t</a></div><div class="ttdoc">BQ7850 current and power data.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00388">star_bms_bq7850.h:388</a></div></div>
-<div class="ttc" id="astructbq7850__current__data__t_html_a5e0d3fe361f68ed764d4683e7412e04c"><div class="ttname"><a href="../../d2/d17/structbq7850__current__data__t.html#a5e0d3fe361f68ed764d4683e7412e04c">bq7850_current_data_t::power_mw</a></div><div class="ttdeci">int32_t power_mw</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00392">star_bms_bq7850.h:392</a></div></div>
-<div class="ttc" id="astructbq7850__current__data__t_html_a61a36f85e1abd5ae195affcf829f8fa8"><div class="ttname"><a href="../../d2/d17/structbq7850__current__data__t.html#a61a36f85e1abd5ae195affcf829f8fa8">bq7850_current_data_t::current_ma</a></div><div class="ttdeci">int16_t current_ma</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00389">star_bms_bq7850.h:389</a></div></div>
-<div class="ttc" id="astructbq7850__current__data__t_html_aedaae8ec39a087b867618ba3c71f721d"><div class="ttname"><a href="../../d2/d17/structbq7850__current__data__t.html#aedaae8ec39a087b867618ba3c71f721d">bq7850_current_data_t::avg_current_ma</a></div><div class="ttdeci">int16_t avg_current_ma</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00390">star_bms_bq7850.h:390</a></div></div>
-<div class="ttc" id="astructbq7850__device__info__t_html"><div class="ttname"><a href="../../dd/dce/structbq7850__device__info__t.html">bq7850_device_info_t</a></div><div class="ttdoc">BQ7850 device information.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00446">star_bms_bq7850.h:446</a></div></div>
-<div class="ttc" id="astructbq7850__device__info__t_html_a0442f8c891ee5cbaf9410bbc925732e1"><div class="ttname"><a href="../../dd/dce/structbq7850__device__info__t.html#a0442f8c891ee5cbaf9410bbc925732e1">bq7850_device_info_t::manufacturer</a></div><div class="ttdeci">char manufacturer[32]</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00451">star_bms_bq7850.h:451</a></div></div>
-<div class="ttc" id="astructbq7850__device__info__t_html_a4e3cb23453f7df823ac04bc8c5864b2b"><div class="ttname"><a href="../../dd/dce/structbq7850__device__info__t.html#a4e3cb23453f7df823ac04bc8c5864b2b">bq7850_device_info_t::device_name</a></div><div class="ttdeci">char device_name[32]</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00452">star_bms_bq7850.h:452</a></div></div>
-<div class="ttc" id="astructbq7850__device__info__t_html_a8b71ceda7a15ab384afe5e67ecef8286"><div class="ttname"><a href="../../dd/dce/structbq7850__device__info__t.html#a8b71ceda7a15ab384afe5e67ecef8286">bq7850_device_info_t::fw_version</a></div><div class="ttdeci">uint16_t fw_version</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00448">star_bms_bq7850.h:448</a></div></div>
-<div class="ttc" id="astructbq7850__device__info__t_html_a991a204570e337d972cc469c1fb0ab62"><div class="ttname"><a href="../../dd/dce/structbq7850__device__info__t.html#a991a204570e337d972cc469c1fb0ab62">bq7850_device_info_t::chemistry</a></div><div class="ttdeci">char chemistry[32]</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00453">star_bms_bq7850.h:453</a></div></div>
-<div class="ttc" id="astructbq7850__device__info__t_html_ab10b14fe17aa6a085bc784d587f5dead"><div class="ttname"><a href="../../dd/dce/structbq7850__device__info__t.html#ab10b14fe17aa6a085bc784d587f5dead">bq7850_device_info_t::serial_number</a></div><div class="ttdeci">uint32_t serial_number</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00450">star_bms_bq7850.h:450</a></div></div>
-<div class="ttc" id="astructbq7850__device__info__t_html_ab1c52e9ac6c4115dd9a6f9a1230aab10"><div class="ttname"><a href="../../dd/dce/structbq7850__device__info__t.html#ab1c52e9ac6c4115dd9a6f9a1230aab10">bq7850_device_info_t::hw_version</a></div><div class="ttdeci">uint16_t hw_version</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00449">star_bms_bq7850.h:449</a></div></div>
-<div class="ttc" id="astructbq7850__protection__t_html"><div class="ttname"><a href="../../d6/d0d/structbq7850__protection__t.html">bq7850_protection_t</a></div><div class="ttdoc">BQ7850 protection thresholds.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00423">star_bms_bq7850.h:423</a></div></div>
-<div class="ttc" id="astructbq7850__protection__t_html_a1d6e2031534ec83d60e9366405d90a2b"><div class="ttname"><a href="../../d6/d0d/structbq7850__protection__t.html#a1d6e2031534ec83d60e9366405d90a2b">bq7850_protection_t::undervoltage_mv</a></div><div class="ttdeci">uint16_t undervoltage_mv</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00425">star_bms_bq7850.h:425</a></div></div>
-<div class="ttc" id="astructbq7850__protection__t_html_a4e3d20791a3eb5f787e62de63a8f24ed"><div class="ttname"><a href="../../d6/d0d/structbq7850__protection__t.html#a4e3d20791a3eb5f787e62de63a8f24ed">bq7850_protection_t::overvoltage_mv</a></div><div class="ttdeci">uint16_t overvoltage_mv</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00424">star_bms_bq7850.h:424</a></div></div>
-<div class="ttc" id="astructbq7850__soc__data__t_html"><div class="ttname"><a href="../../da/de4/structbq7850__soc__data__t.html">bq7850_soc_data_t</a></div><div class="ttdoc">BQ7850 state of charge data.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00398">star_bms_bq7850.h:398</a></div></div>
-<div class="ttc" id="astructbq7850__soc__data__t_html_a6ed6405713d1452915a0306223d3b29f"><div class="ttname"><a href="../../da/de4/structbq7850__soc__data__t.html#a6ed6405713d1452915a0306223d3b29f">bq7850_soc_data_t::full_capacity_mah</a></div><div class="ttdeci">uint16_t full_capacity_mah</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00400">star_bms_bq7850.h:400</a></div></div>
-<div class="ttc" id="astructbq7850__soc__data__t_html_aafaae1965d78b993b8c7713de26573e2"><div class="ttname"><a href="../../da/de4/structbq7850__soc__data__t.html#aafaae1965d78b993b8c7713de26573e2">bq7850_soc_data_t::relative_soc</a></div><div class="ttdeci">uint8_t relative_soc</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00401">star_bms_bq7850.h:401</a></div></div>
-<div class="ttc" id="astructbq7850__soc__data__t_html_ab0f22e236c46d4d8310eb6e9f00a4716"><div class="ttname"><a href="../../da/de4/structbq7850__soc__data__t.html#ab0f22e236c46d4d8310eb6e9f00a4716">bq7850_soc_data_t::cycle_count</a></div><div class="ttdeci">uint16_t cycle_count</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00403">star_bms_bq7850.h:403</a></div></div>
-<div class="ttc" id="astructbq7850__soc__data__t_html_ac40747684149fa1accd119262df0dc85"><div class="ttname"><a href="../../da/de4/structbq7850__soc__data__t.html#ac40747684149fa1accd119262df0dc85">bq7850_soc_data_t::remaining_capacity_mah</a></div><div class="ttdeci">uint16_t remaining_capacity_mah</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00399">star_bms_bq7850.h:399</a></div></div>
-<div class="ttc" id="astructbq7850__soc__data__t_html_ae4c7e54ab1e4495c467a946218fc3711"><div class="ttname"><a href="../../da/de4/structbq7850__soc__data__t.html#ae4c7e54ab1e4495c467a946218fc3711">bq7850_soc_data_t::absolute_soc</a></div><div class="ttdeci">uint8_t absolute_soc</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00402">star_bms_bq7850.h:402</a></div></div>
-<div class="ttc" id="astructbq7850__status__t_html"><div class="ttname"><a href="../../dd/daf/structbq7850__status__t.html">bq7850_status_t</a></div><div class="ttdoc">BQ7850 status flags.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00409">star_bms_bq7850.h:409</a></div></div>
-<div class="ttc" id="astructbq7850__status__t_html_a0b97a2549aeff8ce55350b1fa97d0d8b"><div class="ttname"><a href="../../dd/daf/structbq7850__status__t.html#a0b97a2549aeff8ce55350b1fa97d0d8b">bq7850_status_t::charging</a></div><div class="ttdeci">bool charging</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00414">star_bms_bq7850.h:414</a></div></div>
-<div class="ttc" id="astructbq7850__status__t_html_a23a6d477b977cdf9f1cdf20f3a859496"><div class="ttname"><a href="../../dd/daf/structbq7850__status__t.html#a23a6d477b977cdf9f1cdf20f3a859496">bq7850_status_t::fully_charged</a></div><div class="ttdeci">bool fully_charged</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00416">star_bms_bq7850.h:416</a></div></div>
-<div class="ttc" id="astructbq7850__status__t_html_a28709809dd36f0b4a8b480ef0e8e18a2"><div class="ttname"><a href="../../dd/daf/structbq7850__status__t.html#a28709809dd36f0b4a8b480ef0e8e18a2">bq7850_status_t::discharging</a></div><div class="ttdeci">bool discharging</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00415">star_bms_bq7850.h:415</a></div></div>
-<div class="ttc" id="astructbq7850__status__t_html_af93c5b7856e4e47780995129c4193b96"><div class="ttname"><a href="../../dd/daf/structbq7850__status__t.html#af93c5b7856e4e47780995129c4193b96">bq7850_status_t::fault_active</a></div><div class="ttdeci">bool fault_active</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00417">star_bms_bq7850.h:417</a></div></div>
-<div class="ttc" id="astructbq7850__temp__data__t_html"><div class="ttname"><a href="../../df/d6a/structbq7850__temp__data__t.html">bq7850_temp_data_t</a></div><div class="ttdoc">BQ7850 temperature data.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00379">star_bms_bq7850.h:379</a></div></div>
-<div class="ttc" id="astructbq7850__temp__data__t_html_a3f3c14be903c3e1e38e1099df4d5b776"><div class="ttname"><a href="../../df/d6a/structbq7850__temp__data__t.html#a3f3c14be903c3e1e38e1099df4d5b776">bq7850_temp_data_t::temp_c</a></div><div class="ttdeci">int16_t temp_c[(3)]</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00380">star_bms_bq7850.h:380</a></div></div>
-<div class="ttc" id="astructbq7850__temp__data__t_html_abf3004063392d9357a078597d4996e96"><div class="ttname"><a href="../../df/d6a/structbq7850__temp__data__t.html#abf3004063392d9357a078597d4996e96">bq7850_temp_data_t::avg_temp_c</a></div><div class="ttdeci">int16_t avg_temp_c</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00382">star_bms_bq7850.h:382</a></div></div>
-<div class="ttc" id="astructbq7850__temp__data__t_html_af0db22d14ca600f211c40ec4e72e3e70"><div class="ttname"><a href="../../df/d6a/structbq7850__temp__data__t.html#af0db22d14ca600f211c40ec4e72e3e70">bq7850_temp_data_t::valid_sensors</a></div><div class="ttdeci">uint8_t valid_sensors</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00381">star_bms_bq7850.h:381</a></div></div>
+<div class="ttc" id="astructbq7850__battery__state__t_html"><div class="ttname"><a href="../../d7/db3/structbq7850__battery__state__t.html">bq7850_battery_state_t</a></div><div class="ttdoc">BQ7850 complete battery state.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00440">star_bms_bq7850.h:440</a></div></div>
+<div class="ttc" id="astructbq7850__battery__state__t_html_a4c80f2ca1c5b876251c3376f43a31e33"><div class="ttname"><a href="../../d7/db3/structbq7850__battery__state__t.html#a4c80f2ca1c5b876251c3376f43a31e33">bq7850_battery_state_t::soc</a></div><div class="ttdeci">bq7850_soc_data_t soc</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00444">star_bms_bq7850.h:444</a></div></div>
+<div class="ttc" id="astructbq7850__battery__state__t_html_a89cb49b04779a8be2734a821ffff7d73"><div class="ttname"><a href="../../d7/db3/structbq7850__battery__state__t.html#a89cb49b04779a8be2734a821ffff7d73">bq7850_battery_state_t::temps</a></div><div class="ttdeci">bq7850_temp_data_t temps</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00442">star_bms_bq7850.h:442</a></div></div>
+<div class="ttc" id="astructbq7850__battery__state__t_html_aec29798de44742d410f9d1a63792c0a3"><div class="ttname"><a href="../../d7/db3/structbq7850__battery__state__t.html#aec29798de44742d410f9d1a63792c0a3">bq7850_battery_state_t::status</a></div><div class="ttdeci">bq7850_status_t status</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00445">star_bms_bq7850.h:445</a></div></div>
+<div class="ttc" id="astructbq7850__battery__state__t_html_afa9ecbd944951cc56e33f90a6518e960"><div class="ttname"><a href="../../d7/db3/structbq7850__battery__state__t.html#afa9ecbd944951cc56e33f90a6518e960">bq7850_battery_state_t::current</a></div><div class="ttdeci">bq7850_current_data_t current</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00443">star_bms_bq7850.h:443</a></div></div>
+<div class="ttc" id="astructbq7850__battery__state__t_html_afdcfa528ca8c4edc79447d6876ecd3ef"><div class="ttname"><a href="../../d7/db3/structbq7850__battery__state__t.html#afdcfa528ca8c4edc79447d6876ecd3ef">bq7850_battery_state_t::cells</a></div><div class="ttdeci">bq7850_cell_data_t cells</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00441">star_bms_bq7850.h:441</a></div></div>
+<div class="ttc" id="astructbq7850__cell__data__t_html"><div class="ttname"><a href="../../d2/dde/structbq7850__cell__data__t.html">bq7850_cell_data_t</a></div><div class="ttdoc">BQ7850 cell voltage data.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00375">star_bms_bq7850.h:375</a></div></div>
+<div class="ttc" id="astructbq7850__cell__data__t_html_a48a37b85accd02959fa0c16de2bd59c6"><div class="ttname"><a href="../../d2/dde/structbq7850__cell__data__t.html#a48a37b85accd02959fa0c16de2bd59c6">bq7850_cell_data_t::cell_mv</a></div><div class="ttdeci">uint16_t cell_mv[(16)]</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00376">star_bms_bq7850.h:376</a></div></div>
+<div class="ttc" id="astructbq7850__cell__data__t_html_a9c557e5d2e9e2585deac05b63dbb1efd"><div class="ttname"><a href="../../d2/dde/structbq7850__cell__data__t.html#a9c557e5d2e9e2585deac05b63dbb1efd">bq7850_cell_data_t::valid_cells</a></div><div class="ttdeci">uint8_t valid_cells</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00377">star_bms_bq7850.h:377</a></div></div>
+<div class="ttc" id="astructbq7850__cell__data__t_html_ae996ba6a190db0467a9ff98daa969537"><div class="ttname"><a href="../../d2/dde/structbq7850__cell__data__t.html#ae996ba6a190db0467a9ff98daa969537">bq7850_cell_data_t::pack_mv</a></div><div class="ttdeci">uint16_t pack_mv</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00378">star_bms_bq7850.h:378</a></div></div>
+<div class="ttc" id="astructbq7850__config__t_html"><div class="ttname"><a href="../../dc/d28/structbq7850__config__t.html">bq7850_config_t</a></div><div class="ttdoc">BQ7850 device configuration.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00364">star_bms_bq7850.h:364</a></div></div>
+<div class="ttc" id="astructbq7850__current__data__t_html"><div class="ttname"><a href="../../d2/d17/structbq7850__current__data__t.html">bq7850_current_data_t</a></div><div class="ttdoc">BQ7850 current and power data.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00393">star_bms_bq7850.h:393</a></div></div>
+<div class="ttc" id="astructbq7850__current__data__t_html_a5e0d3fe361f68ed764d4683e7412e04c"><div class="ttname"><a href="../../d2/d17/structbq7850__current__data__t.html#a5e0d3fe361f68ed764d4683e7412e04c">bq7850_current_data_t::power_mw</a></div><div class="ttdeci">int32_t power_mw</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00397">star_bms_bq7850.h:397</a></div></div>
+<div class="ttc" id="astructbq7850__current__data__t_html_a61a36f85e1abd5ae195affcf829f8fa8"><div class="ttname"><a href="../../d2/d17/structbq7850__current__data__t.html#a61a36f85e1abd5ae195affcf829f8fa8">bq7850_current_data_t::current_ma</a></div><div class="ttdeci">int16_t current_ma</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00394">star_bms_bq7850.h:394</a></div></div>
+<div class="ttc" id="astructbq7850__current__data__t_html_aedaae8ec39a087b867618ba3c71f721d"><div class="ttname"><a href="../../d2/d17/structbq7850__current__data__t.html#aedaae8ec39a087b867618ba3c71f721d">bq7850_current_data_t::avg_current_ma</a></div><div class="ttdeci">int16_t avg_current_ma</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00395">star_bms_bq7850.h:395</a></div></div>
+<div class="ttc" id="astructbq7850__device__info__t_html"><div class="ttname"><a href="../../dd/dce/structbq7850__device__info__t.html">bq7850_device_info_t</a></div><div class="ttdoc">BQ7850 device information.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00451">star_bms_bq7850.h:451</a></div></div>
+<div class="ttc" id="astructbq7850__device__info__t_html_a0442f8c891ee5cbaf9410bbc925732e1"><div class="ttname"><a href="../../dd/dce/structbq7850__device__info__t.html#a0442f8c891ee5cbaf9410bbc925732e1">bq7850_device_info_t::manufacturer</a></div><div class="ttdeci">char manufacturer[32]</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00456">star_bms_bq7850.h:456</a></div></div>
+<div class="ttc" id="astructbq7850__device__info__t_html_a4e3cb23453f7df823ac04bc8c5864b2b"><div class="ttname"><a href="../../dd/dce/structbq7850__device__info__t.html#a4e3cb23453f7df823ac04bc8c5864b2b">bq7850_device_info_t::device_name</a></div><div class="ttdeci">char device_name[32]</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00457">star_bms_bq7850.h:457</a></div></div>
+<div class="ttc" id="astructbq7850__device__info__t_html_a8b71ceda7a15ab384afe5e67ecef8286"><div class="ttname"><a href="../../dd/dce/structbq7850__device__info__t.html#a8b71ceda7a15ab384afe5e67ecef8286">bq7850_device_info_t::fw_version</a></div><div class="ttdeci">uint16_t fw_version</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00453">star_bms_bq7850.h:453</a></div></div>
+<div class="ttc" id="astructbq7850__device__info__t_html_a991a204570e337d972cc469c1fb0ab62"><div class="ttname"><a href="../../dd/dce/structbq7850__device__info__t.html#a991a204570e337d972cc469c1fb0ab62">bq7850_device_info_t::chemistry</a></div><div class="ttdeci">char chemistry[32]</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00458">star_bms_bq7850.h:458</a></div></div>
+<div class="ttc" id="astructbq7850__device__info__t_html_ab10b14fe17aa6a085bc784d587f5dead"><div class="ttname"><a href="../../dd/dce/structbq7850__device__info__t.html#ab10b14fe17aa6a085bc784d587f5dead">bq7850_device_info_t::serial_number</a></div><div class="ttdeci">uint32_t serial_number</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00455">star_bms_bq7850.h:455</a></div></div>
+<div class="ttc" id="astructbq7850__device__info__t_html_ab1c52e9ac6c4115dd9a6f9a1230aab10"><div class="ttname"><a href="../../dd/dce/structbq7850__device__info__t.html#ab1c52e9ac6c4115dd9a6f9a1230aab10">bq7850_device_info_t::hw_version</a></div><div class="ttdeci">uint16_t hw_version</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00454">star_bms_bq7850.h:454</a></div></div>
+<div class="ttc" id="astructbq7850__protection__t_html"><div class="ttname"><a href="../../d6/d0d/structbq7850__protection__t.html">bq7850_protection_t</a></div><div class="ttdoc">BQ7850 protection thresholds.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00428">star_bms_bq7850.h:428</a></div></div>
+<div class="ttc" id="astructbq7850__protection__t_html_a1d6e2031534ec83d60e9366405d90a2b"><div class="ttname"><a href="../../d6/d0d/structbq7850__protection__t.html#a1d6e2031534ec83d60e9366405d90a2b">bq7850_protection_t::undervoltage_mv</a></div><div class="ttdeci">uint16_t undervoltage_mv</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00430">star_bms_bq7850.h:430</a></div></div>
+<div class="ttc" id="astructbq7850__protection__t_html_a4e3d20791a3eb5f787e62de63a8f24ed"><div class="ttname"><a href="../../d6/d0d/structbq7850__protection__t.html#a4e3d20791a3eb5f787e62de63a8f24ed">bq7850_protection_t::overvoltage_mv</a></div><div class="ttdeci">uint16_t overvoltage_mv</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00429">star_bms_bq7850.h:429</a></div></div>
+<div class="ttc" id="astructbq7850__soc__data__t_html"><div class="ttname"><a href="../../da/de4/structbq7850__soc__data__t.html">bq7850_soc_data_t</a></div><div class="ttdoc">BQ7850 state of charge data.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00403">star_bms_bq7850.h:403</a></div></div>
+<div class="ttc" id="astructbq7850__soc__data__t_html_a6ed6405713d1452915a0306223d3b29f"><div class="ttname"><a href="../../da/de4/structbq7850__soc__data__t.html#a6ed6405713d1452915a0306223d3b29f">bq7850_soc_data_t::full_capacity_mah</a></div><div class="ttdeci">uint16_t full_capacity_mah</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00405">star_bms_bq7850.h:405</a></div></div>
+<div class="ttc" id="astructbq7850__soc__data__t_html_aafaae1965d78b993b8c7713de26573e2"><div class="ttname"><a href="../../da/de4/structbq7850__soc__data__t.html#aafaae1965d78b993b8c7713de26573e2">bq7850_soc_data_t::relative_soc</a></div><div class="ttdeci">uint8_t relative_soc</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00406">star_bms_bq7850.h:406</a></div></div>
+<div class="ttc" id="astructbq7850__soc__data__t_html_ab0f22e236c46d4d8310eb6e9f00a4716"><div class="ttname"><a href="../../da/de4/structbq7850__soc__data__t.html#ab0f22e236c46d4d8310eb6e9f00a4716">bq7850_soc_data_t::cycle_count</a></div><div class="ttdeci">uint16_t cycle_count</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00408">star_bms_bq7850.h:408</a></div></div>
+<div class="ttc" id="astructbq7850__soc__data__t_html_ac40747684149fa1accd119262df0dc85"><div class="ttname"><a href="../../da/de4/structbq7850__soc__data__t.html#ac40747684149fa1accd119262df0dc85">bq7850_soc_data_t::remaining_capacity_mah</a></div><div class="ttdeci">uint16_t remaining_capacity_mah</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00404">star_bms_bq7850.h:404</a></div></div>
+<div class="ttc" id="astructbq7850__soc__data__t_html_ae4c7e54ab1e4495c467a946218fc3711"><div class="ttname"><a href="../../da/de4/structbq7850__soc__data__t.html#ae4c7e54ab1e4495c467a946218fc3711">bq7850_soc_data_t::absolute_soc</a></div><div class="ttdeci">uint8_t absolute_soc</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00407">star_bms_bq7850.h:407</a></div></div>
+<div class="ttc" id="astructbq7850__status__t_html"><div class="ttname"><a href="../../dd/daf/structbq7850__status__t.html">bq7850_status_t</a></div><div class="ttdoc">BQ7850 status flags.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00414">star_bms_bq7850.h:414</a></div></div>
+<div class="ttc" id="astructbq7850__status__t_html_a0b97a2549aeff8ce55350b1fa97d0d8b"><div class="ttname"><a href="../../dd/daf/structbq7850__status__t.html#a0b97a2549aeff8ce55350b1fa97d0d8b">bq7850_status_t::charging</a></div><div class="ttdeci">bool charging</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00419">star_bms_bq7850.h:419</a></div></div>
+<div class="ttc" id="astructbq7850__status__t_html_a23a6d477b977cdf9f1cdf20f3a859496"><div class="ttname"><a href="../../dd/daf/structbq7850__status__t.html#a23a6d477b977cdf9f1cdf20f3a859496">bq7850_status_t::fully_charged</a></div><div class="ttdeci">bool fully_charged</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00421">star_bms_bq7850.h:421</a></div></div>
+<div class="ttc" id="astructbq7850__status__t_html_a28709809dd36f0b4a8b480ef0e8e18a2"><div class="ttname"><a href="../../dd/daf/structbq7850__status__t.html#a28709809dd36f0b4a8b480ef0e8e18a2">bq7850_status_t::discharging</a></div><div class="ttdeci">bool discharging</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00420">star_bms_bq7850.h:420</a></div></div>
+<div class="ttc" id="astructbq7850__status__t_html_af93c5b7856e4e47780995129c4193b96"><div class="ttname"><a href="../../dd/daf/structbq7850__status__t.html#af93c5b7856e4e47780995129c4193b96">bq7850_status_t::fault_active</a></div><div class="ttdeci">bool fault_active</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00422">star_bms_bq7850.h:422</a></div></div>
+<div class="ttc" id="astructbq7850__temp__data__t_html"><div class="ttname"><a href="../../df/d6a/structbq7850__temp__data__t.html">bq7850_temp_data_t</a></div><div class="ttdoc">BQ7850 temperature data.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00384">star_bms_bq7850.h:384</a></div></div>
+<div class="ttc" id="astructbq7850__temp__data__t_html_a3f3c14be903c3e1e38e1099df4d5b776"><div class="ttname"><a href="../../df/d6a/structbq7850__temp__data__t.html#a3f3c14be903c3e1e38e1099df4d5b776">bq7850_temp_data_t::temp_c</a></div><div class="ttdeci">int16_t temp_c[(3)]</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00385">star_bms_bq7850.h:385</a></div></div>
+<div class="ttc" id="astructbq7850__temp__data__t_html_abf3004063392d9357a078597d4996e96"><div class="ttname"><a href="../../df/d6a/structbq7850__temp__data__t.html#abf3004063392d9357a078597d4996e96">bq7850_temp_data_t::avg_temp_c</a></div><div class="ttdeci">int16_t avg_temp_c</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00387">star_bms_bq7850.h:387</a></div></div>
+<div class="ttc" id="astructbq7850__temp__data__t_html_af0db22d14ca600f211c40ec4e72e3e70"><div class="ttname"><a href="../../df/d6a/structbq7850__temp__data__t.html#af0db22d14ca600f211c40ec4e72e3e70">bq7850_temp_data_t::valid_sensors</a></div><div class="ttdeci">uint8_t valid_sensors</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d63/star__bms__bq7850_8h_source.html#l00386">star_bms_bq7850.h:386</a></div></div>
 </div><!-- fragment --> 
 <p class="definition">Definition in file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 </div><a name="doc-define-members" id="doc-define-members"></a><h2 id="header-doc-define-members" class="groupheader">Macro Definition Documentation</h2>
@@ -645,9 +645,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Discharging </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00335">335</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00340">340</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00599">star_bms_bq7850_read_status()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00577">star_bms_bq7850_read_status()</a>.</p>
 
 </div>
 </div>
@@ -664,9 +664,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Fully charged </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00336">336</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00341">341</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00599">star_bms_bq7850_read_status()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00577">star_bms_bq7850_read_status()</a>.</p>
 
 </div>
 </div>
@@ -683,7 +683,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Fully discharged </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00337">337</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00342">342</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
 </div>
 </div>
@@ -700,7 +700,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Initialized </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00334">334</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00339">339</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
 </div>
 </div>
@@ -717,7 +717,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Over-current in charge </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00328">328</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00333">333</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
 </div>
 </div>
@@ -734,7 +734,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Over-temperature alarm </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00330">330</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00335">335</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
 </div>
 </div>
@@ -751,7 +751,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Remaining capacity alarm </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00332">332</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00337">337</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
 </div>
 </div>
@@ -768,7 +768,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Remaining time alarm </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00333">333</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00338">338</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
 </div>
 </div>
@@ -785,7 +785,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Terminate charge alarm </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00329">329</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00334">334</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
 </div>
 </div>
@@ -802,7 +802,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Terminate discharge alarm </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00331">331</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00336">336</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
 </div>
 </div>
@@ -819,9 +819,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Absolute SOC (%) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00280">280</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00285">285</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00540">star_bms_bq7850_read_soc()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00518">star_bms_bq7850_read_soc()</a>.</p>
 
 </div>
 </div>
@@ -838,9 +838,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Alarm/Warning flags </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00311">311</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00316">316</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00599">star_bms_bq7850_read_status()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00577">star_bms_bq7850_read_status()</a>.</p>
 
 </div>
 </div>
@@ -857,9 +857,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Average current (mA) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00278">278</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00283">283</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00489">star_bms_bq7850_read_current()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00470">star_bms_bq7850_read_current()</a>.</p>
 
 </div>
 </div>
@@ -876,9 +876,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Battery status flags </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00308">308</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00313">313</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00599">star_bms_bq7850_read_status()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00577">star_bms_bq7850_read_status()</a>.</p>
 
 </div>
 </div>
@@ -895,9 +895,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Cell balancing control </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00318">318</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00323">323</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00713">star_bms_bq7850_disable_cell_balancing()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00698">star_bms_bq7850_enable_cell_balancing()</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00728">star_bms_bq7850_get_balancing_status()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00691">star_bms_bq7850_disable_cell_balancing()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00676">star_bms_bq7850_enable_cell_balancing()</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00706">star_bms_bq7850_get_balancing_status()</a>.</p>
 
 </div>
 </div>
@@ -914,7 +914,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Charging current (mA) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00309">309</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00314">314</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
 </div>
 </div>
@@ -931,7 +931,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Charging voltage (mV) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00310">310</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00315">315</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
 </div>
 </div>
@@ -948,9 +948,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Pack current (mA) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00277">277</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00282">282</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00489">star_bms_bq7850_read_current()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00470">star_bms_bq7850_read_current()</a>.</p>
 
 </div>
 </div>
@@ -967,9 +967,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Cycle count </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00281">281</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00286">286</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00540">star_bms_bq7850_read_soc()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00518">star_bms_bq7850_read_soc()</a>.</p>
 
 </div>
 </div>
@@ -986,7 +986,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Design capacity (mAh) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00282">282</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00287">287</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
 </div>
 </div>
@@ -1003,7 +1003,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Design voltage (mV) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00283">283</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00288">288</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
 </div>
 </div>
@@ -1020,9 +1020,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Device chemistry (block) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00287">287</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00292">292</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00238">star_bms_bq7850_get_device_info()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00219">star_bms_bq7850_get_device_info()</a>.</p>
 
 </div>
 </div>
@@ -1039,9 +1039,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Device name (block) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00286">286</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00291">291</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00238">star_bms_bq7850_get_device_info()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00219">star_bms_bq7850_get_device_info()</a>.</p>
 
 </div>
 </div>
@@ -1058,9 +1058,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>FET control </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00315">315</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00320">320</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00833">star_bms_bq7850_control_fets()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00811">star_bms_bq7850_control_fets()</a>.</p>
 
 </div>
 </div>
@@ -1077,9 +1077,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Full charge capacity (mAh) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00274">274</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00279">279</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00540">star_bms_bq7850_read_soc()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00518">star_bms_bq7850_read_soc()</a>.</p>
 
 </div>
 </div>
@@ -1096,7 +1096,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Manufacturer data (block) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00288">288</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00293">293</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
 </div>
 </div>
@@ -1113,9 +1113,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Manufacturer name (block) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00285">285</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00290">290</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00238">star_bms_bq7850_get_device_info()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00219">star_bms_bq7850_get_device_info()</a>.</p>
 
 </div>
 </div>
@@ -1132,9 +1132,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Manufacturer access </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00272">272</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00277">277</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00027">internal_bq7850_manufacturer_access()</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00788">star_bms_bq7850_write_protection()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00028">internal_bq7850_manufacturer_access()</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00766">star_bms_bq7850_write_protection()</a>.</p>
 
 </div>
 </div>
@@ -1151,9 +1151,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Operation status </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00314">314</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00319">319</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00599">star_bms_bq7850_read_status()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00577">star_bms_bq7850_read_status()</a>.</p>
 
 </div>
 </div>
@@ -1170,7 +1170,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Permanent fail status </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00313">313</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00318">318</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
 </div>
 </div>
@@ -1187,9 +1187,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Relative SOC (%) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00279">279</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00284">284</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00540">star_bms_bq7850_read_soc()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00518">star_bms_bq7850_read_soc()</a>.</p>
 
 </div>
 </div>
@@ -1206,9 +1206,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Remaining capacity (mAh) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00273">273</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00278">278</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00540">star_bms_bq7850_read_soc()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00518">star_bms_bq7850_read_soc()</a>.</p>
 
 </div>
 </div>
@@ -1225,9 +1225,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Safety status </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00312">312</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00317">317</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00599">star_bms_bq7850_read_status()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00577">star_bms_bq7850_read_status()</a>.</p>
 
 </div>
 </div>
@@ -1244,9 +1244,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Serial number </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00284">284</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00289">289</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00238">star_bms_bq7850_get_device_info()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00219">star_bms_bq7850_get_device_info()</a>.</p>
 
 </div>
 </div>
@@ -1263,9 +1263,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Temperature (0.1K) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00275">275</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00280">280</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00467">star_bms_bq7850_read_temperature()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00448">star_bms_bq7850_read_temperature()</a>.</p>
 
 </div>
 </div>
@@ -1282,9 +1282,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Pack voltage (mV) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00276">276</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00281">281</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00079">star_bms_bq7850_init()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00359">star_bms_bq7850_read_cells()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00489">star_bms_bq7850_read_current()</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00412">star_bms_bq7850_read_pack_voltage()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00080">star_bms_bq7850_init()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00340">star_bms_bq7850_read_cells()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00470">star_bms_bq7850_read_current()</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00393">star_bms_bq7850_read_pack_voltage()</a>.</p>
 
 </div>
 </div>
@@ -1301,7 +1301,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>BQ7850 default SMBus address (can be configured) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00261">261</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00266">266</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
 </div>
 </div>
@@ -1318,9 +1318,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Charge FET enable </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00350">350</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00355">355</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00833">star_bms_bq7850_control_fets()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00811">star_bms_bq7850_control_fets()</a>.</p>
 
 </div>
 </div>
@@ -1337,9 +1337,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Discharge FET enable </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00351">351</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00356">356</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00833">star_bms_bq7850_control_fets()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00811">star_bms_bq7850_control_fets()</a>.</p>
 
 </div>
 </div>
@@ -1356,7 +1356,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Pre-charge FET enable </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00352">352</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00357">357</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
 </div>
 </div>
@@ -1373,9 +1373,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Maximum number of cells supported by BQ7850 </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00264">264</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00269">269</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00063">internal_bq7850_read_cell_voltage()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00079">star_bms_bq7850_init()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00393">star_bms_bq7850_read_cell_voltage()</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00359">star_bms_bq7850_read_cells()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00064">internal_bq7850_read_cell_voltage()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00080">star_bms_bq7850_init()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00374">star_bms_bq7850_read_cell_voltage()</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00340">star_bms_bq7850_read_cells()</a>.</p>
 
 </div>
 </div>
@@ -1392,9 +1392,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Maximum number of temperature sensors </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00267">267</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00272">272</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00427">star_bms_bq7850_read_temperatures()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00408">star_bms_bq7850_read_temperatures()</a>.</p>
 
 </div>
 </div>
@@ -1411,9 +1411,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Cell overvoltage </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00341">341</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00346">346</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00873">star_bms_bq7850_status_to_string()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00851">star_bms_bq7850_status_to_string()</a>.</p>
 
 </div>
 </div>
@@ -1430,9 +1430,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Cell undervoltage </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00340">340</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00345">345</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00873">star_bms_bq7850_status_to_string()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00851">star_bms_bq7850_status_to_string()</a>.</p>
 
 </div>
 </div>
@@ -1449,9 +1449,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Overcurrent in charge </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00342">342</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00347">347</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00873">star_bms_bq7850_status_to_string()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00851">star_bms_bq7850_status_to_string()</a>.</p>
 
 </div>
 </div>
@@ -1468,9 +1468,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Overcurrent in discharge </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00343">343</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00348">348</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00873">star_bms_bq7850_status_to_string()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00851">star_bms_bq7850_status_to_string()</a>.</p>
 
 </div>
 </div>
@@ -1487,7 +1487,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Over-temperature charge </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00344">344</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00349">349</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
 </div>
 </div>
@@ -1504,7 +1504,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Over-temperature discharge </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00345">345</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00350">350</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
 </div>
 </div>
@@ -1521,7 +1521,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Under-temperature charge </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00346">346</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00351">351</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
 </div>
 </div>
@@ -1538,7 +1538,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Under-temperature discharge </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00347">347</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00352">352</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
 </div>
 </div>
@@ -1555,7 +1555,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Enter calibration mode </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00297">297</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00302">302</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
 </div>
 </div>
@@ -1572,9 +1572,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Cell 1 voltage = 0x0070, Cell 2 = 0x0071, etc. </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00301">301</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00306">306</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00063">internal_bq7850_read_cell_voltage()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00064">internal_bq7850_read_cell_voltage()</a>.</p>
 
 </div>
 </div>
@@ -1591,9 +1591,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Full device reset </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00298">298</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00303">303</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00334">star_bms_bq7850_reset()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00315">star_bms_bq7850_reset()</a>.</p>
 
 </div>
 </div>
@@ -1610,9 +1610,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Device type </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00291">291</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00296">296</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00238">star_bms_bq7850_get_device_info()</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00079">star_bms_bq7850_init()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00219">star_bms_bq7850_get_device_info()</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00080">star_bms_bq7850_init()</a>.</p>
 
 </div>
 </div>
@@ -1629,9 +1629,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Firmware version </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00292">292</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00297">297</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00238">star_bms_bq7850_get_device_info()</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00079">star_bms_bq7850_init()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00219">star_bms_bq7850_get_device_info()</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00080">star_bms_bq7850_init()</a>.</p>
 
 </div>
 </div>
@@ -1648,9 +1648,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Hardware version </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00293">293</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00298">298</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00238">star_bms_bq7850_get_device_info()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00219">star_bms_bq7850_get_device_info()</a>.</p>
 
 </div>
 </div>
@@ -1667,7 +1667,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Enable impedance track </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00296">296</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00301">301</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
 </div>
 </div>
@@ -1684,9 +1684,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Overcurrent threshold </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00323">323</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00328">328</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00743">star_bms_bq7850_read_protection()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00721">star_bms_bq7850_read_protection()</a>.</p>
 
 </div>
 </div>
@@ -1703,7 +1703,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Over-temperature threshold </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00324">324</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00329">329</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
 </div>
 </div>
@@ -1720,9 +1720,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Overvoltage threshold </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00321">321</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00326">326</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00743">star_bms_bq7850_read_protection()</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00788">star_bms_bq7850_write_protection()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00721">star_bms_bq7850_read_protection()</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00766">star_bms_bq7850_write_protection()</a>.</p>
 
 </div>
 </div>
@@ -1739,7 +1739,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Under-temperature threshold </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00325">325</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00330">330</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
 </div>
 </div>
@@ -1756,9 +1756,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Undervoltage threshold </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00322">322</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00327">327</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00743">star_bms_bq7850_read_protection()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00721">star_bms_bq7850_read_protection()</a>.</p>
 
 </div>
 </div>
@@ -1775,7 +1775,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Software reset </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00294">294</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00299">299</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
 </div>
 </div>
@@ -1792,7 +1792,7 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Seal device </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00295">295</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00300">300</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
 </div>
 </div>
@@ -1809,9 +1809,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Temp sensor 1 = 0x0078, etc. </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00305">305</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00310">310</a> of file <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html">star_bms_bq7850.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00427">star_bms_bq7850_read_temperatures()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00408">star_bms_bq7850_read_temperatures()</a>.</p>
 
 </div>
 </div>
@@ -1872,9 +1872,9 @@ Functions</h2></td></tr>
 <p>&lt; Discharge FET enable</p>
 <p>&lt; FET control</p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00833">833</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00811">811</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00315">BQ7850_CMD_FET_CONTROL</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00350">BQ7850_FET_CONTROL_CHG_FET</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00351">BQ7850_FET_CONTROL_DSG_FET</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00464">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00463">bq7850_handle::manager</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00465">bq7850_handle::smbus_addr</a>, and <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00135">star_smbus_write_word()</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00320">BQ7850_CMD_FET_CONTROL</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00355">BQ7850_FET_CONTROL_CHG_FET</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00356">BQ7850_FET_CONTROL_DSG_FET</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00469">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00468">bq7850_handle::manager</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00470">bq7850_handle::smbus_addr</a>, and <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00135">star_smbus_write_word()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1918,7 +1918,7 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Temperature in C (float) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00859">859</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00837">837</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
 
 </div>
 </div>
@@ -1947,19 +1947,21 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00203">203</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00186">186</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00016">BQ7850_MUTEX_TIMEOUT_MS</a>, <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00166">star_error_interface::ctx</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00393">error_handler_destroy_default()</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00467">bq7850_handle::error_iface</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00469">bq7850_handle::initialized</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00468">bq7850_handle::mutex</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00470">bq7850_handle::owns_error_handler</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00472">bq7850_handle::error_iface</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00474">bq7850_handle::initialized</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00473">bq7850_handle::mutex</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00475">bq7850_handle::owns_error_handler</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00017">s_bq7850_mutex_timeout_ms</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00455">star_error_interface_cleanup()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d2/d63/star__bms__bq7850_8h_a02709f23d96dc7f7c34b7a23f86888fc_cgraph.png" border="0" usemap="#ad2/d63/star__bms__bq7850_8h_a02709f23d96dc7f7c34b7a23f86888fc_cgraph" loading="lazy" alt=""/></div>
 <map name="ad2/d63/star__bms__bq7850_8h_a02709f23d96dc7f7c34b7a23f86888fc_cgraph" id="ad2/d63/star__bms__bq7850_8h_a02709f23d96dc7f7c34b7a23f86888fc_cgraph">
 <area shape="rect" title="Deinitialize BQ7850 BMS device handle." alt="" coords="5,13,168,38"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a1632e40ebb7509611a0513c0e6bdbb46" title="Destroy an error handler created by error_handler_create_default() or error_handler_create_custom()." alt="" coords="216,5,362,46"/>
-<area shape="poly" title=" " alt="" coords="168,23,203,25,198,26,168,28"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a3a7dedd3275ece0e7f6029a11464c27d" title="Deinitialize an error handler and release resources." alt="" coords="410,13,544,38"/>
-<area shape="poly" title=" " alt="" coords="362,23,397,26,392,26,363,28"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a983c8213a8523e7362c0b55bdaa296bc" title="Clean up an error interface that may own its handler." alt="" coords="216,5,349,46"/>
+<area shape="poly" title=" " alt="" coords="168,23,203,25,197,26,168,28"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a1632e40ebb7509611a0513c0e6bdbb46" title="Destroy an error handler created by error_handler_create_default() or error_handler_create_custom()." alt="" coords="397,5,543,46"/>
+<area shape="poly" title=" " alt="" coords="349,23,384,26,379,26,350,28"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#aaaf152f965c4c4e01c241f0801ce561a" title="Deinitialize an error handler and release resources." alt="" coords="591,13,726,38"/>
+<area shape="poly" title=" " alt="" coords="544,23,578,26,573,26,544,28"/>
 </map>
 </div>
 
@@ -1990,9 +1992,9 @@ Here is the call graph for this function:</div>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 <p>&lt; Cell balancing control</p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00713">713</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00691">691</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00318">BQ7850_CMD_CELL_BALANCE_CTRL</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00464">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00463">bq7850_handle::manager</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00465">bq7850_handle::smbus_addr</a>, and <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00135">star_smbus_write_word()</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00323">BQ7850_CMD_CELL_BALANCE_CTRL</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00469">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00468">bq7850_handle::manager</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00470">bq7850_handle::smbus_addr</a>, and <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00135">star_smbus_write_word()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2043,9 +2045,9 @@ Here is the call graph for this function:</div>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 <p>&lt; Cell balancing control</p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00698">698</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00676">676</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00318">BQ7850_CMD_CELL_BALANCE_CTRL</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00464">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00463">bq7850_handle::manager</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00465">bq7850_handle::smbus_addr</a>, and <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00135">star_smbus_write_word()</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00323">BQ7850_CMD_CELL_BALANCE_CTRL</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00469">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00468">bq7850_handle::manager</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00470">bq7850_handle::smbus_addr</a>, and <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00135">star_smbus_write_word()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2095,9 +2097,9 @@ Here is the call graph for this function:</div>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 <p>&lt; Cell balancing control</p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00728">728</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00706">706</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00318">BQ7850_CMD_CELL_BALANCE_CTRL</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00464">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00463">bq7850_handle::manager</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00465">bq7850_handle::smbus_addr</a>, and <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00157">star_smbus_read_word()</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00323">BQ7850_CMD_CELL_BALANCE_CTRL</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00469">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00468">bq7850_handle::manager</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00470">bq7850_handle::smbus_addr</a>, and <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00157">star_smbus_read_word()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2153,9 +2155,9 @@ Here is the call graph for this function:</div>
 <p>&lt; Device name (block)</p>
 <p>&lt; Device chemistry (block)</p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00238">238</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00219">219</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00287">BQ7850_CMD_DEVICE_CHEMISTRY</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00286">BQ7850_CMD_DEVICE_NAME</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00285">BQ7850_CMD_MANUFACTURE_NAME</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00284">BQ7850_CMD_SERIAL_NUMBER</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00291">BQ7850_SUBCMD_DEVICE_TYPE</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00292">BQ7850_SUBCMD_FW_VERSION</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00293">BQ7850_SUBCMD_HW_VERSION</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00464">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00453">bq7850_device_info_t::chemistry</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00452">bq7850_device_info_t::device_name</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00447">bq7850_device_info_t::device_type</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00448">bq7850_device_info_t::fw_version</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00449">bq7850_device_info_t::hw_version</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00027">internal_bq7850_manufacturer_access()</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00463">bq7850_handle::manager</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00451">bq7850_device_info_t::manufacturer</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00450">bq7850_device_info_t::serial_number</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00465">bq7850_handle::smbus_addr</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00263">star_smbus_block_read()</a>, and <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00157">star_smbus_read_word()</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00292">BQ7850_CMD_DEVICE_CHEMISTRY</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00291">BQ7850_CMD_DEVICE_NAME</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00290">BQ7850_CMD_MANUFACTURE_NAME</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00289">BQ7850_CMD_SERIAL_NUMBER</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00296">BQ7850_SUBCMD_DEVICE_TYPE</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00297">BQ7850_SUBCMD_FW_VERSION</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00298">BQ7850_SUBCMD_HW_VERSION</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00469">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00458">bq7850_device_info_t::chemistry</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00457">bq7850_device_info_t::device_name</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00452">bq7850_device_info_t::device_type</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00453">bq7850_device_info_t::fw_version</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00454">bq7850_device_info_t::hw_version</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00028">internal_bq7850_manufacturer_access()</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00468">bq7850_handle::manager</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00456">bq7850_device_info_t::manufacturer</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00455">bq7850_device_info_t::serial_number</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00470">bq7850_handle::smbus_addr</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00263">star_smbus_block_read()</a>, and <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00157">star_smbus_read_word()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2249,56 +2251,61 @@ All operations after init are protected by mutex for thread safety </dd></dl>
 <p>&lt; Firmware version</p>
 <p>&lt; Pack voltage (mV)</p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00079">79</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00080">80</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00276">BQ7850_CMD_VOLTAGE</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00264">BQ7850_MAX_CELLS</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00291">BQ7850_SUBCMD_DEVICE_TYPE</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00292">BQ7850_SUBCMD_FW_VERSION</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00464">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00466">bq7850_handle::config</a>, <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00166">star_error_interface::ctx</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00348">error_handler_create_default()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00393">error_handler_destroy_default()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00324">error_handler_get_interface()</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00467">bq7850_handle::error_iface</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00469">bq7850_handle::initialized</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00027">internal_bq7850_manufacturer_access()</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00463">bq7850_handle::manager</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00468">bq7850_handle::mutex</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00360">bq7850_config_t::num_cells</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00470">bq7850_handle::owns_error_handler</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00362">bq7850_config_t::smbus_addr</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00465">bq7850_handle::smbus_addr</a>, and <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00157">star_smbus_read_word()</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00281">BQ7850_CMD_VOLTAGE</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00269">BQ7850_MAX_CELLS</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00296">BQ7850_SUBCMD_DEVICE_TYPE</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00297">BQ7850_SUBCMD_FW_VERSION</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00469">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00471">bq7850_handle::config</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00472">bq7850_handle::error_iface</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00474">bq7850_handle::initialized</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00028">internal_bq7850_manufacturer_access()</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00468">bq7850_handle::manager</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00473">bq7850_handle::mutex</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00365">bq7850_config_t::num_cells</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00475">bq7850_handle::owns_error_handler</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00367">bq7850_config_t::smbus_addr</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00470">bq7850_handle::smbus_addr</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00455">star_error_interface_cleanup()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00413">star_error_interface_create_default()</a>, and <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00157">star_smbus_read_word()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d2/d63/star__bms__bq7850_8h_a4b748fe20f591b1b3799dceb247b1a5c_cgraph.png" border="0" usemap="#ad2/d63/star__bms__bq7850_8h_a4b748fe20f591b1b3799dceb247b1a5c_cgraph" loading="lazy" alt=""/></div>
 <map name="ad2/d63/star__bms__bq7850_8h_a4b748fe20f591b1b3799dceb247b1a5c_cgraph" id="ad2/d63/star__bms__bq7850_8h_a4b748fe20f591b1b3799dceb247b1a5c_cgraph">
-<area shape="rect" title="Create and initialize BQ7850 BMS device handle." alt="" coords="5,193,154,218"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a37c70fed0d10c260212eb781ca4e5862" title="Create and initialize a default error handler with sensible defaults." alt="" coords="230,20,369,61"/>
-<area shape="poly" title=" " alt="" coords="90,191,136,142,200,86,237,66,234,70,203,90,139,145,94,194"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a1632e40ebb7509611a0513c0e6bdbb46" title="Destroy an error handler created by error_handler_create_default() or error_handler_create_custom()." alt="" coords="226,100,372,141"/>
-<area shape="poly" title=" " alt="" coords="113,190,232,145,229,149,116,195"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#adb10b93a13ce155a3e5c2aa2f4b2d543" title="Create an interface adapter for the error handler." alt="" coords="210,193,388,218"/>
-<area shape="poly" title=" " alt="" coords="153,203,197,204,193,207,155,208"/>
-<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#aa9056151568739c998b9ccf957fee277" title="Execute manufacturer access command." alt="" coords="202,308,397,349"/>
-<area shape="poly" title=" " alt="" coords="101,216,203,279,241,300,236,301,200,284,100,222"/>
-<area shape="rect" href="../../d3/df5/star__bus__smbus_8c.html#a06fee6f34cc0d8a110deb97775bb6e6a" title="SMBus Read Word." alt="" coords="446,316,603,341"/>
-<area shape="poly" title=" " alt="" coords="130,216,462,309,459,313,129,222"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a4fbf7f5d1c862bd91f3ece2812b45b03" title="Create and initialize an error handler with custom configuration." alt="" coords="455,5,594,46"/>
-<area shape="poly" title=" " alt="" coords="368,33,442,30,437,32,370,38"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a331853a63aa2729d5a2a368c72aff6f2" title="Initialize an error handler." alt="" coords="673,13,793,38"/>
-<area shape="poly" title=" " alt="" coords="594,23,660,25,655,27,595,28"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a3a7dedd3275ece0e7f6029a11464c27d" title="Deinitialize an error handler and release resources." alt="" coords="458,70,592,96"/>
-<area shape="poly" title=" " alt="" coords="372,106,445,95,440,98,374,111"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#ab75fd15cd19b87cccc39e074b1de6ea7" title=" " alt="" coords="462,120,588,161"/>
-<area shape="poly" title=" " alt="" coords="345,190,449,162,444,164,347,195"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#ac6d32823473f15198e0768fc7dd77ea2" title=" " alt="" coords="454,185,595,226"/>
-<area shape="poly" title=" " alt="" coords="388,203,441,205,436,207,389,208"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a901211322493d6630ce2a7e9bb9cf8a4" title=" " alt="" coords="458,251,592,291"/>
-<area shape="poly" title=" " alt="" coords="346,216,445,247,440,248,346,222"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a079645c8c76bf328f63c7d7a9ecc1697" title="Check if a retry should be attempted." alt="" coords="654,128,812,153"/>
-<area shape="poly" title=" " alt="" coords="588,138,642,140,636,141,589,143"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#acb049bacf435c371692461a57f434d41" title="Record an error and manage retry/reset logic." alt="" coords="663,185,803,226"/>
-<area shape="poly" title=" " alt="" coords="595,203,650,205,645,206,596,208"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#adcd860e401f2ab4c5c907c87fdbba7d0" title="Reset the error handler state." alt="" coords="667,251,799,291"/>
-<area shape="poly" title=" " alt="" coords="592,268,654,271,648,271,593,274"/>
-<area shape="poly" title=" " alt="" coords="397,326,434,328,428,329,397,331"/>
-<area shape="rect" href="../../d3/df5/star__bus__smbus_8c.html#ae35a870d8984311e9af9966d3be33bac" title="SMBus Write Word." alt="" coords="445,373,604,398"/>
-<area shape="poly" title=" " alt="" coords="382,347,459,368,454,369,382,352"/>
-<area shape="rect" href="../../d3/df5/star__bus__smbus_8c.html#a028e8362b8c772d39dee59e24c15439b" title="Validate common parameters for SMBus operations." alt="" coords="652,365,814,406"/>
-<area shape="poly" title=" " alt="" coords="574,339,645,361,639,361,574,344"/>
-<area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#a2e9b9baf8a0f8d00a2080963a7efd62f" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="669,316,797,341"/>
-<area shape="poly" title=" " alt="" coords="603,326,657,328,651,329,603,331"/>
-<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="862,373,1046,398"/>
-<area shape="poly" title=" " alt="" coords="786,339,890,368,884,368,785,344"/>
-<area shape="poly" title=" " alt="" coords="605,383,640,386,634,386,605,388"/>
-<area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="668,430,798,456"/>
-<area shape="poly" title=" " alt="" coords="575,396,672,426,666,425,574,402"/>
-<area shape="poly" title=" " alt="" coords="785,427,884,403,889,403,786,432"/>
+<area shape="rect" title="Create and initialize BQ7850 BMS device handle." alt="" coords="5,141,154,167"/>
+<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#aa9056151568739c998b9ccf957fee277" title="Execute manufacturer access command." alt="" coords="202,100,397,141"/>
+<area shape="poly" title=" " alt="" coords="152,141,188,136,184,140,155,145"/>
+<area shape="rect" href="../../d3/df5/star__bus__smbus_8c.html#a06fee6f34cc0d8a110deb97775bb6e6a" title="SMBus Read Word." alt="" coords="456,55,612,80"/>
+<area shape="poly" title=" " alt="" coords="97,139,143,111,201,86,262,73,325,64,443,62,438,64,325,70,263,78,202,91,146,116,101,143"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a983c8213a8523e7362c0b55bdaa296bc" title="Clean up an error interface that may own its handler." alt="" coords="233,166,366,206"/>
+<area shape="poly" title=" " alt="" coords="153,162,220,173,215,176,155,167"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a0c603b415b63ee1bd6bf532b5f315716" title="Create and allocate a default error interface with internal error handler." alt="" coords="233,231,366,272"/>
+<area shape="poly" title=" " alt="" coords="103,165,203,216,222,225,217,226,201,221,104,170"/>
+<area shape="poly" title=" " alt="" coords="391,97,462,83,457,86,393,102"/>
+<area shape="rect" href="../../d3/df5/star__bus__smbus_8c.html#ae35a870d8984311e9af9966d3be33bac" title="SMBus Write Word." alt="" coords="454,108,614,134"/>
+<area shape="poly" title=" " alt="" coords="397,118,441,120,436,122,398,123"/>
+<area shape="rect" href="../../d3/df5/star__bus__smbus_8c.html#a028e8362b8c772d39dee59e24c15439b" title="Validate common parameters for SMBus operations." alt="" coords="671,55,833,96"/>
+<area shape="poly" title=" " alt="" coords="612,68,658,71,653,73,613,73"/>
+<area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#a2e9b9baf8a0f8d00a2080963a7efd62f" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="688,5,816,31"/>
+<area shape="poly" title=" " alt="" coords="593,52,680,34,675,36,595,56"/>
+<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="881,63,1065,88"/>
+<area shape="poly" title=" " alt="" coords="804,29,908,58,903,59,805,34"/>
+<area shape="poly" title=" " alt="" coords="599,105,659,94,654,96,600,110"/>
+<area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="687,120,817,146"/>
+<area shape="poly" title=" " alt="" coords="614,123,674,128,668,129,615,128"/>
+<area shape="poly" title=" " alt="" coords="804,117,908,92,903,94,805,122"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a1632e40ebb7509611a0513c0e6bdbb46" title="Destroy an error handler created by error_handler_create_default() or error_handler_create_custom()." alt="" coords="461,166,607,206"/>
+<area shape="poly" title=" " alt="" coords="366,184,448,185,443,187,367,189"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#aaaf152f965c4c4e01c241f0801ce561a" title="Deinitialize an error handler and release resources." alt="" coords="685,173,819,199"/>
+<area shape="poly" title=" " alt="" coords="607,184,672,186,667,187,608,189"/>
+<area shape="poly" title=" " alt="" coords="366,230,448,209,444,212,368,235"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a37c70fed0d10c260212eb781ca4e5862" title="Create and initialize a default error handler with sensible defaults." alt="" coords="464,231,604,272"/>
+<area shape="poly" title=" " alt="" coords="366,249,451,251,446,252,367,254"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#adb10b93a13ce155a3e5c2aa2f4b2d543" title="Create an interface adapter for the error handler." alt="" coords="445,328,623,354"/>
+<area shape="poly" title=" " alt="" coords="355,270,486,321,481,323,355,275"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a4fbf7f5d1c862bd91f3ece2812b45b03" title="Create and initialize an error handler with custom configuration." alt="" coords="682,227,822,268"/>
+<area shape="poly" title=" " alt="" coords="604,248,670,249,664,250,605,253"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a331853a63aa2729d5a2a368c72aff6f2" title="Initialize an error handler." alt="" coords="913,235,1033,260"/>
+<area shape="poly" title=" " alt="" coords="821,245,900,247,894,248,822,250"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#ab75fd15cd19b87cccc39e074b1de6ea7" title=" " alt="" coords="689,292,815,333"/>
+<area shape="poly" title=" " alt="" coords="623,327,676,322,671,323,624,332"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#ac6d32823473f15198e0768fc7dd77ea2" title=" " alt="" coords="681,358,823,398"/>
+<area shape="poly" title=" " alt="" coords="613,352,669,363,663,364,613,357"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a901211322493d6630ce2a7e9bb9cf8a4" title=" " alt="" coords="685,423,819,464"/>
+<area shape="poly" title=" " alt="" coords="561,352,672,408,688,417,683,416,670,413,560,357"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a079645c8c76bf328f63c7d7a9ecc1697" title="Check if a retry should be attempted." alt="" coords="894,300,1052,326"/>
+<area shape="poly" title=" " alt="" coords="815,310,882,313,876,313,815,315"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#acb049bacf435c371692461a57f434d41" title="Record an error and manage retry/reset logic." alt="" coords="903,358,1042,398"/>
+<area shape="poly" title=" " alt="" coords="823,376,890,378,885,378,823,381"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#adcd860e401f2ab4c5c907c87fdbba7d0" title="Reset the error handler state." alt="" coords="907,423,1039,464"/>
+<area shape="poly" title=" " alt="" coords="819,441,894,443,888,444,819,446"/>
 </map>
 </div>
 
@@ -2328,9 +2335,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if any fault is active </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00864">864</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00842">842</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00413">bq7850_status_t::alarm_warning</a>, and <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00411">bq7850_status_t::safety_status</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00418">bq7850_status_t::alarm_warning</a>, and <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00416">bq7850_status_t::safety_status</a>.</p>
 
 </div>
 </div>
@@ -2364,9 +2371,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00656">656</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00634">634</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00436">bq7850_battery_state_t::cells</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00438">bq7850_battery_state_t::current</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00439">bq7850_battery_state_t::soc</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00359">star_bms_bq7850_read_cells()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00489">star_bms_bq7850_read_current()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00540">star_bms_bq7850_read_soc()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00599">star_bms_bq7850_read_status()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00427">star_bms_bq7850_read_temperatures()</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00440">bq7850_battery_state_t::status</a>, and <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00437">bq7850_battery_state_t::temps</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00441">bq7850_battery_state_t::cells</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00443">bq7850_battery_state_t::current</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00444">bq7850_battery_state_t::soc</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00340">star_bms_bq7850_read_cells()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00470">star_bms_bq7850_read_current()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00518">star_bms_bq7850_read_soc()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00577">star_bms_bq7850_read_status()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00408">star_bms_bq7850_read_temperatures()</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00445">bq7850_battery_state_t::status</a>, and <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00442">bq7850_battery_state_t::temps</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2446,9 +2453,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, ESP_ERR_INVALID_ARG if cell_index &gt;= 16 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00393">393</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00374">374</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00264">BQ7850_MAX_CELLS</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00464">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00063">internal_bq7850_read_cell_voltage()</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00463">bq7850_handle::manager</a>, and <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00465">bq7850_handle::smbus_addr</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00269">BQ7850_MAX_CELLS</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00469">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00064">internal_bq7850_read_cell_voltage()</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00468">bq7850_handle::manager</a>, and <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00470">bq7850_handle::smbus_addr</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2508,11 +2515,11 @@ Here is the call graph for this function:</div>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 <p>&lt; Pack voltage (mV)</p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00359">359</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00340">340</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00276">BQ7850_CMD_VOLTAGE</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00264">BQ7850_MAX_CELLS</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00464">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00371">bq7850_cell_data_t::cell_mv</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00063">internal_bq7850_read_cell_voltage()</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00463">bq7850_handle::manager</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00373">bq7850_cell_data_t::pack_mv</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00465">bq7850_handle::smbus_addr</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00157">star_smbus_read_word()</a>, and <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00372">bq7850_cell_data_t::valid_cells</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00281">BQ7850_CMD_VOLTAGE</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00269">BQ7850_MAX_CELLS</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00469">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00376">bq7850_cell_data_t::cell_mv</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00064">internal_bq7850_read_cell_voltage()</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00468">bq7850_handle::manager</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00378">bq7850_cell_data_t::pack_mv</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00470">bq7850_handle::smbus_addr</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00157">star_smbus_read_word()</a>, and <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00377">bq7850_cell_data_t::valid_cells</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00656">star_bms_bq7850_read_battery_state()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00634">star_bms_bq7850_read_battery_state()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2585,11 +2592,11 @@ Here is the caller graph for this function:</div>
 <p>&lt; Average current (mA)</p>
 <p>&lt; Pack voltage (mV)</p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00489">489</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00470">470</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00390">bq7850_current_data_t::avg_current_ma</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00278">BQ7850_CMD_AVERAGE_CURRENT</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00277">BQ7850_CMD_CURRENT</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00276">BQ7850_CMD_VOLTAGE</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00464">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00389">bq7850_current_data_t::current_ma</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00463">bq7850_handle::manager</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00392">bq7850_current_data_t::power_mw</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00465">bq7850_handle::smbus_addr</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00157">star_smbus_read_word()</a>, and <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00391">bq7850_current_data_t::voltage_mv</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00395">bq7850_current_data_t::avg_current_ma</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00283">BQ7850_CMD_AVERAGE_CURRENT</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00282">BQ7850_CMD_CURRENT</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00281">BQ7850_CMD_VOLTAGE</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00469">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00394">bq7850_current_data_t::current_ma</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00468">bq7850_handle::manager</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00397">bq7850_current_data_t::power_mw</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00470">bq7850_handle::smbus_addr</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00157">star_smbus_read_word()</a>, and <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00396">bq7850_current_data_t::voltage_mv</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00656">star_bms_bq7850_read_battery_state()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00634">star_bms_bq7850_read_battery_state()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2649,9 +2656,9 @@ Here is the caller graph for this function:</div>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 <p>&lt; Pack voltage (mV)</p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00412">412</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00393">393</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00276">BQ7850_CMD_VOLTAGE</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00464">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00463">bq7850_handle::manager</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00465">bq7850_handle::smbus_addr</a>, and <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00157">star_smbus_read_word()</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00281">BQ7850_CMD_VOLTAGE</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00469">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00468">bq7850_handle::manager</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00470">bq7850_handle::smbus_addr</a>, and <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00157">star_smbus_read_word()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2703,9 +2710,9 @@ Here is the call graph for this function:</div>
 <p>&lt; Undervoltage threshold</p>
 <p>&lt; Overcurrent threshold</p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00743">743</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00721">721</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00323">BQ7850_SUBCMD_PROTECTION_OC_THRESH</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00321">BQ7850_SUBCMD_PROTECTION_OV_THRESH</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00322">BQ7850_SUBCMD_PROTECTION_UV_THRESH</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00464">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00027">internal_bq7850_manufacturer_access()</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00463">bq7850_handle::manager</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00426">bq7850_protection_t::overcharge_ma</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00424">bq7850_protection_t::overvoltage_mv</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00465">bq7850_handle::smbus_addr</a>, and <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00425">bq7850_protection_t::undervoltage_mv</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00328">BQ7850_SUBCMD_PROTECTION_OC_THRESH</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00326">BQ7850_SUBCMD_PROTECTION_OV_THRESH</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00327">BQ7850_SUBCMD_PROTECTION_UV_THRESH</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00469">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00028">internal_bq7850_manufacturer_access()</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00468">bq7850_handle::manager</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00431">bq7850_protection_t::overcharge_ma</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00429">bq7850_protection_t::overvoltage_mv</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00470">bq7850_handle::smbus_addr</a>, and <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00430">bq7850_protection_t::undervoltage_mv</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2767,11 +2774,11 @@ Here is the call graph for this function:</div>
 <p>&lt; Absolute SOC (%)</p>
 <p>&lt; Cycle count</p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00540">540</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00518">518</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00402">bq7850_soc_data_t::absolute_soc</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00280">BQ7850_CMD_ABSOLUTE_STATE_CHARGE</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00281">BQ7850_CMD_CYCLE_COUNT</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00274">BQ7850_CMD_FULL_CHARGE_CAPACITY</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00279">BQ7850_CMD_RELATIVE_STATE_CHARGE</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00273">BQ7850_CMD_REMAINING_CAPACITY</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00464">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00403">bq7850_soc_data_t::cycle_count</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00400">bq7850_soc_data_t::full_capacity_mah</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00463">bq7850_handle::manager</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00401">bq7850_soc_data_t::relative_soc</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00399">bq7850_soc_data_t::remaining_capacity_mah</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00465">bq7850_handle::smbus_addr</a>, and <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00157">star_smbus_read_word()</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00407">bq7850_soc_data_t::absolute_soc</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00285">BQ7850_CMD_ABSOLUTE_STATE_CHARGE</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00286">BQ7850_CMD_CYCLE_COUNT</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00279">BQ7850_CMD_FULL_CHARGE_CAPACITY</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00284">BQ7850_CMD_RELATIVE_STATE_CHARGE</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00278">BQ7850_CMD_REMAINING_CAPACITY</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00469">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00408">bq7850_soc_data_t::cycle_count</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00405">bq7850_soc_data_t::full_capacity_mah</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00468">bq7850_handle::manager</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00406">bq7850_soc_data_t::relative_soc</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00404">bq7850_soc_data_t::remaining_capacity_mah</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00470">bq7850_handle::smbus_addr</a>, and <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00157">star_smbus_read_word()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00656">star_bms_bq7850_read_battery_state()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00634">star_bms_bq7850_read_battery_state()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2837,11 +2844,11 @@ Here is the caller graph for this function:</div>
 <p>&lt; Discharging</p>
 <p>&lt; Fully charged</p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00599">599</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00577">577</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00413">bq7850_status_t::alarm_warning</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00410">bq7850_status_t::battery_status</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00335">BQ7850_BATTERY_STATUS_DSG</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00336">BQ7850_BATTERY_STATUS_FC</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00311">BQ7850_CMD_ALARM_WARNING</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00308">BQ7850_CMD_BATTERY_STATUS</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00314">BQ7850_CMD_OPERATION_STATUS</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00312">BQ7850_CMD_SAFETY_STATUS</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00464">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00414">bq7850_status_t::charging</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00415">bq7850_status_t::discharging</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00417">bq7850_status_t::fault_active</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00416">bq7850_status_t::fully_charged</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00463">bq7850_handle::manager</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00412">bq7850_status_t::operation_status</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00411">bq7850_status_t::safety_status</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00465">bq7850_handle::smbus_addr</a>, and <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00157">star_smbus_read_word()</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00418">bq7850_status_t::alarm_warning</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00415">bq7850_status_t::battery_status</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00340">BQ7850_BATTERY_STATUS_DSG</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00341">BQ7850_BATTERY_STATUS_FC</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00316">BQ7850_CMD_ALARM_WARNING</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00313">BQ7850_CMD_BATTERY_STATUS</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00319">BQ7850_CMD_OPERATION_STATUS</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00317">BQ7850_CMD_SAFETY_STATUS</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00469">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00419">bq7850_status_t::charging</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00420">bq7850_status_t::discharging</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00422">bq7850_status_t::fault_active</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00421">bq7850_status_t::fully_charged</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00468">bq7850_handle::manager</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00417">bq7850_status_t::operation_status</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00416">bq7850_status_t::safety_status</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00470">bq7850_handle::smbus_addr</a>, and <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00157">star_smbus_read_word()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00656">star_bms_bq7850_read_battery_state()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00634">star_bms_bq7850_read_battery_state()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2901,9 +2908,9 @@ Here is the caller graph for this function:</div>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 <p>&lt; Temperature (0.1K)</p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00467">467</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00448">448</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00275">BQ7850_CMD_TEMPERATURE</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00464">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00463">bq7850_handle::manager</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00465">bq7850_handle::smbus_addr</a>, and <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00157">star_smbus_read_word()</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00280">BQ7850_CMD_TEMPERATURE</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00469">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00468">bq7850_handle::manager</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00470">bq7850_handle::smbus_addr</a>, and <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00157">star_smbus_read_word()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2953,11 +2960,11 @@ Here is the call graph for this function:</div>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 <p>&lt; Temp sensor 1 = 0x0078, etc.</p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00427">427</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00408">408</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00382">bq7850_temp_data_t::avg_temp_c</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00267">BQ7850_MAX_TEMP_SENSORS</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00305">BQ7850_SUBCMD_TEMP_SENSOR_BASE</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00464">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00027">internal_bq7850_manufacturer_access()</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00463">bq7850_handle::manager</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00465">bq7850_handle::smbus_addr</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00380">bq7850_temp_data_t::temp_c</a>, and <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00381">bq7850_temp_data_t::valid_sensors</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00387">bq7850_temp_data_t::avg_temp_c</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00272">BQ7850_MAX_TEMP_SENSORS</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00310">BQ7850_SUBCMD_TEMP_SENSOR_BASE</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00469">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00028">internal_bq7850_manufacturer_access()</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00468">bq7850_handle::manager</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00470">bq7850_handle::smbus_addr</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00385">bq7850_temp_data_t::temp_c</a>, and <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00386">bq7850_temp_data_t::valid_sensors</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00656">star_bms_bq7850_read_battery_state()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00634">star_bms_bq7850_read_battery_state()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -3021,9 +3028,9 @@ Here is the caller graph for this function:</div>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 <p>&lt; Full device reset</p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00334">334</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00315">315</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00298">BQ7850_SUBCMD_DEVICE_RESET</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00464">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00027">internal_bq7850_manufacturer_access()</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00463">bq7850_handle::manager</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00465">bq7850_handle::smbus_addr</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00303">BQ7850_SUBCMD_DEVICE_RESET</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00469">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00028">internal_bq7850_manufacturer_access()</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00468">bq7850_handle::manager</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00470">bq7850_handle::smbus_addr</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -3090,9 +3097,9 @@ Here is the call graph for this function:</div>
 <p>&lt; Overcurrent in charge</p>
 <p>&lt; Overcurrent in discharge</p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00873">873</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00851">851</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00341">BQ7850_SAFETY_STATUS_COV</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00340">BQ7850_SAFETY_STATUS_CUV</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00342">BQ7850_SAFETY_STATUS_OCC</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00343">BQ7850_SAFETY_STATUS_OCD</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00414">bq7850_status_t::charging</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00415">bq7850_status_t::discharging</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00416">bq7850_status_t::fully_charged</a>, and <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00411">bq7850_status_t::safety_status</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00346">BQ7850_SAFETY_STATUS_COV</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00345">BQ7850_SAFETY_STATUS_CUV</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00347">BQ7850_SAFETY_STATUS_OCC</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00348">BQ7850_SAFETY_STATUS_OCD</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00419">bq7850_status_t::charging</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00420">bq7850_status_t::discharging</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00421">bq7850_status_t::fully_charged</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c.html#acbc74d3e0c5527eb9bfe1de9bd825cf1">SAFE_APPEND</a>, and <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00416">bq7850_status_t::safety_status</a>.</p>
 
 </div>
 </div>
@@ -3128,9 +3135,9 @@ Here is the call graph for this function:</div>
 <p>&lt; Overvoltage threshold</p>
 <p>&lt; Manufacturer access</p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00788">788</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00766">766</a> of file <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html">star_bms_bq7850.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00272">BQ7850_CMD_MANUFACTURER_ACCESS</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00321">BQ7850_SUBCMD_PROTECTION_OV_THRESH</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00464">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00027">internal_bq7850_manufacturer_access()</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00463">bq7850_handle::manager</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00424">bq7850_protection_t::overvoltage_mv</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00465">bq7850_handle::smbus_addr</a>, and <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00135">star_smbus_write_word()</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00277">BQ7850_CMD_MANUFACTURER_ACCESS</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00326">BQ7850_SUBCMD_PROTECTION_OV_THRESH</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00469">bq7850_handle::bus_name</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00028">internal_bq7850_manufacturer_access()</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00468">bq7850_handle::manager</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00429">bq7850_protection_t::overvoltage_mv</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d2/d63/star__bms__bq7850_8h_source.html#l00470">bq7850_handle::smbus_addr</a>, and <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00135">star_smbus_write_word()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">

@@ -25,10 +25,10 @@ static const char* s_TAG = "pca9685";
  * @brief Write to PCA9685 register with validation
  */
 static esp_err_t internal_pca9685_write_reg(star_bus_manager_t* const manager,
-                                   const char* const         bus_name,
-                                   const uint8_t             addr,
-                                   const uint8_t             reg,
-                                   const uint8_t             value)
+                                            const char* const         bus_name,
+                                            const uint8_t             addr,
+                                            const uint8_t             reg,
+                                            const uint8_t             value)
 {
   if (manager == NULL || bus_name == NULL) {
     return ESP_ERR_INVALID_ARG;
@@ -41,10 +41,10 @@ static esp_err_t internal_pca9685_write_reg(star_bus_manager_t* const manager,
  * @brief Read from PCA9685 register
  */
 static esp_err_t internal_pca9685_read_reg(star_bus_manager_t* const manager,
-                                  const char* const         bus_name,
-                                  const uint8_t             addr,
-                                  const uint8_t             reg,
-                                  uint8_t* const            value)
+                                           const char* const         bus_name,
+                                           const uint8_t             addr,
+                                           const uint8_t             reg,
+                                           uint8_t* const            value)
 {
   if (manager == NULL || bus_name == NULL || value == NULL) {
     return ESP_ERR_INVALID_ARG;
@@ -65,10 +65,10 @@ internal_pca9685_set_mode1_bits(pca9685_handle_t* const handle, const uint8_t bi
 
   uint8_t   mode1;
   esp_err_t ret = internal_pca9685_read_reg(handle->manager,
-                                   handle->bus_name,
-                                   handle->i2c_addr,
-                                   (uint8_t)k_pca9685_reg_mode1,
-                                   &mode1);
+                                            handle->bus_name,
+                                            handle->i2c_addr,
+                                            (uint8_t)k_pca9685_reg_mode1,
+                                            &mode1);
   if (ret != ESP_OK) {
     return ret;
   }
@@ -80,10 +80,10 @@ internal_pca9685_set_mode1_bits(pca9685_handle_t* const handle, const uint8_t bi
   }
 
   return internal_pca9685_write_reg(handle->manager,
-                           handle->bus_name,
-                           handle->i2c_addr,
-                           (uint8_t)k_pca9685_reg_mode1,
-                           mode1);
+                                    handle->bus_name,
+                                    handle->i2c_addr,
+                                    (uint8_t)k_pca9685_reg_mode1,
+                                    mode1);
 }
 
 /**
@@ -102,10 +102,10 @@ static esp_err_t internal_pca9685_set_frequency(pca9685_handle_t* const handle,
   // Device must be in sleep mode to change prescale
   uint8_t old_mode1;
   ret = internal_pca9685_read_reg(handle->manager,
-                         handle->bus_name,
-                         handle->i2c_addr,
-                         (uint8_t)k_pca9685_reg_mode1,
-                         &old_mode1);
+                                  handle->bus_name,
+                                  handle->i2c_addr,
+                                  (uint8_t)k_pca9685_reg_mode1,
+                                  &old_mode1);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to read MODE1: %s", esp_err_to_name(ret));
     return ret;
@@ -115,10 +115,10 @@ static esp_err_t internal_pca9685_set_frequency(pca9685_handle_t* const handle,
   const uint8_t sleep_mode =
     (old_mode1 & ~(uint8_t)k_pca9685_mode1_restart_mask) | (uint8_t)k_pca9685_mode1_sleep_mask;
   ret = internal_pca9685_write_reg(handle->manager,
-                          handle->bus_name,
-                          handle->i2c_addr,
-                          (uint8_t)k_pca9685_reg_mode1,
-                          sleep_mode);
+                                   handle->bus_name,
+                                   handle->i2c_addr,
+                                   (uint8_t)k_pca9685_reg_mode1,
+                                   sleep_mode);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to enter sleep mode: %s", esp_err_to_name(ret));
     return ret;
@@ -126,10 +126,10 @@ static esp_err_t internal_pca9685_set_frequency(pca9685_handle_t* const handle,
 
   // Write prescale
   ret = internal_pca9685_write_reg(handle->manager,
-                          handle->bus_name,
-                          handle->i2c_addr,
-                          (uint8_t)k_pca9685_reg_prescale,
-                          prescale);
+                                   handle->bus_name,
+                                   handle->i2c_addr,
+                                   (uint8_t)k_pca9685_reg_prescale,
+                                   prescale);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to write prescale: %s", esp_err_to_name(ret));
     return ret;
@@ -137,10 +137,10 @@ static esp_err_t internal_pca9685_set_frequency(pca9685_handle_t* const handle,
 
   // Restore old mode (wake up)
   ret = internal_pca9685_write_reg(handle->manager,
-                          handle->bus_name,
-                          handle->i2c_addr,
-                          (uint8_t)k_pca9685_reg_mode1,
-                          old_mode1);
+                                   handle->bus_name,
+                                   handle->i2c_addr,
+                                   (uint8_t)k_pca9685_reg_mode1,
+                                   old_mode1);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to restore MODE1: %s", esp_err_to_name(ret));
     return ret;
@@ -151,10 +151,10 @@ static esp_err_t internal_pca9685_set_frequency(pca9685_handle_t* const handle,
   // Restart if needed
   if (old_mode1 & (uint8_t)k_pca9685_mode1_restart_mask) {
     ret = internal_pca9685_write_reg(handle->manager,
-                            handle->bus_name,
-                            handle->i2c_addr,
-                            (uint8_t)k_pca9685_reg_mode1,
-                            old_mode1 | (uint8_t)k_pca9685_mode1_restart_mask);
+                                     handle->bus_name,
+                                     handle->i2c_addr,
+                                     (uint8_t)k_pca9685_reg_mode1,
+                                     old_mode1 | (uint8_t)k_pca9685_mode1_restart_mask);
     if (ret != ESP_OK) {
       ESP_LOGW(s_TAG, "Failed to restart: %s", esp_err_to_name(ret));
     }
@@ -271,8 +271,11 @@ esp_err_t star_sensor_pca9685_init(pca9685_handle_t*       handle,
   ESP_LOGI(s_TAG, "Initializing PCA9685 on bus '%s' at address 0x%02X", bus_name, config->i2c_addr);
 
   // Reset device
-  esp_err_t ret =
-    internal_pca9685_write_reg(manager, bus_name, config->i2c_addr, (uint8_t)k_pca9685_reg_mode1, 0x00);
+  esp_err_t ret = internal_pca9685_write_reg(manager,
+                                             bus_name,
+                                             config->i2c_addr,
+                                             (uint8_t)k_pca9685_reg_mode1,
+                                             0x00);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to reset device: %s", esp_err_to_name(ret));
     if (oe_pin != GPIO_NUM_NC) {
@@ -293,7 +296,11 @@ esp_err_t star_sensor_pca9685_init(pca9685_handle_t*       handle,
     mode1 |= (uint8_t)k_pca9685_mode1_extclk_mask;
   }
 
-  ret = internal_pca9685_write_reg(manager, bus_name, config->i2c_addr, (uint8_t)k_pca9685_reg_mode1, mode1);
+  ret = internal_pca9685_write_reg(manager,
+                                   bus_name,
+                                   config->i2c_addr,
+                                   (uint8_t)k_pca9685_reg_mode1,
+                                   mode1);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to configure MODE1: %s", esp_err_to_name(ret));
     if (oe_pin != GPIO_NUM_NC) {
@@ -315,7 +322,11 @@ esp_err_t star_sensor_pca9685_init(pca9685_handle_t*       handle,
     mode2 |= (uint8_t)k_pca9685_mode2_invrt_mask;
   }
 
-  ret = internal_pca9685_write_reg(manager, bus_name, config->i2c_addr, (uint8_t)k_pca9685_reg_mode2, mode2);
+  ret = internal_pca9685_write_reg(manager,
+                                   bus_name,
+                                   config->i2c_addr,
+                                   (uint8_t)k_pca9685_reg_mode2,
+                                   mode2);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to configure MODE2: %s", esp_err_to_name(ret));
     if (oe_pin != GPIO_NUM_NC) {
@@ -500,10 +511,10 @@ esp_err_t star_sensor_pca9685_read_frequency(const pca9685_handle_t* handle, uin
 
   uint8_t         prescale;
   const esp_err_t ret = internal_pca9685_read_reg(handle->manager,
-                                         handle->bus_name,
-                                         handle->i2c_addr,
-                                         (uint8_t)k_pca9685_reg_prescale,
-                                         &prescale);
+                                                  handle->bus_name,
+                                                  handle->i2c_addr,
+                                                  (uint8_t)k_pca9685_reg_prescale,
+                                                  &prescale);
   if (ret != ESP_OK) {
     return ret;
   }
@@ -752,7 +763,8 @@ esp_err_t star_sensor_pca9685_sleep(pca9685_handle_t* const handle, const bool s
     return ESP_ERR_INVALID_STATE;
   }
 
-  esp_err_t ret = internal_pca9685_set_mode1_bits(handle, (uint8_t)k_pca9685_mode1_sleep_mask, sleep);
+  esp_err_t ret =
+    internal_pca9685_set_mode1_bits(handle, (uint8_t)k_pca9685_mode1_sleep_mask, sleep);
 
   xSemaphoreGive(mutex);
   return ret;

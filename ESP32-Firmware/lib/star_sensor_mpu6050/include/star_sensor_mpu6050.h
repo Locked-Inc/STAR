@@ -219,8 +219,8 @@ static const uint16_t s_mpu6050_fifo_size = 1024;
  * Where TEMP_OUT is the 16-bit signed raw temperature value from registers 0x41-0x42.
  * These values are from the MPU6050 Register Map and Descriptions document, Section 4.18.
  */
-static const float s_mpu6050_temp_sensitivity = 340.0f;  /* LSB per degree C */
-static const float s_mpu6050_temp_offset      = 36.53f;  /* Offset in degrees C */
+static const float s_mpu6050_temp_sensitivity = 340.0f; /* LSB per degree C */
+static const float s_mpu6050_temp_offset      = 36.53f; /* Offset in degrees C */
 
 /**
  * @brief Accelerometer sensitivity values (LSB/g)
