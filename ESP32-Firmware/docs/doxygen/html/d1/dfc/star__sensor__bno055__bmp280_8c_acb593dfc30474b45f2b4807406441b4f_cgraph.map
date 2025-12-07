@@ -1,7 +1,9 @@
 <map id="star_sensor_imu_10dof_deinit" name="star_sensor_imu_10dof_deinit">
 <area shape="rect" id="Node000001" title="Deinitialize 10&#45;DOF IMU." alt="" coords="5,5,162,46"/>
-<area shape="rect" id="Node000002" href="$d7/d82/star__error__handler_8c.html#a1632e40ebb7509611a0513c0e6bdbb46" title="Destroy an error handler created by error_handler_create_default() or error_handler_create_custom()." alt="" coords="210,5,356,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="162,23,196,25,191,26,162,28"/>
-<area shape="rect" id="Node000003" href="$d7/d82/star__error__handler_8c.html#a3a7dedd3275ece0e7f6029a11464c27d" title="Deinitialize an error handler and release resources." alt="" coords="404,13,538,38"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="356,23,391,26,386,26,357,28"/>
+<area shape="rect" id="Node000002" href="$d7/d82/star__error__handler_8c.html#a983c8213a8523e7362c0b55bdaa296bc" title="Clean up an error interface that may own its handler." alt="" coords="210,5,343,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="162,23,197,25,191,26,162,28"/>
+<area shape="rect" id="Node000003" href="$d7/d82/star__error__handler_8c.html#a1632e40ebb7509611a0513c0e6bdbb46" title="Destroy an error handler created by error_handler_create_default() or error_handler_create_custom()." alt="" coords="391,5,537,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="343,23,378,26,373,26,344,28"/>
+<area shape="rect" id="Node000004" href="$d7/d82/star__error__handler_8c.html#aaaf152f965c4c4e01c241f0801ce561a" title="Deinitialize an error handler and release resources." alt="" coords="585,13,720,38"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="538,23,572,26,567,26,538,28"/>
 </map>

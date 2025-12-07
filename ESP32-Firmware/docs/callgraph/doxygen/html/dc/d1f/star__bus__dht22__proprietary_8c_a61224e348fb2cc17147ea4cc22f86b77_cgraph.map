@@ -9,7 +9,7 @@
 <area shape="rect" id="Node000004" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a9cd874b0290191f0e8a2200e9a727f58" title="Initialize DHT22 global mutex (thread&#45;safe)." alt="" coords="640,71,766,111"/>
 <area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="556,128,627,111,622,113,558,133"/>
 <area shape="poly" id="edge5_Node000005_Node000002" title=" " alt="" coords="324,261,373,229,470,167,475,165,375,233,326,265"/>
-<area shape="rect" id="Node000006" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a0cefc084690818ee196b34da74bcf4e4" title="Read raw data from DHT22 sensor." alt="" coords="454,234,560,260"/>
+<area shape="rect" id="Node000006" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a7eba1783e6f80cc2088540759ca01e16" title="Read raw data from DHT22 sensor." alt="" coords="454,234,560,260"/>
 <area shape="poly" id="edge6_Node000005_Node000006" title=" " alt="" coords="374,264,440,256,435,258,375,269"/>
 <area shape="rect" id="Node000015" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a2b6eb006720d74c12343fee2c65b6d01" title="Calculate checksum from raw data." alt="" coords="422,284,591,325"/>
 <area shape="poly" id="edge16_Node000005_Node000015" title=" " alt="" coords="374,283,409,290,404,291,375,289"/>

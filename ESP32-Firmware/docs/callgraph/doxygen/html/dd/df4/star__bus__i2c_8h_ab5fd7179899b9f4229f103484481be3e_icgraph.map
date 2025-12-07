@@ -4,7 +4,7 @@
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="479,121,441,82,418,62,393,44,370,34,370,29,395,40,421,57,445,78,484,122"/>
 <area shape="rect" id="Node000003" href="$d6/d0b/star__bus__devices_8c.html#a12f967bf79c7da66cdd2367c65e4399a" title="Initialize SSD1306 OLED display." alt="" coords="223,55,374,80"/>
 <area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="457,126,393,95,358,84,358,78,395,90,462,125"/>
-<area shape="rect" id="Node000004" href="$d3/df7/star__sensor__pca9685_8c.html#a1f319c0974d76c124b4cf481499baf6e" title="Software reset of PCA9685." alt="" coords="226,104,371,145"/>
+<area shape="rect" id="Node000004" href="$d3/df7/star__sensor__pca9685_8c.html#a8a00b15121c58b48437640c1c697a697" title="Software reset of PCA9685." alt="" coords="226,104,371,145"/>
 <area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="424,143,372,138,371,132,429,142"/>
 <area shape="rect" id="Node000005" href="$d3/df5/star__bus__smbus_8c.html#a416c6cdf6379a197a9b018603a3e73e8" title="SMBus Block Read." alt="" coords="219,169,378,195"/>
 <area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="424,166,379,174,378,169,429,164"/>

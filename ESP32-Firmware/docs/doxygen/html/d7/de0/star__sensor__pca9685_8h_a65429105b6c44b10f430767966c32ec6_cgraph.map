@@ -1,0 +1,11 @@
+<map id="star_sensor_pca9685_read_frequency" name="star_sensor_pca9685_read_frequency">
+<area shape="rect" id="Node000001" title="Read current PWM frequency from hardware." alt="" coords="5,27,151,68"/>
+<area shape="rect" id="Node000002" href="$d3/df7/star__sensor__pca9685_8c.html#a44e8cb61ed3955aec2b43914cea64860" title="Read from PCA9685 register." alt="" coords="199,5,375,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="150,35,186,32,181,33,151,40"/>
+<area shape="rect" id="Node000005" href="$d3/df7/star__sensor__pca9685_8c.html#a441029eed6f44d433b3c0d6167e24701" title="Convert prescale value to frequency." alt="" coords="214,55,360,96"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="151,55,201,63,196,64,151,60"/>
+<area shape="rect" id="Node000003" href="$dd/d1a/star__bus__i2c_8c.html#a2e9b9baf8a0f8d00a2080963a7efd62f" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="423,5,550,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="375,16,410,18,405,18,375,21"/>
+<area shape="rect" id="Node000004" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="598,5,783,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="550,16,585,18,580,18,551,21"/>
+</map>

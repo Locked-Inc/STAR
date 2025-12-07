@@ -242,10 +242,12 @@ Functions</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 id="header-var-members" class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
 <tr class="memitem:a999e3dd103132afd3cd1856f477f2dbd" id="r_a999e3dd103132afd3cd1856f477f2dbd"><td class="memItemLeft" align="right" valign="top">static const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a999e3dd103132afd3cd1856f477f2dbd">s_TAG</a> = &quot;STAR_UART&quot;</td></tr>
+<tr class="memitem:a1f870f6df560ac08b56439737f53b286" id="r_a1f870f6df560ac08b56439737f53b286"><td class="memItemLeft" align="right" valign="top">static const uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1f870f6df560ac08b56439737f53b286">s_uart_mutex_timeout_ms</a> = 5000</td></tr>
 <tr class="memitem:a7c9897d9ce07d0c0f16dec06e849023d" id="r_a7c9897d9ce07d0c0f16dec06e849023d"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="../../d8/dfe/structuart__state__t.html">uart_state_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7c9897d9ce07d0c0f16dec06e849023d">g_uart_states</a> [(3)] = {0}</td></tr>
 <tr class="memitem:a414539291f3a9121b382139f3467927e" id="r_a414539291f3a9121b382139f3467927e"><td class="memItemLeft" align="right" valign="top">static uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a414539291f3a9121b382139f3467927e">g_num_uart_states</a> = 0</td></tr>
 <tr class="memitem:a0729634ad3f3d04130a29eb4321fd40f" id="r_a0729634ad3f3d04130a29eb4321fd40f"><td class="memItemLeft" align="right" valign="top">static SemaphoreHandle_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0729634ad3f3d04130a29eb4321fd40f">g_uart_mutex</a> = NULL</td></tr>
 <tr class="memitem:a1fb68ec25b7316c8617bc96688031d17" id="r_a1fb68ec25b7316c8617bc96688031d17"><td class="memItemLeft" align="right" valign="top">static portMUX_TYPE&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1fb68ec25b7316c8617bc96688031d17">g_uart_init_spinlock</a> = portMUX_INITIALIZER_UNLOCKED</td></tr>
+<tr class="memitem:a00777c60b5c47c895bcb2f8f0ba7d982" id="r_a00777c60b5c47c895bcb2f8f0ba7d982"><td class="memItemLeft" align="right" valign="top">static portMUX_TYPE&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a00777c60b5c47c895bcb2f8f0ba7d982">g_uart_state_spinlock</a> = portMUX_INITIALIZER_UNLOCKED</td></tr>
 </table>
 <a name="doc-define-members" id="doc-define-members"></a><h2 id="header-doc-define-members" class="groupheader">Macro Definition Documentation</h2>
 <a id="a11b888642a72e2a9213f6fde22164575" name="a11b888642a72e2a9213f6fde22164575"></a>
@@ -260,9 +262,9 @@ Variables</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00018">18</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00021">21</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00076">internal_get_uart_state()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00083">internal_get_uart_state()</a>.</p>
 
 </div>
 </div>
@@ -296,11 +298,11 @@ Variables</h2></td></tr>
 
 <p>Get UART state for a bus (thread-safe). </p>
 
-<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00115">115</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00154">154</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00041">g_uart_mutex</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00076">internal_get_uart_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00049">internal_init_uart_mutex()</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00044">g_uart_mutex</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00083">internal_get_uart_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00053">internal_init_uart_mutex()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00019">s_uart_mutex_timeout_ms</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00564">star_bus_uart_clear_rx()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00283">star_bus_uart_deinit()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00630">star_bus_uart_disable_pattern()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00592">star_bus_uart_enable_pattern()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00536">star_bus_uart_flush()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00506">star_bus_uart_get_available()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00658">star_bus_uart_get_stats()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00186">star_bus_uart_init()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00380">star_bus_uart_read()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00445">star_bus_uart_read_line()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00684">star_bus_uart_reset_stats()</a>, and <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00330">star_bus_uart_write()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00603">star_bus_uart_clear_rx()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00322">star_bus_uart_deinit()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00669">star_bus_uart_disable_pattern()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00631">star_bus_uart_enable_pattern()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00575">star_bus_uart_flush()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00545">star_bus_uart_get_available()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00697">star_bus_uart_get_stats()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00225">star_bus_uart_init()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00419">star_bus_uart_read()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00484">star_bus_uart_read_line()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00723">star_bus_uart_reset_stats()</a>, and <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00369">star_bus_uart_write()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -379,12 +381,13 @@ Here is the caller graph for this function:</div>
 </div><div class="memdoc">
 
 <p>Get UART state for a bus (must be called with mutex held). </p>
+<p>Uses spinlock to protect access to global state array during iteration to prevent race conditions with concurrent array modifications. </p>
 
-<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00076">76</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00083">83</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00026">uart_state_t::bus_name</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00040">g_num_uart_states</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00039">g_uart_states</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00018">MAX_UART_BUSES</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00030">uart_state_t::ops_mutex</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00029">uart_state_t::stats_mutex</a>.</p>
+<p class="reference">References <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00029">uart_state_t::bus_name</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00043">g_num_uart_states</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00046">g_uart_state_spinlock</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00042">g_uart_states</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00021">MAX_UART_BUSES</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00033">uart_state_t::ops_mutex</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00032">uart_state_t::stats_mutex</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00115">get_uart_state()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00154">get_uart_state()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -450,11 +453,11 @@ Here is the caller graph for this function:</div>
 
 <p>Initialize UART global mutex (thread-safe). </p>
 
-<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00049">49</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00053">53</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00042">g_uart_init_spinlock</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00041">g_uart_mutex</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00045">g_uart_init_spinlock</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00044">g_uart_mutex</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00115">get_uart_state()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00154">get_uart_state()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -520,11 +523,11 @@ Here is the caller graph for this function:</div>
 
 <p>Event task for processing UART events. </p>
 
-<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00135">135</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00174">174</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00166">star_uart_stats_t::break_conditions</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00026">uart_state_t::bus_name</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00027">uart_state_t::config</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00145">star_uart_config_t::event_callback</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00146">star_uart_config_t::event_context</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00032">uart_state_t::event_queue</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00034">uart_state_t::event_task_running</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00164">star_uart_stats_t::frame_errors</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00165">star_uart_stats_t::overrun_errors</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00163">star_uart_stats_t::parity_errors</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00028">uart_state_t::stats</a>, and <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00029">uart_state_t::stats_mutex</a>.</p>
+<p class="reference">References <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00166">star_uart_stats_t::break_conditions</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00029">uart_state_t::bus_name</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00030">uart_state_t::config</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00145">star_uart_config_t::event_callback</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00146">star_uart_config_t::event_context</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00035">uart_state_t::event_queue</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00037">uart_state_t::event_task_running</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00164">star_uart_stats_t::frame_errors</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00165">star_uart_stats_t::overrun_errors</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00163">star_uart_stats_t::parity_errors</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00019">s_uart_mutex_timeout_ms</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00031">uart_state_t::stats</a>, and <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00032">uart_state_t::stats_mutex</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00186">star_bus_uart_init()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00225">star_bus_uart_init()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -567,9 +570,9 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00564">564</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00603">603</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00027">uart_state_t::config</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00115">get_uart_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00031">uart_state_t::initialized</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00030">uart_state_t::ops_mutex</a>, and <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00126">star_uart_config_t::port</a>.</p>
+<p class="reference">References <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00030">uart_state_t::config</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00154">get_uart_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00034">uart_state_t::initialized</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00033">uart_state_t::ops_mutex</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00126">star_uart_config_t::port</a>, and <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00019">s_uart_mutex_timeout_ms</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -616,9 +619,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00283">283</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00322">322</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00027">uart_state_t::config</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00034">uart_state_t::event_task_running</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00115">get_uart_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00031">uart_state_t::initialized</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00030">uart_state_t::ops_mutex</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00126">star_uart_config_t::port</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00030">uart_state_t::config</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00037">uart_state_t::event_task_running</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00154">get_uart_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00034">uart_state_t::initialized</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00033">uart_state_t::ops_mutex</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00126">star_uart_config_t::port</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00019">s_uart_mutex_timeout_ms</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -665,9 +668,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00630">630</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00669">669</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00027">uart_state_t::config</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00115">get_uart_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00031">uart_state_t::initialized</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00030">uart_state_t::ops_mutex</a>, and <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00126">star_uart_config_t::port</a>.</p>
+<p class="reference">References <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00030">uart_state_t::config</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00154">get_uart_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00034">uart_state_t::initialized</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00033">uart_state_t::ops_mutex</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00126">star_uart_config_t::port</a>, and <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00019">s_uart_mutex_timeout_ms</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -739,9 +742,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00592">592</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00631">631</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00027">uart_state_t::config</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00115">get_uart_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00031">uart_state_t::initialized</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00030">uart_state_t::ops_mutex</a>, and <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00126">star_uart_config_t::port</a>.</p>
+<p class="reference">References <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00030">uart_state_t::config</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00154">get_uart_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00034">uart_state_t::initialized</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00033">uart_state_t::ops_mutex</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00126">star_uart_config_t::port</a>, and <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00019">s_uart_mutex_timeout_ms</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -789,9 +792,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00536">536</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00575">575</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00027">uart_state_t::config</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00115">get_uart_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00031">uart_state_t::initialized</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00030">uart_state_t::ops_mutex</a>, and <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00126">star_uart_config_t::port</a>.</p>
+<p class="reference">References <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00030">uart_state_t::config</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00154">get_uart_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00034">uart_state_t::initialized</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00033">uart_state_t::ops_mutex</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00126">star_uart_config_t::port</a>, and <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00019">s_uart_mutex_timeout_ms</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -844,9 +847,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00506">506</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00545">545</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00027">uart_state_t::config</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00115">get_uart_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00031">uart_state_t::initialized</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00030">uart_state_t::ops_mutex</a>, and <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00126">star_uart_config_t::port</a>.</p>
+<p class="reference">References <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00030">uart_state_t::config</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00154">get_uart_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00034">uart_state_t::initialized</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00033">uart_state_t::ops_mutex</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00126">star_uart_config_t::port</a>, and <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00019">s_uart_mutex_timeout_ms</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -899,9 +902,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00658">658</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00697">697</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00115">get_uart_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00031">uart_state_t::initialized</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00028">uart_state_t::stats</a>, and <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00029">uart_state_t::stats_mutex</a>.</p>
+<p class="reference">References <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00154">get_uart_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00034">uart_state_t::initialized</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00019">s_uart_mutex_timeout_ms</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00031">uart_state_t::stats</a>, and <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00032">uart_state_t::stats_mutex</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -954,9 +957,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00186">186</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00225">225</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00127">star_uart_config_t::baud_rate</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00027">uart_state_t::config</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00138">star_uart_config_t::cts_pin</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00128">star_uart_config_t::data_bits</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00145">star_uart_config_t::event_callback</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00032">uart_state_t::event_queue</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00147">star_uart_config_t::event_queue_size</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00033">uart_state_t::event_task</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00034">uart_state_t::event_task_running</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00131">star_uart_config_t::flow_ctrl</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00115">get_uart_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00031">uart_state_t::initialized</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00135">internal_uart_event_task()</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00109">k_star_uart_mode_rs485</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00132">star_uart_config_t::mode</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00130">star_uart_config_t::parity</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00126">star_uart_config_t::port</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00137">star_uart_config_t::rts_pin</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00141">star_uart_config_t::rx_buffer_size</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00136">star_uart_config_t::rx_pin</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00151">star_uart_config_t::rx_thresh</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00028">uart_state_t::stats</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00129">star_uart_config_t::stop_bits</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00142">star_uart_config_t::tx_buffer_size</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00135">star_uart_config_t::tx_pin</a>, and <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00150">star_uart_config_t::use_ref_tick</a>.</p>
+<p class="reference">References <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00127">star_uart_config_t::baud_rate</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00030">uart_state_t::config</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00138">star_uart_config_t::cts_pin</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00128">star_uart_config_t::data_bits</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00145">star_uart_config_t::event_callback</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00035">uart_state_t::event_queue</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00147">star_uart_config_t::event_queue_size</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00036">uart_state_t::event_task</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00037">uart_state_t::event_task_running</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00131">star_uart_config_t::flow_ctrl</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00154">get_uart_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00034">uart_state_t::initialized</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00174">internal_uart_event_task()</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00109">k_star_uart_mode_rs485</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00132">star_uart_config_t::mode</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00130">star_uart_config_t::parity</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00126">star_uart_config_t::port</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00137">star_uart_config_t::rts_pin</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00141">star_uart_config_t::rx_buffer_size</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00136">star_uart_config_t::rx_pin</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00151">star_uart_config_t::rx_thresh</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00031">uart_state_t::stats</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00129">star_uart_config_t::stop_bits</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00142">star_uart_config_t::tx_buffer_size</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00135">star_uart_config_t::tx_pin</a>, and <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00150">star_uart_config_t::use_ref_tick</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1004,7 +1007,7 @@ Here is the call graph for this function:</div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00710">710</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00749">749</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
 
 <p class="reference">References <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00166">star_uart_stats_t::break_conditions</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00160">star_uart_stats_t::bytes_received</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00159">star_uart_stats_t::bytes_sent</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00164">star_uart_stats_t::frame_errors</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00168">star_uart_stats_t::last_rx_time_us</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00167">star_uart_stats_t::last_tx_time_us</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00165">star_uart_stats_t::overrun_errors</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00163">star_uart_stats_t::parity_errors</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00162">star_uart_stats_t::rx_operations</a>, and <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00161">star_uart_stats_t::tx_operations</a>.</p>
 
@@ -1063,11 +1066,11 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00380">380</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00419">419</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00160">star_uart_stats_t::bytes_received</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00027">uart_state_t::config</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00115">get_uart_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00031">uart_state_t::initialized</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00168">star_uart_stats_t::last_rx_time_us</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00030">uart_state_t::ops_mutex</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00126">star_uart_config_t::port</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00162">star_uart_stats_t::rx_operations</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00028">uart_state_t::stats</a>, and <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00029">uart_state_t::stats_mutex</a>.</p>
+<p class="reference">References <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00160">star_uart_stats_t::bytes_received</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00030">uart_state_t::config</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00154">get_uart_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00034">uart_state_t::initialized</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00168">star_uart_stats_t::last_rx_time_us</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00033">uart_state_t::ops_mutex</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00126">star_uart_config_t::port</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00162">star_uart_stats_t::rx_operations</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00019">s_uart_mutex_timeout_ms</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00031">uart_state_t::stats</a>, and <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00032">uart_state_t::stats_mutex</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00445">star_bus_uart_read_line()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00484">star_bus_uart_read_line()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1148,9 +1151,9 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00445">445</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00484">484</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00115">get_uart_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00031">uart_state_t::initialized</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00030">uart_state_t::ops_mutex</a>, and <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00380">star_bus_uart_read()</a>.</p>
+<p class="reference">References <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00154">get_uart_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00034">uart_state_t::initialized</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00033">uart_state_t::ops_mutex</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00019">s_uart_mutex_timeout_ms</a>, and <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00419">star_bus_uart_read()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1200,9 +1203,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00684">684</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00723">723</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00115">get_uart_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00031">uart_state_t::initialized</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00028">uart_state_t::stats</a>, and <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00029">uart_state_t::stats_mutex</a>.</p>
+<p class="reference">References <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00154">get_uart_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00034">uart_state_t::initialized</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00019">s_uart_mutex_timeout_ms</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00031">uart_state_t::stats</a>, and <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00032">uart_state_t::stats_mutex</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1261,11 +1264,11 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00330">330</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00369">369</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00159">star_uart_stats_t::bytes_sent</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00027">uart_state_t::config</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00115">get_uart_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00031">uart_state_t::initialized</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00167">star_uart_stats_t::last_tx_time_us</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00030">uart_state_t::ops_mutex</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00126">star_uart_config_t::port</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00028">uart_state_t::stats</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00029">uart_state_t::stats_mutex</a>, and <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00161">star_uart_stats_t::tx_operations</a>.</p>
+<p class="reference">References <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00159">star_uart_stats_t::bytes_sent</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00030">uart_state_t::config</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00154">get_uart_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00034">uart_state_t::initialized</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00167">star_uart_stats_t::last_tx_time_us</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00033">uart_state_t::ops_mutex</a>, <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00126">star_uart_config_t::port</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00019">s_uart_mutex_timeout_ms</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00031">uart_state_t::stats</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00032">uart_state_t::stats_mutex</a>, and <a class="el" href="../../d6/dde/star__bus__uart_8h_source.html#l00161">star_uart_stats_t::tx_operations</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00436">star_bus_uart_write_string()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00475">star_bus_uart_write_string()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1328,9 +1331,9 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00436">436</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00475">475</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00330">star_bus_uart_write()</a>.</p>
+<p class="reference">References <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00369">star_bus_uart_write()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1371,9 +1374,9 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00040">40</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00043">43</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00076">internal_get_uart_state()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00083">internal_get_uart_state()</a>.</p>
 
 </div>
 </div>
@@ -1397,9 +1400,9 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00042">42</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00045">45</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00049">internal_init_uart_mutex()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00053">internal_init_uart_mutex()</a>.</p>
 
 </div>
 </div>
@@ -1423,9 +1426,35 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00041">41</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00044">44</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00115">get_uart_state()</a>, and <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00049">internal_init_uart_mutex()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00154">get_uart_state()</a>, and <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00053">internal_init_uart_mutex()</a>.</p>
+
+</div>
+</div>
+<a id="a00777c60b5c47c895bcb2f8f0ba7d982" name="a00777c60b5c47c895bcb2f8f0ba7d982"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a00777c60b5c47c895bcb2f8f0ba7d982">&#9670;&#160;</a></span>g_uart_state_spinlock</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">portMUX_TYPE g_uart_state_spinlock = portMUX_INITIALIZER_UNLOCKED</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00046">46</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00083">internal_get_uart_state()</a>.</p>
 
 </div>
 </div>
@@ -1449,9 +1478,9 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00039">39</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00042">42</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00076">internal_get_uart_state()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00083">internal_get_uart_state()</a>.</p>
 
 </div>
 </div>
@@ -1476,6 +1505,32 @@ Here is the call graph for this function:</div>
 </div><div class="memdoc">
 
 <p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00016">16</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
+
+</div>
+</div>
+<a id="a1f870f6df560ac08b56439737f53b286" name="a1f870f6df560ac08b56439737f53b286"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1f870f6df560ac08b56439737f53b286">&#9670;&#160;</a></span>s_uart_mutex_timeout_ms</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const uint32_t s_uart_mutex_timeout_ms = 5000</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00019">19</a> of file <a class="el" href="../../da/d14/star__bus__uart_8c_source.html">star_bus_uart.c</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00154">get_uart_state()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00174">internal_uart_event_task()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00603">star_bus_uart_clear_rx()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00322">star_bus_uart_deinit()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00669">star_bus_uart_disable_pattern()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00631">star_bus_uart_enable_pattern()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00575">star_bus_uart_flush()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00545">star_bus_uart_get_available()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00697">star_bus_uart_get_stats()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00419">star_bus_uart_read()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00484">star_bus_uart_read_line()</a>, <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00723">star_bus_uart_reset_stats()</a>, and <a class="el" href="../../da/d14/star__bus__uart_8c_source.html#l00369">star_bus_uart_write()</a>.</p>
 
 </div>
 </div>

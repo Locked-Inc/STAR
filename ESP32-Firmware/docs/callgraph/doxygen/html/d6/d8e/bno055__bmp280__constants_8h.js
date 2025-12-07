@@ -68,10 +68,5 @@ var bno055__bmp280__constants_8h =
       [ "k_bno055_reg_opr_mode", "d6/d8e/bno055__bmp280__constants_8h.html#a59e279407d125a285dd6b72550a9e801a0a0fb6c79bcff32c4b089bcc3e1a2615", null ],
       [ "k_bno055_reg_pwr_mode", "d6/d8e/bno055__bmp280__constants_8h.html#a59e279407d125a285dd6b72550a9e801a7fda846f2cfc652a9bed4c782a079b86", null ],
       [ "k_bno055_reg_sys_trigger", "d6/d8e/bno055__bmp280__constants_8h.html#a59e279407d125a285dd6b72550a9e801accc106f796792968122dbaf60d3aae3d", null ]
-    ] ],
-    [ "BMP280_CHIP_ID_VALUE", "d6/d8e/bno055__bmp280__constants_8h.html#a2a25a2c83a8f5758aaddfb5f993d523c", null ],
-    [ "BMP280_I2C_ADDR", "d6/d8e/bno055__bmp280__constants_8h.html#ac800b06addab29b190e15b8276eb487b", null ],
-    [ "BNO055_CHIP_ID_VALUE", "d6/d8e/bno055__bmp280__constants_8h.html#aa03657eb7ff8b14d063be83b7c61a9b1", null ],
-    [ "BNO055_I2C_ADDR", "d6/d8e/bno055__bmp280__constants_8h.html#a724957d3e919af55e37546a79785f211", null ],
-    [ "BNO055_SYS_TRIGGER_RST", "d6/d8e/bno055__bmp280__constants_8h.html#a52f1db86893fc9df9ceb1a1ec897d6eb", null ]
+    ] ]
 ];

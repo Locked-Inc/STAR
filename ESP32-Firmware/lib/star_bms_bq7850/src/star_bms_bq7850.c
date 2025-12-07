@@ -857,17 +857,17 @@ size_t star_bms_bq7850_status_to_string(const bq7850_status_t* status, char* buf
   size_t offset = 0;
 
   /* Helper macro to safely append to buffer with overflow protection */
-#define SAFE_APPEND(fmt, ...)                                          \
-  do {                                                                 \
-    if (offset < size) {                                               \
-      int written = snprintf(buffer + offset, size - offset, fmt, ##__VA_ARGS__); \
-      if (written > 0) {                                               \
-        offset += (size_t)written;                                     \
-        if (offset > size) {                                           \
-          offset = size;                                               \
-        }                                                              \
-      }                                                                \
-    }                                                                  \
+#define SAFE_APPEND(fmt, ...)                                                                      \
+  do {                                                                                             \
+    if (offset < size) {                                                                           \
+      int written = snprintf(buffer + offset, size - offset, fmt, ##__VA_ARGS__);                  \
+      if (written > 0) {                                                                           \
+        offset += (size_t)written;                                                                 \
+        if (offset > size) {                                                                       \
+          offset = size;                                                                           \
+        }                                                                                          \
+      }                                                                                            \
+    }                                                                                              \
   } while (0)
 
   SAFE_APPEND("Battery Status: ");

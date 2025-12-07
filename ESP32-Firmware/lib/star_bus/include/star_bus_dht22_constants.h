@@ -35,28 +35,28 @@ typedef struct {
 } dht22_timing_t;
 
 /* Standard DHT22 timing constants */
-static const dht22_timing_t s_dht22_timing_standard = {.start_low_us  = 18000, /* 18ms start signal */
-                                                       .start_high_us = 40,
-                                                       .response_low_us  = 80,
-                                                       .response_high_us = 80,
-                                                       .bit_start_us     = 50,
-                                                       .bit_0_high_us    = 28,
-                                                       .bit_1_high_us    = 70,
-                                                       .read_timeout_us =
-                                                         100000, /* 100ms total timeout */
-                                                       .bit_timeout_us = 100};
+static const dht22_timing_t s_dht22_timing_standard = {
+  .start_low_us     = 18000, /* 18ms start signal */
+  .start_high_us    = 40,
+  .response_low_us  = 80,
+  .response_high_us = 80,
+  .bit_start_us     = 50,
+  .bit_0_high_us    = 28,
+  .bit_1_high_us    = 70,
+  .read_timeout_us  = 100000, /* 100ms total timeout */
+  .bit_timeout_us   = 100};
 
 /* DHT11 timing constants (compatible but different sensor) */
-static const dht22_timing_t s_dht11_timing_standard = {.start_low_us  = 18000, /* 18ms start signal */
-                                                       .start_high_us = 40,
-                                                       .response_low_us  = 80,
-                                                       .response_high_us = 80,
-                                                       .bit_start_us     = 50,
-                                                       .bit_0_high_us    = 28,
-                                                       .bit_1_high_us    = 70,
-                                                       .read_timeout_us =
-                                                         100000, /* 100ms total timeout */
-                                                       .bit_timeout_us = 100};
+static const dht22_timing_t s_dht11_timing_standard = {
+  .start_low_us     = 18000, /* 18ms start signal */
+  .start_high_us    = 40,
+  .response_low_us  = 80,
+  .response_high_us = 80,
+  .bit_start_us     = 50,
+  .bit_0_high_us    = 28,
+  .bit_1_high_us    = 70,
+  .read_timeout_us  = 100000, /* 100ms total timeout */
+  .bit_timeout_us   = 100};
 
 /**
  * @brief DHT22 data structure

@@ -2,8 +2,10 @@
 <area shape="rect" id="Node000001" title=" " alt="" coords="5,13,160,38"/>
 <area shape="rect" id="Node000002" href="$de/de2/star__sensor__hcsr04_8c.html#a47cb2059d503f6428dc165b881c6f79f" title="Deinitialize HC&#45;SR04 sensor." alt="" coords="208,5,343,46"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="160,23,195,25,190,26,160,28"/>
-<area shape="rect" id="Node000003" href="$d7/d82/star__error__handler_8c.html#a1632e40ebb7509611a0513c0e6bdbb46" title="Destroy an error handler created by error_handler_create_default() or error_handler_create_custom()." alt="" coords="391,5,537,46"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="343,23,378,26,373,26,343,28"/>
-<area shape="rect" id="Node000004" href="$d7/d82/star__error__handler_8c.html#a3a7dedd3275ece0e7f6029a11464c27d" title="Deinitialize an error handler and release resources." alt="" coords="585,13,720,38"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="538,23,572,26,567,26,538,28"/>
+<area shape="rect" id="Node000003" href="$d7/d82/star__error__handler_8c.html#a983c8213a8523e7362c0b55bdaa296bc" title="Clean up an error interface that may own its handler." alt="" coords="391,5,524,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="344,23,378,26,373,26,344,28"/>
+<area shape="rect" id="Node000004" href="$d7/d82/star__error__handler_8c.html#a1632e40ebb7509611a0513c0e6bdbb46" title="Destroy an error handler created by error_handler_create_default() or error_handler_create_custom()." alt="" coords="572,5,719,46"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="525,23,560,26,554,26,525,28"/>
+<area shape="rect" id="Node000005" href="$d7/d82/star__error__handler_8c.html#aaaf152f965c4c4e01c241f0801ce561a" title="Deinitialize an error handler and release resources." alt="" coords="767,13,901,38"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="719,23,754,26,748,26,719,28"/>
 </map>

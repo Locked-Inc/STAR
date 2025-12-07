@@ -134,8 +134,8 @@ Include dependency graph for star_pin_validator.c:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a4583345fc8acffd3934cbdc1572cd030" id="r_a4583345fc8acffd3934cbdc1572cd030"><td class="memItemLeft" align="right" valign="top">static esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a4583345fc8acffd3934cbdc1572cd030">init_mutex</a> (void)</td></tr>
-<tr class="memdesc:a4583345fc8acffd3934cbdc1572cd030"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize mutex if not already initialized (thread-safe).  <br /></td></tr>
+<tr class="memitem:abb6171433f895757bf5f629a88181cf9" id="r_abb6171433f895757bf5f629a88181cf9"><td class="memItemLeft" align="right" valign="top">static esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#abb6171433f895757bf5f629a88181cf9">internal_init_mutex</a> (void)</td></tr>
+<tr class="memdesc:abb6171433f895757bf5f629a88181cf9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize mutex if not already initialized (thread-safe).  <br /></td></tr>
 <tr class="memitem:a8eace335a8befbd45cc9d4725a523dc7" id="r_a8eace335a8befbd45cc9d4725a523dc7"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8eace335a8befbd45cc9d4725a523dc7">star_register_pin</a> (gpio_num_t gpio_num, const char *desc, bool can_be_shared)</td></tr>
 <tr class="memdesc:a8eace335a8befbd45cc9d4725a523dc7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Register a pin on the validator.  <br /></td></tr>
 <tr class="memitem:a70f90038a8f90485f5ce3ba0df581403" id="r_a70f90038a8f90485f5ce3ba0df581403"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a70f90038a8f90485f5ce3ba0df581403">star_unregister_pin</a> (gpio_num_t gpio_num, const char *desc)</td></tr>
@@ -158,6 +158,8 @@ Functions</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 id="header-var-members" class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
 <tr class="memitem:a999e3dd103132afd3cd1856f477f2dbd" id="r_a999e3dd103132afd3cd1856f477f2dbd"><td class="memItemLeft" align="right" valign="top">static const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a999e3dd103132afd3cd1856f477f2dbd">s_TAG</a> = &quot;pin_validator&quot;</td></tr>
+<tr class="memitem:a1eb247a5fd6d055d84fed0a2dfa6b78d" id="r_a1eb247a5fd6d055d84fed0a2dfa6b78d"><td class="memItemLeft" align="right" valign="top">static const uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1eb247a5fd6d055d84fed0a2dfa6b78d">s_pin_validator_mutex_timeout_ms</a> = 5000</td></tr>
+<tr class="memitem:a60c9aaafbe8e6a91752617c9648f3172" id="r_a60c9aaafbe8e6a91752617c9648f3172"><td class="memItemLeft" align="right" valign="top">static const uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a60c9aaafbe8e6a91752617c9648f3172">s_pin_validator_query_timeout_ms</a> = 100</td></tr>
 <tr class="memitem:a69fc386bb68a09a2cddbcf7c0478bf53" id="r_a69fc386bb68a09a2cddbcf7c0478bf53"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="../../da/dc2/structstar__pin__validator__t.html">star_pin_validator_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a69fc386bb68a09a2cddbcf7c0478bf53">s_g_pin_validator</a> = {0}</td></tr>
 <tr class="memitem:a13c3692b775e559485dd83e9ce3ad88c" id="r_a13c3692b775e559485dd83e9ce3ad88c"><td class="memItemLeft" align="right" valign="top">static portMUX_TYPE&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a13c3692b775e559485dd83e9ce3ad88c">s_g_init_spinlock</a> = portMUX_INITIALIZER_UNLOCKED</td></tr>
 <tr class="memitem:a25fd529801baaabed5f99738dcd77812" id="r_a25fd529801baaabed5f99738dcd77812"><td class="memItemLeft" align="right" valign="top">static volatile bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a25fd529801baaabed5f99738dcd77812">s_g_is_freeing</a> = false</td></tr>
@@ -202,11 +204,11 @@ Variables</h2></td></tr>
 
 <p>Adapter function for register_pin interface. </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00463">463</a> of file <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html">star_pin_validator.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00474">474</a> of file <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html">star_pin_validator.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00051">star_register_pin()</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00057">star_register_pin()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00487">pin_validator_get_interface()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00498">pin_validator_get_interface()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -215,7 +217,7 @@ Here is the call graph for this function:</div>
 <area shape="rect" title="Adapter function for register_pin interface." alt="" coords="5,5,129,31"/>
 <area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#a8eace335a8befbd45cc9d4725a523dc7" title="Register a pin on the validator." alt="" coords="177,5,294,31"/>
 <area shape="poly" title=" " alt="" coords="129,16,163,18,158,18,129,21"/>
-<area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#a4583345fc8acffd3934cbdc1572cd030" title="Initialize mutex if not already initialized (thread&#45;safe)." alt="" coords="342,5,423,31"/>
+<area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#abb6171433f895757bf5f629a88181cf9" title="Initialize mutex if not already initialized (thread&#45;safe)." alt="" coords="342,5,472,31"/>
 <area shape="poly" title=" " alt="" coords="294,16,329,18,324,18,294,21"/>
 </map>
 </div>
@@ -268,11 +270,11 @@ Here is the caller graph for this function:</div>
 
 <p>Adapter function for unregister_pin interface. </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00472">472</a> of file <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html">star_pin_validator.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00483">483</a> of file <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html">star_pin_validator.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00181">star_unregister_pin()</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00189">star_unregister_pin()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00487">pin_validator_get_interface()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00498">pin_validator_get_interface()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -281,7 +283,7 @@ Here is the call graph for this function:</div>
 <area shape="rect" title="Adapter function for unregister_pin interface." alt="" coords="5,5,143,31"/>
 <area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#a70f90038a8f90485f5ce3ba0df581403" title="Unregister a pin from the validator." alt="" coords="191,5,322,31"/>
 <area shape="poly" title=" " alt="" coords="143,16,178,18,173,18,143,21"/>
-<area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#a4583345fc8acffd3934cbdc1572cd030" title="Initialize mutex if not already initialized (thread&#45;safe)." alt="" coords="370,5,451,31"/>
+<area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#abb6171433f895757bf5f629a88181cf9" title="Initialize mutex if not already initialized (thread&#45;safe)." alt="" coords="370,5,500,31"/>
 <area shape="poly" title=" " alt="" coords="322,16,357,18,352,18,322,21"/>
 </map>
 </div>
@@ -325,11 +327,11 @@ Here is the caller graph for this function:</div>
 
 <p>Adapter function for validate interface. </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00481">481</a> of file <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html">star_pin_validator.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00492">492</a> of file <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html">star_pin_validator.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00289">star_validate_pins()</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00299">star_validate_pins()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00487">pin_validator_get_interface()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00498">pin_validator_get_interface()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -338,8 +340,8 @@ Here is the call graph for this function:</div>
 <area shape="rect" title="Adapter function for validate interface." alt="" coords="5,5,107,31"/>
 <area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#a860b80eef110e1f314a05a8d60f09e18" title="Validate all registered pins for conflicts." alt="" coords="155,5,281,31"/>
 <area shape="poly" title=" " alt="" coords="107,16,142,18,137,18,107,21"/>
-<area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#a4583345fc8acffd3934cbdc1572cd030" title="Initialize mutex if not already initialized (thread&#45;safe)." alt="" coords="329,5,410,31"/>
-<area shape="poly" title=" " alt="" coords="282,16,316,18,311,18,282,21"/>
+<area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#abb6171433f895757bf5f629a88181cf9" title="Initialize mutex if not already initialized (thread&#45;safe)." alt="" coords="329,5,459,31"/>
+<area shape="poly" title=" " alt="" coords="281,16,316,18,311,18,281,21"/>
 </map>
 </div>
 <div class="dynheader">
@@ -357,8 +359,8 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="a4583345fc8acffd3934cbdc1572cd030" name="a4583345fc8acffd3934cbdc1572cd030"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a4583345fc8acffd3934cbdc1572cd030">&#9670;&#160;</a></span>init_mutex()</h2>
+<a id="abb6171433f895757bf5f629a88181cf9" name="abb6171433f895757bf5f629a88181cf9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#abb6171433f895757bf5f629a88181cf9">&#9670;&#160;</a></span>internal_init_mutex()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -367,7 +369,7 @@ Here is the caller graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">esp_err_t init_mutex </td>
+          <td class="memname">esp_err_t internal_init_mutex </td>
           <td>(</td>
           <td class="paramtype">void</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
@@ -383,25 +385,25 @@ Here is the caller graph for this function:</div>
 <p>Initialize mutex if not already initialized (thread-safe). </p>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK if successful, otherwise an error code </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00025">25</a> of file <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html">star_pin_validator.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00031">31</a> of file <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html">star_pin_validator.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00016">s_g_init_spinlock</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00013">s_g_pin_validator</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00022">s_g_init_spinlock</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00019">s_g_pin_validator</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00367">star_free_pin_validator()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00051">star_register_pin()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00181">star_unregister_pin()</a>, and <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00289">star_validate_pins()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00377">star_free_pin_validator()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00057">star_register_pin()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00189">star_unregister_pin()</a>, and <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00299">star_validate_pins()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d2/dad/star__pin__validator_8c_a4583345fc8acffd3934cbdc1572cd030_icgraph.png" border="0" usemap="#ad2/dad/star__pin__validator_8c_a4583345fc8acffd3934cbdc1572cd030_icgraph" loading="lazy" alt=""/></div>
-<map name="ad2/dad/star__pin__validator_8c_a4583345fc8acffd3934cbdc1572cd030_icgraph" id="ad2/dad/star__pin__validator_8c_a4583345fc8acffd3934cbdc1572cd030_icgraph">
-<area shape="rect" title="Initialize mutex if not already initialized (thread&#45;safe)." alt="" coords="741,80,822,106"/>
+<div class="center"><img src="../../d2/dad/star__pin__validator_8c_abb6171433f895757bf5f629a88181cf9_icgraph.png" border="0" usemap="#ad2/dad/star__pin__validator_8c_abb6171433f895757bf5f629a88181cf9_icgraph" loading="lazy" alt=""/></div>
+<map name="ad2/dad/star__pin__validator_8c_abb6171433f895757bf5f629a88181cf9_icgraph" id="ad2/dad/star__pin__validator_8c_abb6171433f895757bf5f629a88181cf9_icgraph">
+<area shape="rect" title="Initialize mutex if not already initialized (thread&#45;safe)." alt="" coords="741,80,871,106"/>
 <area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#a9b63dcb8bc299307dd3e66be4f52d45e" title="Free the pin validator resources." alt="" coords="540,5,693,31"/>
-<area shape="poly" title=" " alt="" coords="744,71,692,45,665,34,665,29,694,40,750,72"/>
+<area shape="poly" title=" " alt="" coords="761,73,692,45,662,34,663,29,694,40,766,73"/>
 <area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#a8eace335a8befbd45cc9d4725a523dc7" title="Register a pin on the validator." alt="" coords="558,55,675,80"/>
-<area shape="poly" title=" " alt="" coords="723,84,675,79,676,74,728,84"/>
+<area shape="poly" title=" " alt="" coords="722,82,675,78,675,73,728,82"/>
 <area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#a70f90038a8f90485f5ce3ba0df581403" title="Unregister a pin from the validator." alt="" coords="551,104,682,130"/>
-<area shape="poly" title=" " alt="" coords="728,101,683,110,682,105,723,101"/>
+<area shape="poly" title=" " alt="" coords="728,103,683,111,683,106,723,103"/>
 <area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#a860b80eef110e1f314a05a8d60f09e18" title="Validate all registered pins for conflicts." alt="" coords="553,153,680,179"/>
-<area shape="poly" title=" " alt="" coords="749,113,694,145,665,155,664,150,692,140,744,115"/>
+<area shape="poly" title=" " alt="" coords="765,112,694,145,663,155,662,150,692,140,760,113"/>
 <area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#acae8e3a477362b1b5413e878d31738bf" title="Adapter function for register_pin interface." alt="" coords="362,55,485,80"/>
 <area shape="poly" title=" " alt="" coords="540,68,486,70,485,65,545,67"/>
 <area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#a13730ef0e296c0ffeea5d60b7f04d9cf" title="Create an interface adapter for the pin validator." alt="" coords="131,104,307,130"/>
@@ -443,9 +445,9 @@ Here is the caller graph for this function:</div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00487">487</a> of file <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html">star_pin_validator.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00498">498</a> of file <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html">star_pin_validator.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../da/d58/star__pin__interface_8h_source.html#l00169">star_pin_interface::ctx</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00463">iface_register_pin()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00472">iface_unregister_pin()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00481">iface_validate()</a>, <a class="el" href="../../da/d58/star__pin__interface_8h_source.html#l00148">star_pin_interface::register_pin</a>, <a class="el" href="../../da/d58/star__pin__interface_8h_source.html#l00157">star_pin_interface::unregister_pin</a>, and <a class="el" href="../../da/d58/star__pin__interface_8h_source.html#l00164">star_pin_interface::validate</a>.</p>
+<p class="reference">References <a class="el" href="../../da/d58/star__pin__interface_8h_source.html#l00169">star_pin_interface::ctx</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00474">iface_register_pin()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00483">iface_unregister_pin()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00492">iface_validate()</a>, <a class="el" href="../../da/d58/star__pin__interface_8h_source.html#l00148">star_pin_interface::register_pin</a>, <a class="el" href="../../da/d58/star__pin__interface_8h_source.html#l00157">star_pin_interface::unregister_pin</a>, and <a class="el" href="../../da/d58/star__pin__interface_8h_source.html#l00164">star_pin_interface::validate</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00158">app_main()</a>.</p>
 <div class="dynheader">
@@ -462,14 +464,14 @@ Here is the call graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="150,78,235,100,230,102,150,84"/>
 <area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#a8eace335a8befbd45cc9d4725a523dc7" title="Register a pin on the validator." alt="" coords="422,5,539,31"/>
 <area shape="poly" title=" " alt="" coords="360,16,409,18,404,19,361,21"/>
-<area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#a4583345fc8acffd3934cbdc1572cd030" title="Initialize mutex if not already initialized (thread&#45;safe)." alt="" coords="594,55,676,80"/>
-<area shape="poly" title=" " alt="" coords="524,29,582,50,577,50,523,34"/>
+<area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#abb6171433f895757bf5f629a88181cf9" title="Initialize mutex if not already initialized (thread&#45;safe)." alt="" coords="594,55,725,80"/>
+<area shape="poly" title=" " alt="" coords="530,29,598,50,593,50,530,34"/>
 <area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#a70f90038a8f90485f5ce3ba0df581403" title="Unregister a pin from the validator." alt="" coords="415,55,546,80"/>
 <area shape="poly" title=" " alt="" coords="367,65,403,67,397,68,368,70"/>
-<area shape="poly" title=" " alt="" coords="547,65,581,67,576,68,547,70"/>
+<area shape="poly" title=" " alt="" coords="546,65,582,67,576,68,547,70"/>
 <area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#a860b80eef110e1f314a05a8d60f09e18" title="Validate all registered pins for conflicts." alt="" coords="418,104,544,130"/>
 <area shape="poly" title=" " alt="" coords="349,114,405,117,400,117,349,119"/>
-<area shape="poly" title=" " alt="" coords="523,101,577,86,582,85,524,106"/>
+<area shape="poly" title=" " alt="" coords="530,101,593,85,598,85,531,106"/>
 </map>
 </div>
 <div class="dynheader">
@@ -503,16 +505,16 @@ Here is the caller graph for this function:</div>
 <p>Free the pin validator resources. </p>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK if successful, otherwise an error code </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00367">367</a> of file <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html">star_pin_validator.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00377">377</a> of file <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html">star_pin_validator.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d1/dda/star__pin__validator_8h_source.html#l00109">star_pin_info_t::can_be_shared</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00025">init_mutex()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00016">s_g_init_spinlock</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00019">s_g_is_freeing</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00013">s_g_pin_validator</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d1/dda/star__pin__validator_8h_source.html#l00110">star_pin_info_t::usage_count</a>, and <a class="el" href="../../d1/dda/star__pin__validator_8h_source.html#l00111">star_pin_info_t::users</a>.</p>
+<p class="reference">References <a class="el" href="../../d1/dda/star__pin__validator_8h_source.html#l00109">star_pin_info_t::can_be_shared</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00031">internal_init_mutex()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00022">s_g_init_spinlock</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00025">s_g_is_freeing</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00019">s_g_pin_validator</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00013">s_pin_validator_mutex_timeout_ms</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d1/dda/star__pin__validator_8h_source.html#l00110">star_pin_info_t::usage_count</a>, and <a class="el" href="../../d1/dda/star__pin__validator_8h_source.html#l00111">star_pin_info_t::users</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d2/dad/star__pin__validator_8c_a9b63dcb8bc299307dd3e66be4f52d45e_cgraph.png" border="0" usemap="#ad2/dad/star__pin__validator_8c_a9b63dcb8bc299307dd3e66be4f52d45e_cgraph" loading="lazy" alt=""/></div>
 <map name="ad2/dad/star__pin__validator_8c_a9b63dcb8bc299307dd3e66be4f52d45e_cgraph" id="ad2/dad/star__pin__validator_8c_a9b63dcb8bc299307dd3e66be4f52d45e_cgraph">
 <area shape="rect" title="Free the pin validator resources." alt="" coords="5,5,158,31"/>
-<area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#a4583345fc8acffd3934cbdc1572cd030" title="Initialize mutex if not already initialized (thread&#45;safe)." alt="" coords="206,5,287,31"/>
+<area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#abb6171433f895757bf5f629a88181cf9" title="Initialize mutex if not already initialized (thread&#45;safe)." alt="" coords="206,5,336,31"/>
 <area shape="poly" title=" " alt="" coords="158,16,193,18,187,18,158,21"/>
 </map>
 </div>
@@ -538,9 +540,9 @@ Here is the call graph for this function:</div>
 <p>This function safely checks the initialized flag by acquiring the mutex. Useful for components that want to verify validator state before operations.</p>
 <dl class="section return"><dt>Returns</dt><dd>true if initialized, false otherwise or if mutex unavailable </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00499">499</a> of file <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html">star_pin_validator.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00510">510</a> of file <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html">star_pin_validator.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00019">s_g_is_freeing</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00013">s_g_pin_validator</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00025">s_g_is_freeing</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00019">s_g_pin_validator</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00016">s_pin_validator_query_timeout_ms</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
 
 </div>
 </div>
@@ -579,19 +581,19 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK if successful, otherwise an error code </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00051">51</a> of file <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html">star_pin_validator.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00057">57</a> of file <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html">star_pin_validator.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d1/dda/star__pin__validator_8h_source.html#l00109">star_pin_info_t::can_be_shared</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00025">init_mutex()</a>, <a class="el" href="../../d1/dda/star__pin__validator_8h_source.html#l00103">PIN_VALIDATOR_DESC_MAX_LEN</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00019">s_g_is_freeing</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00013">s_g_pin_validator</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d1/dda/star__pin__validator_8h_source.html#l00110">star_pin_info_t::usage_count</a>, and <a class="el" href="../../d1/dda/star__pin__validator_8h_source.html#l00111">star_pin_info_t::users</a>.</p>
+<p class="reference">References <a class="el" href="../../d1/dda/star__pin__validator_8h_source.html#l00109">star_pin_info_t::can_be_shared</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00031">internal_init_mutex()</a>, <a class="el" href="../../d1/dda/star__pin__validator_8h_source.html#l00103">PIN_VALIDATOR_DESC_MAX_LEN</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00025">s_g_is_freeing</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00019">s_g_pin_validator</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00013">s_pin_validator_mutex_timeout_ms</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d1/dda/star__pin__validator_8h_source.html#l00110">star_pin_info_t::usage_count</a>, and <a class="el" href="../../d1/dda/star__pin__validator_8h_source.html#l00111">star_pin_info_t::users</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00463">iface_register_pin()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00474">iface_register_pin()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d2/dad/star__pin__validator_8c_a8eace335a8befbd45cc9d4725a523dc7_cgraph.png" border="0" usemap="#ad2/dad/star__pin__validator_8c_a8eace335a8befbd45cc9d4725a523dc7_cgraph" loading="lazy" alt=""/></div>
 <map name="ad2/dad/star__pin__validator_8c_a8eace335a8befbd45cc9d4725a523dc7_cgraph" id="ad2/dad/star__pin__validator_8c_a8eace335a8befbd45cc9d4725a523dc7_cgraph">
 <area shape="rect" title="Register a pin on the validator." alt="" coords="5,5,123,31"/>
-<area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#a4583345fc8acffd3934cbdc1572cd030" title="Initialize mutex if not already initialized (thread&#45;safe)." alt="" coords="171,5,252,31"/>
-<area shape="poly" title=" " alt="" coords="123,16,158,18,153,18,123,21"/>
+<area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#abb6171433f895757bf5f629a88181cf9" title="Initialize mutex if not already initialized (thread&#45;safe)." alt="" coords="171,5,301,31"/>
+<area shape="poly" title=" " alt="" coords="123,16,158,18,152,18,123,21"/>
 </map>
 </div>
 <div class="dynheader">
@@ -640,19 +642,19 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK if successful, otherwise an error code </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00181">181</a> of file <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html">star_pin_validator.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00189">189</a> of file <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html">star_pin_validator.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d1/dda/star__pin__validator_8h_source.html#l00109">star_pin_info_t::can_be_shared</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00025">init_mutex()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00019">s_g_is_freeing</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00013">s_g_pin_validator</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d1/dda/star__pin__validator_8h_source.html#l00110">star_pin_info_t::usage_count</a>, and <a class="el" href="../../d1/dda/star__pin__validator_8h_source.html#l00111">star_pin_info_t::users</a>.</p>
+<p class="reference">References <a class="el" href="../../d1/dda/star__pin__validator_8h_source.html#l00109">star_pin_info_t::can_be_shared</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00031">internal_init_mutex()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00025">s_g_is_freeing</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00019">s_g_pin_validator</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00013">s_pin_validator_mutex_timeout_ms</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d1/dda/star__pin__validator_8h_source.html#l00110">star_pin_info_t::usage_count</a>, and <a class="el" href="../../d1/dda/star__pin__validator_8h_source.html#l00111">star_pin_info_t::users</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00472">iface_unregister_pin()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00483">iface_unregister_pin()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d2/dad/star__pin__validator_8c_a70f90038a8f90485f5ce3ba0df581403_cgraph.png" border="0" usemap="#ad2/dad/star__pin__validator_8c_a70f90038a8f90485f5ce3ba0df581403_cgraph" loading="lazy" alt=""/></div>
 <map name="ad2/dad/star__pin__validator_8c_a70f90038a8f90485f5ce3ba0df581403_cgraph" id="ad2/dad/star__pin__validator_8c_a70f90038a8f90485f5ce3ba0df581403_cgraph">
 <area shape="rect" title="Unregister a pin from the validator." alt="" coords="5,5,137,31"/>
-<area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#a4583345fc8acffd3934cbdc1572cd030" title="Initialize mutex if not already initialized (thread&#45;safe)." alt="" coords="185,5,266,31"/>
-<area shape="poly" title=" " alt="" coords="137,16,172,18,166,18,137,21"/>
+<area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#abb6171433f895757bf5f629a88181cf9" title="Initialize mutex if not already initialized (thread&#45;safe)." alt="" coords="185,5,315,31"/>
+<area shape="poly" title=" " alt="" coords="137,16,172,18,167,18,137,21"/>
 </map>
 </div>
 <div class="dynheader">
@@ -690,18 +692,18 @@ Here is the caller graph for this function:</div>
 <p>Validate all registered pins for conflicts. </p>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK if no conflicts, ESP_ERR_INVALID_STATE if conflicts found </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00289">289</a> of file <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html">star_pin_validator.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00299">299</a> of file <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html">star_pin_validator.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d1/dda/star__pin__validator_8h_source.html#l00109">star_pin_info_t::can_be_shared</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00025">init_mutex()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00019">s_g_is_freeing</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00013">s_g_pin_validator</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d1/dda/star__pin__validator_8h_source.html#l00110">star_pin_info_t::usage_count</a>, and <a class="el" href="../../d1/dda/star__pin__validator_8h_source.html#l00111">star_pin_info_t::users</a>.</p>
+<p class="reference">References <a class="el" href="../../d1/dda/star__pin__validator_8h_source.html#l00109">star_pin_info_t::can_be_shared</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00031">internal_init_mutex()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00025">s_g_is_freeing</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00019">s_g_pin_validator</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00013">s_pin_validator_mutex_timeout_ms</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d1/dda/star__pin__validator_8h_source.html#l00110">star_pin_info_t::usage_count</a>, and <a class="el" href="../../d1/dda/star__pin__validator_8h_source.html#l00111">star_pin_info_t::users</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00481">iface_validate()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00492">iface_validate()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d2/dad/star__pin__validator_8c_a860b80eef110e1f314a05a8d60f09e18_cgraph.png" border="0" usemap="#ad2/dad/star__pin__validator_8c_a860b80eef110e1f314a05a8d60f09e18_cgraph" loading="lazy" alt=""/></div>
 <map name="ad2/dad/star__pin__validator_8c_a860b80eef110e1f314a05a8d60f09e18_cgraph" id="ad2/dad/star__pin__validator_8c_a860b80eef110e1f314a05a8d60f09e18_cgraph">
 <area shape="rect" title="Validate all registered pins for conflicts." alt="" coords="5,5,132,31"/>
-<area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#a4583345fc8acffd3934cbdc1572cd030" title="Initialize mutex if not already initialized (thread&#45;safe)." alt="" coords="180,5,261,31"/>
+<area shape="rect" href="../../d2/dad/star__pin__validator_8c.html#abb6171433f895757bf5f629a88181cf9" title="Initialize mutex if not already initialized (thread&#45;safe)." alt="" coords="180,5,310,31"/>
 <area shape="poly" title=" " alt="" coords="132,16,167,18,162,18,132,21"/>
 </map>
 </div>
@@ -743,9 +745,9 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00016">16</a> of file <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html">star_pin_validator.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00022">22</a> of file <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html">star_pin_validator.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00025">init_mutex()</a>, and <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00367">star_free_pin_validator()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00031">internal_init_mutex()</a>, and <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00377">star_free_pin_validator()</a>.</p>
 
 </div>
 </div>
@@ -769,9 +771,9 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00019">19</a> of file <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html">star_pin_validator.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00025">25</a> of file <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html">star_pin_validator.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00367">star_free_pin_validator()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00499">star_pin_validator_is_initialized()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00051">star_register_pin()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00181">star_unregister_pin()</a>, and <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00289">star_validate_pins()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00377">star_free_pin_validator()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00510">star_pin_validator_is_initialized()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00057">star_register_pin()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00189">star_unregister_pin()</a>, and <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00299">star_validate_pins()</a>.</p>
 
 </div>
 </div>
@@ -795,9 +797,61 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
+<p class="definition">Definition at line <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00019">19</a> of file <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html">star_pin_validator.c</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00031">internal_init_mutex()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00377">star_free_pin_validator()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00510">star_pin_validator_is_initialized()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00057">star_register_pin()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00189">star_unregister_pin()</a>, and <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00299">star_validate_pins()</a>.</p>
+
+</div>
+</div>
+<a id="a1eb247a5fd6d055d84fed0a2dfa6b78d" name="a1eb247a5fd6d055d84fed0a2dfa6b78d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1eb247a5fd6d055d84fed0a2dfa6b78d">&#9670;&#160;</a></span>s_pin_validator_mutex_timeout_ms</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const uint32_t s_pin_validator_mutex_timeout_ms = 5000</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
 <p class="definition">Definition at line <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00013">13</a> of file <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html">star_pin_validator.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00025">init_mutex()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00367">star_free_pin_validator()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00499">star_pin_validator_is_initialized()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00051">star_register_pin()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00181">star_unregister_pin()</a>, and <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00289">star_validate_pins()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00377">star_free_pin_validator()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00057">star_register_pin()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00189">star_unregister_pin()</a>, and <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00299">star_validate_pins()</a>.</p>
+
+</div>
+</div>
+<a id="a60c9aaafbe8e6a91752617c9648f3172" name="a60c9aaafbe8e6a91752617c9648f3172"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a60c9aaafbe8e6a91752617c9648f3172">&#9670;&#160;</a></span>s_pin_validator_query_timeout_ms</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const uint32_t s_pin_validator_query_timeout_ms = 100</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00016">16</a> of file <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html">star_pin_validator.c</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00510">star_pin_validator_is_initialized()</a>.</p>
 
 </div>
 </div>

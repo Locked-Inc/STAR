@@ -5,13 +5,15 @@ var star__bus__async_8c =
     [ "MAX_BUSES", "d4/db0/star__bus__async_8c.html#a71478560014bace34a1ebdeab8875365", null ],
     [ "async_operation_t", "d4/db0/star__bus__async_8c.html#a91a8ac0330c4aeed9e460689006aa54d", null ],
     [ "internal_async_worker_task", "d4/db0/star__bus__async_8c.html#a4d0d2de1a960495058f92a453f2ed8b5", null ],
+    [ "internal_check_timeout", "d4/db0/star__bus__async_8c.html#a80d6145ad43f474e0ad7478540658d74", null ],
+    [ "internal_complete_with_timeout", "d4/db0/star__bus__async_8c.html#aea0800b481c0f188d5fb91774fb341bf", null ],
     [ "internal_enqueue_operation", "d4/db0/star__bus__async_8c.html#a549b398e0cdf937b43dafb08eff30015", null ],
     [ "internal_ensure_worker_running", "d4/db0/star__bus__async_8c.html#ad533332fcb303302a416c723c43bbe0c", null ],
     [ "internal_execute_operation", "d4/db0/star__bus__async_8c.html#a01ee3f118825590cceebdbca4fd6807a", null ],
     [ "internal_get_async_state", "d4/db0/star__bus__async_8c.html#adb88694a49558c9b48bd63f224128c06", null ],
     [ "internal_init_global_state", "d4/db0/star__bus__async_8c.html#a707d67f86355b50c44e02c53addac8f3", null ],
     [ "star_async_cancel", "d4/db0/star__bus__async_8c.html#a1c57a63112b10ed5aaaf4b6290868838", null ],
-    [ "star_async_free_handle", "d4/db0/star__bus__async_8c.html#ae8d5cc127eb5e7165d84592001d0abfb", null ],
+    [ "star_async_free_handle", "d4/db0/star__bus__async_8c.html#aac2b563406dcc517f5cd05d02b90ce3c", null ],
     [ "star_async_get_result", "d4/db0/star__bus__async_8c.html#acafd8bd3d0469e8b59a5276707be539b", null ],
     [ "star_async_get_stats", "d4/db0/star__bus__async_8c.html#a0281ef2e08edf041e7282db92cef9120", null ],
     [ "star_async_get_status", "d4/db0/star__bus__async_8c.html#a2d1ed08041a75fbc8909aba9d14e80e8", null ],
@@ -28,5 +30,6 @@ var star__bus__async_8c =
     [ "g_global_mutex", "d4/db0/star__bus__async_8c.html#a8d35988a2d34110252bc1f38c532459b", null ],
     [ "g_init_spinlock", "d4/db0/star__bus__async_8c.html#a4db9777e905c77844013d2790bf34a19", null ],
     [ "g_num_async_states", "d4/db0/star__bus__async_8c.html#ab63bbcdb3c3616f7d7ca459e6d4f635c", null ],
+    [ "s_async_mutex_timeout_ms", "d4/db0/star__bus__async_8c.html#a267719dcb335716750e7ea8a779453f7", null ],
     [ "s_TAG", "d4/db0/star__bus__async_8c.html#a999e3dd103132afd3cd1856f477f2dbd", null ]
 ];

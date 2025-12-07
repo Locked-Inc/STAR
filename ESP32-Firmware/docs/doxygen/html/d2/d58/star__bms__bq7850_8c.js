@@ -1,6 +1,6 @@
 var star__bms__bq7850_8c =
 [
-    [ "BQ7850_MUTEX_TIMEOUT_MS", "d2/d58/star__bms__bq7850_8c.html#a485f17798462ca21058f121da362e850", null ],
+    [ "SAFE_APPEND", "d2/d58/star__bms__bq7850_8c.html#acbc74d3e0c5527eb9bfe1de9bd825cf1", null ],
     [ "internal_bq7850_manufacturer_access", "d2/d58/star__bms__bq7850_8c.html#aa9056151568739c998b9ccf957fee277", null ],
     [ "internal_bq7850_read_cell_voltage", "d2/d58/star__bms__bq7850_8c.html#a5ca840491d01cd97c99ee1bd4150427e", null ],
     [ "star_bms_bq7850_control_fets", "d2/d58/star__bms__bq7850_8c.html#aeb64af20373d57882e8dd29d9a251cf4", null ],
@@ -25,5 +25,6 @@ var star__bms__bq7850_8c =
     [ "star_bms_bq7850_reset", "d2/d58/star__bms__bq7850_8c.html#ac3685008241274955be00adb9304f26d", null ],
     [ "star_bms_bq7850_status_to_string", "d2/d58/star__bms__bq7850_8c.html#a36b66a0f6445de1c6445641eb7b26537", null ],
     [ "star_bms_bq7850_write_protection", "d2/d58/star__bms__bq7850_8c.html#ab14194a4cad45febb48718352688813d", null ],
+    [ "s_bq7850_mutex_timeout_ms", "d2/d58/star__bms__bq7850_8c.html#a0932e2095c6dbc43c6f7a4102c5e7522", null ],
     [ "s_TAG", "d2/d58/star__bms__bq7850_8c.html#a999e3dd103132afd3cd1856f477f2dbd", null ]
 ];
