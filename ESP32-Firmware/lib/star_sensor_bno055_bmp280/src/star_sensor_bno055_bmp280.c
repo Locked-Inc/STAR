@@ -266,7 +266,8 @@ esp_err_t star_sensor_imu_10dof_deinit(imu_10dof_handle_t* handle)
 
   // Acquire mutex before cleanup
   SemaphoreHandle_t mutex = handle->mutex;
-  if (mutex != NULL && xSemaphoreTake(mutex, pdMS_TO_TICKS(s_imu_10dof_mutex_timeout_ms)) != pdTRUE) {
+  if (mutex != NULL &&
+      xSemaphoreTake(mutex, pdMS_TO_TICKS(s_imu_10dof_mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGW(s_TAG, "Failed to acquire mutex for deinit, continuing anyway");
   }
 
@@ -299,7 +300,8 @@ esp_err_t star_sensor_imu_10dof_read(const imu_10dof_handle_t* handle, imu_10dof
 
   // Acquire mutex for thread-safe read
   SemaphoreHandle_t mutex = handle->mutex;
-  if (mutex == NULL || xSemaphoreTake(mutex, pdMS_TO_TICKS(s_imu_10dof_mutex_timeout_ms)) != pdTRUE) {
+  if (mutex == NULL ||
+      xSemaphoreTake(mutex, pdMS_TO_TICKS(s_imu_10dof_mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to acquire mutex for read");
     return ESP_ERR_TIMEOUT;
   }
@@ -457,7 +459,8 @@ esp_err_t star_sensor_imu_10dof_set_mode(imu_10dof_handle_t* handle, bno055_op_m
 
   // Acquire mutex
   SemaphoreHandle_t mutex = handle->mutex;
-  if (mutex == NULL || xSemaphoreTake(mutex, pdMS_TO_TICKS(s_imu_10dof_mutex_timeout_ms)) != pdTRUE) {
+  if (mutex == NULL ||
+      xSemaphoreTake(mutex, pdMS_TO_TICKS(s_imu_10dof_mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGE(s_TAG, "Failed to acquire mutex for set_mode");
     return ESP_ERR_TIMEOUT;
   }

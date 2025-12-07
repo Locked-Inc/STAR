@@ -164,8 +164,8 @@ Typedefs</h2></td></tr>
 Functions</h2></td></tr>
 <tr class="memitem:a331853a63aa2729d5a2a368c72aff6f2" id="r_a331853a63aa2729d5a2a368c72aff6f2"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a331853a63aa2729d5a2a368c72aff6f2">error_handler_init</a> (<a class="el" href="#a3833b4a57f7dde877bba1255d7d50b93">error_handler_t</a> *handler, uint32_t max_retries, uint32_t base_retry_delay, uint32_t max_retry_delay, esp_err_t(*reset_fn)(void *context), void *reset_context)</td></tr>
 <tr class="memdesc:a331853a63aa2729d5a2a368c72aff6f2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize an error handler.  <br /></td></tr>
-<tr class="memitem:a3a7dedd3275ece0e7f6029a11464c27d" id="r_a3a7dedd3275ece0e7f6029a11464c27d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3a7dedd3275ece0e7f6029a11464c27d">error_handler_deinit</a> (<a class="el" href="#a3833b4a57f7dde877bba1255d7d50b93">error_handler_t</a> *handler)</td></tr>
-<tr class="memdesc:a3a7dedd3275ece0e7f6029a11464c27d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deinitialize an error handler and release resources.  <br /></td></tr>
+<tr class="memitem:aaaf152f965c4c4e01c241f0801ce561a" id="r_aaaf152f965c4c4e01c241f0801ce561a"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aaaf152f965c4c4e01c241f0801ce561a">error_handler_deinit</a> (<a class="el" href="#a3833b4a57f7dde877bba1255d7d50b93">error_handler_t</a> *handler)</td></tr>
+<tr class="memdesc:aaaf152f965c4c4e01c241f0801ce561a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deinitialize an error handler and release resources.  <br /></td></tr>
 <tr class="memitem:acb049bacf435c371692461a57f434d41" id="r_acb049bacf435c371692461a57f434d41"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acb049bacf435c371692461a57f434d41">error_handler_record_error</a> (<a class="el" href="#a3833b4a57f7dde877bba1255d7d50b93">error_handler_t</a> *handler, esp_err_t error, const char *description, const char *file, int32_t line, const char *func)</td></tr>
 <tr class="memdesc:acb049bacf435c371692461a57f434d41"><td class="mdescLeft">&#160;</td><td class="mdescRight">Record an error and manage retry/reset logic.  <br /></td></tr>
 <tr class="memitem:a079645c8c76bf328f63c7d7a9ecc1697" id="r_a079645c8c76bf328f63c7d7a9ecc1697"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a079645c8c76bf328f63c7d7a9ecc1697">error_handler_can_retry</a> (<a class="el" href="#a3833b4a57f7dde877bba1255d7d50b93">error_handler_t</a> *handler)</td></tr>
@@ -184,6 +184,8 @@ Functions</h2></td></tr>
 <tr class="memdesc:a0c603b415b63ee1bd6bf532b5f315716"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create and allocate a default error interface with internal error handler.  <br /></td></tr>
 <tr class="memitem:aec5a90e8436436a2317a7c5e8b24414f" id="r_aec5a90e8436436a2317a7c5e8b24414f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aec5a90e8436436a2317a7c5e8b24414f">star_error_interface_destroy</a> (<a class="el" href="../../df/d84/star__error__interface_8h.html#a45a01bbdc613ba6c69401890e9eccbee">star_error_interface_t</a> *iface)</td></tr>
 <tr class="memdesc:aec5a90e8436436a2317a7c5e8b24414f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destroy an error interface created by <a class="el" href="#a0c603b415b63ee1bd6bf532b5f315716" title="Create and allocate a default error interface with internal error handler.">star_error_interface_create_default()</a>.  <br /></td></tr>
+<tr class="memitem:a983c8213a8523e7362c0b55bdaa296bc" id="r_a983c8213a8523e7362c0b55bdaa296bc"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a983c8213a8523e7362c0b55bdaa296bc">star_error_interface_cleanup</a> (<a class="el" href="../../df/d84/star__error__interface_8h.html#a45a01bbdc613ba6c69401890e9eccbee">star_error_interface_t</a> *error_iface, bool owns_handler)</td></tr>
+<tr class="memdesc:a983c8213a8523e7362c0b55bdaa296bc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Clean up an error interface that may own its handler.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Error handling with retry logic and exponential backoff. </p>
@@ -225,7 +227,7 @@ Functions</h2></td></tr>
 <div class="line">}</div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// Cleanup</span></div>
-<div class="line"><a class="code hl_function" href="#a3a7dedd3275ece0e7f6029a11464c27d">error_handler_deinit</a>(&amp;<a class="code hl_struct" href="../../d6/d7d/structerror__handler.html">error_handler</a>);</div>
+<div class="line"><a class="code hl_function" href="#aaaf152f965c4c4e01c241f0801ce561a">error_handler_deinit</a>(&amp;<a class="code hl_struct" href="../../d6/d7d/structerror__handler.html">error_handler</a>);</div>
 <div class="line"> </div>
 <div class="line"> </div>
 <div class="line"><span class="comment">// === With Custom Reset Function ===</span></div>
@@ -292,17 +294,17 @@ Functions</h2></td></tr>
 <div class="ttc" id="astar__bus__manager_8h_html_a2623a57b97d09ed1a3b0a0c012cd6119"><div class="ttname"><a href="../../d6/dcc/star__bus__manager_8h.html#a2623a57b97d09ed1a3b0a0c012cd6119">star_bus_manager_init</a></div><div class="ttdeci">esp_err_t star_bus_manager_init(star_bus_manager_t *manager, const char *tag, star_error_interface_t *error_iface, star_pin_interface_t *pin_iface)</div><div class="ttdoc">Initialize an I2C bus manager instance.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d60/star__bus__manager_8c_source.html#l00248">star_bus_manager.c:248</a></div></div>
 <div class="ttc" id="astar__error__handler_8c_html_afc3d101f633a076cc1ca84b85b6224b2"><div class="ttname"><a href="../../d7/d82/star__error__handler_8c.html#afc3d101f633a076cc1ca84b85b6224b2">TAG</a></div><div class="ttdeci">#define TAG</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d82/star__error__handler_8c_source.html#l00012">star_error_handler.c:12</a></div></div>
 <div class="ttc" id="astar__error__handler_8h_html"><div class="ttname"><a href="../../d4/d59/star__error__handler_8h.html">star_error_handler.h</a></div><div class="ttdoc">Error handling with retry logic and exponential backoff.</div></div>
-<div class="ttc" id="astar__error__handler_8h_html_a079645c8c76bf328f63c7d7a9ecc1697"><div class="ttname"><a href="#a079645c8c76bf328f63c7d7a9ecc1697">error_handler_can_retry</a></div><div class="ttdeci">bool error_handler_can_retry(error_handler_t *handler)</div><div class="ttdoc">Check if a retry should be attempted.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d82/star__error__handler_8c_source.html#l00235">star_error_handler.c:235</a></div></div>
-<div class="ttc" id="astar__error__handler_8h_html_a0c603b415b63ee1bd6bf532b5f315716"><div class="ttname"><a href="#a0c603b415b63ee1bd6bf532b5f315716">star_error_interface_create_default</a></div><div class="ttdeci">star_error_interface_t * star_error_interface_create_default(void)</div><div class="ttdoc">Create and allocate a default error interface with internal error handler.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d82/star__error__handler_8c_source.html#l00408">star_error_handler.c:408</a></div></div>
-<div class="ttc" id="astar__error__handler_8h_html_a1632e40ebb7509611a0513c0e6bdbb46"><div class="ttname"><a href="#a1632e40ebb7509611a0513c0e6bdbb46">error_handler_destroy_default</a></div><div class="ttdeci">void error_handler_destroy_default(error_handler_t *handler)</div><div class="ttdoc">Destroy an error handler created by error_handler_create_default() or error_handler_create_custom().</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d82/star__error__handler_8c_source.html#l00393">star_error_handler.c:393</a></div></div>
+<div class="ttc" id="astar__error__handler_8h_html_a079645c8c76bf328f63c7d7a9ecc1697"><div class="ttname"><a href="#a079645c8c76bf328f63c7d7a9ecc1697">error_handler_can_retry</a></div><div class="ttdeci">bool error_handler_can_retry(error_handler_t *handler)</div><div class="ttdoc">Check if a retry should be attempted.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d82/star__error__handler_8c_source.html#l00240">star_error_handler.c:240</a></div></div>
+<div class="ttc" id="astar__error__handler_8h_html_a0c603b415b63ee1bd6bf532b5f315716"><div class="ttname"><a href="#a0c603b415b63ee1bd6bf532b5f315716">star_error_interface_create_default</a></div><div class="ttdeci">star_error_interface_t * star_error_interface_create_default(void)</div><div class="ttdoc">Create and allocate a default error interface with internal error handler.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d82/star__error__handler_8c_source.html#l00413">star_error_handler.c:413</a></div></div>
+<div class="ttc" id="astar__error__handler_8h_html_a1632e40ebb7509611a0513c0e6bdbb46"><div class="ttname"><a href="#a1632e40ebb7509611a0513c0e6bdbb46">error_handler_destroy_default</a></div><div class="ttdeci">void error_handler_destroy_default(error_handler_t *handler)</div><div class="ttdoc">Destroy an error handler created by error_handler_create_default() or error_handler_create_custom().</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d82/star__error__handler_8c_source.html#l00398">star_error_handler.c:398</a></div></div>
 <div class="ttc" id="astar__error__handler_8h_html_a2f89df48f4e09765e38766404afac12e"><div class="ttname"><a href="#a2f89df48f4e09765e38766404afac12e">RECORD_ERROR</a></div><div class="ttdeci">#define RECORD_ERROR(handler, code, desc)</div><div class="ttdoc">Record an error and manage retry/reset logic.</div><div class="ttdef"><b>Definition</b> <a href="../../d4/d59/star__error__handler_8h_source.html#l00135">star_error_handler.h:135</a></div></div>
-<div class="ttc" id="astar__error__handler_8h_html_a331853a63aa2729d5a2a368c72aff6f2"><div class="ttname"><a href="#a331853a63aa2729d5a2a368c72aff6f2">error_handler_init</a></div><div class="ttdeci">esp_err_t error_handler_init(error_handler_t *handler, uint32_t max_retries, uint32_t base_retry_delay, uint32_t max_retry_delay, esp_err_t(*reset_fn)(void *context), void *reset_context)</div><div class="ttdoc">Initialize an error handler.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d82/star__error__handler_8c_source.html#l00017">star_error_handler.c:17</a></div></div>
-<div class="ttc" id="astar__error__handler_8h_html_a37c70fed0d10c260212eb781ca4e5862"><div class="ttname"><a href="#a37c70fed0d10c260212eb781ca4e5862">error_handler_create_default</a></div><div class="ttdeci">error_handler_t * error_handler_create_default(void)</div><div class="ttdoc">Create and initialize a default error handler with sensible defaults.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d82/star__error__handler_8c_source.html#l00348">star_error_handler.c:348</a></div></div>
+<div class="ttc" id="astar__error__handler_8h_html_a331853a63aa2729d5a2a368c72aff6f2"><div class="ttname"><a href="#a331853a63aa2729d5a2a368c72aff6f2">error_handler_init</a></div><div class="ttdeci">esp_err_t error_handler_init(error_handler_t *handler, uint32_t max_retries, uint32_t base_retry_delay, uint32_t max_retry_delay, esp_err_t(*reset_fn)(void *context), void *reset_context)</div><div class="ttdoc">Initialize an error handler.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d82/star__error__handler_8c_source.html#l00020">star_error_handler.c:20</a></div></div>
+<div class="ttc" id="astar__error__handler_8h_html_a37c70fed0d10c260212eb781ca4e5862"><div class="ttname"><a href="#a37c70fed0d10c260212eb781ca4e5862">error_handler_create_default</a></div><div class="ttdeci">error_handler_t * error_handler_create_default(void)</div><div class="ttdoc">Create and initialize a default error handler with sensible defaults.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d82/star__error__handler_8c_source.html#l00353">star_error_handler.c:353</a></div></div>
 <div class="ttc" id="astar__error__handler_8h_html_a3833b4a57f7dde877bba1255d7d50b93"><div class="ttname"><a href="#a3833b4a57f7dde877bba1255d7d50b93">error_handler_t</a></div><div class="ttdeci">struct error_handler error_handler_t</div><div class="ttdoc">Error handler structure for managing error states and recovery.</div></div>
-<div class="ttc" id="astar__error__handler_8h_html_a3a7dedd3275ece0e7f6029a11464c27d"><div class="ttname"><a href="#a3a7dedd3275ece0e7f6029a11464c27d">error_handler_deinit</a></div><div class="ttdeci">void error_handler_deinit(error_handler_t *handler)</div><div class="ttdoc">Deinitialize an error handler and release resources.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d82/star__error__handler_8c_source.html#l00059">star_error_handler.c:59</a></div></div>
-<div class="ttc" id="astar__error__handler_8h_html_adb10b93a13ce155a3e5c2aa2f4b2d543"><div class="ttname"><a href="#adb10b93a13ce155a3e5c2aa2f4b2d543">error_handler_get_interface</a></div><div class="ttdeci">void error_handler_get_interface(star_error_interface_t *iface, error_handler_t *handler)</div><div class="ttdoc">Create an interface adapter for the error handler.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d82/star__error__handler_8c_source.html#l00324">star_error_handler.c:324</a></div></div>
-<div class="ttc" id="astar__error__handler_8h_html_adcd860e401f2ab4c5c907c87fdbba7d0"><div class="ttname"><a href="#adcd860e401f2ab4c5c907c87fdbba7d0">error_handler_reset_state</a></div><div class="ttdeci">esp_err_t error_handler_reset_state(error_handler_t *handler)</div><div class="ttdoc">Reset the error handler state.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d82/star__error__handler_8c_source.html#l00264">star_error_handler.c:264</a></div></div>
-<div class="ttc" id="astar__error__handler_8h_html_aec5a90e8436436a2317a7c5e8b24414f"><div class="ttname"><a href="#aec5a90e8436436a2317a7c5e8b24414f">star_error_interface_destroy</a></div><div class="ttdeci">void star_error_interface_destroy(star_error_interface_t *iface)</div><div class="ttdoc">Destroy an error interface created by star_error_interface_create_default().</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d82/star__error__handler_8c_source.html#l00432">star_error_handler.c:432</a></div></div>
+<div class="ttc" id="astar__error__handler_8h_html_aaaf152f965c4c4e01c241f0801ce561a"><div class="ttname"><a href="#aaaf152f965c4c4e01c241f0801ce561a">error_handler_deinit</a></div><div class="ttdeci">esp_err_t error_handler_deinit(error_handler_t *handler)</div><div class="ttdoc">Deinitialize an error handler and release resources.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d82/star__error__handler_8c_source.html#l00062">star_error_handler.c:62</a></div></div>
+<div class="ttc" id="astar__error__handler_8h_html_adb10b93a13ce155a3e5c2aa2f4b2d543"><div class="ttname"><a href="#adb10b93a13ce155a3e5c2aa2f4b2d543">error_handler_get_interface</a></div><div class="ttdeci">void error_handler_get_interface(star_error_interface_t *iface, error_handler_t *handler)</div><div class="ttdoc">Create an interface adapter for the error handler.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d82/star__error__handler_8c_source.html#l00329">star_error_handler.c:329</a></div></div>
+<div class="ttc" id="astar__error__handler_8h_html_adcd860e401f2ab4c5c907c87fdbba7d0"><div class="ttname"><a href="#adcd860e401f2ab4c5c907c87fdbba7d0">error_handler_reset_state</a></div><div class="ttdeci">esp_err_t error_handler_reset_state(error_handler_t *handler)</div><div class="ttdoc">Reset the error handler state.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d82/star__error__handler_8c_source.html#l00269">star_error_handler.c:269</a></div></div>
+<div class="ttc" id="astar__error__handler_8h_html_aec5a90e8436436a2317a7c5e8b24414f"><div class="ttname"><a href="#aec5a90e8436436a2317a7c5e8b24414f">star_error_interface_destroy</a></div><div class="ttdeci">void star_error_interface_destroy(star_error_interface_t *iface)</div><div class="ttdoc">Destroy an error interface created by star_error_interface_create_default().</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d82/star__error__handler_8c_source.html#l00437">star_error_handler.c:437</a></div></div>
 <div class="ttc" id="astar__error__interface_8h_html_a45a01bbdc613ba6c69401890e9eccbee"><div class="ttname"><a href="../../df/d84/star__error__interface_8h.html#a45a01bbdc613ba6c69401890e9eccbee">star_error_interface_t</a></div><div class="ttdeci">struct star_error_interface star_error_interface_t</div><div class="ttdoc">Error handler interface - abstract operations for error handling.</div></div>
 <div class="ttc" id="astructerror__handler_html"><div class="ttname"><a href="../../d6/d7d/structerror__handler.html">error_handler</a></div><div class="ttdoc">Error handler structure for managing error states and recovery.</div><div class="ttdef"><b>Definition</b> <a href="../../d4/d59/star__error__handler_8h_source.html#l00150">star_error_handler.h:150</a></div></div>
 </div><!-- fragment --> 
@@ -385,45 +387,45 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if a retry is possible and should be attempted, false if max retries reached, handler is NULL, not in error state, or mutex fails. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00235">235</a> of file <a class="el" href="../../d7/d82/star__error__handler_8c_source.html">star_error_handler.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00240">240</a> of file <a class="el" href="../../d7/d82/star__error__handler_8c_source.html">star_error_handler.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00153">error_handler::current_retry</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00158">error_handler::in_error_state</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00152">error_handler::max_retries</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00160">error_handler::mutex</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00012">TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00153">error_handler::current_retry</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00158">error_handler::in_error_state</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00152">error_handler::max_retries</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00160">error_handler::mutex</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00015">s_error_handler_mutex_timeout_ms</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00012">TAG</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00312">internal_iface_can_retry()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00317">internal_iface_can_retry()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d4/d59/star__error__handler_8h_a079645c8c76bf328f63c7d7a9ecc1697_icgraph.png" border="0" usemap="#ad4/d59/star__error__handler_8h_a079645c8c76bf328f63c7d7a9ecc1697_icgraph" loading="lazy" alt=""/></div>
 <map name="ad4/d59/star__error__handler_8h_a079645c8c76bf328f63c7d7a9ecc1697_icgraph" id="ad4/d59/star__error__handler_8h_a079645c8c76bf328f63c7d7a9ecc1697_icgraph">
-<area shape="rect" title="Check if a retry should be attempted." alt="" coords="1339,137,1496,163"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#ab75fd15cd19b87cccc39e074b1de6ea7" title=" " alt="" coords="1164,129,1291,170"/>
-<area shape="poly" title=" " alt="" coords="1320,150,1291,152,1291,147,1326,150"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#adb10b93a13ce155a3e5c2aa2f4b2d543" title="Create an interface adapter for the error handler." alt="" coords="938,137,1116,163"/>
-<area shape="poly" title=" " alt="" coords="1146,150,1117,152,1117,147,1152,150"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,165,83,191"/>
-<area shape="poly" title=" " alt="" coords="1002,125,954,81,923,58,889,40,844,24,806,14,737,8,666,12,576,15,376,15,326,20,276,33,229,53,184,76,109,127,61,167,57,163,106,122,182,72,226,48,275,28,325,15,376,10,576,10,666,6,737,3,806,9,846,19,891,35,926,54,958,77,1008,126"/>
-<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="726,50,874,76"/>
-<area shape="poly" title=" " alt="" coords="983,130,889,91,853,79,853,74,891,86,988,130"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a0c603b415b63ee1bd6bf532b5f315716" title="Create and allocate a default error interface with internal error handler." alt="" coords="733,100,866,141"/>
-<area shape="poly" title=" " alt="" coords="920,136,867,132,867,126,925,136"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#afd5878b21fda797877bd29036adcbd58" title="Initialize HC&#45;SR04 sensor." alt="" coords="720,165,880,191"/>
-<area shape="poly" title=" " alt="" coords="920,163,880,171,880,165,925,162"/>
-<area shape="rect" href="../../d1/dfc/star__sensor__bno055__bmp280_8c.html#a722083a7cb967139e04c4e0e722895f8" title="Initialize 10&#45;DOF IMU (BNO055 + BMP280)." alt="" coords="710,214,890,240"/>
-<area shape="poly" title=" " alt="" coords="983,168,891,206,855,216,854,211,889,201,978,170"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="715,264,884,289"/>
-<area shape="poly" title=" " alt="" coords="1003,173,953,216,891,255,864,266,862,260,889,250,950,212,998,175"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="488,108,662,133"/>
-<area shape="poly" title=" " alt="" coords="715,121,662,123,662,118,721,120"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afa22a6110eba0db527b95b8e2ce3a746" title=" " alt="" coords="505,165,645,191"/>
-<area shape="poly" title=" " alt="" coords="702,178,646,180,646,175,707,178"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="315,165,440,191"/>
-<area shape="poly" title=" " alt="" coords="487,178,441,180,441,175,492,177"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,165,267,191"/>
-<area shape="poly" title=" " alt="" coords="297,178,268,180,267,175,302,177"/>
-<area shape="poly" title=" " alt="" coords="113,179,84,180,82,175,117,176"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#ad6745a540d038c1266117bbcc686713b" title=" " alt="" coords="316,216,440,241"/>
-<area shape="poly" title=" " alt="" coords="697,266,440,238,440,233,702,265"/>
-<area shape="poly" title=" " alt="" coords="297,225,218,219,130,206,83,193,83,188,131,201,218,214,303,224"/>
+<area shape="rect" title="Check if a retry should be attempted." alt="" coords="1339,112,1496,138"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#ab75fd15cd19b87cccc39e074b1de6ea7" title=" " alt="" coords="1164,105,1291,145"/>
+<area shape="poly" title=" " alt="" coords="1320,125,1291,128,1291,122,1326,125"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#adb10b93a13ce155a3e5c2aa2f4b2d543" title="Create an interface adapter for the error handler." alt="" coords="938,112,1116,138"/>
+<area shape="poly" title=" " alt="" coords="1146,125,1117,128,1117,122,1152,125"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,147,83,173"/>
+<area shape="poly" title=" " alt="" coords="997,101,949,68,920,52,889,38,804,15,736,9,576,13,376,13,327,17,279,29,232,46,188,67,113,112,63,148,60,144,110,108,185,62,230,41,277,24,326,12,376,8,576,8,736,3,805,10,891,33,922,47,952,64,1002,102"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a0c603b415b63ee1bd6bf532b5f315716" title="Create and allocate a default error interface with internal error handler." alt="" coords="733,47,866,88"/>
+<area shape="poly" title=" " alt="" coords="956,108,867,87,867,82,961,108"/>
+<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#afd5878b21fda797877bd29036adcbd58" title="Initialize HC&#45;SR04 sensor." alt="" coords="720,112,880,138"/>
+<area shape="poly" title=" " alt="" coords="920,125,880,128,880,122,925,125"/>
+<area shape="rect" href="../../d1/dfc/star__sensor__bno055__bmp280_8c.html#abef5a4f32095d020c6dddc96d6bbdd5d" title="Initialize 10&#45;DOF IMU (BNO055 + BMP280)." alt="" coords="710,162,890,187"/>
+<area shape="poly" title=" " alt="" coords="952,141,863,164,862,158,947,142"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="715,211,884,237"/>
+<area shape="poly" title=" " alt="" coords="995,146,946,176,891,202,859,213,858,208,889,197,944,171,990,147"/>
+<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="501,48,649,74"/>
+<area shape="poly" title=" " alt="" coords="715,66,650,66,649,61,721,65"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="488,98,662,123"/>
+<area shape="poly" title=" " alt="" coords="716,84,647,100,646,94,721,83"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afa22a6110eba0db527b95b8e2ce3a746" title=" " alt="" coords="505,147,645,173"/>
+<area shape="poly" title=" " alt="" coords="707,139,646,151,645,146,702,140"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="315,147,440,173"/>
+<area shape="poly" title=" " alt="" coords="487,160,441,162,441,157,492,159"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,147,267,173"/>
+<area shape="poly" title=" " alt="" coords="297,160,268,162,267,157,302,159"/>
+<area shape="poly" title=" " alt="" coords="113,161,84,162,82,157,117,158"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ad6745a540d038c1266117bbcc686713b" title=" " alt="" coords="316,198,440,223"/>
+<area shape="poly" title=" " alt="" coords="697,221,440,215,440,210,702,220"/>
+<area shape="poly" title=" " alt="" coords="297,206,218,201,130,188,83,175,83,170,131,182,218,196,303,206"/>
 </map>
 </div>
 
@@ -477,11 +479,11 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Pointer to newly created error handler, or NULL on allocation or initialization failure. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00354">354</a> of file <a class="el" href="../../d7/d82/star__error__handler_8c_source.html">star_error_handler.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00359">359</a> of file <a class="el" href="../../d7/d82/star__error__handler_8c_source.html">star_error_handler.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00017">error_handler_init()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00012">TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00020">error_handler_init()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00012">TAG</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00158">app_main()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00348">error_handler_create_default()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00158">app_main()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00353">error_handler_create_default()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -497,33 +499,33 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d4/d59/star__error__handler_8h_a4fbf7f5d1c862bd91f3ece2812b45b03_icgraph.png" border="0" usemap="#ad4/d59/star__error__handler_8h_a4fbf7f5d1c862bd91f3ece2812b45b03_icgraph" loading="lazy" alt=""/></div>
 <map name="ad4/d59/star__error__handler_8h_a4fbf7f5d1c862bd91f3ece2812b45b03_icgraph" id="ad4/d59/star__error__handler_8h_a4fbf7f5d1c862bd91f3ece2812b45b03_icgraph">
-<area shape="rect" title="Create and initialize an error handler with custom configuration." alt="" coords="1125,68,1265,108"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,158,83,184"/>
-<area shape="poly" title=" " alt="" coords="1116,62,1051,46,972,27,887,13,801,8,376,8,326,13,276,26,229,46,184,69,109,120,61,160,57,156,106,115,182,65,226,41,275,21,325,8,376,3,801,3,887,8,973,22,1052,41,1121,62"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a37c70fed0d10c260212eb781ca4e5862" title="Create and initialize a default error handler with sensible defaults." alt="" coords="938,121,1077,162"/>
-<area shape="poly" title=" " alt="" coords="1113,112,1078,124,1077,119,1108,113"/>
-<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="726,43,874,69"/>
-<area shape="poly" title=" " alt="" coords="954,113,889,84,855,72,855,67,891,79,960,113"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a0c603b415b63ee1bd6bf532b5f315716" title="Create and allocate a default error interface with internal error handler." alt="" coords="733,93,866,134"/>
-<area shape="poly" title=" " alt="" coords="920,130,867,125,867,120,925,130"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#afd5878b21fda797877bd29036adcbd58" title="Initialize HC&#45;SR04 sensor." alt="" coords="720,158,880,184"/>
-<area shape="poly" title=" " alt="" coords="925,153,881,162,880,157,920,154"/>
-<area shape="rect" href="../../d1/dfc/star__sensor__bno055__bmp280_8c.html#a722083a7cb967139e04c4e0e722895f8" title="Initialize 10&#45;DOF IMU (BNO055 + BMP280)." alt="" coords="710,207,890,233"/>
-<area shape="poly" title=" " alt="" coords="956,168,891,198,858,209,857,204,889,194,950,169"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="715,256,884,282"/>
-<area shape="poly" title=" " alt="" coords="981,172,941,213,891,248,866,259,865,253,889,243,937,209,976,174"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="488,100,662,126"/>
-<area shape="poly" title=" " alt="" coords="715,114,662,116,662,111,721,113"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afa22a6110eba0db527b95b8e2ce3a746" title=" " alt="" coords="505,158,645,184"/>
-<area shape="poly" title=" " alt="" coords="702,171,646,173,646,168,707,170"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="315,158,440,184"/>
-<area shape="poly" title=" " alt="" coords="487,171,441,173,441,168,492,170"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,158,267,184"/>
-<area shape="poly" title=" " alt="" coords="297,171,268,173,267,168,302,170"/>
-<area shape="poly" title=" " alt="" coords="113,172,84,173,82,168,117,169"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#ad6745a540d038c1266117bbcc686713b" title=" " alt="" coords="316,232,440,258"/>
-<area shape="poly" title=" " alt="" coords="697,264,440,252,440,246,702,263"/>
-<area shape="poly" title=" " alt="" coords="299,234,130,199,83,185,83,180,131,193,302,230"/>
+<area shape="rect" title="Create and initialize an error handler with custom configuration." alt="" coords="1125,42,1265,83"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,142,83,168"/>
+<area shape="poly" title=" " alt="" coords="1108,43,966,21,884,12,801,8,376,8,327,12,279,24,232,41,188,62,113,107,63,143,60,139,110,103,185,57,230,36,277,19,326,7,376,3,801,3,884,6,967,15,1113,43"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a37c70fed0d10c260212eb781ca4e5862" title="Create and initialize a default error handler with sensible defaults." alt="" coords="938,100,1077,140"/>
+<area shape="poly" title=" " alt="" coords="1115,87,1077,102,1076,96,1110,89"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a0c603b415b63ee1bd6bf532b5f315716" title="Create and allocate a default error interface with internal error handler." alt="" coords="733,42,866,83"/>
+<area shape="poly" title=" " alt="" coords="920,97,867,84,867,78,925,97"/>
+<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#afd5878b21fda797877bd29036adcbd58" title="Initialize HC&#45;SR04 sensor." alt="" coords="720,107,880,133"/>
+<area shape="poly" title=" " alt="" coords="920,120,880,123,880,117,925,120"/>
+<area shape="rect" href="../../d1/dfc/star__sensor__bno055__bmp280_8c.html#abef5a4f32095d020c6dddc96d6bbdd5d" title="Initialize 10&#45;DOF IMU (BNO055 + BMP280)." alt="" coords="710,156,890,182"/>
+<area shape="poly" title=" " alt="" coords="926,140,858,158,857,153,920,140"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="715,206,884,232"/>
+<area shape="poly" title=" " alt="" coords="970,149,932,176,891,197,861,208,860,203,889,192,929,171,964,150"/>
+<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="501,43,649,69"/>
+<area shape="poly" title=" " alt="" coords="715,61,650,61,649,56,721,60"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="488,92,662,118"/>
+<area shape="poly" title=" " alt="" coords="716,79,647,95,646,89,721,78"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afa22a6110eba0db527b95b8e2ce3a746" title=" " alt="" coords="505,142,645,168"/>
+<area shape="poly" title=" " alt="" coords="707,134,646,146,645,141,702,135"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="315,142,440,168"/>
+<area shape="poly" title=" " alt="" coords="487,155,441,157,441,152,492,154"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,142,267,168"/>
+<area shape="poly" title=" " alt="" coords="297,155,268,157,267,152,302,154"/>
+<area shape="poly" title=" " alt="" coords="113,156,84,157,82,152,117,153"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ad6745a540d038c1266117bbcc686713b" title=" " alt="" coords="316,196,440,222"/>
+<area shape="poly" title=" " alt="" coords="697,217,440,213,440,208,702,216"/>
+<area shape="poly" title=" " alt="" coords="297,204,218,197,130,183,83,170,83,165,131,177,218,192,303,203"/>
 </map>
 </div>
 
@@ -554,11 +556,11 @@ Here is the caller graph for this function:</div>
 <p>The returned error handler must be freed by the caller using <a class="el" href="#a1632e40ebb7509611a0513c0e6bdbb46" title="Destroy an error handler created by error_handler_create_default() or error_handler_create_custom().">error_handler_destroy_default()</a>. Use this when you need a simple error handler without custom configuration.</p>
 <dl class="section return"><dt>Returns</dt><dd>Pointer to newly created error handler, or NULL on allocation or initialization failure. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00348">348</a> of file <a class="el" href="../../d7/d82/star__error__handler_8c_source.html">star_error_handler.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00353">353</a> of file <a class="el" href="../../d7/d82/star__error__handler_8c_source.html">star_error_handler.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00354">error_handler_create_custom()</a>.</p>
+<p class="reference">References <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00359">error_handler_create_custom()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00079">star_bms_bq7850_init()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00408">star_error_interface_create_default()</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00036">star_sensor_hcsr04_init()</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00031">star_sensor_imu_10dof_init()</a>, and <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00171">star_sensor_pca9685_init()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00413">star_error_interface_create_default()</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00041">star_sensor_hcsr04_init()</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00028">star_sensor_imu_10dof_init()</a>, and <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00171">star_sensor_pca9685_init()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -576,43 +578,43 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d4/d59/star__error__handler_8h_a37c70fed0d10c260212eb781ca4e5862_icgraph.png" border="0" usemap="#ad4/d59/star__error__handler_8h_a37c70fed0d10c260212eb781ca4e5862_icgraph" loading="lazy" alt=""/></div>
 <map name="ad4/d59/star__error__handler_8h_a37c70fed0d10c260212eb781ca4e5862_icgraph" id="ad4/d59/star__error__handler_8h_a37c70fed0d10c260212eb781ca4e5862_icgraph">
-<area shape="rect" title="Create and initialize a default error handler with sensible defaults." alt="" coords="938,112,1077,153"/>
-<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="726,5,874,31"/>
-<area shape="poly" title=" " alt="" coords="970,101,933,73,889,46,860,34,860,29,891,41,936,69,976,102"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a0c603b415b63ee1bd6bf532b5f315716" title="Create and allocate a default error interface with internal error handler." alt="" coords="733,55,866,96"/>
-<area shape="poly" title=" " alt="" coords="920,109,867,97,867,91,925,110"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#afd5878b21fda797877bd29036adcbd58" title="Initialize HC&#45;SR04 sensor." alt="" coords="720,120,880,146"/>
-<area shape="poly" title=" " alt="" coords="920,133,880,135,880,130,925,133"/>
-<area shape="rect" href="../../d1/dfc/star__sensor__bno055__bmp280_8c.html#a722083a7cb967139e04c4e0e722895f8" title="Initialize 10&#45;DOF IMU (BNO055 + BMP280)." alt="" coords="710,169,890,195"/>
-<area shape="poly" title=" " alt="" coords="926,152,858,171,857,166,920,153"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="715,219,884,244"/>
-<area shape="poly" title=" " alt="" coords="970,162,932,188,891,210,861,221,860,215,889,205,929,184,964,163"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="488,63,662,88"/>
-<area shape="poly" title=" " alt="" coords="715,76,662,78,662,73,721,75"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afa22a6110eba0db527b95b8e2ce3a746" title=" " alt="" coords="505,144,645,170"/>
-<area shape="poly" title=" " alt="" coords="702,143,646,152,645,147,707,143"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="315,145,440,171"/>
-<area shape="poly" title=" " alt="" coords="487,158,441,160,441,155,492,157"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,147,267,172"/>
-<area shape="poly" title=" " alt="" coords="297,159,268,162,267,156,302,158"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,175,83,200"/>
-<area shape="poly" title=" " alt="" coords="113,176,84,183,82,178,118,173"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#ad6745a540d038c1266117bbcc686713b" title=" " alt="" coords="316,205,440,231"/>
-<area shape="poly" title=" " alt="" coords="697,229,440,223,440,217,702,228"/>
-<area shape="poly" title=" " alt="" coords="299,214,83,194,83,188,301,209"/>
+<area shape="rect" title="Create and initialize a default error handler with sensible defaults." alt="" coords="938,100,1077,141"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a0c603b415b63ee1bd6bf532b5f315716" title="Create and allocate a default error interface with internal error handler." alt="" coords="733,18,866,58"/>
+<area shape="poly" title=" " alt="" coords="944,93,889,73,861,62,861,57,891,68,949,94"/>
+<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#afd5878b21fda797877bd29036adcbd58" title="Initialize HC&#45;SR04 sensor." alt="" coords="720,83,880,108"/>
+<area shape="poly" title=" " alt="" coords="920,110,880,108,880,103,925,110"/>
+<area shape="rect" href="../../d1/dfc/star__sensor__bno055__bmp280_8c.html#abef5a4f32095d020c6dddc96d6bbdd5d" title="Initialize 10&#45;DOF IMU (BNO055 + BMP280)." alt="" coords="710,132,890,158"/>
+<area shape="poly" title=" " alt="" coords="925,130,891,137,890,132,920,131"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="715,181,884,207"/>
+<area shape="poly" title=" " alt="" coords="950,147,891,173,856,183,855,178,889,168,944,148"/>
+<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="501,5,649,31"/>
+<area shape="poly" title=" " alt="" coords="715,31,650,27,649,22,721,31"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="488,55,662,80"/>
+<area shape="poly" title=" " alt="" coords="715,49,662,59,661,54,721,48"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afa22a6110eba0db527b95b8e2ce3a746" title=" " alt="" coords="505,104,645,130"/>
+<area shape="poly" title=" " alt="" coords="702,105,646,113,645,108,707,104"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="315,104,440,130"/>
+<area shape="poly" title=" " alt="" coords="487,117,441,119,441,114,492,117"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,104,267,130"/>
+<area shape="poly" title=" " alt="" coords="297,117,268,119,267,114,302,116"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,131,83,156"/>
+<area shape="poly" title=" " alt="" coords="113,133,84,139,82,134,118,130"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ad6745a540d038c1266117bbcc686713b" title=" " alt="" coords="316,157,440,183"/>
+<area shape="poly" title=" " alt="" coords="697,189,440,176,440,171,702,188"/>
+<area shape="poly" title=" " alt="" coords="299,167,83,149,83,144,300,161"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="a3a7dedd3275ece0e7f6029a11464c27d" name="a3a7dedd3275ece0e7f6029a11464c27d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3a7dedd3275ece0e7f6029a11464c27d">&#9670;&#160;</a></span>error_handler_deinit()</h2>
+<a id="aaaf152f965c4c4e01c241f0801ce561a" name="aaaf152f965c4c4e01c241f0801ce561a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aaaf152f965c4c4e01c241f0801ce561a">&#9670;&#160;</a></span>error_handler_deinit()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void error_handler_deinit </td>
+          <td class="memname">esp_err_t error_handler_deinit </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="#a3833b4a57f7dde877bba1255d7d50b93">error_handler_t</a> *</td>          <td class="paramname"><span class="paramname"><em>handler</em></span></td><td>)</td>
           <td></td>
@@ -621,73 +623,79 @@ Here is the caller graph for this function:</div>
 </div><div class="memdoc">
 
 <p>Deinitialize an error handler and release resources. </p>
-<p>Deletes the mutex associated with the error handler. Safe to call even if handler or mutex is NULL or already deinitialized.</p>
+<p>Deletes the mutex associated with the error handler after acquiring it to ensure no other operations are in progress.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
     <tr><td class="paramdir">[in,out]</td><td class="paramname">handler</td><td>Pointer to the error handler structure to deinitialize. </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>ESP_OK if successful, ESP_ERR_INVALID_ARG if handler is NULL, ESP_ERR_INVALID_STATE if mutex is NULL, ESP_ERR_TIMEOUT if mutex could not be acquired within timeout. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00059">59</a> of file <a class="el" href="../../d7/d82/star__error__handler_8c_source.html">star_error_handler.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00062">62</a> of file <a class="el" href="../../d7/d82/star__error__handler_8c_source.html">star_error_handler.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00160">error_handler::mutex</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00159">error_handler::reset_context</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00162">error_handler::reset_fn</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00012">TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00160">error_handler::mutex</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00159">error_handler::reset_context</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00162">error_handler::reset_fn</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00015">s_error_handler_mutex_timeout_ms</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00012">TAG</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00393">error_handler_destroy_default()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00398">error_handler_destroy_default()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d4/d59/star__error__handler_8h_a3a7dedd3275ece0e7f6029a11464c27d_icgraph.png" border="0" usemap="#ad4/d59/star__error__handler_8h_a3a7dedd3275ece0e7f6029a11464c27d_icgraph" loading="lazy" alt=""/></div>
-<map name="ad4/d59/star__error__handler_8h_a3a7dedd3275ece0e7f6029a11464c27d_icgraph" id="ad4/d59/star__error__handler_8h_a3a7dedd3275ece0e7f6029a11464c27d_icgraph">
-<area shape="rect" title="Deinitialize an error handler and release resources." alt="" coords="1141,317,1276,343"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a1632e40ebb7509611a0513c0e6bdbb46" title="Destroy an error handler created by error_handler_create_default() or error_handler_create_custom()." alt="" coords="947,310,1093,350"/>
-<area shape="poly" title=" " alt="" coords="1123,330,1094,333,1093,327,1129,330"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,458,83,484"/>
-<area shape="poly" title=" " alt="" coords="1013,293,1002,239,982,172,967,138,948,105,925,76,897,52,857,28,821,14,787,9,752,9,678,20,635,25,585,27,385,27,345,31,308,43,274,60,242,84,214,112,187,144,142,215,106,289,79,360,51,459,46,457,74,358,101,287,137,212,183,141,210,108,239,80,271,56,306,38,344,26,385,22,585,22,634,20,677,14,752,4,787,3,822,9,860,23,901,48,929,73,952,102,971,135,987,170,1007,238,1018,295"/>
-<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a02709f23d96dc7f7c34b7a23f86888fc" title="Deinitialize BQ7850 BMS device handle." alt="" coords="728,62,890,88"/>
-<area shape="poly" title=" " alt="" coords="1008,294,993,251,971,198,939,146,919,122,897,101,882,91,882,86,901,97,923,118,943,143,975,196,998,249,1013,296"/>
-<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="735,112,883,137"/>
-<area shape="poly" title=" " alt="" coords="1002,295,985,262,962,223,933,185,897,152,877,141,877,135,901,148,937,181,967,220,990,260,1007,296"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a0c603b415b63ee1bd6bf532b5f315716" title="Create and allocate a default error interface with internal error handler." alt="" coords="742,162,876,202"/>
-<area shape="poly" title=" " alt="" coords="987,298,947,261,898,223,866,205,866,200,900,218,950,257,992,299"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="497,226,671,252"/>
-<area shape="poly" title=" " alt="" coords="973,301,938,283,898,267,840,253,781,245,672,239,671,234,781,240,841,248,900,262,941,278,979,301"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#aec5a90e8436436a2317a7c5e8b24414f" title="Destroy an error interface created by star_error_interface_create_default()." alt="" coords="742,276,876,317"/>
-<area shape="poly" title=" " alt="" coords="929,316,876,310,876,304,934,316"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a47cb2059d503f6428dc165b881c6f79f" title="Deinitialize HC&#45;SR04 sensor." alt="" coords="741,342,876,382"/>
-<area shape="poly" title=" " alt="" coords="929,344,877,354,876,349,934,343"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#afd5878b21fda797877bd29036adcbd58" title="Initialize HC&#45;SR04 sensor." alt="" coords="729,406,888,432"/>
-<area shape="poly" title=" " alt="" coords="974,357,900,396,865,408,864,403,898,391,969,359"/>
-<area shape="rect" href="../../d1/dfc/star__sensor__bno055__bmp280_8c.html#acb593dfc30474b45f2b4807406441b4f" title="Deinitialize 10&#45;DOF IMU." alt="" coords="731,456,887,497"/>
-<area shape="poly" title=" " alt="" coords="994,361,952,406,900,447,878,458,877,453,898,442,949,402,990,363"/>
-<area shape="rect" href="../../d1/dfc/star__sensor__bno055__bmp280_8c.html#a722083a7cb967139e04c4e0e722895f8" title="Initialize 10&#45;DOF IMU (BNO055 + BMP280)." alt="" coords="719,521,899,547"/>
-<area shape="poly" title=" " alt="" coords="1007,362,990,400,966,439,937,478,901,511,878,523,876,518,897,506,933,474,962,436,985,397,1003,366"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#abf4b004f9ee13b89446c5f5b268ebcf6" title="Deinitialize PCA9685 PWM controller handle." alt="" coords="131,479,276,520"/>
-<area shape="poly" title=" " alt="" coords="1014,364,1002,413,980,468,947,520,925,543,900,562,878,572,849,579,780,586,697,585,607,577,424,549,276,519,276,513,425,543,608,571,698,579,780,581,849,574,876,567,898,557,922,539,942,517,975,465,997,411,1010,367"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="724,622,894,648"/>
-<area shape="poly" title=" " alt="" coords="1015,364,1002,419,980,483,947,548,926,578,901,605,869,624,868,619,897,601,921,575,942,545,975,480,997,417,1011,367"/>
-<area shape="poly" title=" " alt="" coords="725,204,638,228,636,223,730,202"/>
-<area shape="poly" title=" " alt="" coords="725,276,638,255,637,250,730,275"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#ae98f107b4b0856a04b0613f630f4f7f1" title=" " alt="" coords="509,276,659,317"/>
-<area shape="poly" title=" " alt="" coords="724,297,660,299,659,294,730,296"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a50bf939b7ee7d05f4a59c83f74bbc8d7" title=" " alt="" coords="507,353,661,379"/>
-<area shape="poly" title=" " alt="" coords="723,364,662,367,661,362,728,363"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afa22a6110eba0db527b95b8e2ce3a746" title=" " alt="" coords="514,402,654,428"/>
-<area shape="poly" title=" " alt="" coords="723,382,642,404,641,399,729,381"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="324,402,449,428"/>
-<area shape="poly" title=" " alt="" coords="512,384,442,404,440,399,517,382"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a28fe4002be0e81d2cf72876adc92445b" title="Stop sensor management task." alt="" coords="324,353,449,379"/>
-<area shape="poly" title=" " alt="" coords="488,367,450,369,448,363,494,365"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="135,402,272,428"/>
-<area shape="poly" title=" " alt="" coords="306,416,272,418,271,413,311,414"/>
-<area shape="poly" title=" " alt="" coords="149,436,85,460,82,456,152,432"/>
-<area shape="poly" title=" " alt="" coords="320,385,255,404,253,399,324,382"/>
-<area shape="poly" title=" " alt="" coords="496,416,450,418,449,413,501,415"/>
-<area shape="poly" title=" " alt="" coords="711,418,655,419,654,414,716,417"/>
-<area shape="poly" title=" " alt="" coords="113,485,84,481,82,475,117,482"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#ad6745a540d038c1266117bbcc686713b" title=" " alt="" coords="324,622,449,648"/>
-<area shape="poly" title=" " alt="" coords="706,635,449,638,449,633,711,635"/>
-<area shape="poly" title=" " alt="" coords="328,617,234,583,129,534,91,510,62,487,61,482,94,505,132,529,237,578,333,616"/>
+<div class="center"><img src="../../d4/d59/star__error__handler_8h_aaaf152f965c4c4e01c241f0801ce561a_icgraph.png" border="0" usemap="#ad4/d59/star__error__handler_8h_aaaf152f965c4c4e01c241f0801ce561a_icgraph" loading="lazy" alt=""/></div>
+<map name="ad4/d59/star__error__handler_8h_aaaf152f965c4c4e01c241f0801ce561a_icgraph" id="ad4/d59/star__error__handler_8h_aaaf152f965c4c4e01c241f0801ce561a_icgraph">
+<area shape="rect" title="Deinitialize an error handler and release resources." alt="" coords="1304,296,1438,322"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a1632e40ebb7509611a0513c0e6bdbb46" title="Destroy an error handler created by error_handler_create_default() or error_handler_create_custom()." alt="" coords="1109,289,1256,330"/>
+<area shape="poly" title=" " alt="" coords="1286,310,1256,312,1256,307,1291,309"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,72,83,98"/>
+<area shape="poly" title=" " alt="" coords="1160,274,1118,212,1090,177,1059,145,995,85,938,42,909,27,876,16,837,10,791,8,385,8,313,11,257,20,131,56,79,74,75,70,130,51,256,15,312,6,385,3,791,3,838,5,877,11,911,22,941,37,998,80,1063,141,1094,173,1122,209,1165,276"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a983c8213a8523e7362c0b55bdaa296bc" title="Clean up an error interface that may own its handler." alt="" coords="928,289,1061,330"/>
+<area shape="poly" title=" " alt="" coords="1091,310,1062,312,1061,307,1096,309"/>
+<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#afd5878b21fda797877bd29036adcbd58" title="Initialize HC&#45;SR04 sensor." alt="" coords="710,144,870,170"/>
+<area shape="poly" title=" " alt="" coords="1120,282,1010,236,879,185,842,173,842,168,881,180,1012,231,1125,282"/>
+<area shape="rect" href="../../d1/dfc/star__sensor__bno055__bmp280_8c.html#abef5a4f32095d020c6dddc96d6bbdd5d" title="Initialize 10&#45;DOF IMU (BNO055 + BMP280)." alt="" coords="700,538,880,564"/>
+<area shape="poly" title=" " alt="" coords="1158,341,1116,389,1063,433,1027,451,996,459,965,467,929,484,915,495,906,506,897,518,881,529,856,540,855,535,879,524,893,514,902,503,912,491,927,479,963,462,994,454,1025,446,1060,428,1112,385,1153,343"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="705,43,874,69"/>
+<area shape="poly" title=" " alt="" coords="1144,278,1031,187,957,136,879,90,835,72,835,67,881,86,960,131,1035,183,1150,278"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a0c603b415b63ee1bd6bf532b5f315716" title="Create and allocate a default error interface with internal error handler." alt="" coords="928,378,1061,419"/>
+<area shape="poly" title=" " alt="" coords="1127,336,1040,380,1038,375,1121,338"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#aec5a90e8436436a2317a7c5e8b24414f" title="Destroy an error interface created by star_error_interface_create_default()." alt="" coords="928,493,1061,534"/>
+<area shape="poly" title=" " alt="" coords="1165,342,1122,409,1094,444,1063,477,1038,495,1036,490,1060,473,1090,441,1118,406,1160,345"/>
+<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a02709f23d96dc7f7c34b7a23f86888fc" title="Deinitialize BQ7850 BMS device handle." alt="" coords="709,324,871,350"/>
+<area shape="poly" title=" " alt="" coords="910,321,872,329,871,324,915,320"/>
+<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="716,439,864,465"/>
+<area shape="poly" title=" " alt="" coords="958,339,930,368,917,385,908,400,898,415,881,429,857,441,856,436,879,424,894,411,904,397,912,382,926,365,954,341"/>
+<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a47cb2059d503f6428dc165b881c6f79f" title="Deinitialize HC&#45;SR04 sensor." alt="" coords="722,260,858,300"/>
+<area shape="poly" title=" " alt="" coords="910,298,858,292,858,287,915,297"/>
+<area shape="poly" title=" " alt="" coords="962,277,926,239,904,209,894,197,879,185,855,173,855,168,881,180,898,193,908,206,930,236,967,278"/>
+<area shape="rect" href="../../d1/dfc/star__sensor__bno055__bmp280_8c.html#acb593dfc30474b45f2b4807406441b4f" title="Deinitialize 10&#45;DOF IMU." alt="" coords="712,374,868,415"/>
+<area shape="poly" title=" " alt="" coords="940,336,881,365,852,376,851,371,879,360,935,338"/>
+<area shape="poly" title=" " alt="" coords="954,338,930,368,919,390,914,411,912,451,907,489,898,509,882,529,866,540,864,535,878,525,893,506,902,488,906,450,908,410,914,388,926,365,949,341"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#ae98f107b4b0856a04b0613f630f4f7f1" title="Deinitialize MPU6050 and release resources." alt="" coords="715,194,864,235"/>
+<area shape="poly" title=" " alt="" coords="942,281,879,250,850,238,851,233,881,246,947,281"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="703,488,876,514"/>
+<area shape="poly" title=" " alt="" coords="956,338,930,368,915,398,910,426,903,453,882,479,864,491,863,486,878,475,898,450,905,424,910,396,926,365,951,341"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#abf4b004f9ee13b89446c5f5b268ebcf6" title="Deinitialize PCA9685 PWM controller handle." alt="" coords="131,93,276,134"/>
+<area shape="poly" title=" " alt="" coords="969,275,926,211,914,187,907,167,897,149,879,134,831,116,764,105,685,98,597,96,421,100,277,109,275,104,421,95,597,90,685,93,765,99,832,111,881,130,901,146,911,164,919,185,930,208,974,277"/>
+<area shape="poly" title=" " alt="" coords="982,273,967,233,946,183,916,133,878,90,848,72,848,67,882,86,921,130,951,181,972,231,987,275"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a50bf939b7ee7d05f4a59c83f74bbc8d7" title=" " alt="" coords="497,236,652,262"/>
+<area shape="poly" title=" " alt="" coords="704,269,653,263,652,258,710,268"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afa22a6110eba0db527b95b8e2ce3a746" title=" " alt="" coords="504,187,645,213"/>
+<area shape="poly" title=" " alt="" coords="714,254,699,249,651,226,622,216,622,211,653,222,701,244,719,254"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="324,187,449,213"/>
+<area shape="poly" title=" " alt="" coords="505,233,439,216,438,211,511,231"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a28fe4002be0e81d2cf72876adc92445b" title="Stop sensor management task." alt="" coords="324,236,449,262"/>
+<area shape="poly" title=" " alt="" coords="479,250,450,252,448,247,484,248"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="135,187,272,213"/>
+<area shape="poly" title=" " alt="" coords="306,201,273,202,271,198,311,199"/>
+<area shape="poly" title=" " alt="" coords="170,179,64,101,63,96,174,177"/>
+<area shape="poly" title=" " alt="" coords="319,233,255,216,253,211,324,231"/>
+<area shape="poly" title=" " alt="" coords="486,201,451,203,449,197,491,199"/>
+<area shape="poly" title=" " alt="" coords="704,175,644,189,642,184,709,173"/>
+<area shape="poly" title=" " alt="" coords="113,99,84,94,82,90,117,96"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ad6745a540d038c1266117bbcc686713b" title=" " alt="" coords="324,43,449,69"/>
+<area shape="poly" title=" " alt="" coords="687,57,450,59,448,53,692,55"/>
+<area shape="poly" title=" " alt="" coords="308,65,84,85,82,80,311,60"/>
+<area shape="poly" title=" " alt="" coords="916,419,842,441,841,436,910,420"/>
+<area shape="poly" title=" " alt="" coords="945,426,930,439,906,461,881,480,855,491,853,485,879,475,903,456,926,435,940,428"/>
 </map>
 </div>
 
@@ -717,18 +725,18 @@ Here is the caller graph for this function:</div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00393">393</a> of file <a class="el" href="../../d7/d82/star__error__handler_8c_source.html">star_error_handler.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00398">398</a> of file <a class="el" href="../../d7/d82/star__error__handler_8c_source.html">star_error_handler.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00059">error_handler_deinit()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00012">TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00062">error_handler_deinit()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00012">TAG</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00158">app_main()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00203">star_bms_bq7850_deinit()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00079">star_bms_bq7850_init()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00408">star_error_interface_create_default()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00432">star_error_interface_destroy()</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00167">star_sensor_hcsr04_deinit()</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00036">star_sensor_hcsr04_init()</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00292">star_sensor_imu_10dof_deinit()</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00031">star_sensor_imu_10dof_init()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00076">star_sensor_mpu6050_init()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00368">star_sensor_pca9685_deinit()</a>, and <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00171">star_sensor_pca9685_init()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00158">app_main()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00455">star_error_interface_cleanup()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00413">star_error_interface_create_default()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00437">star_error_interface_destroy()</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00041">star_sensor_hcsr04_init()</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00028">star_sensor_imu_10dof_init()</a>, and <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00171">star_sensor_pca9685_init()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d4/d59/star__error__handler_8h_a1632e40ebb7509611a0513c0e6bdbb46_cgraph.png" border="0" usemap="#ad4/d59/star__error__handler_8h_a1632e40ebb7509611a0513c0e6bdbb46_cgraph" loading="lazy" alt=""/></div>
 <map name="ad4/d59/star__error__handler_8h_a1632e40ebb7509611a0513c0e6bdbb46_cgraph" id="ad4/d59/star__error__handler_8h_a1632e40ebb7509611a0513c0e6bdbb46_cgraph">
 <area shape="rect" title="Destroy an error handler created by error_handler_create_default() or error_handler_create_custom()." alt="" coords="5,5,152,46"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a3a7dedd3275ece0e7f6029a11464c27d" title="Deinitialize an error handler and release resources." alt="" coords="200,13,334,38"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#aaaf152f965c4c4e01c241f0801ce561a" title="Deinitialize an error handler and release resources." alt="" coords="200,13,334,38"/>
 <area shape="poly" title=" " alt="" coords="152,23,187,25,181,26,152,28"/>
 </map>
 </div>
@@ -737,53 +745,58 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d4/d59/star__error__handler_8h_a1632e40ebb7509611a0513c0e6bdbb46_icgraph.png" border="0" usemap="#ad4/d59/star__error__handler_8h_a1632e40ebb7509611a0513c0e6bdbb46_icgraph" loading="lazy" alt=""/></div>
 <map name="ad4/d59/star__error__handler_8h_a1632e40ebb7509611a0513c0e6bdbb46_icgraph" id="ad4/d59/star__error__handler_8h_a1632e40ebb7509611a0513c0e6bdbb46_icgraph">
-<area shape="rect" title="Destroy an error handler created by error_handler_create_default() or error_handler_create_custom()." alt="" coords="947,310,1093,350"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,458,83,484"/>
-<area shape="poly" title=" " alt="" coords="1013,293,1002,239,982,172,967,138,948,105,925,76,897,52,857,28,821,14,787,9,752,9,678,20,635,25,585,27,385,27,345,31,308,43,274,60,242,84,214,112,187,144,142,215,106,289,79,360,51,459,46,457,74,358,101,287,137,212,183,141,210,108,239,80,271,56,306,38,344,26,385,22,585,22,634,20,677,14,752,4,787,3,822,9,860,23,901,48,929,73,952,102,971,135,987,170,1007,238,1018,295"/>
-<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a02709f23d96dc7f7c34b7a23f86888fc" title="Deinitialize BQ7850 BMS device handle." alt="" coords="728,62,890,88"/>
-<area shape="poly" title=" " alt="" coords="1008,294,993,251,971,198,939,146,919,122,897,101,882,91,882,86,901,97,923,118,943,143,975,196,998,249,1013,296"/>
-<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="735,112,883,137"/>
-<area shape="poly" title=" " alt="" coords="1002,295,985,262,962,223,933,185,897,152,877,141,877,135,901,148,937,181,967,220,990,260,1007,296"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a0c603b415b63ee1bd6bf532b5f315716" title="Create and allocate a default error interface with internal error handler." alt="" coords="742,162,876,202"/>
-<area shape="poly" title=" " alt="" coords="987,298,947,261,898,223,866,205,866,200,900,218,950,257,992,299"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="497,226,671,252"/>
-<area shape="poly" title=" " alt="" coords="973,301,938,283,898,267,840,253,781,245,672,239,671,234,781,240,841,248,900,262,941,278,979,301"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#aec5a90e8436436a2317a7c5e8b24414f" title="Destroy an error interface created by star_error_interface_create_default()." alt="" coords="742,276,876,317"/>
-<area shape="poly" title=" " alt="" coords="929,316,876,310,876,304,934,316"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a47cb2059d503f6428dc165b881c6f79f" title="Deinitialize HC&#45;SR04 sensor." alt="" coords="741,342,876,382"/>
-<area shape="poly" title=" " alt="" coords="929,344,877,354,876,349,934,343"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#afd5878b21fda797877bd29036adcbd58" title="Initialize HC&#45;SR04 sensor." alt="" coords="729,406,888,432"/>
-<area shape="poly" title=" " alt="" coords="974,357,900,396,865,408,864,403,898,391,969,359"/>
-<area shape="rect" href="../../d1/dfc/star__sensor__bno055__bmp280_8c.html#acb593dfc30474b45f2b4807406441b4f" title="Deinitialize 10&#45;DOF IMU." alt="" coords="731,456,887,497"/>
-<area shape="poly" title=" " alt="" coords="994,361,952,406,900,447,878,458,877,453,898,442,949,402,990,363"/>
-<area shape="rect" href="../../d1/dfc/star__sensor__bno055__bmp280_8c.html#a722083a7cb967139e04c4e0e722895f8" title="Initialize 10&#45;DOF IMU (BNO055 + BMP280)." alt="" coords="719,521,899,547"/>
-<area shape="poly" title=" " alt="" coords="1007,362,990,400,966,439,937,478,901,511,878,523,876,518,897,506,933,474,962,436,985,397,1003,366"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#abf4b004f9ee13b89446c5f5b268ebcf6" title="Deinitialize PCA9685 PWM controller handle." alt="" coords="131,479,276,520"/>
-<area shape="poly" title=" " alt="" coords="1014,364,1002,413,980,468,947,520,925,543,900,562,878,572,849,579,780,586,697,585,607,577,424,549,276,519,276,513,425,543,608,571,698,579,780,581,849,574,876,567,898,557,922,539,942,517,975,465,997,411,1010,367"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="724,622,894,648"/>
-<area shape="poly" title=" " alt="" coords="1015,364,1002,419,980,483,947,548,926,578,901,605,869,624,868,619,897,601,921,575,942,545,975,480,997,417,1011,367"/>
-<area shape="poly" title=" " alt="" coords="725,204,638,228,636,223,730,202"/>
-<area shape="poly" title=" " alt="" coords="725,276,638,255,637,250,730,275"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#ae98f107b4b0856a04b0613f630f4f7f1" title=" " alt="" coords="509,276,659,317"/>
-<area shape="poly" title=" " alt="" coords="724,297,660,299,659,294,730,296"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a50bf939b7ee7d05f4a59c83f74bbc8d7" title=" " alt="" coords="507,353,661,379"/>
-<area shape="poly" title=" " alt="" coords="723,364,662,367,661,362,728,363"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afa22a6110eba0db527b95b8e2ce3a746" title=" " alt="" coords="514,402,654,428"/>
-<area shape="poly" title=" " alt="" coords="723,382,642,404,641,399,729,381"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="324,402,449,428"/>
-<area shape="poly" title=" " alt="" coords="512,384,442,404,440,399,517,382"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a28fe4002be0e81d2cf72876adc92445b" title="Stop sensor management task." alt="" coords="324,353,449,379"/>
-<area shape="poly" title=" " alt="" coords="488,367,450,369,448,363,494,365"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="135,402,272,428"/>
-<area shape="poly" title=" " alt="" coords="306,416,272,418,271,413,311,414"/>
-<area shape="poly" title=" " alt="" coords="149,436,85,460,82,456,152,432"/>
-<area shape="poly" title=" " alt="" coords="320,385,255,404,253,399,324,382"/>
-<area shape="poly" title=" " alt="" coords="496,416,450,418,449,413,501,415"/>
-<area shape="poly" title=" " alt="" coords="711,418,655,419,654,414,716,417"/>
-<area shape="poly" title=" " alt="" coords="113,485,84,481,82,475,117,482"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#ad6745a540d038c1266117bbcc686713b" title=" " alt="" coords="324,622,449,648"/>
-<area shape="poly" title=" " alt="" coords="706,635,449,638,449,633,711,635"/>
-<area shape="poly" title=" " alt="" coords="328,617,234,583,129,534,91,510,62,487,61,482,94,505,132,529,237,578,333,616"/>
+<area shape="rect" title="Destroy an error handler created by error_handler_create_default() or error_handler_create_custom()." alt="" coords="1109,289,1256,330"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,72,83,98"/>
+<area shape="poly" title=" " alt="" coords="1160,274,1118,212,1090,177,1059,145,995,85,938,42,909,27,876,16,837,10,791,8,385,8,313,11,257,20,131,56,79,74,75,70,130,51,256,15,312,6,385,3,791,3,838,5,877,11,911,22,941,37,998,80,1063,141,1094,173,1122,209,1165,276"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a983c8213a8523e7362c0b55bdaa296bc" title="Clean up an error interface that may own its handler." alt="" coords="928,289,1061,330"/>
+<area shape="poly" title=" " alt="" coords="1091,310,1062,312,1061,307,1096,309"/>
+<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#afd5878b21fda797877bd29036adcbd58" title="Initialize HC&#45;SR04 sensor." alt="" coords="710,144,870,170"/>
+<area shape="poly" title=" " alt="" coords="1120,282,1010,236,879,185,842,173,842,168,881,180,1012,231,1125,282"/>
+<area shape="rect" href="../../d1/dfc/star__sensor__bno055__bmp280_8c.html#abef5a4f32095d020c6dddc96d6bbdd5d" title="Initialize 10&#45;DOF IMU (BNO055 + BMP280)." alt="" coords="700,538,880,564"/>
+<area shape="poly" title=" " alt="" coords="1158,341,1116,389,1063,433,1027,451,996,459,965,467,929,484,915,495,906,506,897,518,881,529,856,540,855,535,879,524,893,514,902,503,912,491,927,479,963,462,994,454,1025,446,1060,428,1112,385,1153,343"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="705,43,874,69"/>
+<area shape="poly" title=" " alt="" coords="1144,278,1031,187,957,136,879,90,835,72,835,67,881,86,960,131,1035,183,1150,278"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a0c603b415b63ee1bd6bf532b5f315716" title="Create and allocate a default error interface with internal error handler." alt="" coords="928,378,1061,419"/>
+<area shape="poly" title=" " alt="" coords="1127,336,1040,380,1038,375,1121,338"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#aec5a90e8436436a2317a7c5e8b24414f" title="Destroy an error interface created by star_error_interface_create_default()." alt="" coords="928,493,1061,534"/>
+<area shape="poly" title=" " alt="" coords="1165,342,1122,409,1094,444,1063,477,1038,495,1036,490,1060,473,1090,441,1118,406,1160,345"/>
+<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a02709f23d96dc7f7c34b7a23f86888fc" title="Deinitialize BQ7850 BMS device handle." alt="" coords="709,324,871,350"/>
+<area shape="poly" title=" " alt="" coords="910,321,872,329,871,324,915,320"/>
+<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="716,439,864,465"/>
+<area shape="poly" title=" " alt="" coords="958,339,930,368,917,385,908,400,898,415,881,429,857,441,856,436,879,424,894,411,904,397,912,382,926,365,954,341"/>
+<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a47cb2059d503f6428dc165b881c6f79f" title="Deinitialize HC&#45;SR04 sensor." alt="" coords="722,260,858,300"/>
+<area shape="poly" title=" " alt="" coords="910,298,858,292,858,287,915,297"/>
+<area shape="poly" title=" " alt="" coords="962,277,926,239,904,209,894,197,879,185,855,173,855,168,881,180,898,193,908,206,930,236,967,278"/>
+<area shape="rect" href="../../d1/dfc/star__sensor__bno055__bmp280_8c.html#acb593dfc30474b45f2b4807406441b4f" title="Deinitialize 10&#45;DOF IMU." alt="" coords="712,374,868,415"/>
+<area shape="poly" title=" " alt="" coords="940,336,881,365,852,376,851,371,879,360,935,338"/>
+<area shape="poly" title=" " alt="" coords="954,338,930,368,919,390,914,411,912,451,907,489,898,509,882,529,866,540,864,535,878,525,893,506,902,488,906,450,908,410,914,388,926,365,949,341"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#ae98f107b4b0856a04b0613f630f4f7f1" title="Deinitialize MPU6050 and release resources." alt="" coords="715,194,864,235"/>
+<area shape="poly" title=" " alt="" coords="942,281,879,250,850,238,851,233,881,246,947,281"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="703,488,876,514"/>
+<area shape="poly" title=" " alt="" coords="956,338,930,368,915,398,910,426,903,453,882,479,864,491,863,486,878,475,898,450,905,424,910,396,926,365,951,341"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#abf4b004f9ee13b89446c5f5b268ebcf6" title="Deinitialize PCA9685 PWM controller handle." alt="" coords="131,93,276,134"/>
+<area shape="poly" title=" " alt="" coords="969,275,926,211,914,187,907,167,897,149,879,134,831,116,764,105,685,98,597,96,421,100,277,109,275,104,421,95,597,90,685,93,765,99,832,111,881,130,901,146,911,164,919,185,930,208,974,277"/>
+<area shape="poly" title=" " alt="" coords="982,273,967,233,946,183,916,133,878,90,848,72,848,67,882,86,921,130,951,181,972,231,987,275"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a50bf939b7ee7d05f4a59c83f74bbc8d7" title=" " alt="" coords="497,236,652,262"/>
+<area shape="poly" title=" " alt="" coords="704,269,653,263,652,258,710,268"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afa22a6110eba0db527b95b8e2ce3a746" title=" " alt="" coords="504,187,645,213"/>
+<area shape="poly" title=" " alt="" coords="714,254,699,249,651,226,622,216,622,211,653,222,701,244,719,254"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="324,187,449,213"/>
+<area shape="poly" title=" " alt="" coords="505,233,439,216,438,211,511,231"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a28fe4002be0e81d2cf72876adc92445b" title="Stop sensor management task." alt="" coords="324,236,449,262"/>
+<area shape="poly" title=" " alt="" coords="479,250,450,252,448,247,484,248"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="135,187,272,213"/>
+<area shape="poly" title=" " alt="" coords="306,201,273,202,271,198,311,199"/>
+<area shape="poly" title=" " alt="" coords="170,179,64,101,63,96,174,177"/>
+<area shape="poly" title=" " alt="" coords="319,233,255,216,253,211,324,231"/>
+<area shape="poly" title=" " alt="" coords="486,201,451,203,449,197,491,199"/>
+<area shape="poly" title=" " alt="" coords="704,175,644,189,642,184,709,173"/>
+<area shape="poly" title=" " alt="" coords="113,99,84,94,82,90,117,96"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ad6745a540d038c1266117bbcc686713b" title=" " alt="" coords="324,43,449,69"/>
+<area shape="poly" title=" " alt="" coords="687,57,450,59,448,53,692,55"/>
+<area shape="poly" title=" " alt="" coords="308,65,84,85,82,80,311,60"/>
+<area shape="poly" title=" " alt="" coords="916,419,842,441,841,436,910,420"/>
+<area shape="poly" title=" " alt="" coords="945,426,930,439,906,461,881,480,855,491,853,485,879,475,903,456,926,435,940,428"/>
 </map>
 </div>
 
@@ -818,11 +831,11 @@ Here is the caller graph for this function:</div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00324">324</a> of file <a class="el" href="../../d7/d82/star__error__handler_8c_source.html">star_error_handler.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00329">329</a> of file <a class="el" href="../../d7/d82/star__error__handler_8c_source.html">star_error_handler.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00154">star_error_interface::can_retry</a>, <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00166">star_error_interface::ctx</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00312">internal_iface_can_retry()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00301">internal_iface_record_error()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00318">internal_iface_reset_state()</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00160">error_handler::mutex</a>, <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00142">star_error_interface::record_error</a>, <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00161">star_error_interface::reset_state</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00012">TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00154">star_error_interface::can_retry</a>, <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00166">star_error_interface::ctx</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00317">internal_iface_can_retry()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00306">internal_iface_record_error()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00323">internal_iface_reset_state()</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00160">error_handler::mutex</a>, <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00142">star_error_interface::record_error</a>, <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00161">star_error_interface::reset_state</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00012">TAG</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00158">app_main()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00079">star_bms_bq7850_init()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00408">star_error_interface_create_default()</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00036">star_sensor_hcsr04_init()</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00031">star_sensor_imu_10dof_init()</a>, and <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00171">star_sensor_pca9685_init()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00158">app_main()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00413">star_error_interface_create_default()</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00041">star_sensor_hcsr04_init()</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00028">star_sensor_imu_10dof_init()</a>, and <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00171">star_sensor_pca9685_init()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -848,31 +861,31 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d4/d59/star__error__handler_8h_adb10b93a13ce155a3e5c2aa2f4b2d543_icgraph.png" border="0" usemap="#ad4/d59/star__error__handler_8h_adb10b93a13ce155a3e5c2aa2f4b2d543_icgraph" loading="lazy" alt=""/></div>
 <map name="ad4/d59/star__error__handler_8h_adb10b93a13ce155a3e5c2aa2f4b2d543_icgraph" id="ad4/d59/star__error__handler_8h_adb10b93a13ce155a3e5c2aa2f4b2d543_icgraph">
-<area shape="rect" title="Create an interface adapter for the error handler." alt="" coords="938,137,1116,163"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,165,83,191"/>
-<area shape="poly" title=" " alt="" coords="1002,125,954,81,923,58,889,40,844,24,806,14,737,8,666,12,576,15,376,15,326,20,276,33,229,53,184,76,109,127,61,167,57,163,106,122,182,72,226,48,275,28,325,15,376,10,576,10,666,6,737,3,806,9,846,19,891,35,926,54,958,77,1008,126"/>
-<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="726,50,874,76"/>
-<area shape="poly" title=" " alt="" coords="983,130,889,91,853,79,853,74,891,86,988,130"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a0c603b415b63ee1bd6bf532b5f315716" title="Create and allocate a default error interface with internal error handler." alt="" coords="733,100,866,141"/>
-<area shape="poly" title=" " alt="" coords="920,136,867,132,867,126,925,136"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#afd5878b21fda797877bd29036adcbd58" title="Initialize HC&#45;SR04 sensor." alt="" coords="720,165,880,191"/>
-<area shape="poly" title=" " alt="" coords="920,163,880,171,880,165,925,162"/>
-<area shape="rect" href="../../d1/dfc/star__sensor__bno055__bmp280_8c.html#a722083a7cb967139e04c4e0e722895f8" title="Initialize 10&#45;DOF IMU (BNO055 + BMP280)." alt="" coords="710,214,890,240"/>
-<area shape="poly" title=" " alt="" coords="983,168,891,206,855,216,854,211,889,201,978,170"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="715,264,884,289"/>
-<area shape="poly" title=" " alt="" coords="1003,173,953,216,891,255,864,266,862,260,889,250,950,212,998,175"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="488,108,662,133"/>
-<area shape="poly" title=" " alt="" coords="715,121,662,123,662,118,721,120"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afa22a6110eba0db527b95b8e2ce3a746" title=" " alt="" coords="505,165,645,191"/>
-<area shape="poly" title=" " alt="" coords="702,178,646,180,646,175,707,178"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="315,165,440,191"/>
-<area shape="poly" title=" " alt="" coords="487,178,441,180,441,175,492,177"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,165,267,191"/>
-<area shape="poly" title=" " alt="" coords="297,178,268,180,267,175,302,177"/>
-<area shape="poly" title=" " alt="" coords="113,179,84,180,82,175,117,176"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#ad6745a540d038c1266117bbcc686713b" title=" " alt="" coords="316,216,440,241"/>
-<area shape="poly" title=" " alt="" coords="697,266,440,238,440,233,702,265"/>
-<area shape="poly" title=" " alt="" coords="297,225,218,219,130,206,83,193,83,188,131,201,218,214,303,224"/>
+<area shape="rect" title="Create an interface adapter for the error handler." alt="" coords="938,112,1116,138"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,147,83,173"/>
+<area shape="poly" title=" " alt="" coords="997,101,949,68,920,52,889,38,804,15,736,9,576,13,376,13,327,17,279,29,232,46,188,67,113,112,63,148,60,144,110,108,185,62,230,41,277,24,326,12,376,8,576,8,736,3,805,10,891,33,922,47,952,64,1002,102"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a0c603b415b63ee1bd6bf532b5f315716" title="Create and allocate a default error interface with internal error handler." alt="" coords="733,47,866,88"/>
+<area shape="poly" title=" " alt="" coords="956,108,867,87,867,82,961,108"/>
+<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#afd5878b21fda797877bd29036adcbd58" title="Initialize HC&#45;SR04 sensor." alt="" coords="720,112,880,138"/>
+<area shape="poly" title=" " alt="" coords="920,125,880,128,880,122,925,125"/>
+<area shape="rect" href="../../d1/dfc/star__sensor__bno055__bmp280_8c.html#abef5a4f32095d020c6dddc96d6bbdd5d" title="Initialize 10&#45;DOF IMU (BNO055 + BMP280)." alt="" coords="710,162,890,187"/>
+<area shape="poly" title=" " alt="" coords="952,141,863,164,862,158,947,142"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="715,211,884,237"/>
+<area shape="poly" title=" " alt="" coords="995,146,946,176,891,202,859,213,858,208,889,197,944,171,990,147"/>
+<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="501,48,649,74"/>
+<area shape="poly" title=" " alt="" coords="715,66,650,66,649,61,721,65"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="488,98,662,123"/>
+<area shape="poly" title=" " alt="" coords="716,84,647,100,646,94,721,83"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afa22a6110eba0db527b95b8e2ce3a746" title=" " alt="" coords="505,147,645,173"/>
+<area shape="poly" title=" " alt="" coords="707,139,646,151,645,146,702,140"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="315,147,440,173"/>
+<area shape="poly" title=" " alt="" coords="487,160,441,162,441,157,492,159"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,147,267,173"/>
+<area shape="poly" title=" " alt="" coords="297,160,268,162,267,157,302,159"/>
+<area shape="poly" title=" " alt="" coords="113,161,84,162,82,157,117,158"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ad6745a540d038c1266117bbcc686713b" title=" " alt="" coords="316,198,440,223"/>
+<area shape="poly" title=" " alt="" coords="697,221,440,215,440,210,702,220"/>
+<area shape="poly" title=" " alt="" coords="297,206,218,201,130,188,83,175,83,170,131,182,218,196,303,206"/>
 </map>
 </div>
 
@@ -932,45 +945,45 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK if successful, ESP_ERR_NO_MEM if mutex creation fails, ESP_ERR_INVALID_ARG if handler is NULL. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00017">17</a> of file <a class="el" href="../../d7/d82/star__error__handler_8c_source.html">star_error_handler.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00020">20</a> of file <a class="el" href="../../d7/d82/star__error__handler_8c_source.html">star_error_handler.c</a>.</p>
 
 <p class="reference">References <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00154">error_handler::base_retry_delay</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00153">error_handler::current_retry</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00156">error_handler::current_retry_delay</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00151">error_handler::error_count</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00158">error_handler::in_error_state</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00157">error_handler::last_error</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00152">error_handler::max_retries</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00155">error_handler::max_retry_delay</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00160">error_handler::mutex</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00159">error_handler::reset_context</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00162">error_handler::reset_fn</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00012">TAG</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00354">error_handler_create_custom()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00359">error_handler_create_custom()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d4/d59/star__error__handler_8h_a331853a63aa2729d5a2a368c72aff6f2_icgraph.png" border="0" usemap="#ad4/d59/star__error__handler_8h_a331853a63aa2729d5a2a368c72aff6f2_icgraph" loading="lazy" alt=""/></div>
 <map name="ad4/d59/star__error__handler_8h_a331853a63aa2729d5a2a368c72aff6f2_icgraph" id="ad4/d59/star__error__handler_8h_a331853a63aa2729d5a2a368c72aff6f2_icgraph">
-<area shape="rect" title="Initialize an error handler." alt="" coords="1313,75,1433,101"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a4fbf7f5d1c862bd91f3ece2812b45b03" title="Create and initialize an error handler with custom configuration." alt="" coords="1125,68,1265,108"/>
-<area shape="poly" title=" " alt="" coords="1294,88,1265,91,1265,85,1300,88"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,158,83,184"/>
-<area shape="poly" title=" " alt="" coords="1116,62,1051,46,972,27,887,13,801,8,376,8,326,13,276,26,229,46,184,69,109,120,61,160,57,156,106,115,182,65,226,41,275,21,325,8,376,3,801,3,887,8,973,22,1052,41,1121,62"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a37c70fed0d10c260212eb781ca4e5862" title="Create and initialize a default error handler with sensible defaults." alt="" coords="938,121,1077,162"/>
-<area shape="poly" title=" " alt="" coords="1113,112,1078,124,1077,119,1108,113"/>
-<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="726,43,874,69"/>
-<area shape="poly" title=" " alt="" coords="954,113,889,84,855,72,855,67,891,79,960,113"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a0c603b415b63ee1bd6bf532b5f315716" title="Create and allocate a default error interface with internal error handler." alt="" coords="733,93,866,134"/>
-<area shape="poly" title=" " alt="" coords="920,130,867,125,867,120,925,130"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#afd5878b21fda797877bd29036adcbd58" title="Initialize HC&#45;SR04 sensor." alt="" coords="720,158,880,184"/>
-<area shape="poly" title=" " alt="" coords="925,153,881,162,880,157,920,154"/>
-<area shape="rect" href="../../d1/dfc/star__sensor__bno055__bmp280_8c.html#a722083a7cb967139e04c4e0e722895f8" title="Initialize 10&#45;DOF IMU (BNO055 + BMP280)." alt="" coords="710,207,890,233"/>
-<area shape="poly" title=" " alt="" coords="956,168,891,198,858,209,857,204,889,194,950,169"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="715,256,884,282"/>
-<area shape="poly" title=" " alt="" coords="981,172,941,213,891,248,866,259,865,253,889,243,937,209,976,174"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="488,100,662,126"/>
-<area shape="poly" title=" " alt="" coords="715,114,662,116,662,111,721,113"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afa22a6110eba0db527b95b8e2ce3a746" title=" " alt="" coords="505,158,645,184"/>
-<area shape="poly" title=" " alt="" coords="702,171,646,173,646,168,707,170"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="315,158,440,184"/>
-<area shape="poly" title=" " alt="" coords="487,171,441,173,441,168,492,170"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,158,267,184"/>
-<area shape="poly" title=" " alt="" coords="297,171,268,173,267,168,302,170"/>
-<area shape="poly" title=" " alt="" coords="113,172,84,173,82,168,117,169"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#ad6745a540d038c1266117bbcc686713b" title=" " alt="" coords="316,232,440,258"/>
-<area shape="poly" title=" " alt="" coords="697,264,440,252,440,246,702,263"/>
-<area shape="poly" title=" " alt="" coords="299,234,130,199,83,185,83,180,131,193,302,230"/>
+<area shape="rect" title="Initialize an error handler." alt="" coords="1313,50,1433,76"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a4fbf7f5d1c862bd91f3ece2812b45b03" title="Create and initialize an error handler with custom configuration." alt="" coords="1125,42,1265,83"/>
+<area shape="poly" title=" " alt="" coords="1294,63,1265,65,1265,60,1300,62"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,142,83,168"/>
+<area shape="poly" title=" " alt="" coords="1108,43,966,21,884,12,801,8,376,8,327,12,279,24,232,41,188,62,113,107,63,143,60,139,110,103,185,57,230,36,277,19,326,7,376,3,801,3,884,6,967,15,1113,43"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a37c70fed0d10c260212eb781ca4e5862" title="Create and initialize a default error handler with sensible defaults." alt="" coords="938,100,1077,140"/>
+<area shape="poly" title=" " alt="" coords="1115,87,1077,102,1076,96,1110,89"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a0c603b415b63ee1bd6bf532b5f315716" title="Create and allocate a default error interface with internal error handler." alt="" coords="733,42,866,83"/>
+<area shape="poly" title=" " alt="" coords="920,97,867,84,867,78,925,97"/>
+<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#afd5878b21fda797877bd29036adcbd58" title="Initialize HC&#45;SR04 sensor." alt="" coords="720,107,880,133"/>
+<area shape="poly" title=" " alt="" coords="920,120,880,123,880,117,925,120"/>
+<area shape="rect" href="../../d1/dfc/star__sensor__bno055__bmp280_8c.html#abef5a4f32095d020c6dddc96d6bbdd5d" title="Initialize 10&#45;DOF IMU (BNO055 + BMP280)." alt="" coords="710,156,890,182"/>
+<area shape="poly" title=" " alt="" coords="926,140,858,158,857,153,920,140"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="715,206,884,232"/>
+<area shape="poly" title=" " alt="" coords="970,149,932,176,891,197,861,208,860,203,889,192,929,171,964,150"/>
+<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="501,43,649,69"/>
+<area shape="poly" title=" " alt="" coords="715,61,650,61,649,56,721,60"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="488,92,662,118"/>
+<area shape="poly" title=" " alt="" coords="716,79,647,95,646,89,721,78"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afa22a6110eba0db527b95b8e2ce3a746" title=" " alt="" coords="505,142,645,168"/>
+<area shape="poly" title=" " alt="" coords="707,134,646,146,645,141,702,135"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="315,142,440,168"/>
+<area shape="poly" title=" " alt="" coords="487,155,441,157,441,152,492,154"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,142,267,168"/>
+<area shape="poly" title=" " alt="" coords="297,155,268,157,267,152,302,154"/>
+<area shape="poly" title=" " alt="" coords="113,156,84,157,82,152,117,153"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ad6745a540d038c1266117bbcc686713b" title=" " alt="" coords="316,196,440,222"/>
+<area shape="poly" title=" " alt="" coords="697,217,440,213,440,208,702,216"/>
+<area shape="poly" title=" " alt="" coords="297,204,218,197,130,183,83,170,83,165,131,177,218,192,303,203"/>
 </map>
 </div>
 
@@ -1030,45 +1043,45 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK if error was handled and recovery succeeded (reset function worked), ESP_ERR_TIMEOUT if mutex couldn't be acquired, or the original error code if handling was unsuccessful or retries exhausted. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00092">92</a> of file <a class="el" href="../../d7/d82/star__error__handler_8c_source.html">star_error_handler.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00097">97</a> of file <a class="el" href="../../d7/d82/star__error__handler_8c_source.html">star_error_handler.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00154">error_handler::base_retry_delay</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00153">error_handler::current_retry</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00156">error_handler::current_retry_delay</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00151">error_handler::error_count</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00158">error_handler::in_error_state</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00157">error_handler::last_error</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00152">error_handler::max_retries</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00155">error_handler::max_retry_delay</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00160">error_handler::mutex</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00159">error_handler::reset_context</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00162">error_handler::reset_fn</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00012">TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00154">error_handler::base_retry_delay</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00153">error_handler::current_retry</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00156">error_handler::current_retry_delay</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00151">error_handler::error_count</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00158">error_handler::in_error_state</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00157">error_handler::last_error</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00152">error_handler::max_retries</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00155">error_handler::max_retry_delay</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00160">error_handler::mutex</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00159">error_handler::reset_context</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00162">error_handler::reset_fn</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00015">s_error_handler_mutex_timeout_ms</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00012">TAG</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00301">internal_iface_record_error()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00306">internal_iface_record_error()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d4/d59/star__error__handler_8h_acb049bacf435c371692461a57f434d41_icgraph.png" border="0" usemap="#ad4/d59/star__error__handler_8h_acb049bacf435c371692461a57f434d41_icgraph" loading="lazy" alt=""/></div>
 <map name="ad4/d59/star__error__handler_8h_acb049bacf435c371692461a57f434d41_icgraph" id="ad4/d59/star__error__handler_8h_acb049bacf435c371692461a57f434d41_icgraph">
-<area shape="rect" title="Record an error and manage retry/reset logic." alt="" coords="1354,129,1493,170"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#ac6d32823473f15198e0768fc7dd77ea2" title=" " alt="" coords="1164,129,1306,170"/>
-<area shape="poly" title=" " alt="" coords="1336,150,1306,152,1306,147,1341,150"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#adb10b93a13ce155a3e5c2aa2f4b2d543" title="Create an interface adapter for the error handler." alt="" coords="938,137,1116,163"/>
-<area shape="poly" title=" " alt="" coords="1146,150,1117,152,1117,147,1152,150"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,165,83,191"/>
-<area shape="poly" title=" " alt="" coords="1002,125,954,81,923,58,889,40,844,24,806,14,737,8,666,12,576,15,376,15,326,20,276,33,229,53,184,76,109,127,61,167,57,163,106,122,182,72,226,48,275,28,325,15,376,10,576,10,666,6,737,3,806,9,846,19,891,35,926,54,958,77,1008,126"/>
-<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="726,50,874,76"/>
-<area shape="poly" title=" " alt="" coords="983,130,889,91,853,79,853,74,891,86,988,130"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a0c603b415b63ee1bd6bf532b5f315716" title="Create and allocate a default error interface with internal error handler." alt="" coords="733,100,866,141"/>
-<area shape="poly" title=" " alt="" coords="920,136,867,132,867,126,925,136"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#afd5878b21fda797877bd29036adcbd58" title="Initialize HC&#45;SR04 sensor." alt="" coords="720,165,880,191"/>
-<area shape="poly" title=" " alt="" coords="920,163,880,171,880,165,925,162"/>
-<area shape="rect" href="../../d1/dfc/star__sensor__bno055__bmp280_8c.html#a722083a7cb967139e04c4e0e722895f8" title="Initialize 10&#45;DOF IMU (BNO055 + BMP280)." alt="" coords="710,214,890,240"/>
-<area shape="poly" title=" " alt="" coords="983,168,891,206,855,216,854,211,889,201,978,170"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="715,264,884,289"/>
-<area shape="poly" title=" " alt="" coords="1003,173,953,216,891,255,864,266,862,260,889,250,950,212,998,175"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="488,108,662,133"/>
-<area shape="poly" title=" " alt="" coords="715,121,662,123,662,118,721,120"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afa22a6110eba0db527b95b8e2ce3a746" title=" " alt="" coords="505,165,645,191"/>
-<area shape="poly" title=" " alt="" coords="702,178,646,180,646,175,707,178"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="315,165,440,191"/>
-<area shape="poly" title=" " alt="" coords="487,178,441,180,441,175,492,177"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,165,267,191"/>
-<area shape="poly" title=" " alt="" coords="297,178,268,180,267,175,302,177"/>
-<area shape="poly" title=" " alt="" coords="113,179,84,180,82,175,117,176"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#ad6745a540d038c1266117bbcc686713b" title=" " alt="" coords="316,216,440,241"/>
-<area shape="poly" title=" " alt="" coords="697,266,440,238,440,233,702,265"/>
-<area shape="poly" title=" " alt="" coords="297,225,218,219,130,206,83,193,83,188,131,201,218,214,303,224"/>
+<area shape="rect" title="Record an error and manage retry/reset logic." alt="" coords="1354,105,1493,145"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#ac6d32823473f15198e0768fc7dd77ea2" title=" " alt="" coords="1164,105,1306,145"/>
+<area shape="poly" title=" " alt="" coords="1336,125,1306,128,1306,122,1341,125"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#adb10b93a13ce155a3e5c2aa2f4b2d543" title="Create an interface adapter for the error handler." alt="" coords="938,112,1116,138"/>
+<area shape="poly" title=" " alt="" coords="1146,125,1117,128,1117,122,1152,125"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,147,83,173"/>
+<area shape="poly" title=" " alt="" coords="997,101,949,68,920,52,889,38,804,15,736,9,576,13,376,13,327,17,279,29,232,46,188,67,113,112,63,148,60,144,110,108,185,62,230,41,277,24,326,12,376,8,576,8,736,3,805,10,891,33,922,47,952,64,1002,102"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a0c603b415b63ee1bd6bf532b5f315716" title="Create and allocate a default error interface with internal error handler." alt="" coords="733,47,866,88"/>
+<area shape="poly" title=" " alt="" coords="956,108,867,87,867,82,961,108"/>
+<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#afd5878b21fda797877bd29036adcbd58" title="Initialize HC&#45;SR04 sensor." alt="" coords="720,112,880,138"/>
+<area shape="poly" title=" " alt="" coords="920,125,880,128,880,122,925,125"/>
+<area shape="rect" href="../../d1/dfc/star__sensor__bno055__bmp280_8c.html#abef5a4f32095d020c6dddc96d6bbdd5d" title="Initialize 10&#45;DOF IMU (BNO055 + BMP280)." alt="" coords="710,162,890,187"/>
+<area shape="poly" title=" " alt="" coords="952,141,863,164,862,158,947,142"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="715,211,884,237"/>
+<area shape="poly" title=" " alt="" coords="995,146,946,176,891,202,859,213,858,208,889,197,944,171,990,147"/>
+<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="501,48,649,74"/>
+<area shape="poly" title=" " alt="" coords="715,66,650,66,649,61,721,65"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="488,98,662,123"/>
+<area shape="poly" title=" " alt="" coords="716,84,647,100,646,94,721,83"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afa22a6110eba0db527b95b8e2ce3a746" title=" " alt="" coords="505,147,645,173"/>
+<area shape="poly" title=" " alt="" coords="707,139,646,151,645,146,702,140"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="315,147,440,173"/>
+<area shape="poly" title=" " alt="" coords="487,160,441,162,441,157,492,159"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,147,267,173"/>
+<area shape="poly" title=" " alt="" coords="297,160,268,162,267,157,302,159"/>
+<area shape="poly" title=" " alt="" coords="113,161,84,162,82,157,117,158"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ad6745a540d038c1266117bbcc686713b" title=" " alt="" coords="316,198,440,223"/>
+<area shape="poly" title=" " alt="" coords="697,221,440,215,440,210,702,220"/>
+<area shape="poly" title=" " alt="" coords="297,206,218,201,130,188,83,175,83,170,131,182,218,196,303,206"/>
 </map>
 </div>
 
@@ -1099,45 +1112,157 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK if successful, ESP_ERR_TIMEOUT if mutex couldn't be acquired, ESP_ERR_INVALID_STATE if mutex not init. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00264">264</a> of file <a class="el" href="../../d7/d82/star__error__handler_8c_source.html">star_error_handler.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00269">269</a> of file <a class="el" href="../../d7/d82/star__error__handler_8c_source.html">star_error_handler.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00154">error_handler::base_retry_delay</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00153">error_handler::current_retry</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00156">error_handler::current_retry_delay</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00151">error_handler::error_count</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00158">error_handler::in_error_state</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00157">error_handler::last_error</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00160">error_handler::mutex</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00012">TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00154">error_handler::base_retry_delay</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00153">error_handler::current_retry</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00156">error_handler::current_retry_delay</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00151">error_handler::error_count</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00158">error_handler::in_error_state</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00157">error_handler::last_error</a>, <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00160">error_handler::mutex</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00015">s_error_handler_mutex_timeout_ms</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00012">TAG</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00318">internal_iface_reset_state()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00323">internal_iface_reset_state()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d4/d59/star__error__handler_8h_adcd860e401f2ab4c5c907c87fdbba7d0_icgraph.png" border="0" usemap="#ad4/d59/star__error__handler_8h_adcd860e401f2ab4c5c907c87fdbba7d0_icgraph" loading="lazy" alt=""/></div>
 <map name="ad4/d59/star__error__handler_8h_adcd860e401f2ab4c5c907c87fdbba7d0_icgraph" id="ad4/d59/star__error__handler_8h_adcd860e401f2ab4c5c907c87fdbba7d0_icgraph">
-<area shape="rect" title="Reset the error handler state." alt="" coords="1347,129,1479,170"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a901211322493d6630ce2a7e9bb9cf8a4" title=" " alt="" coords="1164,129,1299,170"/>
-<area shape="poly" title=" " alt="" coords="1329,150,1299,152,1299,147,1334,150"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#adb10b93a13ce155a3e5c2aa2f4b2d543" title="Create an interface adapter for the error handler." alt="" coords="938,137,1116,163"/>
-<area shape="poly" title=" " alt="" coords="1146,150,1117,152,1117,147,1152,150"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,165,83,191"/>
-<area shape="poly" title=" " alt="" coords="1002,125,954,81,923,58,889,40,844,24,806,14,737,8,666,12,576,15,376,15,326,20,276,33,229,53,184,76,109,127,61,167,57,163,106,122,182,72,226,48,275,28,325,15,376,10,576,10,666,6,737,3,806,9,846,19,891,35,926,54,958,77,1008,126"/>
-<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="726,50,874,76"/>
-<area shape="poly" title=" " alt="" coords="983,130,889,91,853,79,853,74,891,86,988,130"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a0c603b415b63ee1bd6bf532b5f315716" title="Create and allocate a default error interface with internal error handler." alt="" coords="733,100,866,141"/>
-<area shape="poly" title=" " alt="" coords="920,136,867,132,867,126,925,136"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#afd5878b21fda797877bd29036adcbd58" title="Initialize HC&#45;SR04 sensor." alt="" coords="720,165,880,191"/>
-<area shape="poly" title=" " alt="" coords="920,163,880,171,880,165,925,162"/>
-<area shape="rect" href="../../d1/dfc/star__sensor__bno055__bmp280_8c.html#a722083a7cb967139e04c4e0e722895f8" title="Initialize 10&#45;DOF IMU (BNO055 + BMP280)." alt="" coords="710,214,890,240"/>
-<area shape="poly" title=" " alt="" coords="983,168,891,206,855,216,854,211,889,201,978,170"/>
-<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="715,264,884,289"/>
-<area shape="poly" title=" " alt="" coords="1003,173,953,216,891,255,864,266,862,260,889,250,950,212,998,175"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="488,108,662,133"/>
-<area shape="poly" title=" " alt="" coords="715,121,662,123,662,118,721,120"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afa22a6110eba0db527b95b8e2ce3a746" title=" " alt="" coords="505,165,645,191"/>
-<area shape="poly" title=" " alt="" coords="702,178,646,180,646,175,707,178"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="315,165,440,191"/>
-<area shape="poly" title=" " alt="" coords="487,178,441,180,441,175,492,177"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,165,267,191"/>
-<area shape="poly" title=" " alt="" coords="297,178,268,180,267,175,302,177"/>
-<area shape="poly" title=" " alt="" coords="113,179,84,180,82,175,117,176"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#ad6745a540d038c1266117bbcc686713b" title=" " alt="" coords="316,216,440,241"/>
-<area shape="poly" title=" " alt="" coords="697,266,440,238,440,233,702,265"/>
-<area shape="poly" title=" " alt="" coords="297,225,218,219,130,206,83,193,83,188,131,201,218,214,303,224"/>
+<area shape="rect" title="Reset the error handler state." alt="" coords="1347,105,1479,145"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a901211322493d6630ce2a7e9bb9cf8a4" title=" " alt="" coords="1164,105,1299,145"/>
+<area shape="poly" title=" " alt="" coords="1329,125,1299,128,1299,122,1334,125"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#adb10b93a13ce155a3e5c2aa2f4b2d543" title="Create an interface adapter for the error handler." alt="" coords="938,112,1116,138"/>
+<area shape="poly" title=" " alt="" coords="1146,125,1117,128,1117,122,1152,125"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,147,83,173"/>
+<area shape="poly" title=" " alt="" coords="997,101,949,68,920,52,889,38,804,15,736,9,576,13,376,13,327,17,279,29,232,46,188,67,113,112,63,148,60,144,110,108,185,62,230,41,277,24,326,12,376,8,576,8,736,3,805,10,891,33,922,47,952,64,1002,102"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a0c603b415b63ee1bd6bf532b5f315716" title="Create and allocate a default error interface with internal error handler." alt="" coords="733,47,866,88"/>
+<area shape="poly" title=" " alt="" coords="956,108,867,87,867,82,961,108"/>
+<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#afd5878b21fda797877bd29036adcbd58" title="Initialize HC&#45;SR04 sensor." alt="" coords="720,112,880,138"/>
+<area shape="poly" title=" " alt="" coords="920,125,880,128,880,122,925,125"/>
+<area shape="rect" href="../../d1/dfc/star__sensor__bno055__bmp280_8c.html#abef5a4f32095d020c6dddc96d6bbdd5d" title="Initialize 10&#45;DOF IMU (BNO055 + BMP280)." alt="" coords="710,162,890,187"/>
+<area shape="poly" title=" " alt="" coords="952,141,863,164,862,158,947,142"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="715,211,884,237"/>
+<area shape="poly" title=" " alt="" coords="995,146,946,176,891,202,859,213,858,208,889,197,944,171,990,147"/>
+<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="501,48,649,74"/>
+<area shape="poly" title=" " alt="" coords="715,66,650,66,649,61,721,65"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="488,98,662,123"/>
+<area shape="poly" title=" " alt="" coords="716,84,647,100,646,94,721,83"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afa22a6110eba0db527b95b8e2ce3a746" title=" " alt="" coords="505,147,645,173"/>
+<area shape="poly" title=" " alt="" coords="707,139,646,151,645,146,702,140"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="315,147,440,173"/>
+<area shape="poly" title=" " alt="" coords="487,160,441,162,441,157,492,159"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,147,267,173"/>
+<area shape="poly" title=" " alt="" coords="297,160,268,162,267,157,302,159"/>
+<area shape="poly" title=" " alt="" coords="113,161,84,162,82,157,117,158"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ad6745a540d038c1266117bbcc686713b" title=" " alt="" coords="316,198,440,223"/>
+<area shape="poly" title=" " alt="" coords="697,221,440,215,440,210,702,220"/>
+<area shape="poly" title=" " alt="" coords="297,206,218,201,130,188,83,175,83,170,131,182,218,196,303,206"/>
+</map>
+</div>
+
+</div>
+</div>
+<a id="a983c8213a8523e7362c0b55bdaa296bc" name="a983c8213a8523e7362c0b55bdaa296bc"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a983c8213a8523e7362c0b55bdaa296bc">&#9670;&#160;</a></span>star_error_interface_cleanup()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void star_error_interface_cleanup </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="../../df/d84/star__error__interface_8h.html#a45a01bbdc613ba6c69401890e9eccbee">star_error_interface_t</a> *</td>          <td class="paramname"><span class="paramname"><em>error_iface</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>owns_handler</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Clean up an error interface that may own its handler. </p>
+<p>This helper function consolidates the common cleanup pattern used across sensor drivers where an error interface may or may not own its underlying error handler. It handles both cases correctly, preventing code duplication.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">error_iface</td><td>Pointer to the error interface (can be NULL, safe no-op) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">owns_handler</td><td>Whether this interface owns the underlying handler</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section note"><dt>Note</dt><dd>If owns_handler is true, destroys the handler (via error_handler_destroy_default) and frees the interface memory </dd>
+<dd>
+If owns_handler is false, does nothing (caller manages the handler externally) </dd>
+<dd>
+Safe to call with NULL error_iface (no-op)</dd></dl>
+<p>Example usage in sensor driver deinit: </p><div class="fragment"><div class="line"><span class="comment">// OLD pattern (duplicated across many drivers):</span></div>
+<div class="line"><span class="keywordflow">if</span> (handle-&gt;owns_error_handler &amp;&amp; handle-&gt;error_iface != NULL) {</div>
+<div class="line">    <a class="code hl_typedef" href="#a3833b4a57f7dde877bba1255d7d50b93">error_handler_t</a>* handler_ptr = (<a class="code hl_typedef" href="#a3833b4a57f7dde877bba1255d7d50b93">error_handler_t</a>*)handle-&gt;error_iface-&gt;ctx;</div>
+<div class="line">    <a class="code hl_function" href="#a1632e40ebb7509611a0513c0e6bdbb46">error_handler_destroy_default</a>(handler_ptr);</div>
+<div class="line">    free(handle-&gt;error_iface);</div>
+<div class="line">}</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// NEW pattern (single line):</span></div>
+<div class="line"><a class="code hl_function" href="#a983c8213a8523e7362c0b55bdaa296bc">star_error_interface_cleanup</a>(handle-&gt;error_iface, handle-&gt;owns_error_handler);</div>
+<div class="line">handle-&gt;error_iface = NULL;</div>
+<div class="ttc" id="astar__error__handler_8h_html_a983c8213a8523e7362c0b55bdaa296bc"><div class="ttname"><a href="#a983c8213a8523e7362c0b55bdaa296bc">star_error_interface_cleanup</a></div><div class="ttdeci">void star_error_interface_cleanup(star_error_interface_t *error_iface, bool owns_handler)</div><div class="ttdoc">Clean up an error interface that may own its handler.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d82/star__error__handler_8c_source.html#l00455">star_error_handler.c:455</a></div></div>
+</div><!-- fragment --> 
+<p class="definition">Definition at line <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00455">455</a> of file <a class="el" href="../../d7/d82/star__error__handler_8c_source.html">star_error_handler.c</a>.</p>
+
+<p class="reference">References <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00166">star_error_interface::ctx</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00398">error_handler_destroy_default()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00012">TAG</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00186">star_bms_bq7850_deinit()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00080">star_bms_bq7850_init()</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00160">star_sensor_hcsr04_deinit()</a>, <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00041">star_sensor_hcsr04_init()</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00261">star_sensor_imu_10dof_deinit()</a>, <a class="el" href="../../d1/dfc/star__sensor__bno055__bmp280_8c_source.html#l00028">star_sensor_imu_10dof_init()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00214">star_sensor_mpu6050_deinit()</a>, <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00077">star_sensor_mpu6050_init()</a>, <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00364">star_sensor_pca9685_deinit()</a>, and <a class="el" href="../../d3/df7/star__sensor__pca9685_8c_source.html#l00171">star_sensor_pca9685_init()</a>.</p>
+<div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="../../d4/d59/star__error__handler_8h_a983c8213a8523e7362c0b55bdaa296bc_cgraph.png" border="0" usemap="#ad4/d59/star__error__handler_8h_a983c8213a8523e7362c0b55bdaa296bc_cgraph" loading="lazy" alt=""/></div>
+<map name="ad4/d59/star__error__handler_8h_a983c8213a8523e7362c0b55bdaa296bc_cgraph" id="ad4/d59/star__error__handler_8h_a983c8213a8523e7362c0b55bdaa296bc_cgraph">
+<area shape="rect" title="Clean up an error interface that may own its handler." alt="" coords="5,5,139,46"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a1632e40ebb7509611a0513c0e6bdbb46" title="Destroy an error handler created by error_handler_create_default() or error_handler_create_custom()." alt="" coords="187,5,333,46"/>
+<area shape="poly" title=" " alt="" coords="139,23,174,25,169,26,139,28"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#aaaf152f965c4c4e01c241f0801ce561a" title="Deinitialize an error handler and release resources." alt="" coords="381,13,515,38"/>
+<area shape="poly" title=" " alt="" coords="333,23,368,26,363,26,334,28"/>
+</map>
+</div>
+<div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="../../d4/d59/star__error__handler_8h_a983c8213a8523e7362c0b55bdaa296bc_icgraph.png" border="0" usemap="#ad4/d59/star__error__handler_8h_a983c8213a8523e7362c0b55bdaa296bc_icgraph" loading="lazy" alt=""/></div>
+<map name="ad4/d59/star__error__handler_8h_a983c8213a8523e7362c0b55bdaa296bc_icgraph" id="ad4/d59/star__error__handler_8h_a983c8213a8523e7362c0b55bdaa296bc_icgraph">
+<area shape="rect" title="Clean up an error interface that may own its handler." alt="" coords="928,248,1061,289"/>
+<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a02709f23d96dc7f7c34b7a23f86888fc" title="Deinitialize BQ7850 BMS device handle." alt="" coords="709,5,871,31"/>
+<area shape="poly" title=" " alt="" coords="983,232,969,190,948,139,918,88,900,64,878,44,863,34,863,29,882,40,903,61,923,85,953,136,974,188,988,234"/>
+<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="716,55,864,80"/>
+<area shape="poly" title=" " alt="" coords="977,233,962,201,940,164,912,126,878,95,858,84,858,78,882,91,916,123,944,161,966,199,982,235"/>
+<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a47cb2059d503f6428dc165b881c6f79f" title="Deinitialize HC&#45;SR04 sensor." alt="" coords="722,104,858,145"/>
+<area shape="poly" title=" " alt="" coords="965,236,927,197,879,159,858,148,858,143,881,155,930,193,970,237"/>
+<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#afd5878b21fda797877bd29036adcbd58" title="Initialize HC&#45;SR04 sensor." alt="" coords="710,169,870,195"/>
+<area shape="poly" title=" " alt="" coords="944,240,879,210,845,198,845,193,881,205,949,241"/>
+<area shape="rect" href="../../d1/dfc/star__sensor__bno055__bmp280_8c.html#acb593dfc30474b45f2b4807406441b4f" title="Deinitialize 10&#45;DOF IMU." alt="" coords="712,219,868,260"/>
+<area shape="poly" title=" " alt="" coords="910,257,869,253,868,248,915,257"/>
+<area shape="rect" href="../../d1/dfc/star__sensor__bno055__bmp280_8c.html#abef5a4f32095d020c6dddc96d6bbdd5d" title="Initialize 10&#45;DOF IMU (BNO055 + BMP280)." alt="" coords="700,284,880,310"/>
+<area shape="poly" title=" " alt="" coords="910,281,881,287,880,282,915,279"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#ae98f107b4b0856a04b0613f630f4f7f1" title="Deinitialize MPU6050 and release resources." alt="" coords="715,334,864,374"/>
+<area shape="poly" title=" " alt="" coords="940,295,881,325,852,336,851,331,879,320,935,297"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="703,399,876,424"/>
+<area shape="poly" title=" " alt="" coords="972,300,933,347,908,370,881,388,855,401,853,396,879,384,905,365,929,344,967,303"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#abf4b004f9ee13b89446c5f5b268ebcf6" title="Deinitialize PCA9685 PWM controller handle." alt="" coords="131,435,276,476"/>
+<area shape="poly" title=" " alt="" coords="983,302,968,339,946,376,917,411,881,439,832,457,764,469,684,475,597,477,420,473,276,464,276,459,420,468,597,472,684,470,764,463,830,452,879,434,914,408,942,373,963,336,979,305"/>
+<area shape="rect" href="../../d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="705,500,874,526"/>
+<area shape="poly" title=" " alt="" coords="985,302,971,345,949,393,920,441,882,483,849,502,847,497,878,479,915,438,945,391,966,343,981,306"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a50bf939b7ee7d05f4a59c83f74bbc8d7" title=" " alt="" coords="497,116,652,142"/>
+<area shape="poly" title=" " alt="" coords="704,127,653,130,652,125,709,126"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afa22a6110eba0db527b95b8e2ce3a746" title=" " alt="" coords="504,165,645,191"/>
+<area shape="poly" title=" " alt="" coords="705,146,630,167,629,162,710,144"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="324,165,449,191"/>
+<area shape="poly" title=" " alt="" coords="506,147,440,167,437,162,510,145"/>
+<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a28fe4002be0e81d2cf72876adc92445b" title="Stop sensor management task." alt="" coords="324,116,449,142"/>
+<area shape="poly" title=" " alt="" coords="479,130,450,131,448,126,484,128"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="135,165,272,191"/>
+<area shape="poly" title=" " alt="" coords="306,179,273,181,271,176,311,177"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,443,83,468"/>
+<area shape="poly" title=" " alt="" coords="189,206,55,444,50,441,185,204"/>
+<area shape="poly" title=" " alt="" coords="320,148,255,167,253,162,324,145"/>
+<area shape="poly" title=" " alt="" coords="486,179,451,181,449,176,491,177"/>
+<area shape="poly" title=" " alt="" coords="692,181,646,182,645,177,697,180"/>
+<area shape="poly" title=" " alt="" coords="112,457,84,458,82,453,117,454"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#ad6745a540d038c1266117bbcc686713b" title=" " alt="" coords="324,500,449,526"/>
+<area shape="poly" title=" " alt="" coords="687,513,449,515,449,510,692,513"/>
+<area shape="poly" title=" " alt="" coords="306,511,222,506,130,490,75,472,75,466,131,485,223,500,311,510"/>
 </map>
 </div>
 
@@ -1162,11 +1287,11 @@ Here is the caller graph for this function:</div>
 <p>This helper function encapsulates the common pattern of creating a default error handler and wrapping it in an allocated <a class="el" href="../../df/d84/star__error__interface_8h.html#a45a01bbdc613ba6c69401890e9eccbee" title="Error handler interface - abstract operations for error handling.">star_error_interface_t</a>. The caller owns the returned interface and must free it using <a class="el" href="#aec5a90e8436436a2317a7c5e8b24414f" title="Destroy an error interface created by star_error_interface_create_default().">star_error_interface_destroy()</a>.</p>
 <dl class="section return"><dt>Returns</dt><dd>Pointer to newly allocated error interface, or NULL on allocation/initialization failure. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00408">408</a> of file <a class="el" href="../../d7/d82/star__error__handler_8c_source.html">star_error_handler.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00413">413</a> of file <a class="el" href="../../d7/d82/star__error__handler_8c_source.html">star_error_handler.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00348">error_handler_create_default()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00393">error_handler_destroy_default()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00324">error_handler_get_interface()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00012">TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00353">error_handler_create_default()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00398">error_handler_destroy_default()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00329">error_handler_get_interface()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00012">TAG</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00076">star_sensor_mpu6050_init()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00080">star_bms_bq7850_init()</a>, and <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00077">star_sensor_mpu6050_init()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1183,7 +1308,7 @@ Here is the call graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="345,23,401,25,396,27,347,28"/>
 <area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a331853a63aa2729d5a2a368c72aff6f2" title="Initialize an error handler." alt="" coords="621,13,741,38"/>
 <area shape="poly" title=" " alt="" coords="553,23,608,25,603,26,554,28"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a3a7dedd3275ece0e7f6029a11464c27d" title="Deinitialize an error handler and release resources." alt="" coords="416,74,551,100"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#aaaf152f965c4c4e01c241f0801ce561a" title="Deinitialize an error handler and release resources." alt="" coords="416,74,551,100"/>
 <area shape="poly" title=" " alt="" coords="349,87,403,88,398,89,350,92"/>
 <area shape="rect" href="../../d7/d82/star__error__handler_8c.html#ab75fd15cd19b87cccc39e074b1de6ea7" title=" " alt="" coords="420,124,547,165"/>
 <area shape="poly" title=" " alt="" coords="363,160,408,156,403,157,364,165"/>
@@ -1204,9 +1329,11 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d4/d59/star__error__handler_8h_a0c603b415b63ee1bd6bf532b5f315716_icgraph.png" border="0" usemap="#ad4/d59/star__error__handler_8h_a0c603b415b63ee1bd6bf532b5f315716_icgraph" loading="lazy" alt=""/></div>
 <map name="ad4/d59/star__error__handler_8h_a0c603b415b63ee1bd6bf532b5f315716_icgraph" id="ad4/d59/star__error__handler_8h_a0c603b415b63ee1bd6bf532b5f315716_icgraph">
-<area shape="rect" title="Create and allocate a default error interface with internal error handler." alt="" coords="227,5,360,46"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="5,13,179,38"/>
-<area shape="poly" title=" " alt="" coords="209,26,179,28,179,23,214,25"/>
+<area shape="rect" title="Create and allocate a default error interface with internal error handler." alt="" coords="227,23,360,64"/>
+<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="18,5,166,31"/>
+<area shape="poly" title=" " alt="" coords="209,34,167,30,167,25,214,33"/>
+<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="5,55,179,80"/>
+<area shape="poly" title=" " alt="" coords="209,54,179,60,179,54,214,53"/>
 </map>
 </div>
 
@@ -1236,11 +1363,9 @@ Here is the caller graph for this function:</div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00432">432</a> of file <a class="el" href="../../d7/d82/star__error__handler_8c_source.html">star_error_handler.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00437">437</a> of file <a class="el" href="../../d7/d82/star__error__handler_8c_source.html">star_error_handler.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00166">star_error_interface::ctx</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00393">error_handler_destroy_default()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00012">TAG</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00234">star_sensor_mpu6050_deinit()</a>, and <a class="el" href="../../d7/df2/star__sensor__mpu6050_8c_source.html#l00076">star_sensor_mpu6050_init()</a>.</p>
+<p class="reference">References <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00166">star_error_interface::ctx</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00398">error_handler_destroy_default()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00012">TAG</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1249,20 +1374,8 @@ Here is the call graph for this function:</div>
 <area shape="rect" title="Destroy an error interface created by star_error_interface_create_default()." alt="" coords="5,5,139,46"/>
 <area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a1632e40ebb7509611a0513c0e6bdbb46" title="Destroy an error handler created by error_handler_create_default() or error_handler_create_custom()." alt="" coords="187,5,333,46"/>
 <area shape="poly" title=" " alt="" coords="139,23,174,25,169,26,139,28"/>
-<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#a3a7dedd3275ece0e7f6029a11464c27d" title="Deinitialize an error handler and release resources." alt="" coords="381,13,515,38"/>
+<area shape="rect" href="../../d7/d82/star__error__handler_8c.html#aaaf152f965c4c4e01c241f0801ce561a" title="Deinitialize an error handler and release resources." alt="" coords="381,13,515,38"/>
 <area shape="poly" title=" " alt="" coords="333,23,368,26,363,26,334,28"/>
-</map>
-</div>
-<div class="dynheader">
-Here is the caller graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="../../d4/d59/star__error__handler_8h_aec5a90e8436436a2317a7c5e8b24414f_icgraph.png" border="0" usemap="#ad4/d59/star__error__handler_8h_aec5a90e8436436a2317a7c5e8b24414f_icgraph" loading="lazy" alt=""/></div>
-<map name="ad4/d59/star__error__handler_8h_aec5a90e8436436a2317a7c5e8b24414f_icgraph" id="ad4/d59/star__error__handler_8h_aec5a90e8436436a2317a7c5e8b24414f_icgraph">
-<area shape="rect" title="Destroy an error interface created by star_error_interface_create_default()." alt="" coords="227,35,360,75"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#ae98f107b4b0856a04b0613f630f4f7f1" title=" " alt="" coords="17,5,167,46"/>
-<area shape="poly" title=" " alt="" coords="209,44,167,39,167,34,214,43"/>
-<area shape="rect" href="../../d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="5,70,179,96"/>
-<area shape="poly" title=" " alt="" coords="209,67,179,74,179,68,214,66"/>
 </map>
 </div>
 

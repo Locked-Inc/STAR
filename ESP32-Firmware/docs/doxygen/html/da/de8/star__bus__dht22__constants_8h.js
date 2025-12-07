@@ -8,13 +8,13 @@ var star__bus__dht22__constants_8h =
       [ "k_dht_type_dht22", "da/de8/star__bus__dht22__constants_8h.html#a2485cf54a6175eaa0bd4bdda8316e5aea2ae8e73fe122e6427dfcad313542d7d7", null ],
       [ "k_dht_type_am2302", "da/de8/star__bus__dht22__constants_8h.html#a2485cf54a6175eaa0bd4bdda8316e5aea633d0e44f03839ea19339e4f45fdef80", null ]
     ] ],
-    [ "DHT11_MIN_INTERVAL_MS", "da/de8/star__bus__dht22__constants_8h.html#a8bc75725eee83cb0d039958bd7e54971", null ],
-    [ "DHT11_SPECS", "da/de8/star__bus__dht22__constants_8h.html#a20032e59706a26b05ba4141d5d8274d8", null ],
-    [ "DHT11_TIMING_STANDARD", "da/de8/star__bus__dht22__constants_8h.html#acbd3acecefe37cf5dbd28d24b409a0ab", null ],
-    [ "DHT22_DATA_BITS", "da/de8/star__bus__dht22__constants_8h.html#a86aee7007e7a044db774560fda76421b", null ],
-    [ "DHT22_DATA_BYTES", "da/de8/star__bus__dht22__constants_8h.html#ae28bd3ed647c64514c47ff9cded5210c", null ],
-    [ "DHT22_MAX_RETRIES", "da/de8/star__bus__dht22__constants_8h.html#af8c81293ed27445190c95895bb75ece6", null ],
-    [ "DHT22_MIN_INTERVAL_MS", "da/de8/star__bus__dht22__constants_8h.html#a33fc8ecbf6cf982727061e1cad6dd311", null ],
-    [ "DHT22_SPECS", "da/de8/star__bus__dht22__constants_8h.html#a661062f90e180039f4f3f7417c7de095", null ],
-    [ "DHT22_TIMING_STANDARD", "da/de8/star__bus__dht22__constants_8h.html#acd6e53539b0c68f24b7468768e3221e3", null ]
+    [ "s_dht11_min_interval_ms", "da/de8/star__bus__dht22__constants_8h.html#a1f9be1aec8da66cedd1058281a32c1d8", null ],
+    [ "s_dht11_specs", "da/de8/star__bus__dht22__constants_8h.html#abfe598558378bf469973dc3919d06886", null ],
+    [ "s_dht11_timing_standard", "da/de8/star__bus__dht22__constants_8h.html#a9acfaf76497eff1e4b0bdfa0b6355094", null ],
+    [ "s_dht22_data_bits", "da/de8/star__bus__dht22__constants_8h.html#a3992072d48d88597ca5a15745ee3c8fc", null ],
+    [ "s_dht22_data_bytes", "da/de8/star__bus__dht22__constants_8h.html#af40208b22cf511274b931c3fe307e31f", null ],
+    [ "s_dht22_max_retries", "da/de8/star__bus__dht22__constants_8h.html#ac1134051622f8d33556e549395f06ab0", null ],
+    [ "s_dht22_min_interval_ms", "da/de8/star__bus__dht22__constants_8h.html#a11ea8b153cd1979dd33b70b82d5f5087", null ],
+    [ "s_dht22_specs", "da/de8/star__bus__dht22__constants_8h.html#a3ea0259dc71fc5a1902b28a2f830857c", null ],
+    [ "s_dht22_timing_standard", "da/de8/star__bus__dht22__constants_8h.html#a4f8ac501669fca12f4c10ffa0b5ba088", null ]
 ];

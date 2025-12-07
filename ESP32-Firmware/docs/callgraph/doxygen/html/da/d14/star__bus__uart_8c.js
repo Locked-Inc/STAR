@@ -23,6 +23,8 @@ var star__bus__uart_8c =
     [ "g_num_uart_states", "da/d14/star__bus__uart_8c.html#a414539291f3a9121b382139f3467927e", null ],
     [ "g_uart_init_spinlock", "da/d14/star__bus__uart_8c.html#a1fb68ec25b7316c8617bc96688031d17", null ],
     [ "g_uart_mutex", "da/d14/star__bus__uart_8c.html#a0729634ad3f3d04130a29eb4321fd40f", null ],
+    [ "g_uart_state_spinlock", "da/d14/star__bus__uart_8c.html#a00777c60b5c47c895bcb2f8f0ba7d982", null ],
     [ "g_uart_states", "da/d14/star__bus__uart_8c.html#a7c9897d9ce07d0c0f16dec06e849023d", null ],
-    [ "s_TAG", "da/d14/star__bus__uart_8c.html#a999e3dd103132afd3cd1856f477f2dbd", null ]
+    [ "s_TAG", "da/d14/star__bus__uart_8c.html#a999e3dd103132afd3cd1856f477f2dbd", null ],
+    [ "s_uart_mutex_timeout_ms", "da/d14/star__bus__uart_8c.html#a1f870f6df560ac08b56439737f53b286", null ]
 ];

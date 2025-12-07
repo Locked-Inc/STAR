@@ -58,9 +58,9 @@ typedef struct {
 /* --- Static Storage --- */
 
 static onewire_state_t   g_onewire_states[k_max_onewire_buses] = {0};
-static uint8_t           g_num_onewire_states                = 0;
-static SemaphoreHandle_t g_onewire_mutex                     = NULL;
-static portMUX_TYPE      g_onewire_init_spinlock             = portMUX_INITIALIZER_UNLOCKED;
+static uint8_t           g_num_onewire_states                  = 0;
+static SemaphoreHandle_t g_onewire_mutex                       = NULL;
+static portMUX_TYPE      g_onewire_init_spinlock               = portMUX_INITIALIZER_UNLOCKED;
 
 /* --- CRC Tables --- */
 
@@ -142,7 +142,8 @@ static onewire_state_t* internal_get_onewire_state_safe(const char* bus_name, bo
   }
 
   if (xSemaphoreTake(g_onewire_mutex, pdMS_TO_TICKS(s_onewire_mutex_timeout_ms)) != pdTRUE) {
-    ESP_LOGE(s_TAG, "Failed to take 1-Wire mutex (timeout after %lu ms)",
+    ESP_LOGE(s_TAG,
+             "Failed to take 1-Wire mutex (timeout after %lu ms)",
              (unsigned long)s_onewire_mutex_timeout_ms);
     return NULL;
   }

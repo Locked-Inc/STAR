@@ -1,5 +1,5 @@
 <map id="error_handler_destroy_default" name="error_handler_destroy_default">
 <area shape="rect" id="Node000001" title="Destroy an error handler created by error_handler_create_default() or error_handler_create_custom()." alt="" coords="5,5,152,46"/>
-<area shape="rect" id="Node000002" href="$d7/d82/star__error__handler_8c.html#a3a7dedd3275ece0e7f6029a11464c27d" title="Deinitialize an error handler and release resources." alt="" coords="200,13,334,38"/>
+<area shape="rect" id="Node000002" href="$d7/d82/star__error__handler_8c.html#aaaf152f965c4c4e01c241f0801ce561a" title="Deinitialize an error handler and release resources." alt="" coords="200,13,334,38"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="152,23,187,25,181,26,152,28"/>
 </map>

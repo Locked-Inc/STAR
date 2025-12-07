@@ -1,8 +1,6 @@
 var star__bus__async_8h =
 [
     [ "star_async_config_t", "de/d1b/structstar__async__config__t.html", "de/d1b/structstar__async__config__t" ],
-    [ "STAR_ASYNC_DEFAULT_TIMEOUT_MS", "da/d00/star__bus__async_8h.html#a402471a30a7c46987154cd900a261884", null ],
-    [ "STAR_ASYNC_MAX_PENDING", "da/d00/star__bus__async_8h.html#a47fababa0702706564b9043133697409", null ],
     [ "star_async_callback_t", "da/d00/star__bus__async_8h.html#ab3f784292ce800ed26b715b1b3bba911", null ],
     [ "star_async_handle_t", "da/d00/star__bus__async_8h.html#ab1ebca19d24a86431a176b7051ac608f", null ],
     [ "star_async_op_type_t", "da/d00/star__bus__async_8h.html#a17eccf4723230d4da8bc7aab1b51f49f", [
@@ -23,7 +21,7 @@ var star__bus__async_8h =
       [ "k_star_async_status_cancelled", "da/d00/star__bus__async_8h.html#ae82e007d3633edced3dcbc2225a27f15a693ed65594736af7ab4f7aa894b7dbac", null ]
     ] ],
     [ "star_async_cancel", "da/d00/star__bus__async_8h.html#a1c57a63112b10ed5aaaf4b6290868838", null ],
-    [ "star_async_free_handle", "da/d00/star__bus__async_8h.html#ae8d5cc127eb5e7165d84592001d0abfb", null ],
+    [ "star_async_free_handle", "da/d00/star__bus__async_8h.html#aac2b563406dcc517f5cd05d02b90ce3c", null ],
     [ "star_async_get_result", "da/d00/star__bus__async_8h.html#acafd8bd3d0469e8b59a5276707be539b", null ],
     [ "star_async_get_stats", "da/d00/star__bus__async_8h.html#a0281ef2e08edf041e7282db92cef9120", null ],
     [ "star_async_get_status", "da/d00/star__bus__async_8h.html#a2d1ed08041a75fbc8909aba9d14e80e8", null ],

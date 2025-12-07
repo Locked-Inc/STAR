@@ -267,7 +267,7 @@ Functions</h2></td></tr>
 <div class="line">config.<a class="code hl_variable" href="../../d8/dab/structstar__smbus__peripheral__config__t.html#ab56e4a4bea9b6cbd9e15de5ee710f4ef">address</a> = 0x48;</div>
 <div class="line">config.<a class="code hl_variable" href="../../d8/dab/structstar__smbus__peripheral__config__t.html#a700336367dfbcfade7d4d981a6ea5431">on_read_byte</a> = on_read;</div>
 <div class="line"><a class="code hl_function" href="#abb4bd4a9527a28561e582cb948830032">star_bus_smbus_peripheral_enable</a>(manager, <span class="stringliteral">&quot;i2c0&quot;</span>, &amp;config);</div>
-<div class="ttc" id="astar__bus__smbus__peripheral_8h_html_abb4bd4a9527a28561e582cb948830032"><div class="ttname"><a href="#abb4bd4a9527a28561e582cb948830032">star_bus_smbus_peripheral_enable</a></div><div class="ttdeci">esp_err_t star_bus_smbus_peripheral_enable(star_bus_manager_t *manager, const char *bus_name, const star_smbus_peripheral_config_t *config)</div><div class="ttdoc">Enable SMBus peripheral mode.</div><div class="ttdef"><b>Definition</b> <a href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00041">star_bus_smbus_peripheral.c:41</a></div></div>
+<div class="ttc" id="astar__bus__smbus__peripheral_8h_html_abb4bd4a9527a28561e582cb948830032"><div class="ttname"><a href="#abb4bd4a9527a28561e582cb948830032">star_bus_smbus_peripheral_enable</a></div><div class="ttdeci">esp_err_t star_bus_smbus_peripheral_enable(star_bus_manager_t *manager, const char *bus_name, const star_smbus_peripheral_config_t *config)</div><div class="ttdoc">Enable SMBus peripheral mode.</div><div class="ttdef"><b>Definition</b> <a href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00042">star_bus_smbus_peripheral.c:42</a></div></div>
 <div class="ttc" id="astructstar__smbus__peripheral__config__t_html"><div class="ttname"><a href="../../d8/dab/structstar__smbus__peripheral__config__t.html">star_smbus_peripheral_config_t</a></div><div class="ttdoc">SMBus peripheral configuration.</div><div class="ttdef"><b>Definition</b> <a href="../../d6/d2b/star__bus__smbus__peripheral_8h_source.html#l00150">star_bus_smbus_peripheral.h:150</a></div></div>
 <div class="ttc" id="astructstar__smbus__peripheral__config__t_html_a700336367dfbcfade7d4d981a6ea5431"><div class="ttname"><a href="../../d8/dab/structstar__smbus__peripheral__config__t.html#a700336367dfbcfade7d4d981a6ea5431">star_smbus_peripheral_config_t::on_read_byte</a></div><div class="ttdeci">star_smbus_peripheral_read_cb_t on_read_byte</div><div class="ttdef"><b>Definition</b> <a href="../../d6/d2b/star__bus__smbus__peripheral_8h_source.html#l00157">star_bus_smbus_peripheral.h:157</a></div></div>
 <div class="ttc" id="astructstar__smbus__peripheral__config__t_html_ab56e4a4bea9b6cbd9e15de5ee710f4ef"><div class="ttname"><a href="../../d8/dab/structstar__smbus__peripheral__config__t.html#ab56e4a4bea9b6cbd9e15de5ee710f4ef">star_smbus_peripheral_config_t::address</a></div><div class="ttdeci">uint8_t address</div><div class="ttdef"><b>Definition</b> <a href="../../d6/d2b/star__bus__smbus__peripheral_8h_source.html#l00151">star_bus_smbus_peripheral.h:151</a></div></div>
@@ -486,7 +486,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00066">66</a> of file <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html">star_bus_smbus_peripheral.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00067">67</a> of file <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html">star_bus_smbus_peripheral.c</a>.</p>
 
 <p class="reference">References <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00016">smbus_peripheral_state_t::enabled</a>, <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00022">get_peripheral_state()</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
 <div class="dynheader">
@@ -538,7 +538,7 @@ Here is the call graph for this function:</div>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise</dd></dl>
 <dl class="section note"><dt>Note</dt><dd>At least one callback should be provided </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00041">41</a> of file <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html">star_bus_smbus_peripheral.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00042">42</a> of file <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html">star_bus_smbus_peripheral.c</a>.</p>
 
 <p class="reference">References <a class="el" href="../../d6/d2b/star__bus__smbus__peripheral_8h_source.html#l00151">star_smbus_peripheral_config_t::address</a>, <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00014">smbus_peripheral_state_t::config</a>, <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00016">smbus_peripheral_state_t::enabled</a>, <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00022">get_peripheral_state()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00015">smbus_peripheral_state_t::stats</a>.</p>
 <div class="dynheader">
@@ -589,7 +589,7 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00114">114</a> of file <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html">star_bus_smbus_peripheral.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00115">115</a> of file <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html">star_bus_smbus_peripheral.c</a>.</p>
 
 <p class="reference">References <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00016">smbus_peripheral_state_t::enabled</a>, <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00022">get_peripheral_state()</a>, and <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00015">smbus_peripheral_state_t::stats</a>.</p>
 <div class="dynheader">
@@ -640,7 +640,7 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00083">83</a> of file <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html">star_bus_smbus_peripheral.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00084">84</a> of file <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html">star_bus_smbus_peripheral.c</a>.</p>
 
 <p class="reference">References <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00016">smbus_peripheral_state_t::enabled</a>, and <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00022">get_peripheral_state()</a>.</p>
 <div class="dynheader">
@@ -684,7 +684,7 @@ Here is the call graph for this function:</div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00149">149</a> of file <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html">star_bus_smbus_peripheral.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00150">150</a> of file <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html">star_bus_smbus_peripheral.c</a>.</p>
 
 <p class="reference">References <a class="el" href="../../d6/d2b/star__bus__smbus__peripheral_8h_source.html#l00191">star_smbus_peripheral_stats_t::alert_requests</a>, <a class="el" href="../../d6/d2b/star__bus__smbus__peripheral_8h_source.html#l00188">star_smbus_peripheral_stats_t::block_process_commands</a>, <a class="el" href="../../d6/d2b/star__bus__smbus__peripheral_8h_source.html#l00190">star_smbus_peripheral_stats_t::callback_errors</a>, <a class="el" href="../../d6/d2b/star__bus__smbus__peripheral_8h_source.html#l00189">star_smbus_peripheral_stats_t::pec_errors</a>, <a class="el" href="../../d6/d2b/star__bus__smbus__peripheral_8h_source.html#l00187">star_smbus_peripheral_stats_t::process_call_commands</a>, <a class="el" href="../../d6/d2b/star__bus__smbus__peripheral_8h_source.html#l00178">star_smbus_peripheral_stats_t::quick_commands</a>, <a class="el" href="../../d6/d2b/star__bus__smbus__peripheral_8h_source.html#l00185">star_smbus_peripheral_stats_t::read_block_commands</a>, <a class="el" href="../../d6/d2b/star__bus__smbus__peripheral_8h_source.html#l00181">star_smbus_peripheral_stats_t::read_byte_commands</a>, <a class="el" href="../../d6/d2b/star__bus__smbus__peripheral_8h_source.html#l00183">star_smbus_peripheral_stats_t::read_word_commands</a>, <a class="el" href="../../d6/d2b/star__bus__smbus__peripheral_8h_source.html#l00180">star_smbus_peripheral_stats_t::receive_byte_commands</a>, <a class="el" href="../../d6/d2b/star__bus__smbus__peripheral_8h_source.html#l00179">star_smbus_peripheral_stats_t::send_byte_commands</a>, <a class="el" href="../../d6/d2b/star__bus__smbus__peripheral_8h_source.html#l00186">star_smbus_peripheral_stats_t::write_block_commands</a>, <a class="el" href="../../d6/d2b/star__bus__smbus__peripheral_8h_source.html#l00182">star_smbus_peripheral_stats_t::write_byte_commands</a>, and <a class="el" href="../../d6/d2b/star__bus__smbus__peripheral_8h_source.html#l00184">star_smbus_peripheral_stats_t::write_word_commands</a>.</p>
 
@@ -719,7 +719,7 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00132">132</a> of file <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html">star_bus_smbus_peripheral.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00133">133</a> of file <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html">star_bus_smbus_peripheral.c</a>.</p>
 
 <p class="reference">References <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00016">smbus_peripheral_state_t::enabled</a>, <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00022">get_peripheral_state()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00015">smbus_peripheral_state_t::stats</a>.</p>
 <div class="dynheader">
@@ -765,7 +765,7 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00097">97</a> of file <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html">star_bus_smbus_peripheral.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00098">98</a> of file <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html">star_bus_smbus_peripheral.c</a>.</p>
 
 <p class="reference">References <a class="el" href="../../d6/d2b/star__bus__smbus__peripheral_8h_source.html#l00191">star_smbus_peripheral_stats_t::alert_requests</a>, <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00016">smbus_peripheral_state_t::enabled</a>, <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00022">get_peripheral_state()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../d9/d75/star__bus__smbus__peripheral_8c_source.html#l00015">smbus_peripheral_state_t::stats</a>.</p>
 <div class="dynheader">

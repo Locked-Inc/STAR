@@ -121,7 +121,8 @@ esp_err_t star_sensor_mpu6050_init(mpu6050_handle_t*       handle,
   ESP_LOGI(s_TAG, "Initializing MPU6050 on bus '%s' at address 0x%02X", bus_name, config->i2c_addr);
 
   uint8_t         who_am_i;
-  const esp_err_t ret = internal_mpu6050_read_reg(manager, bus_name, k_mpu6050_reg_who_am_i, &who_am_i);
+  const esp_err_t ret =
+    internal_mpu6050_read_reg(manager, bus_name, k_mpu6050_reg_who_am_i, &who_am_i);
   if (ret != ESP_OK || who_am_i != MPU6050_WHO_AM_I_VAL) {
     ESP_LOGE(s_TAG, "Failed to detect MPU6050 (who_am_i=0x%02X)", who_am_i);
     star_error_interface_cleanup(handle->error_iface, handle->owns_error_handler);
@@ -185,7 +186,10 @@ esp_err_t star_sensor_mpu6050_init(mpu6050_handle_t*       handle,
     return ret;
   }
 
-  ret = internal_mpu6050_write_reg(manager, bus_name, k_mpu6050_reg_smplrt_div, config->sample_rate_div);
+  ret = internal_mpu6050_write_reg(manager,
+                                   bus_name,
+                                   k_mpu6050_reg_smplrt_div,
+                                   config->sample_rate_div);
   if (ret != ESP_OK) {
     ESP_LOGE(s_TAG, "Failed to configure sample rate: %s", esp_err_to_name(ret));
     star_error_interface_cleanup(handle->error_iface, handle->owns_error_handler);
@@ -221,10 +225,15 @@ esp_err_t star_sensor_mpu6050_deinit(mpu6050_handle_t* handle)
 
   // Put device to sleep (no separate mutex needed, we already hold it)
   uint8_t pwr_mgmt;
-  if (internal_mpu6050_read_reg(handle->manager, handle->bus_name, k_mpu6050_reg_pwr_mgmt_1, &pwr_mgmt) ==
-      ESP_OK) {
+  if (internal_mpu6050_read_reg(handle->manager,
+                                handle->bus_name,
+                                k_mpu6050_reg_pwr_mgmt_1,
+                                &pwr_mgmt) == ESP_OK) {
     pwr_mgmt |= MPU6050_PWR1_SLEEP;
-    internal_mpu6050_write_reg(handle->manager, handle->bus_name, k_mpu6050_reg_pwr_mgmt_1, pwr_mgmt);
+    internal_mpu6050_write_reg(handle->manager,
+                               handle->bus_name,
+                               k_mpu6050_reg_pwr_mgmt_1,
+                               pwr_mgmt);
   }
 
   // Clean up error handler if we own it
@@ -254,9 +263,9 @@ esp_err_t star_sensor_mpu6050_reset(mpu6050_handle_t* handle)
   }
 
   return internal_mpu6050_write_reg(handle->manager,
-                           handle->bus_name,
-                           k_mpu6050_reg_pwr_mgmt_1,
-                           MPU6050_PWR1_DEVICE_RESET);
+                                    handle->bus_name,
+                                    k_mpu6050_reg_pwr_mgmt_1,
+                                    MPU6050_PWR1_DEVICE_RESET);
 }
 
 esp_err_t star_sensor_mpu6050_read_accel_raw(const mpu6050_handle_t* handle,
@@ -503,16 +512,17 @@ esp_err_t star_sensor_mpu6050_fifo_enable(mpu6050_handle_t* const handle, const 
   if (enable) {
     const uint8_t fifo_en =
       MPU6050_FIFO_EN_ACCEL | MPU6050_FIFO_EN_XG | MPU6050_FIFO_EN_YG | MPU6050_FIFO_EN_ZG;
-    ret = internal_mpu6050_write_reg(handle->manager, handle->bus_name, k_mpu6050_reg_fifo_en, fifo_en);
+    ret =
+      internal_mpu6050_write_reg(handle->manager, handle->bus_name, k_mpu6050_reg_fifo_en, fifo_en);
     if (ret != ESP_OK) {
       xSemaphoreGive(mutex);
       return ret;
     }
 
     ret = internal_mpu6050_write_reg(handle->manager,
-                            handle->bus_name,
-                            k_mpu6050_reg_user_ctrl,
-                            MPU6050_USERCTRL_FIFO_EN);
+                                     handle->bus_name,
+                                     k_mpu6050_reg_user_ctrl,
+                                     MPU6050_USERCTRL_FIFO_EN);
     if (ret != ESP_OK) {
       xSemaphoreGive(mutex);
       return ret;
@@ -556,15 +566,20 @@ esp_err_t star_sensor_mpu6050_fifo_reset(mpu6050_handle_t* handle)
   }
 
   uint8_t   user_ctrl;
-  esp_err_t ret =
-    internal_mpu6050_read_reg(handle->manager, handle->bus_name, k_mpu6050_reg_user_ctrl, &user_ctrl);
+  esp_err_t ret = internal_mpu6050_read_reg(handle->manager,
+                                            handle->bus_name,
+                                            k_mpu6050_reg_user_ctrl,
+                                            &user_ctrl);
   if (ret != ESP_OK) {
     xSemaphoreGive(mutex);
     return ret;
   }
 
   user_ctrl |= MPU6050_USERCTRL_FIFO_RESET;
-  ret = internal_mpu6050_write_reg(handle->manager, handle->bus_name, k_mpu6050_reg_user_ctrl, user_ctrl);
+  ret = internal_mpu6050_write_reg(handle->manager,
+                                   handle->bus_name,
+                                   k_mpu6050_reg_user_ctrl,
+                                   user_ctrl);
 
   xSemaphoreGive(mutex);
   return ret;
@@ -603,10 +618,16 @@ esp_err_t star_sensor_mpu6050_fifo_get_count(const mpu6050_handle_t* handle, uin
     ESP_LOGW(s_TAG, "FIFO overflow detected: count=%d, auto-resetting FIFO", *count);
     /* Auto-reset FIFO on overflow to recover from corrupted state */
     uint8_t user_ctrl;
-    ret = internal_mpu6050_read_reg(handle->manager, handle->bus_name, k_mpu6050_reg_user_ctrl, &user_ctrl);
+    ret = internal_mpu6050_read_reg(handle->manager,
+                                    handle->bus_name,
+                                    k_mpu6050_reg_user_ctrl,
+                                    &user_ctrl);
     if (ret == ESP_OK) {
       user_ctrl |= MPU6050_USERCTRL_FIFO_RESET;
-      internal_mpu6050_write_reg(handle->manager, handle->bus_name, k_mpu6050_reg_user_ctrl, user_ctrl);
+      internal_mpu6050_write_reg(handle->manager,
+                                 handle->bus_name,
+                                 k_mpu6050_reg_user_ctrl,
+                                 user_ctrl);
     }
     *count = 0;
     xSemaphoreGive(mutex);
@@ -670,8 +691,10 @@ esp_err_t star_sensor_mpu6050_set_sleep(mpu6050_handle_t* const handle, const bo
   }
 
   uint8_t   pwr_mgmt;
-  esp_err_t ret =
-    internal_mpu6050_read_reg(handle->manager, handle->bus_name, k_mpu6050_reg_pwr_mgmt_1, &pwr_mgmt);
+  esp_err_t ret = internal_mpu6050_read_reg(handle->manager,
+                                            handle->bus_name,
+                                            k_mpu6050_reg_pwr_mgmt_1,
+                                            &pwr_mgmt);
   if (ret != ESP_OK) {
     xSemaphoreGive(mutex);
     return ret;
@@ -683,7 +706,10 @@ esp_err_t star_sensor_mpu6050_set_sleep(mpu6050_handle_t* const handle, const bo
     pwr_mgmt &= ~MPU6050_PWR1_SLEEP;
   }
 
-  ret = internal_mpu6050_write_reg(handle->manager, handle->bus_name, k_mpu6050_reg_pwr_mgmt_1, pwr_mgmt);
+  ret = internal_mpu6050_write_reg(handle->manager,
+                                   handle->bus_name,
+                                   k_mpu6050_reg_pwr_mgmt_1,
+                                   pwr_mgmt);
 
   xSemaphoreGive(mutex);
   return ret;

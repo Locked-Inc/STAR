@@ -38,11 +38,11 @@ var NAVTREE =
       [ "File Members", "globals.html", [
         [ "All", "globals.html", "globals_dup" ],
         [ "Functions", "globals_func.html", "globals_func" ],
-        [ "Variables", "globals_vars.html", null ],
+        [ "Variables", "globals_vars.html", "globals_vars" ],
         [ "Typedefs", "globals_type.html", null ],
         [ "Enumerations", "globals_enum.html", null ],
         [ "Enumerator", "globals_eval.html", "globals_eval" ],
-        [ "Macros", "globals_defs.html", "globals_defs" ]
+        [ "Macros", "globals_defs.html", null ]
       ] ]
     ] ]
   ] ]
@@ -51,17 +51,17 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"d1/da8/star__bus__debug_8h.html#accd60204fba06cb393615601f42dd3ec",
-"d2/d6c/structstar__health__config__t.html#abcce00c25f94b6b8e99be72de8922504",
-"d3/d32/structstar__bus__stats__t.html#ad003941a1189aeb163325209d24ddc04",
-"d4/d7e/system__config_8h.html#ac331bcadfa89e4c377ee4e7fcce9ec92",
-"d6/d29/structdht22__raw__data__t.html#a1c562c410a58972f8576fe92c752f61b",
-"d7/d82/star__error__handler_8c.html#a37c70fed0d10c260212eb781ca4e5862",
-"d9/dc8/structled__task__context__t.html#a75f02e095f7f1223001250096ea36dc3",
-"da/da9/structstats__state__t.html#ab57bec41e1d9a9358455265aadd9ccb9",
-"dc/d8f/structsensor__task__context__t.html#add04db12c40d0ce8030fd3e79b3054c2",
-"dd/df4/star__bus__i2c_8h.html#a2e9b9baf8a0f8d00a2080963a7efd62f",
-"df/deb/star__bus__batch_8c.html#a80ab7c681dec605acb5a862cabe5fe4e"
+"d1/da8/star__bus__debug_8h.html#a672c8c59e0a222a334f7960fce73a59f",
+"d2/d6c/structstar__health__config__t.html#a5000b4be2530727a80967b229dafdeca",
+"d3/d32/structstar__bus__stats__t.html#aba5cf699c902fbfd7d946ded4de4a818",
+"d4/d7e/system__config_8h.html#a96c6e0528ea62fb58c3df3ce0a997a02a22b836398153b12319c014938cf93127",
+"d6/d1e/structsystem__health__t.html#a8b06b9b49a3e41d1c310bd0a34d2579a",
+"d7/d82/star__error__handler_8c.html#a331853a63aa2729d5a2a368c72aff6f2",
+"d9/dbd/star__bus__spi_8c.html#abb5396e9a5853fff01901fc8bc8fb164",
+"da/dc2/structstar__pin__validator__t.html",
+"dc/d96/watchdog__task_8c.html#a218696bc1c97dcdb24db87e1d71009de",
+"dd/dce/structbq7850__device__info__t.html#a8b71ceda7a15ab384afe5e67ecef8286",
+"df/deb/star__bus__batch_8c.html#a3a1201881330caab00d81086718b48f5"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronization';

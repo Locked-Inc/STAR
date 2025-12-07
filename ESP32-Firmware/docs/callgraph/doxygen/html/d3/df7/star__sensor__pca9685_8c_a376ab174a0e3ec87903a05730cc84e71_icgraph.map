@@ -1,0 +1,21 @@
+<map id="internal_pca9685_write_reg" name="internal_pca9685_write_reg">
+<area shape="rect" id="Node000001" title="Write to PCA9685 register with validation." alt="" coords="734,63,913,88"/>
+<area shape="rect" id="Node000002" href="$d3/df7/star__sensor__pca9685_8c.html#af172ec2771522a913b761463c8d4828f" title="Internal frequency setting (no initialization check, caller must hold mutex if needed)." alt="" coords="541,55,686,96"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="716,76,686,78,686,73,721,75"/>
+<area shape="rect" id="Node000003" href="$d3/df7/star__sensor__pca9685_8c.html#a7cb8d557fd6b5d97d3f4ce4148347af5" title="Create and initialize PCA9685 PWM controller handle." alt="" coords="324,5,493,31"/>
+<area shape="poly" id="edge10_Node000001_Node000003" title=" " alt="" coords="755,59,685,46,586,33,494,25,493,20,586,28,686,41,761,58"/>
+<area shape="rect" id="Node000007" href="$d3/df7/star__sensor__pca9685_8c.html#a26aba8511288f866884e1f5c7d663ee2" title="Set MODE1 register bits." alt="" coords="541,120,686,161"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="768,93,682,122,681,117,762,94"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="524,51,457,34,457,29,529,51"/>
+<area shape="rect" id="Node000006" href="$d3/df7/star__sensor__pca9685_8c.html#ab6df7f67b80a359b6368bc660c14084a" title="Set PWM frequency." alt="" coords="336,55,481,96"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="523,76,482,78,482,73,528,75"/>
+<area shape="rect" id="Node000004" href="$d0/d29/main_8c.html#ad6745a540d038c1266117bbcc686713b" title=" " alt="" coords="141,20,266,46"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="306,26,267,31,265,26,311,24"/>
+<area shape="rect" id="Node000005" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,64,83,90"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="138,52,84,69,82,64,142,48"/>
+<area shape="rect" id="Node000008" href="$d3/df7/star__sensor__pca9685_8c.html#abf4b004f9ee13b89446c5f5b268ebcf6" title="Deinitialize PCA9685 PWM controller handle." alt="" coords="131,84,276,125"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="524,135,276,114,276,109,528,132"/>
+<area shape="rect" id="Node000009" href="$d3/df7/star__sensor__pca9685_8c.html#a8967db4fc39ffbcbadb10919f9d20dae" title="Sleep/wake device." alt="" coords="336,170,481,210"/>
+<area shape="poly" id="edge9_Node000007_Node000009" title=" " alt="" coords="529,161,482,175,482,170,524,162"/>
+<area shape="poly" id="edge8_Node000008_Node000005" title=" " alt="" coords="113,91,84,86,82,81,118,88"/>
+</map>

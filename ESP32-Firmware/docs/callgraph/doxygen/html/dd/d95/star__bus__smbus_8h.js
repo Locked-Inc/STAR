@@ -1,7 +1,5 @@
 var star__bus__smbus_8h =
 [
-    [ "STAR_SMBUS_MAX_BLOCK_SIZE", "dd/d95/star__bus__smbus_8h.html#a7424a34337d385df1be55ffb65692714", null ],
-    [ "STAR_SMBUS_TIMEOUT_MS", "dd/d95/star__bus__smbus_8h.html#aa544b9fab5ba179733c29ad7e9383fbf", null ],
     [ "star_smbus_pec_mode_t", "dd/d95/star__bus__smbus_8h.html#ad9ca418f2e2460cec829c4adeb8c9cf6", [
       [ "k_star_smbus_pec_disabled", "dd/d95/star__bus__smbus_8h.html#ad9ca418f2e2460cec829c4adeb8c9cf6a0dfd39b0c2254b1f5ab3335cc2ce77ff", null ],
       [ "k_star_smbus_pec_enabled", "dd/d95/star__bus__smbus_8h.html#ad9ca418f2e2460cec829c4adeb8c9cf6a2955dffdef6f882266e2dc8e319b6a66", null ]

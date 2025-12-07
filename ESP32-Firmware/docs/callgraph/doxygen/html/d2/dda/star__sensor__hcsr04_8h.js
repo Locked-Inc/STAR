@@ -13,7 +13,7 @@ var star__sensor__hcsr04_8h =
     ] ],
     [ "star_sensor_hcsr04_calculate_distance", "d2/dda/star__sensor__hcsr04_8h.html#a10c4496e7b44e139e9fd4b902df1c888", null ],
     [ "star_sensor_hcsr04_deinit", "d2/dda/star__sensor__hcsr04_8h.html#a47cb2059d503f6428dc165b881c6f79f", null ],
-    [ "star_sensor_hcsr04_get_result", "d2/dda/star__sensor__hcsr04_8h.html#a80427acd575009fe291a5a838a191e4e", null ],
+    [ "star_sensor_hcsr04_get_result", "d2/dda/star__sensor__hcsr04_8h.html#a94efd94a71d36dfadc8463ff661e54f9", null ],
     [ "star_sensor_hcsr04_init", "d2/dda/star__sensor__hcsr04_8h.html#afd5878b21fda797877bd29036adcbd58", null ],
     [ "star_sensor_hcsr04_is_complete", "d2/dda/star__sensor__hcsr04_8h.html#acb5389ce3d9cfdc78c1170755922489e", null ],
     [ "star_sensor_hcsr04_read_distance", "d2/dda/star__sensor__hcsr04_8h.html#a0d4ae739014a4258b50c3a8bc6e3be78", null ],

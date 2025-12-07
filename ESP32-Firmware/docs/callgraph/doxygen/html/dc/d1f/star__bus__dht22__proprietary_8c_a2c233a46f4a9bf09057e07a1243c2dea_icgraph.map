@@ -1,6 +1,6 @@
 <map id="gpio_set_output" name="gpio_set_output">
 <area shape="rect" id="Node000001" title="Set GPIO to output mode." alt="" coords="1312,110,1425,136"/>
-<area shape="rect" id="Node000002" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a0cefc084690818ee196b34da74bcf4e4" title="Read raw data from DHT22 sensor." alt="" coords="1134,81,1241,106"/>
+<area shape="rect" id="Node000002" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a7eba1783e6f80cc2088540759ca01e16" title="Read raw data from DHT22 sensor." alt="" coords="1134,81,1241,106"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1293,111,1241,105,1241,100,1299,111"/>
 <area shape="rect" id="Node000015" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#aec99dc6d2a01015bbb5da6ed3899e400" title="Check if sensor is present and responding." alt="" coords="1111,131,1264,171"/>
 <area shape="poly" id="edge14_Node000001_Node000015" title=" " alt="" coords="1299,134,1264,142,1264,137,1293,134"/>

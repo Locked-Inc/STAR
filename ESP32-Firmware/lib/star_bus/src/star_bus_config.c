@@ -220,7 +220,11 @@ star_bus_config_create_gpio(const char* name, const gpio_num_t pins[], uint8_t p
   /* Validate each pin in the array is a valid GPIO number */
   for (uint8_t i = 0; i < pin_count; ++i) {
     if (pins[i] < 0 || pins[i] >= GPIO_NUM_MAX) {
-      ESP_LOGE(s_TAG, "Invalid GPIO pin at index %d: %d (valid range: 0-%d)", i, pins[i], GPIO_NUM_MAX - 1);
+      ESP_LOGE(s_TAG,
+               "Invalid GPIO pin at index %d: %d (valid range: 0-%d)",
+               i,
+               pins[i],
+               GPIO_NUM_MAX - 1);
       return NULL;
     }
   }

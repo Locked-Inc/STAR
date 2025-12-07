@@ -7,8 +7,6 @@ var star__sensor__bno055__bmp280_8h =
     [ "imu_10dof_data_t", "df/d38/structimu__10dof__data__t.html", "df/d38/structimu__10dof__data__t" ],
     [ "imu_10dof_config_t", "d7/dc9/structimu__10dof__config__t.html", "d7/dc9/structimu__10dof__config__t" ],
     [ "imu_10dof_handle", "df/d20/structimu__10dof__handle.html", "df/d20/structimu__10dof__handle" ],
-    [ "BMP280_I2C_ADDR", "d2/df3/star__sensor__bno055__bmp280_8h.html#aa58a90f8c2ec9ac45d8b345f91fdfab1", null ],
-    [ "BNO055_I2C_ADDR", "d2/df3/star__sensor__bno055__bmp280_8h.html#a495c8fe60d6f1ecaddd0b67a74786d8e", null ],
     [ "imu_10dof_handle_t", "d2/df3/star__sensor__bno055__bmp280_8h.html#a8e14763bd39b3ecda85d3b79f800b7ad", null ],
     [ "bno055_op_mode_t", "d2/df3/star__sensor__bno055__bmp280_8h.html#a97d803f1af9c4292f9437e6907b1aaf2", [
       [ "k_bno055_op_mode_config", "d2/df3/star__sensor__bno055__bmp280_8h.html#a97d803f1af9c4292f9437e6907b1aaf2a6d0dd289d21a2f764cb0477240205ca3", null ],
@@ -29,7 +27,7 @@ var star__sensor__bno055__bmp280_8h =
     ] ],
     [ "star_sensor_imu_10dof_deinit", "d2/df3/star__sensor__bno055__bmp280_8h.html#acb593dfc30474b45f2b4807406441b4f", null ],
     [ "star_sensor_imu_10dof_get_calibration", "d2/df3/star__sensor__bno055__bmp280_8h.html#a893fd4d35167ed7247d3172edcecb600", null ],
-    [ "star_sensor_imu_10dof_init", "d2/df3/star__sensor__bno055__bmp280_8h.html#a722083a7cb967139e04c4e0e722895f8", null ],
+    [ "star_sensor_imu_10dof_init", "d2/df3/star__sensor__bno055__bmp280_8h.html#abef5a4f32095d020c6dddc96d6bbdd5d", null ],
     [ "star_sensor_imu_10dof_is_calibrated", "d2/df3/star__sensor__bno055__bmp280_8h.html#a990d4e7c3b3283d36a148ec59dbd85cf", null ],
     [ "star_sensor_imu_10dof_read", "d2/df3/star__sensor__bno055__bmp280_8h.html#afc8770c3ef4fdfe8ab3f18b3e3b5bd46", null ],
     [ "star_sensor_imu_10dof_reset_bno055", "d2/df3/star__sensor__bno055__bmp280_8h.html#ad32cda498cad9532f0fb33e0f4395df2", null ],

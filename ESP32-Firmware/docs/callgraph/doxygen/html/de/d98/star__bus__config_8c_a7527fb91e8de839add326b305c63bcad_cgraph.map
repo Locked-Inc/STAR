@@ -8,7 +8,7 @@
 <area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="358,326,407,328,402,329,359,331"/>
 <area shape="rect" id="Node000005" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#ad84a1750c76d3cacd25aa7711b5fbdb5" title="Get DHT22 state for a bus (thread&#45;safe)." alt="" coords="627,78,741,104"/>
 <area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="496,313,660,117,665,115,500,317"/>
-<area shape="rect" id="Node000008" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a0cefc084690818ee196b34da74bcf4e4" title="Read raw data from DHT22 sensor." alt="" coords="631,258,737,284"/>
+<area shape="rect" id="Node000008" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a7eba1783e6f80cc2088540759ca01e16" title="Read raw data from DHT22 sensor." alt="" coords="631,258,737,284"/>
 <area shape="poly" id="edge7_Node000004_Node000008" title=" " alt="" coords="532,312,625,288,620,289,534,317"/>
 <area shape="rect" id="Node000017" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a2b6eb006720d74c12343fee2c65b6d01" title="Calculate checksum from raw data." alt="" coords="599,308,769,349"/>
 <area shape="poly" id="edge17_Node000004_Node000017" title=" " alt="" coords="551,326,586,328,581,329,552,331"/>

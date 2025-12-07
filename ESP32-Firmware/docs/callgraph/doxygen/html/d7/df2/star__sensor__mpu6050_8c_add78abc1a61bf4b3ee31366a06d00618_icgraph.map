@@ -1,5 +1,5 @@
 <map id="star_sensor_mpu6050_fifo_enable" name="star_sensor_mpu6050_fifo_enable">
-<area shape="rect" id="Node000001" title=" " alt="" coords="227,5,376,46"/>
+<area shape="rect" id="Node000001" title="Enable or disable the hardware FIFO buffer." alt="" coords="227,5,376,46"/>
 <area shape="rect" id="Node000002" href="$d7/df2/star__sensor__mpu6050_8c.html#a6dbaa7aa91b9b60c82941cdcb8ab125a" title="Initialize MPU6050 IMU sensor." alt="" coords="5,13,179,38"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="209,26,179,28,179,23,214,25"/>
 </map>

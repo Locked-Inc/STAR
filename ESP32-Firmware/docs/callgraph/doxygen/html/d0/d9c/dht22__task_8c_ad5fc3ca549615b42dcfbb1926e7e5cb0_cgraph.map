@@ -39,7 +39,7 @@
 <area shape="poly" id="edge16_Node000015_Node000011" title=" " alt="" coords="735,499,848,529,843,529,735,504"/>
 <area shape="poly" id="edge18_Node000016_Node000013" title=" " alt="" coords="747,606,810,606,804,607,748,611"/>
 <area shape="poly" id="edge20_Node000017_Node000004" title=" " alt="" coords="692,309,887,135,892,132,696,313"/>
-<area shape="rect" id="Node000018" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a0cefc084690818ee196b34da74bcf4e4" title="Read raw data from DHT22 sensor." alt="" coords="864,222,970,248"/>
+<area shape="rect" id="Node000018" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a7eba1783e6f80cc2088540759ca01e16" title="Read raw data from DHT22 sensor." alt="" coords="864,222,970,248"/>
 <area shape="poly" id="edge21_Node000017_Node000018" title=" " alt="" coords="705,309,758,284,822,258,851,251,846,253,824,263,760,289,707,313"/>
 <area shape="rect" id="Node000027" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a2b6eb006720d74c12343fee2c65b6d01" title="Calculate checksum from raw data." alt="" coords="832,272,1002,313"/>
 <area shape="poly" id="edge31_Node000017_Node000027" title=" " alt="" coords="749,312,820,305,815,306,750,317"/>

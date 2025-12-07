@@ -25,7 +25,7 @@
 <area shape="poly" id="edge12_Node000010_Node000007" title=" " alt="" coords="566,234,642,212,673,206,668,208,643,218,568,238"/>
 <area shape="rect" id="Node000012" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#ad84a1750c76d3cacd25aa7711b5fbdb5" title="Get DHT22 state for a bus (thread&#45;safe)." alt="" coords="679,422,794,448"/>
 <area shape="poly" id="edge14_Node000011_Node000012" title=" " alt="" coords="525,355,579,381,643,407,669,417,663,418,641,412,577,386,525,360"/>
-<area shape="rect" id="Node000015" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a0cefc084690818ee196b34da74bcf4e4" title="Read raw data from DHT22 sensor." alt="" coords="683,602,790,628"/>
+<area shape="rect" id="Node000015" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a7eba1783e6f80cc2088540759ca01e16" title="Read raw data from DHT22 sensor." alt="" coords="683,602,790,628"/>
 <area shape="poly" id="edge17_Node000011_Node000015" title=" " alt="" coords="512,355,717,590,711,591,510,360"/>
 <area shape="rect" id="Node000024" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a2b6eb006720d74c12343fee2c65b6d01" title="Calculate checksum from raw data." alt="" coords="652,227,821,267"/>
 <area shape="poly" id="edge27_Node000011_Node000024" title=" " alt="" coords="526,329,641,278,663,272,659,274,643,283,529,333"/>

@@ -1,0 +1,13 @@
+<map id="internal_hcsr04_echo_isr_handler" name="internal_hcsr04_echo_isr_handler">
+<area shape="rect" id="Node000001" title=" " alt="" coords="884,5,1028,46"/>
+<area shape="rect" id="Node000002" href="$de/de2/star__sensor__hcsr04_8c.html#afd5878b21fda797877bd29036adcbd58" title="Initialize HC&#45;SR04 sensor." alt="" coords="677,13,836,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="866,26,836,28,836,23,871,26"/>
+<area shape="rect" id="Node000003" href="$de/dd4/sensor__task_8c.html#afa22a6110eba0db527b95b8e2ce3a746" title=" " alt="" coords="488,13,629,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="658,26,629,28,629,23,664,26"/>
+<area shape="rect" id="Node000004" href="$de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="315,13,440,38"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="470,26,441,28,441,23,475,26"/>
+<area shape="rect" id="Node000005" href="$d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,13,267,38"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="297,26,268,28,267,23,302,26"/>
+<area shape="rect" id="Node000006" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,13,83,38"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="112,26,83,28,83,23,118,25"/>
+</map>

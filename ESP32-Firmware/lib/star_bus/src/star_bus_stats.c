@@ -225,9 +225,9 @@ esp_err_t star_bus_stats_reset(star_bus_manager_t* manager, const char* bus_name
   state->enabled = enabled;
   strncpy(state->bus_name, name, sizeof(state->bus_name) - 1);
   state->bus_name[sizeof(state->bus_name) - 1] = '\0';
-  state->stats.min_operation_time_us = UINT32_MAX;
-  state->stats.stats_start_time_ms   = pdTICKS_TO_MS(xTaskGetTickCount());
-  state->stats.last_reset_time_ms    = pdTICKS_TO_MS(xTaskGetTickCount());
+  state->stats.min_operation_time_us           = UINT32_MAX;
+  state->stats.stats_start_time_ms             = pdTICKS_TO_MS(xTaskGetTickCount());
+  state->stats.last_reset_time_ms              = pdTICKS_TO_MS(xTaskGetTickCount());
 
   ESP_LOGI(s_TAG, "Statistics reset for bus '%s'", bus_name);
 
