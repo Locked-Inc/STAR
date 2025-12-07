@@ -473,6 +473,86 @@
         "via_diameter": 0.6,
         "via_drill": 0.3,
         "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "C0-2",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 2,
+        "schematic_color": "rgb(222, 143, 0)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "FUEL GAUGE",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 4,
+        "schematic_color": "rgb(186, 0, 255)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "GATE",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 3,
+        "schematic_color": "rgb(38, 194, 203)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "GND",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 8,
+        "schematic_color": "rgb(0, 0, 0)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "REGSRC",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 5,
+        "schematic_color": "rgb(76, 79, 255)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "SRN",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 6,
+        "schematic_color": "rgb(255, 46, 44)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "SRP",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 7,
+        "schematic_color": "rgb(34, 190, 28)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "name": "TS1",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 0,
+        "schematic_color": "rgb(96, 123, 97)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "VC",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 1,
+        "schematic_color": "rgb(150, 0, 147)",
+        "wire_width": 6
       }
     ],
     "meta": {
@@ -480,7 +560,60 @@
     },
     "net_colors": null,
     "netclass_assignments": null,
-    "netclass_patterns": []
+    "netclass_patterns": [
+      {
+        "netclass": "GND",
+        "pattern": "GND"
+      },
+      {
+        "netclass": "SRN",
+        "pattern": "/BATT-"
+      },
+      {
+        "netclass": "SRN",
+        "pattern": "/SRP"
+      },
+      {
+        "netclass": "SRP",
+        "pattern": "/PACK-"
+      },
+      {
+        "netclass": "SRP",
+        "pattern": "/SRN"
+      },
+      {
+        "netclass": "REGSRC",
+        "pattern": "/REGSRC"
+      },
+      {
+        "netclass": "FUEL GAUGE",
+        "pattern": "/FUEL*"
+      },
+      {
+        "netclass": "GATE",
+        "pattern": "/GATE*"
+      },
+      {
+        "netclass": "GATE",
+        "pattern": "/BATT+"
+      },
+      {
+        "netclass": "C0-2",
+        "pattern": "/C*"
+      },
+      {
+        "netclass": "FUEL GAUGE",
+        "pattern": "/C3"
+      },
+      {
+        "netclass": "VC",
+        "pattern": "/V*"
+      },
+      {
+        "netclass": "TS1",
+        "pattern": "/TS1"
+      }
+    ]
   },
   "pcbnew": {
     "last_paths": {
