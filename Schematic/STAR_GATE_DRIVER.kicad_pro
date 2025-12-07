@@ -226,7 +226,12 @@
     "equivalence_files": []
   },
   "erc": {
-    "erc_exclusions": [],
+    "erc_exclusions": [
+      [
+        "power_pin_not_driven|723900|1320800|15fc7436-099d-44cc-9c82-e6d436101e1a|00000000-0000-0000-0000-000000000000|/b093d17b-3f16-40e3-b68a-97d9cd4b2df5|/b093d17b-3f16-40e3-b68a-97d9cd4b2df5|",
+        "GND Pin"
+      ]
+    ],
     "meta": {
       "version": 0
     },
@@ -473,6 +478,24 @@
         "via_diameter": 0.6,
         "via_drill": 0.3,
         "wire_width": 6
+      },
+      {
+        "name": "AFE",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 1,
+        "schematic_color": "rgb(255, 0, 0)"
+      },
+      {
+        "name": "Fuel Guage",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 0,
+        "schematic_color": "rgb(0, 0, 255)"
+      },
+      {
+        "name": "GND",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 2,
+        "schematic_color": "rgb(0, 0, 0)"
       }
     ],
     "meta": {
@@ -480,7 +503,20 @@
     },
     "net_colors": null,
     "netclass_assignments": null,
-    "netclass_patterns": []
+    "netclass_patterns": [
+      {
+        "netclass": "GND",
+        "pattern": "GND"
+      },
+      {
+        "netclass": "AFE",
+        "pattern": "/AFE*"
+      },
+      {
+        "netclass": "Fuel Guage",
+        "pattern": "/FUEL*"
+      }
+    ]
   },
   "pcbnew": {
     "last_paths": {
