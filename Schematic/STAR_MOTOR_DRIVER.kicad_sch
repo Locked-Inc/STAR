@@ -12989,8 +12989,71 @@
 				(hide yes)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "6p header"
 			(at 270.51 175.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/short/r8mfmh49"
+			(at 270.51 175.26 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "732-5394-ND "
+			(at 270.51 175.26 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.43"
+			(at 270.51 175.26 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "  61200621621"
+			(at 270.51 175.26 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/4a2Gtty"
+			(at 270.51 175.26 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "710-61200621621 "
+			(at 270.51 175.26 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "0.47"
+			(at 270.51 175.26 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15726,7 +15789,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "Headers & Wire Housings"
 			(at 297.18 102.87 0)
 			(effects
 				(font
@@ -15772,6 +15835,69 @@
 					(size 1.27 1.27)
 				)
 				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/short/5hqzrmdj"
+			(at 297.18 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "455-B6B-XH-A-ND "
+			(at 297.18 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.20"
+			(at 297.18 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "B6B-XH-A"
+			(at 297.18 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "N/A"
+			(at 297.18 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "N/A"
+			(at 297.18 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "N/A"
+			(at 297.18 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 				(hide yes)
 			)
 		)
@@ -17843,8 +17969,71 @@
 				(hide yes)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "8p header"
 			(at 339.09 191.77 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/short/5bh9z1wz"
+			(at 339.09 191.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "732-5395-ND "
+			(at 339.09 191.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.97"
+			(at 339.09 191.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "61200821621"
+			(at 339.09 191.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/4rJy3xv"
+			(at 339.09 191.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "710-61200821621 "
+			(at 339.09 191.77 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "1.08"
+			(at 339.09 191.77 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -21164,7 +21353,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "Headers & Wire Housings"
 			(at 377.19 101.6 0)
 			(effects
 				(font
@@ -21210,6 +21399,69 @@
 					(size 1.27 1.27)
 				)
 				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/short/5hqzrmdj"
+			(at 377.19 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "455-B6B-XH-A-ND "
+			(at 377.19 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.20"
+			(at 377.19 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "B6B-XH-A"
+			(at 377.19 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "N/A"
+			(at 377.19 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "N/A"
+			(at 377.19 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "N/A"
+			(at 377.19 101.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 				(hide yes)
 			)
 		)
@@ -21287,7 +21539,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "Headers & Wire Housings"
 			(at 297.18 52.07 0)
 			(effects
 				(font
@@ -21333,6 +21585,69 @@
 					(size 1.27 1.27)
 				)
 				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/short/5hqzrmdj"
+			(at 297.18 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "455-B6B-XH-A-ND "
+			(at 297.18 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.20"
+			(at 297.18 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "B6B-XH-A"
+			(at 297.18 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "N/A"
+			(at 297.18 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "N/A"
+			(at 297.18 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "N/A"
+			(at 297.18 52.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 				(hide yes)
 			)
 		)
@@ -22936,8 +23251,71 @@
 				(hide yes)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "8p header"
 			(at 340.36 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/short/5bh9z1wz"
+			(at 340.36 233.68 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "732-5395-ND "
+			(at 340.36 233.68 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.97"
+			(at 340.36 233.68 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "61200821621"
+			(at 340.36 233.68 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/4rJy3xv"
+			(at 340.36 233.68 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "710-61200821621 "
+			(at 340.36 233.68 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "1.08"
+			(at 340.36 233.68 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -23708,8 +24086,71 @@
 				(hide yes)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "8p header"
 			(at 339.09 217.17 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/short/5bh9z1wz"
+			(at 339.09 217.17 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "732-5395-ND "
+			(at 339.09 217.17 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.97"
+			(at 339.09 217.17 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "61200821621"
+			(at 339.09 217.17 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/4rJy3xv"
+			(at 339.09 217.17 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "710-61200821621 "
+			(at 339.09 217.17 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "1.08"
+			(at 339.09 217.17 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -31169,8 +31610,71 @@
 				(hide yes)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "8p header"
 			(at 340.36 172.72 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/short/5bh9z1wz"
+			(at 340.36 172.72 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "732-5395-ND "
+			(at 340.36 172.72 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.97"
+			(at 340.36 172.72 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "61200821621"
+			(at 340.36 172.72 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/4rJy3xv"
+			(at 340.36 172.72 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "710-61200821621 "
+			(at 340.36 172.72 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "1.08"
+			(at 340.36 172.72 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -32804,7 +33308,7 @@
 				(hide yes)
 			)
 		)
-		(property "Description" ""
+		(property "Description" "Headers & Wire Housings"
 			(at 377.19 53.34 0)
 			(effects
 				(font
@@ -32850,6 +33354,69 @@
 					(size 1.27 1.27)
 				)
 				(justify bottom)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/short/5hqzrmdj"
+			(at 377.19 53.34 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "455-B6B-XH-A-ND "
+			(at 377.19 53.34 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.20"
+			(at 377.19 53.34 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "B6B-XH-A"
+			(at 377.19 53.34 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "N/A"
+			(at 377.19 53.34 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "N/A"
+			(at 377.19 53.34 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "N/A"
+			(at 377.19 53.34 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 				(hide yes)
 			)
 		)
