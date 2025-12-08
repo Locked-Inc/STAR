@@ -1,6 +1,0 @@
-[submodule "UI-Demo"]
-	path = UI-Demo
-	url = git@github.com:Locked-Inc/UI-Demo.git
-[submodule "419"]
-	path = 419
-	url = git@github.com:Locked-Inc/419.git
