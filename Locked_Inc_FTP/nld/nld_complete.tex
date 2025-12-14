@@ -1,0 +1,54 @@
+% NLD Overview - Phase Connections
+% Generated: 2025-12-06 16:42
+
+\subsection{Network Logic Diagram Overview}
+
+The NLD shows task dependencies and the critical path through the project. Tasks are organized by phase, with arrows indicating predecessor-successor relationships.
+
+\vspace{0.5em}
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{tikzpicture}[
+  node distance=2cm,
+  phase/.style={rectangle, draw, rounded corners=5pt, minimum width=3cm, minimum height=1.2cm, align=center, font=\small\bfseries},
+  arrow/.style={-{Stealth[length=8pt]}, thick, gray!70},
+]
+
+  \node[phase, fill=researchblue] (research) {Research\\Phase};
+  \node[phase, fill=designyellow, right=of research] (design) {Design\\Phase};
+  \node[phase, fill=buildorange, right=of design] (build) {Build\\Phase};
+  \node[phase, fill=testgreen, right=of build] (test) {Test\\Phase};
+  \node[phase, fill=closepink, right=of test] (close) {Close\\Phase};
+
+  % Phase connections
+  \draw[arrow] (research) -- (design);
+  \draw[arrow] (design) -- (build);
+  \draw[arrow] (build) -- (test);
+  \draw[arrow] (test) -- (close);
+
+\end{tikzpicture}
+}%
+\caption{Project Phase Flow}
+\label{fig:nld_overview}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\caption{Phase Statistics}
+\label{tab:nld_stats}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+\textbf{Phase} & \textbf{Tasks} & \textbf{Duration} & \textbf{Critical} \\
+\midrule
+Research & 13 & 56d & 9 \\
+Design & 24 & 103d & 9 \\
+Build & 20 & 94d & 16 \\
+Test & 15 & 62d & 11 \\
+Close & 7 & 24d & 3 \\
+\midrule
+\textbf{Total} & \textbf{79} & \textbf{339d} & \textbf{48} \\
+\bottomrule
+\end{tabular}
+\end{table}

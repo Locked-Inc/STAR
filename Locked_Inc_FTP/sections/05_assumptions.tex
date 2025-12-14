@@ -1,0 +1,138 @@
+% =============================================================================
+% Section 5: Assumptions
+% =============================================================================
+
+\section{Assumptions}
+\sectionauthors{CM, MN}
+
+\subsection{Assumptions Overview}
+%Reviewed by Jeremie
+
+This section documents the assumptions that the team has taken into consideration for the project. These assumptions define the boundaries within which the project will operate and help the team focus their efforts on defined deliverables.
+
+\subsection{Technical Assumptions}
+
+\subsubsection{Hardware Platform}
+
+\begin{enumerate}
+    \item \textbf{Compute Platform}: The Raspberry Pi 5 with 8GB RAM provides sufficient computational resources for running ROS 2, SLAM Toolbox, and Nav2 navigation stack simultaneously at acceptable frame rates. The ESP32 microcontroller handles motor control and encoder feedback via SPI communication, enabling sensor fusion between the main processor and motor subsystem.
+
+    \item \textbf{LiDAR Performance}: The SICK TiM561 2D LiDAR serves as the primary sensor, providing accurate range measurements within its 10-meter range across its 270-degree field of view at 15Hz scan rate with $\pm$60mm accuracy. This industrial-grade sensor was donated by SICK Inc. (valued at \$3,500 including cables). The RPLiDAR C1 2D LiDAR (360° FoV, 12m range, 10Hz, $\pm$30mm accuracy, \$55), purchased separately by the team, serves as a backup sensor for redundancy and development testing.
+
+    \item \textbf{Depth Camera Compatibility}: The IMX219-83 Stereo Camera connects to the Raspberry Pi 5 via the CSI-2 (Camera Serial Interface) ribbon cable connector, using V4L2 camera drivers and OpenCV for stereo depth computation.
+
+    \item \textbf{Motor Control}: The DC gear motors with encoders provide sufficient torque to move the robot with all components at the target velocity of 0.5 m/s on smooth, level surfaces.
+
+    \item \textbf{Battery Capacity}: A custom 3S LiPo battery pack (3S denotes three lithium polymer cells in series, yielding 11.1V nominal / 12.6V fully charged; parallel cell count to be determined during testing, approximately 2500mAh per cell) provides at least 60 minutes of operation under typical navigation workloads.
+\end{enumerate}
+
+\subsubsection{Software Environment}
+
+\begin{enumerate}
+    \item \textbf{Operating System}: A custom Linux image built with Buildroot runs stably on the Raspberry Pi 5, providing a minimal footprint optimized for ROS 2 and SLAM operations with all required drivers and packages.
+
+    \item \textbf{ROS 2 Humble}: ROS 2 Humble Hawksbill is the target distribution and is assumed to be stable and well-supported throughout the project duration.
+
+    \item \textbf{SLAM Toolbox}: SLAM Toolbox is a ROS 2-based SLAM algorithm that creates 2D occupancy grid maps using LiDAR data, requiring wheel odometry.
+
+    \item \textbf{Nav2 Stack}: Nav2 (Navigation 2) is the ROS 2 navigation framework that provides autonomous navigation capabilities including global and local path planning, costmap generation, obstacle avoidance, and behavior trees for complex navigation behaviors.
+
+    \item \textbf{Python 3}: Python 3.10+ is available on the target platform for custom node development and scripting.
+\end{enumerate}
+
+\subsubsection{Operating Environment}
+
+\begin{enumerate}
+    \item \textbf{Indoor Environment}: The robot will operate exclusively in indoor, structured environments with:
+    \begin{itemize}
+        \item Flat, hard flooring (tile, concrete, wood)
+        \item Standard doorways (minimum 76cm width)
+        \item Adequate lighting for depth camera operation
+        \item Primarily static obstacles, dynamic obstacle avoidance using DWA (Dynamic Window Approach) is a stretch goal
+    \end{itemize}
+
+    \item \textbf{WiFi Availability}: WiFi connectivity is available in operating environments for remote monitoring and visualization. As a stretch goal, cellular module integration may provide connectivity in environments without WiFi infrastructure.
+
+    \item \textbf{Temperature Range}: Operating temperature remains within 15-30°C (typical indoor climate control).
+
+    \item \textbf{Obstacle Characteristics}: Obstacles are solid, opaque objects detectable by both LiDAR (range) and depth camera (visual).
+\end{enumerate}
+
+\subsection{Resource Assumptions}
+
+\subsubsection{Team Availability}
+
+\begin{enumerate}
+    \item \textbf{Team Commitment}: All six team members remain enrolled and committed to the project for the full duration (August 2025 - May 2026).
+
+    \item \textbf{Work Hours}: Team members dedicate an average of 8-10 hours per week to project work during academic semesters.
+
+    \item \textbf{Skill Availability}: Team members possess or can acquire necessary skills in robotics, ROS 2, CAD, and electronics within the project timeline.
+
+    \item \textbf{Communication}: Team members are responsive to communications within 24 hours on weekdays.
+\end{enumerate}
+
+\subsubsection{Facilities and Equipment}
+
+\begin{enumerate}
+    \item \textbf{Lab Access}: The team has access to university fabrication labs and testing spaces throughout the project.
+
+    \item \textbf{Tools}: Standard hand tools, soldering equipment, and 3D printers are available through university facilities.
+
+    \item \textbf{Test Environment}: Suitable indoor test spaces are available, including university facilities (minimum 100 sq ft) and TEEX's Disaster City complex for realistic post-disaster scenario testing.
+
+    \item \textbf{Personal Computers}: Team members have personal computers capable of running ROS 2 development tools and simulation.
+\end{enumerate}
+
+\subsubsection{Budget and Procurement}
+
+\begin{enumerate}
+    \item \textbf{Funding}: The department provides less than \$1,000 for materials. Team members have self-funded additional components to accelerate development and reduce dependency on the limited department allocation.
+
+    \item \textbf{Component Availability}: All specified components are available for purchase from domestic and international suppliers within stated lead times.
+\end{enumerate}
+
+\subsection{Project Management Assumptions}
+
+\begin{enumerate}
+    \item \textbf{Sponsor Engagement}: The project sponsor and technical advisor (Dr. Logan Porter) is available for bi-weekly status meetings and provides timely feedback on deliverables.
+
+    \item \textbf{Requirements Stability}: Core project requirements remain stable after Research phase completion. Any changes must follow formal change control and be approved by all members and the sponsor in a meeting.
+
+    \item \textbf{Course Requirements}: ESET-419 course requirements and deadlines do not change significantly from current expectations.
+\end{enumerate}
+
+\subsection{Assumption Validation}
+
+Assumptions are validated through the following methods:
+
+\begin{table}[H]
+\centering
+\caption{Assumption Validation Methods}
+\label{tab:assumption_validation}
+\begin{tabular}{@{}p{0.35\textwidth}p{0.55\textwidth}@{}}
+\toprule
+\textbf{Assumption Category} & \textbf{Validation Approach} \\
+\midrule
+Compute Platform Performance & Benchmark testing during Research phase \\
+Sensor Compatibility & Prototype integration during Design phase \\
+Battery Runtime & Endurance testing during Build phase \\
+Operating Environment & Testing in representative environments \\
+Team Availability & Weekly check-ins and commitment tracking using the Gantt Chart \\
+Facility Access & Advance scheduling and confirmation \\
+Component Availability & Early procurement of long-lead items \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Assumption Tracking}
+
+Assumptions are reviewed bi-monthly and updated as:
+
+\begin{itemize}
+    \item \textbf{Confirmed}: Assumption validated as true
+    \item \textbf{Adjusted}: Assumption modified based on new information or finding
+    \item \textbf{Invalidated}: Assumption found to be false, mitigation required
+\end{itemize}
+
+Invalidated assumptions are escalated as risks and addressed through the risk management process. For more information on risk management and mitigation strategies for invalidated assumptions, see Section~\ref{sec:risks} (Risk Assessment).

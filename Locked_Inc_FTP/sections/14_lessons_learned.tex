@@ -1,0 +1,110 @@
+% =============================================================================
+% Section 14: Lessons Learned
+% =============================================================================
+
+\section{Lessons Learned}
+\sectionauthors{CM, BS, JH, MN, SC, JB}
+%Reviewed by Jeremie
+
+This section documents key insights gained during the project lifecycle, demonstrating continuous improvement and knowledge capture. These lessons have been applied iteratively throughout the project phases.
+
+\subsection{Research Phase Lessons}
+
+\subsubsection{LL-1: Iterative Compute Platform Selection}
+
+\textbf{Situation}: During compute platform selection, the team evaluated multiple options for the main processing unit. The initial candidate was the Texas Instruments SK-TDA4VM, selected for its integrated vision accelerators and automotive-grade reliability.
+
+\textbf{Discovery \#1}: Power analysis revealed the SK-TDA4VM consumed 15--20W under typical SLAM workloads and 100W at max load, exceeding our 10W power budget for the compute subsystem. This would have required a larger battery and increased robot weight.
+
+\textbf{Pivot \#1}: Research into low-power FPGA alternatives led to the Pynq-Z2 board, inspired by work on unified SLAM accelerators for low-end FPGAs \parencite{sugiura_fpga_slam}. The Pynq-Z2 offered hardware acceleration within our power envelope.
+
+\textbf{Discovery \#2}: Compatibility testing revealed that ROS 2 Humble had limited support for the Pynq-Z2's ARM architecture and required significant manual configuration. The FPGA development toolchain also added complexity.
+
+\textbf{Pivot \#2}: The team selected Raspberry Pi 5, which provides native Ubuntu 22.04 and ROS 2 Humble support, extensive community documentation, proven reliability in robotics applications, and acceptable power consumption (5--8W under load).
+
+\textbf{Result}: Zero schedule impact. Both pivots occurred during Research before any hardware procurement. Software development proceeded without compatibility issues.
+
+\textbf{Lesson}: \textit{Evaluate multiple candidates against all constraints (power, software compatibility, development complexity) before procurement. Early pivots cost hours; late pivots cost weeks.}
+
+\subsubsection{LL-2: Sponsor Relationship Investment}
+
+\textbf{Situation}: The project budget constrained sensor options, with professional-grade LiDARs costing \$2,000--\$5,000.
+
+\textbf{Action}: Proactive engagement with SICK Inc. through multiple meetings with Dr. Porter clarified project scope and demonstrated educational value. The team presented the project's alignment with SICK's educational outreach goals.
+
+\textbf{Result}: SICK Inc. donated a TiM561 LiDAR valued at \$3,500+, providing professional-grade sensors at educational budget levels.
+
+\textbf{Lesson}: \textit{Sponsor relationships provide resources beyond funding: expertise, equipment, and scope guidance. Invest time in demonstrating mutual value.}
+
+\subsection{Design Phase Lessons}
+
+\subsubsection{LL-3: Multi-Board PCB Strategy}
+
+\textbf{Situation}: The original electrical design called for a single large PCB containing all motor drivers, power distribution, and sensor interfaces.
+
+\textbf{Risk Analysis}: Risk assessment revealed that a single board failure would be catastrophic; the entire system would be non-functional, and replacement would require complete board redesign and fabrication
+
+\textbf{Action}: Redesigned to six smaller PCBs. Each board uses 2-layer or 4-layer and can be replaced independently.
+
+\textbf{Result}: If one board fails, it's cheaper to replace one board than the entire system.
+
+\textbf{Lesson}: \textit{Design for failure isolation. Modular hardware architecture reduces both cost and catastrophic failure risk.}
+
+\subsubsection{LL-4: Interim Hardware for Parallel Development}
+
+\textbf{Situation}: The donated SICK TiM561 LiDAR requires a specific power adapter board. Initial testing revealed we did not possess the correct adapter, and sourcing would take 2--3 weeks.
+
+\textbf{Problem}: Without a functional LiDAR, software development (ROS 2 drivers, SLAM integration, visualization) would stall.
+
+\textbf{Action}: Ordered an RPLiDAR C1 (\$55) as an interim development sensor. Both sensors use similar ROS 2 driver interfaces, allowing software development to proceed.
+
+\textbf{Result}: Software team continued SLAM development and ROS 2 integration while the SICK adapter was sourced. When the correct adapter arrived, the software was ready for immediate integration.
+
+\textbf{Lesson}: \textit{Identify blockers early and find workarounds to maintain parallel progress. A \$55 interim sensor prevented weeks of idle time.}
+
+\subsection{Implementation Insights}
+
+\subsubsection{LL-5: Backup Hardware Strategy Validated}
+
+\textbf{Incident}: During initial testing in November 2025, jumper wires connected to the SICK TiM561 LiDAR melted due to high inrush current at startup. The LiDAR draws significant current during power-on, which exceeded the current capacity of the temporary jumper wire connections.
+
+\textbf{Impact}: Initial testing was temporarily halted while the team investigated the root cause. Testing with a current-limited bench power supply confirmed the LiDAR itself was undamaged and operated normally under controlled conditions.
+
+\textbf{Mitigation}: Because the RPLiDAR C1 had been ordered as a backup/development sensor (per LL-4), software development continued uninterrupted using the backup sensor. The team was able to proceed with SLAM development and ROS 2 integration while addressing the power delivery issue.
+
+\textbf{Resolution}: The SICK TiM561 remains the primary sensor with proper power management. The RPLiDAR C1 continues to serve as the backup/development sensor, providing redundancy and enabling parallel testing.
+
+\textbf{Lesson}: \textit{Always have backup hardware for critical components, and test power delivery carefully before connecting sensitive equipment. Inrush current management is critical for industrial sensors.}
+
+\subsection{Applied Improvements Summary}
+
+These lessons were applied iteratively throughout the project:
+
+
+\begin{table}[H]
+\centering
+\caption{Lessons Applied During Project}
+\label{tab:lessons_applied}
+\begin{tabular}{@{}llll@{}}
+\toprule
+\textbf{Lesson} & \textbf{Phase Applied} & \textbf{Action Taken} & \textbf{Outcome} \\
+\midrule
+LL-1 & Research & Pynq-Z2 $\rightarrow$ RPi 5 pivot & Zero schedule impact \\ 
+LL-2 & Research & SICK sponsorship engagement & \$3,500+ equipment donated \\
+LL-3 & Design & Single PCB $\rightarrow$ 6 boards & Cost reduction \\
+LL-4 & Design & Ordered RPLiDAR C1 interim & Parallel development \\
+LL-5 & Build (early) & Used backup during power issue & No schedule slip \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Recommendations for Future Projects}
+
+Based on these lessons, we recommend:
+
+\begin{enumerate}
+    \item \textbf{Validate Early}: Test software/hardware compatibility during Research, not Build
+    \item \textbf{Design for Failure}: Modular architectures enable graceful degradation
+    \item \textbf{Budget for Backups}: Include backup components for critical-path items
+    \item \textbf{Engage Sponsors}: Industry partnerships provide more than funding
+\end{enumerate}

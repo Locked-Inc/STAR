@@ -1,0 +1,32 @@
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{forest}
+  for tree={
+    rectangle,
+    draw,
+    rounded corners=2pt,
+    align=center,
+    minimum width=2.5cm,
+    minimum height=0.8cm,
+    l=2cm,
+    s=1cm,
+    anchor=north,
+    edge={->, thick},
+    font=\scriptsize,
+  }
+      [{\textbf{1.1}\\Research}, fill=researchblue, line width=1.5pt, font=\scriptsize\bfseries
+      [{\textbf{1.1.5}\\Build risk register\\and mitigation plan}, fill=researchblue!70
+        [{\textbf{1.1.5.1}\\Identify and categorize\\project risks\\{\tiny SC, 4d}}, fill=researchblue!40]
+        [{\textbf{1.1.5.2}\\Develop mitigation\\strategies\\{\tiny SC, 4d}}, fill=researchblue!40]
+      ]
+      [{\textbf{1.1.6}\\Present research findings\\and phase review}, fill=researchblue!70
+        [{\textbf{1.1.6.1}\\Prepare research phase\\presentation materials\\{\tiny CM, 4d}}, fill=researchblue!40]
+        [{\textbf{1.1.6.2}\\Deliver research phase\\gate review\\{\tiny CM, 4d}}, fill=researchblue!40]
+      ]
+    ]
+\end{forest}
+}%
+\caption{Research Phase Work Breakdown Structure (Part 3: Risk \& Review)}
+\label{fig:wbs_research_part3}
+\end{figure}
