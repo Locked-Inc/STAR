@@ -1,0 +1,8 @@
+"Ref","Value","Qty","Manufacturer","MPN","DigiKey PN","DigiKey Price","DigiKey Link","Mouser PN","Mouser Price","Mouser Link","Footprint","Description"
+"C1,C2","10n","2","","","1276-CL10B103KB8NNNLCT-ND","0.10","https://www.digikey.com/short/8hvrn82n","187-CL10B103KB8NNNL","0.10","https://mou.sr/3KYkcSV","Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder","Unpolarized capacitor"
+"C3","1u","1","","","587-3247-1-ND","0.08","https://www.digikey.com/short/p4m9m2nq","UMK107AB7105KA-T","0.10","https://mou.sr/3TFIthv","Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder","Unpolarized capacitor"
+"J1","6120XX21621_61200821621","1","","","","","","","","","61200821621:61200821621",""
+"J2","6120XX21621_61200621621","1","","","","","","","","","61200621621:61200621621",""
+"R1-R3","100R","3","","","541-100GCT-ND","0.10","https://www.digikey.com/short/r8130h84","71-CRCW0603J-100-E3","0.10","https://mou.sr/3IoWmio","Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder","Resistor"
+"R4-R6","620R","3","","","13-RC0603FR-10620RLCT-ND","0.10","https://www.digikey.com/short/bd0w8z44","603-RC0603FR-10620RL","0.10","https://mou.sr/48jthzs","Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder","Resistor"
+"U1","BQ76200PW","1","","","296-43316-5-ND","3.23","https://www.digikey.com/short/0w92rvbh","595-BQ76200PWR","2.75","https://mou.sr/46i0YyV","BQ76200PWR:SOP65P640X120-16N","High Voltage Battery Pack Front-End Charge/Discharge High-Side NFET Driver, TSSOP-16"

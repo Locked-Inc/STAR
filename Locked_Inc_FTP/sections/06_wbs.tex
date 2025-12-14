@@ -1,0 +1,88 @@
+% =============================================================================
+% Section 6: Work Breakdown Structure (WBS)
+% =============================================================================
+
+\section{Work Breakdown Structure}\label{sec:wbs}
+\sectionauthors{CM, MN}
+
+\subsection{WBS Overview}
+
+The Work Breakdown Structure (WBS) breaks the project scope into manageable work packages \parencite{wbs_guide}. It organizes all work under six main categories: Research, Design, Build, Test, Close, and Project Management Overhead. This structure adds detail at every level to clearly define specific tasks and deliverables.
+
+\subsubsection{Team Member Assignments}
+
+Each leaf-level activity is assigned a primary owner who is accountable for its completion.
+
+\subsubsection{Ownership Structure}
+
+Activity ownership follows a RACI-based(Responsible Accountable Consulted Informed) assignment model \parencite{pmi_raci}:
+
+\begin{itemize}
+    \item \textbf{Owner (A/R)}: Primary team member accountable for and responsible for completing the activity. Shown in the ``Owner'' column of WBS tables.
+    \item \textbf{Sub-Owners}: Supporting team members who contribute as Responsible (R), Consulted (C), or Informed (I) parties.
+\end{itemize}
+
+\noindent Ownership ensures clear accountability, balanced workload distribution, and skills alignment. \textbf{For detailed resource allocation including secondary assignments and person-day calculations, see the WBS Activity Assignment List in Section \ref{sec:resource_planning}, starting in Table \ref{tab:activity_assignments}.}
+
+\subsection{Control Accounts}
+
+The WBS is organized under six primary control accounts \parencite{dau_control_account}:
+
+\begin{table}[H]
+\centering
+\caption{WBS Control Account Summary}
+\label{tab:wbs_control_accounts}
+\begin{tabular}{@{}llrl@{}}
+\toprule
+\textbf{ID} & \textbf{Control Account} & \textbf{Tasks} & \textbf{Description} \\
+\midrule
+1.1 & Research & 13 & Requirements gathering, technology evaluation \\
+1.2 & Design & 24 & Architecture, mechanical, electrical, software design \\
+1.3 & Build & 20 & Procurement, fabrication, assembly, integration \\
+1.4 & Test & 15 & Validation, verification, system testing \\
+1.5 & Close & 7 & Documentation, handoff, final report \\
+1.6 & PM Overhead & 5 & Meetings, status reports, risk management \\
+\midrule
+& \textbf{Total} & \textbf{84} & \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{WBS Hierarchy}
+
+The hierarchical structure follows this pattern:
+
+\begin{itemize}
+    \item \textbf{Level 1}: Project Root (1.0 Project Name)
+    \item \textbf{Level 2}: Control Accounts (Research, Design, Build, Test, Close, PM Overhead)
+    \item \textbf{Level 3}: Categories (Requirements Analysis, System Architecture)
+    \item \textbf{Level 4}: Work Packages (Functional Requirements, Algorithm Design)
+    \item \textbf{Level 5}: Tasks (Document user stories, Evaluate options)
+\end{itemize}
+
+\subsection{WBS Diagram}
+
+The complete WBS overview diagram is included in Appendix \ref{app:wbs} (Figure \ref{app:wbs}). The following subsections show the detailed WBS structure in table format, generated from the project's activities database.
+
+% Native LaTeX WBS tables (auto-generated from activities.yaml)
+\input{wbs/wbs_complete}
+
+% Phase-specific WBS breakdowns with Forest diagrams and tables
+\input{wbs/wbs_research}
+\input{wbs/wbs_design}
+\input{wbs/wbs_build}
+\input{wbs/wbs_test}
+\input{wbs/wbs_close}
+
+\subsection{Activity Naming Convention}
+
+All WBS activities follow the noun-verb format as required:
+
+\begin{itemize}
+    \item \textbf{Correct}: ``Research algorithms'', ``Design chassis'', ``Test system''
+    \item \textbf{Incorrect}: ``Algorithm research'', ``Chassis design'', ``Testing''
+\end{itemize}
+
+\subsection{Duration Guidelines}
+
+Per FTP requirements, all leaf-level activities are limited to a maximum of 5 days. Activities originally estimated at longer durations have been decomposed into smaller tasks.

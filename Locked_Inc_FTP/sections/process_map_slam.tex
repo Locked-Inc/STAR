@@ -1,0 +1,114 @@
+% =============================================================================
+% Software Process Map: SLAM & Mapping Layer (SLAM Toolbox)
+% Native TikZ implementation
+% =============================================================================
+
+\begin{figure}[H]
+\centering
+\adjustbox{max width=\textwidth, max height=0.8\textheight, keepaspectratio}{%
+\begin{tikzpicture}[
+    node distance=0.9cm and 1.2cm,
+    % Node styles
+    startstop/.style={ellipse, draw, fill=pmstartend, minimum width=2cm, minimum height=0.7cm, align=center, font=\small},
+    process/.style={rectangle, draw, rounded corners=3pt, fill=pmprocess, minimum width=2.6cm, minimum height=0.85cm, align=center, font=\small},
+    init/.style={rectangle, draw, rounded corners=3pt, fill=pminit, minimum width=2.6cm, minimum height=0.85cm, align=center, font=\small},
+    decision/.style={diamond, draw, fill=pmstartend, minimum width=1.2cm, minimum height=0.7cm, align=center, font=\small, aspect=2},
+    safety/.style={rectangle, draw, rounded corners=3pt, fill=pmsafety, minimum width=2.6cm, minimum height=0.85cm, align=center, font=\small},
+    output/.style={signal, signal to=east and west, draw, fill=pmoutput, minimum width=2.4cm, minimum height=0.7cm, align=center, font=\small},
+    % Arrow styles
+    arrow/.style={->, thick, >=stealth}
+]
+
+    % === ROW 1: Start ===
+    \node[startstop] (slam_start) {SLAM Start};
+
+    % === ROW 2: Initialization ===
+    \node[init, below=of slam_start] (init_lidar) {Initialize LiDAR\\{\scriptsize SICK TiM561 (Ethernet)}\\{\scriptsize 270\textdegree, 10m range}\\{\scriptsize 15 Hz scan rate}};
+
+    \node[init, below=of init_lidar] (init_toolbox) {Initialize SLAM Toolbox\\{\scriptsize Load params}\\{\scriptsize Set map resolution: 5cm}\\{\scriptsize Configure solver}};
+
+    % === ROW 3: Data Acquisition ===
+    \node[process, below=of init_toolbox] (acquire_scan) {Acquire LiDAR Scan\\{\scriptsize $\sim$680 points/scan}\\{\scriptsize Timestamp sync}};
+
+    \node[process, below=of acquire_scan] (preprocess) {Preprocess Scan\\{\scriptsize Range filter}\\{\scriptsize Voxel downsample}};
+
+    % === ROW 4: Scan Matching ===
+    \node[process, below=of preprocess] (correlative_scan) {Correlative Scan Matching\\{\scriptsize Real-time correlative}\\{\scriptsize Initial pose estimate}};
+
+    \node[process, below=of correlative_scan] (ceres_opt) {Ceres Optimization\\{\scriptsize Non-linear refinement}\\{\scriptsize Minimize scan error}};
+
+    \node[decision, below=of ceres_opt] (match_check) {Match\\Quality OK?};
+
+    % Recovery branch (to the left)
+    \node[safety, left=2.5cm of match_check] (recovery) {Recovery Mode\\{\scriptsize Expand search window}\\{\scriptsize Relocalization}};
+
+    % === ROW 5: Pose Update ===
+    \node[process, below=1.2cm of match_check] (update_pose) {Update Robot Pose\\{\scriptsize Publish /tf}\\{\scriptsize odom $\rightarrow$ map transform}};
+
+    \node[process, below=of update_pose] (update_graph) {Update Pose Graph\\{\scriptsize Add new node}\\{\scriptsize Add odometry constraint}};
+
+    % === ROW 6: Loop Closure ===
+    \node[decision, below=of update_graph] (loop_detect) {Loop Closure\\Candidate?};
+
+    % Verification branch (to the right)
+    \node[process, right=2.5cm of loop_detect] (loop_verify) {Verify Loop Closure\\{\scriptsize Scan-to-scan matching}\\{\scriptsize Covariance check}};
+
+    \node[decision, below=of loop_verify] (loop_valid) {Loop\\Valid?};
+
+    \node[safety, below=of loop_valid] (graph_opt) {Graph Optimization\\{\scriptsize Ceres solver}\\{\scriptsize Correct accumulated drift}};
+
+    % === ROW 7: Map Update ===
+    \node[process, below=1.2cm of loop_detect] (update_map) {Update Occupancy Grid\\{\scriptsize Ray tracing}\\{\scriptsize Probability update}};
+
+    % === ROW 8: Output ===
+    \node[output, below=of update_map] (publish_map) {Publish Map\\{\scriptsize /map topic}\\{\scriptsize nav\_msgs/OccupancyGrid}};
+
+    \node[output, below=of publish_map] (to_nav) {To Navigation Layer\\(map, pose)};
+
+    \node[decision, below=of to_nav] (area_check) {Area Fully\\Mapped?};
+
+    \node[startstop, below=of area_check] (export_map) {Export Final Map\\{\scriptsize Save PGM + YAML}\\{\scriptsize Serialize pose graph}};
+
+    % === CONNECTIONS ===
+    % Main initialization flow
+    \draw[arrow] (slam_start) -- (init_lidar);
+    \draw[arrow] (init_lidar) -- (init_toolbox);
+    \draw[arrow] (init_toolbox) -- (acquire_scan);
+
+    % Data processing flow
+    \draw[arrow] (acquire_scan) -- (preprocess);
+    \draw[arrow] (preprocess) -- (correlative_scan);
+    \draw[arrow] (correlative_scan) -- (ceres_opt);
+    \draw[arrow] (ceres_opt) -- (match_check);
+
+    % Match check branches
+    \draw[arrow] (match_check) -- node[above, font=\scriptsize] {No} (recovery);
+    \draw[arrow, dashed] (recovery.west) -- ++(-1.3,0) |- ([yshift=0.2cm]acquire_scan.west);
+    \draw[arrow] (match_check) -- node[left, font=\scriptsize] {Yes} (update_pose);
+
+    % Pose update flow
+    \draw[arrow] (update_pose) -- (update_graph);
+    \draw[arrow] (update_graph) -- (loop_detect);
+
+    % Loop closure branches
+    \draw[arrow] (loop_detect) -- node[above, font=\scriptsize] {Yes} (loop_verify);
+    \draw[arrow] (loop_verify) -- (loop_valid);
+    \draw[arrow] (loop_valid) -- node[left, font=\scriptsize] {Yes} (graph_opt);
+    \draw[arrow, dashed] (loop_valid.west) -- ++(-0.6,0) |- node[near start, above, font=\scriptsize, xshift=-0.1cm] {No} ([yshift=0.2cm]update_map.east);
+    \draw[arrow, dashed] (graph_opt.west) -- ++(-0.5,0) |- ([yshift=-0.2cm]update_map.east);
+    \draw[arrow] (loop_detect) -- node[left, font=\scriptsize] {No} (update_map);
+
+    % Output flow
+    \draw[arrow] (update_map) -- (publish_map);
+    \draw[arrow] (publish_map) -- (to_nav);
+    \draw[arrow] (to_nav) -- (area_check);
+
+    % Area check branches
+    \draw[arrow] (area_check) -- node[left, font=\scriptsize] {Yes} (export_map);
+    \draw[arrow, dashed] (area_check.west) -- ++(-6.1,0) |- node[near start, above, font=\scriptsize] {No} ([yshift=-0.2cm]acquire_scan.west);
+
+\end{tikzpicture}%
+}
+\caption{SLAM \& Mapping Layer Process Flow (SLAM Toolbox)}
+\label{fig:process-slam}
+\end{figure}
