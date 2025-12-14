@@ -1,0 +1,6 @@
+"Ref","Value","Qty","Manufacturer","MPN","DigiKey PN","DigiKey Price","DigiKey Link","Mouser PN","Mouser Price","Mouser Link","Footprint","Description"
+"C1","4u7","1","","","490-GRT21BR61H475KE13KCT-ND","0.17","https://www.digikey.com/short/489t25j9","81-GRT21BR61H475KE3K","0.17","https://mou.sr/48kjQzY","Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder","Unpolarized capacitor"
+"C2","1u","1","","","587-3247-1-ND","0.08","https://www.digikey.com/short/p4m9m2nq","UMK107AB7105KA-T","0.10","https://mou.sr/3TFIthv","Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder","Unpolarized capacitor"
+"C3","100n","1","","","311-1779-1-ND","0.10","https://www.digikey.com/short/mnn51wf5","603-CC603JRX7R9BB104","0.10","https://mou.sr/3KIvj2i","Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder","Unpolarized capacitor"
+"J2","1028585","1","Phoenix Contact","1028585","277-1028585-ND","10.08","https://www.digikey.com/short/qb0m95mc","651-1028585","13.90","https://mou.sr/3JIm9TA","1028585","Flush-type female connector, 5-position, Socket,  angled, A-coded, PCB mounting, Solder pins"
+"Q1","ZXMP10A13FTA","1","Diodes Incorporated","ZXMP10A13FTA","ZXMP10A13FCT-ND","0.76","https://www.digikey.com/short/wmq34b83","522-ZXMP10A13FTA","0.72","https://mou.sr/3VB9ofX","ZXMP10A13FTA:SOT96P240X110-3N","100V P-CHANNEL ENHANCEMENT MODE MOSFET"
