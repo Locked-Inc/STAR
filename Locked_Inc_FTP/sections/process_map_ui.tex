@@ -1,0 +1,99 @@
+% =============================================================================
+% Software Process Map: User Interface Layer
+% Native TikZ implementation (replaces Python/Graphviz generated PDF)
+% =============================================================================
+
+\begin{figure}[H]
+\centering
+\adjustbox{max width=\textwidth, max height=0.8\textheight, keepaspectratio}{%
+\begin{tikzpicture}[
+    node distance=1cm and 1.5cm,
+    % Node styles
+    startstop/.style={ellipse, draw, fill=pmstartend, minimum width=2cm, minimum height=0.8cm, align=center, font=\small},
+    process/.style={rectangle, draw, rounded corners=3pt, fill=pmprocess, minimum width=3cm, minimum height=1cm, align=center, font=\small},
+    init/.style={rectangle, draw, rounded corners=3pt, fill=pminit, minimum width=3cm, minimum height=1cm, align=center, font=\small},
+    decision/.style={diamond, draw, fill=pmstartend, minimum width=1.5cm, minimum height=1cm, align=center, font=\small, aspect=2},
+    emergency/.style={rectangle, draw, rounded corners=3pt, fill=pmemergency, minimum width=3cm, minimum height=1cm, align=center, font=\small},
+    output/.style={signal, signal to=east and west, draw, fill=pmoutput, minimum width=3cm, minimum height=0.8cm, align=center, font=\small},
+    % Arrow styles
+    arrow/.style={->, thick, >=stealth},
+    emergency_arrow/.style={->, very thick, >=stealth, red}
+]
+
+    % === ROW 1: Start ===
+    \node[startstop] (ui_start) {UI Start};
+
+    % === ROW 2: Initialization ===
+    \node[init, below=of ui_start] (init_windows) {Initialize Windows\\{\scriptsize Map display (800$\times$600)}\\{\scriptsize Camera feed (640$\times$480)}\\{\scriptsize Control panel}};
+
+    % === ROW 3: Backend Connection ===
+    \node[init, below=of init_windows] (connect_backend) {Connect to Backend\\{\scriptsize ROS2 topics}\\{\scriptsize Service clients}\\{\scriptsize Action servers}};
+
+    % === ROW 4: Connection Check ===
+    \node[decision, below=of connect_backend] (conn_check) {Connection\\Successful?};
+
+    % Error display (to the left)
+    \node[emergency, left=2.5cm of conn_check] (display_error) {Display Error\\{\scriptsize Show connection failed}\\{\scriptsize Retry option}};
+
+    % === ROW 5: Parallel Threads ===
+    \node[process, below=1.5cm of conn_check] (map_thread) {Map Display Thread\\{\scriptsize Subscribe to /map topic}\\{\scriptsize Update rate: 10 Hz}\\{\scriptsize Render occupancy grid}};
+
+    \node[process, right=of map_thread] (camera_thread) {Camera Thread\\{\scriptsize Subscribe to /camera/image}\\{\scriptsize Display stereo feed}\\{\scriptsize Overlay detections}};
+
+    \node[process, right=of camera_thread] (control_thread) {Control Thread\\{\scriptsize Read keyboard/joystick}\\{\scriptsize Publish cmd\_vel}\\{\scriptsize Rate: 50 Hz}};
+
+    \node[process, right=of control_thread] (status_thread) {Status Thread\\{\scriptsize Monitor battery level}\\{\scriptsize Check system health}\\{\scriptsize Update indicators}};
+
+    % === ROW 6: Manual Input Check ===
+    \node[decision, below=1.5cm of control_thread] (input_check) {Manual Input\\Received?};
+
+    % Send command (below input check)
+    \node[process, below=of input_check] (send_cmd) {Send Command\\{\scriptsize Validate input}\\{\scriptsize Check safety}\\{\scriptsize Publish to /cmd\_vel}};
+
+    % === ROW 7: E-Stop Check ===
+    \node[decision, below=of send_cmd] (estop_check) {E-Stop\\Pressed?};
+
+    % Emergency handling (to the right)
+    \node[emergency, right=2.5cm of estop_check] (emergency_shutdown) {Emergency Shutdown\\{\scriptsize Save current map}\\{\scriptsize Safe motor stop}\\{\scriptsize Close all systems}};
+
+    % === ROW 8: Output ===
+    \node[output, below=of estop_check] (to_nav) {To Navigation Layer\\(cmd\_vel)};
+
+    % === CONNECTIONS ===
+    % Main flow
+    \draw[arrow] (ui_start) -- (init_windows);
+    \draw[arrow] (init_windows) -- (connect_backend);
+    \draw[arrow] (connect_backend) -- (conn_check);
+
+    % Connection check branches
+    \draw[arrow] (conn_check) -- node[left, font=\scriptsize] {Yes} (map_thread);
+    \draw[arrow] (conn_check) -- node[above, font=\scriptsize] {No} (display_error);
+    \draw[arrow, dashed] (display_error.west) -- ++(-2,0) |- node[near start, left, font=\scriptsize] {Retry} ([xshift=-0.2cm]connect_backend.west);
+
+    % Parallel threads flow
+    \draw[arrow] (map_thread) -- (camera_thread);
+    \draw[arrow] (camera_thread) -- (control_thread);
+    \draw[arrow] (control_thread) -- (status_thread);
+
+    % Thread outputs converge
+    \draw[arrow] (status_thread) |- (input_check);
+
+    % Input check branches
+    \draw[arrow] (input_check) -- node[left, font=\scriptsize] {Yes} (send_cmd);
+    \draw[arrow] (send_cmd) -- (estop_check);
+
+    % No input - loop back (route around blocks)
+    \draw[arrow, dashed] (input_check.west) -- ++(-1,0) -- ++(0,2.2) -- ++(-11,0) -- ++(0,2) -- node[near end, left, font=\scriptsize] {No} ([yshift=0.3cm]map_thread.west);
+
+    % E-Stop branches
+    \draw[emergency_arrow] (estop_check) -- node[above, font=\scriptsize] {Yes} (emergency_shutdown);
+    \draw[arrow] (estop_check) -- node[left, font=\scriptsize] {No} (to_nav);
+
+    % Loop back from output to threads (route below blocks)
+    \draw[arrow, dashed] (to_nav.west) -- ++(-1,0) -- ++(0,5) -| node[pos=0.25, above, font=\scriptsize] {Continue} ([xshift=-0.3cm]map_thread.south);
+
+\end{tikzpicture}%
+}
+\caption{User Interface Layer Process Flow}
+\label{fig:process-ui}
+\end{figure}

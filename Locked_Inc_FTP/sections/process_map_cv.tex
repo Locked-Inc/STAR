@@ -1,0 +1,115 @@
+% =============================================================================
+% Software Process Map: Computer Vision Safety Layer
+% Native TikZ implementation (replaces Python/Graphviz generated PDF)
+% =============================================================================
+
+\begin{figure}[H]
+\centering
+\adjustbox{max width=\textwidth, max height=0.8\textheight, keepaspectratio}{%
+\begin{tikzpicture}[
+    node distance=0.9cm and 1.2cm,
+    % Node stylele then s
+    startstop/.style={ellipse, draw, fill=pmstartend, minimum width=2cm, minimum height=0.7cm, align=center, font=\small},
+    process/.style={rectangle, draw, rounded corners=3pt, fill=pmprocess, minimum width=2.6cm, minimum height=0.85cm, align=center, font=\small},
+    init/.style={rectangle, draw, rounded corners=3pt, fill=pminit, minimum width=2.6cm, minimum height=0.85cm, align=center, font=\small},
+    decision/.style={diamond, draw, fill=pmstartend, minimum width=1.2cm, minimum height=0.7cm, align=center, font=\small, aspect=2},
+    safety/.style={rectangle, draw, rounded corners=3pt, fill=pmsafety, minimum width=2.6cm, minimum height=0.85cm, align=center, font=\small},
+    emergency/.style={rectangle, draw, rounded corners=3pt, fill=pmemergency, minimum width=2.6cm, minimum height=0.85cm, align=center, font=\small},
+    output/.style={signal, signal to=east and west, draw, fill=pmoutput, minimum width=2.4cm, minimum height=0.7cm, align=center, font=\small},
+    % Arrow styles
+    arrow/.style={->, thick, >=stealth},
+    emergency_arrow/.style={->, very thick, >=stealth, red}
+]
+
+    % === ROW 1: Start ===
+    \node[startstop] (cv_start) {CV Start};
+
+    % === ROW 2: Initialization ===
+    \node[init, below=of cv_start] (init_cameras) {Initialize Cameras\\{\scriptsize Stereo pair (USB 3.0)}\\{\scriptsize 640$\times$480 @ 30 FPS}};
+
+    \node[init, below=of init_cameras] (load_models) {Load Detection Models\\{\scriptsize YOLO person detector}\\{\scriptsize Obstacle classifier}};
+
+    \node[init, below=of load_models] (calibrate) {Camera Calibration\\{\scriptsize Load params}\\{\scriptsize Rectify stereo pair}\\{\scriptsize Compute Q matrix}};
+
+    % === ROW 3: Frame Acquisition ===
+    \node[process, below=of calibrate] (acquire_frames) {Acquire Stereo Frames\\{\scriptsize Left \& right images}\\{\scriptsize Synchronized timestamps}};
+
+    % === ROW 4: Parallel Detection ===
+    \node[process, below left=1.2cm and 1cm of acquire_frames] (person_detect) {Person Detection\\{\scriptsize Run YOLO}\\{\scriptsize Detect bounding boxes}};
+
+    \node[process, below right=1.2cm and 1cm of acquire_frames] (obstacle_detect) {Obstacle Detection\\{\scriptsize Edge detection (Canny)}\\{\scriptsize Stereo matching}};
+
+    % === ROW 5: Confidence Check ===
+    \node[decision, below=1.2cm of person_detect] (conf_check) {Confidence\\$> 85\%$?};
+
+    \node[process, below=of conf_check] (calc_distance) {Calculate Distance\\{\scriptsize Stereo depth estimation}\\{\scriptsize Map to meters}};
+
+    \node[process, right=2cm of conf_check] (sensor_fusion) {Sensor Fusion\\{\scriptsize Cross-validate CV + LiDAR}\\{\scriptsize Weight by confidence}};
+
+    % === ROW 6: Distance Checks ===
+    \node[decision, below=1.2cm of calc_distance] (dist_2m) {Distance\\$< 2$m?};
+
+    \node[safety, left=2cm of dist_2m] (warning) {Issue Warning\\{\scriptsize Alert operator}\\{\scriptsize Visual + audio}};
+
+    \node[decision, below=of warning] (dist_half) {Distance\\$< 0.5$m?};
+
+    \node[emergency, below=of dist_half] (emergency_stop) {EMERGENCY STOP\\{\scriptsize Immediate halt}\\{\scriptsize Publish /emergency\_stop}};
+
+    % === ROW 7: Depth Processing ===
+    \node[process, below=1.2cm of dist_2m] (depth_map) {Calculate Depth Map\\{\scriptsize Semi-global matching}\\{\scriptsize Filter outliers}};
+
+    \node[process, below=of depth_map] (classify) {Classify Obstacles\\{\scriptsize Segment by depth}\\{\scriptsize Find boundaries}};
+
+    % === ROW 8: Performance Check ===
+    \node[decision, below=of classify] (fps_check) {Frame Rate\\$> 10$ FPS?};
+
+    \node[safety, right=2cm of fps_check] (fallback) {Fallback Mode\\{\scriptsize Reduce resolution}\\{\scriptsize LiDAR-only}};
+
+    % === ROW 9: Output ===
+    \node[output, below=of fps_check] (to_nav) {To Navigation Layer\\(obstacle map, hazards)};
+
+    % === CONNECTIONS ===
+    % Initialization flow
+    \draw[arrow] (cv_start) -- (init_cameras);
+    \draw[arrow] (init_cameras) -- (load_models);
+    \draw[arrow] (load_models) -- (calibrate);
+    \draw[arrow] (calibrate) -- (acquire_frames);
+
+    % Parallel detection branches
+    \draw[arrow] (acquire_frames) -| (person_detect);
+    \draw[arrow] (acquire_frames) -| (obstacle_detect);
+
+    % Person detection flow
+    \draw[arrow] (person_detect) -- (conf_check);
+    \draw[arrow] (conf_check) -- node[left, font=\scriptsize] {Yes} (calc_distance);
+    \draw[arrow] (conf_check) -- node[above, font=\scriptsize] {No} (sensor_fusion);
+    \draw[arrow] (sensor_fusion) |- (depth_map);
+
+    % Distance check flow
+    \draw[arrow] (calc_distance) -- (dist_2m);
+    \draw[arrow] (dist_2m) -- node[above, font=\scriptsize] {Yes} (warning);
+    \draw[arrow] (warning) -- (dist_half);
+    \draw[emergency_arrow] (dist_half) -- node[left, font=\scriptsize] {Yes} (emergency_stop);
+    \draw[arrow] (dist_half.east) -- ++(0.5,0) |- node[near start, right, font=\scriptsize] {No} (depth_map.west);
+    \draw[arrow] (dist_2m) -- node[left, font=\scriptsize] {No} (depth_map);
+
+    % Obstacle detection joins depth map
+    \draw[arrow] (obstacle_detect) |- ([yshift=-0.4cm]depth_map.east);
+
+    % Depth processing flow
+    \draw[arrow] (depth_map) -- (classify);
+    \draw[arrow] (classify) -- (fps_check);
+
+    % FPS check branches
+    \draw[arrow] (fps_check) -- node[above, font=\scriptsize] {No} (fallback);
+    \draw[arrow] (fallback) |- (to_nav);
+    \draw[arrow] (fps_check) -- node[left, font=\scriptsize] {Yes} (to_nav);
+
+    % Loop back to acquire frames (route around all nodes - offset to avoid vertical line)
+    \draw[arrow, dashed] (to_nav.south) -- ++(0,-0.8) -- ++(-9.5,0) |- node[pos=0.75, above, font=\scriptsize] {Loop} ([yshift=0.4cm]acquire_frames.west);
+
+\end{tikzpicture}%
+}
+\caption{Computer Vision Safety Layer Process Flow}
+\label{fig:process-cv}
+\end{figure}

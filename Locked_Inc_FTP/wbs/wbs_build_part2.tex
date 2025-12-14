@@ -1,0 +1,38 @@
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{forest}
+  for tree={
+    rectangle,
+    draw,
+    rounded corners=2pt,
+    align=center,
+    minimum width=2.2cm,
+    minimum height=0.8cm,
+    inner sep=2pt,
+    s sep=0.3cm,
+    l sep=1cm,
+    anchor=north,
+    edge={->, thick},
+    font=\scriptsize,
+  }
+      [{\textbf{1.3}\\Build}, fill=buildorange, line width=1.5pt, font=\scriptsize\bfseries
+      [{\textbf{1.3.2}\\Build electrical\\harness}, fill=buildorange!70
+        [{\textbf{1.3.2.1}\\Receive and inspect\\PCB assemblies\\{\tiny BS, 4d}}, fill=buildorange!40]
+        [{\textbf{1.3.2.2}\\Build main power\\harness\\{\tiny BS, 5d}}, fill=buildorange!40]
+        [{\textbf{1.3.2.3}\\Build signal and\\data harnesses\\{\tiny BS, 5d}}, fill=buildorange!40]
+        [{\textbf{1.3.2.4}\\Test harness\\continuity\\{\tiny BS, 4d}}, fill=buildorange!40]
+      ]
+      [{\textbf{1.3.3}\\Install sensors\\and compute}, fill=buildorange!70
+        [{\textbf{1.3.3.1}\\Install compute\\platform\\{\tiny JH, 5d}}, fill=buildorange!40]
+        [{\textbf{1.3.3.2}\\Mount and connect\\LiDAR\\{\tiny JH, 5d}}, fill=buildorange!40]
+        [{\textbf{1.3.3.3}\\Install additional\\sensors\\{\tiny JH, 5d}}, fill=buildorange!40]
+        [{\textbf{1.3.3.4}\\Route and secure\\all cabling\\{\tiny JH, 5d}}, fill=buildorange!40]
+        [{\textbf{1.3.3.5}\\Verify electrical\\connections\\{\tiny JH, 4d}}, fill=buildorange!40]
+      ]
+    ]
+\end{forest}
+}%
+\caption{Build Phase Work Breakdown Structure (Part 2: Electrical Assembly)}
+\label{fig:wbs_build_part2}
+\end{figure}
