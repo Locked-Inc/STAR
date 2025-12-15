@@ -10,7 +10,7 @@ static const char* s_TAG = "STAR_SMBUS_PERIPH";
 #define MAX_PERIPHERAL_BUSES (2)
 
 typedef struct {
-  char                           bus_name[32];
+  char                           bus_name[STAR_BUS_NAME_MAX_LEN];
   star_smbus_peripheral_config_t config;
   star_smbus_peripheral_stats_t  stats;
   bool                           enabled;
@@ -147,33 +147,3 @@ esp_err_t star_bus_smbus_peripheral_reset_stats(star_bus_manager_t* manager, con
   return ESP_OK;
 }
 
-void star_bus_smbus_peripheral_print_stats(const char*                          bus_name,
-                                           const star_smbus_peripheral_stats_t* stats)
-{
-  if (bus_name == NULL || stats == NULL) {
-    return;
-  }
-
-  printf("\n=== SMBus Peripheral Statistics: %s ===\n", bus_name);
-  printf("Commands:\n");
-  printf("  Quick:        %llu\n", stats->quick_commands);
-  printf("  Send Byte:    %llu\n", stats->send_byte_commands);
-  printf("  Receive Byte: %llu\n", stats->receive_byte_commands);
-  printf("  Read Byte:    %llu\n", stats->read_byte_commands);
-  printf("  Write Byte:   %llu\n", stats->write_byte_commands);
-  printf("  Read Word:    %llu\n", stats->read_word_commands);
-  printf("  Write Word:   %llu\n", stats->write_word_commands);
-  printf("  Read Block:   %llu\n", stats->read_block_commands);
-  printf("  Write Block:  %llu\n", stats->write_block_commands);
-  printf("  Process Call: %llu\n", stats->process_call_commands);
-  printf("  Block Process:%llu\n", stats->block_process_commands);
-
-  printf("\nErrors:\n");
-  printf("  PEC Errors:      %llu\n", stats->pec_errors);
-  printf("  Callback Errors: %llu\n", stats->callback_errors);
-
-  printf("\nAlert:\n");
-  printf("  Alert Requests: %llu\n", stats->alert_requests);
-
-  printf("=========================================\n\n");
-}

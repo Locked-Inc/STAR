@@ -1,6 +1,5 @@
 /* lib/star_bus/src/star_bus_i2c.c */
 
-/* XXX: Remove the weird   `--- CORRECTED ACCESS ---` comments */
 
 #include "star_bus_i2c.h"
 
@@ -16,7 +15,7 @@
 
 /* --- Constants --- */
 
-static const char* s_TAG = "BusI2C"; /* XXX: This tag style does not match other tags */
+static const char* s_TAG = "STAR_BUS_I2C";
 
 /* Use constant instead of macro for type safety */
 static const uint32_t s_i2c_timeout_ms = 1000; /* Default timeout for I2C operations */
@@ -96,7 +95,6 @@ esp_err_t star_bus_i2c_write(const star_bus_manager_t* manager,
                       s_TAG,
                       "Bus '%s' is not an I2C bus",
                       name);
-  /* --- CORRECTED ACCESS --- */
   ESP_RETURN_ON_FALSE(bus_config->proto.i2c.ops.write,
                       ESP_ERR_NOT_SUPPORTED,
                       s_TAG,
@@ -108,7 +106,6 @@ esp_err_t star_bus_i2c_write(const star_bus_manager_t* manager,
     *bytes_written = 0;
   }
 
-  /* --- CORRECTED ACCESS --- */
   return bus_config->proto.i2c.ops.write(bus_config, data, len, reg_addr, bytes_written);
 }
 
@@ -132,7 +129,6 @@ esp_err_t star_bus_i2c_read(const star_bus_manager_t* manager,
                       s_TAG,
                       "Bus '%s' is not an I2C bus",
                       name);
-  /* --- CORRECTED ACCESS --- */
   ESP_RETURN_ON_FALSE(bus_config->proto.i2c.ops.read,
                       ESP_ERR_NOT_SUPPORTED,
                       s_TAG,
@@ -144,7 +140,6 @@ esp_err_t star_bus_i2c_read(const star_bus_manager_t* manager,
     *bytes_read = 0;
   }
 
-  /* --- CORRECTED ACCESS --- */
   return bus_config->proto.i2c.ops.read(bus_config, data, len, reg_addr, bytes_read);
 }
 
@@ -160,14 +155,12 @@ star_bus_i2c_write_command(const star_bus_manager_t* manager, const char* name, 
                       s_TAG,
                       "Bus '%s' is not an I2C bus",
                       name);
-  /* --- CORRECTED ACCESS --- */
   ESP_RETURN_ON_FALSE(bus_config->proto.i2c.ops.write_command,
                       ESP_ERR_NOT_SUPPORTED,
                       s_TAG,
                       "No write_command op for '%s'",
                       name);
 
-  /* --- CORRECTED ACCESS --- */
   return bus_config->proto.i2c.ops.write_command(bus_config, command);
 }
 
@@ -190,7 +183,6 @@ esp_err_t star_bus_i2c_read_raw(const star_bus_manager_t* manager,
                       s_TAG,
                       "Bus '%s' is not an I2C bus",
                       name);
-  /* --- CORRECTED ACCESS --- */
   ESP_RETURN_ON_FALSE(bus_config->proto.i2c.ops.read_raw,
                       ESP_ERR_NOT_SUPPORTED,
                       s_TAG,
@@ -202,7 +194,6 @@ esp_err_t star_bus_i2c_read_raw(const star_bus_manager_t* manager,
     *bytes_read = 0;
   }
 
-  /* --- CORRECTED ACCESS --- */
   return bus_config->proto.i2c.ops.read_raw(bus_config, data, len, bytes_read);
 }
 
@@ -241,7 +232,6 @@ static esp_err_t internal_star_bus_i2c_write(const star_bus_config_t* config,
                       "Bus '%s' is not initialized",
                       config->name);
 
-  /* --- CORRECTED ACCESS --- */
   i2c_port_t       port    = config->proto.i2c.port;
   uint8_t          address = config->proto.i2c.address;
   esp_err_t        ret     = ESP_OK;
@@ -314,13 +304,11 @@ static esp_err_t internal_star_bus_i2c_write(const star_bus_config_t* config,
   }
 
   /* Call success callback */
-  /* --- CORRECTED ACCESS --- */
   if (config->proto.i2c.callbacks.on_transfer_complete) {
     star_bus_event_t event = {
       .bus_type = k_star_bus_type_i2c,
       .bus_name = config->name,
       .i2c      = {.port = port, .address = address, .is_write = true, .len = len}};
-    /* --- CORRECTED ACCESS --- */
     config->proto.i2c.callbacks.on_transfer_complete(&event, config->user_ctx);
   }
   return ESP_OK;
@@ -331,7 +319,6 @@ write_fail:
   }
   ESP_LOGE(s_TAG, "Write failed for '%s': %s", config->name, esp_err_to_name(ret));
   /* Call error callback */
-  /* --- CORRECTED ACCESS --- */
   if (config->proto.i2c.callbacks.on_error) {
     star_bus_event_t event = {.bus_type = k_star_bus_type_i2c,
                               .bus_name = config->name,
@@ -339,7 +326,6 @@ write_fail:
                                            .address  = address,
                                            .is_write = true,
                                            .len      = 0}}; /* Len is 0 on error */
-    /* --- CORRECTED ACCESS --- */
     config->proto.i2c.callbacks.on_error(&event, ret, config->user_ctx);
   }
   return ret;
@@ -358,7 +344,6 @@ static esp_err_t internal_star_bus_i2c_read(const star_bus_config_t* config,
                       "Bus '%s' is not initialized",
                       config->name);
 
-  /* --- CORRECTED ACCESS --- */
   i2c_port_t       port    = config->proto.i2c.port;
   uint8_t          address = config->proto.i2c.address;
   esp_err_t        ret     = ESP_OK;
@@ -458,13 +443,11 @@ static esp_err_t internal_star_bus_i2c_read(const star_bus_config_t* config,
   }
 
   /* Call success callback */
-  /* --- CORRECTED ACCESS --- */
   if (config->proto.i2c.callbacks.on_transfer_complete) {
     star_bus_event_t event = {
       .bus_type = k_star_bus_type_i2c,
       .bus_name = config->name,
       .i2c      = {.port = port, .address = address, .is_write = false, .len = len}};
-    /* --- CORRECTED ACCESS --- */
     config->proto.i2c.callbacks.on_transfer_complete(&event, config->user_ctx);
   }
   return ESP_OK;
@@ -475,13 +458,11 @@ read_fail:
   }
   ESP_LOGE(s_TAG, "Read failed for '%s': %s", config->name, esp_err_to_name(ret));
   /* Call error callback */
-  /* --- CORRECTED ACCESS --- */
   if (config->proto.i2c.callbacks.on_error) {
     star_bus_event_t event = {
       .bus_type = k_star_bus_type_i2c,
       .bus_name = config->name,
       .i2c      = {.port = port, .address = address, .is_write = false, .len = 0}};
-    /* --- CORRECTED ACCESS --- */
     config->proto.i2c.callbacks.on_error(&event, ret, config->user_ctx);
   }
   return ret;
@@ -497,7 +478,6 @@ static esp_err_t internal_star_bus_i2c_write_command(const star_bus_config_t* co
                       "Bus '%s' is not initialized",
                       config->name);
 
-  /* --- CORRECTED ACCESS --- */
   i2c_port_t       port    = config->proto.i2c.port;
   uint8_t          address = config->proto.i2c.address;
   esp_err_t        ret     = ESP_OK;
@@ -561,7 +541,6 @@ static esp_err_t internal_star_bus_i2c_write_command(const star_bus_config_t* co
            address);
 
   /* Call success callback (treat as write with len=0?) */
-  /* --- CORRECTED ACCESS --- */
   if (config->proto.i2c.callbacks.on_transfer_complete) {
     star_bus_event_t event = {.bus_type = k_star_bus_type_i2c,
                               .bus_name = config->name,
@@ -569,7 +548,6 @@ static esp_err_t internal_star_bus_i2c_write_command(const star_bus_config_t* co
                                            .address  = address,
                                            .is_write = true,
                                            .len      = 0}}; /* Indicate command write */
-    /* --- CORRECTED ACCESS --- */
     config->proto.i2c.callbacks.on_transfer_complete(&event, config->user_ctx);
   }
   return ESP_OK;
@@ -580,13 +558,11 @@ write_cmd_fail:
   }
   ESP_LOGE(s_TAG, "Write Command failed for '%s': %s", config->name, esp_err_to_name(ret));
   /* Call error callback */
-  /* --- CORRECTED ACCESS --- */
   if (config->proto.i2c.callbacks.on_error) {
     star_bus_event_t event = {
       .bus_type = k_star_bus_type_i2c,
       .bus_name = config->name,
       .i2c      = {.port = port, .address = address, .is_write = true, .len = 0}};
-    /* --- CORRECTED ACCESS --- */
     config->proto.i2c.callbacks.on_error(&event, ret, config->user_ctx);
   }
   return ret;
@@ -604,7 +580,6 @@ static esp_err_t internal_star_bus_i2c_read_raw(const star_bus_config_t* config,
                       "Bus '%s' is not initialized",
                       config->name);
 
-  /* --- CORRECTED ACCESS --- */
   i2c_port_t       port    = config->proto.i2c.port;
   uint8_t          address = config->proto.i2c.address;
   esp_err_t        ret     = ESP_OK;
@@ -682,13 +657,11 @@ static esp_err_t internal_star_bus_i2c_read_raw(const star_bus_config_t* config,
   }
 
   /* Call success callback */
-  /* --- CORRECTED ACCESS --- */
   if (config->proto.i2c.callbacks.on_transfer_complete) {
     star_bus_event_t event = {
       .bus_type = k_star_bus_type_i2c,
       .bus_name = config->name,
       .i2c      = {.port = port, .address = address, .is_write = false, .len = len}};
-    /* --- CORRECTED ACCESS --- */
     config->proto.i2c.callbacks.on_transfer_complete(&event, config->user_ctx);
   }
   return ESP_OK;
@@ -699,13 +672,11 @@ read_raw_fail:
   }
   ESP_LOGE(s_TAG, "Read Raw failed for '%s': %s", config->name, esp_err_to_name(ret));
   /* Call error callback */
-  /* --- CORRECTED ACCESS --- */
   if (config->proto.i2c.callbacks.on_error) {
     star_bus_event_t event = {
       .bus_type = k_star_bus_type_i2c,
       .bus_name = config->name,
       .i2c      = {.port = port, .address = address, .is_write = false, .len = 0}};
-    /* --- CORRECTED ACCESS --- */
     config->proto.i2c.callbacks.on_error(&event, ret, config->user_ctx);
   }
   return ret;

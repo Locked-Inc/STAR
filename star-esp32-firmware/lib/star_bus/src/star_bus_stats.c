@@ -27,7 +27,7 @@ typedef struct {
   star_bus_stats_t    stats;                 /**< Statistics data */
   star_stats_config_t config;                /**< Statistics configuration */
   bool                enabled;               /**< Whether stats collection is enabled */
-  char                bus_name[32];          /**< Bus name */ /* XXX: In `star_bus_types.c` I saw this "32" there too, we shouldnt have this hard coded in each file like this */
+  char                bus_name[STAR_BUS_NAME_MAX_LEN];          /**< Bus name */ /* XXX: In `star_bus_types.c` I saw this "32" there too, we shouldnt have this hard coded in each file like this */
   uint64_t            operation_time_sum_us; /**< Sum for average calculation */
 } stats_state_t;
 

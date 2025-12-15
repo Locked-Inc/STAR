@@ -1,6 +1,9 @@
 /* lib/star_sensor_hcsr04/src/star_sensor_hcsr04.c */
 
-/* TODO: Add doxygen doc comment for @file */
+/**
+ * @file star_sensor_hcsr04.c
+ * @brief HC-SR04 ultrasonic distance sensor driver implementation
+ */
 
 #include "star_sensor_hcsr04.h"
 

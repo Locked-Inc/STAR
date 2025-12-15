@@ -361,7 +361,6 @@ esp_err_t star_bus_uart_reset_stats(star_bus_manager_t* manager, const char* bus
  * @param[in] bus_name Name of UART bus
  * @param[in] stats Pointer to statistics
  */
-void star_bus_uart_print_stats(const char* bus_name, const star_uart_stats_t* stats);
 
 /* --- Helper Macros --- */
 

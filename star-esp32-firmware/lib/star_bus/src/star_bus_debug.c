@@ -12,7 +12,7 @@
 #include "star_bus_i2c.h"
 #include "star_bus_types.h"
 
-static const char* s_TAG = "star_bus_debug"; /* FIXME: Fix the style of this tag */
+static const char* s_TAG = "STAR_BUS_DEBUG";
 
 /* --- I2C Bus Scanning --- */
 

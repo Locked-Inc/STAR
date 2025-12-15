@@ -16,7 +16,7 @@
 
 /* --- Constants --- */
 
-static const char* s_TAG = "Bus Manager"; /* FIXME: This doesnt follow the style for the tag like all other files use */
+static const char* s_TAG = "STAR_BUS_MANAGER";
 
 /* --- Pin Registration Helpers --- */
 

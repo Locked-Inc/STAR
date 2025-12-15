@@ -248,15 +248,6 @@ esp_err_t star_bus_onewire_peripheral_get_stats(const star_bus_manager_t*       
 esp_err_t star_bus_onewire_peripheral_reset_stats(star_bus_manager_t* manager,
                                                   const char*         bus_name);
 
-/**
- * @brief Print peripheral statistics
- *
- * @param[in] bus_name Name of 1-Wire bus
- * @param[in] stats Pointer to statistics
- */
-void star_bus_onewire_peripheral_print_stats(const char*                            bus_name,
-                                             const star_onewire_peripheral_stats_t* stats);
-
 /* --- Helper Macros --- */
 
 /**
