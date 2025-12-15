@@ -6,8 +6,6 @@
 
 #include "star_bus_config.h"
 
-#include "star_bus_dht22_proprietary.h"
-#include "star_bus_gpio.h"
 #include "star_bus_i2c.h"
 #include "star_bus_spi.h"
 #include "star_bus_spi_peripheral.h"
@@ -207,111 +205,6 @@ star_bus_config_t* star_bus_config_create_spi_peripheral(const char*       name,
   return config;
 }
 
-star_bus_config_t*
-star_bus_config_create_gpio(const char* name, const gpio_num_t pins[], uint8_t pin_count)
-{
-  ESP_RETURN_ON_FALSE(pins, NULL, s_TAG, "Pins array is NULL");
-  ESP_RETURN_ON_FALSE(pin_count > 0, NULL, s_TAG, "Pin count must be at least 1");
-
-  /* Validate pin_count doesn't exceed the maximum number of GPIO pins */
-  ESP_RETURN_ON_FALSE(pin_count <= GPIO_NUM_MAX,
-                      NULL,
-                      s_TAG,
-                      "Pin count %d exceeds maximum %d",
-                      pin_count,
-                      GPIO_NUM_MAX);
-
-  /* Validate each pin in the array is a valid GPIO number */
-  for (uint8_t i = 0; i < pin_count; ++i) {
-    if (pins[i] < 0 || pins[i] >= GPIO_NUM_MAX) {
-      ESP_LOGE(s_TAG,
-               "Invalid GPIO pin at index %d: %d (valid range: 0-%d)",
-               i,
-               pins[i],
-               GPIO_NUM_MAX - 1);
-      return NULL;
-    }
-  }
-
-  star_bus_config_t* config = internal_star_bus_config_create_common(name, k_star_bus_type_gpio);
-  ESP_RETURN_ON_FALSE(config,
-                      NULL,
-                      s_TAG,
-                      "Failed to create common config for %s",
-                      name ? name : "NULL");
-
-  /* Allocate memory for pins array */
-  gpio_num_t* pins_copy = (gpio_num_t*)malloc(pin_count * sizeof(gpio_num_t));
-  if (pins_copy == NULL) {
-    ESP_LOGE(s_TAG, "Failed to allocate memory for GPIO pins array");
-    internal_star_bus_config_cleanup(config);
-    return NULL;
-  }
-
-  /* Copy pin numbers */
-  memcpy(pins_copy, pins, pin_count * sizeof(gpio_num_t));
-
-  /* Configure GPIO-specific parameters */
-  config->proto.gpio.pins          = pins_copy;
-  config->proto.gpio.pin_count     = pin_count;
-  config->proto.gpio.isr_installed = false;
-
-  /* Initialize callbacks to NULL */
-  memset(&config->proto.gpio.callbacks, 0, sizeof(star_gpio_callbacks_t));
-
-  /* Initialize default operations */
-  star_bus_gpio_init_default_ops(&config->proto.gpio.ops);
-
-  ESP_LOGI(s_TAG, "Created GPIO bus config '%s' with %d pins", name, pin_count);
-  for (uint8_t i = 0; i < pin_count; ++i) {
-    ESP_LOGI(s_TAG, "  Pin[%d]: GPIO%d", i, pins[i]);
-  }
-
-  return config;
-}
-
-star_bus_config_t* star_bus_config_create_dht22(const char*        name,
-                                                gpio_num_t         gpio_pin,
-                                                star_dht22_model_t model,
-                                                uint32_t           start_low_ms,
-                                                uint32_t           read_timeout_ms)
-{
-  ESP_RETURN_ON_FALSE(gpio_pin >= 0, NULL, s_TAG, "Invalid GPIO pin");
-
-  star_bus_config_t* config = internal_star_bus_config_create_common(name, k_star_bus_type_dht22);
-  ESP_RETURN_ON_FALSE(config,
-                      NULL,
-                      s_TAG,
-                      "Failed to create common config for %s",
-                      name ? name : "NULL");
-
-  /* Configure DHT22-specific parameters */
-  config->proto.dht22.gpio_pin        = gpio_pin;
-  config->proto.dht22.model           = model;
-  config->proto.dht22.start_low_ms    = start_low_ms > 0 ? start_low_ms : 18;
-  config->proto.dht22.read_timeout_ms = read_timeout_ms > 0 ? read_timeout_ms : 100;
-
-  /* Initialize callbacks to NULL */
-  memset(&config->proto.dht22.callbacks, 0, sizeof(star_dht22_callbacks_t));
-
-  /* Initialize default operations */
-  star_bus_dht22_init_default_ops(&config->proto.dht22.ops);
-
-  const char* model_str = (model == k_star_dht22_model_dht11)    ? "DHT11"
-                          : (model == k_star_dht22_model_am2301) ? "AM2301"
-                                                                 : "DHT22";
-  ESP_LOGI(s_TAG,
-           "Created DHT22 bus config '%s' (GPIO: %d, Model: %s, Start: %" PRIu32
-           " ms, Timeout: %" PRIu32 " ms)",
-           name,
-           gpio_pin,
-           model_str,
-           config->proto.dht22.start_low_ms,
-           config->proto.dht22.read_timeout_ms);
-
-  return config;
-}
-
 esp_err_t star_bus_config_destroy(star_bus_config_t* config)
 {
   ESP_RETURN_ON_FALSE(config, ESP_ERR_INVALID_ARG, s_TAG, "Config pointer is NULL");
@@ -484,54 +377,6 @@ esp_err_t star_bus_config_init(star_bus_config_t* config, star_bus_manager_t* ma
       }
       break;
 
-    case k_star_bus_type_gpio:
-      /* Initialize GPIO bus - pins are configured on-demand via gpio_configure */
-      ESP_LOGI(s_TAG,
-               "Initializing GPIO bus '%s' with %d pins",
-               bus_name,
-               config->proto.gpio.pin_count);
-
-      /* GPIO initialization is minimal - actual pin configuration happens on first use */
-      /* No driver installation needed for GPIO unlike I2C/SPI */
-
-      ESP_LOGI(s_TAG, "GPIO bus '%s' ready (pins will be configured on-demand)", bus_name);
-      break;
-
-    case k_star_bus_type_dht22:
-      /* Initialize DHT22 bus */
-      ESP_LOGI(s_TAG,
-               "Initializing DHT22 bus '%s' on GPIO %d",
-               bus_name,
-               config->proto.dht22.gpio_pin);
-
-      /* Configure GPIO as open-drain with pull-up for DHT22 protocol */
-      {
-        gpio_config_t io_conf = {
-          .pin_bit_mask = (1ULL << config->proto.dht22.gpio_pin),
-          .mode         = GPIO_MODE_INPUT_OUTPUT_OD,
-          .pull_up_en   = GPIO_PULLUP_ENABLE,
-          .pull_down_en = GPIO_PULLDOWN_DISABLE,
-          .intr_type    = GPIO_INTR_DISABLE,
-        };
-
-        ret = gpio_config(&io_conf);
-        ESP_GOTO_ON_ERROR(ret,
-                          fail,
-                          s_TAG,
-                          "Failed to configure GPIO for DHT22 bus '%s': %s",
-                          bus_name,
-                          esp_err_to_name(ret));
-
-        /* Release bus (high) */
-        gpio_set_level(config->proto.dht22.gpio_pin, 1);
-      }
-
-      ESP_LOGI(s_TAG,
-               "DHT22 bus '%s' initialized on GPIO %d",
-               bus_name,
-               config->proto.dht22.gpio_pin);
-      break;
-
     default:
       ESP_LOGE(s_TAG, "Unsupported bus type for initialization: %d", config->type);
       ret = ESP_ERR_NOT_SUPPORTED;
@@ -606,48 +451,6 @@ esp_err_t star_bus_config_deinit(star_bus_config_t* config)
       }
       break;
 
-    case k_star_bus_type_gpio:
-      /* Deinitialize GPIO bus */
-      ESP_LOGI(s_TAG, "Deinitializing GPIO bus '%s'", bus_name);
-
-      /* Remove ISR handlers for all pins if ISR service was installed */
-      if (config->proto.gpio.isr_installed) {
-        for (uint8_t i = 0; i < config->proto.gpio.pin_count; ++i) {
-          gpio_num_t pin = config->proto.gpio.pins[i];
-          if (pin != GPIO_NUM_NC) {
-            /* Try to remove ISR handler, ignore errors if not set */
-            gpio_isr_handler_remove(pin);
-          }
-        }
-        /* Note: We don't uninstall ISR service as it might be shared with other GPIO buses */
-      }
-
-      /* Reset all pins to input with pull-down (safe default state) */
-      for (uint8_t i = 0; i < config->proto.gpio.pin_count; ++i) {
-        gpio_num_t pin = config->proto.gpio.pins[i];
-        if (pin != GPIO_NUM_NC) {
-          gpio_reset_pin(pin);
-        }
-      }
-
-      ret = ESP_OK;
-      break;
-
-    case k_star_bus_type_dht22:
-      /* Deinitialize DHT22 bus */
-      ESP_LOGI(s_TAG,
-               "Deinitializing DHT22 bus '%s' (GPIO %d)",
-               bus_name,
-               config->proto.dht22.gpio_pin);
-
-      /* Reset GPIO to default state */
-      if (config->proto.dht22.gpio_pin != GPIO_NUM_NC) {
-        gpio_reset_pin(config->proto.dht22.gpio_pin);
-      }
-
-      ret = ESP_OK;
-      break;
-
     default:
       ESP_LOGE(s_TAG, "Unsupported bus type for deinitialization: %d", config->type);
       ret = ESP_ERR_NOT_SUPPORTED;
@@ -687,13 +490,6 @@ static void internal_star_bus_config_cleanup(star_bus_config_t* config)
   if (config->name) {
     free((void*)config->name); /* Cast needed as it's stored as const char* */
     config->name = NULL;
-  }
-
-  /* Free GPIO pins array if this is a GPIO config */
-  if (config->type == k_star_bus_type_gpio && config->proto.gpio.pins != NULL) {
-    free(config->proto.gpio.pins);
-    config->proto.gpio.pins      = NULL;
-    config->proto.gpio.pin_count = 0;
   }
 
   /* Clear other pointers */
