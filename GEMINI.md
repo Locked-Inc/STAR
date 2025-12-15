@@ -1,5 +1,25 @@
 # Project STAR: Gemini Development Guide
 
+## Terminology Standard
+
+**IMPORTANT:** This project uses inclusive terminology following OSHWA (Open Source Hardware Association) standards:
+
+- **Controller/Peripheral** - NOT master/slave
+  - I2C: Controller device initiates transactions, Peripheral device responds
+  - SPI: Controller provides clock, Peripheral responds to chip select
+  - 1-Wire: Controller initiates communication, Peripheral responds
+- **COPI/CIPO** - NOT MOSI/MISO
+  - COPI = Controller Out, Peripheral In (data from controller to peripheral)
+  - CIPO = Controller In, Peripheral Out (data from peripheral to controller)
+- **Primary/Main** - NOT master (for configuration structures, etc.)
+
+When writing or modifying code, documentation, or comments:
+1. Never use "master" or "slave" terminology
+2. Never use MOSI/MISO - always use COPI/CIPO
+3. Use "primary" or "main" for configuration structures instead of "master"
+
+Note: Some external APIs and libraries may still use legacy terminology internally. Map these to our terminology in comments and documentation.
+
 ## Project Overview
 
 STAR (Simultaneous Tracking And Robotics) is a sophisticated robotics project centered around a LiDAR SLAM capable robot. The project is composed of several key modules:
