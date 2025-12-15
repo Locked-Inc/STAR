@@ -39,7 +39,7 @@ extern "C" {
  *
  * // 3. Inject into components that need error handling
  * star_bus_manager_init(&bus_manager, "main", &error_iface, &pin_iface);
- * star_sensor_mpu6050_init(&imu, &bus_manager, "imu_i2c", &error_iface, &config);
+ * // Components use error interface for error handling and retry logic
  *
  *
  * // === Using the Interface Directly ===
@@ -117,7 +117,7 @@ extern "C" {
  * // === NULL Interface Handling ===
  *
  * // Many components accept NULL error_iface and create default internally
- * star_sensor_mpu6050_init(&imu, &bus_manager, "imu_i2c", NULL, &config);
+ * // sensor_init(&sensor, &bus_manager, "sensor_bus", NULL, &config);
  * // ^-- This creates a default error handler internally
  *
  * // The STAR_IFACE_RECORD_ERROR macro safely handles NULL interfaces
