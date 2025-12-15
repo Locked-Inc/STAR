@@ -12,7 +12,7 @@
 
 #include "esp_log.h"
 
-static const char* s_TAG = "pin_validator";
+static const char* s_TAG = "PIN_VALIDATOR";
 
 /* Default mutex timeout in milliseconds to prevent infinite wait deadlocks */
 static const uint32_t s_pin_validator_mutex_timeout_ms = 5000;
