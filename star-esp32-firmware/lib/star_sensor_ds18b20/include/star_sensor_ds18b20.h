@@ -49,7 +49,7 @@ extern "C" {
  * star_ds18b20_config_t config = {
  *     .bus_manager = &bus_manager,
  *     .bus_name = "temp_onewire",
- *     .resolution = STAR_DS18B20_RESOLUTION_12_BIT,
+ *     .resolution = k_star_ds18b20_resolution_12_bit,
  *     .use_rom = false,  // Skip ROM (single sensor on bus)
  * };
  *
@@ -86,10 +86,10 @@ extern "C" {
  * @brief DS18B20 temperature resolution options
  */
 typedef enum {
-  STAR_DS18B20_RESOLUTION_9_BIT  = 0,  /**< 9-bit resolution (0.5°C, 93.75ms conversion) */
-  STAR_DS18B20_RESOLUTION_10_BIT = 1,  /**< 10-bit resolution (0.25°C, 187.5ms conversion) */
-  STAR_DS18B20_RESOLUTION_11_BIT = 2,  /**< 11-bit resolution (0.125°C, 375ms conversion) */
-  STAR_DS18B20_RESOLUTION_12_BIT = 3,  /**< 12-bit resolution (0.0625°C, 750ms conversion) */
+  k_star_ds18b20_resolution_9_bit  = 0,  /**< 9-bit resolution (0.5°C, 93.75ms conversion) */
+  k_star_ds18b20_resolution_10_bit = 1,  /**< 10-bit resolution (0.25°C, 187.5ms conversion) */
+  k_star_ds18b20_resolution_11_bit = 2,  /**< 11-bit resolution (0.125°C, 375ms conversion) */
+  k_star_ds18b20_resolution_12_bit = 3,  /**< 12-bit resolution (0.0625°C, 750ms conversion) */
 } star_ds18b20_resolution_t;
 
 /**

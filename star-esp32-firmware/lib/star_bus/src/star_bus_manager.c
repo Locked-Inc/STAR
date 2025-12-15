@@ -12,6 +12,7 @@
 #include "esp_check.h"
 #include "esp_log.h"
 #include "sdkconfig.h" /* For Kconfig values like timeout */
+#include "soc/soc_caps.h"
 #include "star_bus_adc.h"
 #include "star_bus_config.h"
 #include "star_bus_gpio.h"
@@ -260,6 +261,12 @@ esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
     manager->spi_device_count[i]     = 0; /* Initialize device count */
   }
 
+  /* Initialize ADC unit tracking */
+  for (uint32_t i = 0; i < SOC_ADC_PERIPH_NUM; ++i) {
+    manager->adc_unit_handles[i]  = NULL;
+    manager->adc_channel_count[i] = 0;
+  }
+
   ESP_LOGI(manager->tag, "Initialized");
   return ESP_OK;
 }
@@ -432,6 +439,8 @@ esp_err_t star_bus_manager_remove_bus(star_bus_manager_t* manager, const char* n
   esp_err_t          ret               = ESP_ERR_NOT_FOUND;
   spi_host_device_t  spi_host_to_check = -1;
   bool               free_spi_bus      = false;
+  adc_unit_t         adc_unit_to_check = -1;
+  bool               free_adc_unit     = false;
 
   /* Take mutex for the entire critical section to prevent race conditions */
   if (xSemaphoreTake(manager->mutex, pdMS_TO_TICKS(CONFIG_STAR_KCONFIG_BUS_MUTEX_TIMEOUT_MS * 2)) !=
@@ -483,6 +492,36 @@ esp_err_t star_bus_manager_remove_bus(star_bus_manager_t* manager, const char* n
           spi_host_to_check = -1;
         }
       }
+
+      /* Handle ADC channel count and determine if unit should be freed */
+      if (to_remove->type == k_star_bus_type_adc) {
+        adc_unit_to_check = to_remove->proto.adc.unit;
+        if (adc_unit_to_check >= 0 && adc_unit_to_check < SOC_ADC_PERIPH_NUM) {
+          if (manager->adc_channel_count[adc_unit_to_check] > 0) {
+            manager->adc_channel_count[adc_unit_to_check]--;
+            ESP_LOGD(manager->tag,
+                     "Decremented channel count for ADC unit %d to %d",
+                     adc_unit_to_check,
+                     manager->adc_channel_count[adc_unit_to_check]);
+          } else {
+            ESP_LOGW(manager->tag,
+                     "ADC channel count for unit %d was already 0!",
+                     adc_unit_to_check);
+          }
+
+          /* Determine if we should free the ADC unit - do this while holding mutex */
+          if (manager->adc_channel_count[adc_unit_to_check] == 0 &&
+              manager->adc_unit_handles[adc_unit_to_check] != NULL) {
+            free_adc_unit = true;
+          }
+        } else {
+          ESP_LOGE(manager->tag,
+                   "Invalid ADC unit %d found in config '%s'",
+                   adc_unit_to_check,
+                   name);
+          adc_unit_to_check = -1;
+        }
+      }
       break;
     }
   }
@@ -530,6 +569,24 @@ esp_err_t star_bus_manager_remove_bus(star_bus_manager_t* manager, const char* n
       }
     } else {
       ESP_LOGI(manager->tag, "SPI bus driver for host %d freed.", spi_host_to_check);
+    }
+  }
+
+  /* Free the ADC unit if necessary - still holding mutex */
+  if (free_adc_unit) {
+    ESP_LOGI(manager->tag, "Freeing ADC unit %d...", adc_unit_to_check);
+    esp_err_t free_ret = adc_oneshot_del_unit(manager->adc_unit_handles[adc_unit_to_check]);
+    if (free_ret != ESP_OK) {
+      ESP_LOGE(manager->tag,
+               "Failed to free ADC unit %d: %s",
+               adc_unit_to_check,
+               esp_err_to_name(free_ret));
+      if (ret == ESP_OK) {
+        ret = free_ret;
+      }
+    } else {
+      manager->adc_unit_handles[adc_unit_to_check] = NULL;
+      ESP_LOGI(manager->tag, "ADC unit %d freed.", adc_unit_to_check);
     }
   }
 
