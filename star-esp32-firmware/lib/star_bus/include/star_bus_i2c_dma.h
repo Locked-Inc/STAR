@@ -1,4 +1,4 @@
-/* esp32-firmware/components/star_bus/include/star_bus_i2c_dma.h */
+/* lib/star_bus/include/star_bus_i2c_dma.h */
 
 #ifndef STAR_BUS_I2C_DMA_H
 #define STAR_BUS_I2C_DMA_H

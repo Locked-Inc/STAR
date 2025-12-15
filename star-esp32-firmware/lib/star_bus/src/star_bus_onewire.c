@@ -1,4 +1,4 @@
-/* esp32-firmware/components/star_bus/star_bus_onewire.c */
+/* lib/star_bus/src/star_bus_onewire.c */
 
 #include "star_bus_onewire.h"
 
@@ -18,7 +18,7 @@
 
 static const char* s_TAG = "STAR_ONEWIRE";
 
-enum { k_max_onewire_buses = 4 };
+enum { k_max_onewire_buses = 4 }; /* XXX: This feels out of place, also all of these structs and enums, why are they defined here and not in its header file, this feels wrong */
 
 /* Mutex timeout in milliseconds */
 static const uint32_t s_onewire_mutex_timeout_ms = 5000;
@@ -760,6 +760,7 @@ esp_err_t star_bus_onewire_reset_stats(star_bus_manager_t* manager, const char* 
   return ESP_OK;
 }
 
+/* FIXME: TODO: XXX: Find all of these "print_stats" functions in all files in all libraries and delete them */
 void star_bus_onewire_print_stats(const char* bus_name, const star_onewire_stats_t* stats)
 {
   if (bus_name == NULL || stats == NULL) {

@@ -1,5 +1,7 @@
 /* lib/star_sensor_bno055_bmp280/src/star_sensor_bno055_bmp280.c */
 
+/* TODO: Add doxygen doc comment for @file */
+
 #include "star_sensor_bno055_bmp280.h"
 
 #include <esp_log.h>
@@ -13,14 +15,9 @@
 #include "star_bus_i2c.h"
 #include "star_error_handler.h"
 
-static const char* s_TAG = "imu10dof";
+  static const char* s_TAG = "imu10dof";
 
-/* Use constant instead of macro for type safety */
 static const uint32_t s_imu_10dof_mutex_timeout_ms = 1000;
-
-/* Register addresses, chip ID values, and other constants are now provided
- * by type-safe constants in bno055_bmp280_constants.h (included via the header).
- * See k_bno055_reg_*, k_bmp280_reg_*, k_bno055_chip_id_value, k_bmp280_chip_id_value, etc. */
 
 /* Sea level pressure constant */
 static const float s_sea_level_pressure_pa = 101325.0f;

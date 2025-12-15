@@ -1,4 +1,4 @@
-/* esp32-firmware/components/star_bus/include/star_bus_onewire.h */
+/* lib/star_bus/include/star_bus_onewire.h */
 
 #ifndef STAR_BUS_ONEWIRE_H
 #define STAR_BUS_ONEWIRE_H

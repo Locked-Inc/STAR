@@ -1,4 +1,6 @@
-/* esp32-firmware/components/star_bus/star_bus_devices.c */
+/* lib/star_bus/src/star_bus_devices.c */
+
+/* XXX: This file seems very wrong, why are we having in thie star_bus sensor specific things, this entire file should be removed */
 
 #include "star_bus_devices.h"
 
@@ -9,7 +11,7 @@
 
 #include "star_bus_i2c.h"
 
-static const char* s_TAG = "star_bus_devices";
+static const char* s_TAG = "star_bus_devices"; /* XXX: this doesnt fit the style for the others */
 
 /* --- Helper Functions --- */
 

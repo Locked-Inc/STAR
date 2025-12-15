@@ -1,4 +1,4 @@
-/* esp32-firmware/components/star_bus/star_bus_smbus.c */
+/* lib/star_bus/src/star_bus_smbus.c */
 
 #include "star_bus_smbus.h"
 
@@ -40,7 +40,7 @@ static esp_err_t internal_validate_smbus_params(star_bus_manager_t* manager, con
 
 /* Note: addr parameter is kept for API compatibility but currently unused.
  * The address from the bus configuration is used by the underlying I2C layer. */
-
+/* TODO: We should have an example of how to call this since a param is unused */
 esp_err_t star_smbus_quick_command(star_bus_manager_t* manager,
                                    const char*         bus_name,
                                    uint8_t             addr,

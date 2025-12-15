@@ -1,4 +1,4 @@
-/* esp32-firmware/components/star_error_handler/include/star_error_handler.h */
+/* lib/star_error_handler/include/star_error_handler.h */
 
 #ifndef STAR_ERROR_HANDLER_H
 #define STAR_ERROR_HANDLER_H

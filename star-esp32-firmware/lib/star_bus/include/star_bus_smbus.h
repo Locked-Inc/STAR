@@ -1,4 +1,4 @@
-/* esp32-firmware/components/star_bus/include/star_bus_smbus.h */
+/* lib/star_bus/include/star_bus_smbus.h */
 
 #ifndef STAR_BUS_SMBUS_H
 #define STAR_BUS_SMBUS_H
