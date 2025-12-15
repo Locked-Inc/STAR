@@ -1,6 +1,9 @@
 /* lib/star_pin_validator/src/star_pin_validator.c */
 
-/* TODO: Add doxygen doc comment for @file */
+/**
+ * @file star_pin_validator.c
+ * @brief GPIO pin conflict detection and validation
+ */
 
 #include "star_pin_validator.h"
 

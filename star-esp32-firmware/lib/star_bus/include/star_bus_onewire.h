@@ -401,7 +401,6 @@ esp_err_t star_bus_onewire_reset_stats(star_bus_manager_t* manager, const char* 
  * @param[in] bus_name Name of 1-Wire bus
  * @param[in] stats Pointer to statistics
  */
-void star_bus_onewire_print_stats(const char* bus_name, const star_onewire_stats_t* stats);
 
 /* --- Helper Macros --- */
 

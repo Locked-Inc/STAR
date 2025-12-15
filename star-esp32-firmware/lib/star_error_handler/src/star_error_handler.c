@@ -1,6 +1,9 @@
 /* lib/star_error_handler/src/star_error_handler.c */
 
-/* TODO: Add doxygen doc comment for @file */
+/**
+ * @file star_error_handler.c
+ * @brief Error handling with exponential backoff retry logic
+ */
 
 #include "star_error_handler.h"
 
@@ -11,7 +14,7 @@
 
 #include "esp_log.h"
 
-#define TAG ("STAR ERROR HANDLER") /* FIXME: This should not be a macro */
+static const char* s_TAG = "STAR_ERROR_HANDLER";
 
 /* Default mutex timeout in milliseconds to prevent infinite wait deadlocks */
 static const uint32_t s_error_handler_mutex_timeout_ms = 5000;
@@ -28,13 +31,13 @@ esp_err_t error_handler_init(error_handler_t* handler,
 /* clang-format on */
 {
   if (handler == NULL) {
-    ESP_LOGE(TAG, "Init Error: Handler pointer is NULL");
+    ESP_LOGE(s_TAG, "Init Error: Handler pointer is NULL");
     return ESP_ERR_INVALID_ARG;
   }
 
   /* Check if already initialized to prevent mutex leak */
   if (handler->mutex != NULL) {
-    ESP_LOGE(TAG, "Init Error: Handler already initialized. Call deinit first.");
+    ESP_LOGE(s_TAG, "Init Error: Handler already initialized. Call deinit first.");
     return ESP_ERR_INVALID_STATE;
   }
 
@@ -54,7 +57,7 @@ esp_err_t error_handler_init(error_handler_t* handler,
   /* Create mutex last after other fields are set */
   handler->mutex = xSemaphoreCreateMutex();
   if (handler->mutex == NULL) {
-    ESP_LOGE(TAG, "Mutex Error: Failed to create mutex during initialization");
+    ESP_LOGE(s_TAG, "Mutex Error: Failed to create mutex during initialization");
     return ESP_ERR_NO_MEM;
   }
 
@@ -75,7 +78,7 @@ esp_err_t error_handler_deinit(error_handler_t* handler)
   /* Acquire mutex to ensure no other operation is in progress */
   if (xSemaphoreTake(mutex_to_delete, pdMS_TO_TICKS(s_error_handler_mutex_timeout_ms)) != pdTRUE) {
     /* If we can't acquire mutex within timeout, do NOT proceed - another thread is using it */
-    ESP_LOGE(TAG, "Deinit: Could not acquire mutex within timeout, aborting deinit");
+    ESP_LOGE(s_TAG, "Deinit: Could not acquire mutex within timeout, aborting deinit");
     return ESP_ERR_TIMEOUT;
   }
 
@@ -115,7 +118,7 @@ esp_err_t error_handler_record_error(error_handler_t* handler,
   /* Atomically capture mutex pointer to prevent TOCTOU race */
   SemaphoreHandle_t mutex = handler->mutex;
   if (mutex == NULL) {
-    ESP_LOGE(TAG,
+    ESP_LOGE(s_TAG,
              "Mutex Error: Mutex not initialized for error handler used in %s:%d",
              filename,
              line);
@@ -123,14 +126,14 @@ esp_err_t error_handler_record_error(error_handler_t* handler,
   }
 
   if (xSemaphoreTake(mutex, pdMS_TO_TICKS(s_error_handler_mutex_timeout_ms)) != pdTRUE) {
-    ESP_LOGE(TAG, "Mutex Timeout: Failed to acquire mutex in %s:%d", filename, line);
+    ESP_LOGE(s_TAG, "Mutex Timeout: Failed to acquire mutex in %s:%d", filename, line);
     return ESP_ERR_TIMEOUT;
   }
 
   /* Re-check mutex validity after acquisition (handler could have been deinit'd) */
   if (handler->mutex == NULL) {
     xSemaphoreGive(mutex);
-    ESP_LOGE(TAG, "Handler Error: Handler was deinitialized while waiting for mutex");
+    ESP_LOGE(s_TAG, "Handler Error: Handler was deinitialized while waiting for mutex");
     return ESP_ERR_INVALID_STATE;
   }
 
@@ -152,11 +155,11 @@ esp_err_t error_handler_record_error(error_handler_t* handler,
     } else {
       handler->current_retry_delay = (uint32_t)new_delay_64;
     }
-    ESP_LOGI(TAG, "Backoff: Next retry delay: %" PRIu32 " ms", handler->current_retry_delay);
+    ESP_LOGI(s_TAG, "Backoff: Next retry delay: %" PRIu32 " ms", handler->current_retry_delay);
   } else {
     retry_count_to_log           = handler->max_retries;
     handler->current_retry_delay = handler->max_retry_delay;
-    ESP_LOGI(TAG, "Backoff: Next retry delay: %" PRIu32 " ms", handler->current_retry_delay);
+    ESP_LOGI(s_TAG, "Backoff: Next retry delay: %" PRIu32 " ms", handler->current_retry_delay);
   }
 
   char log_buffer[256];
@@ -173,7 +176,7 @@ esp_err_t error_handler_record_error(error_handler_t* handler,
            handler->max_retries);
   log_buffer[sizeof(log_buffer) - 1] = '\0';
 
-  ESP_LOGE(TAG, "Error Recorded: %s", log_buffer);
+  ESP_LOGE(s_TAG, "Error Recorded: %s", log_buffer);
 
   handler->error_count++;
   handler->last_error = error;
@@ -181,7 +184,7 @@ esp_err_t error_handler_record_error(error_handler_t* handler,
   esp_err_t recovery_result = ESP_FAIL;
 
   if (handler->current_retry >= handler->max_retries) {
-    ESP_LOGE(TAG,
+    ESP_LOGE(s_TAG,
              "Max Retries: Max retries (%" PRIu32 ") exceeded for error %d (%s).",
              handler->max_retries,
              error,
@@ -192,7 +195,7 @@ esp_err_t error_handler_record_error(error_handler_t* handler,
     void* reset_context_local                  = handler->reset_context;
 
     if (reset_fn_local != NULL) {
-      ESP_LOGI(TAG, "Reset Attempt: Attempting reset function after max retries...");
+      ESP_LOGI(s_TAG, "Reset Attempt: Attempting reset function after max retries...");
 
       /* Release mutex before calling potentially blocking reset function */
       xSemaphoreGive(mutex);
@@ -202,19 +205,19 @@ esp_err_t error_handler_record_error(error_handler_t* handler,
 
       /* Re-acquire mutex - use the original captured mutex pointer */
       if (xSemaphoreTake(mutex, pdMS_TO_TICKS(s_error_handler_mutex_timeout_ms)) != pdTRUE) {
-        ESP_LOGE(TAG, "Mutex Error: Failed to re-acquire mutex after reset attempt!");
+        ESP_LOGE(s_TAG, "Mutex Error: Failed to re-acquire mutex after reset attempt!");
         return ESP_ERR_TIMEOUT;
       }
 
       /* Verify handler wasn't deinitialized during reset */
       if (handler->mutex == NULL) {
         xSemaphoreGive(mutex);
-        ESP_LOGE(TAG, "Handler Error: Handler was deinitialized during reset");
+        ESP_LOGE(s_TAG, "Handler Error: Handler was deinitialized during reset");
         return ESP_ERR_INVALID_STATE;
       }
 
       if (recovery_result == ESP_OK) {
-        ESP_LOGI(TAG, "Reset Success: Reset function succeeded. Resetting error state.");
+        ESP_LOGI(s_TAG, "Reset Success: Reset function succeeded. Resetting error state.");
         handler->error_count         = 0;
         handler->current_retry       = 0;
         handler->current_retry_delay = handler->base_retry_delay;
@@ -223,13 +226,13 @@ esp_err_t error_handler_record_error(error_handler_t* handler,
         xSemaphoreGive(mutex);
         return ESP_OK;
       } else {
-        ESP_LOGE(TAG,
+        ESP_LOGE(s_TAG,
                  "Reset Failed: Reset function failed with code: %d (%s)",
                  recovery_result,
                  esp_err_to_name(recovery_result));
       }
     } else {
-      ESP_LOGW(TAG, "No Reset: Max retries exceeded and no reset function provided.");
+      ESP_LOGW(s_TAG, "No Reset: Max retries exceeded and no reset function provided.");
     }
     xSemaphoreGive(mutex);
     return error;
@@ -249,7 +252,7 @@ bool error_handler_can_retry(error_handler_t* handler)
   /* Atomically capture mutex pointer */
   SemaphoreHandle_t mutex = handler->mutex;
   if (mutex == NULL) {
-    ESP_LOGE(TAG, "Mutex Error: Mutex not initialized for error handler (can_retry)");
+    ESP_LOGE(s_TAG, "Mutex Error: Mutex not initialized for error handler (can_retry)");
     return false;
   }
 
@@ -262,7 +265,7 @@ bool error_handler_can_retry(error_handler_t* handler)
     can_retry = (handler->in_error_state && (handler->current_retry < handler->max_retries));
     xSemaphoreGive(mutex);
   } else {
-    ESP_LOGE(TAG, "Mutex Timeout: Failed to acquire mutex for can_retry check");
+    ESP_LOGE(s_TAG, "Mutex Timeout: Failed to acquire mutex for can_retry check");
     can_retry = false;
   }
   return can_retry;
@@ -277,7 +280,7 @@ esp_err_t error_handler_reset_state(error_handler_t* handler)
   /* Atomically capture mutex pointer */
   SemaphoreHandle_t mutex = handler->mutex;
   if (mutex == NULL) {
-    ESP_LOGE(TAG, "Mutex Error: Mutex not initialized for error handler (reset_state)");
+    ESP_LOGE(s_TAG, "Mutex Error: Mutex not initialized for error handler (reset_state)");
     return ESP_ERR_INVALID_STATE;
   }
 
@@ -288,7 +291,7 @@ esp_err_t error_handler_reset_state(error_handler_t* handler)
       return ESP_ERR_INVALID_STATE;
     }
     if (handler->in_error_state) {
-      ESP_LOGI(TAG, "State Reset: Resetting error handler state.");
+      ESP_LOGI(s_TAG, "State Reset: Resetting error handler state.");
     }
     handler->error_count         = 0;
     handler->current_retry       = 0;
@@ -298,7 +301,7 @@ esp_err_t error_handler_reset_state(error_handler_t* handler)
     xSemaphoreGive(mutex);
     return ESP_OK;
   } else {
-    ESP_LOGE(TAG, "Mutex Timeout: Failed to acquire mutex for state reset");
+    ESP_LOGE(s_TAG, "Mutex Timeout: Failed to acquire mutex for state reset");
     return ESP_ERR_TIMEOUT;
   }
 }
@@ -336,7 +339,7 @@ void error_handler_get_interface(star_error_interface_t* iface, error_handler_t*
 
   /* Validate handler before creating interface */
   if (handler == NULL || handler->mutex == NULL) {
-    ESP_LOGE(TAG, "Interface Error: Invalid handler passed to get_interface");
+    ESP_LOGE(s_TAG, "Interface Error: Invalid handler passed to get_interface");
     iface->record_error = NULL;
     iface->can_retry    = NULL;
     iface->reset_state  = NULL;
@@ -367,7 +370,7 @@ error_handler_t* error_handler_create_custom(uint32_t max_retries,
   /* Allocate memory for error handler */
   error_handler_t* handler = (error_handler_t*)malloc(sizeof(error_handler_t));
   if (handler == NULL) {
-    ESP_LOGE(TAG, "Factory Error: Failed to allocate memory for error handler");
+    ESP_LOGE(s_TAG, "Factory Error: Failed to allocate memory for error handler");
     return NULL;
   }
 
@@ -382,13 +385,13 @@ error_handler_t* error_handler_create_custom(uint32_t max_retries,
                                      reset_fn,
                                      reset_context);
   if (ret != ESP_OK) {
-    ESP_LOGE(TAG, "Factory Error: Failed to initialize error handler: %s", esp_err_to_name(ret));
+    ESP_LOGE(s_TAG, "Factory Error: Failed to initialize error handler: %s", esp_err_to_name(ret));
     free(handler);
     return NULL;
   }
 
   ESP_LOGI(
-    TAG,
+    s_TAG,
     "Factory Success: Created error handler (retries=%lu, base_delay=%lums, max_delay=%lums)",
     (unsigned long)max_retries,
     (unsigned long)base_retry_delay,
@@ -409,7 +412,7 @@ void error_handler_destroy_default(error_handler_t* handler)
   /* Free the allocated memory */
   free(handler);
 
-  ESP_LOGD(TAG, "Factory Destroy: Error handler destroyed and memory freed");
+  ESP_LOGD(s_TAG, "Factory Destroy: Error handler destroyed and memory freed");
 }
 
 star_error_interface_t* star_error_interface_create_default(void)
@@ -417,14 +420,14 @@ star_error_interface_t* star_error_interface_create_default(void)
   /* Create default error handler */
   error_handler_t* handler = error_handler_create_default();
   if (handler == NULL) {
-    ESP_LOGE(TAG, "Failed to create default error handler");
+    ESP_LOGE(s_TAG, "Failed to create default error handler");
     return NULL;
   }
 
   /* Allocate interface structure */
   star_error_interface_t* iface = (star_error_interface_t*)malloc(sizeof(star_error_interface_t));
   if (iface == NULL) {
-    ESP_LOGE(TAG, "Failed to allocate error interface");
+    ESP_LOGE(s_TAG, "Failed to allocate error interface");
     error_handler_destroy_default(handler);
     return NULL;
   }
@@ -432,7 +435,7 @@ star_error_interface_t* star_error_interface_create_default(void)
   /* Populate interface */
   error_handler_get_interface(iface, handler);
 
-  ESP_LOGD(TAG, "Created default error interface");
+  ESP_LOGD(s_TAG, "Created default error interface");
   return iface;
 }
 
@@ -451,7 +454,7 @@ void star_error_interface_destroy(star_error_interface_t* iface)
   /* Free the interface */
   free(iface);
 
-  ESP_LOGD(TAG, "Destroyed error interface");
+  ESP_LOGD(s_TAG, "Destroyed error interface");
 }
 
 void star_error_interface_cleanup(star_error_interface_t* error_iface, bool owns_handler)
@@ -470,7 +473,7 @@ void star_error_interface_cleanup(star_error_interface_t* error_iface, bool owns
     /* Free the interface memory */
     free(error_iface);
 
-    ESP_LOGD(TAG, "Cleaned up owned error interface");
+    ESP_LOGD(s_TAG, "Cleaned up owned error interface");
   }
   /* If owns_handler is false, do nothing - caller manages the handler externally */
 }

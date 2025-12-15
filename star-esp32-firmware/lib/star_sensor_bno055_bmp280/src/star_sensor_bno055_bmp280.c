@@ -1,6 +1,9 @@
 /* lib/star_sensor_bno055_bmp280/src/star_sensor_bno055_bmp280.c */
 
-/* TODO: Add doxygen doc comment for @file */
+/**
+ * @file star_sensor_bno055_bmp280.c
+ * @brief BNO055 + BMP280 10-DOF sensor driver implementation
+ */
 
 #include "star_sensor_bno055_bmp280.h"
 

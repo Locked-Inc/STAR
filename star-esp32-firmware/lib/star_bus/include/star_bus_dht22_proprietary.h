@@ -120,7 +120,6 @@ extern "C" {
  *
  * star_dht22_stats_t stats;
  * star_bus_dht22_get_stats(&bus_manager, "dht22_sensor", &stats);
- * star_bus_dht22_print_stats("dht22_sensor", &stats);
  *
  * printf("Success rate: %.1f%%\n",
  *        (float)stats.successful_reads / stats.total_reads * 100.0f);
@@ -341,7 +340,6 @@ esp_err_t star_bus_dht22_reset_stats(star_bus_manager_t* manager, const char* bu
  * @param[in] bus_name Name of DHT22 bus
  * @param[in] stats    Pointer to statistics
  */
-void star_bus_dht22_print_stats(const char* bus_name, const star_dht22_stats_t* stats);
 
 /* --- Utility Functions --- */
 
