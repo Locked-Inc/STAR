@@ -1,4 +1,4 @@
-/* esp32-firmware/components/star_bms_bq7850/include/star_bms_bq7850.h */
+/* lib/star_bms_bq7850/include/star_bms_bq7850.h */
 
 #ifndef STAR_BMS_BQ7850_H
 #define STAR_BMS_BQ7850_H
@@ -271,6 +271,9 @@ extern "C" {
 /** Maximum number of temperature sensors */
 #define BQ7850_MAX_TEMP_SENSORS (3)
 
+/** Maximum length for device info strings (manufacturer, device name, chemistry) */
+#define BQ7850_DEVICE_INFO_STRING_LEN (32)
+
 /* --- Register Map --- */
 
 /* Standard Commands (SMBus) */
@@ -449,20 +452,22 @@ typedef struct {
  * @brief BQ7850 device information
  */
 typedef struct {
-  uint16_t device_type;      /**< Device type ID */
-  uint16_t fw_version;       /**< Firmware version */
-  uint16_t hw_version;       /**< Hardware version */
-  uint32_t serial_number;    /**< Serial number */
-  char     manufacturer[32]; /**< Manufacturer name */
-  char     device_name[32];  /**< Device name */
-  char     chemistry[32];    /**< Battery chemistry */
+  uint16_t device_type;                                  /**< Device type ID */
+  uint16_t fw_version;                                   /**< Firmware version */
+  uint16_t hw_version;                                   /**< Hardware version */
+  uint32_t serial_number;                                /**< Serial number */
+  char     manufacturer[BQ7850_DEVICE_INFO_STRING_LEN];  /**< Manufacturer name */
+  char     device_name[BQ7850_DEVICE_INFO_STRING_LEN];   /**< Device name */
+  char     chemistry[BQ7850_DEVICE_INFO_STRING_LEN];     /**< Battery chemistry */
 } bq7850_device_info_t;
 
 /**
  * @brief BQ7850 device handle
  *
  * Maintains state and error handling for BMS operations.
- * Thread-safe: All operations are protected by an internal mutex.
+ * Thread-safe: Initialization and deinitialization operations are protected
+ * by an internal mutex. Read operations do not acquire mutex (consistent with
+ * other STAR sensor drivers using const handle pointers).
  */
 typedef struct bq7850_handle {
   star_bus_manager_t*     manager;            /**< Pointer to bus manager */

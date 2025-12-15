@@ -14,6 +14,11 @@
 
 static const char* s_TAG = "STAR_OW_PERIPH";
 
+/**
+ * @brief Maximum response buffer size for OneWire peripheral
+ */
+#define STAR_ONEWIRE_PERIPH_RESPONSE_BUFFER_SIZE (256)
+
 #define MAX_PERIPHERAL_BUSES (2)
 
 /* --- Types --- */
@@ -22,7 +27,7 @@ static const char* s_TAG = "STAR_OW_PERIPH";
  * @brief 1-Wire peripheral state
  */
 typedef struct {
-  char                             bus_name[32]; /* XXX: As stated in other files, this is still hard coded */
+  char                             bus_name[STAR_BUS_NAME_MAX_LEN]; /* XXX: As stated in other files, this is still hard coded */
   star_onewire_peripheral_config_t config;
   star_onewire_peripheral_stats_t  stats;
   bool                             enabled;
@@ -30,7 +35,7 @@ typedef struct {
   bool                             alarm_active;
 
   /* Response buffer for read operations */
-  uint8_t response_buffer[256]; /* XXX: This is also hard coded */
+  uint8_t response_buffer[STAR_ONEWIRE_PERIPH_RESPONSE_BUFFER_SIZE];
   size_t  response_length;
   uint8_t last_function_cmd;
 } peripheral_state_t;
@@ -269,30 +274,3 @@ esp_err_t star_bus_onewire_peripheral_reset_stats(star_bus_manager_t* manager, c
   return ESP_OK;
 }
 
-void star_bus_onewire_peripheral_print_stats(const char*                            bus_name,
-                                             const star_onewire_peripheral_stats_t* stats)
-{
-  if (bus_name == NULL || stats == NULL) {
-    return;
-  }
-
-  printf("\n=== 1-Wire Peripheral Statistics: %s ===\n", bus_name);
-  printf("Commands:\n");
-  printf("  Reset Pulses:  %llu\n", stats->reset_pulses_detected);
-  printf("  ROM Reads:     %llu\n", stats->rom_reads);
-  printf("  Match ROM:     %llu\n", stats->match_rom_commands);
-  printf("  Skip ROM:      %llu\n", stats->skip_rom_commands);
-  printf("  Search ROM:    %llu\n", stats->search_rom_commands);
-  printf("  Alarm Search:  %llu\n", stats->alarm_search_commands);
-  printf("  Function Cmds: %llu\n", stats->function_commands);
-
-  printf("\nData Transfer:\n");
-  printf("  Bytes Sent:     %llu\n", stats->bytes_sent);
-  printf("  Bytes Received: %llu\n", stats->bytes_received);
-
-  printf("\nErrors:\n");
-  printf("  Callback Errors: %llu\n", stats->callback_errors);
-  printf("  Last Error: %s\n", esp_err_to_name(stats->last_error));
-
-  printf("==========================================\n\n");
-}

@@ -1,6 +1,9 @@
 /* lib/star_sensor_mpu6050/src/star_sensor_mpu6050.c */
 
-/* TODO: Add doxygen doc comment for @file */
+/**
+ * @file star_sensor_mpu6050.c
+ * @brief MPU6050 6-axis IMU driver implementation
+ */
 
 #include "star_sensor_mpu6050.h"
 

@@ -22,7 +22,7 @@ static const char* s_TAG = "STAR_I2C_PERIPH";
  * @brief I2C peripheral state
  */
 typedef struct {
-  char                         bus_name[32]; /* XXX: hard coded occurs here too ! */
+  char                         bus_name[STAR_BUS_NAME_MAX_LEN]; /* XXX: hard coded occurs here too ! */
   star_i2c_peripheral_config_t config;
   star_i2c_peripheral_stats_t  stats;
   bool                         enabled;
@@ -472,31 +472,3 @@ esp_err_t star_bus_i2c_peripheral_reset_stats(star_bus_manager_t* manager, const
   return ESP_OK;
 }
 
-void star_bus_i2c_peripheral_print_stats(const char*                        bus_name,
-                                         const star_i2c_peripheral_stats_t* stats)
-{
-  if (bus_name == NULL || stats == NULL) {
-    return;
-  }
-
-  printf("\n=== I2C Peripheral Statistics: %s ===\n", bus_name);
-  printf("Requests:\n");
-  printf("  Read:  %llu\n", stats->total_read_requests);
-  printf("  Write: %llu\n", stats->total_write_requests);
-  printf("  Total: %llu\n", stats->total_read_requests + stats->total_write_requests);
-
-  printf("\nData Transfer:\n");
-  printf("  Bytes Sent:     %llu\n", stats->total_bytes_sent);
-  printf("  Bytes Received: %llu\n", stats->total_bytes_received);
-
-  printf("\nErrors:\n");
-  printf("  Failed Reads:  %llu\n", stats->failed_reads);
-  printf("  Failed Writes: %llu\n", stats->failed_writes);
-  printf("  Callback Errors: %llu\n", stats->callback_errors);
-  printf("  Last Error: %s\n", esp_err_to_name(stats->last_error));
-
-  printf("\nTiming:\n");
-  printf("  Last Request: %" PRIu32 " us\n", stats->last_request_time_us);
-
-  printf("======================================\n\n");
-}

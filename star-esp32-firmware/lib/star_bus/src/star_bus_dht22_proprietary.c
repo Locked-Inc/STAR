@@ -45,7 +45,7 @@ static const uint32_t s_dht22_data_bytes = 5;  /* Total bytes */
  * @brief DHT22 bus state (internal)
  */
 typedef struct {
-  char                bus_name[32]; /* XXX: it occurs here too */
+  char                bus_name[STAR_BUS_NAME_MAX_LEN]; /* XXX: it occurs here too */
   star_dht22_config_t config;
   star_dht22_stats_t  stats;
   star_dht22_data_t   last_data;
@@ -697,35 +697,6 @@ esp_err_t star_bus_dht22_reset_stats(star_bus_manager_t* manager, const char* bu
   return ESP_OK;
 }
 
-void star_bus_dht22_print_stats(const char* bus_name, const star_dht22_stats_t* stats)
-{
-  if (bus_name == NULL || stats == NULL) {
-    return;
-  }
-
-  printf("\n=== DHT22 Statistics: %s ===\n", bus_name);
-  printf("Reads:\n");
-  printf("  Total:      %" PRIu64 "\n", stats->total_reads);
-  printf("  Successful: %" PRIu64 "\n", stats->successful_reads);
-  printf("  Failed:     %" PRIu64 "\n", stats->failed_reads);
-
-  printf("\nErrors:\n");
-  printf("  Checksum:    %" PRIu64 "\n", stats->checksum_errors);
-  printf("  Timeout:     %" PRIu64 "\n", stats->timeout_errors);
-  printf("  No Response: %" PRIu64 "\n", stats->no_response_errors);
-
-  printf("\nLast Successful Read:\n");
-  printf("  Temperature: %.1f C\n", stats->last_temperature);
-  printf("  Humidity:    %.1f %%\n", stats->last_humidity);
-  printf("  Read Time:   %" PRIu32 " us\n", stats->last_read_time_us);
-
-  if (stats->total_reads > 0) {
-    float success_rate = (float)stats->successful_reads / stats->total_reads * 100.0f;
-    printf("\nSuccess Rate: %.1f%%\n", success_rate);
-  }
-
-  printf("==================================\n\n");
-}
 
 /* --- Utility Functions --- */
 

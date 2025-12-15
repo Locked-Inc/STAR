@@ -14,11 +14,13 @@
 
 /* --- Constants --- */
 
-static const char* s_TAG = "BusSPI"; /* FIXME: THis tag does not follow the style of the other tags in this project */
+static const char* s_TAG = "STAR_BUS_SPI";
 
 /* Use constant instead of macro for type safety.
  * Currently unused but defined for future polling mode support. */
-/* TODO: Implement the polling feature (option) */
+/* TODO: Implement SPI polling mode support (currently uses interrupt mode)
+ * Would allow synchronous operation without interrupt overhead
+ * See ESP-IDF spi_master.h SPI_DEVICE_NO_DUMMY flag */
 static const uint32_t s_spi_timeout_ms __attribute__((unused)) = 1000;
 
 /* --- Private Function Prototypes (Default Ops) --- */

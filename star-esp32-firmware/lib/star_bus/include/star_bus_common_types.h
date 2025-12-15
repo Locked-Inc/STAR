@@ -15,6 +15,13 @@ extern "C" {
 
 #include "esp_err.h"
 
+/* --- Bus Constants --- */
+
+/**
+ * @brief Maximum length of bus name (including null terminator)
+ */
+#define STAR_BUS_NAME_MAX_LEN (32)
+
 /* --- Forward Declarations --- */
 
 typedef struct star_bus_config  star_bus_config_t;

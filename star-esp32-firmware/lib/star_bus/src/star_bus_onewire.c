@@ -18,7 +18,11 @@
 
 static const char* s_TAG = "STAR_ONEWIRE";
 
-enum { k_max_onewire_buses = 4 }; /* XXX: This feels out of place, also all of these structs and enums, why are they defined here and not in its header file, this feels wrong */
+/**
+ * @brief Maximum number of simultaneous OneWire buses
+ * Can be increased if needed but affects static memory usage
+ */
+#define STAR_ONEWIRE_MAX_BUSES (4)
 
 /* Mutex timeout in milliseconds */
 static const uint32_t s_onewire_mutex_timeout_ms = 5000;
@@ -40,10 +44,16 @@ enum {
 /* --- Types --- */
 
 /**
+ * Internal OneWire timing and state management structures.
+ * These are implementation details and not exposed in the public API.
+ * External code should use the functions in star_bus_onewire.h.
+ */
+
+/**
  * @brief 1-Wire bus state
  */
 typedef struct {
-  char                  bus_name[32];
+  char                  bus_name[STAR_BUS_NAME_MAX_LEN];
   star_onewire_config_t config;
   star_onewire_stats_t  stats;
   bool                  initialized;
@@ -57,7 +67,7 @@ typedef struct {
 
 /* --- Static Storage --- */
 
-static onewire_state_t   g_onewire_states[k_max_onewire_buses] = {0};
+static onewire_state_t   g_onewire_states[STAR_ONEWIRE_MAX_BUSES] = {0};
 static uint8_t           g_num_onewire_states                  = 0;
 static SemaphoreHandle_t g_onewire_mutex                       = NULL;
 static portMUX_TYPE      g_onewire_init_spinlock               = portMUX_INITIALIZER_UNLOCKED;
@@ -120,7 +130,7 @@ static onewire_state_t* internal_internal_get_onewire_state_safe(const char* bus
     }
   }
 
-  if (create && g_num_onewire_states < k_max_onewire_buses) {
+  if (create && g_num_onewire_states < STAR_ONEWIRE_MAX_BUSES) {
     onewire_state_t* state = &g_onewire_states[g_num_onewire_states];
     memset(state, 0, sizeof(onewire_state_t));
     strncpy(state->bus_name, bus_name, sizeof(state->bus_name) - 1);
@@ -760,32 +770,3 @@ esp_err_t star_bus_onewire_reset_stats(star_bus_manager_t* manager, const char* 
   return ESP_OK;
 }
 
-/* FIXME: TODO: XXX: Find all of these "print_stats" functions in all files in all libraries and delete them */
-void star_bus_onewire_print_stats(const char* bus_name, const star_onewire_stats_t* stats)
-{
-  if (bus_name == NULL || stats == NULL) {
-    return;
-  }
-
-  printf("\n=== 1-Wire Statistics: %s ===\n", bus_name);
-  printf("Resets:\n");
-  printf("  Total:      %llu\n", stats->total_resets);
-  printf("  Successful: %llu\n", stats->successful_resets);
-  printf("  Failed:     %llu\n", stats->failed_resets);
-
-  printf("\nData Transfer:\n");
-  printf("  Bytes Written: %llu\n", stats->bytes_written);
-  printf("  Bytes Read:    %llu\n", stats->bytes_read);
-
-  printf("\nSearch:\n");
-  printf("  Operations:    %llu\n", stats->search_operations);
-  printf("  Devices Found: %" PRIu32 "\n", stats->devices_found);
-
-  printf("\nErrors:\n");
-  printf("  CRC Errors: %llu\n", stats->crc_errors);
-
-  printf("\nTiming:\n");
-  printf("  Last Operation: %" PRIu32 " us\n", stats->last_operation_time_us);
-
-  printf("==================================\n\n");
-}

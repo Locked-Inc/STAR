@@ -14,7 +14,7 @@
 
 /* --- Constants --- */
 
-static const char* s_TAG = "BusSPIPeripheral"; /* FIXME: This tag doesn't follow the style of the other tags in this project */
+static const char* s_TAG = "STAR_SPI_PERIPH";
 
 /* --- Private Function Prototypes (Default Ops) --- */
 

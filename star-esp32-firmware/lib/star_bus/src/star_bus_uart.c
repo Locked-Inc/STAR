@@ -26,7 +26,7 @@ static const uint32_t s_uart_mutex_timeout_ms = 5000;
  * @brief UART bus state
  */
 typedef struct {
-  char               bus_name[32];
+  char               bus_name[STAR_BUS_NAME_MAX_LEN];
   star_uart_config_t config;
   star_uart_stats_t  stats;
   SemaphoreHandle_t  stats_mutex; /**< Mutex for stats access */
@@ -747,28 +747,3 @@ esp_err_t star_bus_uart_reset_stats(star_bus_manager_t* manager, const char* bus
 }
 
 /* VERIFY: Should this be using printf, is there any good/valid reason for it */
-void star_bus_uart_print_stats(const char* bus_name, const star_uart_stats_t* stats)
-{
-  if (bus_name == NULL || stats == NULL) {
-    return;
-  }
-
-  printf("\n=== UART Statistics: %s ===\n", bus_name);
-  printf("Data Transfer:\n");
-  printf("  Bytes Sent:     %llu\n", stats->bytes_sent);
-  printf("  Bytes Received: %llu\n", stats->bytes_received);
-  printf("  TX Operations:  %llu\n", stats->tx_operations);
-  printf("  RX Operations:  %llu\n", stats->rx_operations);
-
-  printf("\nErrors:\n");
-  printf("  Parity:   %llu\n", stats->parity_errors);
-  printf("  Frame:    %llu\n", stats->frame_errors);
-  printf("  Overrun:  %llu\n", stats->overrun_errors);
-  printf("  Break:    %llu\n", stats->break_conditions);
-
-  printf("\nTiming:\n");
-  printf("  Last TX: %" PRIu32 " us\n", stats->last_tx_time_us);
-  printf("  Last RX: %" PRIu32 " us\n", stats->last_rx_time_us);
-
-  printf("===============================\n\n");
-}
