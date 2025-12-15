@@ -87,16 +87,20 @@ The \texttt{star-esp32-firmware} project provides real-time motor control, senso
 \hline
 \textbf{Component} & \textbf{Status} & \textbf{Notes} \\
 \hline
-STAR Framework Core & Complete & DIP architecture, interfaces \\
-Bus Abstraction Layer & Complete & I2C, SPI, 1-Wire, SMBus, GPIO \\
-Essential Drivers & \textbf{TODO} & BQ7850 (BMS), DS18B20 (Temp) drivers required \\
-Error Handling & Complete & Retry logic with exponential backoff \\
-Pin Validation & Complete & GPIO conflict detection \\
+STAR Framework Core & \textbf{Complete} & DIP architecture, interfaces \\
+Bus Abstraction Layer & \textbf{Complete} & I2C, SPI, UART, GPIO, ADC, 1-Wire \\
+Error Handling & \textbf{Complete} & Retry logic with exponential backoff \\
+Pin Validation & \textbf{Complete} & GPIO conflict detection \\
 \hline
-Motor Control (MCPWM) & \textbf{TODO} & Requires refactoring per guide \\
-SPI Peripheral (Pi5 comm) & Complete & Low-level communication layer is ready \\
-PID Controller & \textbf{TODO} & To be created as \texttt{lib/star\_pid} \\
-Encoder Reading & \textbf{TODO} & To be created as \texttt{lib/star\_encoder} \\
+Motor Control (MCPWM) & \textbf{Complete} & \texttt{lib/star\_motor} \\
+Motor Driver Integration & \textbf{Complete} & \texttt{lib/star\_drv8243} (DRV8243 H-bridge) \\
+PID Controller & \textbf{Complete} & \texttt{lib/star\_pid} \\
+Encoder Reading & \textbf{Complete} & \texttt{lib/star\_encoder} (PCNT-based) \\
+Temperature Sensor & \textbf{Complete} & \texttt{lib/star\_sensor\_ds18b20} (1-Wire) \\
+Battery Management & \textbf{Complete} & \texttt{lib/star\_bms\_bq7850} \\
+\hline
+SPI Peripheral (Pi5 comm) & \textbf{Complete} & Low-level communication layer ready \\
+Application Code & \textbf{TODO} & Integration example in \texttt{src/main.c} \\
 \hline
 \end{tabular}
 \caption{Implementation Status Summary}
@@ -132,15 +136,20 @@ The firmware follows SOLID principles with emphasis on Dependency Inversion:
 
 \begin{lstlisting}[language=bash]
 star-esp32-firmware/
-|-- src/                      # Application entry point (currently empty)
+|-- src/                      # Application entry point
 |
 |-- lib/
-|   |-- star_core/            # Abstract interfaces
-|   |-- star_error_handler/   # Error handling
+|   |-- star_core/            # Abstract interfaces (DIP foundation)
+|   |-- star_error_handler/   # Error handling with retry logic
 |   |-- star_pin_validator/   # GPIO conflict detection
 |   |-- star_bus/             # Unified bus abstraction
-|   |-- star_motor/           # Motor, Encoder, and PID control
-|   +-- star_bms_bq7850/      # Battery management
+|   |   |                     # (I2C, SPI, UART, GPIO, ADC, 1-Wire)
+|   |-- star_motor/           # Brushed DC motor control (MCPWM)
+|   |-- star_drv8243/         # DRV8243 H-bridge driver integration
+|   |-- star_encoder/         # Quadrature encoder (PCNT-based)
+|   |-- star_pid/             # PID controller
+|   |-- star_sensor_ds18b20/  # DS18B20 temperature sensor (1-Wire)
+|   +-- star_bms_bq7850/      # BQ7850 battery management system
 |
 |-- platformio.ini            # Build configuration
 +-- sdkconfig.*               # ESP-IDF configs
@@ -149,7 +158,7 @@ star-esp32-firmware/
 \subsection{Coding Style and Conventions}
 To ensure long-term maintainability, consistency, and readability of the firmware, this project adheres to a strict set of coding conventions. All contributions must follow the rules outlined in the official project style guide.
 
-\textbf{The primary source of truth for all coding style is the \texttt{styleguide.txt} document located in the root of the \texttt{star-esp32-firmware} directory.}
+\textbf{The primary source of truth for all coding style is the \texttt{docs/style\_guide.pdf} document and the \texttt{CLAUDE.md} architecture guide.}
 
 Adherence to this style guide is not optional; it is a critical requirement for all development within this project.
 
@@ -157,88 +166,109 @@ Adherence to this style guide is not optional; it is a critical requirement for 
 \section{Motor Control Architecture}
 % =============================================================================
 
-\subsection{Motor Control Refactoring Plan}
+\subsection{Motor Control Components}
 
-The \texttt{star\_motor} library currently handles all motor-related functionality. For improved modularity, testability, and clarity, it is recommended to refactor this monolithic library into three distinct components as originally envisioned. The following sections outline the proposed architecture for each module.
+The STAR firmware implements a modular motor control stack with clear separation of concerns:
 
-\subsubsection{\texttt{lib/star\_motor} (Proposed)}
+\subsubsection{\texttt{lib/star\_motor} - Low-Level MCPWM Control}
 
-This library should be responsible only for low-level motor control using the ESP32's MCPWM peripheral. Its sole focus is to abstract the hardware details of generating PWM signals.
+Provides hardware abstraction for brushed DC motor control using ESP32's MCPWM peripheral.
 
-\begin{enumerate}
-    \item Create a clean interface with motor handle and configuration structs.
-    \item Implement MCPWM initialization for 4 motors (2 MCPWM units, 2 operators each).
-    \item Configure center-aligned (up-down count) mode for reduced EMI.
-    \item Implement dead-time insertion to prevent H-bridge shoot-through.
-    \item Add fault input handling for overcurrent protection.
-\end{enumerate}
-
-\textbf{Key Parameters:}
+\textbf{Key Features:}
 \begin{itemize}
-    \item PWM Frequency: 20 kHz (above audible range)
-    \item Dead Time: 500ns (DRV8243 requirement)
-    \item Duty Cycle Resolution: 0.1\%
+    \item Bidirectional PWM control (-100\% to +100\% duty cycle)
+    \item Automatic dead-time insertion for H-bridge safety
+    \item Configurable PWM frequency (default: 20 kHz)
+    \item Optional fault input for overcurrent protection
+    \item Brake and coast modes
 \end{itemize}
 
-\begin{lstlisting}[language=C, caption=Proposed Motor Driver Interface]
+\textbf{No bus dependency} - Direct hardware peripheral control.
+
+\begin{lstlisting}[language=C, caption=Motor Driver Interface]
 typedef struct {
-    mcpwm_unit_t unit;
-    mcpwm_timer_t timer;
-    gpio_num_t pwm_a;
-    gpio_num_t pwm_b;
+    int group_id;
+    uint32_t timer_resolution_hz;
+    uint32_t pwm_freq_hz;
+    gpio_num_t pin_pwm_a;
+    gpio_num_t pin_pwm_b;
+    uint32_t dead_time_ns;
     gpio_num_t fault_pin;
-    float max_duty;
+    bool invert_pwm;
 } star_motor_config_t;
 
 esp_err_t star_motor_init(star_motor_handle_t* handle,
-                          const star_motor_config_t* config,
-                          star_error_interface_t* error_iface);
-esp_err_t star_motor_set_duty(star_motor_handle_t* handle, float duty_cycle);
-esp_err_t star_motor_brake(star_motor_handle_t* handle);
-esp_err_t star_motor_coast(star_motor_handle_t* handle);
+                          const star_motor_config_t* config);
+esp_err_t star_motor_set_duty(star_motor_handle_t* handle, float duty);
+esp_err_t star_motor_stop(star_motor_handle_t* handle, bool brake);
 \end{lstlisting}
 
-\subsubsection{\texttt{lib/star\_encoder} (Proposed)}
+\subsubsection{\texttt{lib/star\_drv8243} - DRV8243 Motor Driver Integration}
 
-This library would be dedicated to handling velocity feedback from the quadrature encoders.
+Integrates motor control with current sensing and fault detection via bus manager.
 
-\begin{enumerate}
-    \item Use the ESP32 PCNT (Pulse Counter) peripheral.
-    \item Configure for quadrature decoding (4x resolution).
-    \item Implement velocity calculation from the count delta over time.
-    \item Add overflow handling for the 16-bit hardware counter.
-\end{enumerate}
-
-\textbf{Encoder Specifications:}
+\textbf{Key Features:}
 \begin{itemize}
-    \item Resolution: 341.2 counts/revolution
-    \item Wheel diameter: 100mm
-    \item Distance per count: 0.92mm
+    \item H-bridge motor control (one brushed DC motor)
+    \item Current sensing via IPROPI pin (ADC)
+    \item Fault detection via nFAULT pin (GPIO)
+    \item Configurable current limiting
+    \item PH/EN control mode (PWM + direction)
+    \item PWM frequency: up to 25 kHz
 \end{itemize}
 
-\subsubsection{\texttt{lib/star\_pid} (Proposed)}
+\textbf{Uses bus manager} for ADC (current sensing) and GPIO (fault detection).
 
-This library should be a generic, reusable PID controller for closed-loop control. It should contain no hardware-specific code.
+\subsubsection{\texttt{lib/star\_encoder} - Quadrature Encoder}
 
-\begin{lstlisting}[language=C, caption=Proposed PID Controller Interface]
+Handles position and velocity feedback using ESP32 PCNT peripheral.
+
+\textbf{Key Features:}
+\begin{itemize}
+    \item Hardware-accelerated quadrature decoding
+    \item Position tracking with signed 32-bit counter
+    \item Velocity calculation (RPM)
+    \item Configurable glitch filter
+    \item Counter limits and overflow detection
+\end{itemize}
+
+\textbf{No bus dependency} - Direct PCNT peripheral access.
+
+\subsubsection{\texttt{lib/star\_pid} - PID Controller}
+
+Generic, stateless PID controller for closed-loop control.
+
+\textbf{Key Features:}
+\begin{itemize}
+    \item Standard PID algorithm with Kp, Ki, Kd gains
+    \item Configurable output limits
+    \item Integral anti-windup
+    \item Runtime gain tuning
+    \item State reset capability
+\end{itemize}
+
+\textbf{No dependencies} - Pure algorithm, hardware-agnostic.
+
+\begin{lstlisting}[language=C, caption=PID Controller Interface]
 typedef struct {
-    float kp, ki, kd;           % Gains
-    float integral_limit;        % Anti-windup
-    float output_limit;          % Max output
-    float deadband;              % Ignore small errors
+    float kp, ki, kd;
+    float output_min, output_max;
+    float integral_min, integral_max;
 } star_pid_config_t;
 
-void star_pid_init(star_pid_t* pid, const star_pid_config_t* config);
-float star_pid_update(star_pid_t* pid, float setpoint, float measurement,
-                      float dt);
-void star_pid_reset(star_pid_t* pid);
+esp_err_t star_pid_init(star_pid_handle_t* handle,
+                        const star_pid_config_t* config);
+esp_err_t star_pid_compute(star_pid_handle_t* handle,
+                           float setpoint, float measured,
+                           float dt, float* output);
+esp_err_t star_pid_reset(star_pid_handle_t* handle);
 \end{lstlisting}
 
-\textbf{Initial Tuning Values (adjust experimentally):}
+\textbf{Recommended Tuning (adjust experimentally):}
 \begin{itemize}
     \item $K_p = 1.0$, $K_i = 0.5$, $K_d = 0.1$
     \item Loop rate: 1000 Hz
-    \item Integral limit: $\pm$100
+    \item Integral limit: $\pm$50
 \end{itemize}
 
 \subsection{Core Communication Interfaces}
@@ -292,168 +322,126 @@ typedef struct __attribute__((packed)) {
 } velocity_cmd_t;
 \end{lstlisting}
 % =============================================================================
-\section{Extending the Bus Abstraction Layer}
+\section{Complete Motor Control System Example}
 % =============================================================================
 
-To fully realize the Dependency Inversion Principle and support all required hardware (including ADCs and GPIO-controlled multiplexers), the \texttt{star\_bus} library must be extended. This section provides a detailed plan for this enhancement.
+\subsection{Closed-Loop Velocity Control}
 
-\subsection{Task 1: Re-create GPIO Bus Driver}
-The GPIO bus driver is required to provide a standardized interface for controlling digital logic, such as the multiplexer for selecting ADC lines.
+The following example demonstrates a complete closed-loop motor control system integrating all motor control components with thermal monitoring:
 
-\subsubsection{Modify Type Definition Files}
-\begin{enumerate}
-    \item \textbf{File:} \texttt{lib/star\_bus/include/star\_bus\_common\_types.h} \\
-    Add \texttt{k\_star\_bus\_type\_gpio} to the \texttt{star\_bus\_type\_t} enum.
-    \item \textbf{File:} \texttt{lib/star\_bus/src/star\_bus\_types.c} \\
-    Add the corresponding \texttt{"GPIO"} string to the \texttt{star\_bus\_type\_strings} array.
-    \item \textbf{File:} \texttt{lib/star\_bus/include/star\_bus\_protocol\_types.h} \\
-    Add the necessary GPIO configuration and operations structs.
-\end{enumerate}
-\begin{lstlisting}[language=C, caption=Additions to star\_bus\_protocol\_types.h]
-/** @brief GPIO operations function pointers */
-typedef struct {
-    esp_err_t (*write_digital)(const struct star_bus_config* config, uint8_t pin_index, uint8_t value);
-    esp_err_t (*read_digital)(const struct star_bus_config* config, uint8_t pin_index, uint8_t* value);
-    /* Other GPIO ops like interrupts can be added here */
-} star_gpio_ops_t;
+\begin{lstlisting}[language=C, caption=Complete Motor Control System]
+#include "star_drv8243.h"
+#include "star_encoder.h"
+#include "star_pid.h"
+#include "star_sensor_ds18b20.h"
 
-/** @brief GPIO bus configuration */
-typedef struct {
-    gpio_num_t* pins;
-    uint8_t pin_count;
-    bool isr_installed;
-    star_gpio_ops_t ops;
-    /* Other config like callbacks can be added here */
-} star_gpio_bus_config_t;
+// === Setup Phase ===
 
-// Then, add star_gpio_bus_config_t to the star_bus_protocol_config_t union
-typedef union {
-    // ... existing i2c, spi, etc. structs
-    star_gpio_bus_config_t gpio;
-} star_bus_protocol_config_t;
+// 1. Initialize bus manager
+star_bus_manager_t bus_manager;
+star_bus_manager_init(&bus_manager, "main", NULL, NULL);
+
+// 2. Create buses
+star_bus_config_t* gpio_bus = star_bus_config_create_gpio("gpio_bus");
+star_bus_config_t* adc_bus = star_bus_config_create_adc(
+    "adc_bus", ADC_UNIT_1, ADC_ATTEN_DB_12, ADC_BITWIDTH_12);
+star_bus_config_t* onewire_bus = star_bus_config_create_onewire(
+    "temp_bus", GPIO_NUM_4, false);
+
+star_bus_manager_add_bus(&bus_manager, gpio_bus);
+star_bus_manager_add_bus(&bus_manager, adc_bus);
+star_bus_manager_add_bus(&bus_manager, onewire_bus);
+
+// 3. Initialize motor driver
+star_drv8243_handle_t motor;
+star_drv8243_config_t motor_cfg = {
+    .bus_manager = &bus_manager,
+    .gpio_bus_name = "gpio_bus",
+    .adc_bus_name = "adc_bus",
+    .pin_pwm_ph = GPIO_NUM_25,
+    .pin_pwm_en = GPIO_NUM_26,
+    .pin_ipropi = ADC_CHANNEL_6,
+    .pin_nfault = GPIO_NUM_35,
+    .pwm_freq_hz = 20000,
+    .current_limit_ma = 2000,
+};
+star_drv8243_init(&motor, &motor_cfg);
+
+// 4. Initialize encoder
+star_encoder_handle_t encoder;
+star_encoder_config_t enc_cfg = {
+    .pcnt_unit = PCNT_UNIT_0,
+    .pin_a = GPIO_NUM_32,
+    .pin_b = GPIO_NUM_33,
+    .filter_value = 1000,
+    .high_limit = 10000,
+    .low_limit = -10000,
+};
+star_encoder_init(&encoder, &enc_cfg);
+
+// 5. Initialize PID controller
+star_pid_handle_t pid;
+star_pid_config_t pid_cfg = {
+    .kp = 1.0f, .ki = 0.5f, .kd = 0.1f,
+    .output_min = -100.0f, .output_max = 100.0f,
+    .integral_min = -50.0f, .integral_max = 50.0f,
+};
+star_pid_init(&pid, &pid_cfg);
+
+// 6. Initialize temperature sensor
+star_ds18b20_handle_t temp_sensor;
+star_ds18b20_config_t temp_cfg = {
+    .bus_manager = &bus_manager,
+    .bus_name = "temp_bus",
+    .resolution = k_star_ds18b20_resolution_12_bit,
+    .use_rom = false,
+};
+star_sensor_ds18b20_init(&temp_sensor, &temp_cfg);
+
+// === Control Loop (1000Hz) ===
+
+float setpoint_rpm = 100.0f;
+float dt = 0.001f;  // 1ms
+
+while (1) {
+    // Read encoder velocity
+    float velocity_rpm;
+    star_encoder_get_velocity_rpm(&encoder, dt * 1000, 500, &velocity_rpm);
+
+    // Compute PID output
+    float pid_output;
+    star_pid_compute(&pid, setpoint_rpm, velocity_rpm, dt, &pid_output);
+
+    // Apply to motor
+    star_drv8243_set_speed(&motor, pid_output);
+
+    // Monitor current and temperature
+    float current_ma, temp_c;
+    star_drv8243_read_current(&motor, &current_ma);
+    star_sensor_ds18b20_read_temp(&temp_sensor, &temp_c);
+
+    // Safety checks
+    bool fault;
+    star_drv8243_get_fault_status(&motor, &fault);
+    if (fault || temp_c > 85.0f) {
+        star_drv8243_stop(&motor, true);  // Emergency brake
+    }
+
+    vTaskDelay(pdMS_TO_TICKS(1));  // 1ms delay
+}
 \end{lstlisting}
 
-\subsubsection{Create GPIO Driver}
-\begin{enumerate}
-    \item Create \texttt{lib/star\_bus/include/star\_bus\_gpio.h} to declare the public API for the GPIO bus, including the default ops initializer.
-    \item Create \texttt{lib/star\_bus/src/star\_bus\_gpio.c}. This file will implement the GPIO logic using the ESP-IDF \texttt{driver/gpio.h} functions.
-\end{enumerate}
+\subsection{Architecture Benefits}
 
-\subsubsection{Update Bus Config Factory}
-\begin{enumerate}
-    \item \textbf{File:} \texttt{lib/star\_bus/include/star\_bus\_config.h} \\
-    Add the function declaration for \texttt{star\_bus\_config\_create\_gpio()}.
-    \item \textbf{File:} \texttt{lib/star\_bus/src/star\_bus\_config.c} \\
-    Implement \texttt{star\_bus\_config\_create\_gpio()} and add the \texttt{k\_star\_bus\_type\_gpio} case to the \texttt{switch} statements in \texttt{star\_bus\_config\_init} and \texttt{star\_bus\_config\_deinit}.
-\end{enumerate}
+The modular design provides:
 
-\subsubsection{Update Build System}
-\begin{enumerate}
-    \item \textbf{File:} \texttt{lib/star\_bus/CMakeLists.txt} \\
-    Add \texttt{"src/star\_bus\_gpio.c"} to the \texttt{SRCS} list.
-\end{enumerate}
-
-\subsection{Task 2: Add ADC Bus Protocol}
-
-This involves creating a new bus type for handling analog-to-digital conversions, following the established pattern in the library.
-
-\subsubsection{Modify Type Definition Files}
-\begin{enumerate}
-    \item \textbf{File:} \texttt{lib/star\_bus/include/star\_bus\_common\_types.h} \\
-    Add \texttt{k\_star\_bus\_type\_adc} to the \texttt{star\_bus\_type\_t} enum before the count.
-    \item \textbf{File:} \texttt{lib/star\_bus/src/star\_bus\_types.c} \\
-    Add the corresponding \texttt{"ADC"} string to the \texttt{star\_bus\_type\_strings} array.
-    \item \textbf{File:} \texttt{lib/star\_bus/include/star\_bus\_protocol\_types.h} \\
-    Add the necessary ADC configuration and operations structs.
-\end{enumerate}
-\begin{lstlisting}[language=C, caption=Additions to star\_bus\_protocol\_types.h]
-/** @brief ADC operations function pointers */
-typedef struct {
-    esp_err_t (*read_raw)(const struct star_bus_config* config, int* out_raw);
-    esp_err_t (*read_voltage)(const struct star_bus_config* config, int* out_voltage_mv);
-} star_adc_ops_t;
-
-/** @brief ADC bus configuration */
-typedef struct {
-    adc_oneshot_unit_handle_t unit_handle;
-    adc_cali_handle_t cali_handle;
-    adc_channel_t channel;
-    adc_bitwidth_t bitwidth;
-    adc_atten_t atten;
-    star_adc_ops_t ops;
-} star_adc_bus_config_t;
-
-// Then, add star_adc_bus_config_t to the star_bus_protocol_config_t union
-typedef union {
-    // ... existing i2c, spi, gpio, etc. structs
-    star_adc_bus_config_t adc;
-} star_bus_protocol_config_t;
-\end{lstlisting}
-
-\subsubsection{Create ADC Driver}
-\begin{enumerate}
-    \item Create \texttt{lib/star\_bus/include/star\_bus\_adc.h} to declare the default ops initializer.
-    \item Create \texttt{lib/star\_bus/src/star\_bus\_adc.c}. This file will implement the ADC logic using the ESP-IDF \texttt{adc\_oneshot} and \texttt{adc\_cali} drivers. It will define the functions for the \texttt{star\_adc\_ops\_t} struct.
-\end{enumerate}
-
-\subsubsection{Update Bus Config Factory}
-\begin{enumerate}
-    \item \textbf{File:} \texttt{lib/star\_bus/include/star\_bus\_config.h} \\
-    Add the function declaration for \texttt{star\_bus\_config\_create\_adc()}.
-    \item \textbf{File:} \texttt{lib/star\_bus/src/star\_bus\_config.c} \\
-    Implement \texttt{star\_bus\_config\_create\_adc()} and add the \texttt{k\_star\_bus\_type\_adc} case to the \texttt{switch} statements in \texttt{star\_bus\_config\_init} and \texttt{star\_bus\_config\_deinit}.
-\end{enumerate}
-
-\subsubsection{Update Build System}
-\begin{enumerate}
-    \item \textbf{File:} \texttt{lib/star\_bus/CMakeLists.txt} \\
-    Add \texttt{"src/star\_bus\_adc.c"} to the \texttt{SRCS} list.
-\end{enumerate}
-
-\subsection{Task 3: Implement Unified Bus Interface}
-
-Create a true abstraction layer in the bus manager so that application code does not need to call protocol-specific functions.
-
-\subsubsection{Add Generic Functions to Bus Manager}
-\begin{enumerate}
-    \item \textbf{File:} \texttt{lib/star\_bus/include/star\_bus\_manager.h} \\
-    Declare new high-level, generic functions.
-    \item \textbf{File:} \texttt{lib/star\_bus/src/star\_bus\_manager.c} \\
-    Implement these functions. Each function will find the bus by name, verify its type, and call the appropriate function pointer from the bus's \texttt{ops} struct.
-\end{enumerate}
-\begin{lstlisting}[language=C, caption=Proposed Generic Interface in star\_bus\_manager.h]
-/**
- * @brief Write a digital value to a bus (e.g., GPIO).
- */
-esp_err_t star_bus_write_digital(star_bus_manager_t* manager, const char* bus_name, uint8_t value);
-
-/**
- * @brief Read an analog value from a bus (e.g., ADC).
- * @param[out] out_voltage_mv The resulting voltage in millivolts.
- */
-esp_err_t star_bus_read_analog_mv(star_bus_manager_t* manager, const char* bus_name, int* out_voltage_mv);
-
-/**
- * @brief Perform a standard I2C/SPI write operation.
- */
-esp_err_t star_bus_write(star_bus_manager_t* manager, const char* bus_name, uint8_t reg_addr, const uint8_t* data, size_t len);
-
-/**
- * @brief Perform a standard I2C/SPI read operation.
- */
-esp_err_t star_bus_read(star_bus_manager_t* manager, const char* bus_name, uint8_t reg_addr, uint8_t* data, size_t len);
-\end{lstlisting}
-
-This approach provides a clean, abstract, and extensible bus management system that fully adheres to the Dependency Inversion Principle.
-
-\subsection{Task 4: Final Bus Library Cleanup}
-As a final cleanup step, the unnecessary 1-Wire peripheral driver should be removed.
-\begin{enumerate}
-    \item Delete \texttt{lib/star\_bus/src/star\_bus\_onewire\_peripheral.c}.
-    \item Delete the corresponding header file if it exists in \texttt{lib/star\_bus/include/}.
-    \item Remove any references from the \texttt{CMakeLists.txt} file.
-\end{enumerate}
-\textbf{Reasoning:} The ESP32 will only act as a controller on the 1-Wire bus to communicate with the DS18B20 sensor. It will never need to act as a 1-Wire peripheral device.
+\begin{itemize}
+    \item \textbf{Clear separation of concerns}: Each library has a single, well-defined purpose
+    \item \textbf{Testability}: Low-level components (motor, encoder, PID) have no dependencies
+    \item \textbf{Reusability}: PID and encoder libraries work with any motor driver
+    \item \textbf{Safety}: Current limiting and fault detection at the integration layer
+    \item \textbf{Flexibility}: Easy to swap motor drivers or add new control algorithms
+\end{itemize}
 
 % =============================================================================
 \section{Testing Plan}

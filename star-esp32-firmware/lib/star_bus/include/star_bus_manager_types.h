@@ -10,6 +10,8 @@ extern "C" {
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 
+#include "esp_adc/adc_oneshot.h"
+#include "soc/soc_caps.h"
 #include "star_bus_common_types.h"
 #include "star_bus_protocol_types.h"
 #include "star_error_interface.h"
@@ -57,6 +59,9 @@ typedef struct star_bus_manager {
   bool
     spi_host_initialized[SPI_HOST_MAX]; /**< Track which SPI hosts have the bus driver installed */
   int spi_device_count[SPI_HOST_MAX];   /**< Count of active devices per SPI host */
+  /* Track ADC unit handles (shared across channels on same unit) */
+  adc_oneshot_unit_handle_t adc_unit_handles[SOC_ADC_PERIPH_NUM]; /**< ADC unit handles */
+  int adc_channel_count[SOC_ADC_PERIPH_NUM]; /**< Count of active channels per ADC unit */
 } star_bus_manager_t;
 
 #ifdef __cplusplus

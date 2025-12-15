@@ -141,8 +141,9 @@ typedef struct star_adc_ops {
  * @brief ADC bus configuration structure.
  */
 typedef struct star_adc_bus_config {
-  adc_oneshot_unit_handle_t unit_handle; /**< ADC unit handle */
+  adc_oneshot_unit_handle_t unit_handle; /**< ADC unit handle (shared across channels) */
   adc_cali_handle_t         cali_handle; /**< ADC calibration handle */
+  adc_unit_t                unit;        /**< ADC unit ID (for reference counting) */
   adc_channel_t             channel;     /**< ADC channel */
   adc_bitwidth_t            bitwidth;    /**< ADC bit width */
   adc_atten_t               atten;       /**< ADC attenuation */
