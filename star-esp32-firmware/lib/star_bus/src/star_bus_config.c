@@ -256,6 +256,7 @@ star_bus_config_t* star_bus_config_create_adc(const char*    name,
   /* Configure ADC-specific parameters */
   config->proto.adc.unit_handle = NULL; /* Will be initialized in star_bus_config_init */
   config->proto.adc.cali_handle = NULL; /* Will be initialized in star_bus_config_init */
+  config->proto.adc.unit        = unit; /* Store unit for reference counting */
   config->proto.adc.channel     = channel;
   config->proto.adc.bitwidth    = bitwidth;
   config->proto.adc.atten       = atten;
@@ -480,28 +481,44 @@ esp_err_t star_bus_config_init(star_bus_config_t* config, star_bus_manager_t* ma
 
     case k_star_bus_type_adc: {
       /* Initialize ADC unit */
-      adc_unit_t unit = (adc_unit_t)(intptr_t)config->handle;
+      ESP_RETURN_ON_FALSE(manager,
+                          ESP_ERR_INVALID_ARG,
+                          s_TAG,
+                          "Bus manager pointer is required for ADC initialization");
+
+      adc_unit_t unit = config->proto.adc.unit;
       ESP_LOGI(s_TAG,
                "Initializing ADC bus '%s' (Unit: %d, Channel: %d)",
                bus_name,
                unit,
                config->proto.adc.channel);
 
-      /* Configure ADC oneshot unit */
-      adc_oneshot_unit_init_cfg_t unit_cfg = {
-        .unit_id  = unit,
-        .ulp_mode = ADC_ULP_MODE_DISABLE,
-      };
+      /* Check if ADC unit is already initialized (shared across channels) */
+      if (manager->adc_unit_handles[unit] == NULL) {
+        /* First channel on this unit - create the unit handle */
+        ESP_LOGI(s_TAG, "Creating new ADC unit handle for unit %d", unit);
 
-      ret = adc_oneshot_new_unit(&unit_cfg, &config->proto.adc.unit_handle);
-      ESP_GOTO_ON_ERROR(ret,
-                        fail,
-                        s_TAG,
-                        "adc_oneshot_new_unit failed for '%s': %s",
-                        bus_name,
-                        esp_err_to_name(ret));
+        adc_oneshot_unit_init_cfg_t unit_cfg = {
+          .unit_id  = unit,
+          .ulp_mode = ADC_ULP_MODE_DISABLE,
+        };
 
-      /* Configure ADC channel */
+        ret = adc_oneshot_new_unit(&unit_cfg, &manager->adc_unit_handles[unit]);
+        ESP_GOTO_ON_ERROR(ret,
+                          fail,
+                          s_TAG,
+                          "adc_oneshot_new_unit failed for '%s': %s",
+                          bus_name,
+                          esp_err_to_name(ret));
+      } else {
+        /* Unit already initialized - reuse the handle */
+        ESP_LOGI(s_TAG, "Reusing existing ADC unit handle for unit %d", unit);
+      }
+
+      /* Store the shared unit handle in this config */
+      config->proto.adc.unit_handle = manager->adc_unit_handles[unit];
+
+      /* Configure this specific ADC channel */
       adc_oneshot_chan_cfg_t chan_cfg = {
         .bitwidth = config->proto.adc.bitwidth,
         .atten    = config->proto.adc.atten,
@@ -516,6 +533,9 @@ esp_err_t star_bus_config_init(star_bus_config_t* config, star_bus_manager_t* ma
                         "adc_oneshot_config_channel failed for '%s': %s",
                         bus_name,
                         esp_err_to_name(ret));
+
+      /* Increment channel count for this unit */
+      manager->adc_channel_count[unit]++;
 
       /* Try to initialize calibration (optional, may fail on some chips) */
 #if ADC_CALI_SCHEME_CURVE_FITTING_SUPPORTED
@@ -564,7 +584,12 @@ esp_err_t star_bus_config_init(star_bus_config_t* config, star_bus_manager_t* ma
       break;
 
     fail_adc_unit:
-      adc_oneshot_del_unit(config->proto.adc.unit_handle);
+      /* Only delete the unit if we created it (first channel on this unit) */
+      manager->adc_channel_count[unit]--;
+      if (manager->adc_channel_count[unit] == 0 && manager->adc_unit_handles[unit]) {
+        adc_oneshot_del_unit(manager->adc_unit_handles[unit]);
+        manager->adc_unit_handles[unit] = NULL;
+      }
       config->proto.adc.unit_handle = NULL;
       goto fail;
     }
@@ -650,7 +675,7 @@ esp_err_t star_bus_config_deinit(star_bus_config_t* config)
       break;
 
     case k_star_bus_type_adc:
-      /* Deinitialize ADC */
+      /* Deinitialize ADC channel */
       ESP_LOGI(s_TAG, "Deinitializing ADC bus '%s'", bus_name);
 
       /* Delete calibration if it was initialized */
@@ -669,11 +694,10 @@ esp_err_t star_bus_config_deinit(star_bus_config_t* config)
         config->proto.adc.cali_handle = NULL;
       }
 
-      /* Delete ADC unit */
-      if (config->proto.adc.unit_handle) {
-        ret = adc_oneshot_del_unit(config->proto.adc.unit_handle);
-        config->proto.adc.unit_handle = NULL;
-      }
+      /* Note: ADC unit handle is shared and managed by bus_manager.
+       * It will be deleted when the last channel using this unit is removed. */
+      config->proto.adc.unit_handle = NULL;
+      ret                           = ESP_OK;
       break;
 
     default:

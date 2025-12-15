@@ -123,12 +123,12 @@ extern "C" {
  * @brief DRV8243 fault type enumeration
  */
 typedef enum {
-  STAR_DRV8243_FAULT_NONE          = 0,  /**< No fault */
-  STAR_DRV8243_FAULT_OVERCURRENT   = 1,  /**< Overcurrent fault */
-  STAR_DRV8243_FAULT_THERMAL       = 2,  /**< Thermal shutdown */
-  STAR_DRV8243_FAULT_UNDERVOLTAGE  = 3,  /**< Undervoltage lockout */
-  STAR_DRV8243_FAULT_OVERVOLTAGE   = 4,  /**< Overvoltage fault */
-  STAR_DRV8243_FAULT_UNKNOWN       = 5,  /**< Unknown fault */
+  k_star_drv8243_fault_none          = 0,  /**< No fault */
+  k_star_drv8243_fault_overcurrent   = 1,  /**< Overcurrent fault */
+  k_star_drv8243_fault_thermal       = 2,  /**< Thermal shutdown */
+  k_star_drv8243_fault_undervoltage  = 3,  /**< Undervoltage lockout */
+  k_star_drv8243_fault_overvoltage   = 4,  /**< Overvoltage fault */
+  k_star_drv8243_fault_unknown       = 5,  /**< Unknown fault */
 } star_drv8243_fault_t;
 
 /**

@@ -150,17 +150,17 @@ esp_err_t star_encoder_init(star_encoder_handle_t* handle, const star_encoder_co
   }
 
   /* Store configuration */
-  handle->pcnt_unit      = config->pcnt_unit;
   handle->pin_a          = config->pin_a;
   handle->pin_b          = config->pin_b;
+  handle->high_limit     = config->high_limit;
+  handle->low_limit      = config->low_limit;
   handle->last_count     = 0;
   handle->last_time_us   = esp_timer_get_time();
   handle->overflow_count = 0;
   handle->initialized    = true;
 
   ESP_LOGI(s_TAG,
-           "Encoder initialized: unit=%d, pins=A%d/B%d, limits=[%d,%d]",
-           config->pcnt_unit,
+           "Encoder initialized: pins=A%d/B%d, limits=[%d,%d]",
            config->pin_a,
            config->pin_b,
            config->low_limit,
@@ -201,7 +201,8 @@ esp_err_t star_encoder_get_count(star_encoder_handle_t* handle, int32_t* out_cou
   ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to get count");
 
   /* Combine hardware count with overflow tracking */
-  *out_count = hw_count + (handle->overflow_count * 0x10000); /* 16-bit overflow */
+  int32_t range = (handle->high_limit - handle->low_limit);
+  *out_count = hw_count + (handle->overflow_count * range);
 
   return ESP_OK;
 }
@@ -267,9 +268,9 @@ static bool internal_encoder_on_reach_callback(pcnt_unit_handle_t             un
   }
 
   /* Track overflow/underflow events */
-  if (event_data->watch_point_value > 0) {
+  if (event_data->watch_point_value == handle->high_limit) {
     handle->overflow_count++; /* High limit reached - overflow */
-  } else {
+  } else if (event_data->watch_point_value == handle->low_limit) {
     handle->overflow_count--; /* Low limit reached - underflow */
   }
 
