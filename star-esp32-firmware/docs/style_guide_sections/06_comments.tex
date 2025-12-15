@@ -1,0 +1,389 @@
+\section{Comments}
+
+All functions must include Doxygen comments. This section establishes comprehensive commenting standards for the STAR firmware codebase.
+
+\subsection{General Commenting Guidelines}
+
+\begin{itemize}
+    \item \textbf{Use Block Comments (\texttt{/* */})}: Always prefer block comments over line comments (\texttt{//}).
+    \item \textbf{Explain Why, Not What}: Comments should explain the reasoning behind code, not what the code does (which should be clear from the code itself).
+    \item \textbf{Keep Comments Updated}: Outdated comments are worse than no comments.
+    \item \textbf{English Only}: All comments must be in English.
+\end{itemize}
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Block comment style */
+/* Initialize the mutex for thread-safe access */
+manager->mutex = xSemaphoreCreateMutex();
+
+/* WRONG - Line comment style */
+// Initialize the mutex for thread-safe access
+manager->mutex = xSemaphoreCreateMutex();
+\end{lstlisting}
+
+\subsection{File Header Comments}
+
+Every source and header file should begin with a file path comment, followed by include guards (for headers) and a \texttt{@file} Doxygen block for headers with significant content.
+
+\begin{lstlisting}[language=C]
+/* lib/star_bus/include/star_bus_manager.h */
+
+#ifndef STAR_COMPONENT_BUS_MANAGER_H
+#define STAR_COMPONENT_BUS_MANAGER_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include "esp_err.h"
+#include "star_bus_manager_types.h"
+
+/**
+ * @file star_bus_manager.h
+ * @brief Unified bus manager for I2C, SPI, GPIO, and other bus protocols
+ *
+ * The bus manager provides a central registry for managing multiple bus
+ * configurations. It supports dependency injection of error handlers and
+ * pin validators for loose coupling.
+ *
+ * Key Features:
+ * - Thread-safe bus management with mutex protection
+ * - Support for multiple bus types (I2C, SPI, GPIO, DHT22, etc.)
+ * - Automatic pin registration and conflict detection
+ * - Safe bus access via callback pattern (prevents use-after-free)
+ *
+ * Example Usage:
+ * @code
+ * // === Basic Bus Manager Setup ===
+ *
+ * #include "star_bus_manager.h"
+ * #include "star_bus_config.h"
+ * #include "star_error_handler.h"
+ *
+ * // 1. Create error handler and pin validator interfaces
+ * error_handler_t error_handler;
+ * error_handler_init(&error_handler, 3, 100, 5000, NULL, NULL);
+ *
+ * star_error_interface_t error_iface;
+ * star_pin_interface_t pin_iface;
+ * error_handler_get_interface(&error_iface, &error_handler);
+ * pin_validator_get_interface(&pin_iface);
+ *
+ * // 2. Initialize bus manager with dependency injection
+ * star_bus_manager_t bus_manager;
+ * star_bus_manager_init(&bus_manager, "main", &error_iface, &pin_iface);
+ * @endcode
+ */
+\end{lstlisting}
+
+\subsection{Source File Header}
+
+Source files begin with a file path comment.
+
+\begin{lstlisting}[language=C]
+/* lib/star_bus/src/star_bus_manager.c */
+
+#include "star_bus_manager.h"
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+/* ... */
+\end{lstlisting}
+
+\subsection{Doxygen Documentation}
+
+\subsubsection{Function Documentation}
+
+All public functions must have Doxygen documentation in the header file.
+
+\begin{lstlisting}[language=C]
+/**
+ * @brief Initialize a bus manager instance.
+ *
+ * Allocates resources (like a mutex) for the manager. Must be called
+ * before any other manager functions.
+ *
+ * @param[out] manager     Pointer to bus manager structure to initialize.
+ *                         Must not be NULL.
+ * @param[in]  tag         Optional tag string for logging associated with
+ *                         this manager instance. If NULL or empty, a
+ *                         default tag is used.
+ * @param[in]  error_iface Optional error handler interface (can be NULL).
+ * @param[in]  pin_iface   Optional pin validator interface (can be NULL).
+ * @return esp_err_t ESP_OK on success, ESP_ERR_INVALID_ARG if manager
+ *                   is NULL, ESP_ERR_NO_MEM if mutex creation fails.
+ */
+esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
+                                const char*             tag,
+                                star_error_interface_t* error_iface,
+                                star_pin_interface_t*   pin_iface);
+\end{lstlisting}
+
+\subsubsection{Parameter Direction Markers}
+
+Use \texttt{[in]}, \texttt{[out]}, or \texttt{[in,out]} to indicate parameter direction.
+
+\begin{lstlisting}[language=C]
+/**
+ * @brief Write data to an I2C device register.
+ *
+ * @param[in]  config        Pointer to I2C bus configuration.
+ * @param[in]  data          Pointer to data buffer to write.
+ * @param[in]  len           Number of bytes to write.
+ * @param[in]  reg_addr      Target register address.
+ * @param[out] bytes_written Pointer to store actual bytes written.
+ *                           Can be NULL if not needed.
+ * @return esp_err_t ESP_OK on success.
+ */
+static esp_err_t internal_star_bus_i2c_write(const star_bus_config_t* config,
+                                              const uint8_t*           data,
+                                              size_t                   len,
+                                              uint8_t                  reg_addr,
+                                              size_t*                  bytes_written);
+
+/**
+ * @brief Record an error and manage retry/reset logic
+ *
+ * @param[in,out] handler     Pointer to error handler structure
+ * @param[in]     error       Error code that occurred
+ * @param[in]     description Human-readable description of the error
+ * @param[in]     file        Source file where error occurred
+ * @param[in]     line        Line number where error occurred
+ * @param[in]     func        Function name where error occurred
+ * @return ESP_OK if error was handled, or the original error code.
+ */
+esp_err_t error_handler_record_error(error_handler_t* handler,
+                                     esp_err_t        error,
+                                     const char*      description,
+                                     const char*      file,
+                                     int32_t          line,
+                                     const char*      func);
+\end{lstlisting}
+
+\subsubsection{Code Examples with @code/@endcode}
+
+Include usage examples in documentation blocks.
+
+\begin{lstlisting}[language=C]
+/**
+ * @file star_error_interface.h
+ * @brief Error handler interface for dependency inversion
+ *
+ * Example Usage:
+ * @code
+ * // === Creating and Using Error Interface ===
+ *
+ * #include "star_error_interface.h"
+ * #include "star_error_handler.h"
+ *
+ * // 1. Create concrete error handler
+ * error_handler_t error_handler;
+ * error_handler_init(&error_handler, 3, 100, 5000, NULL, NULL);
+ *
+ * // 2. Get interface from implementation
+ * star_error_interface_t error_iface;
+ * error_handler_get_interface(&error_iface, &error_handler);
+ *
+ * // 3. Inject into components that need error handling
+ * star_bus_manager_init(&bus_manager, "main", &error_iface, &pin_iface);
+ *
+ * // 4. Use the interface
+ * if (error_iface.can_retry(error_iface.ctx)) {
+ *     // Retry operation...
+ * }
+ * @endcode
+ */
+\end{lstlisting}
+
+\subsubsection{Struct Member Documentation}
+
+Document struct members inline with Doxygen.
+
+\begin{lstlisting}[language=C]
+/**
+ * @brief Bus configuration structure (common part).
+ */
+typedef struct star_bus_config {
+    const char*     name;        /**< Unique name for this bus/device instance */
+    star_bus_type_t type;        /**< Type of bus (I2C, SPI, etc.) */
+    bool            initialized; /**< Whether this bus has been initialized */
+    void*           handle;      /**< Driver/device handle */
+    void*           user_ctx;    /**< User context pointer for callbacks */
+
+    union {
+        star_i2c_bus_config_t  i2c;  /**< I2C-specific configuration */
+        star_spi_bus_config_t  spi;  /**< SPI-specific configuration */
+        star_gpio_bus_config_t gpio; /**< GPIO-specific configuration */
+        star_adc_bus_config_t  adc;  /**< ADC-specific configuration */
+    } proto;
+
+    struct star_bus_config* next; /**< Next bus config in linked list */
+} star_bus_config_t;
+\end{lstlisting}
+
+\subsection{Special Comment Keywords}
+
+Use these keywords to mark special comments for tracking.
+
+\begin{lstlisting}[language=C]
+/* TODO: Implement retry logic for I2C bus reset */
+
+/* FIXME: Memory leak when bus removal fails mid-operation */
+
+/* BUG: Race condition possible if mutex timeout is too short */
+
+/* XXX: This code assumes little-endian byte order */
+
+/* NOTE: ESP-IDF uses mosi_io_num internally - we map to COPI here */
+
+/* WARNING: Must hold mutex before calling this function */
+\end{lstlisting}
+
+\subsubsection{Keyword Definitions}
+
+\begin{itemize}
+    \item \textbf{TODO}: Work that needs to be done but is not urgent.
+    \item \textbf{FIXME}: Known bugs or issues that need to be fixed.
+    \item \textbf{BUG}: Confirmed bugs in the code.
+    \item \textbf{XXX}: Dangerous or hacky code that works but should be reviewed.
+    \item \textbf{NOTE}: Important information about the code.
+    \item \textbf{WARNING}: Critical information that must be understood before modifying.
+\end{itemize}
+
+\subsection{Section Comments}
+
+Use section comments to organize code within files.
+
+\begin{lstlisting}[language=C]
+/* === Includes === */
+#include "star_bus_manager.h"
+#include "freertos/FreeRTOS.h"
+
+/* === Constants === */
+static const char* s_TAG = "STAR_BUS_MANAGER";
+
+/* === Private Function Prototypes === */
+static esp_err_t internal_register_bus_pin(...);
+
+/* === Public Functions === */
+esp_err_t star_bus_manager_init(...) { /* ... */ }
+
+/* === Private Functions === */
+static esp_err_t internal_register_bus_pin(...) { /* ... */ }
+
+/* --- Pin Registration Helpers --- */
+/* Subsection within a section */
+\end{lstlisting}
+
+\subsection{Aligned Comments}
+
+Align comments after declarations for improved readability.
+
+\begin{lstlisting}[language=C]
+typedef struct error_handler {
+    uint32_t          error_count;         /**< Total errors recorded */
+    uint32_t          max_retries;         /**< Max retry attempts */
+    uint32_t          current_retry;       /**< Current retry counter */
+    uint32_t          base_retry_delay;    /**< Base delay (ms) */
+    uint32_t          max_retry_delay;     /**< Max delay (ms) */
+    uint32_t          current_retry_delay; /**< Current delay with backoff */
+    esp_err_t         last_error;          /**< Last recorded error code */
+    bool              in_error_state;      /**< Whether in error state */
+    void*             reset_context;       /**< Context for reset function */
+    SemaphoreHandle_t mutex;               /**< Mutex for thread-safety */
+
+    esp_err_t (*reset_fn)(void* context);  /**< Optional reset function */
+} error_handler_t;
+\end{lstlisting}
+
+\subsection{Implementation Comments}
+
+Comments within function bodies explain non-obvious logic.
+
+\begin{lstlisting}[language=C]
+esp_err_t star_bus_manager_add_bus(star_bus_manager_t* manager,
+                                    star_bus_config_t*  config)
+{
+    /* Validate inputs using ESP-IDF macro */
+    ESP_RETURN_ON_FALSE(manager && config, ESP_ERR_INVALID_ARG,
+                        s_TAG, "Manager or config pointer is NULL");
+
+    esp_err_t ret = ESP_OK;
+
+    /* Acquire mutex with timeout to prevent deadlock */
+    if (xSemaphoreTake(manager->mutex,
+            pdMS_TO_TICKS(CONFIG_STAR_KCONFIG_BUS_MUTEX_TIMEOUT_MS))
+            != pdTRUE) {
+        ESP_LOGE(manager->tag, "Timeout acquiring mutex");
+        return ESP_ERR_TIMEOUT;
+    }
+
+    /* Check for duplicate name - bus names must be unique */
+    for (star_bus_config_t* curr = manager->buses; curr; curr = curr->next) {
+        if (curr->name && strcmp(curr->name, config->name) == 0) {
+            ret = ESP_ERR_INVALID_STATE;
+            goto add_give_mutex;  /* Single exit point pattern */
+        }
+    }
+
+    /* Initialize hardware before adding to list
+     * This ensures manager's SPI host tracking is updated correctly */
+    if (!config->initialized) {
+        ret = star_bus_config_init(config, manager);
+        if (ret != ESP_OK) {
+            goto add_give_mutex;
+        }
+    }
+
+    /* Add to head of list (O(1) insertion) */
+    config->next = manager->buses;
+    manager->buses = config;
+
+add_give_mutex:
+    xSemaphoreGive(manager->mutex);
+    return ret;
+}
+\end{lstlisting}
+
+\subsection{Private Function Documentation}
+
+Static functions should have brief documentation in the source file.
+
+\begin{lstlisting}[language=C]
+/**
+ * @brief Helper to register a single pin via the interface
+ */
+static esp_err_t internal_register_bus_pin(star_pin_interface_t* pin_iface,
+                                            gpio_num_t            pin,
+                                            const char*           bus_name,
+                                            const char*           usage,
+                                            bool                  can_be_shared)
+{
+    if (pin < 0 || pin >= GPIO_NUM_MAX) {
+        return ESP_OK;  /* Not an error, pin is not used */
+    }
+
+    if (!pin_iface || !pin_iface->register_pin) {
+        return ESP_OK;  /* No interface, skip registration */
+    }
+
+    /* Create description: "BusName: Usage" (e.g., "I2C0: SDA") */
+    char desc[64];
+    snprintf(desc, sizeof(desc), "%s: %s", bus_name, usage);
+
+    return pin_iface->register_pin(pin_iface->ctx, pin, desc, can_be_shared);
+}
+\end{lstlisting}
+
+\subsection{Summary}
+
+\begin{itemize}
+    \item Use block comments (\texttt{/* */}), never line comments (\texttt{//})
+    \item Document all public functions with Doxygen in headers
+    \item Use \texttt{[in]}, \texttt{[out]}, \texttt{[in,out]} for parameter direction
+    \item Include \texttt{@code}/@\texttt{endcode} examples in file and complex function docs
+    \item Use TODO, FIXME, BUG, XXX, NOTE, WARNING keywords for tracking
+    \item Align comments after struct members for readability
+    \item Use section comments to organize source files
+\end{itemize}
+
