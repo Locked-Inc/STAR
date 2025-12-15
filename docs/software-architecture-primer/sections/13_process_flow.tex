@@ -1,0 +1,181 @@
+\section{Process Flow Diagrams}
+
+This section illustrates the data flow through the STAR robot system for key operations.
+
+\subsection{Motor Command Flow}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=0.8cm,
+    box/.style={draw, rectangle, rounded corners, minimum width=2.5cm, minimum height=0.8cm, align=center, font=\small},
+    arrow/.style={->, thick, >=stealth}
+]
+    % PWA
+    \node[box, fill=green!20] (pwa) {Vue 3 PWA};
+
+    % gRPC-Web
+    \node[box, fill=gray!20, right=of pwa] (grpc) {gRPC-Web};
+
+    % Envoy
+    \node[box, fill=yellow!20, right=of grpc] (envoy) {Envoy Proxy};
+
+    % Gateway
+    \node[box, fill=orange!20, right=of envoy] (gateway) {Spring Boot};
+
+    % SPI
+    \node[box, fill=blue!20, below=of gateway] (spi) {SPI Adapter};
+
+    % ESP32
+    \node[box, fill=red!20, below=of spi] (esp32) {ESP32};
+
+    % Motor
+    \node[box, fill=purple!20, below=of esp32] (motor) {Motors};
+
+    % Arrows with labels
+    \draw[arrow] (pwa) -- node[above, font=\tiny] {VelocityCmd} (grpc);
+    \draw[arrow] (grpc) -- node[above, font=\tiny] {HTTP/1.1} (envoy);
+    \draw[arrow] (envoy) -- node[above, font=\tiny] {HTTP/2} (gateway);
+    \draw[arrow] (gateway) -- node[right, font=\tiny] {Coroutine} (spi);
+    \draw[arrow] (spi) -- node[right, font=\tiny] {10 MHz} (esp32);
+    \draw[arrow] (esp32) -- node[right, font=\tiny] {PWM} (motor);
+
+    % Latency annotations
+    \node[font=\tiny, gray, right=0.2cm of motor] {Total: $<$ 15ms};
+
+\end{tikzpicture}
+\caption{Motor Command Data Flow}
+\end{figure}
+
+\subsection{SLAM Data Flow}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=1cm,
+    box/.style={draw, rectangle, rounded corners, minimum width=2.8cm, minimum height=0.8cm, align=center, font=\small},
+    topic/.style={draw, ellipse, minimum width=1.5cm, minimum height=0.6cm, align=center, font=\tiny, fill=yellow!20},
+    arrow/.style={->, thick, >=stealth}
+]
+    % LiDAR
+    \node[box, fill=purple!20] (lidar) {RPLiDAR C1};
+
+    % rplidar_ros2
+    \node[box, fill=blue!20, right=1.5cm of lidar] (driver) {rplidar\_ros2};
+
+    % /scan topic
+    \node[topic, below=0.8cm of driver] (scan) {/scan};
+
+    % SLAM Toolbox
+    \node[box, fill=green!20, right=1.5cm of driver] (slam) {SLAM Toolbox};
+
+    % /map topic
+    \node[topic, below=0.8cm of slam] (map) {/map};
+
+    % /tf topic
+    \node[topic, above=0.8cm of slam] (tf) {/tf};
+
+    % Nav2 (consumer)
+    \node[box, fill=orange!20, right=1.5cm of slam] (nav2) {Nav2 Planner};
+
+    % Arrows
+    \draw[arrow] (lidar) -- node[above, font=\tiny] {SLAMTEC\\UART} (driver);
+    \draw[arrow] (driver) -- (scan);
+    \draw[arrow] (scan) -- (slam);
+    \draw[arrow] (slam) -- (map);
+    \draw[arrow] (slam) -- (tf);
+    \draw[arrow] (map) -- (nav2);
+    \draw[arrow] (tf) -- (nav2);
+
+    % Frequency annotations
+    \node[font=\tiny, gray, below=0.1cm of lidar] {10 Hz};
+    \node[font=\tiny, gray, below=0.1cm of slam] {2 Hz map update};
+
+\end{tikzpicture}
+\caption{SLAM Data Flow (ROS 2 Topics)}
+\end{figure}
+
+\subsection{Navigation Pipeline}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=0.6cm,
+    box/.style={draw, rectangle, rounded corners, minimum width=2.5cm, minimum height=0.8cm, align=center, font=\small},
+    topic/.style={draw, ellipse, minimum width=1.8cm, minimum height=0.5cm, align=center, font=\tiny, fill=yellow!20},
+    arrow/.style={->, thick, >=stealth}
+]
+    % Goal input
+    \node[box, fill=green!20] (goal) {Goal Pose\\(from UI)};
+
+    % Global Planner
+    \node[box, fill=blue!20, right=1.2cm of goal] (global) {Global Planner\\(A*)};
+
+    % Path topic
+    \node[topic, below=0.6cm of global] (path) {/plan};
+
+    % DWA Local Planner
+    \node[box, fill=orange!20, right=1.2cm of global] (dwa) {DWA\\Local Planner};
+
+    % cmd_vel topic
+    \node[topic, below=0.6cm of dwa] (cmdvel) {/cmd\_vel};
+
+    % Gateway
+    \node[box, fill=purple!20, right=1.2cm of dwa] (gateway) {Gateway\\Bridge};
+
+    % ESP32
+    \node[box, fill=red!20, right=1.2cm of gateway] (esp) {ESP32\\PID};
+
+    % Arrows
+    \draw[arrow] (goal) -- node[above, font=\tiny] {10 Hz} (global);
+    \draw[arrow] (global) -- (path);
+    \draw[arrow] (path) -- (dwa);
+    \draw[arrow] (dwa) -- (cmdvel);
+    \draw[arrow] (cmdvel) -- node[above, font=\tiny] {20 Hz} (gateway);
+    \draw[arrow] (gateway) -- node[above, font=\tiny] {SPI} (esp);
+
+    % Feedback arrow (odometry)
+    \draw[arrow, dashed, gray] (esp.south) -- ++(0,-0.5) -| node[below, font=\tiny, pos=0.25] {/odom feedback} (global.south);
+
+\end{tikzpicture}
+\caption{Navigation Pipeline Data Flow}
+\end{figure}
+
+\subsection{Telemetry Aggregation Flow}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=0.8cm,
+    box/.style={draw, rectangle, rounded corners, minimum width=2.2cm, minimum height=0.7cm, align=center, font=\small},
+    arrow/.style={->, thick, >=stealth}
+]
+    % Sources (left column)
+    \node[box, fill=red!20] (esp) {ESP32\\Encoders/IMU};
+    \node[box, fill=purple!20, below=0.5cm of esp] (lidar) {LiDAR\\Scan Data};
+    \node[box, fill=blue!20, below=0.5cm of lidar] (ros) {ROS 2\\Nav State};
+    \node[box, fill=green!20, below=0.5cm of ros] (camera) {Camera\\Detections};
+
+    % Aggregation service
+    \node[box, fill=orange!20, minimum width=3cm, minimum height=2cm, right=2cm of lidar] (agg) {Telemetry\\Service\\(Spring Boot)};
+
+    % Outputs (right column)
+    \node[box, fill=gray!20, right=2cm of agg] (graphql) {GraphQL\\Subscription};
+
+    % PWA
+    \node[box, fill=green!30, right=1.5cm of graphql] (pwa) {Vue 3 PWA\\Dashboard};
+
+    % Arrows from sources
+    \draw[arrow] (esp) -| node[above, font=\tiny, pos=0.3] {SPI} (agg);
+    \draw[arrow] (lidar) -- node[above, font=\tiny] {UART} (agg);
+    \draw[arrow] (ros) -| node[below, font=\tiny, pos=0.3] {DDS} (agg);
+    \draw[arrow] (camera) -| (agg);
+
+    % Output arrows
+    \draw[arrow] (agg) -- node[above, font=\tiny] {10 Hz} (graphql);
+    \draw[arrow] (graphql) -- node[above, font=\tiny] {WebSocket} (pwa);
+
+\end{tikzpicture}
+\caption{Telemetry Aggregation and Publishing}
+\end{figure}
+

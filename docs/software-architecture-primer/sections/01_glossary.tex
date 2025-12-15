@@ -1,0 +1,112 @@
+% ============================================================================
+% GLOSSARY OF KEY TERMS
+% ============================================================================
+\section{Glossary of Key Terms}
+
+This section defines key terminology used throughout this document.
+
+\subsection{Communication Protocols}
+
+\begin{description}[style=nextline, leftmargin=2cm]
+    \item[gRPC] \textbf{Google Remote Procedure Call} -- A high-performance, open-source RPC framework developed by Google. Uses HTTP/2 for transport and Protocol Buffers (Protobuf) for serialization. Enables efficient binary communication between services with built-in support for streaming.
+
+    \item[GraphQL] A query language for APIs developed by Facebook. Unlike REST, clients specify exactly what data they need, reducing over-fetching. Supports queries (read), mutations (write), and subscriptions (real-time updates via WebSocket).
+
+    \item[gRPC-Web] A JavaScript implementation of gRPC for browser clients. Since browsers cannot use HTTP/2 trailers directly, gRPC-Web requires a proxy (like Envoy) to translate between gRPC-Web and native gRPC.
+
+    \item[Protobuf] \textbf{Protocol Buffers} -- Google's language-neutral, platform-neutral binary serialization format. Smaller and faster than JSON. Messages are defined in \texttt{.proto} files and compiled to language-specific code.
+
+    \item[WebSocket] A protocol providing full-duplex communication channels over a single TCP connection. Used by GraphQL subscriptions for real-time data streaming from server to client.
+
+    \item[REST] \textbf{Representational State Transfer} -- An architectural style for web APIs using HTTP methods (GET, POST, PUT, DELETE). Uses JSON for data exchange. Simpler but less efficient than gRPC for high-frequency communication.
+\end{description}
+
+\subsection{Middleware and Infrastructure}
+
+\begin{description}[style=nextline, leftmargin=2cm]
+    \item[DDS] \textbf{Data Distribution Service} -- A middleware protocol and API standard for data-centric publish-subscribe communication. Used by ROS 2 for inter-node communication. Provides real-time, scalable, and reliable data exchange with Quality of Service (QoS) policies.
+
+    \item[ROS 2] \textbf{Robot Operating System 2} -- An open-source robotics middleware framework. Provides tools, libraries, and conventions for building robot applications. Uses DDS for communication between nodes.
+
+    \item[SLAM] \textbf{Simultaneous Localization and Mapping} -- A computational technique where a robot builds a map of an unknown environment while simultaneously tracking its location within that map.
+
+    \item[Nav2] \textbf{Navigation 2} -- The ROS 2 navigation stack. Provides autonomous navigation capabilities including path planning (A*), obstacle avoidance (DWA), and localization (AMCL).
+
+    \item[DWA] \textbf{Dynamic Window Approach} -- A local path planning algorithm used by Nav2. Samples velocities in a ``dynamic window'' (velocities reachable within one control cycle) and scores trajectories based on proximity to goal, obstacle clearance, and velocity. Runs at 20 Hz in the STAR robot.
+
+    \item[AMCL] \textbf{Adaptive Monte Carlo Localization} -- A probabilistic localization algorithm that uses a particle filter to track the robot's pose within a known map. Particles represent hypotheses about the robot's position; sensor observations update particle weights. SLAM Toolbox provides similar functionality during mapping.
+
+    \item[mDNS] \textbf{Multicast DNS} -- A protocol that resolves hostnames to IP addresses within small networks without a local DNS server. Enables \texttt{star-robot.local} hostname resolution. Implemented by Avahi on Linux.
+
+    \item[Avahi] A free, open-source implementation of mDNS/DNS-SD (Service Discovery) for Linux. Allows devices to discover each other on a local network without configuration.
+
+    \item[Envoy] A high-performance, open-source edge and service proxy. Used in this project to translate gRPC-Web requests from browsers to native gRPC for the Spring Boot backend.
+\end{description}
+
+\subsection{Hardware Interfaces}
+
+\begin{description}[style=nextline, leftmargin=2cm]
+    \item[SPI] \textbf{Serial Peripheral Interface} -- A synchronous serial communication interface for short-distance communication. Uses 4 wires: COPI (Controller Out Peripheral In), CIPO (Controller In Peripheral Out), CLK (Clock), and CS (Chip Select). Used for RPi5-to-ESP32 communication at 10 MHz.
+
+    \item[I2C] \textbf{Inter-Integrated Circuit} -- A two-wire serial communication protocol (SDA for data, SCL for clock). Used for connecting sensors like IMUs. Supports multiple devices on the same bus with unique addresses.
+
+    \item[UART] \textbf{Universal Asynchronous Receiver-Transmitter} -- A serial communication protocol using TX (transmit) and RX (receive) lines. Commonly used for debugging and some sensor connections.
+
+    \item[GPIO] \textbf{General Purpose Input/Output} -- Configurable digital pins on microcontrollers and single-board computers. Can be set as input (read sensors/buttons) or output (control LEDs/relays).
+
+    \item[PWM] \textbf{Pulse Width Modulation} -- A technique for controlling analog devices using digital signals. The duty cycle (percentage of time the signal is HIGH) controls the effective power. Used for motor speed control.
+
+    \item[Center-Aligned PWM] A PWM mode where the counter counts up then down, centering pulses in the period. Produces cleaner signals with reduced electromagnetic interference (EMI) compared to edge-aligned PWM. Used by the ESP32 MCPWM peripheral for motor control.
+
+    \item[PID] \textbf{Proportional-Integral-Derivative} -- A control loop mechanism for maintaining a desired setpoint. The ESP32 runs a 1 kHz PID loop to maintain precise motor velocities based on encoder feedback.
+
+    \item[SMBus] \textbf{System Management Bus} -- A two-wire interface based on I2C but with stricter timing requirements and additional features like packet error checking (PEC) and timeouts. Used for battery fuel gauge ICs and power management chips.
+
+    \item[1-Wire] A serial protocol using a single data wire (plus ground) for communication. Devices are powered parasitically from the data line or via a separate power pin. Used by DS18B20 temperature sensors for thermal monitoring.
+\end{description}
+
+\subsection{Software Concepts}
+
+\begin{description}[style=nextline, leftmargin=2cm]
+    \item[PWA] \textbf{Progressive Web App} -- A web application that uses modern web technologies to deliver app-like experiences. Can work offline, be installed on devices, and receive push notifications.
+
+    \item[Service Worker] A JavaScript worker that runs in the background, separate from the web page. Enables offline functionality by intercepting network requests and serving cached responses.
+
+    \item[IndexedDB] A low-level browser API for storing large amounts of structured data. Used for offline telemetry storage in the PWA.
+
+    \item[Apollo Client] A comprehensive GraphQL client for JavaScript. Provides caching, state management, and offline support for GraphQL operations.
+
+    \item[Workbox] A set of JavaScript libraries from Google for adding offline support to web apps. Simplifies service worker creation and caching strategies.
+
+    \item[Coroutines] A Kotlin feature for asynchronous programming. Allows writing non-blocking code in a sequential style. Used extensively in the Spring Boot gateway for handling concurrent requests.
+
+    \item[Pi4J] A Java library for accessing GPIO, I2C, SPI, and other hardware interfaces on Raspberry Pi. Used by the gateway to communicate with the ESP32 via SPI.
+
+    \item[FreeRTOS] A real-time operating system kernel for embedded devices. Used by the ESP32 firmware for task scheduling, ensuring the motor control loop runs at exactly 1 kHz.
+\end{description}
+
+\subsection{Protocols and Formats}
+
+\begin{description}[style=nextline, leftmargin=2cm]
+    \item[SLAMTEC Protocol] The communication protocol used by RPLiDAR sensors (like the RPLiDAR C1). A proprietary serial protocol over UART for commanding the sensor and receiving scan data, supported by the rplidar\_ros2 driver.
+
+    \item[JSON] \textbf{JavaScript Object Notation} -- A lightweight, human-readable data interchange format. Used by GraphQL and REST APIs. Larger than binary formats like Protobuf.
+
+    \item[HTTP/2] The second major version of HTTP. Supports multiplexing (multiple requests over one connection), header compression, and server push. Required by gRPC.
+
+    \item[TCP/IP] \textbf{Transmission Control Protocol / Internet Protocol} -- The foundational communication protocols of the internet. Provides reliable, ordered delivery of data packets.
+\end{description}
+
+\subsection{Deployment and Operations}
+
+\begin{description}[style=nextline, leftmargin=2cm]
+    \item[systemd] The init system and service manager for modern Linux distributions. Manages service lifecycle, auto-restart on failure, and dependency ordering.
+
+    \item[Buildroot] A tool for building embedded Linux systems. Used to create the minimal custom Linux image for the Raspberry Pi 5.
+
+    \item[Prometheus] An open-source monitoring and alerting toolkit. Collects metrics from applications via HTTP endpoints. Used with Spring Boot Actuator for gateway monitoring.
+
+    \item[Actuator] A Spring Boot module that exposes operational information (health, metrics, info) via HTTP endpoints. Integrates with Prometheus for metrics collection.
+
+    \item[JVM] \textbf{Java Virtual Machine} -- The runtime environment for Java and Kotlin applications. The Spring Boot gateway runs on the JVM.
+\end{description}

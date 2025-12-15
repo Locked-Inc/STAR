@@ -1,0 +1,163 @@
+% ============================================================================
+% COMMUNICATION PROTOCOL ANALYSIS
+% ============================================================================
+\section{Communication Protocol Analysis}
+
+\subsection{The Problem Statement}
+
+The STAR robot requires communication across three distinct paths:
+
+\begin{enumerate}
+    \item \textbf{Controller App $\rightarrow$ RPi5 Gateway}: Over WiFi/Internet (this is the focus)
+    \item \textbf{RPi5 Gateway $\rightarrow$ ESP32}: Over SPI bus (already defined)
+    \item \textbf{RPi5 Gateway $\rightarrow$ LiDAR}: Over UART (already defined)
+\end{enumerate}
+
+The critical question is: \textit{What protocol should Path \#1 use?}
+
+\subsection{Protocol Options Evaluated}
+
+Four options were evaluated for controller-to-robot communication:
+
+\begin{enumerate}
+    \item gRPC + GraphQL Hybrid
+    \item ConnectRPC (modern gRPC alternative)
+    \item WebSocket + GraphQL
+    \item Pure gRPC with Envoy Proxy
+\end{enumerate}
+
+\subsection{Detailed Comparison}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{|l|X|X|X|X|}
+\hline
+\textbf{Aspect} & \textbf{gRPC + GraphQL} & \textbf{ConnectRPC} & \textbf{WebSocket + GraphQL} & \textbf{Pure gRPC} \\
+\hline
+Latency & gRPC: 1-5ms, GraphQL: 10-30ms & 5-15ms & WS: 5-10ms, GQL: 10-30ms & 1-5ms \\
+\hline
+Packet Size & Binary (gRPC) + JSON (GQL) & Binary OR JSON & JSON only & Binary only \\
+\hline
+Browser Support & gRPC-Web (limited) + GQL (full) & Full (HTTP/1.1) & Full native & Requires Envoy \\
+\hline
+Bidirectional & gRPC-Web: NO, GQL Sub: YES & NO & YES (native) & gRPC-Web: NO \\
+\hline
+Infrastructure & 2 servers & 1 server & 1 server + WS & 1 server + Envoy \\
+\hline
+Learning Curve & High (2 systems) & Medium & Medium & Medium-High \\
+\hline
+Ecosystem & Very mature (both) & Newer (2022+) & Very mature & Very mature \\
+\hline
+\end{tabularx}
+\caption{Protocol Comparison Matrix}
+\end{table}
+
+\subsection{Protocol Deep Dive}
+
+\subsubsection{gRPC + GraphQL Hybrid (Selected)}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[node distance=2cm, auto]
+    \node[draw, rectangle, rounded corners, fill=green!20, minimum width=3cm] (browser) {Controller App (Browser)};
+
+    \node[draw, rectangle, rounded corners, fill=blue!20, minimum width=3cm, below left=1.5cm and 1cm of browser] (graphql) {GraphQL (port 8080)};
+    \node[draw, rectangle, rounded corners, fill=red!20, minimum width=3cm, below right=1.5cm and 1cm of browser] (grpc) {gRPC-Web (port 8090)};
+
+    \node[draw, rectangle, rounded corners, fill=orange!20, minimum width=4cm, below=3cm of browser] (gateway) {RPi5 Gateway};
+
+    \draw[->, thick] (browser) -- (graphql) node[midway, left, font=\small] {Telemetry, Settings};
+    \draw[->, thick] (browser) -- (grpc) node[midway, right, font=\small] {Motor Commands};
+    \draw[->, thick] (graphql) -- (gateway);
+    \draw[->, thick] (grpc) -- (gateway);
+\end{tikzpicture}
+\caption{gRPC + GraphQL Hybrid Architecture}
+\end{figure}
+
+\textbf{Advantages:}
+\begin{itemize}
+    \item gRPC binary format provides fastest motor command transmission
+    \item GraphQL enables flexible queries for complex UI data needs
+    \item Clear separation of concerns: real-time control vs. data queries
+    \item Both protocols are industry standards with excellent tooling
+\end{itemize}
+
+\textbf{Disadvantages:}
+\begin{itemize}
+    \item Two different APIs to maintain
+    \item gRPC-Web requires Envoy proxy as translator
+    \item More complex client code (two client libraries)
+\end{itemize}
+
+\subsubsection{Why This Was Selected for STAR}
+
+\begin{enumerate}
+    \item \textbf{Low-Latency Motor Control}: gRPC's binary Protobuf format minimizes serialization overhead for time-critical motor commands.
+
+    \item \textbf{Flexible Telemetry Queries}: GraphQL subscriptions provide real-time telemetry streaming with selective field fetching.
+
+    \item \textbf{Offline Capability}: Apollo Client (GraphQL) has excellent caching and offline support built-in.
+
+    \item \textbf{Latency Acceptability}: For motor commands, even 10-30ms latency from browser to RPi5 is acceptable because:
+    \begin{itemize}
+        \item The ESP32 maintains autonomous 1kHz PID control between commands
+        \item Human reaction time is approximately 200-300ms
+        \item The critical real-time path is RPi5 $\rightarrow$ ESP32 (SPI), not Controller $\rightarrow$ RPi5
+    \end{itemize}
+\end{enumerate}
+
+\subsection{Packet Format Comparison}
+
+\subsubsection{Protobuf (gRPC) Binary Encoding}
+
+Protobuf uses a compact binary format that excludes field names:
+
+\begin{lstlisting}[language=Protobuf, caption=Protobuf Message Definition]
+message VelocityCommand {
+    float left_velocity = 1;   // 4 bytes + tag
+    float right_velocity = 2;  // 4 bytes + tag
+    uint64 timestamp = 3;      // 1-10 bytes (varint)
+}
+\end{lstlisting}
+
+\textbf{Wire format example} (VelocityCommand with left=1.0, right=0.5, timestamp=1702500000000):
+\begin{verbatim}
+0D 00 00 80 3F  // field 1 (float): 1.0
+15 00 00 00 3F  // field 2 (float): 0.5
+18 80 A0 CF EE E5 31  // field 3 (varint): timestamp
+\end{verbatim}
+
+\textbf{Total size: approximately 17 bytes}
+
+\subsubsection{JSON (GraphQL) Text Encoding}
+
+Equivalent JSON payload:
+\begin{lstlisting}[language=json, caption=JSON Equivalent]
+{
+  "leftVelocity": 1.0,
+  "rightVelocity": 0.5,
+  "timestamp": 1702500000000
+}
+\end{lstlisting}
+
+\textbf{Total size: approximately 65 bytes} (3.8x larger)
+
+\subsubsection{Serialization Performance}
+
+Based on industry benchmarks\footnote{Source: Ambassador Labs, Protobuf vs JSON Performance Analysis, 2024}:
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|c|c|c|}
+\hline
+\textbf{Metric} & \textbf{Protobuf} & \textbf{JSON} & \textbf{Difference} \\
+\hline
+Message Size & 17 bytes & 65 bytes & 3.8x smaller \\
+Serialization (JVM) & 1.2 $\mu$s & 4.5 $\mu$s & 3.75x faster \\
+Deserialization (JVM) & 0.8 $\mu$s & 3.2 $\mu$s & 4x faster \\
+Network Latency (1Mbps) & 0.14 ms & 0.52 ms & 3.7x faster \\
+\hline
+\end{tabular}
+\caption{Protobuf vs JSON Performance Comparison}
+\end{table}

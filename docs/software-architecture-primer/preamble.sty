@@ -1,0 +1,119 @@
+% =============================================================================
+% STAR Software Architecture Primer - Preamble
+% Package configuration and styling
+% =============================================================================
+
+\ProvidesPackage{preamble}
+
+% ============================================================================
+% PACKAGES
+% ============================================================================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{geometry}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{fancyhdr}
+\usepackage{titlesec}
+\usepackage{tocloft}
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{enumitem}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{tikz}
+\usepackage{float}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{pdflscape}
+\usepackage{array}
+
+\usetikzlibrary{shapes.geometric, arrows.meta, positioning, fit, backgrounds}
+
+% ============================================================================
+% DOCUMENT CONFIGURATION
+% ============================================================================
+\geometry{margin=1in}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue!70!black,
+    filecolor=magenta,
+    urlcolor=cyan!70!black,
+    pdftitle={STAR Robot Control System - Software Architecture Primer},
+    pdfauthor={STAR Development Team},
+    pdfsubject={Technical Documentation},
+}
+
+% Code listing styles
+\definecolor{codebg}{RGB}{245,245,245}
+\definecolor{codeframe}{RGB}{200,200,200}
+\definecolor{codekeyword}{RGB}{0,0,180}
+\definecolor{codecomment}{RGB}{0,128,0}
+\definecolor{codestring}{RGB}{163,21,21}
+
+\lstset{
+    basicstyle=\ttfamily\small,
+    backgroundcolor=\color{codebg},
+    frame=single,
+    rulecolor=\color{codeframe},
+    breaklines=true,
+    breakatwhitespace=true,
+    tabsize=2,
+    showstringspaces=false,
+    numbers=left,
+    numberstyle=\tiny\color{gray},
+    numbersep=8pt,
+    keywordstyle=\color{codekeyword}\bfseries,
+    commentstyle=\color{codecomment}\itshape,
+    stringstyle=\color{codestring},
+    captionpos=b,
+}
+
+\lstdefinelanguage{Kotlin}{
+    keywords={fun, val, var, class, object, interface, return, if, else, when, for, while, do, try, catch, finally, throw, suspend, async, await, coroutineScope, withContext, override, private, public, protected, internal, companion, data, sealed, enum, annotation, inline, crossinline, noinline, reified, lateinit, by, lazy, import, package, as, is, in, out, where, typealias, expect, actual},
+    morecomment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    morestring=[b]",
+    morestring=[b]',
+    sensitive=true,
+}
+
+\lstdefinelanguage{GraphQL}{
+    keywords={type, input, enum, interface, union, scalar, query, mutation, subscription, fragment, on, extend, schema, directive},
+    morecomment=[l]{\#},
+    morestring=[b]",
+    sensitive=true,
+}
+
+\lstdefinelanguage{Protobuf}{
+    keywords={syntax, package, option, import, message, enum, service, rpc, returns, stream, repeated, optional, required, map, oneof, reserved, extensions, extend},
+    morecomment=[l]{//},
+    morecomment=[s]{/*}{*/},
+    morestring=[b]",
+    sensitive=true,
+}
+
+% Header/Footer
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\leftmark}
+\fancyhead[R]{STAR Software Architecture Primer}
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0.4pt}
+
+% Section formatting
+\titleformat{\section}
+    {\normalfont\Large\bfseries\color{blue!70!black}}
+    {\thesection}{1em}{}
+\titleformat{\subsection}
+    {\normalfont\large\bfseries\color{blue!50!black}}
+    {\thesubsection}{1em}{}
+\titleformat{\subsubsection}
+    {\normalfont\normalsize\bfseries\color{blue!30!black}}
+    {\thesubsubsection}{1em}{}
