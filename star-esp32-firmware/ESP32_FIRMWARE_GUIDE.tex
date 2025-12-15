@@ -88,15 +88,15 @@ The \texttt{star-esp32-firmware} project provides real-time motor control, senso
 \textbf{Component} & \textbf{Status} & \textbf{Notes} \\
 \hline
 STAR Framework Core & Complete & DIP architecture, interfaces \\
-Bus Abstraction Layer & Complete & I2C, SPI, 1-Wire, SMBus (slimmed down) \\
-Essential Drivers & Complete & BQ7850 (BMS), DS18B20 (Temp) \\
+Bus Abstraction Layer & Complete & I2C, SPI, 1-Wire, SMBus, GPIO \\
+Essential Drivers & \textbf{TODO} & BQ7850 (BMS), DS18B20 (Temp) drivers required \\
 Error Handling & Complete & Retry logic with exponential backoff \\
 Pin Validation & Complete & GPIO conflict detection \\
 \hline
-Motor Control (MCPWM) & Complete & Center-aligned PWM for 4 motors \\
-SPI Peripheral (Pi5 comm) & Complete & Binary protocol for commands \\
-PID Controller & Complete & Integrated into motor control loop \\
-Encoder Reading & Complete & Integrated into motor control loop \\
+Motor Control (MCPWM) & \textbf{TODO} & Requires refactoring per guide \\
+SPI Peripheral (Pi5 comm) & Complete & Low-level communication layer is ready \\
+PID Controller & \textbf{TODO} & To be created as \texttt{lib/star\_pid} \\
+Encoder Reading & \textbf{TODO} & To be created as \texttt{lib/star\_encoder} \\
 \hline
 \end{tabular}
 \caption{Implementation Status Summary}
@@ -145,6 +145,13 @@ star-esp32-firmware/
 |-- platformio.ini            # Build configuration
 +-- sdkconfig.*               # ESP-IDF configs
 \end{lstlisting}
+
+\subsection{Coding Style and Conventions}
+To ensure long-term maintainability, consistency, and readability of the firmware, this project adheres to a strict set of coding conventions. All contributions must follow the rules outlined in the official project style guide.
+
+\textbf{The primary source of truth for all coding style is the \texttt{styleguide.txt} document located in the root of the \texttt{star-esp32-firmware} directory.}
+
+Adherence to this style guide is not optional; it is a critical requirement for all development within this project.
 
 % =============================================================================
 \section{Motor Control Architecture}
@@ -284,6 +291,170 @@ typedef struct __attribute__((packed)) {
     uint32_t timestamp;    // ms since boot
 } velocity_cmd_t;
 \end{lstlisting}
+% =============================================================================
+\section{Extending the Bus Abstraction Layer}
+% =============================================================================
+
+To fully realize the Dependency Inversion Principle and support all required hardware (including ADCs and GPIO-controlled multiplexers), the \texttt{star\_bus} library must be extended. This section provides a detailed plan for this enhancement.
+
+\subsection{Task 1: Re-create GPIO Bus Driver}
+The GPIO bus driver is required to provide a standardized interface for controlling digital logic, such as the multiplexer for selecting ADC lines.
+
+\subsubsection{Modify Type Definition Files}
+\begin{enumerate}
+    \item \textbf{File:} \texttt{lib/star\_bus/include/star\_bus\_common\_types.h} \\
+    Add \texttt{k\_star\_bus\_type\_gpio} to the \texttt{star\_bus\_type\_t} enum.
+    \item \textbf{File:} \texttt{lib/star\_bus/src/star\_bus\_types.c} \\
+    Add the corresponding \texttt{"GPIO"} string to the \texttt{star\_bus\_type\_strings} array.
+    \item \textbf{File:} \texttt{lib/star\_bus/include/star\_bus\_protocol\_types.h} \\
+    Add the necessary GPIO configuration and operations structs.
+\end{enumerate}
+\begin{lstlisting}[language=C, caption=Additions to star\_bus\_protocol\_types.h]
+/** @brief GPIO operations function pointers */
+typedef struct {
+    esp_err_t (*write_digital)(const struct star_bus_config* config, uint8_t pin_index, uint8_t value);
+    esp_err_t (*read_digital)(const struct star_bus_config* config, uint8_t pin_index, uint8_t* value);
+    /* Other GPIO ops like interrupts can be added here */
+} star_gpio_ops_t;
+
+/** @brief GPIO bus configuration */
+typedef struct {
+    gpio_num_t* pins;
+    uint8_t pin_count;
+    bool isr_installed;
+    star_gpio_ops_t ops;
+    /* Other config like callbacks can be added here */
+} star_gpio_bus_config_t;
+
+// Then, add star_gpio_bus_config_t to the star_bus_protocol_config_t union
+typedef union {
+    // ... existing i2c, spi, etc. structs
+    star_gpio_bus_config_t gpio;
+} star_bus_protocol_config_t;
+\end{lstlisting}
+
+\subsubsection{Create GPIO Driver}
+\begin{enumerate}
+    \item Create \texttt{lib/star\_bus/include/star\_bus\_gpio.h} to declare the public API for the GPIO bus, including the default ops initializer.
+    \item Create \texttt{lib/star\_bus/src/star\_bus\_gpio.c}. This file will implement the GPIO logic using the ESP-IDF \texttt{driver/gpio.h} functions.
+\end{enumerate}
+
+\subsubsection{Update Bus Config Factory}
+\begin{enumerate}
+    \item \textbf{File:} \texttt{lib/star\_bus/include/star\_bus\_config.h} \\
+    Add the function declaration for \texttt{star\_bus\_config\_create\_gpio()}.
+    \item \textbf{File:} \texttt{lib/star\_bus/src/star\_bus\_config.c} \\
+    Implement \texttt{star\_bus\_config\_create\_gpio()} and add the \texttt{k\_star\_bus\_type\_gpio} case to the \texttt{switch} statements in \texttt{star\_bus\_config\_init} and \texttt{star\_bus\_config\_deinit}.
+\end{enumerate}
+
+\subsubsection{Update Build System}
+\begin{enumerate}
+    \item \textbf{File:} \texttt{lib/star\_bus/CMakeLists.txt} \\
+    Add \texttt{"src/star\_bus\_gpio.c"} to the \texttt{SRCS} list.
+\end{enumerate}
+
+\subsection{Task 2: Add ADC Bus Protocol}
+
+This involves creating a new bus type for handling analog-to-digital conversions, following the established pattern in the library.
+
+\subsubsection{Modify Type Definition Files}
+\begin{enumerate}
+    \item \textbf{File:} \texttt{lib/star\_bus/include/star\_bus\_common\_types.h} \\
+    Add \texttt{k\_star\_bus\_type\_adc} to the \texttt{star\_bus\_type\_t} enum before the count.
+    \item \textbf{File:} \texttt{lib/star\_bus/src/star\_bus\_types.c} \\
+    Add the corresponding \texttt{"ADC"} string to the \texttt{star\_bus\_type\_strings} array.
+    \item \textbf{File:} \texttt{lib/star\_bus/include/star\_bus\_protocol\_types.h} \\
+    Add the necessary ADC configuration and operations structs.
+\end{enumerate}
+\begin{lstlisting}[language=C, caption=Additions to star\_bus\_protocol\_types.h]
+/** @brief ADC operations function pointers */
+typedef struct {
+    esp_err_t (*read_raw)(const struct star_bus_config* config, int* out_raw);
+    esp_err_t (*read_voltage)(const struct star_bus_config* config, int* out_voltage_mv);
+} star_adc_ops_t;
+
+/** @brief ADC bus configuration */
+typedef struct {
+    adc_oneshot_unit_handle_t unit_handle;
+    adc_cali_handle_t cali_handle;
+    adc_channel_t channel;
+    adc_bitwidth_t bitwidth;
+    adc_atten_t atten;
+    star_adc_ops_t ops;
+} star_adc_bus_config_t;
+
+// Then, add star_adc_bus_config_t to the star_bus_protocol_config_t union
+typedef union {
+    // ... existing i2c, spi, gpio, etc. structs
+    star_adc_bus_config_t adc;
+} star_bus_protocol_config_t;
+\end{lstlisting}
+
+\subsubsection{Create ADC Driver}
+\begin{enumerate}
+    \item Create \texttt{lib/star\_bus/include/star\_bus\_adc.h} to declare the default ops initializer.
+    \item Create \texttt{lib/star\_bus/src/star\_bus\_adc.c}. This file will implement the ADC logic using the ESP-IDF \texttt{adc\_oneshot} and \texttt{adc\_cali} drivers. It will define the functions for the \texttt{star\_adc\_ops\_t} struct.
+\end{enumerate}
+
+\subsubsection{Update Bus Config Factory}
+\begin{enumerate}
+    \item \textbf{File:} \texttt{lib/star\_bus/include/star\_bus\_config.h} \\
+    Add the function declaration for \texttt{star\_bus\_config\_create\_adc()}.
+    \item \textbf{File:} \texttt{lib/star\_bus/src/star\_bus\_config.c} \\
+    Implement \texttt{star\_bus\_config\_create\_adc()} and add the \texttt{k\_star\_bus\_type\_adc} case to the \texttt{switch} statements in \texttt{star\_bus\_config\_init} and \texttt{star\_bus\_config\_deinit}.
+\end{enumerate}
+
+\subsubsection{Update Build System}
+\begin{enumerate}
+    \item \textbf{File:} \texttt{lib/star\_bus/CMakeLists.txt} \\
+    Add \texttt{"src/star\_bus\_adc.c"} to the \texttt{SRCS} list.
+\end{enumerate}
+
+\subsection{Task 3: Implement Unified Bus Interface}
+
+Create a true abstraction layer in the bus manager so that application code does not need to call protocol-specific functions.
+
+\subsubsection{Add Generic Functions to Bus Manager}
+\begin{enumerate}
+    \item \textbf{File:} \texttt{lib/star\_bus/include/star\_bus\_manager.h} \\
+    Declare new high-level, generic functions.
+    \item \textbf{File:} \texttt{lib/star\_bus/src/star\_bus\_manager.c} \\
+    Implement these functions. Each function will find the bus by name, verify its type, and call the appropriate function pointer from the bus's \texttt{ops} struct.
+\end{enumerate}
+\begin{lstlisting}[language=C, caption=Proposed Generic Interface in star\_bus\_manager.h]
+/**
+ * @brief Write a digital value to a bus (e.g., GPIO).
+ */
+esp_err_t star_bus_write_digital(star_bus_manager_t* manager, const char* bus_name, uint8_t value);
+
+/**
+ * @brief Read an analog value from a bus (e.g., ADC).
+ * @param[out] out_voltage_mv The resulting voltage in millivolts.
+ */
+esp_err_t star_bus_read_analog_mv(star_bus_manager_t* manager, const char* bus_name, int* out_voltage_mv);
+
+/**
+ * @brief Perform a standard I2C/SPI write operation.
+ */
+esp_err_t star_bus_write(star_bus_manager_t* manager, const char* bus_name, uint8_t reg_addr, const uint8_t* data, size_t len);
+
+/**
+ * @brief Perform a standard I2C/SPI read operation.
+ */
+esp_err_t star_bus_read(star_bus_manager_t* manager, const char* bus_name, uint8_t reg_addr, uint8_t* data, size_t len);
+\end{lstlisting}
+
+This approach provides a clean, abstract, and extensible bus management system that fully adheres to the Dependency Inversion Principle.
+
+\subsection{Task 4: Final Bus Library Cleanup}
+As a final cleanup step, the unnecessary 1-Wire peripheral driver should be removed.
+\begin{enumerate}
+    \item Delete \texttt{lib/star\_bus/src/star\_bus\_onewire\_peripheral.c}.
+    \item Delete the corresponding header file if it exists in \texttt{lib/star\_bus/include/}.
+    \item Remove any references from the \texttt{CMakeLists.txt} file.
+\end{enumerate}
+\textbf{Reasoning:} The ESP32 will only act as a controller on the 1-Wire bus to communicate with the DS18B20 sensor. It will never need to act as a 1-Wire peripheral device.
+
 % =============================================================================
 \section{Testing Plan}
 % =============================================================================
