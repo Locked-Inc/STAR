@@ -49,8 +49,11 @@ sudo apt-get install -y \
     libssl-dev \
     dosfstools \
     mtools \
-    genimage
+    genimage \
+    qemu-system-arm
 ```
+
+The `qemu-system-arm` package is optional but enables QEMU-based testing without physical hardware.
 
 ## Building
 
@@ -130,24 +133,80 @@ ssh root@star-robot.local
 # Set root password
 passwd
 
-# Configure WiFi
-/root/setup-wifi.sh
+# Configure network (WiFi + Hotspot for ESP32)
+/root/setup-network.sh
 
 # Verify network connectivity
 ping 8.8.8.8
 ```
 
-### 4. WiFi Configuration
+### 4. Network Configuration
 
-The system includes a helper script for easy WiFi setup:
+The system is configured as both a **WiFi station** (connects to your home network) and a **WiFi hotspot** (for ESP32 devices). This allows ESP32 devices to send data to remote servers through the Pi.
 
-```bash
-# Run the WiFi setup script
-/root/setup-wifi.sh
-
-# Or manually edit configuration
-nano /etc/wpa_supplicant/wpa_supplicant.conf
+#### Network Architecture
 ```
+[ESP32 devices] --WiFi--> [Pi5 AP: uap0] --NAT--> [Pi5 STA: wlan0] --WiFi--> [Router] --> [Internet]
+                          192.168.4.1/24           DHCP from router
+```
+
+#### Quick Setup (Full Configuration)
+```bash
+# Run the network setup script and select option 8 (Full setup)
+/root/setup-network.sh
+```
+
+This will:
+1. Configure your upstream WiFi credentials (station mode)
+2. Configure the hotspot SSID and password (AP mode)
+3. Start all network services
+4. Enable services to start at boot
+
+#### Default Hotspot Settings
+- **SSID:** STAR-Robot-AP
+- **Password:** starrobot123 (change this!)
+- **Network:** 192.168.4.0/24
+- **Gateway:** 192.168.4.1
+- **DHCP Range:** 192.168.4.10 - 192.168.4.100
+
+#### Manual Configuration
+```bash
+# Configure upstream WiFi only
+/root/setup-network.sh  # Select option 1
+
+# Configure hotspot only
+/root/setup-network.sh  # Select option 2
+
+# Show network status
+/root/setup-network.sh  # Select option 7
+```
+
+#### Direct WiFi Configuration (without setup script)
+```bash
+# Copy template and edit
+cp /etc/wpa_supplicant/wpa_supplicant.conf.template /etc/wpa_supplicant/wpa_supplicant.conf
+
+# Edit with your credentials
+vi /etc/wpa_supplicant/wpa_supplicant.conf
+# Uncomment and fill in:
+#   ssid="YOUR_WIFI_SSID"
+#   psk="YOUR_WIFI_PASSWORD"
+
+# Restart wpa_supplicant
+systemctl restart wpa_supplicant@wlan0
+```
+
+Configuration files:
+- `/etc/wpa_supplicant/wpa_supplicant.conf` - Upstream WiFi credentials
+- `/etc/hostapd/hostapd.conf` - Hotspot settings
+
+#### ESP32 Connection
+ESP32 devices should connect to the hotspot:
+- **SSID:** STAR-Robot-AP (default)
+- **Password:** starrobot123 (default)
+- **Gateway IP:** 192.168.4.1
+
+Once connected, ESP32 can reach remote servers through the Pi's NAT routing.
 
 ## Hardware Configuration
 
@@ -301,11 +360,26 @@ make busybox-menuconfig
 - Ensure using Raspberry Pi 5 (not Pi 4 or earlier)
 - Verify SD card is not corrupted
 
-### WiFi Not Working
-- Run `/root/setup-wifi.sh` for guided setup
+### WiFi Station Not Working
+- Run `/root/setup-network.sh` and select option 1 for guided setup
 - Check WiFi credentials in `/etc/wpa_supplicant/wpa_supplicant.conf`
 - Verify country code is correct
 - Check WiFi interface: `ip link show wlan0`
+- Check wpa_supplicant service: `systemctl status wpa_supplicant@wlan0`
+
+### Hotspot Not Working
+- Run `/root/setup-network.sh` and select option 7 to show status
+- Check if AP interface exists: `ip link show uap0`
+- Check hostapd service: `systemctl status hostapd`
+- Check hostapd logs: `journalctl -u hostapd -n 50`
+- Verify hostapd config: `cat /etc/hostapd/hostapd.conf`
+
+### ESP32 Can't Connect to Internet
+- Verify NAT is active: `iptables -t nat -L POSTROUTING -n`
+- Check IP forwarding: `cat /proc/sys/net/ipv4/ip_forward` (should be 1)
+- Verify station interface has internet: `ping -I wlan0 8.8.8.8`
+- Check dnsmasq is running: `systemctl status dnsmasq-ap`
+- View connected clients: `cat /var/lib/misc/dnsmasq.leases`
 
 ### Camera Issues
 - Verify camera cables are properly connected
