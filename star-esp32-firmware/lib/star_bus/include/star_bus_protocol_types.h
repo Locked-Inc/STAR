@@ -10,6 +10,8 @@ extern "C" {
 #include "driver/gpio.h"
 #include "driver/i2c.h"
 #include "driver/spi_master.h" /* Added for SPI */
+#include "esp_adc/adc_cali.h"
+#include "esp_adc/adc_oneshot.h"
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -103,6 +105,49 @@ typedef struct star_spi_bus_config {
   /* flags and intr_flags are also part of spi_bus_config_t if needed */
 
 } star_spi_bus_config_t;
+
+/**
+ * @brief GPIO operation functions structure.
+ */
+typedef struct star_gpio_ops {
+  esp_err_t (*write_digital)(const struct star_bus_config* config,
+                             uint8_t                        pin_index,
+                             uint8_t                        value);
+  esp_err_t (*read_digital)(const struct star_bus_config* config,
+                            uint8_t                        pin_index,
+                            uint8_t*                       value);
+} star_gpio_ops_t;
+
+/**
+ * @brief GPIO bus configuration structure.
+ */
+typedef struct star_gpio_bus_config {
+  gpio_num_t*     pins;         /**< Array of GPIO pins */
+  uint8_t         pin_count;    /**< Number of pins in array */
+  bool            isr_installed; /**< Whether ISR service is installed */
+  star_gpio_ops_t ops;          /**< Operation function pointers */
+} star_gpio_bus_config_t;
+
+/**
+ * @brief ADC operation functions structure.
+ */
+typedef struct star_adc_ops {
+  esp_err_t (*read_raw)(const struct star_bus_config* config, int* out_raw);
+  esp_err_t (*read_voltage)(const struct star_bus_config* config,
+                            int*                          out_voltage_mv);
+} star_adc_ops_t;
+
+/**
+ * @brief ADC bus configuration structure.
+ */
+typedef struct star_adc_bus_config {
+  adc_oneshot_unit_handle_t unit_handle; /**< ADC unit handle */
+  adc_cali_handle_t         cali_handle; /**< ADC calibration handle */
+  adc_channel_t             channel;     /**< ADC channel */
+  adc_bitwidth_t            bitwidth;    /**< ADC bit width */
+  adc_atten_t               atten;       /**< ADC attenuation */
+  star_adc_ops_t            ops;         /**< Operation function pointers */
+} star_adc_bus_config_t;
 
 #ifdef __cplusplus
 }

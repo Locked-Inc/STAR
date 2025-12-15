@@ -1,6 +1,8 @@
 idf_component_register(
     SRCS
+        "src/star_bus_adc.c"
         "src/star_bus_config.c"
+        "src/star_bus_gpio.c"
         "src/star_bus_i2c.c"
         "src/star_bus_i2c_dma.c"
         "src/star_bus_manager.c"

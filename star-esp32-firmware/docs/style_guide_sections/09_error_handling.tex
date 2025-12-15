@@ -1,0 +1,353 @@
+\section{Error Handling}
+
+This section establishes error handling patterns for the STAR firmware codebase, with emphasis on ESP-IDF specific patterns.
+
+\subsection{General Principles}
+
+\begin{itemize}
+    \item \textbf{Return Error Codes}: Functions should return error codes via \texttt{esp\_err\_t}.
+    \item \textbf{Check All Return Values}: Never ignore return values from functions that can fail.
+    \item \textbf{Use \texttt{goto} for Clean-up}: Use \texttt{goto} to jump to a clean-up section when multiple resources need release.
+    \item \textbf{Fail Fast}: Return early on invalid arguments or precondition failures.
+\end{itemize}
+
+\subsection{ESP-IDF Error Codes}
+
+Use standard ESP-IDF error codes throughout the codebase.
+
+\begin{lstlisting}[language=C]
+/* Standard ESP-IDF error codes */
+ESP_OK                  /* Success */
+ESP_FAIL                /* Generic failure */
+ESP_ERR_NO_MEM          /* Out of memory */
+ESP_ERR_INVALID_ARG     /* Invalid argument */
+ESP_ERR_INVALID_STATE   /* Invalid state for operation */
+ESP_ERR_INVALID_SIZE    /* Invalid size */
+ESP_ERR_NOT_FOUND       /* Requested resource not found */
+ESP_ERR_NOT_SUPPORTED   /* Operation not supported */
+ESP_ERR_TIMEOUT         /* Operation timed out */
+
+/* Usage example */
+esp_err_t star_bus_manager_init(star_bus_manager_t* manager, ...)
+{
+    if (manager == NULL) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    manager->mutex = xSemaphoreCreateMutex();
+    if (manager->mutex == NULL) {
+        return ESP_ERR_NO_MEM;
+    }
+
+    return ESP_OK;
+}
+\end{lstlisting}
+
+\subsection{ESP-IDF Validation Macros}
+
+Use ESP-IDF macros for parameter validation and error checking.
+
+\subsubsection{ESP\_RETURN\_ON\_FALSE}
+
+Returns an error if condition is false, with logging.
+
+\begin{lstlisting}[language=C]
+#include "esp_check.h"
+
+esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
+                                const char*             tag,
+                                star_error_interface_t* error_iface,
+                                star_pin_interface_t*   pin_iface)
+{
+    /* Validate required parameter with automatic logging */
+    ESP_RETURN_ON_FALSE(manager, ESP_ERR_INVALID_ARG, s_TAG,
+                        "Manager pointer is NULL");
+
+    /* Multiple validations */
+    ESP_RETURN_ON_FALSE(manager->mutex,
+                        ESP_ERR_INVALID_STATE,
+                        manager->tag,
+                        "Manager mutex not initialized");
+
+    ESP_RETURN_ON_FALSE(config->type > k_star_bus_type_none &&
+                        config->type < k_star_bus_type_count,
+                        ESP_ERR_INVALID_ARG,
+                        manager->tag,
+                        "Invalid bus type in config");
+
+    return ESP_OK;
+}
+\end{lstlisting}
+
+\subsubsection{ESP\_GOTO\_ON\_ERROR}
+
+Jumps to a label on error, with logging. Use for cleanup patterns.
+
+\begin{lstlisting}[language=C]
+static esp_err_t internal_star_bus_i2c_write(const star_bus_config_t* config,
+                                              const uint8_t*           data,
+                                              size_t                   len,
+                                              uint8_t                  reg_addr,
+                                              size_t*                  bytes_written)
+{
+    esp_err_t        ret = ESP_OK;
+    i2c_cmd_handle_t cmd = NULL;
+
+    cmd = i2c_cmd_link_create();
+    ESP_RETURN_ON_FALSE(cmd, ESP_ERR_NO_MEM, s_TAG,
+                        "Failed to create I2C command link");
+
+    ret = i2c_master_start(cmd);
+    ESP_GOTO_ON_ERROR(ret, write_fail, s_TAG,
+                      "Write '%s': START failed: %s",
+                      config->name, esp_err_to_name(ret));
+
+    ret = i2c_master_write_byte(cmd, (address << 1) | I2C_MASTER_WRITE, true);
+    ESP_GOTO_ON_ERROR(ret, write_fail, s_TAG,
+                      "Write '%s': Address (W) failed: %s",
+                      config->name, esp_err_to_name(ret));
+
+    ret = i2c_master_write(cmd, data, len, true);
+    ESP_GOTO_ON_ERROR(ret, write_fail, s_TAG,
+                      "Write '%s': Data write failed: %s",
+                      config->name, esp_err_to_name(ret));
+
+    ret = i2c_master_stop(cmd);
+    ESP_GOTO_ON_ERROR(ret, write_fail, s_TAG,
+                      "Write '%s': STOP failed: %s",
+                      config->name, esp_err_to_name(ret));
+
+    /* Execute command */
+    ret = i2c_master_cmd_begin(port, cmd, pdMS_TO_TICKS(1000));
+    ESP_GOTO_ON_ERROR(ret, write_fail, s_TAG,
+                      "Write '%s': CMD failed", config->name);
+
+    /* Success path */
+    i2c_cmd_link_delete(cmd);
+    if (bytes_written) {
+        *bytes_written = len;
+    }
+    return ESP_OK;
+
+write_fail:
+    if (cmd) {
+        i2c_cmd_link_delete(cmd);
+    }
+    return ret;
+}
+\end{lstlisting}
+
+\subsubsection{ESP\_ERROR\_CHECK}
+
+Use during development to catch fatal errors.
+
+\begin{lstlisting}[language=C]
+/* Development only - aborts on error */
+ESP_ERROR_CHECK(i2c_driver_install(port, I2C_MODE_MASTER, 0, 0, 0));
+
+/* Use ESP_ERROR_CHECK_WITHOUT_ABORT for non-fatal checks */
+ESP_ERROR_CHECK_WITHOUT_ABORT(optional_init());
+\end{lstlisting}
+
+\subsection{NULL Safety Patterns}
+
+Always validate pointer parameters.
+
+\begin{lstlisting}[language=C]
+/* At function start - validate all pointers */
+esp_err_t star_bus_i2c_write(const star_bus_manager_t* manager,
+                              const char*               name,
+                              const uint8_t*            data,
+                              size_t                    len,
+                              uint8_t                   reg_addr,
+                              size_t*                   bytes_written)
+{
+    ESP_RETURN_ON_FALSE(manager && name && data,
+                        ESP_ERR_INVALID_ARG,
+                        s_TAG,
+                        "Manager, name, or data is NULL");
+    ESP_RETURN_ON_FALSE(len > 0, ESP_ERR_INVALID_ARG, s_TAG,
+                        "Write length must be > 0");
+
+    /* Clear output parameter initially */
+    if (bytes_written) {
+        *bytes_written = 0;
+    }
+
+    /* ... rest of implementation ... */
+}
+
+/* Check optional interface before use */
+if (manager->error_iface && manager->error_iface->record_error) {
+    manager->error_iface->record_error(
+        manager->error_iface->ctx,
+        ret,
+        "Bus hardware initialization failed",
+        __FILE__,
+        __LINE__,
+        __func__);
+}
+
+/* Use convenience macro for safe interface calls */
+#define STAR_IFACE_RECORD_ERROR(iface, err, msg)  \
+    ((iface) && (iface)->record_error  \
+        ? (iface)->record_error((iface)->ctx, (err), (msg),  \
+                                 __FILE__, __LINE__, __func__)  \
+        : (err))
+
+/* Usage */
+STAR_IFACE_RECORD_ERROR(manager->error_iface, ret, "Operation failed");
+\end{lstlisting}
+
+\subsection{Mutex Error Handling}
+
+Handle mutex acquisition failures properly.
+
+\begin{lstlisting}[language=C]
+esp_err_t star_bus_manager_add_bus(star_bus_manager_t* manager,
+                                    star_bus_config_t*  config)
+{
+    /* Validate arguments first */
+    ESP_RETURN_ON_FALSE(manager && config, ESP_ERR_INVALID_ARG,
+                        s_TAG, "Invalid arguments");
+    ESP_RETURN_ON_FALSE(manager->mutex, ESP_ERR_INVALID_STATE,
+                        manager->tag, "Mutex not initialized");
+
+    esp_err_t ret = ESP_OK;
+
+    /* Acquire mutex with timeout */
+    if (xSemaphoreTake(manager->mutex,
+            pdMS_TO_TICKS(CONFIG_STAR_KCONFIG_BUS_MUTEX_TIMEOUT_MS))
+            != pdTRUE) {
+        ESP_LOGE(manager->tag, "Timeout acquiring mutex for adding bus '%s'",
+                 config->name);
+        return ESP_ERR_TIMEOUT;
+    }
+
+    /* Critical section */
+    /* ... operations ... */
+
+    /* Single exit point ensures mutex release */
+add_give_mutex:
+    xSemaphoreGive(manager->mutex);
+    return ret;
+}
+\end{lstlisting}
+
+\subsection{Error Interface Dependency Injection}
+
+Components receive error handlers through dependency injection.
+
+\begin{lstlisting}[language=C]
+/* Interface definition */
+typedef struct star_error_interface {
+    esp_err_t (*record_error)(void* ctx, esp_err_t error,
+                               const char* message, const char* file,
+                               int line, const char* func);
+    bool (*can_retry)(void* ctx);
+    esp_err_t (*reset_state)(void* ctx);
+    void* ctx;
+} star_error_interface_t;
+
+/* Injecting error handler into component */
+esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
+                                const char*             tag,
+                                star_error_interface_t* error_iface,
+                                star_pin_interface_t*   pin_iface)
+{
+    manager->error_iface = error_iface;  /* Can be NULL */
+    /* ... */
+}
+
+/* Using the error interface */
+if (ret != ESP_OK) {
+    if (manager->error_iface && manager->error_iface->record_error) {
+        manager->error_iface->record_error(
+            manager->error_iface->ctx,
+            ret,
+            "Bus initialization failed",
+            __FILE__,
+            __LINE__,
+            __func__);
+    }
+}
+\end{lstlisting}
+
+\subsection{Cleanup Patterns}
+
+Use goto for consistent cleanup when multiple resources are acquired.
+
+\begin{lstlisting}[language=C]
+esp_err_t complex_init(complex_t* obj)
+{
+    esp_err_t ret = ESP_OK;
+
+    /* Allocate resources */
+    obj->buffer = malloc(BUFFER_SIZE);
+    if (!obj->buffer) {
+        ret = ESP_ERR_NO_MEM;
+        goto cleanup;
+    }
+
+    obj->mutex = xSemaphoreCreateMutex();
+    if (!obj->mutex) {
+        ret = ESP_ERR_NO_MEM;
+        goto cleanup;
+    }
+
+    ret = hardware_init(obj);
+    if (ret != ESP_OK) {
+        goto cleanup;
+    }
+
+    return ESP_OK;
+
+cleanup:
+    /* Release resources in reverse order */
+    if (obj->mutex) {
+        vSemaphoreDelete(obj->mutex);
+        obj->mutex = NULL;
+    }
+    if (obj->buffer) {
+        free(obj->buffer);
+        obj->buffer = NULL;
+    }
+    return ret;
+}
+\end{lstlisting}
+
+\subsection{Error Logging}
+
+Use appropriate log levels for different error severities.
+
+\begin{lstlisting}[language=C]
+/* ESP_LOGE - Errors that prevent operation */
+ESP_LOGE(s_TAG, "Failed to initialize bus '%s': %s",
+         config->name, esp_err_to_name(ret));
+
+/* ESP_LOGW - Warnings that don't prevent operation */
+ESP_LOGW(manager->tag, "Failed to register pins for bus '%s': %s "
+                       "(bus still added)", config->name, esp_err_to_name(ret));
+
+/* ESP_LOGI - Informational messages */
+ESP_LOGI(manager->tag, "Added bus config: %s (Type: %s)",
+         config->name, star_bus_type_to_string(config->type));
+
+/* ESP_LOGD - Debug messages (compiled out in release) */
+ESP_LOGD(s_TAG, "Write Success: %zu bytes to '%s' (Addr 0x%02X)",
+         len, config->name, address);
+\end{lstlisting}
+
+\subsection{Summary}
+
+\begin{itemize}
+    \item Return \texttt{esp\_err\_t} from all functions that can fail
+    \item Use \texttt{ESP\_RETURN\_ON\_FALSE} for parameter validation
+    \item Use \texttt{ESP\_GOTO\_ON\_ERROR} for cleanup patterns
+    \item Always validate pointers before dereferencing
+    \item Handle mutex timeouts as \texttt{ESP\_ERR\_TIMEOUT}
+    \item Use dependency injection for error handlers
+    \item Release resources in reverse order of acquisition
+    \item Log errors with appropriate severity levels
+\end{itemize}
+

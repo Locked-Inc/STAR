@@ -243,6 +243,76 @@ esp_err_t star_bus_manager_register_all_pins(const star_bus_manager_t*   manager
                                              pin_registration_function_t reg_func,
                                              void*                       user_ctx);
 
+/* --- Unified Bus Interface --- */
+
+/**
+ * @brief Write a digital value to a GPIO bus pin (unified interface)
+ *
+ * This is a convenience wrapper that dispatches to the appropriate GPIO bus function.
+ * The bus must be of type k_star_bus_type_gpio.
+ *
+ * @param[in] manager   Pointer to the initialized bus manager. Must not be NULL.
+ * @param[in] bus_name  Name of the GPIO bus. Must not be NULL.
+ * @param[in] pin_index Index of the pin in the GPIO bus configuration.
+ * @param[in] value     Digital value to write (0 or non-zero).
+ * @return esp_err_t ESP_OK on success, ESP_ERR_INVALID_ARG if bus type is not GPIO,
+ *                   or error codes from the underlying GPIO operation.
+ */
+esp_err_t star_bus_write_digital(star_bus_manager_t* manager,
+                                  const char*         bus_name,
+                                  uint8_t             pin_index,
+                                  uint8_t             value);
+
+/**
+ * @brief Read a digital value from a GPIO bus pin (unified interface)
+ *
+ * This is a convenience wrapper that dispatches to the appropriate GPIO bus function.
+ * The bus must be of type k_star_bus_type_gpio.
+ *
+ * @param[in]  manager   Pointer to the initialized bus manager. Must not be NULL.
+ * @param[in]  bus_name  Name of the GPIO bus. Must not be NULL.
+ * @param[in]  pin_index Index of the pin in the GPIO bus configuration.
+ * @param[out] value     Pointer to store the read digital value.
+ * @return esp_err_t ESP_OK on success, ESP_ERR_INVALID_ARG if bus type is not GPIO,
+ *                   or error codes from the underlying GPIO operation.
+ */
+esp_err_t star_bus_read_digital(star_bus_manager_t* manager,
+                                 const char*         bus_name,
+                                 uint8_t             pin_index,
+                                 uint8_t*            value);
+
+/**
+ * @brief Read raw ADC value from an ADC bus (unified interface)
+ *
+ * This is a convenience wrapper that dispatches to the appropriate ADC bus function.
+ * The bus must be of type k_star_bus_type_adc.
+ *
+ * @param[in]  manager  Pointer to the initialized bus manager. Must not be NULL.
+ * @param[in]  bus_name Name of the ADC bus. Must not be NULL.
+ * @param[out] out_raw  Pointer to store the raw ADC value.
+ * @return esp_err_t ESP_OK on success, ESP_ERR_INVALID_ARG if bus type is not ADC,
+ *                   or error codes from the underlying ADC operation.
+ */
+esp_err_t star_bus_read_analog_raw(star_bus_manager_t* manager,
+                                    const char*         bus_name,
+                                    int*                out_raw);
+
+/**
+ * @brief Read calibrated voltage in millivolts from an ADC bus (unified interface)
+ *
+ * This is a convenience wrapper that dispatches to the appropriate ADC bus function.
+ * The bus must be of type k_star_bus_type_adc.
+ *
+ * @param[in]  manager        Pointer to the initialized bus manager. Must not be NULL.
+ * @param[in]  bus_name       Name of the ADC bus. Must not be NULL.
+ * @param[out] out_voltage_mv Pointer to store the voltage in millivolts.
+ * @return esp_err_t ESP_OK on success, ESP_ERR_INVALID_ARG if bus type is not ADC,
+ *                   or error codes from the underlying ADC operation.
+ */
+esp_err_t star_bus_read_analog_mv(star_bus_manager_t* manager,
+                                   const char*         bus_name,
+                                   int*                out_voltage_mv);
+
 #ifdef __cplusplus
 }
 #endif
