@@ -133,32 +133,7 @@
     \vspace{1cm}
     {\Large Comprehensive Technical Reference for Software Engineers\par}
 
-    \vspace{2cm}
-
-    \begin{tikzpicture}[scale=0.8]
-        % External Internet
-        \node[draw, rectangle, rounded corners, fill=blue!20, minimum width=4cm, minimum height=1cm] (internet) at (0,6) {External Internet};
-
-        % Controller App
-        \node[draw, rectangle, rounded corners, fill=green!20, minimum width=3.5cm, minimum height=1.5cm] (controller) at (-5,3) {\begin{tabular}{c}Controller App\\(PWA)\end{tabular}};
-
-        % RPi5
-        \node[draw, rectangle, rounded corners, fill=orange!20, minimum width=5cm, minimum height=2cm] (rpi) at (0,3) {\begin{tabular}{c}Raspberry Pi 5\\Spring Boot Gateway\\ROS 2 / SLAM\end{tabular}};
-
-        % ESP32
-        \node[draw, rectangle, rounded corners, fill=red!20, minimum width=3cm, minimum height=1.5cm] (esp32) at (-3,0) {\begin{tabular}{c}ESP32-S3\\Motor Control\end{tabular}};
-
-        % LiDAR
-        \node[draw, rectangle, rounded corners, fill=purple!20, minimum width=3cm, minimum height=1.5cm] (lidar) at (3,0) {\begin{tabular}{c}SICK TiM561\\LiDAR\end{tabular}};
-
-        % Connections
-        \draw[->, thick] (internet) -- (rpi) node[midway, right] {WiFi STA};
-        \draw[<->, thick] (controller) -- (rpi) node[midway, above] {gRPC/GraphQL};
-        \draw[<->, thick] (rpi) -- (esp32) node[midway, left] {SPI + TCP};
-        \draw[<->, thick] (rpi) -- (lidar) node[midway, right] {Ethernet};
-    \end{tikzpicture}
-
-    \vspace{2cm}
+    \vfill
 
     {\large Version 1.0\par}
     {\large December 2025\par}
@@ -263,7 +238,7 @@ This section defines key terminology used throughout this document.
 \subsection{Protocols and Formats}
 
 \begin{description}[style=nextline, leftmargin=2cm]
-    \item[COLA-B] The communication protocol used by SICK LiDAR sensors (like the TiM561). A binary protocol over TCP/IP for commanding the sensor and receiving scan data.
+    \item[SLAMTEC Protocol] The communication protocol used by RPLiDAR sensors (like the RPLiDAR C1). A proprietary serial protocol over UART for commanding the sensor and receiving scan data, supported by the rplidar\_ros2 driver.
 
     \item[JSON] \textbf{JavaScript Object Notation} -- A lightweight, human-readable data interchange format. Used by GraphQL and REST APIs. Larger than binary formats like Protobuf.
 
@@ -335,7 +310,7 @@ The STAR robot requires communication across three distinct paths:
 \begin{enumerate}
     \item \textbf{Controller App $\rightarrow$ RPi5 Gateway}: Over WiFi/Internet (this is the focus)
     \item \textbf{RPi5 Gateway $\rightarrow$ ESP32}: Over SPI bus (already defined)
-    \item \textbf{RPi5 Gateway $\rightarrow$ LiDAR}: Over Ethernet TCP/IP (already defined)
+    \item \textbf{RPi5 Gateway $\rightarrow$ LiDAR}: Over UART (already defined)
 \end{enumerate}
 
 The critical question is: \textit{What protocol should Path \#1 use?}
@@ -505,13 +480,13 @@ Network Latency (1Mbps) & 0.14 ms & 0.52 ms & 3.7x faster \\
     \node[box, fill=blue!20] (internet) {External Internet};
 
     % WiFi modes explanation
-    \node[right=3cm of internet, font=\small, align=left] (wifi_note) {
+    \node[right=1cm of internet, font=\small, align=left] (wifi_note) {
         WiFi STA: Connect to home/office WiFi\\
         WiFi AP: Create \texttt{star-robot} network
     };
 
     % Controller App
-    \node[box, fill=green!20, below left=2cm and 2cm of internet] (controller) {Controller App\\(PWA - any device)};
+    \node[box, fill=green!20, below left=3.5cm and 4cm of internet] (controller) {Controller App\\(PWA - any device)};
 
     % RPi5
     \node[box, fill=orange!20, minimum width=5cm, minimum height=2cm, below=2cm of internet] (rpi) {
@@ -527,14 +502,14 @@ Network Latency (1Mbps) & 0.14 ms & 0.52 ms & 3.7x faster \\
     \node[box, fill=red!20, below=2cm of rpi] (esp32) {ESP32-S3\\Motor Control\\1kHz PID loop};
 
     % LiDAR
-    \node[box, fill=purple!20, below right=2cm and 0cm of rpi] (lidar) {SICK TiM561\\LiDAR 270\textdegree};
+    \node[box, fill=purple!20, below right=2cm and 0cm of rpi] (lidar) {RPLiDAR C1\\LiDAR 360\textdegree};
 
     % Connections
     \draw[arrow] (internet) -- node[right, font=\small] {WiFi STA} (rpi);
-    \draw[arrow, <->] (controller) -- node[above, font=\small, sloped] {gRPC/GraphQL} (rpi);
+    \draw[arrow, <->] (controller) -- node[above, font=\small, yshift=0.15cm] {gRPC/GraphQL} (rpi);
     \draw[arrow, <->] (hand) -- node[left, font=\small] {WiFi AP} (rpi);
     \draw[arrow, <->] (rpi) -- node[left, font=\small] {SPI + TCP} (esp32);
-    \draw[arrow, <->] (rpi) -- node[right, font=\small] {Ethernet} (lidar);
+    \draw[arrow, <->] (rpi) -- node[right, font=\small] {UART} (lidar);
 
 \end{tikzpicture}
 \caption{Complete Network Topology}
@@ -586,14 +561,14 @@ The Raspberry Pi 5 operates in \textbf{simultaneous dual WiFi mode}:
 
     % Hardware Layer
     \node[sublayer, fill=red!20] (esp32) at (-4,0.5) {ESP32-S3\\STAR Firmware};
-    \node[sublayer, fill=purple!20] (lidar) at (0,0.5) {SICK TiM561\\COLA-B Protocol};
+    \node[sublayer, fill=purple!20] (lidar) at (0,0.5) {RPLiDAR C1\\SLAMTEC Protocol};
     \node[sublayer, fill=blue!20] (ros) at (4,0.5) {ROS 2 Jazzy\\SLAM / Nav2};
 
     % Connections
     \draw[->, thick] (frontend) -- (protocol);
     \draw[->, thick] (protocol) -- (gateway);
     \draw[->, thick] (gateway) -- node[left, font=\small] {SPI/TCP} (esp32);
-    \draw[->, thick] (gateway) -- node[right, font=\small] {TCP} (lidar);
+    \draw[->, thick] (gateway) -- node[right, font=\small] {UART} (lidar);
     \draw[->, thick] (gateway) -- node[right, font=\small] {DDS} (ros);
 
 \end{tikzpicture}
@@ -640,9 +615,9 @@ Memory Usage (0.15) & 4 & 3 & 5 & 4 \\
 \textbf{SLAM Toolbox} was selected as the primary SLAM algorithm based on:
 
 \begin{enumerate}
-    \item \textbf{Compute Efficiency} -- Optimized for resource-constrained platforms like RPi5. Achieves 10+ Hz map updates with 270-degree LiDAR scans.
+    \item \textbf{Compute Efficiency} -- Optimized for resource-constrained platforms like RPi5. Achieves 10+ Hz map updates with 360-degree LiDAR scans.
 
-    \item \textbf{Indoor Accuracy} -- Sub-centimeter accuracy in structured indoor environments. Excellent performance with the SICK TiM561's 0.33-degree angular resolution.
+    \item \textbf{Indoor Accuracy} -- Sub-centimeter accuracy in structured indoor environments. Excellent performance with the RPLiDAR C1's 0.72-degree angular resolution.
 
     \item \textbf{Native ROS 2 Support} -- First-class ROS 2 Humble/Jazzy support. Developed specifically for Nav2 integration.
 
@@ -679,7 +654,7 @@ slam_toolbox:
 
     # Resolution and range
     resolution: 0.05          # 5cm per cell (matches Nav2 costmap)
-    max_laser_range: 10.0     # TiM561 max range
+    max_laser_range: 12.0     # RPLiDAR C1 max range
     minimum_travel_distance: 0.3
     minimum_travel_heading: 0.3
 
@@ -1352,7 +1327,7 @@ When battery reaches critical level (5\%), the system initiates a controlled shu
 |   |       |   |-- hardware/
 |   |       |   |   |-- Esp32SpiAdapter.kt
 |   |       |   |   |-- Esp32TcpAdapter.kt
-|   |       |   |   |-- SickLidarAdapter.kt
+|   |       |   |   |-- RplidarAdapter.kt
 |   |       |   |   +-- Ros2Bridge.kt
 |   |       |   +-- model/
 |   |       |       |-- TelemetryData.kt
@@ -1543,10 +1518,10 @@ star:
       timeout-ms: 100
       retry-attempts: 3
   lidar:
-    host: 192.168.0.1
-    port: 2112
-    protocol: COLA-B
-    scan-rate-hz: 15
+    serial-port: /dev/ttyAMA0
+    baud-rate: 460800
+    protocol: SLAMTEC
+    scan-rate-hz: 10
 
 # Actuator endpoints for health checks
 management:
@@ -1603,7 +1578,7 @@ The STAR system follows a strict six-layer architecture spanning from the remote
     % Layer 5: Hardware Abstraction
     \node[layer, fill=orange!20] (hal) at (0,1.8) {
         \textbf{Layer 5: HARDWARE ABSTRACTION (Pi4J + Adapters)}\\
-        Esp32SpiAdapter | Esp32TcpAdapter | SickLidarAdapter | Ros2Bridge
+        Esp32SpiAdapter | Esp32TcpAdapter | RplidarAdapter | Ros2Bridge
     };
 
     % Layer 6: Embedded
@@ -1622,7 +1597,7 @@ The STAR system follows a strict six-layer architecture spanning from the remote
     % Update rates on the right
     \node[right, font=\footnotesize] at (6.8,9) {Variable};
     \node[right, font=\footnotesize] at (6.8,7.2) {100 Hz max};
-    \node[right, font=\footnotesize] at (6.8,5.4) {15 Hz (LiDAR)};
+    \node[right, font=\footnotesize] at (6.8,5.4) {10 Hz (LiDAR)};
     \node[right, font=\footnotesize] at (6.8,3.6) {10-20 Hz};
     \node[right, font=\footnotesize] at (6.8,1.8) {100 Hz};
     \node[right, font=\footnotesize] at (6.8,0) {1000 Hz};
@@ -1638,11 +1613,11 @@ The STAR system follows a strict six-layer architecture spanning from the remote
 
     \item[Layer 2 - Edge (Spring Boot Gateway)] API gateway running on RPi5. Translates between web protocols (GraphQL/gRPC) and robot internals. Manages authentication, rate limiting, and metrics.
 
-    \item[Layer 3 - SLAM/Mapping (ROS 2 SLAM Toolbox)] Processes LiDAR scans to build occupancy grid maps. Handles loop closure detection and map optimization. Updates at LiDAR scan rate (15 Hz).
+    \item[Layer 3 - SLAM/Mapping (ROS 2 SLAM Toolbox)] Processes LiDAR scans to build occupancy grid maps. Handles loop closure detection and map optimization. Updates at LiDAR scan rate (10 Hz).
 
     \item[Layer 4 - Navigation (Nav2)] Path planning and obstacle avoidance. Global planner (A*) runs at 10 Hz, local planner (DWA) runs at 20 Hz. Publishes velocity commands to Layer 5.
 
-    \item[Layer 5 - Hardware Abstraction (Pi4J + Adapters)] Interfaces between ROS 2 and physical hardware. Communicates with ESP32 via SPI (primary) and TCP (fallback). Reads LiDAR via COLA-B protocol.
+    \item[Layer 5 - Hardware Abstraction (Pi4J + Adapters)] Interfaces between ROS 2 and physical hardware. Communicates with ESP32 via SPI (primary) and TCP (fallback). Reads LiDAR via UART (rplidar\_ros2 driver).
 
     \item[Layer 6 - Embedded (ESP32 FreeRTOS)] Real-time motor control at 1 kHz. Runs PID loops, reads encoders, generates PWM signals. Maintains safe operation even if higher layers fail.
 \end{description}
@@ -1686,10 +1661,10 @@ The STAR robot operates with a multi-rate control hierarchy, where each layer ru
     \node[label, left] at (-0.2,3.5) {DWA Planner};
     \node[freq, right] at (12.2,3.5) {20 Hz};
 
-    % 15 Hz LiDAR Scan - every 66.67ms (not visible in 12ms window, show one)
+    % 10 Hz LiDAR Scan - every 100ms (not visible in 12ms window, show one)
     \draw[fill=purple!60] (0,2.2) rectangle (1.0,2.8);
     \node[label, left] at (-0.2,2.5) {LiDAR Scan};
-    \node[freq, right] at (12.2,2.5) {15 Hz};
+    \node[freq, right] at (12.2,2.5) {10 Hz};
 
     % 10 Hz Global Planner - every 100ms (not visible in 12ms window, show one)
     \draw[fill=green!60] (0,1.2) rectangle (1.2,1.8);
@@ -1718,7 +1693,7 @@ Encoder/IMU Sampling & 100 Hz & 10 ms & ESP32 (FreeRTOS) \\
 \hline
 DWA Local Planner & 20 Hz & 50 ms & RPi5 (Nav2) \\
 \hline
-LiDAR Scan Processing & 15 Hz & 66.7 ms & RPi5 (ROS 2) \\
+LiDAR Scan Processing & 10 Hz & 100 ms & RPi5 (ROS 2) \\
 \hline
 Global Path Planner & 10 Hz & 100 ms & RPi5 (Nav2) \\
 \hline
@@ -1737,7 +1712,7 @@ Map Updates & 2 Hz & 500 ms & RPi5 (SLAM Toolbox) \\
 
     \item \textbf{20 Hz DWA} -- Fast enough for obstacle avoidance at max velocity (0.5 m/s = 2.5cm per cycle), slow enough to not overload CPU.
 
-    \item \textbf{15 Hz LiDAR} -- Fixed by TiM561 hardware. Sufficient for indoor navigation at walking speeds.
+    \item \textbf{10 Hz LiDAR} -- Fixed by RPLiDAR C1 hardware. Sufficient for indoor navigation at walking speeds.
 
     \item \textbf{10 Hz Global Planner} -- Path replanning happens infrequently; 10 Hz allows quick re-routing while minimizing CPU load.
 \end{itemize}
@@ -3985,10 +3960,10 @@ This section illustrates the data flow through the STAR robot system for key ope
     arrow/.style={->, thick, >=stealth}
 ]
     % LiDAR
-    \node[box, fill=purple!20] (lidar) {SICK TiM561};
+    \node[box, fill=purple!20] (lidar) {RPLiDAR C1};
 
-    % sick_scan_xd
-    \node[box, fill=blue!20, right=1.5cm of lidar] (driver) {sick\_scan\_xd};
+    % rplidar_ros2
+    \node[box, fill=blue!20, right=1.5cm of lidar] (driver) {rplidar\_ros2};
 
     % /scan topic
     \node[topic, below=0.8cm of driver] (scan) {/scan};
@@ -4006,7 +3981,7 @@ This section illustrates the data flow through the STAR robot system for key ope
     \node[box, fill=orange!20, right=1.5cm of slam] (nav2) {Nav2 Planner};
 
     % Arrows
-    \draw[arrow] (lidar) -- node[above, font=\tiny] {COLA-B\\TCP} (driver);
+    \draw[arrow] (lidar) -- node[above, font=\tiny] {SLAMTEC\\UART} (driver);
     \draw[arrow] (driver) -- (scan);
     \draw[arrow] (scan) -- (slam);
     \draw[arrow] (slam) -- (map);
@@ -4015,7 +3990,7 @@ This section illustrates the data flow through the STAR robot system for key ope
     \draw[arrow] (tf) -- (nav2);
 
     % Frequency annotations
-    \node[font=\tiny, gray, below=0.1cm of lidar] {15 Hz};
+    \node[font=\tiny, gray, below=0.1cm of lidar] {10 Hz};
     \node[font=\tiny, gray, below=0.1cm of slam] {2 Hz map update};
 
 \end{tikzpicture}
@@ -4094,7 +4069,7 @@ This section illustrates the data flow through the STAR robot system for key ope
 
     % Arrows from sources
     \draw[arrow] (esp) -| node[above, font=\tiny, pos=0.3] {SPI} (agg);
-    \draw[arrow] (lidar) -- node[above, font=\tiny] {TCP} (agg);
+    \draw[arrow] (lidar) -- node[above, font=\tiny] {UART} (agg);
     \draw[arrow] (ros) -| node[below, font=\tiny, pos=0.3] {DDS} (agg);
     \draw[arrow] (camera) -| (agg);
 
@@ -4312,7 +4287,7 @@ static_resources:
 \begin{enumerate}
     \item[$\square$] Implement \texttt{Esp32SpiAdapter} (Pi4J SPI communication)
     \item[$\square$] Implement \texttt{Esp32TcpAdapter} (TCP fallback)
-    \item[$\square$] Implement \texttt{SickLidarAdapter} (COLA-B protocol)
+    \item[$\square$] Implement \texttt{RplidarAdapter} (SLAMTEC protocol via rplidar\_ros2)
     \item[$\square$] Implement domain services:
     \begin{enumerate}
         \item[$\square$] \texttt{MotorControlService}
