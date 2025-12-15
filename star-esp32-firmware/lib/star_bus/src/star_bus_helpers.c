@@ -1,4 +1,4 @@
-/* esp32-firmware/components/star_bus/star_bus_helpers.c */
+/* lib/star_bus/src/star_bus_helpers.c */
 
 #include "star_bus_helpers.h"
 

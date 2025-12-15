@@ -1,5 +1,7 @@
 /* lib/star_sensor_mpu6050/src/star_sensor_mpu6050.c */
 
+/* TODO: Add doxygen doc comment for @file */
+
 #include "star_sensor_mpu6050.h"
 
 #include <esp_log.h>

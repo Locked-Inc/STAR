@@ -1,4 +1,4 @@
-/* esp32-firmware/components/star_bus/include/star_bus_uart.h */
+/* lib/star_bus/include/star_bus_uart.h */
 
 #ifndef STAR_BUS_UART_H
 #define STAR_BUS_UART_H

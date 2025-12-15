@@ -1,3 +1,5 @@
+/* lib/star_core/src/star_core.c */
+
 /**
  * @file star_core.c
  * @brief Core module placeholder (interfaces are header-only)

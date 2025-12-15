@@ -1,4 +1,4 @@
-/* esp32-firmware/components/star_bus/star_bus_uart.c */
+/* lib/star_bus/src/star_bus_uart.c */
 
 #include "star_bus_uart.h"
 
@@ -18,7 +18,7 @@ static const char* s_TAG = "STAR_UART";
 /* Default mutex timeout in milliseconds to prevent infinite wait deadlocks */
 static const uint32_t s_uart_mutex_timeout_ms = 5000;
 
-#define MAX_UART_BUSES (3)
+#define MAX_UART_BUSES (3) /* VERIFY: This prob has to be a macro, but verify */
 
 /* --- Types --- */
 
@@ -746,6 +746,7 @@ esp_err_t star_bus_uart_reset_stats(star_bus_manager_t* manager, const char* bus
   return ESP_OK;
 }
 
+/* VERIFY: Should this be using printf, is there any good/valid reason for it */
 void star_bus_uart_print_stats(const char* bus_name, const star_uart_stats_t* stats)
 {
   if (bus_name == NULL || stats == NULL) {

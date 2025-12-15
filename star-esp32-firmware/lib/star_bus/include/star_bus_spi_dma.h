@@ -1,4 +1,4 @@
-/* esp32-firmware/components/star_bus/include/star_bus_spi_dma.h */
+/* lib/star_bus/include/star_bus_spi_dma.h */
 
 #ifndef STAR_BUS_SPI_DMA_H
 #define STAR_BUS_SPI_DMA_H

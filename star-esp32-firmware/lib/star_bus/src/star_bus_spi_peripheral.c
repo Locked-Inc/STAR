@@ -1,4 +1,4 @@
-/* esp32-firmware/components/star_bus/star_bus_spi_peripheral.c */
+/* lib/star_bus/src/star_bus_spi_peripheral.c */
 
 #include "star_bus_spi_peripheral.h"
 
@@ -14,7 +14,7 @@
 
 /* --- Constants --- */
 
-static const char* s_TAG = "BusSPIPeripheral";
+static const char* s_TAG = "BusSPIPeripheral"; /* FIXME: This tag doesn't follow the style of the other tags in this project */
 
 /* --- Private Function Prototypes (Default Ops) --- */
 

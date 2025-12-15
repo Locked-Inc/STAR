@@ -1,4 +1,4 @@
-/* esp32-firmware/components/star_bus/include/star_bus_manager.h */
+/* lib/star_bus/include/star_bus_manager.h */
 
 #ifndef STAR_COMPONENT_BUS_MANAGER_H
 #define STAR_COMPONENT_BUS_MANAGER_H

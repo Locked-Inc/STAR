@@ -1,4 +1,4 @@
-/* esp32-firmware/components/star_bus/star_bus_spi_dma.c */
+/* lib/star_bus/src/star_bus_spi_dma.c */
 
 #include "star_bus_spi_dma.h"
 
@@ -41,7 +41,7 @@ typedef struct {
  * @brief DMA state storage for SPI buses
  * @note ESP32 has SPI2_HOST (HSPI) and SPI3_HOST (VSPI)
  */
-static spi_dma_state_t g_spi_dma_states[3] = {0}; /* SPI1, SPI2, SPI3 */
+static spi_dma_state_t g_spi_dma_states[3] = {0}; /* SPI1, SPI2, SPI3 */ /* FIXME: We shouldnt hard code */
 
 /* --- Helper Functions --- */
 

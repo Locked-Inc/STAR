@@ -1,4 +1,4 @@
-/* esp32-firmware/components/star_bus/include/star_bus_function_types.h */
+/* lib/star_bus/include/star_bus_function_types.h */
 
 #ifndef STAR_COMPONENT_BUS_FUNCTION_TYPES_H
 #define STAR_COMPONENT_BUS_FUNCTION_TYPES_H

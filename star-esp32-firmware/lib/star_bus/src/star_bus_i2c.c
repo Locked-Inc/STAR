@@ -1,4 +1,6 @@
-/* esp32-firmware/components/star_bus/star_bus_i2c.c */
+/* lib/star_bus/src/star_bus_i2c.c */
+
+/* XXX: Remove the weird   `--- CORRECTED ACCESS ---` comments */
 
 #include "star_bus_i2c.h"
 
@@ -14,7 +16,7 @@
 
 /* --- Constants --- */
 
-static const char* s_TAG = "BusI2C";
+static const char* s_TAG = "BusI2C"; /* XXX: This tag style does not match other tags */
 
 /* Use constant instead of macro for type safety */
 static const uint32_t s_i2c_timeout_ms = 1000; /* Default timeout for I2C operations */

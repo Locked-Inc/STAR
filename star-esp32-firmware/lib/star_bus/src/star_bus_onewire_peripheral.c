@@ -1,4 +1,4 @@
-/* esp32-firmware/components/star_bus/star_bus_onewire_peripheral.c */
+/* lib/star_bus/src/star_bus_onewire_peripheral.c */
 
 #include "star_bus_onewire_peripheral.h"
 
@@ -22,7 +22,7 @@ static const char* s_TAG = "STAR_OW_PERIPH";
  * @brief 1-Wire peripheral state
  */
 typedef struct {
-  char                             bus_name[32];
+  char                             bus_name[32]; /* XXX: As stated in other files, this is still hard coded */
   star_onewire_peripheral_config_t config;
   star_onewire_peripheral_stats_t  stats;
   bool                             enabled;
@@ -30,7 +30,7 @@ typedef struct {
   bool                             alarm_active;
 
   /* Response buffer for read operations */
-  uint8_t response_buffer[256];
+  uint8_t response_buffer[256]; /* XXX: This is also hard coded */
   size_t  response_length;
   uint8_t last_function_cmd;
 } peripheral_state_t;

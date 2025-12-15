@@ -1,5 +1,9 @@
 /* lib/star_servo/src/star_servo.c */
 
+/* TODO: Add doxygen doc comment for @file */
+
+/* FIXME: I am unsure if this is using MCPWM like how the `star_motor` is using. We need center aligned PWM for motor/(servo motor) movement */
+
 #include "star_servo.h"
 
 #include "star_servo_constants.h"

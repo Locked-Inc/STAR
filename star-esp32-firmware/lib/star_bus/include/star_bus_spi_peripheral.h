@@ -1,4 +1,4 @@
-/* esp32-firmware/components/star_bus/include/star_bus_spi_peripheral.h */
+/* lib/star_bus/include/star_bus_spi_peripheral.h */
 
 #ifndef STAR_COMPONENT_BUS_SPI_PERIPHERAL_H
 #define STAR_COMPONENT_BUS_SPI_PERIPHERAL_H

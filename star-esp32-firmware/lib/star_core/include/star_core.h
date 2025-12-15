@@ -1,3 +1,15 @@
+/* lib/star_core/include/star_core.h */
+
+#ifndef STAR_CORE_H
+#define STAR_CORE_H
+
+#include "star_error_interface.h"
+#include "star_pin_interface.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @file star_core.h
  * @brief Unified header for star_core interfaces
@@ -133,16 +145,6 @@
  * }
  * @endcode
  */
-
-#ifndef STAR_CORE_H
-#define STAR_CORE_H
-
-#include "star_error_interface.h"
-#include "star_pin_interface.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /**
  * @brief Get the star_core library version
