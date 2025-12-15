@@ -6,11 +6,16 @@
 
 #include "star_bus_config.h"
 
+#include "star_bus_adc.h"
+#include "star_bus_gpio.h"
 #include "star_bus_i2c.h"
 #include "star_bus_spi.h"
 #include "star_bus_spi_peripheral.h"
 /* Include manager types to access manager struct for SPI host tracking */
 #include "driver/spi_slave.h"
+#include "esp_adc/adc_cali.h"
+#include "esp_adc/adc_cali_scheme.h"
+#include "esp_adc/adc_oneshot.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 
@@ -205,6 +210,73 @@ star_bus_config_t* star_bus_config_create_spi_peripheral(const char*       name,
   return config;
 }
 
+star_bus_config_t*
+star_bus_config_create_gpio(const char* name, gpio_num_t* pins, uint8_t pin_count)
+{
+  ESP_RETURN_ON_FALSE(pins, NULL, s_TAG, "Pin array is NULL");
+  ESP_RETURN_ON_FALSE(pin_count > 0, NULL, s_TAG, "Pin count must be > 0");
+
+  star_bus_config_t* config =
+    internal_star_bus_config_create_common(name, k_star_bus_type_gpio);
+  ESP_RETURN_ON_FALSE(config,
+                      NULL,
+                      s_TAG,
+                      "Failed to create common config for %s",
+                      name ? name : "NULL");
+
+  /* Configure GPIO-specific parameters */
+  config->proto.gpio.pins      = pins;
+  config->proto.gpio.pin_count = pin_count;
+  config->proto.gpio.isr_installed = false;
+
+  /* Initialize default GPIO operations */
+  config->proto.gpio.ops = star_bus_gpio_get_default_ops();
+
+  ESP_LOGI(s_TAG,
+           "Created GPIO config '%s' with %d pins",
+           name,
+           pin_count);
+
+  return config;
+}
+
+star_bus_config_t* star_bus_config_create_adc(const char*    name,
+                                               adc_unit_t     unit,
+                                               adc_channel_t  channel,
+                                               adc_bitwidth_t bitwidth,
+                                               adc_atten_t    atten)
+{
+  star_bus_config_t* config = internal_star_bus_config_create_common(name, k_star_bus_type_adc);
+  ESP_RETURN_ON_FALSE(config,
+                      NULL,
+                      s_TAG,
+                      "Failed to create common config for %s",
+                      name ? name : "NULL");
+
+  /* Configure ADC-specific parameters */
+  config->proto.adc.unit_handle = NULL; /* Will be initialized in star_bus_config_init */
+  config->proto.adc.cali_handle = NULL; /* Will be initialized in star_bus_config_init */
+  config->proto.adc.channel     = channel;
+  config->proto.adc.bitwidth    = bitwidth;
+  config->proto.adc.atten       = atten;
+
+  /* Initialize default ADC operations */
+  config->proto.adc.ops = star_bus_adc_get_default_ops();
+
+  ESP_LOGI(s_TAG,
+           "Created ADC config '%s' (Unit: %d, Channel: %d, Bitwidth: %d, Atten: %d)",
+           name,
+           unit,
+           channel,
+           bitwidth,
+           atten);
+
+  /* Store unit in handle temporarily - will be used during init */
+  config->handle = (void*)(intptr_t)unit;
+
+  return config;
+}
+
 esp_err_t star_bus_config_destroy(star_bus_config_t* config)
 {
   ESP_RETURN_ON_FALSE(config, ESP_ERR_INVALID_ARG, s_TAG, "Config pointer is NULL");
@@ -377,6 +449,126 @@ esp_err_t star_bus_config_init(star_bus_config_t* config, star_bus_manager_t* ma
       }
       break;
 
+    case k_star_bus_type_gpio: {
+      /* Initialize GPIO pins */
+      ESP_LOGI(s_TAG, "Initializing GPIO bus '%s' with %d pins", bus_name, config->proto.gpio.pin_count);
+
+      for (uint8_t i = 0; i < config->proto.gpio.pin_count; i++) {
+        gpio_num_t pin = config->proto.gpio.pins[i];
+
+        /* Configure each pin as output with default low level */
+        gpio_config_t io_conf = {
+          .pin_bit_mask = (1ULL << pin),
+          .mode         = GPIO_MODE_INPUT_OUTPUT, /* Allow both input and output */
+          .pull_up_en   = GPIO_PULLUP_DISABLE,
+          .pull_down_en = GPIO_PULLDOWN_DISABLE,
+          .intr_type    = GPIO_INTR_DISABLE,
+        };
+
+        ret = gpio_config(&io_conf);
+        ESP_GOTO_ON_ERROR(ret,
+                          fail,
+                          s_TAG,
+                          "gpio_config failed for pin %d: %s",
+                          pin,
+                          esp_err_to_name(ret));
+      }
+
+      ESP_LOGI(s_TAG, "GPIO bus '%s' initialized successfully", bus_name);
+      break;
+    }
+
+    case k_star_bus_type_adc: {
+      /* Initialize ADC unit */
+      adc_unit_t unit = (adc_unit_t)(intptr_t)config->handle;
+      ESP_LOGI(s_TAG,
+               "Initializing ADC bus '%s' (Unit: %d, Channel: %d)",
+               bus_name,
+               unit,
+               config->proto.adc.channel);
+
+      /* Configure ADC oneshot unit */
+      adc_oneshot_unit_init_cfg_t unit_cfg = {
+        .unit_id  = unit,
+        .ulp_mode = ADC_ULP_MODE_DISABLE,
+      };
+
+      ret = adc_oneshot_new_unit(&unit_cfg, &config->proto.adc.unit_handle);
+      ESP_GOTO_ON_ERROR(ret,
+                        fail,
+                        s_TAG,
+                        "adc_oneshot_new_unit failed for '%s': %s",
+                        bus_name,
+                        esp_err_to_name(ret));
+
+      /* Configure ADC channel */
+      adc_oneshot_chan_cfg_t chan_cfg = {
+        .bitwidth = config->proto.adc.bitwidth,
+        .atten    = config->proto.adc.atten,
+      };
+
+      ret = adc_oneshot_config_channel(config->proto.adc.unit_handle,
+                                        config->proto.adc.channel,
+                                        &chan_cfg);
+      ESP_GOTO_ON_ERROR(ret,
+                        fail_adc_unit,
+                        s_TAG,
+                        "adc_oneshot_config_channel failed for '%s': %s",
+                        bus_name,
+                        esp_err_to_name(ret));
+
+      /* Try to initialize calibration (optional, may fail on some chips) */
+#if ADC_CALI_SCHEME_CURVE_FITTING_SUPPORTED
+      adc_cali_curve_fitting_config_t cali_cfg = {
+        .unit_id  = unit,
+        .chan     = config->proto.adc.channel,
+        .atten    = config->proto.adc.atten,
+        .bitwidth = config->proto.adc.bitwidth,
+      };
+
+      ret = adc_cali_create_scheme_curve_fitting(&cali_cfg, &config->proto.adc.cali_handle);
+      if (ret == ESP_OK) {
+        ESP_LOGI(s_TAG, "ADC calibration (curve fitting) initialized for '%s'", bus_name);
+      } else {
+        ESP_LOGW(s_TAG,
+                 "ADC calibration initialization failed for '%s': %s (continuing without "
+                 "calibration)",
+                 bus_name,
+                 esp_err_to_name(ret));
+        config->proto.adc.cali_handle = NULL;
+      }
+#elif ADC_CALI_SCHEME_LINE_FITTING_SUPPORTED
+      adc_cali_line_fitting_config_t cali_cfg = {
+        .unit_id  = unit,
+        .atten    = config->proto.adc.atten,
+        .bitwidth = config->proto.adc.bitwidth,
+      };
+
+      ret = adc_cali_create_scheme_line_fitting(&cali_cfg, &config->proto.adc.cali_handle);
+      if (ret == ESP_OK) {
+        ESP_LOGI(s_TAG, "ADC calibration (line fitting) initialized for '%s'", bus_name);
+      } else {
+        ESP_LOGW(s_TAG,
+                 "ADC calibration initialization failed for '%s': %s (continuing without "
+                 "calibration)",
+                 bus_name,
+                 esp_err_to_name(ret));
+        config->proto.adc.cali_handle = NULL;
+      }
+#else
+      ESP_LOGW(s_TAG, "ADC calibration not supported on this chip, continuing without calibration");
+      config->proto.adc.cali_handle = NULL;
+#endif
+
+      ESP_LOGI(s_TAG, "ADC bus '%s' initialized successfully", bus_name);
+      break;
+
+    fail_adc_unit:
+      adc_oneshot_del_unit(config->proto.adc.unit_handle);
+      config->proto.adc.unit_handle = NULL;
+      goto fail;
+    }
+
     default:
       ESP_LOGE(s_TAG, "Unsupported bus type for initialization: %d", config->type);
       ret = ESP_ERR_NOT_SUPPORTED;
@@ -448,6 +640,39 @@ esp_err_t star_bus_config_deinit(star_bus_config_t* config)
           ESP_LOGW(s_TAG, "SPI device '%s' handle was already NULL before deinit.", bus_name);
           ret = ESP_OK;
         }
+      }
+      break;
+
+    case k_star_bus_type_gpio:
+      /* GPIO pins don't need explicit deinitialization - they can be reconfigured anytime */
+      ESP_LOGI(s_TAG, "Deinitializing GPIO bus '%s'", bus_name);
+      ret = ESP_OK;
+      break;
+
+    case k_star_bus_type_adc:
+      /* Deinitialize ADC */
+      ESP_LOGI(s_TAG, "Deinitializing ADC bus '%s'", bus_name);
+
+      /* Delete calibration if it was initialized */
+      if (config->proto.adc.cali_handle) {
+#if ADC_CALI_SCHEME_CURVE_FITTING_SUPPORTED
+        ret = adc_cali_delete_scheme_curve_fitting(config->proto.adc.cali_handle);
+#elif ADC_CALI_SCHEME_LINE_FITTING_SUPPORTED
+        ret = adc_cali_delete_scheme_line_fitting(config->proto.adc.cali_handle);
+#endif
+        if (ret != ESP_OK) {
+          ESP_LOGW(s_TAG,
+                   "Failed to delete ADC calibration for '%s': %s",
+                   bus_name,
+                   esp_err_to_name(ret));
+        }
+        config->proto.adc.cali_handle = NULL;
+      }
+
+      /* Delete ADC unit */
+      if (config->proto.adc.unit_handle) {
+        ret = adc_oneshot_del_unit(config->proto.adc.unit_handle);
+        config->proto.adc.unit_handle = NULL;
       }
       break;
 

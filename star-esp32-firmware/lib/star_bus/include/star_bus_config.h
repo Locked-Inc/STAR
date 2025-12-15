@@ -247,6 +247,40 @@ star_bus_config_t* star_bus_config_create_spi_peripheral(const char*       name,
                                                          uint8_t           mode);
 
 /**
+ * @brief Create a GPIO bus configuration.
+ *
+ * Creates a configuration for a GPIO bus to control multiple digital I/O pins.
+ * GPIO bus is used for simple digital control such as multiplexer select lines.
+ *
+ * @param[in] name      Unique name for this GPIO bus (e.g., "mux_gpio"). Must be non-NULL.
+ * @param[in] pins      Array of GPIO pins to control. Must be non-NULL.
+ * @param[in] pin_count Number of pins in the array. Must be > 0.
+ * @return star_bus_config_t* Pointer to the created configuration, or NULL on failure. Must be destroyed via star_bus_config_destroy.
+ */
+star_bus_config_t* star_bus_config_create_gpio(const char* name,
+                                                gpio_num_t* pins,
+                                                uint8_t     pin_count);
+
+/**
+ * @brief Create an ADC bus configuration.
+ *
+ * Creates a configuration for an ADC bus to read analog voltages.
+ * ADC bus is used for reading analog sensor values such as motor current sense lines.
+ *
+ * @param[in] name      Unique name for this ADC bus (e.g., "motor_current"). Must be non-NULL.
+ * @param[in] unit      ADC unit (ADC_UNIT_1 or ADC_UNIT_2).
+ * @param[in] channel   ADC channel to read from.
+ * @param[in] bitwidth  ADC resolution (e.g., ADC_BITWIDTH_12 for 12-bit).
+ * @param[in] atten     ADC attenuation for voltage range (e.g., ADC_ATTEN_DB_11 for 0-3.3V).
+ * @return star_bus_config_t* Pointer to the created configuration, or NULL on failure. Must be destroyed via star_bus_config_destroy.
+ */
+star_bus_config_t* star_bus_config_create_adc(const char*    name,
+                                               adc_unit_t     unit,
+                                               adc_channel_t  channel,
+                                               adc_bitwidth_t bitwidth,
+                                               adc_atten_t    atten);
+
+/**
  * @brief Deinitialize the bus/device associated with this configuration.
  *
  * For I2C: Performs i2c_driver_delete.

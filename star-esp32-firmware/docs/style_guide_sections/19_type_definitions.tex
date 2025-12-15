@@ -1,0 +1,343 @@
+\section{Type Definitions}
+
+This section describes the patterns and conventions for defining custom types in the STAR firmware codebase. Consistent type definition patterns improve code readability and enable better tooling support.
+
+\subsection{Typedef Struct Pattern}
+
+All structures should be defined using the typedef pattern with the \texttt{\_t} suffix.
+
+\subsubsection{Standard Pattern}
+
+\begin{lstlisting}[language=C]
+/* Forward declaration (in header for dependencies) */
+typedef struct star_bus_config  star_bus_config_t;
+typedef struct star_bus_manager star_bus_manager_t;
+
+/* Full definition (in header or implementation) */
+typedef struct star_bus_config {
+    const char*     name;        /**< Unique name for this bus/device instance */
+    star_bus_type_t type;        /**< Type of bus (I2C, SPI, etc.) */
+    bool            initialized; /**< Whether this bus has been initialized */
+    void*           handle;      /**< Driver/device handle */
+    void*           user_ctx;    /**< User context pointer for callbacks */
+
+    /* Protocol-specific configuration (see union section) */
+    union {
+        star_i2c_bus_config_t  i2c;
+        star_spi_bus_config_t  spi;
+        star_gpio_bus_config_t gpio;
+        star_adc_bus_config_t  adc;
+    } proto;
+
+    struct star_bus_config* next; /**< Linked list pointer */
+} star_bus_config_t;
+\end{lstlisting}
+
+\subsubsection{Error Handler Example}
+
+\begin{lstlisting}[language=C]
+/* From star_error_handler.h */
+typedef struct error_handler {
+    uint32_t          error_count;         /**< Total number of errors recorded */
+    uint32_t          max_retries;         /**< Maximum retry attempts allowed */
+    uint32_t          current_retry;       /**< Current retry attempt counter */
+    uint32_t          base_retry_delay;    /**< Base delay between retries (ms) */
+    uint32_t          max_retry_delay;     /**< Maximum retry delay (ms) */
+    uint32_t          current_retry_delay; /**< Current delay with backoff */
+    esp_err_t         last_error;          /**< Last recorded error code */
+    bool              in_error_state;      /**< Whether in error state */
+    void*             reset_context;       /**< Context for reset function */
+    SemaphoreHandle_t mutex;               /**< Mutex for thread-safety */
+
+    esp_err_t (*reset_fn)(void* context);  /**< Optional reset function */
+} error_handler_t;
+\end{lstlisting}
+
+\subsection{Union Usage for Protocol Configurations}
+
+Unions are used to store protocol-specific configurations efficiently. This pattern allows a single configuration structure to support multiple bus types.
+
+\begin{lstlisting}[language=C]
+/* From star_bus_manager_types.h */
+typedef struct star_bus_config {
+    const char*     name;
+    star_bus_type_t type;  /* Discriminator for the union */
+    bool            initialized;
+    void*           handle;
+    void*           user_ctx;
+
+    /* Union holds protocol-specific configuration */
+    union {
+        star_i2c_bus_config_t  i2c;  /**< I2C-specific configuration */
+        star_spi_bus_config_t  spi;  /**< SPI-specific configuration */
+        star_gpio_bus_config_t gpio; /**< GPIO-specific configuration */
+        star_adc_bus_config_t  adc;  /**< ADC-specific configuration */
+    } proto;
+
+    struct star_bus_config* next;
+} star_bus_config_t;
+
+/* Accessing union members based on type discriminator */
+switch (config->type) {
+    case k_star_bus_type_i2c: {
+        i2c_port_t port = config->proto.i2c.port;
+        uint8_t address = config->proto.i2c.address;
+        /* ... */
+        break;
+    }
+    case k_star_bus_type_spi: {
+        spi_host_device_t host = config->proto.spi.host;
+        gpio_num_t copi_pin = config->proto.spi.copi_io_num;
+        /* ... */
+        break;
+    }
+    /* ... other cases ... */
+}
+\end{lstlisting}
+
+\subsubsection{Protocol-Specific Structures}
+
+\begin{lstlisting}[language=C]
+/* I2C bus configuration (from star_bus_protocol_types.h) */
+typedef struct star_i2c_bus_config {
+    i2c_port_t           port;      /**< I2C port number */
+    i2c_config_t         config;    /**< ESP-IDF I2C configuration */
+    uint8_t              address;   /**< 7-bit I2C device address */
+    star_i2c_callbacks_t callbacks; /**< User callbacks */
+    star_i2c_ops_t       ops;       /**< Operation function pointers */
+} star_i2c_bus_config_t;
+
+/* SPI bus configuration */
+typedef struct star_spi_bus_config {
+    spi_host_device_t host;        /**< SPI host number */
+    bool              is_peripheral; /**< True if SPI peripheral mode */
+    spi_bus_config_t  bus_cfg;     /**< ESP-IDF SPI bus config */
+    spi_device_interface_config_t dev_cfg; /**< Device config */
+    star_spi_callbacks_t callbacks;
+    star_spi_ops_t       ops;
+
+    /* Inclusive terminology pin names (see Terminology section) */
+    gpio_num_t copi_io_num;  /**< Controller Out, Peripheral In */
+    gpio_num_t cipo_io_num;  /**< Controller In, Peripheral Out */
+    gpio_num_t sclk_io_num;  /**< Serial Clock */
+    gpio_num_t cs_io_num;    /**< Chip Select */
+    /* ... */
+} star_spi_bus_config_t;
+\end{lstlisting}
+
+\subsection{Callback Function Types}
+
+Callback function pointer types follow a consistent pattern with the \texttt{\_t} suffix.
+
+\begin{lstlisting}[language=C]
+/* From star_bus_common_types.h - Pin registration callback */
+typedef esp_err_t (*pin_registration_function_t)(gpio_num_t  pin_num,
+                                                  const char* bus_name,
+                                                  const char* pin_usage,
+                                                  void*       user_ctx);
+
+/* From star_bus_manager.h - Bus access callback */
+typedef esp_err_t (*star_bus_callback_t)(star_bus_config_t* bus,
+                                          void*              user_ctx);
+
+/* From star_bus_function_types.h - I2C operation callbacks */
+typedef esp_err_t (*star_i2c_write_fn_t)(const star_bus_config_t* config,
+                                          const uint8_t*           data,
+                                          size_t                   len,
+                                          uint8_t                  reg_addr,
+                                          size_t*                  bytes_written);
+
+typedef esp_err_t (*star_i2c_read_fn_t)(const star_bus_config_t* config,
+                                         uint8_t*                 data,
+                                         size_t                   len,
+                                         uint8_t                  reg_addr,
+                                         size_t*                  bytes_read);
+
+/* Event callbacks */
+typedef void (*star_i2c_transfer_complete_cb_t)(const star_bus_event_t* event,
+                                                 void*                   user_ctx);
+
+typedef void (*star_i2c_error_cb_t)(const star_bus_event_t* event,
+                                     esp_err_t               error,
+                                     void*                   user_ctx);
+
+/* Grouping related callbacks in a struct */
+typedef struct star_i2c_callbacks {
+    star_i2c_transfer_complete_cb_t on_transfer_complete;
+    star_i2c_error_cb_t             on_error;
+} star_i2c_callbacks_t;
+\end{lstlisting}
+
+\subsection{Interface Patterns (Dependency Injection)}
+
+Interfaces use structs with function pointers and an opaque context pointer. This pattern enables dependency injection and testability.
+
+\begin{lstlisting}[language=C]
+/* From star_error_interface.h */
+typedef struct star_error_interface {
+    /**
+     * @brief Record an error
+     * @param ctx Implementation context
+     * @param error Error code
+     * @param message Error message
+     * @param file Source file
+     * @param line Line number
+     * @param func Function name
+     * @return ESP_OK on success
+     */
+    esp_err_t (*record_error)(void*       ctx,
+                              esp_err_t   error,
+                              const char* message,
+                              const char* file,
+                              int         line,
+                              const char* func);
+
+    /**
+     * @brief Check if retry is possible
+     * @param ctx Implementation context
+     * @return true if retry is allowed
+     */
+    bool (*can_retry)(void* ctx);
+
+    /**
+     * @brief Reset error state
+     * @param ctx Implementation context
+     * @return ESP_OK on success
+     */
+    esp_err_t (*reset_state)(void* ctx);
+
+    /**
+     * @brief Implementation context (opaque pointer)
+     */
+    void* ctx;
+} star_error_interface_t;
+
+/* From star_pin_interface.h */
+typedef struct star_pin_interface {
+    esp_err_t (*register_pin)(void* ctx, int pin,
+                               const char* description, bool shared);
+    esp_err_t (*unregister_pin)(void* ctx, int pin,
+                                 const char* description);
+    esp_err_t (*validate)(void* ctx);
+    void* ctx;
+} star_pin_interface_t;
+\end{lstlisting}
+
+\subsubsection{Interface Usage Pattern}
+
+\begin{lstlisting}[language=C]
+/* Creating an interface from concrete implementation */
+error_handler_t error_handler;
+error_handler_init(&error_handler, 3, 100, 5000, NULL, NULL);
+
+star_error_interface_t error_iface;
+error_handler_get_interface(&error_iface, &error_handler);
+
+/* Injecting interfaces into components */
+star_bus_manager_t bus_manager;
+star_bus_manager_init(&bus_manager, "main", &error_iface, &pin_iface);
+
+/* Using interface through function pointers */
+if (error_iface.can_retry(error_iface.ctx)) {
+    /* Retry operation */
+}
+
+/* Or using the convenience macro */
+STAR_IFACE_RECORD_ERROR(&error_iface, ESP_ERR_TIMEOUT, "Operation timed out");
+\end{lstlisting}
+
+\subsection{Opaque Handle Patterns}
+
+For complex objects that should not be directly manipulated, use opaque handles.
+
+\begin{lstlisting}[language=C]
+/* Forward declaration creates an opaque type */
+typedef struct star_bus_manager star_bus_manager_t;
+
+/* Public API only uses pointers to the opaque type */
+esp_err_t star_bus_manager_init(star_bus_manager_t* manager, ...);
+esp_err_t star_bus_manager_add_bus(star_bus_manager_t* manager, ...);
+
+/* Full definition is only in the .c file or private header */
+/* Users cannot access internal fields directly */
+
+/* Example usage - users allocate storage but don't access internals */
+star_bus_manager_t bus_manager;  /* Stack allocation */
+star_bus_manager_init(&bus_manager, "main", &error_iface, &pin_iface);
+
+/* Or heap allocation */
+star_bus_manager_t* manager_ptr = malloc(sizeof(star_bus_manager_t));
+star_bus_manager_init(manager_ptr, "main", &error_iface, &pin_iface);
+\end{lstlisting}
+
+\subsection{Operations Structure Pattern}
+
+Group related function pointers in an operations structure for pluggable implementations.
+
+\begin{lstlisting}[language=C]
+/* From star_bus_protocol_types.h */
+typedef struct star_i2c_ops {
+    star_i2c_write_fn_t         write;         /**< Write with register */
+    star_i2c_read_fn_t          read;          /**< Read with register */
+    star_i2c_write_command_fn_t write_command; /**< Write command byte */
+    star_i2c_read_raw_fn_t      read_raw;      /**< Read raw bytes */
+} star_i2c_ops_t;
+
+typedef struct star_spi_ops {
+    star_spi_transmit_fn_t transmit; /**< Transmit only */
+    star_spi_receive_fn_t  receive;  /**< Receive only */
+    star_spi_transfer_fn_t transfer; /**< Full-duplex transfer */
+} star_spi_ops_t;
+
+typedef struct star_gpio_ops {
+    esp_err_t (*write_digital)(const struct star_bus_config* config,
+                               uint8_t pin_index, uint8_t value);
+    esp_err_t (*read_digital)(const struct star_bus_config* config,
+                              uint8_t pin_index, uint8_t* value);
+} star_gpio_ops_t;
+
+/* Initializing default operations */
+void star_bus_i2c_init_default_ops(star_i2c_ops_t* ops)
+{
+    if (ops == NULL) {
+        ESP_LOGE(s_TAG, "Cannot initialize NULL ops pointer");
+        return;
+    }
+    ops->write         = internal_star_bus_i2c_write;
+    ops->read          = internal_star_bus_i2c_read;
+    ops->write_command = internal_star_bus_i2c_write_command;
+    ops->read_raw      = internal_star_bus_i2c_read_raw;
+}
+\end{lstlisting}
+
+\subsection{Manager Structure Pattern}
+
+Manager structures coordinate multiple resources with thread-safe access.
+
+\begin{lstlisting}[language=C]
+/* From star_bus_manager_types.h */
+typedef struct star_bus_manager {
+    star_bus_config_t*      buses;       /**< Linked list of bus configs */
+    SemaphoreHandle_t       mutex;       /**< Mutex for thread-safety */
+    const char*             tag;         /**< Logging tag */
+    star_error_interface_t* error_iface; /**< Injected error handler */
+    star_pin_interface_t*   pin_iface;   /**< Injected pin validator */
+
+    /* Resource tracking */
+    bool spi_host_initialized[SPI_HOST_MAX];
+    int  spi_device_count[SPI_HOST_MAX];
+} star_bus_manager_t;
+\end{lstlisting}
+
+\subsection{Best Practices}
+
+\begin{itemize}
+    \item \textbf{Always use \texttt{\_t} suffix}: Makes types easily distinguishable from variables.
+    \item \textbf{Use forward declarations}: Minimize header dependencies and compilation time.
+    \item \textbf{Document all fields}: Use Doxygen comments for struct members.
+    \item \textbf{Keep unions discriminated}: Always pair unions with a type field.
+    \item \textbf{Prefer static const over \#define}: For typed constants within structures.
+    \item \textbf{Use opaque types for encapsulation}: Hide implementation details from users.
+    \item \textbf{Group related function pointers}: Use ops structs for pluggable implementations.
+\end{itemize}
+
