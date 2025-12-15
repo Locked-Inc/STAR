@@ -1,4 +1,6 @@
-/* esp32-firmware/components/star_bus/star_bus_config.c */
+/* lib/star_bus/src/star_bus_config.c */a
+
+/* XXX: Why does this have explicit things like DHT22 methods ?? */
 
 #include "star_bus_config.h"
 
@@ -22,7 +24,7 @@
 
 /* --- Constants --- */
 
-static const char* s_TAG = "BusConfig";
+static const char* s_TAG = "BusConfig"; /* FIXME: fix style */
 
 /* --- Private Function Prototypes --- */
 

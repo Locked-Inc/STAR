@@ -1,4 +1,4 @@
-/* esp32-firmware/components/star_bus/include/star_bus_i2c.h */
+/* lib/star_bus/include/star_bus_i2c.h */
 
 #ifndef STAR_COMPONENT_BUS_I2C_H
 #define STAR_COMPONENT_BUS_I2C_H

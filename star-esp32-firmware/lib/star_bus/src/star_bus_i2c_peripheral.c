@@ -1,4 +1,4 @@
-/* esp32-firmware/components/star_bus/star_bus_i2c_peripheral.c */
+/* lib/star_bus/src/star_bus_i2c_peripheral.c */
 
 #include "star_bus_i2c_peripheral.h"
 
@@ -22,7 +22,7 @@ static const char* s_TAG = "STAR_I2C_PERIPH";
  * @brief I2C peripheral state
  */
 typedef struct {
-  char                         bus_name[32];
+  char                         bus_name[32]; /* XXX: hard coded occurs here too ! */
   star_i2c_peripheral_config_t config;
   star_i2c_peripheral_stats_t  stats;
   bool                         enabled;

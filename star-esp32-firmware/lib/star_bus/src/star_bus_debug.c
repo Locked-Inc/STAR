@@ -1,4 +1,4 @@
-/* esp32-firmware/components/star_bus/star_bus_debug.c */
+/* lib/star_bus/src/star_bus_debug.c */
 
 #include "star_bus_debug.h"
 
@@ -12,7 +12,7 @@
 #include "star_bus_i2c.h"
 #include "star_bus_types.h"
 
-static const char* s_TAG = "star_bus_debug";
+static const char* s_TAG = "star_bus_debug"; /* FIXME: Fix the style of this tag */
 
 /* --- I2C Bus Scanning --- */
 

@@ -1,4 +1,6 @@
-/* esp32-firmware/components/star_error_handler/star_error_handler.c */
+/* lib/star_error_handler/src/star_error_handler.c */
+
+/* TODO: Add doxygen doc comment for @file */
 
 #include "star_error_handler.h"
 
@@ -9,7 +11,7 @@
 
 #include "esp_log.h"
 
-#define TAG ("STAR ERROR HANDLER")
+#define TAG ("STAR ERROR HANDLER") /* FIXME: This should not be a macro */
 
 /* Default mutex timeout in milliseconds to prevent infinite wait deadlocks */
 static const uint32_t s_error_handler_mutex_timeout_ms = 5000;

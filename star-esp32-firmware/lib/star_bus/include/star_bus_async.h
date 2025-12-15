@@ -1,4 +1,4 @@
-/* esp32-firmware/components/star_bus/include/star_bus_async.h */
+/* lib/star_bus/include/star_bus_async.h */
 
 #ifndef STAR_BUS_ASYNC_H
 #define STAR_BUS_ASYNC_H

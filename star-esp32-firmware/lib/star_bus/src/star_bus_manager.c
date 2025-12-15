@@ -1,4 +1,4 @@
-/* esp32-firmware/components/star_bus/star_bus_manager.c */
+/* lib/star_bus/src/star_bus_manager.c */
 
 #include "star_bus_manager.h"
 
@@ -16,7 +16,7 @@
 
 /* --- Constants --- */
 
-static const char* s_TAG = "Bus Manager";
+static const char* s_TAG = "Bus Manager"; /* FIXME: This doesnt follow the style for the tag like all other files use */
 
 /* --- Pin Registration Helpers --- */
 

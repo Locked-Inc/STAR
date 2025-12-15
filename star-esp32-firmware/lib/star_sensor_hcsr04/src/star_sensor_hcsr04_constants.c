@@ -1,5 +1,10 @@
 /* lib/star_sensor_hcsr04/src/star_sensor_hcsr04_constants.c */
 
+/* TODO: Add doxygen doc comment for @file */
+/* FIXME: I don't like the idea of these hard coded values, I mean if these are defaults then thats
+ * fine, but if we cannot overwite these (and I dont want to use macros, I do want variables) then
+ * we need to update the code to allow for that */
+
 #include "star_sensor_hcsr04_constants.h"
 
 /* Define the actual constants */

@@ -1,4 +1,4 @@
-/* esp32-firmware/components/star_bus/include/star_bus_batch.h */
+/* lib/star_bus/include/star_bus_batch.h */
 
 #ifndef STAR_BUS_BATCH_H
 #define STAR_BUS_BATCH_H
