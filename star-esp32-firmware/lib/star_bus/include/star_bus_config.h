@@ -108,33 +108,6 @@ extern "C" {
  * star_bus_manager_add_bus(&bus_manager, slave_bus);
  *
  *
- * // === Creating GPIO Bus Configuration ===
- *
- * // Create GPIO bus for sensor pins
- * gpio_num_t sensor_pins[] = {GPIO_NUM_4, GPIO_NUM_5, GPIO_NUM_18};
- * star_bus_config_t* gpio_bus = star_bus_config_create_gpio(
- *     "sensor_gpio",       // Unique bus name
- *     sensor_pins,         // Array of GPIO pins
- *     3                    // Number of pins
- * );
- *
- * star_bus_manager_add_bus(&bus_manager, gpio_bus);
- *
- *
- * // === Creating DHT22 Bus Configuration ===
- *
- * // Create DHT22 temperature/humidity sensor bus
- * star_bus_config_t* dht_bus = star_bus_config_create_dht22(
- *     "dht22_indoor",          // Unique bus name
- *     GPIO_NUM_4,              // Data pin
- *     k_star_dht22_model_dht22, // Sensor model
- *     18,                      // Start signal low duration (ms)
- *     100                      // Read timeout (ms)
- * );
- *
- * star_bus_manager_add_bus(&bus_manager, dht_bus);
- *
- *
  * // === Manual Initialization (Advanced) ===
  *
  * // If not using bus manager, you can manually init/deinit
@@ -284,47 +257,6 @@ star_bus_config_t* star_bus_config_create_spi_peripheral(const char*       name,
  * @return esp_err_t ESP_OK on success, ESP_ERR_INVALID_ARG if config is NULL, ESP_ERR_INVALID_STATE if not initialized, or an error code from the underlying driver deinitialization.
  */
 esp_err_t star_bus_config_deinit(star_bus_config_t* config);
-
-/**
- * @brief Create a new GPIO bus configuration.
- *
- * Configures parameters for GPIO pin control as a logical "bus".
- * Useful for sensors that use direct GPIO control (e.g., HC-SR04 ultrasonic sensor).
- * The GPIO pins will be configured when star_bus_config_init is called.
- *
- * The pins array is copied internally using dynamic allocation, so the caller's
- * array does not need to persist after this call.
- *
- * @param[in] name      Unique name for this GPIO bus instance (e.g., "HCSR04_GPIO"). Must be non-NULL.
- * @param[in] pins      Array of GPIO pin numbers to manage. Must be non-NULL.
- * @param[in] pin_count Number of pins in the array (must be >= 1).
- * @return star_bus_config_t* Pointer to the created configuration, or NULL on failure. Must be destroyed via star_bus_config_destroy.
- */
-star_bus_config_t*
-star_bus_config_create_gpio(const char* name, const gpio_num_t pins[], uint8_t pin_count);
-
-/**
- * @brief Create a new DHT22 bus configuration.
- *
- * Configures parameters for a DHT22/DHT11/AM2301 temperature and humidity sensor
- * using a proprietary single-wire protocol. This protocol is NOT compatible with
- * Dallas 1-Wire protocol.
- *
- * The DHT22 sensor requires minimum 2 seconds between readings. The driver
- * automatically caches readings and returns cached data if called more frequently.
- *
- * @param[in] name           Unique name for this DHT22 bus instance (e.g., "dht22_indoor"). Must be non-NULL.
- * @param[in] gpio_pin       GPIO pin number for the data line.
- * @param[in] model          Sensor model (k_star_dht22_model_dht22, k_star_dht22_model_dht11, or k_star_dht22_model_am2301).
- * @param[in] start_low_ms   Start signal low duration in milliseconds (18ms typical for DHT22, 20ms for DHT11).
- * @param[in] read_timeout_ms Read timeout in milliseconds (100ms default).
- * @return star_bus_config_t* Pointer to the created configuration, or NULL on failure. Must be destroyed via star_bus_config_destroy.
- */
-star_bus_config_t* star_bus_config_create_dht22(const char*        name,
-                                                gpio_num_t         gpio_pin,
-                                                star_dht22_model_t model,
-                                                uint32_t           start_low_ms,
-                                                uint32_t           read_timeout_ms);
 
 #ifdef __cplusplus
 }
