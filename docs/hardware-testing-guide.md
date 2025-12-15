@@ -385,7 +385,7 @@ Once all hardware tests pass:
 - **Pin 8 (GPIO 14)**: UART TX
 - **Pin 10 (GPIO 15)**: UART RX
 - **Pin 3 (GPIO 2), Pin 5 (GPIO 3)**: I2C SDA/SCL
-- **Pin 19, 21, 23**: SPI MOSI, MISO, SCLK
+- **Pin 19, 21, 23**: SPI COPI, CIPO, SCLK
 - **Remaining pins**: General GPIO (see pinout.xyz for full details)
 
 ### For ESP32 Connection

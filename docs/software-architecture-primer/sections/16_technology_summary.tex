@@ -1,0 +1,45 @@
+\section{Technology Summary}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabularx}{\textwidth}{|l|l|X|}
+\hline
+\textbf{Layer} & \textbf{Technology} & \textbf{Purpose} \\
+\hline
+\multicolumn{3}{|c|}{\textbf{Frontend (PWA)}} \\
+\hline
+UI Framework & Vue 3 + TypeScript + Vite 6 & Reactive UI with Composition API \\
+PWA & Workbox 7 + Vite PWA & Offline capability, installability \\
+GraphQL Client & Vue Apollo 4 + Apollo Client & Data fetching, caching, subscriptions \\
+gRPC Client & grpc-web 0.15 & Low-latency motor commands \\
+Offline Storage & IndexedDB (idb 8) & Full telemetry history offline \\
+Styling & Tailwind CSS 4 & Utility-first responsive design \\
+\hline
+\multicolumn{3}{|c|}{\textbf{Backend (Gateway)}} \\
+\hline
+Framework & Spring Boot 3.2 & Production-ready JVM framework \\
+Language & Kotlin 1.9 & Modern JVM language with coroutines \\
+GraphQL Server & Spring GraphQL & Queries, mutations, subscriptions \\
+gRPC Server & grpc-spring-boot-starter 3.1 & Binary RPC for motor control \\
+Hardware Access & Pi4J 2.6+ (GpioD) & SPI/GPIO access on RPi5 RP1 chip \\
+Metrics & Micrometer + Prometheus & Health monitoring, observability \\
+\hline
+\multicolumn{3}{|c|}{\textbf{Infrastructure}} \\
+\hline
+Proxy & Envoy 1.29 & gRPC-Web to gRPC translation \\
+Service Discovery & Avahi (mDNS) & Zero-config \texttt{star-robot.local} \\
+Process Manager & systemd & Service lifecycle, auto-restart \\
+OS & Buildroot 2025.02 LTS & Minimal Linux for RPi5 \\
+\hline
+\multicolumn{3}{|c|}{\textbf{Firmware (ESP32)}} \\
+\hline
+Framework & ESP-IDF 5.x & Official Espressif SDK \\
+RTOS & FreeRTOS & Real-time task scheduling \\
+Communication & SPI + TCP/WiFi & Dual-channel redundancy \\
+Architecture & STAR Firmware (DIP) & Modular, testable embedded code \\
+\hline
+\end{tabularx}
+\caption{Complete Technology Stack}
+\end{table}
+

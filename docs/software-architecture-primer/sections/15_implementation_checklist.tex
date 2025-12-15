@@ -1,0 +1,82 @@
+\section{Implementation Checklist}
+
+\subsection{Phase 1: Infrastructure Setup}
+
+\begin{enumerate}
+    \item[$\square$] Create \texttt{star-gateway/} Spring Boot project structure
+    \item[$\square$] Create \texttt{proto/} shared protobuf definitions
+    \item[$\square$] Set up Gradle build with gRPC + GraphQL plugins
+    \item[$\square$] Add Envoy to Buildroot configuration
+    \item[$\square$] Configure development environment (IDE, linting, testing)
+\end{enumerate}
+
+\subsection{Phase 2: Backend Core}
+
+\begin{enumerate}
+    \item[$\square$] Implement \texttt{Esp32SpiAdapter} (Pi4J SPI communication)
+    \item[$\square$] Implement \texttt{Esp32TcpAdapter} (TCP fallback)
+    \item[$\square$] Implement \texttt{RplidarAdapter} (SLAMTEC protocol via rplidar\_ros2)
+    \item[$\square$] Implement domain services:
+    \begin{enumerate}
+        \item[$\square$] \texttt{MotorControlService}
+        \item[$\square$] \texttt{TelemetryService}
+        \item[$\square$] \texttt{NavigationService}
+        \item[$\square$] \texttt{SensorFusionService}
+    \end{enumerate}
+    \item[$\square$] Implement GraphQL controllers and schema
+    \item[$\square$] Implement gRPC service for motor control
+    \item[$\square$] Add Prometheus metrics and health endpoints
+    \item[$\square$] Write unit tests for all services
+\end{enumerate}
+
+\subsection{Phase 3: Frontend PWA}
+
+\begin{enumerate}
+    \item[$\square$] Copy UI-Demo to \texttt{star-ui/}
+    \item[$\square$] Add PWA dependencies and Vite PWA plugin
+    \item[$\square$] Create Apollo Client with offline persistence
+    \item[$\square$] Create gRPC-Web client with proto compilation
+    \item[$\square$] Replace \texttt{useMockData} hook with \texttt{useRobotConnection}
+    \item[$\square$] Implement IndexedDB storage layer
+    \item[$\square$] Create service worker with Workbox
+    \item[$\square$] Add offline UI indicators
+    \item[$\square$] Test PWA installation and offline mode
+\end{enumerate}
+
+\subsection{Phase 4: ESP32 Updates}
+
+\begin{enumerate}
+    \item[$\square$] Create \texttt{star\_module\_tcp} library
+    \item[$\square$] Implement TCP server with JSON parsing
+    \item[$\square$] Add SPI peripheral command handler (if not present)
+    \item[$\square$] Define binary command protocol
+    \item[$\square$] Integrate TCP server into \texttt{main.c}
+    \item[$\square$] Test SPI + TCP redundancy
+\end{enumerate}
+
+\subsection{Phase 5: Deployment}
+
+\begin{enumerate}
+    \item[$\square$] Create systemd service file
+    \item[$\square$] Create Avahi mDNS service file
+    \item[$\square$] Configure Envoy proxy
+    \item[$\square$] Update Buildroot to include:
+    \begin{enumerate}
+        \item[$\square$] OpenJDK 17
+        \item[$\square$] Envoy proxy
+        \item[$\square$] Gateway JAR
+    \end{enumerate}
+    \item[$\square$] Create deployment scripts
+    \item[$\square$] Integration testing on hardware
+\end{enumerate}
+
+\subsection{Phase 6: Documentation}
+
+\begin{enumerate}
+    \item[$\square$] Update \texttt{GEMINI.md} with new architecture
+    \item[$\square$] Create API documentation (GraphQL schema + gRPC)
+    \item[$\square$] Update hardware testing guide
+    \item[$\square$] Create troubleshooting guide
+    \item[$\square$] Document deployment procedures
+\end{enumerate}
+
