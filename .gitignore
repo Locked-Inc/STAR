@@ -76,3 +76,29 @@ env.bak/
 venv.bak/
 
 settings.local.json
+
+# LaTeX auxiliary files
+*.aux
+*.lof
+*.lot
+*.fls
+*.out
+*.toc
+*.fmt
+*.fot
+*.cb
+*.cb2
+.*.lb
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+*.fdb_latexmk
+*.synctex
+*.synctex(busy)
+*.synctex.gz
+*.synctex.gz(busy)
+*.pdfsync
+*.nav
+*.snm
+*.vrb
