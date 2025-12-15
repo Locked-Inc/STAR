@@ -5,7 +5,6 @@ idf_component_register(
         "src/star_bus_i2c_dma.c"
         "src/star_bus_manager.c"
         "src/star_bus_onewire.c"
-        "src/star_bus_onewire_peripheral.c"
         "src/star_bus_smbus.c"
         "src/star_bus_spi.c"
         "src/star_bus_spi_dma.c"
