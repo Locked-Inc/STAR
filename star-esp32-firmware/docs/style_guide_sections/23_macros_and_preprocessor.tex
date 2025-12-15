@@ -1,0 +1,177 @@
+\section{Macros and Preprocessor Directives}
+
+\subsection{Prefer Alternatives to Macros}
+
+\textbf{Rule:} Avoid macros unless absolutely necessary. Use modern C alternatives:
+
+\begin{itemize}
+    \item \texttt{static const} for constants
+    \item \texttt{inline} functions for simple operations
+    \item \texttt{enum} for related constants
+\end{itemize}
+
+\textbf{Rationale:} Macros lack type safety, scope control, and debugger visibility.
+
+\textbf{Good:}
+\begin{verbatim}
+static const uint32_t k_max_buffer_size = 256;
+static const float k_pi = 3.14159f;
+
+static inline int max(int a, int b) {
+    return (a > b) ? a : b;
+}
+\end{verbatim}
+
+\textbf{Bad:}
+\begin{verbatim}
+#define MAX_BUFFER_SIZE 256
+#define PI 3.14159
+#define MAX(a,b) ((a) > (b) ? (a) : (b))
+\end{verbatim}
+
+\subsection{When Macros Are Necessary}
+
+Use macros only for:
+
+\begin{enumerate}
+    \item Array sizes (compile-time constants)
+    \item Conditional compilation (\texttt{\#ifdef}, \texttt{\#if})
+    \item Token pasting and stringification
+    \item Platform-specific code paths
+\end{enumerate}
+
+\subsection{Macro Safety Rules}
+
+\subsubsection{Wrap Statement-Like Macros in \texttt{do-while(0)}}
+
+\textbf{Rule:} Always wrap multi-statement macros in \texttt{do \{ ... \} while(0)}.
+
+\textbf{Why:} Prevents bugs when used in if-statements without braces.
+
+\textbf{Correct:}
+\begin{verbatim}
+#define LOG_ERROR(msg)          \
+    do {                        \
+        log_timestamp();        \
+        log_message(msg);       \
+    } while (0)
+\end{verbatim}
+
+\textbf{Incorrect (causes bugs):}
+\begin{verbatim}
+#define LOG_ERROR(msg)          \
+    log_timestamp();            \
+    log_message(msg)
+
+/* Bug example: */
+if (error)
+    LOG_ERROR("fail");  /* Only log_timestamp() is conditional! */
+else
+    handle_success();
+\end{verbatim}
+
+\subsubsection{Parenthesize All Macro Arguments}
+
+\textbf{Rule:} Wrap all argument uses and the entire expression in parentheses.
+
+\textbf{Correct:}
+\begin{verbatim}
+#define SQUARE(x) ((x) * (x))
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+\end{verbatim}
+
+\textbf{Incorrect (causes bugs):}
+\begin{verbatim}
+#define SQUARE(x) x * x
+
+int result = SQUARE(2 + 3);  /* Expands to: 2 + 3 * 2 + 3 = 11, not 25! */
+\end{verbatim}
+
+\subsubsection{Beware of Side Effects and Multiple Evaluation}
+
+\textbf{Rule:} Document if macro arguments are evaluated multiple times. Never pass arguments with side effects.
+
+\textbf{Dangerous:}
+\begin{verbatim}
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+
+int i = 5;
+int result = MAX(i++, 10);  /* i is incremented TWICE! */
+\end{verbatim}
+
+\textbf{Solution:} Use inline functions or add warning comment:
+\begin{verbatim}
+/* WARNING: Arguments evaluated multiple times - no side effects! */
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+\end{verbatim}
+
+\subsection{Multi-line Macro Formatting}
+
+\textbf{Rules:}
+\begin{itemize}
+    \item Use backslash continuation aligned consistently
+    \item Indent continuation lines for readability
+    \item Place opening brace on same line as \texttt{do}
+\end{itemize}
+
+\textbf{Example:}
+\begin{verbatim}
+#define RECORD_ERROR(handler, code, desc)                \
+    do {                                                 \
+        if ((handler)->error_iface != NULL) {            \
+            (handler)->error_iface->record_error(        \
+                (code),                                  \
+                (desc),                                  \
+                __FILE__,                                \
+                __LINE__                                 \
+            );                                           \
+        }                                                \
+    } while (0)
+\end{verbatim}
+
+\subsection{Naming Conventions}
+
+\textbf{Rule:} Use \texttt{SCREAMING\_SNAKE\_CASE} for all macros.
+
+\textbf{Examples:}
+\begin{verbatim}
+#define MAX_RETRY_COUNT 3
+#define MOTOR_PWM_FREQ_HZ 20000
+#define LOG_ERROR(msg) ...
+\end{verbatim}
+
+\subsection{Include Guards}
+
+Use traditional include guards for maximum portability:
+
+\begin{verbatim}
+#ifndef STAR_COMPONENT_FILENAME_H
+#define STAR_COMPONENT_FILENAME_H
+
+/* File contents */
+
+#endif /* STAR_COMPONENT_FILENAME_H */
+\end{verbatim}
+
+Do not use \texttt{\#pragma once} (see Section 12 for details).
+
+\subsection{Conditional Compilation}
+
+\textbf{Best Practices:}
+\begin{itemize}
+    \item Document why conditionals exist
+    \item Keep conditional blocks small
+    \item Use configuration headers instead of scattered \texttt{\#ifdef}
+\end{itemize}
+
+\textbf{Good:}
+\begin{verbatim}
+/* Platform-specific GPIO initialization */
+#if defined(CONFIG_STAR_BOARD_ESP32_S3)
+    configure_esp32s3_gpio();
+#elif defined(CONFIG_STAR_BOARD_ESP32_WROOM)
+    configure_esp32_wroom_gpio();
+#else
+    #error "Unsupported board configuration"
+#endif
+\end{verbatim}

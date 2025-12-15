@@ -26,7 +26,7 @@ Note: ESP-IDF APIs still use legacy terminology internally (e.g., `I2C_MODE_SLAV
 
 **STAR Firmware** - Sensor and Actuator Abstraction Runtime for ESP32-IDF
 
-A modular, production-ready embedded firmware framework for ESP32 implementing Dependency Inversion Principle (DIP) for loose coupling, testability, and maintainability. The framework provides unified bus abstraction (I2C, SPI, UART, OneWire, SMBus) and comprehensive sensor/actuator drivers.
+A modular, production-ready embedded firmware framework for ESP32 implementing Dependency Inversion Principle (DIP) for loose coupling, testability, and maintainability. The framework provides unified bus abstraction (I2C, SPI, UART, GPIO, ADC, OneWire) and specialized motor control components including motor drivers, encoders, PID controllers, and temperature monitoring.
 
 ## Build Commands
 
@@ -483,26 +483,33 @@ All bus operations are mutex-protected with configurable timeouts. The default m
 
 **Important:** Use `star_bus_manager_with_bus()` instead of `star_bus_manager_find_bus()` to avoid race conditions where another thread removes a bus while you're using it.
 
-### Sensor Drivers (`lib/star_sensor_*/`)
+### Motor Control Components
 
-Each sensor driver follows a consistent pattern:
-- Takes `star_bus_manager_t*` and bus name during initialization
-- Uses the bus manager to perform all communication
-- Returns structured data via driver-specific data types
+The motor control libraries follow a consistent pattern:
+- **star_motor**: Low-level MCPWM-based motor control (no bus dependency)
+- **star_drv8243**: Integration layer using bus manager for ADC/GPIO
+- **star_encoder**: Position feedback using PCNT peripheral (no bus dependency)
+- **star_pid**: Stateless PID algorithm (no dependencies)
 
-Example driver structure:
+Example motor driver structure:
 ```c
-// Initialize sensor
-mpu6050_handle_t imu;
-mpu6050_config_t config = {
+// Initialize DRV8243 motor driver
+star_drv8243_handle_t motor_driver;
+star_drv8243_config_t config = {
     .bus_manager = &bus_manager,
-    .bus_name = "imu_bus"
+    .gpio_bus_name = "gpio_bus",
+    .adc_bus_name = "adc_bus",
+    .pin_pwm_ph = GPIO_NUM_25,
+    .pin_pwm_en = GPIO_NUM_26,
+    .pin_ipropi = ADC_CHANNEL_6,
+    .pin_nfault = GPIO_NUM_35,
+    .pwm_freq_hz = 20000,
+    .current_limit_ma = 2000,
 };
-star_sensor_mpu6050_init(&imu, &config);
+star_drv8243_init(&motor_driver, &config);
 
-// Read data
-mpu6050_data_t data;
-star_sensor_mpu6050_read(&imu, &data);
+// Control motor
+star_drv8243_set_speed(&motor_driver, 50.0f);
 ```
 
 ## Code Style (from styleguide.txt)
@@ -551,20 +558,23 @@ star_sensor_mpu6050_read(&imu, &data);
 
 ```
 lib/
-├── star_core/           # Abstract interfaces (DIP foundation)
-├── star_error_handler/  # Error handling with retry logic
-├── star_pin_validator/  # GPIO conflict detection
-├── star_bus/            # Unified bus abstraction
-├── star_sensor_*/       # Sensor drivers (MPU6050, HCSR04, PCA9685, BNO055_BMP280, etc.)
-├── star_module_*/       # Communication modules
-└── star_bms_bq7850/     # Battery management system
+├── star_core/              # Abstract interfaces (DIP foundation)
+├── star_error_handler/     # Error handling with retry logic
+├── star_pin_validator/     # GPIO conflict detection
+├── star_bus/               # Unified bus abstraction (I2C, SPI, UART, GPIO, ADC, OneWire)
+├── star_motor/             # Brushed DC motor control (MCPWM-based)
+├── star_drv8243/           # DRV8243 H-bridge motor driver integration
+├── star_encoder/           # Quadrature encoder driver (PCNT-based)
+├── star_pid/               # PID controller for closed-loop control
+├── star_sensor_ds18b20/    # DS18B20 temperature sensor (1-Wire)
+└── star_bms_bq7850/        # BQ7850 battery management system
 
 src/
-└── main.c               # Application entry point
+└── main.c                  # Application entry point
 
 partitions/
-├── partitions_4mb.csv   # ESP32-WROOM partition table
-└── partitions_16mb.csv  # ESP32-S3 partition table
+├── partitions_4mb.csv      # ESP32-WROOM partition table
+└── partitions_16mb.csv     # ESP32-S3 partition table
 ```
 
 ## Library Structure
@@ -596,9 +606,9 @@ lib/star_component/
 
 ## Common Patterns
 
-### Initialize Bus Manager with DIP
+### Initialize Bus Manager for Motor Control
 ```c
-// 1. Create error handler
+// 1. Create error handler (optional)
 error_handler_t error_handler;
 error_handler_init(&error_handler, 3, 100, 5000, NULL, NULL);
 
@@ -612,48 +622,86 @@ pin_validator_get_interface(&pin_iface);
 star_bus_manager_t bus_manager;
 star_bus_manager_init(&bus_manager, "main", &error_iface, &pin_iface);
 
-// 4. Create and add bus
-star_bus_config_t* i2c_bus = star_bus_config_create_i2c(
-    "sensor_bus", I2C_NUM_0, 0x68, GPIO_NUM_21, GPIO_NUM_22, 400000);
-star_bus_manager_add_bus(&bus_manager, i2c_bus);
+// 4. Create buses for motor control
+star_bus_config_t* gpio_bus = star_bus_config_create_gpio("gpio_bus");
+star_bus_config_t* adc_bus = star_bus_config_create_adc(
+    "adc_bus", ADC_UNIT_1, ADC_CHANNEL_6, ADC_BITWIDTH_12, ADC_ATTEN_DB_12);
+
+star_bus_manager_add_bus(&bus_manager, gpio_bus);
+star_bus_manager_add_bus(&bus_manager, adc_bus);
 ```
 
-### Add a Sensor Driver
+### Initialize Motor Driver with Closed-Loop Control
 ```c
-// Initialize sensor with bus manager reference
-mpu6050_handle_t imu;
-mpu6050_config_t cfg = {
+// 1. Initialize motor driver
+star_drv8243_handle_t motor;
+star_drv8243_config_t motor_cfg = {
     .bus_manager = &bus_manager,
-    .bus_name = "sensor_bus"
+    .gpio_bus_name = "gpio_bus",
+    .adc_bus_name = "adc_bus",
+    .pin_pwm_ph = GPIO_NUM_25,
+    .pin_pwm_en = GPIO_NUM_26,
+    .pin_ipropi = ADC_CHANNEL_6,
+    .pin_nfault = GPIO_NUM_35,
+    .pwm_freq_hz = 20000,
+    .current_limit_ma = 2000,
 };
-star_sensor_mpu6050_init(&imu, &cfg);
+star_drv8243_init(&motor, &motor_cfg);
 
-// Read sensor
-mpu6050_data_t data;
-star_sensor_mpu6050_read(&imu, &data);
+// 2. Initialize encoder
+star_encoder_handle_t encoder;
+star_encoder_config_t enc_cfg = {
+    .pin_a = GPIO_NUM_32,
+    .pin_b = GPIO_NUM_33,
+    .filter_value = 1000,
+    .high_limit = 10000,
+    .low_limit = -10000,
+};
+star_encoder_init(&encoder, &enc_cfg);
+
+// 3. Initialize PID
+star_pid_handle_t pid;
+star_pid_config_t pid_cfg = {
+    .kp = 1.0f, .ki = 0.5f, .kd = 0.1f,
+    .output_min = -100.0f, .output_max = 100.0f,
+};
+star_pid_init(&pid, &pid_cfg);
+
+// 4. Control loop
+float setpoint = 100.0f;  // Target RPM
+float velocity_rpm;
+star_encoder_get_velocity_rpm(&encoder, 10.0f, 500, &velocity_rpm);
+
+float output;
+star_pid_compute(&pid, setpoint, velocity_rpm, 0.01f, &output);
+star_drv8243_set_speed(&motor, output);
 ```
 
 ## Adding New Components
 
-### Adding a Sensor Driver
+### Adding a Motor Control Component
 
 1. Create library structure:
    ```
-   lib/star_sensor_newsensor/
-   ├── include/star_sensor_newsensor.h
-   ├── src/star_sensor_newsensor.c
+   lib/star_motor_component/
+   ├── include/star_motor_component.h
+   ├── src/star_motor_component.c
    ├── library.json
    └── CMakeLists.txt
    ```
 
-2. Follow existing sensor patterns (see `star_sensor_mpu6050/`)
+2. Follow existing patterns:
+   - **Low-level hardware**: No bus dependency (see `star_motor`, `star_encoder`, `star_pid`)
+   - **Integration layer**: Use bus manager for ADC/GPIO (see `star_drv8243`)
 
-3. Add dependency injection through bus manager:
+3. For integration components, add dependency injection through bus manager:
    ```c
    typedef struct {
        star_bus_manager_t* bus_manager;
-       const char* bus_name;
-   } newsensor_config_t;
+       const char* gpio_bus_name;
+       const char* adc_bus_name;
+       // Component-specific config
+   } motor_component_config_t;
    ```
 
 ### Adding a Bus Protocol
@@ -686,178 +734,113 @@ star_validate_pins();  // Checks all registered pins for conflicts
 
 The pin validator tracks GPIO assignments and prevents conflicts between different peripherals.
 
-## DIP Pattern vs HAL Pattern
+## Complete Motor Control System Example
 
-The STAR framework now provides two distinct approaches for using sensor/actuator drivers:
+Here's a complete example combining all motor control components:
 
-### 1. DIP Pattern (Direct Driver Usage)
-
-**Use when:** You need maximum control, custom error handling, or are building complex systems.
-
-**Characteristics:**
-- Manual dependency injection
-- Explicit bus manager and error handler setup
-- Thread-safe with mutex protection (1000ms timeout)
-- Maximum flexibility and testability
-
-**Example:**
 ```c
-// Create error handler
-error_handler_t error_handler;
-error_handler_init(&error_handler, 3, 100, 5000, NULL, NULL);
+#include "star_drv8243.h"
+#include "star_encoder.h"
+#include "star_pid.h"
+#include "star_sensor_ds18b20.h"
 
-// Get interfaces
-star_error_interface_t error_iface;
-star_pin_interface_t pin_iface;
-error_handler_get_interface(&error_iface, &error_handler);
-pin_validator_get_interface(&pin_iface);
+// === Setup Phase ===
 
-// Initialize bus manager
+// 1. Initialize bus manager
 star_bus_manager_t bus_manager;
-star_bus_manager_init(&bus_manager, "main", &error_iface, &pin_iface);
+star_bus_manager_init(&bus_manager, "main", NULL, NULL);
 
-// Create and add I2C bus
-star_bus_config_t* i2c_bus = star_bus_config_create_i2c(
-    "sensor_bus", I2C_NUM_0, 0x68, GPIO_NUM_21, GPIO_NUM_22, 400000);
-star_bus_manager_add_bus(&bus_manager, i2c_bus);
+// 2. Create buses
+star_bus_config_t* gpio_bus = star_bus_config_create_gpio("gpio_bus");
+star_bus_config_t* adc_bus = star_bus_config_create_adc(
+    "adc_bus", ADC_UNIT_1, ADC_CHANNEL_6, ADC_BITWIDTH_12, ADC_ATTEN_DB_12);
+star_bus_config_t* onewire_bus = star_bus_config_create_onewire(
+    "temp_bus", GPIO_NUM_4, false);
 
-// Initialize sensor (NULL error_iface creates default internally)
-mpu6050_handle_t imu;
-mpu6050_config_t cfg = {0};
-star_sensor_mpu6050_init(&imu, &bus_manager, "sensor_bus", &error_iface, &cfg);
+star_bus_manager_add_bus(&bus_manager, gpio_bus);
+star_bus_manager_add_bus(&bus_manager, adc_bus);
+star_bus_manager_add_bus(&bus_manager, onewire_bus);
 
-// Use sensor
-mpu6050_data_t data;
-star_sensor_mpu6050_read(&imu, &data);
-
-// Cleanup
-star_sensor_mpu6050_deinit(&imu);
-star_bus_manager_remove_bus(&bus_manager, "sensor_bus");
-star_bus_config_destroy(i2c_bus);
-star_bus_manager_deinit(&bus_manager);
-error_handler_deinit(&error_handler);
-```
-
-### 2. HAL Pattern (Convenience Layer)
-
-**Use when:** You need simple, quick setup for single-device applications.
-
-**Characteristics:**
-- Automatic dependency setup (no manual DIP)
-- Single function initialization
-- Internal bus manager and error handler
-- Simplified API surface
-
-**Example:**
-```c
-// Initialize MPU6050 HAL (all setup automatic)
-star_hal_mpu6050_handle_t hal_imu;
-star_hal_mpu6050_config_t hal_config = {
-    .sda_pin = GPIO_NUM_21,
-    .scl_pin = GPIO_NUM_22,
-    .i2c_freq = 400000,
-    .i2c_addr = 0x68
+// 3. Initialize motor driver
+star_drv8243_handle_t motor;
+star_drv8243_config_t motor_cfg = {
+    .bus_manager = &bus_manager,
+    .gpio_bus_name = "gpio_bus",
+    .adc_bus_name = "adc_bus",
+    .pin_pwm_ph = GPIO_NUM_25,
+    .pin_pwm_en = GPIO_NUM_26,
+    .pin_ipropi = ADC_CHANNEL_6,
+    .pin_nfault = GPIO_NUM_35,
+    .pwm_freq_hz = 20000,
+    .current_limit_ma = 2000,
 };
-star_hal_mpu6050_init(&hal_imu, &hal_config);
+star_drv8243_init(&motor, &motor_cfg);
 
-// Use sensor (same data types as DIP)
-mpu6050_data_t data;
-star_hal_mpu6050_read(&hal_imu, &data);
+// 4. Initialize encoder
+star_encoder_handle_t encoder;
+star_encoder_config_t enc_cfg = {
+    .pin_a = GPIO_NUM_32,
+    .pin_b = GPIO_NUM_33,
+    .filter_value = 1000,
+    .high_limit = 10000,
+    .low_limit = -10000,
+};
+star_encoder_init(&encoder, &enc_cfg);
 
-// Cleanup (frees all internal resources)
-star_hal_mpu6050_deinit(&hal_imu);
-```
+// 5. Initialize PID controller
+star_pid_handle_t pid;
+star_pid_config_t pid_cfg = {
+    .kp = 1.0f,
+    .ki = 0.5f,
+    .kd = 0.1f,
+    .output_min = -100.0f,
+    .output_max = 100.0f,
+    .integral_min = -50.0f,
+    .integral_max = 50.0f,
+};
+star_pid_init(&pid, &pid_cfg);
 
-### When to Use Each Pattern
+// 6. Initialize temperature sensor
+star_ds18b20_handle_t temp_sensor;
+star_ds18b20_config_t temp_cfg = {
+    .bus_manager = &bus_manager,
+    .bus_name = "temp_bus",
+    .resolution = k_star_ds18b20_resolution_12_bit,
+    .use_rom = false,
+};
+star_sensor_ds18b20_init(&temp_sensor, &temp_cfg);
 
-| Scenario | Recommended Pattern |
-|----------|-------------------|
-| Simple single-sensor application | **HAL** |
-| Multiple sensors on same bus | **DIP** |
-| Custom error handling needed | **DIP** |
-| Quick prototyping | **HAL** |
-| Production system with logging | **DIP** |
-| Unit testing with mocks | **DIP** |
-| Educational/example code | **HAL** |
-| Complex multi-bus system | **DIP** |
+// === Control Loop (1000Hz) ===
 
-## Thread Safety
+float setpoint_rpm = 100.0f;
+float dt = 0.001f;  // 1ms
 
-All sensor drivers are thread-safe with mutex protection:
+while (1) {
+    // Read encoder position
+    float velocity_rpm;
+    star_encoder_get_velocity_rpm(&encoder, dt * 1000, 500, &velocity_rpm);
 
-**Standard mutex timeout:** 1000ms (configurable via `*_MUTEX_TIMEOUT_MS`)
+    // Compute PID output
+    float pid_output;
+    star_pid_compute(&pid, setpoint_rpm, velocity_rpm, dt, &pid_output);
 
-**Protected operations:**
-- Driver initialization (`init`)
-- Driver deinitialization (`deinit`)
-- State-modifying operations (e.g., `set_mode`, `set_temperature`)
+    // Apply to motor
+    star_drv8243_set_speed(&motor, pid_output);
 
-**Non-protected operations:**
-- Read operations (use `const` handle pointers)
+    // Monitor current and temperature
+    float current_ma, temp_c;
+    star_drv8243_read_current(&motor, &current_ma);
+    star_sensor_ds18b20_read_temp(&temp_sensor, &temp_c);
 
-**Example of thread-safe state modification:**
-```c
-// From star_sensor_mpu6050.c
-esp_err_t star_sensor_mpu6050_set_accel_range(mpu6050_handle_t* handle, mpu6050_accel_range_t range)
-{
-  if (handle == NULL || !handle->initialized) {
-    return ESP_ERR_INVALID_STATE;
-  }
+    // Check for faults
+    bool fault;
+    star_drv8243_get_fault_status(&motor, &fault);
+    if (fault || temp_c > 85.0f) {
+        star_drv8243_stop(&motor, true);  // Emergency brake
+    }
 
-  // Acquire mutex
-  SemaphoreHandle_t mutex = handle->mutex;
-  if (mutex == NULL || xSemaphoreTake(mutex, pdMS_TO_TICKS(MPU6050_MUTEX_TIMEOUT_MS)) != pdTRUE) {
-    ESP_LOGE(s_TAG, "Failed to acquire mutex");
-    return ESP_ERR_TIMEOUT;
-  }
-
-  // Re-check after mutex acquisition
-  if (!handle->initialized || handle->mutex == NULL) {
-    xSemaphoreGive(mutex);
-    return ESP_ERR_INVALID_STATE;
-  }
-
-  // Perform operation
-  esp_err_t ret = /* ... */;
-
-  xSemaphoreGive(mutex);
-  return ret;
+    vTaskDelay(pdMS_TO_TICKS(1));  // 1ms delay
 }
-```
-
-## Error Handler Injection Pattern
-
-All sensor drivers support optional error handler injection:
-
-**NULL error_iface:** Creates default error handler internally (owned by driver)
-**Non-NULL error_iface:** Uses injected error handler (not owned by driver)
-
-**Example with NULL (automatic):**
-```c
-mpu6050_handle_t imu;
-mpu6050_config_t cfg = {0};
-star_sensor_mpu6050_init(&imu, &bus_manager, "sensor_bus", NULL, &cfg);
-// Driver creates and owns default error handler internally
-```
-
-**Example with custom error handler:**
-```c
-// Create custom error handler
-error_handler_t my_handler;
-error_handler_init(&my_handler, 5, 200, 10000, reset_callback, reset_ctx);
-
-// Get interface
-star_error_interface_t my_error_iface;
-error_handler_get_interface(&my_error_iface, &my_handler);
-
-// Inject into driver
-mpu6050_handle_t imu;
-mpu6050_config_t cfg = {0};
-star_sensor_mpu6050_init(&imu, &bus_manager, "sensor_bus", &my_error_iface, &cfg);
-
-// Cleanup (driver does NOT own error handler)
-star_sensor_mpu6050_deinit(&imu);
-error_handler_deinit(&my_handler);
 ```
 
 ## Available Libraries
@@ -866,72 +849,195 @@ error_handler_deinit(&my_handler);
 - **star_core** - Abstract interfaces (error_interface, pin_interface)
 - **star_error_handler** - Error handling with retry logic
 - **star_pin_validator** - GPIO conflict detection
-- **star_bus** - Unified bus abstraction (I2C, SPI, UART, GPIO, OneWire, SMBus)
+- **star_bus** - Unified bus abstraction (I2C, SPI, UART, GPIO, ADC, OneWire)
 
-### Sensor/Actuator Drivers (DIP Pattern)
-- **star_sensor_pca9685** - 16-channel PWM controller
-- **star_sensor_mpu6050** - 6-axis IMU
-- **star_sensor_hcsr04** - Ultrasonic distance sensor
-- **star_sensor_bno055_bmp280** - 10-DOF IMU (9-axis + pressure)
-- **star_bms_bq7850** - Battery management system
+### Motor Control Components
+- **star_motor** - Brushed DC motor control using ESP32 MCPWM peripheral
+- **star_drv8243** - DRV8243 H-bridge motor driver with current sensing and fault detection
+- **star_encoder** - Quadrature encoder driver using ESP32 PCNT peripheral
+- **star_pid** - Generic PID controller with anti-windup for closed-loop control
 
-### Convenience Libraries
-- **star_servo** - Stateless servo angle calculations (no dependencies)
+### Sensor Drivers
+- **star_sensor_ds18b20** - DS18B20 digital temperature sensor (1-Wire)
 
-### HAL Libraries (Convenience Pattern)
-- **star_hal_pca9685** - PCA9685 with automatic setup
-- **star_hal_mpu6050** - MPU6050 with automatic setup
-- **star_hal_hcsr04** - HC-SR04 with automatic setup
-- **star_hal_bno055_bmp280** - 10-DOF IMU with automatic setup
-- **star_hal_bq7850** - BQ7850 BMS with automatic setup
+### Power Management
+- **star_bms_bq7850** - BQ7850 battery management system
 
-## GPIO Bus Usage Pattern
+## Motor Control Usage
 
-The HC-SR04 driver demonstrates the GPIO bus pattern:
+### Basic Motor Control with star_motor
+
+The `star_motor` library provides MCPWM-based H-bridge control:
 
 ```c
-// Initialize bus manager with GPIO bus
-star_bus_config_t* gpio_bus = star_bus_config_create_gpio("gpio_bus");
-star_bus_manager_add_bus(&bus_manager, gpio_bus);
+#include "star_motor.h"
 
-// Configure pins through GPIO bus
-hcsr04_handle_t sensor;
-hcsr04_config_t config = {
-    .trigger_pin = GPIO_NUM_5,
-    .echo_pin = GPIO_NUM_18,
-    .temperature_c = 25.0f
+// Initialize motor controller
+star_motor_handle_t motor;
+star_motor_config_t config = {
+    .group_id = 0,                    // MCPWM group 0
+    .timer_resolution_hz = 10000000,  // 10MHz timer
+    .pwm_freq_hz = 20000,             // 20kHz PWM
+    .pin_pwm_a = GPIO_NUM_25,         // H-bridge IN1
+    .pin_pwm_b = GPIO_NUM_26,         // H-bridge IN2
+    .dead_time_ns = 1000,             // 1us dead-time
+    .fault_pin = -1,                  // No fault pin
 };
-star_sensor_hcsr04_init(&sensor, &bus_manager, "gpio_bus", &error_iface, &config);
+star_motor_init(&motor, &config);
 
-// Driver uses GPIO bus for pin operations internally
-float distance_cm;
-star_sensor_hcsr04_read_distance(&sensor, &distance_cm);
+// Control motor
+star_motor_set_duty(&motor, 50.0f);   // 50% forward
+star_motor_set_duty(&motor, -75.0f);  // 75% reverse
+star_motor_stop(&motor, true);        // Brake
+
+// Cleanup
+star_motor_deinit(&motor);
 ```
 
-## Servo Control with star_servo
+### DRV8243 Motor Driver Integration
 
-The `star_servo` library provides stateless calculations:
+The `star_drv8243` library integrates motor control with current sensing and fault detection:
 
 ```c
-#include "star_servo.h"
-#include "star_sensor_pca9685.h"
+#include "star_drv8243.h"
 
-// Calculate PWM count for angle
-uint16_t count = star_servo_angle_to_count(90);  // Center position
+// Create GPIO and ADC buses
+star_bus_config_t* gpio_bus = star_bus_config_create_gpio("gpio_bus");
+star_bus_config_t* adc_bus = star_bus_config_create_adc(
+    "adc_bus", ADC_UNIT_1, ADC_CHANNEL_6, ADC_BITWIDTH_12, ADC_ATTEN_DB_12);
+star_bus_manager_add_bus(&bus_manager, gpio_bus);
+star_bus_manager_add_bus(&bus_manager, adc_bus);
 
-// Set servo via PCA9685
-star_sensor_pca9685_set_pwm(&pca_handle, 0, 0, count);
+// Initialize DRV8243 driver
+star_drv8243_handle_t motor_driver;
+star_drv8243_config_t config = {
+    .bus_manager = &bus_manager,
+    .gpio_bus_name = "gpio_bus",
+    .adc_bus_name = "adc_bus",
+    .pin_pwm_ph = GPIO_NUM_25,        // Phase control
+    .pin_pwm_en = GPIO_NUM_26,        // Enable/Speed control
+    .pin_ipropi = ADC_CHANNEL_6,      // Current sense (GPIO34)
+    .pin_nfault = GPIO_NUM_35,        // Fault detect
+    .pwm_freq_hz = 20000,             // 20 kHz PWM
+    .current_limit_ma = 2000,         // 2A limit
+    .ki_propi = 525,                  // IPROPI ratio
+};
+star_drv8243_init(&motor_driver, &config);
 
-// Or use HAL convenience function
-star_hal_pca9685_set_servo_angle(&hal_handle, 0, 90);
+// Control and monitor
+star_drv8243_set_speed(&motor_driver, 50.0f);
+
+float current_ma;
+star_drv8243_read_current(&motor_driver, &current_ma);
+
+bool fault;
+star_drv8243_get_fault_status(&motor_driver, &fault);
+
+// Cleanup
+star_drv8243_deinit(&motor_driver);
 ```
 
-**star_servo functions:**
-- `star_servo_angle_to_count()` - Convert degrees to PCA9685 count
-- `star_servo_pulse_to_count()` - Convert microseconds to PCA9685 count
-- `star_servo_angle_to_pulse()` - Convert degrees to microseconds
-- `star_servo_pulse_to_angle()` - Convert microseconds to degrees
-- `star_servo_get_center_count()` - Get count for 90° (1.5ms)
-- `star_servo_get_min_count()` - Get count for 0° (1.0ms)
-- `star_servo_get_max_count()` - Get count for 180° (2.0ms)
+### Encoder Position Tracking
+
+The `star_encoder` library provides quadrature encoder support:
+
+```c
+#include "star_encoder.h"
+
+// Initialize encoder
+star_encoder_handle_t encoder;
+star_encoder_config_t config = {
+    .pin_a = GPIO_NUM_25,
+    .pin_b = GPIO_NUM_26,
+    .filter_value = 1000,     // Glitch filter
+    .high_limit = 10000,
+    .low_limit = -10000,
+};
+star_encoder_init(&encoder, &config);
+
+// Read position
+int32_t position;
+star_encoder_get_count(&encoder, &position);
+
+// Calculate velocity
+float velocity_rpm;
+star_encoder_get_velocity_rpm(&encoder, 10.0f, 500, &velocity_rpm);
+
+// Reset and cleanup
+star_encoder_reset_count(&encoder);
+star_encoder_deinit(&encoder);
+```
+
+### PID Controller for Closed-Loop Control
+
+The `star_pid` library provides a complete PID implementation:
+
+```c
+#include "star_pid.h"
+
+// Initialize PID controller
+star_pid_handle_t pid;
+star_pid_config_t config = {
+    .kp = 1.0f,            // Proportional gain
+    .ki = 0.5f,            // Integral gain
+    .kd = 0.1f,            // Derivative gain
+    .output_min = -100.0f, // Min output (-100% duty)
+    .output_max = 100.0f,  // Max output (+100% duty)
+    .integral_min = -50.0f,
+    .integral_max = 50.0f,
+};
+star_pid_init(&pid, &config);
+
+// PID control loop (typically 1000Hz)
+float setpoint = 100.0f;  // Target RPM
+float measured = 95.0f;   // Actual RPM from encoder
+float dt = 0.001f;        // 1ms = 1000Hz
+
+float output;
+star_pid_compute(&pid, setpoint, measured, dt, &output);
+
+// Apply output to motor
+star_motor_set_duty(&motor, output);
+
+// Runtime tuning
+star_pid_set_gains(&pid, 1.5f, 0.6f, 0.15f);
+star_pid_reset(&pid);
+
+// Cleanup
+star_pid_deinit(&pid);
+```
+
+### DS18B20 Temperature Monitoring
+
+The `star_sensor_ds18b20` library provides temperature sensing (useful for motor/driver thermal monitoring):
+
+```c
+#include "star_sensor_ds18b20.h"
+
+// Create 1-Wire bus
+star_bus_config_t* onewire_bus = star_bus_config_create_onewire(
+    "temp_onewire", GPIO_NUM_4, false);
+star_bus_manager_add_bus(&bus_manager, onewire_bus);
+
+// Initialize DS18B20
+star_ds18b20_handle_t temp_sensor;
+star_ds18b20_config_t config = {
+    .bus_manager = &bus_manager,
+    .bus_name = "temp_onewire",
+    .resolution = k_star_ds18b20_resolution_12_bit,
+    .use_rom = false,  // Single sensor
+};
+star_sensor_ds18b20_init(&temp_sensor, &config);
+
+// Read temperature
+float temperature_c;
+star_sensor_ds18b20_read_temp(&temp_sensor, &temperature_c);
+
+// Change resolution
+star_sensor_ds18b20_set_resolution(&temp_sensor,
+    k_star_ds18b20_resolution_10_bit);
+
+// Cleanup
+star_sensor_ds18b20_deinit(&temp_sensor);
+```
 
