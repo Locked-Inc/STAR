@@ -1,6 +1,8 @@
-/* lib/star_bus/src/star_bus_config.c */a
+/* lib/star_bus/src/star_bus_config.c */
 
-/* XXX: Why does this have explicit things like DHT22 methods ?? */
+/* DHT22 is a bus protocol (single-wire proprietary), similar to I2C/SPI.
+ * These methods create bus configurations, not sensor drivers.
+ * This is intentional and follows the same pattern as create_i2c(), create_spi(). */
 
 #include "star_bus_config.h"
 
@@ -24,7 +26,7 @@
 
 /* --- Constants --- */
 
-static const char* s_TAG = "BusConfig"; /* FIXME: fix style */
+static const char* s_TAG = "STAR_BUS_CONFIG";
 
 /* --- Private Function Prototypes --- */
 

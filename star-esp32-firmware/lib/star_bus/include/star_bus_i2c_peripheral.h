@@ -268,15 +268,6 @@ esp_err_t star_bus_i2c_peripheral_get_stats(const star_bus_manager_t*    manager
  */
 esp_err_t star_bus_i2c_peripheral_reset_stats(star_bus_manager_t* manager, const char* bus_name);
 
-/**
- * @brief Print peripheral statistics
- *
- * @param[in] bus_name Name of I2C bus
- * @param[in] stats Pointer to statistics
- */
-void star_bus_i2c_peripheral_print_stats(const char*                        bus_name,
-                                         const star_i2c_peripheral_stats_t* stats);
-
 /* --- Helper Macros --- */
 
 /**

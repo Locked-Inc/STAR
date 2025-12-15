@@ -1,6 +1,9 @@
 /* lib/star_servo/src/star_servo_constants.c */
 
-/* TODO: Add doxygen doc comment for @file */
+/**
+ * @file star_servo_constants.c
+ * @brief Servo timing constants for standard hobby servos
+ */
 
 #include "star_servo_constants.h"
 

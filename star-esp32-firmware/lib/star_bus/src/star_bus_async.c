@@ -46,7 +46,7 @@ typedef struct async_operation {
 
   /* Operation-specific data */
   star_bus_manager_t* manager;
-  char                bus_name[32]; /* XXX: here again */
+  char                bus_name[STAR_BUS_NAME_MAX_LEN]; /* XXX: here again */
 
   union {
     struct {
@@ -78,7 +78,7 @@ typedef struct async_operation {
  * @brief Async state for a bus
  */
 typedef struct {
-  char               bus_name[32];   /**< Bus name for identification */
+  char               bus_name[STAR_BUS_NAME_MAX_LEN];   /**< Bus name for identification */
   async_operation_t* pending_head;   /**< Head of pending operations queue */
   async_operation_t* pending_tail;   /**< Tail of pending operations queue */
   uint32_t           pending_count;  /**< Number of pending operations */

@@ -1,8 +1,13 @@
 /* lib/star_sensor_pca9685/src/star_sensor_pca9685.c */
 
-/* TODO: Add doxygen doc comment for @file */
+/**
+ * @file star_sensor_pca9685.c
+ * @brief PCA9685 16-channel PWM controller driver implementation
+ */
 
-/* FIXME: I am unsure if this is using MCPWM like how the `star_motor` is using. We need center aligned PWM for motor/(servo motor) movement */
+/* Note: PCA9685 generates PWM signals via I2C (not ESP32 MCPWM).
+ * Servo motors use edge-aligned PWM (1-2ms pulses), which PCA9685 provides.
+ * Center-aligned PWM is only needed for brushless motor control (see star_motor). */
 
 #include "star_sensor_pca9685.h"
 

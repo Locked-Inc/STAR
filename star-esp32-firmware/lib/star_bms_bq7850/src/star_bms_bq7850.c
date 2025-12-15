@@ -1,4 +1,9 @@
-/* esp32-firmware/components/star_bms_bq7850/star_bms_bq7850.c */
+/* lib/star_bms_bq7850/src/star_bms_bq7850.c */
+
+/**
+ * @file star_bms_bq7850.c
+ * @brief BQ7850 battery management system driver implementation
+ */
 
 #include "star_bms_bq7850.h"
 
@@ -11,7 +16,7 @@
 #include "star_bus_smbus.h"
 #include "star_error_handler.h"
 
-static const char* s_TAG = "bq7850";
+static const char* const s_TAG = "STAR_BMS_BQ7850";
 
 /* Use constant instead of macro for type safety */
 static const uint32_t s_bq7850_mutex_timeout_ms = 1000;
@@ -268,7 +273,7 @@ esp_err_t star_bms_bq7850_get_device_info(const bq7850_handle_t* handle, bq7850_
 
   /* Read manufacturer name (block read) */
   uint8_t mfg_len = 0;
-  uint8_t mfg_data[32];
+  uint8_t mfg_data[BQ7850_DEVICE_INFO_STRING_LEN];
   ret = star_smbus_block_read(manager,
                               bus_name,
                               addr,
@@ -284,7 +289,7 @@ esp_err_t star_bms_bq7850_get_device_info(const bq7850_handle_t* handle, bq7850_
 
   /* Read device name */
   uint8_t dev_len = 0;
-  uint8_t dev_data[32];
+  uint8_t dev_data[BQ7850_DEVICE_INFO_STRING_LEN];
   ret =
     star_smbus_block_read(manager, bus_name, addr, BQ7850_CMD_DEVICE_NAME, dev_data, 32, &dev_len);
   if (ret == ESP_OK && dev_len > 0) {
@@ -295,7 +300,7 @@ esp_err_t star_bms_bq7850_get_device_info(const bq7850_handle_t* handle, bq7850_
 
   /* Read chemistry */
   uint8_t chem_len = 0;
-  uint8_t chem_data[32];
+  uint8_t chem_data[BQ7850_DEVICE_INFO_STRING_LEN];
   ret = star_smbus_block_read(manager,
                               bus_name,
                               addr,
@@ -798,6 +803,14 @@ esp_err_t star_bms_bq7850_write_protection(const bq7850_handle_t*     handle,
 
   /* Add delay between writes */
   vTaskDelay(pdMS_TO_TICKS(50));
+
+  /* FIXME: Write additional protection thresholds (undervoltage, overcurrent,
+   * overtemperature, undertemperature). Currently only implements overvoltage threshold.
+   * Each threshold requires:
+   * 1. Convert threshold value to BQ7850 format
+   * 2. Write to appropriate register via I2C
+   * 3. Verify write success
+   * See BQ7850 datasheet sections 8.3.2-8.3.5 for register addresses. */
 
   /* Similar process for other thresholds... */
   ESP_LOGI(s_TAG, "Protection thresholds updated");

@@ -14,6 +14,12 @@
 
 static const char* s_TAG = "STAR_SPI_DMA";
 
+/**
+ * @brief Number of SPI peripherals on ESP32 (SPI1, SPI2, SPI3)
+ * Note: SPI0 is reserved for flash and not available for general use
+ */
+#define STAR_SPI_NUM_PERIPHERALS (3)
+
 /* --- Types --- */
 
 /**
@@ -41,7 +47,7 @@ typedef struct {
  * @brief DMA state storage for SPI buses
  * @note ESP32 has SPI2_HOST (HSPI) and SPI3_HOST (VSPI)
  */
-static spi_dma_state_t g_spi_dma_states[3] = {0}; /* SPI1, SPI2, SPI3 */ /* FIXME: We shouldnt hard code */
+static spi_dma_state_t g_spi_dma_states[STAR_SPI_NUM_PERIPHERALS] = {0}; /* SPI1, SPI2, SPI3 */
 
 /* --- Helper Functions --- */
 

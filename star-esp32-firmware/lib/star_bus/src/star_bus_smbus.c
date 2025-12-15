@@ -38,9 +38,23 @@ static esp_err_t internal_validate_smbus_params(star_bus_manager_t* manager, con
 
 /* --- Public Functions --- */
 
-/* Note: addr parameter is kept for API compatibility but currently unused.
- * The address from the bus configuration is used by the underlying I2C layer. */
-/* TODO: We should have an example of how to call this since a param is unused */
+/**
+ * @brief SMBus quick command operation
+ *
+ * @param manager Bus manager handle
+ * @param bus_name Name of the SMBus to use
+ * @param addr Device address (unused - inherits from bus config)
+ * @param write true for write command, false for read
+ *
+ * @note The addr parameter is unused because SMBus address is configured
+ *       when the bus is created via star_bus_config_create_smbus().
+ *
+ * @example
+ * // Quick command example (addr=0x00 is ignored, uses bus config address)
+ * esp_err_t ret = star_smbus_quick_command(manager, "smbus0", 0x00, true);
+ *
+ * @return ESP_OK on success, error code otherwise
+ */
 esp_err_t star_smbus_quick_command(star_bus_manager_t* manager,
                                    const char*         bus_name,
                                    uint8_t             addr,
