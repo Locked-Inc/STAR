@@ -1,23 +1,31 @@
-#!/bin/sh
-# ROS2 environment setup
+# ROS2 Jazzy environment setup
+# Uses Python 3.11 from /opt/python3.11
 
-# Set ROS2 environment variables
-export ROS_VERSION=2
+# Set Python 3.11 for ROS2
+export ROS2_PYTHON=/opt/python3.11/bin/python3.11
+
+# Add ROS2 Python packages to PYTHONPATH
+if [ -n "$PYTHONPATH" ]; then
+    export PYTHONPATH=/opt/ros/jazzy/lib/python3.11/site-packages:$PYTHONPATH
+else
+    export PYTHONPATH=/opt/ros/jazzy/lib/python3.11/site-packages
+fi
+
+# Add ROS2 binaries to PATH
+export PATH=/opt/ros/jazzy/bin:$PATH
+
+# ROS2 environment variables
 export ROS_DISTRO=jazzy
-export ROS_PYTHON_VERSION=3
+export AMENT_PREFIX_PATH=/opt/ros/jazzy
+export COLCON_PREFIX_PATH=/opt/ros/jazzy
+export CMAKE_PREFIX_PATH=/opt/ros/jazzy
 
-# Add ROS2 paths if installed
-if [ -d "/opt/ros/jazzy" ]; then
-    export ROS_ROOT=/opt/ros/jazzy
-    export PATH="$ROS_ROOT/bin:$PATH"
-    export LD_LIBRARY_PATH="$ROS_ROOT/lib:$LD_LIBRARY_PATH"
-    export PYTHONPATH="$ROS_ROOT/lib/python3.11/site-packages:$PYTHONPATH"
-    export CMAKE_PREFIX_PATH="$ROS_ROOT:$CMAKE_PREFIX_PATH"
-    export AMENT_PREFIX_PATH="$ROS_ROOT"
+# Add ROS2 library path
+if [ -n "$LD_LIBRARY_PATH" ]; then
+    export LD_LIBRARY_PATH=/opt/ros/jazzy/lib:$LD_LIBRARY_PATH
+else
+    export LD_LIBRARY_PATH=/opt/ros/jazzy/lib
 fi
 
-# Set Java environment
-if [ -d "/usr/lib/jvm/java-17-openjdk" ]; then
-    export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
-    export PATH="$JAVA_HOME/bin:$PATH"
-fi
+# Note: Don't source ROS2's setup.bash - it uses bash-specific syntax
+# The environment variables above provide equivalent functionality

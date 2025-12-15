@@ -12,7 +12,7 @@ IMAGE := $(OUTPUT_DIR)/images/sdcard.img
 # Clean PATH for WSL compatibility
 export PATH := /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
-.PHONY: all build clean distclean download configure help
+.PHONY: all build clean distclean download configure help qemu qemu-build qemu-graphical qemu-ssh qemu-clean
 
 # Default target
 all: build
@@ -36,7 +36,7 @@ configure: download
 # Build the image
 build: configure
 	@echo "Starting build..."
-	@cd $(BUILD_DIR) && $(MAKE)
+	@cd $(BUILD_DIR) && $(MAKE) -j$$(nproc)
 	@echo ""
 	@echo "=== Build Complete ==="
 	@echo "Output image: $(IMAGE)"
@@ -72,20 +72,55 @@ mrproper: distclean
 	@rm -rf $(BUILD_DIR)
 	@echo "Buildroot directory removed."
 
+# QEMU Testing (uses generic ARM64 'virt' machine - Pi5/BCM2712 not yet supported)
+# Use 'qemu' to just run, 'qemu-build' to build first
+qemu:
+	@chmod +x $(PROJECT_DIR)/scripts/qemu-test.sh
+	@$(PROJECT_DIR)/scripts/qemu-test.sh run
+
+qemu-build: build qemu
+
+qemu-graphical:
+	@chmod +x $(PROJECT_DIR)/scripts/qemu-test.sh
+	@$(PROJECT_DIR)/scripts/qemu-test.sh graphical
+
+qemu-ssh:
+	@chmod +x $(PROJECT_DIR)/scripts/qemu-test.sh
+	@$(PROJECT_DIR)/scripts/qemu-test.sh ssh
+
+qemu-clean:
+	@chmod +x $(PROJECT_DIR)/scripts/qemu-test.sh
+	@$(PROJECT_DIR)/scripts/qemu-test.sh clean
+
 # Help target
 help:
-	@echo "RPI Minimal OS Build System"
+	@echo "STAR Robot OS Build System"
 	@echo ""
-	@echo "Available targets:"
-	@echo "  make build      - Download, configure, and build the image"
-	@echo "  make clean      - Clean build artifacts (keeps downloads)"
-	@echo "  make distclean  - Deep clean (removes all build artifacts and downloads)"
-	@echo "  make mrproper   - Remove entire Buildroot directory"
-	@echo "  make download   - Download Buildroot if not present"
-	@echo "  make configure  - Configure Buildroot with external tree"
-	@echo "  make help       - Show this help message"
+	@echo "Build targets:"
+	@echo "  make build         - Download, configure, and build the image"
+	@echo "  make clean         - Clean build artifacts (keeps downloads)"
+	@echo "  make distclean     - Deep clean (removes all build artifacts and downloads)"
+	@echo "  make mrproper      - Remove entire Buildroot directory"
+	@echo "  make download      - Download Buildroot if not present"
+	@echo "  make configure     - Configure Buildroot with external tree"
+	@echo ""
+	@echo "QEMU testing targets:"
+	@echo "  make qemu           - Boot image in QEMU (serial console)"
+	@echo "  make qemu-build     - Build then boot in QEMU"
+	@echo "  make qemu-graphical - Boot with graphical display"
+	@echo "  make qemu-ssh       - SSH into running QEMU instance"
+	@echo "  make qemu-clean     - Remove QEMU working files"
 	@echo ""
 	@echo "Common workflows:"
-	@echo "  make clean build     - Clean and rebuild"
-	@echo "  make distclean build - Full clean rebuild"
-	@echo "  make mrproper build  - Complete fresh build"
+	@echo "  make clean build      - Clean and rebuild"
+	@echo "  make distclean build  - Full clean rebuild"
+	@echo "  make mrproper build   - Complete fresh build"
+	@echo "  make build qemu       - Build and test in QEMU"
+	@echo ""
+	@echo "QEMU environment variables:"
+	@echo "  QEMU_MEMORY=4096 make qemu   - Set RAM (default: 2048MB)"
+	@echo "  QEMU_CPUS=2 make qemu        - Set CPUs (default: 4)"
+	@echo "  QEMU_SSH_PORT=3333 make qemu - Set SSH port (default: 2222)"
+	@echo ""
+	@echo "Note: QEMU uses generic ARM64 'virt' machine (Pi5/BCM2712 not supported)"
+	@echo "      Good for testing systemd, services, userspace - not Pi5 hardware"
