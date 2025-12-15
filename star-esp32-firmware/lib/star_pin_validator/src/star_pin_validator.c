@@ -1,4 +1,6 @@
-/* esp32-firmware/components/star_pin_validator/star_pin_validator.c */
+/* lib/star_pin_validator/src/star_pin_validator.c */
+
+/* TODO: Add doxygen doc comment for @file */
 
 #include "star_pin_validator.h"
 

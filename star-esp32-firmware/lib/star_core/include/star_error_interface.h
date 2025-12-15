@@ -1,3 +1,17 @@
+/* lib/star_core/include/star_error_interface.h */
+
+#ifndef STAR_ERROR_INTERFACE_H
+#define STAR_ERROR_INTERFACE_H
+
+#include <stdbool.h>
+#include <stdint.h>
+
+#include "esp_err.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @file star_error_interface.h
  * @brief Error handler interface for dependency inversion
@@ -112,18 +126,6 @@
  * // ^-- Returns ESP_ERR_TIMEOUT without crashing
  * @endcode
  */
-
-#ifndef STAR_ERROR_INTERFACE_H
-#define STAR_ERROR_INTERFACE_H
-
-#include <stdbool.h>
-#include <stdint.h>
-
-#include "esp_err.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /**
  * @brief Error handler interface - abstract operations for error handling

@@ -1,4 +1,4 @@
-/* esp32-firmware/components/star_bus/star_bus_stats.c */
+/* lib/star_bus/src/star_bus_stats.c */
 
 #include "star_bus_stats.h"
 
@@ -27,13 +27,13 @@ typedef struct {
   star_bus_stats_t    stats;                 /**< Statistics data */
   star_stats_config_t config;                /**< Statistics configuration */
   bool                enabled;               /**< Whether stats collection is enabled */
-  char                bus_name[32];          /**< Bus name */
+  char                bus_name[32];          /**< Bus name */ /* XXX: In `star_bus_types.c` I saw this "32" there too, we shouldnt have this hard coded in each file like this */
   uint64_t            operation_time_sum_us; /**< Sum for average calculation */
 } stats_state_t;
 
 /* --- Static Storage --- */
 
-#define MAX_STATS_BUSES (8)
+#define MAX_STATS_BUSES (8) /* VERIFY: that this needs to be a macro */
 static stats_state_t     g_stats_states[MAX_STATS_BUSES] = {0};
 static uint8_t           g_num_stats_states              = 0;
 static SemaphoreHandle_t g_stats_mutex                   = NULL;

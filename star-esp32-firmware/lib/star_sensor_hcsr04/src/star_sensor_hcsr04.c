@@ -1,5 +1,7 @@
 /* lib/star_sensor_hcsr04/src/star_sensor_hcsr04.c */
 
+/* TODO: Add doxygen doc comment for @file */
+
 #include "star_sensor_hcsr04.h"
 
 #include <esp_log.h>

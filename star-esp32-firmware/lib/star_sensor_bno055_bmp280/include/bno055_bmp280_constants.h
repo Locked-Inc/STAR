@@ -1,5 +1,7 @@
 /* lib/star_sensor_bno055_bmp280/include/bno055_bmp280_constants.h */
 
+/* TODO: Add doxygen doc comment for @file */
+
 #ifndef BNO055_BMP280_CONSTANTS_H
 #define BNO055_BMP280_CONSTANTS_H
 

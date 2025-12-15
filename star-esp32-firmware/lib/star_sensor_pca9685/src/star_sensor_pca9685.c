@@ -1,5 +1,9 @@
 /* lib/star_sensor_pca9685/src/star_sensor_pca9685.c */
 
+/* TODO: Add doxygen doc comment for @file */
+
+/* FIXME: I am unsure if this is using MCPWM like how the `star_motor` is using. We need center aligned PWM for motor/(servo motor) movement */
+
 #include "star_sensor_pca9685.h"
 
 #include <driver/gpio.h>

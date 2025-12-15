@@ -45,7 +45,7 @@ static const uint32_t s_dht22_data_bytes = 5;  /* Total bytes */
  * @brief DHT22 bus state (internal)
  */
 typedef struct {
-  char                bus_name[32];
+  char                bus_name[32]; /* XXX: it occurs here too */
   star_dht22_config_t config;
   star_dht22_stats_t  stats;
   star_dht22_data_t   last_data;

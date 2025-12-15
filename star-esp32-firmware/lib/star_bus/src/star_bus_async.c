@@ -1,4 +1,4 @@
-/* esp32-firmware/components/star_bus/star_bus_async.c */
+/* lib/star_bus/src/star_bus_async.c */
 
 #include "star_bus_async.h"
 
@@ -46,7 +46,7 @@ typedef struct async_operation {
 
   /* Operation-specific data */
   star_bus_manager_t* manager;
-  char                bus_name[32];
+  char                bus_name[32]; /* XXX: here again */
 
   union {
     struct {

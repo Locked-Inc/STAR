@@ -1,4 +1,4 @@
-/* esp32-firmware/components/star_bus/include/star_bus_debug.h */
+/* lib/star_bus/include/star_bus_debug.h */
 
 #ifndef STAR_COMPONENT_BUS_DEBUG_H
 #define STAR_COMPONENT_BUS_DEBUG_H

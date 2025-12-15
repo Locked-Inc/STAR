@@ -1,3 +1,17 @@
+/* lib/star_core/include/star_pin_interface.h */
+
+#ifndef STAR_PIN_INTERFACE_H
+#define STAR_PIN_INTERFACE_H
+
+#include <stdbool.h>
+#include <stdint.h>
+
+#include "esp_err.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * @file star_pin_interface.h
  * @brief Pin validator interface for dependency inversion
@@ -121,17 +135,6 @@
  * @endcode
  */
 
-#ifndef STAR_PIN_INTERFACE_H
-#define STAR_PIN_INTERFACE_H
-
-#include <stdbool.h>
-#include <stdint.h>
-
-#include "esp_err.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /**
  * @brief Pin validator interface - abstract operations for pin management

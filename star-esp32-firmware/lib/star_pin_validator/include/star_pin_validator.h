@@ -1,4 +1,4 @@
-/* esp32-firmware/components/star_pin_validator/include/star_pin_validator.h */
+/* lib/star_pin_validator/include/star_pin_validator.h */
 
 #ifndef STAR_PIN_VALIDATOR_H
 #define STAR_PIN_VALIDATOR_H
@@ -13,7 +13,11 @@
 #include "soc/gpio_num.h"
 #include "star_pin_interface.h"
 
-/**
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+  /**
  * @file star_pin_validator.h
  * @brief GPIO pin conflict detection and tracking
  *
@@ -168,5 +172,9 @@ void pin_validator_get_interface(star_pin_interface_t* iface);
  * @return true if initialized, false otherwise or if mutex unavailable
  */
 bool star_pin_validator_is_initialized(void);
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* STAR_PIN_VALIDATOR_H */
