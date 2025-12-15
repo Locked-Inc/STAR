@@ -802,18 +802,92 @@ esp_err_t star_bms_bq7850_write_protection(const bq7850_handle_t*     handle,
   }
 
   /* Add delay between writes */
-  vTaskDelay(pdMS_TO_TICKS(50));
+  static const uint32_t s_bms_cmd_delay_ms = 50;
+  vTaskDelay(pdMS_TO_TICKS(s_bms_cmd_delay_ms));
 
-  /* FIXME: Write additional protection thresholds (undervoltage, overcurrent,
-   * overtemperature, undertemperature). Currently only implements overvoltage threshold.
-   * Each threshold requires:
-   * 1. Convert threshold value to BQ7850 format
-   * 2. Write to appropriate register via I2C
-   * 3. Verify write success
-   * See BQ7850 datasheet sections 8.3.2-8.3.5 for register addresses. */
+  /* Write undervoltage threshold */
+  ret = internal_bq7850_manufacturer_access(manager,
+                                            bus_name,
+                                            addr,
+                                            BQ7850_SUBCMD_PROTECTION_UV_THRESH,
+                                            NULL);
+  if (ret == ESP_OK) {
+    ret = star_smbus_write_word(manager,
+                                bus_name,
+                                addr,
+                                BQ7850_CMD_MANUFACTURER_ACCESS,
+                                protection->undervoltage_mv);
+  }
 
-  /* Similar process for other thresholds... */
-  ESP_LOGI(s_TAG, "Protection thresholds updated");
+  if (ret != ESP_OK) {
+    ESP_LOGE(s_TAG, "Failed to write UV threshold: %s", esp_err_to_name(ret));
+    return ret;
+  }
+
+  vTaskDelay(pdMS_TO_TICKS(s_bms_cmd_delay_ms));
+
+  /* Write overcurrent threshold */
+  ret = internal_bq7850_manufacturer_access(manager,
+                                            bus_name,
+                                            addr,
+                                            BQ7850_SUBCMD_PROTECTION_OC_THRESH,
+                                            NULL);
+  if (ret == ESP_OK) {
+    ret = star_smbus_write_word(manager,
+                                bus_name,
+                                addr,
+                                BQ7850_CMD_MANUFACTURER_ACCESS,
+                                protection->overcharge_ma);
+  }
+
+  if (ret != ESP_OK) {
+    ESP_LOGE(s_TAG, "Failed to write OC threshold: %s", esp_err_to_name(ret));
+    return ret;
+  }
+
+  vTaskDelay(pdMS_TO_TICKS(s_bms_cmd_delay_ms));
+
+  /* Write overtemperature threshold */
+  ret = internal_bq7850_manufacturer_access(manager,
+                                            bus_name,
+                                            addr,
+                                            BQ7850_SUBCMD_PROTECTION_OT_THRESH,
+                                            NULL);
+  if (ret == ESP_OK) {
+    ret = star_smbus_write_word(manager,
+                                bus_name,
+                                addr,
+                                BQ7850_CMD_MANUFACTURER_ACCESS,
+                                (uint16_t)protection->overtemp_c);
+  }
+
+  if (ret != ESP_OK) {
+    ESP_LOGE(s_TAG, "Failed to write OT threshold: %s", esp_err_to_name(ret));
+    return ret;
+  }
+
+  vTaskDelay(pdMS_TO_TICKS(s_bms_cmd_delay_ms));
+
+  /* Write undertemperature threshold */
+  ret = internal_bq7850_manufacturer_access(manager,
+                                            bus_name,
+                                            addr,
+                                            BQ7850_SUBCMD_PROTECTION_UT_THRESH,
+                                            NULL);
+  if (ret == ESP_OK) {
+    ret = star_smbus_write_word(manager,
+                                bus_name,
+                                addr,
+                                BQ7850_CMD_MANUFACTURER_ACCESS,
+                                (uint16_t)protection->undertemp_c);
+  }
+
+  if (ret != ESP_OK) {
+    ESP_LOGE(s_TAG, "Failed to write UT threshold: %s", esp_err_to_name(ret));
+    return ret;
+  }
+
+  ESP_LOGI(s_TAG, "All protection thresholds updated (OV, UV, OC, OT, UT)");
 
   return ESP_OK;
 }
