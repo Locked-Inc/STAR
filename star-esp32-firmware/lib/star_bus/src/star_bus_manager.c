@@ -139,22 +139,6 @@ static esp_err_t internal_register_config_pins(star_pin_interface_t*    pin_ifac
         first_error = ret;
       break;
 
-    case k_star_bus_type_gpio:
-      /* GPIO pins are NOT shareable - they're dedicated to specific functions */
-      for (uint8_t i = 0; i < config->proto.gpio.pin_count; ++i) {
-        char usage[16];
-        snprintf(usage, sizeof(usage), "GPIO[%d]", i);
-        ret = internal_register_bus_pin(pin_iface,
-                                        config->proto.gpio.pins[i],
-                                        config->name,
-                                        usage,
-                                        false); /* GPIO pins are NOT shareable */
-        if (ret != ESP_OK && first_error == ESP_OK) {
-          first_error = ret;
-        }
-      }
-      break;
-
     default:
       ESP_LOGD(s_TAG, "No pin registration for bus type: %d", config->type);
       break;
@@ -221,18 +205,6 @@ static esp_err_t internal_unregister_config_pins(star_pin_interface_t*    pin_if
                                         "SPI CS");
       if (ret != ESP_OK && first_error == ESP_OK)
         first_error = ret;
-      break;
-
-    case k_star_bus_type_gpio:
-      for (uint8_t i = 0; i < config->proto.gpio.pin_count; ++i) {
-        char usage[16];
-        snprintf(usage, sizeof(usage), "GPIO[%d]", i);
-        ret =
-          internal_unregister_bus_pin(pin_iface, config->proto.gpio.pins[i], config->name, usage);
-        if (ret != ESP_OK && first_error == ESP_OK) {
-          first_error = ret;
-        }
-      }
       break;
 
     default:
