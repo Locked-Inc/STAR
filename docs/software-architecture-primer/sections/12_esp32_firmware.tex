@@ -1,0 +1,367 @@
+\section{ESP32 Firmware Updates}
+
+The existing STAR firmware requires additions for TCP communication as a fallback to SPI.
+
+\subsection{TCP Server Module}
+
+\begin{lstlisting}[language=C, caption=lib/star\_module\_tcp/include/star\_tcp\_server.h]
+/**
+ * @file star_tcp_server.h
+ * @brief TCP server for command reception from RPi5
+ *
+ * Provides fallback communication when SPI is unavailable.
+ */
+
+#ifndef STAR_TCP_SERVER_H
+#define STAR_TCP_SERVER_H
+
+#include "esp_err.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#define TCP_SERVER_PORT 5000
+#define TCP_MAX_CLIENTS 2
+#define TCP_RX_BUFFER_SIZE 256
+#define TCP_TX_BUFFER_SIZE 256
+
+/**
+ * @brief Motor command callback type
+ */
+typedef struct {
+    float left_velocity;
+    float right_velocity;
+    bool emergency_stop;
+    uint64_t timestamp;
+} tcp_motor_command_t;
+
+typedef void (*tcp_command_callback_t)(const tcp_motor_command_t* command);
+
+/**
+ * @brief TCP server configuration
+ */
+typedef struct {
+    uint16_t port;
+    tcp_command_callback_t on_command;
+    void* user_context;
+} tcp_server_config_t;
+
+/**
+ * @brief TCP server handle
+ */
+typedef struct tcp_server_handle* tcp_server_handle_t;
+
+/**
+ * @brief Initialize and start TCP server
+ *
+ * @param config Server configuration
+ * @param out_handle Output handle
+ * @return esp_err_t ESP_OK on success
+ */
+esp_err_t star_tcp_server_init(
+    const tcp_server_config_t* config,
+    tcp_server_handle_t* out_handle
+);
+
+/**
+ * @brief Stop and cleanup TCP server
+ */
+esp_err_t star_tcp_server_deinit(tcp_server_handle_t handle);
+
+/**
+ * @brief Get number of connected clients
+ */
+int star_tcp_server_get_client_count(tcp_server_handle_t handle);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif // STAR_TCP_SERVER_H
+\end{lstlisting}
+
+\begin{lstlisting}[language=C, caption=lib/star\_module\_tcp/src/star\_tcp\_server.c]
+/**
+ * @file star_tcp_server.c
+ * @brief TCP server implementation
+ */
+
+#include "star_tcp_server.h"
+#include "esp_log.h"
+#include "esp_netif.h"
+#include "lwip/sockets.h"
+#include "cJSON.h"
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+
+static const char* TAG = "tcp_server";
+
+struct tcp_server_handle {
+    int listen_socket;
+    tcp_command_callback_t callback;
+    void* user_context;
+    TaskHandle_t server_task;
+    bool running;
+    int client_count;
+};
+
+/**
+ * @brief Parse JSON command from client
+ */
+static esp_err_t parse_json_command(
+    const char* json_str,
+    tcp_motor_command_t* out_cmd
+) {
+    cJSON* root = cJSON_Parse(json_str);
+    if (root == NULL) {
+        ESP_LOGE(TAG, "Failed to parse JSON");
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    memset(out_cmd, 0, sizeof(tcp_motor_command_t));
+
+    cJSON* cmd = cJSON_GetObjectItem(root, "command");
+    if (cmd && cJSON_IsString(cmd)) {
+        if (strcmp(cmd->valuestring, "velocity") == 0) {
+            cJSON* params = cJSON_GetObjectItem(root, "params");
+            if (params) {
+                cJSON* left = cJSON_GetObjectItem(params, "left");
+                cJSON* right = cJSON_GetObjectItem(params, "right");
+
+                if (left && cJSON_IsNumber(left)) {
+                    out_cmd->left_velocity = (float)left->valuedouble;
+                }
+                if (right && cJSON_IsNumber(right)) {
+                    out_cmd->right_velocity = (float)right->valuedouble;
+                }
+            }
+        } else if (strcmp(cmd->valuestring, "emergency_stop") == 0) {
+            out_cmd->emergency_stop = true;
+        }
+    }
+
+    cJSON* ts = cJSON_GetObjectItem(root, "timestamp");
+    if (ts && cJSON_IsNumber(ts)) {
+        out_cmd->timestamp = (uint64_t)ts->valuedouble;
+    }
+
+    cJSON_Delete(root);
+    return ESP_OK;
+}
+
+/**
+ * @brief Build JSON response
+ */
+static void build_json_response(
+    char* buffer,
+    size_t size,
+    bool success,
+    const char* message
+) {
+    snprintf(buffer, size,
+        "{\"success\":%s,\"message\":\"%s\"}",
+        success ? "true" : "false",
+        message
+    );
+}
+
+/**
+ * @brief Handle single client connection
+ */
+static void handle_client(
+    tcp_server_handle_t handle,
+    int client_socket
+) {
+    char rx_buffer[TCP_RX_BUFFER_SIZE];
+    char tx_buffer[TCP_TX_BUFFER_SIZE];
+
+    int len = recv(client_socket, rx_buffer, sizeof(rx_buffer) - 1, 0);
+
+    if (len > 0) {
+        rx_buffer[len] = '\0';
+        ESP_LOGD(TAG, "Received: %s", rx_buffer);
+
+        tcp_motor_command_t cmd;
+        esp_err_t err = parse_json_command(rx_buffer, &cmd);
+
+        if (err == ESP_OK && handle->callback) {
+            handle->callback(&cmd);
+            build_json_response(tx_buffer, sizeof(tx_buffer), true, "OK");
+        } else {
+            build_json_response(tx_buffer, sizeof(tx_buffer), false, "Parse error");
+        }
+
+        send(client_socket, tx_buffer, strlen(tx_buffer), 0);
+    }
+}
+
+/**
+ * @brief TCP server task
+ */
+static void tcp_server_task(void* pvParameters) {
+    tcp_server_handle_t handle = (tcp_server_handle_t)pvParameters;
+
+    struct sockaddr_in server_addr = {
+        .sin_family = AF_INET,
+        .sin_port = htons(TCP_SERVER_PORT),
+        .sin_addr.s_addr = htonl(INADDR_ANY)
+    };
+
+    handle->listen_socket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    if (handle->listen_socket < 0) {
+        ESP_LOGE(TAG, "Failed to create socket");
+        vTaskDelete(NULL);
+        return;
+    }
+
+    int opt = 1;
+    setsockopt(handle->listen_socket, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt));
+
+    if (bind(handle->listen_socket, (struct sockaddr*)&server_addr,
+             sizeof(server_addr)) < 0) {
+        ESP_LOGE(TAG, "Failed to bind socket");
+        close(handle->listen_socket);
+        vTaskDelete(NULL);
+        return;
+    }
+
+    if (listen(handle->listen_socket, TCP_MAX_CLIENTS) < 0) {
+        ESP_LOGE(TAG, "Failed to listen");
+        close(handle->listen_socket);
+        vTaskDelete(NULL);
+        return;
+    }
+
+    ESP_LOGI(TAG, "TCP server listening on port %d", TCP_SERVER_PORT);
+
+    while (handle->running) {
+        struct sockaddr_in client_addr;
+        socklen_t addr_len = sizeof(client_addr);
+
+        int client_socket = accept(
+            handle->listen_socket,
+            (struct sockaddr*)&client_addr,
+            &addr_len
+        );
+
+        if (client_socket >= 0) {
+            handle->client_count++;
+            ESP_LOGI(TAG, "Client connected from %s",
+                inet_ntoa(client_addr.sin_addr));
+
+            handle_client(handle, client_socket);
+
+            close(client_socket);
+            handle->client_count--;
+        }
+    }
+
+    close(handle->listen_socket);
+    vTaskDelete(NULL);
+}
+
+esp_err_t star_tcp_server_init(
+    const tcp_server_config_t* config,
+    tcp_server_handle_t* out_handle
+) {
+    if (config == NULL || out_handle == NULL) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    tcp_server_handle_t handle = calloc(1, sizeof(struct tcp_server_handle));
+    if (handle == NULL) {
+        return ESP_ERR_NO_MEM;
+    }
+
+    handle->callback = config->on_command;
+    handle->user_context = config->user_context;
+    handle->running = true;
+    handle->client_count = 0;
+
+    BaseType_t ret = xTaskCreate(
+        tcp_server_task,
+        "tcp_server",
+        4096,
+        handle,
+        5,
+        &handle->server_task
+    );
+
+    if (ret != pdPASS) {
+        free(handle);
+        return ESP_FAIL;
+    }
+
+    *out_handle = handle;
+    return ESP_OK;
+}
+
+esp_err_t star_tcp_server_deinit(tcp_server_handle_t handle) {
+    if (handle == NULL) {
+        return ESP_ERR_INVALID_ARG;
+    }
+
+    handle->running = false;
+
+    // Wake up the accept() call
+    if (handle->listen_socket >= 0) {
+        shutdown(handle->listen_socket, SHUT_RDWR);
+    }
+
+    // Wait for task to finish
+    vTaskDelay(pdMS_TO_TICKS(100));
+
+    free(handle);
+    return ESP_OK;
+}
+
+int star_tcp_server_get_client_count(tcp_server_handle_t handle) {
+    return handle ? handle->client_count : 0;
+}
+\end{lstlisting}
+
+\subsection{Main Application Integration}
+
+Add TCP server to the main application:
+
+\begin{lstlisting}[language=C, caption=Diff for ESP32-Firmware/src/main.c]
+// Add to includes
+#include "star_tcp_server.h"
+
+// Add global handle
+static tcp_server_handle_t g_tcp_server = NULL;
+
+// Add command callback
+static void on_tcp_command(const tcp_motor_command_t* cmd) {
+    if (cmd->emergency_stop) {
+        // Execute emergency stop
+        motor_control_emergency_stop();
+    } else {
+        // Set motor velocities
+        motor_control_set_velocity(cmd->left_velocity, cmd->right_velocity);
+    }
+}
+
+// Add to app_main() after WiFi is connected
+void app_main(void) {
+    // ... existing initialization ...
+
+    // Initialize TCP server for RPi5 communication
+    tcp_server_config_t tcp_config = {
+        .port = TCP_SERVER_PORT,
+        .on_command = on_tcp_command,
+        .user_context = NULL
+    };
+
+    esp_err_t err = star_tcp_server_init(&tcp_config, &g_tcp_server);
+    if (err == ESP_OK) {
+        ESP_LOGI(TAG, "TCP server started on port %d", TCP_SERVER_PORT);
+    } else {
+        ESP_LOGE(TAG, "Failed to start TCP server");
+    }
+
+    // ... rest of initialization ...
+}
+\end{lstlisting}
+

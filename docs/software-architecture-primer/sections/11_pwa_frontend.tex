@@ -1,0 +1,1043 @@
+\section{PWA Frontend Implementation}
+
+\subsection{Package Configuration}
+
+The PWA builds upon the existing UI-Demo codebase with additional dependencies:
+
+\begin{lstlisting}[language=json, caption=package.json (Vue 3 + TypeScript)]
+{
+  "name": "star-ui",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc && vite build",
+    "preview": "vite preview",
+    "type-check": "vue-tsc --noEmit",
+    "generate:proto": "grpc_tools_node_protoc --js_out=import_style=commonjs,binary:./src/grpc/generated --grpc-web_out=import_style=typescript,mode=grpcwebtext:./src/grpc/generated -I ../proto ../proto/star/*.proto"
+  },
+  "dependencies": {
+    // Vue 3 Core
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0",
+    "pinia": "^2.3.0",
+
+    // UI Libraries
+    "chart.js": "^4.4.7",
+    "vue-chartjs": "^5.3.2",
+    "@vueuse/core": "^12.0.0",
+    "lucide-vue-next": "^0.460.0",
+    "clsx": "^2.1.1",
+    "tailwind-merge": "^3.4.0",
+
+    // GraphQL (Vue Apollo)
+    "@vue/apollo-composable": "^4.3.0",
+    "@apollo/client": "^3.12.0",
+    "graphql": "^16.10.0",
+    "graphql-ws": "^5.16.0",
+    "apollo3-cache-persist": "^0.15.0",
+
+    // gRPC-Web
+    "@improbable-eng/grpc-web": "^0.15.0",
+    "google-protobuf": "^3.21.4",
+
+    // Offline storage
+    "idb": "^8.0.1",
+
+    // Service Worker
+    "workbox-core": "^7.3.0",
+    "workbox-precaching": "^7.3.0",
+    "workbox-routing": "^7.3.0",
+    "workbox-strategies": "^7.3.0"
+  },
+  "devDependencies": {
+    // TypeScript
+    "typescript": "~5.7.0",
+    "vue-tsc": "^2.2.0",
+    "@types/node": "^22.10.0",
+
+    // Vite + Vue
+    "@vitejs/plugin-vue": "^5.2.1",
+    "vite": "^6.0.0",
+
+    // Styling
+    "tailwindcss": "^4.1.17",
+    "autoprefixer": "^10.4.20",
+
+    // PWA plugin
+    "vite-plugin-pwa": "^0.21.1",
+
+    // Proto compilation
+    "grpc_tools_node_protoc_ts": "^5.3.3",
+    "grpc-tools": "^1.12.4"
+  }
+}
+\end{lstlisting}
+
+\subsection{Vite PWA Configuration}
+
+\begin{lstlisting}[language=JavaScript, caption=vite.config.ts]
+import { defineConfig } from 'vite'
+import vue from '@vitejs/plugin-vue'
+import { VitePWA } from 'vite-plugin-pwa'
+
+export default defineConfig({
+  plugins: [
+    vue(),
+    VitePWA({
+      registerType: 'autoUpdate',
+      includeAssets: [
+        'favicon.ico',
+        'robots.txt',
+        'apple-touch-icon.png'
+      ],
+      manifest: {
+        name: 'STAR Robot Controller',
+        short_name: 'STAR',
+        description: 'Control interface for STAR LiDAR SLAM robot',
+        theme_color: '#500000',  // Texas A&M maroon
+        background_color: '#1a1a1a',
+        display: 'standalone',
+        orientation: 'any',
+        start_url: '/',
+        scope: '/',
+        icons: [
+          {
+            src: 'pwa-192x192.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: 'pwa-512x512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'any maskable'
+          }
+        ]
+      },
+      workbox: {
+        // Precache static assets
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+
+        // Runtime caching strategies
+        runtimeCaching: [
+          {
+            // GraphQL API - Network First with fallback
+            urlPattern: /^https?:\/\/star-robot\.local(:8080)?\/graphql/,
+            handler: 'NetworkFirst',
+            options: {
+              cacheName: 'graphql-cache',
+              expiration: {
+                maxEntries: 100,
+                maxAgeSeconds: 60 * 60  // 1 hour
+              },
+              networkTimeoutSeconds: 3,
+              cacheableResponse: {
+                statuses: [0, 200]
+              }
+            }
+          },
+          {
+            // Static assets from gateway
+            urlPattern: /^https?:\/\/star-robot\.local(:8080)?\/static/,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'static-assets',
+              expiration: {
+                maxEntries: 60,
+                maxAgeSeconds: 60 * 60 * 24 * 30  // 30 days
+              }
+            }
+          }
+        ]
+      },
+      devOptions: {
+        enabled: true  // Enable PWA in dev mode for testing
+      }
+    })
+  ],
+  server: {
+    port: 3000,
+    proxy: {
+      '/graphql': {
+        target: 'http://localhost:8080',
+        ws: true  // WebSocket proxy for subscriptions
+      },
+      '/grpc': {
+        target: 'http://localhost:8090'
+      }
+    }
+  }
+})
+\end{lstlisting}
+
+\subsection{Apollo Client with Offline Support (Vue 3)}
+
+\begin{lstlisting}[language=JavaScript, caption=src/graphql/client.ts]
+import {
+  ApolloClient,
+  InMemoryCache,
+  HttpLink,
+  split,
+  ApolloLink,
+  type NormalizedCacheObject
+} from '@apollo/client/core'
+import { GraphQLWsLink } from '@apollo/client/link/subscriptions'
+import { getMainDefinition } from '@apollo/client/utilities'
+import { createClient } from 'graphql-ws'
+import { persistCache, LocalStorageWrapper } from 'apollo3-cache-persist'
+import { onError } from '@apollo/client/link/error'
+import { provideApolloClient } from '@vue/apollo-composable'
+
+// Gateway URL - defaults to mDNS hostname
+const GATEWAY_URL = import.meta.env.VITE_GATEWAY_URL
+  || 'http://star-robot.local:8080';
+
+// HTTP link for queries and mutations
+const httpLink = new HttpLink({
+  uri: `${GATEWAY_URL}/graphql`,
+  credentials: 'include'
+});
+
+// WebSocket link for subscriptions
+const wsLink = new GraphQLWsLink(createClient({
+  url: `ws://${GATEWAY_URL.replace(/^https?:\/\//, '')}/graphql-ws`,
+  connectionParams: () => ({
+    // Add auth tokens here if needed
+    timestamp: Date.now()
+  }),
+  retryAttempts: Infinity,
+  shouldRetry: () => true,
+  on: {
+    connected: () => console.log('WebSocket connected'),
+    closed: () => console.log('WebSocket closed'),
+    error: (err) => console.error('WebSocket error:', err)
+  }
+}));
+
+// Error handling link
+const errorLink = onError(({ graphQLErrors, networkError, operation }) => {
+  if (graphQLErrors) {
+    graphQLErrors.forEach(({ message, locations, path }) => {
+      console.error(
+        `[GraphQL error]: Message: ${message}, ` +
+        `Location: ${locations}, Path: ${path}`
+      );
+    });
+  }
+
+  if (networkError) {
+    console.error(`[Network error]: ${networkError}`);
+    // Could dispatch to offline queue here
+  }
+});
+
+// Split link based on operation type
+const splitLink = split(
+  ({ query }) => {
+    const definition = getMainDefinition(query);
+    return (
+      definition.kind === 'OperationDefinition' &&
+      definition.operation === 'subscription'
+    );
+  },
+  wsLink,
+  httpLink
+);
+
+// Create cache with custom type policies
+const cache = new InMemoryCache({
+  typePolicies: {
+    Query: {
+      fields: {
+        telemetryHistory: {
+          // Merge incoming with existing, keep last 1000
+          merge(existing = [], incoming) {
+            return [...incoming].slice(-1000);
+          }
+        }
+      }
+    },
+    Telemetry: {
+      // Use timestamp as unique identifier
+      keyFields: ['timestamp']
+    },
+    Waypoint: {
+      keyFields: ['id']
+    }
+  }
+});
+
+// Initialize cache persistence
+let apolloClient;
+
+export async function initializeApollo() {
+  // Persist cache to localStorage
+  await persistCache({
+    cache,
+    storage: new LocalStorageWrapper(window.localStorage),
+    maxSize: 1048576 * 10, // 10MB
+    debug: import.meta.env.DEV
+  });
+
+  apolloClient = new ApolloClient({
+    link: ApolloLink.from([errorLink, splitLink]),
+    cache,
+    defaultOptions: {
+      watchQuery: {
+        fetchPolicy: 'cache-and-network',
+        errorPolicy: 'all'
+      },
+      query: {
+        fetchPolicy: 'cache-first',
+        errorPolicy: 'all'
+      },
+      mutate: {
+        errorPolicy: 'all'
+      }
+    }
+  });
+
+  return apolloClient;
+}
+
+export function getApolloClient() {
+  if (!apolloClient) {
+    throw new Error('Apollo Client not initialized. Call initializeApollo() first.');
+  }
+  return apolloClient;
+}
+\end{lstlisting}
+
+\subsection{GraphQL Operations}
+
+\begin{lstlisting}[language=JavaScript, caption=src/graphql/operations.js]
+import { gql } from '@apollo/client';
+
+// ========== QUERIES ==========
+
+export const TELEMETRY_QUERY = gql`
+  query GetTelemetry {
+    telemetry {
+      imu {
+        pitch
+        roll
+        yaw
+        velocity
+        accelerationX
+        accelerationY
+        accelerationZ
+      }
+      gps {
+        latitude
+        longitude
+        altitude
+      }
+      battery
+      wifiSignal
+      cpuUsage
+      temperature
+      motorLoad
+      timestamp
+    }
+  }
+`;
+
+export const SYSTEM_STATUS_QUERY = gql`
+  query GetSystemStatus {
+    systemStatus {
+      connectionStatus
+      mode
+      esp32Connected
+      lidarConnected
+      rosConnected
+    }
+  }
+`;
+
+export const NAVIGATION_STATE_QUERY = gql`
+  query GetNavigationState {
+    navigationState {
+      currentPosition {
+        x
+        y
+        heading
+      }
+      path {
+        x
+        y
+        heading
+      }
+      waypoints {
+        id
+        x
+        y
+        label
+      }
+      isNavigating
+    }
+  }
+`;
+
+export const TELEMETRY_HISTORY_QUERY = gql`
+  query GetTelemetryHistory($limit: Int) {
+    telemetryHistory(limit: $limit) {
+      imu {
+        pitch
+        roll
+        yaw
+        velocity
+      }
+      battery
+      timestamp
+    }
+  }
+`;
+
+// ========== MUTATIONS ==========
+
+export const EMERGENCY_STOP_MUTATION = gql`
+  mutation EmergencyStop {
+    emergencyStop
+  }
+`;
+
+export const SET_MODE_MUTATION = gql`
+  mutation SetMode($mode: RobotMode!) {
+    setMode(mode: $mode)
+  }
+`;
+
+export const SET_SETTINGS_MUTATION = gql`
+  mutation SetSettings($input: SettingsInput!) {
+    setSettings(input: $input) {
+      maxSpeed
+      safetyLockEnabled
+      autonomousEnabled
+      lidarEnabled
+    }
+  }
+`;
+
+export const ADD_WAYPOINT_MUTATION = gql`
+  mutation AddWaypoint($x: Float!, $y: Float!) {
+    addWaypoint(x: $x, y: $y) {
+      id
+      x
+      y
+      label
+    }
+  }
+`;
+
+// ========== SUBSCRIPTIONS ==========
+
+export const TELEMETRY_SUBSCRIPTION = gql`
+  subscription TelemetryStream {
+    telemetryStream {
+      imu {
+        pitch
+        roll
+        yaw
+        velocity
+      }
+      battery
+      wifiSignal
+      cpuUsage
+      temperature
+      timestamp
+    }
+  }
+`;
+
+export const LIDAR_SCAN_SUBSCRIPTION = gql`
+  subscription LidarScan {
+    lidarScan {
+      points {
+        angle
+        distance
+        intensity
+      }
+      timestamp
+    }
+  }
+`;
+
+export const EVENT_LOG_SUBSCRIPTION = gql`
+  subscription EventLog {
+    eventLog {
+      timestamp
+      message
+      type
+    }
+  }
+`;
+\end{lstlisting}
+
+\subsection{gRPC-Web Client}
+
+\begin{lstlisting}[language=JavaScript, caption=src/grpc/client.js]
+import { grpc } from '@improbable-eng/grpc-web';
+import {
+  MotorControlClient
+} from './generated/motor_control_pb_service';
+import {
+  VelocityCommand,
+  EmptyRequest,
+  MotorPowerCommand
+} from './generated/motor_control_pb';
+
+// gRPC endpoint (through Envoy proxy)
+const GRPC_URL = import.meta.env.VITE_GRPC_URL
+  || 'http://star-robot.local:8090';
+
+// Create gRPC-Web client
+const client = new MotorControlClient(GRPC_URL);
+
+/**
+ * Send velocity command via gRPC.
+ * @param {number} leftVelocity - Left wheel velocity in m/s
+ * @param {number} rightVelocity - Right wheel velocity in m/s
+ * @returns {Promise<{success: boolean, message: string, latencyUs: number}>}
+ */
+export function setVelocity(leftVelocity, rightVelocity) {
+  return new Promise((resolve, reject) => {
+    const request = new VelocityCommand();
+    request.setLeftVelocity(leftVelocity);
+    request.setRightVelocity(rightVelocity);
+    request.setTimestamp(Date.now());
+
+    client.setVelocity(request, {}, (err, response) => {
+      if (err) {
+        console.error('gRPC setVelocity error:', err);
+        reject(err);
+      } else {
+        resolve({
+          success: response.getSuccess(),
+          message: response.getMessage(),
+          latencyUs: response.getLatencyUs()
+        });
+      }
+    });
+  });
+}
+
+/**
+ * Send emergency stop command via gRPC.
+ * @returns {Promise<{success: boolean, message: string}>}
+ */
+export function emergencyStop() {
+  return new Promise((resolve, reject) => {
+    const request = new EmptyRequest();
+
+    client.emergencyStop(request, {}, (err, response) => {
+      if (err) {
+        console.error('gRPC emergencyStop error:', err);
+        reject(err);
+      } else {
+        resolve({
+          success: response.getSuccess(),
+          message: response.getMessage()
+        });
+      }
+    });
+  });
+}
+
+/**
+ * Set individual motor power via gRPC.
+ * @param {number} motorId - Motor index (0-3)
+ * @param {number} power - Power level (-1.0 to 1.0)
+ * @returns {Promise<{success: boolean, message: string}>}
+ */
+export function setMotorPower(motorId, power) {
+  return new Promise((resolve, reject) => {
+    const request = new MotorPowerCommand();
+    request.setMotorId(motorId);
+    request.setPower(power);
+
+    client.setMotorPower(request, {}, (err, response) => {
+      if (err) {
+        reject(err);
+      } else {
+        resolve({
+          success: response.getSuccess(),
+          message: response.getMessage()
+        });
+      }
+    });
+  });
+}
+
+/**
+ * Stream encoder data from all motors.
+ * @param {Function} onData - Callback for each encoder data packet
+ * @param {Function} onError - Callback for errors
+ * @param {Function} onEnd - Callback when stream ends
+ * @returns {Function} Cancel function to stop the stream
+ */
+export function streamEncoderData(onData, onError, onEnd) {
+  const request = new EmptyRequest();
+  const stream = client.streamEncoderData(request);
+
+  stream.on('data', (response) => {
+    onData({
+      motorId: response.getMotorId(),
+      ticks: response.getTicks(),
+      velocity: response.getVelocity(),
+      timestamp: response.getTimestamp()
+    });
+  });
+
+  stream.on('error', (err) => {
+    console.error('Encoder stream error:', err);
+    onError(err);
+  });
+
+  stream.on('end', () => {
+    console.log('Encoder stream ended');
+    onEnd();
+  });
+
+  // Return cancel function
+  return () => {
+    stream.cancel();
+  };
+}
+\end{lstlisting}
+
+\subsection{Robot Connection Composable (Vue 3 - Replaces useMockData)}
+
+\begin{lstlisting}[language=JavaScript, caption=src/composables/useRobotConnection.ts]
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
+import { useQuery, useSubscription, useMutation } from '@vue/apollo-composable'
+import {
+  TELEMETRY_QUERY,
+  SYSTEM_STATUS_QUERY,
+  NAVIGATION_STATE_QUERY,
+  TELEMETRY_SUBSCRIPTION,
+  LIDAR_SCAN_SUBSCRIPTION,
+  EVENT_LOG_SUBSCRIPTION,
+  EMERGENCY_STOP_MUTATION,
+  SET_MODE_MUTATION
+} from '@/graphql/operations'
+import * as grpcClient from '@/grpc/client'
+import {
+  saveTelemetryToIndexedDB,
+  getTelemetryFromIndexedDB,
+  saveNavigationState,
+  getNavigationState as getStoredNavState
+} from '@/storage/indexedDB'
+import type { Telemetry, SystemStatus, NavigationState, EncoderData } from '@/types'
+
+/**
+ * Main composable for robot connection and control.
+ * Replaces useMockData with real API integration.
+ */
+export function useRobotConnection() {
+  // Connection state (Vue 3 refs)
+  const isOnline = ref(navigator.onLine)
+  const lastSyncTime = ref<Date | null>(null)
+  const connectionQuality = ref<'good' | 'fair' | 'poor'>('good')
+
+  // Encoder stream reference
+  let encoderStreamCancel: (() => void) | null = null
+  const encoderData = ref<Record<number, EncoderData>>({})
+
+  // ========== GraphQL Queries (Vue Apollo) ==========
+
+  const {
+    result: telemetryResult,
+    loading: telemetryLoading,
+    error: telemetryError
+  } = useQuery(TELEMETRY_QUERY, () => ({
+    pollInterval: isOnline.value ? 0 : 5000,
+    fetchPolicy: 'cache-and-network'
+  }))
+
+  const { result: statusResult } = useQuery(SYSTEM_STATUS_QUERY, {
+    pollInterval: 1000
+  })
+
+  const { result: navResult } = useQuery(NAVIGATION_STATE_QUERY, {
+    pollInterval: 500
+  })
+
+  // ========== GraphQL Subscriptions ==========
+
+  const { result: liveTelemetry } = useSubscription(
+    TELEMETRY_SUBSCRIPTION,
+    null,
+    () => ({ enabled: isOnline.value })
+  )
+
+  const { result: lidarResult } = useSubscription(
+    LIDAR_SCAN_SUBSCRIPTION,
+    null,
+    () => ({ enabled: isOnline.value })
+  )
+
+  const { result: eventResult } = useSubscription(
+    EVENT_LOG_SUBSCRIPTION,
+    null,
+    () => ({ enabled: isOnline.value })
+  )
+
+  // Watch for telemetry updates to persist to IndexedDB
+  watch(liveTelemetry, (newData) => {
+    if (newData?.telemetryStream) {
+      saveTelemetryToIndexedDB(newData.telemetryStream)
+      lastSyncTime.value = new Date()
+    }
+  })
+
+  // ========== GraphQL Mutations ==========
+
+  const { mutate: emergencyStopMutation } = useMutation(EMERGENCY_STOP_MUTATION)
+  const { mutate: setModeMutation } = useMutation(SET_MODE_MUTATION)
+
+  // ========== Network Status (Vue lifecycle) ==========
+
+  onMounted(() => {
+    const handleOnline = () => {
+      isOnline.value = true
+      console.log('Network: Online')
+    }
+    const handleOffline = () => {
+      isOnline.value = false
+      console.log('Network: Offline')
+    }
+
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+  })
+
+  onUnmounted(() => {
+    window.removeEventListener('online', () => {})
+    window.removeEventListener('offline', () => {})
+  })
+
+  // ========== Encoder Stream (gRPC) ==========
+
+  watch(isOnline, (online) => {
+    if (online && !encoderStreamCancel) {
+      encoderStreamCancel = grpcClient.streamEncoderData(
+        (data: EncoderData) => {
+          encoderData.value = {
+            ...encoderData.value,
+            [data.motorId]: data
+          }
+        },
+        (err: Error) => {
+          console.error('Encoder stream error:', err)
+          encoderStreamCancel = null
+        },
+        () => {
+          encoderStreamCancel = null
+        }
+      )
+    }
+  }, { immediate: true })
+
+  onUnmounted(() => {
+    if (encoderStreamCancel) {
+      encoderStreamCancel()
+      encoderStreamCancel = null
+    }
+  })
+
+  // ========== Motor Control (gRPC) ==========
+
+  async function sendMotorCommand(left: number, right: number) {
+    if (!isOnline.value) {
+      throw new Error('Cannot send motor commands while offline')
+    }
+    return grpcClient.setVelocity(left, right)
+  }
+
+  async function emergencyStop() {
+    // Try both gRPC and GraphQL for redundancy
+    const results = await Promise.allSettled([
+      grpcClient.emergencyStop(),
+      emergencyStopMutation()
+    ])
+
+    const anySuccess = results.some(
+      r => r.status === 'fulfilled' && (r.value as any)?.success !== false
+    )
+
+    return { success: anySuccess }
+  }
+
+  async function setMode(mode: string) {
+    const result = await setModeMutation({ mode })
+    return result?.data?.setMode
+  }
+
+  // ========== Computed Properties ==========
+
+  const telemetry = computed(() =>
+    liveTelemetry.value?.telemetryStream
+      || telemetryResult.value?.telemetry
+  )
+
+  const lidarScan = computed(() => lidarResult.value?.lidarScan)
+  const systemStatus = computed(() => statusResult.value?.systemStatus)
+  const navigationState = computed(() => navResult.value?.navigationState)
+  const latestEvent = computed(() => eventResult.value?.eventLog)
+
+  // ========== Return Values ==========
+
+  return {
+    // Connection state
+    isOnline,
+    lastSyncTime,
+    connectionQuality,
+
+    // Telemetry
+    telemetry,
+    telemetryLoading,
+    telemetryError,
+
+    // LiDAR
+    lidarScan,
+
+    // System status
+    systemStatus,
+
+    // Navigation
+    navigationState,
+
+    // Events
+    latestEvent,
+
+    // Encoder data
+    encoderData,
+
+    // Motor control
+    sendMotorCommand,
+    emergencyStop,
+    setMode
+  }
+}
+\end{lstlisting}
+
+\subsection{IndexedDB Offline Storage}
+
+\begin{lstlisting}[language=JavaScript, caption=src/storage/indexedDB.js]
+import { openDB } from 'idb';
+
+const DB_NAME = 'star-robot-db';
+const DB_VERSION = 1;
+
+let dbPromise;
+
+/**
+ * Get or create the IndexedDB database.
+ */
+async function getDB() {
+  if (!dbPromise) {
+    dbPromise = openDB(DB_NAME, DB_VERSION, {
+      upgrade(db, oldVersion, newVersion, transaction) {
+        // Telemetry history store
+        if (!db.objectStoreNames.contains('telemetry')) {
+          const store = db.createObjectStore('telemetry', {
+            keyPath: 'id',
+            autoIncrement: true
+          });
+          store.createIndex('timestamp', 'timestamp');
+          store.createIndex('savedAt', 'savedAt');
+        }
+
+        // Settings store
+        if (!db.objectStoreNames.contains('settings')) {
+          db.createObjectStore('settings', { keyPath: 'key' });
+        }
+
+        // Navigation state store
+        if (!db.objectStoreNames.contains('navigation')) {
+          db.createObjectStore('navigation', { keyPath: 'key' });
+        }
+
+        // Event log store
+        if (!db.objectStoreNames.contains('events')) {
+          const store = db.createObjectStore('events', {
+            keyPath: 'id',
+            autoIncrement: true
+          });
+          store.createIndex('timestamp', 'timestamp');
+        }
+      }
+    });
+  }
+  return dbPromise;
+}
+
+/**
+ * Save telemetry snapshot to IndexedDB.
+ * Automatically prunes to keep only last 10,000 entries.
+ */
+export async function saveTelemetryToIndexedDB(telemetry) {
+  const db = await getDB();
+
+  await db.add('telemetry', {
+    ...telemetry,
+    savedAt: Date.now()
+  });
+
+  // Prune old entries
+  const count = await db.count('telemetry');
+  if (count > 10000) {
+    const tx = db.transaction('telemetry', 'readwrite');
+    const store = tx.objectStore('telemetry');
+    const index = store.index('savedAt');
+
+    let cursor = await index.openCursor();
+    const toDelete = count - 10000;
+    let deleted = 0;
+
+    while (cursor && deleted < toDelete) {
+      await cursor.delete();
+      cursor = await cursor.continue();
+      deleted++;
+    }
+
+    await tx.done;
+  }
+}
+
+/**
+ * Retrieve telemetry history from IndexedDB.
+ * @param {number} limit - Maximum entries to return
+ * @returns {Promise<Array>} Telemetry entries, newest first
+ */
+export async function getTelemetryFromIndexedDB(limit = 100) {
+  const db = await getDB();
+  const tx = db.transaction('telemetry', 'readonly');
+  const store = tx.objectStore('telemetry');
+  const index = store.index('timestamp');
+
+  const entries = [];
+  let cursor = await index.openCursor(null, 'prev');
+
+  while (cursor && entries.length < limit) {
+    entries.push(cursor.value);
+    cursor = await cursor.continue();
+  }
+
+  return entries;
+}
+
+/**
+ * Save user settings to IndexedDB.
+ */
+export async function saveSettings(settings) {
+  const db = await getDB();
+  await db.put('settings', {
+    key: 'userSettings',
+    ...settings,
+    updatedAt: Date.now()
+  });
+}
+
+/**
+ * Retrieve user settings from IndexedDB.
+ */
+export async function getSettings() {
+  const db = await getDB();
+  const result = await db.get('settings', 'userSettings');
+  return result || null;
+}
+
+/**
+ * Save navigation state to IndexedDB.
+ */
+export async function saveNavigationState(state) {
+  const db = await getDB();
+  await db.put('navigation', {
+    key: 'currentState',
+    ...state,
+    savedAt: Date.now()
+  });
+}
+
+/**
+ * Retrieve navigation state from IndexedDB.
+ */
+export async function getNavigationState() {
+  const db = await getDB();
+  const result = await db.get('navigation', 'currentState');
+  return result || null;
+}
+
+/**
+ * Save event to IndexedDB.
+ */
+export async function saveEvent(event) {
+  const db = await getDB();
+  await db.add('events', {
+    ...event,
+    savedAt: Date.now()
+  });
+
+  // Keep only last 500 events
+  const count = await db.count('events');
+  if (count > 500) {
+    const tx = db.transaction('events', 'readwrite');
+    const store = tx.objectStore('events');
+    const index = store.index('timestamp');
+
+    let cursor = await index.openCursor();
+    const toDelete = count - 500;
+    let deleted = 0;
+
+    while (cursor && deleted < toDelete) {
+      await cursor.delete();
+      cursor = await cursor.continue();
+      deleted++;
+    }
+  }
+}
+
+/**
+ * Get recent events from IndexedDB.
+ */
+export async function getEvents(limit = 50) {
+  const db = await getDB();
+  const tx = db.transaction('events', 'readonly');
+  const store = tx.objectStore('events');
+  const index = store.index('timestamp');
+
+  const entries = [];
+  let cursor = await index.openCursor(null, 'prev');
+
+  while (cursor && entries.length < limit) {
+    entries.push(cursor.value);
+    cursor = await cursor.continue();
+  }
+
+  return entries;
+}
+
+/**
+ * Clear all data from IndexedDB.
+ */
+export async function clearAllData() {
+  const db = await getDB();
+
+  const tx = db.transaction(
+    ['telemetry', 'settings', 'navigation', 'events'],
+    'readwrite'
+  );
+
+  await Promise.all([
+    tx.objectStore('telemetry').clear(),
+    tx.objectStore('settings').clear(),
+    tx.objectStore('navigation').clear(),
+    tx.objectStore('events').clear()
+  ]);
+
+  await tx.done;
+}
+\end{lstlisting}
+

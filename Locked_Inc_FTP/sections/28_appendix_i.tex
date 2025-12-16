@@ -1,0 +1,497 @@
+% =============================================================================
+% Appendix I: Bill of Materials
+% =============================================================================
+
+\subsection{Bill of Materials}\label{app:bom}
+
+Complete Bills of Materials for all PCB designs. Each table includes reference designators, values, quantities, manufacturer part numbers, and supplier pricing from Digi-Key and Mouser. \textbf{Cost calculations use the lower price between suppliers. A 1.2$\times$ spare parts buffer (20\% additional) is applied in budget totals (Section~\ref{sec:budget}).}
+
+{\scriptsize
+% Motor Driver BOM
+\subsubsection{Motor Driver Board BOM}
+\begin{longtable}{@{}llrlp{2.8cm}p{2.5cm}rr@{}}
+\caption{Motor Driver Board Complete BOM}\label{tab:bom-motor-full-app}\\
+\toprule
+\textbf{Ref} & \textbf{Value} & \textbf{Qty} & \textbf{MPN} & \textbf{DigiKey PN} & \textbf{Mouser PN} & \textbf{DK \$} & \textbf{MO \$} \\
+\midrule
+\endfirsthead
+\multicolumn{8}{c}{\tablename\ \thetable\ (continued)}\\
+\toprule
+\textbf{Ref} & \textbf{Value} & \textbf{Qty} & \textbf{MPN} & \textbf{DigiKey PN} & \textbf{Mouser PN} & \textbf{DK \$} & \textbf{MO \$} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{8}{r}{Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+C1--C4 & 56$\mu$F & 4 & 865080343007 & 732-8417-1-ND & 710-865080343007 & 0.26 & 0.27 \\
+C5--C8 & 220nF & 4 & CL10B224KB8NNNC & 1276-CL10B224KB8NNNCCT-ND & 187-CL10B224KB8NNNC & 0.11 & 0.11 \\
+C9--C12 & 100nF & 4 & CC603JRX7R9BB104 & 311-1779-1-ND & 603-CC603JRX7R9BB104 & 0.10 & 0.10 \\
+D1--D4 & Red LED & 4 & 150060RS75000 & 732-4978-1-ND & 710-150060RS75000 & 0.15 & 0.16 \\
+J1,J4--J6 & WR-WTB 8P & 4 & 61200821621 & 732-5395-ND & 710-61200821621 & 0.97 & 1.08 \\
+J2 & WR-WTB 6P & 1 & 61200621621 & 732-5394-ND & 710-61200621621 & 0.43 & 0.47 \\
+J3,J10--J12 & JST XH 6P & 4 & B6B-XH-A & 455-B6B-XH-A-ND & -- & 0.20 & -- \\
+J7 & Phoenix 2P & 1 & 1017491 & 277-17493-ND & 651-1017491 & 1.06 & 0.72 \\
+R1--R4 & 10k$\Omega$ & 4 & RT0603BRE0710KL & YAG2313CT-ND & 603-RT0603BRE0710KL & 0.14 & 0.10 \\
+R5--R8 & 68$\Omega$ & 4 & RT0603FRE0768RL & 13-RT0603FRE0768RLCT-ND & 603-RT0603FRE0768RL & 0.10 & 0.10 \\
+R9--R12 & 3.16k$\Omega$ & 4 & ERA-3AEB3161V & P3.16KDBCT-ND & 667-ERA-3AEB3161V & 0.10 & 0.10 \\
+U1--U4 & DRV8243S & 4 & DRV8243SQDGQRQ1 & 296-DRV8243SQDGQRQ1CT-ND & 595-DRV8243SQDGQRQ1 & 4.72 & 6.37 \\
+\midrule
+\multicolumn{6}{r}{\textbf{Board Total (Best Price):}} & \multicolumn{2}{r}{\textbf{\$28.39}} \\
+\end{longtable}
+
+% USB-C BOM
+\subsubsection{USB-C PD Controller Board BOM}
+\begin{longtable}{@{}llrlp{2.8cm}p{2.5cm}rr@{}}
+\caption{USB-C Board Complete BOM}\label{tab:bom-usbc-full-app}\\
+\toprule
+\textbf{Ref} & \textbf{Value} & \textbf{Qty} & \textbf{MPN} & \textbf{DigiKey PN} & \textbf{Mouser PN} & \textbf{DK \$} & \textbf{MO \$} \\
+\midrule
+\endfirsthead
+\multicolumn{8}{c}{\tablename\ \thetable\ (continued)}\\
+\toprule
+\textbf{Ref} & \textbf{Value} & \textbf{Qty} & \textbf{MPN} & \textbf{DigiKey PN} & \textbf{Mouser PN} & \textbf{DK \$} & \textbf{MO \$} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{8}{r}{Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+C1,C5,C8,C14,C17,C24,C28,C29 & 100nF & 8 & CC603JRX7R9BB104 & 311-1779-1-ND & 603-CC603JRX7R9BB104 & 0.10 & 0.10 \\
+C2 & 1$\mu$F & 1 & UMK107AB7105KA-T & 587-3247-1-ND & -- & 0.08 & 0.10 \\
+C3--C13,C22,C25 & 10$\mu$F & 11 & GRM21BR61H106KE3L & 490-18663-1-ND & 81-GRM21BR61H106KE3L & 0.28 & 0.28 \\
+C15,C16 & 330pF & 2 & CL10B331KB8WPNC & 1276-CL10B331KB8WPNCCT-ND & 187-CL10B331KB8WPNC & 0.10 & 0.10 \\
+C18--C21 & 10nF & 4 & CL10B103KB8NNNL & 1276-CL10B103KB8NNNLCT-ND & 187-CL10B103KB8NNNL & 0.10 & 0.10 \\
+C23 & 22$\mu$F & 1 & T527T226M025ATE100 & -- & 80-T527T226M25ATE100 & -- & 1.13 \\
+C26,C27,C30,C31 & 4.7$\mu$F & 4 & GRT21BR61H475KE3K & 490-GRT21BR61H475KE13KCT-ND & 81-GRT21BR61H475KE3K & 0.17 & 0.17 \\
+D1,D2 & TVS & 2 & 82306050029 & 732-3040-1-ND & 710-82306050029 & 0.73 & 0.73 \\
+FB1 & 22$\Omega$ & 1 & BLM18SN220TN1D & 490-13961-1-ND & 81-BLM18SN220TN1D & 0.19 & 0.19 \\
+J1,J2 & Phoenix 2P & 2 & 1017491 & 277-17493-ND & 651-1017491 & 1.06 & 0.72 \\
+J4 & WR-WTB 6P & 1 & 61200621621 & 732-5394-ND & 710-61200621621 & 0.43 & 0.47 \\
+J5 & Header 2P & 1 & M20-9990246 & 952-2262-ND & 855-M20-9990246 & 0.10 & 0.10 \\
+J7 & USB-C & 1 & USB4216-03-A & 2073-USB4216-03-ACT-ND & 640-USB4216-03-A & 0.62 & 0.72 \\
+R1--R4 & 10k$\Omega$ & 4 & RT0603BRE0710KL & YAG2313CT-ND & 603-RT0603BRE0710KL & 0.14 & 0.10 \\
+R5,R6 & 3.3k$\Omega$ & 2 & -- & 311-2366-1-ND & 603-RT0603DRD073K3L & 0.13 & 0.13 \\
+R7 & 100k$\Omega$ & 1 & AC0603JR-07100KL & 311-100KLECT-ND & 603-AC0603JR-07100KL & 0.10 & 0.10 \\
+U1 & EEPROM & 1 & CAT24C512WI-GT3 & CAT24C512WI-GT3OSCT-ND & 863-CAT24C512WI-GT3 & 0.59 & 0.59 \\
+U2 & TPS25751D & 1 & TPS25751DREFR & 296-TPS25751DREFRCT-ND & 595-TPS25751DREFR & 2.90 & 2.91 \\
+U3 & TVS & 1 & TVS2200DRVR & 296-52187-1-ND & 595-TVS2200DRVR & 0.53 & 0.83 \\
+\midrule
+\multicolumn{6}{r}{\textbf{Board Total (Best Price):}} & \multicolumn{2}{r}{\textbf{\$15.59}} \\
+\end{longtable}
+
+% AFE BOM
+\subsubsection{AFE Board BOM}
+\begin{longtable}{@{}llrlp{2.8cm}p{2.5cm}rr@{}}
+\caption{AFE Board Complete BOM}\label{tab:bom-afe-full-app}\\
+\toprule
+\textbf{Ref} & \textbf{Value} & \textbf{Qty} & \textbf{MPN} & \textbf{DigiKey PN} & \textbf{Mouser PN} & \textbf{DK \$} & \textbf{MO \$} \\
+\midrule
+\endfirsthead
+\multicolumn{8}{c}{\tablename\ \thetable\ (continued)}\\
+\toprule
+\textbf{Ref} & \textbf{Value} & \textbf{Qty} & \textbf{MPN} & \textbf{DigiKey PN} & \textbf{Mouser PN} & \textbf{DK \$} & \textbf{MO \$} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{8}{r}{Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+C1--C4 & 220nF & 4 & CL10B224KB8NNNC & 1276-CL10B224KB8NNNCCT-ND & 187-CL10B224KB8NNNC & 0.11 & 0.11 \\
+C5,C6,C8--C10,C14,C15 & 100nF & 7 & CC603JRX7R9BB104 & 311-1779-1-ND & 603-CC603JRX7R9BB104 & 0.10 & 0.10 \\
+C7,C12 & 1$\mu$F & 2 & UMK107AB7105KA-T & 587-3247-1-ND & UMK107AB7105KA-T & 0.08 & 0.10 \\
+C11,C13 & 10$\mu$F & 2 & GRM21BR61H106KE3L & 490-18663-1-ND & 81-GRM21BR61H106KE3L & 0.28 & 0.28 \\
+C16 & 470pF & 1 & VJ0603Y471KXAPW1BC & 720-VJ0603Y471KXAPW1BCCT-ND & 77-VJ0603Y471KXAPBC & 0.10 & 0.10 \\
+C17,C18 & 4.7nF & 2 & CGA3E2X7R1H472K080AA & 445-5661-1-ND & 810-CGA3E2X7R1H472K & 0.10 & 0.10 \\
+D1--D3 & Yellow LED & 3 & SML-D12Y1WT86 & SML-D12Y1WT86CT-ND & 755-SML-D12Y1WT86 & 0.19 & 0.19 \\
+D4--D6 & 5.6V Zener & 3 & DDZ9690-7 & DDZ9690DICT-ND & 621-DDZ9690-7 & 0.10 & 0.10 \\
+D7 & 1N4148W & 1 & 1N4148W & 4878-1N4148WCT-ND & 637-1N4148W & 0.10 & 0.10 \\
+D8,D10 & TVS & 2 & PTVS14VP1UP,115 & 1727-4427-1-ND & 771-PTVS14VP1UP115 & 0.49 & 0.49 \\
+D9 & 3.3V Zener & 1 & MMSZ5226C-E3-08 & MMSZ5226C-E3-08GICT-ND & 78-MMSZ5226C-E3-08 & 0.18 & 0.18 \\
+D11 & Schottky & 1 & V5N3202HM3/I & 112-V5N3202HM3/ICT-ND & 625-V5N3202HM3/I & 0.99 & 1.00 \\
+D12 & Red LED & 1 & 150060RS75000 & 732-4978-1-ND & 710-150060RS75000 & 0.15 & 0.16 \\
+F1,F2 & Fuse & 2 & 3568 & 36-3568-ND & 534-3568 & 1.20 & 1.09 \\
+FB1--FB4 & 220$\Omega$ & 4 & BBPY00201209221Y00 & 553-BBPY00201209221Y00CT-ND & 603-BBPY201209221Y00 & 0.10 & 0.10 \\
+J1 & Phoenix 4P & 1 & 1017495 & 277-17497-ND & 651-1017495 & 2.86 & 2.17 \\
+J3 & MicroSD & 1 & 694106301002 & 732-5930-ND & 710-694106301002 & 0.92 & 1.02 \\
+J4,J5 & WR-WTB 8P & 2 & 61200821621 & 732-5395-ND & 710-61200821621 & 0.97 & 1.08 \\
+J6,J7 & Phoenix 2P & 2 & 1017491 & 277-17493-ND & 651-1017491 & 1.06 & 0.72 \\
+Q1--Q3 & DMN2004K-7 & 3 & DMN2004K-7 & DMN2004KDICT-ND & 621-DMN2004K-7 & 0.41 & 0.41 \\
+Q4,Q5,Q7,Q8 & CSD19531Q5AT & 4 & CSD19531Q5AT & 296-37749-1-ND & 595-CSD19531Q5AT & 3.15 & 3.21 \\
+Q6 & ZXMP10A13FTA & 1 & ZXMP10A13FTA & ZXMP10A13FCT-ND & 522-ZXMP10A13FTA & 0.76 & 0.72 \\
+Q9 & FDD4141 & 1 & FDD4141 & 4518-FDD4141CT-ND & 512-FDD4141 & 1.00 & 1.45 \\
+R1--R3 & 100$\Omega$ & 3 & CRCW0603100RJNEA & 541-100GCT-ND & 71-CRCW0603J-100-E3 & 0.10 & 0.10 \\
+R4--R6 & 33$\Omega$ & 3 & CRCW060333R0FKEAC & 541-3988-1-ND & 71-CRCW060333R0FKEAC & 0.10 & 0.10 \\
+R7,R9,R12,R14,R22,R24 & 10k$\Omega$ & 6 & RT0603BRE0710KL & YAG2313CT-ND & 603-RT0603BRE0710KL & 0.14 & 0.10 \\
+R8,R10,R11,R13,R17,R26 & 1k$\Omega$ & 6 & AC0603JR-131KL & 13-AC0603JR-131KLCT-ND & 603-AC0603JR-131KL & 0.10 & 0.10 \\
+R15,R18,R20 & 100$\Omega$ & 3 & CRCW0603100RJNEA & 541-100GCT-ND & 71-CRCW0603J-100-E3 & 0.10 & 0.10 \\
+R16,R21,R23 & 10M$\Omega$ & 3 & RK73H1JTTD1005F & 2019-RK73H1JTTD1005FCT-ND & 660-RK73H1JTTD1005F & 0.10 & 0.10 \\
+R19 & 2m$\Omega$ & 1 & WSK1216L2000FEA & 541-WSK1216L2000FEACT-ND & 71-WSK1216L2000FEA & 1.41 & 1.41 \\
+R25 & 510k$\Omega$ & 1 & CRCW0603510KJNEA & 541-510KGCT-ND & 71-CRCW0603J-510K-E3 & 0.10 & 0.10 \\
+R27 & 24$\Omega$ & 1 & RT0603BRD0724RL & 13-RT0603BRD0724RLCT-ND & 603-RT0603BRD0724RL & 0.10 & 0.10 \\
+R28 & 3.01k$\Omega$ & 1 & RC0603DR-073K01L & 13-RC0603DR-073K01LCT-ND & 603-RC0603DR-073K01L & 0.10 & 0.10 \\
+S1 & Button & 1 & SKRPACE010 & 4809-SKRPACE010CT-ND & 688-SKRPACE010 & 0.21 & 0.21 \\
+U1 & BQ76920 & 1 & BQ7692000PWR & 296-39958-1-ND & 595-BQ7692000PWR & 3.56 & 3.56 \\
+\midrule
+\multicolumn{6}{r}{\textbf{Board Total (Best Price):}} & \multicolumn{2}{r}{\textbf{\$37.91}} \\
+\end{longtable}
+
+% MCU BOM
+\subsubsection{MCU Board BOM}
+\begin{longtable}{@{}llrlp{2.8cm}p{2.5cm}rr@{}}
+\caption{MCU Board Complete BOM}\label{tab:bom-mcu-full-app}\\
+\toprule
+\textbf{Ref} & \textbf{Value} & \textbf{Qty} & \textbf{MPN} & \textbf{DigiKey PN} & \textbf{Mouser PN} & \textbf{DK \$} & \textbf{MO \$} \\
+\midrule
+\endfirsthead
+\multicolumn{8}{c}{\tablename\ \thetable\ (continued)}\\
+\toprule
+\textbf{Ref} & \textbf{Value} & \textbf{Qty} & \textbf{MPN} & \textbf{DigiKey PN} & \textbf{Mouser PN} & \textbf{DK \$} & \textbf{MO \$} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{8}{r}{Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+C1,C3,C4 & 100nF & 3 & CC603JRX7R9BB104 & 311-1779-1-ND & 603-CC603JRX7R9BB104 & 0.10 & 0.10 \\
+C2 & 1$\mu$F & 1 & UMK107AB7105KA-T & 587-3247-1-ND & UMK107AB7105KA-T & 0.08 & 0.10 \\
+C5 & 10$\mu$F & 1 & GRM21BR61H106KE3L & 490-18663-1-ND & 81-GRM21BR61H106KE3L & 0.28 & 0.28 \\
+D1,D2 & TVS & 2 & 82306050029 & 732-3040-1-ND & 710-82306050029 & 0.73 & 0.73 \\
+J1--J7 & HC-SR04 & 7 & 4007 & 1528-2832-ND & 485-4007 & 3.95 & 3.95 \\
+J8 & Pi GPIO & 1 & 61304021121 & 732-5310-ND & 710-61304021121 & 1.81 & 2.01 \\
+J9 & 9-pin & 1 & 61300911121 & 732-5322-ND & 710-61300911121 & 0.39 & 0.43 \\
+J10,J12 & SWD & 2 & PH1-04-UA & 2057-PH1-04-UA-ND & 737-PH1-04-UA & 0.10 & 0.10 \\
+J11 & WR-WTB 6P & 1 & 61200621621 & 732-5394-ND & 710-61200621621 & 0.43 & 0.47 \\
+J13--J16,J19 & WR-WTB 8P & 5 & 61200821621 & 732-5395-ND & 710-61200821621 & 0.97 & 1.08 \\
+J17 & USB-C & 1 & USB4216-03-A & 2073-USB4216-03-ACT-ND & 640-USB4216-03-A & 0.62 & 0.72 \\
+J18,J21 & WR-WTB 6P & 2 & 61200621621 & 732-5394-ND & 710-61200621621 & 0.43 & 0.47 \\
+J20 & JST XH 5P & 1 & S5B-XH-A & 455-S5B-XH-A-ND & -- & 0.22 & -- \\
+R1--R5,R8 & 10k$\Omega$ & 6 & RT0603BRE0710KL & YAG2313CT-ND & 603-RT0603BRE0710KL & 0.14 & 0.10 \\
+R6,R7 & 5.1k$\Omega$ & 2 & RT0603BRD075K1L & YAG1696CT-ND & 603-RT0603BRD075K1L & 0.10 & 0.10 \\
+S1 & Reset & 1 & SKRPACE010 & 4809-SKRPACE010CT-ND & 688-SKRPACE010 & 0.21 & 0.21 \\
+S2 & Boot & 1 & SKRPACE010 & 4809-SKRPACE010CT-ND & 688-SKRPACE010 & 0.21 & 0.21 \\
+U1 & DS18B20 & 1 & DS18B20+ & DS18B20+PAR-ND & 700-DS18B20+ & 7.00 & 6.59 \\
+U2 & ESP32-S3 & 1 & ESP32-S3-WROOM-1-N16 & 5407-ESP32-S3-WROOM-1-N16CT-ND & 356-ESP32S3WROOM1N16 & 5.92 & 5.99 \\
+U3 & 74HC139 & 1 & 74HC139D,653 & 1727-5943-1-ND & 771-74HC139D-T & 0.36 & 0.36 \\
+U4 & 74HC153 & 1 & SN74HC153DR & 296-14835-1-ND & 595-SN74HC153DR & 0.59 & 1.28 \\
+\midrule
+\multicolumn{6}{r}{\textbf{Board Total (Best Price):}} & \multicolumn{2}{r}{\textbf{\$53.83}} \\
+\end{longtable}
+
+% Buck-Boost Charger BOM
+\subsubsection{Buck-Boost Charger Board BOM}
+\begin{longtable}{@{}llrlp{2.8cm}p{2.5cm}rr@{}}
+\caption{Buck-Boost Charger Board Complete BOM}\label{tab:bom-charger-full-app}\\
+\toprule
+\textbf{Ref} & \textbf{Value} & \textbf{Qty} & \textbf{MPN} & \textbf{DigiKey PN} & \textbf{Mouser PN} & \textbf{DK \$} & \textbf{MO \$} \\
+\midrule
+\endfirsthead
+\multicolumn{8}{c}{\tablename\ \thetable\ (continued)}\\
+\toprule
+\textbf{Ref} & \textbf{Value} & \textbf{Qty} & \textbf{MPN} & \textbf{DigiKey PN} & \textbf{Mouser PN} & \textbf{DK \$} & \textbf{MO \$} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{8}{r}{Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+C1 & 4.7$\mu$F & 1 & GRT21BR61H475KE13K & 490-GRT21BR61H475KE13KCT-ND & 81-GRT21BR61H475KE3K & 0.17 & 0.17 \\
+C2,C3 & 47nF & 2 & CC0603KPX7R9BB473 & 13-CC0603KPX7R9BB473CT-ND & 603-CC603KPX7R9BB473 & 0.10 & 0.10 \\
+C4,C14,C19,C23 & 100nF & 4 & CC603JRX7R9BB104 & 311-1779-1-ND & 603-CC603JRX7R9BB104 & 0.10 & 0.10 \\
+C5--C13,C16--C18,C20--C22 & 10$\mu$F & 13 & GRM21BR61H106KE3L & 490-18663-1-ND & 81-GRM21BR61H106KE3L & 0.28 & 0.28 \\
+C15 & 1nF & 1 & CC0603KPX7R9BB102 & 13-CC0603KPX7R9BB102CT-ND & 603-CC603KPX7R9BB102 & 0.10 & 0.10 \\
+C24--C26 & 22$\mu$F & 3 & T527T226M025ATE100 & -- & 80-T527T226M25ATE100 & -- & 1.13 \\
+D1 & Red LED & 1 & 150060RS75000 & 732-4978-1-ND & 710-150060RS75000 & 0.15 & 0.16 \\
+J2--J4 & Phoenix 2P & 3 & 1017491 & 277-17493-ND & 651-1017491 & 1.06 & 0.72 \\
+L1 & 1$\mu$H & 1 & VLS6045EX-1R0N & 445-173043-1-ND & 810-VLS6045EX-1R0N & 0.34 & 0.30 \\
+R1 & 5.3k$\Omega$ & 1 & TNPW06035K30BEEA & 541-4550-1-ND & 71-TNPW06035K30BEEA & 0.23 & 0.23 \\
+R2 & 30.1k$\Omega$ & 1 & AT0603FRE0730K1L & 13-AT0603FRE0730K1LCT-ND & 603-AT0603FRE0730K1L & 0.10 & 0.10 \\
+R3 & 137k$\Omega$ & 1 & RC0603FR-07137KL & 311-137KHRCT-ND & 603-RC0603FR-07137KL & 0.10 & 0.10 \\
+R4 & 100k$\Omega$ & 1 & AC0603JR-07100KL & 311-100KLECT-ND & 603-AC0603JR-07100KL & 0.10 & 0.10 \\
+R5 & 10k$\Omega$ & 1 & RT0603BRE0710KL & YAG2313CT-ND & 603-RT0603BRE0710KL & 0.14 & 0.10 \\
+R6 & 68$\Omega$ & 1 & RT0603FRE0768RL & 13-RT0603FRE0768RLCT-ND & 603-RT0603FRE0768RL & 0.10 & 0.10 \\
+R7 & 10.5k$\Omega$ & 1 & RT0603FRE0710K5L & 13-RT0603FRE0710K5LCT-ND & 603-RT0603FRE0710K5L & 0.10 & 0.10 \\
+R8 & 100$\Omega$ & 1 & CRCW0603100RJNEA & 541-100GCT-ND & 71-CRCW0603J-100-E3 & 0.10 & 0.10 \\
+TH1 & NTC & 1 & NTCGS163JX103DT7 & 445-NTCGS163JX103DT7CT-ND & 810-NTCGS163JX103DT7 & 0.30 & 0.26 \\
+U1 & BQ25798 & 1 & BQ25798RQMR & 296-BQ25798RQMRCT-ND & 595-BQ25798RQMR & 5.05 & 5.05 \\
+\midrule
+\multicolumn{6}{r}{\textbf{Board Total (Best Price):}} & \multicolumn{2}{r}{\textbf{\$17.51}} \\
+\end{longtable}
+
+% Fuel Gauge BOM
+\subsubsection{Fuel Gauge Board BOM}
+\begin{longtable}{@{}llrlp{2.8cm}p{2.5cm}rr@{}}
+\caption{Fuel Gauge Board Complete BOM}\label{tab:bom-fuel-full-app}\\
+\toprule
+\textbf{Ref} & \textbf{Value} & \textbf{Qty} & \textbf{MPN} & \textbf{DigiKey PN} & \textbf{Mouser PN} & \textbf{DK \$} & \textbf{MO \$} \\
+\midrule
+\endfirsthead
+\multicolumn{8}{c}{\tablename\ \thetable\ (continued)}\\
+\toprule
+\textbf{Ref} & \textbf{Value} & \textbf{Qty} & \textbf{MPN} & \textbf{DigiKey PN} & \textbf{Mouser PN} & \textbf{DK \$} & \textbf{MO \$} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{8}{r}{Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+C1,C2 & 3.3nF & 2 & GCM188R71H332KA37D & 490-8023-1-ND & 81-GCM188R71H332KA7D & 0.12 & 0.10 \\
+C3 & 4.7$\mu$F & 1 & GRT21BR61H475KE13K & 490-GRT21BR61H475KE13KCT-ND & 81-GRT21BR61H475KE3K & 0.17 & 0.17 \\
+C4,C7 & 1$\mu$F & 2 & UMK107AB7105KA-T & 587-3247-1-ND & UMK107AB7105KA-T & 0.08 & 0.10 \\
+C5,C6,C8 & 100nF & 3 & CC603JRX7R9BB104 & 311-1779-1-ND & 603-CC603JRX7R9BB104 & 0.10 & 0.10 \\
+D1--D5 & YelGreen LED & 5 & SML-D12M1WT86 & SML-D12M1WT86CT-ND & 755-SML-D12M1WT86 & 0.19 & 0.19 \\
+D6,D7 & 5.6V Zener & 2 & DDZ9690-7 & DDZ9690DICT-ND & 621-DDZ9690-7 & 0.10 & 0.10 \\
+D8,D9 & TVS & 2 & 82306050029 & 732-3040-1-ND & 710-82306050029 & 0.73 & 0.73 \\
+J1 & WR-WTB 8P & 1 & 61200821621 & 732-5395-ND & 710-61200821621 & 0.97 & 1.08 \\
+J5,J6 & WR-WTB 6P & 2 & 61200621621 & 732-5394-ND & 710-61200621621 & 0.43 & 0.47 \\
+Q1 & ZXMP10A13FTA & 1 & ZXMP10A13FTA & ZXMP10A13FCT-ND & 522-ZXMP10A13FTA & 0.76 & 0.72 \\
+Q2 & BSS123 & 1 & BSS123 & BSS123NCT-ND & 512-BSS123 & 0.35 & 0.36 \\
+Q3 & MMBT3904 & 1 & MMBT3904 & 4878-MMBT3904CT-ND & 637-MMBT3904 & 0.11 & 0.11 \\
+R1,R2,R4 & 300k$\Omega$ 0.1\% & 3 & ERA-3AEB304V & P300KDBCT-ND & 667-ERA-3AEB304V & 0.10 & 0.10 \\
+R3,R6,R9,R10 & 100k$\Omega$ & 4 & AC0603JR-07100KL & 311-100KLECT-ND & 603-AC0603JR-07100KL & 0.10 & 0.10 \\
+R5 & 24.9k$\Omega$ 0.1\% & 1 & RT0603BRD0724K9L & YAG1599CT-ND & 603-RT0603BRD0724K9L & 0.12 & 0.10 \\
+R7 & 10k$\Omega$ 0.1\% & 1 & RT0603BRE0710KL & YAG2313CT-ND & 603-RT0603BRE0710KL & 0.14 & 0.10 \\
+R8,R18 & 510k$\Omega$ & 2 & CRCW0603510KJNEA & 541-510KGCT-ND & 71-CRCW0603J-510K-E3 & 0.10 & 0.10 \\
+R11--R16 & 100$\Omega$ & 6 & CRCW0603100RJNEA & 541-100GCT-ND & 71-CRCW0603J-100-E3 & 0.10 & 0.10 \\
+R13,R14 & 1M$\Omega$ & 2 & AC0603FR-071ML & 311-1MLDCT-ND & 603-AC0603FR-071ML & 0.10 & 0.10 \\
+R17 & 220k$\Omega$ & 1 & CRCW0603220KFKEA & 541-220KHCT-ND & 71-CRCW0603-220K-E3 & 0.10 & 0.10 \\
+R19,R20 & 10k$\Omega$ & 2 & RT0603BRE0710KL & YAG2313CT-ND & 603-RT0603BRE0710KL & 0.14 & 0.10 \\
+S1 & Button & 1 & SKRPACE010 & 4809-SKRPACE010CT-ND & 688-SKRPACE010 & 0.21 & 0.21 \\
+U1 & BQ78350 & 1 & BQ78350DBT-R1A & 296-BQ78350DBT-R1A-ND & 595-BQ78350DBT-R1A & 5.83 & 5.83 \\
+U2 & PCA9306 & 1 & PCA9306D,118 & 568-4215-1-ND & 771-PCA9306D-T & 0.72 & 0.69 \\
+\midrule
+\multicolumn{6}{r}{\textbf{Board Total (Best Price):}} & \multicolumn{2}{r}{\textbf{\$15.18}} \\
+\end{longtable}
+
+% Gate Driver BOM
+\subsubsection{Gate Driver Board BOM}
+\begin{longtable}{@{}llrlp{2.8cm}p{2.5cm}rr@{}}
+\caption{Gate Driver Board Complete BOM}\label{tab:bom-gate-full-app}\\
+\toprule
+\textbf{Ref} & \textbf{Value} & \textbf{Qty} & \textbf{MPN} & \textbf{DigiKey PN} & \textbf{Mouser PN} & \textbf{DK \$} & \textbf{MO \$} \\
+\midrule
+\endfirsthead
+\multicolumn{8}{c}{\tablename\ \thetable\ (continued)}\\
+\toprule
+\textbf{Ref} & \textbf{Value} & \textbf{Qty} & \textbf{MPN} & \textbf{DigiKey PN} & \textbf{Mouser PN} & \textbf{DK \$} & \textbf{MO \$} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{8}{r}{Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+C1,C2 & 10nF & 2 & CL10B103KB8NNNL & 1276-CL10B103KB8NNNLCT-ND & 187-CL10B103KB8NNNL & 0.10 & 0.10 \\
+C3 & 1$\mu$F & 1 & UMK107AB7105KA-T & 587-3247-1-ND & -- & 0.08 & 0.10 \\
+J1 & WR-WTB 8P & 1 & 61200821621 & 732-5395-ND & 710-61200821621 & 0.97 & 1.08 \\
+J2 & WR-WTB 6P & 1 & 61200621621 & 732-5394-ND & 710-61200621621 & 0.43 & 0.47 \\
+R1--R3 & 100$\Omega$ & 3 & -- & 541-100GCT-ND & 71-CRCW0603J-100-E3 & 0.10 & 0.10 \\
+R4--R6 & 620$\Omega$ & 3 & -- & 13-RC0603FR-10620RLCT-ND & 603-RC0603FR-10620RL & 0.10 & 0.10 \\
+U1 & BQ76200PW & 1 & BQ76200PW & 296-43316-5-ND & 595-BQ76200PWR & 3.23 & 2.75 \\
+\midrule
+\multicolumn{6}{r}{\textbf{Board Total (Best Price):}} & \multicolumn{2}{r}{\textbf{\$5.03}} \\
+\end{longtable}
+
+% 3.3V Buck BOM
+\subsubsection{3.3V Buck Regulator Board BOM}
+\begin{longtable}{@{}llrlp{2.8cm}p{2.5cm}rr@{}}
+\caption{3.3V Buck Regulator Board Complete BOM}\label{tab:bom-p3v3-full-app}\\
+\toprule
+\textbf{Ref} & \textbf{Value} & \textbf{Qty} & \textbf{MPN} & \textbf{DigiKey PN} & \textbf{Mouser PN} & \textbf{DK \$} & \textbf{MO \$} \\
+\midrule
+\endfirsthead
+\multicolumn{8}{c}{\tablename\ \thetable\ (continued)}\\
+\toprule
+\textbf{Ref} & \textbf{Value} & \textbf{Qty} & \textbf{MPN} & \textbf{DigiKey PN} & \textbf{Mouser PN} & \textbf{DK \$} & \textbf{MO \$} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{8}{r}{Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+C1,C2,C4 & 22$\mu$F & 3 & T527T226M025ATE100 & N/A & 80-T527T226M25ATE100 & -- & 1.13 \\
+C3,C5,C7 & 100nF & 3 & CC603JRX7R9BB104 & 311-1779-1-ND & 603-CC603JRX7R9BB104 & 0.10 & 0.10 \\
+C6 & 10$\mu$F & 1 & GRM21BR61H106KE3L & 490-18663-1-ND & 81-GRM21BR61H106KE3L & 0.28 & 0.28 \\
+C8 & 4.7$\mu$F & 1 & GRT21BR61H475KE3K & 490-GRT21BR61H475KE13KCT-ND & 81-GRT21BR61H475KE3K & 0.17 & 0.17 \\
+J1 & Phoenix 2P & 1 & 1017491 & 277-17493-ND & 651-1017491 & 1.06 & 0.72 \\
+J2 & WR-WTB 6P & 1 & 61200621621 & 732-5394-ND & 710-61200621621 & 0.43 & 0.47 \\
+J3 & WR-WTB 8P & 1 & 61200821621 & 732-5395-ND & 710-61200821621 & 0.97 & 1.08 \\
+L1 & 1$\mu$H & 1 & VLS6045EX-1R0N & 445-173043-1-ND & 810-VLS6045EX-1R0N & 0.34 & 0.30 \\
+R1 & 100k$\Omega$ & 1 & -- & 311-100KLECT-ND & 603-AC0603JR-07100KL & 0.10 & 0.10 \\
+R2 & 453k$\Omega$ & 1 & -- & 13-RT0603FRE07453KLCT-ND & 603-RT0603FRE07453KL & 0.10 & 0.10 \\
+U1 & TLV62569ADRLR & 1 & TLV62569ADRLR & 296-51692-1-ND & 595-TLV62569ADRLR & 0.24 & 0.24 \\
+\midrule
+\multicolumn{6}{r}{\textbf{Board Total (Best Price):}} & \multicolumn{2}{r}{\textbf{\$7.00}} \\
+\end{longtable}
+
+% 5V Buck BOM
+\subsubsection{5V Buck Regulator Board BOM}
+\begin{longtable}{@{}llrlp{2.8cm}p{2.5cm}rr@{}}
+\caption{5V Buck Regulator Board Complete BOM}\label{tab:bom-p5v0-full-app}\\
+\toprule
+\textbf{Ref} & \textbf{Value} & \textbf{Qty} & \textbf{MPN} & \textbf{DigiKey PN} & \textbf{Mouser PN} & \textbf{DK \$} & \textbf{MO \$} \\
+\midrule
+\endfirsthead
+\multicolumn{8}{c}{\tablename\ \thetable\ (continued)}\\
+\toprule
+\textbf{Ref} & \textbf{Value} & \textbf{Qty} & \textbf{MPN} & \textbf{DigiKey PN} & \textbf{Mouser PN} & \textbf{DK \$} & \textbf{MO \$} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{8}{r}{Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+C1--C6,C12--C14 & 22$\mu$F & 9 & T527T226M025ATE100 & N/A & 80-T527T226M25ATE100 & -- & 1.13 \\
+C7--C9 & 100nF & 3 & CC603JRX7R9BB104 & 311-1779-1-ND & 603-CC603JRX7R9BB104 & 0.10 & 0.10 \\
+C10 & 1$\mu$F & 1 & UMK107AB7105KA-T & 587-3247-1-ND & -- & 0.08 & 0.10 \\
+C11 & 33pF & 1 & -- & 311-4034-1-ND & 603-CC603KRNPO9BN330 & 0.10 & 0.10 \\
+J1,J3--J5 & Phoenix 2P & 4 & 1017491 & 277-17493-ND & 651-1017491 & 1.06 & 0.72 \\
+L1 & 2.2$\mu$H & 1 & PA4343.222NLT & 553-3451-1-ND & 673-PA4343.222NLT & 1.50 & 1.50 \\
+R1 & 100k$\Omega$ & 1 & -- & 311-100KLECT-ND & 603-AC0603JR-07100KL & 0.10 & 0.10 \\
+R2 & 220k$\Omega$ & 1 & -- & 541-220KHCT-ND & 71-CRCW0603-220K-E3 & 0.10 & 0.10 \\
+R3 & 30k$\Omega$ & 1 & -- & 13-RT0603FRE0730KLCT-ND & 603-RT0603FRE0730KL & 0.10 & 0.10 \\
+U1 & TPS566238PRQFR & 1 & TPS566238PRQFR & 296-TPS566238PRQFRCT-ND & 595-TPS566238PRQFR & 1.79 & 0.96 \\
+\midrule
+\multicolumn{6}{r}{\textbf{Board Total (Best Price):}} & \multicolumn{2}{r}{\textbf{\$16.29}} \\
+\end{longtable}
+
+% 6V Buck BOM
+\subsubsection{6V Buck Regulator Board BOM}
+\begin{longtable}{@{}llrlp{2.8cm}p{2.5cm}rr@{}}
+\caption{6V Buck Regulator Board Complete BOM}\label{tab:bom-p6v0-full-app}\\
+\toprule
+\textbf{Ref} & \textbf{Value} & \textbf{Qty} & \textbf{MPN} & \textbf{DigiKey PN} & \textbf{Mouser PN} & \textbf{DK \$} & \textbf{MO \$} \\
+\midrule
+\endfirsthead
+\multicolumn{8}{c}{\tablename\ \thetable\ (continued)}\\
+\toprule
+\textbf{Ref} & \textbf{Value} & \textbf{Qty} & \textbf{MPN} & \textbf{DigiKey PN} & \textbf{Mouser PN} & \textbf{DK \$} & \textbf{MO \$} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{8}{r}{Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+C117--C124,C133--C138 & 10$\mu$F & 14 & T521B106M025ATE100 & 399-16632-2-ND & 80-T521B106M25ATE100 & 1.74 & 1.74 \\
+C125,C132 & 1$\mu$F & 2 & UMK107AB7105KA-T & 587-3247-1-ND & -- & 0.08 & 0.10 \\
+C126 & 3.3nF & 1 & GCM188R71H332KA7D & 490-8023-1-ND & 81-GCM188R71H332KA7D & 0.12 & 0.10 \\
+C127 & 2.2$\mu$F & 1 & GRT188R61H225KE3D & 490-12332-1-ND & 81-GRT188R61H225KE3D & 0.16 & 0.16 \\
+C128 & 220pF & 1 & -- & 13-CC0603KPX7R9BB221CT-ND & 603-CC603KPX7R9BB221 & 0.10 & 0.10 \\
+C129 & 6.8nF & 1 & -- & BC1251CT-ND & 77-VJ0603Y682KXACBC & 0.10 & 0.10 \\
+C130 & 100nF & 1 & CC603JRX7R9BB104 & 311-1779-1-ND & 603-CC603JRX7R9BB104 & 0.10 & 0.10 \\
+C131 & 1nF & 1 & -- & 13-CC0603KPX7R9BB102CT-ND & 603-CC603KPX7R9BB102 & 0.10 & 0.10 \\
+J1,J3 & Phoenix 2P & 2 & 1017491 & 277-17493-ND & 651-1017491 & 1.06 & 0.72 \\
+L4 & 0.44$\mu$H & 1 & SPB1308-R44M & 118-SPB1308-R44MCT-ND & 652-SPB1308-R44M & 1.58 & 1.89 \\
+Q13,Q14 & CSD19531Q5AT & 2 & CSD19531Q5AT & 296-37749-1-ND & 595-CSD19531Q5AT & 3.15 & 3.21 \\
+R82 & 100k$\Omega$ & 1 & -- & 311-100KLECT-ND & 603-AC0603JR-07100KL & 0.10 & 0.10 \\
+R83 & 1.37k$\Omega$ & 1 & -- & YAG4804CT-ND & 603-RT0603DRE071K37L & 0.10 & 0.10 \\
+R84 & 7.68k$\Omega$ & 1 & -- & 13-RT0603FRE077K68LCT-ND & 603-RT0603FRE077K68L & 0.10 & 0.10 \\
+R85 & 309$\Omega$ & 1 & ERA-3AEB3090V & P309DBCT-ND & 667-ERA-3AEB3090V & 0.10 & 0.10 \\
+R86 & 10k$\Omega$ & 1 & RT0603BRE0710KL & YAG2313CT-ND & 603-RT0603BRE0710KL & 0.14 & 0.10 \\
+R87 & 1k$\Omega$ & 1 & -- & 13-AC0603JR-131KLCT-ND & 603-AC0603JR-131KL & 0.10 & 0.10 \\
+U14 & TPS40305DRCT & 1 & TPS40305DRCT & 296-25487-1-ND & 595-TPS40305DRCT & 2.68 & 2.68 \\
+\midrule
+\multicolumn{6}{r}{\textbf{Board Total (Best Price):}} & \multicolumn{2}{r}{\textbf{\$37.78}} \\
+\end{longtable}
+
+% LiDAR Breakout BOM
+\subsubsection{LiDAR Breakout Board BOM}
+\begin{longtable}{@{}llrlp{2.8cm}p{2.5cm}rr@{}}
+\caption{LiDAR Breakout Board Complete BOM}\label{tab:bom-lidar-full-app}\\
+\toprule
+\textbf{Ref} & \textbf{Value} & \textbf{Qty} & \textbf{MPN} & \textbf{DigiKey PN} & \textbf{Mouser PN} & \textbf{DK \$} & \textbf{MO \$} \\
+\midrule
+\endfirsthead
+\multicolumn{8}{c}{\tablename\ \thetable\ (continued)}\\
+\toprule
+\textbf{Ref} & \textbf{Value} & \textbf{Qty} & \textbf{MPN} & \textbf{DigiKey PN} & \textbf{Mouser PN} & \textbf{DK \$} & \textbf{MO \$} \\
+\midrule
+\endhead
+\midrule
+\multicolumn{8}{r}{Continued on next page}\\
+\endfoot
+\bottomrule
+\endlastfoot
+C1 & 4.7$\mu$F & 1 & GRT21BR61H475KE3K & 490-GRT21BR61H475KE13KCT-ND & 81-GRT21BR61H475KE3K & 0.17 & 0.17 \\
+C2 & 1$\mu$F & 1 & UMK107AB7105KA-T & 587-3247-1-ND & -- & 0.08 & 0.10 \\
+C3 & 100nF & 1 & CC603JRX7R9BB104 & 311-1779-1-ND & 603-CC603JRX7R9BB104 & 0.10 & 0.10 \\
+J2 & M12 5P & 1 & 1028585 & 277-1028585-ND & 651-1028585 & 10.08 & 13.90 \\
+Q1 & ZXMP10A13FTA & 1 & ZXMP10A13FTA & ZXMP10A13FCT-ND & 522-ZXMP10A13FTA & 0.76 & 0.72 \\
+\midrule
+\multicolumn{6}{r}{\textbf{Board Total (Best Price):}} & \multicolumn{2}{r}{\textbf{\$11.15}} \\
+\end{longtable}
+
+% Electronics Cost Summary
+\subsubsection{Electronics Cost Summary}
+\begin{table}[H]
+\centering
+\caption{PCB Electronics Cost Summary}\label{tab:bom-electronics-summary}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+\textbf{Board} & \textbf{Parts} & \textbf{Raw Cost} & \textbf{With 1.2$\times$ Buffer} \\
+\midrule
+\multicolumn{4}{l}{\textbf{Power Management}} \\
+3.3V Buck Regulator & 15 & \$7.00 & \$8.40 \\
+5V Buck Regulator & 23 & \$16.29 & \$19.55 \\
+6V Buck Regulator & 34 & \$37.78 & \$45.34 \\
+\addlinespace
+\multicolumn{4}{l}{\textbf{Battery Management}} \\
+Analog Front-End (AFE) & 81 & \$37.91 & \$45.49 \\
+Buck-Boost Charger & 43 & \$17.51 & \$21.01 \\
+Fuel Gauge & 46 & \$15.18 & \$18.22 \\
+Gate Driver & 12 & \$5.03 & \$6.04 \\
+\addlinespace
+\multicolumn{4}{l}{\textbf{Control/Interface}} \\
+LiDAR Breakout & 5 & \$11.15 & \$13.38 \\
+MCU Board & 42 & \$53.83 & \$64.60 \\
+Motor Driver & 42 & \$28.39 & \$34.07 \\
+USB-C PD Controller & 51 & \$15.59 & \$18.71 \\
+\midrule
+\textbf{Electronics Total} & \textbf{394} & \textbf{\$245.66} & \textbf{\$294.81} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% Mechanical Components
+\subsubsection{Mechanical Components}
+\begin{table}[H]
+\centering
+\caption{Mechanical Components Bill of Materials}
+\label{tab:bom-mechanical}
+\small
+\begin{tabular}{@{}p{0.38\textwidth}p{0.10\textwidth}p{0.12\textwidth}p{0.12\textwidth}@{}}
+\toprule
+\textbf{Item} & \textbf{Qty} & \textbf{Unit Cost} & \textbf{Total Cost} \\ 
+\midrule
+1611 Series Flanged Ball Bearing (8mm ID, 14mm OD, 5mm Thick), 2-Pack & 4 & \$4.00 & \$16.00 \\
+8mm REX Shaft with E-Clip (88mm, Stainless Steel) & 4 & \$5.29 & \$21.16 \\
+1309 Series Sonic Hub (8mm REX Bore) & 4 & \$8.00 & \$32.00 \\
+2910 Series Aluminum Clamping Collar (8mm REX ID) & 4 & \$5.00 & \$20.00 \\
+2807 Series Stainless Steel Shim (12-Pack) & 1 & \$2.69 & \$2.69 \\
+Prusament PETG Filament (1 kg) & 1 & \$30.00 & \$30.00 \\
+1120 Series U-Channel (288 mm, 11-Hole) & 2 & \$15.00 & \$30.00 \\
+6061 Aluminum Sheet (12in × 12in, 0.080in thick) & 1 & \$21.00 & \$21.00 \\
+Wasteland Wheel (144mm × 52mm) & 4 & \$25.00 & \$100.00 \\
+Metal DC Geared Motor w/ Encoder (6V, 210 RPM, 10 kg·cm) & 4 & \$20.00 & \$80.00 \\
+2802 Series Steel Button-Head Screw (M4×12mm), 25-Pack & 2 & \$3.60 & \$7.20 \\
+M4 × 0.7mm Nylock Nut & 2 & \$3.00 & \$6.00 \\
+1501 Series M4 Standoff (10mm), 4-Pack & 4 & \$2.80 & \$11.20 \\
+\midrule
+\textbf{Total Cost} &  &  & \textbf{\$377.25} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+}% end scriptsize
+
+\textbf{Note:} Pricing shown is per-unit at time of design; verify current pricing before ordering.

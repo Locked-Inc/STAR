@@ -1,0 +1,116 @@
+% Build Phase WBS Tree
+% Generated: 2025-12-06 16:42
+% Tasks: 27, Leaf Tasks: 20
+
+\subsection{Build Phase Work Breakdown}
+
+\noindent\textbf{Total Elements:} 27
+\\\textbf{Work Packages:} 20
+
+\vspace{0.5em}
+
+\noindent\textit{Note: This phase diagram is split across three figures to improve readability and ensure the work breakdown structure elements remain visible at a legible size.}
+
+\input{wbs/wbs_build_part1}
+
+\newpage
+\input{wbs/wbs_build_part2}
+
+\newpage
+\input{wbs/wbs_build_part3}
+
+\newpage
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{|l|p{6.5cm}|c|l|}
+\hline
+\rowcolor{buildorange!40}
+\textbf{WBS ID} & \textbf{Task Name} & \textbf{Days} & \textbf{Owner} \\
+\hline
+\rowcolor{buildorange!35}
+\texttt{\textbf{1.3.1}} & \textbf{Fabricate chassis and assemble mechanical frame} & -- & -- \\
+\hline
+\rowcolor{white}
+\texttt{1.3.1.1} & \quad Procure chassis materials and components & 5 & MN \\
+\hline
+\rowcolor{buildorange!15}
+\texttt{1.3.1.2} & \quad Fabricate primary chassis structure & 5 & MN \\
+\hline
+\rowcolor{white}
+\texttt{1.3.1.3} & \quad Assemble drivetrain and suspension & 5 & MN \\
+\hline
+\rowcolor{buildorange!15}
+\texttt{1.3.1.4} & \quad Install mounting brackets and verify alignment & 5 & MN \\
+\hline
+\rowcolor{buildorange!35}
+\texttt{\textbf{1.3.2}} & \textbf{Build electrical harness and power bus} & -- & -- \\
+\hline
+\rowcolor{white}
+\texttt{1.3.2.1} & \quad Receive and inspect PCB assemblies & 4 & BS \\
+\hline
+\rowcolor{buildorange!15}
+\texttt{1.3.2.2} & \quad Build main power distribution harness & 5 & BS \\
+\hline
+\rowcolor{white}
+\texttt{1.3.2.3} & \quad Build signal and data harnesses & 5 & BS \\
+\hline
+\rowcolor{buildorange!15}
+\texttt{1.3.2.4} & \quad Test harness continuity and isolation & 4 & BS \\
+\hline
+\rowcolor{buildorange!35}
+\texttt{\textbf{1.3.3}} & \textbf{Install sensors, compute, and cabling} & -- & -- \\
+\hline
+\rowcolor{white}
+\texttt{1.3.3.1} & \quad Install compute platform and configure OS & 5 & JH \\
+\hline
+\rowcolor{buildorange!15}
+\texttt{1.3.3.2} & \quad Mount and connect LiDAR sensor & 5 & JH \\
+\hline
+\rowcolor{white}
+\texttt{1.3.3.3} & \quad Install additional sensors and peripherals & 5 & JH \\
+\hline
+\rowcolor{buildorange!15}
+\texttt{1.3.3.4} & \quad Route and secure all cabling & 5 & JH \\
+\hline
+\rowcolor{white}
+\texttt{1.3.3.5} & \quad Verify all electrical connections and power-on test & 4 & JH \\
+\hline
+\rowcolor{buildorange!35}
+\texttt{\textbf{1.3.4}} & \textbf{Deploy and test SLAM navigation on physical robot} & -- & -- \\
+\hline
+\rowcolor{buildorange!15}
+\texttt{1.3.4.1} & \quad Deploy ROS 2 software stack to robot & 5 & JB \\
+\hline
+\rowcolor{white}
+\texttt{1.3.4.2} & \quad Validate SLAM navigation on physical robot & 5 & JB \\
+\hline
+\rowcolor{buildorange!35}
+\texttt{\textbf{1.3.5}} & \textbf{Run integrated dry runs and readiness checks} & -- & -- \\
+\hline
+\rowcolor{buildorange!15}
+\texttt{1.3.5.1} & \quad Execute mechanical integration tests & 4 & JH \\
+\hline
+\rowcolor{white}
+\texttt{1.3.5.2} & \quad Execute electrical integration tests & 4 & JH \\
+\hline
+\rowcolor{buildorange!15}
+\texttt{1.3.5.3} & \quad Execute software integration tests & 4 & JH \\
+\hline
+\rowcolor{buildorange!35}
+\texttt{\textbf{1.3.6}} & \textbf{Facilitate build phase milestone review} & -- & -- \\
+\hline
+\rowcolor{white}
+\texttt{1.3.6.1} & \quad Prepare build phase review materials & 5 & CM \\
+\hline
+\rowcolor{buildorange!15}
+\texttt{1.3.6.2} & \quad Conduct build phase gate review & 5 & CM \\
+\hline
+\end{tabular}
+\caption{Build Phase Work Breakdown}
+\label{tab:wbs_build}
+\end{table}
+
+\noindent\textit{See Appendix \ref{app:wbs_build} for the complete Build phase WBS diagram.}
+
+\noindent\textit{See Table \ref{tab:activity_assignments} for table including co-owners of tasks.}

@@ -1,0 +1,37 @@
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{forest}
+  for tree={
+    rectangle,
+    draw,
+    rounded corners=2pt,
+    align=center,
+    minimum width=2.2cm,
+    minimum height=0.8cm,
+    inner sep=2pt,
+    s sep=0.3cm,
+    l sep=1cm,
+    anchor=north,
+    edge={->, thick},
+    font=\scriptsize,
+  }
+      [{\textbf{1.4}\\Test}, fill=testgreen, line width=1.5pt, font=\scriptsize\bfseries
+      [{\textbf{1.4.2}\\Execute functional\\and integration}, fill=testgreen!70
+        [{\textbf{1.4.2.1}\\Execute navigation\\functional tests\\{\tiny JH, 4d}}, fill=testgreen!40]
+        [{\textbf{1.4.2.2}\\Execute sensor\\integration tests\\{\tiny JH, 4d}}, fill=testgreen!40]
+        [{\textbf{1.4.2.3}\\Execute power\\system tests\\{\tiny JH, 4d}}, fill=testgreen!40]
+        [{\textbf{1.4.2.4}\\Document test\\results\\{\tiny JH, 4d}}, fill=testgreen!40]
+      ]
+      [{\textbf{1.4.3}\\Lead field trials\\and analyze}, fill=testgreen!70
+        [{\textbf{1.4.3.1}\\Execute indoor\\navigation trials\\{\tiny SC, 4d}}, fill=testgreen!40]
+        [{\textbf{1.4.3.2}\\Execute multi-room\\mapping trials\\{\tiny SC, 4d}}, fill=testgreen!40]
+        [{\textbf{1.4.3.3}\\Execute obstacle\\avoidance trials\\{\tiny SC, 4d}}, fill=testgreen!40]
+        [{\textbf{1.4.3.4}\\Analyze field trial\\data\\{\tiny SC, 4d}}, fill=testgreen!40]
+      ]
+    ]
+\end{forest}
+}%
+\caption{Test Phase Work Breakdown Structure (Part 2: Test Execution)}
+\label{fig:wbs_test_part2}
+\end{figure}
