@@ -145,7 +145,7 @@ esp_err_t star_sensor_ds18b20_set_resolution(star_ds18b20_handle_t*    handle,
 {
   ESP_RETURN_ON_FALSE(handle, ESP_ERR_INVALID_ARG, s_TAG, "Handle is NULL");
   ESP_RETURN_ON_FALSE(handle->initialized, ESP_ERR_INVALID_STATE, s_TAG, "Not initialized");
-  ESP_RETURN_ON_FALSE(resolution <= STAR_DS18B20_RESOLUTION_12_BIT,
+  ESP_RETURN_ON_FALSE(resolution <= k_star_ds18b20_resolution_12_bit,
                       ESP_ERR_INVALID_ARG,
                       s_TAG,
                       "Invalid resolution");
@@ -209,7 +209,7 @@ static esp_err_t internal_ds18b20_start_conversion(star_ds18b20_handle_t* handle
 
   /* Send Convert T command */
   uint8_t cmd = DS18B20_CMD_CONVERT_T;
-  ret = star_bus_onewire_write(handle->bus_manager, handle->bus_name, &cmd, 1);
+  ret = star_bus_onewire_write_byte(handle->bus_manager, handle->bus_name, cmd);
   ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to send Convert T command");
 
   return ESP_OK;
@@ -229,11 +229,11 @@ static esp_err_t internal_ds18b20_read_scratchpad(star_ds18b20_handle_t* handle,
 
   /* Send Read Scratchpad command */
   uint8_t cmd = DS18B20_CMD_READ_SCRATCHPAD;
-  ret = star_bus_onewire_write(handle->bus_manager, handle->bus_name, &cmd, 1);
+  ret = star_bus_onewire_write_byte(handle->bus_manager, handle->bus_name, cmd);
   ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to send Read Scratchpad command");
 
   /* Read 9 bytes (scratchpad + CRC) */
-  ret = star_bus_onewire_read(handle->bus_manager, handle->bus_name, scratchpad, DS18B20_SCRATCHPAD_SIZE);
+  ret = star_bus_onewire_read_bytes(handle->bus_manager, handle->bus_name, scratchpad, DS18B20_SCRATCHPAD_SIZE);
   ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to read scratchpad");
 
   return ESP_OK;
@@ -251,16 +251,20 @@ static esp_err_t internal_ds18b20_write_scratchpad(star_ds18b20_handle_t* handle
   ret = internal_ds18b20_send_rom_command(handle);
   ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to send ROM command");
 
-  /* Prepare scratchpad data: [CMD, TH, TL, CONFIG] */
-  uint8_t data[4];
-  data[0] = DS18B20_CMD_WRITE_SCRATCHPAD;
-  data[1] = 0x00;  /* TH (high alarm, not used) */
-  data[2] = 0x00;  /* TL (low alarm, not used) */
-  data[3] = (handle->resolution << 5) | 0x1F;  /* Configuration register */
+  /* Send Write Scratchpad command */
+  ret = star_bus_onewire_write_byte(handle->bus_manager, handle->bus_name, DS18B20_CMD_WRITE_SCRATCHPAD);
+  ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to send Write Scratchpad command");
 
-  /* Write scratchpad */
-  ret = star_bus_onewire_write(handle->bus_manager, handle->bus_name, data, 4);
-  ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to write scratchpad");
+  /* Write 3 data bytes: [TH, TL, CONFIG] */
+  uint8_t data[3];
+  data[0] = 0x00;  /* TH (high alarm, not used) */
+  data[1] = 0x00;  /* TL (low alarm, not used) */
+  data[2] = (handle->resolution << 5) | 0x1F;  /* Configuration register */
+
+  for (int i = 0; i < 3; i++) {
+    ret = star_bus_onewire_write_byte(handle->bus_manager, handle->bus_name, data[i]);
+    ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to write scratchpad byte");
+  }
 
   return ESP_OK;
 }

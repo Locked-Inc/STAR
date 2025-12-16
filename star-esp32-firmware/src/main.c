@@ -1,6 +1,7 @@
 /* src/main.c - STAR ESP32-S3 Quad Motor Control Application Entry Point */
 
 #include "esp_log.h"
+#include "esp_task_wdt.h"
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -78,12 +79,27 @@ void app_main(void)
     ESP_LOGI(s_TAG, "=== System initialization complete ===");
 
     /* ===================================================================== */
+    /* Subscribe to Watchdog Timer                                           */
+    /* ===================================================================== */
+
+    /* Subscribe main app_main task to watchdog for safety monitoring */
+    esp_err_t wdt_ret = esp_task_wdt_add(NULL);  /* NULL = current task */
+    if (wdt_ret == ESP_OK) {
+        ESP_LOGI(s_TAG, "Main task subscribed to watchdog");
+    } else {
+        ESP_LOGW(s_TAG, "Failed to subscribe main task to watchdog: %s", esp_err_to_name(wdt_ret));
+    }
+
+    /* ===================================================================== */
     /* Main Loop - Heartbeat                                                 */
     /* ===================================================================== */
 
     ESP_LOGI(s_TAG, "Entering main loop...");
 
     while (1) {
+        /* Feed watchdog to indicate main loop is running */
+        esp_task_wdt_reset();
+
         vTaskDelay(pdMS_TO_TICKS(s_heartbeat_period_ms));
         ESP_LOGI(s_TAG, "System running - Heartbeat");
     }

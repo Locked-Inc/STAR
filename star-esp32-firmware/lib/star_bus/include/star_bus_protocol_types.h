@@ -150,6 +150,36 @@ typedef struct star_adc_bus_config {
   star_adc_ops_t            ops;         /**< Operation function pointers */
 } star_adc_bus_config_t;
 
+/**
+ * @brief OneWire operation functions structure.
+ */
+typedef struct star_onewire_ops {
+  esp_err_t (*reset)(const struct star_bus_config* config, bool* present);
+  esp_err_t (*write_byte)(const struct star_bus_config* config, uint8_t byte);
+  esp_err_t (*read_byte)(const struct star_bus_config* config, uint8_t* byte);
+  esp_err_t (*write_bytes)(const struct star_bus_config* config,
+                           uint64_t rom,
+                           const uint8_t* data,
+                           size_t len);
+  esp_err_t (*read_bytes)(const struct star_bus_config* config, uint8_t* data, size_t len);
+  esp_err_t (*search)(const struct star_bus_config* config,
+                      uint64_t* roms,
+                      size_t max_devices,
+                      size_t* count);
+} star_onewire_ops_t;
+
+/**
+ * @brief OneWire bus configuration structure.
+ */
+typedef struct star_onewire_bus_config {
+  gpio_num_t gpio_pin;                      /**< Single 1-Wire data pin (open-drain) */
+  bool       use_parasitic_power;           /**< Enable parasite power mode */
+  bool       use_strong_pullup;             /**< Enable strong pullup for power-hungry operations */
+  uint8_t    speed;                         /**< Speed mode (0=standard, 1=overdrive) */
+  uint32_t   search_timeout_ms;             /**< Timeout for device search operations */
+  star_onewire_ops_t ops;                   /**< Operation function pointers (defaults provided) */
+} star_onewire_bus_config_t;
+
 #ifdef __cplusplus
 }
 #endif

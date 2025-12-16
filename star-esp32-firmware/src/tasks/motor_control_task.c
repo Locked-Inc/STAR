@@ -4,6 +4,10 @@
 
 #include "esp_log.h"
 #include "esp_rom_sys.h"
+#include "esp_task_wdt.h"
+#include "esp_timer.h"
+
+#include <math.h>
 
 #include "star_bus_adc.h"
 #include "star_bus_gpio.h"
@@ -53,9 +57,33 @@ void motor_control_task(void* pvParameters)
     TickType_t     last_wake_time              = xTaskGetTickCount();
     const uint32_t delay_ticks                 = pdMS_TO_TICKS(s_motor_control_period_ms);
 
+    /* Jam detection state */
+    static const uint32_t s_jam_detection_cycles = 125;  /* 500ms at 250Hz per motor */
+    static const float s_min_velocity_threshold_rpm = 5.0f;
+    uint32_t jam_counter[NUM_MOTORS] = {0};
+
     ESP_LOGI(s_TAG, "Motor control task started");
 
+    /* Subscribe motor control task to watchdog - most critical path */
+    esp_err_t wdt_ret = esp_task_wdt_add(NULL);  /* NULL = current task */
+    if (wdt_ret == ESP_OK) {
+        ESP_LOGI(s_TAG, "Motor control task subscribed to watchdog");
+    } else {
+        ESP_LOGW(s_TAG,
+                 "Failed to subscribe motor control task to watchdog: %s",
+                 esp_err_to_name(wdt_ret));
+    }
+
     while (ctx->system_enabled) {
+        /* Performance monitoring - capture start time */
+        int64_t task_start_time_us = esp_timer_get_time();
+
+        /* Transition to RUNNING state on first loop */
+        if (ctx->current_state == SYSTEM_STATE_ARMED) {
+            ctx->current_state = SYSTEM_STATE_RUNNING;
+            ESP_LOGI(s_TAG, "State transition: ARMED -> RUNNING");
+        }
+
         /* Cycle through all motors */
         for (int motor_idx = 0; motor_idx < NUM_MOTORS; motor_idx++) {
             /* === STEP 1: Select encoder via multiplexer === */
@@ -118,22 +146,59 @@ void motor_control_task(void* pvParameters)
                     /* === STEP 4: Apply PWM to motor === */
                     star_motor_set_duty(&ctx->motors[motor_idx], pid_output);
                 }
-            } else {
-                /* Encoder read failed */
-                ESP_LOGE(s_TAG, "Motor %d: Encoder read failed", motor_idx + 1);
 
-                /* Stop motor for safety */
-                star_motor_stop(&ctx->motors[motor_idx], true);
+                /* === STEP 5: Jam Detection === */
+                /* Detect if motor is commanded but not moving */
+                if (fabs(setpoint) > s_min_velocity_threshold_rpm
+                    && fabs(velocity_rpm) < s_min_velocity_threshold_rpm) {
+                    jam_counter[motor_idx]++;
 
-                /* Reset velocity to zero */
-                if (xSemaphoreTake(ctx->state_mutex, portMAX_DELAY) == pdTRUE) {
-                    ctx->current_rpm[motor_idx] = 0.0f;
-                    xSemaphoreGive(ctx->state_mutex);
+                    if (jam_counter[motor_idx] > s_jam_detection_cycles) {
+                        ESP_LOGE(s_TAG,
+                                 "Motor %d jammed - no movement despite command (setpoint=%.1f, actual=%.1f)",
+                                 motor_idx + 1,
+                                 setpoint,
+                                 velocity_rpm);
+
+                        /* Emergency stop jammed motor */
+                        star_motor_stop(&ctx->motors[motor_idx], true);
+
+                        /* Reset PID to clear integral windup */
+                        star_pid_reset(&ctx->pid[motor_idx]);
+
+                        /* Clear setpoint */
+                        if (xSemaphoreTake(ctx->state_mutex, portMAX_DELAY) == pdTRUE) {
+                            ctx->setpoint_rpm[motor_idx] = 0.0f;
+                            xSemaphoreGive(ctx->state_mutex);
+                        }
+
+                        /* Reset jam counter */
+                        jam_counter[motor_idx] = 0;
+                    }
                 } else {
-                    ESP_LOGW(s_TAG,
-                             "Failed to take state mutex for velocity reset on "
-                             "encoder error");
+                    /* Motor is moving or not commanded - reset jam counter */
+                    jam_counter[motor_idx] = 0;
                 }
+            } else {
+                /* Encoder read failed - enter degraded mode */
+                if (!ctx->encoder_failed) {
+                    ESP_LOGE(s_TAG, "Motor %d: Encoder read failed - entering DEGRADED mode", motor_idx + 1);
+                    ctx->encoder_failed = true;
+                    ctx->fault_count++;
+                    ctx->current_state = SYSTEM_STATE_DEGRADED;
+                }
+
+                /* In degraded mode: run open-loop at reduced power */
+                float degraded_output = 0.0f;
+                if (xSemaphoreTake(ctx->state_mutex, portMAX_DELAY) == pdTRUE) {
+                    /* Use 50% of requested setpoint in open-loop */
+                    degraded_output = ctx->setpoint_rpm[motor_idx] * 0.5f;
+                    ctx->current_rpm[motor_idx] = 0.0f; /* No feedback available */
+                    xSemaphoreGive(ctx->state_mutex);
+                }
+
+                /* Apply degraded output (open-loop) */
+                star_motor_set_duty(&ctx->motors[motor_idx], degraded_output);
 
                 /* Continue to next motor */
                 continue;
@@ -185,6 +250,26 @@ void motor_control_task(void* pvParameters)
             }
         }
 
+        /* Feed watchdog to indicate control loop is running */
+        esp_task_wdt_reset();
+
+        /* Performance monitoring - calculate execution time */
+        int64_t task_end_time_us = esp_timer_get_time();
+        uint32_t execution_time_us = (uint32_t)(task_end_time_us - task_start_time_us);
+
+        /* Update maximum execution time */
+        if (execution_time_us > ctx->motor_task_max_time_us) {
+            ctx->motor_task_max_time_us = execution_time_us;
+        }
+
+        /* Log warning if exceeding 80% of time budget (4ms = 4000us) */
+        if (execution_time_us > 3200) {
+            ESP_LOGW(s_TAG,
+                     "Motor task execution time high: %lu us (max: %lu us)",
+                     execution_time_us,
+                     ctx->motor_task_max_time_us);
+        }
+
         /* Wait 4ms before next cycle (gives 250Hz update rate for all motors) */
         vTaskDelayUntil(&last_wake_time, delay_ticks);
     }
@@ -194,5 +279,8 @@ void motor_control_task(void* pvParameters)
     for (int i = 0; i < NUM_MOTORS; i++) {
         star_motor_stop(&ctx->motors[i], true);
     }
+
+    /* Unsubscribe from watchdog before task deletion */
+    esp_task_wdt_delete(NULL);
     vTaskDelete(NULL);
 }
