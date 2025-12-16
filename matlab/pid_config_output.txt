@@ -8,6 +8,6 @@ star_pid_config_t velocity_pid_config = {
     .kd = 0.000000f,
     .output_min = -100.0f,
     .output_max = 100.0f,
-    .integral_min = -100.0f,
-    .integral_max = 100.0f,
+    .integral_min = -50.0f,   // 50% of output range for anti-windup
+    .integral_max = 50.0f,    // 50% of output range for anti-windup
 };
