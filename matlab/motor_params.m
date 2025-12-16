@@ -12,7 +12,7 @@
 %% Motor Electrical Specifications (from FTP Table: Motor and Driver Specifications)
 V_rated = 6;                    % Rated voltage [V]
 n_no_load = 210;                % No-load speed [RPM]
-I_no_load = 0.13;               % No-load current [A] (estimated)
+I_no_load = 0.13;               % No-load current [A] (from datasheet)
 I_stall = 3.2;                  % Stall current [A]
 T_stall_kgcm = 10;              % Stall torque [kg*cm]
 
@@ -26,7 +26,7 @@ T_stall_Nm = T_stall_kgcm * 0.0981;  % Stall torque [N*m] = 0.981 N*m
 %% Derived Electrical Parameters
 R_armature = V_rated / I_stall;      % Armature resistance [Ohm] = 1.875 Ohm
 % Note: Armature inductance is typically small for brushed DC motors
-% Estimate L ~ 0.5 mH (to be measured)
+% Estimate L ~ 0.5 mH (to be measured with LCR meter or from startup transient)
 L_armature = 0.5e-3;                 % Armature inductance [H] (estimated)
 
 %% Derived Motor Constants
@@ -38,15 +38,18 @@ omega_no_load = n_no_load * 2 * pi / 60;  % No-load speed [rad/s] = 22 rad/s
 Ke = (V_rated - I_no_load * R_armature) / omega_no_load;  % Back-EMF constant [V/(rad/s)]
 
 %% Derived Mechanical Parameters (Estimates - To Be Measured)
-% Motor rotor inertia (before gearbox)
-J_motor = 1e-6;                 % Motor rotor inertia [kg*m^2] (estimated)
+% Motor rotor inertia (before gearbox) - typical for small DC motors
+J_motor = 1e-6;                 % Motor rotor inertia [kg*m^2] (estimated, 1e-7 to 1e-5 typical)
 
-% Reflected inertia at output shaft
-J_load = 5e-5;                  % Load inertia [kg*m^2] (estimated for wheel)
+% Reflected inertia at output shaft (wheel as solid disk: J = 0.5*m*r^2)
+wheel_diameter_mm = 144;        % Wheel diameter [mm] (from FTP)
+wheel_mass_kg = 0.25;           % Wheel mass [kg] (estimated)
+J_load = 0.5 * wheel_mass_kg * (wheel_diameter_mm/2000)^2;  % Load inertia [kg*m^2]
 J_total = J_motor * gear_ratio^2 + J_load;  % Total reflected inertia [kg*m^2]
 
-% Viscous friction coefficient
-b = 1e-4;                       % Viscous friction [N*m*s/rad] (estimated)
+% Viscous friction coefficient - estimated from no-load operating point
+% At no-load: T_friction = Kt * I_no_load = b * omega_no_load
+b = (Kt * I_no_load) / omega_no_load;  % Viscous friction [N*m*s/rad]
 
 %% Time Constants
 tau_e = L_armature / R_armature;     % Electrical time constant [s] = 0.27 ms
@@ -62,7 +65,7 @@ encoder_counts_per_sample = 48; % Expected counts per sample at max speed
 % Example: 48 counts in 10ms -> (48/341.2) * 6000 = 844 RPM
 
 %% Physical Dimensions (from FTP)
-wheel_diameter_mm = 144;        % Wheel diameter [mm]
+% wheel_diameter_mm defined above in mechanical parameters
 wheel_radius_m = wheel_diameter_mm / 2000;  % Wheel radius [m]
 max_linear_speed = omega_no_load * wheel_radius_m;  % Max speed [m/s] = 1.58 m/s
 
