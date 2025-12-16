@@ -1,0 +1,20 @@
+% =============================================================================
+% Section 3b: Functional Block Diagram
+% =============================================================================
+
+\section{Functional Block Diagram}
+\sectionauthors{All}
+
+\subsection{Functional Overview}
+
+A Functional Block Diagram (FBD) provides a detailed view of the system's functional components, showing how different subsystems interact and communicate. While the Conceptual Block Diagram (CBD) presents a high-level overview, the FBD expands on this by illustrating the specific hardware components, interfaces, and data flows within the system.
+
+The FBD in Figure \ref{fig:fbd} details the STAR Robot's architecture, including the Raspberry Pi 5 as the main compute unit running ROS 2, the ESP32-S3 microcontroller handling low-level motor control and temperature sensing, the various sensors (LiDAR, IMU, ultrasonic), and the power management system. This diagram clarifies how data flows between components and which interfaces (SPI, I\textsuperscript{2}C, GPIO, SMBus) connect the different subsystems.
+
+\begin{figure}[H]
+\centering
+\fbox{\includegraphics[width=0.95\textwidth]{figures/star_fbd.pdf}}
+\caption{System Functional Block Diagram}
+\label{fig:fbd}
+\end{figure}
+

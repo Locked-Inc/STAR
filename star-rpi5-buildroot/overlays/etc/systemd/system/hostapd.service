@@ -1,0 +1,18 @@
+[Unit]
+Description=STAR Robot WiFi Access Point (hostapd)
+Documentation=man:hostapd(8)
+After=wifi-ap-setup.service
+Requires=wifi-ap-setup.service
+Before=dnsmasq-ap.service
+
+[Service]
+Type=forking
+PIDFile=/run/hostapd.pid
+ExecStartPre=/bin/sh -c 'test -f /etc/hostapd/hostapd.conf'
+ExecStart=/usr/sbin/hostapd -B -P /run/hostapd.pid /etc/hostapd/hostapd.conf
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
