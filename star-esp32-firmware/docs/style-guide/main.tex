@@ -1,0 +1,46 @@
+\documentclass[12pt,letterpaper]{article}
+\usepackage{../../../docs/locked-inc-ftp/preamble}
+
+\title{ESP32 Firmware Style Guide}
+\author{STAR Development Team}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\tableofcontents
+\newpage
+
+% === Part I: Code Formatting ===
+\input{sections/01_asm.tex}
+\input{sections/02_assertions.tex}
+\input{sections/03_braces.tex}
+\input{sections/04_switch.tex}
+\input{sections/05_long_lines.tex}
+\input{sections/06_comments.tex}
+\input{sections/07_concurrency.tex}
+\input{sections/08_enums.tex}
+\input{sections/09_error_handling.tex}
+\input{sections/10_functions.tex}
+\input{sections/11_globals.tex}
+\input{sections/12_header_files.tex}
+\input{sections/13_horizontal_space.tex}
+\input{sections/14_include_statements.tex}
+\input{sections/15_indentation.tex}
+\input{sections/16_line_endings.tex}
+\input{sections/17_logging.tex}
+
+% === Part II: Naming and Types ===
+\input{sections/18_naming_conventions.tex}
+\input{sections/19_type_definitions.tex}
+
+% === Part III: Project Organization ===
+\input{sections/20_file_organization.tex}
+
+% === Part IV: Standards and Patterns ===
+\input{sections/21_terminology.tex}
+\input{sections/22_architecture_patterns.tex}
+\input{sections/23_macros_and_preprocessor.tex}
+
+\end{document}
