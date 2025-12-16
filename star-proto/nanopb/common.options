@@ -1,0 +1,12 @@
+# common.options - nanopb field size constraints for common.proto
+# These settings optimize for ESP32 embedded use with static allocation.
+#
+# STAR Project - Texas A&M University
+
+# RequestHeader field constraints
+star.v1.RequestHeader.request_id        max_size:64
+star.v1.RequestHeader.client_version    max_size:32
+
+# ResponseHeader field constraints
+star.v1.ResponseHeader.request_id       max_size:64
+star.v1.ResponseHeader.error_message    max_size:256
