@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Convert cflow output to DOT format at different abstraction levels
-This creates multiple Egypt-style call graphs showing different levels of detail
+This creates multiple call graphs showing different levels of detail
 """
 
 import sys
