@@ -63,6 +63,13 @@ extern const gpio_num_t s_i2c_scl_pin;
 extern const gpio_num_t s_temp_sensor_pin;
 
 /* ========================================================================= */
+/*                    SAFETY - EMERGENCY STOP                                */
+/* ========================================================================= */
+
+extern const gpio_num_t s_estop_pin;
+extern const bool s_estop_active_low;
+
+/* ========================================================================= */
 /*                    SYSTEM CONFIGURATION CONSTANTS                         */
 /* ========================================================================= */
 

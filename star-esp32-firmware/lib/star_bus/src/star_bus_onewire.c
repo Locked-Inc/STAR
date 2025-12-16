@@ -254,7 +254,11 @@ esp_err_t star_bus_onewire_init(star_bus_manager_t*          manager,
 
 esp_err_t star_bus_onewire_deinit(star_bus_manager_t* manager, const char* bus_name)
 {
-  if (manager == NULL || bus_name == NULL) {
+  /* Note: manager parameter is optional (can be NULL) for API consistency.
+   * The function only uses bus_name to look up the internal state. */
+  (void)manager; /* Explicitly mark as unused */
+
+  if (bus_name == NULL) {
     return ESP_ERR_INVALID_ARG;
   }
 
@@ -502,7 +506,7 @@ esp_err_t star_bus_onewire_read_bytes(star_bus_manager_t* manager,
 
 esp_err_t star_bus_onewire_read_rom(star_bus_manager_t* manager,
                                     const char*         bus_name,
-                                    star_onewire_rom_t* rom)
+                                    uint8_t             rom[8])
 {
   if (manager == NULL || bus_name == NULL || rom == NULL) {
     return ESP_ERR_INVALID_ARG;
@@ -521,17 +525,15 @@ esp_err_t star_bus_onewire_read_rom(star_bus_manager_t* manager,
     return result;
   }
 
-  /* Read 8 bytes */
-  uint8_t rom_bytes[8];
-  result = star_bus_onewire_read_bytes(manager, bus_name, rom_bytes, 8);
+  /* Read 8 bytes directly into output buffer */
+  result = star_bus_onewire_read_bytes(manager, bus_name, rom, 8);
   if (result != ESP_OK) {
     return result;
   }
 
-  *rom = star_bus_onewire_bytes_to_rom(rom_bytes);
-
   /* Verify CRC */
-  if (!star_bus_onewire_verify_rom(*rom)) {
+  star_onewire_rom_t rom_code = star_bus_onewire_bytes_to_rom(rom);
+  if (!star_bus_onewire_verify_rom(rom_code)) {
     onewire_state_t* state = internal_get_onewire_state_safe(bus_name, false);
     if (state != NULL) {
       state->stats.crc_errors++;
@@ -540,6 +542,41 @@ esp_err_t star_bus_onewire_read_rom(star_bus_manager_t* manager,
   }
 
   return ESP_OK;
+}
+
+esp_err_t star_bus_onewire_match_rom(star_bus_manager_t* manager,
+                                     const char*         bus_name,
+                                     const uint8_t       rom[8])
+{
+  if (manager == NULL || bus_name == NULL || rom == NULL) {
+    return ESP_ERR_INVALID_ARG;
+  }
+
+  /* Send MATCH ROM command */
+  esp_err_t result = star_bus_onewire_write_byte(manager, bus_name, STAR_ONEWIRE_CMD_MATCH_ROM);
+  if (result != ESP_OK) {
+    return result;
+  }
+
+  /* Send 8-byte ROM code */
+  for (int i = 0; i < 8; i++) {
+    result = star_bus_onewire_write_byte(manager, bus_name, rom[i]);
+    if (result != ESP_OK) {
+      return result;
+    }
+  }
+
+  return ESP_OK;
+}
+
+esp_err_t star_bus_onewire_skip_rom(star_bus_manager_t* manager, const char* bus_name)
+{
+  if (manager == NULL || bus_name == NULL) {
+    return ESP_ERR_INVALID_ARG;
+  }
+
+  /* Send SKIP ROM command */
+  return star_bus_onewire_write_byte(manager, bus_name, STAR_ONEWIRE_CMD_SKIP_ROM);
 }
 
 esp_err_t star_bus_onewire_search(star_bus_manager_t* manager,

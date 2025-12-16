@@ -68,12 +68,6 @@ brew install cflow doxygen graphviz
 
 # Ubuntu/Debian
 sudo apt-get install cflow doxygen graphviz
-
-# For Egypt tool (manual installation)
-curl -O https://www.gson.org/egypt/download/egypt-1.11.tar.gz
-tar -xzf egypt-1.11.tar.gz
-cp egypt-1.11/egypt ./
-chmod +x egypt
 ```
 
 ### Generate All Call Graphs
@@ -87,7 +81,6 @@ Use the automated script to generate comprehensive call graphs:
 
 This script generates:
 - **GNU cflow** text-based call graphs
-- **Egypt** visual call graphs from compiled RTL dumps
 - **Doxygen** documentation with interactive call/caller graphs
 
 ### Manual Generation
@@ -99,19 +92,6 @@ cflow --main=app_main src/main.c lib/star_*/src/*.c > forward_callgraph.txt
 
 # Reverse call graph (show callers)
 cflow -r --main=app_main src/main.c lib/star_*/src/*.c > reverse_callgraph.txt
-```
-
-#### Egypt (Binary Analysis)
-```bash
-# Build with RTL dump flags (already configured in platformio.ini)
-pio run -e esp32_wroom
-
-# Generate DOT format call graph
-find . -name "*.expand" -path "*/src/*" -o -name "*.expand" -path "*/star_*/*" | ./egypt > callgraph.dot
-
-# Convert to visual formats
-dot -Tpng callgraph.dot -o callgraph.png
-dot -Tsvg callgraph.dot -o callgraph.svg
 ```
 
 #### Doxygen (Documentation with Call Graphs)

@@ -281,6 +281,22 @@ star_bus_config_t* star_bus_config_create_adc(const char*    name,
                                                adc_atten_t    atten);
 
 /**
+ * @brief Create a OneWire bus configuration.
+ *
+ * Creates a configuration for a 1-Wire bus for communicating with Dallas/Maxim devices
+ * such as DS18B20 temperature sensors. The 1-Wire protocol uses a single GPIO pin for
+ * bidirectional communication.
+ *
+ * @param[in] name      Unique name for this 1-Wire bus (e.g., "temp_onewire"). Must be non-NULL.
+ * @param[in] gpio_pin  GPIO pin for 1-Wire data line (requires external 4.7kΩ pullup resistor).
+ * @param[in] use_parasitic_power Enable parasite power mode (devices powered through data line).
+ * @return star_bus_config_t* Pointer to the created configuration, or NULL on failure. Must be destroyed via star_bus_config_destroy.
+ */
+star_bus_config_t* star_bus_config_create_onewire(const char* name,
+                                                   gpio_num_t  gpio_pin,
+                                                   bool        use_parasitic_power);
+
+/**
  * @brief Deinitialize the bus/device associated with this configuration.
  *
  * For I2C: Performs i2c_driver_delete.

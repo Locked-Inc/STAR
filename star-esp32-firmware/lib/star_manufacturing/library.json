@@ -1,0 +1,18 @@
+{
+  "name": "star_manufacturing",
+  "version": "1.0.0",
+  "description": "Manufacturing support and device provisioning for STAR firmware",
+  "keywords": ["manufacturing", "provisioning", "serial", "hardware"],
+  "authors": [
+    {
+      "name": "STAR Project"
+    }
+  ],
+  "license": "MIT",
+  "frameworks": ["espidf"],
+  "platforms": ["espressif32"],
+  "build": {
+    "flags": [],
+    "includeDir": "include"
+  }
+}

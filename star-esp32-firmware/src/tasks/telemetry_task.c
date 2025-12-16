@@ -7,16 +7,15 @@
 #include <string.h>
 
 #include "star_bms_bq7850.h"
-/* TODO: Re-enable once DS18B20 and 1-Wire are implemented */
-/* #include "star_sensor_ds18b20.h" */
+#include "star_motor.h"
+#include "star_sensor_ds18b20.h"
 
 #include "system_config.h"
 
 extern const char* const s_TAG;
 
 /* Telemetry thresholds */
-/* TODO: Re-enable thermal protection when DS18B20 is implemented */
-/* static const float s_thermal_shutdown_temp_c = 85.0f; */
+static const float s_thermal_shutdown_temp_c = 85.0f;
 static const uint8_t s_low_battery_threshold_soc = 10;
 static const uint16_t s_cell_imbalance_threshold_mv = 100;
 
@@ -70,15 +69,84 @@ void telemetry_task(void* pvParameters)
                          max_mv - min_mv,
                          min_mv,
                          max_mv);
+
+                /* Automatically enable balancing if conditions are safe */
+                bool can_balance = true;
+
+                /* Safety check 1: Not under heavy load (current < 1A) */
+                if (abs(bms_state.current.avg_current_ma) > 1000) {
+                    can_balance = false;
+                    ESP_LOGD(s_TAG,
+                             "Balancing deferred - high current: %d mA",
+                             bms_state.current.avg_current_ma);
+                }
+
+                /* Safety check 2: Temperature within safe range (10C to 45C) */
+                /* Temperature in 0.1C units: 100 = 10.0C, 450 = 45.0C */
+                if (bms_state.temps.avg_temp_c < 100 || bms_state.temps.avg_temp_c > 450) {
+                    can_balance = false;
+                    ESP_LOGD(s_TAG,
+                             "Balancing deferred - temperature out of range: %.1fC",
+                             bms_state.temps.avg_temp_c / 10.0f);
+                }
+
+                /* Safety check 3: No active faults */
+                if (bms_state.status.fault_active) {
+                    can_balance = false;
+                    ESP_LOGD(s_TAG, "Balancing deferred - BMS fault active");
+                }
+
+                /* Enable balancing on all cells if safe */
+                if (can_balance) {
+                    uint16_t  cell_mask = (1 << bms_state.cells.valid_cells) - 1;
+                    esp_err_t bal_ret   = star_bms_bq7850_enable_cell_balancing(&ctx->bms,
+                                                                                 cell_mask);
+                    if (bal_ret == ESP_OK) {
+                        ESP_LOGI(s_TAG, "Cell balancing enabled (mask: 0x%04X)", cell_mask);
+                    } else {
+                        ESP_LOGW(s_TAG,
+                                 "Failed to enable balancing: %s",
+                                 esp_err_to_name(bal_ret));
+                    }
+                }
+            } else {
+                /* Cells balanced - disable balancing to save power */
+                uint16_t active_mask = 0;
+                if (star_bms_bq7850_get_balancing_status(&ctx->bms, &active_mask) == ESP_OK) {
+                    if (active_mask != 0) {
+                        star_bms_bq7850_disable_cell_balancing(&ctx->bms);
+                        ESP_LOGI(s_TAG, "Cell balancing disabled - cells balanced");
+                    }
+                }
             }
         }
 
         /* === Temperature Monitoring === */
-        /* TODO: Re-enable once 1-Wire bus and DS18B20 are implemented */
-        /* float temp_c; */
-        /* if (star_sensor_ds18b20_read_temp(&ctx->temp_sensor, &temp_c) == ESP_OK) { */
-        /*     ... thermal protection code ... */
-        /* } */
+        float temp_c = 0.0f;
+        esp_err_t temp_ret = star_sensor_ds18b20_read_temp(&ctx->temp_sensor, &temp_c);
+        if (temp_ret == ESP_OK) {
+            ESP_LOGI(s_TAG, "Temperature: %.2fC", temp_c);
+
+            /* Thermal protection - emergency stop if temperature critical */
+            if (temp_c > s_thermal_shutdown_temp_c) {
+                ESP_LOGE(s_TAG,
+                         "CRITICAL TEMPERATURE: %.2fC - EMERGENCY STOP",
+                         temp_c);
+                /* Stop all motors immediately with emergency brake */
+                for (int i = 0; i < NUM_MOTORS; i++) {
+                    star_motor_stop(&ctx->motors[i], true);
+                }
+                /* Update shared state to indicate motors stopped */
+                if (xSemaphoreTake(ctx->state_mutex, pdMS_TO_TICKS(100)) == pdTRUE) {
+                    for (int i = 0; i < NUM_MOTORS; i++) {
+                        ctx->setpoint_rpm[i] = 0.0f;
+                    }
+                    xSemaphoreGive(ctx->state_mutex);
+                }
+            }
+        } else {
+            ESP_LOGW(s_TAG, "Failed to read temperature: %s", esp_err_to_name(temp_ret));
+        }
 
         /* === Motor Telemetry (All 4 Motors) === */
         /* Copy shared state data under mutex protection */
