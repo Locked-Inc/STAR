@@ -61,13 +61,15 @@ error_rads = setpoint_rads' - velocity_rads;
 %% Add Disturbance Simulation
 fprintf('--- Adding Disturbance ---\n');
 
-% Disturbance: torque disturbance at t=1.0s (load applied)
+% Disturbance: output disturbance at t=1.0s (models load torque effect on velocity)
+% Magnitude represents velocity deviation in rad/s if uncontrolled
 disturbance = zeros(size(t));
-disturbance(t >= 1.0 & t < 1.5) = 50;  % 50% equivalent load
+disturbance(t >= 1.0 & t < 1.5) = 5;  % 5 rad/s (~48 RPM) disturbance
 
-% Simulate with disturbance (approximate as output disturbance)
-sys_dist = feedback(motor_tf_d, C_pid_d);  % Disturbance rejection TF
-[dist_response, ~] = lsim(sys_dist, disturbance', t);
+% Simulate with disturbance using sensitivity function S = 1/(1+GC)
+% Output disturbance rejection: y_dist = S * d
+sys_sensitivity = feedback(1, C_pid_d * motor_tf_d);  % S = 1/(1+GC)
+[dist_response, ~] = lsim(sys_sensitivity, disturbance', t);
 velocity_with_dist = velocity_rpm + dist_response * (60/(2*pi));
 
 %% Calculate Performance Metrics
