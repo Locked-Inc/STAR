@@ -94,9 +94,10 @@ The MATLAB scripts output gains compatible with the ESP32 `star_pid` library:
 
 ```c
 // Velocity PID (from pid_design_velocity.m @ 20 rad/s bandwidth)
+// Transfer function: G(s) = 3.665 / (0.075s + 1)  [tau = 75ms from design doc]
 star_pid_config_t velocity_pid_config = {
-    .kp = 0.158869f,
-    .ki = 7.032521f,
+    .kp = 0.285647f,
+    .ki = 8.008388f,
     .kd = 0.000000f,
     .output_min = -100.0f,   // -100% duty cycle
     .output_max = 100.0f,    // +100% duty cycle
@@ -111,9 +112,9 @@ star_pid_init(&velocity_pid, &velocity_pid_config);
 | Metric | Value |
 |--------|-------|
 | Rise Time | 70 ms |
-| Settling Time | 240 ms |
-| Overshoot | 5.8% |
-| Phase Margin | 69.3° |
+| Settling Time | 260 ms |
+| Overshoot | 9.7% |
+| Phase Margin | 69.2° |
 
 ### Control Loop Rate
 
@@ -182,21 +183,23 @@ Use `cascaded_pid_design.m` for full cascade tuning.
 
 ## Computed PID Gains (from MATLAB)
 
+**Model:** G(s) = 3.665 / (0.075s + 1) with τ = 75ms from design doc
+
 ### Velocity-Only Control (Simpler)
 | Gain | Value |
 |------|-------|
-| Kp | 0.1589 |
-| Ki | 7.0325 |
+| Kp | 0.2856 |
+| Ki | 8.0084 |
 | Kd | 0.0 |
 
 ### Cascaded Control (from cascaded_pid_design.m)
 | Loop | Kp | Ki | Kd | Bandwidth |
 |------|----|----|----|-----------|
 | Current (inner) | 0.0 | 375.5 | 0.0 | 200 rad/s |
-| Velocity (middle) | 0.079 | 0.297 | 0.0007 | 20 rad/s |
-| Position (outer) | 1.92 | 0.71 | 0.17 | 2 rad/s |
+| Velocity (middle) | 0.118 | 0.552 | 0.001 | 20 rad/s |
+| Position (outer) | 1.94 | 0.72 | 0.18 | 2 rad/s |
 
-**Note**: Time constant τ = 50ms is estimated. Run `system_id_template.m` with real encoder data to refine.
+**Note**: Time constant τ = 75ms from `docs/Protobuf_Protocol_Design_Analysis.tex`. Run `system_id_template.m` with real encoder data to refine.
 
 ## Requirements
 
