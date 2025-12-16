@@ -206,8 +206,8 @@ output_min = -100.0;
 
 % Integral term should not exceed what could saturate output alone
 % At steady-state error, I_term = Ki * error * t_accum
-% To prevent windup, limit I_term to +/- 50% of output range
-integral_limit = 0.5 * (output_max - output_min);
+% To prevent windup, limit I_term to +/- 50% of output max
+integral_limit = 0.5 * output_max;  % 50% of max = 50
 
 fprintf('Output Limits:     [%.0f, %.0f] %%\n', output_min, output_max);
 fprintf('Integral Limits:   [%.0f, %.0f] (50%% of output range)\n', -integral_limit, integral_limit);
