@@ -1,0 +1,24 @@
+{
+  "name": "star_encoder",
+  "version": "1.0.0",
+  "description": "Quadrature encoder driver using ESP32 PCNT peripheral",
+  "keywords": [
+    "encoder",
+    "quadrature",
+    "pcnt",
+    "motor control",
+    "position tracking"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/star-esp32-firmware.git"
+  },
+  "authors": [
+    {
+      "name": "STAR Team"
+    }
+  ],
+  "license": "MIT",
+  "frameworks": "espidf",
+  "platforms": "espressif32"
+}

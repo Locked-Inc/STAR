@@ -1,0 +1,272 @@
+\section{Braces}
+
+Proper brace placement makes code cleaner and easier to read. This section establishes consistent brace conventions used throughout the STAR firmware codebase.
+
+\subsection{General Rules}
+
+\begin{itemize}
+    \item \textbf{Always Use Braces for Control Statements}: Every \texttt{if}, \texttt{for}, \texttt{while}, or similar control structure must have braces, even for single statements.
+    \item \textbf{Same Line for Control Structures and Blocks}: For control structures like \texttt{if}, \texttt{for}, \texttt{while}, and blocks like structs and enums, always place the opening brace \texttt{\{} on the same line as the statement.
+    \item \textbf{Functions Have Braces on a New Line}: The only exception to the same-line rule is for functions, where the opening brace goes on its own line.
+\end{itemize}
+
+\subsection{Control Structures}
+
+Opening brace on the \textbf{same line} as the control statement.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - if/else with braces on same line */
+if (ret != ESP_OK) {
+    ESP_LOGE(s_TAG, "Operation failed: %s", esp_err_to_name(ret));
+    return ret;
+}
+
+if (manager == NULL) {
+    return ESP_ERR_INVALID_ARG;
+} else if (manager->mutex == NULL) {
+    return ESP_ERR_INVALID_STATE;
+} else {
+    /* Proceed with operation */
+}
+
+/* CORRECT - Single statement still requires braces */
+if (pin < 0 || pin >= GPIO_NUM_MAX) {
+    return ESP_OK;  /* Not an error, pin is not used */
+}
+
+/* WRONG - Missing braces */
+if (ret != ESP_OK)
+    return ret;
+
+/* WRONG - Brace on new line */
+if (ret != ESP_OK)
+{
+    return ret;
+}
+\end{lstlisting}
+
+\subsubsection{For Loops}
+
+\begin{lstlisting}[language=C]
+/* CORRECT - for loop with brace on same line */
+for (star_bus_config_t* curr = manager->buses; curr; curr = curr->next) {
+    if (curr->name && strcmp(curr->name, name) == 0) {
+        found_bus = curr;
+        break;
+    }
+}
+
+for (uint32_t i = 0; i < SPI_HOST_MAX; ++i) {
+    manager->spi_host_initialized[i] = false;
+    manager->spi_device_count[i] = 0;
+}
+
+/* WRONG */
+for (uint32_t i = 0; i < count; ++i)
+    process_item(i);  /* Missing braces */
+\end{lstlisting}
+
+\subsubsection{While Loops}
+
+\begin{lstlisting}[language=C]
+/* CORRECT - while loop with brace on same line */
+while (curr) {
+    star_bus_config_t* next = curr->next;
+    esp_err_t destroy_result = star_bus_config_destroy(curr);
+    if (destroy_result != ESP_OK && first_error == ESP_OK) {
+        first_error = destroy_result;
+    }
+    curr = next;
+}
+
+while (error_handler_can_retry(&handler)) {
+    ret = attempt_operation();
+    if (ret == ESP_OK) {
+        break;
+    }
+}
+
+/* WRONG */
+while (curr)
+{
+    process_node(curr);  /* Brace on new line */
+    curr = curr->next;
+}
+\end{lstlisting}
+
+\subsection{Functions}
+
+Opening brace on a \textbf{new line} for function definitions.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Function brace on new line */
+esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
+                                const char*             tag,
+                                star_error_interface_t* error_iface,
+                                star_pin_interface_t*   pin_iface)
+{
+    ESP_RETURN_ON_FALSE(manager, ESP_ERR_INVALID_ARG, s_TAG,
+                        "Manager pointer is NULL");
+
+    manager->buses       = NULL;
+    manager->error_iface = error_iface;
+    manager->pin_iface   = pin_iface;
+
+    /* ... */
+
+    return ESP_OK;
+}
+
+static esp_err_t internal_register_bus_pin(star_pin_interface_t* pin_iface,
+                                            gpio_num_t            pin,
+                                            const char*           bus_name,
+                                            const char*           usage,
+                                            bool                  can_be_shared)
+{
+    if (pin < 0 || pin >= GPIO_NUM_MAX) {
+        return ESP_OK;
+    }
+    /* ... */
+}
+
+/* WRONG - Function brace on same line */
+esp_err_t star_bus_manager_init(star_bus_manager_t* manager, ...) {
+    /* ... */
+}
+\end{lstlisting}
+
+\subsection{Structs and Enums}
+
+Opening brace on the \textbf{same line} as the typedef/struct/enum keyword.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Struct brace on same line */
+typedef struct star_bus_manager {
+    star_bus_config_t*      buses;
+    SemaphoreHandle_t       mutex;
+    const char*             tag;
+    star_error_interface_t* error_iface;
+    star_pin_interface_t*   pin_iface;
+    bool                    spi_host_initialized[SPI_HOST_MAX];
+    int                     spi_device_count[SPI_HOST_MAX];
+} star_bus_manager_t;
+
+/* CORRECT - Enum brace on same line */
+typedef enum {
+    k_star_bus_type_none,
+    k_star_bus_type_i2c,
+    k_star_bus_type_spi,
+    k_star_bus_type_gpio,
+    k_star_bus_type_adc,
+    k_star_bus_type_count,
+} star_bus_type_t;
+
+/* CORRECT - Union brace on same line */
+union {
+    star_i2c_bus_config_t  i2c;
+    star_spi_bus_config_t  spi;
+    star_gpio_bus_config_t gpio;
+    star_adc_bus_config_t  adc;
+} proto;
+
+/* WRONG - Brace on new line */
+typedef struct star_bus_manager
+{
+    /* ... */
+} star_bus_manager_t;
+\end{lstlisting}
+
+\subsection{Initializer Lists}
+
+Opening brace on the \textbf{same line} as the assignment.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Initializer brace on same line */
+star_bus_event_t event = {
+    .bus_type = k_star_bus_type_i2c,
+    .bus_name = config->name,
+    .i2c = {
+        .port = port,
+        .address = address,
+        .is_write = true,
+        .len = len
+    }
+};
+
+spi_device_interface_config_t spi_dev_cfg = {
+    .clock_speed_hz = 10 * 1000 * 1000,
+    .mode = 0,
+    .spics_io_num = GPIO_NUM_5,
+    .queue_size = 7,
+    .pre_cb = NULL,
+    .post_cb = NULL,
+};
+
+/* CORRECT - Short initializers can be on one line */
+i2c_config_t i2c_conf = {.mode = I2C_MODE_MASTER};
+
+/* WRONG - Brace on new line */
+star_bus_event_t event =
+{
+    .bus_type = k_star_bus_type_i2c,
+    /* ... */
+};
+\end{lstlisting}
+
+\subsection{Closing Brace Placement}
+
+Closing braces are always on their own line, except for \texttt{else}, \texttt{else if}, and \texttt{while} in \texttt{do-while}.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - else on same line as closing brace */
+if (ret != ESP_OK) {
+    handle_error(ret);
+} else {
+    continue_operation();
+}
+
+/* CORRECT - do-while */
+do {
+    ret = try_operation();
+} while (ret == ESP_ERR_TIMEOUT && retries-- > 0);
+
+/* CORRECT - else if chain */
+if (config->type == k_star_bus_type_i2c) {
+    /* Handle I2C */
+} else if (config->type == k_star_bus_type_spi) {
+    /* Handle SPI */
+} else {
+    /* Handle other */
+}
+\end{lstlisting}
+
+\subsection{Summary Table}
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Construct} & \textbf{Opening Brace Position} \\
+\hline
+Functions & New line \\
+\hline
+if/else/else if & Same line \\
+\hline
+for & Same line \\
+\hline
+while & Same line \\
+\hline
+do-while & Same line \\
+\hline
+switch & Same line \\
+\hline
+struct & Same line \\
+\hline
+enum & Same line \\
+\hline
+union & Same line \\
+\hline
+Initializer lists & Same line \\
+\hline
+\end{tabular}
+\end{center}
+

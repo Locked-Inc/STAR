@@ -1,0 +1,82 @@
+% Test Phase Gantt Chart
+% Generated: 2025-12-06 16:42
+% Tasks: 15, Duration: 57 days
+
+\subsection{Test Phase Schedule}
+
+\noindent\textbf{Phase Duration:} 57 days (Mar 15, 2026 -- May 10, 2026)
+\\\textbf{Total Tasks:} 15
+
+\vspace{0.5em}
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{ganttchart}[
+    x unit=1.2cm,
+    y unit chart=0.4cm,
+    y unit title=0.5cm,
+    title height=1,
+    bar/.style={fill=green!30},
+    bar incomplete/.style={fill=green!30!50},
+    group/.style={fill=green!50, draw=black},
+    group left shift=0,
+    group right shift=0,
+    group peaks height=0.3,
+    milestone/.style={fill=black, shape=diamond, inner sep=2pt},
+    link/.style={->, thick, black!60},
+    vgrid={{*1{draw=gray!30, dashed}}},
+    hgrid,
+    today rule/.style={draw=red!70, ultra thick, dashed},
+    progress label text={},
+    bar label node/.append style={align=left, font=\tiny},
+    group label node/.append style={align=left, font=\tiny\bfseries},
+]{1}{10}
+
+    \gantttitle{Test Phase}{10} \\
+    \gantttitle{03/03}{1} \gantttitle{03/10}{1} \gantttitle{03/17}{1} \gantttitle{03/24}{1} \gantttitle{03/31}{1} \gantttitle{04/07}{1} \gantttitle{04/14}{1} \gantttitle{04/21}{1} \gantttitle{04/28}{1} \gantttitle{05/05}{1} \\
+
+    \ganttgroup{1.4.1: Validate test plan and prep prov...}{1}{3} \\
+    \ganttbar[name=elem2, bar/.append style={fill=red!50}]{1.4.1.1: Review and finalize test procedures}{1}{1} \\
+    \ganttbar[name=elem3, bar/.append style={fill=red!50}]{1.4.1.2: Prepare test environment and equ...}{1}{2} \\
+    \ganttbar[name=elem4, bar/.append style={fill=red!50}]{1.4.1.3: Set up data collection and monit...}{2}{3} \\
+    \ganttgroup{1.4.2: Execute functional and integrati...}{3}{5} \\
+    \ganttbar[name=elem6, bar/.append style={fill=red!50}]{1.4.2.1: Execute navigation functional tests}{3}{3} \\
+    \ganttbar[name=elem7, bar/.append style={fill=red!50}]{1.4.2.2: Execute sensor integration tests}{3}{4} \\
+    \ganttbar[name=elem8, bar/.append style={fill=red!50}]{1.4.2.3: Execute power system tests}{4}{5} \\
+    \ganttbar[name=elem9, bar/.append style={fill=red!50}]{1.4.2.4: Document test results and defects}{5}{5} \\
+    \ganttgroup{1.4.3: Lead field trials and analyze pe...}{3}{5} \\
+    \ganttbar[name=elem11]{1.4.3.1: Execute indoor navigation trials}{3}{3} \\
+    \ganttbar[name=elem12]{1.4.3.2: Execute multi-room mapping trials}{3}{4} \\
+    \ganttbar[name=elem13]{1.4.3.3: Execute obstacle avoidance trials}{4}{5} \\
+    \ganttbar[name=elem14]{1.4.3.4: Analyze field trial data and doc...}{5}{5} \\
+    \ganttgroup{1.4.4: Manage bug triage and remediatio...}{6}{7} \\
+    \ganttbar[name=elem16, bar/.append style={fill=red!50}]{1.4.4.1: Triage and prioritize defects}{6}{6} \\
+    \ganttbar[name=elem17, bar/.append style={fill=red!50}]{1.4.4.2: Implement fixes and verify corre...}{6}{7} \\
+    \ganttgroup{1.4.5: Deliver acceptance demo and test...}{7}{9} \\
+    \ganttbar[name=elem19, bar/.append style={fill=red!50}]{1.4.5.1: Prepare acceptance demonstration}{7}{8} \\
+    \ganttbar[name=elem20, bar/.append style={fill=red!50}]{1.4.5.2: Deliver demo and finalize test r...}{8}{9} \\
+
+    % Dependencies
+    \ganttlink{elem2}{elem3}
+    \ganttlink{elem3}{elem4}
+    \ganttlink{elem4}{elem6}
+    \ganttlink{elem6}{elem7}
+    \ganttlink{elem7}{elem8}
+    \ganttlink{elem8}{elem9}
+    \ganttlink{elem4}{elem11}
+    \ganttlink{elem11}{elem12}
+    \ganttlink{elem12}{elem13}
+    \ganttlink{elem13}{elem14}
+    \ganttlink{elem9}{elem16}
+    \ganttlink{elem16}{elem17}
+    \ganttlink{elem17}{elem19}
+    \ganttlink{elem19}{elem20}
+
+\end{ganttchart}
+}%
+\caption{Test Phase Gantt Chart}
+\label{fig:gantt_test}
+\end{figure}
+
+\noindent\textit{Note: Tasks highlighted in red are on the critical path (11 tasks in this phase).}

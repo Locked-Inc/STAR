@@ -1,0 +1,27 @@
+{
+  "name": "star_sensor_ds18b20",
+  "version": "1.0.0",
+  "description": "DS18B20 digital temperature sensor driver using 1-Wire bus",
+  "keywords": [
+    "ds18b20",
+    "temperature",
+    "sensor",
+    "1-wire",
+    "onewire"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/star-esp32-firmware.git"
+  },
+  "authors": [
+    {
+      "name": "STAR Team"
+    }
+  ],
+  "license": "MIT",
+  "frameworks": "espidf",
+  "platforms": "espressif32",
+  "dependencies": {
+    "star_bus": "1.0.0"
+  }
+}

@@ -1,0 +1,31 @@
+# Buildroot
+buildroot-*/
+dl/
+output/
+downloads/
+overlays/opt/
+overlays/usr/
+
+# Temporary files
+*.tar.gz
+*.tar.bz2
+*.zip
+*.img
+*.img.gz
+*.ext4
+
+# Build artifacts
+.config.old
+.auto.deps
+*.log
+
+# Editor/IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# ccache
+.ccache/

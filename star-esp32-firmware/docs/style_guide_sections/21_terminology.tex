@@ -1,0 +1,258 @@
+\section{Inclusive Terminology}
+
+This section establishes the OSHWA (Open Source Hardware Association) inclusive terminology standards used throughout the STAR firmware codebase. These standards replace legacy terminology with more inclusive alternatives.
+
+\subsection{Overview}
+
+The STAR project follows inclusive terminology guidelines to ensure our codebase is welcoming to all contributors and avoids language with harmful historical connotations. This is particularly relevant in embedded systems where certain legacy terms have been deeply entrenched.
+
+\subsection{SPI Bus Terminology}
+
+\subsubsection{COPI/CIPO (Not MOSI/MISO)}
+
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{STAR Term} & \textbf{Legacy Term} & \textbf{Description} \\
+\hline
+COPI & MOSI & Controller Out, Peripheral In \\
+\hline
+CIPO & MISO & Controller In, Peripheral Out \\
+\hline
+SCLK & SCLK & Serial Clock (unchanged) \\
+\hline
+CS & SS & Chip Select (unchanged) \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{lstlisting}[language=C]
+/* CORRECT - OSHWA terminology */
+typedef struct star_spi_bus_config {
+    gpio_num_t copi_io_num;  /**< Controller Out, Peripheral In */
+    gpio_num_t cipo_io_num;  /**< Controller In, Peripheral Out */
+    gpio_num_t sclk_io_num;  /**< Serial Clock */
+    gpio_num_t cs_io_num;    /**< Chip Select */
+    /* ... */
+} star_spi_bus_config_t;
+
+/* Factory function uses inclusive naming */
+star_bus_config_t* star_bus_config_create_spi_device(
+    const char*       name,
+    spi_host_device_t host,
+    gpio_num_t        copi_pin,   /* NOT mosi_pin */
+    gpio_num_t        cipo_pin,   /* NOT miso_pin */
+    gpio_num_t        sclk_pin,
+    int32_t           dma_chan,
+    const spi_device_interface_config_t* dev_cfg);
+
+/* In documentation and comments */
+/* CORRECT */
+reg_result = register_pin_if_valid(curr->proto.spi.copi_io_num,
+                                   bus_name,
+                                   "SPI COPI",  /* Descriptive usage */
+                                   reg_func,
+                                   user_ctx,
+                                   true);
+
+/* WRONG */
+reg_result = register_pin_if_valid(curr->proto.spi.mosi_io_num,
+                                   bus_name,
+                                   "SPI MOSI",  /* Legacy terminology */
+                                   reg_func,
+                                   user_ctx,
+                                   true);
+\end{lstlisting}
+
+\subsection{I2C and General Bus Terminology}
+
+\subsubsection{Controller/Peripheral (Not Master/Slave)}
+
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{STAR Term} & \textbf{Legacy Term} & \textbf{Description} \\
+\hline
+Controller & Master & Device that initiates communication \\
+\hline
+Peripheral & Slave & Device that responds to controller \\
+\hline
+Primary & Master & For configuration structures \\
+\hline
+Main & Master & For general reference \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Controller/Peripheral terminology */
+typedef struct star_spi_bus_config {
+    spi_host_device_t host;
+    bool is_peripheral;  /**< True if operating as SPI peripheral */
+    /* ... */
+} star_spi_bus_config_t;
+
+/* Factory function for peripheral mode */
+star_bus_config_t* star_bus_config_create_spi_peripheral(
+    const char*       name,
+    spi_host_device_t host,
+    gpio_num_t        copi_pin,
+    gpio_num_t        cipo_pin,
+    gpio_num_t        sclk_pin,
+    gpio_num_t        cs_pin,
+    int32_t           queue_size,
+    uint8_t           mode);
+
+/* In comments and documentation */
+/**
+ * @brief I2C Controller operations
+ *
+ * The controller device initiates all transactions on the bus.
+ * Peripheral devices respond when addressed by the controller.
+ */
+
+/* WRONG */
+bool is_slave;            /* Use is_peripheral */
+star_bus_config_create_spi_slave();  /* Use _peripheral */
+\end{lstlisting}
+
+\subsection{Mapping ESP-IDF Legacy APIs}
+
+ESP-IDF still uses legacy terminology internally. When interfacing with ESP-IDF, document the mapping clearly.
+
+\begin{lstlisting}[language=C]
+/* From star_bus_protocol_types.h */
+typedef struct star_spi_bus_config {
+    /* ... */
+
+    /* SPI pin naming follows OSHWA standard:
+     * - COPI (Controller Out, Peripheral In) - replaces MOSI
+     * - CIPO (Controller In, Peripheral Out) - replaces MISO
+     * This modern terminology removes master/slave language.
+     * The ESP-IDF still uses mosi_io_num/miso_io_num internally,
+     * which we map here.
+     */
+    gpio_num_t copi_io_num;  /**< GPIO for COPI (maps to ESP-IDF mosi_io_num) */
+    gpio_num_t cipo_io_num;  /**< GPIO for CIPO (maps to ESP-IDF miso_io_num) */
+    /* ... */
+} star_spi_bus_config_t;
+
+/* When setting up ESP-IDF structures */
+static esp_err_t internal_setup_spi_bus(star_bus_config_t* config)
+{
+    spi_bus_config_t bus_cfg = {
+        /* Map our inclusive terminology to ESP-IDF legacy names */
+        .mosi_io_num     = config->proto.spi.copi_io_num,
+        .miso_io_num     = config->proto.spi.cipo_io_num,
+        .sclk_io_num     = config->proto.spi.sclk_io_num,
+        .quadwp_io_num   = -1,
+        .quadhd_io_num   = -1,
+        .max_transfer_sz = config->proto.spi.max_transfer_sz,
+    };
+    /* ... */
+}
+
+/* Similarly for I2C */
+/* ESP-IDF uses I2C_MODE_SLAVE, but we document as peripheral mode */
+i2c_config_t i2c_conf = {
+    .mode = I2C_MODE_MASTER,  /* Controller mode in STAR terminology */
+    /* or */
+    .mode = I2C_MODE_SLAVE,   /* Peripheral mode in STAR terminology */
+    /* ... */
+};
+\end{lstlisting}
+
+\subsection{Documentation Guidelines}
+
+When writing comments, documentation, or user-facing text:
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Use inclusive terminology in all documentation */
+
+/**
+ * @brief Configure ESP32 as SPI peripheral device
+ *
+ * The peripheral will respond to transactions initiated by an
+ * external SPI controller. Data flows:
+ * - COPI: Data received from controller
+ * - CIPO: Data sent to controller
+ *
+ * @param[in] name Unique name for this SPI peripheral instance
+ * @param[in] host SPI host device
+ * @param[in] copi_pin GPIO for Controller Out, Peripheral In
+ * @param[in] cipo_pin GPIO for Controller In, Peripheral Out
+ * ...
+ */
+star_bus_config_t* star_bus_config_create_spi_peripheral(...);
+
+/* WRONG - Legacy terminology */
+/**
+ * @brief Configure ESP32 as SPI slave device
+ *
+ * The slave will respond to transactions initiated by the
+ * SPI master. Data flows:
+ * - MOSI: Data from master to slave
+ * - MISO: Data from slave to master
+ */
+\end{lstlisting}
+
+\subsection{Code Review Checklist}
+
+When reviewing code, check for:
+
+\begin{itemize}
+    \item \textbf{Variable names}: No ``master'', ``slave'', ``mosi'', ``miso''
+    \item \textbf{Function names}: Use ``controller'', ``peripheral'', ``copi'', ``cipo''
+    \item \textbf{Comments}: Update any legacy terminology
+    \item \textbf{Documentation}: Ensure Doxygen uses inclusive terms
+    \item \textbf{String literals}: Check log messages and error strings
+    \item \textbf{ESP-IDF mapping}: Document when interfacing with legacy APIs
+\end{itemize}
+
+\subsection{Common Patterns}
+
+\begin{lstlisting}[language=C]
+/* Logging with inclusive terminology */
+ESP_LOGI(s_TAG, "SPI peripheral initialized on host %d", host);
+ESP_LOGI(s_TAG, "I2C controller configured on port %d", port);
+
+/* Error messages */
+ESP_LOGE(s_TAG, "Failed to initialize SPI peripheral: %s",
+         esp_err_to_name(ret));
+ESP_LOGE(s_TAG, "I2C controller transaction failed");
+
+/* Pin registration descriptions */
+internal_register_bus_pin(pin_iface, config->proto.spi.copi_io_num,
+                          config->name, "SPI COPI", true);
+internal_register_bus_pin(pin_iface, config->proto.spi.cipo_io_num,
+                          config->name, "SPI CIPO", true);
+\end{lstlisting}
+
+\subsection{Summary}
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Use This} & \textbf{Not This} \\
+\hline
+Controller & Master \\
+\hline
+Peripheral & Slave \\
+\hline
+COPI & MOSI \\
+\hline
+CIPO & MISO \\
+\hline
+Primary & Master (for configs) \\
+\hline
+Main & Master (general) \\
+\hline
+Allowlist & Whitelist \\
+\hline
+Blocklist & Blacklist \\
+\hline
+\end{tabular}
+\end{center}
+
+Following these guidelines ensures our codebase is inclusive and welcoming while maintaining technical clarity. The terminology accurately describes the functional roles of devices without relying on harmful historical language.
+

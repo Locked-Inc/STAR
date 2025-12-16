@@ -1,0 +1,81 @@
+% Research Phase Gantt Chart
+% Generated: 2025-12-06 16:42
+% Tasks: 13, Duration: 47 days
+
+\subsection{Research Phase Schedule}
+
+\noindent\textbf{Phase Duration:} 67 days (Aug 26, 2025 -- Oct 31, 2025)
+\\\textbf{Total Tasks:} 13
+
+\vspace{0.5em}
+
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{ganttchart}[
+    x unit=1.2cm,
+    y unit chart=0.4cm,
+    y unit title=0.5cm,
+    title height=1,
+    bar/.style={fill=blue!30},
+    bar incomplete/.style={fill=blue!30!50},
+    group/.style={fill=blue!50, draw=black},
+    group left shift=0,
+    group right shift=0,
+    group peaks height=0.3,
+    milestone/.style={fill=black, shape=diamond, inner sep=2pt},
+    link/.style={->, thick, black!60},
+    vgrid={{*1{draw=gray!30, dashed}}},
+    hgrid,
+    today rule/.style={draw=red!70, ultra thick, dashed},
+    progress label text={},
+    bar label node/.append style={align=left, font=\tiny},
+    group label node/.append style={align=left, font=\tiny\bfseries},
+]{1}{8}
+
+    \gantttitle{Research Phase}{8} \\
+    \gantttitle{08/25}{1} \gantttitle{09/01}{1} \gantttitle{09/08}{1} \gantttitle{09/15}{1} \gantttitle{09/22}{1} \gantttitle{09/29}{1} \gantttitle{10/06}{1} \gantttitle{10/13}{1} \\
+
+    \ganttgroup{1.1.1: Conduct stakeholder kickoff inte...}{1}{2} \\
+    \ganttbar[name=elem2, bar/.append style={fill=red!50}]{1.1.1.1: Schedule and conduct stakeholder...}{1}{1} \\
+    \ganttbar[name=elem3, bar/.append style={fill=red!50}]{1.1.1.2: Document interview findings and ...}{1}{2} \\
+    \ganttgroup{1.1.2: Consolidate requirements and sco...}{2}{4} \\
+    \ganttbar[name=elem5, bar/.append style={fill=red!50}]{1.1.2.1: Gather and categorize all requir...}{2}{3} \\
+    \ganttbar[name=elem6, bar/.append style={fill=red!50}]{1.1.2.2: Define scope baseline and accept...}{3}{4} \\
+    \ganttgroup{1.1.3: Run technology trade study for a...}{4}{6} \\
+    \ganttbar[name=elem8, bar/.append style={fill=red!50}]{1.1.3.1: Research autonomy framework options}{4}{4} \\
+    \ganttbar[name=elem9, bar/.append style={fill=red!50}]{1.1.3.2: Evaluate and score framework can...}{4}{5} \\
+    \ganttbar[name=elem10, bar/.append style={fill=red!50}]{1.1.3.3: Document trade study findings an...}{5}{6} \\
+    \ganttgroup{1.1.4: Evaluate sensor and compute opti...}{4}{5} \\
+    \ganttbar[name=elem12]{1.1.4.1: Research and benchmark sensor op...}{4}{4} \\
+    \ganttbar[name=elem13]{1.1.4.2: Evaluate compute platforms and m...}{5}{5} \\
+    \ganttgroup{1.1.5: Build risk register and mitigati...}{4}{5} \\
+    \ganttbar[name=elem15]{1.1.5.1: Identify and categorize project ...}{4}{4} \\
+    \ganttbar[name=elem16]{1.1.5.2: Develop mitigation strategies an...}{4}{5} \\
+    \ganttgroup{1.1.6: Present research findings and ph...}{6}{7} \\
+    \ganttbar[name=elem18, bar/.append style={fill=red!50}]{1.1.6.1: Prepare research phase presentat...}{6}{6} \\
+    \ganttbar[name=elem19, bar/.append style={fill=red!50}]{1.1.6.2: Deliver research phase gate review}{7}{7} \\
+
+    % Dependencies
+    \ganttlink{elem2}{elem3}
+    \ganttlink{elem3}{elem5}
+    \ganttlink{elem5}{elem6}
+    \ganttlink{elem6}{elem8}
+    \ganttlink{elem8}{elem9}
+    \ganttlink{elem9}{elem10}
+    \ganttlink{elem6}{elem12}
+    \ganttlink{elem12}{elem13}
+    \ganttlink{elem6}{elem15}
+    \ganttlink{elem15}{elem16}
+    \ganttlink{elem10}{elem18}
+    \ganttlink{elem13}{elem18}
+    \ganttlink{elem16}{elem18}
+    \ganttlink{elem18}{elem19}
+
+\end{ganttchart}
+}%
+\caption{Research Phase Gantt Chart}
+\label{fig:gantt_research}
+\end{figure}
+
+\noindent\textit{Note: Tasks highlighted in red are on the critical path (9 tasks in this phase).}

@@ -1,0 +1,115 @@
+% =============================================================================
+% Appendix K: Complete Software Process Map
+% =============================================================================
+
+\newpage
+\subsection{Appendix K: Complete Software Process Map}
+\label{app:software-process-full}
+
+This appendix contains the complete integrated software process map showing all six layers and their interconnections. For detailed explanations of each layer, refer to Section~\ref{fig:software-arch} (Software Implementation).
+
+\subsubsection{Full System Process Map}
+
+The complete software architecture with all data flows, decision points, and inter-layer communication paths is documented in Section~17 (Software Implementation). Each of the six layers has a detailed native TikZ process flow diagram:
+
+\begin{itemize}[nosep]
+    \item \textbf{Layer 1: User Interface}: Figure~\ref{fig:process-ui}
+    \item \textbf{Layer 2: Navigation \& Control}: Figure~\ref{fig:process-nav}
+    \item \textbf{Layer 3: SLAM \& Mapping}: Figure~\ref{fig:process-slam}
+    \item \textbf{Layer 4: Computer Vision Safety}: Figure~\ref{fig:process-cv}
+    \item \textbf{Layer 5: Hardware \& Sensors}: Figure~\ref{fig:process-hw}
+    \item \textbf{Layer 6: ESP32-Firmware Demo}: Figure~\ref{fig:process-demo}
+\end{itemize}
+
+\subsubsection{Layer Summary}
+
+\begin{table}[H]
+\centering
+\caption{Software Process Map Layer Summary}
+\label{tab:process-map-layers}
+\begin{tabular}{@{}clp{7cm}@{}}
+\toprule
+\textbf{Layer} & \textbf{Name} & \textbf{Primary Responsibilities} \\
+\midrule
+1 & User Interface & Map display, camera feeds, teleoperation, E-Stop handling \\
+2 & Navigation \& Control & A* path planning, DWA local planning, motion execution \\
+3 & SLAM \& Mapping & LiDAR processing, Hector-SLAM, loop closure, map updates \\
+4 & Computer Vision & Stereo depth, YOLO detection, person/obstacle safety \\
+5 & Hardware \& Sensors & Motor control (SPI), IMU (I2C), power monitoring \\
+6 & ESP32 Demo & STAR Framework, FreeRTOS tasks, demo sensors/actuators \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{Legend}
+
+\paragraph{Shapes}
+\begin{itemize}[nosep]
+    \item \textbf{Ellipse}: Start/End nodes
+    \item \textbf{Rectangle}: Process steps
+    \item \textbf{Diamond}: Decision points
+    \item \textbf{Parallelogram}: Data input/output
+\end{itemize}
+
+\paragraph{Colors}
+\begin{itemize}[nosep]
+    \item \textbf{Yellow}: Start/End/Decision nodes
+    \item \textbf{Blue}: Initialization steps
+    \item \textbf{Green}: Processing steps
+    \item \textbf{Orange}: Optimization/Safety operations
+    \item \textbf{Red}: Emergency handling
+    \item \textbf{Purple}: Output/Communication
+    \item \textbf{Gray}: Data flow
+\end{itemize}
+
+\paragraph{Line Types}
+\begin{itemize}[nosep]
+    \item \textbf{Solid}: Normal control flow
+    \item \textbf{Dashed}: Data flow or feedback
+    \item \textbf{Bold Red}: Emergency paths
+\end{itemize}
+
+\subsubsection{Abbreviations and Interfaces}
+
+\begin{table}[H]
+\centering
+\caption{Process Map Abbreviations}
+\label{tab:process-map-abbrev}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Abbreviation} & \textbf{Meaning} \\
+\midrule
+SLAM & Simultaneous Localization and Mapping (Hector-SLAM) \\
+A* & A-star path planning algorithm \\
+DWA & Dynamic Window Approach (local planner) \\
+LiDAR & SICK TiM561 over Ethernet (TCP/IP) \\
+IMU & Inertial Measurement Unit over I2C \\
+SPI & Serial Peripheral Interface (motor commands) \\
+SMBus & System Management Bus (battery monitoring) \\
+ADC & Analog-to-Digital Converter (temperature) \\
+GPIO & General Purpose Input/Output \\
+ICP & Iterative Closest Point (scan matching) \\
+RANSAC & Random Sample Consensus \\
+FPS & Frames Per Second \\
+PWM & Pulse Width Modulation \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{ESP32-Firmware Demo Components}
+\label{tab:demo-components}
+\begin{tabular}{@{}ll@{}}
+\toprule
+\textbf{Component} & \textbf{Description} \\
+\midrule
+DHT22 & Temperature/Humidity sensor (proprietary protocol) \\
+HC-SR04 & Ultrasonic distance sensors (GPIO) \\
+PCA9685 & 16-channel PWM controller (I2C) \\
+STAR Framework & Bus Manager + Error Handler + Pin Validator \\
+DIP & Dependency Inversion Principle architecture \\
+FreeRTOS Tasks & DHT22, Sensor, LED, Watchdog tasks \\
+\bottomrule
+\end{tabular}
+\end{table}

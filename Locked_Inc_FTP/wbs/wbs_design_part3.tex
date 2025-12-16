@@ -1,0 +1,30 @@
+\begin{figure}[H]
+\centering
+\resizebox{\textwidth}{!}{%
+\begin{forest}
+  for tree={
+    rectangle,
+    draw,
+    rounded corners=2pt,
+    align=center,
+    minimum width=2.2cm,
+    minimum height=0.8cm,
+    inner sep=2pt,
+    s sep=0.3cm,
+    l sep=1cm,
+    anchor=north,
+    edge={->, thick},
+    font=\scriptsize,
+  }
+      [{\textbf{1.2}\\Design}, fill=designyellow, line width=1.5pt, font=\scriptsize\bfseries
+      [{\textbf{1.2.7}\\Configure RPi 5\\ROS 2 env\\{\tiny JB, 5d}}, fill=designyellow!70]
+      [{\textbf{1.2.8}\\Integrate LiDAR\\with SLAM}, fill=designyellow!70
+        [{\textbf{1.2.8.1}\\Configure LiDAR\\driver\\{\tiny JB, 4d}}, fill=designyellow!40]
+        [{\textbf{1.2.8.2}\\Test SLAM in\\simulation\\{\tiny JB, 4d}}, fill=designyellow!40]
+      ]
+    ]
+\end{forest}
+}%
+\caption{Design Phase Work Breakdown Structure (Part 3: Software Configuration)}
+\label{fig:wbs_design_part3}
+\end{figure}

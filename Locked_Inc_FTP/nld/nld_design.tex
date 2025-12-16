@@ -1,0 +1,213 @@
+% Design Phase Network Logic Diagram (Split by Critical Path)
+% Generated: 2025-12-06 16:42
+% Total Tasks: 24 (Critical: 9, Supporting: 15)
+
+\subsection{Design Phase Network Diagram}
+
+The Design phase contains \textbf{24 tasks} totaling \textbf{103 working days}. 
+Of these, 9 tasks (42 days) are on the critical path, 
+and 15 tasks (61 days) are supporting activities with available float time.
+
+\vspace{0.5em}
+
+\subsubsection{Critical Path Tasks}
+
+\noindent The following 9 tasks are on the critical path. 
+Any delay in these tasks will directly extend the project completion date. 
+These tasks span 42 working days.
+
+\vspace{0.5em}
+
+\begin{figure}[H]
+\centering
+\resizebox{0.7\textwidth}{!}{%
+\begin{tikzpicture}[
+  node distance=1.4cm and 1.5cm,
+  task/.style={rectangle, draw, rounded corners=3pt, minimum width=2.4cm, minimum height=1.0cm, align=center, font=\tiny, fill=designyellow!30},
+  timing/.style={font=\tiny, inner sep=1pt},
+  regular_arrow/.style={-{Stealth[length=5pt]}, gray!70, thick},
+  critical_arrow/.style={-{Stealth[length=5pt]}, red, line width=1.2pt},
+]
+
+  \node[task] (1_2_1_1) {\textbf{1.1}\\Define high-level s...\\(4d)};
+  \node[timing, above=2pt of 1_2_1_1] {38 | 42};
+  \node[task] (1_2_1_2) [right=1.5cm of 1_2_1_1] {\textbf{1.2}\\Design subsystem in...\\(4d)};
+  \node[timing, above=2pt of 1_2_1_2] {42 | 46};
+  \node[task] (1_2_1_3) [right=1.5cm of 1_2_1_2] {\textbf{1.3}\\Document interface ...\\(4d)};
+  \node[timing, above=2pt of 1_2_1_3] {46 | 50};
+  \node[task] (1_2_2_1) [below=1.4cm of 1_2_1_1] {\textbf{2.1}\\Create initial chas...\\(5d)};
+  \node[timing, above=2pt of 1_2_2_1] {50 | 55};
+  \node[task] (1_2_2_2) [right=1.5cm of 1_2_2_1] {\textbf{2.2}\\Design drivetrain a...\\(5d)};
+  \node[timing, above=2pt of 1_2_2_2] {55 | 60};
+  \node[task] (1_2_2_3) [right=1.5cm of 1_2_2_2] {\textbf{2.3}\\Design sensor mount...\\(5d)};
+  \node[timing, above=2pt of 1_2_2_3] {60 | 65};
+  \node[task] (1_2_2_4) [right=1.5cm of 1_2_2_3] {\textbf{2.4}\\Complete CAD assemb...\\(5d)};
+  \node[timing, above=2pt of 1_2_2_4] {65 | 70};
+  \node[task] (1_2_6_1) [below=1.4cm of 1_2_2_1] {\textbf{6.1}\\Prepare design revi...\\(5d)};
+  \node[timing, above=2pt of 1_2_6_1] {70 | 75};
+  \node[task] (1_2_6_2) [right=1.5cm of 1_2_6_1] {\textbf{6.2}\\Conduct design revi...\\(5d)};
+  \node[timing, above=2pt of 1_2_6_2] {75 | 80};
+
+  % Dependencies
+  \draw[critical_arrow] (1_2_1_1) -- (1_2_1_2);
+  \draw[critical_arrow] (1_2_1_2) -- (1_2_1_3);
+  \draw[critical_arrow, rounded corners=3pt] (1_2_1_3.south) -- ++(0,-0.3) -| ([xshift=-0.6cm]1_2_2_1.west) -- (1_2_2_1.west);
+  \draw[critical_arrow] (1_2_2_1) -- (1_2_2_2);
+  \draw[critical_arrow] (1_2_2_2) -- (1_2_2_3);
+  \draw[critical_arrow] (1_2_2_3) -- (1_2_2_4);
+  \draw[critical_arrow, rounded corners=3pt] (1_2_2_4.south) -- ++(0,-0.3) -| ([xshift=-0.6cm]1_2_6_1.west) -- (1_2_6_1.west);
+  \draw[critical_arrow] (1_2_6_1) -- (1_2_6_2);
+
+\end{tikzpicture}
+}%
+\caption{Design Phase Critical Path Tasks}
+\label{fig:nld_design_critical}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{designyellow!20}{white}
+\begin{tabular}{|l|p{5cm}|c|c|c|l|}
+\hline
+\rowcolor{designyellow!40}
+\textbf{WBS ID} & \textbf{Task Name} & \textbf{Days} & \textbf{ES} & \textbf{EF} & \textbf{Owner} \\
+\hline
+\texttt{1.2.1.1} & Define high-level system architecture & 4 & 38 & 42 & CM \\
+\hline
+\texttt{1.2.1.2} & Design subsystem interfaces and protocols & 4 & 42 & 46 & CM \\
+\hline
+\texttt{1.2.1.3} & Document interface control and data flow & 4 & 46 & 50 & CM \\
+\hline
+\texttt{1.2.2.1} & Create initial chassis dimensions and constraints & 5 & 50 & 55 & MN \\
+\hline
+\texttt{1.2.2.2} & Design drivetrain and motor mounting & 5 & 55 & 60 & MN \\
+\hline
+\texttt{1.2.2.3} & Design sensor mounting and enclosures & 5 & 60 & 65 & MN \\
+\hline
+\texttt{1.2.2.4} & Complete CAD assembly and generate drawings & 5 & 65 & 70 & MN \\
+\hline
+\texttt{1.2.6.1} & Prepare design review materials and agenda & 5 & 70 & 75 & CM \\
+\hline
+\texttt{1.2.6.2} & Conduct design review and document decisions & 5 & 75 & 80 & CM \\
+\hline
+\end{tabular}
+\caption{Design Phase Critical Path Tasks}
+\label{tab:nld_design_critical}
+\end{table}
+
+\subsubsection{Supporting Tasks}
+
+\noindent The following 15 supporting tasks have available float time. 
+These tasks can be delayed without impacting the project end date, as long as they complete within their late finish dates. 
+These tasks span 61 working days.
+
+\vspace{0.5em}
+
+\begin{figure}[H]
+\centering
+\resizebox{0.85\textwidth}{!}{%
+\begin{tikzpicture}[
+  node distance=1.4cm and 1.5cm,
+  task/.style={rectangle, draw, rounded corners=3pt, minimum width=2.2cm, minimum height=1.0cm, align=center, font=\tiny, fill=designyellow!30},
+  timing/.style={font=\tiny, inner sep=1pt},
+  regular_arrow/.style={-{Stealth[length=5pt]}, gray!70, thick},
+  critical_arrow/.style={-{Stealth[length=5pt]}, red, line width=1.2pt},
+]
+
+  \node[task] (1_2_3_1) {\textbf{3.1}\\Define power bu...\\(4d)};
+  \node[timing, above=2pt of 1_2_3_1] {50 | 54};
+  \node[task] (1_2_3_2) [right=1.5cm of 1_2_3_1] {\textbf{3.2}\\Design PCB sche...\\(5d)};
+  \node[timing, above=2pt of 1_2_3_2] {54 | 59};
+  \node[task] (1_2_3_3) [right=1.5cm of 1_2_3_2] {\textbf{3.3}\\Complete PCB la...\\(4d)};
+  \node[timing, above=2pt of 1_2_3_3] {59 | 63};
+  \node[task] (1_2_3_4) [right=1.5cm of 1_2_3_3] {\textbf{3.4}\\Generate manufa...\\(3d)};
+  \node[timing, above=2pt of 1_2_3_4] {63 | 66};
+  \node[task] (1_2_4_1) [below=1.4cm of 1_2_3_1] {\textbf{4.1}\\Define ROS 2 no...\\(4d)};
+  \node[timing, above=2pt of 1_2_4_1] {50 | 54};
+  \node[task] (1_2_4_2) [right=1.5cm of 1_2_4_1] {\textbf{4.2}\\Design message ...\\(4d)};
+  \node[timing, above=2pt of 1_2_4_2] {54 | 58};
+  \node[task] (1_2_4_3) [right=1.5cm of 1_2_4_2] {\textbf{4.3}\\Design navigati...\\(4d)};
+  \node[timing, above=2pt of 1_2_4_3] {58 | 62};
+  \node[task] (1_2_4_4) [right=1.5cm of 1_2_4_3] {\textbf{4.4}\\Document softwa...\\(4d)};
+  \node[timing, above=2pt of 1_2_4_4] {62 | 66};
+  \node[task] (1_2_5_1) [below=1.4cm of 1_2_4_1] {\textbf{5.1}\\Define integrat...\\(4d)};
+  \node[timing, above=2pt of 1_2_5_1] {50 | 54};
+  \node[task] (1_2_5_2) [right=1.5cm of 1_2_5_1] {\textbf{5.2}\\Design hardware...\\(4d)};
+  \node[timing, above=2pt of 1_2_5_2] {54 | 58};
+  \node[task] (1_2_5_3) [right=1.5cm of 1_2_5_2] {\textbf{5.3}\\Design software...\\(4d)};
+  \node[timing, above=2pt of 1_2_5_3] {58 | 62};
+  \node[task] (1_2_5_4) [right=1.5cm of 1_2_5_3] {\textbf{5.4}\\Document test s...\\(4d)};
+  \node[timing, above=2pt of 1_2_5_4] {62 | 66};
+  \node[task] (1_2_7) [below=1.4cm of 1_2_5_1] {\textbf{2.7}\\Configure Raspb...\\(5d)};
+  \node[timing, above=2pt of 1_2_7] {66 | 71};
+  \node[task] (1_2_8_1) [below=1.4cm of 1_2_7] {\textbf{8.1}\\Configure LiDAR...\\(4d)};
+  \node[timing, above=2pt of 1_2_8_1] {71 | 75};
+  \node[task] (1_2_8_2) [right=1.5cm of 1_2_8_1] {\textbf{8.2}\\Test SLAM algor...\\(4d)};
+  \node[timing, above=2pt of 1_2_8_2] {75 | 79};
+
+  % Dependencies
+  \draw[regular_arrow, rounded corners=3pt] (1_2_4_4.south) -- ++(0,-0.3) -| ([xshift=-0.7cm]1_2_7.west) -- (1_2_7.west);
+  \draw[regular_arrow] (1_2_3_1) -- (1_2_3_2);
+  \draw[regular_arrow] (1_2_3_2) -- (1_2_3_3);
+  \draw[regular_arrow] (1_2_3_3) -- (1_2_3_4);
+  \draw[regular_arrow] (1_2_4_1) -- (1_2_4_2);
+  \draw[regular_arrow] (1_2_4_2) -- (1_2_4_3);
+  \draw[regular_arrow] (1_2_4_3) -- (1_2_4_4);
+  \draw[regular_arrow] (1_2_5_1) -- (1_2_5_2);
+  \draw[regular_arrow] (1_2_5_2) -- (1_2_5_3);
+  \draw[regular_arrow] (1_2_5_3) -- (1_2_5_4);
+  \draw[regular_arrow, rounded corners=3pt] (1_2_7.south) -- ++(0,-0.3) -| ([xshift=-0.6cm]1_2_8_1.west) -- (1_2_8_1.west);
+  \draw[regular_arrow] (1_2_8_1) -- (1_2_8_2);
+
+\end{tikzpicture}
+}%
+\caption{Design Phase Supporting Tasks}
+\label{fig:nld_design_supporting}
+\end{figure}
+
+\begin{table}[H]
+\centering
+\small
+\rowcolors{2}{designyellow!20}{white}
+\begin{tabular}{|l|p{5cm}|c|c|c|l|}
+\hline
+\rowcolor{designyellow!40}
+\textbf{WBS ID} & \textbf{Task Name} & \textbf{Days} & \textbf{ES} & \textbf{EF} & \textbf{Owner} \\
+\hline
+\texttt{1.2.3.1} & Define power budget and distribution architecture & 4 & 50 & 54 & BS \\
+\hline
+\texttt{1.2.3.2} & Design PCB schematic and component selection & 5 & 54 & 59 & BS \\
+\hline
+\texttt{1.2.3.3} & Complete PCB layout and routing & 4 & 59 & 63 & BS \\
+\hline
+\texttt{1.2.3.4} & Generate manufacturing files and submit order & 3 & 63 & 66 & BS \\
+\hline
+\texttt{1.2.4.1} & Define ROS 2 node architecture & 4 & 50 & 54 & JB \\
+\hline
+\texttt{1.2.4.2} & Design message types and topic structure & 4 & 54 & 58 & JB \\
+\hline
+\texttt{1.2.4.3} & Design navigation and SLAM pipeline & 4 & 58 & 62 & JB \\
+\hline
+\texttt{1.2.4.4} & Document software architecture and APIs & 4 & 62 & 66 & JB \\
+\hline
+\texttt{1.2.5.1} & Define integration sequence and dependencies & 4 & 50 & 54 & JH \\
+\hline
+\texttt{1.2.5.2} & Design hardware integration test procedures & 4 & 54 & 58 & JH \\
+\hline
+\texttt{1.2.5.3} & Design software integration test procedures & 4 & 58 & 62 & JH \\
+\hline
+\texttt{1.2.5.4} & Document test strategy and success criteria & 4 & 62 & 66 & JH \\
+\hline
+\texttt{1.2.7} & Configure Raspberry Pi 5 ROS 2 environment & 5 & 66 & 71 & JB \\
+\hline
+\texttt{1.2.8.1} & Configure LiDAR driver and ROS interface & 4 & 71 & 75 & JB \\
+\hline
+\texttt{1.2.8.2} & Test SLAM algorithm in simulation & 4 & 75 & 79 & JB \\
+\hline
+\end{tabular}
+\caption{Design Phase Supporting Tasks}
+\label{tab:nld_design_supporting}
+\end{table}
+
+\noindent\textit{See \hyperref[app:nld]{Appendix C} for the complete Design phase network logic diagram.}
