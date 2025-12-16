@@ -24,8 +24,9 @@ K_dc = omega_no_load / V_rated;
 % Time Constant: tau [seconds]
 % Use mechanical time constant (electrical is negligible)
 % IMPORTANT: This should be measured from actual motor step response!
-% Initial estimate of 50ms based on typical geared DC motor values (literature: 30-100ms)
-tau_est = 0.05;  % Estimated 50ms - MEASURE THIS ON REAL MOTOR
+% Time constant from docs/Protobuf_Protocol_Design_Analysis.tex (line 622, 1022)
+% Design doc uses 75ms for all calculations (control frequency, margins)
+tau_est = 0.075;  % Estimated 75ms from design doc - MEASURE ON REAL MOTOR
 
 fprintf('\n=== First-Order Motor Model ===\n');
 fprintf('DC Gain K:        %.3f (rad/s)/V\n', K_dc);
