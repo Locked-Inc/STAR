@@ -1,0 +1,46 @@
+% =============================================================================
+% Section 1: Introduction
+% =============================================================================
+
+\section{Introduction}\label{sec:introduction}
+\sectionauthors{CM, BS, JB, MN, JH, SC}
+
+\subsection{Project Overview}\label{sec:project-overview}
+
+This Formal Technical Proposal presents the STAR (Simultaneous Tracking and Autonomous Roaming) Robot, an autonomous indoor mapping platform developed by Locked Inc. for the ESET Senior Design course at Texas A\&M University. The STAR Robot addresses the high cost barrier of commercial SLAM (Simultaneous Localization and Mapping) systems by providing an affordable,  platform using common hardware and open-source software.
+
+The project team, Locked Inc., consists of six members with complementary expertise spanning embedded systems, mechanical design, electrical engineering, and software development. The team is committed to delivering a fully functional prototype that demonstrates professional project management practices while meeting all technical requirements.
+
+The team has secured many critical components from personal collections and industry donations, including the SK-TDA4VM (Texas Instruments Edge AI) board, PYNQ-Z2 (Xilinx) board, Raspberry Pi 5, test equipment, backup RPLiDAR sensor, ultrasonic sensors, stereo camera, motors, batteries, and other hardware. This resource availability, combined with donated industrial-grade LiDAR equipment from SICK Inc. valued at approximately \$3,500, enables the project to achieve professional-level capabilities while maintaining an accessible materials budget.
+
+\begin{table}[H]
+\centering
+\caption{Team Member Roles and Responsibilities}
+\label{tab:team_roles}
+\begin{tabular}{@{}llp{0.45\textwidth}@{}}
+\toprule
+\textbf{Name} & \textbf{Role} & \textbf{Responsibilities} \\
+\midrule
+Cesar Magana (CM) & Project Manager & Project coordination, documentation, stakeholder communication \\
+Jared Bartz (JB) & Software Lead & ROS 2 development, SLAM implementation, navigation stack \\
+Brighton Sikarskie (BS) & Electrical Lead & PCB design, power systems, sensor interfaces \\
+Michael Norton (MN) & Mechanical Lead & Chassis design, 3D printing, assembly, drivetrain integration, CAD modeling \\
+Jeremie Hews (JH) & Embedded Systems Lead & Component integration, communication protocols, ESP32 Firmware \\
+Shawn Ciaciura (SC) & Testing \& QA & Test planning, validation, risk management \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\noindent Team member GitHub profiles and LinkedIn pages are available in \cref{sec:team-contacts}.
+
+% 12/5 This section has been reviewed - Brighton
+\subsection{Intellectual Property Statement}\label{sec:ip-statement}
+
+All intellectual property developed during this project remains the property of Locked Inc. team members unless otherwise agreed in writing with the project sponsor. The team has committed to releasing all software as open-source to support the educational robotics community. See \cref{sec:acronyms} for acronyms and definitions referenced throughout this document.
+
+\begin{itemize}
+    \item While copyright is retained by the team, all source code and hardware assets (including Computer-Aided Design (CAD) files and Printed Circuit Boards (PCB)) are released under the MIT License \parencite{mit_license} on GitHub \parencite{github_platform} (\href{https://github.com/Locked-Inc/STAR}{https://github.com/Locked-Inc/STAR}). The MIT License is a permissive open-source license that allows free use, modification, and distribution with minimal restrictions. GitHub is a web-based platform for version control and collaborative software development where the project source code is publicly accessible and managed.
+    \item The team retains intellectual property rights to all design documents and schematics.
+    \item The sponsor may use the final deliverables for research, educational, and demonstration purposes within Texas A\&M University.
+    \item Publication rights remain with the team with proper attribution.
+\end{itemize}
