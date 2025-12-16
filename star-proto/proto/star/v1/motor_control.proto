@@ -1,0 +1,226 @@
+// motor_control.proto - STAR Motor Control Protocol Buffer Definitions
+// Low-latency motor command service for differential drive control.
+//
+// Following Boston Dynamics style guide:
+// - Proto3 only, 100 char line limit, 4 space indent
+// - MKS units (meters per second, radians)
+// - All fields documented with units and valid ranges
+//
+// STAR Project - Texas A&M University
+// December 2025
+
+syntax = "proto3";
+
+package star.v1;
+
+option java_package = "com.star.proto.v1";
+option java_outer_classname = "MotorControlProto";
+option java_multiple_files = true;
+
+import "star/v1/common.proto";
+
+// Motor control service for low-latency differential drive commands.
+// Provides velocity control, emergency stop, and encoder streaming.
+service MotorControlService {
+    // Set wheel velocities for differential drive.
+    // Returns immediately with command acknowledgment.
+    rpc SetVelocity(SetVelocityRequest) returns (SetVelocityResponse);
+
+    // Immediate emergency stop. Stops all motors and engages brakes.
+    // Takes priority over all other commands.
+    rpc EmergencyStop(EmergencyStopRequest) returns (EmergencyStopResponse);
+
+    // Set individual motor power directly (bypass PID).
+    // Use for testing and calibration only.
+    rpc SetMotorPower(SetMotorPowerRequest) returns (SetMotorPowerResponse);
+
+    // Stream encoder data from all motors.
+    // Server streams encoder readings at configured rate.
+    rpc StreamEncoders(StreamEncodersRequest) returns (stream EncoderData);
+
+    // Bidirectional control stream for continuous control.
+    // Client streams velocity commands, server streams encoder feedback.
+    rpc ControlStream(stream VelocityCommand) returns (stream EncoderData);
+}
+
+// Request to set wheel velocities.
+message SetVelocityRequest {
+    // Standard request header.
+    RequestHeader header = 1;
+
+    // Velocity command to execute.
+    VelocityCommand command = 2;
+}
+
+// Response to velocity command.
+message SetVelocityResponse {
+    // Standard response header with status.
+    ResponseHeader header = 1;
+
+    // Current motor status after command.
+    repeated MotorStatus motor_status = 2;
+}
+
+// Velocity command for differential drive robot.
+// Uses MKS units: meters per second.
+message VelocityCommand {
+    // Left wheel velocity in meters per second.
+    // Valid range: -2.0 to 2.0 m/s.
+    // Positive = forward, negative = reverse.
+    double left_velocity_mps = 1;
+
+    // Right wheel velocity in meters per second.
+    // Valid range: -2.0 to 2.0 m/s.
+    // Positive = forward, negative = reverse.
+    double right_velocity_mps = 2;
+
+    // Command sequence number for ordering and deduplication.
+    uint32 sequence = 3;
+
+    // Client timestamp in microseconds for latency tracking.
+    int64 timestamp_us = 4;
+}
+
+// Emergency stop request.
+message EmergencyStopRequest {
+    // Standard request header.
+    RequestHeader header = 1;
+
+    // Reason for emergency stop (for logging).
+    string reason = 2;
+}
+
+// Emergency stop response.
+message EmergencyStopResponse {
+    // Standard response header with status.
+    ResponseHeader header = 1;
+
+    // True if emergency stop was successfully engaged.
+    bool estop_engaged = 2;
+}
+
+// Request to set individual motor power.
+message SetMotorPowerRequest {
+    // Standard request header.
+    RequestHeader header = 1;
+
+    // Motor power command.
+    MotorPowerCommand command = 2;
+}
+
+// Response to motor power command.
+message SetMotorPowerResponse {
+    // Standard response header with status.
+    ResponseHeader header = 1;
+}
+
+// Direct motor power control for individual motors.
+// Bypasses PID controller - use for testing only.
+message MotorPowerCommand {
+    // Motor index: 0 = left, 1 = right.
+    int32 motor_id = 1;
+
+    // Power level as duty cycle percentage.
+    // Valid range: -100.0 to 100.0 percent.
+    // Positive = forward, negative = reverse.
+    double duty_cycle_percent = 2;
+}
+
+// Request to stream encoder data.
+message StreamEncodersRequest {
+    // Standard request header.
+    RequestHeader header = 1;
+
+    // Desired update rate in Hz.
+    // Valid range: 1 to 100 Hz.
+    int32 rate_hz = 2;
+}
+
+// Real-time encoder feedback from motor controller.
+// Streamed at configured rate.
+message EncoderData {
+    // Motor index: 0 = left, 1 = right.
+    int32 motor_id = 1;
+
+    // Absolute encoder position in ticks.
+    // 341.2 ticks per revolution (11 PPR * 34.02:1 gear ratio).
+    int64 ticks = 2;
+
+    // Current velocity in meters per second.
+    double velocity_mps = 3;
+
+    // Timestamp in microseconds since boot.
+    int64 timestamp_us = 4;
+}
+
+// Motor status information.
+message MotorStatus {
+    // Motor index: 0 = left, 1 = right.
+    int32 motor_id = 1;
+
+    // Current duty cycle percentage.
+    // Range: -100.0 to 100.0 percent.
+    double duty_cycle_percent = 2;
+
+    // Current velocity in meters per second.
+    double velocity_mps = 3;
+
+    // Target velocity in meters per second.
+    double target_velocity_mps = 4;
+
+    // Motor temperature in Celsius (if available).
+    double temperature_celsius = 5;
+
+    // Current draw in milliamps (if current sensing available).
+    double current_ma = 6;
+
+    // Fault flags (bitfield).
+    // Bit 0: overcurrent, Bit 1: overtemperature, Bit 2: encoder fault.
+    uint32 fault_flags = 7;
+
+    // Current motor state.
+    MotorState state = 8;
+}
+
+// Motor operating state.
+enum MotorState {
+    // Unknown state.
+    MOTOR_STATE_UNKNOWN = 0;
+
+    // Motor is idle (not commanded).
+    MOTOR_STATE_IDLE = 1;
+
+    // Motor is running under PID control.
+    MOTOR_STATE_RUNNING = 2;
+
+    // Motor is in fault condition.
+    MOTOR_STATE_FAULT = 3;
+
+    // Motor is in emergency stop.
+    MOTOR_STATE_ESTOP = 4;
+}
+
+// PID gains for motor velocity control.
+// Matches ESP32 star_pid_config_t structure.
+message PidConfig {
+    // Proportional gain.
+    double kp = 1;
+
+    // Integral gain.
+    double ki = 2;
+
+    // Derivative gain.
+    double kd = 3;
+
+    // Output saturation minimum (duty cycle percent).
+    double output_min_percent = 4;
+
+    // Output saturation maximum (duty cycle percent).
+    double output_max_percent = 5;
+
+    // Anti-windup integral minimum.
+    double integral_min = 6;
+
+    // Anti-windup integral maximum.
+    double integral_max = 7;
+}
