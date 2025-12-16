@@ -59,6 +59,13 @@ const gpio_num_t s_i2c_scl_pin      = GPIO_NUM_9;  /* Fuel gauge SCL */
 const gpio_num_t s_temp_sensor_pin  = GPIO_NUM_48; /* DS18B20 temperature */
 
 /* ========================================================================= */
+/*                    SAFETY - EMERGENCY STOP                                */
+/* ========================================================================= */
+
+const gpio_num_t s_estop_pin = GPIO_NUM_36;  /* E-stop button (input-only, active-low) */
+const bool s_estop_active_low = true;        /* Button press = low signal */
+
+/* ========================================================================= */
 /*                    MOTOR CONTROL TIMING                                   */
 /* ========================================================================= */
 

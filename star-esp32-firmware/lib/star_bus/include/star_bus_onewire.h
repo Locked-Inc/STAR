@@ -143,7 +143,7 @@ esp_err_t star_bus_onewire_init(star_bus_manager_t*          manager,
 /**
  * @brief Deinitialize 1-Wire bus
  *
- * @param[in] manager Pointer to initialized bus manager
+ * @param[in] manager Pointer to bus manager (can be NULL, parameter kept for API consistency)
  * @param[in] bus_name Name of 1-Wire bus
  *
  * @return ESP_OK on success, error code otherwise
@@ -284,13 +284,42 @@ esp_err_t star_bus_onewire_search_alarms(star_bus_manager_t* manager,
  *
  * @param[in]  manager Pointer to initialized bus manager
  * @param[in]  bus_name Name of 1-Wire bus
- * @param[out] rom Pointer to store ROM code
+ * @param[out] rom Pointer to store ROM code (8-byte array)
  *
  * @return ESP_OK on success, error code otherwise
  */
 esp_err_t star_bus_onewire_read_rom(star_bus_manager_t* manager,
                                     const char*         bus_name,
-                                    star_onewire_rom_t* rom);
+                                    uint8_t             rom[8]);
+
+/**
+ * @brief Send MATCH ROM command to address a specific device
+ *
+ * Sends the MATCH ROM command (0x55) followed by the 8-byte ROM code
+ * to select a specific device on a multi-drop bus.
+ *
+ * @param[in] manager Pointer to initialized bus manager
+ * @param[in] bus_name Name of 1-Wire bus
+ * @param[in] rom 8-byte ROM code of device to address
+ *
+ * @return ESP_OK on success, error code otherwise
+ */
+esp_err_t star_bus_onewire_match_rom(star_bus_manager_t* manager,
+                                     const char*         bus_name,
+                                     const uint8_t       rom[8]);
+
+/**
+ * @brief Send SKIP ROM command to address all devices
+ *
+ * Sends the SKIP ROM command (0xCC) to address all devices on the bus.
+ * Only use when a single device is present or when broadcasting to all devices.
+ *
+ * @param[in] manager Pointer to initialized bus manager
+ * @param[in] bus_name Name of 1-Wire bus
+ *
+ * @return ESP_OK on success, error code otherwise
+ */
+esp_err_t star_bus_onewire_skip_rom(star_bus_manager_t* manager, const char* bus_name);
 
 /* --- CRC Operations --- */
 

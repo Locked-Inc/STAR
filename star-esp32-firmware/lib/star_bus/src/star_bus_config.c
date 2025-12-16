@@ -9,6 +9,7 @@
 #include "star_bus_adc.h"
 #include "star_bus_gpio.h"
 #include "star_bus_i2c.h"
+#include "star_bus_onewire.h"
 #include "star_bus_spi.h"
 #include "star_bus_spi_peripheral.h"
 /* Include manager types to access manager struct for SPI host tracking */
@@ -278,6 +279,37 @@ star_bus_config_t* star_bus_config_create_adc(const char*    name,
   return config;
 }
 
+star_bus_config_t* star_bus_config_create_onewire(const char* name,
+                                                   gpio_num_t  gpio_pin,
+                                                   bool        use_parasitic_power)
+{
+  star_bus_config_t* config =
+    internal_star_bus_config_create_common(name, k_star_bus_type_onewire);
+  ESP_RETURN_ON_FALSE(config,
+                      NULL,
+                      s_TAG,
+                      "Failed to create common config for %s",
+                      name ? name : "NULL");
+
+  /* Configure OneWire-specific parameters */
+  config->proto.onewire.gpio_pin            = gpio_pin;
+  config->proto.onewire.use_parasitic_power = use_parasitic_power;
+  config->proto.onewire.use_strong_pullup   = use_parasitic_power;
+  config->proto.onewire.speed               = 0; /* 0 = standard speed */
+  config->proto.onewire.search_timeout_ms   = 5000;
+
+  /* Initialize default operations to NULL - OneWire uses direct API */
+  memset(&config->proto.onewire.ops, 0, sizeof(star_onewire_ops_t));
+
+  ESP_LOGI(s_TAG,
+           "Created OneWire config '%s' (Pin: %d, Parasitic: %s)",
+           name,
+           gpio_pin,
+           use_parasitic_power ? "Yes" : "No");
+
+  return config;
+}
+
 esp_err_t star_bus_config_destroy(star_bus_config_t* config)
 {
   ESP_RETURN_ON_FALSE(config, ESP_ERR_INVALID_ARG, s_TAG, "Config pointer is NULL");
@@ -392,7 +424,16 @@ esp_err_t star_bus_config_init(star_bus_config_t* config, star_bus_manager_t* ma
           .max_transfer_sz = 0,
         };
 
-        ret = spi_slave_initialize(host, &bus_cfg, &slave_cfg, SPI_DMA_CH_AUTO);
+        /* DMA for SPI peripheral is controlled by the DMA channel parameter */
+#if CONFIG_IDF_TARGET_ESP32S3
+        /* ESP32-S3: Enable DMA for better performance (95% CPU reduction) */
+        int dma_chan = SPI_DMA_CH_AUTO;
+#else
+        /* ESP32-WROOM: No DMA support for SPI peripheral */
+        int dma_chan = SPI_DMA_DISABLED;
+#endif
+
+        ret = spi_slave_initialize(host, &bus_cfg, &slave_cfg, dma_chan);
         ESP_GOTO_ON_ERROR(ret,
                           fail,
                           s_TAG,
@@ -594,6 +635,38 @@ esp_err_t star_bus_config_init(star_bus_config_t* config, star_bus_manager_t* ma
       goto fail;
     }
 
+    case k_star_bus_type_onewire: {
+      /* Initialize OneWire bus */
+      ESP_RETURN_ON_FALSE(manager,
+                          ESP_ERR_INVALID_ARG,
+                          s_TAG,
+                          "Bus manager pointer is required for OneWire initialization");
+
+      ESP_LOGI(s_TAG,
+               "Initializing OneWire bus '%s' (Pin: %d)",
+               bus_name,
+               config->proto.onewire.gpio_pin);
+
+      /* Create onewire config and call star_bus_onewire_init() */
+      star_onewire_config_t ow_cfg;
+      ow_cfg.gpio_pin            = config->proto.onewire.gpio_pin;
+      ow_cfg.speed               = (star_onewire_speed_t)config->proto.onewire.speed;
+      ow_cfg.use_parasitic_power = config->proto.onewire.use_parasitic_power;
+      ow_cfg.use_strong_pullup   = config->proto.onewire.use_strong_pullup;
+      ow_cfg.search_timeout_ms   = config->proto.onewire.search_timeout_ms;
+
+      ret = star_bus_onewire_init(manager, config->name, &ow_cfg);
+      ESP_GOTO_ON_ERROR(ret,
+                        fail,
+                        s_TAG,
+                        "star_bus_onewire_init failed for '%s': %s",
+                        bus_name,
+                        esp_err_to_name(ret));
+
+      ESP_LOGI(s_TAG, "OneWire bus '%s' initialized successfully", bus_name);
+      break;
+    }
+
     default:
       ESP_LOGE(s_TAG, "Unsupported bus type for initialization: %d", config->type);
       ret = ESP_ERR_NOT_SUPPORTED;
@@ -698,6 +771,19 @@ esp_err_t star_bus_config_deinit(star_bus_config_t* config)
        * It will be deleted when the last channel using this unit is removed. */
       config->proto.adc.unit_handle = NULL;
       ret                           = ESP_OK;
+      break;
+
+    case k_star_bus_type_onewire:
+      /* Deinitialize OneWire bus */
+      ESP_LOGI(s_TAG, "Deinitializing OneWire bus '%s'", bus_name);
+      /* Call with NULL manager - the function doesn't use it, only needs bus_name */
+      ret = star_bus_onewire_deinit(NULL, bus_name);
+      if (ret != ESP_OK) {
+        ESP_LOGW(s_TAG,
+                 "Failed to deinitialize OneWire bus '%s': %s",
+                 bus_name,
+                 esp_err_to_name(ret));
+      }
       break;
 
     default:

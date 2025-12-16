@@ -2,6 +2,7 @@
 
 #include "system_init.h"
 
+#include "driver/gpio.h"
 #include "esp_check.h"
 #include "esp_log.h"
 
@@ -10,13 +11,34 @@
 #include "star_bms_bq7850.h"
 #include "star_bus_config.h"
 #include "star_bus_gpio.h"
+#include "star_manufacturing.h"
 #include "star_pin_validator.h"
-/* TODO: Re-enable once DS18B20 and 1-Wire are implemented */
-/* #include "star_sensor_ds18b20.h" */
+#include "star_sensor_ds18b20.h"
 
 #include "system_config.h"
 
 extern const char* const s_TAG;
+
+/**
+ * @brief Emergency stop button ISR handler
+ *
+ * Triggers immediate motor stop and system shutdown when e-stop button pressed.
+ * Must be placed in IRAM for fast execution.
+ *
+ * @param arg Pointer to system_context_t
+ */
+static void IRAM_ATTR estop_isr_handler(void* arg)
+{
+    system_context_t* ctx = (system_context_t*)arg;
+
+    /* Disable system to trigger task shutdown */
+    ctx->system_enabled = false;
+
+    /* Emergency stop all motors from ISR */
+    for (int i = 0; i < NUM_MOTORS; i++) {
+        star_motor_stop(&ctx->motors[i], true);
+    }
+}
 
 esp_err_t system_init(system_context_t* ctx)
 {
@@ -24,6 +46,12 @@ esp_err_t system_init(system_context_t* ctx)
 
     /* Zero out the context structure */
     memset(ctx, 0, sizeof(system_context_t));
+
+    /* ===================================================================== */
+    /* STEP 0.5: Initialize Manufacturing Support                            */
+    /* ===================================================================== */
+
+    ESP_RETURN_ON_ERROR(star_mfg_init(), s_TAG, "Failed to initialize manufacturing info");
 
     /* ===================================================================== */
     /* STEP 1: Initialize Error Handler and Pin Validator                   */
@@ -39,6 +67,22 @@ esp_err_t system_init(system_context_t* ctx)
     pin_validator_get_interface(&ctx->pin_iface);
 
     ESP_LOGI(s_TAG, "Error handler and pin validator initialized");
+
+    /* ===================================================================== */
+    /* STEP 1.5: Load Configuration from NVS                                 */
+    /* ===================================================================== */
+
+    ESP_RETURN_ON_ERROR(star_config_load(&ctx->config),
+                        s_TAG,
+                        "Failed to load configuration");
+
+    ESP_LOGI(s_TAG,
+             "Configuration loaded: Kp=%.2f Ki=%.2f Kd=%.2f, OC=%.0fmA, Timeout=%lums",
+             ctx->config.motor_pid_kp[0],
+             ctx->config.motor_pid_ki[0],
+             ctx->config.motor_pid_kd[0],
+             ctx->config.overcurrent_threshold_ma,
+             ctx->config.communication_timeout_ms);
 
     /* ===================================================================== */
     /* STEP 2: Initialize Bus Manager                                        */
@@ -113,13 +157,31 @@ esp_err_t system_init(system_context_t* ctx)
                         s_TAG,
                         "Failed to add I2C bus");
 
-    /* TODO: 1-Wire Bus for DS18B20 (requires star_bus_config_create_onewire implementation) */
-    /* star_bus_config_t* onewire_bus = star_bus_config_create_onewire(...); */
-    ESP_LOGW(s_TAG, "1-Wire bus not yet implemented - DS18B20 sensor disabled");
+    /* 1-Wire Bus for DS18B20 temperature sensor */
+    star_bus_config_t* onewire_bus = star_bus_config_create_onewire(
+        "temp_onewire",
+        s_temp_sensor_pin,
+        false /* No parasitic power (external VDD) */
+    );
+    ESP_RETURN_ON_ERROR(star_bus_manager_add_bus(&ctx->bus_manager, onewire_bus),
+                        s_TAG,
+                        "Failed to add OneWire bus");
 
-    /* TODO: SPI3 Peripheral for RPi5 (requires star_bus_config_create_spi_peripheral implementation) */
-    /* star_bus_config_t* spi_periph = star_bus_config_create_spi_peripheral(...); */
-    ESP_LOGW(s_TAG, "SPI peripheral bus not yet implemented - RPi5 communication disabled");
+    /* SPI3 Peripheral for RPi5 Communication */
+    star_bus_config_t* rpi_spi = star_bus_config_create_spi_peripheral(
+        "rpi_spi",           /* Bus name (matches communication_task.c) */
+        SPI3_HOST,           /* ESP32-S3 SPI3 for peripheral mode */
+        s_rpi_spi_copi_pin,  /* RPi5 MOSI → ESP32 input */
+        s_rpi_spi_cipo_pin,  /* RPi5 MISO ← ESP32 output */
+        s_rpi_spi_sclk_pin,  /* RPi5 SCLK */
+        s_rpi_spi_cs_pin,    /* RPi5 CS */
+        3,                   /* Queue size (up to 3 pending transactions) */
+        0                    /* SPI mode 0 (CPOL=0, CPHA=0) */
+    );
+    ESP_RETURN_ON_ERROR(star_bus_manager_add_bus(&ctx->bus_manager, rpi_spi),
+                        s_TAG,
+                        "Failed to add RPi5 SPI peripheral");
+    ESP_LOGI(s_TAG, "RPi5 SPI peripheral initialized (mode 0, 100 Hz)");
 
     ESP_LOGI(s_TAG, "All buses created and added to bus manager");
 
@@ -144,6 +206,33 @@ esp_err_t system_init(system_context_t* ctx)
     ctx->selected_motor = 0;
 
     ESP_LOGI(s_TAG, "Encoder multiplexer GPIO initialized");
+
+    /* ===================================================================== */
+    /* STEP 5.5: Configure Emergency Stop Button Interrupt                   */
+    /* ===================================================================== */
+
+    /* Configure E-Stop GPIO with interrupt */
+    gpio_config_t estop_cfg = {
+        .pin_bit_mask = (1ULL << s_estop_pin),
+        .mode = GPIO_MODE_INPUT,
+        .pull_up_en = GPIO_PULLUP_ENABLE,
+        .intr_type = GPIO_INTR_NEGEDGE,  /* Trigger on button press (high→low) */
+    };
+    ESP_RETURN_ON_ERROR(gpio_config(&estop_cfg),
+                        s_TAG,
+                        "Failed to configure E-stop GPIO");
+
+    /* Install ISR service (if not already installed) and add handler */
+    esp_err_t isr_ret = gpio_install_isr_service(0);
+    if (isr_ret != ESP_OK && isr_ret != ESP_ERR_INVALID_STATE) {
+        ESP_RETURN_ON_ERROR(isr_ret, s_TAG, "Failed to install GPIO ISR service");
+    }
+
+    ESP_RETURN_ON_ERROR(gpio_isr_handler_add(s_estop_pin, estop_isr_handler, (void*)ctx),
+                        s_TAG,
+                        "Failed to add E-stop ISR handler");
+
+    ESP_LOGI(s_TAG, "Emergency stop button configured on GPIO %d", s_estop_pin);
 
     /* ===================================================================== */
     /* STEP 6: Initialize 4 Motor Drivers (star_motor)                       */
@@ -205,10 +294,10 @@ esp_err_t system_init(system_context_t* ctx)
 
     for (int i = 0; i < NUM_MOTORS; i++) {
         star_pid_config_t pid_cfg = {
-            .kp           = s_pid_kp_default,
-            .ki           = s_pid_ki_default,
-            .kd           = s_pid_kd_default,
-            .output_min   = s_pid_output_min,
+            .kp           = ctx->config.motor_pid_kp[i], /* Load from NVS config */
+            .ki           = ctx->config.motor_pid_ki[i],
+            .kd           = ctx->config.motor_pid_kd[i],
+            .output_min   = s_pid_output_min,   /* Hardware limits (not configurable) */
             .output_max   = s_pid_output_max,
             .integral_min = s_pid_integral_min,
             .integral_max = s_pid_integral_max,
@@ -218,16 +307,30 @@ esp_err_t system_init(system_context_t* ctx)
                             "Failed to init PID %d",
                             i + 1);
         ctx->setpoint_rpm[i] = 0.0f; /* Initialize to stopped */
+        ESP_LOGI(s_TAG,
+                 "Motor %d PID initialized: Kp=%.2f Ki=%.2f Kd=%.2f",
+                 i + 1,
+                 ctx->config.motor_pid_kp[i],
+                 ctx->config.motor_pid_ki[i],
+                 ctx->config.motor_pid_kd[i]);
     }
-    ESP_LOGI(s_TAG, "%d PID controllers initialized", NUM_MOTORS);
+    ESP_LOGI(s_TAG, "%d PID controllers initialized from config", NUM_MOTORS);
 
     /* ===================================================================== */
     /* STEP 9: Initialize Sensors                                            */
     /* ===================================================================== */
 
-    /* TODO: DS18B20 Temperature Sensor - Requires 1-Wire bus implementation */
-    /* star_sensor_ds18b20_init(&ctx->temp_sensor, &temp_cfg); */
-    ESP_LOGW(s_TAG, "DS18B20 temperature sensor disabled (1-Wire bus not implemented)");
+    /* DS18B20 Temperature Sensor */
+    star_ds18b20_config_t temp_cfg = {
+        .bus_manager = &ctx->bus_manager,
+        .bus_name    = "temp_onewire",
+        .resolution  = k_star_ds18b20_resolution_12_bit,
+        .use_rom     = false, /* Single sensor mode */
+    };
+    ESP_RETURN_ON_ERROR(star_sensor_ds18b20_init(&ctx->temp_sensor, &temp_cfg),
+                        s_TAG,
+                        "Failed to init DS18B20");
+    ESP_LOGI(s_TAG, "DS18B20 temperature sensor initialized");
 
     /* BQ7850 BMS */
     bq7850_config_t bms_cfg = {
@@ -254,7 +357,20 @@ esp_err_t system_init(system_context_t* ctx)
     ctx->state_mutex = xSemaphoreCreateMutex();
     ESP_RETURN_ON_FALSE(ctx->state_mutex, ESP_ERR_NO_MEM, s_TAG, "Failed to create mutex");
 
+    /* Initialize system state */
+    ctx->current_state = SYSTEM_STATE_ARMED;
     ctx->system_enabled = true;
+
+    /* Initialize degradation tracking */
+    ctx->encoder_failed = false;
+    ctx->bms_failed = false;
+    ctx->temp_sensor_failed = false;
+    ctx->fault_count = 0;
+
+    /* Initialize performance monitoring */
+    ctx->motor_task_max_time_us = 0;
+    ctx->telemetry_task_max_time_us = 0;
+    ctx->comm_task_max_time_us = 0;
 
     /* Initialize all motors to stopped */
     for (int i = 0; i < NUM_MOTORS; i++) {
@@ -265,7 +381,7 @@ esp_err_t system_init(system_context_t* ctx)
         ctx->motor_current_ma[i]    = 0.0f;
     }
 
-    ESP_LOGI(s_TAG, "System state initialized");
+    ESP_LOGI(s_TAG, "System initialized successfully - State: ARMED");
 
     return ESP_OK;
 }
@@ -281,8 +397,7 @@ esp_err_t system_deinit(system_context_t* ctx)
     }
 
     star_bms_bq7850_deinit(&ctx->bms);
-    /* DS18B20 not initialized yet */
-    /* star_sensor_ds18b20_deinit(&ctx->temp_sensor); */
+    star_sensor_ds18b20_deinit(&ctx->temp_sensor);
 
     for (int i = 0; i < NUM_MOTORS; i++) {
         star_pid_deinit(&ctx->pid[i]);
@@ -294,9 +409,9 @@ esp_err_t system_deinit(system_context_t* ctx)
         star_motor_deinit(&ctx->motors[i]);
     }
 
-    /* Buses not yet implemented */
-    /* star_bus_manager_remove_bus(&ctx->bus_manager, "rpi_spi"); */
-    /* star_bus_manager_remove_bus(&ctx->bus_manager, "onewire_bus"); */
+    /* Remove buses in reverse order of initialization */
+    star_bus_manager_remove_bus(&ctx->bus_manager, "rpi_spi");
+    star_bus_manager_remove_bus(&ctx->bus_manager, "temp_onewire");
     star_bus_manager_remove_bus(&ctx->bus_manager, "i2c_bus");
     star_bus_manager_remove_bus(&ctx->bus_manager, "adc4_motor4");
     star_bus_manager_remove_bus(&ctx->bus_manager, "adc3_motor3");

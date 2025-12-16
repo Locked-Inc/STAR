@@ -34,12 +34,13 @@ typedef struct star_bus_manager star_bus_manager_t;
  * @brief Types of supported bus interfaces.
  */
 typedef enum {
-  k_star_bus_type_none,  /**< No bus type specified */
-  k_star_bus_type_i2c,   /**< I2C bus */
-  k_star_bus_type_spi,   /**< SPI bus */
-  k_star_bus_type_gpio,  /**< GPIO bus */
-  k_star_bus_type_adc,   /**< ADC bus */
-  k_star_bus_type_count, /**< Number of bus types */
+  k_star_bus_type_none,    /**< No bus type specified */
+  k_star_bus_type_i2c,     /**< I2C bus */
+  k_star_bus_type_spi,     /**< SPI bus */
+  k_star_bus_type_gpio,    /**< GPIO bus */
+  k_star_bus_type_adc,     /**< ADC bus */
+  k_star_bus_type_onewire, /**< OneWire bus (1-Wire protocol) */
+  k_star_bus_type_count,   /**< Number of bus types */
 } star_bus_type_t;
 
 /* --- Callback Function Types --- */
