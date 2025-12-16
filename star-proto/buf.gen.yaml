@@ -1,0 +1,58 @@
+# buf.gen.yaml - STAR Code Generation Configuration
+# Generates code for Kotlin, TypeScript, and nanopb (C)
+#
+# STAR Project - Texas A&M University
+# December 2025
+
+version: v2
+
+managed:
+  enabled: true
+  override:
+    - file_option: java_package
+      value: com.star.proto
+    - file_option: java_multiple_files
+      value: true
+    - file_option: optimize_for
+      value: SPEED
+
+plugins:
+  # ============================================
+  # Kotlin/Java for star-gateway
+  # ============================================
+  - remote: buf.build/protocolbuffers/java
+    out: gen/kotlin
+    opt:
+      - lite=false
+
+  - remote: buf.build/grpc/java
+    out: gen/kotlin
+
+  - remote: buf.build/grpc/kotlin
+    out: gen/kotlin
+    opt:
+      - lite=false
+
+  # ============================================
+  # TypeScript for star-ui (protobuf-ts)
+  # ============================================
+  - remote: buf.build/community/timostamm-protobuf-ts
+    out: gen/typescript
+    opt:
+      - long_type_string
+      - optimize_code_size
+      - generate_dependencies
+      - ts_nocheck
+      - eslint_disable
+
+  # ============================================
+  # C for star-esp32-firmware (nanopb)
+  # Note: nanopb requires local installation
+  # Install: pip install nanopb
+  # ============================================
+  # Uncomment when nanopb is installed locally:
+  # - local: nanopb_generator
+  #   out: gen/nanopb
+  #   opt:
+  #     - --options-path=nanopb/
+  #   strategy: all
