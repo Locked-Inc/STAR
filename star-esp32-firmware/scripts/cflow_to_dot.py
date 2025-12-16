@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Convert cflow output to DOT format for graph visualization
-This creates Egypt-style call graphs from cflow analysis
+This creates call graphs from cflow analysis
 """
 
 import sys
