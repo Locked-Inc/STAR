@@ -221,12 +221,14 @@ fprintf('    .integral_max = 50.0f,\n');
 fprintf('};\n\n');
 
 fprintf('// Velocity Loop PID (middle - 100 Hz)\n');
+fprintf('// NOTE: Output limits assume current sensing is available.\n');
+fprintf('//       Without current sensing, use velocity-only config at bottom.\n');
 fprintf('star_pid_config_t velocity_pid_config = {\n');
 fprintf('    .kp = %.6ff,\n', C_velocity.Kp);
 fprintf('    .ki = %.6ff,\n', C_velocity.Ki);
 fprintf('    .kd = %.6ff,\n', C_velocity.Kd);
-fprintf('    .output_min = -%.1ff,   // Max current command (A)\n', I_stall);
-fprintf('    .output_max = %.1ff,    // Max current command (A)\n', I_stall);
+fprintf('    .output_min = -%.1ff,   // Max current command (A) - requires current sensing\n', I_stall);
+fprintf('    .output_max = %.1ff,    // Max current command (A) - requires current sensing\n', I_stall);
 fprintf('    .integral_min = -%.1ff,\n', I_stall * 0.5);
 fprintf('    .integral_max = %.1ff,\n', I_stall * 0.5);
 fprintf('};\n\n');

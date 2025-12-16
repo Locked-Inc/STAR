@@ -237,7 +237,7 @@ fprintf('\n');
 % Also save to file
 fid = fopen('identified_params.txt', 'w');
 fprintf(fid, '%% Identified Motor Parameters\n');
-fprintf(fid, '%% Generated: %s\n\n', datestr(now));
+fprintf(fid, '%% Generated: %s\n\n', char(datetime('now', 'Format', 'dd-MMM-yyyy HH:mm:ss')));
 fprintf(fid, 'K_dc = %.6f;     %% DC gain [rad/s per volt]\n', K_id);
 fprintf(fid, 'tau_est = %.6f;  %% Time constant [s]\n', tau_id);
 fprintf(fid, '\n%% First-order transfer function:\n');
