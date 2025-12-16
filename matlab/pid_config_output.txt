@@ -1,0 +1,13 @@
+// Auto-generated PID configuration
+// Sample Time: 10 ms (100 Hz)
+// Target Bandwidth: 20 rad/s
+
+star_pid_config_t velocity_pid_config = {
+    .kp = 0.158869f,
+    .ki = 7.032521f,
+    .kd = 0.000000f,
+    .output_min = -100.0f,
+    .output_max = 100.0f,
+    .integral_min = -100.0f,
+    .integral_max = 100.0f,
+};
