@@ -1,5 +1,7 @@
 % Identified Motor Parameters
-% Generated: 16-Dec-2025 14:27:04
+% NOTE: This is EXAMPLE output from simulated data.
+%       Run system_id_template.m with real encoder data to generate actual values.
+% Generated: 16-Dec-2025 14:27:04 (example)
 
 K_dc = 3.663559;     % DC gain [rad/s per volt]
 tau_est = 0.052269;  % Time constant [s]
