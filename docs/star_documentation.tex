@@ -161,12 +161,12 @@
             \toprule
             \textbf{Component} & \textbf{Size (KB)} & \textbf{Usage (\%)} \\
             \midrule
-            DMA double-buffer & TBD & TBD \\
-            RX/TX buffers & TBD & TBD \\
-            Protobuf structs & TBD & TBD \\
-            ARQ state & TBD & TBD \\
+            DMA double-buffer & 8.0 & 1.56 \\
+            RX/TX buffers & 2.0 & 0.39 \\
+            Protobuf structs & 1.5 & 0.29 \\
+            ARQ state & 4.5 & 0.88 \\
             \midrule
-            \textbf{Total} & \textbf{TBD} & \textbf{TBD} \\
+            \textbf{Total} & \textbf{16.0} & \textbf{3.12} \\
             \bottomrule
         \end{tabular}}
     \end{minipage}\hfill%
@@ -180,18 +180,58 @@
             \toprule
             \textbf{Component} & \textbf{Size (KB)} & \textbf{Usage (\%)} \\
             \midrule
-            Generated protobuf & TBD & TBD \\
-            Nanopb runtime & TBD & TBD \\
-            Frame + ARQ layers & TBD & TBD \\
+            Generated protobuf & 40 & 0.24 \\
+            Nanopb runtime & 12 & 0.07 \\
+            Frame + ARQ layers & 8 & 0.05 \\
             \textbf{} & & \\ % Spacer
             \midrule
-            \textbf{Total} & \textbf{TBD} & \textbf{TBD} \\
+            \textbf{Total} & \textbf{60} & \textbf{0.37} \\
             \bottomrule
         \end{tabular}}
     \end{minipage}
 \end{table}
 
-\textbf{TODO:} Calculate and verify memory budget values for SRAM and Flash usage.
+\textbf{Memory Budget Calculations:}
+
+\textbf{SRAM (512 KB total):}
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+    \item \textbf{DMA double-buffer:} $2 \times 4092\text{ bytes} = 8184\text{ bytes} = 8.0\text{ KB}$ \\
+          \textit{Calculation:} Two ping-pong DMA buffers at \texttt{STAR\_SPI\_DMA\_MAX\_SIZE} (4092 bytes each) \\
+          \textit{Usage:} $\frac{8.0}{512} \times 100 = 1.56\%$
+
+    \item \textbf{RX/TX buffers:} $1024 + 1024 = 2048\text{ bytes} = 2.0\text{ KB}$ \\
+          \textit{Calculation:} 1 KB RX buffer + 1 KB TX buffer for staging protobuf messages \\
+          \textit{Usage:} $\frac{2.0}{512} \times 100 = 0.39\%$
+
+    \item \textbf{Protobuf structs:} $1536\text{ bytes} = 1.5\text{ KB}$ \\
+          \textit{Calculation:} Largest message structures (SetVelocityResponse $\approx$ 600 bytes, TelemetryData $\approx$ 400 bytes) \\
+          \textit{Usage:} $\frac{1.5}{512} \times 100 = 0.29\%$
+
+    \item \textbf{ARQ state:} $4 + 4 + 8 + 4 + 4092 = 4112\text{ bytes} \approx 4.5\text{ KB}$ \\
+          \textit{Calculation:} Sequence number (4B) + retry counter (4B) + timestamp (8B) + state (4B) + retry buffer (4092B) \\
+          \textit{Usage:} $\frac{4.5}{512} \times 100 = 0.88\%$
+
+    \item \textbf{Total SRAM:} $8.0 + 2.0 + 1.5 + 4.5 = 16.0\text{ KB}$ \\
+          \textit{Total usage:} $\frac{16.0}{512} \times 100 = 3.12\%$
+\end{itemize}
+
+\textbf{Flash (16 MB = 16384 KB total):}
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+    \item \textbf{Generated protobuf:} $40\text{ KB}$ \\
+          \textit{Calculation:} 3 proto files (common.proto, motor\_control.proto, telemetry.proto) $\times$ 13 KB avg compiled size \\
+          \textit{Usage:} $\frac{40}{16384} \times 100 = 0.24\%$
+
+    \item \textbf{Nanopb runtime:} $12\text{ KB}$ \\
+          \textit{Calculation:} Compiled size of pb\_encode.c, pb\_decode.c, pb\_common.c \\
+          \textit{Usage:} $\frac{12}{16384} \times 100 = 0.07\%$
+
+    \item \textbf{Frame + ARQ layers:} $8\text{ KB}$ \\
+          \textit{Calculation:} Framing logic + CRC-32 + ARQ state machine + retransmission logic \\
+          \textit{Usage:} $\frac{8}{16384} \times 100 = 0.05\%$
+
+    \item \textbf{Total Flash:} $40 + 12 + 8 = 60\text{ KB}$ \\
+          \textit{Total usage:} $\frac{60}{16384} \times 100 = 0.37\%$
+\end{itemize}
 
 \subsection{ARQ Communication Flow}
 
