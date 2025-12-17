@@ -15,129 +15,129 @@ syntax = "proto3";
 
 package star.v1;
 
-option java_package = "com.star.proto.v1";
-option java_multiple_files = true;
-
-import "google/protobuf/timestamp.proto";
 import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+
+option java_multiple_files = true;
+option java_package = "com.star.proto.v1";
 
 // Standard request header included in all requests.
 // Provides tracing, versioning, and client identification.
 message RequestHeader {
-    // Client-generated request identifier for tracing.
-    // Should be unique per request (UUID recommended).
-    string request_id = 1;
+  // Client-generated request identifier for tracing.
+  // Should be unique per request (UUID recommended).
+  string request_id = 1;
 
-    // Client timestamp when request was created.
-    google.protobuf.Timestamp client_timestamp = 2;
+  // Client timestamp when request was created.
+  google.protobuf.Timestamp client_timestamp = 2;
 
-    // Client software version string (e.g., "1.0.0").
-    string client_version = 3;
+  // Client software version string (e.g., "1.0.0").
+  string client_version = 3;
 
-    // Optional deadline for request processing.
-    google.protobuf.Duration timeout = 4;
+  // Optional deadline for request processing.
+  google.protobuf.Duration timeout = 4;
 }
 
 // Standard response header included in all responses.
 // Provides status, timing, and error information.
 message ResponseHeader {
-    // Echo of the request_id from RequestHeader.
-    string request_id = 1;
+  // Echo of the request_id from RequestHeader.
+  string request_id = 1;
 
-    // Server timestamp when response was generated.
-    google.protobuf.Timestamp server_timestamp = 2;
+  // Server timestamp when response was generated.
+  google.protobuf.Timestamp server_timestamp = 2;
 
-    // Processing status.
-    Status status = 3;
+  // Processing status.
+  Status status = 3;
 
-    // Human-readable error message if status is not STATUS_OK.
-    string error_message = 4;
+  // Human-readable error message if status is not STATUS_OK.
+  string error_message = 4;
 
-    // Round-trip latency in microseconds.
-    int64 latency_us = 5;
+  // Round-trip latency in microseconds.
+  int64 latency_us = 5;
 }
 
 // Response status codes following Boston Dynamics pattern.
 // Zero value is STATUS_UNKNOWN per style guide.
 enum Status {
-    // Unknown or unspecified status. Treat as error.
-    STATUS_UNKNOWN = 0;
+  // Unknown or unspecified status. Treat as error.
+  STATUS_UNKNOWN = 0;
 
-    // Request processed successfully.
-    STATUS_OK = 1;
+  // Request processed successfully.
+  STATUS_OK = 1;
 
-    // Request contained invalid parameters.
-    STATUS_INVALID_REQUEST = 2;
+  // Request contained invalid parameters.
+  STATUS_INVALID_REQUEST = 2;
 
-    // Internal server error occurred.
-    STATUS_INTERNAL_ERROR = 3;
+  // Internal server error occurred.
+  STATUS_INTERNAL_ERROR = 3;
 
-    // Requested resource not found.
-    STATUS_NOT_FOUND = 4;
+  // Requested resource not found.
+  STATUS_NOT_FOUND = 4;
 
-    // Operation timed out.
-    STATUS_TIMEOUT = 5;
+  // Operation timed out.
+  STATUS_TIMEOUT = 5;
 
-    // Robot is in an invalid state for this operation.
-    STATUS_INVALID_STATE = 6;
+  // Robot is in an invalid state for this operation.
+  STATUS_INVALID_STATE = 6;
 
-    // Emergency stop is active.
-    STATUS_ESTOP_ACTIVE = 7;
+  // Emergency stop is active.
+  STATUS_ESTOP_ACTIVE = 7;
 }
 
 // 3D vector with MKS units.
 // Usage context determines units (meters for position, m/s for velocity).
 message Vector3 {
-    // X component.
-    double x = 1;
+  // X component.
+  double x = 1;
 
-    // Y component.
-    double y = 2;
+  // Y component.
+  double y = 2;
 
-    // Z component.
-    double z = 3;
+  // Z component.
+  double z = 3;
 }
 
 // Quaternion for orientation representation.
 // Normalized quaternion (w, x, y, z) with w as scalar component.
 message Quaternion {
-    // W component (scalar part).
-    double w = 1;
+  // W component (scalar part).
+  double w = 1;
 
-    // X component.
-    double x = 2;
+  // X component.
+  double x = 2;
 
-    // Y component.
-    double y = 3;
+  // Y component.
+  double y = 3;
 
-    // Z component.
-    double z = 4;
+  // Z component.
+  double z = 4;
 }
 
 // SE2 pose for 2D navigation (position + heading).
 // Uses MKS units: meters for position, radians for angle.
 message SE2Pose {
-    // X position in meters.
-    double x_m = 1;
+  // X position in meters.
+  double x_m = 1;
 
-    // Y position in meters.
-    double y_m = 2;
+  // Y position in meters.
+  double y_m = 2;
 
-    // Heading angle in radians.
-    // Range: -pi to pi, 0 = facing positive X axis.
-    double angle_rad = 3;
+  // Heading angle in radians.
+  // Range: -pi to pi, 0 = facing positive X axis.
+  double angle_rad = 3;
 }
 
 // SE2 velocity for 2D motion.
 // Uses MKS units: m/s for linear, rad/s for angular.
 message SE2Velocity {
-    // Linear velocity X in meters per second.
-    double vx_mps = 1;
+  // Linear velocity X in meters per second.
+  double vx_mps = 1;
 
-    // Linear velocity Y in meters per second.
-    double vy_mps = 2;
+  // Linear velocity Y in meters per second.
+  double vy_mps = 2;
 
-    // Angular velocity in radians per second.
-    // Positive = counter-clockwise.
-    double omega_rad_per_s = 3;
+  // Angular velocity in radians per second.
+  // Positive = counter-clockwise.
+  double omega_rad_per_s = 3;
 }
