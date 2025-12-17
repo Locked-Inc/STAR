@@ -1,0 +1,33 @@
+# firmware_update.options - nanopb field size constraints for firmware_update.proto
+# These settings optimize for ESP32 embedded use with static allocation.
+#
+# Chunk size: 1024 bytes recommended for OTA
+# Version strings: 32 chars max
+#
+# STAR Project - Texas A&M University
+
+# Firmware chunk data (1KB recommended for optimal OTA performance)
+star.v1.FirmwareChunk.data                          max_size:1024
+
+# Session ID for tracking
+star.v1.BeginUpdateResponse.session_id              max_size:64
+
+# Abort reason string
+star.v1.AbortUpdateRequest.reason                   max_size:128
+
+# Firmware info strings
+star.v1.FirmwareInfo.version                        max_size:32
+star.v1.FirmwareInfo.git_hash                       max_size:16
+star.v1.FirmwareInfo.build_date                     max_size:32
+star.v1.FirmwareInfo.idf_version                    max_size:32
+star.v1.FirmwareInfo.chip_target                    max_size:16
+
+# Expected version in begin request
+star.v1.BeginUpdateRequest.expected_version         max_size:32
+
+# Rollback version string
+star.v1.RollbackResponse.previous_version           max_size:32
+
+# Error message strings
+star.v1.FirmwareUpdateError.message                 max_size:128
+star.v1.FirmwareUpdateError.details                 max_size:64

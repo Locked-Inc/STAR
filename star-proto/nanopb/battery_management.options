@@ -1,0 +1,20 @@
+# battery_management.options - nanopb field size constraints for battery_management.proto
+# These settings optimize for ESP32 embedded use with static allocation.
+#
+# BQ7850 hardware limits:
+# - Maximum 16 series cells
+# - Maximum 3 temperature sensors
+# - Device info strings: 32 characters max
+#
+# STAR Project - Texas A&M University
+
+# Cell voltage array (max 16 cells per BQ7850)
+star.v1.CellData.cell_mv                        max_count:16
+
+# Temperature array (max 3 sensors per BQ7850)
+star.v1.TemperatureData.temp_deci_celsius       max_count:3
+
+# Device info strings (32 char max per BQ7850_DEVICE_INFO_STRING_LEN)
+star.v1.BmsDeviceInfo.manufacturer              max_size:32
+star.v1.BmsDeviceInfo.device_name               max_size:32
+star.v1.BmsDeviceInfo.chemistry                 max_size:32

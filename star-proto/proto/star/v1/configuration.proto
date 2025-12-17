@@ -1,0 +1,379 @@
+// configuration.proto - STAR Configuration Protocol Buffer Definitions
+// Runtime NVS configuration management for ESP32 motor controller.
+//
+// Following Boston Dynamics style guide:
+// - Proto3 only, 100 char line limit, 4 space indent
+// - MKS units with suffixes (_ma, _celsius, _mv, _ms)
+// - All fields documented with units and valid ranges
+//
+// STAR Project - Texas A&M University
+// December 2025
+
+syntax = "proto3";
+
+package star.v1;
+
+import "star/v1/common.proto";
+import "star/v1/motor_control.proto";
+
+option java_multiple_files = true;
+option java_outer_classname = "ConfigurationProto";
+option java_package = "com.star.proto.v1";
+
+// Configuration service for runtime parameter management.
+// Provides get/set/reset operations for NVS-stored configuration.
+// Configuration persists across power cycles and firmware updates.
+service ConfigurationService {
+  // Get current system configuration.
+  rpc GetConfiguration(GetConfigurationRequest) returns (GetConfigurationResponse);
+
+  // Set system configuration parameters.
+  // Validates parameters before applying.
+  rpc SetConfiguration(SetConfigurationRequest) returns (SetConfigurationResponse);
+
+  // Reset configuration to factory defaults.
+  // Does not automatically save - call SetConfiguration to persist.
+  rpc ResetToDefaults(ResetToDefaultsRequest) returns (ResetToDefaultsResponse);
+
+  // Validate configuration without applying.
+  // Returns validation status and any error details.
+  rpc ValidateConfiguration(ValidateConfigurationRequest) returns (ValidateConfigurationResponse);
+
+  // Save current configuration to NVS.
+  // Persists in-memory configuration to non-volatile storage.
+  rpc SaveConfiguration(SaveConfigurationRequest) returns (SaveConfigurationResponse);
+
+  // Get individual motor PID configuration.
+  rpc GetMotorPidConfig(GetMotorPidConfigRequest) returns (GetMotorPidConfigResponse);
+
+  // Set individual motor PID configuration.
+  rpc SetMotorPidConfig(SetMotorPidConfigRequest) returns (SetMotorPidConfigResponse);
+}
+
+// Request for current configuration.
+message GetConfigurationRequest {
+  // Standard request header.
+  RequestHeader header = 1;
+}
+
+// Response with current configuration.
+message GetConfigurationResponse {
+  // Standard response header with status.
+  ResponseHeader header = 1;
+
+  // Current system configuration.
+  SystemConfiguration configuration = 2;
+}
+
+// Request to set configuration.
+message SetConfigurationRequest {
+  // Standard request header.
+  RequestHeader header = 1;
+
+  // Configuration to apply.
+  SystemConfiguration configuration = 2;
+
+  // If true, automatically save to NVS after validation.
+  // If false, configuration is only held in memory.
+  bool persist_to_nvs = 3;
+}
+
+// Response to set configuration.
+message SetConfigurationResponse {
+  // Standard response header with status.
+  ResponseHeader header = 1;
+
+  // Validation result.
+  ConfigValidationResult validation_result = 2;
+}
+
+// Request to reset configuration.
+message ResetToDefaultsRequest {
+  // Standard request header.
+  RequestHeader header = 1;
+
+  // If true, automatically save defaults to NVS.
+  bool persist_to_nvs = 2;
+}
+
+// Response to reset configuration.
+message ResetToDefaultsResponse {
+  // Standard response header with status.
+  ResponseHeader header = 1;
+
+  // Default configuration that was applied.
+  SystemConfiguration configuration = 2;
+}
+
+// Request to validate configuration.
+message ValidateConfigurationRequest {
+  // Standard request header.
+  RequestHeader header = 1;
+
+  // Configuration to validate.
+  SystemConfiguration configuration = 2;
+}
+
+// Response with validation results.
+message ValidateConfigurationResponse {
+  // Standard response header with status.
+  ResponseHeader header = 1;
+
+  // Detailed validation result.
+  ConfigValidationResult validation_result = 2;
+}
+
+// Request to save configuration to NVS.
+message SaveConfigurationRequest {
+  // Standard request header.
+  RequestHeader header = 1;
+}
+
+// Response to save configuration.
+message SaveConfigurationResponse {
+  // Standard response header with status.
+  ResponseHeader header = 1;
+
+  // True if save was successful.
+  bool saved = 2;
+
+  // Updated CRC-32 checksum after save.
+  uint32 config_crc = 3;
+}
+
+// Request for motor PID configuration.
+message GetMotorPidConfigRequest {
+  // Standard request header.
+  RequestHeader header = 1;
+
+  // Motor index (0-3 for 4-motor system).
+  int32 motor_id = 2;
+}
+
+// Response with motor PID configuration.
+message GetMotorPidConfigResponse {
+  // Standard response header with status.
+  ResponseHeader header = 1;
+
+  // Motor index.
+  int32 motor_id = 2;
+
+  // PID configuration for this motor.
+  PidConfig pid_config = 3;
+}
+
+// Request to set motor PID configuration.
+message SetMotorPidConfigRequest {
+  // Standard request header.
+  RequestHeader header = 1;
+
+  // Motor index (0-3 for 4-motor system).
+  int32 motor_id = 2;
+
+  // PID configuration to apply.
+  PidConfig pid_config = 3;
+
+  // If true, automatically save to NVS.
+  bool persist_to_nvs = 4;
+}
+
+// Response to set motor PID configuration.
+message SetMotorPidConfigResponse {
+  // Standard response header with status.
+  ResponseHeader header = 1;
+
+  // Validation result.
+  ConfigValidationResult validation_result = 2;
+}
+
+// Complete system configuration.
+// Maps to star_config_t structure.
+message SystemConfiguration {
+  // Motor PID configuration for all motors (max 4 motors).
+  // Array index corresponds to motor ID (0-3).
+  repeated MotorPidConfiguration motor_configs = 1;
+
+  // Current sensor calibration for all motors.
+  CurrentSensorCalibration current_calibration = 2;
+
+  // Temperature sensor calibration.
+  TemperatureCalibration temperature_calibration = 3;
+
+  // Safety thresholds.
+  SafetyThresholds safety_thresholds = 4;
+
+  // Encoder configuration.
+  EncoderConfiguration encoder_config = 5;
+
+  // Timing parameters.
+  TimingConfiguration timing_config = 6;
+
+  // Configuration schema version.
+  // Used for migration between firmware versions.
+  uint32 config_version = 7;
+
+  // CRC-32 checksum for integrity validation.
+  // Computed over all fields except this one.
+  uint32 config_crc = 8;
+}
+
+// Motor PID configuration for a single motor.
+message MotorPidConfiguration {
+  // Motor index (0-3).
+  int32 motor_id = 1;
+
+  // PID gains configuration.
+  // Reuses PidConfig from motor_control.proto.
+  PidConfig pid_config = 2;
+}
+
+// Current sensor calibration data.
+// Applied to all motor current sense readings.
+message CurrentSensorCalibration {
+  // ADC offset when motor stopped, in milliamps.
+  // One per motor (max 4).
+  repeated double offset_ma = 1;
+
+  // Scaling factor adjustment for each motor.
+  // Multiplied with raw ADC reading.
+  // One per motor (max 4).
+  repeated double scale_factor = 2;
+}
+
+// Temperature sensor calibration.
+message TemperatureCalibration {
+  // Temperature offset correction in Celsius.
+  // Added to raw temperature reading.
+  double offset_celsius = 1;
+}
+
+// Safety thresholds for motor and battery protection.
+message SafetyThresholds {
+  // Motor overcurrent limit in milliamps.
+  // Motors disabled if current exceeds this.
+  // Valid range: 1000-20000 mA.
+  double overcurrent_threshold_ma = 1;
+
+  // Emergency temperature cutoff in Celsius.
+  // System enters safe mode above this temperature.
+  // Valid range: 50-100 C.
+  double thermal_shutdown_celsius = 2;
+
+  // Battery cell voltage imbalance threshold in millivolts.
+  // Warning generated if cell delta exceeds this.
+  // Valid range: 50-500 mV.
+  uint32 cell_imbalance_threshold_mv = 3;
+}
+
+// Encoder configuration parameters.
+message EncoderConfiguration {
+  // Encoder edges per motor revolution.
+  // Used for velocity calculation.
+  // Common values: 500, 1000, 2000, 4000.
+  uint32 edges_per_revolution = 1;
+
+  // Wheel diameter in meters (for linear velocity).
+  double wheel_diameter_m = 2;
+
+  // Gear ratio (motor revolutions per wheel revolution).
+  double gear_ratio = 3;
+}
+
+// Timing configuration for control loops and communication.
+message TimingConfiguration {
+  // Motor control loop period in milliseconds.
+  // Lower = faster response, higher CPU usage.
+  // Valid range: 1-100 ms. Typical: 10 ms (100 Hz).
+  uint32 motor_control_period_ms = 1;
+
+  // Telemetry reporting period in milliseconds.
+  // Valid range: 10-1000 ms. Typical: 100 ms (10 Hz).
+  uint32 telemetry_period_ms = 2;
+
+  // RPi5 communication watchdog timeout in milliseconds.
+  // Motors stopped if no command received within timeout.
+  // Valid range: 100-5000 ms. Typical: 500 ms.
+  uint32 communication_timeout_ms = 3;
+
+  // BMS polling period in milliseconds.
+  // Valid range: 100-10000 ms. Typical: 1000 ms.
+  uint32 bms_poll_period_ms = 4;
+}
+
+// Configuration validation result.
+message ConfigValidationResult {
+  // Overall validation status.
+  ConfigValidationStatus status = 1;
+
+  // List of validation errors (empty if valid).
+  repeated ConfigValidationError errors = 2;
+}
+
+// Configuration validation status.
+enum ConfigValidationStatus {
+  // Unknown validation status.
+  CONFIG_VALIDATION_STATUS_UNKNOWN = 0;
+
+  // Configuration is valid and can be applied.
+  CONFIG_VALIDATION_STATUS_VALID = 1;
+
+  // Configuration has invalid parameters.
+  CONFIG_VALIDATION_STATUS_INVALID = 2;
+
+  // Configuration has warnings but can be applied.
+  CONFIG_VALIDATION_STATUS_WARNING = 3;
+
+  // CRC checksum mismatch.
+  CONFIG_VALIDATION_STATUS_CRC_MISMATCH = 4;
+
+  // Configuration version incompatible.
+  CONFIG_VALIDATION_STATUS_VERSION_MISMATCH = 5;
+}
+
+// Individual configuration validation error.
+message ConfigValidationError {
+  // Field that failed validation (dot notation, e.g., "motor_configs[0].pid_config.kp").
+  string field_path = 1;
+
+  // Error code for programmatic handling.
+  ConfigErrorCode error_code = 2;
+
+  // Human-readable error message.
+  string message = 3;
+
+  // Actual value that failed validation.
+  string actual_value = 4;
+
+  // Expected range or constraint description.
+  string expected_constraint = 5;
+}
+
+// Configuration error codes.
+enum ConfigErrorCode {
+  // Unknown error.
+  CONFIG_ERROR_CODE_UNKNOWN = 0;
+
+  // Value is below minimum allowed.
+  CONFIG_ERROR_CODE_VALUE_TOO_LOW = 1;
+
+  // Value is above maximum allowed.
+  CONFIG_ERROR_CODE_VALUE_TOO_HIGH = 2;
+
+  // Value is NaN or infinity.
+  CONFIG_ERROR_CODE_INVALID_NUMBER = 3;
+
+  // Required field is missing.
+  CONFIG_ERROR_CODE_MISSING_FIELD = 4;
+
+  // Array has wrong number of elements.
+  CONFIG_ERROR_CODE_WRONG_ARRAY_SIZE = 5;
+
+  // CRC checksum failed.
+  CONFIG_ERROR_CODE_CRC_FAILED = 6;
+
+  // Version is not supported.
+  CONFIG_ERROR_CODE_UNSUPPORTED_VERSION = 7;
+
+  // NVS storage error.
+  CONFIG_ERROR_CODE_STORAGE_ERROR = 8;
+}

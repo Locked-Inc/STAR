@@ -1,0 +1,23 @@
+# configuration.options - nanopb field size constraints for configuration.proto
+# These settings optimize for ESP32 embedded use with static allocation.
+#
+# STAR_CONFIG_NUM_MOTORS = 4 (from star_config.h)
+# Maximum 8 validation errors to report
+#
+# STAR Project - Texas A&M University
+
+# Motor configuration array (max 4 motors)
+star.v1.SystemConfiguration.motor_configs               max_count:4
+
+# Current sensor calibration arrays (max 4 motors)
+star.v1.CurrentSensorCalibration.offset_ma              max_count:4
+star.v1.CurrentSensorCalibration.scale_factor           max_count:4
+
+# Validation error array (max 8 errors)
+star.v1.ConfigValidationResult.errors                   max_count:8
+
+# Validation error strings
+star.v1.ConfigValidationError.field_path                max_size:64
+star.v1.ConfigValidationError.message                   max_size:128
+star.v1.ConfigValidationError.actual_value              max_size:32
+star.v1.ConfigValidationError.expected_constraint       max_size:64
