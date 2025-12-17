@@ -1,0 +1,37 @@
+# buf.yaml - STAR Protobuf Configuration (buf v1)
+# Following Boston Dynamics style guide:
+# https://dev.bostondynamics.com/docs/protos/style_guide.html
+#
+# STAR Project - Texas A&M University
+# December 2025
+
+version: v1
+
+name: buf.build/star/proto
+
+deps:
+  - buf.build/googleapis/googleapis
+
+lint:
+  use:
+    - DEFAULT
+    - COMMENTS
+  except:
+    - PACKAGE_VERSION_SUFFIX
+    # Boston Dynamics uses _UNKNOWN, not buf's default _UNSPECIFIED
+    - ENUM_ZERO_VALUE_SUFFIX
+    # We use shared types for streaming RPCs (EncoderData, TelemetryData)
+    - RPC_REQUEST_RESPONSE_UNIQUE
+    - RPC_REQUEST_STANDARD_NAME
+    - RPC_RESPONSE_STANDARD_NAME
+  service_suffix: Service
+  rpc_allow_same_request_response: true
+  rpc_allow_google_protobuf_empty_requests: false
+  rpc_allow_google_protobuf_empty_responses: false
+
+breaking:
+  use:
+    - FILE
+    - PACKAGE
+  except:
+    - FIELD_SAME_DEFAULT
