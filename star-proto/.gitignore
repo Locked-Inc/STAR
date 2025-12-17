@@ -1,0 +1,32 @@
+# Generated code (created by buf generate)
+# Keep the gen/ directory structure but ignore contents
+gen/kotlin/*
+gen/typescript/*
+gen/nanopb/*
+!gen/*/.gitignore
+
+# Kotlin/Gradle build artifacts
+tests/kotlin/build/
+tests/kotlin/.gradle/
+
+# TypeScript/Node build artifacts
+tests/typescript/node_modules/
+tests/typescript/coverage/
+tests/typescript/dist/
+
+# nanopb C build artifacts
+tests/nanopb/build/
+tests/nanopb/CMakeCache.txt
+tests/nanopb/CMakeFiles/
+tests/nanopb/cmake_install.cmake
+tests/nanopb/Makefile
+tests/nanopb/*.o
+tests/nanopb/*.a
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OS
+.DS_Store
