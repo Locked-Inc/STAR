@@ -1,0 +1,697 @@
+% =============================================================================
+\section{Project Overview}
+% =============================================================================
+
+\subsection{Purpose}
+
+The \texttt{star-proto} repository contains shared Protocol Buffer (protobuf) definitions used across the STAR robot system:
+
+\begin{itemize}
+    \item \textbf{star-gateway}: Kotlin/Java gRPC server
+    \item \textbf{star-ui}: TypeScript gRPC-Web client
+    \item \textbf{star-esp32-firmware}: (Future) ESP32 binary protocol
+\end{itemize}
+
+\subsection{Why Protocol Buffers?}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Feature} & \textbf{Protobuf} & \textbf{JSON} \\
+\hline
+Message Size & 17 bytes (example) & 65 bytes \\
+Serialization & 1.2 $\mu$s & 4.5 $\mu$s \\
+Type Safety & Compile-time & Runtime \\
+Schema Evolution & Built-in & Manual \\
+Code Generation & Automatic & Manual \\
+\hline
+\end{tabular}
+\caption{Protobuf vs JSON Comparison}
+\end{table}
+
+\subsection{Architecture}
+
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    node distance=1.5cm,
+    box/.style={draw, rectangle, rounded corners, minimum width=2.5cm, minimum height=1cm, align=center, font=\small},
+    arrow/.style={->, thick}
+]
+    % Proto source
+    \node[box, fill=yellow!30] (proto) {star-proto\\(.proto files)};
+
+    % Generators
+    \node[box, fill=blue!20, below left=2cm and 1cm of proto] (kotlin) {protoc\\(Kotlin)};
+    \node[box, fill=green!20, below=2cm of proto] (ts) {protoc\\(TypeScript)};
+    \node[box, fill=orange!20, below right=2cm and 1cm of proto] (c) {nanopb\\(C)};
+
+    % Output
+    \node[box, fill=blue!10, below=1.5cm of kotlin] (gateway) {star-gateway\\(*.kt)};
+    \node[box, fill=green!10, below=1.5cm of ts] (ui) {star-ui\\(*\_pb.ts)};
+    \node[box, fill=orange!10, below=1.5cm of c] (firmware) {star-esp32-firmware\\(*.pb.c)};
+
+    % Connections
+    \draw[arrow] (proto) -- (kotlin);
+    \draw[arrow] (proto) -- (ts);
+    \draw[arrow] (proto) -- (c);
+    \draw[arrow] (kotlin) -- (gateway);
+    \draw[arrow] (ts) -- (ui);
+    \draw[arrow] (c) -- (firmware);
+\end{tikzpicture}
+\caption{Code Generation Flow}
+\end{figure}
+
+% =============================================================================
+\section{Directory Structure}
+% =============================================================================
+
+\begin{lstlisting}[language=bash]
+star-proto/
+|-- README.md
+|-- buf.yaml                      # Buf build configuration
+|-- buf.gen.yaml                  # Code generation config
+|
+|-- star/
+|   |-- motor_control.proto       # Motor command service
+|   |-- telemetry.proto           # Telemetry data types
+|   |-- navigation.proto          # Navigation service
+|   +-- common.proto              # Shared types
+|
+|-- scripts/
+|   |-- generate-kotlin.sh        # Generate for star-gateway
+|   |-- generate-typescript.sh    # Generate for star-ui
+|   +-- generate-c.sh             # Generate for star-esp32-firmware
+|
++-- generated/                    # Generated code (gitignored)
+    |-- kotlin/
+    |-- typescript/
+    +-- c/
+\end{lstlisting}
+
+% =============================================================================
+\section{Protocol Definitions}
+% =============================================================================
+
+\subsection{motor\_control.proto}
+
+\begin{lstlisting}[language=Protobuf, caption=star/motor\_control.proto]
+syntax = "proto3";
+
+package star.motor;
+
+option java_package = "com.star.gateway.proto";
+option java_outer_classname = "MotorControlProto";
+option java_multiple_files = true;
+
+import "star/common.proto";
+
+// Motor control service for low-latency commands
+service MotorControl {
+    // Set wheel velocities (differential drive)
+    rpc SetVelocity(VelocityCommand) returns (CommandResponse);
+
+    // Immediate emergency stop
+    rpc EmergencyStop(EmptyRequest) returns (CommandResponse);
+
+    // Set individual motor power
+    rpc SetMotorPower(MotorPowerCommand) returns (CommandResponse);
+
+    // Stream encoder data (server streaming)
+    rpc StreamEncoderData(EmptyRequest) returns (stream EncoderData);
+
+    // Bidirectional control stream (for continuous control)
+    rpc ControlStream(stream VelocityCommand) returns (stream EncoderData);
+}
+
+// Velocity command for differential drive
+message VelocityCommand {
+    // Left wheel velocity in m/s (-2.0 to 2.0)
+    float left_velocity = 1;
+
+    // Right wheel velocity in m/s (-2.0 to 2.0)
+    float right_velocity = 2;
+
+    // Client timestamp in milliseconds (for latency tracking)
+    uint64 timestamp = 3;
+
+    // Optional: command sequence number
+    uint32 sequence = 4;
+}
+
+// Direct motor power control
+message MotorPowerCommand {
+    // Motor index: 0=front-left, 1=front-right, 2=rear-left, 3=rear-right
+    int32 motor_id = 1;
+
+    // Power level: -1.0 (full reverse) to 1.0 (full forward)
+    float power = 2;
+}
+
+// Standard command response
+message CommandResponse {
+    // True if command was executed successfully
+    bool success = 1;
+
+    // Human-readable status message
+    string message = 2;
+
+    // Round-trip latency in microseconds
+    uint64 latency_us = 3;
+
+    // Server timestamp
+    uint64 server_timestamp = 4;
+}
+
+// Real-time encoder feedback
+message EncoderData {
+    // Motor index (0-3)
+    int32 motor_id = 1;
+
+    // Absolute encoder position (ticks)
+    int64 ticks = 2;
+
+    // Current velocity in m/s
+    float velocity = 3;
+
+    // Timestamp in milliseconds
+    uint64 timestamp = 4;
+}
+\end{lstlisting}
+
+\subsection{telemetry.proto}
+
+\begin{lstlisting}[language=Protobuf, caption=star/telemetry.proto]
+syntax = "proto3";
+
+package star.telemetry;
+
+option java_package = "com.star.gateway.proto";
+option java_multiple_files = true;
+
+import "star/common.proto";
+
+// Telemetry streaming service
+service TelemetryService {
+    // Get current telemetry snapshot
+    rpc GetTelemetry(EmptyRequest) returns (TelemetryData);
+
+    // Stream telemetry at specified rate
+    rpc StreamTelemetry(StreamRequest) returns (stream TelemetryData);
+
+    // Get system status
+    rpc GetSystemStatus(EmptyRequest) returns (SystemStatus);
+}
+
+// Stream configuration
+message StreamRequest {
+    // Update rate in Hz (1-100)
+    int32 rate_hz = 1;
+
+    // Fields to include (empty = all)
+    repeated string fields = 2;
+}
+
+// Complete telemetry snapshot
+message TelemetryData {
+    // IMU data
+    ImuData imu = 1;
+
+    // GPS data (if available)
+    GpsData gps = 2;
+
+    // Battery percentage (0-100)
+    float battery = 3;
+
+    // WiFi signal strength in dBm
+    int32 wifi_signal = 4;
+
+    // CPU usage percentage (0-100)
+    float cpu_usage = 5;
+
+    // Temperature in Celsius
+    float temperature = 6;
+
+    // Motor load percentage (0-100)
+    float motor_load = 7;
+
+    // Timestamp (ISO 8601)
+    string timestamp = 8;
+}
+
+// IMU sensor data
+message ImuData {
+    // Orientation (degrees)
+    float pitch = 1;
+    float roll = 2;
+    float yaw = 3;
+
+    // Linear velocity (m/s)
+    float velocity = 4;
+
+    // Acceleration (m/s^2)
+    float acceleration_x = 5;
+    float acceleration_y = 6;
+    float acceleration_z = 7;
+
+    // Angular velocity (rad/s)
+    float gyro_x = 8;
+    float gyro_y = 9;
+    float gyro_z = 10;
+}
+
+// GPS data
+message GpsData {
+    double latitude = 1;
+    double longitude = 2;
+    float altitude = 3;
+    float accuracy = 4;
+    int32 satellites = 5;
+}
+
+// System status
+message SystemStatus {
+    ConnectionStatus connection_status = 1;
+    RobotMode mode = 2;
+    bool esp32_connected = 3;
+    bool lidar_connected = 4;
+    bool ros_connected = 5;
+    string firmware_version = 6;
+    uint64 uptime_seconds = 7;
+}
+
+// Connection state
+enum ConnectionStatus {
+    CONNECTION_UNKNOWN = 0;
+    CONNECTION_CONNECTED = 1;
+    CONNECTION_DISCONNECTED = 2;
+    CONNECTION_CONNECTING = 3;
+    CONNECTION_ERROR = 4;
+}
+
+// Robot operating mode
+enum RobotMode {
+    MODE_UNKNOWN = 0;
+    MODE_IDLE = 1;
+    MODE_MANUAL = 2;
+    MODE_AUTONOMOUS = 3;
+    MODE_MAPPING = 4;
+    MODE_EMERGENCY_STOP = 5;
+}
+\end{lstlisting}
+
+\subsection{navigation.proto}
+
+\begin{lstlisting}[language=Protobuf, caption=star/navigation.proto]
+syntax = "proto3";
+
+package star.navigation;
+
+option java_package = "com.star.gateway.proto";
+option java_multiple_files = true;
+
+import "star/common.proto";
+
+// Navigation service
+service NavigationService {
+    // Get current navigation state
+    rpc GetState(EmptyRequest) returns (NavigationState);
+
+    // Add waypoint to queue
+    rpc AddWaypoint(Waypoint) returns (WaypointResponse);
+
+    // Clear all waypoints
+    rpc ClearWaypoints(EmptyRequest) returns (CommandResponse);
+
+    // Start autonomous navigation
+    rpc StartNavigation(EmptyRequest) returns (CommandResponse);
+
+    // Stop navigation
+    rpc StopNavigation(EmptyRequest) returns (CommandResponse);
+
+    // Stream navigation updates
+    rpc StreamNavigation(EmptyRequest) returns (stream NavigationState);
+
+    // Stream LiDAR scans
+    rpc StreamLidar(StreamRequest) returns (stream LidarScan);
+}
+
+// Current navigation state
+message NavigationState {
+    // Current robot position
+    Position current_position = 1;
+
+    // Planned path
+    repeated Position path = 2;
+
+    // Queued waypoints
+    repeated Waypoint waypoints = 3;
+
+    // Navigation active
+    bool is_navigating = 4;
+
+    // Progress percentage
+    float progress = 5;
+
+    // Estimated time remaining (seconds)
+    float eta_seconds = 6;
+}
+
+// 2D position with heading
+message Position {
+    float x = 1;  // meters
+    float y = 2;  // meters
+    float heading = 3;  // radians
+}
+
+// Navigation waypoint
+message Waypoint {
+    string id = 1;
+    float x = 2;
+    float y = 3;
+    string label = 4;
+    WaypointType type = 5;
+}
+
+enum WaypointType {
+    WAYPOINT_NORMAL = 0;
+    WAYPOINT_STOP = 1;
+    WAYPOINT_SLOW = 2;
+}
+
+message WaypointResponse {
+    bool success = 1;
+    string waypoint_id = 2;
+    string message = 3;
+}
+
+// LiDAR scan data
+message LidarScan {
+    repeated LidarPoint points = 1;
+    string timestamp = 2;
+    string frame_id = 3;
+}
+
+message LidarPoint {
+    float angle = 1;      // radians
+    float distance = 2;   // meters
+    float intensity = 3;  // 0-255
+}
+
+// Map data
+message OccupancyGrid {
+    // Grid metadata
+    float resolution = 1;  // meters per cell
+    uint32 width = 2;
+    uint32 height = 3;
+    Position origin = 4;
+
+    // Grid data (-1=unknown, 0=free, 100=occupied)
+    bytes data = 5;
+
+    string timestamp = 6;
+}
+\end{lstlisting}
+
+\subsection{common.proto}
+
+\begin{lstlisting}[language=Protobuf, caption=star/common.proto]
+syntax = "proto3";
+
+package star;
+
+option java_package = "com.star.gateway.proto";
+option java_multiple_files = true;
+
+// Empty request placeholder
+message EmptyRequest {}
+
+// Generic command response (shared across services)
+message CommandResponse {
+    bool success = 1;
+    string message = 2;
+}
+
+// Stream request with rate
+message StreamRequest {
+    int32 rate_hz = 1;
+}
+
+// Timestamp wrapper
+message Timestamp {
+    int64 seconds = 1;
+    int32 nanos = 2;
+}
+
+// Vector3 for 3D data
+message Vector3 {
+    float x = 1;
+    float y = 2;
+    float z = 3;
+}
+
+// Quaternion for rotation
+message Quaternion {
+    float x = 1;
+    float y = 2;
+    float z = 3;
+    float w = 4;
+}
+\end{lstlisting}
+
+% =============================================================================
+\section{Code Generation}
+% =============================================================================
+
+\subsection{Prerequisites}
+
+\begin{lstlisting}[language=bash]
+# Install protoc compiler
+# macOS
+brew install protobuf
+
+# Ubuntu
+sudo apt install protobuf-compiler
+
+# Install Buf (recommended)
+# macOS
+brew install bufbuild/buf/buf
+
+# Other platforms
+npm install -g @bufbuild/buf
+\end{lstlisting}
+
+\subsection{Using Buf (Recommended)}
+
+Create \texttt{buf.yaml}:
+
+\begin{lstlisting}[language=yaml, caption=buf.yaml]
+version: v1
+name: buf.build/star/proto
+deps: []
+breaking:
+  use:
+    - FILE
+lint:
+  use:
+    - DEFAULT
+\end{lstlisting}
+
+Create \texttt{buf.gen.yaml}:
+
+\begin{lstlisting}[language=yaml, caption=buf.gen.yaml]
+version: v1
+managed:
+  enabled: true
+  java_package_prefix: com.star.gateway.proto
+plugins:
+  # Kotlin/Java for star-gateway
+  - plugin: buf.build/grpc/java
+    out: generated/kotlin
+  - plugin: buf.build/protocolbuffers/java
+    out: generated/kotlin
+
+  # TypeScript for star-ui
+  - plugin: buf.build/community/timostamm-protobuf-ts
+    out: generated/typescript
+
+  # C for star-esp32-firmware (via nanopb)
+  - plugin: buf.build/community/nanopb-nanopb
+    out: generated/c
+\end{lstlisting}
+
+Generate code:
+
+\begin{lstlisting}[language=bash]
+# Lint proto files
+buf lint
+
+# Generate all targets
+buf generate
+
+# Generate specific target
+buf generate --path star/motor_control.proto
+\end{lstlisting}
+
+\subsection{Manual Generation Scripts}
+
+\texttt{scripts/generate-kotlin.sh}:
+
+\begin{lstlisting}[language=bash, caption=generate-kotlin.sh]
+#!/bin/bash
+set -e
+
+PROTO_DIR="star"
+OUT_DIR="../star-gateway/src/main/kotlin"
+
+protoc \
+    -I=. \
+    --java_out=$OUT_DIR \
+    --grpc-java_out=$OUT_DIR \
+    --kotlin_out=$OUT_DIR \
+    --grpckt_out=$OUT_DIR \
+    $PROTO_DIR/*.proto
+
+echo "Kotlin code generated in $OUT_DIR"
+\end{lstlisting}
+
+\texttt{scripts/generate-typescript.sh}:
+
+\begin{lstlisting}[language=bash, caption=generate-typescript.sh]
+#!/bin/bash
+set -e
+
+PROTO_DIR="star"
+OUT_DIR="../star-ui/src/grpc"
+
+protoc \
+    -I=. \
+    --js_out=import_style=commonjs:$OUT_DIR \
+    --grpc-web_out=import_style=typescript,mode=grpcweb:$OUT_DIR \
+    $PROTO_DIR/*.proto
+
+echo "TypeScript code generated in $OUT_DIR"
+\end{lstlisting}
+
+% =============================================================================
+\section{Best Practices}
+% =============================================================================
+
+\subsection{Schema Evolution}
+
+\begin{enumerate}
+    \item \textbf{Never remove fields} - mark as \texttt{reserved}
+    \item \textbf{Never change field numbers} - they define wire format
+    \item \textbf{Add new fields} with new numbers only
+    \item \textbf{Use optional} for fields that may not be present
+\end{enumerate}
+
+\begin{lstlisting}[language=Protobuf, caption=Schema Evolution Example]
+message VelocityCommand {
+    float left_velocity = 1;
+    float right_velocity = 2;
+
+    // Reserved: removed fields
+    reserved 3;
+    reserved "old_field_name";
+
+    // New optional field (added later)
+    optional float acceleration_limit = 4;
+}
+\end{lstlisting}
+
+\subsection{Naming Conventions}
+
+\begin{table}[H]
+\centering
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Element} & \textbf{Convention} & \textbf{Example} \\
+\hline
+Package & lowercase.dots & star.motor \\
+Message & PascalCase & VelocityCommand \\
+Field & snake\_case & left\_velocity \\
+Enum & SCREAMING\_SNAKE & MODE\_MANUAL \\
+Service & PascalCase & MotorControl \\
+RPC method & PascalCase & SetVelocity \\
+\hline
+\end{tabular}
+\caption{Protobuf Naming Conventions}
+\end{table}
+
+\subsection{Documentation}
+
+Always document messages and fields:
+
+\begin{lstlisting}[language=Protobuf]
+// Velocity command for differential drive robot.
+// Sent from controller to gateway at up to 100Hz.
+message VelocityCommand {
+    // Left wheel velocity in meters per second.
+    // Valid range: -2.0 to 2.0 m/s.
+    float left_velocity = 1;
+
+    // Right wheel velocity in meters per second.
+    // Valid range: -2.0 to 2.0 m/s.
+    float right_velocity = 2;
+}
+\end{lstlisting}
+
+% =============================================================================
+\section{Integration}
+% =============================================================================
+
+\subsection{star-gateway Integration}
+
+Add to \texttt{star-gateway/build.gradle.kts}:
+
+\begin{lstlisting}[language=Kotlin]
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.25.2"
+    }
+    plugins {
+        id("grpc") {
+            artifact = "io.grpc:protoc-gen-grpc-java:1.60.1"
+        }
+        id("grpckt") {
+            artifact = "io.grpc:protoc-gen-grpc-kotlin:1.4.1:jdk8@jar"
+        }
+    }
+}
+
+sourceSets {
+    main {
+        proto {
+            srcDir("../star-proto/star")
+        }
+    }
+}
+\end{lstlisting}
+
+\subsection{star-ui Integration}
+
+Add npm script to \texttt{star-ui/package.json}:
+
+\begin{lstlisting}[language=json]
+{
+  "scripts": {
+    "proto:generate": "cd ../star-proto && ./scripts/generate-typescript.sh"
+  }
+}
+\end{lstlisting}
+
+% =============================================================================
+\section{References}
+% =============================================================================
+
+\begin{itemize}
+    \item Protocol Buffers Documentation: \url{https://protobuf.dev/}
+    \item gRPC Documentation: \url{https://grpc.io/docs/}
+    \item Buf CLI: \url{https://buf.build/docs/}
+    \item gRPC-Web: \url{https://github.com/grpc/grpc-web}
+    \item nanopb (C): \url{https://jpa.kapsi.fi/nanopb/}
+    \item STAR Software Architecture Primer: Section 3 (Protocol Analysis)
+\end{itemize}
+
