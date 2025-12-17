@@ -1087,6 +1087,7 @@
 		(property "Reference" "MP3"
 			(at 0 -4.15 0)
 			(layer "F.SilkS")
+			(hide yes)
 			(uuid "a178a23f-4711-4e4a-810e-8373f0db0d2f")
 			(effects
 				(font
@@ -2429,7 +2430,7 @@
 		(uuid "4ca15dce-1ea6-4309-a5e7-922480d1228d")
 		(at 116.5 124.28 180)
 		(property "Reference" "J2"
-			(at 8.89 -4.43 0)
+			(at -0.1622 -3.101 0)
 			(layer "F.SilkS")
 			(uuid "05a3b2e1-946d-4558-8698-7fc7fdc791f2")
 			(effects
@@ -3965,6 +3966,7 @@
 		(property "Reference" "MP1"
 			(at 0 -4.15 0)
 			(layer "F.SilkS")
+			(hide yes)
 			(uuid "5db138d5-3ef1-4c72-b03c-89eac012257c")
 			(effects
 				(font
@@ -6123,6 +6125,7 @@
 		(property "Reference" "MP4"
 			(at 0 -4.15 0)
 			(layer "F.SilkS")
+			(hide yes)
 			(uuid "004bf321-14ac-4746-9b52-db640ddf61dd")
 			(effects
 				(font
@@ -10261,7 +10264,7 @@
 		(uuid "ee887349-4242-478a-8649-3c001503eff2")
 		(at 116.84 147.02)
 		(property "Reference" "J1"
-			(at -10.21 4.21 0)
+			(at -1.2192 -3.4846 0)
 			(layer "F.SilkS")
 			(uuid "fd73c1e8-bca4-4c1e-b2e9-4d77eac1dfe5")
 			(effects
@@ -10840,6 +10843,7 @@
 		(property "Reference" "MP2"
 			(at 0 -4.15 0)
 			(layer "F.SilkS")
+			(hide yes)
 			(uuid "95de1bd5-8054-4951-ac64-7ff6c89d7bf1")
 			(effects
 				(font
