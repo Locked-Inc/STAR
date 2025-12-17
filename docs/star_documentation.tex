@@ -1,10 +1,10 @@
 % =============================================================================
-% STAR Robot Control System - Software Architecture Primer
-% Comprehensive Technical Reference for Software Engineers
+% STAR Robot Control System - Comprehensive Technical Documentation
+% Complete reference covering architecture, protocols, and implementation
 %
 % INSTRUCTIONS:
-% 1. Compile with: pdflatex main.tex (run twice for TOC)
-% 2. Or use: latexmk -pdf main.tex
+% 1. Compile with: pdflatex star_documentation.tex (run twice for TOC)
+% 2. Or use: latexmk -pdf star_documentation.tex
 % =============================================================================
 
 \documentclass[11pt,letterpaper]{article}
@@ -25,9 +25,9 @@
 
     {\Huge\bfseries STAR Robot Control System\par}
     \vspace{0.5cm}
-    {\LARGE Software Architecture Primer\par}
+    {\LARGE Comprehensive Technical Documentation\par}
     \vspace{1cm}
-    {\Large Comprehensive Technical Reference for Software Engineers\par}
+    {\Large Complete Reference for Software Engineers\par}
 
     \vfill
 
@@ -45,7 +45,7 @@
 \newpage
 
 % =============================================================================
-% BODY - Main Content Sections
+% PART I: ARCHITECTURE AND DESIGN
 % =============================================================================
 
 % Section 1: Glossary of Key Terms
@@ -84,6 +84,10 @@
 \input{sections/09_repository_structure}
 \newpage
 
+% =============================================================================
+% PART II: BACKEND IMPLEMENTATION
+% =============================================================================
+
 % Section 10: Spring Boot Gateway Implementation
 \input{sections/10_spring_boot_gateway}
 \newpage
@@ -114,5 +118,37 @@
 
 % Section 17: References and Resources
 \input{sections/17_references}
+\newpage
+
+% =============================================================================
+% PART III: PROTOCOL DESIGN AND IMPLEMENTATION
+% =============================================================================
+
+% Section 18: Protobuf Protocol Design Analysis
+\input{sections/18_protobuf_protocol_design}
+\newpage
+
+% Section 19: Protocol Implementation Guide
+\input{sections/19_protocol_implementation}
+\newpage
+
+% =============================================================================
+% PART IV: COMPONENT IMPLEMENTATION GUIDES
+% =============================================================================
+
+% Section 20: UI Implementation Guide (Vue 3 PWA)
+\input{sections/20_ui_implementation}
+\newpage
+
+% Section 21: Gateway Implementation Guide (Spring Boot)
+\input{sections/21_gateway_implementation}
+\newpage
+
+% Section 22: Proto Implementation Guide (Protocol Buffers)
+\input{sections/22_proto_implementation}
+\newpage
+
+% Section 23: Buildroot Implementation Guide (Raspberry Pi 5)
+\input{sections/23_buildroot_implementation}
 
 \end{document}
