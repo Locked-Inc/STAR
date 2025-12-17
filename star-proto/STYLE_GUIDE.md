@@ -44,8 +44,12 @@ enum RobotMode {
 }
 ```
 
+> **Note:** Boston Dynamics uses `_UNKNOWN` suffix, while Google's style guide
+> recommends `_UNSPECIFIED`. This project follows the Boston Dynamics convention
+> for consistency with their robotics API patterns.
+
 ### Prefix Convention
-All enum values MUST be prefixed with the enum type name:
+All enum values MUST be prefixed with the enum type name in SCREAMING_SNAKE_CASE:
 
 ```protobuf
 // CORRECT
@@ -64,36 +68,98 @@ enum ConnectionStatus {
 
 ## Units Convention (MKS)
 
-All physical quantities MUST use MKS (Meter-Kilogram-Second) units:
+All physical quantities MUST use MKS (Meter-Kilogram-Second) units with appropriate
+suffixes. For embedded systems, prefer integer types with milli-/deci- prefixes
+to avoid floating-point arithmetic.
 
-| Quantity         | Unit          | Field Suffix    |
-|------------------|---------------|-----------------|
-| Length           | meters        | `_m`            |
-| Velocity         | meters/second | `_mps`          |
-| Acceleration     | m/s^2         | `_mps2`         |
-| Angle            | radians       | `_rad`          |
-| Angular velocity | rad/s         | `_rad_per_s`    |
-| Mass             | kilograms     | `_kg`           |
-| Force            | newtons       | `_n`            |
-| Torque           | newton-meters | `_nm`           |
-| Time             | seconds       | `_s` or `_us`   |
-| Temperature      | celsius       | `_celsius`      |
-| Current          | amperes       | `_a` or `_ma`   |
-| Voltage          | volts         | `_v` or `_mv`   |
-| Percentage       | 0-100         | `_percent`      |
+### Standard Units
+
+| Quantity         | Unit          | Field Suffix    | Type   |
+|------------------|---------------|-----------------|--------|
+| Length           | meters        | `_m`            | double |
+| Velocity         | meters/second | `_mps`          | double |
+| Acceleration     | m/s^2         | `_mps2`         | double |
+| Angle            | radians       | `_rad`          | double |
+| Angular velocity | rad/s         | `_rad_per_s`    | double |
+| Mass             | kilograms     | `_kg`           | double |
+| Force            | newtons       | `_n`            | double |
+| Torque           | newton-meters | `_nm`           | double |
+| Time             | seconds       | `_s`            | double |
+| Time             | microseconds  | `_us`           | int64  |
+| Time             | milliseconds  | `_ms`           | uint32 |
+| Percentage       | 0-100         | `_percent`      | int32  |
+
+### Embedded-Optimized Units (Integer Types)
+
+For ESP32 and other embedded targets, use integer types with scaled units
+to avoid floating-point operations:
+
+| Quantity    | Unit             | Field Suffix       | Type   | Example         |
+|-------------|------------------|--------------------|--------|-----------------|
+| Voltage     | millivolts       | `_mv`              | uint32 | 3700 = 3.7V     |
+| Current     | milliamps        | `_ma`              | int32  | -500 = -0.5A    |
+| Power       | milliwatts       | `_mw`              | int32  | 1850 = 1.85W    |
+| Temperature | deci-celsius     | `_deci_celsius`    | int32  | 253 = 25.3°C    |
+| Capacity    | milliamp-hours   | `_mah`             | uint32 | 5200 = 5.2Ah    |
+
+> **Why deci-celsius?** Many BMS chips (like BQ7850) and temperature sensors
+> return values in 0.1°C resolution. Using deci-celsius preserves this precision
+> without floating-point conversion.
 
 ### Example
 
 ```protobuf
+// Standard floating-point for high-level control
 message ImuData {
     // Pitch angle in radians (-pi to pi).
     double pitch_rad = 1;
 
     // Linear acceleration X in meters per second squared.
     double accel_x_mps2 = 2;
+}
 
-    // Angular velocity Z in radians per second.
-    double gyro_z_rad_per_s = 3;
+// Integer types for embedded/BMS data
+message CellData {
+    // Individual cell voltages in millivolts.
+    // Valid range per cell: 2500-4500 mV typical.
+    repeated uint32 cell_mv = 1;
+
+    // Total pack voltage in millivolts.
+    uint32 pack_mv = 2;
+}
+
+message TemperatureData {
+    // Temperature readings in deci-celsius (0.1°C units).
+    // Example: 253 = 25.3°C, -50 = -5.0°C.
+    repeated int32 temp_deci_celsius = 1;
+}
+```
+
+## Type Selection Guidelines
+
+### When to Use Integer vs Floating-Point
+
+| Use Case | Recommended Type | Rationale |
+|----------|------------------|-----------|
+| Sensor raw values | int32/uint32 | Matches ADC output, no conversion |
+| BMS data (voltage, current, temp) | int32/uint32 with milli-/deci- | Matches chip registers |
+| Timestamps | int64 (_us) or uint32 (_ms) | Microsecond precision |
+| PID gains, control parameters | double | Precision needed for tuning |
+| Wheel velocity, position | double | Standard robotics convention |
+| Configuration thresholds | int32/uint32 | Consistency with sensor data |
+
+### When to Use `optional`
+
+Use `optional` for fields that may legitimately be absent:
+
+```protobuf
+message GetFirmwareInfoResponse {
+    // Current running firmware info.
+    FirmwareInfo current_firmware = 2;
+
+    // Previous firmware info (for rollback), if available.
+    // May be absent on devices that have never been updated.
+    optional FirmwareInfo previous_firmware = 3;
 }
 ```
 
@@ -104,13 +170,33 @@ Include:
 1. What the field represents
 2. Units (if applicable)
 3. Valid range (if applicable)
+4. Hardware mapping (if applicable)
 
 ```protobuf
-message VelocityCommand {
-    // Left wheel velocity in meters per second.
-    // Valid range: -2.0 to 2.0 m/s.
-    // Positive values move forward.
-    double left_velocity_mps = 1;
+message SafetyThresholds {
+    // Motor overcurrent limit in milliamps.
+    // Motors disabled if current exceeds this.
+    // Valid range: 1000-20000 mA.
+    uint32 overcurrent_threshold_ma = 1;
+
+    // Emergency temperature cutoff in deci-celsius (0.1°C units).
+    // System enters safe mode above this temperature.
+    // Valid range: 500-1000 (50.0-100.0°C).
+    int32 thermal_shutdown_deci_celsius = 2;
+}
+```
+
+### Hardware Mapping Comments
+
+When fields map directly to hardware registers or data structures, document this:
+
+```protobuf
+// BMS device information.
+// Maps to bq7850_device_info_t.
+message BmsDeviceInfo {
+    // Firmware version (raw register value from BQ7850).
+    // BQ7850 returns this as a 16-bit packed value.
+    uint32 firmware_version = 2;
 }
 ```
 
@@ -162,14 +248,27 @@ message VelocityCommand {
 
 ## nanopb Considerations
 
-For ESP32 firmware, configure field sizes in `.options` files:
+For ESP32 firmware (no dynamic allocation), configure field sizes in `.options` files:
 
 ```
-# motor_control.options
-star.v1.RequestHeader.request_id    max_size:64
-star.v1.RequestHeader.client_version max_size:32
-star.v1.VelocityCommand.header      type:FT_STATIC
+# Common string limits
+star.v1.RequestHeader.request_id        max_size:64
+star.v1.RequestHeader.client_version    max_size:32
+
+# Array limits matching hardware
+star.v1.CellData.cell_mv                max_count:16   # BQ7850 max cells
+star.v1.TemperatureData.temp_deci_celsius max_count:3  # BQ7850 temp sensors
+
+# Firmware chunk size
+star.v1.FirmwareChunk.data              max_size:1024  # 1KB chunks
 ```
+
+### nanopb Best Practices
+
+1. **Match hardware limits**: Set `max_count` to actual hardware maximums
+2. **Use power-of-2 sizes**: For buffers (256, 512, 1024 bytes)
+3. **Document constraints**: Add comments in .options files explaining limits
+4. **Test serialization size**: Verify messages fit in SPI/UART buffers
 
 ## Breaking Change Policy
 
@@ -190,10 +289,22 @@ All breaking changes MUST:
 proto/
 └── star/
     └── v1/
-        ├── common.proto        # Shared types (RequestHeader, etc.)
-        ├── motor_control.proto # Motor control service
-        ├── telemetry.proto     # Telemetry service
-        └── navigation.proto    # Navigation service
+        ├── common.proto              # Shared types (RequestHeader, ResponseHeader, Status)
+        ├── motor_control.proto       # Motor control service and PID configuration
+        ├── telemetry.proto           # Telemetry streaming service
+        ├── battery_management.proto  # BQ7850 BMS monitoring and control
+        ├── configuration.proto       # Runtime NVS configuration management
+        └── firmware_update.proto     # OTA firmware update service
+```
+
+## Java/Kotlin Options
+
+All proto files SHOULD include Java options for Android/Kotlin interop:
+
+```protobuf
+option java_multiple_files = true;
+option java_outer_classname = "MotorControlProto";
+option java_package = "com.star.proto.v1";
 ```
 
 ## References
@@ -201,3 +312,4 @@ proto/
 - [Boston Dynamics Protobuf Style Guide](https://dev.bostondynamics.com/docs/protos/style_guide.html)
 - [Google Protobuf Style Guide](https://protobuf.dev/programming-guides/style/)
 - [Buf Lint Rules](https://buf.build/docs/lint/rules)
+- [nanopb Documentation](https://jpa.kapsi.fi/nanopb/docs/)
