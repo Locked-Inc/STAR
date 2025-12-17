@@ -74,7 +74,18 @@ jobs:
           version: ${{ env.BUF_VERSION }}
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Check if protos exist in main
+        id: check-main
+        run: |
+          if git ls-tree -r origin/main --name-only | grep -q '^star-proto/proto/'; then
+            echo "has_protos=true" >> $GITHUB_OUTPUT
+          else
+            echo "has_protos=false" >> $GITHUB_OUTPUT
+            echo "Skipping breaking change detection - no protos in main yet"
+          fi
+
       - name: Buf Breaking Change Detection
+        if: steps.check-main.outputs.has_protos == 'true'
         run: buf breaking proto/ --against '.git#branch=main,subdir=star-proto/proto'
 
   # ============================================
