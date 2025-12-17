@@ -15,9 +15,9 @@ repositories {
     mavenCentral()
 }
 
-val grpcVersion = "1.60.1"
+val grpcVersion = "1.60.0"
 val grpcKotlinVersion = "1.4.1"
-val protobufVersion = "3.25.2"
+val protobufVersion = "3.25.3"
 val junitVersion = "5.10.1"
 
 dependencies {
@@ -30,6 +30,9 @@ dependencies {
     implementation("io.grpc:grpc-protobuf:$grpcVersion")
     implementation("io.grpc:grpc-stub:$grpcVersion")
     runtimeOnly("io.grpc:grpc-netty-shaded:$grpcVersion")
+
+    // Coroutines (required by generated gRPC-Kotlin code)
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.7.3")
 
     // JUnit 5 testing
     testImplementation(kotlin("test"))
