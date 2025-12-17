@@ -1,59 +1,0 @@
- -- Press the button again.
-[2K[0m[0m[38;2;193;156;0m[0x40082a54]> [0m[0m[38;2;193;156;0m[0x40082a54]> [0m[0m[2K[0m[0m[38;2;193;156;0m[0x40082a54]> [0ma[0m[38;2;193;156;0m[0x40082a54]> [0m[0ma[2K[0m[0m[38;2;193;156;0m[0x40082a54]> [0maa[0m[38;2;193;156;0m[0x40082a54]> [0m[0maa[2K[0m[0m[38;2;193;156;0m[0x40082a54]> [0maaa[0m[38;2;193;156;0m[0x40082a54]> [0m[0maaa[2K[0m[0m[38;2;193;156;0m[0x40082a54]> [0maaaa[0m[38;2;193;156;0m[0x40082a54]> [0m[0maaaa[2K[0m[0m[38;2;193;156;0m[0x40082a54]> [0maaaa;[0m[38;2;193;156;0m[0x40082a54]> [0m[0maaaa;[2K[0m[0m[38;2;193;156;0m[0x40082a54]> [0maaaa; [0m[38;2;193;156;0m[0x40082a54]> [0m[0maaaa; [2K[0m[0m[38;2;193;156;0m[0x40082a54]> [0maaaa; a[0m[38;2;193;156;0m[0x40082a54]> [0m[0maaaa; a[2K[0m[0m[38;2;193;156;0m[0x40082a54]> [0maaaa; ag[0m[38;2;193;156;0m[0x40082a54]> [0m[0maaaa; ag[2K[0m[0m[38;2;193;156;0m[0x40082a54]> [0maaaa; agc[0m[38;2;193;156;0m[0x40082a54]> [0m[0maaaa; agc[2K[0m[0m[38;2;193;156;0m[0x40082a54]> [0maaaa; agcd[0m[38;2;193;156;0m[0x40082a54]> [0m[0maaaa; agcd[38;2;193;156;0m[0x40082a54]> [0m[0maaaa; agcd[0m
-digraph code {
-rankdir=LR;
-outputorder=edgesfirst;
-graph [bgcolor=azure fontname="Courier" splines="curved"];
-node [penwidth=4 fillcolor=white style=filled fontname="Courier Bold" fontsize=14 shape=box];
-edge [arrowhead="normal" style=bold weight=2];
-  "0x40082a54" [label="dbg.call_start_cpu0" URL="dbg.call_start_cpu0/0x40082a54"];
-  "0x40082a54" -> "0x40082944" [color="#61afef" URL="dbg.do_multicore_settings/0x40082944"];
-  "0x40082944" [label="dbg.do_multicore_settings" URL="dbg.do_multicore_settings/0x40082944"];
-  "0x40082a54" -> "0x4008ab38" [color="#61afef" URL="dbg.cache_hal_init/0x4008ab38"];
-  "0x4008ab38" [label="dbg.cache_hal_init" URL="dbg.cache_hal_init/0x4008ab38"];
-  "0x40082a54" -> "0x40085464" [color="#61afef" URL="dbg.esp_mspi_pin_init/0x40085464"];
-  "0x40085464" [label="dbg.esp_mspi_pin_init" URL="dbg.esp_mspi_pin_init/0x40085464"];
-  "0x40082a54" -> "0x400ee374" [color="#61afef" URL="dbg.bootloader_flash_update_id/0x400ee374"];
-  "0x400ee374" [label="dbg.bootloader_flash_update_id" URL="dbg.bootloader_flash_update_id/0x400ee374"];
-  "0x40082a54" -> "0x400de320" [color="#61afef" URL="dbg.esp_rtc_init/0x400de320"];
-  "0x400de320" [label="dbg.esp_rtc_init" URL="dbg.esp_rtc_init/0x400de320"];
-  "0x40082a54" -> "0x4008546c" [color="#61afef" URL="dbg.spi_flash_init_chip_state/0x4008546c"];
-  "0x4008546c" [label="dbg.spi_flash_init_chip_state" URL="dbg.spi_flash_init_chip_state/0x4008546c"];
-  "0x40082a54" -> "0x400ee6b8" [color="#61afef" URL="dbg.esp_mmu_map_init/0x400ee6b8"];
-  "0x400ee6b8" [label="dbg.esp_mmu_map_init" URL="dbg.esp_mmu_map_init/0x400ee6b8"];
-  "0x40082a54" -> "0x400e06c8" [color="#61afef" URL="dbg.esp_mspi_pin_reserve/0x400e06c8"];
-  "0x400e06c8" [label="dbg.esp_mspi_pin_reserve" URL="dbg.esp_mspi_pin_reserve/0x400e06c8"];
-  "0x40082a54" -> "0x4008e4f0" [color="#61afef" URL="dbg.esp_log_timestamp/0x4008e4f0"];
-  "0x4008e4f0" [label="dbg.esp_log_timestamp" URL="dbg.esp_log_timestamp/0x4008e4f0"];
-  "0x40082a54" -> "0x400ee36c" [color="#61afef" URL="dbg.bootloader_init_mem/0x400ee36c"];
-  "0x400ee36c" [label="dbg.bootloader_init_mem" URL="dbg.bootloader_init_mem/0x400ee36c"];
-  "0x40082a54" -> "0x400ddd28" [color="#61afef" URL="dbg.start_other_core/0x400ddd28"];
-  "0x400ddd28" [label="dbg.start_other_core" URL="dbg.start_other_core/0x400ddd28"];
-  "0x40082a54" -> "0x400de330" [color="#61afef" URL="dbg.esp_clk_init/0x400de330"];
-  "0x400de330" [label="dbg.esp_clk_init" URL="dbg.esp_clk_init/0x400de330"];
-  "0x40082a54" -> "0x400de424" [color="#61afef" URL="dbg.esp_perip_clk_init/0x400de424"];
-  "0x400de424" [label="dbg.esp_perip_clk_init" URL="dbg.esp_perip_clk_init/0x400de424"];
-  "0x40082a54" -> "0x400855a4" [color="#61afef" URL="dbg.esp_rtc_get_time_us/0x400855a4"];
-  "0x400855a4" [label="dbg.esp_rtc_get_time_us" URL="dbg.esp_rtc_get_time_us/0x400855a4"];
-  "0x40082a54" -> "0x400ddd04" [color="#61afef" URL="dbg.core_intr_matrix_clear/0x400ddd04"];
-  "0x400ddd04" [label="dbg.core_intr_matrix_clear" URL="dbg.core_intr_matrix_clear/0x400ddd04"];
-  "0x40082a54" -> "0x40082148" [color="#61afef" URL="dbg.esp_clk_apb_freq/0x40082148"];
-  "0x40082148" [label="dbg.esp_clk_apb_freq" URL="dbg.esp_clk_apb_freq/0x40082148"];
-  "0x40082a54" -> "0x40082600" [color="#61afef" URL="dbg.esp_rom_output_tx_wait_idle/0x40082600"];
-  "0x40082600" [label="dbg.esp_rom_output_tx_wait_idle" URL="dbg.esp_rom_output_tx_wait_idle/0x40082600"];
-  "0x40082a54" -> "0x400dd14c" [color="#61afef" URL="dbg.esp_deep_sleep_wakeup_io_reset/0x400dd14c"];
-  "0x400dd14c" [label="dbg.esp_deep_sleep_wakeup_io_reset" URL="dbg.esp_deep_sleep_wakeup_io_reset/0x400dd14c"];
-  "0x40082a54" -> "0x400de618" [color="#61afef" URL="dbg.esp_cache_err_int_init/0x400de618"];
-  "0x400de618" [label="dbg.esp_cache_err_int_init" URL="dbg.esp_cache_err_int_init/0x400de618"];
-  "0x40082a54" -> "0x4008e558" [color="#61afef" URL="dbg.abort/0x4008e558"];
-  "0x4008e558" [label="dbg.abort" URL="dbg.abort/0x4008e558"];
-  "0x40082a54" -> "0x400846b0" [color="#61afef" URL="dbg.bootloader_flash_clock_config/0x400846b0"];
-  "0x400846b0" [label="dbg.bootloader_flash_clock_config" URL="dbg.bootloader_flash_clock_config/0x400846b0"];
-  "0x40082a54" -> "0x400846fc" [color="#61afef" URL="dbg.bootloader_flash_gpio_config/0x400846fc"];
-  "0x400846fc" [label="dbg.bootloader_flash_gpio_config" URL="dbg.bootloader_flash_gpio_config/0x400846fc"];
-  "0x40082a54" -> "0x400848fc" [color="#61afef" URL="dbg.bootloader_flash_dummy_config/0x400848fc"];
-  "0x400848fc" [label="dbg.bootloader_flash_dummy_config" URL="dbg.bootloader_flash_dummy_config/0x400848fc"];
-  "0x40082a54" -> "0x40084640" [color="#61afef" URL="dbg.bootloader_flash_cs_timing_config/0x40084640"];
-  "0x40084640" [label="dbg.bootloader_flash_cs_timing_config" URL="dbg.bootloader_flash_cs_timing_config/0x40084640"];
-}
-[2K[0m[0m[38;2;193;156;0m[0x40082a54]> [0m[0m[38;2;193;156;0m[0x40082a54]> [0m[0m
