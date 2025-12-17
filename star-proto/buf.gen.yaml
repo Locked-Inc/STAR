@@ -1,34 +1,30 @@
-# buf.gen.yaml - STAR Code Generation Configuration
+# buf.gen.yaml - STAR Code Generation Configuration (buf v1)
 # Generates code for Kotlin, TypeScript, and nanopb (C)
 #
 # STAR Project - Texas A&M University
 # December 2025
 
-version: v2
+version: v1
 
 managed:
   enabled: true
-  override:
-    - file_option: java_package
-      value: com.star.proto
-    - file_option: java_multiple_files
-      value: true
-    - file_option: optimize_for
-      value: SPEED
+  java_package_prefix: com.star.proto
+  java_multiple_files: true
+  optimize_for: SPEED
 
 plugins:
   # ============================================
   # Kotlin/Java for star-gateway
   # ============================================
-  - remote: buf.build/protocolbuffers/java
+  - plugin: buf.build/protocolbuffers/java
     out: gen/kotlin
     opt:
       - lite=false
 
-  - remote: buf.build/grpc/java
+  - plugin: buf.build/grpc/java
     out: gen/kotlin
 
-  - remote: buf.build/grpc/kotlin
+  - plugin: buf.build/grpc/kotlin
     out: gen/kotlin
     opt:
       - lite=false
@@ -36,7 +32,7 @@ plugins:
   # ============================================
   # TypeScript for star-ui (protobuf-ts)
   # ============================================
-  - remote: buf.build/community/timostamm-protobuf-ts
+  - plugin: buf.build/community/timostamm-protobuf-ts
     out: gen/typescript
     opt:
       - long_type_string
@@ -51,7 +47,7 @@ plugins:
   # Install: pip install nanopb
   # ============================================
   # Uncomment when nanopb is installed locally:
-  # - local: nanopb_generator
+  # - plugin: nanopb_generator
   #   out: gen/nanopb
   #   opt:
   #     - --options-path=nanopb/
