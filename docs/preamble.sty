@@ -15,6 +15,30 @@
 \usepackage{hyperref}
 \usepackage{listings}
 \usepackage{xcolor}
+
+% Define custom colors for protocol layers
+\definecolor{esp32color}{RGB}{220,235,255}      % Light blue for ESP32
+\definecolor{rpi5color}{RGB}{220,255,235}       % Light green for RPi5
+\definecolor{layer1color}{RGB}{240,230,255}     % Light purple for Layer 1 (SPI/DMA)
+\definecolor{layer2color}{RGB}{255,240,220}     % Light orange for Layer 2 (Frame)
+\definecolor{layer3color}{RGB}{255,230,230}     % Light red for Layer 3 (ARQ)
+\definecolor{layer4color}{RGB}{220,245,245}     % Light cyan for Layer 4 (Protobuf)
+\definecolor{layer5color}{RGB}{235,255,235}     % Light green for Layer 5 (App)
+\definecolor{keyinsightcolor}{RGB}{255,250,205} % Light yellow for key insights
+\definecolor{importantcolor}{RGB}{255,240,245}  % Light pink for important notes
+
+% Command for colored layer boxes
+\newcommand{\layerbox}[3]{% #1=color, #2=title, #3=content
+    \vspace{0.15cm}
+    \noindent\colorbox{#1}{%
+        \parbox{\dimexpr\linewidth-2\fboxsep}{%
+            \textbf{#2}\\[0.1cm]
+            #3
+        }%
+    }
+    \vspace{0.15cm}
+}
+
 \usepackage{fancyhdr}
 \usepackage{titlesec}
 \usepackage{tocloft}
@@ -44,7 +68,7 @@
     linkcolor=blue!70!black,
     filecolor=magenta,
     urlcolor=cyan!70!black,
-    pdftitle={STAR Robot Control System - Software Architecture Primer},
+    pdftitle={STAR Robot Control System - Software Architecture},
     pdfauthor={STAR Development Team},
     pdfsubject={Technical Documentation},
 }
@@ -99,10 +123,11 @@
 }
 
 % Header/Footer
+\setlength{\headheight}{26pt}
 \pagestyle{fancy}
 \fancyhf{}
 \fancyhead[L]{\leftmark}
-\fancyhead[R]{STAR Software Architecture Primer}
+\fancyhead[R]{STAR Software Architecture}
 \fancyfoot[C]{\thepage}
 \renewcommand{\headrulewidth}{0.4pt}
 \renewcommand{\footrulewidth}{0.4pt}
