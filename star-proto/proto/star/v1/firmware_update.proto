@@ -313,8 +313,9 @@ message GetFirmwareInfoResponse {
   // Current running firmware info.
   FirmwareInfo current_firmware = 2;
 
-  // Previous firmware info (for rollback).
-  FirmwareInfo previous_firmware = 3;
+  // Previous firmware info (for rollback), if available.
+  // May be absent on devices that have never been updated.
+  optional FirmwareInfo previous_firmware = 3;
 
   // True if running from OTA partition.
   bool is_ota_boot = 4;

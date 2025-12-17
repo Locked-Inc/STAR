@@ -429,13 +429,16 @@ message BmsDeviceInfo {
   // Device type identifier.
   uint32 device_type = 1;
 
-  // Firmware version.
+  // Firmware version (raw register value from BQ7850).
+  // BQ7850 returns this as a 16-bit packed value.
   uint32 firmware_version = 2;
 
-  // Hardware version.
+  // Hardware version (raw register value from BQ7850).
+  // BQ7850 returns this as a 16-bit packed value.
   uint32 hardware_version = 3;
 
-  // Device serial number.
+  // Device serial number (raw register value from BQ7850).
+  // BQ7850 stores this as a 32-bit integer in data flash.
   uint32 serial_number = 4;
 
   // Manufacturer name (max 32 chars).

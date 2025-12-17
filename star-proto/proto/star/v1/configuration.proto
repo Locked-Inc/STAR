@@ -218,8 +218,13 @@ message SystemConfiguration {
 }
 
 // Motor PID configuration for a single motor.
+// Note: motor_id is included for self-documentation and validation,
+// even though array index in SystemConfiguration.motor_configs also
+// identifies the motor. This enables server-side validation and
+// clearer debugging of serialized messages.
 message MotorPidConfiguration {
   // Motor index (0-3).
+  // Should match array index in SystemConfiguration.motor_configs.
   int32 motor_id = 1;
 
   // PID gains configuration.
@@ -252,12 +257,12 @@ message SafetyThresholds {
   // Motor overcurrent limit in milliamps.
   // Motors disabled if current exceeds this.
   // Valid range: 1000-20000 mA.
-  double overcurrent_threshold_ma = 1;
+  uint32 overcurrent_threshold_ma = 1;
 
-  // Emergency temperature cutoff in Celsius.
+  // Emergency temperature cutoff in deci-celsius (0.1C units).
   // System enters safe mode above this temperature.
-  // Valid range: 50-100 C.
-  double thermal_shutdown_celsius = 2;
+  // Valid range: 500-1000 (50.0-100.0 C).
+  int32 thermal_shutdown_deci_celsius = 2;
 
   // Battery cell voltage imbalance threshold in millivolts.
   // Warning generated if cell delta exceeds this.

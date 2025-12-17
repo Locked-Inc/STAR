@@ -37,8 +37,8 @@ class ConfigurationTest {
     )
 
     data class SafetyThresholdsTestCase(
-        val overcurrentMa: Double,
-        val thermalShutdownC: Double,
+        val overcurrentMa: Int,
+        val thermalShutdownDeciC: Int,
         val cellImbalanceMv: Int,
         val description: String
     )
@@ -106,22 +106,22 @@ class ConfigurationTest {
         fun safetyThresholdsTestCases(): Stream<Arguments> = Stream.of(
             // Standard thresholds
             Arguments.of(SafetyThresholdsTestCase(
-                5000.0, 60.0, 100,
+                5000, 600, 100,
                 "Standard safety thresholds"
             )),
             // Conservative thresholds
             Arguments.of(SafetyThresholdsTestCase(
-                2000.0, 50.0, 50,
+                2000, 500, 50,
                 "Conservative thresholds"
             )),
             // High-current motor
             Arguments.of(SafetyThresholdsTestCase(
-                15000.0, 70.0, 200,
+                15000, 700, 200,
                 "High-current motor thresholds"
             )),
             // Battery-sensitive
             Arguments.of(SafetyThresholdsTestCase(
-                3000.0, 55.0, 30,
+                3000, 550, 30,
                 "Battery-sensitive thresholds"
             ))
         )
@@ -252,16 +252,16 @@ class ConfigurationTest {
         fun testSafetyThresholdsRoundTrip(testCase: SafetyThresholdsTestCase) {
             val thresholds = SafetyThresholds.newBuilder()
                 .setOvercurrentThresholdMa(testCase.overcurrentMa)
-                .setThermalShutdownCelsius(testCase.thermalShutdownC)
+                .setThermalShutdownDeciCelsius(testCase.thermalShutdownDeciC)
                 .setCellImbalanceThresholdMv(testCase.cellImbalanceMv)
                 .build()
 
             val bytes = thresholds.toByteArray()
             val parsed = SafetyThresholds.parseFrom(bytes)
 
-            assertEquals(testCase.overcurrentMa, parsed.overcurrentThresholdMa, 0.01,
+            assertEquals(testCase.overcurrentMa, parsed.overcurrentThresholdMa,
                 "${testCase.description} - overcurrent")
-            assertEquals(testCase.thermalShutdownC, parsed.thermalShutdownCelsius, 0.1,
+            assertEquals(testCase.thermalShutdownDeciC, parsed.thermalShutdownDeciCelsius,
                 "${testCase.description} - thermal")
             assertEquals(testCase.cellImbalanceMv, parsed.cellImbalanceThresholdMv,
                 "${testCase.description} - cell imbalance")
@@ -275,7 +275,7 @@ class ConfigurationTest {
             "20000, Maximum threshold"
         )
         @DisplayName("Overcurrent threshold values within valid range")
-        fun testOvercurrentRange(thresholdMa: Double, description: String) {
+        fun testOvercurrentRange(thresholdMa: Int, description: String) {
             val thresholds = SafetyThresholds.newBuilder()
                 .setOvercurrentThresholdMa(thresholdMa)
                 .build()
@@ -283,8 +283,8 @@ class ConfigurationTest {
             val bytes = thresholds.toByteArray()
             val parsed = SafetyThresholds.parseFrom(bytes)
 
-            assertTrue(parsed.overcurrentThresholdMa in 1000.0..20000.0, description)
-            assertEquals(thresholdMa, parsed.overcurrentThresholdMa, 0.01, description)
+            assertTrue(parsed.overcurrentThresholdMa in 1000..20000, description)
+            assertEquals(thresholdMa, parsed.overcurrentThresholdMa, description)
         }
     }
 
@@ -587,8 +587,8 @@ class ConfigurationTest {
                     .build())
                 // Safety thresholds
                 .setSafetyThresholds(SafetyThresholds.newBuilder()
-                    .setOvercurrentThresholdMa(5000.0)
-                    .setThermalShutdownCelsius(60.0)
+                    .setOvercurrentThresholdMa(5000)
+                    .setThermalShutdownDeciCelsius(600)
                     .setCellImbalanceThresholdMv(100)
                     .build())
                 // Encoder config
@@ -617,7 +617,7 @@ class ConfigurationTest {
 
             assertEquals(4, parsed.motorConfigsCount, "Should have 4 motor configs")
             assertEquals(0.286, parsed.getMotorConfigs(0).pidConfig.kp, 0.001, "Motor 0 Kp")
-            assertEquals(5000.0, parsed.safetyThresholds.overcurrentThresholdMa, 0.01, "Overcurrent")
+            assertEquals(5000, parsed.safetyThresholds.overcurrentThresholdMa, "Overcurrent")
             assertEquals(10, parsed.timingConfig.motorControlPeriodMs, "Motor period")
             assertEquals(1, parsed.configVersion, "Config version")
             assertEquals(0x12345678, parsed.configCrc, "Config CRC")
