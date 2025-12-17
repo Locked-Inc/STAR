@@ -1,2 +1,12 @@
 .pio
 compile_commands.json
+
+# Generated call graphs
+*.dot
+*.png
+
+# PlatformIO build configs
+sdkconfig.*
+
+# macOS metadata
+.DS_Store
