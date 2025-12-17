@@ -1,14 +1,20 @@
-# buf.yaml - Module-level configuration for star-proto
+# buf.yaml - STAR Protobuf Configuration (buf v1)
 # Following Boston Dynamics style guide:
 # https://dev.bostondynamics.com/docs/protos/style_guide.html
-version: v2
+#
+# STAR Project - Texas A&M University
+# December 2025
+
+version: v1
+
 name: buf.build/star/proto
+
 deps:
   - buf.build/googleapis/googleapis
 
 lint:
   use:
-    - STANDARD
+    - DEFAULT
     - COMMENTS
   except:
     - PACKAGE_VERSION_SUFFIX
