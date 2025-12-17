@@ -4,6 +4,12 @@
 	(generator_version "9.0")
 	(uuid "b093d17b-3f16-40e3-b68a-97d9cd4b2df5")
 	(paper "A4")
+	(title_block
+		(title "Gate Driver")
+		(date "2025-12-07")
+		(rev "Version 1.0.0")
+		(company "Locked Inc.")
+	)
 	(lib_symbols
 		(symbol "61200621621:6120XX21621_61200621621"
 			(pin_names
@@ -1351,6 +1357,113 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Mechanical:MountingHole_Pad"
+			(pin_numbers
+				(hide yes)
+			)
+			(pin_names
+				(offset 1.016)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom no)
+			(on_board yes)
+			(property "Reference" "H"
+				(at 0 6.35 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "MountingHole_Pad"
+				(at 0 4.445 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Mounting Hole with connection"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "mounting hole"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "MountingHole*Pad*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "MountingHole_Pad_0_1"
+				(circle
+					(center 0 1.27)
+					(radius 1.27)
+					(stroke
+						(width 1.27)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+			)
+			(symbol "MountingHole_Pad_1_1"
+				(pin input line
+					(at 0 -2.54 90)
+					(length 2.54)
+					(name "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "PCM_4ms_Power-symbol:PWR_FLAG"
 			(power)
 			(pin_numbers
@@ -1545,6 +1658,42 @@
 			(embedded_fonts no)
 		)
 	)
+	(rectangle
+		(start 63.5 157.48)
+		(end 134.62 182.88)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid 07e7034d-f68d-4142-bbb3-09d5894330d1)
+	)
+	(rectangle
+		(start 166.37 132.08)
+		(end 205.74 147.32)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid 6d9d3f24-566e-4e06-9dc8-89cce13f10f3)
+	)
+	(rectangle
+		(start 63.5 127)
+		(end 128.27 151.13)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(fill
+			(type none)
+		)
+		(uuid f76eb87d-156e-49ae-933e-525763488a9a)
+	)
 	(text "From slusc16b"
 		(exclude_from_sim no)
 		(at 172.72 117.094 0)
@@ -1555,6 +1704,16 @@
 			)
 		)
 		(uuid "359277ca-4019-46c0-8a4e-efe5dea34cc5")
+	)
+	(text "Fuel Guage"
+		(exclude_from_sim no)
+		(at 99.568 177.8 0)
+		(effects
+			(font
+				(size 3.81 3.81)
+			)
+		)
+		(uuid "39a6e49c-8c1b-4dfa-852c-091081790e5d")
 	)
 	(text "From slva729a VDDCP was picked"
 		(exclude_from_sim no)
@@ -1579,11 +1738,27 @@
 		)
 		(uuid "7f96dc4a-1d3f-4383-83d1-e1569f83f843")
 	)
+	(text "AFE"
+		(exclude_from_sim no)
+		(at 99.06 148.844 0)
+		(effects
+			(font
+				(size 3.81 3.81)
+			)
+		)
+		(uuid "cc009334-0995-45a8-af9d-c4c6400ff762")
+	)
 	(junction
 		(at 189.23 99.06)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "179c0202-3ec0-4825-855c-6ce9816ff25f")
+	)
+	(junction
+		(at 170.18 140.97)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "1c87d6ea-1595-41bb-be71-f5607ae13fc0")
 	)
 	(junction
 		(at 91.44 82.55)
@@ -1596,6 +1771,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "225886bd-eed0-4bc1-b57d-a72639033f66")
+	)
+	(junction
+		(at 189.23 140.97)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "48dc0be5-b8f1-47ce-8563-35428cbd9383")
 	)
 	(junction
 		(at 110.49 82.55)
@@ -1620,6 +1801,12 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "c43d25aa-f2f3-4c85-802e-b1024fc0a6c0")
+	)
+	(junction
+		(at 180.34 140.97)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "e4863379-12c4-4b43-ab6c-55331777ce2e")
 	)
 	(wire
 		(pts
@@ -1653,6 +1840,16 @@
 	)
 	(wire
 		(pts
+			(xy 72.39 139.7) (xy 93.98 139.7)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0ba74353-a782-474b-8064-a75601882d2d")
+	)
+	(wire
+		(pts
 			(xy 147.32 69.85) (xy 140.97 69.85)
 		)
 		(stroke
@@ -1660,6 +1857,16 @@
 			(type default)
 		)
 		(uuid "0c216fc6-3e3e-4e92-a62c-5d9eb967c6f7")
+	)
+	(wire
+		(pts
+			(xy 170.18 140.97) (xy 180.34 140.97)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "0cc599b8-a73a-4859-8952-57882cd2b247")
 	)
 	(wire
 		(pts
@@ -1693,7 +1900,7 @@
 	)
 	(wire
 		(pts
-			(xy 87.63 153.67) (xy 93.98 153.67)
+			(xy 87.63 162.56) (xy 93.98 162.56)
 		)
 		(stroke
 			(width 0)
@@ -1713,13 +1920,13 @@
 	)
 	(wire
 		(pts
-			(xy 72.39 134.62) (xy 93.98 134.62)
+			(xy 189.23 140.97) (xy 198.12 140.97)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
-		(uuid "223a744e-72e9-418f-96c5-87cc5a84e600")
+		(uuid "1ecd6a70-d128-44e9-84a2-3382aaa30eac")
 	)
 	(wire
 		(pts
@@ -1753,6 +1960,16 @@
 	)
 	(wire
 		(pts
+			(xy 180.34 140.97) (xy 189.23 140.97)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2bee4f42-0257-41dd-9c4c-eefe1c29cad8")
+	)
+	(wire
+		(pts
 			(xy 104.14 137.16) (xy 124.46 137.16)
 		)
 		(stroke
@@ -1783,7 +2000,17 @@
 	)
 	(wire
 		(pts
-			(xy 129.54 153.67) (xy 104.14 153.67)
+			(xy 72.39 137.16) (xy 93.98 137.16)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "3b3fe19b-cc70-4950-a548-7c2cf557ffb0")
+	)
+	(wire
+		(pts
+			(xy 129.54 162.56) (xy 104.14 162.56)
 		)
 		(stroke
 			(width 0)
@@ -1883,7 +2110,7 @@
 	)
 	(wire
 		(pts
-			(xy 129.54 156.21) (xy 104.14 156.21)
+			(xy 129.54 165.1) (xy 104.14 165.1)
 		)
 		(stroke
 			(width 0)
@@ -1920,6 +2147,16 @@
 			(type default)
 		)
 		(uuid "959223a3-6230-460b-bd1a-f60c91ddbd0e")
+	)
+	(wire
+		(pts
+			(xy 72.39 134.62) (xy 93.98 134.62)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "986ccc91-ca2e-453a-af49-405ab3b827eb")
 	)
 	(wire
 		(pts
@@ -2063,7 +2300,7 @@
 	)
 	(wire
 		(pts
-			(xy 110.49 158.75) (xy 104.14 158.75)
+			(xy 110.49 167.64) (xy 104.14 167.64)
 		)
 		(stroke
 			(width 0)
@@ -2083,23 +2320,13 @@
 	)
 	(wire
 		(pts
-			(xy 69.85 156.21) (xy 93.98 156.21)
+			(xy 69.85 165.1) (xy 93.98 165.1)
 		)
 		(stroke
 			(width 0)
 			(type default)
 		)
 		(uuid "d87ef4e2-1aed-4fbf-81ec-61a14cd78165")
-	)
-	(wire
-		(pts
-			(xy 73.66 139.7) (xy 93.98 139.7)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "da4aa1f5-5df7-459c-a1d9-87cccf789e73")
 	)
 	(wire
 		(pts
@@ -2113,7 +2340,7 @@
 	)
 	(wire
 		(pts
-			(xy 69.85 158.75) (xy 93.98 158.75)
+			(xy 69.85 167.64) (xy 93.98 167.64)
 		)
 		(stroke
 			(width 0)
@@ -2133,16 +2360,6 @@
 	)
 	(wire
 		(pts
-			(xy 72.39 137.16) (xy 93.98 137.16)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f61813ca-1e4c-4389-88df-a44bcfde828c")
-	)
-	(wire
-		(pts
 			(xy 189.23 99.06) (xy 195.58 99.06)
 		)
 		(stroke
@@ -2152,7 +2369,7 @@
 		(uuid "fea4d562-88cf-4c19-b404-5adc8276230a")
 	)
 	(label "AFE_CHG"
-		(at 118.11 139.7 180)
+		(at 124.46 139.7 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2162,7 +2379,7 @@
 		(uuid "20e06534-469b-4338-89d8-b09c1bb5a839")
 	)
 	(label "AFE_PACK+"
-		(at 118.11 134.62 180)
+		(at 124.46 134.62 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2202,7 +2419,7 @@
 		(uuid "485f06df-b079-4a19-976e-3774eaa97f6f")
 	)
 	(label "FUEL_GUAGE_PMON_EN"
-		(at 69.85 156.21 0)
+		(at 69.85 165.1 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2222,7 +2439,7 @@
 		(uuid "504ebbb0-d620-4d3f-b531-024f473105a4")
 	)
 	(label "AFE_BATT+"
-		(at 80.01 137.16 0)
+		(at 72.39 137.16 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2243,7 +2460,7 @@
 		(uuid "6a0617ed-031e-43b8-b7df-c6e81d85c371")
 	)
 	(label "FUEL_GUAGE_PACKDIV"
-		(at 129.54 156.21 180)
+		(at 129.54 165.1 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2283,7 +2500,7 @@
 		(uuid "ab4ea067-162e-40fa-a128-8e4f981007bb")
 	)
 	(label "AFE_PCHG"
-		(at 80.01 139.7 0)
+		(at 72.39 139.7 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2303,7 +2520,7 @@
 		(uuid "b18e5d9b-03c9-4092-99db-a3bfb4010541")
 	)
 	(label "AFE_DSG"
-		(at 118.11 137.16 180)
+		(at 124.46 137.16 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2313,7 +2530,7 @@
 		(uuid "c22318d6-cc1d-4342-adaa-f6afcc7f8219")
 	)
 	(label "AFE_DSG_EN"
-		(at 118.11 132.08 180)
+		(at 124.46 132.08 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2323,7 +2540,7 @@
 		(uuid "c2c16116-0f21-4b3e-a9fd-8cfecd197cda")
 	)
 	(label "AFE_CHG_EN"
-		(at 80.01 134.62 0)
+		(at 72.39 134.62 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2344,7 +2561,7 @@
 		(uuid "cf6d0b89-3a37-4537-8ce6-a9b2699a0d59")
 	)
 	(label "FUEL_GUAGE_PCHG_EN"
-		(at 129.54 153.67 180)
+		(at 129.54 162.56 180)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2354,7 +2571,7 @@
 		(uuid "d554e307-c8b2-4b8b-8642-a026ac2fa5fd")
 	)
 	(label "FUEL_GUAGE_CP_EN"
-		(at 69.85 158.75 0)
+		(at 69.85 167.64 0)
 		(effects
 			(font
 				(size 1.27 1.27)
@@ -2372,127 +2589,6 @@
 			(justify left bottom)
 		)
 		(uuid "e9274844-ccea-41ee-adf5-c6496851bd69")
-	)
-	(hierarchical_label "FUEL_GUAGE_PMON_EN"
-		(shape input)
-		(at 69.85 156.21 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "26935e27-c1a7-41ca-a736-a2d73184cacd")
-	)
-	(hierarchical_label "AFE_PCHG"
-		(shape output)
-		(at 73.66 139.7 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "4194bb34-5604-4f88-888e-a417aa1267ba")
-	)
-	(hierarchical_label "AFE_CHG"
-		(shape output)
-		(at 124.46 139.7 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "4b471698-fe7b-4ab7-a4df-9272402f05dd")
-	)
-	(hierarchical_label "AFE_CHG_EN"
-		(shape output)
-		(at 72.39 134.62 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "6c7f27b0-951c-4cce-9c69-66f161742664")
-	)
-	(hierarchical_label "FUEL_GUAGE_CP_EN"
-		(shape input)
-		(at 69.85 158.75 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "95327abe-ec51-4083-b6de-29ae1ac4b8e3")
-	)
-	(hierarchical_label "FUEL_GUAGE_PACKDIV"
-		(shape input)
-		(at 129.54 156.21 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "9eb8b7e6-932d-4328-9b3e-acfa07fba600")
-	)
-	(hierarchical_label "AFE_PACK+"
-		(shape output)
-		(at 124.46 134.62 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "aad13c85-d908-447c-bc30-6aa8aacd8d66")
-	)
-	(hierarchical_label "AFE_DSG"
-		(shape output)
-		(at 124.46 137.16 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "b991ab8b-bab7-4158-aed4-0554b453402e")
-	)
-	(hierarchical_label "AFE_DSG_EN"
-		(shape output)
-		(at 124.46 132.08 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "d3be7c9a-4c40-4eb3-b7f3-30bfe5e416da")
-	)
-	(hierarchical_label "FUEL_GUAGE_PCHG_EN"
-		(shape input)
-		(at 129.54 153.67 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left)
-		)
-		(uuid "f8827875-bc96-4aad-aede-fa614d725fc7")
-	)
-	(hierarchical_label "AFE_BATT+"
-		(shape output)
-		(at 72.39 137.16 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right)
-		)
-		(uuid "fe048825-ddbc-4110-a618-07d502bfdd73")
 	)
 	(symbol
 		(lib_id "PCM_4ms_Power-symbol:PWR_FLAG")
@@ -2555,6 +2651,73 @@
 			(project "GATE_DRIVER"
 				(path "/b093d17b-3f16-40e3-b68a-97d9cd4b2df5"
 					(reference "#FLG01")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Mechanical:MountingHole_Pad")
+		(at 198.12 138.43 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "174a2271-3fcb-4a70-ba6e-465a0b9278d2")
+		(property "Reference" "MP4"
+			(at 200.66 135.8899 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "M3"
+			(at 200.66 138.4299 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
+			(at 198.12 138.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 198.12 138.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Mounting Hole with connection"
+			(at 198.12 138.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "38e449bc-6376-470d-a83d-cbe7a7dd6253")
+		)
+		(instances
+			(project "STAR_GATE_DRIVER"
+				(path "/b093d17b-3f16-40e3-b68a-97d9cd4b2df5"
+					(reference "MP4")
 					(unit 1)
 				)
 			)
@@ -5805,6 +5968,73 @@
 		)
 	)
 	(symbol
+		(lib_id "Mechanical:MountingHole_Pad")
+		(at 189.23 138.43 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "5fd21f2f-af5f-4aad-9533-ec5958b05bfc")
+		(property "Reference" "MP3"
+			(at 191.77 135.8899 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "M3"
+			(at 191.77 138.4299 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
+			(at 189.23 138.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 189.23 138.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Mounting Hole with connection"
+			(at 189.23 138.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "75509430-1f3a-4a00-bec0-83ca06fcb97a")
+		)
+		(instances
+			(project "STAR_GATE_DRIVER"
+				(path "/b093d17b-3f16-40e3-b68a-97d9cd4b2df5"
+					(reference "MP3")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "PCM_4ms_Power-symbol:PWR_FLAG")
 		(at 140.97 81.28 270)
 		(unit 1)
@@ -5829,6 +6059,7 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
+				(hide yes)
 			)
 		)
 		(property "Footprint" ""
@@ -6556,7 +6787,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 110.49 158.75 90)
+		(at 110.49 167.64 90)
 		(mirror x)
 		(unit 1)
 		(exclude_from_sim no)
@@ -6565,7 +6796,7 @@
 		(dnp no)
 		(uuid "7cda6dc2-a196-4b06-b5b3-8b16e111d38f")
 		(property "Reference" "#PWR04"
-			(at 116.84 158.75 0)
+			(at 116.84 167.64 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6574,7 +6805,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 115.316 158.75 90)
+			(at 115.316 167.64 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6582,7 +6813,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 110.49 158.75 0)
+			(at 110.49 167.64 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6591,7 +6822,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 110.49 158.75 0)
+			(at 110.49 167.64 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6600,7 +6831,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 110.49 158.75 0)
+			(at 110.49 167.64 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -6645,6 +6876,7 @@
 					(size 1.27 1.27)
 				)
 				(justify left)
+				(hide yes)
 			)
 		)
 		(property "Footprint" ""
@@ -7294,6 +7526,73 @@
 		)
 	)
 	(symbol
+		(lib_id "Mechanical:MountingHole_Pad")
+		(at 180.34 138.43 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "b2a446f4-6420-45b4-a69b-a54acf682b46")
+		(property "Reference" "MP2"
+			(at 182.88 135.8899 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "M3"
+			(at 182.88 138.4299 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
+			(at 180.34 138.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 180.34 138.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Mounting Hole with connection"
+			(at 180.34 138.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "27ed0dee-83bc-42bb-97d4-9f77dd2c8b34")
+		)
+		(instances
+			(project "STAR_GATE_DRIVER"
+				(path "/b093d17b-3f16-40e3-b68a-97d9cd4b2df5"
+					(reference "MP2")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "61200821621:6120XX21621_61200821621")
 		(at 99.06 134.62 270)
 		(unit 1)
@@ -7346,6 +7645,69 @@
 				(hide yes)
 			)
 		)
+		(property "DigiKey Link" "https://www.digikey.com/short/tdjp1z2z"
+			(at 99.06 134.62 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "732-5395-ND"
+			(at 99.06 134.62 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.97"
+			(at 99.06 134.62 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "61200821621"
+			(at 99.06 134.62 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/48VCo9j"
+			(at 99.06 134.62 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "710-61200821621"
+			(at 99.06 134.62 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "1.08"
+			(at 99.06 134.62 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "7"
 			(uuid "97e3c6d1-31fe-4c41-a0d6-d4501cae8eea")
 		)
@@ -7381,16 +7743,16 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 87.63 153.67 270)
-		(mirror x)
+		(at 170.18 140.97 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(uuid "cc28800a-1618-4488-af39-65beddc08999")
-		(property "Reference" "#PWR02"
-			(at 81.28 153.67 0)
+		(fields_autoplaced yes)
+		(uuid "c9fe1d3d-9dfa-404e-b17d-ad876c93bd6e")
+		(property "Reference" "#PWR07"
+			(at 170.18 147.32 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7399,7 +7761,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 82.804 153.67 90)
+			(at 170.18 146.05 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7407,7 +7769,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 87.63 153.67 0)
+			(at 170.18 140.97 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7416,7 +7778,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 87.63 153.67 0)
+			(at 170.18 140.97 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7425,7 +7787,73 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 87.63 153.67 0)
+			(at 170.18 140.97 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "842da14a-9fd5-4c50-a701-30e35c07dcd7")
+		)
+		(instances
+			(project ""
+				(path "/b093d17b-3f16-40e3-b68a-97d9cd4b2df5"
+					(reference "#PWR07")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
+		(at 87.63 162.56 270)
+		(mirror x)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "cc28800a-1618-4488-af39-65beddc08999")
+		(property "Reference" "#PWR02"
+			(at 81.28 162.56 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 82.804 162.56 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 87.63 162.56 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 87.63 162.56 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 87.63 162.56 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7447,7 +7875,7 @@
 	)
 	(symbol
 		(lib_id "61200621621:6120XX21621_61200621621")
-		(at 99.06 156.21 270)
+		(at 99.06 165.1 270)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -7455,7 +7883,7 @@
 		(dnp no)
 		(uuid "cc792c26-2ca6-46bd-9fb5-afdea0803c15")
 		(property "Reference" "J2"
-			(at 100.584 149.86 90)
+			(at 100.584 158.75 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7463,7 +7891,7 @@
 			)
 		)
 		(property "Value" "6120XX21621_61200621621"
-			(at 99.314 162.56 90)
+			(at 99.314 171.45 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7471,7 +7899,7 @@
 			)
 		)
 		(property "Footprint" "61200621621:61200621621"
-			(at 99.06 156.21 0)
+			(at 99.06 165.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7481,7 +7909,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 99.06 156.21 0)
+			(at 99.06 165.1 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -7490,7 +7918,70 @@
 			)
 		)
 		(property "Description" ""
-			(at 99.06 156.21 0)
+			(at 99.06 165.1 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/short/99twtrjt"
+			(at 99.06 165.1 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "732-5394-ND"
+			(at 99.06 165.1 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.43"
+			(at 99.06 165.1 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufactaurer Part Number" "61200621621"
+			(at 99.06 165.1 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3XISxZx"
+			(at 99.06 165.1 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "710-61200621621"
+			(at 99.06 165.1 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "0.47"
+			(at 99.06 165.1 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9396,6 +9887,73 @@
 			(project "GATE_DRIVER"
 				(path "/b093d17b-3f16-40e3-b68a-97d9cd4b2df5"
 					(reference "U1")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Mechanical:MountingHole_Pad")
+		(at 170.18 138.43 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom no)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "fcc59f3e-dcb2-41ed-97a8-62ac0e22b538")
+		(property "Reference" "MP1"
+			(at 172.72 135.8899 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Value" "M3"
+			(at 172.72 138.4299 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left)
+			)
+		)
+		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
+			(at 170.18 138.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 170.18 138.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Mounting Hole with connection"
+			(at 170.18 138.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "72a965ee-9d48-46fb-8672-23ce722d0282")
+		)
+		(instances
+			(project ""
+				(path "/b093d17b-3f16-40e3-b68a-97d9cd4b2df5"
+					(reference "MP1")
 					(unit 1)
 				)
 			)
