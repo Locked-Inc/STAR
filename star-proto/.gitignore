@@ -8,7 +8,6 @@ gen/nanopb/*
 # Kotlin/Gradle build artifacts
 tests/kotlin/build/
 tests/kotlin/.gradle/
-tests/kotlin/gradle/wrapper/gradle-wrapper.jar
 
 # TypeScript/Node build artifacts
 tests/typescript/node_modules/

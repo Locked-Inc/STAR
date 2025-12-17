@@ -15,19 +15,18 @@ managed:
 plugins:
   # ============================================
   # Kotlin/Java for star-gateway
+  # Pin versions for compatibility with:
+  #   - grpc-java: 1.60.0
+  #   - protobuf-java: 3.25.3
   # ============================================
-  - plugin: buf.build/protocolbuffers/java
-    out: gen/kotlin
-    opt:
-      - lite=false
-
-  - plugin: buf.build/grpc/java
+  - plugin: buf.build/protocolbuffers/java:v25.3
     out: gen/kotlin
 
-  - plugin: buf.build/grpc/kotlin
+  - plugin: buf.build/grpc/java:v1.60.0
     out: gen/kotlin
-    opt:
-      - lite=false
+
+  - plugin: buf.build/grpc/kotlin:v1.4.1
+    out: gen/kotlin
 
   # ============================================
   # TypeScript for star-ui (protobuf-ts)
