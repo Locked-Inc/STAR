@@ -83,28 +83,28 @@ extern "C" {
  * @brief Encoder configuration structure
  */
 typedef struct {
-  gpio_num_t  pin_a;        /**< Encoder A phase pin */
-  gpio_num_t  pin_b;        /**< Encoder B phase pin */
-  uint32_t    filter_value; /**< Glitch filter (APB clock cycles, 0=disabled) */
-  int16_t     high_limit;   /**< Upper count limit before overflow */
-  int16_t     low_limit;    /**< Lower count limit before underflow */
+  gpio_num_t pin_a;        /**< Encoder A phase pin */
+  gpio_num_t pin_b;        /**< Encoder B phase pin */
+  uint32_t   filter_value; /**< Glitch filter (APB clock cycles, 0=disabled) */
+  int16_t    high_limit;   /**< Upper count limit before overflow */
+  int16_t    low_limit;    /**< Lower count limit before underflow */
 } star_encoder_config_t;
 
 /**
  * @brief Encoder handle structure (opaque)
  */
 typedef struct {
-  pcnt_unit_handle_t     unit_handle;    /**< PCNT unit handle */
-  pcnt_channel_handle_t  channel_a;      /**< PCNT channel A handle */
-  pcnt_channel_handle_t  channel_b;      /**< PCNT channel B handle */
-  gpio_num_t             pin_a;          /**< Encoder A phase pin */
-  gpio_num_t             pin_b;          /**< Encoder B phase pin */
-  int16_t                high_limit;     /**< Upper count limit */
-  int16_t                low_limit;      /**< Lower count limit */
-  int32_t                last_count;     /**< Last count value for velocity calculation */
-  int64_t                last_time_us;   /**< Last timestamp in microseconds */
-  int32_t                overflow_count; /**< Overflow counter for extended range */
-  bool                   initialized;    /**< Initialization flag */
+  pcnt_unit_handle_t    unit_handle;    /**< PCNT unit handle */
+  pcnt_channel_handle_t channel_a;      /**< PCNT channel A handle */
+  pcnt_channel_handle_t channel_b;      /**< PCNT channel B handle */
+  gpio_num_t            pin_a;          /**< Encoder A phase pin */
+  gpio_num_t            pin_b;          /**< Encoder B phase pin */
+  int16_t               high_limit;     /**< Upper count limit */
+  int16_t               low_limit;      /**< Lower count limit */
+  int32_t               last_count;     /**< Last count value for velocity calculation */
+  int64_t               last_time_us;   /**< Last timestamp in microseconds */
+  int32_t               overflow_count; /**< Overflow counter for extended range */
+  bool                  initialized;    /**< Initialization flag */
 } star_encoder_handle_t;
 
 /* --- Public Functions --- */
@@ -162,9 +162,9 @@ esp_err_t star_encoder_reset_count(star_encoder_handle_t* handle);
  * @return esp_err_t ESP_OK on success, error code otherwise
  */
 esp_err_t star_encoder_get_velocity_rpm(star_encoder_handle_t* handle,
-                                         float                  dt_ms,
-                                         uint32_t               counts_per_rev,
-                                         float*                 out_velocity_rpm);
+                                        float                  dt_ms,
+                                        uint32_t               counts_per_rev,
+                                        float*                 out_velocity_rpm);
 
 #ifdef __cplusplus
 }

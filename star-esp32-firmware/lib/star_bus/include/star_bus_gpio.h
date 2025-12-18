@@ -80,9 +80,9 @@ star_gpio_ops_t star_bus_gpio_get_default_ops(void);
  * @return ESP_OK on success, error code otherwise
  */
 esp_err_t star_bus_gpio_write_digital(star_bus_manager_t* manager,
-                                       const char*         bus_name,
-                                       uint8_t             pin_index,
-                                       uint8_t             value);
+                                      const char*         bus_name,
+                                      uint8_t             pin_index,
+                                      uint8_t             value);
 
 /**
  * @brief Read digital value from GPIO pin
@@ -94,9 +94,9 @@ esp_err_t star_bus_gpio_write_digital(star_bus_manager_t* manager,
  * @return ESP_OK on success, error code otherwise
  */
 esp_err_t star_bus_gpio_read_digital(star_bus_manager_t* manager,
-                                      const char*         bus_name,
-                                      uint8_t             pin_index,
-                                      uint8_t*            value);
+                                     const char*         bus_name,
+                                     uint8_t             pin_index,
+                                     uint8_t*            value);
 
 #ifdef __cplusplus
 }

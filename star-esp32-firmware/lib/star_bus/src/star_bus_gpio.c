@@ -19,12 +19,12 @@ static const char* s_TAG = "STAR_BUS_GPIO";
 /* --- Private Function Prototypes (Default Ops) --- */
 
 static esp_err_t internal_star_bus_gpio_write_digital(const star_bus_config_t* config,
-                                                       uint8_t                  pin_index,
-                                                       uint8_t                  value);
+                                                      uint8_t                  pin_index,
+                                                      uint8_t                  value);
 
 static esp_err_t internal_star_bus_gpio_read_digital(const star_bus_config_t* config,
-                                                      uint8_t                  pin_index,
-                                                      uint8_t*                 value);
+                                                     uint8_t                  pin_index,
+                                                     uint8_t*                 value);
 
 /* --- Public Functions --- */
 
@@ -39,9 +39,9 @@ star_gpio_ops_t star_bus_gpio_get_default_ops(void)
 }
 
 esp_err_t star_bus_gpio_write_digital(star_bus_manager_t* manager,
-                                       const char*         bus_name,
-                                       uint8_t             pin_index,
-                                       uint8_t             value)
+                                      const char*         bus_name,
+                                      uint8_t             pin_index,
+                                      uint8_t             value)
 {
   ESP_RETURN_ON_FALSE(manager && bus_name,
                       ESP_ERR_INVALID_ARG,
@@ -65,9 +65,9 @@ esp_err_t star_bus_gpio_write_digital(star_bus_manager_t* manager,
 }
 
 esp_err_t star_bus_gpio_read_digital(star_bus_manager_t* manager,
-                                      const char*         bus_name,
-                                      uint8_t             pin_index,
-                                      uint8_t*            value)
+                                     const char*         bus_name,
+                                     uint8_t             pin_index,
+                                     uint8_t*            value)
 {
   ESP_RETURN_ON_FALSE(manager && bus_name && value,
                       ESP_ERR_INVALID_ARG,
@@ -93,8 +93,8 @@ esp_err_t star_bus_gpio_read_digital(star_bus_manager_t* manager,
 /* --- Private Functions (Default Ops Implementation) --- */
 
 static esp_err_t internal_star_bus_gpio_write_digital(const star_bus_config_t* config,
-                                                       uint8_t                  pin_index,
-                                                       uint8_t                  value)
+                                                      uint8_t                  pin_index,
+                                                      uint8_t                  value)
 {
   ESP_RETURN_ON_FALSE(config, ESP_ERR_INVALID_ARG, s_TAG, "Config is NULL");
   ESP_RETURN_ON_FALSE(pin_index < config->proto.gpio.pin_count,
@@ -114,8 +114,8 @@ static esp_err_t internal_star_bus_gpio_write_digital(const star_bus_config_t* c
 }
 
 static esp_err_t internal_star_bus_gpio_read_digital(const star_bus_config_t* config,
-                                                      uint8_t                  pin_index,
-                                                      uint8_t*                 value)
+                                                     uint8_t                  pin_index,
+                                                     uint8_t*                 value)
 {
   ESP_RETURN_ON_FALSE(config && value, ESP_ERR_INVALID_ARG, s_TAG, "Config or value is NULL");
   ESP_RETURN_ON_FALSE(pin_index < config->proto.gpio.pin_count,

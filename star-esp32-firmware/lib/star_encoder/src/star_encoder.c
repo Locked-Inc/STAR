@@ -2,11 +2,11 @@
 
 #include "star_encoder.h"
 
+#include <string.h>
+
 #include "esp_check.h"
 #include "esp_log.h"
 #include "esp_timer.h"
-
-#include <string.h>
 
 /* --- Constants --- */
 
@@ -14,9 +14,9 @@ static const char* s_TAG = "STAR_ENCODER";
 
 /* --- Private Function Prototypes --- */
 
-static bool internal_encoder_on_reach_callback(pcnt_unit_handle_t    unit,
-                                                const pcnt_watch_event_data_t* event_data,
-                                                void*                 user_ctx);
+static bool internal_encoder_on_reach_callback(pcnt_unit_handle_t             unit,
+                                               const pcnt_watch_event_data_t* event_data,
+                                               void*                          user_ctx);
 
 /* --- Public Functions --- */
 
@@ -33,8 +33,8 @@ esp_err_t star_encoder_init(star_encoder_handle_t* handle, const star_encoder_co
 
   /* Configure PCNT unit */
   pcnt_unit_config_t unit_config = {
-    .high_limit = config->high_limit,
-    .low_limit  = config->low_limit,
+    .high_limit        = config->high_limit,
+    .low_limit         = config->low_limit,
     .flags.accum_count = 0, /* Clear counter on reaching limits */
   };
 
@@ -56,7 +56,7 @@ esp_err_t star_encoder_init(star_encoder_handle_t* handle, const star_encoder_co
 
   /* Configure channel A (encoder phase A) */
   pcnt_chan_config_t chan_a_config = {
-    .edge_gpio_num = config->pin_a,
+    .edge_gpio_num  = config->pin_a,
     .level_gpio_num = config->pin_b,
   };
   ret = pcnt_new_channel(handle->unit_handle, &chan_a_config, &handle->channel_a);
@@ -68,7 +68,7 @@ esp_err_t star_encoder_init(star_encoder_handle_t* handle, const star_encoder_co
 
   /* Configure channel B (encoder phase B) */
   pcnt_chan_config_t chan_b_config = {
-    .edge_gpio_num = config->pin_b,
+    .edge_gpio_num  = config->pin_b,
     .level_gpio_num = config->pin_a,
   };
   ret = pcnt_new_channel(handle->unit_handle, &chan_b_config, &handle->channel_b);
@@ -82,19 +82,19 @@ esp_err_t star_encoder_init(star_encoder_handle_t* handle, const star_encoder_co
   /* Set edge and level actions for quadrature decoding */
   /* Channel A: increment on positive edge when B=0, decrement when B=1 */
   pcnt_channel_set_edge_action(handle->channel_a,
-                                PCNT_CHANNEL_EDGE_ACTION_INCREASE,
-                                PCNT_CHANNEL_EDGE_ACTION_DECREASE);
+                               PCNT_CHANNEL_EDGE_ACTION_INCREASE,
+                               PCNT_CHANNEL_EDGE_ACTION_DECREASE);
   pcnt_channel_set_level_action(handle->channel_a,
-                                 PCNT_CHANNEL_LEVEL_ACTION_KEEP,
-                                 PCNT_CHANNEL_LEVEL_ACTION_INVERSE);
+                                PCNT_CHANNEL_LEVEL_ACTION_KEEP,
+                                PCNT_CHANNEL_LEVEL_ACTION_INVERSE);
 
   /* Channel B: increment on positive edge when A=1, decrement when A=0 */
   pcnt_channel_set_edge_action(handle->channel_b,
-                                PCNT_CHANNEL_EDGE_ACTION_DECREASE,
-                                PCNT_CHANNEL_EDGE_ACTION_INCREASE);
+                               PCNT_CHANNEL_EDGE_ACTION_DECREASE,
+                               PCNT_CHANNEL_EDGE_ACTION_INCREASE);
   pcnt_channel_set_level_action(handle->channel_b,
-                                 PCNT_CHANNEL_LEVEL_ACTION_INVERSE,
-                                 PCNT_CHANNEL_LEVEL_ACTION_KEEP);
+                                PCNT_CHANNEL_LEVEL_ACTION_INVERSE,
+                                PCNT_CHANNEL_LEVEL_ACTION_KEEP);
 
   /* Register overflow/underflow watch events */
   pcnt_event_callbacks_t cbs = {
@@ -192,17 +192,20 @@ esp_err_t star_encoder_deinit(star_encoder_handle_t* handle)
 
 esp_err_t star_encoder_get_count(star_encoder_handle_t* handle, int32_t* out_count)
 {
-  ESP_RETURN_ON_FALSE(handle && out_count, ESP_ERR_INVALID_ARG, s_TAG, "Handle or out_count is NULL");
+  ESP_RETURN_ON_FALSE(handle && out_count,
+                      ESP_ERR_INVALID_ARG,
+                      s_TAG,
+                      "Handle or out_count is NULL");
   ESP_RETURN_ON_FALSE(handle->initialized, ESP_ERR_INVALID_STATE, s_TAG, "Not initialized");
 
   /* Read hardware counter */
-  int hw_count;
+  int       hw_count;
   esp_err_t ret = pcnt_unit_get_count(handle->unit_handle, &hw_count);
   ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to get count");
 
   /* Combine hardware count with overflow tracking */
   int32_t range = (handle->high_limit - handle->low_limit);
-  *out_count = hw_count + (handle->overflow_count * range);
+  *out_count    = hw_count + (handle->overflow_count * range);
 
   return ESP_OK;
 }
@@ -226,9 +229,9 @@ esp_err_t star_encoder_reset_count(star_encoder_handle_t* handle)
 }
 
 esp_err_t star_encoder_get_velocity_rpm(star_encoder_handle_t* handle,
-                                         float                  dt_ms,
-                                         uint32_t               counts_per_rev,
-                                         float*                 out_velocity_rpm)
+                                        float                  dt_ms,
+                                        uint32_t               counts_per_rev,
+                                        float*                 out_velocity_rpm)
 {
   ESP_RETURN_ON_FALSE(handle && out_velocity_rpm,
                       ESP_ERR_INVALID_ARG,
@@ -239,7 +242,7 @@ esp_err_t star_encoder_get_velocity_rpm(star_encoder_handle_t* handle,
   ESP_RETURN_ON_FALSE(dt_ms > 0.0f, ESP_ERR_INVALID_ARG, s_TAG, "dt_ms must be > 0");
 
   /* Get current count */
-  int32_t current_count;
+  int32_t   current_count;
   esp_err_t ret = star_encoder_get_count(handle, &current_count);
   ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to get count");
 
@@ -259,8 +262,8 @@ esp_err_t star_encoder_get_velocity_rpm(star_encoder_handle_t* handle,
 /* --- Private Functions --- */
 
 static bool internal_encoder_on_reach_callback(pcnt_unit_handle_t             unit,
-                                                const pcnt_watch_event_data_t* event_data,
-                                                void*                          user_ctx)
+                                               const pcnt_watch_event_data_t* event_data,
+                                               void*                          user_ctx)
 {
   star_encoder_handle_t* handle = (star_encoder_handle_t*)user_ctx;
   if (!handle) {

@@ -86,33 +86,33 @@ extern "C" {
  * @brief DS18B20 temperature resolution options
  */
 typedef enum {
-  k_star_ds18b20_resolution_9_bit  = 0,  /**< 9-bit resolution (0.5°C, 93.75ms conversion) */
-  k_star_ds18b20_resolution_10_bit = 1,  /**< 10-bit resolution (0.25°C, 187.5ms conversion) */
-  k_star_ds18b20_resolution_11_bit = 2,  /**< 11-bit resolution (0.125°C, 375ms conversion) */
-  k_star_ds18b20_resolution_12_bit = 3,  /**< 12-bit resolution (0.0625°C, 750ms conversion) */
+  k_star_ds18b20_resolution_9_bit  = 0, /**< 9-bit resolution (0.5°C, 93.75ms conversion) */
+  k_star_ds18b20_resolution_10_bit = 1, /**< 10-bit resolution (0.25°C, 187.5ms conversion) */
+  k_star_ds18b20_resolution_11_bit = 2, /**< 11-bit resolution (0.125°C, 375ms conversion) */
+  k_star_ds18b20_resolution_12_bit = 3, /**< 12-bit resolution (0.0625°C, 750ms conversion) */
 } star_ds18b20_resolution_t;
 
 /**
  * @brief DS18B20 configuration structure
  */
 typedef struct {
-  star_bus_manager_t*        bus_manager; /**< Bus manager instance */
-  const char*                bus_name;    /**< 1-Wire bus name */
-  star_ds18b20_resolution_t  resolution;  /**< Temperature resolution */
-  bool                       use_rom;     /**< Use ROM address (true for multiple sensors) */
-  uint64_t                   rom_code;    /**< 64-bit ROM code (if use_rom is true) */
+  star_bus_manager_t*       bus_manager; /**< Bus manager instance */
+  const char*               bus_name;    /**< 1-Wire bus name */
+  star_ds18b20_resolution_t resolution;  /**< Temperature resolution */
+  bool                      use_rom;     /**< Use ROM address (true for multiple sensors) */
+  uint64_t                  rom_code;    /**< 64-bit ROM code (if use_rom is true) */
 } star_ds18b20_config_t;
 
 /**
  * @brief DS18B20 sensor handle structure
  */
 typedef struct {
-  star_bus_manager_t*       bus_manager;  /**< Bus manager reference */
-  const char*               bus_name;     /**< 1-Wire bus name */
-  star_ds18b20_resolution_t resolution;   /**< Current resolution */
-  bool                      use_rom;      /**< Use ROM addressing */
-  uint64_t                  rom_code;     /**< Device ROM code */
-  bool                      initialized;  /**< Initialization flag */
+  star_bus_manager_t*       bus_manager; /**< Bus manager reference */
+  const char*               bus_name;    /**< 1-Wire bus name */
+  star_ds18b20_resolution_t resolution;  /**< Current resolution */
+  bool                      use_rom;     /**< Use ROM addressing */
+  uint64_t                  rom_code;    /**< Device ROM code */
+  bool                      initialized; /**< Initialization flag */
 } star_ds18b20_handle_t;
 
 /* --- Public Functions --- */
@@ -125,7 +125,7 @@ typedef struct {
  * @return esp_err_t ESP_OK on success, error code otherwise
  */
 esp_err_t star_sensor_ds18b20_init(star_ds18b20_handle_t*       handle,
-                                    const star_ds18b20_config_t* config);
+                                   const star_ds18b20_config_t* config);
 
 /**
  * @brief Deinitialize DS18B20 sensor
@@ -158,7 +158,7 @@ esp_err_t star_sensor_ds18b20_read_temp(star_ds18b20_handle_t* handle, float* ou
  * @return esp_err_t ESP_OK on success, error code otherwise
  */
 esp_err_t star_sensor_ds18b20_set_resolution(star_ds18b20_handle_t*    handle,
-                                              star_ds18b20_resolution_t resolution);
+                                             star_ds18b20_resolution_t resolution);
 
 /**
  * @brief Read DS18B20 ROM code (64-bit unique ID)

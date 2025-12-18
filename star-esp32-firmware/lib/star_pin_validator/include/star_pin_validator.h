@@ -17,7 +17,7 @@
 extern "C" {
 #endif
 
-  /**
+/**
  * @file star_pin_validator.h
  * @brief GPIO pin conflict detection and tracking
  *

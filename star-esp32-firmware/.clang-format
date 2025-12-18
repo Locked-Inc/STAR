@@ -78,6 +78,7 @@ CommentPragmas: '\/\*.*\*\/'
 #----------------------------------------------------------------------------
 # Alignment
 #----------------------------------------------------------------------------
+AlignConsecutiveMacros: true
 AlignConsecutiveDeclarations: true
 AlignConsecutiveAssignments: true
 AlignOperands: Align
