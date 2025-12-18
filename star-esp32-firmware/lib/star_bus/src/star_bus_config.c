@@ -14,9 +14,6 @@
 #include "star_bus_spi_peripheral.h"
 /* Include manager types to access manager struct for SPI host tracking */
 #include "driver/spi_slave.h"
-#include "esp_adc/adc_cali.h"
-#include "esp_adc/adc_cali_scheme.h"
-#include "esp_adc/adc_oneshot.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/semphr.h"
 
@@ -24,6 +21,9 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "esp_adc/adc_cali.h"
+#include "esp_adc/adc_cali_scheme.h"
+#include "esp_adc/adc_oneshot.h"
 #include "esp_check.h"
 #include "esp_log.h"
 #include "star_bus_manager_types.h"
@@ -217,8 +217,7 @@ star_bus_config_create_gpio(const char* name, gpio_num_t* pins, uint8_t pin_coun
   ESP_RETURN_ON_FALSE(pins, NULL, s_TAG, "Pin array is NULL");
   ESP_RETURN_ON_FALSE(pin_count > 0, NULL, s_TAG, "Pin count must be > 0");
 
-  star_bus_config_t* config =
-    internal_star_bus_config_create_common(name, k_star_bus_type_gpio);
+  star_bus_config_t* config = internal_star_bus_config_create_common(name, k_star_bus_type_gpio);
   ESP_RETURN_ON_FALSE(config,
                       NULL,
                       s_TAG,
@@ -226,26 +225,23 @@ star_bus_config_create_gpio(const char* name, gpio_num_t* pins, uint8_t pin_coun
                       name ? name : "NULL");
 
   /* Configure GPIO-specific parameters */
-  config->proto.gpio.pins      = pins;
-  config->proto.gpio.pin_count = pin_count;
+  config->proto.gpio.pins          = pins;
+  config->proto.gpio.pin_count     = pin_count;
   config->proto.gpio.isr_installed = false;
 
   /* Initialize default GPIO operations */
   config->proto.gpio.ops = star_bus_gpio_get_default_ops();
 
-  ESP_LOGI(s_TAG,
-           "Created GPIO config '%s' with %d pins",
-           name,
-           pin_count);
+  ESP_LOGI(s_TAG, "Created GPIO config '%s' with %d pins", name, pin_count);
 
   return config;
 }
 
 star_bus_config_t* star_bus_config_create_adc(const char*    name,
-                                               adc_unit_t     unit,
-                                               adc_channel_t  channel,
-                                               adc_bitwidth_t bitwidth,
-                                               adc_atten_t    atten)
+                                              adc_unit_t     unit,
+                                              adc_channel_t  channel,
+                                              adc_bitwidth_t bitwidth,
+                                              adc_atten_t    atten)
 {
   star_bus_config_t* config = internal_star_bus_config_create_common(name, k_star_bus_type_adc);
   ESP_RETURN_ON_FALSE(config,
@@ -279,12 +275,10 @@ star_bus_config_t* star_bus_config_create_adc(const char*    name,
   return config;
 }
 
-star_bus_config_t* star_bus_config_create_onewire(const char* name,
-                                                   gpio_num_t  gpio_pin,
-                                                   bool        use_parasitic_power)
+star_bus_config_t*
+star_bus_config_create_onewire(const char* name, gpio_num_t gpio_pin, bool use_parasitic_power)
 {
-  star_bus_config_t* config =
-    internal_star_bus_config_create_common(name, k_star_bus_type_onewire);
+  star_bus_config_t* config = internal_star_bus_config_create_common(name, k_star_bus_type_onewire);
   ESP_RETURN_ON_FALSE(config,
                       NULL,
                       s_TAG,
@@ -493,7 +487,10 @@ esp_err_t star_bus_config_init(star_bus_config_t* config, star_bus_manager_t* ma
 
     case k_star_bus_type_gpio: {
       /* Initialize GPIO pins */
-      ESP_LOGI(s_TAG, "Initializing GPIO bus '%s' with %d pins", bus_name, config->proto.gpio.pin_count);
+      ESP_LOGI(s_TAG,
+               "Initializing GPIO bus '%s' with %d pins",
+               bus_name,
+               config->proto.gpio.pin_count);
 
       for (uint8_t i = 0; i < config->proto.gpio.pin_count; i++) {
         gpio_num_t pin = config->proto.gpio.pins[i];
@@ -566,8 +563,8 @@ esp_err_t star_bus_config_init(star_bus_config_t* config, star_bus_manager_t* ma
       };
 
       ret = adc_oneshot_config_channel(config->proto.adc.unit_handle,
-                                        config->proto.adc.channel,
-                                        &chan_cfg);
+                                       config->proto.adc.channel,
+                                       &chan_cfg);
       ESP_GOTO_ON_ERROR(ret,
                         fail_adc_unit,
                         s_TAG,

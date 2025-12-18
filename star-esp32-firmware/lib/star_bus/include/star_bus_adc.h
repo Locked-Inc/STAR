@@ -7,11 +7,10 @@
 extern "C" {
 #endif
 
-#include "esp_adc/adc_cali.h"
-#include "esp_adc/adc_oneshot.h"
-
 #include <stdint.h>
 
+#include "esp_adc/adc_cali.h"
+#include "esp_adc/adc_oneshot.h"
 #include "esp_err.h"
 #include "star_bus_types.h"
 
@@ -79,9 +78,7 @@ star_adc_ops_t star_bus_adc_get_default_ops(void);
  * @param[out] out_raw  Pointer to store raw ADC value
  * @return ESP_OK on success, error code otherwise
  */
-esp_err_t star_bus_adc_read_raw(star_bus_manager_t* manager,
-                                 const char*         bus_name,
-                                 int*                out_raw);
+esp_err_t star_bus_adc_read_raw(star_bus_manager_t* manager, const char* bus_name, int* out_raw);
 
 /**
  * @brief Read calibrated voltage in millivolts
@@ -91,9 +88,8 @@ esp_err_t star_bus_adc_read_raw(star_bus_manager_t* manager,
  * @param[out] out_voltage_mv Pointer to store voltage in mV
  * @return ESP_OK on success, error code otherwise
  */
-esp_err_t star_bus_adc_read_voltage(star_bus_manager_t* manager,
-                                     const char*         bus_name,
-                                     int*                out_voltage_mv);
+esp_err_t
+star_bus_adc_read_voltage(star_bus_manager_t* manager, const char* bus_name, int* out_voltage_mv);
 
 #ifdef __cplusplus
 }

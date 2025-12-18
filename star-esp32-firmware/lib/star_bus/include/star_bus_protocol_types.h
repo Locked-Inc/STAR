@@ -10,12 +10,12 @@ extern "C" {
 #include "driver/gpio.h"
 #include "driver/i2c.h"
 #include "driver/spi_master.h" /* Added for SPI */
-#include "esp_adc/adc_cali.h"
-#include "esp_adc/adc_oneshot.h"
 
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "esp_adc/adc_cali.h"
+#include "esp_adc/adc_oneshot.h"
 #include "esp_err.h"
 #include "star_bus_common_types.h"
 #include "star_bus_event_types.h"
@@ -111,21 +111,21 @@ typedef struct star_spi_bus_config {
  */
 typedef struct star_gpio_ops {
   esp_err_t (*write_digital)(const struct star_bus_config* config,
-                             uint8_t                        pin_index,
-                             uint8_t                        value);
+                             uint8_t                       pin_index,
+                             uint8_t                       value);
   esp_err_t (*read_digital)(const struct star_bus_config* config,
-                            uint8_t                        pin_index,
-                            uint8_t*                       value);
+                            uint8_t                       pin_index,
+                            uint8_t*                      value);
 } star_gpio_ops_t;
 
 /**
  * @brief GPIO bus configuration structure.
  */
 typedef struct star_gpio_bus_config {
-  gpio_num_t*     pins;         /**< Array of GPIO pins */
-  uint8_t         pin_count;    /**< Number of pins in array */
+  gpio_num_t*     pins;          /**< Array of GPIO pins */
+  uint8_t         pin_count;     /**< Number of pins in array */
   bool            isr_installed; /**< Whether ISR service is installed */
-  star_gpio_ops_t ops;          /**< Operation function pointers */
+  star_gpio_ops_t ops;           /**< Operation function pointers */
 } star_gpio_bus_config_t;
 
 /**
@@ -133,8 +133,7 @@ typedef struct star_gpio_bus_config {
  */
 typedef struct star_adc_ops {
   esp_err_t (*read_raw)(const struct star_bus_config* config, int* out_raw);
-  esp_err_t (*read_voltage)(const struct star_bus_config* config,
-                            int*                          out_voltage_mv);
+  esp_err_t (*read_voltage)(const struct star_bus_config* config, int* out_voltage_mv);
 } star_adc_ops_t;
 
 /**
@@ -158,26 +157,26 @@ typedef struct star_onewire_ops {
   esp_err_t (*write_byte)(const struct star_bus_config* config, uint8_t byte);
   esp_err_t (*read_byte)(const struct star_bus_config* config, uint8_t* byte);
   esp_err_t (*write_bytes)(const struct star_bus_config* config,
-                           uint64_t rom,
-                           const uint8_t* data,
-                           size_t len);
+                           uint64_t                      rom,
+                           const uint8_t*                data,
+                           size_t                        len);
   esp_err_t (*read_bytes)(const struct star_bus_config* config, uint8_t* data, size_t len);
   esp_err_t (*search)(const struct star_bus_config* config,
-                      uint64_t* roms,
-                      size_t max_devices,
-                      size_t* count);
+                      uint64_t*                     roms,
+                      size_t                        max_devices,
+                      size_t*                       count);
 } star_onewire_ops_t;
 
 /**
  * @brief OneWire bus configuration structure.
  */
 typedef struct star_onewire_bus_config {
-  gpio_num_t gpio_pin;                      /**< Single 1-Wire data pin (open-drain) */
-  bool       use_parasitic_power;           /**< Enable parasite power mode */
-  bool       use_strong_pullup;             /**< Enable strong pullup for power-hungry operations */
-  uint8_t    speed;                         /**< Speed mode (0=standard, 1=overdrive) */
-  uint32_t   search_timeout_ms;             /**< Timeout for device search operations */
-  star_onewire_ops_t ops;                   /**< Operation function pointers (defaults provided) */
+  gpio_num_t         gpio_pin;            /**< Single 1-Wire data pin (open-drain) */
+  bool               use_parasitic_power; /**< Enable parasite power mode */
+  bool               use_strong_pullup;   /**< Enable strong pullup for power-hungry operations */
+  uint8_t            speed;               /**< Speed mode (0=standard, 1=overdrive) */
+  uint32_t           search_timeout_ms;   /**< Timeout for device search operations */
+  star_onewire_ops_t ops;                 /**< Operation function pointers (defaults provided) */
 } star_onewire_bus_config_t;
 
 #ifdef __cplusplus

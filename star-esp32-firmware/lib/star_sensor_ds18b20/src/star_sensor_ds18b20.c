@@ -2,13 +2,13 @@
 
 #include "star_sensor_ds18b20.h"
 
-#include "esp_check.h"
-#include "esp_log.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
 
 #include <string.h>
 
+#include "esp_check.h"
+#include "esp_log.h"
 #include "star_bus_onewire.h"
 
 /* --- Constants --- */
@@ -16,28 +16,29 @@
 static const char* s_TAG = "STAR_DS18B20";
 
 /* DS18B20 Commands */
-#define DS18B20_CMD_SKIP_ROM        0xCC
-#define DS18B20_CMD_MATCH_ROM       0x55
-#define DS18B20_CMD_READ_ROM        0x33
-#define DS18B20_CMD_CONVERT_T       0x44
-#define DS18B20_CMD_READ_SCRATCHPAD 0xBE
-#define DS18B20_CMD_WRITE_SCRATCHPAD 0x4E
+#define DS18B20_CMD_SKIP_ROM         (0xCC)
+#define DS18B20_CMD_MATCH_ROM        (0x55)
+#define DS18B20_CMD_READ_ROM         (0x33)
+#define DS18B20_CMD_CONVERT_T        (0x44)
+#define DS18B20_CMD_READ_SCRATCHPAD  (0xBE)
+#define DS18B20_CMD_WRITE_SCRATCHPAD (0x4E)
 
 /* Scratchpad size */
 #define DS18B20_SCRATCHPAD_SIZE 9
 
 /* Conversion times (ms) for each resolution */
 static const uint16_t s_conversion_times_ms[] = {
-  94,   /* 9-bit: 93.75ms */
-  188,  /* 10-bit: 187.5ms */
-  375,  /* 11-bit: 375ms */
-  750,  /* 12-bit: 750ms */
+  94,  /* 9-bit: 93.75ms */
+  188, /* 10-bit: 187.5ms */
+  375, /* 11-bit: 375ms */
+  750, /* 12-bit: 750ms */
 };
 
 /* --- Private Function Prototypes --- */
 
 static esp_err_t internal_ds18b20_start_conversion(star_ds18b20_handle_t* handle);
-static esp_err_t internal_ds18b20_read_scratchpad(star_ds18b20_handle_t* handle, uint8_t* scratchpad);
+static esp_err_t internal_ds18b20_read_scratchpad(star_ds18b20_handle_t* handle,
+                                                  uint8_t*               scratchpad);
 static esp_err_t internal_ds18b20_write_scratchpad(star_ds18b20_handle_t* handle);
 static uint8_t   internal_ds18b20_crc8(const uint8_t* data, size_t len);
 static esp_err_t internal_ds18b20_send_rom_command(star_ds18b20_handle_t* handle);
@@ -45,7 +46,7 @@ static esp_err_t internal_ds18b20_send_rom_command(star_ds18b20_handle_t* handle
 /* --- Public Functions --- */
 
 esp_err_t star_sensor_ds18b20_init(star_ds18b20_handle_t*       handle,
-                                    const star_ds18b20_config_t* config)
+                                   const star_ds18b20_config_t* config)
 {
   ESP_RETURN_ON_FALSE(handle, ESP_ERR_INVALID_ARG, s_TAG, "Handle is NULL");
   ESP_RETURN_ON_FALSE(config, ESP_ERR_INVALID_ARG, s_TAG, "Config is NULL");
@@ -141,7 +142,7 @@ esp_err_t star_sensor_ds18b20_read_temp(star_ds18b20_handle_t* handle, float* ou
 }
 
 esp_err_t star_sensor_ds18b20_set_resolution(star_ds18b20_handle_t*    handle,
-                                              star_ds18b20_resolution_t resolution)
+                                             star_ds18b20_resolution_t resolution)
 {
   ESP_RETURN_ON_FALSE(handle, ESP_ERR_INVALID_ARG, s_TAG, "Handle is NULL");
   ESP_RETURN_ON_FALSE(handle->initialized, ESP_ERR_INVALID_STATE, s_TAG, "Not initialized");
@@ -165,7 +166,7 @@ esp_err_t star_sensor_ds18b20_read_rom(star_ds18b20_handle_t* handle, uint64_t* 
   ESP_RETURN_ON_FALSE(handle && out_rom, ESP_ERR_INVALID_ARG, s_TAG, "Handle or out_rom is NULL");
 
   /* Send Read ROM command */
-  uint8_t rom_bytes[8];
+  uint8_t   rom_bytes[8];
   esp_err_t ret = star_bus_onewire_read_rom(handle->bus_manager, handle->bus_name, rom_bytes);
   ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to read ROM");
 
@@ -198,7 +199,7 @@ static esp_err_t internal_ds18b20_send_rom_command(star_ds18b20_handle_t* handle
 static esp_err_t internal_ds18b20_start_conversion(star_ds18b20_handle_t* handle)
 {
   /* Reset bus */
-  bool presence;
+  bool      presence;
   esp_err_t ret = star_bus_onewire_reset(handle->bus_manager, handle->bus_name, &presence);
   ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to reset bus");
   ESP_RETURN_ON_FALSE(presence, ESP_ERR_NOT_FOUND, s_TAG, "No device present on bus");
@@ -209,16 +210,17 @@ static esp_err_t internal_ds18b20_start_conversion(star_ds18b20_handle_t* handle
 
   /* Send Convert T command */
   uint8_t cmd = DS18B20_CMD_CONVERT_T;
-  ret = star_bus_onewire_write_byte(handle->bus_manager, handle->bus_name, cmd);
+  ret         = star_bus_onewire_write_byte(handle->bus_manager, handle->bus_name, cmd);
   ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to send Convert T command");
 
   return ESP_OK;
 }
 
-static esp_err_t internal_ds18b20_read_scratchpad(star_ds18b20_handle_t* handle, uint8_t* scratchpad)
+static esp_err_t internal_ds18b20_read_scratchpad(star_ds18b20_handle_t* handle,
+                                                  uint8_t*               scratchpad)
 {
   /* Reset bus */
-  bool presence;
+  bool      presence;
   esp_err_t ret = star_bus_onewire_reset(handle->bus_manager, handle->bus_name, &presence);
   ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to reset bus");
   ESP_RETURN_ON_FALSE(presence, ESP_ERR_NOT_FOUND, s_TAG, "No device present on bus");
@@ -229,11 +231,14 @@ static esp_err_t internal_ds18b20_read_scratchpad(star_ds18b20_handle_t* handle,
 
   /* Send Read Scratchpad command */
   uint8_t cmd = DS18B20_CMD_READ_SCRATCHPAD;
-  ret = star_bus_onewire_write_byte(handle->bus_manager, handle->bus_name, cmd);
+  ret         = star_bus_onewire_write_byte(handle->bus_manager, handle->bus_name, cmd);
   ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to send Read Scratchpad command");
 
   /* Read 9 bytes (scratchpad + CRC) */
-  ret = star_bus_onewire_read_bytes(handle->bus_manager, handle->bus_name, scratchpad, DS18B20_SCRATCHPAD_SIZE);
+  ret = star_bus_onewire_read_bytes(handle->bus_manager,
+                                    handle->bus_name,
+                                    scratchpad,
+                                    DS18B20_SCRATCHPAD_SIZE);
   ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to read scratchpad");
 
   return ESP_OK;
@@ -242,7 +247,7 @@ static esp_err_t internal_ds18b20_read_scratchpad(star_ds18b20_handle_t* handle,
 static esp_err_t internal_ds18b20_write_scratchpad(star_ds18b20_handle_t* handle)
 {
   /* Reset bus */
-  bool presence;
+  bool      presence;
   esp_err_t ret = star_bus_onewire_reset(handle->bus_manager, handle->bus_name, &presence);
   ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to reset bus");
   ESP_RETURN_ON_FALSE(presence, ESP_ERR_NOT_FOUND, s_TAG, "No device present on bus");
@@ -252,14 +257,16 @@ static esp_err_t internal_ds18b20_write_scratchpad(star_ds18b20_handle_t* handle
   ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to send ROM command");
 
   /* Send Write Scratchpad command */
-  ret = star_bus_onewire_write_byte(handle->bus_manager, handle->bus_name, DS18B20_CMD_WRITE_SCRATCHPAD);
+  ret = star_bus_onewire_write_byte(handle->bus_manager,
+                                    handle->bus_name,
+                                    DS18B20_CMD_WRITE_SCRATCHPAD);
   ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to send Write Scratchpad command");
 
   /* Write 3 data bytes: [TH, TL, CONFIG] */
   uint8_t data[3];
-  data[0] = 0x00;  /* TH (high alarm, not used) */
-  data[1] = 0x00;  /* TL (low alarm, not used) */
-  data[2] = (handle->resolution << 5) | 0x1F;  /* Configuration register */
+  data[0] = 0x00;                             /* TH (high alarm, not used) */
+  data[1] = 0x00;                             /* TL (low alarm, not used) */
+  data[2] = (handle->resolution << 5) | 0x1F; /* Configuration register */
 
   for (int i = 0; i < 3; i++) {
     ret = star_bus_onewire_write_byte(handle->bus_manager, handle->bus_name, data[i]);

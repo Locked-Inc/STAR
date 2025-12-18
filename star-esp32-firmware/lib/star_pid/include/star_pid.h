@@ -86,29 +86,29 @@ extern "C" {
  * @brief PID controller configuration structure
  */
 typedef struct {
-  float kp;            /**< Proportional gain */
-  float ki;            /**< Integral gain */
-  float kd;            /**< Derivative gain */
-  float output_min;    /**< Minimum output limit */
-  float output_max;    /**< Maximum output limit */
-  float integral_min;  /**< Minimum integral value (anti-windup) */
-  float integral_max;  /**< Maximum integral value (anti-windup) */
+  float kp;           /**< Proportional gain */
+  float ki;           /**< Integral gain */
+  float kd;           /**< Derivative gain */
+  float output_min;   /**< Minimum output limit */
+  float output_max;   /**< Maximum output limit */
+  float integral_min; /**< Minimum integral value (anti-windup) */
+  float integral_max; /**< Maximum integral value (anti-windup) */
 } star_pid_config_t;
 
 /**
  * @brief PID controller handle structure
  */
 typedef struct {
-  float kp;            /**< Proportional gain */
-  float ki;            /**< Integral gain */
-  float kd;            /**< Derivative gain */
-  float output_min;    /**< Minimum output limit */
-  float output_max;    /**< Maximum output limit */
-  float integral_min;  /**< Minimum integral value (anti-windup) */
-  float integral_max;  /**< Maximum integral value (anti-windup) */
-  float integral;      /**< Accumulated integral term */
-  float prev_error;    /**< Previous error for derivative calculation */
-  bool  initialized;   /**< Initialization flag */
+  float kp;           /**< Proportional gain */
+  float ki;           /**< Integral gain */
+  float kd;           /**< Derivative gain */
+  float output_min;   /**< Minimum output limit */
+  float output_max;   /**< Maximum output limit */
+  float integral_min; /**< Minimum integral value (anti-windup) */
+  float integral_max; /**< Maximum integral value (anti-windup) */
+  float integral;     /**< Accumulated integral term */
+  float prev_error;   /**< Previous error for derivative calculation */
+  bool  initialized;  /**< Initialization flag */
 } star_pid_handle_t;
 
 /* --- Public Functions --- */
@@ -149,10 +149,10 @@ esp_err_t star_pid_deinit(star_pid_handle_t* handle);
  * @return esp_err_t ESP_OK on success, error code otherwise
  */
 esp_err_t star_pid_compute(star_pid_handle_t* handle,
-                            float              setpoint,
-                            float              measured,
-                            float              dt,
-                            float*             output);
+                           float              setpoint,
+                           float              measured,
+                           float              dt,
+                           float*             output);
 
 /**
  * @brief Reset PID controller internal state
@@ -201,9 +201,8 @@ esp_err_t star_pid_set_output_limits(star_pid_handle_t* handle, float output_min
  * @param[in] integral_max New maximum integral limit.
  * @return esp_err_t ESP_OK on success, error code otherwise
  */
-esp_err_t star_pid_set_integral_limits(star_pid_handle_t* handle,
-                                        float              integral_min,
-                                        float              integral_max);
+esp_err_t
+star_pid_set_integral_limits(star_pid_handle_t* handle, float integral_min, float integral_max);
 
 #ifdef __cplusplus
 }

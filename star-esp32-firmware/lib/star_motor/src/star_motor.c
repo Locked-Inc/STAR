@@ -2,11 +2,11 @@
 
 #include "star_motor.h"
 
-#include "esp_check.h"
-#include "esp_log.h"
-
 #include <math.h>
 #include <string.h>
+
+#include "esp_check.h"
+#include "esp_log.h"
 
 /* --- Constants --- */
 
@@ -105,7 +105,8 @@ esp_err_t star_motor_init(star_motor_handle_t* handle, const star_motor_config_t
   /* Configure dead-time */
   if (config->dead_time_ns > 0) {
     /* Convert nanoseconds to timer ticks */
-    uint32_t dead_time_ticks = (uint32_t)((config->dead_time_ns * config->timer_resolution_hz) / 1000000000ULL);
+    uint32_t dead_time_ticks =
+      (uint32_t)((config->dead_time_ns * config->timer_resolution_hz) / 1000000000ULL);
 
     mcpwm_dead_time_config_t dt_config = {
       .posedge_delay_ticks = dead_time_ticks,
@@ -138,9 +139,9 @@ esp_err_t star_motor_init(star_motor_handle_t* handle, const star_motor_config_t
   /* Configure fault detection if pin provided */
   if (config->fault_pin >= 0) {
     mcpwm_gpio_fault_config_t fault_config = {
-      .group_id   = config->group_id,
-      .gpio_num   = config->fault_pin,
-      .flags.pull_up = true,
+      .group_id           = config->group_id,
+      .gpio_num           = config->fault_pin,
+      .flags.pull_up      = true,
       .flags.active_level = 0, /* Active low */
     };
     ret = mcpwm_new_gpio_fault(&fault_config, &handle->fault);
@@ -249,22 +250,40 @@ esp_err_t star_motor_set_duty(star_motor_handle_t* handle, float duty)
   /* Configure direction (swap generator actions based on duty sign) */
   if (duty >= 0.0f) {
     /* Forward: A = PWM, B = LOW */
-    mcpwm_generator_set_action_on_compare_event(handle->gen_a,
-                                                  MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, handle->comparator, MCPWM_GEN_ACTION_HIGH));
-    mcpwm_generator_set_action_on_compare_event(handle->gen_a,
-                                                  MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_DOWN, handle->comparator, MCPWM_GEN_ACTION_LOW));
-    mcpwm_generator_set_actions_on_timer_event(handle->gen_b,
-                                                MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_LOW),
-                                                MCPWM_GEN_TIMER_EVENT_ACTION_END());
+    mcpwm_generator_set_action_on_compare_event(
+      handle->gen_a,
+      MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP,
+                                     handle->comparator,
+                                     MCPWM_GEN_ACTION_HIGH));
+    mcpwm_generator_set_action_on_compare_event(
+      handle->gen_a,
+      MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_DOWN,
+                                     handle->comparator,
+                                     MCPWM_GEN_ACTION_LOW));
+    mcpwm_generator_set_actions_on_timer_event(
+      handle->gen_b,
+      MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP,
+                                   MCPWM_TIMER_EVENT_EMPTY,
+                                   MCPWM_GEN_ACTION_LOW),
+      MCPWM_GEN_TIMER_EVENT_ACTION_END());
   } else {
     /* Reverse: A = LOW, B = PWM */
-    mcpwm_generator_set_actions_on_timer_event(handle->gen_a,
-                                                MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_LOW),
-                                                MCPWM_GEN_TIMER_EVENT_ACTION_END());
-    mcpwm_generator_set_action_on_compare_event(handle->gen_b,
-                                                  MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, handle->comparator, MCPWM_GEN_ACTION_HIGH));
-    mcpwm_generator_set_action_on_compare_event(handle->gen_b,
-                                                  MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_DOWN, handle->comparator, MCPWM_GEN_ACTION_LOW));
+    mcpwm_generator_set_actions_on_timer_event(
+      handle->gen_a,
+      MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP,
+                                   MCPWM_TIMER_EVENT_EMPTY,
+                                   MCPWM_GEN_ACTION_LOW),
+      MCPWM_GEN_TIMER_EVENT_ACTION_END());
+    mcpwm_generator_set_action_on_compare_event(
+      handle->gen_b,
+      MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP,
+                                     handle->comparator,
+                                     MCPWM_GEN_ACTION_HIGH));
+    mcpwm_generator_set_action_on_compare_event(
+      handle->gen_b,
+      MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_DOWN,
+                                     handle->comparator,
+                                     MCPWM_GEN_ACTION_LOW));
   }
 
   handle->current_duty = duty;
@@ -296,10 +315,7 @@ esp_err_t star_motor_stop(star_motor_handle_t* handle, bool brake)
 
 esp_err_t star_motor_get_duty(const star_motor_handle_t* handle, float* out_duty)
 {
-  ESP_RETURN_ON_FALSE(handle && out_duty,
-                      ESP_ERR_INVALID_ARG,
-                      s_TAG,
-                      "Handle or out_duty is NULL");
+  ESP_RETURN_ON_FALSE(handle && out_duty, ESP_ERR_INVALID_ARG, s_TAG, "Handle or out_duty is NULL");
   ESP_RETURN_ON_FALSE(handle->initialized, ESP_ERR_INVALID_STATE, s_TAG, "Not initialized");
 
   *out_duty = handle->current_duty;
@@ -324,21 +340,33 @@ static esp_err_t internal_configure_generators(star_motor_handle_t* handle, bool
   /* Configure generator A actions (forward PWM when duty > 0) */
   esp_err_t ret;
 
-  ret = mcpwm_generator_set_action_on_timer_event(handle->gen_a,
-                                                    MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_LOW));
+  ret =
+    mcpwm_generator_set_action_on_timer_event(handle->gen_a,
+                                              MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP,
+                                                                           MCPWM_TIMER_EVENT_EMPTY,
+                                                                           MCPWM_GEN_ACTION_LOW));
   ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to set gen_a timer action");
 
-  ret = mcpwm_generator_set_action_on_compare_event(handle->gen_a,
-                                                      MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, handle->comparator, MCPWM_GEN_ACTION_HIGH));
+  ret = mcpwm_generator_set_action_on_compare_event(
+    handle->gen_a,
+    MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP,
+                                   handle->comparator,
+                                   MCPWM_GEN_ACTION_HIGH));
   ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to set gen_a compare up action");
 
-  ret = mcpwm_generator_set_action_on_compare_event(handle->gen_a,
-                                                      MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_DOWN, handle->comparator, MCPWM_GEN_ACTION_LOW));
+  ret = mcpwm_generator_set_action_on_compare_event(
+    handle->gen_a,
+    MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_DOWN,
+                                   handle->comparator,
+                                   MCPWM_GEN_ACTION_LOW));
   ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to set gen_a compare down action");
 
   /* Configure generator B actions (initially low, will be set during duty update) */
-  ret = mcpwm_generator_set_action_on_timer_event(handle->gen_b,
-                                                    MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_LOW));
+  ret =
+    mcpwm_generator_set_action_on_timer_event(handle->gen_b,
+                                              MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP,
+                                                                           MCPWM_TIMER_EVENT_EMPTY,
+                                                                           MCPWM_GEN_ACTION_LOW));
   ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to set gen_b timer action");
 
   return ESP_OK;
