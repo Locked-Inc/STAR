@@ -392,33 +392,36 @@ func TestSetVelocityRequestResponse(t *testing.T) {
 // ============================================================================
 
 func TestEncoderStreamSimulation(t *testing.T) {
-	counts := []int{1, 10, 100, 1000}
+	tests := []struct {
+		name  string
+		count int
+	}{
+		{"1_message", 1},
+		{"10_messages", 10},
+		{"100_messages", 100},
+		{"1000_messages", 1000},
+	}
 
-	for _, count := range counts {
-		t.Run(
-			func() string {
-				return "stream_" + string(rune('0'+count%10))
-			}(),
-			func(t *testing.T) {
-				var totalSize int
-				for i := 0; i < count; i++ {
-					encoder := &starv1.EncoderData{
-						MotorId:     int32(i % 4),
-						Ticks:       int64(i * 100),
-						VelocityMps: float64(i) * 0.01,
-					}
-
-					bytes, err := proto.Marshal(encoder)
-					require.NoError(t, err)
-					totalSize += len(bytes)
-
-					parsed := &starv1.EncoderData{}
-					err = proto.Unmarshal(bytes, parsed)
-					require.NoError(t, err)
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			var totalSize int
+			for i := 0; i < tc.count; i++ {
+				encoder := &starv1.EncoderData{
+					MotorId:     int32(i % 4),
+					Ticks:       int64(i * 100),
+					VelocityMps: float64(i) * 0.01,
 				}
 
-				t.Logf("Streamed %d messages, total size: %d bytes", count, totalSize)
-			},
-		)
+				bytes, err := proto.Marshal(encoder)
+				require.NoError(t, err)
+				totalSize += len(bytes)
+
+				parsed := &starv1.EncoderData{}
+				err = proto.Unmarshal(bytes, parsed)
+				require.NoError(t, err)
+			}
+
+			t.Logf("Streamed %d messages, total size: %d bytes", tc.count, totalSize)
+		})
 	}
 }
