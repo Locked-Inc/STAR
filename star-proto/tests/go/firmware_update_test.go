@@ -525,12 +525,19 @@ func TestRebootRequestResponse(t *testing.T) {
 // ============================================================================
 
 func TestChunkStreamingSimulation(t *testing.T) {
-	counts := []int{1, 10, 100}
+	tests := []struct {
+		name  string
+		count int
+	}{
+		{"1_chunk", 1},
+		{"10_chunks", 10},
+		{"100_chunks", 100},
+	}
 
-	for _, count := range counts {
-		t.Run("", func(t *testing.T) {
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
 			var totalSize int
-			for i := 0; i < count; i++ {
+			for i := 0; i < tc.count; i++ {
 				data := make([]byte, 1024)
 				chunk := &starv1.FirmwareChunk{
 					Data:       data,
@@ -548,7 +555,7 @@ func TestChunkStreamingSimulation(t *testing.T) {
 				require.NoError(t, err)
 			}
 
-			t.Logf("Streamed %d chunks, total proto size: %d bytes", count, totalSize)
+			t.Logf("Streamed %d chunks, total proto size: %d bytes", tc.count, totalSize)
 		})
 	}
 }
