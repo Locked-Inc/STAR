@@ -1,0 +1,7 @@
+go 1.21
+
+use (
+	./star-proto/gen/go
+	./star-proto/tests/go
+	./star-gateway
+)

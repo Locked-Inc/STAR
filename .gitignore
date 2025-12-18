@@ -102,3 +102,8 @@ settings.local.json
 *.nav
 *.snm
 *.vrb
+
+# Go
+star-gateway/star-gateway
+*.exe
+go.work.sum
