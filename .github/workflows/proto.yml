@@ -118,6 +118,12 @@ jobs:
           mkdir -p gen/go
           buf generate proto/ --template buf.gen.yaml --include-imports
 
+      - name: Create go.mod for generated code
+        run: |
+          cd gen/go
+          go mod init github.com/Locked-Inc/star-proto/gen/go
+          go mod tidy
+
       - name: Upload Go Artifacts
         uses: actions/upload-artifact@v4
         with:
