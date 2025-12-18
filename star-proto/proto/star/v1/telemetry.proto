@@ -16,6 +16,7 @@ package star.v1;
 import "google/protobuf/timestamp.proto";
 import "star/v1/common.proto";
 
+option go_package = "github.com/Locked-Inc/star-proto/gen/go/star/v1;starv1";
 option java_multiple_files = true;
 option java_outer_classname = "TelemetryProto";
 option java_package = "com.star.proto.v1";

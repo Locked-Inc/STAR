@@ -1,0 +1,432 @@
+// firmware_update.proto - STAR Firmware Update Protocol Buffer Definitions
+// OTA firmware update service for ESP32 motor controller.
+//
+// Following Boston Dynamics style guide:
+// - Proto3 only, 100 char line limit, 4 space indent
+// - All fields documented
+//
+// STAR Project - Texas A&M University
+// December 2025
+
+syntax = "proto3";
+
+package star.v1;
+
+import "star/v1/common.proto";
+
+option go_package = "github.com/Locked-Inc/star-proto/gen/go/star/v1;starv1";
+option java_multiple_files = true;
+option java_outer_classname = "FirmwareUpdateProto";
+option java_package = "com.star.proto.v1";
+
+// Firmware update service for OTA operations.
+// Provides chunked firmware transfer, progress tracking,
+// validation, and rollback capabilities.
+service FirmwareUpdateService {
+  // Begin OTA update process.
+  // Prepares the OTA partition for receiving firmware data.
+  rpc BeginUpdate(BeginUpdateRequest) returns (BeginUpdateResponse);
+
+  // Write a firmware data chunk.
+  // Chunks should be ~1KB for optimal performance.
+  rpc WriteChunk(WriteChunkRequest) returns (WriteChunkResponse);
+
+  // Stream firmware chunks for bulk transfer.
+  // Client streams chunks, server responds with progress.
+  rpc StreamChunks(stream FirmwareChunk) returns (StreamChunksResponse);
+
+  // Finalize OTA update.
+  // Validates firmware and prepares for reboot.
+  rpc FinalizeUpdate(FinalizeUpdateRequest) returns (FinalizeUpdateResponse);
+
+  // Abort OTA update.
+  // Cancels update and cleans up resources.
+  rpc AbortUpdate(AbortUpdateRequest) returns (AbortUpdateResponse);
+
+  // Get current update progress.
+  rpc GetUpdateProgress(GetUpdateProgressRequest) returns (GetUpdateProgressResponse);
+
+  // Stream update progress during transfer.
+  // Server streams progress updates.
+  rpc StreamUpdateProgress(StreamUpdateProgressRequest) returns (stream FirmwareUpdateProgress);
+
+  // Reboot to new firmware.
+  // Only valid after successful FinalizeUpdate.
+  rpc Reboot(RebootRequest) returns (RebootResponse);
+
+  // Roll back to previous firmware.
+  rpc Rollback(RollbackRequest) returns (RollbackResponse);
+
+  // Mark current firmware as valid.
+  // Prevents automatic rollback.
+  rpc MarkValid(MarkValidRequest) returns (MarkValidResponse);
+
+  // Get current firmware information.
+  rpc GetFirmwareInfo(GetFirmwareInfoRequest) returns (GetFirmwareInfoResponse);
+}
+
+// Request to begin OTA update.
+message BeginUpdateRequest {
+  // Standard request header.
+  RequestHeader header = 1;
+
+  // Expected firmware size in bytes.
+  uint32 firmware_size = 2;
+
+  // Expected firmware version (for validation).
+  string expected_version = 3;
+
+  // Expected CRC-32 checksum of complete firmware.
+  uint32 expected_crc32 = 4;
+}
+
+// Response to begin update request.
+message BeginUpdateResponse {
+  // Standard response header with status.
+  ResponseHeader header = 1;
+
+  // True if update can begin.
+  bool accepted = 2;
+
+  // Maximum chunk size supported (in bytes).
+  uint32 max_chunk_size = 3;
+
+  // Update session ID for tracking.
+  string session_id = 4;
+
+  // Detailed error if not accepted.
+  FirmwareUpdateError error = 5;
+}
+
+// Request to write a firmware chunk.
+message WriteChunkRequest {
+  // Standard request header.
+  RequestHeader header = 1;
+
+  // Firmware chunk data.
+  FirmwareChunk chunk = 2;
+}
+
+// Response to write chunk request.
+message WriteChunkResponse {
+  // Standard response header with status.
+  ResponseHeader header = 1;
+
+  // True if chunk was written successfully.
+  bool success = 2;
+
+  // Current progress after this chunk.
+  FirmwareUpdateProgress progress = 3;
+}
+
+// Firmware data chunk.
+message FirmwareChunk {
+  // Raw firmware data bytes.
+  // Recommended size: 1024 bytes (1KB).
+  bytes data = 1;
+
+  // Chunk sequence number (0-indexed).
+  // Used for ordering and deduplication.
+  uint32 sequence = 2;
+
+  // Byte offset in firmware image.
+  uint32 offset = 3;
+
+  // CRC-32 of this chunk (optional, for validation).
+  uint32 chunk_crc32 = 4;
+}
+
+// Response to streaming chunks.
+message StreamChunksResponse {
+  // Standard response header with status.
+  ResponseHeader header = 1;
+
+  // Total chunks received.
+  uint32 chunks_received = 2;
+
+  // Final progress after streaming.
+  FirmwareUpdateProgress progress = 3;
+
+  // Error if streaming failed.
+  FirmwareUpdateError error = 4;
+}
+
+// Request to finalize update.
+message FinalizeUpdateRequest {
+  // Standard request header.
+  RequestHeader header = 1;
+}
+
+// Response to finalize request.
+message FinalizeUpdateResponse {
+  // Standard response header with status.
+  ResponseHeader header = 1;
+
+  // True if firmware validation passed.
+  bool validated = 2;
+
+  // True if ready to reboot.
+  bool ready_to_reboot = 3;
+
+  // Validation error if failed.
+  FirmwareUpdateError error = 4;
+}
+
+// Request to abort update.
+message AbortUpdateRequest {
+  // Standard request header.
+  RequestHeader header = 1;
+
+  // Reason for abort (for logging).
+  string reason = 2;
+}
+
+// Response to abort request.
+message AbortUpdateResponse {
+  // Standard response header with status.
+  ResponseHeader header = 1;
+
+  // True if abort was successful.
+  bool aborted = 2;
+}
+
+// Request to get update progress.
+message GetUpdateProgressRequest {
+  // Standard request header.
+  RequestHeader header = 1;
+}
+
+// Response with update progress.
+message GetUpdateProgressResponse {
+  // Standard response header with status.
+  ResponseHeader header = 1;
+
+  // Current update progress.
+  FirmwareUpdateProgress progress = 2;
+}
+
+// Request to stream update progress.
+message StreamUpdateProgressRequest {
+  // Standard request header.
+  RequestHeader header = 1;
+
+  // Update interval in milliseconds.
+  // Valid range: 100-5000 ms.
+  uint32 update_interval_ms = 2;
+}
+
+// Firmware update progress information.
+// Maps to star_ota_stats_t.
+message FirmwareUpdateProgress {
+  // Total firmware size in bytes.
+  uint32 total_size = 1;
+
+  // Bytes received so far.
+  uint32 bytes_received = 2;
+
+  // Progress percentage (0-100).
+  int32 progress_percent = 3;
+
+  // Running CRC-32 checksum of received data.
+  uint32 running_crc32 = 4;
+
+  // Current update state.
+  FirmwareUpdateState state = 5;
+
+  // Estimated time remaining in seconds.
+  // -1 if cannot be calculated.
+  int32 estimated_seconds_remaining = 6;
+
+  // Transfer speed in bytes per second.
+  uint32 transfer_speed_bps = 7;
+
+  // Last chunk sequence number received.
+  uint32 last_sequence = 8;
+}
+
+// Request to reboot.
+message RebootRequest {
+  // Standard request header.
+  RequestHeader header = 1;
+
+  // Delay before reboot in milliseconds.
+  // Allows time for response to be sent.
+  // Valid range: 0-5000 ms. Default: 1000 ms.
+  uint32 delay_ms = 2;
+}
+
+// Response to reboot request.
+message RebootResponse {
+  // Standard response header with status.
+  ResponseHeader header = 1;
+
+  // True if reboot will occur.
+  bool rebooting = 2;
+
+  // Delay before reboot in milliseconds.
+  uint32 reboot_delay_ms = 3;
+}
+
+// Request to rollback firmware.
+message RollbackRequest {
+  // Standard request header.
+  RequestHeader header = 1;
+}
+
+// Response to rollback request.
+message RollbackResponse {
+  // Standard response header with status.
+  ResponseHeader header = 1;
+
+  // True if rollback will occur.
+  bool rolling_back = 2;
+
+  // Previous firmware version being restored.
+  string previous_version = 3;
+}
+
+// Request to mark firmware valid.
+message MarkValidRequest {
+  // Standard request header.
+  RequestHeader header = 1;
+}
+
+// Response to mark valid request.
+message MarkValidResponse {
+  // Standard response header with status.
+  ResponseHeader header = 1;
+
+  // True if firmware marked as valid.
+  bool marked_valid = 2;
+}
+
+// Request for firmware information.
+message GetFirmwareInfoRequest {
+  // Standard request header.
+  RequestHeader header = 1;
+}
+
+// Response with firmware information.
+message GetFirmwareInfoResponse {
+  // Standard response header with status.
+  ResponseHeader header = 1;
+
+  // Current running firmware info.
+  FirmwareInfo current_firmware = 2;
+
+  // Previous firmware info (for rollback), if available.
+  // May be absent on devices that have never been updated.
+  optional FirmwareInfo previous_firmware = 3;
+
+  // True if running from OTA partition.
+  bool is_ota_boot = 4;
+
+  // True if firmware is marked valid.
+  bool is_valid = 5;
+}
+
+// Firmware version and metadata.
+message FirmwareInfo {
+  // Firmware version string (e.g., "1.0.0").
+  string version = 1;
+
+  // Git commit hash (short form).
+  string git_hash = 2;
+
+  // Build date in ISO 8601 format.
+  string build_date = 3;
+
+  // Firmware size in bytes.
+  uint32 size = 4;
+
+  // Firmware CRC-32 checksum.
+  uint32 crc32 = 5;
+
+  // IDF version used to build.
+  string idf_version = 6;
+
+  // Target chip (e.g., "esp32s3").
+  string chip_target = 7;
+}
+
+// Firmware update state.
+// Maps to star_ota_state_t.
+enum FirmwareUpdateState {
+  // Unknown state.
+  FIRMWARE_UPDATE_STATE_UNKNOWN = 0;
+
+  // No OTA in progress.
+  FIRMWARE_UPDATE_STATE_IDLE = 1;
+
+  // Receiving firmware data.
+  FIRMWARE_UPDATE_STATE_RECEIVING = 2;
+
+  // Validating received firmware.
+  FIRMWARE_UPDATE_STATE_VALIDATING = 3;
+
+  // OTA complete, ready to reboot.
+  FIRMWARE_UPDATE_STATE_COMPLETE = 4;
+
+  // Error occurred during OTA.
+  FIRMWARE_UPDATE_STATE_ERROR = 5;
+}
+
+// Firmware update error codes.
+enum FirmwareUpdateErrorCode {
+  // Unknown error.
+  FIRMWARE_UPDATE_ERROR_CODE_UNKNOWN = 0;
+
+  // Invalid firmware size.
+  FIRMWARE_UPDATE_ERROR_CODE_INVALID_SIZE = 1;
+
+  // OTA already in progress.
+  FIRMWARE_UPDATE_ERROR_CODE_ALREADY_IN_PROGRESS = 2;
+
+  // OTA partition not found.
+  FIRMWARE_UPDATE_ERROR_CODE_NO_PARTITION = 3;
+
+  // OTA not started.
+  FIRMWARE_UPDATE_ERROR_CODE_NOT_STARTED = 4;
+
+  // Size exceeds expected.
+  FIRMWARE_UPDATE_ERROR_CODE_SIZE_EXCEEDED = 5;
+
+  // Incomplete transfer.
+  FIRMWARE_UPDATE_ERROR_CODE_INCOMPLETE = 6;
+
+  // CRC validation failed.
+  FIRMWARE_UPDATE_ERROR_CODE_CRC_FAILED = 7;
+
+  // Firmware validation failed.
+  FIRMWARE_UPDATE_ERROR_CODE_VALIDATION_FAILED = 8;
+
+  // Flash write failed.
+  FIRMWARE_UPDATE_ERROR_CODE_WRITE_FAILED = 9;
+
+  // Chunk sequence error.
+  FIRMWARE_UPDATE_ERROR_CODE_SEQUENCE_ERROR = 10;
+
+  // Timeout during transfer.
+  FIRMWARE_UPDATE_ERROR_CODE_TIMEOUT = 11;
+
+  // Insufficient storage space.
+  FIRMWARE_UPDATE_ERROR_CODE_NO_SPACE = 12;
+}
+
+// Detailed firmware update error.
+message FirmwareUpdateError {
+  // Error code for programmatic handling.
+  FirmwareUpdateErrorCode code = 1;
+
+  // Human-readable error message.
+  string message = 2;
+
+  // Additional error details (ESP error code, etc.).
+  string details = 3;
+
+  // Chunk sequence number where error occurred (if applicable).
+  uint32 error_at_sequence = 4;
+
+  // Byte offset where error occurred (if applicable).
+  uint32 error_at_offset = 5;
+}
