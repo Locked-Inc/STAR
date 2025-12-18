@@ -69,25 +69,31 @@ Code Generation & Automatic & Manual \\
 
 \begin{lstlisting}[language=bash]
 star-proto/
-|-- README.md
-|-- buf.yaml                      # Buf build configuration
+|-- STYLE_GUIDE.md                # Boston Dynamics-based style guide
 |-- buf.gen.yaml                  # Code generation config
 |
-|-- star/
-|   |-- motor_control.proto       # Motor command service
-|   |-- telemetry.proto           # Telemetry data types
-|   |-- navigation.proto          # Navigation service
-|   +-- common.proto              # Shared types
+|-- proto/
+|   |-- buf.yaml                  # Buf lint/build configuration
+|   +-- star/
+|       +-- v1/                   # Versioned package (star.v1)
+|           |-- common.proto      # Shared types (headers, status, vectors)
+|           |-- motor_control.proto  # Motor command service
+|           +-- telemetry.proto   # Telemetry streaming service
 |
-|-- scripts/
-|   |-- generate-kotlin.sh        # Generate for star-gateway
-|   |-- generate-typescript.sh    # Generate for star-ui
-|   +-- generate-c.sh             # Generate for star-esp32-firmware
+|-- nanopb/                       # nanopb options for ESP32 constraints
+|   |-- common.options
+|   |-- motor_control.options
+|   +-- telemetry.options
 |
-+-- generated/                    # Generated code (gitignored)
-    |-- kotlin/
-    |-- typescript/
-    +-- c/
+|-- tests/                        # Serialization tests
+|   |-- go/                       # Go tests (primary)
+|   |-- typescript/               # TypeScript tests
+|   +-- nanopb/                   # C/nanopb tests
+|
++-- gen/                          # Generated code (gitignored)
+    |-- go/                       # Go code for star-gateway
+    |-- typescript/               # TypeScript for star-ui
+    +-- nanopb/                   # C code for ESP32
 \end{lstlisting}
 
 % =============================================================================
@@ -96,181 +102,183 @@ star-proto/
 
 \subsection{motor\_control.proto}
 
-\begin{lstlisting}[language=Protobuf, caption=star/motor\_control.proto]
+\begin{lstlisting}[language=Protobuf, caption=star/v1/motor\_control.proto]
 syntax = "proto3";
 
-package star.motor;
+package star.v1;
 
-option java_package = "com.star.gateway.proto";
-option java_outer_classname = "MotorControlProto";
+import "star/v1/common.proto";
+
+option go_package = "github.com/Locked-Inc/star-proto/gen/go/star/v1;starv1";
 option java_multiple_files = true;
+option java_outer_classname = "MotorControlProto";
+option java_package = "com.star.proto.v1";
 
-import "star/common.proto";
+// Motor control service for low-latency differential drive commands.
+service MotorControlService {
+    // Set wheel velocities for differential drive.
+    rpc SetVelocity(SetVelocityRequest) returns (SetVelocityResponse);
 
-// Motor control service for low-latency commands
-service MotorControl {
-    // Set wheel velocities (differential drive)
-    rpc SetVelocity(VelocityCommand) returns (CommandResponse);
+    // Immediate emergency stop. Stops all motors and engages brakes.
+    rpc EmergencyStop(EmergencyStopRequest) returns (EmergencyStopResponse);
 
-    // Immediate emergency stop
-    rpc EmergencyStop(EmptyRequest) returns (CommandResponse);
+    // Set individual motor power directly (bypass PID).
+    rpc SetMotorPower(SetMotorPowerRequest) returns (SetMotorPowerResponse);
 
-    // Set individual motor power
-    rpc SetMotorPower(MotorPowerCommand) returns (CommandResponse);
+    // Stream encoder data from all motors.
+    rpc StreamEncoders(StreamEncodersRequest) returns (stream EncoderData);
 
-    // Stream encoder data (server streaming)
-    rpc StreamEncoderData(EmptyRequest) returns (stream EncoderData);
-
-    // Bidirectional control stream (for continuous control)
+    // Bidirectional control stream for continuous control.
     rpc ControlStream(stream VelocityCommand) returns (stream EncoderData);
 }
 
-// Velocity command for differential drive
+// Request to set wheel velocities.
+message SetVelocityRequest {
+    // Standard request header.
+    RequestHeader header = 1;
+
+    // Velocity command to execute.
+    VelocityCommand command = 2;
+}
+
+// Response to velocity command.
+message SetVelocityResponse {
+    // Standard response header with status.
+    ResponseHeader header = 1;
+
+    // Current motor status after command.
+    repeated MotorStatus motor_status = 2;
+}
+
+// Velocity command for differential drive robot.
+// Uses MKS units: meters per second.
 message VelocityCommand {
-    // Left wheel velocity in m/s (-2.0 to 2.0)
-    float left_velocity = 1;
+    // Left wheel velocity in meters per second.
+    // Valid range: -2.0 to 2.0 m/s.
+    double left_velocity_mps = 1;
 
-    // Right wheel velocity in m/s (-2.0 to 2.0)
-    float right_velocity = 2;
+    // Right wheel velocity in meters per second.
+    // Valid range: -2.0 to 2.0 m/s.
+    double right_velocity_mps = 2;
 
-    // Client timestamp in milliseconds (for latency tracking)
-    uint64 timestamp = 3;
+    // Command sequence number for ordering.
+    uint32 sequence = 3;
 
-    // Optional: command sequence number
-    uint32 sequence = 4;
+    // Client timestamp in microseconds.
+    int64 timestamp_us = 4;
 }
 
-// Direct motor power control
-message MotorPowerCommand {
-    // Motor index: 0=front-left, 1=front-right, 2=rear-left, 3=rear-right
-    int32 motor_id = 1;
-
-    // Power level: -1.0 (full reverse) to 1.0 (full forward)
-    float power = 2;
-}
-
-// Standard command response
-message CommandResponse {
-    // True if command was executed successfully
-    bool success = 1;
-
-    // Human-readable status message
-    string message = 2;
-
-    // Round-trip latency in microseconds
-    uint64 latency_us = 3;
-
-    // Server timestamp
-    uint64 server_timestamp = 4;
-}
-
-// Real-time encoder feedback
+// Real-time encoder feedback from motor controller.
 message EncoderData {
-    // Motor index (0-3)
+    // Motor index: 0 = left, 1 = right.
     int32 motor_id = 1;
 
-    // Absolute encoder position (ticks)
+    // Absolute encoder position in ticks.
     int64 ticks = 2;
 
-    // Current velocity in m/s
-    float velocity = 3;
+    // Current velocity in meters per second.
+    double velocity_mps = 3;
 
-    // Timestamp in milliseconds
-    uint64 timestamp = 4;
+    // Timestamp in microseconds since boot.
+    int64 timestamp_us = 4;
+}
+
+// Motor operating state.
+enum MotorState {
+    // Unknown state (zero value per Boston Dynamics style).
+    MOTOR_STATE_UNKNOWN = 0;
+    MOTOR_STATE_IDLE = 1;
+    MOTOR_STATE_RUNNING = 2;
+    MOTOR_STATE_FAULT = 3;
+    MOTOR_STATE_ESTOP = 4;
 }
 \end{lstlisting}
 
 \subsection{telemetry.proto}
 
-\begin{lstlisting}[language=Protobuf, caption=star/telemetry.proto]
+\begin{lstlisting}[language=Protobuf, caption=star/v1/telemetry.proto]
 syntax = "proto3";
 
-package star.telemetry;
+package star.v1;
 
-option java_package = "com.star.gateway.proto";
+import "google/protobuf/timestamp.proto";
+import "star/v1/common.proto";
+
+option go_package = "github.com/Locked-Inc/star-proto/gen/go/star/v1;starv1";
 option java_multiple_files = true;
+option java_outer_classname = "TelemetryProto";
+option java_package = "com.star.proto.v1";
 
-import "star/common.proto";
-
-// Telemetry streaming service
+// Telemetry streaming service for real-time sensor data.
 service TelemetryService {
-    // Get current telemetry snapshot
-    rpc GetTelemetry(EmptyRequest) returns (TelemetryData);
+    // Get current telemetry snapshot.
+    rpc GetTelemetry(GetTelemetryRequest) returns (GetTelemetryResponse);
 
-    // Stream telemetry at specified rate
-    rpc StreamTelemetry(StreamRequest) returns (stream TelemetryData);
+    // Stream telemetry at specified rate.
+    rpc StreamTelemetry(StreamTelemetryRequest) returns (stream TelemetryData);
 
-    // Get system status
-    rpc GetSystemStatus(EmptyRequest) returns (SystemStatus);
+    // Get system status information.
+    rpc GetSystemStatus(GetSystemStatusRequest) returns (GetSystemStatusResponse);
 }
 
-// Stream configuration
-message StreamRequest {
-    // Update rate in Hz (1-100)
-    int32 rate_hz = 1;
-
-    // Fields to include (empty = all)
-    repeated string fields = 2;
+// Request for telemetry snapshot.
+message GetTelemetryRequest {
+    RequestHeader header = 1;
 }
 
-// Complete telemetry snapshot
+// Response with telemetry snapshot.
+message GetTelemetryResponse {
+    ResponseHeader header = 1;
+    TelemetryData telemetry = 2;
+}
+
+// Complete telemetry snapshot from all sensors.
 message TelemetryData {
-    // IMU data
     ImuData imu = 1;
-
-    // GPS data (if available)
     GpsData gps = 2;
-
-    // Battery percentage (0-100)
-    float battery = 3;
-
-    // WiFi signal strength in dBm
-    int32 wifi_signal = 4;
-
-    // CPU usage percentage (0-100)
-    float cpu_usage = 5;
-
-    // Temperature in Celsius
-    float temperature = 6;
-
-    // Motor load percentage (0-100)
-    float motor_load = 7;
-
-    // Timestamp (ISO 8601)
-    string timestamp = 8;
+    double battery_percent = 3;       // Range: 0 to 100
+    int32 wifi_signal_dbm = 4;        // Typical: -100 to -30 dBm
+    double cpu_usage_percent = 5;     // Range: 0 to 100
+    double temperature_celsius = 6;   // From DS18B20 sensor
+    double motor_load_percent = 7;    // Average across motors
+    google.protobuf.Timestamp timestamp = 8;
 }
 
-// IMU sensor data
+// IMU sensor data with MKS units.
 message ImuData {
-    // Orientation (degrees)
-    float pitch = 1;
-    float roll = 2;
-    float yaw = 3;
-
-    // Linear velocity (m/s)
-    float velocity = 4;
-
-    // Acceleration (m/s^2)
-    float acceleration_x = 5;
-    float acceleration_y = 6;
-    float acceleration_z = 7;
-
-    // Angular velocity (rad/s)
-    float gyro_x = 8;
-    float gyro_y = 9;
-    float gyro_z = 10;
+    double pitch_rad = 1;             // Range: -pi/2 to pi/2
+    double roll_rad = 2;              // Range: -pi to pi
+    double yaw_rad = 3;               // Range: -pi to pi
+    double accel_x_mps2 = 4;          // Linear acceleration X (m/s^2)
+    double accel_y_mps2 = 5;          // Linear acceleration Y (m/s^2)
+    double accel_z_mps2 = 6;          // ~9.81 at rest
+    double gyro_x_rad_per_s = 7;      // Angular velocity X (rad/s)
+    double gyro_y_rad_per_s = 8;      // Angular velocity Y (rad/s)
+    double gyro_z_rad_per_s = 9;      // Angular velocity Z (rad/s)
 }
 
-// GPS data
+// GPS position data.
 message GpsData {
-    double latitude = 1;
-    double longitude = 2;
-    float altitude = 3;
-    float accuracy = 4;
+    double latitude_deg = 1;          // WGS84, range: -90 to 90
+    double longitude_deg = 2;         // WGS84, range: -180 to 180
+    double altitude_m = 3;            // Meters above sea level
+    double accuracy_m = 4;            // Horizontal accuracy (m)
     int32 satellites = 5;
+    GpsFix fix_type = 6;
 }
 
-// System status
+// GPS fix type enumeration.
+enum GpsFix {
+    GPS_FIX_UNKNOWN = 0;              // Zero value is UNKNOWN
+    GPS_FIX_NONE = 1;
+    GPS_FIX_2D = 2;
+    GPS_FIX_3D = 3;
+    GPS_FIX_DGPS = 4;
+    GPS_FIX_RTK_FLOAT = 5;
+    GPS_FIX_RTK_FIXED = 6;
+}
+
+// System status information.
 message SystemStatus {
     ConnectionStatus connection_status = 1;
     RobotMode mode = 2;
@@ -278,185 +286,202 @@ message SystemStatus {
     bool lidar_connected = 4;
     bool ros_connected = 5;
     string firmware_version = 6;
-    uint64 uptime_seconds = 7;
+    uint64 uptime_s = 7;
+    uint32 free_heap_bytes = 8;
 }
 
-// Connection state
+// Connection state enumeration.
 enum ConnectionStatus {
-    CONNECTION_UNKNOWN = 0;
-    CONNECTION_CONNECTED = 1;
-    CONNECTION_DISCONNECTED = 2;
-    CONNECTION_CONNECTING = 3;
-    CONNECTION_ERROR = 4;
+    CONNECTION_STATUS_UNKNOWN = 0;    // Zero value is UNKNOWN
+    CONNECTION_STATUS_CONNECTED = 1;
+    CONNECTION_STATUS_DISCONNECTED = 2;
+    CONNECTION_STATUS_CONNECTING = 3;
+    CONNECTION_STATUS_ERROR = 4;
 }
 
-// Robot operating mode
+// Robot operating mode enumeration.
 enum RobotMode {
-    MODE_UNKNOWN = 0;
-    MODE_IDLE = 1;
-    MODE_MANUAL = 2;
-    MODE_AUTONOMOUS = 3;
-    MODE_MAPPING = 4;
-    MODE_EMERGENCY_STOP = 5;
+    ROBOT_MODE_UNKNOWN = 0;           // Zero value is UNKNOWN
+    ROBOT_MODE_IDLE = 1;
+    ROBOT_MODE_MANUAL = 2;
+    ROBOT_MODE_AUTONOMOUS = 3;
+    ROBOT_MODE_MAPPING = 4;
+    ROBOT_MODE_EMERGENCY_STOP = 5;
 }
 \end{lstlisting}
 
-\subsection{navigation.proto}
+\subsection{navigation.proto (Planned)}
 
-\begin{lstlisting}[language=Protobuf, caption=star/navigation.proto]
+\begin{lstlisting}[language=Protobuf, caption=star/v1/navigation.proto (planned)]
 syntax = "proto3";
 
-package star.navigation;
+package star.v1;
 
-option java_package = "com.star.gateway.proto";
+import "google/protobuf/timestamp.proto";
+import "star/v1/common.proto";
+
+option go_package = "github.com/Locked-Inc/star-proto/gen/go/star/v1;starv1";
 option java_multiple_files = true;
+option java_outer_classname = "NavigationProto";
+option java_package = "com.star.proto.v1";
 
-import "star/common.proto";
-
-// Navigation service
+// Navigation service for autonomous path planning and execution.
 service NavigationService {
-    // Get current navigation state
-    rpc GetState(EmptyRequest) returns (NavigationState);
+    // Get current navigation state.
+    rpc GetState(GetNavigationStateRequest) returns (GetNavigationStateResponse);
 
-    // Add waypoint to queue
-    rpc AddWaypoint(Waypoint) returns (WaypointResponse);
+    // Add waypoint to navigation queue.
+    rpc AddWaypoint(AddWaypointRequest) returns (AddWaypointResponse);
 
-    // Clear all waypoints
-    rpc ClearWaypoints(EmptyRequest) returns (CommandResponse);
+    // Clear all queued waypoints.
+    rpc ClearWaypoints(ClearWaypointsRequest) returns (ClearWaypointsResponse);
 
-    // Start autonomous navigation
-    rpc StartNavigation(EmptyRequest) returns (CommandResponse);
+    // Start autonomous navigation to queued waypoints.
+    rpc StartNavigation(StartNavigationRequest) returns (StartNavigationResponse);
 
-    // Stop navigation
-    rpc StopNavigation(EmptyRequest) returns (CommandResponse);
+    // Stop navigation and hold position.
+    rpc StopNavigation(StopNavigationRequest) returns (StopNavigationResponse);
 
-    // Stream navigation updates
-    rpc StreamNavigation(EmptyRequest) returns (stream NavigationState);
+    // Stream navigation updates.
+    rpc StreamNavigation(StreamNavigationRequest) returns (stream NavigationState);
 
-    // Stream LiDAR scans
-    rpc StreamLidar(StreamRequest) returns (stream LidarScan);
+    // Stream LiDAR scan data.
+    rpc StreamLidar(StreamLidarRequest) returns (stream LidarScan);
 }
 
-// Current navigation state
+// Current navigation state.
 message NavigationState {
-    // Current robot position
-    Position current_position = 1;
-
-    // Planned path
-    repeated Position path = 2;
-
-    // Queued waypoints
-    repeated Waypoint waypoints = 3;
-
-    // Navigation active
+    SE2Pose current_pose = 1;         // Current robot pose
+    repeated SE2Pose path = 2;        // Planned path points
+    repeated Waypoint waypoints = 3;  // Queued waypoints
     bool is_navigating = 4;
-
-    // Progress percentage
-    float progress = 5;
-
-    // Estimated time remaining (seconds)
-    float eta_seconds = 6;
+    double progress_percent = 5;      // 0-100
+    double eta_s = 6;                 // Estimated time remaining
+    NavigationStatus status = 7;
 }
 
-// 2D position with heading
-message Position {
-    float x = 1;  // meters
-    float y = 2;  // meters
-    float heading = 3;  // radians
-}
-
-// Navigation waypoint
+// Navigation waypoint.
 message Waypoint {
     string id = 1;
-    float x = 2;
-    float y = 3;
+    double x_m = 2;                   // X position in meters
+    double y_m = 3;                   // Y position in meters
     string label = 4;
     WaypointType type = 5;
 }
 
+// Waypoint type enumeration.
 enum WaypointType {
-    WAYPOINT_NORMAL = 0;
-    WAYPOINT_STOP = 1;
-    WAYPOINT_SLOW = 2;
+    WAYPOINT_TYPE_UNKNOWN = 0;        // Zero value is UNKNOWN
+    WAYPOINT_TYPE_NORMAL = 1;
+    WAYPOINT_TYPE_STOP = 2;
+    WAYPOINT_TYPE_SLOW = 3;
 }
 
-message WaypointResponse {
-    bool success = 1;
-    string waypoint_id = 2;
-    string message = 3;
+// Navigation status enumeration.
+enum NavigationStatus {
+    NAVIGATION_STATUS_UNKNOWN = 0;    // Zero value is UNKNOWN
+    NAVIGATION_STATUS_IDLE = 1;
+    NAVIGATION_STATUS_NAVIGATING = 2;
+    NAVIGATION_STATUS_PAUSED = 3;
+    NAVIGATION_STATUS_GOAL_REACHED = 4;
+    NAVIGATION_STATUS_ERROR = 5;
 }
 
-// LiDAR scan data
+// LiDAR scan data.
 message LidarScan {
     repeated LidarPoint points = 1;
-    string timestamp = 2;
+    google.protobuf.Timestamp timestamp = 2;
     string frame_id = 3;
 }
 
+// Single LiDAR measurement point.
 message LidarPoint {
-    float angle = 1;      // radians
-    float distance = 2;   // meters
-    float intensity = 3;  // 0-255
+    double angle_rad = 1;             // Angle in radians
+    double distance_m = 2;            // Distance in meters
+    double intensity = 3;             // Intensity 0-255
 }
 
-// Map data
+// Occupancy grid map.
 message OccupancyGrid {
-    // Grid metadata
-    float resolution = 1;  // meters per cell
+    double resolution_m = 1;          // Meters per cell
     uint32 width = 2;
     uint32 height = 3;
-    Position origin = 4;
-
-    // Grid data (-1=unknown, 0=free, 100=occupied)
-    bytes data = 5;
-
-    string timestamp = 6;
+    SE2Pose origin = 4;
+    bytes data = 5;                   // -1=unknown, 0=free, 100=occupied
+    google.protobuf.Timestamp timestamp = 6;
 }
 \end{lstlisting}
 
 \subsection{common.proto}
 
-\begin{lstlisting}[language=Protobuf, caption=star/common.proto]
+\begin{lstlisting}[language=Protobuf, caption=star/v1/common.proto]
 syntax = "proto3";
 
-package star;
+package star.v1;
 
-option java_package = "com.star.gateway.proto";
+import "google/protobuf/duration.proto";
+import "google/protobuf/timestamp.proto";
+
+option go_package = "github.com/Locked-Inc/star-proto/gen/go/star/v1;starv1";
 option java_multiple_files = true;
+option java_package = "com.star.proto.v1";
 
-// Empty request placeholder
-message EmptyRequest {}
-
-// Generic command response (shared across services)
-message CommandResponse {
-    bool success = 1;
-    string message = 2;
+// Standard request header included in all requests.
+message RequestHeader {
+    string request_id = 1;                    // UUID for tracing
+    google.protobuf.Timestamp client_timestamp = 2;
+    string client_version = 3;                // e.g., "1.0.0"
+    google.protobuf.Duration timeout = 4;     // Optional deadline
 }
 
-// Stream request with rate
-message StreamRequest {
-    int32 rate_hz = 1;
+// Standard response header included in all responses.
+message ResponseHeader {
+    string request_id = 1;                    // Echo of request_id
+    google.protobuf.Timestamp server_timestamp = 2;
+    Status status = 3;                        // Processing status
+    string error_message = 4;                 // If status != STATUS_OK
+    int64 latency_us = 5;                     // Round-trip latency
 }
 
-// Timestamp wrapper
-message Timestamp {
-    int64 seconds = 1;
-    int32 nanos = 2;
+// Response status codes (zero value is UNKNOWN per Boston Dynamics).
+enum Status {
+    STATUS_UNKNOWN = 0;
+    STATUS_OK = 1;
+    STATUS_INVALID_REQUEST = 2;
+    STATUS_INTERNAL_ERROR = 3;
+    STATUS_NOT_FOUND = 4;
+    STATUS_TIMEOUT = 5;
+    STATUS_INVALID_STATE = 6;
+    STATUS_ESTOP_ACTIVE = 7;
 }
 
-// Vector3 for 3D data
+// 3D vector with MKS units (context determines: m, m/s, etc).
 message Vector3 {
-    float x = 1;
-    float y = 2;
-    float z = 3;
+    double x = 1;
+    double y = 2;
+    double z = 3;
 }
 
-// Quaternion for rotation
+// Quaternion for orientation (w, x, y, z).
 message Quaternion {
-    float x = 1;
-    float y = 2;
-    float z = 3;
-    float w = 4;
+    double w = 1;
+    double x = 2;
+    double y = 3;
+    double z = 4;
+}
+
+// SE2 pose for 2D navigation.
+message SE2Pose {
+    double x_m = 1;           // X position in meters
+    double y_m = 2;           // Y position in meters
+    double angle_rad = 3;     // Heading in radians (-pi to pi)
+}
+
+// SE2 velocity for 2D motion.
+message SE2Velocity {
+    double vx_mps = 1;        // Linear velocity X (m/s)
+    double vy_mps = 2;        // Linear velocity Y (m/s)
+    double omega_rad_per_s = 3; // Angular velocity (rad/s)
 }
 \end{lstlisting}
 
@@ -484,94 +509,136 @@ npm install -g @bufbuild/buf
 
 \subsection{Using Buf (Recommended)}
 
-Create \texttt{buf.yaml}:
+Create \texttt{proto/buf.yaml}:
 
-\begin{lstlisting}[language=yaml, caption=buf.yaml]
+\begin{lstlisting}[language=yaml, caption=proto/buf.yaml]
 version: v1
 name: buf.build/star/proto
-deps: []
-breaking:
-  use:
-    - FILE
+
+deps:
+  - buf.build/googleapis/googleapis
+
 lint:
   use:
     - DEFAULT
+    - COMMENTS
+  except:
+    - PACKAGE_VERSION_SUFFIX
+    # Boston Dynamics uses _UNKNOWN, not _UNSPECIFIED
+    - ENUM_ZERO_VALUE_SUFFIX
+    - RPC_REQUEST_RESPONSE_UNIQUE
+    - RPC_REQUEST_STANDARD_NAME
+    - RPC_RESPONSE_STANDARD_NAME
+  service_suffix: Service
+  rpc_allow_same_request_response: true
+
+breaking:
+  use:
+    - FILE
+    - PACKAGE
 \end{lstlisting}
 
 Create \texttt{buf.gen.yaml}:
 
 \begin{lstlisting}[language=yaml, caption=buf.gen.yaml]
 version: v1
+
 managed:
   enabled: true
-  java_package_prefix: com.star.gateway.proto
+  go_package_prefix:
+    default: github.com/Locked-Inc/star-proto/gen/go
+  optimize_for: SPEED
+
 plugins:
-  # Kotlin/Java for star-gateway
-  - plugin: buf.build/grpc/java
-    out: generated/kotlin
-  - plugin: buf.build/protocolbuffers/java
-    out: generated/kotlin
+  # Go for star-gateway (primary language)
+  - plugin: buf.build/protocolbuffers/go
+    out: gen/go
+    opt:
+      - paths=source_relative
 
-  # TypeScript for star-ui
+  - plugin: buf.build/grpc/go
+    out: gen/go
+    opt:
+      - paths=source_relative
+
+  # TypeScript for star-ui (protobuf-ts)
   - plugin: buf.build/community/timostamm-protobuf-ts
-    out: generated/typescript
+    out: gen/typescript
+    opt:
+      - long_type_string
+      - optimize_code_size
+      - generate_dependencies
+      - ts_nocheck
+      - eslint_disable
 
-  # C for star-esp32-firmware (via nanopb)
-  - plugin: buf.build/community/nanopb-nanopb
-    out: generated/c
+  # C for star-esp32-firmware (nanopb)
+  # Note: nanopb requires local installation: pip install nanopb
+  # - plugin: nanopb_generator
+  #   out: gen/nanopb
+  #   opt:
+  #     - --options-path=nanopb/
 \end{lstlisting}
 
 Generate code:
 
 \begin{lstlisting}[language=bash]
+# From star-proto directory
+cd star-proto
+
 # Lint proto files
-buf lint
+buf lint proto/
+
+# Format proto files
+buf format --diff proto/
 
 # Generate all targets
-buf generate
-
-# Generate specific target
-buf generate --path star/motor_control.proto
+buf generate proto/ --template buf.gen.yaml --include-imports
 \end{lstlisting}
 
-\subsection{Manual Generation Scripts}
+\subsection{Manual Generation Scripts (Alternative to Buf)}
 
-\texttt{scripts/generate-kotlin.sh}:
+\texttt{scripts/generate-go.sh} (Primary):
 
-\begin{lstlisting}[language=bash, caption=generate-kotlin.sh]
+\begin{lstlisting}[language=bash, caption=generate-go.sh]
 #!/bin/bash
 set -e
 
-PROTO_DIR="star"
-OUT_DIR="../star-gateway/src/main/kotlin"
+PROTO_DIR="proto"
+OUT_DIR="gen/go"
+
+mkdir -p $OUT_DIR
 
 protoc \
-    -I=. \
-    --java_out=$OUT_DIR \
-    --grpc-java_out=$OUT_DIR \
-    --kotlin_out=$OUT_DIR \
-    --grpckt_out=$OUT_DIR \
-    $PROTO_DIR/*.proto
+    -I=$PROTO_DIR \
+    --go_out=$OUT_DIR \
+    --go_opt=paths=source_relative \
+    --go-grpc_out=$OUT_DIR \
+    --go-grpc_opt=paths=source_relative \
+    $PROTO_DIR/star/v1/*.proto
 
-echo "Kotlin code generated in $OUT_DIR"
+echo "Go code generated in $OUT_DIR"
 \end{lstlisting}
 
-\texttt{scripts/generate-typescript.sh}:
+\texttt{scripts/generate-nanopb.sh} (ESP32):
 
-\begin{lstlisting}[language=bash, caption=generate-typescript.sh]
+\begin{lstlisting}[language=bash, caption=generate-nanopb.sh]
 #!/bin/bash
 set -e
 
-PROTO_DIR="star"
-OUT_DIR="../star-ui/src/grpc"
+PROTO_DIR="proto"
+OUT_DIR="gen/nanopb"
 
-protoc \
-    -I=. \
-    --js_out=import_style=commonjs:$OUT_DIR \
-    --grpc-web_out=import_style=typescript,mode=grpcweb:$OUT_DIR \
-    $PROTO_DIR/*.proto
+mkdir -p $OUT_DIR
 
-echo "TypeScript code generated in $OUT_DIR"
+for proto in $PROTO_DIR/star/v1/*.proto; do
+    nanopb_generator \
+        --proto-path=$PROTO_DIR \
+        --options-path=nanopb \
+        --output-dir=$OUT_DIR \
+        "$proto"
+done
+
+echo "nanopb C code generated in $OUT_DIR"
 \end{lstlisting}
 
 % =============================================================================
@@ -589,19 +656,19 @@ echo "TypeScript code generated in $OUT_DIR"
 
 \begin{lstlisting}[language=Protobuf, caption=Schema Evolution Example]
 message VelocityCommand {
-    float left_velocity = 1;
-    float right_velocity = 2;
+    double left_velocity_mps = 1;
+    double right_velocity_mps = 2;
 
     // Reserved: removed fields
     reserved 3;
     reserved "old_field_name";
 
     // New optional field (added later)
-    optional float acceleration_limit = 4;
+    optional double acceleration_limit_mps2 = 4;
 }
 \end{lstlisting}
 
-\subsection{Naming Conventions}
+\subsection{Naming Conventions (Boston Dynamics Style)}
 
 \begin{table}[H]
 \centering
@@ -609,20 +676,31 @@ message VelocityCommand {
 \hline
 \textbf{Element} & \textbf{Convention} & \textbf{Example} \\
 \hline
-Package & lowercase.dots & star.motor \\
+Package & lowercase.version & star.v1 \\
 Message & PascalCase & VelocityCommand \\
-Field & snake\_case & left\_velocity \\
-Enum & SCREAMING\_SNAKE & MODE\_MANUAL \\
-Service & PascalCase & MotorControl \\
+Field & snake\_case\_with\_units & left\_velocity\_mps \\
+Enum type & PascalCase & RobotMode \\
+Enum value & TYPE\_PREFIX\_VALUE & ROBOT\_MODE\_MANUAL \\
+Enum zero & TYPE\_PREFIX\_UNKNOWN & ROBOT\_MODE\_UNKNOWN \\
+Service & PascalCaseService & MotorControlService \\
 RPC method & PascalCase & SetVelocity \\
 \hline
 \end{tabular}
-\caption{Protobuf Naming Conventions}
+\caption{Protobuf Naming Conventions (Boston Dynamics Style)}
 \end{table}
+
+\textbf{Key Boston Dynamics Conventions:}
+\begin{itemize}
+    \item \textbf{Enum zero value}: Always ends with \texttt{\_UNKNOWN}, not \texttt{\_UNSPECIFIED}
+    \item \textbf{Enum prefixing}: Values prefixed with type name (e.g., \texttt{MOTOR\_STATE\_IDLE})
+    \item \textbf{Unit suffixes}: Fields include units (e.g., \texttt{\_mps}, \texttt{\_rad}, \texttt{\_celsius}, \texttt{\_us})
+    \item \textbf{Double precision}: Use \texttt{double} instead of \texttt{float} for numeric values
+    \item \textbf{Request/Response headers}: All RPCs include \texttt{RequestHeader}/\texttt{ResponseHeader}
+\end{itemize}
 
 \subsection{Documentation}
 
-Always document messages and fields:
+Always document messages and fields with units in field names:
 
 \begin{lstlisting}[language=Protobuf]
 // Velocity command for differential drive robot.
@@ -630,11 +708,19 @@ Always document messages and fields:
 message VelocityCommand {
     // Left wheel velocity in meters per second.
     // Valid range: -2.0 to 2.0 m/s.
-    float left_velocity = 1;
+    // Positive = forward, negative = reverse.
+    double left_velocity_mps = 1;
 
     // Right wheel velocity in meters per second.
     // Valid range: -2.0 to 2.0 m/s.
-    float right_velocity = 2;
+    // Positive = forward, negative = reverse.
+    double right_velocity_mps = 2;
+
+    // Command sequence number for ordering.
+    uint32 sequence = 3;
+
+    // Client timestamp in microseconds.
+    int64 timestamp_us = 4;
 }
 \end{lstlisting}
 
@@ -642,44 +728,69 @@ message VelocityCommand {
 \section{Integration}
 % =============================================================================
 
-\subsection{star-gateway Integration}
+\subsection{star-gateway Integration (Go)}
 
-Add to \texttt{star-gateway/build.gradle.kts}:
+Add to \texttt{star-gateway/go.mod}:
 
-\begin{lstlisting}[language=Kotlin]
-protobuf {
-    protoc {
-        artifact = "com.google.protobuf:protoc:3.25.2"
-    }
-    plugins {
-        id("grpc") {
-            artifact = "io.grpc:protoc-gen-grpc-java:1.60.1"
-        }
-        id("grpckt") {
-            artifact = "io.grpc:protoc-gen-grpc-kotlin:1.4.1:jdk8@jar"
-        }
-    }
-}
+\begin{lstlisting}[language=bash]
+module github.com/Locked-Inc/star-gateway
 
-sourceSets {
-    main {
-        proto {
-            srcDir("../star-proto/star")
-        }
-    }
+go 1.21
+
+require (
+    github.com/Locked-Inc/star-proto/gen/go v0.0.0
+    google.golang.org/grpc v1.60.0
+    google.golang.org/protobuf v1.31.0
+)
+
+// For local development, use replace directive:
+replace github.com/Locked-Inc/star-proto/gen/go => ../star-proto/gen/go
+\end{lstlisting}
+
+Usage in Go code:
+
+\begin{lstlisting}[language=Go]
+import (
+    starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
+    "google.golang.org/grpc"
+)
+
+// Create velocity command
+cmd := &starv1.VelocityCommand{
+    LeftVelocityMps:  1.5,
+    RightVelocityMps: 1.5,
+    Sequence:         42,
 }
 \end{lstlisting}
 
-\subsection{star-ui Integration}
+\subsection{star-ui Integration (TypeScript)}
 
 Add npm script to \texttt{star-ui/package.json}:
 
 \begin{lstlisting}[language=json]
 {
   "scripts": {
-    "proto:generate": "cd ../star-proto && ./scripts/generate-typescript.sh"
+    "proto:generate": "cd ../star-proto && buf generate proto/"
+  },
+  "dependencies": {
+    "@protobuf-ts/runtime": "^2.9.0",
+    "@protobuf-ts/grpcweb-transport": "^2.9.0"
   }
 }
+\end{lstlisting}
+
+\subsection{star-esp32-firmware Integration (nanopb)}
+
+Copy generated files to firmware:
+
+\begin{lstlisting}[language=bash]
+# After running buf generate or nanopb_generator
+cp star-proto/gen/nanopb/*.pb.c star-esp32-firmware/lib/star_proto/src/
+cp star-proto/gen/nanopb/*.pb.h star-esp32-firmware/lib/star_proto/include/
+
+# Include in platformio.ini
+lib_deps =
+    nanopb/Nanopb@^0.4.8
 \end{lstlisting}
 
 % =============================================================================
@@ -687,11 +798,13 @@ Add npm script to \texttt{star-ui/package.json}:
 % =============================================================================
 
 \begin{itemize}
+    \item Boston Dynamics Protobuf Style Guide: \url{https://dev.bostondynamics.com/docs/protos/style_guide}
     \item Protocol Buffers Documentation: \url{https://protobuf.dev/}
     \item gRPC Documentation: \url{https://grpc.io/docs/}
     \item Buf CLI: \url{https://buf.build/docs/}
     \item gRPC-Web: \url{https://github.com/grpc/grpc-web}
     \item nanopb (C): \url{https://jpa.kapsi.fi/nanopb/}
+    \item protobuf-ts (TypeScript): \url{https://github.com/timostamm/protobuf-ts}
     \item STAR Software Architecture Primer: Section 3 (Protocol Analysis)
 \end{itemize}
 
