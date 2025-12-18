@@ -123,65 +123,65 @@ extern "C" {
  * @brief DRV8243 fault type enumeration
  */
 typedef enum {
-  k_star_drv8243_fault_none          = 0,  /**< No fault */
-  k_star_drv8243_fault_overcurrent   = 1,  /**< Overcurrent fault */
-  k_star_drv8243_fault_thermal       = 2,  /**< Thermal shutdown */
-  k_star_drv8243_fault_undervoltage  = 3,  /**< Undervoltage lockout */
-  k_star_drv8243_fault_overvoltage   = 4,  /**< Overvoltage fault */
-  k_star_drv8243_fault_unknown       = 5,  /**< Unknown fault */
+  k_star_drv8243_fault_none         = 0, /**< No fault */
+  k_star_drv8243_fault_overcurrent  = 1, /**< Overcurrent fault */
+  k_star_drv8243_fault_thermal      = 2, /**< Thermal shutdown */
+  k_star_drv8243_fault_undervoltage = 3, /**< Undervoltage lockout */
+  k_star_drv8243_fault_overvoltage  = 4, /**< Overvoltage fault */
+  k_star_drv8243_fault_unknown      = 5, /**< Unknown fault */
 } star_drv8243_fault_t;
 
 /**
  * @brief DRV8243 configuration structure
  */
 typedef struct {
-  star_bus_manager_t* bus_manager;     /**< Bus manager instance */
-  const char*         gpio_bus_name;   /**< GPIO bus name for fault pin */
-  const char*         adc_bus_name;    /**< ADC bus name for current sense */
+  star_bus_manager_t* bus_manager;   /**< Bus manager instance */
+  const char*         gpio_bus_name; /**< GPIO bus name for fault pin */
+  const char*         adc_bus_name;  /**< ADC bus name for current sense */
 
   /* Motor control pins */
-  int pin_pwm_ph;                      /**< Phase/Direction pin (PWM A) */
-  int pin_pwm_en;                      /**< Enable/Speed pin (PWM B) */
+  int pin_pwm_ph; /**< Phase/Direction pin (PWM A) */
+  int pin_pwm_en; /**< Enable/Speed pin (PWM B) */
 
   /* Monitoring pins */
-  int pin_ipropi;                      /**< Current sense pin (ADC channel) */
-  int pin_nfault;                      /**< Fault detect pin (GPIO) */
+  int pin_ipropi; /**< Current sense pin (ADC channel) */
+  int pin_nfault; /**< Fault detect pin (GPIO) */
 
   /* Motor control parameters */
-  uint32_t pwm_freq_hz;                /**< PWM frequency (max 25 kHz) */
-  uint32_t timer_resolution_hz;        /**< Timer resolution (default 10 MHz) */
-  uint32_t dead_time_ns;               /**< Dead-time in nanoseconds */
+  uint32_t pwm_freq_hz;         /**< PWM frequency (max 25 kHz) */
+  uint32_t timer_resolution_hz; /**< Timer resolution (default 10 MHz) */
+  uint32_t dead_time_ns;        /**< Dead-time in nanoseconds */
 
   /* Current sensing parameters */
-  uint16_t current_limit_ma;           /**< Current limit in milliamps (0 = disabled) */
-  uint16_t ki_propi;                   /**< IPROPI ratio in A/V (default 525) */
+  uint16_t current_limit_ma; /**< Current limit in milliamps (0 = disabled) */
+  uint16_t ki_propi;         /**< IPROPI ratio in A/V (default 525) */
 
   /* MCPWM group */
-  int group_id;                        /**< MCPWM group ID (0 or 1) */
+  int group_id; /**< MCPWM group ID (0 or 1) */
 } star_drv8243_config_t;
 
 /**
  * @brief DRV8243 driver handle structure
  */
 typedef struct {
-  star_bus_manager_t* bus_manager;     /**< Bus manager reference */
-  const char*         gpio_bus_name;   /**< GPIO bus name */
-  const char*         adc_bus_name;    /**< ADC bus name */
+  star_bus_manager_t* bus_manager;   /**< Bus manager reference */
+  const char*         gpio_bus_name; /**< GPIO bus name */
+  const char*         adc_bus_name;  /**< ADC bus name */
 
-  star_motor_handle_t motor;           /**< Motor control handle */
+  star_motor_handle_t motor; /**< Motor control handle */
 
   /* Pin assignments */
-  int pin_ipropi;                      /**< Current sense ADC channel */
-  int pin_nfault;                      /**< Fault detect GPIO pin */
+  int pin_ipropi; /**< Current sense ADC channel */
+  int pin_nfault; /**< Fault detect GPIO pin */
 
   /* Configuration */
-  uint16_t current_limit_ma;           /**< Current limit (mA) */
-  uint16_t ki_propi;                   /**< IPROPI ratio (A/V) */
+  uint16_t current_limit_ma; /**< Current limit (mA) */
+  uint16_t ki_propi;         /**< IPROPI ratio (A/V) */
 
   /* State */
-  float    current_speed;              /**< Current speed (-100 to +100) */
-  bool     fault_active;               /**< Fault flag */
-  bool     initialized;                /**< Initialization flag */
+  float current_speed; /**< Current speed (-100 to +100) */
+  bool  fault_active;  /**< Fault flag */
+  bool  initialized;   /**< Initialization flag */
 } star_drv8243_handle_t;
 
 /* --- Public Functions --- */
@@ -196,8 +196,7 @@ typedef struct {
  * @param[in]  config Pointer to DRV8243 configuration. Must not be NULL.
  * @return esp_err_t ESP_OK on success, error code otherwise
  */
-esp_err_t star_drv8243_init(star_drv8243_handle_t*       handle,
-                             const star_drv8243_config_t* config);
+esp_err_t star_drv8243_init(star_drv8243_handle_t* handle, const star_drv8243_config_t* config);
 
 /**
  * @brief Deinitialize DRV8243 motor driver

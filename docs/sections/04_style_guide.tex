@@ -1,12 +1,12 @@
 % =============================================================================
-% UNIFIED STYLE GUIDE
+% PROTOCOL BUFFER STYLE GUIDE
 % =============================================================================
 
 \newpage
-\section{Style Guide and Conventions}
-\label{sec:style-guide}
+\section{Protocol Buffer Style Guide}
+\label{sec:protobuf-style}
 
-This section consolidates coding conventions, naming standards, and best practices for all STAR project components. Following these guidelines ensures consistency across firmware, protocol definitions, and documentation.
+This section defines naming standards and conventions for all Protocol Buffer definitions in the STAR project, following Boston Dynamics style guidelines.
 
 \subsection{Terminology Standard}
 
@@ -28,35 +28,9 @@ Primary/Main & Master & Configuration structures \\
 \end{tabular}
 \end{table}
 
-\layerbox{keyinsightcolor}{ESP-IDF Legacy API Mapping}{%
-ESP-IDF APIs still use legacy terminology internally (e.g., \texttt{I2C\_MODE\_SLAVE}, \texttt{mosi\_io\_num}). Map these to OSHWA terminology in comments and documentation. Never propagate legacy terms into new code or documentation.
-}
+\subsection{Protocol Buffer Naming Conventions (Boston Dynamics Style)}
 
-\subsection{Naming Conventions}
-
-\subsubsection{C/C++ Firmware (ESP32)}
-
-\begin{table}[H]
-\centering
-\caption{ESP32 Firmware Naming Conventions}
-\label{tab:esp32-naming}
-\begin{tabular}{|l|l|l|}
-\hline
-\textbf{Element} & \textbf{Convention} & \textbf{Example} \\
-\hline
-Functions & snake\_case & \texttt{star\_motor\_set\_duty()} \\
-Variables & snake\_case & \texttt{velocity\_rpm}, \texttt{current\_ma} \\
-Macros/Constants & SCREAMING\_SNAKE & \texttt{MAX\_MOTOR\_CURRENT\_MA} \\
-Types & snake\_case\_t suffix & \texttt{star\_motor\_handle\_t} \\
-Static functions & internal\_ prefix & \texttt{internal\_update\_pid()} \\
-Private functions & priv\_ prefix & \texttt{priv\_calculate\_crc()} \\
-Static variables & s\_ prefix & \texttt{s\_motor\_count} \\
-Global variables & g\_ prefix (avoid) & \texttt{g\_system\_state} \\
-\hline
-\end{tabular}
-\end{table}
-
-\subsubsection{Protocol Buffers (Boston Dynamics Style)}
+The STAR project follows Boston Dynamics' Protocol Buffer style guide for all .proto definitions.
 
 \begin{table}[H]
 \centering
@@ -106,100 +80,7 @@ All numeric fields use SI units with explicit suffixes. This eliminates unit amb
 \end{tabular}
 \end{table}
 
-\subsection{ESP32 Firmware Architecture}
-
-The firmware follows \textbf{SOLID principles} with Dependency Inversion (DIP) as the foundation.
-
-\subsubsection{Dependency Inversion Pattern}
-
-\begin{enumerate}[leftmargin=2em]
-    \item \textbf{Core Abstraction Layer} (\texttt{star\_core/}) -- Interfaces only, no implementations
-    \item \textbf{Implementation Modules} -- Concrete implementations of interfaces
-    \item \textbf{Injection Pattern} -- Components receive interfaces, not concrete types
-\end{enumerate}
-
-\layerbox{layer1color}{DIP Benefits for Embedded Systems}{%
-\begin{itemize}[leftmargin=1.5em,topsep=2pt,itemsep=1pt]
-    \item Components can be tested with mock interfaces (no hardware required)
-    \item Implementations can be swapped without changing dependent code
-    \item Optional dependencies can be passed as NULL
-    \item No circular dependencies between modules
-\end{itemize}
-}
-
-\subsubsection{Memory Management Rules}
-
-\begin{itemize}[leftmargin=1.5em]
-    \item \textbf{No dynamic allocation} -- All buffers statically allocated
-    \item \textbf{Avoid large stack allocations} -- Use static/global for large arrays
-    \item \textbf{Use \texttt{const}} -- Put lookup tables and defaults in flash/ROM
-    \item \textbf{Validate all buffers} -- Check lengths before \texttt{memcpy}, DMA, ring buffer ops
-\end{itemize}
-
-\subsubsection{Critical Coding Rules}
-
-\begin{enumerate}[leftmargin=2em]
-    \item \textbf{Always use braces} for control statements (if, for, while), even single statements
-    \item \textbf{Assertions for programming errors only} -- Use \texttt{ESP\_ERROR\_CHECK} for ESP-IDF, proper error handling for runtime errors
-    \item \textbf{Avoid inline ASM} -- If required, use \texttt{volatile} and document why
-    \item \textbf{Minimize ISR work} -- Set flags or queue work to background tasks
-    \item \textbf{No blocking delays} -- Use event-driven design or non-blocking drivers
-\end{enumerate}
-
-\subsection{Embedded Systems Best Practices}
-
-\subsubsection{Real-Time and Safety}
-
-\begin{table}[H]
-\centering
-\caption{Real-Time Best Practices}
-\label{tab:realtime-practices}
-\begin{tabular}{|l|p{9cm}|}
-\hline
-\textbf{Practice} & \textbf{Implementation} \\
-\hline
-Know timing constraints & Profile worst-case execution times (WCET) \\
-Use watchdog timers & Automatic reset on firmware lockup \\
-Handle sensor timeouts & Never assume sensors always respond \\
-Fail safe & On error, disable actuators and enter safe state \\
-CRC critical data & Validate packets and stored configuration \\
-\hline
-\end{tabular}
-\end{table}
-
-\subsubsection{Hardware Abstraction}
-
-\begin{itemize}[leftmargin=1.5em]
-    \item Use abstract bus interfaces (\texttt{star\_bus}) for I2C, SPI, UART, GPIO, ADC
-    \item Debounce mechanical inputs with time-based filtering
-    \item Enable brown-out detection (BOD/BOR)
-    \item Implement flash wear-leveling for frequently written data
-    \item Always use pull-up/pull-down on GPIO inputs (no floating pins)
-\end{itemize}
-
-\subsection{Protocol Buffer Constraints (nanopb)}
-
-ESP32 requires static allocation for all protocol buffer fields. Configure sizes in \texttt{.options} files.
-
-\begin{table}[H]
-\centering
-\caption{nanopb Field Size Constraints}
-\label{tab:nanopb-constraints}
-\begin{tabular}{|l|l|l|}
-\hline
-\textbf{Field Type} & \textbf{Constraint} & \textbf{Example} \\
-\hline
-String (UUID) & \texttt{max\_size:64} & \texttt{request\_id} \\
-String (error) & \texttt{max\_size:128} & \texttt{error\_message} \\
-String (version) & \texttt{max\_size:32} & \texttt{firmware\_version} \\
-Repeated (cells) & \texttt{max\_count:16} & \texttt{cell\_mv[]} \\
-Repeated (motors) & \texttt{max\_count:4} & \texttt{motor\_status[]} \\
-Bytes (firmware) & \texttt{max\_size:1024} & \texttt{chunk\_data} \\
-\hline
-\end{tabular}
-\end{table}
-
-\subsection{Documentation Standards}
+\subsection{General Documentation Standards}
 
 \begin{itemize}[leftmargin=1.5em]
     \item Use Doxygen-compatible comments for all public APIs

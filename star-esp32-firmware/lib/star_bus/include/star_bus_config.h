@@ -257,9 +257,8 @@ star_bus_config_t* star_bus_config_create_spi_peripheral(const char*       name,
  * @param[in] pin_count Number of pins in the array. Must be > 0.
  * @return star_bus_config_t* Pointer to the created configuration, or NULL on failure. Must be destroyed via star_bus_config_destroy.
  */
-star_bus_config_t* star_bus_config_create_gpio(const char* name,
-                                                gpio_num_t* pins,
-                                                uint8_t     pin_count);
+star_bus_config_t*
+star_bus_config_create_gpio(const char* name, gpio_num_t* pins, uint8_t pin_count);
 
 /**
  * @brief Create an ADC bus configuration.
@@ -275,10 +274,10 @@ star_bus_config_t* star_bus_config_create_gpio(const char* name,
  * @return star_bus_config_t* Pointer to the created configuration, or NULL on failure. Must be destroyed via star_bus_config_destroy.
  */
 star_bus_config_t* star_bus_config_create_adc(const char*    name,
-                                               adc_unit_t     unit,
-                                               adc_channel_t  channel,
-                                               adc_bitwidth_t bitwidth,
-                                               adc_atten_t    atten);
+                                              adc_unit_t     unit,
+                                              adc_channel_t  channel,
+                                              adc_bitwidth_t bitwidth,
+                                              adc_atten_t    atten);
 
 /**
  * @brief Create a OneWire bus configuration.
@@ -292,9 +291,8 @@ star_bus_config_t* star_bus_config_create_adc(const char*    name,
  * @param[in] use_parasitic_power Enable parasite power mode (devices powered through data line).
  * @return star_bus_config_t* Pointer to the created configuration, or NULL on failure. Must be destroyed via star_bus_config_destroy.
  */
-star_bus_config_t* star_bus_config_create_onewire(const char* name,
-                                                   gpio_num_t  gpio_pin,
-                                                   bool        use_parasitic_power);
+star_bus_config_t*
+star_bus_config_create_onewire(const char* name, gpio_num_t gpio_pin, bool use_parasitic_power);
 
 /**
  * @brief Deinitialize the bus/device associated with this configuration.

@@ -1,0 +1,6578 @@
+% =============================================================================
+% ESP32 FIRMWARE STYLE GUIDE
+% =============================================================================
+
+\newpage
+\section{ESP32 Firmware Style Guide}
+\label{sec:esp32-style}
+
+This section defines comprehensive style guidelines for ESP32-S3 firmware development in the STAR project. All ESP32 firmware code must follow these conventions to ensure consistency, maintainability, and safety in embedded systems development.
+
+
+
+In this project, \textbf{Assembly code} and \textbf{Inline Assembly} should be used with extreme caution. While it can offer performance improvements or enable access to low-level hardware features, its use can make code harder to understand, maintain, and port. Always prefer writing in C unless absolutely necessary.
+
+\subsection{General Guidelines for ASM and Inline ASM}
+\begin{itemize}
+    \item \textbf{Avoid ASM When Possible}: Always try to write in C before resorting to assembly language. C compilers are highly optimized and can often produce efficient machine code that rivals hand-written assembly.
+    \item \textbf{Document ASM Code Thoroughly}: Assembly code is often harder to understand than C, so it should be accompanied by thorough comments that explain \textbf{why} ASM was used, as well as what the code does.
+\end{itemize}
+
+\begin{lstlisting}[language=bash]
+/* Set register to zero using ASM */
+mov r0, #0      /* Initialize r0 to 0 */
+\end{lstlisting}
+
+\begin{itemize}
+    \item \textbf{Use Inline ASM Sparingly}: Inline assembly allows you to embed assembly instructions directly in C code. It should only be used when absolutely necessary, such as when interacting with hardware registers or performing CPU-specific optimizations.
+    \item \textbf{Constrain the Scope of Inline ASM}: When using inline assembly, constrain its scope to as few lines as possible and avoid intermixing it with complex C logic. This helps isolate potential issues and reduces the risk of bugs.
+\end{itemize}
+
+\begin{lstlisting}[language=C]
+void set_flag(void)
+{
+  asm volatile("mov r0, #1" : : : "r0");  /* Set flag in register r0 */
+}
+\end{lstlisting}
+
+\begin{itemize}
+    \item \textbf{Always Use \texttt{volatile} for Inline ASM}: Inline assembly should be marked as \texttt{volatile} to prevent the compiler from optimizing it out.
+    \item \textbf{Do Not Use Inline ASM for Optimizations}: Modern C compilers perform aggressive optimizations. Inline ASM should not be used to try and optimize code performance unless absolutely necessary, as it is often more error-prone than compiler optimizations.
+    \item \textbf{Use Constraints Correctly}: When using inline ASM in C, use the appropriate constraints to inform the compiler how the assembly instructions interact with C variables.
+\end{itemize}
+
+\begin{lstlisting}[language=C]
+int add(int a, int b)
+{
+  int result;
+  asm volatile(
+  "add %[r], %[a], %[b]"
+  : [r] "=r" (result)    /* Output */
+  : [a] "r" (a), [b] "r" (b) /* Inputs */
+  );
+  return result;
+}
+\end{lstlisting}
+
+\subsection{When to Use ASM and Inline ASM}
+\begin{itemize}
+    \item \textbf{Hardware Access}: Use ASM when direct hardware access is required and C alone cannot provide the necessary control (e.g., setting or clearing specific registers).
+    \item \textbf{Performance Critical Code}: ASM may be justified in performance-critical sections where C compiler optimizations fall short, but this should be documented and used as a last resort.
+    \item \textbf{CPU-Specific Instructions}: Use ASM for executing instructions that are unique to the target CPU (e.g., specific ARM or x86 instructions that are not exposed in C).
+\end{itemize}
+
+In this project, \textbf{assertions} are used as a tool to catch programming errors and invalid states during development. They help ensure that assumptions made in the code are correct, and they provide valuable debugging information when things go wrong. However, assertions should never be relied on to handle runtime errors or expected conditions in production code.
+
+\subsection{Guidelines}
+\begin{itemize}
+    \item \textbf{Use Assertions for Debugging}: Assertions are intended to catch conditions that should never occur during normal program execution. Use them to assert assumptions about the state of the program, such as parameter validation or invariants within algorithms.
+\end{itemize}
+\begin{lstlisting}[language=C]
+#include <assert.h>
+
+void process_data(int* data)
+{
+  assert(data != NULL);  /* Assert that data is not NULL */
+  /* Continue processing */
+}
+\end{lstlisting}
+
+\subsection{ESP32-Specific Assertions}
+In ESP32 projects, you have two specific macros for error checking: \textbf{\texttt{ESP\_ERROR\_CHECK}} and \textbf{\texttt{ESP\_ERROR\_CHECK\_WITHOUT\_ABORT}}. These are commonly used to catch errors during development, especially when working with ESP-IDF functions.
+
+\begin{itemize}
+    \item \textbf{\texttt{ESP\_ERROR\_CHECK}}: This macro checks the return value of an ESP-IDF function and aborts the program if the return code is not \texttt{ESP\_OK}.
+    \item \textbf{\texttt{ESP\_ERROR\_CHECK\_WITHOUT\_ABORT}}: This macro works similarly to \texttt{ESP\_ERROR\_CHECK}, but it will not abort the program when an error occurs.
+\end{itemize}
+
+
+Proper brace placement makes code cleaner and easier to read. This section establishes consistent brace conventions used throughout the STAR firmware codebase.
+
+\subsection{General Rules}
+
+\begin{itemize}
+    \item \textbf{Always Use Braces for Control Statements}: Every \texttt{if}, \texttt{for}, \texttt{while}, or similar control structure must have braces, even for single statements.
+    \item \textbf{Same Line for Control Structures and Blocks}: For control structures like \texttt{if}, \texttt{for}, \texttt{while}, and blocks like structs and enums, always place the opening brace \texttt{\{} on the same line as the statement.
+    \item \textbf{Functions Have Braces on a New Line}: The only exception to the same-line rule is for functions, where the opening brace goes on its own line.
+\end{itemize}
+
+\subsection{Control Structures}
+
+Opening brace on the \textbf{same line} as the control statement.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - if/else with braces on same line */
+if (ret != ESP_OK) {
+  ESP_LOGE(s_TAG, "Operation failed: %s", esp_err_to_name(ret));
+  return ret;
+}
+
+if (manager == NULL) {
+  return ESP_ERR_INVALID_ARG;
+} else if (manager->mutex == NULL) {
+  return ESP_ERR_INVALID_STATE;
+} else {
+  /* Proceed with operation */
+}
+
+/* CORRECT - Single statement still requires braces */
+if (pin < 0 || pin >= GPIO_NUM_MAX) {
+  return ESP_OK;  /* Not an error, pin is not used */
+}
+
+/* WRONG - Missing braces */
+if (ret != ESP_OK)
+return ret;
+
+/* WRONG - Brace on new line */
+if (ret != ESP_OK)
+{
+  return ret;
+}
+\end{lstlisting}
+
+\subsubsection{For Loops}
+
+\begin{lstlisting}[language=C]
+/* CORRECT - for loop with brace on same line */
+for (star_bus_config_t* curr = manager->buses; curr; curr = curr->next) {
+  if (curr->name && strcmp(curr->name, name) == 0) {
+    found_bus = curr;
+    break;
+  }
+}
+
+for (uint32_t i = 0; i < SPI_HOST_MAX; ++i) {
+  manager->spi_host_initialized[i] = false;
+  manager->spi_device_count[i] = 0;
+}
+
+/* WRONG */
+for (uint32_t i = 0; i < count; ++i)
+process_item(i);  /* Missing braces */
+\end{lstlisting}
+
+\subsubsection{While Loops}
+
+\begin{lstlisting}[language=C]
+/* CORRECT - while loop with brace on same line */
+while (curr) {
+  star_bus_config_t* next = curr->next;
+  esp_err_t destroy_result = star_bus_config_destroy(curr);
+  if (destroy_result != ESP_OK && first_error == ESP_OK) {
+    first_error = destroy_result;
+  }
+  curr = next;
+}
+
+while (error_handler_can_retry(&handler)) {
+  ret = attempt_operation();
+  if (ret == ESP_OK) {
+    break;
+  }
+}
+
+/* WRONG */
+while (curr)
+{
+  process_node(curr);  /* Brace on new line */
+  curr = curr->next;
+}
+\end{lstlisting}
+
+\subsection{Functions}
+
+Opening brace on a \textbf{new line} for function definitions.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Function brace on new line */
+esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
+const char*             tag,
+star_error_interface_t* error_iface,
+star_pin_interface_t*   pin_iface)
+{
+  ESP_RETURN_ON_FALSE(manager, ESP_ERR_INVALID_ARG, s_TAG,
+  "Manager pointer is NULL");
+  
+  manager->buses       = NULL;
+  manager->error_iface = error_iface;
+  manager->pin_iface   = pin_iface;
+  
+  /* ... */
+  
+  return ESP_OK;
+}
+
+static esp_err_t internal_register_bus_pin(star_pin_interface_t* pin_iface,
+gpio_num_t            pin,
+const char*           bus_name,
+const char*           usage,
+bool                  can_be_shared)
+{
+  if (pin < 0 || pin >= GPIO_NUM_MAX) {
+    return ESP_OK;
+  }
+  /* ... */
+}
+
+/* WRONG - Function brace on same line */
+esp_err_t star_bus_manager_init(star_bus_manager_t* manager, ...) {
+  /* ... */
+}
+\end{lstlisting}
+
+\subsection{Structs and Enums}
+
+Opening brace on the \textbf{same line} as the typedef/struct/enum keyword.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Struct brace on same line */
+typedef struct star_bus_manager {
+  star_bus_config_t*      buses;
+  SemaphoreHandle_t       mutex;
+  const char*             tag;
+  star_error_interface_t* error_iface;
+  star_pin_interface_t*   pin_iface;
+  bool                    spi_host_initialized[SPI_HOST_MAX];
+  int                     spi_device_count[SPI_HOST_MAX];
+} star_bus_manager_t;
+
+/* CORRECT - Enum brace on same line */
+typedef enum {
+  k_star_bus_type_none,
+  k_star_bus_type_i2c,
+  k_star_bus_type_spi,
+  k_star_bus_type_gpio,
+  k_star_bus_type_adc,
+  k_star_bus_type_count,
+} star_bus_type_t;
+
+/* CORRECT - Union brace on same line */
+union {
+  star_i2c_bus_config_t  i2c;
+  star_spi_bus_config_t  spi;
+  star_gpio_bus_config_t gpio;
+  star_adc_bus_config_t  adc;
+} proto;
+
+/* WRONG - Brace on new line */
+typedef struct star_bus_manager
+{
+  /* ... */
+} star_bus_manager_t;
+\end{lstlisting}
+
+\subsection{Initializer Lists}
+
+Opening brace on the \textbf{same line} as the assignment.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Initializer brace on same line */
+star_bus_event_t event = {
+  .bus_type = k_star_bus_type_i2c,
+  .bus_name = config->name,
+  .i2c = {
+    .port = port,
+    .address = address,
+    .is_write = true,
+    .len = len
+  }
+};
+
+spi_device_interface_config_t spi_dev_cfg = {
+  .clock_speed_hz = 10 * 1000 * 1000,
+  .mode = 0,
+  .spics_io_num = GPIO_NUM_5,
+  .queue_size = 7,
+  .pre_cb = NULL,
+  .post_cb = NULL,
+};
+
+/* CORRECT - Short initializers can be on one line */
+i2c_config_t i2c_conf = {.mode = I2C_MODE_MASTER};
+
+/* WRONG - Brace on new line */
+star_bus_event_t event =
+{
+  .bus_type = k_star_bus_type_i2c,
+  /* ... */
+};
+\end{lstlisting}
+
+\subsection{Closing Brace Placement}
+
+Closing braces are always on their own line, except for \texttt{else}, \texttt{else if}, and \texttt{while} in \texttt{do-while}.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - else on same line as closing brace */
+if (ret != ESP_OK) {
+  handle_error(ret);
+} else {
+  continue_operation();
+}
+
+/* CORRECT - do-while */
+do {
+  ret = try_operation();
+} while (ret == ESP_ERR_TIMEOUT && retries-- > 0);
+
+/* CORRECT - else if chain */
+if (config->type == k_star_bus_type_i2c) {
+  /* Handle I2C */
+} else if (config->type == k_star_bus_type_spi) {
+  /* Handle SPI */
+} else {
+  /* Handle other */
+}
+\end{lstlisting}
+
+\subsection{Summary Table}
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Construct} & \textbf{Opening Brace Position} \\
+\hline
+Functions & New line \\
+\hline
+if/else/else if & Same line \\
+\hline
+for & Same line \\
+\hline
+while & Same line \\
+\hline
+do-while & Same line \\
+\hline
+switch & Same line \\
+\hline
+struct & Same line \\
+\hline
+enum & Same line \\
+\hline
+union & Same line \\
+\hline
+Initializer lists & Same line \\
+\hline
+\end{tabular}
+\end{center}
+
+
+
+Switch statements follow specific formatting rules to ensure consistency and readability throughout the STAR firmware codebase.
+
+\subsection{General Rules}
+
+\begin{itemize}
+    \item \textbf{Same Line for Switch and Opening Brace}: The opening brace \texttt{\{} for a \texttt{switch} statement should be on the same line as the \texttt{switch} keyword.
+    \item \textbf{Braces for Case Blocks}: Each \texttt{case} should have its own block of code enclosed in braces \texttt{\{\}}.
+    \item \textbf{Break Statements}: Every case must end with \texttt{break}, \texttt{return}, or a fall-through comment.
+    \item \textbf{Default Case}: Always include a \texttt{default} case, even if it only logs a warning.
+\end{itemize}
+
+\subsection{Basic Switch Structure}
+
+\begin{lstlisting}[language=C]
+/* CORRECT - from star_bus_manager.c */
+switch (config->type) {
+  case k_star_bus_type_i2c: {
+    ret = internal_register_bus_pin(pin_iface,
+    config->proto.i2c.config.sda_io_num,
+    config->name,
+    "I2C SDA",
+    true);
+    if (ret != ESP_OK && first_error == ESP_OK) {
+      first_error = ret;
+    }
+    
+    ret = internal_register_bus_pin(pin_iface,
+    config->proto.i2c.config.scl_io_num,
+    config->name,
+    "I2C SCL",
+    true);
+    if (ret != ESP_OK && first_error == ESP_OK) {
+      first_error = ret;
+    }
+    break;
+  }
+  
+  case k_star_bus_type_spi: {
+    ret = internal_register_bus_pin(pin_iface,
+    config->proto.spi.copi_io_num,
+    config->name,
+    "SPI COPI",
+    true);
+    if (ret != ESP_OK && first_error == ESP_OK) {
+      first_error = ret;
+    }
+    /* ... more pin registrations ... */
+    break;
+  }
+  
+  default: {
+    ESP_LOGD(s_TAG, "No pin registration for bus type: %d", config->type);
+    break;
+  }
+}
+\end{lstlisting}
+
+\subsection{Case Block Braces}
+
+Each case must have its own braces. This prevents variable scope issues and improves readability.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Each case has braces */
+switch (bus_type) {
+  case k_star_bus_type_i2c: {
+    i2c_port_t port = config->proto.i2c.port;  /* Local variable */
+    uint8_t address = config->proto.i2c.address;
+    ESP_LOGI(s_TAG, "I2C bus on port %d, address 0x%02X", port, address);
+    break;
+  }
+  case k_star_bus_type_spi: {
+    spi_host_device_t host = config->proto.spi.host;  /* Different scope */
+    ESP_LOGI(s_TAG, "SPI bus on host %d", host);
+    break;
+  }
+  case k_star_bus_type_gpio: {
+    uint8_t pin_count = config->proto.gpio.pin_count;
+    ESP_LOGI(s_TAG, "GPIO bus with %d pins", pin_count);
+    break;
+  }
+  default: {
+    ESP_LOGW(s_TAG, "Unknown bus type: %d", bus_type);
+    break;
+  }
+}
+
+/* WRONG - Missing braces */
+switch (bus_type) {
+  case k_star_bus_type_i2c:
+  handle_i2c();
+  break;
+  case k_star_bus_type_spi:
+  handle_spi();
+  break;
+}
+\end{lstlisting}
+
+\subsection{Break Statement Requirements}
+
+Every case must have a clear exit: \texttt{break}, \texttt{return}, or explicit fall-through.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Using break */
+switch (config->type) {
+  case k_star_bus_type_i2c: {
+    process_i2c(config);
+    break;
+  }
+  case k_star_bus_type_spi: {
+    process_spi(config);
+    break;
+  }
+  default: {
+    break;
+  }
+}
+
+/* CORRECT - Using return */
+const char* star_bus_type_to_string(star_bus_type_t type)
+{
+  switch (type) {
+    case k_star_bus_type_none: {
+      return "NONE";
+    }
+    case k_star_bus_type_i2c: {
+      return "I2C";
+    }
+    case k_star_bus_type_spi: {
+      return "SPI";
+    }
+    case k_star_bus_type_gpio: {
+      return "GPIO";
+    }
+    case k_star_bus_type_adc: {
+      return "ADC";
+    }
+    case k_star_bus_type_count: {
+      return "COUNT";
+    }
+    default: {
+      return "UNKNOWN";
+    }
+  }
+}
+
+/* CORRECT - Explicit fall-through (rare, must be commented) */
+switch (priority) {
+  case PRIORITY_CRITICAL: {
+    log_critical(message);
+    /* FALLTHROUGH */
+  }
+  case PRIORITY_HIGH: {
+    notify_admin(message);
+    /* FALLTHROUGH */
+  }
+  case PRIORITY_NORMAL: {
+    log_message(message);
+    break;
+  }
+  default: {
+    break;
+  }
+}
+\end{lstlisting}
+
+\subsection{Default Case Handling}
+
+Always include a default case. Use it for error handling or logging unexpected values.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Default case logs warning */
+switch (curr->type) {
+  case k_star_bus_type_i2c: {
+    reg_result = register_pin_if_valid(curr->proto.i2c.config.sda_io_num,
+    bus_name, "I2C SDA", reg_func,
+    user_ctx, true);
+    /* ... */
+    break;
+  }
+  case k_star_bus_type_spi: {
+    reg_result = register_pin_if_valid(curr->proto.spi.copi_io_num,
+    bus_name, "SPI COPI", reg_func,
+    user_ctx, true);
+    /* ... */
+    break;
+  }
+  default: {
+    ESP_LOGW(manager->tag, "Skipping pin registration for "
+    "unsupported bus type: %d", curr->type);
+    break;
+  }
+}
+
+/* CORRECT - Default case returns error for invalid input */
+esp_err_t process_bus_type(star_bus_type_t type)
+{
+  switch (type) {
+    case k_star_bus_type_i2c: {
+      return process_i2c();
+    }
+    case k_star_bus_type_spi: {
+      return process_spi();
+    }
+    default: {
+      ESP_LOGE(s_TAG, "Invalid bus type: %d", type);
+      return ESP_ERR_INVALID_ARG;
+    }
+  }
+}
+\end{lstlisting}
+
+\subsection{Switch on Enum Types}
+
+When switching on an enum, consider handling all values explicitly.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - All enum values handled */
+switch (config->type) {
+  case k_star_bus_type_none: {
+    ESP_LOGW(s_TAG, "Bus type is NONE - skipping");
+    break;
+  }
+  case k_star_bus_type_i2c: {
+    /* Initialize I2C */
+    break;
+  }
+  case k_star_bus_type_spi: {
+    /* Initialize SPI */
+    break;
+  }
+  case k_star_bus_type_gpio: {
+    /* Initialize GPIO */
+    break;
+  }
+  case k_star_bus_type_adc: {
+    /* Initialize ADC */
+    break;
+  }
+  case k_star_bus_type_count: {
+    /* Sentinel value - should never be used */
+    ESP_LOGE(s_TAG, "Invalid bus type: count sentinel");
+    return ESP_ERR_INVALID_ARG;
+  }
+  /* No default needed when all enum values are handled */
+  /* Compiler warns if new enum values are added */
+}
+\end{lstlisting}
+
+\subsection{Indentation}
+
+Case labels are at the same indentation level as the switch. Case body is indented one level.
+
+\begin{lstlisting}[language=C]
+/* CORRECT indentation */
+switch (state) {
+  case STATE_IDLE: {
+    /* Case body indented */
+    if (condition) {
+      /* Nested code further indented */
+    }
+    break;
+  }
+  case STATE_RUNNING: {
+    process_running();
+    break;
+  }
+  default: {
+    break;
+  }
+}
+
+/* WRONG - Case labels indented */
+switch (state) {
+  case STATE_IDLE: {
+    break;
+  }
+}
+\end{lstlisting}
+
+\subsection{Summary}
+
+\begin{itemize}
+    \item Opening brace on same line as \texttt{switch}
+    \item Each \texttt{case} has its own braces \texttt{\{...\}}
+    \item Every case ends with \texttt{break}, \texttt{return}, or fall-through comment
+    \item Always include \texttt{default} case
+    \item Case labels at switch indentation level
+    \item Case body indented one level inside braces
+\end{itemize}
+
+
+The maximum line length is \textbf{80 characters}. Lines longer than this should be split.
+\begin{itemize}
+    \item \textbf{Break at Natural Points}: Break lines at natural points, such as after operators.
+    \item \textbf{Indentation for Continuation Lines}: When breaking lines, ensure the continued line is indented properly.
+\end{itemize}
+
+
+
+All functions must include Doxygen comments. This section establishes comprehensive commenting standards for the STAR firmware codebase.
+
+\subsection{General Commenting Guidelines}
+
+\begin{itemize}
+    \item \textbf{Use Block Comments (\texttt{/* */})}: Always prefer block comments over line comments (\texttt{//}).
+    \item \textbf{Explain Why, Not What}: Comments should explain the reasoning behind code, not what the code does (which should be clear from the code itself).
+    \item \textbf{Keep Comments Updated}: Outdated comments are worse than no comments.
+    \item \textbf{English Only}: All comments must be in English.
+\end{itemize}
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Block comment style */
+/* Initialize the mutex for thread-safe access */
+manager->mutex = xSemaphoreCreateMutex();
+
+/* WRONG - Line comment style */
+// Initialize the mutex for thread-safe access
+manager->mutex = xSemaphoreCreateMutex();
+\end{lstlisting}
+
+\subsection{File Header Comments}
+
+Every source and header file should begin with a file path comment, followed by include guards (for headers) and a \texttt{@file} Doxygen block for headers with significant content.
+
+\begin{lstlisting}[language=C]
+/* lib/star_bus/include/star_bus_manager.h */
+
+#ifndef STAR_COMPONENT_BUS_MANAGER_H
+#define STAR_COMPONENT_BUS_MANAGER_H
+
+#ifdef __cplusplus
+extern "C" {
+  #endif
+  
+  #include "esp_err.h"
+  #include "star_bus_manager_types.h"
+  
+  /**
+  * @file star_bus_manager.h
+  * @brief Unified bus manager for I2C, SPI, GPIO, and other bus protocols
+  *
+  * The bus manager provides a central registry for managing multiple bus
+  * configurations. It supports dependency injection of error handlers and
+  * pin validators for loose coupling.
+  *
+  * Key Features:
+  * - Thread-safe bus management with mutex protection
+  * - Support for multiple bus types (I2C, SPI, GPIO, DHT22, etc.)
+  * - Automatic pin registration and conflict detection
+  * - Safe bus access via callback pattern (prevents use-after-free)
+  *
+  * Example Usage:
+  * @code
+  * // === Basic Bus Manager Setup ===
+  *
+  * #include "star_bus_manager.h"
+  * #include "star_bus_config.h"
+  * #include "star_error_handler.h"
+  *
+  * // 1. Create error handler and pin validator interfaces
+  * error_handler_t error_handler;
+  * error_handler_init(&error_handler, 3, 100, 5000, NULL, NULL);
+  *
+  * star_error_interface_t error_iface;
+  * star_pin_interface_t pin_iface;
+  * error_handler_get_interface(&error_iface, &error_handler);
+  * pin_validator_get_interface(&pin_iface);
+  *
+  * // 2. Initialize bus manager with dependency injection
+  * star_bus_manager_t bus_manager;
+  * star_bus_manager_init(&bus_manager, "main", &error_iface, &pin_iface);
+  * @endcode
+  */
+\end{lstlisting}
+
+\subsection{Source File Header}
+
+Source files begin with a file path comment.
+
+\begin{lstlisting}[language=C]
+/* lib/star_bus/src/star_bus_manager.c */
+
+#include "star_bus_manager.h"
+
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+/* ... */
+\end{lstlisting}
+
+\subsection{Doxygen Documentation}
+
+\subsubsection{Function Documentation}
+
+All public functions must have Doxygen documentation in the header file.
+
+\begin{lstlisting}[language=C]
+/**
+* @brief Initialize a bus manager instance.
+*
+* Allocates resources (like a mutex) for the manager. Must be called
+* before any other manager functions.
+*
+* @param[out] manager     Pointer to bus manager structure to initialize.
+*                         Must not be NULL.
+* @param[in]  tag         Optional tag string for logging associated with
+*                         this manager instance. If NULL or empty, a
+*                         default tag is used.
+* @param[in]  error_iface Optional error handler interface (can be NULL).
+* @param[in]  pin_iface   Optional pin validator interface (can be NULL).
+* @return esp_err_t ESP_OK on success, ESP_ERR_INVALID_ARG if manager
+*                   is NULL, ESP_ERR_NO_MEM if mutex creation fails.
+*/
+esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
+const char*             tag,
+star_error_interface_t* error_iface,
+star_pin_interface_t*   pin_iface);
+\end{lstlisting}
+
+\subsubsection{Parameter Direction Markers}
+
+Use \texttt{[in]}, \texttt{[out]}, or \texttt{[in,out]} to indicate parameter direction.
+
+\begin{lstlisting}[language=C]
+/**
+* @brief Write data to an I2C device register.
+*
+* @param[in]  config        Pointer to I2C bus configuration.
+* @param[in]  data          Pointer to data buffer to write.
+* @param[in]  len           Number of bytes to write.
+* @param[in]  reg_addr      Target register address.
+* @param[out] bytes_written Pointer to store actual bytes written.
+*                           Can be NULL if not needed.
+* @return esp_err_t ESP_OK on success.
+*/
+static esp_err_t internal_star_bus_i2c_write(const star_bus_config_t* config,
+const uint8_t*           data,
+size_t                   len,
+uint8_t                  reg_addr,
+size_t*                  bytes_written);
+
+/**
+* @brief Record an error and manage retry/reset logic
+*
+* @param[in,out] handler     Pointer to error handler structure
+* @param[in]     error       Error code that occurred
+* @param[in]     description Human-readable description of the error
+* @param[in]     file        Source file where error occurred
+* @param[in]     line        Line number where error occurred
+* @param[in]     func        Function name where error occurred
+* @return ESP_OK if error was handled, or the original error code.
+*/
+esp_err_t error_handler_record_error(error_handler_t* handler,
+esp_err_t        error,
+const char*      description,
+const char*      file,
+int32_t          line,
+const char*      func);
+\end{lstlisting}
+
+\subsubsection{Code Examples with @code/@endcode}
+
+Include usage examples in documentation blocks.
+
+\begin{lstlisting}[language=C]
+/**
+* @file star_error_interface.h
+* @brief Error handler interface for dependency inversion
+*
+* Example Usage:
+* @code
+* // === Creating and Using Error Interface ===
+*
+* #include "star_error_interface.h"
+* #include "star_error_handler.h"
+*
+* // 1. Create concrete error handler
+* error_handler_t error_handler;
+* error_handler_init(&error_handler, 3, 100, 5000, NULL, NULL);
+*
+* // 2. Get interface from implementation
+* star_error_interface_t error_iface;
+* error_handler_get_interface(&error_iface, &error_handler);
+*
+* // 3. Inject into components that need error handling
+* star_bus_manager_init(&bus_manager, "main", &error_iface, &pin_iface);
+*
+* // 4. Use the interface
+* if (error_iface.can_retry(error_iface.ctx)) {
+  *     // Retry operation...
+  * }
+  * @endcode
+  */
+\end{lstlisting}
+
+\subsubsection{Struct Member Documentation}
+
+Document struct members inline with Doxygen.
+
+\begin{lstlisting}[language=C]
+/**
+* @brief Bus configuration structure (common part).
+*/
+typedef struct star_bus_config {
+  const char*     name;        /**< Unique name for this bus/device instance */
+  star_bus_type_t type;        /**< Type of bus (I2C, SPI, etc.) */
+  bool            initialized; /**< Whether this bus has been initialized */
+  void*           handle;      /**< Driver/device handle */
+  void*           user_ctx;    /**< User context pointer for callbacks */
+  
+  union {
+    star_i2c_bus_config_t  i2c;  /**< I2C-specific configuration */
+    star_spi_bus_config_t  spi;  /**< SPI-specific configuration */
+    star_gpio_bus_config_t gpio; /**< GPIO-specific configuration */
+    star_adc_bus_config_t  adc;  /**< ADC-specific configuration */
+  } proto;
+  
+  struct star_bus_config* next; /**< Next bus config in linked list */
+} star_bus_config_t;
+\end{lstlisting}
+
+\subsection{Special Comment Keywords}
+
+Use these keywords to mark special comments for tracking.
+
+\begin{lstlisting}[language=C]
+/* TODO: Implement retry logic for I2C bus reset */
+
+/* FIXME: Memory leak when bus removal fails mid-operation */
+
+/* BUG: Race condition possible if mutex timeout is too short */
+
+/* XXX: This code assumes little-endian byte order */
+
+/* NOTE: ESP-IDF uses mosi_io_num internally - we map to COPI here */
+
+/* WARNING: Must hold mutex before calling this function */
+\end{lstlisting}
+
+\subsubsection{Keyword Definitions}
+
+\begin{itemize}
+    \item \textbf{TODO}: Work that needs to be done but is not urgent.
+    \item \textbf{FIXME}: Known bugs or issues that need to be fixed.
+    \item \textbf{BUG}: Confirmed bugs in the code.
+    \item \textbf{XXX}: Dangerous or hacky code that works but should be reviewed.
+    \item \textbf{NOTE}: Important information about the code.
+    \item \textbf{WARNING}: Critical information that must be understood before modifying.
+\end{itemize}
+
+\subsection{Section Comments}
+
+Use section comments to organize code within files.
+
+\begin{lstlisting}[language=C]
+/* === Includes === */
+#include "star_bus_manager.h"
+#include "freertos/FreeRTOS.h"
+
+/* === Constants === */
+static const char* s_TAG = "STAR_BUS_MANAGER";
+
+/* === Private Function Prototypes === */
+static esp_err_t internal_register_bus_pin(...);
+
+/* === Public Functions === */
+esp_err_t star_bus_manager_init(...) { /* ... */ }
+
+/* === Private Functions === */
+static esp_err_t internal_register_bus_pin(...) { /* ... */ }
+
+/* --- Pin Registration Helpers --- */
+/* Subsection within a section */
+\end{lstlisting}
+
+\subsection{Aligned Comments}
+
+Align comments after declarations for improved readability.
+
+\begin{lstlisting}[language=C]
+typedef struct error_handler {
+  uint32_t          error_count;         /**< Total errors recorded */
+  uint32_t          max_retries;         /**< Max retry attempts */
+  uint32_t          current_retry;       /**< Current retry counter */
+  uint32_t          base_retry_delay;    /**< Base delay (ms) */
+  uint32_t          max_retry_delay;     /**< Max delay (ms) */
+  uint32_t          current_retry_delay; /**< Current delay with backoff */
+  esp_err_t         last_error;          /**< Last recorded error code */
+  bool              in_error_state;      /**< Whether in error state */
+  void*             reset_context;       /**< Context for reset function */
+  SemaphoreHandle_t mutex;               /**< Mutex for thread-safety */
+  
+  esp_err_t (*reset_fn)(void* context);  /**< Optional reset function */
+} error_handler_t;
+\end{lstlisting}
+
+\subsection{Implementation Comments}
+
+Comments within function bodies explain non-obvious logic.
+
+\begin{lstlisting}[language=C]
+esp_err_t star_bus_manager_add_bus(star_bus_manager_t* manager,
+star_bus_config_t*  config)
+{
+  /* Validate inputs using ESP-IDF macro */
+  ESP_RETURN_ON_FALSE(manager && config, ESP_ERR_INVALID_ARG,
+  s_TAG, "Manager or config pointer is NULL");
+  
+  esp_err_t ret = ESP_OK;
+  
+  /* Acquire mutex with timeout to prevent deadlock */
+  if (xSemaphoreTake(manager->mutex,
+  pdMS_TO_TICKS(CONFIG_STAR_KCONFIG_BUS_MUTEX_TIMEOUT_MS))
+  != pdTRUE) {
+    ESP_LOGE(manager->tag, "Timeout acquiring mutex");
+    return ESP_ERR_TIMEOUT;
+  }
+  
+  /* Check for duplicate name - bus names must be unique */
+  for (star_bus_config_t* curr = manager->buses; curr; curr = curr->next) {
+    if (curr->name && strcmp(curr->name, config->name) == 0) {
+      ret = ESP_ERR_INVALID_STATE;
+      goto add_give_mutex;  /* Single exit point pattern */
+    }
+  }
+  
+  /* Initialize hardware before adding to list
+  * This ensures manager's SPI host tracking is updated correctly */
+  if (!config->initialized) {
+    ret = star_bus_config_init(config, manager);
+    if (ret != ESP_OK) {
+      goto add_give_mutex;
+    }
+  }
+  
+  /* Add to head of list (O(1) insertion) */
+  config->next = manager->buses;
+  manager->buses = config;
+  
+  add_give_mutex:
+  xSemaphoreGive(manager->mutex);
+  return ret;
+}
+\end{lstlisting}
+
+\subsection{Private Function Documentation}
+
+Static functions should have brief documentation in the source file.
+
+\begin{lstlisting}[language=C]
+/**
+* @brief Helper to register a single pin via the interface
+*/
+static esp_err_t internal_register_bus_pin(star_pin_interface_t* pin_iface,
+gpio_num_t            pin,
+const char*           bus_name,
+const char*           usage,
+bool                  can_be_shared)
+{
+  if (pin < 0 || pin >= GPIO_NUM_MAX) {
+    return ESP_OK;  /* Not an error, pin is not used */
+  }
+  
+  if (!pin_iface || !pin_iface->register_pin) {
+    return ESP_OK;  /* No interface, skip registration */
+  }
+  
+  /* Create description: "BusName: Usage" (e.g., "I2C0: SDA") */
+  char desc[64];
+  snprintf(desc, sizeof(desc), "%s: %s", bus_name, usage);
+  
+  return pin_iface->register_pin(pin_iface->ctx, pin, desc, can_be_shared);
+}
+\end{lstlisting}
+
+\subsection{Summary}
+
+\begin{itemize}
+    \item Use block comments (\texttt{/* */}), never line comments (\texttt{//})
+    \item Document all public functions with Doxygen in headers
+    \item Use \texttt{[in]}, \texttt{[out]}, \texttt{[in,out]} for parameter direction
+    \item Include \texttt{@code}/@\texttt{endcode} examples in file and complex function docs
+    \item Use TODO, FIXME, BUG, XXX, NOTE, WARNING keywords for tracking
+    \item Align comments after struct members for readability
+    \item Use section comments to organize source files
+\end{itemize}
+
+
+This section outlines the best practices for ensuring thread-safe and efficient concurrent programming.
+
+\subsection{RTOS Types, Mutexes, Semaphores, and Atomic Operations}
+\begin{itemize}
+    \item \textbf{RTOS Types}: Use RTOS types when developing for embedded systems like ESP32.
+    \item \textbf{Mutexes}: Use a mutex when you need \textbf{exclusive access} to a shared resource.
+    \item \textbf{Semaphores}: Use semaphores when you need to manage \textbf{shared resources} that multiple threads can access simultaneously.
+    \item \textbf{Atomic Operations}: Use atomic operations when working with \textbf{simple data types} such as counters or flags.
+\end{itemize}
+
+
+
+This section establishes the standards for defining and using enumerations in the STAR firmware codebase.
+
+\subsection{General Rules}
+
+\begin{itemize}
+    \item \textbf{Enum Names Should End in \texttt{\_t}}: All enum types should end with \texttt{\_t}.
+    \item \textbf{Use Snake Case for Enum Values}: All enum values should follow \texttt{snake\_case} naming conventions.
+    \item \textbf{Enum Values Should Start with \texttt{k\_}}: To distinguish enum members from other constants, values should start with \texttt{k\_}.
+    \item \textbf{Use typedef}: Always use \texttt{typedef} to define the enum type.
+    \item \textbf{Include Count Sentinel}: Include a \texttt{\_count} sentinel value for iteration.
+\end{itemize}
+
+\subsection{Basic Enum Structure}
+
+\begin{lstlisting}[language=C]
+/* CORRECT - from star_bus_common_types.h */
+typedef enum {
+  k_star_bus_type_none,  /**< No bus type specified */
+  k_star_bus_type_i2c,   /**< I2C bus */
+  k_star_bus_type_spi,   /**< SPI bus */
+  k_star_bus_type_gpio,  /**< GPIO bus */
+  k_star_bus_type_adc,   /**< ADC bus */
+  k_star_bus_type_count, /**< Number of bus types (sentinel) */
+} star_bus_type_t;
+
+/* WRONG - Various style violations */
+typedef enum {
+  STAR_BUS_TYPE_I2C,     /* Missing k_ prefix */
+  StarBusTypeSpi,        /* PascalCase not allowed */
+  star_bus_type_gpio,    /* Missing k_ prefix */
+} bad_enum_style;          /* Missing _t suffix */
+\end{lstlisting}
+
+\subsection{Explicit Value Assignment}
+
+Assign explicit values when needed for stability or compatibility.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Explicit values for protocol compatibility */
+typedef enum {
+  k_error_none  = 0,  /**< No error */
+  k_error_minor = 1,  /**< Minor error, operation can continue */
+  k_error_major = 2,  /**< Major error, operation should stop */
+  k_error_fatal = 3,  /**< Fatal error, system needs reset */
+  k_error_count = 4,  /**< Number of error levels */
+} error_level_t;
+
+/* CORRECT - Bit flags with explicit values */
+typedef enum {
+  k_bus_flag_none       = 0x00,  /**< No flags */
+  k_bus_flag_initialized = 0x01,  /**< Bus is initialized */
+  k_bus_flag_busy       = 0x02,  /**< Bus is busy */
+  k_bus_flag_error      = 0x04,  /**< Bus has error */
+  k_bus_flag_dma        = 0x08,  /**< DMA enabled */
+} bus_flags_t;
+\end{lstlisting}
+
+\subsection{Documentation}
+
+Document each enum value with Doxygen comments.
+
+\begin{lstlisting}[language=C]
+/**
+* @brief Types of supported bus interfaces.
+*/
+typedef enum {
+  k_star_bus_type_none,  /**< No bus type specified */
+  k_star_bus_type_i2c,   /**< I2C bus */
+  k_star_bus_type_spi,   /**< SPI bus */
+  k_star_bus_type_gpio,  /**< GPIO bus */
+  k_star_bus_type_adc,   /**< ADC bus */
+  k_star_bus_type_count, /**< Number of bus types */
+} star_bus_type_t;
+\end{lstlisting}
+
+\subsection{Enum to String Functions}
+
+Provide a string conversion function for each enum type.
+
+\begin{lstlisting}[language=C]
+/* In header file */
+const char* star_bus_type_to_string(star_bus_type_t type);
+
+/* In source file */
+const char* star_bus_type_to_string(star_bus_type_t type)
+{
+  switch (type) {
+    case k_star_bus_type_none: {
+      return "NONE";
+    }
+    case k_star_bus_type_i2c: {
+      return "I2C";
+    }
+    case k_star_bus_type_spi: {
+      return "SPI";
+    }
+    case k_star_bus_type_gpio: {
+      return "GPIO";
+    }
+    case k_star_bus_type_adc: {
+      return "ADC";
+    }
+    case k_star_bus_type_count: {
+      return "COUNT";
+    }
+    default: {
+      return "UNKNOWN";
+    }
+  }
+}
+
+/* Usage */
+ESP_LOGI(s_TAG, "Added bus config: %s (Type: %s)",
+config->name, star_bus_type_to_string(config->type));
+\end{lstlisting}
+
+\subsection{Using the Count Sentinel}
+
+The \texttt{\_count} value enables iteration and array sizing.
+
+\begin{lstlisting}[language=C]
+/* Array indexed by enum */
+static const char* s_bus_type_names[k_star_bus_type_count] = {
+  [k_star_bus_type_none] = "NONE",
+  [k_star_bus_type_i2c]  = "I2C",
+  [k_star_bus_type_spi]  = "SPI",
+  [k_star_bus_type_gpio] = "GPIO",
+  [k_star_bus_type_adc]  = "ADC",
+};
+
+/* Iteration using count */
+for (star_bus_type_t type = k_star_bus_type_none;
+type < k_star_bus_type_count; ++type) {
+  ESP_LOGI(s_TAG, "Bus type %d: %s", type, s_bus_type_names[type]);
+}
+
+/* Validation using count */
+if (type >= k_star_bus_type_count) {
+  ESP_LOGE(s_TAG, "Invalid bus type: %d", type);
+  return ESP_ERR_INVALID_ARG;
+}
+\end{lstlisting}
+
+\subsection{Switch Statement Pattern}
+
+Always handle all enum values or include a default case.
+
+\begin{lstlisting}[language=C]
+/* All values handled explicitly */
+switch (config->type) {
+  case k_star_bus_type_none: {
+    ESP_LOGW(s_TAG, "Bus type is NONE - skipping");
+    break;
+  }
+  case k_star_bus_type_i2c: {
+    ret = init_i2c_bus(config);
+    break;
+  }
+  case k_star_bus_type_spi: {
+    ret = init_spi_bus(config);
+    break;
+  }
+  case k_star_bus_type_gpio: {
+    ret = init_gpio_bus(config);
+    break;
+  }
+  case k_star_bus_type_adc: {
+    ret = init_adc_bus(config);
+    break;
+  }
+  case k_star_bus_type_count: {
+    /* Sentinel value should never be used */
+    ESP_LOGE(s_TAG, "Invalid bus type: count sentinel");
+    return ESP_ERR_INVALID_ARG;
+  }
+  /* No default - compiler warns if new enum values added */
+}
+\end{lstlisting}
+
+\subsection{Forward Declaration}
+
+Enums can be forward-declared for header dependency reduction.
+
+\begin{lstlisting}[language=C]
+/* Forward declaration (C11 or later with explicit underlying type) */
+typedef enum star_bus_type star_bus_type_t;
+
+/* Or use typedef in header, full definition in source */
+/* In header: */
+typedef enum star_bus_type star_bus_type_t;
+
+/* In source or types header: */
+enum star_bus_type {
+  k_star_bus_type_none,
+  k_star_bus_type_i2c,
+  /* ... */
+};
+\end{lstlisting}
+
+\subsection{Naming Convention Summary}
+
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Element} & \textbf{Convention} & \textbf{Example} \\
+\hline
+Type name & \texttt{snake\_case\_t} & \texttt{star\_bus\_type\_t} \\
+\hline
+Member prefix & \texttt{k\_} & \texttt{k\_star\_bus\_type\_i2c} \\
+\hline
+Member naming & \texttt{snake\_case} & \texttt{k\_star\_bus\_type\_i2c} \\
+\hline
+Count sentinel & \texttt{\_count} & \texttt{k\_star\_bus\_type\_count} \\
+\hline
+String function & \texttt{\_to\_string} & \texttt{star\_bus\_type\_to\_string} \\
+\hline
+\end{tabular}
+\end{center}
+
+
+
+This section establishes error handling patterns for the STAR firmware codebase, with emphasis on ESP-IDF specific patterns.
+
+\subsection{General Principles}
+
+\begin{itemize}
+    \item \textbf{Return Error Codes}: Functions should return error codes via \texttt{esp\_err\_t}.
+    \item \textbf{Check All Return Values}: Never ignore return values from functions that can fail.
+    \item \textbf{Use \texttt{goto} for Clean-up}: Use \texttt{goto} to jump to a clean-up section when multiple resources need release.
+    \item \textbf{Fail Fast}: Return early on invalid arguments or precondition failures.
+\end{itemize}
+
+\subsection{ESP-IDF Error Codes}
+
+Use standard ESP-IDF error codes throughout the codebase.
+
+\begin{lstlisting}[language=C]
+/* Standard ESP-IDF error codes */
+ESP_OK                  /* Success */
+ESP_FAIL                /* Generic failure */
+ESP_ERR_NO_MEM          /* Out of memory */
+ESP_ERR_INVALID_ARG     /* Invalid argument */
+ESP_ERR_INVALID_STATE   /* Invalid state for operation */
+ESP_ERR_INVALID_SIZE    /* Invalid size */
+ESP_ERR_NOT_FOUND       /* Requested resource not found */
+ESP_ERR_NOT_SUPPORTED   /* Operation not supported */
+ESP_ERR_TIMEOUT         /* Operation timed out */
+
+/* Usage example */
+esp_err_t star_bus_manager_init(star_bus_manager_t* manager, ...)
+{
+  if (manager == NULL) {
+    return ESP_ERR_INVALID_ARG;
+  }
+  
+  manager->mutex = xSemaphoreCreateMutex();
+  if (manager->mutex == NULL) {
+    return ESP_ERR_NO_MEM;
+  }
+  
+  return ESP_OK;
+}
+\end{lstlisting}
+
+\subsection{ESP-IDF Validation Macros}
+
+Use ESP-IDF macros for parameter validation and error checking.
+
+\subsubsection{ESP\_RETURN\_ON\_FALSE}
+
+Returns an error if condition is false, with logging.
+
+\begin{lstlisting}[language=C]
+#include "esp_check.h"
+
+esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
+const char*             tag,
+star_error_interface_t* error_iface,
+star_pin_interface_t*   pin_iface)
+{
+  /* Validate required parameter with automatic logging */
+  ESP_RETURN_ON_FALSE(manager, ESP_ERR_INVALID_ARG, s_TAG,
+  "Manager pointer is NULL");
+  
+  /* Multiple validations */
+  ESP_RETURN_ON_FALSE(manager->mutex,
+  ESP_ERR_INVALID_STATE,
+  manager->tag,
+  "Manager mutex not initialized");
+  
+  ESP_RETURN_ON_FALSE(config->type > k_star_bus_type_none &&
+  config->type < k_star_bus_type_count,
+  ESP_ERR_INVALID_ARG,
+  manager->tag,
+  "Invalid bus type in config");
+  
+  return ESP_OK;
+}
+\end{lstlisting}
+
+\subsubsection{ESP\_GOTO\_ON\_ERROR}
+
+Jumps to a label on error, with logging. Use for cleanup patterns.
+
+\begin{lstlisting}[language=C]
+static esp_err_t internal_star_bus_i2c_write(const star_bus_config_t* config,
+const uint8_t*           data,
+size_t                   len,
+uint8_t                  reg_addr,
+size_t*                  bytes_written)
+{
+  esp_err_t        ret = ESP_OK;
+  i2c_cmd_handle_t cmd = NULL;
+  
+  cmd = i2c_cmd_link_create();
+  ESP_RETURN_ON_FALSE(cmd, ESP_ERR_NO_MEM, s_TAG,
+  "Failed to create I2C command link");
+  
+  ret = i2c_master_start(cmd);
+  ESP_GOTO_ON_ERROR(ret, write_fail, s_TAG,
+  "Write '%s': START failed: %s",
+  config->name, esp_err_to_name(ret));
+  
+  ret = i2c_master_write_byte(cmd, (address << 1) | I2C_MASTER_WRITE, true);
+  ESP_GOTO_ON_ERROR(ret, write_fail, s_TAG,
+  "Write '%s': Address (W) failed: %s",
+  config->name, esp_err_to_name(ret));
+  
+  ret = i2c_master_write(cmd, data, len, true);
+  ESP_GOTO_ON_ERROR(ret, write_fail, s_TAG,
+  "Write '%s': Data write failed: %s",
+  config->name, esp_err_to_name(ret));
+  
+  ret = i2c_master_stop(cmd);
+  ESP_GOTO_ON_ERROR(ret, write_fail, s_TAG,
+  "Write '%s': STOP failed: %s",
+  config->name, esp_err_to_name(ret));
+  
+  /* Execute command */
+  ret = i2c_master_cmd_begin(port, cmd, pdMS_TO_TICKS(1000));
+  ESP_GOTO_ON_ERROR(ret, write_fail, s_TAG,
+  "Write '%s': CMD failed", config->name);
+  
+  /* Success path */
+  i2c_cmd_link_delete(cmd);
+  if (bytes_written) {
+    *bytes_written = len;
+  }
+  return ESP_OK;
+  
+  write_fail:
+  if (cmd) {
+    i2c_cmd_link_delete(cmd);
+  }
+  return ret;
+}
+\end{lstlisting}
+
+\subsubsection{ESP\_ERROR\_CHECK}
+
+Use during development to catch fatal errors.
+
+\begin{lstlisting}[language=C]
+/* Development only - aborts on error */
+ESP_ERROR_CHECK(i2c_driver_install(port, I2C_MODE_MASTER, 0, 0, 0));
+
+/* Use ESP_ERROR_CHECK_WITHOUT_ABORT for non-fatal checks */
+ESP_ERROR_CHECK_WITHOUT_ABORT(optional_init());
+\end{lstlisting}
+
+\subsection{NULL Safety Patterns}
+
+Always validate pointer parameters.
+
+\begin{lstlisting}[language=C]
+/* At function start - validate all pointers */
+esp_err_t star_bus_i2c_write(const star_bus_manager_t* manager,
+const char*               name,
+const uint8_t*            data,
+size_t                    len,
+uint8_t                   reg_addr,
+size_t*                   bytes_written)
+{
+  ESP_RETURN_ON_FALSE(manager && name && data,
+  ESP_ERR_INVALID_ARG,
+  s_TAG,
+  "Manager, name, or data is NULL");
+  ESP_RETURN_ON_FALSE(len > 0, ESP_ERR_INVALID_ARG, s_TAG,
+  "Write length must be > 0");
+  
+  /* Clear output parameter initially */
+  if (bytes_written) {
+    *bytes_written = 0;
+  }
+  
+  /* ... rest of implementation ... */
+}
+
+/* Check optional interface before use */
+if (manager->error_iface && manager->error_iface->record_error) {
+  manager->error_iface->record_error(
+  manager->error_iface->ctx,
+  ret,
+  "Bus hardware initialization failed",
+  __FILE__,
+  __LINE__,
+  __func__);
+}
+
+/* Use convenience macro for safe interface calls */
+#define STAR_IFACE_RECORD_ERROR(iface, err, msg)  \
+((iface) && (iface)->record_error  \
+? (iface)->record_error((iface)->ctx, (err), (msg),  \
+__FILE__, __LINE__, __func__)  \
+: (err))
+
+/* Usage */
+STAR_IFACE_RECORD_ERROR(manager->error_iface, ret, "Operation failed");
+\end{lstlisting}
+
+\subsection{Mutex Error Handling}
+
+Handle mutex acquisition failures properly.
+
+\begin{lstlisting}[language=C]
+esp_err_t star_bus_manager_add_bus(star_bus_manager_t* manager,
+star_bus_config_t*  config)
+{
+  /* Validate arguments first */
+  ESP_RETURN_ON_FALSE(manager && config, ESP_ERR_INVALID_ARG,
+  s_TAG, "Invalid arguments");
+  ESP_RETURN_ON_FALSE(manager->mutex, ESP_ERR_INVALID_STATE,
+  manager->tag, "Mutex not initialized");
+  
+  esp_err_t ret = ESP_OK;
+  
+  /* Acquire mutex with timeout */
+  if (xSemaphoreTake(manager->mutex,
+  pdMS_TO_TICKS(CONFIG_STAR_KCONFIG_BUS_MUTEX_TIMEOUT_MS))
+  != pdTRUE) {
+    ESP_LOGE(manager->tag, "Timeout acquiring mutex for adding bus '%s'",
+    config->name);
+    return ESP_ERR_TIMEOUT;
+  }
+  
+  /* Critical section */
+  /* ... operations ... */
+  
+  /* Single exit point ensures mutex release */
+  add_give_mutex:
+  xSemaphoreGive(manager->mutex);
+  return ret;
+}
+\end{lstlisting}
+
+\subsection{Error Interface Dependency Injection}
+
+Components receive error handlers through dependency injection.
+
+\begin{lstlisting}[language=C]
+/* Interface definition */
+typedef struct star_error_interface {
+  esp_err_t (*record_error)(void* ctx, esp_err_t error,
+  const char* message, const char* file,
+  int line, const char* func);
+  bool (*can_retry)(void* ctx);
+  esp_err_t (*reset_state)(void* ctx);
+  void* ctx;
+} star_error_interface_t;
+
+/* Injecting error handler into component */
+esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
+const char*             tag,
+star_error_interface_t* error_iface,
+star_pin_interface_t*   pin_iface)
+{
+  manager->error_iface = error_iface;  /* Can be NULL */
+  /* ... */
+}
+
+/* Using the error interface */
+if (ret != ESP_OK) {
+  if (manager->error_iface && manager->error_iface->record_error) {
+    manager->error_iface->record_error(
+    manager->error_iface->ctx,
+    ret,
+    "Bus initialization failed",
+    __FILE__,
+    __LINE__,
+    __func__);
+  }
+}
+\end{lstlisting}
+
+\subsection{Cleanup Patterns}
+
+Use goto for consistent cleanup when multiple resources are acquired.
+
+\begin{lstlisting}[language=C]
+esp_err_t complex_init(complex_t* obj)
+{
+  esp_err_t ret = ESP_OK;
+  
+  /* Allocate resources */
+  obj->buffer = malloc(BUFFER_SIZE);
+  if (!obj->buffer) {
+    ret = ESP_ERR_NO_MEM;
+    goto cleanup;
+  }
+  
+  obj->mutex = xSemaphoreCreateMutex();
+  if (!obj->mutex) {
+    ret = ESP_ERR_NO_MEM;
+    goto cleanup;
+  }
+  
+  ret = hardware_init(obj);
+  if (ret != ESP_OK) {
+    goto cleanup;
+  }
+  
+  return ESP_OK;
+  
+  cleanup:
+  /* Release resources in reverse order */
+  if (obj->mutex) {
+    vSemaphoreDelete(obj->mutex);
+    obj->mutex = NULL;
+  }
+  if (obj->buffer) {
+    free(obj->buffer);
+    obj->buffer = NULL;
+  }
+  return ret;
+}
+\end{lstlisting}
+
+\subsection{Error Logging}
+
+Use appropriate log levels for different error severities.
+
+\begin{lstlisting}[language=C]
+/* ESP_LOGE - Errors that prevent operation */
+ESP_LOGE(s_TAG, "Failed to initialize bus '%s': %s",
+config->name, esp_err_to_name(ret));
+
+/* ESP_LOGW - Warnings that don't prevent operation */
+ESP_LOGW(manager->tag, "Failed to register pins for bus '%s': %s "
+"(bus still added)", config->name, esp_err_to_name(ret));
+
+/* ESP_LOGI - Informational messages */
+ESP_LOGI(manager->tag, "Added bus config: %s (Type: %s)",
+config->name, star_bus_type_to_string(config->type));
+
+/* ESP_LOGD - Debug messages (compiled out in release) */
+ESP_LOGD(s_TAG, "Write Success: %zu bytes to '%s' (Addr 0x%02X)",
+len, config->name, address);
+\end{lstlisting}
+
+\subsection{Summary}
+
+\begin{itemize}
+    \item Return \texttt{esp\_err\_t} from all functions that can fail
+    \item Use \texttt{ESP\_RETURN\_ON\_FALSE} for parameter validation
+    \item Use \texttt{ESP\_GOTO\_ON\_ERROR} for cleanup patterns
+    \item Always validate pointers before dereferencing
+    \item Handle mutex timeouts as \texttt{ESP\_ERR\_TIMEOUT}
+    \item Use dependency injection for error handlers
+    \item Release resources in reverse order of acquisition
+    \item Log errors with appropriate severity levels
+\end{itemize}
+
+
+
+This section establishes standards for function design, implementation, and documentation in the STAR firmware codebase.
+
+\subsection{Return Value Conventions}
+
+\begin{itemize}
+    \item If the name of a function is an action (or an imperative command), it should return an \textbf{error-code integer} (\texttt{esp\_err\_t}).
+    \item If the name is a predicate (a function that returns true/false), it should return a \textbf{succeeded boolean}.
+\end{itemize}
+
+\begin{lstlisting}[language=C]
+/* Action functions return esp_err_t */
+esp_err_t star_bus_manager_init(...);
+esp_err_t star_bus_manager_add_bus(...);
+esp_err_t star_bus_config_destroy(...);
+
+/* Predicate functions return bool */
+bool error_handler_can_retry(error_handler_t* handler);
+bool is_bus_initialized(const star_bus_config_t* config);
+
+/* Getter functions return the value or pointer */
+star_bus_config_t* star_bus_manager_find_bus(...);
+const char* star_bus_type_to_string(star_bus_type_t type);
+\end{lstlisting}
+
+\subsection{Private and Exposed Private Functions}
+
+\subsubsection{Private Functions (static)}
+
+Functions internal to a single source file should be declared \texttt{static} with the \texttt{internal\_} prefix.
+
+\begin{lstlisting}[language=C]
+/* In .c file - private static functions */
+static esp_err_t internal_register_bus_pin(star_pin_interface_t* pin_iface,
+gpio_num_t            pin,
+const char*           bus_name,
+const char*           usage,
+bool                  can_be_shared)
+{
+  if (pin < 0 || pin >= GPIO_NUM_MAX) {
+    return ESP_OK;  /* Not an error, pin is not used */
+  }
+  /* ... implementation ... */
+}
+
+static esp_err_t internal_i2c_execute_with_retry(const star_bus_config_t* config,
+i2c_port_t               port,
+i2c_cmd_handle_t         cmd,
+const char*              operation_name)
+{
+  /* ... implementation ... */
+}
+
+/* Declare prototypes at top of file */
+static esp_err_t internal_register_bus_pin(...);
+static esp_err_t internal_unregister_bus_pin(...);
+static esp_err_t internal_register_config_pins(...);
+\end{lstlisting}
+
+\subsubsection{Exposed Private Functions (priv\_)}
+
+If a function cannot be \texttt{static} and must be exposed across files within a module (but not publicly), prefix its name with \texttt{priv\_}.
+
+\begin{lstlisting}[language=C]
+/* In internal header (e.g., star_bus_internal.h) */
+esp_err_t priv_star_bus_validate_config(const star_bus_config_t* config);
+esp_err_t priv_star_bus_acquire_mutex(star_bus_manager_t* manager);
+void      priv_star_bus_release_mutex(star_bus_manager_t* manager);
+\end{lstlisting}
+
+\subsection{Parameter Validation}
+
+Validate all parameters at the start of public functions.
+
+\begin{lstlisting}[language=C]
+esp_err_t star_bus_manager_add_bus(star_bus_manager_t* manager,
+star_bus_config_t*  config)
+{
+  /* Validate required parameters */
+  ESP_RETURN_ON_FALSE(manager && config,
+  ESP_ERR_INVALID_ARG,
+  s_TAG,
+  "Manager or config pointer is NULL");
+  
+  /* Validate config contents */
+  ESP_RETURN_ON_FALSE(config->name && strlen(config->name) > 0,
+  ESP_ERR_INVALID_ARG,
+  manager->tag,
+  "Config name is NULL or empty");
+  
+  /* Validate enum range */
+  ESP_RETURN_ON_FALSE(config->type > k_star_bus_type_none &&
+  config->type < k_star_bus_type_count,
+  ESP_ERR_INVALID_ARG,
+  manager->tag,
+  "Invalid bus type in config");
+  
+  /* Validate state */
+  ESP_RETURN_ON_FALSE(manager->mutex,
+  ESP_ERR_INVALID_STATE,
+  manager->tag,
+  "Manager mutex not initialized");
+  
+  /* ... rest of implementation ... */
+}
+
+esp_err_t star_bus_i2c_write(const star_bus_manager_t* manager,
+const char*               name,
+const uint8_t*            data,
+size_t                    len,
+uint8_t                   reg_addr,
+size_t*                   bytes_written)
+{
+  /* Validate all required pointers */
+  ESP_RETURN_ON_FALSE(manager && name && data,
+  ESP_ERR_INVALID_ARG,
+  s_TAG,
+  "Manager, name, or data is NULL");
+  
+  /* Validate numeric constraints */
+  ESP_RETURN_ON_FALSE(len > 0, ESP_ERR_INVALID_ARG, s_TAG,
+  "Write length must be > 0");
+  
+  /* Clear output parameters initially */
+  if (bytes_written) {
+    *bytes_written = 0;
+  }
+  
+  /* ... rest of implementation ... */
+}
+\end{lstlisting}
+
+\subsection{Function Declaration Formatting}
+
+Align parameters vertically when they span multiple lines.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Aligned parameters */
+esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
+const char*             tag,
+star_error_interface_t* error_iface,
+star_pin_interface_t*   pin_iface);
+
+star_bus_config_t* star_bus_config_create_spi_device(
+const char*                          name,
+spi_host_device_t                    host,
+gpio_num_t                           copi_pin,
+gpio_num_t                           cipo_pin,
+gpio_num_t                           sclk_pin,
+int32_t                              dma_chan,
+const spi_device_interface_config_t* dev_cfg);
+
+/* Function pointers in structs */
+typedef struct star_error_interface {
+  esp_err_t (*record_error)(void*       ctx,
+  esp_err_t   error,
+  const char* message,
+  const char* file,
+  int         line,
+  const char* func);
+  bool (*can_retry)(void* ctx);
+  esp_err_t (*reset_state)(void* ctx);
+  void* ctx;
+} star_error_interface_t;
+\end{lstlisting}
+
+\subsection{Doxygen Documentation}
+
+All public functions must have complete Doxygen documentation in header files.
+
+\begin{lstlisting}[language=C]
+/**
+* @brief Add a new bus/device configuration to the manager.
+*
+* Adds a previously created configuration (via star_bus_config_create_*)
+* to the manager's internal list. The manager takes ownership conceptually,
+* but the configuration still needs to be destroyed eventually (typically via
+* star_bus_manager_remove_bus or star_bus_manager_deinit).
+*
+* The configuration must have a unique name. This function is thread-safe.
+*
+* @param[in] manager Pointer to the initialized bus manager.
+*                    Must not be NULL.
+* @param[in] config  Pointer to the bus configuration structure to add.
+*                    Must not be NULL and must have a valid name.
+* @return esp_err_t ESP_OK on success,
+*                   ESP_ERR_INVALID_ARG if manager or config is invalid,
+*                   ESP_ERR_INVALID_STATE if a bus with the same name
+*                       already exists or mutex error,
+*                   ESP_ERR_TIMEOUT if mutex times out.
+*/
+esp_err_t star_bus_manager_add_bus(star_bus_manager_t* manager,
+star_bus_config_t*  config);
+\end{lstlisting}
+
+\subsection{Private Function Documentation}
+
+Static functions should have brief documentation in the source file.
+
+\begin{lstlisting}[language=C]
+/**
+* @brief Helper: Execute I2C command with retry logic
+*
+* Wraps i2c_master_cmd_begin() with automatic retry for transient errors.
+*
+* @param[in] config         Pointer to I2C bus configuration
+* @param[in] port           I2C port number
+* @param[in] cmd            I2C command handle
+* @param[in] operation_name Name of operation for logging
+* @return esp_err_t Final result after retries
+*/
+static esp_err_t internal_i2c_execute_with_retry(const star_bus_config_t* config,
+i2c_port_t               port,
+i2c_cmd_handle_t         cmd,
+const char*              operation_name);
+\end{lstlisting}
+
+\subsection{Function Implementation Patterns}
+
+\subsubsection{Single Exit Point with Cleanup}
+
+\begin{lstlisting}[language=C]
+esp_err_t star_bus_manager_remove_bus(star_bus_manager_t* manager,
+const char*         name)
+{
+  ESP_RETURN_ON_FALSE(manager && name && strlen(name) > 0,
+  ESP_ERR_INVALID_ARG, s_TAG, "Invalid arguments");
+  
+  star_bus_config_t* to_remove = NULL;
+  star_bus_config_t* prev      = NULL;
+  esp_err_t          ret       = ESP_ERR_NOT_FOUND;
+  
+  /* Acquire mutex */
+  if (xSemaphoreTake(manager->mutex,
+  pdMS_TO_TICKS(CONFIG_STAR_KCONFIG_BUS_MUTEX_TIMEOUT_MS))
+  != pdTRUE) {
+    return ESP_ERR_TIMEOUT;
+  }
+  
+  /* Find and unlink */
+  for (star_bus_config_t* curr = manager->buses; curr;
+  prev = curr, curr = curr->next) {
+    if (curr->name && strcmp(curr->name, name) == 0) {
+      to_remove = curr;
+      if (prev == NULL) {
+        manager->buses = curr->next;
+      } else {
+        prev->next = curr->next;
+      }
+      to_remove->next = NULL;
+      ret = ESP_OK;
+      break;
+    }
+  }
+  
+  if (ret == ESP_ERR_NOT_FOUND) {
+    goto remove_give_mutex;
+  }
+  
+  /* Cleanup operations */
+  esp_err_t destroy_result = star_bus_config_destroy(to_remove);
+  if (destroy_result != ESP_OK) {
+    ret = destroy_result;
+  }
+  
+  remove_give_mutex:
+  xSemaphoreGive(manager->mutex);
+  return ret;
+}
+\end{lstlisting}
+
+\subsubsection{Factory Function Pattern}
+
+\begin{lstlisting}[language=C]
+star_bus_config_t* star_bus_config_create_i2c(const char* name,
+i2c_port_t  port,
+uint8_t     address,
+gpio_num_t  sda_pin,
+gpio_num_t  scl_pin,
+uint32_t    clk_speed)
+{
+  if (name == NULL || strlen(name) == 0) {
+    ESP_LOGE(s_TAG, "Invalid name for I2C bus config");
+    return NULL;
+  }
+  
+  star_bus_config_t* config = calloc(1, sizeof(star_bus_config_t));
+  if (config == NULL) {
+    ESP_LOGE(s_TAG, "Failed to allocate memory for I2C config");
+    return NULL;
+  }
+  
+  /* Initialize common fields */
+  config->name        = strdup(name);
+  config->type        = k_star_bus_type_i2c;
+  config->initialized = false;
+  config->handle      = NULL;
+  config->next        = NULL;
+  
+  /* Initialize I2C-specific fields */
+  config->proto.i2c.port    = port;
+  config->proto.i2c.address = address;
+  config->proto.i2c.config.sda_io_num = sda_pin;
+  config->proto.i2c.config.scl_io_num = scl_pin;
+  config->proto.i2c.config.master.clk_speed = clk_speed;
+  
+  /* Set default operations */
+  star_bus_i2c_init_default_ops(&config->proto.i2c.ops);
+  
+  return config;
+}
+\end{lstlisting}
+
+\subsection{Callback Functions}
+
+\begin{lstlisting}[language=C]
+/* Callback type definition */
+typedef esp_err_t (*star_bus_callback_t)(star_bus_config_t* bus,
+void*              user_ctx);
+
+/* Function using callback */
+esp_err_t star_bus_manager_with_bus(star_bus_manager_t* manager,
+const char*         name,
+star_bus_callback_t callback,
+void*               user_ctx)
+{
+  ESP_RETURN_ON_FALSE(manager && name && callback,
+  ESP_ERR_INVALID_ARG, s_TAG, "Invalid arguments");
+  
+  /* ... find bus and invoke callback while holding mutex ... */
+  esp_err_t callback_result = callback(found_bus, user_ctx);
+  
+  xSemaphoreGive(manager->mutex);
+  return callback_result;
+}
+
+/* Using the callback pattern */
+esp_err_t my_bus_callback(star_bus_config_t* bus, void* ctx) {
+  ESP_LOGI(TAG, "Bus type: %s", star_bus_type_to_string(bus->type));
+  return ESP_OK;
+}
+
+star_bus_manager_with_bus(&manager, "sensor_i2c", my_bus_callback, NULL);
+\end{lstlisting}
+
+\subsection{Summary}
+
+\begin{itemize}
+    \item Action functions return \texttt{esp\_err\_t}; predicates return \texttt{bool}
+    \item Use \texttt{static} with \texttt{internal\_} prefix for file-local functions
+    \item Use \texttt{priv\_} prefix for exposed-but-not-public functions
+    \item Validate all parameters at function start
+    \item Align parameters vertically in multi-line declarations
+    \item Document all public functions with complete Doxygen
+    \item Use single exit point with cleanup for complex functions
+    \item Use factory functions for object creation
+\end{itemize}
+
+
+
+Global variables should be avoided when possible. This section establishes patterns for when they are necessary.
+
+\subsection{General Principles}
+
+\begin{itemize}
+    \item \textbf{Avoid Globals}: Global variables are strongly discouraged. Use dependency injection instead.
+    \item \textbf{File-Scoped When Necessary}: If a global is needed, limit its scope to a single file using \texttt{static}.
+    \item \textbf{Use Prefix Conventions}: \texttt{s\_} for static file-scoped, \texttt{g\_} for true globals.
+    \item \textbf{Prefer \texttt{static const} Over \texttt{\#define}}: For typed constants, use \texttt{static const}.
+\end{itemize}
+
+\subsection{Static File-Scoped Variables (s\_ prefix)}
+
+Use \texttt{static} with \texttt{s\_} prefix for variables that should be accessible only within a single source file.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Static file-scoped variables */
+
+/* Logging tag - most common pattern */
+static const char* s_TAG = "STAR_BUS_MANAGER";
+
+/* Configuration constants - prefer static const over #define */
+static const uint32_t s_i2c_timeout_ms = 1000;
+static const uint32_t s_default_retry_count = 3;
+
+/* State variables scoped to this file */
+static bool s_module_initialized = false;
+
+/* From star_bus_i2c.c */
+static const char* s_TAG = "STAR_BUS_I2C";
+static const uint32_t s_i2c_timeout_ms = 1000;
+
+/* From star_bus_config.c */
+static const char* s_TAG = "STAR_BUS_CONFIG";
+\end{lstlisting}
+
+\subsection{Why static const Over \#define}
+
+\texttt{static const} provides type safety and scope control that \texttt{\#define} lacks.
+
+\begin{lstlisting}[language=C]
+/* PREFERRED - Type-safe, scoped, debugger-visible */
+static const uint32_t s_timeout_ms = 1000;
+static const size_t   s_buffer_size = 256;
+
+/* Use the constant with type checking */
+uint32_t timeout = s_timeout_ms;  /* Compiler checks type */
+
+/* AVOID - No type safety, global namespace pollution */
+#define TIMEOUT_MS 1000
+#define BUFFER_SIZE 256
+
+/* Issues with #define: */
+/* 1. No type checking */
+/* 2. Can collide with other defines */
+/* 3. Not visible in debugger */
+/* 4. Can have unexpected macro expansion */
+\end{lstlisting}
+
+\subsection{When to Use \#define}
+
+Use \texttt{\#define} for:
+\begin{itemize}
+    \item Compile-time constants for array sizes
+    \item Conditional compilation
+    \item Macros that cannot be functions
+\end{itemize}
+
+\begin{lstlisting}[language=C]
+/* Array sizes must be compile-time constants */
+#define STAR_BUS_NAME_MAX_LEN  (32)
+
+char bus_name[STAR_BUS_NAME_MAX_LEN];  /* OK - compile-time constant */
+
+/* Conditional compilation */
+#ifdef CONFIG_STAR_ENABLE_DEBUG_LOGGING
+ESP_LOGD(s_TAG, "Debug info: %d", value);
+#endif
+
+/* Macros with special features */
+#define RECORD_ERROR(handler, code, desc)  \
+do {  \
+error_handler_record_error((handler), (code), (desc),  \
+__FILE__, __LINE__, __func__);  \
+} while (0)
+\end{lstlisting}
+
+\subsection{True Global Variables (g\_ prefix)}
+
+If a truly global variable is unavoidable, use the \texttt{g\_} prefix. This should be rare.
+
+\begin{lstlisting}[language=C]
+/* DISCOURAGED but sometimes necessary */
+/* g_ prefix for true globals (visible across files) */
+g_system_state_t g_system_state;
+
+/* Prefer dependency injection instead */
+/* BETTER approach: */
+typedef struct app_context {
+  star_bus_manager_t  bus_manager;
+  error_handler_t     error_handler;
+  /* ... */
+} app_context_t;
+
+/* Pass context to functions that need it */
+void app_process_sensors(app_context_t* ctx);
+\end{lstlisting}
+
+\subsection{Dependency Injection Alternative}
+
+Replace globals with dependency injection.
+
+\begin{lstlisting}[language=C]
+/* WRONG - Global error handler */
+error_handler_t g_error_handler;  /* Global - bad */
+
+void some_function(void) {
+  if (error) {
+    RECORD_ERROR(&g_error_handler, err, "Failed");  /* Uses global */
+  }
+}
+
+/* CORRECT - Dependency injection */
+typedef struct star_bus_manager {
+  star_error_interface_t* error_iface;  /* Injected dependency */
+  /* ... */
+} star_bus_manager_t;
+
+esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
+const char*             tag,
+star_error_interface_t* error_iface,  /* Injected */
+star_pin_interface_t*   pin_iface)    /* Injected */
+{
+  manager->error_iface = error_iface;
+  /* ... */
+}
+
+/* Usage */
+error_handler_t error_handler;
+error_handler_init(&error_handler, 3, 100, 5000, NULL, NULL);
+
+star_error_interface_t error_iface;
+error_handler_get_interface(&error_iface, &error_handler);
+
+star_bus_manager_t bus_manager;
+star_bus_manager_init(&bus_manager, "main", &error_iface, NULL);
+\end{lstlisting}
+
+\subsection{Static Variables for Module State}
+
+When a module needs to maintain state, prefer explicit initialization and deinitialization.
+
+\begin{lstlisting}[language=C]
+/* Module-private state */
+static struct {
+  bool     initialized;
+  uint32_t transaction_count;
+  /* ... */
+} s_module_state = {
+  .initialized = false,
+  .transaction_count = 0,
+};
+
+esp_err_t module_init(void)
+{
+  if (s_module_state.initialized) {
+    return ESP_ERR_INVALID_STATE;
+  }
+  
+  /* Initialize module */
+  s_module_state.initialized = true;
+  return ESP_OK;
+}
+
+esp_err_t module_deinit(void)
+{
+  if (!s_module_state.initialized) {
+    return ESP_ERR_INVALID_STATE;
+  }
+  
+  /* Clean up */
+  s_module_state.initialized = false;
+  s_module_state.transaction_count = 0;
+  return ESP_OK;
+}
+\end{lstlisting}
+
+\subsection{Thread Safety for Shared State}
+
+If static variables are accessed from multiple threads, protect with mutex.
+
+\begin{lstlisting}[language=C]
+/* Thread-safe module state */
+static struct {
+  bool              initialized;
+  SemaphoreHandle_t mutex;
+  uint32_t          counter;
+} s_shared_state;
+
+esp_err_t safe_increment_counter(void)
+{
+  if (xSemaphoreTake(s_shared_state.mutex, pdMS_TO_TICKS(1000)) != pdTRUE) {
+    return ESP_ERR_TIMEOUT;
+  }
+  
+  s_shared_state.counter++;
+  
+  xSemaphoreGive(s_shared_state.mutex);
+  return ESP_OK;
+}
+\end{lstlisting}
+
+\subsection{Summary}
+
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Type} & \textbf{Prefix} & \textbf{Usage} \\
+\hline
+Static file-scoped & \texttt{s\_} & Prefer this for module-internal state \\
+\hline
+True global & \texttt{g\_} & Avoid; use dependency injection \\
+\hline
+\texttt{static const} & \texttt{s\_} & Type-safe constants \\
+\hline
+\texttt{\#define} & None & Array sizes, macros, conditional compilation \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{itemize}
+    \item Use \texttt{static const} for type-safe constants
+    \item Use \texttt{s\_TAG} for module logging tags
+    \item Prefer dependency injection over global variables
+    \item Protect shared state with mutexes
+    \item Limit variable scope to the smallest necessary
+\end{itemize}
+
+
+
+This section establishes standards for header file organization and content in the STAR firmware codebase.
+
+\subsection{General Principles}
+
+\begin{itemize}
+    \item \textbf{Header Files Should Only Contain Declarations}: No implementations except for inline functions.
+    \item \textbf{Minimal Includes in Headers}: Include only what is necessary for the declarations.
+    \item \textbf{Self-Contained Headers}: Each header should compile independently.
+    \item \textbf{One Purpose Per Header}: Split large headers into focused sub-headers.
+\end{itemize}
+
+\subsection{Include Guard Naming Convention}
+
+All header files must use include guards following the pattern: \texttt{STAR\_COMPONENT\_FILENAME\_H}
+
+\begin{lstlisting}[language=C]
+/* CORRECT - from star_bus_manager.h */
+#ifndef STAR_COMPONENT_BUS_MANAGER_H
+#define STAR_COMPONENT_BUS_MANAGER_H
+
+/* ... declarations ... */
+
+#endif /* STAR_COMPONENT_BUS_MANAGER_H */
+
+/* CORRECT - from star_bus_config.h */
+#ifndef STAR_COMPONENT_BUS_CONFIG_H
+#define STAR_COMPONENT_BUS_CONFIG_H
+/* ... */
+#endif /* STAR_COMPONENT_BUS_CONFIG_H */
+
+/* CORRECT - from star_error_interface.h */
+#ifndef STAR_ERROR_INTERFACE_H
+#define STAR_ERROR_INTERFACE_H
+/* ... */
+#endif /* STAR_ERROR_INTERFACE_H */
+
+/* CORRECT - from star_pin_interface.h */
+#ifndef STAR_PIN_INTERFACE_H
+#define STAR_PIN_INTERFACE_H
+/* ... */
+#endif /* STAR_PIN_INTERFACE_H */
+\end{lstlisting}
+
+\subsection{C++ Compatibility}
+
+All headers must include C++ extern ``C'' blocks for compatibility with C++ compilers.
+
+\begin{lstlisting}[language=C]
+#ifndef STAR_COMPONENT_BUS_MANAGER_H
+#define STAR_COMPONENT_BUS_MANAGER_H
+
+#ifdef __cplusplus
+extern "C" {
+  #endif
+  
+  /* All declarations go here */
+  
+  #ifdef __cplusplus
+}
+#endif
+
+#endif /* STAR_COMPONENT_BUS_MANAGER_H */
+\end{lstlisting}
+
+\subsection{Header File Structure}
+
+Headers should follow this organization:
+
+\begin{lstlisting}[language=C]
+/* lib/star_bus/include/star_bus_manager.h */
+
+#ifndef STAR_COMPONENT_BUS_MANAGER_H
+#define STAR_COMPONENT_BUS_MANAGER_H
+
+#ifdef __cplusplus
+extern "C" {
+  #endif
+  
+  /* === 1. Includes === */
+  #include "esp_err.h"
+  #include "star_bus_manager_types.h"
+  
+  /* === 2. File Documentation === */
+  /**
+  * @file star_bus_manager.h
+  * @brief Unified bus manager for I2C, SPI, GPIO, and other bus protocols
+  *
+  * The bus manager provides a central registry for managing multiple
+  * bus configurations. It supports dependency injection of error handlers
+  * and pin validators for loose coupling.
+  *
+  * Example Usage:
+  * @code
+  * // Initialize bus manager with dependency injection
+  * star_bus_manager_t bus_manager;
+  * star_bus_manager_init(&bus_manager, "main", &error_iface, &pin_iface);
+  * @endcode
+  */
+  
+  /* === 3. Forward Declarations (if needed) === */
+  /* Forward declarations reduce header dependencies */
+  
+  /* === 4. Macros and Constants === */
+  #define STAR_BUS_NAME_MAX_LEN (32)
+  
+  /* === 5. Type Definitions === */
+  /* (Usually in separate _types.h header) */
+  
+  /* === 6. Function Declarations === */
+  
+  /**
+  * @brief Initialize a bus manager instance.
+  *
+  * @param[out] manager     Pointer to bus manager to initialize.
+  * @param[in]  tag         Optional tag string for logging.
+  * @param[in]  error_iface Optional error handler interface.
+  * @param[in]  pin_iface   Optional pin validator interface.
+  * @return esp_err_t ESP_OK on success.
+  */
+  esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
+  const char*             tag,
+  star_error_interface_t* error_iface,
+  star_pin_interface_t*   pin_iface);
+  
+  /* ... more function declarations ... */
+  
+  #ifdef __cplusplus
+}
+#endif
+
+#endif /* STAR_COMPONENT_BUS_MANAGER_H */
+\end{lstlisting}
+
+\subsection{Include Order}
+
+Includes should be ordered in groups, separated by blank lines:
+
+\begin{lstlisting}[language=C]
+/* 1. Primary header (in .c file, include corresponding .h first) */
+#include "star_bus_manager.h"
+
+/* 2. FreeRTOS includes */
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+#include "freertos/task.h"
+
+/* 3. Standard library includes */
+#include <inttypes.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+/* 4. ESP-IDF includes */
+#include "driver/gpio.h"
+#include "driver/i2c.h"
+#include "esp_check.h"
+#include "esp_err.h"
+#include "esp_log.h"
+#include "sdkconfig.h"
+
+/* 5. Project includes */
+#include "star_bus_config.h"
+#include "star_bus_i2c.h"
+#include "star_bus_types.h"
+#include "star_error_interface.h"
+\end{lstlisting}
+
+\subsection{Forward Declarations}
+
+Use forward declarations to minimize header dependencies.
+
+\begin{lstlisting}[language=C]
+/* In star_bus_config.h - forward declare instead of including */
+/* Forward declaration */
+struct star_bus_manager;  /* Don't need full definition */
+
+/* Function using forward-declared type */
+esp_err_t star_bus_config_init(star_bus_config_t*      config,
+struct star_bus_manager* manager);
+
+/* In star_bus_common_types.h */
+/* Forward declarations for pointer-only usage */
+typedef struct star_bus_config  star_bus_config_t;
+typedef struct star_bus_manager star_bus_manager_t;
+\end{lstlisting}
+
+\subsection{Separating Types from Functions}
+
+For complex modules, split type definitions into dedicated headers.
+
+\begin{lstlisting}[language=C]
+/* File organization for star_bus module */
+star_bus/include/
+star_bus_manager.h        /* Main API (functions) */
+star_bus_manager_types.h  /* Types for manager */
+star_bus_common_types.h   /* Shared types */
+star_bus_protocol_types.h /* Protocol-specific types */
+star_bus_function_types.h /* Function pointer types */
+star_bus_event_types.h    /* Event structures */
+star_bus_types.h          /* Controller - includes all */
+
+/* Controller header pattern */
+/* star_bus_types.h */
+#ifndef STAR_COMPONENT_BUS_TYPES_H
+#define STAR_COMPONENT_BUS_TYPES_H
+
+#ifdef __cplusplus
+extern "C" {
+  #endif
+  
+  /* Include all type headers */
+  #include "star_bus_common_types.h"
+  #include "star_bus_event_types.h"
+  #include "star_bus_function_types.h"
+  #include "star_bus_manager_types.h"
+  #include "star_bus_protocol_types.h"
+  
+  #ifdef __cplusplus
+}
+#endif
+
+#endif /* STAR_COMPONENT_BUS_TYPES_H */
+\end{lstlisting}
+
+\subsection{Doxygen File Documentation}
+
+Include \texttt{@file} documentation for headers with significant content.
+
+\begin{lstlisting}[language=C]
+/**
+* @file star_error_handler.h
+* @brief Error handling with retry logic and exponential backoff
+*
+* This module provides a concrete implementation of the error interface
+* with automatic retry management, exponential backoff delays, and
+* optional reset function callbacks.
+*
+* Key Features:
+* - Configurable max retries and backoff delays
+* - Exponential backoff between retries
+* - Optional custom reset function for recovery
+* - Thread-safe with mutex protection
+*
+* Example Usage:
+* @code
+* error_handler_t error_handler;
+* error_handler_init(&error_handler, 3, 100, 5000, NULL, NULL);
+*
+* if (operation_failed()) {
+  *     RECORD_ERROR(&error_handler, ESP_ERR_TIMEOUT, "Timeout");
+  * }
+  * @endcode
+  */
+\end{lstlisting}
+
+\subsection{Complete Header Template}
+
+\begin{lstlisting}[language=C]
+/* lib/star_module/include/star_module.h */
+
+#ifndef STAR_COMPONENT_MODULE_H
+#define STAR_COMPONENT_MODULE_H
+
+#ifdef __cplusplus
+extern "C" {
+  #endif
+  
+  /* === Includes === */
+  #include <stdbool.h>
+  #include <stdint.h>
+  
+  #include "esp_err.h"
+  
+  /* === File Documentation === */
+  /**
+  * @file star_module.h
+  * @brief Brief description of this module
+  *
+  * Detailed description of what this module provides and how to use it.
+  */
+  
+  /* === Forward Declarations === */
+  typedef struct star_module star_module_t;
+  
+  /* === Macros === */
+  #define STAR_MODULE_DEFAULT_TIMEOUT_MS (1000)
+  
+  /* === Type Definitions === */
+  typedef struct star_module {
+    bool        initialized;
+    uint32_t    timeout_ms;
+    void*       user_ctx;
+  } star_module_t;
+  
+  /* === Function Declarations === */
+  
+  /**
+  * @brief Initialize the module.
+  *
+  * @param[out] module  Pointer to module structure to initialize.
+  * @param[in]  timeout Timeout in milliseconds.
+  * @return esp_err_t ESP_OK on success.
+  */
+  esp_err_t star_module_init(star_module_t* module, uint32_t timeout);
+  
+  /**
+  * @brief Deinitialize the module.
+  *
+  * @param[in,out] module Pointer to module structure to deinitialize.
+  * @return esp_err_t ESP_OK on success.
+  */
+  esp_err_t star_module_deinit(star_module_t* module);
+  
+  #ifdef __cplusplus
+}
+#endif
+
+#endif /* STAR_COMPONENT_MODULE_H */
+\end{lstlisting}
+
+\subsection{Summary}
+
+\begin{itemize}
+    \item Use include guards: \texttt{STAR\_COMPONENT\_FILENAME\_H}
+    \item Include C++ extern ``C'' blocks
+    \item Order includes: FreeRTOS, standard library, ESP-IDF, project
+    \item Use forward declarations to minimize dependencies
+    \item Split types into separate \_types.h headers for complex modules
+    \item Document files with \texttt{@file} Doxygen blocks
+    \item Keep headers focused on declarations, not implementations
+\end{itemize}
+
+
+
+This section establishes standards for horizontal spacing in the STAR firmware codebase.
+
+\subsection{General Rules}
+
+\begin{itemize}
+    \item \textbf{Space After Keywords}: Add space after \texttt{if}, \texttt{for}, \texttt{while}, \texttt{switch}.
+    \item \textbf{Binary Operators}: Add a single space around binary operators.
+    \item \textbf{No Space After Function Names}: No space between function name and opening parenthesis.
+    \item \textbf{Alignment}: Align related declarations and comments.
+\end{itemize}
+
+\subsection{Space After Control Keywords}
+
+Add a space between keywords and opening parenthesis.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Space after keywords */
+if (ret != ESP_OK) {
+  return ret;
+}
+
+for (star_bus_config_t* curr = manager->buses; curr; curr = curr->next) {
+  process(curr);
+}
+
+while (retry_count > 0) {
+  attempt_operation();
+  retry_count--;
+}
+
+switch (config->type) {
+  case k_star_bus_type_i2c: {
+    /* ... */
+    break;
+  }
+}
+
+/* WRONG - No space after keywords */
+if(ret != ESP_OK) {         /* Missing space */
+return ret;
+}
+
+for(int i = 0; i < 10; i++) {  /* Missing space */
+/* ... */
+}
+\end{lstlisting}
+
+\subsection{No Space After Function Names}
+
+Do not add space between function name and opening parenthesis.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - No space after function name */
+esp_err_t ret = star_bus_manager_init(&manager, "main", NULL, NULL);
+ESP_LOGI(s_TAG, "Initialized bus manager");
+free(buffer);
+
+/* WRONG - Space after function name */
+esp_err_t ret = star_bus_manager_init (&manager, "main", NULL, NULL);
+ESP_LOGI (s_TAG, "Initialized bus manager");
+free (buffer);
+\end{lstlisting}
+
+\subsection{Binary Operators}
+
+Add a single space around binary operators.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Spaces around binary operators */
+int result = a + b;
+bool is_valid = (count > 0) && (size <= MAX_SIZE);
+uint32_t mask = flags | FLAG_ENABLED;
+int shifted = value << 2;
+size_t remaining = total - processed;
+
+/* Assignment operators */
+count += 1;
+flags |= FLAG_INITIALIZED;
+value >>= 4;
+
+/* Comparison operators */
+if (ret != ESP_OK) { /* ... */ }
+if (count >= threshold) { /* ... */ }
+if (ptr == NULL) { /* ... */ }
+
+/* WRONG - Missing spaces */
+int result = a+b;
+bool is_valid = (count>0)&&(size<=MAX_SIZE);
+if (ret!=ESP_OK) { /* ... */ }
+\end{lstlisting}
+
+\subsection{Unary Operators}
+
+No space between unary operator and operand.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - No space with unary operators */
+count++;
+--remaining;
+bool is_null = !ptr;
+int negative = -value;
+uint32_t complement = ~mask;
+size_t size = sizeof(star_bus_config_t);
+int* ptr = &value;
+int deref = *ptr;
+
+/* WRONG - Space with unary operators */
+count ++;
+-- remaining;
+bool is_null = ! ptr;
+\end{lstlisting}
+
+\subsection{Pointer Declarations}
+
+Place asterisk with the type, not the variable name.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Asterisk with type */
+star_bus_config_t* config;
+const char* name;
+void* user_ctx;
+
+/* Function parameters */
+esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
+const char*             tag,
+star_error_interface_t* error_iface,
+star_pin_interface_t*   pin_iface);
+
+/* Multiple pointers on same line (avoid when possible) */
+int *a, *b;  /* Both are pointers */
+
+/* WRONG - Various incorrect styles */
+star_bus_config_t *config;     /* Asterisk with variable */
+star_bus_config_t * config;    /* Spaces around asterisk */
+\end{lstlisting}
+
+\subsection{Comma and Semicolon Spacing}
+
+Space after comma and semicolon, not before.
+
+\begin{lstlisting}[language=C]
+/* CORRECT */
+star_bus_manager_init(&manager, "main", &error_iface, &pin_iface);
+
+for (int i = 0; i < count; i++) {
+  /* ... */
+}
+
+int array[] = {1, 2, 3, 4, 5};
+
+/* WRONG */
+star_bus_manager_init(&manager ,"main" ,&error_iface ,&pin_iface);
+for (int i = 0 ;i < count ;i++) { /* ... */ }
+int array[] = {1 ,2 ,3 ,4 ,5};
+\end{lstlisting}
+
+\subsection{Parentheses Spacing}
+
+No space after opening parenthesis or before closing parenthesis.
+
+\begin{lstlisting}[language=C]
+/* CORRECT */
+if (ret != ESP_OK) {
+  return ret;
+}
+
+result = calculate(a, b, c);
+
+/* WRONG - Spaces inside parentheses */
+if ( ret != ESP_OK ) {
+  return ret;
+}
+
+result = calculate( a, b, c );
+\end{lstlisting}
+
+\subsection{Parameter Alignment}
+
+Align parameters vertically in multi-line function declarations and calls.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Aligned parameters */
+esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
+const char*             tag,
+star_error_interface_t* error_iface,
+star_pin_interface_t*   pin_iface);
+
+star_bus_config_t* star_bus_config_create_spi_device(
+const char*                          name,
+spi_host_device_t                    host,
+gpio_num_t                           copi_pin,
+gpio_num_t                           cipo_pin,
+gpio_num_t                           sclk_pin,
+int32_t                              dma_chan,
+const spi_device_interface_config_t* dev_cfg);
+
+/* Long function calls */
+ESP_RETURN_ON_FALSE(manager && config,
+ESP_ERR_INVALID_ARG,
+s_TAG,
+"Manager or config pointer is NULL");
+\end{lstlisting}
+
+\subsection{Variable and Comment Alignment}
+
+Align related variables and their comments.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Aligned declarations and comments */
+typedef struct error_handler {
+  uint32_t          error_count;         /**< Total errors recorded */
+  uint32_t          max_retries;         /**< Max retry attempts */
+  uint32_t          current_retry;       /**< Current retry counter */
+  uint32_t          base_retry_delay;    /**< Base delay (ms) */
+  uint32_t          max_retry_delay;     /**< Max delay (ms) */
+  uint32_t          current_retry_delay; /**< Current delay with backoff */
+  esp_err_t         last_error;          /**< Last recorded error code */
+  bool              in_error_state;      /**< Whether in error state */
+  void*             reset_context;       /**< Context for reset function */
+  SemaphoreHandle_t mutex;               /**< Mutex for thread-safety */
+} error_handler_t;
+
+/* Aligned local variables */
+i2c_port_t       port    = config->proto.i2c.port;
+uint8_t          address = config->proto.i2c.address;
+esp_err_t        ret     = ESP_OK;
+i2c_cmd_handle_t cmd     = NULL;
+\end{lstlisting}
+
+\subsection{Struct Initializer Alignment}
+
+Align designated initializers.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Aligned initializers */
+star_bus_event_t event = {
+  .bus_type = k_star_bus_type_i2c,
+  .bus_name = config->name,
+  .i2c      = {
+    .port     = port,
+    .address  = address,
+    .is_write = true,
+    .len      = len
+  }
+};
+
+spi_device_interface_config_t spi_cfg = {
+  .clock_speed_hz = 10 * 1000 * 1000,
+  .mode           = 0,
+  .spics_io_num   = GPIO_NUM_5,
+  .queue_size     = 7,
+  .pre_cb         = NULL,
+  .post_cb        = NULL,
+};
+\end{lstlisting}
+
+\subsection{Summary}
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Context} & \textbf{Rule} \\
+\hline
+After \texttt{if}, \texttt{for}, \texttt{while}, \texttt{switch} & Space \\
+\hline
+After function name & No space \\
+\hline
+Around binary operators & Space \\
+\hline
+With unary operators & No space \\
+\hline
+After comma/semicolon & Space \\
+\hline
+Inside parentheses & No space \\
+\hline
+Pointer asterisk & With type \\
+\hline
+Multi-line parameters & Align vertically \\
+\hline
+\end{tabular}
+\end{center}
+
+
+
+This section establishes standards for include statement organization and ordering in the STAR firmware codebase.
+
+\subsection{General Rules}
+
+\begin{itemize}
+    \item \textbf{Use Angle Brackets for System/Library Headers}: \texttt{<stdio.h>}.
+    \item \textbf{Use Quotation Marks for Project Headers}: \texttt{"my\_project.h"}.
+    \item \textbf{Minimal Includes in Header Files}: Only include what is necessary.
+    \item \textbf{Group and Order Includes}: Follow consistent ordering.
+\end{itemize}
+
+\subsection{Include Order}
+
+Includes should be ordered in these groups, separated by blank lines:
+
+\begin{enumerate}
+    \item Primary header (in .c files)
+    \item FreeRTOS includes
+    \item Standard library includes
+    \item ESP-IDF includes
+    \item Project includes
+\end{enumerate}
+
+\begin{lstlisting}[language=C]
+/* lib/star_bus/src/star_bus_i2c.c */
+
+/* 1. Primary header - always first in .c file */
+#include "star_bus_i2c.h"
+
+/* 2. FreeRTOS includes */
+#include "freertos/FreeRTOS.h"
+
+/* 3. Standard library includes */
+#include <inttypes.h>
+#include <string.h>
+
+/* 4. ESP-IDF includes */
+#include "esp_check.h"
+#include "esp_log.h"
+
+/* 5. Project includes */
+#include "star_bus_manager.h"
+#include "star_bus_types.h"
+\end{lstlisting}
+
+\subsection{Complete Example from Codebase}
+
+\begin{lstlisting}[language=C]
+/* lib/star_bus/src/star_bus_manager.c */
+
+/* Primary header */
+#include "star_bus_manager.h"
+
+/* FreeRTOS */
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+
+/* Standard library */
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+/* ESP-IDF */
+#include "esp_check.h"
+#include "esp_log.h"
+#include "sdkconfig.h"
+
+/* Project includes */
+#include "star_bus_adc.h"
+#include "star_bus_config.h"
+#include "star_bus_gpio.h"
+#include "star_bus_i2c.h"
+#include "star_bus_spi.h"
+\end{lstlisting}
+
+\subsection{FreeRTOS Include Order}
+
+FreeRTOS requires specific include ordering. Always include \texttt{FreeRTOS.h} first.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - FreeRTOS.h must come first */
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+#include "freertos/task.h"
+#include "freertos/queue.h"
+#include "freertos/event_groups.h"
+
+/* WRONG - Other FreeRTOS headers before FreeRTOS.h */
+#include "freertos/semphr.h"  /* Error: FreeRTOS.h not included first */
+#include "freertos/FreeRTOS.h"
+\end{lstlisting}
+
+\subsection{System Includes}
+
+Use angle brackets for system and standard library headers.
+
+\begin{lstlisting}[language=C]
+/* Standard C library */
+#include <inttypes.h>
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+\end{lstlisting}
+
+\subsection{ESP-IDF Includes}
+
+ESP-IDF headers use quotation marks but are treated as a separate group.
+
+\begin{lstlisting}[language=C]
+/* ESP-IDF driver includes */
+#include "driver/gpio.h"
+#include "driver/i2c.h"
+#include "driver/spi_master.h"
+#include "driver/uart.h"
+
+/* ESP-IDF system includes */
+#include "esp_check.h"
+#include "esp_err.h"
+#include "esp_log.h"
+#include "esp_system.h"
+
+/* ESP-IDF ADC includes */
+#include "esp_adc/adc_cali.h"
+#include "esp_adc/adc_cali_scheme.h"
+#include "esp_adc/adc_oneshot.h"
+
+/* Configuration */
+#include "sdkconfig.h"
+\end{lstlisting}
+
+\subsection{Project Includes}
+
+Use quotation marks for project headers. Alphabetize within each group.
+
+\begin{lstlisting}[language=C]
+/* Project includes - alphabetized */
+#include "star_bus_adc.h"
+#include "star_bus_config.h"
+#include "star_bus_gpio.h"
+#include "star_bus_i2c.h"
+#include "star_bus_manager.h"
+#include "star_bus_spi.h"
+#include "star_bus_types.h"
+#include "star_error_interface.h"
+#include "star_pin_interface.h"
+\end{lstlisting}
+
+\subsection{Header File Includes}
+
+Header files should minimize includes and use forward declarations when possible.
+
+\begin{lstlisting}[language=C]
+/* star_bus_manager.h - Header file includes */
+#ifndef STAR_COMPONENT_BUS_MANAGER_H
+#define STAR_COMPONENT_BUS_MANAGER_H
+
+#ifdef __cplusplus
+extern "C" {
+  #endif
+  
+  /* Only include what's needed for declarations */
+  #include "esp_err.h"
+  #include "star_bus_manager_types.h"
+  
+  /* Use forward declarations for pointer-only usage */
+  struct star_bus_config;  /* Don't include star_bus_config.h */
+  
+  /* Function using forward-declared type */
+  esp_err_t star_bus_manager_add_bus(star_bus_manager_t* manager,
+  struct star_bus_config* config);
+  
+  #ifdef __cplusplus
+}
+#endif
+
+#endif /* STAR_COMPONENT_BUS_MANAGER_H */
+\end{lstlisting}
+
+\subsection{Conditional Includes}
+
+Use \texttt{\#ifdef} for platform-specific or optional includes.
+
+\begin{lstlisting}[language=C]
+/* Platform-specific includes */
+#ifdef CONFIG_IDF_TARGET_ESP32S3
+#include "esp32s3/rom/gpio.h"
+#else
+#include "esp32/rom/gpio.h"
+#endif
+
+/* Optional feature includes */
+#ifdef CONFIG_STAR_ENABLE_DEBUG_LOGGING
+#include "esp_debug_helpers.h"
+#endif
+\end{lstlisting}
+
+\subsection{Include Comments}
+
+Add comments for non-obvious includes explaining why they are needed.
+
+\begin{lstlisting}[language=C]
+#include "star_bus_manager.h"
+
+#include "freertos/FreeRTOS.h"
+
+#include <inttypes.h>
+#include <string.h>
+
+#include "esp_check.h"
+#include "esp_log.h"
+#include "star_bus_manager.h" /* Needed for star_bus_manager_find_bus */
+#include "star_bus_types.h"   /* Needed for star_bus_config_t and union */
+\end{lstlisting}
+
+\subsection{Avoiding Circular Dependencies}
+
+Structure your includes to avoid circular dependencies.
+
+\begin{lstlisting}[language=C]
+/* Problem: Circular dependency */
+/* star_bus_manager.h includes star_bus_config.h */
+/* star_bus_config.h includes star_bus_manager.h */
+
+/* Solution: Use forward declarations */
+/* star_bus_config.h */
+struct star_bus_manager;  /* Forward declare, don't include */
+
+esp_err_t star_bus_config_init(star_bus_config_t* config,
+struct star_bus_manager* manager);
+
+/* star_bus_config.c - Include full header here */
+#include "star_bus_config.h"
+#include "star_bus_manager.h"  /* Full definition needed in .c */
+\end{lstlisting}
+
+\subsection{Summary}
+
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Order} & \textbf{Category} & \textbf{Style} \\
+\hline
+1 & Primary header (.c files) & \texttt{"..."} \\
+\hline
+2 & FreeRTOS & \texttt{"freertos/..."} \\
+\hline
+3 & Standard library & \texttt{<...>} \\
+\hline
+4 & ESP-IDF & \texttt{"..."} \\
+\hline
+5 & Project & \texttt{"..."} \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{itemize}
+    \item Always include \texttt{FreeRTOS.h} before other FreeRTOS headers
+    \item Separate groups with blank lines
+    \item Alphabetize within each group
+    \item Minimize includes in headers; use forward declarations
+    \item Add comments for non-obvious include dependencies
+\end{itemize}
+
+
+This project follows the rule of \textbf{2 spaces} for indentation, without using tabs.
+
+
+\textbf{Unix-style line endings} (`LF`, represented as `\textbackslash n`) are mandatory.
+
+
+Logging is handled using the ESP-IDF logging macros.
+\begin{itemize}
+    \item \textbf{ESP\_LOGE} - Error
+    \item \textbf{ESP\_LOGW} - Warning
+    \item \textbf{ESP\_LOGI} - Info
+    \item \textbf{ESP\_LOGD} - Debug
+    \item \textbf{ESP\_LOGV} - Verbose
+\end{itemize}
+
+
+
+This section establishes comprehensive naming standards for all identifiers in the STAR firmware codebase. Consistent naming improves readability, maintainability, and reduces cognitive load when navigating the codebase.
+
+\subsection{General Rules}
+
+\begin{itemize}
+    \item \textbf{Language}: All identifiers must be in English.
+    \item \textbf{Clarity}: Names should be descriptive and self-documenting.
+    \item \textbf{Abbreviations}: Avoid abbreviations unless they are widely understood (e.g., \texttt{GPIO}, \texttt{I2C}, \texttt{SPI}).
+\end{itemize}
+
+\subsection{Functions and Variables}
+
+Functions and variables use \texttt{snake\_case}---all lowercase with words separated by underscores.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - snake_case for functions and variables */
+esp_err_t star_bus_manager_init(star_bus_manager_t* manager, const char* tag);
+uint32_t  error_count;
+size_t    bytes_written;
+bool      is_initialized;
+
+/* WRONG - other naming styles */
+esp_err_t StarBusManagerInit();   /* PascalCase */
+esp_err_t starBusManagerInit();   /* camelCase */
+uint32_t  ErrorCount;             /* PascalCase */
+\end{lstlisting}
+
+\subsection{Module Prefixes}
+
+All public functions must use the module prefix pattern: \texttt{star\_[module]\_[function]}.
+
+\begin{lstlisting}[language=C]
+/* From star_bus_manager.h */
+esp_err_t star_bus_manager_init(...);
+esp_err_t star_bus_manager_add_bus(...);
+esp_err_t star_bus_manager_remove_bus(...);
+esp_err_t star_bus_manager_deinit(...);
+
+/* From star_bus_config.h */
+star_bus_config_t* star_bus_config_create_i2c(...);
+star_bus_config_t* star_bus_config_create_spi_device(...);
+esp_err_t          star_bus_config_destroy(...);
+
+/* From star_bus_i2c.h */
+esp_err_t star_bus_i2c_write(...);
+esp_err_t star_bus_i2c_read(...);
+void      star_bus_i2c_init_default_ops(...);
+
+/* From star_error_handler.h */
+esp_err_t error_handler_init(...);
+esp_err_t error_handler_record_error(...);
+bool      error_handler_can_retry(...);
+\end{lstlisting}
+
+\subsection{Constants and Macros}
+
+Constants and macros use \texttt{SCREAMING\_SNAKE\_CASE}---all uppercase with words separated by underscores.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - SCREAMING_SNAKE_CASE for macros and constants */
+#define STAR_BUS_NAME_MAX_LEN           (32)
+#define CONFIG_STAR_KCONFIG_BUS_MUTEX_TIMEOUT_MS  (1000)
+#define I2C_MASTER_WRITE                0
+#define I2C_MASTER_READ                 1
+#define GPIO_NUM_MAX                    48
+
+/* Convenience macro with proper naming */
+#define RECORD_ERROR(handler, code, desc)  \
+do {  \
+error_handler_record_error((handler), (code), (desc), \
+__FILE__, __LINE__, __func__);  \
+} while (0)
+
+#define STAR_IFACE_RECORD_ERROR(iface, err, msg)  \
+((iface) && (iface)->record_error  \
+? (iface)->record_error((iface)->ctx, (err), (msg), \
+__FILE__, __LINE__, __func__)  \
+: (err))
+
+/* WRONG */
+#define star_bus_name_max_len  32   /* lowercase */
+#define StarBusNameMaxLen      32   /* PascalCase */
+\end{lstlisting}
+
+\subsection{Type Names}
+
+All custom types must use \texttt{snake\_case} with the \texttt{\_t} suffix.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - snake_case_t for type names */
+typedef struct star_bus_config  star_bus_config_t;
+typedef struct star_bus_manager star_bus_manager_t;
+typedef struct error_handler    error_handler_t;
+typedef enum star_bus_type      star_bus_type_t;
+
+/* Callback function types also use _t suffix */
+typedef esp_err_t (*star_bus_callback_t)(star_bus_config_t* bus, void* user_ctx);
+typedef esp_err_t (*pin_registration_function_t)(gpio_num_t  pin_num,
+const char* bus_name,
+const char* pin_usage,
+void*       user_ctx);
+
+/* WRONG */
+typedef struct StarBusConfig StarBusConfig;  /* PascalCase */
+typedef struct star_bus_config star_bus_config;  /* missing _t suffix */
+\end{lstlisting}
+
+\subsection{Enum Members}
+
+Enum members use the \texttt{k\_} prefix followed by \texttt{snake\_case}.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - k_prefix with snake_case */
+typedef enum {
+  k_star_bus_type_none,   /**< No bus type specified */
+  k_star_bus_type_i2c,    /**< I2C bus */
+  k_star_bus_type_spi,    /**< SPI bus */
+  k_star_bus_type_gpio,   /**< GPIO bus */
+  k_star_bus_type_adc,    /**< ADC bus */
+  k_star_bus_type_count,  /**< Number of bus types (sentinel) */
+} star_bus_type_t;
+
+/* Usage in switch statements */
+switch (config->type) {
+  case k_star_bus_type_i2c: {
+    /* Handle I2C */
+    break;
+  }
+  case k_star_bus_type_spi: {
+    /* Handle SPI */
+    break;
+  }
+  default: {
+    ESP_LOGW(s_TAG, "Unknown bus type: %d", config->type);
+    break;
+  }
+}
+
+/* WRONG */
+typedef enum {
+  STAR_BUS_TYPE_I2C,   /* SCREAMING_SNAKE_CASE without k_ */
+  StarBusTypeI2c,      /* PascalCase */
+  starBusTypeI2c,      /* camelCase */
+} bad_enum_t;
+\end{lstlisting}
+
+\subsection{Static Variables (File-Scoped)}
+
+Static file-scoped variables use the \texttt{s\_} prefix followed by \texttt{snake\_case}.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - s_ prefix for static file-scoped variables */
+static const char* s_TAG = "STAR_BUS_MANAGER";
+static const uint32_t s_i2c_timeout_ms = 1000;
+
+/* From star_bus_i2c.c */
+static const char* s_TAG = "STAR_BUS_I2C";
+static const uint32_t s_i2c_timeout_ms = 1000;
+
+/* From star_bus_config.c */
+static const char* s_TAG = "STAR_BUS_CONFIG";
+
+/* WRONG - missing s_ prefix */
+static const char* TAG = "MODULE";
+static uint32_t timeout_ms = 1000;
+\end{lstlisting}
+
+\subsection{Global Variables}
+
+Global variables use the \texttt{g\_} prefix followed by \texttt{snake\_case}. However, global variables are \textbf{strongly discouraged}. Prefer dependency injection or static file-scoped variables.
+
+\begin{lstlisting}[language=C]
+/* CORRECT (but discouraged) - g_ prefix for globals */
+g_system_state_t g_system_state;
+uint32_t g_error_count;
+
+/* PREFERRED - use dependency injection instead */
+typedef struct {
+  star_error_interface_t* error_iface;  /* Injected */
+  star_pin_interface_t*   pin_iface;    /* Injected */
+} star_bus_manager_t;
+
+/* Initialize with injected dependencies */
+esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
+const char*             tag,
+star_error_interface_t* error_iface,
+star_pin_interface_t*   pin_iface);
+\end{lstlisting}
+
+\subsection{Private Functions}
+
+\subsubsection{File-Scoped Static Functions (internal\_ prefix)}
+
+Static functions that are internal to a single source file use the \texttt{internal\_} prefix.
+
+\begin{lstlisting}[language=C]
+/* From star_bus_manager.c - internal helper functions */
+static esp_err_t internal_register_bus_pin(star_pin_interface_t* pin_iface,
+gpio_num_t            pin,
+const char*           bus_name,
+const char*           usage,
+bool                  can_be_shared)
+{
+  if (pin < 0 || pin >= GPIO_NUM_MAX) {
+    return ESP_OK;  /* Not an error, pin is not used */
+  }
+  /* ... implementation ... */
+}
+
+static esp_err_t internal_unregister_bus_pin(star_pin_interface_t* pin_iface,
+gpio_num_t            pin,
+const char*           bus_name,
+const char*           usage)
+{
+  /* ... implementation ... */
+}
+
+static esp_err_t internal_register_config_pins(star_pin_interface_t*    pin_iface,
+const star_bus_config_t* config)
+{
+  /* ... implementation ... */
+}
+
+/* From star_bus_i2c.c */
+static esp_err_t internal_star_bus_i2c_write(const star_bus_config_t* config,
+const uint8_t*           data,
+size_t                   len,
+uint8_t                  reg_addr,
+size_t*                  bytes_written);
+
+static esp_err_t internal_i2c_execute_with_retry(const star_bus_config_t* config,
+i2c_port_t               port,
+i2c_cmd_handle_t         cmd,
+const char*              operation_name);
+\end{lstlisting}
+
+\subsubsection{Exposed Private Functions (priv\_ prefix)}
+
+Functions that must be exposed across files within a module (but are not part of the public API) use the \texttt{priv\_} prefix.
+
+\begin{lstlisting}[language=C]
+/* In private header (e.g., star_bus_internal.h) */
+/* These functions are used by multiple .c files in the same module
+but should not be called by external code */
+
+esp_err_t priv_star_bus_validate_config(const star_bus_config_t* config);
+esp_err_t priv_star_bus_acquire_mutex(star_bus_manager_t* manager);
+void      priv_star_bus_release_mutex(star_bus_manager_t* manager);
+
+/* Used in implementation files within the module */
+esp_err_t star_bus_config_init(star_bus_config_t* config,
+struct star_bus_manager* manager)
+{
+  /* Validate using private helper */
+  esp_err_t ret = priv_star_bus_validate_config(config);
+  if (ret != ESP_OK) {
+    return ret;
+  }
+  /* ... rest of implementation ... */
+}
+\end{lstlisting}
+
+\subsection{Summary Table}
+
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Identifier Type} & \textbf{Convention} & \textbf{Example} \\
+\hline
+Functions & \texttt{snake\_case} & \texttt{star\_bus\_manager\_init} \\
+\hline
+Variables & \texttt{snake\_case} & \texttt{bytes\_written} \\
+\hline
+Constants/Macros & \texttt{SCREAMING\_SNAKE\_CASE} & \texttt{STAR\_BUS\_NAME\_MAX\_LEN} \\
+\hline
+Type names & \texttt{snake\_case\_t} & \texttt{star\_bus\_config\_t} \\
+\hline
+Enum members & \texttt{k\_snake\_case} & \texttt{k\_star\_bus\_type\_i2c} \\
+\hline
+Static variables & \texttt{s\_snake\_case} & \texttt{s\_TAG} \\
+\hline
+Global variables & \texttt{g\_snake\_case} & \texttt{g\_system\_state} \\
+\hline
+Internal functions & \texttt{internal\_snake\_case} & \texttt{internal\_register\_bus\_pin} \\
+\hline
+Private functions & \texttt{priv\_snake\_case} & \texttt{priv\_star\_bus\_validate\_config} \\
+\hline
+Module prefix & \texttt{star\_[module]\_} & \texttt{star\_bus\_}, \texttt{star\_error\_} \\
+\hline
+\end{tabular}
+\end{center}
+
+
+
+This section describes the patterns and conventions for defining custom types in the STAR firmware codebase. Consistent type definition patterns improve code readability and enable better tooling support.
+
+\subsection{Typedef Struct Pattern}
+
+All structures should be defined using the typedef pattern with the \texttt{\_t} suffix.
+
+\subsubsection{Standard Pattern}
+
+\begin{lstlisting}[language=C]
+/* Forward declaration (in header for dependencies) */
+typedef struct star_bus_config  star_bus_config_t;
+typedef struct star_bus_manager star_bus_manager_t;
+
+/* Full definition (in header or implementation) */
+typedef struct star_bus_config {
+  const char*     name;        /**< Unique name for this bus/device instance */
+  star_bus_type_t type;        /**< Type of bus (I2C, SPI, etc.) */
+  bool            initialized; /**< Whether this bus has been initialized */
+  void*           handle;      /**< Driver/device handle */
+  void*           user_ctx;    /**< User context pointer for callbacks */
+  
+  /* Protocol-specific configuration (see union section) */
+  union {
+    star_i2c_bus_config_t  i2c;
+    star_spi_bus_config_t  spi;
+    star_gpio_bus_config_t gpio;
+    star_adc_bus_config_t  adc;
+  } proto;
+  
+  struct star_bus_config* next; /**< Linked list pointer */
+} star_bus_config_t;
+\end{lstlisting}
+
+\subsubsection{Error Handler Example}
+
+\begin{lstlisting}[language=C]
+/* From star_error_handler.h */
+typedef struct error_handler {
+  uint32_t          error_count;         /**< Total number of errors recorded */
+  uint32_t          max_retries;         /**< Maximum retry attempts allowed */
+  uint32_t          current_retry;       /**< Current retry attempt counter */
+  uint32_t          base_retry_delay;    /**< Base delay between retries (ms) */
+  uint32_t          max_retry_delay;     /**< Maximum retry delay (ms) */
+  uint32_t          current_retry_delay; /**< Current delay with backoff */
+  esp_err_t         last_error;          /**< Last recorded error code */
+  bool              in_error_state;      /**< Whether in error state */
+  void*             reset_context;       /**< Context for reset function */
+  SemaphoreHandle_t mutex;               /**< Mutex for thread-safety */
+  
+  esp_err_t (*reset_fn)(void* context);  /**< Optional reset function */
+} error_handler_t;
+\end{lstlisting}
+
+\subsection{Union Usage for Protocol Configurations}
+
+Unions are used to store protocol-specific configurations efficiently. This pattern allows a single configuration structure to support multiple bus types.
+
+\begin{lstlisting}[language=C]
+/* From star_bus_manager_types.h */
+typedef struct star_bus_config {
+  const char*     name;
+  star_bus_type_t type;  /* Discriminator for the union */
+  bool            initialized;
+  void*           handle;
+  void*           user_ctx;
+  
+  /* Union holds protocol-specific configuration */
+  union {
+    star_i2c_bus_config_t  i2c;  /**< I2C-specific configuration */
+    star_spi_bus_config_t  spi;  /**< SPI-specific configuration */
+    star_gpio_bus_config_t gpio; /**< GPIO-specific configuration */
+    star_adc_bus_config_t  adc;  /**< ADC-specific configuration */
+  } proto;
+  
+  struct star_bus_config* next;
+} star_bus_config_t;
+
+/* Accessing union members based on type discriminator */
+switch (config->type) {
+  case k_star_bus_type_i2c: {
+    i2c_port_t port = config->proto.i2c.port;
+    uint8_t address = config->proto.i2c.address;
+    /* ... */
+    break;
+  }
+  case k_star_bus_type_spi: {
+    spi_host_device_t host = config->proto.spi.host;
+    gpio_num_t copi_pin = config->proto.spi.copi_io_num;
+    /* ... */
+    break;
+  }
+  /* ... other cases ... */
+}
+\end{lstlisting}
+
+\subsubsection{Protocol-Specific Structures}
+
+\begin{lstlisting}[language=C]
+/* I2C bus configuration (from star_bus_protocol_types.h) */
+typedef struct star_i2c_bus_config {
+  i2c_port_t           port;      /**< I2C port number */
+  i2c_config_t         config;    /**< ESP-IDF I2C configuration */
+  uint8_t              address;   /**< 7-bit I2C device address */
+  star_i2c_callbacks_t callbacks; /**< User callbacks */
+  star_i2c_ops_t       ops;       /**< Operation function pointers */
+} star_i2c_bus_config_t;
+
+/* SPI bus configuration */
+typedef struct star_spi_bus_config {
+  spi_host_device_t host;        /**< SPI host number */
+  bool              is_peripheral; /**< True if SPI peripheral mode */
+  spi_bus_config_t  bus_cfg;     /**< ESP-IDF SPI bus config */
+  spi_device_interface_config_t dev_cfg; /**< Device config */
+  star_spi_callbacks_t callbacks;
+  star_spi_ops_t       ops;
+  
+  /* Inclusive terminology pin names (see Terminology section) */
+  gpio_num_t copi_io_num;  /**< Controller Out, Peripheral In */
+  gpio_num_t cipo_io_num;  /**< Controller In, Peripheral Out */
+  gpio_num_t sclk_io_num;  /**< Serial Clock */
+  gpio_num_t cs_io_num;    /**< Chip Select */
+  /* ... */
+} star_spi_bus_config_t;
+\end{lstlisting}
+
+\subsection{Callback Function Types}
+
+Callback function pointer types follow a consistent pattern with the \texttt{\_t} suffix.
+
+\begin{lstlisting}[language=C]
+/* From star_bus_common_types.h - Pin registration callback */
+typedef esp_err_t (*pin_registration_function_t)(gpio_num_t  pin_num,
+const char* bus_name,
+const char* pin_usage,
+void*       user_ctx);
+
+/* From star_bus_manager.h - Bus access callback */
+typedef esp_err_t (*star_bus_callback_t)(star_bus_config_t* bus,
+void*              user_ctx);
+
+/* From star_bus_function_types.h - I2C operation callbacks */
+typedef esp_err_t (*star_i2c_write_fn_t)(const star_bus_config_t* config,
+const uint8_t*           data,
+size_t                   len,
+uint8_t                  reg_addr,
+size_t*                  bytes_written);
+
+typedef esp_err_t (*star_i2c_read_fn_t)(const star_bus_config_t* config,
+uint8_t*                 data,
+size_t                   len,
+uint8_t                  reg_addr,
+size_t*                  bytes_read);
+
+/* Event callbacks */
+typedef void (*star_i2c_transfer_complete_cb_t)(const star_bus_event_t* event,
+void*                   user_ctx);
+
+typedef void (*star_i2c_error_cb_t)(const star_bus_event_t* event,
+esp_err_t               error,
+void*                   user_ctx);
+
+/* Grouping related callbacks in a struct */
+typedef struct star_i2c_callbacks {
+  star_i2c_transfer_complete_cb_t on_transfer_complete;
+  star_i2c_error_cb_t             on_error;
+} star_i2c_callbacks_t;
+\end{lstlisting}
+
+\subsection{Interface Patterns (Dependency Injection)}
+
+Interfaces use structs with function pointers and an opaque context pointer. This pattern enables dependency injection and testability.
+
+\begin{lstlisting}[language=C]
+/* From star_error_interface.h */
+typedef struct star_error_interface {
+  /**
+  * @brief Record an error
+  * @param ctx Implementation context
+  * @param error Error code
+  * @param message Error message
+  * @param file Source file
+  * @param line Line number
+  * @param func Function name
+  * @return ESP_OK on success
+  */
+  esp_err_t (*record_error)(void*       ctx,
+  esp_err_t   error,
+  const char* message,
+  const char* file,
+  int         line,
+  const char* func);
+  
+  /**
+  * @brief Check if retry is possible
+  * @param ctx Implementation context
+  * @return true if retry is allowed
+  */
+  bool (*can_retry)(void* ctx);
+  
+  /**
+  * @brief Reset error state
+  * @param ctx Implementation context
+  * @return ESP_OK on success
+  */
+  esp_err_t (*reset_state)(void* ctx);
+  
+  /**
+  * @brief Implementation context (opaque pointer)
+  */
+  void* ctx;
+} star_error_interface_t;
+
+/* From star_pin_interface.h */
+typedef struct star_pin_interface {
+  esp_err_t (*register_pin)(void* ctx, int pin,
+  const char* description, bool shared);
+  esp_err_t (*unregister_pin)(void* ctx, int pin,
+  const char* description);
+  esp_err_t (*validate)(void* ctx);
+  void* ctx;
+} star_pin_interface_t;
+\end{lstlisting}
+
+\subsubsection{Interface Usage Pattern}
+
+\begin{lstlisting}[language=C]
+/* Creating an interface from concrete implementation */
+error_handler_t error_handler;
+error_handler_init(&error_handler, 3, 100, 5000, NULL, NULL);
+
+star_error_interface_t error_iface;
+error_handler_get_interface(&error_iface, &error_handler);
+
+/* Injecting interfaces into components */
+star_bus_manager_t bus_manager;
+star_bus_manager_init(&bus_manager, "main", &error_iface, &pin_iface);
+
+/* Using interface through function pointers */
+if (error_iface.can_retry(error_iface.ctx)) {
+  /* Retry operation */
+}
+
+/* Or using the convenience macro */
+STAR_IFACE_RECORD_ERROR(&error_iface, ESP_ERR_TIMEOUT, "Operation timed out");
+\end{lstlisting}
+
+\subsection{Opaque Handle Patterns}
+
+For complex objects that should not be directly manipulated, use opaque handles.
+
+\begin{lstlisting}[language=C]
+/* Forward declaration creates an opaque type */
+typedef struct star_bus_manager star_bus_manager_t;
+
+/* Public API only uses pointers to the opaque type */
+esp_err_t star_bus_manager_init(star_bus_manager_t* manager, ...);
+esp_err_t star_bus_manager_add_bus(star_bus_manager_t* manager, ...);
+
+/* Full definition is only in the .c file or private header */
+/* Users cannot access internal fields directly */
+
+/* Example usage - users allocate storage but don't access internals */
+star_bus_manager_t bus_manager;  /* Stack allocation */
+star_bus_manager_init(&bus_manager, "main", &error_iface, &pin_iface);
+
+/* Or heap allocation */
+star_bus_manager_t* manager_ptr = malloc(sizeof(star_bus_manager_t));
+star_bus_manager_init(manager_ptr, "main", &error_iface, &pin_iface);
+\end{lstlisting}
+
+\subsection{Operations Structure Pattern}
+
+Group related function pointers in an operations structure for pluggable implementations.
+
+\begin{lstlisting}[language=C]
+/* From star_bus_protocol_types.h */
+typedef struct star_i2c_ops {
+  star_i2c_write_fn_t         write;         /**< Write with register */
+  star_i2c_read_fn_t          read;          /**< Read with register */
+  star_i2c_write_command_fn_t write_command; /**< Write command byte */
+  star_i2c_read_raw_fn_t      read_raw;      /**< Read raw bytes */
+} star_i2c_ops_t;
+
+typedef struct star_spi_ops {
+  star_spi_transmit_fn_t transmit; /**< Transmit only */
+  star_spi_receive_fn_t  receive;  /**< Receive only */
+  star_spi_transfer_fn_t transfer; /**< Full-duplex transfer */
+} star_spi_ops_t;
+
+typedef struct star_gpio_ops {
+  esp_err_t (*write_digital)(const struct star_bus_config* config,
+  uint8_t pin_index, uint8_t value);
+  esp_err_t (*read_digital)(const struct star_bus_config* config,
+  uint8_t pin_index, uint8_t* value);
+} star_gpio_ops_t;
+
+/* Initializing default operations */
+void star_bus_i2c_init_default_ops(star_i2c_ops_t* ops)
+{
+  if (ops == NULL) {
+    ESP_LOGE(s_TAG, "Cannot initialize NULL ops pointer");
+    return;
+  }
+  ops->write         = internal_star_bus_i2c_write;
+  ops->read          = internal_star_bus_i2c_read;
+  ops->write_command = internal_star_bus_i2c_write_command;
+  ops->read_raw      = internal_star_bus_i2c_read_raw;
+}
+\end{lstlisting}
+
+\subsection{Manager Structure Pattern}
+
+Manager structures coordinate multiple resources with thread-safe access.
+
+\begin{lstlisting}[language=C]
+/* From star_bus_manager_types.h */
+typedef struct star_bus_manager {
+  star_bus_config_t*      buses;       /**< Linked list of bus configs */
+  SemaphoreHandle_t       mutex;       /**< Mutex for thread-safety */
+  const char*             tag;         /**< Logging tag */
+  star_error_interface_t* error_iface; /**< Injected error handler */
+  star_pin_interface_t*   pin_iface;   /**< Injected pin validator */
+  
+  /* Resource tracking */
+  bool spi_host_initialized[SPI_HOST_MAX];
+  int  spi_device_count[SPI_HOST_MAX];
+} star_bus_manager_t;
+\end{lstlisting}
+
+\subsection{Best Practices}
+
+\begin{itemize}
+    \item \textbf{Always use \texttt{\_t} suffix}: Makes types easily distinguishable from variables.
+    \item \textbf{Use forward declarations}: Minimize header dependencies and compilation time.
+    \item \textbf{Document all fields}: Use Doxygen comments for struct members.
+    \item \textbf{Keep unions discriminated}: Always pair unions with a type field.
+    \item \textbf{Prefer static const over \#define}: For typed constants within structures.
+    \item \textbf{Use opaque types for encapsulation}: Hide implementation details from users.
+    \item \textbf{Group related function pointers}: Use ops structs for pluggable implementations.
+\end{itemize}
+
+
+
+This section describes the standard file and directory structure for the STAR firmware codebase. Consistent organization improves navigability and maintainability.
+
+\subsection{Library Directory Structure}
+
+Each library follows a standard PlatformIO/ESP-IDF component structure:
+
+\begin{verbatim}
+lib/star_component/
+    CMakeLists.txt       # CMake build configuration
+    library.json         # PlatformIO library metadata
+    include/             # Public headers (API)
+        star_component.h
+        star_component_types.h
+    src/                 # Implementation files
+        star_component.c
+\end{verbatim}
+
+\subsubsection{Example: star\_bus Library}
+
+\begin{verbatim}
+lib/star_bus/
+    CMakeLists.txt
+    library.json
+    include/
+        star_bus_adc.h
+        star_bus_common_types.h
+        star_bus_config.h
+        star_bus_event_types.h
+        star_bus_function_types.h
+        star_bus_gpio.h
+        star_bus_i2c.h
+        star_bus_manager.h
+        star_bus_manager_types.h
+        star_bus_protocol_types.h
+        star_bus_spi.h
+        star_bus_types.h
+    src/
+        star_bus_adc.c
+        star_bus_config.c
+        star_bus_gpio.c
+        star_bus_i2c.c
+        star_bus_manager.c
+        star_bus_spi.c
+        star_bus_types.c
+\end{verbatim}
+
+\subsection{CMakeLists.txt Structure}
+
+\begin{lstlisting}
+# lib/star_bus/CMakeLists.txt
+
+idf_component_register(
+SRCS
+"src/star_bus_adc.c"
+"src/star_bus_config.c"
+"src/star_bus_gpio.c"
+"src/star_bus_i2c.c"
+"src/star_bus_manager.c"
+"src/star_bus_spi.c"
+"src/star_bus_types.c"
+INCLUDE_DIRS
+"include"
+REQUIRES
+driver
+esp_adc
+freertos
+star_core
+)
+\end{lstlisting}
+
+\subsection{Header File Organization}
+
+Header files must follow a consistent internal structure.
+
+\subsubsection{Header File Template}
+
+\begin{lstlisting}[language=C]
+/* lib/star_bus/include/star_bus_manager.h */
+
+#ifndef STAR_COMPONENT_BUS_MANAGER_H
+#define STAR_COMPONENT_BUS_MANAGER_H
+
+#ifdef __cplusplus
+extern "C" {
+  #endif
+  
+  /* === Includes === */
+  #include "esp_err.h"
+  #include "star_bus_manager_types.h"
+  
+  /**
+  * @file star_bus_manager.h
+  * @brief Unified bus manager for I2C, SPI, GPIO, and other bus protocols
+  *
+  * The bus manager provides a central registry for managing multiple
+  * bus configurations. It supports dependency injection of error handlers
+  * and pin validators for loose coupling.
+  *
+  * Key Features:
+  * - Thread-safe bus management with mutex protection
+  * - Support for multiple bus types (I2C, SPI, GPIO, etc.)
+  * - Automatic pin registration and conflict detection
+  * - Safe bus access via callback pattern
+  *
+  * Example Usage:
+  * @code
+  * // Initialize bus manager with dependency injection
+  * star_bus_manager_t bus_manager;
+  * star_bus_manager_init(&bus_manager, "main", &error_iface, &pin_iface);
+  *
+  * // Create and add an I2C bus
+  * star_bus_config_t* i2c_bus = star_bus_config_create_i2c(
+  *     "sensor_i2c", I2C_NUM_0, 0x68, GPIO_NUM_21, GPIO_NUM_22, 400000);
+  * star_bus_manager_add_bus(&bus_manager, i2c_bus);
+  * @endcode
+  */
+  
+  /* === Forward Declarations === */
+  /* (if needed beyond what's in included headers) */
+  
+  /* === Public Functions === */
+  
+  /**
+  * @brief Initialize a bus manager instance.
+  *
+  * @param[out] manager     Pointer to bus manager to initialize. Must not be NULL.
+  * @param[in]  tag         Optional tag string for logging. NULL uses default.
+  * @param[in]  error_iface Optional error handler interface (can be NULL).
+  * @param[in]  pin_iface   Optional pin validator interface (can be NULL).
+  * @return esp_err_t ESP_OK on success, ESP_ERR_INVALID_ARG if manager is NULL,
+  *                   ESP_ERR_NO_MEM if mutex creation fails.
+  */
+  esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
+  const char*             tag,
+  star_error_interface_t* error_iface,
+  star_pin_interface_t*   pin_iface);
+  
+  /* ... more function declarations ... */
+  
+  #ifdef __cplusplus
+}
+#endif
+
+#endif /* STAR_COMPONENT_BUS_MANAGER_H */
+\end{lstlisting}
+
+\subsubsection{Header Section Order}
+
+\begin{enumerate}
+    \item \textbf{File path comment}: Identifies the file location
+    \item \textbf{Include guard}: \texttt{\#ifndef STAR\_COMPONENT\_FILENAME\_H}
+    \item \textbf{C++ extern ``C'' opening}: For C++ compatibility
+    \item \textbf{Includes}: System, then ESP-IDF, then project headers
+    \item \textbf{File documentation}: \texttt{@file} Doxygen block with overview
+    \item \textbf{Forward declarations}: If needed
+    \item \textbf{Constants and macros}: Public defines
+    \item \textbf{Type definitions}: Enums, structs, typedefs
+    \item \textbf{Function declarations}: Grouped by category
+    \item \textbf{C++ extern ``C'' closing}: Matches opening
+    \item \textbf{Include guard closing}: \texttt{\#endif /* ... */}
+\end{enumerate}
+
+\subsection{Include Guard Naming Convention}
+
+Include guards follow the pattern: \texttt{STAR\_COMPONENT\_FILENAME\_H}
+
+\begin{lstlisting}[language=C]
+/* star_bus_manager.h */
+#ifndef STAR_COMPONENT_BUS_MANAGER_H
+#define STAR_COMPONENT_BUS_MANAGER_H
+/* ... */
+#endif /* STAR_COMPONENT_BUS_MANAGER_H */
+
+/* star_bus_config.h */
+#ifndef STAR_COMPONENT_BUS_CONFIG_H
+#define STAR_COMPONENT_BUS_CONFIG_H
+/* ... */
+#endif /* STAR_COMPONENT_BUS_CONFIG_H */
+
+/* star_error_interface.h */
+#ifndef STAR_ERROR_INTERFACE_H
+#define STAR_ERROR_INTERFACE_H
+/* ... */
+#endif /* STAR_ERROR_INTERFACE_H */
+
+/* star_pin_interface.h */
+#ifndef STAR_PIN_INTERFACE_H
+#define STAR_PIN_INTERFACE_H
+/* ... */
+#endif /* STAR_PIN_INTERFACE_H */
+\end{lstlisting}
+
+\subsection{Source File Organization}
+
+Source files follow a consistent internal structure.
+
+\subsubsection{Source File Template}
+
+\begin{lstlisting}[language=C]
+/* lib/star_bus/src/star_bus_manager.c */
+
+/* === Primary Header === */
+#include "star_bus_manager.h"
+
+/* === System Includes === */
+#include "freertos/FreeRTOS.h"
+#include "freertos/semphr.h"
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+/* === ESP-IDF Includes === */
+#include "esp_check.h"
+#include "esp_log.h"
+#include "sdkconfig.h"
+
+/* === Project Includes === */
+#include "star_bus_adc.h"
+#include "star_bus_config.h"
+#include "star_bus_gpio.h"
+
+/* === Constants === */
+
+static const char* s_TAG = "STAR_BUS_MANAGER";
+
+/* === Private Function Prototypes === */
+
+static esp_err_t internal_register_bus_pin(star_pin_interface_t* pin_iface,
+gpio_num_t            pin,
+const char*           bus_name,
+const char*           usage,
+bool                  can_be_shared);
+
+static esp_err_t internal_unregister_bus_pin(star_pin_interface_t* pin_iface,
+gpio_num_t            pin,
+const char*           bus_name,
+const char*           usage);
+
+/* === Public Functions === */
+
+esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
+const char*             tag,
+star_error_interface_t* error_iface,
+star_pin_interface_t*   pin_iface)
+{
+  ESP_RETURN_ON_FALSE(manager, ESP_ERR_INVALID_ARG, s_TAG,
+  "Manager pointer is NULL");
+  
+  manager->buses       = NULL;
+  manager->error_iface = error_iface;
+  manager->pin_iface   = pin_iface;
+  
+  /* ... rest of implementation ... */
+  
+  return ESP_OK;
+}
+
+/* ... more public functions ... */
+
+/* === Private Functions === */
+
+static esp_err_t internal_register_bus_pin(star_pin_interface_t* pin_iface,
+gpio_num_t            pin,
+const char*           bus_name,
+const char*           usage,
+bool                  can_be_shared)
+{
+  if (pin < 0 || pin >= GPIO_NUM_MAX) {
+    return ESP_OK;  /* Not an error, pin is not used */
+  }
+  /* ... implementation ... */
+}
+\end{lstlisting}
+
+\subsubsection{Source Section Order}
+
+\begin{enumerate}
+    \item \textbf{File path comment}: Identifies the file location
+    \item \textbf{Primary header}: The corresponding .h file for this .c file
+    \item \textbf{System includes}: FreeRTOS, standard library (\texttt{<...>})
+    \item \textbf{ESP-IDF includes}: ESP-IDF components
+    \item \textbf{Project includes}: Other project headers (\texttt{"..."})
+    \item \textbf{Constants}: \texttt{static const} variables, including \texttt{s\_TAG}
+    \item \textbf{Private function prototypes}: Forward declarations of static functions
+    \item \textbf{Public functions}: Implementation of API functions
+    \item \textbf{Private functions}: Implementation of static helper functions
+\end{enumerate}
+
+\subsection{Types Header Separation}
+
+For complex modules, separate type definitions into dedicated headers:
+
+\begin{verbatim}
+star_bus/include/
+    star_bus_manager.h        # Main API (functions)
+    star_bus_manager_types.h  # Types for manager
+    star_bus_common_types.h   # Shared types (enums, forward decls)
+    star_bus_protocol_types.h # Protocol-specific types
+    star_bus_function_types.h # Function pointer types
+    star_bus_event_types.h    # Event structures
+    star_bus_types.h          # Controller header (includes all)
+\end{verbatim}
+
+\subsubsection{Controller Header Pattern}
+
+\begin{lstlisting}[language=C]
+/* star_bus_types.h - includes all type headers */
+#ifndef STAR_COMPONENT_BUS_TYPES_H
+#define STAR_COMPONENT_BUS_TYPES_H
+
+#ifdef __cplusplus
+extern "C" {
+  #endif
+  
+  /* Controller include file for all public types */
+  #include "star_bus_common_types.h"
+  #include "star_bus_event_types.h"
+  #include "star_bus_function_types.h"
+  #include "star_bus_manager_types.h"
+  #include "star_bus_protocol_types.h"
+  
+  #ifdef __cplusplus
+}
+#endif
+
+#endif /* STAR_COMPONENT_BUS_TYPES_H */
+\end{lstlisting}
+
+\subsection{Project Root Structure}
+
+\begin{verbatim}
+star-esp32-firmware/
+    CLAUDE.md              # Claude Code instructions
+    platformio.ini         # PlatformIO configuration
+    sdkconfig.defaults     # ESP-IDF default config
+    lib/                   # Libraries/components
+        star_core/         # Core interfaces
+        star_bus/          # Bus abstraction
+        star_error_handler/
+        star_pin_validator/
+        star_sensor_*/     # Sensor drivers
+        star_motor/
+        star_pid/
+    src/                   # Main application
+        main.c
+    partitions/            # Partition tables
+        partitions_4mb.csv
+        partitions_16mb.csv
+    docs/                  # Documentation
+        style_guide.tex
+        style_guide_sections/
+    scripts/               # Build/utility scripts
+    test/                  # Test files
+\end{verbatim}
+
+\subsection{Best Practices}
+
+\begin{itemize}
+    \item \textbf{One header per component}: Each component has its primary public header.
+    \item \textbf{Minimize header dependencies}: Use forward declarations to reduce includes.
+    \item \textbf{Self-contained headers}: Each header should compile independently.
+    \item \textbf{Consistent naming}: Files match the component they contain.
+    \item \textbf{Group related files}: Keep related headers and sources together.
+    \item \textbf{Separate types from functions}: For complex modules, split into \_types.h.
+    \item \textbf{Document file purpose}: Use \texttt{@file} Doxygen blocks.
+\end{itemize}
+
+
+
+This section establishes the OSHWA (Open Source Hardware Association) inclusive terminology standards used throughout the STAR firmware codebase. These standards replace legacy terminology with more inclusive alternatives.
+
+\subsection{Overview}
+
+The STAR project follows inclusive terminology guidelines to ensure our codebase is welcoming to all contributors and avoids language with harmful historical connotations. This is particularly relevant in embedded systems where certain legacy terms have been deeply entrenched.
+
+\subsection{SPI Bus Terminology}
+
+\subsubsection{COPI/CIPO (Not MOSI/MISO)}
+
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{STAR Term} & \textbf{Legacy Term} & \textbf{Description} \\
+\hline
+COPI & MOSI & Controller Out, Peripheral In \\
+\hline
+CIPO & MISO & Controller In, Peripheral Out \\
+\hline
+SCLK & SCLK & Serial Clock (unchanged) \\
+\hline
+CS & SS & Chip Select (unchanged) \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{lstlisting}[language=C]
+/* CORRECT - OSHWA terminology */
+typedef struct star_spi_bus_config {
+  gpio_num_t copi_io_num;  /**< Controller Out, Peripheral In */
+  gpio_num_t cipo_io_num;  /**< Controller In, Peripheral Out */
+  gpio_num_t sclk_io_num;  /**< Serial Clock */
+  gpio_num_t cs_io_num;    /**< Chip Select */
+  /* ... */
+} star_spi_bus_config_t;
+
+/* Factory function uses inclusive naming */
+star_bus_config_t* star_bus_config_create_spi_device(
+const char*       name,
+spi_host_device_t host,
+gpio_num_t        copi_pin,   /* NOT mosi_pin */
+gpio_num_t        cipo_pin,   /* NOT miso_pin */
+gpio_num_t        sclk_pin,
+int32_t           dma_chan,
+const spi_device_interface_config_t* dev_cfg);
+
+/* In documentation and comments */
+/* CORRECT */
+reg_result = register_pin_if_valid(curr->proto.spi.copi_io_num,
+bus_name,
+"SPI COPI",  /* Descriptive usage */
+reg_func,
+user_ctx,
+true);
+
+/* WRONG */
+reg_result = register_pin_if_valid(curr->proto.spi.mosi_io_num,
+bus_name,
+"SPI MOSI",  /* Legacy terminology */
+reg_func,
+user_ctx,
+true);
+\end{lstlisting}
+
+\subsection{I2C and General Bus Terminology}
+
+\subsubsection{Controller/Peripheral (Not Master/Slave)}
+
+\begin{center}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{STAR Term} & \textbf{Legacy Term} & \textbf{Description} \\
+\hline
+Controller & Master & Device that initiates communication \\
+\hline
+Peripheral & Slave & Device that responds to controller \\
+\hline
+Primary & Master & For configuration structures \\
+\hline
+Main & Master & For general reference \\
+\hline
+\end{tabular}
+\end{center}
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Controller/Peripheral terminology */
+typedef struct star_spi_bus_config {
+  spi_host_device_t host;
+  bool is_peripheral;  /**< True if operating as SPI peripheral */
+  /* ... */
+} star_spi_bus_config_t;
+
+/* Factory function for peripheral mode */
+star_bus_config_t* star_bus_config_create_spi_peripheral(
+const char*       name,
+spi_host_device_t host,
+gpio_num_t        copi_pin,
+gpio_num_t        cipo_pin,
+gpio_num_t        sclk_pin,
+gpio_num_t        cs_pin,
+int32_t           queue_size,
+uint8_t           mode);
+
+/* In comments and documentation */
+/**
+* @brief I2C Controller operations
+*
+* The controller device initiates all transactions on the bus.
+* Peripheral devices respond when addressed by the controller.
+*/
+
+/* WRONG */
+bool is_slave;            /* Use is_peripheral */
+star_bus_config_create_spi_slave();  /* Use _peripheral */
+\end{lstlisting}
+
+\subsection{Mapping ESP-IDF Legacy APIs}
+
+ESP-IDF still uses legacy terminology internally. When interfacing with ESP-IDF, document the mapping clearly.
+
+\begin{lstlisting}[language=C]
+/* From star_bus_protocol_types.h */
+typedef struct star_spi_bus_config {
+  /* ... */
+  
+  /* SPI pin naming follows OSHWA standard:
+  * - COPI (Controller Out, Peripheral In) - replaces MOSI
+  * - CIPO (Controller In, Peripheral Out) - replaces MISO
+  * This modern terminology removes master/slave language.
+  * The ESP-IDF still uses mosi_io_num/miso_io_num internally,
+  * which we map here.
+  */
+  gpio_num_t copi_io_num;  /**< GPIO for COPI (maps to ESP-IDF mosi_io_num) */
+  gpio_num_t cipo_io_num;  /**< GPIO for CIPO (maps to ESP-IDF miso_io_num) */
+  /* ... */
+} star_spi_bus_config_t;
+
+/* When setting up ESP-IDF structures */
+static esp_err_t internal_setup_spi_bus(star_bus_config_t* config)
+{
+  spi_bus_config_t bus_cfg = {
+    /* Map our inclusive terminology to ESP-IDF legacy names */
+    .mosi_io_num     = config->proto.spi.copi_io_num,
+    .miso_io_num     = config->proto.spi.cipo_io_num,
+    .sclk_io_num     = config->proto.spi.sclk_io_num,
+    .quadwp_io_num   = -1,
+    .quadhd_io_num   = -1,
+    .max_transfer_sz = config->proto.spi.max_transfer_sz,
+  };
+  /* ... */
+}
+
+/* Similarly for I2C */
+/* ESP-IDF uses I2C_MODE_SLAVE, but we document as peripheral mode */
+i2c_config_t i2c_conf = {
+  .mode = I2C_MODE_MASTER,  /* Controller mode in STAR terminology */
+  /* or */
+  .mode = I2C_MODE_SLAVE,   /* Peripheral mode in STAR terminology */
+  /* ... */
+};
+\end{lstlisting}
+
+\subsection{Documentation Guidelines}
+
+When writing comments, documentation, or user-facing text:
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Use inclusive terminology in all documentation */
+
+/**
+* @brief Configure ESP32 as SPI peripheral device
+*
+* The peripheral will respond to transactions initiated by an
+* external SPI controller. Data flows:
+* - COPI: Data received from controller
+* - CIPO: Data sent to controller
+*
+* @param[in] name Unique name for this SPI peripheral instance
+* @param[in] host SPI host device
+* @param[in] copi_pin GPIO for Controller Out, Peripheral In
+* @param[in] cipo_pin GPIO for Controller In, Peripheral Out
+* ...
+*/
+star_bus_config_t* star_bus_config_create_spi_peripheral(...);
+
+/* WRONG - Legacy terminology */
+/**
+* @brief Configure ESP32 as SPI slave device
+*
+* The slave will respond to transactions initiated by the
+* SPI master. Data flows:
+* - MOSI: Data from master to slave
+* - MISO: Data from slave to master
+*/
+\end{lstlisting}
+
+\subsection{Code Review Checklist}
+
+When reviewing code, check for:
+
+\begin{itemize}
+    \item \textbf{Variable names}: No ``master'', ``slave'', ``mosi'', ``miso''
+    \item \textbf{Function names}: Use ``controller'', ``peripheral'', ``copi'', ``cipo''
+    \item \textbf{Comments}: Update any legacy terminology
+    \item \textbf{Documentation}: Ensure Doxygen uses inclusive terms
+    \item \textbf{String literals}: Check log messages and error strings
+    \item \textbf{ESP-IDF mapping}: Document when interfacing with legacy APIs
+\end{itemize}
+
+\subsection{Common Patterns}
+
+\begin{lstlisting}[language=C]
+/* Logging with inclusive terminology */
+ESP_LOGI(s_TAG, "SPI peripheral initialized on host %d", host);
+ESP_LOGI(s_TAG, "I2C controller configured on port %d", port);
+
+/* Error messages */
+ESP_LOGE(s_TAG, "Failed to initialize SPI peripheral: %s",
+esp_err_to_name(ret));
+ESP_LOGE(s_TAG, "I2C controller transaction failed");
+
+/* Pin registration descriptions */
+internal_register_bus_pin(pin_iface, config->proto.spi.copi_io_num,
+config->name, "SPI COPI", true);
+internal_register_bus_pin(pin_iface, config->proto.spi.cipo_io_num,
+config->name, "SPI CIPO", true);
+\end{lstlisting}
+
+\subsection{Summary}
+
+\begin{center}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Use This} & \textbf{Not This} \\
+\hline
+Controller & Master \\
+\hline
+Peripheral & Slave \\
+\hline
+COPI & MOSI \\
+\hline
+CIPO & MISO \\
+\hline
+Primary & Master (for configs) \\
+\hline
+Main & Master (general) \\
+\hline
+Allowlist & Whitelist \\
+\hline
+Blocklist & Blacklist \\
+\hline
+\end{tabular}
+\end{center}
+
+Following these guidelines ensures our codebase is inclusive and welcoming while maintaining technical clarity. The terminology accurately describes the functional roles of devices without relying on harmful historical language.
+
+
+
+This section describes the key architectural patterns used throughout the STAR firmware codebase. These patterns enable loose coupling, testability, and maintainability in embedded systems.
+
+\subsection{Dependency Injection (DIP)}
+
+The Dependency Inversion Principle (DIP) is the foundational architectural pattern of the STAR framework. High-level modules depend on abstract interfaces rather than concrete implementations.
+
+\subsubsection{Interface Definition}
+
+Interfaces are defined as structs containing function pointers and an opaque context pointer.
+
+\begin{lstlisting}[language=C]
+/* From star_error_interface.h */
+typedef struct star_error_interface {
+  esp_err_t (*record_error)(void* ctx, esp_err_t error,
+  const char* message, const char* file,
+  int line, const char* func);
+  bool (*can_retry)(void* ctx);
+  esp_err_t (*reset_state)(void* ctx);
+  void* ctx;  /* Opaque context pointer */
+} star_error_interface_t;
+
+/* From star_pin_interface.h */
+typedef struct star_pin_interface {
+  esp_err_t (*register_pin)(void* ctx, int pin,
+  const char* description, bool shared);
+  esp_err_t (*unregister_pin)(void* ctx, int pin,
+  const char* description);
+  esp_err_t (*validate)(void* ctx);
+  void* ctx;
+} star_pin_interface_t;
+\end{lstlisting}
+
+\subsubsection{Interface Implementation}
+
+Concrete implementations provide the actual functionality.
+
+\begin{lstlisting}[language=C]
+/* Create error handler and get interface */
+error_handler_t error_handler;
+error_handler_init(&error_handler, 3, 100, 5000, NULL, NULL);
+
+star_error_interface_t error_iface;
+error_handler_get_interface(&error_iface, &error_handler);
+
+/* Implementation of get_interface */
+void error_handler_get_interface(star_error_interface_t* iface,
+error_handler_t* handler)
+{
+  iface->record_error = adapter_record_error;  /* Adapter function */
+  iface->can_retry    = adapter_can_retry;
+  iface->reset_state  = adapter_reset_state;
+  iface->ctx          = handler;  /* Concrete handler as context */
+}
+\end{lstlisting}
+
+\subsubsection{Dependency Injection Pattern}
+
+Components receive their dependencies through initialization functions.
+
+\begin{lstlisting}[language=C]
+/* Component declares interface dependencies */
+typedef struct star_bus_manager {
+  star_bus_config_t*      buses;
+  SemaphoreHandle_t       mutex;
+  const char*             tag;
+  star_error_interface_t* error_iface;  /* Injected */
+  star_pin_interface_t*   pin_iface;    /* Injected */
+  /* ... */
+} star_bus_manager_t;
+
+/* Initialization receives dependencies */
+esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
+const char*             tag,
+star_error_interface_t* error_iface,
+star_pin_interface_t*   pin_iface)
+{
+  ESP_RETURN_ON_FALSE(manager, ESP_ERR_INVALID_ARG, s_TAG,
+  "Manager pointer is NULL");
+  
+  manager->buses       = NULL;
+  manager->error_iface = error_iface;  /* Can be NULL */
+  manager->pin_iface   = pin_iface;    /* Can be NULL */
+  /* ... */
+}
+
+/* Usage with injected dependencies */
+error_handler_t error_handler;
+error_handler_init(&error_handler, 3, 100, 5000, NULL, NULL);
+
+star_error_interface_t error_iface;
+star_pin_interface_t pin_iface;
+error_handler_get_interface(&error_iface, &error_handler);
+pin_validator_get_interface(&pin_iface);
+
+star_bus_manager_t bus_manager;
+star_bus_manager_init(&bus_manager, "main", &error_iface, &pin_iface);
+\end{lstlisting}
+
+\subsubsection{NULL Interface Handling}
+
+Components gracefully handle NULL interfaces.
+
+\begin{lstlisting}[language=C]
+/* Check interface before use */
+if (manager->error_iface && manager->error_iface->record_error) {
+  manager->error_iface->record_error(manager->error_iface->ctx,
+  ret, "Operation failed",
+  __FILE__, __LINE__, __func__);
+}
+
+/* Or use convenience macro */
+#define STAR_IFACE_RECORD_ERROR(iface, err, msg)  \
+((iface) && (iface)->record_error  \
+? (iface)->record_error((iface)->ctx, (err), (msg),  \
+__FILE__, __LINE__, __func__)  \
+: (err))
+\end{lstlisting}
+
+\subsection{Bus Abstraction Pattern}
+
+The bus abstraction provides a unified interface for different communication protocols.
+
+\subsubsection{Unified Configuration}
+
+\begin{lstlisting}[language=C]
+/* Single config type with protocol union */
+typedef struct star_bus_config {
+  const char*     name;
+  star_bus_type_t type;  /* Discriminator */
+  bool            initialized;
+  void*           handle;
+  void*           user_ctx;
+  
+  union {
+    star_i2c_bus_config_t  i2c;
+    star_spi_bus_config_t  spi;
+    star_gpio_bus_config_t gpio;
+    star_adc_bus_config_t  adc;
+  } proto;
+  
+  struct star_bus_config* next;
+} star_bus_config_t;
+\end{lstlisting}
+
+\subsubsection{Factory Functions}
+
+Factory functions create configurations for specific protocols.
+
+\begin{lstlisting}[language=C]
+/* I2C bus factory */
+star_bus_config_t* star_bus_config_create_i2c(
+const char* name,
+i2c_port_t  port,
+uint8_t     address,
+gpio_num_t  sda_pin,
+gpio_num_t  scl_pin,
+uint32_t    clk_speed);
+
+/* SPI device factory */
+star_bus_config_t* star_bus_config_create_spi_device(
+const char*                          name,
+spi_host_device_t                    host,
+gpio_num_t                           copi_pin,
+gpio_num_t                           cipo_pin,
+gpio_num_t                           sclk_pin,
+int32_t                              dma_chan,
+const spi_device_interface_config_t* dev_cfg);
+
+/* GPIO bus factory */
+star_bus_config_t* star_bus_config_create_gpio(
+const char* name,
+gpio_num_t* pins,
+uint8_t     pin_count);
+\end{lstlisting}
+
+\subsubsection{Manager Pattern}
+
+The bus manager coordinates multiple bus configurations.
+
+\begin{lstlisting}[language=C]
+/* Initialize manager */
+star_bus_manager_t bus_manager;
+star_bus_manager_init(&bus_manager, "main", &error_iface, &pin_iface);
+
+/* Add buses */
+star_bus_config_t* i2c_bus = star_bus_config_create_i2c(
+"sensor_i2c", I2C_NUM_0, 0x68, GPIO_NUM_21, GPIO_NUM_22, 400000);
+star_bus_manager_add_bus(&bus_manager, i2c_bus);
+
+/* Find and use buses */
+star_bus_config_t* bus = star_bus_manager_find_bus(&bus_manager, "sensor_i2c");
+
+/* Safe access with callback (prevents use-after-free) */
+esp_err_t my_callback(star_bus_config_t* bus, void* ctx) {
+  /* Access bus safely while mutex is held */
+  return ESP_OK;
+}
+star_bus_manager_with_bus(&bus_manager, "sensor_i2c", my_callback, NULL);
+\end{lstlisting}
+
+\subsection{Operations Structure Pattern}
+
+Group related function pointers for pluggable implementations.
+
+\begin{lstlisting}[language=C]
+/* Define operations structure */
+typedef struct star_i2c_ops {
+  star_i2c_write_fn_t         write;
+  star_i2c_read_fn_t          read;
+  star_i2c_write_command_fn_t write_command;
+  star_i2c_read_raw_fn_t      read_raw;
+} star_i2c_ops_t;
+
+/* Initialize with default implementations */
+void star_bus_i2c_init_default_ops(star_i2c_ops_t* ops)
+{
+  if (ops == NULL) {
+    ESP_LOGE(s_TAG, "Cannot initialize NULL ops pointer");
+    return;
+  }
+  ops->write         = internal_star_bus_i2c_write;
+  ops->read          = internal_star_bus_i2c_read;
+  ops->write_command = internal_star_bus_i2c_write_command;
+  ops->read_raw      = internal_star_bus_i2c_read_raw;
+}
+
+/* Use through function pointers */
+esp_err_t star_bus_i2c_write(const star_bus_manager_t* manager,
+const char* name, ...)
+{
+  star_bus_config_t* bus_config = star_bus_manager_find_bus(manager, name);
+  /* ... validation ... */
+  return bus_config->proto.i2c.ops.write(bus_config, data, len,
+  reg_addr, bytes_written);
+}
+\end{lstlisting}
+
+\subsection{Thread-Safe Callback Pattern}
+
+Safely access shared resources through callbacks.
+
+\begin{lstlisting}[language=C]
+/* Callback type */
+typedef esp_err_t (*star_bus_callback_t)(star_bus_config_t* bus,
+void* user_ctx);
+
+/* Thread-safe access function */
+esp_err_t star_bus_manager_with_bus(star_bus_manager_t* manager,
+const char*         name,
+star_bus_callback_t callback,
+void*               user_ctx)
+{
+  ESP_RETURN_ON_FALSE(manager && name && callback,
+  ESP_ERR_INVALID_ARG, s_TAG, "Invalid arguments");
+  
+  /* Acquire mutex */
+  if (xSemaphoreTake(manager->mutex,
+  pdMS_TO_TICKS(CONFIG_STAR_KCONFIG_BUS_MUTEX_TIMEOUT_MS))
+  != pdTRUE) {
+    return ESP_ERR_TIMEOUT;
+  }
+  
+  /* Find bus while holding mutex */
+  star_bus_config_t* found_bus = NULL;
+  for (star_bus_config_t* curr = manager->buses; curr; curr = curr->next) {
+    if (curr->name && strcmp(curr->name, name) == 0) {
+      found_bus = curr;
+      break;
+    }
+  }
+  
+  if (found_bus == NULL) {
+    xSemaphoreGive(manager->mutex);
+    return ESP_ERR_NOT_FOUND;
+  }
+  
+  /* Invoke callback while holding mutex - prevents use-after-free */
+  esp_err_t callback_result = callback(found_bus, user_ctx);
+  
+  xSemaphoreGive(manager->mutex);
+  return callback_result;
+}
+\end{lstlisting}
+
+\subsection{Thread Safety Patterns}
+
+\subsubsection{Mutex Timeout Convention}
+
+Standard mutex timeout is 1000ms (configurable via Kconfig).
+
+\begin{lstlisting}[language=C]
+/* Standard mutex acquisition pattern */
+if (xSemaphoreTake(manager->mutex,
+pdMS_TO_TICKS(CONFIG_STAR_KCONFIG_BUS_MUTEX_TIMEOUT_MS))
+!= pdTRUE) {
+  ESP_LOGE(manager->tag, "Timeout acquiring mutex");
+  return ESP_ERR_TIMEOUT;
+}
+
+/* Critical section */
+/* ... protected operations ... */
+
+xSemaphoreGive(manager->mutex);
+\end{lstlisting}
+
+\subsubsection{Mutex with Cleanup (goto pattern)}
+
+\begin{lstlisting}[language=C]
+esp_err_t star_bus_manager_add_bus(star_bus_manager_t* manager,
+star_bus_config_t* config)
+{
+  ESP_RETURN_ON_FALSE(manager && config, ESP_ERR_INVALID_ARG,
+  s_TAG, "Invalid arguments");
+  
+  esp_err_t ret = ESP_OK;
+  
+  if (xSemaphoreTake(manager->mutex,
+  pdMS_TO_TICKS(CONFIG_STAR_KCONFIG_BUS_MUTEX_TIMEOUT_MS))
+  != pdTRUE) {
+    return ESP_ERR_TIMEOUT;
+  }
+  
+  /* Check for duplicate name */
+  for (star_bus_config_t* curr = manager->buses; curr; curr = curr->next) {
+    if (curr->name && strcmp(curr->name, config->name) == 0) {
+      ret = ESP_ERR_INVALID_STATE;
+      goto add_give_mutex;  /* Single exit point */
+    }
+  }
+  
+  /* Initialize bus hardware */
+  ret = star_bus_config_init(config, manager);
+  if (ret != ESP_OK) {
+    goto add_give_mutex;
+  }
+  
+  /* Add to list */
+  config->next = manager->buses;
+  manager->buses = config;
+  
+  add_give_mutex:
+  xSemaphoreGive(manager->mutex);
+  return ret;
+}
+\end{lstlisting}
+
+\subsection{Error Handler Ownership Pattern}
+
+Components track whether they own their error handler for proper cleanup.
+
+\begin{lstlisting}[language=C]
+/* Sensor handle with ownership tracking */
+typedef struct mpu6050_handle {
+  star_bus_manager_t*     bus_manager;
+  const char*             bus_name;
+  star_error_interface_t* error_iface;
+  bool                    owns_error_handler;  /* Ownership flag */
+  SemaphoreHandle_t       mutex;
+  bool                    initialized;
+  /* ... */
+} mpu6050_handle_t;
+
+/* Initialization with optional interface */
+esp_err_t star_sensor_mpu6050_init(mpu6050_handle_t* handle,
+star_bus_manager_t* bus_manager,
+const char* bus_name,
+star_error_interface_t* error_iface,
+const mpu6050_config_t* config)
+{
+  if (error_iface != NULL) {
+    /* Use provided interface - we don't own it */
+    handle->error_iface = error_iface;
+    handle->owns_error_handler = false;
+  } else {
+    /* Create default - we own it */
+    handle->error_iface = star_error_interface_create_default();
+    handle->owns_error_handler = true;
+  }
+  /* ... */
+}
+
+/* Cleanup respects ownership */
+esp_err_t star_sensor_mpu6050_deinit(mpu6050_handle_t* handle)
+{
+  /* Clean up error interface if we own it */
+  star_error_interface_cleanup(handle->error_iface,
+  handle->owns_error_handler);
+  handle->error_iface = NULL;
+  /* ... */
+}
+
+/* Helper for cleanup */
+void star_error_interface_cleanup(star_error_interface_t* error_iface,
+bool owns_handler)
+{
+  if (!owns_handler || !error_iface) {
+    return;  /* Not our responsibility */
+  }
+  error_handler_t* handler = (error_handler_t*)error_iface->ctx;
+  error_handler_destroy_default(handler);
+  free(error_iface);
+}
+\end{lstlisting}
+
+\subsection{Linked List Management}
+
+Bus configurations are managed as a singly-linked list.
+
+\begin{lstlisting}[language=C]
+/* Add to head of list (O(1)) */
+config->next = manager->buses;
+manager->buses = config;
+
+/* Remove from list (O(n)) */
+star_bus_config_t* prev = NULL;
+for (star_bus_config_t* curr = manager->buses; curr; prev = curr, curr = curr->next) {
+  if (strcmp(curr->name, name) == 0) {
+    if (prev == NULL) {
+      manager->buses = curr->next;  /* Remove head */
+    } else {
+      prev->next = curr->next;  /* Remove middle/tail */
+    }
+    curr->next = NULL;
+    /* ... cleanup curr ... */
+    break;
+  }
+}
+
+/* Iterate through list */
+for (star_bus_config_t* curr = manager->buses; curr; curr = curr->next) {
+  /* Process each configuration */
+}
+\end{lstlisting}
+
+\subsection{Best Practices Summary}
+
+\begin{itemize}
+    \item \textbf{Use dependency injection}: Components receive interfaces, not concrete types.
+    \item \textbf{Handle NULL interfaces}: Always check before dereferencing.
+    \item \textbf{Track ownership}: Know who is responsible for cleanup.
+    \item \textbf{Use callbacks for safe access}: Prevents use-after-free with shared resources.
+    \item \textbf{Consistent mutex timeout}: 1000ms standard timeout.
+    \item \textbf{Single exit point with goto}: Ensures mutex release on all paths.
+    \item \textbf{Factory functions}: Create configurations with proper initialization.
+    \item \textbf{Operations structures}: Enable pluggable implementations.
+\end{itemize}
+
+
+
+\subsection{Prefer Alternatives to Macros}
+
+\textbf{Rule:} Avoid macros unless absolutely necessary. Use modern C alternatives:
+
+\begin{itemize}
+    \item \texttt{static const} for constants
+    \item \texttt{inline} functions for simple operations
+    \item \texttt{enum} for related constants
+\end{itemize}
+
+\textbf{Rationale:} Macros lack type safety, scope control, and debugger visibility.
+
+\textbf{Good:}
+\begin{verbatim}
+static const uint32_t k_max_buffer_size = 256;
+static const float k_pi = 3.14159f;
+
+static inline int max(int a, int b) {
+    return (a > b) ? a : b;
+}
+\end{verbatim}
+
+\textbf{Bad:}
+\begin{verbatim}
+#define MAX_BUFFER_SIZE 256
+#define PI 3.14159
+#define MAX(a,b) ((a) > (b) ? (a) : (b))
+\end{verbatim}
+
+\subsection{When Macros Are Necessary}
+
+Use macros only for:
+
+\begin{enumerate}
+    \item Array sizes (compile-time constants)
+    \item Conditional compilation (\texttt{\#ifdef}, \texttt{\#if})
+    \item Token pasting and stringification
+    \item Platform-specific code paths
+\end{enumerate}
+
+\subsection{Macro Safety Rules}
+
+\subsubsection{Wrap Statement-Like Macros in \texttt{do-while(0)}}
+
+\textbf{Rule:} Always wrap multi-statement macros in \texttt{do \{ ... \} while(0)}.
+
+\textbf{Why:} Prevents bugs when used in if-statements without braces.
+
+\textbf{Correct:}
+\begin{verbatim}
+#define LOG_ERROR(msg)          \
+    do {                        \
+        log_timestamp();        \
+        log_message(msg);       \
+    } while (0)
+\end{verbatim}
+
+\textbf{Incorrect (causes bugs):}
+\begin{verbatim}
+#define LOG_ERROR(msg)          \
+    log_timestamp();            \
+    log_message(msg)
+
+/* Bug example: */
+if (error)
+    LOG_ERROR("fail");  /* Only log_timestamp() is conditional! */
+else
+    handle_success();
+\end{verbatim}
+
+\subsubsection{Parenthesize All Macro Arguments}
+
+\textbf{Rule:} Wrap all argument uses and the entire expression in parentheses.
+
+\textbf{Correct:}
+\begin{verbatim}
+#define SQUARE(x) ((x) * (x))
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+\end{verbatim}
+
+\textbf{Incorrect (causes bugs):}
+\begin{verbatim}
+#define SQUARE(x) x * x
+
+int result = SQUARE(2 + 3);  /* Expands to: 2 + 3 * 2 + 3 = 11, not 25! */
+\end{verbatim}
+
+\subsubsection{Beware of Side Effects and Multiple Evaluation}
+
+\textbf{Rule:} Document if macro arguments are evaluated multiple times. Never pass arguments with side effects.
+
+\textbf{Dangerous:}
+\begin{verbatim}
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+
+int i = 5;
+int result = MAX(i++, 10);  /* i is incremented TWICE! */
+\end{verbatim}
+
+\textbf{Solution:} Use inline functions or add warning comment:
+\begin{verbatim}
+/* WARNING: Arguments evaluated multiple times - no side effects! */
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+\end{verbatim}
+
+\subsection{Multi-line Macro Formatting}
+
+\textbf{Rules:}
+\begin{itemize}
+    \item Use backslash continuation aligned consistently
+    \item Indent continuation lines for readability
+    \item Place opening brace on same line as \texttt{do}
+\end{itemize}
+
+\textbf{Example:}
+\begin{verbatim}
+#define RECORD_ERROR(handler, code, desc)                \
+    do {                                                 \
+        if ((handler)->error_iface != NULL) {            \
+            (handler)->error_iface->record_error(        \
+                (code),                                  \
+                (desc),                                  \
+                __FILE__,                                \
+                __LINE__                                 \
+            );                                           \
+        }                                                \
+    } while (0)
+\end{verbatim}
+
+\subsection{Naming Conventions}
+
+\textbf{Rule:} Use \texttt{SCREAMING\_SNAKE\_CASE} for all macros.
+
+\textbf{Examples:}
+\begin{verbatim}
+/* Simple constants */
+#define MAX_RETRY_COUNT (3)
+#define MOTOR_PWM_FREQ_HZ (20000)
+
+/* Function-like macros (always use parentheses) */
+#define SQUARE(x) ((x) * (x))
+#define MAX(a, b) (((a) > (b)) ? (a) : (b))
+
+/* Multi-statement macros (always use do-while(0)) */
+#define LOG_ERROR(msg)          \
+  do {                          \
+    log_timestamp();            \
+    log_message(msg);           \
+  } while (0)
+
+#define RECORD_ERROR(handler, code, desc)  \
+  do {                                     \
+    error_handler_record_error(            \
+      (handler), (code), (desc),           \
+      __FILE__, __LINE__, __func__         \
+    );                                     \
+  } while (0)
+\end{verbatim}
+
+\subsection{Include Guards}
+
+Use traditional include guards for maximum portability:
+
+\begin{verbatim}
+#ifndef STAR_COMPONENT_FILENAME_H
+#define STAR_COMPONENT_FILENAME_H
+
+/* File contents */
+
+#endif /* STAR_COMPONENT_FILENAME_H */
+\end{verbatim}
+
+Do not use \texttt{\#pragma once} (see Section 12 for details).
+
+\subsection{Conditional Compilation}
+
+\textbf{Best Practices:}
+\begin{itemize}
+    \item Document why conditionals exist
+    \item Keep conditional blocks small
+    \item Use configuration headers instead of scattered \texttt{\#ifdef}
+\end{itemize}
+
+\textbf{Good:}
+\begin{verbatim}
+/* Platform-specific GPIO initialization */
+#if defined(CONFIG_STAR_BOARD_ESP32_S3)
+    configure_esp32s3_gpio();
+#elif defined(CONFIG_STAR_BOARD_ESP32_WROOM)
+    configure_esp32_wroom_gpio();
+#else
+    #error "Unsupported board configuration"
+#endif
+\end{verbatim}
+
+
+This section establishes the unit suffix naming standard used throughout the STAR firmware codebase. All numeric fields use SI (International System of Units) units with explicit suffixes to eliminate unit ambiguity and enable automatic documentation generation.
+
+\subsection{Overview}
+
+The firmware uses the MKS (Meter-Kilogram-Second) system as the foundation for all physical measurements. Every numeric variable that represents a physical quantity must include a unit suffix that clearly identifies its meaning.
+
+\subsection{Benefits}
+
+\begin{itemize}
+  \item \textbf{Eliminates Unit Ambiguity}: No confusion about whether a value is in meters or millimeters, degrees or radians
+  \item \textbf{Self-Documenting Code}: Variable names explicitly state their units
+  \item \textbf{Protocol Buffer Compatibility}: Matches naming conventions used in \texttt{star-proto/} messages
+  \item \textbf{Prevents Conversion Errors}: Explicit units reduce the risk of unit mismatch bugs
+\end{itemize}
+
+\subsection{Standard Unit Suffixes}
+
+\begin{table}[H]
+\centering
+\caption{Standard Unit Suffixes for STAR Firmware}
+\label{tab:unit-suffixes}
+\begin{tabular}{|l|l|l|l|}
+\hline
+\textbf{Suffix} & \textbf{Unit} & \textbf{Proto Example} & \textbf{C Example} \\
+\hline
+\texttt{\_m} & meters & \texttt{x\_m} & \texttt{distance\_m} \\
+\hline
+\texttt{\_mps} & meters/second & \texttt{velocity\_mps} & \texttt{speed\_mps} \\
+\hline
+\texttt{\_mps2} & m/s$^2$ & \texttt{accel\_x\_mps2} & \texttt{acceleration\_mps2} \\
+\hline
+\texttt{\_rad} & radians & \texttt{angle\_rad} & \texttt{heading\_rad} \\
+\hline
+\texttt{\_rad\_per\_s} & rad/second & \texttt{omega\_rad\_per\_s} & \texttt{angular\_vel\_rad\_per\_s} \\
+\hline
+\texttt{\_celsius} & degrees C & \texttt{temperature\_celsius} & \texttt{motor\_temp\_celsius} \\
+\hline
+\texttt{\_deci\_celsius} & 0.1\textdegree C & \texttt{temp\_deci\_celsius} & (BMS native format) \\
+\hline
+\texttt{\_us} & microseconds & \texttt{timestamp\_us} & \texttt{elapsed\_us} \\
+\hline
+\texttt{\_ms} & milliseconds & \texttt{timeout\_ms} & \texttt{period\_ms} \\
+\hline
+\texttt{\_ma} & milliamps & \texttt{current\_ma} & \texttt{motor\_current\_ma} \\
+\hline
+\texttt{\_mv} & millivolts & \texttt{cell\_mv} & \texttt{pack\_voltage\_mv} \\
+\hline
+\texttt{\_mw} & milliwatts & \texttt{power\_mw} & \texttt{consumption\_mw} \\
+\hline
+\texttt{\_percent} & 0--100\% & \texttt{soc\_percent} & \texttt{duty\_cycle\_percent} \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Usage Examples}
+
+\subsubsection{Distance and Velocity}
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Distance and velocity with units */
+float distance_m = 1.5f;           /* 1.5 meters */
+float velocity_mps = 2.0f;         /* 2.0 meters per second */
+float acceleration_mps2 = 9.81f;   /* 9.81 m/s^2 (gravity) */
+
+/* Motor velocity tracking */
+float target_velocity_mps = 0.5f;
+float current_velocity_mps;
+star_encoder_get_velocity_rpm(&encoder, 10.0f, 500, &current_velocity_mps);
+
+/* WRONG - No unit suffix */
+float distance = 1.5f;     /* What unit? Meters? Millimeters? Feet? */
+float velocity = 2.0f;     /* Meters per second? RPM? */
+
+
+\end{lstlisting}
+\subsubsection{Angular Measurements}
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Angular measurements in radians */
+float heading_rad = 1.57f;              /* 90 degrees in radians */
+float angular_velocity_rad_per_s = 3.14f; /* pi radians per second */
+
+/* Robot pose */
+typedef struct {
+  float x_m;
+  float y_m;
+  float theta_rad;  /* Heading angle */
+} robot_pose_t;
+
+/* WRONG - Ambiguous angle units */
+float heading = 90.0f;  /* Degrees or radians? */
+float omega = 3.14f;    /* What unit? */
+
+
+\end{lstlisting}
+\subsubsection{Temperature}
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Temperature with units */
+float motor_temp_celsius;
+star_sensor_ds18b20_read_temp(&temp_sensor, &motor_temp_celsius);
+
+/* BMS uses deci-celsius (0.1 degree resolution) */
+int16_t cell_temp_deci_celsius = 235;  /* 23.5 degrees C */
+
+/* Thermal shutdown threshold */
+#define MOTOR_THERMAL_SHUTDOWN_CELSIUS  (85.0f)
+
+if (motor_temp_celsius > MOTOR_THERMAL_SHUTDOWN_CELSIUS) {
+  star_drv8243_stop(&motor, true);  /* Emergency brake */
+}
+
+/* WRONG */
+float motor_temp = 75.0f;  /* Celsius? Fahrenheit? Kelvin? */
+
+
+\end{lstlisting}
+\subsubsection{Time}
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Time units */
+uint32_t timeout_ms = 1000;        /* 1 second timeout */
+uint64_t timestamp_us;             /* Microsecond timestamp */
+star_encoder_get_timestamp_us(&encoder, &timestamp_us);
+
+/* Timing for control loops */
+const uint32_t control_period_ms = 1;     /* 1ms = 1000Hz */
+const uint32_t sensor_poll_us = 10000;    /* 10ms in microseconds */
+
+/* WRONG */
+uint32_t timeout = 1000;    /* Milliseconds? Seconds? Ticks? */
+uint64_t timestamp;         /* What resolution? */
+
+
+\end{lstlisting}
+\subsubsection{Electrical Measurements}
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Electrical units */
+uint32_t motor_current_ma;
+star_drv8243_read_current(&motor, &motor_current_ma);
+
+uint32_t cell_voltage_mv = 3700;   /* 3.7V in millivolts */
+uint32_t pack_voltage_mv = 11100;  /* 11.1V (3S LiPo) */
+uint32_t power_mw = 7400;          /* 7.4W in milliwatts */
+
+/* Current limiting */
+#define MAX_MOTOR_CURRENT_MA  (2000)  /* 2A limit */
+
+if (motor_current_ma > MAX_MOTOR_CURRENT_MA) {
+  ESP_LOGW(s_TAG, "Motor current limit exceeded: %lu mA", motor_current_ma);
+  star_drv8243_set_speed(&motor, 0.0f);
+}
+
+/* WRONG */
+uint32_t motor_current = 1500;  /* Milliamps? Amps? */
+uint32_t voltage = 3700;        /* Millivolts? Volts? */
+
+
+\end{lstlisting}
+\subsubsection{Percentage}
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Percentage (0-100 range) */
+float duty_cycle_percent = 75.0f;      /* 75% duty cycle */
+uint8_t battery_soc_percent = 85;      /* 85% state of charge */
+float throttle_percent = 50.0f;        /* 50% throttle */
+
+star_drv8243_set_speed(&motor, duty_cycle_percent);
+
+/* WRONG */
+float duty_cycle = 0.75f;    /* Normalized (0-1)? Percentage (0-100)? */
+uint8_t battery_soc = 85;    /* Percentage? Raw ADC value? */
+
+
+\end{lstlisting}
+\subsection{Protocol Buffer Integration}
+
+The unit suffix convention matches the naming used in Protocol Buffer messages:
+
+\begin{lstlisting}[language=proto]
+// From star-proto/proto/robot_command.proto
+message VelocityCommand {
+  float velocity_mps = 1;          // Meters per second
+  float angular_velocity_rad_per_s = 2;  // Radians per second
+}
+
+message BatteryState {
+  repeated uint32 cell_mv = 1;     // Cell voltages in millivolts
+  uint32 current_ma = 2;           // Pack current in milliamps
+  uint8 soc_percent = 3;           // State of charge (0-100%)
+  int16 temperature_celsius = 4;   // Pack temperature
+}
+
+
+\end{lstlisting}
+\subsection{Conversion Functions}
+
+When converting between units, use descriptive function names:
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Clear unit conversion */
+float rpm_to_mps(float rpm, float wheel_diameter_m)
+{
+  float wheel_circumference_m = 3.14159f * wheel_diameter_m;
+  float revolutions_per_second = rpm / 60.0f;
+  return revolutions_per_second * wheel_circumference_m;
+}
+
+float celsius_to_deci_celsius(float temp_celsius)
+{
+  return temp_celsius * 10.0f;
+}
+
+float mv_to_volts(uint32_t voltage_mv)
+{
+  return voltage_mv / 1000.0f;
+}
+
+/* WRONG - Ambiguous conversions */
+float convert_rpm(float rpm);  /* Convert to what? */
+float scale_temp(float temp);  /* What units? */
+
+
+\end{lstlisting}
+\subsection{Summary}
+
+\begin{itemize}
+\item \textbf{Always use unit suffixes} for physical quantities
+\item \textbf{Match Protocol Buffer conventions} for consistency
+\item \textbf{Use SI base units} when possible (meters, radians, seconds)
+\item \textbf{Document conversions} clearly in function names
+\item \textbf{Prefer millivolts/milliamps} over floating-point volts/amps for integer precision
+\end{itemize}
+
+This convention eliminates an entire class of bugs caused by unit ambiguity and makes the codebase more maintainable.
+
+
+This section establishes memory management rules for ESP32 firmware. The ESP32-S3 has limited RAM (512KB SRAM, no PSRAM in our configuration), making proper memory management critical for system stability and performance.
+
+\subsection{No Dynamic Allocation}
+
+\textbf{Rule}: Never use \texttt{malloc()}, \texttt{calloc()}, \texttt{realloc()}, or \texttt{free()} in production firmware.
+
+\subsubsection{Rationale}
+
+\begin{itemize}
+  \item \textbf{Heap Fragmentation}: Repeated allocation/deallocation causes memory fragmentation over time
+  \item \textbf{Memory Leaks}: Forgotten \texttt{free()} calls lead to gradual RAM exhaustion
+  \item \textbf{Unpredictable Timing}: Allocation time is non-deterministic (breaks real-time constraints)
+  \item \textbf{Out-of-Memory Failures}: No recovery mechanism when heap is exhausted
+  \item \textbf{Debugging Difficulty}: Memory corruption bugs are extremely hard to track down
+\end{itemize}
+
+\subsubsection{Alternatives}
+
+Use static allocation instead:
+
+\begin{lstlisting}[language=C]
+/* WRONG - Dynamic allocation */
+void process_sensor_data(void)
+{
+  float* samples = (float*)malloc(1000 * sizeof(float));
+  if (samples == NULL) {
+    ESP_LOGE(s_TAG, "Out of memory!");
+    return;
+  }
+  
+  /* Process samples... */
+  
+  free(samples);  /* Easy to forget! */
+}
+
+/* CORRECT - Static allocation */
+static float s_samples[1000];  /* Allocated once at compile time */
+
+void process_sensor_data(void)
+{
+  /* Use s_samples directly - no allocation, no leaks */
+  for (int i = 0; i < 1000; i++) {
+    s_samples[i] = read_sensor();
+  }
+}
+
+
+\end{lstlisting}
+\subsubsection{ESP-IDF Heap Functions}
+
+ESP-IDF provides heap functions (\texttt{heap\_caps\_malloc}, \texttt{esp\_heap\_caps\_malloc}) that are \textbf{only acceptable} for:
+
+\begin{itemize}
+\item \textbf{One-time initialization}: Allocating resources during startup that persist for the lifetime of the program
+\item \textbf{FreeRTOS task stacks}: Created once during task initialization
+\item \textbf{Third-party libraries}: When required by external dependencies (document clearly)
+\end{itemize}
+
+\begin{lstlisting}[language=C]
+/* ACCEPTABLE - One-time allocation during init */
+esp_err_t sensor_driver_init(sensor_handle_t* handle)
+{
+  /* Allocate persistent buffer once */
+  handle->rx_buffer = heap_caps_malloc(DMA_BUFFER_SIZE,
+  MALLOC_CAP_DMA);
+  if (handle->rx_buffer == NULL) {
+    return ESP_ERR_NO_MEM;
+  }
+  handle->owns_buffer = true;  /* Track ownership */
+  return ESP_OK;
+}
+
+/* Must have corresponding cleanup */
+esp_err_t sensor_driver_deinit(sensor_handle_t* handle)
+{
+  if (handle->owns_buffer && handle->rx_buffer) {
+    free(handle->rx_buffer);
+    handle->rx_buffer = NULL;
+  }
+  return ESP_OK;
+}
+
+
+\end{lstlisting}
+\subsection{Avoid Large Stack Allocations}
+
+\textbf{Rule}: Never allocate large arrays on the stack. Use static or global storage instead.
+
+\subsubsection{Stack Size Constraints}
+
+\begin{itemize}
+\item ESP32 default task stack: \textbf{3KB--8KB} (configurable in FreeRTOS)
+\item ISR stack: Even smaller (\textasciitilde1KB)
+\item Stack overflow causes silent corruption or hard faults
+\end{itemize}
+
+\subsubsection{Examples}
+
+\begin{lstlisting}[language=C]
+/* WRONG - Large stack allocation */
+void process_image(void)
+{
+  uint8_t frame_buffer[640 * 480];  /* 307KB on stack! */
+  /* Stack overflow guaranteed! */
+}
+
+/* WRONG - Nested large allocations */
+void motor_control_loop(void)
+{
+  float pid_state[100];       /* 400 bytes */
+  uint32_t encoder_samples[500];  /* 2000 bytes */
+  /* Total: 2400 bytes - may overflow 3KB stack */
+}
+
+/* CORRECT - Use static storage */
+static uint8_t s_frame_buffer[640 * 480];  /* In .bss, not stack */
+
+void process_image(void)
+{
+  /* Use s_frame_buffer safely */
+  memset(s_frame_buffer, 0, sizeof(s_frame_buffer));
+}
+
+/* CORRECT - Small stack allocations are fine */
+void calculate_checksum(const uint8_t* data, size_t len)
+{
+  uint32_t crc = 0;  /* 4 bytes - perfectly fine on stack */
+  /* ... */
+}
+
+
+\end{lstlisting}
+\subsubsection{Stack Usage Guidelines}
+
+\begin{table}[H]
+\centering
+\caption{Stack Allocation Guidelines}
+\label{tab:stack-guidelines}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Size} & \textbf{Allowed} & \textbf{Storage Location} \\
+\hline
+< 256 bytes & Yes & Stack (automatic) \\
+\hline
+256 bytes -- 1 KB & Caution & Prefer static if persistent \\
+\hline
+> 1 KB & No & Static or global only \\
+\hline
+> 10 KB & Never & Static with explicit comment \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Use \texttt{const} for Flash Storage}
+
+\textbf{Rule}: Place all read-only data in flash/ROM using the \texttt{const} keyword.
+
+\subsubsection{Rationale}
+
+\begin{itemize}
+\item ESP32 has \textbf{16MB flash} but only \textbf{512KB RAM}
+\item \texttt{const} data is stored in flash and accessed directly (no RAM copy)
+\item Saves precious SRAM for runtime variables
+\end{itemize}
+
+\subsubsection{Examples}
+
+\begin{lstlisting}[language=C]
+/* WRONG - Lookup table in RAM (wastes 256 bytes) */
+static uint8_t sine_lookup[256] = {
+  0, 3, 6, 9, 12, /* ... */
+};
+
+/* CORRECT - Lookup table in flash (zero RAM usage) */
+static const uint8_t sine_lookup[256] = {
+  0, 3, 6, 9, 12, /* ... */
+};
+
+/* WRONG - String literals without const */
+static char* error_messages[] = {
+  "Sensor timeout",
+  "Invalid checksum",
+  "Bus error"
+};
+
+/* CORRECT - Strings in flash */
+static const char* const error_messages[] = {
+  "Sensor timeout",
+  "Invalid checksum",
+  "Bus error"
+};
+
+/* CORRECT - Default configuration in flash */
+static const star_pid_config_t default_pid_config = {
+  .kp = 1.0f,
+  .ki = 0.5f,
+  .kd = 0.1f,
+  .output_min = -100.0f,
+  .output_max = 100.0f,
+};
+
+/* Usage: Copy to RAM only when needed */
+star_pid_config_t runtime_config;
+memcpy(&runtime_config, &default_pid_config, sizeof(runtime_config));
+
+
+\end{lstlisting}
+\subsubsection{Pointer Declarations}
+
+Be careful with pointer \texttt{const} placement:
+
+\begin{lstlisting}[language=C]
+/* Pointer to const data (data in flash, pointer in RAM) */
+const char* error_msg = "Timeout";
+
+/* Const pointer to data (pointer in flash, data in RAM) */
+char* const buffer_ptr = buffer;
+
+/* Const pointer to const data (both in flash) */
+const char* const error_table[] = {"Error 1", "Error 2"};
+
+
+\end{lstlisting}
+\subsection{Validate All Buffers}
+
+\textbf{Rule}: Always validate buffer sizes before \texttt{memcpy()}, DMA operations, or ring buffer manipulations.
+
+\subsubsection{Rationale}
+
+\begin{itemize}
+\item Buffer overruns cause memory corruption
+\item Corruption may manifest much later, making debugging extremely difficult
+\item Real-time systems have no memory protection (unlike Linux)
+\end{itemize}
+
+\subsubsection{Validation Patterns}
+
+\begin{lstlisting}[language=C]
+/* WRONG - Unchecked memcpy */
+void receive_packet(uint8_t* data, size_t len)
+{
+  memcpy(rx_buffer, data, len);  /* What if len > buffer size? */
+}
+
+/* CORRECT - Validate before copy */
+#define RX_BUFFER_SIZE  (512)
+static uint8_t rx_buffer[RX_BUFFER_SIZE];
+
+void receive_packet(const uint8_t* data, size_t len)
+{
+  if (data == NULL || len > RX_BUFFER_SIZE) {
+    ESP_LOGE(s_TAG, "Invalid packet: len=%zu (max=%d)",
+    len, RX_BUFFER_SIZE);
+    return;
+  }
+  memcpy(rx_buffer, data, len);
+}
+
+/* CORRECT - Clamp to buffer size */
+void receive_packet_safe(const uint8_t* data, size_t len,
+size_t* bytes_copied)
+{
+  size_t copy_len = (len < RX_BUFFER_SIZE) ? len : RX_BUFFER_SIZE;
+  memcpy(rx_buffer, data, copy_len);
+  *bytes_copied = copy_len;
+  
+  if (len > RX_BUFFER_SIZE) {
+    ESP_LOGW(s_TAG, "Packet truncated: %zu bytes lost",
+    len - RX_BUFFER_SIZE);
+  }
+}
+
+
+\end{lstlisting}
+\subsubsection{DMA Buffer Validation}
+
+\begin{lstlisting}[language=C]
+/* DMA buffers must be validated AND aligned */
+esp_err_t start_dma_transfer(const uint8_t* src, size_t len)
+{
+  /* Validate buffer pointer */
+  if (src == NULL) {
+    return ESP_ERR_INVALID_ARG;
+  }
+  
+  /* Validate length */
+  if (len == 0 || len > MAX_DMA_TRANSFER_SIZE) {
+    ESP_LOGE(s_TAG, "Invalid DMA length: %zu", len);
+    return ESP_ERR_INVALID_SIZE;
+  }
+  
+  /* Check alignment (DMA requires 4-byte alignment) */
+  if (((uintptr_t)src & 0x3) != 0) {
+    ESP_LOGE(s_TAG, "DMA buffer not 4-byte aligned");
+    return ESP_ERR_INVALID_ARG;
+  }
+  
+  /* Proceed with DMA */
+  return spi_device_transmit(spi_handle, &transaction);
+}
+
+
+\end{lstlisting}
+\subsubsection{Ring Buffer Validation}
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Ring buffer with overflow protection */
+typedef struct {
+  uint8_t buffer[256];
+  size_t head;
+  size_t tail;
+  size_t count;
+} ring_buffer_t;
+
+esp_err_t ring_buffer_write(ring_buffer_t* rb, const uint8_t* data,
+size_t len)
+{
+  if (rb == NULL || data == NULL) {
+    return ESP_ERR_INVALID_ARG;
+  }
+  
+  /* Check available space */
+  size_t available = sizeof(rb->buffer) - rb->count;
+  if (len > available) {
+    ESP_LOGW(s_TAG, "Ring buffer overflow: %zu bytes lost",
+    len - available);
+    return ESP_ERR_NO_MEM;
+  }
+  
+  /* Safe to write */
+  for (size_t i = 0; i < len; i++) {
+    rb->buffer[rb->head] = data[i];
+    rb->head = (rb->head + 1) % sizeof(rb->buffer);
+    rb->count++;
+  }
+  
+  return ESP_OK;
+}
+
+
+\end{lstlisting}
+\subsection{Summary}
+
+\begin{table}[H]
+\centering
+\caption{Memory Management Rules Summary}
+\label{tab:memory-rules-summary}
+\begin{tabular}{|l|p{9cm}|}
+\hline
+\textbf{Rule} & \textbf{Implementation} \\
+\hline
+No dynamic allocation & Use static/global buffers instead of malloc/free \\
+\hline
+Avoid large stack arrays & Use static storage for arrays > 256 bytes \\
+\hline
+Use \texttt{const} & Place lookup tables, strings, defaults in flash \\
+\hline
+Validate all buffers & Check lengths before memcpy, DMA, ring buffers \\
+\hline
+\end{tabular}
+\end{table}
+
+Following these rules ensures stable, predictable memory usage and prevents an entire class of memory-related bugs that are extremely difficult to debug in embedded systems.
+
+
+This section establishes best practices for real-time embedded systems development on ESP32. These guidelines are critical for motor control (1000Hz loops), sensor fusion, and safety-critical robotics applications.
+
+\subsection{Interrupt Service Routines (ISRs)}
+
+\subsubsection{Minimize ISR Work}
+
+\textbf{Rule}: Keep ISRs as short as possible. Set flags or queue work to background tasks instead of performing complex operations.
+
+\begin{lstlisting}[language=C]
+/* WRONG - Too much work in ISR */
+static void IRAM_ATTR gpio_isr_handler(void* arg)
+{
+  /* Reading I2C sensor blocks for milliseconds! */
+  float temperature = read_i2c_sensor();
+  update_pid_controller(temperature);
+  adjust_motor_speed();
+  log_telemetry_to_sd_card();  /* File I/O in ISR! */
+}
+
+/* CORRECT - Minimal ISR, queue work to task */
+static volatile bool s_encoder_event = false;
+static QueueHandle_t s_encoder_queue;
+
+static void IRAM_ATTR encoder_isr_handler(void* arg)
+{
+  /* Only set flag and queue event */
+  s_encoder_event = true;
+  
+  encoder_event_t event = {.timestamp_us = esp_timer_get_time()};
+  xQueueSendFromISR(s_encoder_queue, &event, NULL);
+  
+  /* ISR done in microseconds, not milliseconds */
+}
+
+/* Background task processes events */
+void encoder_task(void* arg)
+{
+  encoder_event_t event;
+  while (1) {
+    if (xQueueReceive(s_encoder_queue, &event, portMAX_DELAY)) {
+      /* Heavy processing here, not in ISR */
+      process_encoder_event(&event);
+    }
+  }
+}
+
+
+\end{lstlisting}
+\subsubsection{ISR Constraints}
+
+\begin{itemize}
+\item \textbf{No blocking operations}: No mutexes, delays, or I/O
+\item \textbf{Use \texttt{IRAM\_ATTR}}: Places ISR in IRAM for faster execution
+\item \textbf{FromISR variants}: Use \texttt{xQueueSendFromISR()}, not \texttt{xQueueSend()}
+\item \textbf{Keep stack usage low}: ISR stack is typically 1KB or less
+\item \textbf{No floating-point}: Context save/restore is expensive
+\end{itemize}
+
+\subsection{No Blocking Delays}
+
+\textbf{Rule}: Never use \texttt{vTaskDelay()} or busy-wait loops in time-critical code. Use event-driven design.
+
+\begin{lstlisting}[language=C]
+/* WRONG - Blocking delay in motor control */
+void motor_control_loop(void)
+{
+  while (1) {
+    read_encoder();
+    compute_pid();
+    update_motor();
+    
+    vTaskDelay(pdMS_TO_TICKS(1));  /* Blocks, jitter from scheduler */
+  }
+}
+
+/* CORRECT - Timer-driven execution */
+static void motor_control_timer_callback(void* arg)
+{
+  /* Called exactly every 1ms by hardware timer */
+  read_encoder();
+  compute_pid();
+  update_motor();
+}
+
+void setup_motor_control(void)
+{
+  esp_timer_create_args_t timer_args = {
+    .callback = motor_control_timer_callback,
+    .name = "motor_ctrl"
+  };
+  
+  esp_timer_handle_t timer;
+  esp_timer_create(&timer_args, &timer);
+  esp_timer_start_periodic(timer, 1000);  /* 1ms = 1000us */
+}
+
+/* CORRECT - Event-driven sensor reading */
+void sensor_task(void* arg)
+{
+  while (1) {
+    /* Wait for event, no polling */
+    ulTaskNotifyTake(pdTRUE, portMAX_DELAY);
+    
+    /* Event occurred, process it */
+    process_sensor_data();
+  }
+}
+
+
+\end{lstlisting}
+\subsection{Real-Time and Safety}
+
+\begin{table}[H]
+\centering
+\caption{Real-Time Best Practices}
+\label{tab:realtime-practices}
+\begin{tabular}{|l|p{9cm}|}
+\hline
+\textbf{Practice} & \textbf{Implementation} \\
+\hline
+Know timing constraints & Profile worst-case execution times (WCET) \\
+\hline
+Use watchdog timers & Automatic reset on firmware lockup \\
+\hline
+Handle sensor timeouts & Never assume sensors always respond \\
+\hline
+Fail safe & On error, disable actuators and enter safe state \\
+\hline
+CRC critical data & Validate packets and stored configuration \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Timing Constraints}
+
+\begin{lstlisting}[language=C]
+/* Profile execution time using GPIO toggle */
+void motor_control_loop(void)
+{
+  gpio_set_level(DEBUG_PIN, 1);  /* Pin HIGH */
+  
+  /* Critical timing section */
+  read_encoder();
+  compute_pid();
+  update_motor();
+  
+  gpio_set_level(DEBUG_PIN, 0);  /* Pin LOW */
+  
+  /* Measure with oscilloscope:
+  * Pulse width = worst-case execution time (WCET) */
+}
+
+/* Or use ESP32 cycle counter */
+uint32_t start_cycles = esp_cpu_get_cycle_count();
+
+critical_function();
+
+uint32_t end_cycles = esp_cpu_get_cycle_count();
+uint32_t elapsed_us = (end_cycles - start_cycles) / (CPU_FREQ_MHZ);
+ESP_LOGI(s_TAG, "Execution time: %lu us", elapsed_us);
+
+
+\end{lstlisting}
+\subsubsection{Watchdog Timers}
+
+\begin{lstlisting}[language=C]
+/* Initialize task watchdog */
+#include "esp_task_wdt.h"
+
+void motor_control_task(void* arg)
+{
+  /* Subscribe to watchdog (5 second timeout) */
+  esp_task_wdt_add(NULL);
+  
+  while (1) {
+    /* Kick watchdog to prove we're alive */
+    esp_task_wdt_reset();
+    
+    /* Control loop */
+    motor_control_iteration();
+    
+    vTaskDelay(pdMS_TO_TICKS(1));
+  }
+}
+
+/* If task hangs, watchdog resets ESP32 after 5 seconds */
+
+
+\end{lstlisting}
+\subsubsection{Sensor Timeouts}
+
+\begin{lstlisting}[language=C]
+/* WRONG - Assumes sensor always responds */
+float read_temperature(void)
+{
+  send_i2c_command(TEMP_SENSOR_ADDR, READ_TEMP_CMD);
+  return receive_i2c_data(TEMP_SENSOR_ADDR);  /* Hangs if sensor fails */
+}
+
+/* CORRECT - Timeout and error handling */
+esp_err_t read_temperature_safe(float* temp_celsius)
+{
+  esp_err_t ret;
+  uint8_t data[2];
+  
+  /* I2C read with 100ms timeout */
+  ret = star_bus_i2c_read(bus_manager, "temp_i2c", data, 2,
+  TEMP_READ_REG, NULL);
+  if (ret != ESP_OK) {
+    ESP_LOGW(s_TAG, "Temperature sensor timeout");
+    return ret;
+  }
+  
+  *temp_celsius = (data[0] << 8 | data[1]) / 10.0f;
+  return ESP_OK;
+}
+
+/* Use sensor timeout for safety */
+esp_err_t ret = read_temperature_safe(&motor_temp);
+if (ret != ESP_OK) {
+  /* Sensor failed - enter safe state */
+  star_drv8243_stop(&motor, true);
+  system_enter_safe_mode();
+}
+
+
+\end{lstlisting}
+\subsubsection{Fail-Safe Design}
+
+\begin{lstlisting}[language=C]
+/* Safe state: all motors stopped, systems halted */
+void system_enter_safe_mode(void)
+{
+  ESP_LOGE(s_TAG, "ENTERING SAFE MODE");
+  
+  /* Stop all motors */
+  for (int i = 0; i < NUM_MOTORS; i++) {
+    star_drv8243_stop(&motors[i], true);  /* Brake */
+  }
+  
+  /* Disable all actuators */
+  gpio_set_level(RELAY_ENABLE_PIN, 0);
+  
+  /* Set error LED */
+  gpio_set_level(ERROR_LED_PIN, 1);
+  
+  /* Log error to flash */
+  log_critical_error_to_nvs("Safe mode triggered");
+  
+  /* Infinite loop - require manual reset */
+  while (1) {
+    vTaskDelay(pdMS_TO_TICKS(100));
+  }
+}
+
+/* Trigger safe mode on critical errors */
+if (battery_voltage_mv < BATTERY_CRITICAL_MV) {
+  system_enter_safe_mode();
+}
+
+if (motor_temp_celsius > THERMAL_SHUTDOWN_CELSIUS) {
+  system_enter_safe_mode();
+}
+
+
+\end{lstlisting}
+\subsubsection{CRC Validation}
+
+\begin{lstlisting}[language=C]
+/* Validate critical configuration with CRC */
+typedef struct {
+  star_pid_config_t pid;
+  uint32_t crc32;  /* CRC of pid structure */
+} stored_config_t;
+
+esp_err_t save_config_to_nvs(const star_pid_config_t* config)
+{
+  stored_config_t stored;
+  memcpy(&stored.pid, config, sizeof(star_pid_config_t));
+  
+  /* Calculate CRC-32 */
+  stored.crc32 = esp_crc32_le(0, (uint8_t*)&stored.pid,
+  sizeof(star_pid_config_t));
+  
+  /* Save to NVS */
+  return nvs_set_blob(nvs_handle, "pid_config", &stored,
+  sizeof(stored_config_t));
+}
+
+esp_err_t load_config_from_nvs(star_pid_config_t* config)
+{
+  stored_config_t stored;
+  size_t len = sizeof(stored_config_t);
+  
+  esp_err_t ret = nvs_get_blob(nvs_handle, "pid_config",
+  &stored, &len);
+  if (ret != ESP_OK) {
+    return ret;
+  }
+  
+  /* Verify CRC */
+  uint32_t calculated_crc = esp_crc32_le(0, (uint8_t*)&stored.pid,
+  sizeof(star_pid_config_t));
+  if (calculated_crc != stored.crc32) {
+    ESP_LOGE(s_TAG, "Config CRC mismatch! Flash corrupted?");
+    return ESP_ERR_INVALID_CRC;
+  }
+  
+  memcpy(config, &stored.pid, sizeof(star_pid_config_t));
+  return ESP_OK;
+}
+
+
+\end{lstlisting}
+\subsection{Hardware Abstraction}
+
+\subsubsection{Use Abstract Bus Interfaces}
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Driver depends on bus abstraction, not ESP-IDF */
+esp_err_t mpu6050_init(mpu6050_handle_t* handle,
+star_bus_manager_t* bus_manager,
+const char* bus_name)
+{
+  handle->bus_manager = bus_manager;
+  handle->bus_name = bus_name;
+  
+  /* Access I2C through bus manager */
+  uint8_t whoami;
+  esp_err_t ret = star_bus_i2c_read(bus_manager, bus_name,
+  &whoami, 1, MPU6050_WHO_AM_I, NULL);
+  
+  /* Easy to mock for testing */
+  return ret;
+}
+
+
+\end{lstlisting}
+\subsubsection{Debounce Mechanical Inputs}
+
+\begin{lstlisting}[language=C]
+/* Software debounce for button */
+typedef struct {
+  gpio_num_t pin;
+  bool state;
+  uint32_t last_change_ms;
+  uint32_t debounce_ms;
+} debounced_button_t;
+
+bool button_read(debounced_button_t* btn)
+{
+  bool raw_state = gpio_get_level(btn->pin);
+  uint32_t now_ms = xTaskGetTickCount() * portTICK_PERIOD_MS;
+  
+  if (raw_state != btn->state) {
+    /* State change detected */
+    if (now_ms - btn->last_change_ms > btn->debounce_ms) {
+      /* Stable for debounce period */
+      btn->state = raw_state;
+      btn->last_change_ms = now_ms;
+    }
+  }
+  
+  return btn->state;
+}
+
+
+\end{lstlisting}
+\subsubsection{Enable Brown-Out Detection}
+
+\begin{lstlisting}[language=C]
+/* In sdkconfig or menuconfig:
+* CONFIG_ESP32_BROWNOUT_DET=y
+* CONFIG_ESP32_BROWNOUT_DET_LVL_SEL_7=y  (3.08V threshold)
+*/
+
+/* ESP32 automatically resets on voltage dip below threshold */
+/* Prevents flash corruption and erratic behavior */
+
+
+\end{lstlisting}
+\subsubsection{Flash Wear-Leveling}
+
+\begin{lstlisting}[language=C]
+/* Use NVS (Non-Volatile Storage) for wear-leveling */
+#include "nvs_flash.h"
+
+esp_err_t init_nvs(void)
+{
+  esp_err_t ret = nvs_flash_init();
+  if (ret == ESP_ERR_NVS_NO_FREE_PAGES ||
+  ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+    /* Erase and retry */
+    ESP_ERROR_CHECK(nvs_flash_erase());
+    ret = nvs_flash_init();
+  }
+  return ret;
+}
+
+/* NVS automatically rotates writes across sectors */
+nvs_handle_t nvs_handle;
+nvs_open("storage", NVS_READWRITE, &nvs_handle);
+nvs_set_u32(nvs_handle, "boot_count", boot_count);
+nvs_commit(nvs_handle);
+
+
+\end{lstlisting}
+\subsubsection{Always Use Pull-Up/Pull-Down}
+
+\begin{lstlisting}[language=C]
+/* WRONG - Floating input */
+gpio_config_t io_conf = {
+  .pin_bit_mask = (1ULL << GPIO_NUM_35),
+  .mode = GPIO_MODE_INPUT,
+  /* No pull-up or pull-down! Reads random values */
+};
+
+/* CORRECT - Enable pull-up */
+gpio_config_t io_conf = {
+  .pin_bit_mask = (1ULL << GPIO_NUM_35),
+  .mode = GPIO_MODE_INPUT,
+  .pull_up_en = GPIO_PULLUP_ENABLE,
+  .pull_down_en = GPIO_PULLDOWN_DISABLE,
+};
+gpio_config(&io_conf);
+
+/* For active-low signals (like nFAULT), use pull-up */
+/* For active-high signals, use pull-down */
+
+
+\end{lstlisting}
+\subsection{Performance and Real-Time}
+
+\subsubsection{Benchmark, Don't Guess}
+
+\begin{lstlisting}[language=C]
+/* Use GPIO toggle to measure timing on oscilloscope */
+#define BENCHMARK_START()  gpio_set_level(BENCHMARK_PIN, 1)
+#define BENCHMARK_END()    gpio_set_level(BENCHMARK_PIN, 0)
+
+void pid_control_loop(void)
+{
+  BENCHMARK_START();
+  
+  float velocity_rpm;
+  star_encoder_get_velocity_rpm(&encoder, 1.0f, 500, &velocity_rpm);
+  
+  float output;
+  star_pid_compute(&pid, setpoint, velocity_rpm, 0.001f, &output);
+  
+  star_motor_set_duty(&motor, output);
+  
+  BENCHMARK_END();
+  /* Oscilloscope shows pulse width = execution time */
+}
+
+
+\end{lstlisting}
+\subsubsection{Avoid Blocking Operations}
+
+\begin{lstlisting}[language=C]
+/* WRONG - Blocking I2C read in control loop */
+void control_loop(void)
+{
+  while (1) {
+    uint8_t data[6];
+    i2c_master_read_from_device(I2C_NUM_0, SENSOR_ADDR,
+    data, 6, 100 / portTICK_PERIOD_MS);
+    /* Blocks for up to 100ms! */
+    
+    process_data(data);
+  }
+}
+
+/* CORRECT - Non-blocking with DMA */
+void setup_nonblocking_i2c(void)
+{
+  /* Configure I2C interrupt + DMA */
+  /* When data ready, ISR triggers */
+  /* Background task processes results */
+}
+
+
+\end{lstlisting}
+\subsection{Power Management}
+
+\subsubsection{Use Sleep Modes}
+
+\begin{lstlisting}[language=C]
+/* Light sleep between sensor reads */
+void sensor_polling_task(void* arg)
+{
+  while (1) {
+    read_sensors();
+    process_data();
+    
+    /* Sleep for 100ms instead of busy-wait */
+    esp_sleep_enable_timer_wakeup(100000);  /* 100ms in us */
+    esp_light_sleep_start();
+  }
+}
+
+
+\end{lstlisting}
+\subsubsection{Use DMA to Reduce CPU Load}
+
+\begin{lstlisting}[language=C]
+/* DMA-enabled SPI transfer (CPU-free) */
+spi_device_transmit(spi_handle, &transaction);
+/* DMA handles transfer, CPU does other work */
+
+
+\end{lstlisting}
+\subsection{Testing and Debugging}
+
+\subsubsection{Use Mock Drivers}
+
+\begin{lstlisting}[language=C]
+/* Create mock bus for unit testing */
+star_bus_manager_t mock_bus_manager;
+star_bus_manager_init(&mock_bus_manager, "mock", NULL, NULL);
+
+/* Test driver without hardware */
+mpu6050_handle_t sensor;
+mpu6050_init(&sensor, &mock_bus_manager, "mock_i2c");
+
+
+\end{lstlisting}
+\subsubsection{Meaningful Logging}
+
+\begin{lstlisting}[language=C]
+/* Include timestamp, module, and error codes */
+ESP_LOGE(s_TAG, "[%lu] Motor fault detected: current=%lu mA (limit=%d mA)",
+esp_timer_get_time() / 1000,  /* Timestamp in ms */
+current_ma,
+MAX_MOTOR_CURRENT_MA);
+
+
+\end{lstlisting}
+\subsection{Reliability and Fault Tolerance}
+
+\subsubsection{Reset Peripherals if Stuck}
+
+\begin{lstlisting}[language=C]
+/* I2C bus recovery */
+esp_err_t recover_i2c_bus(i2c_port_t port)
+{
+  ESP_LOGW(s_TAG, "Recovering I2C bus %d", port);
+  
+  /* Delete driver */
+  i2c_driver_delete(port);
+  
+  /* Wait */
+  vTaskDelay(pdMS_TO_TICKS(10));
+  
+  /* Re-initialize */
+  i2c_config_t conf = {/* ... */};
+  i2c_param_config(port, &conf);
+  return i2c_driver_install(port, conf.mode, 0, 0, 0);
+}
+
+
+\end{lstlisting}
+\subsection{Summary}
+
+Following these real-time and embedded best practices ensures:
+\begin{itemize}
+\item \textbf{Predictable timing} for motor control and sensor fusion
+\item \textbf{Robust error handling} for fault tolerance
+\item \textbf{Safe operation} in robotics applications
+\item \textbf{Maintainable code} through proper abstractions
+\item \textbf{Testability} with mock drivers and measurement tools
+\end{itemize}
+
+These practices are the foundation of reliable embedded systems for robotics.
+
+
+This section establishes configuration requirements for Protocol Buffer messages used in ESP32 firmware. The STAR project uses \textbf{nanopb} (Nano Protocol Buffers) for embedded systems, which requires static memory allocation.
+
+\subsection{nanopb Overview}
+
+\textbf{nanopb} is a small, portable Protocol Buffers implementation designed for embedded systems:
+
+\begin{itemize}
+  \item \textbf{Static Allocation}: All buffers allocated at compile time (no malloc)
+  \item \textbf{Small Code Size}: Minimal flash/RAM footprint
+  \item \textbf{C Language}: Compatible with C99 (not C++ required)
+  \item \textbf{Field Size Constraints}: Maximum sizes configured in \texttt{.options} files
+\end{itemize}
+
+\subsection{Why Static Allocation?}
+
+ESP32 firmware follows strict "no dynamic allocation" rules (see Section 25). nanopb field sizes must be explicitly configured to enable compile-time buffer allocation.
+
+\subsection{Field Size Configuration}
+
+Field sizes are configured in \texttt{.options} files located alongside \texttt{.proto} files:
+
+\begin{lstlisting}[language=bash]
+# File: star-proto/proto/star.options
+star.v1.RequestHeader.request_id max_size:64
+star.v1.ResponseHeader.error_message max_size:128
+star.v1.FirmwareChunk.data max_size:1024
+
+
+\end{lstlisting}
+\subsection{Standard Field Size Constraints}
+
+\begin{table}[H]
+\centering
+\caption{nanopb Field Size Constraints for ESP32}
+\label{tab:nanopb-constraints}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Field Type} & \textbf{Constraint} & \textbf{Example} \\
+\hline
+String (UUID) & \texttt{max\_size:64} & \texttt{request\_id} \\
+\hline
+String (error) & \texttt{max\_size:128} & \texttt{error\_message} \\
+\hline
+String (version) & \texttt{max\_size:32} & \texttt{firmware\_version} \\
+\hline
+Repeated (cells) & \texttt{max\_count:16} & \texttt{cell\_mv[]} \\
+\hline
+Repeated (motors) & \texttt{max\_count:4} & \texttt{motor\_status[]} \\
+\hline
+Bytes (firmware) & \texttt{max\_size:1024} & \texttt{chunk\_data} \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Examples}
+
+\subsubsection{String Fields}
+
+\begin{lstlisting}[language=proto]
+// File: robot_command.proto
+message RequestHeader {
+  string request_id = 1;  // UUID (36 chars + null terminator)
+}
+
+// File: robot_command.options
+RequestHeader.request_id max_size:64
+\end{lstlisting}
+
+Generated C code:
+\begin{lstlisting}[language=C]
+typedef struct _RequestHeader {
+  char request_id[64];  /* Static allocation */
+} RequestHeader;
+
+
+\end{lstlisting}
+\subsubsection{Repeated Fields}
+
+\begin{lstlisting}[language=proto]
+// File: battery_state.proto
+message BatteryState {
+  repeated uint32 cell_mv = 1;  // Cell voltages in millivolts
+}
+
+// File: battery_state.options
+BatteryState.cell_mv max_count:16
+\end{lstlisting}
+
+Generated C code:
+\begin{lstlisting}[language=C]
+typedef struct _BatteryState {
+  uint32_t cell_mv[16];      /* Static array */
+  pb_size_t cell_mv_count;   /* Actual element count */
+} BatteryState;
+
+
+\end{lstlisting}
+\subsubsection{Bytes Fields}
+
+\begin{lstlisting}[language=proto]
+// File: firmware_update.proto
+message FirmwareChunk {
+  bytes data = 1;  // Binary firmware data
+}
+
+// File: firmware_update.options
+FirmwareChunk.data max_size:1024
+\end{lstlisting}
+
+Generated C code:
+\begin{lstlisting}[language=C]
+typedef struct _FirmwareChunk {
+  pb_bytes_array_t data;  /* Contains uint8_t bytes[1024] */
+} FirmwareChunk;
+
+
+\end{lstlisting}
+\subsection{Sizing Guidelines}
+
+\subsubsection{String Sizes}
+
+\begin{table}[H]
+\centering
+\caption{Recommended String Field Sizes}
+\label{tab:string-sizes}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Purpose} & \textbf{Size} & \textbf{Example} \\
+\hline
+UUID (RFC 4122) & 64 bytes & \texttt{request\_id}, \texttt{session\_id} \\
+\hline
+Error messages & 128 bytes & \texttt{error\_message} \\
+\hline
+Version strings & 32 bytes & \texttt{firmware\_version} \\
+\hline
+Short names & 32 bytes & \texttt{component\_name} \\
+\hline
+Log messages & 256 bytes & \texttt{log\_text} \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Repeated Field Counts}
+
+\begin{table}[H]
+\centering
+\caption{Recommended Repeated Field Counts}
+\label{tab:repeated-counts}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Purpose} & \textbf{Count} & \textbf{Example} \\
+\hline
+Battery cells (3S LiPo) & 3 & \texttt{cell\_mv[]} \\
+\hline
+Motors (quadruped) & 4 & \texttt{motor\_status[]} \\
+\hline
+Motors (hexapod) & 8 & \texttt{motor\_status[]} \\
+\hline
+Sensor array & 8--16 & \texttt{temperature\_sensors[]} \\
+\hline
+Telemetry samples & 32--64 & \texttt{velocity\_samples[]} \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Bytes Field Sizes}
+
+\begin{table}[H]
+\centering
+\caption{Recommended Bytes Field Sizes}
+\label{tab:bytes-sizes}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Purpose} & \textbf{Size} & \textbf{Example} \\
+\hline
+Firmware chunk & 1024 bytes & \texttt{chunk\_data} \\
+\hline
+Image thumbnail & 4096 bytes & \texttt{thumbnail} \\
+\hline
+Small binary data & 256 bytes & \texttt{calibration\_blob} \\
+\hline
+Cryptographic key & 64 bytes & \texttt{aes\_key} \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Memory Impact}
+
+\subsubsection{Buffer Size Calculation}
+
+Each message allocates memory for the largest possible size:
+
+\begin{lstlisting}[language=C]
+/* Example: BatteryState with 3 cells (3S LiPo) */
+typedef struct {
+  uint32_t cell_mv[3];       /* 3 * 4 = 12 bytes */
+  pb_size_t cell_mv_count;   /* 4 bytes */
+  uint32_t current_ma;        /* 4 bytes */
+  uint8_t soc_percent;        /* 1 byte */
+  /* Total: ~21 bytes + padding */
+} BatteryState;
+
+/* Even if only 1 cell used, full array is allocated */
+
+
+\end{lstlisting}
+\subsubsection{RAM Usage Example}
+
+\begin{lstlisting}[language=C]
+/* Static allocation of message buffers */
+static RequestHeader s_request;         /* 64 bytes */
+static ResponseHeader s_response;        /* 128 bytes */
+static BatteryState s_battery_state;     /* 24 bytes */
+static FirmwareChunk s_firmware_chunk;   /* 1024 bytes */
+
+/* Total: ~1240 bytes of static RAM */
+
+
+\end{lstlisting}
+\subsection{Best Practices}
+
+\subsubsection{Right-Size Your Buffers}
+
+\begin{itemize}
+\item \textbf{Don't over-allocate}: \texttt{max\_size:1024} for a 20-byte string wastes 1004 bytes
+\item \textbf{Don't under-allocate}: Truncated data causes silent bugs
+\item \textbf{Measure actual usage}: Profile message sizes in production
+\end{itemize}
+
+\subsubsection{Use Fixed-Size Types}
+
+\begin{lstlisting}[language=proto]
+/* CORRECT - Fixed-size integer types */
+message MotorCommand {
+  int32 speed_percent = 1;     // Always 4 bytes
+  uint64 timestamp_us = 2;     // Always 8 bytes
+}
+
+/* AVOID - Variable-length encoding */
+message MotorCommand {
+  sint32 speed_percent = 1;    // 1-5 bytes (varint encoding)
+}
+
+
+\end{lstlisting}
+\subsubsection{Validate Message Sizes}
+
+\begin{lstlisting}[language=C]
+/* Check encoded message size before transmission */
+uint8_t buffer[256];
+pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
+
+bool status = pb_encode(&stream, RequestHeader_fields, &request);
+if (!status) {
+  ESP_LOGE(s_TAG, "Encoding failed: %s", PB_GET_ERROR(&stream));
+  return ESP_FAIL;
+}
+
+size_t message_length = stream.bytes_written;
+ESP_LOGI(s_TAG, "Encoded message: %zu bytes", message_length);
+
+/* Verify it fits in SPI transaction buffer */
+if (message_length > SPI_MAX_TRANSFER_SIZE) {
+  ESP_LOGE(s_TAG, "Message too large for SPI: %zu > %d",
+  message_length, SPI_MAX_TRANSFER_SIZE);
+  return ESP_ERR_INVALID_SIZE;
+}
+
+
+\end{lstlisting}
+\subsection{Integration with Code Generation}
+
+\subsubsection{buf.gen.yaml Configuration}
+
+\begin{lstlisting}[language=bash]
+# File: star-proto/buf.gen.yaml
+version: v2
+plugins:
+- local: nanopb_generator
+out: gen/nanopb
+opt:
+- --extension=.pb
+
+
+\end{lstlisting}
+\subsubsection{Options File Naming}
+
+\begin{lstlisting}[language=bash]
+# Options file must match .proto file name
+proto/
+robot_command.proto     -> robot_command.options
+battery_state.proto     -> battery_state.options
+firmware_update.proto   -> firmware_update.options
+
+
+\end{lstlisting}
+\subsection{Common Pitfalls}
+
+\subsubsection{Missing Options File}
+
+\begin{lstlisting}[language=C]
+/* ERROR: No .options file for string field */
+// robot_command.proto
+message Command {
+  string name = 1;  // No max_size specified
+}
+
+/* Generated code uses default (usually too small or error) */
+
+
+\end{lstlisting}
+\textbf{Fix}: Always create \texttt{.options} file for messages with strings, bytes, or repeated fields.
+
+\subsubsection{Mismatched Field Names}
+
+\begin{lstlisting}[language=bash]
+# WRONG - Field name mismatch
+# robot_command.options
+Command.command_name max_size:32  # Field is 'name', not 'command_name'
+
+# CORRECT
+Command.name max_size:32
+
+
+\end{lstlisting}
+\subsubsection{Forgetting Array Count}
+
+\begin{lstlisting}[language=C]
+/* Common mistake: Forgetting to set count field */
+BatteryState battery = {0};
+battery.cell_mv[0] = 3700;
+battery.cell_mv[1] = 3720;
+battery.cell_mv[2] = 3710;
+/* BUG: battery.cell_mv_count not set! Encoder sends 0 cells */
+
+/* CORRECT */
+battery.cell_mv_count = 3;  /* Set actual element count (3S LiPo) */
+
+
+\end{lstlisting}
+\subsection{Summary}
+
+\begin{itemize}
+\item \textbf{Always create .options files} for strings, bytes, repeated fields
+\item \textbf{Right-size buffers} based on actual usage (measure, don't guess)
+\item \textbf{Use fixed-size types} to avoid varint encoding overhead
+\item \textbf{Validate encoded sizes} before transmission
+\item \textbf{Set array count fields} for repeated fields
+\end{itemize}
+
+Properly configured nanopb constraints enable reliable, predictable Protocol Buffer communication on resource-constrained ESP32 hardware.

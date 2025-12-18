@@ -2,12 +2,11 @@
 
 #include "star_bus_adc.h"
 
-#include "esp_adc/adc_cali.h"
-#include "esp_adc/adc_oneshot.h"
-
 #include <inttypes.h>
 #include <string.h>
 
+#include "esp_adc/adc_cali.h"
+#include "esp_adc/adc_oneshot.h"
 #include "esp_check.h"
 #include "esp_log.h"
 #include "star_bus_manager.h" /* Needed for star_bus_manager_find_bus */
@@ -19,11 +18,10 @@ static const char* s_TAG = "STAR_BUS_ADC";
 
 /* --- Private Function Prototypes (Default Ops) --- */
 
-static esp_err_t internal_star_bus_adc_read_raw(const star_bus_config_t* config,
-                                                 int*                     out_raw);
+static esp_err_t internal_star_bus_adc_read_raw(const star_bus_config_t* config, int* out_raw);
 
 static esp_err_t internal_star_bus_adc_read_voltage(const star_bus_config_t* config,
-                                                     int*                     out_voltage_mv);
+                                                    int*                     out_voltage_mv);
 
 /* --- Public Functions --- */
 
@@ -37,9 +35,7 @@ star_adc_ops_t star_bus_adc_get_default_ops(void)
   return ops;
 }
 
-esp_err_t star_bus_adc_read_raw(star_bus_manager_t* manager,
-                                 const char*         bus_name,
-                                 int*                out_raw)
+esp_err_t star_bus_adc_read_raw(star_bus_manager_t* manager, const char* bus_name, int* out_raw)
 {
   ESP_RETURN_ON_FALSE(manager && bus_name && out_raw,
                       ESP_ERR_INVALID_ARG,
@@ -62,9 +58,8 @@ esp_err_t star_bus_adc_read_raw(star_bus_manager_t* manager,
   return bus_config->proto.adc.ops.read_raw(bus_config, out_raw);
 }
 
-esp_err_t star_bus_adc_read_voltage(star_bus_manager_t* manager,
-                                     const char*         bus_name,
-                                     int*                out_voltage_mv)
+esp_err_t
+star_bus_adc_read_voltage(star_bus_manager_t* manager, const char* bus_name, int* out_voltage_mv)
 {
   ESP_RETURN_ON_FALSE(manager && bus_name && out_voltage_mv,
                       ESP_ERR_INVALID_ARG,
@@ -97,9 +92,8 @@ static esp_err_t internal_star_bus_adc_read_raw(const star_bus_config_t* config,
                       s_TAG,
                       "ADC unit handle is NULL");
 
-  esp_err_t ret = adc_oneshot_read(config->proto.adc.unit_handle,
-                                    config->proto.adc.channel,
-                                    out_raw);
+  esp_err_t ret =
+    adc_oneshot_read(config->proto.adc.unit_handle, config->proto.adc.channel, out_raw);
   ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to read ADC channel %d", config->proto.adc.channel);
 
   ESP_LOGD(s_TAG, "ADC channel %d raw value: %d", config->proto.adc.channel, *out_raw);
@@ -107,7 +101,7 @@ static esp_err_t internal_star_bus_adc_read_raw(const star_bus_config_t* config,
 }
 
 static esp_err_t internal_star_bus_adc_read_voltage(const star_bus_config_t* config,
-                                                     int*                     out_voltage_mv)
+                                                    int*                     out_voltage_mv)
 {
   ESP_RETURN_ON_FALSE(config && out_voltage_mv,
                       ESP_ERR_INVALID_ARG,
@@ -119,10 +113,9 @@ static esp_err_t internal_star_bus_adc_read_voltage(const star_bus_config_t* con
                       "ADC unit handle is NULL");
 
   /* First read raw value */
-  int raw_value;
-  esp_err_t ret = adc_oneshot_read(config->proto.adc.unit_handle,
-                                    config->proto.adc.channel,
-                                    &raw_value);
+  int       raw_value;
+  esp_err_t ret =
+    adc_oneshot_read(config->proto.adc.unit_handle, config->proto.adc.channel, &raw_value);
   ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to read ADC channel %d", config->proto.adc.channel);
 
   /* Convert to voltage if calibration is available */

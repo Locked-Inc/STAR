@@ -135,7 +135,6 @@ extern "C" {
  * @endcode
  */
 
-
 /**
  * @brief Pin validator interface - abstract operations for pin management
  */
