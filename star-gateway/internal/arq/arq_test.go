@@ -116,11 +116,8 @@ func TestStopAndWaitInitialState(t *testing.T) {
 func TestStopAndWaitReset(t *testing.T) {
 	arq := NewStopAndWait(nil)
 
-	// Manually modify state (simulating usage)
-	arq.state = StateError
-	arq.txSequence = 100
-	arq.rxSequence = 50
-	arq.retryCount = 3
+	// Set state to non-default values using test helper
+	arq.SetStateForTesting(StateError, 100, 50, 3)
 
 	arq.Reset()
 
