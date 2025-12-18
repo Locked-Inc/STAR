@@ -1,5 +1,5 @@
 # buf.gen.yaml - STAR Code Generation Configuration (buf v1)
-# Generates code for Kotlin, TypeScript, and nanopb (C)
+# Generates code for Go (primary), TypeScript, and nanopb (C)
 #
 # STAR Project - Texas A&M University
 # December 2025
@@ -8,25 +8,23 @@ version: v1
 
 managed:
   enabled: true
-  java_package_prefix: com.star.proto
-  java_multiple_files: true
+  go_package_prefix:
+    default: github.com/Locked-Inc/star-proto/gen/go
   optimize_for: SPEED
 
 plugins:
   # ============================================
-  # Kotlin/Java for star-gateway
-  # Pin versions for compatibility with:
-  #   - grpc-java: 1.60.0
-  #   - protobuf-java: 3.25.3
+  # Go for star-gateway (primary language)
   # ============================================
-  - plugin: buf.build/protocolbuffers/java:v25.3
-    out: gen/kotlin
+  - plugin: buf.build/protocolbuffers/go
+    out: gen/go
+    opt:
+      - paths=source_relative
 
-  - plugin: buf.build/grpc/java:v1.60.0
-    out: gen/kotlin
-
-  - plugin: buf.build/grpc/kotlin:v1.4.1
-    out: gen/kotlin
+  - plugin: buf.build/grpc/go
+    out: gen/go
+    opt:
+      - paths=source_relative
 
   # ============================================
   # TypeScript for star-ui (protobuf-ts)
