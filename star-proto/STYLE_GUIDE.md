@@ -190,10 +190,93 @@ All breaking changes MUST:
 proto/
 └── star/
     └── v1/
-        ├── common.proto        # Shared types (RequestHeader, etc.)
-        ├── motor_control.proto # Motor control service
-        ├── telemetry.proto     # Telemetry service
-        └── navigation.proto    # Navigation service
+        ├── common.proto              # Shared types (RequestHeader, ResponseHeader, Status)
+        ├── motor_control.proto       # Motor control service and PID configuration
+        ├── telemetry.proto           # Telemetry streaming service
+        ├── battery_management.proto  # BQ7850 BMS monitoring and control
+        ├── configuration.proto       # Runtime NVS configuration management
+        └── firmware_update.proto     # OTA firmware update service
+```
+
+## Language Options
+
+### Go (Primary Language)
+
+All proto files MUST include the Go package option for gateway service code:
+
+```protobuf
+option go_package = "github.com/Locked-Inc/star-proto/gen/go/star/v1;starv1";
+```
+
+## Testing Strategy
+
+### Go Table-Driven Tests (Primary)
+
+All protobuf message tests use Go's table-driven test pattern for comprehensive
+coverage and maintainability:
+
+```go
+func TestVelocityCommandRoundTrip(t *testing.T) {
+    tests := []struct {
+        name     string
+        leftMps  float64
+        rightMps float64
+        sequence uint32
+        desc     string
+    }{
+        {"forward_full", 2.0, 2.0, 1, "Both wheels forward"},
+        {"reverse_full", -2.0, -2.0, 2, "Both wheels reverse"},
+        {"stop", 0.0, 0.0, 3, "Both wheels stopped"},
+        {"turn_left", 0.5, 1.5, 4, "Left turn"},
+    }
+
+    for _, tc := range tests {
+        t.Run(tc.name, func(t *testing.T) {
+            cmd := &starv1.VelocityCommand{
+                LeftVelocityMps:  tc.leftMps,
+                RightVelocityMps: tc.rightMps,
+                Sequence:         tc.sequence,
+            }
+
+            bytes, err := proto.Marshal(cmd)
+            require.NoError(t, err, tc.desc)
+
+            parsed := &starv1.VelocityCommand{}
+            err = proto.Unmarshal(bytes, parsed)
+            require.NoError(t, err, tc.desc)
+
+            assert.InDelta(t, tc.leftMps, parsed.LeftVelocityMps, 0.0001)
+            assert.InDelta(t, tc.rightMps, parsed.RightVelocityMps, 0.0001)
+            assert.Equal(t, tc.sequence, parsed.Sequence)
+        })
+    }
+}
+```
+
+### Test Requirements
+
+Every proto message MUST have:
+1. **Round-trip serialization test** - Marshal → Unmarshal → verify equality
+2. **Multiple test cases** covering edge cases (zero values, max values, negative values)
+3. **Enum zero value test** - Verify zero value is `_UNKNOWN`
+
+### Test Organization
+
+```
+tests/
+└── go/
+    ├── go.mod                       # Test module with replace directive
+    ├── serialization_test.go        # Common message tests
+    ├── battery_management_test.go   # BMS-specific tests
+    ├── configuration_test.go        # Config service tests
+    └── firmware_update_test.go      # OTA service tests
+```
+
+### Running Tests
+
+```bash
+cd tests/go
+go test -v ./...
 ```
 
 ## References
