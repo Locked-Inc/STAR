@@ -68,9 +68,9 @@ typedef struct {
 /* --- Static Storage --- */
 
 static onewire_state_t   g_onewire_states[STAR_ONEWIRE_MAX_BUSES] = {0};
-static uint8_t           g_num_onewire_states                  = 0;
-static SemaphoreHandle_t g_onewire_mutex                       = NULL;
-static portMUX_TYPE      g_onewire_init_spinlock               = portMUX_INITIALIZER_UNLOCKED;
+static uint8_t           g_num_onewire_states                     = 0;
+static SemaphoreHandle_t g_onewire_mutex                          = NULL;
+static portMUX_TYPE      g_onewire_init_spinlock                  = portMUX_INITIALIZER_UNLOCKED;
 
 /* --- CRC Tables --- */
 
@@ -504,9 +504,8 @@ esp_err_t star_bus_onewire_read_bytes(star_bus_manager_t* manager,
   return ESP_OK;
 }
 
-esp_err_t star_bus_onewire_read_rom(star_bus_manager_t* manager,
-                                    const char*         bus_name,
-                                    uint8_t             rom[8])
+esp_err_t
+star_bus_onewire_read_rom(star_bus_manager_t* manager, const char* bus_name, uint8_t rom[8])
 {
   if (manager == NULL || bus_name == NULL || rom == NULL) {
     return ESP_ERR_INVALID_ARG;
@@ -544,9 +543,8 @@ esp_err_t star_bus_onewire_read_rom(star_bus_manager_t* manager,
   return ESP_OK;
 }
 
-esp_err_t star_bus_onewire_match_rom(star_bus_manager_t* manager,
-                                     const char*         bus_name,
-                                     const uint8_t       rom[8])
+esp_err_t
+star_bus_onewire_match_rom(star_bus_manager_t* manager, const char* bus_name, const uint8_t rom[8])
 {
   if (manager == NULL || bus_name == NULL || rom == NULL) {
     return ESP_ERR_INVALID_ARG;
@@ -806,4 +804,3 @@ esp_err_t star_bus_onewire_reset_stats(star_bus_manager_t* manager, const char* 
 
   return ESP_OK;
 }
-

@@ -42,6 +42,15 @@
 \usepackage{fancyhdr}
 \usepackage{titlesec}
 \usepackage{tocloft}
+
+% Increase TOC number width to prevent overlap with long section numbers
+% Set same width for alignment
+\setlength{\cftsubsecnumwidth}{5em}     % Width for subsection numbers (default 2.3em)
+\setlength{\cftsubsubsecnumwidth}{5em}  % Width for subsubsection numbers (default 3.2em)
+
+% Remove nested indentation - align all text at the same position
+\setlength{\cftsubsubsecindent}{\cftsubsecindent}
+
 \usepackage{booktabs}
 \usepackage{longtable}
 \usepackage{tabularx}

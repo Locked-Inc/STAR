@@ -78,10 +78,10 @@ extern "C" {
 #define STAR_ONEWIRE_MAX_DEVICES (100)
 
 /* 1-Wire ROM Commands */
-#define STAR_ONEWIRE_CMD_READ_ROM (0x33)     /**< Read ROM (single device) */
-#define STAR_ONEWIRE_CMD_MATCH_ROM (0x55)    /**< Match ROM (address device) */
-#define STAR_ONEWIRE_CMD_SKIP_ROM (0xCC)     /**< Skip ROM (all devices) */
-#define STAR_ONEWIRE_CMD_SEARCH_ROM (0xF0)   /**< Search ROM (find devices) */
+#define STAR_ONEWIRE_CMD_READ_ROM     (0x33) /**< Read ROM (single device) */
+#define STAR_ONEWIRE_CMD_MATCH_ROM    (0x55) /**< Match ROM (address device) */
+#define STAR_ONEWIRE_CMD_SKIP_ROM     (0xCC) /**< Skip ROM (all devices) */
+#define STAR_ONEWIRE_CMD_SEARCH_ROM   (0xF0) /**< Search ROM (find devices) */
 #define STAR_ONEWIRE_CMD_ALARM_SEARCH (0xEC) /**< Alarm search */
 
 /* --- Types --- */
@@ -288,9 +288,8 @@ esp_err_t star_bus_onewire_search_alarms(star_bus_manager_t* manager,
  *
  * @return ESP_OK on success, error code otherwise
  */
-esp_err_t star_bus_onewire_read_rom(star_bus_manager_t* manager,
-                                    const char*         bus_name,
-                                    uint8_t             rom[8]);
+esp_err_t
+star_bus_onewire_read_rom(star_bus_manager_t* manager, const char* bus_name, uint8_t rom[8]);
 
 /**
  * @brief Send MATCH ROM command to address a specific device
@@ -304,9 +303,8 @@ esp_err_t star_bus_onewire_read_rom(star_bus_manager_t* manager,
  *
  * @return ESP_OK on success, error code otherwise
  */
-esp_err_t star_bus_onewire_match_rom(star_bus_manager_t* manager,
-                                     const char*         bus_name,
-                                     const uint8_t       rom[8]);
+esp_err_t
+star_bus_onewire_match_rom(star_bus_manager_t* manager, const char* bus_name, const uint8_t rom[8]);
 
 /**
  * @brief Send SKIP ROM command to address all devices
@@ -450,11 +448,11 @@ esp_err_t star_bus_onewire_reset_stats(star_bus_manager_t* manager, const char* 
  */
 #define STAR_ONEWIRE_FAMILY_DS18S20 (0x10) /**< Temperature sensor */
 #define STAR_ONEWIRE_FAMILY_DS18B20 (0x28) /**< Temperature sensor */
-#define STAR_ONEWIRE_FAMILY_DS1822 (0x22)  /**< Temperature sensor */
-#define STAR_ONEWIRE_FAMILY_DS2431 (0x2D)  /**< 1K EEPROM */
-#define STAR_ONEWIRE_FAMILY_DS2433 (0x23)  /**< 4K EEPROM */
-#define STAR_ONEWIRE_FAMILY_DS2401 (0x01)  /**< Silicon serial number */
-#define STAR_ONEWIRE_FAMILY_DS2411 (0x01)  /**< Silicon serial number */
+#define STAR_ONEWIRE_FAMILY_DS1822  (0x22) /**< Temperature sensor */
+#define STAR_ONEWIRE_FAMILY_DS2431  (0x2D) /**< 1K EEPROM */
+#define STAR_ONEWIRE_FAMILY_DS2433  (0x23) /**< 4K EEPROM */
+#define STAR_ONEWIRE_FAMILY_DS2401  (0x01) /**< Silicon serial number */
+#define STAR_ONEWIRE_FAMILY_DS2411  (0x01) /**< Silicon serial number */
 #define STAR_ONEWIRE_FAMILY_DS1990A (0x01) /**< iButton */
 
 #ifdef __cplusplus

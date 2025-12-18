@@ -3,11 +3,11 @@
 #include "star_drv8243.h"
 
 #include "driver/gpio.h"
-#include "esp_check.h"
-#include "esp_log.h"
 
 #include <string.h>
 
+#include "esp_check.h"
+#include "esp_log.h"
 #include "star_bus_adc.h"
 
 /* --- Constants --- */
@@ -15,9 +15,9 @@
 static const char* s_TAG = "STAR_DRV8243";
 
 /* Default configuration values */
-#define DRV8243_DEFAULT_TIMER_RES_HZ 10000000  /* 10 MHz */
-#define DRV8243_DEFAULT_KI_PROPI     525       /* 525 A/V typical */
-#define DRV8243_MAX_PWM_FREQ_HZ      25000     /* 25 kHz max */
+#define DRV8243_DEFAULT_TIMER_RES_HZ 10000000 /* 10 MHz */
+#define DRV8243_DEFAULT_KI_PROPI     525      /* 525 A/V typical */
+#define DRV8243_MAX_PWM_FREQ_HZ      25000    /* 25 kHz max */
 
 /* --- Private Function Prototypes --- */
 
@@ -26,8 +26,7 @@ static esp_err_t internal_drv8243_configure_fault_pin(star_drv8243_handle_t* han
 
 /* --- Public Functions --- */
 
-esp_err_t star_drv8243_init(star_drv8243_handle_t*       handle,
-                             const star_drv8243_config_t* config)
+esp_err_t star_drv8243_init(star_drv8243_handle_t* handle, const star_drv8243_config_t* config)
 {
   ESP_RETURN_ON_FALSE(handle, ESP_ERR_INVALID_ARG, s_TAG, "Handle is NULL");
   ESP_RETURN_ON_FALSE(config, ESP_ERR_INVALID_ARG, s_TAG, "Config is NULL");
@@ -46,27 +45,27 @@ esp_err_t star_drv8243_init(star_drv8243_handle_t*       handle,
   memset(handle, 0, sizeof(star_drv8243_handle_t));
 
   /* Store configuration */
-  handle->bus_manager    = config->bus_manager;
-  handle->gpio_bus_name  = config->gpio_bus_name;
-  handle->adc_bus_name   = config->adc_bus_name;
-  handle->pin_ipropi     = config->pin_ipropi;
-  handle->pin_nfault     = config->pin_nfault;
+  handle->bus_manager      = config->bus_manager;
+  handle->gpio_bus_name    = config->gpio_bus_name;
+  handle->adc_bus_name     = config->adc_bus_name;
+  handle->pin_ipropi       = config->pin_ipropi;
+  handle->pin_nfault       = config->pin_nfault;
   handle->current_limit_ma = config->current_limit_ma;
-  handle->ki_propi       = config->ki_propi > 0 ? config->ki_propi : DRV8243_DEFAULT_KI_PROPI;
+  handle->ki_propi         = config->ki_propi > 0 ? config->ki_propi : DRV8243_DEFAULT_KI_PROPI;
 
   esp_err_t ret = ESP_OK;
 
   /* Initialize motor control (MCPWM for H-bridge) */
   star_motor_config_t motor_config = {
-    .group_id            = config->group_id,
-    .pin_pwm_a           = config->pin_pwm_ph,
-    .pin_pwm_b           = config->pin_pwm_en,
-    .pwm_freq_hz         = config->pwm_freq_hz,
-    .timer_resolution_hz = config->timer_resolution_hz > 0 ? config->timer_resolution_hz
-                                                            : DRV8243_DEFAULT_TIMER_RES_HZ,
-    .dead_time_ns        = config->dead_time_ns,
-    .invert_pwm          = false,
-    .fault_pin           = -1,  /* We handle fault separately via GPIO bus */
+    .group_id    = config->group_id,
+    .pin_pwm_a   = config->pin_pwm_ph,
+    .pin_pwm_b   = config->pin_pwm_en,
+    .pwm_freq_hz = config->pwm_freq_hz,
+    .timer_resolution_hz =
+      config->timer_resolution_hz > 0 ? config->timer_resolution_hz : DRV8243_DEFAULT_TIMER_RES_HZ,
+    .dead_time_ns = config->dead_time_ns,
+    .invert_pwm   = false,
+    .fault_pin    = -1, /* We handle fault separately via GPIO bus */
   };
 
   ret = star_motor_init(&handle->motor, &motor_config);
@@ -120,7 +119,7 @@ esp_err_t star_drv8243_set_speed(star_drv8243_handle_t* handle, float speed)
   ESP_RETURN_ON_FALSE(handle->initialized, ESP_ERR_INVALID_STATE, s_TAG, "Not initialized");
 
   /* Check for fault condition */
-  bool fault_active;
+  bool      fault_active;
   esp_err_t ret = star_drv8243_get_fault_status(handle, &fault_active);
   if (ret == ESP_OK && fault_active) {
     ESP_LOGW(s_TAG, "Cannot set speed: fault condition active");
@@ -170,11 +169,11 @@ esp_err_t star_drv8243_read_current(star_drv8243_handle_t* handle, float* out_cu
   ESP_RETURN_ON_FALSE(handle->initialized, ESP_ERR_INVALID_STATE, s_TAG, "Not initialized");
 
   /* Read ADC voltage from IPROPI pin */
-  uint32_t voltage_mv;
+  uint32_t  voltage_mv;
   esp_err_t ret = star_bus_adc_read_voltage(handle->bus_manager,
-                                              handle->adc_bus_name,
-                                              handle->pin_ipropi,
-                                              &voltage_mv);
+                                            handle->adc_bus_name,
+                                            handle->pin_ipropi,
+                                            &voltage_mv);
   ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to read IPROPI ADC");
 
   /* Convert voltage to current using ki_propi ratio
@@ -199,7 +198,7 @@ esp_err_t star_drv8243_get_fault_status(star_drv8243_handle_t* handle, bool* out
   int level = gpio_get_level(handle->pin_nfault);
 
   /* Fault is active when pin is LOW */
-  *out_fault       = (level == 0);
+  *out_fault           = (level == 0);
   handle->fault_active = *out_fault;
 
   if (*out_fault) {
@@ -236,12 +235,15 @@ esp_err_t star_drv8243_set_current_limit(star_drv8243_handle_t* handle, uint16_t
 
 static esp_err_t internal_drv8243_check_current_limit(star_drv8243_handle_t* handle)
 {
-  float current_ma;
+  float     current_ma;
   esp_err_t ret = star_drv8243_read_current(handle, &current_ma);
   ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to read current for limit check");
 
   if (current_ma > (float)handle->current_limit_ma) {
-    ESP_LOGW(s_TAG, "Current limit exceeded: %.1f mA > %u mA", current_ma, handle->current_limit_ma);
+    ESP_LOGW(s_TAG,
+             "Current limit exceeded: %.1f mA > %u mA",
+             current_ma,
+             handle->current_limit_ma);
     return ESP_ERR_INVALID_STATE;
   }
 
