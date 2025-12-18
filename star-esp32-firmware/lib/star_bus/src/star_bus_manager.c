@@ -841,20 +841,23 @@ esp_err_t star_bus_manager_register_all_pins(const star_bus_manager_t*   manager
 /* --- Unified Bus Interface --- */
 
 esp_err_t star_bus_write_digital(star_bus_manager_t* manager,
-                                  const char*         bus_name,
-                                  uint8_t             pin_index,
-                                  uint8_t             value)
+                                 const char*         bus_name,
+                                 uint8_t             pin_index,
+                                 uint8_t             value)
 {
-  ESP_RETURN_ON_FALSE(manager && bus_name, ESP_ERR_INVALID_ARG, s_TAG, "Manager or bus_name is NULL");
+  ESP_RETURN_ON_FALSE(manager && bus_name,
+                      ESP_ERR_INVALID_ARG,
+                      s_TAG,
+                      "Manager or bus_name is NULL");
 
   /* Dispatch to GPIO bus function */
   return star_bus_gpio_write_digital(manager, bus_name, pin_index, value);
 }
 
 esp_err_t star_bus_read_digital(star_bus_manager_t* manager,
-                                 const char*         bus_name,
-                                 uint8_t             pin_index,
-                                 uint8_t*            value)
+                                const char*         bus_name,
+                                uint8_t             pin_index,
+                                uint8_t*            value)
 {
   ESP_RETURN_ON_FALSE(manager && bus_name && value,
                       ESP_ERR_INVALID_ARG,
@@ -865,9 +868,7 @@ esp_err_t star_bus_read_digital(star_bus_manager_t* manager,
   return star_bus_gpio_read_digital(manager, bus_name, pin_index, value);
 }
 
-esp_err_t star_bus_read_analog_raw(star_bus_manager_t* manager,
-                                    const char*         bus_name,
-                                    int*                out_raw)
+esp_err_t star_bus_read_analog_raw(star_bus_manager_t* manager, const char* bus_name, int* out_raw)
 {
   ESP_RETURN_ON_FALSE(manager && bus_name && out_raw,
                       ESP_ERR_INVALID_ARG,
@@ -878,9 +879,8 @@ esp_err_t star_bus_read_analog_raw(star_bus_manager_t* manager,
   return star_bus_adc_read_raw(manager, bus_name, out_raw);
 }
 
-esp_err_t star_bus_read_analog_mv(star_bus_manager_t* manager,
-                                   const char*         bus_name,
-                                   int*                out_voltage_mv)
+esp_err_t
+star_bus_read_analog_mv(star_bus_manager_t* manager, const char* bus_name, int* out_voltage_mv)
 {
   ESP_RETURN_ON_FALSE(manager && bus_name && out_voltage_mv,
                       ESP_ERR_INVALID_ARG,

@@ -1,6 +1,5 @@
 /* lib/star_bus/src/star_bus_i2c.c */
 
-
 #include "star_bus_i2c.h"
 
 #include "freertos/FreeRTOS.h"

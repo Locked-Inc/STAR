@@ -277,32 +277,32 @@ extern "C" {
 /* --- Register Map --- */
 
 /* Standard Commands (SMBus) */
-#define BQ7850_CMD_MANUFACTURER_ACCESS (0x00)   /**< Manufacturer access */
-#define BQ7850_CMD_REMAINING_CAPACITY (0x0F)    /**< Remaining capacity (mAh) */
-#define BQ7850_CMD_FULL_CHARGE_CAPACITY (0x10)  /**< Full charge capacity (mAh) */
-#define BQ7850_CMD_TEMPERATURE (0x08)           /**< Temperature (0.1K) */
-#define BQ7850_CMD_VOLTAGE (0x09)               /**< Pack voltage (mV) */
-#define BQ7850_CMD_CURRENT (0x0A)               /**< Pack current (mA) */
-#define BQ7850_CMD_AVERAGE_CURRENT (0x0B)       /**< Average current (mA) */
+#define BQ7850_CMD_MANUFACTURER_ACCESS   (0x00) /**< Manufacturer access */
+#define BQ7850_CMD_REMAINING_CAPACITY    (0x0F) /**< Remaining capacity (mAh) */
+#define BQ7850_CMD_FULL_CHARGE_CAPACITY  (0x10) /**< Full charge capacity (mAh) */
+#define BQ7850_CMD_TEMPERATURE           (0x08) /**< Temperature (0.1K) */
+#define BQ7850_CMD_VOLTAGE               (0x09) /**< Pack voltage (mV) */
+#define BQ7850_CMD_CURRENT               (0x0A) /**< Pack current (mA) */
+#define BQ7850_CMD_AVERAGE_CURRENT       (0x0B) /**< Average current (mA) */
 #define BQ7850_CMD_RELATIVE_STATE_CHARGE (0x0D) /**< Relative SOC (%) */
 #define BQ7850_CMD_ABSOLUTE_STATE_CHARGE (0x0E) /**< Absolute SOC (%) */
-#define BQ7850_CMD_CYCLE_COUNT (0x17)           /**< Cycle count */
-#define BQ7850_CMD_DESIGN_CAPACITY (0x18)       /**< Design capacity (mAh) */
-#define BQ7850_CMD_DESIGN_VOLTAGE (0x19)        /**< Design voltage (mV) */
-#define BQ7850_CMD_SERIAL_NUMBER (0x1C)         /**< Serial number */
-#define BQ7850_CMD_MANUFACTURE_NAME (0x20)      /**< Manufacturer name (block) */
-#define BQ7850_CMD_DEVICE_NAME (0x21)           /**< Device name (block) */
-#define BQ7850_CMD_DEVICE_CHEMISTRY (0x22)      /**< Device chemistry (block) */
-#define BQ7850_CMD_MANUFACTURE_DATA (0x23)      /**< Manufacturer data (block) */
+#define BQ7850_CMD_CYCLE_COUNT           (0x17) /**< Cycle count */
+#define BQ7850_CMD_DESIGN_CAPACITY       (0x18) /**< Design capacity (mAh) */
+#define BQ7850_CMD_DESIGN_VOLTAGE        (0x19) /**< Design voltage (mV) */
+#define BQ7850_CMD_SERIAL_NUMBER         (0x1C) /**< Serial number */
+#define BQ7850_CMD_MANUFACTURE_NAME      (0x20) /**< Manufacturer name (block) */
+#define BQ7850_CMD_DEVICE_NAME           (0x21) /**< Device name (block) */
+#define BQ7850_CMD_DEVICE_CHEMISTRY      (0x22) /**< Device chemistry (block) */
+#define BQ7850_CMD_MANUFACTURE_DATA      (0x23) /**< Manufacturer data (block) */
 
 /* Extended Commands (via Manufacturer Access 0x00) */
-#define BQ7850_SUBCMD_DEVICE_TYPE (0x0001)  /**< Device type */
-#define BQ7850_SUBCMD_FW_VERSION (0x0002)   /**< Firmware version */
-#define BQ7850_SUBCMD_HW_VERSION (0x0003)   /**< Hardware version */
-#define BQ7850_SUBCMD_RESET (0x0041)        /**< Software reset */
-#define BQ7850_SUBCMD_SEAL (0x0030)         /**< Seal device */
-#define BQ7850_SUBCMD_IT_ENABLE (0x0021)    /**< Enable impedance track */
-#define BQ7850_SUBCMD_CAL_MODE (0x0040)     /**< Enter calibration mode */
+#define BQ7850_SUBCMD_DEVICE_TYPE  (0x0001) /**< Device type */
+#define BQ7850_SUBCMD_FW_VERSION   (0x0002) /**< Firmware version */
+#define BQ7850_SUBCMD_HW_VERSION   (0x0003) /**< Hardware version */
+#define BQ7850_SUBCMD_RESET        (0x0041) /**< Software reset */
+#define BQ7850_SUBCMD_SEAL         (0x0030) /**< Seal device */
+#define BQ7850_SUBCMD_IT_ENABLE    (0x0021) /**< Enable impedance track */
+#define BQ7850_SUBCMD_CAL_MODE     (0x0040) /**< Enter calibration mode */
 #define BQ7850_SUBCMD_DEVICE_RESET (0x0041) /**< Full device reset */
 
 /* Cell Voltage Registers (via subcommands) */
@@ -313,14 +313,14 @@ extern "C" {
 #define BQ7850_SUBCMD_TEMP_SENSOR_BASE (0x0078) /**< Temp sensor 1 = 0x0078, etc. */
 
 /* Status and Control Registers */
-#define BQ7850_CMD_BATTERY_STATUS (0x16)   /**< Battery status flags */
+#define BQ7850_CMD_BATTERY_STATUS   (0x16) /**< Battery status flags */
 #define BQ7850_CMD_CHARGING_CURRENT (0x14) /**< Charging current (mA) */
 #define BQ7850_CMD_CHARGING_VOLTAGE (0x15) /**< Charging voltage (mV) */
-#define BQ7850_CMD_ALARM_WARNING (0x50)    /**< Alarm/Warning flags */
-#define BQ7850_CMD_SAFETY_STATUS (0x51)    /**< Safety status */
-#define BQ7850_CMD_PF_STATUS (0x53)        /**< Permanent fail status */
+#define BQ7850_CMD_ALARM_WARNING    (0x50) /**< Alarm/Warning flags */
+#define BQ7850_CMD_SAFETY_STATUS    (0x51) /**< Safety status */
+#define BQ7850_CMD_PF_STATUS        (0x53) /**< Permanent fail status */
 #define BQ7850_CMD_OPERATION_STATUS (0x54) /**< Operation status */
-#define BQ7850_CMD_FET_CONTROL (0x46)      /**< FET control */
+#define BQ7850_CMD_FET_CONTROL      (0x46) /**< FET control */
 
 /* Cell Balancing Control */
 #define BQ7850_CMD_CELL_BALANCE_CTRL (0x40) /**< Cell balancing control */
@@ -333,16 +333,16 @@ extern "C" {
 #define BQ7850_SUBCMD_PROTECTION_UT_THRESH (0x0014) /**< Under-temperature threshold */
 
 /* --- Battery Status Flags (0x16) --- */
-#define BQ7850_BATTERY_STATUS_OCA (1 << (0))  /**< Over-current in charge */
-#define BQ7850_BATTERY_STATUS_TCA (1 << (1))  /**< Terminate charge alarm */
-#define BQ7850_BATTERY_STATUS_OTA (1 << (15)) /**< Over-temperature alarm */
-#define BQ7850_BATTERY_STATUS_TDA (1 << (14)) /**< Terminate discharge alarm */
-#define BQ7850_BATTERY_STATUS_RCA (1 << (9))  /**< Remaining capacity alarm */
-#define BQ7850_BATTERY_STATUS_RTA (1 << (10)) /**< Remaining time alarm */
-#define BQ7850_BATTERY_STATUS_INIT (1 << (7)) /**< Initialized */
-#define BQ7850_BATTERY_STATUS_DSG (1 << (6))  /**< Discharging */
-#define BQ7850_BATTERY_STATUS_FC (1 << (5))   /**< Fully charged */
-#define BQ7850_BATTERY_STATUS_FD (1 << (4))   /**< Fully discharged */
+#define BQ7850_BATTERY_STATUS_OCA  (1 << (0))  /**< Over-current in charge */
+#define BQ7850_BATTERY_STATUS_TCA  (1 << (1))  /**< Terminate charge alarm */
+#define BQ7850_BATTERY_STATUS_OTA  (1 << (15)) /**< Over-temperature alarm */
+#define BQ7850_BATTERY_STATUS_TDA  (1 << (14)) /**< Terminate discharge alarm */
+#define BQ7850_BATTERY_STATUS_RCA  (1 << (9))  /**< Remaining capacity alarm */
+#define BQ7850_BATTERY_STATUS_RTA  (1 << (10)) /**< Remaining time alarm */
+#define BQ7850_BATTERY_STATUS_INIT (1 << (7))  /**< Initialized */
+#define BQ7850_BATTERY_STATUS_DSG  (1 << (6))  /**< Discharging */
+#define BQ7850_BATTERY_STATUS_FC   (1 << (5))  /**< Fully charged */
+#define BQ7850_BATTERY_STATUS_FD   (1 << (4))  /**< Fully discharged */
 
 /* --- Safety Status Flags (0x51) --- */
 #define BQ7850_SAFETY_STATUS_CUV (1 << (0)) /**< Cell undervoltage */
@@ -355,8 +355,8 @@ extern "C" {
 #define BQ7850_SAFETY_STATUS_UTD (1 << (7)) /**< Under-temperature discharge */
 
 /* --- FET Control Bits (0x46) --- */
-#define BQ7850_FET_CONTROL_CHG_FET (1 << (0))  /**< Charge FET enable */
-#define BQ7850_FET_CONTROL_DSG_FET (1 << (1))  /**< Discharge FET enable */
+#define BQ7850_FET_CONTROL_CHG_FET  (1 << (0)) /**< Charge FET enable */
+#define BQ7850_FET_CONTROL_DSG_FET  (1 << (1)) /**< Discharge FET enable */
 #define BQ7850_FET_CONTROL_PCHG_FET (1 << (2)) /**< Pre-charge FET enable */
 
 /* --- Types --- */
@@ -452,13 +452,13 @@ typedef struct {
  * @brief BQ7850 device information
  */
 typedef struct {
-  uint16_t device_type;                                  /**< Device type ID */
-  uint16_t fw_version;                                   /**< Firmware version */
-  uint16_t hw_version;                                   /**< Hardware version */
-  uint32_t serial_number;                                /**< Serial number */
-  char     manufacturer[BQ7850_DEVICE_INFO_STRING_LEN];  /**< Manufacturer name */
-  char     device_name[BQ7850_DEVICE_INFO_STRING_LEN];   /**< Device name */
-  char     chemistry[BQ7850_DEVICE_INFO_STRING_LEN];     /**< Battery chemistry */
+  uint16_t device_type;                                 /**< Device type ID */
+  uint16_t fw_version;                                  /**< Firmware version */
+  uint16_t hw_version;                                  /**< Hardware version */
+  uint32_t serial_number;                               /**< Serial number */
+  char     manufacturer[BQ7850_DEVICE_INFO_STRING_LEN]; /**< Manufacturer name */
+  char     device_name[BQ7850_DEVICE_INFO_STRING_LEN];  /**< Device name */
+  char     chemistry[BQ7850_DEVICE_INFO_STRING_LEN];    /**< Battery chemistry */
 } bq7850_device_info_t;
 
 /**

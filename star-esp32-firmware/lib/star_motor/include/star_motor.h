@@ -81,31 +81,31 @@ extern "C" {
  * @brief Motor controller configuration structure
  */
 typedef struct {
-  int                group_id;            /**< MCPWM group ID (0 or 1) */
-  uint32_t           timer_resolution_hz; /**< Timer resolution in Hz (e.g., 10MHz) */
-  uint32_t           pwm_freq_hz;         /**< PWM frequency in Hz (e.g., 20kHz) */
-  gpio_num_t         pin_pwm_a;           /**< PWM output A (H-bridge IN1) */
-  gpio_num_t         pin_pwm_b;           /**< PWM output B (H-bridge IN2) */
-  uint32_t           dead_time_ns;        /**< Dead-time in nanoseconds (e.g., 1000ns = 1us) */
-  gpio_num_t         fault_pin;           /**< Fault input pin (-1 if not used) */
-  bool               invert_pwm;          /**< Invert PWM polarity */
+  int        group_id;            /**< MCPWM group ID (0 or 1) */
+  uint32_t   timer_resolution_hz; /**< Timer resolution in Hz (e.g., 10MHz) */
+  uint32_t   pwm_freq_hz;         /**< PWM frequency in Hz (e.g., 20kHz) */
+  gpio_num_t pin_pwm_a;           /**< PWM output A (H-bridge IN1) */
+  gpio_num_t pin_pwm_b;           /**< PWM output B (H-bridge IN2) */
+  uint32_t   dead_time_ns;        /**< Dead-time in nanoseconds (e.g., 1000ns = 1us) */
+  gpio_num_t fault_pin;           /**< Fault input pin (-1 if not used) */
+  bool       invert_pwm;          /**< Invert PWM polarity */
 } star_motor_config_t;
 
 /**
  * @brief Motor controller handle structure
  */
 typedef struct {
-  mcpwm_timer_handle_t     timer;      /**< MCPWM timer handle */
-  mcpwm_oper_handle_t      operator;   /**< MCPWM operator handle */
-  mcpwm_cmpr_handle_t      comparator; /**< MCPWM comparator handle */
-  mcpwm_gen_handle_t       gen_a;      /**< MCPWM generator A handle */
-  mcpwm_gen_handle_t       gen_b;      /**< MCPWM generator B handle */
-  mcpwm_fault_handle_t     fault;      /**< MCPWM fault handle (optional) */
-  int                      group_id;   /**< MCPWM group ID */
-  uint32_t                 pwm_freq_hz;   /**< PWM frequency */
-  uint32_t                 period_ticks;  /**< PWM period in timer ticks */
-  float                    current_duty;  /**< Current duty cycle (-100 to +100) */
-  bool                     initialized;   /**< Initialization flag */
+  mcpwm_timer_handle_t timer;        /**< MCPWM timer handle */
+  mcpwm_oper_handle_t  operator;     /**< MCPWM operator handle */
+  mcpwm_cmpr_handle_t  comparator;   /**< MCPWM comparator handle */
+  mcpwm_gen_handle_t   gen_a;        /**< MCPWM generator A handle */
+  mcpwm_gen_handle_t   gen_b;        /**< MCPWM generator B handle */
+  mcpwm_fault_handle_t fault;        /**< MCPWM fault handle (optional) */
+  int                  group_id;     /**< MCPWM group ID */
+  uint32_t             pwm_freq_hz;  /**< PWM frequency */
+  uint32_t             period_ticks; /**< PWM period in timer ticks */
+  float                current_duty; /**< Current duty cycle (-100 to +100) */
+  bool                 initialized;  /**< Initialization flag */
 } star_motor_handle_t;
 
 /* --- Public Functions --- */
