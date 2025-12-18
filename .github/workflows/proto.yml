@@ -237,7 +237,7 @@ jobs:
           path: star-proto/gen/go/
 
       - name: Download Dependencies
-        run: go mod download
+        run: go mod tidy
 
       - name: Run Go Tests
         run: go test -v ./...
