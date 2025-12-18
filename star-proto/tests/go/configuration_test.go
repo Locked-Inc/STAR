@@ -59,12 +59,20 @@ func TestSafetyThresholdsRoundTrip(t *testing.T) {
 }
 
 func TestOvercurrentRange(t *testing.T) {
-	validValues := []uint32{1000, 5000, 10000, 20000}
+	tests := []struct {
+		name string
+		val  uint32
+	}{
+		{"min_valid", 1000},
+		{"mid_valid", 5000},
+		{"high_valid", 10000},
+		{"max_valid", 20000},
+	}
 
-	for _, val := range validValues {
-		t.Run("", func(t *testing.T) {
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
 			thresholds := &starv1.SafetyThresholds{
-				OvercurrentThresholdMa: val,
+				OvercurrentThresholdMa: tc.val,
 			}
 
 			bytes, err := proto.Marshal(thresholds)
@@ -75,7 +83,7 @@ func TestOvercurrentRange(t *testing.T) {
 			require.NoError(t, err)
 
 			assert.True(t, parsed.OvercurrentThresholdMa >= 1000 && parsed.OvercurrentThresholdMa <= 20000)
-			assert.Equal(t, val, parsed.OvercurrentThresholdMa)
+			assert.Equal(t, tc.val, parsed.OvercurrentThresholdMa)
 		})
 	}
 }
