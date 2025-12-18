@@ -1,0 +1,262 @@
+% =============================================================================
+% GATEWAY ARCHITECTURE
+% =============================================================================
+
+\newpage
+\section{Gateway Architecture}
+\label{sec:gateway-architecture}
+
+This section documents the \texttt{star-gateway} Go service that bridges the Raspberry Pi 5 control stack with the ESP32-S3 motor controller.
+
+\subsection{Overview}
+
+The gateway service runs on the Raspberry Pi 5 and serves as the communication bridge between:
+
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item \textbf{High-level side:} gRPC clients (Nav2/ROS2 for autonomous navigation, UI for manual control)
+    \item \textbf{Low-level side:} ESP32-S3 motor controller via SPI at 10 MHz
+\end{itemize}
+
+\noindent\makebox[\textwidth]{%
+\begin{tikzpicture}[
+    font=\small,
+    node distance=0.5cm,
+    box/.style={
+        draw,
+        thick,
+        rectangle,
+        minimum width=3.5cm,
+        minimum height=1cm,
+        align=center
+    }
+]
+    % High-level clients
+    \node[box, fill=blue!20] (nav2) at (0,0) {Nav2/ROS2\\(Autonomous)};
+    \node[box, fill=green!20, right=of nav2] (ui) {star-ui\\(Manual Control)};
+
+    % Gateway
+    \node[box, fill=orange!30, below=1cm of $(nav2)!0.5!(ui)$, minimum width=8cm] (gateway) {\textbf{star-gateway}\\gRPC Server + SPI Controller};
+
+    % ESP32
+    \node[box, fill=cyan!20, below=1cm of gateway, minimum width=8cm] (esp32) {\textbf{ESP32-S3}\\Motor Controller + Sensors};
+
+    % Arrows
+    \draw[->, thick] (nav2.south) -- ++(0,-0.3) -| (gateway.north west);
+    \draw[->, thick] (ui.south) -- ++(0,-0.3) -| (gateway.north east);
+    \draw[<->, thick] (gateway.south) -- node[right] {SPI @ 10 MHz} (esp32.north);
+
+    % Labels
+    \node[above=0.1cm of nav2, font=\footnotesize\bfseries] {gRPC Clients};
+\end{tikzpicture}%
+}
+
+\subsection{Protocol Stack Implementation}
+
+The gateway implements Layers 1--4 of the communication protocol (see Section~\ref{sec:protocol-stack}).
+
+\begin{table}[H]
+\centering
+\caption{Gateway Protocol Stack Implementation}
+\label{tab:gateway-stack}
+\begin{tabular}{|c|l|l|l|}
+\hline
+\textbf{Layer} & \textbf{Name} & \textbf{Go Package} & \textbf{Status} \\
+\hline
+5 & Application & \texttt{internal/service/} & Placeholder \\
+4 & Serialization & \texttt{star-proto/gen/go/} & Generated \\
+3 & ARQ & \texttt{internal/arq/} & Placeholder \\
+2 & Framing & \texttt{internal/frame/} & Constants defined \\
+1 & Transport & \texttt{internal/transport/} & Placeholder \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Directory Structure}
+
+\begin{verbatim}
+star-gateway/
+├── cmd/
+│   └── star-gateway/
+│       └── main.go              # Entry point
+├── internal/
+│   ├── transport/               # Layer 1: SPI transport
+│   │   ├── spi.go               # Transport interface
+│   │   └── spi_test.go
+│   ├── frame/                   # Layer 2: Frame protocol
+│   │   ├── frame.go             # Constants and types
+│   │   ├── encoder.go           # Frame encoder
+│   │   ├── decoder.go           # Frame decoder
+│   │   └── frame_test.go
+│   ├── arq/                     # Layer 3: ARQ protocol
+│   │   ├── arq.go               # Stop-and-Wait ARQ
+│   │   └── arq_test.go
+│   └── service/                 # Layer 5: gRPC services
+│       ├── motor_control.go
+│       ├── telemetry.go
+│       ├── battery.go
+│       ├── configuration.go
+│       └── firmware.go
+├── go.mod
+└── CLAUDE.md
+\end{verbatim}
+
+\subsection{Frame Package}
+
+The \texttt{internal/frame} package defines the wire protocol constants and types.
+
+\subsubsection{Frame Constants}
+
+\begin{table}[H]
+\centering
+\caption{Frame Protocol Constants}
+\label{tab:frame-constants}
+\begin{tabular}{|l|c|l|}
+\hline
+\textbf{Constant} & \textbf{Value} & \textbf{Description} \\
+\hline
+\texttt{SyncWord} & \texttt{0x55AA} & Frame synchronization marker \\
+\texttt{SyncSize} & 2 bytes & Sync word size \\
+\texttt{HeaderSize} & 6 bytes & SEQ(2) + LEN(2) + TYPE(1) + FLAGS(1) \\
+\texttt{CRCSize} & 4 bytes & CRC-32 checksum \\
+\texttt{MaxPayloadSize} & 1024 bytes & Maximum protobuf payload \\
+\texttt{MaxFrameSize} & 1036 bytes & Total frame size \\
+\texttt{MinFrameSize} & 12 bytes & Empty payload frame \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Frame Types}
+
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item \texttt{FrameTypeCommand} -- Command from controller to peripheral
+    \item \texttt{FrameTypeResponse} -- Response from peripheral to controller
+    \item \texttt{FrameTypeAck} -- Acknowledgment of successful receipt
+    \item \texttt{FrameTypeNack} -- Negative acknowledgment (CRC error, etc.)
+\end{itemize}
+
+\subsection{Transport Package}
+
+The \texttt{internal/transport} package provides the SPI transport layer.
+
+\subsubsection{SPI Configuration}
+
+\begin{table}[H]
+\centering
+\caption{SPI Configuration Constants}
+\label{tab:spi-config}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Parameter} & \textbf{Value} & \textbf{Description} \\
+\hline
+Device & \texttt{/dev/spidev0.0} & SPI device path \\
+Speed & 10 MHz & SPI clock frequency \\
+Mode & 0 & CPOL=0, CPHA=0 \\
+Bits per word & 8 & Word size \\
+Timeout & 100 ms & Default operation timeout \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{Transport Interface}
+
+\begin{verbatim}
+type Transport interface {
+    Send(data []byte) (int, error)
+    Receive(maxLen int) ([]byte, error)
+    Transfer(txData []byte) ([]byte, error)
+    Close() error
+}
+\end{verbatim}
+
+\subsection{ARQ Package}
+
+The \texttt{internal/arq} package implements Stop-and-Wait ARQ for reliable delivery.
+
+\subsubsection{ARQ Parameters}
+
+\begin{table}[H]
+\centering
+\caption{ARQ Protocol Parameters}
+\label{tab:arq-params}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Parameter} & \textbf{Value} & \textbf{Description} \\
+\hline
+Max Retries & 3 & Maximum transmission attempts \\
+Timeout & 10 ms & ACK wait timeout \\
+Sequence Max & 0xFFFF & 16-bit wraparound \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsubsection{ARQ State Machine}
+
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item \textbf{IDLE} -- Ready to send or receive
+    \item \textbf{WAITING\_ACK} -- Waiting for acknowledgment
+    \item \textbf{RETRANSMITTING} -- Retransmitting after timeout/NACK
+    \item \textbf{ERROR} -- Max retries exceeded
+\end{itemize}
+
+\subsection{gRPC Services}
+
+The gateway exposes five gRPC services (see Section~\ref{sec:service-specifications} for detailed specifications):
+
+\begin{table}[H]
+\centering
+\caption{Gateway gRPC Services}
+\label{tab:gateway-services}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Service} & \textbf{Purpose} \\
+\hline
+MotorControlService & Differential drive control, encoder streaming \\
+TelemetryService & IMU, GPS, system status \\
+BatteryManagementService & BQ7850 BMS monitoring \\
+ConfigurationService & Runtime parameters, NVS persistence \\
+FirmwareUpdateService & OTA updates, rollback \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Build and Test}
+
+\begin{verbatim}
+# Build the gateway binary
+cd star-gateway
+go build ./cmd/star-gateway
+
+# Run all tests
+go test ./...
+
+# Run with verbose output
+go test -v ./...
+
+# Format code
+go fmt ./...
+
+# Static analysis
+go vet ./...
+\end{verbatim}
+
+\subsection{Dependencies}
+
+The gateway depends on:
+
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item \texttt{github.com/Locked-Inc/star-proto/gen/go} -- Generated protobuf and gRPC code
+    \item \texttt{google.golang.org/grpc} -- gRPC framework
+    \item \texttt{google.golang.org/protobuf} -- Protocol Buffers runtime
+\end{itemize}
+
+The \texttt{go.work} file at the repository root enables workspace mode for seamless cross-module development:
+
+\begin{verbatim}
+go 1.21
+
+use (
+    ./star-proto/gen/go
+    ./star-proto/tests/go
+    ./star-gateway
+)
+\end{verbatim}
