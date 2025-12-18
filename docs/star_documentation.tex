@@ -695,6 +695,263 @@ Duplicate detection & Checks RPi5's \texttt{seq} & Checks ESP32's \texttt{seq} \
 \end{center}
 
 % =============================================================================
+% PROTOCOL BUFFER SCHEMAS
+% =============================================================================
+
+\newpage
+\section{Protocol Buffer Schema Definitions}
+
+This section documents the Protocol Buffer schemas used for RPi5$\leftrightarrow$ESP32 communication. All schemas follow the \textbf{Boston Dynamics Protobuf Style Guide} for consistency and best practices.
+
+\subsection{Style Guide Conventions}
+
+\begin{table}[H]
+\centering
+\caption{Boston Dynamics Protobuf Style Guide Conventions}
+\label{tab:proto-style}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Element} & \textbf{Convention} & \textbf{Example} \\
+\hline
+Package & Versioned namespace & \texttt{star.v1} \\
+Messages & PascalCase & \texttt{VelocityCommand} \\
+Fields & snake\_case with unit suffix & \texttt{velocity\_mps}, \texttt{angle\_rad} \\
+Enums & SCREAMING\_SNAKE\_CASE & \texttt{MOTOR\_STATE\_RUNNING} \\
+Enum Zero Value & \_UNKNOWN suffix & \texttt{STATUS\_UNKNOWN = 0} \\
+Enum Prefix & Type name prefix & \texttt{ROBOT\_MODE\_MANUAL} \\
+RPC Request/Response & \{RpcName\}Request/Response & \texttt{SetVelocityRequest} \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Unit Suffixes (MKS System):}
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item \texttt{\_m} -- meters (distance)
+    \item \texttt{\_mps} -- meters per second (velocity)
+    \item \texttt{\_mps2} -- meters per second squared (acceleration)
+    \item \texttt{\_rad} -- radians (angle)
+    \item \texttt{\_rad\_per\_s} -- radians per second (angular velocity)
+    \item \texttt{\_celsius} -- degrees Celsius (temperature)
+    \item \texttt{\_us} -- microseconds (time)
+    \item \texttt{\_ma} -- milliamps (current)
+    \item \texttt{\_mv} -- millivolts (voltage)
+\end{itemize}
+
+\subsection{Schema Directory Structure}
+
+\begin{lstlisting}[language=bash,caption={Proto Directory Layout}]
+star-proto/
+  proto/
+    star/v1/
+      common.proto          # Shared types (headers, status, vectors)
+      motor_control.proto   # Motor velocity control service
+      telemetry.proto       # Sensor data streaming service
+      battery_management.proto  # BMS monitoring service
+      configuration.proto   # Runtime configuration service
+      firmware_update.proto # OTA update service
+  nanopb/
+    *.options              # nanopb size constraints for ESP32
+  gen/
+    go/                    # Generated Go code (star-gateway)
+    nanopb/                # Generated C code (ESP32 firmware)
+\end{lstlisting}
+
+\subsection{common.proto -- Shared Types}
+
+The \texttt{common.proto} file defines types shared across all services:
+
+\begin{lstlisting}[language=Protobuf,caption={common.proto -- Request/Response Headers}]
+syntax = "proto3";
+package star.v1;
+
+// Standard request header included in all requests.
+message RequestHeader {
+  string request_id = 1;                    // UUID for tracing
+  google.protobuf.Timestamp client_timestamp = 2;
+  string client_version = 3;
+  google.protobuf.Duration timeout = 4;
+}
+
+// Standard response header included in all responses.
+message ResponseHeader {
+  string request_id = 1;                    // Echo of request_id
+  google.protobuf.Timestamp server_timestamp = 2;
+  Status status = 3;
+  string error_message = 4;
+  int64 latency_us = 5;                     // Round-trip latency
+}
+
+// Response status codes (zero value is _UNKNOWN).
+enum Status {
+  STATUS_UNKNOWN = 0;
+  STATUS_OK = 1;
+  STATUS_INVALID_REQUEST = 2;
+  STATUS_INTERNAL_ERROR = 3;
+  STATUS_NOT_FOUND = 4;
+  STATUS_TIMEOUT = 5;
+  STATUS_INVALID_STATE = 6;
+  STATUS_ESTOP_ACTIVE = 7;
+}
+\end{lstlisting}
+
+\begin{lstlisting}[language=Protobuf,caption={common.proto -- Geometric Types}]
+// SE2 pose for 2D navigation (position + heading).
+message SE2Pose {
+  double x_m = 1;          // X position in meters
+  double y_m = 2;          // Y position in meters
+  double angle_rad = 3;    // Heading in radians (-pi to pi)
+}
+
+// SE2 velocity for 2D motion.
+message SE2Velocity {
+  double vx_mps = 1;           // Linear velocity X (m/s)
+  double vy_mps = 2;           // Linear velocity Y (m/s)
+  double omega_rad_per_s = 3;  // Angular velocity (rad/s)
+}
+\end{lstlisting}
+
+\subsection{motor\_control.proto -- Motor Control Service}
+
+The \texttt{motor\_control.proto} file defines the low-latency motor control service:
+
+\begin{lstlisting}[language=Protobuf,caption={MotorControlService RPC Definitions}]
+service MotorControlService {
+  // Set wheel velocities for differential drive.
+  rpc SetVelocity(SetVelocityRequest) returns (SetVelocityResponse);
+
+  // Immediate emergency stop (priority over all commands).
+  rpc EmergencyStop(EmergencyStopRequest) returns (EmergencyStopResponse);
+
+  // Set individual motor power (bypass PID, testing only).
+  rpc SetMotorPower(SetMotorPowerRequest) returns (SetMotorPowerResponse);
+
+  // Stream encoder data at configured rate.
+  rpc StreamEncoders(StreamEncodersRequest) returns (stream EncoderData);
+
+  // Bidirectional control: velocity commands in, encoder feedback out.
+  rpc ControlStream(stream VelocityCommand) returns (stream EncoderData);
+}
+\end{lstlisting}
+
+\begin{lstlisting}[language=Protobuf,caption={VelocityCommand and EncoderData Messages}]
+// Velocity command for differential drive robot.
+message VelocityCommand {
+  double left_velocity_mps = 1;   // Left wheel (-2.0 to 2.0 m/s)
+  double right_velocity_mps = 2;  // Right wheel (-2.0 to 2.0 m/s)
+  uint32 sequence = 3;            // Command sequence number
+  int64 timestamp_us = 4;         // Client timestamp
+}
+
+// Real-time encoder feedback from motor controller.
+message EncoderData {
+  int32 motor_id = 1;        // Motor index (0=left, 1=right)
+  int64 ticks = 2;           // Absolute position (341.2 PPR)
+  double velocity_mps = 3;   // Current velocity
+  int64 timestamp_us = 4;    // Timestamp since boot
+}
+
+// Motor operating state (zero value is _UNKNOWN).
+enum MotorState {
+  MOTOR_STATE_UNKNOWN = 0;
+  MOTOR_STATE_IDLE = 1;
+  MOTOR_STATE_RUNNING = 2;
+  MOTOR_STATE_FAULT = 3;
+  MOTOR_STATE_ESTOP = 4;
+}
+\end{lstlisting}
+
+\subsection{telemetry.proto -- Telemetry Service}
+
+The \texttt{telemetry.proto} file defines the sensor data streaming service:
+
+\begin{lstlisting}[language=Protobuf,caption={TelemetryService RPC Definitions}]
+service TelemetryService {
+  // Get current telemetry snapshot.
+  rpc GetTelemetry(GetTelemetryRequest) returns (GetTelemetryResponse);
+
+  // Stream telemetry at specified rate (1-100 Hz).
+  rpc StreamTelemetry(StreamTelemetryRequest) returns (stream TelemetryData);
+
+  // Get system status (firmware version, uptime, connections).
+  rpc GetSystemStatus(GetSystemStatusRequest) returns (GetSystemStatusResponse);
+}
+\end{lstlisting}
+
+\begin{lstlisting}[language=Protobuf,caption={TelemetryData and ImuData Messages}]
+// Complete telemetry snapshot from all sensors.
+message TelemetryData {
+  ImuData imu = 1;
+  GpsData gps = 2;
+  double battery_percent = 3;       // 0-100%
+  int32 wifi_signal_dbm = 4;        // -100 to -30 dBm
+  double cpu_usage_percent = 5;
+  double temperature_celsius = 6;   // DS18B20 sensor
+  double motor_load_percent = 7;
+  google.protobuf.Timestamp timestamp = 8;
+}
+
+// IMU sensor data (BNO085 9-axis IMU).
+message ImuData {
+  double pitch_rad = 1;             // -pi/2 to pi/2
+  double roll_rad = 2;              // -pi to pi
+  double yaw_rad = 3;               // -pi to pi
+  double accel_x_mps2 = 4;          // Linear acceleration
+  double accel_y_mps2 = 5;
+  double accel_z_mps2 = 6;          // ~9.81 at rest
+  double gyro_x_rad_per_s = 7;      // Angular velocity
+  double gyro_y_rad_per_s = 8;
+  double gyro_z_rad_per_s = 9;
+}
+
+// Robot operating mode (zero value is _UNKNOWN).
+enum RobotMode {
+  ROBOT_MODE_UNKNOWN = 0;
+  ROBOT_MODE_IDLE = 1;
+  ROBOT_MODE_MANUAL = 2;
+  ROBOT_MODE_AUTONOMOUS = 3;
+  ROBOT_MODE_MAPPING = 4;
+  ROBOT_MODE_EMERGENCY_STOP = 5;
+}
+\end{lstlisting}
+
+\subsection{Code Generation}
+
+Code is generated for multiple targets using \texttt{buf generate}:
+
+\begin{table}[H]
+\centering
+\caption{Code Generation Targets}
+\label{tab:codegen}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Target} & \textbf{Generator} & \textbf{Usage} \\
+\hline
+Go & protoc-gen-go, protoc-gen-go-grpc & star-gateway service \\
+nanopb & nanopb\_generator & ESP32 firmware \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Generation Commands:}
+\begin{lstlisting}[language=bash,caption={Manual Code Generation}]
+# Generate Go code
+buf generate proto/ --template buf.gen.yaml
+
+# Generate nanopb code (ESP32)
+cd gen/nanopb && ./generate.sh
+\end{lstlisting}
+
+\textbf{nanopb Options (ESP32 Constraints):}
+
+Since ESP32 uses static allocation, field sizes must be constrained in \texttt{.options} files:
+
+\begin{lstlisting}[caption={Example nanopb Options}]
+star.v1.RequestHeader.request_id max_size:64
+star.v1.ResponseHeader.error_message max_size:128
+star.v1.TelemetryData.fields max_count:8
+\end{lstlisting}
+
+% =============================================================================
 % HARDWARE PIN CONNECTIONS
 % =============================================================================
 
