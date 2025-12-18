@@ -61,12 +61,17 @@ func TestStateString(t *testing.T) {
 func TestDefaultARQConfig(t *testing.T) {
 	config := DefaultARQConfig()
 
-	if config.MaxRetries != DefaultMaxRetries {
-		t.Errorf("MaxRetries = %d, want %d", config.MaxRetries, DefaultMaxRetries)
-	}
-	if config.Timeout != DefaultTimeout {
-		t.Errorf("Timeout = %v, want %v", config.Timeout, DefaultTimeout)
-	}
+	t.Run("MaxRetries", func(t *testing.T) {
+		if config.MaxRetries != DefaultMaxRetries {
+			t.Errorf("MaxRetries = %d, want %d", config.MaxRetries, DefaultMaxRetries)
+		}
+	})
+
+	t.Run("Timeout", func(t *testing.T) {
+		if config.Timeout != DefaultTimeout {
+			t.Errorf("Timeout = %v, want %v", config.Timeout, DefaultTimeout)
+		}
+	})
 }
 
 // ============================================================================
@@ -74,77 +79,135 @@ func TestDefaultARQConfig(t *testing.T) {
 // ============================================================================
 
 func TestNewStopAndWait(t *testing.T) {
-	t.Run("with_nil_config", func(t *testing.T) {
-		arq := NewStopAndWait(nil)
-		if arq == nil {
-			t.Fatal("expected ARQ, got nil")
-		}
-		if arq.Config().MaxRetries != DefaultMaxRetries {
-			t.Errorf("MaxRetries = %d, want %d", arq.Config().MaxRetries, DefaultMaxRetries)
-		}
-	})
+	tests := []struct {
+		name              string
+		config            *Config
+		expectedRetries   int
+		expectedTimeout   time.Duration
+	}{
+		{
+			name:            "nil_config_uses_defaults",
+			config:          nil,
+			expectedRetries: DefaultMaxRetries,
+			expectedTimeout: DefaultTimeout,
+		},
+		{
+			name: "custom_config",
+			config: &Config{
+				MaxRetries: 5,
+				Timeout:    20 * time.Millisecond,
+			},
+			expectedRetries: 5,
+			expectedTimeout: 20 * time.Millisecond,
+		},
+		{
+			name: "zero_retries",
+			config: &Config{
+				MaxRetries: 0,
+				Timeout:    5 * time.Millisecond,
+			},
+			expectedRetries: 0,
+			expectedTimeout: 5 * time.Millisecond,
+		},
+	}
 
-	t.Run("with_custom_config", func(t *testing.T) {
-		customConfig := &Config{
-			MaxRetries: 5,
-			Timeout:    20 * time.Millisecond,
-		}
-		arq := NewStopAndWait(customConfig)
-		if arq.Config().MaxRetries != 5 {
-			t.Errorf("MaxRetries = %d, want 5", arq.Config().MaxRetries)
-		}
-		if arq.Config().Timeout != 20*time.Millisecond {
-			t.Errorf("Timeout = %v, want 20ms", arq.Config().Timeout)
-		}
-	})
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			arq := NewStopAndWait(tc.config)
+
+			if arq == nil {
+				t.Fatal("expected ARQ, got nil")
+			}
+			if arq.Config().MaxRetries != tc.expectedRetries {
+				t.Errorf("MaxRetries = %d, want %d", arq.Config().MaxRetries, tc.expectedRetries)
+			}
+			if arq.Config().Timeout != tc.expectedTimeout {
+				t.Errorf("Timeout = %v, want %v", arq.Config().Timeout, tc.expectedTimeout)
+			}
+		})
+	}
 }
 
 func TestStopAndWaitInitialState(t *testing.T) {
 	arq := NewStopAndWait(nil)
 
-	if arq.GetState() != StateIdle {
-		t.Errorf("GetState() = %v, want StateIdle", arq.GetState())
-	}
-	if arq.GetTxSequence() != 0 {
-		t.Errorf("GetTxSequence() = %d, want 0", arq.GetTxSequence())
-	}
-	if arq.GetRxSequence() != 0 {
-		t.Errorf("GetRxSequence() = %d, want 0", arq.GetRxSequence())
-	}
+	t.Run("State", func(t *testing.T) {
+		if arq.GetState() != StateIdle {
+			t.Errorf("GetState() = %v, want StateIdle", arq.GetState())
+		}
+	})
+
+	t.Run("TxSequence", func(t *testing.T) {
+		if arq.GetTxSequence() != 0 {
+			t.Errorf("GetTxSequence() = %d, want 0", arq.GetTxSequence())
+		}
+	})
+
+	t.Run("RxSequence", func(t *testing.T) {
+		if arq.GetRxSequence() != 0 {
+			t.Errorf("GetRxSequence() = %d, want 0", arq.GetRxSequence())
+		}
+	})
 }
 
 func TestStopAndWaitReset(t *testing.T) {
-	arq := NewStopAndWait(nil)
-
-	// Set state to non-default values using test helper
-	arq.SetStateForTesting(StateError, 100, 50, 3)
-
-	arq.Reset()
-
-	if arq.GetState() != StateIdle {
-		t.Errorf("GetState() = %v, want StateIdle after Reset", arq.GetState())
+	tests := []struct {
+		name       string
+		setupState State
+		setupTxSeq uint16
+		setupRxSeq uint16
+		setupRetry int
+	}{
+		{"from_error_state", StateError, 100, 50, 3},
+		{"from_waiting_ack", StateWaitingAck, 255, 128, 1},
+		{"from_retransmitting", StateRetransmitting, 1000, 999, 2},
 	}
-	if arq.GetTxSequence() != 0 {
-		t.Errorf("GetTxSequence() = %d, want 0 after Reset", arq.GetTxSequence())
-	}
-	if arq.GetRxSequence() != 0 {
-		t.Errorf("GetRxSequence() = %d, want 0 after Reset", arq.GetRxSequence())
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			arq := NewStopAndWait(nil)
+			arq.SetStateForTesting(tc.setupState, tc.setupTxSeq, tc.setupRxSeq, tc.setupRetry)
+
+			arq.Reset()
+
+			if arq.GetState() != StateIdle {
+				t.Errorf("GetState() = %v, want StateIdle after Reset", arq.GetState())
+			}
+			if arq.GetTxSequence() != 0 {
+				t.Errorf("GetTxSequence() = %d, want 0 after Reset", arq.GetTxSequence())
+			}
+			if arq.GetRxSequence() != 0 {
+				t.Errorf("GetRxSequence() = %d, want 0 after Reset", arq.GetRxSequence())
+			}
+		})
 	}
 }
 
-func TestStopAndWaitSendNotImplemented(t *testing.T) {
-	arq := NewStopAndWait(nil)
-	err := arq.Send([]byte{0x01, 0x02, 0x03})
-	if err != ErrNotImplemented {
-		t.Errorf("Send() error = %v, want ErrNotImplemented", err)
+func TestStopAndWaitNotImplemented(t *testing.T) {
+	tests := []struct {
+		name      string
+		operation string
+	}{
+		{"Send", "send"},
+		{"Receive", "receive"},
 	}
-}
 
-func TestStopAndWaitReceiveNotImplemented(t *testing.T) {
-	arq := NewStopAndWait(nil)
-	_, err := arq.Receive()
-	if err != ErrNotImplemented {
-		t.Errorf("Receive() error = %v, want ErrNotImplemented", err)
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			arq := NewStopAndWait(nil)
+
+			var err error
+			switch tc.operation {
+			case "send":
+				err = arq.Send([]byte{0x01, 0x02, 0x03})
+			case "receive":
+				_, err = arq.Receive()
+			}
+
+			if err != ErrNotImplemented {
+				t.Errorf("%s() error = %v, want ErrNotImplemented", tc.name, err)
+			}
+		})
 	}
 }
 
@@ -160,8 +223,9 @@ func TestIncrementSequence(t *testing.T) {
 	}{
 		{"zero", 0, 1},
 		{"normal", 100, 101},
+		{"large_value", 10000, 10001},
 		{"before_max", DefaultSequenceMax - 1, DefaultSequenceMax},
-		{"wraparound", DefaultSequenceMax, 0},
+		{"wraparound_at_max", DefaultSequenceMax, 0},
 	}
 
 	for _, tc := range tests {
