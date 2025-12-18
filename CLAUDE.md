@@ -83,10 +83,22 @@ buf format --diff proto/
 # Generate code for all targets
 buf generate proto/ --template buf.gen.yaml --include-imports
 
-# Run tests
-cd tests/kotlin && ./gradlew test
-cd tests/typescript && npm test
-cd tests/nanopb && mkdir -p build && cd build && cmake .. && make && ctest
+# Run Go tests
+cd tests/go && go test ./...
+```
+
+### Gateway Service (`star-gateway/`)
+
+```bash
+# Build
+cd star-gateway
+go build ./cmd/star-gateway
+
+# Test
+go test ./...
+
+# Run (on RPi5)
+./star-gateway
 ```
 
 ### MATLAB (`matlab/`)
@@ -146,7 +158,7 @@ Use `star_bus_manager_with_bus()` instead of `star_bus_manager_find_bus()` to av
 
 | Target | Plugin | Output |
 |--------|--------|--------|
-| Go | buf.build/protocolbuffers/go | `gen/go/` |
+| Go | buf.build/protocolbuffers/go, buf.build/grpc/go | `gen/go/` |
 | TypeScript | timostamm-protobuf-ts | `gen/typescript/` |
 | C (ESP32) | nanopb_generator | `gen/nanopb/` |
 
@@ -248,6 +260,6 @@ The `proto.yml` workflow runs on pushes to `star-proto/`:
 ## Key Documentation
 
 - `star-esp32-firmware/CLAUDE.md` - Detailed ESP32 firmware guide
+- `star-gateway/CLAUDE.md` - Gateway service architecture and build guide
 - `star-proto/STYLE_GUIDE.md` - Protobuf conventions
-- `star-proto/PROTO_GUIDE.pdf` - Protocol implementation guide
 - `docs/star_documentation.pdf` - System documentation
