@@ -14,35 +14,47 @@ This section documents the Protocol Buffer schema architecture for RPi5$\leftrig
 \noindent\makebox[\textwidth]{%
 \begin{tikzpicture}[
     font=\small,
-    node distance = 0.3cm,
+    node distance = 0.4cm,
     service/.style={
         draw,
         thick,
         rectangle,
-        minimum width=7cm,
+        minimum width=6cm,
         minimum height=1.1cm,
         align=center
+    },
+    common/.style={
+        draw,
+        thick,
+        rectangle,
+        minimum width=14cm,
+        minimum height=1.1cm,
+        align=center,
+        fill=cyan!20
     },
 ]
     % Left column - Core Services
     \node[service, fill=blue!20] (motor) at (-4,0) {\textbf{MotorControlService}\\Velocity commands, encoder streaming};
     \node[service, fill=green!20, below=of motor] (telemetry) {\textbf{TelemetryService}\\Sensor data, system status};
-    \node[service, fill=cyan!20, below=of telemetry] (common) {\textbf{common.proto}\\Headers, status codes, geometry};
 
     % Right column - Support Services
     \node[service, fill=orange!20] (battery) at (4,0) {\textbf{BatteryManagementService}\\BMS state, protection, balancing};
     \node[service, fill=yellow!20, below=of battery] (config) {\textbf{ConfigurationService}\\PID gains, calibration, NVS};
     \node[service, fill=red!20, below=of config] (firmware) {\textbf{FirmwareUpdateService}\\OTA chunks, progress, rollback};
 
+    % Common proto spans bottom
+    \node[common, below=0.8cm of telemetry, xshift=4cm] (common) {\textbf{common.proto}\\Headers, status codes, geometry types};
+
     % Labels
     \node[above=0.3cm of motor, font=\footnotesize\bfseries] {Real-Time Control};
     \node[above=0.3cm of battery, font=\footnotesize\bfseries] {Device Management};
 
-    % Arrows to common
-    \draw[->, thick, gray] (motor.south) -- ++(0,-0.5) -| (common.north);
-    \draw[->, thick, gray] (telemetry.south) -- (common.north);
-    \draw[->, thick, gray] (battery.south) -- ++(0,-0.5);
-    \draw[->, thick, gray] (config.south) -- ++(0,-0.3);
+    % Arrows to common - routed around blocks
+    \draw[->, thick, gray] (motor.west) -- ++(-0.5,0) |- (common.west);
+    \draw[->, thick, gray] (telemetry.south) -- (telemetry.south |- common.north);
+    \draw[->, thick, gray] (battery.east) -- ++(0.5,0) |- (common.east);
+    \draw[->, thick, gray] (config.south) -- (config.south |- common.north);
+    \draw[->, thick, gray] (firmware.south) -- (firmware.south |- common.north);
 \end{tikzpicture}%
 }
 
@@ -52,58 +64,12 @@ This section documents the Protocol Buffer schema architecture for RPi5$\leftrig
 \begin{itemize}[leftmargin=1.5em,topsep=2pt,itemsep=1pt]
     \item \textbf{Versioned Package:} All services use \texttt{star.v1} namespace for API evolution
     \item \textbf{Request/Response Headers:} Every RPC includes tracing, timestamps, and status
-    \item \textbf{Streaming Support:} High-frequency data uses server streaming (100Hz capable)
+    \item \textbf{Streaming Support:} Continuous data uses server streaming (up to 100Hz)
     \item \textbf{Static Allocation:} All messages sized for nanopb constraints (no dynamic memory)
 \end{itemize}
 }
 
-\subsection{Boston Dynamics Style Guide Conventions}
-
-The project follows the Boston Dynamics Protobuf Style Guide, ensuring consistency with industry robotics standards.
-
-\begin{table}[H]
-\centering
-\caption{Naming Conventions}
-\label{tab:proto-naming}
-\begin{tabular}{|l|l|l|}
-\hline
-\textbf{Element} & \textbf{Convention} & \textbf{Example} \\
-\hline
-Package & Versioned namespace & \texttt{star.v1} \\
-Messages & PascalCase & \texttt{VelocityCommand}, \texttt{BatteryState} \\
-Fields & snake\_case with unit suffix & \texttt{velocity\_mps}, \texttt{temperature\_celsius} \\
-Enums & SCREAMING\_SNAKE\_CASE & \texttt{MOTOR\_STATE\_RUNNING} \\
-Enum Zero Value & \_UNKNOWN suffix & \texttt{STATUS\_UNKNOWN = 0} \\
-Enum Prefix & Type name prefix & \texttt{ROBOT\_MODE\_MANUAL} \\
-RPC Pattern & \{RpcName\}Request/Response & \texttt{SetVelocityRequest} \\
-\hline
-\end{tabular}
-\end{table}
-
-\begin{table}[H]
-\centering
-\caption{Unit Suffixes (MKS System)}
-\label{tab:unit-suffixes}
-\begin{tabular}{|l|l|l|}
-\hline
-\textbf{Suffix} & \textbf{Unit} & \textbf{Usage Example} \\
-\hline
-\texttt{\_m} & meters & \texttt{x\_m}, \texttt{altitude\_m} \\
-\texttt{\_mps} & meters/second & \texttt{velocity\_mps}, \texttt{left\_velocity\_mps} \\
-\texttt{\_mps2} & meters/second$^2$ & \texttt{accel\_x\_mps2} \\
-\texttt{\_rad} & radians & \texttt{angle\_rad}, \texttt{pitch\_rad} \\
-\texttt{\_rad\_per\_s} & radians/second & \texttt{omega\_rad\_per\_s}, \texttt{gyro\_x\_rad\_per\_s} \\
-\texttt{\_celsius} & degrees Celsius & \texttt{temperature\_celsius} \\
-\texttt{\_deci\_celsius} & 0.1\textdegree C (BMS native) & \texttt{temp\_deci\_celsius} \\
-\texttt{\_us} & microseconds & \texttt{timestamp\_us}, \texttt{latency\_us} \\
-\texttt{\_ms} & milliseconds & \texttt{timeout\_ms}, \texttt{period\_ms} \\
-\texttt{\_ma} & milliamps & \texttt{current\_ma}, \texttt{offset\_ma} \\
-\texttt{\_mv} & millivolts & \texttt{cell\_mv}, \texttt{pack\_mv} \\
-\texttt{\_mw} & milliwatts & \texttt{power\_mw} \\
-\texttt{\_percent} & percentage (0-100) & \texttt{duty\_cycle\_percent}, \texttt{soc\_percent} \\
-\hline
-\end{tabular}
-\end{table}
+\textbf{Note:} Naming conventions, unit suffixes, and coding standards are consolidated in Section~\ref{sec:style-guide} (Style Guide and Conventions).
 
 \subsection{Service Specifications}
 

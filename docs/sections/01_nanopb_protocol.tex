@@ -134,12 +134,12 @@
             \toprule
             \textbf{Component} & \textbf{Size (KB)} & \textbf{Usage (\%)} \\
             \midrule
-            Generated protobuf & 40 & 0.24 \\
+            Generated protobuf & 80 & 0.49 \\
             Nanopb runtime & 12 & 0.07 \\
             Frame + ARQ layers & 8 & 0.05 \\
             \textbf{} & & \\ % Spacer
             \midrule
-            \textbf{Total} & \textbf{60} & \textbf{0.37} \\
+            \textbf{Total} & \textbf{100} & \textbf{0.61} \\
             \bottomrule
         \end{tabular}}
     \end{minipage}
@@ -171,9 +171,9 @@
 
 \textbf{Flash (16 MB = 16384 KB total):}
 \begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
-    \item \textbf{Generated protobuf:} $40\text{ KB}$ \\
-          \textit{Calculation:} 3 proto files (common.proto, motor\_control.proto, telemetry.proto) $\times$ 13 KB avg compiled size \\
-          \textit{Usage:} $\frac{40}{16384} \times 100 = 0.24\%$
+    \item \textbf{Generated protobuf:} $80\text{ KB}$ \\
+          \textit{Calculation:} 6 proto files (common, motor\_control, telemetry, battery\_management, configuration, firmware\_update) $\times$ 13 KB avg compiled size \\
+          \textit{Usage:} $\frac{80}{16384} \times 100 = 0.49\%$
 
     \item \textbf{Nanopb runtime:} $12\text{ KB}$ \\
           \textit{Calculation:} Compiled size of pb\_encode.c, pb\_decode.c, pb\_common.c \\
@@ -183,8 +183,8 @@
           \textit{Calculation:} Framing logic + CRC-32 + ARQ state machine + retransmission logic \\
           \textit{Usage:} $\frac{8}{16384} \times 100 = 0.05\%$
 
-    \item \textbf{Total Flash:} $40 + 12 + 8 = 60\text{ KB}$ \\
-          \textit{Total usage:} $\frac{60}{16384} \times 100 = 0.37\%$
+    \item \textbf{Total Flash:} $80 + 12 + 8 = 100\text{ KB}$ \\
+          \textit{Total usage:} $\frac{100}{16384} \times 100 = 0.61\%$
 \end{itemize}
 
 \subsection{Implementation Requirements}
@@ -298,7 +298,8 @@ The protocol is implemented as a layered stack on both the RPi5 (SPI controller)
 \begin{itemize}[leftmargin=1.5em,topsep=0pt,itemsep=2pt,parsep=0pt]
     \item Decode incoming bytes $\rightarrow$ \texttt{SetVelocityRequest}, \texttt{EmergencyStopRequest}
     \item Encode outgoing structs $\rightarrow$ \texttt{SetVelocityResponse}, \texttt{TelemetryData}
-    \item Use static allocation (no malloc) with \texttt{.options} file constraints
+    \item Uses \texttt{star.v1} package following Boston Dynamics style guide
+    \item Static allocation (no malloc) with \texttt{.options} file constraints
 \end{itemize}
 \vspace{0.05cm}
 }}
@@ -364,11 +365,12 @@ The protocol is implemented as a layered stack on both the RPi5 (SPI controller)
 \vspace{0.25cm}
 
 \noindent\colorbox{layer4color}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
-\textbf{Layer 4: Protobuf (nanopb, protobuf-c, or gRPC)}
+\textbf{Layer 4: Protobuf (Go with protoc-gen-go)}
 \vspace{0.1cm}
 \begin{itemize}[leftmargin=1.5em,topsep=0pt,itemsep=2pt,parsep=0pt]
     \item Encode: \texttt{SetVelocityRequest}, \texttt{EmergencyStopRequest}
     \item Decode: \texttt{SetVelocityResponse}, \texttt{TelemetryData}, \texttt{EncoderData}
+    \item Uses \texttt{star.v1} package following Boston Dynamics style guide
 \end{itemize}
 \vspace{0.05cm}
 }}
@@ -376,13 +378,13 @@ The protocol is implemented as a layered stack on both the RPi5 (SPI controller)
 \vspace{0.25cm}
 
 \noindent\colorbox{layer5color}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
-\textbf{Layer 5: Application}
+\textbf{Layer 5: Application (star-gateway)}
 \vspace{0.1cm}
 \begin{itemize}[leftmargin=1.5em,topsep=0pt,itemsep=2pt,parsep=0pt]
-    \item Send motor velocity commands (from Nav2 or joystick)
-    \item Receive encoder feedback for odometry
-    \item Integrate with ROS2 navigation stack
-    \item Handle UI commands and visualization
+    \item Send motor velocity commands from Nav2 (autonomous) or UI (manual)
+    \item All control flows through Nav2 stack for consistent behavior
+    \item Receive encoder feedback for odometry calculations
+    \item Bridge ROS2 topics to/from ESP32 via SPI
 \end{itemize}
 \vspace{0.05cm}
 }}
