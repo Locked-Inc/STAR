@@ -201,6 +201,15 @@ func (s *StopAndWait) Config() *Config {
 	return s.config
 }
 
+// SetStateForTesting sets internal state for testing purposes.
+// This method should only be used in tests to simulate various states.
+func (s *StopAndWait) SetStateForTesting(state State, txSeq, rxSeq uint16, retryCount int) {
+	s.state = state
+	s.txSequence = txSeq
+	s.rxSequence = rxSeq
+	s.retryCount = retryCount
+}
+
 // incrementSequence increments a sequence number with wraparound.
 func incrementSequence(seq uint16) uint16 {
 	if seq == DefaultSequenceMax {
