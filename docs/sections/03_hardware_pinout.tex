@@ -1,0 +1,396 @@
+% =============================================================================
+% HARDWARE PIN CONNECTIONS
+% =============================================================================
+
+\newpage
+\section{Hardware Pin Connections}
+
+\subsection{ESP32-S3-WROOM-1-N16 Pinout}
+
+\noindent\colorbox{importantcolor}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
+\textbf{Critical Hardware Note:} This module is the ESP32-S3-WROOM-1-\textbf{N16} variant (does NOT end with R\_), which means it has \textbf{NO PSRAM}. We are allowed to use IO35-IO37 for SPI2 communication with motor drivers.
+}}
+
+\vspace{0.3cm}
+
+\subsubsection{Main GPIO Assignments}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{|c|l|l|}
+\hline
+\textbf{Pin Number} & \textbf{GPIO Label} & \textbf{Signal Name / Function} \\
+\hline
+27 & IO0 & GND \\
+\hline
+39 & IO1 & MOTOR\_DRIVER\_MOTOR1\_IPROPI (ADC) \\
+\hline
+38 & IO2 & MOTOR\_DRIVER\_MOTOR2\_IPROPI (ADC) \\
+\hline
+15 & IO3 & JTAG signal source strapping pin (NC) \\
+\hline
+4 & IO4 & MOTOR\_DRIVER\_MOTOR3\_IPROPI (ADC) \\
+\hline
+5 & IO5 & MOTOR\_DRIVER\_MOTOR4\_IPROPI (ADC) \\
+\hline
+6 & IO6 & MOTOR\_DRIVER\_MOTOR1\_EN\_IN1 (MCPWM) \\
+\hline
+7 & IO7 & MOTOR\_DRIVER\_MOTOR1\_PH\_IN2 (MCPWM) \\
+\hline
+12 & IO8 & FUEL\_GUAGE\_SMBD\_SDA \\
+\hline
+17 & IO9 & FUEL\_GUAGE\_SMBC\_SCL \\
+\hline
+18 & IO10 & ESP\_PI\_SPI3\_PM\_CS \\
+\hline
+19 & IO11 & ESP\_PI\_SPI3\_PM\_COPI \\
+\hline
+20 & IO12 & ESP\_PI\_SPI3\_PM\_SCLK \\
+\hline
+21 & IO13 & ESP\_PI\_SPI3\_PM\_CIPO \\
+\hline
+22 & IO14 & MOTOR\_DRIVER\_MOTOR2\_EN\_IN1 (MCPWM) \\
+\hline
+8 & IO15 & MOTOR\_DRIVER\_MOTOR2\_PH\_IN2 (MCPWM) \\
+\hline
+9 & IO16 & MOTOR\_DRIVER\_MOTOR3\_EN\_IN1 (MCPWM) \\
+\hline
+10 & IO17 & MOTOR\_DRIVER\_MOTOR3\_PH\_IN2 (MCPWM) \\
+\hline
+11 & IO18 & MOTOR\_DRIVER\_MOTOR4\_EN\_IN1 (MCPWM) \\
+\hline
+13 & USB\_D- & USB\_C\_N \\
+\hline
+14 & USB\_D+ & USB\_C\_P \\
+\hline
+23 & IO21 & MOTOR\_DRIVER\_MOTOR4\_PH\_IN2 (MCPWM) \\
+\hline
+28 & IO35 & MOTOR\_DRIVER\_SPI2\_CM\_COPI \\
+\hline
+29 & IO36 & MOTOR\_DRIVER\_SPI2\_CM\_SCLK \\
+\hline
+30 & IO37 & MOTOR\_DRIVER\_SPI2\_CM\_CIPO \\
+\hline
+31 & IO38 & Decoder Input 1A0 (for Motor nCS selection) \\
+\hline
+32 & IO39 & Decoder Input 1A1 (for Motor nCS selection) \\
+\hline
+33 & IO40 & MOTOR\_ENCODER\_SEL0 \\
+\hline
+34 & IO41 & MOTOR\_ENCODER\_SEL1 \\
+\hline
+35 & IO42 & MOTOR\_ENCODER\_OUT0 \\
+\hline
+26 & IO45 & Strapping pin for VDD\_SPI voltage (NC) \\
+\hline
+16 & IO46 & Boot-mode / ROM-print strapping pin \\
+\hline
+24 & IO47 & MOTOR\_ENCODER\_OUT1 \\
+\hline
+25 & IO48 & TEMPERATURE\_SENSOR (DS18B20+) \\
+\hline
+37 & TXD0 & ESP\_PI\_SPI3\_PM\_DRDY1 (Interrupt to Pi) \\
+\hline
+36 & RXD0 & ESP\_PI\_SPI3\_PM\_DRDY2 (Interrupt to Pi) \\
+\hline
+\end{tabular}
+\caption{ESP32-S3 GPIO pin assignments}
+\label{tab:esp32-pinout}
+\end{table}
+
+\subsubsection{Pin Function Categories}
+
+\textbf{SPI3 (Peripheral Mode - Communication with RPi5):}
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item IO10: Chip Select (CS)
+    \item IO11: Controller Out Peripheral In (COPI)
+    \item IO12: Serial Clock (SCLK)
+    \item IO13: Controller In Peripheral Out (CIPO)
+    \item TXD0 (IO1): Data Ready 1 interrupt to Pi
+    \item RXD0 (IO3): Data Ready 2 interrupt to Pi
+\end{itemize}
+
+\textbf{SPI2 (Controller Mode - Communication with Motor Drivers):}
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item IO35: Controller Out Peripheral In (COPI)
+    \item IO36: Serial Clock (SCLK)
+    \item IO37: Controller In Peripheral Out (CIPO)
+    \item Chip selects generated via 74HC238 decoder (see below)
+\end{itemize}
+
+\textbf{MCPWM (Motor Control):}
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item Motor 1: IO6 (EN), IO7 (PH)
+    \item Motor 2: IO14 (EN), IO15 (PH)
+    \item Motor 3: IO16 (EN), IO17 (PH)
+    \item Motor 4: IO18 (EN), IO21 (PH)
+\end{itemize}
+
+\textbf{ADC (Current Sensing - IPROPI):}
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item IO1: Motor 1 current
+    \item IO2: Motor 2 current
+    \item IO4: Motor 3 current
+    \item IO5: Motor 4 current
+\end{itemize}
+
+\textbf{Encoder Selection and Reading:}
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item IO40, IO41: Multiplexer select lines
+    \item IO42, IO47: Encoder output channels
+\end{itemize}
+
+\subsection{74HC238 Decoder (Motor Driver Chip Select)}
+
+The 74HC238 3-to-8 line decoder generates individual chip select signals for the four motor drivers using only two GPIO pins (IO38, IO39).
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{|c|l|l|l|}
+\hline
+\textbf{Pin Number} & \textbf{Pin Name} & \textbf{Signal Label / Connection} & \textbf{Source/Destination} \\
+\hline
+1 & 1$\overline{\text{E}}$ & GND (Always Enabled) & Ground \\
+\hline
+2 & 1A0 & Connected to IO38 & ESP32-S3 \\
+\hline
+3 & 1A1 & Connected to IO39 & ESP32-S3 \\
+\hline
+4 & 1$\overline{\text{Y0}}$ & MOTOR\_DRIVER\_SPI2\_MOTOR1\_nCS & SPI2 Chip Select 1 \\
+\hline
+5 & 1$\overline{\text{Y1}}$ & MOTOR\_DRIVER\_SPI2\_MOTOR2\_nCS & SPI2 Chip Select 2 \\
+\hline
+6 & 1$\overline{\text{Y2}}$ & MOTOR\_DRIVER\_SPI2\_MOTOR3\_nCS & SPI2 Chip Select 3 \\
+\hline
+7 & 1$\overline{\text{Y3}}$ & MOTOR\_DRIVER\_SPI2\_MOTOR4\_nCS & SPI2 Chip Select 4 \\
+\hline
+8 & GND & GND & Ground \\
+\hline
+9-14 & 2Y3–2A0 & NC (Not Connected) & Marked with "X" \\
+\hline
+15 & 2$\overline{\text{E}}$ & P3V3\_BUCK (Disabled) & Power Rail \\
+\hline
+16 & VCC & P3V3\_BUCK & Power Rail \\
+\hline
+\end{tabular}
+\caption{74HC238 decoder pinout for motor driver chip select generation}
+\label{tab:decoder-pinout}
+\end{table}
+
+\noindent\colorbox{keyinsightcolor}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
+\textbf{Design Rationale:} Using a hardware decoder reduces GPIO usage from 4 pins to 2 pins while providing active-low chip select signals required by the DRV8243S motor drivers.
+}}
+
+\subsection{74HC4052 Multiplexer (Encoder Channel Selection)}
+
+The 74HC4052 dual 4-to-1 multiplexer allows reading all four encoder channels (A and B) using only four GPIO pins instead of eight.
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{|c|l|l|l|}
+\hline
+\textbf{Pin Number} & \textbf{Pin Name} & \textbf{Signal Label / Connection} & \textbf{Source/Destination} \\
+\hline
+1 & 1$\overline{\text{G}}$ & GND (Always Enabled) & Ground \\
+\hline
+2 & B & MOTOR\_ENCODER\_SEL1 (IO41) & ESP32-S3 \\
+\hline
+3 & 1C3 & MOTOR\_DRIVER\_ENCODER4\_OUTPUT\_A & Encoder 4 \\
+\hline
+4 & 1C2 & MOTOR\_DRIVER\_ENCODER3\_OUTPUT\_A & Encoder 3 \\
+\hline
+5 & 1C1 & MOTOR\_DRIVER\_ENCODER2\_OUTPUT\_A & Encoder 2 \\
+\hline
+6 & 1C0 & MOTOR\_DRIVER\_ENCODER1\_OUTPUT\_A & Encoder 1 \\
+\hline
+7 & 1Y & MOTOR\_ENCODER\_OUT1 (IO47) & ESP32-S3 \\
+\hline
+8 & GND & GND & Ground \\
+\hline
+9 & 2Y & MOTOR\_ENCODER\_OUT0 (IO42) & ESP32-S3 \\
+\hline
+10 & 2C0 & MOTOR\_DRIVER\_ENCODER1\_OUTPUT\_B & Encoder 1 \\
+\hline
+11 & 2C1 & MOTOR\_DRIVER\_ENCODER2\_OUTPUT\_B & Encoder 2 \\
+\hline
+12 & 2C2 & MOTOR\_DRIVER\_ENCODER3\_OUTPUT\_B & Encoder 3 \\
+\hline
+13 & 2C3 & MOTOR\_DRIVER\_ENCODER4\_OUTPUT\_B & Encoder 4 \\
+\hline
+14 & A & MOTOR\_ENCODER\_SEL0 (IO40) & ESP32-S3 \\
+\hline
+15 & 2$\overline{\text{G}}$ & GND (Always Enabled) & Ground \\
+\hline
+16 & VCC & P3V3\_BUCK & Power Rail \\
+\hline
+\end{tabular}
+\caption{74HC4052 multiplexer pinout for encoder channel selection}
+\label{tab:mux-pinout}
+\end{table}
+
+\noindent\colorbox{keyinsightcolor}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
+\textbf{Design Rationale:} The dual multiplexer allows simultaneous reading of both A and B channels from the selected encoder, reducing GPIO usage from 8 pins to 4 pins while maintaining quadrature decoding capability.
+}}
+
+\subsection{Raspberry Pi 5 Pinout}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{|c|l|l|l|}
+\hline
+\textbf{Pin} & \textbf{RPi Label} & \textbf{Signal Name / Connection} & \textbf{Status / Note} \\
+\hline
+1 & 3v3 & Not Connected & Pi 3v3 Rail (Not used) \\
+\hline
+2 & 5v & Not Connected & Pi 5v Rail (Not used) \\
+\hline
+3 & SDA & PI\_SDA & I2C Data \\
+\hline
+4 & 5v & Not Connected & Pi 5v Rail (Not used) \\
+\hline
+5 & SCL & PI\_SCL & I2C Clock \\
+\hline
+7 & IO4 & HCSR04\_TRIG1 & Ultrasonic Trigger 1 \\
+\hline
+8 & TXD & LiDAR\_RX\_PI5\_TX & UART Transmit to LiDAR \\
+\hline
+9 & GND & GND & Common Ground \\
+\hline
+10 & RXD & LiDAR\_TX\_PI5\_RX & UART Receive from LiDAR \\
+\hline
+11 & IO17 & HCSR04\_ECHO1 & Ultrasonic Echo 1 \\
+\hline
+12 & IO18 & HCSR04\_TRIG4 & Ultrasonic Trigger 4 \\
+\hline
+13 & IO27 & HCSR04\_TRIG2 & Ultrasonic Trigger 2 \\
+\hline
+15 & IO22 & HCSR04\_ECHO2 & Ultrasonic Echo 2 \\
+\hline
+16 & IO23 & IMU\_RST & IMU Reset \\
+\hline
+17 & 3v3 & Not Connected & Pi 3v3 Rail (Not used) \\
+\hline
+18 & IO24 & IMU\_INT & IMU Interrupt \\
+\hline
+19 & COPI & ESP\_PI\_SPI3\_PM\_COPI & SPI Controller Out \\
+\hline
+21 & CIPO & ESP\_PI\_SPI3\_PM\_CIPO & SPI Controller In \\
+\hline
+22 & IO25 & HCSR04\_ECHO4 & Ultrasonic Echo 4 \\
+\hline
+23 & SCLK & ESP\_PI\_SPI3\_PM\_SCLK & SPI Clock \\
+\hline
+24 & CE0 & ESP\_PI\_SPI3\_PM\_CS & SPI Chip Enable 0 \\
+\hline
+26 & CE1 & HCSR04\_TRIG5 & Ultrasonic Trigger 5 \\
+\hline
+27 & ID\_SD & MOTOR\_DRIVER\_MOTOR4\_nFAULT & Motor 4 Fault \\
+\hline
+28 & ID\_SC & HCSR04\_ECHO5 & Ultrasonic Echo 5 \\
+\hline
+29 & IO5 & MOTOR\_DRIVER\_MOTOR3\_nFAULT & Motor 3 Fault \\
+\hline
+31 & IO6 & MOTOR\_DRIVER\_MOTOR2\_nFAULT & Motor 2 Fault \\
+\hline
+32 & IO12 & HCSR04\_TRIG6 & Ultrasonic Trigger 6 \\
+\hline
+33 & IO13 & MOTOR\_DRIVER\_MOTOR1\_nFAULT & Motor 1 Fault \\
+\hline
+35 & IO19 & HCSR04\_TRIG3 & Ultrasonic Trigger 3 \\
+\hline
+36 & IO16 & HCSR04\_ECHO6 & Ultrasonic Echo 6 \\
+\hline
+37 & IO26 & HCSR04\_ECHO3 & Ultrasonic Echo 3 \\
+\hline
+38 & IO20 & ESP\_PI\_SPI3\_PM\_DRDY1 & SPI Data Ready 1 \\
+\hline
+40 & IO21 & ESP\_PI\_SPI3\_PM\_DRDY2 & SPI Data Ready 2 \\
+\hline
+\end{tabular}
+\caption{Raspberry Pi 5 GPIO pin assignments}
+\label{tab:rpi5-pinout}
+\end{table}
+
+\subsubsection{RPi5 Pin Function Categories}
+
+\textbf{SPI3 (Controller Mode - Communication with ESP32):}
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item Pin 24 (CE0): Chip Select
+    \item Pin 19 (COPI): Controller Out Peripheral In
+    \item Pin 23 (SCLK): Serial Clock
+    \item Pin 21 (CIPO): Controller In Peripheral Out
+    \item Pin 38 (IO20): Data Ready 1 interrupt from ESP32
+    \item Pin 40 (IO21): Data Ready 2 interrupt from ESP32
+\end{itemize}
+
+\textbf{I2C (IMU and Stereo Cameras):}
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item Pin 3 (SDA): I2C Data
+    \item Pin 5 (SCL): I2C Clock
+    \item Pin 16 (IO23): IMU Reset
+    \item Pin 18 (IO24): IMU Interrupt
+\end{itemize}
+
+\textbf{UART (RPLiDAR C1):}
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item Pin 8 (TXD): LiDAR RX (Pi TX)
+    \item Pin 10 (RXD): LiDAR TX (Pi RX)
+\end{itemize}
+
+\textbf{Motor Driver Fault Lines:}
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item Pin 33 (IO13): Motor 1 nFAULT
+    \item Pin 31 (IO6): Motor 2 nFAULT
+    \item Pin 29 (IO5): Motor 3 nFAULT
+    \item Pin 27 (ID\_SD): Motor 4 nFAULT
+\end{itemize}
+
+\textbf{HC-SR04 Ultrasonic Sensors (6 sensors):}
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item Sensor 1: Pin 7 (TRIG), Pin 11 (ECHO)
+    \item Sensor 2: Pin 13 (TRIG), Pin 15 (ECHO)
+    \item Sensor 3: Pin 35 (TRIG), Pin 37 (ECHO)
+    \item Sensor 4: Pin 12 (TRIG), Pin 22 (ECHO)
+    \item Sensor 5: Pin 26 (TRIG), Pin 28 (ECHO)
+    \item Sensor 6: Pin 32 (TRIG), Pin 36 (ECHO)
+\end{itemize}
+
+\subsection{Additional Peripheral Connections}
+
+\subsubsection{IMU (Inertial Measurement Unit)}
+
+\textbf{Hardware:}
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item BNO055: 9-axis absolute orientation sensor
+    \item BMP280: Barometric pressure sensor
+\end{itemize}
+
+\textbf{Protocol:} I2C communication
+
+\textbf{Connection:} Connects to RPi5 via Header J10:
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item PI\_SCL (Clock) routes to RPi5 Pin 5
+    \item PI\_SDA (Data) routes to RPi5 Pin 3
+    \item IMU\_RST routes to RPi5 Pin 16 (IO23)
+    \item IMU\_INT routes to RPi5 Pin 18 (IO24)
+\end{itemize}
+
+\subsubsection{Stereo Cameras}
+
+\textbf{Hardware:} External stereo camera modules
+
+\textbf{Protocol:} I2C communication
+
+\textbf{Connection:} Connects via Header J12 to the same I2C bus (PI\_SCL and PI\_SDA), allowing the Pi to address them alongside the IMU using different I2C addresses.
+
+\subsubsection{Temperature Sensor}
+
+\textbf{Hardware:} DS18B20+ 1-Wire digital temperature sensor
+
+\textbf{Protocol:} 1-Wire communication
+
+\textbf{Connection:} Connected to ESP32-S3 IO48
