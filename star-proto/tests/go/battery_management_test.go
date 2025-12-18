@@ -124,18 +124,19 @@ func TestTemperatureDataRoundTrip(t *testing.T) {
 func TestDeciCelsiusConversion(t *testing.T) {
 	// Verify deci-celsius values convert correctly
 	tests := []struct {
+		name      string
 		deciC     int32
 		expectedC float64
 	}{
-		{250, 25.0},
-		{0, 0.0},
-		{-100, -10.0},
-		{600, 60.0},
-		{850, 85.0},
+		{"room_temp", 250, 25.0},
+		{"zero", 0, 0.0},
+		{"below_freezing", -100, -10.0},
+		{"hot", 600, 60.0},
+		{"very_hot", 850, 85.0},
 	}
 
 	for _, tc := range tests {
-		t.Run("", func(t *testing.T) {
+		t.Run(tc.name, func(t *testing.T) {
 			actualC := float64(tc.deciC) / 10.0
 			assert.InDelta(t, tc.expectedC, actualC, 0.01)
 		})
