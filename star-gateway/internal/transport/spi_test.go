@@ -48,21 +48,35 @@ func TestSPIConstants(t *testing.T) {
 func TestDefaultConfig(t *testing.T) {
 	config := DefaultConfig()
 
-	if config.Device != DefaultDevice {
-		t.Errorf("Device = %s, want %s", config.Device, DefaultDevice)
-	}
-	if config.SpeedHz != DefaultSpeedHz {
-		t.Errorf("SpeedHz = %d, want %d", config.SpeedHz, DefaultSpeedHz)
-	}
-	if config.Mode != DefaultMode {
-		t.Errorf("Mode = %d, want %d", config.Mode, DefaultMode)
-	}
-	if config.BitsPerWord != DefaultBitsPerWord {
-		t.Errorf("BitsPerWord = %d, want %d", config.BitsPerWord, DefaultBitsPerWord)
-	}
-	if config.Timeout != DefaultTimeout {
-		t.Errorf("Timeout = %v, want %v", config.Timeout, DefaultTimeout)
-	}
+	t.Run("Device", func(t *testing.T) {
+		if config.Device != DefaultDevice {
+			t.Errorf("Device = %s, want %s", config.Device, DefaultDevice)
+		}
+	})
+
+	t.Run("SpeedHz", func(t *testing.T) {
+		if config.SpeedHz != DefaultSpeedHz {
+			t.Errorf("SpeedHz = %d, want %d", config.SpeedHz, DefaultSpeedHz)
+		}
+	})
+
+	t.Run("Mode", func(t *testing.T) {
+		if config.Mode != DefaultMode {
+			t.Errorf("Mode = %d, want %d", config.Mode, DefaultMode)
+		}
+	})
+
+	t.Run("BitsPerWord", func(t *testing.T) {
+		if config.BitsPerWord != DefaultBitsPerWord {
+			t.Errorf("BitsPerWord = %d, want %d", config.BitsPerWord, DefaultBitsPerWord)
+		}
+	})
+
+	t.Run("Timeout", func(t *testing.T) {
+		if config.Timeout != DefaultTimeout {
+			t.Errorf("Timeout = %v, want %v", config.Timeout, DefaultTimeout)
+		}
+	})
 }
 
 // ============================================================================
@@ -70,32 +84,59 @@ func TestDefaultConfig(t *testing.T) {
 // ============================================================================
 
 func TestNewSPITransport(t *testing.T) {
-	t.Run("with_nil_config", func(t *testing.T) {
-		transport := NewSPITransport(nil)
-		if transport == nil {
-			t.Fatal("expected transport, got nil")
-		}
-		if transport.Config().Device != DefaultDevice {
-			t.Errorf("Device = %s, want %s", transport.Config().Device, DefaultDevice)
-		}
-	})
+	tests := []struct {
+		name            string
+		config          *SPIConfig
+		expectedDevice  string
+		expectedSpeedHz uint32
+	}{
+		{
+			name:            "nil_config_uses_defaults",
+			config:          nil,
+			expectedDevice:  DefaultDevice,
+			expectedSpeedHz: DefaultSpeedHz,
+		},
+		{
+			name: "custom_config",
+			config: &SPIConfig{
+				Device:      "/dev/spidev1.0",
+				SpeedHz:     5_000_000,
+				Mode:        1,
+				BitsPerWord: 8,
+				Timeout:     200 * time.Millisecond,
+			},
+			expectedDevice:  "/dev/spidev1.0",
+			expectedSpeedHz: 5_000_000,
+		},
+		{
+			name: "alternate_device",
+			config: &SPIConfig{
+				Device:      "/dev/spidev0.1",
+				SpeedHz:     1_000_000,
+				Mode:        3,
+				BitsPerWord: 8,
+				Timeout:     50 * time.Millisecond,
+			},
+			expectedDevice:  "/dev/spidev0.1",
+			expectedSpeedHz: 1_000_000,
+		},
+	}
 
-	t.Run("with_custom_config", func(t *testing.T) {
-		customConfig := &SPIConfig{
-			Device:      "/dev/spidev1.0",
-			SpeedHz:     5_000_000,
-			Mode:        1,
-			BitsPerWord: 8,
-			Timeout:     200 * time.Millisecond,
-		}
-		transport := NewSPITransport(customConfig)
-		if transport.Config().Device != "/dev/spidev1.0" {
-			t.Errorf("Device = %s, want /dev/spidev1.0", transport.Config().Device)
-		}
-		if transport.Config().SpeedHz != 5_000_000 {
-			t.Errorf("SpeedHz = %d, want 5000000", transport.Config().SpeedHz)
-		}
-	})
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			transport := NewSPITransport(tc.config)
+
+			if transport == nil {
+				t.Fatal("expected transport, got nil")
+			}
+			if transport.Config().Device != tc.expectedDevice {
+				t.Errorf("Device = %s, want %s", transport.Config().Device, tc.expectedDevice)
+			}
+			if transport.Config().SpeedHz != tc.expectedSpeedHz {
+				t.Errorf("SpeedHz = %d, want %d", transport.Config().SpeedHz, tc.expectedSpeedHz)
+			}
+		})
+	}
 }
 
 func TestSPITransportIsOpen(t *testing.T) {
@@ -106,28 +147,34 @@ func TestSPITransportIsOpen(t *testing.T) {
 }
 
 func TestSPITransportNotOpenErrors(t *testing.T) {
-	transport := NewSPITransport(nil)
+	tests := []struct {
+		name      string
+		operation string
+	}{
+		{"Send", "send"},
+		{"Receive", "receive"},
+		{"Transfer", "transfer"},
+	}
 
-	t.Run("send_not_open", func(t *testing.T) {
-		_, err := transport.Send([]byte{0x01, 0x02})
-		if err != ErrDeviceNotOpen {
-			t.Errorf("Send() error = %v, want ErrDeviceNotOpen", err)
-		}
-	})
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			transport := NewSPITransport(nil)
 
-	t.Run("receive_not_open", func(t *testing.T) {
-		_, err := transport.Receive(64)
-		if err != ErrDeviceNotOpen {
-			t.Errorf("Receive() error = %v, want ErrDeviceNotOpen", err)
-		}
-	})
+			var err error
+			switch tc.operation {
+			case "send":
+				_, err = transport.Send([]byte{0x01, 0x02})
+			case "receive":
+				_, err = transport.Receive(64)
+			case "transfer":
+				_, err = transport.Transfer([]byte{0x01, 0x02})
+			}
 
-	t.Run("transfer_not_open", func(t *testing.T) {
-		_, err := transport.Transfer([]byte{0x01, 0x02})
-		if err != ErrDeviceNotOpen {
-			t.Errorf("Transfer() error = %v, want ErrDeviceNotOpen", err)
-		}
-	})
+			if err != ErrDeviceNotOpen {
+				t.Errorf("%s() error = %v, want ErrDeviceNotOpen", tc.name, err)
+			}
+		})
+	}
 }
 
 func TestSPITransportOpenNotImplemented(t *testing.T) {
