@@ -3,6 +3,15 @@
     "version": "1.0.0",
     "description": "GPIO pin conflict detection and validation",
     "keywords": ["esp32", "gpio", "pin", "validator"],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Locked-Inc/STAR.git"
+    },
+    "authors": [
+        {
+            "name": "STAR Team"
+        }
+    ],
     "license": "MIT",
     "frameworks": ["espidf"],
     "platforms": ["espressif32"],

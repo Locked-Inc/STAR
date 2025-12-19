@@ -1,13 +1,13 @@
 {
-  "name": "star_encoder",
+  "name": "star_frame",
   "version": "1.0.0",
-  "description": "Quadrature encoder driver using ESP32 PCNT peripheral",
+  "description": "Frame layer with CRC-32 validation for SPI communication protocol",
   "keywords": [
-    "encoder",
-    "quadrature",
-    "pcnt",
-    "motor control",
-    "position tracking"
+    "framing",
+    "crc32",
+    "protocol",
+    "packet",
+    "spi"
   ],
   "repository": {
     "type": "git",

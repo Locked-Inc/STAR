@@ -1,13 +1,13 @@
 {
-  "name": "star_drv8243",
+  "name": "star_arq",
   "version": "1.0.0",
-  "description": "DRV8243 H-Bridge Motor Driver Integration with current sensing and fault detection",
+  "description": "Automatic Repeat Request (ARQ) layer with Stop-and-Wait protocol for reliable SPI communication",
   "keywords": [
-    "drv8243",
-    "motor",
-    "h-bridge",
-    "current-sense",
-    "fault-detection"
+    "arq",
+    "stop-and-wait",
+    "protocol",
+    "reliable",
+    "spi"
   ],
   "repository": {
     "type": "git",
@@ -22,7 +22,7 @@
   "frameworks": "espidf",
   "platforms": "espressif32",
   "dependencies": {
-    "star_bus": "1.0.0",
-    "star_motor": "1.0.0"
+    "star_frame": "1.0.0",
+    "star_bus": "1.0.0"
   }
 }
