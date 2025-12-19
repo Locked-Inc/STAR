@@ -128,6 +128,42 @@ For context, control loop frequencies should match system dynamics:
 \end{tikzpicture}%
 }
 
+\subsubsection{Byte Order and Standards Compliance}
+
+The protocol follows established standards for byte ordering to ensure cross-platform compatibility:
+
+\begin{table}[H]
+\centering
+\caption{Byte Order Standards by Protocol Field}
+\label{tab:byte-order-standards}
+\begin{tabular}{|l|l|l|l|}
+\hline
+\textbf{Field} & \textbf{Byte Order} & \textbf{Standard} & \textbf{Rationale} \\
+\hline
+SYNC & Big-endian & RFC 1700 & Network byte order for headers \\
+SEQ & Big-endian & RFC 1700 & Network byte order for headers \\
+LEN & Big-endian & RFC 1700 & Network byte order for headers \\
+TYPE & N/A (1 byte) & -- & Single byte, no endianness \\
+FLAGS & N/A (1 byte) & -- & Single byte, no endianness \\
+CRC-32 & Little-endian & IEEE 802.3 & Standard CRC-32 polynomial \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{SYNC Magic Word (0x55AA):} The frame synchronization marker uses the distinctive bit pattern 0x55AA (binary: 0101010101010101 in big-endian wire format). This alternating pattern is easily recognizable and unlikely to appear in random data, making it ideal for frame alignment. The value 0x55AA is transmitted as bytes \texttt{[0x55, 0xAA]} on the wire.
+
+\textbf{RFC 1700 (Network Byte Order):} All multi-byte header fields (SYNC, SEQ, LEN) use big-endian format following RFC 1700 ``Assigned Numbers'' standard. This ensures compatibility when communicating between different architectures (ARM RPi5 and Xtensa ESP32, both little-endian internally).
+
+\textbf{IEEE 802.3 (CRC-32):} The frame checksum uses IEEE 802.3 polynomial (0x04C11DB7) in little-endian format, matching the ESP32 ROM CRC implementation and standard Ethernet CRC libraries. This allows zero-copy CRC validation using hardware accelerators where available.
+
+\vspace{0.2cm}
+
+\noindent\colorbox{keyinsightcolor}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
+\textbf{Key Insight:} Mixed byte orders are intentional — headers follow network standards for cross-platform compatibility, while CRC follows IEEE 802.3 for hardware acceleration and library compatibility.
+}}
+
+\vspace{0.3cm}
+
 \subsubsection{Memory Budget}
 
 \begin{table}[H]
@@ -420,7 +456,16 @@ The protocol is implemented as a layered stack on both the RPi5 (SPI controller)
 
 \subsubsection{ARQ Symmetry and State Management}
 
-The ARQ protocol is \textbf{symmetric} — both sides implement identical logic but maintain separate state for their own transmissions and receptions.
+The ARQ layer uses \textbf{Stop-and-Wait} protocol (also called alternating bit protocol). This means each side sends one frame at a time, waits for acknowledgment (ACK) with a timeout, and retries up to 3 times before declaring failure. This approach provides:
+
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item Simple implementation suitable for embedded systems
+    \item Predictable worst-case latency for real-time control
+    \item Low memory overhead (single retry buffer, not a window of frames)
+    \item Sufficient throughput for 10 Mbps SPI with <1ms frame time
+\end{itemize}
+
+The ARQ protocol is \textbf{symmetric} — both sides implement identical Stop-and-Wait logic but maintain separate state for their own transmissions and receptions.
 
 \vspace{0.2cm}
 \noindent\textbf{Each Side Maintains:}
