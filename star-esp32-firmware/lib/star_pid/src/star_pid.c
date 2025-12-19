@@ -10,7 +10,7 @@
 
 /* --- Constants --- */
 
-static const char* s_TAG = "STAR_PID";
+static const char* s_tag = "STAR_PID";
 
 /* --- Private Function Prototypes --- */
 
@@ -20,18 +20,18 @@ static inline float internal_clamp(float value, float min, float max);
 
 esp_err_t star_pid_init(star_pid_handle_t* handle, const star_pid_config_t* config)
 {
-  ESP_RETURN_ON_FALSE(handle, ESP_ERR_INVALID_ARG, s_TAG, "Handle is NULL");
-  ESP_RETURN_ON_FALSE(config, ESP_ERR_INVALID_ARG, s_TAG, "Config is NULL");
-  ESP_RETURN_ON_FALSE(!handle->initialized, ESP_ERR_INVALID_STATE, s_TAG, "Already initialized");
+  ESP_RETURN_ON_FALSE(handle, ESP_ERR_INVALID_ARG, s_tag, "Handle is NULL");
+  ESP_RETURN_ON_FALSE(config, ESP_ERR_INVALID_ARG, s_tag, "Config is NULL");
+  ESP_RETURN_ON_FALSE(!handle->initialized, ESP_ERR_INVALID_STATE, s_tag, "Already initialized");
 
   /* Validate configuration */
   ESP_RETURN_ON_FALSE(config->output_max > config->output_min,
                       ESP_ERR_INVALID_ARG,
-                      s_TAG,
+                      s_tag,
                       "output_max must be > output_min");
   ESP_RETURN_ON_FALSE(config->integral_max > config->integral_min,
                       ESP_ERR_INVALID_ARG,
-                      s_TAG,
+                      s_tag,
                       "integral_max must be > integral_min");
 
   /* Zero out handle */
@@ -49,7 +49,7 @@ esp_err_t star_pid_init(star_pid_handle_t* handle, const star_pid_config_t* conf
   handle->prev_error   = 0.0f;
   handle->initialized  = true;
 
-  ESP_LOGI(s_TAG,
+  ESP_LOGI(s_tag,
            "PID initialized: Kp=%.3f, Ki=%.3f, Kd=%.3f, out=[%.1f,%.1f]",
            config->kp,
            config->ki,
@@ -62,22 +62,22 @@ esp_err_t star_pid_init(star_pid_handle_t* handle, const star_pid_config_t* conf
 
 esp_err_t star_pid_deinit(star_pid_handle_t* handle)
 {
-  ESP_RETURN_ON_FALSE(handle, ESP_ERR_INVALID_ARG, s_TAG, "Handle is NULL");
-  ESP_RETURN_ON_FALSE(handle->initialized, ESP_ERR_INVALID_STATE, s_TAG, "Not initialized");
+  ESP_RETURN_ON_FALSE(handle, ESP_ERR_INVALID_ARG, s_tag, "Handle is NULL");
+  ESP_RETURN_ON_FALSE(handle->initialized, ESP_ERR_INVALID_STATE, s_tag, "Not initialized");
 
   /* Clear handle */
   memset(handle, 0, sizeof(star_pid_handle_t));
 
-  ESP_LOGI(s_TAG, "PID deinitialized");
+  ESP_LOGI(s_tag, "PID deinitialized");
   return ESP_OK;
 }
 
 esp_err_t
 star_pid_compute(star_pid_handle_t* handle, float setpoint, float measured, float dt, float* output)
 {
-  ESP_RETURN_ON_FALSE(handle && output, ESP_ERR_INVALID_ARG, s_TAG, "Handle or output is NULL");
-  ESP_RETURN_ON_FALSE(handle->initialized, ESP_ERR_INVALID_STATE, s_TAG, "Not initialized");
-  ESP_RETURN_ON_FALSE(dt > 0.0f, ESP_ERR_INVALID_ARG, s_TAG, "dt must be > 0");
+  ESP_RETURN_ON_FALSE(handle && output, ESP_ERR_INVALID_ARG, s_tag, "Handle or output is NULL");
+  ESP_RETURN_ON_FALSE(handle->initialized, ESP_ERR_INVALID_STATE, s_tag, "Not initialized");
+  ESP_RETURN_ON_FALSE(dt > 0.0f, ESP_ERR_INVALID_ARG, s_tag, "dt must be > 0");
 
   /* Calculate error */
   float error = setpoint - measured;
@@ -103,7 +103,7 @@ star_pid_compute(star_pid_handle_t* handle, float setpoint, float measured, floa
   /* Store error for next iteration */
   handle->prev_error = error;
 
-  ESP_LOGD(s_TAG,
+  ESP_LOGD(s_tag,
            "PID: error=%.2f, P=%.2f, I=%.2f, D=%.2f, out=%.2f",
            error,
            p_term,
@@ -116,54 +116,54 @@ star_pid_compute(star_pid_handle_t* handle, float setpoint, float measured, floa
 
 esp_err_t star_pid_reset(star_pid_handle_t* handle)
 {
-  ESP_RETURN_ON_FALSE(handle, ESP_ERR_INVALID_ARG, s_TAG, "Handle is NULL");
-  ESP_RETURN_ON_FALSE(handle->initialized, ESP_ERR_INVALID_STATE, s_TAG, "Not initialized");
+  ESP_RETURN_ON_FALSE(handle, ESP_ERR_INVALID_ARG, s_tag, "Handle is NULL");
+  ESP_RETURN_ON_FALSE(handle->initialized, ESP_ERR_INVALID_STATE, s_tag, "Not initialized");
 
   /* Clear internal state */
   handle->integral   = 0.0f;
   handle->prev_error = 0.0f;
 
-  ESP_LOGD(s_TAG, "PID state reset");
+  ESP_LOGD(s_tag, "PID state reset");
   return ESP_OK;
 }
 
 esp_err_t star_pid_set_gains(star_pid_handle_t* handle, float kp, float ki, float kd)
 {
-  ESP_RETURN_ON_FALSE(handle, ESP_ERR_INVALID_ARG, s_TAG, "Handle is NULL");
-  ESP_RETURN_ON_FALSE(handle->initialized, ESP_ERR_INVALID_STATE, s_TAG, "Not initialized");
+  ESP_RETURN_ON_FALSE(handle, ESP_ERR_INVALID_ARG, s_tag, "Handle is NULL");
+  ESP_RETURN_ON_FALSE(handle->initialized, ESP_ERR_INVALID_STATE, s_tag, "Not initialized");
 
   handle->kp = kp;
   handle->ki = ki;
   handle->kd = kd;
 
-  ESP_LOGI(s_TAG, "PID gains updated: Kp=%.3f, Ki=%.3f, Kd=%.3f", kp, ki, kd);
+  ESP_LOGI(s_tag, "PID gains updated: Kp=%.3f, Ki=%.3f, Kd=%.3f", kp, ki, kd);
   return ESP_OK;
 }
 
 esp_err_t star_pid_set_output_limits(star_pid_handle_t* handle, float output_min, float output_max)
 {
-  ESP_RETURN_ON_FALSE(handle, ESP_ERR_INVALID_ARG, s_TAG, "Handle is NULL");
-  ESP_RETURN_ON_FALSE(handle->initialized, ESP_ERR_INVALID_STATE, s_TAG, "Not initialized");
+  ESP_RETURN_ON_FALSE(handle, ESP_ERR_INVALID_ARG, s_tag, "Handle is NULL");
+  ESP_RETURN_ON_FALSE(handle->initialized, ESP_ERR_INVALID_STATE, s_tag, "Not initialized");
   ESP_RETURN_ON_FALSE(output_max > output_min,
                       ESP_ERR_INVALID_ARG,
-                      s_TAG,
+                      s_tag,
                       "output_max must be > output_min");
 
   handle->output_min = output_min;
   handle->output_max = output_max;
 
-  ESP_LOGI(s_TAG, "PID output limits updated: [%.1f, %.1f]", output_min, output_max);
+  ESP_LOGI(s_tag, "PID output limits updated: [%.1f, %.1f]", output_min, output_max);
   return ESP_OK;
 }
 
 esp_err_t
 star_pid_set_integral_limits(star_pid_handle_t* handle, float integral_min, float integral_max)
 {
-  ESP_RETURN_ON_FALSE(handle, ESP_ERR_INVALID_ARG, s_TAG, "Handle is NULL");
-  ESP_RETURN_ON_FALSE(handle->initialized, ESP_ERR_INVALID_STATE, s_TAG, "Not initialized");
+  ESP_RETURN_ON_FALSE(handle, ESP_ERR_INVALID_ARG, s_tag, "Handle is NULL");
+  ESP_RETURN_ON_FALSE(handle->initialized, ESP_ERR_INVALID_STATE, s_tag, "Not initialized");
   ESP_RETURN_ON_FALSE(integral_max > integral_min,
                       ESP_ERR_INVALID_ARG,
-                      s_TAG,
+                      s_tag,
                       "integral_max must be > integral_min");
 
   handle->integral_min = integral_min;
@@ -172,7 +172,7 @@ star_pid_set_integral_limits(star_pid_handle_t* handle, float integral_min, floa
   /* Clamp current integral to new limits */
   handle->integral = internal_clamp(handle->integral, integral_min, integral_max);
 
-  ESP_LOGI(s_TAG, "PID integral limits updated: [%.1f, %.1f]", integral_min, integral_max);
+  ESP_LOGI(s_tag, "PID integral limits updated: [%.1f, %.1f]", integral_min, integral_max);
   return ESP_OK;
 }
 

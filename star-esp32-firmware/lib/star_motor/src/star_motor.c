@@ -10,7 +10,16 @@
 
 /* --- Constants --- */
 
-static const char* s_TAG = "STAR_MOTOR";
+static const char* s_tag = "STAR_MOTOR";
+
+enum {
+  k_motor_duty_max      = 100,  /**< Maximum duty cycle percentage */
+  k_motor_duty_min      = -100, /**< Minimum duty cycle percentage */
+  k_motor_percent_scale = 100,  /**< Percentage scale factor */
+  k_motor_duty_zero     = 0,    /**< Zero duty cycle */
+};
+
+static const uint64_t s_ns_per_sec = 1000000000ULL; /**< Nanoseconds per second */
 
 /* --- Private Function Prototypes --- */
 
@@ -21,9 +30,9 @@ static esp_err_t    internal_configure_generators(star_motor_handle_t* handle, b
 
 esp_err_t star_motor_init(star_motor_handle_t* handle, const star_motor_config_t* config)
 {
-  ESP_RETURN_ON_FALSE(handle, ESP_ERR_INVALID_ARG, s_TAG, "Handle is NULL");
-  ESP_RETURN_ON_FALSE(config, ESP_ERR_INVALID_ARG, s_TAG, "Config is NULL");
-  ESP_RETURN_ON_FALSE(!handle->initialized, ESP_ERR_INVALID_STATE, s_TAG, "Already initialized");
+  ESP_RETURN_ON_FALSE(handle, ESP_ERR_INVALID_ARG, s_tag, "Handle is NULL");
+  ESP_RETURN_ON_FALSE(config, ESP_ERR_INVALID_ARG, s_tag, "Config is NULL");
+  ESP_RETURN_ON_FALSE(!handle->initialized, ESP_ERR_INVALID_STATE, s_tag, "Already initialized");
 
   /* Zero out handle */
   memset(handle, 0, sizeof(star_motor_handle_t));
@@ -42,7 +51,7 @@ esp_err_t star_motor_init(star_motor_handle_t* handle, const star_motor_config_t
     .period_ticks  = period_ticks,
   };
   ret = mcpwm_new_timer(&timer_config, &handle->timer);
-  ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to create MCPWM timer");
+  ESP_RETURN_ON_ERROR(ret, s_tag, "Failed to create MCPWM timer");
 
   /* Create MCPWM operator */
   mcpwm_operator_config_t operator_config = {
@@ -50,7 +59,7 @@ esp_err_t star_motor_init(star_motor_handle_t* handle, const star_motor_config_t
   };
   ret = mcpwm_new_operator(&operator_config, &handle->operator);
   if (ret != ESP_OK) {
-    ESP_LOGE(s_TAG, "Failed to create MCPWM operator: %s", esp_err_to_name(ret));
+    ESP_LOGE(s_tag, "Failed to create MCPWM operator: %s", esp_err_to_name(ret));
     mcpwm_del_timer(handle->timer);
     return ret;
   }
@@ -58,7 +67,7 @@ esp_err_t star_motor_init(star_motor_handle_t* handle, const star_motor_config_t
   /* Connect operator to timer */
   ret = mcpwm_operator_connect_timer(handle->operator, handle->timer);
   if (ret != ESP_OK) {
-    ESP_LOGE(s_TAG, "Failed to connect operator to timer: %s", esp_err_to_name(ret));
+    ESP_LOGE(s_tag, "Failed to connect operator to timer: %s", esp_err_to_name(ret));
     mcpwm_del_operator(handle->operator);
     mcpwm_del_timer(handle->timer);
     return ret;
@@ -70,7 +79,7 @@ esp_err_t star_motor_init(star_motor_handle_t* handle, const star_motor_config_t
   };
   ret = mcpwm_new_comparator(handle->operator, &comparator_config, &handle->comparator);
   if (ret != ESP_OK) {
-    ESP_LOGE(s_TAG, "Failed to create comparator: %s", esp_err_to_name(ret));
+    ESP_LOGE(s_tag, "Failed to create comparator: %s", esp_err_to_name(ret));
     mcpwm_del_operator(handle->operator);
     mcpwm_del_timer(handle->timer);
     return ret;
@@ -82,7 +91,7 @@ esp_err_t star_motor_init(star_motor_handle_t* handle, const star_motor_config_t
   };
   ret = mcpwm_new_generator(handle->operator, &gen_a_config, &handle->gen_a);
   if (ret != ESP_OK) {
-    ESP_LOGE(s_TAG, "Failed to create generator A: %s", esp_err_to_name(ret));
+    ESP_LOGE(s_tag, "Failed to create generator A: %s", esp_err_to_name(ret));
     mcpwm_del_comparator(handle->comparator);
     mcpwm_del_operator(handle->operator);
     mcpwm_del_timer(handle->timer);
@@ -94,7 +103,7 @@ esp_err_t star_motor_init(star_motor_handle_t* handle, const star_motor_config_t
   };
   ret = mcpwm_new_generator(handle->operator, &gen_b_config, &handle->gen_b);
   if (ret != ESP_OK) {
-    ESP_LOGE(s_TAG, "Failed to create generator B: %s", esp_err_to_name(ret));
+    ESP_LOGE(s_tag, "Failed to create generator B: %s", esp_err_to_name(ret));
     mcpwm_del_generator(handle->gen_a);
     mcpwm_del_comparator(handle->comparator);
     mcpwm_del_operator(handle->operator);
@@ -106,7 +115,7 @@ esp_err_t star_motor_init(star_motor_handle_t* handle, const star_motor_config_t
   if (config->dead_time_ns > 0) {
     /* Convert nanoseconds to timer ticks */
     uint32_t dead_time_ticks =
-      (uint32_t)((config->dead_time_ns * config->timer_resolution_hz) / 1000000000ULL);
+      (uint32_t)((config->dead_time_ns * config->timer_resolution_hz) / s_ns_per_sec);
 
     mcpwm_dead_time_config_t dt_config = {
       .posedge_delay_ticks = dead_time_ticks,
@@ -116,12 +125,12 @@ esp_err_t star_motor_init(star_motor_handle_t* handle, const star_motor_config_t
 
     ret = mcpwm_generator_set_dead_time(handle->gen_a, handle->gen_a, &dt_config);
     if (ret != ESP_OK) {
-      ESP_LOGW(s_TAG, "Failed to set dead-time for gen_a: %s", esp_err_to_name(ret));
+      ESP_LOGW(s_tag, "Failed to set dead-time for gen_a: %s", esp_err_to_name(ret));
     }
 
     ret = mcpwm_generator_set_dead_time(handle->gen_b, handle->gen_b, &dt_config);
     if (ret != ESP_OK) {
-      ESP_LOGW(s_TAG, "Failed to set dead-time for gen_b: %s", esp_err_to_name(ret));
+      ESP_LOGW(s_tag, "Failed to set dead-time for gen_b: %s", esp_err_to_name(ret));
     }
   }
 
@@ -146,7 +155,7 @@ esp_err_t star_motor_init(star_motor_handle_t* handle, const star_motor_config_t
     };
     ret = mcpwm_new_gpio_fault(&fault_config, &handle->fault);
     if (ret != ESP_OK) {
-      ESP_LOGW(s_TAG, "Failed to configure fault detection: %s", esp_err_to_name(ret));
+      ESP_LOGW(s_tag, "Failed to configure fault detection: %s", esp_err_to_name(ret));
       handle->fault = NULL;
     }
   }
@@ -154,7 +163,7 @@ esp_err_t star_motor_init(star_motor_handle_t* handle, const star_motor_config_t
   /* Enable and start timer */
   ret = mcpwm_timer_enable(handle->timer);
   if (ret != ESP_OK) {
-    ESP_LOGE(s_TAG, "Failed to enable timer: %s", esp_err_to_name(ret));
+    ESP_LOGE(s_tag, "Failed to enable timer: %s", esp_err_to_name(ret));
     if (handle->fault) {
       mcpwm_del_fault(handle->fault);
     }
@@ -168,7 +177,7 @@ esp_err_t star_motor_init(star_motor_handle_t* handle, const star_motor_config_t
 
   ret = mcpwm_timer_start_stop(handle->timer, MCPWM_TIMER_START_NO_STOP);
   if (ret != ESP_OK) {
-    ESP_LOGE(s_TAG, "Failed to start timer: %s", esp_err_to_name(ret));
+    ESP_LOGE(s_tag, "Failed to start timer: %s", esp_err_to_name(ret));
     mcpwm_timer_disable(handle->timer);
     if (handle->fault) {
       mcpwm_del_fault(handle->fault);
@@ -185,13 +194,13 @@ esp_err_t star_motor_init(star_motor_handle_t* handle, const star_motor_config_t
   handle->group_id     = config->group_id;
   handle->pwm_freq_hz  = config->pwm_freq_hz;
   handle->period_ticks = period_ticks;
-  handle->current_duty = 0.0f;
+  handle->current_duty = (float)k_motor_duty_zero;
   handle->initialized  = true;
 
   /* Set initial duty to 0 (stopped) */
-  star_motor_set_duty(handle, 0.0f);
+  star_motor_set_duty(handle, (float)k_motor_duty_zero);
 
-  ESP_LOGI(s_TAG,
+  ESP_LOGI(s_tag,
            "Motor initialized: group=%d, freq=%luHz, pins=A%d/B%d, dead_time=%luns",
            config->group_id,
            config->pwm_freq_hz,
@@ -204,8 +213,8 @@ esp_err_t star_motor_init(star_motor_handle_t* handle, const star_motor_config_t
 
 esp_err_t star_motor_deinit(star_motor_handle_t* handle)
 {
-  ESP_RETURN_ON_FALSE(handle, ESP_ERR_INVALID_ARG, s_TAG, "Handle is NULL");
-  ESP_RETURN_ON_FALSE(handle->initialized, ESP_ERR_INVALID_STATE, s_TAG, "Not initialized");
+  ESP_RETURN_ON_FALSE(handle, ESP_ERR_INVALID_ARG, s_tag, "Handle is NULL");
+  ESP_RETURN_ON_FALSE(handle->initialized, ESP_ERR_INVALID_STATE, s_tag, "Not initialized");
 
   /* Stop motor first */
   star_motor_stop(handle, false);
@@ -227,28 +236,28 @@ esp_err_t star_motor_deinit(star_motor_handle_t* handle)
   /* Clear handle */
   memset(handle, 0, sizeof(star_motor_handle_t));
 
-  ESP_LOGI(s_TAG, "Motor deinitialized");
+  ESP_LOGI(s_tag, "Motor deinitialized");
   return ESP_OK;
 }
 
 esp_err_t star_motor_set_duty(star_motor_handle_t* handle, float duty)
 {
-  ESP_RETURN_ON_FALSE(handle, ESP_ERR_INVALID_ARG, s_TAG, "Handle is NULL");
-  ESP_RETURN_ON_FALSE(handle->initialized, ESP_ERR_INVALID_STATE, s_TAG, "Not initialized");
+  ESP_RETURN_ON_FALSE(handle, ESP_ERR_INVALID_ARG, s_tag, "Handle is NULL");
+  ESP_RETURN_ON_FALSE(handle->initialized, ESP_ERR_INVALID_STATE, s_tag, "Not initialized");
 
   /* Clamp duty cycle */
   duty = internal_clamp_duty(duty);
 
   /* Calculate compare value (duty is -100 to +100, so we use absolute value) */
   float    abs_duty      = fabsf(duty);
-  uint32_t compare_ticks = (uint32_t)((abs_duty / 100.0f) * handle->period_ticks);
+  uint32_t compare_ticks = (uint32_t)((abs_duty / (float)k_motor_percent_scale) * handle->period_ticks);
 
   /* Set comparator value */
   esp_err_t ret = mcpwm_comparator_set_compare_value(handle->comparator, compare_ticks);
-  ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to set compare value");
+  ESP_RETURN_ON_ERROR(ret, s_tag, "Failed to set compare value");
 
   /* Configure direction (swap generator actions based on duty sign) */
-  if (duty >= 0.0f) {
+  if (duty >= (float)k_motor_duty_zero) {
     /* Forward: A = PWM, B = LOW */
     mcpwm_generator_set_action_on_compare_event(
       handle->gen_a,
@@ -288,14 +297,14 @@ esp_err_t star_motor_set_duty(star_motor_handle_t* handle, float duty)
 
   handle->current_duty = duty;
 
-  ESP_LOGD(s_TAG, "Motor duty set: %.1f%% (compare=%lu ticks)", duty, compare_ticks);
+  ESP_LOGD(s_tag, "Motor duty set: %.1f%% (compare=%lu ticks)", duty, compare_ticks);
   return ESP_OK;
 }
 
 esp_err_t star_motor_stop(star_motor_handle_t* handle, bool brake)
 {
-  ESP_RETURN_ON_FALSE(handle, ESP_ERR_INVALID_ARG, s_TAG, "Handle is NULL");
-  ESP_RETURN_ON_FALSE(handle->initialized, ESP_ERR_INVALID_STATE, s_TAG, "Not initialized");
+  ESP_RETURN_ON_FALSE(handle, ESP_ERR_INVALID_ARG, s_tag, "Handle is NULL");
+  ESP_RETURN_ON_FALSE(handle->initialized, ESP_ERR_INVALID_STATE, s_tag, "Not initialized");
 
   if (brake) {
     /* Brake: both outputs high (short circuit brake) */
@@ -307,16 +316,16 @@ esp_err_t star_motor_stop(star_motor_handle_t* handle, bool brake)
     mcpwm_generator_set_force_level(handle->gen_b, 0, true);
   }
 
-  handle->current_duty = 0.0f;
+  handle->current_duty = (float)k_motor_duty_zero;
 
-  ESP_LOGD(s_TAG, "Motor stopped (%s)", brake ? "brake" : "coast");
+  ESP_LOGD(s_tag, "Motor stopped (%s)", brake ? "brake" : "coast");
   return ESP_OK;
 }
 
 esp_err_t star_motor_get_duty(const star_motor_handle_t* handle, float* out_duty)
 {
-  ESP_RETURN_ON_FALSE(handle && out_duty, ESP_ERR_INVALID_ARG, s_TAG, "Handle or out_duty is NULL");
-  ESP_RETURN_ON_FALSE(handle->initialized, ESP_ERR_INVALID_STATE, s_TAG, "Not initialized");
+  ESP_RETURN_ON_FALSE(handle && out_duty, ESP_ERR_INVALID_ARG, s_tag, "Handle or out_duty is NULL");
+  ESP_RETURN_ON_FALSE(handle->initialized, ESP_ERR_INVALID_STATE, s_tag, "Not initialized");
 
   *out_duty = handle->current_duty;
   return ESP_OK;
@@ -326,11 +335,11 @@ esp_err_t star_motor_get_duty(const star_motor_handle_t* handle, float* out_duty
 
 static inline float internal_clamp_duty(float duty)
 {
-  if (duty < -100.0f) {
-    return -100.0f;
+  if (duty < (float)k_motor_duty_min) {
+    return (float)k_motor_duty_min;
   }
-  if (duty > 100.0f) {
-    return 100.0f;
+  if (duty > (float)k_motor_duty_max) {
+    return (float)k_motor_duty_max;
   }
   return duty;
 }
@@ -345,21 +354,21 @@ static esp_err_t internal_configure_generators(star_motor_handle_t* handle, bool
                                               MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP,
                                                                            MCPWM_TIMER_EVENT_EMPTY,
                                                                            MCPWM_GEN_ACTION_LOW));
-  ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to set gen_a timer action");
+  ESP_RETURN_ON_ERROR(ret, s_tag, "Failed to set gen_a timer action");
 
   ret = mcpwm_generator_set_action_on_compare_event(
     handle->gen_a,
     MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP,
                                    handle->comparator,
                                    MCPWM_GEN_ACTION_HIGH));
-  ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to set gen_a compare up action");
+  ESP_RETURN_ON_ERROR(ret, s_tag, "Failed to set gen_a compare up action");
 
   ret = mcpwm_generator_set_action_on_compare_event(
     handle->gen_a,
     MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_DOWN,
                                    handle->comparator,
                                    MCPWM_GEN_ACTION_LOW));
-  ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to set gen_a compare down action");
+  ESP_RETURN_ON_ERROR(ret, s_tag, "Failed to set gen_a compare down action");
 
   /* Configure generator B actions (initially low, will be set during duty update) */
   ret =
@@ -367,7 +376,7 @@ static esp_err_t internal_configure_generators(star_motor_handle_t* handle, bool
                                               MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP,
                                                                            MCPWM_TIMER_EVENT_EMPTY,
                                                                            MCPWM_GEN_ACTION_LOW));
-  ESP_RETURN_ON_ERROR(ret, s_TAG, "Failed to set gen_b timer action");
+  ESP_RETURN_ON_ERROR(ret, s_tag, "Failed to set gen_b timer action");
 
   return ESP_OK;
 }

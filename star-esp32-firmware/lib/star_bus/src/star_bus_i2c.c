@@ -14,7 +14,7 @@
 
 /* --- Constants --- */
 
-static const char* s_TAG = "STAR_BUS_I2C";
+static const char* s_tag = "STAR_BUS_I2C";
 
 /* Use constant instead of macro for type safety */
 static const uint32_t s_i2c_timeout_ms = 1000; /* Default timeout for I2C operations */
@@ -64,14 +64,14 @@ static esp_err_t internal_i2c_execute_with_retry(const star_bus_config_t* config
 void star_bus_i2c_init_default_ops(star_i2c_ops_t* ops)
 {
   if (ops == NULL) {
-    ESP_LOGE(s_TAG, "Cannot initialize NULL ops pointer");
+    ESP_LOGE(s_tag, "Cannot initialize NULL ops pointer");
     return;
   }
   ops->write         = internal_star_bus_i2c_write;
   ops->read          = internal_star_bus_i2c_read;
   ops->write_command = internal_star_bus_i2c_write_command;
   ops->read_raw      = internal_star_bus_i2c_read_raw;
-  ESP_LOGD(s_TAG, "Default I2C operations initialized");
+  ESP_LOGD(s_tag, "Default I2C operations initialized");
 }
 
 esp_err_t star_bus_i2c_write(const star_bus_manager_t* manager,
@@ -83,20 +83,20 @@ esp_err_t star_bus_i2c_write(const star_bus_manager_t* manager,
 {
   ESP_RETURN_ON_FALSE(manager && name && data,
                       ESP_ERR_INVALID_ARG,
-                      s_TAG,
+                      s_tag,
                       "Manager, name, or data is NULL");
-  ESP_RETURN_ON_FALSE(len > 0, ESP_ERR_INVALID_ARG, s_TAG, "Write length must be > 0");
+  ESP_RETURN_ON_FALSE(len > 0, ESP_ERR_INVALID_ARG, s_tag, "Write length must be > 0");
 
   star_bus_config_t* bus_config = star_bus_manager_find_bus(manager, name);
-  ESP_RETURN_ON_FALSE(bus_config, ESP_ERR_NOT_FOUND, s_TAG, "Bus '%s' not found", name);
+  ESP_RETURN_ON_FALSE(bus_config, ESP_ERR_NOT_FOUND, s_tag, "Bus '%s' not found", name);
   ESP_RETURN_ON_FALSE(bus_config->type == k_star_bus_type_i2c,
                       ESP_ERR_INVALID_ARG,
-                      s_TAG,
+                      s_tag,
                       "Bus '%s' is not an I2C bus",
                       name);
   ESP_RETURN_ON_FALSE(bus_config->proto.i2c.ops.write,
                       ESP_ERR_NOT_SUPPORTED,
-                      s_TAG,
+                      s_tag,
                       "No write op for '%s'",
                       name);
 
@@ -117,20 +117,20 @@ esp_err_t star_bus_i2c_read(const star_bus_manager_t* manager,
 {
   ESP_RETURN_ON_FALSE(manager && name && data,
                       ESP_ERR_INVALID_ARG,
-                      s_TAG,
+                      s_tag,
                       "Manager, name, or data is NULL");
-  ESP_RETURN_ON_FALSE(len > 0, ESP_ERR_INVALID_ARG, s_TAG, "Read length must be > 0");
+  ESP_RETURN_ON_FALSE(len > 0, ESP_ERR_INVALID_ARG, s_tag, "Read length must be > 0");
 
   star_bus_config_t* bus_config = star_bus_manager_find_bus(manager, name);
-  ESP_RETURN_ON_FALSE(bus_config, ESP_ERR_NOT_FOUND, s_TAG, "Bus '%s' not found", name);
+  ESP_RETURN_ON_FALSE(bus_config, ESP_ERR_NOT_FOUND, s_tag, "Bus '%s' not found", name);
   ESP_RETURN_ON_FALSE(bus_config->type == k_star_bus_type_i2c,
                       ESP_ERR_INVALID_ARG,
-                      s_TAG,
+                      s_tag,
                       "Bus '%s' is not an I2C bus",
                       name);
   ESP_RETURN_ON_FALSE(bus_config->proto.i2c.ops.read,
                       ESP_ERR_NOT_SUPPORTED,
-                      s_TAG,
+                      s_tag,
                       "No read op for '%s'",
                       name);
 
@@ -145,18 +145,18 @@ esp_err_t star_bus_i2c_read(const star_bus_manager_t* manager,
 esp_err_t
 star_bus_i2c_write_command(const star_bus_manager_t* manager, const char* name, uint8_t command)
 {
-  ESP_RETURN_ON_FALSE(manager && name, ESP_ERR_INVALID_ARG, s_TAG, "Manager or name is NULL");
+  ESP_RETURN_ON_FALSE(manager && name, ESP_ERR_INVALID_ARG, s_tag, "Manager or name is NULL");
 
   star_bus_config_t* bus_config = star_bus_manager_find_bus(manager, name);
-  ESP_RETURN_ON_FALSE(bus_config, ESP_ERR_NOT_FOUND, s_TAG, "Bus '%s' not found", name);
+  ESP_RETURN_ON_FALSE(bus_config, ESP_ERR_NOT_FOUND, s_tag, "Bus '%s' not found", name);
   ESP_RETURN_ON_FALSE(bus_config->type == k_star_bus_type_i2c,
                       ESP_ERR_INVALID_ARG,
-                      s_TAG,
+                      s_tag,
                       "Bus '%s' is not an I2C bus",
                       name);
   ESP_RETURN_ON_FALSE(bus_config->proto.i2c.ops.write_command,
                       ESP_ERR_NOT_SUPPORTED,
-                      s_TAG,
+                      s_tag,
                       "No write_command op for '%s'",
                       name);
 
@@ -171,20 +171,20 @@ esp_err_t star_bus_i2c_read_raw(const star_bus_manager_t* manager,
 {
   ESP_RETURN_ON_FALSE(manager && name && data,
                       ESP_ERR_INVALID_ARG,
-                      s_TAG,
+                      s_tag,
                       "Manager, name, or data is NULL");
-  ESP_RETURN_ON_FALSE(len > 0, ESP_ERR_INVALID_ARG, s_TAG, "Read length must be > 0");
+  ESP_RETURN_ON_FALSE(len > 0, ESP_ERR_INVALID_ARG, s_tag, "Read length must be > 0");
 
   star_bus_config_t* bus_config = star_bus_manager_find_bus(manager, name);
-  ESP_RETURN_ON_FALSE(bus_config, ESP_ERR_NOT_FOUND, s_TAG, "Bus '%s' not found", name);
+  ESP_RETURN_ON_FALSE(bus_config, ESP_ERR_NOT_FOUND, s_tag, "Bus '%s' not found", name);
   ESP_RETURN_ON_FALSE(bus_config->type == k_star_bus_type_i2c,
                       ESP_ERR_INVALID_ARG,
-                      s_TAG,
+                      s_tag,
                       "Bus '%s' is not an I2C bus",
                       name);
   ESP_RETURN_ON_FALSE(bus_config->proto.i2c.ops.read_raw,
                       ESP_ERR_NOT_SUPPORTED,
-                      s_TAG,
+                      s_tag,
                       "No read_raw op for '%s'",
                       name);
 
@@ -212,7 +212,7 @@ static esp_err_t internal_i2c_execute_with_retry(const star_bus_config_t* config
   esp_err_t ret = i2c_master_cmd_begin(port, cmd, pdMS_TO_TICKS(s_i2c_timeout_ms));
 
   if (ret != ESP_OK) {
-    ESP_LOGE(s_TAG, "%s '%s': Error %s", operation_name, config->name, esp_err_to_name(ret));
+    ESP_LOGE(s_tag, "%s '%s': Error %s", operation_name, config->name, esp_err_to_name(ret));
   }
 
   return ret;
@@ -227,7 +227,7 @@ static esp_err_t internal_star_bus_i2c_write(const star_bus_config_t* config,
   /* Basic validation (config, data assumed non-NULL, len > 0 by caller) */
   ESP_RETURN_ON_FALSE(config->initialized,
                       ESP_ERR_INVALID_STATE,
-                      s_TAG,
+                      s_tag,
                       "Bus '%s' is not initialized",
                       config->name);
 
@@ -239,14 +239,14 @@ static esp_err_t internal_star_bus_i2c_write(const star_bus_config_t* config,
   cmd = i2c_cmd_link_create();
   ESP_RETURN_ON_FALSE(cmd,
                       ESP_ERR_NO_MEM,
-                      s_TAG,
+                      s_tag,
                       "Failed to create I2C command link for write '%s'",
                       config->name);
 
   ret = i2c_master_start(cmd);
   ESP_GOTO_ON_ERROR(ret,
                     write_fail,
-                    s_TAG,
+                    s_tag,
                     "Write '%s': START failed: %s",
                     config->name,
                     esp_err_to_name(ret));
@@ -254,7 +254,7 @@ static esp_err_t internal_star_bus_i2c_write(const star_bus_config_t* config,
   ret = i2c_master_write_byte(cmd, (address << 1) | I2C_MASTER_WRITE, true);
   ESP_GOTO_ON_ERROR(ret,
                     write_fail,
-                    s_TAG,
+                    s_tag,
                     "Write '%s': Address (W) failed: %s",
                     config->name,
                     esp_err_to_name(ret));
@@ -263,7 +263,7 @@ static esp_err_t internal_star_bus_i2c_write(const star_bus_config_t* config,
   ret = i2c_master_write_byte(cmd, reg_addr, true);
   ESP_GOTO_ON_ERROR(ret,
                     write_fail,
-                    s_TAG,
+                    s_tag,
                     "Write '%s': Reg Addr failed: %s",
                     config->name,
                     esp_err_to_name(ret));
@@ -272,7 +272,7 @@ static esp_err_t internal_star_bus_i2c_write(const star_bus_config_t* config,
   ret = i2c_master_write(cmd, data, len, true);
   ESP_GOTO_ON_ERROR(ret,
                     write_fail,
-                    s_TAG,
+                    s_tag,
                     "Write '%s': Data write failed: %s",
                     config->name,
                     esp_err_to_name(ret));
@@ -280,19 +280,19 @@ static esp_err_t internal_star_bus_i2c_write(const star_bus_config_t* config,
   ret = i2c_master_stop(cmd);
   ESP_GOTO_ON_ERROR(ret,
                     write_fail,
-                    s_TAG,
+                    s_tag,
                     "Write '%s': STOP failed: %s",
                     config->name,
                     esp_err_to_name(ret));
 
   /* Execute with retry logic */
   ret = internal_i2c_execute_with_retry(config, port, cmd, "Write");
-  ESP_GOTO_ON_ERROR(ret, write_fail, s_TAG, "Write '%s': CMD failed after retries", config->name);
+  ESP_GOTO_ON_ERROR(ret, write_fail, s_tag, "Write '%s': CMD failed after retries", config->name);
 
   /* Success path */
   i2c_cmd_link_delete(cmd);
   cmd = NULL; /* Prevent double delete in fail path */
-  ESP_LOGD(s_TAG,
+  ESP_LOGD(s_tag,
            "Write Success: %zu bytes to '%s' (Addr 0x%02X, Reg 0x%02X)",
            len,
            config->name,
@@ -316,7 +316,7 @@ write_fail:
   if (cmd) {
     i2c_cmd_link_delete(cmd);
   }
-  ESP_LOGE(s_TAG, "Write failed for '%s': %s", config->name, esp_err_to_name(ret));
+  ESP_LOGE(s_tag, "Write failed for '%s': %s", config->name, esp_err_to_name(ret));
   /* Call error callback */
   if (config->proto.i2c.callbacks.on_error) {
     star_bus_event_t event = {.bus_type = k_star_bus_type_i2c,
@@ -339,7 +339,7 @@ static esp_err_t internal_star_bus_i2c_read(const star_bus_config_t* config,
   /* Basic validation (config, data assumed non-NULL, len > 0 by caller) */
   ESP_RETURN_ON_FALSE(config->initialized,
                       ESP_ERR_INVALID_STATE,
-                      s_TAG,
+                      s_tag,
                       "Bus '%s' is not initialized",
                       config->name);
 
@@ -351,7 +351,7 @@ static esp_err_t internal_star_bus_i2c_read(const star_bus_config_t* config,
   cmd = i2c_cmd_link_create();
   ESP_RETURN_ON_FALSE(cmd,
                       ESP_ERR_NO_MEM,
-                      s_TAG,
+                      s_tag,
                       "Failed to create I2C command link for read '%s'",
                       config->name);
 
@@ -359,7 +359,7 @@ static esp_err_t internal_star_bus_i2c_read(const star_bus_config_t* config,
   ret = i2c_master_start(cmd);
   ESP_GOTO_ON_ERROR(ret,
                     read_fail,
-                    s_TAG,
+                    s_tag,
                     "Read '%s': START failed: %s",
                     config->name,
                     esp_err_to_name(ret));
@@ -367,7 +367,7 @@ static esp_err_t internal_star_bus_i2c_read(const star_bus_config_t* config,
   ret = i2c_master_write_byte(cmd, (address << 1) | I2C_MASTER_WRITE, true);
   ESP_GOTO_ON_ERROR(ret,
                     read_fail,
-                    s_TAG,
+                    s_tag,
                     "Read '%s': Address (W) failed: %s",
                     config->name,
                     esp_err_to_name(ret));
@@ -375,7 +375,7 @@ static esp_err_t internal_star_bus_i2c_read(const star_bus_config_t* config,
   ret = i2c_master_write_byte(cmd, reg_addr, true);
   ESP_GOTO_ON_ERROR(ret,
                     read_fail,
-                    s_TAG,
+                    s_tag,
                     "Read '%s': Reg Addr failed: %s",
                     config->name,
                     esp_err_to_name(ret));
@@ -384,7 +384,7 @@ static esp_err_t internal_star_bus_i2c_read(const star_bus_config_t* config,
   ret = i2c_master_start(cmd); /* Repeated start */
   ESP_GOTO_ON_ERROR(ret,
                     read_fail,
-                    s_TAG,
+                    s_tag,
                     "Read '%s': Repeated START failed: %s",
                     config->name,
                     esp_err_to_name(ret));
@@ -392,7 +392,7 @@ static esp_err_t internal_star_bus_i2c_read(const star_bus_config_t* config,
   ret = i2c_master_write_byte(cmd, (address << 1) | I2C_MASTER_READ, true);
   ESP_GOTO_ON_ERROR(ret,
                     read_fail,
-                    s_TAG,
+                    s_tag,
                     "Read '%s': Address (R) failed: %s",
                     config->name,
                     esp_err_to_name(ret));
@@ -401,7 +401,7 @@ static esp_err_t internal_star_bus_i2c_read(const star_bus_config_t* config,
     ret = i2c_master_read(cmd, data, len - 1, I2C_MASTER_ACK);
     ESP_GOTO_ON_ERROR(ret,
                       read_fail,
-                      s_TAG,
+                      s_tag,
                       "Read '%s': Data read (ACK) failed: %s",
                       config->name,
                       esp_err_to_name(ret));
@@ -411,7 +411,7 @@ static esp_err_t internal_star_bus_i2c_read(const star_bus_config_t* config,
   ret = i2c_master_read_byte(cmd, data + len - 1, I2C_MASTER_NACK);
   ESP_GOTO_ON_ERROR(ret,
                     read_fail,
-                    s_TAG,
+                    s_tag,
                     "Read '%s': Data read (NACK) failed: %s",
                     config->name,
                     esp_err_to_name(ret));
@@ -419,19 +419,19 @@ static esp_err_t internal_star_bus_i2c_read(const star_bus_config_t* config,
   ret = i2c_master_stop(cmd);
   ESP_GOTO_ON_ERROR(ret,
                     read_fail,
-                    s_TAG,
+                    s_tag,
                     "Read '%s': STOP failed: %s",
                     config->name,
                     esp_err_to_name(ret));
 
   /* Execute with retry logic */
   ret = internal_i2c_execute_with_retry(config, port, cmd, "Read");
-  ESP_GOTO_ON_ERROR(ret, read_fail, s_TAG, "Read '%s': CMD failed after retries", config->name);
+  ESP_GOTO_ON_ERROR(ret, read_fail, s_tag, "Read '%s': CMD failed after retries", config->name);
 
   /* Success path */
   i2c_cmd_link_delete(cmd);
   cmd = NULL; /* Prevent double delete in fail path */
-  ESP_LOGD(s_TAG,
+  ESP_LOGD(s_tag,
            "Read Success: %zu bytes from '%s' (Addr 0x%02X, Reg 0x%02X)",
            len,
            config->name,
@@ -455,7 +455,7 @@ read_fail:
   if (cmd) {
     i2c_cmd_link_delete(cmd);
   }
-  ESP_LOGE(s_TAG, "Read failed for '%s': %s", config->name, esp_err_to_name(ret));
+  ESP_LOGE(s_tag, "Read failed for '%s': %s", config->name, esp_err_to_name(ret));
   /* Call error callback */
   if (config->proto.i2c.callbacks.on_error) {
     star_bus_event_t event = {
@@ -473,7 +473,7 @@ static esp_err_t internal_star_bus_i2c_write_command(const star_bus_config_t* co
   /* Basic validation (config assumed non-NULL by caller) */
   ESP_RETURN_ON_FALSE(config->initialized,
                       ESP_ERR_INVALID_STATE,
-                      s_TAG,
+                      s_tag,
                       "Bus '%s' is not initialized",
                       config->name);
 
@@ -485,14 +485,14 @@ static esp_err_t internal_star_bus_i2c_write_command(const star_bus_config_t* co
   cmd = i2c_cmd_link_create();
   ESP_RETURN_ON_FALSE(cmd,
                       ESP_ERR_NO_MEM,
-                      s_TAG,
+                      s_tag,
                       "Failed to create I2C command link for write_command '%s'",
                       config->name);
 
   ret = i2c_master_start(cmd);
   ESP_GOTO_ON_ERROR(ret,
                     write_cmd_fail,
-                    s_TAG,
+                    s_tag,
                     "WriteCmd '%s': START failed: %s",
                     config->name,
                     esp_err_to_name(ret));
@@ -500,7 +500,7 @@ static esp_err_t internal_star_bus_i2c_write_command(const star_bus_config_t* co
   ret = i2c_master_write_byte(cmd, (address << 1) | I2C_MASTER_WRITE, true);
   ESP_GOTO_ON_ERROR(ret,
                     write_cmd_fail,
-                    s_TAG,
+                    s_tag,
                     "WriteCmd '%s': Address (W) failed: %s",
                     config->name,
                     esp_err_to_name(ret));
@@ -509,7 +509,7 @@ static esp_err_t internal_star_bus_i2c_write_command(const star_bus_config_t* co
   ret = i2c_master_write_byte(cmd, command, true);
   ESP_GOTO_ON_ERROR(ret,
                     write_cmd_fail,
-                    s_TAG,
+                    s_tag,
                     "WriteCmd '%s': Command byte failed: %s",
                     config->name,
                     esp_err_to_name(ret));
@@ -517,7 +517,7 @@ static esp_err_t internal_star_bus_i2c_write_command(const star_bus_config_t* co
   ret = i2c_master_stop(cmd);
   ESP_GOTO_ON_ERROR(ret,
                     write_cmd_fail,
-                    s_TAG,
+                    s_tag,
                     "WriteCmd '%s': STOP failed: %s",
                     config->name,
                     esp_err_to_name(ret));
@@ -526,14 +526,14 @@ static esp_err_t internal_star_bus_i2c_write_command(const star_bus_config_t* co
   ret = internal_i2c_execute_with_retry(config, port, cmd, "WriteCmd");
   ESP_GOTO_ON_ERROR(ret,
                     write_cmd_fail,
-                    s_TAG,
+                    s_tag,
                     "WriteCmd '%s': CMD failed after retries",
                     config->name);
 
   /* Success path */
   i2c_cmd_link_delete(cmd);
   cmd = NULL; /* Prevent double delete in fail path */
-  ESP_LOGD(s_TAG,
+  ESP_LOGD(s_tag,
            "Write Command Success: 0x%02X to '%s' (Addr 0x%02X)",
            command,
            config->name,
@@ -555,7 +555,7 @@ write_cmd_fail:
   if (cmd) {
     i2c_cmd_link_delete(cmd);
   }
-  ESP_LOGE(s_TAG, "Write Command failed for '%s': %s", config->name, esp_err_to_name(ret));
+  ESP_LOGE(s_tag, "Write Command failed for '%s': %s", config->name, esp_err_to_name(ret));
   /* Call error callback */
   if (config->proto.i2c.callbacks.on_error) {
     star_bus_event_t event = {
@@ -575,7 +575,7 @@ static esp_err_t internal_star_bus_i2c_read_raw(const star_bus_config_t* config,
   /* Basic validation (config, data assumed non-NULL, len > 0 by caller) */
   ESP_RETURN_ON_FALSE(config->initialized,
                       ESP_ERR_INVALID_STATE,
-                      s_TAG,
+                      s_tag,
                       "Bus '%s' is not initialized",
                       config->name);
 
@@ -587,7 +587,7 @@ static esp_err_t internal_star_bus_i2c_read_raw(const star_bus_config_t* config,
   cmd = i2c_cmd_link_create();
   ESP_RETURN_ON_FALSE(cmd,
                       ESP_ERR_NO_MEM,
-                      s_TAG,
+                      s_tag,
                       "Failed to create I2C command link for read_raw '%s'",
                       config->name);
 
@@ -595,7 +595,7 @@ static esp_err_t internal_star_bus_i2c_read_raw(const star_bus_config_t* config,
   ret = i2c_master_start(cmd);
   ESP_GOTO_ON_ERROR(ret,
                     read_raw_fail,
-                    s_TAG,
+                    s_tag,
                     "ReadRaw '%s': START failed: %s",
                     config->name,
                     esp_err_to_name(ret));
@@ -603,7 +603,7 @@ static esp_err_t internal_star_bus_i2c_read_raw(const star_bus_config_t* config,
   ret = i2c_master_write_byte(cmd, (address << 1) | I2C_MASTER_READ, true);
   ESP_GOTO_ON_ERROR(ret,
                     read_raw_fail,
-                    s_TAG,
+                    s_tag,
                     "ReadRaw '%s': Address (R) failed: %s",
                     config->name,
                     esp_err_to_name(ret));
@@ -612,7 +612,7 @@ static esp_err_t internal_star_bus_i2c_read_raw(const star_bus_config_t* config,
     ret = i2c_master_read(cmd, data, len - 1, I2C_MASTER_ACK);
     ESP_GOTO_ON_ERROR(ret,
                       read_raw_fail,
-                      s_TAG,
+                      s_tag,
                       "ReadRaw '%s': Data read (ACK) failed: %s",
                       config->name,
                       esp_err_to_name(ret));
@@ -622,7 +622,7 @@ static esp_err_t internal_star_bus_i2c_read_raw(const star_bus_config_t* config,
   ret = i2c_master_read_byte(cmd, data + len - 1, I2C_MASTER_NACK);
   ESP_GOTO_ON_ERROR(ret,
                     read_raw_fail,
-                    s_TAG,
+                    s_tag,
                     "ReadRaw '%s': Data read (NACK) failed: %s",
                     config->name,
                     esp_err_to_name(ret));
@@ -630,7 +630,7 @@ static esp_err_t internal_star_bus_i2c_read_raw(const star_bus_config_t* config,
   ret = i2c_master_stop(cmd);
   ESP_GOTO_ON_ERROR(ret,
                     read_raw_fail,
-                    s_TAG,
+                    s_tag,
                     "ReadRaw '%s': STOP failed: %s",
                     config->name,
                     esp_err_to_name(ret));
@@ -639,14 +639,14 @@ static esp_err_t internal_star_bus_i2c_read_raw(const star_bus_config_t* config,
   ret = internal_i2c_execute_with_retry(config, port, cmd, "ReadRaw");
   ESP_GOTO_ON_ERROR(ret,
                     read_raw_fail,
-                    s_TAG,
+                    s_tag,
                     "ReadRaw '%s': CMD failed after retries",
                     config->name);
 
   /* Success path */
   i2c_cmd_link_delete(cmd);
   cmd = NULL; /* Prevent double delete in fail path */
-  ESP_LOGD(s_TAG,
+  ESP_LOGD(s_tag,
            "Read Raw Success: %zu bytes from '%s' (Addr 0x%02X)",
            len,
            config->name,
@@ -669,7 +669,7 @@ read_raw_fail:
   if (cmd) {
     i2c_cmd_link_delete(cmd);
   }
-  ESP_LOGE(s_TAG, "Read Raw failed for '%s': %s", config->name, esp_err_to_name(ret));
+  ESP_LOGE(s_tag, "Read Raw failed for '%s': %s", config->name, esp_err_to_name(ret));
   /* Call error callback */
   if (config->proto.i2c.callbacks.on_error) {
     star_bus_event_t event = {

@@ -14,7 +14,7 @@
 
 /* --- Constants --- */
 
-static const char* s_TAG = "STAR_BUS_SPI";
+static const char* s_tag = "STAR_BUS_SPI";
 
 /* Use constant instead of macro for type safety.
  * Currently unused but defined for future polling mode support. */
@@ -46,13 +46,13 @@ static esp_err_t internal_star_bus_spi_transfer(const star_bus_config_t* config,
 void star_bus_spi_init_default_ops(star_spi_ops_t* ops)
 {
   if (ops == NULL) {
-    ESP_LOGE(s_TAG, "Cannot initialize NULL ops pointer");
+    ESP_LOGE(s_tag, "Cannot initialize NULL ops pointer");
     return;
   }
   ops->transmit = internal_star_bus_spi_transmit;
   ops->receive  = internal_star_bus_spi_receive;
   ops->transfer = internal_star_bus_spi_transfer;
-  ESP_LOGD(s_TAG, "Default SPI operations initialized");
+  ESP_LOGD(s_tag, "Default SPI operations initialized");
 }
 
 esp_err_t star_bus_spi_transmit(const star_bus_manager_t* manager,
@@ -63,21 +63,21 @@ esp_err_t star_bus_spi_transmit(const star_bus_manager_t* manager,
 {
   ESP_RETURN_ON_FALSE(manager && name && tx_buffer,
                       ESP_ERR_INVALID_ARG,
-                      s_TAG,
+                      s_tag,
                       "Manager, name, or tx_buffer is NULL");
   /* Allow len == 0 for command-only transfers? Maybe not useful for SPI. */
-  ESP_RETURN_ON_FALSE(len > 0, ESP_ERR_INVALID_ARG, s_TAG, "Transmit length must be > 0");
+  ESP_RETURN_ON_FALSE(len > 0, ESP_ERR_INVALID_ARG, s_tag, "Transmit length must be > 0");
 
   star_bus_config_t* bus_config = star_bus_manager_find_bus(manager, name);
-  ESP_RETURN_ON_FALSE(bus_config, ESP_ERR_NOT_FOUND, s_TAG, "Bus '%s' not found", name);
+  ESP_RETURN_ON_FALSE(bus_config, ESP_ERR_NOT_FOUND, s_tag, "Bus '%s' not found", name);
   ESP_RETURN_ON_FALSE(bus_config->type == k_star_bus_type_spi,
                       ESP_ERR_INVALID_ARG,
-                      s_TAG,
+                      s_tag,
                       "Bus '%s' is not an SPI bus",
                       name);
   ESP_RETURN_ON_FALSE(bus_config->proto.spi.ops.transmit,
                       ESP_ERR_NOT_SUPPORTED,
-                      s_TAG,
+                      s_tag,
                       "No transmit op for '%s'",
                       name);
 
@@ -92,20 +92,20 @@ esp_err_t star_bus_spi_receive(const star_bus_manager_t* manager,
 {
   ESP_RETURN_ON_FALSE(manager && name && rx_buffer,
                       ESP_ERR_INVALID_ARG,
-                      s_TAG,
+                      s_tag,
                       "Manager, name, or rx_buffer is NULL");
-  ESP_RETURN_ON_FALSE(len > 0, ESP_ERR_INVALID_ARG, s_TAG, "Receive length must be > 0");
+  ESP_RETURN_ON_FALSE(len > 0, ESP_ERR_INVALID_ARG, s_tag, "Receive length must be > 0");
 
   star_bus_config_t* bus_config = star_bus_manager_find_bus(manager, name);
-  ESP_RETURN_ON_FALSE(bus_config, ESP_ERR_NOT_FOUND, s_TAG, "Bus '%s' not found", name);
+  ESP_RETURN_ON_FALSE(bus_config, ESP_ERR_NOT_FOUND, s_tag, "Bus '%s' not found", name);
   ESP_RETURN_ON_FALSE(bus_config->type == k_star_bus_type_spi,
                       ESP_ERR_INVALID_ARG,
-                      s_TAG,
+                      s_tag,
                       "Bus '%s' is not an SPI bus",
                       name);
   ESP_RETURN_ON_FALSE(bus_config->proto.spi.ops.receive,
                       ESP_ERR_NOT_SUPPORTED,
-                      s_TAG,
+                      s_tag,
                       "No receive op for '%s'",
                       name);
 
@@ -121,20 +121,20 @@ esp_err_t star_bus_spi_transfer(const star_bus_manager_t* manager,
 {
   ESP_RETURN_ON_FALSE(manager && name && tx_buffer && rx_buffer,
                       ESP_ERR_INVALID_ARG,
-                      s_TAG,
+                      s_tag,
                       "Manager, name, tx_buffer, or rx_buffer is NULL");
-  ESP_RETURN_ON_FALSE(len > 0, ESP_ERR_INVALID_ARG, s_TAG, "Transfer length must be > 0");
+  ESP_RETURN_ON_FALSE(len > 0, ESP_ERR_INVALID_ARG, s_tag, "Transfer length must be > 0");
 
   star_bus_config_t* bus_config = star_bus_manager_find_bus(manager, name);
-  ESP_RETURN_ON_FALSE(bus_config, ESP_ERR_NOT_FOUND, s_TAG, "Bus '%s' not found", name);
+  ESP_RETURN_ON_FALSE(bus_config, ESP_ERR_NOT_FOUND, s_tag, "Bus '%s' not found", name);
   ESP_RETURN_ON_FALSE(bus_config->type == k_star_bus_type_spi,
                       ESP_ERR_INVALID_ARG,
-                      s_TAG,
+                      s_tag,
                       "Bus '%s' is not an SPI bus",
                       name);
   ESP_RETURN_ON_FALSE(bus_config->proto.spi.ops.transfer,
                       ESP_ERR_NOT_SUPPORTED,
-                      s_TAG,
+                      s_tag,
                       "No transfer op for '%s'",
                       name);
 
@@ -151,19 +151,19 @@ static esp_err_t internal_star_bus_spi_transmit(const star_bus_config_t* config,
 {
   ESP_RETURN_ON_FALSE(config->initialized,
                       ESP_ERR_INVALID_STATE,
-                      s_TAG,
+                      s_tag,
                       "SPI device '%s' is not initialized",
                       config->name);
   ESP_RETURN_ON_FALSE(config->handle,
                       ESP_ERR_INVALID_STATE,
-                      s_TAG,
+                      s_tag,
                       "SPI device '%s' handle is NULL",
                       config->name);
 
   /* Check for overflow: length in bits must fit in uint32_t */
   ESP_RETURN_ON_FALSE(len <= (UINT32_MAX / 8),
                       ESP_ERR_INVALID_ARG,
-                      s_TAG,
+                      s_tag,
                       "SPI transmit length too large: %zu bytes (max: %lu)",
                       len,
                       (unsigned long)(UINT32_MAX / 8));
@@ -184,7 +184,7 @@ static esp_err_t internal_star_bus_spi_transmit(const star_bus_config_t* config,
   /* } */
 
   if (ret != ESP_OK) {
-    ESP_LOGE(s_TAG, "SPI transmit failed for '%s': %s", config->name, esp_err_to_name(ret));
+    ESP_LOGE(s_tag, "SPI transmit failed for '%s': %s", config->name, esp_err_to_name(ret));
     /* Call error callback */
     if (config->proto.spi.callbacks.on_error) {
       star_bus_event_t event = {.bus_type = k_star_bus_type_spi,
@@ -197,7 +197,7 @@ static esp_err_t internal_star_bus_spi_transmit(const star_bus_config_t* config,
       config->proto.spi.callbacks.on_error(&event, ret, config->user_ctx);
     }
   } else {
-    ESP_LOGD(s_TAG, "SPI transmit success: %zu bytes from '%s'", len, config->name);
+    ESP_LOGD(s_tag, "SPI transmit success: %zu bytes from '%s'", len, config->name);
     /* Call success callback */
     if (config->proto.spi.callbacks.on_transfer_complete) {
       star_bus_event_t event = {.bus_type = k_star_bus_type_spi,
@@ -220,19 +220,19 @@ static esp_err_t internal_star_bus_spi_receive(const star_bus_config_t* config,
 {
   ESP_RETURN_ON_FALSE(config->initialized,
                       ESP_ERR_INVALID_STATE,
-                      s_TAG,
+                      s_tag,
                       "SPI device '%s' is not initialized",
                       config->name);
   ESP_RETURN_ON_FALSE(config->handle,
                       ESP_ERR_INVALID_STATE,
-                      s_TAG,
+                      s_tag,
                       "SPI device '%s' handle is NULL",
                       config->name);
 
   /* Check for overflow: length in bits must fit in uint32_t */
   ESP_RETURN_ON_FALSE(len <= (UINT32_MAX / 8),
                       ESP_ERR_INVALID_ARG,
-                      s_TAG,
+                      s_tag,
                       "SPI receive length too large: %zu bytes (max: %lu)",
                       len,
                       (unsigned long)(UINT32_MAX / 8));
@@ -249,7 +249,7 @@ static esp_err_t internal_star_bus_spi_receive(const star_bus_config_t* config,
   esp_err_t ret = spi_device_polling_transmit((spi_device_handle_t)config->handle, &trans);
 
   if (ret != ESP_OK) {
-    ESP_LOGE(s_TAG, "SPI receive failed for '%s': %s", config->name, esp_err_to_name(ret));
+    ESP_LOGE(s_tag, "SPI receive failed for '%s': %s", config->name, esp_err_to_name(ret));
     /* Call error callback */
     if (config->proto.spi.callbacks.on_error) {
       star_bus_event_t event = {.bus_type = k_star_bus_type_spi,
@@ -262,7 +262,7 @@ static esp_err_t internal_star_bus_spi_receive(const star_bus_config_t* config,
       config->proto.spi.callbacks.on_error(&event, ret, config->user_ctx);
     }
   } else {
-    ESP_LOGD(s_TAG, "SPI receive success: %zu bytes to '%s'", len, config->name);
+    ESP_LOGD(s_tag, "SPI receive success: %zu bytes to '%s'", len, config->name);
     /* Call success callback */
     if (config->proto.spi.callbacks.on_transfer_complete) {
       star_bus_event_t event = {.bus_type = k_star_bus_type_spi,
@@ -286,19 +286,19 @@ static esp_err_t internal_star_bus_spi_transfer(const star_bus_config_t* config,
 {
   ESP_RETURN_ON_FALSE(config->initialized,
                       ESP_ERR_INVALID_STATE,
-                      s_TAG,
+                      s_tag,
                       "SPI device '%s' is not initialized",
                       config->name);
   ESP_RETURN_ON_FALSE(config->handle,
                       ESP_ERR_INVALID_STATE,
-                      s_TAG,
+                      s_tag,
                       "SPI device '%s' handle is NULL",
                       config->name);
 
   /* Check for overflow: length in bits must fit in uint32_t */
   ESP_RETURN_ON_FALSE(len <= (UINT32_MAX / 8),
                       ESP_ERR_INVALID_ARG,
-                      s_TAG,
+                      s_tag,
                       "SPI transfer length too large: %zu bytes (max: %lu)",
                       len,
                       (unsigned long)(UINT32_MAX / 8));
@@ -315,7 +315,7 @@ static esp_err_t internal_star_bus_spi_transfer(const star_bus_config_t* config,
   esp_err_t ret = spi_device_polling_transmit((spi_device_handle_t)config->handle, &trans);
 
   if (ret != ESP_OK) {
-    ESP_LOGE(s_TAG, "SPI transfer failed for '%s': %s", config->name, esp_err_to_name(ret));
+    ESP_LOGE(s_tag, "SPI transfer failed for '%s': %s", config->name, esp_err_to_name(ret));
     /* Call error callback */
     if (config->proto.spi.callbacks.on_error) {
       star_bus_event_t event = {.bus_type = k_star_bus_type_spi,
@@ -328,7 +328,7 @@ static esp_err_t internal_star_bus_spi_transfer(const star_bus_config_t* config,
       config->proto.spi.callbacks.on_error(&event, ret, config->user_ctx);
     }
   } else {
-    ESP_LOGD(s_TAG, "SPI transfer success: %zu bytes for '%s'", len, config->name);
+    ESP_LOGD(s_tag, "SPI transfer success: %zu bytes for '%s'", len, config->name);
     /* Call success callback */
     if (config->proto.spi.callbacks.on_transfer_complete) {
       star_bus_event_t event = {.bus_type = k_star_bus_type_spi,
