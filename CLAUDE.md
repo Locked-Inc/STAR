@@ -261,5 +261,4 @@ The `proto.yml` workflow runs on pushes to `star-proto/`:
 
 - `star-esp32-firmware/CLAUDE.md` - Detailed ESP32 firmware guide
 - `star-gateway/CLAUDE.md` - Gateway service architecture and build guide
-- `star-proto/STYLE_GUIDE.md` - Protobuf conventions
 - `docs/star_documentation.pdf` - System documentation
