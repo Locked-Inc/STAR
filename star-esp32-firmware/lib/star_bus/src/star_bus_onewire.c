@@ -16,7 +16,7 @@
 
 /* --- Constants --- */
 
-static const char* s_TAG = "STAR_ONEWIRE";
+static const char* s_tag = "STAR_ONEWIRE";
 
 /**
  * @brief Maximum number of simultaneous OneWire buses
@@ -110,7 +110,7 @@ static esp_err_t internal_init_onewire_mutex(void)
     g_onewire_mutex = xSemaphoreCreateMutex();
     if (g_onewire_mutex == NULL) {
       portEXIT_CRITICAL(&g_onewire_init_spinlock);
-      ESP_LOGE(s_TAG, "Failed to create 1-Wire global mutex");
+      ESP_LOGE(s_tag, "Failed to create 1-Wire global mutex");
       return ESP_ERR_NO_MEM;
     }
   }
@@ -152,7 +152,7 @@ static onewire_state_t* internal_get_onewire_state_safe(const char* bus_name, bo
   }
 
   if (xSemaphoreTake(g_onewire_mutex, pdMS_TO_TICKS(s_onewire_mutex_timeout_ms)) != pdTRUE) {
-    ESP_LOGE(s_TAG,
+    ESP_LOGE(s_tag,
              "Failed to take 1-Wire mutex (timeout after %lu ms)",
              (unsigned long)s_onewire_mutex_timeout_ms);
     return NULL;
@@ -203,18 +203,18 @@ esp_err_t star_bus_onewire_init(star_bus_manager_t*          manager,
                                 const star_onewire_config_t* config)
 {
   if (manager == NULL || bus_name == NULL || config == NULL) {
-    ESP_LOGE(s_TAG, "Invalid parameters");
+    ESP_LOGE(s_tag, "Invalid parameters");
     return ESP_ERR_INVALID_ARG;
   }
 
   if (config->gpio_pin < 0) {
-    ESP_LOGE(s_TAG, "Invalid GPIO pin");
+    ESP_LOGE(s_tag, "Invalid GPIO pin");
     return ESP_ERR_INVALID_ARG;
   }
 
   onewire_state_t* state = internal_get_onewire_state_safe(bus_name, true);
   if (state == NULL) {
-    ESP_LOGE(s_TAG, "Failed to create state for bus '%s'", bus_name);
+    ESP_LOGE(s_tag, "Failed to create state for bus '%s'", bus_name);
     return ESP_ERR_NO_MEM;
   }
 
@@ -232,7 +232,7 @@ esp_err_t star_bus_onewire_init(star_bus_manager_t*          manager,
 
   esp_err_t result = gpio_config(&io_conf);
   if (result != ESP_OK) {
-    ESP_LOGE(s_TAG, "Failed to configure GPIO: %s", esp_err_to_name(result));
+    ESP_LOGE(s_tag, "Failed to configure GPIO: %s", esp_err_to_name(result));
     return result;
   }
 
@@ -247,7 +247,7 @@ esp_err_t star_bus_onewire_init(star_bus_manager_t*          manager,
 
   state->initialized = true;
 
-  ESP_LOGI(s_TAG, "1-Wire bus '%s' initialized on GPIO %d", bus_name, config->gpio_pin);
+  ESP_LOGI(s_tag, "1-Wire bus '%s' initialized on GPIO %d", bus_name, config->gpio_pin);
 
   return ESP_OK;
 }
@@ -272,7 +272,7 @@ esp_err_t star_bus_onewire_deinit(star_bus_manager_t* manager, const char* bus_n
 
   state->initialized = false;
 
-  ESP_LOGI(s_TAG, "1-Wire bus '%s' deinitialized", bus_name);
+  ESP_LOGI(s_tag, "1-Wire bus '%s' deinitialized", bus_name);
 
   return ESP_OK;
 }
@@ -551,7 +551,7 @@ star_bus_onewire_match_rom(star_bus_manager_t* manager, const char* bus_name, co
   }
 
   /* Send MATCH ROM command */
-  esp_err_t result = star_bus_onewire_write_byte(manager, bus_name, STAR_ONEWIRE_CMD_MATCH_ROM);
+  esp_err_t result = star_bus_onewire_write_byte(manager, bus_name, k_star_onewire_cmd_match_rom);
   if (result != ESP_OK) {
     return result;
   }
@@ -574,7 +574,7 @@ esp_err_t star_bus_onewire_skip_rom(star_bus_manager_t* manager, const char* bus
   }
 
   /* Send SKIP ROM command */
-  return star_bus_onewire_write_byte(manager, bus_name, STAR_ONEWIRE_CMD_SKIP_ROM);
+  return star_bus_onewire_write_byte(manager, bus_name, k_star_onewire_cmd_skip_rom);
 }
 
 esp_err_t star_bus_onewire_search(star_bus_manager_t* manager,
@@ -704,7 +704,7 @@ esp_err_t star_bus_onewire_search(star_bus_manager_t* manager,
 
   state->stats.devices_found = *count;
 
-  ESP_LOGI(s_TAG, "Found %d device(s) on bus '%s'", *count, bus_name);
+  ESP_LOGI(s_tag, "Found %d device(s) on bus '%s'", *count, bus_name);
 
   return ESP_OK;
 }
@@ -800,7 +800,7 @@ esp_err_t star_bus_onewire_reset_stats(star_bus_manager_t* manager, const char* 
 
   memset(&state->stats, 0, sizeof(star_onewire_stats_t));
 
-  ESP_LOGI(s_TAG, "Statistics reset for 1-Wire bus '%s'", bus_name);
+  ESP_LOGI(s_tag, "Statistics reset for 1-Wire bus '%s'", bus_name);
 
   return ESP_OK;
 }

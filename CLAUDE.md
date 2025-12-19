@@ -150,6 +150,50 @@ star.v1.RequestHeader.request_id max_size:64
 - Static variables: `s_` prefix
 - Global variables: `g_` prefix (avoid)
 
+### Constants and Macros
+
+Prefer enums over const variables over macros for defining constant values.
+
+1. **Enums** - Use for related integer constants
+   ```c
+   // PREFER: Type-safe enums with debugger support
+   typedef enum {
+     k_motor_state_idle    = 0,
+     k_motor_state_running = 1,
+     k_motor_state_error   = 2,
+   } motor_state_t;
+
+   // AVOID: Macros for related constants
+   #define MOTOR_STATE_IDLE    (0)
+   #define MOTOR_STATE_RUNNING (1)
+   #define MOTOR_STATE_ERROR   (2)
+   ```
+
+2. **const variables** - Use for single typed values
+   ```c
+   // PREFER: Type-safe const with scope
+   static const float    s_max_velocity_mps = 2.5f;
+   static const uint32_t s_timeout_ms       = 1000;
+
+   // AVOID: Macros for simple constants
+   #define MAX_VELOCITY_MPS (2.5f)
+   #define TIMEOUT_MS       (1000)
+   ```
+
+3. **Macros** - Only when compile-time evaluation or token pasting is required
+   ```c
+   // ACCEPTABLE: Macro required for token pasting
+   #define CONCAT(a, b) a##b
+
+   // ACCEPTABLE: Macro required for compile-time size
+   #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+   ```
+
+**Why this matters:**
+- Enums provide type safety and debugger support
+- const variables have type information and scope
+- Macros lack type safety and can cause subtle bugs
+
 ### Critical Rules
 
 - Always use braces for control statements

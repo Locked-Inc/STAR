@@ -19,7 +19,7 @@
 
 /* --- Constants --- */
 
-static const char* s_TAG = "STAR_BUS_MANAGER";
+static const char* s_tag = "STAR_BUS_MANAGER";
 
 /* --- Pin Registration Helpers --- */
 
@@ -143,7 +143,7 @@ static esp_err_t internal_register_config_pins(star_pin_interface_t*    pin_ifac
       break;
 
     default:
-      ESP_LOGD(s_TAG, "No pin registration for bus type: %d", config->type);
+      ESP_LOGD(s_tag, "No pin registration for bus type: %d", config->type);
       break;
   }
 
@@ -211,7 +211,7 @@ static esp_err_t internal_unregister_config_pins(star_pin_interface_t*    pin_if
       break;
 
     default:
-      ESP_LOGD(s_TAG, "No pin unregistration for bus type: %d", config->type);
+      ESP_LOGD(s_tag, "No pin unregistration for bus type: %d", config->type);
       break;
   }
 
@@ -225,7 +225,7 @@ esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
                                 star_error_interface_t* error_iface,
                                 star_pin_interface_t*   pin_iface)
 {
-  ESP_RETURN_ON_FALSE(manager, ESP_ERR_INVALID_ARG, s_TAG, "Manager pointer is NULL");
+  ESP_RETURN_ON_FALSE(manager, ESP_ERR_INVALID_ARG, s_tag, "Manager pointer is NULL");
 
   manager->buses       = NULL;
   manager->error_iface = error_iface; /* Can be NULL */
@@ -238,17 +238,17 @@ esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
     manager->tag = strdup(tag);
     ESP_RETURN_ON_FALSE(manager->tag,
                         ESP_ERR_NO_MEM,
-                        s_TAG,
+                        s_tag,
                         "Failed to allocate memory for manager tag");
   } else {
-    manager->tag = s_TAG; /* Use the component's default static tag */
+    manager->tag = s_tag; /* Use the component's default static tag */
   }
 
   manager->mutex = xSemaphoreCreateMutex();
   if (!manager->mutex) {
     ESP_LOGE(manager->tag, "Failed to create mutex");
     /* Free tag only if it was dynamically allocated */
-    if (manager->tag != s_TAG) {
+    if (manager->tag != s_tag) {
       free((void*)manager->tag); /* Cast needed for free */
       manager->tag = NULL;
     }
@@ -275,7 +275,7 @@ esp_err_t star_bus_manager_add_bus(star_bus_manager_t* manager, star_bus_config_
 {
   ESP_RETURN_ON_FALSE(manager && config,
                       ESP_ERR_INVALID_ARG,
-                      s_TAG,
+                      s_tag,
                       "Manager or config pointer is NULL");
   ESP_RETURN_ON_FALSE(config->name && strlen(config->name) > 0,
                       ESP_ERR_INVALID_ARG,
@@ -389,7 +389,7 @@ esp_err_t star_bus_manager_with_bus(star_bus_manager_t* manager,
 {
   ESP_RETURN_ON_FALSE(manager && name && strlen(name) > 0 && callback,
                       ESP_ERR_INVALID_ARG,
-                      s_TAG,
+                      s_tag,
                       "Invalid arguments to with_bus");
   ESP_RETURN_ON_FALSE(manager->mutex,
                       ESP_ERR_INVALID_STATE,
@@ -427,7 +427,7 @@ esp_err_t star_bus_manager_remove_bus(star_bus_manager_t* manager, const char* n
 {
   ESP_RETURN_ON_FALSE(manager && name && strlen(name) > 0,
                       ESP_ERR_INVALID_ARG,
-                      s_TAG,
+                      s_tag,
                       "Manager is NULL or name is invalid");
   ESP_RETURN_ON_FALSE(manager->mutex,
                       ESP_ERR_INVALID_STATE,
@@ -596,7 +596,7 @@ esp_err_t star_bus_manager_remove_bus(star_bus_manager_t* manager, const char* n
 
 esp_err_t star_bus_manager_deinit(star_bus_manager_t* manager)
 {
-  ESP_RETURN_ON_FALSE(manager, ESP_ERR_INVALID_ARG, s_TAG, "Manager pointer is NULL");
+  ESP_RETURN_ON_FALSE(manager, ESP_ERR_INVALID_ARG, s_tag, "Manager pointer is NULL");
 
   bool mutex_taken = false;
   if (manager->mutex != NULL) {
@@ -670,7 +670,7 @@ esp_err_t star_bus_manager_deinit(star_bus_manager_t* manager)
   }
 
   /* Free the tag string if it was dynamically allocated */
-  if (manager->tag != NULL && manager->tag != s_TAG) {
+  if (manager->tag != NULL && manager->tag != s_tag) {
     free((void*)manager->tag); /* Cast needed for free */
   }
   manager->tag = NULL;
@@ -688,7 +688,7 @@ esp_err_t star_bus_manager_deinit(star_bus_manager_t* manager)
     manager->mutex = NULL;
   }
 
-  ESP_LOGI(s_TAG,
+  ESP_LOGI(s_tag,
            "Manager deinitialized %s",
            (first_error == ESP_OK) ? "successfully" : "with errors");
   return first_error;
@@ -717,7 +717,7 @@ esp_err_t star_bus_manager_register_all_pins(const star_bus_manager_t*   manager
 {
   ESP_RETURN_ON_FALSE(manager && reg_func,
                       ESP_ERR_INVALID_ARG,
-                      s_TAG,
+                      s_tag,
                       "Manager or registration function is NULL");
   ESP_RETURN_ON_FALSE(manager->mutex,
                       ESP_ERR_INVALID_STATE,
@@ -847,7 +847,7 @@ esp_err_t star_bus_write_digital(star_bus_manager_t* manager,
 {
   ESP_RETURN_ON_FALSE(manager && bus_name,
                       ESP_ERR_INVALID_ARG,
-                      s_TAG,
+                      s_tag,
                       "Manager or bus_name is NULL");
 
   /* Dispatch to GPIO bus function */
@@ -861,18 +861,19 @@ esp_err_t star_bus_read_digital(star_bus_manager_t* manager,
 {
   ESP_RETURN_ON_FALSE(manager && bus_name && value,
                       ESP_ERR_INVALID_ARG,
-                      s_TAG,
+                      s_tag,
                       "Manager, bus_name, or value is NULL");
 
   /* Dispatch to GPIO bus function */
   return star_bus_gpio_read_digital(manager, bus_name, pin_index, value);
 }
 
-esp_err_t star_bus_read_analog_raw(star_bus_manager_t* manager, const char* bus_name, int* out_raw)
+esp_err_t
+star_bus_read_analog_raw(star_bus_manager_t* manager, const char* bus_name, int32_t* out_raw)
 {
   ESP_RETURN_ON_FALSE(manager && bus_name && out_raw,
                       ESP_ERR_INVALID_ARG,
-                      s_TAG,
+                      s_tag,
                       "Manager, bus_name, or out_raw is NULL");
 
   /* Dispatch to ADC bus function */
@@ -880,11 +881,11 @@ esp_err_t star_bus_read_analog_raw(star_bus_manager_t* manager, const char* bus_
 }
 
 esp_err_t
-star_bus_read_analog_mv(star_bus_manager_t* manager, const char* bus_name, int* out_voltage_mv)
+star_bus_read_analog_mv(star_bus_manager_t* manager, const char* bus_name, int32_t* out_voltage_mv)
 {
   ESP_RETURN_ON_FALSE(manager && bus_name && out_voltage_mv,
                       ESP_ERR_INVALID_ARG,
-                      s_TAG,
+                      s_tag,
                       "Manager, bus_name, or out_voltage_mv is NULL");
 
   /* Dispatch to ADC bus function */

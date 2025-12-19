@@ -71,18 +71,30 @@ extern "C" {
 
 /* --- Constants --- */
 
-/** 1-Wire ROM code size (8 bytes: 1 family + 6 serial + 1 CRC) */
-#define STAR_ONEWIRE_ROM_SIZE (8)
+/**
+ * @brief OneWire size constants
+ *
+ * Using enum for type safety while maintaining compile-time constant behavior
+ * required for array sizes in C.
+ */
+enum {
+  /** 1-Wire ROM code size (8 bytes: 1 family + 6 serial + 1 CRC) */
+  k_star_onewire_rom_size    = 8,
 
-/** Maximum devices on a 1-Wire bus */
-#define STAR_ONEWIRE_MAX_DEVICES (100)
+  /** Maximum devices on a 1-Wire bus */
+  k_star_onewire_max_devices = 100,
+};
 
-/* 1-Wire ROM Commands */
-#define STAR_ONEWIRE_CMD_READ_ROM     (0x33) /**< Read ROM (single device) */
-#define STAR_ONEWIRE_CMD_MATCH_ROM    (0x55) /**< Match ROM (address device) */
-#define STAR_ONEWIRE_CMD_SKIP_ROM     (0xCC) /**< Skip ROM (all devices) */
-#define STAR_ONEWIRE_CMD_SEARCH_ROM   (0xF0) /**< Search ROM (find devices) */
-#define STAR_ONEWIRE_CMD_ALARM_SEARCH (0xEC) /**< Alarm search */
+/**
+ * @brief OneWire ROM commands
+ */
+typedef enum {
+  k_star_onewire_cmd_read_rom     = 0x33, /**< Read ROM (single device) */
+  k_star_onewire_cmd_match_rom    = 0x55, /**< Match ROM (address device) */
+  k_star_onewire_cmd_skip_rom     = 0xCC, /**< Skip ROM (all devices) */
+  k_star_onewire_cmd_search_rom   = 0xF0, /**< Search ROM (find devices) */
+  k_star_onewire_cmd_alarm_search = 0xEC, /**< Alarm search */
+} star_onewire_cmd_t;
 
 /* --- Types --- */
 
@@ -437,7 +449,7 @@ esp_err_t star_bus_onewire_reset_stats(star_bus_manager_t* manager, const char* 
 #define STAR_ONEWIRE_CONFIG_DEFAULT()                                                              \
   {                                                                                                \
     .gpio_pin            = GPIO_NUM_NC,                                                            \
-    .speed               = STAR_ONEWIRE_SPEED_STANDARD,                                            \
+    .speed               = k_star_onewire_speed_standard,                                          \
     .use_parasitic_power = false,                                                                  \
     .use_strong_pullup   = false,                                                                  \
     .search_timeout_ms   = 5000,                                                                   \
@@ -446,14 +458,17 @@ esp_err_t star_bus_onewire_reset_stats(star_bus_manager_t* manager, const char* 
 /**
  * @brief Common device family codes
  */
-#define STAR_ONEWIRE_FAMILY_DS18S20 (0x10) /**< Temperature sensor */
-#define STAR_ONEWIRE_FAMILY_DS18B20 (0x28) /**< Temperature sensor */
-#define STAR_ONEWIRE_FAMILY_DS1822  (0x22) /**< Temperature sensor */
-#define STAR_ONEWIRE_FAMILY_DS2431  (0x2D) /**< 1K EEPROM */
-#define STAR_ONEWIRE_FAMILY_DS2433  (0x23) /**< 4K EEPROM */
-#define STAR_ONEWIRE_FAMILY_DS2401  (0x01) /**< Silicon serial number */
-#define STAR_ONEWIRE_FAMILY_DS2411  (0x01) /**< Silicon serial number */
-#define STAR_ONEWIRE_FAMILY_DS1990A (0x01) /**< iButton */
+typedef enum {
+  k_star_onewire_family_ds18s20 = 0x10, /**< Temperature sensor */
+  k_star_onewire_family_ds1822  = 0x22, /**< Temperature sensor */
+  k_star_onewire_family_ds2433  = 0x23, /**< 4K EEPROM */
+  k_star_onewire_family_ds2438  = 0x26, /**< Smart battery monitor */
+  k_star_onewire_family_ds18b20 = 0x28, /**< Temperature sensor */
+  k_star_onewire_family_ds2431  = 0x2D, /**< 1K EEPROM */
+  k_star_onewire_family_ds2401  = 0x01, /**< Silicon serial number */
+  k_star_onewire_family_ds2411  = 0x01, /**< Silicon serial number */
+  k_star_onewire_family_ds1990a = 0x01, /**< iButton */
+} star_onewire_family_t;
 
 #ifdef __cplusplus
 }
