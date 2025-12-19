@@ -3,6 +3,8 @@
 #ifndef STAR_CORE_H
 #define STAR_CORE_H
 
+#include <stddef.h>
+
 #include "star_error_interface.h"
 #include "star_pin_interface.h"
 
@@ -159,8 +161,23 @@ const char* star_core_version(void);
  */
 static inline bool star_error_interface_is_valid(const star_error_interface_t* iface)
 {
-  return (iface != NULL && iface->record_error != NULL && iface->can_retry != NULL &&
-          iface->reset_state != NULL);
+  if (iface == NULL) {
+    return false;
+  }
+
+  if (iface->record_error == NULL) {
+    return false;
+  }
+
+  if (iface->can_retry == NULL) {
+    return false;
+  }
+
+  if (iface->reset_state == NULL) {
+    return false;
+  }
+
+  return true;
 }
 
 /**
@@ -170,8 +187,23 @@ static inline bool star_error_interface_is_valid(const star_error_interface_t* i
  */
 static inline bool star_pin_interface_is_valid(const star_pin_interface_t* iface)
 {
-  return (iface != NULL && iface->register_pin != NULL && iface->unregister_pin != NULL &&
-          iface->validate != NULL);
+  if (iface == NULL) {
+    return false;
+  }
+
+  if (iface->register_pin == NULL) {
+    return false;
+  }
+
+  if (iface->unregister_pin == NULL) {
+    return false;
+  }
+
+  if (iface->validate == NULL) {
+    return false;
+  }
+
+  return true;
 }
 
 /**

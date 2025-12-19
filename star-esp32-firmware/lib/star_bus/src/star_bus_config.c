@@ -30,7 +30,7 @@
 
 /* --- Constants --- */
 
-static const char* s_TAG = "STAR_BUS_CONFIG";
+static const char* s_tag = "STAR_BUS_CONFIG";
 
 /* --- Private Function Prototypes --- */
 
@@ -51,7 +51,7 @@ star_bus_config_t* star_bus_config_create_i2c(const char* name,
   star_bus_config_t* config = internal_star_bus_config_create_common(name, k_star_bus_type_i2c);
   ESP_RETURN_ON_FALSE(config,
                       NULL,
-                      s_TAG,
+                      s_tag,
                       "Failed to create common config for %s",
                       name ? name : "NULL");
 
@@ -71,7 +71,7 @@ star_bus_config_t* star_bus_config_create_i2c(const char* name,
   /* Initialize default operations */
   star_bus_i2c_init_default_ops(&config->proto.i2c.ops);
 
-  ESP_LOGI(s_TAG,
+  ESP_LOGI(s_tag,
            "Created I2C config '%s' (Port: %d, Addr: 0x%02X, SDA: %d, SCL: %d, Speed: %" PRIu32
            " Hz)",
            name,
@@ -91,17 +91,17 @@ star_bus_config_t* star_bus_config_create_spi_device(const char*                
                                                      int32_t                              dma_chan,
                                                      const spi_device_interface_config_t* dev_cfg)
 {
-  ESP_RETURN_ON_FALSE(dev_cfg, NULL, s_TAG, "SPI device config cannot be NULL");
+  ESP_RETURN_ON_FALSE(dev_cfg, NULL, s_tag, "SPI device config cannot be NULL");
   ESP_RETURN_ON_FALSE(host >= 0 && host < SPI_HOST_MAX,
                       NULL,
-                      s_TAG,
+                      s_tag,
                       "Invalid SPI host number: %d",
                       host);
 
   star_bus_config_t* config = internal_star_bus_config_create_common(name, k_star_bus_type_spi);
   ESP_RETURN_ON_FALSE(config,
                       NULL,
-                      s_TAG,
+                      s_tag,
                       "Failed to create common config for %s",
                       name ? name : "NULL");
 
@@ -133,7 +133,7 @@ star_bus_config_t* star_bus_config_create_spi_device(const char*                
   star_bus_spi_init_default_ops(&config->proto.spi.ops);
 
   ESP_LOGI(
-    s_TAG,
+    s_tag,
     "Created SPI config '%s' (Host: %d, COPI: %d, CIPO: %d, SCLK: %d, CS: %d, Mode: %d, Speed: %" PRId32
     " Hz, DMA: %s)",
     name,
@@ -160,20 +160,20 @@ star_bus_config_t* star_bus_config_create_spi_peripheral(const char*       name,
 {
   ESP_RETURN_ON_FALSE(host >= 0 && host < SPI_HOST_MAX,
                       NULL,
-                      s_TAG,
+                      s_tag,
                       "Invalid SPI host number: %d",
                       host);
   ESP_RETURN_ON_FALSE(queue_size > 0 && queue_size <= 10,
                       NULL,
-                      s_TAG,
+                      s_tag,
                       "Invalid queue size: %d (must be 1-10)",
                       queue_size);
-  ESP_RETURN_ON_FALSE(mode <= 3, NULL, s_TAG, "Invalid SPI mode: %d (must be 0-3)", mode);
+  ESP_RETURN_ON_FALSE(mode <= 3, NULL, s_tag, "Invalid SPI mode: %d (must be 0-3)", mode);
 
   star_bus_config_t* config = internal_star_bus_config_create_common(name, k_star_bus_type_spi);
   ESP_RETURN_ON_FALSE(config,
                       NULL,
-                      s_TAG,
+                      s_tag,
                       "Failed to create common config for %s",
                       name ? name : "NULL");
 
@@ -197,7 +197,7 @@ star_bus_config_t* star_bus_config_create_spi_peripheral(const char*       name,
   star_bus_spi_peripheral_init_default_ops(&config->proto.spi.ops);
 
   ESP_LOGI(
-    s_TAG,
+    s_tag,
     "Created SPI Peripheral config '%s' (Host: %d, COPI: %d, CIPO: %d, SCLK: %d, CS: %d, Mode: %d, Queue: %d)",
     name,
     host,
@@ -214,13 +214,13 @@ star_bus_config_t* star_bus_config_create_spi_peripheral(const char*       name,
 star_bus_config_t*
 star_bus_config_create_gpio(const char* name, gpio_num_t* pins, uint8_t pin_count)
 {
-  ESP_RETURN_ON_FALSE(pins, NULL, s_TAG, "Pin array is NULL");
-  ESP_RETURN_ON_FALSE(pin_count > 0, NULL, s_TAG, "Pin count must be > 0");
+  ESP_RETURN_ON_FALSE(pins, NULL, s_tag, "Pin array is NULL");
+  ESP_RETURN_ON_FALSE(pin_count > 0, NULL, s_tag, "Pin count must be > 0");
 
   star_bus_config_t* config = internal_star_bus_config_create_common(name, k_star_bus_type_gpio);
   ESP_RETURN_ON_FALSE(config,
                       NULL,
-                      s_TAG,
+                      s_tag,
                       "Failed to create common config for %s",
                       name ? name : "NULL");
 
@@ -232,7 +232,7 @@ star_bus_config_create_gpio(const char* name, gpio_num_t* pins, uint8_t pin_coun
   /* Initialize default GPIO operations */
   config->proto.gpio.ops = star_bus_gpio_get_default_ops();
 
-  ESP_LOGI(s_TAG, "Created GPIO config '%s' with %d pins", name, pin_count);
+  ESP_LOGI(s_tag, "Created GPIO config '%s' with %d pins", name, pin_count);
 
   return config;
 }
@@ -246,7 +246,7 @@ star_bus_config_t* star_bus_config_create_adc(const char*    name,
   star_bus_config_t* config = internal_star_bus_config_create_common(name, k_star_bus_type_adc);
   ESP_RETURN_ON_FALSE(config,
                       NULL,
-                      s_TAG,
+                      s_tag,
                       "Failed to create common config for %s",
                       name ? name : "NULL");
 
@@ -261,7 +261,7 @@ star_bus_config_t* star_bus_config_create_adc(const char*    name,
   /* Initialize default ADC operations */
   config->proto.adc.ops = star_bus_adc_get_default_ops();
 
-  ESP_LOGI(s_TAG,
+  ESP_LOGI(s_tag,
            "Created ADC config '%s' (Unit: %d, Channel: %d, Bitwidth: %d, Atten: %d)",
            name,
            unit,
@@ -281,7 +281,7 @@ star_bus_config_create_onewire(const char* name, gpio_num_t gpio_pin, bool use_p
   star_bus_config_t* config = internal_star_bus_config_create_common(name, k_star_bus_type_onewire);
   ESP_RETURN_ON_FALSE(config,
                       NULL,
-                      s_TAG,
+                      s_tag,
                       "Failed to create common config for %s",
                       name ? name : "NULL");
 
@@ -295,7 +295,7 @@ star_bus_config_create_onewire(const char* name, gpio_num_t gpio_pin, bool use_p
   /* Initialize default operations to NULL - OneWire uses direct API */
   memset(&config->proto.onewire.ops, 0, sizeof(star_onewire_ops_t));
 
-  ESP_LOGI(s_TAG,
+  ESP_LOGI(s_tag,
            "Created OneWire config '%s' (Pin: %d, Parasitic: %s)",
            name,
            gpio_pin,
@@ -306,13 +306,13 @@ star_bus_config_create_onewire(const char* name, gpio_num_t gpio_pin, bool use_p
 
 esp_err_t star_bus_config_destroy(star_bus_config_t* config)
 {
-  ESP_RETURN_ON_FALSE(config, ESP_ERR_INVALID_ARG, s_TAG, "Config pointer is NULL");
+  ESP_RETURN_ON_FALSE(config, ESP_ERR_INVALID_ARG, s_tag, "Config pointer is NULL");
 
   /* If the bus/device is initialized, deinitialize it first */
   if (config->initialized) {
     esp_err_t ret = star_bus_config_deinit(config);
     if (ret != ESP_OK) {
-      ESP_LOGE(s_TAG,
+      ESP_LOGE(s_tag,
                "Failed to deinitialize bus '%s' before destroying: %s. Continuing cleanup.",
                config->name ? config->name : "UNKNOWN",
                esp_err_to_name(ret));
@@ -320,7 +320,7 @@ esp_err_t star_bus_config_destroy(star_bus_config_t* config)
     }
   }
 
-  ESP_LOGI(s_TAG, "Destroying bus config '%s'", config->name ? config->name : "UNKNOWN");
+  ESP_LOGI(s_tag, "Destroying bus config '%s'", config->name ? config->name : "UNKNOWN");
 
   /* Specific cleanup for SPI is handled by the manager during remove_bus */
   /* The manager checks if the bus needs to be freed based on device count */
@@ -345,10 +345,10 @@ esp_err_t star_bus_config_destroy(star_bus_config_t* config)
  */
 esp_err_t star_bus_config_init(star_bus_config_t* config, star_bus_manager_t* manager)
 {
-  ESP_RETURN_ON_FALSE(config, ESP_ERR_INVALID_ARG, s_TAG, "Config pointer is NULL");
+  ESP_RETURN_ON_FALSE(config, ESP_ERR_INVALID_ARG, s_tag, "Config pointer is NULL");
   ESP_RETURN_ON_FALSE(!config->initialized,
                       ESP_ERR_INVALID_STATE,
-                      s_TAG,
+                      s_tag,
                       "Bus '%s' is already initialized",
                       config->name ? config->name : "UNKNOWN");
 
@@ -358,12 +358,12 @@ esp_err_t star_bus_config_init(star_bus_config_t* config, star_bus_manager_t* ma
   switch (config->type) {
     case k_star_bus_type_i2c:
       /* Initialize I2C bus */
-      ESP_LOGI(s_TAG, "Initializing I2C bus '%s' (Port %d)", bus_name, config->proto.i2c.port);
+      ESP_LOGI(s_tag, "Initializing I2C bus '%s' (Port %d)", bus_name, config->proto.i2c.port);
 
       ret = i2c_param_config(config->proto.i2c.port, &config->proto.i2c.config);
       ESP_GOTO_ON_ERROR(ret,
                         fail,
-                        s_TAG,
+                        s_tag,
                         "i2c_param_config failed for '%s': %s",
                         bus_name,
                         esp_err_to_name(ret));
@@ -375,7 +375,7 @@ esp_err_t star_bus_config_init(star_bus_config_t* config, star_bus_manager_t* ma
                                0); /* Flags */
       ESP_GOTO_ON_ERROR(ret,
                         fail_i2c_driver,
-                        s_TAG,
+                        s_tag,
                         "i2c_driver_install failed for '%s': %s",
                         bus_name,
                         esp_err_to_name(ret));
@@ -384,20 +384,20 @@ esp_err_t star_bus_config_init(star_bus_config_t* config, star_bus_manager_t* ma
     case k_star_bus_type_spi:
       ESP_RETURN_ON_FALSE(manager,
                           ESP_ERR_INVALID_ARG,
-                          s_TAG,
+                          s_tag,
                           "Bus manager pointer is required for SPI initialization");
 
       spi_host_device_t host = config->proto.spi.host;
       ESP_RETURN_ON_FALSE(host >= 0 && host < SPI_HOST_MAX,
                           ESP_ERR_INVALID_ARG,
-                          s_TAG,
+                          s_tag,
                           "Invalid SPI host number: %d",
                           host);
 
       /* Check if this is peripheral or controller mode */
       if (config->proto.spi.is_peripheral) {
         /* SPI Peripheral Mode */
-        ESP_LOGI(s_TAG, "Initializing SPI peripheral '%s' (Host %d)", bus_name, host);
+        ESP_LOGI(s_tag, "Initializing SPI peripheral '%s' (Host %d)", bus_name, host);
 
         spi_slave_interface_config_t slave_cfg = {
           .spics_io_num  = config->proto.spi.cs_io_num,
@@ -430,20 +430,20 @@ esp_err_t star_bus_config_init(star_bus_config_t* config, star_bus_manager_t* ma
         ret = spi_slave_initialize(host, &bus_cfg, &slave_cfg, dma_chan);
         ESP_GOTO_ON_ERROR(ret,
                           fail,
-                          s_TAG,
+                          s_tag,
                           "spi_slave_initialize failed for '%s': %s",
                           bus_name,
                           esp_err_to_name(ret));
 
         manager->spi_host_initialized[host] = true;
-        ESP_LOGI(s_TAG, "SPI peripheral '%s' initialized successfully", bus_name);
+        ESP_LOGI(s_tag, "SPI peripheral '%s' initialized successfully", bus_name);
       } else {
         /* SPI Controller Mode */
-        ESP_LOGI(s_TAG, "Initializing SPI device '%s' (Host %d)", bus_name, host);
+        ESP_LOGI(s_tag, "Initializing SPI device '%s' (Host %d)", bus_name, host);
 
         /* Initialize the SPI bus *only if* it hasn't been initialized yet for this host */
         if (!manager->spi_host_initialized[host]) {
-          ESP_LOGI(s_TAG, "Initializing SPI bus driver for host %d...", host);
+          ESP_LOGI(s_tag, "Initializing SPI bus driver for host %d...", host);
           /* Map COPI/CIPO to ESP-IDF's MOSI/MISO */
           spi_bus_config_t esp_idf_bus_cfg = {
             .mosi_io_num     = config->proto.spi.copi_io_num,
@@ -460,15 +460,15 @@ esp_err_t star_bus_config_init(star_bus_config_t* config, star_bus_manager_t* ma
           ret              = spi_bus_initialize(host, &esp_idf_bus_cfg, dma_chan);
           ESP_GOTO_ON_ERROR(ret,
                             fail,
-                            s_TAG,
+                            s_tag,
                             "spi_bus_initialize failed for host %d: %s",
                             host,
                             esp_err_to_name(ret));
           manager->spi_host_initialized[host] = true;
           manager->spi_device_count[host]     = 0;
-          ESP_LOGI(s_TAG, "SPI bus driver for host %d initialized.", host);
+          ESP_LOGI(s_tag, "SPI bus driver for host %d initialized.", host);
         } else {
-          ESP_LOGD(s_TAG, "SPI bus driver for host %d already initialized.", host);
+          ESP_LOGD(s_tag, "SPI bus driver for host %d already initialized.", host);
         }
 
         /* Add the SPI device to the bus */
@@ -476,7 +476,7 @@ esp_err_t star_bus_config_init(star_bus_config_t* config, star_bus_manager_t* ma
         ret = spi_bus_add_device(host, &config->proto.spi.dev_cfg, &spi_handle);
         ESP_GOTO_ON_ERROR(ret,
                           fail_spi_add_device,
-                          s_TAG,
+                          s_tag,
                           "spi_bus_add_device failed for '%s': %s",
                           bus_name,
                           esp_err_to_name(ret));
@@ -487,7 +487,7 @@ esp_err_t star_bus_config_init(star_bus_config_t* config, star_bus_manager_t* ma
 
     case k_star_bus_type_gpio: {
       /* Initialize GPIO pins */
-      ESP_LOGI(s_TAG,
+      ESP_LOGI(s_tag,
                "Initializing GPIO bus '%s' with %d pins",
                bus_name,
                config->proto.gpio.pin_count);
@@ -507,13 +507,13 @@ esp_err_t star_bus_config_init(star_bus_config_t* config, star_bus_manager_t* ma
         ret = gpio_config(&io_conf);
         ESP_GOTO_ON_ERROR(ret,
                           fail,
-                          s_TAG,
+                          s_tag,
                           "gpio_config failed for pin %d: %s",
                           pin,
                           esp_err_to_name(ret));
       }
 
-      ESP_LOGI(s_TAG, "GPIO bus '%s' initialized successfully", bus_name);
+      ESP_LOGI(s_tag, "GPIO bus '%s' initialized successfully", bus_name);
       break;
     }
 
@@ -521,11 +521,11 @@ esp_err_t star_bus_config_init(star_bus_config_t* config, star_bus_manager_t* ma
       /* Initialize ADC unit */
       ESP_RETURN_ON_FALSE(manager,
                           ESP_ERR_INVALID_ARG,
-                          s_TAG,
+                          s_tag,
                           "Bus manager pointer is required for ADC initialization");
 
       adc_unit_t unit = config->proto.adc.unit;
-      ESP_LOGI(s_TAG,
+      ESP_LOGI(s_tag,
                "Initializing ADC bus '%s' (Unit: %d, Channel: %d)",
                bus_name,
                unit,
@@ -534,7 +534,7 @@ esp_err_t star_bus_config_init(star_bus_config_t* config, star_bus_manager_t* ma
       /* Check if ADC unit is already initialized (shared across channels) */
       if (manager->adc_unit_handles[unit] == NULL) {
         /* First channel on this unit - create the unit handle */
-        ESP_LOGI(s_TAG, "Creating new ADC unit handle for unit %d", unit);
+        ESP_LOGI(s_tag, "Creating new ADC unit handle for unit %d", unit);
 
         adc_oneshot_unit_init_cfg_t unit_cfg = {
           .unit_id  = unit,
@@ -544,13 +544,13 @@ esp_err_t star_bus_config_init(star_bus_config_t* config, star_bus_manager_t* ma
         ret = adc_oneshot_new_unit(&unit_cfg, &manager->adc_unit_handles[unit]);
         ESP_GOTO_ON_ERROR(ret,
                           fail,
-                          s_TAG,
+                          s_tag,
                           "adc_oneshot_new_unit failed for '%s': %s",
                           bus_name,
                           esp_err_to_name(ret));
       } else {
         /* Unit already initialized - reuse the handle */
-        ESP_LOGI(s_TAG, "Reusing existing ADC unit handle for unit %d", unit);
+        ESP_LOGI(s_tag, "Reusing existing ADC unit handle for unit %d", unit);
       }
 
       /* Store the shared unit handle in this config */
@@ -567,7 +567,7 @@ esp_err_t star_bus_config_init(star_bus_config_t* config, star_bus_manager_t* ma
                                        &chan_cfg);
       ESP_GOTO_ON_ERROR(ret,
                         fail_adc_unit,
-                        s_TAG,
+                        s_tag,
                         "adc_oneshot_config_channel failed for '%s': %s",
                         bus_name,
                         esp_err_to_name(ret));
@@ -586,9 +586,9 @@ esp_err_t star_bus_config_init(star_bus_config_t* config, star_bus_manager_t* ma
 
       ret = adc_cali_create_scheme_curve_fitting(&cali_cfg, &config->proto.adc.cali_handle);
       if (ret == ESP_OK) {
-        ESP_LOGI(s_TAG, "ADC calibration (curve fitting) initialized for '%s'", bus_name);
+        ESP_LOGI(s_tag, "ADC calibration (curve fitting) initialized for '%s'", bus_name);
       } else {
-        ESP_LOGW(s_TAG,
+        ESP_LOGW(s_tag,
                  "ADC calibration initialization failed for '%s': %s (continuing without "
                  "calibration)",
                  bus_name,
@@ -604,9 +604,9 @@ esp_err_t star_bus_config_init(star_bus_config_t* config, star_bus_manager_t* ma
 
       ret = adc_cali_create_scheme_line_fitting(&cali_cfg, &config->proto.adc.cali_handle);
       if (ret == ESP_OK) {
-        ESP_LOGI(s_TAG, "ADC calibration (line fitting) initialized for '%s'", bus_name);
+        ESP_LOGI(s_tag, "ADC calibration (line fitting) initialized for '%s'", bus_name);
       } else {
-        ESP_LOGW(s_TAG,
+        ESP_LOGW(s_tag,
                  "ADC calibration initialization failed for '%s': %s (continuing without "
                  "calibration)",
                  bus_name,
@@ -614,11 +614,11 @@ esp_err_t star_bus_config_init(star_bus_config_t* config, star_bus_manager_t* ma
         config->proto.adc.cali_handle = NULL;
       }
 #else
-      ESP_LOGW(s_TAG, "ADC calibration not supported on this chip, continuing without calibration");
+      ESP_LOGW(s_tag, "ADC calibration not supported on this chip, continuing without calibration");
       config->proto.adc.cali_handle = NULL;
 #endif
 
-      ESP_LOGI(s_TAG, "ADC bus '%s' initialized successfully", bus_name);
+      ESP_LOGI(s_tag, "ADC bus '%s' initialized successfully", bus_name);
       break;
 
     fail_adc_unit:
@@ -636,10 +636,10 @@ esp_err_t star_bus_config_init(star_bus_config_t* config, star_bus_manager_t* ma
       /* Initialize OneWire bus */
       ESP_RETURN_ON_FALSE(manager,
                           ESP_ERR_INVALID_ARG,
-                          s_TAG,
+                          s_tag,
                           "Bus manager pointer is required for OneWire initialization");
 
-      ESP_LOGI(s_TAG,
+      ESP_LOGI(s_tag,
                "Initializing OneWire bus '%s' (Pin: %d)",
                bus_name,
                config->proto.onewire.gpio_pin);
@@ -655,24 +655,24 @@ esp_err_t star_bus_config_init(star_bus_config_t* config, star_bus_manager_t* ma
       ret = star_bus_onewire_init(manager, config->name, &ow_cfg);
       ESP_GOTO_ON_ERROR(ret,
                         fail,
-                        s_TAG,
+                        s_tag,
                         "star_bus_onewire_init failed for '%s': %s",
                         bus_name,
                         esp_err_to_name(ret));
 
-      ESP_LOGI(s_TAG, "OneWire bus '%s' initialized successfully", bus_name);
+      ESP_LOGI(s_tag, "OneWire bus '%s' initialized successfully", bus_name);
       break;
     }
 
     default:
-      ESP_LOGE(s_TAG, "Unsupported bus type for initialization: %d", config->type);
+      ESP_LOGE(s_tag, "Unsupported bus type for initialization: %d", config->type);
       ret = ESP_ERR_NOT_SUPPORTED;
       goto fail;
   }
 
   /* Mark as initialized */
   config->initialized = true;
-  ESP_LOGI(s_TAG,
+  ESP_LOGI(s_tag,
            "Successfully initialized bus/device '%s' (%s)",
            bus_name,
            star_bus_type_to_string(config->type));
@@ -690,16 +690,16 @@ fail_spi_add_device:
 
 /* Generic failure point */
 fail:
-  ESP_LOGE(s_TAG, "Failed to initialize bus/device '%s'", bus_name);
+  ESP_LOGE(s_tag, "Failed to initialize bus/device '%s'", bus_name);
   return ret;
 }
 
 esp_err_t star_bus_config_deinit(star_bus_config_t* config)
 {
-  ESP_RETURN_ON_FALSE(config, ESP_ERR_INVALID_ARG, s_TAG, "Config pointer is NULL");
+  ESP_RETURN_ON_FALSE(config, ESP_ERR_INVALID_ARG, s_tag, "Config pointer is NULL");
   ESP_RETURN_ON_FALSE(config->initialized,
                       ESP_ERR_INVALID_STATE,
-                      s_TAG,
+                      s_tag,
                       "Bus/device '%s' is not initialized",
                       config->name ? config->name : "UNKNOWN");
 
@@ -709,7 +709,7 @@ esp_err_t star_bus_config_deinit(star_bus_config_t* config)
   switch (config->type) {
     case k_star_bus_type_i2c:
       /* Deinitialize I2C bus */
-      ESP_LOGI(s_TAG, "Deinitializing I2C bus '%s' (Port %d)", bus_name, config->proto.i2c.port);
+      ESP_LOGI(s_tag, "Deinitializing I2C bus '%s' (Port %d)", bus_name, config->proto.i2c.port);
 
       ret = i2c_driver_delete(config->proto.i2c.port);
       break;
@@ -717,14 +717,14 @@ esp_err_t star_bus_config_deinit(star_bus_config_t* config)
     case k_star_bus_type_spi:
       if (config->proto.spi.is_peripheral) {
         /* SPI Peripheral Mode - Free the peripheral driver */
-        ESP_LOGI(s_TAG,
+        ESP_LOGI(s_tag,
                  "Deinitializing SPI peripheral '%s' (Host %d)",
                  bus_name,
                  config->proto.spi.host);
         ret = spi_slave_free(config->proto.spi.host);
       } else {
         /* SPI Controller Mode - Remove device */
-        ESP_LOGI(s_TAG,
+        ESP_LOGI(s_tag,
                  "Deinitializing SPI device '%s' (Host %d)",
                  bus_name,
                  config->proto.spi.host);
@@ -732,7 +732,7 @@ esp_err_t star_bus_config_deinit(star_bus_config_t* config)
           ret            = spi_bus_remove_device((spi_device_handle_t)config->handle);
           config->handle = NULL;
         } else {
-          ESP_LOGW(s_TAG, "SPI device '%s' handle was already NULL before deinit.", bus_name);
+          ESP_LOGW(s_tag, "SPI device '%s' handle was already NULL before deinit.", bus_name);
           ret = ESP_OK;
         }
       }
@@ -740,13 +740,13 @@ esp_err_t star_bus_config_deinit(star_bus_config_t* config)
 
     case k_star_bus_type_gpio:
       /* GPIO pins don't need explicit deinitialization - they can be reconfigured anytime */
-      ESP_LOGI(s_TAG, "Deinitializing GPIO bus '%s'", bus_name);
+      ESP_LOGI(s_tag, "Deinitializing GPIO bus '%s'", bus_name);
       ret = ESP_OK;
       break;
 
     case k_star_bus_type_adc:
       /* Deinitialize ADC channel */
-      ESP_LOGI(s_TAG, "Deinitializing ADC bus '%s'", bus_name);
+      ESP_LOGI(s_tag, "Deinitializing ADC bus '%s'", bus_name);
 
       /* Delete calibration if it was initialized */
       if (config->proto.adc.cali_handle) {
@@ -756,7 +756,7 @@ esp_err_t star_bus_config_deinit(star_bus_config_t* config)
         ret = adc_cali_delete_scheme_line_fitting(config->proto.adc.cali_handle);
 #endif
         if (ret != ESP_OK) {
-          ESP_LOGW(s_TAG,
+          ESP_LOGW(s_tag,
                    "Failed to delete ADC calibration for '%s': %s",
                    bus_name,
                    esp_err_to_name(ret));
@@ -772,11 +772,11 @@ esp_err_t star_bus_config_deinit(star_bus_config_t* config)
 
     case k_star_bus_type_onewire:
       /* Deinitialize OneWire bus */
-      ESP_LOGI(s_TAG, "Deinitializing OneWire bus '%s'", bus_name);
+      ESP_LOGI(s_tag, "Deinitializing OneWire bus '%s'", bus_name);
       /* Call with NULL manager - the function doesn't use it, only needs bus_name */
       ret = star_bus_onewire_deinit(NULL, bus_name);
       if (ret != ESP_OK) {
-        ESP_LOGW(s_TAG,
+        ESP_LOGW(s_tag,
                  "Failed to deinitialize OneWire bus '%s': %s",
                  bus_name,
                  esp_err_to_name(ret));
@@ -784,13 +784,13 @@ esp_err_t star_bus_config_deinit(star_bus_config_t* config)
       break;
 
     default:
-      ESP_LOGE(s_TAG, "Unsupported bus type for deinitialization: %d", config->type);
+      ESP_LOGE(s_tag, "Unsupported bus type for deinitialization: %d", config->type);
       ret = ESP_ERR_NOT_SUPPORTED;
       break;
   }
 
   if (ret != ESP_OK) {
-    ESP_LOGE(s_TAG, "Failed to deinitialize bus/device '%s': %s", bus_name, esp_err_to_name(ret));
+    ESP_LOGE(s_tag, "Failed to deinitialize bus/device '%s': %s", bus_name, esp_err_to_name(ret));
     /* Do not return early, mark as uninitialized anyway */
   }
 
@@ -799,7 +799,7 @@ esp_err_t star_bus_config_deinit(star_bus_config_t* config)
   config->handle      = NULL; /* Clear handle */
 
   if (ret == ESP_OK) {
-    ESP_LOGI(s_TAG, "Successfully deinitialized bus/device '%s'", bus_name);
+    ESP_LOGI(s_tag, "Successfully deinitialized bus/device '%s'", bus_name);
   }
 
   return ret; /* Return the ret of the deinit operation */
@@ -845,14 +845,14 @@ static star_bus_config_t* internal_star_bus_config_create_common(const char*    
 {
   /* Name validation */
   if (name == NULL) {
-    ESP_LOGE(s_TAG, "Bus name cannot be NULL");
+    ESP_LOGE(s_tag, "Bus name cannot be NULL");
     return NULL;
   }
 
   /* Allocate memory for the bus configuration */
   star_bus_config_t* config = (star_bus_config_t*)malloc(sizeof(star_bus_config_t));
   if (config == NULL) {
-    ESP_LOGE(s_TAG, "Failed to allocate memory for bus configuration");
+    ESP_LOGE(s_tag, "Failed to allocate memory for bus configuration");
     return NULL;
   }
 
@@ -862,7 +862,7 @@ static star_bus_config_t* internal_star_bus_config_create_common(const char*    
   /* Make a copy of the bus name */
   char* name_copy = strdup(name);
   if (name_copy == NULL) {
-    ESP_LOGE(s_TAG, "Failed to allocate memory for bus name");
+    ESP_LOGE(s_tag, "Failed to allocate memory for bus name");
     free(config);
     return NULL;
   }

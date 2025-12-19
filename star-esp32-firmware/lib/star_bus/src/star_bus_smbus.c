@@ -11,10 +11,10 @@
 
 /* --- Constants --- */
 
-static const char* s_TAG = "STAR_SMBUS";
+static const char* s_tag = "STAR_SMBUS";
 
 /* CRC-8 polynomial for SMBus PEC: x^8 + x^2 + x + 1 */
-#define STAR_SMBUS_PEC_POLYNOMIAL (0x07)
+static const uint8_t s_smbus_pec_polynomial = 0x07;
 
 /* --- Helper Functions --- */
 
@@ -24,12 +24,12 @@ static const char* s_TAG = "STAR_SMBUS";
 static esp_err_t internal_validate_smbus_params(star_bus_manager_t* manager, const char* bus_name)
 {
   if (manager == NULL) {
-    ESP_LOGE(s_TAG, "Manager is NULL");
+    ESP_LOGE(s_tag, "Manager is NULL");
     return ESP_ERR_INVALID_ARG;
   }
 
   if (bus_name == NULL) {
-    ESP_LOGE(s_TAG, "Bus name is NULL");
+    ESP_LOGE(s_tag, "Bus name is NULL");
     return ESP_ERR_INVALID_ARG;
   }
 
@@ -102,7 +102,7 @@ esp_err_t star_smbus_receive_byte(star_bus_manager_t* manager,
   }
 
   if (data == NULL) {
-    ESP_LOGE(s_TAG, "Data pointer is NULL");
+    ESP_LOGE(s_tag, "Data pointer is NULL");
     return ESP_ERR_INVALID_ARG;
   }
 
@@ -139,7 +139,7 @@ esp_err_t star_smbus_read_byte(star_bus_manager_t* manager,
   }
 
   if (data == NULL) {
-    ESP_LOGE(s_TAG, "Data pointer is NULL");
+    ESP_LOGE(s_tag, "Data pointer is NULL");
     return ESP_ERR_INVALID_ARG;
   }
 
@@ -182,7 +182,7 @@ esp_err_t star_smbus_read_word(star_bus_manager_t* manager,
   }
 
   if (data == NULL) {
-    ESP_LOGE(s_TAG, "Data pointer is NULL");
+    ESP_LOGE(s_tag, "Data pointer is NULL");
     return ESP_ERR_INVALID_ARG;
   }
 
@@ -214,7 +214,7 @@ esp_err_t star_smbus_process_call(star_bus_manager_t* manager,
   }
 
   if (read_data == NULL) {
-    ESP_LOGE(s_TAG, "Read data pointer is NULL");
+    ESP_LOGE(s_tag, "Read data pointer is NULL");
     return ESP_ERR_INVALID_ARG;
   }
 
@@ -257,12 +257,12 @@ esp_err_t star_smbus_block_write(star_bus_manager_t* manager,
   }
 
   if (data == NULL) {
-    ESP_LOGE(s_TAG, "Data pointer is NULL");
+    ESP_LOGE(s_tag, "Data pointer is NULL");
     return ESP_ERR_INVALID_ARG;
   }
 
   if (length == 0 || length > STAR_SMBUS_MAX_BLOCK_SIZE) {
-    ESP_LOGE(s_TAG, "Invalid block length: %d (must be 1-%d)", length, STAR_SMBUS_MAX_BLOCK_SIZE);
+    ESP_LOGE(s_tag, "Invalid block length: %d (must be 1-%d)", length, STAR_SMBUS_MAX_BLOCK_SIZE);
     return ESP_ERR_INVALID_ARG;
   }
 
@@ -290,12 +290,12 @@ esp_err_t star_smbus_block_read(star_bus_manager_t* manager,
   }
 
   if (data == NULL || length == NULL) {
-    ESP_LOGE(s_TAG, "Data or length pointer is NULL");
+    ESP_LOGE(s_tag, "Data or length pointer is NULL");
     return ESP_ERR_INVALID_ARG;
   }
 
   if (max_length < STAR_SMBUS_MAX_BLOCK_SIZE) {
-    ESP_LOGE(s_TAG,
+    ESP_LOGE(s_tag,
              "Buffer too small: %d (should be >= %d)",
              max_length,
              STAR_SMBUS_MAX_BLOCK_SIZE);
@@ -317,7 +317,7 @@ esp_err_t star_smbus_block_read(star_bus_manager_t* manager,
 
   /* Validate block length */
   if (block_length == 0 || block_length > STAR_SMBUS_MAX_BLOCK_SIZE) {
-    ESP_LOGE(s_TAG, "Invalid block length received: %d", block_length);
+    ESP_LOGE(s_tag, "Invalid block length received: %d", block_length);
     return ESP_ERR_INVALID_RESPONSE;
   }
 
@@ -349,12 +349,12 @@ esp_err_t star_smbus_block_process_call(star_bus_manager_t* manager,
   }
 
   if (write_data == NULL || read_data == NULL || read_length == NULL) {
-    ESP_LOGE(s_TAG, "Null pointer in block process call parameters");
+    ESP_LOGE(s_tag, "Null pointer in block process call parameters");
     return ESP_ERR_INVALID_ARG;
   }
 
   if (write_length == 0 || write_length > STAR_SMBUS_MAX_BLOCK_SIZE) {
-    ESP_LOGE(s_TAG,
+    ESP_LOGE(s_tag,
              "Invalid write length: %d (must be 1-%d)",
              write_length,
              STAR_SMBUS_MAX_BLOCK_SIZE);
@@ -362,7 +362,7 @@ esp_err_t star_smbus_block_process_call(star_bus_manager_t* manager,
   }
 
   if (max_read_len < STAR_SMBUS_MAX_BLOCK_SIZE) {
-    ESP_LOGE(s_TAG,
+    ESP_LOGE(s_tag,
              "Read buffer too small: %d (should be >= %d)",
              max_read_len,
              STAR_SMBUS_MAX_BLOCK_SIZE);
@@ -389,7 +389,7 @@ esp_err_t star_smbus_block_process_call(star_bus_manager_t* manager,
 
   /* Validate response length */
   if (response_length == 0 || response_length > STAR_SMBUS_MAX_BLOCK_SIZE) {
-    ESP_LOGE(s_TAG, "Invalid response length: %d", response_length);
+    ESP_LOGE(s_tag, "Invalid response length: %d", response_length);
     return ESP_ERR_INVALID_RESPONSE;
   }
 
@@ -417,7 +417,7 @@ uint8_t star_smbus_calculate_pec(const uint8_t* data, size_t length, uint8_t crc
 
     for (uint32_t bit = 0; bit < 8; bit++) {
       if (crc & 0x80) {
-        crc = (crc << 1) ^ STAR_SMBUS_PEC_POLYNOMIAL;
+        crc = (crc << 1) ^ s_smbus_pec_polynomial;
       } else {
         crc = (crc << 1);
       }

@@ -71,7 +71,7 @@ extern "C" {
  *
  * // === Change Resolution ===
  *
- * star_sensor_ds18b20_set_resolution(&temp_sensor, STAR_DS18B20_RESOLUTION_10_BIT);
+ * star_sensor_ds18b20_set_resolution(&temp_sensor, k_star_ds18b20_resolution_10_bit);
  *
  *
  * // === Cleanup ===

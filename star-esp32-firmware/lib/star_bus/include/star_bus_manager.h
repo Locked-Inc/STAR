@@ -289,11 +289,12 @@ esp_err_t star_bus_read_digital(star_bus_manager_t* manager,
  *
  * @param[in]  manager  Pointer to the initialized bus manager. Must not be NULL.
  * @param[in]  bus_name Name of the ADC bus. Must not be NULL.
- * @param[out] out_raw  Pointer to store the raw ADC value.
+ * @param[out] out_raw  Pointer to store the raw ADC value (int32_t for explicit typing).
  * @return esp_err_t ESP_OK on success, ESP_ERR_INVALID_ARG if bus type is not ADC,
  *                   or error codes from the underlying ADC operation.
  */
-esp_err_t star_bus_read_analog_raw(star_bus_manager_t* manager, const char* bus_name, int* out_raw);
+esp_err_t
+star_bus_read_analog_raw(star_bus_manager_t* manager, const char* bus_name, int32_t* out_raw);
 
 /**
  * @brief Read calibrated voltage in millivolts from an ADC bus (unified interface)
@@ -303,12 +304,13 @@ esp_err_t star_bus_read_analog_raw(star_bus_manager_t* manager, const char* bus_
  *
  * @param[in]  manager        Pointer to the initialized bus manager. Must not be NULL.
  * @param[in]  bus_name       Name of the ADC bus. Must not be NULL.
- * @param[out] out_voltage_mv Pointer to store the voltage in millivolts.
+ * @param[out] out_voltage_mv Pointer to store the voltage in millivolts (int32_t for explicit typing).
  * @return esp_err_t ESP_OK on success, ESP_ERR_INVALID_ARG if bus type is not ADC,
  *                   or error codes from the underlying ADC operation.
  */
-esp_err_t
-star_bus_read_analog_mv(star_bus_manager_t* manager, const char* bus_name, int* out_voltage_mv);
+esp_err_t star_bus_read_analog_mv(star_bus_manager_t* manager,
+                                  const char*         bus_name,
+                                  int32_t*            out_voltage_mv);
 
 #ifdef __cplusplus
 }
