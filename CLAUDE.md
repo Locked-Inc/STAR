@@ -23,10 +23,29 @@ Note: ESP-IDF and other external APIs may still use legacy terminology internall
 | `star-esp32-firmware/` | ESP32-S3 motor controller (PlatformIO + ESP-IDF) |
 | `star-proto/` | Protocol Buffers schemas with multi-language code generation |
 | `star-rpi5-buildroot/` | Custom Buildroot Linux for Raspberry Pi 5 |
-| `star-gateway/` | Gateway service (RPi5 to ESP32 communication) |
-| `star-ui/` | User interface |
+| `star-gateway/` | Go gateway service (UI ↔ ROS2 bridge) running on RPi5 |
+| `star-ui/` | User interface (TypeScript) |
 | `matlab/` | Motor system identification and PID controller design |
 | `Schematic/` | KiCad PCB designs |
+
+### System Communication Flow
+
+```
+User → UI (TypeScript)
+     → Gateway (Go on RPi5)
+     → ROS2 (C++ on RPi5)
+     → [SPI Bridge - TBD: ROS2 node or custom C using DIP libs]
+     → ESP32 (C firmware with nanopb)
+```
+
+**Key Design Notes:**
+- **Gateway (Go):** Handles WebSocket/HTTP with UI, bridges to ROS2, runs on RPi5
+- **ROS2 (C++):** Robot control framework, runs on RPi5
+- **SPI Bridge:** Not yet implemented - options include:
+  - ROS2 node with SPI support
+  - Custom C implementation using existing DIP libraries from `star-esp32-firmware/lib/star_bus/`
+  - Go implementation (less likely due to existing C libraries)
+- **ESP32:** Real-time motor control at 250Hz, communicates via Protocol Buffers over SPI
 
 ### Hardware
 
@@ -127,7 +146,7 @@ Use `star_bus_manager_with_bus()` instead of `star_bus_manager_find_bus()` to av
 
 | Target | Plugin | Output |
 |--------|--------|--------|
-| Kotlin/Java | buf.build/protocolbuffers/java, grpc/java, grpc/kotlin | `gen/kotlin/` |
+| Go | buf.build/protocolbuffers/go | `gen/go/` |
 | TypeScript | timostamm-protobuf-ts | `gen/typescript/` |
 | C (ESP32) | nanopb_generator | `gen/nanopb/` |
 
@@ -219,7 +238,7 @@ G(s) = 3.665 / (0.075s + 1)
 The `proto.yml` workflow runs on pushes to `star-proto/`:
 1. **Lint:** `buf format`, `buf lint`, `buf build`
 2. **Breaking:** `buf breaking` against main (PRs only)
-3. **Generate:** Kotlin, TypeScript, nanopb code
+3. **Generate:** Go, TypeScript, nanopb code
 4. **Test:** Serialization tests for all three targets
 
 ## Git Commits and Pull Requests

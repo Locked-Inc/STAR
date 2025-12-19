@@ -74,6 +74,33 @@
     \item Static allocation only (no malloc)
 \end{itemize}
 
+\subsubsection{Control Loop Frequency Rationale}
+
+\textbf{Why different loop rates?}
+
+The nested loop architecture follows classic control systems design. The outer loop (SPI at 100Hz) handles command distribution and telemetry collection, while the inner loop (PID at 250Hz) responds quickly to motor dynamics. Running PID at 2.5 times the communication rate ensures smooth control between commands without wasting CPU on excessive computation.
+
+\textbf{Why 250Hz for motor control?}
+
+This is a Nyquist sampling consideration. With DC gearmotors at 210 RPM (3.5 Hz mechanical speed) and a first-order time constant $\tau = 75$ ms (cutoff frequency $f_c = 1/(2\pi \tau) \approx 2.1$ Hz), the 250Hz control rate provides approximately 60 times oversampling of the mechanical dynamics - well above the 2 times Nyquist minimum.
+
+While the ESP32 could easily run the PID loop at 1kHz or higher, doing so would not improve control quality because the motor mechanics are the limiting factor, not the computational speed. The physical system cannot respond faster than its time constant allows. Running at 250Hz balances:
+
+\begin{itemize}
+    \item Adequate sampling of motor dynamics (60 times oversampling)
+    \item Efficient CPU utilization (4 motors $\times$ PID + encoder reads)
+    \item Low latency between velocity commands and motor response
+    \item Power efficiency (fewer ADC conversions, GPIO reads, and computations)
+\end{itemize}
+
+For context, control loop frequencies should match system dynamics:
+\begin{itemize}
+    \item DC gearmotors: 50-500 Hz typical
+    \item High-speed servos: 1-10 kHz
+    \item Motor current control: 10-50 kHz
+    \item Temperature control: 0.1-10 Hz
+\end{itemize}
+
 \subsection{Key Design Decisions}
 
 \subsubsection{Protocol Stack}
