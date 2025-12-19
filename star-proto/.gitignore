@@ -1,13 +1,12 @@
 # Generated code (created by buf generate)
-# Keep the gen/ directory structure but ignore contents
-gen/kotlin/*
+gen/go/*
 gen/typescript/*
 gen/nanopb/*
 !gen/*/.gitignore
 
-# Kotlin/Gradle build artifacts
-tests/kotlin/build/
-tests/kotlin/.gradle/
+# Go build artifacts
+tests/go/coverage.out
+tests/go/*.test
 
 # TypeScript/Node build artifacts
 tests/typescript/node_modules/
