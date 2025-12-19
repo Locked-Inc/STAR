@@ -121,67 +121,94 @@ extern "C" {
 
 /**
  * @brief DRV8243 fault type enumeration
+ *
+ * These fault types correspond to DRV8243 fault conditions as indicated
+ * by the nFAULT pin. The DRV8243 uses a single nFAULT output (active low)
+ * that asserts on any fault condition. Without SPI diagnostic register
+ * access, specific fault type identification requires external diagnostics.
  */
 typedef enum {
-  k_star_drv8243_fault_none         = 0, /**< No fault */
-  k_star_drv8243_fault_overcurrent  = 1, /**< Overcurrent fault */
-  k_star_drv8243_fault_thermal      = 2, /**< Thermal shutdown */
-  k_star_drv8243_fault_undervoltage = 3, /**< Undervoltage lockout */
-  k_star_drv8243_fault_overvoltage  = 4, /**< Overvoltage fault */
-  k_star_drv8243_fault_unknown      = 5, /**< Unknown fault */
+  k_star_drv8243_fault_none         = 0, /**< No fault detected */
+  k_star_drv8243_fault_overcurrent  = 1, /**< Overcurrent protection triggered */
+  k_star_drv8243_fault_thermal      = 2, /**< Thermal shutdown (TSD) */
+  k_star_drv8243_fault_undervoltage = 3, /**< Undervoltage lockout (UVLO) */
+  k_star_drv8243_fault_overvoltage  = 4, /**< Overvoltage protection (OVP) */
+  k_star_drv8243_fault_unknown      = 5, /**< Unknown/unidentified fault */
 } star_drv8243_fault_t;
 
 /**
  * @brief DRV8243 configuration structure
+ *
+ * Hardware Assumptions:
+ * - DRV8243 operates in PH/EN (Phase/Enable) control mode
+ * - PH pin controls direction, EN pin controls speed via PWM duty cycle
+ * - nFAULT is active-low with internal pull-up on DRV8243; external pull-up
+ *   on ESP32 GPIO is configured for reliable fault detection
+ * - IPROPI outputs a voltage proportional to motor current (typical 525 A/V)
+ * - The ESP32 ADC reference voltage affects current measurement accuracy
+ *
+ * Timing Constraints:
+ * - PWM frequency should not exceed 25 kHz for optimal efficiency
+ * - Dead-time prevents H-bridge shoot-through; typical 1us is safe
+ * - Current sensing requires time for ADC conversion (typically 10-50us)
  */
 typedef struct {
-  star_bus_manager_t* bus_manager;   /**< Bus manager instance */
-  const char*         gpio_bus_name; /**< GPIO bus name for fault pin */
-  const char*         adc_bus_name;  /**< ADC bus name for current sense */
+  star_bus_manager_t* bus_manager;   /**< Bus manager instance (required) */
+  const char*         gpio_bus_name; /**< GPIO bus name for fault pin (required) */
+  const char*         adc_bus_name;  /**< ADC bus name for current sense (required) */
 
-  /* Motor control pins */
-  int pin_pwm_ph; /**< Phase/Direction pin (PWM A) */
-  int pin_pwm_en; /**< Enable/Speed pin (PWM B) */
+  /* Motor control pins (directly connected to DRV8243) */
+  int pin_pwm_ph; /**< Phase/Direction pin -> DRV8243 PH (controls H-bridge polarity) */
+  int pin_pwm_en; /**< Enable/Speed pin -> DRV8243 EN (PWM duty = motor speed) */
 
-  /* Monitoring pins */
-  int pin_ipropi; /**< Current sense pin (ADC channel) */
-  int pin_nfault; /**< Fault detect pin (GPIO) */
+  /* Monitoring pins (directly connected to DRV8243) */
+  int pin_ipropi; /**< Current sense -> DRV8243 IPROPI (ADC channel, not GPIO number) */
+  int pin_nfault; /**< Fault detect <- DRV8243 nFAULT (active-low, GPIO number) */
 
   /* Motor control parameters */
-  uint32_t pwm_freq_hz;         /**< PWM frequency (max 25 kHz) */
-  uint32_t timer_resolution_hz; /**< Timer resolution (default 10 MHz) */
-  uint32_t dead_time_ns;        /**< Dead-time in nanoseconds */
+  uint32_t pwm_freq_hz;         /**< PWM frequency in Hz (max 25 kHz recommended) */
+  uint32_t timer_resolution_hz; /**< MCPWM timer resolution (0 = default 10 MHz) */
+  uint32_t dead_time_ns;        /**< H-bridge dead-time (prevents shoot-through) */
 
   /* Current sensing parameters */
-  uint16_t current_limit_ma; /**< Current limit in milliamps (0 = disabled) */
-  uint16_t ki_propi;         /**< IPROPI ratio in A/V (default 525) */
+  uint16_t current_limit_ma; /**< Software current limit in mA (0 = disabled) */
+  uint16_t ki_propi;         /**< IPROPI ratio in A/V (0 = default 525 from datasheet) */
 
-  /* MCPWM group */
-  int group_id; /**< MCPWM group ID (0 or 1) */
+  /* MCPWM hardware selection */
+  int group_id; /**< MCPWM group ID (0 or 1, ESP32 has 2 groups) */
 } star_drv8243_config_t;
 
 /**
  * @brief DRV8243 driver handle structure
+ *
+ * This structure maintains the runtime state of a DRV8243 motor driver instance.
+ * It is allocated by the caller (typically on stack or as static storage) and
+ * initialized via star_drv8243_init(). Zero dynamic allocation is used.
+ *
+ * Thread Safety:
+ * - The handle is not inherently thread-safe
+ * - Callers must provide external synchronization if accessed from multiple tasks
+ * - Bus manager operations are internally mutex-protected
  */
 typedef struct {
-  star_bus_manager_t* bus_manager;   /**< Bus manager reference */
-  const char*         gpio_bus_name; /**< GPIO bus name */
-  const char*         adc_bus_name;  /**< ADC bus name */
+  star_bus_manager_t* bus_manager;   /**< Bus manager reference (not owned) */
+  const char*         gpio_bus_name; /**< GPIO bus name (not owned) */
+  const char*         adc_bus_name;  /**< ADC bus name (not owned) */
 
-  star_motor_handle_t motor; /**< Motor control handle */
+  star_motor_handle_t motor; /**< Underlying MCPWM motor control handle */
 
-  /* Pin assignments */
-  int pin_ipropi; /**< Current sense ADC channel */
-  int pin_nfault; /**< Fault detect GPIO pin */
+  /* Pin assignments (cached from config) */
+  int pin_ipropi; /**< Current sense ADC channel number */
+  int pin_nfault; /**< Fault detect GPIO pin number */
 
-  /* Configuration */
-  uint16_t current_limit_ma; /**< Current limit (mA) */
-  uint16_t ki_propi;         /**< IPROPI ratio (A/V) */
+  /* Configuration (cached from config) */
+  uint16_t current_limit_ma; /**< Software current limit in mA */
+  uint16_t ki_propi;         /**< IPROPI current sense ratio (A/V) */
 
-  /* State */
-  float current_speed; /**< Current speed (-100 to +100) */
-  bool  fault_active;  /**< Fault flag */
-  bool  initialized;   /**< Initialization flag */
+  /* Runtime state */
+  float current_speed; /**< Last commanded speed (-100.0 to +100.0 percent) */
+  bool  fault_active;  /**< Last known fault status from nFAULT pin */
+  bool  initialized;   /**< True after successful init, false after deinit */
 } star_drv8243_handle_t;
 
 /* --- Public Functions --- */

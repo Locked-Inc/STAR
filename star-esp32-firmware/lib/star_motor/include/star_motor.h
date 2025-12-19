@@ -81,7 +81,7 @@ extern "C" {
  * @brief Motor controller configuration structure
  */
 typedef struct {
-  int        group_id;            /**< MCPWM group ID (0 or 1) */
+  int32_t    group_id;            /**< MCPWM group ID (0 or 1) */
   uint32_t   timer_resolution_hz; /**< Timer resolution in Hz (e.g., 10MHz) */
   uint32_t   pwm_freq_hz;         /**< PWM frequency in Hz (e.g., 20kHz) */
   gpio_num_t pin_pwm_a;           /**< PWM output A (H-bridge IN1) */
@@ -101,7 +101,7 @@ typedef struct {
   mcpwm_gen_handle_t   gen_a;        /**< MCPWM generator A handle */
   mcpwm_gen_handle_t   gen_b;        /**< MCPWM generator B handle */
   mcpwm_fault_handle_t fault;        /**< MCPWM fault handle (optional) */
-  int                  group_id;     /**< MCPWM group ID */
+  int32_t              group_id;     /**< MCPWM group ID */
   uint32_t             pwm_freq_hz;  /**< PWM frequency */
   uint32_t             period_ticks; /**< PWM period in timer ticks */
   float                current_duty; /**< Current duty cycle (-100 to +100) */
