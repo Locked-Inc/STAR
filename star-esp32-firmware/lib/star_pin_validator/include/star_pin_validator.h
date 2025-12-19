@@ -104,7 +104,12 @@ extern "C" {
  * @endcode
  */
 
-#define PIN_VALIDATOR_DESC_MAX_LEN (64)
+/**
+ * @brief Pin validator configuration constants
+ */
+enum {
+  k_pin_validator_desc_max_len = 64,
+};
 
 /**
  * @brief Info for each GPIO pin

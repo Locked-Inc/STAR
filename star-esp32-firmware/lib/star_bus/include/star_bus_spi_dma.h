@@ -48,7 +48,7 @@ extern "C" {
  * // Configure DMA for an SPI bus
  * star_spi_dma_config_t dma_config = {
  *     .enabled = true,
- *     .min_transfer_size = STAR_SPI_DMA_MIN_SIZE,
+ *     .min_transfer_size = k_star_spi_dma_min_size,
  *     .dma_channel = 1
  * };
  * star_bus_spi_configure_dma(&bus_manager, "flash_bus", &dma_config);
@@ -196,19 +196,21 @@ extern "C" {
 /* --- Constants --- */
 
 /**
- * @brief Minimum transfer size to use DMA (bytes)
+ * @brief SPI DMA constants
+ *
+ * Using enum for type safety while maintaining compile-time constant behavior
+ * required for array sizes in C.
  */
-#define STAR_SPI_DMA_MIN_SIZE (64)
+enum {
+  /** Minimum transfer size to use DMA (bytes) */
+  k_star_spi_dma_min_size  = 64,
 
-/**
- * @brief Maximum DMA transfer size (bytes)
- */
-#define STAR_SPI_DMA_MAX_SIZE (4092)
+  /** Maximum DMA transfer size (bytes) */
+  k_star_spi_dma_max_size  = 4092,
 
-/**
- * @brief DMA buffer alignment requirement (bytes)
- */
-#define STAR_SPI_DMA_ALIGNMENT (4)
+  /** DMA buffer alignment requirement (bytes) */
+  k_star_spi_dma_alignment = 4,
+};
 
 /* --- Types --- */
 

@@ -16,7 +16,6 @@
 
 /* Project headers */
 #include "star_bus_manager.h"
-#include "star_error_interface.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -52,21 +51,21 @@ extern "C" {
  * star_bus_config_t* bms_bus = star_bus_config_create_i2c(
  *     "bms_smbus",
  *     I2C_NUM_0,
- *     BQ7850_DEFAULT_ADDR,    // 0x08
- *     GPIO_NUM_21,            // SDA
- *     GPIO_NUM_22,            // SCL
- *     100000                  // 100kHz (SMBus standard)
+ *     k_bq7850_default_addr,    // 0x08
+ *     GPIO_NUM_21,              // SDA
+ *     GPIO_NUM_22,              // SCL
+ *     100000                    // 100kHz (SMBus standard)
  * );
  * star_bus_manager_add_bus(&bus_manager, bms_bus);
  *
  * // 3. Configure and initialize BMS
  * bq7850_handle_t bms;
  * bq7850_config_t config = {
- *     .num_cells = 4,               // 4S battery pack
- *     .num_temp = 2,                // 2 temperature sensors
- *     .smbus_addr = BQ7850_DEFAULT_ADDR,
- *     .design_capacity = 5000,      // 5000 mAh
- *     .design_voltage = 14800       // 14.8V (4S * 3.7V)
+ *     .num_cells = 4,                   // 4S battery pack
+ *     .num_temp = 2,                    // 2 temperature sensors
+ *     .smbus_addr = k_bq7850_default_addr,
+ *     .design_capacity = 5000,          // 5000 mAh
+ *     .design_voltage = 14800           // 14.8V (4S * 3.7V)
  * };
  *
  * esp_err_t ret = star_bms_bq7850_init(
@@ -260,104 +259,135 @@ extern "C" {
  * @endcode
  */
 
-/* --- Constants --- */
+/* --- Device Constants --- */
 
-/** BQ7850 default SMBus address (can be configured) */
-#define BQ7850_DEFAULT_ADDR (0x08)
+/**
+ * @brief BQ7850 device configuration limits
+ *
+ * These constants define the hardware limits of the BQ7850 device.
+ */
+typedef enum {
+  k_bq7850_default_addr           = 0x08, /**< Default SMBus address (configurable) */
+  k_bq7850_max_cells              = 16,   /**< Maximum number of series cells */
+  k_bq7850_max_temp_sensors       = 3,    /**< Maximum number of temperature sensors */
+  k_bq7850_device_info_string_len = 32,   /**< Maximum length for device info strings */
+} bq7850_device_limits_t;
 
-/** Maximum number of cells supported by BQ7850 */
-#define BQ7850_MAX_CELLS (16)
-
-/** Maximum number of temperature sensors */
-#define BQ7850_MAX_TEMP_SENSORS (3)
-
-/** Maximum length for device info strings (manufacturer, device name, chemistry) */
-#define BQ7850_DEVICE_INFO_STRING_LEN (32)
+/**
+ * @brief BQ7850 timing constants
+ *
+ * Timing values for various BQ7850 operations.
+ */
+typedef enum {
+  k_bq7850_mfr_access_delay_ms  = 10,   /**< Delay after manufacturer access command (ms) */
+  k_bq7850_reset_delay_ms       = 1000, /**< Delay after device reset (ms) */
+  k_bq7850_cmd_write_delay_ms   = 50,   /**< Delay between consecutive write commands (ms) */
+  k_bq7850_kelvin_offset_deci_c = 2731, /**< 273.1K in 0.1K units (for K to C conversion) */
+} bq7850_timing_t;
 
 /* --- Register Map --- */
 
-/* Standard Commands (SMBus) */
-#define BQ7850_CMD_MANUFACTURER_ACCESS   (0x00) /**< Manufacturer access */
-#define BQ7850_CMD_REMAINING_CAPACITY    (0x0F) /**< Remaining capacity (mAh) */
-#define BQ7850_CMD_FULL_CHARGE_CAPACITY  (0x10) /**< Full charge capacity (mAh) */
-#define BQ7850_CMD_TEMPERATURE           (0x08) /**< Temperature (0.1K) */
-#define BQ7850_CMD_VOLTAGE               (0x09) /**< Pack voltage (mV) */
-#define BQ7850_CMD_CURRENT               (0x0A) /**< Pack current (mA) */
-#define BQ7850_CMD_AVERAGE_CURRENT       (0x0B) /**< Average current (mA) */
-#define BQ7850_CMD_RELATIVE_STATE_CHARGE (0x0D) /**< Relative SOC (%) */
-#define BQ7850_CMD_ABSOLUTE_STATE_CHARGE (0x0E) /**< Absolute SOC (%) */
-#define BQ7850_CMD_CYCLE_COUNT           (0x17) /**< Cycle count */
-#define BQ7850_CMD_DESIGN_CAPACITY       (0x18) /**< Design capacity (mAh) */
-#define BQ7850_CMD_DESIGN_VOLTAGE        (0x19) /**< Design voltage (mV) */
-#define BQ7850_CMD_SERIAL_NUMBER         (0x1C) /**< Serial number */
-#define BQ7850_CMD_MANUFACTURE_NAME      (0x20) /**< Manufacturer name (block) */
-#define BQ7850_CMD_DEVICE_NAME           (0x21) /**< Device name (block) */
-#define BQ7850_CMD_DEVICE_CHEMISTRY      (0x22) /**< Device chemistry (block) */
-#define BQ7850_CMD_MANUFACTURE_DATA      (0x23) /**< Manufacturer data (block) */
+/**
+ * @brief BQ7850 Standard SMBus Commands
+ *
+ * Standard commands accessible via SMBus protocol.
+ */
+typedef enum {
+  k_bq7850_cmd_manufacturer_access   = 0x00, /**< Manufacturer access */
+  k_bq7850_cmd_temperature           = 0x08, /**< Temperature (0.1K) */
+  k_bq7850_cmd_voltage               = 0x09, /**< Pack voltage (mV) */
+  k_bq7850_cmd_current               = 0x0A, /**< Pack current (mA) */
+  k_bq7850_cmd_average_current       = 0x0B, /**< Average current (mA) */
+  k_bq7850_cmd_relative_state_charge = 0x0D, /**< Relative SOC (%) */
+  k_bq7850_cmd_absolute_state_charge = 0x0E, /**< Absolute SOC (%) */
+  k_bq7850_cmd_remaining_capacity    = 0x0F, /**< Remaining capacity (mAh) */
+  k_bq7850_cmd_full_charge_capacity  = 0x10, /**< Full charge capacity (mAh) */
+  k_bq7850_cmd_charging_current      = 0x14, /**< Charging current (mA) */
+  k_bq7850_cmd_charging_voltage      = 0x15, /**< Charging voltage (mV) */
+  k_bq7850_cmd_battery_status        = 0x16, /**< Battery status flags */
+  k_bq7850_cmd_cycle_count           = 0x17, /**< Cycle count */
+  k_bq7850_cmd_design_capacity       = 0x18, /**< Design capacity (mAh) */
+  k_bq7850_cmd_design_voltage        = 0x19, /**< Design voltage (mV) */
+  k_bq7850_cmd_serial_number         = 0x1C, /**< Serial number */
+  k_bq7850_cmd_manufacture_name      = 0x20, /**< Manufacturer name (block) */
+  k_bq7850_cmd_device_name           = 0x21, /**< Device name (block) */
+  k_bq7850_cmd_device_chemistry      = 0x22, /**< Device chemistry (block) */
+  k_bq7850_cmd_manufacture_data      = 0x23, /**< Manufacturer data (block) */
+  k_bq7850_cmd_cell_balance_ctrl     = 0x40, /**< Cell balancing control */
+  k_bq7850_cmd_fet_control           = 0x46, /**< FET control */
+  k_bq7850_cmd_alarm_warning         = 0x50, /**< Alarm/Warning flags */
+  k_bq7850_cmd_safety_status         = 0x51, /**< Safety status */
+  k_bq7850_cmd_pf_status             = 0x53, /**< Permanent fail status */
+  k_bq7850_cmd_operation_status      = 0x54, /**< Operation status */
+} bq7850_cmd_t;
 
-/* Extended Commands (via Manufacturer Access 0x00) */
-#define BQ7850_SUBCMD_DEVICE_TYPE  (0x0001) /**< Device type */
-#define BQ7850_SUBCMD_FW_VERSION   (0x0002) /**< Firmware version */
-#define BQ7850_SUBCMD_HW_VERSION   (0x0003) /**< Hardware version */
-#define BQ7850_SUBCMD_RESET        (0x0041) /**< Software reset */
-#define BQ7850_SUBCMD_SEAL         (0x0030) /**< Seal device */
-#define BQ7850_SUBCMD_IT_ENABLE    (0x0021) /**< Enable impedance track */
-#define BQ7850_SUBCMD_CAL_MODE     (0x0040) /**< Enter calibration mode */
-#define BQ7850_SUBCMD_DEVICE_RESET (0x0041) /**< Full device reset */
+/**
+ * @brief BQ7850 Extended Subcommands (via Manufacturer Access 0x00)
+ *
+ * Subcommands written to manufacturer access register for extended functions.
+ */
+typedef enum {
+  k_bq7850_subcmd_device_type           = 0x0001, /**< Device type */
+  k_bq7850_subcmd_fw_version            = 0x0002, /**< Firmware version */
+  k_bq7850_subcmd_hw_version            = 0x0003, /**< Hardware version */
+  k_bq7850_subcmd_protection_ov_thresh  = 0x0010, /**< Overvoltage threshold */
+  k_bq7850_subcmd_protection_uv_thresh  = 0x0011, /**< Undervoltage threshold */
+  k_bq7850_subcmd_protection_oc_thresh  = 0x0012, /**< Overcurrent threshold */
+  k_bq7850_subcmd_protection_ot_thresh  = 0x0013, /**< Over-temperature threshold */
+  k_bq7850_subcmd_protection_ut_thresh  = 0x0014, /**< Under-temperature threshold */
+  k_bq7850_subcmd_it_enable             = 0x0021, /**< Enable impedance track */
+  k_bq7850_subcmd_seal                  = 0x0030, /**< Seal device */
+  k_bq7850_subcmd_cal_mode              = 0x0040, /**< Enter calibration mode */
+  k_bq7850_subcmd_reset                 = 0x0041, /**< Software reset */
+  k_bq7850_subcmd_device_reset          = 0x0041, /**< Full device reset (same as reset) */
+  k_bq7850_subcmd_cell_voltage_base     = 0x0070, /**< Cell 1 voltage base (Cell N = base + N-1) */
+  k_bq7850_subcmd_temp_sensor_base      = 0x0078, /**< Temp sensor 1 base (Sensor N = base + N-1) */
+} bq7850_subcmd_t;
 
-/* Cell Voltage Registers (via subcommands) */
-#define BQ7850_SUBCMD_CELL_VOLTAGE_BASE                                                            \
-  (0x0070) /**< Cell 1 voltage = 0x0070, Cell 2 = 0x0071, etc. */
+/**
+ * @brief BQ7850 Battery Status Flags (register 0x16)
+ *
+ * Bit flags for battery status register.
+ */
+typedef enum {
+  k_bq7850_battery_status_oca  = (1 << 0),  /**< Over-current in charge */
+  k_bq7850_battery_status_tca  = (1 << 1),  /**< Terminate charge alarm */
+  k_bq7850_battery_status_fd   = (1 << 4),  /**< Fully discharged */
+  k_bq7850_battery_status_fc   = (1 << 5),  /**< Fully charged */
+  k_bq7850_battery_status_dsg  = (1 << 6),  /**< Discharging */
+  k_bq7850_battery_status_init = (1 << 7),  /**< Initialized */
+  k_bq7850_battery_status_rca  = (1 << 9),  /**< Remaining capacity alarm */
+  k_bq7850_battery_status_rta  = (1 << 10), /**< Remaining time alarm */
+  k_bq7850_battery_status_tda  = (1 << 14), /**< Terminate discharge alarm */
+  k_bq7850_battery_status_ota  = (1 << 15), /**< Over-temperature alarm */
+} bq7850_battery_status_t;
 
-/* Temperature Registers */
-#define BQ7850_SUBCMD_TEMP_SENSOR_BASE (0x0078) /**< Temp sensor 1 = 0x0078, etc. */
+/**
+ * @brief BQ7850 Safety Status Flags (register 0x51)
+ *
+ * Bit flags for safety status register.
+ */
+typedef enum {
+  k_bq7850_safety_status_cuv = (1 << 0), /**< Cell undervoltage */
+  k_bq7850_safety_status_cov = (1 << 1), /**< Cell overvoltage */
+  k_bq7850_safety_status_occ = (1 << 2), /**< Overcurrent in charge */
+  k_bq7850_safety_status_ocd = (1 << 3), /**< Overcurrent in discharge */
+  k_bq7850_safety_status_otc = (1 << 4), /**< Over-temperature charge */
+  k_bq7850_safety_status_otd = (1 << 5), /**< Over-temperature discharge */
+  k_bq7850_safety_status_utc = (1 << 6), /**< Under-temperature charge */
+  k_bq7850_safety_status_utd = (1 << 7), /**< Under-temperature discharge */
+} bq7850_safety_status_t;
 
-/* Status and Control Registers */
-#define BQ7850_CMD_BATTERY_STATUS   (0x16) /**< Battery status flags */
-#define BQ7850_CMD_CHARGING_CURRENT (0x14) /**< Charging current (mA) */
-#define BQ7850_CMD_CHARGING_VOLTAGE (0x15) /**< Charging voltage (mV) */
-#define BQ7850_CMD_ALARM_WARNING    (0x50) /**< Alarm/Warning flags */
-#define BQ7850_CMD_SAFETY_STATUS    (0x51) /**< Safety status */
-#define BQ7850_CMD_PF_STATUS        (0x53) /**< Permanent fail status */
-#define BQ7850_CMD_OPERATION_STATUS (0x54) /**< Operation status */
-#define BQ7850_CMD_FET_CONTROL      (0x46) /**< FET control */
-
-/* Cell Balancing Control */
-#define BQ7850_CMD_CELL_BALANCE_CTRL (0x40) /**< Cell balancing control */
-
-/* Protection Thresholds */
-#define BQ7850_SUBCMD_PROTECTION_OV_THRESH (0x0010) /**< Overvoltage threshold */
-#define BQ7850_SUBCMD_PROTECTION_UV_THRESH (0x0011) /**< Undervoltage threshold */
-#define BQ7850_SUBCMD_PROTECTION_OC_THRESH (0x0012) /**< Overcurrent threshold */
-#define BQ7850_SUBCMD_PROTECTION_OT_THRESH (0x0013) /**< Over-temperature threshold */
-#define BQ7850_SUBCMD_PROTECTION_UT_THRESH (0x0014) /**< Under-temperature threshold */
-
-/* --- Battery Status Flags (0x16) --- */
-#define BQ7850_BATTERY_STATUS_OCA  (1 << (0))  /**< Over-current in charge */
-#define BQ7850_BATTERY_STATUS_TCA  (1 << (1))  /**< Terminate charge alarm */
-#define BQ7850_BATTERY_STATUS_OTA  (1 << (15)) /**< Over-temperature alarm */
-#define BQ7850_BATTERY_STATUS_TDA  (1 << (14)) /**< Terminate discharge alarm */
-#define BQ7850_BATTERY_STATUS_RCA  (1 << (9))  /**< Remaining capacity alarm */
-#define BQ7850_BATTERY_STATUS_RTA  (1 << (10)) /**< Remaining time alarm */
-#define BQ7850_BATTERY_STATUS_INIT (1 << (7))  /**< Initialized */
-#define BQ7850_BATTERY_STATUS_DSG  (1 << (6))  /**< Discharging */
-#define BQ7850_BATTERY_STATUS_FC   (1 << (5))  /**< Fully charged */
-#define BQ7850_BATTERY_STATUS_FD   (1 << (4))  /**< Fully discharged */
-
-/* --- Safety Status Flags (0x51) --- */
-#define BQ7850_SAFETY_STATUS_CUV (1 << (0)) /**< Cell undervoltage */
-#define BQ7850_SAFETY_STATUS_COV (1 << (1)) /**< Cell overvoltage */
-#define BQ7850_SAFETY_STATUS_OCC (1 << (2)) /**< Overcurrent in charge */
-#define BQ7850_SAFETY_STATUS_OCD (1 << (3)) /**< Overcurrent in discharge */
-#define BQ7850_SAFETY_STATUS_OTC (1 << (4)) /**< Over-temperature charge */
-#define BQ7850_SAFETY_STATUS_OTD (1 << (5)) /**< Over-temperature discharge */
-#define BQ7850_SAFETY_STATUS_UTC (1 << (6)) /**< Under-temperature charge */
-#define BQ7850_SAFETY_STATUS_UTD (1 << (7)) /**< Under-temperature discharge */
-
-/* --- FET Control Bits (0x46) --- */
-#define BQ7850_FET_CONTROL_CHG_FET  (1 << (0)) /**< Charge FET enable */
-#define BQ7850_FET_CONTROL_DSG_FET  (1 << (1)) /**< Discharge FET enable */
-#define BQ7850_FET_CONTROL_PCHG_FET (1 << (2)) /**< Pre-charge FET enable */
+/**
+ * @brief BQ7850 FET Control Bits (register 0x46)
+ *
+ * Bit flags for FET control register.
+ */
+typedef enum {
+  k_bq7850_fet_control_chg_fet  = (1 << 0), /**< Charge FET enable */
+  k_bq7850_fet_control_dsg_fet  = (1 << 1), /**< Discharge FET enable */
+  k_bq7850_fet_control_pchg_fet = (1 << 2), /**< Pre-charge FET enable */
+} bq7850_fet_control_t;
 
 /* --- Types --- */
 
@@ -376,18 +406,18 @@ typedef struct {
  * @brief BQ7850 cell voltage data
  */
 typedef struct {
-  uint16_t cell_mv[BQ7850_MAX_CELLS]; /**< Individual cell voltages (mV) */
-  uint8_t  valid_cells;               /**< Number of valid cell readings */
-  uint16_t pack_mv;                   /**< Total pack voltage (mV) */
+  uint16_t cell_mv[k_bq7850_max_cells]; /**< Individual cell voltages (mV) */
+  uint8_t  valid_cells;                 /**< Number of valid cell readings */
+  uint16_t pack_mv;                     /**< Total pack voltage (mV) */
 } bq7850_cell_data_t;
 
 /**
  * @brief BQ7850 temperature data
  */
 typedef struct {
-  int16_t temp_c[BQ7850_MAX_TEMP_SENSORS]; /**< Temperature sensors (0.1C) */
-  uint8_t valid_sensors;                   /**< Number of valid sensors */
-  int16_t avg_temp_c;                      /**< Average temperature (0.1C) */
+  int16_t temp_c[k_bq7850_max_temp_sensors]; /**< Temperature sensors (0.1C) */
+  uint8_t valid_sensors;                     /**< Number of valid sensors */
+  int16_t avg_temp_c;                        /**< Average temperature (0.1C) */
 } bq7850_temp_data_t;
 
 /**
@@ -452,13 +482,13 @@ typedef struct {
  * @brief BQ7850 device information
  */
 typedef struct {
-  uint16_t device_type;                                 /**< Device type ID */
-  uint16_t fw_version;                                  /**< Firmware version */
-  uint16_t hw_version;                                  /**< Hardware version */
-  uint32_t serial_number;                               /**< Serial number */
-  char     manufacturer[BQ7850_DEVICE_INFO_STRING_LEN]; /**< Manufacturer name */
-  char     device_name[BQ7850_DEVICE_INFO_STRING_LEN];  /**< Device name */
-  char     chemistry[BQ7850_DEVICE_INFO_STRING_LEN];    /**< Battery chemistry */
+  uint16_t device_type;                                   /**< Device type ID */
+  uint16_t fw_version;                                    /**< Firmware version */
+  uint16_t hw_version;                                    /**< Hardware version */
+  uint32_t serial_number;                                 /**< Serial number */
+  char     manufacturer[k_bq7850_device_info_string_len]; /**< Manufacturer name */
+  char     device_name[k_bq7850_device_info_string_len];  /**< Device name */
+  char     chemistry[k_bq7850_device_info_string_len];    /**< Battery chemistry */
 } bq7850_device_info_t;
 
 /**
@@ -470,14 +500,12 @@ typedef struct {
  * other STAR sensor drivers using const handle pointers).
  */
 typedef struct bq7850_handle {
-  star_bus_manager_t*     manager;            /**< Pointer to bus manager */
-  const char*             bus_name;           /**< Name of I2C/SMBus for this device */
-  uint8_t                 smbus_addr;         /**< SMBus device address */
-  bq7850_config_t         config;             /**< Device configuration */
-  star_error_interface_t* error_iface;        /**< Injected error interface (NULL = default) */
-  SemaphoreHandle_t       mutex;              /**< Mutex for thread-safe operations */
-  bool                    initialized;        /**< Initialization state */
-  bool                    owns_error_handler; /**< True if we created default error handler */
+  star_bus_manager_t* manager;      /**< Pointer to bus manager */
+  const char*         bus_name;     /**< Name of I2C/SMBus for this device */
+  uint8_t             smbus_addr;   /**< SMBus device address */
+  bq7850_config_t     config;       /**< Device configuration */
+  SemaphoreHandle_t   mutex;        /**< Mutex for thread-safe operations */
+  bool                initialized;  /**< Initialization state */
 } bq7850_handle_t;
 
 /* --- Core Functions --- */
@@ -488,28 +516,25 @@ typedef struct bq7850_handle {
  * Performs device detection, reads configuration, and verifies communication.
  * Thread-safe: Creates an internal mutex for protecting handle state.
  *
- * @param[out] handle      Pointer to handle structure (must be allocated by caller)
- * @param[in]  manager     Pointer to initialized bus manager
- * @param[in]  bus_name    Name of I2C/SMBus configured for this device
- * @param[in]  error_iface Error interface for error handling (NULL = create default internally)
- * @param[in]  config      Device configuration
+ * @param[out] handle   Pointer to handle structure (must be allocated by caller)
+ * @param[in]  manager  Pointer to initialized bus manager
+ * @param[in]  bus_name Name of I2C/SMBus configured for this device
+ * @param[in]  config   Device configuration
  *
  * @return ESP_OK on success, error code otherwise
  *
  * @note The handle must be deinitialized with star_bms_bq7850_deinit() when done
- * @note If error_iface is NULL, a default error handler will be created internally
  * @note All operations after init are protected by mutex for thread safety
  */
-esp_err_t star_bms_bq7850_init(bq7850_handle_t*        handle,
-                               star_bus_manager_t*     manager,
-                               const char*             bus_name,
-                               star_error_interface_t* error_iface,
-                               const bq7850_config_t*  config);
+esp_err_t star_bms_bq7850_init(bq7850_handle_t*       handle,
+                               star_bus_manager_t*    manager,
+                               const char*            bus_name,
+                               const bq7850_config_t* config);
 
 /**
  * @brief Deinitialize BQ7850 BMS device handle
  *
- * Cleans up resources associated with the handle, including the error handler.
+ * Cleans up resources associated with the handle.
  *
  * @param[in] handle Pointer to initialized handle
  *

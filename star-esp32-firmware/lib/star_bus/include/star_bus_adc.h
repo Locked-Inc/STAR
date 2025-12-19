@@ -45,17 +45,17 @@ extern "C" {
  * // === Read Raw ADC Value ===
  *
  * // Read raw ADC counts (0-4095 for 12-bit)
- * int raw_value;
+ * int32_t raw_value;
  * star_bus_adc_read_raw(&bus_manager, "motor_current", &raw_value);
- * ESP_LOGI(TAG, "Raw ADC: %d", raw_value);
+ * ESP_LOGI(TAG, "Raw ADC: %" PRId32, raw_value);
  *
  *
  * // === Read Calibrated Voltage ===
  *
  * // Read voltage in millivolts
- * int voltage_mv;
+ * int32_t voltage_mv;
  * star_bus_adc_read_voltage(&bus_manager, "motor_current", &voltage_mv);
- * ESP_LOGI(TAG, "Voltage: %d mV (%.2f V)", voltage_mv, voltage_mv / 1000.0f);
+ * ESP_LOGI(TAG, "Voltage: %" PRId32 " mV (%.2f V)", voltage_mv, voltage_mv / 1000.0f);
  *
  * @endcode
  */
@@ -75,21 +75,22 @@ star_adc_ops_t star_bus_adc_get_default_ops(void);
  *
  * @param[in]  manager  Bus manager instance
  * @param[in]  bus_name Name of ADC bus
- * @param[out] out_raw  Pointer to store raw ADC value
+ * @param[out] out_raw  Pointer to store raw ADC value (int32_t for explicit typing)
  * @return ESP_OK on success, error code otherwise
  */
-esp_err_t star_bus_adc_read_raw(star_bus_manager_t* manager, const char* bus_name, int* out_raw);
+esp_err_t star_bus_adc_read_raw(star_bus_manager_t* manager, const char* bus_name, int32_t* out_raw);
 
 /**
  * @brief Read calibrated voltage in millivolts
  *
  * @param[in]  manager        Bus manager instance
  * @param[in]  bus_name       Name of ADC bus
- * @param[out] out_voltage_mv Pointer to store voltage in mV
+ * @param[out] out_voltage_mv Pointer to store voltage in mV (int32_t for explicit typing)
  * @return ESP_OK on success, error code otherwise
  */
-esp_err_t
-star_bus_adc_read_voltage(star_bus_manager_t* manager, const char* bus_name, int* out_voltage_mv);
+esp_err_t star_bus_adc_read_voltage(star_bus_manager_t* manager,
+                                    const char*         bus_name,
+                                    int32_t*            out_voltage_mv);
 
 #ifdef __cplusplus
 }

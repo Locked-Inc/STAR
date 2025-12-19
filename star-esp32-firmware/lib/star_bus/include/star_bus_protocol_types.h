@@ -130,10 +130,13 @@ typedef struct star_gpio_bus_config {
 
 /**
  * @brief ADC operation functions structure.
+ *
+ * @note Uses int32_t* for output parameters in our API. Implementations should
+ *       use 'int' when calling ESP-IDF functions and perform explicit conversions.
  */
 typedef struct star_adc_ops {
-  esp_err_t (*read_raw)(const struct star_bus_config* config, int* out_raw);
-  esp_err_t (*read_voltage)(const struct star_bus_config* config, int* out_voltage_mv);
+  esp_err_t (*read_raw)(const struct star_bus_config* config, int32_t* out_raw);
+  esp_err_t (*read_voltage)(const struct star_bus_config* config, int32_t* out_voltage_mv);
 } star_adc_ops_t;
 
 /**

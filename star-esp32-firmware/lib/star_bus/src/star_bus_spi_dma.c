@@ -12,7 +12,7 @@
 
 /* --- Constants --- */
 
-static const char* s_TAG = "STAR_SPI_DMA";
+static const char* s_tag = "STAR_SPI_DMA";
 
 /**
  * @brief Number of SPI peripherals on ESP32 (SPI1, SPI2, SPI3)
@@ -88,7 +88,7 @@ static bool internal_should_use_spi_dma(const spi_dma_state_t* state, size_t len
     return false;
   }
 
-  if (length > STAR_SPI_DMA_MAX_SIZE) {
+  if (length > k_star_spi_dma_max_size) {
     return false;
   }
 
@@ -100,12 +100,12 @@ static bool internal_should_use_spi_dma(const spi_dma_state_t* state, size_t len
 void* star_spi_dma_malloc(size_t size)
 {
   void* ptr =
-    heap_caps_aligned_alloc(STAR_SPI_DMA_ALIGNMENT, size, MALLOC_CAP_DMA | MALLOC_CAP_INTERNAL);
+    heap_caps_aligned_alloc(k_star_spi_dma_alignment, size, MALLOC_CAP_DMA | MALLOC_CAP_INTERNAL);
 
   if (ptr == NULL) {
-    ESP_LOGE(s_TAG, "Failed to allocate %zu bytes of DMA memory", size);
+    ESP_LOGE(s_tag, "Failed to allocate %zu bytes of DMA memory", size);
   } else {
-    ESP_LOGD(s_TAG, "Allocated %zu bytes of DMA memory at %p", size, ptr);
+    ESP_LOGD(s_tag, "Allocated %zu bytes of DMA memory at %p", size, ptr);
   }
 
   return ptr;
@@ -125,7 +125,7 @@ bool star_spi_is_dma_capable(const void* buffer, size_t size)
   }
 
   /* Check alignment */
-  if (((uintptr_t)buffer % STAR_SPI_DMA_ALIGNMENT) != 0) {
+  if (((uintptr_t)buffer % k_star_spi_dma_alignment) != 0) {
     return false;
   }
 
@@ -143,13 +143,13 @@ esp_err_t star_bus_spi_configure_dma(star_bus_manager_t*          manager,
                                      const star_spi_dma_config_t* config)
 {
   if (manager == NULL || bus_name == NULL || config == NULL) {
-    ESP_LOGE(s_TAG, "Invalid parameters");
+    ESP_LOGE(s_tag, "Invalid parameters");
     return ESP_ERR_INVALID_ARG;
   }
 
   spi_host_device_t host = get_spi_host_from_bus(manager, bus_name);
   if (host == SPI_HOST_MAX) {
-    ESP_LOGE(s_TAG, "Bus '%s' not found or not SPI", bus_name);
+    ESP_LOGE(s_tag, "Bus '%s' not found or not SPI", bus_name);
     return ESP_ERR_NOT_FOUND;
   }
 
@@ -160,14 +160,14 @@ esp_err_t star_bus_spi_configure_dma(star_bus_manager_t*          manager,
 
   /* Validate DMA channel */
   if (config->dma_channel < 1 || config->dma_channel > 2) {
-    ESP_LOGE(s_TAG, "Invalid DMA channel: %d (must be 1-2)", config->dma_channel);
+    ESP_LOGE(s_tag, "Invalid DMA channel: %d (must be 1-2)", config->dma_channel);
     return ESP_ERR_INVALID_ARG;
   }
 
   /* Store configuration */
   memcpy(&state->config, config, sizeof(star_spi_dma_config_t));
 
-  ESP_LOGI(s_TAG,
+  ESP_LOGI(s_tag,
            "DMA configured for bus '%s': enabled=%d, min_size=%" PRIu32 ", channel=%d",
            bus_name,
            config->enabled,
@@ -208,13 +208,13 @@ esp_err_t star_bus_spi_transmit_dma(star_bus_manager_t*     manager,
                                     void*                   context)
 {
   if (manager == NULL || bus_name == NULL || data == NULL || length == 0) {
-    ESP_LOGE(s_TAG, "Invalid parameters");
+    ESP_LOGE(s_tag, "Invalid parameters");
     return ESP_ERR_INVALID_ARG;
   }
 
   spi_host_device_t host = get_spi_host_from_bus(manager, bus_name);
   if (host == SPI_HOST_MAX) {
-    ESP_LOGE(s_TAG, "Bus '%s' not found or not SPI", bus_name);
+    ESP_LOGE(s_tag, "Bus '%s' not found or not SPI", bus_name);
     return ESP_ERR_NOT_FOUND;
   }
 
@@ -226,7 +226,7 @@ esp_err_t star_bus_spi_transmit_dma(star_bus_manager_t*     manager,
   bool use_dma = internal_should_use_spi_dma(state, length);
 
   if (!use_dma) {
-    ESP_LOGD(s_TAG, "Using standard SPI transmit (length=%zu)", length);
+    ESP_LOGD(s_tag, "Using standard SPI transmit (length=%zu)", length);
     esp_err_t result = star_bus_spi_transmit(manager, bus_name, data, length, 0);
 
     if (callback != NULL) {
@@ -237,7 +237,7 @@ esp_err_t star_bus_spi_transmit_dma(star_bus_manager_t*     manager,
   }
 
   if (!star_spi_is_dma_capable(data, length)) {
-    ESP_LOGW(s_TAG, "Buffer not DMA-capable, falling back to standard SPI");
+    ESP_LOGW(s_tag, "Buffer not DMA-capable, falling back to standard SPI");
     esp_err_t result = star_bus_spi_transmit(manager, bus_name, data, length, 0);
 
     if (callback != NULL) {
@@ -247,7 +247,7 @@ esp_err_t star_bus_spi_transmit_dma(star_bus_manager_t*     manager,
     return result;
   }
 
-  ESP_LOGD(s_TAG, "Using DMA for transmit: %zu bytes", length);
+  ESP_LOGD(s_tag, "Using DMA for transmit: %zu bytes", length);
 
   state->transfer_context.callback     = callback;
   state->transfer_context.user_context = context;
@@ -277,13 +277,13 @@ esp_err_t star_bus_spi_receive_dma(star_bus_manager_t*     manager,
                                    void*                   context)
 {
   if (manager == NULL || bus_name == NULL || data == NULL || length == 0) {
-    ESP_LOGE(s_TAG, "Invalid parameters");
+    ESP_LOGE(s_tag, "Invalid parameters");
     return ESP_ERR_INVALID_ARG;
   }
 
   spi_host_device_t host = get_spi_host_from_bus(manager, bus_name);
   if (host == SPI_HOST_MAX) {
-    ESP_LOGE(s_TAG, "Bus '%s' not found or not SPI", bus_name);
+    ESP_LOGE(s_tag, "Bus '%s' not found or not SPI", bus_name);
     return ESP_ERR_NOT_FOUND;
   }
 
@@ -295,7 +295,7 @@ esp_err_t star_bus_spi_receive_dma(star_bus_manager_t*     manager,
   bool use_dma = internal_should_use_spi_dma(state, length);
 
   if (!use_dma) {
-    ESP_LOGD(s_TAG, "Using standard SPI receive (length=%zu)", length);
+    ESP_LOGD(s_tag, "Using standard SPI receive (length=%zu)", length);
     esp_err_t result = star_bus_spi_receive(manager, bus_name, data, length, 0);
 
     if (callback != NULL) {
@@ -306,7 +306,7 @@ esp_err_t star_bus_spi_receive_dma(star_bus_manager_t*     manager,
   }
 
   if (!star_spi_is_dma_capable(data, length)) {
-    ESP_LOGW(s_TAG, "Buffer not DMA-capable, falling back to standard SPI");
+    ESP_LOGW(s_tag, "Buffer not DMA-capable, falling back to standard SPI");
     esp_err_t result = star_bus_spi_receive(manager, bus_name, data, length, 0);
 
     if (callback != NULL) {
@@ -316,7 +316,7 @@ esp_err_t star_bus_spi_receive_dma(star_bus_manager_t*     manager,
     return result;
   }
 
-  ESP_LOGD(s_TAG, "Using DMA for receive: %zu bytes", length);
+  ESP_LOGD(s_tag, "Using DMA for receive: %zu bytes", length);
 
   state->transfer_context.callback     = callback;
   state->transfer_context.user_context = context;
@@ -347,13 +347,13 @@ esp_err_t star_bus_spi_transceive_dma(star_bus_manager_t*     manager,
                                       void*                   context)
 {
   if (manager == NULL || bus_name == NULL || tx_data == NULL || rx_data == NULL || length == 0) {
-    ESP_LOGE(s_TAG, "Invalid parameters");
+    ESP_LOGE(s_tag, "Invalid parameters");
     return ESP_ERR_INVALID_ARG;
   }
 
   spi_host_device_t host = get_spi_host_from_bus(manager, bus_name);
   if (host == SPI_HOST_MAX) {
-    ESP_LOGE(s_TAG, "Bus '%s' not found or not SPI", bus_name);
+    ESP_LOGE(s_tag, "Bus '%s' not found or not SPI", bus_name);
     return ESP_ERR_NOT_FOUND;
   }
 
@@ -365,7 +365,7 @@ esp_err_t star_bus_spi_transceive_dma(star_bus_manager_t*     manager,
   bool use_dma = internal_should_use_spi_dma(state, length);
 
   if (!use_dma) {
-    ESP_LOGD(s_TAG, "Using standard SPI transceive (length=%zu)", length);
+    ESP_LOGD(s_tag, "Using standard SPI transceive (length=%zu)", length);
     esp_err_t result = star_bus_spi_transfer(manager, bus_name, tx_data, rx_data, length, 0);
 
     if (callback != NULL) {
@@ -376,7 +376,7 @@ esp_err_t star_bus_spi_transceive_dma(star_bus_manager_t*     manager,
   }
 
   if (!star_spi_is_dma_capable(tx_data, length) || !star_spi_is_dma_capable(rx_data, length)) {
-    ESP_LOGW(s_TAG, "Buffers not DMA-capable, falling back to standard SPI");
+    ESP_LOGW(s_tag, "Buffers not DMA-capable, falling back to standard SPI");
     esp_err_t result = star_bus_spi_transfer(manager, bus_name, tx_data, rx_data, length, 0);
 
     if (callback != NULL) {
@@ -386,7 +386,7 @@ esp_err_t star_bus_spi_transceive_dma(star_bus_manager_t*     manager,
     return result;
   }
 
-  ESP_LOGD(s_TAG, "Using DMA for transceive: %zu bytes", length);
+  ESP_LOGD(s_tag, "Using DMA for transceive: %zu bytes", length);
 
   state->transfer_context.callback     = callback;
   state->transfer_context.user_context = context;
