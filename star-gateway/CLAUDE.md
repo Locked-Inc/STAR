@@ -133,7 +133,7 @@ The gateway exposes 5 gRPC services:
 | Module structure | Done |
 | Frame constants/types | Done |
 | Transport interface | Done (placeholder) |
-| Frame encoder/decoder | Placeholder |
+| Frame encoder/decoder | Done |
 | ARQ protocol | Placeholder |
 | gRPC services | Placeholder |
 | SPI implementation | Not started |
@@ -143,8 +143,7 @@ The gateway exposes 5 gRPC services:
 
 - `docs/sections/01_nanopb_protocol.tex` - Protocol specification
 - `docs/sections/02_protobuf_schemas.tex` - Protobuf service definitions
-- `docs/sections/05_gateway_architecture.tex` - Gateway architecture
-- `star-proto/STYLE_GUIDE.md` - Protobuf style conventions
+- `docs/sections/07_gateway_architecture.tex` - Gateway architecture
 
 ## Terminology
 
