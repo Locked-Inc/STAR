@@ -3,6 +3,15 @@
     "version": "1.0.0",
     "description": "TI BQ7850 battery management system driver",
     "keywords": ["esp32", "bms", "battery", "bq7850"],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Locked-Inc/STAR.git"
+    },
+    "authors": [
+        {
+            "name": "STAR Team"
+        }
+    ],
     "license": "MIT",
     "frameworks": ["espidf"],
     "platforms": ["espressif32"],

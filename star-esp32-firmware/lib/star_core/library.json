@@ -3,6 +3,15 @@
     "version": "1.0.0",
     "description": "Core interfaces for STAR firmware - defines abstractions for dependency inversion",
     "keywords": ["esp32", "interfaces", "core"],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/Locked-Inc/STAR.git"
+    },
+    "authors": [
+        {
+            "name": "STAR Team"
+        }
+    ],
     "license": "MIT",
     "frameworks": ["espidf"],
     "platforms": ["espressif32"],
