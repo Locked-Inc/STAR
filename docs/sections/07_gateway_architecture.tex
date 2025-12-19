@@ -114,7 +114,7 @@ The \texttt{internal/frame} package defines the wire protocol constants and type
 \hline
 \textbf{Constant} & \textbf{Value} & \textbf{Description} \\
 \hline
-\texttt{SyncWord} & \texttt{0x55AA} & Frame synchronization marker \\
+\texttt{SyncWord} & \texttt{0x55AA} & Frame sync marker (alternating bits: \texttt{[0x55, 0xAA]}) \\
 \texttt{SyncSize} & 2 bytes & Sync word size \\
 \texttt{HeaderSize} & 6 bytes & SEQ(2) + LEN(2) + TYPE(1) + FLAGS(1) \\
 \texttt{CRCSize} & 4 bytes & CRC-32 checksum \\
