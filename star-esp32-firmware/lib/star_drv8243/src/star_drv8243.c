@@ -96,15 +96,15 @@ esp_err_t star_drv8243_init(star_drv8243_handle_t* handle, const star_drv8243_co
 
   /* Initialize motor control (MCPWM for H-bridge) */
   star_motor_config_t motor_config = {
-    .group_id    = config->group_id,
-    .pin_pwm_a   = config->pin_pwm_ph,
-    .pin_pwm_b   = config->pin_pwm_en,
-    .pwm_freq_hz = config->pwm_freq_hz,
-    .timer_resolution_hz =
-      config->timer_resolution_hz > 0 ? config->timer_resolution_hz : k_drv8243_default_timer_res_hz,
-    .dead_time_ns = config->dead_time_ns,
-    .invert_pwm   = false,
-    .fault_pin    = -1, /* We handle fault separately via GPIO bus */
+    .group_id            = config->group_id,
+    .pin_pwm_a           = config->pin_pwm_ph,
+    .pin_pwm_b           = config->pin_pwm_en,
+    .pwm_freq_hz         = config->pwm_freq_hz,
+    .timer_resolution_hz = config->timer_resolution_hz > 0 ? config->timer_resolution_hz
+                                                           : k_drv8243_default_timer_res_hz,
+    .dead_time_ns        = config->dead_time_ns,
+    .invert_pwm          = false,
+    .fault_pin           = -1, /* We handle fault separately via GPIO bus */
   };
 
   ret = star_motor_init(&handle->motor, &motor_config);
@@ -212,9 +212,7 @@ esp_err_t star_drv8243_read_current(star_drv8243_handle_t* handle, float* out_cu
    * The voltage is returned in millivolts after ESP-IDF calibration.
    */
   int32_t   voltage_mv;
-  esp_err_t ret = star_bus_adc_read_voltage(handle->bus_manager,
-                                            handle->adc_bus_name,
-                                            &voltage_mv);
+  esp_err_t ret = star_bus_adc_read_voltage(handle->bus_manager, handle->adc_bus_name, &voltage_mv);
   ESP_RETURN_ON_ERROR(ret, s_tag, "Failed to read IPROPI ADC");
 
   /*

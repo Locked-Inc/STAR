@@ -337,21 +337,21 @@ typedef enum {
  * Subcommands written to manufacturer access register for extended functions.
  */
 typedef enum {
-  k_bq7850_subcmd_device_type           = 0x0001, /**< Device type */
-  k_bq7850_subcmd_fw_version            = 0x0002, /**< Firmware version */
-  k_bq7850_subcmd_hw_version            = 0x0003, /**< Hardware version */
-  k_bq7850_subcmd_protection_ov_thresh  = 0x0010, /**< Overvoltage threshold */
-  k_bq7850_subcmd_protection_uv_thresh  = 0x0011, /**< Undervoltage threshold */
-  k_bq7850_subcmd_protection_oc_thresh  = 0x0012, /**< Overcurrent threshold */
-  k_bq7850_subcmd_protection_ot_thresh  = 0x0013, /**< Over-temperature threshold */
-  k_bq7850_subcmd_protection_ut_thresh  = 0x0014, /**< Under-temperature threshold */
-  k_bq7850_subcmd_it_enable             = 0x0021, /**< Enable impedance track */
-  k_bq7850_subcmd_seal                  = 0x0030, /**< Seal device */
-  k_bq7850_subcmd_cal_mode              = 0x0040, /**< Enter calibration mode */
-  k_bq7850_subcmd_reset                 = 0x0041, /**< Software reset */
-  k_bq7850_subcmd_device_reset          = 0x0041, /**< Full device reset (same as reset) */
-  k_bq7850_subcmd_cell_voltage_base     = 0x0070, /**< Cell 1 voltage base (Cell N = base + N-1) */
-  k_bq7850_subcmd_temp_sensor_base      = 0x0078, /**< Temp sensor 1 base (Sensor N = base + N-1) */
+  k_bq7850_subcmd_device_type          = 0x0001, /**< Device type */
+  k_bq7850_subcmd_fw_version           = 0x0002, /**< Firmware version */
+  k_bq7850_subcmd_hw_version           = 0x0003, /**< Hardware version */
+  k_bq7850_subcmd_protection_ov_thresh = 0x0010, /**< Overvoltage threshold */
+  k_bq7850_subcmd_protection_uv_thresh = 0x0011, /**< Undervoltage threshold */
+  k_bq7850_subcmd_protection_oc_thresh = 0x0012, /**< Overcurrent threshold */
+  k_bq7850_subcmd_protection_ot_thresh = 0x0013, /**< Over-temperature threshold */
+  k_bq7850_subcmd_protection_ut_thresh = 0x0014, /**< Under-temperature threshold */
+  k_bq7850_subcmd_it_enable            = 0x0021, /**< Enable impedance track */
+  k_bq7850_subcmd_seal                 = 0x0030, /**< Seal device */
+  k_bq7850_subcmd_cal_mode             = 0x0040, /**< Enter calibration mode */
+  k_bq7850_subcmd_reset                = 0x0041, /**< Software reset */
+  k_bq7850_subcmd_device_reset         = 0x0041, /**< Full device reset (same as reset) */
+  k_bq7850_subcmd_cell_voltage_base    = 0x0070, /**< Cell 1 voltage base (Cell N = base + N-1) */
+  k_bq7850_subcmd_temp_sensor_base     = 0x0078, /**< Temp sensor 1 base (Sensor N = base + N-1) */
 } bq7850_subcmd_t;
 
 /**
@@ -510,12 +510,12 @@ typedef struct {
  * other STAR sensor drivers using const handle pointers).
  */
 typedef struct bq7850_handle {
-  star_bus_manager_t* manager;      /**< Pointer to bus manager */
-  const char*         bus_name;     /**< Name of I2C/SMBus for this device */
-  uint8_t             smbus_addr;   /**< SMBus device address */
-  bq7850_config_t     config;       /**< Device configuration */
-  SemaphoreHandle_t   mutex;        /**< Mutex for thread-safe operations */
-  bool                initialized;  /**< Initialization state */
+  star_bus_manager_t* manager;     /**< Pointer to bus manager */
+  const char*         bus_name;    /**< Name of I2C/SMBus for this device */
+  uint8_t             smbus_addr;  /**< SMBus device address */
+  bq7850_config_t     config;      /**< Device configuration */
+  SemaphoreHandle_t   mutex;       /**< Mutex for thread-safe operations */
+  bool                initialized; /**< Initialization state */
 } bq7850_handle_t;
 
 /* --- Core Functions --- */

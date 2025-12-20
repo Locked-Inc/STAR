@@ -1,0 +1,32 @@
+<map id="lib/star_encoder_mux/src/star_encoder_mux.c" name="lib/star_encoder_mux/src/star_encoder_mux.c">
+<area shape="rect" id="Node000001" title="Multiplexed quadrature encoder driver implementation." alt="" coords="358,5,524,46"/>
+<area shape="rect" id="Node000002" href="$da/d40/star__encoder__mux_8h.html" title="Multiplexed quadrature encoder driver for 74HC4052&#45;based encoder reading." alt="" coords="142,94,281,120"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="381,48,262,91,260,86,386,45"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,241,98,267"/>
+<area shape="poly" id="edge12_Node000001_Node000003" title=" " alt="" coords="355,38,228,62,170,78,132,96,104,125,83,160,69,196,59,227,55,225,64,194,78,158,100,122,129,92,168,73,227,57,360,35"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="305,94,369,120"/>
+<area shape="poly" id="edge13_Node000001_Node000009" title=" " alt="" coords="417,45,366,87,364,82,413,48"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="393,94,488,120"/>
+<area shape="poly" id="edge14_Node000001_Node000010" title=" " alt="" coords="442,44,443,80,439,77,439,49"/>
+<area shape="rect" id="Node000011" title=" " alt="" coords="513,94,590,120"/>
+<area shape="poly" id="edge15_Node000001_Node000011" title=" " alt="" coords="469,44,525,85,519,85,468,49"/>
+<area shape="rect" id="Node000012" title=" " alt="" coords="614,94,702,120"/>
+<area shape="poly" id="edge16_Node000001_Node000012" title=" " alt="" coords="495,44,613,88,608,89,495,49"/>
+<area shape="rect" id="Node000013" title=" " alt="" coords="726,94,830,120"/>
+<area shape="poly" id="edge17_Node000001_Node000013" title=" " alt="" coords="524,44,714,89,709,90,524,49"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="200,122,78,233,74,229,196,118"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="122,241,197,267"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="210,119,171,228,167,225,205,121"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="370,241,434,267"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="250,117,296,137,341,166,369,195,391,229,386,227,365,199,338,170,293,142,249,123"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="458,241,533,267"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="252,118,310,138,371,165,425,197,471,232,466,231,422,202,369,170,308,143,252,123"/>
+<area shape="rect" id="Node000007" href="$d1/daa/star__encoder_8h.html" title="Quadrature encoder driver API using ESP32 PCNT peripheral." alt="" coords="221,168,327,193"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="223,117,256,156,251,156,221,122"/>
+<area shape="poly" id="edge7_Node000007_Node000003" title=" " alt="" coords="237,196,105,239,103,234,236,191"/>
+<area shape="poly" id="edge9_Node000007_Node000004" title=" " alt="" coords="257,193,193,235,191,230,252,195"/>
+<area shape="poly" id="edge10_Node000007_Node000005" title=" " alt="" coords="297,191,370,233,364,233,295,196"/>
+<area shape="poly" id="edge11_Node000007_Node000006" title=" " alt="" coords="312,191,446,236,441,237,311,197"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="221,241,346,267"/>
+<area shape="poly" id="edge8_Node000007_Node000008" title=" " alt="" coords="277,192,282,227,278,225,274,196"/>
+</map>

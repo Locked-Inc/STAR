@@ -106,19 +106,19 @@ extern "C" {
  * @brief ARQ protocol constants
  */
 typedef enum {
-    k_star_arq_default_max_retries    = 3,    /**< Default maximum retry attempts */
-    k_star_arq_default_timeout_ms     = 10,   /**< Default retry timeout (10ms) */
-    k_star_arq_max_data_size          = 1024, /**< Maximum data payload size */
+  k_star_arq_default_max_retries = 3,    /**< Default maximum retry attempts */
+  k_star_arq_default_timeout_ms  = 10,   /**< Default retry timeout (10ms) */
+  k_star_arq_max_data_size       = 1024, /**< Maximum data payload size */
 } star_arq_constants_t;
 
 /**
  * @brief ARQ configuration structure
  */
 typedef struct {
-    star_bus_manager_t* bus_manager;      /**< Bus manager instance (required) */
-    const char*         spi_bus_name;     /**< SPI bus name for communication (required) */
-    uint8_t             max_retries;      /**< Maximum retry attempts (default: 3) */
-    uint32_t            retry_timeout_ms; /**< Retry timeout in milliseconds (default: 10) */
+  star_bus_manager_t* bus_manager;      /**< Bus manager instance (required) */
+  const char*         spi_bus_name;     /**< SPI bus name for communication (required) */
+  uint8_t             max_retries;      /**< Maximum retry attempts (default: 3) */
+  uint32_t            retry_timeout_ms; /**< Retry timeout in milliseconds (default: 10) */
 } star_arq_config_t;
 
 /**
@@ -128,28 +128,28 @@ typedef struct {
  * All memory is statically allocated (no malloc).
  */
 typedef struct {
-    /* Configuration */
-    star_bus_manager_t* bus_manager;      /**< Bus manager instance */
-    const char*         spi_bus_name;     /**< SPI bus name */
-    uint8_t             max_retries;      /**< Maximum retry attempts */
-    uint32_t            retry_timeout_ms; /**< Retry timeout in milliseconds */
+  /* Configuration */
+  star_bus_manager_t* bus_manager;      /**< Bus manager instance */
+  const char*         spi_bus_name;     /**< SPI bus name */
+  uint8_t             max_retries;      /**< Maximum retry attempts */
+  uint32_t            retry_timeout_ms; /**< Retry timeout in milliseconds */
 
-    /* TX state (transmit) */
-    uint16_t tx_seq;                      /**< Next sequence number to send */
-    uint8_t  retry_buffer[k_star_frame_max_size]; /**< Last sent frame for retries */
-    size_t   retry_buffer_len;            /**< Length of data in retry buffer */
-    uint8_t  retry_count;                 /**< Current retry attempt (0-max_retries) */
+  /* TX state (transmit) */
+  uint16_t tx_seq;                              /**< Next sequence number to send */
+  uint8_t  retry_buffer[k_star_frame_max_size]; /**< Last sent frame for retries */
+  size_t   retry_buffer_len;                    /**< Length of data in retry buffer */
+  uint8_t  retry_count;                         /**< Current retry attempt (0-max_retries) */
 
-    /* RX state (receive) */
-    uint16_t rx_last_seq;                 /**< Last successfully received sequence number */
-    bool     rx_initialized;              /**< RX sequence tracking initialized */
+  /* RX state (receive) */
+  uint16_t rx_last_seq;    /**< Last successfully received sequence number */
+  bool     rx_initialized; /**< RX sequence tracking initialized */
 
-    /* Frame layer handles */
-    star_frame_handle_t tx_frame;         /**< Frame handle for building TX frames */
-    star_frame_handle_t rx_frame;         /**< Frame handle for parsing RX frames */
+  /* Frame layer handles */
+  star_frame_handle_t tx_frame; /**< Frame handle for building TX frames */
+  star_frame_handle_t rx_frame; /**< Frame handle for parsing RX frames */
 
-    /* Initialization flag */
-    bool initialized;                     /**< ARQ layer initialized */
+  /* Initialization flag */
+  bool initialized; /**< ARQ layer initialized */
 } star_arq_handle_t;
 
 /* --- Public Functions --- */
@@ -211,12 +211,8 @@ esp_err_t star_arq_deinit(star_arq_handle_t* handle);
  *     - ESP_ERR_TIMEOUT if max retries exceeded
  *     - ESP_FAIL on SPI communication error
  */
-esp_err_t star_arq_send(
-    star_arq_handle_t* handle,
-    const uint8_t* data,
-    size_t len,
-    uint32_t timeout_ms
-);
+esp_err_t
+star_arq_send(star_arq_handle_t* handle, const uint8_t* data, size_t len, uint32_t timeout_ms);
 
 /**
  * @brief Receive data with duplicate filtering
@@ -245,13 +241,11 @@ esp_err_t star_arq_send(
  *     - ESP_ERR_TIMEOUT if timeout occurs
  *     - ESP_FAIL on SPI communication error
  */
-esp_err_t star_arq_receive(
-    star_arq_handle_t* handle,
-    uint8_t* data,
-    size_t max_len,
-    size_t* out_len,
-    uint32_t timeout_ms
-);
+esp_err_t star_arq_receive(star_arq_handle_t* handle,
+                           uint8_t*           data,
+                           size_t             max_len,
+                           size_t*            out_len,
+                           uint32_t           timeout_ms);
 
 #ifdef __cplusplus
 }

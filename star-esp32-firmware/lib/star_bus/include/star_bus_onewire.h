@@ -89,7 +89,7 @@ extern "C" {
  */
 enum {
   /** 1-Wire ROM code size (8 bytes: 1 family + 6 serial + 1 CRC) */
-  k_star_onewire_rom_size    = 8,
+  k_star_onewire_rom_size = 8,
 
   /** Maximum devices on a 1-Wire bus */
   k_star_onewire_max_devices = 100,

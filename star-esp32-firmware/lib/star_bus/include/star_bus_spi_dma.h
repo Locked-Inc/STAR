@@ -204,10 +204,10 @@ extern "C" {
  */
 enum {
   /** Minimum transfer size to use DMA (bytes) */
-  k_star_spi_dma_min_size  = 64,
+  k_star_spi_dma_min_size = 64,
 
   /** Maximum DMA transfer size (bytes) */
-  k_star_spi_dma_max_size  = 4092,
+  k_star_spi_dma_max_size = 4092,
 
   /** DMA buffer alignment requirement (bytes) */
   k_star_spi_dma_alignment = 4,

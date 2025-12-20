@@ -20,7 +20,7 @@ var searchData=
   ['altitude_5fm_17',['altitude_m',['../d6/db7/struct__star__v1___gps_data.html#a2b5c188d0334e68b07040dd5ca8f837e',1,'_star_v1_GpsData']]],
   ['angle_5frad_18',['angle_rad',['../df/dba/struct__star__v1___s_e2_pose.html#a4494e7a8911164c22bc85cc632e73b14',1,'_star_v1_SE2Pose']]],
   ['app_5fmain_19',['app_main',['../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70',1,'main.c']]],
-  ['arq_20',['arq',['../d7/d53/structtelemetry__task__params__t.html#a9b3866e09c29290589ee43d8c7d25e89',1,'telemetry_task_params_t']]],
+  ['arq_20',['arq',['../d0/dfd/structcommand__task__params__t.html#a130c9369975014cb3a7ade1a20124135',1,'command_task_params_t::arq'],['../d7/d53/structtelemetry__task__params__t.html#a9b3866e09c29290589ee43d8c7d25e89',1,'telemetry_task_params_t::arq']]],
   ['arq_5fconfig_5ft_21',['arq_config_t',['../d4/dbf/main_8h.html#ab2f774e79b0e4933f513de7595938868',1,'main.h']]],
   ['atten_22',['atten',['../dc/de0/structstar__adc__bus__config.html#a59171621fd245b942ce2de925e33eed0',1,'star_adc_bus_config']]],
   ['avg_5fcurrent_5fma_23',['avg_current_ma',['../d2/d17/structbq7850__current__data__t.html#aedaae8ec39a087b867618ba3c71f721d',1,'bq7850_current_data_t::avg_current_ma'],['../d1/d47/struct__star__v1___current_data.html#afb816b7d049a2a8888d74bf92965925c',1,'_star_v1_CurrentData::avg_current_ma']]],

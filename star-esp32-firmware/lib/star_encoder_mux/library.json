@@ -1,0 +1,29 @@
+{
+  "name": "star_encoder_mux",
+  "version": "1.0.0",
+  "description": "Multiplexed quadrature encoder driver using 74HC4052 mux and ESP32 PCNT",
+  "keywords": [
+    "encoder",
+    "quadrature",
+    "multiplexer",
+    "74HC4052",
+    "pcnt",
+    "motor control",
+    "position tracking"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Locked-Inc/STAR.git"
+  },
+  "authors": [
+    {
+      "name": "STAR Team"
+    }
+  ],
+  "license": "MIT",
+  "frameworks": "espidf",
+  "platforms": "espressif32",
+  "dependencies": {
+    "star_encoder": "*"
+  }
+}
