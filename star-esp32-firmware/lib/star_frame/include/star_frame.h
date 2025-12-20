@@ -18,8 +18,8 @@ extern "C" {
 #endif
 
 #include <stdbool.h>
-#include <stdint.h>
 #include <stddef.h>
+#include <stdint.h>
 
 #include "esp_err.h"
 
@@ -113,21 +113,22 @@ extern "C" {
  * @brief Frame type identifiers
  */
 typedef enum {
-    k_star_frame_type_request  = 0x01, /**< Request frame (RPi5 → ESP32) */
-    k_star_frame_type_response = 0x02, /**< Response frame (ESP32 → RPi5) */
-    k_star_frame_type_ack      = 0x03, /**< Acknowledgement (ARQ layer) */
-    k_star_frame_type_nack     = 0x04, /**< Negative acknowledgement (ARQ layer) */
+  k_star_frame_type_request  = 0x01, /**< Request frame (RPi5 → ESP32) */
+  k_star_frame_type_response = 0x02, /**< Response frame (ESP32 → RPi5) */
+  k_star_frame_type_ack      = 0x03, /**< Acknowledgement (ARQ layer) */
+  k_star_frame_type_nack     = 0x04, /**< Negative acknowledgement (ARQ layer) */
 } star_frame_type_t;
 
 /**
  * @brief Frame size constants
  */
 typedef enum {
-    k_star_frame_sync_magic    = 0x55AA, /**< SYNC magic bytes for frame alignment (per docs/sections/07_gateway_architecture.tex) */
-    k_star_frame_header_size   = 8,      /**< Frame header size (SYNC + SEQ + LEN + TYPE + FLAGS) */
-    k_star_frame_crc_size      = 4,      /**< CRC-32 footer size */
-    k_star_frame_max_payload   = 1024,   /**< Maximum payload size (1024 bytes) */
-    k_star_frame_max_size      = 1036,   /**< Total max frame size (header + max payload + CRC) */
+  k_star_frame_sync_magic =
+    0x55AA, /**< SYNC magic bytes for frame alignment (per docs/sections/07_gateway_architecture.tex) */
+  k_star_frame_header_size = 8,    /**< Frame header size (SYNC + SEQ + LEN + TYPE + FLAGS) */
+  k_star_frame_crc_size    = 4,    /**< CRC-32 footer size */
+  k_star_frame_max_payload = 1024, /**< Maximum payload size (1024 bytes) */
+  k_star_frame_max_size    = 1036, /**< Total max frame size (header + max payload + CRC) */
 } star_frame_size_t;
 
 /**
@@ -137,11 +138,11 @@ typedef enum {
  * All memory is statically allocated (no malloc).
  */
 typedef struct {
-    uint8_t  buffer[k_star_frame_max_size]; /**< Static frame buffer */
-    uint16_t seq;                            /**< Last processed sequence number */
-    uint16_t payload_len;                    /**< Last processed payload length */
-    uint8_t  type;                           /**< Last processed frame type */
-    bool     valid;                          /**< Frame validity flag */
+  uint8_t  buffer[k_star_frame_max_size]; /**< Static frame buffer */
+  uint16_t seq;                           /**< Last processed sequence number */
+  uint16_t payload_len;                   /**< Last processed payload length */
+  uint8_t  type;                          /**< Last processed frame type */
+  bool     valid;                         /**< Frame validity flag */
 } star_frame_handle_t;
 
 /* --- Public Functions --- */
@@ -189,15 +190,13 @@ esp_err_t star_frame_init(star_frame_handle_t* handle);
  *     - ESP_ERR_INVALID_SIZE if payload_len > k_star_frame_max_payload
  *     - ESP_ERR_INVALID_ARG if payload is NULL but payload_len > 0
  */
-esp_err_t star_frame_build(
-    star_frame_handle_t* handle,
-    uint16_t seq,
-    star_frame_type_t type,
-    const uint8_t* payload,
-    uint16_t payload_len,
-    uint8_t** out_frame,
-    size_t* out_frame_len
-);
+esp_err_t star_frame_build(star_frame_handle_t* handle,
+                           uint16_t             seq,
+                           star_frame_type_t    type,
+                           const uint8_t*       payload,
+                           uint16_t             payload_len,
+                           uint8_t**            out_frame,
+                           size_t*              out_frame_len);
 
 /**
  * @brief Parse and validate a received frame
@@ -221,15 +220,13 @@ esp_err_t star_frame_build(
  *     - ESP_ERR_INVALID_CRC if CRC-32 checksum mismatch
  *     - ESP_ERR_INVALID_SIZE if payload length exceeds maximum
  */
-esp_err_t star_frame_parse(
-    star_frame_handle_t* handle,
-    const uint8_t* data,
-    size_t data_len,
-    uint16_t* out_seq,
-    star_frame_type_t* out_type,
-    uint8_t** out_payload,
-    uint16_t* out_payload_len
-);
+esp_err_t star_frame_parse(star_frame_handle_t* handle,
+                           const uint8_t*       data,
+                           size_t               data_len,
+                           uint16_t*            out_seq,
+                           star_frame_type_t*   out_type,
+                           uint8_t**            out_payload,
+                           uint16_t*            out_payload_len);
 
 /**
  * @brief Calculate CRC-32 checksum (IEEE 802.3)

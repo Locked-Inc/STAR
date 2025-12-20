@@ -259,8 +259,9 @@ esp_err_t star_motor_set_duty(star_motor_handle_t* handle, float duty)
   duty = internal_clamp_duty(duty);
 
   /* Calculate compare value (duty is -100 to +100, so we use absolute value) */
-  float    abs_duty      = fabsf(duty);
-  uint32_t compare_ticks = (uint32_t)((abs_duty / (float)k_motor_percent_scale) * handle->period_ticks);
+  float    abs_duty = fabsf(duty);
+  uint32_t compare_ticks =
+    (uint32_t)((abs_duty / (float)k_motor_percent_scale) * handle->period_ticks);
 
   /* Set comparator value */
   esp_err_t ret = mcpwm_comparator_set_compare_value(handle->comparator, compare_ticks);

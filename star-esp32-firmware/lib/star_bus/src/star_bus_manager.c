@@ -22,7 +22,6 @@
 
 #include "esp_check.h"
 #include "esp_log.h"
-#include "sdkconfig.h" /* For Kconfig values like timeout */
 #include "soc/soc_caps.h"
 #include "star_bus_adc.h"
 #include "star_bus_config.h"
@@ -303,8 +302,7 @@ esp_err_t star_bus_manager_add_bus(star_bus_manager_t* manager, star_bus_config_
 
   esp_err_t ret = ESP_OK;
 
-  if (xSemaphoreTake(manager->mutex, pdMS_TO_TICKS(CONFIG_STAR_KCONFIG_BUS_MUTEX_TIMEOUT_MS)) !=
-      pdTRUE) {
+  if (xSemaphoreTake(manager->mutex, pdMS_TO_TICKS(k_bus_manager_mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGE(manager->tag, "Timeout acquiring mutex for adding bus '%s'", config->name);
     return ESP_ERR_TIMEOUT;
   }
@@ -376,8 +374,7 @@ star_bus_config_t* star_bus_manager_find_bus(const star_bus_manager_t* manager, 
 
   star_bus_config_t* found_bus = NULL;
 
-  if (xSemaphoreTake(manager->mutex, pdMS_TO_TICKS(CONFIG_STAR_KCONFIG_BUS_MUTEX_TIMEOUT_MS)) !=
-      pdTRUE) {
+  if (xSemaphoreTake(manager->mutex, pdMS_TO_TICKS(k_bus_manager_mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGE(manager->tag, "Timeout acquiring mutex for finding bus '%s'", name);
     return NULL; /* Return NULL on timeout */
   }
@@ -407,8 +404,7 @@ esp_err_t star_bus_manager_with_bus(star_bus_manager_t* manager,
                       manager->tag,
                       "Manager mutex not initialized");
 
-  if (xSemaphoreTake(manager->mutex, pdMS_TO_TICKS(CONFIG_STAR_KCONFIG_BUS_MUTEX_TIMEOUT_MS)) !=
-      pdTRUE) {
+  if (xSemaphoreTake(manager->mutex, pdMS_TO_TICKS(k_bus_manager_mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGE(manager->tag, "Timeout acquiring mutex for with_bus '%s'", name);
     return ESP_ERR_TIMEOUT;
   }
@@ -454,8 +450,7 @@ esp_err_t star_bus_manager_remove_bus(star_bus_manager_t* manager, const char* n
   bool               free_adc_unit     = false;
 
   /* Take mutex for the entire critical section to prevent race conditions */
-  if (xSemaphoreTake(manager->mutex, pdMS_TO_TICKS(CONFIG_STAR_KCONFIG_BUS_MUTEX_TIMEOUT_MS * 2)) !=
-      pdTRUE) {
+  if (xSemaphoreTake(manager->mutex, pdMS_TO_TICKS(k_bus_manager_mutex_timeout_ms * 2)) != pdTRUE) {
     ESP_LOGE(manager->tag, "Timeout acquiring mutex for removing bus '%s'", name);
     return ESP_ERR_TIMEOUT;
   }
@@ -612,8 +607,8 @@ esp_err_t star_bus_manager_deinit(star_bus_manager_t* manager)
   bool mutex_taken = false;
   if (manager->mutex != NULL) {
     /* Use a slightly longer timeout for full cleanup */
-    if (xSemaphoreTake(manager->mutex,
-                       pdMS_TO_TICKS(CONFIG_STAR_KCONFIG_BUS_MUTEX_TIMEOUT_MS * 2)) == pdTRUE) {
+    if (xSemaphoreTake(manager->mutex, pdMS_TO_TICKS(k_bus_manager_mutex_timeout_ms * 2)) ==
+        pdTRUE) {
       mutex_taken = true;
     } else {
       ESP_LOGE(manager->tag, "Timeout acquiring mutex for deinit - cleanup may be incomplete!");
@@ -738,8 +733,7 @@ esp_err_t star_bus_manager_register_all_pins(const star_bus_manager_t*   manager
   esp_err_t ret        = ESP_OK;
   esp_err_t reg_result = ESP_OK; /* Track registration errors separately */
 
-  if (xSemaphoreTake(manager->mutex, pdMS_TO_TICKS(CONFIG_STAR_KCONFIG_BUS_MUTEX_TIMEOUT_MS)) !=
-      pdTRUE) {
+  if (xSemaphoreTake(manager->mutex, pdMS_TO_TICKS(k_bus_manager_mutex_timeout_ms)) != pdTRUE) {
     ESP_LOGE(manager->tag, "Timeout acquiring mutex for pin registration");
     return ESP_ERR_TIMEOUT;
   }

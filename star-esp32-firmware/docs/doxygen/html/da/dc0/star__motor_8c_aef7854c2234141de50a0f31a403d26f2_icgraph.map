@@ -1,5 +1,7 @@
 <map id="star_motor_init" name="star_motor_init">
-<area shape="rect" id="Node000001" title="Initialize motor controller with MCPWM." alt="" coords="174,5,281,31"/>
-<area shape="rect" id="Node000002" href="$d2/d8f/star__drv8243_8c.html#abd5193a0c6cf77aa8630a9ded476e412" title="Initialize DRV8243 motor driver." alt="" coords="5,5,126,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="156,18,126,21,126,16,161,18"/>
+<area shape="rect" id="Node000001" title="Initialize motor controller with MCPWM." alt="" coords="174,31,281,56"/>
+<area shape="rect" id="Node000002" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="27,5,104,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="156,34,105,27,105,22,161,32"/>
+<area shape="rect" id="Node000003" href="$d2/d8f/star__drv8243_8c.html#abd5193a0c6cf77aa8630a9ded476e412" title="Initialize DRV8243 motor driver." alt="" coords="5,55,126,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="156,54,126,61,126,56,161,53"/>
 </map>

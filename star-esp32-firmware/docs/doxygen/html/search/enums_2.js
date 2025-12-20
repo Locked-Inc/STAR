@@ -6,5 +6,6 @@ var searchData=
   ['bq7850_5ffet_5fcontrol_5ft_3',['bq7850_fet_control_t',['../d2/d63/star__bms__bq7850_8h.html#ae1766ad56d0595efae17ace804ec0f08',1,'star_bms_bq7850.h']]],
   ['bq7850_5fsafety_5fstatus_5ft_4',['bq7850_safety_status_t',['../d2/d63/star__bms__bq7850_8h.html#a419c4f535189c4b4e7a7a527db5a0ae1',1,'star_bms_bq7850.h']]],
   ['bq7850_5fsubcmd_5ft_5',['bq7850_subcmd_t',['../d2/d63/star__bms__bq7850_8h.html#a41759c6e7fe89c974bf5fb3953e0b03c',1,'star_bms_bq7850.h']]],
-  ['bq7850_5ftiming_5ft_6',['bq7850_timing_t',['../d2/d63/star__bms__bq7850_8h.html#a2182945b1fc950b23d2cc673c043da6b',1,'star_bms_bq7850.h']]]
+  ['bq7850_5ftiming_5ft_6',['bq7850_timing_t',['../d2/d63/star__bms__bq7850_8h.html#a2182945b1fc950b23d2cc673c043da6b',1,'star_bms_bq7850.h']]],
+  ['bus_5fmanager_5fconfig_5ft_7',['bus_manager_config_t',['../d6/dcc/star__bus__manager_8h.html#a412980ac19de89bb35a7fdbe113eff98',1,'star_bus_manager.h']]]
 ];

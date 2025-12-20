@@ -22,5 +22,5 @@ var searchData=
   ['ds18b20_5fsize_5ft_19',['ds18b20_size_t',['../d5/dca/star__sensor__ds18b20_8c.html#ac36f214a78a2b9898d50df3f2211c10c',1,'star_sensor_ds18b20.c']]],
   ['duration_2epb_2ec_20',['duration.pb.c',['../d7/dc4/include_2google_2protobuf_2duration_8pb_8c.html',1,'(Global Namespace)'],['../de/d52/src_2proto_2google_2protobuf_2duration_8pb_8c.html',1,'(Global Namespace)']]],
   ['duration_2epb_2eh_21',['duration.pb.h',['../dc/d30/duration_8pb_8h.html',1,'']]],
-  ['duty_5fcycle_5fpercent_22',['duty_cycle_percent',['../d6/d68/struct__star__v1___motor_power_command.html#a93ea779c11a75618e30d29ada4e992ec',1,'_star_v1_MotorPowerCommand::duty_cycle_percent'],['../d7/d3e/struct__star__v1___motor_status.html#aed01dc951624582a4f35f5b8d0262e28',1,'_star_v1_MotorStatus::duty_cycle_percent']]]
+  ['duty_5fcycle_5fpercent_22',['duty_cycle_percent',['../da/d8b/structmotor__shared__state__t.html#a8f64bbacc790fee6c9d1a13c379a4637',1,'motor_shared_state_t::duty_cycle_percent'],['../d6/d68/struct__star__v1___motor_power_command.html#a93ea779c11a75618e30d29ada4e992ec',1,'_star_v1_MotorPowerCommand::duty_cycle_percent'],['../d7/d3e/struct__star__v1___motor_status.html#aed01dc951624582a4f35f5b8d0262e28',1,'_star_v1_MotorStatus::duty_cycle_percent']]]
 ];

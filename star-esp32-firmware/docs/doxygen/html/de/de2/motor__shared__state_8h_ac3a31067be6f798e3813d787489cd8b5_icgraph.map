@@ -1,0 +1,5 @@
+<map id="motor_shared_state_set_estop" name="motor_shared_state_set_estop">
+<area shape="rect" id="Node000001" title="Set emergency stop flag." alt="" coords="233,5,369,46"/>
+<area shape="rect" id="Node000002" href="$d8/d71/command__handler__task_8c.html#a40d99ce04db1dc6872c786c97fb6ef87" title="Handle EmergencyStopRequest message." alt="" coords="5,5,185,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="215,26,185,28,185,23,220,25"/>
+</map>

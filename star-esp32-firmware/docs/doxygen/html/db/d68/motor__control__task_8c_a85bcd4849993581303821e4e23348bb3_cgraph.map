@@ -1,0 +1,31 @@
+<map id="internal_motor_control_task" name="internal_motor_control_task">
+<area shape="rect" id="Node000001" title="Motor control task entry point." alt="" coords="5,238,187,264"/>
+<area shape="rect" id="Node000002" href="$db/d68/motor__control__task_8c.html#ac7a3ac10291801a1d7e6d42bd2d32eb2" title="Main motor control loop (250Hz)." alt="" coords="235,238,415,264"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="186,248,221,250,217,252,188,254"/>
+<area shape="rect" id="Node000003" href="$db/d68/motor__control__task_8c.html#adf1bd892591feee19efdfc546e9bbcc0" title="Convert velocities from RPM to m/s." alt="" coords="482,5,624,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="330,236,348,201,376,153,415,102,461,57,472,52,468,56,465,61,419,106,381,156,352,204,334,239"/>
+<area shape="rect" id="Node000004" href="$d1/d6c/motor__shared__state_8c.html#a9625f1e643178f350928e96745328d9b" title="Get emergency stop flag." alt="" coords="485,71,621,111"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="336,236,387,182,422,150,462,122,475,117,471,120,464,127,426,154,390,186,339,240"/>
+<area shape="rect" id="Node000005" href="$d1/d6c/motor__shared__state_8c.html#aa398b1a1d67ae6e6766b790ad8d01040" title="Get velocity setpoint for a specific motor." alt="" coords="485,136,621,177"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="354,235,462,187,482,182,478,184,464,192,356,240"/>
+<area shape="rect" id="Node000006" href="$d1/d6c/motor__shared__state_8c.html#ae795bff19b86afb44be2e3a07ebf5cf3" title="Set motor status for a specific motor." alt="" coords="485,201,621,242"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="415,237,472,232,467,233,416,242"/>
+<area shape="rect" id="Node000007" href="$d2/dc5/star__encoder__mux_8c.html#aadee742c73b0e702ab97f670c23422a4" title="Read positions and velocities from all 4 encoders." alt="" coords="463,266,643,292"/>
+<area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="415,259,450,266,445,266,416,265"/>
+<area shape="rect" id="Node000011" href="$da/dc0/star__motor_8c.html#aded359b2a7707eede58b92d452e7c60a" title="Set motor duty cycle." alt="" coords="483,316,623,341"/>
+<area shape="poly" id="edge10_Node000002_Node000011" title=" " alt="" coords="358,262,464,302,487,311,481,311,462,307,358,267"/>
+<area shape="rect" id="Node000013" href="$da/dc0/star__motor_8c.html#afbbfe21c46e45f08382adba217da7072" title="Stop motor." alt="" coords="496,365,611,390"/>
+<area shape="poly" id="edge12_Node000002_Node000013" title=" " alt="" coords="341,262,393,306,428,330,464,351,483,361,478,361,462,356,425,335,390,310,339,267"/>
+<area shape="rect" id="Node000014" href="$d8/d55/star__pid_8c.html#aec137bd2ff54217286aa5896f85634a3" title="Compute PID output for current error." alt="" coords="491,414,615,440"/>
+<area shape="poly" id="edge13_Node000002_Node000014" title=" " alt="" coords="335,262,385,329,422,368,464,401,479,410,474,409,462,405,418,372,381,333,333,267"/>
+<area shape="rect" id="Node000008" href="$d2/dc5/star__encoder__mux_8c.html#a01cc24ba216342bb388db8de8130ff97" title="Read position and velocity from a specific encoder." alt="" coords="691,255,840,295"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="643,275,679,276,673,277,644,280"/>
+<area shape="rect" id="Node000009" href="$d2/dc5/star__encoder__mux_8c.html#a27e764c58a5c98a7572d57e6bbe77723" title="Select a specific encoder via multiplexer." alt="" coords="889,238,1047,264"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="840,264,876,262,871,263,840,269"/>
+<area shape="rect" id="Node000010" href="$d9/d76/star__encoder_8c.html#a6f3706eee73f8c4d4c11356014b996be" title="Get current encoder count." alt="" coords="888,288,1048,313"/>
+<area shape="poly" id="edge9_Node000008_Node000010" title=" " alt="" coords="840,282,875,288,869,288,840,287"/>
+<area shape="rect" id="Node000012" href="$da/dc0/star__motor_8c.html#a4335063cb179a19e4da77a7ad74727e1" title=" " alt="" coords="697,320,834,345"/>
+<area shape="poly" id="edge11_Node000011_Node000012" title=" " alt="" coords="624,327,684,331,679,331,624,332"/>
+<area shape="rect" id="Node000015" href="$d8/d55/star__pid_8c.html#ad92cd9a2714258efaa6ef5dbe69de4b3" title=" " alt="" coords="713,414,818,440"/>
+<area shape="poly" id="edge14_Node000014_Node000015" title=" " alt="" coords="616,424,700,427,694,427,616,430"/>
+</map>
