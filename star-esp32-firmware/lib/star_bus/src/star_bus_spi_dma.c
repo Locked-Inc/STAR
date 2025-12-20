@@ -1,4 +1,15 @@
-/* lib/star_bus/src/star_bus_spi_dma.c */
+/**
+ * @file star_bus_spi_dma.c
+ * @brief DMA-accelerated SPI operations implementation for high-throughput transfers
+ * @details
+ * Implements DMA-backed SPI transfer operations for maximum throughput and minimal CPU
+ * overhead when moving large data blocks. Provides zero-copy buffer management, automatic
+ * DMA-capable memory allocation, and configurable thresholds for DMA vs. polling mode.
+ * Supports full-duplex simultaneous transmit/receive with ESP32 SPI peripheral DMA channels.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #include "star_bus_spi_dma.h"
 

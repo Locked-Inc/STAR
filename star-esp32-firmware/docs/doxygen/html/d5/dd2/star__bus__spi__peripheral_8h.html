@@ -93,7 +93,7 @@ $(function(){initNavTree('d5/dd2/star__bus__spi__peripheral_8h.html','../../',''
 </div><!--header-->
 <div class="contents">
 
-<p>SPI peripheral (slave) mode operations.  
+<p>SPI peripheral mode API for the bus manager.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;driver/spi_slave.h&quot;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
@@ -104,7 +104,7 @@ Include dependency graph for star_bus_spi_peripheral.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../df/d4d/star__bus__spi__peripheral_8h__incl.png" border="0" usemap="#alib_2star__bus_2include_2star__bus__spi__peripheral_8h" loading="lazy" alt=""/></div>
 <map name="alib_2star__bus_2include_2star__bus__spi__peripheral_8h" id="alib_2star__bus_2include_2star__bus__spi__peripheral_8h">
-<area shape="rect" title="SPI peripheral (slave) mode operations." alt="" coords="861,5,1034,46"/>
+<area shape="rect" title="SPI peripheral mode API for the bus manager." alt="" coords="861,5,1034,46"/>
 <area shape="rect" title=" " alt="" coords="387,94,510,120"/>
 <area shape="poly" title=" " alt="" coords="858,42,527,96,525,91,863,39"/>
 <area shape="rect" title=" " alt="" coords="718,536,782,562"/>
@@ -184,7 +184,7 @@ This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d1/d32/star__bus__spi__peripheral_8h__dep__incl.png" border="0" usemap="#alib_2star__bus_2include_2star__bus__spi__peripheral_8hdep" loading="lazy" alt=""/></div>
 <map name="alib_2star__bus_2include_2star__bus__spi__peripheral_8hdep" id="alib_2star__bus_2include_2star__bus__spi__peripheral_8hdep">
-<area shape="rect" title="SPI peripheral (slave) mode operations." alt="" coords="144,5,317,46"/>
+<area shape="rect" title="SPI peripheral mode API for the bus manager." alt="" coords="144,5,317,46"/>
 <area shape="rect" href="../../d4/d23/star__arq_8c.html" title="Automatic Repeat Request (ARQ) protocol implementation with Stop&#45;and&#45;Wait." alt="" coords="5,94,139,135"/>
 <area shape="poly" title=" " alt="" coords="184,53,109,96,107,91,179,55"/>
 <area shape="rect" href="../../de/d98/star__bus__config_8c.html" title="Bus configuration creation and lifecycle management implementation." alt="" coords="162,94,299,135"/>
@@ -208,7 +208,11 @@ Functions</h2></td></tr>
 <tr class="memdesc:a2e6951544874012fcfcc4c1779286837"><td class="mdescLeft">&#160;</td><td class="mdescRight">Perform a full-duplex transaction (receive and transmit simultaneously).  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>SPI peripheral (slave) mode operations. </p>
+<div class="textblock"><p>SPI peripheral mode API for the bus manager. </p>
+<p>SPI peripheral mode operations.</p>
+<p>Provides interface for SPI peripheral mode operations through the bus manager. Allows ESP32 to act as an SPI peripheral controlled by an external controller (e.g., RPi5). Supports DMA transfers and event-driven callbacks for efficient bidirectional communication.</p>
+<dl class="section date"><dt>Date</dt><dd>2025-12-19 </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>Copyright (c) 2025 STAR Project</dd></dl>
 <p>This module allows the ESP32 to act as an SPI peripheral device, receiving commands and data from an external SPI controller.</p>
 <p>Example Usage: </p><div class="fragment"></div><!-- fragment --> 
 <p class="definition">Definition in file <a class="el" href="../../d5/dd2/star__bus__spi__peripheral_8h_source.html">star_bus_spi_peripheral.h</a>.</p>
@@ -238,7 +242,7 @@ Functions</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00048">48</a> of file <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html">star_bus_spi_peripheral.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00156">internal_star_bus_spi_peripheral_receive()</a>, <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00274">internal_star_bus_spi_peripheral_transceive()</a>, <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00215">internal_star_bus_spi_peripheral_transmit()</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00093">star_spi_ops::receive</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00094">star_spi_ops::transfer</a>, and <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00092">star_spi_ops::transmit</a>.</p>
+<p class="reference">References <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00156">internal_star_bus_spi_peripheral_receive()</a>, <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00274">internal_star_bus_spi_peripheral_transceive()</a>, <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00215">internal_star_bus_spi_peripheral_transmit()</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00093">star_spi_ops::receive</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00094">star_spi_ops::transfer</a>, and <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00092">star_spi_ops::transmit</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00158">star_bus_config_create_spi_peripheral()</a>.</p>
 <div class="dynheader">
@@ -261,7 +265,7 @@ Here is the caller graph for this function:</div>
 <div class="center"><img src="../../d5/dd2/star__bus__spi__peripheral_8h_a2345e4ad6acf2f73b394513fe38340da_icgraph.png" border="0" usemap="#ad5/dd2/star__bus__spi__peripheral_8h_a2345e4ad6acf2f73b394513fe38340da_icgraph" loading="lazy" alt=""/></div>
 <map name="ad5/dd2/star__bus__spi__peripheral_8h_a2345e4ad6acf2f73b394513fe38340da_icgraph" id="ad5/dd2/star__bus__spi__peripheral_8h_a2345e4ad6acf2f73b394513fe38340da_icgraph">
 <area shape="rect" title="Initialize default SPI peripheral operations function pointers within a config structure...." alt="" coords="335,5,493,46"/>
-<area shape="rect" href="../../de/d98/star__bus__config_8c.html#a16ccb4aebc8dd1759ce3a1e5c67d7184" title="Create a new SPI peripheral (slave) configuration." alt="" coords="131,5,287,46"/>
+<area shape="rect" href="../../de/d98/star__bus__config_8c.html#a16ccb4aebc8dd1759ce3a1e5c67d7184" title="Create a new SPI peripheral configuration." alt="" coords="131,5,287,46"/>
 <area shape="poly" title=" " alt="" coords="316,26,288,28,288,23,322,26"/>
 <area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,13,83,38"/>
 <area shape="poly" title=" " alt="" coords="112,26,83,28,83,23,118,25"/>
@@ -320,7 +324,7 @@ Here is the caller graph for this function:</div>
 
 <p class="definition">Definition at line <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00064">64</a> of file <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html">star_bus_spi_peripheral.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00156">internal_star_bus_spi_peripheral_receive()</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00057">k_star_bus_type_spi</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00109">star_spi_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00093">star_spi_ops::receive</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00060">star_bus_config::spi</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00199">star_bus_manager_find_bus()</a>, and <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00052">star_bus_config::type</a>.</p>
+<p class="reference">References <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00156">internal_star_bus_spi_peripheral_receive()</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00057">k_star_bus_type_spi</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00109">star_spi_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00093">star_spi_ops::receive</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00060">star_bus_config::spi</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00370">star_bus_manager_find_bus()</a>, and <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00052">star_bus_config::type</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="../../d4/d23/star__arq_8c_source.html#l00387">internal_wait_for_ack()</a>, and <a class="el" href="../../d4/d23/star__arq_8c_source.html#l00179">star_arq_receive()</a>.</p>
 <div class="dynheader">
@@ -419,7 +423,7 @@ Here is the caller graph for this function:</div>
 
 <p class="definition">Definition at line <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00120">120</a> of file <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html">star_bus_spi_peripheral.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00274">internal_star_bus_spi_peripheral_transceive()</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00057">k_star_bus_type_spi</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00109">star_spi_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00060">star_bus_config::spi</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00199">star_bus_manager_find_bus()</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00094">star_spi_ops::transfer</a>, and <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00052">star_bus_config::type</a>.</p>
+<p class="reference">References <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00274">internal_star_bus_spi_peripheral_transceive()</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00057">k_star_bus_type_spi</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00109">star_spi_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00060">star_bus_config::spi</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00370">star_bus_manager_find_bus()</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00094">star_spi_ops::transfer</a>, and <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00052">star_bus_config::type</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -485,7 +489,7 @@ Here is the call graph for this function:</div>
 
 <p class="definition">Definition at line <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00092">92</a> of file <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html">star_bus_spi_peripheral.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00215">internal_star_bus_spi_peripheral_transmit()</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00057">k_star_bus_type_spi</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00109">star_spi_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00060">star_bus_config::spi</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00199">star_bus_manager_find_bus()</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00092">star_spi_ops::transmit</a>, and <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00052">star_bus_config::type</a>.</p>
+<p class="reference">References <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00215">internal_star_bus_spi_peripheral_transmit()</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00057">k_star_bus_type_spi</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00109">star_spi_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00060">star_bus_config::spi</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00370">star_bus_manager_find_bus()</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00092">star_spi_ops::transmit</a>, and <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00052">star_bus_config::type</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="../../d4/d23/star__arq_8c_source.html#l00300">internal_send_ack()</a>, <a class="el" href="../../d4/d23/star__arq_8c_source.html#l00342">internal_send_nack()</a>, and <a class="el" href="../../d4/d23/star__arq_8c_source.html#l00091">star_arq_send()</a>.</p>
 <div class="dynheader">

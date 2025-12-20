@@ -1,28 +1,10 @@
-/* lib/star_arq/include/star_arq.h */
-
-#ifndef STAR_ARQ_H
-#define STAR_ARQ_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-
-#include "esp_err.h"
-#include "star_bus_manager.h"
-#include "star_frame.h"
-
 /**
  * @file star_arq.h
- * @brief Automatic Repeat Request (ARQ) layer with Stop-and-Wait protocol
- *
- * This library implements a Stop-and-Wait ARQ protocol for reliable
- * communication over SPI between RPi5 and ESP32. The protocol provides
- * automatic retransmission on timeout or NACK, duplicate detection, and
- * in-order delivery guarantees.
+ * @brief Automatic Repeat Request (ARQ) protocol API with Stop-and-Wait strategy
+ * @details
+ * Provides interface for reliable packet delivery over SPI peripheral using Stop-and-Wait ARQ.
+ * Implements automatic retransmission, acknowledgment handling, duplicate detection, and
+ * configurable timeout/retry parameters for robust communication between ESP32 and RPi5.
  *
  * Stop-and-Wait Protocol:
  * - Send one frame at a time
@@ -98,7 +80,25 @@ extern "C" {
  *
  * star_arq_deinit(&arq);
  * @endcode
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
  */
+
+#ifndef STAR_ARQ_H
+#define STAR_ARQ_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
+#include "esp_err.h"
+#include "star_bus_manager.h"
+#include "star_frame.h"
 
 /* --- Type Definitions --- */
 

@@ -6,7 +6,7 @@
 <area shape="poly" id="edge16_Node000001_Node000005" title=" " alt="" coords="889,525,798,540,684,546,623,545,561,539,500,528,441,511,391,474,326,417,327,412,394,469,443,506,501,523,562,534,623,540,684,541,798,535,894,524"/>
 <area shape="rect" id="Node000007" href="$d2/d58/star__bms__bq7850_8c.html#a7aebeaeb09bb7ef8ea7d83c7f888b778" title="Read device information from BQ7850." alt="" coords="448,405,597,446"/>
 <area shape="poly" id="edge14_Node000001_Node000007" title=" " alt="" coords="905,491,845,479,714,455,598,438,597,433,715,450,846,474,911,491"/>
-<area shape="rect" id="Node000008" href="$d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="448,470,596,496"/>
+<area shape="rect" id="Node000008" href="$d2/d58/star__bms__bq7850_8c.html#a18f3aeef758059d22cb359789c1c3c7c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="448,470,596,496"/>
 <area shape="poly" id="edge15_Node000001_Node000008" title=" " alt="" coords="876,504,597,490,597,485,881,502"/>
 <area shape="rect" id="Node000013" href="$d2/d58/star__bms__bq7850_8c.html#a1bbee1247cef5042ba7f727c5381e15d" title="Get cell balancing status." alt="" coords="673,621,823,662"/>
 <area shape="poly" id="edge13_Node000001_Node000013" title=" " alt="" coords="947,530,901,569,847,605,809,623,808,618,844,601,898,565,942,533"/>

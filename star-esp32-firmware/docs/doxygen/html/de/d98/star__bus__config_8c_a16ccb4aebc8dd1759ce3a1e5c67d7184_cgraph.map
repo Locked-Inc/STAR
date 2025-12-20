@@ -1,5 +1,5 @@
 <map id="star_bus_config_create_spi_peripheral" name="star_bus_config_create_spi_peripheral">
-<area shape="rect" id="Node000001" title="Create a new SPI peripheral (slave) configuration." alt="" coords="5,39,162,79"/>
+<area shape="rect" id="Node000001" title="Create a new SPI peripheral configuration." alt="" coords="5,39,162,79"/>
 <area shape="rect" id="Node000002" href="$de/d98/star__bus__config_8c.html#a15ff256a9a257629ad970a5359136a59" title="Create a generic bus configuration structure and allocate memory." alt="" coords="210,5,372,46"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="161,44,197,40,192,42,163,49"/>
 <area shape="rect" id="Node000003" href="$d4/d34/star__bus__spi__peripheral_8c.html#a2345e4ad6acf2f73b394513fe38340da" title="Initialize default SPI peripheral operations function pointers within a config structure...." alt="" coords="212,71,370,111"/>

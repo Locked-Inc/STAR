@@ -101,8 +101,8 @@ extern "C" {
  * // === Creating SPI Peripheral Configuration ===
  *
  * // Configure ESP32 as SPI peripheral device
- * star_bus_config_t* slave_bus = star_bus_config_create_spi_peripheral(
- *     "spi_slave",         // Unique bus name
+ * star_bus_config_t* peripheral_bus = star_bus_config_create_spi_peripheral(
+ *     "spi_peripheral",    // Unique bus name
  *     SPI2_HOST,           // SPI host
  *     GPIO_NUM_23,         // COPI pin
  *     GPIO_NUM_19,         // CIPO pin
@@ -112,7 +112,7 @@ extern "C" {
  *     0                    // SPI mode 0
  * );
  *
- * star_bus_manager_add_bus(&bus_manager, slave_bus);
+ * star_bus_manager_add_bus(&bus_manager, peripheral_bus);
  *
  *
  * // === Manual Initialization (Advanced) ===
@@ -228,11 +228,11 @@ esp_err_t star_bus_config_destroy(star_bus_config_t* config);
 esp_err_t star_bus_config_init(star_bus_config_t* config, struct star_bus_manager* manager);
 
 /**
- * @brief Create a new SPI peripheral (slave) configuration.
+ * @brief Create a new SPI peripheral configuration.
  *
  * Configures parameters for operating as an SPI peripheral device.
  * The peripheral will respond to transactions initiated by an external SPI controller.
- * The underlying SPI slave driver will be initialized when star_bus_config_init is called.
+ * The underlying SPI peripheral driver will be initialized when star_bus_config_init is called.
  *
  * @param[in] name        Unique name for this SPI peripheral instance (e.g., "SPI_Peripheral"). Must be non-NULL.
  * @param[in] host        SPI host device (e.g., SPI2_HOST, SPI3_HOST).

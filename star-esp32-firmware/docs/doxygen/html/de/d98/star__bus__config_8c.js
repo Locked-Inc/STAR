@@ -11,5 +11,5 @@ var star__bus__config_8c =
     [ "star_bus_config_deinit", "de/d98/star__bus__config_8c.html#a7698bd213b1044dfc1d6e92d879ca03e", null ],
     [ "star_bus_config_destroy", "de/d98/star__bus__config_8c.html#a194581e2eb82227a022f04b9057db839", null ],
     [ "star_bus_config_init", "de/d98/star__bus__config_8c.html#aab1f2b4c0cdc21f5d37c1a376cb2a672", null ],
-    [ "s_TAG", "de/d98/star__bus__config_8c.html#a999e3dd103132afd3cd1856f477f2dbd", null ]
+    [ "s_tag", "de/d98/star__bus__config_8c.html#af8861f6a1fb30510e283b1b7806b64e7", null ]
 ];

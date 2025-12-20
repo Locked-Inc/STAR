@@ -1,4 +1,15 @@
-/* lib/star_bus/src/star_bus_onewire.c */
+/**
+ * @file star_bus_onewire.c
+ * @brief 1-Wire protocol implementation for the bus manager
+ * @details
+ * Implements Dallas/Maxim 1-Wire protocol for single-wire communication with devices like
+ * DS18B20 temperature sensors. Provides bit-banged GPIO-based timing-critical operations
+ * for reset, write, and read with support for ROM commands, device search, and parasitic
+ * power mode. Includes comprehensive CRC-8 validation for data integrity.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #include "star_bus_onewire.h"
 
@@ -26,20 +37,6 @@ static const char* s_tag = "STAR_ONEWIRE";
 
 /* Mutex timeout in milliseconds */
 static const uint32_t s_onewire_mutex_timeout_ms = 5000;
-
-/* Timing parameters (microseconds) - Standard Speed
- * Using enum for type safety with compile-time constant behavior */
-enum {
-  k_timing_reset_pulse     = 480,
-  k_timing_presence_wait   = 70,
-  k_timing_presence_sample = 410,
-  k_timing_write_0_low     = 60,
-  k_timing_write_1_low     = 6,
-  k_timing_write_recovery  = 10,
-  k_timing_read_low        = 6,
-  k_timing_read_sample     = 9,
-  k_timing_read_recovery   = 55,
-};
 
 /* --- Types --- */
 

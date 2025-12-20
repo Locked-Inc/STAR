@@ -1,5 +1,5 @@
 <map id="lib/star_pin_validator/src/star_pin_validator.c" name="lib/star_pin_validator/src/star_pin_validator.c">
-<area shape="rect" id="Node000001" title="Concrete implementation of GPIO pin conflict detection and validation." alt="" coords="471,5,630,46"/>
+<area shape="rect" id="Node000001" title="GPIO pin conflict detection and validation." alt="" coords="471,5,630,46"/>
 <area shape="rect" id="Node000002" href="$d1/dda/star__pin__validator_8h.html" title="Concrete implementation of GPIO pin conflict detection and tracking." alt="" coords="317,94,450,120"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="511,46,424,89,422,85,506,48"/>
 <area shape="rect" id="Node000010" title=" " alt="" coords="475,94,538,120"/>

@@ -1,4 +1,14 @@
-/* lib/star_bus/include/star_bus_gpio.h */
+/**
+ * @file star_bus_gpio.h
+ * @brief GPIO operations API through the unified bus manager
+ * @details
+ * Provides interface for general-purpose input/output operations through the bus manager.
+ * Supports digital pin read/write, configurable pin modes, pull-up/pull-down resistors,
+ * and interrupt service routine (ISR) handling for edge detection and event-driven GPIO.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #ifndef STAR_COMPONENT_BUS_GPIO_H
 #define STAR_COMPONENT_BUS_GPIO_H

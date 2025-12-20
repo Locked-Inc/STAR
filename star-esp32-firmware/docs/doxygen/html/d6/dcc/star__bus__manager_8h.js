@@ -8,8 +8,8 @@ var star__bus__manager_8h =
     [ "star_bus_manager_register_all_pins", "d6/dcc/star__bus__manager_8h.html#ad3ad5ac9f78399d475aeea127ad5f641", null ],
     [ "star_bus_manager_remove_bus", "d6/dcc/star__bus__manager_8h.html#aa440431606d8a33fb394b4225db51f93", null ],
     [ "star_bus_manager_with_bus", "d6/dcc/star__bus__manager_8h.html#a82a97432d19eef429970f3e80a9be14b", null ],
-    [ "star_bus_read_analog_mv", "d6/dcc/star__bus__manager_8h.html#a20dc68877907e8b866bb386caa57f351", null ],
-    [ "star_bus_read_analog_raw", "d6/dcc/star__bus__manager_8h.html#ac56f7a391c23f795d7c07775676b3497", null ],
+    [ "star_bus_read_analog_mv", "d6/dcc/star__bus__manager_8h.html#a92fd8b349a1209cc8e82aba2d779b339", null ],
+    [ "star_bus_read_analog_raw", "d6/dcc/star__bus__manager_8h.html#acefa929ad30a81325ed5098236148374", null ],
     [ "star_bus_read_digital", "d6/dcc/star__bus__manager_8h.html#a42334b54b0bb4a6ffc8fc73c9cdde5e4", null ],
     [ "star_bus_write_digital", "d6/dcc/star__bus__manager_8h.html#a858ce3f84b41cbf367b32e86b784c571", null ]
 ];

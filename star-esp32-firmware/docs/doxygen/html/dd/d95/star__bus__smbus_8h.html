@@ -93,7 +93,7 @@ $(function(){initNavTree('dd/d95/star__bus__smbus_8h.html','../../',''); });
 </div><!--header-->
 <div class="contents">
 
-<p>SMBus (System Management Bus) protocol implementation over I2C.  
+<p>SMBus protocol API over I2C.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;esp_err.h&gt;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
@@ -104,12 +104,12 @@ Include dependency graph for star_bus_smbus.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d4/df7/star__bus__smbus_8h__incl.png" border="0" usemap="#alib_2star__bus_2include_2star__bus__smbus_8h" loading="lazy" alt=""/></div>
 <map name="alib_2star__bus_2include_2star__bus__smbus_8h" id="alib_2star__bus_2include_2star__bus__smbus_8h">
-<area shape="rect" title="SMBus (System Management Bus) protocol implementation over I2C." alt="" coords="1582,5,1715,46"/>
+<area shape="rect" title="SMBus protocol API over I2C." alt="" coords="1582,5,1715,46"/>
 <area shape="rect" title=" " alt="" coords="1307,610,1382,635"/>
 <area shape="poly" title=" " alt="" coords="1694,44,1733,66,1771,96,1799,134,1808,156,1811,179,1811,477,1808,498,1801,514,1789,527,1775,536,1696,564,1617,591,1535,608,1459,618,1397,623,1397,617,1459,613,1535,603,1616,586,1694,559,1772,531,1786,523,1797,511,1803,497,1806,476,1806,179,1803,157,1795,136,1767,100,1730,71,1693,49"/>
 <area shape="rect" title=" " alt="" coords="832,610,896,635"/>
 <area shape="poly" title=" " alt="" coords="1639,45,1612,106,1602,142,1598,179,1598,256,1592,311,1575,360,1548,404,1513,443,1471,476,1423,506,1371,531,1315,552,1200,584,1088,605,988,617,912,622,912,617,988,612,1087,600,1199,579,1314,547,1369,526,1420,501,1468,472,1509,439,1544,401,1570,358,1587,309,1592,255,1592,179,1597,141,1607,104,1635,48"/>
-<area shape="rect" href="../../dd/df4/star__bus__i2c_8h.html" title="I2C bus operations through the unified bus manager." alt="" coords="887,94,994,120"/>
+<area shape="rect" href="../../dd/df4/star__bus__i2c_8h.html" title="I2C controller protocol API for the bus manager." alt="" coords="887,94,994,120"/>
 <area shape="poly" title=" " alt="" coords="1579,36,1009,101,1008,95,1583,33"/>
 <area shape="rect" href="../../d6/dcc/star__bus__manager_8h.html" title="Unified bus manager API for I2C, SPI, UART, GPIO, ADC, and 1&#45;Wire protocols." alt="" coords="1632,168,1771,193"/>
 <area shape="poly" title=" " alt="" coords="1656,44,1695,154,1690,152,1654,49"/>
@@ -191,10 +191,10 @@ This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d6/d23/star__bus__smbus_8h__dep__incl.png" border="0" usemap="#alib_2star__bus_2include_2star__bus__smbus_8hdep" loading="lazy" alt=""/></div>
 <map name="alib_2star__bus_2include_2star__bus__smbus_8hdep" id="alib_2star__bus_2include_2star__bus__smbus_8hdep">
-<area shape="rect" title="SMBus (System Management Bus) protocol implementation over I2C." alt="" coords="106,5,239,46"/>
+<area shape="rect" title="SMBus protocol API over I2C." alt="" coords="106,5,239,46"/>
 <area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html" title="BQ7850 battery management system driver implementation." alt="" coords="5,94,167,135"/>
 <area shape="poly" title=" " alt="" coords="145,56,107,96,104,91,140,58"/>
-<area shape="rect" href="../../d3/df5/star__bus__smbus_8c.html" title="SMBus (System Management Bus) protocol implementation." alt="" coords="191,94,328,135"/>
+<area shape="rect" href="../../d3/df5/star__bus__smbus_8c.html" title="SMBus protocol layer implementation over I2C." alt="" coords="191,94,328,135"/>
 <area shape="poly" title=" " alt="" coords="204,55,242,94,237,93,202,60"/>
 </map>
 </div>
@@ -240,7 +240,11 @@ Functions</h2></td></tr>
 <tr class="memdesc:a04c99f2c476876fb69206eaaa71e5a6a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Calculate CRC-8 for SMBus Packet Error Checking (PEC).  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>SMBus (System Management Bus) protocol implementation over I2C. </p>
+<div class="textblock"><p>SMBus protocol API over I2C. </p>
+<p>SMBus (System Management Bus) protocol implementation over I2C.</p>
+<p>Provides System Management Bus (SMBus) protocol interface as a high-level abstraction over I2C. Includes standard SMBus commands (quick, byte, word, block) with optional Packet Error Checking (PEC) using CRC-8 for battery management and power monitoring applications.</p>
+<dl class="section date"><dt>Date</dt><dd>2025-12-19 </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>Copyright (c) 2025 STAR Project</dd></dl>
 <p>SMBus is a subset of I2C with additional timing and protocol requirements. This module provides standard SMBus commands built on top of the star_bus I2C implementation.</p>
 <p>SMBus Protocol Features:</p><ul>
 <li>Standardized command set</li>
@@ -272,7 +276,7 @@ Functions</h2></td></tr>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="../../dd/d95/star__bus__smbus_8h_source.html#l00203">203</a> of file <a class="el" href="../../dd/d95/star__bus__smbus_8h_source.html">star_bus_smbus.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/d95/star__bus__smbus_8h_source.html#l00213">213</a> of file <a class="el" href="../../dd/d95/star__bus__smbus_8h_source.html">star_bus_smbus.h</a>.</p>
 
 </div>
 </div>
@@ -296,7 +300,7 @@ Functions</h2></td></tr>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="../../dd/d95/star__bus__smbus_8h_source.html#l00216">216</a> of file <a class="el" href="../../dd/d95/star__bus__smbus_8h_source.html">star_bus_smbus.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/d95/star__bus__smbus_8h_source.html#l00226">226</a> of file <a class="el" href="../../dd/d95/star__bus__smbus_8h_source.html">star_bus_smbus.h</a>.</p>
 
 </div>
 </div>
@@ -373,9 +377,9 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00329">329</a> of file <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html">star_bus_smbus.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00346">346</a> of file <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html">star_bus_smbus.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00428">internal_validate_smbus_params()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00175">star_bus_i2c_read_raw()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00086">star_bus_i2c_write()</a>, and <a class="el" href="../../dd/d95/star__bus__smbus_8h_source.html#l00205">STAR_SMBUS_MAX_BLOCK_SIZE</a>.</p>
+<p class="reference">References <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00035">internal_validate_smbus_params()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00175">star_bus_i2c_read_raw()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00086">star_bus_i2c_write()</a>, and <a class="el" href="../../dd/d95/star__bus__smbus_8h_source.html#l00215">STAR_SMBUS_MAX_BLOCK_SIZE</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -456,11 +460,11 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00272">272</a> of file <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html">star_bus_smbus.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00289">289</a> of file <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html">star_bus_smbus.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00428">internal_validate_smbus_params()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00175">star_bus_i2c_read_raw()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00155">star_bus_i2c_write_command()</a>, and <a class="el" href="../../dd/d95/star__bus__smbus_8h_source.html#l00205">STAR_SMBUS_MAX_BLOCK_SIZE</a>.</p>
+<p class="reference">References <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00035">internal_validate_smbus_params()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00175">star_bus_i2c_read_raw()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00155">star_bus_i2c_write_command()</a>, and <a class="el" href="../../dd/d95/star__bus__smbus_8h_source.html#l00215">STAR_SMBUS_MAX_BLOCK_SIZE</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00187">star_bms_bq7850_get_device_info()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00193">star_bms_bq7850_get_device_info()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -545,9 +549,9 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, ESP_ERR_INVALID_ARG if length &gt; 32 </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00240">240</a> of file <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html">star_bus_smbus.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00257">257</a> of file <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html">star_bus_smbus.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00428">internal_validate_smbus_params()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00086">star_bus_i2c_write()</a>, and <a class="el" href="../../dd/d95/star__bus__smbus_8h_source.html#l00205">STAR_SMBUS_MAX_BLOCK_SIZE</a>.</p>
+<p class="reference">References <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00035">internal_validate_smbus_params()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00086">star_bus_i2c_write()</a>, and <a class="el" href="../../dd/d95/star__bus__smbus_8h_source.html#l00215">STAR_SMBUS_MAX_BLOCK_SIZE</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -601,9 +605,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Calculated CRC-8 value </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00401">401</a> of file <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html">star_bus_smbus.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00420">420</a> of file <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html">star_bus_smbus.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00027">STAR_SMBUS_PEC_POLYNOMIAL</a>.</p>
+<p class="reference">References <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00028">s_smbus_pec_polynomial</a>.</p>
 
 </div>
 </div>
@@ -661,9 +665,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00197">197</a> of file <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html">star_bus_smbus.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00214">214</a> of file <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html">star_bus_smbus.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00428">internal_validate_smbus_params()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00175">star_bus_i2c_read_raw()</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00086">star_bus_i2c_write()</a>.</p>
+<p class="reference">References <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00035">internal_validate_smbus_params()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00175">star_bus_i2c_read_raw()</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00086">star_bus_i2c_write()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -738,9 +742,9 @@ Here is the call graph for this function:</div>
 <dl class="section note"><dt>Note</dt><dd>The addr parameter is unused because SMBus address is configured when the bus is created via star_bus_config_create_smbus().</dd></dl>
 <div class="fragment"></div><!-- fragment --><dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00053">53</a> of file <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html">star_bus_smbus.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00070">70</a> of file <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html">star_bus_smbus.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00428">internal_validate_smbus_params()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00175">star_bus_i2c_read_raw()</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00155">star_bus_i2c_write_command()</a>.</p>
+<p class="reference">References <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00035">internal_validate_smbus_params()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00175">star_bus_i2c_read_raw()</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00155">star_bus_i2c_write_command()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -809,9 +813,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00123">123</a> of file <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html">star_bus_smbus.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00140">140</a> of file <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html">star_bus_smbus.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00428">internal_validate_smbus_params()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00120">star_bus_i2c_read()</a>.</p>
+<p class="reference">References <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00035">internal_validate_smbus_params()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00120">star_bus_i2c_read()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -877,11 +881,11 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00166">166</a> of file <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html">star_bus_smbus.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00183">183</a> of file <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html">star_bus_smbus.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00428">internal_validate_smbus_params()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00120">star_bus_i2c_read()</a>.</p>
+<p class="reference">References <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00035">internal_validate_smbus_params()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00120">star_bus_i2c_read()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00965">internal_bq7850_manufacturer_access()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00674">star_bms_bq7850_get_balancing_status()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00187">star_bms_bq7850_get_device_info()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00048">star_bms_bq7850_init()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00308">star_bms_bq7850_read_cells()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00438">star_bms_bq7850_read_current()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00361">star_bms_bq7850_read_pack_voltage()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00486">star_bms_bq7850_read_soc()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00545">star_bms_bq7850_read_status()</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00416">star_bms_bq7850_read_temperature()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00032">internal_bq7850_manufacturer_access()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00701">star_bms_bq7850_get_balancing_status()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00193">star_bms_bq7850_get_device_info()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00084">star_bms_bq7850_init()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00322">star_bms_bq7850_read_cells()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00453">star_bms_bq7850_read_current()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00375">star_bms_bq7850_read_pack_voltage()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00502">star_bms_bq7850_read_soc()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00561">star_bms_bq7850_read_status()</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00430">star_bms_bq7850_read_temperature()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -908,7 +912,7 @@ Here is the caller graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="889,525,798,540,684,546,623,545,561,539,500,528,441,511,391,474,326,417,327,412,394,469,443,506,501,523,562,534,623,540,684,541,798,535,894,524"/>
 <area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a7aebeaeb09bb7ef8ea7d83c7f888b778" title="Read device information from BQ7850." alt="" coords="448,405,597,446"/>
 <area shape="poly" title=" " alt="" coords="905,491,845,479,714,455,598,438,597,433,715,450,846,474,911,491"/>
-<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="448,470,596,496"/>
+<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a18f3aeef758059d22cb359789c1c3c7c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="448,470,596,496"/>
 <area shape="poly" title=" " alt="" coords="876,504,597,490,597,485,881,502"/>
 <area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a1bbee1247cef5042ba7f727c5381e15d" title="Get cell balancing status." alt="" coords="673,621,823,662"/>
 <area shape="poly" title=" " alt="" coords="947,530,901,569,847,605,809,623,808,618,844,601,898,565,942,533"/>
@@ -990,9 +994,9 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00087">87</a> of file <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html">star_bus_smbus.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00104">104</a> of file <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html">star_bus_smbus.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00428">internal_validate_smbus_params()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00175">star_bus_i2c_read_raw()</a>.</p>
+<p class="reference">References <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00035">internal_validate_smbus_params()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00175">star_bus_i2c_read_raw()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1052,9 +1056,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00075">75</a> of file <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html">star_bus_smbus.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00092">92</a> of file <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html">star_bus_smbus.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00428">internal_validate_smbus_params()</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00155">star_bus_i2c_write_command()</a>.</p>
+<p class="reference">References <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00035">internal_validate_smbus_params()</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00155">star_bus_i2c_write_command()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1120,9 +1124,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00107">107</a> of file <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html">star_bus_smbus.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00124">124</a> of file <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html">star_bus_smbus.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00428">internal_validate_smbus_params()</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00086">star_bus_i2c_write()</a>.</p>
+<p class="reference">References <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00035">internal_validate_smbus_params()</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00086">star_bus_i2c_write()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1188,11 +1192,11 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00144">144</a> of file <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html">star_bus_smbus.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00161">161</a> of file <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html">star_bus_smbus.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00428">internal_validate_smbus_params()</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00086">star_bus_i2c_write()</a>.</p>
+<p class="reference">References <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00035">internal_validate_smbus_params()</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00086">star_bus_i2c_write()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00965">internal_bq7850_manufacturer_access()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00861">star_bms_bq7850_control_fets()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00659">star_bms_bq7850_disable_cell_balancing()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00644">star_bms_bq7850_enable_cell_balancing()</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00734">star_bms_bq7850_write_protection()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00032">internal_bq7850_manufacturer_access()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00887">star_bms_bq7850_control_fets()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00681">star_bms_bq7850_disable_cell_balancing()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00666">star_bms_bq7850_enable_cell_balancing()</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00761">star_bms_bq7850_write_protection()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1227,7 +1231,7 @@ Here is the caller graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="697,199,645,131,611,94,573,61,554,49,553,44,576,57,615,90,649,128,702,199"/>
 <area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a7aebeaeb09bb7ef8ea7d83c7f888b778" title="Read device information from BQ7850." alt="" coords="420,71,569,111"/>
 <area shape="poly" title=" " alt="" coords="683,202,633,164,573,125,552,114,552,109,576,121,636,160,688,202"/>
-<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="420,136,568,161"/>
+<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a18f3aeef758059d22cb359789c1c3c7c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="420,136,568,161"/>
 <area shape="poly" title=" " alt="" coords="654,206,573,176,539,164,539,159,575,171,659,205"/>
 <area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#afd0ffaa80c738dcccbcc04aca730326c" title="Read protection thresholds." alt="" coords="416,185,572,226"/>
 <area shape="poly" title=" " alt="" coords="606,220,573,217,572,212,612,219"/>

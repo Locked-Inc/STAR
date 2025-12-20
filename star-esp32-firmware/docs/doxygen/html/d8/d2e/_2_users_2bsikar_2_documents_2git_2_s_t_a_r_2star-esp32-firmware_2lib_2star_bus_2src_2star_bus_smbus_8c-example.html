@@ -105,7 +105,7 @@ $(function(){initNavTree('d8/d2e/_2_users_2bsikar_2_documents_2git_2_s_t_a_r_2st
 <dl class="section note"><dt>Note</dt><dd>The addr parameter is unused because SMBus address is configured when the bus is created via star_bus_config_create_smbus().</dd></dl>
 <p>// Quick command example (addr=0x00 is ignored, uses bus config address) esp_err_t ret = star_smbus_quick_command(manager, "smbus0", 0x00, true);</p>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise</dd></dl>
-<div class="fragment"><div class="line"></div>
+<div class="fragment"><div class="line"><span class="comment">/* lib/star_bus/src/star_bus_smbus.c */</span></div>
 <div class="line"> </div>
 <div class="line"><span class="preprocessor">#include &quot;<a class="code" href="../../dd/d95/star__bus__smbus_8h.html">star_bus_smbus.h</a>&quot;</span></div>
 <div class="line"> </div>
@@ -118,18 +118,31 @@ $(function(){initNavTree('d8/d2e/_2_users_2bsikar_2_documents_2git_2_s_t_a_r_2st
 <div class="line"> </div>
 <div class="line"><span class="comment">/* --- Constants --- */</span></div>
 <div class="line"> </div>
-<div class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">char</span>* <a id="_a0" name="_a0"></a><a class="code hl_variable" href="../../d2/d58/star__bms__bq7850_8c.html#a0ef4cd21b66ec96ecc491ff1bafab645">s_TAG</a> = <span class="stringliteral">&quot;STAR_SMBUS&quot;</span>;</div>
+<div class="line"><span class="keyword">static</span> <span class="keyword">const</span> <span class="keywordtype">char</span>* <a id="_a0" name="_a0"></a><a class="code hl_variable" href="../../d0/d29/main_8c.html#af8861f6a1fb30510e283b1b7806b64e7">s_tag</a> = <span class="stringliteral">&quot;STAR_SMBUS&quot;</span>;</div>
 <div class="line"> </div>
 <div class="line"><span class="comment">/* CRC-8 polynomial for SMBus PEC: x^8 + x^2 + x + 1 */</span></div>
-<div class="line"><span class="preprocessor">#define STAR_SMBUS_PEC_POLYNOMIAL (0x07)</span></div>
+<div class="line"><span class="keyword">static</span> <span class="keyword">const</span> uint8_t <a id="_a1" name="_a1"></a><a class="code hl_variable" href="../../d3/df5/star__bus__smbus_8c.html#a886d292f1fcf0a8d6baba731c4ce13bf">s_smbus_pec_polynomial</a> = 0x07;</div>
 <div class="line"> </div>
-<div class="line"><span class="comment">/* --- Private Function Prototypes --- */</span></div>
+<div class="line"><span class="comment">/* --- Helper Functions --- */</span></div>
+<div class="line"></div>
+<div class="line"><span class="keyword">static</span> esp_err_t <a id="a2" name="a2"></a><a class="code hl_function" href="../../d3/df5/star__bus__smbus_8c.html#a028e8362b8c772d39dee59e24c15439b">internal_validate_smbus_params</a>(<a id="_a3" name="_a3"></a><a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a>* manager, <span class="keyword">const</span> <span class="keywordtype">char</span>* bus_name)</div>
+<div class="line">{</div>
+<div class="line">  <span class="keywordflow">if</span> (manager == NULL) {</div>
+<div class="line">    ESP_LOGE(<a class="code hl_variable" href="../../d0/d29/main_8c.html#af8861f6a1fb30510e283b1b7806b64e7">s_tag</a>, <span class="stringliteral">&quot;Manager is NULL&quot;</span>);</div>
+<div class="line">    <span class="keywordflow">return</span> ESP_ERR_INVALID_ARG;</div>
+<div class="line">  }</div>
 <div class="line"> </div>
-<div class="line"><span class="keyword">static</span> esp_err_t <a id="a1" name="a1"></a><a class="code hl_function" href="../../d3/df5/star__bus__smbus_8c.html#a028e8362b8c772d39dee59e24c15439b">internal_validate_smbus_params</a>(<a id="_a2" name="_a2"></a><a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a>* manager, <span class="keyword">const</span> <span class="keywordtype">char</span>* bus_name);</div>
+<div class="line">  <span class="keywordflow">if</span> (bus_name == NULL) {</div>
+<div class="line">    ESP_LOGE(<a class="code hl_variable" href="../../d0/d29/main_8c.html#af8861f6a1fb30510e283b1b7806b64e7">s_tag</a>, <span class="stringliteral">&quot;Bus name is NULL&quot;</span>);</div>
+<div class="line">    <span class="keywordflow">return</span> ESP_ERR_INVALID_ARG;</div>
+<div class="line">  }</div>
+<div class="line"> </div>
+<div class="line">  <span class="keywordflow">return</span> ESP_OK;</div>
+<div class="line">}</div>
 <div class="line"> </div>
 <div class="line"><span class="comment">/* --- Public Functions --- */</span></div>
 <div class="line"></div>
-<div class="line">esp_err_t <a id="a3" name="a3"></a><a class="code hl_function" href="../../dd/d95/star__bus__smbus_8h.html#a48ef2e6fb5d356dd99268601da6f19aa">star_smbus_quick_command</a>(<a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a>* manager,</div>
+<div class="line">esp_err_t <a id="a4" name="a4"></a><a class="code hl_function" href="../../dd/d95/star__bus__smbus_8h.html#a48ef2e6fb5d356dd99268601da6f19aa">star_smbus_quick_command</a>(<a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a>* manager,</div>
 <div class="line">                                   <span class="keyword">const</span> <span class="keywordtype">char</span>*         bus_name,</div>
 <div class="line">                                   uint8_t             addr,</div>
 <div class="line">                                   <span class="keywordtype">bool</span>                write)</div>
@@ -143,15 +156,15 @@ $(function(){initNavTree('d8/d2e/_2_users_2bsikar_2_documents_2git_2_s_t_a_r_2st
 <div class="line"> </div>
 <div class="line">  <span class="comment">/* Quick command: write=send command byte 0, read=read raw with 0 length */</span></div>
 <div class="line">  <span class="keywordflow">if</span> (write) {</div>
-<div class="line">    <span class="keywordflow">return</span> <a id="a4" name="a4"></a><a class="code hl_function" href="../../dd/df4/star__bus__i2c_8h.html#ab5fd7179899b9f4229f103484481be3e">star_bus_i2c_write_command</a>(manager, bus_name, 0);</div>
+<div class="line">    <span class="keywordflow">return</span> <a id="a5" name="a5"></a><a class="code hl_function" href="../../dd/df4/star__bus__i2c_8h.html#ab5fd7179899b9f4229f103484481be3e">star_bus_i2c_write_command</a>(manager, bus_name, 0);</div>
 <div class="line">  } <span class="keywordflow">else</span> {</div>
 <div class="line">    uint8_t dummy;</div>
-<div class="line">    <span class="keywordflow">return</span> <a id="a5" name="a5"></a><a class="code hl_function" href="../../dd/df4/star__bus__i2c_8h.html#a6b73d11538cb25e07de224584c54ec49">star_bus_i2c_read_raw</a>(manager, bus_name, &amp;dummy, 0, NULL);</div>
+<div class="line">    <span class="keywordflow">return</span> <a id="a6" name="a6"></a><a class="code hl_function" href="../../dd/df4/star__bus__i2c_8h.html#a6b73d11538cb25e07de224584c54ec49">star_bus_i2c_read_raw</a>(manager, bus_name, &amp;dummy, 0, NULL);</div>
 <div class="line">  }</div>
 <div class="line">}</div>
 <div class="line"> </div>
 <div class="line">esp_err_t</div>
-<div class="line"><a id="a6" name="a6"></a><a class="code hl_function" href="../../dd/d95/star__bus__smbus_8h.html#a9136f077a15f7940183ecd6705683c10">star_smbus_send_byte</a>(<a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a>* manager, <span class="keyword">const</span> <span class="keywordtype">char</span>* bus_name, uint8_t addr, uint8_t data)</div>
+<div class="line"><a id="a7" name="a7"></a><a class="code hl_function" href="../../dd/d95/star__bus__smbus_8h.html#a9136f077a15f7940183ecd6705683c10">star_smbus_send_byte</a>(<a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a>* manager, <span class="keyword">const</span> <span class="keywordtype">char</span>* bus_name, uint8_t addr, uint8_t data)</div>
 <div class="line">{</div>
 <div class="line">  (void)addr; <span class="comment">/* Address comes from bus config */</span></div>
 <div class="line"> </div>
@@ -163,7 +176,7 @@ $(function(){initNavTree('d8/d2e/_2_users_2bsikar_2_documents_2git_2_s_t_a_r_2st
 <div class="line">  <span class="keywordflow">return</span> <a class="code hl_function" href="../../dd/df4/star__bus__i2c_8h.html#ab5fd7179899b9f4229f103484481be3e">star_bus_i2c_write_command</a>(manager, bus_name, data);</div>
 <div class="line">}</div>
 <div class="line"> </div>
-<div class="line">esp_err_t <a id="a7" name="a7"></a><a class="code hl_function" href="../../dd/d95/star__bus__smbus_8h.html#ac1e373dc01160b349e13e917068fcc93">star_smbus_receive_byte</a>(<a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a>* manager,</div>
+<div class="line">esp_err_t <a id="a8" name="a8"></a><a class="code hl_function" href="../../dd/d95/star__bus__smbus_8h.html#ac1e373dc01160b349e13e917068fcc93">star_smbus_receive_byte</a>(<a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a>* manager,</div>
 <div class="line">                                  <span class="keyword">const</span> <span class="keywordtype">char</span>*         bus_name,</div>
 <div class="line">                                  uint8_t             addr,</div>
 <div class="line">                                  uint8_t*            data)</div>
@@ -176,14 +189,14 @@ $(function(){initNavTree('d8/d2e/_2_users_2bsikar_2_documents_2git_2_s_t_a_r_2st
 <div class="line">  }</div>
 <div class="line"> </div>
 <div class="line">  <span class="keywordflow">if</span> (data == NULL) {</div>
-<div class="line">    ESP_LOGE(<a class="code hl_variable" href="../../d2/d58/star__bms__bq7850_8c.html#a0ef4cd21b66ec96ecc491ff1bafab645">s_TAG</a>, <span class="stringliteral">&quot;Data pointer is NULL&quot;</span>);</div>
+<div class="line">    ESP_LOGE(<a class="code hl_variable" href="../../d0/d29/main_8c.html#af8861f6a1fb30510e283b1b7806b64e7">s_tag</a>, <span class="stringliteral">&quot;Data pointer is NULL&quot;</span>);</div>
 <div class="line">    <span class="keywordflow">return</span> ESP_ERR_INVALID_ARG;</div>
 <div class="line">  }</div>
 <div class="line"> </div>
 <div class="line">  <span class="keywordflow">return</span> <a class="code hl_function" href="../../dd/df4/star__bus__i2c_8h.html#a6b73d11538cb25e07de224584c54ec49">star_bus_i2c_read_raw</a>(manager, bus_name, data, 1, NULL);</div>
 <div class="line">}</div>
 <div class="line"> </div>
-<div class="line">esp_err_t <a id="a8" name="a8"></a><a class="code hl_function" href="../../dd/d95/star__bus__smbus_8h.html#a4150488512abf781bf193c6bdb9d20a0">star_smbus_write_byte</a>(<a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a>* manager,</div>
+<div class="line">esp_err_t <a id="a9" name="a9"></a><a class="code hl_function" href="../../dd/d95/star__bus__smbus_8h.html#a4150488512abf781bf193c6bdb9d20a0">star_smbus_write_byte</a>(<a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a>* manager,</div>
 <div class="line">                                <span class="keyword">const</span> <span class="keywordtype">char</span>*         bus_name,</div>
 <div class="line">                                uint8_t             addr,</div>
 <div class="line">                                uint8_t             command,</div>
@@ -196,10 +209,10 @@ $(function(){initNavTree('d8/d2e/_2_users_2bsikar_2_documents_2git_2_s_t_a_r_2st
 <div class="line">    <span class="keywordflow">return</span> result;</div>
 <div class="line">  }</div>
 <div class="line"> </div>
-<div class="line">  <span class="keywordflow">return</span> <a id="a9" name="a9"></a><a class="code hl_function" href="../../dd/df4/star__bus__i2c_8h.html#aff2961e205530246d5a602fa747a6e3c">star_bus_i2c_write</a>(manager, bus_name, &amp;data, 1, command, NULL);</div>
+<div class="line">  <span class="keywordflow">return</span> <a id="a10" name="a10"></a><a class="code hl_function" href="../../dd/df4/star__bus__i2c_8h.html#aff2961e205530246d5a602fa747a6e3c">star_bus_i2c_write</a>(manager, bus_name, &amp;data, 1, command, NULL);</div>
 <div class="line">}</div>
 <div class="line"> </div>
-<div class="line">esp_err_t <a id="a10" name="a10"></a><a class="code hl_function" href="../../dd/d95/star__bus__smbus_8h.html#a66c94dc0a7eb2893f78e8b887d6d0b4d">star_smbus_read_byte</a>(<a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a>* manager,</div>
+<div class="line">esp_err_t <a id="a11" name="a11"></a><a class="code hl_function" href="../../dd/d95/star__bus__smbus_8h.html#a66c94dc0a7eb2893f78e8b887d6d0b4d">star_smbus_read_byte</a>(<a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a>* manager,</div>
 <div class="line">                               <span class="keyword">const</span> <span class="keywordtype">char</span>*         bus_name,</div>
 <div class="line">                               uint8_t             addr,</div>
 <div class="line">                               uint8_t             command,</div>
@@ -213,14 +226,14 @@ $(function(){initNavTree('d8/d2e/_2_users_2bsikar_2_documents_2git_2_s_t_a_r_2st
 <div class="line">  }</div>
 <div class="line"> </div>
 <div class="line">  <span class="keywordflow">if</span> (data == NULL) {</div>
-<div class="line">    ESP_LOGE(<a class="code hl_variable" href="../../d2/d58/star__bms__bq7850_8c.html#a0ef4cd21b66ec96ecc491ff1bafab645">s_TAG</a>, <span class="stringliteral">&quot;Data pointer is NULL&quot;</span>);</div>
+<div class="line">    ESP_LOGE(<a class="code hl_variable" href="../../d0/d29/main_8c.html#af8861f6a1fb30510e283b1b7806b64e7">s_tag</a>, <span class="stringliteral">&quot;Data pointer is NULL&quot;</span>);</div>
 <div class="line">    <span class="keywordflow">return</span> ESP_ERR_INVALID_ARG;</div>
 <div class="line">  }</div>
 <div class="line"> </div>
-<div class="line">  <span class="keywordflow">return</span> <a id="a11" name="a11"></a><a class="code hl_function" href="../../dd/df4/star__bus__i2c_8h.html#a2e9b9baf8a0f8d00a2080963a7efd62f">star_bus_i2c_read</a>(manager, bus_name, data, 1, command, NULL);</div>
+<div class="line">  <span class="keywordflow">return</span> <a id="a12" name="a12"></a><a class="code hl_function" href="../../dd/df4/star__bus__i2c_8h.html#a2e9b9baf8a0f8d00a2080963a7efd62f">star_bus_i2c_read</a>(manager, bus_name, data, 1, command, NULL);</div>
 <div class="line">}</div>
 <div class="line"> </div>
-<div class="line">esp_err_t <a id="a12" name="a12"></a><a class="code hl_function" href="../../dd/d95/star__bus__smbus_8h.html#ae35a870d8984311e9af9966d3be33bac">star_smbus_write_word</a>(<a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a>* manager,</div>
+<div class="line">esp_err_t <a id="a13" name="a13"></a><a class="code hl_function" href="../../dd/d95/star__bus__smbus_8h.html#ae35a870d8984311e9af9966d3be33bac">star_smbus_write_word</a>(<a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a>* manager,</div>
 <div class="line">                                <span class="keyword">const</span> <span class="keywordtype">char</span>*         bus_name,</div>
 <div class="line">                                uint8_t             addr,</div>
 <div class="line">                                uint8_t             command,</div>
@@ -242,7 +255,7 @@ $(function(){initNavTree('d8/d2e/_2_users_2bsikar_2_documents_2git_2_s_t_a_r_2st
 <div class="line">  <span class="keywordflow">return</span> <a class="code hl_function" href="../../dd/df4/star__bus__i2c_8h.html#aff2961e205530246d5a602fa747a6e3c">star_bus_i2c_write</a>(manager, bus_name, buffer, 2, command, NULL);</div>
 <div class="line">}</div>
 <div class="line"> </div>
-<div class="line">esp_err_t <a id="a13" name="a13"></a><a class="code hl_function" href="../../dd/d95/star__bus__smbus_8h.html#a06fee6f34cc0d8a110deb97775bb6e6a">star_smbus_read_word</a>(<a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a>* manager,</div>
+<div class="line">esp_err_t <a id="a14" name="a14"></a><a class="code hl_function" href="../../dd/d95/star__bus__smbus_8h.html#a06fee6f34cc0d8a110deb97775bb6e6a">star_smbus_read_word</a>(<a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a>* manager,</div>
 <div class="line">                               <span class="keyword">const</span> <span class="keywordtype">char</span>*         bus_name,</div>
 <div class="line">                               uint8_t             addr,</div>
 <div class="line">                               uint8_t             command,</div>
@@ -256,7 +269,7 @@ $(function(){initNavTree('d8/d2e/_2_users_2bsikar_2_documents_2git_2_s_t_a_r_2st
 <div class="line">  }</div>
 <div class="line"> </div>
 <div class="line">  <span class="keywordflow">if</span> (data == NULL) {</div>
-<div class="line">    ESP_LOGE(<a class="code hl_variable" href="../../d2/d58/star__bms__bq7850_8c.html#a0ef4cd21b66ec96ecc491ff1bafab645">s_TAG</a>, <span class="stringliteral">&quot;Data pointer is NULL&quot;</span>);</div>
+<div class="line">    ESP_LOGE(<a class="code hl_variable" href="../../d0/d29/main_8c.html#af8861f6a1fb30510e283b1b7806b64e7">s_tag</a>, <span class="stringliteral">&quot;Data pointer is NULL&quot;</span>);</div>
 <div class="line">    <span class="keywordflow">return</span> ESP_ERR_INVALID_ARG;</div>
 <div class="line">  }</div>
 <div class="line"> </div>
@@ -273,7 +286,7 @@ $(function(){initNavTree('d8/d2e/_2_users_2bsikar_2_documents_2git_2_s_t_a_r_2st
 <div class="line">  <span class="keywordflow">return</span> ESP_OK;</div>
 <div class="line">}</div>
 <div class="line"> </div>
-<div class="line">esp_err_t <a id="a14" name="a14"></a><a class="code hl_function" href="../../dd/d95/star__bus__smbus_8h.html#a880eddb5f6fe400ad1c9022cec7bc766">star_smbus_process_call</a>(<a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a>* manager,</div>
+<div class="line">esp_err_t <a id="a15" name="a15"></a><a class="code hl_function" href="../../dd/d95/star__bus__smbus_8h.html#a880eddb5f6fe400ad1c9022cec7bc766">star_smbus_process_call</a>(<a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a>* manager,</div>
 <div class="line">                                  <span class="keyword">const</span> <span class="keywordtype">char</span>*         bus_name,</div>
 <div class="line">                                  uint8_t             addr,</div>
 <div class="line">                                  uint8_t             command,</div>
@@ -288,7 +301,7 @@ $(function(){initNavTree('d8/d2e/_2_users_2bsikar_2_documents_2git_2_s_t_a_r_2st
 <div class="line">  }</div>
 <div class="line"> </div>
 <div class="line">  <span class="keywordflow">if</span> (read_data == NULL) {</div>
-<div class="line">    ESP_LOGE(<a class="code hl_variable" href="../../d2/d58/star__bms__bq7850_8c.html#a0ef4cd21b66ec96ecc491ff1bafab645">s_TAG</a>, <span class="stringliteral">&quot;Read data pointer is NULL&quot;</span>);</div>
+<div class="line">    ESP_LOGE(<a class="code hl_variable" href="../../d0/d29/main_8c.html#af8861f6a1fb30510e283b1b7806b64e7">s_tag</a>, <span class="stringliteral">&quot;Read data pointer is NULL&quot;</span>);</div>
 <div class="line">    <span class="keywordflow">return</span> ESP_ERR_INVALID_ARG;</div>
 <div class="line">  }</div>
 <div class="line"> </div>
@@ -316,7 +329,7 @@ $(function(){initNavTree('d8/d2e/_2_users_2bsikar_2_documents_2git_2_s_t_a_r_2st
 <div class="line">  <span class="keywordflow">return</span> ESP_OK;</div>
 <div class="line">}</div>
 <div class="line"> </div>
-<div class="line">esp_err_t <a id="a15" name="a15"></a><a class="code hl_function" href="../../dd/d95/star__bus__smbus_8h.html#a5b3419e1efc2e09a4a145f51f1c52458">star_smbus_block_write</a>(<a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a>* manager,</div>
+<div class="line">esp_err_t <a id="a16" name="a16"></a><a class="code hl_function" href="../../dd/d95/star__bus__smbus_8h.html#a5b3419e1efc2e09a4a145f51f1c52458">star_smbus_block_write</a>(<a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a>* manager,</div>
 <div class="line">                                 <span class="keyword">const</span> <span class="keywordtype">char</span>*         bus_name,</div>
 <div class="line">                                 uint8_t             addr,</div>
 <div class="line">                                 uint8_t             command,</div>
@@ -331,12 +344,12 @@ $(function(){initNavTree('d8/d2e/_2_users_2bsikar_2_documents_2git_2_s_t_a_r_2st
 <div class="line">  }</div>
 <div class="line"> </div>
 <div class="line">  <span class="keywordflow">if</span> (data == NULL) {</div>
-<div class="line">    ESP_LOGE(<a class="code hl_variable" href="../../d2/d58/star__bms__bq7850_8c.html#a0ef4cd21b66ec96ecc491ff1bafab645">s_TAG</a>, <span class="stringliteral">&quot;Data pointer is NULL&quot;</span>);</div>
+<div class="line">    ESP_LOGE(<a class="code hl_variable" href="../../d0/d29/main_8c.html#af8861f6a1fb30510e283b1b7806b64e7">s_tag</a>, <span class="stringliteral">&quot;Data pointer is NULL&quot;</span>);</div>
 <div class="line">    <span class="keywordflow">return</span> ESP_ERR_INVALID_ARG;</div>
 <div class="line">  }</div>
 <div class="line"> </div>
-<div class="line">  <span class="keywordflow">if</span> (length == 0 || length &gt; <a id="_a16" name="_a16"></a><a class="code hl_enumvalue" href="../../dd/d95/star__bus__smbus_8h.html#a19086baa0f945a3e3ce52f72c52cc474aebc7dce5fadbdbbeda54894184813f79">STAR_SMBUS_MAX_BLOCK_SIZE</a>) {</div>
-<div class="line">    ESP_LOGE(<a class="code hl_variable" href="../../d2/d58/star__bms__bq7850_8c.html#a0ef4cd21b66ec96ecc491ff1bafab645">s_TAG</a>, <span class="stringliteral">&quot;Invalid block length: %d (must be 1-%d)&quot;</span>, length, <a class="code hl_enumvalue" href="../../dd/d95/star__bus__smbus_8h.html#a19086baa0f945a3e3ce52f72c52cc474aebc7dce5fadbdbbeda54894184813f79">STAR_SMBUS_MAX_BLOCK_SIZE</a>);</div>
+<div class="line">  <span class="keywordflow">if</span> (length == 0 || length &gt; <a id="_a17" name="_a17"></a><a class="code hl_enumvalue" href="../../dd/d95/star__bus__smbus_8h.html#a19086baa0f945a3e3ce52f72c52cc474aebc7dce5fadbdbbeda54894184813f79">STAR_SMBUS_MAX_BLOCK_SIZE</a>) {</div>
+<div class="line">    ESP_LOGE(<a class="code hl_variable" href="../../d0/d29/main_8c.html#af8861f6a1fb30510e283b1b7806b64e7">s_tag</a>, <span class="stringliteral">&quot;Invalid block length: %d (must be 1-%d)&quot;</span>, length, <a class="code hl_enumvalue" href="../../dd/d95/star__bus__smbus_8h.html#a19086baa0f945a3e3ce52f72c52cc474aebc7dce5fadbdbbeda54894184813f79">STAR_SMBUS_MAX_BLOCK_SIZE</a>);</div>
 <div class="line">    <span class="keywordflow">return</span> ESP_ERR_INVALID_ARG;</div>
 <div class="line">  }</div>
 <div class="line"> </div>
@@ -348,7 +361,7 @@ $(function(){initNavTree('d8/d2e/_2_users_2bsikar_2_documents_2git_2_s_t_a_r_2st
 <div class="line">  <span class="keywordflow">return</span> <a class="code hl_function" href="../../dd/df4/star__bus__i2c_8h.html#aff2961e205530246d5a602fa747a6e3c">star_bus_i2c_write</a>(manager, bus_name, buffer, 1 + length, command, NULL);</div>
 <div class="line">}</div>
 <div class="line"> </div>
-<div class="line">esp_err_t <a id="a17" name="a17"></a><a class="code hl_function" href="../../dd/d95/star__bus__smbus_8h.html#a416c6cdf6379a197a9b018603a3e73e8">star_smbus_block_read</a>(<a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a>* manager,</div>
+<div class="line">esp_err_t <a id="a18" name="a18"></a><a class="code hl_function" href="../../dd/d95/star__bus__smbus_8h.html#a416c6cdf6379a197a9b018603a3e73e8">star_smbus_block_read</a>(<a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a>* manager,</div>
 <div class="line">                                <span class="keyword">const</span> <span class="keywordtype">char</span>*         bus_name,</div>
 <div class="line">                                uint8_t             addr,</div>
 <div class="line">                                uint8_t             command,</div>
@@ -364,12 +377,12 @@ $(function(){initNavTree('d8/d2e/_2_users_2bsikar_2_documents_2git_2_s_t_a_r_2st
 <div class="line">  }</div>
 <div class="line"> </div>
 <div class="line">  <span class="keywordflow">if</span> (data == NULL || length == NULL) {</div>
-<div class="line">    ESP_LOGE(<a class="code hl_variable" href="../../d2/d58/star__bms__bq7850_8c.html#a0ef4cd21b66ec96ecc491ff1bafab645">s_TAG</a>, <span class="stringliteral">&quot;Data or length pointer is NULL&quot;</span>);</div>
+<div class="line">    ESP_LOGE(<a class="code hl_variable" href="../../d0/d29/main_8c.html#af8861f6a1fb30510e283b1b7806b64e7">s_tag</a>, <span class="stringliteral">&quot;Data or length pointer is NULL&quot;</span>);</div>
 <div class="line">    <span class="keywordflow">return</span> ESP_ERR_INVALID_ARG;</div>
 <div class="line">  }</div>
 <div class="line"> </div>
 <div class="line">  <span class="keywordflow">if</span> (max_length &lt; <a class="code hl_enumvalue" href="../../dd/d95/star__bus__smbus_8h.html#a19086baa0f945a3e3ce52f72c52cc474aebc7dce5fadbdbbeda54894184813f79">STAR_SMBUS_MAX_BLOCK_SIZE</a>) {</div>
-<div class="line">    ESP_LOGE(<a class="code hl_variable" href="../../d2/d58/star__bms__bq7850_8c.html#a0ef4cd21b66ec96ecc491ff1bafab645">s_TAG</a>,</div>
+<div class="line">    ESP_LOGE(<a class="code hl_variable" href="../../d0/d29/main_8c.html#af8861f6a1fb30510e283b1b7806b64e7">s_tag</a>,</div>
 <div class="line">             <span class="stringliteral">&quot;Buffer too small: %d (should be &gt;= %d)&quot;</span>,</div>
 <div class="line">             max_length,</div>
 <div class="line">             <a class="code hl_enumvalue" href="../../dd/d95/star__bus__smbus_8h.html#a19086baa0f945a3e3ce52f72c52cc474aebc7dce5fadbdbbeda54894184813f79">STAR_SMBUS_MAX_BLOCK_SIZE</a>);</div>
@@ -391,7 +404,7 @@ $(function(){initNavTree('d8/d2e/_2_users_2bsikar_2_documents_2git_2_s_t_a_r_2st
 <div class="line"> </div>
 <div class="line">  <span class="comment">/* Validate block length */</span></div>
 <div class="line">  <span class="keywordflow">if</span> (block_length == 0 || block_length &gt; <a class="code hl_enumvalue" href="../../dd/d95/star__bus__smbus_8h.html#a19086baa0f945a3e3ce52f72c52cc474aebc7dce5fadbdbbeda54894184813f79">STAR_SMBUS_MAX_BLOCK_SIZE</a>) {</div>
-<div class="line">    ESP_LOGE(<a class="code hl_variable" href="../../d2/d58/star__bms__bq7850_8c.html#a0ef4cd21b66ec96ecc491ff1bafab645">s_TAG</a>, <span class="stringliteral">&quot;Invalid block length received: %d&quot;</span>, block_length);</div>
+<div class="line">    ESP_LOGE(<a class="code hl_variable" href="../../d0/d29/main_8c.html#af8861f6a1fb30510e283b1b7806b64e7">s_tag</a>, <span class="stringliteral">&quot;Invalid block length received: %d&quot;</span>, block_length);</div>
 <div class="line">    <span class="keywordflow">return</span> ESP_ERR_INVALID_RESPONSE;</div>
 <div class="line">  }</div>
 <div class="line"> </div>
@@ -405,7 +418,7 @@ $(function(){initNavTree('d8/d2e/_2_users_2bsikar_2_documents_2git_2_s_t_a_r_2st
 <div class="line">  <span class="keywordflow">return</span> ESP_OK;</div>
 <div class="line">}</div>
 <div class="line"> </div>
-<div class="line">esp_err_t <a id="a18" name="a18"></a><a class="code hl_function" href="../../dd/d95/star__bus__smbus_8h.html#acebfaf2149e5be667ccc2c3303128019">star_smbus_block_process_call</a>(<a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a>* manager,</div>
+<div class="line">esp_err_t <a id="a19" name="a19"></a><a class="code hl_function" href="../../dd/d95/star__bus__smbus_8h.html#acebfaf2149e5be667ccc2c3303128019">star_smbus_block_process_call</a>(<a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a>* manager,</div>
 <div class="line">                                        <span class="keyword">const</span> <span class="keywordtype">char</span>*         bus_name,</div>
 <div class="line">                                        uint8_t             addr,</div>
 <div class="line">                                        uint8_t             command,</div>
@@ -423,12 +436,12 @@ $(function(){initNavTree('d8/d2e/_2_users_2bsikar_2_documents_2git_2_s_t_a_r_2st
 <div class="line">  }</div>
 <div class="line"> </div>
 <div class="line">  <span class="keywordflow">if</span> (write_data == NULL || read_data == NULL || read_length == NULL) {</div>
-<div class="line">    ESP_LOGE(<a class="code hl_variable" href="../../d2/d58/star__bms__bq7850_8c.html#a0ef4cd21b66ec96ecc491ff1bafab645">s_TAG</a>, <span class="stringliteral">&quot;Null pointer in block process call parameters&quot;</span>);</div>
+<div class="line">    ESP_LOGE(<a class="code hl_variable" href="../../d0/d29/main_8c.html#af8861f6a1fb30510e283b1b7806b64e7">s_tag</a>, <span class="stringliteral">&quot;Null pointer in block process call parameters&quot;</span>);</div>
 <div class="line">    <span class="keywordflow">return</span> ESP_ERR_INVALID_ARG;</div>
 <div class="line">  }</div>
 <div class="line"> </div>
 <div class="line">  <span class="keywordflow">if</span> (write_length == 0 || write_length &gt; <a class="code hl_enumvalue" href="../../dd/d95/star__bus__smbus_8h.html#a19086baa0f945a3e3ce52f72c52cc474aebc7dce5fadbdbbeda54894184813f79">STAR_SMBUS_MAX_BLOCK_SIZE</a>) {</div>
-<div class="line">    ESP_LOGE(<a class="code hl_variable" href="../../d2/d58/star__bms__bq7850_8c.html#a0ef4cd21b66ec96ecc491ff1bafab645">s_TAG</a>,</div>
+<div class="line">    ESP_LOGE(<a class="code hl_variable" href="../../d0/d29/main_8c.html#af8861f6a1fb30510e283b1b7806b64e7">s_tag</a>,</div>
 <div class="line">             <span class="stringliteral">&quot;Invalid write length: %d (must be 1-%d)&quot;</span>,</div>
 <div class="line">             write_length,</div>
 <div class="line">             <a class="code hl_enumvalue" href="../../dd/d95/star__bus__smbus_8h.html#a19086baa0f945a3e3ce52f72c52cc474aebc7dce5fadbdbbeda54894184813f79">STAR_SMBUS_MAX_BLOCK_SIZE</a>);</div>
@@ -436,7 +449,7 @@ $(function(){initNavTree('d8/d2e/_2_users_2bsikar_2_documents_2git_2_s_t_a_r_2st
 <div class="line">  }</div>
 <div class="line"> </div>
 <div class="line">  <span class="keywordflow">if</span> (max_read_len &lt; <a class="code hl_enumvalue" href="../../dd/d95/star__bus__smbus_8h.html#a19086baa0f945a3e3ce52f72c52cc474aebc7dce5fadbdbbeda54894184813f79">STAR_SMBUS_MAX_BLOCK_SIZE</a>) {</div>
-<div class="line">    ESP_LOGE(<a class="code hl_variable" href="../../d2/d58/star__bms__bq7850_8c.html#a0ef4cd21b66ec96ecc491ff1bafab645">s_TAG</a>,</div>
+<div class="line">    ESP_LOGE(<a class="code hl_variable" href="../../d0/d29/main_8c.html#af8861f6a1fb30510e283b1b7806b64e7">s_tag</a>,</div>
 <div class="line">             <span class="stringliteral">&quot;Read buffer too small: %d (should be &gt;= %d)&quot;</span>,</div>
 <div class="line">             max_read_len,</div>
 <div class="line">             <a class="code hl_enumvalue" href="../../dd/d95/star__bus__smbus_8h.html#a19086baa0f945a3e3ce52f72c52cc474aebc7dce5fadbdbbeda54894184813f79">STAR_SMBUS_MAX_BLOCK_SIZE</a>);</div>
@@ -463,7 +476,7 @@ $(function(){initNavTree('d8/d2e/_2_users_2bsikar_2_documents_2git_2_s_t_a_r_2st
 <div class="line"> </div>
 <div class="line">  <span class="comment">/* Validate response length */</span></div>
 <div class="line">  <span class="keywordflow">if</span> (response_length == 0 || response_length &gt; <a class="code hl_enumvalue" href="../../dd/d95/star__bus__smbus_8h.html#a19086baa0f945a3e3ce52f72c52cc474aebc7dce5fadbdbbeda54894184813f79">STAR_SMBUS_MAX_BLOCK_SIZE</a>) {</div>
-<div class="line">    ESP_LOGE(<a class="code hl_variable" href="../../d2/d58/star__bms__bq7850_8c.html#a0ef4cd21b66ec96ecc491ff1bafab645">s_TAG</a>, <span class="stringliteral">&quot;Invalid response length: %d&quot;</span>, response_length);</div>
+<div class="line">    ESP_LOGE(<a class="code hl_variable" href="../../d0/d29/main_8c.html#af8861f6a1fb30510e283b1b7806b64e7">s_tag</a>, <span class="stringliteral">&quot;Invalid response length: %d&quot;</span>, response_length);</div>
 <div class="line">    <span class="keywordflow">return</span> ESP_ERR_INVALID_RESPONSE;</div>
 <div class="line">  }</div>
 <div class="line"> </div>
@@ -477,7 +490,9 @@ $(function(){initNavTree('d8/d2e/_2_users_2bsikar_2_documents_2git_2_s_t_a_r_2st
 <div class="line">  <span class="keywordflow">return</span> ESP_OK;</div>
 <div class="line">}</div>
 <div class="line"> </div>
-<div class="line">uint8_t <a id="a19" name="a19"></a><a class="code hl_function" href="../../dd/d95/star__bus__smbus_8h.html#a04c99f2c476876fb69206eaaa71e5a6a">star_smbus_calculate_pec</a>(<span class="keyword">const</span> uint8_t* data, <span class="keywordtype">size_t</span> length, uint8_t crc)</div>
+<div class="line"><span class="comment">/* --- PEC (Packet Error Checking) Functions --- */</span></div>
+<div class="line"> </div>
+<div class="line">uint8_t <a id="a20" name="a20"></a><a class="code hl_function" href="../../dd/d95/star__bus__smbus_8h.html#a04c99f2c476876fb69206eaaa71e5a6a">star_smbus_calculate_pec</a>(<span class="keyword">const</span> uint8_t* data, <span class="keywordtype">size_t</span> length, uint8_t crc)</div>
 <div class="line">{</div>
 <div class="line">  <span class="keywordflow">if</span> (data == NULL) {</div>
 <div class="line">    <span class="keywordflow">return</span> crc;</div>
@@ -489,7 +504,7 @@ $(function(){initNavTree('d8/d2e/_2_users_2bsikar_2_documents_2git_2_s_t_a_r_2st
 <div class="line"> </div>
 <div class="line">    <span class="keywordflow">for</span> (uint32_t bit = 0; bit &lt; 8; bit++) {</div>
 <div class="line">      <span class="keywordflow">if</span> (crc &amp; 0x80) {</div>
-<div class="line">        crc = (crc &lt;&lt; 1) ^ <a id="_a20" name="_a20"></a><a class="code hl_define" href="../../d3/df5/star__bus__smbus_8c.html#a2127bfebd89d30e4fd8452d6dc092cad">STAR_SMBUS_PEC_POLYNOMIAL</a>;</div>
+<div class="line">        crc = (crc &lt;&lt; 1) ^ <a class="code hl_variable" href="../../d3/df5/star__bus__smbus_8c.html#a886d292f1fcf0a8d6baba731c4ce13bf">s_smbus_pec_polynomial</a>;</div>
 <div class="line">      } <span class="keywordflow">else</span> {</div>
 <div class="line">        crc = (crc &lt;&lt; 1);</div>
 <div class="line">      }</div>
@@ -498,24 +513,7 @@ $(function(){initNavTree('d8/d2e/_2_users_2bsikar_2_documents_2git_2_s_t_a_r_2st
 <div class="line"> </div>
 <div class="line">  <span class="keywordflow">return</span> crc;</div>
 <div class="line">}</div>
-<div class="line"> </div>
-<div class="line"><span class="comment">/* --- Private Functions --- */</span></div>
-<div class="line"></div>
-<div class="line"><span class="keyword">static</span> esp_err_t <a class="code hl_function" href="../../d3/df5/star__bus__smbus_8c.html#a028e8362b8c772d39dee59e24c15439b">internal_validate_smbus_params</a>(<a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a>* manager, <span class="keyword">const</span> <span class="keywordtype">char</span>* bus_name)</div>
-<div class="line">{</div>
-<div class="line">  <span class="keywordflow">if</span> (manager == NULL) {</div>
-<div class="line">    ESP_LOGE(<a class="code hl_variable" href="../../d2/d58/star__bms__bq7850_8c.html#a0ef4cd21b66ec96ecc491ff1bafab645">s_TAG</a>, <span class="stringliteral">&quot;Manager is NULL&quot;</span>);</div>
-<div class="line">    <span class="keywordflow">return</span> ESP_ERR_INVALID_ARG;</div>
-<div class="line">  }</div>
-<div class="line"> </div>
-<div class="line">  <span class="keywordflow">if</span> (bus_name == NULL) {</div>
-<div class="line">    ESP_LOGE(<a class="code hl_variable" href="../../d2/d58/star__bms__bq7850_8c.html#a0ef4cd21b66ec96ecc491ff1bafab645">s_TAG</a>, <span class="stringliteral">&quot;Bus name is NULL&quot;</span>);</div>
-<div class="line">    <span class="keywordflow">return</span> ESP_ERR_INVALID_ARG;</div>
-<div class="line">  }</div>
-<div class="line"> </div>
-<div class="line">  <span class="keywordflow">return</span> ESP_OK;</div>
-<div class="line">}</div>
-<div class="ttc" id="astar__bms__bq7850_8c_html_a0ef4cd21b66ec96ecc491ff1bafab645"><div class="ttname"><a href="../../d2/d58/star__bms__bq7850_8c.html#a0ef4cd21b66ec96ecc491ff1bafab645">s_TAG</a></div><div class="ttdeci">static const char *const s_TAG</div><div class="ttdef"><b>Definition</b> <a href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">star_bms_bq7850.c:26</a></div></div>
+<div class="ttc" id="amain_8c_html_af8861f6a1fb30510e283b1b7806b64e7"><div class="ttname"><a href="../../d0/d29/main_8c.html#af8861f6a1fb30510e283b1b7806b64e7">s_tag</a></div><div class="ttdeci">static const char * s_tag</div><div class="ttdef"><b>Definition</b> <a href="../../d0/d29/main_8c_source.html#l00030">main.c:30</a></div></div>
 <div class="ttc" id="astar__bus__common__types_8h_html_a129dc23a884803fefe3727fe95ab91d7"><div class="ttname"><a href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a></div><div class="ttdeci">struct star_bus_manager star_bus_manager_t</div><div class="ttdef"><b>Definition</b> <a href="../../dd/d40/star__bus__common__types_8h_source.html#l00047">star_bus_common_types.h:47</a></div></div>
 <div class="ttc" id="astar__bus__i2c_8h_html"><div class="ttname"><a href="../../dd/df4/star__bus__i2c_8h.html">star_bus_i2c.h</a></div><div class="ttdoc">I2C bus operations through the unified bus manager.</div></div>
 <div class="ttc" id="astar__bus__i2c_8h_html_a2e9b9baf8a0f8d00a2080963a7efd62f"><div class="ttname"><a href="../../dd/df4/star__bus__i2c_8h.html#a2e9b9baf8a0f8d00a2080963a7efd62f">star_bus_i2c_read</a></div><div class="ttdeci">esp_err_t star_bus_i2c_read(const star_bus_manager_t *manager, const char *name, uint8_t *data, size_t len, uint8_t reg_addr, size_t *bytes_read)</div><div class="ttdoc">Read data from an I2C device specified by a bus configuration, after writing a register address.</div><div class="ttdef"><b>Definition</b> <a href="../../dd/d1a/star__bus__i2c_8c_source.html#l00120">star_bus_i2c.c:120</a></div></div>
@@ -523,22 +521,22 @@ $(function(){initNavTree('d8/d2e/_2_users_2bsikar_2_documents_2git_2_s_t_a_r_2st
 <div class="ttc" id="astar__bus__i2c_8h_html_ab5fd7179899b9f4229f103484481be3e"><div class="ttname"><a href="../../dd/df4/star__bus__i2c_8h.html#ab5fd7179899b9f4229f103484481be3e">star_bus_i2c_write_command</a></div><div class="ttdeci">esp_err_t star_bus_i2c_write_command(const star_bus_manager_t *manager, const char *name, uint8_t command)</div><div class="ttdoc">Write a single command byte to an I2C device specified by a bus configuration. No register address or...</div><div class="ttdef"><b>Definition</b> <a href="../../dd/d1a/star__bus__i2c_8c_source.html#l00155">star_bus_i2c.c:155</a></div></div>
 <div class="ttc" id="astar__bus__i2c_8h_html_aff2961e205530246d5a602fa747a6e3c"><div class="ttname"><a href="../../dd/df4/star__bus__i2c_8h.html#aff2961e205530246d5a602fa747a6e3c">star_bus_i2c_write</a></div><div class="ttdeci">esp_err_t star_bus_i2c_write(const star_bus_manager_t *manager, const char *name, const uint8_t *data, size_t len, uint8_t reg_addr, size_t *bytes_written)</div><div class="ttdoc">Write data to an I2C device specified by a bus configuration, preceded by a register address.</div><div class="ttdef"><b>Definition</b> <a href="../../dd/d1a/star__bus__i2c_8c_source.html#l00086">star_bus_i2c.c:86</a></div></div>
 <div class="ttc" id="astar__bus__manager_8h_html"><div class="ttname"><a href="../../d6/dcc/star__bus__manager_8h.html">star_bus_manager.h</a></div><div class="ttdoc">Unified bus manager API for I2C, SPI, UART, GPIO, ADC, and 1-Wire protocols.</div></div>
-<div class="ttc" id="astar__bus__smbus_8c_html_a028e8362b8c772d39dee59e24c15439b"><div class="ttname"><a href="../../d3/df5/star__bus__smbus_8c.html#a028e8362b8c772d39dee59e24c15439b">internal_validate_smbus_params</a></div><div class="ttdeci">static esp_err_t internal_validate_smbus_params(star_bus_manager_t *manager, const char *bus_name)</div><div class="ttdoc">Validate common parameters for SMBus operations.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df5/star__bus__smbus_8c_source.html#l00427">star_bus_smbus.c:427</a></div></div>
-<div class="ttc" id="astar__bus__smbus_8c_html_a2127bfebd89d30e4fd8452d6dc092cad"><div class="ttname"><a href="../../d3/df5/star__bus__smbus_8c.html#a2127bfebd89d30e4fd8452d6dc092cad">STAR_SMBUS_PEC_POLYNOMIAL</a></div><div class="ttdeci">#define STAR_SMBUS_PEC_POLYNOMIAL</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df5/star__bus__smbus_8c_source.html#l00027">star_bus_smbus.c:27</a></div></div>
+<div class="ttc" id="astar__bus__smbus_8c_html_a028e8362b8c772d39dee59e24c15439b"><div class="ttname"><a href="../../d3/df5/star__bus__smbus_8c.html#a028e8362b8c772d39dee59e24c15439b">internal_validate_smbus_params</a></div><div class="ttdeci">static esp_err_t internal_validate_smbus_params(star_bus_manager_t *manager, const char *bus_name)</div><div class="ttdoc">Validate common parameters for SMBus operations.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df5/star__bus__smbus_8c_source.html#l00024">star_bus_smbus.c:24</a></div></div>
+<div class="ttc" id="astar__bus__smbus_8c_html_a886d292f1fcf0a8d6baba731c4ce13bf"><div class="ttname"><a href="../../d3/df5/star__bus__smbus_8c.html#a886d292f1fcf0a8d6baba731c4ce13bf">s_smbus_pec_polynomial</a></div><div class="ttdeci">static const uint8_t s_smbus_pec_polynomial</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df5/star__bus__smbus_8c_source.html#l00017">star_bus_smbus.c:17</a></div></div>
 <div class="ttc" id="astar__bus__smbus_8h_html"><div class="ttname"><a href="../../dd/d95/star__bus__smbus_8h.html">star_bus_smbus.h</a></div><div class="ttdoc">SMBus (System Management Bus) protocol implementation over I2C.</div></div>
-<div class="ttc" id="astar__bus__smbus_8h_html_a04c99f2c476876fb69206eaaa71e5a6a"><div class="ttname"><a href="../../dd/d95/star__bus__smbus_8h.html#a04c99f2c476876fb69206eaaa71e5a6a">star_smbus_calculate_pec</a></div><div class="ttdeci">uint8_t star_smbus_calculate_pec(const uint8_t *data, size_t length, uint8_t crc)</div><div class="ttdoc">Calculate CRC-8 for SMBus Packet Error Checking (PEC).</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df5/star__bus__smbus_8c_source.html#l00400">star_bus_smbus.c:400</a></div></div>
-<div class="ttc" id="astar__bus__smbus_8h_html_a06fee6f34cc0d8a110deb97775bb6e6a"><div class="ttname"><a href="../../dd/d95/star__bus__smbus_8h.html#a06fee6f34cc0d8a110deb97775bb6e6a">star_smbus_read_word</a></div><div class="ttdeci">esp_err_t star_smbus_read_word(star_bus_manager_t *manager, const char *bus_name, uint8_t addr, uint8_t command, uint16_t *data)</div><div class="ttdoc">SMBus Read Word.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df5/star__bus__smbus_8c_source.html#l00165">star_bus_smbus.c:165</a></div></div>
+<div class="ttc" id="astar__bus__smbus_8h_html_a04c99f2c476876fb69206eaaa71e5a6a"><div class="ttname"><a href="../../dd/d95/star__bus__smbus_8h.html#a04c99f2c476876fb69206eaaa71e5a6a">star_smbus_calculate_pec</a></div><div class="ttdeci">uint8_t star_smbus_calculate_pec(const uint8_t *data, size_t length, uint8_t crc)</div><div class="ttdoc">Calculate CRC-8 for SMBus Packet Error Checking (PEC).</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df5/star__bus__smbus_8c_source.html#l00408">star_bus_smbus.c:408</a></div></div>
+<div class="ttc" id="astar__bus__smbus_8h_html_a06fee6f34cc0d8a110deb97775bb6e6a"><div class="ttname"><a href="../../dd/d95/star__bus__smbus_8h.html#a06fee6f34cc0d8a110deb97775bb6e6a">star_smbus_read_word</a></div><div class="ttdeci">esp_err_t star_smbus_read_word(star_bus_manager_t *manager, const char *bus_name, uint8_t addr, uint8_t command, uint16_t *data)</div><div class="ttdoc">SMBus Read Word.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df5/star__bus__smbus_8c_source.html#l00171">star_bus_smbus.c:171</a></div></div>
 <div class="ttc" id="astar__bus__smbus_8h_html_a19086baa0f945a3e3ce52f72c52cc474aebc7dce5fadbdbbeda54894184813f79"><div class="ttname"><a href="../../dd/d95/star__bus__smbus_8h.html#a19086baa0f945a3e3ce52f72c52cc474aebc7dce5fadbdbbeda54894184813f79">STAR_SMBUS_MAX_BLOCK_SIZE</a></div><div class="ttdeci">@ STAR_SMBUS_MAX_BLOCK_SIZE</div><div class="ttdef"><b>Definition</b> <a href="../../dd/d95/star__bus__smbus_8h_source.html#l00205">star_bus_smbus.h:205</a></div></div>
-<div class="ttc" id="astar__bus__smbus_8h_html_a4150488512abf781bf193c6bdb9d20a0"><div class="ttname"><a href="../../dd/d95/star__bus__smbus_8h.html#a4150488512abf781bf193c6bdb9d20a0">star_smbus_write_byte</a></div><div class="ttdeci">esp_err_t star_smbus_write_byte(star_bus_manager_t *manager, const char *bus_name, uint8_t addr, uint8_t command, uint8_t data)</div><div class="ttdoc">SMBus Write Byte.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df5/star__bus__smbus_8c_source.html#l00106">star_bus_smbus.c:106</a></div></div>
-<div class="ttc" id="astar__bus__smbus_8h_html_a416c6cdf6379a197a9b018603a3e73e8"><div class="ttname"><a href="../../dd/d95/star__bus__smbus_8h.html#a416c6cdf6379a197a9b018603a3e73e8">star_smbus_block_read</a></div><div class="ttdeci">esp_err_t star_smbus_block_read(star_bus_manager_t *manager, const char *bus_name, uint8_t addr, uint8_t command, uint8_t *data, uint8_t max_length, uint8_t *length)</div><div class="ttdoc">SMBus Block Read.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df5/star__bus__smbus_8c_source.html#l00271">star_bus_smbus.c:271</a></div></div>
-<div class="ttc" id="astar__bus__smbus_8h_html_a48ef2e6fb5d356dd99268601da6f19aa"><div class="ttname"><a href="../../dd/d95/star__bus__smbus_8h.html#a48ef2e6fb5d356dd99268601da6f19aa">star_smbus_quick_command</a></div><div class="ttdeci">esp_err_t star_smbus_quick_command(star_bus_manager_t *manager, const char *bus_name, uint8_t addr, bool write)</div><div class="ttdoc">SMBus Quick Command.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df5/star__bus__smbus_8c_source.html#l00052">star_bus_smbus.c:52</a></div></div>
-<div class="ttc" id="astar__bus__smbus_8h_html_a5b3419e1efc2e09a4a145f51f1c52458"><div class="ttname"><a href="../../dd/d95/star__bus__smbus_8h.html#a5b3419e1efc2e09a4a145f51f1c52458">star_smbus_block_write</a></div><div class="ttdeci">esp_err_t star_smbus_block_write(star_bus_manager_t *manager, const char *bus_name, uint8_t addr, uint8_t command, const uint8_t *data, uint8_t length)</div><div class="ttdoc">SMBus Block Write.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df5/star__bus__smbus_8c_source.html#l00239">star_bus_smbus.c:239</a></div></div>
-<div class="ttc" id="astar__bus__smbus_8h_html_a66c94dc0a7eb2893f78e8b887d6d0b4d"><div class="ttname"><a href="../../dd/d95/star__bus__smbus_8h.html#a66c94dc0a7eb2893f78e8b887d6d0b4d">star_smbus_read_byte</a></div><div class="ttdeci">esp_err_t star_smbus_read_byte(star_bus_manager_t *manager, const char *bus_name, uint8_t addr, uint8_t command, uint8_t *data)</div><div class="ttdoc">SMBus Read Byte.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df5/star__bus__smbus_8c_source.html#l00122">star_bus_smbus.c:122</a></div></div>
-<div class="ttc" id="astar__bus__smbus_8h_html_a880eddb5f6fe400ad1c9022cec7bc766"><div class="ttname"><a href="../../dd/d95/star__bus__smbus_8h.html#a880eddb5f6fe400ad1c9022cec7bc766">star_smbus_process_call</a></div><div class="ttdeci">esp_err_t star_smbus_process_call(star_bus_manager_t *manager, const char *bus_name, uint8_t addr, uint8_t command, uint16_t write_data, uint16_t *read_data)</div><div class="ttdoc">SMBus Process Call.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df5/star__bus__smbus_8c_source.html#l00196">star_bus_smbus.c:196</a></div></div>
-<div class="ttc" id="astar__bus__smbus_8h_html_a9136f077a15f7940183ecd6705683c10"><div class="ttname"><a href="../../dd/d95/star__bus__smbus_8h.html#a9136f077a15f7940183ecd6705683c10">star_smbus_send_byte</a></div><div class="ttdeci">esp_err_t star_smbus_send_byte(star_bus_manager_t *manager, const char *bus_name, uint8_t addr, uint8_t data)</div><div class="ttdoc">SMBus Send Byte.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df5/star__bus__smbus_8c_source.html#l00074">star_bus_smbus.c:74</a></div></div>
-<div class="ttc" id="astar__bus__smbus_8h_html_ac1e373dc01160b349e13e917068fcc93"><div class="ttname"><a href="../../dd/d95/star__bus__smbus_8h.html#ac1e373dc01160b349e13e917068fcc93">star_smbus_receive_byte</a></div><div class="ttdeci">esp_err_t star_smbus_receive_byte(star_bus_manager_t *manager, const char *bus_name, uint8_t addr, uint8_t *data)</div><div class="ttdoc">SMBus Receive Byte.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df5/star__bus__smbus_8c_source.html#l00086">star_bus_smbus.c:86</a></div></div>
-<div class="ttc" id="astar__bus__smbus_8h_html_acebfaf2149e5be667ccc2c3303128019"><div class="ttname"><a href="../../dd/d95/star__bus__smbus_8h.html#acebfaf2149e5be667ccc2c3303128019">star_smbus_block_process_call</a></div><div class="ttdeci">esp_err_t star_smbus_block_process_call(star_bus_manager_t *manager, const char *bus_name, uint8_t addr, uint8_t command, const uint8_t *write_data, uint8_t write_length, uint8_t *read_data, uint8_t max_read_len, uint8_t *read_length)</div><div class="ttdoc">SMBus Block Write-Block Read Process Call.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df5/star__bus__smbus_8c_source.html#l00328">star_bus_smbus.c:328</a></div></div>
-<div class="ttc" id="astar__bus__smbus_8h_html_ae35a870d8984311e9af9966d3be33bac"><div class="ttname"><a href="../../dd/d95/star__bus__smbus_8h.html#ae35a870d8984311e9af9966d3be33bac">star_smbus_write_word</a></div><div class="ttdeci">esp_err_t star_smbus_write_word(star_bus_manager_t *manager, const char *bus_name, uint8_t addr, uint8_t command, uint16_t data)</div><div class="ttdoc">SMBus Write Word.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df5/star__bus__smbus_8c_source.html#l00143">star_bus_smbus.c:143</a></div></div>
+<div class="ttc" id="astar__bus__smbus_8h_html_a4150488512abf781bf193c6bdb9d20a0"><div class="ttname"><a href="../../dd/d95/star__bus__smbus_8h.html#a4150488512abf781bf193c6bdb9d20a0">star_smbus_write_byte</a></div><div class="ttdeci">esp_err_t star_smbus_write_byte(star_bus_manager_t *manager, const char *bus_name, uint8_t addr, uint8_t command, uint8_t data)</div><div class="ttdoc">SMBus Write Byte.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df5/star__bus__smbus_8c_source.html#l00112">star_bus_smbus.c:112</a></div></div>
+<div class="ttc" id="astar__bus__smbus_8h_html_a416c6cdf6379a197a9b018603a3e73e8"><div class="ttname"><a href="../../dd/d95/star__bus__smbus_8h.html#a416c6cdf6379a197a9b018603a3e73e8">star_smbus_block_read</a></div><div class="ttdeci">esp_err_t star_smbus_block_read(star_bus_manager_t *manager, const char *bus_name, uint8_t addr, uint8_t command, uint8_t *data, uint8_t max_length, uint8_t *length)</div><div class="ttdoc">SMBus Block Read.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df5/star__bus__smbus_8c_source.html#l00277">star_bus_smbus.c:277</a></div></div>
+<div class="ttc" id="astar__bus__smbus_8h_html_a48ef2e6fb5d356dd99268601da6f19aa"><div class="ttname"><a href="../../dd/d95/star__bus__smbus_8h.html#a48ef2e6fb5d356dd99268601da6f19aa">star_smbus_quick_command</a></div><div class="ttdeci">esp_err_t star_smbus_quick_command(star_bus_manager_t *manager, const char *bus_name, uint8_t addr, bool write)</div><div class="ttdoc">SMBus Quick Command.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df5/star__bus__smbus_8c_source.html#l00058">star_bus_smbus.c:58</a></div></div>
+<div class="ttc" id="astar__bus__smbus_8h_html_a5b3419e1efc2e09a4a145f51f1c52458"><div class="ttname"><a href="../../dd/d95/star__bus__smbus_8h.html#a5b3419e1efc2e09a4a145f51f1c52458">star_smbus_block_write</a></div><div class="ttdeci">esp_err_t star_smbus_block_write(star_bus_manager_t *manager, const char *bus_name, uint8_t addr, uint8_t command, const uint8_t *data, uint8_t length)</div><div class="ttdoc">SMBus Block Write.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df5/star__bus__smbus_8c_source.html#l00245">star_bus_smbus.c:245</a></div></div>
+<div class="ttc" id="astar__bus__smbus_8h_html_a66c94dc0a7eb2893f78e8b887d6d0b4d"><div class="ttname"><a href="../../dd/d95/star__bus__smbus_8h.html#a66c94dc0a7eb2893f78e8b887d6d0b4d">star_smbus_read_byte</a></div><div class="ttdeci">esp_err_t star_smbus_read_byte(star_bus_manager_t *manager, const char *bus_name, uint8_t addr, uint8_t command, uint8_t *data)</div><div class="ttdoc">SMBus Read Byte.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df5/star__bus__smbus_8c_source.html#l00128">star_bus_smbus.c:128</a></div></div>
+<div class="ttc" id="astar__bus__smbus_8h_html_a880eddb5f6fe400ad1c9022cec7bc766"><div class="ttname"><a href="../../dd/d95/star__bus__smbus_8h.html#a880eddb5f6fe400ad1c9022cec7bc766">star_smbus_process_call</a></div><div class="ttdeci">esp_err_t star_smbus_process_call(star_bus_manager_t *manager, const char *bus_name, uint8_t addr, uint8_t command, uint16_t write_data, uint16_t *read_data)</div><div class="ttdoc">SMBus Process Call.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df5/star__bus__smbus_8c_source.html#l00202">star_bus_smbus.c:202</a></div></div>
+<div class="ttc" id="astar__bus__smbus_8h_html_a9136f077a15f7940183ecd6705683c10"><div class="ttname"><a href="../../dd/d95/star__bus__smbus_8h.html#a9136f077a15f7940183ecd6705683c10">star_smbus_send_byte</a></div><div class="ttdeci">esp_err_t star_smbus_send_byte(star_bus_manager_t *manager, const char *bus_name, uint8_t addr, uint8_t data)</div><div class="ttdoc">SMBus Send Byte.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df5/star__bus__smbus_8c_source.html#l00080">star_bus_smbus.c:80</a></div></div>
+<div class="ttc" id="astar__bus__smbus_8h_html_ac1e373dc01160b349e13e917068fcc93"><div class="ttname"><a href="../../dd/d95/star__bus__smbus_8h.html#ac1e373dc01160b349e13e917068fcc93">star_smbus_receive_byte</a></div><div class="ttdeci">esp_err_t star_smbus_receive_byte(star_bus_manager_t *manager, const char *bus_name, uint8_t addr, uint8_t *data)</div><div class="ttdoc">SMBus Receive Byte.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df5/star__bus__smbus_8c_source.html#l00092">star_bus_smbus.c:92</a></div></div>
+<div class="ttc" id="astar__bus__smbus_8h_html_acebfaf2149e5be667ccc2c3303128019"><div class="ttname"><a href="../../dd/d95/star__bus__smbus_8h.html#acebfaf2149e5be667ccc2c3303128019">star_smbus_block_process_call</a></div><div class="ttdeci">esp_err_t star_smbus_block_process_call(star_bus_manager_t *manager, const char *bus_name, uint8_t addr, uint8_t command, const uint8_t *write_data, uint8_t write_length, uint8_t *read_data, uint8_t max_read_len, uint8_t *read_length)</div><div class="ttdoc">SMBus Block Write-Block Read Process Call.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df5/star__bus__smbus_8c_source.html#l00334">star_bus_smbus.c:334</a></div></div>
+<div class="ttc" id="astar__bus__smbus_8h_html_ae35a870d8984311e9af9966d3be33bac"><div class="ttname"><a href="../../dd/d95/star__bus__smbus_8h.html#ae35a870d8984311e9af9966d3be33bac">star_smbus_write_word</a></div><div class="ttdeci">esp_err_t star_smbus_write_word(star_bus_manager_t *manager, const char *bus_name, uint8_t addr, uint8_t command, uint16_t data)</div><div class="ttdoc">SMBus Write Word.</div><div class="ttdef"><b>Definition</b> <a href="../../d3/df5/star__bus__smbus_8c_source.html#l00149">star_bus_smbus.c:149</a></div></div>
 </div><!-- fragment --> </div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->

@@ -11,5 +11,5 @@ var star__bus__i2c_8c =
     [ "star_bus_i2c_write", "dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c", null ],
     [ "star_bus_i2c_write_command", "dd/d1a/star__bus__i2c_8c.html#ab5fd7179899b9f4229f103484481be3e", null ],
     [ "s_i2c_timeout_ms", "dd/d1a/star__bus__i2c_8c.html#a9699fc676ca21c63081f97fd86b312a2", null ],
-    [ "s_TAG", "dd/d1a/star__bus__i2c_8c.html#a999e3dd103132afd3cd1856f477f2dbd", null ]
+    [ "s_tag", "dd/d1a/star__bus__i2c_8c.html#af8861f6a1fb30510e283b1b7806b64e7", null ]
 ];

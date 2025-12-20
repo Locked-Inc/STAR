@@ -1,5 +1,5 @@
 <map id="lib/star_bus/include/star_bus_gpio.h" name="lib/star_bus/include/star_bus_gpio.h">
-<area shape="rect" id="Node000001" title="GPIO bus operations through the unified bus manager." alt="" coords="916,5,1049,46"/>
+<area shape="rect" id="Node000001" title="GPIO operations API through the unified bus manager." alt="" coords="916,5,1049,46"/>
 <area shape="rect" id="Node000002" title=" " alt="" coords="86,536,178,562"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="913,32,680,48,378,77,236,97,117,121,71,135,37,149,15,164,8,180,8,403,10,423,17,441,39,475,69,504,100,527,94,528,65,508,35,479,12,444,5,424,3,403,3,179,11,161,34,144,70,130,116,116,235,92,377,72,680,43,918,29"/>
 <area shape="rect" id="Node000003" title=" " alt="" coords="893,536,958,562"/>

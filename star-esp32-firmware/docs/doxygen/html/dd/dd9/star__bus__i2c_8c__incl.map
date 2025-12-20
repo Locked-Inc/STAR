@@ -1,6 +1,6 @@
 <map id="lib/star_bus/src/star_bus_i2c.c" name="lib/star_bus/src/star_bus_i2c.c">
 <area shape="rect" id="Node000001" title="I2C controller protocol implementation for the bus manager." alt="" coords="1526,5,1663,46"/>
-<area shape="rect" id="Node000002" href="$dd/df4/star__bus__i2c_8h.html" title="I2C bus operations through the unified bus manager." alt="" coords="864,94,970,120"/>
+<area shape="rect" id="Node000002" href="$dd/df4/star__bus__i2c_8h.html" title="I2C controller protocol API for the bus manager." alt="" coords="864,94,970,120"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1524,36,986,100,985,95,1528,34"/>
 <area shape="rect" id="Node000006" href="$d7/d7c/star__bus__types_8h.html" title="Bus type definitions and enumerations." alt="" coords="645,168,766,193"/>
 <area shape="poly" id="edge62_Node000001_Node000006" title=" " alt="" coords="1524,30,1371,39,1176,52,988,71,911,83,853,97,820,110,788,126,734,160,731,156,785,122,817,105,851,91,910,77,987,65,1176,46,1371,34,1529,29"/>

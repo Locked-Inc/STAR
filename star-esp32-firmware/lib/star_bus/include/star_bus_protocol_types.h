@@ -100,7 +100,7 @@ typedef struct star_spi_ops {
 typedef struct star_spi_bus_config {
   spi_host_device_t host; /**< SPI host number */
   bool
-    is_peripheral; /**< True if operating as SPI peripheral (slave), false if controller (master) */
+    is_peripheral; /**< True if operating as SPI peripheral, false if controller */
   spi_bus_config_t bus_cfg; /**< Underlying ESP-IDF SPI bus configuration */
                             /* Note: bus_cfg members like mosi_io_num are renamed below */
   spi_device_interface_config_t
@@ -111,10 +111,9 @@ typedef struct star_spi_bus_config {
   /* --- Renamed members within spi_bus_config_t for internal use --- */
   /* These correspond to the fields in the ESP-IDF spi_bus_config_t */
   /* SPI pin naming follows OSHWA (Open Source Hardware Association) standard:
-   * - COPI (Controller Out, Peripheral In) - replaces MOSI (Master Out, Slave In)
-   * - CIPO (Controller In, Peripheral Out) - replaces MISO (Master In, Slave Out)
-   * This modern terminology removes master/slave language while maintaining clarity.
-   * The ESP-IDF still uses mosi_io_num/miso_io_num internally, which we map here.
+   * - COPI (Controller Out, Peripheral In)
+   * - CIPO (Controller In, Peripheral Out)
+   * The ESP-IDF still uses legacy mosi_io_num/miso_io_num field names internally, which we map here.
    */
   gpio_num_t copi_io_num;     /**< GPIO pin for COPI (Controller Out, Peripheral In) */
   gpio_num_t cipo_io_num;     /**< GPIO pin for CIPO (Controller In, Peripheral Out) */

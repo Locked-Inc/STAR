@@ -1,5 +1,5 @@
 <map id="lib/star_bus/src/star_bus_manager.c" name="lib/star_bus/src/star_bus_manager.c">
-<area shape="rect" id="Node000001" title="Central bus management implementation with thread&#45;safe operations." alt="" coords="600,5,736,46"/>
+<area shape="rect" id="Node000001" title="Unified bus manager implementation for multi&#45;protocol peripheral management." alt="" coords="600,5,736,46"/>
 <area shape="rect" id="Node000002" href="$d6/dcc/star__bus__manager_8h.html" title="Unified bus manager API for I2C, SPI, UART, GPIO, ADC, and 1&#45;Wire protocols." alt="" coords="200,168,338,193"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="597,32,545,40,483,52,419,70,359,96,320,125,289,157,285,154,316,121,356,92,417,65,482,47,544,35,602,30"/>
 <area shape="rect" id="Node000005" title=" " alt="" coords="144,315,288,341"/>
@@ -20,11 +20,11 @@
 <area shape="poly" id="edge53_Node000001_Node000025" title=" " alt="" coords="721,44,838,88,833,89,722,49"/>
 <area shape="rect" id="Node000026" title=" " alt="" coords="945,94,1034,120"/>
 <area shape="poly" id="edge54_Node000001_Node000026" title=" " alt="" coords="736,41,932,90,927,92,737,46"/>
-<area shape="rect" id="Node000027" href="$d2/d8f/star__bus__adc_8h.html" title="ADC bus operations through the unified bus manager." alt="" coords="1058,94,1168,120"/>
+<area shape="rect" id="Node000027" href="$d2/d8f/star__bus__adc_8h.html" title="ADC bus operations API through the unified bus manager." alt="" coords="1058,94,1168,120"/>
 <area shape="poly" id="edge56_Node000001_Node000027" title=" " alt="" coords="736,36,1045,92,1040,94,737,42"/>
 <area shape="rect" id="Node000029" href="$d0/de4/star__bus__config_8h.html" title="Bus configuration creation and lifecycle management API." alt="" coords="1679,94,1804,120"/>
 <area shape="poly" id="edge67_Node000001_Node000029" title=" " alt="" coords="737,29,1665,98,1662,102,737,35"/>
-<area shape="rect" id="Node000030" href="$d9/d5b/star__bus__gpio_8h.html" title="GPIO bus operations through the unified bus manager." alt="" coords="1267,94,1381,120"/>
+<area shape="rect" id="Node000030" href="$d9/d5b/star__bus__gpio_8h.html" title="GPIO operations API through the unified bus manager." alt="" coords="1267,94,1381,120"/>
 <area shape="poly" id="edge73_Node000001_Node000030" title=" " alt="" coords="736,33,1254,95,1249,98,737,38"/>
 <area shape="rect" id="Node000003" title=" " alt="" coords="570,610,644,635"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="198,192,142,210,114,224,90,243,73,262,64,280,60,300,59,327,59,476,59,503,63,524,72,542,90,560,125,578,175,592,236,603,304,610,442,618,557,622,551,622,442,623,304,616,236,608,174,597,123,583,86,564,67,545,58,526,54,504,53,477,53,326,54,300,59,278,68,259,86,239,112,220,140,205,202,188"/>
