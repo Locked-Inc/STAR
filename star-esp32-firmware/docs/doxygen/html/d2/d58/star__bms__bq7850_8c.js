@@ -26,5 +26,5 @@ var star__bms__bq7850_8c =
     [ "star_bms_bq7850_status_to_string", "d2/d58/star__bms__bq7850_8c.html#a36b66a0f6445de1c6445641eb7b26537", null ],
     [ "star_bms_bq7850_write_protection", "d2/d58/star__bms__bq7850_8c.html#ab14194a4cad45febb48718352688813d", null ],
     [ "s_bq7850_mutex_timeout_ms", "d2/d58/star__bms__bq7850_8c.html#a0932e2095c6dbc43c6f7a4102c5e7522", null ],
-    [ "s_TAG", "d2/d58/star__bms__bq7850_8c.html#a999e3dd103132afd3cd1856f477f2dbd", null ]
+    [ "s_TAG", "d2/d58/star__bms__bq7850_8c.html#a0ef4cd21b66ec96ecc491ff1bafab645", null ]
 ];

@@ -1,4 +1,14 @@
-/* lib/star_sensor_ds18b20/src/star_sensor_ds18b20.c */
+/**
+ * @file star_sensor_ds18b20.c
+ * @brief DS18B20 temperature sensor driver implementation over 1-Wire
+ * @details
+ * Implements driver for Dallas/Maxim DS18B20 digital temperature sensor using 1-Wire protocol
+ * via the bus manager. Supports configurable resolution (9-12 bit), temperature conversion, and
+ * both single-device and multi-device configurations with ROM addressing.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #include "star_sensor_ds18b20.h"
 

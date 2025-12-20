@@ -1,5 +1,7 @@
 var structstar__bus__manager =
 [
+    [ "adc_channel_count", "d4/d53/structstar__bus__manager.html#ad220b51313b71471326bae836c353de5", null ],
+    [ "adc_unit_handles", "d4/d53/structstar__bus__manager.html#a7a2f53e6d321cba2220a13261d8b609a", null ],
     [ "buses", "d4/d53/structstar__bus__manager.html#a2c22a2d908289fde1e5345f772fdc3a5", null ],
     [ "error_iface", "d4/d53/structstar__bus__manager.html#a02d78c3cbb1e96870e21d444cd289f43", null ],
     [ "mutex", "d4/d53/structstar__bus__manager.html#a603b9011f4532e051f64e0de08326b1e", null ],

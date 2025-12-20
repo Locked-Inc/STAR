@@ -1,0 +1,7 @@
+<map id="internal_star_bus_gpio_write_digital" name="internal_star_bus_gpio_write_digital">
+<area shape="rect" id="Node000001" title=" " alt="" coords="490,5,641,46"/>
+<area shape="rect" id="Node000002" href="$da/d8b/star__bus__gpio_8c.html#aa9776ada4c3f8a958dc47a93b4c9d8e8" title="Get default GPIO operations structure." alt="" coords="241,13,442,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="472,26,443,28,442,23,477,26"/>
+<area shape="rect" id="Node000003" href="$de/d98/star__bus__config_8c.html#aa8850b2918def11489920457d487909e" title="Create a GPIO bus configuration." alt="" coords="5,13,193,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="222,26,193,28,193,23,228,25"/>
+</map>

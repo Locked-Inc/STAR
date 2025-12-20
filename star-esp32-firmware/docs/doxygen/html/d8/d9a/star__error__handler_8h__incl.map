@@ -1,12 +1,12 @@
 <map id="lib/star_error_handler/include/star_error_handler.h" name="lib/star_error_handler/include/star_error_handler.h">
-<area shape="rect" id="Node000001" title="Error handling with retry logic and exponential backoff." alt="" coords="192,5,376,46"/>
+<area shape="rect" id="Node000001" title="Concrete error handler implementation with retry logic and exponential backoff." alt="" coords="192,5,376,46"/>
 <area shape="rect" id="Node000002" title=" " alt="" coords="5,94,149,120"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="230,49,124,91,122,86,234,45"/>
 <area shape="rect" id="Node000003" title=" " alt="" coords="173,94,296,120"/>
 <area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="274,45,252,83,248,79,269,48"/>
 <area shape="rect" id="Node000004" title=" " alt="" coords="301,168,376,193"/>
 <area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="292,44,331,153,326,152,289,48"/>
-<area shape="rect" id="Node000005" href="$df/d84/star__error__interface_8h.html" title="Error handler interface for dependency inversion." alt="" coords="370,94,514,120"/>
+<area shape="rect" id="Node000005" href="$df/d84/star__error__interface_8h.html" title="Abstract error handler interface for dependency inversion." alt="" coords="370,94,514,120"/>
 <area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="324,44,407,87,402,87,323,49"/>
 <area shape="poly" id="edge7_Node000005_Node000004" title=" " alt="" coords="427,119,369,161,367,156,422,121"/>
 <area shape="rect" id="Node000006" title=" " alt="" coords="402,168,477,193"/>

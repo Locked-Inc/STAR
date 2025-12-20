@@ -1,4 +1,13 @@
-/* lib/star_bus/include/star_bus_types.h */
+/**
+ * @file star_bus_types.h
+ * @brief Bus type definitions and enumerations
+ * @details
+ * Defines bus type enumerations, structures, and common types used throughout the bus manager.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
+
 
 #ifndef STAR_COMPONENT_BUS_TYPES_H
 #define STAR_COMPONENT_BUS_TYPES_H

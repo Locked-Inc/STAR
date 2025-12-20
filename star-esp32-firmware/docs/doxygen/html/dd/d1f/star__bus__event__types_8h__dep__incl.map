@@ -1,143 +1,110 @@
 <map id="lib/star_bus/include/star_bus_event_types.h" name="lib/star_bus/include/star_bus_event_types.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="3707,5,3872,46"/>
-<area shape="rect" id="Node000002" href="$d0/da6/star__bus__function__types_8h.html" title=" " alt="" coords="3700,94,3878,135"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="3791,60,3791,95,3787,92,3788,64"/>
-<area shape="rect" id="Node000003" href="$dd/d9d/star__bus__protocol__types_8h.html" title=" " alt="" coords="3586,183,3764,223"/>
-<area shape="poly" id="edge90_Node000001_Node000003" title=" " alt="" coords="3733,53,3709,74,3690,95,3681,117,3676,140,3674,184,3670,180,3671,139,3676,115,3686,93,3705,70,3728,55"/>
-<area shape="rect" id="Node000062" href="$d7/d7c/star__bus__types_8h.html" title=" " alt="" coords="3736,360,3869,401"/>
-<area shape="poly" id="edge91_Node000001_Node000062" title=" " alt="" coords="3851,51,3875,70,3893,93,3906,130,3908,168,3902,207,3890,245,3855,313,3820,362,3817,357,3850,310,3885,243,3897,206,3903,168,3901,131,3888,95,3871,73,3850,56"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="3754,143,3702,185,3700,180,3749,145"/>
-<area shape="poly" id="edge89_Node000002_Node000062" title=" " alt="" coords="3793,148,3804,361,3800,358,3789,152"/>
-<area shape="rect" id="Node000004" href="$d0/d84/star__bus__manager__types_8h.html" title=" " alt="" coords="3558,271,3740,312"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="3667,237,3657,273,3653,269,3663,240"/>
-<area shape="poly" id="edge88_Node000003_Node000062" title=" " alt="" coords="3715,231,3754,270,3781,316,3799,361,3794,358,3777,318,3750,273,3713,236"/>
-<area shape="rect" id="Node000005" href="$d6/dcc/star__bus__manager_8h.html" title="Unified bus manager for I2C, SPI, GPIO, and other bus protocols." alt="" coords="1938,360,2080,401"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="3540,299,2081,378,2081,373,3545,298"/>
-<area shape="rect" id="Node000017" href="$de/d98/star__bus__config_8c.html" title=" " alt="" coords="3513,560,3650,600"/>
-<area shape="poly" id="edge87_Node000004_Node000017" title=" " alt="" coords="3658,325,3663,365,3665,410,3661,458,3649,505,3631,537,3607,562,3604,557,3626,533,3644,503,3656,457,3660,410,3658,365,3654,329"/>
-<area shape="poly" id="edge48_Node000004_Node000062" title=" " alt="" coords="3698,317,3771,360,3765,359,3697,322"/>
-<area shape="rect" id="Node000006" href="$d2/d63/star__bms__bq7850_8h.html" title="TI BQ7850 Battery Management System driver." alt="" coords="2008,456,2192,497"/>
-<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="2040,409,2084,457,2079,455,2038,414"/>
-<area shape="rect" id="Node000008" href="$da/d00/star__bus__async_8h.html" title="Asynchronous (non&#45;blocking) bus operations with callback support." alt="" coords="656,560,789,600"/>
-<area shape="poly" id="edge6_Node000005_Node000008" title=" " alt="" coords="1920,382,1551,388,1051,398,810,406,603,418,455,432,410,441,388,451,377,466,372,479,373,491,379,502,405,522,446,538,496,551,551,561,658,575,653,575,551,566,495,556,444,543,402,527,375,505,368,492,367,478,372,463,385,447,408,436,454,427,603,412,809,401,1051,392,1551,383,1925,382"/>
-<area shape="rect" id="Node000010" href="$de/d18/star__bus__batch_8h.html" title="Transaction batching for atomic multi&#45;operation sequences." alt="" coords="5,560,139,600"/>
-<area shape="poly" id="edge8_Node000005_Node000010" title=" " alt="" coords="1920,383,1508,391,936,403,416,423,241,436,187,443,159,451,130,474,108,503,91,534,81,561,76,558,87,532,103,501,126,470,156,446,186,438,241,431,416,418,936,398,1508,386,1925,382"/>
-<area shape="rect" id="Node000012" href="$d1/da8/star__bus__debug_8h.html" title="Debug and diagnostic utilities for STAR Bus Manager." alt="" coords="2627,456,2760,497"/>
-<area shape="poly" id="edge10_Node000005_Node000012" title=" " alt="" coords="2096,384,2329,403,2469,421,2609,446,2638,456,2633,455,2607,451,2468,427,2328,409,2096,389"/>
-<area shape="rect" id="Node000014" href="$d3/d53/star__bus__devices_8h.html" title="Device profiles and helper functions for common I2C devices." alt="" coords="399,456,537,497"/>
-<area shape="poly" id="edge12_Node000005_Node000014" title=" " alt="" coords="1920,383,1631,390,1234,401,838,421,674,435,550,451,522,458,520,453,549,446,673,429,838,416,1233,396,1630,385,1925,382"/>
-<area shape="rect" id="Node000016" href="$d1/dd1/star__bus__dht22__proprietary_8h.html" title="DHT22 (AM2302) proprietary single&#45;wire protocol implementation." alt="" coords="3419,456,3610,497"/>
-<area shape="poly" id="edge14_Node000005_Node000016" title=" " alt="" coords="2096,381,2755,402,3132,421,3288,433,3407,446,3446,456,3440,455,3406,451,3288,438,3131,426,2755,407,2096,386"/>
-<area shape="rect" id="Node000019" href="$d0/d29/main_8c.html" title=" " alt="" coords="3247,567,3329,593"/>
-<area shape="poly" id="edge47_Node000005_Node000019" title=" " alt="" coords="1920,386,1794,397,1649,410,1527,428,1486,439,1464,451,1456,464,1453,477,1456,490,1464,502,1494,514,1555,523,1755,536,2028,542,2339,543,2927,542,3134,544,3235,550,3272,567,3266,566,3234,555,3134,549,2927,547,2339,549,2028,547,1755,541,1554,528,1492,519,1461,506,1451,492,1447,477,1451,462,1461,447,1484,434,1526,423,1649,405,1793,392,1926,386"/>
-<area shape="rect" id="Node000021" href="$d2/d56/star__bus__helpers_8h.html" title="Configuration helpers and validation utilities." alt="" coords="2004,560,2140,600"/>
-<area shape="poly" id="edge17_Node000005_Node000021" title=" " alt="" coords="2096,392,2188,414,2226,429,2250,447,2259,462,2261,476,2258,491,2250,506,2233,521,2206,536,2139,562,2138,557,2204,531,2230,517,2246,503,2253,489,2256,476,2254,464,2246,450,2224,434,2187,419,2096,397"/>
-<area shape="rect" id="Node000022" href="$d1/d50/star__bus__helpers_8c.html" title=" " alt="" coords="1494,656,1631,697"/>
-<area shape="poly" id="edge35_Node000005_Node000022" title=" " alt="" coords="2096,386,2127,394,2157,407,2184,424,2206,447,2215,462,2218,477,2216,492,2206,506,2180,521,2137,531,2079,537,2009,539,1843,538,1657,531,1470,524,1304,523,1235,525,1178,531,1136,541,1111,554,1102,567,1100,580,1103,593,1111,606,1136,625,1175,640,1223,651,1277,660,1393,670,1497,675,1491,675,1392,675,1277,665,1222,657,1173,645,1134,629,1107,610,1098,595,1094,580,1097,565,1108,550,1134,536,1177,526,1234,520,1304,517,1471,519,1657,526,1843,532,2009,534,2079,531,2136,525,2178,516,2202,502,2211,490,2213,477,2210,464,2202,450,2181,428,2154,411,2125,399,2096,392"/>
-<area shape="rect" id="Node000023" href="$db/d73/star__bus__i2c__dma_8h.html" title="DMA&#45;accelerated I2C operations for large data transfers." alt="" coords="561,456,703,497"/>
-<area shape="poly" id="edge19_Node000005_Node000023" title=" " alt="" coords="1920,384,1661,392,1312,405,967,424,823,436,715,451,687,458,685,453,714,446,823,431,966,419,1312,399,1661,387,1925,383"/>
-<area shape="rect" id="Node000025" href="$d2/d2f/star__bus__i2c__peripheral_8h.html" title="I2C peripheral (slave) mode implementation." alt="" coords="1227,456,1400,497"/>
-<area shape="poly" id="edge21_Node000005_Node000025" title=" " alt="" coords="1920,388,1694,412,1556,429,1419,451,1387,458,1386,453,1418,446,1556,424,1694,407,1925,388"/>
-<area shape="rect" id="Node000027" href="$d0/d6c/star__bus__onewire_8h.html" title="1&#45;Wire master protocol implementation" alt="" coords="186,456,324,497"/>
-<area shape="poly" id="edge22_Node000005_Node000027" title=" " alt="" coords="1920,383,1594,389,1137,400,678,419,487,434,343,451,313,458,311,453,342,446,487,428,678,414,1137,394,1594,384,1925,382"/>
-<area shape="rect" id="Node000028" href="$d2/d0f/star__bus__onewire__peripheral_8h.html" title="1&#45;Wire peripheral (slave) mode implementation" alt="" coords="163,560,365,600"/>
-<area shape="poly" id="edge24_Node000005_Node000028" title=" " alt="" coords="1920,382,1508,386,938,394,660,402,423,414,252,430,200,440,175,451,167,463,166,475,176,503,199,534,230,559,224,560,195,538,171,506,160,475,162,461,172,447,198,435,251,425,422,409,660,397,937,389,1508,380,1925,381"/>
-<area shape="rect" id="Node000031" href="$dd/d95/star__bus__smbus_8h.html" title="SMBus (System Management Bus) protocol implementation over I2C." alt="" coords="2215,560,2348,600"/>
-<area shape="poly" id="edge25_Node000005_Node000031" title=" " alt="" coords="2096,390,2202,412,2246,428,2274,447,2289,474,2294,505,2293,535,2288,561,2284,558,2288,535,2288,506,2284,476,2270,450,2243,432,2200,417,2096,395"/>
-<area shape="rect" id="Node000032" href="$d3/df5/star__bus__smbus_8c.html" title=" " alt="" coords="2573,656,2710,697"/>
-<area shape="poly" id="edge38_Node000005_Node000032" title=" " alt="" coords="2096,383,2204,390,2326,402,2437,420,2481,432,2515,446,2530,459,2539,473,2546,488,2559,502,2584,516,2607,522,2629,530,2649,551,2659,578,2660,607,2650,658,2647,654,2655,606,2654,579,2644,554,2626,535,2605,527,2582,521,2556,506,2542,491,2534,476,2526,463,2512,451,2480,437,2436,426,2325,407,2204,395,2096,388"/>
-<area shape="rect" id="Node000033" href="$d6/d2b/star__bus__smbus__peripheral_8h.html" title="SMBus peripheral (slave) mode implementation." alt="" coords="1474,456,1670,497"/>
-<area shape="poly" id="edge29_Node000005_Node000033" title=" " alt="" coords="1925,398,1682,451,1652,458,1651,453,1681,446,1920,399"/>
-<area shape="rect" id="Node000035" href="$d0/d31/star__bus__spi__dma_8h.html" title="DMA&#45;accelerated SPI operations for high&#45;speed data transfers." alt="" coords="3736,456,3878,497"/>
-<area shape="poly" id="edge30_Node000005_Node000035" title=" " alt="" coords="2096,381,2876,403,3333,422,3523,433,3667,446,3738,460,3732,459,3666,451,3522,439,3332,427,2876,408,2096,386"/>
-<area shape="rect" id="Node000037" href="$d9/deb/star__bus__stats_8h.html" title="Bus statistics and performance monitoring." alt="" coords="1693,456,1827,497"/>
-<area shape="poly" id="edge32_Node000005_Node000037" title=" " alt="" coords="1946,406,1813,458,1812,453,1940,407"/>
-<area shape="rect" id="Node000039" href="$d6/dde/star__bus__uart_8h.html" title="UART/Serial bus communication implementation." alt="" coords="1851,456,1984,497"/>
-<area shape="poly" id="edge33_Node000005_Node000039" title=" " alt="" coords="1982,411,1938,458,1935,453,1977,413"/>
-<area shape="rect" id="Node000041" href="$da/d8b/star__bus__gpio_8c.html" title=" " alt="" coords="3353,560,3490,600"/>
-<area shape="poly" id="edge34_Node000005_Node000041" title=" " alt="" coords="2095,379,2465,383,2962,392,3202,401,3408,412,3556,427,3601,436,3624,447,3634,461,3637,476,3634,491,3624,506,3572,529,3479,562,3478,557,3570,524,3621,502,3629,489,3632,476,3629,463,3621,451,3600,441,3555,433,3407,418,3202,406,2962,398,2465,388,2096,385"/>
-<area shape="rect" id="Node000042" href="$dd/d1a/star__bus__i2c_8c.html" title=" " alt="" coords="2729,560,2866,600"/>
-<area shape="poly" id="edge36_Node000005_Node000042" title=" " alt="" coords="2096,383,2214,390,2347,403,2471,421,2521,433,2559,446,2577,459,2589,473,2600,488,2616,502,2675,534,2735,560,2730,559,2673,538,2613,507,2596,491,2585,477,2574,463,2556,451,2519,438,2470,426,2347,408,2213,396,2096,388"/>
-<area shape="rect" id="Node000043" href="$d7/d60/star__bus__manager_8c.html" title=" " alt="" coords="1844,560,1980,600"/>
-<area shape="poly" id="edge37_Node000005_Node000043" title=" " alt="" coords="1920,383,1736,389,1513,400,1408,409,1318,420,1251,434,1229,442,1217,451,1208,464,1205,477,1208,489,1217,502,1230,511,1252,518,1322,529,1413,535,1516,540,1714,544,1832,550,1861,559,1856,559,1832,555,1714,549,1515,545,1413,541,1321,534,1251,523,1227,515,1213,506,1203,492,1199,477,1203,461,1213,447,1227,437,1250,429,1317,414,1407,403,1512,395,1736,384,1925,382"/>
-<area shape="rect" id="Node000044" href="$d9/dbd/star__bus__spi_8c.html" title=" " alt="" coords="3845,560,3982,600"/>
-<area shape="poly" id="edge39_Node000005_Node000044" title=" " alt="" coords="2095,379,2518,382,3102,391,3386,399,3631,411,3808,426,3863,436,3891,447,3910,472,3919,503,3921,534,3918,561,3915,557,3915,534,3913,504,3905,475,3888,451,3861,441,3807,431,3630,416,3386,404,3101,396,2518,387,2096,384"/>
-<area shape="rect" id="Node000045" href="$d4/d34/star__bus__spi__peripheral_8c.html" title=" " alt="" coords="4173,560,4320,600"/>
-<area shape="poly" id="edge40_Node000005_Node000045" title=" " alt="" coords="2096,380,2557,386,3206,399,3800,418,4001,431,4064,438,4098,446,4116,458,4127,472,4136,487,4150,502,4220,560,4215,558,4146,506,4132,490,4123,475,4113,462,4096,451,4063,444,4000,436,3799,424,3206,404,2557,391,2096,385"/>
-<area shape="rect" id="Node000046" href="$d2/df3/star__sensor__bno055__bmp280_8h.html" title="BNO055 + BMP280 10&#45;DOF IMU driver." alt="" coords="727,449,918,504"/>
-<area shape="poly" id="edge41_Node000005_Node000046" title=" " alt="" coords="1921,382,1742,387,1495,397,1214,417,1070,432,930,451,919,453,918,448,929,446,1069,427,1213,412,1495,392,1742,382,1926,381"/>
-<area shape="rect" id="Node000048" href="$d2/dda/star__sensor__hcsr04_8h.html" title="HC&#45;SR04 ultrasonic distance sensor driver." alt="" coords="2834,456,3030,497"/>
-<area shape="poly" id="edge43_Node000005_Node000048" title=" " alt="" coords="2096,384,2396,407,2584,425,2772,446,2837,458,2831,458,2772,451,2583,430,2395,412,2096,390"/>
-<area shape="rect" id="Node000053" href="$dd/d2b/star__sensor__mpu6050_8h.html" title="MPU6050 6&#45;axis IMU driver (3&#45;axis accelerometer + 3&#45;axis gyroscope)." alt="" coords="942,456,1151,497"/>
-<area shape="poly" id="edge45_Node000005_Node000053" title=" " alt="" coords="1920,385,1592,407,1382,425,1171,451,1132,458,1131,453,1170,446,1382,420,1592,402,1925,384"/>
-<area shape="rect" id="Node000009" href="$d4/db0/star__bus__async_8c.html" title=" " alt="" coords="2293,656,2430,697"/>
-<area shape="poly" id="edge7_Node000008_Node000009" title=" " alt="" coords="805,585,1109,605,1286,613,1436,616,1691,616,1813,618,1945,623,2094,634,2270,653,2295,660,2290,659,2269,659,2093,640,1944,629,1813,623,1690,622,1436,621,1286,618,1109,611,805,590"/>
-<area shape="rect" id="Node000011" href="$df/deb/star__bus__batch_8c.html" title=" " alt="" coords="2121,656,2258,697"/>
-<area shape="poly" id="edge9_Node000010_Node000011" title=" " alt="" coords="137,603,151,605,295,624,475,636,679,643,895,647,1316,649,1643,653,2123,673,2118,673,1643,659,1316,655,895,653,679,649,475,641,295,629,150,611,138,608"/>
-<area shape="rect" id="Node000013" href="$df/df6/star__bus__debug_8c.html" title=" " alt="" coords="2889,560,3026,600"/>
-<area shape="poly" id="edge11_Node000012_Node000013" title=" " alt="" coords="2759,500,2909,560,2903,559,2758,505"/>
-<area shape="rect" id="Node000015" href="$d6/d0b/star__bus__devices_8c.html" title=" " alt="" coords="1121,560,1258,600"/>
-<area shape="poly" id="edge13_Node000014_Node000015" title=" " alt="" coords="537,499,550,502,709,531,868,551,1124,575,1118,576,868,557,708,536,549,507,538,504"/>
-<area shape="poly" id="edge15_Node000016_Node000017" title=" " alt="" coords="3537,508,3571,561,3566,558,3535,512"/>
-<area shape="poly" id="edge16_Node000016_Node000019" title=" " alt="" coords="3456,503,3342,555,3312,569,3311,564,3340,550,3451,504"/>
-<area shape="poly" id="edge18_Node000021_Node000022" title=" " alt="" coords="2005,605,1993,611,1895,631,1797,648,1632,670,1631,665,1796,643,1894,626,1991,605,2000,606"/>
-<area shape="rect" id="Node000024" href="$de/db1/star__bus__i2c__dma_8c.html" title=" " alt="" coords="1281,560,1418,600"/>
-<area shape="poly" id="edge20_Node000023_Node000024" title=" " alt="" coords="702,499,715,502,799,516,870,523,992,525,1115,528,1186,535,1270,550,1299,559,1293,559,1269,555,1186,541,1114,533,992,531,869,528,798,521,714,507,702,504"/>
-<area shape="poly" id="edge23_Node000027_Node000028" title=" " alt="" coords="259,510,265,560,260,558,256,515"/>
-<area shape="poly" id="edge26_Node000031_Node000009" title=" " alt="" coords="2309,610,2347,657,2342,655,2307,615"/>
-<area shape="poly" id="edge27_Node000031_Node000011" title=" " alt="" coords="2254,611,2209,658,2207,653,2249,613"/>
-<area shape="poly" id="edge28_Node000031_Node000032" title=" " alt="" coords="2364,600,2575,657,2570,657,2363,605"/>
-<area shape="rect" id="Node000036" href="$dc/d0c/star__bus__spi__dma_8c.html" title=" " alt="" coords="3685,560,3822,600"/>
-<area shape="poly" id="edge31_Node000035_Node000036" title=" " alt="" coords="3792,509,3765,562,3762,557,3787,512"/>
-<area shape="rect" id="Node000047" href="$d1/dfc/star__sensor__bno055__bmp280_8c.html" title=" " alt="" coords="1441,552,1610,608"/>
-<area shape="poly" id="edge42_Node000046_Node000047" title=" " alt="" coords="933,502,1073,519,1183,525,1292,531,1430,550,1443,555,1438,554,1429,555,1292,536,1183,530,1073,524,933,507"/>
-<area shape="rect" id="Node000049" href="$de/de2/star__sensor__hcsr04_8c.html" title=" " alt="" coords="3050,560,3222,600"/>
-<area shape="poly" id="edge44_Node000048_Node000049" title=" " alt="" coords="2985,501,3099,560,3094,559,2984,506"/>
-<area shape="rect" id="Node000054" href="$d7/df2/star__sensor__mpu6050_8c.html" title=" " alt="" coords="1634,560,1820,600"/>
-<area shape="poly" id="edge46_Node000053_Node000054" title=" " alt="" coords="1148,498,1171,502,1297,518,1396,524,1496,532,1622,550,1657,559,1652,559,1621,555,1495,537,1396,530,1297,523,1170,507,1148,503"/>
-<area shape="poly" id="edge83_Node000062_Node000013" title=" " alt="" coords="3718,382,3569,388,3386,398,3296,407,3213,418,3144,433,3093,451,3077,462,3066,475,3043,506,2982,562,2980,557,3039,503,3062,472,3073,458,3091,446,3143,428,3213,413,3295,402,3386,393,3569,383,3723,382"/>
-<area shape="poly" id="edge84_Node000062_Node000042" title=" " alt="" coords="3718,382,3495,387,3213,396,3077,404,2960,416,2872,432,2842,441,2824,451,2807,475,2798,504,2796,534,2797,561,2793,558,2791,534,2793,503,2802,472,2821,447,2840,436,2871,426,2959,411,3077,399,3212,391,3495,382,3723,382"/>
-<area shape="poly" id="edge85_Node000062_Node000045" title=" " alt="" coords="3885,383,4014,392,4158,405,4282,423,4324,434,4347,447,4356,461,4358,475,4348,506,4336,523,4322,538,4289,562,4287,557,4318,534,4332,520,4343,503,4353,475,4351,463,4344,451,4322,439,4281,428,4158,410,4013,397,3885,389"/>
-<area shape="rect" id="Node000063" href="$d0/de4/star__bus__config_8h.html" title="Bus configuration creation and lifecycle management." alt="" coords="3104,456,3237,497"/>
-<area shape="poly" id="edge49_Node000062_Node000063" title=" " alt="" coords="3723,386,3506,409,3378,427,3250,451,3224,458,3224,453,3249,446,3377,422,3506,404,3718,387"/>
-<area shape="rect" id="Node000064" href="$d9/d5b/star__bus__gpio_8h.html" title="GPIO operations through the unified bus manager." alt="" coords="3261,456,3395,497"/>
-<area shape="poly" id="edge56_Node000062_Node000064" title=" " alt="" coords="3723,391,3574,417,3407,451,3383,458,3382,453,3406,446,3573,412,3718,392"/>
-<area shape="rect" id="Node000065" href="$dd/df4/star__bus__i2c_8h.html" title="I2C bus operations through the unified bus manager." alt="" coords="2368,456,2501,497"/>
-<area shape="poly" id="edge61_Node000062_Node000065" title=" " alt="" coords="3718,384,3251,405,2935,424,2615,451,2502,467,2501,461,2614,446,2935,419,3250,400,3723,384"/>
-<area shape="rect" id="Node000066" href="$d8/d8a/star__bus__spi_8h.html" title="SPI bus operations through the unified bus manager." alt="" coords="3952,456,4085,497"/>
-<area shape="poly" id="edge74_Node000062_Node000066" title=" " alt="" coords="3862,405,3976,456,3971,455,3861,410"/>
-<area shape="rect" id="Node000067" href="$d5/dd2/star__bus__spi__peripheral_8h.html" title="SPI peripheral (slave) mode operations." alt="" coords="4160,456,4333,497"/>
-<area shape="poly" id="edge80_Node000062_Node000067" title=" " alt="" coords="3885,394,4142,446,4173,456,4168,455,4141,451,3885,399"/>
-<area shape="rect" id="Node000068" href="$d7/d27/star__bus__types_8c.html" title=" " alt="" coords="4408,456,4544,497"/>
-<area shape="poly" id="edge86_Node000062_Node000068" title=" " alt="" coords="3885,384,4114,404,4252,422,4390,446,4420,456,4415,455,4389,451,4251,427,4113,409,3885,389"/>
-<area shape="poly" id="edge52_Node000063_Node000013" title=" " alt="" coords="3119,503,2999,562,2998,557,3114,504"/>
-<area shape="poly" id="edge51_Node000063_Node000017" title=" " alt="" coords="3241,499,3250,502,3320,517,3376,526,3431,534,3502,550,3528,560,3523,559,3501,555,3430,539,3375,531,3319,523,3249,507,3240,504"/>
-<area shape="poly" id="edge55_Node000063_Node000019" title=" " alt="" coords="3206,505,3276,568,3271,566,3204,510"/>
-<area shape="poly" id="edge50_Node000063_Node000021" title=" " alt="" coords="3091,496,3042,507,2914,521,2806,528,2622,531,2438,534,2330,541,2203,555,2141,566,2140,560,2202,550,2330,536,2438,529,2622,526,2806,523,2914,516,3041,502,3086,497"/>
-<area shape="poly" id="edge53_Node000063_Node000041" title=" " alt="" coords="3234,500,3375,560,3370,559,3233,506"/>
-<area shape="poly" id="edge54_Node000063_Node000043" title=" " alt="" coords="3091,496,3042,507,2882,522,2747,527,2627,525,2515,521,2404,518,2285,520,2150,531,1993,555,1965,562,1964,557,1991,550,2150,526,2284,514,2404,512,2515,515,2627,520,2746,522,2882,517,3041,502,3086,497"/>
-<area shape="poly" id="edge57_Node000064_Node000017" title=" " alt="" coords="3392,500,3535,560,3530,559,3391,506"/>
-<area shape="poly" id="edge60_Node000064_Node000019" title=" " alt="" coords="3317,510,3294,569,3291,565,3313,513"/>
-<area shape="poly" id="edge58_Node000064_Node000041" title=" " alt="" coords="3357,506,3406,560,3401,558,3355,511"/>
-<area shape="poly" id="edge59_Node000064_Node000049" title=" " alt="" coords="3280,504,3174,562,3172,557,3275,505"/>
-<area shape="poly" id="edge63_Node000065_Node000009" title=" " alt="" coords="2424,510,2370,658,2367,653,2420,513"/>
-<area shape="poly" id="edge64_Node000065_Node000011" title=" " alt="" coords="2355,494,2264,522,2227,537,2205,554,2192,578,2186,605,2187,657,2184,654,2181,605,2187,576,2201,551,2225,533,2262,517,2350,495"/>
-<area shape="poly" id="edge66_Node000065_Node000013" title=" " alt="" coords="2517,487,2713,519,2878,550,2904,559,2899,559,2877,555,2712,524,2516,493"/>
-<area shape="poly" id="edge67_Node000065_Node000015" title=" " alt="" coords="2355,491,2248,507,2099,518,1972,521,1757,517,1653,516,1542,520,1417,532,1270,555,1242,562,1241,557,1269,550,1416,526,1542,514,1653,510,1757,511,1972,515,2099,512,2248,502,2350,491"/>
-<area shape="poly" id="edge65_Node000065_Node000017" title=" " alt="" coords="2517,489,2615,502,2750,512,2864,515,3060,513,3154,513,3255,517,3368,528,3502,550,3532,560,3526,559,3501,555,3368,533,3254,522,3154,518,3060,518,2864,521,2749,517,2614,507,2517,494"/>
-<area shape="poly" id="edge69_Node000065_Node000024" title=" " alt="" coords="2355,491,2248,507,2124,517,2017,520,1837,519,1750,519,1657,524,1553,535,1430,555,1403,562,1402,557,1429,550,1552,529,1657,518,1750,514,1837,514,2017,515,2123,511,2248,502,2350,491"/>
-<area shape="poly" id="edge62_Node000065_Node000031" title=" " alt="" coords="2395,505,2312,562,2310,557,2390,506"/>
-<area shape="poly" id="edge70_Node000065_Node000032" title=" " alt="" coords="2504,500,2576,528,2618,550,2633,576,2641,605,2645,657,2641,654,2636,606,2628,578,2614,554,2574,533,2503,505"/>
-<area shape="poly" id="edge68_Node000065_Node000042" title=" " alt="" coords="2516,498,2732,560,2726,560,2516,503"/>
-<area shape="poly" id="edge71_Node000065_Node000047" title=" " alt="" coords="2355,490,2248,507,2072,521,1934,524,1797,531,1716,540,1622,555,1610,557,1610,552,1621,550,1716,535,1796,526,1934,519,2071,515,2248,502,2350,491"/>
-<area shape="poly" id="edge72_Node000065_Node000054" title=" " alt="" coords="2355,490,2248,507,2131,520,2040,527,1949,537,1832,555,1800,562,1799,557,1832,550,1948,531,2039,522,2131,514,2248,502,2350,490"/>
-<area shape="rect" id="Node000056" href="$d3/df7/star__sensor__pca9685_8c.html" title=" " alt="" coords="2422,560,2604,600"/>
-<area shape="poly" id="edge73_Node000065_Node000056" title=" " alt="" coords="2460,507,2501,560,2496,558,2458,512"/>
-<area shape="poly" id="edge75_Node000066_Node000009" title=" " alt="" coords="4038,509,4048,534,4054,561,4052,587,4039,610,4013,621,3961,629,3794,642,3567,650,3309,655,2561,659,2430,670,2430,665,2561,653,3309,649,3567,645,3794,637,3961,624,4012,616,4036,606,4047,585,4049,561,4043,536,4035,513"/>
-<area shape="poly" id="edge76_Node000066_Node000011" title=" " alt="" coords="4025,510,4025,537,4021,564,4012,589,3995,610,3964,621,3903,630,3709,643,3445,650,3146,654,2579,655,2282,659,2258,662,2258,657,2281,653,2578,650,3146,648,3445,645,3708,637,3903,625,3963,616,3992,606,4007,586,4016,562,4020,537,4021,514"/>
-<area shape="poly" id="edge77_Node000066_Node000017" title=" " alt="" coords="3939,495,3674,555,3648,562,3647,557,3673,550,3934,495"/>
-<area shape="poly" id="edge79_Node000066_Node000036" title=" " alt="" coords="3956,502,3805,562,3804,557,3951,503"/>
-<area shape="poly" id="edge78_Node000066_Node000044" title=" " alt="" coords="3990,507,3935,562,3933,557,3985,509"/>
-<area shape="poly" id="edge81_Node000067_Node000017" title=" " alt="" coords="4147,497,4098,507,3978,521,3885,527,3792,536,3674,555,3645,562,3644,557,3673,550,3791,530,3884,522,3978,515,4097,502,4142,497"/>
-<area shape="poly" id="edge82_Node000067_Node000045" title=" " alt="" coords="4249,511,4249,561,4245,558,4245,514"/>
+<area shape="rect" id="Node000001" title="Event data structures for bus callback functions." alt="" coords="1861,5,2026,46"/>
+<area shape="rect" id="Node000002" href="$d0/da6/star__bus__function__types_8h.html" title="Callback and operation function type definitions." alt="" coords="1854,94,2033,135"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1945,59,1946,95,1941,92,1942,64"/>
+<area shape="rect" id="Node000003" href="$dd/d9d/star__bus__protocol__types_8h.html" title="Protocol&#45;specific configuration structures for all bus types." alt="" coords="1765,183,1943,223"/>
+<area shape="poly" id="edge70_Node000001_Node000003" title=" " alt="" coords="1885,53,1861,73,1844,95,1838,117,1838,140,1848,183,1843,181,1832,140,1832,116,1840,93,1858,70,1880,55"/>
+<area shape="rect" id="Node000030" href="$d7/d7c/star__bus__types_8h.html" title="Bus type definitions and enumerations." alt="" coords="1978,360,2111,401"/>
+<area shape="poly" id="edge71_Node000001_Node000030" title=" " alt="" coords="2005,51,2029,70,2047,93,2062,128,2070,166,2074,204,2073,242,2065,311,2053,361,2049,358,2060,310,2068,242,2069,204,2065,167,2057,130,2042,95,2025,73,2004,57"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="1915,144,1876,185,1873,180,1910,147"/>
+<area shape="poly" id="edge69_Node000002_Node000030" title=" " alt="" coords="1958,147,2040,361,2035,359,1955,151"/>
+<area shape="rect" id="Node000004" href="$d0/d84/star__bus__manager__types_8h.html" title="Bus manager internal type definitions." alt="" coords="1650,271,1832,312"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="1819,232,1768,273,1765,268,1814,234"/>
+<area shape="poly" id="edge68_Node000003_Node000030" title=" " alt="" coords="1887,231,2026,360,2021,359,1886,237"/>
+<area shape="rect" id="Node000005" href="$d6/dcc/star__bus__manager_8h.html" title="Unified bus manager API for I2C, SPI, UART, GPIO, ADC, and 1&#45;Wire protocols." alt="" coords="1147,360,1289,401"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="1632,311,1290,370,1289,365,1637,310"/>
+<area shape="rect" id="Node000014" href="$de/d98/star__bus__config_8c.html" title="Bus configuration creation and lifecycle management implementation." alt="" coords="1695,537,1832,578"/>
+<area shape="poly" id="edge67_Node000004_Node000014" title=" " alt="" coords="1731,325,1722,362,1715,402,1714,446,1721,489,1732,514,1748,538,1743,536,1728,516,1716,490,1708,446,1710,402,1717,360,1727,328"/>
+<area shape="poly" id="edge34_Node000004_Node000030" title=" " alt="" coords="1825,314,1980,360,1975,360,1825,319"/>
+<area shape="rect" id="Node000006" href="$dd/d61/star__arq_8h.html" title="Automatic Repeat Request (ARQ) layer with Stop&#45;and&#45;Wait protocol." alt="" coords="256,449,386,489"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="1128,385,990,393,808,405,604,424,399,451,387,453,386,448,398,446,603,419,807,400,990,388,1134,384"/>
+<area shape="rect" id="Node000008" href="$d0/d29/main_8c.html" title="Application entry point and system initialization for STAR ESP32 firmware." alt="" coords="46,545,129,570"/>
+<area shape="poly" id="edge33_Node000005_Node000008" title=" " alt="" coords="1129,384,848,393,486,405,167,425,62,437,31,444,16,451,9,462,9,473,21,499,45,523,71,543,67,546,42,527,17,502,3,474,4,460,12,447,29,439,62,432,167,419,486,400,848,387,1134,383"/>
+<area shape="rect" id="Node000009" href="$d2/d63/star__bms__bq7850_8h.html" title="BQ7850 battery management system driver API." alt="" coords="573,449,757,489"/>
+<area shape="poly" id="edge8_Node000005_Node000009" title=" " alt="" coords="1129,395,776,451,758,454,757,449,775,446,1134,394"/>
+<area shape="rect" id="Node000011" href="$db/d73/star__bus__i2c__dma_8h.html" title="DMA&#45;accelerated I2C operations for large data transfers." alt="" coords="1255,449,1397,489"/>
+<area shape="poly" id="edge10_Node000005_Node000011" title=" " alt="" coords="1255,408,1304,449,1299,448,1254,413"/>
+<area shape="rect" id="Node000013" href="$d0/d6c/star__bus__onewire_8h.html" title="1&#45;Wire controller protocol implementation" alt="" coords="410,449,549,489"/>
+<area shape="poly" id="edge12_Node000005_Node000013" title=" " alt="" coords="1129,388,875,411,718,429,561,451,550,453,548,448,560,446,718,423,875,406,1134,386"/>
+<area shape="rect" id="Node000017" href="$dd/d95/star__bus__smbus_8h.html" title="SMBus (System Management Bus) protocol implementation over I2C." alt="" coords="1047,537,1181,578"/>
+<area shape="poly" id="edge16_Node000005_Node000017" title=" " alt="" coords="1135,391,1106,402,1080,414,1056,430,1038,450,1033,461,1032,472,1042,495,1061,516,1085,537,1080,536,1057,520,1037,498,1027,473,1027,460,1033,447,1053,426,1077,409,1104,397,1129,392"/>
+<area shape="rect" id="Node000018" href="$d3/df5/star__bus__smbus_8c.html" title="SMBus (System Management Bus) protocol implementation." alt="" coords="1150,626,1286,667"/>
+<area shape="poly" id="edge25_Node000005_Node000018" title=" " alt="" coords="1220,415,1220,627,1216,624,1216,418"/>
+<area shape="rect" id="Node000019" href="$d0/d31/star__bus__spi__dma_8h.html" title="DMA&#45;accelerated SPI operations for high&#45;speed data transfers." alt="" coords="831,449,973,489"/>
+<area shape="poly" id="edge19_Node000005_Node000019" title=" " alt="" coords="1135,404,974,451,973,446,1129,406"/>
+<area shape="rect" id="Node000021" href="$d2/deb/star__bus__adc_8c.html" title="ADC (Analog&#45;to&#45;Digital Converter) operations implementation." alt="" coords="2941,537,3077,578"/>
+<area shape="poly" id="edge21_Node000005_Node000021" title=" " alt="" coords="1305,382,2271,413,2764,432,2921,440,2985,446,3001,467,3010,491,3013,539,3009,535,3004,492,2996,469,2982,451,2921,445,2764,437,2270,418,1305,387"/>
+<area shape="rect" id="Node000022" href="$da/d8b/star__bus__gpio_8c.html" title="GPIO operations implementation for the bus manager." alt="" coords="2230,537,2366,578"/>
+<area shape="poly" id="edge22_Node000005_Node000022" title=" " alt="" coords="1305,380,1495,385,1732,396,1960,416,2054,429,2124,446,2169,465,2211,488,2278,538,2272,536,2208,493,2167,469,2123,451,2053,435,1959,421,1731,401,1495,390,1305,386"/>
+<area shape="rect" id="Node000023" href="$dd/d1a/star__bus__i2c_8c.html" title="I2C controller protocol implementation for the bus manager." alt="" coords="1523,537,1660,578"/>
+<area shape="poly" id="edge23_Node000005_Node000023" title=" " alt="" coords="1305,385,1379,393,1456,405,1523,423,1549,434,1568,447,1583,468,1591,492,1595,539,1591,535,1586,493,1578,470,1564,451,1547,439,1522,428,1455,411,1378,398,1305,390"/>
+<area shape="rect" id="Node000024" href="$d7/d60/star__bus__manager_8c.html" title="Central bus management implementation with thread&#45;safe operations." alt="" coords="2390,537,2526,578"/>
+<area shape="poly" id="edge24_Node000005_Node000024" title=" " alt="" coords="1305,382,1924,408,2231,426,2333,436,2383,446,2408,465,2428,489,2453,538,2448,536,2423,492,2404,469,2381,451,2333,441,2231,432,1924,413,1305,387"/>
+<area shape="rect" id="Node000025" href="$d9/dbd/star__bus__spi_8c.html" title="SPI controller protocol implementation for the bus manager." alt="" coords="727,537,864,578"/>
+<area shape="poly" id="edge26_Node000005_Node000025" title=" " alt="" coords="1129,386,1046,394,954,406,873,425,842,437,821,451,808,470,800,493,796,539,792,535,795,492,803,467,818,447,840,432,871,420,953,401,1045,389,1134,385"/>
+<area shape="rect" id="Node000026" href="$d4/d34/star__bus__spi__peripheral_8c.html" title="SPI peripheral mode implementation for the bus manager." alt="" coords="1867,537,2014,578"/>
+<area shape="poly" id="edge27_Node000005_Node000026" title=" " alt="" coords="1304,382,1468,389,1659,401,1826,420,1884,432,1917,447,1933,467,1941,491,1944,539,1940,535,1936,492,1928,470,1914,451,1883,437,1825,426,1659,407,1468,394,1304,387"/>
+<area shape="rect" id="Node000027" href="$dc/ddf/star__drv8243_8h.html" title="DRV8243 H&#45;bridge motor driver integration API." alt="" coords="2495,449,2653,489"/>
+<area shape="poly" id="edge28_Node000005_Node000027" title=" " alt="" coords="1305,379,1513,383,1804,393,2138,413,2309,428,2477,446,2497,451,2492,451,2476,451,2309,433,2138,418,1803,399,1513,388,1305,385"/>
+<area shape="rect" id="Node000029" href="$d5/d4a/star__sensor__ds18b20_8h.html" title="DS18B20 temperature sensor driver API over 1&#45;Wire." alt="" coords="26,449,231,489"/>
+<area shape="poly" id="edge30_Node000005_Node000029" title=" " alt="" coords="1129,386,746,408,496,426,244,451,233,453,231,448,243,446,496,421,746,402,1134,384"/>
+<area shape="rect" id="Node000007" href="$d4/d23/star__arq_8c.html" title="Automatic Repeat Request (ARQ) protocol implementation with Stop&#45;and&#45;Wait." alt="" coords="519,537,653,578"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="395,492,528,536,523,537,395,497"/>
+<area shape="poly" id="edge7_Node000006_Node000008" title=" " alt="" coords="252,497,122,547,119,542,255,493"/>
+<area shape="rect" id="Node000010" href="$d2/d58/star__bms__bq7850_8c.html" title="BQ7850 battery management system driver implementation." alt="" coords="787,626,948,667"/>
+<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="675,502,692,541,717,576,755,604,798,626,793,625,752,608,714,580,687,543,672,506"/>
+<area shape="rect" id="Node000012" href="$de/db1/star__bus__i2c__dma_8c.html" title="I2C DMA transfer implementation for high&#45;throughput operations." alt="" coords="1271,537,1408,578"/>
+<area shape="poly" id="edge11_Node000011_Node000012" title=" " alt="" coords="1333,503,1339,538,1334,535,1330,507"/>
+<area shape="poly" id="edge13_Node000013_Node000014" title=" " alt="" coords="564,487,732,505,875,513,1001,515,1119,513,1237,510,1362,511,1505,518,1672,535,1697,541,1692,541,1671,540,1504,523,1362,516,1237,516,1119,518,1001,520,875,519,732,511,564,492"/>
+<area shape="rect" id="Node000015" href="$d9/dd6/star__bus__onewire_8c.html" title="1&#45;Wire controller protocol implementation for the bus manager" alt="" coords="359,537,496,578"/>
+<area shape="poly" id="edge14_Node000013_Node000015" title=" " alt="" coords="462,501,441,539,437,535,458,504"/>
+<area shape="rect" id="Node000016" href="$d5/dca/star__sensor__ds18b20_8c.html" title="DS18B20 temperature sensor driver implementation over 1&#45;Wire." alt="" coords="152,537,335,578"/>
+<area shape="poly" id="edge15_Node000013_Node000016" title=" " alt="" coords="409,496,298,539,296,534,414,494"/>
+<area shape="poly" id="edge17_Node000017_Node000010" title=" " alt="" coords="1047,583,924,628,923,623,1041,584"/>
+<area shape="poly" id="edge18_Node000017_Node000018" title=" " alt="" coords="1150,585,1197,626,1192,625,1148,590"/>
+<area shape="rect" id="Node000020" href="$dc/d0c/star__bus__spi__dma_8c.html" title="SPI DMA transfer implementation for high&#45;throughput operations." alt="" coords="887,537,1024,578"/>
+<area shape="poly" id="edge20_Node000019_Node000020" title=" " alt="" coords="923,500,946,538,941,536,921,505"/>
+<area shape="rect" id="Node000028" href="$d2/d8f/star__drv8243_8c.html" title="DRV8243 H&#45;bridge motor driver integration implementation." alt="" coords="2666,537,2802,578"/>
+<area shape="poly" id="edge29_Node000027_Node000028" title=" " alt="" coords="2624,494,2701,537,2695,536,2623,500"/>
+<area shape="poly" id="edge32_Node000029_Node000008" title=" " alt="" coords="114,501,95,546,91,543,111,506"/>
+<area shape="poly" id="edge31_Node000029_Node000016" title=" " alt="" coords="167,496,220,536,215,537,167,502"/>
+<area shape="poly" id="edge62_Node000030_Node000021" title=" " alt="" coords="2127,378,2354,379,2639,387,2775,396,2893,408,2981,424,3011,435,3029,447,3040,469,3040,493,3033,517,3022,539,3019,535,3028,515,3035,492,3035,470,3025,450,3009,440,2980,430,2892,413,2775,401,2639,393,2354,385,2127,384"/>
+<area shape="poly" id="edge63_Node000030_Node000022" title=" " alt="" coords="2127,384,2200,391,2277,403,2342,421,2367,433,2384,447,2391,460,2392,473,2381,498,2358,520,2332,540,2330,535,2355,516,2376,495,2387,472,2386,461,2380,450,2364,437,2340,426,2275,408,2200,396,2127,389"/>
+<area shape="poly" id="edge64_Node000030_Node000023" title=" " alt="" coords="1960,387,1907,397,1845,409,1780,427,1719,451,1687,471,1656,494,1609,539,1607,535,1653,490,1684,466,1717,446,1779,422,1843,404,1906,392,1965,387"/>
+<area shape="poly" id="edge65_Node000030_Node000026" title=" " alt="" coords="2089,408,2110,426,2126,446,2132,469,2126,491,2103,514,2076,532,2046,544,2015,552,2015,547,2044,539,2073,527,2100,510,2121,488,2127,469,2121,449,2106,430,2088,413"/>
+<area shape="rect" id="Node000031" href="$d2/d8f/star__bus__adc_8h.html" title="ADC bus operations through the unified bus manager." alt="" coords="2838,449,2971,489"/>
+<area shape="poly" id="edge35_Node000030_Node000031" title=" " alt="" coords="2127,382,2436,401,2631,420,2827,446,2840,451,2835,451,2826,451,2630,425,2435,406,2127,387"/>
+<area shape="rect" id="Node000032" href="$d0/de4/star__bus__config_8h.html" title="Bus configuration creation and lifecycle management API." alt="" coords="1978,449,2111,489"/>
+<area shape="poly" id="edge40_Node000030_Node000032" title=" " alt="" coords="2047,414,2047,450,2043,446,2043,418"/>
+<area shape="rect" id="Node000033" href="$d9/d5b/star__bus__gpio_8h.html" title="GPIO bus operations through the unified bus manager." alt="" coords="2237,449,2370,489"/>
+<area shape="poly" id="edge44_Node000030_Node000033" title=" " alt="" coords="2118,403,2247,448,2242,448,2117,409"/>
+<area shape="rect" id="Node000034" href="$dd/df4/star__bus__i2c_8h.html" title="I2C bus operations through the unified bus manager." alt="" coords="1421,449,1554,489"/>
+<area shape="poly" id="edge48_Node000030_Node000034" title=" " alt="" coords="1965,394,1555,460,1554,455,1960,395"/>
+<area shape="rect" id="Node000035" href="$d8/d8a/star__bus__spi_8h.html" title="SPI bus operations through the unified bus manager." alt="" coords="1047,449,1181,489"/>
+<area shape="poly" id="edge54_Node000030_Node000035" title=" " alt="" coords="1960,387,1647,413,1244,451,1182,460,1181,454,1243,446,1646,407,1965,387"/>
+<area shape="rect" id="Node000036" href="$d5/dd2/star__bus__spi__peripheral_8h.html" title="SPI peripheral (slave) mode operations." alt="" coords="1730,449,1903,489"/>
+<area shape="poly" id="edge58_Node000030_Node000036" title=" " alt="" coords="1982,406,1869,451,1868,445,1976,407"/>
+<area shape="rect" id="Node000037" href="$d7/d27/star__bus__types_8c.html" title="Bus type utilities and helper functions implementation." alt="" coords="2678,449,2814,489"/>
+<area shape="poly" id="edge66_Node000030_Node000037" title=" " alt="" coords="2127,385,2369,406,2517,424,2665,446,2680,451,2675,451,2664,451,2516,429,2368,412,2127,390"/>
+<area shape="poly" id="edge37_Node000031_Node000014" title=" " alt="" coords="2826,489,2676,509,2551,517,2441,519,2338,518,2125,518,2001,525,1856,540,1832,544,1832,538,1855,535,2001,520,2125,513,2338,513,2441,514,2551,512,2676,504,2820,490"/>
+<area shape="poly" id="edge36_Node000031_Node000021" title=" " alt="" coords="2941,497,2988,538,2983,536,2939,502"/>
+<area shape="poly" id="edge38_Node000031_Node000024" title=" " alt="" coords="2825,490,2527,548,2526,542,2820,490"/>
+<area shape="poly" id="edge39_Node000031_Node000028" title=" " alt="" coords="2855,496,2773,539,2772,534,2850,497"/>
+<area shape="poly" id="edge43_Node000032_Node000008" title=" " alt="" coords="1965,484,1916,492,1742,501,1527,504,1026,502,769,502,527,507,312,519,221,528,141,540,118,547,115,542,140,535,220,523,312,513,526,501,769,497,1026,496,1527,498,1742,496,1915,487,1960,484"/>
+<area shape="poly" id="edge41_Node000032_Node000014" title=" " alt="" coords="1969,494,1828,539,1827,534,1964,495"/>
+<area shape="poly" id="edge42_Node000032_Node000024" title=" " alt="" coords="2127,483,2379,535,2392,540,2387,540,2378,540,2127,489"/>
+<area shape="poly" id="edge45_Node000033_Node000014" title=" " alt="" coords="2224,481,2053,508,1856,540,1833,544,1832,539,1855,535,2052,503,2219,481"/>
+<area shape="poly" id="edge46_Node000033_Node000022" title=" " alt="" coords="2303,503,2301,539,2297,535,2299,507"/>
+<area shape="poly" id="edge47_Node000033_Node000024" title=" " alt="" coords="2352,495,2426,537,2421,536,2351,500"/>
+<area shape="poly" id="edge52_Node000034_Node000012" title=" " alt="" coords="1443,497,1374,539,1372,534,1438,498"/>
+<area shape="poly" id="edge50_Node000034_Node000014" title=" " alt="" coords="1565,492,1703,537,1698,537,1564,497"/>
+<area shape="poly" id="edge49_Node000034_Node000017" title=" " alt="" coords="1408,490,1181,544,1180,539,1403,490"/>
+<area shape="poly" id="edge53_Node000034_Node000018" title=" " alt="" coords="1476,502,1454,544,1421,580,1390,601,1355,616,1287,637,1286,632,1353,611,1387,596,1418,576,1450,541,1472,505"/>
+<area shape="poly" id="edge51_Node000034_Node000023" title=" " alt="" coords="1523,497,1571,538,1565,536,1522,502"/>
+<area shape="poly" id="edge55_Node000035_Node000014" title=" " alt="" coords="1196,480,1244,487,1458,509,1552,518,1672,535,1697,542,1692,541,1671,540,1551,523,1457,514,1243,492,1196,485"/>
+<area shape="poly" id="edge57_Node000035_Node000020" title=" " alt="" coords="1067,496,992,539,990,534,1062,498"/>
+<area shape="poly" id="edge56_Node000035_Node000025" title=" " alt="" coords="1035,492,865,540,864,535,1030,493"/>
+<area shape="poly" id="edge59_Node000036_Node000007" title=" " alt="" coords="1712,479,1566,492,1327,505,1140,511,954,520,716,540,654,548,653,543,715,535,954,515,1140,506,1327,499,1566,487,1717,478"/>
+<area shape="poly" id="edge60_Node000036_Node000014" title=" " alt="" coords="1799,501,1777,539,1774,535,1794,504"/>
+<area shape="poly" id="edge61_Node000036_Node000026" title=" " alt="" coords="1858,496,1915,538,1910,536,1857,501"/>
 </map>

@@ -1,0 +1,21 @@
+<map id="_star_v1_GetBatteryStateResponse" name="_star_v1_GetBatteryStateResponse">
+<area shape="rect" id="Node000001" title=" " alt="" coords="916,72,1089,113"/>
+<area shape="rect" id="Node000002" href="$d5/de6/struct__star__v1___response_header.html" title=" " alt="" coords="642,20,821,45"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="808,47,918,73,913,74,808,52"/>
+<area shape="rect" id="Node000003" href="$d6/df3/struct__google__protobuf___timestamp.html" title=" " alt="" coords="289,13,482,39"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="496,25,644,30,639,32,497,31"/>
+<area shape="rect" id="Node000004" href="$d0/df6/struct__star__v1___battery_state.html" title=" " alt="" coords="656,160,807,185"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="792,152,928,114,933,113,793,158"/>
+<area shape="rect" id="Node000005" href="$d4/dc5/struct__star__v1___cell_data.html" title=" " alt="" coords="321,66,450,92"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="465,84,541,96,619,115,668,135,711,160,705,159,666,140,617,121,540,101,466,89"/>
+<area shape="rect" id="Node000006" href="$d9/d7e/struct__star__v1___temperature_data.html" title=" " alt="" coords="296,120,474,145"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="490,142,658,163,653,165,490,147"/>
+<area shape="rect" id="Node000007" href="$d1/d47/struct__star__v1___current_data.html" title=" " alt="" coords="311,173,460,199"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="475,185,618,182,658,182,653,182,618,188,475,190"/>
+<area shape="rect" id="Node000008" href="$d2/d98/struct__star__v1___state_of_charge_data.html" title=" " alt="" coords="289,226,482,252"/>
+<area shape="poly" id="edge7_Node000004_Node000008" title=" " alt="" coords="497,231,557,224,617,213,661,199,699,187,704,185,663,204,619,218,558,230,498,237"/>
+<area shape="rect" id="Node000009" href="$d2/da3/struct__star__v1___battery_status.html" title=" " alt="" coords="306,280,464,305"/>
+<area shape="poly" id="edge8_Node000004_Node000009" title=" " alt="" coords="480,288,548,279,617,259,647,242,675,222,716,187,720,185,678,227,650,247,619,263,550,284,480,294"/>
+<area shape="rect" id="Node000010" href="$d7/dfe/struct__star__v1___safety_faults.html" title=" " alt="" coords="5,280,158,305"/>
+<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="173,290,308,292,303,293,173,295"/>
+</map>

@@ -111,8 +111,10 @@ Public Attributes</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Error handler interface - abstract operations for error handling. </p>
-
-<p class="definition">Definition at line <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00131">131</a> of file <a class="el" href="../../df/d84/star__error__interface_8h_source.html">star_error_interface.h</a>.</p>
+<p>It follows the Dependency Inversion Principle (DIP), allowing high-level components to depend on this abstract interface rather than concrete implementations.</p>
+<p>The concrete implementation is provided by <a class="el" href="../../d4/d59/star__error__handler_8h.html" title="Concrete error handler implementation with retry logic and exponential backoff.">star_error_handler.h</a>.</p>
+<p>Example Usage: </p><div class="fragment"></div><!-- fragment --> 
+<p class="definition">Definition at line <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00140">140</a> of file <a class="el" href="../../df/d84/star__error__interface_8h_source.html">star_error_interface.h</a>.</p>
 </div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
 <a id="a6411ebe7eac1acc07ab4a13d7c6574a9" name="a6411ebe7eac1acc07ab4a13d7c6574a9"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6411ebe7eac1acc07ab4a13d7c6574a9">&#9670;&#160;</a></span>can_retry</h2>
@@ -135,9 +137,9 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if retry is allowed </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00154">154</a> of file <a class="el" href="../../df/d84/star__error__interface_8h_source.html">star_error_interface.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00163">163</a> of file <a class="el" href="../../df/d84/star__error__interface_8h_source.html">star_error_interface.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00329">error_handler_get_interface()</a>, and <a class="el" href="../../d5/d95/star__core_8h_source.html#l00158">star_error_interface_is_valid()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00327">error_handler_get_interface()</a>, and <a class="el" href="../../d5/d95/star__core_8h_source.html#l00165">star_error_interface_is_valid()</a>.</p>
 
 </div>
 </div>
@@ -155,9 +157,9 @@ Public Attributes</h2></td></tr>
 
 <p>Implementation context (opaque pointer to actual handler). </p>
 
-<p class="definition">Definition at line <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00166">166</a> of file <a class="el" href="../../df/d84/star__error__interface_8h_source.html">star_error_interface.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00175">175</a> of file <a class="el" href="../../df/d84/star__error__interface_8h_source.html">star_error_interface.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00329">error_handler_get_interface()</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00293">star_bus_manager_add_bus()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00455">star_error_interface_cleanup()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00437">star_error_interface_destroy()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00327">error_handler_get_interface()</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00114">star_bus_manager_add_bus()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00451">star_error_interface_cleanup()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00433">star_error_interface_destroy()</a>.</p>
 
 </div>
 </div>
@@ -187,9 +189,9 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00142">142</a> of file <a class="el" href="../../df/d84/star__error__interface_8h_source.html">star_error_interface.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00151">151</a> of file <a class="el" href="../../df/d84/star__error__interface_8h_source.html">star_error_interface.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00329">error_handler_get_interface()</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00293">star_bus_manager_add_bus()</a>, and <a class="el" href="../../d5/d95/star__core_8h_source.html#l00158">star_error_interface_is_valid()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00327">error_handler_get_interface()</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00114">star_bus_manager_add_bus()</a>, and <a class="el" href="../../d5/d95/star__core_8h_source.html#l00165">star_error_interface_is_valid()</a>.</p>
 
 </div>
 </div>
@@ -214,9 +216,9 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00161">161</a> of file <a class="el" href="../../df/d84/star__error__interface_8h_source.html">star_error_interface.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00170">170</a> of file <a class="el" href="../../df/d84/star__error__interface_8h_source.html">star_error_interface.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00329">error_handler_get_interface()</a>, and <a class="el" href="../../d5/d95/star__core_8h_source.html#l00158">star_error_interface_is_valid()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00327">error_handler_get_interface()</a>, and <a class="el" href="../../d5/d95/star__core_8h_source.html#l00165">star_error_interface_is_valid()</a>.</p>
 
 </div>
 </div>

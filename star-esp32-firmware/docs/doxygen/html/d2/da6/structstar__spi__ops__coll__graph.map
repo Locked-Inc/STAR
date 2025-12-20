@@ -1,39 +1,37 @@
 <map id="star_spi_ops" name="star_spi_ops">
-<area shape="rect" id="Node000001" title="SPI operation functions structure." alt="" coords="532,212,628,237"/>
-<area shape="rect" id="Node000009" href="$da/d1c/structstar__spi__bus__config.html" title="SPI bus configuration structure (part of star_bus_config_t)." alt="" coords="837,252,974,277"/>
-<area shape="poly" id="edge12_Node000009_Node000001" title=" " alt="" coords="643,236,677,242,839,260,834,261,676,247,643,241"/>
-<area shape="rect" id="Node000002" href="$d2/d8d/structstar__bus__config.html" title="Bus configuration structure (common part)." alt="" coords="1166,190,1280,216"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1149,207,628,225,628,220,1153,204"/>
-<area shape="poly" id="edge21_Node000002_Node000002" title=" " alt="" coords="1199,173,1207,166,1223,164,1238,166,1248,172,1250,181,1245,192,1242,188,1245,181,1243,175,1236,171,1223,169,1209,171,1201,177"/>
-<area shape="rect" id="Node000008" href="$d2/ddb/structstar__i2c__ops.html" title="I2C operation functions structure." alt="" coords="1431,158,1526,184"/>
-<area shape="poly" id="edge8_Node000008_Node000002" title=" " alt="" coords="1295,199,1403,188,1431,185,1436,184,1404,194,1296,204"/>
-<area shape="rect" id="Node000013" href="$d3/d05/structstar__gpio__ops.html" title="GPIO operation functions structure." alt="" coords="1428,278,1530,304"/>
-<area shape="poly" id="edge17_Node000013_Node000002" title=" " alt="" coords="1241,226,1268,261,1285,276,1305,287,1335,297,1367,301,1430,301,1425,301,1366,306,1334,302,1303,292,1282,280,1264,264,1238,231"/>
-<area shape="rect" id="Node000003" href="$dd/d20/structstar__i2c__bus__config.html" title="I2C bus configuration structure (part of star_bus_config_t)." alt="" coords="1610,76,1748,101"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="1592,85,1432,88,1357,95,1327,101,1305,109,1280,127,1260,149,1232,192,1229,188,1256,145,1277,123,1302,105,1326,96,1356,90,1432,83,1597,84"/>
-<area shape="rect" id="Node000004" href="$d4/d97/structstar__i2c__callbacks.html" title="I2C callback functions structure." alt="" coords="676,21,806,46"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="821,29,1073,26,1480,26,1529,31,1577,43,1654,75,1649,75,1575,48,1528,36,1480,31,1073,31,822,34"/>
-<area shape="rect" id="Node000005" href="$d5/dcd/structstar__bus__event.html" title="Bus event structure passed to callback functions." alt="" coords="217,286,327,312"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="290,272,325,228,375,174,437,119,471,95,507,74,549,57,593,45,679,35,674,37,594,50,551,62,509,79,474,99,440,123,379,178,329,232,293,276"/>
-<area shape="rect" id="Node000010" href="$d7/d96/structstar__spi__callbacks.html" title="SPI callback functions structure." alt="" coords="516,286,645,312"/>
-<area shape="poly" id="edge11_Node000010_Node000005" title=" " alt="" coords="342,296,518,298,512,300,342,302"/>
-<area shape="rect" id="Node000012" href="$d0/d95/structstar__gpio__callbacks.html" title="GPIO callback functions structure." alt="" coords="1006,378,1142,404"/>
-<area shape="poly" id="edge15_Node000012_Node000005" title=" " alt="" coords="323,315,409,342,508,365,646,382,783,390,908,392,1003,394,1008,393,908,397,783,395,645,387,508,370,408,347,323,320"/>
-<area shape="rect" id="Node000006" href="$d2/d88/structstar__i2c__event__data.html" title="I2C bus event data structure." alt="" coords="5,260,144,285"/>
-<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="158,281,219,291,214,293,159,286"/>
-<area shape="rect" id="Node000007" href="$d6/d01/structstar__spi__event__data.html" title="SPI bus event data structure." alt="" coords="5,313,144,338"/>
-<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="159,318,192,314,219,312,214,313,193,319,160,323"/>
-<area shape="poly" id="edge7_Node000003_Node000008" title=" " alt="" coords="1528,150,1582,128,1645,102,1651,101,1584,132,1529,155"/>
-<area shape="poly" id="edge9_Node000002_Node000009" title=" " alt="" coords="990,263,1064,257,1142,242,1173,229,1199,217,1204,215,1175,234,1143,247,1065,263,990,268"/>
-<area shape="poly" id="edge10_Node000009_Node000010" title=" " alt="" coords="660,302,731,302,805,295,840,287,871,278,876,277,842,292,806,301,731,308,660,307"/>
-<area shape="rect" id="Node000011" href="$d2/de7/structstar__gpio__bus__config.html" title="GPIO bus configuration structure (part of star_bus_config_t)." alt="" coords="1607,338,1751,364"/>
-<area shape="poly" id="edge13_Node000002_Node000011" title=" " alt="" coords="1594,363,1524,368,1449,362,1373,345,1336,331,1302,312,1276,290,1255,264,1229,219,1232,214,1260,261,1280,286,1305,307,1338,326,1374,340,1450,357,1524,362,1589,363"/>
-<area shape="poly" id="edge14_Node000011_Node000012" title=" " alt="" coords="1158,389,1352,385,1468,378,1583,367,1614,365,1619,364,1583,372,1468,384,1352,390,1158,394"/>
-<area shape="poly" id="edge16_Node000011_Node000013" title=" " alt="" coords="1539,306,1636,338,1631,337,1539,311"/>
-<area shape="rect" id="Node000014" href="$dc/da7/structstar__dht22__bus__config.html" title="DHT22 bus configuration structure (part of star_bus_config_t)." alt="" coords="830,90,982,116"/>
-<area shape="poly" id="edge18_Node000002_Node000014" title=" " alt="" coords="964,118,1182,189,1177,190,964,124"/>
-<area shape="rect" id="Node000015" href="$dc/d56/structstar__dht22__callbacks.html" title="DHT22 callback functions structure." alt="" coords="508,142,652,168"/>
-<area shape="poly" id="edge19_Node000014_Node000015" title=" " alt="" coords="667,147,735,140,805,129,866,116,861,117,806,134,736,145,668,152"/>
-<area shape="rect" id="Node000016" href="$dc/dd2/structstar__dht22__ops.html" title="DHT22 operation functions structure." alt="" coords="525,89,635,114"/>
-<area shape="poly" id="edge20_Node000014_Node000016" title=" " alt="" coords="651,99,832,102,827,103,652,105"/>
+<area shape="rect" id="Node000001" title="SPI operation functions structure." alt="" coords="525,188,620,213"/>
+<area shape="rect" id="Node000009" href="$da/d1c/structstar__spi__bus__config.html" title="SPI bus configuration structure (part of star_bus_config_t)." alt="" coords="829,228,966,253"/>
+<area shape="poly" id="edge12_Node000009_Node000001" title=" " alt="" coords="635,213,662,218,748,229,831,237,826,238,748,234,661,223,635,218"/>
+<area shape="rect" id="Node000002" href="$d2/d8d/structstar__bus__config.html" title="Bus configuration structure (common part)." alt="" coords="1081,173,1194,198"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1063,188,661,200,621,201,620,196,661,195,1068,186"/>
+<area shape="poly" id="edge19_Node000002_Node000002" title=" " alt="" coords="1117,155,1124,149,1138,146,1150,148,1158,155,1160,164,1156,174,1153,170,1155,164,1154,158,1148,153,1138,151,1126,154,1120,160"/>
+<area shape="rect" id="Node000008" href="$d2/ddb/structstar__i2c__ops.html" title="I2C operation functions structure." alt="" coords="1342,113,1438,138"/>
+<area shape="poly" id="edge8_Node000008_Node000002" title=" " alt="" coords="1208,166,1339,137,1344,136,1210,171"/>
+<area shape="rect" id="Node000003" href="$dd/d20/structstar__i2c__bus__config.html" title="I2C bus configuration structure (part of star_bus_config_t)." alt="" coords="1515,113,1652,138"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="1539,144,1490,164,1438,177,1373,186,1307,190,1195,191,1194,186,1307,185,1373,180,1437,171,1489,158,1534,145"/>
+<area shape="rect" id="Node000004" href="$d4/d97/structstar__i2c__callbacks.html" title="I2C callback functions structure." alt="" coords="661,16,791,41"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="806,26,1029,26,1391,26,1419,28,1446,35,1497,58,1540,86,1571,113,1565,112,1536,90,1495,63,1445,40,1418,33,1391,31,1029,31,807,31"/>
+<area shape="rect" id="Node000005" href="$d5/dcd/structstar__bus__event.html" title="Bus event structure passed to callback functions." alt="" coords="217,137,327,162"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="311,127,400,88,453,68,507,51,587,36,663,30,658,32,587,41,509,56,455,73,402,93,314,132"/>
+<area shape="rect" id="Node000010" href="$d7/d96/structstar__spi__callbacks.html" title="SPI callback functions structure." alt="" coords="508,238,637,264"/>
+<area shape="poly" id="edge11_Node000010_Node000005" title=" " alt="" coords="327,165,534,237,530,239,327,171"/>
+<area shape="rect" id="Node000006" href="$d2/d88/structstar__i2c__event__data.html" title="I2C bus event data structure." alt="" coords="5,110,144,136"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="158,132,219,141,214,144,159,137"/>
+<area shape="rect" id="Node000007" href="$d6/d01/structstar__spi__event__data.html" title="SPI bus event data structure." alt="" coords="5,164,144,189"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="158,169,192,165,219,162,214,164,193,170,160,174"/>
+<area shape="poly" id="edge7_Node000003_Node000008" title=" " alt="" coords="1453,123,1517,125,1512,126,1453,128"/>
+<area shape="poly" id="edge9_Node000002_Node000009" title=" " alt="" coords="981,232,1056,218,1108,200,1114,198,1058,223,982,237"/>
+<area shape="poly" id="edge10_Node000009_Node000010" title=" " alt="" coords="631,266,662,271,726,277,790,271,828,263,860,254,866,253,829,268,791,277,726,283,661,277,631,271"/>
+<area shape="rect" id="Node000011" href="$d2/de7/structstar__gpio__bus__config.html" title="GPIO bus configuration structure." alt="" coords="825,313,970,338"/>
+<area shape="poly" id="edge13_Node000002_Node000011" title=" " alt="" coords="955,305,1005,284,1056,257,1094,227,1122,200,1127,198,1097,231,1058,262,1008,289,957,310"/>
+<area shape="rect" id="Node000012" href="$d3/d05/structstar__gpio__ops.html" title="GPIO operation functions structure." alt="" coords="522,316,624,341"/>
+<area shape="poly" id="edge14_Node000011_Node000012" title=" " alt="" coords="639,326,791,325,827,327,822,327,791,330,640,331"/>
+<area shape="rect" id="Node000013" href="$dc/de0/structstar__adc__bus__config.html" title="ADC bus configuration structure." alt="" coords="827,364,968,389"/>
+<area shape="poly" id="edge15_Node000002_Node000013" title=" " alt="" coords="975,356,1017,338,1055,312,1081,284,1102,252,1129,201,1133,198,1107,255,1085,287,1059,316,1019,343,976,361"/>
+<area shape="rect" id="Node000014" href="$de/d37/structstar__adc__ops.html" title="ADC operation functions structure." alt="" coords="523,369,622,394"/>
+<area shape="poly" id="edge16_Node000013_Node000014" title=" " alt="" coords="638,378,829,377,824,378,638,383"/>
+<area shape="rect" id="Node000015" href="$db/dd6/structstar__onewire__bus__config.html" title="OneWire bus configuration structure." alt="" coords="815,66,980,92"/>
+<area shape="poly" id="edge17_Node000002_Node000015" title=" " alt="" coords="951,95,981,107,1113,172,1108,172,979,112,950,100"/>
+<area shape="rect" id="Node000016" href="$d5/d02/structstar__onewire__ops.html" title="OneWire operation functions structure." alt="" coords="511,66,634,92"/>
+<area shape="poly" id="edge18_Node000015_Node000016" title=" " alt="" coords="649,76,817,78,811,80,650,82"/>
 </map>

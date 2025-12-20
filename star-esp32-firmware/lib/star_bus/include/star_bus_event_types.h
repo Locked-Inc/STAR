@@ -1,4 +1,21 @@
-/* lib/star_bus/include/star_bus_event_types.h */
+/**
+ * @file star_bus_event_types.h
+ * @brief Event data structures for bus callback functions
+ * @details
+ * This file defines event data structures passed to bus callback functions, providing
+ * transaction-specific information for debugging and monitoring.
+ *
+ * Key types defined:
+ * - star_i2c_event_data_t - I2C transaction event data (port, address, direction, length)
+ * - star_spi_event_data_t - SPI transaction event data (host, CS pin, TX/RX lengths)
+ * - star_bus_event_t - Unified bus event with type-specific union
+ *
+ * These structures are used by the bus manager to provide context to user callbacks
+ * (on_transfer_complete, on_error) after bus operations complete.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #ifndef STAR_COMPONENT_BUS_EVENT_TYPES_H
 #define STAR_COMPONENT_BUS_EVENT_TYPES_H

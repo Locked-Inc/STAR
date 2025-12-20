@@ -1,6 +1,6 @@
 <map id="lib/star_pin_validator/src/star_pin_validator.c" name="lib/star_pin_validator/src/star_pin_validator.c">
-<area shape="rect" id="Node000001" title=" " alt="" coords="471,5,630,46"/>
-<area shape="rect" id="Node000002" href="$d1/dda/star__pin__validator_8h.html" title="GPIO pin conflict detection and tracking." alt="" coords="317,94,450,120"/>
+<area shape="rect" id="Node000001" title="Concrete implementation of GPIO pin conflict detection and validation." alt="" coords="471,5,630,46"/>
+<area shape="rect" id="Node000002" href="$d1/dda/star__pin__validator_8h.html" title="Concrete implementation of GPIO pin conflict detection and tracking." alt="" coords="317,94,450,120"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="511,46,424,89,422,85,506,48"/>
 <area shape="rect" id="Node000010" title=" " alt="" coords="475,94,538,120"/>
 <area shape="poly" id="edge12_Node000001_Node000010" title=" " alt="" coords="542,45,522,82,519,78,537,48"/>
@@ -20,7 +20,7 @@
 <area shape="poly" id="edge6_Node000002_Node000007" title=" " alt="" coords="444,118,519,138,551,151,571,166,579,180,584,195,585,228,581,224,579,196,575,182,567,169,548,156,518,143,444,123"/>
 <area shape="rect" id="Node000008" title=" " alt="" coords="632,168,746,193"/>
 <area shape="poly" id="edge7_Node000002_Node000008" title=" " alt="" coords="436,118,625,163,620,164,436,123"/>
-<area shape="rect" id="Node000009" href="$da/d58/star__pin__interface_8h.html" title="Pin validator interface for dependency inversion." alt="" coords="421,168,557,193"/>
+<area shape="rect" id="Node000009" href="$da/d58/star__pin__interface_8h.html" title="Abstract pin validator interface for dependency inversion." alt="" coords="421,168,557,193"/>
 <area shape="poly" id="edge8_Node000002_Node000009" title=" " alt="" coords="402,118,461,159,456,159,401,123"/>
 <area shape="poly" id="edge9_Node000009_Node000005" title=" " alt="" coords="470,193,399,236,397,231,465,195"/>
 <area shape="poly" id="edge10_Node000009_Node000006" title=" " alt="" coords="488,192,481,228,477,224,484,195"/>

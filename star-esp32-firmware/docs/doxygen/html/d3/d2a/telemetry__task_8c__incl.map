@@ -1,0 +1,32 @@
+<map id="src/tasks/telemetry_task.c" name="src/tasks/telemetry_task.c">
+<area shape="rect" id="Node000001" title="FreeRTOS task implementation for telemetry data handling and transmission." alt="" coords="541,5,674,46"/>
+<area shape="rect" id="Node000002" href="$d9/d8b/telemetry__task_8h.html" title="Public API for the telemetry FreeRTOS task." alt="" coords="5,94,160,120"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="540,40,176,94,175,89,542,34"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="184,94,328,120"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="539,44,326,93,324,88,543,40"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="351,94,456,120"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="554,48,450,90,448,86,559,45"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="481,94,545,120"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="587,45,541,86,538,82,582,48"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="569,94,646,120"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="609,44,610,80,606,77,606,49"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="671,94,766,120"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="636,44,692,85,686,84,635,49"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="791,94,886,120"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="666,44,791,88,786,89,665,49"/>
+<area shape="rect" id="Node000009" href="$d4/d40/star_2v1_2common_8pb_8h.html" title=" " alt="" coords="852,168,996,193"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="675,32,804,54,862,71,884,81,900,92,911,105,918,121,925,154,920,151,913,123,906,108,897,96,882,86,860,76,803,59,675,37"/>
+<area shape="rect" id="Node000013" href="$d1/d91/star_2v1_2telemetry_8pb_8h.html" title=" " alt="" coords="961,94,1108,120"/>
+<area shape="poly" id="edge14_Node000001_Node000013" title=" " alt="" coords="675,37,956,90,951,91,675,42"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="901,315,947,341"/>
+<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="854,192,765,214,730,228,709,243,700,263,706,279,724,292,751,303,820,316,888,325,883,325,819,322,749,308,721,297,702,282,695,263,704,240,727,223,764,209,849,193"/>
+<area shape="rect" id="Node000011" href="$dc/d30/duration_8pb_8h.html" title=" " alt="" coords="718,241,908,267"/>
+<area shape="poly" id="edge10_Node000009_Node000011" title=" " alt="" coords="908,193,846,235,844,230,903,195"/>
+<area shape="rect" id="Node000012" href="$d2/d11/timestamp_8pb_8h.html" title=" " alt="" coords="932,241,1137,267"/>
+<area shape="poly" id="edge12_Node000009_Node000012" title=" " alt="" coords="943,191,1006,233,1000,232,942,196"/>
+<area shape="poly" id="edge11_Node000011_Node000010" title=" " alt="" coords="833,265,895,307,890,306,831,270"/>
+<area shape="poly" id="edge13_Node000012_Node000010" title=" " alt="" coords="1018,267,956,309,954,304,1013,268"/>
+<area shape="poly" id="edge17_Node000013_Node000009" title=" " alt="" coords="1018,119,956,161,954,157,1013,121"/>
+<area shape="poly" id="edge15_Node000013_Node000010" title=" " alt="" coords="1056,118,1096,145,1136,182,1151,203,1161,225,1161,247,1151,269,1139,280,1120,289,1070,305,963,325,962,319,1069,300,1118,284,1136,275,1147,265,1156,246,1155,226,1147,205,1132,185,1092,149,1055,123"/>
+<area shape="poly" id="edge16_Node000013_Node000012" title=" " alt="" coords="1036,118,1037,227,1032,224,1033,122"/>
+</map>

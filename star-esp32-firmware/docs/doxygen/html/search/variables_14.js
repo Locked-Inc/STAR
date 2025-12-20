@@ -1,21 +1,14 @@
 var searchData=
 [
-  ['w_0',['w',['../de/de3/structquaternion__t.html#ab0f97711455d1f2c8b8b5aa76dcd1149',1,'quaternion_t']]],
-  ['wait_5fsemaphore_1',['wait_semaphore',['../d1/d8d/structasync__operation.html#add6000b2b739150f72fe00596cf1edf5',1,'async_operation']]],
-  ['wake_5fdelay_5fus_2',['wake_delay_us',['../d4/dc6/structpca9685__timing__constants__t.html#a9a81c1f56a811f882ce3a8c16bd15e7b',1,'pca9685_timing_constants_t']]],
-  ['watchdog_3',['watchdog',['../de/df9/structstar__tasks__config__t.html#a4377e4b6aea86878695366faf36b2af3',1,'star_tasks_config_t::watchdog'],['../d5/da8/structstar__log__tags__t.html#a75f98709c526ff3660c020b9c2dbd7a8',1,'star_log_tags_t::watchdog']]],
-  ['watchdog_5ftask_5fhandle_4',['watchdog_task_handle',['../d0/d3c/structshared__context__t.html#a73ee7e23bdc8935e478319a9849f491f',1,'shared_context_t']]],
-  ['worker_5frunning_5',['worker_running',['../d7/d48/structasync__state__t.html#a655ac16c2110371f6c5f56773dc70adf',1,'async_state_t']]],
-  ['worker_5ftask_6',['worker_task',['../d7/d48/structasync__state__t.html#acf2db7c2d37bc3e969f95dfd196e5a9b',1,'async_state_t']]],
-  ['wrap_5faround_7',['wrap_around',['../d6/d47/structstar__bus__transaction__logger__t.html#adf3292e9eadb020510c7ccb2c7a87e5b',1,'star_bus_transaction_logger_t']]],
-  ['write_8',['write',['../d2/ddb/structstar__i2c__ops.html#a93b135b5bd7d79e35e89cab5faf8b66f',1,'star_i2c_ops::write'],['../d3/d05/structstar__gpio__ops.html#a73f9b8eef9352b3f034f7d9f9770521d',1,'star_gpio_ops::write']]],
-  ['write_5f0_5flow_5fus_9',['write_0_low_us',['../d3/da1/structonewire__timing__t.html#ae7e7559161e567f3e187cc2ed59bfb10',1,'onewire_timing_t']]],
-  ['write_5f1_5flow_5fus_10',['write_1_low_us',['../d3/da1/structonewire__timing__t.html#ac0eebe9c27d2acf929e9dec415cb8a5f',1,'onewire_timing_t']]],
-  ['write_5fblock_5fcommands_11',['write_block_commands',['../d4/d16/structstar__smbus__peripheral__stats__t.html#a4d3eaa2b6b60212a7d4e57c44bfee418',1,'star_smbus_peripheral_stats_t']]],
-  ['write_5fbyte_5fcommands_12',['write_byte_commands',['../d4/d16/structstar__smbus__peripheral__stats__t.html#a58c58ecf28a169928140ef1ca0e744ed',1,'star_smbus_peripheral_stats_t']]],
-  ['write_5fcommand_13',['write_command',['../d2/ddb/structstar__i2c__ops.html#a656f2b078b74450b86d878cc20d35385',1,'star_i2c_ops']]],
-  ['write_5findex_14',['write_index',['../d6/d47/structstar__bus__transaction__logger__t.html#a10d0f86103a031e0a4d07af6d7f8b042',1,'star_bus_transaction_logger_t']]],
-  ['write_5foperations_15',['write_operations',['../d3/d32/structstar__bus__stats__t.html#a0b2979e0cbf4751d67e5ed3c73a037d7',1,'star_bus_stats_t']]],
-  ['write_5frecovery_5fus_16',['write_recovery_us',['../d3/da1/structonewire__timing__t.html#ab283a96dac8a24aaa9cf3d532dad4b19',1,'onewire_timing_t']]],
-  ['write_5fword_5fcommands_17',['write_word_commands',['../d4/d16/structstar__smbus__peripheral__stats__t.html#a8d89d70e42d4593a749eee3ce319ab0e',1,'star_smbus_peripheral_stats_t']]]
+  ['valid_0',['valid',['../d7/d80/structstar__frame__handle__t.html#aa8cf7ef386b2ae8a89289781860ab3e8',1,'star_frame_handle_t']]],
+  ['valid_5fcells_1',['valid_cells',['../d2/dde/structbq7850__cell__data__t.html#a9c557e5d2e9e2585deac05b63dbb1efd',1,'bq7850_cell_data_t::valid_cells'],['../d4/dc5/struct__star__v1___cell_data.html#a4d50a93203ba38565e047966c1ac67fd',1,'_star_v1_CellData::valid_cells']]],
+  ['valid_5fsensors_2',['valid_sensors',['../df/d6a/structbq7850__temp__data__t.html#af0db22d14ca600f211c40ec4e72e3e70',1,'bq7850_temp_data_t::valid_sensors'],['../d9/d7e/struct__star__v1___temperature_data.html#a2991050575c1e50a9c15f69c5b7779de',1,'_star_v1_TemperatureData::valid_sensors']]],
+  ['validate_3',['validate',['../d1/d3c/structstar__pin__interface.html#aa8ef6b06f5d40f8e1ae177527e1ddbec',1,'star_pin_interface']]],
+  ['validated_4',['validated',['../df/d2d/struct__star__v1___finalize_update_response.html#a59c636825841482cfdd6dddeb4d89ac0',1,'_star_v1_FinalizeUpdateResponse']]],
+  ['validation_5fresult_5',['validation_result',['../d1/d7c/struct__star__v1___set_configuration_response.html#ae5eb2924f5b09c2c597c969a55730907',1,'_star_v1_SetConfigurationResponse::validation_result'],['../de/d11/struct__star__v1___validate_configuration_response.html#a62376a256c324dc0bf369bb9216d00ae',1,'_star_v1_ValidateConfigurationResponse::validation_result'],['../d0/d89/struct__star__v1___set_motor_pid_config_response.html#abb1e1297236f0ae33cb1882ff3f9a13e',1,'_star_v1_SetMotorPidConfigResponse::validation_result']]],
+  ['velocity_5fmps_6',['velocity_mps',['../d2/df5/struct__star__v1___encoder_data.html#a40108e8c4a40bd782a242e4a195a253f',1,'_star_v1_EncoderData::velocity_mps'],['../d7/d3e/struct__star__v1___motor_status.html#a9eec2e48ebf40940d2073a6199668340',1,'_star_v1_MotorStatus::velocity_mps']]],
+  ['version_7',['version',['../da/db6/struct__star__v1___firmware_info.html#a008e70ece1c57c102cc6c1d26658ef07',1,'_star_v1_FirmwareInfo']]],
+  ['voltage_5fmv_8',['voltage_mv',['../d2/d17/structbq7850__current__data__t.html#afed33046def3e4a7dc505eb20024b560',1,'bq7850_current_data_t::voltage_mv'],['../d1/d47/struct__star__v1___current_data.html#a7575c4767f60d4d79fb3bd2fe0f776c9',1,'_star_v1_CurrentData::voltage_mv']]],
+  ['vx_5fmps_9',['vx_mps',['../d5/dcd/struct__star__v1___s_e2_velocity.html#acf8e54afab4005d67697e9bfc9bc9910',1,'_star_v1_SE2Velocity']]],
+  ['vy_5fmps_10',['vy_mps',['../d5/dcd/struct__star__v1___s_e2_velocity.html#a5cdb095b39013df23b180d6f4b55f1be',1,'_star_v1_SE2Velocity']]]
 ];

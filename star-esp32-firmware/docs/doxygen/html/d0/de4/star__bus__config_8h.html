@@ -93,7 +93,7 @@ $(function(){initNavTree('d0/de4/star__bus__config_8h.html','../../',''); });
 </div><!--header-->
 <div class="contents">
 
-<p>Bus configuration creation and lifecycle management.  
+<p>Bus configuration creation and lifecycle management API.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;driver/gpio.h&quot;</code><br />
 <code>#include &quot;driver/i2c.h&quot;</code><br />
@@ -105,72 +105,79 @@ Include dependency graph for star_bus_config.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d1/d58/star__bus__config_8h__incl.png" border="0" usemap="#alib_2star__bus_2include_2star__bus__config_8h" loading="lazy" alt=""/></div>
 <map name="alib_2star__bus_2include_2star__bus__config_8h" id="alib_2star__bus_2include_2star__bus__config_8h">
-<area shape="rect" title="Bus configuration creation and lifecycle management." alt="" coords="65,5,199,46"/>
-<area shape="rect" title=" " alt="" coords="123,536,216,562"/>
-<area shape="poly" title=" " alt="" coords="93,49,66,69,39,96,15,134,9,154,8,179,8,403,9,429,13,449,23,466,39,486,72,512,111,531,106,532,69,516,35,490,18,469,8,450,4,429,3,403,3,179,4,153,10,132,35,92,62,65,95,44"/>
-<area shape="rect" title=" " alt="" coords="144,462,229,488"/>
-<area shape="poly" title=" " alt="" coords="133,44,135,179,135,255,139,310,150,363,178,448,173,448,145,364,134,310,129,256,129,179,131,49"/>
-<area shape="rect" title=" " alt="" coords="302,536,434,562"/>
-<area shape="poly" title=" " alt="" coords="114,49,98,73,79,105,65,141,59,179,59,403,65,437,81,465,106,488,138,506,174,520,212,530,290,544,284,544,211,535,172,525,136,511,103,492,77,468,60,439,53,403,53,179,59,140,75,102,94,70,116,44"/>
-<area shape="rect" title=" " alt="" coords="1214,536,1288,562"/>
-<area shape="poly" title=" " alt="" coords="198,24,532,29,756,36,988,49,1207,67,1391,94,1463,111,1518,130,1554,153,1563,165,1567,179,1567,403,1565,424,1559,442,1538,474,1507,499,1468,518,1426,531,1382,540,1304,549,1303,544,1382,535,1425,526,1466,513,1504,494,1534,471,1554,440,1559,423,1561,403,1561,179,1558,168,1550,157,1516,135,1462,116,1390,99,1206,73,988,54,755,42,532,34,200,30"/>
-<area shape="rect" href="../../d7/d7c/star__bus__types_8h.html" title=" " alt="" coords="465,94,586,120"/>
-<area shape="poly" title=" " alt="" coords="199,38,452,89,448,92,200,43"/>
-<area shape="rect" href="../../dd/d40/star__bus__common__types_8h.html" title=" " alt="" coords="558,462,736,488"/>
-<area shape="poly" title=" " alt="" coords="525,118,522,184,523,225,531,266,550,320,577,371,630,451,625,449,572,373,546,322,525,268,518,226,516,184,522,122"/>
-<area shape="rect" href="../../db/d78/star__bus__event__types_8h.html" title=" " alt="" coords="354,389,515,414"/>
-<area shape="poly" title=" " alt="" coords="502,122,480,142,458,169,439,223,431,279,430,332,433,375,429,372,425,332,426,279,434,221,454,166,476,138,506,119"/>
-<area shape="rect" href="../../d0/da6/star__bus__function__types_8h.html" title=" " alt="" coords="664,315,838,341"/>
-<area shape="poly" title=" " alt="" coords="555,118,596,136,642,163,688,198,728,240,742,269,750,300,745,298,737,271,723,243,684,202,639,167,593,141,556,123"/>
-<area shape="rect" href="../../d0/d84/star__bus__manager__types_8h.html" title=" " alt="" coords="1059,168,1237,193"/>
-<area shape="poly" title=" " alt="" coords="586,112,1046,166,1041,169,586,118"/>
-<area shape="rect" href="../../dd/d9d/star__bus__protocol__types_8h.html" title=" " alt="" coords="540,241,714,267"/>
-<area shape="poly" title=" " alt="" coords="534,117,612,229,607,228,533,123"/>
-<area shape="poly" title=" " alt="" coords="566,491,231,541,231,536,565,486"/>
-<area shape="poly" title=" " alt="" coords="602,488,431,534,429,529,597,489"/>
-<area shape="poly" title=" " alt="" coords="737,484,1201,541,1195,542,736,490"/>
-<area shape="rect" title=" " alt="" coords="751,536,825,562"/>
-<area shape="poly" title=" " alt="" coords="671,486,753,529,748,528,670,491"/>
-<area shape="rect" title=" " alt="" coords="864,536,928,562"/>
-<area shape="poly" title=" " alt="" coords="689,486,851,534,846,534,689,491"/>
-<area shape="poly" title=" " alt="" coords="415,416,206,530,204,526,410,413"/>
-<area shape="poly" title=" " alt="" coords="390,416,244,460,243,455,395,414"/>
-<area shape="poly" title=" " alt="" coords="429,413,402,463,378,523,375,519,398,461,425,416"/>
-<area shape="poly" title=" " alt="" coords="471,412,599,457,594,457,470,418"/>
-<area shape="poly" title=" " alt="" coords="442,413,466,450,483,470,503,486,561,513,623,531,684,541,738,547,733,547,683,546,622,536,559,518,500,490,479,473,461,453,439,417"/>
-<area shape="poly" title=" " alt="" coords="449,412,500,454,547,486,588,502,624,512,688,520,754,523,838,533,852,538,846,538,837,539,754,529,688,526,623,517,586,507,544,490,496,458,448,417"/>
-<area shape="poly" title=" " alt="" coords="660,334,512,352,427,368,344,391,275,422,218,456,215,451,272,417,342,386,425,363,511,347,666,332"/>
-<area shape="poly" title=" " alt="" coords="732,342,403,530,401,526,727,340"/>
-<area shape="poly" title=" " alt="" coords="796,339,1079,412,1111,417,1139,418,1191,417,1214,419,1237,425,1259,438,1281,461,1288,476,1286,494,1271,526,1268,522,1281,492,1282,477,1276,464,1256,443,1235,430,1213,424,1191,422,1139,424,1110,422,1078,417,796,344"/>
-<area shape="poly" title=" " alt="" coords="745,340,666,452,663,447,740,342"/>
-<area shape="poly" title=" " alt="" coords="755,339,786,522,781,520,751,343"/>
-<area shape="poly" title=" " alt="" coords="760,339,882,524,877,522,757,343"/>
-<area shape="poly" title=" " alt="" coords="694,342,504,387,503,382,699,340"/>
-<area shape="poly" title=" " alt="" coords="1130,194,681,457,679,452,1125,194"/>
-<area shape="rect" title=" " alt="" coords="1236,241,1380,267"/>
-<area shape="poly" title=" " alt="" coords="1175,191,1270,235,1264,235,1175,197"/>
-<area shape="rect" title=" " alt="" coords="1404,241,1526,267"/>
-<area shape="poly" title=" " alt="" coords="1202,191,1399,237,1394,238,1202,197"/>
-<area shape="poly" title=" " alt="" coords="1056,195,730,241,729,236,1061,193"/>
-<area shape="rect" href="../../df/d84/star__error__interface_8h.html" title="Error handler interface for dependency inversion." alt="" coords="962,462,1107,488"/>
-<area shape="poly" title=" " alt="" coords="1146,192,1047,450,1043,446,1141,195"/>
-<area shape="rect" href="../../da/d58/star__pin__interface_8h.html" title="Pin validator interface for dependency inversion." alt="" coords="1131,462,1266,488"/>
-<area shape="poly" title=" " alt="" coords="1154,192,1169,241,1189,355,1199,449,1194,446,1184,356,1164,242,1151,196"/>
-<area shape="poly" title=" " alt="" coords="546,269,463,289,371,318,293,344,231,367,204,381,179,401,156,428,134,463,131,478,133,494,150,525,145,524,128,495,125,478,130,461,152,425,176,397,201,377,229,362,292,339,370,312,461,284,551,267"/>
-<area shape="poly" title=" " alt="" coords="576,269,517,288,440,315,358,349,280,391,241,421,209,453,205,449,237,417,277,386,356,344,438,310,515,283,581,267"/>
-<area shape="poly" title=" " alt="" coords="594,269,450,332,380,366,357,380,345,390,337,406,334,423,335,458,344,492,357,523,352,521,339,494,330,459,328,422,332,404,341,387,353,376,377,362,448,327,599,266"/>
-<area shape="poly" title=" " alt="" coords="706,265,859,293,1039,335,1126,362,1202,392,1263,424,1286,442,1302,461,1308,478,1303,496,1293,513,1279,528,1276,523,1289,510,1299,494,1302,479,1298,464,1282,446,1260,429,1200,396,1124,367,1038,340,858,298,707,270"/>
-<area shape="poly" title=" " alt="" coords="630,265,647,448,642,446,626,269"/>
-<area shape="poly" title=" " alt="" coords="713,265,796,284,830,297,851,313,865,339,871,368,869,397,861,427,836,482,808,525,805,521,832,479,856,425,863,396,865,368,860,341,847,317,827,302,795,289,713,270"/>
-<area shape="poly" title=" " alt="" coords="714,263,810,282,850,296,877,313,893,337,905,364,911,392,914,422,912,477,905,523,901,519,907,476,909,422,906,393,900,366,889,340,873,317,848,301,809,288,714,269"/>
-<area shape="poly" title=" " alt="" coords="619,266,588,304,546,343,511,366,476,384,474,379,508,361,542,339,584,300,615,269"/>
-<area shape="poly" title=" " alt="" coords="648,265,719,307,714,307,647,270"/>
-<area shape="poly" title=" " alt="" coords="1072,486,1202,531,1197,530,1071,491"/>
-<area shape="poly" title=" " alt="" coords="995,488,841,535,840,530,990,489"/>
-<area shape="poly" title=" " alt="" coords="1014,488,934,531,933,526,1009,489"/>
-<area shape="poly" title=" " alt="" coords="1208,486,1235,524,1230,522,1206,491"/>
-<area shape="poly" title=" " alt="" coords="1134,488,852,539,841,541,840,535,852,533,1128,488"/>
-<area shape="poly" title=" " alt="" coords="1150,488,944,539,943,534,1144,489"/>
+<area shape="rect" title="Bus configuration creation and lifecycle management API." alt="" coords="40,5,173,46"/>
+<area shape="rect" title=" " alt="" coords="159,536,252,562"/>
+<area shape="poly" title=" " alt="" coords="80,49,60,70,40,96,15,135,10,154,8,179,8,403,9,429,13,449,22,467,39,486,63,504,89,519,147,538,142,540,87,524,60,509,35,490,18,470,8,451,4,430,3,403,3,179,5,153,11,133,35,92,56,66,83,44"/>
+<area shape="rect" title=" " alt="" coords="243,462,328,488"/>
+<area shape="poly" title=" " alt="" coords="107,44,109,179,109,255,113,288,124,319,141,348,162,374,209,419,254,453,249,454,205,423,158,378,137,351,120,321,108,289,104,256,104,179,106,49"/>
+<area shape="rect" title=" " alt="" coords="350,536,482,562"/>
+<area shape="poly" title=" " alt="" coords="95,49,73,106,63,142,59,179,59,402,66,423,87,443,118,462,158,479,249,508,340,532,335,533,248,514,156,484,116,467,83,447,61,426,53,403,53,179,57,141,68,104,96,44"/>
+<area shape="rect" title=" " alt="" coords="1262,536,1336,562"/>
+<area shape="poly" title=" " alt="" coords="173,25,489,31,699,40,916,53,1121,72,1292,98,1359,114,1411,133,1444,154,1453,166,1456,179,1456,403,1453,426,1445,447,1417,482,1380,511,1343,532,1342,527,1377,506,1413,479,1440,444,1448,424,1451,403,1451,179,1448,168,1440,158,1408,138,1358,120,1291,104,1120,77,916,58,698,45,489,37,175,30"/>
+<area shape="rect" href="../../d7/d7c/star__bus__types_8h.html" title="Bus type definitions and enumerations." alt="" coords="338,94,459,120"/>
+<area shape="poly" title=" " alt="" coords="173,42,342,88,337,91,174,48"/>
+<area shape="rect" href="../../dd/d40/star__bus__common__types_8h.html" title="Common type definitions shared across all bus protocols." alt="" coords="555,462,733,488"/>
+<area shape="poly" title=" " alt="" coords="395,118,380,162,367,219,364,251,365,282,373,312,387,339,404,356,420,366,438,370,456,371,497,372,520,376,544,386,589,417,625,452,620,451,585,421,541,391,518,382,497,377,456,376,437,375,418,371,400,360,383,342,368,314,360,283,358,250,361,218,375,160,392,123"/>
+<area shape="rect" href="../../db/d78/star__bus__event__types_8h.html" title="Event data structures for bus callback functions." alt="" coords="370,389,531,414"/>
+<area shape="poly" title=" " alt="" coords="353,122,321,141,305,153,293,169,271,215,262,255,269,295,293,339,306,354,321,366,358,385,353,386,318,370,302,358,288,342,264,297,257,255,265,213,288,166,301,150,318,136,357,118"/>
+<area shape="rect" href="../../d0/da6/star__bus__function__types_8h.html" title="Callback and operation function type definitions." alt="" coords="656,315,830,341"/>
+<area shape="poly" title=" " alt="" coords="459,115,522,130,591,154,660,190,691,213,719,240,736,269,743,301,738,298,731,271,715,243,688,217,657,194,589,159,520,135,460,120"/>
+<area shape="rect" href="../../d0/d84/star__bus__manager__types_8h.html" title="Bus manager internal type definitions." alt="" coords="975,168,1153,193"/>
+<area shape="poly" title=" " alt="" coords="459,112,961,166,957,170,460,117"/>
+<area shape="rect" href="../../dd/d9d/star__bus__protocol__types_8h.html" title="Protocol&#45;specific configuration structures for all bus types." alt="" coords="532,241,706,267"/>
+<area shape="poly" title=" " alt="" coords="417,118,591,232,585,233,417,123"/>
+<area shape="poly" title=" " alt="" coords="570,491,267,540,266,535,568,486"/>
+<area shape="poly" title=" " alt="" coords="608,488,470,533,469,528,603,489"/>
+<area shape="poly" title=" " alt="" coords="734,484,1249,541,1244,542,733,489"/>
+<area shape="rect" title=" " alt="" coords="788,536,862,562"/>
+<area shape="poly" title=" " alt="" coords="675,486,783,530,778,530,674,491"/>
+<area shape="rect" title=" " alt="" coords="916,536,980,562"/>
+<area shape="poly" title=" " alt="" coords="696,486,904,536,898,537,696,491"/>
+<area shape="poly" title=" " alt="" coords="440,413,397,451,341,490,297,514,253,532,252,527,295,509,339,486,394,447,435,416"/>
+<area shape="poly" title=" " alt="" coords="425,414,328,458,326,453,420,416"/>
+<area shape="poly" title=" " alt="" coords="450,413,425,522,420,519,446,416"/>
+<area shape="poly" title=" " alt="" coords="484,412,599,456,594,457,483,418"/>
+<area shape="poly" title=" " alt="" coords="455,413,471,451,484,470,500,486,521,496,549,506,622,522,776,543,770,543,621,527,548,511,519,501,497,490,480,473,467,453,453,417"/>
+<area shape="poly" title=" " alt="" coords="460,412,495,450,518,470,544,486,590,505,631,517,668,523,704,525,780,525,875,533,903,540,898,540,874,539,779,531,704,530,668,528,630,522,589,510,541,490,515,474,491,454,458,417"/>
+<area shape="poly" title=" " alt="" coords="652,337,489,358,413,373,360,391,326,419,301,451,298,447,322,415,357,386,411,367,488,352,657,335"/>
+<area shape="poly" title=" " alt="" coords="746,339,757,418,756,461,753,478,747,490,731,503,707,514,643,531,569,541,497,547,497,542,568,536,642,526,705,509,728,499,743,486,748,476,751,460,751,419,743,343"/>
+<area shape="poly" title=" " alt="" coords="830,333,962,348,1111,373,1182,390,1245,410,1295,433,1329,461,1336,476,1335,494,1319,526,1316,522,1329,492,1330,477,1325,464,1292,438,1243,415,1181,395,1110,378,961,353,830,339"/>
+<area shape="poly" title=" " alt="" coords="737,340,704,390,662,452,659,447,699,387,732,342"/>
+<area shape="poly" title=" " alt="" coords="749,339,818,523,813,521,745,343"/>
+<area shape="poly" title=" " alt="" coords="755,339,929,525,924,525,752,343"/>
+<area shape="poly" title=" " alt="" coords="691,342,516,387,515,382,696,340"/>
+<area shape="poly" title=" " alt="" coords="972,193,884,214,847,227,825,243,819,255,819,265,832,288,846,312,848,327,844,342,814,382,775,415,734,440,695,459,693,454,731,436,772,411,810,379,839,339,843,326,841,314,827,291,814,267,814,254,821,240,845,222,882,209,977,192"/>
+<area shape="rect" title=" " alt="" coords="835,241,978,267"/>
+<area shape="poly" title=" " alt="" coords="1040,193,948,237,946,232,1035,195"/>
+<area shape="rect" title=" " alt="" coords="1003,241,1125,267"/>
+<area shape="poly" title=" " alt="" coords="1066,191,1066,227,1062,224,1062,196"/>
+<area shape="rect" title=" " alt="" coords="1056,315,1216,341"/>
+<area shape="poly" title=" " alt="" coords="1154,188,1258,206,1301,221,1329,240,1337,255,1337,269,1329,282,1316,292,1278,307,1232,318,1231,313,1276,302,1313,287,1325,278,1332,268,1332,256,1325,243,1299,226,1257,211,1154,193"/>
+<area shape="rect" title=" " alt="" coords="1201,241,1314,267"/>
+<area shape="poly" title=" " alt="" coords="1097,191,1213,235,1207,236,1097,197"/>
+<area shape="poly" title=" " alt="" coords="985,195,710,241,709,236,990,193"/>
+<area shape="rect" href="../../df/d84/star__error__interface_8h.html" title="Abstract error handler interface for dependency inversion." alt="" coords="1010,462,1155,488"/>
+<area shape="poly" title=" " alt="" coords="1083,191,1166,250,1206,284,1230,314,1236,337,1234,359,1224,380,1208,399,1167,432,1124,457,1123,452,1164,428,1204,395,1219,377,1228,358,1231,337,1226,316,1202,288,1163,254,1082,196"/>
+<area shape="rect" href="../../da/d58/star__pin__interface_8h.html" title="Abstract pin validator interface for dependency inversion." alt="" coords="1179,462,1314,488"/>
+<area shape="poly" title=" " alt="" coords="1153,186,1212,193,1271,204,1320,219,1338,229,1351,240,1366,267,1369,296,1363,326,1350,356,1312,411,1272,454,1270,449,1308,408,1345,354,1358,325,1364,296,1361,268,1347,243,1335,233,1318,224,1269,209,1212,198,1154,191"/>
+<area shape="poly" title=" " alt="" coords="529,257,478,264,420,275,362,292,308,317,283,336,263,360,247,387,234,416,217,473,210,522,205,519,212,472,229,414,242,384,259,357,280,332,305,313,360,287,419,270,477,259,534,256"/>
+<area shape="poly" title=" " alt="" coords="529,266,458,285,421,299,387,317,354,346,328,381,309,417,296,450,291,446,304,415,323,378,350,342,384,313,419,294,457,280,533,264"/>
+<area shape="poly" title=" " alt="" coords="529,261,488,269,441,280,394,295,351,317,306,348,276,377,253,413,233,463,230,479,234,493,243,505,256,515,293,529,337,541,332,541,291,535,253,519,239,508,229,495,225,480,228,462,249,411,272,374,303,343,348,313,392,291,439,275,487,264,534,259"/>
+<area shape="poly" title=" " alt="" coords="685,265,785,286,897,312,1001,335,1138,364,1205,383,1267,405,1316,430,1336,445,1350,461,1356,478,1352,496,1341,513,1327,528,1325,523,1337,509,1347,494,1351,478,1346,464,1332,449,1314,435,1264,410,1204,388,1136,370,1000,340,895,318,784,291,685,270"/>
+<area shape="poly" title=" " alt="" coords="622,265,643,448,638,446,618,269"/>
+<area shape="poly" title=" " alt="" coords="705,265,788,284,822,297,843,313,858,339,866,366,868,395,867,425,855,480,839,524,835,520,850,478,861,424,863,395,861,367,853,341,839,317,819,302,787,289,705,270"/>
+<area shape="poly" title=" " alt="" coords="706,265,801,284,841,298,868,313,889,336,906,362,930,419,944,475,949,522,945,519,938,476,925,421,902,365,885,339,865,317,839,302,800,290,706,270"/>
+<area shape="poly" title=" " alt="" coords="612,266,583,304,544,343,487,383,484,378,541,339,579,300,608,269"/>
+<area shape="poly" title=" " alt="" coords="640,265,711,307,706,307,639,270"/>
+<area shape="poly" title=" " alt="" coords="706,265,1044,313,1038,314,706,270"/>
+<area shape="rect" title=" " alt="" coords="397,315,531,341"/>
+<area shape="poly" title=" " alt="" coords="590,269,505,311,503,306,595,266"/>
+<area shape="poly" title=" " alt="" coords="1120,486,1250,531,1245,530,1119,491"/>
+<area shape="poly" title=" " alt="" coords="1042,488,878,536,877,530,1036,489"/>
+<area shape="poly" title=" " alt="" coords="1062,488,985,531,983,526,1057,489"/>
+<area shape="poly" title=" " alt="" coords="1256,486,1283,524,1278,522,1254,491"/>
+<area shape="poly" title=" " alt="" coords="1181,488,878,541,877,536,1176,488"/>
+<area shape="poly" title=" " alt="" coords="1198,488,996,539,995,534,1193,489"/>
 </map>
 </div>
 </div><div class="textblock"><div class="dynheader">
@@ -178,21 +185,13 @@ This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../df/d02/star__bus__config_8h__dep__incl.png" border="0" usemap="#alib_2star__bus_2include_2star__bus__config_8hdep" loading="lazy" alt=""/></div>
 <map name="alib_2star__bus_2include_2star__bus__config_8hdep" id="alib_2star__bus_2include_2star__bus__config_8hdep">
-<area shape="rect" title="Bus configuration creation and lifecycle management." alt="" coords="407,5,540,46"/>
-<area shape="rect" href="../../d2/d56/star__bus__helpers_8h.html" title="Configuration helpers and validation utilities." alt="" coords="6,94,141,135"/>
-<area shape="poly" title=" " alt="" coords="391,46,154,97,143,99,140,94,153,91,392,41"/>
-<area shape="rect" href="../../de/d98/star__bus__config_8c.html" title=" " alt="" coords="165,94,302,135"/>
-<area shape="poly" title=" " alt="" coords="402,53,289,96,287,91,407,51"/>
-<area shape="rect" href="../../df/df6/star__bus__debug_8c.html" title=" " alt="" coords="325,94,462,135"/>
-<area shape="poly" title=" " alt="" coords="447,56,413,96,410,91,443,59"/>
-<area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html" title=" " alt="" coords="485,94,622,135"/>
-<area shape="poly" title=" " alt="" coords="503,55,538,94,533,93,501,60"/>
-<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html" title=" " alt="" coords="645,94,782,135"/>
-<area shape="poly" title=" " alt="" coords="543,49,662,93,656,94,542,54"/>
-<area shape="rect" href="../../d0/d29/main_8c.html" title=" " alt="" coords="806,102,888,127"/>
-<area shape="poly" title=" " alt="" coords="555,38,669,61,794,91,818,101,813,101,793,97,668,66,555,44"/>
-<area shape="rect" href="../../d1/d50/star__bus__helpers_8c.html" title=" " alt="" coords="5,183,142,223"/>
-<area shape="poly" title=" " alt="" coords="75,148,76,183,71,181,72,152"/>
+<area shape="rect" title="Bus configuration creation and lifecycle management API." alt="" coords="167,5,300,46"/>
+<area shape="rect" href="../../de/d98/star__bus__config_8c.html" title="Bus configuration creation and lifecycle management implementation." alt="" coords="5,94,142,135"/>
+<area shape="poly" title=" " alt="" coords="187,53,111,96,108,91,181,54"/>
+<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html" title="Central bus management implementation with thread&#45;safe operations." alt="" coords="165,94,302,135"/>
+<area shape="poly" title=" " alt="" coords="235,60,236,95,231,92,232,64"/>
+<area shape="rect" href="../../d0/d29/main_8c.html" title="Application entry point and system initialization for STAR ESP32 firmware." alt="" coords="326,102,408,127"/>
+<area shape="poly" title=" " alt="" coords="277,52,351,101,346,101,276,57"/>
 </map>
 </div>
 </div>
@@ -210,277 +209,95 @@ Functions</h2></td></tr>
 <tr class="memdesc:acac7a0cf0c56efc3bb097a450f94b417"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize the bus/device associated with this configuration.  <br /></td></tr>
 <tr class="memitem:a16ccb4aebc8dd1759ce3a1e5c67d7184" id="r_a16ccb4aebc8dd1759ce3a1e5c67d7184"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a16ccb4aebc8dd1759ce3a1e5c67d7184">star_bus_config_create_spi_peripheral</a> (const char *name, spi_host_device_t host, gpio_num_t copi_pin, gpio_num_t cipo_pin, gpio_num_t sclk_pin, gpio_num_t cs_pin, int32_t queue_size, uint8_t mode)</td></tr>
 <tr class="memdesc:a16ccb4aebc8dd1759ce3a1e5c67d7184"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new SPI peripheral (slave) configuration.  <br /></td></tr>
+<tr class="memitem:aa8850b2918def11489920457d487909e" id="r_aa8850b2918def11489920457d487909e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa8850b2918def11489920457d487909e">star_bus_config_create_gpio</a> (const char *name, gpio_num_t *pins, uint8_t pin_count)</td></tr>
+<tr class="memdesc:aa8850b2918def11489920457d487909e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a GPIO bus configuration.  <br /></td></tr>
+<tr class="memitem:ac85bf955f3f1dfeebe2e5add73d47900" id="r_ac85bf955f3f1dfeebe2e5add73d47900"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac85bf955f3f1dfeebe2e5add73d47900">star_bus_config_create_adc</a> (const char *name, adc_unit_t unit, adc_channel_t channel, adc_bitwidth_t bitwidth, adc_atten_t atten)</td></tr>
+<tr class="memdesc:ac85bf955f3f1dfeebe2e5add73d47900"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create an ADC bus configuration.  <br /></td></tr>
+<tr class="memitem:af5cbfa29f49dfaea9ebaf7ae67aeb07f" id="r_af5cbfa29f49dfaea9ebaf7ae67aeb07f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af5cbfa29f49dfaea9ebaf7ae67aeb07f">star_bus_config_create_onewire</a> (const char *name, gpio_num_t gpio_pin, bool use_parasitic_power)</td></tr>
+<tr class="memdesc:af5cbfa29f49dfaea9ebaf7ae67aeb07f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a OneWire bus configuration.  <br /></td></tr>
 <tr class="memitem:a7698bd213b1044dfc1d6e92d879ca03e" id="r_a7698bd213b1044dfc1d6e92d879ca03e"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7698bd213b1044dfc1d6e92d879ca03e">star_bus_config_deinit</a> (<a class="el" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a> *config)</td></tr>
 <tr class="memdesc:a7698bd213b1044dfc1d6e92d879ca03e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Deinitialize the bus/device associated with this configuration.  <br /></td></tr>
-<tr class="memitem:a856acf68aec88c1a3203d65ec656fd3c" id="r_a856acf68aec88c1a3203d65ec656fd3c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a856acf68aec88c1a3203d65ec656fd3c">star_bus_config_create_gpio</a> (const char *name, const gpio_num_t pins[], uint8_t pin_count)</td></tr>
-<tr class="memdesc:a856acf68aec88c1a3203d65ec656fd3c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new GPIO bus configuration.  <br /></td></tr>
-<tr class="memitem:a7527fb91e8de839add326b305c63bcad" id="r_a7527fb91e8de839add326b305c63bcad"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7527fb91e8de839add326b305c63bcad">star_bus_config_create_dht22</a> (const char *name, gpio_num_t gpio_pin, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h.html#a635fa3623e6b583a61efd00e05c4dc9f">star_dht22_model_t</a> model, uint32_t start_low_ms, uint32_t read_timeout_ms)</td></tr>
-<tr class="memdesc:a7527fb91e8de839add326b305c63bcad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a new DHT22 bus configuration.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Bus configuration creation and lifecycle management. </p>
-<p>This module provides factory functions for creating bus configurations for different protocols (I2C, SPI, GPIO, DHT22). Each configuration represents a communication channel that can be added to the bus manager.</p>
-<p>Key Features:</p><ul>
-<li>Factory functions for I2C, SPI, GPIO, and DHT22 configurations</li>
-<li>Automatic driver initialization via <a class="el" href="#acac7a0cf0c56efc3bb097a450f94b417" title="Initialize the bus/device associated with this configuration.">star_bus_config_init()</a></li>
-<li>Resource cleanup via <a class="el" href="#a194581e2eb82227a022f04b9057db839" title="Destroy a bus configuration and free all associated resources.">star_bus_config_destroy()</a></li>
-<li>Support for multiple devices on shared buses</li>
-</ul>
-<p>Example Usage: </p><div class="fragment"><div class="line"><span class="comment">// === Creating I2C Bus Configuration ===</span></div>
-<div class="line"> </div>
-<div class="line"><span class="preprocessor">#include &quot;<a class="code" href="../../d0/de4/star__bus__config_8h.html">star_bus_config.h</a>&quot;</span></div>
-<div class="line"><span class="preprocessor">#include &quot;<a class="code" href="../../d6/dcc/star__bus__manager_8h.html">star_bus_manager.h</a>&quot;</span></div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// Create I2C config for MPU6050 IMU sensor</span></div>
-<div class="line"><a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a>* imu_bus = <a class="code hl_function" href="#ae2c74c07526c11cc15773c858681f8d4">star_bus_config_create_i2c</a>(</div>
-<div class="line">    <span class="stringliteral">&quot;imu_i2c&quot;</span>,           <span class="comment">// Unique bus name</span></div>
-<div class="line">    I2C_NUM_0,           <span class="comment">// I2C port (0 or 1)</span></div>
-<div class="line">    0x68,                <span class="comment">// MPU6050 I2C address</span></div>
-<div class="line">    GPIO_NUM_21,         <span class="comment">// SDA pin</span></div>
-<div class="line">    GPIO_NUM_22,         <span class="comment">// SCL pin</span></div>
-<div class="line">    400000               <span class="comment">// 400kHz fast mode</span></div>
-<div class="line">);</div>
-<div class="line"> </div>
-<div class="line"><span class="keywordflow">if</span> (imu_bus == NULL) {</div>
-<div class="line">    ESP_LOGE(<a class="code hl_define" href="../../d7/d82/star__error__handler_8c.html#afc3d101f633a076cc1ca84b85b6224b2">TAG</a>, <span class="stringliteral">&quot;Failed to create I2C config&quot;</span>);</div>
-<div class="line">    <span class="keywordflow">return</span>;</div>
-<div class="line">}</div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// Add to bus manager (initializes the I2C driver)</span></div>
-<div class="line"><a class="code hl_function" href="../../d6/dcc/star__bus__manager_8h.html#a3a0dc80007e321a8697c399e0f0bf559">star_bus_manager_add_bus</a>(&amp;bus_manager, imu_bus);</div>
-<div class="line"> </div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// === Creating Multiple I2C Devices on Same Port ===</span></div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// Same I2C port, different device addresses</span></div>
-<div class="line"><a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a>* accel_bus = <a class="code hl_function" href="#ae2c74c07526c11cc15773c858681f8d4">star_bus_config_create_i2c</a>(</div>
-<div class="line">    <span class="stringliteral">&quot;accel_i2c&quot;</span>, I2C_NUM_0, 0x1D, GPIO_NUM_21, GPIO_NUM_22, 400000);</div>
-<div class="line"><a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a>* mag_bus = <a class="code hl_function" href="#ae2c74c07526c11cc15773c858681f8d4">star_bus_config_create_i2c</a>(</div>
-<div class="line">    <span class="stringliteral">&quot;mag_i2c&quot;</span>, I2C_NUM_0, 0x1E, GPIO_NUM_21, GPIO_NUM_22, 400000);</div>
-<div class="line"> </div>
-<div class="line"><a class="code hl_function" href="../../d6/dcc/star__bus__manager_8h.html#a3a0dc80007e321a8697c399e0f0bf559">star_bus_manager_add_bus</a>(&amp;bus_manager, accel_bus);</div>
-<div class="line"><a class="code hl_function" href="../../d6/dcc/star__bus__manager_8h.html#a3a0dc80007e321a8697c399e0f0bf559">star_bus_manager_add_bus</a>(&amp;bus_manager, mag_bus);</div>
-<div class="line"> </div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// === Creating SPI Device Configuration ===</span></div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// Configure SPI device interface</span></div>
-<div class="line">spi_device_interface_config_t spi_dev_cfg = {</div>
-<div class="line">    .clock_speed_hz = 10 * 1000 * 1000,  <span class="comment">// 10 MHz</span></div>
-<div class="line">    .mode = 0,                            <span class="comment">// SPI mode 0</span></div>
-<div class="line">    .spics_io_num = GPIO_NUM_5,           <span class="comment">// CS pin</span></div>
-<div class="line">    .queue_size = 7,                      <span class="comment">// Transaction queue size</span></div>
-<div class="line">    .pre_cb = NULL,                       <span class="comment">// Pre-transfer callback</span></div>
-<div class="line">    .post_cb = NULL,                      <span class="comment">// Post-transfer callback</span></div>
-<div class="line">};</div>
-<div class="line"> </div>
-<div class="line"><a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a>* lcd_bus = <a class="code hl_function" href="#a324325978d7341cb09445826922989d7">star_bus_config_create_spi_device</a>(</div>
-<div class="line">    <span class="stringliteral">&quot;lcd_spi&quot;</span>,           <span class="comment">// Unique bus name</span></div>
-<div class="line">    SPI2_HOST,           <span class="comment">// SPI host (SPI2 or SPI3)</span></div>
-<div class="line">    GPIO_NUM_23,         <span class="comment">// COPI (MOSI) pin</span></div>
-<div class="line">    GPIO_NUM_19,         <span class="comment">// CIPO (MISO) pin (-1 if not used)</span></div>
-<div class="line">    GPIO_NUM_18,         <span class="comment">// SCLK pin</span></div>
-<div class="line">    SPI_DMA_CH_AUTO,     <span class="comment">// DMA channel (auto-select)</span></div>
-<div class="line">    &amp;spi_dev_cfg         <span class="comment">// Device configuration</span></div>
-<div class="line">);</div>
-<div class="line"> </div>
-<div class="line"><a class="code hl_function" href="../../d6/dcc/star__bus__manager_8h.html#a3a0dc80007e321a8697c399e0f0bf559">star_bus_manager_add_bus</a>(&amp;bus_manager, lcd_bus);</div>
-<div class="line"> </div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// === Creating SPI Peripheral (Slave) Configuration ===</span></div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// Configure ESP32 as SPI slave device</span></div>
-<div class="line"><a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a>* slave_bus = <a class="code hl_function" href="#a16ccb4aebc8dd1759ce3a1e5c67d7184">star_bus_config_create_spi_peripheral</a>(</div>
-<div class="line">    <span class="stringliteral">&quot;spi_slave&quot;</span>,         <span class="comment">// Unique bus name</span></div>
-<div class="line">    SPI2_HOST,           <span class="comment">// SPI host</span></div>
-<div class="line">    GPIO_NUM_23,         <span class="comment">// COPI pin</span></div>
-<div class="line">    GPIO_NUM_19,         <span class="comment">// CIPO pin</span></div>
-<div class="line">    GPIO_NUM_18,         <span class="comment">// SCLK pin</span></div>
-<div class="line">    GPIO_NUM_5,          <span class="comment">// CS pin</span></div>
-<div class="line">    3,                   <span class="comment">// Transaction queue size</span></div>
-<div class="line">    0                    <span class="comment">// SPI mode 0</span></div>
-<div class="line">);</div>
-<div class="line"> </div>
-<div class="line"><a class="code hl_function" href="../../d6/dcc/star__bus__manager_8h.html#a3a0dc80007e321a8697c399e0f0bf559">star_bus_manager_add_bus</a>(&amp;bus_manager, slave_bus);</div>
-<div class="line"> </div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// === Creating GPIO Bus Configuration ===</span></div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// Create GPIO bus for sensor pins</span></div>
-<div class="line">gpio_num_t sensor_pins[] = {GPIO_NUM_4, GPIO_NUM_5, GPIO_NUM_18};</div>
-<div class="line"><a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a>* gpio_bus = <a class="code hl_function" href="#a856acf68aec88c1a3203d65ec656fd3c">star_bus_config_create_gpio</a>(</div>
-<div class="line">    <span class="stringliteral">&quot;sensor_gpio&quot;</span>,       <span class="comment">// Unique bus name</span></div>
-<div class="line">    sensor_pins,         <span class="comment">// Array of GPIO pins</span></div>
-<div class="line">    3                    <span class="comment">// Number of pins</span></div>
-<div class="line">);</div>
-<div class="line"> </div>
-<div class="line"><a class="code hl_function" href="../../d6/dcc/star__bus__manager_8h.html#a3a0dc80007e321a8697c399e0f0bf559">star_bus_manager_add_bus</a>(&amp;bus_manager, gpio_bus);</div>
-<div class="line"> </div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// === Creating DHT22 Bus Configuration ===</span></div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// Create DHT22 temperature/humidity sensor bus</span></div>
-<div class="line"><a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a>* dht_bus = <a class="code hl_function" href="#a7527fb91e8de839add326b305c63bcad">star_bus_config_create_dht22</a>(</div>
-<div class="line">    <span class="stringliteral">&quot;dht22_indoor&quot;</span>,          <span class="comment">// Unique bus name</span></div>
-<div class="line">    GPIO_NUM_4,              <span class="comment">// Data pin</span></div>
-<div class="line">    <a class="code hl_enumvalue" href="../../dd/d9d/star__bus__protocol__types_8h.html#a635fa3623e6b583a61efd00e05c4dc9fab6f18024855b697ffa7dd79fa4d57cf5">k_star_dht22_model_dht22</a>, <span class="comment">// Sensor model</span></div>
-<div class="line">    18,                      <span class="comment">// Start signal low duration (ms)</span></div>
-<div class="line">    100                      <span class="comment">// Read timeout (ms)</span></div>
-<div class="line">);</div>
-<div class="line"> </div>
-<div class="line"><a class="code hl_function" href="../../d6/dcc/star__bus__manager_8h.html#a3a0dc80007e321a8697c399e0f0bf559">star_bus_manager_add_bus</a>(&amp;bus_manager, dht_bus);</div>
-<div class="line"> </div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// === Manual Initialization (Advanced) ===</span></div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// If not using bus manager, you can manually init/deinit</span></div>
-<div class="line"><a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a>* manual_bus = <a class="code hl_function" href="#ae2c74c07526c11cc15773c858681f8d4">star_bus_config_create_i2c</a>(</div>
-<div class="line">    <span class="stringliteral">&quot;manual_i2c&quot;</span>, I2C_NUM_1, 0x50, GPIO_NUM_25, GPIO_NUM_26, 100000);</div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// Initialize the driver</span></div>
-<div class="line">esp_err_t ret = <a class="code hl_function" href="#acac7a0cf0c56efc3bb097a450f94b417">star_bus_config_init</a>(manual_bus, &amp;bus_manager);</div>
-<div class="line"><span class="keywordflow">if</span> (ret != ESP_OK) {</div>
-<div class="line">    ESP_LOGE(<a class="code hl_define" href="../../d7/d82/star__error__handler_8c.html#afc3d101f633a076cc1ca84b85b6224b2">TAG</a>, <span class="stringliteral">&quot;Failed to init bus: %s&quot;</span>, esp_err_to_name(ret));</div>
-<div class="line">    <a class="code hl_function" href="#a194581e2eb82227a022f04b9057db839">star_bus_config_destroy</a>(manual_bus);</div>
-<div class="line">    <span class="keywordflow">return</span>;</div>
-<div class="line">}</div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// Use the bus...</span></div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// Deinitialize driver (but keep config)</span></div>
-<div class="line"><a class="code hl_function" href="#a7698bd213b1044dfc1d6e92d879ca03e">star_bus_config_deinit</a>(manual_bus);</div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// Destroy config and free memory</span></div>
-<div class="line"><a class="code hl_function" href="#a194581e2eb82227a022f04b9057db839">star_bus_config_destroy</a>(manual_bus);</div>
-<div class="line"> </div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// === Cleanup ===</span></div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// Remove bus from manager (deinitializes driver)</span></div>
-<div class="line"><a class="code hl_function" href="../../d6/dcc/star__bus__manager_8h.html#aa440431606d8a33fb394b4225db51f93">star_bus_manager_remove_bus</a>(&amp;bus_manager, <span class="stringliteral">&quot;imu_i2c&quot;</span>);</div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// Destroy the configuration (frees memory)</span></div>
-<div class="line"><a class="code hl_function" href="#a194581e2eb82227a022f04b9057db839">star_bus_config_destroy</a>(imu_bus);</div>
-<div class="ttc" id="astar__bus__common__types_8h_html_ad802dda67d7518bd4022e4a9498fa542"><div class="ttname"><a href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a></div><div class="ttdeci">struct star_bus_config star_bus_config_t</div><div class="ttdef"><b>Definition</b> <a href="../../dd/d40/star__bus__common__types_8h_source.html#l00020">star_bus_common_types.h:20</a></div></div>
-<div class="ttc" id="astar__bus__config_8h_html"><div class="ttname"><a href="../../d0/de4/star__bus__config_8h.html">star_bus_config.h</a></div><div class="ttdoc">Bus configuration creation and lifecycle management.</div></div>
-<div class="ttc" id="astar__bus__config_8h_html_a16ccb4aebc8dd1759ce3a1e5c67d7184"><div class="ttname"><a href="#a16ccb4aebc8dd1759ce3a1e5c67d7184">star_bus_config_create_spi_peripheral</a></div><div class="ttdeci">star_bus_config_t * star_bus_config_create_spi_peripheral(const char *name, spi_host_device_t host, gpio_num_t copi_pin, gpio_num_t cipo_pin, gpio_num_t sclk_pin, gpio_num_t cs_pin, int32_t queue_size, uint8_t mode)</div><div class="ttdoc">Create a new SPI peripheral (slave) configuration.</div><div class="ttdef"><b>Definition</b> <a href="../../de/d98/star__bus__config_8c_source.html#l00144">star_bus_config.c:144</a></div></div>
-<div class="ttc" id="astar__bus__config_8h_html_a194581e2eb82227a022f04b9057db839"><div class="ttname"><a href="#a194581e2eb82227a022f04b9057db839">star_bus_config_destroy</a></div><div class="ttdeci">esp_err_t star_bus_config_destroy(star_bus_config_t *config)</div><div class="ttdoc">Destroy a bus configuration and free all associated resources.</div><div class="ttdef"><b>Definition</b> <a href="../../de/d98/star__bus__config_8c_source.html#l00311">star_bus_config.c:311</a></div></div>
-<div class="ttc" id="astar__bus__config_8h_html_a324325978d7341cb09445826922989d7"><div class="ttname"><a href="#a324325978d7341cb09445826922989d7">star_bus_config_create_spi_device</a></div><div class="ttdeci">star_bus_config_t * star_bus_config_create_spi_device(const char *name, spi_host_device_t host, gpio_num_t copi_pin, gpio_num_t cipo_pin, gpio_num_t sclk_pin, int32_t dma_chan, const spi_device_interface_config_t *dev_cfg)</div><div class="ttdoc">Create a new SPI device configuration.</div><div class="ttdef"><b>Definition</b> <a href="../../de/d98/star__bus__config_8c_source.html#l00078">star_bus_config.c:78</a></div></div>
-<div class="ttc" id="astar__bus__config_8h_html_a7527fb91e8de839add326b305c63bcad"><div class="ttname"><a href="#a7527fb91e8de839add326b305c63bcad">star_bus_config_create_dht22</a></div><div class="ttdeci">star_bus_config_t * star_bus_config_create_dht22(const char *name, gpio_num_t gpio_pin, star_dht22_model_t model, uint32_t start_low_ms, uint32_t read_timeout_ms)</div><div class="ttdoc">Create a new DHT22 bus configuration.</div><div class="ttdef"><b>Definition</b> <a href="../../de/d98/star__bus__config_8c_source.html#l00269">star_bus_config.c:269</a></div></div>
-<div class="ttc" id="astar__bus__config_8h_html_a7698bd213b1044dfc1d6e92d879ca03e"><div class="ttname"><a href="#a7698bd213b1044dfc1d6e92d879ca03e">star_bus_config_deinit</a></div><div class="ttdeci">esp_err_t star_bus_config_deinit(star_bus_config_t *config)</div><div class="ttdoc">Deinitialize the bus/device associated with this configuration.</div><div class="ttdef"><b>Definition</b> <a href="../../de/d98/star__bus__config_8c_source.html#l00561">star_bus_config.c:561</a></div></div>
-<div class="ttc" id="astar__bus__config_8h_html_a856acf68aec88c1a3203d65ec656fd3c"><div class="ttname"><a href="#a856acf68aec88c1a3203d65ec656fd3c">star_bus_config_create_gpio</a></div><div class="ttdeci">star_bus_config_t * star_bus_config_create_gpio(const char *name, const gpio_num_t pins[], uint8_t pin_count)</div><div class="ttdoc">Create a new GPIO bus configuration.</div><div class="ttdef"><b>Definition</b> <a href="../../de/d98/star__bus__config_8c_source.html#l00207">star_bus_config.c:207</a></div></div>
-<div class="ttc" id="astar__bus__config_8h_html_acac7a0cf0c56efc3bb097a450f94b417"><div class="ttname"><a href="#acac7a0cf0c56efc3bb097a450f94b417">star_bus_config_init</a></div><div class="ttdeci">esp_err_t star_bus_config_init(star_bus_config_t *config, struct star_bus_manager *manager)</div><div class="ttdoc">Initialize the bus/device associated with this configuration.</div><div class="ttdef"><b>Definition</b> <a href="../../de/d98/star__bus__config_8c_source.html#l00350">star_bus_config.c:350</a></div></div>
-<div class="ttc" id="astar__bus__config_8h_html_ae2c74c07526c11cc15773c858681f8d4"><div class="ttname"><a href="#ae2c74c07526c11cc15773c858681f8d4">star_bus_config_create_i2c</a></div><div class="ttdeci">star_bus_config_t * star_bus_config_create_i2c(const char *name, i2c_port_t port, uint8_t address, gpio_num_t sda_pin, gpio_num_t scl_pin, uint32_t clk_speed)</div><div class="ttdoc">Create a new I2C bus/device configuration.</div><div class="ttdef"><b>Definition</b> <a href="../../de/d98/star__bus__config_8c_source.html#l00036">star_bus_config.c:36</a></div></div>
-<div class="ttc" id="astar__bus__manager_8h_html"><div class="ttname"><a href="../../d6/dcc/star__bus__manager_8h.html">star_bus_manager.h</a></div><div class="ttdoc">Unified bus manager for I2C, SPI, GPIO, and other bus protocols.</div></div>
-<div class="ttc" id="astar__bus__manager_8h_html_a3a0dc80007e321a8697c399e0f0bf559"><div class="ttname"><a href="../../d6/dcc/star__bus__manager_8h.html#a3a0dc80007e321a8697c399e0f0bf559">star_bus_manager_add_bus</a></div><div class="ttdeci">esp_err_t star_bus_manager_add_bus(star_bus_manager_t *manager, star_bus_config_t *config)</div><div class="ttdoc">Add a new I2C bus/device configuration to the manager.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d60/star__bus__manager_8c_source.html#l00293">star_bus_manager.c:293</a></div></div>
-<div class="ttc" id="astar__bus__manager_8h_html_aa440431606d8a33fb394b4225db51f93"><div class="ttname"><a href="../../d6/dcc/star__bus__manager_8h.html#aa440431606d8a33fb394b4225db51f93">star_bus_manager_remove_bus</a></div><div class="ttdeci">esp_err_t star_bus_manager_remove_bus(star_bus_manager_t *manager, const char *name)</div><div class="ttdoc">Remove an I2C bus configuration from the manager and destroy it.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d60/star__bus__manager_8c_source.html#l00445">star_bus_manager.c:445</a></div></div>
-<div class="ttc" id="astar__bus__protocol__types_8h_html_a635fa3623e6b583a61efd00e05c4dc9fab6f18024855b697ffa7dd79fa4d57cf5"><div class="ttname"><a href="../../dd/d9d/star__bus__protocol__types_8h.html#a635fa3623e6b583a61efd00e05c4dc9fab6f18024855b697ffa7dd79fa4d57cf5">k_star_dht22_model_dht22</a></div><div class="ttdeci">@ k_star_dht22_model_dht22</div><div class="ttdef"><b>Definition</b> <a href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00144">star_bus_protocol_types.h:144</a></div></div>
-<div class="ttc" id="astar__error__handler_8c_html_afc3d101f633a076cc1ca84b85b6224b2"><div class="ttname"><a href="../../d7/d82/star__error__handler_8c.html#afc3d101f633a076cc1ca84b85b6224b2">TAG</a></div><div class="ttdeci">#define TAG</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d82/star__error__handler_8c_source.html#l00012">star_error_handler.c:12</a></div></div>
-</div><!-- fragment --> 
+<div class="textblock"><p>Bus configuration creation and lifecycle management API. </p>
+<p>Defines factory functions for creating bus configuration structures for all supported protocols (I2C, SPI, UART, GPIO, ADC, 1-Wire). Configurations are heap-allocated and must be destroyed using <a class="el" href="#a194581e2eb82227a022f04b9057db839" title="Destroy a bus configuration and free all associated resources.">star_bus_config_destroy()</a> to prevent memory leaks.</p>
+<dl class="section date"><dt>Date</dt><dd>2025-12-19 </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>Copyright (c) 2025 STAR Project </dd></dl>
+
 <p class="definition">Definition in file <a class="el" href="../../d0/de4/star__bus__config_8h_source.html">star_bus_config.h</a>.</p>
 </div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
-<a id="a7527fb91e8de839add326b305c63bcad" name="a7527fb91e8de839add326b305c63bcad"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7527fb91e8de839add326b305c63bcad">&#9670;&#160;</a></span>star_bus_config_create_dht22()</h2>
+<a id="ac85bf955f3f1dfeebe2e5add73d47900" name="ac85bf955f3f1dfeebe2e5add73d47900"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac85bf955f3f1dfeebe2e5add73d47900">&#9670;&#160;</a></span>star_bus_config_create_adc()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a> * star_bus_config_create_dht22 </td>
+          <td class="memname"><a class="el" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a> * star_bus_config_create_adc </td>
           <td>(</td>
           <td class="paramtype">const char *</td>          <td class="paramname"><span class="paramname"><em>name</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">gpio_num_t</td>          <td class="paramname"><span class="paramname"><em>gpio_pin</em></span>, </td>
+          <td class="paramtype">adc_unit_t</td>          <td class="paramname"><span class="paramname"><em>unit</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype"><a class="el" href="../../dd/d9d/star__bus__protocol__types_8h.html#a635fa3623e6b583a61efd00e05c4dc9f">star_dht22_model_t</a></td>          <td class="paramname"><span class="paramname"><em>model</em></span>, </td>
+          <td class="paramtype">adc_channel_t</td>          <td class="paramname"><span class="paramname"><em>channel</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>start_low_ms</em></span>, </td>
+          <td class="paramtype">adc_bitwidth_t</td>          <td class="paramname"><span class="paramname"><em>bitwidth</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>read_timeout_ms</em></span>&#160;)</td>
+          <td class="paramtype">adc_atten_t</td>          <td class="paramname"><span class="paramname"><em>atten</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Create a new DHT22 bus configuration. </p>
-<p>Configures parameters for a DHT22/DHT11/AM2301 temperature and humidity sensor using a proprietary single-wire protocol. This protocol is NOT compatible with Dallas 1-Wire protocol.</p>
-<p>The DHT22 sensor requires minimum 2 seconds between readings. The driver automatically caches readings and returns cached data if called more frequently.</p>
+<p>Create an ADC bus configuration. </p>
+<p>Creates a configuration for an ADC bus to read analog voltages. ADC bus is used for reading analog sensor values such as motor current sense lines.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">name</td><td>Unique name for this DHT22 bus instance (e.g., "dht22_indoor"). Must be non-NULL. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">gpio_pin</td><td>GPIO pin number for the data line. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">model</td><td>Sensor model (k_star_dht22_model_dht22, k_star_dht22_model_dht11, or k_star_dht22_model_am2301). </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">start_low_ms</td><td>Start signal low duration in milliseconds (18ms typical for DHT22, 20ms for DHT11). </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">read_timeout_ms</td><td>Read timeout in milliseconds (100ms default). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">name</td><td>Unique name for this ADC bus (e.g., "motor_current"). Must be non-NULL. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">unit</td><td>ADC unit (ADC_UNIT_1 or ADC_UNIT_2). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">channel</td><td>ADC channel to read from. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">bitwidth</td><td>ADC resolution (e.g., ADC_BITWIDTH_12 for 12-bit). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">atten</td><td>ADC attenuation for voltage range (e.g., ADC_ATTEN_DB_11 for 0-3.3V). </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>star_bus_config_t* Pointer to the created configuration, or NULL on failure. Must be destroyed via star_bus_config_destroy. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00269">269</a> of file <a class="el" href="../../de/d98/star__bus__config_8c_source.html">star_bus_config.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00246">246</a> of file <a class="el" href="../../de/d98/star__bus__config_8c_source.html">star_bus_config.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00190">star_dht22_bus_config::callbacks</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00038">star_bus_config::dht22</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00186">star_dht22_bus_config::gpio_pin</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00711">internal_star_bus_config_create_common()</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00034">k_star_bus_type_dht22</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00146">k_star_dht22_model_am2301</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00145">k_star_dht22_model_dht11</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00187">star_dht22_bus_config::model</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00191">star_dht22_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00189">star_dht22_bus_config::read_timeout_ms</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../dc/d1f/star__bus__dht22__proprietary_8c_source.html#l00471">star_bus_dht22_init_default_ops()</a>, and <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00188">star_dht22_bus_config::start_low_ms</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00062">star_bus_config::adc</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00171">star_adc_bus_config::atten</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00170">star_adc_bus_config::bitwidth</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00167">star_adc_bus_config::cali_handle</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00169">star_adc_bus_config::channel</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00054">star_bus_config::handle</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00849">internal_star_bus_config_create_common()</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00059">k_star_bus_type_adc</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00172">star_adc_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../d2/deb/star__bus__adc_8c_source.html#l00037">star_bus_adc_get_default_ops()</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00168">star_adc_bus_config::unit</a>, and <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00166">star_adc_bus_config::unit_handle</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d0/de4/star__bus__config_8h_a7527fb91e8de839add326b305c63bcad_cgraph.png" border="0" usemap="#ad0/de4/star__bus__config_8h_a7527fb91e8de839add326b305c63bcad_cgraph" loading="lazy" alt=""/></div>
-<map name="ad0/de4/star__bus__config_8h_a7527fb91e8de839add326b305c63bcad_cgraph" id="ad0/de4/star__bus__config_8h_a7527fb91e8de839add326b305c63bcad_cgraph">
-<area shape="rect" title="Create a new DHT22 bus configuration." alt="" coords="5,276,162,317"/>
-<area shape="rect" href="../../de/d98/star__bus__config_8c.html#a15ff256a9a257629ad970a5359136a59" title="Create a generic bus configuration structure and allocate memory." alt="" coords="210,243,372,283"/>
-<area shape="poly" title=" " alt="" coords="161,281,196,277,192,280,163,286"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a6a87d003ee9fcecd46ce8a441e5e31a9" title="Initialize default DHT22 operations function pointers." alt="" coords="224,308,358,349"/>
-<area shape="poly" title=" " alt="" coords="162,306,211,315,206,317,163,311"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a5c65480966d51bd711746a7be6199438" title="Default read operation implementation." alt="" coords="420,316,551,341"/>
-<area shape="poly" title=" " alt="" coords="358,326,407,328,402,329,359,331"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ad84a1750c76d3cacd25aa7711b5fbdb5" title="Get DHT22 state for a bus (thread&#45;safe)." alt="" coords="627,78,741,104"/>
-<area shape="poly" title=" " alt="" coords="496,313,660,117,665,115,500,317"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a7eba1783e6f80cc2088540759ca01e16" title="Read raw data from DHT22 sensor." alt="" coords="631,258,737,284"/>
-<area shape="poly" title=" " alt="" coords="532,312,625,288,620,289,534,317"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a2b6eb006720d74c12343fee2c65b6d01" title="Calculate checksum from raw data." alt="" coords="599,308,769,349"/>
-<area shape="poly" title=" " alt="" coords="551,326,586,328,581,329,552,331"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a5f2659d313c7223f531d49a3584d84a3" title="Convert raw temperature to Celsius." alt="" coords="615,373,753,414"/>
-<area shape="poly" title=" " alt="" coords="527,339,608,368,603,368,527,344"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ab03f05ea4c39d5883e95b0db468a5a92" title="Convert raw humidity to percentage." alt="" coords="615,439,753,479"/>
-<area shape="poly" title=" " alt="" coords="500,339,543,380,601,423,612,432,607,431,598,428,540,384,498,344"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a15fbe86b35253f8620cdba249493f6fa" title="Get DHT22 state for a bus (must be called with mutex held)." alt="" coords="817,5,944,46"/>
-<area shape="poly" title=" " alt="" coords="724,75,805,50,800,53,726,80"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a9cd874b0290191f0e8a2200e9a727f58" title="Initialize DHT22 global mutex (thread&#45;safe)." alt="" coords="817,71,944,111"/>
-<area shape="poly" title=" " alt="" coords="741,88,804,90,799,92,742,94"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ada0028be4bd29beb995c4990d33a0dff" title="Delay in microseconds." alt="" coords="844,136,917,161"/>
-<area shape="poly" title=" " alt="" coords="699,255,748,215,815,170,827,167,832,165,818,175,752,219,701,260"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#af3c6d2f2ae3b906ff2590c579ae42e8f" title="Set GPIO output high." alt="" coords="842,185,918,210"/>
-<area shape="poly" title=" " alt="" coords="720,255,827,217,832,216,722,260"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a40df8a338e77a732f53aca4fa72d5192" title="Set GPIO output low." alt="" coords="844,234,916,260"/>
-<area shape="poly" title=" " alt="" coords="737,262,831,253,826,254,738,267"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ac56257b5f48f81efe2392e6e28b8393a" title="Set GPIO to input mode." alt="" coords="828,284,933,309"/>
-<area shape="poly" title=" " alt="" coords="738,275,815,287,809,288,738,281"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a2c233a46f4a9bf09057e07a1243c2dea" title="Set GPIO to output mode." alt="" coords="824,333,937,358"/>
-<area shape="poly" title=" " alt="" coords="735,282,770,294,818,319,831,327,826,326,816,324,768,299,735,287"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#ac0af9cb9d464422a719e1e0bb987d80f" title="Wait for GPIO level change and measure duration." alt="" coords="826,382,935,408"/>
-<area shape="poly" title=" " alt="" coords="738,278,770,294,787,313,795,332,803,351,818,369,824,375,819,374,815,373,798,354,791,334,783,316,767,298,737,283"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a6068135097f7705a28bda46fb88640d2" title="Wait for GPIO to reach expected level with timeout." alt="" coords="830,432,931,457"/>
-<area shape="poly" title=" " alt="" coords="738,276,755,284,770,294,784,310,791,326,796,357,800,388,807,403,819,419,822,424,817,422,815,422,802,406,795,390,791,358,786,328,779,313,767,298,753,288,737,282"/>
-<area shape="rect" href="../../dc/d1f/star__bus__dht22__proprietary_8c.html#a71842e7ab86cba68432d023f022556d5" title="Read GPIO input." alt="" coords="992,408,1069,433"/>
-<area shape="poly" title=" " alt="" coords="936,402,979,411,974,411,935,407"/>
-<area shape="poly" title=" " alt="" coords="931,434,974,429,979,429,932,439"/>
+<div class="center"><img src="../../d0/de4/star__bus__config_8h_ac85bf955f3f1dfeebe2e5add73d47900_cgraph.png" border="0" usemap="#ad0/de4/star__bus__config_8h_ac85bf955f3f1dfeebe2e5add73d47900_cgraph" loading="lazy" alt=""/></div>
+<map name="ad0/de4/star__bus__config_8h_ac85bf955f3f1dfeebe2e5add73d47900_cgraph" id="ad0/de4/star__bus__config_8h_ac85bf955f3f1dfeebe2e5add73d47900_cgraph">
+<area shape="rect" title="Create an ADC bus configuration." alt="" coords="5,42,190,68"/>
+<area shape="rect" href="../../de/d98/star__bus__config_8c.html#a15ff256a9a257629ad970a5359136a59" title="Create a generic bus configuration structure and allocate memory." alt="" coords="256,5,418,46"/>
+<area shape="poly" title=" " alt="" coords="189,41,243,37,238,38,191,46"/>
+<area shape="rect" href="../../d2/deb/star__bus__adc_8c.html#aa3fe9206840f1db313371895470b989a" title="Get default ADC operations structure." alt="" coords="238,70,436,96"/>
+<area shape="poly" title=" " alt="" coords="190,63,225,69,220,70,190,68"/>
+<area shape="rect" href="../../d2/deb/star__bus__adc_8c.html#a8654d658e291ea15a6e2fa218f2cc6c4" title=" " alt="" coords="484,29,632,70"/>
+<area shape="poly" title=" " alt="" coords="426,67,471,63,466,64,427,72"/>
+<area shape="rect" href="../../d2/deb/star__bus__adc_8c.html#aa96bcd883cd482287518ab0cc64b0043" title=" " alt="" coords="484,95,632,135"/>
+<area shape="poly" title=" " alt="" coords="430,94,471,102,466,102,430,99"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="a856acf68aec88c1a3203d65ec656fd3c" name="a856acf68aec88c1a3203d65ec656fd3c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a856acf68aec88c1a3203d65ec656fd3c">&#9670;&#160;</a></span>star_bus_config_create_gpio()</h2>
+<a id="aa8850b2918def11489920457d487909e" name="aa8850b2918def11489920457d487909e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa8850b2918def11489920457d487909e">&#9670;&#160;</a></span>star_bus_config_create_gpio()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -493,7 +310,7 @@ Here is the call graph for this function:</div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const gpio_num_t</td>          <td class="paramname"><span class="paramname"><em>pins</em></span>[], </td>
+          <td class="paramtype">gpio_num_t *</td>          <td class="paramname"><span class="paramname"><em>pins</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -503,56 +320,35 @@ Here is the call graph for this function:</div>
       </table>
 </div><div class="memdoc">
 
-<p>Create a new GPIO bus configuration. </p>
-<p>Configures parameters for GPIO pin control as a logical "bus". Useful for sensors that use direct GPIO control (e.g., HC-SR04 ultrasonic sensor). The GPIO pins will be configured when star_bus_config_init is called.</p>
-<p>The pins array is copied internally using dynamic allocation, so the caller's array does not need to persist after this call.</p>
+<p>Create a GPIO bus configuration. </p>
+<p>Creates a configuration for a GPIO bus to control multiple digital I/O pins. GPIO bus is used for simple digital control such as multiplexer select lines.</p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">name</td><td>Unique name for this GPIO bus instance (e.g., "HCSR04_GPIO"). Must be non-NULL. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">pins</td><td>Array of GPIO pin numbers to manage. Must be non-NULL. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">pin_count</td><td>Number of pins in the array (must be &gt;= 1). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">name</td><td>Unique name for this GPIO bus (e.g., "mux_gpio"). Must be non-NULL. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pins</td><td>Array of GPIO pins to control. Must be non-NULL. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pin_count</td><td>Number of pins in the array. Must be &gt; 0. </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>star_bus_config_t* Pointer to the created configuration, or NULL on failure. Must be destroyed via star_bus_config_destroy. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00207">207</a> of file <a class="el" href="../../de/d98/star__bus__config_8c_source.html">star_bus_config.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00221">221</a> of file <a class="el" href="../../de/d98/star__bus__config_8c_source.html">star_bus_config.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00135">star_gpio_bus_config::callbacks</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00037">star_bus_config::gpio</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00676">internal_star_bus_config_cleanup()</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00711">internal_star_bus_config_create_common()</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00137">star_gpio_bus_config::isr_installed</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00033">k_star_bus_type_gpio</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00136">star_gpio_bus_config::ops</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00134">star_gpio_bus_config::pin_count</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00133">star_gpio_bus_config::pins</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00264">star_bus_gpio_init_default_ops()</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00033">initialize_hardware_buses()</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00061">star_bus_config::gpio</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00849">internal_star_bus_config_create_common()</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00150">star_gpio_bus_config::isr_installed</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00058">k_star_bus_type_gpio</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00151">star_gpio_bus_config::ops</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00149">star_gpio_bus_config::pin_count</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00148">star_gpio_bus_config::pins</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, and <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00040">star_bus_gpio_get_default_ops()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d0/de4/star__bus__config_8h_a856acf68aec88c1a3203d65ec656fd3c_cgraph.png" border="0" usemap="#ad0/de4/star__bus__config_8h_a856acf68aec88c1a3203d65ec656fd3c_cgraph" loading="lazy" alt=""/></div>
-<map name="ad0/de4/star__bus__config_8h_a856acf68aec88c1a3203d65ec656fd3c_cgraph" id="ad0/de4/star__bus__config_8h_a856acf68aec88c1a3203d65ec656fd3c_cgraph">
-<area shape="rect" title="Create a new GPIO bus configuration." alt="" coords="5,78,193,104"/>
-<area shape="rect" href="../../de/d98/star__bus__config_8c.html#a83c2bd0044ce80e0be65ebba3c1a3cc1" title="Clean up and free memory for a bus configuration structure. Does NOT deinitialize the hardware/driver..." alt="" coords="241,5,403,46"/>
-<area shape="poly" title=" " alt="" coords="144,75,237,49,234,53,147,80"/>
-<area shape="rect" href="../../de/d98/star__bus__config_8c.html#a15ff256a9a257629ad970a5359136a59" title="Create a generic bus configuration structure and allocate memory." alt="" coords="241,71,403,111"/>
-<area shape="poly" title=" " alt="" coords="192,88,227,90,222,92,194,94"/>
-<area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html#a0fff90f319ba2507d0e6fdce4620278c" title="Initialize default GPIO operations function pointers within a config structure. Typically called inte..." alt="" coords="259,136,385,177"/>
-<area shape="poly" title=" " alt="" coords="145,102,246,132,242,135,145,107"/>
-<area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html#a398e64268b55afc72df387ad1a1c7fc1" title="Default implementation for configuring a GPIO pin." alt="" coords="451,65,602,90"/>
-<area shape="poly" title=" " alt="" coords="373,133,402,121,450,99,464,97,469,95,452,104,404,125,375,138"/>
-<area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html#af20ab080c3ac32e57c9e9d3d0df681e7" title="Default implementation for reading from a GPIO pin." alt="" coords="465,114,588,140"/>
-<area shape="poly" title=" " alt="" coords="385,145,452,137,447,139,386,150"/>
-<area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html#a861d4619ac157b0e282ff0f22340a050" title="Default implementation for setting GPIO interrupt." alt="" coords="464,164,589,205"/>
-<area shape="poly" title=" " alt="" coords="385,162,452,174,446,174,385,168"/>
-<area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html#af2724ae0d0a1260cb6dbaf5853470a5f" title="Default implementation for writing to a GPIO pin." alt="" coords="464,229,590,254"/>
-<area shape="poly" title=" " alt="" coords="365,175,452,214,472,224,466,223,450,219,364,180"/>
-</map>
-</div>
-<div class="dynheader">
-Here is the caller graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="../../d0/de4/star__bus__config_8h_a856acf68aec88c1a3203d65ec656fd3c_icgraph.png" border="0" usemap="#ad0/de4/star__bus__config_8h_a856acf68aec88c1a3203d65ec656fd3c_icgraph" loading="lazy" alt=""/></div>
-<map name="ad0/de4/star__bus__config_8h_a856acf68aec88c1a3203d65ec656fd3c_icgraph" id="ad0/de4/star__bus__config_8h_a856acf68aec88c1a3203d65ec656fd3c_icgraph">
-<area shape="rect" title="Create a new GPIO bus configuration." alt="" coords="307,13,494,38"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a06b72c3ee71e25fc9eac1ce50d7b08de" title=" " alt="" coords="131,5,259,46"/>
-<area shape="poly" title=" " alt="" coords="289,26,260,28,260,23,294,26"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,13,83,38"/>
-<area shape="poly" title=" " alt="" coords="112,26,83,28,83,23,118,25"/>
+<div class="center"><img src="../../d0/de4/star__bus__config_8h_aa8850b2918def11489920457d487909e_cgraph.png" border="0" usemap="#ad0/de4/star__bus__config_8h_aa8850b2918def11489920457d487909e_cgraph" loading="lazy" alt=""/></div>
+<map name="ad0/de4/star__bus__config_8h_aa8850b2918def11489920457d487909e_cgraph" id="ad0/de4/star__bus__config_8h_aa8850b2918def11489920457d487909e_cgraph">
+<area shape="rect" title="Create a GPIO bus configuration." alt="" coords="5,42,193,68"/>
+<area shape="rect" href="../../de/d98/star__bus__config_8c.html#a15ff256a9a257629ad970a5359136a59" title="Create a generic bus configuration structure and allocate memory." alt="" coords="260,5,422,46"/>
+<area shape="poly" title=" " alt="" coords="192,41,247,36,242,38,194,46"/>
+<area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html#aa9776ada4c3f8a958dc47a93b4c9d8e8" title="Get default GPIO operations structure." alt="" coords="241,70,442,96"/>
+<area shape="poly" title=" " alt="" coords="193,63,228,69,222,70,193,68"/>
+<area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html#acc3fb5abdf06a75718d86a66364b27e0" title=" " alt="" coords="490,29,641,70"/>
+<area shape="poly" title=" " alt="" coords="432,67,477,63,472,64,433,72"/>
+<area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html#aa43cb0b0920c20eb9e23619e5ef13015" title=" " alt="" coords="490,95,641,135"/>
+<area shape="poly" title=" " alt="" coords="436,94,477,102,472,102,436,99"/>
 </map>
 </div>
 
@@ -612,11 +408,9 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>star_bus_config_t* Pointer to the created configuration, or NULL on failure. Must be destroyed via star_bus_config_destroy. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00036">36</a> of file <a class="el" href="../../de/d98/star__bus__config_8c_source.html">star_bus_config.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00050">50</a> of file <a class="el" href="../../de/d98/star__bus__config_8c_source.html">star_bus_config.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00049">star_i2c_bus_config::address</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00048">star_i2c_bus_config::config</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00035">star_bus_config::i2c</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00711">internal_star_bus_config_create_common()</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00031">k_star_bus_type_i2c</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00051">star_i2c_bus_config::ops</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00047">star_i2c_bus_config::port</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00064">star_bus_i2c_init_default_ops()</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00033">initialize_hardware_buses()</a>, <a class="el" href="../../d1/d50/star__bus__helpers_8c_source.html#l00030">star_bus_config_i2c_fast()</a>, <a class="el" href="../../d1/d50/star__bus__helpers_8c_source.html#l00040">star_bus_config_i2c_fast_plus()</a>, and <a class="el" href="../../d1/d50/star__bus__helpers_8c_source.html#l00016">star_bus_config_i2c_standard()</a>.</p>
+<p class="reference">References <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00074">star_i2c_bus_config::address</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00073">star_i2c_bus_config::config</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00059">star_bus_config::i2c</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00849">internal_star_bus_config_create_common()</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00056">k_star_bus_type_i2c</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00076">star_i2c_bus_config::ops</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00072">star_i2c_bus_config::port</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, and <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00073">star_bus_i2c_init_default_ops()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -642,24 +436,68 @@ Here is the call graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="622,183,650,170,717,138,723,136,652,175,623,188"/>
 </map>
 </div>
+
+</div>
+</div>
+<a id="af5cbfa29f49dfaea9ebaf7ae67aeb07f" name="af5cbfa29f49dfaea9ebaf7ae67aeb07f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af5cbfa29f49dfaea9ebaf7ae67aeb07f">&#9670;&#160;</a></span>star_bus_config_create_onewire()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a> * star_bus_config_create_onewire </td>
+          <td>(</td>
+          <td class="paramtype">const char *</td>          <td class="paramname"><span class="paramname"><em>name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">gpio_num_t</td>          <td class="paramname"><span class="paramname"><em>gpio_pin</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">bool</td>          <td class="paramname"><span class="paramname"><em>use_parasitic_power</em></span>&#160;)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Create a OneWire bus configuration. </p>
+<p>Creates a configuration for a 1-Wire bus for communicating with Dallas/Maxim devices such as DS18B20 temperature sensors. The 1-Wire protocol uses a single GPIO pin for bidirectional communication.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">name</td><td>Unique name for this 1-Wire bus (e.g., "temp_onewire"). Must be non-NULL. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">gpio_pin</td><td>GPIO pin for 1-Wire data line (requires external 4.7kΩ pullup resistor). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">use_parasitic_power</td><td>Enable parasite power mode (devices powered through data line). </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>star_bus_config_t* Pointer to the created configuration, or NULL on failure. Must be destroyed via star_bus_config_destroy. </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00285">285</a> of file <a class="el" href="../../de/d98/star__bus__config_8c_source.html">star_bus_config.c</a>.</p>
+
+<p class="reference">References <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00197">star_onewire_bus_config::gpio_pin</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00849">internal_star_bus_config_create_common()</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00060">k_star_bus_type_onewire</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00063">star_bus_config::onewire</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00202">star_onewire_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00201">star_onewire_bus_config::search_timeout_ms</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00200">star_onewire_bus_config::speed</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00198">star_onewire_bus_config::use_parasitic_power</a>, and <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00199">star_onewire_bus_config::use_strong_pullup</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00032">app_main()</a>.</p>
+<div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="../../d0/de4/star__bus__config_8h_af5cbfa29f49dfaea9ebaf7ae67aeb07f_cgraph.png" border="0" usemap="#ad0/de4/star__bus__config_8h_af5cbfa29f49dfaea9ebaf7ae67aeb07f_cgraph" loading="lazy" alt=""/></div>
+<map name="ad0/de4/star__bus__config_8h_af5cbfa29f49dfaea9ebaf7ae67aeb07f_cgraph" id="ad0/de4/star__bus__config_8h_af5cbfa29f49dfaea9ebaf7ae67aeb07f_cgraph">
+<area shape="rect" title="Create a OneWire bus configuration." alt="" coords="5,5,162,46"/>
+<area shape="rect" href="../../de/d98/star__bus__config_8c.html#a15ff256a9a257629ad970a5359136a59" title="Create a generic bus configuration structure and allocate memory." alt="" coords="210,5,372,46"/>
+<area shape="poly" title=" " alt="" coords="162,23,197,25,192,26,162,28"/>
+</map>
+</div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d0/de4/star__bus__config_8h_ae2c74c07526c11cc15773c858681f8d4_icgraph.png" border="0" usemap="#ad0/de4/star__bus__config_8h_ae2c74c07526c11cc15773c858681f8d4_icgraph" loading="lazy" alt=""/></div>
-<map name="ad0/de4/star__bus__config_8h_ae2c74c07526c11cc15773c858681f8d4_icgraph" id="ad0/de4/star__bus__config_8h_ae2c74c07526c11cc15773c858681f8d4_icgraph">
-<area shape="rect" title="Create a new I2C bus/device configuration." alt="" coords="440,100,620,125"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a06b72c3ee71e25fc9eac1ce50d7b08de" title=" " alt="" coords="245,5,373,46"/>
-<area shape="poly" title=" " alt="" coords="479,94,391,60,364,49,364,44,393,55,484,93"/>
-<area shape="rect" href="../../d1/d50/star__bus__helpers_8c.html#a8a45aff6fa43266e370b6d1f5e764cad" title="Create I2C config for fast mode (400 kHz)." alt="" coords="226,70,392,96"/>
-<area shape="poly" title=" " alt="" coords="422,99,393,97,392,91,428,98"/>
-<area shape="rect" href="../../d1/d50/star__bus__helpers_8c.html#a605d3a80ed172746a7f8563c45473181" title="Create I2C config for fast mode plus (1 MHz)." alt="" coords="240,120,378,161"/>
-<area shape="poly" title=" " alt="" coords="422,126,378,134,377,129,427,125"/>
-<area shape="rect" href="../../d1/d50/star__bus__helpers_8c.html#a49977b9bdf148ec39503fa5340f96fc3" title="Create I2C config for standard mode (100 kHz)." alt="" coords="240,185,378,226"/>
-<area shape="poly" title=" " alt="" coords="488,131,393,175,363,187,361,182,391,170,482,132"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="53,13,130,38"/>
-<area shape="poly" title=" " alt="" coords="227,27,131,28,130,23,231,24"/>
-<area shape="rect" href="../../d1/d50/star__bus__helpers_8c.html#a88cdd0738dfec53d37d49f977c9d989c" title="Quick setup: I2C master with automatic defaults." alt="" coords="5,70,178,96"/>
-<area shape="poly" title=" " alt="" coords="207,84,179,86,177,80,212,82"/>
+<div class="center"><img src="../../d0/de4/star__bus__config_8h_af5cbfa29f49dfaea9ebaf7ae67aeb07f_icgraph.png" border="0" usemap="#ad0/de4/star__bus__config_8h_af5cbfa29f49dfaea9ebaf7ae67aeb07f_icgraph" loading="lazy" alt=""/></div>
+<map name="ad0/de4/star__bus__config_8h_af5cbfa29f49dfaea9ebaf7ae67aeb07f_icgraph" id="ad0/de4/star__bus__config_8h_af5cbfa29f49dfaea9ebaf7ae67aeb07f_icgraph">
+<area shape="rect" title="Create a OneWire bus configuration." alt="" coords="131,5,287,46"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,13,83,38"/>
+<area shape="poly" title=" " alt="" coords="112,26,83,28,83,23,118,25"/>
 </map>
 </div>
 
@@ -715,8 +553,8 @@ Here is the caller graph for this function:</div>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">name</td><td>Unique name for this SPI device instance (e.g., "SPI_LCD"). Must be non-NULL. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">host</td><td>SPI host device (e.g., SPI2_HOST, SPI3_HOST). </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">copi_pin</td><td>GPIO number for COPI (Controller Out, Peripheral In) line. Modern replacement for MOSI (Master Out, Slave In). </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">cipo_pin</td><td>GPIO number for CIPO (Controller In, Peripheral Out) line (-1 if not used). Modern replacement for MISO (Master In, Slave Out). </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">copi_pin</td><td>GPIO number for COPI (Controller Out, Peripheral In) line. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">cipo_pin</td><td>GPIO number for CIPO (Controller In, Peripheral Out) line (-1 if not used). </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">sclk_pin</td><td>GPIO number for SCLK line. </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dma_chan</td><td>SPI DMA channel to use (SPI_DMA_CH_AUTO, SPI_DMA_CH1, SPI_DMA_CH2, or 0 if DMA disabled). </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">dev_cfg</td><td>Pointer to the ESP-IDF SPI device interface configuration structure. This structure contains CS pin, clock speed, mode, queue size, callbacks, etc. The bus manager does NOT take ownership of this pointer or its contents; it copies the relevant data. The caller must ensure dev_cfg is valid. </td></tr>
@@ -725,9 +563,9 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>star_bus_config_t* Pointer to the created configuration, or NULL on failure. Must be destroyed via star_bus_config_destroy. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00078">78</a> of file <a class="el" href="../../de/d98/star__bus__config_8c_source.html">star_bus_config.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00092">92</a> of file <a class="el" href="../../de/d98/star__bus__config_8c_source.html">star_bus_config.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00079">star_spi_bus_config::bus_cfg</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00095">star_spi_bus_config::cipo_io_num</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00094">star_spi_bus_config::copi_io_num</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00082">star_spi_bus_config::dev_cfg</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00076">star_spi_bus_config::host</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00711">internal_star_bus_config_create_common()</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00078">star_spi_bus_config::is_peripheral</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00032">k_star_bus_type_spi</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00100">star_spi_bus_config::max_transfer_sz</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00084">star_spi_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00099">star_spi_bus_config::quadhd_io_num</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00098">star_spi_bus_config::quadwp_io_num</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00096">star_spi_bus_config::sclk_io_num</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00036">star_bus_config::spi</a>, and <a class="el" href="../../d9/dbd/star__bus__spi_8c_source.html#l00043">star_bus_spi_init_default_ops()</a>.</p>
+<p class="reference">References <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00104">star_spi_bus_config::bus_cfg</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00120">star_spi_bus_config::cipo_io_num</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00119">star_spi_bus_config::copi_io_num</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00107">star_spi_bus_config::dev_cfg</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00101">star_spi_bus_config::host</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00849">internal_star_bus_config_create_common()</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00103">star_spi_bus_config::is_peripheral</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00057">k_star_bus_type_spi</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00125">star_spi_bus_config::max_transfer_sz</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00109">star_spi_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00124">star_spi_bus_config::quadhd_io_num</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00123">star_spi_bus_config::quadwp_io_num</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00121">star_spi_bus_config::sclk_io_num</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00060">star_bus_config::spi</a>, and <a class="el" href="../../d9/dbd/star__bus__spi_8c_source.html#l00055">star_bus_spi_init_default_ops()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -815,9 +653,11 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>star_bus_config_t* Pointer to the created configuration, or NULL on failure. Must be destroyed via star_bus_config_destroy. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00144">144</a> of file <a class="el" href="../../de/d98/star__bus__config_8c_source.html">star_bus_config.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00158">158</a> of file <a class="el" href="../../de/d98/star__bus__config_8c_source.html">star_bus_config.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00095">star_spi_bus_config::cipo_io_num</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00094">star_spi_bus_config::copi_io_num</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00097">star_spi_bus_config::cs_io_num</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00076">star_spi_bus_config::host</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00711">internal_star_bus_config_create_common()</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00078">star_spi_bus_config::is_peripheral</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00032">k_star_bus_type_spi</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00102">star_spi_bus_config::mode</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00084">star_spi_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00099">star_spi_bus_config::quadhd_io_num</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00098">star_spi_bus_config::quadwp_io_num</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00101">star_spi_bus_config::queue_size</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00096">star_spi_bus_config::sclk_io_num</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00036">star_bus_config::spi</a>, and <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00039">star_bus_spi_peripheral_init_default_ops()</a>.</p>
+<p class="reference">References <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00120">star_spi_bus_config::cipo_io_num</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00119">star_spi_bus_config::copi_io_num</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00122">star_spi_bus_config::cs_io_num</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00101">star_spi_bus_config::host</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00849">internal_star_bus_config_create_common()</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00103">star_spi_bus_config::is_peripheral</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00057">k_star_bus_type_spi</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00127">star_spi_bus_config::mode</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00109">star_spi_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00124">star_spi_bus_config::quadhd_io_num</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00123">star_spi_bus_config::quadwp_io_num</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00126">star_spi_bus_config::queue_size</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00121">star_spi_bus_config::sclk_io_num</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00060">star_bus_config::spi</a>, and <a class="el" href="../../d4/d34/star__bus__spi__peripheral_8c_source.html#l00048">star_bus_spi_peripheral_init_default_ops()</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00032">app_main()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -834,6 +674,16 @@ Here is the call graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="370,88,407,91,402,91,371,94"/>
 <area shape="rect" href="../../d4/d34/star__bus__spi__peripheral_8c.html#af3daadb82934d79dbd87fc6fadd27659" title=" " alt="" coords="424,136,568,177"/>
 <area shape="poly" title=" " alt="" coords="357,109,418,131,412,131,356,114"/>
+</map>
+</div>
+<div class="dynheader">
+Here is the caller graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="../../d0/de4/star__bus__config_8h_a16ccb4aebc8dd1759ce3a1e5c67d7184_icgraph.png" border="0" usemap="#ad0/de4/star__bus__config_8h_a16ccb4aebc8dd1759ce3a1e5c67d7184_icgraph" loading="lazy" alt=""/></div>
+<map name="ad0/de4/star__bus__config_8h_a16ccb4aebc8dd1759ce3a1e5c67d7184_icgraph" id="ad0/de4/star__bus__config_8h_a16ccb4aebc8dd1759ce3a1e5c67d7184_icgraph">
+<area shape="rect" title="Create a new SPI peripheral (slave) configuration." alt="" coords="131,5,287,46"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,13,83,38"/>
+<area shape="poly" title=" " alt="" coords="112,26,83,28,83,23,118,25"/>
 </map>
 </div>
 
@@ -864,30 +714,39 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success, ESP_ERR_INVALID_ARG if config is NULL, ESP_ERR_INVALID_STATE if not initialized, or an error code from the underlying driver deinitialization. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00561">561</a> of file <a class="el" href="../../de/d98/star__bus__config_8c_source.html">star_bus_config.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00703">703</a> of file <a class="el" href="../../de/d98/star__bus__config_8c_source.html">star_bus_config.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00038">star_bus_config::dht22</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00037">star_bus_config::gpio</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00186">star_dht22_bus_config::gpio_pin</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00030">star_bus_config::handle</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00076">star_spi_bus_config::host</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00035">star_bus_config::i2c</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00029">star_bus_config::initialized</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00078">star_spi_bus_config::is_peripheral</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00137">star_gpio_bus_config::isr_installed</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00034">k_star_bus_type_dht22</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00033">k_star_bus_type_gpio</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00031">k_star_bus_type_i2c</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00032">k_star_bus_type_spi</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00027">star_bus_config::name</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00134">star_gpio_bus_config::pin_count</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00133">star_gpio_bus_config::pins</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00047">star_i2c_bus_config::port</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00036">star_bus_config::spi</a>, and <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00028">star_bus_config::type</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00062">star_bus_config::adc</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00167">star_adc_bus_config::cali_handle</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00054">star_bus_config::handle</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00101">star_spi_bus_config::host</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00059">star_bus_config::i2c</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00053">star_bus_config::initialized</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00103">star_spi_bus_config::is_peripheral</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00059">k_star_bus_type_adc</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00058">k_star_bus_type_gpio</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00056">k_star_bus_type_i2c</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00060">k_star_bus_type_onewire</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00057">k_star_bus_type_spi</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00051">star_bus_config::name</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00072">star_i2c_bus_config::port</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00060">star_bus_config::spi</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00154">star_bus_onewire_deinit()</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00052">star_bus_config::type</a>, and <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00166">star_adc_bus_config::unit_handle</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00311">star_bus_config_destroy()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00313">star_bus_config_destroy()</a>.</p>
+<div class="dynheader">
+Here is the call graph for this function:</div>
+<div class="dyncontent">
+<div class="center"><img src="../../d0/de4/star__bus__config_8h_a7698bd213b1044dfc1d6e92d879ca03e_cgraph.png" border="0" usemap="#ad0/de4/star__bus__config_8h_a7698bd213b1044dfc1d6e92d879ca03e_cgraph" loading="lazy" alt=""/></div>
+<map name="ad0/de4/star__bus__config_8h_a7698bd213b1044dfc1d6e92d879ca03e_cgraph" id="ad0/de4/star__bus__config_8h_a7698bd213b1044dfc1d6e92d879ca03e_cgraph">
+<area shape="rect" title="Deinitialize the bus/device associated with this configuration." alt="" coords="5,46,157,72"/>
+<area shape="rect" href="../../d9/dd6/star__bus__onewire_8c.html#a29d4d6f395cdbf4ba5757cbcc183c13c" title="Deinitialize 1&#45;Wire bus." alt="" coords="205,46,366,72"/>
+<area shape="poly" title=" " alt="" coords="157,56,192,58,186,60,157,62"/>
+<area shape="rect" href="../../d9/dd6/star__bus__onewire_8c.html#ae2fccd2ccf0204c4ae5e4ae370719b9a" title="Get 1&#45;Wire state for a bus (thread&#45;safe)." alt="" coords="414,39,554,79"/>
+<area shape="poly" title=" " alt="" coords="366,56,401,59,396,59,367,62"/>
+<area shape="rect" href="../../d9/dd6/star__bus__onewire_8c.html#a1ca358f311abcb5bb498c6df68b556c6" title="Initialize 1&#45;Wire global mutex (thread&#45;safe)." alt="" coords="603,5,743,46"/>
+<area shape="poly" title=" " alt="" coords="554,44,585,41,591,40,555,49"/>
+<area shape="rect" href="../../d9/dd6/star__bus__onewire_8c.html#aeaca1b0b2a8c0f56d9c5a0a68736af0a" title="Get 1&#45;Wire state for a bus (must be called with mutex held)." alt="" coords="602,71,744,111"/>
+<area shape="poly" title=" " alt="" coords="555,68,590,77,585,76,555,74"/>
+</map>
+</div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d0/de4/star__bus__config_8h_a7698bd213b1044dfc1d6e92d879ca03e_icgraph.png" border="0" usemap="#ad0/de4/star__bus__config_8h_a7698bd213b1044dfc1d6e92d879ca03e_icgraph" loading="lazy" alt=""/></div>
 <map name="ad0/de4/star__bus__config_8h_a7698bd213b1044dfc1d6e92d879ca03e_icgraph" id="ad0/de4/star__bus__config_8h_a7698bd213b1044dfc1d6e92d879ca03e_icgraph">
-<area shape="rect" title="Deinitialize the bus/device associated with this configuration." alt="" coords="596,96,748,121"/>
-<area shape="rect" href="../../de/d98/star__bus__config_8c.html#a194581e2eb82227a022f04b9057db839" title="Destroy a bus configuration and free all associated resources." alt="" coords="385,96,548,121"/>
-<area shape="poly" title=" " alt="" coords="578,109,549,111,549,106,583,108"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a06b72c3ee71e25fc9eac1ce50d7b08de" title=" " alt="" coords="170,5,298,46"/>
-<area shape="poly" title=" " alt="" coords="417,90,336,60,298,47,298,42,338,55,422,89"/>
-<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a238abc1b4d0e4b98520e4227ec121b42" title="Deinitialize the bus manager and all managed I2C bus configurations." alt="" coords="151,70,317,96"/>
-<area shape="poly" title=" " alt="" coords="367,98,318,95,317,89,372,97"/>
-<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#aa440431606d8a33fb394b4225db51f93" title="Remove an I2C bus configuration from the manager and destroy it." alt="" coords="131,120,337,145"/>
-<area shape="poly" title=" " alt="" coords="367,119,338,124,337,119,373,118"/>
-<area shape="rect" href="../../d1/d50/star__bus__helpers_8c.html#a88cdd0738dfec53d37d49f977c9d989c" title="Quick setup: I2C master with automatic defaults." alt="" coords="148,169,320,194"/>
-<area shape="poly" title=" " alt="" coords="423,127,338,160,299,171,297,166,336,155,418,128"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,42,83,68"/>
-<area shape="poly" title=" " alt="" coords="152,40,84,52,82,47,156,36"/>
-<area shape="poly" title=" " alt="" coords="133,70,84,63,83,58,138,67"/>
+<area shape="rect" title="Deinitialize the bus/device associated with this configuration." alt="" coords="471,31,622,56"/>
+<area shape="rect" href="../../de/d98/star__bus__config_8c.html#a194581e2eb82227a022f04b9057db839" title="Destroy a bus configuration and free all associated resources." alt="" coords="260,31,423,56"/>
+<area shape="poly" title=" " alt="" coords="452,44,423,46,423,41,458,43"/>
+<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a238abc1b4d0e4b98520e4227ec121b42" title="Deinitialize the bus manager and all managed I2C bus configurations." alt="" coords="25,5,192,31"/>
+<area shape="poly" title=" " alt="" coords="242,33,192,30,192,25,247,33"/>
+<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#aa440431606d8a33fb394b4225db51f93" title="Remove an I2C bus configuration from the manager and destroy it." alt="" coords="5,55,212,80"/>
+<area shape="poly" title=" " alt="" coords="242,54,212,59,212,54,247,53"/>
 </map>
 </div>
 
@@ -918,11 +777,11 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success, ESP_ERR_INVALID_ARG if config is NULL, or an error code from the underlying deinitialization process. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00311">311</a> of file <a class="el" href="../../de/d98/star__bus__config_8c_source.html">star_bus_config.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00313">313</a> of file <a class="el" href="../../de/d98/star__bus__config_8c_source.html">star_bus_config.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00029">star_bus_config::initialized</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00676">internal_star_bus_config_cleanup()</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00027">star_bus_config::name</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00561">star_bus_config_deinit()</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00053">star_bus_config::initialized</a>, <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00821">internal_star_bus_config_cleanup()</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00051">star_bus_config::name</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, and <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00703">star_bus_config_deinit()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00033">initialize_hardware_buses()</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00566">star_bus_manager_deinit()</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00445">star_bus_manager_remove_bus()</a>, and <a class="el" href="../../d1/d50/star__bus__helpers_8c_source.html#l00100">star_bus_quick_setup_i2c()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00437">star_bus_manager_deinit()</a>, and <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00266">star_bus_manager_remove_bus()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -930,9 +789,17 @@ Here is the call graph for this function:</div>
 <map name="ad0/de4/star__bus__config_8h_a194581e2eb82227a022f04b9057db839_cgraph" id="ad0/de4/star__bus__config_8h_a194581e2eb82227a022f04b9057db839_cgraph">
 <area shape="rect" title="Destroy a bus configuration and free all associated resources." alt="" coords="5,42,169,68"/>
 <area shape="rect" href="../../de/d98/star__bus__config_8c.html#a83c2bd0044ce80e0be65ebba3c1a3cc1" title="Clean up and free memory for a bus configuration structure. Does NOT deinitialize the hardware/driver..." alt="" coords="217,5,379,46"/>
-<area shape="poly" title=" " alt="" coords="168,41,204,38,199,40,169,46"/>
+<area shape="poly" title=" " alt="" coords="168,41,204,38,199,40,170,46"/>
 <area shape="rect" href="../../de/d98/star__bus__config_8c.html#a7698bd213b1044dfc1d6e92d879ca03e" title="Deinitialize the bus/device associated with this configuration." alt="" coords="222,70,374,96"/>
-<area shape="poly" title=" " alt="" coords="169,63,209,71,204,71,169,68"/>
+<area shape="poly" title=" " alt="" coords="169,63,209,70,204,71,169,68"/>
+<area shape="rect" href="../../d9/dd6/star__bus__onewire_8c.html#a29d4d6f395cdbf4ba5757cbcc183c13c" title="Deinitialize 1&#45;Wire bus." alt="" coords="427,70,588,96"/>
+<area shape="poly" title=" " alt="" coords="374,80,414,83,409,83,374,86"/>
+<area shape="rect" href="../../d9/dd6/star__bus__onewire_8c.html#ae2fccd2ccf0204c4ae5e4ae370719b9a" title="Get 1&#45;Wire state for a bus (thread&#45;safe)." alt="" coords="636,63,777,103"/>
+<area shape="poly" title=" " alt="" coords="589,80,623,83,618,83,589,86"/>
+<area shape="rect" href="../../d9/dd6/star__bus__onewire_8c.html#a1ca358f311abcb5bb498c6df68b556c6" title="Initialize 1&#45;Wire global mutex (thread&#45;safe)." alt="" coords="826,29,965,70"/>
+<area shape="poly" title=" " alt="" coords="777,68,808,65,813,64,778,73"/>
+<area shape="rect" href="../../d9/dd6/star__bus__onewire_8c.html#aeaca1b0b2a8c0f56d9c5a0a68736af0a" title="Get 1&#45;Wire state for a bus (must be called with mutex held)." alt="" coords="825,95,966,135"/>
+<area shape="poly" title=" " alt="" coords="777,92,813,101,807,100,777,98"/>
 </map>
 </div>
 <div class="dynheader">
@@ -940,18 +807,11 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d0/de4/star__bus__config_8h_a194581e2eb82227a022f04b9057db839_icgraph.png" border="0" usemap="#ad0/de4/star__bus__config_8h_a194581e2eb82227a022f04b9057db839_icgraph" loading="lazy" alt=""/></div>
 <map name="ad0/de4/star__bus__config_8h_a194581e2eb82227a022f04b9057db839_icgraph" id="ad0/de4/star__bus__config_8h_a194581e2eb82227a022f04b9057db839_icgraph">
-<area shape="rect" title="Destroy a bus configuration and free all associated resources." alt="" coords="385,96,548,121"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a06b72c3ee71e25fc9eac1ce50d7b08de" title=" " alt="" coords="170,5,298,46"/>
-<area shape="poly" title=" " alt="" coords="417,90,336,60,298,47,298,42,338,55,422,89"/>
-<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a238abc1b4d0e4b98520e4227ec121b42" title="Deinitialize the bus manager and all managed I2C bus configurations." alt="" coords="151,70,317,96"/>
-<area shape="poly" title=" " alt="" coords="367,98,318,95,317,89,372,97"/>
-<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#aa440431606d8a33fb394b4225db51f93" title="Remove an I2C bus configuration from the manager and destroy it." alt="" coords="131,120,337,145"/>
-<area shape="poly" title=" " alt="" coords="367,119,338,124,337,119,373,118"/>
-<area shape="rect" href="../../d1/d50/star__bus__helpers_8c.html#a88cdd0738dfec53d37d49f977c9d989c" title="Quick setup: I2C master with automatic defaults." alt="" coords="148,169,320,194"/>
-<area shape="poly" title=" " alt="" coords="423,127,338,160,299,171,297,166,336,155,418,128"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,42,83,68"/>
-<area shape="poly" title=" " alt="" coords="152,40,84,52,82,47,156,36"/>
-<area shape="poly" title=" " alt="" coords="133,70,84,63,83,58,138,67"/>
+<area shape="rect" title="Destroy a bus configuration and free all associated resources." alt="" coords="260,31,423,56"/>
+<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a238abc1b4d0e4b98520e4227ec121b42" title="Deinitialize the bus manager and all managed I2C bus configurations." alt="" coords="25,5,192,31"/>
+<area shape="poly" title=" " alt="" coords="242,33,192,30,192,25,247,33"/>
+<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#aa440431606d8a33fb394b4225db51f93" title="Remove an I2C bus configuration from the manager and destroy it." alt="" coords="5,55,212,80"/>
+<area shape="poly" title=" " alt="" coords="242,54,212,59,212,54,247,53"/>
 </map>
 </div>
 
@@ -996,19 +856,29 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success, ESP_ERR_INVALID_ARG if config or manager is NULL, ESP_ERR_INVALID_STATE if already initialized, or an error code from the underlying driver initialization. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00350">350</a> of file <a class="el" href="../../de/d98/star__bus__config_8c_source.html">star_bus_config.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00352">352</a> of file <a class="el" href="../../de/d98/star__bus__config_8c_source.html">star_bus_config.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00079">star_spi_bus_config::bus_cfg</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00095">star_spi_bus_config::cipo_io_num</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00048">star_i2c_bus_config::config</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00094">star_spi_bus_config::copi_io_num</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00097">star_spi_bus_config::cs_io_num</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00082">star_spi_bus_config::dev_cfg</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00038">star_bus_config::dht22</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00037">star_bus_config::gpio</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00186">star_dht22_bus_config::gpio_pin</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00030">star_bus_config::handle</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00076">star_spi_bus_config::host</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00035">star_bus_config::i2c</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00029">star_bus_config::initialized</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00078">star_spi_bus_config::is_peripheral</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00034">k_star_bus_type_dht22</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00033">k_star_bus_type_gpio</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00031">k_star_bus_type_i2c</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00032">k_star_bus_type_spi</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00100">star_spi_bus_config::max_transfer_sz</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00102">star_spi_bus_config::mode</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00027">star_bus_config::name</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00134">star_gpio_bus_config::pin_count</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00047">star_i2c_bus_config::port</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00099">star_spi_bus_config::quadhd_io_num</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00098">star_spi_bus_config::quadwp_io_num</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00101">star_spi_bus_config::queue_size</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00096">star_spi_bus_config::sclk_io_num</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00036">star_bus_config::spi</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00060">star_bus_manager::spi_device_count</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00059">star_bus_manager::spi_host_initialized</a>, <a class="el" href="../../d7/d27/star__bus__types_8c_source.html#l00007">star_bus_type_to_string()</a>, and <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00028">star_bus_config::type</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00062">star_bus_config::adc</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00087">star_bus_manager::adc_channel_count</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00086">star_bus_manager::adc_unit_handles</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00171">star_adc_bus_config::atten</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00170">star_adc_bus_config::bitwidth</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00104">star_spi_bus_config::bus_cfg</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00167">star_adc_bus_config::cali_handle</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00169">star_adc_bus_config::channel</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00120">star_spi_bus_config::cipo_io_num</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00073">star_i2c_bus_config::config</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00119">star_spi_bus_config::copi_io_num</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00122">star_spi_bus_config::cs_io_num</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00107">star_spi_bus_config::dev_cfg</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00061">star_bus_config::gpio</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00197">star_onewire_bus_config::gpio_pin</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00127">star_onewire_config_t::gpio_pin</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00054">star_bus_config::handle</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00101">star_spi_bus_config::host</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00059">star_bus_config::i2c</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00053">star_bus_config::initialized</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00103">star_spi_bus_config::is_peripheral</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00059">k_star_bus_type_adc</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00058">k_star_bus_type_gpio</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00056">k_star_bus_type_i2c</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00060">k_star_bus_type_onewire</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00057">k_star_bus_type_spi</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00125">star_spi_bus_config::max_transfer_sz</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00127">star_spi_bus_config::mode</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00051">star_bus_config::name</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00063">star_bus_config::onewire</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00149">star_gpio_bus_config::pin_count</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00148">star_gpio_bus_config::pins</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00072">star_i2c_bus_config::port</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00124">star_spi_bus_config::quadhd_io_num</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00123">star_spi_bus_config::quadwp_io_num</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00126">star_spi_bus_config::queue_size</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00121">star_spi_bus_config::sclk_io_num</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00201">star_onewire_bus_config::search_timeout_ms</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00131">star_onewire_config_t::search_timeout_ms</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00200">star_onewire_bus_config::speed</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00128">star_onewire_config_t::speed</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00060">star_bus_config::spi</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00084">star_bus_manager::spi_device_count</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00083">star_bus_manager::spi_host_initialized</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00100">star_bus_onewire_init()</a>, <a class="el" href="../../d7/d27/star__bus__types_8c_source.html#l00016">star_bus_type_to_string()</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00052">star_bus_config::type</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00168">star_adc_bus_config::unit</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00166">star_adc_bus_config::unit_handle</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00198">star_onewire_bus_config::use_parasitic_power</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00129">star_onewire_config_t::use_parasitic_power</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00199">star_onewire_bus_config::use_strong_pullup</a>, and <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00130">star_onewire_config_t::use_strong_pullup</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00293">star_bus_manager_add_bus()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00114">star_bus_manager_add_bus()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d0/de4/star__bus__config_8h_acac7a0cf0c56efc3bb097a450f94b417_cgraph.png" border="0" usemap="#ad0/de4/star__bus__config_8h_acac7a0cf0c56efc3bb097a450f94b417_cgraph" loading="lazy" alt=""/></div>
 <map name="ad0/de4/star__bus__config_8h_acac7a0cf0c56efc3bb097a450f94b417_cgraph" id="ad0/de4/star__bus__config_8h_acac7a0cf0c56efc3bb097a450f94b417_cgraph">
-<area shape="rect" title="Initialize the bus/device associated with this configuration." alt="" coords="5,5,143,31"/>
-<area shape="rect" href="../../d7/d27/star__bus__types_8c.html#afa900f53de82aaa97ea08d9b3d5a4a6d" title="Convert bus type to string." alt="" coords="191,5,351,31"/>
-<area shape="poly" title=" " alt="" coords="143,16,178,18,173,18,143,21"/>
+<area shape="rect" title="Initialize the bus/device associated with this configuration." alt="" coords="5,98,143,124"/>
+<area shape="rect" href="../../d9/dd6/star__bus__onewire_8c.html#a62f64f5066b1bf467cc7aec6786f41f4" title="Initialize 1&#45;Wire bus." alt="" coords="197,73,344,98"/>
+<area shape="poly" title=" " alt="" coords="143,100,184,96,179,98,144,105"/>
+<area shape="rect" href="../../d7/d27/star__bus__types_8c.html#afa900f53de82aaa97ea08d9b3d5a4a6d" title="Convert bus type to string." alt="" coords="191,122,351,148"/>
+<area shape="poly" title=" " alt="" coords="143,117,178,123,173,124,143,122"/>
+<area shape="rect" href="../../d9/dd6/star__bus__onewire_8c.html#ae2fccd2ccf0204c4ae5e4ae370719b9a" title="Get 1&#45;Wire state for a bus (thread&#45;safe)." alt="" coords="399,37,539,78"/>
+<area shape="poly" title=" " alt="" coords="345,73,386,69,381,70,345,78"/>
+<area shape="rect" href="../../d9/dd6/star__bus__onewire_8c.html#ad63255b48501f7f398a53edeaf6eb9ce" title="Set GPIO output high (release for pull&#45;up)." alt="" coords="406,102,532,128"/>
+<area shape="poly" title=" " alt="" coords="345,94,394,103,389,104,345,99"/>
+<area shape="rect" href="../../d9/dd6/star__bus__onewire_8c.html#a1ca358f311abcb5bb498c6df68b556c6" title="Initialize 1&#45;Wire global mutex (thread&#45;safe)." alt="" coords="588,5,728,46"/>
+<area shape="poly" title=" " alt="" coords="539,43,576,40,570,41,540,48"/>
+<area shape="rect" href="../../d9/dd6/star__bus__onewire_8c.html#aeaca1b0b2a8c0f56d9c5a0a68736af0a" title="Get 1&#45;Wire state for a bus (must be called with mutex held)." alt="" coords="587,71,729,111"/>
+<area shape="poly" title=" " alt="" coords="540,67,575,76,570,76,540,73"/>
 </map>
 </div>
 <div class="dynheader">
@@ -1016,15 +886,11 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d0/de4/star__bus__config_8h_acac7a0cf0c56efc3bb097a450f94b417_icgraph.png" border="0" usemap="#ad0/de4/star__bus__config_8h_acac7a0cf0c56efc3bb097a450f94b417_icgraph" loading="lazy" alt=""/></div>
 <map name="ad0/de4/star__bus__config_8h_acac7a0cf0c56efc3bb097a450f94b417_icgraph" id="ad0/de4/star__bus__config_8h_acac7a0cf0c56efc3bb097a450f94b417_icgraph">
-<area shape="rect" title="Initialize the bus/device associated with this configuration." alt="" coords="583,42,721,68"/>
-<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a3a0dc80007e321a8697c399e0f0bf559" title="Add a new I2C bus/device configuration to the manager." alt="" coords="351,42,535,68"/>
-<area shape="poly" title=" " alt="" coords="565,55,536,58,536,52,571,55"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a06b72c3ee71e25fc9eac1ce50d7b08de" title=" " alt="" coords="153,5,281,46"/>
-<area shape="poly" title=" " alt="" coords="333,41,282,37,282,31,339,41"/>
-<area shape="rect" href="../../d1/d50/star__bus__helpers_8c.html#a88cdd0738dfec53d37d49f977c9d989c" title="Quick setup: I2C master with automatic defaults." alt="" coords="131,70,303,96"/>
-<area shape="poly" title=" " alt="" coords="338,68,304,75,303,70,333,69"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,13,83,38"/>
-<area shape="poly" title=" " alt="" coords="135,27,84,28,83,23,139,24"/>
+<area shape="rect" title="Initialize the bus/device associated with this configuration." alt="" coords="363,5,500,31"/>
+<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a3a0dc80007e321a8697c399e0f0bf559" title="Add a new I2C bus/device configuration to the manager." alt="" coords="131,5,315,31"/>
+<area shape="poly" title=" " alt="" coords="345,18,315,21,315,16,350,18"/>
+<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
+<area shape="poly" title=" " alt="" coords="113,19,83,21,83,16,118,18"/>
 </map>
 </div>
 

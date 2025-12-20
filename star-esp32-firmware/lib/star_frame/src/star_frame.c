@@ -1,4 +1,14 @@
-/* lib/star_frame/src/star_sensor_ds18b20.c */
+/**
+ * @file star_frame.c
+ * @brief Frame encoding/decoding implementation with CRC-32 error detection
+ * @details
+ * Implements frame protocol for reliable data transmission with CRC-32 error detection.
+ * Provides frame serialization/deserialization with header, payload, and CRC validation
+ * for SPI communication between ESP32 and RPi5.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #include "star_frame.h"
 
@@ -12,61 +22,12 @@
 
 static const char* s_tag = "STAR_FRAME";
 
-/* --- Helper Functions --- */
+/* --- Private Function Prototypes --- */
 
-/**
- * @brief Write 16-bit value in network byte order (big-endian)
- *
- * Protocol headers use big-endian format following RFC 1700 network byte order standard.
- * This ensures cross-platform compatibility when communicating between RPi5 (ARM, little-endian)
- * and ESP32 (Xtensa, little-endian) over SPI.
- *
- * @param[out] dest  Destination buffer (2 bytes)
- * @param[in]  value 16-bit value to write
- */
-static inline void internal_write_u16_be(uint8_t* dest, uint16_t value) {
-    dest[0] = (value >> 8) & 0xFF;
-    dest[1] = value & 0xFF;
-}
-
-/**
- * @brief Read 16-bit value from network byte order (big-endian)
- *
- * @param[in] src  Source buffer (2 bytes)
- * @return 16-bit value in host byte order
- */
-static inline uint16_t internal_read_u16_be(const uint8_t* src) {
-    return ((uint16_t)src[0] << 8) | src[1];
-}
-
-/**
- * @brief Write 32-bit value in little-endian format
- *
- * CRC-32 uses little-endian format to match IEEE 802.3 standard and ESP32 ROM
- * CRC implementation. This is different from the big-endian header fields.
- *
- * @param[out] dest  Destination buffer (4 bytes)
- * @param[in]  value 32-bit value to write
- */
-static inline void internal_write_u32_le(uint8_t* dest, uint32_t value) {
-    dest[0] = value & 0xFF;
-    dest[1] = (value >> 8) & 0xFF;
-    dest[2] = (value >> 16) & 0xFF;
-    dest[3] = (value >> 24) & 0xFF;
-}
-
-/**
- * @brief Read 32-bit value from little-endian format
- *
- * @param[in] src  Source buffer (4 bytes)
- * @return 32-bit value in host byte order
- */
-static inline uint32_t internal_read_u32_le(const uint8_t* src) {
-    return ((uint32_t)src[0]) |
-           ((uint32_t)src[1] << 8) |
-           ((uint32_t)src[2] << 16) |
-           ((uint32_t)src[3] << 24);
-}
+static inline void     internal_write_u16_be(uint8_t* dest, uint16_t value);
+static inline uint16_t internal_read_u16_be(const uint8_t* src);
+static inline void     internal_write_u32_le(uint8_t* dest, uint32_t value);
+static inline uint32_t internal_read_u32_le(const uint8_t* src);
 
 /* --- Public Functions --- */
 
@@ -267,4 +228,60 @@ uint32_t star_frame_crc32(const uint8_t* data, size_t len) {
      * This implementation has zero SRAM overhead (uses ROM lookup table)
      */
     return esp_rom_crc32_le(0xFFFFFFFF, data, len) ^ 0xFFFFFFFF;
+}
+
+/* --- Private Functions --- */
+
+/**
+ * @brief Write 16-bit value in network byte order (big-endian)
+ *
+ * Protocol headers use big-endian format following RFC 1700 network byte order standard.
+ * This ensures cross-platform compatibility when communicating between RPi5 (ARM, little-endian)
+ * and ESP32 (Xtensa, little-endian) over SPI.
+ *
+ * @param[out] dest  Destination buffer (2 bytes)
+ * @param[in]  value 16-bit value to write
+ */
+static inline void internal_write_u16_be(uint8_t* dest, uint16_t value) {
+    dest[0] = (value >> 8) & 0xFF;
+    dest[1] = value & 0xFF;
+}
+
+/**
+ * @brief Read 16-bit value from network byte order (big-endian)
+ *
+ * @param[in] src  Source buffer (2 bytes)
+ * @return 16-bit value in host byte order
+ */
+static inline uint16_t internal_read_u16_be(const uint8_t* src) {
+    return ((uint16_t)src[0] << 8) | src[1];
+}
+
+/**
+ * @brief Write 32-bit value in little-endian format
+ *
+ * CRC-32 uses little-endian format to match IEEE 802.3 standard and ESP32 ROM
+ * CRC implementation. This is different from the big-endian header fields.
+ *
+ * @param[out] dest  Destination buffer (4 bytes)
+ * @param[in]  value 32-bit value to write
+ */
+static inline void internal_write_u32_le(uint8_t* dest, uint32_t value) {
+    dest[0] = value & 0xFF;
+    dest[1] = (value >> 8) & 0xFF;
+    dest[2] = (value >> 16) & 0xFF;
+    dest[3] = (value >> 24) & 0xFF;
+}
+
+/**
+ * @brief Read 32-bit value from little-endian format
+ *
+ * @param[in] src  Source buffer (4 bytes)
+ * @return 32-bit value in host byte order
+ */
+static inline uint32_t internal_read_u32_le(const uint8_t* src) {
+    return ((uint32_t)src[0]) |
+           ((uint32_t)src[1] << 8) |
+           ((uint32_t)src[2] << 16) |
+           ((uint32_t)src[3] << 24);
 }

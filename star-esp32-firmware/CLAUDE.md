@@ -534,6 +534,78 @@ star_drv8243_set_speed(&motor_driver, 50.0f);
    - Document public APIs thoroughly
    - Explain the "why" not just the "what"
 
+5a. **Enum Placement**
+   - **All enums must be in header files (.h)**, never in .c files
+   - This includes configuration constants, state enums, and option enums
+   - Rationale:
+     - Makes configuration discoverable without reading implementation
+     - Users can see available options and limits
+     - Easier to tune parameters
+     - Consistent with STAR library pattern (see `star_ds18b20_resolution_t`)
+   - Example:
+     ```c
+     /* In telemetry_task.h */
+     typedef enum {
+       k_telemetry_rx_buffer_size = 256,
+       k_telemetry_tx_buffer_size = 512,
+     } telemetry_buffer_config_t;
+     ```
+
+6. **Task Organization**
+   - **One FreeRTOS task per file** - Each task should be in its own module
+   - Place task headers in `include/tasks/` directory
+   - Place task implementation in `src/tasks/` directory
+   - File naming: `<task_name>_task.c` and `<task_name>_task.h`
+   - Each task module should expose a single creation function: `<task_name>_task_create()`
+   - Example structure:
+     ```
+     include/tasks/telemetry_task.h      - Public API (task creation)
+     src/tasks/telemetry_task.c          - Task implementation
+     include/tasks/motor_control_task.h
+     src/tasks/motor_control_task.c
+     ```
+   - Benefits:
+     - Clear separation of concerns (headers in include/, source in src/)
+     - Easier to test individual tasks
+     - Reduces main.c complexity
+     - Makes task dependencies explicit
+     - Follows standard C project structure
+
+7. **Function Organization**
+   - **Always use forward declarations** for static functions
+   - Place forward declarations in a "Private Function Prototypes" section after constants/types
+   - Organize file structure as follows:
+     ```c
+     /* Includes */
+
+     /* Constants and static variables */
+
+     /* Type definitions */
+
+     /* --- Private Function Prototypes --- */
+     static void internal_helper(void);
+     static void internal_main_logic(void);
+
+     /* --- Public Functions --- */
+     void public_api_function(void) {
+         internal_main_logic();
+     }
+
+     /* --- Private Functions --- */
+     static void internal_main_logic(void) {
+         internal_helper();
+     }
+
+     static void internal_helper(void) {
+         // Implementation
+     }
+     ```
+   - Benefits of forward declarations:
+     - Clear API overview at file top
+     - Functions can be organized logically (high-level first)
+     - Easier to navigate large files
+     - Consistent with majority of STAR codebase
+
 ## Project Structure
 
 ```

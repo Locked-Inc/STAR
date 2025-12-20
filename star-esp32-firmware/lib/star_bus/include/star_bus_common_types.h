@@ -1,4 +1,22 @@
-/* lib/star_bus/include/star_bus_common_types.h */
+/**
+ * @file star_bus_common_types.h
+ * @brief Common type definitions shared across all bus protocols
+ * @details
+ * This file provides fundamental types used by all bus abstractions in the STAR framework.
+ * It serves as the foundation for the bus manager architecture.
+ *
+ * Key types defined:
+ * - star_bus_type_t - Bus protocol enumeration (I2C, SPI, GPIO, ADC, OneWire)
+ * - pin_registration_function_t - Callback type for pin conflict detection
+ * - Forward declarations for star_bus_config_t, star_bus_event_t, star_bus_manager_t
+ *
+ * This header is included by all protocol-specific headers and ensures consistent type
+ * definitions across the bus abstraction layer. It follows the Dependency Inversion
+ * Principle by defining interfaces independent of concrete implementations.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #ifndef STAR_COMPONENT_BUS_COMMON_TYPES_H
 #define STAR_COMPONENT_BUS_COMMON_TYPES_H

@@ -1,0 +1,9 @@
+<map id="_star_v1_GetProtectionThresholdsResponse" name="_star_v1_GetProtectionThresholdsResponse">
+<area shape="rect" id="Node000001" title=" " alt="" coords="98,199,321,239"/>
+<area shape="rect" id="Node000002" href="$d5/de6/struct__star__v1___response_header.html" title=" " alt="" coords="12,102,191,128"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="126,136,192,198,186,199,124,141"/>
+<area shape="rect" id="Node000003" href="$d6/df3/struct__google__protobuf___timestamp.html" title=" " alt="" coords="5,5,198,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="103,44,104,102,99,101,100,49"/>
+<area shape="rect" id="Node000004" href="$db/dd0/struct__star__v1___protection_thresholds.html" title=" " alt="" coords="216,102,417,128"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="295,137,231,201,228,196,290,139"/>
+</map>

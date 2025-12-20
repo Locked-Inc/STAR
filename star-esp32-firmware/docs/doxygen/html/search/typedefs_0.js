@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['async_5foperation_5ft_0',['async_operation_t',['../d4/db0/star__bus__async_8c.html#a91a8ac0330c4aeed9e460689006aa54d',1,'star_bus_async.c']]]
+  ['bq7850_5fhandle_5ft_0',['bq7850_handle_t',['../d2/d63/star__bms__bq7850_8h.html#a450e1107b37dc6f35e424dc7772544e2',1,'star_bms_bq7850.h']]]
 ];

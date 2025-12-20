@@ -1,0 +1,9 @@
+<map id="_star_v1_GetUpdateProgressResponse" name="_star_v1_GetUpdateProgressResponse">
+<area shape="rect" id="Node000001" title=" " alt="" coords="174,199,368,239"/>
+<area shape="rect" id="Node000002" href="$d5/de6/struct__star__v1___response_header.html" title=" " alt="" coords="12,102,191,128"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="136,134,241,197,236,199,134,139"/>
+<area shape="rect" id="Node000003" href="$d6/df3/struct__google__protobuf___timestamp.html" title=" " alt="" coords="5,5,198,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="103,44,104,102,99,101,100,49"/>
+<area shape="rect" id="Node000004" href="$d0/d26/struct__star__v1___firmware_update_progress.html" title=" " alt="" coords="215,102,441,128"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="316,140,284,200,280,196,312,143"/>
+</map>

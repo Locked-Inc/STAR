@@ -1,0 +1,9 @@
+<map id="lib/star_motor/include/star_motor.h" name="lib/star_motor/include/star_motor.h">
+<area shape="rect" id="Node000001" title="Brushed DC motor control API using ESP32 MCPWM peripheral." alt="" coords="93,5,238,46"/>
+<area shape="rect" id="Node000002" href="$dc/ddf/star__drv8243_8h.html" title="DRV8243 H&#45;bridge motor driver integration API." alt="" coords="5,94,164,135"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="135,60,105,95,101,92,139,55"/>
+<area shape="rect" id="Node000004" href="$da/dc0/star__motor_8c.html" title="Brushed DC motor control implementation using ESP32 MCPWM peripheral." alt="" coords="187,94,310,135"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="196,55,232,93,227,94,195,60"/>
+<area shape="rect" id="Node000003" href="$d2/d8f/star__drv8243_8c.html" title="DRV8243 H&#45;bridge motor driver integration implementation." alt="" coords="17,183,152,223"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="86,148,87,183,82,181,83,152"/>
+</map>
