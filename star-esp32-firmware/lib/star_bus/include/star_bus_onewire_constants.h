@@ -1,4 +1,23 @@
-/* lib/star_bus/include/star_bus_onewire_constants.h */
+/**
+ * @file star_bus_onewire_constants.h
+ * @brief OneWire (1-Wire) protocol timing constants and device definitions
+ * @details
+ * This file provides timing specifications, ROM commands, and device family codes for
+ * the Dallas/Maxim OneWire protocol used in STAR firmware.
+ *
+ * Key definitions:
+ * - onewire_timing_t - Timing parameters for standard and overdrive modes
+ * - onewire_rom_cmd_t - ROM commands (search, read, match, skip, alarm search)
+ * - ds18b20_cmd_t - DS18B20 temperature sensor specific commands
+ * - onewire_family_code_t - Device family codes for common OneWire devices
+ *
+ * All timing values follow Dallas/Maxim specifications and are expressed in microseconds.
+ * Standard speed is used by default (480us reset pulse), with overdrive mode available
+ * for future high-speed implementations.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #ifndef STAR_BUS_ONEWIRE_CONSTANTS_H
 #define STAR_BUS_ONEWIRE_CONSTANTS_H

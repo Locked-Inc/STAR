@@ -1,0 +1,5 @@
+<map id="star_drv8243_stop" name="star_drv8243_stop">
+<area shape="rect" id="Node000001" title="Stop motor." alt="" coords="5,5,134,31"/>
+<area shape="rect" id="Node000002" href="$da/dc0/star__motor_8c.html#afbbfe21c46e45f08382adba217da7072" title="Stop motor." alt="" coords="182,5,297,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="134,16,169,18,163,18,134,21"/>
+</map>

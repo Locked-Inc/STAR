@@ -12,5 +12,9 @@ var star__bus__manager_8c =
     [ "star_bus_manager_register_all_pins", "d7/d60/star__bus__manager_8c.html#ad3ad5ac9f78399d475aeea127ad5f641", null ],
     [ "star_bus_manager_remove_bus", "d7/d60/star__bus__manager_8c.html#aa440431606d8a33fb394b4225db51f93", null ],
     [ "star_bus_manager_with_bus", "d7/d60/star__bus__manager_8c.html#a82a97432d19eef429970f3e80a9be14b", null ],
+    [ "star_bus_read_analog_mv", "d7/d60/star__bus__manager_8c.html#a20dc68877907e8b866bb386caa57f351", null ],
+    [ "star_bus_read_analog_raw", "d7/d60/star__bus__manager_8c.html#ac56f7a391c23f795d7c07775676b3497", null ],
+    [ "star_bus_read_digital", "d7/d60/star__bus__manager_8c.html#a42334b54b0bb4a6ffc8fc73c9cdde5e4", null ],
+    [ "star_bus_write_digital", "d7/d60/star__bus__manager_8c.html#a858ce3f84b41cbf367b32e86b784c571", null ],
     [ "s_TAG", "d7/d60/star__bus__manager_8c.html#a999e3dd103132afd3cd1856f477f2dbd", null ]
 ];

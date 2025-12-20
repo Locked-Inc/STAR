@@ -47,6 +47,7 @@ var star__bms__bq7850_8h =
     [ "BQ7850_CMD_TEMPERATURE", "d2/d63/star__bms__bq7850_8h.html#a229a0c93542ed61e5f1d742644a9ae15", null ],
     [ "BQ7850_CMD_VOLTAGE", "d2/d63/star__bms__bq7850_8h.html#ac6d66eb2ff44cde3320fa8e309daa7ff", null ],
     [ "BQ7850_DEFAULT_ADDR", "d2/d63/star__bms__bq7850_8h.html#a5870a81b9d89f403dc3489ff207a69e4", null ],
+    [ "BQ7850_DEVICE_INFO_STRING_LEN", "d2/d63/star__bms__bq7850_8h.html#a5fa5d91d1d09f17dfc16080d7138ad48", null ],
     [ "BQ7850_FET_CONTROL_CHG_FET", "d2/d63/star__bms__bq7850_8h.html#af9787eb72bfca663ec895dac08bc21a0", null ],
     [ "BQ7850_FET_CONTROL_DSG_FET", "d2/d63/star__bms__bq7850_8h.html#a2918b3ff48afc70390fa22209c3cf39c", null ],
     [ "BQ7850_FET_CONTROL_PCHG_FET", "d2/d63/star__bms__bq7850_8h.html#aafcbe3bcde7d1cef008044a221a568cf", null ],

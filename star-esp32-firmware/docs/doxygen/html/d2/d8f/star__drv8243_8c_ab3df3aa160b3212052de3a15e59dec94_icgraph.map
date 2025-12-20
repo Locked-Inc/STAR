@@ -1,0 +1,7 @@
+<map id="star_drv8243_read_current" name="star_drv8243_read_current">
+<area shape="rect" id="Node000001" title="Read motor current." alt="" coords="423,13,598,38"/>
+<area shape="rect" id="Node000002" href="$d2/d8f/star__drv8243_8c.html#a0f2ea5aae7887b0cae90a4627ca8e1a5" title=" " alt="" coords="217,5,375,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="405,26,375,28,375,23,410,26"/>
+<area shape="rect" id="Node000003" href="$d2/d8f/star__drv8243_8c.html#a89498ae0f0e8381a9df852d8ac98b2fb" title="Set motor speed and direction." alt="" coords="5,13,169,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="199,26,169,28,169,23,204,25"/>
+</map>

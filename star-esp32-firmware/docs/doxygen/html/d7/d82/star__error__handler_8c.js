@@ -1,6 +1,5 @@
 var star__error__handler_8c =
 [
-    [ "TAG", "d7/d82/star__error__handler_8c.html#afc3d101f633a076cc1ca84b85b6224b2", null ],
     [ "error_handler_can_retry", "d7/d82/star__error__handler_8c.html#a079645c8c76bf328f63c7d7a9ecc1697", null ],
     [ "error_handler_create_custom", "d7/d82/star__error__handler_8c.html#a4fbf7f5d1c862bd91f3ece2812b45b03", null ],
     [ "error_handler_create_default", "d7/d82/star__error__handler_8c.html#a37c70fed0d10c260212eb781ca4e5862", null ],
@@ -16,5 +15,6 @@ var star__error__handler_8c =
     [ "star_error_interface_cleanup", "d7/d82/star__error__handler_8c.html#a983c8213a8523e7362c0b55bdaa296bc", null ],
     [ "star_error_interface_create_default", "d7/d82/star__error__handler_8c.html#a0c603b415b63ee1bd6bf532b5f315716", null ],
     [ "star_error_interface_destroy", "d7/d82/star__error__handler_8c.html#aec5a90e8436436a2317a7c5e8b24414f", null ],
-    [ "s_error_handler_mutex_timeout_ms", "d7/d82/star__error__handler_8c.html#a7b533658e1e2a7b5ddf2a61fe69efd4c", null ]
+    [ "s_error_handler_mutex_timeout_ms", "d7/d82/star__error__handler_8c.html#a7b533658e1e2a7b5ddf2a61fe69efd4c", null ],
+    [ "s_TAG", "d7/d82/star__error__handler_8c.html#a999e3dd103132afd3cd1856f477f2dbd", null ]
 ];

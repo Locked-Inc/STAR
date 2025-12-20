@@ -39,10 +39,10 @@ var NAVTREE =
         [ "All", "globals.html", "globals_dup" ],
         [ "Functions", "globals_func.html", "globals_func" ],
         [ "Variables", "globals_vars.html", "globals_vars" ],
-        [ "Typedefs", "globals_type.html", null ],
+        [ "Typedefs", "globals_type.html", "globals_type" ],
         [ "Enumerations", "globals_enum.html", null ],
         [ "Enumerator", "globals_eval.html", "globals_eval" ],
-        [ "Macros", "globals_defs.html", null ]
+        [ "Macros", "globals_defs.html", "globals_defs" ]
       ] ]
     ] ]
   ] ]
@@ -51,17 +51,25 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"d1/da8/star__bus__debug_8h.html#a672c8c59e0a222a334f7960fce73a59f",
-"d2/d6c/structstar__health__config__t.html#a5000b4be2530727a80967b229dafdeca",
-"d3/d32/structstar__bus__stats__t.html#aba5cf699c902fbfd7d946ded4de4a818",
-"d4/d7e/system__config_8h.html#a96c6e0528ea62fb58c3df3ce0a997a02a22b836398153b12319c014938cf93127",
-"d6/d1e/structsystem__health__t.html#a8b06b9b49a3e41d1c310bd0a34d2579a",
-"d7/d82/star__error__handler_8c.html#a331853a63aa2729d5a2a368c72aff6f2",
-"d9/dbd/star__bus__spi_8c.html#abb5396e9a5853fff01901fc8bc8fb164",
-"da/dc2/structstar__pin__validator__t.html",
-"dc/d96/watchdog__task_8c.html#a218696bc1c97dcdb24db87e1d71009de",
-"dd/dce/structbq7850__device__info__t.html#a8b71ceda7a15ab384afe5e67ecef8286",
-"df/deb/star__bus__batch_8c.html#a3a1201881330caab00d81086718b48f5"
+"d0/df6/struct__star__v1___battery_state.html",
+"d1/dd0/proto_2battery__management_8pb_8h.html#a101126701ad72c4291613092a059ce0d",
+"d1/dd0/proto_2battery__management_8pb_8h.html#ac818216191d891d62ca2bf59e8b7ad15",
+"d2/d88/structstar__i2c__event__data.html#a31092c0121d79b93e44f0967e8a8f145",
+"d2/dfa/proto_2motor__control_8pb_8h.html#aa8ae1cf349a568d1b7c6d82bea96e85b",
+"d3/dcd/star_2v1_2firmware__update_8pb_8h.html#a7f858303351a8df2ef5bc2c819c20769",
+"d4/d40/star_2v1_2common_8pb_8h.html#a42952eb100e733304fb01feef959742f",
+"d5/d02/star_2v1_2configuration_8pb_8h.html#a5ce6bd69d7fcd74fa206409cc648ddb1",
+"d5/d95/star__core_8h_source.html",
+"d7/d63/struct__star__v1___get_motor_pid_config_response.html#afa0ad50fdfc7960808404cc8fc45fa31",
+"d7/dd3/proto_2firmware__update_8pb_8h.html#a0c1ac3d0f5c73349a91e0cfc5c82db19",
+"d7/dd3/proto_2firmware__update_8pb_8h.html#acd6bd96d31ec03091be9658654c46474a3c8270b219daf01ba024ac93ebe0921d",
+"da/d1c/structstar__spi__bus__config.html#af449d969307bf40e698e4a973bed6ae2",
+"db/d65/proto_2configuration_8pb_8h.html#a8b450a95c79ce58af6dd28230f8e21db",
+"dc/d30/duration_8pb_8h.html#a4a6befc597f26e97860edd068b2fd020",
+"de/d57/star_2v1_2motor__control_8pb_8h.html#a0f44a77ee22922615f68da802669acd0",
+"df/d2d/struct__star__v1___finalize_update_response.html",
+"df/d92/star_2v1_2battery__management_8pb_8h.html#a9675f37af4db9856891bfa78e34d665d",
+"functions_vars_k.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronization';

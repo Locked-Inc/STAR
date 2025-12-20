@@ -1,4 +1,13 @@
-/* lib/star_bus/src/star_bus_spi_peripheral.c */
+/**
+ * @file star_bus_spi_peripheral.c
+ * @brief SPI peripheral mode implementation for the bus manager
+ * @details
+ * Implements SPI peripheral (slave) mode operations for ESP32. Allows ESP32 to act
+ * as an SPI peripheral device controlled by an external SPI controller (e.g., Raspberry Pi 5).
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #include "star_bus_spi_peripheral.h"
 

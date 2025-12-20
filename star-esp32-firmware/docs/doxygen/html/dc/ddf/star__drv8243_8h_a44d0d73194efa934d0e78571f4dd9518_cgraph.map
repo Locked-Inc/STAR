@@ -1,0 +1,10 @@
+<map id="star_drv8243_deinit" name="star_drv8243_deinit">
+<area shape="rect" id="Node000001" title="Deinitialize DRV8243 motor driver." alt="" coords="5,31,140,56"/>
+<area shape="rect" id="Node000002" href="$d2/d8f/star__drv8243_8c.html#a2b42dc030f30835c30c570b0d6571f2b" title="Stop motor." alt="" coords="188,5,316,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="140,31,175,29,170,30,141,37"/>
+<area shape="rect" id="Node000004" href="$da/dc0/star__motor_8c.html#ad823fb7c44b2b792c6b20010493d668b" title="Deinitialize motor controller and release resources." alt="" coords="191,55,312,80"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="140,50,179,57,173,58,140,55"/>
+<area shape="rect" id="Node000003" href="$da/dc0/star__motor_8c.html#afbbfe21c46e45f08382adba217da7072" title="Stop motor." alt="" coords="364,31,479,56"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="316,25,351,33,346,33,316,30"/>
+<area shape="poly" id="edge4_Node000004_Node000003" title=" " alt="" coords="313,56,346,54,351,53,313,62"/>
+</map>

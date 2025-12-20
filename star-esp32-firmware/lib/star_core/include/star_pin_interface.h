@@ -1,4 +1,15 @@
-/* lib/star_core/include/star_pin_interface.h */
+/**
+ * @file star_pin_interface.h
+ * @brief Abstract pin validator interface for dependency inversion
+ * @details
+ * This interface defines the contract for GPIO pin management in the STAR framework.
+ * It follows the Dependency Inversion Principle (DIP), allowing high-level components
+ * to register, unregister, and validate GPIO pins without depending on concrete
+ * pin validator implementations. Prevents pin conflicts across peripheral drivers.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #ifndef STAR_PIN_INTERFACE_H
 #define STAR_PIN_INTERFACE_H
@@ -13,10 +24,6 @@ extern "C" {
 #endif
 
 /**
- * @file star_pin_interface.h
- * @brief Pin validator interface for dependency inversion
- *
- * This interface defines the contract for GPIO pin management in the STAR framework.
  * It follows the Dependency Inversion Principle (DIP), allowing high-level
  * components to depend on this abstract interface rather than concrete implementations.
  *

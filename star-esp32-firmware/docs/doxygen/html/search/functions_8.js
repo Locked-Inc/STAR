@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['measure_5fpulse_0',['measure_pulse',['../dc/d1f/star__bus__dht22__proprietary_8c.html#ac0af9cb9d464422a719e1e0bb987d80f',1,'star_bus_dht22_proprietary.c']]]
+  ['telemetry_5ftask_5fcreate_0',['telemetry_task_create',['../dd/d6f/telemetry__task_8c.html#a8b71cb82beffbf0e20612ef2cdcf151a',1,'telemetry_task_create(star_ds18b20_handle_t *sensor, star_arq_handle_t *arq):&#160;telemetry_task.c'],['../d9/d8b/telemetry__task_8h.html#a8b71cb82beffbf0e20612ef2cdcf151a',1,'telemetry_task_create(star_ds18b20_handle_t *sensor, star_arq_handle_t *arq):&#160;telemetry_task.c']]]
 ];

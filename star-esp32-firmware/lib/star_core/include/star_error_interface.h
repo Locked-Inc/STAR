@@ -1,4 +1,15 @@
-/* lib/star_core/include/star_error_interface.h */
+/**
+ * @file star_error_interface.h
+ * @brief Abstract error handler interface for dependency inversion
+ * @details
+ * This interface defines the contract for error handling in the STAR framework.
+ * It follows the Dependency Inversion Principle (DIP), allowing high-level
+ * components to depend on this abstraction rather than concrete error handler
+ * implementations. Supports retry logic with exponential backoff for transient errors.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #ifndef STAR_ERROR_INTERFACE_H
 #define STAR_ERROR_INTERFACE_H
@@ -13,10 +24,6 @@ extern "C" {
 #endif
 
 /**
- * @file star_error_interface.h
- * @brief Error handler interface for dependency inversion
- *
- * This interface defines the contract for error handling in the STAR framework.
  * It follows the Dependency Inversion Principle (DIP), allowing high-level
  * components to depend on this abstract interface rather than concrete implementations.
  *

@@ -1,9 +1,7 @@
 <map id="internal_unregister_config_pins" name="internal_unregister_config_pins">
-<area shape="rect" id="Node000001" title="Unregister all pins for a single bus configuration." alt="" coords="385,23,512,64"/>
-<area shape="rect" id="Node000002" href="$d7/d60/star__bus__manager_8c.html#a238abc1b4d0e4b98520e4227ec121b42" title="Deinitialize the bus manager and all managed I2C bus configurations." alt="" coords="151,5,317,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="367,34,317,31,317,25,373,34"/>
-<area shape="rect" id="Node000004" href="$d7/d60/star__bus__manager_8c.html#aa440431606d8a33fb394b4225db51f93" title="Remove an I2C bus configuration from the manager and destroy it." alt="" coords="131,55,337,80"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="372,52,338,59,337,53,367,53"/>
-<area shape="rect" id="Node000003" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="133,20,84,21,83,16,138,17"/>
+<area shape="rect" id="Node000001" title="Unregister all pins for a single bus configuration." alt="" coords="260,23,387,64"/>
+<area shape="rect" id="Node000002" href="$d7/d60/star__bus__manager_8c.html#a238abc1b4d0e4b98520e4227ec121b42" title="Deinitialize the bus manager and all managed I2C bus configurations." alt="" coords="25,5,192,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="242,35,192,31,192,25,247,34"/>
+<area shape="rect" id="Node000003" href="$d7/d60/star__bus__manager_8c.html#aa440431606d8a33fb394b4225db51f93" title="Remove an I2C bus configuration from the manager and destroy it." alt="" coords="5,55,212,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="242,53,212,59,212,53,247,52"/>
 </map>

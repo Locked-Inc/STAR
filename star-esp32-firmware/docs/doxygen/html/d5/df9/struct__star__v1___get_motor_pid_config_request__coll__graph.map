@@ -1,0 +1,9 @@
+<map id="_star_v1_GetMotorPidConfigRequest" name="_star_v1_GetMotorPidConfigRequest">
+<area shape="rect" id="Node000001" title=" " alt="" coords="111,199,300,239"/>
+<area shape="rect" id="Node000002" href="$d7/df7/struct__star__v1___request_header.html" title=" " alt="" coords="121,102,290,128"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="207,141,208,200,203,197,204,145"/>
+<area shape="rect" id="Node000003" href="$d6/df3/struct__google__protobuf___timestamp.html" title=" " alt="" coords="5,5,198,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="126,39,195,101,190,102,125,44"/>
+<area shape="rect" id="Node000004" href="$de/d3e/struct__google__protobuf___duration.html" title=" " alt="" coords="221,5,398,31"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="302,44,293,64,281,80,263,94,243,104,240,99,260,89,277,76,289,61,298,48"/>
+</map>

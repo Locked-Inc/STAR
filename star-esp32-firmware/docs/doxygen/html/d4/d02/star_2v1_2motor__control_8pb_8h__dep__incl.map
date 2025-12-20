@@ -1,0 +1,19 @@
+<map id="include/star/v1/motor_control.pb.h" name="include/star/v1/motor_control.pb.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="424,5,568,46"/>
+<area shape="rect" id="Node000002" href="$db/d65/proto_2configuration_8pb_8h.html" title=" " alt="" coords="5,102,208,127"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="408,49,162,103,161,98,409,44"/>
+<area shape="rect" id="Node000003" href="$de/d03/include_2proto_2motor__control_8pb_8c.html" title=" " alt="" coords="232,94,365,135"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="440,52,344,96,342,91,435,53"/>
+<area shape="rect" id="Node000004" href="$d5/d02/star_2v1_2configuration_8pb_8h.html" title=" " alt="" coords="389,102,602,127"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="498,60,498,103,494,100,494,64"/>
+<area shape="rect" id="Node000008" href="$da/d6e/include_2star_2v1_2motor__control_8pb_8c.html" title=" " alt="" coords="627,94,770,135"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="556,50,655,93,650,93,555,55"/>
+<area shape="rect" id="Node000009" href="$de/df6/src_2proto_2star_2v1_2motor__control_8pb_8c.html" title=" " alt="" coords="794,94,947,135"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="583,44,796,95,791,96,583,50"/>
+<area shape="rect" id="Node000005" href="$d6/db7/include_2proto_2configuration_8pb_8c.html" title=" " alt="" coords="163,183,365,208"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="449,132,300,185,299,179,443,133"/>
+<area shape="rect" id="Node000006" href="$d0/da9/include_2star_2v1_2configuration_8pb_8c.html" title=" " alt="" coords="389,183,602,208"/>
+<area shape="poly" id="edge5_Node000004_Node000006" title=" " alt="" coords="498,141,498,184,494,180,494,145"/>
+<area shape="rect" id="Node000007" href="$d5/d9b/src_2proto_2star_2v1_2configuration_8pb_8c.html" title=" " alt="" coords="627,183,850,208"/>
+<area shape="poly" id="edge6_Node000004_Node000007" title=" " alt="" coords="548,130,704,182,698,182,547,135"/>
+</map>

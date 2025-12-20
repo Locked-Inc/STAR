@@ -1,0 +1,17 @@
+<map id="star_drv8243_set_speed" name="star_drv8243_set_speed">
+<area shape="rect" id="Node000001" title="Set motor speed and direction." alt="" coords="5,78,169,104"/>
+<area shape="rect" id="Node000002" href="$d2/d8f/star__drv8243_8c.html#a0f2ea5aae7887b0cae90a4627ca8e1a5" title=" " alt="" coords="217,5,375,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="130,75,216,50,212,53,132,80"/>
+<area shape="rect" id="Node000006" href="$d2/d8f/star__drv8243_8c.html#a16b6ca9e1e6dbb5bd94813b1c645f420" title="Get fault status." alt="" coords="219,71,372,111"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="169,88,206,90,201,92,170,94"/>
+<area shape="rect" id="Node000007" href="$da/dc0/star__motor_8c.html#aded359b2a7707eede58b92d452e7c60a" title="Set motor duty cycle." alt="" coords="226,136,366,161"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="137,102,234,130,229,132,136,107"/>
+<area shape="rect" id="Node000003" href="$d2/d8f/star__drv8243_8c.html#ab3df3aa160b3212052de3a15e59dec94" title="Read motor current." alt="" coords="423,13,598,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="375,23,410,25,405,26,376,28"/>
+<area shape="rect" id="Node000004" href="$d2/deb/star__bus__adc_8c.html#a1bb4dd7003ae57c4a6fff8bfa4c9d60c" title="Read calibrated voltage in millivolts." alt="" coords="646,13,827,38"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="599,23,634,25,628,26,599,28"/>
+<area shape="rect" id="Node000005" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="875,13,1059,38"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="827,23,862,25,856,26,827,28"/>
+<area shape="rect" id="Node000008" href="$da/dc0/star__motor_8c.html#a4335063cb179a19e4da77a7ad74727e1" title=" " alt="" coords="442,136,579,161"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="367,146,429,148,424,148,367,151"/>
+</map>

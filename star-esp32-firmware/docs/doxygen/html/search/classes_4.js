@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['error_5fhandler_0',['error_handler',['../d6/d7d/structerror__handler.html',1,'']]],
-  ['euler_5ft_1',['euler_t',['../d8/ded/structeuler__t.html',1,'']]]
+  ['i2c_5fdma_5fstate_5ft_0',['i2c_dma_state_t',['../dd/d28/structi2c__dma__state__t.html',1,'']]]
 ];

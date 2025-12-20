@@ -1,0 +1,18 @@
+<map id="include/proto/configuration.pb.h" name="include/proto/configuration.pb.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,208,31"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="146,300,192,326"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="97,34,77,72,52,128,43,160,40,191,44,222,55,251,70,268,89,282,133,302,128,304,87,287,67,272,51,253,38,223,35,191,38,159,47,127,72,70,99,29"/>
+<area shape="rect" id="Node000003" href="$d4/d40/star_2v1_2common_8pb_8h.html" title=" " alt="" coords="97,153,241,178"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="109,29,120,64,134,104,155,140,149,140,129,106,115,66,109,34"/>
+<area shape="rect" id="Node000006" href="$de/d57/star_2v1_2motor__control_8pb_8h.html" title=" " alt="" coords="144,79,317,105"/>
+<area shape="poly" id="edge8_Node000001_Node000006" title=" " alt="" coords="127,29,199,70,194,72,128,34"/>
+<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="125,181,92,199,77,212,65,228,61,239,62,249,77,269,103,285,134,300,129,300,101,290,73,273,57,251,56,238,60,225,73,208,90,195,129,177"/>
+<area shape="rect" id="Node000004" href="$dc/d30/duration_8pb_8h.html" title=" " alt="" coords="74,226,264,252"/>
+<area shape="poly" id="edge4_Node000003_Node000004" title=" " alt="" coords="171,176,172,211,167,210,168,181"/>
+<area shape="rect" id="Node000005" href="$d2/d11/timestamp_8pb_8h.html" title=" " alt="" coords="288,226,493,252"/>
+<area shape="poly" id="edge6_Node000003_Node000005" title=" " alt="" coords="207,176,341,220,336,222,206,182"/>
+<area shape="poly" id="edge5_Node000004_Node000002" title=" " alt="" coords="171,250,172,285,167,283,167,254"/>
+<area shape="poly" id="edge7_Node000005_Node000002" title=" " alt="" coords="356,253,208,302,206,297,350,252"/>
+<area shape="poly" id="edge9_Node000006_Node000002" title=" " alt="" coords="298,103,383,124,426,138,465,155,497,175,517,198,522,211,522,225,517,239,507,254,486,270,455,282,373,300,283,309,208,313,208,308,283,304,372,294,453,277,484,265,503,250,512,237,517,224,516,212,512,201,493,179,463,160,424,143,382,129,299,108"/>
+<area shape="poly" id="edge10_Node000006_Node000003" title=" " alt="" coords="222,103,191,142,187,139,219,107"/>
+</map>

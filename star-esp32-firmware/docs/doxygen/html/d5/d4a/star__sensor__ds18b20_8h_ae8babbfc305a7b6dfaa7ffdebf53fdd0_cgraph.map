@@ -1,0 +1,38 @@
+<map id="star_sensor_ds18b20_set_resolution" name="star_sensor_ds18b20_set_resolution">
+<area shape="rect" id="Node000001" title="Set DS18B20 temperature resolution." alt="" coords="5,98,151,138"/>
+<area shape="rect" id="Node000002" href="$d5/dca/star__sensor__ds18b20_8c.html#a7590a7e4166137a0c32a07d12f7ca72f" title=" " alt="" coords="199,98,353,138"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="150,116,186,117,181,119,152,121"/>
+<area shape="rect" id="Node000003" href="$d5/dca/star__sensor__ds18b20_8c.html#a3a5346d34dbc4c38fb0dd24e74558e05" title=" " alt="" coords="401,40,555,81"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="349,95,392,85,387,87,351,100"/>
+<area shape="rect" id="Node000005" href="$d9/dd6/star__bus__onewire_8c.html#ae88febdda5fbab30605093333a32d45c" title="Write a byte." alt="" coords="847,55,1037,80"/>
+<area shape="poly" id="edge21_Node000002_Node000005" title=" " alt="" coords="353,115,555,109,677,101,798,90,863,83,858,84,799,95,677,107,555,114,354,120"/>
+<area shape="rect" id="Node000014" href="$d9/dd6/star__bus__onewire_8c.html#ac79d607f6cdbfc963260a2220dacfc19" title="Send reset pulse and detect device presence." alt="" coords="1095,156,1254,182"/>
+<area shape="poly" id="edge15_Node000002_Node000014" title=" " alt="" coords="354,120,1080,161,1079,166,354,125"/>
+<area shape="rect" id="Node000004" href="$d9/dd6/star__bus__onewire_8c.html#a2bcf9eed5cd94bb5aab94b47f5c9e183" title="Send MATCH ROM command to address a specific device." alt="" coords="603,5,799,31"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="555,43,618,34,613,35,557,49"/>
+<area shape="rect" id="Node000013" href="$d9/dd6/star__bus__onewire_8c.html#a8514f88ab78bd0bc87dff818b0fbc6ff" title="Send SKIP ROM command to address all devices." alt="" coords="609,55,793,80"/>
+<area shape="poly" id="edge13_Node000003_Node000013" title=" " alt="" coords="555,61,597,64,591,65,556,66"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="767,29,863,51,858,51,767,34"/>
+<area shape="rect" id="Node000006" href="$d9/dd6/star__bus__onewire_8c.html#ae2fccd2ccf0204c4ae5e4ae370719b9a" title="Get 1&#45;Wire state for a bus (thread&#45;safe)." alt="" coords="1312,42,1453,82"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="1037,64,1299,63,1294,64,1037,69"/>
+<area shape="rect" id="Node000009" href="$d9/dd6/star__bus__onewire_8c.html#a68eda1de47f3c405ce2f5819d72f1f9e" title="Write a single bit." alt="" coords="1085,107,1264,132"/>
+<area shape="poly" id="edge8_Node000005_Node000009" title=" " alt="" coords="1003,78,1102,103,1096,103,1002,84"/>
+<area shape="rect" id="Node000007" href="$d9/dd6/star__bus__onewire_8c.html#a1ca358f311abcb5bb498c6df68b556c6" title="Initialize 1&#45;Wire global mutex (thread&#45;safe)." alt="" coords="1502,10,1641,50"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="1453,48,1484,45,1489,44,1454,53"/>
+<area shape="rect" id="Node000008" href="$d9/dd6/star__bus__onewire_8c.html#aeaca1b0b2a8c0f56d9c5a0a68736af0a" title="Get 1&#45;Wire state for a bus (must be called with mutex held)." alt="" coords="1501,75,1642,116"/>
+<area shape="poly" id="edge7_Node000006_Node000008" title=" " alt="" coords="1453,72,1489,80,1483,80,1453,77"/>
+<area shape="poly" id="edge10_Node000009_Node000006" title=" " alt="" coords="1224,103,1295,86,1300,85,1225,109"/>
+<area shape="rect" id="Node000010" href="$d9/dd6/star__bus__onewire_8c.html#aa9ea579b78a4cd478c2ad813a5845871" title="Delay in microseconds." alt="" coords="1321,107,1444,132"/>
+<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="1265,117,1309,119,1303,120,1265,122"/>
+<area shape="rect" id="Node000011" href="$d9/dd6/star__bus__onewire_8c.html#ad63255b48501f7f398a53edeaf6eb9ce" title="Set GPIO output high (release for pull&#45;up)." alt="" coords="1320,156,1445,182"/>
+<area shape="poly" id="edge11_Node000009_Node000011" title=" " alt="" coords="1232,130,1313,152,1308,152,1232,136"/>
+<area shape="rect" id="Node000012" href="$d9/dd6/star__bus__onewire_8c.html#a2aaa095c78afd087a3292adf5b587aa3" title="Set GPIO output low." alt="" coords="1322,205,1443,231"/>
+<area shape="poly" id="edge12_Node000009_Node000012" title=" " alt="" coords="1242,130,1266,141,1281,154,1291,167,1300,180,1314,192,1322,199,1317,198,1311,196,1296,183,1286,170,1277,158,1263,146,1241,135"/>
+<area shape="poly" id="edge14_Node000013_Node000005" title=" " alt="" coords="793,65,833,67,828,68,793,70"/>
+<area shape="poly" id="edge17_Node000014_Node000006" title=" " alt="" coords="1241,153,1263,143,1278,131,1287,119,1296,106,1311,92,1315,92,1320,90,1314,96,1300,109,1291,122,1281,135,1266,147,1242,158"/>
+<area shape="poly" id="edge16_Node000014_Node000010" title=" " alt="" coords="1232,153,1308,137,1313,136,1233,158"/>
+<area shape="poly" id="edge18_Node000014_Node000011" title=" " alt="" coords="1255,166,1307,169,1302,169,1255,171"/>
+<area shape="poly" id="edge19_Node000014_Node000012" title=" " alt="" coords="1232,180,1313,201,1308,201,1232,185"/>
+<area shape="rect" id="Node000015" href="$d9/dd6/star__bus__onewire_8c.html#a95b10449e89aa69b47b641529ed75edc" title="Read GPIO input." alt="" coords="1319,255,1446,280"/>
+<area shape="poly" id="edge20_Node000014_Node000015" title=" " alt="" coords="1198,180,1250,209,1313,241,1328,249,1323,248,1311,246,1248,214,1197,185"/>
+</map>

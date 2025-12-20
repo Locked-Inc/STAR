@@ -1,11 +1,7 @@
 <map id="internal_register_config_pins" name="internal_register_config_pins">
-<area shape="rect" id="Node000001" title="Register all pins for a single bus configuration." alt="" coords="583,42,770,68"/>
-<area shape="rect" id="Node000002" href="$d7/d60/star__bus__manager_8c.html#a3a0dc80007e321a8697c399e0f0bf559" title="Add a new I2C bus/device configuration to the manager." alt="" coords="351,42,535,68"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="565,55,536,58,536,52,570,55"/>
-<area shape="rect" id="Node000003" href="$d0/d29/main_8c.html#a06b72c3ee71e25fc9eac1ce50d7b08de" title=" " alt="" coords="153,5,281,46"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="333,41,282,37,282,31,339,41"/>
-<area shape="rect" id="Node000005" href="$d1/d50/star__bus__helpers_8c.html#a88cdd0738dfec53d37d49f977c9d989c" title="Quick setup: I2C master with automatic defaults." alt="" coords="131,70,303,96"/>
-<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="338,68,304,75,303,70,333,69"/>
-<area shape="rect" id="Node000004" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,13,83,38"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="135,27,84,28,83,23,139,24"/>
+<area shape="rect" id="Node000001" title="Register all pins for a single bus configuration." alt="" coords="363,5,549,31"/>
+<area shape="rect" id="Node000002" href="$d7/d60/star__bus__manager_8c.html#a3a0dc80007e321a8697c399e0f0bf559" title="Add a new I2C bus/device configuration to the manager." alt="" coords="131,5,315,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="344,18,316,21,316,16,350,18"/>
+<area shape="rect" id="Node000003" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="113,19,83,21,83,16,118,18"/>
 </map>

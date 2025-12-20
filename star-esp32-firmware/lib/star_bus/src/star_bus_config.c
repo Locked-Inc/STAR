@@ -1,8 +1,14 @@
-/* lib/star_bus/src/star_bus_config.c */
-
-/* DHT22 is a bus protocol (single-wire proprietary), similar to I2C/SPI.
- * These methods create bus configurations, not sensor drivers.
- * This is intentional and follows the same pattern as create_i2c(), create_spi(). */
+/**
+ * @file star_bus_config.c
+ * @brief Bus configuration creation and lifecycle management implementation
+ * @details
+ * Provides factory functions for creating bus configuration structures for various
+ * protocols (I2C, SPI, UART, GPIO, ADC, 1-Wire). Each configuration is heap-allocated
+ * and must be freed using star_bus_config_destroy() to prevent memory leaks.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #include "star_bus_config.h"
 

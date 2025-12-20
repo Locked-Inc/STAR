@@ -1,0 +1,5 @@
+<map id="star_bus_gpio_write_digital" name="star_bus_gpio_write_digital">
+<area shape="rect" id="Node000001" title="Write digital value to GPIO pin." alt="" coords="5,5,143,46"/>
+<area shape="rect" id="Node000002" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="191,13,375,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="143,23,178,25,173,26,143,28"/>
+</map>

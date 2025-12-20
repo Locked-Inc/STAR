@@ -116,7 +116,7 @@ Public Attributes</h2></td></tr>
 <div class="textblock"><p>Error handler structure for managing error states and recovery. </p>
 <p>This structure maintains error state information and provides retry mechanisms for components that encounter errors. It tracks error counts, manages exponential backoff for retries, and can execute custom reset functions when needed. </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00150">150</a> of file <a class="el" href="../../d4/d59/star__error__handler_8h_source.html">star_error_handler.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00158">158</a> of file <a class="el" href="../../d4/d59/star__error__handler_8h_source.html">star_error_handler.h</a>.</p>
 </div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
 <a id="a3092784cca7d05c20028c9881bbf87cc" name="a3092784cca7d05c20028c9881bbf87cc"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3092784cca7d05c20028c9881bbf87cc">&#9670;&#160;</a></span>base_retry_delay</h2>
@@ -131,9 +131,9 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>Base delay between retries (ms) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00154">154</a> of file <a class="el" href="../../d4/d59/star__error__handler_8h_source.html">star_error_handler.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00162">162</a> of file <a class="el" href="../../d4/d59/star__error__handler_8h_source.html">star_error_handler.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00020">error_handler_init()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00097">error_handler_record_error()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00269">error_handler_reset_state()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00043">error_handler_init()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00120">error_handler_record_error()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00292">error_handler_reset_state()</a>.</p>
 
 </div>
 </div>
@@ -150,9 +150,9 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>Current retry attempt counter </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00153">153</a> of file <a class="el" href="../../d4/d59/star__error__handler_8h_source.html">star_error_handler.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00161">161</a> of file <a class="el" href="../../d4/d59/star__error__handler_8h_source.html">star_error_handler.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00240">error_handler_can_retry()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00020">error_handler_init()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00097">error_handler_record_error()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00269">error_handler_reset_state()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00263">error_handler_can_retry()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00043">error_handler_init()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00120">error_handler_record_error()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00292">error_handler_reset_state()</a>.</p>
 
 </div>
 </div>
@@ -169,9 +169,9 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>Current retry delay with backoff applied </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00156">156</a> of file <a class="el" href="../../d4/d59/star__error__handler_8h_source.html">star_error_handler.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00164">164</a> of file <a class="el" href="../../d4/d59/star__error__handler_8h_source.html">star_error_handler.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00020">error_handler_init()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00097">error_handler_record_error()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00269">error_handler_reset_state()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00043">error_handler_init()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00120">error_handler_record_error()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00292">error_handler_reset_state()</a>.</p>
 
 </div>
 </div>
@@ -188,9 +188,9 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>Total number of errors recorded </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00151">151</a> of file <a class="el" href="../../d4/d59/star__error__handler_8h_source.html">star_error_handler.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00159">159</a> of file <a class="el" href="../../d4/d59/star__error__handler_8h_source.html">star_error_handler.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00020">error_handler_init()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00097">error_handler_record_error()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00269">error_handler_reset_state()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00043">error_handler_init()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00120">error_handler_record_error()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00292">error_handler_reset_state()</a>.</p>
 
 </div>
 </div>
@@ -207,9 +207,9 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>Whether component is in error state </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00158">158</a> of file <a class="el" href="../../d4/d59/star__error__handler_8h_source.html">star_error_handler.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00166">166</a> of file <a class="el" href="../../d4/d59/star__error__handler_8h_source.html">star_error_handler.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00240">error_handler_can_retry()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00020">error_handler_init()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00097">error_handler_record_error()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00269">error_handler_reset_state()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00263">error_handler_can_retry()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00043">error_handler_init()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00120">error_handler_record_error()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00292">error_handler_reset_state()</a>.</p>
 
 </div>
 </div>
@@ -226,9 +226,9 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>Last recorded error code </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00157">157</a> of file <a class="el" href="../../d4/d59/star__error__handler_8h_source.html">star_error_handler.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00165">165</a> of file <a class="el" href="../../d4/d59/star__error__handler_8h_source.html">star_error_handler.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00020">error_handler_init()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00097">error_handler_record_error()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00269">error_handler_reset_state()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00043">error_handler_init()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00120">error_handler_record_error()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00292">error_handler_reset_state()</a>.</p>
 
 </div>
 </div>
@@ -245,9 +245,9 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>Maximum number of retry attempts allowed </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00152">152</a> of file <a class="el" href="../../d4/d59/star__error__handler_8h_source.html">star_error_handler.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00160">160</a> of file <a class="el" href="../../d4/d59/star__error__handler_8h_source.html">star_error_handler.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00240">error_handler_can_retry()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00020">error_handler_init()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00097">error_handler_record_error()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00263">error_handler_can_retry()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00043">error_handler_init()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00120">error_handler_record_error()</a>.</p>
 
 </div>
 </div>
@@ -264,9 +264,9 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>Maximum retry delay (ms) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00155">155</a> of file <a class="el" href="../../d4/d59/star__error__handler_8h_source.html">star_error_handler.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00163">163</a> of file <a class="el" href="../../d4/d59/star__error__handler_8h_source.html">star_error_handler.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00020">error_handler_init()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00097">error_handler_record_error()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00043">error_handler_init()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00120">error_handler_record_error()</a>.</p>
 
 </div>
 </div>
@@ -283,9 +283,9 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>Mutex for thread-safe operations </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00160">160</a> of file <a class="el" href="../../d4/d59/star__error__handler_8h_source.html">star_error_handler.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00168">168</a> of file <a class="el" href="../../d4/d59/star__error__handler_8h_source.html">star_error_handler.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00240">error_handler_can_retry()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00062">error_handler_deinit()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00329">error_handler_get_interface()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00020">error_handler_init()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00097">error_handler_record_error()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00269">error_handler_reset_state()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00263">error_handler_can_retry()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00085">error_handler_deinit()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00327">error_handler_get_interface()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00043">error_handler_init()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00120">error_handler_record_error()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00292">error_handler_reset_state()</a>.</p>
 
 </div>
 </div>
@@ -302,9 +302,9 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>Context passed to reset function </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00159">159</a> of file <a class="el" href="../../d4/d59/star__error__handler_8h_source.html">star_error_handler.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00167">167</a> of file <a class="el" href="../../d4/d59/star__error__handler_8h_source.html">star_error_handler.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00062">error_handler_deinit()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00020">error_handler_init()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00097">error_handler_record_error()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00085">error_handler_deinit()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00043">error_handler_init()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00120">error_handler_record_error()</a>.</p>
 
 </div>
 </div>
@@ -321,9 +321,9 @@ Public Attributes</h2></td></tr>
 </div><div class="memdoc">
 <p>Optional function to reset component </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00162">162</a> of file <a class="el" href="../../d4/d59/star__error__handler_8h_source.html">star_error_handler.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d4/d59/star__error__handler_8h_source.html#l00170">170</a> of file <a class="el" href="../../d4/d59/star__error__handler_8h_source.html">star_error_handler.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00062">error_handler_deinit()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00020">error_handler_init()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00097">error_handler_record_error()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00085">error_handler_deinit()</a>, <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00043">error_handler_init()</a>, and <a class="el" href="../../d7/d82/star__error__handler_8c_source.html#l00120">error_handler_record_error()</a>.</p>
 
 </div>
 </div>

@@ -1,5 +1,5 @@
 <map id="star_smbus_quick_command" name="star_smbus_quick_command">
-<area shape="rect" id="Node000001" title="SMBus Quick Command." alt="" coords="5,70,197,96"/>
+<area shape="rect" id="Node000001" title="SMBus quick command operation." alt="" coords="5,70,197,96"/>
 <area shape="rect" id="Node000002" href="$d3/df5/star__bus__smbus_8c.html#a028e8362b8c772d39dee59e24c15439b" title="Validate common parameters for SMBus operations." alt="" coords="245,5,406,46"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="153,67,232,49,227,51,155,72"/>
 <area shape="rect" id="Node000003" href="$dd/d1a/star__bus__i2c_8c.html#a6b73d11538cb25e07de224584c54ec49" title="Read raw bytes from an I2C device specified by a bus configuration. Does not send a register address ..." alt="" coords="248,70,403,96"/>

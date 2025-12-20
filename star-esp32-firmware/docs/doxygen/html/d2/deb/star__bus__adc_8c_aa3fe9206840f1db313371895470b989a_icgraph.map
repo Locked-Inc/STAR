@@ -1,0 +1,5 @@
+<map id="star_bus_adc_get_default_ops" name="star_bus_adc_get_default_ops">
+<area shape="rect" id="Node000001" title="Get default ADC operations structure." alt="" coords="238,5,436,31"/>
+<area shape="rect" id="Node000002" href="$de/d98/star__bus__config_8c.html#ac85bf955f3f1dfeebe2e5add73d47900" title="Create an ADC bus configuration." alt="" coords="5,5,190,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="219,18,190,21,190,16,225,18"/>
+</map>

@@ -1,0 +1,5 @@
+<map id="star_motor_set_duty" name="star_motor_set_duty">
+<area shape="rect" id="Node000001" title="Set motor duty cycle." alt="" coords="5,5,146,31"/>
+<area shape="rect" id="Node000002" href="$da/dc0/star__motor_8c.html#a4335063cb179a19e4da77a7ad74727e1" title=" " alt="" coords="194,5,331,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="146,16,181,18,176,18,146,21"/>
+</map>

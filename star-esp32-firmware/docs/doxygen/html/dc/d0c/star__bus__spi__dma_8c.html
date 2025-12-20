@@ -92,6 +92,9 @@ $(function(){initNavTree('dc/d0c/star__bus__spi__dma_8c.html','../../',''); });
   <div class="headertitle"><div class="title">star_bus_spi_dma.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>SPI DMA transfer implementation for high-throughput operations.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html">star_bus_spi_dma.h</a>&quot;</code><br />
 <code>#include &lt;driver/spi_master.h&gt;</code><br />
 <code>#include &lt;esp_heap_caps.h&gt;</code><br />
@@ -104,92 +107,99 @@ Include dependency graph for star_bus_spi_dma.c:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d5/df9/star__bus__spi__dma_8c__incl.png" border="0" usemap="#alib_2star__bus_2src_2star__bus__spi__dma_8c" loading="lazy" alt=""/></div>
 <map name="alib_2star__bus_2src_2star__bus__spi__dma_8c" id="alib_2star__bus_2src_2star__bus__spi__dma_8c">
-<area shape="rect" title=" " alt="" coords="1821,5,1957,46"/>
+<area shape="rect" title="SPI DMA transfer implementation for high&#45;throughput operations." alt="" coords="1042,5,1178,46"/>
 <area shape="rect" href="../../d0/d31/star__bus__spi__dma_8h.html" title="DMA&#45;accelerated SPI operations for high&#45;speed data transfers." alt="" coords="93,94,231,120"/>
-<area shape="poly" title=" " alt="" coords="1820,33,247,104,246,99,1820,27"/>
-<area shape="rect" title=" " alt="" coords="1598,610,1729,635"/>
-<area shape="poly" title=" " alt="" coords="1863,45,1839,70,1818,95,1798,135,1793,179,1793,477,1790,498,1784,517,1760,552,1730,581,1699,604,1698,599,1727,577,1756,549,1779,515,1785,496,1788,476,1788,179,1792,134,1813,93,1835,66,1859,48"/>
-<area shape="rect" title=" " alt="" coords="1827,94,1950,120"/>
-<area shape="poly" title=" " alt="" coords="1890,44,1891,80,1887,77,1887,49"/>
-<area shape="rect" title=" " alt="" coords="1974,94,2052,120"/>
-<area shape="poly" title=" " alt="" coords="1920,44,1984,86,1978,85,1919,49"/>
-<area shape="rect" title=" " alt="" coords="2075,94,2153,120"/>
-<area shape="poly" title=" " alt="" coords="1945,44,2068,88,2063,88,1945,49"/>
-<area shape="rect" title=" " alt="" coords="2178,94,2242,120"/>
-<area shape="poly" title=" " alt="" coords="1958,41,2166,93,2160,94,1957,46"/>
-<area shape="rect" href="../../d8/d8a/star__bus__spi_8h.html" title="SPI bus operations through the unified bus manager." alt="" coords="1045,94,1151,120"/>
-<area shape="poly" title=" " alt="" coords="1818,35,1167,101,1166,96,1822,33"/>
-<area shape="rect" title=" " alt="" coords="328,610,402,635"/>
-<area shape="poly" title=" " alt="" coords="154,123,130,177,119,214,114,253,114,476,120,507,135,533,157,555,185,573,251,598,315,615,310,615,249,603,183,578,154,559,130,537,115,509,109,477,109,253,114,213,125,175,156,118"/>
+<area shape="poly" title=" " alt="" coords="1041,35,247,101,246,96,1042,30"/>
+<area shape="rect" title=" " alt="" coords="1616,610,1748,635"/>
+<area shape="poly" title=" " alt="" coords="1178,25,1351,32,1455,40,1560,54,1656,73,1736,99,1767,116,1791,134,1806,155,1811,179,1811,477,1809,498,1802,517,1779,552,1749,581,1718,604,1716,599,1746,577,1775,549,1797,515,1804,496,1806,476,1806,179,1801,157,1787,138,1764,120,1734,104,1655,78,1559,59,1455,46,1351,37,1179,30"/>
+<area shape="rect" title=" " alt="" coords="924,94,1048,120"/>
+<area shape="poly" title=" " alt="" coords="1082,45,1019,88,1017,83,1077,48"/>
+<area shape="rect" title=" " alt="" coords="1072,94,1149,120"/>
+<area shape="poly" title=" " alt="" coords="1112,44,1112,80,1108,77,1109,49"/>
+<area shape="rect" title=" " alt="" coords="1172,94,1251,120"/>
+<area shape="poly" title=" " alt="" coords="1136,44,1187,84,1181,84,1135,49"/>
+<area shape="rect" title=" " alt="" coords="1275,94,1340,120"/>
+<area shape="poly" title=" " alt="" coords="1159,44,1266,88,1260,88,1159,49"/>
+<area shape="rect" href="../../d8/d8a/star__bus__spi_8h.html" title="SPI bus operations through the unified bus manager." alt="" coords="794,94,901,120"/>
+<area shape="poly" title=" " alt="" coords="1042,48,904,91,902,87,1047,45"/>
+<area shape="rect" title=" " alt="" coords="346,610,421,635"/>
+<area shape="poly" title=" " alt="" coords="154,123,130,177,119,214,114,253,114,476,120,509,137,537,162,559,193,577,227,591,264,602,333,617,328,617,262,607,226,596,190,582,158,564,133,540,115,511,109,477,109,253,114,213,125,175,156,118"/>
 <area shape="rect" title=" " alt="" coords="5,168,74,193"/>
 <area shape="poly" title=" " alt="" coords="140,123,75,161,71,158,143,118"/>
-<area shape="rect" title=" " alt="" coords="813,610,877,635"/>
-<area shape="poly" title=" " alt="" coords="165,118,175,153,190,192,248,312,298,405,327,445,363,483,409,521,467,559,493,571,529,581,619,597,800,618,795,618,619,602,528,586,492,576,465,564,406,525,360,487,323,449,293,408,243,315,185,194,170,155,164,123"/>
-<area shape="rect" href="../../d6/dcc/star__bus__manager_8h.html" title="Unified bus manager for I2C, SPI, GPIO, and other bus protocols." alt="" coords="200,168,338,193"/>
+<area shape="rect" title=" " alt="" coords="803,610,868,635"/>
+<area shape="poly" title=" " alt="" coords="165,117,176,153,190,192,213,229,239,256,260,284,267,303,269,326,269,403,274,442,288,471,309,493,338,508,410,532,494,559,572,585,653,602,727,612,791,619,785,619,727,617,652,607,571,590,492,564,409,537,336,513,306,497,283,474,269,444,264,403,264,327,261,304,255,287,235,259,209,233,185,194,171,154,165,123"/>
+<area shape="rect" href="../../d6/dcc/star__bus__manager_8h.html" title="Unified bus manager API for I2C, SPI, UART, GPIO, ADC, and 1&#45;Wire protocols." alt="" coords="200,168,338,193"/>
 <area shape="poly" title=" " alt="" coords="180,118,240,158,236,160,181,123"/>
-<area shape="poly" title=" " alt="" coords="260,196,243,229,219,278,199,338,192,369,190,400,190,476,193,499,202,520,215,538,232,555,273,582,316,604,310,604,270,587,229,559,211,542,197,522,188,501,185,477,185,400,187,368,194,336,214,276,239,226,262,191"/>
-<area shape="rect" href="../../d0/d84/star__bus__manager__types_8h.html" title=" " alt="" coords="597,241,775,267"/>
-<area shape="poly" title=" " alt="" coords="338,191,602,237,598,240,339,196"/>
-<area shape="rect" title=" " alt="" coords="326,315,470,341"/>
-<area shape="poly" title=" " alt="" coords="635,269,463,313,461,308,640,266"/>
-<area shape="rect" title=" " alt="" coords="494,315,617,341"/>
-<area shape="poly" title=" " alt="" coords="662,269,592,310,589,305,666,266"/>
-<area shape="rect" href="../../dd/d40/star__bus__common__types_8h.html" title=" " alt="" coords="1009,536,1187,562"/>
-<area shape="poly" title=" " alt="" coords="694,265,725,307,772,367,833,431,867,460,904,486,957,512,1015,532,1010,532,955,517,901,490,864,464,829,434,768,370,720,310,693,270"/>
-<area shape="rect" href="../../dd/d9d/star__bus__protocol__types_8h.html" title=" " alt="" coords="1011,315,1185,341"/>
-<area shape="poly" title=" " alt="" coords="756,265,1016,311,1010,313,757,270"/>
-<area shape="rect" href="../../df/d84/star__error__interface_8h.html" title="Error handler interface for dependency inversion." alt="" coords="478,536,622,562"/>
-<area shape="poly" title=" " alt="" coords="683,266,564,524,560,521,678,268"/>
-<area shape="rect" href="../../da/d58/star__pin__interface_8h.html" title="Pin validator interface for dependency inversion." alt="" coords="646,536,782,562"/>
-<area shape="poly" title=" " alt="" coords="689,266,714,522,709,520,685,269"/>
-<area shape="poly" title=" " alt="" coords="1009,561,418,619,418,613,1008,556"/>
-<area shape="poly" title=" " alt="" coords="1058,562,892,611,891,605,1053,563"/>
-<area shape="rect" title=" " alt="" coords="1440,610,1532,635"/>
-<area shape="poly" title=" " alt="" coords="1165,560,1427,610,1422,610,1164,565"/>
-<area shape="poly" title=" " alt="" coords="1188,559,1585,611,1580,611,1188,564"/>
-<area shape="rect" title=" " alt="" coords="998,610,1073,635"/>
-<area shape="poly" title=" " alt="" coords="1090,561,1057,600,1055,595,1085,563"/>
-<area shape="poly" title=" " alt="" coords="1008,337,886,357,811,372,732,393,651,419,571,451,493,491,423,538,396,566,377,598,374,594,392,563,419,534,491,486,568,446,649,414,731,388,810,367,885,352,1013,336"/>
-<area shape="poly" title=" " alt="" coords="1089,340,1044,390,865,600,862,596,1040,387,1084,343"/>
-<area shape="poly" title=" " alt="" coords="1100,339,1100,522,1096,519,1096,343"/>
-<area shape="poly" title=" " alt="" coords="1185,338,1281,357,1382,386,1459,410,1488,428,1515,461,1523,478,1526,496,1524,533,1515,568,1502,598,1499,594,1510,566,1519,532,1521,496,1517,480,1511,464,1485,432,1457,415,1380,391,1280,362,1185,343"/>
-<area shape="poly" title=" " alt="" coords="1186,330,1244,336,1309,347,1376,363,1441,386,1503,415,1549,444,1589,481,1632,535,1649,564,1659,596,1655,593,1644,566,1628,537,1585,485,1546,448,1500,420,1438,391,1375,368,1308,352,1244,342,1186,336"/>
-<area shape="poly" title=" " alt="" coords="1092,340,1045,421,1019,477,999,537,997,549,999,561,1018,598,1013,596,994,563,992,549,994,535,1014,475,1040,419,1088,342"/>
-<area shape="rect" title=" " alt="" coords="1212,536,1297,562"/>
-<area shape="poly" title=" " alt="" coords="1106,339,1151,413,1196,473,1236,525,1231,523,1191,476,1147,416,1103,343"/>
-<area shape="rect" href="../../db/d78/star__bus__event__types_8h.html" title=" " alt="" coords="1341,462,1501,488"/>
-<area shape="poly" title=" " alt="" coords="1186,334,1267,352,1309,367,1348,386,1382,415,1408,450,1403,448,1378,419,1345,391,1307,372,1266,357,1186,340"/>
-<area shape="rect" href="../../d0/da6/star__bus__function__types_8h.html" title=" " alt="" coords="1160,389,1335,414"/>
-<area shape="poly" title=" " alt="" coords="1124,339,1211,382,1206,381,1123,344"/>
-<area shape="poly" title=" " alt="" coords="1412,487,1370,528,1341,548,1310,564,1244,578,1128,593,893,619,892,614,1128,588,1243,573,1308,559,1338,543,1366,524,1407,489"/>
-<area shape="poly" title=" " alt="" coords="1368,488,1168,535,1167,530,1363,489"/>
-<area shape="poly" title=" " alt="" coords="1430,486,1457,535,1480,596,1475,594,1452,537,1427,491"/>
-<area shape="poly" title=" " alt="" coords="1442,486,1633,602,1627,601,1440,491"/>
-<area shape="poly" title=" " alt="" coords="1424,486,1424,525,1417,546,1405,564,1382,579,1349,591,1264,608,1170,618,1088,622,1088,617,1169,613,1263,603,1348,586,1380,574,1402,560,1413,544,1418,524,1420,490"/>
-<area shape="poly" title=" " alt="" coords="1395,488,1297,532,1296,527,1390,489"/>
-<area shape="poly" title=" " alt="" coords="1157,412,994,434,793,463,602,498,525,518,467,538,422,568,386,601,384,596,419,563,465,534,523,513,601,493,792,457,993,429,1162,411"/>
-<area shape="poly" title=" " alt="" coords="1227,414,998,538,880,604,878,599,996,534,1222,416"/>
-<area shape="poly" title=" " alt="" coords="1238,414,1123,527,1120,522,1233,416"/>
-<area shape="poly" title=" " alt="" coords="1335,407,1425,424,1471,440,1514,460,1557,491,1595,527,1650,598,1645,596,1592,531,1554,495,1511,465,1469,445,1423,430,1335,412"/>
-<area shape="poly" title=" " alt="" coords="1260,412,1286,442,1311,480,1319,501,1323,523,1321,544,1311,563,1296,576,1274,586,1216,602,1149,613,1088,620,1088,615,1149,608,1215,597,1272,581,1293,571,1307,560,1316,542,1318,523,1314,503,1306,483,1282,445,1259,417"/>
-<area shape="poly" title=" " alt="" coords="1250,413,1255,522,1251,519,1246,417"/>
-<area shape="poly" title=" " alt="" coords="1277,412,1380,456,1375,456,1277,418"/>
-<area shape="poly" title=" " alt="" coords="521,562,411,606,410,601,516,563"/>
-<area shape="poly" title=" " alt="" coords="601,560,800,610,795,610,600,565"/>
-<area shape="poly" title=" " alt="" coords="623,558,986,613,980,614,623,563"/>
-<area shape="poly" title=" " alt="" coords="657,562,417,613,417,608,652,562"/>
-<area shape="poly" title=" " alt="" coords="737,560,812,603,807,602,736,565"/>
-<area shape="poly" title=" " alt="" coords="769,560,986,610,980,610,769,565"/>
-<area shape="poly" title=" " alt="" coords="1042,116,879,144,660,187,551,215,452,246,371,280,340,298,316,317,301,336,294,354,291,400,291,476,297,511,310,544,328,573,346,599,341,597,323,576,305,546,292,512,286,477,286,400,288,353,296,333,312,313,337,294,368,275,450,241,549,210,659,182,878,139,1047,114"/>
-<area shape="poly" title=" " alt="" coords="1080,119,1012,170,975,204,943,243,917,288,896,336,880,387,868,436,853,528,848,596,844,592,848,527,863,435,875,385,891,335,912,285,939,240,971,200,1009,166,1075,122"/>
-<area shape="poly" title=" " alt="" coords="1151,106,1309,113,1406,122,1504,134,1595,153,1670,178,1700,193,1722,210,1737,230,1742,253,1742,477,1737,512,1723,546,1705,576,1686,600,1684,596,1701,573,1718,544,1732,511,1737,476,1737,253,1732,233,1719,214,1697,197,1668,183,1593,158,1503,140,1405,127,1308,119,1152,112"/>
-<area shape="rect" href="../../d7/d7c/star__bus__types_8h.html" title=" " alt="" coords="1038,168,1159,193"/>
-<area shape="poly" title=" " alt="" coords="1100,118,1100,153,1096,150,1097,122"/>
-<area shape="poly" title=" " alt="" coords="1034,193,772,241,771,236,1039,191"/>
-<area shape="poly" title=" " alt="" coords="1062,193,1017,215,972,243,953,260,937,280,927,302,923,327,923,403,927,425,935,446,949,464,965,481,1005,508,1048,530,1043,530,1003,513,962,485,944,468,931,448,921,427,918,403,918,326,922,300,933,277,949,257,969,239,1015,210,1057,195"/>
-<area shape="poly" title=" " alt="" coords="1100,192,1100,301,1096,298,1096,196"/>
-<area shape="poly" title=" " alt="" coords="1122,191,1175,221,1244,264,1317,321,1352,353,1383,387,1402,417,1415,449,1410,447,1397,419,1379,390,1348,356,1314,325,1241,269,1173,225,1122,197"/>
-<area shape="poly" title=" " alt="" coords="1109,191,1199,314,1236,376,1231,374,1195,316,1107,196"/>
+<area shape="poly" title=" " alt="" coords="262,191,235,251,223,288,218,327,218,476,221,499,229,519,242,537,258,554,297,581,337,604,332,603,294,586,255,558,238,540,225,521,216,500,213,477,213,326,218,287,230,248,260,196"/>
+<area shape="rect" href="../../d0/d84/star__bus__manager__types_8h.html" title="Bus manager internal type definitions." alt="" coords="717,241,895,267"/>
+<area shape="poly" title=" " alt="" coords="338,188,704,237,700,241,339,194"/>
+<area shape="rect" title=" " alt="" coords="456,315,599,341"/>
+<area shape="poly" title=" " alt="" coords="756,269,590,313,589,308,761,266"/>
+<area shape="rect" title=" " alt="" coords="674,315,797,341"/>
+<area shape="poly" title=" " alt="" coords="797,266,760,306,757,302,792,269"/>
+<area shape="rect" title=" " alt="" coords="662,389,822,414"/>
+<area shape="poly" title=" " alt="" coords="732,269,696,288,678,300,665,316,660,333,668,350,684,365,705,381,700,380,680,369,663,353,655,334,660,314,675,296,693,283,737,266"/>
+<area shape="rect" title=" " alt="" coords="820,315,934,341"/>
+<area shape="poly" title=" " alt="" coords="818,265,857,304,852,303,817,270"/>
+<area shape="rect" href="../../dd/d40/star__bus__common__types_8h.html" title="Common type definitions shared across all bus protocols." alt="" coords="1028,536,1206,562"/>
+<area shape="poly" title=" " alt="" coords="878,265,922,277,958,293,971,303,979,315,979,328,971,342,950,361,925,373,897,381,867,385,803,384,741,378,687,372,650,372,641,376,637,383,641,395,652,413,675,433,710,452,753,470,804,485,913,512,1018,533,1013,533,912,517,802,491,752,475,707,457,672,437,648,416,636,397,632,382,637,372,649,367,688,366,741,373,803,379,867,380,896,376,923,368,947,356,967,339,974,327,974,316,967,306,956,297,920,282,878,270"/>
+<area shape="rect" href="../../dd/d9d/star__bus__protocol__types_8h.html" title="Protocol&#45;specific configuration structures for all bus types." alt="" coords="1059,315,1233,341"/>
+<area shape="poly" title=" " alt="" coords="864,265,1076,311,1071,312,864,270"/>
+<area shape="rect" href="../../df/d84/star__error__interface_8h.html" title="Abstract error handler interface for dependency inversion." alt="" coords="547,536,692,562"/>
+<area shape="poly" title=" " alt="" coords="714,258,638,265,557,275,488,292,463,303,445,317,436,331,431,345,432,374,444,404,467,433,495,461,527,486,588,528,582,528,524,490,492,465,463,436,440,406,426,375,426,344,431,328,442,313,460,299,486,287,556,270,638,260,719,257"/>
+<area shape="rect" href="../../da/d58/star__pin__interface_8h.html" title="Abstract pin validator interface for dependency inversion." alt="" coords="716,536,851,562"/>
+<area shape="poly" title=" " alt="" coords="862,265,902,277,936,294,948,304,955,316,956,329,948,342,929,361,908,374,887,381,865,383,821,379,776,367,731,356,687,351,667,354,647,361,627,373,608,390,597,411,599,430,610,449,629,468,681,502,739,530,733,530,679,506,625,472,605,453,593,432,592,409,604,387,624,368,644,356,666,349,687,346,732,351,777,362,821,373,865,378,886,375,906,369,925,357,944,339,951,327,950,317,944,308,933,298,900,282,862,270"/>
+<area shape="poly" title=" " alt="" coords="1028,561,437,619,436,613,1027,556"/>
+<area shape="poly" title=" " alt="" coords="1072,562,883,612,882,607,1066,562"/>
+<area shape="rect" title=" " alt="" coords="1349,610,1442,635"/>
+<area shape="poly" title=" " alt="" coords="1164,560,1337,606,1332,605,1164,565"/>
+<area shape="poly" title=" " alt="" coords="1207,559,1604,611,1598,611,1206,564"/>
+<area shape="rect" title=" " alt="" coords="990,610,1065,635"/>
+<area shape="poly" title=" " alt="" coords="1104,561,1055,602,1053,597,1099,563"/>
+<area shape="poly" title=" " alt="" coords="1105,341,758,444,577,500,513,522,476,538,436,568,404,601,401,596,432,564,473,534,511,517,576,495,757,438,1100,342"/>
+<area shape="poly" title=" " alt="" coords="1106,340,1057,363,1010,391,957,442,912,499,876,554,850,598,847,594,871,551,907,496,953,438,1007,387,1055,358,1101,342"/>
+<area shape="poly" title=" " alt="" coords="1075,342,827,388,826,383,1080,341"/>
+<area shape="poly" title=" " alt="" coords="1104,340,1067,362,1051,374,1039,390,1036,401,1039,413,1065,464,1103,524,1098,522,1060,467,1034,415,1031,401,1034,387,1048,371,1064,357,1099,342"/>
+<area shape="poly" title=" " alt="" coords="1158,339,1379,599,1373,598,1155,343"/>
+<area shape="poly" title=" " alt="" coords="1234,332,1408,351,1489,366,1522,376,1546,386,1590,417,1617,449,1638,486,1662,535,1673,565,1680,596,1676,593,1668,566,1657,537,1634,489,1613,452,1586,421,1544,391,1520,381,1488,371,1408,356,1234,337"/>
+<area shape="poly" title=" " alt="" coords="1100,340,1060,362,1044,374,1030,390,1017,415,1009,441,1005,498,1011,551,1021,596,1016,593,1006,552,999,498,1004,441,1012,413,1025,387,1040,370,1058,357,1095,342"/>
+<area shape="rect" title=" " alt="" coords="1534,536,1620,562"/>
+<area shape="poly" title=" " alt="" coords="1234,332,1393,351,1465,366,1494,376,1516,387,1544,415,1562,451,1573,488,1577,522,1573,519,1567,489,1557,453,1539,418,1513,391,1492,381,1464,371,1392,356,1234,338"/>
+<area shape="rect" title=" " alt="" coords="1049,389,1182,414"/>
+<area shape="poly" title=" " alt="" coords="1143,339,1128,376,1125,372,1139,343"/>
+<area shape="rect" href="../../db/d78/star__bus__event__types_8h.html" title="Event data structures for bus callback functions." alt="" coords="1358,462,1518,488"/>
+<area shape="poly" title=" " alt="" coords="1234,329,1309,335,1386,345,1452,362,1478,373,1495,387,1502,404,1497,422,1485,439,1469,455,1466,450,1481,436,1492,420,1496,405,1491,390,1475,378,1451,367,1385,350,1308,340,1234,334"/>
+<area shape="rect" href="../../d0/da6/star__bus__function__types_8h.html" title="Callback and operation function type definitions." alt="" coords="1307,389,1481,414"/>
+<area shape="poly" title=" " alt="" coords="1188,339,1340,384,1335,384,1188,344"/>
+<area shape="poly" title=" " alt="" coords="1415,488,1328,527,1219,564,1127,585,1034,601,883,620,883,614,1033,596,1126,580,1217,559,1326,522,1410,489"/>
+<area shape="poly" title=" " alt="" coords="1386,488,1187,535,1186,530,1381,489"/>
+<area shape="poly" title=" " alt="" coords="1437,487,1417,562,1406,597,1402,593,1412,561,1433,490"/>
+<area shape="poly" title=" " alt="" coords="1448,486,1480,522,1524,559,1571,584,1622,605,1616,604,1569,589,1521,564,1476,526,1446,491"/>
+<area shape="poly" title=" " alt="" coords="1427,488,1379,527,1347,547,1314,564,1253,586,1190,601,1080,619,1080,614,1189,596,1251,581,1312,559,1345,543,1376,523,1422,489"/>
+<area shape="poly" title=" " alt="" coords="1462,486,1542,529,1537,528,1461,491"/>
+<area shape="poly" title=" " alt="" coords="1304,413,1127,436,904,466,690,502,602,520,536,539,470,569,414,603,412,598,467,564,535,533,601,515,689,496,903,461,1126,431,1309,412"/>
+<area shape="poly" title=" " alt="" coords="1358,414,1206,467,1017,538,873,605,872,600,1014,534,1205,462,1353,416"/>
+<area shape="poly" title=" " alt="" coords="1374,414,1155,531,1153,526,1368,416"/>
+<area shape="poly" title=" " alt="" coords="1446,412,1503,431,1561,460,1598,491,1630,527,1672,597,1668,595,1625,530,1594,494,1558,465,1501,436,1445,418"/>
+<area shape="poly" title=" " alt="" coords="1387,414,1321,485,1273,527,1220,564,1185,581,1149,595,1081,614,1080,609,1147,590,1183,576,1217,559,1270,523,1317,482,1382,416"/>
+<area shape="poly" title=" " alt="" coords="1441,412,1488,431,1532,460,1555,490,1570,523,1566,520,1551,492,1528,464,1485,436,1440,417"/>
+<area shape="poly" title=" " alt="" coords="1403,412,1425,450,1420,448,1400,417"/>
+<area shape="poly" title=" " alt="" coords="582,562,436,608,435,603,577,563"/>
+<area shape="poly" title=" " alt="" coords="657,560,791,606,786,606,656,565"/>
+<area shape="poly" title=" " alt="" coords="689,560,978,612,972,612,689,565"/>
+<area shape="poly" title=" " alt="" coords="718,562,436,615,435,609,713,562"/>
+<area shape="poly" title=" " alt="" coords="793,560,820,598,815,596,791,564"/>
+<area shape="poly" title=" " alt="" coords="825,560,978,606,973,606,824,565"/>
+<area shape="poly" title=" " alt="" coords="792,114,684,132,621,148,561,170,506,200,460,243,429,276,409,316,396,353,388,392,379,471,379,541,383,596,378,593,374,541,374,470,382,391,391,352,404,314,425,273,456,239,503,196,558,165,620,143,683,127,796,111"/>
+<area shape="poly" title=" " alt="" coords="791,117,709,139,658,154,606,175,554,201,505,233,462,271,427,316,410,353,404,387,408,420,421,451,441,480,468,508,537,559,567,576,600,590,668,608,733,617,790,622,785,622,733,622,667,613,598,595,565,581,534,564,465,512,437,484,416,454,403,421,398,387,405,351,423,314,458,268,502,229,551,196,604,170,656,149,707,133,796,115"/>
+<area shape="poly" title=" " alt="" coords="901,115,913,117,1003,123,1124,123,1263,121,1406,123,1541,132,1600,141,1653,153,1697,170,1731,192,1753,219,1761,253,1761,477,1755,512,1742,546,1724,576,1705,600,1702,596,1719,573,1737,544,1750,511,1756,476,1756,253,1748,221,1728,196,1695,175,1652,158,1599,146,1540,137,1406,128,1263,127,1124,128,1003,128,913,122,902,120"/>
+<area shape="rect" href="../../d7/d7c/star__bus__types_8h.html" title="Bus type definitions and enumerations." alt="" coords="1167,168,1288,193"/>
+<area shape="poly" title=" " alt="" coords="901,116,1154,164,1149,166,901,121"/>
+<area shape="poly" title=" " alt="" coords="1164,193,894,241,892,236,1169,191"/>
+<area shape="poly" title=" " alt="" coords="1233,191,1250,257,1253,299,1247,341,1226,396,1197,448,1139,526,1136,522,1193,445,1221,394,1242,340,1248,299,1245,258,1230,196"/>
+<area shape="poly" title=" " alt="" coords="1223,192,1162,303,1159,299,1219,195"/>
+<area shape="poly" title=" " alt="" coords="1261,191,1321,217,1393,259,1429,285,1463,315,1493,349,1517,388,1520,408,1511,427,1496,443,1477,457,1475,452,1493,439,1507,424,1515,407,1512,390,1488,352,1459,319,1426,289,1390,263,1319,222,1261,196"/>
+<area shape="poly" title=" " alt="" coords="1242,191,1291,240,1343,311,1383,376,1378,375,1339,314,1287,243,1241,196"/>
 </map>
 </div>
 </div>
@@ -201,6 +211,11 @@ Classes</h2></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">DMA transfer context.  <a href="../../d3/d7b/structspi__dma__transfer__context__t.html#details">More...</a><br /></td></tr>
 <tr class="memitem:spi_5Fdma_5Fstate_5Ft" id="r_spi_5Fdma_5Fstate_5Ft"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../dd/d41/structspi__dma__state__t.html">spi_dma_state_t</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">DMA state for an SPI bus.  <a href="../../dd/d41/structspi__dma__state__t.html#details">More...</a><br /></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-define-members" class="groupheader"><a id="define-members" name="define-members"></a>
+Macros</h2></td></tr>
+<tr class="memitem:ac71c8dddbfd91df7e35cfeae9719ba3f" id="r_ac71c8dddbfd91df7e35cfeae9719ba3f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac71c8dddbfd91df7e35cfeae9719ba3f">STAR_SPI_NUM_PERIPHERALS</a>&#160;&#160;&#160;(3)</td></tr>
+<tr class="memdesc:ac71c8dddbfd91df7e35cfeae9719ba3f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Number of SPI peripherals on ESP32 (SPI1, SPI2, SPI3) Note: SPI0 is reserved for flash and not available for general use.  <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -232,9 +247,35 @@ Functions</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 id="header-var-members" class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
 <tr class="memitem:a999e3dd103132afd3cd1856f477f2dbd" id="r_a999e3dd103132afd3cd1856f477f2dbd"><td class="memItemLeft" align="right" valign="top">static const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a999e3dd103132afd3cd1856f477f2dbd">s_TAG</a> = &quot;STAR_SPI_DMA&quot;</td></tr>
-<tr class="memitem:a370351e64bcd438eac596d74177a3ffa" id="r_a370351e64bcd438eac596d74177a3ffa"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="../../dd/d41/structspi__dma__state__t.html">spi_dma_state_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a370351e64bcd438eac596d74177a3ffa">g_spi_dma_states</a> [3] = {0}</td></tr>
-<tr class="memdesc:a370351e64bcd438eac596d74177a3ffa"><td class="mdescLeft">&#160;</td><td class="mdescRight">DMA state storage for SPI buses.  <br /></td></tr>
+<tr class="memitem:ad9cd42a9c82b77686b158ca244378fc9" id="r_ad9cd42a9c82b77686b158ca244378fc9"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="../../dd/d41/structspi__dma__state__t.html">spi_dma_state_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ad9cd42a9c82b77686b158ca244378fc9">g_spi_dma_states</a> [(3)] = {0}</td></tr>
+<tr class="memdesc:ad9cd42a9c82b77686b158ca244378fc9"><td class="mdescLeft">&#160;</td><td class="mdescRight">DMA state storage for SPI buses.  <br /></td></tr>
 </table>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>SPI DMA transfer implementation for high-throughput operations. </p>
+<p>Implements DMA-based SPI transfers for efficient large data transfers without CPU involvement. Reduces interrupt overhead for high-speed SPI communications.</p>
+<dl class="section date"><dt>Date</dt><dd>2025-12-19 </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>Copyright (c) 2025 STAR Project </dd></dl>
+
+<p class="definition">Definition in file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
+</div><a name="doc-define-members" id="doc-define-members"></a><h2 id="header-doc-define-members" class="groupheader">Macro Definition Documentation</h2>
+<a id="ac71c8dddbfd91df7e35cfeae9719ba3f" name="ac71c8dddbfd91df7e35cfeae9719ba3f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac71c8dddbfd91df7e35cfeae9719ba3f">&#9670;&#160;</a></span>STAR_SPI_NUM_PERIPHERALS</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">#define STAR_SPI_NUM_PERIPHERALS&#160;&#160;&#160;(3)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Number of SPI peripherals on ESP32 (SPI1, SPI2, SPI3) Note: SPI0 is reserved for flash and not available for general use. </p>
+
+<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00030">30</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
+
+</div>
+</div>
 <a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
 <a id="ae6f3f7193babc100dd9a817ee1ebbdc5" name="ae6f3f7193babc100dd9a817ee1ebbdc5"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae6f3f7193babc100dd9a817ee1ebbdc5">&#9670;&#160;</a></span>get_spi_dma_state()</h2>
@@ -261,11 +302,11 @@ Variables</h2></td></tr>
 
 <p>Get DMA state for an SPI host. </p>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00064">64</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00428">428</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00044">g_spi_dma_states</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00059">g_spi_dma_states</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00135">star_bus_spi_configure_dma()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00174">star_bus_spi_get_dma_config()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00405">star_bus_spi_get_dma_stats()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00266">star_bus_spi_receive_dma()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00335">star_bus_spi_transceive_dma()</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00197">star_bus_spi_transmit_dma()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00110">star_bus_spi_configure_dma()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00149">star_bus_spi_get_dma_config()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00380">star_bus_spi_get_dma_stats()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00241">star_bus_spi_receive_dma()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00310">star_bus_spi_transceive_dma()</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00172">star_bus_spi_transmit_dma()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -318,11 +359,11 @@ Here is the caller graph for this function:</div>
 
 <p>Get SPI host from bus name. </p>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00051">51</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00415">415</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00076">star_spi_bus_config::host</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00032">k_star_bus_type_spi</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00036">star_bus_config::spi</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00378">star_bus_manager_find_bus()</a>, and <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00028">star_bus_config::type</a>.</p>
+<p class="reference">References <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00101">star_spi_bus_config::host</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00057">k_star_bus_type_spi</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00060">star_bus_config::spi</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00199">star_bus_manager_find_bus()</a>, and <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00052">star_bus_config::type</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00135">star_bus_spi_configure_dma()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00174">star_bus_spi_get_dma_config()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00405">star_bus_spi_get_dma_stats()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00266">star_bus_spi_receive_dma()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00335">star_bus_spi_transceive_dma()</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00197">star_bus_spi_transmit_dma()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00110">star_bus_spi_configure_dma()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00149">star_bus_spi_get_dma_config()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00380">star_bus_spi_get_dma_stats()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00241">star_bus_spi_receive_dma()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00310">star_bus_spi_transceive_dma()</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00172">star_bus_spi_transmit_dma()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -385,11 +426,11 @@ Here is the caller graph for this function:</div>
 
 <p>Check if transfer should use DMA. </p>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00075">75</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00439">439</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00032">spi_dma_state_t::config</a>, <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html#l00227">star_spi_dma_config_t::enabled</a>, and <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html#l00206">STAR_SPI_DMA_MAX_SIZE</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00047">spi_dma_state_t::config</a>, <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html#l00227">star_spi_dma_config_t::enabled</a>, and <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html#l00206">STAR_SPI_DMA_MAX_SIZE</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00266">star_bus_spi_receive_dma()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00335">star_bus_spi_transceive_dma()</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00197">star_bus_spi_transmit_dma()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00241">star_bus_spi_receive_dma()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00310">star_bus_spi_transceive_dma()</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00172">star_bus_spi_transmit_dma()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -446,9 +487,9 @@ Here is the caller graph for this function:</div>
 <dd>
 Can be called multiple times to reconfigure </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00135">135</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00110">110</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00032">spi_dma_state_t::config</a>, <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html#l00229">star_spi_dma_config_t::dma_channel</a>, <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html#l00227">star_spi_dma_config_t::enabled</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00064">get_spi_dma_state()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00051">get_spi_host_from_bus()</a>, <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html#l00228">star_spi_dma_config_t::min_transfer_size</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00047">spi_dma_state_t::config</a>, <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html#l00229">star_spi_dma_config_t::dma_channel</a>, <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html#l00227">star_spi_dma_config_t::enabled</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00428">get_spi_dma_state()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00415">get_spi_host_from_bus()</a>, <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html#l00228">star_spi_dma_config_t::min_transfer_size</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -501,9 +542,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00174">174</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00149">149</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00032">spi_dma_state_t::config</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00064">get_spi_dma_state()</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00051">get_spi_host_from_bus()</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00047">spi_dma_state_t::config</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00428">get_spi_dma_state()</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00415">get_spi_host_from_bus()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -562,9 +603,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00405">405</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00380">380</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00035">spi_dma_state_t::bytes_transferred</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00064">get_spi_dma_state()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00051">get_spi_host_from_bus()</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00034">spi_dma_state_t::transfer_count</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00050">spi_dma_state_t::bytes_transferred</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00428">get_spi_dma_state()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00415">get_spi_host_from_bus()</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00049">spi_dma_state_t::transfer_count</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -641,9 +682,9 @@ If callback is provided, operation is asynchronous </dd>
 <dd>
 Data buffer must remain valid until callback is called </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00266">266</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00241">241</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00035">spi_dma_state_t::bytes_transferred</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00023">spi_dma_transfer_context_t::callback</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00064">get_spi_dma_state()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00051">get_spi_host_from_bus()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00025">spi_dma_transfer_context_t::in_progress</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00075">internal_should_use_spi_dma()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d9/dbd/star__bus__spi_8c_source.html#l00084">star_bus_spi_receive()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00115">star_spi_is_dma_capable()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00033">spi_dma_state_t::transfer_context</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00034">spi_dma_state_t::transfer_count</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00024">spi_dma_transfer_context_t::user_context</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00050">spi_dma_state_t::bytes_transferred</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00038">spi_dma_transfer_context_t::callback</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00428">get_spi_dma_state()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00415">get_spi_host_from_bus()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00040">spi_dma_transfer_context_t::in_progress</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00439">internal_should_use_spi_dma()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../d9/dbd/star__bus__spi_8c_source.html#l00096">star_bus_spi_receive()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00090">star_spi_is_dma_capable()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00048">spi_dma_state_t::transfer_context</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00049">spi_dma_state_t::transfer_count</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00039">spi_dma_transfer_context_t::user_context</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -733,9 +774,9 @@ If callback is NULL, operation is blocking </dd>
 <dd>
 Buffers must remain valid until callback is called </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00335">335</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00310">310</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00035">spi_dma_state_t::bytes_transferred</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00023">spi_dma_transfer_context_t::callback</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00064">get_spi_dma_state()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00051">get_spi_host_from_bus()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00025">spi_dma_transfer_context_t::in_progress</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00075">internal_should_use_spi_dma()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d9/dbd/star__bus__spi_8c_source.html#l00112">star_bus_spi_transfer()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00115">star_spi_is_dma_capable()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00033">spi_dma_state_t::transfer_context</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00034">spi_dma_state_t::transfer_count</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00024">spi_dma_transfer_context_t::user_context</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00050">spi_dma_state_t::bytes_transferred</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00038">spi_dma_transfer_context_t::callback</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00428">get_spi_dma_state()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00415">get_spi_host_from_bus()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00040">spi_dma_transfer_context_t::in_progress</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00439">internal_should_use_spi_dma()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../d9/dbd/star__bus__spi_8c_source.html#l00124">star_bus_spi_transfer()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00090">star_spi_is_dma_capable()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00048">spi_dma_state_t::transfer_context</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00049">spi_dma_state_t::transfer_count</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00039">spi_dma_transfer_context_t::user_context</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -819,9 +860,9 @@ If callback is provided, operation is asynchronous </dd>
 <dd>
 Data buffer must remain valid until callback is called </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00197">197</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00172">172</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00035">spi_dma_state_t::bytes_transferred</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00023">spi_dma_transfer_context_t::callback</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00064">get_spi_dma_state()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00051">get_spi_host_from_bus()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00025">spi_dma_transfer_context_t::in_progress</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00075">internal_should_use_spi_dma()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d9/dbd/star__bus__spi_8c_source.html#l00055">star_bus_spi_transmit()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00115">star_spi_is_dma_capable()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00033">spi_dma_state_t::transfer_context</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00034">spi_dma_state_t::transfer_count</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00024">spi_dma_transfer_context_t::user_context</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00050">spi_dma_state_t::bytes_transferred</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00038">spi_dma_transfer_context_t::callback</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00428">get_spi_dma_state()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00415">get_spi_host_from_bus()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00040">spi_dma_transfer_context_t::in_progress</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00439">internal_should_use_spi_dma()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../d9/dbd/star__bus__spi_8c_source.html#l00067">star_bus_spi_transmit()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00090">star_spi_is_dma_capable()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00048">spi_dma_state_t::transfer_context</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00049">spi_dma_state_t::transfer_count</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00039">spi_dma_transfer_context_t::user_context</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -869,7 +910,7 @@ Here is the call graph for this function:</div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00108">108</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00083">83</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
 
 </div>
 </div>
@@ -901,9 +942,9 @@ Here is the call graph for this function:</div>
 <dd>
 Buffer is cache-aligned and DMA-capable </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00094">94</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00069">69</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html#l00211">STAR_SPI_DMA_ALIGNMENT</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, and <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html#l00211">STAR_SPI_DMA_ALIGNMENT</a>.</p>
 
 </div>
 </div>
@@ -937,11 +978,11 @@ Buffer is cache-aligned and DMA-capable </dd></dl>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if buffer is DMA-capable, false otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00115">115</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00090">90</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
 
 <p class="reference">References <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html#l00211">STAR_SPI_DMA_ALIGNMENT</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00266">star_bus_spi_receive_dma()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00335">star_bus_spi_transceive_dma()</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00197">star_bus_spi_transmit_dma()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00241">star_bus_spi_receive_dma()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00310">star_bus_spi_transceive_dma()</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00172">star_bus_spi_transmit_dma()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -960,8 +1001,8 @@ Here is the caller graph for this function:</div>
 </div>
 </div>
 <a name="doc-var-members" id="doc-var-members"></a><h2 id="header-doc-var-members" class="groupheader">Variable Documentation</h2>
-<a id="a370351e64bcd438eac596d74177a3ffa" name="a370351e64bcd438eac596d74177a3ffa"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a370351e64bcd438eac596d74177a3ffa">&#9670;&#160;</a></span>g_spi_dma_states</h2>
+<a id="ad9cd42a9c82b77686b158ca244378fc9" name="ad9cd42a9c82b77686b158ca244378fc9"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad9cd42a9c82b77686b158ca244378fc9">&#9670;&#160;</a></span>g_spi_dma_states</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -970,7 +1011,7 @@ Here is the caller graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="../../dd/d41/structspi__dma__state__t.html">spi_dma_state_t</a> g_spi_dma_states[3] = {0}</td>
+          <td class="memname"><a class="el" href="../../dd/d41/structspi__dma__state__t.html">spi_dma_state_t</a> g_spi_dma_states[(3)] = {0}</td>
         </tr>
       </table>
   </td>
@@ -983,9 +1024,9 @@ Here is the caller graph for this function:</div>
 <p>DMA state storage for SPI buses. </p>
 <dl class="section note"><dt>Note</dt><dd>ESP32 has SPI2_HOST (HSPI) and SPI3_HOST (VSPI) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00044">44</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00059">59</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00064">get_spi_dma_state()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00428">get_spi_dma_state()</a>.</p>
 
 </div>
 </div>
@@ -1009,7 +1050,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00015">15</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00024">24</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
 
 </div>
 </div>

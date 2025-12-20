@@ -1,4 +1,14 @@
-/* lib/star_bms_bq7850/include/star_bms_bq7850.h */
+/**
+ * @file star_bms_bq7850.h
+ * @brief BQ7850 battery management system driver API
+ * @details
+ * Provides interface for Texas Instruments BQ7850 battery management IC for multi-cell
+ * lithium-ion battery packs. Supports cell voltage monitoring, temperature sensing,
+ * current measurement, and protection features via I2C/SMBus interface.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #ifndef STAR_BMS_BQ7850_H
 #define STAR_BMS_BQ7850_H

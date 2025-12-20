@@ -1,0 +1,9 @@
+<map id="_star_v1_FinalizeUpdateResponse" name="_star_v1_FinalizeUpdateResponse">
+<area shape="rect" id="Node000001" title=" " alt="" coords="149,199,374,224"/>
+<area shape="rect" id="Node000002" href="$d5/de6/struct__star__v1___response_header.html" title=" " alt="" coords="12,102,191,128"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="136,133,243,197,238,199,134,138"/>
+<area shape="rect" id="Node000003" href="$d6/df3/struct__google__protobuf___timestamp.html" title=" " alt="" coords="5,5,198,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="103,44,104,102,99,101,100,49"/>
+<area shape="rect" id="Node000004" href="$d8/d15/struct__star__v1___firmware_update_error.html" title=" " alt="" coords="215,102,417,128"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="304,140,270,200,267,196,299,142"/>
+</map>

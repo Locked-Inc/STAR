@@ -1,4 +1,14 @@
-/* lib/star_encoder/include/star_encoder.h */
+/**
+ * @file star_encoder.h
+ * @brief Quadrature encoder driver API using ESP32 PCNT peripheral
+ * @details
+ * Provides an interface for tracking position and velocity using quadrature encoders with the
+ * ESP32 Pulse Counter (PCNT) peripheral. Supports edge counting, glitch filtering, velocity
+ * calculation, and configurable count limits with overflow detection.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #ifndef STAR_ENCODER_H
 #define STAR_ENCODER_H

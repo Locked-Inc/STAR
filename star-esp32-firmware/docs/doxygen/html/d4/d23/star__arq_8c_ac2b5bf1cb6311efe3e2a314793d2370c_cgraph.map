@@ -1,0 +1,35 @@
+<map id="star_arq_receive" name="star_arq_receive">
+<area shape="rect" id="Node000001" title="Receive data with duplicate filtering." alt="" coords="5,187,123,212"/>
+<area shape="rect" id="Node000002" href="$d4/d23/star__arq_8c.html#a349cf680367d0c82775c2900fa1d9926" title="Send ACK frame for a given sequence number." alt="" coords="187,137,313,163"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="114,184,186,166,182,169,117,188"/>
+<area shape="rect" id="Node000010" href="$d4/d23/star__arq_8c.html#a71c3c0d8af336955063c1fe3bd0ca4fb" title="Send NACK frame for a given sequence number." alt="" coords="183,88,316,114"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="79,184,119,154,169,122,185,118,181,121,172,127,122,158,83,188"/>
+<area shape="rect" id="Node000011" href="$d4/d34/star__bus__spi__peripheral_8c.html#a3ccbd2706237d383f19bab2320109c0b" title="Receive data from the SPI controller (this device acts as peripheral)." alt="" coords="171,319,329,360"/>
+<area shape="poly" id="edge12_Node000001_Node000011" title=" " alt="" coords="84,210,212,308,207,311,82,215"/>
+<area shape="rect" id="Node000013" href="$d5/d3c/star__frame_8c.html#ae7dd1a69e54509b9f844d0ddc224b355" title="Parse and validate a received frame." alt="" coords="189,216,311,242"/>
+<area shape="poly" id="edge15_Node000001_Node000013" title=" " alt="" coords="123,206,176,215,171,218,124,211"/>
+<area shape="rect" id="Node000003" href="$d4/d34/star__bus__spi__peripheral_8c.html#a8a6fa2b9bc1aab92c0bc8b412a0b51e3" title="Transmit data to the SPI controller (this device acts as peripheral)." alt="" coords="377,104,535,145"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="312,140,364,135,359,138,314,145"/>
+<area shape="rect" id="Node000006" href="$d5/d3c/star__frame_8c.html#aea5f7b6dba28081a187e48996f4736c8" title="Build a frame with CRC&#45;32 validation." alt="" coords="398,55,515,80"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="301,134,328,124,352,107,376,91,395,85,390,87,378,95,355,112,330,129,304,139"/>
+<area shape="rect" id="Node000004" href="$d4/d34/star__bus__spi__peripheral_8c.html#af3daadb82934d79dbd87fc6fadd27659" title=" " alt="" coords="603,154,748,194"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="536,140,591,154,585,155,536,145"/>
+<area shape="rect" id="Node000005" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="583,301,768,327"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="483,143,650,291,645,291,480,148"/>
+<area shape="rect" id="Node000007" href="$d5/d3c/star__frame_8c.html#a4455a97cf23ee5dd334c918c809c3a86" title="Write 16&#45;bit value in network byte order (big&#45;endian)." alt="" coords="602,55,749,80"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="514,65,589,67,584,68,516,70"/>
+<area shape="rect" id="Node000008" href="$d5/d3c/star__frame_8c.html#a20ab77509013345dad5790b90e90624a" title="Write 32&#45;bit value in little&#45;endian format." alt="" coords="604,5,747,31"/>
+<area shape="poly" id="edge7_Node000006_Node000008" title=" " alt="" coords="514,52,603,34,598,36,516,57"/>
+<area shape="rect" id="Node000009" href="$d5/d3c/star__frame_8c.html#affb4050f4ee5e749495b48eef0c0ba3e" title="Calculate CRC&#45;32 checksum (IEEE 802.3)." alt="" coords="614,104,737,130"/>
+<area shape="poly" id="edge8_Node000006_Node000009" title=" " alt="" coords="515,78,603,99,598,101,515,83"/>
+<area shape="poly" id="edge10_Node000010_Node000003" title=" " alt="" coords="316,106,364,113,359,115,317,111"/>
+<area shape="poly" id="edge11_Node000010_Node000006" title=" " alt="" coords="316,88,384,78,380,81,318,93"/>
+<area shape="poly" id="edge14_Node000011_Node000005" title=" " alt="" coords="321,358,377,369,457,377,491,376,535,369,588,353,634,335,639,334,590,358,536,374,492,381,456,383,377,374,320,363"/>
+<area shape="rect" id="Node000012" href="$d4/d34/star__bus__spi__peripheral_8c.html#a3170d6b62a04e8ea00c269919ba7780f" title=" " alt="" coords="384,319,528,360"/>
+<area shape="poly" id="edge13_Node000011_Node000012" title=" " alt="" coords="329,337,371,339,366,340,329,342"/>
+<area shape="poly" id="edge18_Node000013_Node000009" title=" " alt="" coords="307,213,535,154,583,140,613,133,608,135,584,145,536,159,308,218"/>
+<area shape="rect" id="Node000014" href="$d5/d3c/star__frame_8c.html#a7a4b94a4c8db8b735d3343594dc79d66" title="Read 16&#45;bit value from network byte order (big&#45;endian)." alt="" coords="384,269,528,295"/>
+<area shape="poly" id="edge16_Node000013_Node000014" title=" " alt="" coords="303,240,391,264,386,265,302,245"/>
+<area shape="rect" id="Node000015" href="$d5/d3c/star__frame_8c.html#a137d95c3d3c4678dfd5dd0bd893a1b09" title="Read 32&#45;bit value from little&#45;endian format." alt="" coords="386,220,526,246"/>
+<area shape="poly" id="edge17_Node000013_Node000015" title=" " alt="" coords="311,227,373,230,368,232,312,233"/>
+</map>

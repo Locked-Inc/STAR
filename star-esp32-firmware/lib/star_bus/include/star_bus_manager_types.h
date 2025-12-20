@@ -1,4 +1,26 @@
-/* lib/star_bus/include/star_bus_manager_types.h */
+/**
+ * @file star_bus_manager_types.h
+ * @brief Bus manager internal type definitions
+ * @details
+ * This file defines the core data structures used internally by the bus manager to
+ * maintain and manage multiple bus configurations.
+ *
+ * Key types defined:
+ * - star_bus_config_t - Bus configuration node with protocol-specific union
+ * - star_bus_manager_t - Manager structure with thread-safe linked list and resource tracking
+ *
+ * The bus manager uses a linked list to store heterogeneous bus configurations
+ * (I2C, SPI, GPIO, ADC, OneWire) with thread-safe access via mutex. It tracks
+ * shared hardware resources (SPI hosts, ADC units) to prevent conflicts and
+ * manage reference counting.
+ *
+ * This architecture follows Dependency Inversion Principle by injecting error
+ * and pin validation interfaces, allowing the manager to be tested independently
+ * of concrete error handlers.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #ifndef STAR_COMPONENT_BUS_MANAGER_TYPES_H
 #define STAR_COMPONENT_BUS_MANAGER_TYPES_H

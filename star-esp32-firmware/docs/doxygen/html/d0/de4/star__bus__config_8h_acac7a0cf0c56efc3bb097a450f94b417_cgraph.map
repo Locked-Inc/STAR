@@ -1,5 +1,15 @@
 <map id="star_bus_config_init" name="star_bus_config_init">
-<area shape="rect" id="Node000001" title="Initialize the bus/device associated with this configuration." alt="" coords="5,5,143,31"/>
-<area shape="rect" id="Node000002" href="$d7/d27/star__bus__types_8c.html#afa900f53de82aaa97ea08d9b3d5a4a6d" title="Convert bus type to string." alt="" coords="191,5,351,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="143,16,178,18,173,18,143,21"/>
+<area shape="rect" id="Node000001" title="Initialize the bus/device associated with this configuration." alt="" coords="5,98,143,124"/>
+<area shape="rect" id="Node000002" href="$d9/dd6/star__bus__onewire_8c.html#a62f64f5066b1bf467cc7aec6786f41f4" title="Initialize 1&#45;Wire bus." alt="" coords="197,73,344,98"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="143,100,184,96,179,98,144,105"/>
+<area shape="rect" id="Node000007" href="$d7/d27/star__bus__types_8c.html#afa900f53de82aaa97ea08d9b3d5a4a6d" title="Convert bus type to string." alt="" coords="191,122,351,148"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="143,117,178,123,173,124,143,122"/>
+<area shape="rect" id="Node000003" href="$d9/dd6/star__bus__onewire_8c.html#ae2fccd2ccf0204c4ae5e4ae370719b9a" title="Get 1&#45;Wire state for a bus (thread&#45;safe)." alt="" coords="399,37,539,78"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="345,73,386,69,381,70,345,78"/>
+<area shape="rect" id="Node000006" href="$d9/dd6/star__bus__onewire_8c.html#ad63255b48501f7f398a53edeaf6eb9ce" title="Set GPIO output high (release for pull&#45;up)." alt="" coords="406,102,532,128"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="345,94,394,103,389,104,345,99"/>
+<area shape="rect" id="Node000004" href="$d9/dd6/star__bus__onewire_8c.html#a1ca358f311abcb5bb498c6df68b556c6" title="Initialize 1&#45;Wire global mutex (thread&#45;safe)." alt="" coords="588,5,728,46"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="539,43,576,40,570,41,540,48"/>
+<area shape="rect" id="Node000005" href="$d9/dd6/star__bus__onewire_8c.html#aeaca1b0b2a8c0f56d9c5a0a68736af0a" title="Get 1&#45;Wire state for a bus (must be called with mutex held)." alt="" coords="587,71,729,111"/>
+<area shape="poly" id="edge4_Node000003_Node000005" title=" " alt="" coords="540,67,575,76,570,76,540,73"/>
 </map>
