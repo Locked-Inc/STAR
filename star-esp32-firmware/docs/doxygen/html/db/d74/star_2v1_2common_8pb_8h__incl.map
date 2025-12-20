@@ -1,0 +1,11 @@
+<map id="include/star/v1/common.pb.h" name="include/star/v1/common.pb.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="22,5,211,31"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="94,153,140,178"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="73,34,40,52,25,65,12,80,8,92,10,102,25,121,51,138,81,151,77,154,48,142,21,125,5,104,3,91,8,78,21,61,37,48,76,29"/>
+<area shape="rect" id="Node000003" href="$dc/d30/duration_8pb_8h.html" title=" " alt="" coords="22,79,211,105"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="118,29,119,64,114,62,116,34"/>
+<area shape="rect" id="Node000004" href="$d2/d11/timestamp_8pb_8h.html" title=" " alt="" coords="236,79,440,105"/>
+<area shape="poly" id="edge4_Node000001_Node000004" title=" " alt="" coords="155,29,288,72,284,75,154,34"/>
+<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="119,103,119,138,114,136,115,107"/>
+<area shape="poly" id="edge5_Node000004_Node000002" title=" " alt="" coords="303,107,155,155,154,149,298,104"/>
+</map>

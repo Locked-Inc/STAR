@@ -1,4 +1,13 @@
-/* lib/star_bus/src/star_bus_gpio.c */
+/**
+ * @file star_bus_gpio.c
+ * @brief GPIO operations implementation for the bus manager
+ * @details
+ * Implements general-purpose input/output operations for digital pins on ESP32.
+ * Supports configurable pin modes, pull-up/pull-down resistors, and ISR handling.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #include "star_bus_gpio.h"
 

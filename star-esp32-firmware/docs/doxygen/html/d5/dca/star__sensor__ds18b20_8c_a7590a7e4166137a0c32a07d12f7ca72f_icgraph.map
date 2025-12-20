@@ -1,0 +1,9 @@
+<map id="internal_ds18b20_write_scratchpad" name="internal_ds18b20_write_scratchpad">
+<area shape="rect" id="Node000001" title=" " alt="" coords="348,27,502,68"/>
+<area shape="rect" id="Node000002" href="$d5/dca/star__sensor__ds18b20_8c.html#ad683fbe17df477928affa017ab1d4c8f" title="Initialize DS18B20 temperature sensor." alt="" coords="131,5,300,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="330,35,301,33,301,27,336,34"/>
+<area shape="rect" id="Node000004" href="$d5/dca/star__sensor__ds18b20_8c.html#ae8babbfc305a7b6dfaa7ffdebf53fdd0" title="Set DS18B20 temperature resolution." alt="" coords="143,55,288,96"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="336,59,289,68,288,63,330,60"/>
+<area shape="rect" id="Node000003" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="113,19,84,21,82,16,117,17"/>
+</map>

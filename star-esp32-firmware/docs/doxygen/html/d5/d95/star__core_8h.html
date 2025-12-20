@@ -93,7 +93,7 @@ $(function(){initNavTree('d5/d95/star__core_8h.html','../../',''); });
 </div><!--header-->
 <div class="contents">
 
-<p>Unified header for star_core interfaces.  
+<p>Unified header for STAR core abstract interfaces.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="../../df/d84/star__error__interface_8h_source.html">star_error_interface.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../da/d58/star__pin__interface_8h_source.html">star_pin_interface.h</a>&quot;</code><br />
@@ -102,10 +102,10 @@ Include dependency graph for star_core.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d3/d53/star__core_8h__incl.png" border="0" usemap="#alib_2star__core_2include_2star__core_8h" loading="lazy" alt=""/></div>
 <map name="alib_2star__core_2include_2star__core_8h" id="alib_2star__core_2include_2star__core_8h">
-<area shape="rect" title="Unified header for star_core interfaces." alt="" coords="90,5,228,46"/>
-<area shape="rect" href="../../df/d84/star__error__interface_8h.html" title="Error handler interface for dependency inversion." alt="" coords="5,94,150,120"/>
+<area shape="rect" title="Unified header for STAR core abstract interfaces." alt="" coords="90,5,228,46"/>
+<area shape="rect" href="../../df/d84/star__error__interface_8h.html" title="Abstract error handler interface for dependency inversion." alt="" coords="5,94,150,120"/>
 <area shape="poly" title=" " alt="" coords="137,48,103,85,99,81,141,44"/>
-<area shape="rect" href="../../da/d58/star__pin__interface_8h.html" title="Pin validator interface for dependency inversion." alt="" coords="174,94,309,120"/>
+<area shape="rect" href="../../da/d58/star__pin__interface_8h.html" title="Abstract pin validator interface for dependency inversion." alt="" coords="174,94,309,120"/>
 <area shape="poly" title=" " alt="" coords="180,44,220,83,215,83,179,49"/>
 <area shape="rect" title=" " alt="" coords="30,168,104,193"/>
 <area shape="poly" title=" " alt="" coords="78,118,73,153,68,151,74,122"/>
@@ -144,153 +144,11 @@ Functions</h2></td></tr>
 <tr class="memdesc:a1d3cfacf279e7501df34d8d4a327fc03"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if a pin interface is valid (all function pointers set).  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Unified header for star_core interfaces. </p>
-<p>This header provides all interface definitions and validation utilities for the STAR firmware's dependency inversion system.</p>
-<p>Example Usage: </p><div class="fragment"><div class="line"><span class="comment">// === Include All Core Interfaces ===</span></div>
-<div class="line"> </div>
-<div class="line"><span class="preprocessor">#include &quot;<a class="code" href="../../d5/d95/star__core_8h.html">star_core.h</a>&quot;</span>  <span class="comment">// Includes star_error_interface.h and star_pin_interface.h</span></div>
-<div class="line"> </div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// === Get Library Version ===</span></div>
-<div class="line"> </div>
-<div class="line"><span class="keyword">const</span> <span class="keywordtype">char</span>* version = <a class="code hl_function" href="#a414b17df4ebcf47183ab8129efa396fd">star_core_version</a>();</div>
-<div class="line">ESP_LOGI(<a class="code hl_define" href="../../d7/d82/star__error__handler_8c.html#afc3d101f633a076cc1ca84b85b6224b2">TAG</a>, <span class="stringliteral">&quot;STAR Core version: %s&quot;</span>, version);</div>
-<div class="line"> </div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// === Validate Interfaces Before Use ===</span></div>
-<div class="line"> </div>
-<div class="line"><a class="code hl_typedef" href="../../df/d84/star__error__interface_8h.html#a45a01bbdc613ba6c69401890e9eccbee">star_error_interface_t</a> error_iface;</div>
-<div class="line"><a class="code hl_function" href="../../d4/d59/star__error__handler_8h.html#adb10b93a13ce155a3e5c2aa2f4b2d543">error_handler_get_interface</a>(&amp;error_iface, &amp;<a class="code hl_struct" href="../../d6/d7d/structerror__handler.html">error_handler</a>);</div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// Check if error interface is valid (all function pointers set)</span></div>
-<div class="line"><span class="keywordflow">if</span> (<a class="code hl_function" href="#a4c01cd93cf25a837e3163a25535b85c2">star_error_interface_is_valid</a>(&amp;error_iface)) {</div>
-<div class="line">    ESP_LOGI(<a class="code hl_define" href="../../d7/d82/star__error__handler_8c.html#afc3d101f633a076cc1ca84b85b6224b2">TAG</a>, <span class="stringliteral">&quot;Error interface is valid&quot;</span>);</div>
-<div class="line">} <span class="keywordflow">else</span> {</div>
-<div class="line">    ESP_LOGE(<a class="code hl_define" href="../../d7/d82/star__error__handler_8c.html#afc3d101f633a076cc1ca84b85b6224b2">TAG</a>, <span class="stringliteral">&quot;Error interface is incomplete&quot;</span>);</div>
-<div class="line">    <span class="keywordflow">return</span> ESP_ERR_INVALID_STATE;</div>
-<div class="line">}</div>
-<div class="line"> </div>
-<div class="line"><a class="code hl_typedef" href="../../da/d58/star__pin__interface_8h.html#a5db85e9efea7cdf1644e4e3ef518bf13">star_pin_interface_t</a> pin_iface;</div>
-<div class="line"><a class="code hl_function" href="../../d1/dda/star__pin__validator_8h.html#a13730ef0e296c0ffeea5d60b7f04d9cf">pin_validator_get_interface</a>(&amp;pin_iface);</div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// Check if pin interface is valid</span></div>
-<div class="line"><span class="keywordflow">if</span> (<a class="code hl_function" href="#a1d3cfacf279e7501df34d8d4a327fc03">star_pin_interface_is_valid</a>(&amp;pin_iface)) {</div>
-<div class="line">    ESP_LOGI(<a class="code hl_define" href="../../d7/d82/star__error__handler_8c.html#afc3d101f633a076cc1ca84b85b6224b2">TAG</a>, <span class="stringliteral">&quot;Pin interface is valid&quot;</span>);</div>
-<div class="line">}</div>
-<div class="line"> </div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// === Using Convenience Macros ===</span></div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// Check if retry is possible (safely handles NULL)</span></div>
-<div class="line"><span class="keywordflow">if</span> (<a class="code hl_define" href="#ab12e0016f800a9c360b159a2339ebbea">STAR_IFACE_CAN_RETRY</a>(&amp;error_iface)) {</div>
-<div class="line">    ESP_LOGI(<a class="code hl_define" href="../../d7/d82/star__error__handler_8c.html#afc3d101f633a076cc1ca84b85b6224b2">TAG</a>, <span class="stringliteral">&quot;Retry is possible&quot;</span>);</div>
-<div class="line">    <span class="comment">// Attempt retry...</span></div>
-<div class="line">}</div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// Reset error state</span></div>
-<div class="line">esp_err_t ret = <a class="code hl_define" href="#a9e8de87d490eb8c031bebe500cdc83d2">STAR_IFACE_RESET_STATE</a>(&amp;error_iface);</div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// Register a GPIO pin</span></div>
-<div class="line">ret = <a class="code hl_define" href="#aed4e42170644e8c1d726f5ea07fecea1">STAR_IFACE_REGISTER_PIN</a>(&amp;pin_iface, GPIO_NUM_21, <span class="stringliteral">&quot;I2C SDA&quot;</span>, <span class="keyword">true</span>);</div>
-<div class="line">ret = <a class="code hl_define" href="#aed4e42170644e8c1d726f5ea07fecea1">STAR_IFACE_REGISTER_PIN</a>(&amp;pin_iface, GPIO_NUM_22, <span class="stringliteral">&quot;I2C SCL&quot;</span>, <span class="keyword">true</span>);</div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// Unregister a pin when no longer needed</span></div>
-<div class="line">ret = <a class="code hl_define" href="#a8061cad06e614cca7ea5996d7cec2793">STAR_IFACE_UNREGISTER_PIN</a>(&amp;pin_iface, GPIO_NUM_21, <span class="stringliteral">&quot;I2C SDA&quot;</span>);</div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// Validate all registered pins for conflicts</span></div>
-<div class="line">ret = <a class="code hl_define" href="#a3f5c5549d597ed400a9f4cff83949ef7">STAR_IFACE_VALIDATE_PINS</a>(&amp;pin_iface);</div>
-<div class="line"><span class="keywordflow">if</span> (ret != ESP_OK) {</div>
-<div class="line">    ESP_LOGE(<a class="code hl_define" href="../../d7/d82/star__error__handler_8c.html#afc3d101f633a076cc1ca84b85b6224b2">TAG</a>, <span class="stringliteral">&quot;Pin conflict detected!&quot;</span>);</div>
-<div class="line">}</div>
-<div class="line"> </div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// === NULL-Safe Macro Usage ===</span></div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// All STAR_IFACE_* macros safely handle NULL interfaces</span></div>
-<div class="line"><a class="code hl_typedef" href="../../df/d84/star__error__interface_8h.html#a45a01bbdc613ba6c69401890e9eccbee">star_error_interface_t</a>* maybe_null = NULL;</div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// This won&#39;t crash - returns false for NULL</span></div>
-<div class="line"><span class="keywordtype">bool</span> can_retry = <a class="code hl_define" href="#ab12e0016f800a9c360b159a2339ebbea">STAR_IFACE_CAN_RETRY</a>(maybe_null);</div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// This won&#39;t crash - returns ESP_OK for NULL (no-op)</span></div>
-<div class="line">ret = <a class="code hl_define" href="#a9e8de87d490eb8c031bebe500cdc83d2">STAR_IFACE_RESET_STATE</a>(maybe_null);</div>
-<div class="line"> </div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// === Typical Initialization Pattern ===</span></div>
-<div class="line"> </div>
-<div class="line">esp_err_t init_system(<span class="keywordtype">void</span>) {</div>
-<div class="line">    <span class="comment">// Create error handler</span></div>
-<div class="line">    <a class="code hl_typedef" href="../../d4/d59/star__error__handler_8h.html#a3833b4a57f7dde877bba1255d7d50b93">error_handler_t</a> <a class="code hl_struct" href="../../d6/d7d/structerror__handler.html">error_handler</a>;</div>
-<div class="line">    <a class="code hl_function" href="../../d4/d59/star__error__handler_8h.html#a331853a63aa2729d5a2a368c72aff6f2">error_handler_init</a>(&amp;<a class="code hl_struct" href="../../d6/d7d/structerror__handler.html">error_handler</a>, 3, 100, 5000, NULL, NULL);</div>
-<div class="line"> </div>
-<div class="line">    <span class="comment">// Get error interface</span></div>
-<div class="line">    <a class="code hl_typedef" href="../../df/d84/star__error__interface_8h.html#a45a01bbdc613ba6c69401890e9eccbee">star_error_interface_t</a> error_iface;</div>
-<div class="line">    <a class="code hl_function" href="../../d4/d59/star__error__handler_8h.html#adb10b93a13ce155a3e5c2aa2f4b2d543">error_handler_get_interface</a>(&amp;error_iface, &amp;<a class="code hl_struct" href="../../d6/d7d/structerror__handler.html">error_handler</a>);</div>
-<div class="line"> </div>
-<div class="line">    <span class="comment">// Validate before use</span></div>
-<div class="line">    <span class="keywordflow">if</span> (!<a class="code hl_function" href="#a4c01cd93cf25a837e3163a25535b85c2">star_error_interface_is_valid</a>(&amp;error_iface)) {</div>
-<div class="line">        <span class="keywordflow">return</span> ESP_ERR_INVALID_STATE;</div>
-<div class="line">    }</div>
-<div class="line"> </div>
-<div class="line">    <span class="comment">// Get pin interface</span></div>
-<div class="line">    <a class="code hl_typedef" href="../../da/d58/star__pin__interface_8h.html#a5db85e9efea7cdf1644e4e3ef518bf13">star_pin_interface_t</a> pin_iface;</div>
-<div class="line">    <a class="code hl_function" href="../../d1/dda/star__pin__validator_8h.html#a13730ef0e296c0ffeea5d60b7f04d9cf">pin_validator_get_interface</a>(&amp;pin_iface);</div>
-<div class="line"> </div>
-<div class="line">    <span class="comment">// Validate before use</span></div>
-<div class="line">    <span class="keywordflow">if</span> (!<a class="code hl_function" href="#a1d3cfacf279e7501df34d8d4a327fc03">star_pin_interface_is_valid</a>(&amp;pin_iface)) {</div>
-<div class="line">        <span class="keywordflow">return</span> ESP_ERR_INVALID_STATE;</div>
-<div class="line">    }</div>
-<div class="line"> </div>
-<div class="line">    <span class="comment">// Initialize bus manager with validated interfaces</span></div>
-<div class="line">    <a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a> bus_manager;</div>
-<div class="line">    esp_err_t ret = <a class="code hl_function" href="../../d6/dcc/star__bus__manager_8h.html#a2623a57b97d09ed1a3b0a0c012cd6119">star_bus_manager_init</a>(&amp;bus_manager, <span class="stringliteral">&quot;main&quot;</span>,</div>
-<div class="line">                                           &amp;error_iface, &amp;pin_iface);</div>
-<div class="line">    <span class="keywordflow">return</span> ret;</div>
-<div class="line">}</div>
-<div class="line"> </div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// === Using STAR_IFACE_RECORD_ERROR ===</span></div>
-<div class="line"> </div>
-<div class="line"><span class="comment">// Record error through interface (from star_error_interface.h)</span></div>
-<div class="line">esp_err_t perform_operation(<a class="code hl_typedef" href="../../df/d84/star__error__interface_8h.html#a45a01bbdc613ba6c69401890e9eccbee">star_error_interface_t</a>* error_iface) {</div>
-<div class="line">    esp_err_t ret = some_function();</div>
-<div class="line"> </div>
-<div class="line">    <span class="keywordflow">if</span> (ret != ESP_OK) {</div>
-<div class="line">        <span class="comment">// Record error with file/line/function info</span></div>
-<div class="line">        <a class="code hl_define" href="../../df/d84/star__error__interface_8h.html#a95a06f42dd16dc1fe536b71980bd7750">STAR_IFACE_RECORD_ERROR</a>(error_iface, ret, <span class="stringliteral">&quot;Operation failed&quot;</span>);</div>
-<div class="line"> </div>
-<div class="line">        <span class="comment">// Check if we should retry</span></div>
-<div class="line">        <span class="keywordflow">if</span> (<a class="code hl_define" href="#ab12e0016f800a9c360b159a2339ebbea">STAR_IFACE_CAN_RETRY</a>(error_iface)) {</div>
-<div class="line">            <span class="comment">// Retry logic...</span></div>
-<div class="line">            ret = some_function();</div>
-<div class="line">            <span class="keywordflow">if</span> (ret == ESP_OK) {</div>
-<div class="line">                <a class="code hl_define" href="#a9e8de87d490eb8c031bebe500cdc83d2">STAR_IFACE_RESET_STATE</a>(error_iface);</div>
-<div class="line">            }</div>
-<div class="line">        }</div>
-<div class="line">    }</div>
-<div class="line">    <span class="keywordflow">return</span> ret;</div>
-<div class="line">}</div>
-<div class="ttc" id="astar__bus__common__types_8h_html_a129dc23a884803fefe3727fe95ab91d7"><div class="ttname"><a href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a></div><div class="ttdeci">struct star_bus_manager star_bus_manager_t</div><div class="ttdef"><b>Definition</b> <a href="../../dd/d40/star__bus__common__types_8h_source.html#l00022">star_bus_common_types.h:22</a></div></div>
-<div class="ttc" id="astar__bus__manager_8h_html_a2623a57b97d09ed1a3b0a0c012cd6119"><div class="ttname"><a href="../../d6/dcc/star__bus__manager_8h.html#a2623a57b97d09ed1a3b0a0c012cd6119">star_bus_manager_init</a></div><div class="ttdeci">esp_err_t star_bus_manager_init(star_bus_manager_t *manager, const char *tag, star_error_interface_t *error_iface, star_pin_interface_t *pin_iface)</div><div class="ttdoc">Initialize an I2C bus manager instance.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d60/star__bus__manager_8c_source.html#l00248">star_bus_manager.c:248</a></div></div>
-<div class="ttc" id="astar__core_8h_html"><div class="ttname"><a href="../../d5/d95/star__core_8h.html">star_core.h</a></div><div class="ttdoc">Unified header for star_core interfaces.</div></div>
-<div class="ttc" id="astar__core_8h_html_a1d3cfacf279e7501df34d8d4a327fc03"><div class="ttname"><a href="#a1d3cfacf279e7501df34d8d4a327fc03">star_pin_interface_is_valid</a></div><div class="ttdeci">static bool star_pin_interface_is_valid(const star_pin_interface_t *iface)</div><div class="ttdoc">Check if a pin interface is valid (all function pointers set).</div><div class="ttdef"><b>Definition</b> <a href="../../d5/d95/star__core_8h_source.html#l00169">star_core.h:169</a></div></div>
-<div class="ttc" id="astar__core_8h_html_a3f5c5549d597ed400a9f4cff83949ef7"><div class="ttname"><a href="#a3f5c5549d597ed400a9f4cff83949ef7">STAR_IFACE_VALIDATE_PINS</a></div><div class="ttdeci">#define STAR_IFACE_VALIDATE_PINS(iface)</div><div class="ttdoc">Convenience macro to validate pins through interface Returns ESP_OK if interface is NULL (no-op).</div><div class="ttdef"><b>Definition</b> <a href="../../d5/d95/star__core_8h_source.html#l00206">star_core.h:206</a></div></div>
-<div class="ttc" id="astar__core_8h_html_a414b17df4ebcf47183ab8129efa396fd"><div class="ttname"><a href="#a414b17df4ebcf47183ab8129efa396fd">star_core_version</a></div><div class="ttdeci">const char * star_core_version(void)</div><div class="ttdoc">Get the star_core library version.</div><div class="ttdef"><b>Definition</b> <a href="../../da/d27/star__core_8c_source.html#l00010">star_core.c:10</a></div></div>
-<div class="ttc" id="astar__core_8h_html_a4c01cd93cf25a837e3163a25535b85c2"><div class="ttname"><a href="#a4c01cd93cf25a837e3163a25535b85c2">star_error_interface_is_valid</a></div><div class="ttdeci">static bool star_error_interface_is_valid(const star_error_interface_t *iface)</div><div class="ttdoc">Check if an error interface is valid (all function pointers set).</div><div class="ttdef"><b>Definition</b> <a href="../../d5/d95/star__core_8h_source.html#l00158">star_core.h:158</a></div></div>
-<div class="ttc" id="astar__core_8h_html_a8061cad06e614cca7ea5996d7cec2793"><div class="ttname"><a href="#a8061cad06e614cca7ea5996d7cec2793">STAR_IFACE_UNREGISTER_PIN</a></div><div class="ttdeci">#define STAR_IFACE_UNREGISTER_PIN(iface, pin, desc)</div><div class="ttdoc">Convenience macro to unregister a pin through interface Returns ESP_OK if interface is NULL (no-op).</div><div class="ttdef"><b>Definition</b> <a href="../../d5/d95/star__core_8h_source.html#l00199">star_core.h:199</a></div></div>
-<div class="ttc" id="astar__core_8h_html_a9e8de87d490eb8c031bebe500cdc83d2"><div class="ttname"><a href="#a9e8de87d490eb8c031bebe500cdc83d2">STAR_IFACE_RESET_STATE</a></div><div class="ttdeci">#define STAR_IFACE_RESET_STATE(iface)</div><div class="ttdoc">Convenience macro to reset error state through interface Returns ESP_OK if interface is NULL (no-op),...</div><div class="ttdef"><b>Definition</b> <a href="../../d5/d95/star__core_8h_source.html#l00185">star_core.h:185</a></div></div>
-<div class="ttc" id="astar__core_8h_html_ab12e0016f800a9c360b159a2339ebbea"><div class="ttname"><a href="#ab12e0016f800a9c360b159a2339ebbea">STAR_IFACE_CAN_RETRY</a></div><div class="ttdeci">#define STAR_IFACE_CAN_RETRY(iface)</div><div class="ttdoc">Convenience macro to check if retry is possible through interface Returns false if interface is NULL ...</div><div class="ttdef"><b>Definition</b> <a href="../../d5/d95/star__core_8h_source.html#l00179">star_core.h:179</a></div></div>
-<div class="ttc" id="astar__core_8h_html_aed4e42170644e8c1d726f5ea07fecea1"><div class="ttname"><a href="#aed4e42170644e8c1d726f5ea07fecea1">STAR_IFACE_REGISTER_PIN</a></div><div class="ttdeci">#define STAR_IFACE_REGISTER_PIN(iface, pin, desc, shared)</div><div class="ttdoc">Convenience macro to register a pin through interface Returns ESP_OK if interface is NULL (no-op).</div><div class="ttdef"><b>Definition</b> <a href="../../d5/d95/star__core_8h_source.html#l00192">star_core.h:192</a></div></div>
-<div class="ttc" id="astar__error__handler_8c_html_afc3d101f633a076cc1ca84b85b6224b2"><div class="ttname"><a href="../../d7/d82/star__error__handler_8c.html#afc3d101f633a076cc1ca84b85b6224b2">TAG</a></div><div class="ttdeci">#define TAG</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d82/star__error__handler_8c_source.html#l00012">star_error_handler.c:12</a></div></div>
-<div class="ttc" id="astar__error__handler_8h_html_a331853a63aa2729d5a2a368c72aff6f2"><div class="ttname"><a href="../../d4/d59/star__error__handler_8h.html#a331853a63aa2729d5a2a368c72aff6f2">error_handler_init</a></div><div class="ttdeci">esp_err_t error_handler_init(error_handler_t *handler, uint32_t max_retries, uint32_t base_retry_delay, uint32_t max_retry_delay, esp_err_t(*reset_fn)(void *context), void *reset_context)</div><div class="ttdoc">Initialize an error handler.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d82/star__error__handler_8c_source.html#l00020">star_error_handler.c:20</a></div></div>
-<div class="ttc" id="astar__error__handler_8h_html_a3833b4a57f7dde877bba1255d7d50b93"><div class="ttname"><a href="../../d4/d59/star__error__handler_8h.html#a3833b4a57f7dde877bba1255d7d50b93">error_handler_t</a></div><div class="ttdeci">struct error_handler error_handler_t</div><div class="ttdoc">Error handler structure for managing error states and recovery.</div></div>
-<div class="ttc" id="astar__error__handler_8h_html_adb10b93a13ce155a3e5c2aa2f4b2d543"><div class="ttname"><a href="../../d4/d59/star__error__handler_8h.html#adb10b93a13ce155a3e5c2aa2f4b2d543">error_handler_get_interface</a></div><div class="ttdeci">void error_handler_get_interface(star_error_interface_t *iface, error_handler_t *handler)</div><div class="ttdoc">Create an interface adapter for the error handler.</div><div class="ttdef"><b>Definition</b> <a href="../../d7/d82/star__error__handler_8c_source.html#l00329">star_error_handler.c:329</a></div></div>
-<div class="ttc" id="astar__error__interface_8h_html_a45a01bbdc613ba6c69401890e9eccbee"><div class="ttname"><a href="../../df/d84/star__error__interface_8h.html#a45a01bbdc613ba6c69401890e9eccbee">star_error_interface_t</a></div><div class="ttdeci">struct star_error_interface star_error_interface_t</div><div class="ttdoc">Error handler interface - abstract operations for error handling.</div></div>
-<div class="ttc" id="astar__error__interface_8h_html_a95a06f42dd16dc1fe536b71980bd7750"><div class="ttname"><a href="../../df/d84/star__error__interface_8h.html#a95a06f42dd16dc1fe536b71980bd7750">STAR_IFACE_RECORD_ERROR</a></div><div class="ttdeci">#define STAR_IFACE_RECORD_ERROR(iface, err, msg)</div><div class="ttdoc">Convenience macro to record error through interface.</div><div class="ttdef"><b>Definition</b> <a href="../../df/d84/star__error__interface_8h_source.html#l00172">star_error_interface.h:172</a></div></div>
-<div class="ttc" id="astar__pin__interface_8h_html_a5db85e9efea7cdf1644e4e3ef518bf13"><div class="ttname"><a href="../../da/d58/star__pin__interface_8h.html#a5db85e9efea7cdf1644e4e3ef518bf13">star_pin_interface_t</a></div><div class="ttdeci">struct star_pin_interface star_pin_interface_t</div><div class="ttdoc">Pin validator interface - abstract operations for pin management.</div></div>
-<div class="ttc" id="astar__pin__validator_8h_html_a13730ef0e296c0ffeea5d60b7f04d9cf"><div class="ttname"><a href="../../d1/dda/star__pin__validator_8h.html#a13730ef0e296c0ffeea5d60b7f04d9cf">pin_validator_get_interface</a></div><div class="ttdeci">void pin_validator_get_interface(star_pin_interface_t *iface)</div><div class="ttdoc">Create an interface adapter for the pin validator.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/dad/star__pin__validator_8c_source.html#l00498">star_pin_validator.c:498</a></div></div>
-<div class="ttc" id="astructerror__handler_html"><div class="ttname"><a href="../../d6/d7d/structerror__handler.html">error_handler</a></div><div class="ttdoc">Error handler structure for managing error states and recovery.</div><div class="ttdef"><b>Definition</b> <a href="../../d4/d59/star__error__handler_8h_source.html#l00150">star_error_handler.h:150</a></div></div>
-</div><!-- fragment --> 
+<div class="textblock"><p>Unified header for STAR core abstract interfaces. </p>
+<p>This header provides all interface definitions and validation utilities for the STAR firmware's dependency inversion system. Includes error handling and pin validation interfaces that form the foundation of the DIP architecture.</p>
+<dl class="section date"><dt>Date</dt><dd>2025-12-19 </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>Copyright (c) 2025 STAR Project </dd></dl>
+
 <p class="definition">Definition in file <a class="el" href="../../d5/d95/star__core_8h_source.html">star_core.h</a>.</p>
 </div><a name="doc-define-members" id="doc-define-members"></a><h2 id="header-doc-define-members" class="groupheader">Macro Definition Documentation</h2>
 <a id="ab12e0016f800a9c360b159a2339ebbea" name="ab12e0016f800a9c360b159a2339ebbea"></a>
@@ -307,11 +165,10 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line">((iface)-&gt;can_retry ? (iface)-&gt;can_retry((iface)-&gt;ctx) : <span class="keyword">false</span>)</div>
-</div><!-- fragment -->
+<b>Value:</b><div class="fragment"></div><!-- fragment -->
 <p>Convenience macro to check if retry is possible through interface Returns false if interface is NULL or invalid. </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d5/d95/star__core_8h_source.html#l00179">179</a> of file <a class="el" href="../../d5/d95/star__core_8h_source.html">star_core.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d5/d95/star__core_8h_source.html#l00186">186</a> of file <a class="el" href="../../d5/d95/star__core_8h_source.html">star_core.h</a>.</p>
 
 </div>
 </div>
@@ -343,11 +200,10 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line">  ((iface)-&gt;register_pin ? (iface)-&gt;register_pin((iface)-&gt;ctx, (pin), (desc), (shared)) : ESP_OK)</div>
-</div><!-- fragment -->
+<b>Value:</b><div class="fragment"></div><!-- fragment -->
 <p>Convenience macro to register a pin through interface Returns ESP_OK if interface is NULL (no-op). </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d5/d95/star__core_8h_source.html#l00192">192</a> of file <a class="el" href="../../d5/d95/star__core_8h_source.html">star_core.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d5/d95/star__core_8h_source.html#l00199">199</a> of file <a class="el" href="../../d5/d95/star__core_8h_source.html">star_core.h</a>.</p>
 
 </div>
 </div>
@@ -365,11 +221,10 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line">  ((iface)-&gt;reset_state ? (iface)-&gt;reset_state((iface)-&gt;ctx) : ESP_OK)</div>
-</div><!-- fragment -->
+<b>Value:</b><div class="fragment"></div><!-- fragment -->
 <p>Convenience macro to reset error state through interface Returns ESP_OK if interface is NULL (no-op), otherwise calls reset_state. </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d5/d95/star__core_8h_source.html#l00185">185</a> of file <a class="el" href="../../d5/d95/star__core_8h_source.html">star_core.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d5/d95/star__core_8h_source.html#l00192">192</a> of file <a class="el" href="../../d5/d95/star__core_8h_source.html">star_core.h</a>.</p>
 
 </div>
 </div>
@@ -396,11 +251,10 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line">  ((iface)-&gt;unregister_pin ? (iface)-&gt;unregister_pin((iface)-&gt;ctx, (pin), (desc)) : ESP_OK)</div>
-</div><!-- fragment -->
+<b>Value:</b><div class="fragment"></div><!-- fragment -->
 <p>Convenience macro to unregister a pin through interface Returns ESP_OK if interface is NULL (no-op). </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d5/d95/star__core_8h_source.html#l00199">199</a> of file <a class="el" href="../../d5/d95/star__core_8h_source.html">star_core.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d5/d95/star__core_8h_source.html#l00206">206</a> of file <a class="el" href="../../d5/d95/star__core_8h_source.html">star_core.h</a>.</p>
 
 </div>
 </div>
@@ -418,11 +272,10 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Value:</b><div class="fragment"><div class="line">  ((iface)-&gt;validate ? (iface)-&gt;validate((iface)-&gt;ctx) : ESP_OK)</div>
-</div><!-- fragment -->
+<b>Value:</b><div class="fragment"></div><!-- fragment -->
 <p>Convenience macro to validate pins through interface Returns ESP_OK if interface is NULL (no-op). </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d5/d95/star__core_8h_source.html#l00206">206</a> of file <a class="el" href="../../d5/d95/star__core_8h_source.html">star_core.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d5/d95/star__core_8h_source.html#l00213">213</a> of file <a class="el" href="../../d5/d95/star__core_8h_source.html">star_core.h</a>.</p>
 
 </div>
 </div>
@@ -443,9 +296,9 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 
 <p>Get the star_core library version. </p>
-<dl class="section return"><dt>Returns</dt><dd>Version string </dd></dl>
+<p>Example Usage: </p><div class="fragment"></div><!-- fragment --> <dl class="section return"><dt>Returns</dt><dd>Version string </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../da/d27/star__core_8c_source.html#l00010">10</a> of file <a class="el" href="../../da/d27/star__core_8c_source.html">star_core.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d27/star__core_8c_source.html#l00019">19</a> of file <a class="el" href="../../da/d27/star__core_8c_source.html">star_core.c</a>.</p>
 
 </div>
 </div>
@@ -481,9 +334,9 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if interface is valid and usable </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d5/d95/star__core_8h_source.html#l00158">158</a> of file <a class="el" href="../../d5/d95/star__core_8h_source.html">star_core.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d5/d95/star__core_8h_source.html#l00165">165</a> of file <a class="el" href="../../d5/d95/star__core_8h_source.html">star_core.h</a>.</p>
 
-<p class="reference">References <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00154">star_error_interface::can_retry</a>, <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00142">star_error_interface::record_error</a>, and <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00161">star_error_interface::reset_state</a>.</p>
+<p class="reference">References <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00163">star_error_interface::can_retry</a>, <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00151">star_error_interface::record_error</a>, and <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00170">star_error_interface::reset_state</a>.</p>
 
 </div>
 </div>
@@ -519,9 +372,9 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if interface is valid and usable </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d5/d95/star__core_8h_source.html#l00169">169</a> of file <a class="el" href="../../d5/d95/star__core_8h_source.html">star_core.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d5/d95/star__core_8h_source.html#l00176">176</a> of file <a class="el" href="../../d5/d95/star__core_8h_source.html">star_core.h</a>.</p>
 
-<p class="reference">References <a class="el" href="../../da/d58/star__pin__interface_8h_source.html#l00148">star_pin_interface::register_pin</a>, <a class="el" href="../../da/d58/star__pin__interface_8h_source.html#l00157">star_pin_interface::unregister_pin</a>, and <a class="el" href="../../da/d58/star__pin__interface_8h_source.html#l00164">star_pin_interface::validate</a>.</p>
+<p class="reference">References <a class="el" href="../../da/d58/star__pin__interface_8h_source.html#l00157">star_pin_interface::register_pin</a>, <a class="el" href="../../da/d58/star__pin__interface_8h_source.html#l00166">star_pin_interface::unregister_pin</a>, and <a class="el" href="../../da/d58/star__pin__interface_8h_source.html#l00173">star_pin_interface::validate</a>.</p>
 
 </div>
 </div>

@@ -1,5 +1,7 @@
 <map id="star_bus_spi_peripheral_init_default_ops" name="star_bus_spi_peripheral_init_default_ops">
-<area shape="rect" id="Node000001" title="Initialize default SPI peripheral operations function pointers within a config structure...." alt="" coords="210,5,368,46"/>
-<area shape="rect" id="Node000002" href="$de/d98/star__bus__config_8c.html#a16ccb4aebc8dd1759ce3a1e5c67d7184" title="Create a new SPI peripheral (slave) configuration." alt="" coords="5,5,162,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="191,26,162,28,162,23,196,25"/>
+<area shape="rect" id="Node000001" title="Initialize default SPI peripheral operations function pointers within a config structure...." alt="" coords="335,5,493,46"/>
+<area shape="rect" id="Node000002" href="$de/d98/star__bus__config_8c.html#a16ccb4aebc8dd1759ce3a1e5c67d7184" title="Create a new SPI peripheral (slave) configuration." alt="" coords="131,5,287,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="316,26,288,28,288,23,322,26"/>
+<area shape="rect" id="Node000003" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,13,83,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="112,26,83,28,83,23,118,25"/>
 </map>

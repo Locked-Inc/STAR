@@ -1,5 +1,5 @@
 <map id="lib/star_bus/include/star_bus_function_types.h" name="lib/star_bus/include/star_bus_function_types.h">
-<area shape="rect" id="Node000001" title=" " alt="" coords="144,5,322,46"/>
+<area shape="rect" id="Node000001" title="Callback and operation function type definitions." alt="" coords="144,5,322,46"/>
 <area shape="rect" id="Node000002" title=" " alt="" coords="45,168,130,193"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="198,48,172,70,143,96,120,125,102,155,98,152,116,122,139,92,168,66,202,45"/>
 <area shape="rect" id="Node000003" title=" " alt="" coords="50,241,181,267"/>
@@ -10,9 +10,9 @@
 <area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="172,48,115,75,59,108,39,128,27,148,25,169,35,191,191,237,188,242,31,195,20,170,22,147,35,124,56,104,112,70,176,44"/>
 <area shape="rect" id="Node000006" title=" " alt="" coords="585,241,659,267"/>
 <area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="322,35,404,56,445,71,484,92,524,123,559,159,610,229,605,227,555,163,520,127,481,96,443,76,402,61,322,41"/>
-<area shape="rect" id="Node000007" href="$dd/d40/star__bus__common__types_8h.html" title=" " alt="" coords="306,168,485,193"/>
+<area shape="rect" id="Node000007" href="$dd/d40/star__bus__common__types_8h.html" title="Common type definitions shared across all bus protocols." alt="" coords="306,168,485,193"/>
 <area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="264,44,327,92,356,123,381,156,376,155,352,127,323,96,263,49"/>
-<area shape="rect" id="Node000009" href="$db/d78/star__bus__event__types_8h.html" title=" " alt="" coords="153,94,313,120"/>
+<area shape="rect" id="Node000009" href="$db/d78/star__bus__event__types_8h.html" title="Event data structures for bus callback functions." alt="" coords="153,94,313,120"/>
 <area shape="poly" id="edge12_Node000001_Node000009" title=" " alt="" coords="234,44,235,79,230,77,232,49"/>
 <area shape="poly" id="edge8_Node000007_Node000003" title=" " alt="" coords="350,195,179,240,177,234,346,192"/>
 <area shape="poly" id="edge9_Node000007_Node000004" title=" " alt="" coords="418,191,490,234,485,233,416,196"/>

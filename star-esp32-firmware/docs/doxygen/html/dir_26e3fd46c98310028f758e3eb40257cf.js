@@ -1,25 +1,15 @@
 var dir_26e3fd46c98310028f758e3eb40257cf =
 [
-    [ "star_bus_async.c", "d4/db0/star__bus__async_8c.html", "d4/db0/star__bus__async_8c" ],
-    [ "star_bus_batch.c", "df/deb/star__bus__batch_8c.html", "df/deb/star__bus__batch_8c" ],
+    [ "star_bus_adc.c", "d2/deb/star__bus__adc_8c.html", "d2/deb/star__bus__adc_8c" ],
     [ "star_bus_config.c", "de/d98/star__bus__config_8c.html", "de/d98/star__bus__config_8c" ],
-    [ "star_bus_debug.c", "df/df6/star__bus__debug_8c.html", "df/df6/star__bus__debug_8c" ],
-    [ "star_bus_devices.c", "d6/d0b/star__bus__devices_8c.html", "d6/d0b/star__bus__devices_8c" ],
-    [ "star_bus_dht22_proprietary.c", "dc/d1f/star__bus__dht22__proprietary_8c.html", "dc/d1f/star__bus__dht22__proprietary_8c" ],
     [ "star_bus_gpio.c", "da/d8b/star__bus__gpio_8c.html", "da/d8b/star__bus__gpio_8c" ],
-    [ "star_bus_helpers.c", "d1/d50/star__bus__helpers_8c.html", "d1/d50/star__bus__helpers_8c" ],
     [ "star_bus_i2c.c", "dd/d1a/star__bus__i2c_8c.html", "dd/d1a/star__bus__i2c_8c" ],
     [ "star_bus_i2c_dma.c", "de/db1/star__bus__i2c__dma_8c.html", "de/db1/star__bus__i2c__dma_8c" ],
-    [ "star_bus_i2c_peripheral.c", "d5/d06/star__bus__i2c__peripheral_8c.html", "d5/d06/star__bus__i2c__peripheral_8c" ],
     [ "star_bus_manager.c", "d7/d60/star__bus__manager_8c.html", "d7/d60/star__bus__manager_8c" ],
     [ "star_bus_onewire.c", "d9/dd6/star__bus__onewire_8c.html", "d9/dd6/star__bus__onewire_8c" ],
-    [ "star_bus_onewire_peripheral.c", "d2/de5/star__bus__onewire__peripheral_8c.html", "d2/de5/star__bus__onewire__peripheral_8c" ],
     [ "star_bus_smbus.c", "d3/df5/star__bus__smbus_8c.html", "d3/df5/star__bus__smbus_8c" ],
-    [ "star_bus_smbus_peripheral.c", "d9/d75/star__bus__smbus__peripheral_8c.html", "d9/d75/star__bus__smbus__peripheral_8c" ],
     [ "star_bus_spi.c", "d9/dbd/star__bus__spi_8c.html", "d9/dbd/star__bus__spi_8c" ],
     [ "star_bus_spi_dma.c", "dc/d0c/star__bus__spi__dma_8c.html", "dc/d0c/star__bus__spi__dma_8c" ],
     [ "star_bus_spi_peripheral.c", "d4/d34/star__bus__spi__peripheral_8c.html", "d4/d34/star__bus__spi__peripheral_8c" ],
-    [ "star_bus_stats.c", "dd/d61/star__bus__stats_8c.html", "dd/d61/star__bus__stats_8c" ],
-    [ "star_bus_types.c", "d7/d27/star__bus__types_8c.html", "d7/d27/star__bus__types_8c" ],
-    [ "star_bus_uart.c", "da/d14/star__bus__uart_8c.html", "da/d14/star__bus__uart_8c" ]
+    [ "star_bus_types.c", "d7/d27/star__bus__types_8c.html", "d7/d27/star__bus__types_8c" ]
 ];

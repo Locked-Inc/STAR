@@ -1,9 +1,27 @@
 <map id="internal_star_bus_spi_peripheral_receive" name="internal_star_bus_spi_peripheral_receive">
-<area shape="rect" id="Node000001" title=" " alt="" coords="416,39,560,79"/>
-<area shape="rect" id="Node000002" href="$d4/d34/star__bus__spi__peripheral_8c.html#a2345e4ad6acf2f73b394513fe38340da" title="Initialize default SPI peripheral operations function pointers within a config structure...." alt="" coords="210,5,368,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="398,45,368,42,368,36,403,44"/>
-<area shape="rect" id="Node000004" href="$d4/d34/star__bus__spi__peripheral_8c.html#a3ccbd2706237d383f19bab2320109c0b" title="Receive data from the SPI controller (this device acts as peripheral)." alt="" coords="210,71,368,111"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="403,73,369,81,368,76,398,73"/>
-<area shape="rect" id="Node000003" href="$de/d98/star__bus__config_8c.html#a16ccb4aebc8dd1759ce3a1e5c67d7184" title="Create a new SPI peripheral (slave) configuration." alt="" coords="5,5,162,46"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="191,26,163,28,162,23,196,25"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="1528,39,1672,79"/>
+<area shape="rect" id="Node000002" href="$d4/d34/star__bus__spi__peripheral_8c.html#a2345e4ad6acf2f73b394513fe38340da" title="Initialize default SPI peripheral operations function pointers within a config structure...." alt="" coords="1322,5,1480,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1510,44,1480,42,1481,36,1515,45"/>
+<area shape="rect" id="Node000005" href="$d4/d34/star__bus__spi__peripheral_8c.html#a3ccbd2706237d383f19bab2320109c0b" title="Receive data from the SPI controller (this device acts as peripheral)." alt="" coords="1322,71,1480,111"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="1515,73,1481,81,1480,76,1510,73"/>
+<area shape="rect" id="Node000003" href="$de/d98/star__bus__config_8c.html#a16ccb4aebc8dd1759ce3a1e5c67d7184" title="Create a new SPI peripheral (slave) configuration." alt="" coords="753,5,910,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="1304,26,910,28,910,23,1309,25"/>
+<area shape="rect" id="Node000004" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,42,83,68"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="737,32,83,56,83,51,738,26"/>
+<area shape="rect" id="Node000006" href="$d4/d23/star__arq_8c.html#a40ff53b2a730e5d7b2d3143f35e59210" title="Wait for ACK/NACK response with timeout." alt="" coords="1129,78,1274,104"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="1303,91,1274,94,1274,88,1309,91"/>
+<area shape="rect" id="Node000012" href="$d4/d23/star__arq_8c.html#ac2b5bf1cb6311efe3e2a314793d2370c" title="Receive data with duplicate filtering." alt="" coords="964,133,1081,158"/>
+<area shape="poly" id="edge12_Node000005_Node000012" title=" " alt="" coords="1309,110,1274,119,1082,143,1081,138,1273,114,1304,111"/>
+<area shape="rect" id="Node000007" href="$d4/d23/star__arq_8c.html#a829a9c320b9fd82df86139f8a99a86ed" title="Send data with automatic retries (Stop&#45;and&#45;Wait)." alt="" coords="971,78,1074,104"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="1111,91,1075,94,1075,88,1117,91"/>
+<area shape="rect" id="Node000008" href="$dd/d6f/telemetry__task_8c.html#a4ed3c7ef431e86500b5b13ff66dcd2df" title=" " alt="" coords="747,71,916,111"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="953,91,917,94,916,88,958,91"/>
+<area shape="rect" id="Node000009" href="$dd/d6f/telemetry__task_8c.html#a5f1c53af0b7c4392cd3e4e0f8edf7f85" title=" " alt="" coords="533,78,699,104"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="729,91,699,94,699,88,734,91"/>
+<area shape="rect" id="Node000010" href="$dd/d6f/telemetry__task_8c.html#af6165a8452f2bd60402570e04a1047ae" title=" " alt="" coords="329,72,485,97"/>
+<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="515,88,486,89,486,84,521,88"/>
+<area shape="rect" id="Node000011" href="$dd/d6f/telemetry__task_8c.html#a8b71cb82beffbf0e20612ef2cdcf151a" title="Create and start the telemetry task." alt="" coords="131,68,281,93"/>
+<area shape="poly" id="edge10_Node000010_Node000011" title=" " alt="" coords="311,83,282,84,281,79,316,82"/>
+<area shape="poly" id="edge11_Node000011_Node000004" title=" " alt="" coords="113,67,83,64,82,58,117,65"/>
+<area shape="poly" id="edge13_Node000012_Node000009" title=" " alt="" coords="946,143,852,139,746,126,663,107,664,102,747,120,853,133,951,143"/>
 </map>

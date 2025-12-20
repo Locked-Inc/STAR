@@ -1,4 +1,14 @@
-/* lib/star_frame/include/star_frame.h */
+/**
+ * @file star_frame.h
+ * @brief Frame encoding/decoding API with CRC-32 error detection
+ * @details
+ * Provides frame protocol interface for reliable data transmission with CRC-32 error detection.
+ * Includes frame serialization/deserialization with header, payload, and CRC validation
+ * for SPI communication between ESP32 and RPi5.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #ifndef STAR_FRAME_H
 #define STAR_FRAME_H

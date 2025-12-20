@@ -1,0 +1,7 @@
+<map id="internal_clamp" name="internal_clamp">
+<area shape="rect" id="Node000001" title=" " alt="" coords="195,35,300,60"/>
+<area shape="rect" id="Node000002" href="$d8/d55/star__pid_8c.html#aec137bd2ff54217286aa5896f85634a3" title="Compute PID output for current error." alt="" coords="14,5,138,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="177,37,138,31,138,26,182,35"/>
+<area shape="rect" id="Node000003" href="$d8/d55/star__pid_8c.html#acca528ee9472937d0e24f2fa17bd2fd1" title="Update PID integral limits at runtime (anti&#45;windup)." alt="" coords="5,55,147,96"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="176,59,147,67,146,61,182,58"/>
+</map>

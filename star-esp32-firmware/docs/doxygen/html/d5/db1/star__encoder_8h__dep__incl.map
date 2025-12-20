@@ -1,0 +1,5 @@
+<map id="lib/star_encoder/include/star_encoder.h" name="lib/star_encoder/include/star_encoder.h">
+<area shape="rect" id="Node000001" title="Quadrature encoder driver API using ESP32 PCNT peripheral." alt="" coords="5,5,164,46"/>
+<area shape="rect" id="Node000002" href="$d9/d76/star__encoder_8c.html" title="Quadrature encoder driver implementation using ESP32 PCNT peripheral." alt="" coords="17,94,152,135"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="86,60,87,94,82,93,83,64"/>
+</map>

@@ -1,0 +1,9 @@
+<map id="star_frame_parse" name="star_frame_parse">
+<area shape="rect" id="Node000001" title="Parse and validate a received frame." alt="" coords="5,55,128,80"/>
+<area shape="rect" id="Node000002" href="$d5/d3c/star__frame_8c.html#a7a4b94a4c8db8b735d3343594dc79d66" title="Read 16&#45;bit value from network byte order (big&#45;endian)." alt="" coords="176,5,320,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="116,52,185,34,181,37,118,57"/>
+<area shape="rect" id="Node000003" href="$d5/d3c/star__frame_8c.html#a137d95c3d3c4678dfd5dd0bd893a1b09" title="Read 32&#45;bit value from little&#45;endian format." alt="" coords="178,55,318,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="128,65,165,67,160,68,129,70"/>
+<area shape="rect" id="Node000004" href="$d5/d3c/star__frame_8c.html#affb4050f4ee5e749495b48eef0c0ba3e" title="Calculate CRC&#45;32 checksum (IEEE 802.3)." alt="" coords="187,104,309,130"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="117,78,186,98,181,100,116,84"/>
+</map>

@@ -43,9 +43,8 @@ plugins:
   # Note: nanopb requires local installation
   # Install: pip install nanopb
   # ============================================
-  # Uncomment when nanopb is installed locally:
-  # - plugin: nanopb_generator
-  #   out: gen/nanopb
-  #   opt:
-  #     - --options-path=nanopb/
-  #   strategy: all
+  - plugin: nanopb
+    out: gen/nanopb
+    opt:
+      - --options-path=nanopb/
+    strategy: all

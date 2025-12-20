@@ -1,4 +1,14 @@
-/* lib/star_motor/include/star_motor.h */
+/**
+ * @file star_motor.h
+ * @brief Brushed DC motor control API using ESP32 MCPWM peripheral
+ * @details
+ * Provides an interface for controlling brushed DC motors via H-bridge drivers using the
+ * ESP32 Motor Control PWM (MCPWM) peripheral. Supports bidirectional control with configurable
+ * PWM frequency, dead-time insertion for preventing shoot-through, and fault detection.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #ifndef STAR_MOTOR_H
 #define STAR_MOTOR_H

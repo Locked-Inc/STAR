@@ -1,0 +1,14 @@
+<map id="include/star/v1/battery_management.pb.h" name="include/star/v1/battery_management.pb.h">
+<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,156,46"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="119,241,165,267"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="79,44,80,113,85,153,96,192,107,212,121,231,116,230,102,214,91,194,80,154,75,113,77,49"/>
+<area shape="rect" id="Node000003" href="$d4/d40/star_2v1_2common_8pb_8h.html" title=" " alt="" coords="99,94,243,120"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="103,44,148,83,143,84,103,49"/>
+<area shape="poly" id="edge3_Node000003_Node000002" title=" " alt="" coords="147,122,125,142,104,169,101,184,104,199,122,230,117,229,99,201,96,184,99,167,121,138,151,118"/>
+<area shape="rect" id="Node000004" href="$dc/d30/duration_8pb_8h.html" title=" " alt="" coords="114,168,303,193"/>
+<area shape="poly" id="edge4_Node000003_Node000004" title=" " alt="" coords="178,117,198,154,193,153,176,122"/>
+<area shape="rect" id="Node000005" href="$d2/d11/timestamp_8pb_8h.html" title=" " alt="" coords="328,168,532,193"/>
+<area shape="poly" id="edge6_Node000003_Node000005" title=" " alt="" coords="215,118,373,162,369,164,215,123"/>
+<area shape="poly" id="edge5_Node000004_Node000002" title=" " alt="" coords="200,192,165,232,162,228,195,195"/>
+<area shape="poly" id="edge7_Node000005_Node000002" title=" " alt="" coords="382,196,181,246,180,241,380,192"/>
+</map>

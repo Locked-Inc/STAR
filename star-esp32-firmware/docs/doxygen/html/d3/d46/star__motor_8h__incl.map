@@ -1,0 +1,13 @@
+<map id="lib/star_motor/include/star_motor.h" name="lib/star_motor/include/star_motor.h">
+<area shape="rect" id="Node000001" title="Brushed DC motor control API using ESP32 MCPWM peripheral." alt="" coords="274,5,419,46"/>
+<area shape="rect" id="Node000002" title=" " alt="" coords="5,94,98,120"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="274,49,112,92,111,87,272,44"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="122,94,285,120"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="313,46,240,89,238,84,308,47"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="309,94,383,120"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="348,44,348,80,344,77,344,48"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="407,94,472,120"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="370,44,416,84,411,83,368,49"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="496,94,570,120"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="393,44,493,88,488,88,392,49"/>
+</map>

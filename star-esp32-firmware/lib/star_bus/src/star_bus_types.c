@@ -1,4 +1,13 @@
-/* lib/star_bus/src/star_bus_types.c */
+/**
+ * @file star_bus_types.c
+ * @brief Bus type utilities and helper functions implementation
+ * @details
+ * Provides utility functions for working with bus types, including string conversion
+ * and type validation for the bus manager subsystem.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #include "star_bus_types.h"
 

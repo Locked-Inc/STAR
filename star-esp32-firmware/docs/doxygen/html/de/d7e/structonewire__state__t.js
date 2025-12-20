@@ -1,6 +1,6 @@
 var structonewire__state__t =
 [
-    [ "bus_name", "de/d7e/structonewire__state__t.html#a06180dbff8aae68276d9b2b40c1572f9", null ],
+    [ "bus_name", "de/d7e/structonewire__state__t.html#a4f1e1751bc44ca6ed409eacdf701cc98", null ],
     [ "config", "de/d7e/structonewire__state__t.html#a59c03b4439cd6cf5b83c41802efc1934", null ],
     [ "initialized", "de/d7e/structonewire__state__t.html#a7109e81dffaf6e2359ced5c842b46fa2", null ],
     [ "last_device_flag", "de/d7e/structonewire__state__t.html#a3b251159b3f2a4cbdf79d25027a32719", null ],

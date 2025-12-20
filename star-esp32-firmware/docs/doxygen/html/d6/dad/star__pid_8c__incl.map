@@ -1,0 +1,19 @@
+<map id="lib/star_pid/src/star_pid.c" name="lib/star_pid/src/star_pid.c">
+<area shape="rect" id="Node000001" title="PID controller implementation for closed&#45;loop motor control." alt="" coords="250,5,382,46"/>
+<area shape="rect" id="Node000002" href="$dd/d1d/star__pid_8h.html" title="PID controller API for closed&#45;loop motor control." alt="" coords="97,94,175,120"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="269,48,178,90,176,85,273,45"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="198,94,260,120"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="297,45,255,85,252,81,292,48"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="284,94,348,120"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="317,44,318,80,314,77,314,49"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="372,94,468,120"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="342,44,394,84,389,84,341,49"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="492,94,569,120"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="370,44,486,88,481,89,369,49"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,168,80,193"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="123,120,72,160,69,156,117,121"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="104,168,168,193"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="138,118,138,153,133,151,134,122"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="192,168,266,193"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="153,118,204,158,199,158,151,123"/>
+</map>

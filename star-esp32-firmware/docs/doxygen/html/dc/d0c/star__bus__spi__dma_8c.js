@@ -2,6 +2,7 @@ var star__bus__spi__dma_8c =
 [
     [ "spi_dma_transfer_context_t", "d3/d7b/structspi__dma__transfer__context__t.html", "d3/d7b/structspi__dma__transfer__context__t" ],
     [ "spi_dma_state_t", "dd/d41/structspi__dma__state__t.html", "dd/d41/structspi__dma__state__t" ],
+    [ "STAR_SPI_NUM_PERIPHERALS", "dc/d0c/star__bus__spi__dma_8c.html#ac71c8dddbfd91df7e35cfeae9719ba3f", null ],
     [ "get_spi_dma_state", "dc/d0c/star__bus__spi__dma_8c.html#ae6f3f7193babc100dd9a817ee1ebbdc5", null ],
     [ "get_spi_host_from_bus", "dc/d0c/star__bus__spi__dma_8c.html#af5ad74578aa070f6c9b52f995459590d", null ],
     [ "internal_should_use_spi_dma", "dc/d0c/star__bus__spi__dma_8c.html#aee06ddc77f2184cc24ee84b885ddbbcf", null ],
@@ -14,6 +15,6 @@ var star__bus__spi__dma_8c =
     [ "star_spi_dma_free", "dc/d0c/star__bus__spi__dma_8c.html#a780ffb5043b505e643bab31ba476f454", null ],
     [ "star_spi_dma_malloc", "dc/d0c/star__bus__spi__dma_8c.html#a4bca74f3cf7eeb65a4fef821e1913a91", null ],
     [ "star_spi_is_dma_capable", "dc/d0c/star__bus__spi__dma_8c.html#ae0812860368e24030307d3df5b78b2d5", null ],
-    [ "g_spi_dma_states", "dc/d0c/star__bus__spi__dma_8c.html#a370351e64bcd438eac596d74177a3ffa", null ],
+    [ "g_spi_dma_states", "dc/d0c/star__bus__spi__dma_8c.html#ad9cd42a9c82b77686b158ca244378fc9", null ],
     [ "s_TAG", "dc/d0c/star__bus__spi__dma_8c.html#a999e3dd103132afd3cd1856f477f2dbd", null ]
 ];
