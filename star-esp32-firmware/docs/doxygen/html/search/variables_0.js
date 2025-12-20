@@ -19,7 +19,7 @@ var searchData=
   ['alarm_5fwarning_5fregister_16',['alarm_warning_register',['../d2/da3/struct__star__v1___battery_status.html#a6c08b2f8fd7ea8cc630958146b11d18b',1,'_star_v1_BatteryStatus']]],
   ['altitude_5fm_17',['altitude_m',['../d6/db7/struct__star__v1___gps_data.html#a2b5c188d0334e68b07040dd5ca8f837e',1,'_star_v1_GpsData']]],
   ['angle_5frad_18',['angle_rad',['../df/dba/struct__star__v1___s_e2_pose.html#a4494e7a8911164c22bc85cc632e73b14',1,'_star_v1_SE2Pose']]],
-  ['arq_19',['arq',['../d7/d53/structtelemetry__task__params__t.html#a9b3866e09c29290589ee43d8c7d25e89',1,'telemetry_task_params_t']]],
+  ['arq_19',['arq',['../d0/dfd/structcommand__task__params__t.html#a130c9369975014cb3a7ade1a20124135',1,'command_task_params_t::arq'],['../d7/d53/structtelemetry__task__params__t.html#a9b3866e09c29290589ee43d8c7d25e89',1,'telemetry_task_params_t::arq']]],
   ['atten_20',['atten',['../dc/de0/structstar__adc__bus__config.html#a59171621fd245b942ce2de925e33eed0',1,'star_adc_bus_config']]],
   ['avg_5fcurrent_5fma_21',['avg_current_ma',['../d2/d17/structbq7850__current__data__t.html#aedaae8ec39a087b867618ba3c71f721d',1,'bq7850_current_data_t::avg_current_ma'],['../d1/d47/struct__star__v1___current_data.html#afb816b7d049a2a8888d74bf92965925c',1,'_star_v1_CurrentData::avg_current_ma']]],
   ['avg_5ftemp_5fc_22',['avg_temp_c',['../df/d6a/structbq7850__temp__data__t.html#abf3004063392d9357a078597d4996e96',1,'bq7850_temp_data_t']]],

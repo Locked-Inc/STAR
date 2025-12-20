@@ -20,6 +20,15 @@ extern "C" {
 #include "esp_err.h"
 #include "star_bus_manager_types.h"
 
+/* --- Configuration Constants --- */
+
+/**
+ * @brief Bus manager configuration constants
+ */
+typedef enum {
+  k_bus_manager_mutex_timeout_ms = 1000, /**< Default mutex timeout (ms) for bus operations */
+} bus_manager_config_t;
+
 /**
  * Key Features:
  * - Thread-safe bus management with mutex protection
@@ -312,9 +321,8 @@ star_bus_read_analog_raw(star_bus_manager_t* manager, const char* bus_name, int3
  * @return esp_err_t ESP_OK on success, ESP_ERR_INVALID_ARG if bus type is not ADC,
  *                   or error codes from the underlying ADC operation.
  */
-esp_err_t star_bus_read_analog_mv(star_bus_manager_t* manager,
-                                  const char*         bus_name,
-                                  int32_t*            out_voltage_mv);
+esp_err_t
+star_bus_read_analog_mv(star_bus_manager_t* manager, const char* bus_name, int32_t* out_voltage_mv);
 
 #ifdef __cplusplus
 }

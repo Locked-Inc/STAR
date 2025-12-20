@@ -98,11 +98,10 @@ typedef struct star_spi_ops {
  * @brief SPI bus configuration structure (part of star_bus_config_t).
  */
 typedef struct star_spi_bus_config {
-  spi_host_device_t host; /**< SPI host number */
-  bool
-    is_peripheral; /**< True if operating as SPI peripheral, false if controller */
-  spi_bus_config_t bus_cfg; /**< Underlying ESP-IDF SPI bus configuration */
-                            /* Note: bus_cfg members like mosi_io_num are renamed below */
+  spi_host_device_t host;          /**< SPI host number */
+  bool              is_peripheral; /**< True if operating as SPI peripheral, false if controller */
+  spi_bus_config_t  bus_cfg;       /**< Underlying ESP-IDF SPI bus configuration */
+                                   /* Note: bus_cfg members like mosi_io_num are renamed below */
   spi_device_interface_config_t
     dev_cfg; /**< Underlying ESP-IDF SPI device configuration (controller mode only) */
   star_spi_callbacks_t callbacks; /**< User-provided callback functions */

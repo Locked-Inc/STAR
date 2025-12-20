@@ -7,8 +7,9 @@ var searchData=
   ['validated_4',['validated',['../df/d2d/struct__star__v1___finalize_update_response.html#a59c636825841482cfdd6dddeb4d89ac0',1,'_star_v1_FinalizeUpdateResponse']]],
   ['validation_5fresult_5',['validation_result',['../d1/d7c/struct__star__v1___set_configuration_response.html#ae5eb2924f5b09c2c597c969a55730907',1,'_star_v1_SetConfigurationResponse::validation_result'],['../de/d11/struct__star__v1___validate_configuration_response.html#a62376a256c324dc0bf369bb9216d00ae',1,'_star_v1_ValidateConfigurationResponse::validation_result'],['../d0/d89/struct__star__v1___set_motor_pid_config_response.html#abb1e1297236f0ae33cb1882ff3f9a13e',1,'_star_v1_SetMotorPidConfigResponse::validation_result']]],
   ['velocity_5fmps_6',['velocity_mps',['../d2/df5/struct__star__v1___encoder_data.html#a40108e8c4a40bd782a242e4a195a253f',1,'_star_v1_EncoderData::velocity_mps'],['../d7/d3e/struct__star__v1___motor_status.html#a9eec2e48ebf40940d2073a6199668340',1,'_star_v1_MotorStatus::velocity_mps']]],
-  ['version_7',['version',['../da/db6/struct__star__v1___firmware_info.html#a008e70ece1c57c102cc6c1d26658ef07',1,'_star_v1_FirmwareInfo']]],
-  ['voltage_5fmv_8',['voltage_mv',['../d2/d17/structbq7850__current__data__t.html#afed33046def3e4a7dc505eb20024b560',1,'bq7850_current_data_t::voltage_mv'],['../d1/d47/struct__star__v1___current_data.html#a7575c4767f60d4d79fb3bd2fe0f776c9',1,'_star_v1_CurrentData::voltage_mv']]],
-  ['vx_5fmps_9',['vx_mps',['../d5/dcd/struct__star__v1___s_e2_velocity.html#acf8e54afab4005d67697e9bfc9bc9910',1,'_star_v1_SE2Velocity']]],
-  ['vy_5fmps_10',['vy_mps',['../d5/dcd/struct__star__v1___s_e2_velocity.html#a5cdb095b39013df23b180d6f4b55f1be',1,'_star_v1_SE2Velocity']]]
+  ['velocity_5fsetpoint_5fmps_7',['velocity_setpoint_mps',['../da/d8b/structmotor__shared__state__t.html#a1be4f0fe6a60a19eee835c97cc567f04',1,'motor_shared_state_t']]],
+  ['version_8',['version',['../da/db6/struct__star__v1___firmware_info.html#a008e70ece1c57c102cc6c1d26658ef07',1,'_star_v1_FirmwareInfo']]],
+  ['voltage_5fmv_9',['voltage_mv',['../d2/d17/structbq7850__current__data__t.html#afed33046def3e4a7dc505eb20024b560',1,'bq7850_current_data_t::voltage_mv'],['../d1/d47/struct__star__v1___current_data.html#a7575c4767f60d4d79fb3bd2fe0f776c9',1,'_star_v1_CurrentData::voltage_mv']]],
+  ['vx_5fmps_10',['vx_mps',['../d5/dcd/struct__star__v1___s_e2_velocity.html#acf8e54afab4005d67697e9bfc9bc9910',1,'_star_v1_SE2Velocity']]],
+  ['vy_5fmps_11',['vy_mps',['../d5/dcd/struct__star__v1___s_e2_velocity.html#a5cdb095b39013df23b180d6f4b55f1be',1,'_star_v1_SE2Velocity']]]
 ];

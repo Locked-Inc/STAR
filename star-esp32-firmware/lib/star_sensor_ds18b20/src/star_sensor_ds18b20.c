@@ -44,20 +44,20 @@ typedef enum {
  * @brief DS18B20 data sizes and constants
  */
 typedef enum {
-  k_ds18b20_scratchpad_size  = 9,    /**< Scratchpad size in bytes (data + CRC) */
-  k_ds18b20_rom_size         = 8,    /**< ROM code size in bytes */
-  k_ds18b20_scratchpad_bytes = 3,    /**< Bytes written to scratchpad (TH, TL, Config) */
-  k_ds18b20_bits_per_byte    = 8,    /**< Bits per byte for CRC calculation */
+  k_ds18b20_scratchpad_size  = 9, /**< Scratchpad size in bytes (data + CRC) */
+  k_ds18b20_rom_size         = 8, /**< ROM code size in bytes */
+  k_ds18b20_scratchpad_bytes = 3, /**< Bytes written to scratchpad (TH, TL, Config) */
+  k_ds18b20_bits_per_byte    = 8, /**< Bits per byte for CRC calculation */
 } ds18b20_size_t;
 
 /**
  * @brief DS18B20 scratchpad register configuration constants
  */
 typedef enum {
-  k_ds18b20_config_th_default      = 0x00, /**< TH register default (high alarm, unused) */
-  k_ds18b20_config_tl_default      = 0x00, /**< TL register default (low alarm, unused) */
-  k_ds18b20_config_resolution_mask = 0x1F, /**< Config register base mask */
-  k_ds18b20_config_resolution_shift = 5,   /**< Resolution bits shift position */
+  k_ds18b20_config_th_default       = 0x00, /**< TH register default (high alarm, unused) */
+  k_ds18b20_config_tl_default       = 0x00, /**< TL register default (low alarm, unused) */
+  k_ds18b20_config_resolution_mask  = 0x1F, /**< Config register base mask */
+  k_ds18b20_config_resolution_shift = 5,    /**< Resolution bits shift position */
 } ds18b20_config_t;
 
 /**

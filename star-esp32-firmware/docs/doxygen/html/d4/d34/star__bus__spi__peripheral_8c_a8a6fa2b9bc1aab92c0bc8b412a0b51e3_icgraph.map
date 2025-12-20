@@ -1,23 +1,35 @@
 <map id="star_bus_spi_peripheral_transmit" name="star_bus_spi_peripheral_transmit">
-<area shape="rect" id="Node000001" title="Transmit data to the SPI controller (this device acts as peripheral)." alt="" coords="1145,47,1304,88"/>
-<area shape="rect" id="Node000002" href="$d4/d23/star__arq_8c.html#a349cf680367d0c82775c2900fa1d9926" title="Send ACK frame for a given sequence number." alt="" coords="968,5,1094,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1128,43,1084,34,1084,29,1133,44"/>
-<area shape="rect" id="Node000008" href="$d4/d23/star__arq_8c.html#a71c3c0d8af336955063c1fe3bd0ca4fb" title="Send NACK frame for a given sequence number." alt="" coords="964,55,1097,80"/>
-<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="1127,68,1098,70,1098,65,1132,67"/>
-<area shape="rect" id="Node000009" href="$d4/d23/star__arq_8c.html#a829a9c320b9fd82df86139f8a99a86ed" title="Send data with automatic retries (Stop&#45;and&#45;Wait)." alt="" coords="979,104,1082,130"/>
-<area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="1133,91,1083,106,1082,101,1128,92"/>
-<area shape="rect" id="Node000003" href="$d4/d23/star__arq_8c.html#ac2b5bf1cb6311efe3e2a314793d2370c" title="Receive data with duplicate filtering." alt="" coords="773,47,890,72"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="955,34,891,50,890,45,950,35"/>
-<area shape="rect" id="Node000004" href="$dd/d6f/telemetry__task_8c.html#a5f1c53af0b7c4392cd3e4e0f8edf7f85" title=" " alt="" coords="533,76,699,102"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="760,69,700,80,699,75,755,70"/>
-<area shape="rect" id="Node000005" href="$dd/d6f/telemetry__task_8c.html#af6165a8452f2bd60402570e04a1047ae" title=" " alt="" coords="329,76,485,102"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="515,89,486,91,486,86,521,89"/>
-<area shape="rect" id="Node000006" href="$dd/d6f/telemetry__task_8c.html#a8b71cb82beffbf0e20612ef2cdcf151a" title="Create and start the telemetry task." alt="" coords="131,76,281,102"/>
-<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="311,89,282,91,281,86,316,89"/>
-<area shape="rect" id="Node000007" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,76,83,102"/>
-<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="112,90,83,91,82,86,117,88"/>
-<area shape="poly" id="edge8_Node000008_Node000003" title=" " alt="" coords="946,64,891,65,891,59,951,64"/>
-<area shape="rect" id="Node000010" href="$dd/d6f/telemetry__task_8c.html#a4ed3c7ef431e86500b5b13ff66dcd2df" title=" " alt="" coords="747,96,916,137"/>
-<area shape="poly" id="edge10_Node000009_Node000010" title=" " alt="" coords="961,117,916,119,916,114,966,117"/>
-<area shape="poly" id="edge11_Node000010_Node000004" title=" " alt="" coords="729,104,699,102,699,97,734,104"/>
+<area shape="rect" id="Node000001" title="Transmit data to the SPI controller (this device acts as peripheral)." alt="" coords="1216,47,1375,88"/>
+<area shape="rect" id="Node000002" href="$d4/d23/star__arq_8c.html#a349cf680367d0c82775c2900fa1d9926" title="Send ACK frame for a given sequence number." alt="" coords="1038,5,1165,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1199,43,1155,34,1155,29,1204,44"/>
+<area shape="rect" id="Node000011" href="$d4/d23/star__arq_8c.html#a71c3c0d8af336955063c1fe3bd0ca4fb" title="Send NACK frame for a given sequence number." alt="" coords="1035,55,1168,80"/>
+<area shape="poly" id="edge11_Node000001_Node000011" title=" " alt="" coords="1198,68,1169,70,1169,65,1203,67"/>
+<area shape="rect" id="Node000012" href="$d4/d23/star__arq_8c.html#a829a9c320b9fd82df86139f8a99a86ed" title="Send data with automatic retries (Stop&#45;and&#45;Wait)." alt="" coords="1050,116,1153,142"/>
+<area shape="poly" id="edge13_Node000001_Node000012" title=" " alt="" coords="1217,93,1145,118,1144,113,1212,94"/>
+<area shape="rect" id="Node000003" href="$d4/d23/star__arq_8c.html#ac2b5bf1cb6311efe3e2a314793d2370c" title="Receive data with duplicate filtering." alt="" coords="839,5,956,31"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="1021,18,957,21,956,16,1026,18"/>
+<area shape="rect" id="Node000004" href="$d8/d71/command__handler__task_8c.html#ae30aab7323c1c2d46ff7d3170f2d2bc3" title="Main request/response loop." alt="" coords="594,35,760,60"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="821,28,761,39,760,34,826,27"/>
+<area shape="rect" id="Node000008" href="$dd/d6f/telemetry__task_8c.html#a5f1c53af0b7c4392cd3e4e0f8edf7f85" title=" " alt="" coords="594,92,760,118"/>
+<area shape="poly" id="edge7_Node000003_Node000008" title=" " alt="" coords="829,35,809,46,785,60,761,75,717,94,716,89,758,70,782,55,807,41,824,37"/>
+<area shape="rect" id="Node000005" href="$d8/d71/command__handler__task_8c.html#ab2a47d15e4e4a87518255558eb43e8fb" title="Command handler task entry point." alt="" coords="338,35,546,60"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="576,48,547,50,547,45,581,47"/>
+<area shape="rect" id="Node000006" href="$d8/d71/command__handler__task_8c.html#a17179b9da1977df5b628a6bf6fbaf139" title="Create and start the command handler task." alt="" coords="131,27,290,68"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="320,48,291,50,290,45,325,47"/>
+<area shape="rect" id="Node000007" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,64,83,90"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="113,66,84,72,82,68,117,63"/>
+<area shape="rect" id="Node000009" href="$dd/d6f/telemetry__task_8c.html#af6165a8452f2bd60402570e04a1047ae" title=" " alt="" coords="364,92,520,118"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="576,105,521,107,520,102,581,104"/>
+<area shape="rect" id="Node000010" href="$dd/d6f/telemetry__task_8c.html#a8b71cb82beffbf0e20612ef2cdcf151a" title="Create and start the telemetry task." alt="" coords="135,92,286,118"/>
+<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="346,106,286,107,286,102,351,104"/>
+<area shape="poly" id="edge10_Node000010_Node000007" title=" " alt="" coords="118,91,84,86,82,81,122,88"/>
+<area shape="poly" id="edge12_Node000011_Node000003" title=" " alt="" coords="1028,50,954,34,954,29,1033,50"/>
+<area shape="rect" id="Node000013" href="$d8/d71/command__handler__task_8c.html#a40d99ce04db1dc6872c786c97fb6ef87" title="Handle EmergencyStopRequest message." alt="" coords="808,186,987,226"/>
+<area shape="poly" id="edge14_Node000012_Node000013" title=" " alt="" coords="1055,147,988,175,955,188,954,183,986,170,1050,148"/>
+<area shape="rect" id="Node000014" href="$d8/d71/command__handler__task_8c.html#a4263cbb348117f15a7546d898b9b94c3" title="Handle SetVelocityRequest message." alt="" coords="831,55,964,96"/>
+<area shape="poly" id="edge15_Node000012_Node000014" title=" " alt="" coords="1032,111,964,96,965,90,1038,112"/>
+<area shape="rect" id="Node000015" href="$dd/d6f/telemetry__task_8c.html#a4ed3c7ef431e86500b5b13ff66dcd2df" title=" " alt="" coords="813,120,982,161"/>
+<area shape="poly" id="edge17_Node000012_Node000015" title=" " alt="" coords="1031,133,983,139,982,133,1037,133"/>
+<area shape="poly" id="edge16_Node000014_Node000004" title=" " alt="" coords="813,65,760,61,760,55,818,65"/>
+<area shape="poly" id="edge18_Node000015_Node000008" title=" " alt="" coords="795,125,760,121,760,116,800,125"/>
 </map>
