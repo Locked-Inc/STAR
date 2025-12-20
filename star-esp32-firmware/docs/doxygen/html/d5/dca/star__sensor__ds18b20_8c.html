@@ -120,7 +120,7 @@ Include dependency graph for star_sensor_ds18b20.c:</div>
 <area shape="poly" title=" " alt="" coords="546,44,599,84,593,85,546,49"/>
 <area shape="rect" title=" " alt="" coords="696,94,773,120"/>
 <area shape="poly" title=" " alt="" coords="573,44,690,88,685,89,574,49"/>
-<area shape="rect" href="../../d0/d6c/star__bus__onewire_8h.html" title="1&#45;Wire controller protocol implementation" alt="" coords="797,94,931,120"/>
+<area shape="rect" href="../../d0/d6c/star__bus__onewire_8h.html" title="1&#45;Wire protocol API for the bus manager" alt="" coords="797,94,931,120"/>
 <area shape="poly" title=" " alt="" coords="606,44,798,89,794,91,606,49"/>
 <area shape="rect" title=" " alt="" coords="1304,610,1378,635"/>
 <area shape="poly" title=" " alt="" coords="241,115,561,156,990,222,1199,260,1379,301,1454,323,1514,344,1558,365,1583,387,1593,405,1598,423,1598,440,1593,457,1574,489,1543,519,1505,546,1464,570,1388,606,1387,601,1462,565,1502,542,1540,515,1569,486,1588,455,1592,439,1593,423,1588,407,1579,390,1555,370,1512,349,1452,328,1378,307,1198,266,989,227,560,161,242,120"/>
@@ -199,15 +199,35 @@ Include dependency graph for star_sensor_ds18b20.c:</div>
 </div>
 <p><a href="../../d5/dca/star__sensor__ds18b20_8c_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-define-members" class="groupheader"><a id="define-members" name="define-members"></a>
-Macros</h2></td></tr>
-<tr class="memitem:a608ba051f40d5b9e54f8ebc016dc1514" id="r_a608ba051f40d5b9e54f8ebc016dc1514"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a608ba051f40d5b9e54f8ebc016dc1514">DS18B20_CMD_SKIP_ROM</a>&#160;&#160;&#160;(0xCC)</td></tr>
-<tr class="memitem:a6cdf02a12f71612a40dde0a265ebd75b" id="r_a6cdf02a12f71612a40dde0a265ebd75b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6cdf02a12f71612a40dde0a265ebd75b">DS18B20_CMD_MATCH_ROM</a>&#160;&#160;&#160;(0x55)</td></tr>
-<tr class="memitem:a72f0f569eb68858f479bcc730c3e295c" id="r_a72f0f569eb68858f479bcc730c3e295c"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a72f0f569eb68858f479bcc730c3e295c">DS18B20_CMD_READ_ROM</a>&#160;&#160;&#160;(0x33)</td></tr>
-<tr class="memitem:ac2a9d81efb3ef7b921377c116e41a3f8" id="r_ac2a9d81efb3ef7b921377c116e41a3f8"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac2a9d81efb3ef7b921377c116e41a3f8">DS18B20_CMD_CONVERT_T</a>&#160;&#160;&#160;(0x44)</td></tr>
-<tr class="memitem:a3734ec2848db33401ad3246798e474a7" id="r_a3734ec2848db33401ad3246798e474a7"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3734ec2848db33401ad3246798e474a7">DS18B20_CMD_READ_SCRATCHPAD</a>&#160;&#160;&#160;(0xBE)</td></tr>
-<tr class="memitem:a57959c93d714e1c177afc244b2c57d5e" id="r_a57959c93d714e1c177afc244b2c57d5e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a57959c93d714e1c177afc244b2c57d5e">DS18B20_CMD_WRITE_SCRATCHPAD</a>&#160;&#160;&#160;(0x4E)</td></tr>
-<tr class="memitem:af67ff473ba37804c2338d21b208b01e6" id="r_af67ff473ba37804c2338d21b208b01e6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af67ff473ba37804c2338d21b208b01e6">DS18B20_SCRATCHPAD_SIZE</a>&#160;&#160;&#160;9</td></tr>
+<tr class="heading"><td colspan="2"><h2 id="header-enum-members" class="groupheader"><a id="enum-members" name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:add46b9e64e98895681f648451ee67f65" id="r_add46b9e64e98895681f648451ee67f65"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#add46b9e64e98895681f648451ee67f65">ds18b20_cmd_t</a> { <br />
+&#160;&#160;<a class="el" href="#add46b9e64e98895681f648451ee67f65a7ea51174c0a82744e1ac76040b852e00">k_ds18b20_cmd_skip_rom</a> = 0xCC
+, <a class="el" href="#add46b9e64e98895681f648451ee67f65a308707a9448f95f281ad2c4e512d79b1">k_ds18b20_cmd_match_rom</a> = 0x55
+, <a class="el" href="#add46b9e64e98895681f648451ee67f65ac5f810ef0ab6c870c5695b9672cad06a">k_ds18b20_cmd_read_rom</a> = 0x33
+, <a class="el" href="#add46b9e64e98895681f648451ee67f65a77f2653cef7f318f3c1c01bbc4391466">k_ds18b20_cmd_convert_t</a> = 0x44
+, <br />
+&#160;&#160;<a class="el" href="#add46b9e64e98895681f648451ee67f65aba4e3d9c1ef4135033659db2f0f7f95c">k_ds18b20_cmd_read_scratchpad</a> = 0xBE
+, <a class="el" href="#add46b9e64e98895681f648451ee67f65a0ae5bad506bc6a752e7e1b3b9bbd22f7">k_ds18b20_cmd_write_scratchpad</a> = 0x4E
+<br />
+ }</td></tr>
+<tr class="memdesc:add46b9e64e98895681f648451ee67f65"><td class="mdescLeft">&#160;</td><td class="mdescRight">DS18B20 1-Wire command codes.  <a href="#add46b9e64e98895681f648451ee67f65">More...</a><br /></td></tr>
+<tr class="memitem:ac36f214a78a2b9898d50df3f2211c10c" id="r_ac36f214a78a2b9898d50df3f2211c10c"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac36f214a78a2b9898d50df3f2211c10c">ds18b20_size_t</a> { <a class="el" href="#ac36f214a78a2b9898d50df3f2211c10cad869f4831cb95c9e1d7c6641d2d3825b">k_ds18b20_scratchpad_size</a> = 9
+, <a class="el" href="#ac36f214a78a2b9898d50df3f2211c10ca7dc0635c4303972dae7c5db26e607dd9">k_ds18b20_rom_size</a> = 8
+, <a class="el" href="#ac36f214a78a2b9898d50df3f2211c10cace042aa6cc5eb681bca35e073ac4fd53">k_ds18b20_scratchpad_bytes</a> = 3
+, <a class="el" href="#ac36f214a78a2b9898d50df3f2211c10cac870be5c63c4cd6730860bd76766ccff">k_ds18b20_bits_per_byte</a> = 8
+ }</td></tr>
+<tr class="memdesc:ac36f214a78a2b9898d50df3f2211c10c"><td class="mdescLeft">&#160;</td><td class="mdescRight">DS18B20 data sizes and constants.  <a href="#ac36f214a78a2b9898d50df3f2211c10c">More...</a><br /></td></tr>
+<tr class="memitem:a3b6c0570e4301f4ae2ae5a5607c449fb" id="r_a3b6c0570e4301f4ae2ae5a5607c449fb"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3b6c0570e4301f4ae2ae5a5607c449fb">ds18b20_config_t</a> { <a class="el" href="#a3b6c0570e4301f4ae2ae5a5607c449fba3dbd26eb3d4b0e0277bb416bb6cb9689">k_ds18b20_config_th_default</a> = 0x00
+, <a class="el" href="#a3b6c0570e4301f4ae2ae5a5607c449fbaa43ff3e8a12e387a8f9afae1b1257957">k_ds18b20_config_tl_default</a> = 0x00
+, <a class="el" href="#a3b6c0570e4301f4ae2ae5a5607c449fba1657f33a30f2bc476b5aa4b99b6921ce">k_ds18b20_config_resolution_mask</a> = 0x1F
+, <a class="el" href="#a3b6c0570e4301f4ae2ae5a5607c449fbacd15a6e252b50f0bf567e6ab87c1b068">k_ds18b20_config_resolution_shift</a> = 5
+ }</td></tr>
+<tr class="memdesc:a3b6c0570e4301f4ae2ae5a5607c449fb"><td class="mdescLeft">&#160;</td><td class="mdescRight">DS18B20 scratchpad register configuration constants.  <a href="#a3b6c0570e4301f4ae2ae5a5607c449fb">More...</a><br /></td></tr>
+<tr class="memitem:ada0497cc0ee5be0d0ec54077d62b928b" id="r_ada0497cc0ee5be0d0ec54077d62b928b"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ada0497cc0ee5be0d0ec54077d62b928b">ds18b20_crc_t</a> { <a class="el" href="#ada0497cc0ee5be0d0ec54077d62b928bafa9c1a8cfc991507adc42d4ce2cad02e">k_ds18b20_crc_polynomial</a> = 0x8C
+, <a class="el" href="#ada0497cc0ee5be0d0ec54077d62b928ba48807966d0ae774ffe364f1276120adc">k_ds18b20_crc_lsb_mask</a> = 0x01
+ }</td></tr>
+<tr class="memdesc:ada0497cc0ee5be0d0ec54077d62b928b"><td class="mdescLeft">&#160;</td><td class="mdescRight">DS18B20 CRC-8 calculation constants.  <a href="#ada0497cc0ee5be0d0ec54077d62b928b">More...</a><br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -229,7 +249,7 @@ Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-var-members" class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:a999e3dd103132afd3cd1856f477f2dbd" id="r_a999e3dd103132afd3cd1856f477f2dbd"><td class="memItemLeft" align="right" valign="top">static const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a999e3dd103132afd3cd1856f477f2dbd">s_TAG</a> = &quot;STAR_DS18B20&quot;</td></tr>
+<tr class="memitem:af8861f6a1fb30510e283b1b7806b64e7" id="r_af8861f6a1fb30510e283b1b7806b64e7"><td class="memItemLeft" align="right" valign="top">static const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af8861f6a1fb30510e283b1b7806b64e7">s_tag</a> = &quot;STAR_DS18B20&quot;</td></tr>
 <tr class="memitem:a928540150252ce075dd76d48eaaf30de" id="r_a928540150252ce075dd76d48eaaf30de"><td class="memItemLeft" align="right" valign="top">static const uint16_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a928540150252ce075dd76d48eaaf30de">s_conversion_times_ms</a> []</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
@@ -239,124 +259,118 @@ Variables</h2></td></tr>
 <dl class="section copyright"><dt>Copyright</dt><dd>Copyright (c) 2025 STAR Project </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
-</div><a name="doc-define-members" id="doc-define-members"></a><h2 id="header-doc-define-members" class="groupheader">Macro Definition Documentation</h2>
-<a id="ac2a9d81efb3ef7b921377c116e41a3f8" name="ac2a9d81efb3ef7b921377c116e41a3f8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac2a9d81efb3ef7b921377c116e41a3f8">&#9670;&#160;</a></span>DS18B20_CMD_CONVERT_T</h2>
+</div><a name="doc-enum-members" id="doc-enum-members"></a><h2 id="header-doc-enum-members" class="groupheader">Enumeration Type Documentation</h2>
+<a id="add46b9e64e98895681f648451ee67f65" name="add46b9e64e98895681f648451ee67f65"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#add46b9e64e98895681f648451ee67f65">&#9670;&#160;</a></span>ds18b20_cmd_t</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define DS18B20_CMD_CONVERT_T&#160;&#160;&#160;(0x44)</td>
+          <td class="memname">enum <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h.html#add46b9e64e98895681f648451ee67f65">ds18b20_cmd_t</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00032">32</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00209">internal_ds18b20_start_conversion()</a>.</p>
-
-</div>
-</div>
-<a id="a6cdf02a12f71612a40dde0a265ebd75b" name="a6cdf02a12f71612a40dde0a265ebd75b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6cdf02a12f71612a40dde0a265ebd75b">&#9670;&#160;</a></span>DS18B20_CMD_MATCH_ROM</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define DS18B20_CMD_MATCH_ROM&#160;&#160;&#160;(0x55)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00030">30</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
-
-</div>
-</div>
-<a id="a72f0f569eb68858f479bcc730c3e295c" name="a72f0f569eb68858f479bcc730c3e295c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a72f0f569eb68858f479bcc730c3e295c">&#9670;&#160;</a></span>DS18B20_CMD_READ_ROM</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define DS18B20_CMD_READ_ROM&#160;&#160;&#160;(0x33)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00031">31</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
-
-</div>
-</div>
-<a id="a3734ec2848db33401ad3246798e474a7" name="a3734ec2848db33401ad3246798e474a7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3734ec2848db33401ad3246798e474a7">&#9670;&#160;</a></span>DS18B20_CMD_READ_SCRATCHPAD</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define DS18B20_CMD_READ_SCRATCHPAD&#160;&#160;&#160;(0xBE)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00033">33</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00229">internal_ds18b20_read_scratchpad()</a>.</p>
-
-</div>
-</div>
-<a id="a608ba051f40d5b9e54f8ebc016dc1514" name="a608ba051f40d5b9e54f8ebc016dc1514"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a608ba051f40d5b9e54f8ebc016dc1514">&#9670;&#160;</a></span>DS18B20_CMD_SKIP_ROM</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define DS18B20_CMD_SKIP_ROM&#160;&#160;&#160;(0xCC)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00029">29</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
-
-</div>
-</div>
-<a id="a57959c93d714e1c177afc244b2c57d5e" name="a57959c93d714e1c177afc244b2c57d5e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a57959c93d714e1c177afc244b2c57d5e">&#9670;&#160;</a></span>DS18B20_CMD_WRITE_SCRATCHPAD</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define DS18B20_CMD_WRITE_SCRATCHPAD&#160;&#160;&#160;(0x4E)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
+<p>DS18B20 1-Wire command codes. </p>
+<p>These are the standard DS18B20 ROM and function commands used for communication over the 1-Wire bus (controller-to-peripheral protocol). </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="add46b9e64e98895681f648451ee67f65a7ea51174c0a82744e1ac76040b852e00" name="add46b9e64e98895681f648451ee67f65a7ea51174c0a82744e1ac76040b852e00"></a>k_ds18b20_cmd_skip_rom&#160;</td><td class="fielddoc"><p>Skip ROM - address all peripherals </p>
+</td></tr>
+<tr><td class="fieldname"><a id="add46b9e64e98895681f648451ee67f65a308707a9448f95f281ad2c4e512d79b1" name="add46b9e64e98895681f648451ee67f65a308707a9448f95f281ad2c4e512d79b1"></a>k_ds18b20_cmd_match_rom&#160;</td><td class="fielddoc"><p>Match ROM - address specific peripheral </p>
+</td></tr>
+<tr><td class="fieldname"><a id="add46b9e64e98895681f648451ee67f65ac5f810ef0ab6c870c5695b9672cad06a" name="add46b9e64e98895681f648451ee67f65ac5f810ef0ab6c870c5695b9672cad06a"></a>k_ds18b20_cmd_read_rom&#160;</td><td class="fielddoc"><p>Read ROM - get peripheral's 64-bit ID </p>
+</td></tr>
+<tr><td class="fieldname"><a id="add46b9e64e98895681f648451ee67f65a77f2653cef7f318f3c1c01bbc4391466" name="add46b9e64e98895681f648451ee67f65a77f2653cef7f318f3c1c01bbc4391466"></a>k_ds18b20_cmd_convert_t&#160;</td><td class="fielddoc"><p>Convert T - start temperature conversion </p>
+</td></tr>
+<tr><td class="fieldname"><a id="add46b9e64e98895681f648451ee67f65aba4e3d9c1ef4135033659db2f0f7f95c" name="add46b9e64e98895681f648451ee67f65aba4e3d9c1ef4135033659db2f0f7f95c"></a>k_ds18b20_cmd_read_scratchpad&#160;</td><td class="fielddoc"><p>Read Scratchpad - read 9 bytes of data </p>
+</td></tr>
+<tr><td class="fieldname"><a id="add46b9e64e98895681f648451ee67f65a0ae5bad506bc6a752e7e1b3b9bbd22f7" name="add46b9e64e98895681f648451ee67f65a0ae5bad506bc6a752e7e1b3b9bbd22f7"></a>k_ds18b20_cmd_write_scratchpad&#160;</td><td class="fielddoc"><p>Write Scratchpad - write config data </p>
+</td></tr>
+</table>
 
 <p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00034">34</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00257">internal_ds18b20_write_scratchpad()</a>.</p>
-
 </div>
 </div>
-<a id="af67ff473ba37804c2338d21b208b01e6" name="af67ff473ba37804c2338d21b208b01e6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af67ff473ba37804c2338d21b208b01e6">&#9670;&#160;</a></span>DS18B20_SCRATCHPAD_SIZE</h2>
+<a id="a3b6c0570e4301f4ae2ae5a5607c449fb" name="a3b6c0570e4301f4ae2ae5a5607c449fb"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3b6c0570e4301f4ae2ae5a5607c449fb">&#9670;&#160;</a></span>ds18b20_config_t</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define DS18B20_SCRATCHPAD_SIZE&#160;&#160;&#160;9</td>
+          <td class="memname">enum <a class="el" href="#a3b6c0570e4301f4ae2ae5a5607c449fb">ds18b20_config_t</a></td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00037">37</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
+<p>DS18B20 scratchpad register configuration constants. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a3b6c0570e4301f4ae2ae5a5607c449fba3dbd26eb3d4b0e0277bb416bb6cb9689" name="a3b6c0570e4301f4ae2ae5a5607c449fba3dbd26eb3d4b0e0277bb416bb6cb9689"></a>k_ds18b20_config_th_default&#160;</td><td class="fielddoc"><p>TH register default (high alarm, unused) </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a3b6c0570e4301f4ae2ae5a5607c449fbaa43ff3e8a12e387a8f9afae1b1257957" name="a3b6c0570e4301f4ae2ae5a5607c449fbaa43ff3e8a12e387a8f9afae1b1257957"></a>k_ds18b20_config_tl_default&#160;</td><td class="fielddoc"><p>TL register default (low alarm, unused) </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a3b6c0570e4301f4ae2ae5a5607c449fba1657f33a30f2bc476b5aa4b99b6921ce" name="a3b6c0570e4301f4ae2ae5a5607c449fba1657f33a30f2bc476b5aa4b99b6921ce"></a>k_ds18b20_config_resolution_mask&#160;</td><td class="fielddoc"><p>Config register base mask </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a3b6c0570e4301f4ae2ae5a5607c449fbacd15a6e252b50f0bf567e6ab87c1b068" name="a3b6c0570e4301f4ae2ae5a5607c449fbacd15a6e252b50f0bf567e6ab87c1b068"></a>k_ds18b20_config_resolution_shift&#160;</td><td class="fielddoc"><p>Resolution bits shift position </p>
+</td></tr>
+</table>
 
-<p class="reference">Referenced by <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00229">internal_ds18b20_read_scratchpad()</a>, and <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00117">star_sensor_ds18b20_read_temp()</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00056">56</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
+
+</div>
+</div>
+<a id="ada0497cc0ee5be0d0ec54077d62b928b" name="ada0497cc0ee5be0d0ec54077d62b928b"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ada0497cc0ee5be0d0ec54077d62b928b">&#9670;&#160;</a></span>ds18b20_crc_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="#ada0497cc0ee5be0d0ec54077d62b928b">ds18b20_crc_t</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>DS18B20 CRC-8 calculation constants. </p>
+<p>The DS18B20 uses a polynomial of x^8 + x^5 + x^4 + 1 (0x8C reflected). </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ada0497cc0ee5be0d0ec54077d62b928bafa9c1a8cfc991507adc42d4ce2cad02e" name="ada0497cc0ee5be0d0ec54077d62b928bafa9c1a8cfc991507adc42d4ce2cad02e"></a>k_ds18b20_crc_polynomial&#160;</td><td class="fielddoc"><p>CRC-8 polynomial (reflected form) </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ada0497cc0ee5be0d0ec54077d62b928ba48807966d0ae774ffe364f1276120adc" name="ada0497cc0ee5be0d0ec54077d62b928ba48807966d0ae774ffe364f1276120adc"></a>k_ds18b20_crc_lsb_mask&#160;</td><td class="fielddoc"><p>Mask for LSB extraction </p>
+</td></tr>
+</table>
+
+<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00068">68</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
+
+</div>
+</div>
+<a id="ac36f214a78a2b9898d50df3f2211c10c" name="ac36f214a78a2b9898d50df3f2211c10c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac36f214a78a2b9898d50df3f2211c10c">&#9670;&#160;</a></span>ds18b20_size_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="#ac36f214a78a2b9898d50df3f2211c10c">ds18b20_size_t</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>DS18B20 data sizes and constants. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="ac36f214a78a2b9898d50df3f2211c10cad869f4831cb95c9e1d7c6641d2d3825b" name="ac36f214a78a2b9898d50df3f2211c10cad869f4831cb95c9e1d7c6641d2d3825b"></a>k_ds18b20_scratchpad_size&#160;</td><td class="fielddoc"><p>Scratchpad size in bytes (data + CRC) </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ac36f214a78a2b9898d50df3f2211c10ca7dc0635c4303972dae7c5db26e607dd9" name="ac36f214a78a2b9898d50df3f2211c10ca7dc0635c4303972dae7c5db26e607dd9"></a>k_ds18b20_rom_size&#160;</td><td class="fielddoc"><p>ROM code size in bytes </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ac36f214a78a2b9898d50df3f2211c10cace042aa6cc5eb681bca35e073ac4fd53" name="ac36f214a78a2b9898d50df3f2211c10cace042aa6cc5eb681bca35e073ac4fd53"></a>k_ds18b20_scratchpad_bytes&#160;</td><td class="fielddoc"><p>Bytes written to scratchpad (TH, TL, Config) </p>
+</td></tr>
+<tr><td class="fieldname"><a id="ac36f214a78a2b9898d50df3f2211c10cac870be5c63c4cd6730860bd76766ccff" name="ac36f214a78a2b9898d50df3f2211c10cac870be5c63c4cd6730860bd76766ccff"></a>k_ds18b20_bits_per_byte&#160;</td><td class="fielddoc"><p>Bits per byte for CRC calculation </p>
+</td></tr>
+</table>
+
+<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00046">46</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
 
 </div>
 </div>
@@ -388,9 +402,11 @@ Variables</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00289">289</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00327">327</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00117">star_sensor_ds18b20_read_temp()</a>.</p>
+<p class="reference">References <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00050">k_ds18b20_bits_per_byte</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00070">k_ds18b20_crc_lsb_mask</a>, and <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00069">k_ds18b20_crc_polynomial</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00151">star_sensor_ds18b20_read_temp()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -441,11 +457,11 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00229">229</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00266">266</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00120">star_ds18b20_handle_t::bus_manager</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00121">star_ds18b20_handle_t::bus_name</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00033">DS18B20_CMD_READ_SCRATCHPAD</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00037">DS18B20_SCRATCHPAD_SIZE</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00194">internal_ds18b20_send_rom_command()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00387">star_bus_onewire_read_bytes()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00179">star_bus_onewire_reset()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00281">star_bus_onewire_write_byte()</a>.</p>
+<p class="reference">References <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00120">star_ds18b20_handle_t::bus_manager</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00121">star_ds18b20_handle_t::bus_name</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00231">internal_ds18b20_send_rom_command()</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00039">k_ds18b20_cmd_read_scratchpad</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00047">k_ds18b20_scratchpad_size</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00485">star_bus_onewire_read_bytes()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00277">star_bus_onewire_reset()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00379">star_bus_onewire_write_byte()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00117">star_sensor_ds18b20_read_temp()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00151">star_sensor_ds18b20_read_temp()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -545,11 +561,11 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00194">194</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00231">231</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00120">star_ds18b20_handle_t::bus_manager</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00121">star_ds18b20_handle_t::bus_name</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00124">star_ds18b20_handle_t::rom_code</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00446">star_bus_onewire_match_rom()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00469">star_bus_onewire_skip_rom()</a>, and <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00123">star_ds18b20_handle_t::use_rom</a>.</p>
+<p class="reference">References <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00120">star_ds18b20_handle_t::bus_manager</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00121">star_ds18b20_handle_t::bus_name</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00050">k_ds18b20_bits_per_byte</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00048">k_ds18b20_rom_size</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00124">star_ds18b20_handle_t::rom_code</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00544">star_bus_onewire_match_rom()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00567">star_bus_onewire_skip_rom()</a>, and <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00123">star_ds18b20_handle_t::use_rom</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00229">internal_ds18b20_read_scratchpad()</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00209">internal_ds18b20_start_conversion()</a>, and <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00257">internal_ds18b20_write_scratchpad()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00266">internal_ds18b20_read_scratchpad()</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00246">internal_ds18b20_start_conversion()</a>, and <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00294">internal_ds18b20_write_scratchpad()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -638,11 +654,11 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00209">209</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00246">246</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00120">star_ds18b20_handle_t::bus_manager</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00121">star_ds18b20_handle_t::bus_name</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00032">DS18B20_CMD_CONVERT_T</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00194">internal_ds18b20_send_rom_command()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00179">star_bus_onewire_reset()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00281">star_bus_onewire_write_byte()</a>.</p>
+<p class="reference">References <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00120">star_ds18b20_handle_t::bus_manager</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00121">star_ds18b20_handle_t::bus_name</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00231">internal_ds18b20_send_rom_command()</a>, <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html#l00093">k_ds18b20_cmd_convert_t</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00277">star_bus_onewire_reset()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00379">star_bus_onewire_write_byte()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00117">star_sensor_ds18b20_read_temp()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00151">star_sensor_ds18b20_read_temp()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -730,11 +746,11 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00257">257</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00294">294</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00120">star_ds18b20_handle_t::bus_manager</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00121">star_ds18b20_handle_t::bus_name</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00034">DS18B20_CMD_WRITE_SCRATCHPAD</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00194">internal_ds18b20_send_rom_command()</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00122">star_ds18b20_handle_t::resolution</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00179">star_bus_onewire_reset()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00281">star_bus_onewire_write_byte()</a>.</p>
+<p class="reference">References <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00120">star_ds18b20_handle_t::bus_manager</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00121">star_ds18b20_handle_t::bus_name</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00231">internal_ds18b20_send_rom_command()</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00040">k_ds18b20_cmd_write_scratchpad</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00059">k_ds18b20_config_resolution_mask</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00060">k_ds18b20_config_resolution_shift</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00057">k_ds18b20_config_th_default</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00058">k_ds18b20_config_tl_default</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00049">k_ds18b20_scratchpad_bytes</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00122">star_ds18b20_handle_t::resolution</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00277">star_bus_onewire_reset()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00379">star_bus_onewire_write_byte()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00058">star_sensor_ds18b20_init()</a>, and <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00154">star_sensor_ds18b20_set_resolution()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00092">star_sensor_ds18b20_init()</a>, and <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00191">star_sensor_ds18b20_set_resolution()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -817,9 +833,9 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00105">105</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00139">139</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00125">star_ds18b20_handle_t::initialized</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00125">star_ds18b20_handle_t::initialized</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>.</p>
 
 </div>
 </div>
@@ -852,9 +868,9 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00058">58</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00092">92</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00109">star_ds18b20_config_t::bus_manager</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00120">star_ds18b20_handle_t::bus_manager</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00110">star_ds18b20_config_t::bus_name</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00121">star_ds18b20_handle_t::bus_name</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00125">star_ds18b20_handle_t::initialized</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00257">internal_ds18b20_write_scratchpad()</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00111">star_ds18b20_config_t::resolution</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00122">star_ds18b20_handle_t::resolution</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00113">star_ds18b20_config_t::rom_code</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00124">star_ds18b20_handle_t::rom_code</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00174">star_sensor_ds18b20_read_rom()</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00112">star_ds18b20_config_t::use_rom</a>, and <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00123">star_ds18b20_handle_t::use_rom</a>.</p>
+<p class="reference">References <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00109">star_ds18b20_config_t::bus_manager</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00120">star_ds18b20_handle_t::bus_manager</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00110">star_ds18b20_config_t::bus_name</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00121">star_ds18b20_handle_t::bus_name</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00125">star_ds18b20_handle_t::initialized</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00294">internal_ds18b20_write_scratchpad()</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00111">star_ds18b20_config_t::resolution</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00122">star_ds18b20_handle_t::resolution</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00113">star_ds18b20_config_t::rom_code</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00124">star_ds18b20_handle_t::rom_code</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00211">star_sensor_ds18b20_read_rom()</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00112">star_ds18b20_config_t::use_rom</a>, and <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00123">star_ds18b20_handle_t::use_rom</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="../../d0/d29/main_8c_source.html#l00032">app_main()</a>.</p>
 <div class="dynheader">
@@ -970,11 +986,11 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00174">174</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00211">211</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00120">star_ds18b20_handle_t::bus_manager</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00121">star_ds18b20_handle_t::bus_name</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00407">star_bus_onewire_read_rom()</a>.</p>
+<p class="reference">References <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00120">star_ds18b20_handle_t::bus_manager</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00121">star_ds18b20_handle_t::bus_name</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00050">k_ds18b20_bits_per_byte</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00048">k_ds18b20_rom_size</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00505">star_bus_onewire_read_rom()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00058">star_sensor_ds18b20_init()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00092">star_sensor_ds18b20_init()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1076,9 +1092,9 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00117">117</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00151">151</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00037">DS18B20_SCRATCHPAD_SIZE</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00125">star_ds18b20_handle_t::initialized</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00289">internal_ds18b20_crc8()</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00229">internal_ds18b20_read_scratchpad()</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00209">internal_ds18b20_start_conversion()</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00122">star_ds18b20_handle_t::resolution</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00040">s_conversion_times_ms</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00125">star_ds18b20_handle_t::initialized</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00327">internal_ds18b20_crc8()</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00266">internal_ds18b20_read_scratchpad()</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00246">internal_ds18b20_start_conversion()</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00047">k_ds18b20_scratchpad_size</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00122">star_ds18b20_handle_t::resolution</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00074">s_conversion_times_ms</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="../../dd/d6f/telemetry__task_8c_source.html#l00090">internal_handle_telemetry_request()</a>.</p>
 <div class="dynheader">
@@ -1194,9 +1210,9 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00154">154</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00191">191</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00125">star_ds18b20_handle_t::initialized</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00257">internal_ds18b20_write_scratchpad()</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00102">k_star_ds18b20_resolution_12_bit</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00122">star_ds18b20_handle_t::resolution</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00125">star_ds18b20_handle_t::initialized</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00294">internal_ds18b20_write_scratchpad()</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00102">k_star_ds18b20_resolution_12_bit</a>, <a class="el" href="../../d5/d4a/star__sensor__ds18b20_8h_source.html#l00122">star_ds18b20_handle_t::resolution</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1264,14 +1280,14 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"></div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00040">40</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00074">74</a> of file <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html">star_sensor_ds18b20.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00117">star_sensor_ds18b20_read_temp()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00151">star_sensor_ds18b20_read_temp()</a>.</p>
 
 </div>
 </div>
-<a id="a999e3dd103132afd3cd1856f477f2dbd" name="a999e3dd103132afd3cd1856f477f2dbd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a999e3dd103132afd3cd1856f477f2dbd">&#9670;&#160;</a></span>s_TAG</h2>
+<a id="af8861f6a1fb30510e283b1b7806b64e7" name="af8861f6a1fb30510e283b1b7806b64e7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af8861f6a1fb30510e283b1b7806b64e7">&#9670;&#160;</a></span>s_tag</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -1280,7 +1296,7 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const char* s_TAG = &quot;STAR_DS18B20&quot;</td>
+          <td class="memname">const char* s_tag = &quot;STAR_DS18B20&quot;</td>
         </tr>
       </table>
   </td>

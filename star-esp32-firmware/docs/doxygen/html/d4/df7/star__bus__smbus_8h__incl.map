@@ -1,10 +1,10 @@
 <map id="lib/star_bus/include/star_bus_smbus.h" name="lib/star_bus/include/star_bus_smbus.h">
-<area shape="rect" id="Node000001" title="SMBus (System Management Bus) protocol implementation over I2C." alt="" coords="1582,5,1715,46"/>
+<area shape="rect" id="Node000001" title="SMBus protocol API over I2C." alt="" coords="1582,5,1715,46"/>
 <area shape="rect" id="Node000002" title=" " alt="" coords="1307,610,1382,635"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1694,44,1733,66,1771,96,1799,134,1808,156,1811,179,1811,477,1808,498,1801,514,1789,527,1775,536,1696,564,1617,591,1535,608,1459,618,1397,623,1397,617,1459,613,1535,603,1616,586,1694,559,1772,531,1786,523,1797,511,1803,497,1806,476,1806,179,1803,157,1795,136,1767,100,1730,71,1693,49"/>
 <area shape="rect" id="Node000003" title=" " alt="" coords="832,610,896,635"/>
 <area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="1639,45,1612,106,1602,142,1598,179,1598,256,1592,311,1575,360,1548,404,1513,443,1471,476,1423,506,1371,531,1315,552,1200,584,1088,605,988,617,912,622,912,617,988,612,1087,600,1199,579,1314,547,1369,526,1420,501,1468,472,1509,439,1544,401,1570,358,1587,309,1592,255,1592,179,1597,141,1607,104,1635,48"/>
-<area shape="rect" id="Node000004" href="$dd/df4/star__bus__i2c_8h.html" title="I2C bus operations through the unified bus manager." alt="" coords="887,94,994,120"/>
+<area shape="rect" id="Node000004" href="$dd/df4/star__bus__i2c_8h.html" title="I2C controller protocol API for the bus manager." alt="" coords="887,94,994,120"/>
 <area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="1579,36,1009,101,1008,95,1583,33"/>
 <area shape="rect" id="Node000022" href="$d6/dcc/star__bus__manager_8h.html" title="Unified bus manager API for I2C, SPI, UART, GPIO, ADC, and 1&#45;Wire protocols." alt="" coords="1632,168,1771,193"/>
 <area shape="poly" id="edge56_Node000001_Node000022" title=" " alt="" coords="1656,44,1695,154,1690,152,1654,49"/>

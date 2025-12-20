@@ -1,4 +1,14 @@
-/* lib/star_bus/include/star_bus_smbus.h */
+/**
+ * @file star_bus_smbus.h
+ * @brief SMBus protocol API over I2C
+ * @details
+ * Provides System Management Bus (SMBus) protocol interface as a high-level abstraction over I2C.
+ * Includes standard SMBus commands (quick, byte, word, block) with optional Packet Error Checking
+ * (PEC) using CRC-8 for battery management and power monitoring applications.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #ifndef STAR_BUS_SMBUS_H
 #define STAR_BUS_SMBUS_H

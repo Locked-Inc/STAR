@@ -1,4 +1,14 @@
-/* lib/star_bus/include/star_bus_spi.h */
+/**
+ * @file star_bus_spi.h
+ * @brief SPI controller protocol API for the bus manager
+ * @details
+ * Provides interface for SPI controller mode operations through the bus manager. Supports
+ * configurable clock speeds, COPI/CIPO pinout, chip select management, and DMA transfers
+ * for high-speed communication with peripherals like displays and flash memory.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #ifndef STAR_COMPONENT_BUS_SPI_H
 #define STAR_COMPONENT_BUS_SPI_H
@@ -31,8 +41,8 @@ extern "C" {
  *
  * SPI Pin Naming: COPI/CIPO (OSHWA Standard)
  * This component uses OSHWA standard SPI terminology:
- * - COPI (Controller Out, Peripheral In): replaces MOSI
- * - CIPO (Controller In, Peripheral Out): replaces MISO
+ * - COPI (Controller Out, Peripheral In)
+ * - CIPO (Controller In, Peripheral Out)
  *
  * Example Usage:
  * @code
@@ -164,11 +174,8 @@ extern "C" {
  * - COPI (Controller Out, Peripheral In): Data line where the controller sends data to the peripheral
  * - CIPO (Controller In, Peripheral Out): Data line where the controller receives data from the peripheral
  *
- * This modern terminology replaces the outdated master/slave language:
- * - COPI replaces MOSI (Master Out, Slave In)
- * - CIPO replaces MISO (Master In, Slave Out)
  *
- * Note: The ESP-IDF still uses mosi_io_num/miso_io_num internally, which we map to COPI/CIPO.
+ * Note: The ESP-IDF still uses legacy mosi_io_num/miso_io_num field names internally, which we map to COPI/CIPO.
  */
 
 /* --- Public Functions --- */

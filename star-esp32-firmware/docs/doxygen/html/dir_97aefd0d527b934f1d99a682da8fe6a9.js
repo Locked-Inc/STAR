@@ -6,7 +6,6 @@ var dir_97aefd0d527b934f1d99a682da8fe6a9 =
     [ "star_core", "dir_d6fbec051985756cab9cb3545636f68c.html", "dir_d6fbec051985756cab9cb3545636f68c" ],
     [ "star_drv8243", "dir_cbdd9e43d0e8093a9673e68dd8ebf2f9.html", "dir_cbdd9e43d0e8093a9673e68dd8ebf2f9" ],
     [ "star_encoder", "dir_fe6f5bdc4b978a8e60c99428024c3f58.html", "dir_fe6f5bdc4b978a8e60c99428024c3f58" ],
-    [ "star_error_handler", "dir_64451d11afc5ea229c8e913978f37e05.html", "dir_64451d11afc5ea229c8e913978f37e05" ],
     [ "star_frame", "dir_aac7f0907e60c23cb986941c9e9d7e49.html", "dir_aac7f0907e60c23cb986941c9e9d7e49" ],
     [ "star_motor", "dir_c254b729b2a5f41ead3206f4656ac553.html", "dir_c254b729b2a5f41ead3206f4656ac553" ],
     [ "star_pid", "dir_9bf406670cce6f2779cc259ee79bd707.html", "dir_9bf406670cce6f2779cc259ee79bd707" ],

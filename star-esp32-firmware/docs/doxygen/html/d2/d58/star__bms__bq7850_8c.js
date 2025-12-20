@@ -10,7 +10,7 @@ var star__bms__bq7850_8c =
     [ "star_bms_bq7850_enable_cell_balancing", "d2/d58/star__bms__bq7850_8c.html#afcf09922b2aaf11ff7c5a9653440026d", null ],
     [ "star_bms_bq7850_get_balancing_status", "d2/d58/star__bms__bq7850_8c.html#a1bbee1247cef5042ba7f727c5381e15d", null ],
     [ "star_bms_bq7850_get_device_info", "d2/d58/star__bms__bq7850_8c.html#a7aebeaeb09bb7ef8ea7d83c7f888b778", null ],
-    [ "star_bms_bq7850_init", "d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c", null ],
+    [ "star_bms_bq7850_init", "d2/d58/star__bms__bq7850_8c.html#a18f3aeef758059d22cb359789c1c3c7c", null ],
     [ "star_bms_bq7850_is_fault_active", "d2/d58/star__bms__bq7850_8c.html#ab5ac19b0d05e17eb722d54ee491f6992", null ],
     [ "star_bms_bq7850_read_battery_state", "d2/d58/star__bms__bq7850_8c.html#a0d22297192ffaac26fd6fb5b6b77c3f7", null ],
     [ "star_bms_bq7850_read_cell_voltage", "d2/d58/star__bms__bq7850_8c.html#a60fbc7943a9017cb235890abd5d177c2", null ],
@@ -26,5 +26,6 @@ var star__bms__bq7850_8c =
     [ "star_bms_bq7850_status_to_string", "d2/d58/star__bms__bq7850_8c.html#a36b66a0f6445de1c6445641eb7b26537", null ],
     [ "star_bms_bq7850_write_protection", "d2/d58/star__bms__bq7850_8c.html#ab14194a4cad45febb48718352688813d", null ],
     [ "s_bq7850_mutex_timeout_ms", "d2/d58/star__bms__bq7850_8c.html#a0932e2095c6dbc43c6f7a4102c5e7522", null ],
-    [ "s_TAG", "d2/d58/star__bms__bq7850_8c.html#a0ef4cd21b66ec96ecc491ff1bafab645", null ]
+    [ "s_tag", "d2/d58/star__bms__bq7850_8c.html#aa7129027772dcdce950994a2fabfc92a", null ],
+    [ "s_temp_divisor", "d2/d58/star__bms__bq7850_8c.html#aa42dffd22bf991e363213e598e1e5442", null ]
 ];

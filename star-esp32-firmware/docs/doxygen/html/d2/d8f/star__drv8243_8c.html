@@ -97,6 +97,7 @@ $(function(){initNavTree('d2/d8f/star__drv8243_8c.html','../../',''); });
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>&quot;</code><br />
 <code>#include &quot;driver/gpio.h&quot;</code><br />
+<code>#include &lt;inttypes.h&gt;</code><br />
 <code>#include &lt;string.h&gt;</code><br />
 <code>#include &quot;esp_check.h&quot;</code><br />
 <code>#include &quot;esp_log.h&quot;</code><br />
@@ -106,19 +107,21 @@ Include dependency graph for star_drv8243.c:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d9/d0f/star__drv8243_8c__incl.png" border="0" usemap="#alib_2star__drv8243_2src_2star__drv8243_8c" loading="lazy" alt=""/></div>
 <map name="alib_2star__drv8243_2src_2star__drv8243_8c" id="alib_2star__drv8243_2src_2star__drv8243_8c">
-<area shape="rect" title="DRV8243 H&#45;bridge motor driver integration implementation." alt="" coords="1235,5,1370,46"/>
+<area shape="rect" title="DRV8243 H&#45;bridge motor driver integration implementation." alt="" coords="1286,5,1421,46"/>
 <area shape="rect" href="../../dc/ddf/star__drv8243_8h.html" title="DRV8243 H&#45;bridge motor driver integration API." alt="" coords="157,94,264,120"/>
-<area shape="poly" title=" " alt="" coords="1234,34,281,103,280,98,1235,29"/>
+<area shape="poly" title=" " alt="" coords="1285,34,280,103,279,98,1286,29"/>
 <area shape="rect" title=" " alt="" coords="1426,610,1518,635"/>
-<area shape="poly" title=" " alt="" coords="1371,32,1490,50,1622,79,1682,98,1731,121,1765,148,1774,163,1777,179,1777,477,1770,498,1751,518,1723,536,1688,554,1609,585,1534,608,1533,603,1607,579,1686,549,1720,532,1748,513,1766,495,1772,476,1772,179,1769,165,1761,151,1729,126,1680,103,1621,84,1489,55,1371,37"/>
-<area shape="rect" title=" " alt="" coords="1218,94,1283,120"/>
-<area shape="poly" title=" " alt="" coords="1292,45,1269,83,1265,79,1288,48"/>
-<area shape="rect" title=" " alt="" coords="1307,94,1402,120"/>
-<area shape="poly" title=" " alt="" coords="1316,44,1341,81,1336,80,1315,49"/>
-<area shape="rect" title=" " alt="" coords="1427,94,1504,120"/>
-<area shape="poly" title=" " alt="" coords="1343,44,1429,87,1424,87,1343,49"/>
-<area shape="rect" href="../../d2/d8f/star__bus__adc_8h.html" title="ADC bus operations through the unified bus manager." alt="" coords="1084,94,1194,120"/>
-<area shape="poly" title=" " alt="" coords="1264,45,1179,89,1176,85,1259,48"/>
+<area shape="poly" title=" " alt="" coords="1421,35,1528,55,1644,85,1695,104,1738,126,1766,151,1775,165,1777,179,1777,477,1770,498,1751,518,1723,536,1688,554,1609,585,1534,608,1533,603,1607,579,1686,549,1720,532,1748,513,1766,495,1772,476,1772,179,1770,167,1762,154,1735,131,1693,109,1642,90,1526,60,1422,40"/>
+<area shape="rect" title=" " alt="" coords="1218,94,1296,120"/>
+<area shape="poly" title=" " alt="" coords="1332,45,1285,86,1282,82,1327,48"/>
+<area shape="rect" title=" " alt="" coords="1321,94,1386,120"/>
+<area shape="poly" title=" " alt="" coords="1355,44,1356,80,1351,77,1352,49"/>
+<area shape="rect" title=" " alt="" coords="1410,94,1505,120"/>
+<area shape="poly" title=" " alt="" coords="1379,44,1432,85,1427,84,1379,49"/>
+<area shape="rect" title=" " alt="" coords="1529,94,1607,120"/>
+<area shape="poly" title=" " alt="" coords="1407,44,1524,88,1518,88,1407,49"/>
+<area shape="rect" href="../../d2/d8f/star__bus__adc_8h.html" title="ADC bus operations API through the unified bus manager." alt="" coords="1084,94,1194,120"/>
+<area shape="poly" title=" " alt="" coords="1297,48,1187,91,1185,86,1302,46"/>
 <area shape="rect" title=" " alt="" coords="718,610,792,635"/>
 <area shape="poly" title=" " alt="" coords="179,122,143,142,103,171,86,188,71,208,62,229,59,253,59,329,63,378,76,416,96,448,123,474,156,496,195,517,285,559,343,583,393,596,440,602,485,602,582,599,638,600,705,610,700,609,637,605,582,604,485,608,440,607,392,602,341,588,283,564,192,521,153,501,120,478,92,451,71,419,58,379,53,329,53,253,57,228,67,205,81,185,100,167,141,138,182,118"/>
 <area shape="rect" title=" " alt="" coords="874,610,939,635"/>
@@ -210,11 +213,13 @@ Include dependency graph for star_drv8243.c:</div>
 </div>
 <p><a href="../../d2/d8f/star__drv8243_8c_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-define-members" class="groupheader"><a id="define-members" name="define-members"></a>
-Macros</h2></td></tr>
-<tr class="memitem:a0616a79b78beb71fb5fd175678000e2d" id="r_a0616a79b78beb71fb5fd175678000e2d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0616a79b78beb71fb5fd175678000e2d">DRV8243_DEFAULT_TIMER_RES_HZ</a>&#160;&#160;&#160;10000000 /* 10 MHz */</td></tr>
-<tr class="memitem:aa43f963c52e199ce8b03bbd87755339d" id="r_aa43f963c52e199ce8b03bbd87755339d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa43f963c52e199ce8b03bbd87755339d">DRV8243_DEFAULT_KI_PROPI</a>&#160;&#160;&#160;525      /* 525 A/V typical */</td></tr>
-<tr class="memitem:a8410639ed07841f83dabd243841d6fbd" id="r_a8410639ed07841f83dabd243841d6fbd"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8410639ed07841f83dabd243841d6fbd">DRV8243_MAX_PWM_FREQ_HZ</a>&#160;&#160;&#160;25000    /* 25 kHz max */</td></tr>
+<tr class="heading"><td colspan="2"><h2 id="header-enum-members" class="groupheader"><a id="enum-members" name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:a3f962fb74d0e5c3dc30df51ee00f5631" id="r_a3f962fb74d0e5c3dc30df51ee00f5631"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <a class="el" href="#a3f962fb74d0e5c3dc30df51ee00f5631ab44cff03a43cf077fa1a3a3b12cd9295">k_drv8243_default_timer_res_hz</a> = 10000000
+, <a class="el" href="#a3f962fb74d0e5c3dc30df51ee00f5631a6471e2767d55bb8f0580c418ceb596ca">k_drv8243_default_ki_propi</a> = 525
+, <a class="el" href="#a3f962fb74d0e5c3dc30df51ee00f5631a799ede6377efb68c335ce0ece1329926">k_drv8243_max_pwm_freq_hz</a> = 25000
+ }</td></tr>
+<tr class="memdesc:a3f962fb74d0e5c3dc30df51ee00f5631"><td class="mdescLeft">&#160;</td><td class="mdescRight">DRV8243 configuration constants.  <a href="#a3f962fb74d0e5c3dc30df51ee00f5631">More...</a><br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -239,7 +244,11 @@ Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-var-members" class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:a999e3dd103132afd3cd1856f477f2dbd" id="r_a999e3dd103132afd3cd1856f477f2dbd"><td class="memItemLeft" align="right" valign="top">static const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a999e3dd103132afd3cd1856f477f2dbd">s_TAG</a> = &quot;STAR_DRV8243&quot;</td></tr>
+<tr class="memitem:af8861f6a1fb30510e283b1b7806b64e7" id="r_af8861f6a1fb30510e283b1b7806b64e7"><td class="memItemLeft" align="right" valign="top">static const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af8861f6a1fb30510e283b1b7806b64e7">s_tag</a> = &quot;STAR_DRV8243&quot;</td></tr>
+<tr class="memitem:a19ee7e97c2b74f35f6c0c97bca554403" id="r_a19ee7e97c2b74f35f6c0c97bca554403"><td class="memItemLeft" align="right" valign="top">static const float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a19ee7e97c2b74f35f6c0c97bca554403">s_current_limit_reduction_factor</a> = 0.9f</td></tr>
+<tr class="memdesc:a19ee7e97c2b74f35f6c0c97bca554403"><td class="mdescLeft">&#160;</td><td class="mdescRight">Speed reduction factor when current limit is exceeded.  <br /></td></tr>
+<tr class="memitem:a5fec4fb9aa8192d9bba7ee19bb214326" id="r_a5fec4fb9aa8192d9bba7ee19bb214326"><td class="memItemLeft" align="right" valign="top">static const float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5fec4fb9aa8192d9bba7ee19bb214326">s_mv_to_v_divisor</a> = 1000.0f</td></tr>
+<tr class="memdesc:a5fec4fb9aa8192d9bba7ee19bb214326"><td class="mdescLeft">&#160;</td><td class="mdescRight">Conversion factor from millivolts to volts.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>DRV8243 H-bridge motor driver integration implementation. </p>
@@ -248,58 +257,35 @@ Variables</h2></td></tr>
 <dl class="section copyright"><dt>Copyright</dt><dd>Copyright (c) 2025 STAR Project </dd></dl>
 
 <p class="definition">Definition in file <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html">star_drv8243.c</a>.</p>
-</div><a name="doc-define-members" id="doc-define-members"></a><h2 id="header-doc-define-members" class="groupheader">Macro Definition Documentation</h2>
-<a id="aa43f963c52e199ce8b03bbd87755339d" name="aa43f963c52e199ce8b03bbd87755339d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa43f963c52e199ce8b03bbd87755339d">&#9670;&#160;</a></span>DRV8243_DEFAULT_KI_PROPI</h2>
+</div><a name="doc-enum-members" id="doc-enum-members"></a><h2 id="header-doc-enum-members" class="groupheader">Enumeration Type Documentation</h2>
+<a id="a3f962fb74d0e5c3dc30df51ee00f5631" name="a3f962fb74d0e5c3dc30df51ee00f5631"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a3f962fb74d0e5c3dc30df51ee00f5631">&#9670;&#160;</a></span>anonymous enum</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">#define DRV8243_DEFAULT_KI_PROPI&#160;&#160;&#160;525      /* 525 A/V typical */</td>
+          <td class="memname">anonymous enum</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00029">29</a> of file <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html">star_drv8243.c</a>.</p>
+<p>DRV8243 configuration constants. </p>
+<p>These values are derived from the DRV8243 datasheet (SLVSGD7A).</p><ul>
+<li>Timer resolution: 10 MHz provides good duty cycle resolution at 20-25 kHz PWM</li>
+<li>Ki_PROPI: Current sense ratio from IPROPI pin (typical 525 A/V at 25C)</li>
+<li>Max PWM frequency: DRV8243 supports up to 200 kHz, but 25 kHz is recommended for low audible noise and efficient switching </li>
+</ul>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a3f962fb74d0e5c3dc30df51ee00f5631ab44cff03a43cf077fa1a3a3b12cd9295" name="a3f962fb74d0e5c3dc30df51ee00f5631ab44cff03a43cf077fa1a3a3b12cd9295"></a>k_drv8243_default_timer_res_hz&#160;</td><td class="fielddoc"><p>10 MHz timer resolution </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a3f962fb74d0e5c3dc30df51ee00f5631a6471e2767d55bb8f0580c418ceb596ca" name="a3f962fb74d0e5c3dc30df51ee00f5631a6471e2767d55bb8f0580c418ceb596ca"></a>k_drv8243_default_ki_propi&#160;</td><td class="fielddoc"><p>525 A/V IPROPI ratio (typical) </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a3f962fb74d0e5c3dc30df51ee00f5631a799ede6377efb68c335ce0ece1329926" name="a3f962fb74d0e5c3dc30df51ee00f5631a799ede6377efb68c335ce0ece1329926"></a>k_drv8243_max_pwm_freq_hz&#160;</td><td class="fielddoc"><p>25 kHz max recommended PWM </p>
+</td></tr>
+</table>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00039">star_drv8243_init()</a>.</p>
-
-</div>
-</div>
-<a id="a0616a79b78beb71fb5fd175678000e2d" name="a0616a79b78beb71fb5fd175678000e2d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0616a79b78beb71fb5fd175678000e2d">&#9670;&#160;</a></span>DRV8243_DEFAULT_TIMER_RES_HZ</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define DRV8243_DEFAULT_TIMER_RES_HZ&#160;&#160;&#160;10000000 /* 10 MHz */</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00028">28</a> of file <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html">star_drv8243.c</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00039">star_drv8243_init()</a>.</p>
-
-</div>
-</div>
-<a id="a8410639ed07841f83dabd243841d6fbd" name="a8410639ed07841f83dabd243841d6fbd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8410639ed07841f83dabd243841d6fbd">&#9670;&#160;</a></span>DRV8243_MAX_PWM_FREQ_HZ</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define DRV8243_MAX_PWM_FREQ_HZ&#160;&#160;&#160;25000    /* 25 kHz max */</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p class="definition">Definition at line <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00030">30</a> of file <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html">star_drv8243.c</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00039">star_drv8243_init()</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00037">37</a> of file <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html">star_drv8243.c</a>.</p>
 
 </div>
 </div>
@@ -327,11 +313,11 @@ Variables</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00246">246</a> of file <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html">star_drv8243.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00289">289</a> of file <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html">star_drv8243.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00188">star_drv8243_handle_t::current_limit_ma</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, and <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00173">star_drv8243_read_current()</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00215">star_drv8243_handle_t::current_limit_ma</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, and <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00201">star_drv8243_read_current()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00126">star_drv8243_set_speed()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00155">star_drv8243_set_speed()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -340,7 +326,7 @@ Here is the call graph for this function:</div>
 <area shape="rect" title=" " alt="" coords="5,5,164,46"/>
 <area shape="rect" href="../../d2/d8f/star__drv8243_8c.html#ab3df3aa160b3212052de3a15e59dec94" title="Read motor current." alt="" coords="212,13,387,38"/>
 <area shape="poly" title=" " alt="" coords="164,23,199,25,194,26,164,28"/>
-<area shape="rect" href="../../d2/deb/star__bus__adc_8c.html#a1bb4dd7003ae57c4a6fff8bfa4c9d60c" title="Read calibrated voltage in millivolts." alt="" coords="435,13,615,38"/>
+<area shape="rect" href="../../d2/deb/star__bus__adc_8c.html#a93bf2ccd624c4656121404c06ab1894e" title="Read calibrated voltage in millivolts." alt="" coords="435,13,615,38"/>
 <area shape="poly" title=" " alt="" coords="388,23,422,26,417,26,388,28"/>
 <area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="663,13,848,38"/>
 <area shape="poly" title=" " alt="" coords="616,23,650,26,645,26,616,28"/>
@@ -382,11 +368,11 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00263">263</a> of file <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html">star_drv8243.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00306">306</a> of file <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html">star_drv8243.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00185">star_drv8243_handle_t::pin_nfault</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00212">star_drv8243_handle_t::pin_nfault</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00039">star_drv8243_init()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00068">star_drv8243_init()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -425,9 +411,9 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00108">108</a> of file <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html">star_drv8243.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00137">137</a> of file <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html">star_drv8243.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00194">star_drv8243_handle_t::initialized</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00181">star_drv8243_handle_t::motor</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00159">star_drv8243_stop()</a>, and <a class="el" href="../../da/dc0/star__motor_8c_source.html#l00215">star_motor_deinit()</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00221">star_drv8243_handle_t::initialized</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00208">star_drv8243_handle_t::motor</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00187">star_drv8243_stop()</a>, and <a class="el" href="../../da/dc0/star__motor_8c_source.html#l00224">star_motor_deinit()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -476,11 +462,11 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00199">199</a> of file <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html">star_drv8243.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00242">242</a> of file <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html">star_drv8243.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00193">star_drv8243_handle_t::fault_active</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00194">star_drv8243_handle_t::initialized</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00185">star_drv8243_handle_t::pin_nfault</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00220">star_drv8243_handle_t::fault_active</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00221">star_drv8243_handle_t::initialized</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00212">star_drv8243_handle_t::pin_nfault</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00126">star_drv8243_set_speed()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00155">star_drv8243_set_speed()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -524,9 +510,9 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00221">221</a> of file <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html">star_drv8243.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00264">264</a> of file <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html">star_drv8243.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00192">star_drv8243_handle_t::current_speed</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00194">star_drv8243_handle_t::initialized</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00219">star_drv8243_handle_t::current_speed</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00221">star_drv8243_handle_t::initialized</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>.</p>
 
 </div>
 </div>
@@ -560,9 +546,9 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00039">39</a> of file <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html">star_drv8243.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00068">68</a> of file <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html">star_drv8243.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00150">star_drv8243_config_t::adc_bus_name</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00179">star_drv8243_handle_t::adc_bus_name</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00148">star_drv8243_config_t::bus_manager</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00177">star_drv8243_handle_t::bus_manager</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00166">star_drv8243_config_t::current_limit_ma</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00188">star_drv8243_handle_t::current_limit_ma</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00192">star_drv8243_handle_t::current_speed</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00163">star_drv8243_config_t::dead_time_ns</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00029">DRV8243_DEFAULT_KI_PROPI</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00028">DRV8243_DEFAULT_TIMER_RES_HZ</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00030">DRV8243_MAX_PWM_FREQ_HZ</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00193">star_drv8243_handle_t::fault_active</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00149">star_drv8243_config_t::gpio_bus_name</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00178">star_drv8243_handle_t::gpio_bus_name</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00170">star_drv8243_config_t::group_id</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00194">star_drv8243_handle_t::initialized</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00263">internal_drv8243_configure_fault_pin()</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00167">star_drv8243_config_t::ki_propi</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00189">star_drv8243_handle_t::ki_propi</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00181">star_drv8243_handle_t::motor</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00157">star_drv8243_config_t::pin_ipropi</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00184">star_drv8243_handle_t::pin_ipropi</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00158">star_drv8243_config_t::pin_nfault</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00185">star_drv8243_handle_t::pin_nfault</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00154">star_drv8243_config_t::pin_pwm_en</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00153">star_drv8243_config_t::pin_pwm_ph</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00161">star_drv8243_config_t::pwm_freq_hz</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../da/dc0/star__motor_8c_source.html#l00215">star_motor_deinit()</a>, <a class="el" href="../../da/dc0/star__motor_8c_source.html#l00032">star_motor_init()</a>, and <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00162">star_drv8243_config_t::timer_resolution_hz</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00168">star_drv8243_config_t::adc_bus_name</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00206">star_drv8243_handle_t::adc_bus_name</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00166">star_drv8243_config_t::bus_manager</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00204">star_drv8243_handle_t::bus_manager</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00184">star_drv8243_config_t::current_limit_ma</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00215">star_drv8243_handle_t::current_limit_ma</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00219">star_drv8243_handle_t::current_speed</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00181">star_drv8243_config_t::dead_time_ns</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00220">star_drv8243_handle_t::fault_active</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00167">star_drv8243_config_t::gpio_bus_name</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00205">star_drv8243_handle_t::gpio_bus_name</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00188">star_drv8243_config_t::group_id</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00221">star_drv8243_handle_t::initialized</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00306">internal_drv8243_configure_fault_pin()</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00039">k_drv8243_default_ki_propi</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00038">k_drv8243_default_timer_res_hz</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00040">k_drv8243_max_pwm_freq_hz</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00185">star_drv8243_config_t::ki_propi</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00216">star_drv8243_handle_t::ki_propi</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00208">star_drv8243_handle_t::motor</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00175">star_drv8243_config_t::pin_ipropi</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00211">star_drv8243_handle_t::pin_ipropi</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00176">star_drv8243_config_t::pin_nfault</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00212">star_drv8243_handle_t::pin_nfault</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00172">star_drv8243_config_t::pin_pwm_en</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00171">star_drv8243_config_t::pin_pwm_ph</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00179">star_drv8243_config_t::pwm_freq_hz</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, <a class="el" href="../../da/dc0/star__motor_8c_source.html#l00224">star_motor_deinit()</a>, <a class="el" href="../../da/dc0/star__motor_8c_source.html#l00041">star_motor_init()</a>, and <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00180">star_drv8243_config_t::timer_resolution_hz</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -618,18 +604,18 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00173">173</a> of file <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html">star_drv8243.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00201">201</a> of file <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html">star_drv8243.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00179">star_drv8243_handle_t::adc_bus_name</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00177">star_drv8243_handle_t::bus_manager</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00194">star_drv8243_handle_t::initialized</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00189">star_drv8243_handle_t::ki_propi</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00184">star_drv8243_handle_t::pin_ipropi</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, and <a class="el" href="../../d2/deb/star__bus__adc_8c_source.html#l00071">star_bus_adc_read_voltage()</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00206">star_drv8243_handle_t::adc_bus_name</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00204">star_drv8243_handle_t::bus_manager</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00221">star_drv8243_handle_t::initialized</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00216">star_drv8243_handle_t::ki_propi</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00059">s_mv_to_v_divisor</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, and <a class="el" href="../../d2/deb/star__bus__adc_8c_source.html#l00070">star_bus_adc_read_voltage()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00246">internal_drv8243_check_current_limit()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00289">internal_drv8243_check_current_limit()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d2/d8f/star__drv8243_8c_ab3df3aa160b3212052de3a15e59dec94_cgraph.png" border="0" usemap="#ad2/d8f/star__drv8243_8c_ab3df3aa160b3212052de3a15e59dec94_cgraph" loading="lazy" alt=""/></div>
 <map name="ad2/d8f/star__drv8243_8c_ab3df3aa160b3212052de3a15e59dec94_cgraph" id="ad2/d8f/star__drv8243_8c_ab3df3aa160b3212052de3a15e59dec94_cgraph">
 <area shape="rect" title="Read motor current." alt="" coords="5,5,181,31"/>
-<area shape="rect" href="../../d2/deb/star__bus__adc_8c.html#a1bb4dd7003ae57c4a6fff8bfa4c9d60c" title="Read calibrated voltage in millivolts." alt="" coords="229,5,409,31"/>
+<area shape="rect" href="../../d2/deb/star__bus__adc_8c.html#a93bf2ccd624c4656121404c06ab1894e" title="Read calibrated voltage in millivolts." alt="" coords="229,5,409,31"/>
 <area shape="poly" title=" " alt="" coords="181,16,216,18,211,18,181,21"/>
 <area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="457,5,641,31"/>
 <area shape="poly" title=" " alt="" coords="409,16,444,18,439,18,410,21"/>
@@ -680,9 +666,9 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00233">233</a> of file <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html">star_drv8243.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00276">276</a> of file <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html">star_drv8243.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00188">star_drv8243_handle_t::current_limit_ma</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00194">star_drv8243_handle_t::initialized</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00215">star_drv8243_handle_t::current_limit_ma</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00221">star_drv8243_handle_t::initialized</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>.</p>
 
 </div>
 </div>
@@ -716,9 +702,9 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00126">126</a> of file <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html">star_drv8243.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00155">155</a> of file <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html">star_drv8243.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00188">star_drv8243_handle_t::current_limit_ma</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00192">star_drv8243_handle_t::current_speed</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00194">star_drv8243_handle_t::initialized</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00246">internal_drv8243_check_current_limit()</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00181">star_drv8243_handle_t::motor</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00199">star_drv8243_get_fault_status()</a>, and <a class="el" href="../../da/dc0/star__motor_8c_source.html#l00244">star_motor_set_duty()</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00215">star_drv8243_handle_t::current_limit_ma</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00219">star_drv8243_handle_t::current_speed</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00221">star_drv8243_handle_t::initialized</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00289">internal_drv8243_check_current_limit()</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00208">star_drv8243_handle_t::motor</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00051">s_current_limit_reduction_factor</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00242">star_drv8243_get_fault_status()</a>, and <a class="el" href="../../da/dc0/star__motor_8c_source.html#l00253">star_motor_set_duty()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -733,7 +719,7 @@ Here is the call graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="137,102,234,130,229,132,136,107"/>
 <area shape="rect" href="../../d2/d8f/star__drv8243_8c.html#ab3df3aa160b3212052de3a15e59dec94" title="Read motor current." alt="" coords="423,13,598,38"/>
 <area shape="poly" title=" " alt="" coords="375,23,410,25,405,26,376,28"/>
-<area shape="rect" href="../../d2/deb/star__bus__adc_8c.html#a1bb4dd7003ae57c4a6fff8bfa4c9d60c" title="Read calibrated voltage in millivolts." alt="" coords="646,13,827,38"/>
+<area shape="rect" href="../../d2/deb/star__bus__adc_8c.html#a93bf2ccd624c4656121404c06ab1894e" title="Read calibrated voltage in millivolts." alt="" coords="646,13,827,38"/>
 <area shape="poly" title=" " alt="" coords="599,23,634,25,628,26,599,28"/>
 <area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="875,13,1059,38"/>
 <area shape="poly" title=" " alt="" coords="827,23,862,25,856,26,827,28"/>
@@ -774,11 +760,11 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00159">159</a> of file <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html">star_drv8243.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00187">187</a> of file <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html">star_drv8243.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00192">star_drv8243_handle_t::current_speed</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00194">star_drv8243_handle_t::initialized</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00181">star_drv8243_handle_t::motor</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, and <a class="el" href="../../da/dc0/star__motor_8c_source.html#l00305">star_motor_stop()</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00219">star_drv8243_handle_t::current_speed</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00221">star_drv8243_handle_t::initialized</a>, <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00208">star_drv8243_handle_t::motor</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, and <a class="el" href="../../da/dc0/star__motor_8c_source.html#l00314">star_motor_stop()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00108">star_drv8243_deinit()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00137">star_drv8243_deinit()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -803,8 +789,8 @@ Here is the caller graph for this function:</div>
 </div>
 </div>
 <a name="doc-var-members" id="doc-var-members"></a><h2 id="header-doc-var-members" class="groupheader">Variable Documentation</h2>
-<a id="a999e3dd103132afd3cd1856f477f2dbd" name="a999e3dd103132afd3cd1856f477f2dbd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a999e3dd103132afd3cd1856f477f2dbd">&#9670;&#160;</a></span>s_TAG</h2>
+<a id="a19ee7e97c2b74f35f6c0c97bca554403" name="a19ee7e97c2b74f35f6c0c97bca554403"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a19ee7e97c2b74f35f6c0c97bca554403">&#9670;&#160;</a></span>s_current_limit_reduction_factor</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -813,7 +799,7 @@ Here is the caller graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const char* s_TAG = &quot;STAR_DRV8243&quot;</td>
+          <td class="memname">const float s_current_limit_reduction_factor = 0.9f</td>
         </tr>
       </table>
   </td>
@@ -823,7 +809,65 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00025">25</a> of file <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html">star_drv8243.c</a>.</p>
+<p>Speed reduction factor when current limit is exceeded. </p>
+<p>When motor current exceeds the configured limit, speed is reduced by this factor (0.9 = 10% reduction) as a soft protection measure. This provides gradual current limiting without abrupt motor stops that could cause mechanical stress or loss of control. </p>
+
+<p class="definition">Definition at line <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00051">51</a> of file <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html">star_drv8243.c</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00155">star_drv8243_set_speed()</a>.</p>
+
+</div>
+</div>
+<a id="a5fec4fb9aa8192d9bba7ee19bb214326" name="a5fec4fb9aa8192d9bba7ee19bb214326"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5fec4fb9aa8192d9bba7ee19bb214326">&#9670;&#160;</a></span>s_mv_to_v_divisor</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const float s_mv_to_v_divisor = 1000.0f</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Conversion factor from millivolts to volts. </p>
+<p>Used in current calculation to convert ADC reading (mV) to proper units for the Ki_PROPI formula: I_motor (mA) = V (mV) * Ki_PROPI (A/V) / 1000 </p>
+
+<p class="definition">Definition at line <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00059">59</a> of file <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html">star_drv8243.c</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00201">star_drv8243_read_current()</a>.</p>
+
+</div>
+</div>
+<a id="af8861f6a1fb30510e283b1b7806b64e7" name="af8861f6a1fb30510e283b1b7806b64e7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af8861f6a1fb30510e283b1b7806b64e7">&#9670;&#160;</a></span>s_tag</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char* s_tag = &quot;STAR_DRV8243&quot;</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p class="definition">Definition at line <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00026">26</a> of file <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html">star_drv8243.c</a>.</p>
 
 </div>
 </div>

@@ -36,5 +36,5 @@ var star__bus__onewire_8c =
     [ "g_onewire_mutex", "d9/dd6/star__bus__onewire_8c.html#af3b1b7b4a978b6edb15e966c5e851531", null ],
     [ "g_onewire_states", "d9/dd6/star__bus__onewire_8c.html#a89a39ab8430acf71158849824ee20f22", null ],
     [ "s_onewire_mutex_timeout_ms", "d9/dd6/star__bus__onewire_8c.html#ab729687de696f1c99ce479dc5c1ebb3a", null ],
-    [ "s_TAG", "d9/dd6/star__bus__onewire_8c.html#a999e3dd103132afd3cd1856f477f2dbd", null ]
+    [ "s_tag", "d9/dd6/star__bus__onewire_8c.html#af8861f6a1fb30510e283b1b7806b64e7", null ]
 ];

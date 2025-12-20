@@ -1,5 +1,5 @@
 <map id="lib/star_bus/include/star_bus_spi_dma.h" name="lib/star_bus/include/star_bus_spi_dma.h">
 <area shape="rect" id="Node000001" title="DMA&#45;accelerated SPI operations for high&#45;speed data transfers." alt="" coords="5,5,148,46"/>
-<area shape="rect" id="Node000002" href="$dc/d0c/star__bus__spi__dma_8c.html" title="SPI DMA transfer implementation for high&#45;throughput operations." alt="" coords="8,94,145,135"/>
+<area shape="rect" id="Node000002" href="$dc/d0c/star__bus__spi__dma_8c.html" title="DMA&#45;accelerated SPI operations implementation for high&#45;throughput transfers." alt="" coords="8,94,145,135"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="78,60,79,94,74,93,75,64"/>
 </map>

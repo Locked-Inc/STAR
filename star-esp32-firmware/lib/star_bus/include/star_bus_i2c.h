@@ -1,4 +1,14 @@
-/* lib/star_bus/include/star_bus_i2c.h */
+/**
+ * @file star_bus_i2c.h
+ * @brief I2C controller protocol API for the bus manager
+ * @details
+ * Provides interface for I2C controller mode operations through the bus manager. Supports
+ * standard and DMA-based transfers with configurable clock speeds, timeout handling, and
+ * multi-device communication on shared SDA/SCL lines.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #ifndef STAR_COMPONENT_BUS_I2C_H
 #define STAR_COMPONENT_BUS_I2C_H

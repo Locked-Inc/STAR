@@ -4,7 +4,7 @@
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="46,238,56,208,73,170,97,130,129,95,156,82,153,86,132,99,101,133,78,172,61,210,52,239"/>
 <area shape="rect" id="Node000004" href="$de/d98/star__bus__config_8c.html#af5cbfa29f49dfaea9ebaf7ae67aeb07f" title="Create a OneWire bus configuration." alt="" coords="137,109,294,150"/>
 <area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="53,238,84,200,129,160,141,155,138,159,132,165,88,203,57,240"/>
-<area shape="rect" id="Node000006" href="$de/d98/star__bus__config_8c.html#a16ccb4aebc8dd1759ce3a1e5c67d7184" title="Create a new SPI peripheral (slave) configuration." alt="" coords="137,174,294,215"/>
+<area shape="rect" id="Node000006" href="$de/d98/star__bus__config_8c.html#a16ccb4aebc8dd1759ce3a1e5c67d7184" title="Create a new SPI peripheral configuration." alt="" coords="137,174,294,215"/>
 <area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="81,237,140,218,136,223,85,241"/>
 <area shape="rect" id="Node000011" href="$d7/d60/star__bus__manager_8c.html#a3a0dc80007e321a8697c399e0f0bf559" title="Add a new I2C bus/device configuration to the manager." alt="" coords="777,346,962,371"/>
 <area shape="poly" id="edge11_Node000001_Node000011" title=" " alt="" coords="82,262,131,275,303,304,476,326,764,351,759,354,475,331,302,309,130,280,85,267"/>

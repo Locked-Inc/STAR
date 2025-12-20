@@ -1,5 +1,5 @@
 <map id="lib/star_bus/include/star_bus_spi.h" name="lib/star_bus/include/star_bus_spi.h">
-<area shape="rect" id="Node000001" title="SPI bus operations through the unified bus manager." alt="" coords="272,5,405,46"/>
+<area shape="rect" id="Node000001" title="SPI controller protocol API for the bus manager." alt="" coords="272,5,405,46"/>
 <area shape="rect" id="Node000002" title=" " alt="" coords="41,536,172,562"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="270,31,189,41,145,51,103,65,65,85,35,109,15,141,10,159,8,179,8,403,15,439,33,473,57,501,81,525,76,527,53,505,29,476,10,441,3,403,3,179,5,158,10,139,31,106,62,80,101,60,144,46,188,36,274,27"/>
 <area shape="rect" id="Node000003" title=" " alt="" coords="589,536,654,562"/>
