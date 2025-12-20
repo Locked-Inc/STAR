@@ -1,4 +1,13 @@
-/* lib/star_bus/src/star_bus_spi.c */
+/**
+ * @file star_bus_spi.c
+ * @brief SPI controller protocol implementation for the bus manager
+ * @details
+ * Implements SPI controller mode operations for ESP32-IDF. Supports configurable
+ * clock speeds, COPI/CIPO pinout, chip select management, and DMA transfers.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #include "star_bus_spi.h"
 

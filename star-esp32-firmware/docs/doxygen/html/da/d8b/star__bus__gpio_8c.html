@@ -92,103 +92,110 @@ $(function(){initNavTree('da/d8b/star__bus__gpio_8c.html','../../',''); });
   <div class="headertitle"><div class="title">star_bus_gpio.c File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>GPIO operations implementation for the bus manager.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;<a class="el" href="../../d9/d5b/star__bus__gpio_8h_source.html">star_bus_gpio.h</a>&quot;</code><br />
 <code>#include &quot;driver/gpio.h&quot;</code><br />
+<code>#include &lt;inttypes.h&gt;</code><br />
 <code>#include &lt;string.h&gt;</code><br />
 <code>#include &quot;esp_check.h&quot;</code><br />
 <code>#include &quot;esp_log.h&quot;</code><br />
-<code>#include &quot;<a class="el" href="../../d0/de4/star__bus__config_8h_source.html">star_bus_config.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../d6/dcc/star__bus__manager_8h_source.html">star_bus_manager.h</a>&quot;</code><br />
+<code>#include &quot;<a class="el" href="../../d7/d7c/star__bus__types_8h_source.html">star_bus_types.h</a>&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for star_bus_gpio.c:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d7/dab/star__bus__gpio_8c__incl.png" border="0" usemap="#alib_2star__bus_2src_2star__bus__gpio_8c" loading="lazy" alt=""/></div>
 <map name="alib_2star__bus_2src_2star__bus__gpio_8c" id="alib_2star__bus_2src_2star__bus__gpio_8c">
-<area shape="rect" title=" " alt="" coords="1710,5,1847,46"/>
-<area shape="rect" href="../../d9/d5b/star__bus__gpio_8h.html" title="GPIO operations through the unified bus manager." alt="" coords="1091,94,1204,120"/>
-<area shape="poly" title=" " alt="" coords="1707,36,1220,99,1219,94,1712,35"/>
-<area shape="rect" title=" " alt="" coords="1606,610,1698,635"/>
-<area shape="poly" title=" " alt="" coords="1780,44,1781,179,1781,477,1779,498,1772,517,1749,552,1719,581,1688,604,1686,599,1715,577,1745,549,1767,515,1773,496,1776,476,1776,179,1777,48"/>
-<area shape="rect" title=" " alt="" coords="1816,94,1880,120"/>
-<area shape="poly" title=" " alt="" coords="1796,44,1830,83,1825,81,1795,49"/>
-<area shape="rect" title=" " alt="" coords="1904,94,2000,120"/>
-<area shape="poly" title=" " alt="" coords="1822,44,1914,87,1909,87,1822,49"/>
-<area shape="rect" title=" " alt="" coords="2024,94,2101,120"/>
-<area shape="poly" title=" " alt="" coords="1847,43,2011,90,2006,91,1847,49"/>
-<area shape="rect" href="../../d0/de4/star__bus__config_8h.html" title="Bus configuration creation and lifecycle management." alt="" coords="1463,94,1587,120"/>
-<area shape="poly" title=" " alt="" coords="1713,47,1580,91,1578,86,1718,46"/>
-<area shape="rect" href="../../d6/dcc/star__bus__manager_8h.html" title="Unified bus manager for I2C, SPI, GPIO, and other bus protocols." alt="" coords="5,168,144,193"/>
-<area shape="poly" title=" " alt="" coords="1707,33,1077,84,626,124,163,170,161,170,157,166,162,165,625,119,1077,79,1712,31"/>
-<area shape="poly" title=" " alt="" coords="1164,118,1223,166,1389,310,1551,460,1592,494,1609,511,1626,535,1640,565,1649,596,1644,593,1635,566,1622,537,1605,514,1588,498,1547,464,1386,314,1219,170,1163,123"/>
-<area shape="rect" title=" " alt="" coords="717,610,781,635"/>
-<area shape="poly" title=" " alt="" coords="1131,119,1086,153,1026,197,961,253,902,317,851,391,811,470,780,542,759,597,756,593,775,540,806,467,847,388,898,313,957,249,1023,193,1083,148,1127,121"/>
-<area shape="rect" title=" " alt="" coords="257,610,332,635"/>
-<area shape="poly" title=" " alt="" coords="1088,109,948,117,749,136,638,152,525,175,412,206,304,244,246,270,223,285,204,301,189,320,178,342,171,369,169,400,169,476,171,502,175,522,185,539,200,560,225,583,254,603,249,602,222,587,197,563,180,542,170,523,165,503,164,477,164,400,166,368,173,340,185,317,200,297,220,280,244,266,301,239,410,200,523,170,637,147,749,130,948,111,1093,108"/>
-<area shape="rect" href="../../d7/d7c/star__bus__types_8h.html" title=" " alt="" coords="1087,168,1208,193"/>
-<area shape="poly" title=" " alt="" coords="1149,118,1150,153,1146,150,1146,122"/>
-<area shape="rect" href="../../dd/d40/star__bus__common__types_8h.html" title=" " alt="" coords="939,536,1117,562"/>
-<area shape="poly" title=" " alt="" coords="1152,191,1161,231,1167,287,1165,352,1160,384,1150,415,1132,450,1108,481,1058,529,1055,524,1104,477,1128,447,1145,413,1155,383,1160,351,1161,287,1155,232,1149,196"/>
-<area shape="rect" href="../../db/d78/star__bus__event__types_8h.html" title=" " alt="" coords="1176,462,1336,488"/>
-<area shape="poly" title=" " alt="" coords="1159,191,1178,214,1194,240,1217,296,1234,353,1254,448,1249,446,1229,354,1212,298,1189,243,1174,217,1158,196"/>
-<area shape="rect" href="../../d0/da6/star__bus__function__types_8h.html" title=" " alt="" coords="962,389,1136,414"/>
-<area shape="poly" title=" " alt="" coords="1147,192,1132,259,1118,301,1099,342,1073,379,1070,375,1095,339,1113,299,1127,258,1144,196"/>
-<area shape="rect" href="../../d0/d84/star__bus__manager__types_8h.html" title=" " alt="" coords="483,241,661,267"/>
-<area shape="poly" title=" " alt="" coords="1084,191,677,243,676,237,1089,188"/>
-<area shape="rect" href="../../dd/d9d/star__bus__protocol__types_8h.html" title=" " alt="" coords="911,315,1086,341"/>
-<area shape="poly" title=" " alt="" coords="1138,192,1023,306,1020,302,1133,195"/>
-<area shape="poly" title=" " alt="" coords="1117,558,1593,614,1587,614,1117,563"/>
-<area shape="poly" title=" " alt="" coords="983,562,797,612,796,607,978,562"/>
-<area shape="poly" title=" " alt="" coords="939,561,348,619,347,613,938,556"/>
-<area shape="rect" title=" " alt="" coords="1241,610,1372,635"/>
-<area shape="poly" title=" " alt="" coords="1075,560,1247,606,1242,605,1075,565"/>
-<area shape="rect" title=" " alt="" coords="835,610,909,635"/>
-<area shape="poly" title=" " alt="" coords="1004,562,913,605,912,600,999,563"/>
-<area shape="poly" title=" " alt="" coords="1270,486,1319,523,1350,542,1384,559,1437,579,1492,593,1593,614,1588,614,1490,599,1435,584,1381,564,1348,547,1316,527,1269,491"/>
-<area shape="poly" title=" " alt="" coords="1245,487,1196,528,1164,548,1130,564,1047,590,979,599,910,603,823,612,797,616,796,611,822,607,910,598,979,594,1046,585,1128,559,1162,543,1193,523,1240,489"/>
-<area shape="poly" title=" " alt="" coords="1220,488,1082,533,1081,528,1215,489"/>
-<area shape="poly" title=" " alt="" coords="1262,486,1300,596,1295,593,1258,490"/>
-<area shape="poly" title=" " alt="" coords="1257,487,1250,526,1240,547,1226,564,1203,577,1171,588,1090,605,1002,615,925,621,924,616,1001,610,1089,599,1170,583,1201,572,1222,560,1236,544,1245,524,1253,490"/>
-<area shape="rect" title=" " alt="" coords="1394,536,1480,562"/>
-<area shape="poly" title=" " alt="" coords="1287,486,1395,530,1389,530,1286,491"/>
-<area shape="poly" title=" " alt="" coords="1034,414,964,465,778,603,776,598,961,460,1029,416"/>
-<area shape="poly" title=" " alt="" coords="961,416,608,474,439,508,380,524,347,538,322,565,305,597,302,593,317,562,344,534,378,519,438,503,607,469,966,414"/>
-<area shape="poly" title=" " alt="" coords="1049,413,1034,522,1030,519,1045,416"/>
-<area shape="poly" title=" " alt="" coords="1064,412,1284,600,1279,599,1062,417"/>
-<area shape="poly" title=" " alt="" coords="1039,413,989,468,929,538,888,598,885,594,924,534,985,464,1035,416"/>
-<area shape="poly" title=" " alt="" coords="1085,412,1209,457,1204,457,1084,418"/>
-<area shape="poly" title=" " alt="" coords="1136,405,1241,422,1297,438,1349,460,1390,489,1421,525,1416,523,1386,493,1347,465,1295,443,1240,427,1136,410"/>
-<area shape="poly" title=" " alt="" coords="591,265,999,526,994,528,589,270"/>
-<area shape="rect" title=" " alt="" coords="255,315,398,341"/>
-<area shape="poly" title=" " alt="" coords="528,269,384,313,382,308,532,266"/>
-<area shape="rect" title=" " alt="" coords="473,315,596,341"/>
-<area shape="poly" title=" " alt="" coords="568,265,550,303,546,299,564,269"/>
-<area shape="poly" title=" " alt="" coords="645,265,913,311,908,313,645,270"/>
-<area shape="rect" href="../../df/d84/star__error__interface_8h.html" title="Error handler interface for dependency inversion." alt="" coords="357,536,501,562"/>
-<area shape="poly" title=" " alt="" coords="527,269,494,288,477,301,463,317,449,341,439,368,428,424,426,477,428,522,423,519,420,477,422,423,434,366,444,339,459,313,473,297,491,284,532,266"/>
-<area shape="rect" href="../../da/d58/star__pin__interface_8h.html" title="Pin validator interface for dependency inversion." alt="" coords="526,536,661,562"/>
-<area shape="poly" title=" " alt="" coords="582,265,599,287,610,314,614,356,612,413,599,522,595,519,606,412,609,356,605,316,594,290,581,270"/>
-<area shape="poly" title=" " alt="" coords="1086,330,1151,335,1225,346,1302,362,1377,386,1446,416,1497,445,1542,482,1596,534,1621,564,1641,597,1636,595,1617,568,1593,538,1539,486,1493,450,1443,421,1375,391,1301,367,1224,351,1151,341,1086,335"/>
-<area shape="poly" title=" " alt="" coords="984,340,927,391,878,446,833,504,766,599,763,595,828,501,874,443,923,387,979,343"/>
-<area shape="poly" title=" " alt="" coords="908,330,779,343,701,356,619,375,537,401,457,436,383,481,349,508,318,538,309,550,303,565,297,596,293,593,298,563,304,548,314,534,345,504,380,477,454,432,535,396,618,370,700,351,779,338,913,329"/>
-<area shape="poly" title=" " alt="" coords="987,340,968,364,953,390,951,401,953,414,964,444,979,474,1011,525,1006,523,974,477,959,447,948,415,945,401,948,388,964,360,982,343"/>
-<area shape="poly" title=" " alt="" coords="1086,330,1192,344,1252,358,1311,378,1368,405,1419,439,1462,482,1480,507,1494,535,1498,553,1495,568,1486,582,1471,592,1432,608,1388,617,1387,612,1431,603,1468,588,1482,578,1490,566,1493,553,1489,537,1475,510,1458,485,1416,443,1365,409,1309,383,1250,364,1192,350,1086,335"/>
-<area shape="poly" title=" " alt="" coords="986,340,965,364,945,390,919,444,900,501,878,596,874,593,895,500,914,442,940,387,961,360,982,342"/>
-<area shape="poly" title=" " alt="" coords="1038,339,1092,359,1149,386,1196,418,1235,453,1230,451,1192,422,1146,391,1090,364,1037,344"/>
-<area shape="poly" title=" " alt="" coords="1084,339,1155,354,1234,378,1313,413,1351,435,1386,460,1411,489,1429,523,1424,521,1407,493,1382,464,1348,440,1311,418,1232,383,1153,359,1084,344"/>
-<area shape="poly" title=" " alt="" coords="1008,338,1034,377,1029,375,1006,343"/>
-<area shape="poly" title=" " alt="" coords="484,560,704,610,699,611,483,565"/>
-<area shape="poly" title=" " alt="" coords="409,562,332,605,330,600,404,563"/>
-<area shape="poly" title=" " alt="" coords="502,559,822,612,817,613,502,564"/>
-<area shape="poly" title=" " alt="" coords="620,560,711,603,706,602,619,565"/>
-<area shape="poly" title=" " alt="" coords="545,562,347,611,346,606,539,562"/>
-<area shape="poly" title=" " alt="" coords="641,560,822,608,817,608,640,565"/>
-<area shape="poly" title=" " alt="" coords="1575,118,1625,135,1675,163,1697,181,1715,202,1726,226,1730,253,1730,477,1725,512,1711,546,1693,576,1674,600,1672,596,1689,573,1707,544,1720,511,1725,476,1725,253,1721,227,1710,204,1693,185,1672,167,1623,140,1575,123"/>
-<area shape="poly" title=" " alt="" coords="1460,113,1291,128,1044,152,759,190,613,215,471,244,402,255,346,261,321,267,296,277,271,293,244,317,229,336,222,354,220,400,220,476,225,511,239,544,257,573,275,599,270,597,252,576,234,546,220,512,215,477,215,400,217,353,225,333,241,313,268,289,294,272,319,262,345,256,401,249,470,239,612,210,759,185,1044,147,1290,122,1465,111"/>
-<area shape="poly" title=" " alt="" coords="1460,121,1224,167,1223,162,1465,119"/>
-<area shape="poly" title=" " alt="" coords="1534,118,1562,175,1574,213,1578,253,1578,477,1574,507,1560,534,1539,556,1513,574,1451,600,1388,615,1387,609,1450,594,1510,569,1535,552,1555,531,1568,506,1573,476,1573,253,1568,214,1557,177,1531,122"/>
-<area shape="poly" title=" " alt="" coords="1522,118,1495,206,1483,265,1477,327,1477,403,1475,436,1468,468,1450,523,1446,519,1463,467,1469,435,1472,403,1472,326,1477,264,1490,205,1518,122"/>
-<area shape="poly" title=" " alt="" coords="78,191,96,250,102,288,105,326,105,476,108,503,116,523,129,540,150,560,171,576,195,589,245,609,240,610,192,594,168,580,146,564,125,544,111,526,103,504,100,477,100,327,97,288,91,251,78,196"/>
-<area shape="poly" title=" " alt="" coords="144,189,473,236,470,241,145,194"/>
+<area shape="rect" title="GPIO operations implementation for the bus manager." alt="" coords="705,5,842,46"/>
+<area shape="rect" href="../../d9/d5b/star__bus__gpio_8h.html" title="GPIO bus operations through the unified bus manager." alt="" coords="498,94,611,120"/>
+<area shape="poly" title=" " alt="" coords="716,48,604,91,601,86,721,45"/>
+<area shape="rect" title=" " alt="" coords="60,610,153,635"/>
+<area shape="poly" title=" " alt="" coords="702,28,516,33,401,40,285,52,177,71,89,98,55,115,30,134,14,155,8,179,8,476,15,513,33,546,57,575,81,599,76,601,53,579,29,549,10,515,3,477,3,179,9,153,26,130,52,110,87,93,176,66,284,47,400,34,516,27,707,25"/>
+<area shape="rect" href="../../d7/d7c/star__bus__types_8h.html" title="Bus type definitions and enumerations." alt="" coords="589,168,710,193"/>
+<area shape="poly" title=" " alt="" coords="730,48,703,69,677,96,663,124,655,153,650,150,658,122,673,92,700,65,734,45"/>
+<area shape="rect" title=" " alt="" coords="686,94,764,120"/>
+<area shape="poly" title=" " alt="" coords="763,44,743,82,739,79,760,48"/>
+<area shape="rect" title=" " alt="" coords="789,94,854,120"/>
+<area shape="poly" title=" " alt="" coords="786,44,809,81,804,80,785,49"/>
+<area shape="rect" title=" " alt="" coords="878,94,973,120"/>
+<area shape="poly" title=" " alt="" coords="811,44,891,86,886,87,811,49"/>
+<area shape="rect" title=" " alt="" coords="997,94,1075,120"/>
+<area shape="poly" title=" " alt="" coords="839,44,985,89,980,90,839,49"/>
+<area shape="rect" href="../../d6/dcc/star__bus__manager_8h.html" title="Unified bus manager API for I2C, SPI, UART, GPIO, ADC, and 1&#45;Wire protocols." alt="" coords="1730,168,1868,193"/>
+<area shape="poly" title=" " alt="" coords="842,34,1716,165,1712,168,842,40"/>
+<area shape="poly" title=" " alt="" coords="495,114,374,129,228,156,162,174,108,197,87,209,72,223,62,237,59,253,59,476,62,509,71,541,95,596,89,596,66,543,57,510,53,477,53,253,57,235,68,219,84,205,105,192,160,169,227,150,373,124,500,111"/>
+<area shape="rect" title=" " alt="" coords="716,610,780,635"/>
+<area shape="poly" title=" " alt="" coords="496,118,399,138,287,167,237,186,197,206,169,229,162,241,160,253,160,476,164,495,177,513,197,528,224,543,293,567,377,585,467,599,557,608,703,620,698,620,556,613,467,604,376,590,291,572,221,548,194,533,173,516,159,498,155,477,155,253,157,239,165,225,194,202,235,181,286,162,398,133,500,115"/>
+<area shape="rect" title=" " alt="" coords="1318,610,1392,635"/>
+<area shape="poly" title=" " alt="" coords="612,112,865,144,1210,193,1381,222,1530,252,1642,283,1681,298,1704,313,1721,333,1729,352,1731,400,1731,477,1728,490,1720,503,1694,526,1655,547,1607,565,1501,595,1407,615,1407,610,1500,590,1605,560,1652,542,1691,522,1716,499,1723,488,1725,476,1725,400,1723,354,1716,336,1701,317,1678,303,1641,288,1529,258,1380,227,1209,199,864,149,612,117"/>
+<area shape="poly" title=" " alt="" coords="571,118,624,158,619,158,571,123"/>
+<area shape="rect" href="../../dd/d40/star__bus__common__types_8h.html" title="Common type definitions shared across all bus protocols." alt="" coords="659,536,837,562"/>
+<area shape="poly" title=" " alt="" coords="657,191,682,249,692,287,696,326,696,403,700,436,709,468,735,524,730,522,704,470,695,437,691,403,691,327,687,288,677,251,655,196"/>
+<area shape="rect" href="../../db/d78/star__bus__event__types_8h.html" title="Event data structures for bus callback functions." alt="" coords="344,462,504,488"/>
+<area shape="poly" title=" " alt="" coords="634,192,594,226,542,270,489,326,465,357,445,390,434,419,428,449,424,446,429,417,440,387,461,354,485,323,538,267,590,222,629,196"/>
+<area shape="rect" href="../../d0/da6/star__bus__function__types_8h.html" title="Callback and operation function type definitions." alt="" coords="482,389,656,414"/>
+<area shape="poly" title=" " alt="" coords="647,192,581,376,577,373,643,195"/>
+<area shape="rect" href="../../d0/d84/star__bus__manager__types_8h.html" title="Bus manager internal type definitions." alt="" coords="1204,241,1382,267"/>
+<area shape="poly" title=" " alt="" coords="710,186,1191,240,1186,243,711,191"/>
+<area shape="rect" href="../../dd/d9d/star__bus__protocol__types_8h.html" title="Protocol&#45;specific configuration structures for all bus types." alt="" coords="730,315,904,341"/>
+<area shape="poly" title=" " alt="" coords="664,191,795,305,789,305,662,196"/>
+<area shape="poly" title=" " alt="" coords="656,561,647,564,169,617,168,612,646,559,661,560"/>
+<area shape="poly" title=" " alt="" coords="750,560,750,596,746,592,746,564"/>
+<area shape="poly" title=" " alt="" coords="838,558,1305,615,1299,615,837,563"/>
+<area shape="rect" title=" " alt="" coords="269,610,400,635"/>
+<area shape="poly" title=" " alt="" coords="680,562,416,610,415,605,675,562"/>
+<area shape="rect" title=" " alt="" coords="888,610,962,635"/>
+<area shape="poly" title=" " alt="" coords="779,560,884,604,879,603,778,565"/>
+<area shape="poly" title=" " alt="" coords="399,491,148,605,146,600,396,486"/>
+<area shape="poly" title=" " alt="" coords="425,486,428,524,433,543,445,560,462,572,488,582,557,598,633,609,703,618,698,618,633,614,556,604,487,587,460,576,441,564,429,546,422,525,421,490"/>
+<area shape="poly" title=" " alt="" coords="480,486,681,532,675,533,479,491"/>
+<area shape="poly" title=" " alt="" coords="419,487,352,598,348,594,414,489"/>
+<area shape="poly" title=" " alt="" coords="436,486,479,523,508,543,538,559,603,577,694,592,876,616,871,616,693,598,602,582,536,564,505,548,476,527,435,491"/>
+<area shape="rect" title=" " alt="" coords="549,536,635,562"/>
+<area shape="poly" title=" " alt="" coords="453,486,552,529,547,530,452,491"/>
+<area shape="poly" title=" " alt="" coords="563,413,547,444,532,482,527,523,530,543,539,560,564,577,606,592,703,615,698,614,605,597,562,582,535,563,525,544,521,524,527,481,543,442,559,416"/>
+<area shape="poly" title=" " alt="" coords="657,404,824,416,1024,440,1121,457,1209,478,1281,503,1309,518,1331,534,1342,547,1349,563,1356,596,1352,593,1344,564,1338,550,1328,538,1306,522,1278,508,1207,483,1120,462,1023,445,823,422,657,410"/>
+<area shape="poly" title=" " alt="" coords="585,412,724,526,719,526,583,417"/>
+<area shape="poly" title=" " alt="" coords="479,414,392,435,356,448,334,464,319,495,316,530,320,565,328,596,323,594,315,566,311,530,314,494,330,461,354,444,391,430,484,412"/>
+<area shape="poly" title=" " alt="" coords="606,412,720,458,787,493,851,534,884,564,911,598,906,596,880,568,848,538,785,497,718,463,606,418"/>
+<area shape="poly" title=" " alt="" coords="547,414,463,458,461,453,542,416"/>
+<area shape="poly" title=" " alt="" coords="573,413,590,522,585,519,569,417"/>
+<area shape="poly" title=" " alt="" coords="1246,267,1191,289,1138,317,1110,342,1094,366,1077,391,1050,416,988,456,922,488,804,533,803,528,920,483,985,451,1046,412,1073,387,1089,363,1106,338,1134,313,1189,284,1241,268"/>
+<area shape="rect" title=" " alt="" coords="1547,315,1690,341"/>
+<area shape="poly" title=" " alt="" coords="1349,265,1551,311,1546,311,1349,270"/>
+<area shape="rect" title=" " alt="" coords="1162,315,1284,341"/>
+<area shape="poly" title=" " alt="" coords="1284,266,1247,306,1244,302,1279,269"/>
+<area shape="rect" title=" " alt="" coords="1212,389,1372,414"/>
+<area shape="poly" title=" " alt="" coords="1353,265,1390,277,1422,293,1433,303,1440,315,1441,328,1436,342,1409,368,1376,386,1374,381,1406,364,1431,339,1436,327,1435,316,1429,307,1419,297,1388,282,1353,270"/>
+<area shape="rect" title=" " alt="" coords="1307,315,1421,341"/>
+<area shape="poly" title=" " alt="" coords="1306,265,1344,304,1339,303,1304,270"/>
+<area shape="poly" title=" " alt="" coords="1209,268,914,315,913,310,1215,267"/>
+<area shape="rect" href="../../df/d84/star__error__interface_8h.html" title="Abstract error handler interface for dependency inversion." alt="" coords="1013,536,1158,562"/>
+<area shape="poly" title=" " alt="" coords="1236,267,1196,282,1163,298,1152,307,1146,317,1145,327,1151,339,1166,352,1183,362,1224,372,1270,374,1315,372,1354,370,1383,374,1392,379,1396,388,1394,400,1386,416,1366,441,1343,463,1288,498,1229,522,1173,537,1172,532,1228,517,1286,493,1340,459,1362,438,1382,413,1389,398,1391,389,1388,383,1381,379,1354,376,1315,378,1270,380,1223,378,1181,367,1162,357,1147,342,1140,328,1140,315,1148,304,1160,293,1194,277,1231,268"/>
+<area shape="rect" href="../../da/d58/star__pin__interface_8h.html" title="Abstract pin validator interface for dependency inversion." alt="" coords="1182,536,1317,562"/>
+<area shape="poly" title=" " alt="" coords="1381,265,1423,283,1442,296,1457,314,1461,327,1457,341,1447,389,1433,425,1411,457,1375,490,1339,514,1301,532,1299,527,1336,510,1372,486,1407,453,1428,423,1442,387,1452,340,1455,327,1452,316,1438,300,1421,288,1381,270"/>
+<area shape="poly" title=" " alt="" coords="727,336,533,357,439,372,373,391,333,412,294,438,224,495,167,553,127,599,123,595,163,549,221,492,291,433,330,408,371,386,438,367,532,352,732,334"/>
+<area shape="poly" title=" " alt="" coords="826,338,838,362,848,388,861,437,871,478,870,518,852,563,827,590,795,609,793,604,823,586,847,560,865,516,866,478,856,439,843,389,834,364,824,343"/>
+<area shape="poly" title=" " alt="" coords="889,339,977,358,1070,386,1161,413,1236,433,1269,446,1300,466,1330,495,1358,535,1364,549,1367,565,1364,596,1360,593,1362,565,1359,551,1354,537,1326,498,1297,470,1267,451,1234,438,1160,418,1069,391,976,363,889,344"/>
+<area shape="poly" title=" " alt="" coords="822,339,830,406,828,448,816,489,801,511,782,529,779,524,797,508,811,487,822,447,825,406,818,343"/>
+<area shape="poly" title=" " alt="" coords="727,333,666,341,593,351,517,368,444,391,378,416,355,434,334,464,323,497,321,532,324,565,329,596,324,593,318,566,315,532,318,495,330,461,351,430,376,412,442,386,516,363,592,346,665,336,732,332"/>
+<area shape="poly" title=" " alt="" coords="905,338,992,357,1028,370,1050,387,1056,406,1052,430,1024,489,984,550,946,600,943,596,980,547,1020,486,1047,429,1051,406,1046,390,1025,375,991,362,905,343"/>
+<area shape="poly" title=" " alt="" coords="727,336,583,357,517,372,472,391,459,403,449,417,434,449,430,445,444,415,455,399,469,386,515,367,582,352,732,335"/>
+<area shape="poly" title=" " alt="" coords="808,340,616,528,613,523,803,342"/>
+<area shape="poly" title=" " alt="" coords="773,342,627,386,625,381,778,340"/>
+<area shape="poly" title=" " alt="" coords="898,339,1200,385,1194,386,898,344"/>
+<area shape="rect" title=" " alt="" coords="903,389,1036,414"/>
+<area shape="poly" title=" " alt="" coords="843,339,932,382,927,382,843,344"/>
+<area shape="poly" title=" " alt="" coords="1030,562,796,614,795,609,1025,563"/>
+<area shape="poly" title=" " alt="" coords="1131,560,1305,608,1300,607,1131,565"/>
+<area shape="poly" title=" " alt="" coords="1061,562,967,606,966,600,1056,563"/>
+<area shape="poly" title=" " alt="" coords="1184,560,1170,564,796,617,795,612,1169,559,1179,560"/>
+<area shape="poly" title=" " alt="" coords="1268,560,1327,601,1322,600,1266,565"/>
+<area shape="poly" title=" " alt="" coords="1197,562,978,612,977,607,1191,563"/>
+<area shape="poly" title=" " alt="" coords="1800,192,1795,327,1795,477,1792,505,1785,527,1770,546,1748,564,1722,577,1685,589,1593,605,1493,616,1407,622,1407,616,1492,611,1592,600,1684,583,1720,572,1745,559,1767,542,1780,525,1787,504,1789,476,1789,326,1796,196"/>
+<area shape="poly" title=" " alt="" coords="1726,192,1395,241,1394,236,1732,191"/>
 </map>
 </div>
 </div>
@@ -196,32 +203,29 @@ Include dependency graph for star_bus_gpio.c:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a398e64268b55afc72df387ad1a1c7fc1" id="r_a398e64268b55afc72df387ad1a1c7fc1"><td class="memItemLeft" align="right" valign="top">static esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a398e64268b55afc72df387ad1a1c7fc1">gpio_configure_default</a> (const <a class="el" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a> *config, gpio_num_t pin, gpio_mode_t mode, gpio_pull_mode_t pull)</td></tr>
-<tr class="memdesc:a398e64268b55afc72df387ad1a1c7fc1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default implementation for configuring a GPIO pin.  <br /></td></tr>
-<tr class="memitem:af2724ae0d0a1260cb6dbaf5853470a5f" id="r_af2724ae0d0a1260cb6dbaf5853470a5f"><td class="memItemLeft" align="right" valign="top">static esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af2724ae0d0a1260cb6dbaf5853470a5f">gpio_write_default</a> (const <a class="el" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a> *config, gpio_num_t pin, uint32_t level)</td></tr>
-<tr class="memdesc:af2724ae0d0a1260cb6dbaf5853470a5f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default implementation for writing to a GPIO pin.  <br /></td></tr>
-<tr class="memitem:af20ab080c3ac32e57c9e9d3d0df681e7" id="r_af20ab080c3ac32e57c9e9d3d0df681e7"><td class="memItemLeft" align="right" valign="top">static esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af20ab080c3ac32e57c9e9d3d0df681e7">gpio_read_default</a> (const <a class="el" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a> *config, gpio_num_t pin, uint32_t *level)</td></tr>
-<tr class="memdesc:af20ab080c3ac32e57c9e9d3d0df681e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default implementation for reading from a GPIO pin.  <br /></td></tr>
-<tr class="memitem:a861d4619ac157b0e282ff0f22340a050" id="r_a861d4619ac157b0e282ff0f22340a050"><td class="memItemLeft" align="right" valign="top">static esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a861d4619ac157b0e282ff0f22340a050">gpio_set_interrupt_default</a> (const <a class="el" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a> *config, gpio_num_t pin, gpio_int_type_t intr_type, gpio_isr_t isr_handler, void *args)</td></tr>
-<tr class="memdesc:a861d4619ac157b0e282ff0f22340a050"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default implementation for setting GPIO interrupt.  <br /></td></tr>
-<tr class="memitem:a0fff90f319ba2507d0e6fdce4620278c" id="r_a0fff90f319ba2507d0e6fdce4620278c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0fff90f319ba2507d0e6fdce4620278c">star_bus_gpio_init_default_ops</a> (<a class="el" href="../../dd/d9d/star__bus__protocol__types_8h.html#ae63ae0cd20933b19ed9b5844b1c92795">star_gpio_ops_t</a> *ops)</td></tr>
-<tr class="memdesc:a0fff90f319ba2507d0e6fdce4620278c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize default GPIO operations function pointers within a config structure. Typically called internally by star_bus_config_create_gpio. Assigns default implementations for configure, write, and read operations.  <br /></td></tr>
-<tr class="memitem:a3f3ec8a58cef289721cb02a336d52ee0" id="r_a3f3ec8a58cef289721cb02a336d52ee0"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a3f3ec8a58cef289721cb02a336d52ee0">star_bus_gpio_configure</a> (const <a class="el" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a> *manager, const char *name, gpio_num_t pin, gpio_mode_t mode, gpio_pull_mode_t pull)</td></tr>
-<tr class="memdesc:a3f3ec8a58cef289721cb02a336d52ee0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configure a GPIO pin (set mode, pull-up/down) via bus manager.  <br /></td></tr>
-<tr class="memitem:a7272db26c004de64a1586bc7311eabdb" id="r_a7272db26c004de64a1586bc7311eabdb"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a7272db26c004de64a1586bc7311eabdb">star_bus_gpio_write</a> (const <a class="el" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a> *manager, const char *name, gpio_num_t pin, uint32_t level)</td></tr>
-<tr class="memdesc:a7272db26c004de64a1586bc7311eabdb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set the output level of a GPIO pin via bus manager.  <br /></td></tr>
-<tr class="memitem:a031b80f1dcaf775a18e3fc87dfed2f9b" id="r_a031b80f1dcaf775a18e3fc87dfed2f9b"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a031b80f1dcaf775a18e3fc87dfed2f9b">star_bus_gpio_read</a> (const <a class="el" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a> *manager, const char *name, gpio_num_t pin, uint32_t *level)</td></tr>
-<tr class="memdesc:a031b80f1dcaf775a18e3fc87dfed2f9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read the input level of a GPIO pin via bus manager.  <br /></td></tr>
-<tr class="memitem:a0679661e113801bc35156c4f23304e70" id="r_a0679661e113801bc35156c4f23304e70"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0679661e113801bc35156c4f23304e70">star_bus_gpio_set_interrupt</a> (const <a class="el" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a> *manager, const char *name, gpio_num_t pin, gpio_int_type_t intr_type, gpio_isr_t isr_handler, void *args)</td></tr>
-<tr class="memdesc:a0679661e113801bc35156c4f23304e70"><td class="mdescLeft">&#160;</td><td class="mdescRight">Configure GPIO interrupt for a pin via bus manager.  <br /></td></tr>
+<tr class="memitem:aa43cb0b0920c20eb9e23619e5ef13015" id="r_aa43cb0b0920c20eb9e23619e5ef13015"><td class="memItemLeft" align="right" valign="top">static esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa43cb0b0920c20eb9e23619e5ef13015">internal_star_bus_gpio_write_digital</a> (const <a class="el" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a> *config, uint8_t pin_index, uint8_t value)</td></tr>
+<tr class="memitem:acc3fb5abdf06a75718d86a66364b27e0" id="r_acc3fb5abdf06a75718d86a66364b27e0"><td class="memItemLeft" align="right" valign="top">static esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#acc3fb5abdf06a75718d86a66364b27e0">internal_star_bus_gpio_read_digital</a> (const <a class="el" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a> *config, uint8_t pin_index, uint8_t *value)</td></tr>
+<tr class="memitem:aa9776ada4c3f8a958dc47a93b4c9d8e8" id="r_aa9776ada4c3f8a958dc47a93b4c9d8e8"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../dd/d9d/star__bus__protocol__types_8h.html#ae63ae0cd20933b19ed9b5844b1c92795">star_gpio_ops_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa9776ada4c3f8a958dc47a93b4c9d8e8">star_bus_gpio_get_default_ops</a> (void)</td></tr>
+<tr class="memdesc:aa9776ada4c3f8a958dc47a93b4c9d8e8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get default GPIO operations structure.  <br /></td></tr>
+<tr class="memitem:a50011c3e35b7fa2d6b8290207056894d" id="r_a50011c3e35b7fa2d6b8290207056894d"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a50011c3e35b7fa2d6b8290207056894d">star_bus_gpio_write_digital</a> (<a class="el" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a> *manager, const char *bus_name, uint8_t pin_index, uint8_t value)</td></tr>
+<tr class="memdesc:a50011c3e35b7fa2d6b8290207056894d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write digital value to GPIO pin.  <br /></td></tr>
+<tr class="memitem:a77ea5065453059955f4570d5f811f54e" id="r_a77ea5065453059955f4570d5f811f54e"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a77ea5065453059955f4570d5f811f54e">star_bus_gpio_read_digital</a> (<a class="el" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a> *manager, const char *bus_name, uint8_t pin_index, uint8_t *value)</td></tr>
+<tr class="memdesc:a77ea5065453059955f4570d5f811f54e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read digital value from GPIO pin.  <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-var-members" class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
 <tr class="memitem:a999e3dd103132afd3cd1856f477f2dbd" id="r_a999e3dd103132afd3cd1856f477f2dbd"><td class="memItemLeft" align="right" valign="top">static const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a999e3dd103132afd3cd1856f477f2dbd">s_TAG</a> = &quot;STAR_BUS_GPIO&quot;</td></tr>
 </table>
-<a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
-<a id="a398e64268b55afc72df387ad1a1c7fc1" name="a398e64268b55afc72df387ad1a1c7fc1"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a398e64268b55afc72df387ad1a1c7fc1">&#9670;&#160;</a></span>gpio_configure_default()</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>GPIO operations implementation for the bus manager. </p>
+<p>Implements general-purpose input/output operations for digital pins on ESP32. Supports configurable pin modes, pull-up/pull-down resistors, and ISR handling.</p>
+<dl class="section date"><dt>Date</dt><dd>2025-12-19 </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>Copyright (c) 2025 STAR Project </dd></dl>
+
+<p class="definition">Definition in file <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html">star_bus_gpio.c</a>.</p>
+</div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
+<a id="acc3fb5abdf06a75718d86a66364b27e0" name="acc3fb5abdf06a75718d86a66364b27e0"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#acc3fb5abdf06a75718d86a66364b27e0">&#9670;&#160;</a></span>internal_star_bus_gpio_read_digital()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -230,24 +234,19 @@ Variables</h2></td></tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">esp_err_t gpio_configure_default </td>
+          <td class="memname">esp_err_t internal_star_bus_gpio_read_digital </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a> *</td>          <td class="paramname"><span class="paramname"><em>config</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">gpio_num_t</td>          <td class="paramname"><span class="paramname"><em>pin</em></span>, </td>
+          <td class="paramtype">uint8_t</td>          <td class="paramname"><span class="paramname"><em>pin_index</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">gpio_mode_t</td>          <td class="paramname"><span class="paramname"><em>mode</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">gpio_pull_mode_t</td>          <td class="paramname"><span class="paramname"><em>pull</em></span>&#160;)</td>
+          <td class="paramtype">uint8_t *</td>          <td class="paramname"><span class="paramname"><em>value</em></span>&#160;)</td>
         </tr>
       </table>
   </td>
@@ -257,34 +256,28 @@ Variables</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Default implementation for configuring a GPIO pin. </p>
+<p class="definition">Definition at line <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00125">125</a> of file <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html">star_bus_gpio.c</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00021">21</a> of file <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html">star_bus_gpio.c</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00061">star_bus_config::gpio</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00149">star_gpio_bus_config::pin_count</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00148">star_gpio_bus_config::pins</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00037">star_bus_config::gpio</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00029">star_bus_config::initialized</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00033">k_star_bus_type_gpio</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00027">star_bus_config::name</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00134">star_gpio_bus_config::pin_count</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00133">star_gpio_bus_config::pins</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00028">star_bus_config::type</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00264">star_bus_gpio_init_default_ops()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00040">star_bus_gpio_get_default_ops()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../da/d8b/star__bus__gpio_8c_a398e64268b55afc72df387ad1a1c7fc1_icgraph.png" border="0" usemap="#ada/d8b/star__bus__gpio_8c_a398e64268b55afc72df387ad1a1c7fc1_icgraph" loading="lazy" alt=""/></div>
-<map name="ada/d8b/star__bus__gpio_8c_a398e64268b55afc72df387ad1a1c7fc1_icgraph" id="ada/d8b/star__bus__gpio_8c_a398e64268b55afc72df387ad1a1c7fc1_icgraph">
-<area shape="rect" title="Default implementation for configuring a GPIO pin." alt="" coords="717,13,868,38"/>
-<area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html#a0fff90f319ba2507d0e6fdce4620278c" title="Initialize default GPIO operations function pointers within a config structure. Typically called inte..." alt="" coords="542,5,669,46"/>
-<area shape="poly" title=" " alt="" coords="698,26,669,28,669,23,704,26"/>
-<area shape="rect" href="../../de/d98/star__bus__config_8c.html#a856acf68aec88c1a3203d65ec656fd3c" title="Create a new GPIO bus configuration." alt="" coords="307,13,494,38"/>
-<area shape="poly" title=" " alt="" coords="524,26,495,28,495,23,530,26"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a06b72c3ee71e25fc9eac1ce50d7b08de" title=" " alt="" coords="131,5,259,46"/>
-<area shape="poly" title=" " alt="" coords="289,26,260,28,260,23,294,26"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,13,83,38"/>
-<area shape="poly" title=" " alt="" coords="112,26,83,28,83,23,118,25"/>
+<div class="center"><img src="../../da/d8b/star__bus__gpio_8c_acc3fb5abdf06a75718d86a66364b27e0_icgraph.png" border="0" usemap="#ada/d8b/star__bus__gpio_8c_acc3fb5abdf06a75718d86a66364b27e0_icgraph" loading="lazy" alt=""/></div>
+<map name="ada/d8b/star__bus__gpio_8c_acc3fb5abdf06a75718d86a66364b27e0_icgraph" id="ada/d8b/star__bus__gpio_8c_acc3fb5abdf06a75718d86a66364b27e0_icgraph">
+<area shape="rect" title=" " alt="" coords="490,5,641,46"/>
+<area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html#aa9776ada4c3f8a958dc47a93b4c9d8e8" title="Get default GPIO operations structure." alt="" coords="241,13,442,38"/>
+<area shape="poly" title=" " alt="" coords="472,26,443,28,442,23,477,26"/>
+<area shape="rect" href="../../de/d98/star__bus__config_8c.html#aa8850b2918def11489920457d487909e" title="Create a GPIO bus configuration." alt="" coords="5,13,193,38"/>
+<area shape="poly" title=" " alt="" coords="222,26,193,28,193,23,228,25"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="af20ab080c3ac32e57c9e9d3d0df681e7" name="af20ab080c3ac32e57c9e9d3d0df681e7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af20ab080c3ac32e57c9e9d3d0df681e7">&#9670;&#160;</a></span>gpio_read_default()</h2>
+<a id="aa43cb0b0920c20eb9e23619e5ef13015" name="aa43cb0b0920c20eb9e23619e5ef13015"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa43cb0b0920c20eb9e23619e5ef13015">&#9670;&#160;</a></span>internal_star_bus_gpio_write_digital()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -293,19 +286,19 @@ Here is the caller graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">esp_err_t gpio_read_default </td>
+          <td class="memname">esp_err_t internal_star_bus_gpio_write_digital </td>
           <td>(</td>
           <td class="paramtype">const <a class="el" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a> *</td>          <td class="paramname"><span class="paramname"><em>config</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">gpio_num_t</td>          <td class="paramname"><span class="paramname"><em>pin</em></span>, </td>
+          <td class="paramtype">uint8_t</td>          <td class="paramname"><span class="paramname"><em>pin_index</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint32_t *</td>          <td class="paramname"><span class="paramname"><em>level</em></span>&#160;)</td>
+          <td class="paramtype">uint8_t</td>          <td class="paramname"><span class="paramname"><em>value</em></span>&#160;)</td>
         </tr>
       </table>
   </td>
@@ -315,533 +308,208 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p>Default implementation for reading from a GPIO pin. </p>
+<p class="definition">Definition at line <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00104">104</a> of file <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html">star_bus_gpio.c</a>.</p>
 
-<p class="definition">Definition at line <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00130">130</a> of file <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html">star_bus_gpio.c</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00061">star_bus_config::gpio</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00149">star_gpio_bus_config::pin_count</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00148">star_gpio_bus_config::pins</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00037">star_bus_config::gpio</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00029">star_bus_config::initialized</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00033">k_star_bus_type_gpio</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00027">star_bus_config::name</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00134">star_gpio_bus_config::pin_count</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00133">star_gpio_bus_config::pins</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00028">star_bus_config::type</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00264">star_bus_gpio_init_default_ops()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00040">star_bus_gpio_get_default_ops()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../da/d8b/star__bus__gpio_8c_af20ab080c3ac32e57c9e9d3d0df681e7_icgraph.png" border="0" usemap="#ada/d8b/star__bus__gpio_8c_af20ab080c3ac32e57c9e9d3d0df681e7_icgraph" loading="lazy" alt=""/></div>
-<map name="ada/d8b/star__bus__gpio_8c_af20ab080c3ac32e57c9e9d3d0df681e7_icgraph" id="ada/d8b/star__bus__gpio_8c_af20ab080c3ac32e57c9e9d3d0df681e7_icgraph">
-<area shape="rect" title="Default implementation for reading from a GPIO pin." alt="" coords="717,13,840,38"/>
-<area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html#a0fff90f319ba2507d0e6fdce4620278c" title="Initialize default GPIO operations function pointers within a config structure. Typically called inte..." alt="" coords="542,5,669,46"/>
-<area shape="poly" title=" " alt="" coords="698,26,669,28,669,23,703,26"/>
-<area shape="rect" href="../../de/d98/star__bus__config_8c.html#a856acf68aec88c1a3203d65ec656fd3c" title="Create a new GPIO bus configuration." alt="" coords="307,13,494,38"/>
-<area shape="poly" title=" " alt="" coords="524,26,495,28,495,23,530,26"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a06b72c3ee71e25fc9eac1ce50d7b08de" title=" " alt="" coords="131,5,259,46"/>
-<area shape="poly" title=" " alt="" coords="289,26,260,28,260,23,294,26"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,13,83,38"/>
-<area shape="poly" title=" " alt="" coords="112,26,83,28,83,23,118,25"/>
+<div class="center"><img src="../../da/d8b/star__bus__gpio_8c_aa43cb0b0920c20eb9e23619e5ef13015_icgraph.png" border="0" usemap="#ada/d8b/star__bus__gpio_8c_aa43cb0b0920c20eb9e23619e5ef13015_icgraph" loading="lazy" alt=""/></div>
+<map name="ada/d8b/star__bus__gpio_8c_aa43cb0b0920c20eb9e23619e5ef13015_icgraph" id="ada/d8b/star__bus__gpio_8c_aa43cb0b0920c20eb9e23619e5ef13015_icgraph">
+<area shape="rect" title=" " alt="" coords="490,5,641,46"/>
+<area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html#aa9776ada4c3f8a958dc47a93b4c9d8e8" title="Get default GPIO operations structure." alt="" coords="241,13,442,38"/>
+<area shape="poly" title=" " alt="" coords="472,26,443,28,442,23,477,26"/>
+<area shape="rect" href="../../de/d98/star__bus__config_8c.html#aa8850b2918def11489920457d487909e" title="Create a GPIO bus configuration." alt="" coords="5,13,193,38"/>
+<area shape="poly" title=" " alt="" coords="222,26,193,28,193,23,228,25"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="a861d4619ac157b0e282ff0f22340a050" name="a861d4619ac157b0e282ff0f22340a050"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a861d4619ac157b0e282ff0f22340a050">&#9670;&#160;</a></span>gpio_set_interrupt_default()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">esp_err_t gpio_set_interrupt_default </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a> *</td>          <td class="paramname"><span class="paramname"><em>config</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">gpio_num_t</td>          <td class="paramname"><span class="paramname"><em>pin</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">gpio_int_type_t</td>          <td class="paramname"><span class="paramname"><em>intr_type</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">gpio_isr_t</td>          <td class="paramname"><span class="paramname"><em>isr_handler</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *</td>          <td class="paramname"><span class="paramname"><em>args</em></span>&#160;)</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Default implementation for setting GPIO interrupt. </p>
-
-<p class="definition">Definition at line <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00175">175</a> of file <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html">star_bus_gpio.c</a>.</p>
-
-<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00037">star_bus_config::gpio</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00029">star_bus_config::initialized</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00137">star_gpio_bus_config::isr_installed</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00033">k_star_bus_type_gpio</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00027">star_bus_config::name</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00134">star_gpio_bus_config::pin_count</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00133">star_gpio_bus_config::pins</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00028">star_bus_config::type</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00264">star_bus_gpio_init_default_ops()</a>.</p>
-<div class="dynheader">
-Here is the caller graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="../../da/d8b/star__bus__gpio_8c_a861d4619ac157b0e282ff0f22340a050_icgraph.png" border="0" usemap="#ada/d8b/star__bus__gpio_8c_a861d4619ac157b0e282ff0f22340a050_icgraph" loading="lazy" alt=""/></div>
-<map name="ada/d8b/star__bus__gpio_8c_a861d4619ac157b0e282ff0f22340a050_icgraph" id="ada/d8b/star__bus__gpio_8c_a861d4619ac157b0e282ff0f22340a050_icgraph">
-<area shape="rect" title="Default implementation for setting GPIO interrupt." alt="" coords="717,5,841,46"/>
-<area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html#a0fff90f319ba2507d0e6fdce4620278c" title="Initialize default GPIO operations function pointers within a config structure. Typically called inte..." alt="" coords="542,5,669,46"/>
-<area shape="poly" title=" " alt="" coords="699,26,669,28,669,23,704,26"/>
-<area shape="rect" href="../../de/d98/star__bus__config_8c.html#a856acf68aec88c1a3203d65ec656fd3c" title="Create a new GPIO bus configuration." alt="" coords="307,13,494,38"/>
-<area shape="poly" title=" " alt="" coords="524,26,495,28,495,23,530,26"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a06b72c3ee71e25fc9eac1ce50d7b08de" title=" " alt="" coords="131,5,259,46"/>
-<area shape="poly" title=" " alt="" coords="289,26,260,28,260,23,294,26"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,13,83,38"/>
-<area shape="poly" title=" " alt="" coords="112,26,83,28,83,23,118,25"/>
-</map>
-</div>
-
-</div>
-</div>
-<a id="af2724ae0d0a1260cb6dbaf5853470a5f" name="af2724ae0d0a1260cb6dbaf5853470a5f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#af2724ae0d0a1260cb6dbaf5853470a5f">&#9670;&#160;</a></span>gpio_write_default()</h2>
-
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">esp_err_t gpio_write_default </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a> *</td>          <td class="paramname"><span class="paramname"><em>config</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">gpio_num_t</td>          <td class="paramname"><span class="paramname"><em>pin</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>level</em></span>&#160;)</td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Default implementation for writing to a GPIO pin. </p>
-
-<p class="definition">Definition at line <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00081">81</a> of file <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html">star_bus_gpio.c</a>.</p>
-
-<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00037">star_bus_config::gpio</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00029">star_bus_config::initialized</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00033">k_star_bus_type_gpio</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00027">star_bus_config::name</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00134">star_gpio_bus_config::pin_count</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00133">star_gpio_bus_config::pins</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, and <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00028">star_bus_config::type</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00264">star_bus_gpio_init_default_ops()</a>.</p>
-<div class="dynheader">
-Here is the caller graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="../../da/d8b/star__bus__gpio_8c_af2724ae0d0a1260cb6dbaf5853470a5f_icgraph.png" border="0" usemap="#ada/d8b/star__bus__gpio_8c_af2724ae0d0a1260cb6dbaf5853470a5f_icgraph" loading="lazy" alt=""/></div>
-<map name="ada/d8b/star__bus__gpio_8c_af2724ae0d0a1260cb6dbaf5853470a5f_icgraph" id="ada/d8b/star__bus__gpio_8c_af2724ae0d0a1260cb6dbaf5853470a5f_icgraph">
-<area shape="rect" title="Default implementation for writing to a GPIO pin." alt="" coords="717,13,843,38"/>
-<area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html#a0fff90f319ba2507d0e6fdce4620278c" title="Initialize default GPIO operations function pointers within a config structure. Typically called inte..." alt="" coords="542,5,669,46"/>
-<area shape="poly" title=" " alt="" coords="698,26,669,28,669,23,704,26"/>
-<area shape="rect" href="../../de/d98/star__bus__config_8c.html#a856acf68aec88c1a3203d65ec656fd3c" title="Create a new GPIO bus configuration." alt="" coords="307,13,494,38"/>
-<area shape="poly" title=" " alt="" coords="524,26,495,28,495,23,530,26"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a06b72c3ee71e25fc9eac1ce50d7b08de" title=" " alt="" coords="131,5,259,46"/>
-<area shape="poly" title=" " alt="" coords="289,26,260,28,260,23,294,26"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,13,83,38"/>
-<area shape="poly" title=" " alt="" coords="112,26,83,28,83,23,118,25"/>
-</map>
-</div>
-
-</div>
-</div>
-<a id="a3f3ec8a58cef289721cb02a336d52ee0" name="a3f3ec8a58cef289721cb02a336d52ee0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a3f3ec8a58cef289721cb02a336d52ee0">&#9670;&#160;</a></span>star_bus_gpio_configure()</h2>
+<a id="aa9776ada4c3f8a958dc47a93b4c9d8e8" name="aa9776ada4c3f8a958dc47a93b4c9d8e8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa9776ada4c3f8a958dc47a93b4c9d8e8">&#9670;&#160;</a></span>star_bus_gpio_get_default_ops()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">esp_err_t star_bus_gpio_configure </td>
+          <td class="memname"><a class="el" href="../../dd/d9d/star__bus__protocol__types_8h.html#ae63ae0cd20933b19ed9b5844b1c92795">star_gpio_ops_t</a> star_bus_gpio_get_default_ops </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a> *</td>          <td class="paramname"><span class="paramname"><em>manager</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
+          <td class="paramtype">void</td>          <td class="paramname"><span class="paramname"><em></em></span></td><td>)</td>
           <td></td>
-          <td class="paramtype">const char *</td>          <td class="paramname"><span class="paramname"><em>name</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">gpio_num_t</td>          <td class="paramname"><span class="paramname"><em>pin</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">gpio_mode_t</td>          <td class="paramname"><span class="paramname"><em>mode</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">gpio_pull_mode_t</td>          <td class="paramname"><span class="paramname"><em>pull</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Configure a GPIO pin (set mode, pull-up/down) via bus manager. </p>
-<p>Finds the bus configuration by name and calls its configure operation.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">manager</td><td>Pointer to the initialized bus manager. Must not be NULL. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">name</td><td>Name of the GPIO bus configuration. Must not be NULL. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">pin</td><td>GPIO pin number to configure. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">mode</td><td>GPIO mode (input, output, etc.). </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">pull</td><td>GPIO pull mode (pull-up, pull-down, floating). </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success, ESP_ERR_INVALID_ARG if params invalid, ESP_ERR_NOT_FOUND if bus not found, ESP_ERR_INVALID_STATE if bus not initialized, or an error from the driver. </dd></dl>
+<p>Get default GPIO operations structure. </p>
+<p>Returns a structure containing function pointers to the default implementations for GPIO bus operations.</p>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="../../dd/d9d/star__bus__protocol__types_8h.html#ae63ae0cd20933b19ed9b5844b1c92795" title="GPIO operation functions structure.">star_gpio_ops_t</a> Default operations structure </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00279">279</a> of file <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html">star_bus_gpio.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00040">40</a> of file <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html">star_bus_gpio.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00119">star_gpio_ops::configure</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00037">star_bus_config::gpio</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00033">k_star_bus_type_gpio</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00136">star_gpio_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00378">star_bus_manager_find_bus()</a>, and <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00028">star_bus_config::type</a>.</p>
+<p class="reference">References <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00125">internal_star_bus_gpio_read_digital()</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00104">internal_star_bus_gpio_write_digital()</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00041">star_sensor_hcsr04_init()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00221">star_bus_config_create_gpio()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../da/d8b/star__bus__gpio_8c_a3f3ec8a58cef289721cb02a336d52ee0_cgraph.png" border="0" usemap="#ada/d8b/star__bus__gpio_8c_a3f3ec8a58cef289721cb02a336d52ee0_cgraph" loading="lazy" alt=""/></div>
-<map name="ada/d8b/star__bus__gpio_8c_a3f3ec8a58cef289721cb02a336d52ee0_cgraph" id="ada/d8b/star__bus__gpio_8c_a3f3ec8a58cef289721cb02a336d52ee0_cgraph">
-<area shape="rect" title="Configure a GPIO pin (set mode, pull&#45;up/down) via bus manager." alt="" coords="5,5,168,31"/>
-<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="216,5,400,31"/>
-<area shape="poly" title=" " alt="" coords="168,16,203,18,197,18,168,21"/>
+<div class="center"><img src="../../da/d8b/star__bus__gpio_8c_aa9776ada4c3f8a958dc47a93b4c9d8e8_cgraph.png" border="0" usemap="#ada/d8b/star__bus__gpio_8c_aa9776ada4c3f8a958dc47a93b4c9d8e8_cgraph" loading="lazy" alt=""/></div>
+<map name="ada/d8b/star__bus__gpio_8c_aa9776ada4c3f8a958dc47a93b4c9d8e8_cgraph" id="ada/d8b/star__bus__gpio_8c_aa9776ada4c3f8a958dc47a93b4c9d8e8_cgraph">
+<area shape="rect" title="Get default GPIO operations structure." alt="" coords="5,46,207,72"/>
+<area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html#acc3fb5abdf06a75718d86a66364b27e0" title=" " alt="" coords="255,5,406,46"/>
+<area shape="poly" title=" " alt="" coords="196,43,242,38,237,40,197,48"/>
+<area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html#aa43cb0b0920c20eb9e23619e5ef13015" title=" " alt="" coords="255,71,406,111"/>
+<area shape="poly" title=" " alt="" coords="201,70,242,78,236,78,201,75"/>
 </map>
 </div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../da/d8b/star__bus__gpio_8c_a3f3ec8a58cef289721cb02a336d52ee0_icgraph.png" border="0" usemap="#ada/d8b/star__bus__gpio_8c_a3f3ec8a58cef289721cb02a336d52ee0_icgraph" loading="lazy" alt=""/></div>
-<map name="ada/d8b/star__bus__gpio_8c_a3f3ec8a58cef289721cb02a336d52ee0_icgraph" id="ada/d8b/star__bus__gpio_8c_a3f3ec8a58cef289721cb02a336d52ee0_icgraph">
-<area shape="rect" title="Configure a GPIO pin (set mode, pull&#45;up/down) via bus manager." alt="" coords="884,5,1046,31"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#afd5878b21fda797877bd29036adcbd58" title="Initialize HC&#45;SR04 sensor." alt="" coords="677,5,836,31"/>
-<area shape="poly" title=" " alt="" coords="866,18,836,21,836,16,871,18"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afa22a6110eba0db527b95b8e2ce3a746" title=" " alt="" coords="488,5,629,31"/>
-<area shape="poly" title=" " alt="" coords="658,18,629,21,629,16,664,18"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="315,5,440,31"/>
-<area shape="poly" title=" " alt="" coords="470,18,441,21,441,16,475,18"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,5,267,31"/>
-<area shape="poly" title=" " alt="" coords="297,18,268,21,267,16,302,18"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
-<area shape="poly" title=" " alt="" coords="112,19,83,21,83,16,118,18"/>
+<div class="center"><img src="../../da/d8b/star__bus__gpio_8c_aa9776ada4c3f8a958dc47a93b4c9d8e8_icgraph.png" border="0" usemap="#ada/d8b/star__bus__gpio_8c_aa9776ada4c3f8a958dc47a93b4c9d8e8_icgraph" loading="lazy" alt=""/></div>
+<map name="ada/d8b/star__bus__gpio_8c_aa9776ada4c3f8a958dc47a93b4c9d8e8_icgraph" id="ada/d8b/star__bus__gpio_8c_aa9776ada4c3f8a958dc47a93b4c9d8e8_icgraph">
+<area shape="rect" title="Get default GPIO operations structure." alt="" coords="241,5,442,31"/>
+<area shape="rect" href="../../de/d98/star__bus__config_8c.html#aa8850b2918def11489920457d487909e" title="Create a GPIO bus configuration." alt="" coords="5,5,193,31"/>
+<area shape="poly" title=" " alt="" coords="222,18,193,21,193,16,228,18"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="a0fff90f319ba2507d0e6fdce4620278c" name="a0fff90f319ba2507d0e6fdce4620278c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0fff90f319ba2507d0e6fdce4620278c">&#9670;&#160;</a></span>star_bus_gpio_init_default_ops()</h2>
+<a id="a77ea5065453059955f4570d5f811f54e" name="a77ea5065453059955f4570d5f811f54e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a77ea5065453059955f4570d5f811f54e">&#9670;&#160;</a></span>star_bus_gpio_read_digital()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">void star_bus_gpio_init_default_ops </td>
+          <td class="memname">esp_err_t star_bus_gpio_read_digital </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="../../dd/d9d/star__bus__protocol__types_8h.html#ae63ae0cd20933b19ed9b5844b1c92795">star_gpio_ops_t</a> *</td>          <td class="paramname"><span class="paramname"><em>ops</em></span></td><td>)</td>
+          <td class="paramtype"><a class="el" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a> *</td>          <td class="paramname"><span class="paramname"><em>manager</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">const char *</td>          <td class="paramname"><span class="paramname"><em>bus_name</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t</td>          <td class="paramname"><span class="paramname"><em>pin_index</em></span>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t *</td>          <td class="paramname"><span class="paramname"><em>value</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Initialize default GPIO operations function pointers within a config structure. Typically called internally by star_bus_config_create_gpio. Assigns default implementations for configure, write, and read operations. </p>
+<p>Read digital value from GPIO pin. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[out]</td><td class="paramname">ops</td><td>Pointer to GPIO operations structure to initialize. Must not be NULL. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">manager</td><td>Bus manager instance </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">bus_name</td><td>Name of GPIO bus </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pin_index</td><td>Index into pin array (0-based) </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">value</td><td>Pointer to store pin state (0 or 1) </td></tr>
   </table>
   </dd>
 </dl>
+<dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00264">264</a> of file <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html">star_bus_gpio.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00076">76</a> of file <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html">star_bus_gpio.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00119">star_gpio_ops::configure</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00021">gpio_configure_default()</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00130">gpio_read_default()</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00175">gpio_set_interrupt_default()</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00081">gpio_write_default()</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00121">star_gpio_ops::read</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00122">star_gpio_ops::set_interrupt</a>, and <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00120">star_gpio_ops::write</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00061">star_bus_config::gpio</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00058">k_star_bus_type_gpio</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00151">star_gpio_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00139">star_gpio_ops::read_digital</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00199">star_bus_manager_find_bus()</a>, and <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00052">star_bus_config::type</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00207">star_bus_config_create_gpio()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00678">star_bus_read_digital()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../da/d8b/star__bus__gpio_8c_a0fff90f319ba2507d0e6fdce4620278c_cgraph.png" border="0" usemap="#ada/d8b/star__bus__gpio_8c_a0fff90f319ba2507d0e6fdce4620278c_cgraph" loading="lazy" alt=""/></div>
-<map name="ada/d8b/star__bus__gpio_8c_a0fff90f319ba2507d0e6fdce4620278c_cgraph" id="ada/d8b/star__bus__gpio_8c_a0fff90f319ba2507d0e6fdce4620278c_cgraph">
-<area shape="rect" title="Initialize default GPIO operations function pointers within a config structure. Typically called inte..." alt="" coords="5,76,132,117"/>
-<area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html#a398e64268b55afc72df387ad1a1c7fc1" title="Default implementation for configuring a GPIO pin." alt="" coords="180,5,331,31"/>
-<area shape="poly" title=" " alt="" coords="107,74,179,40,197,35,192,38,181,45,110,78"/>
-<area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html#af20ab080c3ac32e57c9e9d3d0df681e7" title="Default implementation for reading from a GPIO pin." alt="" coords="194,55,317,80"/>
-<area shape="poly" title=" " alt="" coords="131,84,181,78,176,81,133,89"/>
-<area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html#a861d4619ac157b0e282ff0f22340a050" title="Default implementation for setting GPIO interrupt." alt="" coords="193,104,318,145"/>
-<area shape="poly" title=" " alt="" coords="132,104,180,112,175,114,132,109"/>
-<area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html#af2724ae0d0a1260cb6dbaf5853470a5f" title="Default implementation for writing to a GPIO pin." alt="" coords="192,169,318,195"/>
-<area shape="poly" title=" " alt="" coords="105,115,181,154,199,164,194,164,179,159,104,120"/>
+<div class="center"><img src="../../da/d8b/star__bus__gpio_8c_a77ea5065453059955f4570d5f811f54e_cgraph.png" border="0" usemap="#ada/d8b/star__bus__gpio_8c_a77ea5065453059955f4570d5f811f54e_cgraph" loading="lazy" alt=""/></div>
+<map name="ada/d8b/star__bus__gpio_8c_a77ea5065453059955f4570d5f811f54e_cgraph" id="ada/d8b/star__bus__gpio_8c_a77ea5065453059955f4570d5f811f54e_cgraph">
+<area shape="rect" title="Read digital value from GPIO pin." alt="" coords="5,5,140,46"/>
+<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="188,13,372,38"/>
+<area shape="poly" title=" " alt="" coords="140,23,175,25,169,26,140,28"/>
 </map>
 </div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../da/d8b/star__bus__gpio_8c_a0fff90f319ba2507d0e6fdce4620278c_icgraph.png" border="0" usemap="#ada/d8b/star__bus__gpio_8c_a0fff90f319ba2507d0e6fdce4620278c_icgraph" loading="lazy" alt=""/></div>
-<map name="ada/d8b/star__bus__gpio_8c_a0fff90f319ba2507d0e6fdce4620278c_icgraph" id="ada/d8b/star__bus__gpio_8c_a0fff90f319ba2507d0e6fdce4620278c_icgraph">
-<area shape="rect" title="Initialize default GPIO operations function pointers within a config structure. Typically called inte..." alt="" coords="542,5,669,46"/>
-<area shape="rect" href="../../de/d98/star__bus__config_8c.html#a856acf68aec88c1a3203d65ec656fd3c" title="Create a new GPIO bus configuration." alt="" coords="307,13,494,38"/>
-<area shape="poly" title=" " alt="" coords="524,26,495,28,495,23,530,26"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a06b72c3ee71e25fc9eac1ce50d7b08de" title=" " alt="" coords="131,5,259,46"/>
-<area shape="poly" title=" " alt="" coords="289,26,260,28,260,23,294,26"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,13,83,38"/>
-<area shape="poly" title=" " alt="" coords="112,26,83,28,83,23,118,25"/>
+<div class="center"><img src="../../da/d8b/star__bus__gpio_8c_a77ea5065453059955f4570d5f811f54e_icgraph.png" border="0" usemap="#ada/d8b/star__bus__gpio_8c_a77ea5065453059955f4570d5f811f54e_icgraph" loading="lazy" alt=""/></div>
+<map name="ada/d8b/star__bus__gpio_8c_a77ea5065453059955f4570d5f811f54e_icgraph" id="ada/d8b/star__bus__gpio_8c_a77ea5065453059955f4570d5f811f54e_icgraph">
+<area shape="rect" title="Read digital value from GPIO pin." alt="" coords="198,5,332,46"/>
+<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a42334b54b0bb4a6ffc8fc73c9cdde5e4" title="Read a digital value from a GPIO bus pin (unified interface)." alt="" coords="5,13,150,38"/>
+<area shape="poly" title=" " alt="" coords="179,26,150,28,150,23,185,25"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="a031b80f1dcaf775a18e3fc87dfed2f9b" name="a031b80f1dcaf775a18e3fc87dfed2f9b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a031b80f1dcaf775a18e3fc87dfed2f9b">&#9670;&#160;</a></span>star_bus_gpio_read()</h2>
+<a id="a50011c3e35b7fa2d6b8290207056894d" name="a50011c3e35b7fa2d6b8290207056894d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a50011c3e35b7fa2d6b8290207056894d">&#9670;&#160;</a></span>star_bus_gpio_write_digital()</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">esp_err_t star_bus_gpio_read </td>
+          <td class="memname">esp_err_t star_bus_gpio_write_digital </td>
           <td>(</td>
-          <td class="paramtype">const <a class="el" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a> *</td>          <td class="paramname"><span class="paramname"><em>manager</em></span>, </td>
+          <td class="paramtype"><a class="el" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a> *</td>          <td class="paramname"><span class="paramname"><em>manager</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const char *</td>          <td class="paramname"><span class="paramname"><em>name</em></span>, </td>
+          <td class="paramtype">const char *</td>          <td class="paramname"><span class="paramname"><em>bus_name</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">gpio_num_t</td>          <td class="paramname"><span class="paramname"><em>pin</em></span>, </td>
+          <td class="paramtype">uint8_t</td>          <td class="paramname"><span class="paramname"><em>pin_index</em></span>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">uint32_t *</td>          <td class="paramname"><span class="paramname"><em>level</em></span>&#160;)</td>
+          <td class="paramtype">uint8_t</td>          <td class="paramname"><span class="paramname"><em>value</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p>Read the input level of a GPIO pin via bus manager. </p>
-<p>Finds the bus configuration by name and calls its read operation.</p>
+<p>Write digital value to GPIO pin. </p>
 <dl class="params"><dt>Parameters</dt><dd>
   <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">manager</td><td>Pointer to the initialized bus manager. Must not be NULL. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">name</td><td>Name of the GPIO bus configuration. Must not be NULL. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">pin</td><td>GPIO pin number to read. </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">level</td><td>Pointer to store the read level (0 = low, 1 = high). Must not be NULL. </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">manager</td><td>Bus manager instance </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">bus_name</td><td>Name of GPIO bus </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">pin_index</td><td>Index into pin array (0-based) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">value</td><td>Value to write (0=LOW, non-zero=HIGH) </td></tr>
   </table>
   </dd>
 </dl>
-<dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success, ESP_ERR_INVALID_ARG if params invalid, ESP_ERR_NOT_FOUND if bus not found, ESP_ERR_INVALID_STATE if bus not initialized, or an error from the driver. </dd></dl>
+<dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00328">328</a> of file <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html">star_bus_gpio.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00050">50</a> of file <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html">star_bus_gpio.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00037">star_bus_config::gpio</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00033">k_star_bus_type_gpio</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00136">star_gpio_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00121">star_gpio_ops::read</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00378">star_bus_manager_find_bus()</a>, and <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00028">star_bus_config::type</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00061">star_bus_config::gpio</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00058">k_star_bus_type_gpio</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00151">star_gpio_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00199">star_bus_manager_find_bus()</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00052">star_bus_config::type</a>, and <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00136">star_gpio_ops::write_digital</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00664">star_bus_write_digital()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../da/d8b/star__bus__gpio_8c_a031b80f1dcaf775a18e3fc87dfed2f9b_cgraph.png" border="0" usemap="#ada/d8b/star__bus__gpio_8c_a031b80f1dcaf775a18e3fc87dfed2f9b_cgraph" loading="lazy" alt=""/></div>
-<map name="ada/d8b/star__bus__gpio_8c_a031b80f1dcaf775a18e3fc87dfed2f9b_cgraph" id="ada/d8b/star__bus__gpio_8c_a031b80f1dcaf775a18e3fc87dfed2f9b_cgraph">
-<area shape="rect" title="Read the input level of a GPIO pin via bus manager." alt="" coords="5,5,140,31"/>
-<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="188,5,372,31"/>
-<area shape="poly" title=" " alt="" coords="140,16,175,18,169,18,140,21"/>
-</map>
-</div>
-
-</div>
-</div>
-<a id="a0679661e113801bc35156c4f23304e70" name="a0679661e113801bc35156c4f23304e70"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a0679661e113801bc35156c4f23304e70">&#9670;&#160;</a></span>star_bus_gpio_set_interrupt()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">esp_err_t star_bus_gpio_set_interrupt </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a> *</td>          <td class="paramname"><span class="paramname"><em>manager</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const char *</td>          <td class="paramname"><span class="paramname"><em>name</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">gpio_num_t</td>          <td class="paramname"><span class="paramname"><em>pin</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">gpio_int_type_t</td>          <td class="paramname"><span class="paramname"><em>intr_type</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">gpio_isr_t</td>          <td class="paramname"><span class="paramname"><em>isr_handler</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">void *</td>          <td class="paramname"><span class="paramname"><em>args</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Configure GPIO interrupt for a pin via bus manager. </p>
-<p>Finds the bus configuration by name and calls its set_interrupt operation.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">manager</td><td>Pointer to the initialized bus manager. Must not be NULL. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">name</td><td>Name of the GPIO bus configuration. Must not be NULL. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">pin</td><td>GPIO pin number to configure interrupt for. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">intr_type</td><td>Interrupt type (rising edge, falling edge, etc.). </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">isr_handler</td><td>ISR handler function. Can be NULL to disable interrupt. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">args</td><td>Arguments to pass to ISR handler. Can be NULL. </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success, ESP_ERR_INVALID_ARG if params invalid, ESP_ERR_NOT_FOUND if bus not found, ESP_ERR_INVALID_STATE if bus not initialized, or an error from the driver. </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00353">353</a> of file <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html">star_bus_gpio.c</a>.</p>
-
-<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00037">star_bus_config::gpio</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00033">k_star_bus_type_gpio</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00136">star_gpio_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00122">star_gpio_ops::set_interrupt</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00378">star_bus_manager_find_bus()</a>, and <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00028">star_bus_config::type</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00041">star_sensor_hcsr04_init()</a>.</p>
-<div class="dynheader">
-Here is the call graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="../../da/d8b/star__bus__gpio_8c_a0679661e113801bc35156c4f23304e70_cgraph.png" border="0" usemap="#ada/d8b/star__bus__gpio_8c_a0679661e113801bc35156c4f23304e70_cgraph" loading="lazy" alt=""/></div>
-<map name="ada/d8b/star__bus__gpio_8c_a0679661e113801bc35156c4f23304e70_cgraph" id="ada/d8b/star__bus__gpio_8c_a0679661e113801bc35156c4f23304e70_cgraph">
-<area shape="rect" title="Configure GPIO interrupt for a pin via bus manager." alt="" coords="5,5,187,31"/>
-<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="235,5,419,31"/>
-<area shape="poly" title=" " alt="" coords="187,16,222,18,217,18,187,21"/>
+<div class="center"><img src="../../da/d8b/star__bus__gpio_8c_a50011c3e35b7fa2d6b8290207056894d_cgraph.png" border="0" usemap="#ada/d8b/star__bus__gpio_8c_a50011c3e35b7fa2d6b8290207056894d_cgraph" loading="lazy" alt=""/></div>
+<map name="ada/d8b/star__bus__gpio_8c_a50011c3e35b7fa2d6b8290207056894d_cgraph" id="ada/d8b/star__bus__gpio_8c_a50011c3e35b7fa2d6b8290207056894d_cgraph">
+<area shape="rect" title="Write digital value to GPIO pin." alt="" coords="5,5,143,46"/>
+<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="191,13,375,38"/>
+<area shape="poly" title=" " alt="" coords="143,23,178,25,173,26,143,28"/>
 </map>
 </div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../da/d8b/star__bus__gpio_8c_a0679661e113801bc35156c4f23304e70_icgraph.png" border="0" usemap="#ada/d8b/star__bus__gpio_8c_a0679661e113801bc35156c4f23304e70_icgraph" loading="lazy" alt=""/></div>
-<map name="ada/d8b/star__bus__gpio_8c_a0679661e113801bc35156c4f23304e70_icgraph" id="ada/d8b/star__bus__gpio_8c_a0679661e113801bc35156c4f23304e70_icgraph">
-<area shape="rect" title="Configure GPIO interrupt for a pin via bus manager." alt="" coords="884,5,1065,31"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#afd5878b21fda797877bd29036adcbd58" title="Initialize HC&#45;SR04 sensor." alt="" coords="677,5,836,31"/>
-<area shape="poly" title=" " alt="" coords="866,18,837,21,837,16,871,18"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afa22a6110eba0db527b95b8e2ce3a746" title=" " alt="" coords="488,5,629,31"/>
-<area shape="poly" title=" " alt="" coords="658,18,629,21,629,16,664,18"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="315,5,440,31"/>
-<area shape="poly" title=" " alt="" coords="470,18,441,21,441,16,475,18"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,5,267,31"/>
-<area shape="poly" title=" " alt="" coords="297,18,268,21,267,16,302,18"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
-<area shape="poly" title=" " alt="" coords="112,19,83,21,83,16,118,18"/>
-</map>
-</div>
-
-</div>
-</div>
-<a id="a7272db26c004de64a1586bc7311eabdb" name="a7272db26c004de64a1586bc7311eabdb"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a7272db26c004de64a1586bc7311eabdb">&#9670;&#160;</a></span>star_bus_gpio_write()</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">esp_err_t star_bus_gpio_write </td>
-          <td>(</td>
-          <td class="paramtype">const <a class="el" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a> *</td>          <td class="paramname"><span class="paramname"><em>manager</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const char *</td>          <td class="paramname"><span class="paramname"><em>name</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">gpio_num_t</td>          <td class="paramname"><span class="paramname"><em>pin</em></span>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">uint32_t</td>          <td class="paramname"><span class="paramname"><em>level</em></span>&#160;)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Set the output level of a GPIO pin via bus manager. </p>
-<p>Finds the bus configuration by name and calls its write operation.</p>
-<dl class="params"><dt>Parameters</dt><dd>
-  <table class="params">
-    <tr><td class="paramdir">[in]</td><td class="paramname">manager</td><td>Pointer to the initialized bus manager. Must not be NULL. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">name</td><td>Name of the GPIO bus configuration. Must not be NULL. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">pin</td><td>GPIO pin number to write. </td></tr>
-    <tr><td class="paramdir">[in]</td><td class="paramname">level</td><td>Level to set (0 = low, 1 = high). </td></tr>
-  </table>
-  </dd>
-</dl>
-<dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success, ESP_ERR_INVALID_ARG if params invalid, ESP_ERR_NOT_FOUND if bus not found, ESP_ERR_INVALID_STATE if bus not initialized, or an error from the driver. </dd></dl>
-
-<p class="definition">Definition at line <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00304">304</a> of file <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html">star_bus_gpio.c</a>.</p>
-
-<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00037">star_bus_config::gpio</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00033">k_star_bus_type_gpio</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00136">star_gpio_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00031">s_TAG</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00378">star_bus_manager_find_bus()</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00028">star_bus_config::type</a>, and <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00120">star_gpio_ops::write</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00041">star_sensor_hcsr04_init()</a>, and <a class="el" href="../../de/de2/star__sensor__hcsr04_8c_source.html#l00196">star_sensor_hcsr04_trigger()</a>.</p>
-<div class="dynheader">
-Here is the call graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="../../da/d8b/star__bus__gpio_8c_a7272db26c004de64a1586bc7311eabdb_cgraph.png" border="0" usemap="#ada/d8b/star__bus__gpio_8c_a7272db26c004de64a1586bc7311eabdb_cgraph" loading="lazy" alt=""/></div>
-<map name="ada/d8b/star__bus__gpio_8c_a7272db26c004de64a1586bc7311eabdb_cgraph" id="ada/d8b/star__bus__gpio_8c_a7272db26c004de64a1586bc7311eabdb_cgraph">
-<area shape="rect" title="Set the output level of a GPIO pin via bus manager." alt="" coords="5,5,143,31"/>
-<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="191,5,375,31"/>
-<area shape="poly" title=" " alt="" coords="143,16,178,18,173,18,143,21"/>
-</map>
-</div>
-<div class="dynheader">
-Here is the caller graph for this function:</div>
-<div class="dyncontent">
-<div class="center"><img src="../../da/d8b/star__bus__gpio_8c_a7272db26c004de64a1586bc7311eabdb_icgraph.png" border="0" usemap="#ada/d8b/star__bus__gpio_8c_a7272db26c004de64a1586bc7311eabdb_icgraph" loading="lazy" alt=""/></div>
-<map name="ada/d8b/star__bus__gpio_8c_a7272db26c004de64a1586bc7311eabdb_icgraph" id="ada/d8b/star__bus__gpio_8c_a7272db26c004de64a1586bc7311eabdb_icgraph">
-<area shape="rect" title="Set the output level of a GPIO pin via bus manager." alt="" coords="1288,35,1425,60"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#afd5878b21fda797877bd29036adcbd58" title="Initialize HC&#45;SR04 sensor." alt="" coords="1080,5,1240,31"/>
-<area shape="poly" title=" " alt="" coords="1270,35,1240,33,1240,27,1275,35"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a69a5f2fb8f4f0e300d199d3462d2c28f" title="Trigger measurement (non&#45;blocking)." alt="" coords="1092,55,1228,96"/>
-<area shape="poly" title=" " alt="" coords="1275,59,1228,69,1228,63,1269,60"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afa22a6110eba0db527b95b8e2ce3a746" title=" " alt="" coords="709,5,849,31"/>
-<area shape="poly" title=" " alt="" coords="1062,18,849,21,849,16,1067,18"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#ac5cd0136ae977ebd52643b0cc06671b4" title="Initialize sensor management task." alt="" coords="315,35,440,60"/>
-<area shape="poly" title=" " alt="" coords="690,25,441,46,440,40,696,24"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#ae44a49638133e59838e9ba464ba39296" title=" " alt="" coords="131,35,267,60"/>
-<area shape="poly" title=" " alt="" coords="297,48,268,50,267,45,302,47"/>
-<area shape="rect" href="../../d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,35,83,60"/>
-<area shape="poly" title=" " alt="" coords="113,49,83,50,83,45,117,46"/>
-<area shape="rect" href="../../de/de2/star__sensor__hcsr04_8c.html#a0d4ae739014a4258b50c3a8bc6e3be78" title="Trigger measurement and read distance." alt="" coords="897,55,1032,96"/>
-<area shape="poly" title=" " alt="" coords="1074,76,1033,78,1033,73,1079,75"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#a1ea224ad4e9ad60c90644c2688e8d946" title=" " alt="" coords="711,55,847,96"/>
-<area shape="poly" title=" " alt="" coords="879,76,847,78,847,73,884,75"/>
-<area shape="rect" href="../../de/dd4/sensor__task_8c.html#afde0408db6c60f5c886dc0dc13a88ed5" title=" " alt="" coords="488,60,661,86"/>
-<area shape="poly" title=" " alt="" coords="693,74,661,77,661,71,698,74"/>
-<area shape="poly" title=" " alt="" coords="470,60,441,58,441,53,476,60"/>
+<div class="center"><img src="../../da/d8b/star__bus__gpio_8c_a50011c3e35b7fa2d6b8290207056894d_icgraph.png" border="0" usemap="#ada/d8b/star__bus__gpio_8c_a50011c3e35b7fa2d6b8290207056894d_icgraph" loading="lazy" alt=""/></div>
+<map name="ada/d8b/star__bus__gpio_8c_a50011c3e35b7fa2d6b8290207056894d_icgraph" id="ada/d8b/star__bus__gpio_8c_a50011c3e35b7fa2d6b8290207056894d_icgraph">
+<area shape="rect" title="Write digital value to GPIO pin." alt="" coords="201,5,338,46"/>
+<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a858ce3f84b41cbf367b32e86b784c571" title="Write a digital value to a GPIO bus pin (unified interface)." alt="" coords="5,13,153,38"/>
+<area shape="poly" title=" " alt="" coords="182,26,153,28,153,23,188,25"/>
 </map>
 </div>
 
@@ -868,7 +536,7 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00014">14</a> of file <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html">star_bus_gpio.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00026">26</a> of file <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html">star_bus_gpio.c</a>.</p>
 
 </div>
 </div>

@@ -1,4 +1,14 @@
-/* lib/star_drv8243/include/star_drv8243.h */
+/**
+ * @file star_drv8243.h
+ * @brief DRV8243 H-bridge motor driver integration API
+ * @details
+ * Provides an integration layer for the Texas Instruments DRV8243 H-bridge motor driver.
+ * Combines star_motor for PWM control with the bus manager for current sensing via ADC
+ * and fault detection via GPIO. Includes current limiting and comprehensive protection features.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #ifndef STAR_DRV8243_H
 #define STAR_DRV8243_H

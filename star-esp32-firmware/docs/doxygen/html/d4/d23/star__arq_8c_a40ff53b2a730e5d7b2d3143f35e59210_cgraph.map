@@ -1,0 +1,17 @@
+<map id="internal_wait_for_ack" name="internal_wait_for_ack">
+<area shape="rect" id="Node000001" title="Wait for ACK/NACK response with timeout." alt="" coords="5,120,150,145"/>
+<area shape="rect" id="Node000002" href="$d4/d34/star__bus__spi__peripheral_8c.html#a3ccbd2706237d383f19bab2320109c0b" title="Receive data from the SPI controller (this device acts as peripheral)." alt="" coords="198,63,356,103"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="131,116,184,105,180,108,134,121"/>
+<area shape="rect" id="Node000005" href="$d5/d3c/star__frame_8c.html#ae7dd1a69e54509b9f844d0ddc224b355" title="Parse and validate a received frame." alt="" coords="216,148,338,173"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="150,140,203,149,198,151,150,145"/>
+<area shape="rect" id="Node000003" href="$d4/d34/star__bus__spi__peripheral_8c.html#a3170d6b62a04e8ea00c269919ba7780f" title=" " alt="" coords="424,5,568,46"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="355,60,412,47,407,49,357,65"/>
+<area shape="rect" id="Node000004" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="404,70,588,96"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="356,80,391,82,386,84,357,86"/>
+<area shape="rect" id="Node000006" href="$d5/d3c/star__frame_8c.html#a7a4b94a4c8db8b735d3343594dc79d66" title="Read 16&#45;bit value from network byte order (big&#45;endian)." alt="" coords="424,120,568,145"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="338,150,411,143,406,144,339,155"/>
+<area shape="rect" id="Node000007" href="$d5/d3c/star__frame_8c.html#a137d95c3d3c4678dfd5dd0bd893a1b09" title="Read 32&#45;bit value from little&#45;endian format." alt="" coords="426,169,566,194"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="338,164,413,173,408,174,339,169"/>
+<area shape="rect" id="Node000008" href="$d5/d3c/star__frame_8c.html#affb4050f4ee5e749495b48eef0c0ba3e" title="Calculate CRC&#45;32 checksum (IEEE 802.3)." alt="" coords="435,218,557,244"/>
+<area shape="poly" id="edge7_Node000005_Node000008" title=" " alt="" coords="312,171,405,204,429,214,423,213,403,210,311,176"/>
+</map>

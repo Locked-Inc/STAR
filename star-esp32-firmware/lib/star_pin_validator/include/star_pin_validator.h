@@ -1,4 +1,15 @@
-/* lib/star_pin_validator/include/star_pin_validator.h */
+/**
+ * @file star_pin_validator.h
+ * @brief Concrete implementation of GPIO pin conflict detection and tracking
+ * @details
+ * This module implements star_pin_interface to track GPIO pin usage across the application
+ * and detect conflicts where multiple components try to use the same pin. Supports both
+ * exclusive pins and shared pins (like I2C bus lines used by multiple devices) with
+ * thread-safe registration and validation via FreeRTOS mutexes.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #ifndef STAR_PIN_VALIDATOR_H
 #define STAR_PIN_VALIDATOR_H
@@ -18,13 +29,6 @@ extern "C" {
 #endif
 
 /**
- * @file star_pin_validator.h
- * @brief GPIO pin conflict detection and tracking
- *
- * This module tracks GPIO pin usage across your application to detect conflicts
- * where multiple components try to use the same pin. It supports both exclusive
- * pins and shared pins (like I2C bus lines used by multiple devices).
- *
  * Key Features:
  * - Register pins with descriptions for tracking
  * - Detect conflicts between exclusive pins

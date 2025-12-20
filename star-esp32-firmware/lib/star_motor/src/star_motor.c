@@ -1,4 +1,14 @@
-/* lib/star_motor/src/star_motor.c */
+/**
+ * @file star_motor.c
+ * @brief Brushed DC motor control implementation using ESP32 MCPWM peripheral
+ * @details
+ * Implements H-bridge motor control using the ESP32 Motor Control PWM (MCPWM) peripheral.
+ * Supports bidirectional control, configurable PWM frequency, dead-time insertion, and
+ * fault detection for safe motor operation.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #include "star_motor.h"
 

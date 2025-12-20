@@ -1,4 +1,14 @@
-/* lib/star_pid/src/star_pid.c */
+/**
+ * @file star_pid.c
+ * @brief PID controller implementation for closed-loop motor control
+ * @details
+ * Implements a stateless PID (Proportional-Integral-Derivative) controller with anti-windup,
+ * derivative filtering, and configurable output limits. Designed for embedded systems with
+ * no dynamic memory allocation and tunable gains for velocity or position control.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #include "star_pid.h"
 

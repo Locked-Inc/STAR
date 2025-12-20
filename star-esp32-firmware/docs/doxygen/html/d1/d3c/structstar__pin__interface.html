@@ -111,8 +111,10 @@ Public Attributes</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Pin validator interface - abstract operations for pin management. </p>
-
-<p class="definition">Definition at line <a class="el" href="../../da/d58/star__pin__interface_8h_source.html#l00139">139</a> of file <a class="el" href="../../da/d58/star__pin__interface_8h_source.html">star_pin_interface.h</a>.</p>
+<p>It follows the Dependency Inversion Principle (DIP), allowing high-level components to depend on this abstract interface rather than concrete implementations.</p>
+<p>The concrete implementation is provided by <a class="el" href="../../d1/dda/star__pin__validator_8h.html" title="Concrete implementation of GPIO pin conflict detection and tracking.">star_pin_validator.h</a>.</p>
+<p>Example Usage: </p><div class="fragment"></div><!-- fragment --> 
+<p class="definition">Definition at line <a class="el" href="../../da/d58/star__pin__interface_8h_source.html#l00148">148</a> of file <a class="el" href="../../da/d58/star__pin__interface_8h_source.html">star_pin_interface.h</a>.</p>
 </div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
 <a id="a29849a773b0c4e32f0c5f92042dc618f" name="a29849a773b0c4e32f0c5f92042dc618f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a29849a773b0c4e32f0c5f92042dc618f">&#9670;&#160;</a></span>ctx</h2>
@@ -128,9 +130,9 @@ Public Attributes</h2></td></tr>
 
 <p>Implementation context (opaque pointer to actual validator). </p>
 
-<p class="definition">Definition at line <a class="el" href="../../da/d58/star__pin__interface_8h_source.html#l00169">169</a> of file <a class="el" href="../../da/d58/star__pin__interface_8h_source.html">star_pin_interface.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d58/star__pin__interface_8h_source.html#l00178">178</a> of file <a class="el" href="../../da/d58/star__pin__interface_8h_source.html">star_pin_interface.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00026">internal_register_bus_pin()</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00050">internal_unregister_bus_pin()</a>, and <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00498">pin_validator_get_interface()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00720">internal_register_bus_pin()</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00744">internal_unregister_bus_pin()</a>, and <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00463">pin_validator_get_interface()</a>.</p>
 
 </div>
 </div>
@@ -158,9 +160,9 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../da/d58/star__pin__interface_8h_source.html#l00148">148</a> of file <a class="el" href="../../da/d58/star__pin__interface_8h_source.html">star_pin_interface.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d58/star__pin__interface_8h_source.html#l00157">157</a> of file <a class="el" href="../../da/d58/star__pin__interface_8h_source.html">star_pin_interface.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00026">internal_register_bus_pin()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00498">pin_validator_get_interface()</a>, and <a class="el" href="../../d5/d95/star__core_8h_source.html#l00169">star_pin_interface_is_valid()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00720">internal_register_bus_pin()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00463">pin_validator_get_interface()</a>, and <a class="el" href="../../d5/d95/star__core_8h_source.html#l00176">star_pin_interface_is_valid()</a>.</p>
 
 </div>
 </div>
@@ -187,9 +189,9 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../da/d58/star__pin__interface_8h_source.html#l00157">157</a> of file <a class="el" href="../../da/d58/star__pin__interface_8h_source.html">star_pin_interface.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d58/star__pin__interface_8h_source.html#l00166">166</a> of file <a class="el" href="../../da/d58/star__pin__interface_8h_source.html">star_pin_interface.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00050">internal_unregister_bus_pin()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00498">pin_validator_get_interface()</a>, and <a class="el" href="../../d5/d95/star__core_8h_source.html#l00169">star_pin_interface_is_valid()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00744">internal_unregister_bus_pin()</a>, <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00463">pin_validator_get_interface()</a>, and <a class="el" href="../../d5/d95/star__core_8h_source.html#l00176">star_pin_interface_is_valid()</a>.</p>
 
 </div>
 </div>
@@ -214,9 +216,9 @@ Public Attributes</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK if no conflicts </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../da/d58/star__pin__interface_8h_source.html#l00164">164</a> of file <a class="el" href="../../da/d58/star__pin__interface_8h_source.html">star_pin_interface.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../da/d58/star__pin__interface_8h_source.html#l00173">173</a> of file <a class="el" href="../../da/d58/star__pin__interface_8h_source.html">star_pin_interface.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00498">pin_validator_get_interface()</a>, and <a class="el" href="../../d5/d95/star__core_8h_source.html#l00169">star_pin_interface_is_valid()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/dad/star__pin__validator_8c_source.html#l00463">pin_validator_get_interface()</a>, and <a class="el" href="../../d5/d95/star__core_8h_source.html#l00176">star_pin_interface_is_valid()</a>.</p>
 
 </div>
 </div>

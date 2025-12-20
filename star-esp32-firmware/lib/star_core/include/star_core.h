@@ -1,4 +1,15 @@
-/* lib/star_core/include/star_core.h */
+/**
+ * @file star_core.h
+ * @brief Unified header for STAR core abstract interfaces
+ * @details
+ * This header provides all interface definitions and validation utilities
+ * for the STAR firmware's dependency inversion system. Includes error
+ * handling and pin validation interfaces that form the foundation of
+ * the DIP architecture.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #ifndef STAR_CORE_H
 #define STAR_CORE_H
@@ -13,12 +24,6 @@ extern "C" {
 #endif
 
 /**
- * @file star_core.h
- * @brief Unified header for star_core interfaces
- *
- * This header provides all interface definitions and validation utilities
- * for the STAR firmware's dependency inversion system.
- *
  * Example Usage:
  * @code
  * // === Include All Core Interfaces ===

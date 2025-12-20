@@ -1,4 +1,13 @@
-/* lib/star_bus/src/star_bus_adc.c */
+/**
+ * @file star_bus_adc.c
+ * @brief ADC (Analog-to-Digital Converter) operations implementation
+ * @details
+ * Implements analog-to-digital conversion operations for ESP32 ADC units.
+ * Supports configurable bit width, attenuation levels, and channel selection.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #include "star_bus_adc.h"
 

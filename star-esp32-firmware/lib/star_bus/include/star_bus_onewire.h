@@ -96,6 +96,27 @@ typedef enum {
   k_star_onewire_cmd_alarm_search = 0xEC, /**< Alarm search */
 } star_onewire_cmd_t;
 
+/* --- Configuration Constants --- */
+
+/**
+ * @brief Timing parameters for 1-Wire standard speed (microseconds)
+ *
+ * These values define the critical timing requirements for 1-Wire
+ * communication at standard speed. Values are based on the Dallas/Maxim
+ * 1-Wire specification.
+ */
+typedef enum {
+  k_timing_reset_pulse     = 480, /**< Reset pulse duration (us) */
+  k_timing_presence_wait   = 70,  /**< Wait before sampling presence (us) */
+  k_timing_presence_sample = 410, /**< Presence pulse sample time (us) */
+  k_timing_write_0_low     = 60,  /**< Write 0 low pulse duration (us) */
+  k_timing_write_1_low     = 6,   /**< Write 1 low pulse duration (us) */
+  k_timing_write_recovery  = 10,  /**< Recovery time after write (us) */
+  k_timing_read_low        = 6,   /**< Read initiation low pulse (us) */
+  k_timing_read_sample     = 9,   /**< Read sample time after low (us) */
+  k_timing_read_recovery   = 55,  /**< Recovery time after read (us) */
+} onewire_timing_config_t;
+
 /* --- Types --- */
 
 /**

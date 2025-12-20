@@ -1,5 +1,5 @@
 <map id="lib/star_pin_validator/include/star_pin_validator.h" name="lib/star_pin_validator/include/star_pin_validator.h">
-<area shape="rect" id="Node000001" title="GPIO pin conflict detection and tracking." alt="" coords="292,5,475,46"/>
+<area shape="rect" id="Node000001" title="Concrete implementation of GPIO pin conflict detection and tracking." alt="" coords="292,5,475,46"/>
 <area shape="rect" id="Node000002" title=" " alt="" coords="5,94,149,120"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="306,49,140,92,138,87,308,44"/>
 <area shape="rect" id="Node000003" title=" " alt="" coords="173,94,296,120"/>
@@ -12,7 +12,7 @@
 <area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="475,37,528,57,551,73,571,92,579,106,584,122,585,154,581,151,579,123,574,108,567,96,548,77,525,62,475,42"/>
 <area shape="rect" id="Node000007" title=" " alt="" coords="632,94,746,120"/>
 <area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="460,44,630,89,625,90,460,49"/>
-<area shape="rect" id="Node000008" href="$da/d58/star__pin__interface_8h.html" title="Pin validator interface for dependency inversion." alt="" coords="421,94,557,120"/>
+<area shape="rect" id="Node000008" href="$da/d58/star__pin__interface_8h.html" title="Abstract pin validator interface for dependency inversion." alt="" coords="421,94,557,120"/>
 <area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="410,44,463,84,458,84,409,49"/>
 <area shape="poly" id="edge8_Node000008_Node000004" title=" " alt="" coords="470,120,399,162,397,157,465,121"/>
 <area shape="poly" id="edge9_Node000008_Node000005" title=" " alt="" coords="488,118,481,154,477,150,484,122"/>

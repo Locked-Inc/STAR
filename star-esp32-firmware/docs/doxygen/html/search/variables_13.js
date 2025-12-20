@@ -1,8 +1,20 @@
 var searchData=
 [
-  ['valid_5fcells_0',['valid_cells',['../d2/dde/structbq7850__cell__data__t.html#a9c557e5d2e9e2585deac05b63dbb1efd',1,'bq7850_cell_data_t']]],
-  ['valid_5fsensors_1',['valid_sensors',['../df/d6a/structbq7850__temp__data__t.html#af0db22d14ca600f211c40ec4e72e3e70',1,'bq7850_temp_data_t']]],
-  ['validate_2',['validate',['../d1/d3c/structstar__pin__interface.html#aa8ef6b06f5d40f8e1ae177527e1ddbec',1,'star_pin_interface']]],
-  ['value_3',['value',['../d7/dbd/structhsv__color__t.html#a8222a8bee8e8db37aefe9fe1a0d19842',1,'hsv_color_t']]],
-  ['voltage_5fmv_4',['voltage_mv',['../d2/d17/structbq7850__current__data__t.html#afed33046def3e4a7dc505eb20024b560',1,'bq7850_current_data_t']]]
+  ['undertemp_5fc_0',['undertemp_c',['../d6/d0d/structbq7850__protection__t.html#ae38364c662f2106d1135f8a5b6eba2a1',1,'bq7850_protection_t']]],
+  ['undertemp_5fcharge_1',['undertemp_charge',['../d7/dfe/struct__star__v1___safety_faults.html#a01bc82d2b768cca1e5774d358086d7a3',1,'_star_v1_SafetyFaults']]],
+  ['undertemp_5fdeci_5fcelsius_2',['undertemp_deci_celsius',['../db/dd0/struct__star__v1___protection_thresholds.html#a68e03814096c604e1be27e2a493e6a57',1,'_star_v1_ProtectionThresholds']]],
+  ['undertemp_5fdischarge_3',['undertemp_discharge',['../d7/dfe/struct__star__v1___safety_faults.html#a49435187c1b151b67f1269f244c433bb',1,'_star_v1_SafetyFaults']]],
+  ['undervoltage_5fmv_4',['undervoltage_mv',['../d6/d0d/structbq7850__protection__t.html#a1d6e2031534ec83d60e9366405d90a2b',1,'bq7850_protection_t::undervoltage_mv'],['../db/dd0/struct__star__v1___protection_thresholds.html#a3b2eea5bfb4de2b16299f71724729888',1,'_star_v1_ProtectionThresholds::undervoltage_mv']]],
+  ['unit_5',['unit',['../dc/de0/structstar__adc__bus__config.html#a02c1c24fcb129b357ad6349919998e14',1,'star_adc_bus_config']]],
+  ['unit_5fhandle_6',['unit_handle',['../dc/de0/structstar__adc__bus__config.html#a8ad8c650a70f7d35bf29bc4d627522ed',1,'star_adc_bus_config::unit_handle'],['../d9/db2/structstar__encoder__handle__t.html#affe0346a54eb58a1d1daf176a2a8a078',1,'star_encoder_handle_t::unit_handle']]],
+  ['unregister_5fpin_7',['unregister_pin',['../d1/d3c/structstar__pin__interface.html#a6b7c73a1eb066ee73c07d9841e13d82f',1,'star_pin_interface']]],
+  ['update_5finterval_5fms_8',['update_interval_ms',['../df/d28/struct__star__v1___stream_update_progress_request.html#a2f70a9c1ec05dc122168031c34de3c3b',1,'_star_v1_StreamUpdateProgressRequest']]],
+  ['uptime_5fs_9',['uptime_s',['../d2/dac/struct__star__v1___system_status.html#aefcc1daba98950720b3a8570834f5d1c',1,'_star_v1_SystemStatus']]],
+  ['usage_5fcount_10',['usage_count',['../d4/dd5/structstar__pin__info__t.html#a76f03f1f2a03f62334bea71f26c4f9cd',1,'star_pin_info_t']]],
+  ['use_5fparasitic_5fpower_11',['use_parasitic_power',['../df/db2/structstar__onewire__config__t.html#ada28287f5b6a7f658e961857b4c3a593',1,'star_onewire_config_t::use_parasitic_power'],['../db/dd6/structstar__onewire__bus__config.html#a69a7977c5e369606c317ebd877596f24',1,'star_onewire_bus_config::use_parasitic_power']]],
+  ['use_5from_12',['use_rom',['../dc/d3b/structstar__ds18b20__config__t.html#a2003ae900d81c97518021f73a0ee9283',1,'star_ds18b20_config_t::use_rom'],['../d0/d97/structstar__ds18b20__handle__t.html#a56b6db0033327f0e8d4de515cfcee2a4',1,'star_ds18b20_handle_t::use_rom']]],
+  ['use_5fstrong_5fpullup_13',['use_strong_pullup',['../df/db2/structstar__onewire__config__t.html#a6cdcea967ce96a2060f62fdfdfbbd881',1,'star_onewire_config_t::use_strong_pullup'],['../db/dd6/structstar__onewire__bus__config.html#a34573a794ca0f4cf2bfe2569896f047f',1,'star_onewire_bus_config::use_strong_pullup']]],
+  ['user_5fcontext_14',['user_context',['../d7/d4a/structdma__transfer__context__t.html#a36cc1da2ffdf9c113510d1118d2a4561',1,'dma_transfer_context_t::user_context'],['../d3/d7b/structspi__dma__transfer__context__t.html#a4ef32f4018ac97091f970cd433e6730a',1,'spi_dma_transfer_context_t::user_context']]],
+  ['user_5fctx_15',['user_ctx',['../d2/d8d/structstar__bus__config.html#a08cf4e550e073e56cfe12b2a8378d91d',1,'star_bus_config']]],
+  ['users_16',['users',['../d4/dd5/structstar__pin__info__t.html#a9fb2dc694f7c7abb0a6f1d6b9bd5867a',1,'star_pin_info_t']]]
 ];

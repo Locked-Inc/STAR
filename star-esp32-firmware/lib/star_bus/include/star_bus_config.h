@@ -1,4 +1,14 @@
-/* lib/star_bus/include/star_bus_config.h */
+/**
+ * @file star_bus_config.h
+ * @brief Bus configuration creation and lifecycle management API
+ * @details
+ * Defines factory functions for creating bus configuration structures for all supported
+ * protocols (I2C, SPI, UART, GPIO, ADC, 1-Wire). Configurations are heap-allocated and
+ * must be destroyed using star_bus_config_destroy() to prevent memory leaks.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #ifndef STAR_COMPONENT_BUS_CONFIG_H
 #define STAR_COMPONENT_BUS_CONFIG_H
@@ -15,9 +25,6 @@ extern "C" {
 #include "star_bus_types.h"
 
 /**
- * @file star_bus_config.h
- * @brief Bus configuration creation and lifecycle management
- *
  * This module provides factory functions for creating bus configurations for
  * different protocols (I2C, SPI, GPIO, DHT22). Each configuration represents
  * a communication channel that can be added to the bus manager.

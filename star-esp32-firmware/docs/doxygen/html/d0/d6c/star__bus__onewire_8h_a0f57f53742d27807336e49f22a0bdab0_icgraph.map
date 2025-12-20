@@ -1,0 +1,9 @@
+<map id="star_bus_onewire_read_rom" name="star_bus_onewire_read_rom">
+<area shape="rect" id="Node000001" title="Read ROM from single device on bus." alt="" coords="541,13,726,38"/>
+<area shape="rect" id="Node000002" href="$d5/dca/star__sensor__ds18b20_8c.html#a5e9c15794ea1f45b6f2ee6e8b98231d0" title="Read DS18B20 ROM code (64&#45;bit unique ID)." alt="" coords="348,5,493,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="523,26,494,28,493,23,529,26"/>
+<area shape="rect" id="Node000003" href="$d5/dca/star__sensor__ds18b20_8c.html#ad683fbe17df477928affa017ab1d4c8f" title="Initialize DS18B20 temperature sensor." alt="" coords="131,13,300,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="330,26,301,28,301,23,335,26"/>
+<area shape="rect" id="Node000004" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,13,83,38"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="113,26,83,28,83,23,118,25"/>
+</map>

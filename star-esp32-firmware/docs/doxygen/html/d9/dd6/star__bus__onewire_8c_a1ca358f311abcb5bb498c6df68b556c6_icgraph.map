@@ -1,44 +1,98 @@
 <map id="internal_init_onewire_mutex" name="internal_init_onewire_mutex">
-<area shape="rect" id="Node000001" title="Initialize 1&#45;Wire global mutex (thread&#45;safe)." alt="" coords="1109,290,1248,330"/>
-<area shape="rect" id="Node000002" href="$d9/dd6/star__bus__onewire_8c.html#ae2fccd2ccf0204c4ae5e4ae370719b9a" title="Get 1&#45;Wire state for a bus (thread&#45;safe)." alt="" coords="921,290,1061,330"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1091,311,1062,313,1061,308,1096,310"/>
-<area shape="rect" id="Node000003" href="$d9/dd6/star__bus__onewire_8c.html#a29d4d6f395cdbf4ba5757cbcc183c13c" title="Deinitialize 1&#45;Wire bus." alt="" coords="702,5,864,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="981,273,969,224,948,162,916,99,895,70,871,46,854,34,854,29,874,41,899,67,920,96,953,160,974,222,986,276"/>
-<area shape="rect" id="Node000004" href="$d9/dd6/star__bus__onewire_8c.html#a9211f99b84eec1a10c15acddf5a8c175" title="Get 1&#45;Wire bus statistics." alt="" coords="709,55,857,96"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="975,274,959,237,937,193,907,148,871,110,856,99,856,94,874,105,912,145,942,190,964,235,980,276"/>
-<area shape="rect" id="Node000005" href="$d9/dd6/star__bus__onewire_8c.html#a62f64f5066b1bf467cc7aec6786f41f4" title="Initialize 1&#45;Wire bus." alt="" coords="709,120,857,146"/>
-<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="967,276,927,221,901,192,871,167,836,149,836,144,874,163,905,188,931,218,973,277"/>
-<area shape="rect" id="Node000006" href="$d9/dd6/star__bus__onewire_8c.html#a7f17f7f63e9d28846b205cb077fba679" title="Read a single bit." alt="" coords="695,423,871,448"/>
-<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="963,341,922,381,874,414,848,425,847,420,871,409,919,376,958,343"/>
-<area shape="rect" id="Node000007" href="$d9/dd6/star__bus__onewire_8c.html#a9bdfb58e3d3e35760925323e30879968" title="Read a byte." alt="" coords="456,473,644,499"/>
-<area shape="poly" id="edge11_Node000002_Node000007" title=" " alt="" coords="976,343,959,375,936,408,908,439,874,463,818,486,758,498,699,502,644,501,644,495,698,497,757,493,816,481,871,458,904,435,932,405,955,373,972,346"/>
-<area shape="rect" id="Node000009" href="$d9/dd6/star__bus__onewire_8c.html#a585e54933529b5a71ee8f22332692285" title="Read ROM from single device on bus." alt="" coords="5,308,190,334"/>
-<area shape="poly" id="edge12_Node000002_Node000009" title=" " alt="" coords="941,282,909,267,872,253,696,200,622,180,553,167,484,162,412,167,331,183,239,211,198,231,162,258,112,309,108,306,159,254,195,227,237,206,330,178,411,162,484,157,554,162,623,175,697,194,874,248,911,262,947,282"/>
-<area shape="rect" id="Node000010" href="$d9/dd6/star__bus__onewire_8c.html#a9e824a2a3393b3059ede24129d9f59f7" title="Search for all devices on the bus." alt="" coords="238,387,407,412"/>
-<area shape="poly" id="edge18_Node000002_Node000010" title=" " alt="" coords="982,343,968,385,946,430,915,473,896,492,874,507,836,523,786,534,727,542,665,545,602,544,543,538,492,528,454,514,435,498,427,479,420,460,405,441,384,427,362,416,362,410,387,422,409,438,424,458,432,477,439,495,456,509,494,523,544,533,602,538,664,540,727,536,785,529,834,518,871,502,892,488,911,470,941,428,963,383,978,347"/>
-<area shape="rect" id="Node000012" href="$d9/dd6/star__bus__onewire_8c.html#ac79d607f6cdbfc963260a2220dacfc19" title="Send reset pulse and detect device presence." alt="" coords="470,272,630,298"/>
-<area shape="poly" id="edge13_Node000002_Node000012" title=" " alt="" coords="903,306,630,292,630,287,908,304"/>
-<area shape="rect" id="Node000013" href="$d9/dd6/star__bus__onewire_8c.html#adee9b5236bf808b50ec63f3bec1eb695" title="Write multiple bytes." alt="" coords="243,220,402,261"/>
-<area shape="poly" id="edge26_Node000002_Node000013" title=" " alt="" coords="903,287,872,282,744,264,615,253,402,244,402,239,615,248,744,259,873,277,908,286"/>
-<area shape="rect" id="Node000014" href="$d9/dd6/star__bus__onewire_8c.html#a5646a2914ef651c0de92d49ef1edc38d" title="Reset 1&#45;Wire bus statistics." alt="" coords="703,574,863,614"/>
-<area shape="poly" id="edge17_Node000002_Node000014" title=" " alt="" coords="983,344,969,393,947,449,916,506,874,557,848,576,846,571,871,554,911,503,942,447,964,391,979,347"/>
-<area shape="rect" id="Node000015" href="$d9/dd6/star__bus__onewire_8c.html#a68eda1de47f3c405ce2f5819d72f1f9e" title="Write a single bit." alt="" coords="693,373,873,399"/>
-<area shape="poly" id="edge19_Node000002_Node000015" title=" " alt="" coords="923,336,874,357,823,375,821,370,872,352,918,337"/>
-<area shape="rect" id="Node000016" href="$d9/dd6/star__bus__onewire_8c.html#ae88febdda5fbab30605093333a32d45c" title="Write a byte." alt="" coords="455,321,645,347"/>
-<area shape="poly" id="edge25_Node000002_Node000016" title=" " alt="" coords="902,316,646,332,645,326,907,314"/>
-<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="703,453,613,475,612,470,708,452"/>
-<area shape="poly" id="edge9_Node000006_Node000010" title=" " alt="" coords="677,429,408,409,407,403,682,426"/>
-<area shape="rect" id="Node000008" href="$d9/dd6/star__bus__onewire_8c.html#a5ba505f020f3b1de4f6ed6a4becc6108" title="Read multiple bytes." alt="" coords="245,451,400,492"/>
-<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="438,480,401,479,400,474,443,479"/>
-<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="261,443,236,427,221,412,212,397,202,384,188,370,160,351,133,337,132,332,163,346,191,365,207,381,216,395,225,408,239,423,266,443"/>
-<area shape="rect" id="Node000011" href="$d9/dd6/star__bus__onewire_8c.html#a77482610444b896ddb6f74aa04b44b1c" title="Search for devices with active alarms." alt="" coords="13,379,182,420"/>
-<area shape="poly" id="edge10_Node000010_Node000011" title=" " alt="" coords="219,401,183,402,182,397,224,398"/>
-<area shape="poly" id="edge14_Node000012_Node000009" title=" " alt="" coords="453,295,191,316,189,311,456,290"/>
-<area shape="poly" id="edge15_Node000012_Node000010" title=" " alt="" coords="467,304,456,311,390,350,341,388,338,384,387,346,454,306,472,302"/>
-<area shape="poly" id="edge16_Node000012_Node000013" title=" " alt="" coords="463,269,402,259,401,253,468,268"/>
-<area shape="poly" id="edge20_Node000015_Node000010" title=" " alt="" coords="676,391,408,400,407,394,680,388"/>
-<area shape="poly" id="edge21_Node000015_Node000016" title=" " alt="" coords="705,370,611,350,611,345,710,369"/>
-<area shape="poly" id="edge22_Node000016_Node000009" title=" " alt="" coords="438,333,190,326,189,321,441,329"/>
-<area shape="poly" id="edge23_Node000016_Node000010" title=" " alt="" coords="486,353,371,389,369,384,490,351"/>
-<area shape="poly" id="edge24_Node000016_Node000013" title=" " alt="" coords="470,317,454,313,402,289,358,264,358,259,404,284,456,308,476,316"/>
+<area shape="rect" id="Node000001" title="Initialize 1&#45;Wire global mutex (thread&#45;safe)." alt="" coords="2550,427,2690,468"/>
+<area shape="rect" id="Node000002" href="$d9/dd6/star__bus__onewire_8c.html#ae2fccd2ccf0204c4ae5e4ae370719b9a" title="Get 1&#45;Wire state for a bus (thread&#45;safe)." alt="" coords="2362,427,2502,468"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="2532,448,2503,450,2502,445,2537,447"/>
+<area shape="rect" id="Node000003" href="$d9/dd6/star__bus__onewire_8c.html#a29d4d6f395cdbf4ba5757cbcc183c13c" title="Deinitialize 1&#45;Wire bus." alt="" coords="2144,29,2305,55"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="2428,410,2422,340,2405,248,2390,199,2370,152,2345,108,2312,69,2297,58,2298,53,2316,66,2349,105,2375,150,2395,198,2410,247,2428,339,2433,413"/>
+<area shape="rect" id="Node000008" href="$d9/dd6/star__bus__onewire_8c.html#a9211f99b84eec1a10c15acddf5a8c175" title="Get 1&#45;Wire bus statistics." alt="" coords="2150,79,2298,120"/>
+<area shape="poly" id="edge7_Node000002_Node000008" title=" " alt="" coords="2425,410,2415,352,2395,277,2380,239,2362,201,2339,165,2312,133,2298,122,2299,117,2316,130,2343,162,2366,198,2385,236,2400,276,2420,351,2430,413"/>
+<area shape="rect" id="Node000009" href="$d9/dd6/star__bus__onewire_8c.html#a62f64f5066b1bf467cc7aec6786f41f4" title="Initialize 1&#45;Wire bus." alt="" coords="2151,144,2298,170"/>
+<area shape="poly" id="edge8_Node000002_Node000009" title=" " alt="" coords="2422,411,2408,363,2387,304,2355,243,2335,216,2312,191,2283,173,2284,168,2316,187,2339,212,2360,241,2392,302,2414,362,2426,413"/>
+<area shape="rect" id="Node000013" href="$d9/dd6/star__bus__onewire_8c.html#a7f17f7f63e9d28846b205cb077fba679" title="Read a single bit." alt="" coords="2136,409,2312,435"/>
+<area shape="poly" id="edge12_Node000002_Node000013" title=" " alt="" coords="2344,437,2313,436,2313,430,2349,437"/>
+<area shape="rect" id="Node000014" href="$d9/dd6/star__bus__onewire_8c.html#a9bdfb58e3d3e35760925323e30879968" title="Read a byte." alt="" coords="1898,359,2085,384"/>
+<area shape="poly" id="edge28_Node000002_Node000014" title=" " alt="" coords="2375,420,2313,399,2255,388,2196,380,2086,373,2085,368,2196,375,2256,382,2315,394,2380,420"/>
+<area shape="rect" id="Node000022" href="$d9/dd6/star__bus__onewire_8c.html#a0f57f53742d27807336e49f22a0bdab0" title="Read ROM from single device on bus." alt="" coords="1410,295,1594,320"/>
+<area shape="poly" id="edge29_Node000002_Node000022" title=" " alt="" coords="2392,417,2356,393,2313,369,2188,317,2087,287,1983,268,1848,251,1750,241,1708,243,1654,251,1586,272,1530,296,1528,292,1584,267,1652,246,1707,238,1750,236,1849,246,1984,263,2088,282,2190,312,2315,364,2359,388,2398,418"/>
+<area shape="rect" id="Node000025" href="$d9/dd6/star__bus__onewire_8c.html#a9e824a2a3393b3059ede24129d9f59f7" title="Search for all devices on the bus." alt="" coords="1666,612,1835,638"/>
+<area shape="poly" id="edge41_Node000002_Node000025" title=" " alt="" coords="2405,479,2364,519,2315,551,2254,577,2190,597,2125,612,2060,622,1937,632,1836,632,1836,627,1937,627,2059,617,2124,607,2189,592,2253,572,2313,546,2361,514,2400,481"/>
+<area shape="rect" id="Node000027" href="$d9/dd6/star__bus__onewire_8c.html#ac79d607f6cdbfc963260a2220dacfc19" title="Send reset pulse and detect device presence." alt="" coords="1912,727,2071,752"/>
+<area shape="poly" id="edge30_Node000002_Node000027" title=" " alt="" coords="2427,481,2415,533,2394,591,2361,649,2340,674,2316,696,2288,714,2257,727,2193,744,2129,751,2072,751,2071,745,2129,746,2192,739,2256,722,2285,709,2312,692,2336,671,2357,646,2389,589,2410,531,2423,485"/>
+<area shape="rect" id="Node000031" href="$d9/dd6/star__bus__onewire_8c.html#adee9b5236bf808b50ec63f3bec1eb695" title="Write multiple bytes." alt="" coords="1672,662,1830,702"/>
+<area shape="poly" id="edge59_Node000002_Node000031" title=" " alt="" coords="2419,480,2403,516,2380,552,2351,587,2315,615,2255,645,2191,667,2125,683,2058,693,1933,699,1830,694,1830,689,1933,693,2058,687,2124,678,2190,662,2253,640,2313,611,2347,583,2376,549,2398,513,2415,483"/>
+<area shape="rect" id="Node000032" href="$d9/dd6/star__bus__onewire_8c.html#a5646a2914ef651c0de92d49ef1edc38d" title="Reset 1&#45;Wire bus statistics." alt="" coords="2145,763,2304,804"/>
+<area shape="poly" id="edge40_Node000002_Node000032" title=" " alt="" coords="2428,482,2417,540,2396,610,2363,682,2341,716,2316,747,2291,765,2289,760,2312,743,2337,713,2358,680,2391,608,2411,539,2424,485"/>
+<area shape="rect" id="Node000033" href="$d9/dd6/star__bus__onewire_8c.html#a68eda1de47f3c405ce2f5819d72f1f9e" title="Write a single bit." alt="" coords="2135,511,2314,536"/>
+<area shape="poly" id="edge42_Node000002_Node000033" title=" " alt="" coords="2364,473,2315,494,2264,513,2262,507,2313,489,2359,474"/>
+<area shape="rect" id="Node000034" href="$d9/dd6/star__bus__onewire_8c.html#ae88febdda5fbab30605093333a32d45c" title="Write a byte." alt="" coords="1896,460,2087,486"/>
+<area shape="poly" id="edge58_Node000002_Node000034" title=" " alt="" coords="2343,453,2087,470,2087,465,2349,452"/>
+<area shape="rect" id="Node000004" href="$de/d98/star__bus__config_8c.html#a7698bd213b1044dfc1d6e92d879ca03e" title="Deinitialize the bus/device associated with this configuration." alt="" coords="1916,29,2067,55"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="2125,43,2068,45,2067,40,2131,42"/>
+<area shape="rect" id="Node000005" href="$de/d98/star__bus__config_8c.html#a194581e2eb82227a022f04b9057db839" title="Destroy a bus configuration and free all associated resources." alt="" coords="1669,29,1832,55"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="1898,43,1833,45,1832,40,1903,42"/>
+<area shape="rect" id="Node000006" href="$d7/d60/star__bus__manager_8c.html#a238abc1b4d0e4b98520e4227ec121b42" title="Deinitialize the bus manager and all managed I2C bus configurations." alt="" coords="1419,55,1585,80"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="1651,53,1586,62,1585,56,1656,51"/>
+<area shape="rect" id="Node000007" href="$d7/d60/star__bus__manager_8c.html#aa440431606d8a33fb394b4225db51f93" title="Remove an I2C bus configuration from the manager and destroy it." alt="" coords="1399,5,1605,31"/>
+<area shape="poly" id="edge6_Node000005_Node000007" title=" " alt="" coords="1651,33,1606,31,1605,26,1656,32"/>
+<area shape="rect" id="Node000010" href="$de/d98/star__bus__config_8c.html#aab1f2b4c0cdc21f5d37c1a376cb2a672" title="Initialize the bus/device associated with this configuration." alt="" coords="1923,144,2060,170"/>
+<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="2132,157,2061,159,2060,154,2138,156"/>
+<area shape="rect" id="Node000011" href="$d7/d60/star__bus__manager_8c.html#a3a0dc80007e321a8697c399e0f0bf559" title="Add a new I2C bus/device configuration to the manager." alt="" coords="747,155,931,180"/>
+<area shape="poly" id="edge10_Node000010_Node000011" title=" " alt="" coords="1905,158,1503,160,1272,159,932,167,931,161,1272,154,1503,154,1910,156"/>
+<area shape="rect" id="Node000012" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,323,83,348"/>
+<area shape="poly" id="edge11_Node000011_Node000012" title=" " alt="" coords="758,187,131,319,85,329,81,325,130,314,759,181"/>
+<area shape="poly" id="edge13_Node000013_Node000014" title=" " alt="" coords="2144,406,2054,388,2054,382,2150,405"/>
+<area shape="poly" id="edge26_Node000013_Node000025" title=" " alt="" coords="2192,443,2143,474,2088,501,2034,518,1991,526,1948,536,1898,556,1874,575,1850,595,1805,614,1803,609,1847,591,1871,571,1895,552,1947,530,1990,521,2033,513,2086,496,2140,469,2187,445"/>
+<area shape="rect" id="Node000015" href="$d9/dd6/star__bus__onewire_8c.html#a5ba505f020f3b1de4f6ed6a4becc6108" title="Read multiple bytes." alt="" coords="1673,295,1828,336"/>
+<area shape="poly" id="edge14_Node000014_Node000015" title=" " alt="" coords="1916,355,1829,336,1829,331,1921,354"/>
+<area shape="rect" id="Node000016" href="$d5/dca/star__sensor__ds18b20_8c.html#a5b9ba2fa22f18898a73b8d44c5e79cf7" title=" " alt="" coords="1198,467,1349,508"/>
+<area shape="poly" id="edge15_Node000015_Node000016" title=" " alt="" coords="1665,342,1542,386,1400,437,1322,469,1320,464,1398,432,1540,381,1670,340"/>
+<area shape="poly" id="edge22_Node000015_Node000022" title=" " alt="" coords="1655,313,1595,313,1594,308,1660,312"/>
+<area shape="rect" id="Node000017" href="$d5/dca/star__sensor__ds18b20_8c.html#ad2b3f0265583c562b9a481bc17a34b78" title="Read temperature from DS18B20 sensor." alt="" coords="991,467,1136,508"/>
+<area shape="poly" id="edge16_Node000016_Node000017" title=" " alt="" coords="1180,488,1137,490,1136,485,1185,487"/>
+<area shape="rect" id="Node000018" href="$dd/d6f/telemetry__task_8c.html#a4ed3c7ef431e86500b5b13ff66dcd2df" title=" " alt="" coords="754,404,924,445"/>
+<area shape="poly" id="edge17_Node000017_Node000018" title=" " alt="" coords="974,464,915,448,914,443,979,463"/>
+<area shape="rect" id="Node000019" href="$dd/d6f/telemetry__task_8c.html#a5f1c53af0b7c4392cd3e4e0f8edf7f85" title=" " alt="" coords="533,376,699,402"/>
+<area shape="poly" id="edge18_Node000018_Node000019" title=" " alt="" coords="736,409,700,405,699,400,741,408"/>
+<area shape="rect" id="Node000020" href="$dd/d6f/telemetry__task_8c.html#af6165a8452f2bd60402570e04a1047ae" title=" " alt="" coords="329,373,485,399"/>
+<area shape="poly" id="edge19_Node000019_Node000020" title=" " alt="" coords="516,389,487,390,485,385,520,386"/>
+<area shape="rect" id="Node000021" href="$dd/d6f/telemetry__task_8c.html#a8b71cb82beffbf0e20612ef2cdcf151a" title="Create and start the telemetry task." alt="" coords="131,373,281,399"/>
+<area shape="poly" id="edge20_Node000020_Node000021" title=" " alt="" coords="311,388,283,389,280,384,316,385"/>
+<area shape="poly" id="edge21_Node000021_Node000012" title=" " alt="" coords="146,370,84,350,82,345,150,367"/>
+<area shape="rect" id="Node000023" href="$d5/dca/star__sensor__ds18b20_8c.html#a5e9c15794ea1f45b6f2ee6e8b98231d0" title="Read DS18B20 ROM code (64&#45;bit unique ID)." alt="" coords="1201,300,1346,341"/>
+<area shape="poly" id="edge23_Node000022_Node000023" title=" " alt="" coords="1392,314,1347,319,1346,314,1397,313"/>
+<area shape="rect" id="Node000024" href="$d5/dca/star__sensor__ds18b20_8c.html#ad683fbe17df477928affa017ab1d4c8f" title="Initialize DS18B20 temperature sensor." alt="" coords="979,323,1148,348"/>
+<area shape="poly" id="edge24_Node000023_Node000024" title=" " alt="" coords="1183,328,1150,332,1148,327,1188,326"/>
+<area shape="poly" id="edge25_Node000024_Node000012" title=" " alt="" coords="961,337,617,338,406,338,84,338,82,333,406,333,617,333,966,334"/>
+<area shape="rect" id="Node000026" href="$d9/dd6/star__bus__onewire_8c.html#a77482610444b896ddb6f74aa04b44b1c" title="Search for devices with active alarms." alt="" coords="1417,611,1586,652"/>
+<area shape="poly" id="edge27_Node000025_Node000026" title=" " alt="" coords="1648,628,1587,632,1587,627,1653,627"/>
+<area shape="poly" id="edge31_Node000027_Node000016" title=" " alt="" coords="1957,759,1849,812,1778,838,1701,859,1620,871,1541,870,1502,863,1465,851,1430,834,1397,811,1370,779,1358,746,1358,713,1363,678,1369,643,1372,607,1367,570,1349,533,1325,511,1326,506,1353,530,1372,569,1378,607,1375,643,1368,679,1363,713,1363,745,1374,777,1400,807,1432,829,1467,846,1503,858,1541,865,1620,866,1700,854,1776,833,1847,808,1951,761"/>
+<area shape="poly" id="edge37_Node000027_Node000022" title=" " alt="" coords="1927,756,1861,768,1788,768,1751,763,1715,753,1681,738,1651,716,1624,684,1611,651,1608,619,1611,585,1619,514,1616,476,1603,435,1583,401,1560,369,1517,323,1518,318,1564,366,1588,398,1607,433,1621,475,1624,515,1616,586,1613,619,1616,650,1629,681,1655,712,1684,733,1717,748,1752,758,1788,763,1860,762,1922,756"/>
+<area shape="poly" id="edge38_Node000027_Node000025" title=" " alt="" coords="1958,716,1908,685,1847,653,1814,641,1815,636,1849,648,1911,681,1963,718"/>
+<area shape="rect" id="Node000028" href="$d5/dca/star__sensor__ds18b20_8c.html#afc896d8a1630c9572a8534212265b771" title=" " alt="" coords="1197,543,1350,584"/>
+<area shape="poly" id="edge32_Node000027_Node000028" title=" " alt="" coords="1973,763,1921,818,1887,843,1849,862,1723,907,1668,922,1616,929,1564,929,1512,918,1457,897,1397,862,1364,833,1337,799,1316,760,1301,720,1281,643,1275,587,1278,582,1286,642,1306,718,1321,758,1342,796,1368,830,1400,857,1459,892,1513,913,1565,924,1615,924,1667,916,1722,902,1847,857,1884,838,1918,814,1968,765"/>
+<area shape="rect" id="Node000029" href="$d5/dca/star__sensor__ds18b20_8c.html#a7590a7e4166137a0c32a07d12f7ca72f" title=" " alt="" coords="1196,382,1351,422"/>
+<area shape="poly" id="edge34_Node000027_Node000029" title=" " alt="" coords="1931,756,1849,774,1711,789,1651,792,1596,788,1544,775,1495,752,1446,716,1397,665,1379,638,1370,612,1368,587,1369,562,1369,511,1363,485,1348,457,1333,440,1315,426,1316,420,1337,436,1353,454,1368,483,1375,511,1374,562,1373,586,1376,611,1384,636,1401,662,1449,712,1497,748,1546,770,1597,782,1651,786,1710,784,1848,769,1925,757"/>
+<area shape="poly" id="edge39_Node000027_Node000031" title=" " alt="" coords="1917,722,1830,704,1831,698,1922,723"/>
+<area shape="poly" id="edge33_Node000028_Node000017" title=" " alt="" coords="1198,537,1122,511,1122,506,1203,537"/>
+<area shape="poly" id="edge35_Node000029_Node000024" title=" " alt="" coords="1190,377,1107,352,1107,346,1195,376"/>
+<area shape="rect" id="Node000030" href="$d5/dca/star__sensor__ds18b20_8c.html#ae8babbfc305a7b6dfaa7ffdebf53fdd0" title="Set DS18B20 temperature resolution." alt="" coords="991,382,1136,422"/>
+<area shape="poly" id="edge36_Node000029_Node000030" title=" " alt="" coords="1178,403,1137,405,1136,400,1184,402"/>
+<area shape="poly" id="edge43_Node000033_Node000025" title=" " alt="" coords="2148,540,1815,614,1814,609,2143,541"/>
+<area shape="poly" id="edge44_Node000033_Node000034" title=" " alt="" coords="2144,507,2054,489,2054,484,2150,507"/>
+<area shape="poly" id="edge45_Node000034_Node000016" title=" " alt="" coords="1911,490,1849,501,1722,509,1624,511,1399,501,1350,498,1349,492,1399,496,1624,505,1722,504,1848,496,1916,489"/>
+<area shape="poly" id="edge53_Node000034_Node000022" title=" " alt="" coords="1953,451,1923,429,1894,398,1884,382,1879,366,1874,336,1868,309,1860,297,1847,286,1808,267,1766,256,1722,254,1678,257,1597,275,1534,297,1533,292,1595,270,1678,252,1722,248,1767,251,1810,262,1850,281,1864,293,1873,307,1880,335,1884,364,1889,380,1898,395,1926,425,1958,452"/>
+<area shape="poly" id="edge54_Node000034_Node000025" title=" " alt="" coords="1918,491,1898,507,1882,528,1875,550,1868,572,1850,595,1816,614,1814,609,1847,591,1863,570,1870,548,1877,525,1895,503,1913,493"/>
+<area shape="poly" id="edge46_Node000034_Node000028" title=" " alt="" coords="1940,490,1849,517,1712,538,1575,552,1351,564,1350,559,1574,546,1711,532,1848,512,1935,491"/>
+<area shape="poly" id="edge47_Node000034_Node000029" title=" " alt="" coords="1957,451,1908,424,1878,411,1848,401,1781,387,1713,379,1576,375,1451,381,1352,392,1350,387,1451,376,1576,370,1713,374,1782,382,1849,396,1880,406,1910,419,1962,451"/>
+<area shape="poly" id="edge57_Node000034_Node000031" title=" " alt="" coords="1978,498,1928,575,1892,617,1850,652,1830,664,1828,659,1847,648,1888,613,1924,572,1974,501"/>
+<area shape="rect" id="Node000035" href="$d9/dd6/star__bus__onewire_8c.html#a2bcf9eed5cd94bb5aab94b47f5c9e183" title="Send MATCH ROM command to address a specific device." alt="" coords="1653,460,1848,486"/>
+<area shape="poly" id="edge48_Node000034_Node000035" title=" " alt="" coords="1878,473,1849,475,1848,470,1883,473"/>
+<area shape="rect" id="Node000037" href="$d9/dd6/star__bus__onewire_8c.html#a8514f88ab78bd0bc87dff818b0fbc6ff" title="Send SKIP ROM command to address all devices." alt="" coords="1659,411,1842,436"/>
+<area shape="poly" id="edge55_Node000034_Node000037" title=" " alt="" coords="1907,456,1817,440,1817,434,1913,456"/>
+<area shape="rect" id="Node000036" href="$d5/dca/star__sensor__ds18b20_8c.html#a3a5346d34dbc4c38fb0dd24e74558e05" title=" " alt="" coords="1425,446,1579,486"/>
+<area shape="poly" id="edge49_Node000035_Node000036" title=" " alt="" coords="1635,470,1580,471,1579,466,1640,469"/>
+<area shape="poly" id="edge50_Node000036_Node000016" title=" " alt="" coords="1407,475,1350,483,1349,478,1412,474"/>
+<area shape="poly" id="edge51_Node000036_Node000028" title=" " alt="" coords="1441,492,1324,545,1322,540,1436,494"/>
+<area shape="poly" id="edge52_Node000036_Node000029" title=" " alt="" coords="1410,441,1349,426,1348,420,1415,441"/>
+<area shape="poly" id="edge56_Node000037_Node000036" title=" " alt="" coords="1654,440,1580,456,1579,450,1659,439"/>
 </map>

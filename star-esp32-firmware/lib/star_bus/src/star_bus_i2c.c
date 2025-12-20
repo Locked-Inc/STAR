@@ -1,4 +1,13 @@
-/* lib/star_bus/src/star_bus_i2c.c */
+/**
+ * @file star_bus_i2c.c
+ * @brief I2C controller protocol implementation for the bus manager
+ * @details
+ * Implements I2C controller mode operations for ESP32-IDF. Supports both standard
+ * and DMA-based transfers with configurable clock speeds and timeout handling.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #include "star_bus_i2c.h"
 

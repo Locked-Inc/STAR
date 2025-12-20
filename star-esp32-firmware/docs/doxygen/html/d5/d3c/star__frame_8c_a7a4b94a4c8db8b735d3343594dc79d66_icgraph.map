@@ -1,0 +1,22 @@
+<map id="internal_read_u16_be" name="internal_read_u16_be">
+<area shape="rect" id="Node000001" title="Read 16&#45;bit value from network byte order (big&#45;endian)." alt="" coords="1492,41,1636,66"/>
+<area shape="rect" id="Node000002" href="$d5/d3c/star__frame_8c.html#ae7dd1a69e54509b9f844d0ddc224b355" title="Parse and validate a received frame." alt="" coords="1322,41,1444,66"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1474,54,1444,56,1444,51,1479,54"/>
+<area shape="rect" id="Node000003" href="$d4/d23/star__arq_8c.html#a40ff53b2a730e5d7b2d3143f35e59210" title="Wait for ACK/NACK response with timeout." alt="" coords="1129,14,1274,40"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="1303,42,1274,40,1274,35,1309,43"/>
+<area shape="rect" id="Node000010" href="$d4/d23/star__arq_8c.html#ac2b5bf1cb6311efe3e2a314793d2370c" title="Receive data with duplicate filtering." alt="" coords="964,69,1081,94"/>
+<area shape="poly" id="edge9_Node000002_Node000010" title=" " alt="" coords="1309,59,1082,80,1081,74,1303,60"/>
+<area shape="rect" id="Node000004" href="$d4/d23/star__arq_8c.html#a829a9c320b9fd82df86139f8a99a86ed" title="Send data with automatic retries (Stop&#45;and&#45;Wait)." alt="" coords="971,14,1074,40"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="1111,27,1075,30,1075,24,1117,27"/>
+<area shape="rect" id="Node000005" href="$dd/d6f/telemetry__task_8c.html#a4ed3c7ef431e86500b5b13ff66dcd2df" title=" " alt="" coords="747,5,916,46"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="953,27,917,29,916,24,958,26"/>
+<area shape="rect" id="Node000006" href="$dd/d6f/telemetry__task_8c.html#a5f1c53af0b7c4392cd3e4e0f8edf7f85" title=" " alt="" coords="533,42,699,68"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="734,39,699,46,699,41,729,40"/>
+<area shape="rect" id="Node000007" href="$dd/d6f/telemetry__task_8c.html#af6165a8452f2bd60402570e04a1047ae" title=" " alt="" coords="329,42,485,68"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="515,55,486,58,486,52,521,55"/>
+<area shape="rect" id="Node000008" href="$dd/d6f/telemetry__task_8c.html#a8b71cb82beffbf0e20612ef2cdcf151a" title="Create and start the telemetry task." alt="" coords="131,42,281,68"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="311,55,282,58,281,52,316,55"/>
+<area shape="rect" id="Node000009" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,42,83,68"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="112,56,83,58,83,52,117,54"/>
+<area shape="poly" id="edge10_Node000010_Node000006" title=" " alt="" coords="946,77,699,63,699,58,951,77"/>
+</map>

@@ -1,4 +1,14 @@
-/* lib/star_bus/include/star_bus_manager.h */
+/**
+ * @file star_bus_manager.h
+ * @brief Unified bus manager API for I2C, SPI, UART, GPIO, ADC, and 1-Wire protocols
+ * @details
+ * The bus manager provides a central registry for managing multiple bus configurations
+ * with thread-safe operations. Supports dependency injection of error handlers and pin
+ * validators for loose coupling following the Dependency Inversion Principle.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #ifndef STAR_COMPONENT_BUS_MANAGER_H
 #define STAR_COMPONENT_BUS_MANAGER_H
@@ -11,12 +21,6 @@ extern "C" {
 #include "star_bus_manager_types.h"
 
 /**
- * @file star_bus_manager.h
- * @brief Unified bus manager for I2C, SPI, GPIO, and other bus protocols
- *
- * The bus manager provides a central registry for managing multiple bus configurations.
- * It supports dependency injection of error handlers and pin validators for loose coupling.
- *
  * Key Features:
  * - Thread-safe bus management with mutex protection
  * - Support for multiple bus types (I2C, SPI, GPIO, DHT22, etc.)

@@ -1,7 +1,9 @@
 <map id="lib/star_bus/include/star_bus_spi_peripheral.h" name="lib/star_bus/include/star_bus_spi_peripheral.h">
-<area shape="rect" id="Node000001" title="SPI peripheral (slave) mode operations." alt="" coords="70,5,243,46"/>
-<area shape="rect" id="Node000002" href="$de/d98/star__bus__config_8c.html" title=" " alt="" coords="5,94,142,135"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="129,56,94,96,90,92,124,59"/>
-<area shape="rect" id="Node000003" href="$d4/d34/star__bus__spi__peripheral_8c.html" title=" " alt="" coords="165,94,312,135"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="186,55,223,94,217,93,184,60"/>
+<area shape="rect" id="Node000001" title="SPI peripheral (slave) mode operations." alt="" coords="144,5,317,46"/>
+<area shape="rect" id="Node000002" href="$d4/d23/star__arq_8c.html" title="Automatic Repeat Request (ARQ) protocol implementation with Stop&#45;and&#45;Wait." alt="" coords="5,94,139,135"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="184,53,109,96,107,91,179,55"/>
+<area shape="rect" id="Node000003" href="$de/d98/star__bus__config_8c.html" title="Bus configuration creation and lifecycle management implementation." alt="" coords="162,94,299,135"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="233,60,233,95,228,92,229,64"/>
+<area shape="rect" id="Node000004" href="$d4/d34/star__bus__spi__peripheral_8c.html" title="SPI peripheral mode implementation for the bus manager." alt="" coords="322,94,470,135"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="282,51,361,93,356,94,281,56"/>
 </map>

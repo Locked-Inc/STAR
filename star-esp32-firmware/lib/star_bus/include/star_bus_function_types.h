@@ -1,4 +1,27 @@
-/* lib/star_bus/include/star_bus_function_types.h */
+/**
+ * @file star_bus_function_types.h
+ * @brief Callback and operation function type definitions
+ * @details
+ * This file defines all function pointer types used for bus callbacks and operations
+ * across different protocols.
+ *
+ * Function types defined:
+ * - Callbacks: Transfer complete and error handlers for I2C, SPI, GPIO (return void)
+ * - Operations: Protocol-specific read/write/transfer functions (return esp_err_t)
+ *
+ * Callback design pattern:
+ * - All callbacks return void and should handle errors internally
+ * - Callbacks receive const star_bus_event_t* with transaction context
+ * - User context pointer allows access to application state
+ * - Callbacks must not block to avoid disrupting bus timing
+ *
+ * Operation function pointers allow protocol-specific implementations to be
+ * injected into bus configurations, enabling testing with mock functions
+ * and supporting future protocol extensions.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #ifndef STAR_COMPONENT_BUS_FUNCTION_TYPES_H
 #define STAR_COMPONENT_BUS_FUNCTION_TYPES_H

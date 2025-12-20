@@ -1,23 +1,21 @@
 <map id="internal_init_mutex" name="internal_init_mutex">
-<area shape="rect" id="Node000001" title="Initialize mutex if not already initialized (thread&#45;safe)." alt="" coords="741,80,871,106"/>
-<area shape="rect" id="Node000002" href="$d2/dad/star__pin__validator_8c.html#a9b63dcb8bc299307dd3e66be4f52d45e" title="Free the pin validator resources." alt="" coords="540,5,693,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="761,73,692,45,662,34,663,29,694,40,766,73"/>
-<area shape="rect" id="Node000003" href="$d2/dad/star__pin__validator_8c.html#a8eace335a8befbd45cc9d4725a523dc7" title="Register a pin on the validator." alt="" coords="558,55,675,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="722,82,675,78,675,73,728,82"/>
-<area shape="rect" id="Node000007" href="$d2/dad/star__pin__validator_8c.html#a70f90038a8f90485f5ce3ba0df581403" title="Unregister a pin from the validator." alt="" coords="551,104,682,130"/>
-<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="728,103,683,111,683,106,723,103"/>
-<area shape="rect" id="Node000009" href="$d2/dad/star__pin__validator_8c.html#a860b80eef110e1f314a05a8d60f09e18" title="Validate all registered pins for conflicts." alt="" coords="553,153,680,179"/>
-<area shape="poly" id="edge9_Node000001_Node000009" title=" " alt="" coords="765,112,694,145,663,155,662,150,692,140,760,113"/>
-<area shape="rect" id="Node000004" href="$d2/dad/star__pin__validator_8c.html#acae8e3a477362b1b5413e878d31738bf" title="Adapter function for register_pin interface." alt="" coords="362,55,485,80"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="540,68,486,70,485,65,545,67"/>
-<area shape="rect" id="Node000005" href="$d2/dad/star__pin__validator_8c.html#a13730ef0e296c0ffeea5d60b7f04d9cf" title="Create an interface adapter for the pin validator." alt="" coords="131,104,307,130"/>
-<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="350,85,276,106,275,101,355,84"/>
-<area shape="rect" id="Node000006" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,104,83,130"/>
-<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="113,118,84,119,82,114,118,116"/>
-<area shape="rect" id="Node000008" href="$d2/dad/star__pin__validator_8c.html#afae88fbbf79a18a7785317791efeb3d9" title="Adapter function for unregister_pin interface." alt="" coords="355,104,492,130"/>
-<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="533,117,493,119,493,114,538,117"/>
-<area shape="poly" id="edge8_Node000008_Node000005" title=" " alt="" coords="337,117,308,119,307,114,342,117"/>
-<area shape="rect" id="Node000010" href="$d2/dad/star__pin__validator_8c.html#a60f41f737709bc866a5de20157a75964" title="Adapter function for validate interface." alt="" coords="373,153,474,179"/>
-<area shape="poly" id="edge10_Node000009_Node000010" title=" " alt="" coords="535,166,475,169,475,164,540,166"/>
-<area shape="poly" id="edge11_Node000010_Node000005" title=" " alt="" coords="355,151,275,133,276,128,360,150"/>
+<area shape="rect" id="Node000001" title="Initialize mutex if not already initialized (thread&#45;safe)." alt="" coords="664,80,795,106"/>
+<area shape="rect" id="Node000002" href="$d2/dad/star__pin__validator_8c.html#a9b63dcb8bc299307dd3e66be4f52d45e" title="Free the pin validator resources." alt="" coords="464,5,616,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="685,73,615,45,586,34,586,29,617,40,690,73"/>
+<area shape="rect" id="Node000003" href="$d2/dad/star__pin__validator_8c.html#a8eace335a8befbd45cc9d4725a523dc7" title="Register a pin on the validator." alt="" coords="482,55,599,80"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="646,82,599,78,599,73,651,82"/>
+<area shape="rect" id="Node000006" href="$d2/dad/star__pin__validator_8c.html#a70f90038a8f90485f5ce3ba0df581403" title="Unregister a pin from the validator." alt="" coords="474,104,606,130"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="651,103,607,111,606,106,646,103"/>
+<area shape="rect" id="Node000008" href="$d2/dad/star__pin__validator_8c.html#a860b80eef110e1f314a05a8d60f09e18" title="Validate all registered pins for conflicts." alt="" coords="477,153,603,179"/>
+<area shape="poly" id="edge8_Node000001_Node000008" title=" " alt="" coords="689,112,617,145,587,155,586,150,615,140,684,113"/>
+<area shape="rect" id="Node000004" href="$d2/dad/star__pin__validator_8c.html#aca84a3519fe38e22a537f062ae105e72" title="Adapter function for register_pin interface." alt="" coords="237,55,409,80"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="464,68,410,70,409,65,469,67"/>
+<area shape="rect" id="Node000005" href="$d2/dad/star__pin__validator_8c.html#a13730ef0e296c0ffeea5d60b7f04d9cf" title="Create an interface adapter for the pin validator." alt="" coords="5,104,182,130"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="243,85,157,106,156,101,247,83"/>
+<area shape="rect" id="Node000007" href="$d2/dad/star__pin__validator_8c.html#af18f016016ffba8aae81657a724d2e8d" title="Adapter function for unregister_pin interface." alt="" coords="230,104,416,130"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="456,117,417,119,416,114,461,117"/>
+<area shape="poly" id="edge7_Node000007_Node000005" title=" " alt="" coords="212,117,183,119,182,114,217,116"/>
+<area shape="rect" id="Node000009" href="$d2/dad/star__pin__validator_8c.html#a5a9f01b714445ff2b6b056368603c755" title="Adapter function for validate interface." alt="" coords="248,153,398,179"/>
+<area shape="poly" id="edge9_Node000008_Node000009" title=" " alt="" coords="459,166,399,169,399,164,464,166"/>
+<area shape="poly" id="edge10_Node000009_Node000005" title=" " alt="" coords="242,150,156,133,157,128,247,149"/>
 </map>

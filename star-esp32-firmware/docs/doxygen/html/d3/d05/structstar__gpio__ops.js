@@ -1,7 +1,5 @@
 var structstar__gpio__ops =
 [
-    [ "configure", "d3/d05/structstar__gpio__ops.html#a7befa4505f30fb2ed61917666b088853", null ],
-    [ "read", "d3/d05/structstar__gpio__ops.html#a7b6059b43e5694128eeb71321e6a7ce3", null ],
-    [ "set_interrupt", "d3/d05/structstar__gpio__ops.html#a0882d93afc0d53135f91d68d1e3e6acc", null ],
-    [ "write", "d3/d05/structstar__gpio__ops.html#a73f9b8eef9352b3f034f7d9f9770521d", null ]
+    [ "read_digital", "d3/d05/structstar__gpio__ops.html#aec2583d1131188985a72d45dca31579d", null ],
+    [ "write_digital", "d3/d05/structstar__gpio__ops.html#a8969b2d433f2b9ee5c4646da5afd3af8", null ]
 ];

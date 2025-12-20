@@ -1,4 +1,14 @@
-/* lib/star_arq/src/star_arq.c */
+/**
+ * @file star_arq.c
+ * @brief Automatic Repeat Request (ARQ) protocol implementation with Stop-and-Wait
+ * @details
+ * Implements ARQ protocol layer with Stop-and-Wait strategy for reliable packet delivery
+ * over SPI peripheral interface. Provides automatic retransmission, acknowledgment handling,
+ * and configurable timeout/retry parameters for robust communication with RPi5 controller.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #include "star_arq.h"
 
@@ -16,172 +26,15 @@
 
 static const char* s_tag = "STAR_ARQ";
 
-/* --- Helper Functions --- */
+/* --- Private Function Prototypes --- */
 
-/**
- * @brief Send ACK frame for a given sequence number
- *
- * Builds and transmits an ACK frame to acknowledge successful receipt.
- *
- * @param[in,out] handle  Pointer to ARQ handle
- * @param[in]     seq     Sequence number to acknowledge
- *
- * @return
- *     - ESP_OK on success
- *     - ESP_FAIL on SPI transmission error
- */
-static esp_err_t internal_send_ack(star_arq_handle_t* handle, uint16_t seq) {
-    /* Build ACK frame (no payload) */
-    uint8_t* frame_data;
-    size_t frame_len;
-
-    esp_err_t ret = star_frame_build(
-        &handle->tx_frame,
-        seq,
-        k_star_frame_type_ack,
-        NULL,
-        0,
-        &frame_data,
-        &frame_len
-    );
-    ESP_RETURN_ON_ERROR(ret, s_tag, "Failed to build ACK frame");
-
-    /* Send via SPI */
-    ret = star_bus_spi_peripheral_transmit(
-        handle->bus_manager,
-        handle->spi_bus_name,
-        frame_data,
-        frame_len,
-        1000 /* 1 second timeout */
-    );
-    ESP_RETURN_ON_ERROR(ret, s_tag, "Failed to transmit ACK");
-
-    ESP_LOGD(s_tag, "Sent ACK: seq=%u", seq);
-    return ESP_OK;
-}
-
-/**
- * @brief Send NACK frame for a given sequence number
- *
- * Builds and transmits a NACK frame to request retransmission.
- *
- * @param[in,out] handle  Pointer to ARQ handle
- * @param[in]     seq     Sequence number to NACK
- *
- * @return
- *     - ESP_OK on success
- *     - ESP_FAIL on SPI transmission error
- */
-static esp_err_t internal_send_nack(star_arq_handle_t* handle, uint16_t seq) {
-    /* Build NACK frame (no payload) */
-    uint8_t* frame_data;
-    size_t frame_len;
-
-    esp_err_t ret = star_frame_build(
-        &handle->tx_frame,
-        seq,
-        k_star_frame_type_nack,
-        NULL,
-        0,
-        &frame_data,
-        &frame_len
-    );
-    ESP_RETURN_ON_ERROR(ret, s_tag, "Failed to build NACK frame");
-
-    /* Send via SPI */
-    ret = star_bus_spi_peripheral_transmit(
-        handle->bus_manager,
-        handle->spi_bus_name,
-        frame_data,
-        frame_len,
-        1000 /* 1 second timeout */
-    );
-    ESP_RETURN_ON_ERROR(ret, s_tag, "Failed to transmit NACK");
-
-    ESP_LOGD(s_tag, "Sent NACK: seq=%u", seq);
-    return ESP_OK;
-}
-
-/**
- * @brief Wait for ACK/NACK response with timeout
- *
- * Receives a frame and checks if it's an ACK or NACK for the expected sequence.
- *
- * @param[in,out] handle      Pointer to ARQ handle
- * @param[in]     expected_seq Expected sequence number
- * @param[in]     timeout_ms  Timeout in milliseconds
- * @param[out]    is_ack      Pointer to store ACK status (true=ACK, false=NACK)
- *
- * @return
- *     - ESP_OK if ACK or NACK received
- *     - ESP_ERR_TIMEOUT if timeout occurs
- *     - ESP_FAIL on other errors
- */
+static esp_err_t internal_send_ack(star_arq_handle_t* handle, uint16_t seq);
+static esp_err_t internal_send_nack(star_arq_handle_t* handle, uint16_t seq);
 static esp_err_t internal_wait_for_ack(
     star_arq_handle_t* handle,
     uint16_t expected_seq,
     uint32_t timeout_ms,
-    bool* is_ack)
-{
-    uint8_t rx_buffer[k_star_frame_max_size];
-    size_t rx_len;
-
-    /* Receive response frame */
-    esp_err_t ret = star_bus_spi_peripheral_receive(
-        handle->bus_manager,
-        handle->spi_bus_name,
-        rx_buffer,
-        sizeof(rx_buffer),
-        timeout_ms
-    );
-
-    if (ret == ESP_ERR_TIMEOUT) {
-        ESP_LOGD(s_tag, "ACK timeout for seq=%u", expected_seq);
-        return ESP_ERR_TIMEOUT;
-    }
-    ESP_RETURN_ON_ERROR(ret, s_tag, "Failed to receive ACK/NACK");
-
-    /* Parse frame */
-    uint16_t seq;
-    star_frame_type_t type;
-    uint8_t* payload;
-    uint16_t payload_len;
-
-    ret = star_frame_parse(
-        &handle->rx_frame,
-        rx_buffer,
-        sizeof(rx_buffer),
-        &seq,
-        &type,
-        &payload,
-        &payload_len
-    );
-
-    if (ret != ESP_OK) {
-        ESP_LOGW(s_tag, "Invalid frame received (CRC error or malformed)");
-        return ESP_FAIL;
-    }
-
-    /* Check if it's for our sequence */
-    if (seq != expected_seq) {
-        ESP_LOGW(s_tag, "Unexpected seq in response: got=%u, expected=%u", seq, expected_seq);
-        return ESP_FAIL;
-    }
-
-    /* Check frame type */
-    if (type == k_star_frame_type_ack) {
-        *is_ack = true;
-        ESP_LOGD(s_tag, "Received ACK: seq=%u", seq);
-        return ESP_OK;
-    } else if (type == k_star_frame_type_nack) {
-        *is_ack = false;
-        ESP_LOGD(s_tag, "Received NACK: seq=%u", seq);
-        return ESP_OK;
-    } else {
-        ESP_LOGW(s_tag, "Unexpected frame type: %d", type);
-        return ESP_FAIL;
-    }
-}
+    bool* is_ack);
 
 /* --- Public Functions --- */
 
@@ -428,4 +281,171 @@ esp_err_t star_arq_receive(
 
     /* Unreachable */
     return ESP_FAIL;
+}
+
+/* --- Private Functions --- */
+
+/**
+ * @brief Send ACK frame for a given sequence number
+ *
+ * Builds and transmits an ACK frame to acknowledge successful receipt.
+ *
+ * @param[in,out] handle  Pointer to ARQ handle
+ * @param[in]     seq     Sequence number to acknowledge
+ *
+ * @return
+ *     - ESP_OK on success
+ *     - ESP_FAIL on SPI transmission error
+ */
+static esp_err_t internal_send_ack(star_arq_handle_t* handle, uint16_t seq) {
+    /* Build ACK frame (no payload) */
+    uint8_t* frame_data;
+    size_t frame_len;
+
+    esp_err_t ret = star_frame_build(
+        &handle->tx_frame,
+        seq,
+        k_star_frame_type_ack,
+        NULL,
+        0,
+        &frame_data,
+        &frame_len
+    );
+    ESP_RETURN_ON_ERROR(ret, s_tag, "Failed to build ACK frame");
+
+    /* Send via SPI */
+    ret = star_bus_spi_peripheral_transmit(
+        handle->bus_manager,
+        handle->spi_bus_name,
+        frame_data,
+        frame_len,
+        1000 /* 1 second timeout */
+    );
+    ESP_RETURN_ON_ERROR(ret, s_tag, "Failed to transmit ACK");
+
+    ESP_LOGD(s_tag, "Sent ACK: seq=%u", seq);
+    return ESP_OK;
+}
+
+/**
+ * @brief Send NACK frame for a given sequence number
+ *
+ * Builds and transmits a NACK frame to request retransmission.
+ *
+ * @param[in,out] handle  Pointer to ARQ handle
+ * @param[in]     seq     Sequence number to NACK
+ *
+ * @return
+ *     - ESP_OK on success
+ *     - ESP_FAIL on SPI transmission error
+ */
+static esp_err_t internal_send_nack(star_arq_handle_t* handle, uint16_t seq) {
+    /* Build NACK frame (no payload) */
+    uint8_t* frame_data;
+    size_t frame_len;
+
+    esp_err_t ret = star_frame_build(
+        &handle->tx_frame,
+        seq,
+        k_star_frame_type_nack,
+        NULL,
+        0,
+        &frame_data,
+        &frame_len
+    );
+    ESP_RETURN_ON_ERROR(ret, s_tag, "Failed to build NACK frame");
+
+    /* Send via SPI */
+    ret = star_bus_spi_peripheral_transmit(
+        handle->bus_manager,
+        handle->spi_bus_name,
+        frame_data,
+        frame_len,
+        1000 /* 1 second timeout */
+    );
+    ESP_RETURN_ON_ERROR(ret, s_tag, "Failed to transmit NACK");
+
+    ESP_LOGD(s_tag, "Sent NACK: seq=%u", seq);
+    return ESP_OK;
+}
+
+/**
+ * @brief Wait for ACK/NACK response with timeout
+ *
+ * Receives a frame and checks if it's an ACK or NACK for the expected sequence.
+ *
+ * @param[in,out] handle      Pointer to ARQ handle
+ * @param[in]     expected_seq Expected sequence number
+ * @param[in]     timeout_ms  Timeout in milliseconds
+ * @param[out]    is_ack      Pointer to store ACK status (true=ACK, false=NACK)
+ *
+ * @return
+ *     - ESP_OK if ACK or NACK received
+ *     - ESP_ERR_TIMEOUT if timeout occurs
+ *     - ESP_FAIL on other errors
+ */
+static esp_err_t internal_wait_for_ack(
+    star_arq_handle_t* handle,
+    uint16_t expected_seq,
+    uint32_t timeout_ms,
+    bool* is_ack)
+{
+    uint8_t rx_buffer[k_star_frame_max_size];
+    size_t rx_len;
+
+    /* Receive response frame */
+    esp_err_t ret = star_bus_spi_peripheral_receive(
+        handle->bus_manager,
+        handle->spi_bus_name,
+        rx_buffer,
+        sizeof(rx_buffer),
+        timeout_ms
+    );
+
+    if (ret == ESP_ERR_TIMEOUT) {
+        ESP_LOGD(s_tag, "ACK timeout for seq=%u", expected_seq);
+        return ESP_ERR_TIMEOUT;
+    }
+    ESP_RETURN_ON_ERROR(ret, s_tag, "Failed to receive ACK/NACK");
+
+    /* Parse frame */
+    uint16_t seq;
+    star_frame_type_t type;
+    uint8_t* payload;
+    uint16_t payload_len;
+
+    ret = star_frame_parse(
+        &handle->rx_frame,
+        rx_buffer,
+        sizeof(rx_buffer),
+        &seq,
+        &type,
+        &payload,
+        &payload_len
+    );
+
+    if (ret != ESP_OK) {
+        ESP_LOGW(s_tag, "Invalid frame received (CRC error or malformed)");
+        return ESP_FAIL;
+    }
+
+    /* Check if it's for our sequence */
+    if (seq != expected_seq) {
+        ESP_LOGW(s_tag, "Unexpected seq in response: got=%u, expected=%u", seq, expected_seq);
+        return ESP_FAIL;
+    }
+
+    /* Check frame type */
+    if (type == k_star_frame_type_ack) {
+        *is_ack = true;
+        ESP_LOGD(s_tag, "Received ACK: seq=%u", seq);
+        return ESP_OK;
+    } else if (type == k_star_frame_type_nack) {
+        *is_ack = false;
+        ESP_LOGD(s_tag, "Received NACK: seq=%u", seq);
+        return ESP_OK;
+    } else {
+        ESP_LOGW(s_tag, "Unexpected frame type: %d", type);
+        return ESP_FAIL;
+    }
 }

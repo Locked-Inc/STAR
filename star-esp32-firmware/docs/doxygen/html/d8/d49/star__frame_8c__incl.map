@@ -1,0 +1,21 @@
+<map id="lib/star_frame/src/star_frame.c" name="lib/star_frame/src/star_frame.c">
+<area shape="rect" id="Node000001" title="Frame encoding/decoding implementation with CRC&#45;32 error detection." alt="" coords="328,5,450,46"/>
+<area shape="rect" id="Node000002" href="$d1/d9f/star__frame_8h.html" title="Frame encoding/decoding API with CRC&#45;32 error detection." alt="" coords="134,94,228,120"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="335,48,228,91,226,86,340,45"/>
+<area shape="rect" id="Node000007" title=" " alt="" coords="253,94,317,120"/>
+<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="366,45,315,87,312,82,361,48"/>
+<area shape="rect" id="Node000008" title=" " alt="" coords="342,94,437,120"/>
+<area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="391,44,391,80,387,77,387,48"/>
+<area shape="rect" id="Node000009" title=" " alt="" coords="461,94,538,120"/>
+<area shape="poly" id="edge8_Node000001_Node000009" title=" " alt="" coords="417,44,473,85,468,84,416,49"/>
+<area shape="rect" id="Node000010" title=" " alt="" coords="562,94,670,120"/>
+<area shape="poly" id="edge9_Node000001_Node000010" title=" " alt="" coords="446,44,569,88,564,89,445,49"/>
+<area shape="rect" id="Node000003" title=" " alt="" coords="5,168,80,193"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="160,122,81,162,79,158,156,118"/>
+<area shape="rect" id="Node000004" title=" " alt="" coords="104,168,168,193"/>
+<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="176,119,153,156,150,153,171,121"/>
+<area shape="rect" id="Node000005" title=" " alt="" coords="192,168,261,193"/>
+<area shape="poly" id="edge4_Node000002_Node000005" title=" " alt="" coords="190,118,213,155,208,154,187,122"/>
+<area shape="rect" id="Node000006" title=" " alt="" coords="285,168,360,193"/>
+<area shape="poly" id="edge5_Node000002_Node000006" title=" " alt="" coords="206,118,287,160,282,161,205,123"/>
+</map>

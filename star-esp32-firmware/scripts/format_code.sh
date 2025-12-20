@@ -15,7 +15,7 @@ NC='\033[0m' # No Color
 CHECK_ONLY=false
 VERBOSE=false
 EXTENSIONS=("*.c" "*.h" "*.cpp" "*.hpp")
-DIRECTORIES=("src" "lib")
+DIRECTORIES=("src" "lib" "include")
 
 # Print usage information
 usage() {

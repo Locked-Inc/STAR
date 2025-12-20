@@ -92,13 +92,16 @@ $(function(){initNavTree('db/dbf/star__bus__onewire__constants_8h.html','../../'
   <div class="headertitle"><div class="title">star_bus_onewire_constants.h File Reference</div></div>
 </div><!--header-->
 <div class="contents">
+
+<p>OneWire (1-Wire) protocol timing constants and device definitions.  
+<a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;stdint.h&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for star_bus_onewire_constants.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d9/dd2/star__bus__onewire__constants_8h__incl.png" border="0" usemap="#alib_2star__bus_2include_2star__bus__onewire__constants_8h" loading="lazy" alt=""/></div>
 <map name="alib_2star__bus_2include_2star__bus__onewire__constants_8h" id="alib_2star__bus_2include_2star__bus__onewire__constants_8h">
-<area shape="rect" title=" " alt="" coords="5,5,208,46"/>
+<area shape="rect" title="OneWire (1&#45;Wire) protocol timing constants and device definitions." alt="" coords="5,5,208,46"/>
 <area shape="rect" title=" " alt="" coords="74,94,139,120"/>
 <area shape="poly" title=" " alt="" coords="108,44,109,79,104,77,105,48"/>
 </map>
@@ -108,8 +111,8 @@ This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../db/da4/star__bus__onewire__constants_8h__dep__incl.png" border="0" usemap="#alib_2star__bus_2include_2star__bus__onewire__constants_8hdep" loading="lazy" alt=""/></div>
 <map name="alib_2star__bus_2include_2star__bus__onewire__constants_8hdep" id="alib_2star__bus_2include_2star__bus__onewire__constants_8hdep">
-<area shape="rect" title=" " alt="" coords="5,5,208,46"/>
-<area shape="rect" href="../../d9/dd6/star__bus__onewire_8c.html" title=" " alt="" coords="38,94,175,135"/>
+<area shape="rect" title="OneWire (1&#45;Wire) protocol timing constants and device definitions." alt="" coords="5,5,208,46"/>
+<area shape="rect" href="../../d9/dd6/star__bus__onewire_8c.html" title="1&#45;Wire controller protocol implementation for the bus manager" alt="" coords="38,94,175,135"/>
 <area shape="poly" title=" " alt="" coords="108,60,109,95,104,93,105,64"/>
 </map>
 </div>
@@ -161,7 +164,21 @@ Variables</h2></td></tr>
 <tr class="memitem:aa7bc2ba669fc7174bdece0b17830e1ec" id="r_aa7bc2ba669fc7174bdece0b17830e1ec"><td class="memItemLeft" align="right" valign="top">static const uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa7bc2ba669fc7174bdece0b17830e1ec">s_max_onewire_buses</a> = 4</td></tr>
 <tr class="memitem:a8b9afaa36239f610197bc74662d265de" id="r_a8b9afaa36239f610197bc74662d265de"><td class="memItemLeft" align="right" valign="top">static const uint8_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8b9afaa36239f610197bc74662d265de">s_max_peripheral_buses</a> = 2</td></tr>
 </table>
-<a name="doc-enum-members" id="doc-enum-members"></a><h2 id="header-doc-enum-members" class="groupheader">Enumeration Type Documentation</h2>
+<a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>OneWire (1-Wire) protocol timing constants and device definitions. </p>
+<p>This file provides timing specifications, ROM commands, and device family codes for the Dallas/Maxim OneWire protocol used in STAR firmware.</p>
+<p>Key definitions:</p><ul>
+<li><a class="el" href="../../d3/da1/structonewire__timing__t.html" title="OneWire protocol timing constants (in microseconds).">onewire_timing_t</a> - Timing parameters for standard and overdrive modes</li>
+<li><a class="el" href="#ae7cab31d85b2319b8da43a27045a3101">onewire_rom_cmd_t</a> - ROM commands (search, read, match, skip, alarm search)</li>
+<li><a class="el" href="#add46b9e64e98895681f648451ee67f65">ds18b20_cmd_t</a> - DS18B20 temperature sensor specific commands</li>
+<li><a class="el" href="#a40bfdad2ce9a54c85b58af0e7b7fd099">onewire_family_code_t</a> - Device family codes for common OneWire devices</li>
+</ul>
+<p>All timing values follow Dallas/Maxim specifications and are expressed in microseconds. Standard speed is used by default (480us reset pulse), with overdrive mode available for future high-speed implementations.</p>
+<dl class="section date"><dt>Date</dt><dd>2025-12-19 </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>Copyright (c) 2025 STAR Project </dd></dl>
+
+<p class="definition">Definition in file <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html">star_bus_onewire_constants.h</a>.</p>
+</div><a name="doc-enum-members" id="doc-enum-members"></a><h2 id="header-doc-enum-members" class="groupheader">Enumeration Type Documentation</h2>
 <a id="add46b9e64e98895681f648451ee67f65" name="add46b9e64e98895681f648451ee67f65"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#add46b9e64e98895681f648451ee67f65">&#9670;&#160;</a></span>ds18b20_cmd_t</h2>
 
@@ -182,7 +199,7 @@ Variables</h2></td></tr>
 <tr><td class="fieldname"><a id="add46b9e64e98895681f648451ee67f65a814e10df85d8a27dd809f937eb6ead1e" name="add46b9e64e98895681f648451ee67f65a814e10df85d8a27dd809f937eb6ead1e"></a>k_ds18b20_cmd_read_power&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html#l00073">73</a> of file <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html">star_bus_onewire_constants.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html#l00092">92</a> of file <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html">star_bus_onewire_constants.h</a>.</p>
 
 </div>
 </div>
@@ -207,7 +224,7 @@ Variables</h2></td></tr>
 <tr><td class="fieldname"><a id="a40bfdad2ce9a54c85b58af0e7b7fd099aa3154f49209d27406b0c498efad06018" name="a40bfdad2ce9a54c85b58af0e7b7fd099aa3154f49209d27406b0c498efad06018"></a>k_onewire_family_ds2438&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html#l00083">83</a> of file <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html">star_bus_onewire_constants.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html#l00102">102</a> of file <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html">star_bus_onewire_constants.h</a>.</p>
 
 </div>
 </div>
@@ -230,7 +247,7 @@ Variables</h2></td></tr>
 <tr><td class="fieldname"><a id="ae7cab31d85b2319b8da43a27045a3101a1b35ac2d52eff06963f13fc4495ef082" name="ae7cab31d85b2319b8da43a27045a3101a1b35ac2d52eff06963f13fc4495ef082"></a>k_onewire_cmd_alarm_search&#160;</td><td class="fielddoc"></td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html#l00064">64</a> of file <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html">star_bus_onewire_constants.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html#l00083">83</a> of file <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html">star_bus_onewire_constants.h</a>.</p>
 
 </div>
 </div>
@@ -255,7 +272,7 @@ Variables</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html#l00058">58</a> of file <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html">star_bus_onewire_constants.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html#l00077">77</a> of file <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html">star_bus_onewire_constants.h</a>.</p>
 
 </div>
 </div>
@@ -279,7 +296,7 @@ Variables</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html#l00061">61</a> of file <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html">star_bus_onewire_constants.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html#l00080">80</a> of file <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html">star_bus_onewire_constants.h</a>.</p>
 
 </div>
 </div>
@@ -302,17 +319,8 @@ Variables</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">= {.reset_pulse_us     = 70,</div>
-<div class="line">                                                            .presence_wait_us   = 8,</div>
-<div class="line">                                                            .presence_sample_us = 40,</div>
-<div class="line">                                                            .write_0_low_us     = 8,</div>
-<div class="line">                                                            .write_1_low_us     = 1,</div>
-<div class="line">                                                            .write_recovery_us  = 1,</div>
-<div class="line">                                                            .read_low_us        = 1,</div>
-<div class="line">                                                            .read_sample_us     = 2,</div>
-<div class="line">                                                            .read_recovery_us   = 7}</div>
-</div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html#l00047">47</a> of file <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html">star_bus_onewire_constants.h</a>.</p>
+<b>Initial value:</b><div class="fragment"></div><!-- fragment -->
+<p class="definition">Definition at line <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html#l00066">66</a> of file <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html">star_bus_onewire_constants.h</a>.</p>
 
 </div>
 </div>
@@ -335,17 +343,8 @@ Variables</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">= {.reset_pulse_us     = 480,</div>
-<div class="line">                                                           .presence_wait_us   = 70,</div>
-<div class="line">                                                           .presence_sample_us = 410,</div>
-<div class="line">                                                           .write_0_low_us     = 60,</div>
-<div class="line">                                                           .write_1_low_us     = 6,</div>
-<div class="line">                                                           .write_recovery_us  = 10,</div>
-<div class="line">                                                           .read_low_us        = 6,</div>
-<div class="line">                                                           .read_sample_us     = 9,</div>
-<div class="line">                                                           .read_recovery_us   = 55}</div>
-</div><!-- fragment -->
-<p class="definition">Definition at line <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html#l00036">36</a> of file <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html">star_bus_onewire_constants.h</a>.</p>
+<b>Initial value:</b><div class="fragment"></div><!-- fragment -->
+<p class="definition">Definition at line <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html#l00055">55</a> of file <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html">star_bus_onewire_constants.h</a>.</p>
 
 </div>
 </div>

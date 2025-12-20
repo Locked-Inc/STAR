@@ -32,7 +32,7 @@ WARN_NO_PARAMDOC       = NO
 #---------------------------------------------------------------------------
 # Configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = src/ lib/
+INPUT                  = src/ lib/ include/
 INPUT_ENCODING         = UTF-8
 FILE_PATTERNS          = *.c *.h *.cpp *.hpp
 RECURSIVE              = YES
@@ -97,7 +97,8 @@ ENABLE_PREPROCESSING   = YES
 MACRO_EXPANSION        = YES
 EXPAND_ONLY_PREDEF     = NO
 SEARCH_INCLUDES        = YES
-INCLUDE_PATH           = lib/*/include \
+INCLUDE_PATH           = include/ \
+                        lib/*/include \
                         src/ \
                         ~/.platformio/packages/framework-espidf/components/freertos/FreeRTOS-Kernel/include \
                         ~/.platformio/packages/framework-espidf/components/esp_common/include \

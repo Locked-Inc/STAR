@@ -1,4 +1,14 @@
-/* lib/star_pid/include/star_pid.h */
+/**
+ * @file star_pid.h
+ * @brief PID controller API for closed-loop motor control
+ * @details
+ * Provides a stateless PID (Proportional-Integral-Derivative) controller interface with
+ * anti-windup, derivative filtering, and configurable output limits. Suitable for embedded
+ * systems with deterministic behavior and tunable gains for velocity or position control loops.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #ifndef STAR_PID_H
 #define STAR_PID_H

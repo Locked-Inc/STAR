@@ -1,0 +1,5 @@
+<map id="internal_drv8243_configure_fault_pin" name="internal_drv8243_configure_fault_pin">
+<area shape="rect" id="Node000001" title=" " alt="" coords="174,5,350,46"/>
+<area shape="rect" id="Node000002" href="$d2/d8f/star__drv8243_8c.html#abd5193a0c6cf77aa8630a9ded476e412" title="Initialize DRV8243 motor driver." alt="" coords="5,13,126,38"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="156,26,126,28,126,23,161,25"/>
+</map>

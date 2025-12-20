@@ -1,4 +1,27 @@
-/* lib/star_bus/include/star_bus_protocol_types.h */
+/**
+ * @file star_bus_protocol_types.h
+ * @brief Protocol-specific configuration structures for all bus types
+ * @details
+ * This file defines configuration structures for each supported bus protocol,
+ * including callbacks and operation function pointers.
+ *
+ * Key structures defined:
+ * - I2C: star_i2c_bus_config_t, star_i2c_callbacks_t, star_i2c_ops_t
+ * - SPI: star_spi_bus_config_t, star_spi_callbacks_t, star_spi_ops_t
+ * - GPIO: star_gpio_bus_config_t, star_gpio_ops_t
+ * - ADC: star_adc_bus_config_t, star_adc_ops_t
+ * - OneWire: star_onewire_bus_config_t, star_onewire_ops_t
+ *
+ * Each protocol structure contains:
+ * - ESP-IDF native configuration (i2c_config_t, spi_bus_config_t, etc.)
+ * - User callbacks for events (optional)
+ * - Operation function pointers (defaults provided by bus manager)
+ *
+ * Note: SPI pin naming follows OSHWA standards (COPI/CIPO instead of MOSI/MISO).
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #ifndef STAR_COMPONENT_BUS_PROTOCOL_TYPES_H
 #define STAR_COMPONENT_BUS_PROTOCOL_TYPES_H
