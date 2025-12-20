@@ -81,14 +81,6 @@ BR2_PACKAGE_AVAHI=y
 BR2_PACKAGE_AVAHI_DAEMON=y
 BR2_PACKAGE_DBUS=y
 
-# X.Org and OpenJDK disabled - OpenJDK cannot build under WSL
-# due to configure script detecting WSL as Windows.
-# To build OpenJDK, use a native Linux system or Docker.
-# BR2_PACKAGE_XORG7=y
-# BR2_PACKAGE_XSERVER_XORG_SERVER=y
-# BR2_PACKAGE_OPENJDK=y
-# BR2_PACKAGE_OPENJDK_FULL_JDK=y
-
 # Python 3 (required for ROS2)
 BR2_PACKAGE_PYTHON3=y
 BR2_PACKAGE_PYTHON3_PY_PYC=y
@@ -113,15 +105,8 @@ BR2_PACKAGE_OPENCV4_WITH_TIFF=y
 # ROS2 Jazzy
 BR2_PACKAGE_ROS2_JAZZY=y
 
-# Development tools (needed for ROS2 workspace builds)
-# Note: Native GCC will be installed via post-build script (copy cross-toolchain)
-BR2_PACKAGE_MAKE=y
-BR2_PACKAGE_CMAKE=y
-BR2_PACKAGE_PKGCONF=y
-BR2_PACKAGE_GIT=y
+# Utilities
 BR2_PACKAGE_WGET=y
-BR2_PACKAGE_PATCH=y
-BR2_PACKAGE_DIFFUTILS=y
 
 # Package manager (for runtime package installation)
 BR2_PACKAGE_OPKG=y
@@ -131,3 +116,12 @@ BR2_PACKAGE_HOST_DOSFSTOOLS=y
 BR2_PACKAGE_HOST_GENIMAGE=y
 BR2_PACKAGE_HOST_KMOD_XZ=y
 BR2_PACKAGE_HOST_MTOOLS=y
+
+# Go toolchain (host only - for cross-compiling Go packages during build)
+# The target does NOT include Go compiler/runtime (production-only image)
+# To deploy star-gateway:
+#   1. Cross-compile on dev machine: cd star-gateway && GOOS=linux GOARCH=arm64 go build -o star-gateway ./cmd/star-gateway
+#   2. Deploy to target: scp star-gateway root@<pi5-ip>:/usr/bin/star-gateway
+#   3. Set permissions: ssh root@<pi5-ip> 'chmod +x /usr/bin/star-gateway'
+#   4. Restart service: ssh root@<pi5-ip> 'systemctl restart robot-gateway'
+BR2_PACKAGE_HOST_GO=y
