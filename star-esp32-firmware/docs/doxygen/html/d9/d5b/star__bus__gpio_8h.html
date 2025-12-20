@@ -93,7 +93,7 @@ $(function(){initNavTree('d9/d5b/star__bus__gpio_8h.html','../../',''); });
 </div><!--header-->
 <div class="contents">
 
-<p>GPIO bus operations through the unified bus manager.  
+<p>GPIO operations API through the unified bus manager.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;driver/gpio.h&quot;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
@@ -104,7 +104,7 @@ Include dependency graph for star_bus_gpio.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d8/d05/star__bus__gpio_8h__incl.png" border="0" usemap="#alib_2star__bus_2include_2star__bus__gpio_8h" loading="lazy" alt=""/></div>
 <map name="alib_2star__bus_2include_2star__bus__gpio_8h" id="alib_2star__bus_2include_2star__bus__gpio_8h">
-<area shape="rect" title="GPIO bus operations through the unified bus manager." alt="" coords="916,5,1049,46"/>
+<area shape="rect" title="GPIO operations API through the unified bus manager." alt="" coords="916,5,1049,46"/>
 <area shape="rect" title=" " alt="" coords="86,536,178,562"/>
 <area shape="poly" title=" " alt="" coords="913,32,680,48,378,77,236,97,117,121,71,135,37,149,15,164,8,180,8,403,10,423,17,441,39,475,69,504,100,527,94,528,65,508,35,479,12,444,5,424,3,403,3,179,11,161,34,144,70,130,116,116,235,92,377,72,680,43,918,29"/>
 <area shape="rect" title=" " alt="" coords="893,536,958,562"/>
@@ -183,12 +183,12 @@ This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d6/d54/star__bus__gpio_8h__dep__incl.png" border="0" usemap="#alib_2star__bus_2include_2star__bus__gpio_8hdep" loading="lazy" alt=""/></div>
 <map name="alib_2star__bus_2include_2star__bus__gpio_8hdep" id="alib_2star__bus_2include_2star__bus__gpio_8hdep">
-<area shape="rect" title="GPIO bus operations through the unified bus manager." alt="" coords="167,5,300,46"/>
+<area shape="rect" title="GPIO operations API through the unified bus manager." alt="" coords="167,5,300,46"/>
 <area shape="rect" href="../../de/d98/star__bus__config_8c.html" title="Bus configuration creation and lifecycle management implementation." alt="" coords="5,94,142,135"/>
 <area shape="poly" title=" " alt="" coords="187,53,111,96,108,91,181,54"/>
 <area shape="rect" href="../../da/d8b/star__bus__gpio_8c.html" title="GPIO operations implementation for the bus manager." alt="" coords="165,94,302,135"/>
 <area shape="poly" title=" " alt="" coords="235,60,236,95,231,92,232,64"/>
-<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html" title="Central bus management implementation with thread&#45;safe operations." alt="" coords="325,94,462,135"/>
+<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html" title="Unified bus manager implementation for multi&#45;protocol peripheral management." alt="" coords="325,94,462,135"/>
 <area shape="poly" title=" " alt="" coords="284,51,360,94,355,94,282,56"/>
 </map>
 </div>
@@ -205,7 +205,11 @@ Functions</h2></td></tr>
 <tr class="memdesc:a77ea5065453059955f4570d5f811f54e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read digital value from GPIO pin.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>GPIO bus operations through the unified bus manager. </p>
+<div class="textblock"><p>GPIO operations API through the unified bus manager. </p>
+<p>GPIO bus operations through the unified bus manager.</p>
+<p>Provides interface for general-purpose input/output operations through the bus manager. Supports digital pin read/write, configurable pin modes, pull-up/pull-down resistors, and interrupt service routine (ISR) handling for edge detection and event-driven GPIO.</p>
+<dl class="section date"><dt>Date</dt><dd>2025-12-19 </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>Copyright (c) 2025 STAR Project</dd></dl>
 <p>This module provides GPIO digital read/write operations that work through the bus manager. GPIO bus is used for controlling digital logic such as multiplexer select lines.</p>
 <p>Key Features:</p><ul>
 <li>Digital write operations (set pin high/low)</li>
@@ -236,7 +240,7 @@ Functions</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00040">40</a> of file <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html">star_bus_gpio.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00125">internal_star_bus_gpio_read_digital()</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00104">internal_star_bus_gpio_write_digital()</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00125">internal_star_bus_gpio_read_digital()</a>, <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00104">internal_star_bus_gpio_write_digital()</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00221">star_bus_config_create_gpio()</a>.</p>
 <div class="dynheader">
@@ -307,9 +311,9 @@ Here is the caller graph for this function:</div>
 
 <p class="definition">Definition at line <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00076">76</a> of file <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html">star_bus_gpio.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00061">star_bus_config::gpio</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00058">k_star_bus_type_gpio</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00151">star_gpio_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00139">star_gpio_ops::read_digital</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00199">star_bus_manager_find_bus()</a>, and <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00052">star_bus_config::type</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00061">star_bus_config::gpio</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00058">k_star_bus_type_gpio</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00150">star_gpio_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00138">star_gpio_ops::read_digital</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00370">star_bus_manager_find_bus()</a>, and <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00052">star_bus_config::type</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00678">star_bus_read_digital()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00868">star_bus_read_digital()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -376,9 +380,9 @@ Here is the caller graph for this function:</div>
 
 <p class="definition">Definition at line <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html#l00050">50</a> of file <a class="el" href="../../da/d8b/star__bus__gpio_8c_source.html">star_bus_gpio.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00061">star_bus_config::gpio</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00058">k_star_bus_type_gpio</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00151">star_gpio_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00199">star_bus_manager_find_bus()</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00052">star_bus_config::type</a>, and <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00136">star_gpio_ops::write_digital</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00061">star_bus_config::gpio</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00058">k_star_bus_type_gpio</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00150">star_gpio_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00370">star_bus_manager_find_bus()</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00052">star_bus_config::type</a>, and <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00135">star_gpio_ops::write_digital</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00664">star_bus_write_digital()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00854">star_bus_write_digital()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">

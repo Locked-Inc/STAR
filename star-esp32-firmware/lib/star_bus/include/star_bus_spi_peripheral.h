@@ -1,4 +1,14 @@
-/* lib/star_bus/include/star_bus_spi_peripheral.h */
+/**
+ * @file star_bus_spi_peripheral.h
+ * @brief SPI peripheral mode API for the bus manager
+ * @details
+ * Provides interface for SPI peripheral mode operations through the bus manager.
+ * Allows ESP32 to act as an SPI peripheral controlled by an external controller (e.g., RPi5).
+ * Supports DMA transfers and event-driven callbacks for efficient bidirectional communication.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #ifndef STAR_COMPONENT_BUS_SPI_PERIPHERAL_H
 #define STAR_COMPONENT_BUS_SPI_PERIPHERAL_H
@@ -16,7 +26,7 @@ extern "C" {
 
 /**
  * @file star_bus_spi_peripheral.h
- * @brief SPI peripheral (slave) mode operations
+ * @brief SPI peripheral mode operations
  *
  * This module allows the ESP32 to act as an SPI peripheral device,
  * receiving commands and data from an external SPI controller.
@@ -32,7 +42,7 @@ extern "C" {
  * // Create SPI peripheral bus configuration
  * // Note: Use star_bus_config_create_spi_peripheral() from star_bus_config.h
  * star_bus_config_t* spi_periph = star_bus_config_create_spi_peripheral(
- *     "spi_slave",
+ *     "spi_peripheral",
  *     SPI2_HOST,
  *     GPIO_NUM_23,  // COPI (data in from controller)
  *     GPIO_NUM_19,  // CIPO (data out to controller)
@@ -47,7 +57,7 @@ extern "C" {
  * uint8_t rx_buffer[64];
  * esp_err_t ret = star_bus_spi_peripheral_receive(
  *     &bus_manager,
- *     "spi_slave",
+ *     "spi_peripheral",
  *     rx_buffer,
  *     sizeof(rx_buffer),
  *     5000  // 5 second timeout
@@ -68,7 +78,7 @@ extern "C" {
  *
  * ret = star_bus_spi_peripheral_transmit(
  *     &bus_manager,
- *     "spi_slave",
+ *     "spi_peripheral",
  *     tx_buffer,
  *     sizeof(tx_buffer),
  *     5000  // 5 second timeout
@@ -91,7 +101,7 @@ extern "C" {
  *
  * ret = star_bus_spi_peripheral_transceive(
  *     &bus_manager,
- *     "spi_slave",
+ *     "spi_peripheral",
  *     tx_data,      // Data to send to controller
  *     rx_data,      // Data received from controller
  *     32,           // Transfer length
@@ -115,7 +125,7 @@ extern "C" {
  *     while (1) {
  *         // Wait for command from controller
  *         esp_err_t ret = star_bus_spi_peripheral_receive(
- *             &bus_manager, "spi_slave",
+ *             &bus_manager, "spi_peripheral",
  *             cmd_buffer, sizeof(cmd_buffer),
  *             portMAX_DELAY
  *         );
@@ -138,7 +148,7 @@ extern "C" {
  *
  *             // Send response
  *             star_bus_spi_peripheral_transmit(
- *                 &bus_manager, "spi_slave",
+ *                 &bus_manager, "spi_peripheral",
  *                 resp_buffer, 1, 1000
  *             );
  *         }
@@ -160,11 +170,8 @@ extern "C" {
  * - COPI (Controller Out, Peripheral In): Data line where the controller sends data to the peripheral
  * - CIPO (Controller In, Peripheral Out): Data line where the controller receives data from the peripheral
  *
- * This modern terminology replaces the outdated master/slave language:
- * - COPI replaces MOSI (Master Out, Slave In)
- * - CIPO replaces MISO (Master In, Slave Out)
  *
- * Note: The ESP-IDF SPI slave driver still uses mosi_io_num/miso_io_num internally, which we map to COPI/CIPO.
+ * Note: The ESP-IDF SPI peripheral driver (spi_slave.h) still uses legacy mosi_io_num/miso_io_num field names internally, which we map to COPI/CIPO.
  */
 
 /* --- Public Functions --- */

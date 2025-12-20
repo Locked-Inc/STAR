@@ -1,18 +1,3 @@
-/* lib/star_bus/include/star_bus_spi_dma.h */
-
-#ifndef STAR_BUS_SPI_DMA_H
-#define STAR_BUS_SPI_DMA_H
-
-#include <esp_err.h>
-#include <stddef.h>
-#include <stdint.h>
-
-#include "star_bus_manager.h"
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 /**
  * @file star_bus_spi_dma.h
  * @brief DMA-accelerated SPI operations for high-speed data transfers
@@ -191,7 +176,23 @@ extern "C" {
  * star_spi_dma_free(tx_buffer);
  * star_spi_dma_free(rx_buffer);
  * @endcode
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
  */
+
+#ifndef STAR_BUS_SPI_DMA_H
+#define STAR_BUS_SPI_DMA_H
+
+#include <esp_err.h>
+#include <stddef.h>
+#include <stdint.h>
+
+#include "star_bus_manager.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 /* --- Constants --- */
 

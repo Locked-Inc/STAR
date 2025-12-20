@@ -1,4 +1,15 @@
-/* lib/star_bus/src/star_bus_smbus.c */
+/**
+ * @file star_bus_smbus.c
+ * @brief SMBus protocol layer implementation over I2C
+ * @details
+ * Implements the System Management Bus (SMBus) protocol as a high-level abstraction over I2C.
+ * Provides standard SMBus commands including quick command, byte operations, word operations,
+ * and block transfers. Supports optional Packet Error Checking (PEC) using CRC-8 for enhanced
+ * reliability in battery management and power monitoring applications.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #include "star_bus_smbus.h"
 
@@ -49,9 +60,10 @@ static esp_err_t internal_validate_smbus_params(star_bus_manager_t* manager, con
  * @note The addr parameter is unused because SMBus address is configured
  *       when the bus is created via star_bus_config_create_smbus().
  *
- * @example
+ * @code
  * // Quick command example (addr=0x00 is ignored, uses bus config address)
  * esp_err_t ret = star_smbus_quick_command(manager, "smbus0", 0x00, true);
+ * @endcode
  *
  * @return ESP_OK on success, error code otherwise
  */

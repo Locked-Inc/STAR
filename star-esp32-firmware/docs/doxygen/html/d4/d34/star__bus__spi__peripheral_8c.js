@@ -7,5 +7,5 @@ var star__bus__spi__peripheral_8c =
     [ "star_bus_spi_peripheral_receive", "d4/d34/star__bus__spi__peripheral_8c.html#a3ccbd2706237d383f19bab2320109c0b", null ],
     [ "star_bus_spi_peripheral_transceive", "d4/d34/star__bus__spi__peripheral_8c.html#a2e6951544874012fcfcc4c1779286837", null ],
     [ "star_bus_spi_peripheral_transmit", "d4/d34/star__bus__spi__peripheral_8c.html#a8a6fa2b9bc1aab92c0bc8b412a0b51e3", null ],
-    [ "s_TAG", "d4/d34/star__bus__spi__peripheral_8c.html#a999e3dd103132afd3cd1856f477f2dbd", null ]
+    [ "s_tag", "d4/d34/star__bus__spi__peripheral_8c.html#af8861f6a1fb30510e283b1b7806b64e7", null ]
 ];

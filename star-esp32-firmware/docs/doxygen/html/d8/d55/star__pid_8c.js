@@ -8,5 +8,5 @@ var star__pid_8c =
     [ "star_pid_set_gains", "d8/d55/star__pid_8c.html#ad3af8a5f881707ec84133c8068e1f027", null ],
     [ "star_pid_set_integral_limits", "d8/d55/star__pid_8c.html#acca528ee9472937d0e24f2fa17bd2fd1", null ],
     [ "star_pid_set_output_limits", "d8/d55/star__pid_8c.html#ac9b80b4562a65072292dddc5abdc8eb8", null ],
-    [ "s_TAG", "d8/d55/star__pid_8c.html#a999e3dd103132afd3cd1856f477f2dbd", null ]
+    [ "s_tag", "d8/d55/star__pid_8c.html#af8861f6a1fb30510e283b1b7806b64e7", null ]
 ];

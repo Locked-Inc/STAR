@@ -1,5 +1,5 @@
 <map id="lib/star_bus/include/star_bus_spi_peripheral.h" name="lib/star_bus/include/star_bus_spi_peripheral.h">
-<area shape="rect" id="Node000001" title="SPI peripheral (slave) mode operations." alt="" coords="861,5,1034,46"/>
+<area shape="rect" id="Node000001" title="SPI peripheral mode API for the bus manager." alt="" coords="861,5,1034,46"/>
 <area shape="rect" id="Node000002" title=" " alt="" coords="387,94,510,120"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="858,42,527,96,525,91,863,39"/>
 <area shape="rect" id="Node000003" title=" " alt="" coords="718,536,782,562"/>

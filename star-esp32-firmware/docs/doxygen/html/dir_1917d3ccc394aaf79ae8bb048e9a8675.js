@@ -7,7 +7,6 @@ var dir_1917d3ccc394aaf79ae8bb048e9a8675 =
     [ "star_bus_function_types.h", "d0/da6/star__bus__function__types_8h.html", "d0/da6/star__bus__function__types_8h" ],
     [ "star_bus_gpio.h", "d9/d5b/star__bus__gpio_8h.html", "d9/d5b/star__bus__gpio_8h" ],
     [ "star_bus_i2c.h", "dd/df4/star__bus__i2c_8h.html", "dd/df4/star__bus__i2c_8h" ],
-    [ "star_bus_i2c_dma.h", "db/d73/star__bus__i2c__dma_8h.html", "db/d73/star__bus__i2c__dma_8h" ],
     [ "star_bus_manager.h", "d6/dcc/star__bus__manager_8h.html", "d6/dcc/star__bus__manager_8h" ],
     [ "star_bus_manager_types.h", "d0/d84/star__bus__manager__types_8h.html", "d0/d84/star__bus__manager__types_8h" ],
     [ "star_bus_onewire.h", "d0/d6c/star__bus__onewire_8h.html", "d0/d6c/star__bus__onewire_8h" ],

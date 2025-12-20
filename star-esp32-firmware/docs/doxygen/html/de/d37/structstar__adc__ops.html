@@ -100,47 +100,48 @@ $(function(){initNavTree('de/d37/structstar__adc__ops.html','../../','d5/d00/str
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-pub-attribs" class="groupheader"><a id="pub-attribs" name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a774168c3aea12920853e7bac580d074e" id="r_a774168c3aea12920853e7bac580d074e"><td class="memItemLeft" align="right" valign="top">esp_err_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a774168c3aea12920853e7bac580d074e">read_raw</a> )(const struct <a class="el" href="../../d2/d8d/structstar__bus__config.html">star_bus_config</a> *config, int *out_raw)</td></tr>
-<tr class="memitem:a2a622bd3f148f36725861157f0d0c84a" id="r_a2a622bd3f148f36725861157f0d0c84a"><td class="memItemLeft" align="right" valign="top">esp_err_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2a622bd3f148f36725861157f0d0c84a">read_voltage</a> )(const struct <a class="el" href="../../d2/d8d/structstar__bus__config.html">star_bus_config</a> *config, int *out_voltage_mv)</td></tr>
+<tr class="memitem:a537c518cdacd4a240d236090d1fb570d" id="r_a537c518cdacd4a240d236090d1fb570d"><td class="memItemLeft" align="right" valign="top">esp_err_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a537c518cdacd4a240d236090d1fb570d">read_raw</a> )(const struct <a class="el" href="../../d2/d8d/structstar__bus__config.html">star_bus_config</a> *config, int32_t *out_raw)</td></tr>
+<tr class="memitem:a2217c05988f8e5cc99224815bff0b93f" id="r_a2217c05988f8e5cc99224815bff0b93f"><td class="memItemLeft" align="right" valign="top">esp_err_t(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2217c05988f8e5cc99224815bff0b93f">read_voltage</a> )(const struct <a class="el" href="../../d2/d8d/structstar__bus__config.html">star_bus_config</a> *config, int32_t *out_voltage_mv)</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>ADC operation functions structure. </p>
+<dl class="section note"><dt>Note</dt><dd>Uses int32_t* for output parameters in our API. Implementations should use 'int' when calling ESP-IDF functions and perform explicit conversions. </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00157">157</a> of file <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html">star_bus_protocol_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00159">159</a> of file <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html">star_bus_protocol_types.h</a>.</p>
 </div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
-<a id="a774168c3aea12920853e7bac580d074e" name="a774168c3aea12920853e7bac580d074e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a774168c3aea12920853e7bac580d074e">&#9670;&#160;</a></span>read_raw</h2>
+<a id="a537c518cdacd4a240d236090d1fb570d" name="a537c518cdacd4a240d236090d1fb570d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a537c518cdacd4a240d236090d1fb570d">&#9670;&#160;</a></span>read_raw</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">esp_err_t(* star_adc_ops::read_raw) (const struct <a class="el" href="../../d2/d8d/structstar__bus__config.html">star_bus_config</a> *config, int *out_raw)</td>
+          <td class="memname">esp_err_t(* star_adc_ops::read_raw) (const struct <a class="el" href="../../d2/d8d/structstar__bus__config.html">star_bus_config</a> *config, int32_t *out_raw)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00158">158</a> of file <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html">star_bus_protocol_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00160">160</a> of file <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html">star_bus_protocol_types.h</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="../../d2/deb/star__bus__adc_8c_source.html#l00047">star_bus_adc_read_raw()</a>.</p>
 
 </div>
 </div>
-<a id="a2a622bd3f148f36725861157f0d0c84a" name="a2a622bd3f148f36725861157f0d0c84a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2a622bd3f148f36725861157f0d0c84a">&#9670;&#160;</a></span>read_voltage</h2>
+<a id="a2217c05988f8e5cc99224815bff0b93f" name="a2217c05988f8e5cc99224815bff0b93f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a2217c05988f8e5cc99224815bff0b93f">&#9670;&#160;</a></span>read_voltage</h2>
 
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">esp_err_t(* star_adc_ops::read_voltage) (const struct <a class="el" href="../../d2/d8d/structstar__bus__config.html">star_bus_config</a> *config, int *out_voltage_mv)</td>
+          <td class="memname">esp_err_t(* star_adc_ops::read_voltage) (const struct <a class="el" href="../../d2/d8d/structstar__bus__config.html">star_bus_config</a> *config, int32_t *out_voltage_mv)</td>
         </tr>
       </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00159">159</a> of file <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html">star_bus_protocol_types.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00161">161</a> of file <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html">star_bus_protocol_types.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/deb/star__bus__adc_8c_source.html#l00071">star_bus_adc_read_voltage()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/deb/star__bus__adc_8c_source.html#l00070">star_bus_adc_read_voltage()</a>.</p>
 
 </div>
 </div>

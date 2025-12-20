@@ -1,7 +1,5 @@
 var NAVTREEINDEX2 =
 {
-"d1/dd0/proto_2battery__management_8pb_8h.html#a101126701ad72c4291613092a059ce0d":[1,0,0,1,1,256],
-"d1/dd0/proto_2battery__management_8pb_8h.html#a104028e7aeec4c686b32ec98df3c1f46":[1,0,0,1,1,150],
 "d1/dd0/proto_2battery__management_8pb_8h.html#a10d4b018569b7184674376199d673123":[1,0,0,1,1,200],
 "d1/dd0/proto_2battery__management_8pb_8h.html#a115c4aa4ac202e379e62a74d0f78fcf0":[1,0,0,1,1,279],
 "d1/dd0/proto_2battery__management_8pb_8h.html#a1234fc650389eddc75437604c2ae4363":[1,0,0,1,1,342],
@@ -249,5 +247,7 @@ var NAVTREEINDEX2 =
 "d1/dd0/proto_2battery__management_8pb_8h.html#ac39af54c378647376e0f6689014ef8d9":[1,0,0,1,1,81],
 "d1/dd0/proto_2battery__management_8pb_8h.html#ac4897a64369dd8ce55215c1559f567a9":[1,0,0,1,1,140],
 "d1/dd0/proto_2battery__management_8pb_8h.html#ac6b36555385c80b5e1fe9557bbd83e41":[1,0,0,1,1,41],
-"d1/dd0/proto_2battery__management_8pb_8h.html#ac8137949e8716f4e798cd4eaf3e6ad87":[1,0,0,1,1,290]
+"d1/dd0/proto_2battery__management_8pb_8h.html#ac8137949e8716f4e798cd4eaf3e6ad87":[1,0,0,1,1,290],
+"d1/dd0/proto_2battery__management_8pb_8h.html#ac818216191d891d62ca2bf59e8b7ad15":[1,0,0,1,1,102],
+"d1/dd0/proto_2battery__management_8pb_8h.html#ac81ddeca8f9ba2118a20a3e08f4f3569":[1,0,0,1,1,76]
 };

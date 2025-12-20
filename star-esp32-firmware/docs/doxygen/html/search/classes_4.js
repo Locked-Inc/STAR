@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['i2c_5fdma_5fstate_5ft_0',['i2c_dma_state_t',['../dd/d28/structi2c__dma__state__t.html',1,'']]]
+  ['telemetry_5ftask_5fparams_5ft_0',['telemetry_task_params_t',['../d7/d53/structtelemetry__task__params__t.html',1,'']]]
 ];

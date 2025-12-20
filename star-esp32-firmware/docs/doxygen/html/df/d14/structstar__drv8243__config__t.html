@@ -166,8 +166,20 @@ Public Attributes</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>DRV8243 configuration structure. </p>
+<p>Hardware Assumptions:</p><ul>
+<li>DRV8243 operates in PH/EN (Phase/Enable) control mode</li>
+<li>PH pin controls direction, EN pin controls speed via PWM duty cycle</li>
+<li>nFAULT is active-low with internal pull-up on DRV8243; external pull-up on ESP32 GPIO is configured for reliable fault detection</li>
+<li>IPROPI outputs a voltage proportional to motor current (typical 525 A/V)</li>
+<li>The ESP32 ADC reference voltage affects current measurement accuracy</li>
+</ul>
+<p>Timing Constraints:</p><ul>
+<li>PWM frequency should not exceed 25 kHz for optimal efficiency</li>
+<li>Dead-time prevents H-bridge shoot-through; typical 1us is safe</li>
+<li>Current sensing requires time for ADC conversion (typically 10-50us) </li>
+</ul>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00147">147</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00165">165</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
 </div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
 <a id="a0955ff3e26e1f08653c6458c49c8519e" name="a0955ff3e26e1f08653c6458c49c8519e"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a0955ff3e26e1f08653c6458c49c8519e">&#9670;&#160;</a></span>adc_bus_name</h2>
@@ -180,11 +192,11 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>ADC bus name for current sense </p>
+<p>ADC bus name for current sense (required) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00150">150</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00168">168</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00039">star_drv8243_init()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00068">star_drv8243_init()</a>.</p>
 
 </div>
 </div>
@@ -199,11 +211,11 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Bus manager instance </p>
+<p>Bus manager instance (required) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00148">148</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00166">166</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00039">star_drv8243_init()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00068">star_drv8243_init()</a>.</p>
 
 </div>
 </div>
@@ -218,11 +230,11 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Current limit in milliamps (0 = disabled) </p>
+<p>Software current limit in mA (0 = disabled) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00166">166</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00184">184</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00039">star_drv8243_init()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00068">star_drv8243_init()</a>.</p>
 
 </div>
 </div>
@@ -237,11 +249,11 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Dead-time in nanoseconds </p>
+<p>H-bridge dead-time (prevents shoot-through) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00163">163</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00181">181</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00039">star_drv8243_init()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00068">star_drv8243_init()</a>.</p>
 
 </div>
 </div>
@@ -256,11 +268,11 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>GPIO bus name for fault pin </p>
+<p>GPIO bus name for fault pin (required) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00149">149</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00167">167</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00039">star_drv8243_init()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00068">star_drv8243_init()</a>.</p>
 
 </div>
 </div>
@@ -275,11 +287,11 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>MCPWM group ID (0 or 1) </p>
+<p>MCPWM group ID (0 or 1, ESP32 has 2 groups) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00170">170</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00188">188</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00039">star_drv8243_init()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00068">star_drv8243_init()</a>.</p>
 
 </div>
 </div>
@@ -294,11 +306,11 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>IPROPI ratio in A/V (default 525) </p>
+<p>IPROPI ratio in A/V (0 = default 525 from datasheet) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00167">167</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00185">185</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00039">star_drv8243_init()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00068">star_drv8243_init()</a>.</p>
 
 </div>
 </div>
@@ -313,11 +325,11 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Current sense pin (ADC channel) </p>
+<p>Current sense -&gt; DRV8243 IPROPI (ADC channel, not GPIO number) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00157">157</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00175">175</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00039">star_drv8243_init()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00068">star_drv8243_init()</a>.</p>
 
 </div>
 </div>
@@ -332,11 +344,11 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Fault detect pin (GPIO) </p>
+<p>Fault detect &lt;- DRV8243 nFAULT (active-low, GPIO number) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00158">158</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00176">176</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00039">star_drv8243_init()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00068">star_drv8243_init()</a>.</p>
 
 </div>
 </div>
@@ -351,11 +363,11 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Enable/Speed pin (PWM B) </p>
+<p>Enable/Speed pin -&gt; DRV8243 EN (PWM duty = motor speed) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00154">154</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00172">172</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00039">star_drv8243_init()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00068">star_drv8243_init()</a>.</p>
 
 </div>
 </div>
@@ -370,11 +382,11 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Phase/Direction pin (PWM A) </p>
+<p>Phase/Direction pin -&gt; DRV8243 PH (controls H-bridge polarity) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00153">153</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00171">171</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00039">star_drv8243_init()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00068">star_drv8243_init()</a>.</p>
 
 </div>
 </div>
@@ -389,11 +401,11 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>PWM frequency (max 25 kHz) </p>
+<p>PWM frequency in Hz (max 25 kHz recommended) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00161">161</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00179">179</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00039">star_drv8243_init()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00068">star_drv8243_init()</a>.</p>
 
 </div>
 </div>
@@ -408,11 +420,11 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Timer resolution (default 10 MHz) </p>
+<p>MCPWM timer resolution (0 = default 10 MHz) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00162">162</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00180">180</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00039">star_drv8243_init()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00068">star_drv8243_init()</a>.</p>
 
 </div>
 </div>

@@ -134,6 +134,7 @@ Include dependency graph for star_encoder.c:</div>
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a8210b97cbf41c70b766380200a177831" id="r_a8210b97cbf41c70b766380200a177831"><td class="memItemLeft" align="right" valign="top">static bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8210b97cbf41c70b766380200a177831">internal_encoder_on_reach_callback</a> (pcnt_unit_handle_t unit, const pcnt_watch_event_data_t *event_data, void *user_ctx)</td></tr>
+<tr class="memdesc:a8210b97cbf41c70b766380200a177831"><td class="mdescLeft">&#160;</td><td class="mdescRight">PCNT watch point callback for overflow/underflow tracking.  <br /></td></tr>
 <tr class="memitem:a95d7f3ccc362548f27e335d576aea46a" id="r_a95d7f3ccc362548f27e335d576aea46a"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a95d7f3ccc362548f27e335d576aea46a">star_encoder_init</a> (<a class="el" href="../../d9/db2/structstar__encoder__handle__t.html">star_encoder_handle_t</a> *handle, const <a class="el" href="../../df/d00/structstar__encoder__config__t.html">star_encoder_config_t</a> *config)</td></tr>
 <tr class="memdesc:a95d7f3ccc362548f27e335d576aea46a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Initialize a quadrature encoder instance.  <br /></td></tr>
 <tr class="memitem:a724290adbd98ae08b3996413d95d0540" id="r_a724290adbd98ae08b3996413d95d0540"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a724290adbd98ae08b3996413d95d0540">star_encoder_deinit</a> (<a class="el" href="../../d9/db2/structstar__encoder__handle__t.html">star_encoder_handle_t</a> *handle)</td></tr>
@@ -147,7 +148,12 @@ Functions</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-var-members" class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:a999e3dd103132afd3cd1856f477f2dbd" id="r_a999e3dd103132afd3cd1856f477f2dbd"><td class="memItemLeft" align="right" valign="top">static const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a999e3dd103132afd3cd1856f477f2dbd">s_TAG</a> = &quot;STAR_ENCODER&quot;</td></tr>
+<tr class="memitem:af8861f6a1fb30510e283b1b7806b64e7" id="r_af8861f6a1fb30510e283b1b7806b64e7"><td class="memItemLeft" align="right" valign="top">static const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af8861f6a1fb30510e283b1b7806b64e7">s_tag</a> = &quot;STAR_ENCODER&quot;</td></tr>
+<tr class="memdesc:af8861f6a1fb30510e283b1b7806b64e7"><td class="mdescLeft">&#160;</td><td class="mdescRight">Logging tag for ESP-IDF logging macros.  <br /></td></tr>
+<tr class="memitem:a6a5ac5db0b4e4e0dffd10f9c4b4fc579" id="r_a6a5ac5db0b4e4e0dffd10f9c4b4fc579"><td class="memItemLeft" align="right" valign="top">static const float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6a5ac5db0b4e4e0dffd10f9c4b4fc579">s_apb_clock_period_ns</a> = 12.5f</td></tr>
+<tr class="memdesc:a6a5ac5db0b4e4e0dffd10f9c4b4fc579"><td class="mdescLeft">&#160;</td><td class="mdescRight">APB clock period in nanoseconds.  <br /></td></tr>
+<tr class="memitem:a0f58cd4d9f1b92882f533968ef9b1c06" id="r_a0f58cd4d9f1b92882f533968ef9b1c06"><td class="memItemLeft" align="right" valign="top">static const float&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a0f58cd4d9f1b92882f533968ef9b1c06">s_ms_per_minute</a> = 60000.0f</td></tr>
+<tr class="memdesc:a0f58cd4d9f1b92882f533968ef9b1c06"><td class="mdescLeft">&#160;</td><td class="mdescRight">Conversion factor from milliseconds to minutes.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>Quadrature encoder driver implementation using ESP32 PCNT peripheral. </p>
@@ -189,17 +195,34 @@ Variables</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d76/star__encoder_8c_source.html#l00274">274</a> of file <a class="el" href="../../d9/d76/star__encoder_8c_source.html">star_encoder.c</a>.</p>
+<p>PCNT watch point callback for overflow/underflow tracking. </p>
+<p>This ISR callback is invoked when the PCNT counter reaches the configured high or low limit watch points. It updates the overflow counter to extend the effective counting range beyond the 16-bit hardware limit.</p>
+<p>Hardware behavior:</p><ul>
+<li>Counter wraps around when reaching limits (not accumulated)</li>
+<li>High limit reached: indicates positive direction overflow</li>
+<li>Low limit reached: indicates negative direction underflow</li>
+</ul>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramdir">[in]</td><td class="paramname">unit</td><td>PCNT unit handle (unused, required by ESP-IDF callback signature) </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">event_data</td><td>Watch event data containing the watch point value </td></tr>
+    <tr><td class="paramdir">[in]</td><td class="paramname">user_ctx</td><td>User context pointer (star_encoder_handle_t*) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>false Always returns false to not yield from ISR </dd></dl>
+
+<p class="definition">Definition at line <a class="el" href="../../d9/d76/star__encoder_8c_source.html#l00315">315</a> of file <a class="el" href="../../d9/d76/star__encoder_8c_source.html">star_encoder.c</a>.</p>
 
 <p class="reference">References <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00112">star_encoder_handle_t::high_limit</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00113">star_encoder_handle_t::low_limit</a>, and <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00116">star_encoder_handle_t::overflow_count</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d9/d76/star__encoder_8c_source.html#l00033">star_encoder_init()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d9/d76/star__encoder_8c_source.html#l00053">star_encoder_init()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d9/d76/star__encoder_8c_a8210b97cbf41c70b766380200a177831_icgraph.png" border="0" usemap="#ad9/d76/star__encoder_8c_a8210b97cbf41c70b766380200a177831_icgraph" loading="lazy" alt=""/></div>
 <map name="ad9/d76/star__encoder_8c_a8210b97cbf41c70b766380200a177831_icgraph" id="ad9/d76/star__encoder_8c_a8210b97cbf41c70b766380200a177831_icgraph">
-<area shape="rect" title=" " alt="" coords="174,5,311,46"/>
+<area shape="rect" title="PCNT watch point callback for overflow/underflow tracking." alt="" coords="174,5,311,46"/>
 <area shape="rect" href="../../d9/d76/star__encoder_8c.html#a95d7f3ccc362548f27e335d576aea46a" title="Initialize a quadrature encoder instance." alt="" coords="5,13,126,38"/>
 <area shape="poly" title=" " alt="" coords="155,26,126,28,126,23,161,25"/>
 </map>
@@ -231,9 +254,9 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d76/star__encoder_8c_source.html#l00182">182</a> of file <a class="el" href="../../d9/d76/star__encoder_8c_source.html">star_encoder.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d76/star__encoder_8c_source.html#l00202">202</a> of file <a class="el" href="../../d9/d76/star__encoder_8c_source.html">star_encoder.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00108">star_encoder_handle_t::channel_a</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00109">star_encoder_handle_t::channel_b</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00117">star_encoder_handle_t::initialized</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, and <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00107">star_encoder_handle_t::unit_handle</a>.</p>
+<p class="reference">References <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00108">star_encoder_handle_t::channel_a</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00109">star_encoder_handle_t::channel_b</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00117">star_encoder_handle_t::initialized</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, and <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00107">star_encoder_handle_t::unit_handle</a>.</p>
 
 </div>
 </div>
@@ -267,11 +290,11 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d76/star__encoder_8c_source.html#l00203">203</a> of file <a class="el" href="../../d9/d76/star__encoder_8c_source.html">star_encoder.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d76/star__encoder_8c_source.html#l00223">223</a> of file <a class="el" href="../../d9/d76/star__encoder_8c_source.html">star_encoder.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00112">star_encoder_handle_t::high_limit</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00117">star_encoder_handle_t::initialized</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00113">star_encoder_handle_t::low_limit</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00116">star_encoder_handle_t::overflow_count</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, and <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00107">star_encoder_handle_t::unit_handle</a>.</p>
+<p class="reference">References <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00112">star_encoder_handle_t::high_limit</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00117">star_encoder_handle_t::initialized</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00113">star_encoder_handle_t::low_limit</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00116">star_encoder_handle_t::overflow_count</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, and <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00107">star_encoder_handle_t::unit_handle</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d9/d76/star__encoder_8c_source.html#l00241">star_encoder_get_velocity_rpm()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d9/d76/star__encoder_8c_source.html#l00265">star_encoder_get_velocity_rpm()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -327,9 +350,9 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d76/star__encoder_8c_source.html#l00241">241</a> of file <a class="el" href="../../d9/d76/star__encoder_8c_source.html">star_encoder.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d76/star__encoder_8c_source.html#l00265">265</a> of file <a class="el" href="../../d9/d76/star__encoder_8c_source.html">star_encoder.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00117">star_encoder_handle_t::initialized</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00114">star_encoder_handle_t::last_count</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00115">star_encoder_handle_t::last_time_us</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, and <a class="el" href="../../d9/d76/star__encoder_8c_source.html#l00203">star_encoder_get_count()</a>.</p>
+<p class="reference">References <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00117">star_encoder_handle_t::initialized</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00114">star_encoder_handle_t::last_count</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00115">star_encoder_handle_t::last_time_us</a>, <a class="el" href="../../d9/d76/star__encoder_8c_source.html#l00043">s_ms_per_minute</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, and <a class="el" href="../../d9/d76/star__encoder_8c_source.html#l00223">star_encoder_get_count()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -373,16 +396,16 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d76/star__encoder_8c_source.html#l00033">33</a> of file <a class="el" href="../../d9/d76/star__encoder_8c_source.html">star_encoder.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d76/star__encoder_8c_source.html#l00053">53</a> of file <a class="el" href="../../d9/d76/star__encoder_8c_source.html">star_encoder.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00108">star_encoder_handle_t::channel_a</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00109">star_encoder_handle_t::channel_b</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00098">star_encoder_config_t::filter_value</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00099">star_encoder_config_t::high_limit</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00112">star_encoder_handle_t::high_limit</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00117">star_encoder_handle_t::initialized</a>, <a class="el" href="../../d9/d76/star__encoder_8c_source.html#l00274">internal_encoder_on_reach_callback()</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00114">star_encoder_handle_t::last_count</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00115">star_encoder_handle_t::last_time_us</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00100">star_encoder_config_t::low_limit</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00113">star_encoder_handle_t::low_limit</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00116">star_encoder_handle_t::overflow_count</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00096">star_encoder_config_t::pin_a</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00110">star_encoder_handle_t::pin_a</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00097">star_encoder_config_t::pin_b</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00111">star_encoder_handle_t::pin_b</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, and <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00107">star_encoder_handle_t::unit_handle</a>.</p>
+<p class="reference">References <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00108">star_encoder_handle_t::channel_a</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00109">star_encoder_handle_t::channel_b</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00098">star_encoder_config_t::filter_value</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00099">star_encoder_config_t::high_limit</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00112">star_encoder_handle_t::high_limit</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00117">star_encoder_handle_t::initialized</a>, <a class="el" href="../../d9/d76/star__encoder_8c_source.html#l00315">internal_encoder_on_reach_callback()</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00114">star_encoder_handle_t::last_count</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00115">star_encoder_handle_t::last_time_us</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00100">star_encoder_config_t::low_limit</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00113">star_encoder_handle_t::low_limit</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00116">star_encoder_handle_t::overflow_count</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00096">star_encoder_config_t::pin_a</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00110">star_encoder_handle_t::pin_a</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00097">star_encoder_config_t::pin_b</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00111">star_encoder_handle_t::pin_b</a>, <a class="el" href="../../d9/d76/star__encoder_8c_source.html#l00035">s_apb_clock_period_ns</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, and <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00107">star_encoder_handle_t::unit_handle</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d9/d76/star__encoder_8c_a95d7f3ccc362548f27e335d576aea46a_cgraph.png" border="0" usemap="#ad9/d76/star__encoder_8c_a95d7f3ccc362548f27e335d576aea46a_cgraph" loading="lazy" alt=""/></div>
 <map name="ad9/d76/star__encoder_8c_a95d7f3ccc362548f27e335d576aea46a_cgraph" id="ad9/d76/star__encoder_8c_a95d7f3ccc362548f27e335d576aea46a_cgraph">
 <area shape="rect" title="Initialize a quadrature encoder instance." alt="" coords="5,13,126,38"/>
-<area shape="rect" href="../../d9/d76/star__encoder_8c.html#a8210b97cbf41c70b766380200a177831" title=" " alt="" coords="174,5,311,46"/>
+<area shape="rect" href="../../d9/d76/star__encoder_8c.html#a8210b97cbf41c70b766380200a177831" title="PCNT watch point callback for overflow/underflow tracking." alt="" coords="174,5,311,46"/>
 <area shape="poly" title=" " alt="" coords="126,23,161,25,156,26,126,28"/>
 </map>
 </div>
@@ -413,15 +436,15 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>esp_err_t ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d76/star__encoder_8c_source.html#l00223">223</a> of file <a class="el" href="../../d9/d76/star__encoder_8c_source.html">star_encoder.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/d76/star__encoder_8c_source.html#l00247">247</a> of file <a class="el" href="../../d9/d76/star__encoder_8c_source.html">star_encoder.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00117">star_encoder_handle_t::initialized</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00114">star_encoder_handle_t::last_count</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00115">star_encoder_handle_t::last_time_us</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00116">star_encoder_handle_t::overflow_count</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, and <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00107">star_encoder_handle_t::unit_handle</a>.</p>
+<p class="reference">References <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00117">star_encoder_handle_t::initialized</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00114">star_encoder_handle_t::last_count</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00115">star_encoder_handle_t::last_time_us</a>, <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00116">star_encoder_handle_t::overflow_count</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, and <a class="el" href="../../d1/daa/star__encoder_8h_source.html#l00107">star_encoder_handle_t::unit_handle</a>.</p>
 
 </div>
 </div>
 <a name="doc-var-members" id="doc-var-members"></a><h2 id="header-doc-var-members" class="groupheader">Variable Documentation</h2>
-<a id="a999e3dd103132afd3cd1856f477f2dbd" name="a999e3dd103132afd3cd1856f477f2dbd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a999e3dd103132afd3cd1856f477f2dbd">&#9670;&#160;</a></span>s_TAG</h2>
+<a id="a6a5ac5db0b4e4e0dffd10f9c4b4fc579" name="a6a5ac5db0b4e4e0dffd10f9c4b4fc579"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a6a5ac5db0b4e4e0dffd10f9c4b4fc579">&#9670;&#160;</a></span>s_apb_clock_period_ns</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -430,7 +453,7 @@ Here is the call graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const char* s_TAG = &quot;STAR_ENCODER&quot;</td>
+          <td class="memname">const float s_apb_clock_period_ns = 12.5f</td>
         </tr>
       </table>
   </td>
@@ -440,7 +463,67 @@ Here is the call graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d9/d76/star__encoder_8c_source.html#l00023">23</a> of file <a class="el" href="../../d9/d76/star__encoder_8c_source.html">star_encoder.c</a>.</p>
+<p>APB clock period in nanoseconds. </p>
+<p>The ESP32 APB clock runs at 80 MHz, giving a period of 12.5 ns. Used to convert glitch filter values from APB clock cycles to nanoseconds as required by pcnt_glitch_filter_config_t. </p>
+
+<p class="definition">Definition at line <a class="el" href="../../d9/d76/star__encoder_8c_source.html#l00035">35</a> of file <a class="el" href="../../d9/d76/star__encoder_8c_source.html">star_encoder.c</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d9/d76/star__encoder_8c_source.html#l00053">star_encoder_init()</a>.</p>
+
+</div>
+</div>
+<a id="a0f58cd4d9f1b92882f533968ef9b1c06" name="a0f58cd4d9f1b92882f533968ef9b1c06"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a0f58cd4d9f1b92882f533968ef9b1c06">&#9670;&#160;</a></span>s_ms_per_minute</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const float s_ms_per_minute = 60000.0f</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Conversion factor from milliseconds to minutes. </p>
+<p>Used in velocity calculation to convert counts/ms to RPM. 60000 ms = 1 minute </p>
+
+<p class="definition">Definition at line <a class="el" href="../../d9/d76/star__encoder_8c_source.html#l00043">43</a> of file <a class="el" href="../../d9/d76/star__encoder_8c_source.html">star_encoder.c</a>.</p>
+
+<p class="reference">Referenced by <a class="el" href="../../d9/d76/star__encoder_8c_source.html#l00265">star_encoder_get_velocity_rpm()</a>.</p>
+
+</div>
+</div>
+<a id="af8861f6a1fb30510e283b1b7806b64e7" name="af8861f6a1fb30510e283b1b7806b64e7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af8861f6a1fb30510e283b1b7806b64e7">&#9670;&#160;</a></span>s_tag</h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char* s_tag = &quot;STAR_ENCODER&quot;</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel static">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Logging tag for ESP-IDF logging macros. </p>
+
+<p class="definition">Definition at line <a class="el" href="../../d9/d76/star__encoder_8c_source.html#l00026">26</a> of file <a class="el" href="../../d9/d76/star__encoder_8c_source.html">star_encoder.c</a>.</p>
 
 </div>
 </div>

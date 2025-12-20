@@ -1,4 +1,15 @@
-/* lib/star_bus/src/star_bus_manager.c */
+/**
+ * @file star_bus_manager.c
+ * @brief Unified bus manager implementation for multi-protocol peripheral management
+ * @details
+ * Implements the central bus management system for I2C, SPI, UART, GPIO, ADC, and 1-Wire
+ * protocols. Provides thread-safe bus registration, lookup, and lifecycle management with
+ * a linked-list registry. Supports dependency injection of error handlers and pin validators
+ * following the Dependency Inversion Principle for loose coupling and testability.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #include "star_bus_manager.h"
 

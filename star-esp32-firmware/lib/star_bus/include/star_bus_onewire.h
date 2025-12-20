@@ -1,4 +1,14 @@
-/* lib/star_bus/include/star_bus_onewire.h */
+/**
+ * @file star_bus_onewire.h
+ * @brief 1-Wire protocol API for the bus manager
+ * @details
+ * Provides interface for Dallas/Maxim 1-Wire protocol operations through the bus manager.
+ * Supports single-wire bidirectional communication with devices like DS18B20 temperature
+ * sensors, ROM commands, device enumeration, and CRC-8 validation for data integrity.
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
+ */
 
 #ifndef STAR_BUS_ONEWIRE_H
 #define STAR_BUS_ONEWIRE_H

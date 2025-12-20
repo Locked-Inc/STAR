@@ -1,26 +1,10 @@
-/* lib/star_bus/include/star_bus_adc.h */
-
-#ifndef STAR_COMPONENT_BUS_ADC_H
-#define STAR_COMPONENT_BUS_ADC_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-#include <stdint.h>
-
-#include "esp_adc/adc_cali.h"
-#include "esp_adc/adc_oneshot.h"
-#include "esp_err.h"
-#include "star_bus_types.h"
-
 /**
  * @file star_bus_adc.h
- * @brief ADC bus operations through the unified bus manager
- *
- * This module provides ADC analog read operations that work through the
- * bus manager. ADC bus is used for reading analog voltages such as
- * motor current sense lines.
+ * @brief ADC bus operations API through the unified bus manager
+ * @details
+ * Provides interface for ADC analog read operations through the bus manager. Supports both
+ * raw ADC value reading and calibrated voltage measurements for applications like motor
+ * current sensing, battery monitoring, and analog sensor inputs.
  *
  * Key Features:
  * - Raw ADC value reading
@@ -58,7 +42,24 @@ extern "C" {
  * ESP_LOGI(TAG, "Voltage: %" PRId32 " mV (%.2f V)", voltage_mv, voltage_mv / 1000.0f);
  *
  * @endcode
+ *
+ * @date 2025-12-19
+ * @copyright Copyright (c) 2025 STAR Project
  */
+
+#ifndef STAR_COMPONENT_BUS_ADC_H
+#define STAR_COMPONENT_BUS_ADC_H
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+#include <stdint.h>
+
+#include "esp_adc/adc_cali.h"
+#include "esp_adc/adc_oneshot.h"
+#include "esp_err.h"
+#include "star_bus_types.h"
 
 /**
  * @brief Get default ADC operations structure

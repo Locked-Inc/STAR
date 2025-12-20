@@ -1,45 +1,43 @@
 <map id="star_bus_i2c_write" name="star_bus_i2c_write">
-<area shape="rect" id="Node000001" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="1125,258,1255,284"/>
-<area shape="rect" id="Node000002" href="$de/db1/star__bus__i2c__dma_8c.html#aae80743fb443e9a629270ccdb9e1eb8d" title="Write data to I2C device using DMA." alt="" coords="892,134,1054,160"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1165,246,1126,209,1102,190,1076,173,1051,163,1051,158,1078,169,1105,185,1130,205,1170,247"/>
-<area shape="rect" id="Node000003" href="$d3/df5/star__bus__smbus_8c.html#acebfaf2149e5be667ccc2c3303128019" title="SMBus Block Write&#45;Block Read Process Call." alt="" coords="870,184,1077,209"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="1147,251,1076,223,1041,212,1041,207,1078,218,1152,251"/>
-<area shape="rect" id="Node000004" href="$d3/df5/star__bus__smbus_8c.html#a5b3419e1efc2e09a4a145f51f1c52458" title="SMBus Block Write." alt="" coords="892,233,1054,258"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="1107,262,1055,258,1055,252,1112,261"/>
-<area shape="rect" id="Node000005" href="$d3/df5/star__bus__smbus_8c.html#a880eddb5f6fe400ad1c9022cec7bc766" title="SMBus Process Call." alt="" coords="889,282,1058,308"/>
-<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="1107,280,1059,288,1058,283,1112,279"/>
-<area shape="rect" id="Node000006" href="$d3/df5/star__bus__smbus_8c.html#a4150488512abf781bf193c6bdb9d20a0" title="SMBus Write Byte." alt="" coords="895,332,1052,357"/>
-<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="1151,290,1078,323,1041,333,1040,328,1076,318,1146,292"/>
-<area shape="rect" id="Node000007" href="$d3/df5/star__bus__smbus_8c.html#ae35a870d8984311e9af9966d3be33bac" title="SMBus Write Word." alt="" coords="894,381,1053,406"/>
-<area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="1170,295,1130,336,1078,372,1052,383,1050,378,1076,367,1126,332,1165,297"/>
-<area shape="rect" id="Node000008" href="$d2/d58/star__bms__bq7850_8c.html#aa9056151568739c998b9ccf957fee277" title="Execute manufacturer access command." alt="" coords="624,212,820,253"/>
-<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="878,375,868,372,842,351,820,326,745,256,746,251,824,322,846,347,871,367,883,375"/>
-<area shape="rect" id="Node000018" href="$d2/d58/star__bms__bq7850_8c.html#ab14194a4cad45febb48718352688813d" title="Write protection thresholds." alt="" coords="414,351,574,391"/>
-<area shape="poly" id="edge22_Node000007_Node000018" title=" " alt="" coords="889,378,821,371,722,368,622,371,575,372,574,366,622,366,722,363,822,366,895,377"/>
-<area shape="rect" id="Node000019" href="$d2/d58/star__bms__bq7850_8c.html#aeb64af20373d57882e8dd29d9a251cf4" title="Control charge/discharge FETs." alt="" coords="622,381,822,406"/>
-<area shape="poly" id="edge19_Node000007_Node000019" title=" " alt="" coords="876,394,822,396,822,391,881,393"/>
-<area shape="rect" id="Node000020" href="$d2/d58/star__bms__bq7850_8c.html#abcbded89df9ff98462d0e088ad6c3693" title="Disable cell balancing." alt="" coords="636,431,808,471"/>
-<area shape="poly" id="edge20_Node000007_Node000020" title=" " alt="" coords="902,410,809,434,808,429,896,411"/>
-<area shape="rect" id="Node000021" href="$d2/d58/star__bms__bq7850_8c.html#afcf09922b2aaf11ff7c5a9653440026d" title="Enable cell balancing." alt="" coords="637,496,807,537"/>
-<area shape="poly" id="edge21_Node000007_Node000021" title=" " alt="" coords="943,414,887,451,823,485,792,498,791,493,821,481,885,447,938,416"/>
-<area shape="rect" id="Node000009" href="$d2/d58/star__bms__bq7850_8c.html#a5ca840491d01cd97c99ee1bd4150427e" title="Read cell voltage via manufacturer access subcommand." alt="" coords="422,5,566,46"/>
-<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="697,199,645,131,611,94,573,61,554,49,553,44,576,57,615,90,649,128,702,199"/>
-<area shape="rect" id="Node000013" href="$d2/d58/star__bms__bq7850_8c.html#a7aebeaeb09bb7ef8ea7d83c7f888b778" title="Read device information from BQ7850." alt="" coords="420,71,569,111"/>
-<area shape="poly" id="edge12_Node000008_Node000013" title=" " alt="" coords="683,202,633,164,573,125,552,114,552,109,576,121,636,160,688,202"/>
-<area shape="rect" id="Node000014" href="$d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="420,136,568,161"/>
-<area shape="poly" id="edge13_Node000008_Node000014" title=" " alt="" coords="654,206,573,176,539,164,539,159,575,171,659,205"/>
-<area shape="rect" id="Node000015" href="$d2/d58/star__bms__bq7850_8c.html#afd0ffaa80c738dcccbcc04aca730326c" title="Read protection thresholds." alt="" coords="416,185,572,226"/>
-<area shape="poly" id="edge14_Node000008_Node000015" title=" " alt="" coords="606,220,573,217,572,212,612,219"/>
-<area shape="rect" id="Node000016" href="$d2/d58/star__bms__bq7850_8c.html#acab9b627f844ed87063713d187b806a0" title="Read all temperature sensors." alt="" coords="210,216,366,257"/>
-<area shape="poly" id="edge15_Node000008_Node000016" title=" " alt="" coords="606,238,574,240,414,240,367,240,366,235,414,235,574,235,611,236"/>
-<area shape="rect" id="Node000017" href="$d2/d58/star__bms__bq7850_8c.html#ac3685008241274955be00adb9304f26d" title="Software reset of BQ7850." alt="" coords="414,301,574,326"/>
-<area shape="poly" id="edge17_Node000008_Node000017" title=" " alt="" coords="646,259,534,303,532,298,651,257"/>
-<area shape="poly" id="edge18_Node000008_Node000018" title=" " alt="" coords="687,262,635,303,576,341,553,353,551,348,573,337,632,299,682,264"/>
-<area shape="rect" id="Node000010" href="$d2/d58/star__bms__bq7850_8c.html#a60fbc7943a9017cb235890abd5d177c2" title="Read single cell voltage." alt="" coords="210,5,366,46"/>
-<area shape="poly" id="edge9_Node000009_Node000010" title=" " alt="" coords="404,27,368,28,365,23,409,24"/>
-<area shape="rect" id="Node000011" href="$d2/d58/star__bms__bq7850_8c.html#ae6be6b56d85f086df6e8852d62e63d05" title="Read all cell voltages." alt="" coords="210,97,366,138"/>
-<area shape="poly" id="edge10_Node000009_Node000011" title=" " alt="" coords="427,54,415,61,334,99,331,95,413,57,431,51"/>
-<area shape="rect" id="Node000012" href="$d2/d58/star__bms__bq7850_8c.html#a0d22297192ffaac26fd6fb5b6b77c3f7" title="Read complete battery state." alt="" coords="5,184,162,225"/>
-<area shape="poly" id="edge11_Node000011_Node000012" title=" " alt="" coords="222,147,135,185,132,181,225,142"/>
-<area shape="poly" id="edge16_Node000016_Node000012" title=" " alt="" coords="192,223,163,219,161,214,196,220"/>
+<area shape="rect" id="Node000001" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="1125,282,1255,308"/>
+<area shape="rect" id="Node000002" href="$d3/df5/star__bus__smbus_8c.html#acebfaf2149e5be667ccc2c3303128019" title="SMBus Block Write&#45;Block Read Process Call." alt="" coords="870,184,1077,209"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1159,272,1121,247,1076,223,1047,212,1047,207,1078,218,1124,243,1164,273"/>
+<area shape="rect" id="Node000003" href="$d3/df5/star__bus__smbus_8c.html#a5b3419e1efc2e09a4a145f51f1c52458" title="SMBus Block Write." alt="" coords="892,233,1054,258"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="1113,278,1033,262,1033,256,1118,278"/>
+<area shape="rect" id="Node000004" href="$d3/df5/star__bus__smbus_8c.html#a880eddb5f6fe400ad1c9022cec7bc766" title="SMBus Process Call." alt="" coords="889,282,1058,308"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="1107,295,1059,298,1058,292,1112,295"/>
+<area shape="rect" id="Node000005" href="$d3/df5/star__bus__smbus_8c.html#a4150488512abf781bf193c6bdb9d20a0" title="SMBus Write Byte." alt="" coords="895,332,1052,357"/>
+<area shape="poly" id="edge4_Node000001_Node000005" title=" " alt="" coords="1118,311,1034,333,1033,328,1113,312"/>
+<area shape="rect" id="Node000006" href="$d3/df5/star__bus__smbus_8c.html#ae35a870d8984311e9af9966d3be33bac" title="SMBus Write Word." alt="" coords="894,381,1053,406"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="1164,316,1124,347,1078,372,1047,383,1046,378,1076,367,1121,343,1159,318"/>
+<area shape="rect" id="Node000007" href="$d2/d58/star__bms__bq7850_8c.html#aa9056151568739c998b9ccf957fee277" title="Execute manufacturer access command." alt="" coords="624,212,820,253"/>
+<area shape="poly" id="edge6_Node000006_Node000007" title=" " alt="" coords="878,375,868,372,842,351,820,326,745,256,746,251,824,322,846,347,871,367,883,375"/>
+<area shape="rect" id="Node000017" href="$d2/d58/star__bms__bq7850_8c.html#ab14194a4cad45febb48718352688813d" title="Write protection thresholds." alt="" coords="414,351,574,391"/>
+<area shape="poly" id="edge21_Node000006_Node000017" title=" " alt="" coords="889,378,821,371,722,368,622,371,575,372,574,366,622,366,722,363,822,366,895,377"/>
+<area shape="rect" id="Node000018" href="$d2/d58/star__bms__bq7850_8c.html#aeb64af20373d57882e8dd29d9a251cf4" title="Control charge/discharge FETs." alt="" coords="622,381,822,406"/>
+<area shape="poly" id="edge18_Node000006_Node000018" title=" " alt="" coords="876,394,822,396,822,391,881,393"/>
+<area shape="rect" id="Node000019" href="$d2/d58/star__bms__bq7850_8c.html#abcbded89df9ff98462d0e088ad6c3693" title="Disable cell balancing." alt="" coords="636,431,808,471"/>
+<area shape="poly" id="edge19_Node000006_Node000019" title=" " alt="" coords="902,410,809,434,808,429,896,411"/>
+<area shape="rect" id="Node000020" href="$d2/d58/star__bms__bq7850_8c.html#afcf09922b2aaf11ff7c5a9653440026d" title="Enable cell balancing." alt="" coords="637,496,807,537"/>
+<area shape="poly" id="edge20_Node000006_Node000020" title=" " alt="" coords="943,414,887,451,823,485,792,498,791,493,821,481,885,447,938,416"/>
+<area shape="rect" id="Node000008" href="$d2/d58/star__bms__bq7850_8c.html#a5ca840491d01cd97c99ee1bd4150427e" title="Read cell voltage via manufacturer access subcommand." alt="" coords="422,5,566,46"/>
+<area shape="poly" id="edge7_Node000007_Node000008" title=" " alt="" coords="697,199,645,131,611,94,573,61,554,49,553,44,576,57,615,90,649,128,702,199"/>
+<area shape="rect" id="Node000012" href="$d2/d58/star__bms__bq7850_8c.html#a7aebeaeb09bb7ef8ea7d83c7f888b778" title="Read device information from BQ7850." alt="" coords="420,71,569,111"/>
+<area shape="poly" id="edge11_Node000007_Node000012" title=" " alt="" coords="683,202,633,164,573,125,552,114,552,109,576,121,636,160,688,202"/>
+<area shape="rect" id="Node000013" href="$d2/d58/star__bms__bq7850_8c.html#a18f3aeef758059d22cb359789c1c3c7c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="420,136,568,161"/>
+<area shape="poly" id="edge12_Node000007_Node000013" title=" " alt="" coords="654,206,573,176,539,164,539,159,575,171,659,205"/>
+<area shape="rect" id="Node000014" href="$d2/d58/star__bms__bq7850_8c.html#afd0ffaa80c738dcccbcc04aca730326c" title="Read protection thresholds." alt="" coords="416,185,572,226"/>
+<area shape="poly" id="edge13_Node000007_Node000014" title=" " alt="" coords="606,220,573,217,572,212,612,219"/>
+<area shape="rect" id="Node000015" href="$d2/d58/star__bms__bq7850_8c.html#acab9b627f844ed87063713d187b806a0" title="Read all temperature sensors." alt="" coords="210,216,366,257"/>
+<area shape="poly" id="edge14_Node000007_Node000015" title=" " alt="" coords="606,238,574,240,414,240,367,240,366,235,414,235,574,235,611,236"/>
+<area shape="rect" id="Node000016" href="$d2/d58/star__bms__bq7850_8c.html#ac3685008241274955be00adb9304f26d" title="Software reset of BQ7850." alt="" coords="414,301,574,326"/>
+<area shape="poly" id="edge16_Node000007_Node000016" title=" " alt="" coords="646,259,534,303,532,298,651,257"/>
+<area shape="poly" id="edge17_Node000007_Node000017" title=" " alt="" coords="687,262,635,303,576,341,553,353,551,348,573,337,632,299,682,264"/>
+<area shape="rect" id="Node000009" href="$d2/d58/star__bms__bq7850_8c.html#a60fbc7943a9017cb235890abd5d177c2" title="Read single cell voltage." alt="" coords="210,5,366,46"/>
+<area shape="poly" id="edge8_Node000008_Node000009" title=" " alt="" coords="404,27,368,28,365,23,409,24"/>
+<area shape="rect" id="Node000010" href="$d2/d58/star__bms__bq7850_8c.html#ae6be6b56d85f086df6e8852d62e63d05" title="Read all cell voltages." alt="" coords="210,97,366,138"/>
+<area shape="poly" id="edge9_Node000008_Node000010" title=" " alt="" coords="427,54,415,61,334,99,331,95,413,57,431,51"/>
+<area shape="rect" id="Node000011" href="$d2/d58/star__bms__bq7850_8c.html#a0d22297192ffaac26fd6fb5b6b77c3f7" title="Read complete battery state." alt="" coords="5,184,162,225"/>
+<area shape="poly" id="edge10_Node000010_Node000011" title=" " alt="" coords="222,147,135,185,132,181,225,142"/>
+<area shape="poly" id="edge15_Node000015_Node000011" title=" " alt="" coords="192,223,163,219,161,214,196,220"/>
 </map>

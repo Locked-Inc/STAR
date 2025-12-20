@@ -16,5 +16,5 @@ var star__bus__spi__dma_8c =
     [ "star_spi_dma_malloc", "dc/d0c/star__bus__spi__dma_8c.html#a4bca74f3cf7eeb65a4fef821e1913a91", null ],
     [ "star_spi_is_dma_capable", "dc/d0c/star__bus__spi__dma_8c.html#ae0812860368e24030307d3df5b78b2d5", null ],
     [ "g_spi_dma_states", "dc/d0c/star__bus__spi__dma_8c.html#ad9cd42a9c82b77686b158ca244378fc9", null ],
-    [ "s_TAG", "dc/d0c/star__bus__spi__dma_8c.html#a999e3dd103132afd3cd1856f477f2dbd", null ]
+    [ "s_tag", "dc/d0c/star__bus__spi__dma_8c.html#af8861f6a1fb30510e283b1b7806b64e7", null ]
 ];

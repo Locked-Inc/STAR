@@ -10,11 +10,11 @@ var searchData=
   ['details_7',['details',['../d8/d15/struct__star__v1___firmware_update_error.html#a0bdbd5e6a2056bebb9e0c468a0a115a5',1,'_star_v1_FirmwareUpdateError']]],
   ['dev_5fcfg_8',['dev_cfg',['../da/d1c/structstar__spi__bus__config.html#a8ce7cb1c472887928116b70fca0f8614',1,'star_spi_bus_config']]],
   ['device_5finfo_9',['device_info',['../d8/d40/struct__star__v1___get_device_info_response.html#a67e761c901ac5e8781b81dca5e28e644',1,'_star_v1_GetDeviceInfoResponse']]],
-  ['device_5fname_10',['device_name',['../dd/dce/structbq7850__device__info__t.html#a182191973a1914419cdf42f39a8c94da',1,'bq7850_device_info_t::device_name'],['../d3/d35/struct__star__v1___bms_device_info.html#a897acfcd6890c365c2228c40e15e2301',1,'_star_v1_BmsDeviceInfo::device_name']]],
+  ['device_5fname_10',['device_name',['../dd/dce/structbq7850__device__info__t.html#a696c168572bd28d3dfe368e502fc3cbb',1,'bq7850_device_info_t::device_name'],['../d3/d35/struct__star__v1___bms_device_info.html#a897acfcd6890c365c2228c40e15e2301',1,'_star_v1_BmsDeviceInfo::device_name']]],
   ['device_5ftype_11',['device_type',['../dd/dce/structbq7850__device__info__t.html#a6ef0aabf0e171cc0c2148cbeb65a97c9',1,'bq7850_device_info_t::device_type'],['../d3/d35/struct__star__v1___bms_device_info.html#a6151eba923b75eec1b881846313c9267',1,'_star_v1_BmsDeviceInfo::device_type']]],
   ['devices_5ffound_12',['devices_found',['../de/dd3/structstar__onewire__stats__t.html#aa8fd466fb0caec4a73f24d693e52896d',1,'star_onewire_stats_t']]],
   ['discharge_5ffet_5fenabled_13',['discharge_fet_enabled',['../d2/d5c/struct__star__v1___control_fets_response.html#a53c438f2861f1635e601b09b94269580',1,'_star_v1_ControlFetsResponse']]],
   ['discharging_14',['discharging',['../dd/daf/structbq7850__status__t.html#a28709809dd36f0b4a8b480ef0e8e18a2',1,'bq7850_status_t::discharging'],['../d2/da3/struct__star__v1___battery_status.html#a8006207d947f0a6ec5a46cd669bcca1d',1,'_star_v1_BatteryStatus::discharging']]],
-  ['dma_5fchannel_15',['dma_channel',['../dd/d15/structstar__i2c__dma__config__t.html#a6df28268ceb208441bc157e03578aa3a',1,'star_i2c_dma_config_t::dma_channel'],['../df/df1/structstar__spi__dma__config__t.html#a9036378293f98953aa4373c73c1427a6',1,'star_spi_dma_config_t::dma_channel']]],
+  ['dma_5fchannel_15',['dma_channel',['../df/df1/structstar__spi__dma__config__t.html#a9036378293f98953aa4373c73c1427a6',1,'star_spi_dma_config_t']]],
   ['duty_5fcycle_5fpercent_16',['duty_cycle_percent',['../d6/d68/struct__star__v1___motor_power_command.html#a93ea779c11a75618e30d29ada4e992ec',1,'_star_v1_MotorPowerCommand::duty_cycle_percent'],['../d7/d3e/struct__star__v1___motor_status.html#aed01dc951624582a4f35f5b8d0262e28',1,'_star_v1_MotorStatus::duty_cycle_percent']]]
 ];

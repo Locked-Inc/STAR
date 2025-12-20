@@ -4,7 +4,7 @@
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="691,173,640,118,607,88,573,61,552,49,553,44,576,57,611,84,643,114,696,174"/>
 <area shape="rect" id="Node000006" href="$d2/d58/star__bms__bq7850_8c.html#a7aebeaeb09bb7ef8ea7d83c7f888b778" title="Read device information from BQ7850." alt="" coords="420,71,569,111"/>
 <area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="670,177,573,125,550,115,550,109,576,121,675,177"/>
-<area shape="rect" id="Node000007" href="$d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="420,136,568,161"/>
+<area shape="rect" id="Node000007" href="$d2/d58/star__bms__bq7850_8c.html#a18f3aeef758059d22cb359789c1c3c7c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="420,136,568,161"/>
 <area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="620,181,548,164,548,159,626,181"/>
 <area shape="rect" id="Node000008" href="$d2/d58/star__bms__bq7850_8c.html#afd0ffaa80c738dcccbcc04aca730326c" title="Read protection thresholds." alt="" coords="416,185,572,226"/>
 <area shape="poly" id="edge7_Node000001_Node000008" title=" " alt="" coords="604,206,573,208,572,203,610,205"/>

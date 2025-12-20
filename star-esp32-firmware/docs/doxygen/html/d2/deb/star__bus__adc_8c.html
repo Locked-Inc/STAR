@@ -110,7 +110,7 @@ Include dependency graph for star_bus_adc.c:</div>
 <div class="center"><img src="../../d3/dbd/star__bus__adc_8c__incl.png" border="0" usemap="#alib_2star__bus_2src_2star__bus__adc_8c" loading="lazy" alt=""/></div>
 <map name="alib_2star__bus_2src_2star__bus__adc_8c" id="alib_2star__bus_2src_2star__bus__adc_8c">
 <area shape="rect" title="ADC (Analog&#45;to&#45;Digital Converter) operations implementation." alt="" coords="1458,5,1595,46"/>
-<area shape="rect" href="../../d2/d8f/star__bus__adc_8h.html" title="ADC bus operations through the unified bus manager." alt="" coords="1218,94,1328,120"/>
+<area shape="rect" href="../../d2/d8f/star__bus__adc_8h.html" title="ADC bus operations API through the unified bus manager." alt="" coords="1218,94,1328,120"/>
 <area shape="poly" title=" " alt="" coords="1461,48,1328,91,1326,86,1466,46"/>
 <area shape="rect" title=" " alt="" coords="5,389,139,414"/>
 <area shape="poly" title=" " alt="" coords="1456,28,1123,34,898,41,664,54,444,72,260,99,188,116,134,135,99,156,91,168,88,179,88,256,85,319,79,374,73,373,79,319,83,255,83,179,86,165,96,152,131,130,187,111,259,94,444,67,664,48,898,36,1123,29,1461,26"/>
@@ -206,18 +206,18 @@ Include dependency graph for star_bus_adc.c:</div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a8654d658e291ea15a6e2fa218f2cc6c4" id="r_a8654d658e291ea15a6e2fa218f2cc6c4"><td class="memItemLeft" align="right" valign="top">static esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a8654d658e291ea15a6e2fa218f2cc6c4">internal_star_bus_adc_read_raw</a> (const <a class="el" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a> *config, int *out_raw)</td></tr>
-<tr class="memitem:aa96bcd883cd482287518ab0cc64b0043" id="r_aa96bcd883cd482287518ab0cc64b0043"><td class="memItemLeft" align="right" valign="top">static esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa96bcd883cd482287518ab0cc64b0043">internal_star_bus_adc_read_voltage</a> (const <a class="el" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a> *config, int *out_voltage_mv)</td></tr>
+<tr class="memitem:a9aa38e07cbe4bfb0c10cffcb38b8b44f" id="r_a9aa38e07cbe4bfb0c10cffcb38b8b44f"><td class="memItemLeft" align="right" valign="top">static esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a9aa38e07cbe4bfb0c10cffcb38b8b44f">internal_star_bus_adc_read_raw</a> (const <a class="el" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a> *config, int32_t *out_raw)</td></tr>
+<tr class="memitem:aee75177aaf69ec3d185b2dae64133ce3" id="r_aee75177aaf69ec3d185b2dae64133ce3"><td class="memItemLeft" align="right" valign="top">static esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aee75177aaf69ec3d185b2dae64133ce3">internal_star_bus_adc_read_voltage</a> (const <a class="el" href="../../dd/d40/star__bus__common__types_8h.html#ad802dda67d7518bd4022e4a9498fa542">star_bus_config_t</a> *config, int32_t *out_voltage_mv)</td></tr>
 <tr class="memitem:aa3fe9206840f1db313371895470b989a" id="r_aa3fe9206840f1db313371895470b989a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="../../dd/d9d/star__bus__protocol__types_8h.html#a73e1b75ae3e8fde5fc5e43224ce4c225">star_adc_ops_t</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa3fe9206840f1db313371895470b989a">star_bus_adc_get_default_ops</a> (void)</td></tr>
 <tr class="memdesc:aa3fe9206840f1db313371895470b989a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get default ADC operations structure.  <br /></td></tr>
-<tr class="memitem:ab4b26501aa8f09b960d0238c4d338704" id="r_ab4b26501aa8f09b960d0238c4d338704"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab4b26501aa8f09b960d0238c4d338704">star_bus_adc_read_raw</a> (<a class="el" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a> *manager, const char *bus_name, int *out_raw)</td></tr>
-<tr class="memdesc:ab4b26501aa8f09b960d0238c4d338704"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read raw ADC value.  <br /></td></tr>
-<tr class="memitem:a1bb4dd7003ae57c4a6fff8bfa4c9d60c" id="r_a1bb4dd7003ae57c4a6fff8bfa4c9d60c"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1bb4dd7003ae57c4a6fff8bfa4c9d60c">star_bus_adc_read_voltage</a> (<a class="el" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a> *manager, const char *bus_name, int *out_voltage_mv)</td></tr>
-<tr class="memdesc:a1bb4dd7003ae57c4a6fff8bfa4c9d60c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read calibrated voltage in millivolts.  <br /></td></tr>
+<tr class="memitem:ac030b4ce2926ab952d01e9a73975b84e" id="r_ac030b4ce2926ab952d01e9a73975b84e"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac030b4ce2926ab952d01e9a73975b84e">star_bus_adc_read_raw</a> (<a class="el" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a> *manager, const char *bus_name, int32_t *out_raw)</td></tr>
+<tr class="memdesc:ac030b4ce2926ab952d01e9a73975b84e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read raw ADC value.  <br /></td></tr>
+<tr class="memitem:a93bf2ccd624c4656121404c06ab1894e" id="r_a93bf2ccd624c4656121404c06ab1894e"><td class="memItemLeft" align="right" valign="top">esp_err_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a93bf2ccd624c4656121404c06ab1894e">star_bus_adc_read_voltage</a> (<a class="el" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a> *manager, const char *bus_name, int32_t *out_voltage_mv)</td></tr>
+<tr class="memdesc:a93bf2ccd624c4656121404c06ab1894e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read calibrated voltage in millivolts.  <br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-var-members" class="groupheader"><a id="var-members" name="var-members"></a>
 Variables</h2></td></tr>
-<tr class="memitem:a999e3dd103132afd3cd1856f477f2dbd" id="r_a999e3dd103132afd3cd1856f477f2dbd"><td class="memItemLeft" align="right" valign="top">static const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a999e3dd103132afd3cd1856f477f2dbd">s_TAG</a> = &quot;STAR_BUS_ADC&quot;</td></tr>
+<tr class="memitem:af8861f6a1fb30510e283b1b7806b64e7" id="r_af8861f6a1fb30510e283b1b7806b64e7"><td class="memItemLeft" align="right" valign="top">static const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#af8861f6a1fb30510e283b1b7806b64e7">s_tag</a> = &quot;STAR_BUS_ADC&quot;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>ADC (Analog-to-Digital Converter) operations implementation. </p>
@@ -227,8 +227,8 @@ Variables</h2></td></tr>
 
 <p class="definition">Definition in file <a class="el" href="../../d2/deb/star__bus__adc_8c_source.html">star_bus_adc.c</a>.</p>
 </div><a name="doc-func-members" id="doc-func-members"></a><h2 id="header-doc-func-members" class="groupheader">Function Documentation</h2>
-<a id="a8654d658e291ea15a6e2fa218f2cc6c4" name="a8654d658e291ea15a6e2fa218f2cc6c4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a8654d658e291ea15a6e2fa218f2cc6c4">&#9670;&#160;</a></span>internal_star_bus_adc_read_raw()</h2>
+<a id="a9aa38e07cbe4bfb0c10cffcb38b8b44f" name="a9aa38e07cbe4bfb0c10cffcb38b8b44f"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9aa38e07cbe4bfb0c10cffcb38b8b44f">&#9670;&#160;</a></span>internal_star_bus_adc_read_raw()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -244,7 +244,7 @@ Variables</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int *</td>          <td class="paramname"><span class="paramname"><em>out_raw</em></span>&#160;)</td>
+          <td class="paramtype">int32_t *</td>          <td class="paramname"><span class="paramname"><em>out_raw</em></span>&#160;)</td>
         </tr>
       </table>
   </td>
@@ -254,16 +254,16 @@ Variables</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d2/deb/star__bus__adc_8c_source.html#l00096">96</a> of file <a class="el" href="../../d2/deb/star__bus__adc_8c_source.html">star_bus_adc.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/deb/star__bus__adc_8c_source.html#l00097">97</a> of file <a class="el" href="../../d2/deb/star__bus__adc_8c_source.html">star_bus_adc.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00062">star_bus_config::adc</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00169">star_adc_bus_config::channel</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, and <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00166">star_adc_bus_config::unit_handle</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00062">star_bus_config::adc</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00171">star_adc_bus_config::channel</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, and <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00168">star_adc_bus_config::unit_handle</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="../../d2/deb/star__bus__adc_8c_source.html#l00037">star_bus_adc_get_default_ops()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d2/deb/star__bus__adc_8c_a8654d658e291ea15a6e2fa218f2cc6c4_icgraph.png" border="0" usemap="#ad2/deb/star__bus__adc_8c_a8654d658e291ea15a6e2fa218f2cc6c4_icgraph" loading="lazy" alt=""/></div>
-<map name="ad2/deb/star__bus__adc_8c_a8654d658e291ea15a6e2fa218f2cc6c4_icgraph" id="ad2/deb/star__bus__adc_8c_a8654d658e291ea15a6e2fa218f2cc6c4_icgraph">
+<div class="center"><img src="../../d2/deb/star__bus__adc_8c_a9aa38e07cbe4bfb0c10cffcb38b8b44f_icgraph.png" border="0" usemap="#ad2/deb/star__bus__adc_8c_a9aa38e07cbe4bfb0c10cffcb38b8b44f_icgraph" loading="lazy" alt=""/></div>
+<map name="ad2/deb/star__bus__adc_8c_a9aa38e07cbe4bfb0c10cffcb38b8b44f_icgraph" id="ad2/deb/star__bus__adc_8c_a9aa38e07cbe4bfb0c10cffcb38b8b44f_icgraph">
 <area shape="rect" title=" " alt="" coords="484,5,632,46"/>
 <area shape="rect" href="../../d2/deb/star__bus__adc_8c.html#aa3fe9206840f1db313371895470b989a" title="Get default ADC operations structure." alt="" coords="238,13,436,38"/>
 <area shape="poly" title=" " alt="" coords="466,26,437,28,437,23,471,26"/>
@@ -274,8 +274,8 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="aa96bcd883cd482287518ab0cc64b0043" name="aa96bcd883cd482287518ab0cc64b0043"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa96bcd883cd482287518ab0cc64b0043">&#9670;&#160;</a></span>internal_star_bus_adc_read_voltage()</h2>
+<a id="aee75177aaf69ec3d185b2dae64133ce3" name="aee75177aaf69ec3d185b2dae64133ce3"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aee75177aaf69ec3d185b2dae64133ce3">&#9670;&#160;</a></span>internal_star_bus_adc_read_voltage()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -291,7 +291,7 @@ Here is the caller graph for this function:</div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int *</td>          <td class="paramname"><span class="paramname"><em>out_voltage_mv</em></span>&#160;)</td>
+          <td class="paramtype">int32_t *</td>          <td class="paramname"><span class="paramname"><em>out_voltage_mv</em></span>&#160;)</td>
         </tr>
       </table>
   </td>
@@ -301,16 +301,16 @@ Here is the caller graph for this function:</div>
 </table>
 </div><div class="memdoc">
 
-<p class="definition">Definition at line <a class="el" href="../../d2/deb/star__bus__adc_8c_source.html#l00112">112</a> of file <a class="el" href="../../d2/deb/star__bus__adc_8c_source.html">star_bus_adc.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/deb/star__bus__adc_8c_source.html#l00118">118</a> of file <a class="el" href="../../d2/deb/star__bus__adc_8c_source.html">star_bus_adc.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00062">star_bus_config::adc</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00167">star_adc_bus_config::cali_handle</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00169">star_adc_bus_config::channel</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, and <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00166">star_adc_bus_config::unit_handle</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00062">star_bus_config::adc</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00169">star_adc_bus_config::cali_handle</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00171">star_adc_bus_config::channel</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, and <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00168">star_adc_bus_config::unit_handle</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="../../d2/deb/star__bus__adc_8c_source.html#l00037">star_bus_adc_get_default_ops()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d2/deb/star__bus__adc_8c_aa96bcd883cd482287518ab0cc64b0043_icgraph.png" border="0" usemap="#ad2/deb/star__bus__adc_8c_aa96bcd883cd482287518ab0cc64b0043_icgraph" loading="lazy" alt=""/></div>
-<map name="ad2/deb/star__bus__adc_8c_aa96bcd883cd482287518ab0cc64b0043_icgraph" id="ad2/deb/star__bus__adc_8c_aa96bcd883cd482287518ab0cc64b0043_icgraph">
+<div class="center"><img src="../../d2/deb/star__bus__adc_8c_aee75177aaf69ec3d185b2dae64133ce3_icgraph.png" border="0" usemap="#ad2/deb/star__bus__adc_8c_aee75177aaf69ec3d185b2dae64133ce3_icgraph" loading="lazy" alt=""/></div>
+<map name="ad2/deb/star__bus__adc_8c_aee75177aaf69ec3d185b2dae64133ce3_icgraph" id="ad2/deb/star__bus__adc_8c_aee75177aaf69ec3d185b2dae64133ce3_icgraph">
 <area shape="rect" title=" " alt="" coords="484,5,632,46"/>
 <area shape="rect" href="../../d2/deb/star__bus__adc_8c.html#aa3fe9206840f1db313371895470b989a" title="Get default ADC operations structure." alt="" coords="238,13,436,38"/>
 <area shape="poly" title=" " alt="" coords="466,26,437,28,437,23,471,26"/>
@@ -342,7 +342,7 @@ Here is the caller graph for this function:</div>
 
 <p class="definition">Definition at line <a class="el" href="../../d2/deb/star__bus__adc_8c_source.html#l00037">37</a> of file <a class="el" href="../../d2/deb/star__bus__adc_8c_source.html">star_bus_adc.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/deb/star__bus__adc_8c_source.html#l00096">internal_star_bus_adc_read_raw()</a>, <a class="el" href="../../d2/deb/star__bus__adc_8c_source.html#l00112">internal_star_bus_adc_read_voltage()</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../d2/deb/star__bus__adc_8c_source.html#l00097">internal_star_bus_adc_read_raw()</a>, <a class="el" href="../../d2/deb/star__bus__adc_8c_source.html#l00118">internal_star_bus_adc_read_voltage()</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00246">star_bus_config_create_adc()</a>.</p>
 <div class="dynheader">
@@ -351,9 +351,9 @@ Here is the call graph for this function:</div>
 <div class="center"><img src="../../d2/deb/star__bus__adc_8c_aa3fe9206840f1db313371895470b989a_cgraph.png" border="0" usemap="#ad2/deb/star__bus__adc_8c_aa3fe9206840f1db313371895470b989a_cgraph" loading="lazy" alt=""/></div>
 <map name="ad2/deb/star__bus__adc_8c_aa3fe9206840f1db313371895470b989a_cgraph" id="ad2/deb/star__bus__adc_8c_aa3fe9206840f1db313371895470b989a_cgraph">
 <area shape="rect" title="Get default ADC operations structure." alt="" coords="5,46,204,72"/>
-<area shape="rect" href="../../d2/deb/star__bus__adc_8c.html#a8654d658e291ea15a6e2fa218f2cc6c4" title=" " alt="" coords="252,5,400,46"/>
+<area shape="rect" href="../../d2/deb/star__bus__adc_8c.html#a9aa38e07cbe4bfb0c10cffcb38b8b44f" title=" " alt="" coords="252,5,400,46"/>
 <area shape="poly" title=" " alt="" coords="194,43,239,38,234,40,195,48"/>
-<area shape="rect" href="../../d2/deb/star__bus__adc_8c.html#aa96bcd883cd482287518ab0cc64b0043" title=" " alt="" coords="252,71,400,111"/>
+<area shape="rect" href="../../d2/deb/star__bus__adc_8c.html#aee75177aaf69ec3d185b2dae64133ce3" title=" " alt="" coords="252,71,400,111"/>
 <area shape="poly" title=" " alt="" coords="198,70,239,78,233,78,198,75"/>
 </map>
 </div>
@@ -370,8 +370,8 @@ Here is the caller graph for this function:</div>
 
 </div>
 </div>
-<a id="ab4b26501aa8f09b960d0238c4d338704" name="ab4b26501aa8f09b960d0238c4d338704"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab4b26501aa8f09b960d0238c4d338704">&#9670;&#160;</a></span>star_bus_adc_read_raw()</h2>
+<a id="ac030b4ce2926ab952d01e9a73975b84e" name="ac030b4ce2926ab952d01e9a73975b84e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ac030b4ce2926ab952d01e9a73975b84e">&#9670;&#160;</a></span>star_bus_adc_read_raw()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -389,7 +389,7 @@ Here is the caller graph for this function:</div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int *</td>          <td class="paramname"><span class="paramname"><em>out_raw</em></span>&#160;)</td>
+          <td class="paramtype">int32_t *</td>          <td class="paramname"><span class="paramname"><em>out_raw</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -399,7 +399,7 @@ Here is the caller graph for this function:</div>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">manager</td><td>Bus manager instance </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">bus_name</td><td>Name of ADC bus </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">out_raw</td><td>Pointer to store raw ADC value </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">out_raw</td><td>Pointer to store raw ADC value (int32_t for explicit typing) </td></tr>
   </table>
   </dd>
 </dl>
@@ -407,14 +407,14 @@ Here is the caller graph for this function:</div>
 
 <p class="definition">Definition at line <a class="el" href="../../d2/deb/star__bus__adc_8c_source.html#l00047">47</a> of file <a class="el" href="../../d2/deb/star__bus__adc_8c_source.html">star_bus_adc.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00062">star_bus_config::adc</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00059">k_star_bus_type_adc</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00172">star_adc_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00158">star_adc_ops::read_raw</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00199">star_bus_manager_find_bus()</a>, and <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00052">star_bus_config::type</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00062">star_bus_config::adc</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00059">k_star_bus_type_adc</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00174">star_adc_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00160">star_adc_ops::read_raw</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00370">star_bus_manager_find_bus()</a>, and <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00052">star_bus_config::type</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00692">star_bus_read_analog_raw()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00883">star_bus_read_analog_raw()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d2/deb/star__bus__adc_8c_ab4b26501aa8f09b960d0238c4d338704_cgraph.png" border="0" usemap="#ad2/deb/star__bus__adc_8c_ab4b26501aa8f09b960d0238c4d338704_cgraph" loading="lazy" alt=""/></div>
-<map name="ad2/deb/star__bus__adc_8c_ab4b26501aa8f09b960d0238c4d338704_cgraph" id="ad2/deb/star__bus__adc_8c_ab4b26501aa8f09b960d0238c4d338704_cgraph">
+<div class="center"><img src="../../d2/deb/star__bus__adc_8c_ac030b4ce2926ab952d01e9a73975b84e_cgraph.png" border="0" usemap="#ad2/deb/star__bus__adc_8c_ac030b4ce2926ab952d01e9a73975b84e_cgraph" loading="lazy" alt=""/></div>
+<map name="ad2/deb/star__bus__adc_8c_ac030b4ce2926ab952d01e9a73975b84e_cgraph" id="ad2/deb/star__bus__adc_8c_ac030b4ce2926ab952d01e9a73975b84e_cgraph">
 <area shape="rect" title="Read raw ADC value." alt="" coords="5,5,165,31"/>
 <area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="213,5,397,31"/>
 <area shape="poly" title=" " alt="" coords="165,16,200,18,194,18,165,21"/>
@@ -423,18 +423,18 @@ Here is the call graph for this function:</div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d2/deb/star__bus__adc_8c_ab4b26501aa8f09b960d0238c4d338704_icgraph.png" border="0" usemap="#ad2/deb/star__bus__adc_8c_ab4b26501aa8f09b960d0238c4d338704_icgraph" loading="lazy" alt=""/></div>
-<map name="ad2/deb/star__bus__adc_8c_ab4b26501aa8f09b960d0238c4d338704_icgraph" id="ad2/deb/star__bus__adc_8c_ab4b26501aa8f09b960d0238c4d338704_icgraph">
+<div class="center"><img src="../../d2/deb/star__bus__adc_8c_ac030b4ce2926ab952d01e9a73975b84e_icgraph.png" border="0" usemap="#ad2/deb/star__bus__adc_8c_ac030b4ce2926ab952d01e9a73975b84e_icgraph" loading="lazy" alt=""/></div>
+<map name="ad2/deb/star__bus__adc_8c_ac030b4ce2926ab952d01e9a73975b84e_icgraph" id="ad2/deb/star__bus__adc_8c_ac030b4ce2926ab952d01e9a73975b84e_icgraph">
 <area shape="rect" title="Read raw ADC value." alt="" coords="230,5,389,31"/>
-<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#ac56f7a391c23f795d7c07775676b3497" title="Read raw ADC value from an ADC bus (unified interface)." alt="" coords="5,5,182,31"/>
+<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#acefa929ad30a81325ed5098236148374" title="Read raw ADC value from an ADC bus (unified interface)." alt="" coords="5,5,182,31"/>
 <area shape="poly" title=" " alt="" coords="211,18,182,21,182,16,217,18"/>
 </map>
 </div>
 
 </div>
 </div>
-<a id="a1bb4dd7003ae57c4a6fff8bfa4c9d60c" name="a1bb4dd7003ae57c4a6fff8bfa4c9d60c"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1bb4dd7003ae57c4a6fff8bfa4c9d60c">&#9670;&#160;</a></span>star_bus_adc_read_voltage()</h2>
+<a id="a93bf2ccd624c4656121404c06ab1894e" name="a93bf2ccd624c4656121404c06ab1894e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a93bf2ccd624c4656121404c06ab1894e">&#9670;&#160;</a></span>star_bus_adc_read_voltage()</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -452,7 +452,7 @@ Here is the caller graph for this function:</div>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">int *</td>          <td class="paramname"><span class="paramname"><em>out_voltage_mv</em></span>&#160;)</td>
+          <td class="paramtype">int32_t *</td>          <td class="paramname"><span class="paramname"><em>out_voltage_mv</em></span>&#160;)</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -462,22 +462,22 @@ Here is the caller graph for this function:</div>
   <table class="params">
     <tr><td class="paramdir">[in]</td><td class="paramname">manager</td><td>Bus manager instance </td></tr>
     <tr><td class="paramdir">[in]</td><td class="paramname">bus_name</td><td>Name of ADC bus </td></tr>
-    <tr><td class="paramdir">[out]</td><td class="paramname">out_voltage_mv</td><td>Pointer to store voltage in mV </td></tr>
+    <tr><td class="paramdir">[out]</td><td class="paramname">out_voltage_mv</td><td>Pointer to store voltage in mV (int32_t for explicit typing) </td></tr>
   </table>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d2/deb/star__bus__adc_8c_source.html#l00071">71</a> of file <a class="el" href="../../d2/deb/star__bus__adc_8c_source.html">star_bus_adc.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d2/deb/star__bus__adc_8c_source.html#l00070">70</a> of file <a class="el" href="../../d2/deb/star__bus__adc_8c_source.html">star_bus_adc.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00062">star_bus_config::adc</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00059">k_star_bus_type_adc</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00172">star_adc_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00159">star_adc_ops::read_voltage</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00199">star_bus_manager_find_bus()</a>, and <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00052">star_bus_config::type</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00062">star_bus_config::adc</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00059">k_star_bus_type_adc</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00174">star_adc_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00161">star_adc_ops::read_voltage</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00370">star_bus_manager_find_bus()</a>, and <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00052">star_bus_config::type</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00704">star_bus_read_analog_mv()</a>, and <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00173">star_drv8243_read_current()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00895">star_bus_read_analog_mv()</a>, and <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00201">star_drv8243_read_current()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d2/deb/star__bus__adc_8c_a1bb4dd7003ae57c4a6fff8bfa4c9d60c_cgraph.png" border="0" usemap="#ad2/deb/star__bus__adc_8c_a1bb4dd7003ae57c4a6fff8bfa4c9d60c_cgraph" loading="lazy" alt=""/></div>
-<map name="ad2/deb/star__bus__adc_8c_a1bb4dd7003ae57c4a6fff8bfa4c9d60c_cgraph" id="ad2/deb/star__bus__adc_8c_a1bb4dd7003ae57c4a6fff8bfa4c9d60c_cgraph">
+<div class="center"><img src="../../d2/deb/star__bus__adc_8c_a93bf2ccd624c4656121404c06ab1894e_cgraph.png" border="0" usemap="#ad2/deb/star__bus__adc_8c_a93bf2ccd624c4656121404c06ab1894e_cgraph" loading="lazy" alt=""/></div>
+<map name="ad2/deb/star__bus__adc_8c_a93bf2ccd624c4656121404c06ab1894e_cgraph" id="ad2/deb/star__bus__adc_8c_a93bf2ccd624c4656121404c06ab1894e_cgraph">
 <area shape="rect" title="Read calibrated voltage in millivolts." alt="" coords="5,5,186,31"/>
 <area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="234,5,418,31"/>
 <area shape="poly" title=" " alt="" coords="186,16,221,18,215,18,186,21"/>
@@ -486,10 +486,10 @@ Here is the call graph for this function:</div>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
-<div class="center"><img src="../../d2/deb/star__bus__adc_8c_a1bb4dd7003ae57c4a6fff8bfa4c9d60c_icgraph.png" border="0" usemap="#ad2/deb/star__bus__adc_8c_a1bb4dd7003ae57c4a6fff8bfa4c9d60c_icgraph" loading="lazy" alt=""/></div>
-<map name="ad2/deb/star__bus__adc_8c_a1bb4dd7003ae57c4a6fff8bfa4c9d60c_icgraph" id="ad2/deb/star__bus__adc_8c_a1bb4dd7003ae57c4a6fff8bfa4c9d60c_icgraph">
+<div class="center"><img src="../../d2/deb/star__bus__adc_8c_a93bf2ccd624c4656121404c06ab1894e_icgraph.png" border="0" usemap="#ad2/deb/star__bus__adc_8c_a93bf2ccd624c4656121404c06ab1894e_icgraph" loading="lazy" alt=""/></div>
+<map name="ad2/deb/star__bus__adc_8c_a93bf2ccd624c4656121404c06ab1894e_icgraph" id="ad2/deb/star__bus__adc_8c_a93bf2ccd624c4656121404c06ab1894e_icgraph">
 <area shape="rect" title="Read calibrated voltage in millivolts." alt="" coords="646,31,827,56"/>
-<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a20dc68877907e8b866bb386caa57f351" title="Read calibrated voltage in millivolts from an ADC bus (unified interface)." alt="" coords="424,5,597,31"/>
+<area shape="rect" href="../../d7/d60/star__bus__manager_8c.html#a92fd8b349a1209cc8e82aba2d779b339" title="Read calibrated voltage in millivolts from an ADC bus (unified interface)." alt="" coords="424,5,597,31"/>
 <area shape="poly" title=" " alt="" coords="628,32,598,31,598,25,633,32"/>
 <area shape="rect" href="../../d2/d8f/star__drv8243_8c.html#ab3df3aa160b3212052de3a15e59dec94" title="Read motor current." alt="" coords="423,55,598,80"/>
 <area shape="poly" title=" " alt="" coords="633,55,599,61,599,55,628,55"/>
@@ -503,8 +503,8 @@ Here is the caller graph for this function:</div>
 </div>
 </div>
 <a name="doc-var-members" id="doc-var-members"></a><h2 id="header-doc-var-members" class="groupheader">Variable Documentation</h2>
-<a id="a999e3dd103132afd3cd1856f477f2dbd" name="a999e3dd103132afd3cd1856f477f2dbd"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a999e3dd103132afd3cd1856f477f2dbd">&#9670;&#160;</a></span>s_TAG</h2>
+<a id="af8861f6a1fb30510e283b1b7806b64e7" name="af8861f6a1fb30510e283b1b7806b64e7"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#af8861f6a1fb30510e283b1b7806b64e7">&#9670;&#160;</a></span>s_tag</h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -513,7 +513,7 @@ Here is the caller graph for this function:</div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">const char* s_TAG = &quot;STAR_BUS_ADC&quot;</td>
+          <td class="memname">const char* s_tag = &quot;STAR_BUS_ADC&quot;</td>
         </tr>
       </table>
   </td>
