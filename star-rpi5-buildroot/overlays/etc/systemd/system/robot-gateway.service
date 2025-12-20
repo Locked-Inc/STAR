@@ -9,12 +9,11 @@ StartLimitIntervalSec=0
 Type=simple
 User=root
 WorkingDirectory=/opt/robot-gateway
-ExecStart=/usr/bin/java -jar /opt/robot-gateway/robot-gateway.jar
+ExecStart=/usr/bin/star-gateway
 Restart=always
 RestartSec=10
 
 # Environment variables
-Environment="JAVA_HOME=/usr/lib/jvm/java-17-openjdk"
 Environment="ROS_DISTRO=jazzy"
 Environment="ROS_VERSION=2"
 
