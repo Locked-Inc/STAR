@@ -1,6 +1,7 @@
 var searchData=
 [
-  ['onewire_5ffamily_5fcode_5ft_0',['onewire_family_code_t',['../db/dbf/star__bus__onewire__constants_8h.html#a40bfdad2ce9a54c85b58af0e7b7fd099',1,'star_bus_onewire_constants.h']]],
-  ['onewire_5from_5fcmd_5ft_1',['onewire_rom_cmd_t',['../db/dbf/star__bus__onewire__constants_8h.html#ae7cab31d85b2319b8da43a27045a3101',1,'star_bus_onewire_constants.h']]],
-  ['onewire_5ftiming_5fconfig_5ft_2',['onewire_timing_config_t',['../d0/d6c/star__bus__onewire_8h.html#a85c2b703e576b58e758a1fdade773981',1,'star_bus_onewire.h']]]
+  ['ds18b20_5fcmd_5ft_0',['ds18b20_cmd_t',['../db/dbf/star__bus__onewire__constants_8h.html#add46b9e64e98895681f648451ee67f65',1,'ds18b20_cmd_t:&#160;star_bus_onewire_constants.h'],['../d5/dca/star__sensor__ds18b20_8c.html#add46b9e64e98895681f648451ee67f65',1,'ds18b20_cmd_t:&#160;star_sensor_ds18b20.c']]],
+  ['ds18b20_5fconfig_5ft_1',['ds18b20_config_t',['../d5/dca/star__sensor__ds18b20_8c.html#a3b6c0570e4301f4ae2ae5a5607c449fb',1,'star_sensor_ds18b20.c']]],
+  ['ds18b20_5fcrc_5ft_2',['ds18b20_crc_t',['../d5/dca/star__sensor__ds18b20_8c.html#ada0497cc0ee5be0d0ec54077d62b928b',1,'star_sensor_ds18b20.c']]],
+  ['ds18b20_5fsize_5ft_3',['ds18b20_size_t',['../d5/dca/star__sensor__ds18b20_8c.html#ac36f214a78a2b9898d50df3f2211c10c',1,'star_sensor_ds18b20.c']]]
 ];

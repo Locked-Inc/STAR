@@ -1,8 +1,5 @@
 var star__drv8243_8c =
 [
-    [ "DRV8243_DEFAULT_KI_PROPI", "d2/d8f/star__drv8243_8c.html#aa43f963c52e199ce8b03bbd87755339d", null ],
-    [ "DRV8243_DEFAULT_TIMER_RES_HZ", "d2/d8f/star__drv8243_8c.html#a0616a79b78beb71fb5fd175678000e2d", null ],
-    [ "DRV8243_MAX_PWM_FREQ_HZ", "d2/d8f/star__drv8243_8c.html#a8410639ed07841f83dabd243841d6fbd", null ],
     [ "internal_drv8243_check_current_limit", "d2/d8f/star__drv8243_8c.html#a0f2ea5aae7887b0cae90a4627ca8e1a5", null ],
     [ "internal_drv8243_configure_fault_pin", "d2/d8f/star__drv8243_8c.html#aa3b8ff73fa35a97c51af28fa7c31dd7e", null ],
     [ "star_drv8243_deinit", "d2/d8f/star__drv8243_8c.html#a44d0d73194efa934d0e78571f4dd9518", null ],
@@ -13,5 +10,7 @@ var star__drv8243_8c =
     [ "star_drv8243_set_current_limit", "d2/d8f/star__drv8243_8c.html#a2cfdb5ca2c91de92b944c0a19c944cb7", null ],
     [ "star_drv8243_set_speed", "d2/d8f/star__drv8243_8c.html#a89498ae0f0e8381a9df852d8ac98b2fb", null ],
     [ "star_drv8243_stop", "d2/d8f/star__drv8243_8c.html#a2b42dc030f30835c30c570b0d6571f2b", null ],
-    [ "s_TAG", "d2/d8f/star__drv8243_8c.html#a999e3dd103132afd3cd1856f477f2dbd", null ]
+    [ "s_current_limit_reduction_factor", "d2/d8f/star__drv8243_8c.html#a19ee7e97c2b74f35f6c0c97bca554403", null ],
+    [ "s_mv_to_v_divisor", "d2/d8f/star__drv8243_8c.html#a5fec4fb9aa8192d9bba7ee19bb214326", null ],
+    [ "s_tag", "d2/d8f/star__drv8243_8c.html#af8861f6a1fb30510e283b1b7806b64e7", null ]
 ];

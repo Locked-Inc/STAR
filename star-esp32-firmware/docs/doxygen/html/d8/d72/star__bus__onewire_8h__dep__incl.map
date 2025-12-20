@@ -1,8 +1,8 @@
 <map id="lib/star_bus/include/star_bus_onewire.h" name="lib/star_bus/include/star_bus_onewire.h">
-<area shape="rect" id="Node000001" title="1&#45;Wire controller protocol implementation" alt="" coords="164,5,303,46"/>
+<area shape="rect" id="Node000001" title="1&#45;Wire protocol API for the bus manager" alt="" coords="164,5,303,46"/>
 <area shape="rect" id="Node000002" href="$de/d98/star__bus__config_8c.html" title="Bus configuration creation and lifecycle management implementation." alt="" coords="5,94,142,135"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="187,53,111,96,108,91,181,54"/>
-<area shape="rect" id="Node000003" href="$d9/dd6/star__bus__onewire_8c.html" title="1&#45;Wire controller protocol implementation for the bus manager" alt="" coords="165,94,302,135"/>
+<area shape="rect" id="Node000003" href="$d9/dd6/star__bus__onewire_8c.html" title="1&#45;Wire protocol implementation for the bus manager" alt="" coords="165,94,302,135"/>
 <area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="235,60,236,95,231,92,232,64"/>
 <area shape="rect" id="Node000004" href="$d5/dca/star__sensor__ds18b20_8c.html" title="DS18B20 temperature sensor driver implementation over 1&#45;Wire." alt="" coords="326,94,509,135"/>
 <area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="289,50,379,93,373,94,288,55"/>

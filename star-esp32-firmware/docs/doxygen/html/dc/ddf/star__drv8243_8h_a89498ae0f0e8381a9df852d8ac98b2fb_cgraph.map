@@ -8,7 +8,7 @@
 <area shape="poly" id="edge6_Node000001_Node000007" title=" " alt="" coords="137,102,234,130,229,132,136,107"/>
 <area shape="rect" id="Node000003" href="$d2/d8f/star__drv8243_8c.html#ab3df3aa160b3212052de3a15e59dec94" title="Read motor current." alt="" coords="423,13,598,38"/>
 <area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="375,23,410,25,405,26,376,28"/>
-<area shape="rect" id="Node000004" href="$d2/deb/star__bus__adc_8c.html#a1bb4dd7003ae57c4a6fff8bfa4c9d60c" title="Read calibrated voltage in millivolts." alt="" coords="646,13,827,38"/>
+<area shape="rect" id="Node000004" href="$d2/deb/star__bus__adc_8c.html#a93bf2ccd624c4656121404c06ab1894e" title="Read calibrated voltage in millivolts." alt="" coords="646,13,827,38"/>
 <area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="599,23,634,25,628,26,599,28"/>
 <area shape="rect" id="Node000005" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="875,13,1059,38"/>
 <area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="827,23,862,25,856,26,827,28"/>

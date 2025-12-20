@@ -30,6 +30,5 @@ var searchData=
   ['overtemp_5fcharge_27',['overtemp_charge',['../d7/dfe/struct__star__v1___safety_faults.html#a84b47b5f7708b6f32cd4ad4a40e30297',1,'_star_v1_SafetyFaults']]],
   ['overtemp_5fdeci_5fcelsius_28',['overtemp_deci_celsius',['../db/dd0/struct__star__v1___protection_thresholds.html#a46e7cbd671f8e406c5fd15ec92d99e2c',1,'_star_v1_ProtectionThresholds']]],
   ['overtemp_5fdischarge_29',['overtemp_discharge',['../d7/dfe/struct__star__v1___safety_faults.html#a67b1c2f01d141410fdd2228a8d2142ed',1,'_star_v1_SafetyFaults']]],
-  ['overvoltage_5fmv_30',['overvoltage_mv',['../d6/d0d/structbq7850__protection__t.html#a4e3d20791a3eb5f787e62de63a8f24ed',1,'bq7850_protection_t::overvoltage_mv'],['../db/dd0/struct__star__v1___protection_thresholds.html#aee3dc9e593102d1081992897dcf9271d',1,'_star_v1_ProtectionThresholds::overvoltage_mv']]],
-  ['owns_5ferror_5fhandler_31',['owns_error_handler',['../d4/dbb/structbq7850__handle.html#a478923960978994ca9ea6d0b97a86b5a',1,'bq7850_handle']]]
+  ['overvoltage_5fmv_30',['overvoltage_mv',['../d6/d0d/structbq7850__protection__t.html#a4e3d20791a3eb5f787e62de63a8f24ed',1,'bq7850_protection_t::overvoltage_mv'],['../db/dd0/struct__star__v1___protection_thresholds.html#aee3dc9e593102d1081992897dcf9271d',1,'_star_v1_ProtectionThresholds::overvoltage_mv']]]
 ];

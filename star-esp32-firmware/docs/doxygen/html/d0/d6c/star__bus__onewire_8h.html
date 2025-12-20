@@ -93,7 +93,7 @@ $(function(){initNavTree('d0/d6c/star__bus__onewire_8h.html','../../',''); });
 </div><!--header-->
 <div class="contents">
 
-<p>1-Wire controller protocol implementation  
+<p>1-Wire protocol API for the bus manager  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &lt;driver/gpio.h&gt;</code><br />
 <code>#include &lt;esp_err.h&gt;</code><br />
@@ -105,7 +105,7 @@ Include dependency graph for star_bus_onewire.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d1/df8/star__bus__onewire_8h__incl.png" border="0" usemap="#alib_2star__bus_2include_2star__bus__onewire_8h" loading="lazy" alt=""/></div>
 <map name="alib_2star__bus_2include_2star__bus__onewire_8h" id="alib_2star__bus_2include_2star__bus__onewire_8h">
-<area shape="rect" title="1&#45;Wire controller protocol implementation" alt="" coords="250,5,388,46"/>
+<area shape="rect" title="1&#45;Wire protocol API for the bus manager" alt="" coords="250,5,388,46"/>
 <area shape="rect" title=" " alt="" coords="1431,536,1524,562"/>
 <area shape="poly" title=" " alt="" coords="388,25,610,30,908,41,1202,61,1325,75,1416,91,1483,101,1544,108,1569,115,1589,128,1602,149,1607,179,1607,403,1604,424,1597,444,1574,479,1544,508,1513,530,1511,525,1541,504,1570,475,1593,441,1599,423,1601,403,1601,179,1597,151,1585,132,1567,120,1543,113,1483,106,1416,97,1324,80,1202,66,907,47,610,36,389,31"/>
 <area shape="rect" title=" " alt="" coords="268,536,342,562"/>
@@ -182,10 +182,10 @@ This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d8/d72/star__bus__onewire_8h__dep__incl.png" border="0" usemap="#alib_2star__bus_2include_2star__bus__onewire_8hdep" loading="lazy" alt=""/></div>
 <map name="alib_2star__bus_2include_2star__bus__onewire_8hdep" id="alib_2star__bus_2include_2star__bus__onewire_8hdep">
-<area shape="rect" title="1&#45;Wire controller protocol implementation" alt="" coords="164,5,303,46"/>
+<area shape="rect" title="1&#45;Wire protocol API for the bus manager" alt="" coords="164,5,303,46"/>
 <area shape="rect" href="../../de/d98/star__bus__config_8c.html" title="Bus configuration creation and lifecycle management implementation." alt="" coords="5,94,142,135"/>
 <area shape="poly" title=" " alt="" coords="187,53,111,96,108,91,181,54"/>
-<area shape="rect" href="../../d9/dd6/star__bus__onewire_8c.html" title="1&#45;Wire controller protocol implementation for the bus manager" alt="" coords="165,94,302,135"/>
+<area shape="rect" href="../../d9/dd6/star__bus__onewire_8c.html" title="1&#45;Wire protocol implementation for the bus manager" alt="" coords="165,94,302,135"/>
 <area shape="poly" title=" " alt="" coords="235,60,236,95,231,92,232,64"/>
 <area shape="rect" href="../../d5/dca/star__sensor__ds18b20_8c.html" title="DS18B20 temperature sensor driver implementation over 1&#45;Wire." alt="" coords="326,94,509,135"/>
 <area shape="poly" title=" " alt="" coords="289,50,379,93,373,94,288,55"/>
@@ -203,24 +203,8 @@ Classes</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-define-members" class="groupheader"><a id="define-members" name="define-members"></a>
 Macros</h2></td></tr>
-<tr class="memitem:a81db6354883063126b185e4613ec9375" id="r_a81db6354883063126b185e4613ec9375"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a81db6354883063126b185e4613ec9375">STAR_ONEWIRE_ROM_SIZE</a>&#160;&#160;&#160;(8)</td></tr>
-<tr class="memitem:a2e51db341bf16ba668039f3b4b8b606b" id="r_a2e51db341bf16ba668039f3b4b8b606b"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a2e51db341bf16ba668039f3b4b8b606b">STAR_ONEWIRE_MAX_DEVICES</a>&#160;&#160;&#160;(100)</td></tr>
-<tr class="memitem:adf9a6d4aa2b935031a7d728d1ea0b8ba" id="r_adf9a6d4aa2b935031a7d728d1ea0b8ba"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adf9a6d4aa2b935031a7d728d1ea0b8ba">STAR_ONEWIRE_CMD_READ_ROM</a>&#160;&#160;&#160;(0x33)</td></tr>
-<tr class="memitem:a5657eb08fef21fce01a0565078b247bc" id="r_a5657eb08fef21fce01a0565078b247bc"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a5657eb08fef21fce01a0565078b247bc">STAR_ONEWIRE_CMD_MATCH_ROM</a>&#160;&#160;&#160;(0x55)</td></tr>
-<tr class="memitem:aa10fab60770abb2357132b0fd8cdd704" id="r_aa10fab60770abb2357132b0fd8cdd704"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa10fab60770abb2357132b0fd8cdd704">STAR_ONEWIRE_CMD_SKIP_ROM</a>&#160;&#160;&#160;(0xCC)</td></tr>
-<tr class="memitem:ac8f96f9e678db80b5614c77c45a75fe7" id="r_ac8f96f9e678db80b5614c77c45a75fe7"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ac8f96f9e678db80b5614c77c45a75fe7">STAR_ONEWIRE_CMD_SEARCH_ROM</a>&#160;&#160;&#160;(0xF0)</td></tr>
-<tr class="memitem:a061ac17a5828a00bd2532aef1df210f7" id="r_a061ac17a5828a00bd2532aef1df210f7"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a061ac17a5828a00bd2532aef1df210f7">STAR_ONEWIRE_CMD_ALARM_SEARCH</a>&#160;&#160;&#160;(0xEC)</td></tr>
 <tr class="memitem:ade9fd42bcf578c4c3eca1c0f0f87c028" id="r_ade9fd42bcf578c4c3eca1c0f0f87c028"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ade9fd42bcf578c4c3eca1c0f0f87c028">STAR_ONEWIRE_CONFIG_DEFAULT</a>()</td></tr>
 <tr class="memdesc:ade9fd42bcf578c4c3eca1c0f0f87c028"><td class="mdescLeft">&#160;</td><td class="mdescRight">Print 1-Wire statistics.  <br /></td></tr>
-<tr class="memitem:a649869acc36a86069d24fd58f43aa96f" id="r_a649869acc36a86069d24fd58f43aa96f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a649869acc36a86069d24fd58f43aa96f">STAR_ONEWIRE_FAMILY_DS18S20</a>&#160;&#160;&#160;(0x10)</td></tr>
-<tr class="memdesc:a649869acc36a86069d24fd58f43aa96f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Common device family codes.  <br /></td></tr>
-<tr class="memitem:a820715fa1520ed701022af9e2685f6b6" id="r_a820715fa1520ed701022af9e2685f6b6"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a820715fa1520ed701022af9e2685f6b6">STAR_ONEWIRE_FAMILY_DS18B20</a>&#160;&#160;&#160;(0x28)</td></tr>
-<tr class="memitem:ae850044d197cb7a0a183bef19e110de8" id="r_ae850044d197cb7a0a183bef19e110de8"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae850044d197cb7a0a183bef19e110de8">STAR_ONEWIRE_FAMILY_DS1822</a>&#160;&#160;&#160;(0x22)</td></tr>
-<tr class="memitem:a41f7d1b9c4da7b23c8ad0da6ce09c95a" id="r_a41f7d1b9c4da7b23c8ad0da6ce09c95a"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a41f7d1b9c4da7b23c8ad0da6ce09c95a">STAR_ONEWIRE_FAMILY_DS2431</a>&#160;&#160;&#160;(0x2D)</td></tr>
-<tr class="memitem:aa08ef34190c9e59eec064e82cf48b98f" id="r_aa08ef34190c9e59eec064e82cf48b98f"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#aa08ef34190c9e59eec064e82cf48b98f">STAR_ONEWIRE_FAMILY_DS2433</a>&#160;&#160;&#160;(0x23)</td></tr>
-<tr class="memitem:a1ffee7268c1692e060d8c4d619e6f57d" id="r_a1ffee7268c1692e060d8c4d619e6f57d"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a1ffee7268c1692e060d8c4d619e6f57d">STAR_ONEWIRE_FAMILY_DS2401</a>&#160;&#160;&#160;(0x01)</td></tr>
-<tr class="memitem:a653a7584a73fa3e8ef12c8ea05aa6de9" id="r_a653a7584a73fa3e8ef12c8ea05aa6de9"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a653a7584a73fa3e8ef12c8ea05aa6de9">STAR_ONEWIRE_FAMILY_DS2411</a>&#160;&#160;&#160;(0x01)</td></tr>
-<tr class="memitem:a6f1a8a939569ba59b41891a16e1043ce" id="r_a6f1a8a939569ba59b41891a16e1043ce"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a6f1a8a939569ba59b41891a16e1043ce">STAR_ONEWIRE_FAMILY_DS1990A</a>&#160;&#160;&#160;(0x01)</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-typedef-members" class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
@@ -229,6 +213,20 @@ Typedefs</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-enum-members" class="groupheader"><a id="enum-members" name="enum-members"></a>
 Enumerations</h2></td></tr>
+<tr class="memitem:a1cc6447766fa55a82e9a6937a572b14e" id="r_a1cc6447766fa55a82e9a6937a572b14e"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <a class="el" href="#a1cc6447766fa55a82e9a6937a572b14ea5d7f8cfa98d7b5d74fd7eae0c3fd28d0">k_star_onewire_rom_size</a> = 8
+, <a class="el" href="#a1cc6447766fa55a82e9a6937a572b14ea447fa82f57cb2ff53522757fecccc6c4">k_star_onewire_max_devices</a> = 100
+ }</td></tr>
+<tr class="memdesc:a1cc6447766fa55a82e9a6937a572b14e"><td class="mdescLeft">&#160;</td><td class="mdescRight">OneWire size constants.  <a href="#a1cc6447766fa55a82e9a6937a572b14e">More...</a><br /></td></tr>
+<tr class="memitem:a86e5c0ebe6a15b1ed9f46d6ea73d3bea" id="r_a86e5c0ebe6a15b1ed9f46d6ea73d3bea"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a86e5c0ebe6a15b1ed9f46d6ea73d3bea">star_onewire_cmd_t</a> { <br />
+&#160;&#160;<a class="el" href="#a86e5c0ebe6a15b1ed9f46d6ea73d3beaad59f5689f749032dd268e81a2b4b5cfd">k_star_onewire_cmd_read_rom</a> = 0x33
+, <a class="el" href="#a86e5c0ebe6a15b1ed9f46d6ea73d3beaa3362e755cafa012b7950e4b6c96b1093">k_star_onewire_cmd_match_rom</a> = 0x55
+, <a class="el" href="#a86e5c0ebe6a15b1ed9f46d6ea73d3beaa618db862138ec7567d78206505ca04d4">k_star_onewire_cmd_skip_rom</a> = 0xCC
+, <a class="el" href="#a86e5c0ebe6a15b1ed9f46d6ea73d3beaa4142481afd1821744c2d90248c6b822f">k_star_onewire_cmd_search_rom</a> = 0xF0
+, <br />
+&#160;&#160;<a class="el" href="#a86e5c0ebe6a15b1ed9f46d6ea73d3beaa7cb40475859dac482b351628966d2a54">k_star_onewire_cmd_alarm_search</a> = 0xEC
+<br />
+ }</td></tr>
+<tr class="memdesc:a86e5c0ebe6a15b1ed9f46d6ea73d3bea"><td class="mdescLeft">&#160;</td><td class="mdescRight">OneWire ROM commands.  <a href="#a86e5c0ebe6a15b1ed9f46d6ea73d3bea">More...</a><br /></td></tr>
 <tr class="memitem:a85c2b703e576b58e758a1fdade773981" id="r_a85c2b703e576b58e758a1fdade773981"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a85c2b703e576b58e758a1fdade773981">onewire_timing_config_t</a> { <br />
 &#160;&#160;<a class="el" href="#a85c2b703e576b58e758a1fdade773981af7c97042020a489c5923b5e13f4c9768">k_timing_reset_pulse</a> = 480
 , <a class="el" href="#a85c2b703e576b58e758a1fdade773981ab83140d13a633bad5721db3b5c652560">k_timing_presence_wait</a> = 70
@@ -248,6 +246,21 @@ Enumerations</h2></td></tr>
 , <a class="el" href="#a280ca9da569dab4d61852a5220ba729cacb6fa50e7bd92a80633d70960df04065">k_star_onewire_speed_overdrive</a> = 1
  }</td></tr>
 <tr class="memdesc:a280ca9da569dab4d61852a5220ba729c"><td class="mdescLeft">&#160;</td><td class="mdescRight">1-Wire speed mode  <a href="#a280ca9da569dab4d61852a5220ba729c">More...</a><br /></td></tr>
+<tr class="memitem:a060f24d15ec68107cd2cc28b2dded131" id="r_a060f24d15ec68107cd2cc28b2dded131"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#a060f24d15ec68107cd2cc28b2dded131">star_onewire_family_t</a> { <br />
+&#160;&#160;<a class="el" href="#a060f24d15ec68107cd2cc28b2dded131a93812d98debc575bb4e091081cf0e748">k_star_onewire_family_ds18s20</a> = 0x10
+, <a class="el" href="#a060f24d15ec68107cd2cc28b2dded131a5cab85093815d80a7aeef27bd6328b94">k_star_onewire_family_ds1822</a> = 0x22
+, <a class="el" href="#a060f24d15ec68107cd2cc28b2dded131a1b1dc530e0249c0b3e08663654db3e35">k_star_onewire_family_ds2433</a> = 0x23
+, <a class="el" href="#a060f24d15ec68107cd2cc28b2dded131a81ccac98b7574caa27e931a5ada3c0a2">k_star_onewire_family_ds2438</a> = 0x26
+, <br />
+&#160;&#160;<a class="el" href="#a060f24d15ec68107cd2cc28b2dded131a3560940866448297f40849725421032a">k_star_onewire_family_ds18b20</a> = 0x28
+, <a class="el" href="#a060f24d15ec68107cd2cc28b2dded131a238bfa0835092bbbf93fd662d3b88936">k_star_onewire_family_ds2431</a> = 0x2D
+, <a class="el" href="#a060f24d15ec68107cd2cc28b2dded131ad101328ce82be5d30e1da37c3a4da597">k_star_onewire_family_ds2401</a> = 0x01
+, <a class="el" href="#a060f24d15ec68107cd2cc28b2dded131a26999860c23bb68ecfd414d97918cc29">k_star_onewire_family_ds2411</a> = 0x01
+, <br />
+&#160;&#160;<a class="el" href="#a060f24d15ec68107cd2cc28b2dded131aee417e7989e1e16e27cb62f0907a5e41">k_star_onewire_family_ds1990a</a> = 0x01
+<br />
+ }</td></tr>
+<tr class="memdesc:a060f24d15ec68107cd2cc28b2dded131"><td class="mdescLeft">&#160;</td><td class="mdescRight">Common device family codes.  <a href="#a060f24d15ec68107cd2cc28b2dded131">More...</a><br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -299,7 +312,11 @@ Functions</h2></td></tr>
 <tr class="memdesc:a5646a2914ef651c0de92d49ef1edc38d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reset 1-Wire bus statistics.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>1-Wire controller protocol implementation </p>
+<div class="textblock"><p>1-Wire protocol API for the bus manager </p>
+<p>1-Wire controller protocol implementation</p>
+<p>Provides interface for Dallas/Maxim 1-Wire protocol operations through the bus manager. Supports single-wire bidirectional communication with devices like DS18B20 temperature sensors, ROM commands, device enumeration, and CRC-8 validation for data integrity.</p>
+<dl class="section date"><dt>Date</dt><dd>2025-12-19 </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>Copyright (c) 2025 STAR Project</dd></dl>
 <p>This module implements the 1-Wire protocol for communication with Dallas/Maxim 1-Wire devices. The protocol uses a single data line for bidirectional communication.</p>
 <p>Features:</p><ul>
 <li>Standard and overdrive speed modes</li>
@@ -326,95 +343,6 @@ Functions</h2></td></tr>
 <p>Example: </p><div class="fragment"></div><!-- fragment --> 
 <p class="definition">Definition in file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
 </div><a name="doc-define-members" id="doc-define-members"></a><h2 id="header-doc-define-members" class="groupheader">Macro Definition Documentation</h2>
-<a id="a061ac17a5828a00bd2532aef1df210f7" name="a061ac17a5828a00bd2532aef1df210f7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a061ac17a5828a00bd2532aef1df210f7">&#9670;&#160;</a></span>STAR_ONEWIRE_CMD_ALARM_SEARCH</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define STAR_ONEWIRE_CMD_ALARM_SEARCH&#160;&#160;&#160;(0xEC)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Alarm search </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00085">85</a> of file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
-
-</div>
-</div>
-<a id="a5657eb08fef21fce01a0565078b247bc" name="a5657eb08fef21fce01a0565078b247bc"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a5657eb08fef21fce01a0565078b247bc">&#9670;&#160;</a></span>STAR_ONEWIRE_CMD_MATCH_ROM</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define STAR_ONEWIRE_CMD_MATCH_ROM&#160;&#160;&#160;(0x55)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Match ROM (address device) </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00082">82</a> of file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00446">star_bus_onewire_match_rom()</a>.</p>
-
-</div>
-</div>
-<a id="adf9a6d4aa2b935031a7d728d1ea0b8ba" name="adf9a6d4aa2b935031a7d728d1ea0b8ba"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adf9a6d4aa2b935031a7d728d1ea0b8ba">&#9670;&#160;</a></span>STAR_ONEWIRE_CMD_READ_ROM</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define STAR_ONEWIRE_CMD_READ_ROM&#160;&#160;&#160;(0x33)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Read ROM (single device) </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00081">81</a> of file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
-
-</div>
-</div>
-<a id="ac8f96f9e678db80b5614c77c45a75fe7" name="ac8f96f9e678db80b5614c77c45a75fe7"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ac8f96f9e678db80b5614c77c45a75fe7">&#9670;&#160;</a></span>STAR_ONEWIRE_CMD_SEARCH_ROM</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define STAR_ONEWIRE_CMD_SEARCH_ROM&#160;&#160;&#160;(0xF0)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Search ROM (find devices) </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00084">84</a> of file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
-
-</div>
-</div>
-<a id="aa10fab60770abb2357132b0fd8cdd704" name="aa10fab60770abb2357132b0fd8cdd704"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa10fab60770abb2357132b0fd8cdd704">&#9670;&#160;</a></span>STAR_ONEWIRE_CMD_SKIP_ROM</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define STAR_ONEWIRE_CMD_SKIP_ROM&#160;&#160;&#160;(0xCC)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Skip ROM (all devices) </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00083">83</a> of file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00469">star_bus_onewire_skip_rom()</a>.</p>
-
-</div>
-</div>
 <a id="ade9fd42bcf578c4c3eca1c0f0f87c028" name="ade9fd42bcf578c4c3eca1c0f0f87c028"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ade9fd42bcf578c4c3eca1c0f0f87c028">&#9670;&#160;</a></span>STAR_ONEWIRE_CONFIG_DEFAULT</h2>
 
@@ -440,179 +368,7 @@ Functions</h2></td></tr>
 </dl>
 <p>Create default 1-Wire configuration </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00458">458</a> of file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
-
-</div>
-</div>
-<a id="ae850044d197cb7a0a183bef19e110de8" name="ae850044d197cb7a0a183bef19e110de8"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ae850044d197cb7a0a183bef19e110de8">&#9670;&#160;</a></span>STAR_ONEWIRE_FAMILY_DS1822</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define STAR_ONEWIRE_FAMILY_DS1822&#160;&#160;&#160;(0x22)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Temperature sensor </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00472">472</a> of file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
-
-</div>
-</div>
-<a id="a820715fa1520ed701022af9e2685f6b6" name="a820715fa1520ed701022af9e2685f6b6"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a820715fa1520ed701022af9e2685f6b6">&#9670;&#160;</a></span>STAR_ONEWIRE_FAMILY_DS18B20</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define STAR_ONEWIRE_FAMILY_DS18B20&#160;&#160;&#160;(0x28)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Temperature sensor </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00471">471</a> of file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
-
-</div>
-</div>
-<a id="a649869acc36a86069d24fd58f43aa96f" name="a649869acc36a86069d24fd58f43aa96f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a649869acc36a86069d24fd58f43aa96f">&#9670;&#160;</a></span>STAR_ONEWIRE_FAMILY_DS18S20</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define STAR_ONEWIRE_FAMILY_DS18S20&#160;&#160;&#160;(0x10)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Common device family codes. </p>
-<p>Temperature sensor </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00470">470</a> of file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
-
-</div>
-</div>
-<a id="a6f1a8a939569ba59b41891a16e1043ce" name="a6f1a8a939569ba59b41891a16e1043ce"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a6f1a8a939569ba59b41891a16e1043ce">&#9670;&#160;</a></span>STAR_ONEWIRE_FAMILY_DS1990A</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define STAR_ONEWIRE_FAMILY_DS1990A&#160;&#160;&#160;(0x01)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>iButton </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00477">477</a> of file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
-
-</div>
-</div>
-<a id="a1ffee7268c1692e060d8c4d619e6f57d" name="a1ffee7268c1692e060d8c4d619e6f57d"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a1ffee7268c1692e060d8c4d619e6f57d">&#9670;&#160;</a></span>STAR_ONEWIRE_FAMILY_DS2401</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define STAR_ONEWIRE_FAMILY_DS2401&#160;&#160;&#160;(0x01)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Silicon serial number </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00475">475</a> of file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
-
-</div>
-</div>
-<a id="a653a7584a73fa3e8ef12c8ea05aa6de9" name="a653a7584a73fa3e8ef12c8ea05aa6de9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a653a7584a73fa3e8ef12c8ea05aa6de9">&#9670;&#160;</a></span>STAR_ONEWIRE_FAMILY_DS2411</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define STAR_ONEWIRE_FAMILY_DS2411&#160;&#160;&#160;(0x01)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Silicon serial number </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00476">476</a> of file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
-
-</div>
-</div>
-<a id="a41f7d1b9c4da7b23c8ad0da6ce09c95a" name="a41f7d1b9c4da7b23c8ad0da6ce09c95a"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a41f7d1b9c4da7b23c8ad0da6ce09c95a">&#9670;&#160;</a></span>STAR_ONEWIRE_FAMILY_DS2431</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define STAR_ONEWIRE_FAMILY_DS2431&#160;&#160;&#160;(0x2D)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>1K EEPROM </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00473">473</a> of file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
-
-</div>
-</div>
-<a id="aa08ef34190c9e59eec064e82cf48b98f" name="aa08ef34190c9e59eec064e82cf48b98f"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#aa08ef34190c9e59eec064e82cf48b98f">&#9670;&#160;</a></span>STAR_ONEWIRE_FAMILY_DS2433</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define STAR_ONEWIRE_FAMILY_DS2433&#160;&#160;&#160;(0x23)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>4K EEPROM </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00474">474</a> of file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
-
-</div>
-</div>
-<a id="a2e51db341bf16ba668039f3b4b8b606b" name="a2e51db341bf16ba668039f3b4b8b606b"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a2e51db341bf16ba668039f3b4b8b606b">&#9670;&#160;</a></span>STAR_ONEWIRE_MAX_DEVICES</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define STAR_ONEWIRE_MAX_DEVICES&#160;&#160;&#160;(100)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Maximum devices on a 1-Wire bus </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00078">78</a> of file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
-
-</div>
-</div>
-<a id="a81db6354883063126b185e4613ec9375" name="a81db6354883063126b185e4613ec9375"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a81db6354883063126b185e4613ec9375">&#9670;&#160;</a></span>STAR_ONEWIRE_ROM_SIZE</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define STAR_ONEWIRE_ROM_SIZE&#160;&#160;&#160;(8)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>1-Wire ROM code size (8 bytes: 1 family + 6 serial + 1 CRC) </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00075">75</a> of file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00480">480</a> of file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
 
 </div>
 </div>
@@ -631,11 +387,36 @@ Functions</h2></td></tr>
 
 <p>1-Wire ROM code (64-bit unique address) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00121">121</a> of file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00143">143</a> of file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
 
 </div>
 </div>
 <a name="doc-enum-members" id="doc-enum-members"></a><h2 id="header-doc-enum-members" class="groupheader">Enumeration Type Documentation</h2>
+<a id="a1cc6447766fa55a82e9a6937a572b14e" name="a1cc6447766fa55a82e9a6937a572b14e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a1cc6447766fa55a82e9a6937a572b14e">&#9670;&#160;</a></span>anonymous enum</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">anonymous enum</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>OneWire size constants. </p>
+<p>Using enum for type safety while maintaining compile-time constant behavior required for array sizes in C. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a1cc6447766fa55a82e9a6937a572b14ea5d7f8cfa98d7b5d74fd7eae0c3fd28d0" name="a1cc6447766fa55a82e9a6937a572b14ea5d7f8cfa98d7b5d74fd7eae0c3fd28d0"></a>k_star_onewire_rom_size&#160;</td><td class="fielddoc"><p>1-Wire ROM code size (8 bytes: 1 family + 6 serial + 1 CRC) </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a1cc6447766fa55a82e9a6937a572b14ea447fa82f57cb2ff53522757fecccc6c4" name="a1cc6447766fa55a82e9a6937a572b14ea447fa82f57cb2ff53522757fecccc6c4"></a>k_star_onewire_max_devices&#160;</td><td class="fielddoc"><p>Maximum devices on a 1-Wire bus </p>
+</td></tr>
+</table>
+
+<p class="definition">Definition at line <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00090">90</a> of file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
+
+</div>
+</div>
 <a id="a85c2b703e576b58e758a1fdade773981" name="a85c2b703e576b58e758a1fdade773981"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a85c2b703e576b58e758a1fdade773981">&#9670;&#160;</a></span>onewire_timing_config_t</h2>
 
@@ -671,7 +452,75 @@ Functions</h2></td></tr>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00096">96</a> of file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00118">118</a> of file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
+
+</div>
+</div>
+<a id="a86e5c0ebe6a15b1ed9f46d6ea73d3bea" name="a86e5c0ebe6a15b1ed9f46d6ea73d3bea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a86e5c0ebe6a15b1ed9f46d6ea73d3bea">&#9670;&#160;</a></span>star_onewire_cmd_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="#a86e5c0ebe6a15b1ed9f46d6ea73d3bea">star_onewire_cmd_t</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>OneWire ROM commands. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a86e5c0ebe6a15b1ed9f46d6ea73d3beaad59f5689f749032dd268e81a2b4b5cfd" name="a86e5c0ebe6a15b1ed9f46d6ea73d3beaad59f5689f749032dd268e81a2b4b5cfd"></a>k_star_onewire_cmd_read_rom&#160;</td><td class="fielddoc"><p>Read ROM (single device) </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a86e5c0ebe6a15b1ed9f46d6ea73d3beaa3362e755cafa012b7950e4b6c96b1093" name="a86e5c0ebe6a15b1ed9f46d6ea73d3beaa3362e755cafa012b7950e4b6c96b1093"></a>k_star_onewire_cmd_match_rom&#160;</td><td class="fielddoc"><p>Match ROM (address device) </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a86e5c0ebe6a15b1ed9f46d6ea73d3beaa618db862138ec7567d78206505ca04d4" name="a86e5c0ebe6a15b1ed9f46d6ea73d3beaa618db862138ec7567d78206505ca04d4"></a>k_star_onewire_cmd_skip_rom&#160;</td><td class="fielddoc"><p>Skip ROM (all devices) </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a86e5c0ebe6a15b1ed9f46d6ea73d3beaa4142481afd1821744c2d90248c6b822f" name="a86e5c0ebe6a15b1ed9f46d6ea73d3beaa4142481afd1821744c2d90248c6b822f"></a>k_star_onewire_cmd_search_rom&#160;</td><td class="fielddoc"><p>Search ROM (find devices) </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a86e5c0ebe6a15b1ed9f46d6ea73d3beaa7cb40475859dac482b351628966d2a54" name="a86e5c0ebe6a15b1ed9f46d6ea73d3beaa7cb40475859dac482b351628966d2a54"></a>k_star_onewire_cmd_alarm_search&#160;</td><td class="fielddoc"><p>Alarm search </p>
+</td></tr>
+</table>
+
+<p class="definition">Definition at line <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00101">101</a> of file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
+
+</div>
+</div>
+<a id="a060f24d15ec68107cd2cc28b2dded131" name="a060f24d15ec68107cd2cc28b2dded131"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a060f24d15ec68107cd2cc28b2dded131">&#9670;&#160;</a></span>star_onewire_family_t</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="#a060f24d15ec68107cd2cc28b2dded131">star_onewire_family_t</a></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Common device family codes. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a060f24d15ec68107cd2cc28b2dded131a93812d98debc575bb4e091081cf0e748" name="a060f24d15ec68107cd2cc28b2dded131a93812d98debc575bb4e091081cf0e748"></a>k_star_onewire_family_ds18s20&#160;</td><td class="fielddoc"><p>Temperature sensor </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a060f24d15ec68107cd2cc28b2dded131a5cab85093815d80a7aeef27bd6328b94" name="a060f24d15ec68107cd2cc28b2dded131a5cab85093815d80a7aeef27bd6328b94"></a>k_star_onewire_family_ds1822&#160;</td><td class="fielddoc"><p>Temperature sensor </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a060f24d15ec68107cd2cc28b2dded131a1b1dc530e0249c0b3e08663654db3e35" name="a060f24d15ec68107cd2cc28b2dded131a1b1dc530e0249c0b3e08663654db3e35"></a>k_star_onewire_family_ds2433&#160;</td><td class="fielddoc"><p>4K EEPROM </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a060f24d15ec68107cd2cc28b2dded131a81ccac98b7574caa27e931a5ada3c0a2" name="a060f24d15ec68107cd2cc28b2dded131a81ccac98b7574caa27e931a5ada3c0a2"></a>k_star_onewire_family_ds2438&#160;</td><td class="fielddoc"><p>Smart battery monitor </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a060f24d15ec68107cd2cc28b2dded131a3560940866448297f40849725421032a" name="a060f24d15ec68107cd2cc28b2dded131a3560940866448297f40849725421032a"></a>k_star_onewire_family_ds18b20&#160;</td><td class="fielddoc"><p>Temperature sensor </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a060f24d15ec68107cd2cc28b2dded131a238bfa0835092bbbf93fd662d3b88936" name="a060f24d15ec68107cd2cc28b2dded131a238bfa0835092bbbf93fd662d3b88936"></a>k_star_onewire_family_ds2431&#160;</td><td class="fielddoc"><p>1K EEPROM </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a060f24d15ec68107cd2cc28b2dded131ad101328ce82be5d30e1da37c3a4da597" name="a060f24d15ec68107cd2cc28b2dded131ad101328ce82be5d30e1da37c3a4da597"></a>k_star_onewire_family_ds2401&#160;</td><td class="fielddoc"><p>Silicon serial number </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a060f24d15ec68107cd2cc28b2dded131a26999860c23bb68ecfd414d97918cc29" name="a060f24d15ec68107cd2cc28b2dded131a26999860c23bb68ecfd414d97918cc29"></a>k_star_onewire_family_ds2411&#160;</td><td class="fielddoc"><p>Silicon serial number </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a060f24d15ec68107cd2cc28b2dded131aee417e7989e1e16e27cb62f0907a5e41" name="a060f24d15ec68107cd2cc28b2dded131aee417e7989e1e16e27cb62f0907a5e41"></a>k_star_onewire_family_ds1990a&#160;</td><td class="fielddoc"><p>iButton </p>
+</td></tr>
+</table>
+
+<p class="definition">Definition at line <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00492">492</a> of file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
 
 </div>
 </div>
@@ -695,7 +544,7 @@ Functions</h2></td></tr>
 </td></tr>
 </table>
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00113">113</a> of file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00135">135</a> of file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
 
 </div>
 </div>
@@ -724,9 +573,9 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ROM code </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00660">660</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00758">758</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00407">star_bus_onewire_read_rom()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00479">star_bus_onewire_search()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00505">star_bus_onewire_read_rom()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00577">star_bus_onewire_search()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -780,7 +629,7 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>CRC-16 value </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00641">641</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00739">739</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
 
 </div>
 </div>
@@ -814,11 +663,11 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>CRC-8 value </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00621">621</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00719">719</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00072">crc8_table</a>.</p>
+<p class="reference">References <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00074">crc8_table</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00632">star_bus_onewire_verify_rom()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00730">star_bus_onewire_verify_rom()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -873,9 +722,9 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00154">154</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00252">252</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00052">onewire_state_t::config</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00127">star_onewire_config_t::gpio_pin</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00054">onewire_state_t::initialized</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00762">internal_get_onewire_state_safe()</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00054">onewire_state_t::config</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00149">star_onewire_config_t::gpio_pin</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00056">onewire_state_t::initialized</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00145">internal_get_onewire_state_safe()</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00703">star_bus_config_deinit()</a>.</p>
 <div class="dynheader">
@@ -943,7 +792,7 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>CRC (last byte) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00399">399</a> of file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00421">421</a> of file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
 
 </div>
 </div>
@@ -979,7 +828,7 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Family code (first byte) </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00387">387</a> of file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00409">409</a> of file <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html">star_bus_onewire.h</a>.</p>
 
 </div>
 </div>
@@ -1018,9 +867,9 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00671">671</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00769">769</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00054">onewire_state_t::initialized</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00762">internal_get_onewire_state_safe()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00053">onewire_state_t::stats</a>.</p>
+<p class="reference">References <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00056">onewire_state_t::initialized</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00145">internal_get_onewire_state_safe()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00055">onewire_state_t::stats</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1073,9 +922,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00100">100</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00198">198</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00052">onewire_state_t::config</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00127">star_onewire_config_t::gpio_pin</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00054">onewire_state_t::initialized</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00762">internal_get_onewire_state_safe()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00800">internal_gpio_high()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00059">onewire_state_t::last_device_flag</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00057">onewire_state_t::last_discrepancy</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00058">onewire_state_t::last_family_discrepancy</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00060">onewire_state_t::search_rom</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00053">onewire_state_t::stats</a>.</p>
+<p class="reference">References <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00054">onewire_state_t::config</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00149">star_onewire_config_t::gpio_pin</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00056">onewire_state_t::initialized</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00145">internal_get_onewire_state_safe()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00183">internal_gpio_high()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00061">onewire_state_t::last_device_flag</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00059">onewire_state_t::last_discrepancy</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00060">onewire_state_t::last_family_discrepancy</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00062">onewire_state_t::search_rom</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00055">onewire_state_t::stats</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00352">star_bus_config_init()</a>.</p>
 <div class="dynheader">
@@ -1147,11 +996,11 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00446">446</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00544">544</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00281">star_bus_onewire_write_byte()</a>, and <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00082">STAR_ONEWIRE_CMD_MATCH_ROM</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00103">k_star_onewire_cmd_match_rom</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00379">star_bus_onewire_write_byte()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00194">internal_ds18b20_send_rom_command()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00231">internal_ds18b20_send_rom_command()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1249,11 +1098,11 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00252">252</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00350">350</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00052">onewire_state_t::config</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00127">star_onewire_config_t::gpio_pin</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00054">onewire_state_t::initialized</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00784">internal_delay_us()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00762">internal_get_onewire_state_safe()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00800">internal_gpio_high()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00792">internal_gpio_low()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00808">internal_gpio_read()</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00103">k_timing_read_low</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00105">k_timing_read_recovery</a>, and <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00104">k_timing_read_sample</a>.</p>
+<p class="reference">References <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00054">onewire_state_t::config</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00149">star_onewire_config_t::gpio_pin</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00056">onewire_state_t::initialized</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00167">internal_delay_us()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00145">internal_get_onewire_state_safe()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00183">internal_gpio_high()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00175">internal_gpio_low()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00191">internal_gpio_read()</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00125">k_timing_read_low</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00127">k_timing_read_recovery</a>, and <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00126">k_timing_read_sample</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00305">star_bus_onewire_read_byte()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00479">star_bus_onewire_search()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00403">star_bus_onewire_read_byte()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00577">star_bus_onewire_search()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1351,11 +1200,11 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00305">305</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00403">403</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00142">star_onewire_stats_t::bytes_read</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00054">onewire_state_t::initialized</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00762">internal_get_onewire_state_safe()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00252">star_bus_onewire_read_bit()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00053">onewire_state_t::stats</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00164">star_onewire_stats_t::bytes_read</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00056">onewire_state_t::initialized</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00145">internal_get_onewire_state_safe()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00350">star_bus_onewire_read_bit()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00055">onewire_state_t::stats</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00387">star_bus_onewire_read_bytes()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00485">star_bus_onewire_read_bytes()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1456,11 +1305,11 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00387">387</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00485">485</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00305">star_bus_onewire_read_byte()</a>.</p>
+<p class="reference">References <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00403">star_bus_onewire_read_byte()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00229">internal_ds18b20_read_scratchpad()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00407">star_bus_onewire_read_rom()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00266">internal_ds18b20_read_scratchpad()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00505">star_bus_onewire_read_rom()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1556,11 +1405,11 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00407">407</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00505">505</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00143">star_onewire_stats_t::crc_errors</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00762">internal_get_onewire_state_safe()</a>, <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html#l00085">k_onewire_cmd_read_rom</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00660">star_bus_onewire_bytes_to_rom()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00387">star_bus_onewire_read_bytes()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00179">star_bus_onewire_reset()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00632">star_bus_onewire_verify_rom()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00281">star_bus_onewire_write_byte()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00053">onewire_state_t::stats</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00165">star_onewire_stats_t::crc_errors</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00145">internal_get_onewire_state_safe()</a>, <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html#l00085">k_onewire_cmd_read_rom</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00758">star_bus_onewire_bytes_to_rom()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00485">star_bus_onewire_read_bytes()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00277">star_bus_onewire_reset()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00730">star_bus_onewire_verify_rom()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00379">star_bus_onewire_write_byte()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00055">onewire_state_t::stats</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00174">star_sensor_ds18b20_read_rom()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00211">star_sensor_ds18b20_read_rom()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1667,11 +1516,11 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00179">179</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00277">277</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00052">onewire_state_t::config</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00140">star_onewire_stats_t::failed_resets</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00127">star_onewire_config_t::gpio_pin</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00054">onewire_state_t::initialized</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00784">internal_delay_us()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00762">internal_get_onewire_state_safe()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00800">internal_gpio_high()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00792">internal_gpio_low()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00808">internal_gpio_read()</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00099">k_timing_presence_sample</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00098">k_timing_presence_wait</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00097">k_timing_reset_pulse</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00146">star_onewire_stats_t::last_operation_time_us</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00053">onewire_state_t::stats</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00139">star_onewire_stats_t::successful_resets</a>, and <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00138">star_onewire_stats_t::total_resets</a>.</p>
+<p class="reference">References <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00054">onewire_state_t::config</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00162">star_onewire_stats_t::failed_resets</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00149">star_onewire_config_t::gpio_pin</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00056">onewire_state_t::initialized</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00167">internal_delay_us()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00145">internal_get_onewire_state_safe()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00183">internal_gpio_high()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00175">internal_gpio_low()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00191">internal_gpio_read()</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00121">k_timing_presence_sample</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00120">k_timing_presence_wait</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00119">k_timing_reset_pulse</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00168">star_onewire_stats_t::last_operation_time_us</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00055">onewire_state_t::stats</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00161">star_onewire_stats_t::successful_resets</a>, and <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00160">star_onewire_stats_t::total_resets</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00229">internal_ds18b20_read_scratchpad()</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00209">internal_ds18b20_start_conversion()</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00257">internal_ds18b20_write_scratchpad()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00407">star_bus_onewire_read_rom()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00479">star_bus_onewire_search()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00331">star_bus_onewire_write_bytes()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00266">internal_ds18b20_read_scratchpad()</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00246">internal_ds18b20_start_conversion()</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00294">internal_ds18b20_write_scratchpad()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00505">star_bus_onewire_read_rom()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00577">star_bus_onewire_search()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00429">star_bus_onewire_write_bytes()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1769,9 +1618,9 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00689">689</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00787">787</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00054">onewire_state_t::initialized</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00762">internal_get_onewire_state_safe()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00053">onewire_state_t::stats</a>.</p>
+<p class="reference">References <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00056">onewire_state_t::initialized</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00145">internal_get_onewire_state_safe()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00055">onewire_state_t::stats</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1817,9 +1666,9 @@ Here is the call graph for this function:</div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00653">653</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00751">751</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00632">star_bus_onewire_verify_rom()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00331">star_bus_onewire_write_bytes()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00730">star_bus_onewire_verify_rom()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00429">star_bus_onewire_write_bytes()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">
@@ -1889,11 +1738,11 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00479">479</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00577">577</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00143">star_onewire_stats_t::crc_errors</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00145">star_onewire_stats_t::devices_found</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00054">onewire_state_t::initialized</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00762">internal_get_onewire_state_safe()</a>, <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html#l00084">k_onewire_cmd_search_rom</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00059">onewire_state_t::last_device_flag</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00057">onewire_state_t::last_discrepancy</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00058">onewire_state_t::last_family_discrepancy</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00144">star_onewire_stats_t::search_operations</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00060">onewire_state_t::search_rom</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00660">star_bus_onewire_bytes_to_rom()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00252">star_bus_onewire_read_bit()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00179">star_bus_onewire_reset()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00632">star_bus_onewire_verify_rom()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00222">star_bus_onewire_write_bit()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00281">star_bus_onewire_write_byte()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00053">onewire_state_t::stats</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00165">star_onewire_stats_t::crc_errors</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00167">star_onewire_stats_t::devices_found</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00056">onewire_state_t::initialized</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00145">internal_get_onewire_state_safe()</a>, <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html#l00084">k_onewire_cmd_search_rom</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00061">onewire_state_t::last_device_flag</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00059">onewire_state_t::last_discrepancy</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00060">onewire_state_t::last_family_discrepancy</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00166">star_onewire_stats_t::search_operations</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00062">onewire_state_t::search_rom</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00758">star_bus_onewire_bytes_to_rom()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00350">star_bus_onewire_read_bit()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00277">star_bus_onewire_reset()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00730">star_bus_onewire_verify_rom()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00320">star_bus_onewire_write_bit()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00379">star_bus_onewire_write_byte()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00055">onewire_state_t::stats</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00611">star_bus_onewire_search_alarms()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00709">star_bus_onewire_search_alarms()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -1998,9 +1847,9 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00611">611</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00709">709</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00479">star_bus_onewire_search()</a>.</p>
+<p class="reference">References <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00577">star_bus_onewire_search()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2086,11 +1935,11 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00469">469</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00567">567</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00281">star_bus_onewire_write_byte()</a>, and <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00083">STAR_ONEWIRE_CMD_SKIP_ROM</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00104">k_star_onewire_cmd_skip_rom</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00379">star_bus_onewire_write_byte()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00194">internal_ds18b20_send_rom_command()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00231">internal_ds18b20_send_rom_command()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2177,11 +2026,11 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if CRC is valid, false otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00632">632</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00730">730</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00621">star_bus_onewire_crc8()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00653">star_bus_onewire_rom_to_bytes()</a>.</p>
+<p class="reference">References <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00719">star_bus_onewire_crc8()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00751">star_bus_onewire_rom_to_bytes()</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00407">star_bus_onewire_read_rom()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00479">star_bus_onewire_search()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00505">star_bus_onewire_read_rom()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00577">star_bus_onewire_search()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2252,11 +2101,11 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00222">222</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00320">320</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00052">onewire_state_t::config</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00127">star_onewire_config_t::gpio_pin</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00054">onewire_state_t::initialized</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00784">internal_delay_us()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00762">internal_get_onewire_state_safe()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00800">internal_gpio_high()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00792">internal_gpio_low()</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00100">k_timing_write_0_low</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00101">k_timing_write_1_low</a>, and <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00102">k_timing_write_recovery</a>.</p>
+<p class="reference">References <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00054">onewire_state_t::config</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00149">star_onewire_config_t::gpio_pin</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00056">onewire_state_t::initialized</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00167">internal_delay_us()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00145">internal_get_onewire_state_safe()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00183">internal_gpio_high()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00175">internal_gpio_low()</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00122">k_timing_write_0_low</a>, <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00123">k_timing_write_1_low</a>, and <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00124">k_timing_write_recovery</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00479">star_bus_onewire_search()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00281">star_bus_onewire_write_byte()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00577">star_bus_onewire_search()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00379">star_bus_onewire_write_byte()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2371,11 +2220,11 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00281">281</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00379">379</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00141">star_onewire_stats_t::bytes_written</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00054">onewire_state_t::initialized</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00762">internal_get_onewire_state_safe()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00222">star_bus_onewire_write_bit()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00053">onewire_state_t::stats</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d6c/star__bus__onewire_8h_source.html#l00163">star_onewire_stats_t::bytes_written</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00056">onewire_state_t::initialized</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00145">internal_get_onewire_state_safe()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00320">star_bus_onewire_write_bit()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00055">onewire_state_t::stats</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00229">internal_ds18b20_read_scratchpad()</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00209">internal_ds18b20_start_conversion()</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00257">internal_ds18b20_write_scratchpad()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00446">star_bus_onewire_match_rom()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00407">star_bus_onewire_read_rom()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00479">star_bus_onewire_search()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00469">star_bus_onewire_skip_rom()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00331">star_bus_onewire_write_bytes()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00266">internal_ds18b20_read_scratchpad()</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00246">internal_ds18b20_start_conversion()</a>, <a class="el" href="../../d5/dca/star__sensor__ds18b20_8c_source.html#l00294">internal_ds18b20_write_scratchpad()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00544">star_bus_onewire_match_rom()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00505">star_bus_onewire_read_rom()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00577">star_bus_onewire_search()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00567">star_bus_onewire_skip_rom()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00429">star_bus_onewire_write_bytes()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -2502,9 +2351,9 @@ Here is the caller graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00331">331</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00429">429</a> of file <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html">star_bus_onewire.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00054">onewire_state_t::initialized</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00762">internal_get_onewire_state_safe()</a>, <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html#l00086">k_onewire_cmd_match_rom</a>, <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html#l00087">k_onewire_cmd_skip_rom</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00179">star_bus_onewire_reset()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00653">star_bus_onewire_rom_to_bytes()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00281">star_bus_onewire_write_byte()</a>.</p>
+<p class="reference">References <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00056">onewire_state_t::initialized</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00145">internal_get_onewire_state_safe()</a>, <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html#l00086">k_onewire_cmd_match_rom</a>, <a class="el" href="../../db/dbf/star__bus__onewire__constants_8h_source.html#l00087">k_onewire_cmd_skip_rom</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00277">star_bus_onewire_reset()</a>, <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00751">star_bus_onewire_rom_to_bytes()</a>, and <a class="el" href="../../d9/dd6/star__bus__onewire_8c_source.html#l00379">star_bus_onewire_write_byte()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">

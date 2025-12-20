@@ -2,22 +2,7 @@ var star__bus__onewire_8h =
 [
     [ "star_onewire_config_t", "df/db2/structstar__onewire__config__t.html", "df/db2/structstar__onewire__config__t" ],
     [ "star_onewire_stats_t", "de/dd3/structstar__onewire__stats__t.html", "de/dd3/structstar__onewire__stats__t" ],
-    [ "STAR_ONEWIRE_CMD_ALARM_SEARCH", "d0/d6c/star__bus__onewire_8h.html#a061ac17a5828a00bd2532aef1df210f7", null ],
-    [ "STAR_ONEWIRE_CMD_MATCH_ROM", "d0/d6c/star__bus__onewire_8h.html#a5657eb08fef21fce01a0565078b247bc", null ],
-    [ "STAR_ONEWIRE_CMD_READ_ROM", "d0/d6c/star__bus__onewire_8h.html#adf9a6d4aa2b935031a7d728d1ea0b8ba", null ],
-    [ "STAR_ONEWIRE_CMD_SEARCH_ROM", "d0/d6c/star__bus__onewire_8h.html#ac8f96f9e678db80b5614c77c45a75fe7", null ],
-    [ "STAR_ONEWIRE_CMD_SKIP_ROM", "d0/d6c/star__bus__onewire_8h.html#aa10fab60770abb2357132b0fd8cdd704", null ],
     [ "STAR_ONEWIRE_CONFIG_DEFAULT", "d0/d6c/star__bus__onewire_8h.html#ade9fd42bcf578c4c3eca1c0f0f87c028", null ],
-    [ "STAR_ONEWIRE_FAMILY_DS1822", "d0/d6c/star__bus__onewire_8h.html#ae850044d197cb7a0a183bef19e110de8", null ],
-    [ "STAR_ONEWIRE_FAMILY_DS18B20", "d0/d6c/star__bus__onewire_8h.html#a820715fa1520ed701022af9e2685f6b6", null ],
-    [ "STAR_ONEWIRE_FAMILY_DS18S20", "d0/d6c/star__bus__onewire_8h.html#a649869acc36a86069d24fd58f43aa96f", null ],
-    [ "STAR_ONEWIRE_FAMILY_DS1990A", "d0/d6c/star__bus__onewire_8h.html#a6f1a8a939569ba59b41891a16e1043ce", null ],
-    [ "STAR_ONEWIRE_FAMILY_DS2401", "d0/d6c/star__bus__onewire_8h.html#a1ffee7268c1692e060d8c4d619e6f57d", null ],
-    [ "STAR_ONEWIRE_FAMILY_DS2411", "d0/d6c/star__bus__onewire_8h.html#a653a7584a73fa3e8ef12c8ea05aa6de9", null ],
-    [ "STAR_ONEWIRE_FAMILY_DS2431", "d0/d6c/star__bus__onewire_8h.html#a41f7d1b9c4da7b23c8ad0da6ce09c95a", null ],
-    [ "STAR_ONEWIRE_FAMILY_DS2433", "d0/d6c/star__bus__onewire_8h.html#aa08ef34190c9e59eec064e82cf48b98f", null ],
-    [ "STAR_ONEWIRE_MAX_DEVICES", "d0/d6c/star__bus__onewire_8h.html#a2e51db341bf16ba668039f3b4b8b606b", null ],
-    [ "STAR_ONEWIRE_ROM_SIZE", "d0/d6c/star__bus__onewire_8h.html#a81db6354883063126b185e4613ec9375", null ],
     [ "star_onewire_rom_t", "d0/d6c/star__bus__onewire_8h.html#ad154590aa2e421193b3ab84ec31f5b64", null ],
     [ "onewire_timing_config_t", "d0/d6c/star__bus__onewire_8h.html#a85c2b703e576b58e758a1fdade773981", [
       [ "k_timing_reset_pulse", "d0/d6c/star__bus__onewire_8h.html#a85c2b703e576b58e758a1fdade773981af7c97042020a489c5923b5e13f4c9768", null ],
@@ -29,6 +14,24 @@ var star__bus__onewire_8h =
       [ "k_timing_read_low", "d0/d6c/star__bus__onewire_8h.html#a85c2b703e576b58e758a1fdade773981aabae65ac5c15a4742566da68f02ebdd3", null ],
       [ "k_timing_read_sample", "d0/d6c/star__bus__onewire_8h.html#a85c2b703e576b58e758a1fdade773981a75174bb7876890ffa95d8cd4388a2e1d", null ],
       [ "k_timing_read_recovery", "d0/d6c/star__bus__onewire_8h.html#a85c2b703e576b58e758a1fdade773981adaba78991e2949916b9592fdd15b854f", null ]
+    ] ],
+    [ "star_onewire_cmd_t", "d0/d6c/star__bus__onewire_8h.html#a86e5c0ebe6a15b1ed9f46d6ea73d3bea", [
+      [ "k_star_onewire_cmd_read_rom", "d0/d6c/star__bus__onewire_8h.html#a86e5c0ebe6a15b1ed9f46d6ea73d3beaad59f5689f749032dd268e81a2b4b5cfd", null ],
+      [ "k_star_onewire_cmd_match_rom", "d0/d6c/star__bus__onewire_8h.html#a86e5c0ebe6a15b1ed9f46d6ea73d3beaa3362e755cafa012b7950e4b6c96b1093", null ],
+      [ "k_star_onewire_cmd_skip_rom", "d0/d6c/star__bus__onewire_8h.html#a86e5c0ebe6a15b1ed9f46d6ea73d3beaa618db862138ec7567d78206505ca04d4", null ],
+      [ "k_star_onewire_cmd_search_rom", "d0/d6c/star__bus__onewire_8h.html#a86e5c0ebe6a15b1ed9f46d6ea73d3beaa4142481afd1821744c2d90248c6b822f", null ],
+      [ "k_star_onewire_cmd_alarm_search", "d0/d6c/star__bus__onewire_8h.html#a86e5c0ebe6a15b1ed9f46d6ea73d3beaa7cb40475859dac482b351628966d2a54", null ]
+    ] ],
+    [ "star_onewire_family_t", "d0/d6c/star__bus__onewire_8h.html#a060f24d15ec68107cd2cc28b2dded131", [
+      [ "k_star_onewire_family_ds18s20", "d0/d6c/star__bus__onewire_8h.html#a060f24d15ec68107cd2cc28b2dded131a93812d98debc575bb4e091081cf0e748", null ],
+      [ "k_star_onewire_family_ds1822", "d0/d6c/star__bus__onewire_8h.html#a060f24d15ec68107cd2cc28b2dded131a5cab85093815d80a7aeef27bd6328b94", null ],
+      [ "k_star_onewire_family_ds2433", "d0/d6c/star__bus__onewire_8h.html#a060f24d15ec68107cd2cc28b2dded131a1b1dc530e0249c0b3e08663654db3e35", null ],
+      [ "k_star_onewire_family_ds2438", "d0/d6c/star__bus__onewire_8h.html#a060f24d15ec68107cd2cc28b2dded131a81ccac98b7574caa27e931a5ada3c0a2", null ],
+      [ "k_star_onewire_family_ds18b20", "d0/d6c/star__bus__onewire_8h.html#a060f24d15ec68107cd2cc28b2dded131a3560940866448297f40849725421032a", null ],
+      [ "k_star_onewire_family_ds2431", "d0/d6c/star__bus__onewire_8h.html#a060f24d15ec68107cd2cc28b2dded131a238bfa0835092bbbf93fd662d3b88936", null ],
+      [ "k_star_onewire_family_ds2401", "d0/d6c/star__bus__onewire_8h.html#a060f24d15ec68107cd2cc28b2dded131ad101328ce82be5d30e1da37c3a4da597", null ],
+      [ "k_star_onewire_family_ds2411", "d0/d6c/star__bus__onewire_8h.html#a060f24d15ec68107cd2cc28b2dded131a26999860c23bb68ecfd414d97918cc29", null ],
+      [ "k_star_onewire_family_ds1990a", "d0/d6c/star__bus__onewire_8h.html#a060f24d15ec68107cd2cc28b2dded131aee417e7989e1e16e27cb62f0907a5e41", null ]
     ] ],
     [ "star_onewire_speed_t", "d0/d6c/star__bus__onewire_8h.html#a280ca9da569dab4d61852a5220ba729c", [
       [ "k_star_onewire_speed_standard", "d0/d6c/star__bus__onewire_8h.html#a280ca9da569dab4d61852a5220ba729ca7e95b8200f96bae66b19e5ffb73384fd", null ],

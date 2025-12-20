@@ -1,5 +1,5 @@
 <map id="internal_encoder_on_reach_callback" name="internal_encoder_on_reach_callback">
-<area shape="rect" id="Node000001" title=" " alt="" coords="174,5,311,46"/>
+<area shape="rect" id="Node000001" title="PCNT watch point callback for overflow/underflow tracking." alt="" coords="174,5,311,46"/>
 <area shape="rect" id="Node000002" href="$d9/d76/star__encoder_8c.html#a95d7f3ccc362548f27e335d576aea46a" title="Initialize a quadrature encoder instance." alt="" coords="5,13,126,38"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="155,26,126,28,126,23,161,25"/>
 </map>

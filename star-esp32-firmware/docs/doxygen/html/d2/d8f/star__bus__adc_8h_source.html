@@ -92,38 +92,38 @@ $(function(){initNavTree('d2/d8f/star__bus__adc_8h_source.html','../../',''); })
   <div class="headertitle"><div class="title">star_bus_adc.h</div></div>
 </div><!--header-->
 <div class="contents">
-<a href="../../d2/d8f/star__bus__adc_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span><span class="comment">/* lib/star_bus/include/star_bus_adc.h */</span></div>
-<div class="line"><a id="l00002" name="l00002"></a><span class="lineno">    2</span> </div>
-<div class="line"><a id="l00003" name="l00003"></a><span class="lineno">    3</span><span class="preprocessor">#ifndef STAR_COMPONENT_BUS_ADC_H</span></div>
-<div class="line"><a id="l00004" name="l00004"></a><span class="lineno">    4</span><span class="preprocessor">#define STAR_COMPONENT_BUS_ADC_H</span></div>
-<div class="line"><a id="l00005" name="l00005"></a><span class="lineno">    5</span> </div>
-<div class="line"><a id="l00006" name="l00006"></a><span class="lineno">    6</span><span class="preprocessor">#ifdef __cplusplus</span></div>
-<div class="line"><a id="l00007" name="l00007"></a><span class="lineno">    7</span><span class="keyword">extern</span> <span class="stringliteral">&quot;C&quot;</span> {</div>
-<div class="line"><a id="l00008" name="l00008"></a><span class="lineno">    8</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00009" name="l00009"></a><span class="lineno">    9</span> </div>
-<div class="line"><a id="l00010" name="l00010"></a><span class="lineno">   10</span><span class="preprocessor">#include &lt;stdint.h&gt;</span></div>
-<div class="line"><a id="l00011" name="l00011"></a><span class="lineno">   11</span> </div>
-<div class="line"><a id="l00012" name="l00012"></a><span class="lineno">   12</span><span class="preprocessor">#include &quot;esp_adc/adc_cali.h&quot;</span></div>
-<div class="line"><a id="l00013" name="l00013"></a><span class="lineno">   13</span><span class="preprocessor">#include &quot;esp_adc/adc_oneshot.h&quot;</span></div>
-<div class="line"><a id="l00014" name="l00014"></a><span class="lineno">   14</span><span class="preprocessor">#include &quot;esp_err.h&quot;</span></div>
-<div class="line"><a id="l00015" name="l00015"></a><span class="lineno">   15</span><span class="preprocessor">#include &quot;<a class="code" href="../../d7/d7c/star__bus__types_8h.html">star_bus_types.h</a>&quot;</span></div>
-<div class="line"><a id="l00016" name="l00016"></a><span class="lineno">   16</span></div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span></div>
-<div class="line"><a id="l00071" name="l00071"></a><span class="lineno">   71</span><a class="code hl_typedef" href="../../dd/d9d/star__bus__protocol__types_8h.html#a73e1b75ae3e8fde5fc5e43224ce4c225">star_adc_ops_t</a> <a class="code hl_function" href="../../d2/d8f/star__bus__adc_8h.html#aa3fe9206840f1db313371895470b989a">star_bus_adc_get_default_ops</a>(<span class="keywordtype">void</span>);</div>
-<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span></div>
-<div class="line"><a id="l00081" name="l00081"></a><span class="lineno">   81</span>esp_err_t <a class="code hl_function" href="../../d2/d8f/star__bus__adc_8h.html#ab4b26501aa8f09b960d0238c4d338704">star_bus_adc_read_raw</a>(<a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a>* manager, <span class="keyword">const</span> <span class="keywordtype">char</span>* bus_name, <span class="keywordtype">int</span>* out_raw);</div>
-<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span></div>
-<div class="line"><a id="l00091" name="l00091"></a><span class="lineno">   91</span>esp_err_t</div>
-<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span><a class="code hl_function" href="../../d2/d8f/star__bus__adc_8h.html#a1bb4dd7003ae57c4a6fff8bfa4c9d60c">star_bus_adc_read_voltage</a>(<a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a>* manager, <span class="keyword">const</span> <span class="keywordtype">char</span>* bus_name, <span class="keywordtype">int</span>* out_voltage_mv);</div>
-<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span> </div>
-<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span><span class="preprocessor">#ifdef __cplusplus</span></div>
-<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span>}</div>
-<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span><span class="preprocessor">#endif</span></div>
-<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span> </div>
-<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span><span class="preprocessor">#endif </span><span class="comment">/* STAR_COMPONENT_BUS_ADC_H */</span><span class="preprocessor"></span></div>
-<div class="ttc" id="astar__bus__adc_8h_html_a1bb4dd7003ae57c4a6fff8bfa4c9d60c"><div class="ttname"><a href="../../d2/d8f/star__bus__adc_8h.html#a1bb4dd7003ae57c4a6fff8bfa4c9d60c">star_bus_adc_read_voltage</a></div><div class="ttdeci">esp_err_t star_bus_adc_read_voltage(star_bus_manager_t *manager, const char *bus_name, int *out_voltage_mv)</div><div class="ttdoc">Read calibrated voltage in millivolts.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/deb/star__bus__adc_8c_source.html#l00071">star_bus_adc.c:71</a></div></div>
+<a href="../../d2/d8f/star__bus__adc_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a id="l00001" name="l00001"></a><span class="lineno">    1</span></div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span> </div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span><span class="preprocessor">#ifndef STAR_COMPONENT_BUS_ADC_H</span></div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span><span class="preprocessor">#define STAR_COMPONENT_BUS_ADC_H</span></div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span> </div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span><span class="preprocessor">#ifdef __cplusplus</span></div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span><span class="keyword">extern</span> <span class="stringliteral">&quot;C&quot;</span> {</div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span> </div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span><span class="preprocessor">#include &lt;stdint.h&gt;</span></div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span> </div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span><span class="preprocessor">#include &quot;esp_adc/adc_cali.h&quot;</span></div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span><span class="preprocessor">#include &quot;esp_adc/adc_oneshot.h&quot;</span></div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span><span class="preprocessor">#include &quot;esp_err.h&quot;</span></div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span><span class="preprocessor">#include &quot;<a class="code" href="../../d7/d7c/star__bus__types_8h.html">star_bus_types.h</a>&quot;</span></div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span></div>
+<div class="line"><a id="l00072" name="l00072"></a><span class="lineno">   72</span><a class="code hl_typedef" href="../../dd/d9d/star__bus__protocol__types_8h.html#a73e1b75ae3e8fde5fc5e43224ce4c225">star_adc_ops_t</a> <a class="code hl_function" href="../../d2/d8f/star__bus__adc_8h.html#aa3fe9206840f1db313371895470b989a">star_bus_adc_get_default_ops</a>(<span class="keywordtype">void</span>);</div>
+<div class="line"><a id="l00073" name="l00073"></a><span class="lineno">   73</span></div>
+<div class="line"><a id="l00082" name="l00082"></a><span class="lineno">   82</span>esp_err_t <a class="code hl_function" href="../../d2/d8f/star__bus__adc_8h.html#ac030b4ce2926ab952d01e9a73975b84e">star_bus_adc_read_raw</a>(<a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a>* manager, <span class="keyword">const</span> <span class="keywordtype">char</span>* bus_name, int32_t* out_raw);</div>
+<div class="line"><a id="l00083" name="l00083"></a><span class="lineno">   83</span></div>
+<div class="line"><a id="l00092" name="l00092"></a><span class="lineno">   92</span>esp_err_t <a class="code hl_function" href="../../d2/d8f/star__bus__adc_8h.html#a93bf2ccd624c4656121404c06ab1894e">star_bus_adc_read_voltage</a>(<a class="code hl_typedef" href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a>* manager,</div>
+<div class="line"><a id="l00093" name="l00093"></a><span class="lineno">   93</span>                                    <span class="keyword">const</span> <span class="keywordtype">char</span>*         bus_name,</div>
+<div class="line"><a id="l00094" name="l00094"></a><span class="lineno">   94</span>                                    int32_t*            out_voltage_mv);</div>
+<div class="line"><a id="l00095" name="l00095"></a><span class="lineno">   95</span> </div>
+<div class="line"><a id="l00096" name="l00096"></a><span class="lineno">   96</span><span class="preprocessor">#ifdef __cplusplus</span></div>
+<div class="line"><a id="l00097" name="l00097"></a><span class="lineno">   97</span>}</div>
+<div class="line"><a id="l00098" name="l00098"></a><span class="lineno">   98</span><span class="preprocessor">#endif</span></div>
+<div class="line"><a id="l00099" name="l00099"></a><span class="lineno">   99</span> </div>
+<div class="line"><a id="l00100" name="l00100"></a><span class="lineno">  100</span><span class="preprocessor">#endif </span><span class="comment">/* STAR_COMPONENT_BUS_ADC_H */</span><span class="preprocessor"></span></div>
+<div class="ttc" id="astar__bus__adc_8h_html_a93bf2ccd624c4656121404c06ab1894e"><div class="ttname"><a href="../../d2/d8f/star__bus__adc_8h.html#a93bf2ccd624c4656121404c06ab1894e">star_bus_adc_read_voltage</a></div><div class="ttdeci">esp_err_t star_bus_adc_read_voltage(star_bus_manager_t *manager, const char *bus_name, int32_t *out_voltage_mv)</div><div class="ttdoc">Read calibrated voltage in millivolts.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/deb/star__bus__adc_8c_source.html#l00070">star_bus_adc.c:70</a></div></div>
 <div class="ttc" id="astar__bus__adc_8h_html_aa3fe9206840f1db313371895470b989a"><div class="ttname"><a href="../../d2/d8f/star__bus__adc_8h.html#aa3fe9206840f1db313371895470b989a">star_bus_adc_get_default_ops</a></div><div class="ttdeci">star_adc_ops_t star_bus_adc_get_default_ops(void)</div><div class="ttdoc">Get default ADC operations structure.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/deb/star__bus__adc_8c_source.html#l00037">star_bus_adc.c:37</a></div></div>
-<div class="ttc" id="astar__bus__adc_8h_html_ab4b26501aa8f09b960d0238c4d338704"><div class="ttname"><a href="../../d2/d8f/star__bus__adc_8h.html#ab4b26501aa8f09b960d0238c4d338704">star_bus_adc_read_raw</a></div><div class="ttdeci">esp_err_t star_bus_adc_read_raw(star_bus_manager_t *manager, const char *bus_name, int *out_raw)</div><div class="ttdoc">Read raw ADC value.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/deb/star__bus__adc_8c_source.html#l00047">star_bus_adc.c:47</a></div></div>
+<div class="ttc" id="astar__bus__adc_8h_html_ac030b4ce2926ab952d01e9a73975b84e"><div class="ttname"><a href="../../d2/d8f/star__bus__adc_8h.html#ac030b4ce2926ab952d01e9a73975b84e">star_bus_adc_read_raw</a></div><div class="ttdeci">esp_err_t star_bus_adc_read_raw(star_bus_manager_t *manager, const char *bus_name, int32_t *out_raw)</div><div class="ttdoc">Read raw ADC value.</div><div class="ttdef"><b>Definition</b> <a href="../../d2/deb/star__bus__adc_8c_source.html#l00047">star_bus_adc.c:47</a></div></div>
 <div class="ttc" id="astar__bus__common__types_8h_html_a129dc23a884803fefe3727fe95ab91d7"><div class="ttname"><a href="../../dd/d40/star__bus__common__types_8h.html#a129dc23a884803fefe3727fe95ab91d7">star_bus_manager_t</a></div><div class="ttdeci">struct star_bus_manager star_bus_manager_t</div><div class="ttdef"><b>Definition</b> <a href="../../dd/d40/star__bus__common__types_8h_source.html#l00047">star_bus_common_types.h:47</a></div></div>
 <div class="ttc" id="astar__bus__protocol__types_8h_html_a73e1b75ae3e8fde5fc5e43224ce4c225"><div class="ttname"><a href="../../dd/d9d/star__bus__protocol__types_8h.html#a73e1b75ae3e8fde5fc5e43224ce4c225">star_adc_ops_t</a></div><div class="ttdeci">struct star_adc_ops star_adc_ops_t</div><div class="ttdoc">ADC operation functions structure.</div></div>
 <div class="ttc" id="astar__bus__types_8h_html"><div class="ttname"><a href="../../d7/d7c/star__bus__types_8h.html">star_bus_types.h</a></div><div class="ttdoc">Bus type definitions and enumerations.</div></div>

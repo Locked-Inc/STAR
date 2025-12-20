@@ -166,8 +166,14 @@ Public Attributes</h2></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>DRV8243 driver handle structure. </p>
+<p>This structure maintains the runtime state of a DRV8243 motor driver instance. It is allocated by the caller (typically on stack or as static storage) and initialized via <a class="el" href="../../dc/ddf/star__drv8243_8h.html#abd5193a0c6cf77aa8630a9ded476e412" title="Initialize DRV8243 motor driver.">star_drv8243_init()</a>. Zero dynamic allocation is used.</p>
+<p>Thread Safety:</p><ul>
+<li>The handle is not inherently thread-safe</li>
+<li>Callers must provide external synchronization if accessed from multiple tasks</li>
+<li>Bus manager operations are internally mutex-protected </li>
+</ul>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00176">176</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00203">203</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
 </div><a name="doc-variable-members" id="doc-variable-members"></a><h2 id="header-doc-variable-members" class="groupheader">Member Data Documentation</h2>
 <a id="ae64fb847384e907e8c7f50bd886c7d8a" name="ae64fb847384e907e8c7f50bd886c7d8a"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae64fb847384e907e8c7f50bd886c7d8a">&#9670;&#160;</a></span>adc_bus_name</h2>
@@ -180,11 +186,11 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>ADC bus name </p>
+<p>ADC bus name (not owned) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00179">179</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00206">206</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00039">star_drv8243_init()</a>, and <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00173">star_drv8243_read_current()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00068">star_drv8243_init()</a>, and <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00201">star_drv8243_read_current()</a>.</p>
 
 </div>
 </div>
@@ -199,11 +205,11 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Bus manager reference </p>
+<p>Bus manager reference (not owned) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00177">177</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00204">204</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00039">star_drv8243_init()</a>, and <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00173">star_drv8243_read_current()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00068">star_drv8243_init()</a>, and <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00201">star_drv8243_read_current()</a>.</p>
 
 </div>
 </div>
@@ -218,11 +224,11 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Current limit (mA) </p>
+<p>Software current limit in mA </p>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00188">188</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00215">215</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00246">internal_drv8243_check_current_limit()</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00039">star_drv8243_init()</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00233">star_drv8243_set_current_limit()</a>, and <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00126">star_drv8243_set_speed()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00289">internal_drv8243_check_current_limit()</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00068">star_drv8243_init()</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00276">star_drv8243_set_current_limit()</a>, and <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00155">star_drv8243_set_speed()</a>.</p>
 
 </div>
 </div>
@@ -237,11 +243,11 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Current speed (-100 to +100) </p>
+<p>Last commanded speed (-100.0 to +100.0 percent) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00192">192</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00219">219</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00221">star_drv8243_get_speed()</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00039">star_drv8243_init()</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00126">star_drv8243_set_speed()</a>, and <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00159">star_drv8243_stop()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00264">star_drv8243_get_speed()</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00068">star_drv8243_init()</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00155">star_drv8243_set_speed()</a>, and <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00187">star_drv8243_stop()</a>.</p>
 
 </div>
 </div>
@@ -256,11 +262,11 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Fault flag </p>
+<p>Last known fault status from nFAULT pin </p>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00193">193</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00220">220</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00199">star_drv8243_get_fault_status()</a>, and <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00039">star_drv8243_init()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00242">star_drv8243_get_fault_status()</a>, and <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00068">star_drv8243_init()</a>.</p>
 
 </div>
 </div>
@@ -275,11 +281,11 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>GPIO bus name </p>
+<p>GPIO bus name (not owned) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00178">178</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00205">205</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00039">star_drv8243_init()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00068">star_drv8243_init()</a>.</p>
 
 </div>
 </div>
@@ -294,11 +300,11 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Initialization flag </p>
+<p>True after successful init, false after deinit </p>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00194">194</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00221">221</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00108">star_drv8243_deinit()</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00199">star_drv8243_get_fault_status()</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00221">star_drv8243_get_speed()</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00039">star_drv8243_init()</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00173">star_drv8243_read_current()</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00233">star_drv8243_set_current_limit()</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00126">star_drv8243_set_speed()</a>, and <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00159">star_drv8243_stop()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00137">star_drv8243_deinit()</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00242">star_drv8243_get_fault_status()</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00264">star_drv8243_get_speed()</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00068">star_drv8243_init()</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00201">star_drv8243_read_current()</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00276">star_drv8243_set_current_limit()</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00155">star_drv8243_set_speed()</a>, and <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00187">star_drv8243_stop()</a>.</p>
 
 </div>
 </div>
@@ -313,11 +319,11 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>IPROPI ratio (A/V) </p>
+<p>IPROPI current sense ratio (A/V) </p>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00189">189</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00216">216</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00039">star_drv8243_init()</a>, and <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00173">star_drv8243_read_current()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00068">star_drv8243_init()</a>, and <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00201">star_drv8243_read_current()</a>.</p>
 
 </div>
 </div>
@@ -332,11 +338,11 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Motor control handle </p>
+<p>Underlying MCPWM motor control handle </p>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00181">181</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00208">208</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00108">star_drv8243_deinit()</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00039">star_drv8243_init()</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00126">star_drv8243_set_speed()</a>, and <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00159">star_drv8243_stop()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00137">star_drv8243_deinit()</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00068">star_drv8243_init()</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00155">star_drv8243_set_speed()</a>, and <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00187">star_drv8243_stop()</a>.</p>
 
 </div>
 </div>
@@ -351,11 +357,11 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Current sense ADC channel </p>
+<p>Current sense ADC channel number </p>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00184">184</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00211">211</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00039">star_drv8243_init()</a>, and <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00173">star_drv8243_read_current()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00068">star_drv8243_init()</a>.</p>
 
 </div>
 </div>
@@ -370,11 +376,11 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Fault detect GPIO pin </p>
+<p>Fault detect GPIO pin number </p>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00185">185</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html#l00212">212</a> of file <a class="el" href="../../dc/ddf/star__drv8243_8h_source.html">star_drv8243.h</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00263">internal_drv8243_configure_fault_pin()</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00199">star_drv8243_get_fault_status()</a>, and <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00039">star_drv8243_init()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00306">internal_drv8243_configure_fault_pin()</a>, <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00242">star_drv8243_get_fault_status()</a>, and <a class="el" href="../../d2/d8f/star__drv8243_8c_source.html#l00068">star_drv8243_init()</a>.</p>
 
 </div>
 </div>

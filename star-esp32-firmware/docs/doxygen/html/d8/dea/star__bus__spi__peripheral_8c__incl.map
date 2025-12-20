@@ -1,6 +1,6 @@
 <map id="lib/star_bus/src/star_bus_spi_peripheral.c" name="lib/star_bus/src/star_bus_spi_peripheral.c">
 <area shape="rect" id="Node000001" title="SPI peripheral mode implementation for the bus manager." alt="" coords="1464,5,1611,46"/>
-<area shape="rect" id="Node000002" href="$d5/dd2/star__bus__spi__peripheral_8h.html" title="SPI peripheral (slave) mode operations." alt="" coords="985,94,1154,120"/>
+<area shape="rect" id="Node000002" href="$d5/dd2/star__bus__spi__peripheral_8h.html" title="SPI peripheral mode API for the bus manager." alt="" coords="985,94,1154,120"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="1461,40,1157,93,1156,88,1466,39"/>
 <area shape="rect" id="Node000006" href="$d7/d7c/star__bus__types_8h.html" title="Bus type definitions and enumerations." alt="" coords="512,168,633,193"/>
 <area shape="poly" id="edge62_Node000001_Node000006" title=" " alt="" coords="1461,34,1244,59,974,97,790,132,638,166,636,161,789,127,973,91,1243,54,1466,33"/>

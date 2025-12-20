@@ -1,5 +1,5 @@
 <map id="register_pin_if_valid" name="register_pin_if_valid">
-<area shape="rect" id="Node000001" title="Helper function to register a single pin if valid." alt="" coords="232,13,368,38"/>
+<area shape="rect" id="Node000001" title=" " alt="" coords="232,13,368,38"/>
 <area shape="rect" id="Node000002" href="$d7/d60/star__bus__manager_8c.html#ad3ad5ac9f78399d475aeea127ad5f641" title="Iterates through all I2C buses/devices managed by the manager and calls a user&#45;provided function to r..." alt="" coords="5,5,184,46"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="213,26,184,28,184,23,219,25"/>
 </map>

@@ -95,27 +95,30 @@ $(function(){initNavTree('d5/d95/star__core_8h.html','../../',''); });
 
 <p>Unified header for STAR core abstract interfaces.  
 <a href="#details">More...</a></p>
-<div class="textblock"><code>#include &quot;<a class="el" href="../../df/d84/star__error__interface_8h_source.html">star_error_interface.h</a>&quot;</code><br />
+<div class="textblock"><code>#include &lt;stddef.h&gt;</code><br />
+<code>#include &quot;<a class="el" href="../../df/d84/star__error__interface_8h_source.html">star_error_interface.h</a>&quot;</code><br />
 <code>#include &quot;<a class="el" href="../../da/d58/star__pin__interface_8h_source.html">star_pin_interface.h</a>&quot;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for star_core.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d3/d53/star__core_8h__incl.png" border="0" usemap="#alib_2star__core_2include_2star__core_8h" loading="lazy" alt=""/></div>
 <map name="alib_2star__core_2include_2star__core_8h" id="alib_2star__core_2include_2star__core_8h">
-<area shape="rect" title="Unified header for STAR core abstract interfaces." alt="" coords="90,5,228,46"/>
-<area shape="rect" href="../../df/d84/star__error__interface_8h.html" title="Abstract error handler interface for dependency inversion." alt="" coords="5,94,150,120"/>
-<area shape="poly" title=" " alt="" coords="137,48,103,85,99,81,141,44"/>
-<area shape="rect" href="../../da/d58/star__pin__interface_8h.html" title="Abstract pin validator interface for dependency inversion." alt="" coords="174,94,309,120"/>
-<area shape="poly" title=" " alt="" coords="180,44,220,83,215,83,179,49"/>
-<area shape="rect" title=" " alt="" coords="30,168,104,193"/>
-<area shape="poly" title=" " alt="" coords="78,118,73,153,68,151,74,122"/>
-<area shape="rect" title=" " alt="" coords="128,168,192,193"/>
-<area shape="poly" title=" " alt="" coords="92,118,137,157,132,158,91,123"/>
-<area shape="rect" title=" " alt="" coords="216,168,291,193"/>
-<area shape="poly" title=" " alt="" coords="108,118,212,160,207,163,107,123"/>
-<area shape="poly" title=" " alt="" coords="214,121,112,164,110,159,209,119"/>
-<area shape="poly" title=" " alt="" coords="230,119,187,160,184,155,225,121"/>
-<area shape="poly" title=" " alt="" coords="245,118,251,153,247,151,242,122"/>
+<area shape="rect" title="Unified header for STAR core abstract interfaces." alt="" coords="96,5,234,46"/>
+<area shape="rect" title=" " alt="" coords="5,94,74,120"/>
+<area shape="poly" title=" " alt="" coords="132,49,73,87,70,83,135,44"/>
+<area shape="rect" href="../../df/d84/star__error__interface_8h.html" title="Abstract error handler interface for dependency inversion." alt="" coords="257,94,401,120"/>
+<area shape="poly" title=" " alt="" coords="206,44,293,86,288,88,205,49"/>
+<area shape="rect" href="../../da/d58/star__pin__interface_8h.html" title="Abstract pin validator interface for dependency inversion." alt="" coords="97,94,232,120"/>
+<area shape="poly" title=" " alt="" coords="166,44,167,79,162,77,163,49"/>
+<area shape="rect" title=" " alt="" coords="116,168,190,193"/>
+<area shape="poly" title=" " alt="" coords="302,120,198,164,196,159,296,121"/>
+<area shape="rect" title=" " alt="" coords="214,168,278,193"/>
+<area shape="poly" title=" " alt="" coords="317,119,273,160,270,155,312,121"/>
+<area shape="rect" title=" " alt="" coords="302,168,377,193"/>
+<area shape="poly" title=" " alt="" coords="332,118,338,154,333,151,329,122"/>
+<area shape="poly" title=" " alt="" coords="165,118,160,154,155,151,161,122"/>
+<area shape="poly" title=" " alt="" coords="180,118,224,157,219,157,178,123"/>
+<area shape="poly" title=" " alt="" coords="195,118,298,161,293,162,194,123"/>
 </map>
 </div>
 </div>
@@ -168,7 +171,7 @@ Functions</h2></td></tr>
 <b>Value:</b><div class="fragment"></div><!-- fragment -->
 <p>Convenience macro to check if retry is possible through interface Returns false if interface is NULL or invalid. </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d5/d95/star__core_8h_source.html#l00186">186</a> of file <a class="el" href="../../d5/d95/star__core_8h_source.html">star_core.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d5/d95/star__core_8h_source.html#l00218">218</a> of file <a class="el" href="../../d5/d95/star__core_8h_source.html">star_core.h</a>.</p>
 
 </div>
 </div>
@@ -203,7 +206,7 @@ Functions</h2></td></tr>
 <b>Value:</b><div class="fragment"></div><!-- fragment -->
 <p>Convenience macro to register a pin through interface Returns ESP_OK if interface is NULL (no-op). </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d5/d95/star__core_8h_source.html#l00199">199</a> of file <a class="el" href="../../d5/d95/star__core_8h_source.html">star_core.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d5/d95/star__core_8h_source.html#l00231">231</a> of file <a class="el" href="../../d5/d95/star__core_8h_source.html">star_core.h</a>.</p>
 
 </div>
 </div>
@@ -224,7 +227,7 @@ Functions</h2></td></tr>
 <b>Value:</b><div class="fragment"></div><!-- fragment -->
 <p>Convenience macro to reset error state through interface Returns ESP_OK if interface is NULL (no-op), otherwise calls reset_state. </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d5/d95/star__core_8h_source.html#l00192">192</a> of file <a class="el" href="../../d5/d95/star__core_8h_source.html">star_core.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d5/d95/star__core_8h_source.html#l00224">224</a> of file <a class="el" href="../../d5/d95/star__core_8h_source.html">star_core.h</a>.</p>
 
 </div>
 </div>
@@ -254,7 +257,7 @@ Functions</h2></td></tr>
 <b>Value:</b><div class="fragment"></div><!-- fragment -->
 <p>Convenience macro to unregister a pin through interface Returns ESP_OK if interface is NULL (no-op). </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d5/d95/star__core_8h_source.html#l00206">206</a> of file <a class="el" href="../../d5/d95/star__core_8h_source.html">star_core.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d5/d95/star__core_8h_source.html#l00238">238</a> of file <a class="el" href="../../d5/d95/star__core_8h_source.html">star_core.h</a>.</p>
 
 </div>
 </div>
@@ -275,7 +278,7 @@ Functions</h2></td></tr>
 <b>Value:</b><div class="fragment"></div><!-- fragment -->
 <p>Convenience macro to validate pins through interface Returns ESP_OK if interface is NULL (no-op). </p>
 
-<p class="definition">Definition at line <a class="el" href="../../d5/d95/star__core_8h_source.html#l00213">213</a> of file <a class="el" href="../../d5/d95/star__core_8h_source.html">star_core.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d5/d95/star__core_8h_source.html#l00245">245</a> of file <a class="el" href="../../d5/d95/star__core_8h_source.html">star_core.h</a>.</p>
 
 </div>
 </div>
@@ -299,6 +302,8 @@ Functions</h2></td></tr>
 <p>Example Usage: </p><div class="fragment"></div><!-- fragment --> <dl class="section return"><dt>Returns</dt><dd>Version string </dd></dl>
 
 <p class="definition">Definition at line <a class="el" href="../../da/d27/star__core_8c_source.html#l00019">19</a> of file <a class="el" href="../../da/d27/star__core_8c_source.html">star_core.c</a>.</p>
+
+<p class="reference">References <a class="el" href="../../da/d27/star__core_8c_source.html#l00017">s_version</a>.</p>
 
 </div>
 </div>
@@ -334,7 +339,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if interface is valid and usable </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d5/d95/star__core_8h_source.html#l00165">165</a> of file <a class="el" href="../../d5/d95/star__core_8h_source.html">star_core.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d5/d95/star__core_8h_source.html#l00167">167</a> of file <a class="el" href="../../d5/d95/star__core_8h_source.html">star_core.h</a>.</p>
 
 <p class="reference">References <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00163">star_error_interface::can_retry</a>, <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00151">star_error_interface::record_error</a>, and <a class="el" href="../../df/d84/star__error__interface_8h_source.html#l00170">star_error_interface::reset_state</a>.</p>
 
@@ -372,7 +377,7 @@ Functions</h2></td></tr>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if interface is valid and usable </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d5/d95/star__core_8h_source.html#l00176">176</a> of file <a class="el" href="../../d5/d95/star__core_8h_source.html">star_core.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d5/d95/star__core_8h_source.html#l00193">193</a> of file <a class="el" href="../../d5/d95/star__core_8h_source.html">star_core.h</a>.</p>
 
 <p class="reference">References <a class="el" href="../../da/d58/star__pin__interface_8h_source.html#l00157">star_pin_interface::register_pin</a>, <a class="el" href="../../da/d58/star__pin__interface_8h_source.html#l00166">star_pin_interface::unregister_pin</a>, and <a class="el" href="../../da/d58/star__pin__interface_8h_source.html#l00173">star_pin_interface::validate</a>.</p>
 

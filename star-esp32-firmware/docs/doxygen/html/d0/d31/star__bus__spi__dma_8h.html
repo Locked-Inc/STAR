@@ -182,7 +182,7 @@ This graph shows which files directly or indirectly include this file:</div>
 <div class="center"><img src="../../d4/d5f/star__bus__spi__dma_8h__dep__incl.png" border="0" usemap="#alib_2star__bus_2include_2star__bus__spi__dma_8hdep" loading="lazy" alt=""/></div>
 <map name="alib_2star__bus_2include_2star__bus__spi__dma_8hdep" id="alib_2star__bus_2include_2star__bus__spi__dma_8hdep">
 <area shape="rect" title="DMA&#45;accelerated SPI operations for high&#45;speed data transfers." alt="" coords="5,5,148,46"/>
-<area shape="rect" href="../../dc/d0c/star__bus__spi__dma_8c.html" title="SPI DMA transfer implementation for high&#45;throughput operations." alt="" coords="8,94,145,135"/>
+<area shape="rect" href="../../dc/d0c/star__bus__spi__dma_8c.html" title="DMA&#45;accelerated SPI operations implementation for high&#45;throughput transfers." alt="" coords="8,94,145,135"/>
 <area shape="poly" title=" " alt="" coords="78,60,79,94,74,93,75,64"/>
 </map>
 </div>
@@ -194,19 +194,18 @@ Classes</h2></td></tr>
 <tr class="memitem:star_5Fspi_5Fdma_5Fconfig_5Ft" id="r_star_5Fspi_5Fdma_5Fconfig_5Ft"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="../../df/df1/structstar__spi__dma__config__t.html">star_spi_dma_config_t</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">DMA configuration for SPI bus.  <a href="../../df/df1/structstar__spi__dma__config__t.html#details">More...</a><br /></td></tr>
 </table><table class="memberdecls">
-<tr class="heading"><td colspan="2"><h2 id="header-define-members" class="groupheader"><a id="define-members" name="define-members"></a>
-Macros</h2></td></tr>
-<tr class="memitem:ab9b020dcf76fbbc5eeb321cbbcae061e" id="r_ab9b020dcf76fbbc5eeb321cbbcae061e"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ab9b020dcf76fbbc5eeb321cbbcae061e">STAR_SPI_DMA_MIN_SIZE</a>&#160;&#160;&#160;(64)</td></tr>
-<tr class="memdesc:ab9b020dcf76fbbc5eeb321cbbcae061e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Minimum transfer size to use DMA (bytes).  <br /></td></tr>
-<tr class="memitem:afdc105a8549c8746fea5b570a0f8a7f0" id="r_afdc105a8549c8746fea5b570a0f8a7f0"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#afdc105a8549c8746fea5b570a0f8a7f0">STAR_SPI_DMA_MAX_SIZE</a>&#160;&#160;&#160;(4092)</td></tr>
-<tr class="memdesc:afdc105a8549c8746fea5b570a0f8a7f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum DMA transfer size (bytes).  <br /></td></tr>
-<tr class="memitem:adf2a96ffba35b424e84b3d1e60152846" id="r_adf2a96ffba35b424e84b3d1e60152846"><td class="memItemLeft" align="right" valign="top">#define&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#adf2a96ffba35b424e84b3d1e60152846">STAR_SPI_DMA_ALIGNMENT</a>&#160;&#160;&#160;(4)</td></tr>
-<tr class="memdesc:adf2a96ffba35b424e84b3d1e60152846"><td class="mdescLeft">&#160;</td><td class="mdescRight">DMA buffer alignment requirement (bytes).  <br /></td></tr>
-</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-typedef-members" class="groupheader"><a id="typedef-members" name="typedef-members"></a>
 Typedefs</h2></td></tr>
 <tr class="memitem:ae18ee7f643cd6e498d76bef2dd3827a7" id="r_ae18ee7f643cd6e498d76bef2dd3827a7"><td class="memItemLeft" align="right" valign="top">typedef void(*&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="#ae18ee7f643cd6e498d76bef2dd3827a7">star_spi_dma_callback_t</a>) (esp_err_t result, void *context)</td></tr>
 <tr class="memdesc:ae18ee7f643cd6e498d76bef2dd3827a7"><td class="mdescLeft">&#160;</td><td class="mdescRight">DMA transfer complete callback function type.  <br /></td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 id="header-enum-members" class="groupheader"><a id="enum-members" name="enum-members"></a>
+Enumerations</h2></td></tr>
+<tr class="memitem:a8254b7bee82b3d3b98f61c1d8bb5d281" id="r_a8254b7bee82b3d3b98f61c1d8bb5d281"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom">{ <a class="el" href="#a8254b7bee82b3d3b98f61c1d8bb5d281a64bc26e4d4d20ae27b48cd9e5dc9c122">k_star_spi_dma_min_size</a> = 64
+, <a class="el" href="#a8254b7bee82b3d3b98f61c1d8bb5d281a3033e280ebbf5d048614592a5af16230">k_star_spi_dma_max_size</a> = 4092
+, <a class="el" href="#a8254b7bee82b3d3b98f61c1d8bb5d281a91bbf98992e096b4f1a216e46167ed86">k_star_spi_dma_alignment</a> = 4
+ }</td></tr>
+<tr class="memdesc:a8254b7bee82b3d3b98f61c1d8bb5d281"><td class="mdescLeft">&#160;</td><td class="mdescRight">SPI DMA constants.  <a href="#a8254b7bee82b3d3b98f61c1d8bb5d281">More...</a><br /></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 id="header-func-members" class="groupheader"><a id="func-members" name="func-members"></a>
 Functions</h2></td></tr>
@@ -249,68 +248,11 @@ Functions</h2></td></tr>
 <li>4-byte alignment requirement</li>
 <li>Maximum single transfer: 4092 bytes</li>
 </ul>
-<p>Example Usage: </p><div class="fragment"></div><!-- fragment --> 
+<p>Example Usage: </p><div class="fragment"></div><!-- fragment --><dl class="section date"><dt>Date</dt><dd>2025-12-19 </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>Copyright (c) 2025 STAR Project </dd></dl>
+
 <p class="definition">Definition in file <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html">star_bus_spi_dma.h</a>.</p>
-</div><a name="doc-define-members" id="doc-define-members"></a><h2 id="header-doc-define-members" class="groupheader">Macro Definition Documentation</h2>
-<a id="adf2a96ffba35b424e84b3d1e60152846" name="adf2a96ffba35b424e84b3d1e60152846"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#adf2a96ffba35b424e84b3d1e60152846">&#9670;&#160;</a></span>STAR_SPI_DMA_ALIGNMENT</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define STAR_SPI_DMA_ALIGNMENT&#160;&#160;&#160;(4)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>DMA buffer alignment requirement (bytes). </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html#l00211">211</a> of file <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html">star_bus_spi_dma.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00069">star_spi_dma_malloc()</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00090">star_spi_is_dma_capable()</a>.</p>
-
-</div>
-</div>
-<a id="afdc105a8549c8746fea5b570a0f8a7f0" name="afdc105a8549c8746fea5b570a0f8a7f0"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afdc105a8549c8746fea5b570a0f8a7f0">&#9670;&#160;</a></span>STAR_SPI_DMA_MAX_SIZE</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define STAR_SPI_DMA_MAX_SIZE&#160;&#160;&#160;(4092)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Maximum DMA transfer size (bytes). </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html#l00206">206</a> of file <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html">star_bus_spi_dma.h</a>.</p>
-
-<p class="reference">Referenced by <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00439">internal_should_use_spi_dma()</a>.</p>
-
-</div>
-</div>
-<a id="ab9b020dcf76fbbc5eeb321cbbcae061e" name="ab9b020dcf76fbbc5eeb321cbbcae061e"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#ab9b020dcf76fbbc5eeb321cbbcae061e">&#9670;&#160;</a></span>STAR_SPI_DMA_MIN_SIZE</h2>
-
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">#define STAR_SPI_DMA_MIN_SIZE&#160;&#160;&#160;(64)</td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-<p>Minimum transfer size to use DMA (bytes). </p>
-
-<p class="definition">Definition at line <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html#l00201">201</a> of file <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html">star_bus_spi_dma.h</a>.</p>
-
-</div>
-</div>
-<a name="doc-typedef-members" id="doc-typedef-members"></a><h2 id="header-doc-typedef-members" class="groupheader">Typedef Documentation</h2>
+</div><a name="doc-typedef-members" id="doc-typedef-members"></a><h2 id="header-doc-typedef-members" class="groupheader">Typedef Documentation</h2>
 <a id="ae18ee7f643cd6e498d76bef2dd3827a7" name="ae18ee7f643cd6e498d76bef2dd3827a7"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#ae18ee7f643cd6e498d76bef2dd3827a7">&#9670;&#160;</a></span>star_spi_dma_callback_t</h2>
 
@@ -332,7 +274,35 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html#l00221">221</a> of file <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html">star_bus_spi_dma.h</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html#l00224">224</a> of file <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html">star_bus_spi_dma.h</a>.</p>
+
+</div>
+</div>
+<a name="doc-enum-members" id="doc-enum-members"></a><h2 id="header-doc-enum-members" class="groupheader">Enumeration Type Documentation</h2>
+<a id="a8254b7bee82b3d3b98f61c1d8bb5d281" name="a8254b7bee82b3d3b98f61c1d8bb5d281"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a8254b7bee82b3d3b98f61c1d8bb5d281">&#9670;&#160;</a></span>anonymous enum</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">anonymous enum</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>SPI DMA constants. </p>
+<p>Using enum for type safety while maintaining compile-time constant behavior required for array sizes in C. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a id="a8254b7bee82b3d3b98f61c1d8bb5d281a64bc26e4d4d20ae27b48cd9e5dc9c122" name="a8254b7bee82b3d3b98f61c1d8bb5d281a64bc26e4d4d20ae27b48cd9e5dc9c122"></a>k_star_spi_dma_min_size&#160;</td><td class="fielddoc"><p>Minimum transfer size to use DMA (bytes) </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a8254b7bee82b3d3b98f61c1d8bb5d281a3033e280ebbf5d048614592a5af16230" name="a8254b7bee82b3d3b98f61c1d8bb5d281a3033e280ebbf5d048614592a5af16230"></a>k_star_spi_dma_max_size&#160;</td><td class="fielddoc"><p>Maximum DMA transfer size (bytes) </p>
+</td></tr>
+<tr><td class="fieldname"><a id="a8254b7bee82b3d3b98f61c1d8bb5d281a91bbf98992e096b4f1a216e46167ed86" name="a8254b7bee82b3d3b98f61c1d8bb5d281a91bbf98992e096b4f1a216e46167ed86"></a>k_star_spi_dma_alignment&#160;</td><td class="fielddoc"><p>DMA buffer alignment requirement (bytes) </p>
+</td></tr>
+</table>
+
+<p class="definition">Definition at line <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html#l00205">205</a> of file <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html">star_bus_spi_dma.h</a>.</p>
 
 </div>
 </div>
@@ -376,9 +346,9 @@ Functions</h2></td></tr>
 <dd>
 Can be called multiple times to reconfigure </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00110">110</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00152">152</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00047">spi_dma_state_t::config</a>, <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html#l00229">star_spi_dma_config_t::dma_channel</a>, <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html#l00227">star_spi_dma_config_t::enabled</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00428">get_spi_dma_state()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00415">get_spi_host_from_bus()</a>, <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html#l00228">star_spi_dma_config_t::min_transfer_size</a>, and <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00049">spi_dma_state_t::config</a>, <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html#l00232">star_spi_dma_config_t::dma_channel</a>, <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html#l00230">star_spi_dma_config_t::enabled</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00081">get_spi_dma_state()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00068">get_spi_host_from_bus()</a>, <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html#l00231">star_spi_dma_config_t::min_transfer_size</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -431,9 +401,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00149">149</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00191">191</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00047">spi_dma_state_t::config</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00428">get_spi_dma_state()</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00415">get_spi_host_from_bus()</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00049">spi_dma_state_t::config</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00081">get_spi_dma_state()</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00068">get_spi_host_from_bus()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -492,9 +462,9 @@ Here is the call graph for this function:</div>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>ESP_OK on success, error code otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00380">380</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00422">422</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00050">spi_dma_state_t::bytes_transferred</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00428">get_spi_dma_state()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00415">get_spi_host_from_bus()</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00049">spi_dma_state_t::transfer_count</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00052">spi_dma_state_t::bytes_transferred</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00081">get_spi_dma_state()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00068">get_spi_host_from_bus()</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00051">spi_dma_state_t::transfer_count</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -571,9 +541,9 @@ If callback is provided, operation is asynchronous </dd>
 <dd>
 Data buffer must remain valid until callback is called </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00241">241</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00283">283</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00050">spi_dma_state_t::bytes_transferred</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00038">spi_dma_transfer_context_t::callback</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00428">get_spi_dma_state()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00415">get_spi_host_from_bus()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00040">spi_dma_transfer_context_t::in_progress</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00439">internal_should_use_spi_dma()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../d9/dbd/star__bus__spi_8c_source.html#l00096">star_bus_spi_receive()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00090">star_spi_is_dma_capable()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00048">spi_dma_state_t::transfer_context</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00049">spi_dma_state_t::transfer_count</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00039">spi_dma_transfer_context_t::user_context</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00052">spi_dma_state_t::bytes_transferred</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00040">spi_dma_transfer_context_t::callback</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00081">get_spi_dma_state()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00068">get_spi_host_from_bus()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00042">spi_dma_transfer_context_t::in_progress</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00092">internal_should_use_spi_dma()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, <a class="el" href="../../d9/dbd/star__bus__spi_8c_source.html#l00096">star_bus_spi_receive()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00132">star_spi_is_dma_capable()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00050">spi_dma_state_t::transfer_context</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00051">spi_dma_state_t::transfer_count</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00041">spi_dma_transfer_context_t::user_context</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -663,9 +633,9 @@ If callback is NULL, operation is blocking </dd>
 <dd>
 Buffers must remain valid until callback is called </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00310">310</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00352">352</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00050">spi_dma_state_t::bytes_transferred</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00038">spi_dma_transfer_context_t::callback</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00428">get_spi_dma_state()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00415">get_spi_host_from_bus()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00040">spi_dma_transfer_context_t::in_progress</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00439">internal_should_use_spi_dma()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../d9/dbd/star__bus__spi_8c_source.html#l00124">star_bus_spi_transfer()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00090">star_spi_is_dma_capable()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00048">spi_dma_state_t::transfer_context</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00049">spi_dma_state_t::transfer_count</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00039">spi_dma_transfer_context_t::user_context</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00052">spi_dma_state_t::bytes_transferred</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00040">spi_dma_transfer_context_t::callback</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00081">get_spi_dma_state()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00068">get_spi_host_from_bus()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00042">spi_dma_transfer_context_t::in_progress</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00092">internal_should_use_spi_dma()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, <a class="el" href="../../d9/dbd/star__bus__spi_8c_source.html#l00124">star_bus_spi_transfer()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00132">star_spi_is_dma_capable()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00050">spi_dma_state_t::transfer_context</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00051">spi_dma_state_t::transfer_count</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00041">spi_dma_transfer_context_t::user_context</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -749,9 +719,9 @@ If callback is provided, operation is asynchronous </dd>
 <dd>
 Data buffer must remain valid until callback is called </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00172">172</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00214">214</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00050">spi_dma_state_t::bytes_transferred</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00038">spi_dma_transfer_context_t::callback</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00428">get_spi_dma_state()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00415">get_spi_host_from_bus()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00040">spi_dma_transfer_context_t::in_progress</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00439">internal_should_use_spi_dma()</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../d9/dbd/star__bus__spi_8c_source.html#l00067">star_bus_spi_transmit()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00090">star_spi_is_dma_capable()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00048">spi_dma_state_t::transfer_context</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00049">spi_dma_state_t::transfer_count</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00039">spi_dma_transfer_context_t::user_context</a>.</p>
+<p class="reference">References <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00052">spi_dma_state_t::bytes_transferred</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00040">spi_dma_transfer_context_t::callback</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00081">get_spi_dma_state()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00068">get_spi_host_from_bus()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00042">spi_dma_transfer_context_t::in_progress</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00092">internal_should_use_spi_dma()</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, <a class="el" href="../../d9/dbd/star__bus__spi_8c_source.html#l00067">star_bus_spi_transmit()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00132">star_spi_is_dma_capable()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00050">spi_dma_state_t::transfer_context</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00051">spi_dma_state_t::transfer_count</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00041">spi_dma_transfer_context_t::user_context</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -799,7 +769,7 @@ Here is the call graph for this function:</div>
   </dd>
 </dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00083">83</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00125">125</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
 
 </div>
 </div>
@@ -831,9 +801,9 @@ Here is the call graph for this function:</div>
 <dd>
 Buffer is cache-aligned and DMA-capable </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00069">69</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00111">111</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, and <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html#l00211">STAR_SPI_DMA_ALIGNMENT</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html#l00213">k_star_spi_dma_alignment</a>, and <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>.</p>
 
 </div>
 </div>
@@ -867,11 +837,11 @@ Buffer is cache-aligned and DMA-capable </dd></dl>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>true if buffer is DMA-capable, false otherwise </dd></dl>
 
-<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00090">90</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
+<p class="definition">Definition at line <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00132">132</a> of file <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html">star_bus_spi_dma.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html#l00211">STAR_SPI_DMA_ALIGNMENT</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d31/star__bus__spi__dma_8h_source.html#l00213">k_star_spi_dma_alignment</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00241">star_bus_spi_receive_dma()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00310">star_bus_spi_transceive_dma()</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00172">star_bus_spi_transmit_dma()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00283">star_bus_spi_receive_dma()</a>, <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00352">star_bus_spi_transceive_dma()</a>, and <a class="el" href="../../dc/d0c/star__bus__spi__dma_8c_source.html#l00214">star_bus_spi_transmit_dma()</a>.</p>
 <div class="dynheader">
 Here is the caller graph for this function:</div>
 <div class="dyncontent">

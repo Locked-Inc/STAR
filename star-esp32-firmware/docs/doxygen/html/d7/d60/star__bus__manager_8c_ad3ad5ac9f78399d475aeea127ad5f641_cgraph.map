@@ -1,6 +1,6 @@
 <map id="star_bus_manager_register_all_pins" name="star_bus_manager_register_all_pins">
 <area shape="rect" id="Node000001" title="Iterates through all I2C buses/devices managed by the manager and calls a user&#45;provided function to r..." alt="" coords="5,23,184,64"/>
-<area shape="rect" id="Node000002" href="$d7/d60/star__bus__manager_8c.html#aa3b439b8eaf6eada1e14f37929f19c68" title="Helper function to register a single pin if valid." alt="" coords="244,5,380,31"/>
+<area shape="rect" id="Node000002" href="$d7/d60/star__bus__manager_8c.html#aa3b439b8eaf6eada1e14f37929f19c68" title=" " alt="" coords="244,5,380,31"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="183,30,231,27,226,28,184,36"/>
 <area shape="rect" id="Node000003" href="$d7/d27/star__bus__types_8c.html#afa900f53de82aaa97ea08d9b3d5a4a6d" title="Convert bus type to string." alt="" coords="232,55,392,80"/>
 <area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="184,51,219,57,214,57,184,56"/>

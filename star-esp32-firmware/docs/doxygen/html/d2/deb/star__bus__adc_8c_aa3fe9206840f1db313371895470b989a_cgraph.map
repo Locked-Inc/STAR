@@ -1,7 +1,7 @@
 <map id="star_bus_adc_get_default_ops" name="star_bus_adc_get_default_ops">
 <area shape="rect" id="Node000001" title="Get default ADC operations structure." alt="" coords="5,46,204,72"/>
-<area shape="rect" id="Node000002" href="$d2/deb/star__bus__adc_8c.html#a8654d658e291ea15a6e2fa218f2cc6c4" title=" " alt="" coords="252,5,400,46"/>
+<area shape="rect" id="Node000002" href="$d2/deb/star__bus__adc_8c.html#a9aa38e07cbe4bfb0c10cffcb38b8b44f" title=" " alt="" coords="252,5,400,46"/>
 <area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="194,43,239,38,234,40,195,48"/>
-<area shape="rect" id="Node000003" href="$d2/deb/star__bus__adc_8c.html#aa96bcd883cd482287518ab0cc64b0043" title=" " alt="" coords="252,71,400,111"/>
+<area shape="rect" id="Node000003" href="$d2/deb/star__bus__adc_8c.html#aee75177aaf69ec3d185b2dae64133ce3" title=" " alt="" coords="252,71,400,111"/>
 <area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="198,70,239,78,233,78,198,75"/>
 </map>

@@ -93,7 +93,7 @@ $(function(){initNavTree('dd/df4/star__bus__i2c_8h.html','../../',''); });
 </div><!--header-->
 <div class="contents">
 
-<p>I2C bus operations through the unified bus manager.  
+<p>I2C controller protocol API for the bus manager.  
 <a href="#details">More...</a></p>
 <div class="textblock"><code>#include &quot;driver/i2c.h&quot;</code><br />
 <code>#include &lt;stdint.h&gt;</code><br />
@@ -104,7 +104,7 @@ Include dependency graph for star_bus_i2c.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../d9/df5/star__bus__i2c_8h__incl.png" border="0" usemap="#alib_2star__bus_2include_2star__bus__i2c_8h" loading="lazy" alt=""/></div>
 <map name="alib_2star__bus_2include_2star__bus__i2c_8h" id="alib_2star__bus_2include_2star__bus__i2c_8h">
-<area shape="rect" title="I2C bus operations through the unified bus manager." alt="" coords="412,5,545,46"/>
+<area shape="rect" title="I2C controller protocol API for the bus manager." alt="" coords="412,5,545,46"/>
 <area shape="rect" title=" " alt="" coords="1181,462,1267,488"/>
 <area shape="poly" title=" " alt="" coords="545,29,759,47,1027,78,1152,98,1257,121,1297,134,1328,148,1349,162,1356,179,1356,329,1353,350,1346,370,1323,405,1292,434,1261,457,1259,452,1289,430,1319,402,1342,368,1348,349,1351,329,1351,180,1344,166,1326,152,1295,139,1255,126,1151,103,1026,83,758,52,546,34"/>
 <area shape="rect" title=" " alt="" coords="504,536,568,562"/>
@@ -183,17 +183,15 @@ This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../df/de1/star__bus__i2c_8h__dep__incl.png" border="0" usemap="#alib_2star__bus_2include_2star__bus__i2c_8hdep" loading="lazy" alt=""/></div>
 <map name="alib_2star__bus_2include_2star__bus__i2c_8hdep" id="alib_2star__bus_2include_2star__bus__i2c_8hdep">
-<area shape="rect" title="I2C bus operations through the unified bus manager." alt="" coords="298,5,431,46"/>
-<area shape="rect" href="../../dd/d95/star__bus__smbus_8h.html" title="SMBus (System Management Bus) protocol implementation over I2C." alt="" coords="89,94,222,135"/>
-<area shape="poly" title=" " alt="" coords="301,54,204,96,202,91,305,51"/>
-<area shape="rect" href="../../d3/df5/star__bus__smbus_8c.html" title="SMBus (System Management Bus) protocol implementation." alt="" coords="191,183,328,223"/>
-<area shape="poly" title=" " alt="" coords="323,54,303,75,287,95,276,117,269,141,262,184,258,181,264,139,271,115,282,93,299,71,318,57"/>
+<area shape="rect" title="I2C controller protocol API for the bus manager." alt="" coords="245,5,378,46"/>
+<area shape="rect" href="../../dd/d95/star__bus__smbus_8h.html" title="SMBus protocol API over I2C." alt="" coords="89,94,222,135"/>
+<area shape="poly" title=" " alt="" coords="261,55,192,96,189,91,265,52"/>
+<area shape="rect" href="../../d3/df5/star__bus__smbus_8c.html" title="SMBus protocol layer implementation over I2C." alt="" coords="191,183,328,223"/>
+<area shape="poly" title=" " alt="" coords="299,59,287,95,265,184,261,181,282,93,295,62"/>
 <area shape="rect" href="../../de/d98/star__bus__config_8c.html" title="Bus configuration creation and lifecycle management implementation." alt="" coords="296,94,433,135"/>
-<area shape="poly" title=" " alt="" coords="366,59,367,95,362,92,363,64"/>
+<area shape="poly" title=" " alt="" coords="332,57,355,94,350,93,330,62"/>
 <area shape="rect" href="../../dd/d1a/star__bus__i2c_8c.html" title="I2C controller protocol implementation for the bus manager." alt="" coords="456,94,593,135"/>
-<area shape="poly" title=" " alt="" coords="415,51,491,93,486,94,414,56"/>
-<area shape="rect" href="../../de/db1/star__bus__i2c__dma_8c.html" title="I2C DMA transfer implementation for high&#45;throughput operations." alt="" coords="616,94,753,135"/>
-<area shape="poly" title=" " alt="" coords="447,46,619,94,613,95,446,52"/>
+<area shape="poly" title=" " alt="" coords="374,50,479,93,473,94,373,55"/>
 <area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html" title="BQ7850 battery management system driver implementation." alt="" coords="5,183,167,223"/>
 <area shape="poly" title=" " alt="" coords="133,146,104,184,100,180,128,148"/>
 <area shape="poly" title=" " alt="" coords="191,142,238,182,233,182,189,147"/>
@@ -216,7 +214,11 @@ Functions</h2></td></tr>
 <tr class="memdesc:a6b73d11538cb25e07de224584c54ec49"><td class="mdescLeft">&#160;</td><td class="mdescRight">Read raw bytes from an I2C device specified by a bus configuration. Does not send a register address before reading.  <br /></td></tr>
 </table>
 <a name="details" id="details"></a><h2 id="header-details" class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>I2C bus operations through the unified bus manager. </p>
+<div class="textblock"><p>I2C controller protocol API for the bus manager. </p>
+<p>I2C bus operations through the unified bus manager.</p>
+<p>Provides interface for I2C controller mode operations through the bus manager. Supports standard and DMA-based transfers with configurable clock speeds, timeout handling, and multi-device communication on shared SDA/SCL lines.</p>
+<dl class="section date"><dt>Date</dt><dd>2025-12-19 </dd></dl>
+<dl class="section copyright"><dt>Copyright</dt><dd>Copyright (c) 2025 STAR Project</dd></dl>
 <p>This module provides I2C read/write operations that work through the bus manager. All operations find the bus configuration by name and use the configured I2C port and device address.</p>
 <p>Key Features:</p><ul>
 <li>Register-based read/write operations</li>
@@ -252,7 +254,7 @@ Functions</h2></td></tr>
 
 <p class="definition">Definition at line <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00073">73</a> of file <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html">star_bus_i2c.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00342">internal_star_bus_i2c_read()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00579">internal_star_bus_i2c_read_raw()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00230">internal_star_bus_i2c_write()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00479">internal_star_bus_i2c_write_command()</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00063">star_i2c_ops::read</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00065">star_i2c_ops::read_raw</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00062">star_i2c_ops::write</a>, and <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00064">star_i2c_ops::write_command</a>.</p>
+<p class="reference">References <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00342">internal_star_bus_i2c_read()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00579">internal_star_bus_i2c_read_raw()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00230">internal_star_bus_i2c_write()</a>, <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00479">internal_star_bus_i2c_write_command()</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00063">star_i2c_ops::read</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00065">star_i2c_ops::read_raw</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00062">star_i2c_ops::write</a>, and <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00064">star_i2c_ops::write_command</a>.</p>
 
 <p class="reference">Referenced by <a class="el" href="../../de/d98/star__bus__config_8c_source.html#l00050">star_bus_config_create_i2c()</a>.</p>
 <div class="dynheader">
@@ -345,9 +347,9 @@ Here is the caller graph for this function:</div>
 
 <p class="definition">Definition at line <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00120">120</a> of file <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html">star_bus_i2c.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00059">star_bus_config::i2c</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00056">k_star_bus_type_i2c</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00076">star_i2c_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00063">star_i2c_ops::read</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00199">star_bus_manager_find_bus()</a>, and <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00052">star_bus_config::type</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00059">star_bus_config::i2c</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00056">k_star_bus_type_i2c</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00076">star_i2c_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00063">star_i2c_ops::read</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00370">star_bus_manager_find_bus()</a>, and <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00052">star_bus_config::type</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../de/db1/star__bus__i2c__dma_8c_source.html#l00259">star_bus_i2c_read_dma()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00123">star_smbus_read_byte()</a>, and <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00166">star_smbus_read_word()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00140">star_smbus_read_byte()</a>, and <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00183">star_smbus_read_word()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -363,33 +365,31 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../dd/df4/star__bus__i2c_8h_a2e9b9baf8a0f8d00a2080963a7efd62f_icgraph.png" border="0" usemap="#add/df4/star__bus__i2c_8h_a2e9b9baf8a0f8d00a2080963a7efd62f_icgraph" loading="lazy" alt=""/></div>
 <map name="add/df4/star__bus__i2c_8h_a2e9b9baf8a0f8d00a2080963a7efd62f_icgraph" id="add/df4/star__bus__i2c_8h_a2e9b9baf8a0f8d00a2080963a7efd62f_icgraph">
-<area shape="rect" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="1101,446,1228,472"/>
-<area shape="rect" href="../../de/db1/star__bus__i2c__dma_8c.html#ab2c1053b6698e5496f4b96d241108319" title="Read data from I2C device using DMA." alt="" coords="894,397,1053,422"/>
-<area shape="poly" title=" " alt="" coords="1094,442,1026,426,1026,420,1100,441"/>
-<area shape="rect" href="../../d3/df5/star__bus__smbus_8c.html#a66c94dc0a7eb2893f78e8b887d6d0b4d" title="SMBus Read Byte." alt="" coords="897,446,1050,472"/>
-<area shape="poly" title=" " alt="" coords="1083,459,1051,462,1050,456,1088,459"/>
-<area shape="rect" href="../../d3/df5/star__bus__smbus_8c.html#a06fee6f34cc0d8a110deb97775bb6e6a" title="SMBus Read Word." alt="" coords="895,496,1052,521"/>
-<area shape="poly" title=" " alt="" coords="1094,477,1027,497,1025,492,1100,476"/>
+<area shape="rect" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="1098,472,1225,497"/>
+<area shape="rect" href="../../d3/df5/star__bus__smbus_8c.html#a66c94dc0a7eb2893f78e8b887d6d0b4d" title="SMBus Read Byte." alt="" coords="895,446,1048,472"/>
+<area shape="poly" title=" " alt="" coords="1080,474,1049,472,1049,467,1085,474"/>
+<area shape="rect" href="../../d3/df5/star__bus__smbus_8c.html#a06fee6f34cc0d8a110deb97775bb6e6a" title="SMBus Read Word." alt="" coords="894,496,1050,521"/>
+<area shape="poly" title=" " alt="" coords="1080,495,1051,501,1050,496,1085,494"/>
 <area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#aa9056151568739c998b9ccf957fee277" title="Execute manufacturer access command." alt="" coords="650,307,846,347"/>
-<area shape="poly" title=" " alt="" coords="896,487,892,486,874,468,865,450,857,432,844,411,810,378,777,351,778,345,813,374,848,408,862,429,870,448,879,465,895,482,901,488"/>
+<area shape="poly" title=" " alt="" coords="896,488,892,486,874,468,865,450,857,432,844,411,810,378,777,351,778,345,813,374,848,408,862,429,870,448,879,465,895,482,902,488"/>
 <area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#ae6be6b56d85f086df6e8852d62e63d05" title="Read all cell voltages." alt="" coords="224,373,380,414"/>
-<area shape="poly" title=" " alt="" coords="891,525,800,540,685,546,624,545,562,539,500,528,441,511,391,474,326,417,327,412,394,469,443,506,501,523,562,534,624,540,685,541,799,535,896,524"/>
+<area shape="poly" title=" " alt="" coords="889,525,798,540,684,546,623,545,561,539,500,528,441,511,391,474,326,417,327,412,394,469,443,506,501,523,562,534,623,540,684,541,798,535,894,524"/>
 <area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a7aebeaeb09bb7ef8ea7d83c7f888b778" title="Read device information from BQ7850." alt="" coords="448,405,597,446"/>
-<area shape="poly" title=" " alt="" coords="906,491,845,479,714,455,598,438,597,433,715,450,846,474,911,491"/>
-<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="448,470,596,496"/>
-<area shape="poly" title=" " alt="" coords="877,504,597,490,597,484,882,502"/>
+<area shape="poly" title=" " alt="" coords="905,491,845,479,714,455,598,438,597,433,715,450,846,474,911,491"/>
+<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a18f3aeef758059d22cb359789c1c3c7c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="448,470,596,496"/>
+<area shape="poly" title=" " alt="" coords="876,504,597,490,597,485,881,502"/>
 <area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a1bbee1247cef5042ba7f727c5381e15d" title="Get cell balancing status." alt="" coords="673,621,823,662"/>
-<area shape="poly" title=" " alt="" coords="948,530,902,569,847,605,809,623,808,618,844,601,899,565,943,533"/>
+<area shape="poly" title=" " alt="" coords="947,530,901,569,847,605,809,623,808,618,844,601,898,565,942,533"/>
 <area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#af6718c1de9a626cb3b0f6738f3f35836" title="Read current measurements." alt="" coords="224,76,380,117"/>
-<area shape="poly" title=" " alt="" coords="893,485,892,486,874,462,865,439,862,416,862,394,862,347,856,322,843,296,792,223,743,171,716,151,684,133,601,99,546,85,488,79,431,80,382,85,379,80,431,75,488,74,546,80,603,94,686,128,719,147,747,167,797,219,848,294,861,321,867,346,867,394,867,416,870,438,879,460,896,483,898,486"/>
+<area shape="poly" title=" " alt="" coords="893,486,892,486,874,462,865,439,862,416,862,393,862,347,856,322,843,296,792,223,743,171,716,151,684,133,601,99,546,85,488,79,431,80,382,85,379,80,431,75,488,74,546,80,603,94,686,128,719,147,747,167,797,219,848,294,861,321,867,346,867,393,867,416,870,438,879,460,896,483,898,487"/>
 <area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a0b9f2eb6bfc85b7cd7f59ef709d7b3d9" title="Read pack voltage." alt="" coords="670,687,826,727"/>
-<area shape="poly" title=" " alt="" coords="961,533,916,605,884,643,847,676,825,689,823,684,844,672,880,639,912,602,956,536"/>
+<area shape="poly" title=" " alt="" coords="959,533,916,605,884,643,847,676,825,689,823,684,844,672,880,639,911,602,955,536"/>
 <area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a5a59ade472744947b6c1e479c89c0b16" title="Read state of charge data." alt="" coords="210,489,394,514"/>
-<area shape="poly" title=" " alt="" coords="931,527,890,544,846,555,733,572,644,578,554,572,441,555,381,538,331,518,331,512,383,533,443,550,555,567,644,573,733,567,845,550,888,539,926,528"/>
+<area shape="poly" title=" " alt="" coords="930,527,889,544,846,555,733,572,644,578,554,572,441,555,381,538,331,518,331,512,383,533,443,550,555,567,644,573,733,567,845,550,887,539,925,528"/>
 <area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#adac0c080984d9314f1f1fac481f20fb3" title="Read all status flags." alt="" coords="224,5,380,46"/>
-<area shape="poly" title=" " alt="" coords="892,485,892,486,867,448,858,411,858,374,864,338,870,301,872,265,865,227,844,189,798,140,743,102,682,73,617,52,552,38,489,30,381,25,379,20,489,25,553,33,619,47,684,68,746,97,801,136,848,185,870,226,877,264,875,302,869,339,864,374,863,410,872,446,896,483,897,486"/>
+<area shape="poly" title=" " alt="" coords="892,485,892,486,867,448,858,411,858,374,864,338,870,301,872,265,865,227,844,189,798,140,743,102,682,73,617,52,552,38,489,30,381,25,379,20,489,25,553,33,619,47,684,68,746,97,801,136,848,185,870,226,877,264,875,302,869,338,864,374,863,410,872,446,896,483,897,486"/>
 <area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#ab1438f4fde0a0f76af5d2947fc6d22a5" title="Read pack temperature." alt="" coords="670,752,826,793"/>
-<area shape="poly" title=" " alt="" coords="966,534,951,581,926,636,892,692,871,718,847,741,827,754,825,749,844,737,867,714,888,689,922,633,946,579,962,537"/>
+<area shape="poly" title=" " alt="" coords="965,534,950,581,926,636,892,692,871,718,847,741,827,754,826,749,844,737,867,714,888,689,921,633,945,579,961,537"/>
 <area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a5ca840491d01cd97c99ee1bd4150427e" title="Read cell voltage via manufacturer access subcommand." alt="" coords="450,340,594,381"/>
 <area shape="poly" title=" " alt="" coords="633,345,596,352,594,347,638,343"/>
 <area shape="poly" title=" " alt="" coords="685,356,603,395,575,407,572,402,601,390,690,353"/>
@@ -466,9 +466,9 @@ Here is the caller graph for this function:</div>
 
 <p class="definition">Definition at line <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00175">175</a> of file <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html">star_bus_i2c.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00059">star_bus_config::i2c</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00056">k_star_bus_type_i2c</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00076">star_i2c_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00065">star_i2c_ops::read_raw</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00199">star_bus_manager_find_bus()</a>, and <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00052">star_bus_config::type</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00059">star_bus_config::i2c</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00056">k_star_bus_type_i2c</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00076">star_i2c_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00065">star_i2c_ops::read_raw</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00370">star_bus_manager_find_bus()</a>, and <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00052">star_bus_config::type</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00329">star_smbus_block_process_call()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00272">star_smbus_block_read()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00197">star_smbus_process_call()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00053">star_smbus_quick_command()</a>, and <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00087">star_smbus_receive_byte()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00346">star_smbus_block_process_call()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00289">star_smbus_block_read()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00214">star_smbus_process_call()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00070">star_smbus_quick_command()</a>, and <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00104">star_smbus_receive_byte()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -558,9 +558,9 @@ Here is the caller graph for this function:</div>
 
 <p class="definition">Definition at line <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00086">86</a> of file <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html">star_bus_i2c.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00059">star_bus_config::i2c</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00056">k_star_bus_type_i2c</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00076">star_i2c_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00199">star_bus_manager_find_bus()</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00052">star_bus_config::type</a>, and <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00062">star_i2c_ops::write</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00059">star_bus_config::i2c</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00056">k_star_bus_type_i2c</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00076">star_i2c_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00370">star_bus_manager_find_bus()</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00052">star_bus_config::type</a>, and <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00062">star_i2c_ops::write</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../de/db1/star__bus__i2c__dma_8c_source.html#l00173">star_bus_i2c_write_dma()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00329">star_smbus_block_process_call()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00240">star_smbus_block_write()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00197">star_smbus_process_call()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00107">star_smbus_write_byte()</a>, and <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00144">star_smbus_write_word()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00346">star_smbus_block_process_call()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00257">star_smbus_block_write()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00214">star_smbus_process_call()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00124">star_smbus_write_byte()</a>, and <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00161">star_smbus_write_word()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
@@ -576,19 +576,17 @@ Here is the caller graph for this function:</div>
 <div class="dyncontent">
 <div class="center"><img src="../../dd/df4/star__bus__i2c_8h_aff2961e205530246d5a602fa747a6e3c_icgraph.png" border="0" usemap="#add/df4/star__bus__i2c_8h_aff2961e205530246d5a602fa747a6e3c_icgraph" loading="lazy" alt=""/></div>
 <map name="add/df4/star__bus__i2c_8h_aff2961e205530246d5a602fa747a6e3c_icgraph" id="add/df4/star__bus__i2c_8h_aff2961e205530246d5a602fa747a6e3c_icgraph">
-<area shape="rect" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="1125,258,1255,284"/>
-<area shape="rect" href="../../de/db1/star__bus__i2c__dma_8c.html#aae80743fb443e9a629270ccdb9e1eb8d" title="Write data to I2C device using DMA." alt="" coords="892,134,1054,160"/>
-<area shape="poly" title=" " alt="" coords="1165,246,1126,209,1102,190,1076,173,1051,163,1051,158,1078,169,1105,185,1130,205,1170,247"/>
+<area shape="rect" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="1125,282,1255,308"/>
 <area shape="rect" href="../../d3/df5/star__bus__smbus_8c.html#acebfaf2149e5be667ccc2c3303128019" title="SMBus Block Write&#45;Block Read Process Call." alt="" coords="870,184,1077,209"/>
-<area shape="poly" title=" " alt="" coords="1147,251,1076,223,1041,212,1041,207,1078,218,1152,251"/>
+<area shape="poly" title=" " alt="" coords="1159,272,1121,247,1076,223,1047,212,1047,207,1078,218,1124,243,1164,273"/>
 <area shape="rect" href="../../d3/df5/star__bus__smbus_8c.html#a5b3419e1efc2e09a4a145f51f1c52458" title="SMBus Block Write." alt="" coords="892,233,1054,258"/>
-<area shape="poly" title=" " alt="" coords="1107,262,1055,258,1055,252,1112,261"/>
+<area shape="poly" title=" " alt="" coords="1113,278,1033,262,1033,256,1118,278"/>
 <area shape="rect" href="../../d3/df5/star__bus__smbus_8c.html#a880eddb5f6fe400ad1c9022cec7bc766" title="SMBus Process Call." alt="" coords="889,282,1058,308"/>
-<area shape="poly" title=" " alt="" coords="1107,280,1059,288,1058,283,1112,279"/>
+<area shape="poly" title=" " alt="" coords="1107,295,1059,298,1058,292,1112,295"/>
 <area shape="rect" href="../../d3/df5/star__bus__smbus_8c.html#a4150488512abf781bf193c6bdb9d20a0" title="SMBus Write Byte." alt="" coords="895,332,1052,357"/>
-<area shape="poly" title=" " alt="" coords="1151,290,1078,323,1041,333,1040,328,1076,318,1146,292"/>
+<area shape="poly" title=" " alt="" coords="1118,311,1034,333,1033,328,1113,312"/>
 <area shape="rect" href="../../d3/df5/star__bus__smbus_8c.html#ae35a870d8984311e9af9966d3be33bac" title="SMBus Write Word." alt="" coords="894,381,1053,406"/>
-<area shape="poly" title=" " alt="" coords="1170,295,1130,336,1078,372,1052,383,1050,378,1076,367,1126,332,1165,297"/>
+<area shape="poly" title=" " alt="" coords="1164,316,1124,347,1078,372,1047,383,1046,378,1076,367,1121,343,1159,318"/>
 <area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#aa9056151568739c998b9ccf957fee277" title="Execute manufacturer access command." alt="" coords="624,212,820,253"/>
 <area shape="poly" title=" " alt="" coords="878,375,868,372,842,351,820,326,745,256,746,251,824,322,846,347,871,367,883,375"/>
 <area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#ab14194a4cad45febb48718352688813d" title="Write protection thresholds." alt="" coords="414,351,574,391"/>
@@ -603,7 +601,7 @@ Here is the caller graph for this function:</div>
 <area shape="poly" title=" " alt="" coords="697,199,645,131,611,94,573,61,554,49,553,44,576,57,615,90,649,128,702,199"/>
 <area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a7aebeaeb09bb7ef8ea7d83c7f888b778" title="Read device information from BQ7850." alt="" coords="420,71,569,111"/>
 <area shape="poly" title=" " alt="" coords="683,202,633,164,573,125,552,114,552,109,576,121,636,160,688,202"/>
-<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="420,136,568,161"/>
+<area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#a18f3aeef758059d22cb359789c1c3c7c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="420,136,568,161"/>
 <area shape="poly" title=" " alt="" coords="654,206,573,176,539,164,539,159,575,171,659,205"/>
 <area shape="rect" href="../../d2/d58/star__bms__bq7850_8c.html#afd0ffaa80c738dcccbcc04aca730326c" title="Read protection thresholds." alt="" coords="416,185,572,226"/>
 <area shape="poly" title=" " alt="" coords="606,220,573,217,572,212,612,219"/>
@@ -662,9 +660,9 @@ Here is the caller graph for this function:</div>
 
 <p class="definition">Definition at line <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html#l00155">155</a> of file <a class="el" href="../../dd/d1a/star__bus__i2c_8c_source.html">star_bus_i2c.c</a>.</p>
 
-<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00059">star_bus_config::i2c</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00056">k_star_bus_type_i2c</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00076">star_i2c_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d2/d58/star__bms__bq7850_8c_source.html#l00026">s_TAG</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00199">star_bus_manager_find_bus()</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00052">star_bus_config::type</a>, and <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00064">star_i2c_ops::write_command</a>.</p>
+<p class="reference">References <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00059">star_bus_config::i2c</a>, <a class="el" href="../../dd/d40/star__bus__common__types_8h_source.html#l00056">k_star_bus_type_i2c</a>, <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00076">star_i2c_bus_config::ops</a>, <a class="el" href="../../d2/d8d/structstar__bus__config.html#aa05bad9789a7279c047026057c603f54">star_bus_config::proto</a>, <a class="el" href="../../d0/d29/main_8c_source.html#l00030">s_tag</a>, <a class="el" href="../../d7/d60/star__bus__manager_8c_source.html#l00370">star_bus_manager_find_bus()</a>, <a class="el" href="../../d0/d84/star__bus__manager__types_8h_source.html#l00052">star_bus_config::type</a>, and <a class="el" href="../../dd/d9d/star__bus__protocol__types_8h_source.html#l00064">star_i2c_ops::write_command</a>.</p>
 
-<p class="reference">Referenced by <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00272">star_smbus_block_read()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00053">star_smbus_quick_command()</a>, and <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00075">star_smbus_send_byte()</a>.</p>
+<p class="reference">Referenced by <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00289">star_smbus_block_read()</a>, <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00070">star_smbus_quick_command()</a>, and <a class="el" href="../../d3/df5/star__bus__smbus_8c_source.html#l00092">star_smbus_send_byte()</a>.</p>
 <div class="dynheader">
 Here is the call graph for this function:</div>
 <div class="dyncontent">
