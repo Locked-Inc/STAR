@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['get_5fspi_5fdma_5fstate_0',['get_spi_dma_state',['../dc/d0c/star__bus__spi__dma_8c.html#ae6f3f7193babc100dd9a817ee1ebbdc5',1,'star_bus_spi_dma.c']]],
-  ['get_5fspi_5fhost_5ffrom_5fbus_1',['get_spi_host_from_bus',['../dc/d0c/star__bus__spi__dma_8c.html#af5ad74578aa070f6c9b52f995459590d',1,'star_bus_spi_dma.c']]]
+  ['command_5fhandler_5ftask_5fcreate_0',['command_handler_task_create',['../d8/d71/command__handler__task_8c.html#a17179b9da1977df5b628a6bf6fbaf139',1,'command_handler_task_create(motor_shared_state_t *shared_state, star_arq_handle_t *arq):&#160;command_handler_task.c'],['../dc/dbe/command__handler__task_8h.html#a17179b9da1977df5b628a6bf6fbaf139',1,'command_handler_task_create(motor_shared_state_t *shared_state, star_arq_handle_t *arq):&#160;command_handler_task.c']]]
 ];

@@ -79,7 +79,8 @@ star_adc_ops_t star_bus_adc_get_default_ops(void);
  * @param[out] out_raw  Pointer to store raw ADC value (int32_t for explicit typing)
  * @return ESP_OK on success, error code otherwise
  */
-esp_err_t star_bus_adc_read_raw(star_bus_manager_t* manager, const char* bus_name, int32_t* out_raw);
+esp_err_t
+star_bus_adc_read_raw(star_bus_manager_t* manager, const char* bus_name, int32_t* out_raw);
 
 /**
  * @brief Read calibrated voltage in millivolts

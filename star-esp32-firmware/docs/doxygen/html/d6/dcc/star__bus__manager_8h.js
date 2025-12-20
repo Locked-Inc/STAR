@@ -1,6 +1,9 @@
 var star__bus__manager_8h =
 [
     [ "star_bus_callback_t", "d6/dcc/star__bus__manager_8h.html#a86768aa2f1359361eb5e5b2b9f7e41b8", null ],
+    [ "bus_manager_config_t", "d6/dcc/star__bus__manager_8h.html#a412980ac19de89bb35a7fdbe113eff98", [
+      [ "k_bus_manager_mutex_timeout_ms", "d6/dcc/star__bus__manager_8h.html#a412980ac19de89bb35a7fdbe113eff98a94c8b36f288d7aba276661db9d2cfd2c", null ]
+    ] ],
     [ "star_bus_manager_add_bus", "d6/dcc/star__bus__manager_8h.html#a3a0dc80007e321a8697c399e0f0bf559", null ],
     [ "star_bus_manager_deinit", "d6/dcc/star__bus__manager_8h.html#a238abc1b4d0e4b98520e4227ec121b42", null ],
     [ "star_bus_manager_find_bus", "d6/dcc/star__bus__manager_8h.html#a966853e8a343920b499e6f7de13b3257", null ],

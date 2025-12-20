@@ -3,6 +3,7 @@
 # Usage: ./format_code.sh [options]
 
 set -e  # Exit on any error
+set +H  # Disable history expansion (fixes ! in if statements)
 
 # Colors for output
 RED='\033[0;31m'
@@ -176,16 +177,20 @@ format_files() {
         if [ "$VERBOSE" = true ]; then
             echo "  Processing: $file"
         fi
-        
+
         # Create a temporary file to compare
         local temp_file
         temp_file=$(mktemp)
-        
+
         # Format the file to temp
-        clang-format "$file" > "$temp_file"
+        clang-format "$file" > "$temp_file" 2>&1 || {
+            echo "ERROR: clang-format failed on $file" >&2
+            rm "$temp_file"
+            continue
+        }
         
         # Check if file was changed
-        if ! cmp -s "$file" "$temp_file"; then
+        if ! cmp -s "$file" "$temp_file" 2>/dev/null; then
             cp "$temp_file" "$file"
             ((formatted_count++))
             if [ "$VERBOSE" = true ]; then

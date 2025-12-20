@@ -1,0 +1,5 @@
+<map id="star_encoder_mux_handle_t" name="star_encoder_mux_handle_t">
+<area shape="rect" id="Node000001" title="Multiplexed encoder handle structure." alt="" coords="5,102,190,128"/>
+<area shape="rect" id="Node000002" href="$d9/db2/structstar__encoder__handle__t.html" title="Encoder handle structure (opaque)." alt="" coords="21,5,174,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="100,45,100,102,95,101,95,48"/>
+</map>

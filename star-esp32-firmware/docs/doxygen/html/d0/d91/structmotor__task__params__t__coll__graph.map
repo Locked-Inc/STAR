@@ -1,0 +1,13 @@
+<map id="motor_task_params_t" name="motor_task_params_t">
+<area shape="rect" id="Node000001" title="Task parameters structure." alt="" coords="578,85,725,111"/>
+<area shape="rect" id="Node000002" href="$da/d8b/structmotor__shared__state__t.html" title="Motor shared state structure." alt="" coords="278,5,426,31"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="441,26,498,37,555,52,593,66,628,85,623,85,591,71,553,57,496,42,441,32"/>
+<area shape="rect" id="Node000003" href="$da/db6/structstar__motor__handle__t.html" title="Motor controller handle structure." alt="" coords="282,59,422,84"/>
+<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="437,76,580,91,575,92,437,82"/>
+<area shape="rect" id="Node000004" href="$db/da0/structstar__encoder__mux__handle__t.html" title="Multiplexed encoder handle structure." alt="" coords="260,112,444,138"/>
+<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="459,121,554,115,587,112,593,111,554,120,460,127"/>
+<area shape="rect" id="Node000005" href="$d9/db2/structstar__encoder__handle__t.html" title="Encoder handle structure (opaque)." alt="" coords="5,112,158,138"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="173,122,262,124,257,126,173,127"/>
+<area shape="rect" id="Node000006" href="$d0/d66/structstar__pid__handle__t.html" title="PID controller handle structure." alt="" coords="290,165,414,191"/>
+<area shape="poly" id="edge5_Node000001_Node000006" title=" " alt="" coords="429,172,490,165,553,149,595,130,629,112,634,111,598,135,555,154,491,170,429,178"/>
+</map>

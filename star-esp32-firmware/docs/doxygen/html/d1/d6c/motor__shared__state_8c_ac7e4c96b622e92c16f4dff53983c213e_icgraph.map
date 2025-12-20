@@ -1,0 +1,13 @@
+<map id="motor_shared_state_set_velocity" name="motor_shared_state_set_velocity">
+<area shape="rect" id="Node000001" title="Set velocity setpoint for a specific motor." alt="" coords="989,5,1125,46"/>
+<area shape="rect" id="Node000002" href="$d8/d71/command__handler__task_8c.html#a4263cbb348117f15a7546d898b9b94c3" title="Handle SetVelocityRequest message." alt="" coords="808,5,941,46"/>
+<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="971,26,942,28,942,23,976,26"/>
+<area shape="rect" id="Node000003" href="$d8/d71/command__handler__task_8c.html#ae30aab7323c1c2d46ff7d3170f2d2bc3" title="Main request/response loop." alt="" coords="594,13,760,38"/>
+<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="789,26,760,28,760,23,795,26"/>
+<area shape="rect" id="Node000004" href="$d8/d71/command__handler__task_8c.html#ab2a47d15e4e4a87518255558eb43e8fb" title="Command handler task entry point." alt="" coords="338,13,546,38"/>
+<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="576,26,547,28,547,23,581,26"/>
+<area shape="rect" id="Node000005" href="$d8/d71/command__handler__task_8c.html#a17179b9da1977df5b628a6bf6fbaf139" title="Create and start the command handler task." alt="" coords="131,5,290,46"/>
+<area shape="poly" id="edge4_Node000004_Node000005" title=" " alt="" coords="320,26,291,28,291,23,325,26"/>
+<area shape="rect" id="Node000006" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,13,83,38"/>
+<area shape="poly" id="edge5_Node000005_Node000006" title=" " alt="" coords="112,26,83,28,83,23,117,25"/>
+</map>

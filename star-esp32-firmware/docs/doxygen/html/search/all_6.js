@@ -7,7 +7,7 @@ var searchData=
   ['fault_5fpin_4',['fault_pin',['../d3/dad/structstar__motor__config__t.html#af8f989ce341c650802fe3c2f29507134',1,'star_motor_config_t']]],
   ['field_5fpath_5',['field_path',['../d7/d1a/struct__star__v1___config_validation_error.html#ae4a813af6992edca378c3c395e2d304e',1,'_star_v1_ConfigValidationError']]],
   ['fields_6',['fields',['../dc/d6e/struct__star__v1___stream_telemetry_request.html#a23760968729aa923213555d024923db9',1,'_star_v1_StreamTelemetryRequest']]],
-  ['filter_5fvalue_7',['filter_value',['../df/d00/structstar__encoder__config__t.html#a87fee40e8e2e3aac03bfc26651f27687',1,'star_encoder_config_t']]],
+  ['filter_5fvalue_7',['filter_value',['../df/d00/structstar__encoder__config__t.html#a87fee40e8e2e3aac03bfc26651f27687',1,'star_encoder_config_t::filter_value'],['../d2/d7b/structstar__encoder__mux__config__t.html#a2e086b93628779abee0f69ab0317af6d',1,'star_encoder_mux_config_t::filter_value']]],
   ['firmware_5fsize_8',['firmware_size',['../d5/da0/struct__star__v1___begin_update_request.html#a69e4034e7f83baa49285ce36ba09c503',1,'_star_v1_BeginUpdateRequest']]],
   ['firmware_5fupdate_2epb_2ec_9',['firmware_update.pb.c',['../de/d51/include_2proto_2firmware__update_8pb_8c.html',1,'(Global Namespace)'],['../db/d73/include_2star_2v1_2firmware__update_8pb_8c.html',1,'(Global Namespace)'],['../d2/dcb/src_2proto_2star_2v1_2firmware__update_8pb_8c.html',1,'(Global Namespace)']]],
   ['firmware_5fupdate_2epb_2eh_10',['firmware_update.pb.h',['../d7/dd3/proto_2firmware__update_8pb_8h.html',1,'(Global Namespace)'],['../d3/dcd/star_2v1_2firmware__update_8pb_8h.html',1,'(Global Namespace)']]],

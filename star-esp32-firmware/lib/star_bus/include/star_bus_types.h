@@ -8,7 +8,6 @@
  * @copyright Copyright (c) 2025 STAR Project
  */
 
-
 #ifndef STAR_COMPONENT_BUS_TYPES_H
 #define STAR_COMPONENT_BUS_TYPES_H
 
