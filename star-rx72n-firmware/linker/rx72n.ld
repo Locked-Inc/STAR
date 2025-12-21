@@ -35,11 +35,23 @@ SECTIONS
      * =============================================================================
      */
 
-    /* Reset vector and interrupt vectors */
+    /* Reset vector and fixed interrupt vectors */
     .fvectors 0xFFFFFF80 :
     {
         KEEP(*(.fvectors))
     } > ROM
+
+    /* Relocatable interrupt vectors */
+    .rvectors :
+    {
+        . = ALIGN(1024);  /* RX requires 1KB alignment for INTB */
+        __rvectors_start = .;
+        KEEP(*(.rvectors))
+        __rvectors_end = .;
+    } > RAM AT> ROM
+
+    /* LMA for relocatable vectors (for copying to RAM) */
+    __rvectors_load = LOADADDR(.rvectors);
 
     /* Program code */
     .text :

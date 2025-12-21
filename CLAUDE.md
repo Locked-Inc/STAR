@@ -20,7 +20,8 @@ Note: ESP-IDF and other external APIs may still use legacy terminology internall
 
 | Component | Description |
 |-----------|-------------|
-| `star-esp32-firmware/` | ESP32-S3 motor controller (PlatformIO + ESP-IDF) |
+| `star-esp32-firmware/` | ESP32-S3 motor controller (PlatformIO + ESP-IDF + FreeRTOS) |
+| `star-rx72n-firmware/` | Renesas RX72N motor controller (CMake + GNURX + ThreadX) |
 | `star-proto/` | Protocol Buffers schemas with multi-language code generation |
 | `star-rpi5-buildroot/` | Custom Buildroot Linux for Raspberry Pi 5 |
 | `star-gateway/` | Go gateway service (UI ↔ ROS2 bridge) running on RPi5 |

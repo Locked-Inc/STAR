@@ -3,7 +3,7 @@
 # ThreadX-based motor control for Renesas RX72N
 # =============================================================================
 
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.16)
 
 # Project definition
 project(star-rx72n-firmware
@@ -48,14 +48,14 @@ add_compile_definitions(
     STAR_FIRMWARE_VERSION="1.0.0-rx72n"
 )
 
-# Compiler warnings (strict)
+# Compiler warnings (strict, but not -Werror for third-party code)
 add_compile_options(
     -Wall
     -Wextra
     -Wpedantic
-    -Werror
     -Wno-unused-parameter
     -Wno-missing-braces  # nanopb generates these
+    -Wno-comment  # ThreadX has nested comments in assembly
 )
 
 # Optimization flags
@@ -72,10 +72,12 @@ endif()
 set(SOURCES
     src/main.c
     src/hardware/startup_rx72n.S
+
     # Hardware initialization
-    # src/hardware/system_init.c
-    # src/hardware/clock_config.c
-    # src/hardware/gpio_config.c
+    src/hardware/system_init.c
+    src/hardware/gpio.c
+    src/hardware/timer.c
+    src/hardware/uart.c
 
     # ThreadX tasks (will be added)
     # src/tasks/motor_control_task.c
@@ -151,3 +153,25 @@ message(STATUS "RAM:              ${MCU_RAM_SIZE}")
 message(STATUS "Build Type:       ${CMAKE_BUILD_TYPE}")
 message(STATUS "C Compiler:       ${CMAKE_C_COMPILER}")
 message(STATUS "==============================================")
+
+# =============================================================================
+# Hardware Access (Flash/Debug)
+# =============================================================================
+#
+# Professional embedded workflow:
+# - BUILD in Docker (reproducible, cross-platform)
+# - FLASH/DEBUG on host (requires USB hardware access)
+#
+# Use provided scripts instead of make targets:
+#   ./flash.sh  - Flash firmware via E2 Lite (runs rfp-cli on host)
+#   ./debug.sh  - Start GDB session (connects to J-Link/E2 on host)
+#
+# Why not 'make flash'?
+# - Docker containers cannot access USB devices reliably
+# - Host scripts provide better error messages and setup guidance
+# - Consistent across Mac/Linux/Windows
+#
+# =============================================================================
+
+message(STATUS "Flash/Debug:      Use ./flash.sh and ./debug.sh (host scripts)")
+message(STATUS "                  Hardware access requires running on host, not in Docker")
