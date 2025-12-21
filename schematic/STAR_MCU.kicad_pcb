@@ -3203,7 +3203,7 @@
 		)
 		(embedded_fonts no)
 	)
-	(footprint "74HC139D,653:SOIC127P600X175-16N"
+	(footprint "74HC139D-653:SOIC127P600X175-16N"
 		(layer "F.Cu")
 		(uuid "2d50b138-deed-4b2d-8ae6-c1accf09af6d")
 		(at 152.18 123.2)
@@ -16381,7 +16381,7 @@
 			)
 		)
 	)
-	(footprint "74HC139D,653:SOIC127P600X175-16N"
+	(footprint "74HC139D-653:SOIC127P600X175-16N"
 		(layer "F.Cu")
 		(uuid "c23016e7-30c6-4c57-b898-ac1dcc6f6878")
 		(at 143.63 123.2)

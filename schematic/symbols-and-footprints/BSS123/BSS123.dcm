@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP BSS123
+D Compact Industry Standard SOT-23 Surface Mount Package; 0.17 A, 100 V RDS(ON) = 6  @ VGS = 10 V RDS(ON) = 10  @ VGS = 4.5 V; Rugged and Reliable; High Density Cell Design for Extremely Low RDS(ON)
+K
+F https://www.onsemi.com/pub/Collateral/BSS123-D.PDF
+$ENDCMP
+#
+#End Doc Library

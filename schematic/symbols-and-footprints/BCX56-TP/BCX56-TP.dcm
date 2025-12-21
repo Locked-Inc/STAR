@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP BCX56-TP
+D Bipolar (BJT) Transistor NPN 80 V 1 A 130MHz 500 mW Surface Mount SOT-89
+K
+F https://www.mccsemi.com/pdf/Products/BCX56(SOT-89).pdf
+$ENDCMP
+#
+#End Doc Library
