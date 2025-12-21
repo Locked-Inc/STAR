@@ -14,6 +14,7 @@
 #include "rx_bus_smbus.h"
 
 #include "hardware.h"
+#include "rx_bus_i2c.h"
 #include "rx_check.h"
 #include "rx_log.h"
 
