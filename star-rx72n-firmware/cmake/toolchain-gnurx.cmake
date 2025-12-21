@@ -24,8 +24,9 @@ set(CMAKE_OBJDUMP      "${GNURX_ROOT}/bin/rx-elf-objdump")
 set(CMAKE_SIZE         "${GNURX_ROOT}/bin/rx-elf-size")
 set(CMAKE_RANLIB       "${GNURX_ROOT}/bin/rx-elf-ranlib")
 
-# Target specifications for RX72N (shares same RX72M architecture)
-set(CPU_FLAGS "-mcpu=rx72n -mlittle-endian-data")
+# Target specifications for RX72N (use rx71m as closest supported CPU)
+# Note: Older GCC versions don't support rx72n, use rx71m from same RX700 series
+set(CPU_FLAGS "-mcpu=rx71m -mlittle-endian-data")
 
 # Compiler flags
 set(CMAKE_C_FLAGS_INIT "${CPU_FLAGS} -ffunction-sections -fdata-sections")

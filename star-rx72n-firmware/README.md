@@ -2,6 +2,82 @@
 
 ThreadX-based motor control firmware for Renesas RX72N (R5F572NNHGFP#30).
 
+## Quick Start
+
+**Prerequisites:** [Docker Desktop](https://www.docker.com/products/docker-desktop)
+
+### Build Scripts
+
+| Script | Purpose | When to Use |
+|--------|---------|-------------|
+| `./build.sh` | Build firmware | After code changes |
+| `./clean.sh` | Clean build artifacts | Before fresh rebuild |
+| `./flash.sh` | Flash to hardware | After build, with E2 Lite connected |
+| `./debug.sh` | Start debugging | When troubleshooting |
+
+### Mac / Linux
+```bash
+chmod +x *.sh           # First time only
+./build.sh              # Build firmware
+./flash.sh              # Flash to RX72N
+```
+
+### Windows (PowerShell)
+```powershell
+# Build
+docker build -t rx72n-build .
+docker run --rm -v ${PWD}:/work -w /work rx72n-build bash -c "mkdir -p build && cd build && cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchain-gnurx.cmake .. && make -j`$(nproc)"
+
+# Flash (install rfp-cli first)
+./flash.sh
+```
+
+### Windows (WSL2 / Git Bash)
+```bash
+./build.sh              # Same as Mac/Linux
+./flash.sh
+```
+
+**Build Performance:**
+- First build: ~3-5 min (downloads Docker image, builds ThreadX)
+- Incremental: ~5-30 sec (only recompiles changed files)
+- Clean rebuild: ~1-2 min
+
+**Why was development slow?** We were reinstalling CMake/build tools every Docker run. The `Dockerfile` now caches everything.
+
+## Build Output
+
+- `build/star-rx72n-firmware.elf` - Executable with debug symbols (231 KB)
+- `build/star-rx72n-firmware.hex` - Intel HEX for flashing (20 KB)
+- `build/star-rx72n-firmware.bin` - Raw binary (~60 KB)
+- `build/star-rx72n-firmware.map` - Linker memory map (195 KB)
+
+**Memory usage:** 7 KB code + 53 KB RAM (ThreadX stacks)
+
+## Flashing & Debugging
+
+### Flash to Hardware
+
+```bash
+./build.sh          # Build firmware
+./flash.sh          # Flash to RX72N via E2 Lite
+```
+
+**Prerequisites:** [Renesas Flash Programmer](https://www.renesas.com/us/en/software-tool/renesas-flash-programmer-programming-gui) + E2 Lite debugger
+
+### Debug with GDB
+
+```bash
+# Terminal 1: Start GDB server
+JLinkGDBServer -device R5F572NN -if JTAG -speed 4000 -port 2331
+
+# Terminal 2: Build and debug
+./build.sh          # Build firmware
+./debug.sh          # Launch GDB debugger
+```
+
+**See [FLASH.md](FLASH.md) for complete flashing and debugging guide.**
+
 ## Architecture
 
 - **MCU:** Renesas RX72N (R5F572NNHGFP#30)
@@ -10,52 +86,11 @@ ThreadX-based motor control firmware for Renesas RX72N (R5F572NNHGFP#30).
   - 100-pin LFQFP package (14×14mm)
   - 182 GPIO pins (no mux/decoder needed!)
 - **RTOS:** ThreadX (Azure RTOS / Eclipse ThreadX)
-- **Toolchain:** GNURX (GCC for Renesas RX)
-- **IDE:** CLion (CMake-based)
+- **Toolchain:** GNURX GCC 8.3.0 (rx-elf-gcc)
 
-## Development Environment Setup
+## Native Build (Advanced)
 
-### 1. Install GNURX Toolchain
-
-1. Register (free) at https://llvm-gcc-renesas.com/
-2. Download GNURX toolchain v14.2.0.202511 or later
-3. Install to `/opt/gnurx` (or custom location)
-4. Add to environment:
-   ```bash
-   export GNURX_ROOT=/opt/gnurx
-   export PATH=$GNURX_ROOT/bin:$PATH
-   ```
-
-### 2. Install CLion
-
-1. Download CLion from https://www.jetbrains.com/clion/
-2. Install and activate (free for educational use, or 30-day trial)
-
-### 3. Clone ThreadX Submodule
-
-```bash
-cd star-rx72m-firmware
-git submodule add https://github.com/renesas/threadx.git lib/threadx
-git submodule update --init --recursive
-```
-
-### 4. Open in CLion
-
-1. Open CLion
-2. File → Open → Select `star-rx72m-firmware` directory
-3. CLion will detect CMakeLists.txt and configure project
-4. Select toolchain: `cmake/toolchain-gnurx.cmake`
-
-### 5. Build
-
-```bash
-mkdir build
-cd build
-cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchain-gnurx.cmake ..
-make
-```
-
-Or use CLion's Build button.
+For native toolchain installation (without Docker), see [BUILD.md](BUILD.md).
 
 ## Project Structure
 
