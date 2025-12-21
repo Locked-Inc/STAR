@@ -1,187 +1,206 @@
 /**
  * @file main.c
- * @brief STAR RX72N Firmware - Main Entry Point
+ * @brief STAR RX72N Firmware - ThreadX LED Blink Example
  *
- * ThreadX-based motor control firmware for RX72N microcontroller (R5F572NNHGFP#30).
+ * Simple ThreadX application demonstrating:
+ * - ThreadX kernel initialization
+ * - Task creation
+ * - Task delays
+ * - GPIO toggling (LED blink)
  *
- * Architecture:
- * - Motor control at 250Hz (ISR-driven for determinism)
- * - ThreadX tasks for communication, telemetry, monitoring
- * - Protocol Buffers over SPI to Raspberry Pi 5
+ * Hardware: Renesas RX72N (R5F572NNHGFP#30)
+ * RTOS: ThreadX (Azure RTOS / Eclipse ThreadX)
  */
 
 #include <stdint.h>
 #include <stdbool.h>
+#include "tx_api.h"  /* ThreadX API */
 
-// TODO: Add ThreadX headers when submodule is integrated
-// #include "tx_api.h"
+/* =============================================================================
+ * Configuration
+ * =============================================================================
+ */
 
-// TODO: Add RX72N peripheral headers
-// #include "iodefine.h"  // RX72N register definitions
+/* LED connected to GPIO (placeholder - update based on actual hardware) */
+#define LED_PORT_BASE   ((volatile uint8_t *)0x0008C000)  /* Example port address */
+#define LED_PIN         (1 << 0)  /* Bit 0 */
+
+/* ThreadX task stack sizes */
+#define LED_TASK_STACK_SIZE     1024
+#define DEMO_TASK_STACK_SIZE    1024
+
+/* Task priorities (0 = highest, 31 = lowest) */
+#define LED_TASK_PRIORITY       5
+#define DEMO_TASK_PRIORITY      10
+
+/* =============================================================================
+ * ThreadX Objects
+ * =============================================================================
+ */
+
+/* Task control blocks */
+TX_THREAD led_thread;
+TX_THREAD demo_thread;
+
+/* Task stacks */
+static uint8_t led_task_stack[LED_TASK_STACK_SIZE];
+static uint8_t demo_task_stack[DEMO_TASK_STACK_SIZE];
+
+/* =============================================================================
+ * Hardware Abstraction
+ * =============================================================================
+ */
 
 /**
- * @brief Hardware initialization
- *
- * Configures:
- * - Clock system (240 MHz from PLL)
- * - GPIO pins for motors, encoders, SPI
- * - MTU3a for motor PWM
- * - S12ADFa for current sensing
- * - RSPI for RPi5 communication
+ * @brief Initialize LED GPIO
  */
-static void hardware_init(void)
+static void led_init(void)
 {
-    // TODO: Implement hardware initialization
-    // 1. Clock configuration (240 MHz)
-    // 2. GPIO configuration (no mux/decoder needed!)
-    // 3. MTU3a setup (motor PWM)
-    // 4. S12ADFa setup (ADC with PWM sync)
-    // 5. RSPI setup (SPI to RPi5)
-    // 6. Interrupt configuration
+    /* TODO: Configure GPIO pin as output */
+    /* This is a placeholder - actual implementation depends on RX72N GPIO registers */
+
+    /* For now, just a stub */
+    (void)LED_PORT_BASE;
 }
 
 /**
- * @brief Motor control ISR (250Hz)
- *
- * Time-critical motor control loop running in interrupt context
- * for maximum determinism. Notifies motor task when complete.
+ * @brief Toggle LED state
  */
-void mtu0_tgra_isr(void)
+static void led_toggle(void)
 {
-    // TODO: Implement 250Hz motor control ISR
-    // 1. Read all 8 encoder channels (direct GPIO - no mux!)
-    // 2. Read 4 current sensors (S12ADFa synchronized to PWM)
-    // 3. Run PID controllers
-    // 4. Update MTU3a PWM outputs
-    // 5. Notify motor supervisor task (ThreadX semaphore)
+    /* TODO: Toggle GPIO pin */
+    /* Placeholder for actual GPIO toggle */
+    static uint8_t state = 0;
+    state = !state;
+
+    /* Would actually write to GPIO register */
+    /* *LED_PORT_BASE ^= LED_PIN; */
 }
 
-/**
- * @brief Motor supervisor task (ThreadX)
- *
- * Priority: 6 (high)
- * Triggered by motor control ISR completion.
- * Handles non-critical motor management.
+/* =============================================================================
+ * ThreadX Tasks
+ * =============================================================================
  */
-void motor_supervisor_task(unsigned long input)
+
+/**
+ * @brief LED blink task (500ms interval)
+ *
+ * Demonstrates:
+ * - ThreadX task loop
+ * - tx_thread_sleep() for delays
+ * - GPIO control
+ */
+static void led_task_entry(ULONG input)
 {
     (void)input;
 
-    // TODO: Implement motor supervisor
-    // while (1) {
-    //     // Wait for motor control ISR to complete cycle
-    //     tx_semaphore_get(&motor_cycle_complete, TX_WAIT_FOREVER);
-    //
-    //     // Check for fault conditions
-    //     // Log motor statistics
-    //     // Update telemetry buffer
-    // }
-}
+    /* Initialize LED */
+    led_init();
 
-/**
- * @brief SPI communication task (ThreadX)
- *
- * Priority: 4 (medium-high)
- * Handles bidirectional Protocol Buffer communication with RPi5.
- */
-void spi_communication_task(unsigned long input)
-{
-    (void)input;
+    /* Task loop */
+    while (1)
+    {
+        /* Toggle LED */
+        led_toggle();
 
-    // TODO: Implement SPI task
-    // while (1) {
-    //     // Wait for SPI RX interrupt
-    //     tx_semaphore_get(&spi_rx_ready, TX_WAIT_FOREVER);
-    //
-    //     // Receive and decode Protocol Buffer command
-    //     // Queue command for motor task
-    //     // Send queued telemetry
-    // }
-}
-
-/**
- * @brief Telemetry task (ThreadX)
- *
- * Priority: 2 (medium)
- * Collects system telemetry at 10Hz and encodes Protocol Buffers.
- */
-void telemetry_task(unsigned long input)
-{
-    (void)input;
-
-    // TODO: Implement telemetry task
-    // while (1) {
-    //     // Sleep for 100ms (10Hz)
-    //     tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND / 10);
-    //
-    //     // Collect motor data
-    //     // Encode Protocol Buffer
-    //     // Queue for SPI transmission
-    // }
-}
-
-/**
- * @brief Temperature monitor task (ThreadX)
- *
- * Priority: 1 (low)
- * Monitors DS18B20 temperature sensor at 1Hz.
- */
-void temperature_monitor_task(unsigned long input)
-{
-    (void)input;
-
-    // TODO: Implement temperature task
-    // while (1) {
-    //     // Sleep for 1 second
-    //     tx_thread_sleep(TX_TIMER_TICKS_PER_SECOND);
-    //
-    //     // Read DS18B20 via 1-Wire
-    //     // Check thermal limits
-    //     // Update telemetry
-    // }
-}
-
-/**
- * @brief Application entry point
- *
- * Initializes hardware and ThreadX, then starts the scheduler.
- * This function never returns.
- */
-int main(void)
-{
-    // Initialize hardware
-    hardware_init();
-
-    // TODO: Initialize ThreadX kernel
-    // tx_kernel_enter();
-
-    // Note: Execution continues in tx_application_define()
-
-    // This should never be reached
-    while (1) {
-        // Placeholder - will be replaced by ThreadX scheduler
-        __asm__ volatile ("nop");
+        /* Sleep for 500ms (assumes 100 ticks/sec timer) */
+        tx_thread_sleep(50);
     }
-
-    return 0;
 }
+
+/**
+ * @brief Demo task (prints to console via semihosting or UART)
+ *
+ * Demonstrates a second concurrent task running at lower priority.
+ */
+static void demo_task_entry(ULONG input)
+{
+    (void)input;
+
+    ULONG counter = 0;
+
+    while (1)
+    {
+        /* Increment counter */
+        counter++;
+
+        /* In a real application, this would print via UART:
+         * printf("ThreadX running, count = %lu\n", counter);
+         */
+
+        /* Sleep for 1 second */
+        tx_thread_sleep(100);
+    }
+}
+
+/* =============================================================================
+ * ThreadX Application Definition
+ * =============================================================================
+ */
 
 /**
  * @brief ThreadX application definition
  *
- * Called by tx_kernel_enter() to create tasks, semaphores, queues, etc.
- * This is where we set up the ThreadX application.
+ * Called by tx_kernel_enter() to create all application objects.
+ * This is where we create tasks, semaphores, queues, etc.
  */
 void tx_application_define(void *first_unused_memory)
 {
     (void)first_unused_memory;
 
-    // TODO: Create ThreadX objects
-    // 1. Create semaphores (motor_cycle_complete, spi_rx_ready)
-    // 2. Create queues (motor commands, telemetry data)
-    // 3. Create tasks:
-    //    - motor_supervisor_task (priority 6, 2KB stack)
-    //    - spi_communication_task (priority 4, 4KB stack)
-    //    - telemetry_task (priority 2, 2KB stack)
-    //    - temperature_monitor_task (priority 1, 1KB stack)
+    /* Create LED blink task */
+    tx_thread_create(
+        &led_thread,                /* Thread control block */
+        "LED Task",                 /* Thread name */
+        led_task_entry,             /* Entry function */
+        0,                          /* Entry input (unused) */
+        led_task_stack,             /* Stack pointer */
+        LED_TASK_STACK_SIZE,        /* Stack size */
+        LED_TASK_PRIORITY,          /* Priority */
+        LED_TASK_PRIORITY,          /* Preemption threshold (same as priority) */
+        TX_NO_TIME_SLICE,           /* No time slicing */
+        TX_AUTO_START               /* Start immediately */
+    );
+
+    /* Create demo task */
+    tx_thread_create(
+        &demo_thread,
+        "Demo Task",
+        demo_task_entry,
+        0,
+        demo_task_stack,
+        DEMO_TASK_STACK_SIZE,
+        DEMO_TASK_PRIORITY,
+        DEMO_TASK_PRIORITY,
+        TX_NO_TIME_SLICE,
+        TX_AUTO_START
+    );
+}
+
+/* =============================================================================
+ * Main Entry Point
+ * =============================================================================
+ */
+
+/**
+ * @brief Application entry point
+ *
+ * Called by startup code after hardware initialization.
+ * Starts the ThreadX kernel - this function never returns.
+ */
+int main(void)
+{
+    /* Note: Hardware initialization (clocks, interrupts) would go here */
+    /* For now, we rely on default reset state */
+
+    /* Enter ThreadX kernel - this never returns */
+    tx_kernel_enter();
+
+    /* Should never reach here */
+    while (1)
+    {
+        __asm__ volatile ("wait");
+    }
+
+    return 0;
 }
