@@ -152,7 +152,7 @@ rx_err_t rx_mtu_init_pwm(rx_mtu_channel_t channel, const rx_mtu_config_t* config
 {
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
 
-  if ((int)channel >= k_mtu_max_channels) {
+  if ((int32_t)channel >= k_mtu_max_channels) {
     RX_LOG_ERROR(s_tag, "Invalid MTU channel");
     return RX_ERR_INVALID_ARG;
   }
@@ -231,7 +231,7 @@ rx_err_t rx_mtu_init_pwm(rx_mtu_channel_t channel, const rx_mtu_config_t* config
 
 rx_err_t rx_mtu_set_duty(rx_mtu_channel_t channel, rx_mtu_output_t output, float duty_percent)
 {
-  if ((int)channel >= k_mtu_max_channels || !s_mtu_initialized[channel]) {
+  if ((int32_t)channel >= k_mtu_max_channels || !s_mtu_initialized[channel]) {
     return RX_ERR_INVALID_STATE;
   }
 
@@ -249,7 +249,7 @@ rx_err_t rx_mtu_set_duty(rx_mtu_channel_t channel, rx_mtu_output_t output, float
 
 rx_err_t rx_mtu_set_duty_raw(rx_mtu_channel_t channel, rx_mtu_output_t output, uint16_t duty_count)
 {
-  if ((int)channel >= k_mtu_max_channels || !s_mtu_initialized[channel]) {
+  if ((int32_t)channel >= k_mtu_max_channels || !s_mtu_initialized[channel]) {
     return RX_ERR_INVALID_STATE;
   }
 
@@ -280,7 +280,7 @@ rx_err_t rx_mtu_get_duty(rx_mtu_channel_t channel, rx_mtu_output_t output, float
 {
   RX_CHECK_NULL_PTR(duty_percent, s_tag, "duty_percent pointer is NULL");
 
-  if ((int)channel >= k_mtu_max_channels || !s_mtu_initialized[channel]) {
+  if ((int32_t)channel >= k_mtu_max_channels || !s_mtu_initialized[channel]) {
     return RX_ERR_INVALID_STATE;
   }
 
@@ -306,7 +306,7 @@ rx_err_t rx_mtu_get_period(rx_mtu_channel_t channel, uint16_t* period_count)
 {
   RX_CHECK_NULL_PTR(period_count, s_tag, "period_count pointer is NULL");
 
-  if ((int)channel >= k_mtu_max_channels || !s_mtu_initialized[channel]) {
+  if ((int32_t)channel >= k_mtu_max_channels || !s_mtu_initialized[channel]) {
     return RX_ERR_INVALID_STATE;
   }
 
@@ -316,7 +316,7 @@ rx_err_t rx_mtu_get_period(rx_mtu_channel_t channel, uint16_t* period_count)
 
 rx_err_t rx_mtu_enable_output(rx_mtu_channel_t channel, rx_mtu_output_t output, bool enable)
 {
-  if ((int)channel >= k_mtu_max_channels || !s_mtu_initialized[channel]) {
+  if ((int32_t)channel >= k_mtu_max_channels || !s_mtu_initialized[channel]) {
     return RX_ERR_INVALID_STATE;
   }
 
@@ -350,7 +350,7 @@ rx_err_t rx_mtu_enable_output(rx_mtu_channel_t channel, rx_mtu_output_t output, 
 
 rx_err_t rx_mtu_start(rx_mtu_channel_t channel)
 {
-  if ((int)channel >= k_mtu_max_channels) {
+  if ((int32_t)channel >= k_mtu_max_channels) {
     return RX_ERR_INVALID_ARG;
   }
 
@@ -385,7 +385,7 @@ rx_err_t rx_mtu_start(rx_mtu_channel_t channel)
 
 rx_err_t rx_mtu_stop(rx_mtu_channel_t channel)
 {
-  if ((int)channel >= k_mtu_max_channels) {
+  if ((int32_t)channel >= k_mtu_max_channels) {
     return RX_ERR_INVALID_ARG;
   }
 
@@ -419,7 +419,7 @@ rx_err_t rx_mtu_stop(rx_mtu_channel_t channel)
 
 rx_err_t rx_mtu_deinit(rx_mtu_channel_t channel)
 {
-  if ((int)channel >= k_mtu_max_channels) {
+  if ((int32_t)channel >= k_mtu_max_channels) {
     return RX_ERR_INVALID_ARG;
   }
 
