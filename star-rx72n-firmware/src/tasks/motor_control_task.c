@@ -207,7 +207,7 @@ static void internal_motor_control_loop(motor_task_params_t* params)
     }
 
     /* 1. Read all 4 encoders directly from MTU channels (~10μs each) */
-    for (int i = 0; i < k_motor_count; i++) {
+    for (int32_t i = 0; i < k_motor_count; i++) {
       rx_err_t err = rx_encoder_read_count(params->encoder_channels[i], &encoder_states[i]);
       if (err != RX_OK) {
         RX_LOG_WARN(s_tag, "Warning");
@@ -226,7 +226,7 @@ static void internal_motor_control_loop(motor_task_params_t* params)
     internal_convert_rpm_to_mps(velocities_rpm, velocities_mps);
 
     /* 3. Read velocity setpoints from shared state (~5μs per motor) */
-    for (int i = 0; i < k_motor_count; i++) {
+    for (int32_t i = 0; i < k_motor_count; i++) {
       rx_err_t err = motor_shared_state_get_velocity(params->shared_state, i, &setpoints_mps[i]);
       if (err != RX_OK) {
         /* On timeout, use last known setpoint (already in setpoints_mps) */
@@ -235,7 +235,7 @@ static void internal_motor_control_loop(motor_task_params_t* params)
     }
 
     /* 4. Compute PID for all 4 motors (~20μs per motor) */
-    for (int i = 0; i < k_motor_count; i++) {
+    for (int32_t i = 0; i < k_motor_count; i++) {
       rx_err_t err =
         rx_pid_compute(&params->pids[i], setpoints_mps[i], velocities_mps[i], dt_s, &outputs[i]);
 
@@ -246,7 +246,7 @@ static void internal_motor_control_loop(motor_task_params_t* params)
     }
 
     /* 5. Apply outputs to motors (~20μs per motor) */
-    for (int i = 0; i < k_motor_count; i++) {
+    for (int32_t i = 0; i < k_motor_count; i++) {
       rx_err_t err = rx_motor_set_duty(&params->motors[i], outputs[i]);
       if (err != RX_OK) {
         RX_LOG_WARN(s_tag, "Warning");
@@ -254,7 +254,7 @@ static void internal_motor_control_loop(motor_task_params_t* params)
     }
 
     /* 6. Update shared state with status (~25μs per motor) */
-    for (int i = 0; i < k_motor_count; i++) {
+    for (int32_t i = 0; i < k_motor_count; i++) {
       rx_motor_state_t motor_state;
 
       /* Determine motor state */
@@ -284,7 +284,7 @@ static void internal_motor_control_loop(motor_task_params_t* params)
 
     if (estop_active) {
       /* Emergency stop: brake all motors */
-      for (int i = 0; i < k_motor_count; i++) {
+      for (int32_t i = 0; i < k_motor_count; i++) {
         rx_motor_stop(&params->motors[i], true); /* Brake */
 
         /* Update state to FAULT (using as ESTOP equivalent) */
@@ -319,7 +319,7 @@ static void internal_convert_rpm_to_mps(const float velocities_rpm[k_motor_count
   const float diameter_m        = k_wheel_diameter_mm / 1000.0f; /* mm to m */
   const float conversion_factor = (M_PI * diameter_m) / 60.0f;
 
-  for (int i = 0; i < k_motor_count; i++) {
+  for (int32_t i = 0; i < k_motor_count; i++) {
     velocities_mps[i] = velocities_rpm[i] * conversion_factor;
   }
 }

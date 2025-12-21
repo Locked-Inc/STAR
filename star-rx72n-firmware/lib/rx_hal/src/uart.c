@@ -8,6 +8,7 @@
  * Provides basic transmit-only functionality for printf debugging.
  */
 
+#include <stdbool.h>
 #include <stdint.h>
 
 #include "hardware.h"
@@ -58,7 +59,7 @@ rx_err_t uart_init(void)
 
   /* Wait for at least 1 bit time (at least 8.68 us at 115200 bps)
      * Simple delay loop - should be > 520 cycles at 60 MHz */
-  for (volatile int i = 0; i < 1000; i++) {
+  for (volatile int32_t i = 0; i < 1000; i++) {
     __asm__ volatile("nop");
   }
 
@@ -134,11 +135,11 @@ void uart_putint(int32_t value)
   char     buffer[12]; /* Enough for -2147483648 */
   char*    p = buffer + sizeof(buffer) - 1;
   uint32_t abs_value;
-  int      is_negative = 0;
+  bool     is_negative = false;
 
   /* Handle negative numbers */
   if (value < 0) {
-    is_negative = 1;
+    is_negative = true;
     abs_value   = (uint32_t)(-value);
   } else {
     abs_value = (uint32_t)value;
@@ -183,7 +184,7 @@ void uart_puthex(uint32_t value, uint8_t digits)
   }
 
   /* Print hex digits from most significant */
-  for (int i = digits - 1; i >= 0; i--) {
+  for (int32_t i = digits - 1; i >= 0; i--) {
     uint8_t nibble = (value >> (i * 4)) & 0x0F;
     uart_putc(s_hex[nibble]);
   }
