@@ -169,7 +169,7 @@ rx_err_t rx_cmt_init(rx_cmt_channel_t channel, const rx_cmt_config_t* config)
 {
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
 
-  if ((int)channel >= k_cmt_max_channels) {
+  if ((int32_t)channel >= k_cmt_max_channels) {
     RX_LOG_ERROR(s_tag, "Error occurred");
     return RX_ERR_INVALID_ARG;
   }
@@ -250,7 +250,7 @@ rx_err_t rx_cmt_init(rx_cmt_channel_t channel, const rx_cmt_config_t* config)
 
 rx_err_t rx_cmt_start(rx_cmt_channel_t channel)
 {
-  if ((int)channel >= k_cmt_max_channels || !s_cmt_initialized[channel]) {
+  if ((int32_t)channel >= k_cmt_max_channels || !s_cmt_initialized[channel]) {
     return RX_ERR_INVALID_STATE;
   }
 
@@ -277,7 +277,7 @@ rx_err_t rx_cmt_start(rx_cmt_channel_t channel)
 
 rx_err_t rx_cmt_stop(rx_cmt_channel_t channel)
 {
-  if ((int)channel >= k_cmt_max_channels) {
+  if ((int32_t)channel >= k_cmt_max_channels) {
     return RX_ERR_INVALID_ARG;
   }
 
@@ -306,7 +306,7 @@ rx_err_t rx_cmt_get_count(rx_cmt_channel_t channel, uint16_t* count)
 {
   RX_CHECK_NULL_PTR(count, s_tag, "count pointer is NULL");
 
-  if ((int)channel >= k_cmt_max_channels || !s_cmt_initialized[channel]) {
+  if ((int32_t)channel >= k_cmt_max_channels || !s_cmt_initialized[channel]) {
     return RX_ERR_INVALID_STATE;
   }
 
@@ -321,7 +321,7 @@ rx_err_t rx_cmt_get_count(rx_cmt_channel_t channel, uint16_t* count)
 
 rx_err_t rx_cmt_deinit(rx_cmt_channel_t channel)
 {
-  if ((int)channel >= k_cmt_max_channels) {
+  if ((int32_t)channel >= k_cmt_max_channels) {
     return RX_ERR_INVALID_ARG;
   }
 
