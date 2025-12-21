@@ -35,7 +35,7 @@ rx_err_t motor_shared_state_init(motor_shared_state_t* state)
   memset(state, 0, sizeof(motor_shared_state_t));
 
   /* Initialize all motors to IDLE state */
-  for (int i = 0; i < k_motor_count; i++) {
+  for (int32_t i = 0; i < k_motor_count; i++) {
     state->state[i] = k_motor_state_idle;
   }
 

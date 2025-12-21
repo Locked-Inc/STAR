@@ -230,7 +230,7 @@ static rx_err_t internal_init_pids(void)
   };
 
   /* Initialize all 4 PID controllers with same gains */
-  for (int i = 0; i < k_motor_count; i++) {
+  for (int32_t i = 0; i < k_motor_count; i++) {
     err = rx_pid_init(&s_pids[i], &pid_config);
     if (err != RX_OK) {
       RX_LOG_ERROR(s_tag, "Failed to init PID controller");
