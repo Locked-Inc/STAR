@@ -1,0 +1,563 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Important
+
+**This firmware follows the STAR project code style guide.** See the main project CLAUDE.md at `/Users/bsikar/Documents/git/STAR/CLAUDE.md` for complete style guidelines.
+
+This document covers RX72N-specific requirements and differences from ESP32 firmware.
+
+## Terminology Standard
+
+**IMPORTANT:** This project uses inclusive terminology following OSHWA standards:
+
+- **Controller/Peripheral** - NOT master/slave (I2C, SPI, 1-Wire)
+- **COPI/CIPO** - NOT MOSI/MISO (Controller Out Peripheral In / Controller In Peripheral Out)
+- **Primary/Main** - NOT master (for configuration structures)
+
+Note: Renesas APIs and ThreadX may still use legacy terminology internally. Map these to our terminology in comments and documentation.
+
+## Project Overview
+
+**STAR RX72N Firmware** - ThreadX-based motor control firmware for Renesas RX72N microcontroller.
+
+This firmware is part of the STAR (Sensor and Actuator Abstraction Runtime) distributed robotics platform. It runs on the RX72N motor controller PCB and communicates with the Raspberry Pi 5 control system via SPI using Protocol Buffers.
+
+### Key Differences from ESP32 Firmware
+
+| Feature | ESP32-S3 Firmware | RX72N Firmware |
+|---------|-------------------|----------------|
+| **RTOS** | FreeRTOS | ThreadX (Azure RTOS / Eclipse ThreadX) |
+| **MCU** | ESP32-S3 (Xtensa dual-core) | RX72N (RXv3 240MHz single-core) |
+| **GPIO** | 35 usable (with mux/decoder) | **182 direct** (no mux needed!) |
+| **Build System** | PlatformIO + ESP-IDF | CMake + GNURX GCC |
+| **Development** | Native builds | Docker-based cross-compilation |
+| **PWM** | MCPWM peripheral | MTU3a peripheral |
+| **ADC** | SAR ADC | S12ADFa (12-bit with PWM sync) |
+| **Flash/Debug** | USB (ESP-IDF tools) | E2 Lite / J-Link (Renesas tools) |
+
+## Build System
+
+### Docker-Based Workflow
+
+**Professional embedded development pattern:**
+- **Build in Docker** (reproducible, cross-platform)
+- **Flash/Debug on host** (hardware access via USB)
+
+### Build Scripts
+
+```bash
+./build.sh              # Build firmware in Docker
+./clean.sh              # Clean build artifacts
+./flash.sh              # Flash to RX72N (host, needs E2 Lite)
+./debug.sh              # Debug with GDB (host, needs J-Link/E2)
+```
+
+### Manual Build
+
+```bash
+# Inside Docker
+docker run --rm -v "$(pwd):/work" -w /work rx72n-build bash -c "
+    mkdir -p build && cd build
+    cmake -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchain-gnurx.cmake ..
+    make -j\$(nproc)
+"
+
+# Output files
+build/star-rx72n-firmware.elf   # Executable with debug symbols
+build/star-rx72n-firmware.hex   # Intel HEX for flashing
+build/star-rx72n-firmware.bin   # Raw binary
+build/star-rx72n-firmware.map   # Linker map
+```
+
+## Code Formatting
+
+### Format C Code
+
+```bash
+# Format all C/H files according to .clang-format
+./scripts/format_code.sh
+```
+
+The formatter uses the same `.clang-format` configuration as ESP32 firmware for consistency.
+
+### Pre-Commit Hook (Recommended)
+
+```bash
+# Install pre-commit hook to auto-format on commit
+cp scripts/pre-commit .git/hooks/
+chmod +x .git/hooks/pre-commit
+```
+
+## Code Style
+
+**Follow the main STAR style guide** (see `/Users/bsikar/Documents/git/STAR/CLAUDE.md`)
+
+### RX72N-Specific Style Notes
+
+#### 1. RTOS Differences (ThreadX vs FreeRTOS)
+
+**ThreadX terminology:**
+```c
+// Thread creation (NOT task)
+TX_THREAD led_thread;
+tx_thread_create(&led_thread, "LED", led_task_entry, ...);
+
+// Sleep (NOT vTaskDelay)
+tx_thread_sleep(50);  // 50 ticks (10ms at 100Hz)
+
+// Semaphores
+TX_SEMAPHORE my_semaphore;
+tx_semaphore_create(&my_semaphore, "MySem", 1);
+tx_semaphore_get(&my_semaphore, TX_WAIT_FOREVER);
+tx_semaphore_put(&my_semaphore);
+```
+
+**File organization for ThreadX tasks:**
+- Still use **one task per file** pattern
+- Place in `src/tasks/` and `include/tasks/`
+- File naming: `<task_name>_task.c` and `<task_name>_task.h`
+- Expose creation function: `<task_name>_task_create()`
+
+#### 2. Hardware Register Access
+
+**Always use register structures, never raw pointers:**
+
+```c
+// CORRECT: Use defined register structures
+SYSTEM.PRCR = 0xA50F;  // Unlock protection
+CMT0.CMCR = 0x0042;    // Configure timer
+
+// WRONG: Don't use raw memory access
+*(volatile uint16_t*)0x000803FE = 0xA50F;  // Hard to read, error-prone
+```
+
+**Register structures are defined in `include/rx72n_regs.h`:**
+- `SYSTEM` - System control registers
+- `CMT0`, `CMT1` - Compare Match Timers
+- `ICU` - Interrupt Controller
+- `PORT0`-`PORTJ` - GPIO ports
+- `SCI0`-`SCI12` - Serial Communication Interface (UART)
+- `MTU0`-`MTU7` - Multi-Function Timer Units (PWM)
+
+#### 3. Interrupt Handlers
+
+**RX interrupt handlers are plain C functions (no special attributes needed):**
+
+```c
+// In timer.c
+void cmt0_isr(void) {
+    // Clear interrupt flag
+    CMT0.CMCR;
+
+    // Call ThreadX timer interrupt
+    _tx_timer_interrupt();
+}
+```
+
+**Symbol naming:**
+- RX GCC prefixes C functions with `_` (e.g., `cmt0_isr` becomes `_cmt0_isr`)
+- Assembly code must reference with underscore: `.long _cmt0_isr`
+
+#### 4. Memory Safety
+
+**No dynamic allocation:**
+- ThreadX stacks are **statically allocated** arrays
+- All buffers pre-allocated at compile time
+- This is safety-critical firmware - zero malloc/free
+
+```c
+// CORRECT: Static allocation
+static uint8_t led_task_stack[1024];
+
+tx_thread_create(&led_thread, "LED", led_task_entry,
+    0, led_task_stack, sizeof(led_task_stack), ...);
+
+// WRONG: Dynamic allocation
+uint8_t* stack = malloc(1024);  // Never do this!
+```
+
+#### 5. Constants and Macros
+
+**Prefer enums over const over macros** (same as ESP32):
+
+```c
+// PREFER: Type-safe enum
+typedef enum {
+    k_motor_state_idle    = 0,
+    k_motor_state_running = 1,
+    k_motor_state_error   = 2,
+} motor_state_t;
+
+// AVOID: Macros for constants
+#define MOTOR_STATE_IDLE 0
+```
+
+#### 6. ThreadX Configuration
+
+**ThreadX config is in `include/tx_user.h`:**
+
+```c
+// Example: Configure system tick
+#define TX_TIMER_TICKS_PER_SECOND    100    // 100 Hz (10ms tick)
+#define TX_RX72N_CMT_DIVIDER         128    // CMT clock divider
+#define TX_RX72N_CMT_CMCOR           4687   // Compare match value
+
+// Enable features
+#define TX_ENABLE_STACK_CHECKING          // Catch stack overflow
+#define TX_TIMER_PROCESS_IN_ISR           // Timer processing in ISR
+```
+
+#### 7. Peripheral Initialization Order
+
+**Critical startup sequence for RX72N:**
+
+```c
+// In main.c
+int main(void) {
+    // 1. System init FIRST (clocks, power)
+    system_init();   // 240 MHz PLL, PCLKB 60 MHz
+
+    // 2. Hardware peripherals
+    timer_init();    // CMT0 for ThreadX tick
+    uart_init();     // Debug UART
+
+    // 3. Print startup banner (after UART init!)
+    uart_puts("STAR RX72N Firmware Starting...\r\n");
+
+    // 4. ThreadX kernel (never returns)
+    tx_kernel_enter();
+
+    // Should never reach here
+    while (1) __asm__ volatile ("wait");
+    return 0;
+}
+```
+
+## Project Structure
+
+```
+star-rx72n-firmware/
+├── Dockerfile              # Build environment
+├── build.sh                # Build in Docker
+├── flash.sh                # Flash via E2 Lite
+├── debug.sh                # GDB debugging
+├── clean.sh                # Clean build artifacts
+│
+├── .clang-format           # Code formatting rules
+├── scripts/
+│   ├── format_code.sh      # Format all C/H files
+│   └── compile_doxygen.sh  # Generate documentation
+│
+├── CMakeLists.txt          # Build configuration
+├── cmake/
+│   └── toolchain-gnurx.cmake   # Cross-compile settings
+│
+├── src/
+│   ├── main.c              # Application entry, ThreadX init
+│   └── hardware/           # Hardware abstraction layer
+│       ├── startup_rx72n.S # Reset vector, interrupts
+│       ├── system_init.c   # Clock/power initialization
+│       ├── gpio.c          # GPIO control
+│       ├── timer.c         # CMT0 system tick
+│       └── uart.c          # Debug UART (SCI)
+│
+├── include/
+│   ├── rx72n_regs.h        # Hardware register definitions
+│   ├── tx_user.h           # ThreadX configuration
+│   └── hardware.h          # HAL public API
+│
+├── lib/
+│   └── threadx/            # ThreadX RTOS (submodule)
+│
+├── linker/
+│   └── rx72n.ld            # Memory layout (4MB Flash, 1MB RAM)
+│
+└── build/                  # Generated (not in git)
+    ├── Makefile            # Generated by CMake
+    └── *.elf, *.hex, *.bin # Build outputs
+```
+
+## Hardware Abstraction Layer
+
+### System Initialization (`system_init.c`)
+
+```c
+void system_init(void);         // Initialize clocks (240 MHz) and power
+void clock_init(void);          // PLL configuration
+```
+
+### GPIO (`gpio.c`)
+
+```c
+void gpio_set_output(uint8_t port, uint8_t pin);
+void gpio_set_input(uint8_t port, uint8_t pin);
+void gpio_write_high(uint8_t port, uint8_t pin);
+void gpio_write_low(uint8_t port, uint8_t pin);
+void gpio_toggle(uint8_t port, uint8_t pin);
+bool gpio_read(uint8_t port, uint8_t pin);
+```
+
+### UART (`uart.c`)
+
+```c
+void uart_init(void);                       // Initialize SCI1 (115200 baud)
+void uart_putc(char c);                     // Send character
+void uart_puts(const char* str);            // Send string
+void uart_putint(int32_t value);            // Send integer
+```
+
+### Timer (`timer.c`)
+
+```c
+void timer_init(void);          // Initialize CMT0 for ThreadX tick (100 Hz)
+void cmt0_isr(void);            // CMT0 interrupt handler
+```
+
+## ThreadX Patterns
+
+### Creating a Task
+
+```c
+// In include/tasks/my_task.h
+#ifndef MY_TASK_H
+#define MY_TASK_H
+
+#include "tx_api.h"
+
+esp_err_t my_task_create(void);  // Note: Still use esp_err_t for consistency
+
+#endif
+
+// In src/tasks/my_task.c
+#include "tasks/my_task.h"
+#include "hardware.h"
+
+#define MY_TASK_STACK_SIZE 1024
+#define MY_TASK_PRIORITY   5
+
+static TX_THREAD my_thread;
+static uint8_t my_task_stack[MY_TASK_STACK_SIZE];
+
+static void my_task_entry(ULONG input) {
+    (void)input;
+
+    while (1) {
+        // Task logic
+        uart_puts("[MyTask] Running\r\n");
+        tx_thread_sleep(100);  // 1 second at 100 Hz
+    }
+}
+
+esp_err_t my_task_create(void) {
+    UINT status = tx_thread_create(
+        &my_thread,
+        "MyTask",
+        my_task_entry,
+        0,
+        my_task_stack,
+        MY_TASK_STACK_SIZE,
+        MY_TASK_PRIORITY,
+        MY_TASK_PRIORITY,
+        TX_NO_TIME_SLICE,
+        TX_AUTO_START
+    );
+
+    return (status == TX_SUCCESS) ? ESP_OK : ESP_FAIL;
+}
+```
+
+### Using Semaphores
+
+```c
+static TX_SEMAPHORE data_ready_sem;
+
+// In initialization:
+tx_semaphore_create(&data_ready_sem, "DataReady", 0);
+
+// Producer thread:
+// ... prepare data ...
+tx_semaphore_put(&data_ready_sem);
+
+// Consumer thread:
+tx_semaphore_get(&data_ready_sem, TX_WAIT_FOREVER);
+// ... process data ...
+```
+
+### Using Mutexes
+
+```c
+static TX_MUTEX data_mutex;
+
+// In initialization:
+tx_mutex_create(&data_mutex, "DataMutex", TX_NO_INHERIT);
+
+// In task:
+tx_mutex_get(&data_mutex, TX_WAIT_FOREVER);
+// ... critical section ...
+tx_mutex_put(&data_mutex);
+```
+
+## Debugging
+
+### Printf Debugging (UART)
+
+```c
+// In any file:
+#include "hardware.h"
+
+uart_puts("[DEBUG] Task started\r\n");
+uart_puts("[DEBUG] Counter: ");
+uart_putint(counter);
+uart_puts("\r\n");
+```
+
+Monitor via serial:
+```bash
+screen /dev/tty.usbserial-XXXXXXXX 115200
+```
+
+### GDB Debugging
+
+```bash
+# Terminal 1: Start GDB server
+JLinkGDBServer -device R5F572NN -if JTAG -speed 4000 -port 2331
+
+# Terminal 2: Debug
+./debug.sh
+
+# In GDB:
+(gdb) break main
+(gdb) continue
+(gdb) print led_thread
+(gdb) info threads
+(gdb) backtrace
+```
+
+See [FLASH.md](FLASH.md) for complete debugging guide.
+
+## Adding New Features
+
+### Adding a New Task
+
+1. Create task files:
+   ```
+   include/tasks/motor_control_task.h
+   src/tasks/motor_control_task.c
+   ```
+
+2. Add to CMakeLists.txt:
+   ```cmake
+   set(SOURCES
+       src/main.c
+       src/tasks/motor_control_task.c  # Add here
+       ...
+   )
+   ```
+
+3. Create in `tx_application_define()`:
+   ```c
+   // In main.c
+   void tx_application_define(void *first_unused_memory) {
+       motor_control_task_create();
+       telemetry_task_create();
+       // ...
+   }
+   ```
+
+### Adding a New Driver
+
+1. Create driver files:
+   ```
+   include/drivers/mtu3a.h
+   src/drivers/mtu3a.c
+   ```
+
+2. Add register definitions to `rx72n_regs.h`:
+   ```c
+   typedef struct {
+       volatile uint8_t  TCR;
+       volatile uint8_t  TMDR;
+       // ...
+   } MTU_Type;
+
+   #define MTU0 ((MTU_Type*)0x00088600)
+   ```
+
+3. Add to CMakeLists.txt and use in tasks
+
+## Memory Layout
+
+```
+RX72N Memory Map (R5F572NNHGFP#30):
+
+Flash (4 MB):
+0x00000000 - 0x003FFFFF    Code and constants
+
+RAM (1 MB):
+0x00000000 - 0x000FFFFF    RAM (shared with Flash address space via bus)
+                           Actual RAM at different physical address
+
+Peripherals:
+0x00080000 - 0x000FFFFF    Peripheral registers
+0x00088000 - ICU
+0x00088200 - CMT
+0x000C0000 - GPIO (PORT)
+0x000D0000 - MTU3a
+0x000E0000 - S12AD
+0x00088000 - SCI
+
+Reset Vectors:
+0xFFFFFFFC - Reset vector (points to _PowerON_Reset)
+```
+
+Current firmware usage:
+```
+Text (code):    7,147 bytes  (0.2% of 4MB Flash)
+Data (init):        4 bytes
+BSS (uninit):  53,172 bytes  (5% of 1MB RAM, mostly ThreadX stacks)
+Total:         60,323 bytes
+```
+
+## Common Patterns
+
+### Safe Register Modification
+
+```c
+// Unlock protection
+SYSTEM.PRCR = 0xA50F;
+
+// Modify registers
+SYSTEM.MSTPCRA &= ~(1 << 15);  // Enable CMT module
+
+// Lock protection
+SYSTEM.PRCR = 0xA500;
+```
+
+### Enabling Interrupts
+
+```c
+// 1. Configure peripheral interrupt
+CMT0.CMCR = 0x0042;  // CKS=10 (PCLK/128), CMIE=1 (enable)
+
+// 2. Set interrupt priority in ICU
+ICU.IPR[28] = 3;  // Priority 3 (0-15, higher = higher priority)
+
+// 3. Enable interrupt in ICU
+ICU.IER[3] |= (1 << 4);  // Enable CMI0 (vector 28, IER3 bit 4)
+
+// 4. Clear interrupt flag
+ICU.IR[28] = 0;
+
+// 5. Enable interrupts globally (if not already enabled)
+// ThreadX does this automatically
+```
+
+## References
+
+- [RX72N Hardware Manual](https://www.renesas.com/en/products/rx72n) - Complete peripheral reference
+- [ThreadX Documentation](https://github.com/eclipse-threadx/rtos-docs) - RTOS API reference
+- [GNURX Toolchain](https://llvm-gcc-renesas.com/) - Compiler documentation
+- [Main STAR Style Guide](../CLAUDE.md) - Project-wide coding standards
+- [ESP32 Firmware](../star-esp32-firmware/CLAUDE.md) - Sister project for comparison

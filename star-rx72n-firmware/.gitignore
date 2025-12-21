@@ -23,7 +23,7 @@ Debug/
 Release/
 HardwareDebug/
 
-# Toolchain temporary files
+# Toolchain temporary files (lowercase .s only, not uppercase .S source files)
 *.su
 *.i
 *.s

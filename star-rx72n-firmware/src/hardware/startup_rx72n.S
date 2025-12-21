@@ -10,42 +10,66 @@
 
 /**
  * Fixed interrupt vector table (at 0xFFFFFF80)
- * RX72N has 256 interrupt vectors
+ * Contains exception vectors and reset vector
  */
 _vectors:
-    /* Exception vectors */
-    .long   0                       /* Reserved */
-    .long   0                       /* Reserved */
-    .long   0                       /* Reserved */
-    .long   0                       /* Reserved */
-    .long   0                       /* Reserved */
-    .long   0                       /* Reserved */
-    .long   0                       /* Reserved */
-    .long   0                       /* Reserved */
-    .long   0                       /* Reserved */
-    .long   0                       /* Reserved */
-    .long   0                       /* Reserved */
-    .long   0                       /* Reserved */
-    .long   0                       /* Reserved */
-    .long   0                       /* Reserved */
-    .long   0                       /* Reserved */
-    .long   0                       /* Reserved */
-    .long   0                       /* Reserved */
-    .long   0                       /* Reserved */
-    .long   0                       /* Reserved */
-    .long   0                       /* Reserved */
-    .long   0                       /* Reserved */
-    .long   0                       /* Reserved */
-    .long   0                       /* Reserved */
-    .long   0                       /* Reserved */
-    .long   0                       /* Reserved */
-    .long   0                       /* Reserved */
-    .long   0                       /* Reserved */
-    .long   0                       /* Reserved */
-    .long   0                       /* Reserved */
-    .long   0                       /* Reserved */
-    .long   0                       /* Reserved */
-    .long   _PowerON_Reset          /* Reset vector (0xFFFFFFFC) */
+    /* Exception vectors (0xFFFFFF80 - 0xFFFFFFFC) */
+    .long   _Default_Handler        /* Vector  0: Reserved */
+    .long   _Default_Handler        /* Vector  1: Reserved */
+    .long   _Default_Handler        /* Vector  2: Reserved */
+    .long   _Default_Handler        /* Vector  3: Reserved */
+    .long   _Default_Handler        /* Vector  4: Reserved */
+    .long   _Default_Handler        /* Vector  5: Reserved */
+    .long   _Default_Handler        /* Vector  6: Reserved */
+    .long   _Default_Handler        /* Vector  7: Reserved */
+    .long   _Default_Handler        /* Vector  8: Reserved */
+    .long   _Default_Handler        /* Vector  9: Reserved */
+    .long   _Default_Handler        /* Vector 10: Reserved */
+    .long   _Default_Handler        /* Vector 11: Reserved */
+    .long   _Default_Handler        /* Vector 12: Reserved */
+    .long   _Default_Handler        /* Vector 13: Reserved */
+    .long   _Default_Handler        /* Vector 14: Reserved */
+    .long   _Default_Handler        /* Vector 15: Reserved */
+    .long   _Default_Handler        /* Vector 16: Reserved */
+    .long   _Default_Handler        /* Vector 17: Reserved */
+    .long   _Default_Handler        /* Vector 18: Reserved */
+    .long   _Default_Handler        /* Vector 19: Reserved */
+    .long   _Default_Handler        /* Vector 20: Reserved */
+    .long   _Default_Handler        /* Vector 21: Reserved */
+    .long   _Default_Handler        /* Vector 22: Reserved */
+    .long   _Default_Handler        /* Vector 23: Reserved */
+    .long   _Default_Handler        /* Vector 24: Reserved */
+    .long   _Default_Handler        /* Vector 25: Reserved */
+    .long   _Default_Handler        /* Vector 26: Reserved */
+    .long   _Default_Handler        /* Vector 27: Reserved */
+    .long   _Default_Handler        /* Vector 28: Reserved */
+    .long   _Default_Handler        /* Vector 29: Reserved */
+    .long   _Default_Handler        /* Vector 30: Reserved */
+    .long   _PowerON_Reset          /* Vector 31: Reset (0xFFFFFFFC) */
+
+/**
+ * Relocatable interrupt vector table
+ * RX72N uses this for peripheral interrupts
+ */
+    .section .rvectors, "ax"
+    .global _relocatable_vectors
+
+_relocatable_vectors:
+    /* Vectors 0-27: Software/NMI/Exceptions */
+    .rept 28
+    .long   _Default_Handler
+    .endr
+
+    /* Vector 28: CMT0 CMI0 (Compare Match Interrupt 0) */
+    .long   _cmt0_isr
+
+    /* Vector 29: CMT1 CMI1 */
+    .long   _Default_Handler
+
+    /* Vectors 30-255: Other peripherals */
+    .rept 226
+    .long   _Default_Handler
+    .endr
 
 /**
  * @brief Power-on reset handler
@@ -68,6 +92,17 @@ _PowerON_Reset:
     mov.l   #_StackTop, r0
     mvtc    r0, isp             /* Interrupt stack pointer */
     mvtc    r0, usp             /* User stack pointer */
+
+    /* Copy relocatable interrupt vectors to RAM */
+    mov.l   #__rvectors_load, r1    /* Source (ROM) */
+    mov.l   #__rvectors_start, r2   /* Destination (RAM) */
+    mov.l   #__rvectors_end, r3     /* End */
+    sub     r2, r3                  /* Length */
+    smovf                           /* Block copy */
+
+    /* Set INTB register to point to relocatable vectors */
+    mov.l   #__rvectors_start, r1
+    mvtc    r1, intb
 
     /* Initialize data section (copy from ROM to RAM) */
     mov.l   #_sidata, r1        /* Source (ROM) */
@@ -92,7 +127,7 @@ _PowerON_Reset:
     /* If main returns, loop forever */
 _exit_loop:
     wait
-    bra.s   _exit_loop
+    bra     _exit_loop
 
 /**
  * @brief Dummy _init function (C++ constructors)
@@ -113,6 +148,6 @@ _Default_Handler:
 
     .size _Default_Handler, . - _Default_Handler
 
-/* Weak aliases for all interrupt handlers */
-    .weak   _main
-    .set    _main, main
+/* External symbols defined in C code */
+    .extern _main
+    .extern _cmt0_isr
