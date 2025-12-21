@@ -64,10 +64,8 @@ extern "C" {
  * @note The config structure must remain valid for the lifetime of bus usage
  * @note The name string must remain valid (use string literals or static storage)
  */
-rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config,
-                                  const char*      name,
-                                  uint8_t          port,
-                                  uint8_t          pin);
+rx_err_t
+rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, uint8_t port, uint8_t pin);
 
 /* =============================================================================
  * ADC Bus Configuration
@@ -93,10 +91,10 @@ rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config,
  * @note The name string must remain valid (use string literals or static storage)
  */
 rx_err_t rx_bus_config_init_adc(rx_bus_config_t* config,
-                                 const char*      name,
-                                 uint8_t          unit,
-                                 uint8_t          channel,
-                                 uint8_t          bits);
+                                const char*      name,
+                                uint8_t          unit,
+                                uint8_t          channel,
+                                uint8_t          bits);
 
 /* =============================================================================
  * I2C Bus Configuration (Future)
@@ -125,14 +123,14 @@ rx_err_t rx_bus_config_init_adc(rx_bus_config_t* config,
  * @note Not yet implemented - Phase 1.4
  */
 rx_err_t rx_bus_config_init_i2c(rx_bus_config_t* config,
-                                 const char*      name,
-                                 uint8_t          channel,
-                                 uint8_t          device_addr,
-                                 uint8_t          sda_port,
-                                 uint8_t          sda_pin,
-                                 uint8_t          scl_port,
-                                 uint8_t          scl_pin,
-                                 uint32_t         frequency_hz);
+                                const char*      name,
+                                uint8_t          channel,
+                                uint8_t          device_addr,
+                                uint8_t          sda_port,
+                                uint8_t          sda_pin,
+                                uint8_t          scl_port,
+                                uint8_t          scl_pin,
+                                uint32_t         frequency_hz);
 
 /* =============================================================================
  * SMBUS Bus Configuration (Future)
@@ -162,15 +160,15 @@ rx_err_t rx_bus_config_init_i2c(rx_bus_config_t* config,
  * @note Not yet implemented - Phase 1.4
  */
 rx_err_t rx_bus_config_init_smbus(rx_bus_config_t* config,
-                                   const char*      name,
-                                   uint8_t          channel,
-                                   uint8_t          device_addr,
-                                   uint8_t          sda_port,
-                                   uint8_t          sda_pin,
-                                   uint8_t          scl_port,
-                                   uint8_t          scl_pin,
-                                   uint32_t         frequency_hz,
-                                   bool             use_pec);
+                                  const char*      name,
+                                  uint8_t          channel,
+                                  uint8_t          device_addr,
+                                  uint8_t          sda_port,
+                                  uint8_t          sda_pin,
+                                  uint8_t          scl_port,
+                                  uint8_t          scl_pin,
+                                  uint32_t         frequency_hz,
+                                  bool             use_pec);
 
 #ifdef __cplusplus
 }

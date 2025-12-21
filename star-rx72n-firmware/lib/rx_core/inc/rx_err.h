@@ -60,17 +60,17 @@ typedef enum {
   RX_OK = 0,
 
   /* Generic Errors (0x100 - 0x1FF) */
-  RX_FAIL                 = 0x101,
-  RX_ERR_NO_MEM           = 0x102,
-  RX_ERR_INVALID_ARG      = 0x103,
-  RX_ERR_INVALID_STATE    = 0x104,
-  RX_ERR_INVALID_SIZE     = 0x105,
-  RX_ERR_NOT_FOUND        = 0x106,
-  RX_ERR_NOT_SUPPORTED    = 0x107,
-  RX_ERR_TIMEOUT          = 0x108,
-  RX_ERR_BUSY             = 0x109,
-  RX_ERR_WOULD_BLOCK      = 0x10A,
-  RX_ERR_EXISTS           = 0x10B,
+  RX_FAIL              = 0x101,
+  RX_ERR_NO_MEM        = 0x102,
+  RX_ERR_INVALID_ARG   = 0x103,
+  RX_ERR_INVALID_STATE = 0x104,
+  RX_ERR_INVALID_SIZE  = 0x105,
+  RX_ERR_NOT_FOUND     = 0x106,
+  RX_ERR_NOT_SUPPORTED = 0x107,
+  RX_ERR_TIMEOUT       = 0x108,
+  RX_ERR_BUSY          = 0x109,
+  RX_ERR_WOULD_BLOCK   = 0x10A,
+  RX_ERR_EXISTS        = 0x10B,
 
   /* Hardware Errors (0x200 - 0x2FF) */
   RX_ERR_HW_INIT_FAILED    = 0x201,

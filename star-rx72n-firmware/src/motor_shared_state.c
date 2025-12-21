@@ -15,10 +15,10 @@
 
 #include "motor_shared_state.h"
 
+#include <string.h>
+
 #include "rx_check.h"
 #include "rx_log.h"
-
-#include <string.h>
 
 static const char* s_tag = "MOTOR_STATE";
 
@@ -51,9 +51,8 @@ rx_err_t motor_shared_state_init(motor_shared_state_t* state)
   return RX_OK;
 }
 
-rx_err_t motor_shared_state_set_velocity(motor_shared_state_t* state,
-                                          uint8_t               motor_idx,
-                                          float                 velocity_mps)
+rx_err_t
+motor_shared_state_set_velocity(motor_shared_state_t* state, uint8_t motor_idx, float velocity_mps)
 {
   RX_CHECK_NULL_PTR(state, s_tag, "state pointer is NULL");
 
@@ -79,8 +78,8 @@ rx_err_t motor_shared_state_set_velocity(motor_shared_state_t* state,
 }
 
 rx_err_t motor_shared_state_get_velocity(motor_shared_state_t* state,
-                                          uint8_t               motor_idx,
-                                          float*                out_velocity_mps)
+                                         uint8_t               motor_idx,
+                                         float*                out_velocity_mps)
 {
   RX_CHECK_NULL_PTR(state, s_tag, "state pointer is NULL");
   RX_CHECK_NULL_PTR(out_velocity_mps, s_tag, "out_velocity_mps pointer is NULL");
@@ -107,11 +106,11 @@ rx_err_t motor_shared_state_get_velocity(motor_shared_state_t* state,
 }
 
 rx_err_t motor_shared_state_set_status(motor_shared_state_t* state,
-                                        uint8_t               motor_idx,
-                                        float                 velocity_mps,
-                                        float                 duty_cycle,
-                                        float                 current_ma,
-                                        rx_motor_state_t      motor_state)
+                                       uint8_t               motor_idx,
+                                       float                 velocity_mps,
+                                       float                 duty_cycle,
+                                       float                 current_ma,
+                                       rx_motor_state_t      motor_state)
 {
   RX_CHECK_NULL_PTR(state, s_tag, "state pointer is NULL");
 
@@ -140,11 +139,11 @@ rx_err_t motor_shared_state_set_status(motor_shared_state_t* state,
 }
 
 rx_err_t motor_shared_state_get_status(motor_shared_state_t* state,
-                                        uint8_t               motor_idx,
-                                        float*                out_velocity_mps,
-                                        float*                out_duty_cycle,
-                                        float*                out_current_ma,
-                                        rx_motor_state_t*     out_motor_state)
+                                       uint8_t               motor_idx,
+                                       float*                out_velocity_mps,
+                                       float*                out_duty_cycle,
+                                       float*                out_current_ma,
+                                       rx_motor_state_t*     out_motor_state)
 {
   RX_CHECK_NULL_PTR(state, s_tag, "state pointer is NULL");
   RX_CHECK_NULL_PTR(out_velocity_mps, s_tag, "out_velocity_mps pointer is NULL");

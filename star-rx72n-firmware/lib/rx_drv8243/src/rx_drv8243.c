@@ -16,12 +16,12 @@
 
 #include "rx_drv8243.h"
 
+#include <string.h>
+
 #include "rx72n_regs.h"
 #include "rx_bus_adc.h"
 #include "rx_check.h"
 #include "rx_log.h"
-
-#include <string.h>
 
 static const char* s_tag = "DRV8243";
 
@@ -115,7 +115,7 @@ rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t*
   handle->port_nfault      = config->port_nfault;
   handle->pin_nfault       = config->pin_nfault;
   handle->current_limit_ma = config->current_limit_ma;
-  handle->ki_propi = config->ki_propi > 0 ? config->ki_propi : k_drv8243_default_ki_propi;
+  handle->ki_propi         = config->ki_propi > 0 ? config->ki_propi : k_drv8243_default_ki_propi;
 
   /* Initialize motor control (MTU for H-bridge) */
   rx_motor_config_t motor_config = {

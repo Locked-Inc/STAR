@@ -182,26 +182,26 @@ typedef struct {
  */
 
 typedef struct {
-  volatile uint8_t ICCR1;  /* I2C Bus Control Register 1 */
-  volatile uint8_t ICCR2;  /* I2C Bus Control Register 2 */
-  volatile uint8_t ICMR1;  /* I2C Bus Mode Register 1 */
-  volatile uint8_t ICMR2;  /* I2C Bus Mode Register 2 */
-  volatile uint8_t ICMR3;  /* I2C Bus Mode Register 3 */
-  volatile uint8_t ICFER;  /* I2C Bus Function Enable Register */
-  volatile uint8_t ICSER;  /* I2C Bus Status Enable Register */
-  volatile uint8_t ICIER;  /* I2C Bus Interrupt Enable Register */
-  volatile uint8_t ICSR1;  /* I2C Bus Status Register 1 */
-  volatile uint8_t ICSR2;  /* I2C Bus Status Register 2 */
-  volatile uint8_t SARL0;  /* Slave Address Register L0 */
-  volatile uint8_t SARU0;  /* Slave Address Register U0 */
-  volatile uint8_t SARL1;  /* Slave Address Register L1 */
-  volatile uint8_t SARU1;  /* Slave Address Register U1 */
-  volatile uint8_t SARL2;  /* Slave Address Register L2 */
-  volatile uint8_t SARU2;  /* Slave Address Register U2 */
-  volatile uint8_t ICBRL;  /* I2C Bus Bit Rate Register L */
-  volatile uint8_t ICBRH;  /* I2C Bus Bit Rate Register H */
-  volatile uint8_t ICDRT;  /* I2C Bus Transmit Data Register */
-  volatile uint8_t ICDRR;  /* I2C Bus Receive Data Register */
+  volatile uint8_t ICCR1; /* I2C Bus Control Register 1 */
+  volatile uint8_t ICCR2; /* I2C Bus Control Register 2 */
+  volatile uint8_t ICMR1; /* I2C Bus Mode Register 1 */
+  volatile uint8_t ICMR2; /* I2C Bus Mode Register 2 */
+  volatile uint8_t ICMR3; /* I2C Bus Mode Register 3 */
+  volatile uint8_t ICFER; /* I2C Bus Function Enable Register */
+  volatile uint8_t ICSER; /* I2C Bus Status Enable Register */
+  volatile uint8_t ICIER; /* I2C Bus Interrupt Enable Register */
+  volatile uint8_t ICSR1; /* I2C Bus Status Register 1 */
+  volatile uint8_t ICSR2; /* I2C Bus Status Register 2 */
+  volatile uint8_t SARL0; /* Slave Address Register L0 */
+  volatile uint8_t SARU0; /* Slave Address Register U0 */
+  volatile uint8_t SARL1; /* Slave Address Register L1 */
+  volatile uint8_t SARU1; /* Slave Address Register U1 */
+  volatile uint8_t SARL2; /* Slave Address Register L2 */
+  volatile uint8_t SARU2; /* Slave Address Register U2 */
+  volatile uint8_t ICBRL; /* I2C Bus Bit Rate Register L */
+  volatile uint8_t ICBRH; /* I2C Bus Bit Rate Register H */
+  volatile uint8_t ICDRT; /* I2C Bus Transmit Data Register */
+  volatile uint8_t ICDRR; /* I2C Bus Receive Data Register */
 } RIIC_Type;
 
 #define RIIC0_BASE ((RIIC_Type*)0x00088300)
@@ -214,9 +214,9 @@ typedef struct {
 
 /* RIIC Control Register 1 (ICCR1) Bit Definitions */
 typedef enum {
-  k_riic_iccr1_ice   = (1 << 7), /* I2C Bus Interface Enable */
-  k_riic_iccr1_iicrst = (1 << 6), /* I2C Bus Interface Internal Reset */
-  k_riic_iccr1_clk_mask = 0x0F,   /* Clock Select Mask (bits 0-3) */
+  k_riic_iccr1_ice      = (1 << 7), /* I2C Bus Interface Enable */
+  k_riic_iccr1_iicrst   = (1 << 6), /* I2C Bus Interface Internal Reset */
+  k_riic_iccr1_clk_mask = 0x0F,     /* Clock Select Mask (bits 0-3) */
 } riic_iccr1_bits_t;
 
 /* RIIC Control Register 2 (ICCR2) Bit Definitions */
@@ -386,37 +386,37 @@ typedef struct {
 
 /* MTU Channel Register Structure (MTU0-MTU4, MTU6-MTU7) */
 typedef struct {
-  volatile uint8_t  TCR;    /* Timer Control Register */
-  volatile uint8_t  TMDR;   /* Timer Mode Register */
-  volatile uint8_t  TIORH;  /* Timer I/O Control Register H */
-  volatile uint8_t  TIORL;  /* Timer I/O Control Register L */
-  volatile uint8_t  TIER;   /* Timer Interrupt Enable Register */
-  volatile uint8_t  TSR;    /* Timer Status Register */
-  volatile uint16_t TCNT;   /* Timer Counter */
-  volatile uint16_t TGRA;   /* Timer General Register A */
-  volatile uint16_t TGRB;   /* Timer General Register B */
-  volatile uint16_t TGRC;   /* Timer General Register C */
-  volatile uint16_t TGRD;   /* Timer General Register D */
+  volatile uint8_t  TCR;   /* Timer Control Register */
+  volatile uint8_t  TMDR;  /* Timer Mode Register */
+  volatile uint8_t  TIORH; /* Timer I/O Control Register H */
+  volatile uint8_t  TIORL; /* Timer I/O Control Register L */
+  volatile uint8_t  TIER;  /* Timer Interrupt Enable Register */
+  volatile uint8_t  TSR;   /* Timer Status Register */
+  volatile uint16_t TCNT;  /* Timer Counter */
+  volatile uint16_t TGRA;  /* Timer General Register A */
+  volatile uint16_t TGRB;  /* Timer General Register B */
+  volatile uint16_t TGRC;  /* Timer General Register C */
+  volatile uint16_t TGRD;  /* Timer General Register D */
 } MTU_Channel_Type;
 
 /* MTU3 and MTU4 have additional registers */
 typedef struct {
-  volatile uint8_t  TCR;    /* 0x00: Timer Control Register */
-  volatile uint8_t  TMDR;   /* 0x01: Timer Mode Register */
-  volatile uint8_t  TIORH;  /* 0x02: Timer I/O Control Register H */
-  volatile uint8_t  TIORL;  /* 0x03: Timer I/O Control Register L */
-  volatile uint8_t  TIER;   /* 0x04: Timer Interrupt Enable Register */
-  volatile uint8_t  TSR;    /* 0x05: Timer Status Register */
-  volatile uint16_t TCNT;   /* 0x06: Timer Counter */
-  volatile uint16_t TGRA;   /* 0x08: Timer General Register A */
-  volatile uint16_t TGRB;   /* 0x0A: Timer General Register B */
-  volatile uint16_t TGRC;   /* 0x0C: Timer General Register C */
-  volatile uint16_t TGRD;   /* 0x0E: Timer General Register D */
-  volatile uint16_t TGRE;   /* 0x10: Timer General Register E (MTU3/4 only) */
-  volatile uint16_t TGRF;   /* 0x12: Timer General Register F (MTU3/4 only) */
-  volatile uint8_t  TIER2;  /* 0x14: Timer Interrupt Enable Register 2 */
-  volatile uint8_t  TSR2;   /* 0x15: Timer Status Register 2 */
-  volatile uint8_t  TBTM;   /* 0x16: Timer Buffer Transfer Mode Register */
+  volatile uint8_t  TCR;   /* 0x00: Timer Control Register */
+  volatile uint8_t  TMDR;  /* 0x01: Timer Mode Register */
+  volatile uint8_t  TIORH; /* 0x02: Timer I/O Control Register H */
+  volatile uint8_t  TIORL; /* 0x03: Timer I/O Control Register L */
+  volatile uint8_t  TIER;  /* 0x04: Timer Interrupt Enable Register */
+  volatile uint8_t  TSR;   /* 0x05: Timer Status Register */
+  volatile uint16_t TCNT;  /* 0x06: Timer Counter */
+  volatile uint16_t TGRA;  /* 0x08: Timer General Register A */
+  volatile uint16_t TGRB;  /* 0x0A: Timer General Register B */
+  volatile uint16_t TGRC;  /* 0x0C: Timer General Register C */
+  volatile uint16_t TGRD;  /* 0x0E: Timer General Register D */
+  volatile uint16_t TGRE;  /* 0x10: Timer General Register E (MTU3/4 only) */
+  volatile uint16_t TGRF;  /* 0x12: Timer General Register F (MTU3/4 only) */
+  volatile uint8_t  TIER2; /* 0x14: Timer Interrupt Enable Register 2 */
+  volatile uint8_t  TSR2;  /* 0x15: Timer Status Register 2 */
+  volatile uint8_t  TBTM;  /* 0x16: Timer Buffer Transfer Mode Register */
 } MTU34_Channel_Type;
 
 /* MTU Start Register */
@@ -445,22 +445,22 @@ typedef struct {
 
 /* Timer Control Register (TCR) bits */
 typedef enum {
-  k_mtu_tcr_tpsc_mask  = 0x07, /* Timer Prescaler mask (bits 0-2) */
-  k_mtu_tcr_ckeg_mask  = 0x18, /* Clock Edge mask (bits 3-4) */
-  k_mtu_tcr_cclr_mask  = 0xE0, /* Counter Clear Source mask (bits 5-7) */
-  k_mtu_tcr_tpsc_1     = 0x00, /* PCLKA/1 */
-  k_mtu_tcr_tpsc_4     = 0x01, /* PCLKA/4 */
-  k_mtu_tcr_tpsc_16    = 0x02, /* PCLKA/16 */
-  k_mtu_tcr_tpsc_64    = 0x03, /* PCLKA/64 */
-  k_mtu_tcr_cclr_tgra  = (0x01 << 5), /* Clear on TGRA compare match */
+  k_mtu_tcr_tpsc_mask = 0x07,        /* Timer Prescaler mask (bits 0-2) */
+  k_mtu_tcr_ckeg_mask = 0x18,        /* Clock Edge mask (bits 3-4) */
+  k_mtu_tcr_cclr_mask = 0xE0,        /* Counter Clear Source mask (bits 5-7) */
+  k_mtu_tcr_tpsc_1    = 0x00,        /* PCLKA/1 */
+  k_mtu_tcr_tpsc_4    = 0x01,        /* PCLKA/4 */
+  k_mtu_tcr_tpsc_16   = 0x02,        /* PCLKA/16 */
+  k_mtu_tcr_tpsc_64   = 0x03,        /* PCLKA/64 */
+  k_mtu_tcr_cclr_tgra = (0x01 << 5), /* Clear on TGRA compare match */
 } mtu_tcr_bits_t;
 
 /* Timer Mode Register (TMDR) bits */
 typedef enum {
-  k_mtu_tmdr_md_mask   = 0x0F, /* Mode select mask (bits 0-3) */
-  k_mtu_tmdr_md_normal = 0x00, /* Normal mode */
-  k_mtu_tmdr_md_pwm1   = 0x02, /* PWM mode 1 */
-  k_mtu_tmdr_md_pwm2   = 0x03, /* PWM mode 2 */
+  k_mtu_tmdr_md_mask   = 0x0F,     /* Mode select mask (bits 0-3) */
+  k_mtu_tmdr_md_normal = 0x00,     /* Normal mode */
+  k_mtu_tmdr_md_pwm1   = 0x02,     /* PWM mode 1 */
+  k_mtu_tmdr_md_pwm2   = 0x03,     /* PWM mode 2 */
   k_mtu_tmdr_bfa       = (1 << 4), /* Buffer mode A */
   k_mtu_tmdr_bfb       = (1 << 5), /* Buffer mode B */
 } mtu_tmdr_bits_t;
@@ -491,7 +491,7 @@ typedef enum {
 /* Pin Function Select Register */
 typedef struct {
   volatile uint8_t PSEL : 5; /* Peripheral Select (bits 0-4) */
-  volatile uint8_t      : 1; /* Reserved */
+  volatile uint8_t : 1;      /* Reserved */
   volatile uint8_t ISEL : 1; /* Interrupt Input Select (bit 6) */
   volatile uint8_t ASEL : 1; /* Analog Input Select (bit 7) */
 } PFS_Type;
@@ -560,9 +560,9 @@ typedef enum {
 
 /* PFS Register bits */
 typedef enum {
-  k_pfs_psel_mask  = 0x1F, /* Peripheral Select mask (bits 0-4) */
-  k_pfs_isel       = (1 << 6), /* Interrupt Input Select */
-  k_pfs_asel       = (1 << 7), /* Analog Input Select */
+  k_pfs_psel_mask = 0x1F,     /* Peripheral Select mask (bits 0-4) */
+  k_pfs_isel      = (1 << 6), /* Interrupt Input Select */
+  k_pfs_asel      = (1 << 7), /* Analog Input Select */
 } pfs_bits_t;
 
 /* =============================================================================

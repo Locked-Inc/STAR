@@ -26,11 +26,10 @@
  * @copyright Copyright (c) 2025 STAR Project
  */
 
-#include "rx_mtu_encoder.h"
-
 #include "rx72n_regs.h"
 #include "rx_check.h"
 #include "rx_log.h"
+#include "rx_mtu_encoder.h"
 
 static const char* s_tag = "MTU_ENCODER";
 
@@ -40,7 +39,7 @@ static const char* s_tag = "MTU_ENCODER";
  */
 
 typedef enum {
-  k_encoder_max_channels = 7,
+  k_encoder_max_channels       = 7,
   k_tmdr_phase_counting_mode_1 = 0x04, /* Phase counting mode 1 (4x decoding) */
 } encoder_constants_t;
 
@@ -49,11 +48,11 @@ typedef enum {
  * =============================================================================
  */
 
-static bool              s_encoder_initialized[k_encoder_max_channels] = {false};
-static rx_encoder_state_t s_encoder_state[k_encoder_max_channels]      = {0};
-static uint16_t          s_counts_per_rev[k_encoder_max_channels]     = {0};
-static bool              s_invert_direction[k_encoder_max_channels]   = {false};
-static int32_t           s_last_count[k_encoder_max_channels]         = {0};
+static bool               s_encoder_initialized[k_encoder_max_channels] = {false};
+static rx_encoder_state_t s_encoder_state[k_encoder_max_channels]       = {0};
+static uint16_t           s_counts_per_rev[k_encoder_max_channels]      = {0};
+static bool               s_invert_direction[k_encoder_max_channels]    = {false};
+static int32_t            s_last_count[k_encoder_max_channels]          = {0};
 
 /* =============================================================================
  * Internal Helper Functions
@@ -155,9 +154,9 @@ rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
   s_encoder_state[channel].revolutions    = 0;
   s_encoder_state[channel].position_deg   = 0.0f;
 
-  s_counts_per_rev[channel]     = config->counts_per_rev;
-  s_invert_direction[channel]   = config->invert_direction;
-  s_last_count[channel]         = 0;
+  s_counts_per_rev[channel]      = config->counts_per_rev;
+  s_invert_direction[channel]    = config->invert_direction;
+  s_last_count[channel]          = 0;
   s_encoder_initialized[channel] = true;
 
   /* Start counter */
@@ -228,13 +227,11 @@ rx_err_t rx_encoder_read_count(rx_mtu_channel_t channel, rx_encoder_state_t* sta
   s_encoder_state[channel].last_raw_count = current_count;
 
   /* Calculate revolutions and position */
-  uint16_t counts_per_rev = s_counts_per_rev[channel];
-  s_encoder_state[channel].revolutions =
-    s_encoder_state[channel].total_count / counts_per_rev;
+  uint16_t counts_per_rev              = s_counts_per_rev[channel];
+  s_encoder_state[channel].revolutions = s_encoder_state[channel].total_count / counts_per_rev;
 
-  int32_t remainder_counts = s_encoder_state[channel].total_count % counts_per_rev;
-  s_encoder_state[channel].position_deg =
-    (float)(remainder_counts * 360.0f) / counts_per_rev;
+  int32_t remainder_counts              = s_encoder_state[channel].total_count % counts_per_rev;
+  s_encoder_state[channel].position_deg = (float)(remainder_counts * 360.0f) / counts_per_rev;
 
   /* Copy to output */
   *state = s_encoder_state[channel];
@@ -242,9 +239,7 @@ rx_err_t rx_encoder_read_count(rx_mtu_channel_t channel, rx_encoder_state_t* sta
   return RX_OK;
 }
 
-rx_err_t rx_encoder_read_velocity(rx_mtu_channel_t channel,
-                                    float            delta_time_s,
-                                    float*           velocity_rps)
+rx_err_t rx_encoder_read_velocity(rx_mtu_channel_t channel, float delta_time_s, float* velocity_rps)
 {
   RX_CHECK_NULL_PTR(velocity_rps, s_tag, "velocity_rps pointer is NULL");
 
@@ -259,13 +254,13 @@ rx_err_t rx_encoder_read_velocity(rx_mtu_channel_t channel,
 
   /* Read current count */
   rx_encoder_state_t state;
-  rx_err_t err = rx_encoder_read_count(channel, &state);
+  rx_err_t           err = rx_encoder_read_count(channel, &state);
   if (err != RX_OK) {
     return err;
   }
 
   /* Calculate velocity based on count change */
-  int32_t delta_count = state.total_count - s_last_count[channel];
+  int32_t delta_count   = state.total_count - s_last_count[channel];
   s_last_count[channel] = state.total_count;
 
   /* Convert to revolutions per second */
@@ -320,10 +315,10 @@ rx_err_t rx_encoder_set_count(rx_mtu_channel_t channel, int32_t count)
   s_last_count[channel]                   = count;
 
   /* Recalculate position */
-  uint16_t counts_per_rev = s_counts_per_rev[channel];
+  uint16_t counts_per_rev              = s_counts_per_rev[channel];
   s_encoder_state[channel].revolutions = count / counts_per_rev;
 
-  int32_t remainder_counts = count % counts_per_rev;
+  int32_t remainder_counts              = count % counts_per_rev;
   s_encoder_state[channel].position_deg = (float)(remainder_counts * 360.0f) / counts_per_rev;
 
   return RX_OK;
@@ -340,7 +335,7 @@ rx_err_t rx_encoder_deinit(rx_mtu_channel_t channel)
 
   /* Mark as uninitialized */
   s_encoder_initialized[channel] = false;
-  s_counts_per_rev[channel]     = 0;
+  s_counts_per_rev[channel]      = 0;
 
   RX_LOG_INFO(s_tag, "MTU encoder deinitialized");
 

@@ -53,9 +53,9 @@ extern "C" {
  * @return RX_ERR_THREADX if ThreadX mutex creation fails
  */
 rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
-                               const char*           tag,
-                               rx_error_interface_t* error_iface,
-                               rx_pin_interface_t*   pin_iface);
+                             const char*           tag,
+                             rx_error_interface_t* error_iface,
+                             rx_pin_interface_t*   pin_iface);
 
 /**
  * @brief Deinitialize bus manager and free all resources
@@ -124,9 +124,8 @@ rx_err_t rx_bus_manager_remove_bus(rx_bus_manager_t* manager, const char* name);
  * @return RX_ERR_NULL_POINTER if any parameter is NULL
  * @return RX_ERR_NOT_FOUND if bus not found
  */
-rx_err_t rx_bus_manager_find_bus(rx_bus_manager_t* manager,
-                                  const char*        name,
-                                  rx_bus_config_t**  bus_config);
+rx_err_t
+rx_bus_manager_find_bus(rx_bus_manager_t* manager, const char* name, rx_bus_config_t** bus_config);
 
 /**
  * @brief Callback function type for rx_bus_manager_with_bus()
@@ -155,10 +154,10 @@ typedef rx_err_t (*rx_bus_callback_t)(rx_bus_config_t* bus_config, void* user_ct
  * @return RX_ERR_TIMEOUT if mutex timeout
  * @return Error code from callback if callback fails
  */
-rx_err_t rx_bus_manager_with_bus(rx_bus_manager_t*  manager,
-                                  const char*        name,
-                                  rx_bus_callback_t  callback,
-                                  void*              user_ctx);
+rx_err_t rx_bus_manager_with_bus(rx_bus_manager_t* manager,
+                                 const char*       name,
+                                 rx_bus_callback_t callback,
+                                 void*             user_ctx);
 
 #ifdef __cplusplus
 }

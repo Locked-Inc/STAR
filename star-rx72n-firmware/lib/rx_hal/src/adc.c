@@ -11,10 +11,10 @@
  * @copyright Copyright (c) 2025 STAR Project
  */
 
+#include <string.h>
+
 #include "hardware.h"
 #include "rx72n_regs.h"
-
-#include <string.h>
 
 /* =============================================================================
  * Constants
@@ -22,8 +22,8 @@
  */
 
 typedef enum {
-  k_adc_max_units    = 2,  /* S12AD0, S12AD1 */
-  k_adc_max_channels = 8,  /* Channels 0-7 per unit */
+  k_adc_max_units    = 2,   /* S12AD0, S12AD1 */
+  k_adc_max_channels = 8,   /* Channels 0-7 per unit */
   k_adc_timeout_ms   = 100, /* ADC conversion timeout */
 } adc_constants_t;
 
