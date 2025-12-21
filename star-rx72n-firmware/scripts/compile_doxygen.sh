@@ -1,5 +1,5 @@
 #!/bin/bash
-# ESP32 STAR Firmware Doxygen Documentation Generator
+# RX72N STAR Firmware Doxygen Documentation Generator
 # Usage: ./compile_doxygen.sh [options]
 
 set -e  # Exit on any error
@@ -19,7 +19,7 @@ VERBOSE=false
 
 # Print usage information
 usage() {
-    echo "ESP32 STAR Firmware Doxygen Documentation Generator"
+    echo "RX72N STAR Firmware Doxygen Documentation Generator"
     echo ""
     echo "Usage: $0 [options]"
     echo ""

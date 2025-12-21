@@ -26,9 +26,9 @@
 #ifndef STAR_RX72N_LOG_H
 #define STAR_RX72N_LOG_H
 
-#include "rx_err.h"
-
 #include <stdint.h>
+
+#include "rx_err.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -120,8 +120,11 @@ static inline void internal_rx_log(const char* level_str, const char* tag, const
  * @param[in] line Line number
  * @param[in] message Log message string
  */
-static inline void internal_rx_log_detailed(const char* level_str, const char* tag,
-                                            const char* file, int32_t line, const char* message)
+static inline void internal_rx_log_detailed(const char* level_str,
+                                            const char* tag,
+                                            const char* file,
+                                            int32_t     line,
+                                            const char* message)
 {
   uart_putc('[');
   uart_puts(level_str);
@@ -226,7 +229,7 @@ static inline void internal_rx_log_detailed(const char* level_str, const char* t
  * Output: [ERROR] [MOTOR] motor.c:123: Init failed
  */
 #if (RX_LOG_LEVEL >= RX_LOG_LEVEL_ERROR)
-#define RX_LOG_ERROR_DETAILED(tag, message) \
+#define RX_LOG_ERROR_DETAILED(tag, message)                                                        \
   internal_rx_log_detailed("ERROR", tag, __FILE__, __LINE__, message)
 #else
 #define RX_LOG_ERROR_DETAILED(tag, message) ((void)0)
@@ -239,7 +242,7 @@ static inline void internal_rx_log_detailed(const char* level_str, const char* t
  * @param[in] message Message string
  */
 #if (RX_LOG_LEVEL >= RX_LOG_LEVEL_WARN)
-#define RX_LOG_WARN_DETAILED(tag, message) \
+#define RX_LOG_WARN_DETAILED(tag, message)                                                         \
   internal_rx_log_detailed("WARN", tag, __FILE__, __LINE__, message)
 #else
 #define RX_LOG_WARN_DETAILED(tag, message) ((void)0)
@@ -252,7 +255,7 @@ static inline void internal_rx_log_detailed(const char* level_str, const char* t
  * @param[in] message Message string
  */
 #if (RX_LOG_LEVEL >= RX_LOG_LEVEL_INFO)
-#define RX_LOG_INFO_DETAILED(tag, message) \
+#define RX_LOG_INFO_DETAILED(tag, message)                                                         \
   internal_rx_log_detailed("INFO", tag, __FILE__, __LINE__, message)
 #else
 #define RX_LOG_INFO_DETAILED(tag, message) ((void)0)
@@ -265,7 +268,7 @@ static inline void internal_rx_log_detailed(const char* level_str, const char* t
  * @param[in] message Message string
  */
 #if (RX_LOG_LEVEL >= RX_LOG_LEVEL_DEBUG)
-#define RX_LOG_DEBUG_DETAILED(tag, message) \
+#define RX_LOG_DEBUG_DETAILED(tag, message)                                                        \
   internal_rx_log_detailed("DEBUG", tag, __FILE__, __LINE__, message)
 #else
 #define RX_LOG_DEBUG_DETAILED(tag, message) ((void)0)

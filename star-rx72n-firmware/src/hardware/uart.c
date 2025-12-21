@@ -8,10 +8,9 @@
  * Provides basic transmit-only functionality for printf debugging.
  */
 
-#include "hardware.h"
-
 #include <stdint.h>
 
+#include "hardware.h"
 #include "rx72n_regs.h"
 
 /* =============================================================================

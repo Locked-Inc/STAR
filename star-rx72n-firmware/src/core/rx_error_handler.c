@@ -29,7 +29,7 @@
  * @return Pointer to component state, or NULL if not found
  */
 static error_component_state_t* internal_find_component(error_handler_t* handler,
-                                                        const char*       component)
+                                                        const char*      component)
 {
   for (uint32_t i = 0; i < RX_ERROR_HANDLER_MAX_COMPONENTS; i++) {
     if (handler->components[i].in_use && strcmp(handler->components[i].name, component) == 0) {
@@ -48,7 +48,7 @@ static error_component_state_t* internal_find_component(error_handler_t* handler
  * @return Pointer to component state, or NULL if no slots available
  */
 static error_component_state_t* internal_find_or_create_component(error_handler_t* handler,
-                                                                  const char*       component)
+                                                                  const char*      component)
 {
   /* Try to find existing component */
   error_component_state_t* comp = internal_find_component(handler, component);
@@ -81,8 +81,8 @@ static error_component_state_t* internal_find_or_create_component(error_handler_
 /**
  * @brief Report error implementation
  */
-static rx_err_t impl_report_error(void* ctx, rx_err_t err, const char* component,
-                                  const char* message)
+static rx_err_t
+impl_report_error(void* ctx, rx_err_t err, const char* component, const char* message)
 {
   error_handler_t* handler = (error_handler_t*)ctx;
 
@@ -307,8 +307,10 @@ static uint32_t impl_get_backoff_delay(void* ctx, const char* component)
  * =============================================================================
  */
 
-rx_err_t error_handler_init(error_handler_t* handler, uint32_t max_retries,
-                            uint32_t initial_backoff_ms, uint32_t max_backoff_ms)
+rx_err_t error_handler_init(error_handler_t* handler,
+                            uint32_t         max_retries,
+                            uint32_t         initial_backoff_ms,
+                            uint32_t         max_backoff_ms)
 {
   RX_CHECK_NULL_PTR(handler, "ERROR_HANDLER", "Handler pointer is NULL");
 
@@ -345,14 +347,14 @@ rx_err_t error_handler_get_interface(rx_error_interface_t* iface, error_handler_
   }
 
   /* Fill interface */
-  iface->ctx                        = handler;
-  iface->report_error               = impl_report_error;
-  iface->get_error_count            = impl_get_error_count;
-  iface->get_component_error_count  = impl_get_component_error_count;
-  iface->clear_errors               = impl_clear_errors;
-  iface->is_retry_limit_reached     = impl_is_retry_limit_reached;
-  iface->reset_retry_counter        = impl_reset_retry_counter;
-  iface->get_backoff_delay          = impl_get_backoff_delay;
+  iface->ctx                       = handler;
+  iface->report_error              = impl_report_error;
+  iface->get_error_count           = impl_get_error_count;
+  iface->get_component_error_count = impl_get_component_error_count;
+  iface->clear_errors              = impl_clear_errors;
+  iface->is_retry_limit_reached    = impl_is_retry_limit_reached;
+  iface->reset_retry_counter       = impl_reset_retry_counter;
+  iface->get_backoff_delay         = impl_get_backoff_delay;
 
   return RX_OK;
 }

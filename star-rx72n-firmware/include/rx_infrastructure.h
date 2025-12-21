@@ -98,9 +98,9 @@ rx_pin_interface_t* rx_infrastructure_get_pin_interface(void);
  */
 #define RX_REPORT_ERROR(err, component, message)                                                   \
   do {                                                                                             \
-    rx_error_interface_t* iface_ = rx_infrastructure_get_error_interface();                       \
+    rx_error_interface_t* iface_ = rx_infrastructure_get_error_interface();                        \
     if (iface_ != NULL) {                                                                          \
-      iface_->report_error(iface_->ctx, err, component, message);                                 \
+      iface_->report_error(iface_->ctx, err, component, message);                                  \
     }                                                                                              \
   } while (0)
 
@@ -115,10 +115,10 @@ rx_pin_interface_t* rx_infrastructure_get_pin_interface(void);
  */
 #define RX_RESERVE_PIN(port, pin, function)                                                        \
   ({                                                                                               \
-    rx_err_t         err_   = RX_ERR_INVALID_STATE;                                                \
-    rx_pin_interface_t* iface_ = rx_infrastructure_get_pin_interface();                           \
+    rx_err_t            err_   = RX_ERR_INVALID_STATE;                                             \
+    rx_pin_interface_t* iface_ = rx_infrastructure_get_pin_interface();                            \
     if (iface_ != NULL) {                                                                          \
-      err_ = iface_->reserve_pin(iface_->ctx, port, pin, function);                               \
+      err_ = iface_->reserve_pin(iface_->ctx, port, pin, function);                                \
     }                                                                                              \
     err_;                                                                                          \
   })
@@ -133,10 +133,10 @@ rx_pin_interface_t* rx_infrastructure_get_pin_interface(void);
  */
 #define RX_RELEASE_PIN(port, pin)                                                                  \
   ({                                                                                               \
-    rx_err_t         err_   = RX_ERR_INVALID_STATE;                                                \
-    rx_pin_interface_t* iface_ = rx_infrastructure_get_pin_interface();                           \
+    rx_err_t            err_   = RX_ERR_INVALID_STATE;                                             \
+    rx_pin_interface_t* iface_ = rx_infrastructure_get_pin_interface();                            \
     if (iface_ != NULL) {                                                                          \
-      err_ = iface_->release_pin(iface_->ctx, port, pin);                                         \
+      err_ = iface_->release_pin(iface_->ctx, port, pin);                                          \
     }                                                                                              \
     err_;                                                                                          \
   })

@@ -95,7 +95,7 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
   do {                                                                                             \
     rx_err_t err_rc_ = (err);                                                                      \
     if (rx_err_is_error(err_rc_)) {                                                                \
-      internal_rx_fatal_error("ERROR_CHECK", "Fatal error detected", err_rc_);                    \
+      internal_rx_fatal_error("ERROR_CHECK", "Fatal error detected", err_rc_);                     \
     }                                                                                              \
   } while (0)
 
