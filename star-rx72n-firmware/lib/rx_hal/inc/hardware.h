@@ -269,11 +269,11 @@ rx_err_t riic_read(uint8_t channel, uint8_t device_addr, uint8_t* data, uint16_t
  *         RX_ERR_NACK if device NACK received
  */
 rx_err_t riic_write_read(uint8_t        channel,
-                          uint8_t        device_addr,
-                          const uint8_t* write_data,
-                          uint16_t       write_length,
-                          uint8_t*       read_data,
-                          uint16_t       read_length);
+                         uint8_t        device_addr,
+                         const uint8_t* write_data,
+                         uint16_t       write_length,
+                         uint8_t*       read_data,
+                         uint16_t       read_length);
 
 /* =============================================================================
  * RSPI (SPI) Functions - Peripheral Mode
@@ -306,9 +306,9 @@ rx_err_t rspi_init_peripheral(uint8_t channel, uint8_t mode, bool use_16bit);
  *         RX_ERR_TIMEOUT if transfer timeout
  */
 rx_err_t rspi_peripheral_transfer(uint8_t        channel,
-                                   const uint8_t* tx_data,
-                                   uint8_t*       rx_data,
-                                   uint16_t       length);
+                                  const uint8_t* tx_data,
+                                  uint8_t*       rx_data,
+                                  uint16_t       length);
 
 /**
  * @brief Check if receive data is available

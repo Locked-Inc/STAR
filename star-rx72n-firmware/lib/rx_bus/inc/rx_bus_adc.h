@@ -72,9 +72,8 @@ rx_err_t rx_bus_adc_read(rx_bus_manager_t* manager, const char* bus_name, uint16
  * @return RX_ERR_INVALID_STATE if bus not initialized
  * @return RX_ERR_TIMEOUT if conversion or mutex timeout
  */
-rx_err_t rx_bus_adc_read_voltage_mv(rx_bus_manager_t* manager,
-                                     const char*        bus_name,
-                                     uint32_t*          voltage_mv);
+rx_err_t
+rx_bus_adc_read_voltage_mv(rx_bus_manager_t* manager, const char* bus_name, uint32_t* voltage_mv);
 
 #ifdef __cplusplus
 }

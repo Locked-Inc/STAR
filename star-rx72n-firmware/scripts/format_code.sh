@@ -112,7 +112,7 @@ parse_args() {
 # Find all source files
 find_source_files() {
     local files=()
-    
+
     for dir in "${DIRECTORIES[@]}"; do
         if [ ! -d "$dir" ]; then
             if [ "$VERBOSE" = true ]; then
@@ -120,15 +120,16 @@ find_source_files() {
             fi
             continue
         fi
-        
+
         for ext in "${EXTENSIONS[@]}"; do
             # Use find to recursively find files with the extension
+            # Exclude third-party code (threadx)
             while IFS= read -r -d '' file; do
                 files+=("$file")
-            done < <(find "$dir" -name "$ext" -type f -print0 2>/dev/null)
+            done < <(find "$dir" -name "$ext" -type f -not -path "lib/threadx/*" -print0 2>/dev/null)
         done
     done
-    
+
     printf '%s\n' "${files[@]}"
 }
 

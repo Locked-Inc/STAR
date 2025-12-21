@@ -47,8 +47,8 @@ extern "C" {
  * Values are device-specific - consult RX72N hardware manual Table 21.5.
  */
 typedef enum {
-  k_pin_function_gpio    = 0x00, /**< GPIO mode (default) */
-  k_pin_function_periph  = 0x01, /**< Peripheral function (auto-detect from PSEL) */
+  k_pin_function_gpio   = 0x00, /**< GPIO mode (default) */
+  k_pin_function_periph = 0x01, /**< Peripheral function (auto-detect from PSEL) */
 } rx_pin_function_t;
 
 /**

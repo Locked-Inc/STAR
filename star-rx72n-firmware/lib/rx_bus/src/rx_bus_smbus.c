@@ -124,7 +124,7 @@ static rx_err_t internal_smbus_init_callback(rx_bus_config_t* bus_config, void* 
 
   /* Initialize underlying I2C channel */
   rx_err_t err = riic_init(bus_config->proto.smbus.i2c_config.channel,
-                            bus_config->proto.smbus.i2c_config.frequency_hz);
+                           bus_config->proto.smbus.i2c_config.frequency_hz);
 
   if (err != RX_OK) {
     RX_LOG_ERROR(s_tag, "RIIC initialization failed");
@@ -154,19 +154,18 @@ static rx_err_t internal_smbus_write_byte_callback(rx_bus_config_t* bus_config, 
 
   /* Calculate PEC if enabled */
   if (bus_config->proto.smbus.use_pec) {
-    uint8_t  crc = k_smbus_crc8_init;
-    uint8_t  addr_byte =
-      (bus_config->proto.smbus.i2c_config.device_addr << 1) | 0; /* Write */
-    crc     = internal_crc8(crc, &addr_byte, 1);
-    crc     = internal_crc8(crc, data, 1);
-    data[1] = crc;
-    length  = 2;
+    uint8_t crc       = k_smbus_crc8_init;
+    uint8_t addr_byte = (bus_config->proto.smbus.i2c_config.device_addr << 1) | 0; /* Write */
+    crc               = internal_crc8(crc, &addr_byte, 1);
+    crc               = internal_crc8(crc, data, 1);
+    data[1]           = crc;
+    length            = 2;
   }
 
   rx_err_t err = riic_write(bus_config->proto.smbus.i2c_config.channel,
-                             bus_config->proto.smbus.i2c_config.device_addr,
-                             data,
-                             length);
+                            bus_config->proto.smbus.i2c_config.device_addr,
+                            data,
+                            length);
 
   ctx->result = err;
   return err;
@@ -185,9 +184,9 @@ static rx_err_t internal_smbus_read_byte_callback(rx_bus_config_t* bus_config, v
   uint8_t  data[2];
   uint8_t  length = bus_config->proto.smbus.use_pec ? 2 : 1;
   rx_err_t err    = riic_read(bus_config->proto.smbus.i2c_config.channel,
-                               bus_config->proto.smbus.i2c_config.device_addr,
-                               data,
-                               length);
+                           bus_config->proto.smbus.i2c_config.device_addr,
+                           data,
+                           length);
 
   if (err != RX_OK) {
     ctx->result = err;
@@ -196,11 +195,10 @@ static rx_err_t internal_smbus_read_byte_callback(rx_bus_config_t* bus_config, v
 
   /* Verify PEC if enabled */
   if (bus_config->proto.smbus.use_pec) {
-    uint8_t crc = k_smbus_crc8_init;
-    uint8_t addr_byte =
-      (bus_config->proto.smbus.i2c_config.device_addr << 1) | 1; /* Read */
-    crc = internal_crc8(crc, &addr_byte, 1);
-    crc = internal_crc8(crc, data, 1);
+    uint8_t crc       = k_smbus_crc8_init;
+    uint8_t addr_byte = (bus_config->proto.smbus.i2c_config.device_addr << 1) | 1; /* Read */
+    crc               = internal_crc8(crc, &addr_byte, 1);
+    crc               = internal_crc8(crc, data, 1);
 
     if (crc != data[1]) {
       RX_LOG_ERROR(s_tag, "PEC mismatch");
@@ -214,8 +212,7 @@ static rx_err_t internal_smbus_read_byte_callback(rx_bus_config_t* bus_config, v
   return RX_OK;
 }
 
-static rx_err_t internal_smbus_read_word_data_callback(rx_bus_config_t* bus_config,
-                                                         void*            user_ctx)
+static rx_err_t internal_smbus_read_word_data_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
   smbus_read_word_data_ctx_t* ctx = (smbus_read_word_data_ctx_t*)user_ctx;
 
@@ -274,8 +271,7 @@ rx_err_t rx_bus_smbus_init(rx_bus_manager_t* manager, const char* bus_name)
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
 
   smbus_init_ctx_t ctx = {.result = RX_ERR_HW_ERROR};
-  rx_err_t         err =
-    rx_bus_manager_with_bus(manager, bus_name, internal_smbus_init_callback, &ctx);
+  rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_smbus_init_callback, &ctx);
 
   return (err != RX_OK) ? err : ctx.result;
 }
@@ -306,9 +302,9 @@ rx_err_t rx_bus_smbus_read_byte(rx_bus_manager_t* manager, const char* bus_name,
 }
 
 rx_err_t rx_bus_smbus_write_byte_data(rx_bus_manager_t* manager,
-                                       const char*        bus_name,
-                                       uint8_t            command,
-                                       uint8_t            data)
+                                      const char*       bus_name,
+                                      uint8_t           command,
+                                      uint8_t           data)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
@@ -319,9 +315,9 @@ rx_err_t rx_bus_smbus_write_byte_data(rx_bus_manager_t* manager,
 }
 
 rx_err_t rx_bus_smbus_read_byte_data(rx_bus_manager_t* manager,
-                                      const char*        bus_name,
-                                      uint8_t            command,
-                                      uint8_t*           data)
+                                     const char*       bus_name,
+                                     uint8_t           command,
+                                     uint8_t*          data)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
@@ -332,9 +328,9 @@ rx_err_t rx_bus_smbus_read_byte_data(rx_bus_manager_t* manager,
 }
 
 rx_err_t rx_bus_smbus_write_word_data(rx_bus_manager_t* manager,
-                                       const char*        bus_name,
-                                       uint8_t            command,
-                                       uint16_t           data)
+                                      const char*       bus_name,
+                                      uint8_t           command,
+                                      uint16_t          data)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
@@ -345,9 +341,9 @@ rx_err_t rx_bus_smbus_write_word_data(rx_bus_manager_t* manager,
 }
 
 rx_err_t rx_bus_smbus_read_word_data(rx_bus_manager_t* manager,
-                                      const char*        bus_name,
-                                      uint8_t            command,
-                                      uint16_t*          data)
+                                     const char*       bus_name,
+                                     uint8_t           command,
+                                     uint16_t*         data)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
@@ -361,11 +357,11 @@ rx_err_t rx_bus_smbus_read_word_data(rx_bus_manager_t* manager,
 }
 
 rx_err_t rx_bus_smbus_read_block_data(rx_bus_manager_t* manager,
-                                       const char*        bus_name,
-                                       uint8_t            command,
-                                       uint8_t*           data,
-                                       uint8_t*           length,
-                                       uint8_t            max_length)
+                                      const char*       bus_name,
+                                      uint8_t           command,
+                                      uint8_t*          data,
+                                      uint8_t*          length,
+                                      uint8_t           max_length)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");

@@ -16,10 +16,10 @@
  * @copyright Copyright (c) 2025 STAR Project
  */
 
+#include <string.h>
+
 #include "hardware.h"
 #include "rx72n_regs.h"
-
-#include <string.h>
 
 /* =============================================================================
  * Constants
@@ -27,7 +27,7 @@
  */
 
 typedef enum {
-  k_rspi_max_channels = 3,    /* RSPI0, RSPI1, RSPI2 */
+  k_rspi_max_channels = 3,     /* RSPI0, RSPI1, RSPI2 */
   k_rspi_timeout_us   = 10000, /* 10ms timeout for operations */
 } rspi_constants_t;
 
@@ -123,17 +123,17 @@ rx_err_t rspi_init_peripheral(uint8_t channel, uint8_t mode, bool use_16bit)
 
   /* Configure data length */
   if (use_16bit) {
-    spcmd |= (0x0F << 8);      /* 16-bit data */
-    rspi->SPDCR = (1 << 4);    /* Word access mode */
+    spcmd |= (0x0F << 8);   /* 16-bit data */
+    rspi->SPDCR = (1 << 4); /* Word access mode */
   } else {
-    spcmd |= (0x07 << 8);      /* 8-bit data */
-    rspi->SPDCR = 0;           /* Byte access mode */
+    spcmd |= (0x07 << 8); /* 8-bit data */
+    rspi->SPDCR = 0;      /* Byte access mode */
   }
 
   rspi->SPCMD0 = spcmd;
 
   /* Configure peripheral mode */
-  rspi->SPCR = k_rspi_spcr_spe;  /* Enable SPI in peripheral mode (MSTR=0) */
+  rspi->SPCR = k_rspi_spcr_spe; /* Enable SPI in peripheral mode (MSTR=0) */
 
   /* Configure pin control (no loopback) */
   rspi->SPPCR = 0;
@@ -146,10 +146,8 @@ rx_err_t rspi_init_peripheral(uint8_t channel, uint8_t mode, bool use_16bit)
   return RX_OK;
 }
 
-rx_err_t rspi_peripheral_transfer(uint8_t   channel,
-                                    const uint8_t* tx_data,
-                                    uint8_t*       rx_data,
-                                    uint16_t       length)
+rx_err_t
+rspi_peripheral_transfer(uint8_t channel, const uint8_t* tx_data, uint8_t* rx_data, uint16_t length)
 {
   RX_CHECK_NULL_PTR(tx_data, s_tag, "TX data pointer is NULL");
   RX_CHECK_NULL_PTR(rx_data, s_tag, "RX data pointer is NULL");

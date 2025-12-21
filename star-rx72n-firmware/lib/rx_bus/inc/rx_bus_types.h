@@ -41,14 +41,14 @@ extern "C" {
  * @brief Supported bus/protocol types
  */
 typedef enum {
-  k_bus_type_gpio = 0,   /* GPIO (digital I/O) */
-  k_bus_type_adc,        /* ADC (analog input) */
-  k_bus_type_i2c,        /* I2C (RIIC peripheral) */
-  k_bus_type_smbus,      /* SMBUS (I2C variant for fuel gauge) */
-  k_bus_type_spi,        /* SPI (RSPI peripheral) */
-  k_bus_type_uart,       /* UART (SCI peripheral) */
-  k_bus_type_onewire,    /* 1-Wire (GPIO bit-bang) */
-  k_bus_type_max,        /* Sentinel value */
+  k_bus_type_gpio = 0, /* GPIO (digital I/O) */
+  k_bus_type_adc,      /* ADC (analog input) */
+  k_bus_type_i2c,      /* I2C (RIIC peripheral) */
+  k_bus_type_smbus,    /* SMBUS (I2C variant for fuel gauge) */
+  k_bus_type_spi,      /* SPI (RSPI peripheral) */
+  k_bus_type_uart,     /* UART (SCI peripheral) */
+  k_bus_type_onewire,  /* 1-Wire (GPIO bit-bang) */
+  k_bus_type_max,      /* Sentinel value */
 } rx_bus_type_t;
 
 /* =============================================================================
@@ -77,13 +77,13 @@ typedef struct {
  * @brief I2C bus configuration
  */
 typedef struct {
-  uint8_t  channel;     /* RIIC channel (0-2) */
-  uint8_t  sda_port;    /* SDA pin port */
-  uint8_t  sda_pin;     /* SDA pin number */
-  uint8_t  scl_port;    /* SCL pin port */
-  uint8_t  scl_pin;     /* SCL pin number */
+  uint8_t  channel;      /* RIIC channel (0-2) */
+  uint8_t  sda_port;     /* SDA pin port */
+  uint8_t  sda_pin;      /* SDA pin number */
+  uint8_t  scl_port;     /* SCL pin port */
+  uint8_t  scl_pin;      /* SCL pin number */
   uint32_t frequency_hz; /* Clock frequency (100kHz, 400kHz, 1MHz) */
-  uint8_t  device_addr; /* 7-bit device address */
+  uint8_t  device_addr;  /* 7-bit device address */
 } rx_i2c_bus_config_t;
 
 /**
@@ -143,11 +143,11 @@ typedef struct {
  * linked list managed by the bus manager.
  */
 typedef struct rx_bus_config {
-  const char*    name;        /* Unique bus name */
-  rx_bus_type_t  type;        /* Bus type */
-  bool           initialized; /* Is bus initialized? */
-  void*          handle;      /* Driver-specific handle */
-  void*          user_ctx;    /* User context for callbacks */
+  const char*   name;        /* Unique bus name */
+  rx_bus_type_t type;        /* Bus type */
+  bool          initialized; /* Is bus initialized? */
+  void*         handle;      /* Driver-specific handle */
+  void*         user_ctx;    /* User context for callbacks */
 
   /* Protocol-specific configuration union */
   union {
@@ -182,15 +182,15 @@ typedef enum {
  * protection for concurrent access.
  */
 typedef struct {
-  rx_bus_config_t*        buses;       /* Linked list of bus configurations */
-  TX_MUTEX                mutex;       /* ThreadX mutex for thread safety */
-  const char*             tag;         /* Logging tag */
-  rx_error_interface_t*   error_iface; /* Error handler (DIP) */
-  rx_pin_interface_t*     pin_iface;   /* Pin validator (DIP) */
+  rx_bus_config_t*      buses;       /* Linked list of bus configurations */
+  TX_MUTEX              mutex;       /* ThreadX mutex for thread safety */
+  const char*           tag;         /* Logging tag */
+  rx_error_interface_t* error_iface; /* Error handler (DIP) */
+  rx_pin_interface_t*   pin_iface;   /* Pin validator (DIP) */
 
   /* Resource tracking */
-  bool riic_initialized[3];   /* RIIC channels 0-2 initialized? */
-  bool rspi_initialized[3];   /* RSPI channels 0-2 initialized? */
+  bool riic_initialized[3];     /* RIIC channels 0-2 initialized? */
+  bool rspi_initialized[3];     /* RSPI channels 0-2 initialized? */
   bool adc_unit_initialized[2]; /* ADC units 0-1 initialized? */
 
   uint8_t bus_count; /* Number of buses registered */

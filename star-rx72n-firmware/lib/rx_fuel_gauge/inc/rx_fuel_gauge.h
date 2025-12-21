@@ -40,11 +40,11 @@ extern "C" {
  * @brief Fuel gauge battery status
  */
 typedef struct {
-  uint16_t voltage_mv;      /**< Battery voltage in millivolts */
-  int16_t  current_ma;      /**< Battery current in milliamps (+ charging, - discharging) */
-  uint8_t  state_of_charge; /**< State of charge in percent (0-100) */
-  int16_t  temperature_c;   /**< Battery temperature in degrees Celsius */
-  uint16_t capacity_mah;    /**< Remaining capacity in milliamp-hours */
+  uint16_t voltage_mv;        /**< Battery voltage in millivolts */
+  int16_t  current_ma;        /**< Battery current in milliamps (+ charging, - discharging) */
+  uint8_t  state_of_charge;   /**< State of charge in percent (0-100) */
+  int16_t  temperature_c;     /**< Battery temperature in degrees Celsius */
+  uint16_t capacity_mah;      /**< Remaining capacity in milliamp-hours */
   uint16_t full_capacity_mah; /**< Full charge capacity in milliamp-hours */
   uint16_t time_to_empty_min; /**< Estimated time to empty in minutes (0xFFFF if charging) */
   uint16_t time_to_full_min;  /**< Estimated time to full in minutes (0xFFFF if discharging) */
@@ -58,7 +58,7 @@ typedef struct {
  * @brief Fuel gauge configuration
  */
 typedef struct {
-  uint16_t design_capacity_mah; /**< Battery design capacity in mAh */
+  uint16_t design_capacity_mah;  /**< Battery design capacity in mAh */
   uint16_t terminate_voltage_mv; /**< Termination voltage in mV */
   uint8_t  low_soc_threshold;    /**< Low SoC threshold in percent (0-100) */
 } rx_fuel_gauge_config_t;
@@ -85,8 +85,8 @@ typedef struct {
  * @return RX_ERR_NACK if device not responding
  */
 rx_err_t rx_fuel_gauge_init(rx_bus_manager_t*             manager,
-                             const char*                   bus_name,
-                             const rx_fuel_gauge_config_t* config);
+                            const char*                   bus_name,
+                            const rx_fuel_gauge_config_t* config);
 
 /**
  * @brief Read battery voltage
@@ -102,9 +102,8 @@ rx_err_t rx_fuel_gauge_init(rx_bus_manager_t*             manager,
  * @return RX_ERR_TIMEOUT if SMBUS timeout
  * @return RX_ERR_CRC_MISMATCH if PEC check fails
  */
-rx_err_t rx_fuel_gauge_read_voltage(rx_bus_manager_t* manager,
-                                     const char*       bus_name,
-                                     uint16_t*         voltage_mv);
+rx_err_t
+rx_fuel_gauge_read_voltage(rx_bus_manager_t* manager, const char* bus_name, uint16_t* voltage_mv);
 
 /**
  * @brief Read battery current
@@ -121,9 +120,8 @@ rx_err_t rx_fuel_gauge_read_voltage(rx_bus_manager_t* manager,
  * @return RX_ERR_TIMEOUT if SMBUS timeout
  * @return RX_ERR_CRC_MISMATCH if PEC check fails
  */
-rx_err_t rx_fuel_gauge_read_current(rx_bus_manager_t* manager,
-                                     const char*       bus_name,
-                                     int16_t*          current_ma);
+rx_err_t
+rx_fuel_gauge_read_current(rx_bus_manager_t* manager, const char* bus_name, int16_t* current_ma);
 
 /**
  * @brief Read state of charge
@@ -139,9 +137,8 @@ rx_err_t rx_fuel_gauge_read_current(rx_bus_manager_t* manager,
  * @return RX_ERR_TIMEOUT if SMBUS timeout
  * @return RX_ERR_CRC_MISMATCH if PEC check fails
  */
-rx_err_t rx_fuel_gauge_read_soc(rx_bus_manager_t* manager,
-                                 const char*       bus_name,
-                                 uint8_t*          soc_percent);
+rx_err_t
+rx_fuel_gauge_read_soc(rx_bus_manager_t* manager, const char* bus_name, uint8_t* soc_percent);
 
 /**
  * @brief Read battery temperature
@@ -158,8 +155,8 @@ rx_err_t rx_fuel_gauge_read_soc(rx_bus_manager_t* manager,
  * @return RX_ERR_CRC_MISMATCH if PEC check fails
  */
 rx_err_t rx_fuel_gauge_read_temperature(rx_bus_manager_t* manager,
-                                         const char*       bus_name,
-                                         int16_t*          temperature_c);
+                                        const char*       bus_name,
+                                        int16_t*          temperature_c);
 
 /**
  * @brief Read complete battery status
@@ -178,9 +175,9 @@ rx_err_t rx_fuel_gauge_read_temperature(rx_bus_manager_t* manager,
  * @return RX_ERR_TIMEOUT if SMBUS timeout
  * @return RX_ERR_CRC_MISMATCH if PEC check fails
  */
-rx_err_t rx_fuel_gauge_read_status(rx_bus_manager_t*      manager,
-                                    const char*            bus_name,
-                                    rx_fuel_gauge_status_t* status);
+rx_err_t rx_fuel_gauge_read_status(rx_bus_manager_t*       manager,
+                                   const char*             bus_name,
+                                   rx_fuel_gauge_status_t* status);
 
 /**
  * @brief Set low battery threshold
@@ -199,8 +196,8 @@ rx_err_t rx_fuel_gauge_read_status(rx_bus_manager_t*      manager,
  * @return RX_ERR_TIMEOUT if SMBUS timeout
  */
 rx_err_t rx_fuel_gauge_set_low_threshold(rx_bus_manager_t* manager,
-                                          const char*       bus_name,
-                                          uint8_t           threshold_percent);
+                                         const char*       bus_name,
+                                         uint8_t           threshold_percent);
 
 /**
  * @brief Trigger fuel gauge learning cycle

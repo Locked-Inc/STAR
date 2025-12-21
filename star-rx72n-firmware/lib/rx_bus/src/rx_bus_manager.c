@@ -20,7 +20,7 @@
  * =============================================================================
  */
 
-rx_err_t bus_manager_init(rx_bus_manager_t*        manager,
+rx_err_t bus_manager_init(rx_bus_manager_t*     manager,
                           rx_error_interface_t* error_iface,
                           rx_pin_interface_t*   pin_iface)
 {

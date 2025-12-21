@@ -153,11 +153,8 @@ rx_err_t rx_pid_deinit(rx_pid_handle_t* handle);
  * @return RX_ERR_INVALID_STATE if not initialized
  * @return RX_ERR_INVALID_ARG if dt <= 0
  */
-rx_err_t rx_pid_compute(rx_pid_handle_t* handle,
-                         float            setpoint,
-                         float            measured,
-                         float            dt,
-                         float*           output);
+rx_err_t
+rx_pid_compute(rx_pid_handle_t* handle, float setpoint, float measured, float dt, float* output);
 
 /**
  * @brief Reset PID controller internal state
@@ -220,7 +217,8 @@ rx_err_t rx_pid_set_output_limits(rx_pid_handle_t* handle, float output_min, flo
  * @return RX_ERR_INVALID_STATE if not initialized
  * @return RX_ERR_INVALID_ARG if integral_max <= integral_min
  */
-rx_err_t rx_pid_set_integral_limits(rx_pid_handle_t* handle, float integral_min, float integral_max);
+rx_err_t
+rx_pid_set_integral_limits(rx_pid_handle_t* handle, float integral_min, float integral_max);
 
 #ifdef __cplusplus
 }

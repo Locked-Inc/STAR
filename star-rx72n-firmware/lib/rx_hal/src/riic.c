@@ -11,10 +11,10 @@
  * @copyright Copyright (c) 2025 STAR Project
  */
 
+#include <string.h>
+
 #include "hardware.h"
 #include "rx72n_regs.h"
-
-#include <string.h>
 
 /* =============================================================================
  * Constants
@@ -22,7 +22,7 @@
  */
 
 typedef enum {
-  k_riic_max_channels = 3,    /* RIIC0, RIIC1, RIIC2 */
+  k_riic_max_channels = 3,     /* RIIC0, RIIC1, RIIC2 */
   k_riic_timeout_us   = 10000, /* 10ms timeout for operations */
 } riic_constants_t;
 
@@ -296,7 +296,7 @@ rx_err_t riic_init(uint8_t channel, uint32_t frequency_hz)
   riic->ICCR1 = 0;
 
   /* Calculate bit rate */
-  uint8_t icbrl, icbrh;
+  uint8_t  icbrl, icbrh;
   rx_err_t err = internal_calculate_bit_rate(frequency_hz, &icbrl, &icbrh);
   RX_RETURN_ON_ERROR(err, s_tag, "Bit rate calculation failed");
 
@@ -320,10 +320,7 @@ rx_err_t riic_init(uint8_t channel, uint32_t frequency_hz)
   return RX_OK;
 }
 
-rx_err_t riic_write(uint8_t  channel,
-                     uint8_t  device_addr,
-                     const uint8_t* data,
-                     uint16_t       length)
+rx_err_t riic_write(uint8_t channel, uint8_t device_addr, const uint8_t* data, uint16_t length)
 {
   RX_CHECK_NULL_PTR(data, s_tag, "Data pointer is NULL");
 
@@ -404,7 +401,7 @@ rx_err_t riic_read(uint8_t channel, uint8_t device_addr, uint8_t* data, uint16_t
   /* Receive data bytes */
   for (uint16_t i = 0; i < length; i++) {
     bool send_ack = (i < length - 1); /* NACK on last byte */
-    err          = internal_read_byte(riic, &data[i], send_ack);
+    err           = internal_read_byte(riic, &data[i], send_ack);
     if (err != RX_OK) {
       internal_send_stop(riic);
       return err;
@@ -419,11 +416,11 @@ rx_err_t riic_read(uint8_t channel, uint8_t device_addr, uint8_t* data, uint16_t
 }
 
 rx_err_t riic_write_read(uint8_t        channel,
-                          uint8_t        device_addr,
-                          const uint8_t* write_data,
-                          uint16_t       write_length,
-                          uint8_t*       read_data,
-                          uint16_t       read_length)
+                         uint8_t        device_addr,
+                         const uint8_t* write_data,
+                         uint16_t       write_length,
+                         uint8_t*       read_data,
+                         uint16_t       read_length)
 {
   RX_CHECK_NULL_PTR(write_data, s_tag, "Write data pointer is NULL");
   RX_CHECK_NULL_PTR(read_data, s_tag, "Read data pointer is NULL");
@@ -497,7 +494,7 @@ rx_err_t riic_write_read(uint8_t        channel,
   /* Receive data bytes */
   for (uint16_t i = 0; i < read_length; i++) {
     bool send_ack = (i < read_length - 1); /* NACK on last byte */
-    err          = internal_read_byte(riic, &read_data[i], send_ack);
+    err           = internal_read_byte(riic, &read_data[i], send_ack);
     if (err != RX_OK) {
       internal_send_stop(riic);
       return err;

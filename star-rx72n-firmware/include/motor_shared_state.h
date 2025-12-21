@@ -26,12 +26,11 @@
 extern "C" {
 #endif
 
-#include "tx_api.h"
-
 #include <stdbool.h>
 #include <stdint.h>
 
 #include "rx_err.h"
+#include "tx_api.h"
 
 /* =============================================================================
  * Configuration Constants
@@ -87,10 +86,10 @@ typedef struct {
   float velocity_setpoint_mps[k_motor_count]; /**< Target velocities (m/s) */
 
   /* Motor status (written by motor_control_task, read by command_handler_task) */
-  float             measured_velocity_mps[k_motor_count]; /**< Measured velocities (m/s) */
-  float             duty_cycle_percent[k_motor_count];    /**< Motor duty cycles (%) */
-  float             current_ma[k_motor_count];            /**< Motor currents (mA) */
-  rx_motor_state_t  state[k_motor_count];                 /**< Motor states */
+  float            measured_velocity_mps[k_motor_count]; /**< Measured velocities (m/s) */
+  float            duty_cycle_percent[k_motor_count];    /**< Motor duty cycles (%) */
+  float            current_ma[k_motor_count];            /**< Motor currents (mA) */
+  rx_motor_state_t state[k_motor_count];                 /**< Motor states */
 
   /* Emergency stop (written by command_handler_task, read by motor_control_task) */
   bool estop_active; /**< Emergency stop flag */
@@ -127,9 +126,8 @@ rx_err_t motor_shared_state_init(motor_shared_state_t* state);
  * @return RX_ERR_INVALID_ARG if motor_idx is invalid
  * @return RX_ERR_TIMEOUT if mutex timeout
  */
-rx_err_t motor_shared_state_set_velocity(motor_shared_state_t* state,
-                                          uint8_t               motor_idx,
-                                          float                 velocity_mps);
+rx_err_t
+motor_shared_state_set_velocity(motor_shared_state_t* state, uint8_t motor_idx, float velocity_mps);
 
 /**
  * @brief Get velocity setpoint for a specific motor
@@ -144,8 +142,8 @@ rx_err_t motor_shared_state_set_velocity(motor_shared_state_t* state,
  * @return RX_ERR_TIMEOUT if mutex timeout
  */
 rx_err_t motor_shared_state_get_velocity(motor_shared_state_t* state,
-                                          uint8_t               motor_idx,
-                                          float*                out_velocity_mps);
+                                         uint8_t               motor_idx,
+                                         float*                out_velocity_mps);
 
 /**
  * @brief Set motor status for a specific motor
@@ -163,11 +161,11 @@ rx_err_t motor_shared_state_get_velocity(motor_shared_state_t* state,
  * @return RX_ERR_TIMEOUT if mutex timeout
  */
 rx_err_t motor_shared_state_set_status(motor_shared_state_t* state,
-                                        uint8_t               motor_idx,
-                                        float                 velocity_mps,
-                                        float                 duty_cycle,
-                                        float                 current_ma,
-                                        rx_motor_state_t      motor_state);
+                                       uint8_t               motor_idx,
+                                       float                 velocity_mps,
+                                       float                 duty_cycle,
+                                       float                 current_ma,
+                                       rx_motor_state_t      motor_state);
 
 /**
  * @brief Get motor status for a specific motor
@@ -185,11 +183,11 @@ rx_err_t motor_shared_state_set_status(motor_shared_state_t* state,
  * @return RX_ERR_TIMEOUT if mutex timeout
  */
 rx_err_t motor_shared_state_get_status(motor_shared_state_t* state,
-                                        uint8_t               motor_idx,
-                                        float*                out_velocity_mps,
-                                        float*                out_duty_cycle,
-                                        float*                out_current_ma,
-                                        rx_motor_state_t*     out_motor_state);
+                                       uint8_t               motor_idx,
+                                       float*                out_velocity_mps,
+                                       float*                out_duty_cycle,
+                                       float*                out_current_ma,
+                                       rx_motor_state_t*     out_motor_state);
 
 /**
  * @brief Set emergency stop flag

@@ -16,11 +16,11 @@
 
 #include "rx_pid.h"
 
-#include "rx_check.h"
-#include "rx_log.h"
-
 #include <math.h>
 #include <string.h>
+
+#include "rx_check.h"
+#include "rx_log.h"
 
 static const char* s_tag = "PID";
 
@@ -112,11 +112,8 @@ rx_err_t rx_pid_deinit(rx_pid_handle_t* handle)
   return RX_OK;
 }
 
-rx_err_t rx_pid_compute(rx_pid_handle_t* handle,
-                         float            setpoint,
-                         float            measured,
-                         float            dt,
-                         float*           output)
+rx_err_t
+rx_pid_compute(rx_pid_handle_t* handle, float setpoint, float measured, float dt, float* output)
 {
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
   RX_CHECK_NULL_PTR(output, s_tag, "output pointer is NULL");

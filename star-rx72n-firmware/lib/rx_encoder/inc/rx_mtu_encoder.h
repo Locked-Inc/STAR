@@ -130,7 +130,8 @@ rx_err_t rx_encoder_read_count(rx_mtu_channel_t channel, rx_encoder_state_t* sta
  * @return RX_ERR_INVALID_ARG if channel or delta_time_s is invalid
  * @return RX_ERR_INVALID_STATE if encoder not initialized
  */
-rx_err_t rx_encoder_read_velocity(rx_mtu_channel_t channel, float delta_time_s, float* velocity_rps);
+rx_err_t
+rx_encoder_read_velocity(rx_mtu_channel_t channel, float delta_time_s, float* velocity_rps);
 
 /**
  * @brief Reset encoder count to zero

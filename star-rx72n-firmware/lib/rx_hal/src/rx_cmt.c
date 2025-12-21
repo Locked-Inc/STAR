@@ -29,10 +29,9 @@
  * @copyright Copyright (c) 2025 STAR Project
  */
 
-#include "rx_cmt.h"
-
 #include "rx72n_regs.h"
 #include "rx_check.h"
+#include "rx_cmt.h"
 #include "rx_log.h"
 
 static const char* s_tag = "CMT";
@@ -55,9 +54,9 @@ typedef enum {
  * =============================================================================
  */
 
-static bool             s_cmt_initialized[k_cmt_max_channels] = {false};
-static rx_cmt_callback_t s_cmt_callback[k_cmt_max_channels]   = {NULL};
-static void*            s_cmt_user_data[k_cmt_max_channels]   = {NULL};
+static bool              s_cmt_initialized[k_cmt_max_channels] = {false};
+static rx_cmt_callback_t s_cmt_callback[k_cmt_max_channels]    = {NULL};
+static void*             s_cmt_user_data[k_cmt_max_channels]   = {NULL};
 
 /* =============================================================================
  * Internal Helper Functions
@@ -96,9 +95,8 @@ static volatile CMT_Channel_Type* internal_get_cmt_base(rx_cmt_channel_t channel
  *
  * @return RX_OK on success, error code on failure
  */
-static rx_err_t internal_calculate_cmt_params(uint32_t frequency_hz,
-                                                 uint8_t* divider,
-                                                 uint16_t* cmcor)
+static rx_err_t
+internal_calculate_cmt_params(uint32_t frequency_hz, uint8_t* divider, uint16_t* cmcor)
 {
   const uint32_t pclkb = PCLKB_HZ;
 
@@ -203,9 +201,9 @@ rx_err_t rx_cmt_init(rx_cmt_channel_t channel, const rx_cmt_config_t* config)
   RX_LOG_INFO(s_tag, "CMT initialized");
 
   /* Enable CMT module (clear module stop bit) */
-  SYSTEM.PRCR = 0xA50B; /* Enable writes to MSTPCR */
+  SYSTEM.PRCR = 0xA50B;         /* Enable writes to MSTPCR */
   SYSTEM.MSTPCRB &= ~(1 << 15); /* CMT0-CMT3 */
-  SYSTEM.PRCR = 0xA500; /* Lock MSTPCR */
+  SYSTEM.PRCR = 0xA500;         /* Lock MSTPCR */
 
   /* Stop timer before configuration */
   rx_cmt_stop(channel);
@@ -238,8 +236,8 @@ rx_err_t rx_cmt_init(rx_cmt_channel_t channel, const rx_cmt_config_t* config)
   ICU.IR[vector] = 0;
 
   /* Save callback */
-  s_cmt_callback[channel]  = config->callback;
-  s_cmt_user_data[channel] = config->user_data;
+  s_cmt_callback[channel]    = config->callback;
+  s_cmt_user_data[channel]   = config->user_data;
   s_cmt_initialized[channel] = true;
 
   /* Start timer */
@@ -337,8 +335,8 @@ rx_err_t rx_cmt_deinit(rx_cmt_channel_t channel)
   ICU.IER[ier_index] &= ~(1 << ier_bit);
 
   /* Clear callback */
-  s_cmt_callback[channel]  = NULL;
-  s_cmt_user_data[channel] = NULL;
+  s_cmt_callback[channel]    = NULL;
+  s_cmt_user_data[channel]   = NULL;
   s_cmt_initialized[channel] = false;
 
   RX_LOG_INFO(s_tag, "CMT deinitialized");

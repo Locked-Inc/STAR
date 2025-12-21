@@ -104,9 +104,9 @@ typedef enum {
  * @note The task must be created after initializing the shared state
  */
 rx_err_t motor_control_task_create(motor_shared_state_t* shared_state,
-                                    rx_motor_handle_t     motors[k_motor_count],
-                                    rx_mtu_channel_t      encoder_channels[k_motor_count],
-                                    rx_pid_handle_t       pids[k_motor_count]);
+                                   rx_motor_handle_t     motors[k_motor_count],
+                                   rx_mtu_channel_t      encoder_channels[k_motor_count],
+                                   rx_pid_handle_t       pids[k_motor_count]);
 
 #ifdef __cplusplus
 }
