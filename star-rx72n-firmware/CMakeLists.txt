@@ -48,14 +48,15 @@ add_compile_definitions(
     STAR_FIRMWARE_VERSION="1.0.0-rx72n"
 )
 
-# Compiler warnings (strict, but not -Werror for third-party code)
+# Compiler warnings (treat warnings as errors for clean code)
 add_compile_options(
     -Wall
     -Wextra
     -Wpedantic
+    -Werror                # Treat warnings as errors
     -Wno-unused-parameter
-    -Wno-missing-braces  # nanopb generates these
-    -Wno-comment  # ThreadX has nested comments in assembly
+    -Wno-missing-braces    # nanopb generates these
+    -Wno-comment           # ThreadX has nested comments in assembly
 )
 
 # Optimization flags
