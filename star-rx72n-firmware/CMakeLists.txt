@@ -71,6 +71,7 @@ endif()
 
 set(SOURCES
     src/main.c
+    src/hardware/startup_rx72n.S
     # Hardware initialization
     # src/hardware/system_init.c
     # src/hardware/clock_config.c
@@ -81,7 +82,7 @@ set(SOURCES
     # src/tasks/spi_task.c
     # src/tasks/telemetry_task.c
 
-    # RX72M drivers (will be added)
+    # RX72N drivers (will be added)
     # src/drivers/mtu3a.c          # Motor PWM
     # src/drivers/s12adf.c         # ADC
     # src/drivers/rspi.c           # SPI
@@ -97,11 +98,15 @@ include_directories(
 )
 
 # =============================================================================
-# ThreadX Integration (Placeholder - will add submodule)
+# ThreadX Integration
 # =============================================================================
 
-# TODO: Add ThreadX as submodule and integrate here
-# add_subdirectory(lib/threadx)
+# Configure ThreadX for RXv3 with GNU toolchain
+set(THREADX_ARCH "rxv3")
+set(THREADX_TOOLCHAIN "gnu")
+
+# Add ThreadX library
+add_subdirectory(lib/threadx)
 
 # =============================================================================
 # Executable Target
@@ -111,14 +116,14 @@ add_executable(${PROJECT_NAME}.elf ${SOURCES})
 
 # Link libraries
 target_link_libraries(${PROJECT_NAME}.elf
-    # ThreadX will be added here
-    # tx
+    PRIVATE
+    threadx
 )
 
-# Linker script (will be created)
-# set_target_properties(${PROJECT_NAME}.elf PROPERTIES
-#     LINK_FLAGS "-T${CMAKE_CURRENT_SOURCE_DIR}/linker/rx72n.ld"
-# )
+# Linker script
+set_target_properties(${PROJECT_NAME}.elf PROPERTIES
+    LINK_FLAGS "-T${CMAKE_CURRENT_SOURCE_DIR}/linker/rx72n.ld -Wl,-Map=${PROJECT_NAME}.map,--cref,--no-warn-mismatch"
+)
 
 # =============================================================================
 # Post-Build: Generate .hex and .bin files
