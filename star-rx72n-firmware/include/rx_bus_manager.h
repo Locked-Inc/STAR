@@ -2,156 +2,163 @@
 
 /**
  * @file rx_bus_manager.h
- * @brief Bus Manager Skeleton (Future Implementation)
+ * @brief Unified bus manager API for RX72N
+ * @details
+ * The bus manager provides central registry for managing multiple bus
+ * configurations with thread-safe operations using ThreadX mutex.
  *
- * This is a skeleton/stub file demonstrating how the bus manager will use
- * the Dependency Inversion Principle (DIP) interfaces.
+ * Supports dependency injection of error handlers and pin validators
+ * following the Dependency Inversion Principle.
  *
- * The bus manager will:
- * - Accept error_interface and pin_interface as dependencies (DIP)
- * - Manage communication buses (SPI, I2C, UART, etc.)
- * - Use pin interface to reserve/validate GPIO pins
- * - Use error interface to report bus errors and retry logic
+ * Supported bus types:
+ * - GPIO (digital I/O)
+ * - ADC (analog input via S12ADFa)
+ * - I2C (via RIIC peripheral)
+ * - SMBUS (I2C variant for fuel gauge)
+ * - SPI (via RSPI peripheral)
+ * - UART (via SCI peripheral)
+ * - 1-Wire (GPIO bit-bang)
  *
- * This pattern follows the ESP32 star_bus_manager architecture:
- * - Interfaces injected at initialization
- * - No direct dependencies on concrete implementations
- * - Testable via mock interfaces
- *
- * Example usage (future implementation):
- *   // 1. Create dependencies
- *   static error_handler_t s_error_handler;
- *   static pin_validator_t s_pin_validator;
- *   error_handler_init(&s_error_handler, 3, 100, 5000);
- *   pin_validator_init(&s_pin_validator);
- *
- *   // 2. Get interfaces
- *   rx_error_interface_t error_iface;
- *   rx_pin_interface_t pin_iface;
- *   error_handler_get_interface(&error_iface, &s_error_handler);
- *   pin_validator_get_interface(&pin_iface, &s_pin_validator);
- *
- *   // 3. Initialize bus manager with interfaces
- *   static bus_manager_t s_bus_manager;
- *   bus_manager_init(&s_bus_manager, &error_iface, &pin_iface);
- *
- *   // 4. Use bus manager
- *   rx_err_t err = bus_manager_create_spi(&s_bus_manager, "SPI0", ...);
- *   if (err != RX_OK) {
- *       // Bus manager will have used error interface to report details
- *   }
+ * @date 2025-12-21
+ * @copyright Copyright (c) 2025 STAR Project
  */
 
 #ifndef STAR_RX72N_BUS_MANAGER_H
 #define STAR_RX72N_BUS_MANAGER_H
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-
+#include "rx_bus_types.h"
 #include "rx_err.h"
-#include "rx_error_interface.h"
-#include "rx_pin_interface.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 /* =============================================================================
- * Bus Manager Structure (Skeleton)
- * =============================================================================
- */
-
-/**
- * @brief Bus manager instance (skeleton for future implementation)
- *
- * This structure will hold:
- * - Injected interfaces (error, pin)
- * - Bus instance tracking (SPI, I2C, UART)
- * - Bus configuration and state
- */
-typedef struct {
-  /**
-   * @brief Error handler interface (injected dependency)
-   */
-  rx_error_interface_t* error_iface;
-
-  /**
-   * @brief Pin validator interface (injected dependency)
-   */
-  rx_pin_interface_t* pin_iface;
-
-  /**
-   * @brief Is the bus manager initialized?
-   */
-  bool initialized;
-
-  /* Future: Bus instance tracking arrays will go here */
-} bus_manager_t;
-
-/* =============================================================================
- * Public API (Skeleton)
+ * Bus Manager Initialization
  * =============================================================================
  */
 
 /**
  * @brief Initialize bus manager with injected dependencies
  *
+ * Creates ThreadX mutex for thread-safe bus access.
+ *
  * @param[in,out] manager Bus manager instance to initialize
- * @param[in] error_iface Error handler interface (DIP)
- * @param[in] pin_iface Pin validator interface (DIP)
+ * @param[in] tag Logging tag (e.g., "main")
+ * @param[in] error_iface Error handler interface (DIP, can be NULL)
+ * @param[in] pin_iface Pin validator interface (DIP, can be NULL)
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if any parameter is NULL,
- *         RX_ERR_INVALID_STATE if interfaces are invalid
- *
- * @note This is a skeleton implementation demonstrating DIP pattern.
- *       Full bus management functionality will be added in future commits.
+ * @return RX_OK on success
+ * @return RX_ERR_NULL_POINTER if manager or tag is NULL
+ * @return RX_ERR_THREADX if ThreadX mutex creation fails
  */
-rx_err_t bus_manager_init(bus_manager_t* manager, rx_error_interface_t* error_iface,
-                          rx_pin_interface_t* pin_iface);
+rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
+                               const char*           tag,
+                               rx_error_interface_t* error_iface,
+                               rx_pin_interface_t*   pin_iface);
 
 /**
- * @brief Deinitialize bus manager
+ * @brief Deinitialize bus manager and free all resources
+ *
+ * Removes all buses and deletes ThreadX mutex.
  *
  * @param[in,out] manager Bus manager instance
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if manager is NULL
+ * @return RX_OK on success
+ * @return RX_ERR_NULL_POINTER if manager is NULL
  */
-rx_err_t bus_manager_deinit(bus_manager_t* manager);
+rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager);
 
 /* =============================================================================
- * Future API (Placeholders)
+ * Bus Registration
  * =============================================================================
  */
 
-/*
- * Future functions will include:
+/**
+ * @brief Add a bus configuration to the manager
  *
- * rx_err_t bus_manager_create_spi(bus_manager_t* manager, const char* name,
- *                                 uint8_t mosi_port, uint8_t mosi_pin,
- *                                 uint8_t miso_port, uint8_t miso_pin,
- *                                 uint8_t sck_port, uint8_t sck_pin,
- *                                 uint8_t cs_port, uint8_t cs_pin,
- *                                 uint32_t frequency_hz);
+ * Takes ownership of the bus_config pointer. The bus will be
+ * initialized when first accessed.
  *
- * rx_err_t bus_manager_create_i2c(bus_manager_t* manager, const char* name,
- *                                 uint8_t sda_port, uint8_t sda_pin,
- *                                 uint8_t scl_port, uint8_t scl_pin,
- *                                 uint32_t frequency_hz);
+ * @param[in,out] manager Bus manager instance
+ * @param[in] bus_config Bus configuration to add (manager takes ownership)
  *
- * rx_err_t bus_manager_create_uart(bus_manager_t* manager, const char* name,
- *                                  uint8_t tx_port, uint8_t tx_pin,
- *                                  uint8_t rx_port, uint8_t rx_pin,
- *                                  uint32_t baudrate);
- *
- * rx_err_t bus_manager_spi_transfer(bus_manager_t* manager, const char* name,
- *                                   const uint8_t* tx_data, uint8_t* rx_data,
- *                                   size_t len, uint32_t timeout_ms);
- *
- * ... etc ...
+ * @return RX_OK on success
+ * @return RX_ERR_NULL_POINTER if manager or bus_config is NULL
+ * @return RX_ERR_INVALID_ARG if bus name is NULL or empty
+ * @return RX_ERR_EXISTS if bus with same name already exists
+ * @return RX_ERR_NO_MEM if maximum buses reached
  */
+rx_err_t rx_bus_manager_add_bus(rx_bus_manager_t* manager, rx_bus_config_t* bus_config);
+
+/**
+ * @brief Remove a bus from the manager by name
+ *
+ * Deinitializes the bus and frees the configuration.
+ *
+ * @param[in,out] manager Bus manager instance
+ * @param[in] name Bus name
+ *
+ * @return RX_OK on success
+ * @return RX_ERR_NULL_POINTER if manager or name is NULL
+ * @return RX_ERR_NOT_FOUND if bus not found
+ */
+rx_err_t rx_bus_manager_remove_bus(rx_bus_manager_t* manager, const char* name);
+
+/* =============================================================================
+ * Bus Access (Thread-Safe)
+ * =============================================================================
+ */
+
+/**
+ * @brief Find a bus by name (thread-safe lookup only)
+ *
+ * WARNING: Prefer rx_bus_manager_with_bus() to avoid race conditions
+ * where bus could be removed while in use.
+ *
+ * @param[in] manager Bus manager instance
+ * @param[in] name Bus name
+ * @param[out] bus_config Pointer to bus configuration (if found)
+ *
+ * @return RX_OK on success
+ * @return RX_ERR_NULL_POINTER if any parameter is NULL
+ * @return RX_ERR_NOT_FOUND if bus not found
+ */
+rx_err_t rx_bus_manager_find_bus(rx_bus_manager_t* manager,
+                                  const char*        name,
+                                  rx_bus_config_t**  bus_config);
+
+/**
+ * @brief Callback function type for rx_bus_manager_with_bus()
+ *
+ * @param[in] bus_config Bus configuration
+ * @param[in] user_ctx User context passed to rx_bus_manager_with_bus()
+ *
+ * @return RX_OK on success, error code on failure
+ */
+typedef rx_err_t (*rx_bus_callback_t)(rx_bus_config_t* bus_config, void* user_ctx);
+
+/**
+ * @brief Execute callback with bus locked (prevents removal during use)
+ *
+ * Recommended pattern for thread-safe bus access. Holds mutex while
+ * callback executes, preventing bus removal race conditions.
+ *
+ * @param[in] manager Bus manager instance
+ * @param[in] name Bus name
+ * @param[in] callback Function to execute with bus locked
+ * @param[in] user_ctx User context passed to callback
+ *
+ * @return RX_OK on success
+ * @return RX_ERR_NULL_POINTER if manager, name, or callback is NULL
+ * @return RX_ERR_NOT_FOUND if bus not found
+ * @return RX_ERR_TIMEOUT if mutex timeout
+ * @return Error code from callback if callback fails
+ */
+rx_err_t rx_bus_manager_with_bus(rx_bus_manager_t*  manager,
+                                  const char*        name,
+                                  rx_bus_callback_t  callback,
+                                  void*              user_ctx);
 
 #ifdef __cplusplus
 }

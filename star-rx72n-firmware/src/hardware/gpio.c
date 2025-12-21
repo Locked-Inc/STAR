@@ -7,10 +7,9 @@
  * GPIO control with integrated error handling, logging, and pin validation.
  */
 
-#include "hardware.h"
-
 #include <stddef.h>
 
+#include "hardware.h"
 #include "rx72n_regs.h"
 
 /* =============================================================================

@@ -8,10 +8,9 @@
  * for ThreadX system tick at 100 Hz.
  */
 
-#include "hardware.h"
-
 #include <stdint.h>
 
+#include "hardware.h"
 #include "rx72n_regs.h"
 #include "tx_api.h"
 #include "tx_user.h"

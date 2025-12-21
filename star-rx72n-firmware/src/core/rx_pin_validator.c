@@ -233,8 +233,8 @@ static bool impl_is_pin_reserved(void* ctx, uint8_t port, uint8_t pin)
 /**
  * @brief Get pin function implementation
  */
-static rx_err_t impl_get_pin_function(void* ctx, uint8_t port, uint8_t pin, char* function_out,
-                                      size_t function_len)
+static rx_err_t
+impl_get_pin_function(void* ctx, uint8_t port, uint8_t pin, char* function_out, size_t function_len)
 {
   pin_validator_t* validator = (pin_validator_t*)ctx;
 

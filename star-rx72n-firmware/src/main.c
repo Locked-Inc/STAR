@@ -2,159 +2,245 @@
 
 /**
  * @file main.c
- * @brief STAR RX72N Firmware - ThreadX LED Blink with Full Infrastructure
- *
- * Demonstrates:
- * - ThreadX kernel initialization
- * - Full error handling and logging infrastructure
- * - Pin validation and reservation
- * - Error checking with RX_ERROR_CHECK macros
- * - GPIO toggling (LED blink)
+ * @brief STAR RX72N Motor Control Firmware - Main Entry Point
+ * @details
+ * Complete 4-motor control system with:
+ * - 250Hz PID velocity control
+ * - Hardware encoder feedback (4 dedicated MTU channels)
+ * - Thread-safe shared state
+ * - Emergency stop support
+ * - Battery management system integration
  *
  * Hardware: Renesas RX72N (R5F572NNHGFP#30)
  * RTOS: ThreadX (Azure RTOS / Eclipse ThreadX)
+ *
+ * @date 2025-12-21
+ * @copyright Copyright (c) 2025 STAR Project
  */
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <string.h>
 
-#include "hardware.h" /* Hardware abstraction layer */
-#include "tx_api.h"   /* ThreadX API */
+#include "hardware.h"
+#include "tx_api.h"
+
+/* Motor control system */
+#include "hardware_config.h"
+#include "motor_shared_state.h"
+#include "rx_drv8243.h"
+#include "rx_motor.h"
+#include "rx_mtu_encoder.h"
+#include "rx_pid.h"
+#include "system_config.h"
+#include "tasks/motor_control_task.h"
+
+/* Infrastructure */
+#include "rx_bus_manager.h"
+#include "rx_log.h"
+
+static const char* s_tag = "MAIN";
 
 /* =============================================================================
- * Configuration
+ * Global Motor Control Objects
  * =============================================================================
  */
 
-/* LED connected to PORT0, Pin 0 (update based on actual hardware) */
-#define LED_PORT 0 /* PORT0 */
-#define LED_PIN  0 /* Pin 0 */
+/* Motor controllers */
+static rx_motor_handle_t s_motors[k_motor_count];
 
-/* ThreadX task stack sizes */
-#define LED_TASK_STACK_SIZE  1024
-#define DEMO_TASK_STACK_SIZE 1024
+/* PID controllers */
+static rx_pid_handle_t s_pids[k_motor_count];
 
-/* Task priorities (0 = highest, 31 = lowest) */
-#define LED_TASK_PRIORITY  5
-#define DEMO_TASK_PRIORITY 10
+/* Encoder channels */
+static rx_mtu_channel_t s_encoder_channels[k_motor_count];
 
-/* =============================================================================
- * ThreadX Objects
- * =============================================================================
- */
-
-/* Task control blocks */
-TX_THREAD led_thread;
-TX_THREAD demo_thread;
-
-/* Task stacks */
-static uint8_t led_task_stack[LED_TASK_STACK_SIZE];
-static uint8_t demo_task_stack[DEMO_TASK_STACK_SIZE];
+/* Shared state */
+static motor_shared_state_t s_shared_state;
 
 /* =============================================================================
- * Hardware Abstraction
+ * Motor System Initialization
  * =============================================================================
  */
 
 /**
- * @brief Initialize LED GPIO
+ * @brief Initialize all 4 motors with MTU PWM
  *
- * @return RX_OK on success, error code on failure
+ * @return RX_OK on success
  */
-static rx_err_t led_init(void)
+static rx_err_t internal_init_motors(void)
 {
   rx_err_t err;
 
-  /* Configure LED pin as output */
-  err = gpio_set_output(LED_PORT, LED_PIN);
-  RX_RETURN_ON_ERROR(err, "LED", "Failed to configure LED pin as output");
+  RX_LOG_INFO(s_tag, "Initializing 4 motors...");
 
-  /* Start with LED off */
-  err = gpio_write_low(LED_PORT, LED_PIN);
-  RX_RETURN_ON_ERROR(err, "LED", "Failed to set LED initial state");
-
-  RX_LOG_INFO("LED", "LED initialized successfully");
-
-  return RX_OK;
-}
-
-/**
- * @brief Toggle LED state
- *
- * @return RX_OK on success, error code on failure
- */
-static rx_err_t led_toggle(void)
-{
-  /* Toggle LED GPIO pin */
-  rx_err_t err = gpio_toggle(LED_PORT, LED_PIN);
-  RX_RETURN_ON_ERROR(err, "LED", "Failed to toggle LED");
-
-  return RX_OK;
-}
-
-/* =============================================================================
- * ThreadX Tasks
- * =============================================================================
- */
-
-/**
- * @brief LED blink task (500ms interval)
- *
- * Demonstrates:
- * - ThreadX task loop
- * - tx_thread_sleep() for delays
- * - GPIO control with error handling
- */
-static void led_task_entry(ULONG input)
-{
-  (void)input;
-
-  /* Initialize LED */
-  rx_err_t err = led_init();
+  /* Motor 0 configuration */
+  rx_motor_config_t motor0_config = {
+    .channel      = k_motor_0_mtu_channel,
+    .output_a     = k_motor_0_pwm_ph,
+    .output_b     = k_motor_0_pwm_en,
+    .pwm_freq_hz  = k_motor_pwm_freq_hz,
+    .dead_time_ns = k_motor_dead_time_ns,
+    .invert_pwm   = false,
+  };
+  err = rx_motor_init(&s_motors[0], &motor0_config);
   if (err != RX_OK) {
-    RX_LOG_ERROR("LED_TASK", "LED initialization failed");
-    /* Continue anyway - non-critical */
+    RX_LOG_ERROR(s_tag, "Failed to init motor 0");
+    return err;
   }
 
-  /* Task loop */
-  while (1) {
-    /* Toggle LED */
-    err = led_toggle();
-    if (err != RX_OK) {
-      RX_LOG_ERROR("LED_TASK", "LED toggle failed");
-    }
-
-    /* Sleep for 500ms (assumes 100 ticks/sec timer) */
-    tx_thread_sleep(50);
+  /* Motor 1 configuration */
+  rx_motor_config_t motor1_config = {
+    .channel      = k_motor_1_mtu_channel,
+    .output_a     = k_motor_1_pwm_ph,
+    .output_b     = k_motor_1_pwm_en,
+    .pwm_freq_hz  = k_motor_pwm_freq_hz,
+    .dead_time_ns = k_motor_dead_time_ns,
+    .invert_pwm   = false,
+  };
+  err = rx_motor_init(&s_motors[1], &motor1_config);
+  if (err != RX_OK) {
+    RX_LOG_ERROR(s_tag, "Failed to init motor 1");
+    return err;
   }
+
+  /* Motor 2 configuration */
+  rx_motor_config_t motor2_config = {
+    .channel      = k_motor_2_mtu_channel,
+    .output_a     = k_motor_2_pwm_ph,
+    .output_b     = k_motor_2_pwm_en,
+    .pwm_freq_hz  = k_motor_pwm_freq_hz,
+    .dead_time_ns = k_motor_dead_time_ns,
+    .invert_pwm   = false,
+  };
+  err = rx_motor_init(&s_motors[2], &motor2_config);
+  if (err != RX_OK) {
+    RX_LOG_ERROR(s_tag, "Failed to init motor 2");
+    return err;
+  }
+
+  /* Motor 3 configuration */
+  rx_motor_config_t motor3_config = {
+    .channel      = k_motor_3_mtu_channel,
+    .output_a     = k_motor_3_pwm_ph,
+    .output_b     = k_motor_3_pwm_en,
+    .pwm_freq_hz  = k_motor_pwm_freq_hz,
+    .dead_time_ns = k_motor_dead_time_ns,
+    .invert_pwm   = false,
+  };
+  err = rx_motor_init(&s_motors[3], &motor3_config);
+  if (err != RX_OK) {
+    RX_LOG_ERROR(s_tag, "Failed to init motor 3");
+    return err;
+  }
+
+  RX_LOG_INFO(s_tag, "All 4 motors initialized successfully");
+  return RX_OK;
 }
 
 /**
- * @brief Demo task (prints debug info via UART)
+ * @brief Initialize all 4 encoders with dedicated MTU channels
  *
- * Demonstrates a second concurrent task running at lower priority.
- * Prints a counter every second to show the system is alive.
+ * @return RX_OK on success
  */
-static void demo_task_entry(ULONG input)
+static rx_err_t internal_init_encoders(void)
 {
-  (void)input;
+  rx_err_t err;
 
-  ULONG counter = 0;
+  RX_LOG_INFO(s_tag, "Initializing 4 encoders...");
 
-  RX_LOG_INFO("DEMO_TASK", "Demo task started");
+  /* Store encoder channels for motor control task */
+  s_encoder_channels[0] = k_motor_0_encoder_ch;
+  s_encoder_channels[1] = k_motor_1_encoder_ch;
+  s_encoder_channels[2] = k_motor_2_encoder_ch;
+  s_encoder_channels[3] = k_motor_3_encoder_ch;
 
-  while (1) {
-    /* Increment counter */
-    counter++;
-
-    /* Print debug message via UART */
-    uart_puts("[Demo Task] Count: ");
-    uart_putint((int32_t)counter);
-    uart_puts("\r\n");
-
-    /* Sleep for 1 second */
-    tx_thread_sleep(100);
+  /* Initialize encoder 0 */
+  rx_encoder_config_t enc0_config = {
+    .channel           = k_motor_0_encoder_ch,
+    .counts_per_rev    = k_encoder_ppr,
+    .invert_direction  = false,
+  };
+  err = rx_encoder_init(&enc0_config);
+  if (err != RX_OK) {
+    RX_LOG_ERROR(s_tag, "Failed to init encoder 0");
+    return err;
   }
+
+  /* Initialize encoder 1 */
+  rx_encoder_config_t enc1_config = {
+    .channel           = k_motor_1_encoder_ch,
+    .counts_per_rev    = k_encoder_ppr,
+    .invert_direction  = false,
+  };
+  err = rx_encoder_init(&enc1_config);
+  if (err != RX_OK) {
+    RX_LOG_ERROR(s_tag, "Failed to init encoder 1");
+    return err;
+  }
+
+  /* Initialize encoder 2 */
+  rx_encoder_config_t enc2_config = {
+    .channel           = k_motor_2_encoder_ch,
+    .counts_per_rev    = k_encoder_ppr,
+    .invert_direction  = false,
+  };
+  err = rx_encoder_init(&enc2_config);
+  if (err != RX_OK) {
+    RX_LOG_ERROR(s_tag, "Failed to init encoder 2");
+    return err;
+  }
+
+  /* Initialize encoder 3 */
+  rx_encoder_config_t enc3_config = {
+    .channel           = k_motor_3_encoder_ch,
+    .counts_per_rev    = k_encoder_ppr,
+    .invert_direction  = false,
+  };
+  err = rx_encoder_init(&enc3_config);
+  if (err != RX_OK) {
+    RX_LOG_ERROR(s_tag, "Failed to init encoder 3");
+    return err;
+  }
+
+  RX_LOG_INFO(s_tag, "All 4 encoders initialized successfully");
+  return RX_OK;
+}
+
+/**
+ * @brief Initialize all 4 PID controllers
+ *
+ * @return RX_OK on success
+ */
+static rx_err_t internal_init_pids(void)
+{
+  rx_err_t err;
+
+  RX_LOG_INFO(s_tag, "Initializing 4 PID controllers...");
+
+  /* Common PID configuration for all motors */
+  rx_pid_config_t pid_config = {
+    .kp           = k_pid_kp_default / 1000.0f,      /* Convert from × 1000 */
+    .ki           = k_pid_ki_default / 1000.0f,      /* Convert from × 1000 */
+    .kd           = k_pid_kd_default / 1000.0f,      /* Convert from × 1000 */
+    .output_min   = k_pid_output_min / 100.0f,       /* Convert from × 100 */
+    .output_max   = k_pid_output_max / 100.0f,       /* Convert from × 100 */
+    .integral_min = k_pid_integral_min / 100.0f,     /* Convert from × 100 */
+    .integral_max = k_pid_integral_max / 100.0f,     /* Convert from × 100 */
+  };
+
+  /* Initialize all 4 PID controllers with same gains */
+  for (int i = 0; i < k_motor_count; i++) {
+    err = rx_pid_init(&s_pids[i], &pid_config);
+    if (err != RX_OK) {
+      RX_LOG_ERROR(s_tag, "Failed to init PID controller");
+      return err;
+    }
+  }
+
+  RX_LOG_INFO(s_tag, "All 4 PIDs initialized successfully");
+
+  return RX_OK;
 }
 
 /* =============================================================================
@@ -166,48 +252,28 @@ static void demo_task_entry(ULONG input)
  * @brief ThreadX application definition
  *
  * Called by tx_kernel_enter() to create all application objects.
- * This is where we create tasks, semaphores, queues, etc.
  */
 void tx_application_define(void* first_unused_memory)
 {
   (void)first_unused_memory;
 
-  RX_LOG_INFO("THREADX", "Creating application tasks");
+  RX_LOG_INFO(s_tag, "Creating motor control system...");
 
-  /* Create LED blink task */
-  UINT status = tx_thread_create(&led_thread,         /* Thread control block */
-                                  "LED Task",          /* Thread name */
-                                  led_task_entry,      /* Entry function */
-                                  0,                   /* Entry input (unused) */
-                                  led_task_stack,      /* Stack pointer */
-                                  LED_TASK_STACK_SIZE, /* Stack size */
-                                  LED_TASK_PRIORITY,   /* Priority */
-                                  LED_TASK_PRIORITY, /* Preemption threshold (same as priority) */
-                                  TX_NO_TIME_SLICE,  /* No time slicing */
-                                  TX_AUTO_START      /* Start immediately */
-  );
-
-  if (status != TX_SUCCESS) {
-    RX_LOG_ERROR("THREADX", "Failed to create LED task");
+  /* Initialize shared state */
+  rx_err_t err = motor_shared_state_init(&s_shared_state);
+  if (err != RX_OK) {
+    RX_LOG_ERROR(s_tag, "Failed to init shared state");
+    return;
   }
 
-  /* Create demo task */
-  status = tx_thread_create(&demo_thread,
-                            "Demo Task",
-                            demo_task_entry,
-                            0,
-                            demo_task_stack,
-                            DEMO_TASK_STACK_SIZE,
-                            DEMO_TASK_PRIORITY,
-                            DEMO_TASK_PRIORITY,
-                            TX_NO_TIME_SLICE,
-                            TX_AUTO_START);
-
-  if (status != TX_SUCCESS) {
-    RX_LOG_ERROR("THREADX", "Failed to create demo task");
+  /* Create motor control task (250Hz control loop) */
+  err = motor_control_task_create(&s_shared_state, s_motors, s_encoder_channels, s_pids);
+  if (err != RX_OK) {
+    RX_LOG_ERROR(s_tag, "Failed to create motor control task");
+    return;
   }
 
-  RX_LOG_INFO("THREADX", "Application tasks created successfully");
+  RX_LOG_INFO(s_tag, "Motor control system created successfully");
 }
 
 /* =============================================================================
@@ -218,47 +284,72 @@ void tx_application_define(void* first_unused_memory)
 /**
  * @brief Application entry point
  *
- * Called by startup code after hardware initialization.
- * Initializes all infrastructure and starts the ThreadX kernel.
+ * Initializes all hardware and starts the ThreadX kernel.
  * This function never returns.
  */
 int main(void)
 {
   rx_err_t err;
 
-  /* Initialize RX72N hardware (clocks and peripherals) */
+  /* Initialize RX72N hardware (clocks, 240MHz CPU) */
   err = system_init();
-  RX_ERROR_CHECK(err); /* Fatal: can't continue without clocks */
+  RX_ERROR_CHECK(err);
 
   /* Initialize UART first for logging */
   err = uart_init();
-  RX_ERROR_CHECK(err); /* Fatal: can't continue without logging */
+  RX_ERROR_CHECK(err);
 
-  /* Now we can start logging */
-  uart_puts("\r\n===========================================\r\n");
-  uart_puts("STAR RX72N Firmware v1.0.0\r\n");
-  uart_puts("with Full Infrastructure Integration\r\n");
-  uart_puts("===========================================\r\n\r\n");
+  /* Print startup banner */
+  uart_puts("\r\n");
+  uart_puts("========================================\r\n");
+  uart_puts("STAR RX72N Motor Control Firmware v1.0\r\n");
+  uart_puts("========================================\r\n");
+  uart_puts("CPU:     240 MHz RXv3 Core\r\n");
+  uart_puts("RTOS:    ThreadX (Azure RTOS)\r\n");
+  uart_puts("Control: 250Hz PID Loop (4 motors)\r\n");
+  uart_puts("========================================\r\n\r\n");
 
-  RX_LOG_INFO("MAIN", "System initialization complete");
+  RX_LOG_INFO(s_tag, "System clocks initialized (240MHz CPU, 120MHz PCLKA, 60MHz PCLKB)");
 
   /* Initialize global error handling and pin validation */
   err = rx_infrastructure_init();
-  RX_ERROR_CHECK(err); /* Fatal: infrastructure is critical */
+  RX_ERROR_CHECK(err);
+  RX_LOG_INFO(s_tag, "Infrastructure initialized");
 
-  /* Initialize system tick timer */
+  /* Initialize system tick timer (CMT0 reserved for ThreadX) */
   err = timer_init();
-  RX_ERROR_CHECK(err); /* Fatal: ThreadX needs system tick */
+  RX_ERROR_CHECK(err);
+  RX_LOG_INFO(s_tag, "System tick initialized");
 
-  /* Send ThreadX startup message */
-  RX_LOG_INFO("MAIN", "Starting ThreadX RTOS");
+  /* Initialize motor control hardware */
+  RX_LOG_INFO(s_tag, "Initializing motor control system...");
+
+  err = internal_init_motors();
+  RX_ERROR_CHECK(err);
+
+  err = internal_init_encoders();
+  RX_ERROR_CHECK(err);
+
+  err = internal_init_pids();
+  RX_ERROR_CHECK(err);
+
+  RX_LOG_INFO(s_tag, "Motor control hardware initialized");
+  RX_LOG_INFO(s_tag, "  Motors:   4 × DRV8243 H-bridge");
+  RX_LOG_INFO(s_tag, "  Encoders: 4 × MTU phase counting");
+  RX_LOG_INFO(s_tag, "  PIDs:     4 × velocity control");
+  RX_LOG_INFO(s_tag, "  Control:  250 Hz (4ms period)");
+
+  /* All systems ready */
+  uart_puts("\r\n");
+  RX_LOG_INFO(s_tag, "All systems initialized successfully");
+  RX_LOG_INFO(s_tag, "Starting ThreadX RTOS...");
   uart_puts("\r\n");
 
   /* Enter ThreadX kernel - this never returns */
   tx_kernel_enter();
 
   /* Should never reach here */
-  RX_LOG_ERROR("MAIN", "ThreadX kernel exited unexpectedly");
+  RX_LOG_ERROR(s_tag, "ThreadX kernel exited unexpectedly");
   while (1) {
     __asm__ volatile("wait");
   }
