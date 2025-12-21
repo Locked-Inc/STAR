@@ -99,7 +99,7 @@ rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
 
   rx_mtu_channel_t channel = config->channel;
 
-  if ((int)channel >= k_encoder_max_channels) {
+  if ((int32_t)channel >= k_encoder_max_channels) {
     RX_LOG_ERROR(s_tag, "Error occurred");
     return RX_ERR_INVALID_ARG;
   }
@@ -171,7 +171,7 @@ rx_err_t rx_encoder_read_raw(rx_mtu_channel_t channel, uint16_t* count)
 {
   RX_CHECK_NULL_PTR(count, s_tag, "count pointer is NULL");
 
-  if ((int)channel >= k_encoder_max_channels || !s_encoder_initialized[channel]) {
+  if ((int32_t)channel >= k_encoder_max_channels || !s_encoder_initialized[channel]) {
     return RX_ERR_INVALID_STATE;
   }
 
@@ -188,7 +188,7 @@ rx_err_t rx_encoder_read_count(rx_mtu_channel_t channel, rx_encoder_state_t* sta
 {
   RX_CHECK_NULL_PTR(state, s_tag, "state pointer is NULL");
 
-  if ((int)channel >= k_encoder_max_channels || !s_encoder_initialized[channel]) {
+  if ((int32_t)channel >= k_encoder_max_channels || !s_encoder_initialized[channel]) {
     return RX_ERR_INVALID_STATE;
   }
 
@@ -243,7 +243,7 @@ rx_err_t rx_encoder_read_velocity(rx_mtu_channel_t channel, float delta_time_s, 
 {
   RX_CHECK_NULL_PTR(velocity_rps, s_tag, "velocity_rps pointer is NULL");
 
-  if ((int)channel >= k_encoder_max_channels || !s_encoder_initialized[channel]) {
+  if ((int32_t)channel >= k_encoder_max_channels || !s_encoder_initialized[channel]) {
     return RX_ERR_INVALID_STATE;
   }
 
@@ -273,7 +273,7 @@ rx_err_t rx_encoder_read_velocity(rx_mtu_channel_t channel, float delta_time_s, 
 
 rx_err_t rx_encoder_reset(rx_mtu_channel_t channel)
 {
-  if ((int)channel >= k_encoder_max_channels || !s_encoder_initialized[channel]) {
+  if ((int32_t)channel >= k_encoder_max_channels || !s_encoder_initialized[channel]) {
     return RX_ERR_INVALID_STATE;
   }
 
@@ -297,7 +297,7 @@ rx_err_t rx_encoder_reset(rx_mtu_channel_t channel)
 
 rx_err_t rx_encoder_set_count(rx_mtu_channel_t channel, int32_t count)
 {
-  if ((int)channel >= k_encoder_max_channels || !s_encoder_initialized[channel]) {
+  if ((int32_t)channel >= k_encoder_max_channels || !s_encoder_initialized[channel]) {
     return RX_ERR_INVALID_STATE;
   }
 
@@ -326,7 +326,7 @@ rx_err_t rx_encoder_set_count(rx_mtu_channel_t channel, int32_t count)
 
 rx_err_t rx_encoder_deinit(rx_mtu_channel_t channel)
 {
-  if ((int)channel >= k_encoder_max_channels) {
+  if ((int32_t)channel >= k_encoder_max_channels) {
     return RX_ERR_INVALID_ARG;
   }
 

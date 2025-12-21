@@ -1,12 +1,12 @@
 % =============================================================================
-% ESP32 FIRMWARE STYLE GUIDE
+% C STYLE GUIDE
 % =============================================================================
 
 \newpage
-\section{ESP32 Firmware Style Guide}
-\label{sec:esp32-style}
+\section{C Style Guide}
+\label{sec:c-style}
 
-This section defines comprehensive style guidelines for ESP32-S3 firmware development in the STAR project. All ESP32 firmware code must follow these conventions to ensure consistency, maintainability, and safety in embedded systems development.
+This section defines comprehensive style guidelines for C firmware development in the STAR project. All firmware code (ESP32-S3, RX72N, and future platforms) must follow these conventions to ensure consistency, maintainability, and safety in embedded systems development.
 
 
 
@@ -2076,6 +2076,142 @@ error_handler_record_error((handler), (code), (desc),  \
 __FILE__, __LINE__, __func__);  \
 } while (0)
 \end{lstlisting}
+
+\subsection{Explicit Type Usage - Always Use Fixed-Width Integer Types}
+
+\textbf{CRITICAL RULE}: Never use implicit types like \texttt{int}, \texttt{char}, \texttt{short}, or \texttt{long}. Always use explicit fixed-width types from \texttt{<stdint.h>}.
+
+\subsubsection{Why Explicit Types Matter}
+
+\begin{itemize}
+    \item \textbf{Platform Independence}: \texttt{int} can be 16-bit or 32-bit depending on platform
+    \item \textbf{Clear Intent}: \texttt{uint32\_t} explicitly shows the variable is unsigned and 32-bit
+    \item \textbf{Prevents Bugs}: Implicit integer promotion and sign extension bugs are avoided
+    \item \textbf{Embedded Safety}: Embedded systems require precise control over data sizes
+    \item \textbf{Code Portability}: Code works identically on ESP32, RX72N, and future platforms
+\end{itemize}
+
+\subsubsection{Correct Type Usage}
+
+\begin{lstlisting}[language=C]
+#include <stdint.h>
+#include <stdbool.h>
+
+/* CORRECT - Always use explicit fixed-width types */
+
+/* Unsigned integers */
+uint8_t   byte_value    = 0xFF;      /* 8-bit unsigned (0 to 255) */
+uint16_t  word_value    = 0xFFFF;    /* 16-bit unsigned (0 to 65535) */
+uint32_t  counter       = 0;          /* 32-bit unsigned */
+uint64_t  timestamp_us  = 0;          /* 64-bit unsigned */
+
+/* Signed integers */
+int8_t    temperature   = -40;        /* 8-bit signed (-128 to 127) */
+int16_t   offset        = -1000;      /* 16-bit signed */
+int32_t   position      = 0;          /* 32-bit signed */
+int64_t   delta_time_us = 0;          /* 64-bit signed */
+
+/* Boolean (not int!) */
+bool      is_enabled    = false;      /* Use stdbool.h */
+
+/* Size and pointer types */
+size_t    buffer_size   = 256;        /* For sizes and counts */
+uintptr_t address       = 0x20000000; /* For storing addresses */
+
+/* WRONG - Never use these implicit types */
+int       bad_counter;     /* Platform-dependent size! */
+unsigned  bad_value;       /* Ambiguous width! */
+char      bad_byte;        /* Is it signed or unsigned? */
+short     bad_small;       /* 16-bit? Not guaranteed! */
+long      bad_large;       /* 32-bit or 64-bit? Depends on platform! */
+\end{lstlisting}
+
+\subsubsection{Special Case: Characters and Strings}
+
+Only use \texttt{char} for actual character strings, never for byte data.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - char only for strings */
+const char* message = "Hello, STAR!";
+char        buffer[64];
+char        letter = 'A';
+
+/* WRONG - Don't use char for byte data */
+char data[256];  /* Should be uint8_t data[256] */
+char byte = 0xFF;  /* Should be uint8_t byte = 0xFF */
+
+/* CORRECT - uint8_t for byte data */
+uint8_t data_buffer[256];
+uint8_t byte_value = 0xFF;
+\end{lstlisting}
+
+\subsubsection{Loop Counters and Array Indices}
+
+Use \texttt{uint32\_t} or \texttt{size\_t} for loop counters and array indices.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Explicit types for loops */
+for (uint32_t i = 0; i < array_length; i++) {
+  process_element(array[i]);
+}
+
+/* For sizes from sizeof() or string length */
+for (size_t i = 0; i < buffer_size; i++) {
+  buffer[i] = 0;
+}
+
+/* WRONG - Never use int for loops */
+for (int i = 0; i < count; i++) {  /* What if count > INT_MAX? */
+  /* ... */
+}
+\end{lstlisting}
+
+\subsubsection{Function Parameters and Return Types}
+
+Always use explicit types in function signatures.
+
+\begin{lstlisting}[language=C]
+/* CORRECT - Explicit types in function signatures */
+uint32_t calculate_checksum(const uint8_t* data, size_t length);
+int32_t  read_temperature_celsius(uint8_t sensor_id);
+bool     is_motor_running(uint8_t motor_id);
+
+/* WRONG - Implicit types */
+int calculate_value(char* data, int len);  /* Ambiguous! */
+\end{lstlisting}
+
+\subsubsection{Type Casting for Enum Comparisons}
+
+When comparing enums of different types, cast to the appropriate fixed-width type.
+
+\begin{lstlisting}[language=C]
+typedef enum {
+  k_channel_0 = 0,
+  k_channel_1 = 1,
+  k_channel_max = 2,
+} channel_t;
+
+/* CORRECT - Cast to explicit type for comparison */
+if ((int32_t)channel >= k_channel_max) {
+  return ERROR_INVALID_CHANNEL;
+}
+
+/* WRONG - Direct enum comparison can trigger warnings */
+if (channel >= k_channel_max) {  /* -Werror=enum-compare */
+  return ERROR_INVALID_CHANNEL;
+}
+\end{lstlisting}
+
+\subsubsection{Summary: Type Usage Rules}
+
+\begin{itemize}
+    \item \textbf{ALWAYS}: Use \texttt{uint8\_t}, \texttt{int32\_t}, etc. from \texttt{<stdint.h>}
+    \item \textbf{NEVER}: Use \texttt{int}, \texttt{unsigned}, \texttt{short}, \texttt{long}
+    \item \textbf{ONLY}: Use \texttt{char} for actual character strings
+    \item \textbf{USE}: \texttt{bool} from \texttt{<stdbool.h>} for boolean values
+    \item \textbf{USE}: \texttt{size\_t} for sizes and counts from sizeof()
+    \item \textbf{CAST}: Enums to \texttt{int32\_t} when comparing different enum types
+\end{itemize}
 
 \subsection{True Global Variables (g\_ prefix)}
 
