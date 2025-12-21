@@ -2,12 +2,13 @@
 
 /**
  * @file main.c
- * @brief STAR RX72N Firmware - ThreadX LED Blink Example
+ * @brief STAR RX72N Firmware - ThreadX LED Blink with Full Infrastructure
  *
- * Simple ThreadX application demonstrating:
+ * Demonstrates:
  * - ThreadX kernel initialization
- * - Task creation
- * - Task delays
+ * - Full error handling and logging infrastructure
+ * - Pin validation and reservation
+ * - Error checking with RX_ERROR_CHECK macros
  * - GPIO toggling (LED blink)
  *
  * Hardware: Renesas RX72N (R5F572NNHGFP#30)
@@ -57,23 +58,38 @@ static uint8_t demo_task_stack[DEMO_TASK_STACK_SIZE];
 
 /**
  * @brief Initialize LED GPIO
+ *
+ * @return RX_OK on success, error code on failure
  */
-static void led_init(void)
+static rx_err_t led_init(void)
 {
+  rx_err_t err;
+
   /* Configure LED pin as output */
-  gpio_set_output(LED_PORT, LED_PIN);
+  err = gpio_set_output(LED_PORT, LED_PIN);
+  RX_RETURN_ON_ERROR(err, "LED", "Failed to configure LED pin as output");
 
   /* Start with LED off */
-  gpio_write_low(LED_PORT, LED_PIN);
+  err = gpio_write_low(LED_PORT, LED_PIN);
+  RX_RETURN_ON_ERROR(err, "LED", "Failed to set LED initial state");
+
+  RX_LOG_INFO("LED", "LED initialized successfully");
+
+  return RX_OK;
 }
 
 /**
  * @brief Toggle LED state
+ *
+ * @return RX_OK on success, error code on failure
  */
-static void led_toggle(void)
+static rx_err_t led_toggle(void)
 {
   /* Toggle LED GPIO pin */
-  gpio_toggle(LED_PORT, LED_PIN);
+  rx_err_t err = gpio_toggle(LED_PORT, LED_PIN);
+  RX_RETURN_ON_ERROR(err, "LED", "Failed to toggle LED");
+
+  return RX_OK;
 }
 
 /* =============================================================================
@@ -87,19 +103,26 @@ static void led_toggle(void)
  * Demonstrates:
  * - ThreadX task loop
  * - tx_thread_sleep() for delays
- * - GPIO control
+ * - GPIO control with error handling
  */
 static void led_task_entry(ULONG input)
 {
   (void)input;
 
   /* Initialize LED */
-  led_init();
+  rx_err_t err = led_init();
+  if (err != RX_OK) {
+    RX_LOG_ERROR("LED_TASK", "LED initialization failed");
+    /* Continue anyway - non-critical */
+  }
 
   /* Task loop */
   while (1) {
     /* Toggle LED */
-    led_toggle();
+    err = led_toggle();
+    if (err != RX_OK) {
+      RX_LOG_ERROR("LED_TASK", "LED toggle failed");
+    }
 
     /* Sleep for 500ms (assumes 100 ticks/sec timer) */
     tx_thread_sleep(50);
@@ -117,6 +140,8 @@ static void demo_task_entry(ULONG input)
   (void)input;
 
   ULONG counter = 0;
+
+  RX_LOG_INFO("DEMO_TASK", "Demo task started");
 
   while (1) {
     /* Increment counter */
@@ -147,30 +172,42 @@ void tx_application_define(void* first_unused_memory)
 {
   (void)first_unused_memory;
 
+  RX_LOG_INFO("THREADX", "Creating application tasks");
+
   /* Create LED blink task */
-  tx_thread_create(&led_thread,         /* Thread control block */
-                   "LED Task",          /* Thread name */
-                   led_task_entry,      /* Entry function */
-                   0,                   /* Entry input (unused) */
-                   led_task_stack,      /* Stack pointer */
-                   LED_TASK_STACK_SIZE, /* Stack size */
-                   LED_TASK_PRIORITY,   /* Priority */
-                   LED_TASK_PRIORITY,   /* Preemption threshold (same as priority) */
-                   TX_NO_TIME_SLICE,    /* No time slicing */
-                   TX_AUTO_START        /* Start immediately */
+  UINT status = tx_thread_create(&led_thread,         /* Thread control block */
+                                  "LED Task",          /* Thread name */
+                                  led_task_entry,      /* Entry function */
+                                  0,                   /* Entry input (unused) */
+                                  led_task_stack,      /* Stack pointer */
+                                  LED_TASK_STACK_SIZE, /* Stack size */
+                                  LED_TASK_PRIORITY,   /* Priority */
+                                  LED_TASK_PRIORITY, /* Preemption threshold (same as priority) */
+                                  TX_NO_TIME_SLICE,  /* No time slicing */
+                                  TX_AUTO_START      /* Start immediately */
   );
 
+  if (status != TX_SUCCESS) {
+    RX_LOG_ERROR("THREADX", "Failed to create LED task");
+  }
+
   /* Create demo task */
-  tx_thread_create(&demo_thread,
-                   "Demo Task",
-                   demo_task_entry,
-                   0,
-                   demo_task_stack,
-                   DEMO_TASK_STACK_SIZE,
-                   DEMO_TASK_PRIORITY,
-                   DEMO_TASK_PRIORITY,
-                   TX_NO_TIME_SLICE,
-                   TX_AUTO_START);
+  status = tx_thread_create(&demo_thread,
+                            "Demo Task",
+                            demo_task_entry,
+                            0,
+                            demo_task_stack,
+                            DEMO_TASK_STACK_SIZE,
+                            DEMO_TASK_PRIORITY,
+                            DEMO_TASK_PRIORITY,
+                            TX_NO_TIME_SLICE,
+                            TX_AUTO_START);
+
+  if (status != TX_SUCCESS) {
+    RX_LOG_ERROR("THREADX", "Failed to create demo task");
+  }
+
+  RX_LOG_INFO("THREADX", "Application tasks created successfully");
 }
 
 /* =============================================================================
@@ -182,25 +219,46 @@ void tx_application_define(void* first_unused_memory)
  * @brief Application entry point
  *
  * Called by startup code after hardware initialization.
- * Starts the ThreadX kernel - this function never returns.
+ * Initializes all infrastructure and starts the ThreadX kernel.
+ * This function never returns.
  */
 int main(void)
 {
-  /* Initialize RX72N hardware */
-  system_init(); /* Configure clocks (240 MHz) and peripherals */
-  timer_init();  /* Start CMT0 for ThreadX system tick (100 Hz) */
-  uart_init();   /* Initialize UART for debug output (115200 bps) */
+  rx_err_t err;
 
-  /* Send startup message */
+  /* Initialize RX72N hardware (clocks and peripherals) */
+  err = system_init();
+  RX_ERROR_CHECK(err); /* Fatal: can't continue without clocks */
+
+  /* Initialize UART first for logging */
+  err = uart_init();
+  RX_ERROR_CHECK(err); /* Fatal: can't continue without logging */
+
+  /* Now we can start logging */
   uart_puts("\r\n===========================================\r\n");
   uart_puts("STAR RX72N Firmware v1.0.0\r\n");
-  uart_puts("ThreadX RTOS Starting...\r\n");
+  uart_puts("with Full Infrastructure Integration\r\n");
   uart_puts("===========================================\r\n\r\n");
+
+  RX_LOG_INFO("MAIN", "System initialization complete");
+
+  /* Initialize global error handling and pin validation */
+  err = rx_infrastructure_init();
+  RX_ERROR_CHECK(err); /* Fatal: infrastructure is critical */
+
+  /* Initialize system tick timer */
+  err = timer_init();
+  RX_ERROR_CHECK(err); /* Fatal: ThreadX needs system tick */
+
+  /* Send ThreadX startup message */
+  RX_LOG_INFO("MAIN", "Starting ThreadX RTOS");
+  uart_puts("\r\n");
 
   /* Enter ThreadX kernel - this never returns */
   tx_kernel_enter();
 
   /* Should never reach here */
+  RX_LOG_ERROR("MAIN", "ThreadX kernel exited unexpectedly");
   while (1) {
     __asm__ volatile("wait");
   }

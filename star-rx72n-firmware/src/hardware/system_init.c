@@ -10,6 +10,8 @@
  * - Interrupt controller
  */
 
+#include "hardware.h"
+
 #include <stdint.h>
 
 #include "rx72n_regs.h"
@@ -29,8 +31,10 @@
  * - PCLKA: 120 MHz
  * - PCLKB/C/D: 60 MHz
  * - FCLK (Flash): 60 MHz
+ *
+ * @return RX_OK on success
  */
-void clock_init(void)
+static rx_err_t clock_init(void)
 {
   /* Protect off for clock registers */
   SYSTEM.PRCR = 0xA50F;
@@ -54,8 +58,16 @@ void clock_init(void)
   SYSTEM.PLLCR2 = 0x00;   /* Enable PLL */
 
   /* Wait for PLL stabilization */
-  while ((SYSTEM.OSCOVFSR & 0x04) == 0) {
+  uint32_t timeout = 1000000;
+  while ((SYSTEM.OSCOVFSR & 0x04) == 0 && timeout > 0) {
+    timeout--;
     /* Wait for PLL stable */
+  }
+
+  if (timeout == 0) {
+    /* PLL failed to stabilize - but can't log yet (UART not initialized) */
+    SYSTEM.PRCR = 0xA500;
+    return RX_ERR_HW_TIMEOUT;
   }
 
   /* Configure system clocks */
@@ -68,6 +80,8 @@ void clock_init(void)
 
   /* Protect on */
   SYSTEM.PRCR = 0xA500;
+
+  return RX_OK;
 }
 
 /* =============================================================================
@@ -83,8 +97,10 @@ void clock_init(void)
  * - SCI5 (UART debug)
  * - MTU (motor PWM)
  * - S12AD (ADC)
+ *
+ * @return RX_OK on success
  */
-void module_stop_init(void)
+static rx_err_t module_stop_init(void)
 {
   /* Protect off */
   SYSTEM.PRCR = 0xA50F;
@@ -106,6 +122,8 @@ void module_stop_init(void)
 
   /* Protect on */
   SYSTEM.PRCR = 0xA500;
+
+  return RX_OK;
 }
 
 /* =============================================================================
@@ -117,12 +135,26 @@ void module_stop_init(void)
  * @brief Initialize RX72N system
  *
  * Call this early in startup, before ThreadX initialization.
+ *
+ * @return RX_OK on success, error code on failure
  */
-void system_init(void)
+rx_err_t system_init(void)
 {
   /* Initialize clock to 240 MHz */
-  clock_init();
+  rx_err_t err = clock_init();
+  if (err != RX_OK) {
+    /* Can't log - UART not initialized yet */
+    return err;
+  }
 
   /* Enable peripheral modules */
-  module_stop_init();
+  err = module_stop_init();
+  if (err != RX_OK) {
+    /* Can't log - UART not initialized yet */
+    return err;
+  }
+
+  /* System init complete - but still can't log until UART is initialized */
+
+  return RX_OK;
 }
