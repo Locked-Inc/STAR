@@ -19,6 +19,15 @@
  * - Check estop: ~20μs
  * Total: ~340μs (8.5% of 4ms period)
  *
+ * Current Implementation Status:
+ * - [x] 250Hz PID velocity control
+ * - [x] Hardware encoder feedback (MTU phase counting)
+ * - [x] Thread-safe shared state (mutex-protected)
+ * - [x] Emergency stop support
+ * - [ ] Motor current sensing (hardware ready, software pending)
+ * - [ ] Current-based fault detection
+ * - [ ] Battery management system integration
+ *
  * @date 2025-12-21
  * @copyright Copyright (c) 2025 STAR Project
  */
@@ -126,7 +135,7 @@ rx_err_t motor_control_task_create(motor_shared_state_t* shared_state,
   /* Create semaphore for 250Hz timing */
   UINT status = tx_semaphore_create(&s_control_loop_semaphore, "motor_ctrl_sem", 0);
   if (status != TX_SUCCESS) {
-    RX_LOG_ERROR(s_tag, "Error occurred");
+    rx_log_error_int(s_tag, "Failed to create motor control semaphore, status", (int32_t)status);
     return RX_ERR_INVALID_STATE;
   }
 
@@ -140,7 +149,7 @@ rx_err_t motor_control_task_create(motor_shared_state_t* shared_state,
 
   rx_err_t err = rx_cmt_init(k_cmt_channel_1, &cmt_config);
   if (err != RX_OK) {
-    RX_LOG_ERROR(s_tag, "Error occurred");
+    rx_log_error_int(s_tag, "Failed to initialize CMT1 for 250Hz timing, err", (int32_t)err);
     tx_semaphore_delete(&s_control_loop_semaphore);
     return err;
   }
@@ -158,7 +167,7 @@ rx_err_t motor_control_task_create(motor_shared_state_t* shared_state,
                             TX_AUTO_START);
 
   if (status != TX_SUCCESS) {
-    RX_LOG_ERROR(s_tag, "Error occurred");
+    rx_log_error_int(s_tag, "Failed to create motor control thread, status", (int32_t)status);
     rx_cmt_deinit(k_cmt_channel_1);
     tx_semaphore_delete(&s_control_loop_semaphore);
     return RX_ERR_INVALID_STATE;
@@ -196,13 +205,13 @@ static void internal_motor_control_loop(motor_task_params_t* params)
   memset(encoder_states, 0, sizeof(encoder_states));
   memset(setpoints_mps, 0, sizeof(setpoints_mps));
 
-  RX_LOG_INFO(s_tag, "Info");
+  RX_LOG_INFO(s_tag, "Motor control loop initialized (250Hz, 4ms period)");
 
   while (true) {
     /* Wait for 250Hz timer (CMT1 callback posts semaphore) */
     UINT status = tx_semaphore_get(&s_control_loop_semaphore, TX_WAIT_FOREVER);
     if (status != TX_SUCCESS) {
-      RX_LOG_ERROR(s_tag, "Error occurred");
+      rx_log_error_int(s_tag, "Failed to wait for control loop semaphore, status", (int32_t)status);
       continue;
     }
 
@@ -210,14 +219,14 @@ static void internal_motor_control_loop(motor_task_params_t* params)
     for (int32_t i = 0; i < k_motor_count; i++) {
       rx_err_t err = rx_encoder_read_count(params->encoder_channels[i], &encoder_states[i]);
       if (err != RX_OK) {
-        RX_LOG_WARN(s_tag, "Warning");
+        rx_log_warn_int(s_tag, "Failed to read encoder count for motor", i);
         /* Continue with last known values */
       }
 
       /* Calculate velocity in RPM */
       err = rx_encoder_read_velocity(params->encoder_channels[i], dt_s, &velocities_rpm[i]);
       if (err != RX_OK) {
-        RX_LOG_WARN(s_tag, "Warning");
+        rx_log_warn_int(s_tag, "Failed to read encoder velocity for motor, using 0 RPM", i);
         velocities_rpm[i] = 0.0f;
       }
     }
@@ -230,7 +239,7 @@ static void internal_motor_control_loop(motor_task_params_t* params)
       rx_err_t err = motor_shared_state_get_velocity(params->shared_state, i, &setpoints_mps[i]);
       if (err != RX_OK) {
         /* On timeout, use last known setpoint (already in setpoints_mps) */
-        RX_LOG_DEBUG(s_tag, "Debug");
+        rx_log_warn_int(s_tag, "Mutex timeout reading velocity setpoint for motor, using last known", i);
       }
     }
 
@@ -240,7 +249,7 @@ static void internal_motor_control_loop(motor_task_params_t* params)
         rx_pid_compute(&params->pids[i], setpoints_mps[i], velocities_mps[i], dt_s, &outputs[i]);
 
       if (err != RX_OK) {
-        RX_LOG_WARN(s_tag, "Warning");
+        rx_log_warn_int(s_tag, "PID computation failed for motor, using 0 percent duty", i);
         outputs[i] = 0.0f; /* Safe fallback */
       }
     }
@@ -249,7 +258,7 @@ static void internal_motor_control_loop(motor_task_params_t* params)
     for (int32_t i = 0; i < k_motor_count; i++) {
       rx_err_t err = rx_motor_set_duty(&params->motors[i], outputs[i]);
       if (err != RX_OK) {
-        RX_LOG_WARN(s_tag, "Warning");
+        rx_log_warn_int(s_tag, "Failed to set duty cycle for motor", i);
       }
     }
 
@@ -265,11 +274,27 @@ static void internal_motor_control_loop(motor_task_params_t* params)
       }
 
       /* Update status (ignore timeout - not critical) */
+      /*
+       * Current Sensing: Not yet implemented
+       *
+       * Hardware: DRV8243 IPROPI pins connected to RX72N S12ADFa ADC channels 0-3
+       * ADC channels configured in hardware_config.h (k_motor_0_ipropi_ch, etc.)
+       *
+       * Implementation plan:
+       * 1. Add rx_drv8243_read_current() function to rx_drv8243 library
+       * 2. Function should use rx_bus_manager to read ADC via bus abstraction
+       * 3. Convert ADC reading to milliamps using DRV8243 IPROPI scaling:
+       *    - IPROPI = IOUT / 2000 (per DRV8243 datasheet)
+       *    - Measure ADC voltage, multiply by 2000 to get current
+       * 4. Call rx_drv8243_read_current() here in control loop
+       *
+       * For now, report 0.0 mA current (safe default - no overcurrent false alarms)
+       */
       motor_shared_state_set_status(params->shared_state,
                                     i,
                                     velocities_mps[i],
                                     outputs[i],
-                                    0.0f, /* TODO: Add current sensing via rx_drv8243 */
+                                    0.0f,  /* Current: not implemented yet, see comment above */
                                     motor_state);
     }
 
