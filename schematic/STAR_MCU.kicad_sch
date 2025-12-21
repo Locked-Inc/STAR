@@ -6644,12 +6644,6 @@
 		(uuid "04a0307a-3d19-4fdb-acfb-e4292b227b49")
 	)
 	(junction
-		(at 101.6 134.62)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "05e3f212-3a0e-4574-982a-1af50c7bac93")
-	)
-	(junction
 		(at 27.94 163.83)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -6738,12 +6732,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "31ce8a10-da90-44cb-80db-16d1c88e3705")
-	)
-	(junction
-		(at 101.6 124.46)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "3729e140-75fa-4bb9-bc27-18970a527043")
 	)
 	(junction
 		(at 24.13 196.85)
@@ -6973,12 +6961,6 @@
 		(color 0 0 0 0)
 		(uuid "f354fa4c-d989-4aa1-90bb-aad98a913bc9")
 	)
-	(junction
-		(at 102.87 127)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "f94bdfcc-7ad7-4513-87db-c234789ab198")
-	)
 	(no_connect
 		(at 106.68 137.16)
 		(uuid "107599c4-bf78-4b22-ae8e-647e69f53e05")
@@ -7008,7 +6990,7 @@
 		(uuid "5cb73049-22c4-4ff9-b383-b180c8eef6e8")
 	)
 	(no_connect
-		(at 101.6 144.78)
+		(at 106.68 144.78)
 		(uuid "67ded7c2-5dac-4c6a-bf7c-18eb686d35a9")
 	)
 	(no_connect
@@ -7440,16 +7422,6 @@
 			(type default)
 		)
 		(uuid "217d5c44-8891-4ecb-acfb-c97a0baa74ca")
-	)
-	(wire
-		(pts
-			(xy 102.87 127) (xy 106.68 127)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "21e7b5f1-2be2-431b-9aa0-cb21068a0b1b")
 	)
 	(wire
 		(pts
@@ -8113,16 +8085,6 @@
 	)
 	(wire
 		(pts
-			(xy 106.68 124.46) (xy 101.6 124.46)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "566e540f-3707-4c55-ab30-56a1cd5eb620")
-	)
-	(wire
-		(pts
 			(xy 201.93 36.83) (xy 238.76 36.83)
 		)
 		(stroke
@@ -8283,7 +8245,7 @@
 	)
 	(wire
 		(pts
-			(xy 87.63 134.62) (xy 101.6 134.62)
+			(xy 87.63 134.62) (xy 106.68 134.62)
 		)
 		(stroke
 			(width 0)
@@ -8363,26 +8325,6 @@
 	)
 	(wire
 		(pts
-			(xy 106.68 142.24) (xy 101.6 142.24)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "6a2b679e-af55-499c-add9-f237beb17bb1")
-	)
-	(wire
-		(pts
-			(xy 106.68 134.62) (xy 101.6 134.62)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "6b38b7ec-eeca-4a81-aaba-b7a3e4adb6c0")
-	)
-	(wire
-		(pts
 			(xy 29.21 48.26) (xy 73.66 48.26)
 		)
 		(stroke
@@ -8420,16 +8362,6 @@
 			(type default)
 		)
 		(uuid "6c4527b9-25fd-4b2c-b6de-f5e0ffbb4cab")
-	)
-	(wire
-		(pts
-			(xy 106.68 129.54) (xy 101.6 129.54)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "6c564aa1-08ff-4c77-96cd-15c6912b95ec")
 	)
 	(wire
 		(pts
@@ -9093,16 +9025,6 @@
 	)
 	(wire
 		(pts
-			(xy 106.68 137.16) (xy 101.6 137.16)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "9bd8a31d-52d9-4469-9f7c-2d559bdbe8e0")
-	)
-	(wire
-		(pts
 			(xy 254 82.55) (xy 298.45 82.55)
 		)
 		(stroke
@@ -9113,7 +9035,7 @@
 	)
 	(wire
 		(pts
-			(xy 102.87 127) (xy 101.6 127)
+			(xy 102.87 127) (xy 106.68 127)
 		)
 		(stroke
 			(width 0)
@@ -9903,16 +9825,6 @@
 	)
 	(wire
 		(pts
-			(xy 106.68 139.7) (xy 101.6 139.7)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "dd8509c6-d84b-4460-92c7-0244a1a54e5b")
-	)
-	(wire
-		(pts
 			(xy 24.13 196.85) (xy 45.72 196.85)
 		)
 		(stroke
@@ -9943,7 +9855,7 @@
 	)
 	(wire
 		(pts
-			(xy 87.63 124.46) (xy 101.6 124.46)
+			(xy 87.63 124.46) (xy 106.68 124.46)
 		)
 		(stroke
 			(width 0)
@@ -10223,7 +10135,7 @@
 	)
 	(wire
 		(pts
-			(xy 87.63 132.08) (xy 101.6 132.08)
+			(xy 87.63 132.08) (xy 106.68 132.08)
 		)
 		(stroke
 			(width 0)
@@ -14094,7 +14006,7 @@
 	)
 	(symbol
 		(lib_id "PCM_4ms_Connector:Conn_01x09")
-		(at 106.68 134.62 0)
+		(at 111.76 134.62 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -14103,7 +14015,7 @@
 		(fields_autoplaced yes)
 		(uuid "1e5e2ca7-466e-4728-9f93-aa7db8acd4bb")
 		(property "Reference" "J9"
-			(at 109.22 133.3499 0)
+			(at 114.3 133.3499 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14112,7 +14024,7 @@
 			)
 		)
 		(property "Value" "Conn_01x09"
-			(at 109.22 135.8899 0)
+			(at 114.3 135.8899 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14121,7 +14033,7 @@
 			)
 		)
 		(property "Footprint" "4ms_Connector:Pins_1x09_2.54mm_TH"
-			(at 107.95 156.21 0)
+			(at 113.03 156.21 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14130,7 +14042,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 106.68 135.89 0)
+			(at 111.76 135.89 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14139,7 +14051,7 @@
 			)
 		)
 		(property "Description" "HEADER 1x9 MALE PINS 0.100” 180deg"
-			(at 106.68 134.62 0)
+			(at 111.76 134.62 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14148,7 +14060,7 @@
 			)
 		)
 		(property "Specifications" "HEADER 1x6 MALE PINS 0.100” 180deg"
-			(at 106.045 154.305 0)
+			(at 111.125 154.305 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14158,7 +14070,7 @@
 			)
 		)
 		(property "Manufacturer" "TAD"
-			(at 105.41 151.13 0)
+			(at 110.49 151.13 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14168,7 +14080,7 @@
 			)
 		)
 		(property "Part Number" "1-0901FBV0T"
-			(at 106.045 153.035 0)
+			(at 111.125 153.035 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14178,7 +14090,7 @@
 			)
 		)
 		(property "DigiKey Link" "https://www.digikey.com/short/0chbnz0n"
-			(at 106.68 134.62 0)
+			(at 111.76 134.62 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14187,7 +14099,7 @@
 			)
 		)
 		(property "DigiKey Part Number" "732-5322-ND"
-			(at 106.68 134.62 0)
+			(at 111.76 134.62 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14196,7 +14108,7 @@
 			)
 		)
 		(property "DigiKey Price per Unit" "0.39"
-			(at 106.68 134.62 0)
+			(at 111.76 134.62 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14205,7 +14117,7 @@
 			)
 		)
 		(property "Manufactaurer Part Number" "61300911121"
-			(at 106.68 134.62 0)
+			(at 111.76 134.62 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14214,7 +14126,7 @@
 			)
 		)
 		(property "Mouser Link" "https://mou.sr/48TuddL"
-			(at 106.68 134.62 0)
+			(at 111.76 134.62 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14223,7 +14135,7 @@
 			)
 		)
 		(property "Mouser Part Number" "710-61300911121"
-			(at 106.68 134.62 0)
+			(at 111.76 134.62 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14232,7 +14144,7 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.43"
-			(at 106.68 134.62 0)
+			(at 111.76 134.62 0)
 			(effects
 				(font
 					(size 1.27 1.27)
