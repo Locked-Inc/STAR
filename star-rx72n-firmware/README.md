@@ -1,6 +1,6 @@
-# STAR RX72M Firmware
+# STAR RX72N Firmware
 
-ThreadX-based motor control firmware for Renesas RX72M (R5F572MNDDFC#30).
+ThreadX-based motor control firmware for Renesas RX72N (R5F572NNHGFP#30).
 
 ## Architecture
 
