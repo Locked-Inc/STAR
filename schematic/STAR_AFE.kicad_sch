@@ -24433,7 +24433,7 @@
 		)
 	)
 	(symbol
-		(lib_id "PTVS14VP1UP,115:PTVS14VP1UP,115")
+		(lib_id "PTVS14VP1UP-115:PTVS14VP1UP,115")
 		(at 218.44 200.66 90)
 		(unit 1)
 		(exclude_from_sim no)
@@ -24459,7 +24459,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "PTVS14VP1UP,115:PMEG3050EP115"
+		(property "Footprint" "PTVS14VP1UP-115:PMEG3050EP115"
 			(at 312.09 190.5 0)
 			(effects
 				(font
@@ -38038,7 +38038,7 @@
 		)
 	)
 	(symbol
-		(lib_id "PTVS14VP1UP,115:PTVS14VP1UP,115")
+		(lib_id "PTVS14VP1UP-115:PTVS14VP1UP,115")
 		(at 156.21 200.66 90)
 		(unit 1)
 		(exclude_from_sim no)
@@ -38064,7 +38064,7 @@
 				(justify right)
 			)
 		)
-		(property "Footprint" "PTVS14VP1UP,115:PMEG3050EP115"
+		(property "Footprint" "PTVS14VP1UP-115:PMEG3050EP115"
 			(at 249.86 190.5 0)
 			(effects
 				(font

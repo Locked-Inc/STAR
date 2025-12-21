@@ -4577,7 +4577,7 @@
 			)
 		)
 	)
-	(footprint "PTVS14VP1UP,115:PMEG3050EP115"
+	(footprint "PTVS14VP1UP-115:PMEG3050EP115"
 		(layer "F.Cu")
 		(uuid "0c5570e6-91f5-488b-aa0a-af42f6d0bc8b")
 		(at 182.75 87.5 90)
@@ -44793,7 +44793,7 @@
 			)
 		)
 	)
-	(footprint "PTVS14VP1UP,115:PMEG3050EP115"
+	(footprint "PTVS14VP1UP-115:PMEG3050EP115"
 		(layer "F.Cu")
 		(uuid "b970f509-7675-4b96-897d-a9b69ee73589")
 		(at 173.75 93.25 180)

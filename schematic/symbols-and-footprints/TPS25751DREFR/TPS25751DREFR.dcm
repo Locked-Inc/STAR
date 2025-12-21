@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP TPS25751DREFR
+D USB Interface IC USB Type-C and USB Power Delivery (PD) controller with integrated power switches , 3V ~ 3.6V, 4.9V ~ 5.5V, 4V ~ 22V , -40C ~ 125C (TJ) , 3mA , 38-WQFN (4x6)
+K
+F https://www.ti.com/lit/gpn/TPS25751
+$ENDCMP
+#
+#End Doc Library
