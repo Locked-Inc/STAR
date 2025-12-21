@@ -79,6 +79,11 @@ set(SOURCES
     src/hardware/timer.c
     src/hardware/uart.c
 
+    # Core infrastructure (ESP32 pattern adaptation)
+    src/core/rx_error_handler.c
+    src/core/rx_pin_validator.c
+    src/core/rx_bus_manager.c
+
     # ThreadX tasks (will be added)
     # src/tasks/motor_control_task.c
     # src/tasks/spi_task.c
