@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP PESD5V0U1BLD,315
+D PESD5V0U1BLD - Ultra low capacitance bidirectional ESD protection diode
+K
+F https://assets.nexperia.com/documents/data-sheet/PESD5V0U1BLD.pdf
+$ENDCMP
+#
+#End Doc Library
