@@ -31,7 +31,13 @@
  */
 
 /* Disable unused features to save Flash/RAM */
-#define TX_DISABLE_ERROR_CHECKING       /* Remove parameter checking */
+/* Disable error checking in release builds for performance.
+ * In debug builds, error checking is enabled (see DEBUG section below)
+ * to catch parameter validation errors during development.
+ */
+#ifndef DEBUG
+#define TX_DISABLE_ERROR_CHECKING /* Remove parameter checking in release */
+#endif
 #define TX_DISABLE_PREEMPTION_THRESHOLD /* Disable preemption threshold */
 #define TX_DISABLE_REDUNDANT_CLEARING   /* Don't clear control blocks */
 #define TX_DISABLE_NOTIFY_CALLBACKS     /* Disable notify callbacks */

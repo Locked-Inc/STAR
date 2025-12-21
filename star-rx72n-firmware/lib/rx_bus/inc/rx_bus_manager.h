@@ -26,6 +26,7 @@
 #ifndef STAR_RX72N_BUS_MANAGER_H
 #define STAR_RX72N_BUS_MANAGER_H
 
+#include "rx_bus_command.h"
 #include "rx_bus_types.h"
 #include "rx_err.h"
 
@@ -158,6 +159,56 @@ rx_err_t rx_bus_manager_with_bus(rx_bus_manager_t* manager,
                                  const char*       name,
                                  rx_bus_callback_t callback,
                                  void*             user_ctx);
+
+/* =============================================================================
+ * Command Pattern Interface (Recommended for new code)
+ * =============================================================================
+ */
+
+/**
+ * @brief Execute a command on a bus (Command Pattern)
+ *
+ * This is the RECOMMENDED interface for implementing new bus operations.
+ * It provides better OCP compliance by allowing new operations to be added
+ * without modifying the bus manager internals.
+ *
+ * The command pattern approach:
+ * 1. Encapsulates operations as command objects
+ * 2. Allows operations to be extended without modifying bus manager
+ * 3. Provides consistent interface for all bus operations
+ * 4. Maintains thread safety via mutex
+ *
+ * @param[in] manager Bus manager instance
+ * @param[in] name Bus name to execute command on
+ * @param[in,out] command Command to execute (result stored in command->result)
+ *
+ * @return RX_OK on success
+ * @return RX_ERR_NULL_POINTER if manager, name, or command is NULL
+ * @return RX_ERR_NOT_FOUND if bus not found
+ * @return RX_ERR_TIMEOUT if mutex timeout
+ * @return Command execution result (stored in command->result)
+ *
+ * Example usage:
+ * @code
+ * // Define command data
+ * gpio_write_data_t data = { .value = true };
+ *
+ * // Create and initialize command
+ * rx_bus_command_t cmd;
+ * rx_bus_command_init(&cmd, gpio_write_execute, &data);
+ *
+ * // Execute command
+ * rx_err_t err = rx_bus_manager_execute_command(manager, "led", &cmd);
+ * if (err == RX_OK) {
+ *   // Command executed, check cmd.result for operation-specific result
+ * }
+ * @endcode
+ *
+ * @see rx_bus_command.h for command pattern documentation
+ */
+rx_err_t rx_bus_manager_execute_command(rx_bus_manager_t* manager,
+                                        const char*       name,
+                                        rx_bus_command_t* command);
 
 #ifdef __cplusplus
 }

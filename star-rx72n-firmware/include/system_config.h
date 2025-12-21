@@ -93,12 +93,21 @@ typedef enum {
 } control_loop_performance_t;
 
 /* =============================================================================
+ * Future Feature Configuration
+ *
+ * The following configurations are defined for planned features not yet
+ * implemented. They serve as documentation of the intended system architecture.
+ * =============================================================================
+ */
+
+/* =============================================================================
  * Safety and Fault Handling
  * =============================================================================
  */
 
 /**
  * @brief Emergency stop configuration
+ * @note Future feature - E-stop hardware interface not yet implemented
  */
 typedef enum {
   k_estop_debounce_ms       = 50,   /**< E-stop button debounce time */
@@ -108,6 +117,7 @@ typedef enum {
 
 /**
  * @brief Fault detection thresholds
+ * @note Future feature - Fault monitoring system not yet implemented
  */
 typedef enum {
   k_fault_encoder_timeout_ms  = 100,   /**< Encoder read timeout */
@@ -119,6 +129,7 @@ typedef enum {
 
 /**
  * @brief Fault recovery behavior
+ * @note Future feature - Automatic fault recovery not yet implemented
  */
 typedef enum {
   k_fault_auto_recovery_enabled = 1,    /**< Enable automatic fault recovery */
@@ -133,6 +144,7 @@ typedef enum {
 
 /**
  * @brief SPI communication parameters (Raspberry Pi)
+ * @note Future feature - SPI communication with RPi5 not yet implemented
  */
 typedef enum {
   k_spi_clock_hz        = 10000000, /**< 10 MHz SPI clock */
@@ -143,6 +155,7 @@ typedef enum {
 
 /**
  * @brief UART debug console parameters
+ * @note Future feature - Buffered UART communication not yet implemented
  */
 typedef enum {
   k_uart_baud_rate      = 115200, /**< 115200 baud */
@@ -152,6 +165,7 @@ typedef enum {
 
 /**
  * @brief I2C/SMBUS parameters (BMS)
+ * @note Future feature - I2C/SMBUS battery management not yet implemented
  */
 typedef enum {
   k_i2c_clock_hz     = 100000, /**< 100 kHz I2C clock */
@@ -172,24 +186,27 @@ typedef enum {
  * - 4-7: Medium priority (communication)
  * - 8-11: High priority (motor control, safety)
  * - 12-15: Critical (emergency stop, fault handling)
+ *
+ * @note Only motor_control task is currently implemented
  */
 typedef enum {
-  k_task_priority_motor_control   = 10, /**< Motor control task */
-  k_task_priority_command_handler = 8,  /**< Command handler task */
-  k_task_priority_telemetry       = 5,  /**< Telemetry reporting task */
-  k_task_priority_bms             = 7,  /**< Battery management task */
-  k_task_priority_fault_monitor   = 12, /**< Fault monitoring task */
+  k_task_priority_motor_control   = 10, /**< Motor control task (implemented) */
+  k_task_priority_command_handler = 8,  /**< Command handler task (future) */
+  k_task_priority_telemetry       = 5,  /**< Telemetry reporting task (future) */
+  k_task_priority_bms             = 7,  /**< Battery management task (future) */
+  k_task_priority_fault_monitor   = 12, /**< Fault monitoring task (future) */
 } task_priority_config_t;
 
 /**
  * @brief Task stack sizes (bytes)
+ * @note Only motor_control task is currently implemented
  */
 typedef enum {
-  k_task_stack_motor_control   = 4096, /**< Motor control task */
-  k_task_stack_command_handler = 4096, /**< Command handler task */
-  k_task_stack_telemetry       = 2048, /**< Telemetry task */
-  k_task_stack_bms             = 2048, /**< BMS task */
-  k_task_stack_fault_monitor   = 2048, /**< Fault monitor task */
+  k_task_stack_motor_control   = 4096, /**< Motor control task (implemented) */
+  k_task_stack_command_handler = 4096, /**< Command handler task (future) */
+  k_task_stack_telemetry       = 2048, /**< Telemetry task (future) */
+  k_task_stack_bms             = 2048, /**< BMS task (future) */
+  k_task_stack_fault_monitor   = 2048, /**< Fault monitor task (future) */
 } task_stack_config_t;
 
 /**
@@ -207,6 +224,7 @@ typedef enum {
 
 /**
  * @brief Telemetry reporting rates (Hz)
+ * @note Future feature - Telemetry reporting not yet implemented
  */
 typedef enum {
   k_telemetry_motor_status_hz   = 10, /**< Motor status @ 10 Hz */
@@ -216,6 +234,7 @@ typedef enum {
 
 /**
  * @brief Logging configuration
+ * @note Future feature - Structured logging system not yet implemented
  */
 typedef enum {
   k_log_level_default = 3,    /**< 0=ERROR, 1=WARN, 2=INFO, 3=DEBUG */
@@ -230,6 +249,7 @@ typedef enum {
 
 /**
  * @brief Battery monitoring thresholds
+ * @note Future feature - Battery monitoring not yet implemented
  */
 typedef enum {
   k_battery_voltage_nominal_mv  = 14800, /**< 14.8V nominal (4S LiPo) */
@@ -240,6 +260,7 @@ typedef enum {
 
 /**
  * @brief Battery capacity and SOC
+ * @note Future feature - State of charge tracking not yet implemented
  */
 typedef enum {
   k_battery_capacity_mah         = 5000, /**< 5000 mAh nominal capacity */
@@ -249,6 +270,7 @@ typedef enum {
 
 /**
  * @brief Charging configuration
+ * @note Future feature - Battery charging control not yet implemented
  */
 typedef enum {
   k_charge_current_max_ma    = 2000,  /**< 2A max charge current */
@@ -263,6 +285,7 @@ typedef enum {
 
 /**
  * @brief Watchdog timer configuration
+ * @note Future feature - Watchdog monitoring not yet implemented
  */
 typedef enum {
   k_watchdog_timeout_ms = 1000, /**< 1 second watchdog timeout */
@@ -271,6 +294,7 @@ typedef enum {
 
 /**
  * @brief Stack overflow detection
+ * @note Future feature - Stack monitoring not yet implemented
  */
 typedef enum {
   k_stack_check_enabled   = 1,   /**< Enable stack checking */

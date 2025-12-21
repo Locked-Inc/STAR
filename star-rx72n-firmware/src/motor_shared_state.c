@@ -39,10 +39,10 @@ rx_err_t motor_shared_state_init(motor_shared_state_t* state)
     state->state[i] = k_motor_state_idle;
   }
 
-  /* Create mutex for thread safety */
-  UINT status = tx_mutex_create(&state->mutex, "motor_state_mutex", TX_NO_INHERIT);
+  /* Create mutex for thread safety with priority inheritance to prevent priority inversion */
+  UINT status = tx_mutex_create(&state->mutex, "motor_state_mutex", TX_INHERIT);
   if (status != TX_SUCCESS) {
-    RX_LOG_ERROR(s_tag, "Error occurred");
+    rx_log_error_int(s_tag, "Failed to create motor shared state mutex, status", (int32_t)status);
     return RX_ERR_INVALID_STATE;
   }
 
@@ -57,14 +57,14 @@ motor_shared_state_set_velocity(motor_shared_state_t* state, uint8_t motor_idx, 
   RX_CHECK_NULL_PTR(state, s_tag, "state pointer is NULL");
 
   if (motor_idx >= k_motor_count) {
-    RX_LOG_ERROR(s_tag, "Error occurred");
+    rx_log_error_int(s_tag, "Invalid motor index", motor_idx);
     return RX_ERR_INVALID_ARG;
   }
 
   /* Take mutex with write timeout */
   UINT status = tx_mutex_get(&state->mutex, k_mutex_timeout_write_ticks);
   if (status != TX_SUCCESS) {
-    RX_LOG_WARN(s_tag, "Warning");
+    rx_log_warn_int(s_tag, "Mutex timeout setting velocity for motor", motor_idx);
     return RX_ERR_TIMEOUT;
   }
 
@@ -85,14 +85,14 @@ rx_err_t motor_shared_state_get_velocity(motor_shared_state_t* state,
   RX_CHECK_NULL_PTR(out_velocity_mps, s_tag, "out_velocity_mps pointer is NULL");
 
   if (motor_idx >= k_motor_count) {
-    RX_LOG_ERROR(s_tag, "Error occurred");
+    rx_log_error_int(s_tag, "Invalid motor index", motor_idx);
     return RX_ERR_INVALID_ARG;
   }
 
   /* Take mutex with short read timeout (control loop) */
   UINT status = tx_mutex_get(&state->mutex, k_mutex_timeout_read_ticks);
   if (status != TX_SUCCESS) {
-    RX_LOG_WARN(s_tag, "Warning");
+    rx_log_warn_int(s_tag, "Mutex timeout getting velocity for motor", motor_idx);
     return RX_ERR_TIMEOUT;
   }
 
@@ -115,14 +115,14 @@ rx_err_t motor_shared_state_set_status(motor_shared_state_t* state,
   RX_CHECK_NULL_PTR(state, s_tag, "state pointer is NULL");
 
   if (motor_idx >= k_motor_count) {
-    RX_LOG_ERROR(s_tag, "Error occurred");
+    rx_log_error_int(s_tag, "Invalid motor index", motor_idx);
     return RX_ERR_INVALID_ARG;
   }
 
   /* Take mutex with read timeout (called from control loop) */
   UINT status = tx_mutex_get(&state->mutex, k_mutex_timeout_read_ticks);
   if (status != TX_SUCCESS) {
-    RX_LOG_WARN(s_tag, "Warning");
+    rx_log_warn_int(s_tag, "Mutex timeout setting status for motor", motor_idx);
     return RX_ERR_TIMEOUT;
   }
 
@@ -152,14 +152,14 @@ rx_err_t motor_shared_state_get_status(motor_shared_state_t* state,
   RX_CHECK_NULL_PTR(out_motor_state, s_tag, "out_motor_state pointer is NULL");
 
   if (motor_idx >= k_motor_count) {
-    RX_LOG_ERROR(s_tag, "Error occurred");
+    rx_log_error_int(s_tag, "Invalid motor index", motor_idx);
     return RX_ERR_INVALID_ARG;
   }
 
   /* Take mutex with write timeout */
   UINT status = tx_mutex_get(&state->mutex, k_mutex_timeout_write_ticks);
   if (status != TX_SUCCESS) {
-    RX_LOG_WARN(s_tag, "Warning");
+    rx_log_warn_int(s_tag, "Mutex timeout getting status for motor", motor_idx);
     return RX_ERR_TIMEOUT;
   }
 
@@ -192,7 +192,11 @@ rx_err_t motor_shared_state_set_estop(motor_shared_state_t* state, bool active)
   /* Release mutex */
   tx_mutex_put(&state->mutex);
 
-  RX_LOG_INFO(s_tag, "Info");
+  if (active) {
+    RX_LOG_INFO(s_tag, "Emergency stop activated");
+  } else {
+    RX_LOG_INFO(s_tag, "Emergency stop deactivated");
+  }
 
   return RX_OK;
 }
