@@ -66,69 +66,6 @@ else()
 endif()
 
 # =============================================================================
-# Source Files
-# =============================================================================
-
-set(SOURCES
-    src/main.c
-    src/hardware/startup_rx72n.S
-
-    # Hardware initialization
-    src/hardware/system_init.c
-    src/hardware/gpio.c
-    src/hardware/timer.c
-    src/hardware/uart.c
-    src/hardware/adc.c              # S12AD ADC peripheral
-    src/hardware/riic.c             # RIIC I2C peripheral
-    src/hardware/rspi.c             # RSPI SPI peripheral
-
-    # Core infrastructure (ESP32 DIP pattern)
-    src/core/rx_infrastructure.c
-    src/core/rx_error_handler.c
-    src/core/rx_pin_validator.c
-    src/core/rx_bus_manager.c
-
-    # Bus abstractions
-    src/rx_bus_gpio.c
-    src/rx_bus_adc.c
-    src/rx_bus_i2c.c
-    src/rx_bus_smbus.c
-    src/rx_bus_config.c
-    src/rx_bus_manager.c
-
-    # RX72N peripheral drivers
-    src/drivers/rx_mtu3a.c          # MTU PWM for motors
-    src/drivers/rx_mtu_encoder.c    # MTU phase counting encoder
-    src/drivers/rx_cmt.c            # Compare Match Timer (250Hz)
-    src/drivers/rx_mpc.c            # Pin multiplexer configuration
-
-    # Motor control libraries
-    src/rx_motor.c                  # H-bridge motor control
-    src/rx_pid.c                    # PID controller
-    src/rx_drv8243.c                # DRV8243 driver integration
-
-    # Battery management system
-    src/rx_fuel_gauge.c             # Fuel gauge (SMBUS)
-    src/rx_bq25798.c                # BQ25798 charger (I2C)
-
-    # Motor control system
-    src/motor_shared_state.c        # Thread-safe shared state
-
-    # ThreadX tasks
-    src/tasks/motor_control_task.c  # 250Hz motor control loop
-)
-
-# =============================================================================
-# Include Directories
-# =============================================================================
-
-include_directories(
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/tasks
-    # ThreadX headers are added by add_subdirectory(lib/threadx)
-)
-
-# =============================================================================
 # ThreadX Integration
 # =============================================================================
 
@@ -140,15 +77,122 @@ set(THREADX_TOOLCHAIN "gnu")
 add_subdirectory(lib/threadx)
 
 # =============================================================================
+# Custom Libraries (following ESP32 structure)
+# =============================================================================
+
+# rx_core - Core infrastructure (DIP interfaces)
+# Depends on ThreadX for RTOS primitives
+add_library(rx_core STATIC
+    lib/rx_core/src/rx_error_handler.c
+    lib/rx_core/src/rx_pin_validator.c
+    lib/rx_core/src/rx_infrastructure.c
+)
+target_include_directories(rx_core PUBLIC lib/rx_core/inc)
+target_link_libraries(rx_core PUBLIC threadx)
+
+# rx_hal - Hardware Abstraction Layer
+# Depends on rx_core for error handling and logging, threadx for RTOS
+add_library(rx_hal STATIC
+    lib/rx_hal/src/startup_rx72n.S
+    lib/rx_hal/src/system_init.c
+    lib/rx_hal/src/gpio.c
+    lib/rx_hal/src/uart.c
+    lib/rx_hal/src/timer.c
+    lib/rx_hal/src/adc.c
+    lib/rx_hal/src/riic.c
+    lib/rx_hal/src/rspi.c
+    lib/rx_hal/src/rx_mtu3a.c
+    lib/rx_hal/src/rx_cmt.c
+    lib/rx_hal/src/rx_mpc.c
+)
+target_include_directories(rx_hal PUBLIC
+    lib/rx_hal/inc
+    ${CMAKE_CURRENT_SOURCE_DIR}/include  # For tx_user.h
+)
+target_link_libraries(rx_hal PUBLIC rx_core threadx)
+
+# rx_bus - Bus manager and peripherals
+add_library(rx_bus STATIC
+    lib/rx_bus/src/rx_bus_manager.c
+    lib/rx_bus/src/rx_bus_config.c
+    lib/rx_bus/src/rx_bus_gpio.c
+    lib/rx_bus/src/rx_bus_adc.c
+    lib/rx_bus/src/rx_bus_i2c.c
+    lib/rx_bus/src/rx_bus_smbus.c
+)
+target_include_directories(rx_bus PUBLIC lib/rx_bus/inc)
+target_link_libraries(rx_bus PUBLIC rx_core rx_hal)
+
+# rx_encoder - MTU encoder driver
+add_library(rx_encoder STATIC
+    lib/rx_encoder/src/rx_mtu_encoder.c
+)
+target_include_directories(rx_encoder PUBLIC lib/rx_encoder/inc)
+target_link_libraries(rx_encoder PUBLIC rx_hal rx_core)
+
+# rx_pid - PID controller (pure algorithm, no dependencies)
+add_library(rx_pid STATIC
+    lib/rx_pid/src/rx_pid.c
+)
+target_include_directories(rx_pid PUBLIC lib/rx_pid/inc)
+target_link_libraries(rx_pid PUBLIC rx_core)
+
+# rx_motor - MTU3a motor control
+add_library(rx_motor STATIC
+    lib/rx_motor/src/rx_motor.c
+)
+target_include_directories(rx_motor PUBLIC lib/rx_motor/inc)
+target_link_libraries(rx_motor PUBLIC rx_hal rx_core)
+
+# rx_drv8243 - DRV8243 driver integration
+add_library(rx_drv8243 STATIC
+    lib/rx_drv8243/src/rx_drv8243.c
+)
+target_include_directories(rx_drv8243 PUBLIC lib/rx_drv8243/inc)
+target_link_libraries(rx_drv8243 PUBLIC rx_bus rx_motor rx_core)
+
+# rx_fuel_gauge - Battery management
+add_library(rx_fuel_gauge STATIC
+    lib/rx_fuel_gauge/src/rx_fuel_gauge.c
+    lib/rx_fuel_gauge/src/rx_bq25798.c
+)
+target_include_directories(rx_fuel_gauge PUBLIC lib/rx_fuel_gauge/inc)
+target_link_libraries(rx_fuel_gauge PUBLIC rx_bus rx_core)
+
+# =============================================================================
+# Application Source Files
+# =============================================================================
+
+set(APP_SOURCES
+    src/main.c
+    src/motor_shared_state.c
+    src/tasks/motor_control_task.c
+)
+
+# =============================================================================
 # Executable Target
 # =============================================================================
 
-add_executable(${PROJECT_NAME}.elf ${SOURCES})
+add_executable(${PROJECT_NAME}.elf ${APP_SOURCES})
 
-# Link libraries
+# Application include directories
+target_include_directories(${PROJECT_NAME}.elf PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/tasks
+)
+
+# Link all libraries
 target_link_libraries(${PROJECT_NAME}.elf
     PRIVATE
     threadx
+    rx_hal
+    rx_core
+    rx_bus
+    rx_motor
+    rx_encoder
+    rx_pid
+    rx_drv8243
+    rx_fuel_gauge
 )
 
 # Linker script
@@ -181,6 +225,16 @@ message(STATUS "Flash:            ${MCU_FLASH_SIZE}")
 message(STATUS "RAM:              ${MCU_RAM_SIZE}")
 message(STATUS "Build Type:       ${CMAKE_BUILD_TYPE}")
 message(STATUS "C Compiler:       ${CMAKE_C_COMPILER}")
+message(STATUS "==============================================")
+message(STATUS "Libraries:")
+message(STATUS "  rx_hal         - Hardware abstraction (MTU, CMT, GPIO, UART)")
+message(STATUS "  rx_core        - Core infrastructure (error, logging, DIP)")
+message(STATUS "  rx_bus         - Bus manager (GPIO, ADC, I2C, SMBUS)")
+message(STATUS "  rx_motor       - Motor control (MTU3a PWM)")
+message(STATUS "  rx_encoder     - Encoder (MTU phase counting)")
+message(STATUS "  rx_pid         - PID controller")
+message(STATUS "  rx_drv8243     - DRV8243 H-bridge driver")
+message(STATUS "  rx_fuel_gauge  - Battery management (BQ25798)")
 message(STATUS "==============================================")
 
 # =============================================================================
