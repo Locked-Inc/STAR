@@ -15,6 +15,44 @@
 #include "rx_check.h"
 #include "rx_log.h"
 
+static const char* s_tag = "BUS_MANAGER";
+
+/* =============================================================================
+ * Private Helper Functions
+ * =============================================================================
+ */
+
+/**
+ * @brief Adapter callback to execute command via rx_bus_manager_with_bus
+ *
+ * This internal callback adapts the command pattern interface to work with
+ * the existing rx_bus_manager_with_bus callback mechanism.
+ *
+ * @param[in] bus_config Bus configuration
+ * @param[in] user_ctx User context (rx_bus_command_t*)
+ *
+ * @return RX_OK on success, error code on failure
+ */
+static rx_err_t internal_execute_command_callback(rx_bus_config_t* bus_config, void* user_ctx)
+{
+  rx_bus_command_t* command = (rx_bus_command_t*)user_ctx;
+
+  /* Validate command has execution function */
+  if (command->execute == NULL) {
+    RX_LOG_ERROR(s_tag, "Command execute function is NULL");
+    command->result = RX_ERR_NULL_POINTER;
+    return RX_ERR_NULL_POINTER;
+  }
+
+  /* Execute the command */
+  rx_err_t err = command->execute(bus_config, command->data);
+
+  /* Store result in command for caller inspection */
+  command->result = err;
+
+  return err;
+}
+
 /* =============================================================================
  * Public API Implementation
  * =============================================================================
@@ -24,20 +62,20 @@ rx_err_t bus_manager_init(rx_bus_manager_t*     manager,
                           rx_error_interface_t* error_iface,
                           rx_pin_interface_t*   pin_iface)
 {
-  RX_CHECK_NULL_PTR(manager, "BUS_MANAGER", "Manager pointer is NULL");
-  RX_CHECK_NULL_PTR(error_iface, "BUS_MANAGER", "Error interface is NULL");
-  RX_CHECK_NULL_PTR(pin_iface, "BUS_MANAGER", "Pin interface is NULL");
+  RX_CHECK_NULL_PTR(manager, s_tag, "Manager pointer is NULL");
+  RX_CHECK_NULL_PTR(error_iface, s_tag, "Error interface is NULL");
+  RX_CHECK_NULL_PTR(pin_iface, s_tag, "Pin interface is NULL");
 
   /* Validate interfaces */
   rx_err_t err = rx_error_interface_validate(error_iface);
   if (err != RX_OK) {
-    RX_LOG_ERROR("BUS_MANAGER", "Error interface validation failed");
+    RX_LOG_ERROR(s_tag, "Error interface validation failed");
     return err;
   }
 
   err = rx_pin_interface_validate(pin_iface);
   if (err != RX_OK) {
-    RX_LOG_ERROR("BUS_MANAGER", "Pin interface validation failed");
+    RX_LOG_ERROR(s_tag, "Pin interface validation failed");
     return err;
   }
 
@@ -48,18 +86,45 @@ rx_err_t bus_manager_init(rx_bus_manager_t*     manager,
   manager->error_iface = error_iface;
   manager->pin_iface   = pin_iface;
 
-  RX_LOG_INFO("BUS_MANAGER", "Bus manager initialized (skeleton)");
+  RX_LOG_INFO(s_tag, "Bus manager initialized (skeleton)");
 
   return RX_OK;
 }
 
 rx_err_t bus_manager_deinit(rx_bus_manager_t* manager)
 {
-  RX_CHECK_NULL_PTR(manager, "BUS_MANAGER", "Manager pointer is NULL");
+  RX_CHECK_NULL_PTR(manager, s_tag, "Manager pointer is NULL");
 
   /* Future: Cleanup bus instances here */
 
-  RX_LOG_INFO("BUS_MANAGER", "Bus manager deinitialized");
+  RX_LOG_INFO(s_tag, "Bus manager deinitialized");
 
   return RX_OK;
+}
+
+/* =============================================================================
+ * Command Pattern Implementation
+ * =============================================================================
+ */
+
+rx_err_t rx_bus_manager_execute_command(rx_bus_manager_t* manager,
+                                        const char*       name,
+                                        rx_bus_command_t* command)
+{
+  RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
+  RX_CHECK_NULL_PTR(name, s_tag, "name pointer is NULL");
+  RX_CHECK_NULL_PTR(command, s_tag, "command pointer is NULL");
+
+  /* Validate command has execution function */
+  if (command->execute == NULL) {
+    RX_LOG_ERROR(s_tag, "Command execute function is NULL");
+    return RX_ERR_NULL_POINTER;
+  }
+
+  /* Execute command using existing with_bus infrastructure */
+  rx_err_t err = rx_bus_manager_with_bus(manager, name, internal_execute_command_callback, command);
+
+  /* Return the error from with_bus (mutex/lookup errors) */
+  /* The command execution result is stored in command->result */
+  return err;
 }

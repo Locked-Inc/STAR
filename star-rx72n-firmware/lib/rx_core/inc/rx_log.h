@@ -299,6 +299,66 @@ static inline void rx_log_error_code(const char* tag, rx_err_t err)
   uart_puts("\r\n");
 }
 
+/**
+ * @brief Log error with message and integer value
+ *
+ * @param[in] tag Component tag
+ * @param[in] message Error message
+ * @param[in] value Integer value to log
+ */
+static inline void rx_log_error_int(const char* tag, const char* message, int32_t value)
+{
+  uart_putc('[');
+  uart_puts("ERROR");
+  uart_puts("] [");
+  uart_puts(tag);
+  uart_puts("] ");
+  uart_puts(message);
+  uart_puts(": ");
+  uart_putint(value);
+  uart_puts("\r\n");
+}
+
+/**
+ * @brief Log warning with message and integer value
+ *
+ * @param[in] tag Component tag
+ * @param[in] message Warning message
+ * @param[in] value Integer value to log
+ */
+static inline void rx_log_warn_int(const char* tag, const char* message, int32_t value)
+{
+  uart_putc('[');
+  uart_puts("WARN");
+  uart_puts("] [");
+  uart_puts(tag);
+  uart_puts("] ");
+  uart_puts(message);
+  uart_puts(": ");
+  uart_putint(value);
+  uart_puts("\r\n");
+}
+
+/**
+ * @brief Log info with message and string value
+ *
+ * @param[in] tag Component tag
+ * @param[in] message Info message
+ * @param[in] str_value String value to log
+ */
+static inline void rx_log_info_str(const char* tag, const char* message, const char* str_value)
+{
+  uart_putc('[');
+  uart_puts("INFO");
+  uart_puts("] [");
+  uart_puts(tag);
+  uart_puts("] ");
+  uart_puts(message);
+  uart_puts(": ");
+  uart_puts(str_value);
+  uart_puts("\r\n");
+}
+
 #ifdef __cplusplus
 }
 #endif

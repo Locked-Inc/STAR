@@ -71,7 +71,7 @@ typedef enum {
  */
 typedef enum {
   k_motor_control_task_stack_size = 4096, /**< Stack size (bytes) - RX72N has more RAM */
-  k_motor_control_task_priority   = 8,    /**< Task priority (higher than telemetry) */
+  k_motor_control_task_priority   = 10,   /**< Task priority (matches system_config.h) */
 } motor_task_config_t;
 
 /* =============================================================================

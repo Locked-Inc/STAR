@@ -87,6 +87,9 @@ add_library(rx_core STATIC
     lib/rx_core/src/rx_error_handler.c
     lib/rx_core/src/rx_pin_validator.c
     lib/rx_core/src/rx_infrastructure.c
+    # Mock implementations available for testing (not compiled by default):
+    # lib/rx_core/src/mock_error_handler.c
+    # lib/rx_core/src/mock_pin_validator.c
 )
 target_include_directories(rx_core PUBLIC lib/rx_core/inc)
 target_link_libraries(rx_core PUBLIC threadx)
