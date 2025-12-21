@@ -63,7 +63,9 @@ typedef struct rx_error_interface rx_error_interface_t;
  *
  * @return RX_OK on success, error code on failure
  */
-typedef rx_err_t (*rx_error_report_fn)(void* ctx, rx_err_t err, const char* component,
+typedef rx_err_t (*rx_error_report_fn)(void*       ctx,
+                                       rx_err_t    err,
+                                       const char* component,
                                        const char* message);
 
 /**

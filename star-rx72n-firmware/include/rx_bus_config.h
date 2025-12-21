@@ -1,0 +1,179 @@
+/* include/rx_bus_config.h */
+
+/**
+ * @file rx_bus_config.h
+ * @brief Bus configuration creation helpers for RX72N
+ * @details
+ * Provides helper functions to initialize bus configuration structures.
+ * Uses static allocation pattern - user provides the config structure.
+ *
+ * Unlike ESP32 version which uses dynamic allocation, RX72N firmware
+ * follows zero-allocation principle for safety-critical applications.
+ *
+ * @date 2025-12-21
+ * @copyright Copyright (c) 2025 STAR Project
+ */
+
+#ifndef STAR_RX72N_BUS_CONFIG_H
+#define STAR_RX72N_BUS_CONFIG_H
+
+#include "rx_bus_types.h"
+#include "rx_err.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/**
+ * @example Basic usage with static allocation:
+ * @code
+ * // Declare static config
+ * static rx_bus_config_t gpio_led_config;
+ *
+ * // Initialize config
+ * rx_bus_config_init_gpio(&gpio_led_config, "led_gpio", 3, 0);
+ *
+ * // Add to bus manager
+ * rx_bus_manager_add_bus(&bus_manager, &gpio_led_config);
+ *
+ * // Use through bus abstraction
+ * rx_bus_gpio_init(&bus_manager, "led_gpio", true);  // Output
+ * rx_bus_gpio_write(&bus_manager, "led_gpio", true); // LED on
+ * @endcode
+ */
+
+/* =============================================================================
+ * GPIO Bus Configuration
+ * =============================================================================
+ */
+
+/**
+ * @brief Initialize GPIO bus configuration
+ *
+ * Configures a single GPIO pin for bus manager control.
+ *
+ * @param[out] config Pointer to bus config structure to initialize
+ * @param[in] name Unique bus name (must remain valid for lifetime)
+ * @param[in] port GPIO port number (0-9, or 0xA-0x10 for A-G)
+ * @param[in] pin GPIO pin number (0-7)
+ *
+ * @return RX_OK on success
+ * @return RX_ERR_NULL_POINTER if config or name is NULL
+ * @return RX_ERR_INVALID_ARG if port or pin is invalid
+ *
+ * @note The config structure must remain valid for the lifetime of bus usage
+ * @note The name string must remain valid (use string literals or static storage)
+ */
+rx_err_t rx_bus_config_init_gpio(rx_bus_config_t* config,
+                                  const char*      name,
+                                  uint8_t          port,
+                                  uint8_t          pin);
+
+/* =============================================================================
+ * ADC Bus Configuration
+ * =============================================================================
+ */
+
+/**
+ * @brief Initialize ADC bus configuration
+ *
+ * Configures an ADC channel for bus manager control.
+ *
+ * @param[out] config Pointer to bus config structure to initialize
+ * @param[in] name Unique bus name (must remain valid for lifetime)
+ * @param[in] unit ADC unit (0 or 1)
+ * @param[in] channel ADC channel (0-7)
+ * @param[in] bits Resolution (8, 10, or 12 bits)
+ *
+ * @return RX_OK on success
+ * @return RX_ERR_NULL_POINTER if config or name is NULL
+ * @return RX_ERR_INVALID_ARG if unit, channel, or bits is invalid
+ *
+ * @note The config structure must remain valid for the lifetime of bus usage
+ * @note The name string must remain valid (use string literals or static storage)
+ */
+rx_err_t rx_bus_config_init_adc(rx_bus_config_t* config,
+                                 const char*      name,
+                                 uint8_t          unit,
+                                 uint8_t          channel,
+                                 uint8_t          bits);
+
+/* =============================================================================
+ * I2C Bus Configuration (Future)
+ * =============================================================================
+ */
+
+/**
+ * @brief Initialize I2C bus configuration
+ *
+ * Configures an I2C device for bus manager control.
+ *
+ * @param[out] config Pointer to bus config structure to initialize
+ * @param[in] name Unique bus name (must remain valid for lifetime)
+ * @param[in] channel RIIC channel (0-2)
+ * @param[in] device_addr 7-bit I2C device address
+ * @param[in] sda_port SDA pin port
+ * @param[in] sda_pin SDA pin number
+ * @param[in] scl_port SCL pin port
+ * @param[in] scl_pin SCL pin number
+ * @param[in] frequency_hz Clock frequency (100000, 400000, or 1000000)
+ *
+ * @return RX_OK on success
+ * @return RX_ERR_NULL_POINTER if config or name is NULL
+ * @return RX_ERR_INVALID_ARG if parameters are invalid
+ *
+ * @note Not yet implemented - Phase 1.4
+ */
+rx_err_t rx_bus_config_init_i2c(rx_bus_config_t* config,
+                                 const char*      name,
+                                 uint8_t          channel,
+                                 uint8_t          device_addr,
+                                 uint8_t          sda_port,
+                                 uint8_t          sda_pin,
+                                 uint8_t          scl_port,
+                                 uint8_t          scl_pin,
+                                 uint32_t         frequency_hz);
+
+/* =============================================================================
+ * SMBUS Bus Configuration (Future)
+ * =============================================================================
+ */
+
+/**
+ * @brief Initialize SMBUS bus configuration
+ *
+ * Configures an SMBUS device (I2C variant with CRC-8) for bus manager control.
+ *
+ * @param[out] config Pointer to bus config structure to initialize
+ * @param[in] name Unique bus name (must remain valid for lifetime)
+ * @param[in] channel RIIC channel (0-2)
+ * @param[in] device_addr 7-bit SMBUS device address
+ * @param[in] sda_port SDA pin port
+ * @param[in] sda_pin SDA pin number
+ * @param[in] scl_port SCL pin port
+ * @param[in] scl_pin SCL pin number
+ * @param[in] frequency_hz Clock frequency (typically 100000)
+ * @param[in] use_pec Enable Packet Error Checking (CRC-8)
+ *
+ * @return RX_OK on success
+ * @return RX_ERR_NULL_POINTER if config or name is NULL
+ * @return RX_ERR_INVALID_ARG if parameters are invalid
+ *
+ * @note Not yet implemented - Phase 1.4
+ */
+rx_err_t rx_bus_config_init_smbus(rx_bus_config_t* config,
+                                   const char*      name,
+                                   uint8_t          channel,
+                                   uint8_t          device_addr,
+                                   uint8_t          sda_port,
+                                   uint8_t          sda_pin,
+                                   uint8_t          scl_port,
+                                   uint8_t          scl_pin,
+                                   uint32_t         frequency_hz,
+                                   bool             use_pec);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* STAR_RX72N_BUS_CONFIG_H */

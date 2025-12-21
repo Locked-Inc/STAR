@@ -116,37 +116,6 @@ typedef struct {
 #define PORTJ (*PORTJ_BASE)
 
 /* =============================================================================
- * Multi-Function Timer Pulse Unit 3a (MTU3a) - For Motor PWM
- * =============================================================================
- */
-
-typedef struct {
-  volatile uint8_t  TCR;   /* Timer Control Register */
-  volatile uint8_t  TMDR1; /* Timer Mode Register 1 */
-  volatile uint8_t  TIORH; /* Timer I/O Control Register H */
-  volatile uint8_t  TIORL; /* Timer I/O Control Register L */
-  volatile uint8_t  TIER;  /* Timer Interrupt Enable Register */
-  volatile uint8_t  TSR;   /* Timer Status Register */
-  volatile uint16_t TCNT;  /* Timer Counter */
-  volatile uint16_t TGRA;  /* Timer General Register A */
-  volatile uint16_t TGRB;  /* Timer General Register B */
-  volatile uint16_t TGRC;  /* Timer General Register C */
-  volatile uint16_t TGRD;  /* Timer General Register D */
-} MTU_Channel_Type;
-
-#define MTU0_BASE ((MTU_Channel_Type*)0x000C1200)
-#define MTU1_BASE ((MTU_Channel_Type*)0x000C1280)
-#define MTU2_BASE ((MTU_Channel_Type*)0x000C1200)
-#define MTU3_BASE ((MTU_Channel_Type*)0x000C1200)
-#define MTU4_BASE ((MTU_Channel_Type*)0x000C1200)
-
-#define MTU0 (*MTU0_BASE)
-#define MTU1 (*MTU1_BASE)
-#define MTU2 (*MTU2_BASE)
-#define MTU3 (*MTU3_BASE)
-#define MTU4 (*MTU4_BASE)
-
-/* =============================================================================
  * 12-bit A/D Converter (S12ADFa) - For Current Sensing
  * =============================================================================
  */
@@ -208,6 +177,73 @@ typedef struct {
 #define SCI6 (*SCI6_BASE)
 
 /* =============================================================================
+ * I2C Bus Interface (RIIC) - For I2C/SMBUS Communication
+ * =============================================================================
+ */
+
+typedef struct {
+  volatile uint8_t ICCR1;  /* I2C Bus Control Register 1 */
+  volatile uint8_t ICCR2;  /* I2C Bus Control Register 2 */
+  volatile uint8_t ICMR1;  /* I2C Bus Mode Register 1 */
+  volatile uint8_t ICMR2;  /* I2C Bus Mode Register 2 */
+  volatile uint8_t ICMR3;  /* I2C Bus Mode Register 3 */
+  volatile uint8_t ICFER;  /* I2C Bus Function Enable Register */
+  volatile uint8_t ICSER;  /* I2C Bus Status Enable Register */
+  volatile uint8_t ICIER;  /* I2C Bus Interrupt Enable Register */
+  volatile uint8_t ICSR1;  /* I2C Bus Status Register 1 */
+  volatile uint8_t ICSR2;  /* I2C Bus Status Register 2 */
+  volatile uint8_t SARL0;  /* Slave Address Register L0 */
+  volatile uint8_t SARU0;  /* Slave Address Register U0 */
+  volatile uint8_t SARL1;  /* Slave Address Register L1 */
+  volatile uint8_t SARU1;  /* Slave Address Register U1 */
+  volatile uint8_t SARL2;  /* Slave Address Register L2 */
+  volatile uint8_t SARU2;  /* Slave Address Register U2 */
+  volatile uint8_t ICBRL;  /* I2C Bus Bit Rate Register L */
+  volatile uint8_t ICBRH;  /* I2C Bus Bit Rate Register H */
+  volatile uint8_t ICDRT;  /* I2C Bus Transmit Data Register */
+  volatile uint8_t ICDRR;  /* I2C Bus Receive Data Register */
+} RIIC_Type;
+
+#define RIIC0_BASE ((RIIC_Type*)0x00088300)
+#define RIIC1_BASE ((RIIC_Type*)0x00088320)
+#define RIIC2_BASE ((RIIC_Type*)0x00088340)
+
+#define RIIC0 (*RIIC0_BASE)
+#define RIIC1 (*RIIC1_BASE)
+#define RIIC2 (*RIIC2_BASE)
+
+/* RIIC Control Register 1 (ICCR1) Bit Definitions */
+typedef enum {
+  k_riic_iccr1_ice   = (1 << 7), /* I2C Bus Interface Enable */
+  k_riic_iccr1_iicrst = (1 << 6), /* I2C Bus Interface Internal Reset */
+  k_riic_iccr1_clk_mask = 0x0F,   /* Clock Select Mask (bits 0-3) */
+} riic_iccr1_bits_t;
+
+/* RIIC Control Register 2 (ICCR2) Bit Definitions */
+typedef enum {
+  k_riic_iccr2_bbsy = (1 << 7), /* Bus Busy Detection Flag */
+  k_riic_iccr2_mst  = (1 << 6), /* Controller Mode */
+  k_riic_iccr2_trx  = (1 << 5), /* Transmit/Receive Mode (1=TX, 0=RX) */
+  k_riic_iccr2_sp   = (1 << 3), /* Stop Condition Issue Request */
+  k_riic_iccr2_rs   = (1 << 2), /* Restart Condition Issue Request */
+  k_riic_iccr2_st   = (1 << 1), /* Start Condition Issue Request */
+} riic_iccr2_bits_t;
+
+/* RIIC Status Register 1 (ICSR1) Bit Definitions */
+typedef enum {
+  k_riic_icsr1_ackbr = (1 << 0), /* ACK Bit Receive Flag */
+} riic_icsr1_bits_t;
+
+/* RIIC Status Register 2 (ICSR2) Bit Definitions */
+typedef enum {
+  k_riic_icsr2_nackf = (1 << 4), /* NACK Detection Flag */
+  k_riic_icsr2_stop  = (1 << 3), /* Stop Condition Detection Flag */
+  k_riic_icsr2_start = (1 << 2), /* Start Condition Detection Flag */
+  k_riic_icsr2_tdre  = (1 << 7), /* Transmit Data Empty Flag */
+  k_riic_icsr2_rdrf  = (1 << 1), /* Receive Data Full Flag */
+} riic_icsr2_bits_t;
+
+/* =============================================================================
  * Renesas Serial Peripheral Interface (RSPI) - For SPI to RPi5
  * =============================================================================
  */
@@ -236,6 +272,41 @@ typedef struct {
 #define RSPI0 (*RSPI0_BASE)
 #define RSPI1 (*RSPI1_BASE)
 #define RSPI2 (*RSPI2_BASE)
+
+/* RSPI Control Register (SPCR) Bit Definitions */
+typedef enum {
+  k_rspi_spcr_sprie = (1 << 7), /* Receive Interrupt Enable */
+  k_rspi_spcr_spe   = (1 << 6), /* SPI Function Enable */
+  k_rspi_spcr_sptie = (1 << 5), /* Transmit Interrupt Enable */
+  k_rspi_spcr_speie = (1 << 4), /* Error Interrupt Enable */
+  k_rspi_spcr_mstr  = (1 << 3), /* Controller/Peripheral Mode (1=Controller, 0=Peripheral) */
+  k_rspi_spcr_modfe = (1 << 2), /* Mode Fault Error Detection Enable */
+  k_rspi_spcr_txmd  = (1 << 1), /* Transmit Only Mode */
+  k_rspi_spcr_spms  = (1 << 0), /* SPI Mode Select */
+} rspi_spcr_bits_t;
+
+/* RSPI Status Register (SPSR) Bit Definitions */
+typedef enum {
+  k_rspi_spsr_sprf  = (1 << 7), /* Receive Buffer Full Flag */
+  k_rspi_spsr_sptef = (1 << 5), /* Transmit Buffer Empty Flag */
+  k_rspi_spsr_perf  = (1 << 3), /* Parity Error Flag */
+  k_rspi_spsr_modf  = (1 << 2), /* Mode Fault Error Flag */
+  k_rspi_spsr_idlnf = (1 << 1), /* Idle Flag */
+  k_rspi_spsr_ovrf  = (1 << 0), /* Overrun Error Flag */
+} rspi_spsr_bits_t;
+
+/* RSPI Pin Control Register (SPPCR) Bit Definitions */
+typedef enum {
+  k_rspi_sppcr_moife = (1 << 6), /* COPI Idle Fixed Value Enable */
+  k_rspi_sppcr_moifv = (1 << 5), /* COPI Idle Fixed Value */
+  k_rspi_sppcr_splp  = (1 << 0), /* Loopback Mode */
+} rspi_sppcr_bits_t;
+
+/* RSPI Data Control Register (SPDCR) Bit Definitions */
+typedef enum {
+  k_rspi_spdcr_sprdtd = (1 << 5), /* Receive Data Ready Detection */
+  k_rspi_spdcr_splw   = (1 << 4), /* Word Access Mode (1=Word, 0=Byte) */
+} rspi_spdcr_bits_t;
 
 /* =============================================================================
  * Compare Match Timer (CMT) - For ThreadX System Tick
@@ -307,6 +378,192 @@ typedef struct {
 #define IPR_LEVEL_DISABLE 0
 #define IPR_LEVEL_MIN     1
 #define IPR_LEVEL_MAX     15
+
+/* =============================================================================
+ * Multi-Function Timer Unit (MTU3a)
+ * =============================================================================
+ */
+
+/* MTU Channel Register Structure (MTU0-MTU4, MTU6-MTU7) */
+typedef struct {
+  volatile uint8_t  TCR;    /* Timer Control Register */
+  volatile uint8_t  TMDR;   /* Timer Mode Register */
+  volatile uint8_t  TIORH;  /* Timer I/O Control Register H */
+  volatile uint8_t  TIORL;  /* Timer I/O Control Register L */
+  volatile uint8_t  TIER;   /* Timer Interrupt Enable Register */
+  volatile uint8_t  TSR;    /* Timer Status Register */
+  volatile uint16_t TCNT;   /* Timer Counter */
+  volatile uint16_t TGRA;   /* Timer General Register A */
+  volatile uint16_t TGRB;   /* Timer General Register B */
+  volatile uint16_t TGRC;   /* Timer General Register C */
+  volatile uint16_t TGRD;   /* Timer General Register D */
+} MTU_Channel_Type;
+
+/* MTU3 and MTU4 have additional registers */
+typedef struct {
+  volatile uint8_t  TCR;    /* 0x00: Timer Control Register */
+  volatile uint8_t  TMDR;   /* 0x01: Timer Mode Register */
+  volatile uint8_t  TIORH;  /* 0x02: Timer I/O Control Register H */
+  volatile uint8_t  TIORL;  /* 0x03: Timer I/O Control Register L */
+  volatile uint8_t  TIER;   /* 0x04: Timer Interrupt Enable Register */
+  volatile uint8_t  TSR;    /* 0x05: Timer Status Register */
+  volatile uint16_t TCNT;   /* 0x06: Timer Counter */
+  volatile uint16_t TGRA;   /* 0x08: Timer General Register A */
+  volatile uint16_t TGRB;   /* 0x0A: Timer General Register B */
+  volatile uint16_t TGRC;   /* 0x0C: Timer General Register C */
+  volatile uint16_t TGRD;   /* 0x0E: Timer General Register D */
+  volatile uint16_t TGRE;   /* 0x10: Timer General Register E (MTU3/4 only) */
+  volatile uint16_t TGRF;   /* 0x12: Timer General Register F (MTU3/4 only) */
+  volatile uint8_t  TIER2;  /* 0x14: Timer Interrupt Enable Register 2 */
+  volatile uint8_t  TSR2;   /* 0x15: Timer Status Register 2 */
+  volatile uint8_t  TBTM;   /* 0x16: Timer Buffer Transfer Mode Register */
+} MTU34_Channel_Type;
+
+/* MTU Start Register */
+typedef struct {
+  volatile uint8_t TSTR; /* Timer Start Register */
+} MTU_TSTR_Type;
+
+#define MTU0_BASE ((MTU_Channel_Type*)0x000D0600)
+#define MTU1_BASE ((MTU_Channel_Type*)0x000D0680)
+#define MTU2_BASE ((MTU_Channel_Type*)0x000D0700)
+#define MTU3_BASE ((MTU34_Channel_Type*)0x000D0200)
+#define MTU4_BASE ((MTU34_Channel_Type*)0x000D0201)
+#define MTU6_BASE ((MTU_Channel_Type*)0x000D0A00)
+#define MTU7_BASE ((MTU_Channel_Type*)0x000D0A80)
+
+#define MTU0 (*MTU0_BASE)
+#define MTU1 (*MTU1_BASE)
+#define MTU2 (*MTU2_BASE)
+#define MTU3 (*MTU3_BASE)
+#define MTU4 (*MTU4_BASE)
+#define MTU6 (*MTU6_BASE)
+#define MTU7 (*MTU7_BASE)
+
+#define MTU_TSTR_BASE ((MTU_TSTR_Type*)0x000D0880)
+#define MTU_TSTR      (*MTU_TSTR_BASE)
+
+/* Timer Control Register (TCR) bits */
+typedef enum {
+  k_mtu_tcr_tpsc_mask  = 0x07, /* Timer Prescaler mask (bits 0-2) */
+  k_mtu_tcr_ckeg_mask  = 0x18, /* Clock Edge mask (bits 3-4) */
+  k_mtu_tcr_cclr_mask  = 0xE0, /* Counter Clear Source mask (bits 5-7) */
+  k_mtu_tcr_tpsc_1     = 0x00, /* PCLKA/1 */
+  k_mtu_tcr_tpsc_4     = 0x01, /* PCLKA/4 */
+  k_mtu_tcr_tpsc_16    = 0x02, /* PCLKA/16 */
+  k_mtu_tcr_tpsc_64    = 0x03, /* PCLKA/64 */
+  k_mtu_tcr_cclr_tgra  = (0x01 << 5), /* Clear on TGRA compare match */
+} mtu_tcr_bits_t;
+
+/* Timer Mode Register (TMDR) bits */
+typedef enum {
+  k_mtu_tmdr_md_mask   = 0x0F, /* Mode select mask (bits 0-3) */
+  k_mtu_tmdr_md_normal = 0x00, /* Normal mode */
+  k_mtu_tmdr_md_pwm1   = 0x02, /* PWM mode 1 */
+  k_mtu_tmdr_md_pwm2   = 0x03, /* PWM mode 2 */
+  k_mtu_tmdr_bfa       = (1 << 4), /* Buffer mode A */
+  k_mtu_tmdr_bfb       = (1 << 5), /* Buffer mode B */
+} mtu_tmdr_bits_t;
+
+/* Timer I/O Control Register (TIOR) bits */
+typedef enum {
+  k_mtu_tior_ioa_mask  = 0x0F, /* I/O Control A mask (bits 0-3) */
+  k_mtu_tior_iob_mask  = 0xF0, /* I/O Control B mask (bits 4-7) */
+  k_mtu_tior_init_low  = 0x02, /* Initial output low, compare match high */
+  k_mtu_tior_init_high = 0x05, /* Initial output high, compare match low */
+  k_mtu_tior_toggle    = 0x03, /* Toggle on compare match */
+} mtu_tior_bits_t;
+
+/* Timer Start Register (TSTR) bits */
+typedef enum {
+  k_mtu_tstr_cst0 = (1 << 0), /* Counter Start 0 */
+  k_mtu_tstr_cst1 = (1 << 1), /* Counter Start 1 */
+  k_mtu_tstr_cst2 = (1 << 2), /* Counter Start 2 */
+  k_mtu_tstr_cst3 = (1 << 6), /* Counter Start 3 */
+  k_mtu_tstr_cst4 = (1 << 7), /* Counter Start 4 */
+} mtu_tstr_bits_t;
+
+/* =============================================================================
+ * Multi-Function Pin Controller (MPC)
+ * =============================================================================
+ */
+
+/* Pin Function Select Register */
+typedef struct {
+  volatile uint8_t PSEL : 5; /* Peripheral Select (bits 0-4) */
+  volatile uint8_t      : 1; /* Reserved */
+  volatile uint8_t ISEL : 1; /* Interrupt Input Select (bit 6) */
+  volatile uint8_t ASEL : 1; /* Analog Input Select (bit 7) */
+} PFS_Type;
+
+/* MPC Register Block */
+typedef struct {
+  volatile uint8_t PWPR; /* 0x00: Write Protect Register */
+  uint8_t          RESERVED0[32];
+  volatile uint8_t P00PFS; /* 0x21: Port 0 Pin 0 Function Select */
+  volatile uint8_t P01PFS; /* 0x22: Port 0 Pin 1 Function Select */
+  volatile uint8_t P02PFS; /* 0x23: Port 0 Pin 2 Function Select */
+  volatile uint8_t P03PFS; /* 0x24: Port 0 Pin 3 Function Select */
+  volatile uint8_t P04PFS; /* 0x25: Port 0 Pin 4 Function Select */
+  volatile uint8_t P05PFS; /* 0x26: Port 0 Pin 5 Function Select */
+  volatile uint8_t P06PFS; /* 0x27: Port 0 Pin 6 Function Select */
+  volatile uint8_t P07PFS; /* 0x28: Port 0 Pin 7 Function Select */
+  volatile uint8_t P10PFS; /* 0x29: Port 1 Pin 0 Function Select */
+  volatile uint8_t P11PFS; /* 0x2A: Port 1 Pin 1 Function Select */
+  volatile uint8_t P12PFS; /* 0x2B: Port 1 Pin 2 Function Select */
+  volatile uint8_t P13PFS; /* 0x2C: Port 1 Pin 3 Function Select */
+  volatile uint8_t P14PFS; /* 0x2D: Port 1 Pin 4 Function Select */
+  volatile uint8_t P15PFS; /* 0x2E: Port 1 Pin 5 Function Select */
+  volatile uint8_t P16PFS; /* 0x2F: Port 1 Pin 6 Function Select */
+  volatile uint8_t P17PFS; /* 0x30: Port 1 Pin 7 Function Select */
+  volatile uint8_t P20PFS; /* 0x31: Port 2 Pin 0 Function Select */
+  volatile uint8_t P21PFS; /* 0x32: Port 2 Pin 1 Function Select */
+  volatile uint8_t P22PFS; /* 0x33: Port 2 Pin 2 Function Select */
+  volatile uint8_t P23PFS; /* 0x34: Port 2 Pin 3 Function Select */
+  volatile uint8_t P24PFS; /* 0x35: Port 2 Pin 4 Function Select */
+  volatile uint8_t P25PFS; /* 0x36: Port 2 Pin 5 Function Select */
+  volatile uint8_t P26PFS; /* 0x37: Port 2 Pin 6 Function Select */
+  volatile uint8_t P27PFS; /* 0x38: Port 2 Pin 7 Function Select */
+  volatile uint8_t P30PFS; /* 0x39: Port 3 Pin 0 Function Select */
+  volatile uint8_t P31PFS; /* 0x3A: Port 3 Pin 1 Function Select */
+  volatile uint8_t P32PFS; /* 0x3B: Port 3 Pin 2 Function Select */
+  volatile uint8_t P33PFS; /* 0x3C: Port 3 Pin 3 Function Select */
+  volatile uint8_t P34PFS; /* 0x3D: Port 3 Pin 4 Function Select */
+  volatile uint8_t P40PFS; /* 0x3E: Port 4 Pin 0 Function Select */
+  volatile uint8_t P41PFS; /* 0x3F: Port 4 Pin 1 Function Select */
+  volatile uint8_t P42PFS; /* 0x40: Port 4 Pin 2 Function Select */
+  volatile uint8_t P43PFS; /* 0x41: Port 4 Pin 3 Function Select */
+  volatile uint8_t P44PFS; /* 0x42: Port 4 Pin 4 Function Select */
+  volatile uint8_t P45PFS; /* 0x43: Port 4 Pin 5 Function Select */
+  volatile uint8_t P46PFS; /* 0x44: Port 4 Pin 6 Function Select */
+  volatile uint8_t P47PFS; /* 0x45: Port 4 Pin 7 Function Select */
+  volatile uint8_t P50PFS; /* 0x46: Port 5 Pin 0 Function Select */
+  volatile uint8_t P51PFS; /* 0x47: Port 5 Pin 1 Function Select */
+  volatile uint8_t P52PFS; /* 0x48: Port 5 Pin 2 Function Select */
+  volatile uint8_t P53PFS; /* 0x49: Port 5 Pin 3 Function Select */
+  volatile uint8_t P54PFS; /* 0x4A: Port 5 Pin 4 Function Select */
+  volatile uint8_t P55PFS; /* 0x4B: Port 5 Pin 5 Function Select */
+  volatile uint8_t P56PFS; /* 0x4C: Port 5 Pin 6 Function Select */
+  volatile uint8_t P57PFS; /* 0x4D: Port 5 Pin 7 Function Select */
+  /* Note: Additional port PFS registers continue for all ports */
+  /* Simplified for common motor control pins */
+} MPC_Type;
+
+#define MPC_BASE ((MPC_Type*)0x0008C100)
+#define MPC      (*MPC_BASE)
+
+/* MPC Write Protect Register (PWPR) bits */
+typedef enum {
+  k_mpc_pwpr_pfswe = (1 << 6), /* PFS Write Enable */
+  k_mpc_pwpr_b0wi  = (1 << 7), /* PFSWE Bit Write Disable */
+} mpc_pwpr_bits_t;
+
+/* PFS Register bits */
+typedef enum {
+  k_pfs_psel_mask  = 0x1F, /* Peripheral Select mask (bits 0-4) */
+  k_pfs_isel       = (1 << 6), /* Interrupt Input Select */
+  k_pfs_asel       = (1 << 7), /* Analog Input Select */
+} pfs_bits_t;
 
 /* =============================================================================
  * Clock Frequencies (assume PLL configured for 240 MHz)

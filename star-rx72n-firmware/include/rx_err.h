@@ -40,209 +40,72 @@ extern "C" {
 typedef int32_t rx_err_t;
 
 /* =============================================================================
- * Success Code
+ * Error Codes (Following Style Guide: Enums > Const > Macros)
  * =============================================================================
  */
 
 /**
- * @brief Success return code
+ * @brief Error codes for RX72N firmware
+ *
+ * Organized into categories:
+ * - 0x000: Success
+ * - 0x1xx: Generic errors
+ * - 0x2xx: Hardware errors
+ * - 0x3xx: RTOS errors
+ * - 0x4xx: Communication errors
+ * - 0x5xx: Validation errors
  */
-#define RX_OK (0)
+typedef enum {
+  /* Success */
+  RX_OK = 0,
 
-/* =============================================================================
- * Generic Errors (0x100 - 0x1FF)
- * =============================================================================
- */
+  /* Generic Errors (0x100 - 0x1FF) */
+  RX_FAIL                 = 0x101,
+  RX_ERR_NO_MEM           = 0x102,
+  RX_ERR_INVALID_ARG      = 0x103,
+  RX_ERR_INVALID_STATE    = 0x104,
+  RX_ERR_INVALID_SIZE     = 0x105,
+  RX_ERR_NOT_FOUND        = 0x106,
+  RX_ERR_NOT_SUPPORTED    = 0x107,
+  RX_ERR_TIMEOUT          = 0x108,
+  RX_ERR_BUSY             = 0x109,
+  RX_ERR_WOULD_BLOCK      = 0x10A,
+  RX_ERR_EXISTS           = 0x10B,
 
-/**
- * @brief Generic failure
- */
-#define RX_FAIL (0x101)
+  /* Hardware Errors (0x200 - 0x2FF) */
+  RX_ERR_HW_INIT_FAILED    = 0x201,
+  RX_ERR_HW_NOT_READY      = 0x202,
+  RX_ERR_HW_TIMEOUT        = 0x203,
+  RX_ERR_HW_ERROR          = 0x204,
+  RX_ERR_GPIO_CONFLICT     = 0x205,
+  RX_ERR_GPIO_INVALID_PORT = 0x206,
+  RX_ERR_GPIO_INVALID_PIN  = 0x207,
 
-/**
- * @brief Out of memory
- */
-#define RX_ERR_NO_MEM (0x102)
+  /* RTOS Errors (0x300 - 0x3FF) */
+  RX_ERR_RTOS_ERROR         = 0x301,
+  RX_ERR_THREADX            = 0x301, /* Alias for ThreadX-specific */
+  RX_ERR_RTOS_THREAD_CREATE = 0x302,
+  RX_ERR_RTOS_SEMAPHORE     = 0x303,
+  RX_ERR_RTOS_MUTEX         = 0x304,
+  RX_ERR_RTOS_QUEUE         = 0x305,
+  RX_ERR_RTOS_TIMER         = 0x306,
 
-/**
- * @brief Invalid argument
- */
-#define RX_ERR_INVALID_ARG (0x103)
+  /* Communication Errors (0x400 - 0x4FF) */
+  RX_ERR_COMM_ERROR     = 0x401,
+  RX_ERR_SPI_ERROR      = 0x402,
+  RX_ERR_UART_ERROR     = 0x403,
+  RX_ERR_I2C_ERROR      = 0x404,
+  RX_ERR_CRC_MISMATCH   = 0x405,
+  RX_ERR_PROTOCOL_ERROR = 0x406,
+  RX_ERR_NACK           = 0x407,
+  RX_ERR_CONFLICT       = 0x408,
 
-/**
- * @brief Invalid state
- */
-#define RX_ERR_INVALID_STATE (0x104)
-
-/**
- * @brief Invalid size
- */
-#define RX_ERR_INVALID_SIZE (0x105)
-
-/**
- * @brief Not found
- */
-#define RX_ERR_NOT_FOUND (0x106)
-
-/**
- * @brief Not supported
- */
-#define RX_ERR_NOT_SUPPORTED (0x107)
-
-/**
- * @brief Timeout occurred
- */
-#define RX_ERR_TIMEOUT (0x108)
-
-/**
- * @brief Resource busy
- */
-#define RX_ERR_BUSY (0x109)
-
-/**
- * @brief Operation would block
- */
-#define RX_ERR_WOULD_BLOCK (0x10A)
-
-/**
- * @brief Resource already exists
- */
-#define RX_ERR_EXISTS (0x10B)
-
-/* =============================================================================
- * Hardware Errors (0x200 - 0x2FF)
- * =============================================================================
- */
-
-/**
- * @brief Hardware initialization failed
- */
-#define RX_ERR_HW_INIT_FAILED (0x201)
-
-/**
- * @brief Hardware not ready
- */
-#define RX_ERR_HW_NOT_READY (0x202)
-
-/**
- * @brief Hardware timeout
- */
-#define RX_ERR_HW_TIMEOUT (0x203)
-
-/**
- * @brief Hardware error detected
- */
-#define RX_ERR_HW_ERROR (0x204)
-
-/**
- * @brief GPIO pin conflict
- */
-#define RX_ERR_GPIO_CONFLICT (0x205)
-
-/**
- * @brief Invalid GPIO port
- */
-#define RX_ERR_GPIO_INVALID_PORT (0x206)
-
-/**
- * @brief Invalid GPIO pin
- */
-#define RX_ERR_GPIO_INVALID_PIN (0x207)
-
-/* =============================================================================
- * RTOS Errors (0x300 - 0x3FF)
- * =============================================================================
- */
-
-/**
- * @brief ThreadX error
- */
-#define RX_ERR_RTOS_ERROR (0x301)
-
-/**
- * @brief Thread creation failed
- */
-#define RX_ERR_RTOS_THREAD_CREATE (0x302)
-
-/**
- * @brief Semaphore error
- */
-#define RX_ERR_RTOS_SEMAPHORE (0x303)
-
-/**
- * @brief Mutex error
- */
-#define RX_ERR_RTOS_MUTEX (0x304)
-
-/**
- * @brief Queue error
- */
-#define RX_ERR_RTOS_QUEUE (0x305)
-
-/**
- * @brief Timer error
- */
-#define RX_ERR_RTOS_TIMER (0x306)
-
-/* =============================================================================
- * Communication Errors (0x400 - 0x4FF)
- * =============================================================================
- */
-
-/**
- * @brief Communication error
- */
-#define RX_ERR_COMM_ERROR (0x401)
-
-/**
- * @brief SPI error
- */
-#define RX_ERR_SPI_ERROR (0x402)
-
-/**
- * @brief UART error
- */
-#define RX_ERR_UART_ERROR (0x403)
-
-/**
- * @brief I2C error
- */
-#define RX_ERR_I2C_ERROR (0x404)
-
-/**
- * @brief CRC mismatch
- */
-#define RX_ERR_CRC_MISMATCH (0x405)
-
-/**
- * @brief Protocol error
- */
-#define RX_ERR_PROTOCOL_ERROR (0x406)
-
-/* =============================================================================
- * Validation Errors (0x500 - 0x5FF)
- * =============================================================================
- */
-
-/**
- * @brief Validation failed
- */
-#define RX_ERR_VALIDATION_FAILED (0x501)
-
-/**
- * @brief Checksum mismatch
- */
-#define RX_ERR_CHECKSUM_MISMATCH (0x502)
-
-/**
- * @brief Range check failed
- */
-#define RX_ERR_RANGE_CHECK_FAILED (0x503)
-
-/**
- * @brief Null pointer
- */
-#define RX_ERR_NULL_POINTER (0x504)
+  /* Validation Errors (0x500 - 0x5FF) */
+  RX_ERR_VALIDATION_FAILED  = 0x501,
+  RX_ERR_CHECKSUM_MISMATCH  = 0x502,
+  RX_ERR_RANGE_CHECK_FAILED = 0x503,
+  RX_ERR_NULL_POINTER       = 0x504,
+} rx_err_codes_t;
 
 /* =============================================================================
  * Error Code Helpers

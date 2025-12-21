@@ -78,22 +78,44 @@ set(SOURCES
     src/hardware/gpio.c
     src/hardware/timer.c
     src/hardware/uart.c
+    src/hardware/adc.c              # S12AD ADC peripheral
+    src/hardware/riic.c             # RIIC I2C peripheral
+    src/hardware/rspi.c             # RSPI SPI peripheral
 
-    # Core infrastructure (ESP32 pattern adaptation)
+    # Core infrastructure (ESP32 DIP pattern)
     src/core/rx_infrastructure.c
     src/core/rx_error_handler.c
     src/core/rx_pin_validator.c
     src/core/rx_bus_manager.c
 
-    # ThreadX tasks (will be added)
-    # src/tasks/motor_control_task.c
-    # src/tasks/spi_task.c
-    # src/tasks/telemetry_task.c
+    # Bus abstractions
+    src/rx_bus_gpio.c
+    src/rx_bus_adc.c
+    src/rx_bus_i2c.c
+    src/rx_bus_smbus.c
+    src/rx_bus_config.c
+    src/rx_bus_manager.c
 
-    # RX72N drivers (will be added)
-    # src/drivers/mtu3a.c          # Motor PWM
-    # src/drivers/s12adf.c         # ADC
-    # src/drivers/rspi.c           # SPI
+    # RX72N peripheral drivers
+    src/drivers/rx_mtu3a.c          # MTU PWM for motors
+    src/drivers/rx_mtu_encoder.c    # MTU phase counting encoder
+    src/drivers/rx_cmt.c            # Compare Match Timer (250Hz)
+    src/drivers/rx_mpc.c            # Pin multiplexer configuration
+
+    # Motor control libraries
+    src/rx_motor.c                  # H-bridge motor control
+    src/rx_pid.c                    # PID controller
+    src/rx_drv8243.c                # DRV8243 driver integration
+
+    # Battery management system
+    src/rx_fuel_gauge.c             # Fuel gauge (SMBUS)
+    src/rx_bq25798.c                # BQ25798 charger (I2C)
+
+    # Motor control system
+    src/motor_shared_state.c        # Thread-safe shared state
+
+    # ThreadX tasks
+    src/tasks/motor_control_task.c  # 250Hz motor control loop
 )
 
 # =============================================================================
@@ -102,7 +124,8 @@ set(SOURCES
 
 include_directories(
     ${CMAKE_CURRENT_SOURCE_DIR}/include
-    # ThreadX will be added here
+    ${CMAKE_CURRENT_SOURCE_DIR}/include/tasks
+    # ThreadX headers are added by add_subdirectory(lib/threadx)
 )
 
 # =============================================================================

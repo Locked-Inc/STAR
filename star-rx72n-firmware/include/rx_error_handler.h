@@ -170,8 +170,10 @@ typedef struct {
  *         RX_ERR_NULL_POINTER if handler is NULL,
  *         RX_ERR_RTOS_MUTEX if mutex creation fails
  */
-rx_err_t error_handler_init(error_handler_t* handler, uint32_t max_retries,
-                            uint32_t initial_backoff_ms, uint32_t max_backoff_ms);
+rx_err_t error_handler_init(error_handler_t* handler,
+                            uint32_t         max_retries,
+                            uint32_t         initial_backoff_ms,
+                            uint32_t         max_backoff_ms);
 
 /**
  * @brief Get interface from concrete handler
