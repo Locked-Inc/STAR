@@ -26,12 +26,19 @@
 #ifndef STAR_RX72N_LOG_H
 #define STAR_RX72N_LOG_H
 
-#include "hardware.h"
 #include "rx_err.h"
+
+#include <stdint.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+/* Forward declarations for UART functions (avoid circular dependency) */
+void uart_putc(char data);
+void uart_puts(const char* str);
+void uart_putint(int32_t value);
+void uart_puthex(uint32_t value, uint8_t digits);
 
 /* =============================================================================
  * Log Level Definitions

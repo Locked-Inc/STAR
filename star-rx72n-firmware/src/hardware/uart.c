@@ -8,6 +8,8 @@
  * Provides basic transmit-only functionality for printf debugging.
  */
 
+#include "hardware.h"
+
 #include <stdint.h>
 
 #include "rx72n_regs.h"
@@ -40,8 +42,10 @@
  * - 8 data bits, 1 stop bit, no parity
  * - TX only (no RX)
  * - Clock: PCLKB (60 MHz)
+ *
+ * @return RX_OK on success
  */
-void uart_init(void)
+rx_err_t uart_init(void)
 {
   /* Disable SCI5 transmit/receive */
   SCI5.SCR = 0x00;
@@ -70,6 +74,10 @@ void uart_init(void)
      * This would require MPC (Multi-Function Pin Controller) registers
      * which are not yet defined. For now, assume pins are configured
      * by default or by external code. */
+
+  /* UART init complete - can't use RX_LOG yet since UART is just now ready */
+
+  return RX_OK;
 }
 
 /* =============================================================================
