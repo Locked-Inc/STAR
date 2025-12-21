@@ -8,6 +8,8 @@
  * for ThreadX system tick at 100 Hz.
  */
 
+#include "hardware.h"
+
 #include <stdint.h>
 
 #include "rx72n_regs.h"
@@ -50,12 +52,16 @@ void cmt0_isr(void)
  *
  * Configuration:
  * - Clock: PCLKB (60 MHz)
- * - Divider: /8 (7.5 MHz)
- * - Compare: 74999 (100 Hz)
+ * - Divider: /128 (468.75 kHz)
+ * - Compare: 4687 (100 Hz)
  * - Priority: 5
+ *
+ * @return RX_OK on success
  */
-void timer_init(void)
+rx_err_t timer_init(void)
 {
+  RX_LOG_INFO("TIMER", "Initializing CMT0 for ThreadX tick");
+
   /* Stop CMT0 if running */
   CMT_CTRL.CMSTR0 &= ~0x01;
 
@@ -85,23 +91,40 @@ void timer_init(void)
 
   /* Enable interrupts globally (set I flag in PSW) */
   __asm__ volatile("setpsw i");
+
+  RX_LOG_INFO("TIMER", "CMT0 initialized successfully");
+
+  return RX_OK;
 }
 
 /**
  * @brief Stop CMT0 timer
+ *
+ * @return RX_OK on success
  */
-void timer_stop(void)
+rx_err_t timer_stop(void)
 {
+  RX_LOG_INFO("TIMER", "Stopping CMT0");
+
   /* Stop CMT0 */
   CMT_CTRL.CMSTR0 &= ~0x01;
+
+  return RX_OK;
 }
 
 /**
- * @brief Get current tick count
+ * @brief Get current CMT0 counter value
  *
- * @return Current CMT0 counter value
+ * @param[out] count Pointer to store counter value
+ *
+ * @return RX_OK on success,
+ *         RX_ERR_NULL_POINTER if count is NULL
  */
-uint16_t timer_get_count(void)
+rx_err_t timer_get_count(uint16_t* count)
 {
-  return CMT0.CMCNT;
+  RX_CHECK_NULL_PTR(count, "TIMER", "Count pointer is NULL");
+
+  *count = CMT0.CMCNT;
+
+  return RX_OK;
 }
