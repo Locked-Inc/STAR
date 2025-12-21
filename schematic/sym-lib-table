@@ -80,4 +80,5 @@
   (lib (name "1663964")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/1663964/KiCad/1663964.kicad_sym")(options "")(descr ""))
   (lib (name "S5B-XH-A")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/S5B_XH_A/S5B-XH-A.kicad_sym")(options "")(descr ""))
   (lib (name "DS188B20+")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/DS18B20+/KiCad/DS18B20+.kicad_sym")(options "")(descr ""))
+  (lib (name "rp2xxx")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/rp2xxx_stamp_footprints/KiCad/RP2xxx_Stamp.kicad_sym")(options "")(descr ""))
 )

@@ -259,6 +259,16 @@ The `proto.yml` workflow runs on pushes to `star-proto/`:
 
 ## Key Documentation
 
+**IMPORTANT:** Always reference the LaTeX source files (`.tex`) in `docs/sections/` for accurate technical information, NOT the compiled PDF.
+
 - `star-esp32-firmware/CLAUDE.md` - Detailed ESP32 firmware guide
 - `star-gateway/CLAUDE.md` - Gateway service architecture and build guide
-- `docs/star_documentation.pdf` - System documentation
+- `docs/sections/*.tex` - System documentation source files (hardware pinout, protocols, style guides)
+  - `03_hardware_pinout.tex` - Complete GPIO pin assignments and peripheral connections
+  - `01_nanopb_protocol.tex` - SPI communication protocol specification
+  - `02_protobuf_schemas.tex` - Protocol Buffer message definitions
+  - `04_style_guide.tex` - Protocol Buffer coding standards
+  - `05_esp32_style.tex` - ESP32 firmware coding standards
+  - `06_nasa_power_of_10.tex` - Safety-critical coding rules
+  - `07_gateway_architecture.tex` - Gateway service design
+- `docs/star_documentation.pdf` - Compiled documentation (reference `.tex` files for latest changes)
