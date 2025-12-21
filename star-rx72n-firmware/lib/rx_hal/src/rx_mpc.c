@@ -22,11 +22,11 @@
 
 #include "rx_mpc.h"
 
+#include <stddef.h>
+
 #include "rx72n_regs.h"
 #include "rx_check.h"
 #include "rx_log.h"
-
-#include <stddef.h>
 
 static const char* s_tag = "MPC";
 
@@ -111,8 +111,8 @@ static void internal_mpc_unlock(void)
    * 1. Clear B0WI to allow PFSWE write
    * 2. Set PFSWE to allow PFS write
    */
-  MPC.PWPR = 0x00;                     /* Clear B0WI */
-  MPC.PWPR = k_mpc_pwpr_pfswe;         /* Set PFSWE */
+  MPC.PWPR = 0x00;             /* Clear B0WI */
+  MPC.PWPR = k_mpc_pwpr_pfswe; /* Set PFSWE */
 }
 
 /**
@@ -124,8 +124,8 @@ static void internal_mpc_lock(void)
    * 1. Clear PFSWE to protect PFS
    * 2. Set B0WI to protect PFSWE
    */
-  MPC.PWPR = 0x00;                     /* Clear PFSWE */
-  MPC.PWPR = k_mpc_pwpr_b0wi;          /* Set B0WI */
+  MPC.PWPR = 0x00;            /* Clear PFSWE */
+  MPC.PWPR = k_mpc_pwpr_b0wi; /* Set B0WI */
 }
 
 /**

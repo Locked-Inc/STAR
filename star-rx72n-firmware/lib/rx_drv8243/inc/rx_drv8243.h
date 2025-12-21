@@ -109,8 +109,8 @@ typedef struct {
 
   /* Monitoring pins */
   uint8_t pin_ipropi;  /**< Current sense ADC channel (0-7) */
-  uint8_t          port_nfault; /**< Fault detect GPIO port number */
-  uint8_t          pin_nfault;  /**< Fault detect GPIO pin number */
+  uint8_t port_nfault; /**< Fault detect GPIO port number */
+  uint8_t pin_nfault;  /**< Fault detect GPIO pin number */
 
   /* Motor control parameters */
   uint32_t pwm_freq_hz;  /**< PWM frequency in Hz (max 25 kHz recommended) */
@@ -133,8 +133,8 @@ typedef struct {
 
   /* Pin assignments */
   uint8_t pin_ipropi;  /**< Current sense ADC channel (0-7) */
-  uint8_t          port_nfault; /**< Fault detect GPIO port number */
-  uint8_t          pin_nfault;  /**< Fault detect GPIO pin number */
+  uint8_t port_nfault; /**< Fault detect GPIO port number */
+  uint8_t pin_nfault;  /**< Fault detect GPIO pin number */
 
   /* Configuration */
   uint16_t current_limit_ma; /**< Software current limit in mA */

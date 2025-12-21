@@ -73,9 +73,8 @@ static rx_err_t internal_adc_init_callback(rx_bus_config_t* bus_config, void* us
   }
 
   /* Initialize ADC channel */
-  rx_err_t err = adc_init(bus_config->proto.adc.unit,
-                           bus_config->proto.adc.channel,
-                           bus_config->proto.adc.bits);
+  rx_err_t err =
+    adc_init(bus_config->proto.adc.unit, bus_config->proto.adc.channel, bus_config->proto.adc.bits);
 
   if (err != RX_OK) {
     RX_LOG_ERROR(s_tag, "ADC HAL initialization failed");
@@ -116,8 +115,7 @@ static rx_err_t internal_adc_read_callback(rx_bus_config_t* bus_config, void* us
   }
 
   /* Read ADC value */
-  rx_err_t err =
-    adc_read(bus_config->proto.adc.unit, bus_config->proto.adc.channel, ctx->value);
+  rx_err_t err = adc_read(bus_config->proto.adc.unit, bus_config->proto.adc.channel, ctx->value);
 
   if (err != RX_OK) {
     RX_LOG_ERROR(s_tag, "ADC read failed");
@@ -150,9 +148,9 @@ static rx_err_t internal_adc_voltage_callback(rx_bus_config_t* bus_config, void*
 
   /* Read ADC voltage */
   rx_err_t err = adc_read_voltage_mv(bus_config->proto.adc.unit,
-                                      bus_config->proto.adc.channel,
-                                      bus_config->proto.adc.bits,
-                                      ctx->voltage_mv);
+                                     bus_config->proto.adc.channel,
+                                     bus_config->proto.adc.bits,
+                                     ctx->voltage_mv);
 
   if (err != RX_OK) {
     RX_LOG_ERROR(s_tag, "ADC voltage read failed");
@@ -202,9 +200,8 @@ rx_err_t rx_bus_adc_read(rx_bus_manager_t* manager, const char* bus_name, uint16
   return ctx.result;
 }
 
-rx_err_t rx_bus_adc_read_voltage_mv(rx_bus_manager_t* manager,
-                                     const char*        bus_name,
-                                     uint32_t*          voltage_mv)
+rx_err_t
+rx_bus_adc_read_voltage_mv(rx_bus_manager_t* manager, const char* bus_name, uint32_t* voltage_mv)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
@@ -212,8 +209,7 @@ rx_err_t rx_bus_adc_read_voltage_mv(rx_bus_manager_t* manager,
 
   adc_voltage_ctx_t ctx = {.voltage_mv = voltage_mv, .result = RX_ERR_HW_ERROR};
 
-  rx_err_t err =
-    rx_bus_manager_with_bus(manager, bus_name, internal_adc_voltage_callback, &ctx);
+  rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_adc_voltage_callback, &ctx);
 
   if (err != RX_OK) {
     return err;

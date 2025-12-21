@@ -157,9 +157,9 @@ static rx_err_t internal_init_encoders(void)
 
   /* Initialize encoder 0 */
   rx_encoder_config_t enc0_config = {
-    .channel           = k_motor_0_encoder_ch,
-    .counts_per_rev    = k_encoder_ppr,
-    .invert_direction  = false,
+    .channel          = k_motor_0_encoder_ch,
+    .counts_per_rev   = k_encoder_ppr,
+    .invert_direction = false,
   };
   err = rx_encoder_init(&enc0_config);
   if (err != RX_OK) {
@@ -169,9 +169,9 @@ static rx_err_t internal_init_encoders(void)
 
   /* Initialize encoder 1 */
   rx_encoder_config_t enc1_config = {
-    .channel           = k_motor_1_encoder_ch,
-    .counts_per_rev    = k_encoder_ppr,
-    .invert_direction  = false,
+    .channel          = k_motor_1_encoder_ch,
+    .counts_per_rev   = k_encoder_ppr,
+    .invert_direction = false,
   };
   err = rx_encoder_init(&enc1_config);
   if (err != RX_OK) {
@@ -181,9 +181,9 @@ static rx_err_t internal_init_encoders(void)
 
   /* Initialize encoder 2 */
   rx_encoder_config_t enc2_config = {
-    .channel           = k_motor_2_encoder_ch,
-    .counts_per_rev    = k_encoder_ppr,
-    .invert_direction  = false,
+    .channel          = k_motor_2_encoder_ch,
+    .counts_per_rev   = k_encoder_ppr,
+    .invert_direction = false,
   };
   err = rx_encoder_init(&enc2_config);
   if (err != RX_OK) {
@@ -193,9 +193,9 @@ static rx_err_t internal_init_encoders(void)
 
   /* Initialize encoder 3 */
   rx_encoder_config_t enc3_config = {
-    .channel           = k_motor_3_encoder_ch,
-    .counts_per_rev    = k_encoder_ppr,
-    .invert_direction  = false,
+    .channel          = k_motor_3_encoder_ch,
+    .counts_per_rev   = k_encoder_ppr,
+    .invert_direction = false,
   };
   err = rx_encoder_init(&enc3_config);
   if (err != RX_OK) {
@@ -220,13 +220,13 @@ static rx_err_t internal_init_pids(void)
 
   /* Common PID configuration for all motors */
   rx_pid_config_t pid_config = {
-    .kp           = k_pid_kp_default / 1000.0f,      /* Convert from × 1000 */
-    .ki           = k_pid_ki_default / 1000.0f,      /* Convert from × 1000 */
-    .kd           = k_pid_kd_default / 1000.0f,      /* Convert from × 1000 */
-    .output_min   = k_pid_output_min / 100.0f,       /* Convert from × 100 */
-    .output_max   = k_pid_output_max / 100.0f,       /* Convert from × 100 */
-    .integral_min = k_pid_integral_min / 100.0f,     /* Convert from × 100 */
-    .integral_max = k_pid_integral_max / 100.0f,     /* Convert from × 100 */
+    .kp           = k_pid_kp_default / 1000.0f,  /* Convert from × 1000 */
+    .ki           = k_pid_ki_default / 1000.0f,  /* Convert from × 1000 */
+    .kd           = k_pid_kd_default / 1000.0f,  /* Convert from × 1000 */
+    .output_min   = k_pid_output_min / 100.0f,   /* Convert from × 100 */
+    .output_max   = k_pid_output_max / 100.0f,   /* Convert from × 100 */
+    .integral_min = k_pid_integral_min / 100.0f, /* Convert from × 100 */
+    .integral_max = k_pid_integral_max / 100.0f, /* Convert from × 100 */
   };
 
   /* Initialize all 4 PID controllers with same gains */

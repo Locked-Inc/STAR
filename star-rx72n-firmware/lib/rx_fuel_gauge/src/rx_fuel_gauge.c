@@ -66,16 +66,16 @@ typedef enum {
  * @brief Battery status flags (register 0x0A)
  */
 typedef enum {
-  k_flag_over_charged_alarm      = (1 << 15), /* Over charged alarm */
-  k_flag_terminate_charge_alarm  = (1 << 14), /* Terminate charge alarm */
-  k_flag_over_temp_alarm         = (1 << 12), /* Over temperature alarm */
+  k_flag_over_charged_alarm        = (1 << 15), /* Over charged alarm */
+  k_flag_terminate_charge_alarm    = (1 << 14), /* Terminate charge alarm */
+  k_flag_over_temp_alarm           = (1 << 12), /* Over temperature alarm */
   k_flag_terminate_discharge_alarm = (1 << 11), /* Terminate discharge alarm */
-  k_flag_remaining_capacity_alarm = (1 << 9), /* Remaining capacity alarm */
-  k_flag_remaining_time_alarm    = (1 << 8),  /* Remaining time alarm */
-  k_flag_initialized             = (1 << 7),  /* Battery initialized */
-  k_flag_discharging             = (1 << 6),  /* Battery discharging */
-  k_flag_fully_charged           = (1 << 5),  /* Battery fully charged */
-  k_flag_fully_discharged        = (1 << 4),  /* Battery fully discharged */
+  k_flag_remaining_capacity_alarm  = (1 << 9),  /* Remaining capacity alarm */
+  k_flag_remaining_time_alarm      = (1 << 8),  /* Remaining time alarm */
+  k_flag_initialized               = (1 << 7),  /* Battery initialized */
+  k_flag_discharging               = (1 << 6),  /* Battery discharging */
+  k_flag_fully_charged             = (1 << 5),  /* Battery fully charged */
+  k_flag_fully_discharged          = (1 << 4),  /* Battery fully discharged */
 } battery_flags_t;
 
 /* =============================================================================
@@ -105,8 +105,8 @@ static int16_t internal_convert_temperature(uint16_t temp_0_1k)
  */
 
 rx_err_t rx_fuel_gauge_init(rx_bus_manager_t*             manager,
-                             const char*                   bus_name,
-                             const rx_fuel_gauge_config_t* config)
+                            const char*                   bus_name,
+                            const rx_fuel_gauge_config_t* config)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
@@ -124,9 +124,9 @@ rx_err_t rx_fuel_gauge_init(rx_bus_manager_t*             manager,
   /* Write design capacity if provided */
   if (config->design_capacity_mah > 0) {
     err = rx_bus_smbus_write_word_data(manager,
-                                        bus_name,
-                                        k_reg_design_capacity,
-                                        config->design_capacity_mah);
+                                       bus_name,
+                                       k_reg_design_capacity,
+                                       config->design_capacity_mah);
     if (err != RX_OK) {
       RX_LOG_WARN(s_tag, "Failed to write design capacity");
       /* Non-fatal - continue */
@@ -146,9 +146,8 @@ rx_err_t rx_fuel_gauge_init(rx_bus_manager_t*             manager,
   return RX_OK;
 }
 
-rx_err_t rx_fuel_gauge_read_voltage(rx_bus_manager_t* manager,
-                                     const char*       bus_name,
-                                     uint16_t*         voltage_mv)
+rx_err_t
+rx_fuel_gauge_read_voltage(rx_bus_manager_t* manager, const char* bus_name, uint16_t* voltage_mv)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
@@ -157,9 +156,8 @@ rx_err_t rx_fuel_gauge_read_voltage(rx_bus_manager_t* manager,
   return rx_bus_smbus_read_word_data(manager, bus_name, k_reg_voltage, voltage_mv);
 }
 
-rx_err_t rx_fuel_gauge_read_current(rx_bus_manager_t* manager,
-                                     const char*       bus_name,
-                                     int16_t*          current_ma)
+rx_err_t
+rx_fuel_gauge_read_current(rx_bus_manager_t* manager, const char* bus_name, int16_t* current_ma)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
@@ -177,9 +175,8 @@ rx_err_t rx_fuel_gauge_read_current(rx_bus_manager_t* manager,
   return err;
 }
 
-rx_err_t rx_fuel_gauge_read_soc(rx_bus_manager_t* manager,
-                                 const char*       bus_name,
-                                 uint8_t*          soc_percent)
+rx_err_t
+rx_fuel_gauge_read_soc(rx_bus_manager_t* manager, const char* bus_name, uint8_t* soc_percent)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
@@ -197,8 +194,8 @@ rx_err_t rx_fuel_gauge_read_soc(rx_bus_manager_t* manager,
 }
 
 rx_err_t rx_fuel_gauge_read_temperature(rx_bus_manager_t* manager,
-                                         const char*       bus_name,
-                                         int16_t*          temperature_c)
+                                        const char*       bus_name,
+                                        int16_t*          temperature_c)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
@@ -215,8 +212,8 @@ rx_err_t rx_fuel_gauge_read_temperature(rx_bus_manager_t* manager,
 }
 
 rx_err_t rx_fuel_gauge_read_status(rx_bus_manager_t*       manager,
-                                    const char*             bus_name,
-                                    rx_fuel_gauge_status_t* status)
+                                   const char*             bus_name,
+                                   rx_fuel_gauge_status_t* status)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
@@ -253,28 +250,32 @@ rx_err_t rx_fuel_gauge_read_status(rx_bus_manager_t*       manager,
   }
 
   /* Read remaining capacity */
-  err = rx_bus_smbus_read_word_data(manager, bus_name, k_reg_remaining_capacity, &status->capacity_mah);
+  err =
+    rx_bus_smbus_read_word_data(manager, bus_name, k_reg_remaining_capacity, &status->capacity_mah);
   if (err != RX_OK) {
     RX_LOG_ERROR(s_tag, "Failed to read remaining capacity");
     return err;
   }
 
   /* Read full capacity */
-  err = rx_bus_smbus_read_word_data(manager, bus_name, k_reg_full_capacity, &status->full_capacity_mah);
+  err =
+    rx_bus_smbus_read_word_data(manager, bus_name, k_reg_full_capacity, &status->full_capacity_mah);
   if (err != RX_OK) {
     RX_LOG_ERROR(s_tag, "Failed to read full capacity");
     return err;
   }
 
   /* Read time to empty */
-  err = rx_bus_smbus_read_word_data(manager, bus_name, k_reg_time_to_empty, &status->time_to_empty_min);
+  err =
+    rx_bus_smbus_read_word_data(manager, bus_name, k_reg_time_to_empty, &status->time_to_empty_min);
   if (err != RX_OK) {
     RX_LOG_ERROR(s_tag, "Failed to read time to empty");
     return err;
   }
 
   /* Read time to full */
-  err = rx_bus_smbus_read_word_data(manager, bus_name, k_reg_time_to_full, &status->time_to_full_min);
+  err =
+    rx_bus_smbus_read_word_data(manager, bus_name, k_reg_time_to_full, &status->time_to_full_min);
   if (err != RX_OK) {
     RX_LOG_ERROR(s_tag, "Failed to read time to full");
     return err;
@@ -296,16 +297,16 @@ rx_err_t rx_fuel_gauge_read_status(rx_bus_manager_t*       manager,
   }
 
   /* Parse flags */
-  status->is_charging    = !(flags & k_flag_discharging);
-  status->is_full        = (flags & k_flag_fully_charged) != 0;
-  status->is_low         = (flags & k_flag_remaining_capacity_alarm) != 0;
+  status->is_charging = !(flags & k_flag_discharging);
+  status->is_full     = (flags & k_flag_fully_charged) != 0;
+  status->is_low      = (flags & k_flag_remaining_capacity_alarm) != 0;
 
   return RX_OK;
 }
 
 rx_err_t rx_fuel_gauge_set_low_threshold(rx_bus_manager_t* manager,
-                                          const char*       bus_name,
-                                          uint8_t           threshold_percent)
+                                         const char*       bus_name,
+                                         uint8_t           threshold_percent)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");

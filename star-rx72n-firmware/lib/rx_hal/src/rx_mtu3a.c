@@ -22,11 +22,10 @@
  * @copyright Copyright (c) 2025 STAR Project
  */
 
-#include "rx_mtu3a.h"
-
 #include "rx72n_regs.h"
 #include "rx_check.h"
 #include "rx_log.h"
+#include "rx_mtu3a.h"
 
 static const char* s_tag = "MTU3A";
 
@@ -128,7 +127,7 @@ static rx_err_t internal_calculate_period(uint32_t frequency_hz, uint16_t* perio
  * @return Pointer to TGR register, or NULL if invalid
  */
 static volatile uint16_t* internal_get_tgr_register(volatile MTU_Channel_Type* mtu,
-                                                      rx_mtu_output_t           output)
+                                                    rx_mtu_output_t            output)
 {
   switch (output) {
     case k_mtu_output_a:

@@ -121,9 +121,9 @@ static rx_err_t internal_i2c_write_callback(rx_bus_config_t* bus_config, void* u
 
   /* Write I2C data */
   rx_err_t err = riic_write(bus_config->proto.i2c.channel,
-                             bus_config->proto.i2c.device_addr,
-                             ctx->data,
-                             ctx->length);
+                            bus_config->proto.i2c.device_addr,
+                            ctx->data,
+                            ctx->length);
 
   if (err != RX_OK) {
     RX_LOG_ERROR(s_tag, "I2C write failed");
@@ -156,9 +156,9 @@ static rx_err_t internal_i2c_read_callback(rx_bus_config_t* bus_config, void* us
 
   /* Read I2C data */
   rx_err_t err = riic_read(bus_config->proto.i2c.channel,
-                            bus_config->proto.i2c.device_addr,
-                            ctx->data,
-                            ctx->length);
+                           bus_config->proto.i2c.device_addr,
+                           ctx->data,
+                           ctx->length);
 
   if (err != RX_OK) {
     RX_LOG_ERROR(s_tag, "I2C read failed");
@@ -191,11 +191,11 @@ static rx_err_t internal_i2c_write_read_callback(rx_bus_config_t* bus_config, vo
 
   /* I2C write-read operation */
   rx_err_t err = riic_write_read(bus_config->proto.i2c.channel,
-                                  bus_config->proto.i2c.device_addr,
-                                  ctx->write_data,
-                                  ctx->write_length,
-                                  ctx->read_data,
-                                  ctx->read_length);
+                                 bus_config->proto.i2c.device_addr,
+                                 ctx->write_data,
+                                 ctx->write_length,
+                                 ctx->read_data,
+                                 ctx->read_length);
 
   if (err != RX_OK) {
     RX_LOG_ERROR(s_tag, "I2C write-read failed");
@@ -229,9 +229,9 @@ rx_err_t rx_bus_i2c_init(rx_bus_manager_t* manager, const char* bus_name)
 }
 
 rx_err_t rx_bus_i2c_write(rx_bus_manager_t* manager,
-                           const char*        bus_name,
-                           const uint8_t*     data,
-                           uint16_t           length)
+                          const char*       bus_name,
+                          const uint8_t*    data,
+                          uint16_t          length)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
@@ -248,10 +248,8 @@ rx_err_t rx_bus_i2c_write(rx_bus_manager_t* manager,
   return ctx.result;
 }
 
-rx_err_t rx_bus_i2c_read(rx_bus_manager_t* manager,
-                          const char*        bus_name,
-                          uint8_t*           data,
-                          uint16_t           length)
+rx_err_t
+rx_bus_i2c_read(rx_bus_manager_t* manager, const char* bus_name, uint8_t* data, uint16_t length)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
@@ -269,11 +267,11 @@ rx_err_t rx_bus_i2c_read(rx_bus_manager_t* manager,
 }
 
 rx_err_t rx_bus_i2c_write_read(rx_bus_manager_t* manager,
-                                 const char*        bus_name,
-                                 const uint8_t*     write_data,
-                                 uint16_t           write_length,
-                                 uint8_t*           read_data,
-                                 uint16_t           read_length)
+                               const char*       bus_name,
+                               const uint8_t*    write_data,
+                               uint16_t          write_length,
+                               uint8_t*          read_data,
+                               uint16_t          read_length)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
@@ -281,13 +279,12 @@ rx_err_t rx_bus_i2c_write_read(rx_bus_manager_t* manager,
   RX_CHECK_NULL_PTR(read_data, s_tag, "read_data pointer is NULL");
 
   i2c_write_read_ctx_t ctx = {.write_data   = write_data,
-                               .write_length = write_length,
-                               .read_data    = read_data,
-                               .read_length  = read_length,
-                               .result       = RX_ERR_HW_ERROR};
+                              .write_length = write_length,
+                              .read_data    = read_data,
+                              .read_length  = read_length,
+                              .result       = RX_ERR_HW_ERROR};
 
-  rx_err_t err =
-    rx_bus_manager_with_bus(manager, bus_name, internal_i2c_write_read_callback, &ctx);
+  rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_i2c_write_read_callback, &ctx);
 
   if (err != RX_OK) {
     return err;

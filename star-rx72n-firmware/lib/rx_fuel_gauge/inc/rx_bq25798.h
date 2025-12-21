@@ -55,49 +55,49 @@ typedef enum {
  * @brief VBUS status
  */
 typedef enum {
-  k_bq25798_vbus_status_no_input  = 0,
-  k_bq25798_vbus_status_usb_host  = 1,
-  k_bq25798_vbus_status_adapter   = 2,
-  k_bq25798_vbus_status_otg       = 3,
+  k_bq25798_vbus_status_no_input = 0,
+  k_bq25798_vbus_status_usb_host = 1,
+  k_bq25798_vbus_status_adapter  = 2,
+  k_bq25798_vbus_status_otg      = 3,
 } bq25798_vbus_status_t;
 
 /**
  * @brief Charger configuration
  */
 typedef struct {
-  uint16_t charge_voltage_mv;     /**< Charge voltage limit in mV (3000-18800) */
-  uint16_t charge_current_ma;     /**< Charge current limit in mA (0-5000) */
-  uint16_t input_voltage_limit_mv; /**< Input voltage limit in mV (3600-24000) */
-  uint16_t input_current_limit_ma; /**< Input current limit in mA (100-3300) */
+  uint16_t charge_voltage_mv;         /**< Charge voltage limit in mV (3000-18800) */
+  uint16_t charge_current_ma;         /**< Charge current limit in mA (0-5000) */
+  uint16_t input_voltage_limit_mv;    /**< Input voltage limit in mV (3600-24000) */
+  uint16_t input_current_limit_ma;    /**< Input current limit in mA (100-3300) */
   uint16_t minimum_system_voltage_mv; /**< Minimum system voltage in mV */
-  bool     enable_charging;        /**< Enable charging on init */
-  bool     enable_adc;             /**< Enable ADC measurements */
+  bool     enable_charging;           /**< Enable charging on init */
+  bool     enable_adc;                /**< Enable ADC measurements */
 } bq25798_config_t;
 
 /**
  * @brief Charger status information
  */
 typedef struct {
-  bq25798_charge_status_t charge_status; /**< Charging status */
-  bq25798_vbus_status_t   vbus_status;   /**< VBUS status */
-  bool                    power_good;    /**< Power good indicator */
-  bool                    vindpm_active; /**< Input voltage DPM active */
-  bool                    iindpm_active; /**< Input current DPM active */
+  bq25798_charge_status_t charge_status;      /**< Charging status */
+  bq25798_vbus_status_t   vbus_status;        /**< VBUS status */
+  bool                    power_good;         /**< Power good indicator */
+  bool                    vindpm_active;      /**< Input voltage DPM active */
+  bool                    iindpm_active;      /**< Input current DPM active */
   bool                    thermal_regulation; /**< Thermal regulation active */
-  bool                    watchdog_fault; /**< Watchdog timer fault */
-  bool                    charging_enabled; /**< Charging enabled */
+  bool                    watchdog_fault;     /**< Watchdog timer fault */
+  bool                    charging_enabled;   /**< Charging enabled */
 } bq25798_status_t;
 
 /**
  * @brief ADC measurement results
  */
 typedef struct {
-  uint16_t vbus_mv;    /**< VBUS voltage in mV */
-  uint16_t vbat_mv;    /**< Battery voltage in mV */
-  uint16_t vsys_mv;    /**< System voltage in mV */
-  int16_t  ichg_ma;    /**< Charge current in mA */
-  int16_t  ibus_ma;    /**< Input current in mA */
-  int16_t  ts_temp_c;  /**< TS pin temperature in °C */
+  uint16_t vbus_mv;     /**< VBUS voltage in mV */
+  uint16_t vbat_mv;     /**< Battery voltage in mV */
+  uint16_t vsys_mv;     /**< System voltage in mV */
+  int16_t  ichg_ma;     /**< Charge current in mA */
+  int16_t  ibus_ma;     /**< Input current in mA */
+  int16_t  ts_temp_c;   /**< TS pin temperature in °C */
   int16_t  tdie_temp_c; /**< Die temperature in °C */
 } bq25798_adc_t;
 
@@ -123,7 +123,8 @@ typedef struct {
  * @return RX_ERR_NACK if device not responding
  * @return RX_ERR_INVALID_ARG if configuration values are out of range
  */
-rx_err_t rx_bq25798_init(rx_bus_manager_t* manager, const char* bus_name, const bq25798_config_t* config);
+rx_err_t
+rx_bq25798_init(rx_bus_manager_t* manager, const char* bus_name, const bq25798_config_t* config);
 
 /**
  * @brief Enable or disable charging
@@ -154,9 +155,8 @@ rx_err_t rx_bq25798_enable_charging(rx_bus_manager_t* manager, const char* bus_n
  * @return RX_ERR_INVALID_STATE if bus not initialized
  * @return RX_ERR_TIMEOUT if I2C timeout
  */
-rx_err_t rx_bq25798_set_charge_voltage(rx_bus_manager_t* manager,
-                                        const char*       bus_name,
-                                        uint16_t          voltage_mv);
+rx_err_t
+rx_bq25798_set_charge_voltage(rx_bus_manager_t* manager, const char* bus_name, uint16_t voltage_mv);
 
 /**
  * @brief Set charge current limit
@@ -172,9 +172,8 @@ rx_err_t rx_bq25798_set_charge_voltage(rx_bus_manager_t* manager,
  * @return RX_ERR_INVALID_STATE if bus not initialized
  * @return RX_ERR_TIMEOUT if I2C timeout
  */
-rx_err_t rx_bq25798_set_charge_current(rx_bus_manager_t* manager,
-                                        const char*       bus_name,
-                                        uint16_t          current_ma);
+rx_err_t
+rx_bq25798_set_charge_current(rx_bus_manager_t* manager, const char* bus_name, uint16_t current_ma);
 
 /**
  * @brief Set input voltage limit (VINDPM)
@@ -191,8 +190,8 @@ rx_err_t rx_bq25798_set_charge_current(rx_bus_manager_t* manager,
  * @return RX_ERR_TIMEOUT if I2C timeout
  */
 rx_err_t rx_bq25798_set_input_voltage_limit(rx_bus_manager_t* manager,
-                                             const char*       bus_name,
-                                             uint16_t          voltage_mv);
+                                            const char*       bus_name,
+                                            uint16_t          voltage_mv);
 
 /**
  * @brief Set input current limit (IINDPM)
@@ -209,8 +208,8 @@ rx_err_t rx_bq25798_set_input_voltage_limit(rx_bus_manager_t* manager,
  * @return RX_ERR_TIMEOUT if I2C timeout
  */
 rx_err_t rx_bq25798_set_input_current_limit(rx_bus_manager_t* manager,
-                                             const char*       bus_name,
-                                             uint16_t          current_ma);
+                                            const char*       bus_name,
+                                            uint16_t          current_ma);
 
 /**
  * @brief Read charger status
@@ -225,7 +224,8 @@ rx_err_t rx_bq25798_set_input_current_limit(rx_bus_manager_t* manager,
  * @return RX_ERR_INVALID_STATE if bus not initialized
  * @return RX_ERR_TIMEOUT if I2C timeout
  */
-rx_err_t rx_bq25798_read_status(rx_bus_manager_t* manager, const char* bus_name, bq25798_status_t* status);
+rx_err_t
+rx_bq25798_read_status(rx_bus_manager_t* manager, const char* bus_name, bq25798_status_t* status);
 
 /**
  * @brief Read ADC measurements

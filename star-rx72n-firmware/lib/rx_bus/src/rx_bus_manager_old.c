@@ -11,10 +11,9 @@
  * @copyright Copyright (c) 2025 STAR Project
  */
 
-#include "rx_bus_manager.h"
-
 #include <string.h>
 
+#include "rx_bus_manager.h"
 #include "rx_check.h"
 #include "rx_log.h"
 
@@ -53,9 +52,9 @@ static rx_bus_config_t* internal_find_bus(rx_bus_manager_t* manager, const char*
  */
 
 rx_err_t rx_bus_manager_init(rx_bus_manager_t*     manager,
-                               const char*           tag,
-                               rx_error_interface_t* error_iface,
-                               rx_pin_interface_t*   pin_iface)
+                             const char*           tag,
+                             rx_error_interface_t* error_iface,
+                             rx_pin_interface_t*   pin_iface)
 {
   /* Validate parameters */
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
@@ -151,9 +150,9 @@ rx_err_t rx_bus_manager_add_bus(rx_bus_manager_t* manager, rx_bus_config_t* bus_
   }
 
   /* Add bus to linked list (prepend for O(1) insertion) */
-  bus_config->next   = manager->buses;
+  bus_config->next        = manager->buses;
   bus_config->initialized = false;
-  manager->buses     = bus_config;
+  manager->buses          = bus_config;
   manager->bus_count++;
 
   /* Release mutex */
@@ -209,9 +208,8 @@ rx_err_t rx_bus_manager_remove_bus(rx_bus_manager_t* manager, const char* name)
   return RX_ERR_NOT_FOUND;
 }
 
-rx_err_t rx_bus_manager_find_bus(rx_bus_manager_t* manager,
-                                  const char*        name,
-                                  rx_bus_config_t**  bus_config)
+rx_err_t
+rx_bus_manager_find_bus(rx_bus_manager_t* manager, const char* name, rx_bus_config_t** bus_config)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(name, s_tag, "name pointer is NULL");
@@ -239,10 +237,10 @@ rx_err_t rx_bus_manager_find_bus(rx_bus_manager_t* manager,
   return RX_OK;
 }
 
-rx_err_t rx_bus_manager_with_bus(rx_bus_manager_t*  manager,
-                                  const char*        name,
-                                  rx_bus_callback_t  callback,
-                                  void*              user_ctx)
+rx_err_t rx_bus_manager_with_bus(rx_bus_manager_t* manager,
+                                 const char*       name,
+                                 rx_bus_callback_t callback,
+                                 void*             user_ctx)
 {
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(name, s_tag, "name pointer is NULL");

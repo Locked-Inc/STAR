@@ -107,9 +107,9 @@ rx_err_t rx_bus_smbus_read_byte(rx_bus_manager_t* manager, const char* bus_name,
  * @return RX_ERR_CRC_MISMATCH if PEC check fails
  */
 rx_err_t rx_bus_smbus_write_byte_data(rx_bus_manager_t* manager,
-                                       const char*        bus_name,
-                                       uint8_t            command,
-                                       uint8_t            data);
+                                      const char*       bus_name,
+                                      uint8_t           command,
+                                      uint8_t           data);
 
 /**
  * @brief Read byte data from SMBUS register
@@ -130,9 +130,9 @@ rx_err_t rx_bus_smbus_write_byte_data(rx_bus_manager_t* manager,
  * @return RX_ERR_CRC_MISMATCH if PEC check fails
  */
 rx_err_t rx_bus_smbus_read_byte_data(rx_bus_manager_t* manager,
-                                      const char*        bus_name,
-                                      uint8_t            command,
-                                      uint8_t*           data);
+                                     const char*       bus_name,
+                                     uint8_t           command,
+                                     uint8_t*          data);
 
 /**
  * @brief Write word data to SMBUS register
@@ -153,9 +153,9 @@ rx_err_t rx_bus_smbus_read_byte_data(rx_bus_manager_t* manager,
  * @return RX_ERR_CRC_MISMATCH if PEC check fails
  */
 rx_err_t rx_bus_smbus_write_word_data(rx_bus_manager_t* manager,
-                                       const char*        bus_name,
-                                       uint8_t            command,
-                                       uint16_t           data);
+                                      const char*       bus_name,
+                                      uint8_t           command,
+                                      uint16_t          data);
 
 /**
  * @brief Read word data from SMBUS register
@@ -176,9 +176,9 @@ rx_err_t rx_bus_smbus_write_word_data(rx_bus_manager_t* manager,
  * @return RX_ERR_CRC_MISMATCH if PEC check fails
  */
 rx_err_t rx_bus_smbus_read_word_data(rx_bus_manager_t* manager,
-                                      const char*        bus_name,
-                                      uint8_t            command,
-                                      uint16_t*          data);
+                                     const char*       bus_name,
+                                     uint8_t           command,
+                                     uint16_t*         data);
 
 /**
  * @brief Read block data from SMBUS device
@@ -201,11 +201,11 @@ rx_err_t rx_bus_smbus_read_word_data(rx_bus_manager_t* manager,
  * @return RX_ERR_CRC_MISMATCH if PEC check fails
  */
 rx_err_t rx_bus_smbus_read_block_data(rx_bus_manager_t* manager,
-                                       const char*        bus_name,
-                                       uint8_t            command,
-                                       uint8_t*           data,
-                                       uint8_t*           length,
-                                       uint8_t            max_length);
+                                      const char*       bus_name,
+                                      uint8_t           command,
+                                      uint8_t*          data,
+                                      uint8_t*          length,
+                                      uint8_t           max_length);
 
 #ifdef __cplusplus
 }

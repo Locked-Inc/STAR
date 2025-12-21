@@ -26,10 +26,10 @@
 
 #include "rx_motor.h"
 
+#include <math.h>
+
 #include "rx_check.h"
 #include "rx_log.h"
-
-#include <math.h>
 
 static const char* s_tag = "MOTOR";
 

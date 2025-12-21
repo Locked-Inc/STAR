@@ -25,13 +25,13 @@
 
 #include "tasks/motor_control_task.h"
 
+#include <math.h>
+#include <string.h>
+
 #include "hardware_config.h"
 #include "rx_check.h"
 #include "rx_cmt.h"
 #include "rx_log.h"
-
-#include <math.h>
-#include <string.h>
 
 static const char* s_tag = "MOTOR_CTRL";
 
@@ -62,10 +62,10 @@ typedef struct {
  * =============================================================================
  */
 
-static TX_THREAD            s_motor_control_thread;
-static uint8_t              s_motor_control_stack[k_motor_control_task_stack_size];
-static motor_task_params_t  s_task_params;
-static TX_SEMAPHORE         s_control_loop_semaphore;
+static TX_THREAD           s_motor_control_thread;
+static uint8_t             s_motor_control_stack[k_motor_control_task_stack_size];
+static motor_task_params_t s_task_params;
+static TX_SEMAPHORE        s_control_loop_semaphore;
 
 /* =============================================================================
  * Internal Helper Functions
@@ -108,9 +108,9 @@ static void internal_cmt1_callback(void* user_data);
  */
 
 rx_err_t motor_control_task_create(motor_shared_state_t* shared_state,
-                                    rx_motor_handle_t     motors[k_motor_count],
-                                    rx_mtu_channel_t      encoder_channels[k_motor_count],
-                                    rx_pid_handle_t       pids[k_motor_count])
+                                   rx_motor_handle_t     motors[k_motor_count],
+                                   rx_mtu_channel_t      encoder_channels[k_motor_count],
+                                   rx_pid_handle_t       pids[k_motor_count])
 {
   RX_CHECK_NULL_PTR(shared_state, s_tag, "shared_state pointer is NULL");
   RX_CHECK_NULL_PTR(motors, s_tag, "motors pointer is NULL");
@@ -147,15 +147,15 @@ rx_err_t motor_control_task_create(motor_shared_state_t* shared_state,
 
   /* Create motor control thread */
   status = tx_thread_create(&s_motor_control_thread,
-                           "motor_ctrl",
-                           internal_motor_control_task,
-                           0, /* Input parameter (unused, using static params) */
-                           s_motor_control_stack,
-                           k_motor_control_task_stack_size,
-                           k_motor_control_task_priority,
-                           k_motor_control_task_priority,
-                           TX_NO_TIME_SLICE,
-                           TX_AUTO_START);
+                            "motor_ctrl",
+                            internal_motor_control_task,
+                            0, /* Input parameter (unused, using static params) */
+                            s_motor_control_stack,
+                            k_motor_control_task_stack_size,
+                            k_motor_control_task_priority,
+                            k_motor_control_task_priority,
+                            TX_NO_TIME_SLICE,
+                            TX_AUTO_START);
 
   if (status != TX_SUCCESS) {
     RX_LOG_ERROR(s_tag, "Error occurred");
@@ -215,9 +215,7 @@ static void internal_motor_control_loop(motor_task_params_t* params)
       }
 
       /* Calculate velocity in RPM */
-      err = rx_encoder_read_velocity(params->encoder_channels[i],
-                                      dt_s,
-                                      &velocities_rpm[i]);
+      err = rx_encoder_read_velocity(params->encoder_channels[i], dt_s, &velocities_rpm[i]);
       if (err != RX_OK) {
         RX_LOG_WARN(s_tag, "Warning");
         velocities_rpm[i] = 0.0f;

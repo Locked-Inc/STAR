@@ -73,10 +73,10 @@ typedef enum {
  * @brief MTU PWM configuration
  */
 typedef struct {
-  uint32_t frequency_hz;     /**< PWM frequency in Hz (e.g., 20000 for 20kHz) */
-  uint16_t deadtime_ns;      /**< Deadtime in nanoseconds (e.g., 1000 for 1us) */
+  uint32_t frequency_hz;         /**< PWM frequency in Hz (e.g., 20000 for 20kHz) */
+  uint16_t deadtime_ns;          /**< Deadtime in nanoseconds (e.g., 1000 for 1us) */
   bool     enable_complementary; /**< Enable complementary outputs */
-  bool     invert_polarity;  /**< Invert PWM polarity */
+  bool     invert_polarity;      /**< Invert PWM polarity */
 } rx_mtu_config_t;
 
 /* =============================================================================
