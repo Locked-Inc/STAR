@@ -6,7 +6,7 @@
 \section{C Style Guide}
 \label{sec:c-style}
 
-This section defines comprehensive style guidelines for C firmware development in the STAR project. All firmware code (ESP32-S3, RX72N, and future platforms) must follow these conventions to ensure consistency, maintainability, and safety in embedded systems development.
+This section defines comprehensive style guidelines for C firmware development in the STAR project. All firmware code (ESP32, RX72N, and future platforms) must follow these conventions to ensure consistency, maintainability, and safety in embedded systems development.
 
 
 
@@ -77,13 +77,16 @@ void process_data(int* data)
 }
 \end{lstlisting}
 
-\subsection{ESP32-Specific Assertions}
-In ESP32 projects, you have two specific macros for error checking: \textbf{\texttt{ESP\_ERROR\_CHECK}} and \textbf{\texttt{ESP\_ERROR\_CHECK\_WITHOUT\_ABORT}}. These are commonly used to catch errors during development, especially when working with ESP-IDF functions.
+\subsection{Platform-Specific Error Checking Macros}
+Different platforms provide error checking macros for development and debugging:
 
 \begin{itemize}
-    \item \textbf{\texttt{ESP\_ERROR\_CHECK}}: This macro checks the return value of an ESP-IDF function and aborts the program if the return code is not \texttt{ESP\_OK}.
-    \item \textbf{\texttt{ESP\_ERROR\_CHECK\_WITHOUT\_ABORT}}: This macro works similarly to \texttt{ESP\_ERROR\_CHECK}, but it will not abort the program when an error occurs.
+    \item \textbf{ESP32 (ESP-IDF)}: \texttt{ESP\_ERROR\_CHECK} aborts on error, \texttt{ESP\_ERROR\_CHECK\_WITHOUT\_ABORT} logs but continues
+    \item \textbf{RX72N}: Custom error checking macros following similar patterns
+    \item \textbf{General Pattern}: Check return values and handle errors appropriately for your platform
 \end{itemize}
+
+\textbf{Note:} While platform-specific macros are useful during development, production code should use explicit error handling with proper cleanup and recovery mechanisms.
 
 
 Proper brace placement makes code cleaner and easier to read. This section establishes consistent brace conventions used throughout the STAR firmware codebase.
@@ -102,30 +105,30 @@ Opening brace on the \textbf{same line} as the control statement.
 
 \begin{lstlisting}[language=C]
 /* CORRECT - if/else with braces on same line */
-if (ret != ESP_OK) {
-  ESP_LOGE(s_TAG, "Operation failed: %s", esp_err_to_name(ret));
+if (ret != RX_OK) {
+  RX_LOG_ERROR(s_TAG, "Operation failed: %s", rx_err_to_name(ret));
   return ret;
 }
 
 if (manager == NULL) {
-  return ESP_ERR_INVALID_ARG;
+  return RX_ERR_INVALID_ARG;
 } else if (manager->mutex == NULL) {
-  return ESP_ERR_INVALID_STATE;
+  return RX_ERR_INVALID_STATE;
 } else {
   /* Proceed with operation */
 }
 
 /* CORRECT - Single statement still requires braces */
 if (pin < 0 || pin >= GPIO_NUM_MAX) {
-  return ESP_OK;  /* Not an error, pin is not used */
+  return RX_OK;  /* Not an error, pin is not used */
 }
 
 /* WRONG - Missing braces */
-if (ret != ESP_OK)
+if (ret != RX_OK)
 return ret;
 
 /* WRONG - Brace on new line */
-if (ret != ESP_OK)
+if (ret != RX_OK)
 {
   return ret;
 }
@@ -159,7 +162,7 @@ process_item(i);  /* Missing braces */
 while (curr) {
   star_bus_config_t* next = curr->next;
   esp_err_t destroy_result = star_bus_config_destroy(curr);
-  if (destroy_result != ESP_OK && first_error == ESP_OK) {
+  if (destroy_result != RX_OK && first_error == RX_OK) {
     first_error = destroy_result;
   }
   curr = next;
@@ -167,7 +170,7 @@ while (curr) {
 
 while (error_handler_can_retry(&handler)) {
   ret = attempt_operation();
-  if (ret == ESP_OK) {
+  if (ret == RX_OK) {
     break;
   }
 }
@@ -186,12 +189,12 @@ Opening brace on a \textbf{new line} for function definitions.
 
 \begin{lstlisting}[language=C]
 /* CORRECT - Function brace on new line */
-esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
+rx_err_t star_bus_manager_init(star_bus_manager_t*     manager,
 const char*             tag,
 star_error_interface_t* error_iface,
 star_pin_interface_t*   pin_iface)
 {
-  ESP_RETURN_ON_FALSE(manager, ESP_ERR_INVALID_ARG, s_TAG,
+  RX_RETURN_ON_FALSE(manager, RX_ERR_INVALID_ARG, s_TAG,
   "Manager pointer is NULL");
   
   manager->buses       = NULL;
@@ -200,23 +203,23 @@ star_pin_interface_t*   pin_iface)
   
   /* ... */
   
-  return ESP_OK;
+  return RX_OK;
 }
 
-static esp_err_t internal_register_bus_pin(star_pin_interface_t* pin_iface,
+static rx_err_t internal_register_bus_pin(star_pin_interface_t* pin_iface,
 gpio_num_t            pin,
 const char*           bus_name,
 const char*           usage,
 bool                  can_be_shared)
 {
   if (pin < 0 || pin >= GPIO_NUM_MAX) {
-    return ESP_OK;
+    return RX_OK;
   }
   /* ... */
 }
 
 /* WRONG - Function brace on same line */
-esp_err_t star_bus_manager_init(star_bus_manager_t* manager, ...) {
+rx_err_t star_bus_manager_init(star_bus_manager_t* manager, ...) {
   /* ... */
 }
 \end{lstlisting}
@@ -305,7 +308,7 @@ Closing braces are always on their own line, except for \texttt{else}, \texttt{e
 
 \begin{lstlisting}[language=C]
 /* CORRECT - else on same line as closing brace */
-if (ret != ESP_OK) {
+if (ret != RX_OK) {
   handle_error(ret);
 } else {
   continue_operation();
@@ -314,7 +317,7 @@ if (ret != ESP_OK) {
 /* CORRECT - do-while */
 do {
   ret = try_operation();
-} while (ret == ESP_ERR_TIMEOUT && retries-- > 0);
+} while (ret == RX_ERR_TIMEOUT && retries-- > 0);
 
 /* CORRECT - else if chain */
 if (config->type == k_star_bus_type_i2c) {
@@ -380,7 +383,7 @@ switch (config->type) {
     config->name,
     "I2C SDA",
     true);
-    if (ret != ESP_OK && first_error == ESP_OK) {
+    if (ret != RX_OK && first_error == RX_OK) {
       first_error = ret;
     }
     
@@ -389,7 +392,7 @@ switch (config->type) {
     config->name,
     "I2C SCL",
     true);
-    if (ret != ESP_OK && first_error == ESP_OK) {
+    if (ret != RX_OK && first_error == RX_OK) {
       first_error = ret;
     }
     break;
@@ -401,7 +404,7 @@ switch (config->type) {
     config->name,
     "SPI COPI",
     true);
-    if (ret != ESP_OK && first_error == ESP_OK) {
+    if (ret != RX_OK && first_error == RX_OK) {
       first_error = ret;
     }
     /* ... more pin registrations ... */
@@ -409,7 +412,7 @@ switch (config->type) {
   }
   
   default: {
-    ESP_LOGD(s_TAG, "No pin registration for bus type: %d", config->type);
+    RX_LOG_DEBUG(s_TAG, "No pin registration for bus type: %d", config->type);
     break;
   }
 }
@@ -425,21 +428,21 @@ switch (bus_type) {
   case k_star_bus_type_i2c: {
     i2c_port_t port = config->proto.i2c.port;  /* Local variable */
     uint8_t address = config->proto.i2c.address;
-    ESP_LOGI(s_TAG, "I2C bus on port %d, address 0x%02X", port, address);
+    RX_LOG_INFO(s_TAG, "I2C bus on port %d, address 0x%02X", port, address);
     break;
   }
   case k_star_bus_type_spi: {
     spi_host_device_t host = config->proto.spi.host;  /* Different scope */
-    ESP_LOGI(s_TAG, "SPI bus on host %d", host);
+    RX_LOG_INFO(s_TAG, "SPI bus on host %d", host);
     break;
   }
   case k_star_bus_type_gpio: {
     uint8_t pin_count = config->proto.gpio.pin_count;
-    ESP_LOGI(s_TAG, "GPIO bus with %d pins", pin_count);
+    RX_LOG_INFO(s_TAG, "GPIO bus with %d pins", pin_count);
     break;
   }
   default: {
-    ESP_LOGW(s_TAG, "Unknown bus type: %d", bus_type);
+    RX_LOG_WARN(s_TAG, "Unknown bus type: %d", bus_type);
     break;
   }
 }
@@ -545,14 +548,14 @@ switch (curr->type) {
     break;
   }
   default: {
-    ESP_LOGW(manager->tag, "Skipping pin registration for "
+    RX_LOG_WARN(manager->tag, "Skipping pin registration for "
     "unsupported bus type: %d", curr->type);
     break;
   }
 }
 
 /* CORRECT - Default case returns error for invalid input */
-esp_err_t process_bus_type(star_bus_type_t type)
+rx_err_t process_bus_type(star_bus_type_t type)
 {
   switch (type) {
     case k_star_bus_type_i2c: {
@@ -562,8 +565,8 @@ esp_err_t process_bus_type(star_bus_type_t type)
       return process_spi();
     }
     default: {
-      ESP_LOGE(s_TAG, "Invalid bus type: %d", type);
-      return ESP_ERR_INVALID_ARG;
+      RX_LOG_ERROR(s_TAG, "Invalid bus type: %d", type);
+      return RX_ERR_INVALID_ARG;
     }
   }
 }
@@ -577,7 +580,7 @@ When switching on an enum, consider handling all values explicitly.
 /* CORRECT - All enum values handled */
 switch (config->type) {
   case k_star_bus_type_none: {
-    ESP_LOGW(s_TAG, "Bus type is NONE - skipping");
+    RX_LOG_WARN(s_TAG, "Bus type is NONE - skipping");
     break;
   }
   case k_star_bus_type_i2c: {
@@ -598,8 +601,8 @@ switch (config->type) {
   }
   case k_star_bus_type_count: {
     /* Sentinel value - should never be used */
-    ESP_LOGE(s_TAG, "Invalid bus type: count sentinel");
-    return ESP_ERR_INVALID_ARG;
+    RX_LOG_ERROR(s_TAG, "Invalid bus type: count sentinel");
+    return RX_ERR_INVALID_ARG;
   }
   /* No default needed when all enum values are handled */
   /* Compiler warns if new enum values are added */
@@ -767,10 +770,10 @@ All public functions must have Doxygen documentation in the header file.
 *                         default tag is used.
 * @param[in]  error_iface Optional error handler interface (can be NULL).
 * @param[in]  pin_iface   Optional pin validator interface (can be NULL).
-* @return esp_err_t ESP_OK on success, ESP_ERR_INVALID_ARG if manager
+* @return rx_err_t RX_OK on success, RX_ERR_INVALID_ARG if manager
 *                   is NULL, ESP_ERR_NO_MEM if mutex creation fails.
 */
-esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
+rx_err_t star_bus_manager_init(star_bus_manager_t*     manager,
 const char*             tag,
 star_error_interface_t* error_iface,
 star_pin_interface_t*   pin_iface);
@@ -790,9 +793,9 @@ Use \texttt{[in]}, \texttt{[out]}, or \texttt{[in,out]} to indicate parameter di
 * @param[in]  reg_addr      Target register address.
 * @param[out] bytes_written Pointer to store actual bytes written.
 *                           Can be NULL if not needed.
-* @return esp_err_t ESP_OK on success.
+* @return rx_err_t RX_OK on success.
 */
-static esp_err_t internal_star_bus_i2c_write(const star_bus_config_t* config,
+static rx_err_t internal_star_bus_i2c_write(const star_bus_config_t* config,
 const uint8_t*           data,
 size_t                   len,
 uint8_t                  reg_addr,
@@ -807,10 +810,10 @@ size_t*                  bytes_written);
 * @param[in]     file        Source file where error occurred
 * @param[in]     line        Line number where error occurred
 * @param[in]     func        Function name where error occurred
-* @return ESP_OK if error was handled, or the original error code.
+* @return RX_OK if error was handled, or the original error code.
 */
-esp_err_t error_handler_record_error(error_handler_t* handler,
-esp_err_t        error,
+rx_err_t error_handler_record_error(error_handler_t* handler,
+rx_err_t        error,
 const char*      description,
 const char*      file,
 int32_t          line,
@@ -926,7 +929,7 @@ static esp_err_t internal_register_bus_pin(...);
 esp_err_t star_bus_manager_init(...) { /* ... */ }
 
 /* === Private Functions === */
-static esp_err_t internal_register_bus_pin(...) { /* ... */ }
+static rx_err_t internal_register_bus_pin(...) { /* ... */ }
 
 /* --- Pin Registration Helpers --- */
 /* Subsection within a section */
@@ -944,12 +947,12 @@ typedef struct error_handler {
   uint32_t          base_retry_delay;    /**< Base delay (ms) */
   uint32_t          max_retry_delay;     /**< Max delay (ms) */
   uint32_t          current_retry_delay; /**< Current delay with backoff */
-  esp_err_t         last_error;          /**< Last recorded error code */
+  rx_err_t         last_error;          /**< Last recorded error code */
   bool              in_error_state;      /**< Whether in error state */
   void*             reset_context;       /**< Context for reset function */
   SemaphoreHandle_t mutex;               /**< Mutex for thread-safety */
   
-  esp_err_t (*reset_fn)(void* context);  /**< Optional reset function */
+  rx_err_t (*reset_fn)(void* context);  /**< Optional reset function */
 } error_handler_t;
 \end{lstlisting}
 
@@ -958,27 +961,27 @@ typedef struct error_handler {
 Comments within function bodies explain non-obvious logic.
 
 \begin{lstlisting}[language=C]
-esp_err_t star_bus_manager_add_bus(star_bus_manager_t* manager,
+rx_err_t star_bus_manager_add_bus(star_bus_manager_t* manager,
 star_bus_config_t*  config)
 {
   /* Validate inputs using ESP-IDF macro */
-  ESP_RETURN_ON_FALSE(manager && config, ESP_ERR_INVALID_ARG,
+  RX_RETURN_ON_FALSE(manager && config, RX_ERR_INVALID_ARG,
   s_TAG, "Manager or config pointer is NULL");
   
-  esp_err_t ret = ESP_OK;
+  rx_err_t ret = RX_OK;
   
   /* Acquire mutex with timeout to prevent deadlock */
   if (xSemaphoreTake(manager->mutex,
   pdMS_TO_TICKS(CONFIG_STAR_KCONFIG_BUS_MUTEX_TIMEOUT_MS))
   != pdTRUE) {
-    ESP_LOGE(manager->tag, "Timeout acquiring mutex");
-    return ESP_ERR_TIMEOUT;
+    RX_LOG_ERROR(manager->tag, "Timeout acquiring mutex");
+    return RX_ERR_TIMEOUT;
   }
   
   /* Check for duplicate name - bus names must be unique */
   for (star_bus_config_t* curr = manager->buses; curr; curr = curr->next) {
     if (curr->name && strcmp(curr->name, config->name) == 0) {
-      ret = ESP_ERR_INVALID_STATE;
+      ret = RX_ERR_INVALID_STATE;
       goto add_give_mutex;  /* Single exit point pattern */
     }
   }
@@ -987,7 +990,7 @@ star_bus_config_t*  config)
   * This ensures manager's SPI host tracking is updated correctly */
   if (!config->initialized) {
     ret = star_bus_config_init(config, manager);
-    if (ret != ESP_OK) {
+    if (ret != RX_OK) {
       goto add_give_mutex;
     }
   }
@@ -1010,18 +1013,18 @@ Static functions should have brief documentation in the source file.
 /**
 * @brief Helper to register a single pin via the interface
 */
-static esp_err_t internal_register_bus_pin(star_pin_interface_t* pin_iface,
+static rx_err_t internal_register_bus_pin(star_pin_interface_t* pin_iface,
 gpio_num_t            pin,
 const char*           bus_name,
 const char*           usage,
 bool                  can_be_shared)
 {
   if (pin < 0 || pin >= GPIO_NUM_MAX) {
-    return ESP_OK;  /* Not an error, pin is not used */
+    return RX_OK;  /* Not an error, pin is not used */
   }
   
   if (!pin_iface || !pin_iface->register_pin) {
-    return ESP_OK;  /* No interface, skip registration */
+    return RX_OK;  /* No interface, skip registration */
   }
   
   /* Create description: "BusName: Usage" (e.g., "I2C0: SDA") */
@@ -1169,7 +1172,7 @@ const char* star_bus_type_to_string(star_bus_type_t type)
 }
 
 /* Usage */
-ESP_LOGI(s_TAG, "Added bus config: %s (Type: %s)",
+RX_LOG_INFO(s_TAG, "Added bus config: %s (Type: %s)",
 config->name, star_bus_type_to_string(config->type));
 \end{lstlisting}
 
@@ -1190,13 +1193,13 @@ static const char* s_bus_type_names[k_star_bus_type_count] = {
 /* Iteration using count */
 for (star_bus_type_t type = k_star_bus_type_none;
 type < k_star_bus_type_count; ++type) {
-  ESP_LOGI(s_TAG, "Bus type %d: %s", type, s_bus_type_names[type]);
+  RX_LOG_INFO(s_TAG, "Bus type %d: %s", type, s_bus_type_names[type]);
 }
 
 /* Validation using count */
 if (type >= k_star_bus_type_count) {
-  ESP_LOGE(s_TAG, "Invalid bus type: %d", type);
-  return ESP_ERR_INVALID_ARG;
+  RX_LOG_ERROR(s_TAG, "Invalid bus type: %d", type);
+  return RX_ERR_INVALID_ARG;
 }
 \end{lstlisting}
 
@@ -1208,7 +1211,7 @@ Always handle all enum values or include a default case.
 /* All values handled explicitly */
 switch (config->type) {
   case k_star_bus_type_none: {
-    ESP_LOGW(s_TAG, "Bus type is NONE - skipping");
+    RX_LOG_WARN(s_TAG, "Bus type is NONE - skipping");
     break;
   }
   case k_star_bus_type_i2c: {
@@ -1229,8 +1232,8 @@ switch (config->type) {
   }
   case k_star_bus_type_count: {
     /* Sentinel value should never be used */
-    ESP_LOGE(s_TAG, "Invalid bus type: count sentinel");
-    return ESP_ERR_INVALID_ARG;
+    RX_LOG_ERROR(s_TAG, "Invalid bus type: count sentinel");
+    return RX_ERR_INVALID_ARG;
   }
   /* No default - compiler warns if new enum values added */
 }
@@ -1278,7 +1281,7 @@ String function & \texttt{\_to\_string} & \texttt{star\_bus\_type\_to\_string} \
 
 
 
-This section establishes error handling patterns for the STAR firmware codebase, with emphasis on ESP-IDF specific patterns.
+This section establishes error handling patterns for the STAR firmware codebase across all platforms (ESP32, RX72N, and future targets).
 
 \subsection{General Principles}
 
@@ -1289,71 +1292,72 @@ This section establishes error handling patterns for the STAR firmware codebase,
     \item \textbf{Fail Fast}: Return early on invalid arguments or precondition failures.
 \end{itemize}
 
-\subsection{ESP-IDF Error Codes}
+\subsection{Platform Error Codes}
 
-Use standard ESP-IDF error codes throughout the codebase.
+Use platform-specific error codes consistently. STAR defines generic error types that map to platform implementations.
 
 \begin{lstlisting}[language=C]
-/* Standard ESP-IDF error codes */
-ESP_OK                  /* Success */
-ESP_FAIL                /* Generic failure */
-ESP_ERR_NO_MEM          /* Out of memory */
-ESP_ERR_INVALID_ARG     /* Invalid argument */
-ESP_ERR_INVALID_STATE   /* Invalid state for operation */
-ESP_ERR_INVALID_SIZE    /* Invalid size */
-ESP_ERR_NOT_FOUND       /* Requested resource not found */
-ESP_ERR_NOT_SUPPORTED   /* Operation not supported */
-ESP_ERR_TIMEOUT         /* Operation timed out */
+/* Generic STAR error codes (map to platform-specific implementations) */
+RX_OK                   /* Success */
+RX_ERR_FAIL             /* Generic failure */
+RX_ERR_NO_MEM           /* Out of memory */
+RX_ERR_INVALID_ARG      /* Invalid argument */
+RX_ERR_INVALID_STATE    /* Invalid state for operation */
+RX_ERR_INVALID_SIZE     /* Invalid size */
+RX_ERR_NOT_FOUND        /* Requested resource not found */
+RX_ERR_NOT_SUPPORTED    /* Operation not supported */
+RX_ERR_TIMEOUT          /* Operation timed out */
 
 /* Usage example */
-esp_err_t star_bus_manager_init(star_bus_manager_t* manager, ...)
+rx_err_t star_bus_manager_init(star_bus_manager_t* manager, ...)
 {
   if (manager == NULL) {
-    return ESP_ERR_INVALID_ARG;
+    return RX_ERR_INVALID_ARG;
   }
-  
+
   manager->mutex = xSemaphoreCreateMutex();
   if (manager->mutex == NULL) {
-    return ESP_ERR_NO_MEM;
+    return RX_ERR_NO_MEM;
   }
-  
-  return ESP_OK;
+
+  return RX_OK;
 }
 \end{lstlisting}
 
-\subsection{ESP-IDF Validation Macros}
+\subsection{Validation Macros}
 
-Use ESP-IDF macros for parameter validation and error checking.
+Use platform-provided validation macros for parameter checking and early returns. These provide consistent error handling patterns across the codebase.
 
-\subsubsection{ESP\_RETURN\_ON\_FALSE}
+\subsubsection{RX\_RETURN\_ON\_FALSE}
 
-Returns an error if condition is false, with logging.
+Returns an error if condition is false, with logging. ESP32 platforms use \texttt{ESP\_RETURN\_ON\_FALSE}, RX72N uses \texttt{RX\_RETURN\_ON\_FALSE}.
 
 \begin{lstlisting}[language=C]
-#include "esp_check.h"
+/* Platform-specific: ESP32 uses esp_check.h, RX72N uses rx_check.h */
+#include "rx_check.h"
 
-esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
+rx_err_t star_bus_manager_init(star_bus_manager_t*     manager,
 const char*             tag,
 star_error_interface_t* error_iface,
 star_pin_interface_t*   pin_iface)
 {
   /* Validate required parameter with automatic logging */
-  ESP_RETURN_ON_FALSE(manager, ESP_ERR_INVALID_ARG, s_TAG,
+  RX_RETURN_ON_FALSE(manager, RX_ERR_INVALID_ARG, s_TAG,
   "Manager pointer is NULL");
   
   /* Multiple validations */
-  ESP_RETURN_ON_FALSE(manager->mutex,
-  ESP_ERR_INVALID_STATE,
+  RX_RETURN_ON_FALSE(manager->mutex,
+  RX_ERR_INVALID_STATE,
   manager->tag,
   "Manager mutex not initialized");
   
-  ESP_RETURN_ON_FALSE(config->type > k_star_bus_type_none &&
+  RX_RETURN_ON_FALSE(config->type > k_star_bus_type_none &&
   config->type < k_star_bus_type_count,
-  ESP_ERR_INVALID_ARG,
+  RX_ERR_INVALID_ARG,
   manager->tag,
   "Invalid bus type in config");
   
-  return ESP_OK;
+  return RX_OK;
 }
 \end{lstlisting}
 
@@ -1362,38 +1366,38 @@ star_pin_interface_t*   pin_iface)
 Jumps to a label on error, with logging. Use for cleanup patterns.
 
 \begin{lstlisting}[language=C]
-static esp_err_t internal_star_bus_i2c_write(const star_bus_config_t* config,
+static rx_err_t internal_star_bus_i2c_write(const star_bus_config_t* config,
 const uint8_t*           data,
 size_t                   len,
 uint8_t                  reg_addr,
 size_t*                  bytes_written)
 {
-  esp_err_t        ret = ESP_OK;
+  rx_err_t        ret = RX_OK;
   i2c_cmd_handle_t cmd = NULL;
   
   cmd = i2c_cmd_link_create();
-  ESP_RETURN_ON_FALSE(cmd, ESP_ERR_NO_MEM, s_TAG,
+  RX_RETURN_ON_FALSE(cmd, RX_ERR_NO_MEM, s_TAG,
   "Failed to create I2C command link");
   
   ret = i2c_master_start(cmd);
   ESP_GOTO_ON_ERROR(ret, write_fail, s_TAG,
   "Write '%s': START failed: %s",
-  config->name, esp_err_to_name(ret));
+  config->name, rx_err_to_name(ret));
   
   ret = i2c_master_write_byte(cmd, (address << 1) | I2C_MASTER_WRITE, true);
   ESP_GOTO_ON_ERROR(ret, write_fail, s_TAG,
   "Write '%s': Address (W) failed: %s",
-  config->name, esp_err_to_name(ret));
+  config->name, rx_err_to_name(ret));
   
   ret = i2c_master_write(cmd, data, len, true);
   ESP_GOTO_ON_ERROR(ret, write_fail, s_TAG,
   "Write '%s': Data write failed: %s",
-  config->name, esp_err_to_name(ret));
+  config->name, rx_err_to_name(ret));
   
   ret = i2c_master_stop(cmd);
   ESP_GOTO_ON_ERROR(ret, write_fail, s_TAG,
   "Write '%s': STOP failed: %s",
-  config->name, esp_err_to_name(ret));
+  config->name, rx_err_to_name(ret));
   
   /* Execute command */
   ret = i2c_master_cmd_begin(port, cmd, pdMS_TO_TICKS(1000));
@@ -1405,7 +1409,7 @@ size_t*                  bytes_written)
   if (bytes_written) {
     *bytes_written = len;
   }
-  return ESP_OK;
+  return RX_OK;
   
   write_fail:
   if (cmd) {
@@ -1421,10 +1425,14 @@ Use during development to catch fatal errors.
 
 \begin{lstlisting}[language=C]
 /* Development only - aborts on error */
+/* Platform-specific error checking example (ESP32 shown) */
 ESP_ERROR_CHECK(i2c_driver_install(port, I2C_MODE_MASTER, 0, 0, 0));
 
-/* Use ESP_ERROR_CHECK_WITHOUT_ABORT for non-fatal checks */
-ESP_ERROR_CHECK_WITHOUT_ABORT(optional_init());
+/* Generic pattern: check return value and handle errors */
+rx_err_t ret = optional_init();
+if (ret != RX_OK) {
+  RX_LOG_WARN(TAG, "Optional init failed: %d", ret);
+}
 \end{lstlisting}
 
 \subsection{NULL Safety Patterns}
@@ -1433,18 +1441,18 @@ Always validate pointer parameters.
 
 \begin{lstlisting}[language=C]
 /* At function start - validate all pointers */
-esp_err_t star_bus_i2c_write(const star_bus_manager_t* manager,
+rx_err_t star_bus_i2c_write(const star_bus_manager_t* manager,
 const char*               name,
 const uint8_t*            data,
 size_t                    len,
 uint8_t                   reg_addr,
 size_t*                   bytes_written)
 {
-  ESP_RETURN_ON_FALSE(manager && name && data,
-  ESP_ERR_INVALID_ARG,
+  RX_RETURN_ON_FALSE(manager && name && data,
+  RX_ERR_INVALID_ARG,
   s_TAG,
   "Manager, name, or data is NULL");
-  ESP_RETURN_ON_FALSE(len > 0, ESP_ERR_INVALID_ARG, s_TAG,
+  RX_RETURN_ON_FALSE(len > 0, RX_ERR_INVALID_ARG, s_TAG,
   "Write length must be > 0");
   
   /* Clear output parameter initially */
@@ -1482,24 +1490,24 @@ STAR_IFACE_RECORD_ERROR(manager->error_iface, ret, "Operation failed");
 Handle mutex acquisition failures properly.
 
 \begin{lstlisting}[language=C]
-esp_err_t star_bus_manager_add_bus(star_bus_manager_t* manager,
+rx_err_t star_bus_manager_add_bus(star_bus_manager_t* manager,
 star_bus_config_t*  config)
 {
   /* Validate arguments first */
-  ESP_RETURN_ON_FALSE(manager && config, ESP_ERR_INVALID_ARG,
+  RX_RETURN_ON_FALSE(manager && config, RX_ERR_INVALID_ARG,
   s_TAG, "Invalid arguments");
-  ESP_RETURN_ON_FALSE(manager->mutex, ESP_ERR_INVALID_STATE,
+  RX_RETURN_ON_FALSE(manager->mutex, ESP_ERR_INVALID_STATE,
   manager->tag, "Mutex not initialized");
   
-  esp_err_t ret = ESP_OK;
+  rx_err_t ret = RX_OK;
   
   /* Acquire mutex with timeout */
   if (xSemaphoreTake(manager->mutex,
   pdMS_TO_TICKS(CONFIG_STAR_KCONFIG_BUS_MUTEX_TIMEOUT_MS))
   != pdTRUE) {
-    ESP_LOGE(manager->tag, "Timeout acquiring mutex for adding bus '%s'",
+    RX_LOG_ERROR(manager->tag, "Timeout acquiring mutex for adding bus '%s'",
     config->name);
-    return ESP_ERR_TIMEOUT;
+    return RX_ERR_TIMEOUT;
   }
   
   /* Critical section */
@@ -1519,16 +1527,16 @@ Components receive error handlers through dependency injection.
 \begin{lstlisting}[language=C]
 /* Interface definition */
 typedef struct star_error_interface {
-  esp_err_t (*record_error)(void* ctx, esp_err_t error,
+  rx_err_t (*record_error)(void* ctx, rx_err_t error,
   const char* message, const char* file,
   int line, const char* func);
   bool (*can_retry)(void* ctx);
-  esp_err_t (*reset_state)(void* ctx);
+  rx_err_t (*reset_state)(void* ctx);
   void* ctx;
 } star_error_interface_t;
 
 /* Injecting error handler into component */
-esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
+rx_err_t star_bus_manager_init(star_bus_manager_t*     manager,
 const char*             tag,
 star_error_interface_t* error_iface,
 star_pin_interface_t*   pin_iface)
@@ -1538,7 +1546,7 @@ star_pin_interface_t*   pin_iface)
 }
 
 /* Using the error interface */
-if (ret != ESP_OK) {
+if (ret != RX_OK) {
   if (manager->error_iface && manager->error_iface->record_error) {
     manager->error_iface->record_error(
     manager->error_iface->ctx,
@@ -1556,29 +1564,29 @@ if (ret != ESP_OK) {
 Use goto for consistent cleanup when multiple resources are acquired.
 
 \begin{lstlisting}[language=C]
-esp_err_t complex_init(complex_t* obj)
+rx_err_t complex_init(complex_t* obj)
 {
-  esp_err_t ret = ESP_OK;
+  rx_err_t ret = RX_OK;
   
   /* Allocate resources */
   obj->buffer = malloc(BUFFER_SIZE);
   if (!obj->buffer) {
-    ret = ESP_ERR_NO_MEM;
+    ret = RX_ERR_NO_MEM;
     goto cleanup;
   }
   
   obj->mutex = xSemaphoreCreateMutex();
   if (!obj->mutex) {
-    ret = ESP_ERR_NO_MEM;
+    ret = RX_ERR_NO_MEM;
     goto cleanup;
   }
   
   ret = hardware_init(obj);
-  if (ret != ESP_OK) {
+  if (ret != RX_OK) {
     goto cleanup;
   }
   
-  return ESP_OK;
+  return RX_OK;
   
   cleanup:
   /* Release resources in reverse order */
@@ -1599,27 +1607,27 @@ esp_err_t complex_init(complex_t* obj)
 Use appropriate log levels for different error severities.
 
 \begin{lstlisting}[language=C]
-/* ESP_LOGE - Errors that prevent operation */
-ESP_LOGE(s_TAG, "Failed to initialize bus '%s': %s",
-config->name, esp_err_to_name(ret));
+/* RX_LOG_ERROR - Errors that prevent operation */
+RX_LOG_ERROR(s_TAG, "Failed to initialize bus '%s': %s",
+config->name, rx_err_to_name(ret));
 
-/* ESP_LOGW - Warnings that don't prevent operation */
-ESP_LOGW(manager->tag, "Failed to register pins for bus '%s': %s "
-"(bus still added)", config->name, esp_err_to_name(ret));
+/* RX_LOG_WARN - Warnings that don't prevent operation */
+RX_LOG_WARN(manager->tag, "Failed to register pins for bus '%s': %s "
+"(bus still added)", config->name, rx_err_to_name(ret));
 
-/* ESP_LOGI - Informational messages */
-ESP_LOGI(manager->tag, "Added bus config: %s (Type: %s)",
+/* RX_LOG_INFO - Informational messages */
+RX_LOG_INFO(manager->tag, "Added bus config: %s (Type: %s)",
 config->name, star_bus_type_to_string(config->type));
 
-/* ESP_LOGD - Debug messages (compiled out in release) */
-ESP_LOGD(s_TAG, "Write Success: %zu bytes to '%s' (Addr 0x%02X)",
+/* RX_LOG_DEBUG - Debug messages (compiled out in release) */
+RX_LOG_DEBUG(s_TAG, "Write Success: %zu bytes to '%s' (Addr 0x%02X)",
 len, config->name, address);
 \end{lstlisting}
 
 \subsection{Summary}
 
 \begin{itemize}
-    \item Return \texttt{esp\_err\_t} from all functions that can fail
+    \item Return \texttt{rx\_err\_t} from all functions that can fail
     \item Use \texttt{ESP\_RETURN\_ON\_FALSE} for parameter validation
     \item Use \texttt{ESP\_GOTO\_ON\_ERROR} for cleanup patterns
     \item Always validate pointers before dereferencing
@@ -1641,10 +1649,10 @@ This section establishes standards for function design, implementation, and docu
 \end{itemize}
 
 \begin{lstlisting}[language=C]
-/* Action functions return esp_err_t */
-esp_err_t star_bus_manager_init(...);
-esp_err_t star_bus_manager_add_bus(...);
-esp_err_t star_bus_config_destroy(...);
+/* Action functions return rx_err_t */
+rx_err_t star_bus_manager_init(...);
+rx_err_t star_bus_manager_add_bus(...);
+rx_err_t star_bus_config_destroy(...);
 
 /* Predicate functions return bool */
 bool error_handler_can_retry(error_handler_t* handler);
@@ -1663,19 +1671,19 @@ Functions internal to a single source file should be declared \texttt{static} wi
 
 \begin{lstlisting}[language=C]
 /* In .c file - private static functions */
-static esp_err_t internal_register_bus_pin(star_pin_interface_t* pin_iface,
+static rx_err_t internal_register_bus_pin(star_pin_interface_t* pin_iface,
 gpio_num_t            pin,
 const char*           bus_name,
 const char*           usage,
 bool                  can_be_shared)
 {
   if (pin < 0 || pin >= GPIO_NUM_MAX) {
-    return ESP_OK;  /* Not an error, pin is not used */
+    return RX_OK;  /* Not an error, pin is not used */
   }
   /* ... implementation ... */
 }
 
-static esp_err_t internal_i2c_execute_with_retry(const star_bus_config_t* config,
+static rx_err_t internal_i2c_execute_with_retry(const star_bus_config_t* config,
 i2c_port_t               port,
 i2c_cmd_handle_t         cmd,
 const char*              operation_name)
@@ -1684,9 +1692,9 @@ const char*              operation_name)
 }
 
 /* Declare prototypes at top of file */
-static esp_err_t internal_register_bus_pin(...);
-static esp_err_t internal_unregister_bus_pin(...);
-static esp_err_t internal_register_config_pins(...);
+static rx_err_t internal_register_bus_pin(...);
+static rx_err_t internal_unregister_bus_pin(...);
+static rx_err_t internal_register_config_pins(...);
 \end{lstlisting}
 
 \subsubsection{Exposed Private Functions (priv\_)}
@@ -1695,8 +1703,8 @@ If a function cannot be \texttt{static} and must be exposed across files within 
 
 \begin{lstlisting}[language=C]
 /* In internal header (e.g., star_bus_internal.h) */
-esp_err_t priv_star_bus_validate_config(const star_bus_config_t* config);
-esp_err_t priv_star_bus_acquire_mutex(star_bus_manager_t* manager);
+rx_err_t priv_star_bus_validate_config(const star_bus_config_t* config);
+rx_err_t priv_star_bus_acquire_mutex(star_bus_manager_t* manager);
 void      priv_star_bus_release_mutex(star_bus_manager_t* manager);
 \end{lstlisting}
 
@@ -1705,38 +1713,38 @@ void      priv_star_bus_release_mutex(star_bus_manager_t* manager);
 Validate all parameters at the start of public functions.
 
 \begin{lstlisting}[language=C]
-esp_err_t star_bus_manager_add_bus(star_bus_manager_t* manager,
+rx_err_t star_bus_manager_add_bus(star_bus_manager_t* manager,
 star_bus_config_t*  config)
 {
   /* Validate required parameters */
   ESP_RETURN_ON_FALSE(manager && config,
-  ESP_ERR_INVALID_ARG,
+  RX_ERR_INVALID_ARG,
   s_TAG,
   "Manager or config pointer is NULL");
   
   /* Validate config contents */
   ESP_RETURN_ON_FALSE(config->name && strlen(config->name) > 0,
-  ESP_ERR_INVALID_ARG,
+  RX_ERR_INVALID_ARG,
   manager->tag,
   "Config name is NULL or empty");
   
   /* Validate enum range */
-  ESP_RETURN_ON_FALSE(config->type > k_star_bus_type_none &&
+  RX_RETURN_ON_FALSE(config->type > k_star_bus_type_none &&
   config->type < k_star_bus_type_count,
-  ESP_ERR_INVALID_ARG,
+  RX_ERR_INVALID_ARG,
   manager->tag,
   "Invalid bus type in config");
   
   /* Validate state */
-  ESP_RETURN_ON_FALSE(manager->mutex,
-  ESP_ERR_INVALID_STATE,
+  RX_RETURN_ON_FALSE(manager->mutex,
+  RX_ERR_INVALID_STATE,
   manager->tag,
   "Manager mutex not initialized");
   
   /* ... rest of implementation ... */
 }
 
-esp_err_t star_bus_i2c_write(const star_bus_manager_t* manager,
+rx_err_t star_bus_i2c_write(const star_bus_manager_t* manager,
 const char*               name,
 const uint8_t*            data,
 size_t                    len,
@@ -1744,13 +1752,13 @@ uint8_t                   reg_addr,
 size_t*                   bytes_written)
 {
   /* Validate all required pointers */
-  ESP_RETURN_ON_FALSE(manager && name && data,
-  ESP_ERR_INVALID_ARG,
+  RX_RETURN_ON_FALSE(manager && name && data,
+  RX_ERR_INVALID_ARG,
   s_TAG,
   "Manager, name, or data is NULL");
   
   /* Validate numeric constraints */
-  ESP_RETURN_ON_FALSE(len > 0, ESP_ERR_INVALID_ARG, s_TAG,
+  RX_RETURN_ON_FALSE(len > 0, RX_ERR_INVALID_ARG, s_TAG,
   "Write length must be > 0");
   
   /* Clear output parameters initially */
@@ -1768,7 +1776,7 @@ Align parameters vertically when they span multiple lines.
 
 \begin{lstlisting}[language=C]
 /* CORRECT - Aligned parameters */
-esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
+rx_err_t star_bus_manager_init(star_bus_manager_t*     manager,
 const char*             tag,
 star_error_interface_t* error_iface,
 star_pin_interface_t*   pin_iface);
@@ -1784,14 +1792,14 @@ const spi_device_interface_config_t* dev_cfg);
 
 /* Function pointers in structs */
 typedef struct star_error_interface {
-  esp_err_t (*record_error)(void*       ctx,
-  esp_err_t   error,
+  rx_err_t (*record_error)(void*       ctx,
+  rx_err_t   error,
   const char* message,
   const char* file,
   int         line,
   const char* func);
   bool (*can_retry)(void* ctx);
-  esp_err_t (*reset_state)(void* ctx);
+  rx_err_t (*reset_state)(void* ctx);
   void* ctx;
 } star_error_interface_t;
 \end{lstlisting}
@@ -1815,13 +1823,13 @@ All public functions must have complete Doxygen documentation in header files.
 *                    Must not be NULL.
 * @param[in] config  Pointer to the bus configuration structure to add.
 *                    Must not be NULL and must have a valid name.
-* @return esp_err_t ESP_OK on success,
+* @return rx_err_t RX_OK on success,
 *                   ESP_ERR_INVALID_ARG if manager or config is invalid,
 *                   ESP_ERR_INVALID_STATE if a bus with the same name
 *                       already exists or mutex error,
 *                   ESP_ERR_TIMEOUT if mutex times out.
 */
-esp_err_t star_bus_manager_add_bus(star_bus_manager_t* manager,
+rx_err_t star_bus_manager_add_bus(star_bus_manager_t* manager,
 star_bus_config_t*  config);
 \end{lstlisting}
 
@@ -1839,9 +1847,9 @@ Static functions should have brief documentation in the source file.
 * @param[in] port           I2C port number
 * @param[in] cmd            I2C command handle
 * @param[in] operation_name Name of operation for logging
-* @return esp_err_t Final result after retries
+* @return rx_err_t Final result after retries
 */
-static esp_err_t internal_i2c_execute_with_retry(const star_bus_config_t* config,
+static rx_err_t internal_i2c_execute_with_retry(const star_bus_config_t* config,
 i2c_port_t               port,
 i2c_cmd_handle_t         cmd,
 const char*              operation_name);
@@ -1852,21 +1860,21 @@ const char*              operation_name);
 \subsubsection{Single Exit Point with Cleanup}
 
 \begin{lstlisting}[language=C]
-esp_err_t star_bus_manager_remove_bus(star_bus_manager_t* manager,
+rx_err_t star_bus_manager_remove_bus(star_bus_manager_t* manager,
 const char*         name)
 {
   ESP_RETURN_ON_FALSE(manager && name && strlen(name) > 0,
-  ESP_ERR_INVALID_ARG, s_TAG, "Invalid arguments");
+  RX_ERR_INVALID_ARG, s_TAG, "Invalid arguments");
   
   star_bus_config_t* to_remove = NULL;
   star_bus_config_t* prev      = NULL;
-  esp_err_t          ret       = ESP_ERR_NOT_FOUND;
+  rx_err_t          ret       = RX_ERR_NOT_FOUND;
   
   /* Acquire mutex */
   if (xSemaphoreTake(manager->mutex,
   pdMS_TO_TICKS(CONFIG_STAR_KCONFIG_BUS_MUTEX_TIMEOUT_MS))
   != pdTRUE) {
-    return ESP_ERR_TIMEOUT;
+    return RX_ERR_TIMEOUT;
   }
   
   /* Find and unlink */
@@ -1880,7 +1888,7 @@ const char*         name)
         prev->next = curr->next;
       }
       to_remove->next = NULL;
-      ret = ESP_OK;
+      ret = RX_OK;
       break;
     }
   }
@@ -1890,8 +1898,8 @@ const char*         name)
   }
   
   /* Cleanup operations */
-  esp_err_t destroy_result = star_bus_config_destroy(to_remove);
-  if (destroy_result != ESP_OK) {
+  rx_err_t destroy_result = star_bus_config_destroy(to_remove);
+  if (destroy_result != RX_OK) {
     ret = destroy_result;
   }
   
@@ -1912,13 +1920,13 @@ gpio_num_t  scl_pin,
 uint32_t    clk_speed)
 {
   if (name == NULL || strlen(name) == 0) {
-    ESP_LOGE(s_TAG, "Invalid name for I2C bus config");
+    RX_LOG_ERROR(s_TAG, "Invalid name for I2C bus config");
     return NULL;
   }
   
   star_bus_config_t* config = calloc(1, sizeof(star_bus_config_t));
   if (config == NULL) {
-    ESP_LOGE(s_TAG, "Failed to allocate memory for I2C config");
+    RX_LOG_ERROR(s_TAG, "Failed to allocate memory for I2C config");
     return NULL;
   }
   
@@ -1947,29 +1955,29 @@ uint32_t    clk_speed)
 
 \begin{lstlisting}[language=C]
 /* Callback type definition */
-typedef esp_err_t (*star_bus_callback_t)(star_bus_config_t* bus,
+typedef rx_err_t (*star_bus_callback_t)(star_bus_config_t* bus,
 void*              user_ctx);
 
 /* Function using callback */
-esp_err_t star_bus_manager_with_bus(star_bus_manager_t* manager,
+rx_err_t star_bus_manager_with_bus(star_bus_manager_t* manager,
 const char*         name,
 star_bus_callback_t callback,
 void*               user_ctx)
 {
   ESP_RETURN_ON_FALSE(manager && name && callback,
-  ESP_ERR_INVALID_ARG, s_TAG, "Invalid arguments");
+  RX_ERR_INVALID_ARG, s_TAG, "Invalid arguments");
   
   /* ... find bus and invoke callback while holding mutex ... */
-  esp_err_t callback_result = callback(found_bus, user_ctx);
+  rx_err_t callback_result = callback(found_bus, user_ctx);
   
   xSemaphoreGive(manager->mutex);
   return callback_result;
 }
 
 /* Using the callback pattern */
-esp_err_t my_bus_callback(star_bus_config_t* bus, void* ctx) {
+rx_err_t my_bus_callback(star_bus_config_t* bus, void* ctx) {
   ESP_LOGI(TAG, "Bus type: %s", star_bus_type_to_string(bus->type));
-  return ESP_OK;
+  return RX_OK;
 }
 
 star_bus_manager_with_bus(&manager, "sensor_i2c", my_bus_callback, NULL);
@@ -2066,7 +2074,7 @@ char bus_name[STAR_BUS_NAME_MAX_LEN];  /* OK - compile-time constant */
 
 /* Conditional compilation */
 #ifdef CONFIG_STAR_ENABLE_DEBUG_LOGGING
-ESP_LOGD(s_TAG, "Debug info: %d", value);
+RX_LOG_DEBUG(s_TAG, "Debug info: %d", value);
 #endif
 
 /* Macros with special features */
@@ -2254,7 +2262,7 @@ typedef struct star_bus_manager {
   /* ... */
 } star_bus_manager_t;
 
-esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
+rx_err_t star_bus_manager_init(star_bus_manager_t*     manager,
 const char*             tag,
 star_error_interface_t* error_iface,  /* Injected */
 star_pin_interface_t*   pin_iface)    /* Injected */
@@ -2289,27 +2297,27 @@ static struct {
   .transaction_count = 0,
 };
 
-esp_err_t module_init(void)
+rx_err_t module_init(void)
 {
   if (s_module_state.initialized) {
-    return ESP_ERR_INVALID_STATE;
+    return RX_ERR_INVALID_STATE;
   }
   
   /* Initialize module */
   s_module_state.initialized = true;
-  return ESP_OK;
+  return RX_OK;
 }
 
-esp_err_t module_deinit(void)
+rx_err_t module_deinit(void)
 {
   if (!s_module_state.initialized) {
-    return ESP_ERR_INVALID_STATE;
+    return RX_ERR_INVALID_STATE;
   }
   
   /* Clean up */
   s_module_state.initialized = false;
   s_module_state.transaction_count = 0;
-  return ESP_OK;
+  return RX_OK;
 }
 \end{lstlisting}
 
@@ -2325,16 +2333,16 @@ static struct {
   uint32_t          counter;
 } s_shared_state;
 
-esp_err_t safe_increment_counter(void)
+rx_err_t safe_increment_counter(void)
 {
   if (xSemaphoreTake(s_shared_state.mutex, pdMS_TO_TICKS(1000)) != pdTRUE) {
-    return ESP_ERR_TIMEOUT;
+    return RX_ERR_TIMEOUT;
   }
   
   s_shared_state.counter++;
   
   xSemaphoreGive(s_shared_state.mutex);
-  return ESP_OK;
+  return RX_OK;
 }
 \end{lstlisting}
 
@@ -2483,9 +2491,9 @@ extern "C" {
   * @param[in]  tag         Optional tag string for logging.
   * @param[in]  error_iface Optional error handler interface.
   * @param[in]  pin_iface   Optional pin validator interface.
-  * @return esp_err_t ESP_OK on success.
+  * @return rx_err_t RX_OK on success.
   */
-  esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
+  rx_err_t star_bus_manager_init(star_bus_manager_t*     manager,
   const char*             tag,
   star_error_interface_t* error_iface,
   star_pin_interface_t*   pin_iface);
@@ -2521,10 +2529,11 @@ Includes should be ordered in groups, separated by blank lines:
 #include <stdlib.h>
 #include <string.h>
 
-/* 4. ESP-IDF includes */
+/* 4. Platform HAL includes (ESP-IDF, Renesas, etc.) */
 #include "driver/gpio.h"
 #include "driver/i2c.h"
-#include "esp_check.h"
+/* Platform-specific: ESP32 uses esp_check.h, RX72N uses rx_check.h */
+#include "rx_check.h"
 #include "esp_err.h"
 #include "esp_log.h"
 #include "sdkconfig.h"
@@ -2546,7 +2555,7 @@ Use forward declarations to minimize header dependencies.
 struct star_bus_manager;  /* Don't need full definition */
 
 /* Function using forward-declared type */
-esp_err_t star_bus_config_init(star_bus_config_t*      config,
+rx_err_t star_bus_config_init(star_bus_config_t*      config,
 struct star_bus_manager* manager);
 
 /* In star_bus_common_types.h */
@@ -2670,7 +2679,7 @@ extern "C" {
   *
   * @param[out] module  Pointer to module structure to initialize.
   * @param[in]  timeout Timeout in milliseconds.
-  * @return esp_err_t ESP_OK on success.
+  * @return rx_err_t RX_OK on success.
   */
   esp_err_t star_module_init(star_module_t* module, uint32_t timeout);
   
@@ -2678,7 +2687,7 @@ extern "C" {
   * @brief Deinitialize the module.
   *
   * @param[in,out] module Pointer to module structure to deinitialize.
-  * @return esp_err_t ESP_OK on success.
+  * @return rx_err_t RX_OK on success.
   */
   esp_err_t star_module_deinit(star_module_t* module);
   
@@ -2694,7 +2703,7 @@ extern "C" {
 \begin{itemize}
     \item Use include guards: \texttt{STAR\_COMPONENT\_FILENAME\_H}
     \item Include C++ extern ``C'' blocks
-    \item Order includes: FreeRTOS, standard library, ESP-IDF, project
+    \item Order includes: RTOS, standard library, platform HAL, project
     \item Use forward declarations to minimize dependencies
     \item Split types into separate \_types.h headers for complex modules
     \item Document files with \texttt{@file} Doxygen blocks
@@ -2720,7 +2729,7 @@ Add a space between keywords and opening parenthesis.
 
 \begin{lstlisting}[language=C]
 /* CORRECT - Space after keywords */
-if (ret != ESP_OK) {
+if (ret != RX_OK) {
   return ret;
 }
 
@@ -2741,7 +2750,7 @@ switch (config->type) {
 }
 
 /* WRONG - No space after keywords */
-if(ret != ESP_OK) {         /* Missing space */
+if(ret != RX_OK) {         /* Missing space */
 return ret;
 }
 
@@ -2756,13 +2765,13 @@ Do not add space between function name and opening parenthesis.
 
 \begin{lstlisting}[language=C]
 /* CORRECT - No space after function name */
-esp_err_t ret = star_bus_manager_init(&manager, "main", NULL, NULL);
-ESP_LOGI(s_TAG, "Initialized bus manager");
+rx_err_t ret = star_bus_manager_init(&manager, "main", NULL, NULL);
+RX_LOG_INFO(s_TAG, "Initialized bus manager");
 free(buffer);
 
 /* WRONG - Space after function name */
 esp_err_t ret = star_bus_manager_init (&manager, "main", NULL, NULL);
-ESP_LOGI (s_TAG, "Initialized bus manager");
+RX_LOG_INFO (s_TAG, "Initialized bus manager");
 free (buffer);
 \end{lstlisting}
 
@@ -2784,7 +2793,7 @@ flags |= FLAG_INITIALIZED;
 value >>= 4;
 
 /* Comparison operators */
-if (ret != ESP_OK) { /* ... */ }
+if (ret != RX_OK) { /* ... */ }
 if (count >= threshold) { /* ... */ }
 if (ptr == NULL) { /* ... */ }
 
@@ -2826,7 +2835,7 @@ const char* name;
 void* user_ctx;
 
 /* Function parameters */
-esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
+rx_err_t star_bus_manager_init(star_bus_manager_t*     manager,
 const char*             tag,
 star_error_interface_t* error_iface,
 star_pin_interface_t*   pin_iface);
@@ -2865,14 +2874,14 @@ No space after opening parenthesis or before closing parenthesis.
 
 \begin{lstlisting}[language=C]
 /* CORRECT */
-if (ret != ESP_OK) {
+if (ret != RX_OK) {
   return ret;
 }
 
 result = calculate(a, b, c);
 
 /* WRONG - Spaces inside parentheses */
-if ( ret != ESP_OK ) {
+if ( ret != RX_OK ) {
   return ret;
 }
 
@@ -2885,7 +2894,7 @@ Align parameters vertically in multi-line function declarations and calls.
 
 \begin{lstlisting}[language=C]
 /* CORRECT - Aligned parameters */
-esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
+rx_err_t star_bus_manager_init(star_bus_manager_t*     manager,
 const char*             tag,
 star_error_interface_t* error_iface,
 star_pin_interface_t*   pin_iface);
@@ -2919,7 +2928,7 @@ typedef struct error_handler {
   uint32_t          base_retry_delay;    /**< Base delay (ms) */
   uint32_t          max_retry_delay;     /**< Max delay (ms) */
   uint32_t          current_retry_delay; /**< Current delay with backoff */
-  esp_err_t         last_error;          /**< Last recorded error code */
+  rx_err_t         last_error;          /**< Last recorded error code */
   bool              in_error_state;      /**< Whether in error state */
   void*             reset_context;       /**< Context for reset function */
   SemaphoreHandle_t mutex;               /**< Mutex for thread-safety */
@@ -2928,7 +2937,7 @@ typedef struct error_handler {
 /* Aligned local variables */
 i2c_port_t       port    = config->proto.i2c.port;
 uint8_t          address = config->proto.i2c.address;
-esp_err_t        ret     = ESP_OK;
+rx_err_t        ret     = RX_OK;
 i2c_cmd_handle_t cmd     = NULL;
 \end{lstlisting}
 
@@ -3006,7 +3015,7 @@ Includes should be ordered in these groups, separated by blank lines:
     \item Primary header (in .c files)
     \item FreeRTOS includes
     \item Standard library includes
-    \item ESP-IDF includes
+    \item Platform HAL includes
     \item Project includes
 \end{enumerate}
 
@@ -3023,8 +3032,9 @@ Includes should be ordered in these groups, separated by blank lines:
 #include <inttypes.h>
 #include <string.h>
 
-/* 4. ESP-IDF includes */
-#include "esp_check.h"
+/* 4. Platform HAL includes (ESP-IDF, Renesas, etc.) */
+/* Platform-specific: ESP32 uses esp_check.h, RX72N uses rx_check.h */
+#include "rx_check.h"
 #include "esp_log.h"
 
 /* 5. Project includes */
@@ -3049,8 +3059,9 @@ Includes should be ordered in these groups, separated by blank lines:
 #include <stdlib.h>
 #include <string.h>
 
-/* ESP-IDF */
-#include "esp_check.h"
+/* Platform HAL (ESP-IDF, Renesas, etc.) */
+/* Platform-specific: ESP32 uses esp_check.h, RX72N uses rx_check.h */
+#include "rx_check.h"
 #include "esp_log.h"
 #include "sdkconfig.h"
 
@@ -3094,26 +3105,26 @@ Use angle brackets for system and standard library headers.
 #include <string.h>
 \end{lstlisting}
 
-\subsection{ESP-IDF Includes}
+\subsection{Platform HAL Includes}
 
-ESP-IDF headers use quotation marks but are treated as a separate group.
+Platform HAL headers (ESP-IDF, Renesas, etc.) use quotation marks and are grouped separately.
 
 \begin{lstlisting}[language=C]
-/* ESP-IDF driver includes */
+/* Platform-specific driver includes (example: ESP32) */
 #include "driver/gpio.h"
 #include "driver/i2c.h"
 #include "driver/spi_master.h"
 #include "driver/uart.h"
 
-/* ESP-IDF system includes */
-#include "esp_check.h"
-#include "esp_err.h"
-#include "esp_log.h"
-#include "esp_system.h"
+/* Platform system includes */
+/* Platform-specific: ESP32 uses esp_check.h, RX72N uses rx_check.h */
+#include "rx_check.h"
+#include "rx_err.h"     /* Platform error types */
+#include "rx_log.h"     /* Platform logging */
+#include "platform_system.h"
 
-/* ESP-IDF ADC includes */
-#include "esp_adc/adc_cali.h"
-#include "esp_adc/adc_cali_scheme.h"
+/* Platform peripheral includes (if needed) */
+#include "platform_adc.h"
 #include "esp_adc/adc_oneshot.h"
 
 /* Configuration */
@@ -3158,7 +3169,7 @@ extern "C" {
   struct star_bus_config;  /* Don't include star_bus_config.h */
   
   /* Function using forward-declared type */
-  esp_err_t star_bus_manager_add_bus(star_bus_manager_t* manager,
+  rx_err_t star_bus_manager_add_bus(star_bus_manager_t* manager,
   struct star_bus_config* config);
   
   #ifdef __cplusplus
@@ -3198,7 +3209,8 @@ Add comments for non-obvious includes explaining why they are needed.
 #include <inttypes.h>
 #include <string.h>
 
-#include "esp_check.h"
+/* Platform-specific: ESP32 uses esp_check.h, RX72N uses rx_check.h */
+#include "rx_check.h"
 #include "esp_log.h"
 #include "star_bus_manager.h" /* Needed for star_bus_manager_find_bus */
 #include "star_bus_types.h"   /* Needed for star_bus_config_t and union */
@@ -3217,7 +3229,7 @@ Structure your includes to avoid circular dependencies.
 /* star_bus_config.h */
 struct star_bus_manager;  /* Forward declare, don't include */
 
-esp_err_t star_bus_config_init(star_bus_config_t* config,
+rx_err_t star_bus_config_init(star_bus_config_t* config,
 struct star_bus_manager* manager);
 
 /* star_bus_config.c - Include full header here */
@@ -3238,7 +3250,7 @@ struct star_bus_manager* manager);
 \hline
 3 & Standard library & \texttt{<...>} \\
 \hline
-4 & ESP-IDF & \texttt{"..."} \\
+4 & Platform HAL & \texttt{"..."} \\
 \hline
 5 & Project & \texttt{"..."} \\
 \hline
@@ -3260,13 +3272,13 @@ This project follows the rule of \textbf{2 spaces} for indentation, without usin
 \textbf{Unix-style line endings} (`LF`, represented as `\textbackslash n`) are mandatory.
 
 
-Logging is handled using the ESP-IDF logging macros.
+Logging is handled using platform-specific logging macros (e.g., RX_LOG_* for STAR, ESP_LOG* for ESP-IDF compatibility layer).
 \begin{itemize}
-    \item \textbf{ESP\_LOGE} - Error
-    \item \textbf{ESP\_LOGW} - Warning
-    \item \textbf{ESP\_LOGI} - Info
-    \item \textbf{ESP\_LOGD} - Debug
-    \item \textbf{ESP\_LOGV} - Verbose
+    \item \textbf{RX\_LOG\_ERROR / ESP\_LOGE} - Error
+    \item \textbf{RX\_LOG\_WARN / ESP\_LOGW} - Warning
+    \item \textbf{RX\_LOG\_INFO / ESP\_LOGI} - Info
+    \item \textbf{RX\_LOG\_DEBUG / ESP\_LOGD} - Debug
+    \item \textbf{RX\_LOG\_VERBOSE / ESP\_LOGV} - Verbose
 \end{itemize}
 
 
@@ -3293,8 +3305,8 @@ size_t    bytes_written;
 bool      is_initialized;
 
 /* WRONG - other naming styles */
-esp_err_t StarBusManagerInit();   /* PascalCase */
-esp_err_t starBusManagerInit();   /* camelCase */
+rx_err_t StarBusManagerInit();   /* PascalCase */
+rx_err_t starBusManagerInit();   /* camelCase */
 uint32_t  ErrorCount;             /* PascalCase */
 \end{lstlisting}
 
@@ -3304,24 +3316,24 @@ All public functions must use the module prefix pattern: \texttt{star\_[module]\
 
 \begin{lstlisting}[language=C]
 /* From star_bus_manager.h */
-esp_err_t star_bus_manager_init(...);
-esp_err_t star_bus_manager_add_bus(...);
-esp_err_t star_bus_manager_remove_bus(...);
-esp_err_t star_bus_manager_deinit(...);
+rx_err_t star_bus_manager_init(...);
+rx_err_t star_bus_manager_add_bus(...);
+rx_err_t star_bus_manager_remove_bus(...);
+rx_err_t star_bus_manager_deinit(...);
 
 /* From star_bus_config.h */
 star_bus_config_t* star_bus_config_create_i2c(...);
 star_bus_config_t* star_bus_config_create_spi_device(...);
-esp_err_t          star_bus_config_destroy(...);
+rx_err_t          star_bus_config_destroy(...);
 
 /* From star_bus_i2c.h */
-esp_err_t star_bus_i2c_write(...);
-esp_err_t star_bus_i2c_read(...);
+rx_err_t star_bus_i2c_write(...);
+rx_err_t star_bus_i2c_read(...);
 void      star_bus_i2c_init_default_ops(...);
 
 /* From star_error_handler.h */
-esp_err_t error_handler_init(...);
-esp_err_t error_handler_record_error(...);
+rx_err_t error_handler_init(...);
+rx_err_t error_handler_record_error(...);
 bool      error_handler_can_retry(...);
 \end{lstlisting}
 
@@ -3367,8 +3379,8 @@ typedef struct error_handler    error_handler_t;
 typedef enum star_bus_type      star_bus_type_t;
 
 /* Callback function types also use _t suffix */
-typedef esp_err_t (*star_bus_callback_t)(star_bus_config_t* bus, void* user_ctx);
-typedef esp_err_t (*pin_registration_function_t)(gpio_num_t  pin_num,
+typedef rx_err_t (*star_bus_callback_t)(star_bus_config_t* bus, void* user_ctx);
+typedef rx_err_t (*pin_registration_function_t)(gpio_num_t  pin_num,
 const char* bus_name,
 const char* pin_usage,
 void*       user_ctx);
@@ -3404,7 +3416,7 @@ switch (config->type) {
     break;
   }
   default: {
-    ESP_LOGW(s_TAG, "Unknown bus type: %d", config->type);
+    RX_LOG_WARN(s_TAG, "Unknown bus type: %d", config->type);
     break;
   }
 }
@@ -3454,7 +3466,7 @@ typedef struct {
 } star_bus_manager_t;
 
 /* Initialize with injected dependencies */
-esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
+rx_err_t star_bus_manager_init(star_bus_manager_t*     manager,
 const char*             tag,
 star_error_interface_t* error_iface,
 star_pin_interface_t*   pin_iface);
@@ -3468,19 +3480,19 @@ Static functions that are internal to a single source file use the \texttt{inter
 
 \begin{lstlisting}[language=C]
 /* From star_bus_manager.c - internal helper functions */
-static esp_err_t internal_register_bus_pin(star_pin_interface_t* pin_iface,
+static rx_err_t internal_register_bus_pin(star_pin_interface_t* pin_iface,
 gpio_num_t            pin,
 const char*           bus_name,
 const char*           usage,
 bool                  can_be_shared)
 {
   if (pin < 0 || pin >= GPIO_NUM_MAX) {
-    return ESP_OK;  /* Not an error, pin is not used */
+    return RX_OK;  /* Not an error, pin is not used */
   }
   /* ... implementation ... */
 }
 
-static esp_err_t internal_unregister_bus_pin(star_pin_interface_t* pin_iface,
+static rx_err_t internal_unregister_bus_pin(star_pin_interface_t* pin_iface,
 gpio_num_t            pin,
 const char*           bus_name,
 const char*           usage)
@@ -3488,20 +3500,20 @@ const char*           usage)
   /* ... implementation ... */
 }
 
-static esp_err_t internal_register_config_pins(star_pin_interface_t*    pin_iface,
+static rx_err_t internal_register_config_pins(star_pin_interface_t*    pin_iface,
 const star_bus_config_t* config)
 {
   /* ... implementation ... */
 }
 
 /* From star_bus_i2c.c */
-static esp_err_t internal_star_bus_i2c_write(const star_bus_config_t* config,
+static rx_err_t internal_star_bus_i2c_write(const star_bus_config_t* config,
 const uint8_t*           data,
 size_t                   len,
 uint8_t                  reg_addr,
 size_t*                  bytes_written);
 
-static esp_err_t internal_i2c_execute_with_retry(const star_bus_config_t* config,
+static rx_err_t internal_i2c_execute_with_retry(const star_bus_config_t* config,
 i2c_port_t               port,
 i2c_cmd_handle_t         cmd,
 const char*              operation_name);
@@ -3516,17 +3528,17 @@ Functions that must be exposed across files within a module (but are not part of
 /* These functions are used by multiple .c files in the same module
 but should not be called by external code */
 
-esp_err_t priv_star_bus_validate_config(const star_bus_config_t* config);
-esp_err_t priv_star_bus_acquire_mutex(star_bus_manager_t* manager);
+rx_err_t priv_star_bus_validate_config(const star_bus_config_t* config);
+rx_err_t priv_star_bus_acquire_mutex(star_bus_manager_t* manager);
 void      priv_star_bus_release_mutex(star_bus_manager_t* manager);
 
 /* Used in implementation files within the module */
-esp_err_t star_bus_config_init(star_bus_config_t* config,
+rx_err_t star_bus_config_init(star_bus_config_t* config,
 struct star_bus_manager* manager)
 {
   /* Validate using private helper */
   esp_err_t ret = priv_star_bus_validate_config(config);
-  if (ret != ESP_OK) {
+  if (ret != RX_OK) {
     return ret;
   }
   /* ... rest of implementation ... */
@@ -3609,12 +3621,12 @@ typedef struct error_handler {
   uint32_t          base_retry_delay;    /**< Base delay between retries (ms) */
   uint32_t          max_retry_delay;     /**< Maximum retry delay (ms) */
   uint32_t          current_retry_delay; /**< Current delay with backoff */
-  esp_err_t         last_error;          /**< Last recorded error code */
+  rx_err_t         last_error;          /**< Last recorded error code */
   bool              in_error_state;      /**< Whether in error state */
   void*             reset_context;       /**< Context for reset function */
   SemaphoreHandle_t mutex;               /**< Mutex for thread-safety */
   
-  esp_err_t (*reset_fn)(void* context);  /**< Optional reset function */
+  rx_err_t (*reset_fn)(void* context);  /**< Optional reset function */
 } error_handler_t;
 \end{lstlisting}
 
@@ -3666,7 +3678,7 @@ switch (config->type) {
 /* I2C bus configuration (from star_bus_protocol_types.h) */
 typedef struct star_i2c_bus_config {
   i2c_port_t           port;      /**< I2C port number */
-  i2c_config_t         config;    /**< ESP-IDF I2C configuration */
+  i2c_config_t         config;    /**< Platform I2C configuration */
   uint8_t              address;   /**< 7-bit I2C device address */
   star_i2c_callbacks_t callbacks; /**< User callbacks */
   star_i2c_ops_t       ops;       /**< Operation function pointers */
@@ -3676,7 +3688,7 @@ typedef struct star_i2c_bus_config {
 typedef struct star_spi_bus_config {
   spi_host_device_t host;        /**< SPI host number */
   bool              is_peripheral; /**< True if SPI peripheral mode */
-  spi_bus_config_t  bus_cfg;     /**< ESP-IDF SPI bus config */
+  spi_bus_config_t  bus_cfg;     /**< Platform SPI bus config */
   spi_device_interface_config_t dev_cfg; /**< Device config */
   star_spi_callbacks_t callbacks;
   star_spi_ops_t       ops;
@@ -3696,23 +3708,23 @@ Callback function pointer types follow a consistent pattern with the \texttt{\_t
 
 \begin{lstlisting}[language=C]
 /* From star_bus_common_types.h - Pin registration callback */
-typedef esp_err_t (*pin_registration_function_t)(gpio_num_t  pin_num,
+typedef rx_err_t (*pin_registration_function_t)(gpio_num_t  pin_num,
 const char* bus_name,
 const char* pin_usage,
 void*       user_ctx);
 
 /* From star_bus_manager.h - Bus access callback */
-typedef esp_err_t (*star_bus_callback_t)(star_bus_config_t* bus,
+typedef rx_err_t (*star_bus_callback_t)(star_bus_config_t* bus,
 void*              user_ctx);
 
 /* From star_bus_function_types.h - I2C operation callbacks */
-typedef esp_err_t (*star_i2c_write_fn_t)(const star_bus_config_t* config,
+typedef rx_err_t (*star_i2c_write_fn_t)(const star_bus_config_t* config,
 const uint8_t*           data,
 size_t                   len,
 uint8_t                  reg_addr,
 size_t*                  bytes_written);
 
-typedef esp_err_t (*star_i2c_read_fn_t)(const star_bus_config_t* config,
+typedef rx_err_t (*star_i2c_read_fn_t)(const star_bus_config_t* config,
 uint8_t*                 data,
 size_t                   len,
 uint8_t                  reg_addr,
@@ -3723,7 +3735,7 @@ typedef void (*star_i2c_transfer_complete_cb_t)(const star_bus_event_t* event,
 void*                   user_ctx);
 
 typedef void (*star_i2c_error_cb_t)(const star_bus_event_t* event,
-esp_err_t               error,
+rx_err_t               error,
 void*                   user_ctx);
 
 /* Grouping related callbacks in a struct */
@@ -3750,8 +3762,8 @@ typedef struct star_error_interface {
   * @param func Function name
   * @return ESP_OK on success
   */
-  esp_err_t (*record_error)(void*       ctx,
-  esp_err_t   error,
+  rx_err_t (*record_error)(void*       ctx,
+  rx_err_t   error,
   const char* message,
   const char* file,
   int         line,
@@ -3769,7 +3781,7 @@ typedef struct star_error_interface {
   * @param ctx Implementation context
   * @return ESP_OK on success
   */
-  esp_err_t (*reset_state)(void* ctx);
+  rx_err_t (*reset_state)(void* ctx);
   
   /**
   * @brief Implementation context (opaque pointer)
@@ -3779,11 +3791,11 @@ typedef struct star_error_interface {
 
 /* From star_pin_interface.h */
 typedef struct star_pin_interface {
-  esp_err_t (*register_pin)(void* ctx, int pin,
+  rx_err_t (*register_pin)(void* ctx, int pin,
   const char* description, bool shared);
-  esp_err_t (*unregister_pin)(void* ctx, int pin,
+  rx_err_t (*unregister_pin)(void* ctx, int pin,
   const char* description);
-  esp_err_t (*validate)(void* ctx);
+  rx_err_t (*validate)(void* ctx);
   void* ctx;
 } star_pin_interface_t;
 \end{lstlisting}
@@ -3821,7 +3833,7 @@ typedef struct star_bus_manager star_bus_manager_t;
 
 /* Public API only uses pointers to the opaque type */
 esp_err_t star_bus_manager_init(star_bus_manager_t* manager, ...);
-esp_err_t star_bus_manager_add_bus(star_bus_manager_t* manager, ...);
+rx_err_t star_bus_manager_add_bus(star_bus_manager_t* manager, ...);
 
 /* Full definition is only in the .c file or private header */
 /* Users cannot access internal fields directly */
@@ -3855,9 +3867,9 @@ typedef struct star_spi_ops {
 } star_spi_ops_t;
 
 typedef struct star_gpio_ops {
-  esp_err_t (*write_digital)(const struct star_bus_config* config,
+  rx_err_t (*write_digital)(const struct star_bus_config* config,
   uint8_t pin_index, uint8_t value);
-  esp_err_t (*read_digital)(const struct star_bus_config* config,
+  rx_err_t (*read_digital)(const struct star_bus_config* config,
   uint8_t pin_index, uint8_t* value);
 } star_gpio_ops_t;
 
@@ -3865,7 +3877,7 @@ typedef struct star_gpio_ops {
 void star_bus_i2c_init_default_ops(star_i2c_ops_t* ops)
 {
   if (ops == NULL) {
-    ESP_LOGE(s_TAG, "Cannot initialize NULL ops pointer");
+    RX_LOG_ERROR(s_TAG, "Cannot initialize NULL ops pointer");
     return;
   }
   ops->write         = internal_star_bus_i2c_write;
@@ -3912,7 +3924,7 @@ This section describes the standard file and directory structure for the STAR fi
 
 \subsection{Library Directory Structure}
 
-Each library follows a standard PlatformIO/ESP-IDF component structure:
+Each library follows a standard component structure (PlatformIO/ESP-IDF on ESP32, CMake on RX72N):
 
 \begin{verbatim}
 lib/star_component/
@@ -4037,10 +4049,10 @@ extern "C" {
   * @param[in]  tag         Optional tag string for logging. NULL uses default.
   * @param[in]  error_iface Optional error handler interface (can be NULL).
   * @param[in]  pin_iface   Optional pin validator interface (can be NULL).
-  * @return esp_err_t ESP_OK on success, ESP_ERR_INVALID_ARG if manager is NULL,
+  * @return rx_err_t RX_OK on success, RX_ERR_INVALID_ARG if manager is NULL,
   *                   ESP_ERR_NO_MEM if mutex creation fails.
   */
-  esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
+  rx_err_t star_bus_manager_init(star_bus_manager_t*     manager,
   const char*             tag,
   star_error_interface_t* error_iface,
   star_pin_interface_t*   pin_iface);
@@ -4060,7 +4072,7 @@ extern "C" {
     \item \textbf{File path comment}: Identifies the file location
     \item \textbf{Include guard}: \texttt{\#ifndef STAR\_COMPONENT\_FILENAME\_H}
     \item \textbf{C++ extern ``C'' opening}: For C++ compatibility
-    \item \textbf{Includes}: System, then ESP-IDF, then project headers
+    \item \textbf{Includes}: System, then platform HAL, then project headers
     \item \textbf{File documentation}: \texttt{@file} Doxygen block with overview
     \item \textbf{Forward declarations}: If needed
     \item \textbf{Constants and macros}: Public defines
@@ -4120,8 +4132,9 @@ Source files follow a consistent internal structure.
 #include <stdlib.h>
 #include <string.h>
 
-/* === ESP-IDF Includes === */
-#include "esp_check.h"
+/* === Platform HAL Includes === */
+/* Platform-specific: ESP32 uses esp_check.h, RX72N uses rx_check.h */
+#include "rx_check.h"
 #include "esp_log.h"
 #include "sdkconfig.h"
 
@@ -4136,25 +4149,25 @@ static const char* s_TAG = "STAR_BUS_MANAGER";
 
 /* === Private Function Prototypes === */
 
-static esp_err_t internal_register_bus_pin(star_pin_interface_t* pin_iface,
+static rx_err_t internal_register_bus_pin(star_pin_interface_t* pin_iface,
 gpio_num_t            pin,
 const char*           bus_name,
 const char*           usage,
 bool                  can_be_shared);
 
-static esp_err_t internal_unregister_bus_pin(star_pin_interface_t* pin_iface,
+static rx_err_t internal_unregister_bus_pin(star_pin_interface_t* pin_iface,
 gpio_num_t            pin,
 const char*           bus_name,
 const char*           usage);
 
 /* === Public Functions === */
 
-esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
+rx_err_t star_bus_manager_init(star_bus_manager_t*     manager,
 const char*             tag,
 star_error_interface_t* error_iface,
 star_pin_interface_t*   pin_iface)
 {
-  ESP_RETURN_ON_FALSE(manager, ESP_ERR_INVALID_ARG, s_TAG,
+  RX_RETURN_ON_FALSE(manager, RX_ERR_INVALID_ARG, s_TAG,
   "Manager pointer is NULL");
   
   manager->buses       = NULL;
@@ -4163,21 +4176,21 @@ star_pin_interface_t*   pin_iface)
   
   /* ... rest of implementation ... */
   
-  return ESP_OK;
+  return RX_OK;
 }
 
 /* ... more public functions ... */
 
 /* === Private Functions === */
 
-static esp_err_t internal_register_bus_pin(star_pin_interface_t* pin_iface,
+static rx_err_t internal_register_bus_pin(star_pin_interface_t* pin_iface,
 gpio_num_t            pin,
 const char*           bus_name,
 const char*           usage,
 bool                  can_be_shared)
 {
   if (pin < 0 || pin >= GPIO_NUM_MAX) {
-    return ESP_OK;  /* Not an error, pin is not used */
+    return RX_OK;  /* Not an error, pin is not used */
   }
   /* ... implementation ... */
 }
@@ -4189,7 +4202,7 @@ bool                  can_be_shared)
     \item \textbf{File path comment}: Identifies the file location
     \item \textbf{Primary header}: The corresponding .h file for this .c file
     \item \textbf{System includes}: FreeRTOS, standard library (\texttt{<...>})
-    \item \textbf{ESP-IDF includes}: ESP-IDF components
+    \item \textbf{Platform HAL includes}: Platform-specific components
     \item \textbf{Project includes}: Other project headers (\texttt{"..."})
     \item \textbf{Constants}: \texttt{static const} variables, including \texttt{s\_TAG}
     \item \textbf{Private function prototypes}: Forward declarations of static functions
@@ -4394,9 +4407,9 @@ bool is_slave;            /* Use is_peripheral */
 star_bus_config_create_spi_slave();  /* Use _peripheral */
 \end{lstlisting}
 
-\subsection{Mapping ESP-IDF Legacy APIs}
+\subsection{Mapping Platform Legacy APIs}
 
-ESP-IDF still uses legacy terminology internally. When interfacing with ESP-IDF, document the mapping clearly.
+Some platform HALs (like ESP-IDF) still use legacy terminology internally. When interfacing with these APIs, document the mapping clearly.
 
 \begin{lstlisting}[language=C]
 /* From star_bus_protocol_types.h */
@@ -4407,19 +4420,19 @@ typedef struct star_spi_bus_config {
   * - COPI (Controller Out, Peripheral In) - replaces MOSI
   * - CIPO (Controller In, Peripheral Out) - replaces MISO
   * This modern terminology removes master/slave language.
-  * The ESP-IDF still uses mosi_io_num/miso_io_num internally,
+  * Some platforms (like ESP-IDF) use legacy mosi/miso terminology,
   * which we map here.
   */
-  gpio_num_t copi_io_num;  /**< GPIO for COPI (maps to ESP-IDF mosi_io_num) */
-  gpio_num_t cipo_io_num;  /**< GPIO for CIPO (maps to ESP-IDF miso_io_num) */
+  gpio_num_t copi_io_num;  /**< GPIO for COPI (maps to platform mosi_io_num) */
+  gpio_num_t cipo_io_num;  /**< GPIO for CIPO (maps to platform miso_io_num) */
   /* ... */
 } star_spi_bus_config_t;
 
-/* When setting up ESP-IDF structures */
-static esp_err_t internal_setup_spi_bus(star_bus_config_t* config)
+/* When setting up platform HAL structures (example: ESP32) */
+static rx_err_t internal_setup_spi_bus(star_bus_config_t* config)
 {
   spi_bus_config_t bus_cfg = {
-    /* Map our inclusive terminology to ESP-IDF legacy names */
+    /* Map our inclusive terminology to platform legacy names */
     .mosi_io_num     = config->proto.spi.copi_io_num,
     .miso_io_num     = config->proto.spi.cipo_io_num,
     .sclk_io_num     = config->proto.spi.sclk_io_num,
@@ -4431,7 +4444,7 @@ static esp_err_t internal_setup_spi_bus(star_bus_config_t* config)
 }
 
 /* Similarly for I2C */
-/* ESP-IDF uses I2C_MODE_SLAVE, but we document as peripheral mode */
+/* Some platforms use I2C_MODE_SLAVE/MASTER, we document as peripheral/controller */
 i2c_config_t i2c_conf = {
   .mode = I2C_MODE_MASTER,  /* Controller mode in STAR terminology */
   /* or */
@@ -4484,19 +4497,19 @@ When reviewing code, check for:
     \item \textbf{Comments}: Update any legacy terminology
     \item \textbf{Documentation}: Ensure Doxygen uses inclusive terms
     \item \textbf{String literals}: Check log messages and error strings
-    \item \textbf{ESP-IDF mapping}: Document when interfacing with legacy APIs
+    \item \textbf{Platform HAL mapping}: Document when interfacing with legacy APIs
 \end{itemize}
 
 \subsection{Common Patterns}
 
 \begin{lstlisting}[language=C]
 /* Logging with inclusive terminology */
-ESP_LOGI(s_TAG, "SPI peripheral initialized on host %d", host);
-ESP_LOGI(s_TAG, "I2C controller configured on port %d", port);
+RX_LOG_INFO(s_TAG, "SPI peripheral initialized on host %d", host);
+RX_LOG_INFO(s_TAG, "I2C controller configured on port %d", port);
 
 /* Error messages */
 ESP_LOGE(s_TAG, "Failed to initialize SPI peripheral: %s",
-esp_err_to_name(ret));
+rx_err_to_name(ret));
 ESP_LOGE(s_TAG, "I2C controller transaction failed");
 
 /* Pin registration descriptions */
@@ -4549,21 +4562,21 @@ Interfaces are defined as structs containing function pointers and an opaque con
 \begin{lstlisting}[language=C]
 /* From star_error_interface.h */
 typedef struct star_error_interface {
-  esp_err_t (*record_error)(void* ctx, esp_err_t error,
+  rx_err_t (*record_error)(void* ctx, rx_err_t error,
   const char* message, const char* file,
   int line, const char* func);
   bool (*can_retry)(void* ctx);
-  esp_err_t (*reset_state)(void* ctx);
+  rx_err_t (*reset_state)(void* ctx);
   void* ctx;  /* Opaque context pointer */
 } star_error_interface_t;
 
 /* From star_pin_interface.h */
 typedef struct star_pin_interface {
-  esp_err_t (*register_pin)(void* ctx, int pin,
+  rx_err_t (*register_pin)(void* ctx, int pin,
   const char* description, bool shared);
-  esp_err_t (*unregister_pin)(void* ctx, int pin,
+  rx_err_t (*unregister_pin)(void* ctx, int pin,
   const char* description);
-  esp_err_t (*validate)(void* ctx);
+  rx_err_t (*validate)(void* ctx);
   void* ctx;
 } star_pin_interface_t;
 \end{lstlisting}
@@ -4607,12 +4620,12 @@ typedef struct star_bus_manager {
 } star_bus_manager_t;
 
 /* Initialization receives dependencies */
-esp_err_t star_bus_manager_init(star_bus_manager_t*     manager,
+rx_err_t star_bus_manager_init(star_bus_manager_t*     manager,
 const char*             tag,
 star_error_interface_t* error_iface,
 star_pin_interface_t*   pin_iface)
 {
-  ESP_RETURN_ON_FALSE(manager, ESP_ERR_INVALID_ARG, s_TAG,
+  RX_RETURN_ON_FALSE(manager, RX_ERR_INVALID_ARG, s_TAG,
   "Manager pointer is NULL");
   
   manager->buses       = NULL;
@@ -4729,9 +4742,9 @@ star_bus_manager_add_bus(&bus_manager, i2c_bus);
 star_bus_config_t* bus = star_bus_manager_find_bus(&bus_manager, "sensor_i2c");
 
 /* Safe access with callback (prevents use-after-free) */
-esp_err_t my_callback(star_bus_config_t* bus, void* ctx) {
+rx_err_t my_callback(star_bus_config_t* bus, void* ctx) {
   /* Access bus safely while mutex is held */
-  return ESP_OK;
+  return RX_OK;
 }
 star_bus_manager_with_bus(&bus_manager, "sensor_i2c", my_callback, NULL);
 \end{lstlisting}
@@ -4753,7 +4766,7 @@ typedef struct star_i2c_ops {
 void star_bus_i2c_init_default_ops(star_i2c_ops_t* ops)
 {
   if (ops == NULL) {
-    ESP_LOGE(s_TAG, "Cannot initialize NULL ops pointer");
+    RX_LOG_ERROR(s_TAG, "Cannot initialize NULL ops pointer");
     return;
   }
   ops->write         = internal_star_bus_i2c_write;
@@ -4763,7 +4776,7 @@ void star_bus_i2c_init_default_ops(star_i2c_ops_t* ops)
 }
 
 /* Use through function pointers */
-esp_err_t star_bus_i2c_write(const star_bus_manager_t* manager,
+rx_err_t star_bus_i2c_write(const star_bus_manager_t* manager,
 const char* name, ...)
 {
   star_bus_config_t* bus_config = star_bus_manager_find_bus(manager, name);
@@ -4779,23 +4792,23 @@ Safely access shared resources through callbacks.
 
 \begin{lstlisting}[language=C]
 /* Callback type */
-typedef esp_err_t (*star_bus_callback_t)(star_bus_config_t* bus,
+typedef rx_err_t (*star_bus_callback_t)(star_bus_config_t* bus,
 void* user_ctx);
 
 /* Thread-safe access function */
-esp_err_t star_bus_manager_with_bus(star_bus_manager_t* manager,
+rx_err_t star_bus_manager_with_bus(star_bus_manager_t* manager,
 const char*         name,
 star_bus_callback_t callback,
 void*               user_ctx)
 {
   ESP_RETURN_ON_FALSE(manager && name && callback,
-  ESP_ERR_INVALID_ARG, s_TAG, "Invalid arguments");
+  RX_ERR_INVALID_ARG, s_TAG, "Invalid arguments");
   
   /* Acquire mutex */
   if (xSemaphoreTake(manager->mutex,
   pdMS_TO_TICKS(CONFIG_STAR_KCONFIG_BUS_MUTEX_TIMEOUT_MS))
   != pdTRUE) {
-    return ESP_ERR_TIMEOUT;
+    return RX_ERR_TIMEOUT;
   }
   
   /* Find bus while holding mutex */
@@ -4813,7 +4826,7 @@ void*               user_ctx)
   }
   
   /* Invoke callback while holding mutex - prevents use-after-free */
-  esp_err_t callback_result = callback(found_bus, user_ctx);
+  rx_err_t callback_result = callback(found_bus, user_ctx);
   
   xSemaphoreGive(manager->mutex);
   return callback_result;
@@ -4844,31 +4857,31 @@ xSemaphoreGive(manager->mutex);
 \subsubsection{Mutex with Cleanup (goto pattern)}
 
 \begin{lstlisting}[language=C]
-esp_err_t star_bus_manager_add_bus(star_bus_manager_t* manager,
+rx_err_t star_bus_manager_add_bus(star_bus_manager_t* manager,
 star_bus_config_t* config)
 {
-  ESP_RETURN_ON_FALSE(manager && config, ESP_ERR_INVALID_ARG,
+  RX_RETURN_ON_FALSE(manager && config, RX_ERR_INVALID_ARG,
   s_TAG, "Invalid arguments");
   
-  esp_err_t ret = ESP_OK;
+  rx_err_t ret = RX_OK;
   
   if (xSemaphoreTake(manager->mutex,
   pdMS_TO_TICKS(CONFIG_STAR_KCONFIG_BUS_MUTEX_TIMEOUT_MS))
   != pdTRUE) {
-    return ESP_ERR_TIMEOUT;
+    return RX_ERR_TIMEOUT;
   }
   
   /* Check for duplicate name */
   for (star_bus_config_t* curr = manager->buses; curr; curr = curr->next) {
     if (curr->name && strcmp(curr->name, config->name) == 0) {
-      ret = ESP_ERR_INVALID_STATE;
+      ret = RX_ERR_INVALID_STATE;
       goto add_give_mutex;  /* Single exit point */
     }
   }
   
   /* Initialize bus hardware */
   ret = star_bus_config_init(config, manager);
-  if (ret != ESP_OK) {
+  if (ret != RX_OK) {
     goto add_give_mutex;
   }
   
@@ -4899,7 +4912,7 @@ typedef struct mpu6050_handle {
 } mpu6050_handle_t;
 
 /* Initialization with optional interface */
-esp_err_t star_sensor_mpu6050_init(mpu6050_handle_t* handle,
+rx_err_t star_sensor_mpu6050_init(mpu6050_handle_t* handle,
 star_bus_manager_t* bus_manager,
 const char* bus_name,
 star_error_interface_t* error_iface,
@@ -4918,7 +4931,7 @@ const mpu6050_config_t* config)
 }
 
 /* Cleanup respects ownership */
-esp_err_t star_sensor_mpu6050_deinit(mpu6050_handle_t* handle)
+rx_err_t star_sensor_mpu6050_deinit(mpu6050_handle_t* handle)
 {
   /* Clean up error interface if we own it */
   star_error_interface_cleanup(handle->error_iface,
@@ -5419,7 +5432,7 @@ float scale_temp(float temp);  /* What units? */
 This convention eliminates an entire class of bugs caused by unit ambiguity and makes the codebase more maintainable.
 
 
-This section establishes memory management rules for ESP32 firmware. The ESP32-S3 has limited RAM (512KB SRAM, no PSRAM in our configuration), making proper memory management critical for system stability and performance.
+This section establishes memory management rules for STAR firmware across all platforms. Embedded platforms have limited RAM (e.g., ESP32-S3: 512KB SRAM, RX72N: 1MB SRAM), making proper memory management critical for system stability and performance.
 
 \subsection{No Dynamic Allocation}
 
@@ -5445,7 +5458,7 @@ void process_sensor_data(void)
 {
   float* samples = (float*)malloc(1000 * sizeof(float));
   if (samples == NULL) {
-    ESP_LOGE(s_TAG, "Out of memory!");
+    RX_LOG_ERROR(s_TAG, "Out of memory!");
     return;
   }
   
@@ -5467,9 +5480,9 @@ void process_sensor_data(void)
 
 
 \end{lstlisting}
-\subsubsection{ESP-IDF Heap Functions}
+\subsubsection{Platform Heap Functions}
 
-ESP-IDF provides heap functions (\texttt{heap\_caps\_malloc}, \texttt{esp\_heap\_caps\_malloc}) that are \textbf{only acceptable} for:
+Some platforms provide specialized heap functions (e.g., ESP-IDF's \texttt{heap\_caps\_malloc}) that are \textbf{only acceptable} for:
 
 \begin{itemize}
 \item \textbf{One-time initialization}: Allocating resources during startup that persist for the lifetime of the program
@@ -5479,7 +5492,7 @@ ESP-IDF provides heap functions (\texttt{heap\_caps\_malloc}, \texttt{esp\_heap\
 
 \begin{lstlisting}[language=C]
 /* ACCEPTABLE - One-time allocation during init */
-esp_err_t sensor_driver_init(sensor_handle_t* handle)
+rx_err_t sensor_driver_init(sensor_handle_t* handle)
 {
   /* Allocate persistent buffer once */
   handle->rx_buffer = heap_caps_malloc(DMA_BUFFER_SIZE,
@@ -5488,17 +5501,17 @@ esp_err_t sensor_driver_init(sensor_handle_t* handle)
     return ESP_ERR_NO_MEM;
   }
   handle->owns_buffer = true;  /* Track ownership */
-  return ESP_OK;
+  return RX_OK;
 }
 
 /* Must have corresponding cleanup */
-esp_err_t sensor_driver_deinit(sensor_handle_t* handle)
+rx_err_t sensor_driver_deinit(sensor_handle_t* handle)
 {
   if (handle->owns_buffer && handle->rx_buffer) {
     free(handle->rx_buffer);
     handle->rx_buffer = NULL;
   }
-  return ESP_OK;
+  return RX_OK;
 }
 
 
@@ -5510,7 +5523,7 @@ esp_err_t sensor_driver_deinit(sensor_handle_t* handle)
 \subsubsection{Stack Size Constraints}
 
 \begin{itemize}
-\item ESP32 default task stack: \textbf{3KB--8KB} (configurable in FreeRTOS)
+\item Typical embedded task stack: \textbf{2KB--8KB} (platform and RTOS dependent)
 \item ISR stack: Even smaller (\textasciitilde1KB)
 \item Stack overflow causes silent corruption or hard faults
 \end{itemize}
@@ -5579,7 +5592,7 @@ void calculate_checksum(const uint8_t* data, size_t len)
 \subsubsection{Rationale}
 
 \begin{itemize}
-\item ESP32 has \textbf{16MB flash} but only \textbf{512KB RAM}
+\item Embedded platforms typically have large flash but limited RAM (e.g., ESP32: 16MB flash / 512KB RAM, RX72N: 4MB flash / 1MB RAM)
 \item \texttt{const} data is stored in flash and accessed directly (no RAM copy)
 \item Saves precious SRAM for runtime variables
 \end{itemize}
@@ -5670,7 +5683,7 @@ static uint8_t rx_buffer[RX_BUFFER_SIZE];
 void receive_packet(const uint8_t* data, size_t len)
 {
   if (data == NULL || len > RX_BUFFER_SIZE) {
-    ESP_LOGE(s_TAG, "Invalid packet: len=%zu (max=%d)",
+    RX_LOG_ERROR(s_TAG, "Invalid packet: len=%zu (max=%d)",
     len, RX_BUFFER_SIZE);
     return;
   }
@@ -5686,7 +5699,7 @@ size_t* bytes_copied)
   *bytes_copied = copy_len;
   
   if (len > RX_BUFFER_SIZE) {
-    ESP_LOGW(s_TAG, "Packet truncated: %zu bytes lost",
+    RX_LOG_WARN(s_TAG, "Packet truncated: %zu bytes lost",
     len - RX_BUFFER_SIZE);
   }
 }
@@ -5697,23 +5710,23 @@ size_t* bytes_copied)
 
 \begin{lstlisting}[language=C]
 /* DMA buffers must be validated AND aligned */
-esp_err_t start_dma_transfer(const uint8_t* src, size_t len)
+rx_err_t start_dma_transfer(const uint8_t* src, size_t len)
 {
   /* Validate buffer pointer */
   if (src == NULL) {
-    return ESP_ERR_INVALID_ARG;
+    return RX_ERR_INVALID_ARG;
   }
   
   /* Validate length */
   if (len == 0 || len > MAX_DMA_TRANSFER_SIZE) {
-    ESP_LOGE(s_TAG, "Invalid DMA length: %zu", len);
+    RX_LOG_ERROR(s_TAG, "Invalid DMA length: %zu", len);
     return ESP_ERR_INVALID_SIZE;
   }
   
   /* Check alignment (DMA requires 4-byte alignment) */
   if (((uintptr_t)src & 0x3) != 0) {
-    ESP_LOGE(s_TAG, "DMA buffer not 4-byte aligned");
-    return ESP_ERR_INVALID_ARG;
+    RX_LOG_ERROR(s_TAG, "DMA buffer not 4-byte aligned");
+    return RX_ERR_INVALID_ARG;
   }
   
   /* Proceed with DMA */
@@ -5733,17 +5746,17 @@ typedef struct {
   size_t count;
 } ring_buffer_t;
 
-esp_err_t ring_buffer_write(ring_buffer_t* rb, const uint8_t* data,
+rx_err_t ring_buffer_write(ring_buffer_t* rb, const uint8_t* data,
 size_t len)
 {
   if (rb == NULL || data == NULL) {
-    return ESP_ERR_INVALID_ARG;
+    return RX_ERR_INVALID_ARG;
   }
   
   /* Check available space */
   size_t available = sizeof(rb->buffer) - rb->count;
   if (len > available) {
-    ESP_LOGW(s_TAG, "Ring buffer overflow: %zu bytes lost",
+    RX_LOG_WARN(s_TAG, "Ring buffer overflow: %zu bytes lost",
     len - available);
     return ESP_ERR_NO_MEM;
   }
@@ -5755,7 +5768,7 @@ size_t len)
     rb->count++;
   }
   
-  return ESP_OK;
+  return RX_OK;
 }
 
 
@@ -5784,7 +5797,7 @@ Validate all buffers & Check lengths before memcpy, DMA, ring buffers \\
 Following these rules ensures stable, predictable memory usage and prevents an entire class of memory-related bugs that are extremely difficult to debug in embedded systems.
 
 
-This section establishes best practices for real-time embedded systems development on ESP32. These guidelines are critical for motor control (1000Hz loops), sensor fusion, and safety-critical robotics applications.
+This section establishes best practices for real-time embedded systems development across all STAR platforms. These guidelines are critical for motor control (1000Hz loops), sensor fusion, and safety-critical robotics applications.
 
 \subsection{Interrupt Service Routines (ISRs)}
 
@@ -5936,14 +5949,14 @@ void motor_control_loop(void)
   * Pulse width = worst-case execution time (WCET) */
 }
 
-/* Or use ESP32 cycle counter */
+/* Or use platform-specific cycle counter (ESP32, RX72N, etc.) */
 uint32_t start_cycles = esp_cpu_get_cycle_count();
 
 critical_function();
 
 uint32_t end_cycles = esp_cpu_get_cycle_count();
 uint32_t elapsed_us = (end_cycles - start_cycles) / (CPU_FREQ_MHZ);
-ESP_LOGI(s_TAG, "Execution time: %lu us", elapsed_us);
+RX_LOG_INFO(s_TAG, "Execution time: %lu us", elapsed_us);
 
 
 \end{lstlisting}
@@ -5969,7 +5982,7 @@ void motor_control_task(void* arg)
   }
 }
 
-/* If task hangs, watchdog resets ESP32 after 5 seconds */
+/* If task hangs, watchdog resets system after timeout (platform-specific) */
 
 
 \end{lstlisting}
@@ -5984,26 +5997,26 @@ float read_temperature(void)
 }
 
 /* CORRECT - Timeout and error handling */
-esp_err_t read_temperature_safe(float* temp_celsius)
+rx_err_t read_temperature_safe(float* temp_celsius)
 {
-  esp_err_t ret;
+  rx_err_t ret;
   uint8_t data[2];
   
   /* I2C read with 100ms timeout */
   ret = star_bus_i2c_read(bus_manager, "temp_i2c", data, 2,
   TEMP_READ_REG, NULL);
-  if (ret != ESP_OK) {
-    ESP_LOGW(s_TAG, "Temperature sensor timeout");
+  if (ret != RX_OK) {
+    RX_LOG_WARN(s_TAG, "Temperature sensor timeout");
     return ret;
   }
   
   *temp_celsius = (data[0] << 8 | data[1]) / 10.0f;
-  return ESP_OK;
+  return RX_OK;
 }
 
 /* Use sensor timeout for safety */
-esp_err_t ret = read_temperature_safe(&motor_temp);
-if (ret != ESP_OK) {
+rx_err_t ret = read_temperature_safe(&motor_temp);
+if (ret != RX_OK) {
   /* Sensor failed - enter safe state */
   star_drv8243_stop(&motor, true);
   system_enter_safe_mode();
@@ -6017,7 +6030,7 @@ if (ret != ESP_OK) {
 /* Safe state: all motors stopped, systems halted */
 void system_enter_safe_mode(void)
 {
-  ESP_LOGE(s_TAG, "ENTERING SAFE MODE");
+  RX_LOG_ERROR(s_TAG, "ENTERING SAFE MODE");
   
   /* Stop all motors */
   for (int i = 0; i < NUM_MOTORS; i++) {
@@ -6059,7 +6072,7 @@ typedef struct {
   uint32_t crc32;  /* CRC of pid structure */
 } stored_config_t;
 
-esp_err_t save_config_to_nvs(const star_pid_config_t* config)
+rx_err_t save_config_to_nvs(const star_pid_config_t* config)
 {
   stored_config_t stored;
   memcpy(&stored.pid, config, sizeof(star_pid_config_t));
@@ -6073,14 +6086,14 @@ esp_err_t save_config_to_nvs(const star_pid_config_t* config)
   sizeof(stored_config_t));
 }
 
-esp_err_t load_config_from_nvs(star_pid_config_t* config)
+rx_err_t load_config_from_nvs(star_pid_config_t* config)
 {
   stored_config_t stored;
   size_t len = sizeof(stored_config_t);
   
   esp_err_t ret = nvs_get_blob(nvs_handle, "pid_config",
   &stored, &len);
-  if (ret != ESP_OK) {
+  if (ret != RX_OK) {
     return ret;
   }
   
@@ -6088,12 +6101,12 @@ esp_err_t load_config_from_nvs(star_pid_config_t* config)
   uint32_t calculated_crc = esp_crc32_le(0, (uint8_t*)&stored.pid,
   sizeof(star_pid_config_t));
   if (calculated_crc != stored.crc32) {
-    ESP_LOGE(s_TAG, "Config CRC mismatch! Flash corrupted?");
+    RX_LOG_ERROR(s_TAG, "Config CRC mismatch! Flash corrupted?");
     return ESP_ERR_INVALID_CRC;
   }
   
   memcpy(config, &stored.pid, sizeof(star_pid_config_t));
-  return ESP_OK;
+  return RX_OK;
 }
 
 
@@ -6103,8 +6116,8 @@ esp_err_t load_config_from_nvs(star_pid_config_t* config)
 \subsubsection{Use Abstract Bus Interfaces}
 
 \begin{lstlisting}[language=C]
-/* CORRECT - Driver depends on bus abstraction, not ESP-IDF */
-esp_err_t mpu6050_init(mpu6050_handle_t* handle,
+/* CORRECT - Driver depends on bus abstraction, not platform HAL */
+rx_err_t mpu6050_init(mpu6050_handle_t* handle,
 star_bus_manager_t* bus_manager,
 const char* bus_name)
 {
@@ -6171,13 +6184,14 @@ bool button_read(debounced_button_t* btn)
 /* Use NVS (Non-Volatile Storage) for wear-leveling */
 #include "nvs_flash.h"
 
-esp_err_t init_nvs(void)
+rx_err_t init_nvs(void)
 {
   esp_err_t ret = nvs_flash_init();
   if (ret == ESP_ERR_NVS_NO_FREE_PAGES ||
   ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
     /* Erase and retry */
-    ESP_ERROR_CHECK(nvs_flash_erase());
+    /* Platform-specific: handle flash erase error appropriately */
+    nvs_flash_erase();
     ret = nvs_flash_init();
   }
   return ret;
@@ -6329,7 +6343,7 @@ MAX_MOTOR_CURRENT_MA);
 
 \begin{lstlisting}[language=C]
 /* I2C bus recovery */
-esp_err_t recover_i2c_bus(i2c_port_t port)
+rx_err_t recover_i2c_bus(i2c_port_t port)
 {
   ESP_LOGW(s_TAG, "Recovering I2C bus %d", port);
   
@@ -6361,7 +6375,7 @@ Following these real-time and embedded best practices ensures:
 These practices are the foundation of reliable embedded systems for robotics.
 
 
-This section establishes configuration requirements for Protocol Buffer messages used in ESP32 firmware. The STAR project uses \textbf{nanopb} (Nano Protocol Buffers) for embedded systems, which requires static memory allocation.
+This section establishes configuration requirements for Protocol Buffer messages used in STAR embedded firmware (ESP32, RX72N). The STAR project uses \textbf{nanopb} (Nano Protocol Buffers) for embedded systems, which requires static memory allocation.
 
 \subsection{nanopb Overview}
 
@@ -6376,7 +6390,7 @@ This section establishes configuration requirements for Protocol Buffer messages
 
 \subsection{Why Static Allocation?}
 
-ESP32 firmware follows strict "no dynamic allocation" rules (see Section 25). nanopb field sizes must be explicitly configured to enable compile-time buffer allocation.
+STAR firmware follows strict "no dynamic allocation" rules (see Section 25). nanopb field sizes must be explicitly configured to enable compile-time buffer allocation.
 
 \subsection{Field Size Configuration}
 
@@ -6394,7 +6408,7 @@ star.v1.FirmwareChunk.data max_size:1024
 
 \begin{table}[H]
 \centering
-\caption{nanopb Field Size Constraints for ESP32}
+\caption{nanopb Field Size Constraints for Embedded Platforms}
 \label{tab:nanopb-constraints}
 \begin{tabular}{|l|l|l|}
 \hline
@@ -6615,16 +6629,16 @@ pb_ostream_t stream = pb_ostream_from_buffer(buffer, sizeof(buffer));
 
 bool status = pb_encode(&stream, RequestHeader_fields, &request);
 if (!status) {
-  ESP_LOGE(s_TAG, "Encoding failed: %s", PB_GET_ERROR(&stream));
-  return ESP_FAIL;
+  RX_LOG_ERROR(s_TAG, "Encoding failed: %s", PB_GET_ERROR(&stream));
+  return RX_ERR_FAIL;
 }
 
 size_t message_length = stream.bytes_written;
-ESP_LOGI(s_TAG, "Encoded message: %zu bytes", message_length);
+RX_LOG_INFO(s_TAG, "Encoded message: %zu bytes", message_length);
 
 /* Verify it fits in SPI transaction buffer */
 if (message_length > SPI_MAX_TRANSFER_SIZE) {
-  ESP_LOGE(s_TAG, "Message too large for SPI: %zu > %d",
+  RX_LOG_ERROR(s_TAG, "Message too large for SPI: %zu > %d",
   message_length, SPI_MAX_TRANSFER_SIZE);
   return ESP_ERR_INVALID_SIZE;
 }
@@ -6711,4 +6725,4 @@ battery.cell_mv_count = 3;  /* Set actual element count (3S LiPo) */
 \item \textbf{Set array count fields} for repeated fields
 \end{itemize}
 
-Properly configured nanopb constraints enable reliable, predictable Protocol Buffer communication on resource-constrained ESP32 hardware.
+Properly configured nanopb constraints enable reliable, predictable Protocol Buffer communication on resource-constrained embedded hardware (ESP32, RX72N, and future platforms).
