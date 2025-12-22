@@ -26,7 +26,7 @@ Note: External APIs may still use legacy terminology internally. Map these to ou
 | `star-gateway/` | Go gateway service (UI ↔ ROS2 bridge) running on RPi5 |
 | `star-ui/` | User interface (TypeScript) |
 | `matlab/` | Motor system identification and PID controller design |
-| `Schematic/` | KiCad PCB designs |
+| `schematic/` | KiCad PCB designs |
 
 ### System Communication Flow
 
