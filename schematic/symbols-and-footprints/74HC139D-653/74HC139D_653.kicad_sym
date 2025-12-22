@@ -2,7 +2,7 @@
 	(version 20241209)
 	(generator "kicad_symbol_editor")
 	(generator_version "9.0")
-	(symbol "74HC139D,653"
+	(symbol "74HC139D-653"
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
