@@ -104,6 +104,7 @@ For context, control loop frequencies should match system dynamics:
 \subsection{Key Design Decisions}
 
 \subsubsection{Protocol Stack}
+\label{sec:protocol-stack}
 
 \noindent\makebox[\textwidth]{%
 \begin{tikzpicture}[
@@ -181,9 +182,9 @@ CRC-32 & Little-endian & IEEE 802.3 & Standard CRC-32 polynomial \\
             DMA double-buffer & 8.0 & 1.56 \\
             RX/TX buffers & 2.0 & 0.39 \\
             Protobuf structs & 1.5 & 0.29 \\
-            ARQ state & 4.5 & 0.88 \\
+            ARQ state & 4.0 & 0.78 \\
             \midrule
-            \textbf{Total} & \textbf{16.0} & \textbf{3.12} \\
+            \textbf{Total} & \textbf{15.5} & \textbf{3.03} \\
             \bottomrule
         \end{tabular}}
     \end{minipage}\hfill%
@@ -224,12 +225,12 @@ CRC-32 & Little-endian & IEEE 802.3 & Standard CRC-32 polynomial \\
           \textit{Calculation:} Largest message structures (SetVelocityResponse $\approx$ 600 bytes, TelemetryData $\approx$ 400 bytes) \\
           \textit{Usage:} $\frac{1.5}{512} \times 100 = 0.29\%$
 
-    \item \textbf{ARQ state:} $4 + 4 + 8 + 4 + 4092 = 4112\text{ bytes} \approx 4.5\text{ KB}$ \\
+    \item \textbf{ARQ state:} $4 + 4 + 8 + 4 + 4092 = 4112\text{ bytes} \approx 4.0\text{ KB}$ \\
           \textit{Calculation:} Sequence number (4B) + retry counter (4B) + timestamp (8B) + state (4B) + retry buffer (4092B) \\
-          \textit{Usage:} $\frac{4.5}{512} \times 100 = 0.88\%$
+          \textit{Usage:} $\frac{4.0}{512} \times 100 = 0.78\%$
 
-    \item \textbf{Total SRAM:} $8.0 + 2.0 + 1.5 + 4.5 = 16.0\text{ KB}$ \\
-          \textit{Total usage:} $\frac{16.0}{512} \times 100 = 3.12\%$
+    \item \textbf{Total SRAM:} $8.0 + 2.0 + 1.5 + 4.0 = 15.5\text{ KB}$ \\
+          \textit{Total usage:} $\frac{15.5}{512} \times 100 = 3.03\%$
 \end{itemize}
 
 \textbf{Flash (16 MB = 16384 KB total):}
