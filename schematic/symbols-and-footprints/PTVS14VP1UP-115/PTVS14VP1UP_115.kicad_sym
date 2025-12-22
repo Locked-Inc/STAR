@@ -2,7 +2,7 @@
 	(version 20241209)
 	(generator "kicad_symbol_editor")
 	(generator_version "9.0")
-	(symbol "PTVS14VP1UP,115"
+	(symbol "PTVS14VP1UP-115"
 		(pin_names
 			(hide yes)
 		)
