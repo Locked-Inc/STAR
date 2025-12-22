@@ -38,27 +38,27 @@ extern "C" {
  * See: matlab/pid_design_velocity.m
  */
 typedef enum {
-  k_pid_kp_default = 286,  /**< Proportional gain × 1000 (0.286 actual) */
-  k_pid_ki_default = 8010, /**< Integral gain × 1000 (8.01 actual) */
-  k_pid_kd_default = 0,    /**< Derivative gain × 1000 (0.0 actual) */
+  k_pid_kp_default = 286,  /**< Proportional gain x 1000 (0.286 actual) */
+  k_pid_ki_default = 8010, /**< Integral gain x 1000 (8.01 actual) */
+  k_pid_kd_default = 0,    /**< Derivative gain x 1000 (0.0 actual) */
 } pid_gains_config_t;
 
 /**
  * @brief PID output limits (duty cycle percentage)
  */
 typedef enum {
-  k_pid_output_min   = -10000, /**< -100.0% duty cycle × 100 */
-  k_pid_output_max   = 10000,  /**< +100.0% duty cycle × 100 */
-  k_pid_integral_min = -5000,  /**< -50.0 integral limit × 100 */
-  k_pid_integral_max = 5000,   /**< +50.0 integral limit × 100 */
+  k_pid_output_min   = -10000, /**< -100.0% duty cycle x 100 */
+  k_pid_output_max   = 10000,  /**< +100.0% duty cycle x 100 */
+  k_pid_integral_min = -5000,  /**< -50.0 integral limit x 100 */
+  k_pid_integral_max = 5000,   /**< +50.0 integral limit x 100 */
 } pid_limits_config_t;
 
 /**
  * @brief Motor velocity limits (m/s)
  */
 typedef enum {
-  k_motor_max_velocity_mps = 2500, /**< 2.5 m/s × 1000 (absolute max) */
-  k_motor_min_velocity_mps = 10,   /**< 0.01 m/s × 1000 (deadband threshold) */
+  k_motor_max_velocity_mps = 2500, /**< 2.5 m/s x 1000 (absolute max) */
+  k_motor_min_velocity_mps = 10,   /**< 0.01 m/s x 1000 (deadband threshold) */
 } motor_velocity_config_t;
 
 /**
@@ -81,7 +81,7 @@ typedef enum {
 typedef enum {
   k_control_loop_freq_hz   = 250,  /**< 250 Hz control loop */
   k_control_loop_period_ms = 4,    /**< 4ms period */
-  k_control_loop_period_us = 4000, /**< 4000μs period */
+  k_control_loop_period_us = 4000, /**< 4000us period */
 } control_loop_config_t;
 
 /**
@@ -274,8 +274,8 @@ typedef enum {
  */
 typedef enum {
   k_charge_current_max_ma    = 2000,  /**< 2A max charge current */
-  k_charge_voltage_max_mv    = 16800, /**< 16.8V max charge voltage (4.2V × 4) */
-  k_charge_temperature_max_c = 45,    /**< 45°C max charge temperature */
+  k_charge_voltage_max_mv    = 16800, /**< 16.8V max charge voltage (4.2V x 4) */
+  k_charge_temperature_max_c = 45,    /**< 45 deg C max charge temperature */
 } charging_config_t;
 
 /* =============================================================================

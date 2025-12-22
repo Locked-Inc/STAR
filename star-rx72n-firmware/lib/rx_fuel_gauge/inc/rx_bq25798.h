@@ -97,8 +97,8 @@ typedef struct {
   uint16_t vsys_mv;     /**< System voltage in mV */
   int16_t  ichg_ma;     /**< Charge current in mA */
   int16_t  ibus_ma;     /**< Input current in mA */
-  int16_t  ts_temp_c;   /**< TS pin temperature in °C */
-  int16_t  tdie_temp_c; /**< Die temperature in °C */
+  int16_t  ts_temp_c;   /**< TS pin temperature in deg C */
+  int16_t  tdie_temp_c; /**< Die temperature in deg C */
 } bq25798_adc_t;
 
 /* =============================================================================

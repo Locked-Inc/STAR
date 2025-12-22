@@ -25,7 +25,7 @@
  *
  * Clock tree:
  * - Main oscillator: 16 MHz (external crystal)
- * - PLL: 16 MHz × 30 / 2 = 240 MHz
+ * - PLL: 16 MHz x 30 / 2 = 240 MHz
  * - ICLK (CPU): 240 MHz
  * - PCLKA: 120 MHz
  * - PCLKB/C/D: 60 MHz
@@ -51,8 +51,8 @@ static rx_err_t clock_init(void)
   }
 
   /* Configure PLL */
-  /* PLL = (Main OSC × PLIDIV) / PLLSTBY */
-  /* 240 MHz = (16 MHz × 30) / 2 */
+  /* PLL = (Main OSC x PLIDIV) / PLLSTBY */
+  /* 240 MHz = (16 MHz x 30) / 2 */
   SYSTEM.PLLCR  = 0x1D01; /* PLIDIV=30-1=29(0x1D), STC=1 (div by 2) */
   SYSTEM.PLLCR2 = 0x00;   /* Enable PLL */
 

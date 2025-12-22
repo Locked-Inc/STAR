@@ -115,7 +115,7 @@ typedef enum {
  */
 typedef enum {
   k_motor_pwm_freq_hz  = 20000, /**< 20 kHz PWM frequency */
-  k_motor_dead_time_ns = 1000,  /**< 1μs dead-time for H-bridge */
+  k_motor_dead_time_ns = 1000,  /**< 1us dead-time for H-bridge */
 } motor_timing_config_t;
 
 /* =============================================================================

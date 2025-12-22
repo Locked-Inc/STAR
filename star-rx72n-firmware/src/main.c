@@ -220,13 +220,13 @@ static rx_err_t internal_init_pids(void)
 
   /* Common PID configuration for all motors */
   rx_pid_config_t pid_config = {
-    .kp           = k_pid_kp_default / 1000.0f,  /* Convert from × 1000 */
-    .ki           = k_pid_ki_default / 1000.0f,  /* Convert from × 1000 */
-    .kd           = k_pid_kd_default / 1000.0f,  /* Convert from × 1000 */
-    .output_min   = k_pid_output_min / 100.0f,   /* Convert from × 100 */
-    .output_max   = k_pid_output_max / 100.0f,   /* Convert from × 100 */
-    .integral_min = k_pid_integral_min / 100.0f, /* Convert from × 100 */
-    .integral_max = k_pid_integral_max / 100.0f, /* Convert from × 100 */
+    .kp           = k_pid_kp_default / 1000.0f,  /* Convert from x 1000 */
+    .ki           = k_pid_ki_default / 1000.0f,  /* Convert from x 1000 */
+    .kd           = k_pid_kd_default / 1000.0f,  /* Convert from x 1000 */
+    .output_min   = k_pid_output_min / 100.0f,   /* Convert from x 100 */
+    .output_max   = k_pid_output_max / 100.0f,   /* Convert from x 100 */
+    .integral_min = k_pid_integral_min / 100.0f, /* Convert from x 100 */
+    .integral_max = k_pid_integral_max / 100.0f, /* Convert from x 100 */
   };
 
   /* Initialize all 4 PID controllers with same gains */
@@ -334,9 +334,9 @@ int main(void)
   RX_ERROR_CHECK(err);
 
   RX_LOG_INFO(s_tag, "Motor control hardware initialized");
-  RX_LOG_INFO(s_tag, "  Motors:   4 × DRV8243 H-bridge");
-  RX_LOG_INFO(s_tag, "  Encoders: 4 × MTU phase counting");
-  RX_LOG_INFO(s_tag, "  PIDs:     4 × velocity control");
+  RX_LOG_INFO(s_tag, "  Motors:   4 x DRV8243 H-bridge");
+  RX_LOG_INFO(s_tag, "  Encoders: 4 x MTU phase counting");
+  RX_LOG_INFO(s_tag, "  PIDs:     4 x velocity control");
   RX_LOG_INFO(s_tag, "  Control:  250 Hz (4ms period)");
 
   /* All systems ready */

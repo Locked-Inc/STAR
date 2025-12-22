@@ -19,10 +19,10 @@
  * - PWM frequency: up to 25 kHz
  *
  * Hardware Connections:
- * - RX72N MTU PWM_A → DRV8243 PH (Phase/Direction)
- * - RX72N MTU PWM_B → DRV8243 EN (Enable/Speed)
- * - DRV8243 IPROPI → RX72N ADC (Current sense)
- * - DRV8243 nFAULT → RX72N GPIO (Fault detect)
+ * - RX72N MTU PWM_A -> DRV8243 PH (Phase/Direction)
+ * - RX72N MTU PWM_B -> DRV8243 EN (Enable/Speed)
+ * - DRV8243 IPROPI -> RX72N ADC (Current sense)
+ * - DRV8243 nFAULT -> RX72N GPIO (Fault detect)
  *
  * Example Usage:
  * @code
