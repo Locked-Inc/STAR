@@ -1,5 +1,0 @@
-<map id="star_bus_gpio_set_interrupt" name="star_bus_gpio_set_interrupt">
-<area shape="rect" id="Node000001" title="Configure GPIO interrupt for a pin via bus manager." alt="" coords="5,5,187,31"/>
-<area shape="rect" id="Node000002" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="235,5,419,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="187,16,222,18,217,18,187,21"/>
-</map>

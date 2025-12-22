@@ -1,9 +1,0 @@
-<map id="lib/star_bus/include/star_bus_config.h" name="lib/star_bus/include/star_bus_config.h">
-<area shape="rect" id="Node000001" title="Bus configuration creation and lifecycle management API." alt="" coords="167,5,300,46"/>
-<area shape="rect" id="Node000002" href="$de/d98/star__bus__config_8c.html" title="Bus configuration creation and lifecycle management implementation." alt="" coords="5,94,142,135"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="187,53,111,96,108,91,181,54"/>
-<area shape="rect" id="Node000003" href="$d7/d60/star__bus__manager_8c.html" title="Unified bus manager implementation for multi&#45;protocol peripheral management." alt="" coords="165,94,302,135"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="235,60,236,95,231,92,232,64"/>
-<area shape="rect" id="Node000004" href="$d0/d29/main_8c.html" title="Application entry point and system initialization for STAR ESP32 firmware." alt="" coords="326,102,408,127"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="277,52,351,101,346,101,276,57"/>
-</map>

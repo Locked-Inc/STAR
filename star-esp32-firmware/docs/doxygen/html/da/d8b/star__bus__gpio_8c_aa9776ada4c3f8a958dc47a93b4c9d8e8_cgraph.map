@@ -1,7 +1,0 @@
-<map id="star_bus_gpio_get_default_ops" name="star_bus_gpio_get_default_ops">
-<area shape="rect" id="Node000001" title="Get default GPIO operations structure." alt="" coords="5,46,207,72"/>
-<area shape="rect" id="Node000002" href="$da/d8b/star__bus__gpio_8c.html#acc3fb5abdf06a75718d86a66364b27e0" title=" " alt="" coords="255,5,406,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="196,43,242,38,237,40,197,48"/>
-<area shape="rect" id="Node000003" href="$da/d8b/star__bus__gpio_8c.html#aa43cb0b0920c20eb9e23619e5ef13015" title=" " alt="" coords="255,71,406,111"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="201,70,242,78,236,78,201,75"/>
-</map>

@@ -1,9 +1,0 @@
-<map id="star_bus_config_deinit" name="star_bus_config_deinit">
-<area shape="rect" id="Node000001" title="Deinitialize the bus/device associated with this configuration." alt="" coords="471,31,622,56"/>
-<area shape="rect" id="Node000002" href="$de/d98/star__bus__config_8c.html#a194581e2eb82227a022f04b9057db839" title="Destroy a bus configuration and free all associated resources." alt="" coords="260,31,423,56"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="452,44,423,46,423,41,458,43"/>
-<area shape="rect" id="Node000003" href="$d7/d60/star__bus__manager_8c.html#a238abc1b4d0e4b98520e4227ec121b42" title="Deinitialize the bus manager and all managed I2C bus configurations." alt="" coords="25,5,192,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="242,33,192,30,192,25,247,33"/>
-<area shape="rect" id="Node000004" href="$d7/d60/star__bus__manager_8c.html#aa440431606d8a33fb394b4225db51f93" title="Remove an I2C bus configuration from the manager and destroy it." alt="" coords="5,55,212,80"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="242,54,212,59,212,54,247,53"/>
-</map>

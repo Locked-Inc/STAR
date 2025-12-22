@@ -1,9 +1,0 @@
-<map id="internal_register_bus_pin" name="internal_register_bus_pin">
-<area shape="rect" id="Node000001" title="Helper to register a single pin via the interface." alt="" coords="597,5,763,31"/>
-<area shape="rect" id="Node000002" href="$d7/d60/star__bus__manager_8c.html#a1ca47ab4ab3f7448d603776d092e4a24" title="Register all pins for a single bus configuration." alt="" coords="363,5,549,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="579,18,550,21,550,16,585,18"/>
-<area shape="rect" id="Node000003" href="$d7/d60/star__bus__manager_8c.html#a3a0dc80007e321a8697c399e0f0bf559" title="Add a new I2C bus/device configuration to the manager." alt="" coords="131,5,315,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="344,18,316,21,316,16,350,18"/>
-<area shape="rect" id="Node000004" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="113,19,83,21,83,16,118,18"/>
-</map>

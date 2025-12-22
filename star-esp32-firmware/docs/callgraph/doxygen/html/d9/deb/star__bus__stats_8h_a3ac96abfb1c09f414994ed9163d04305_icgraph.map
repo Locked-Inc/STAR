@@ -1,5 +1,0 @@
-<map id="star_bus_stats_get" name="star_bus_stats_get">
-<area shape="rect" id="Node000001" title="Get current statistics for a bus." alt="" coords="186,5,318,31"/>
-<area shape="rect" id="Node000002" href="$dd/d61/star__bus__stats_8c.html#aa6408f28ab32afa7d02354bf1b230bbd" title="Calculate difference between current stats and snapshot." alt="" coords="5,5,138,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="168,18,138,21,138,16,173,18"/>
-</map>

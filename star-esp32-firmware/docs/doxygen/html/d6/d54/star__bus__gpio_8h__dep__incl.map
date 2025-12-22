@@ -1,9 +1,0 @@
-<map id="lib/star_bus/include/star_bus_gpio.h" name="lib/star_bus/include/star_bus_gpio.h">
-<area shape="rect" id="Node000001" title="GPIO operations API through the unified bus manager." alt="" coords="167,5,300,46"/>
-<area shape="rect" id="Node000002" href="$de/d98/star__bus__config_8c.html" title="Bus configuration creation and lifecycle management implementation." alt="" coords="5,94,142,135"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="187,53,111,96,108,91,181,54"/>
-<area shape="rect" id="Node000003" href="$da/d8b/star__bus__gpio_8c.html" title="GPIO operations implementation for the bus manager." alt="" coords="165,94,302,135"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="235,60,236,95,231,92,232,64"/>
-<area shape="rect" id="Node000004" href="$d7/d60/star__bus__manager_8c.html" title="Unified bus manager implementation for multi&#45;protocol peripheral management." alt="" coords="325,94,462,135"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="284,51,360,94,355,94,282,56"/>
-</map>

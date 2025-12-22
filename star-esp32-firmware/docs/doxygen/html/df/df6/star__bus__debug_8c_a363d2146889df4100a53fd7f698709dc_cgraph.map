@@ -1,5 +1,0 @@
-<map id="star_bus_debug_print_buses" name="star_bus_debug_print_buses">
-<area shape="rect" id="Node000001" title="Print information about all configured buses." alt="" coords="5,5,151,46"/>
-<area shape="rect" id="Node000002" href="$d7/d27/star__bus__types_8c.html#afa900f53de82aaa97ea08d9b3d5a4a6d" title="Convert bus type to string." alt="" coords="199,13,359,38"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="151,23,186,25,180,26,151,28"/>
-</map>

@@ -1,7 +1,0 @@
-<map id="get_uart_state" name="get_uart_state">
-<area shape="rect" id="Node000001" title="Get UART state for a bus (thread&#45;safe)." alt="" coords="5,35,110,60"/>
-<area shape="rect" id="Node000002" href="$da/d14/star__bus__uart_8c.html#aa67160559a776670459f39d3453dac74" title="Get UART state for a bus (must be called with mutex held)." alt="" coords="158,5,311,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="109,36,145,32,140,34,111,41"/>
-<area shape="rect" id="Node000003" href="$da/d14/star__bus__uart_8c.html#aec8133ec6aaf61f663c70861b3788270" title="Initialize UART global mutex (thread&#45;safe)." alt="" coords="176,55,292,96"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="110,53,164,63,159,65,110,58"/>
-</map>

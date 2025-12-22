@@ -1,5 +1,0 @@
-<map id="star_bus_spi_transfer" name="star_bus_spi_transfer">
-<area shape="rect" id="Node000001" title="Perform a full&#45;duplex transfer with an SPI device specified by a bus configuration." alt="" coords="248,5,394,31"/>
-<area shape="rect" id="Node000002" href="$dc/d0c/star__bus__spi__dma_8c.html#adf3123b20b78dd55e9349ccbaae6794b" title="Perform full&#45;duplex SPI transceive using DMA." alt="" coords="5,5,200,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="229,18,200,21,200,16,235,18"/>
-</map>

@@ -1,5 +1,0 @@
-<map id="star_bus_gpio_read" name="star_bus_gpio_read">
-<area shape="rect" id="Node000001" title="Read the input level of a GPIO pin via bus manager." alt="" coords="5,5,140,31"/>
-<area shape="rect" id="Node000002" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="188,5,372,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="140,16,175,18,169,18,140,21"/>
-</map>

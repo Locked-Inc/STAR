@@ -1,5 +1,0 @@
-<map id="star_motor_deinit" name="star_motor_deinit">
-<area shape="rect" id="Node000001" title="Deinitialize motor controller and release resources." alt="" coords="5,5,127,31"/>
-<area shape="rect" id="Node000002" href="$da/dc0/star__motor_8c.html#afbbfe21c46e45f08382adba217da7072" title="Stop motor." alt="" coords="175,5,290,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="127,16,162,18,157,18,127,21"/>
-</map>

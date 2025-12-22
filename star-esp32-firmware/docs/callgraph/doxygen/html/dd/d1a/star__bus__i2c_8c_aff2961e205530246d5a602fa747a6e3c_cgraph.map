@@ -1,5 +1,0 @@
-<map id="star_bus_i2c_write" name="star_bus_i2c_write">
-<area shape="rect" id="Node000001" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="5,5,136,31"/>
-<area shape="rect" id="Node000002" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="184,5,368,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="136,16,170,18,165,18,136,21"/>
-</map>

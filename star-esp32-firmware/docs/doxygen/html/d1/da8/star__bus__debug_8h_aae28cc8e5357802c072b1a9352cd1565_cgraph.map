@@ -1,5 +1,0 @@
-<map id="star_bus_debug_scan_i2c" name="star_bus_debug_scan_i2c">
-<area shape="rect" id="Node000001" title="Scan I2C bus for devices." alt="" coords="5,5,178,31"/>
-<area shape="rect" id="Node000002" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="226,5,410,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="178,16,213,18,207,18,178,21"/>
-</map>

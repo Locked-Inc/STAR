@@ -1,5 +1,0 @@
-<map id="star_bus_dht22_celsius_to_fahrenheit" name="star_bus_dht22_celsius_to_fahrenheit">
-<area shape="rect" id="Node000001" title="Convert Celsius to Fahrenheit." alt="" coords="223,5,381,46"/>
-<area shape="rect" id="Node000002" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#af55bc41ea6246d1b9f8e5ba9b2e8bca6" title="Calculate heat index (apparent temperature)." alt="" coords="5,5,175,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="204,26,175,28,175,23,209,25"/>
-</map>

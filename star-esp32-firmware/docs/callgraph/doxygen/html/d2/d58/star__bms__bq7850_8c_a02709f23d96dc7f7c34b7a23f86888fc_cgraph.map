@@ -1,9 +1,0 @@
-<map id="star_bms_bq7850_deinit" name="star_bms_bq7850_deinit">
-<area shape="rect" id="Node000001" title="Deinitialize BQ7850 BMS device handle." alt="" coords="5,13,168,38"/>
-<area shape="rect" id="Node000002" href="$d7/d82/star__error__handler_8c.html#a983c8213a8523e7362c0b55bdaa296bc" title="Clean up an error interface that may own its handler." alt="" coords="216,5,349,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="168,23,203,25,197,26,168,28"/>
-<area shape="rect" id="Node000003" href="$d7/d82/star__error__handler_8c.html#a1632e40ebb7509611a0513c0e6bdbb46" title="Destroy an error handler created by error_handler_create_default() or error_handler_create_custom()." alt="" coords="397,5,543,46"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="349,23,384,26,379,26,350,28"/>
-<area shape="rect" id="Node000004" href="$d7/d82/star__error__handler_8c.html#aaaf152f965c4c4e01c241f0801ce561a" title="Deinitialize an error handler and release resources." alt="" coords="591,13,726,38"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="544,23,578,26,573,26,544,28"/>
-</map>

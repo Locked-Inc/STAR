@@ -1,5 +1,0 @@
-<map id="star_bus_spi_transmit" name="star_bus_spi_transmit">
-<area shape="rect" id="Node000001" title="Transmit data to an SPI device specified by a bus configuration." alt="" coords="235,5,384,31"/>
-<area shape="rect" id="Node000002" href="$dc/d0c/star__bus__spi__dma_8c.html#a48e6bc6331dd5601e1d327d5adb6eefd" title="Transmit data via SPI using DMA." alt="" coords="5,5,187,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="216,18,187,21,187,16,222,18"/>
-</map>

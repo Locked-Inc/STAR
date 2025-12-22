@@ -1,7 +1,0 @@
-<map id="lib/star_servo/include/star_servo.h" name="lib/star_servo/include/star_servo.h">
-<area shape="rect" id="Node000001" title="Stateless servo angle calculation library." alt="" coords="112,5,257,46"/>
-<area shape="rect" id="Node000002" href="$d3/df7/star__sensor__pca9685_8c.html" title=" " alt="" coords="5,94,188,135"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="156,56,118,96,115,91,151,58"/>
-<area shape="rect" id="Node000003" href="$d3/d75/star__servo_8c.html" title=" " alt="" coords="212,94,333,135"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="216,55,255,94,250,93,214,60"/>
-</map>

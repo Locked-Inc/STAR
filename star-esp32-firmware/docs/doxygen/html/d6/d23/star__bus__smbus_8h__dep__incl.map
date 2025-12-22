@@ -1,7 +1,0 @@
-<map id="lib/star_bus/include/star_bus_smbus.h" name="lib/star_bus/include/star_bus_smbus.h">
-<area shape="rect" id="Node000001" title="SMBus protocol API over I2C." alt="" coords="106,5,239,46"/>
-<area shape="rect" id="Node000002" href="$d2/d58/star__bms__bq7850_8c.html" title="BQ7850 battery management system driver implementation." alt="" coords="5,94,167,135"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="145,56,107,96,104,91,140,58"/>
-<area shape="rect" id="Node000003" href="$d3/df5/star__bus__smbus_8c.html" title="SMBus protocol layer implementation over I2C." alt="" coords="191,94,328,135"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="204,55,242,94,237,93,202,60"/>
-</map>

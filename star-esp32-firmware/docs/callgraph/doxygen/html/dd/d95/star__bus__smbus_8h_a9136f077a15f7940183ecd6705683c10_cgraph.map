@@ -1,9 +1,0 @@
-<map id="star_smbus_send_byte" name="star_smbus_send_byte">
-<area shape="rect" id="Node000001" title="SMBus Send Byte." alt="" coords="5,46,162,72"/>
-<area shape="rect" id="Node000002" href="$d3/df5/star__bus__smbus_8c.html#a028e8362b8c772d39dee59e24c15439b" title="Validate common parameters for SMBus operations." alt="" coords="210,5,371,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="161,44,197,40,192,42,163,49"/>
-<area shape="rect" id="Node000003" href="$dd/d1a/star__bus__i2c_8c.html#ab5fd7179899b9f4229f103484481be3e" title="Write a single command byte to an I2C device specified by a bus configuration. No register address or..." alt="" coords="225,71,356,111"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="162,68,213,78,208,79,162,74"/>
-<area shape="rect" id="Node000004" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="419,78,603,104"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="356,88,406,91,401,91,356,94"/>
-</map>

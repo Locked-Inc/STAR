@@ -1,9 +1,0 @@
-<map id="star_frame_build" name="star_frame_build">
-<area shape="rect" id="Node000001" title="Build a frame with CRC&#45;32 validation." alt="" coords="5,55,123,80"/>
-<area shape="rect" id="Node000002" href="$d5/d3c/star__frame_8c.html#a4455a97cf23ee5dd334c918c809c3a86" title="Write 16&#45;bit value in network byte order (big&#45;endian)." alt="" coords="171,5,318,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="113,52,182,34,178,37,115,57"/>
-<area shape="rect" id="Node000003" href="$d5/d3c/star__frame_8c.html#a20ab77509013345dad5790b90e90624a" title="Write 32&#45;bit value in little&#45;endian format." alt="" coords="173,55,316,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="123,65,160,67,155,68,123,70"/>
-<area shape="rect" id="Node000004" href="$d5/d3c/star__frame_8c.html#affb4050f4ee5e749495b48eef0c0ba3e" title="Calculate CRC&#45;32 checksum (IEEE 802.3)." alt="" coords="183,104,306,130"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="114,78,182,98,177,100,114,84"/>
-</map>

@@ -1,5 +1,0 @@
-<map id="star_drv8243_stop" name="star_drv8243_stop">
-<area shape="rect" id="Node000001" title="Stop motor." alt="" coords="188,5,316,31"/>
-<area shape="rect" id="Node000002" href="$d2/d8f/star__drv8243_8c.html#a44d0d73194efa934d0e78571f4dd9518" title="Deinitialize DRV8243 motor driver." alt="" coords="5,5,140,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="169,18,140,21,140,16,175,18"/>
-</map>

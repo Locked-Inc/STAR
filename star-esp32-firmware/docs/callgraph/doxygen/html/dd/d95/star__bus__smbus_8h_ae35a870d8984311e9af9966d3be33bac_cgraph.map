@@ -1,9 +1,0 @@
-<map id="star_smbus_write_word" name="star_smbus_write_word">
-<area shape="rect" id="Node000001" title="SMBus Write Word." alt="" coords="5,42,165,68"/>
-<area shape="rect" id="Node000002" href="$d3/df5/star__bus__smbus_8c.html#a028e8362b8c772d39dee59e24c15439b" title="Validate common parameters for SMBus operations." alt="" coords="213,5,374,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="165,41,200,39,195,40,166,46"/>
-<area shape="rect" id="Node000003" href="$dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="228,70,358,96"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="165,63,215,72,210,72,165,68"/>
-<area shape="rect" id="Node000004" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="422,70,606,96"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="359,80,409,83,404,83,359,86"/>
-</map>
