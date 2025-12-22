@@ -889,8 +889,8 @@
         },
         {
           "group_by": false,
-          "label": "Manufactaurer Part Number",
-          "name": "Manufactaurer Part Number",
+          "label": "Manufacturer Part Number",
+          "name": "Manufacturer Part Number",
           "show": true
         },
         {

@@ -3280,7 +3280,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "RC0603FR-10620RL"
+		(property "Manufacturer Part Number" "RC0603FR-10620RL"
 			(at 199.39 99.06 90)
 			(effects
 				(font
@@ -3887,7 +3887,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "RC0603FR-10620RL"
+		(property "Manufacturer Part Number" "RC0603FR-10620RL"
 			(at 161.29 93.98 90)
 			(effects
 				(font
@@ -4560,7 +4560,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "RC0603FR-10620RL"
+		(property "Manufacturer Part Number" "RC0603FR-10620RL"
 			(at 161.29 96.52 90)
 			(effects
 				(font
@@ -5178,7 +5178,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CL10B103KB8NNNL"
+		(property "Manufacturer Part Number" "CL10B103KB8NNNL"
 			(at 148.59 76.2 90)
 			(effects
 				(font
@@ -5851,7 +5851,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CRCW0603100RJNEA"
+		(property "Manufacturer Part Number" "CRCW0603100RJNEA"
 			(at 151.13 69.85 90)
 			(effects
 				(font
@@ -6669,7 +6669,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "963-UMK107AB7105KA-T"
+		(property "Manufacturer Part Number" "963-UMK107AB7105KA-T"
 			(at 161.29 88.9 90)
 			(effects
 				(font
@@ -7475,7 +7475,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CRCW0603100RJNEA"
+		(property "Manufacturer Part Number" "CRCW0603100RJNEA"
 			(at 91.44 76.2 0)
 			(effects
 				(font
@@ -7673,7 +7673,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "61200821621"
+		(property "Manufacturer Part Number" "61200821621"
 			(at 99.06 134.62 90)
 			(effects
 				(font
@@ -7954,7 +7954,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "61200621621"
+		(property "Manufacturer Part Number" "61200621621"
 			(at 99.06 165.1 90)
 			(effects
 				(font
@@ -8584,7 +8584,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CL10B103KB8NNNL"
+		(property "Manufacturer Part Number" "CL10B103KB8NNNL"
 			(at 91.44 88.9 0)
 			(effects
 				(font
@@ -9191,7 +9191,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CRCW0603100RJNEA"
+		(property "Manufacturer Part Number" "CRCW0603100RJNEA"
 			(at 132.08 76.2 90)
 			(effects
 				(font
@@ -9800,7 +9800,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "BQ76200PW"
+		(property "Manufacturer Part Number" "BQ76200PW"
 			(at 140.97 99.06 0)
 			(effects
 				(font

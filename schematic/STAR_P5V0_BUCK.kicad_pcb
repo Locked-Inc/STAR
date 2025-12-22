@@ -500,7 +500,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "T527T226M025ATE100"
+		(property "Manufacturer Part Number" "T527T226M025ATE100"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -1808,7 +1808,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
+		(property "Manufacturer Part Number" "CC0603JRX7R9BB104"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -2433,7 +2433,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "T527T226M025ATE100"
+		(property "Manufacturer Part Number" "T527T226M025ATE100"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -2732,7 +2732,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "T527T226M025ATE100"
+		(property "Manufacturer Part Number" "T527T226M025ATE100"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -3031,7 +3031,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "T527T226M025ATE100"
+		(property "Manufacturer Part Number" "T527T226M025ATE100"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -3330,7 +3330,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "T527T226M025ATE100"
+		(property "Manufacturer Part Number" "T527T226M025ATE100"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -3629,7 +3629,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "T527T226M025ATE100"
+		(property "Manufacturer Part Number" "T527T226M025ATE100"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -4616,7 +4616,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
+		(property "Manufacturer Part Number" "CC0603JRX7R9BB104"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -5621,7 +5621,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "963-UMK107AB7105KA-T"
+		(property "Manufacturer Part Number" "963-UMK107AB7105KA-T"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -5912,7 +5912,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "T527T226M025ATE100"
+		(property "Manufacturer Part Number" "T527T226M025ATE100"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -6263,7 +6263,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "PA4343.222NLT"
+		(property "Manufacturer Part Number" "PA4343.222NLT"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -6540,7 +6540,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "T527T226M025ATE100"
+		(property "Manufacturer Part Number" "T527T226M025ATE100"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -7527,7 +7527,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "CRCW0603220KFKEA"
+		(property "Manufacturer Part Number" "CRCW0603220KFKEA"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -8506,7 +8506,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
+		(property "Manufacturer Part Number" "CC0603JRX7R9BB104"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -9511,7 +9511,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "CC0603KRNPO9BN330"
+		(property "Manufacturer Part Number" "CC0603KRNPO9BN330"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -10490,7 +10490,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "RT0603FRE0730KL"
+		(property "Manufacturer Part Number" "RT0603FRE0730KL"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -10781,7 +10781,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "T527T226M025ATE100"
+		(property "Manufacturer Part Number" "T527T226M025ATE100"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -11768,7 +11768,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "AC0603JR-07100KL"
+		(property "Manufacturer Part Number" "AC0603JR-07100KL"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -12267,7 +12267,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "TPS566238PRQFR"
+		(property "Manufacturer Part Number" "TPS566238PRQFR"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
