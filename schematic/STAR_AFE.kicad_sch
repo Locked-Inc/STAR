@@ -4938,7 +4938,7 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "PTVS14VP1UP,115:PTVS14VP1UP,115"
+		(symbol "PTVS14VP1UP-115:PTVS14VP1UP-115"
 			(pin_numbers
 				(hide yes)
 			)
@@ -4957,7 +4957,7 @@
 					(justify left top)
 				)
 			)
-			(property "Value" "PTVS14VP1UP,115"
+			(property "Value" "PTVS14VP1UP-115"
 				(at 10.16 6.35 0)
 				(effects
 					(font
@@ -5035,7 +5035,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Part_Number" "PTVS14VP1UP,115"
+			(property "Manufacturer_Part_Number" "PTVS14VP1UP-115"
 				(at 10.16 -793.65 0)
 				(effects
 					(font
@@ -5045,7 +5045,7 @@
 					(hide yes)
 				)
 			)
-			(symbol "PTVS14VP1UP,115_0_1"
+			(symbol "PTVS14VP1UP-115_0_1"
 				(polyline
 					(pts
 						(xy 6.858 1.27) (xy 6.35 1.27) (xy 6.35 -1.27)
@@ -5071,7 +5071,7 @@
 					)
 				)
 			)
-			(symbol "PTVS14VP1UP,115_1_1"
+			(symbol "PTVS14VP1UP-115_1_1"
 				(pin passive line
 					(at 3.81 0 0)
 					(length 2.54)
@@ -24433,7 +24433,7 @@
 		)
 	)
 	(symbol
-		(lib_id "PTVS14VP1UP-115:PTVS14VP1UP,115")
+		(lib_id "PTVS14VP1UP-115:PTVS14VP1UP-115")
 		(at 218.44 200.66 90)
 		(unit 1)
 		(exclude_from_sim no)
@@ -24450,7 +24450,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "PTVS14VP1UP,115"
+		(property "Value" "PTVS14VP1UP-115"
 			(at 218.44 195.326 90)
 			(effects
 				(font
@@ -24672,7 +24672,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "PTVS14VP1UP,115"
+		(property "Manufactaurer Part Number" "PTVS14VP1UP-115"
 			(at 218.44 200.66 90)
 			(effects
 				(font
@@ -38038,7 +38038,7 @@
 		)
 	)
 	(symbol
-		(lib_id "PTVS14VP1UP-115:PTVS14VP1UP,115")
+		(lib_id "PTVS14VP1UP-115:PTVS14VP1UP-115")
 		(at 156.21 200.66 90)
 		(unit 1)
 		(exclude_from_sim no)
@@ -38055,7 +38055,7 @@
 				(justify right)
 			)
 		)
-		(property "Value" "PTVS14VP1UP,115"
+		(property "Value" "PTVS14VP1UP-115"
 			(at 156.21 195.326 90)
 			(effects
 				(font
@@ -38277,7 +38277,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "PTVS14VP1UP,115"
+		(property "Manufactaurer Part Number" "PTVS14VP1UP-115"
 			(at 156.21 200.66 90)
 			(effects
 				(font
