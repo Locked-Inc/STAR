@@ -885,7 +885,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "150060RS75000 "
+		(property "Manufacturer Part Number" "150060RS75000 "
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -2216,7 +2216,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
+		(property "Manufacturer Part Number" "CC0603JRX7R9BB104"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -3221,7 +3221,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -3512,7 +3512,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "T527T226M025ATE100"
+		(property "Manufacturer Part Number" "T527T226M025ATE100"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -4499,7 +4499,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "CRCW0603100RJNEA"
+		(property "Manufacturer Part Number" "CRCW0603100RJNEA"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -5491,7 +5491,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -6483,7 +6483,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -7462,7 +7462,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "TNPW06035K30BEEA"
+		(property "Manufacturer Part Number" "TNPW06035K30BEEA"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -8454,7 +8454,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "AT0603FRE0730K1L"
+		(property "Manufacturer Part Number" "AT0603FRE0730K1L"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -9459,7 +9459,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -10451,7 +10451,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -11430,7 +11430,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "RT0603BRE0710KL"
+		(property "Manufacturer Part Number" "RT0603BRE0710KL"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -12422,7 +12422,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "RT0603FRE0710K5L"
+		(property "Manufacturer Part Number" "RT0603FRE0710K5L"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -13427,7 +13427,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "CC0603KPX7R9BB473"
+		(property "Manufacturer Part Number" "CC0603KPX7R9BB473"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -14419,7 +14419,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -15411,7 +15411,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -16724,7 +16724,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -18277,7 +18277,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "AC0603JR-07100KL"
+		(property "Manufacturer Part Number" "AC0603JR-07100KL"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -18607,7 +18607,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "NTCGS163JX103DT7"
+		(property "Manufacturer Part Number" "NTCGS163JX103DT7"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -18885,7 +18885,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "T527T226M025ATE100"
+		(property "Manufacturer Part Number" "T527T226M025ATE100"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -19872,7 +19872,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "RC0603FR-07137KL "
+		(property "Manufacturer Part Number" "RC0603FR-07137KL "
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -20864,7 +20864,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -21843,7 +21843,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
+		(property "Manufacturer Part Number" "CC0603JRX7R9BB104"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -22319,7 +22319,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "VLS6045EX-1R0N"
+		(property "Manufacturer Part Number" "VLS6045EX-1R0N"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -23288,7 +23288,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "CC0603KPX7R9BB473"
+		(property "Manufacturer Part Number" "CC0603KPX7R9BB473"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -24280,7 +24280,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "CC0603KPX7R9BB102"
+		(property "Manufacturer Part Number" "CC0603KPX7R9BB102"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -25272,7 +25272,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -26251,7 +26251,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
+		(property "Manufacturer Part Number" "CC0603JRX7R9BB104"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -27256,7 +27256,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -28248,7 +28248,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -29240,7 +29240,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -29739,7 +29739,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "BQ25798RQMR"
+		(property "Manufacturer Part Number" "BQ25798RQMR"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -30330,7 +30330,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "T527T226M025ATE100"
+		(property "Manufacturer Part Number" "T527T226M025ATE100"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -31330,7 +31330,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -32322,7 +32322,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRT21BR61H475KE13K"
+		(property "Manufacturer Part Number" "GRT21BR61H475KE13K"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -33314,7 +33314,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -33604,7 +33604,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "RT0603FRE0768RL"
+		(property "Manufacturer Part Number" "RT0603FRE0768RL"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -34583,7 +34583,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
+		(property "Manufacturer Part Number" "CC0603JRX7R9BB104"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")

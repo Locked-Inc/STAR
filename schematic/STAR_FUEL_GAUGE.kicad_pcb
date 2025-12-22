@@ -905,7 +905,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "CRCW0603100RJNEA"
+		(property "Manufacturer Part Number" "CRCW0603100RJNEA"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -1884,7 +1884,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "RT0603BRE0710KL"
+		(property "Manufacturer Part Number" "RT0603BRE0710KL"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -3429,7 +3429,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "CRCW0603100RJNEA"
+		(property "Manufacturer Part Number" "CRCW0603100RJNEA"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -4409,7 +4409,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "ERA-3AEB304V "
+		(property "Manufacturer Part Number" "ERA-3AEB304V "
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -5967,7 +5967,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "GCM188R71H332KA37D"
+		(property "Manufacturer Part Number" "GCM188R71H332KA37D"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -6946,7 +6946,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "AC0603JR-07100KL"
+		(property "Manufacturer Part Number" "AC0603JR-07100KL"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -7938,7 +7938,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "GCM188R71H332KA37D"
+		(property "Manufacturer Part Number" "GCM188R71H332KA37D"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -8803,7 +8803,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "MMBT3904"
+		(property "Manufacturer Part Number" "MMBT3904"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -10122,7 +10122,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "963-UMK107AB7105KA-T"
+		(property "Manufacturer Part Number" "963-UMK107AB7105KA-T"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -11102,7 +11102,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "ERA-3AEB304V "
+		(property "Manufacturer Part Number" "ERA-3AEB304V "
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -11405,7 +11405,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "BQ78350DBT-R1A"
+		(property "Manufacturer Part Number" "BQ78350DBT-R1A"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -13024,7 +13024,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" " SML-D12M1WT86 "
+		(property "Manufacturer Part Number" " SML-D12M1WT86 "
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -14034,7 +14034,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "CRCW0603100RJNEA"
+		(property "Manufacturer Part Number" "CRCW0603100RJNEA"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -14324,7 +14324,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "PCA9306D,118"
+		(property "Manufacturer Part Number" "PCA9306D,118"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -15469,7 +15469,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "RT0603BRD0724K9L"
+		(property "Manufacturer Part Number" "RT0603BRD0724K9L"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -16448,7 +16448,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
+		(property "Manufacturer Part Number" "CC0603JRX7R9BB104"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -17440,7 +17440,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "CRCW0603510KJNEA"
+		(property "Manufacturer Part Number" "CRCW0603510KJNEA"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -18419,7 +18419,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "RT0603BRE0710KL"
+		(property "Manufacturer Part Number" "RT0603BRE0710KL"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -18931,7 +18931,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "82306050029"
+		(property "Manufacturer Part Number" "82306050029"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -19411,7 +19411,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "82306050029"
+		(property "Manufacturer Part Number" "82306050029"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -20760,7 +20760,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "AC0603JR-07100KL"
+		(property "Manufacturer Part Number" "AC0603JR-07100KL"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -21116,7 +21116,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "SKRPACE010"
+		(property "Manufacturer Part Number" "SKRPACE010"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -22343,7 +22343,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
+		(property "Manufacturer Part Number" "CC0603JRX7R9BB104"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -23336,7 +23336,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" " SML-D12M1WT86 "
+		(property "Manufacturer Part Number" " SML-D12M1WT86 "
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -24346,7 +24346,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "RT0603BRE0710KL"
+		(property "Manufacturer Part Number" "RT0603BRE0710KL"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -25338,7 +25338,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "CRCW0603100RJNEA"
+		(property "Manufacturer Part Number" "CRCW0603100RJNEA"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -27281,7 +27281,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "963-UMK107AB7105KA-T"
+		(property "Manufacturer Part Number" "963-UMK107AB7105KA-T"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -28260,7 +28260,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "ERA-3AEB304V "
+		(property "Manufacturer Part Number" "ERA-3AEB304V "
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -29253,7 +29253,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" " DDZ9690-7"
+		(property "Manufacturer Part Number" " DDZ9690-7"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -30255,7 +30255,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "AC0603FR-071ML"
+		(property "Manufacturer Part Number" "AC0603FR-071ML"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -31234,7 +31234,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "AC0603JR-07100KL"
+		(property "Manufacturer Part Number" "AC0603JR-07100KL"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -32214,7 +32214,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" " SML-D12M1WT86 "
+		(property "Manufacturer Part Number" " SML-D12M1WT86 "
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -33224,7 +33224,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "AC0603JR-07100KL"
+		(property "Manufacturer Part Number" "AC0603JR-07100KL"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -34204,7 +34204,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" " DDZ9690-7"
+		(property "Manufacturer Part Number" " DDZ9690-7"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -35689,7 +35689,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRT21BR61H475KE13K"
+		(property "Manufacturer Part Number" "GRT21BR61H475KE13K"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -36668,7 +36668,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "AC0603FR-071ML"
+		(property "Manufacturer Part Number" "AC0603FR-071ML"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -37024,7 +37024,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "ZXMP10A13FTA"
+		(property "Manufacturer Part Number" "ZXMP10A13FTA"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -38039,7 +38039,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "BSS123"
+		(property "Manufacturer Part Number" "BSS123"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -39066,7 +39066,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "CRCW0603220KFKEA"
+		(property "Manufacturer Part Number" "CRCW0603220KFKEA"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -40046,7 +40046,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" " SML-D12M1WT86 "
+		(property "Manufacturer Part Number" " SML-D12M1WT86 "
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -41258,7 +41258,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" " SML-D12M1WT86 "
+		(property "Manufacturer Part Number" " SML-D12M1WT86 "
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -42268,7 +42268,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
+		(property "Manufacturer Part Number" "CC0603JRX7R9BB104"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -43260,7 +43260,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "CRCW0603510KJNEA"
+		(property "Manufacturer Part Number" "CRCW0603510KJNEA"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")

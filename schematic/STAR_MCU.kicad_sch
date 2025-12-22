@@ -715,6 +715,177 @@
 			)
 			(embedded_fonts no)
 		)
+		(symbol "Connector_Generic:Conn_01x03"
+			(pin_names
+				(offset 1.016)
+				(hide yes)
+			)
+			(exclude_from_sim no)
+			(in_bom yes)
+			(on_board yes)
+			(property "Reference" "J"
+				(at 0 5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Value" "Conn_01x03"
+				(at 0 -5.08 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+				)
+			)
+			(property "Footprint" ""
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Datasheet" "~"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "Description" "Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_keywords" "connector"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(property "ki_fp_filters" "Connector*:*_1x??_*"
+				(at 0 0 0)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(hide yes)
+				)
+			)
+			(symbol "Conn_01x03_1_1"
+				(rectangle
+					(start -1.27 3.81)
+					(end 1.27 -3.81)
+					(stroke
+						(width 0.254)
+						(type default)
+					)
+					(fill
+						(type background)
+					)
+				)
+				(rectangle
+					(start -1.27 2.667)
+					(end 0 2.413)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start -1.27 0.127)
+					(end 0 -0.127)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(rectangle
+					(start -1.27 -2.413)
+					(end 0 -2.667)
+					(stroke
+						(width 0.1524)
+						(type default)
+					)
+					(fill
+						(type none)
+					)
+				)
+				(pin passive line
+					(at -5.08 2.54 0)
+					(length 3.81)
+					(name "Pin_1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "1"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 0 0)
+					(length 3.81)
+					(name "Pin_2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "2"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+				(pin passive line
+					(at -5.08 -2.54 0)
+					(length 3.81)
+					(name "Pin_3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+					(number "3"
+						(effects
+							(font
+								(size 1.27 1.27)
+							)
+						)
+					)
+				)
+			)
+			(embedded_fonts no)
+		)
 		(symbol "Connector_Generic:Conn_02x20_Odd_Even"
 			(pin_names
 				(offset 1.016)
@@ -5558,6 +5729,12 @@
 		(uuid "1be9915c-8778-490d-aac3-b864a25ff93f")
 	)
 	(junction
+		(at 228.6 205.74)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "222b5757-56bf-485b-9318-f1f20b729caf")
+	)
+	(junction
 		(at 242.57 224.79)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -6119,6 +6296,16 @@
 	)
 	(wire
 		(pts
+			(xy 222.25 205.74) (xy 228.6 205.74)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "2f429ea3-224e-4bbe-828e-22d22231483e")
+	)
+	(wire
+		(pts
 			(xy 49.53 303.53) (xy 45.72 303.53)
 		)
 		(stroke
@@ -6146,6 +6333,26 @@
 			(type default)
 		)
 		(uuid "306189cf-9194-4783-973d-a736d42c7ac1")
+	)
+	(wire
+		(pts
+			(xy 220.98 243.84) (xy 318.77 243.84)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "30d901be-d991-4e51-bfda-089dd557c65b")
+	)
+	(wire
+		(pts
+			(xy 220.98 241.3) (xy 222.25 241.3)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "359de1cb-6cab-4dd9-be05-bfd364c40870")
 	)
 	(wire
 		(pts
@@ -6626,6 +6833,16 @@
 			(type default)
 		)
 		(uuid "6e82c7bb-a7e4-4bc5-997d-a6362a7a61ab")
+	)
+	(wire
+		(pts
+			(xy 222.25 205.74) (xy 222.25 241.3)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "6e87d82f-3a73-4a49-8eef-104c5b70ee35")
 	)
 	(wire
 		(pts
@@ -7409,6 +7626,16 @@
 	)
 	(wire
 		(pts
+			(xy 226.06 246.38) (xy 226.06 247.65)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "cce73a41-e200-49cd-beb7-19ffb280574e")
+	)
+	(wire
+		(pts
 			(xy 285.75 205.74) (xy 318.77 205.74)
 		)
 		(stroke
@@ -7757,6 +7984,16 @@
 		)
 		(uuid "fd9df107-9921-4601-b89b-0281f6c85848")
 	)
+	(wire
+		(pts
+			(xy 220.98 246.38) (xy 226.06 246.38)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "ff54de5b-049a-4600-8a92-2cba2c405444")
+	)
 	(table
 		(column_count 1)
 		(border
@@ -7862,6 +8099,165 @@
 					(justify left top)
 				)
 				(uuid "58c64efc-c4b4-423b-b9ce-66e205e626c4")
+			)
+		)
+	)
+	(table
+		(column_count 2)
+		(border
+			(external yes)
+			(header yes)
+			(stroke
+				(width 0)
+				(type solid)
+			)
+		)
+		(separators
+			(rows yes)
+			(cols yes)
+			(stroke
+				(width 0)
+				(type solid)
+			)
+		)
+		(column_widths 21.59 26.67)
+		(row_heights 2.54 16.51 6.35 3.81)
+		(cells
+			(table_cell ""
+				(exclude_from_sim no)
+				(at 161.29 229.87 0)
+				(size 21.59 2.54)
+				(margins 0.9525 0.9525 0.9525 0.9525)
+				(span 1 1)
+				(fill
+					(type none)
+				)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+				(uuid "c9570616-a9ae-446e-b8e5-145c91111768")
+			)
+			(table_cell "Emulator Configuration"
+				(exclude_from_sim no)
+				(at 182.88 229.87 0)
+				(size 26.67 2.54)
+				(margins 0.9525 0.9525 0.9525 0.9525)
+				(span 1 1)
+				(fill
+					(type none)
+				)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+				(uuid "518837ca-17f3-4038-afbf-6f6ce2d08d28")
+			)
+			(table_cell "Shorted Pin 1-2"
+				(exclude_from_sim no)
+				(at 161.29 232.41 0)
+				(size 21.59 16.51)
+				(margins 0.9525 0.9525 0.9525 0.9525)
+				(span 1 1)
+				(fill
+					(type none)
+				)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+				(uuid "38e3da7f-ff8e-46d1-bda9-9543f8c8ceb1")
+			)
+			(table_cell "E1/E2 Lite normal debugging (use this mode for normal operation). Microcontroller signle operation (without emulator)"
+				(exclude_from_sim no)
+				(at 182.88 232.41 0)
+				(size 26.67 16.51)
+				(margins 0.9525 0.9525 0.9525 0.9525)
+				(span 1 1)
+				(fill
+					(type none)
+				)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+				(uuid "56da71a6-5a30-42dd-91e1-6233c0700b81")
+			)
+			(table_cell "Shorted Pin 203"
+				(exclude_from_sim no)
+				(at 161.29 248.92 0)
+				(size 21.59 6.35)
+				(margins 0.9525 0.9525 0.9525 0.9525)
+				(span 1 1)
+				(fill
+					(type none)
+				)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+				(uuid "fa9ca9bb-8641-4fe1-bec6-2f678eb0b0a4")
+			)
+			(table_cell "E1/E2 Lite debugging with Hot plug-in"
+				(exclude_from_sim no)
+				(at 182.88 248.92 0)
+				(size 26.67 6.35)
+				(margins 0.9525 0.9525 0.9525 0.9525)
+				(span 1 1)
+				(fill
+					(type none)
+				)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+				(uuid "a138bb84-59bd-44bb-8872-651ebfb6cd3b")
+			)
+			(table_cell "All open"
+				(exclude_from_sim no)
+				(at 161.29 255.27 0)
+				(size 21.59 3.81)
+				(margins 0.9525 0.9525 0.9525 0.9525)
+				(span 1 1)
+				(fill
+					(type none)
+				)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+				(uuid "8454ad01-25ad-4d15-b1da-c3361f78f015")
+			)
+			(table_cell "DO NOT SET"
+				(exclude_from_sim no)
+				(at 182.88 255.27 0)
+				(size 26.67 3.81)
+				(margins 0.9525 0.9525 0.9525 0.9525)
+				(span 1 1)
+				(fill
+					(type none)
+				)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+				(uuid "fe0d2862-ffff-433e-8a6b-2a35986cb894")
 			)
 		)
 	)
@@ -8505,6 +8901,16 @@
 		)
 		(uuid "f9871e85-d35f-44c0-9e98-f222a2dadfc3")
 	)
+	(label "EMU_EMLE"
+		(at 243.84 243.84 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "fa4a861a-f86a-48fc-8c32-bd51a86e45e2")
+	)
 	(label "MOTOR_DRIVER_MOTOR1_IPROPI"
 		(at 158.75 386.08 180)
 		(effects
@@ -9073,7 +9479,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
+		(property "Manufacturer Part Number" "CC0603JRX7R9BB104"
 			(at 292.1 218.44 0)
 			(effects
 				(font
@@ -9279,7 +9685,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "61200621621"
+		(property "Manufacturer Part Number" "61200621621"
 			(at 90.17 332.74 90)
 			(effects
 				(font
@@ -9344,7 +9750,7 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 210.82 236.22 90)
+		(at 215.9 191.77 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -9352,7 +9758,7 @@
 		(dnp no)
 		(uuid "16bcc407-9f20-4c7e-b6f6-cd7767cce710")
 		(property "Reference" "C3"
-			(at 209.296 234.696 90)
+			(at 214.376 190.246 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9361,7 +9767,7 @@
 			)
 		)
 		(property "Value" "100n"
-			(at 216.916 234.95 90)
+			(at 221.996 190.5 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9370,7 +9776,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder"
-			(at 214.63 235.2548 0)
+			(at 219.71 190.8048 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9379,7 +9785,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9388,7 +9794,7 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9397,7 +9803,7 @@
 			)
 		)
 		(property "Display" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9406,7 +9812,7 @@
 			)
 		)
 		(property "JLCPCB ID" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9415,7 +9821,7 @@
 			)
 		)
 		(property "LCSC Part" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9424,7 +9830,7 @@
 			)
 		)
 		(property "A_MAX" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9433,7 +9839,7 @@
 			)
 		)
 		(property "BALL_COLUMNS" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9442,7 +9848,7 @@
 			)
 		)
 		(property "BALL_ROWS" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9451,7 +9857,7 @@
 			)
 		)
 		(property "BODY_DIAMETER" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9460,7 +9866,7 @@
 			)
 		)
 		(property "B_MAX" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9469,7 +9875,7 @@
 			)
 		)
 		(property "B_MIN" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9478,7 +9884,7 @@
 			)
 		)
 		(property "B_NOM" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9487,7 +9893,7 @@
 			)
 		)
 		(property "D2_NOM" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9496,7 +9902,7 @@
 			)
 		)
 		(property "DMAX" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9505,7 +9911,7 @@
 			)
 		)
 		(property "DMIN" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9514,7 +9920,7 @@
 			)
 		)
 		(property "DNOM" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9523,7 +9929,7 @@
 			)
 		)
 		(property "D_MAX" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9532,7 +9938,7 @@
 			)
 		)
 		(property "D_MIN" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9541,7 +9947,7 @@
 			)
 		)
 		(property "D_NOM" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9550,7 +9956,7 @@
 			)
 		)
 		(property "E2_NOM" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9559,7 +9965,7 @@
 			)
 		)
 		(property "EMAX" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9568,7 +9974,7 @@
 			)
 		)
 		(property "EMIN" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9577,7 +9983,7 @@
 			)
 		)
 		(property "ENOM" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9586,7 +9992,7 @@
 			)
 		)
 		(property "E_MAX" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9595,7 +10001,7 @@
 			)
 		)
 		(property "E_MIN" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9604,7 +10010,7 @@
 			)
 		)
 		(property "E_NOM" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9613,7 +10019,7 @@
 			)
 		)
 		(property "IPC" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9622,7 +10028,7 @@
 			)
 		)
 		(property "JEDEC" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9631,7 +10037,7 @@
 			)
 		)
 		(property "L_MAX" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9640,7 +10046,7 @@
 			)
 		)
 		(property "L_MIN" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9649,7 +10055,7 @@
 			)
 		)
 		(property "L_NOM" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9658,7 +10064,7 @@
 			)
 		)
 		(property "PACKAGE_TYPE" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9667,7 +10073,7 @@
 			)
 		)
 		(property "PARTEV" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9676,7 +10082,7 @@
 			)
 		)
 		(property "PINS" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9685,7 +10091,7 @@
 			)
 		)
 		(property "PIN_COLUMNS" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9694,7 +10100,7 @@
 			)
 		)
 		(property "PIN_COUNT_D" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9703,7 +10109,7 @@
 			)
 		)
 		(property "PIN_COUNT_E" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9712,7 +10118,7 @@
 			)
 		)
 		(property "THERMAL_PAD" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9721,7 +10127,7 @@
 			)
 		)
 		(property "VACANCIES" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9730,7 +10136,7 @@
 			)
 		)
 		(property "Supplier" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9739,7 +10145,7 @@
 			)
 		)
 		(property "Sim.Device" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9748,7 +10154,7 @@
 			)
 		)
 		(property "Sim.Pins" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9757,7 +10163,7 @@
 			)
 		)
 		(property "SNAPEDA_PACKAGE_ID" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9766,7 +10172,7 @@
 			)
 		)
 		(property "Availability" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9775,7 +10181,7 @@
 			)
 		)
 		(property "Check_prices" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9784,7 +10190,7 @@
 			)
 		)
 		(property "Description_1" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9793,7 +10199,7 @@
 			)
 		)
 		(property "MANUFACTURER" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9802,7 +10208,7 @@
 			)
 		)
 		(property "MAXIMUM_PACKAGE_HEIGHT" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9811,7 +10217,7 @@
 			)
 		)
 		(property "MF" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9820,7 +10226,7 @@
 			)
 		)
 		(property "MP" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9829,7 +10235,7 @@
 			)
 		)
 		(property "PARTREV" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9838,7 +10244,7 @@
 			)
 		)
 		(property "Package" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9847,7 +10253,7 @@
 			)
 		)
 		(property "Part Number" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9856,7 +10262,7 @@
 			)
 		)
 		(property "STANDARD" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9865,7 +10271,7 @@
 			)
 		)
 		(property "SnapEDA_Link" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9874,7 +10280,7 @@
 			)
 		)
 		(property "Specifications" ""
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9883,7 +10289,7 @@
 			)
 		)
 		(property "DigiKey Link" "https://www.digikey.com/short/mnn51wf5"
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9892,7 +10298,7 @@
 			)
 		)
 		(property "DigiKey Part Number" "311-1779-1-ND"
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9900,8 +10306,8 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
-			(at 210.82 236.22 0)
+		(property "Manufacturer Part Number" "CC0603JRX7R9BB104"
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9910,7 +10316,7 @@
 			)
 		)
 		(property "Mouser Link" "https://mou.sr/3KIvj2i"
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9919,7 +10325,7 @@
 			)
 		)
 		(property "Mouser Part Number" "603-CC603JRX7R9BB104"
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9928,7 +10334,7 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.10"
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -9937,7 +10343,7 @@
 			)
 		)
 		(property "DigiKey Price per Unit" "0.10"
-			(at 210.82 236.22 0)
+			(at 215.9 191.77 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10527,7 +10933,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CL10B103KB8NNNL"
+		(property "Manufacturer Part Number" "CL10B103KB8NNNL"
 			(at 298.45 218.44 90)
 			(effects
 				(font
@@ -10690,7 +11096,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "61300911121"
+		(property "Manufacturer Part Number" "61300911121"
 			(at 54.61 129.54 0)
 			(effects
 				(font
@@ -11386,7 +11792,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
+		(property "Manufacturer Part Number" "CC0603JRX7R9BB104"
 			(at 270.51 218.44 0)
 			(effects
 				(font
@@ -11942,7 +12348,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "61304021121"
+		(property "Manufacturer Part Number" "61304021121"
 			(at 83.82 66.04 0)
 			(effects
 				(font
@@ -12254,7 +12660,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "61200821621"
+		(property "Manufacturer Part Number" "61200821621"
 			(at 116.84 388.62 90)
 			(effects
 				(font
@@ -12457,6 +12863,72 @@
 	)
 	(symbol
 		(lib_id "power:GND")
+		(at 226.06 247.65 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "4dee5258-baa4-4244-a96e-f6b6ecc008cf")
+		(property "Reference" "#PWR011"
+			(at 226.06 254 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 228.092 251.206 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" ""
+			(at 226.06 247.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 226.06 247.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 226.06 247.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "017ee959-d9b7-4849-87a4-cc7ec56bda67")
+		)
+		(instances
+			(project "STAR_MCU"
+				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
+					(reference "#PWR011")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
 		(at 62.23 102.87 0)
 		(mirror y)
 		(unit 1)
@@ -12517,6 +12989,77 @@
 			(project "STAR_MCU"
 				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
 					(reference "#PWR02")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "Connector_Generic:Conn_01x03")
+		(at 215.9 243.84 0)
+		(mirror y)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "5159722e-8dce-4080-9f37-669f574b92f4")
+		(property "Reference" "J1"
+			(at 215.646 238.252 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "Conn_01x03"
+			(at 215.646 249.682 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 215.9 243.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "~"
+			(at 215.9 243.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Generic connector, single row, 01x03, script generated (kicad-library-utils/schlib/autogen/connector/)"
+			(at 215.9 243.84 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "cc053db3-eb49-4e97-94e4-d038b13598d0")
+		)
+		(pin "2"
+			(uuid "a3dd5a14-15bb-4d95-a900-12e31fcecc6e")
+		)
+		(pin "3"
+			(uuid "cb975bf3-da04-4719-9c27-359d6eff590c")
+		)
+		(instances
+			(project ""
+				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
+					(reference "J1")
 					(unit 1)
 				)
 			)
@@ -12634,7 +13177,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "PH1-04-UA"
+		(property "Manufacturer Part Number" "PH1-04-UA"
 			(at 40.64 175.26 0)
 			(effects
 				(font
@@ -13324,7 +13867,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CL10B103KB8NNNL"
+		(property "Manufacturer Part Number" "CL10B103KB8NNNL"
 			(at 276.86 218.44 90)
 			(effects
 				(font
@@ -13455,7 +13998,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "61200821621"
+		(property "Manufacturer Part Number" "61200821621"
 			(at 115.57 368.3 90)
 			(effects
 				(font
@@ -14080,7 +14623,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "RT0603BRE0710KL"
+		(property "Manufacturer Part Number" "RT0603BRE0710KL"
 			(at 67.31 39.37 0)
 			(effects
 				(font
@@ -14252,7 +14795,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "PH1-04-UA"
+		(property "Manufacturer Part Number" "PH1-04-UA"
 			(at 49.53 147.32 0)
 			(effects
 				(font
@@ -14454,7 +14997,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "61200621621"
+		(property "Manufacturer Part Number" "61200621621"
 			(at 54.61 303.53 90)
 			(effects
 				(font
@@ -15288,7 +15831,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
 			(at 264.16 218.44 0)
 			(effects
 				(font
@@ -15906,7 +16449,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
 			(at 242.57 218.44 0)
 			(effects
 				(font
@@ -16524,7 +17067,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CL10B103KB8NNNL"
+		(property "Manufacturer Part Number" "CL10B103KB8NNNL"
 			(at 234.95 218.44 90)
 			(effects
 				(font
@@ -16655,7 +17198,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "61200821621"
+		(property "Manufacturer Part Number" "61200821621"
 			(at 115.57 350.52 90)
 			(effects
 				(font
@@ -16791,7 +17334,7 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 207.01 227.33 90)
+		(at 212.09 182.88 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -16799,7 +17342,7 @@
 		(dnp no)
 		(uuid "97918ca2-aca8-46e7-9a35-cc4d38e712d2")
 		(property "Reference" "C30"
-			(at 204.724 226.314 90)
+			(at 209.804 181.864 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16808,7 +17351,7 @@
 			)
 		)
 		(property "Value" "4u7"
-			(at 211.836 226.314 90)
+			(at 216.916 181.864 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16817,7 +17360,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder"
-			(at 210.82 226.3648 0)
+			(at 215.9 181.9148 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16826,7 +17369,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 207.01 227.33 0)
+			(at 212.09 182.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16835,7 +17378,7 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
-			(at 207.01 227.33 0)
+			(at 212.09 182.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16844,7 +17387,7 @@
 			)
 		)
 		(property "Display" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16853,7 +17396,7 @@
 			)
 		)
 		(property "JLCPCB ID" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16862,7 +17405,7 @@
 			)
 		)
 		(property "LCSC Part" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16871,7 +17414,7 @@
 			)
 		)
 		(property "A_MAX" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16880,7 +17423,7 @@
 			)
 		)
 		(property "BALL_COLUMNS" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16889,7 +17432,7 @@
 			)
 		)
 		(property "BALL_ROWS" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16898,7 +17441,7 @@
 			)
 		)
 		(property "BODY_DIAMETER" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16907,7 +17450,7 @@
 			)
 		)
 		(property "B_MAX" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16916,7 +17459,7 @@
 			)
 		)
 		(property "B_MIN" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16925,7 +17468,7 @@
 			)
 		)
 		(property "B_NOM" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16934,7 +17477,7 @@
 			)
 		)
 		(property "D2_NOM" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16943,7 +17486,7 @@
 			)
 		)
 		(property "DMAX" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16952,7 +17495,7 @@
 			)
 		)
 		(property "DMIN" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16961,7 +17504,7 @@
 			)
 		)
 		(property "DNOM" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16970,7 +17513,7 @@
 			)
 		)
 		(property "D_MAX" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16979,7 +17522,7 @@
 			)
 		)
 		(property "D_MIN" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16988,7 +17531,7 @@
 			)
 		)
 		(property "D_NOM" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -16997,7 +17540,7 @@
 			)
 		)
 		(property "E2_NOM" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17006,7 +17549,7 @@
 			)
 		)
 		(property "EMAX" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17015,7 +17558,7 @@
 			)
 		)
 		(property "EMIN" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17024,7 +17567,7 @@
 			)
 		)
 		(property "ENOM" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17033,7 +17576,7 @@
 			)
 		)
 		(property "E_MAX" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17042,7 +17585,7 @@
 			)
 		)
 		(property "E_MIN" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17051,7 +17594,7 @@
 			)
 		)
 		(property "E_NOM" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17060,7 +17603,7 @@
 			)
 		)
 		(property "IPC" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17069,7 +17612,7 @@
 			)
 		)
 		(property "JEDEC" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17078,7 +17621,7 @@
 			)
 		)
 		(property "L_MAX" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17087,7 +17630,7 @@
 			)
 		)
 		(property "L_MIN" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17096,7 +17639,7 @@
 			)
 		)
 		(property "L_NOM" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17105,7 +17648,7 @@
 			)
 		)
 		(property "PACKAGE_TYPE" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17114,7 +17657,7 @@
 			)
 		)
 		(property "PARTEV" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17123,7 +17666,7 @@
 			)
 		)
 		(property "PINS" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17132,7 +17675,7 @@
 			)
 		)
 		(property "PIN_COLUMNS" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17141,7 +17684,7 @@
 			)
 		)
 		(property "PIN_COUNT_D" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17150,7 +17693,7 @@
 			)
 		)
 		(property "PIN_COUNT_E" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17159,7 +17702,7 @@
 			)
 		)
 		(property "THERMAL_PAD" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17168,7 +17711,7 @@
 			)
 		)
 		(property "VACANCIES" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17177,7 +17720,7 @@
 			)
 		)
 		(property "Supplier" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17186,7 +17729,7 @@
 			)
 		)
 		(property "Sim.Device" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17195,7 +17738,7 @@
 			)
 		)
 		(property "Sim.Pins" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17204,7 +17747,7 @@
 			)
 		)
 		(property "SNAPEDA_PACKAGE_ID" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17213,7 +17756,7 @@
 			)
 		)
 		(property "Availability" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17222,7 +17765,7 @@
 			)
 		)
 		(property "Check_prices" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17231,7 +17774,7 @@
 			)
 		)
 		(property "Description_1" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17240,7 +17783,7 @@
 			)
 		)
 		(property "MANUFACTURER" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17249,7 +17792,7 @@
 			)
 		)
 		(property "MAXIMUM_PACKAGE_HEIGHT" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17258,7 +17801,7 @@
 			)
 		)
 		(property "MF" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17267,7 +17810,7 @@
 			)
 		)
 		(property "MP" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17276,7 +17819,7 @@
 			)
 		)
 		(property "PARTREV" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17285,7 +17828,7 @@
 			)
 		)
 		(property "Package" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17294,7 +17837,7 @@
 			)
 		)
 		(property "Part Number" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17303,7 +17846,7 @@
 			)
 		)
 		(property "STANDARD" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17312,7 +17855,7 @@
 			)
 		)
 		(property "SnapEDA_Link" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17321,7 +17864,7 @@
 			)
 		)
 		(property "Specifications" ""
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17330,7 +17873,7 @@
 			)
 		)
 		(property "DigiKey Link" "https://www.digikey.com/short/489t25j9"
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17339,7 +17882,7 @@
 			)
 		)
 		(property "DigiKey Part Number" "490-GRT21BR61H475KE13KCT-ND"
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17348,7 +17891,7 @@
 			)
 		)
 		(property "DigiKey Price per Unit" "0.17"
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17356,8 +17899,8 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRT21BR61H475KE13K"
-			(at 207.01 227.33 90)
+		(property "Manufacturer Part Number" "GRT21BR61H475KE13K"
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17366,7 +17909,7 @@
 			)
 		)
 		(property "Mouser Link" "https://mou.sr/48kjQzY"
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17375,7 +17918,7 @@
 			)
 		)
 		(property "Mouser Part Number" "81-GRT21BR61H475KE3K"
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -17384,7 +17927,7 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.17"
-			(at 207.01 227.33 90)
+			(at 212.09 182.88 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18108,7 +18651,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
 			(at 228.6 218.44 0)
 			(effects
 				(font
@@ -18347,7 +18890,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "S5B-XH-A"
+		(property "Manufacturer Part Number" "S5B-XH-A"
 			(at 55.88 203.2 0)
 			(effects
 				(font
@@ -18409,7 +18952,7 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 196.85 234.95 0)
+		(at 201.93 190.5 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -18417,7 +18960,7 @@
 		(dnp no)
 		(uuid "c93490d3-71c9-475e-b237-695bd7ab47ff")
 		(property "Reference" "C2"
-			(at 196.85 232.918 0)
+			(at 201.93 188.468 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18426,7 +18969,7 @@
 			)
 		)
 		(property "Value" "1u"
-			(at 196.85 237.236 0)
+			(at 201.93 192.786 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18435,7 +18978,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder"
-			(at 197.8152 238.76 0)
+			(at 202.8952 194.31 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18444,7 +18987,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18453,7 +18996,7 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18462,7 +19005,7 @@
 			)
 		)
 		(property "Display" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18471,7 +19014,7 @@
 			)
 		)
 		(property "JLCPCB ID" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18480,7 +19023,7 @@
 			)
 		)
 		(property "LCSC Part" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18489,7 +19032,7 @@
 			)
 		)
 		(property "A_MAX" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18498,7 +19041,7 @@
 			)
 		)
 		(property "BALL_COLUMNS" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18507,7 +19050,7 @@
 			)
 		)
 		(property "BALL_ROWS" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18516,7 +19059,7 @@
 			)
 		)
 		(property "BODY_DIAMETER" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18525,7 +19068,7 @@
 			)
 		)
 		(property "B_MAX" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18534,7 +19077,7 @@
 			)
 		)
 		(property "B_MIN" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18543,7 +19086,7 @@
 			)
 		)
 		(property "B_NOM" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18552,7 +19095,7 @@
 			)
 		)
 		(property "D2_NOM" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18561,7 +19104,7 @@
 			)
 		)
 		(property "DMAX" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18570,7 +19113,7 @@
 			)
 		)
 		(property "DMIN" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18579,7 +19122,7 @@
 			)
 		)
 		(property "DNOM" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18588,7 +19131,7 @@
 			)
 		)
 		(property "D_MAX" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18597,7 +19140,7 @@
 			)
 		)
 		(property "D_MIN" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18606,7 +19149,7 @@
 			)
 		)
 		(property "D_NOM" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18615,7 +19158,7 @@
 			)
 		)
 		(property "E2_NOM" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18624,7 +19167,7 @@
 			)
 		)
 		(property "EMAX" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18633,7 +19176,7 @@
 			)
 		)
 		(property "EMIN" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18642,7 +19185,7 @@
 			)
 		)
 		(property "ENOM" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18651,7 +19194,7 @@
 			)
 		)
 		(property "E_MAX" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18660,7 +19203,7 @@
 			)
 		)
 		(property "E_MIN" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18669,7 +19212,7 @@
 			)
 		)
 		(property "E_NOM" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18678,7 +19221,7 @@
 			)
 		)
 		(property "IPC" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18687,7 +19230,7 @@
 			)
 		)
 		(property "JEDEC" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18696,7 +19239,7 @@
 			)
 		)
 		(property "L_MAX" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18705,7 +19248,7 @@
 			)
 		)
 		(property "L_MIN" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18714,7 +19257,7 @@
 			)
 		)
 		(property "L_NOM" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18723,7 +19266,7 @@
 			)
 		)
 		(property "PACKAGE_TYPE" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18732,7 +19275,7 @@
 			)
 		)
 		(property "PARTEV" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18741,7 +19284,7 @@
 			)
 		)
 		(property "PINS" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18750,7 +19293,7 @@
 			)
 		)
 		(property "PIN_COLUMNS" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18759,7 +19302,7 @@
 			)
 		)
 		(property "PIN_COUNT_D" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18768,7 +19311,7 @@
 			)
 		)
 		(property "PIN_COUNT_E" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18777,7 +19320,7 @@
 			)
 		)
 		(property "THERMAL_PAD" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18786,7 +19329,7 @@
 			)
 		)
 		(property "VACANCIES" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18795,7 +19338,7 @@
 			)
 		)
 		(property "Supplier" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18804,7 +19347,7 @@
 			)
 		)
 		(property "Sim.Device" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18813,7 +19356,7 @@
 			)
 		)
 		(property "Sim.Pins" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18822,7 +19365,7 @@
 			)
 		)
 		(property "SNAPEDA_PACKAGE_ID" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18831,7 +19374,7 @@
 			)
 		)
 		(property "Availability" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18840,7 +19383,7 @@
 			)
 		)
 		(property "Check_prices" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18849,7 +19392,7 @@
 			)
 		)
 		(property "Description_1" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18858,7 +19401,7 @@
 			)
 		)
 		(property "MANUFACTURER" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18867,7 +19410,7 @@
 			)
 		)
 		(property "MAXIMUM_PACKAGE_HEIGHT" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18876,7 +19419,7 @@
 			)
 		)
 		(property "MF" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18885,7 +19428,7 @@
 			)
 		)
 		(property "MP" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18894,7 +19437,7 @@
 			)
 		)
 		(property "PARTREV" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18903,7 +19446,7 @@
 			)
 		)
 		(property "Package" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18912,7 +19455,7 @@
 			)
 		)
 		(property "Part Number" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18921,7 +19464,7 @@
 			)
 		)
 		(property "STANDARD" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18930,7 +19473,7 @@
 			)
 		)
 		(property "SnapEDA_Link" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18939,7 +19482,7 @@
 			)
 		)
 		(property "Specifications" ""
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18948,7 +19491,7 @@
 			)
 		)
 		(property "DigiKey Link" "https://www.digikey.com/short/p4m9m2nq"
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18957,7 +19500,7 @@
 			)
 		)
 		(property "DigiKey Part Number" "587-3247-1-ND"
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18966,7 +19509,7 @@
 			)
 		)
 		(property "DigiKey Price per Unit" "0.08"
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18974,8 +19517,8 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "963-UMK107AB7105KA-T"
-			(at 196.85 234.95 0)
+		(property "Manufacturer Part Number" "963-UMK107AB7105KA-T"
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18984,7 +19527,7 @@
 			)
 		)
 		(property "Mouser Link" "https://mou.sr/3TFIthv"
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -18993,7 +19536,7 @@
 			)
 		)
 		(property "Mouser Part Number" "UMK107AB7105KA-T"
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -19002,7 +19545,7 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.10"
-			(at 196.85 234.95 0)
+			(at 201.93 190.5 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -19105,7 +19648,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "61200821621"
+		(property "Manufacturer Part Number" "61200821621"
 			(at 123.19 299.72 90)
 			(effects
 				(font
@@ -19732,7 +20275,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
+		(property "Manufacturer Part Number" "CC0603JRX7R9BB104"
 			(at 248.92 218.44 0)
 			(effects
 				(font
@@ -19872,7 +20415,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "61200621621"
+		(property "Manufacturer Part Number" "61200621621"
 			(at 182.88 300.99 90)
 			(effects
 				(font
@@ -20002,7 +20545,7 @@
 	)
 	(symbol
 		(lib_id "Device:C")
-		(at 187.96 233.68 90)
+		(at 193.04 189.23 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -20010,7 +20553,7 @@
 		(dnp no)
 		(uuid "e09a3dfe-928d-4a47-80bd-8d81f74fbe02")
 		(property "Reference" "C4"
-			(at 186.944 232.664 90)
+			(at 192.024 188.214 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20019,7 +20562,7 @@
 			)
 		)
 		(property "Value" "10u"
-			(at 192.786 232.664 90)
+			(at 197.866 188.214 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20028,7 +20571,7 @@
 			)
 		)
 		(property "Footprint" "Capacitor_SMD:C_0805_2012Metric_Pad1.18x1.45mm_HandSolder"
-			(at 191.77 232.7148 0)
+			(at 196.85 188.2648 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20037,7 +20580,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20046,7 +20589,7 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20055,7 +20598,7 @@
 			)
 		)
 		(property "Display" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20064,7 +20607,7 @@
 			)
 		)
 		(property "JLCPCB ID" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20073,7 +20616,7 @@
 			)
 		)
 		(property "LCSC Part" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20082,7 +20625,7 @@
 			)
 		)
 		(property "A_MAX" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20091,7 +20634,7 @@
 			)
 		)
 		(property "BALL_COLUMNS" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20100,7 +20643,7 @@
 			)
 		)
 		(property "BALL_ROWS" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20109,7 +20652,7 @@
 			)
 		)
 		(property "BODY_DIAMETER" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20118,7 +20661,7 @@
 			)
 		)
 		(property "B_MAX" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20127,7 +20670,7 @@
 			)
 		)
 		(property "B_MIN" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20136,7 +20679,7 @@
 			)
 		)
 		(property "B_NOM" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20145,7 +20688,7 @@
 			)
 		)
 		(property "D2_NOM" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20154,7 +20697,7 @@
 			)
 		)
 		(property "DMAX" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20163,7 +20706,7 @@
 			)
 		)
 		(property "DMIN" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20172,7 +20715,7 @@
 			)
 		)
 		(property "DNOM" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20181,7 +20724,7 @@
 			)
 		)
 		(property "D_MAX" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20190,7 +20733,7 @@
 			)
 		)
 		(property "D_MIN" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20199,7 +20742,7 @@
 			)
 		)
 		(property "D_NOM" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20208,7 +20751,7 @@
 			)
 		)
 		(property "E2_NOM" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20217,7 +20760,7 @@
 			)
 		)
 		(property "EMAX" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20226,7 +20769,7 @@
 			)
 		)
 		(property "EMIN" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20235,7 +20778,7 @@
 			)
 		)
 		(property "ENOM" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20244,7 +20787,7 @@
 			)
 		)
 		(property "E_MAX" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20253,7 +20796,7 @@
 			)
 		)
 		(property "E_MIN" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20262,7 +20805,7 @@
 			)
 		)
 		(property "E_NOM" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20271,7 +20814,7 @@
 			)
 		)
 		(property "IPC" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20280,7 +20823,7 @@
 			)
 		)
 		(property "JEDEC" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20289,7 +20832,7 @@
 			)
 		)
 		(property "L_MAX" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20298,7 +20841,7 @@
 			)
 		)
 		(property "L_MIN" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20307,7 +20850,7 @@
 			)
 		)
 		(property "L_NOM" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20316,7 +20859,7 @@
 			)
 		)
 		(property "PACKAGE_TYPE" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20325,7 +20868,7 @@
 			)
 		)
 		(property "PARTEV" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20334,7 +20877,7 @@
 			)
 		)
 		(property "PINS" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20343,7 +20886,7 @@
 			)
 		)
 		(property "PIN_COLUMNS" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20352,7 +20895,7 @@
 			)
 		)
 		(property "PIN_COUNT_D" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20361,7 +20904,7 @@
 			)
 		)
 		(property "PIN_COUNT_E" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20370,7 +20913,7 @@
 			)
 		)
 		(property "THERMAL_PAD" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20379,7 +20922,7 @@
 			)
 		)
 		(property "VACANCIES" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20388,7 +20931,7 @@
 			)
 		)
 		(property "Supplier" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20397,7 +20940,7 @@
 			)
 		)
 		(property "Sim.Device" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20406,7 +20949,7 @@
 			)
 		)
 		(property "Sim.Pins" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20415,7 +20958,7 @@
 			)
 		)
 		(property "SNAPEDA_PACKAGE_ID" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20424,7 +20967,7 @@
 			)
 		)
 		(property "Availability" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20433,7 +20976,7 @@
 			)
 		)
 		(property "Check_prices" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20442,7 +20985,7 @@
 			)
 		)
 		(property "Description_1" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20451,7 +20994,7 @@
 			)
 		)
 		(property "MANUFACTURER" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20460,7 +21003,7 @@
 			)
 		)
 		(property "MAXIMUM_PACKAGE_HEIGHT" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20469,7 +21012,7 @@
 			)
 		)
 		(property "MF" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20478,7 +21021,7 @@
 			)
 		)
 		(property "MP" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20487,7 +21030,7 @@
 			)
 		)
 		(property "PARTREV" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20496,7 +21039,7 @@
 			)
 		)
 		(property "Package" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20505,7 +21048,7 @@
 			)
 		)
 		(property "Part Number" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20514,7 +21057,7 @@
 			)
 		)
 		(property "STANDARD" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20523,7 +21066,7 @@
 			)
 		)
 		(property "SnapEDA_Link" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20532,7 +21075,7 @@
 			)
 		)
 		(property "Specifications" ""
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20541,7 +21084,7 @@
 			)
 		)
 		(property "DigiKey Link" "https://www.digikey.com/short/5070d0hf"
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20550,7 +21093,7 @@
 			)
 		)
 		(property "DigiKey Part Number" "490-18663-1-ND"
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20559,7 +21102,7 @@
 			)
 		)
 		(property "DigiKey Price per Unit" "0.28"
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20567,8 +21110,8 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
-			(at 187.96 233.68 0)
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20577,7 +21120,7 @@
 			)
 		)
 		(property "Mouser Link" "https://mou.sr/3QUmnUX"
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20586,7 +21129,7 @@
 			)
 		)
 		(property "Mouser Part Number" "81-GRM21BR61H106KE3L"
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20595,7 +21138,7 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.28"
-			(at 187.96 233.68 0)
+			(at 193.04 189.23 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20698,7 +21241,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "61200821621"
+		(property "Manufacturer Part Number" "61200821621"
 			(at 116.84 407.67 90)
 			(effects
 				(font
@@ -21393,7 +21936,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "RT0603BRE0710KL"
+		(property "Manufacturer Part Number" "RT0603BRE0710KL"
 			(at 73.66 39.37 0)
 			(effects
 				(font
@@ -22020,7 +22563,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
 			(at 285.75 218.44 0)
 			(effects
 				(font
@@ -22638,7 +23181,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CL10B103KB8NNNL"
+		(property "Manufacturer Part Number" "CL10B103KB8NNNL"
 			(at 255.27 218.44 90)
 			(effects
 				(font
