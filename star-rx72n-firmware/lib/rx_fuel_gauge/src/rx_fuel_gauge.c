@@ -92,7 +92,7 @@ typedef enum {
  */
 static int16_t internal_convert_temperature(uint16_t temp_0_1k)
 {
-  /* Convert from 0.1K to 0.1°C: subtract 2731.5 (273.15K) */
+  /* Convert from 0.1K to 0.1 deg C: subtract 2731.5 (273.15K) */
   int32_t temp_0_1c = (int32_t)temp_0_1k - 2731;
 
   /* Convert to whole degrees Celsius */

@@ -25,7 +25,7 @@
 /* Calculate BRR value for baud rate
  * BRR = (PCLKB / (32 * 2^(2n-1) * baudrate)) - 1
  * For SCI with n=0 (PCLK/1):
- * BRR = (60,000,000 / (64 * 115200)) - 1 = 7.13 ≈ 7
+ * BRR = (60,000,000 / (64 * 115200)) - 1 = 7.13 ~= 7
  */
 #define UART_BRR_VALUE 7
 
