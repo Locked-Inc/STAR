@@ -103,7 +103,7 @@
 				(hide yes)
 			)
 		)
-		(symbol "74HC139D,653_1_1"
+		(symbol "74HC139D-653_1_1"
 			(rectangle
 				(start 5.08 2.54)
 				(end 22.86 -20.32)

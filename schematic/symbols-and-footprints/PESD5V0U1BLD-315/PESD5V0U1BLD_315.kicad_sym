@@ -106,7 +106,7 @@
 				(hide yes)
 			)
 		)
-		(symbol "PESD5V0U1BLD,315_0_1"
+		(symbol "PESD5V0U1BLD-315_0_1"
 			(polyline
 				(pts
 					(xy 20.32 5.08) (xy 20.32 2.54) (xy 25.4 5.08) (xy 25.4 2.54) (xy 20.32 5.08)
@@ -132,7 +132,7 @@
 				)
 			)
 		)
-		(symbol "PESD5V0U1BLD,315_1_1"
+		(symbol "PESD5V0U1BLD-315_1_1"
 			(pin passive line
 				(at 17.78 3.81 0)
 				(length 2.54)

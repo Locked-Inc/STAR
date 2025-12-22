@@ -103,7 +103,7 @@
 				(hide yes)
 			)
 		)
-		(symbol "PCA9685PW_Q900,118_1_1"
+		(symbol "PCA9685PW_Q900-118_1_1"
 			(rectangle
 				(start 5.08 2.54)
 				(end 25.4 -35.56)
