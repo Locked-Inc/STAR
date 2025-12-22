@@ -1,9 +1,0 @@
-<map id="star_bus_stats_get" name="star_bus_stats_get">
-<area shape="rect" id="Node000001" title="Get current statistics for a bus." alt="" coords="5,46,138,72"/>
-<area shape="rect" id="Node000002" href="$dd/d61/star__bus__stats_8c.html#ac7b660e277ecd707a5dc0f411a1c11c3" title="Get or create statistics state for a bus (thread&#45;safe)." alt="" coords="186,46,297,72"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="138,56,172,58,167,60,138,62"/>
-<area shape="rect" id="Node000003" href="$dd/d61/star__bus__stats_8c.html#a7aab2e18c51149c4cd1d6db8217fa100" title="Get or create statistics state for a bus (must be called with mutex held)." alt="" coords="345,5,469,46"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="297,45,333,41,327,42,298,50"/>
-<area shape="rect" id="Node000004" href="$dd/d61/star__bus__stats_8c.html#a4d607e473362eb8364793a60fbfd2b2a" title="Initialize stats global mutex (thread&#45;safe)." alt="" coords="346,71,469,111"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="298,67,333,76,328,76,297,72"/>
-</map>

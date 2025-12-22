@@ -10,17 +10,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 - **COPI/CIPO** - NOT MOSI/MISO (Controller Out Peripheral In / Controller In Peripheral Out)
 - **Primary/Main** - NOT master (for configuration structures)
 
-Note: ESP-IDF and other external APIs may still use legacy terminology internally. Map these to our terminology in comments and documentation.
+Note: External APIs may still use legacy terminology internally. Map these to our terminology in comments and documentation.
 
 ## Project Overview
 
-**STAR (Sensor and Actuator Abstraction Runtime)** - A distributed robotics platform with custom PCB hardware, ESP32 motor control firmware, Raspberry Pi 5 control system, and Protocol Buffers communication.
+**STAR (Sensor and Actuator Abstraction Runtime)** - A distributed robotics platform with custom PCB hardware, Renesas RX72N motor control firmware, Raspberry Pi 5 control system, and Protocol Buffers communication.
 
 ### Architecture
 
 | Component | Description |
 |-----------|-------------|
-| `star-esp32-firmware/` | ESP32-S3 motor controller (PlatformIO + ESP-IDF + FreeRTOS) |
 | `star-rx72n-firmware/` | Renesas RX72N motor controller (CMake + GNURX + ThreadX) |
 | `star-proto/` | Protocol Buffers schemas with multi-language code generation |
 | `star-rpi5-buildroot/` | Custom Buildroot Linux for Raspberry Pi 5 |
@@ -35,44 +34,26 @@ Note: ESP-IDF and other external APIs may still use legacy terminology internall
 User → UI (TypeScript)
      → Gateway (Go on RPi5)
      → ROS2 (C++ on RPi5)
-     → [SPI Bridge - TBD: ROS2 node or custom C using DIP libs]
-     → ESP32 (C firmware with nanopb)
+     → [SPI Bridge - TBD: ROS2 node or custom C]
+     → RX72N (C firmware with ThreadX + nanopb)
 ```
 
 **Key Design Notes:**
 - **Gateway (Go):** Handles WebSocket/HTTP with UI, bridges to ROS2, runs on RPi5
 - **ROS2 (C++):** Robot control framework, runs on RPi5
-- **SPI Bridge:** Not yet implemented - options include:
-  - ROS2 node with SPI support
-  - Custom C implementation using existing DIP libraries from `star-esp32-firmware/lib/star_bus/`
-  - Go implementation (less likely due to existing C libraries)
-- **ESP32:** Real-time motor control at 250Hz, communicates via Protocol Buffers over SPI
+- **SPI Bridge:** Not yet implemented - ROS2 node with SPI support
+- **RX72N:** Real-time motor control, communicates via Protocol Buffers over SPI
 
 ### Hardware
 
 - **Main Controller:** Raspberry Pi 5
-- **Motor Controller:** ESP32-S3-WROOM-1-N16 (16MB Flash, 512KB SRAM, NO PSRAM)
+- **Motor Controller:** Renesas RX72N (4MB Flash, 512KB SRAM)
 - **Motors:** 4x 6V brushed DC gearmotors (210 RPM, 341 PPR Hall encoders)
 - **Motor Drivers:** DRV8243S H-bridge with current sensing
 - **Lidar:** RPLiDAR C1 (12m range, IP54)
-- **Communication:** 10 Mbps SPI (RPi5 ↔ ESP32) with nanopb + CRC-32
+- **Communication:** 10 Mbps SPI (RPi5 ↔ RX72N) with nanopb + CRC-32
 
 ## Build Commands
-
-### ESP32 Firmware (`star-esp32-firmware/`)
-
-```bash
-# Build
-pio run -e esp32_wroom          # ESP32-WROOM (4MB)
-pio run -e esp32s3              # ESP32-S3 (16MB)
-
-# Upload and monitor
-pio run -e esp32s3 --target upload
-pio device monitor
-
-# Generate call graphs (requires cflow, doxygen, graphviz)
-./scripts/generate_callgraph.sh
-```
 
 ### Protocol Buffers (`star-proto/`)
 
@@ -108,42 +89,8 @@ go test ./...
 # Run in MATLAB
 motor_model_1st_order   # Estimate transfer function
 pid_design_velocity     # Design PID controller
-pid_discretize          # Generate discrete coefficients for ESP32
+pid_discretize          # Generate discrete coefficients for RX72N
 ```
-
-## ESP32 Firmware Architecture
-
-The firmware follows **Dependency Inversion Principle (DIP)** with these key patterns:
-
-### Core Libraries
-
-| Library | Purpose | Dependencies |
-|---------|---------|--------------|
-| `star_core` | Abstract interfaces only (error_interface, pin_interface) | None |
-| `star_bus` | Unified bus abstraction (I2C, SPI, UART, GPIO, ADC, OneWire) | star_core |
-| `star_motor` | MCPWM-based motor control | None |
-| `star_encoder` | PCNT-based quadrature encoder | None |
-| `star_pid` | Stateless PID algorithm | None |
-| `star_drv8243` | DRV8243 driver integration | star_bus |
-
-### DIP Pattern
-
-```c
-// 1. Initialize concrete implementation
-error_handler_t error_handler;
-error_handler_init(&error_handler, 3, 100, 5000, NULL, NULL);
-
-// 2. Get interface from implementation
-star_error_interface_t error_iface;
-error_handler_get_interface(&error_iface, &error_handler);
-
-// 3. Inject interface into dependent component
-star_bus_manager_init(&bus_manager, "main", &error_iface, &pin_iface);
-```
-
-### Thread Safety
-
-Use `star_bus_manager_with_bus()` instead of `star_bus_manager_find_bus()` to avoid race conditions. Default mutex timeout: 1000ms.
 
 ## Protocol Buffers
 
@@ -161,11 +108,11 @@ Use `star_bus_manager_with_bus()` instead of `star_bus_manager_find_bus()` to av
 |--------|--------|--------|
 | Go | buf.build/protocolbuffers/go, buf.build/grpc/go | `gen/go/` |
 | TypeScript | timostamm-protobuf-ts | `gen/typescript/` |
-| C (ESP32) | nanopb_generator | `gen/nanopb/` |
+| C (RX72N) | nanopb_generator | `gen/nanopb/` |
 
 ### nanopb Considerations
 
-Configure field sizes in `.options` files for ESP32 (no dynamic allocation):
+Configure field sizes in `.options` files for RX72N (no dynamic allocation):
 ```
 star.v1.RequestHeader.request_id max_size:64
 ```
@@ -231,7 +178,7 @@ Prefer enums over const variables over macros for defining constant values.
 - Always use braces for control statements
 - Use `assert()` for programming errors only, not runtime errors
 - Avoid inline ASM; if required, use `volatile` and document why
-- Zero dynamic allocation in ESP32 firmware (safety-critical)
+- Zero dynamic allocation in RX72N firmware (safety-critical)
 
 ## Motor Control
 
@@ -239,7 +186,7 @@ Prefer enums over const variables over macros for defining constant values.
 
 1. Measure motor step response → estimate time constant (τ = 75ms)
 2. Run MATLAB: `motor_model_1st_order.m` → `pid_design_velocity.m` → `pid_discretize.m`
-3. Update ESP32 firmware with new gains (Kp=0.286, Ki=8.01)
+3. Update RX72N firmware with new gains (Kp=0.286, Ki=8.01)
 4. Test closed-loop at 100 Hz control rate
 
 ### Motor Model
@@ -262,14 +209,13 @@ The `proto.yml` workflow runs on pushes to `star-proto/`:
 
 **IMPORTANT:** Always reference the LaTeX source files (`.tex`) in `docs/sections/` for accurate technical information, NOT the compiled PDF.
 
-- `star-esp32-firmware/CLAUDE.md` - Detailed ESP32 firmware guide
+- `star-rx72n-firmware/CLAUDE.md` - Detailed RX72N firmware guide
 - `star-gateway/CLAUDE.md` - Gateway service architecture and build guide
 - `docs/sections/*.tex` - System documentation source files (hardware pinout, protocols, style guides)
   - `03_hardware_pinout.tex` - Complete GPIO pin assignments and peripheral connections
   - `01_nanopb_protocol.tex` - SPI communication protocol specification
   - `02_protobuf_schemas.tex` - Protocol Buffer message definitions
   - `04_style_guide.tex` - Protocol Buffer coding standards
-  - `05_esp32_style.tex` - ESP32 firmware coding standards
   - `06_nasa_power_of_10.tex` - Safety-critical coding rules
   - `07_gateway_architecture.tex` - Gateway service design
 - `docs/star_documentation.pdf` - Compiled documentation (reference `.tex` files for latest changes)

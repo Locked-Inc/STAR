@@ -1,5 +1,0 @@
-<map id="star_bus_adc_read_raw" name="star_bus_adc_read_raw">
-<area shape="rect" id="Node000001" title="Read raw ADC value." alt="" coords="230,5,389,31"/>
-<area shape="rect" id="Node000002" href="$d7/d60/star__bus__manager_8c.html#ac56f7a391c23f795d7c07775676b3497" title="Read raw ADC value from an ADC bus (unified interface)." alt="" coords="5,5,182,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="211,18,182,21,182,16,217,18"/>
-</map>

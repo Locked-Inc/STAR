@@ -1,9 +1,0 @@
-<map id="star_bus_uart_enable_pattern" name="star_bus_uart_enable_pattern">
-<area shape="rect" id="Node000001" title="Enable pattern detection." alt="" coords="5,27,151,68"/>
-<area shape="rect" id="Node000002" href="$da/d14/star__bus__uart_8c.html#a28f970cc8af3f6e71f9a501a77d03824" title="Get UART state for a bus (thread&#45;safe)." alt="" coords="199,35,303,60"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="151,45,186,47,180,48,151,50"/>
-<area shape="rect" id="Node000003" href="$da/d14/star__bus__uart_8c.html#aa67160559a776670459f39d3453dac74" title="Get UART state for a bus (must be called with mutex held)." alt="" coords="351,5,504,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="303,36,338,33,333,34,304,41"/>
-<area shape="rect" id="Node000004" href="$da/d14/star__bus__uart_8c.html#aec8133ec6aaf61f663c70861b3788270" title="Initialize UART global mutex (thread&#45;safe)." alt="" coords="370,55,486,96"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="304,53,357,64,352,64,303,58"/>
-</map>

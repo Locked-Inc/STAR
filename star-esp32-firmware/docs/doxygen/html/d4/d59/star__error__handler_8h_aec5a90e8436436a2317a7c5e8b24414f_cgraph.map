@@ -1,7 +1,0 @@
-<map id="star_error_interface_destroy" name="star_error_interface_destroy">
-<area shape="rect" id="Node000001" title="Destroy an error interface created by star_error_interface_create_default()." alt="" coords="5,5,139,46"/>
-<area shape="rect" id="Node000002" href="$d7/d82/star__error__handler_8c.html#a1632e40ebb7509611a0513c0e6bdbb46" title="Destroy an error handler created by error_handler_create_default() or error_handler_create_custom()." alt="" coords="187,5,333,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="139,23,174,25,169,26,139,28"/>
-<area shape="rect" id="Node000003" href="$d7/d82/star__error__handler_8c.html#aaaf152f965c4c4e01c241f0801ce561a" title="Deinitialize an error handler and release resources." alt="" coords="381,13,515,38"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="333,23,368,26,363,26,334,28"/>
-</map>

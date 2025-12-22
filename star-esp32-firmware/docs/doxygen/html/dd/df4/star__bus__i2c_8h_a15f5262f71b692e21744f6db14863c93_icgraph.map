@@ -1,5 +1,0 @@
-<map id="star_bus_i2c_init_default_ops" name="star_bus_i2c_init_default_ops">
-<area shape="rect" id="Node000001" title="Initialize default I2C operations function pointers within a config structure. Typically called inter..." alt="" coords="234,5,427,31"/>
-<area shape="rect" id="Node000002" href="$de/d98/star__bus__config_8c.html#ae2c74c07526c11cc15773c858681f8d4" title="Create a new I2C bus/device configuration." alt="" coords="5,5,186,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="215,18,186,21,186,16,221,18"/>
-</map>

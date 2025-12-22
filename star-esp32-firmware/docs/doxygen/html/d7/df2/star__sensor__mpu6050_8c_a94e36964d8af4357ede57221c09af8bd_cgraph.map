@@ -1,7 +1,0 @@
-<map id="mpu6050_write_reg" name="mpu6050_write_reg">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,5,140,31"/>
-<area shape="rect" id="Node000002" href="$dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="188,5,318,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="140,16,174,18,169,18,140,21"/>
-<area shape="rect" id="Node000003" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="366,5,550,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="318,16,353,18,347,18,318,21"/>
-</map>

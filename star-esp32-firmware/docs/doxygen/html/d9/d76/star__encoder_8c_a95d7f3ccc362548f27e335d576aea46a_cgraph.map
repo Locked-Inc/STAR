@@ -1,5 +1,0 @@
-<map id="star_encoder_init" name="star_encoder_init">
-<area shape="rect" id="Node000001" title="Initialize a quadrature encoder instance." alt="" coords="5,13,126,38"/>
-<area shape="rect" id="Node000002" href="$d9/d76/star__encoder_8c.html#a8210b97cbf41c70b766380200a177831" title="PCNT watch point callback for overflow/underflow tracking." alt="" coords="174,5,311,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="126,23,161,25,156,26,126,28"/>
-</map>

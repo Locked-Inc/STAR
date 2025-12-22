@@ -1,7 +1,0 @@
-<map id="internal_star_bus_adc_read_voltage" name="internal_star_bus_adc_read_voltage">
-<area shape="rect" id="Node000001" title=" " alt="" coords="484,5,632,46"/>
-<area shape="rect" id="Node000002" href="$d2/deb/star__bus__adc_8c.html#aa3fe9206840f1db313371895470b989a" title="Get default ADC operations structure." alt="" coords="238,13,436,38"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="466,26,437,28,437,23,471,26"/>
-<area shape="rect" id="Node000003" href="$de/d98/star__bus__config_8c.html#ac85bf955f3f1dfeebe2e5add73d47900" title="Create an ADC bus configuration." alt="" coords="5,13,190,38"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="219,26,190,28,190,23,225,25"/>
-</map>

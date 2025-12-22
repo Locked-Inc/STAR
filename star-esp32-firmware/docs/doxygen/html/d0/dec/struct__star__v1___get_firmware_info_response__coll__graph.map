@@ -1,9 +1,0 @@
-<map id="_star_v1_GetFirmwareInfoResponse" name="_star_v1_GetFirmwareInfoResponse">
-<area shape="rect" id="Node000001" title=" " alt="" coords="156,219,332,260"/>
-<area shape="rect" id="Node000002" href="$d5/de6/struct__star__v1___response_header.html" title=" " alt="" coords="12,102,191,128"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="128,136,224,218,219,220,126,141"/>
-<area shape="rect" id="Node000003" href="$d6/df3/struct__google__protobuf___timestamp.html" title=" " alt="" coords="5,5,198,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="102,44,104,102,99,101,101,49"/>
-<area shape="rect" id="Node000004" href="$da/db6/struct__star__v1___firmware_info.html" title=" " alt="" coords="215,102,369,128"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="284,141,254,220,250,217,280,144"/>
-</map>

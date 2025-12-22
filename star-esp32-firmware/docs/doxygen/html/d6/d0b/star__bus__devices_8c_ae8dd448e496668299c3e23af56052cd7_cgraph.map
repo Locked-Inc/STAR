@@ -1,7 +1,0 @@
-<map id="star_bus_pcf8574_read" name="star_bus_pcf8574_read">
-<area shape="rect" id="Node000001" title="Read byte from PCF8574 I/O expander." alt="" coords="5,5,162,31"/>
-<area shape="rect" id="Node000002" href="$dd/d1a/star__bus__i2c_8c.html#a6b73d11538cb25e07de224584c54ec49" title="Read raw bytes from an I2C device specified by a bus configuration. Does not send a register address ..." alt="" coords="210,5,365,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="162,16,197,18,192,18,162,21"/>
-<area shape="rect" id="Node000003" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="413,5,597,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="365,16,400,18,395,18,365,21"/>
-</map>

@@ -1,7 +1,0 @@
-<map id="_star_v1_MarkValidResponse" name="_star_v1_MarkValidResponse">
-<area shape="rect" id="Node000001" title=" " alt="" coords="5,199,200,224"/>
-<area shape="rect" id="Node000002" href="$d5/de6/struct__star__v1___response_header.html" title=" " alt="" coords="13,102,192,128"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="105,141,105,199,100,197,100,145"/>
-<area shape="rect" id="Node000003" href="$d6/df3/struct__google__protobuf___timestamp.html" title=" " alt="" coords="6,5,199,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="104,44,105,102,100,101,101,49"/>
-</map>

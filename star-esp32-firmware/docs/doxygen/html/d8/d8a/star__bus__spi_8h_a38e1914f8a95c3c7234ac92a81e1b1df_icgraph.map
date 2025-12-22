@@ -1,5 +1,0 @@
-<map id="star_bus_spi_receive" name="star_bus_spi_receive">
-<area shape="rect" id="Node000001" title="Receive data from an SPI device specified by a bus configuration." alt="" coords="230,5,374,31"/>
-<area shape="rect" id="Node000002" href="$dc/d0c/star__bus__spi__dma_8c.html#aeb458f8a3f35813285e422041ee4a086" title="Receive data via SPI using DMA." alt="" coords="5,5,182,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="211,18,182,21,182,16,217,18"/>
-</map>

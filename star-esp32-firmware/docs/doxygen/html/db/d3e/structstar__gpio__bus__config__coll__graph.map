@@ -1,5 +1,0 @@
-<map id="star_gpio_bus_config" name="star_gpio_bus_config">
-<area shape="rect" id="Node000001" title="GPIO bus configuration structure." alt="" coords="5,102,150,128"/>
-<area shape="rect" id="Node000002" href="$d3/d05/structstar__gpio__ops.html" title="GPIO operation functions structure." alt="" coords="26,5,129,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="80,45,80,102,75,101,75,48"/>
-</map>
