@@ -1,7 +1,0 @@
-<map id="star_bus_debug_read_reg" name="star_bus_debug_read_reg">
-<area shape="rect" id="Node000001" title="Read and print register value." alt="" coords="5,5,176,31"/>
-<area shape="rect" id="Node000002" href="$dd/d1a/star__bus__i2c_8c.html#a2e9b9baf8a0f8d00a2080963a7efd62f" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="224,5,351,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="176,16,211,18,206,18,176,21"/>
-<area shape="rect" id="Node000003" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="399,5,583,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="351,16,386,18,381,18,351,21"/>
-</map>

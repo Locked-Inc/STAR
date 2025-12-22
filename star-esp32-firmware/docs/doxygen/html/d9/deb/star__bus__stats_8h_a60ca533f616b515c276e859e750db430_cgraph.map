@@ -1,9 +1,0 @@
-<map id="star_bus_stats_is_enabled" name="star_bus_stats_is_enabled">
-<area shape="rect" id="Node000001" title="Check if statistics collection is enabled for a bus." alt="" coords="5,46,182,72"/>
-<area shape="rect" id="Node000002" href="$dd/d61/star__bus__stats_8c.html#ac7b660e277ecd707a5dc0f411a1c11c3" title="Get or create statistics state for a bus (thread&#45;safe)." alt="" coords="230,46,341,72"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="182,56,217,59,211,59,183,62"/>
-<area shape="rect" id="Node000003" href="$dd/d61/star__bus__stats_8c.html#a7aab2e18c51149c4cd1d6db8217fa100" title="Get or create statistics state for a bus (must be called with mutex held)." alt="" coords="389,5,513,46"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="341,45,371,42,377,41,342,50"/>
-<area shape="rect" id="Node000004" href="$dd/d61/star__bus__stats_8c.html#a4d607e473362eb8364793a60fbfd2b2a" title="Initialize stats global mutex (thread&#45;safe)." alt="" coords="390,71,513,111"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="342,67,377,76,372,76,341,72"/>
-</map>

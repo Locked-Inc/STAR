@@ -1,7 +1,0 @@
-<map id="star_drv8243_read_current" name="star_drv8243_read_current">
-<area shape="rect" id="Node000001" title="Read motor current." alt="" coords="5,5,181,31"/>
-<area shape="rect" id="Node000002" href="$d2/deb/star__bus__adc_8c.html#a93bf2ccd624c4656121404c06ab1894e" title="Read calibrated voltage in millivolts." alt="" coords="229,5,409,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="181,16,216,18,211,18,181,21"/>
-<area shape="rect" id="Node000003" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="457,5,641,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="409,16,444,18,439,18,410,21"/>
-</map>

@@ -1,7 +1,0 @@
-<map id="include/tasks/telemetry_task.h" name="include/tasks/telemetry_task.h">
-<area shape="rect" id="Node000001" title="Public API for the telemetry FreeRTOS task." alt="" coords="34,5,190,46"/>
-<area shape="rect" id="Node000002" href="$d0/d29/main_8c.html" title="Application entry point and system initialization for STAR ESP32 firmware." alt="" coords="5,102,88,127"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="91,58,57,103,53,99,85,59"/>
-<area shape="rect" id="Node000003" href="$dd/d6f/telemetry__task_8c.html" title="FreeRTOS task implementation for telemetry data handling and transmission." alt="" coords="112,94,245,135"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="137,56,166,94,161,93,135,61"/>
-</map>

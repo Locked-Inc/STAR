@@ -1,7 +1,0 @@
-<map id="star_bus_read_analog_raw" name="star_bus_read_analog_raw">
-<area shape="rect" id="Node000001" title="Read raw ADC value from an ADC bus (unified interface)." alt="" coords="5,5,182,31"/>
-<area shape="rect" id="Node000002" href="$d2/deb/star__bus__adc_8c.html#ab4b26501aa8f09b960d0238c4d338704" title="Read raw ADC value." alt="" coords="230,5,389,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="182,16,216,18,211,18,182,21"/>
-<area shape="rect" id="Node000003" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="437,5,621,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="389,16,424,18,419,18,389,21"/>
-</map>

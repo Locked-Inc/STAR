@@ -1,9 +1,0 @@
-<map id="internal_pca9685_set_mode1_bits" name="internal_pca9685_set_mode1_bits">
-<area shape="rect" id="Node000001" title="Set MODE1 register bits." alt="" coords="324,39,468,79"/>
-<area shape="rect" id="Node000002" href="$d3/df7/star__sensor__pca9685_8c.html#abf4b004f9ee13b89446c5f5b268ebcf6" title="Deinitialize PCA9685 PWM controller handle." alt="" coords="131,5,276,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="306,44,276,41,276,36,311,44"/>
-<area shape="rect" id="Node000004" href="$d3/df7/star__sensor__pca9685_8c.html#a8967db4fc39ffbcbadb10919f9d20dae" title="Sleep/wake device." alt="" coords="131,71,276,111"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="311,73,277,82,276,76,306,74"/>
-<area shape="rect" id="Node000003" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,13,83,38"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="113,27,84,28,82,23,117,24"/>
-</map>

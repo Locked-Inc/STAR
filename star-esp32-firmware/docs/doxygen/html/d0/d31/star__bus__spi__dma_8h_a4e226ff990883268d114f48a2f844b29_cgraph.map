@@ -1,9 +1,0 @@
-<map id="star_bus_spi_configure_dma" name="star_bus_spi_configure_dma">
-<area shape="rect" id="Node000001" title="Configure DMA for an SPI bus." alt="" coords="5,31,193,56"/>
-<area shape="rect" id="Node000002" href="$dc/d0c/star__bus__spi__dma_8c.html#ae6f3f7193babc100dd9a817ee1ebbdc5" title="Get DMA state for an SPI host." alt="" coords="253,5,384,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="193,30,240,27,235,28,193,35"/>
-<area shape="rect" id="Node000003" href="$dc/d0c/star__bus__spi__dma_8c.html#af5ad74578aa070f6c9b52f995459590d" title="Get SPI host from bus name." alt="" coords="241,55,397,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="193,51,228,57,222,57,193,56"/>
-<area shape="rect" id="Node000004" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="445,55,629,80"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="397,65,432,67,427,68,397,70"/>
-</map>

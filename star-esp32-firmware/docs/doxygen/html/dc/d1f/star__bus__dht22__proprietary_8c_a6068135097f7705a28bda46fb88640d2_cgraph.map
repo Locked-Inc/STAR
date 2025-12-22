@@ -1,5 +1,0 @@
-<map id="wait_for_level" name="wait_for_level">
-<area shape="rect" id="Node000001" title="Wait for GPIO to reach expected level with timeout." alt="" coords="5,5,107,31"/>
-<area shape="rect" id="Node000002" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a71842e7ab86cba68432d023f022556d5" title="Read GPIO input." alt="" coords="155,5,232,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="107,16,142,18,137,18,107,21"/>
-</map>

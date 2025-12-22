@@ -1,7 +1,0 @@
-<map id="star_encoder_init" name="star_encoder_init">
-<area shape="rect" id="Node000001" title="Initialize a quadrature encoder instance." alt="" coords="331,5,451,31"/>
-<area shape="rect" id="Node000002" href="$d2/dc5/star__encoder__mux_8c.html#a78274a6f3a7aead0b767a36543c49025" title="Initialize the multiplexed encoder driver." alt="" coords="131,5,283,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="312,18,283,21,283,16,318,18"/>
-<area shape="rect" id="Node000003" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="112,19,83,21,83,16,118,18"/>
-</map>

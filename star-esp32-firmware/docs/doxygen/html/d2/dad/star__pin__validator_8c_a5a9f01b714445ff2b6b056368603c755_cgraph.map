@@ -1,7 +1,0 @@
-<map id="internal_iface_validate" name="internal_iface_validate">
-<area shape="rect" id="Node000001" title="Adapter function for validate interface." alt="" coords="5,5,156,31"/>
-<area shape="rect" id="Node000002" href="$d2/dad/star__pin__validator_8c.html#a860b80eef110e1f314a05a8d60f09e18" title="Validate all registered pins for conflicts." alt="" coords="204,5,330,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="156,16,191,18,185,18,156,21"/>
-<area shape="rect" id="Node000003" href="$d2/dad/star__pin__validator_8c.html#abb6171433f895757bf5f629a88181cf9" title="Initialize mutex if not already initialized (thread&#45;safe)." alt="" coords="378,5,508,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="330,16,365,18,360,18,330,21"/>
-</map>

@@ -1,5 +1,0 @@
-<map id="star_bus_onewire_peripheral_get_rom" name="star_bus_onewire_peripheral_get_rom">
-<area shape="rect" id="Node000001" title="Get current peripheral ROM code." alt="" coords="5,5,192,46"/>
-<area shape="rect" id="Node000002" href="$d2/de5/star__bus__onewire__peripheral_8c.html#a501a3f667c641db510d4f13247860593" title="Get peripheral state for a bus." alt="" coords="240,13,378,38"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="192,23,227,25,221,26,192,28"/>
-</map>

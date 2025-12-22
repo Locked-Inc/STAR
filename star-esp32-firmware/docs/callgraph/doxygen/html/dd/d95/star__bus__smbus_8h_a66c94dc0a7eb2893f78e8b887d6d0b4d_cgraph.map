@@ -1,9 +1,0 @@
-<map id="star_smbus_read_byte" name="star_smbus_read_byte">
-<area shape="rect" id="Node000001" title="SMBus Read Byte." alt="" coords="5,42,159,68"/>
-<area shape="rect" id="Node000002" href="$d3/df5/star__bus__smbus_8c.html#a028e8362b8c772d39dee59e24c15439b" title="Validate common parameters for SMBus operations." alt="" coords="207,5,368,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="158,41,194,39,188,40,159,47"/>
-<area shape="rect" id="Node000003" href="$dd/d1a/star__bus__i2c_8c.html#a2e9b9baf8a0f8d00a2080963a7efd62f" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="224,70,351,96"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="159,63,211,72,205,72,159,68"/>
-<area shape="rect" id="Node000004" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="416,70,600,96"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="351,80,403,83,397,83,351,86"/>
-</map>

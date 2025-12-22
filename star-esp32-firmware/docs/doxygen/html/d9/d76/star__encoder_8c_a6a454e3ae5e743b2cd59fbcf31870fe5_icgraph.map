@@ -1,5 +1,0 @@
-<map id="star_encoder_reset_count" name="star_encoder_reset_count">
-<area shape="rect" id="Node000001" title="Reset encoder count to zero." alt="" coords="238,5,370,46"/>
-<area shape="rect" id="Node000002" href="$d2/dc5/star__encoder__mux_8c.html#ac86206367cf5fc14d548083c163a10dd" title="Reset positions for all encoders." alt="" coords="5,13,190,38"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="220,26,190,28,190,23,225,25"/>
-</map>

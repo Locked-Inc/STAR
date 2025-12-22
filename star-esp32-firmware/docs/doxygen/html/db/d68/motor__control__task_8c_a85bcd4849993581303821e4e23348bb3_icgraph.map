@@ -1,7 +1,0 @@
-<map id="internal_motor_control_task" name="internal_motor_control_task">
-<area shape="rect" id="Node000001" title="Motor control task entry point." alt="" coords="311,13,492,38"/>
-<area shape="rect" id="Node000002" href="$db/d68/motor__control__task_8c.html#a4b6f1f31007caadc984cc529bcbb948b" title="Create and start the motor control task." alt="" coords="131,5,263,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="293,26,264,28,263,23,298,26"/>
-<area shape="rect" id="Node000003" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,13,83,38"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="112,26,83,28,83,23,117,25"/>
-</map>

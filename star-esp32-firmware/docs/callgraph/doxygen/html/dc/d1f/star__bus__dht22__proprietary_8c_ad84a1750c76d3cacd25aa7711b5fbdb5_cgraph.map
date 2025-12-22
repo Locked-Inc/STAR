@@ -1,7 +1,0 @@
-<map id="get_dht22_state" name="get_dht22_state">
-<area shape="rect" id="Node000001" title="Get DHT22 state for a bus (thread&#45;safe)." alt="" coords="5,46,120,72"/>
-<area shape="rect" id="Node000002" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a15fbe86b35253f8620cdba249493f6fa" title="Get DHT22 state for a bus (must be called with mutex held)." alt="" coords="168,5,295,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="119,45,155,40,150,42,121,50"/>
-<area shape="rect" id="Node000003" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a9cd874b0290191f0e8a2200e9a727f58" title="Initialize DHT22 global mutex (thread&#45;safe)." alt="" coords="168,71,294,111"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="120,67,155,76,150,77,120,73"/>
-</map>

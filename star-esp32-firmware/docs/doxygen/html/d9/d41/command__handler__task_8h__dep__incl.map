@@ -1,7 +1,0 @@
-<map id="include/tasks/command_handler_task.h" name="include/tasks/command_handler_task.h">
-<area shape="rect" id="Node000001" title="Public API for the command handler FreeRTOS task." alt="" coords="46,5,205,46"/>
-<area shape="rect" id="Node000002" href="$d0/d29/main_8c.html" title="Application entry point and system initialization for STAR ESP32 firmware." alt="" coords="5,102,88,127"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="100,57,59,103,55,99,95,58"/>
-<area shape="rect" id="Node000003" href="$d8/d71/command__handler__task_8c.html" title="FreeRTOS task implementation for command handling." alt="" coords="111,94,296,135"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="154,55,189,94,183,93,152,60"/>
-</map>

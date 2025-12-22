@@ -1,7 +1,0 @@
-<map id="star_error_interface_cleanup" name="star_error_interface_cleanup">
-<area shape="rect" id="Node000001" title="Clean up an error interface that may own its handler." alt="" coords="216,23,349,64"/>
-<area shape="rect" id="Node000002" href="$d2/d58/star__bms__bq7850_8c.html#a02709f23d96dc7f7c34b7a23f86888fc" title="Deinitialize BQ7850 BMS device handle." alt="" coords="5,5,168,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="197,33,168,31,168,26,203,33"/>
-<area shape="rect" id="Node000003" href="$d2/d58/star__bms__bq7850_8c.html#a4b748fe20f591b1b3799dceb247b1a5c" title="Create and initialize BQ7850 BMS device handle." alt="" coords="12,55,161,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="197,54,161,61,161,56,203,53"/>
-</map>
