@@ -1,5 +1,0 @@
-<map id="internal_dec_to_bcd" name="internal_dec_to_bcd">
-<area shape="rect" id="Node000001" title="Convert decimal to BCD." alt="" coords="231,5,368,31"/>
-<area shape="rect" id="Node000002" href="$d6/d0b/star__bus__devices_8c.html#a3747838d07db068959f18debab212bb3" title="Set DS3231 time." alt="" coords="5,5,183,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="213,18,183,21,183,16,218,18"/>
-</map>

@@ -1,9 +1,0 @@
-<map id="star_bus_onewire_reset_stats" name="star_bus_onewire_reset_stats">
-<area shape="rect" id="Node000001" title="Reset 1&#45;Wire bus statistics." alt="" coords="5,39,165,79"/>
-<area shape="rect" id="Node000002" href="$d9/dd6/star__bus__onewire_8c.html#ae2fccd2ccf0204c4ae5e4ae370719b9a" title="Get 1&#45;Wire state for a bus (thread&#45;safe)." alt="" coords="213,39,353,79"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="165,56,200,58,194,60,165,62"/>
-<area shape="rect" id="Node000003" href="$d9/dd6/star__bus__onewire_8c.html#a1ca358f311abcb5bb498c6df68b556c6" title="Initialize 1&#45;Wire global mutex (thread&#45;safe)." alt="" coords="402,5,541,46"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="353,44,389,40,384,41,354,49"/>
-<area shape="rect" id="Node000004" href="$d9/dd6/star__bus__onewire_8c.html#aeaca1b0b2a8c0f56d9c5a0a68736af0a" title="Get 1&#45;Wire state for a bus (must be called with mutex held)." alt="" coords="401,71,542,111"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="354,68,389,77,384,77,353,74"/>
-</map>

@@ -1,0 +1,9 @@
+Manufacturer=Nexperia
+PartNumber=74LVC125APW,118
+PartCategory=Integrated Circuit
+PackageCategory=Small Outline Packages
+PinCount=14
+Version=13.1
+Released=2017-01-12 09:39:31
+Downloaded=2025-09-11 19:20:18
+3D=Y

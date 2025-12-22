@@ -6,7 +6,7 @@
 
 \subsection{Executive Summary}
 
-\textbf{Overview:} Protocol Buffers (nanopb) encapsulated in frames with CRC-32 and Automatic Repeat Request (ARQ) for reliable SPI communication between RPi5 and ESP32-S3.
+\textbf{Overview:} Protocol Buffers (nanopb) encapsulated in frames with CRC-32 and Automatic Repeat Request (ARQ) for reliable SPI communication between RPi5 and RX72N.
 
 \noindent\makebox[\textwidth]{%
 \begin{tikzpicture}[
@@ -68,7 +68,7 @@
 
 \textbf{System Constraints:}
 \begin{itemize}
-    \item ESP32-S3-WROOM-1-N16: 16MB flash, 512KB SRAM, NO PSRAM
+    \item Renesas RX72N: 4MB flash, 1MB SRAM
     \item 100Hz SPI communication (10ms period)
     \item 250Hz motor control loop (4ms period)
     \item Static allocation only (no malloc)
@@ -84,7 +84,7 @@ The nested loop architecture follows classic control systems design. The outer l
 
 This is a Nyquist sampling consideration. With DC gearmotors at 210 RPM (3.5 Hz mechanical speed) and a first-order time constant $\tau = 75$ ms (cutoff frequency $f_c = 1/(2\pi \tau) \approx 2.1$ Hz), the 250Hz control rate provides approximately 60 times oversampling of the mechanical dynamics - well above the 2 times Nyquist minimum.
 
-While the ESP32 could easily run the PID loop at 1kHz or higher, doing so would not improve control quality because the motor mechanics are the limiting factor, not the computational speed. The physical system cannot respond faster than its time constant allows. Running at 250Hz balances:
+Running at 250Hz balances:
 
 \begin{itemize}
     \item Adequate sampling of motor dynamics (60 times oversampling)
@@ -104,6 +104,7 @@ For context, control loop frequencies should match system dynamics:
 \subsection{Key Design Decisions}
 
 \subsubsection{Protocol Stack}
+\label{sec:protocol-stack}
 
 \noindent\makebox[\textwidth]{%
 \begin{tikzpicture}[
@@ -128,6 +129,42 @@ For context, control loop frequencies should match system dynamics:
 \end{tikzpicture}%
 }
 
+\subsubsection{Byte Order and Standards Compliance}
+
+The protocol follows established standards for byte ordering to ensure cross-platform compatibility:
+
+\begin{table}[H]
+\centering
+\caption{Byte Order Standards by Protocol Field}
+\label{tab:byte-order-standards}
+\begin{tabular}{|l|l|l|l|}
+\hline
+\textbf{Field} & \textbf{Byte Order} & \textbf{Standard} & \textbf{Rationale} \\
+\hline
+SYNC & Big-endian & RFC 1700 & Network byte order for headers \\
+SEQ & Big-endian & RFC 1700 & Network byte order for headers \\
+LEN & Big-endian & RFC 1700 & Network byte order for headers \\
+TYPE & N/A (1 byte) & -- & Single byte, no endianness \\
+FLAGS & N/A (1 byte) & -- & Single byte, no endianness \\
+CRC-32 & Little-endian & IEEE 802.3 & Standard CRC-32 polynomial \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{SYNC Magic Word (0x55AA):} The frame synchronization marker uses the distinctive bit pattern 0x55AA (binary: 0101010101010101 in big-endian wire format). This alternating pattern is easily recognizable and unlikely to appear in random data, making it ideal for frame alignment. The value 0x55AA is transmitted as bytes \texttt{[0x55, 0xAA]} on the wire.
+
+\textbf{RFC 1700 (Network Byte Order):} All multi-byte header fields (SYNC, SEQ, LEN) use big-endian format following RFC 1700 ``Assigned Numbers'' standard. This ensures compatibility when communicating between different architectures (ARM RPi5 and Renesas RX72N, both little-endian internally).
+
+\textbf{IEEE 802.3 (CRC-32):} The frame checksum uses IEEE 802.3 polynomial (0x04C11DB7) in little-endian format, compatible with standard Ethernet CRC libraries. This allows zero-copy CRC validation using hardware accelerators where available.
+
+\vspace{0.2cm}
+
+\noindent\colorbox{keyinsightcolor}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
+\textbf{Key Insight:} Mixed byte orders are intentional — headers follow network standards for cross-platform compatibility, while CRC follows IEEE 802.3 for hardware acceleration and library compatibility.
+}}
+
+\vspace{0.3cm}
+
 \subsubsection{Memory Budget}
 
 \begin{table}[H]
@@ -145,9 +182,9 @@ For context, control loop frequencies should match system dynamics:
             DMA double-buffer & 8.0 & 1.56 \\
             RX/TX buffers & 2.0 & 0.39 \\
             Protobuf structs & 1.5 & 0.29 \\
-            ARQ state & 4.5 & 0.88 \\
+            ARQ state & 4.0 & 0.78 \\
             \midrule
-            \textbf{Total} & \textbf{16.0} & \textbf{3.12} \\
+            \textbf{Total} & \textbf{15.5} & \textbf{3.03} \\
             \bottomrule
         \end{tabular}}
     \end{minipage}\hfill%
@@ -188,12 +225,12 @@ For context, control loop frequencies should match system dynamics:
           \textit{Calculation:} Largest message structures (SetVelocityResponse $\approx$ 600 bytes, TelemetryData $\approx$ 400 bytes) \\
           \textit{Usage:} $\frac{1.5}{512} \times 100 = 0.29\%$
 
-    \item \textbf{ARQ state:} $4 + 4 + 8 + 4 + 4092 = 4112\text{ bytes} \approx 4.5\text{ KB}$ \\
+    \item \textbf{ARQ state:} $4 + 4 + 8 + 4 + 4092 = 4112\text{ bytes} \approx 4.0\text{ KB}$ \\
           \textit{Calculation:} Sequence number (4B) + retry counter (4B) + timestamp (8B) + state (4B) + retry buffer (4092B) \\
-          \textit{Usage:} $\frac{4.5}{512} \times 100 = 0.88\%$
+          \textit{Usage:} $\frac{4.0}{512} \times 100 = 0.78\%$
 
-    \item \textbf{Total SRAM:} $8.0 + 2.0 + 1.5 + 4.5 = 16.0\text{ KB}$ \\
-          \textit{Total usage:} $\frac{16.0}{512} \times 100 = 3.12\%$
+    \item \textbf{Total SRAM:} $8.0 + 2.0 + 1.5 + 4.0 = 15.5\text{ KB}$ \\
+          \textit{Total usage:} $\frac{15.5}{512} \times 100 = 3.03\%$
 \end{itemize}
 
 \textbf{Flash (16 MB = 16384 KB total):}
@@ -218,7 +255,7 @@ For context, control loop frequencies should match system dynamics:
 
 \subsubsection{Protocol Stack Architecture}
 
-The protocol is implemented as a layered stack on both the RPi5 (SPI controller) and ESP32 (SPI peripheral). Each layer has specific responsibilities:
+The protocol is implemented as a layered stack on both the RPi5 (SPI controller) and RX72N (SPI peripheral). Each layer has specific responsibilities:
 
 \vspace{0.3cm}
 
@@ -251,7 +288,7 @@ The protocol is implemented as a layered stack on both the RPi5 (SPI controller)
 
 \vspace{0.3cm}
 
-\subsubsection{ESP32 (SPI Peripheral) Implementation}
+\subsubsection{RX72N (SPI Peripheral) Implementation}
 
 \vspace{0.2cm}
 
@@ -259,7 +296,7 @@ The protocol is implemented as a layered stack on both the RPi5 (SPI controller)
 \textbf{Layer 1: SPI Peripheral with DMA}
 \vspace{0.1cm}
 \begin{itemize}[leftmargin=1.5em,topsep=0pt,itemsep=2pt,parsep=0pt]
-    \item Configure SPI3 in peripheral mode using ESP-IDF
+    \item Configure RSPI in peripheral mode
     \item Set up DMA with double-buffering: 2 $\times$ 4092 bytes
     \item Register DMA interrupt callbacks for buffer swapping
     \item Wait for chip select from RPi5, respond to clock
@@ -366,7 +403,7 @@ The protocol is implemented as a layered stack on both the RPi5 (SPI controller)
 \vspace{0.25cm}
 
 \noindent\colorbox{layer2color}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
-\textbf{Layer 2: Frame Layer} \textit{(Custom Code - SAME AS ESP32)}
+\textbf{Layer 2: Frame Layer} \textit{(Custom Code - SAME AS RX72N)}
 \vspace{0.1cm}
 
 \noindent\textit{RX Path:} Parse frame header, verify CRC-32, extract payload or discard on CRC failure
@@ -379,7 +416,7 @@ The protocol is implemented as a layered stack on both the RPi5 (SPI controller)
 \vspace{0.25cm}
 
 \noindent\colorbox{layer3color}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
-\textbf{Layer 3: ARQ Layer} \textit{(Custom Code - SAME AS ESP32)}
+\textbf{Layer 3: ARQ Layer} \textit{(Custom Code - SAME AS RX72N)}
 \vspace{0.1cm}
 
 \noindent\textit{RX Path:} Check sequence number, detect duplicates $\rightarrow$ ACK and discard, detect out-of-order $\rightarrow$ NACK
@@ -411,7 +448,7 @@ The protocol is implemented as a layered stack on both the RPi5 (SPI controller)
     \item Send motor velocity commands from Nav2 (autonomous) or UI (manual)
     \item All control flows through Nav2 stack for consistent behavior
     \item Receive encoder feedback for odometry calculations
-    \item Bridge ROS2 topics to/from ESP32 via SPI
+    \item Bridge ROS2 topics to/from RX72N via SPI
 \end{itemize}
 \vspace{0.05cm}
 }}
@@ -420,7 +457,16 @@ The protocol is implemented as a layered stack on both the RPi5 (SPI controller)
 
 \subsubsection{ARQ Symmetry and State Management}
 
-The ARQ protocol is \textbf{symmetric} — both sides implement identical logic but maintain separate state for their own transmissions and receptions.
+The ARQ layer uses \textbf{Stop-and-Wait} protocol (also called alternating bit protocol). This means each side sends one frame at a time, waits for acknowledgment (ACK) with a timeout, and retries up to 3 times before declaring failure. This approach provides:
+
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item Simple implementation suitable for embedded systems
+    \item Predictable worst-case latency for real-time control
+    \item Low memory overhead (single retry buffer, not a window of frames)
+    \item Sufficient throughput for 10 Mbps SPI with <1ms frame time
+\end{itemize}
+
+The ARQ protocol is \textbf{symmetric} — both sides implement identical Stop-and-Wait logic but maintain separate state for their own transmissions and receptions.
 
 \vspace{0.2cm}
 \noindent\textbf{Each Side Maintains:}
@@ -437,17 +483,17 @@ The ARQ protocol is \textbf{symmetric} — both sides implement identical logic 
 \centering
 \begin{tabular}{|l|c|c|}
 \hline
-\textbf{Responsibility} & \textbf{ESP32 (Peripheral)} & \textbf{RPi5 (Controller)} \\
+\textbf{Responsibility} & \textbf{RX72N (Peripheral)} & \textbf{RPi5 (Controller)} \\
 \hline
 Sends & Telemetry, responses & Commands, requests \\
 \hline
 TX sequence numbering & Own \texttt{tx\_seq} & Own \texttt{tx\_seq} \\
 \hline
-ACK/NACK generation & Sends ACK for RPi5 & Sends ACK for ESP32 \\
+ACK/NACK generation & Sends ACK for RPi5 & Sends ACK for RX72N \\
 \hline
 Retry logic & Retries if no ACK & Retries if no ACK \\
 \hline
-Duplicate detection & Checks RPi5's \texttt{seq} & Checks ESP32's \texttt{seq} \\
+Duplicate detection & Checks RPi5's \texttt{seq} & Checks RX72N's \texttt{seq} \\
 \hline
 \end{tabular}
 \caption{ARQ role distribution between controller and peripheral}
@@ -471,15 +517,15 @@ Duplicate detection & Checks RPi5's \texttt{seq} & Checks ESP32's \texttt{seq} \
     \item \textbf{RPi5 Protobuf:} Encode to binary (nanopb)
     \item \textbf{RPi5 ARQ:} Assign \texttt{seq=42}, save to retry buffer, start 10ms timeout
     \item \textbf{RPi5 Frame:} Build packet with header, CRC-32, footer
-    \item \textbf{RPi5 SPI:} DMA transfer to ESP32 (controller initiates)
-    \item \textbf{ESP32 SPI:} DMA receives packet in double-buffer
-    \item \textbf{ESP32 Frame:} Verify CRC-32 $\rightarrow$ valid
-    \item \textbf{ESP32 ARQ:} Check \texttt{seq=42} = \texttt{rx\_last\_ack+1} $\rightarrow$ accept
-    \item \textbf{ESP32 Protobuf:} Decode to \texttt{SetVelocityRequest} struct
-    \item \textbf{ESP32 Application:} Update motor setpoints, execute PID control
-    \item \textbf{ESP32 ARQ:} Build ACK packet with \texttt{ack\_seq=42}
-    \item \textbf{ESP32 Frame:} Wrap ACK in frame with CRC-32
-    \item \textbf{ESP32 SPI:} DMA transmits ACK (peripheral responds)
+    \item \textbf{RPi5 SPI:} DMA transfer to RX72N (controller initiates)
+    \item \textbf{RX72N SPI:} DMA receives packet in double-buffer
+    \item \textbf{RX72N Frame:} Verify CRC-32 $\rightarrow$ valid
+    \item \textbf{RX72N ARQ:} Check \texttt{seq=42} = \texttt{rx\_last\_ack+1} $\rightarrow$ accept
+    \item \textbf{RX72N Protobuf:} Decode to \texttt{SetVelocityRequest} struct
+    \item \textbf{RX72N Application:} Update motor setpoints, execute PID control
+    \item \textbf{RX72N ARQ:} Build ACK packet with \texttt{ack\_seq=42}
+    \item \textbf{RX72N Frame:} Wrap ACK in frame with CRC-32
+    \item \textbf{RX72N SPI:} DMA transmits ACK (peripheral responds)
     \item \textbf{RPi5 SPI:} DMA receives ACK packet
     \item \textbf{RPi5 Frame:} Verify CRC-32 $\rightarrow$ valid
     \item \textbf{RPi5 ARQ:} Got \texttt{ACK(42)} $\rightarrow$ clear retry buffer, cancel timeout
@@ -505,7 +551,7 @@ Duplicate detection & Checks RPi5's \texttt{seq} & Checks ESP32's \texttt{seq} \
     ]
         % Entities
         \node[entity] (rpi) at (0, 0) {RPi5};
-        \node[entity] (esp) at (6, 0) {ESP32-S3};
+        \node[entity] (esp) at (6, 0) {RX72N};
 
         % Vertical timelines
         \draw[thick, dotted] (0, -0.5) -- (0, -7.5);
@@ -542,7 +588,7 @@ Duplicate detection & Checks RPi5's \texttt{seq} & Checks ESP32's \texttt{seq} \
     ]
         % Entities
         \node[entity] (rpi) at (0, 0) {RPi5};
-        \node[entity] (esp) at (6, 0) {ESP32-S3};
+        \node[entity] (esp) at (6, 0) {RX72N};
 
         % Vertical timelines
         \draw[thick, dotted] (0, -0.5) -- (0, -5);

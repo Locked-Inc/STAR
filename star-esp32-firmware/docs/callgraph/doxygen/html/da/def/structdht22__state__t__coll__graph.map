@@ -1,9 +1,0 @@
-<map id="dht22_state_t" name="dht22_state_t">
-<area shape="rect" id="Node000001" title="DHT22 bus state (internal)." alt="" coords="179,102,279,128"/>
-<area shape="rect" id="Node000002" href="$dd/dfe/structstar__dht22__config__t.html" title="DHT22 bus configuration (for user&#45;facing initialization)." alt="" coords="5,5,141,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="106,37,211,100,207,103,105,42"/>
-<area shape="rect" id="Node000003" href="$de/d56/structstar__dht22__stats__t.html" title="DHT22 bus statistics." alt="" coords="164,5,294,31"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="231,45,231,103,227,100,227,48"/>
-<area shape="rect" id="Node000004" href="$d2/dd9/structstar__dht22__data.html" title="DHT22 sensor reading data." alt="" coords="317,5,432,31"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="346,39,249,104,247,99,341,40"/>
-</map>

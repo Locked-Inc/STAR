@@ -1,7 +1,0 @@
-<map id="stats_state_t" name="stats_state_t">
-<area shape="rect" id="Node000001" title="Statistics state for a bus." alt="" coords="90,102,188,128"/>
-<area shape="rect" id="Node000002" href="$d3/d32/structstar__bus__stats__t.html" title="Bus operation statistics." alt="" coords="5,5,124,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="85,41,132,101,127,102,82,45"/>
-<area shape="rect" id="Node000003" href="$df/da9/structstar__stats__config__t.html" title="Statistics collection configuration." alt="" coords="148,5,280,31"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="198,42,151,103,147,99,193,44"/>
-</map>

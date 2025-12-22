@@ -1,5 +1,0 @@
-<map id="watchdog_task_stop" name="watchdog_task_stop">
-<area shape="rect" id="Node000001" title="Stop the system watchdog task." alt="" coords="5,5,147,31"/>
-<area shape="rect" id="Node000002" href="$db/d0d/shared__data_8c.html#acf829b11efe6efde5ff9c9a1798b05c9" title="Get pointer to global shared context." alt="" coords="195,5,362,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="147,16,182,18,176,18,147,21"/>
-</map>

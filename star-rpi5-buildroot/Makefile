@@ -9,9 +9,6 @@ BUILD_DIR := $(PROJECT_DIR)/$(BUILDROOT_DIR)
 OUTPUT_DIR := $(BUILD_DIR)/output
 IMAGE := $(OUTPUT_DIR)/images/sdcard.img
 
-# Clean PATH for WSL compatibility
-export PATH := /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
-
 .PHONY: all build clean distclean download configure help qemu qemu-build qemu-graphical qemu-ssh qemu-clean
 
 # Default target
@@ -44,7 +41,7 @@ build: configure
 	@echo "To flash to SD card:"
 	@echo "  sudo dd if=$(IMAGE) of=/dev/sdX bs=4M status=progress conv=fsync"
 	@echo ""
-	@echo "Image includes: Systemd, OpenJDK 17, ROS2 Jazzy, Python 3"
+	@echo "Image includes: Systemd, ROS2 Jazzy, Python 3"
 
 # Clean build artifacts (keeps downloads)
 clean:

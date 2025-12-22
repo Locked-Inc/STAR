@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP PTVS40VS1UTR,115
+D PTVSxS1UTR series - High-temperature 400 W Transient Voltage Suppressor
+K
+F https://assets.nexperia.com/documents/data-sheet/PTVSXS1UTR_SER.pdf
+$ENDCMP
+#
+#End Doc Library
