@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP DMN2004K-7
+D N-CHANNEL ENHANCEMENT MODE FIELD EFFECT TRANSISTOR
+K
+F https://www.diodes.com//assets/Datasheets/DMN2004K.pdf
+$ENDCMP
+#
+#End Doc Library

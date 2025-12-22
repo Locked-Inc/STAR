@@ -879,7 +879,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "CRCW0603100RJNEA"
+		(property "Manufacturer Part Number" "CRCW0603100RJNEA"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -2060,7 +2060,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "BQ76200PW"
+		(property "Manufacturer Part Number" "BQ76200PW"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -3758,7 +3758,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "CRCW0603100RJNEA"
+		(property "Manufacturer Part Number" "CRCW0603100RJNEA"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -4938,7 +4938,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "RC0603FR-10620RL"
+		(property "Manufacturer Part Number" "RC0603FR-10620RL"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -5917,7 +5917,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "RC0603FR-10620RL"
+		(property "Manufacturer Part Number" "RC0603FR-10620RL"
 			(at 0 0 0)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -7110,7 +7110,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "963-UMK107AB7105KA-T"
+		(property "Manufacturer Part Number" "963-UMK107AB7105KA-T"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -8102,7 +8102,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "CL10B103KB8NNNL"
+		(property "Manufacturer Part Number" "CL10B103KB8NNNL"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -9081,7 +9081,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "RC0603FR-10620RL"
+		(property "Manufacturer Part Number" "RC0603FR-10620RL"
 			(at 0 0 90)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -10060,7 +10060,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "CRCW0603100RJNEA"
+		(property "Manufacturer Part Number" "CRCW0603100RJNEA"
 			(at 0 0 180)
 			(unlocked yes)
 			(layer "F.Fab")
@@ -11828,7 +11828,7 @@
 				)
 			)
 		)
-		(property "Manufactaurer Part Number" "CL10B103KB8NNNL"
+		(property "Manufacturer Part Number" "CL10B103KB8NNNL"
 			(at 0 0 270)
 			(unlocked yes)
 			(layer "F.Fab")

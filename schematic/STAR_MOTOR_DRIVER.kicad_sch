@@ -1772,7 +1772,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufactaurer Part Number" "DRV8243SQDGQRQ1"
+			(property "Manufacturer Part Number" "DRV8243SQDGQRQ1"
 				(at 0 0 0)
 				(effects
 					(font
@@ -2902,7 +2902,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufactaurer Part Number" "DRV8243SQDGQRQ1"
+			(property "Manufacturer Part Number" "DRV8243SQDGQRQ1"
 				(at 0 0 0)
 				(effects
 					(font
@@ -4032,7 +4032,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufactaurer Part Number" "DRV8243SQDGQRQ1"
+			(property "Manufacturer Part Number" "DRV8243SQDGQRQ1"
 				(at 0 0 0)
 				(effects
 					(font
@@ -5162,7 +5162,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufactaurer Part Number" "DRV8243SQDGQRQ1"
+			(property "Manufacturer Part Number" "DRV8243SQDGQRQ1"
 				(at 0 0 0)
 				(effects
 					(font
@@ -12885,7 +12885,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "RT0603BRE0710KL"
+		(property "Manufacturer Part Number" "RT0603BRE0710KL"
 			(at 153.67 101.6 0)
 			(effects
 				(font
@@ -13025,7 +13025,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "  61200621621"
+		(property "Manufacturer Part Number" "  61200621621"
 			(at 270.51 175.26 90)
 			(effects
 				(font
@@ -13619,7 +13619,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
+		(property "Manufacturer Part Number" "CC0603JRX7R9BB104"
 			(at 35.56 52.07 0)
 			(effects
 				(font
@@ -14286,7 +14286,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CL10B224KB8NNNC"
+		(property "Manufacturer Part Number" "CL10B224KB8NNNC"
 			(at 29.21 179.07 0)
 			(effects
 				(font
@@ -14877,7 +14877,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "865080343007 "
+		(property "Manufacturer Part Number" "865080343007 "
 			(at 22.86 179.07 0)
 			(effects
 				(font
@@ -15550,7 +15550,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "ERA-3AEB3161V"
+		(property "Manufacturer Part Number" "ERA-3AEB3161V"
 			(at 168.91 245.11 0)
 			(effects
 				(font
@@ -15865,7 +15865,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "B6B-XH-A"
+		(property "Manufacturer Part Number" "B6B-XH-A"
 			(at 297.18 102.87 0)
 			(effects
 				(font
@@ -16617,7 +16617,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "RT0603BRE0710KL"
+		(property "Manufacturer Part Number" "RT0603BRE0710KL"
 			(at 152.4 33.02 0)
 			(effects
 				(font
@@ -17217,7 +17217,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CL10B224KB8NNNC"
+		(property "Manufacturer Part Number" "CL10B224KB8NNNC"
 			(at 29.21 52.07 0)
 			(effects
 				(font
@@ -17808,7 +17808,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "865080343007 "
+		(property "Manufacturer Part Number" "865080343007 "
 			(at 22.86 52.07 0)
 			(effects
 				(font
@@ -18005,7 +18005,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "61200821621"
+		(property "Manufacturer Part Number" "61200821621"
 			(at 339.09 191.77 90)
 			(effects
 				(font
@@ -18614,7 +18614,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CL10B224KB8NNNC"
+		(property "Manufacturer Part Number" "CL10B224KB8NNNC"
 			(at 29.21 247.65 0)
 			(effects
 				(font
@@ -19187,7 +19187,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "DRV8243SQDGQRQ1"
+		(property "Manufacturer Part Number" "DRV8243SQDGQRQ1"
 			(at 66.04 30.48 0)
 			(effects
 				(font
@@ -19934,7 +19934,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "865080343007 "
+		(property "Manufacturer Part Number" "865080343007 "
 			(at 22.86 120.65 0)
 			(effects
 				(font
@@ -20582,7 +20582,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
+		(property "Manufacturer Part Number" "CC0603JRX7R9BB104"
 			(at 35.56 247.65 0)
 			(effects
 				(font
@@ -21165,7 +21165,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "DRV8243SQDGQRQ1"
+		(property "Manufacturer Part Number" "DRV8243SQDGQRQ1"
 			(at 66.04 226.06 0)
 			(effects
 				(font
@@ -21429,7 +21429,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "B6B-XH-A"
+		(property "Manufacturer Part Number" "B6B-XH-A"
 			(at 377.19 101.6 0)
 			(effects
 				(font
@@ -21615,7 +21615,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "B6B-XH-A"
+		(property "Manufacturer Part Number" "B6B-XH-A"
 			(at 297.18 52.07 0)
 			(effects
 				(font
@@ -21809,7 +21809,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "1017491"
+		(property "Manufacturer Part Number" "1017491"
 			(at 251.46 207.01 0)
 			(effects
 				(font
@@ -22513,7 +22513,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "DRV8243SQDGQRQ1"
+		(property "Manufacturer Part Number" "DRV8243SQDGQRQ1"
 			(at 66.04 99.06 0)
 			(effects
 				(font
@@ -23210,7 +23210,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "ERA-3AEB3161V"
+		(property "Manufacturer Part Number" "ERA-3AEB3161V"
 			(at 168.91 49.53 0)
 			(effects
 				(font
@@ -23341,7 +23341,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "61200821621"
+		(property "Manufacturer Part Number" "61200821621"
 			(at 340.36 233.68 90)
 			(effects
 				(font
@@ -23969,7 +23969,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "150060RS75000 "
+		(property "Manufacturer Part Number" "150060RS75000 "
 			(at 177.8 27.94 0)
 			(effects
 				(font
@@ -24176,7 +24176,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "61200821621"
+		(property "Manufacturer Part Number" "61200821621"
 			(at 339.09 217.17 90)
 			(effects
 				(font
@@ -24776,7 +24776,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
+		(property "Manufacturer Part Number" "CC0603JRX7R9BB104"
 			(at 35.56 120.65 0)
 			(effects
 				(font
@@ -25642,7 +25642,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "865080343007 "
+		(property "Manufacturer Part Number" "865080343007 "
 			(at 22.86 247.65 0)
 			(effects
 				(font
@@ -26315,7 +26315,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "RT0603BRE0710KL"
+		(property "Manufacturer Part Number" "RT0603BRE0710KL"
 			(at 153.67 228.6 0)
 			(effects
 				(font
@@ -26586,7 +26586,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "RT0603FRE0768RL"
+		(property "Manufacturer Part Number" "RT0603FRE0768RL"
 			(at 163.83 223.52 90)
 			(effects
 				(font
@@ -27177,7 +27177,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CL10B224KB8NNNC"
+		(property "Manufacturer Part Number" "CL10B224KB8NNNC"
 			(at 29.21 120.65 0)
 			(effects
 				(font
@@ -27787,7 +27787,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "150060RS75000 "
+		(property "Manufacturer Part Number" "150060RS75000 "
 			(at 177.8 96.52 0)
 			(effects
 				(font
@@ -28737,7 +28737,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "150060RS75000 "
+		(property "Manufacturer Part Number" "150060RS75000 "
 			(at 177.8 223.52 0)
 			(effects
 				(font
@@ -28876,7 +28876,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "RT0603FRE0768RL"
+		(property "Manufacturer Part Number" "RT0603FRE0768RL"
 			(at 163.83 96.52 90)
 			(effects
 				(font
@@ -29006,7 +29006,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "RT0603FRE0768RL"
+		(property "Manufacturer Part Number" "RT0603FRE0768RL"
 			(at 163.83 27.94 90)
 			(effects
 				(font
@@ -29613,7 +29613,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "RT0603BRE0710KL"
+		(property "Manufacturer Part Number" "RT0603BRE0710KL"
 			(at 152.4 160.02 0)
 			(effects
 				(font
@@ -30204,7 +30204,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
+		(property "Manufacturer Part Number" "CC0603JRX7R9BB104"
 			(at 35.56 179.07 0)
 			(effects
 				(font
@@ -30886,7 +30886,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "ERA-3AEB3161V"
+		(property "Manufacturer Part Number" "ERA-3AEB3161V"
 			(at 168.91 118.11 0)
 			(effects
 				(font
@@ -31502,7 +31502,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "ERA-3AEB3161V"
+		(property "Manufacturer Part Number" "ERA-3AEB3161V"
 			(at 168.91 176.53 0)
 			(effects
 				(font
@@ -31700,7 +31700,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "61200821621"
+		(property "Manufacturer Part Number" "61200821621"
 			(at 340.36 172.72 90)
 			(effects
 				(font
@@ -32395,7 +32395,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "150060RS75000 "
+		(property "Manufacturer Part Number" "150060RS75000 "
 			(at 177.8 154.94 0)
 			(effects
 				(font
@@ -32600,7 +32600,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "RT0603FRE0768RL"
+		(property "Manufacturer Part Number" "RT0603FRE0768RL"
 			(at 163.83 154.94 90)
 			(effects
 				(font
@@ -33174,7 +33174,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "DRV8243SQDGQRQ1"
+		(property "Manufacturer Part Number" "DRV8243SQDGQRQ1"
 			(at 66.04 157.48 0)
 			(effects
 				(font
@@ -33438,7 +33438,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "B6B-XH-A"
+		(property "Manufacturer Part Number" "B6B-XH-A"
 			(at 377.19 53.34 0)
 			(effects
 				(font

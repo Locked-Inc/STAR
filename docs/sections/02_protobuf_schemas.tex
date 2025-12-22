@@ -5,7 +5,7 @@
 \newpage
 \section{Protocol Buffer Schema Architecture}
 
-This section documents the Protocol Buffer schema architecture for RPi5$\leftrightarrow$ESP32 communication. All schemas follow the \textbf{Boston Dynamics Protobuf Style Guide} for consistency, maintainability, and industry best practices.
+This section documents the Protocol Buffer schema architecture for RPi5$\leftrightarrow$RX72N communication. All schemas follow the \textbf{Boston Dynamics Protobuf Style Guide} for consistency, maintainability, and industry best practices.
 
 \subsection{Architecture Overview}
 
@@ -69,9 +69,10 @@ This section documents the Protocol Buffer schema architecture for RPi5$\leftrig
 \end{itemize}
 }
 
-\textbf{Note:} Naming conventions, unit suffixes, and coding standards are consolidated in Section~\ref{sec:style-guide} (Style Guide and Conventions).
+\textbf{Note:} Naming conventions, unit suffixes, and coding standards are consolidated in Section~\ref{sec:protobuf-style} (Style Guide and Conventions).
 
 \subsection{Service Specifications}
+\label{sec:service-specifications}
 
 \subsubsection{MotorControlService}
 
@@ -277,12 +278,12 @@ ResponseHeader & request\_id (echo), server\_timestamp, status, error\_message, 
 \textbf{Target} & \textbf{Generator} & \textbf{Output} & \textbf{Usage} \\
 \hline
 Go & protoc-gen-go + grpc & \texttt{gen/go/} & star-gateway (RPi5) \\
-nanopb & nanopb\_generator & \texttt{gen/nanopb/} & ESP32 firmware \\
+nanopb & nanopb\_generator & \texttt{gen/nanopb/} & RX72N firmware \\
 \hline
 \end{tabular}
 \end{table}
 
-\textbf{nanopb Constraints:} ESP32 requires static allocation. Field sizes are configured in \texttt{.options} files:
+\textbf{nanopb Constraints:} RX72N requires static allocation. Field sizes are configured in \texttt{.options} files:
 \begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
     \item String fields: \texttt{max\_size:64} (request\_id), \texttt{max\_size:128} (error\_message)
     \item Repeated fields: \texttt{max\_count:16} (cell voltages), \texttt{max\_count:4} (motors)

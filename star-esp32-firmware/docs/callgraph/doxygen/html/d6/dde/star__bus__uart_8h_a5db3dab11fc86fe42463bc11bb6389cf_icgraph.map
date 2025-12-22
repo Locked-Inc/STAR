@@ -1,5 +1,0 @@
-<map id="star_bus_uart_read" name="star_bus_uart_read">
-<area shape="rect" id="Node000001" title="Read data from UART." alt="" coords="213,5,345,31"/>
-<area shape="rect" id="Node000002" href="$da/d14/star__bus__uart_8c.html#a25f8c7e4d4365ab473af86110090f84d" title="Read line from UART (until newline or buffer full)." alt="" coords="5,5,165,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="194,18,165,21,165,16,200,18"/>
-</map>

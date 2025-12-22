@@ -1,7 +1,0 @@
-<map id="dht22_read_default" name="dht22_read_default">
-<area shape="rect" id="Node000001" title="Default read operation implementation." alt="" coords="392,13,523,38"/>
-<area shape="rect" id="Node000002" href="$dc/d1f/star__bus__dht22__proprietary_8c.html#a6a87d003ee9fcecd46ce8a441e5e31a9" title="Initialize default DHT22 operations function pointers." alt="" coords="210,5,344,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="373,26,345,28,344,23,379,26"/>
-<area shape="rect" id="Node000003" href="$de/d98/star__bus__config_8c.html#a7527fb91e8de839add326b305c63bcad" title="Create a new DHT22 bus configuration." alt="" coords="5,5,162,46"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="191,26,162,28,162,23,197,25"/>
-</map>

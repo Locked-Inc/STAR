@@ -1,0 +1,32 @@
+EESchema-LIBRARY Version 2.3
+#encoding utf-8
+#SamacSys ECAD Model TPS7A9101DSKR
+#/610317/1764184/2.50/11/3/Integrated Circuit
+DEF TPS7A9101DSKR IC 0 30 Y Y 1 F N
+F0 "IC" 1250 300 50 H V L CNN
+F1 "TPS7A9101DSKR" 1250 200 50 H V L CNN
+F2 "SON50P250X250X80-11N-D" 1250 100 50 H I L CNN
+F3 "http://www.ti.com/lit/ds/symlink/tps7a91.pdf" 1250 0 50 H I L CNN
+F4 "LDO Voltage Regulators 1-A, High Accuracy, Low Noise LDO Voltage Regulator 10-SON -40 to 125" 1250 -100 50 H I L CNN "Description"
+F5 "0.8" 1250 -200 50 H I L CNN "Height"
+F6 "595-TPS7A9101DSKR" 1250 -300 50 H I L CNN "Mouser Part Number"
+F7 "https://www.mouser.co.uk/ProductDetail/Texas-Instruments/TPS7A9101DSKR?qs=34RfhUjJmKdov7HQNWp7rg%3D%3D" 1250 -400 50 H I L CNN "Mouser Price/Stock"
+F8 "Texas Instruments" 1250 -500 50 H I L CNN "Manufacturer_Name"
+F9 "TPS7A9101DSKR" 1250 -600 50 H I L CNN "Manufacturer_Part_Number"
+DRAW
+X OUT_1 1 0 0 200 R 50 50 0 0 P
+X OUT_2 2 0 -100 200 R 50 50 0 0 P
+X FB 3 0 -200 200 R 50 50 0 0 P
+X GND_1 4 0 -300 200 R 50 50 0 0 P
+X PG 5 0 -400 200 R 50 50 0 0 P
+X GND_2 11 700 -1100 200 U 50 50 0 0 P
+X IN_2 10 1400 0 200 L 50 50 0 0 P
+X IN_1 9 1400 -100 200 L 50 50 0 0 P
+X NR/SS 8 1400 -200 200 L 50 50 0 0 P
+X EN 7 1400 -300 200 L 50 50 0 0 P
+X SS_CTRL 6 1400 -400 200 L 50 50 0 0 P
+P 5 0 1 6 200 100 1200 100 1200 -900 200 -900 200 100 N
+ENDDRAW
+ENDDEF
+#
+#End Library

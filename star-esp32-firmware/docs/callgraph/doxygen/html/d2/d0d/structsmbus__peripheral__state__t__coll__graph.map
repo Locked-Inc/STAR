@@ -1,7 +1,0 @@
-<map id="smbus_peripheral_state_t" name="smbus_peripheral_state_t">
-<area shape="rect" id="Node000001" title=" " alt="" coords="84,117,255,143"/>
-<area shape="rect" id="Node000002" href="$d8/dab/structstar__smbus__peripheral__config__t.html" title="SMBus peripheral configuration." alt="" coords="5,5,158,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="110,56,162,116,157,117,107,60"/>
-<area shape="rect" id="Node000003" href="$d4/d16/structstar__smbus__peripheral__stats__t.html" title="SMBus peripheral statistics." alt="" coords="181,5,334,46"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="233,57,181,119,178,115,228,59"/>
-</map>

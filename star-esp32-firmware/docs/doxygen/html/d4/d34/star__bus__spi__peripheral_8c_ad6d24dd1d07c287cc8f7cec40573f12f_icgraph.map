@@ -1,9 +1,0 @@
-<map id="internal_star_bus_spi_peripheral_transceive" name="internal_star_bus_spi_peripheral_transceive">
-<area shape="rect" id="Node000001" title=" " alt="" coords="416,39,567,79"/>
-<area shape="rect" id="Node000002" href="$d4/d34/star__bus__spi__peripheral_8c.html#a2345e4ad6acf2f73b394513fe38340da" title="Initialize default SPI peripheral operations function pointers within a config structure...." alt="" coords="210,5,368,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="398,44,368,41,368,36,403,44"/>
-<area shape="rect" id="Node000004" href="$d4/d34/star__bus__spi__peripheral_8c.html#a2e6951544874012fcfcc4c1779286837" title="Perform a full&#45;duplex transaction (receive and transmit simultaneously)." alt="" coords="210,71,368,111"/>
-<area shape="poly" id="edge3_Node000001_Node000004" title=" " alt="" coords="403,73,369,81,368,76,398,74"/>
-<area shape="rect" id="Node000003" href="$de/d98/star__bus__config_8c.html#a16ccb4aebc8dd1759ce3a1e5c67d7184" title="Create a new SPI peripheral (slave) configuration." alt="" coords="5,5,162,46"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="191,26,163,28,162,23,196,25"/>
-</map>

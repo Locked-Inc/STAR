@@ -1,7 +1,0 @@
-<map id="star_servo_angle_to_pulse" name="star_servo_angle_to_pulse">
-<area shape="rect" id="Node000001" title="Calculate pulse width in microseconds from angle (0&#45;180 degrees)." alt="" coords="385,5,523,46"/>
-<area shape="rect" id="Node000002" href="$d3/d75/star__servo_8c.html#a104148a95f986eac12fabe6d01d4c87d" title="Calculate PCA9685 count value from angle (0&#45;180 degrees)." alt="" coords="199,5,337,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="366,26,338,28,338,23,372,26"/>
-<area shape="rect" id="Node000003" href="$d3/df7/star__sensor__pca9685_8c.html#a2e4fa8ab35cdf64c114217bfc1309a1c" title="Set servo position by angle." alt="" coords="5,5,151,46"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="181,26,151,28,151,23,186,25"/>
-</map>

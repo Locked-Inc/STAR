@@ -5,237 +5,157 @@
 \newpage
 \section{Hardware Pin Connections}
 
-\subsection{ESP32-S3-WROOM-1-N16 Pinout}
+\subsection{RX72N Microcontroller Pinout (R5F572NNHGFP\#30)}
 
-\noindent\colorbox{importantcolor}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
-\textbf{Critical Hardware Note:} This module is the ESP32-S3-WROOM-1-\textbf{N16} variant (does NOT end with R\_), which means it has \textbf{NO PSRAM}. We are allowed to use IO35-IO37 for SPI2 communication with motor drivers.
+\noindent\colorbox{keyinsightcolor}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
+\textbf{Hardware Advantage:} The RX72N provides \textbf{182 direct GPIO pins} with dedicated peripheral functions. \textbf{No multiplexers or decoders are required} - each motor gets its own dedicated MTU channels for both PWM and encoder, with direct GPIO access to fault lines and current sense ADC channels.
 }}
 
 \vspace{0.3cm}
 
-\subsubsection{Main GPIO Assignments}
+\subsubsection{Package Information}
+
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item \textbf{MCU:} Renesas RX72N (R5F572NNHGFP\#30)
+    \item \textbf{Package:} 100-pin LFQFP (Low-profile Quad Flat Package)
+    \item \textbf{GPIO Pins:} 182 (multiplexed across package pins)
+    \item \textbf{Flash:} 4 MB
+    \item \textbf{RAM:} 1 MB
+    \item \textbf{CPU:} RXv3 core at 240 MHz
+\end{itemize}
+
+\subsubsection{Motor Control Pin Assignments}
+
+\textbf{Direct Motor Control - No Multiplexing Required}
 
 \begin{table}[H]
 \centering
 \small
-\begin{tabular}{|c|l|l|}
+\begin{tabular}{|l|l|l|l|l|}
 \hline
-\textbf{Pin Number} & \textbf{GPIO Label} & \textbf{Signal Name / Function} \\
+\textbf{Motor} & \textbf{PWM Channel} & \textbf{Encoder Channel} & \textbf{Fault Pin} & \textbf{Current Sense} \\
 \hline
-27 & IO0 & GND \\
+Motor 0 (FL) & MTU3 (MTIOC3A/B) & MTU1 (Phase Count) & PORT3.2 & AN000 (ADC) \\
 \hline
-39 & IO1 & MOTOR\_DRIVER\_MOTOR1\_IPROPI (ADC) \\
+Motor 1 (FR) & MTU4 (MTIOC4A/B) & MTU2 (Phase Count) & PORT3.3 & AN001 (ADC) \\
 \hline
-38 & IO2 & MOTOR\_DRIVER\_MOTOR2\_IPROPI (ADC) \\
+Motor 2 (RL) & MTU6 (MTIOC6A/B) & MTU0 (Phase Count) & PORT3.4 & AN002 (ADC) \\
 \hline
-15 & IO3 & JTAG signal source strapping pin (NC) \\
-\hline
-4 & IO4 & MOTOR\_DRIVER\_MOTOR3\_IPROPI (ADC) \\
-\hline
-5 & IO5 & MOTOR\_DRIVER\_MOTOR4\_IPROPI (ADC) \\
-\hline
-6 & IO6 & MOTOR\_DRIVER\_MOTOR1\_EN\_IN1 (MCPWM) \\
-\hline
-7 & IO7 & MOTOR\_DRIVER\_MOTOR1\_PH\_IN2 (MCPWM) \\
-\hline
-12 & IO8 & FUEL\_GUAGE\_SMBD\_SDA \\
-\hline
-17 & IO9 & FUEL\_GUAGE\_SMBC\_SCL \\
-\hline
-18 & IO10 & ESP\_PI\_SPI3\_PM\_CS \\
-\hline
-19 & IO11 & ESP\_PI\_SPI3\_PM\_COPI \\
-\hline
-20 & IO12 & ESP\_PI\_SPI3\_PM\_SCLK \\
-\hline
-21 & IO13 & ESP\_PI\_SPI3\_PM\_CIPO \\
-\hline
-22 & IO14 & MOTOR\_DRIVER\_MOTOR2\_EN\_IN1 (MCPWM) \\
-\hline
-8 & IO15 & MOTOR\_DRIVER\_MOTOR2\_PH\_IN2 (MCPWM) \\
-\hline
-9 & IO16 & MOTOR\_DRIVER\_MOTOR3\_EN\_IN1 (MCPWM) \\
-\hline
-10 & IO17 & MOTOR\_DRIVER\_MOTOR3\_PH\_IN2 (MCPWM) \\
-\hline
-11 & IO18 & MOTOR\_DRIVER\_MOTOR4\_EN\_IN1 (MCPWM) \\
-\hline
-13 & USB\_D- & USB\_C\_N \\
-\hline
-14 & USB\_D+ & USB\_C\_P \\
-\hline
-23 & IO21 & MOTOR\_DRIVER\_MOTOR4\_PH\_IN2 (MCPWM) \\
-\hline
-28 & IO35 & MOTOR\_DRIVER\_SPI2\_CM\_COPI \\
-\hline
-29 & IO36 & MOTOR\_DRIVER\_SPI2\_CM\_SCLK \\
-\hline
-30 & IO37 & MOTOR\_DRIVER\_SPI2\_CM\_CIPO \\
-\hline
-31 & IO38 & Decoder Input 1A0 (for Motor nCS selection) \\
-\hline
-32 & IO39 & Decoder Input 1A1 (for Motor nCS selection) \\
-\hline
-33 & IO40 & MOTOR\_ENCODER\_SEL0 \\
-\hline
-34 & IO41 & MOTOR\_ENCODER\_SEL1 \\
-\hline
-35 & IO42 & MOTOR\_ENCODER\_OUT0 \\
-\hline
-26 & IO45 & Strapping pin for VDD\_SPI voltage (NC) \\
-\hline
-16 & IO46 & Boot-mode / ROM-print strapping pin \\
-\hline
-24 & IO47 & MOTOR\_ENCODER\_OUT1 \\
-\hline
-25 & IO48 & TEMPERATURE\_SENSOR (DS18B20+) \\
-\hline
-37 & TXD0 & ESP\_PI\_SPI3\_PM\_DRDY1 (Interrupt to Pi) \\
-\hline
-36 & RXD0 & ESP\_PI\_SPI3\_PM\_DRDY2 (Interrupt to Pi) \\
+Motor 3 (RR) & MTU7 (MTIOC7A/B) & MTU5 (Phase Count) & PORT3.5 & AN003 (ADC) \\
 \hline
 \end{tabular}
-\caption{ESP32-S3 GPIO pin assignments}
-\label{tab:esp32-pinout}
+\caption{RX72N motor control pin assignments (FL=Front-Left, FR=Front-Right, RL=Rear-Left, RR=Rear-Right)}
+\label{tab:rx72n-motor-pinout}
 \end{table}
 
-\subsubsection{Pin Function Categories}
-
-\textbf{SPI3 (Peripheral Mode - Communication with RPi5):}
+\textbf{PWM Configuration:}
 \begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
-    \item IO10: Chip Select (CS)
-    \item IO11: Controller Out Peripheral In (COPI)
-    \item IO12: Serial Clock (SCLK)
-    \item IO13: Controller In Peripheral Out (CIPO)
-    \item TXD0 (IO1): Data Ready 1 interrupt to Pi
-    \item RXD0 (IO3): Data Ready 2 interrupt to Pi
+    \item Frequency: 20 kHz (center-aligned PWM mode 1)
+    \item Dead-time: 1 $\mu$s for H-bridge safety
+    \item Resolution: $\sim$12-bit (3000 counts at 120 MHz PCLKA)
+    \item MTIOCA: PH (Phase) signal to DRV8243S
+    \item MTIOCB: EN (Enable) signal to DRV8243S
 \end{itemize}
 
-\textbf{SPI2 (Controller Mode - Communication with Motor Drivers):}
+\textbf{Encoder Configuration:}
 \begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
-    \item IO35: Controller Out Peripheral In (COPI)
-    \item IO36: Serial Clock (SCLK)
-    \item IO37: Controller In Peripheral Out (CIPO)
-    \item Chip selects generated via 74HC238 decoder (see below)
+    \item Mode: MTU Phase Counting Mode 1 (4x decoding)
+    \item Inputs: MTCLKA (Phase A), MTCLKB (Phase B)
+    \item Resolution: 341 PPR (Pulses Per Revolution)
+    \item Counter: 16-bit hardware counter with software wraparound tracking
+    \item Update Rate: Read at 250 Hz control loop
 \end{itemize}
 
-\textbf{MCPWM (Motor Control):}
+\textbf{Fault Detection:}
 \begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
-    \item Motor 1: IO6 (EN), IO7 (PH)
-    \item Motor 2: IO14 (EN), IO15 (PH)
-    \item Motor 3: IO16 (EN), IO17 (PH)
-    \item Motor 4: IO18 (EN), IO21 (PH)
+    \item Active-low nFAULT signals from DRV8243S
+    \item Direct GPIO input (no external hardware needed)
+    \item Polled at 250 Hz control loop
 \end{itemize}
 
-\textbf{ADC (Current Sensing - IPROPI):}
+\textbf{Current Sensing:}
 \begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
-    \item IO1: Motor 1 current
-    \item IO2: Motor 2 current
-    \item IO4: Motor 3 current
-    \item IO5: Motor 4 current
+    \item IPROPI analog output from DRV8243S
+    \item 12-bit S12ADFa ADC with PWM synchronization
+    \item Range: 0-3.3V (0-2000 mA motor current)
+    \item Sample time: 24 states for low-noise acquisition
 \end{itemize}
 
-\textbf{Encoder Selection and Reading:}
+\subsubsection{Communication Interfaces}
+
+\textbf{Debug UART (SCI1):}
 \begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
-    \item IO40, IO41: Multiplexer select lines
-    \item IO42, IO47: Encoder output channels
+    \item PORT2.6: TXD1 (Transmit)
+    \item PORT2.5: RXD1 (Receive)
+    \item Baud Rate: 115200 bps
+    \item Purpose: Debug output, logging, firmware update
 \end{itemize}
 
-\subsection{74HC238 Decoder (Motor Driver Chip Select)}
+\textbf{SPI to Raspberry Pi 5 (RSPI0):}
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item PORT7.4: SSLA0 (Chip Select)
+    \item PORT7.5: RSPCKA (Serial Clock)
+    \item PORT7.6: MISOA (Controller In Peripheral Out - CIPO)
+    \item PORT7.7: MOSIA (Controller Out Peripheral In - COPI)
+    \item Mode: Peripheral (RX72N receives commands from RPi5)
+    \item Speed: 10 Mbps
+    \item Protocol: nanopb + CRC-32
+\end{itemize}
 
-The 74HC238 3-to-8 line decoder generates individual chip select signals for the four motor drivers using only two GPIO pins (IO38, IO39).
+\textbf{I2C Bus 0 (RIIC0) - BQ25798 Charger:}
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item SDA0, SCL0: I2C data and clock
+    \item PORT5.0: BQ25798 INT (interrupt)
+    \item Purpose: Battery charging control
+\end{itemize}
+
+\textbf{I2C Bus 1 (RIIC1) - Fuel Gauge (SMBUS):}
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item SDA1, SCL1: SMBUS-compatible I2C
+    \item PORT5.1: Fuel Gauge ALERT (interrupt)
+    \item Purpose: Battery state-of-charge monitoring
+    \item Features: Hardware CRC-8 PEC support
+\end{itemize}
+
+\subsubsection{Status and Safety}
+
+\textbf{Status LEDs:}
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item PORT0.3: Status LED (heartbeat)
+    \item PORT0.5: Error LED (fault indication)
+    \item PORT0.7: Power LED (system active)
+\end{itemize}
+
+\textbf{Emergency Stop:}
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item PORT1.0: E-STOP button input
+    \item Pull-up resistor, active-low
+    \item Polled at 250 Hz, immediately stops all motors
+\end{itemize}
+
+\subsubsection{System Clocks}
 
 \begin{table}[H]
 \centering
 \small
-\begin{tabular}{|c|l|l|l|}
+\begin{tabular}{|l|c|l|}
 \hline
-\textbf{Pin Number} & \textbf{Pin Name} & \textbf{Signal Label / Connection} & \textbf{Source/Destination} \\
+\textbf{Clock Domain} & \textbf{Frequency} & \textbf{Purpose} \\
 \hline
-1 & 1$\overline{\text{E}}$ & GND (Always Enabled) & Ground \\
+CPU (ICLK) & 240 MHz & RXv3 core execution \\
 \hline
-2 & 1A0 & Connected to IO38 & ESP32-S3 \\
+PCLKA & 120 MHz & MTU3a (PWM, Encoder) \\
 \hline
-3 & 1A1 & Connected to IO39 & ESP32-S3 \\
-\hline
-4 & 1$\overline{\text{Y0}}$ & MOTOR\_DRIVER\_SPI2\_MOTOR1\_nCS & SPI2 Chip Select 1 \\
-\hline
-5 & 1$\overline{\text{Y1}}$ & MOTOR\_DRIVER\_SPI2\_MOTOR2\_nCS & SPI2 Chip Select 2 \\
-\hline
-6 & 1$\overline{\text{Y2}}$ & MOTOR\_DRIVER\_SPI2\_MOTOR3\_nCS & SPI2 Chip Select 3 \\
-\hline
-7 & 1$\overline{\text{Y3}}$ & MOTOR\_DRIVER\_SPI2\_MOTOR4\_nCS & SPI2 Chip Select 4 \\
-\hline
-8 & GND & GND & Ground \\
-\hline
-9-14 & 2Y3–2A0 & NC (Not Connected) & Marked with "X" \\
-\hline
-15 & 2$\overline{\text{E}}$ & P3V3\_BUCK (Disabled) & Power Rail \\
-\hline
-16 & VCC & P3V3\_BUCK & Power Rail \\
+PCLKB & 60 MHz & CMT (Timers), SCI (UART) \\
 \hline
 \end{tabular}
-\caption{74HC238 decoder pinout for motor driver chip select generation}
-\label{tab:decoder-pinout}
+\caption{RX72N clock configuration}
+\label{tab:rx72n-clocks}
 \end{table}
-
-\noindent\colorbox{keyinsightcolor}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
-\textbf{Design Rationale:} Using a hardware decoder reduces GPIO usage from 4 pins to 2 pins while providing active-low chip select signals required by the DRV8243S motor drivers.
-}}
-
-\subsection{74HC4052 Multiplexer (Encoder Channel Selection)}
-
-The 74HC4052 dual 4-to-1 multiplexer allows reading all four encoder channels (A and B) using only four GPIO pins instead of eight.
-
-\begin{table}[H]
-\centering
-\small
-\begin{tabular}{|c|l|l|l|}
-\hline
-\textbf{Pin Number} & \textbf{Pin Name} & \textbf{Signal Label / Connection} & \textbf{Source/Destination} \\
-\hline
-1 & 1$\overline{\text{G}}$ & GND (Always Enabled) & Ground \\
-\hline
-2 & B & MOTOR\_ENCODER\_SEL1 (IO41) & ESP32-S3 \\
-\hline
-3 & 1C3 & MOTOR\_DRIVER\_ENCODER4\_OUTPUT\_A & Encoder 4 \\
-\hline
-4 & 1C2 & MOTOR\_DRIVER\_ENCODER3\_OUTPUT\_A & Encoder 3 \\
-\hline
-5 & 1C1 & MOTOR\_DRIVER\_ENCODER2\_OUTPUT\_A & Encoder 2 \\
-\hline
-6 & 1C0 & MOTOR\_DRIVER\_ENCODER1\_OUTPUT\_A & Encoder 1 \\
-\hline
-7 & 1Y & MOTOR\_ENCODER\_OUT1 (IO47) & ESP32-S3 \\
-\hline
-8 & GND & GND & Ground \\
-\hline
-9 & 2Y & MOTOR\_ENCODER\_OUT0 (IO42) & ESP32-S3 \\
-\hline
-10 & 2C0 & MOTOR\_DRIVER\_ENCODER1\_OUTPUT\_B & Encoder 1 \\
-\hline
-11 & 2C1 & MOTOR\_DRIVER\_ENCODER2\_OUTPUT\_B & Encoder 2 \\
-\hline
-12 & 2C2 & MOTOR\_DRIVER\_ENCODER3\_OUTPUT\_B & Encoder 3 \\
-\hline
-13 & 2C3 & MOTOR\_DRIVER\_ENCODER4\_OUTPUT\_B & Encoder 4 \\
-\hline
-14 & A & MOTOR\_ENCODER\_SEL0 (IO40) & ESP32-S3 \\
-\hline
-15 & 2$\overline{\text{G}}$ & GND (Always Enabled) & Ground \\
-\hline
-16 & VCC & P3V3\_BUCK & Power Rail \\
-\hline
-\end{tabular}
-\caption{74HC4052 multiplexer pinout for encoder channel selection}
-\label{tab:mux-pinout}
-\end{table}
-
-\noindent\colorbox{keyinsightcolor}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
-\textbf{Design Rationale:} The dual multiplexer allows simultaneous reading of both A and B channels from the selected encoder, reducing GPIO usage from 8 pins to 4 pins while maintaining quadrature decoding capability.
-}}
 
 \subsection{Raspberry Pi 5 Pinout}
+
+The Raspberry Pi 5 remains unchanged from the original design, handling high-level control, sensor fusion, and ROS2 communication.
 
 \begin{table}[H]
 \centering
@@ -276,29 +196,29 @@ The 74HC4052 dual 4-to-1 multiplexer allows reading all four encoder channels (A
 \hline
 18 & IO24 & IMU\_INT & IMU Interrupt \\
 \hline
-19 & COPI & ESP\_PI\_SPI3\_PM\_COPI & SPI Controller Out \\
+19 & COPI & RX72N\_SPI\_COPI & SPI Controller Out \\
 \hline
-21 & CIPO & ESP\_PI\_SPI3\_PM\_CIPO & SPI Controller In \\
+21 & CIPO & RX72N\_SPI\_CIPO & SPI Controller In \\
 \hline
 22 & IO25 & HCSR04\_ECHO4 & Ultrasonic Echo 4 \\
 \hline
-23 & SCLK & ESP\_PI\_SPI3\_PM\_SCLK & SPI Clock \\
+23 & SCLK & RX72N\_SPI\_SCLK & SPI Clock \\
 \hline
-24 & CE0 & ESP\_PI\_SPI3\_PM\_CS & SPI Chip Enable 0 \\
+24 & CE0 & RX72N\_SPI\_CS & SPI Chip Enable 0 \\
 \hline
 26 & CE1 & HCSR04\_TRIG5 & Ultrasonic Trigger 5 \\
 \hline
-27 & ID\_SD & MOTOR\_DRIVER\_MOTOR4\_nFAULT & Motor 4 Fault \\
+27 & ID\_SD & MOTOR\_DRIVER\_MOTOR3\_nFAULT & Motor 3 Fault \\
 \hline
 28 & ID\_SC & HCSR04\_ECHO5 & Ultrasonic Echo 5 \\
 \hline
-29 & IO5 & MOTOR\_DRIVER\_MOTOR3\_nFAULT & Motor 3 Fault \\
+29 & IO5 & MOTOR\_DRIVER\_MOTOR2\_nFAULT & Motor 2 Fault \\
 \hline
-31 & IO6 & MOTOR\_DRIVER\_MOTOR2\_nFAULT & Motor 2 Fault \\
+31 & IO6 & MOTOR\_DRIVER\_MOTOR1\_nFAULT & Motor 1 Fault \\
 \hline
 32 & IO12 & HCSR04\_TRIG6 & Ultrasonic Trigger 6 \\
 \hline
-33 & IO13 & MOTOR\_DRIVER\_MOTOR1\_nFAULT & Motor 1 Fault \\
+33 & IO13 & MOTOR\_DRIVER\_MOTOR0\_nFAULT & Motor 0 Fault \\
 \hline
 35 & IO19 & HCSR04\_TRIG3 & Ultrasonic Trigger 3 \\
 \hline
@@ -306,9 +226,9 @@ The 74HC4052 dual 4-to-1 multiplexer allows reading all four encoder channels (A
 \hline
 37 & IO26 & HCSR04\_ECHO3 & Ultrasonic Echo 3 \\
 \hline
-38 & IO20 & ESP\_PI\_SPI3\_PM\_DRDY1 & SPI Data Ready 1 \\
+38 & IO20 & RX72N\_SPI\_DRDY1 & SPI Data Ready 1 \\
 \hline
-40 & IO21 & ESP\_PI\_SPI3\_PM\_DRDY2 & SPI Data Ready 2 \\
+40 & IO21 & RX72N\_SPI\_DRDY2 & SPI Data Ready 2 \\
 \hline
 \end{tabular}
 \caption{Raspberry Pi 5 GPIO pin assignments}
@@ -317,14 +237,14 @@ The 74HC4052 dual 4-to-1 multiplexer allows reading all four encoder channels (A
 
 \subsubsection{RPi5 Pin Function Categories}
 
-\textbf{SPI3 (Controller Mode - Communication with ESP32):}
+\textbf{SPI (Controller Mode - Communication with RX72N):}
 \begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
     \item Pin 24 (CE0): Chip Select
     \item Pin 19 (COPI): Controller Out Peripheral In
     \item Pin 23 (SCLK): Serial Clock
     \item Pin 21 (CIPO): Controller In Peripheral Out
-    \item Pin 38 (IO20): Data Ready 1 interrupt from ESP32
-    \item Pin 40 (IO21): Data Ready 2 interrupt from ESP32
+    \item Pin 38 (IO20): Data Ready 1 interrupt from RX72N
+    \item Pin 40 (IO21): Data Ready 2 interrupt from RX72N
 \end{itemize}
 
 \textbf{I2C (IMU and Stereo Cameras):}
@@ -341,12 +261,12 @@ The 74HC4052 dual 4-to-1 multiplexer allows reading all four encoder channels (A
     \item Pin 10 (RXD): LiDAR TX (Pi RX)
 \end{itemize}
 
-\textbf{Motor Driver Fault Lines:}
+\textbf{Motor Driver Fault Lines (from RX72N):}
 \begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
-    \item Pin 33 (IO13): Motor 1 nFAULT
-    \item Pin 31 (IO6): Motor 2 nFAULT
-    \item Pin 29 (IO5): Motor 3 nFAULT
-    \item Pin 27 (ID\_SD): Motor 4 nFAULT
+    \item Pin 33 (IO13): Motor 0 nFAULT
+    \item Pin 31 (IO6): Motor 1 nFAULT
+    \item Pin 29 (IO5): Motor 2 nFAULT
+    \item Pin 27 (ID\_SD): Motor 3 nFAULT
 \end{itemize}
 
 \textbf{HC-SR04 Ultrasonic Sensors (6 sensors):}
@@ -393,4 +313,4 @@ The 74HC4052 dual 4-to-1 multiplexer allows reading all four encoder channels (A
 
 \textbf{Protocol:} 1-Wire communication
 
-\textbf{Connection:} Connected to ESP32-S3 IO48
+\textbf{Connection:} Connected to RX72N GPIO (specific pin TBD in final hardware design)
