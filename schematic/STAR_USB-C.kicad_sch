@@ -8817,7 +8817,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
 			(at 220.98 147.32 0)
 			(effects
 				(font
@@ -9465,7 +9465,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CAT24C512WI-GT3"
+		(property "Manufacturer Part Number" "CAT24C512WI-GT3"
 			(at 43.18 87.63 0)
 			(effects
 				(font
@@ -10101,7 +10101,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
 			(at 166.37 100.33 0)
 			(effects
 				(font
@@ -10482,7 +10482,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "PH1-04-UA"
+		(property "Manufacturer Part Number" "PH1-04-UA"
 			(at 180.34 107.95 0)
 			(effects
 				(font
@@ -10670,7 +10670,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "TPS25751DREFR"
+		(property "Manufacturer Part Number" "TPS25751DREFR"
 			(at 198.12 87.63 0)
 			(effects
 				(font
@@ -11448,7 +11448,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "RT0603BRE0710KL"
+		(property "Manufacturer Part Number" "RT0603BRE0710KL"
 			(at 30.48 97.79 0)
 			(effects
 				(font
@@ -12124,7 +12124,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
+		(property "Manufacturer Part Number" "CC0603JRX7R9BB104"
 			(at 146.05 100.33 0)
 			(effects
 				(font
@@ -12264,7 +12264,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "61200621621"
+		(property "Manufacturer Part Number" "61200621621"
 			(at 71.12 213.36 90)
 			(effects
 				(font
@@ -12894,7 +12894,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CL10B103KB8NNNL"
+		(property "Manufacturer Part Number" "CL10B103KB8NNNL"
 			(at 307.34 147.32 90)
 			(effects
 				(font
@@ -13512,7 +13512,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CL10B331KB8WPNC"
+		(property "Manufacturer Part Number" "CL10B331KB8WPNC"
 			(at 271.78 123.19 0)
 			(effects
 				(font
@@ -14121,7 +14121,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
+		(property "Manufacturer Part Number" "CC0603JRX7R9BB104"
 			(at 326.39 101.6 0)
 			(effects
 				(font
@@ -14748,7 +14748,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
 			(at 309.88 106.68 0)
 			(effects
 				(font
@@ -15366,7 +15366,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CL10B103KB8NNNL"
+		(property "Manufacturer Part Number" "CL10B103KB8NNNL"
 			(at 307.34 152.4 90)
 			(effects
 				(font
@@ -15984,7 +15984,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRT21BR61H475KE13K"
+		(property "Manufacturer Part Number" "GRT21BR61H475KE13K"
 			(at 261.62 137.16 90)
 			(effects
 				(font
@@ -16591,7 +16591,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "RT0603BRE0710KL"
+		(property "Manufacturer Part Number" "RT0603BRE0710KL"
 			(at 25.4 97.79 0)
 			(effects
 				(font
@@ -17209,7 +17209,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CL10B103KB8NNNL"
+		(property "Manufacturer Part Number" "CL10B103KB8NNNL"
 			(at 307.34 157.48 90)
 			(effects
 				(font
@@ -17827,7 +17827,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
 			(at 139.7 100.33 0)
 			(effects
 				(font
@@ -18445,7 +18445,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
 			(at 226.06 147.32 0)
 			(effects
 				(font
@@ -19063,7 +19063,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
 			(at 231.14 147.32 0)
 			(effects
 				(font
@@ -19869,7 +19869,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "RT0603BRE0710KL"
+		(property "Manufacturer Part Number" "RT0603BRE0710KL"
 			(at 35.56 97.79 0)
 			(effects
 				(font
@@ -20648,7 +20648,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "TVS2200DRVR"
+		(property "Manufacturer Part Number" "TVS2200DRVR"
 			(at 307.34 168.91 90)
 			(effects
 				(font
@@ -21088,7 +21088,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "82306050029"
+		(property "Manufacturer Part Number" "82306050029"
 			(at 334.01 186.69 0)
 			(effects
 				(font
@@ -21270,7 +21270,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "1017491"
+		(property "Manufacturer Part Number" "1017491"
 			(at 58.42 196.85 0)
 			(effects
 				(font
@@ -21875,7 +21875,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "RT0603DRD073K3L"
+		(property "Manufacturer Part Number" "RT0603DRD073K3L"
 			(at 156.21 133.35 0)
 			(effects
 				(font
@@ -22502,7 +22502,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRT21BR61H475KE13K"
+		(property "Manufacturer Part Number" "GRT21BR61H475KE13K"
 			(at 340.36 153.67 90)
 			(effects
 				(font
@@ -22633,7 +22633,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "PH1-03-UA"
+		(property "Manufacturer Part Number" "PH1-03-UA"
 			(at 64.77 113.03 0)
 			(effects
 				(font
@@ -23386,7 +23386,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CL10B103KB8NNNL"
+		(property "Manufacturer Part Number" "CL10B103KB8NNNL"
 			(at 307.34 162.56 90)
 			(effects
 				(font
@@ -24004,7 +24004,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
 			(at 160.02 100.33 0)
 			(effects
 				(font
@@ -24688,7 +24688,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRT21BR61H475KE13K"
+		(property "Manufacturer Part Number" "GRT21BR61H475KE13K"
 			(at 340.36 147.32 90)
 			(effects
 				(font
@@ -25295,7 +25295,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "AC0603JR-07100KL"
+		(property "Manufacturer Part Number" "AC0603JR-07100KL"
 			(at 177.8 90.17 90)
 			(effects
 				(font
@@ -25427,7 +25427,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "T527T226M025ATE100"
+		(property "Manufacturer Part Number" "T527T226M025ATE100"
 			(at 316.23 106.68 0)
 			(effects
 				(font
@@ -26036,7 +26036,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
+		(property "Manufacturer Part Number" "CC0603JRX7R9BB104"
 			(at 236.22 147.32 0)
 			(effects
 				(font
@@ -26720,7 +26720,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
+		(property "Manufacturer Part Number" "CC0603JRX7R9BB104"
 			(at 256.54 137.16 90)
 			(effects
 				(font
@@ -27404,7 +27404,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
+		(property "Manufacturer Part Number" "CC0603JRX7R9BB104"
 			(at 303.53 106.68 0)
 			(effects
 				(font
@@ -28031,7 +28031,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
 			(at 331.47 101.6 0)
 			(effects
 				(font
@@ -28649,7 +28649,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "963-UMK107AB7105KA-T"
+		(property "Manufacturer Part Number" "963-UMK107AB7105KA-T"
 			(at 125.73 96.52 0)
 			(effects
 				(font
@@ -29267,7 +29267,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
 			(at 215.9 147.32 0)
 			(effects
 				(font
@@ -29399,7 +29399,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "M20-9990246"
+		(property "Manufacturer Part Number" "M20-9990246"
 			(at 73.66 232.41 0)
 			(effects
 				(font
@@ -30017,7 +30017,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CL10B331KB8WPNC"
+		(property "Manufacturer Part Number" "CL10B331KB8WPNC"
 			(at 285.75 123.19 0)
 			(effects
 				(font
@@ -30626,7 +30626,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
+		(property "Manufacturer Part Number" "CC0603JRX7R9BB104"
 			(at 172.72 100.33 0)
 			(effects
 				(font
@@ -31253,7 +31253,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRT21BR61H475KE13K"
+		(property "Manufacturer Part Number" "GRT21BR61H475KE13K"
 			(at 266.7 137.16 90)
 			(effects
 				(font
@@ -31928,7 +31928,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
+		(property "Manufacturer Part Number" "CC0603JRX7R9BB104"
 			(at 340.36 142.24 90)
 			(effects
 				(font
@@ -32119,7 +32119,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "USB4216-03-A "
+		(property "Manufacturer Part Number" "USB4216-03-A "
 			(at 354.33 180.34 0)
 			(effects
 				(font
@@ -32829,7 +32829,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "BLM18SN220TN1D"
+		(property "Manufacturer Part Number" "BLM18SN220TN1D"
 			(at 334.01 161.29 0)
 			(effects
 				(font
@@ -33011,7 +33011,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "1017491"
+		(property "Manufacturer Part Number" "1017491"
 			(at 58.42 182.88 0)
 			(effects
 				(font
@@ -33693,7 +33693,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
 			(at 133.35 100.33 0)
 			(effects
 				(font
@@ -34050,7 +34050,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "82306050029"
+		(property "Manufacturer Part Number" "82306050029"
 			(at 334.01 189.23 0)
 			(effects
 				(font
@@ -34659,7 +34659,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "CC0603JRX7R9BB104"
+		(property "Manufacturer Part Number" "CC0603JRX7R9BB104"
 			(at 119.38 96.52 0)
 			(effects
 				(font
@@ -35276,7 +35276,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "RT0603DRD073K3L"
+		(property "Manufacturer Part Number" "RT0603DRD073K3L"
 			(at 171.45 133.35 0)
 			(effects
 				(font
@@ -35903,7 +35903,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "GRM21BR61H106KE43L"
+		(property "Manufacturer Part Number" "GRM21BR61H106KE43L"
 			(at 210.82 147.32 0)
 			(effects
 				(font
@@ -36644,7 +36644,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "RT0603BRE0710KL"
+		(property "Manufacturer Part Number" "RT0603BRE0710KL"
 			(at 110.49 96.52 0)
 			(effects
 				(font
