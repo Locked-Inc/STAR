@@ -226,12 +226,7 @@
     "equivalence_files": []
   },
   "erc": {
-    "erc_exclusions": [
-      [
-        "power_pin_not_driven|723900|1320800|15fc7436-099d-44cc-9c82-e6d436101e1a|00000000-0000-0000-0000-000000000000|/b093d17b-3f16-40e3-b68a-97d9cd4b2df5|/b093d17b-3f16-40e3-b68a-97d9cd4b2df5|",
-        "GND Pin"
-      ]
-    ],
+    "erc_exclusions": [],
     "meta": {
       "version": 0
     },
