@@ -11,13 +11,13 @@
  * Port of ESP32 motor_control_task using ThreadX RTOS and RX72N peripherals.
  *
  * Control Loop Timing (4ms period, 250Hz):
- * - Read 4 encoders: ~40μs (no mux, direct MTU reads)
- * - Read setpoints: ~20μs
- * - Compute 4 PIDs: ~80μs
- * - Apply motors: ~80μs
- * - Update status: ~100μs
- * - Check estop: ~20μs
- * Total: ~340μs (8.5% of 4ms period)
+ * - Read 4 encoders: ~40us (no mux, direct MTU reads)
+ * - Read setpoints: ~20us
+ * - Compute 4 PIDs: ~80us
+ * - Apply motors: ~80us
+ * - Update status: ~100us
+ * - Check estop: ~20us
+ * Total: ~340us (8.5% of 4ms period)
  *
  * Current Implementation Status:
  * - [x] 250Hz PID velocity control
@@ -215,7 +215,7 @@ static void internal_motor_control_loop(motor_task_params_t* params)
       continue;
     }
 
-    /* 1. Read all 4 encoders directly from MTU channels (~10μs each) */
+    /* 1. Read all 4 encoders directly from MTU channels (~10us each) */
     for (int32_t i = 0; i < k_motor_count; i++) {
       rx_err_t err = rx_encoder_read_count(params->encoder_channels[i], &encoder_states[i]);
       if (err != RX_OK) {
@@ -234,7 +234,7 @@ static void internal_motor_control_loop(motor_task_params_t* params)
     /* 2. Convert RPM to m/s */
     internal_convert_rpm_to_mps(velocities_rpm, velocities_mps);
 
-    /* 3. Read velocity setpoints from shared state (~5μs per motor) */
+    /* 3. Read velocity setpoints from shared state (~5us per motor) */
     for (int32_t i = 0; i < k_motor_count; i++) {
       rx_err_t err = motor_shared_state_get_velocity(params->shared_state, i, &setpoints_mps[i]);
       if (err != RX_OK) {
@@ -243,7 +243,7 @@ static void internal_motor_control_loop(motor_task_params_t* params)
       }
     }
 
-    /* 4. Compute PID for all 4 motors (~20μs per motor) */
+    /* 4. Compute PID for all 4 motors (~20us per motor) */
     for (int32_t i = 0; i < k_motor_count; i++) {
       rx_err_t err =
         rx_pid_compute(&params->pids[i], setpoints_mps[i], velocities_mps[i], dt_s, &outputs[i]);
@@ -254,7 +254,7 @@ static void internal_motor_control_loop(motor_task_params_t* params)
       }
     }
 
-    /* 5. Apply outputs to motors (~20μs per motor) */
+    /* 5. Apply outputs to motors (~20us per motor) */
     for (int32_t i = 0; i < k_motor_count; i++) {
       rx_err_t err = rx_motor_set_duty(&params->motors[i], outputs[i]);
       if (err != RX_OK) {
@@ -262,7 +262,7 @@ static void internal_motor_control_loop(motor_task_params_t* params)
       }
     }
 
-    /* 6. Update shared state with status (~25μs per motor) */
+    /* 6. Update shared state with status (~25us per motor) */
     for (int32_t i = 0; i < k_motor_count; i++) {
       rx_motor_state_t motor_state;
 
@@ -298,7 +298,7 @@ static void internal_motor_control_loop(motor_task_params_t* params)
                                     motor_state);
     }
 
-    /* 7. Check emergency stop (~5μs) */
+    /* 7. Check emergency stop (~5us) */
     bool     estop_active;
     rx_err_t err = motor_shared_state_get_estop(params->shared_state, &estop_active);
 
