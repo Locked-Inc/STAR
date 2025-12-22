@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP SLC1480-441MLD
+D Power Inductors - SMD 440nH Shld 20% 55A 210mOhms
+K
+F https://www.mouser.cn/datasheet/2/597/slc1480-270715.pdf
+$ENDCMP
+#
+#End Doc Library

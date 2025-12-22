@@ -1,7 +1,0 @@
-# ESP32-WROOM-32 (4MB) Partition Table
-# No OTA - maximum application space
-# Name,   Type, SubType, Offset,   Size,    Flags
-nvs,      data, nvs,     0x9000,   24K,
-phy_init, data, phy,     0xf000,   4K,
-factory,  app,  factory, 0x10000,  1984K,
-storage,  data, spiffs,  0x200000, 2048K,

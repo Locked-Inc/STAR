@@ -1,7 +1,0 @@
-<map id="star_bus_ssd1306_init" name="star_bus_ssd1306_init">
-<area shape="rect" id="Node000001" title="Initialize SSD1306 OLED display." alt="" coords="5,13,157,38"/>
-<area shape="rect" id="Node000002" href="$dd/d1a/star__bus__i2c_8c.html#ab5fd7179899b9f4229f103484481be3e" title="Write a single command byte to an I2C device specified by a bus configuration. No register address or..." alt="" coords="205,5,335,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="157,23,191,25,186,26,157,28"/>
-<area shape="rect" id="Node000003" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="383,13,567,38"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="335,23,370,26,364,26,335,28"/>
-</map>

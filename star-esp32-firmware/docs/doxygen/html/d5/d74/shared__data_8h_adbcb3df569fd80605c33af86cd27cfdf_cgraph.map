@@ -1,5 +1,0 @@
-<map id="shared_data_set_temperature" name="shared_data_set_temperature">
-<area shape="rect" id="Node000001" title="Update current temperature." alt="" coords="5,5,199,31"/>
-<area shape="rect" id="Node000002" href="$d4/d7e/system__config_8h.html#ae1333c5306d999ad9d292b11465114c2" title="Validate temperature reading." alt="" coords="247,5,418,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="199,16,233,18,228,18,199,21"/>
-</map>

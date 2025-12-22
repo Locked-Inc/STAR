@@ -1,0 +1,204 @@
+/* include/rx_error_handler.h */
+
+/**
+ * @file rx_error_handler.h
+ * @brief Error Handler Concrete Implementation
+ *
+ * Concrete implementation of the rx_error_interface_t.
+ * Provides error tracking, retry logic, and exponential backoff.
+ *
+ * Features:
+ * - Global error counter
+ * - Per-component error tracking (up to RX_ERROR_HANDLER_MAX_COMPONENTS)
+ * - Retry counting with configurable limits
+ * - Exponential backoff calculation
+ * - Thread-safe operation (ThreadX mutex)
+ *
+ * Memory usage (static allocation):
+ * - ~200 bytes for error_handler_t struct
+ * - ~1KB for component tracking array
+ * - ~100 bytes for ThreadX mutex
+ * Total: ~1.3KB RAM
+ *
+ * Usage:
+ *   // 1. Declare handler
+ *   static error_handler_t s_error_handler;
+ *
+ *   // 2. Initialize
+ *   rx_err_t err = error_handler_init(&s_error_handler, 3, 100, 5000);
+ *   RX_ERROR_CHECK(err);
+ *
+ *   // 3. Get interface
+ *   rx_error_interface_t error_iface;
+ *   error_handler_get_interface(&error_iface, &s_error_handler);
+ *
+ *   // 4. Use through interface
+ *   error_iface.report_error(error_iface.ctx, RX_FAIL, "SPI", "Transfer timeout");
+ *
+ *   // 5. Check retry logic
+ *   if (!error_iface.is_retry_limit_reached(error_iface.ctx, "SPI")) {
+ *       uint32_t delay_ms = error_iface.get_backoff_delay(error_iface.ctx, "SPI");
+ *       tx_thread_sleep(delay_ms / 10);  // Convert ms to ThreadX ticks
+ *       // ... retry operation ...
+ *   }
+ */
+
+#ifndef STAR_RX72N_ERROR_HANDLER_H
+#define STAR_RX72N_ERROR_HANDLER_H
+
+#include <stddef.h>
+#include <stdint.h>
+
+#include "rx_err.h"
+#include "rx_error_interface.h"
+#include "tx_api.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* =============================================================================
+ * Configuration
+ * =============================================================================
+ */
+
+/**
+ * @brief Maximum number of components to track
+ *
+ * Each component gets its own error counter and retry state.
+ * Increase this if you have more than 16 components reporting errors.
+ */
+#define RX_ERROR_HANDLER_MAX_COMPONENTS 16
+
+/**
+ * @brief Maximum component name length
+ */
+#define RX_ERROR_HANDLER_COMPONENT_NAME_MAX 32
+
+/* =============================================================================
+ * Component Error Tracking
+ * =============================================================================
+ */
+
+/**
+ * @brief Per-component error tracking state
+ */
+typedef struct {
+  /**
+   * @brief Component name (e.g., "SPI", "GPIO", "UART")
+   */
+  char name[RX_ERROR_HANDLER_COMPONENT_NAME_MAX];
+
+  /**
+   * @brief Error count for this component
+   */
+  uint32_t error_count;
+
+  /**
+   * @brief Retry attempt count
+   */
+  uint32_t retry_count;
+
+  /**
+   * @brief Is this slot in use?
+   */
+  bool in_use;
+} error_component_state_t;
+
+/* =============================================================================
+ * Error Handler Structure
+ * =============================================================================
+ */
+
+/**
+ * @brief Error handler concrete implementation
+ *
+ * This structure contains all state for error tracking and retry logic.
+ * It implements the rx_error_interface_t.
+ */
+typedef struct {
+  /**
+   * @brief ThreadX mutex for thread-safe operation
+   */
+  TX_MUTEX mutex;
+
+  /**
+   * @brief Total error count across all components
+   */
+  uint32_t total_error_count;
+
+  /**
+   * @brief Per-component error tracking
+   */
+  error_component_state_t components[RX_ERROR_HANDLER_MAX_COMPONENTS];
+
+  /**
+   * @brief Maximum retry attempts before giving up
+   */
+  uint32_t max_retries;
+
+  /**
+   * @brief Initial backoff delay in milliseconds
+   */
+  uint32_t initial_backoff_ms;
+
+  /**
+   * @brief Maximum backoff delay in milliseconds
+   */
+  uint32_t max_backoff_ms;
+
+  /**
+   * @brief Is the handler initialized?
+   */
+  bool initialized;
+} error_handler_t;
+
+/* =============================================================================
+ * Public API
+ * =============================================================================
+ */
+
+/**
+ * @brief Initialize error handler
+ *
+ * @param[in,out] handler Handler instance to initialize
+ * @param[in] max_retries Maximum retry attempts (0 = no retry limit)
+ * @param[in] initial_backoff_ms Initial backoff delay in milliseconds
+ * @param[in] max_backoff_ms Maximum backoff delay in milliseconds
+ *
+ * @return RX_OK on success,
+ *         RX_ERR_NULL_POINTER if handler is NULL,
+ *         RX_ERR_RTOS_MUTEX if mutex creation fails
+ */
+rx_err_t error_handler_init(error_handler_t* handler,
+                            uint32_t         max_retries,
+                            uint32_t         initial_backoff_ms,
+                            uint32_t         max_backoff_ms);
+
+/**
+ * @brief Get interface from concrete handler
+ *
+ * @param[out] iface Interface to fill
+ * @param[in,out] handler Concrete handler instance
+ *
+ * @return RX_OK on success,
+ *         RX_ERR_NULL_POINTER if either parameter is NULL,
+ *         RX_ERR_INVALID_STATE if handler not initialized
+ */
+rx_err_t error_handler_get_interface(rx_error_interface_t* iface, error_handler_t* handler);
+
+/**
+ * @brief Deinitialize error handler (cleanup resources)
+ *
+ * @param[in,out] handler Handler to deinitialize
+ *
+ * @return RX_OK on success,
+ *         RX_ERR_NULL_POINTER if handler is NULL
+ */
+rx_err_t error_handler_deinit(error_handler_t* handler);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* STAR_RX72N_ERROR_HANDLER_H */

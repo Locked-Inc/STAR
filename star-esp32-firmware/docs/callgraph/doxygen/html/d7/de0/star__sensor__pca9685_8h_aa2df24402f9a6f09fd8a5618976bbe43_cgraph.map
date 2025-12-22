@@ -1,7 +1,0 @@
-<map id="star_sensor_pca9685_read_pwm" name="star_sensor_pca9685_read_pwm">
-<area shape="rect" id="Node000001" title="Read PWM values for a channel from hardware." alt="" coords="5,5,151,46"/>
-<area shape="rect" id="Node000002" href="$dd/d1a/star__bus__i2c_8c.html#a2e9b9baf8a0f8d00a2080963a7efd62f" title="Read data from an I2C device specified by a bus configuration, after writing a register address." alt="" coords="199,13,326,38"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="151,23,186,25,181,26,151,28"/>
-<area shape="rect" id="Node000003" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="374,13,558,38"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="326,23,361,26,356,26,326,28"/>
-</map>

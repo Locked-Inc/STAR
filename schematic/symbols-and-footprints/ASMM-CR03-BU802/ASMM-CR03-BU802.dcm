@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP ASMM-CR03-BU802
+D Standard LEDs - SMD PLCC2, SMD,AlInGaP,Red
+K
+F https://docs.broadcom.com/doc/ASMM-Cx03-xxxxx-DS
+$ENDCMP
+#
+#End Doc Library

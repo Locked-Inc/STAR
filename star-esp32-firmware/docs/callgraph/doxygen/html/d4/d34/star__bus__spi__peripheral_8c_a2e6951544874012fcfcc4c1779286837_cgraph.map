@@ -1,7 +1,0 @@
-<map id="star_bus_spi_peripheral_transceive" name="star_bus_spi_peripheral_transceive">
-<area shape="rect" id="Node000001" title="Perform a full&#45;duplex transaction (receive and transmit simultaneously)." alt="" coords="5,35,164,75"/>
-<area shape="rect" id="Node000002" href="$d4/d34/star__bus__spi__peripheral_8c.html#ad6d24dd1d07c287cc8f7cec40573f12f" title=" " alt="" coords="228,5,380,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="164,42,215,37,210,39,165,47"/>
-<area shape="rect" id="Node000003" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="212,70,396,96"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="164,62,199,69,193,69,164,68"/>
-</map>

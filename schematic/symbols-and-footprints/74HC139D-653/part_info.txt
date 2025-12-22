@@ -1,0 +1,9 @@
+Manufacturer=Nexperia
+PartNumber=74HC139D,653
+PartCategory=Integrated Circuit
+PackageCategory=Small Outline Packages
+PinCount=16
+Version=2.1
+Released=2019-11-12 07:41:52
+Downloaded=2025-10-06 06:11:41
+3D=Y

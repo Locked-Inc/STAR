@@ -1,7 +1,0 @@
-<map id="star_sensor_pca9685_set_channel_off" name="star_sensor_pca9685_set_channel_off">
-<area shape="rect" id="Node000001" title="Set channel to full OFF (0% duty cycle)." alt="" coords="5,5,151,46"/>
-<area shape="rect" id="Node000002" href="$dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="199,13,329,38"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="151,23,186,25,181,26,151,28"/>
-<area shape="rect" id="Node000003" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="377,13,561,38"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="329,23,364,26,358,26,329,28"/>
-</map>

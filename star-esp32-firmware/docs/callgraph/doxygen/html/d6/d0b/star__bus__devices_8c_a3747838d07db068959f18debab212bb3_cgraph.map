@@ -1,9 +1,0 @@
-<map id="star_bus_ds3231_set_time" name="star_bus_ds3231_set_time">
-<area shape="rect" id="Node000001" title="Set DS3231 time." alt="" coords="5,31,183,56"/>
-<area shape="rect" id="Node000002" href="$d6/d0b/star__bus__devices_8c.html#a94bf05d0f181f92fe96e5a10f061489d" title="Convert decimal to BCD." alt="" coords="231,5,368,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="183,30,218,28,212,29,184,35"/>
-<area shape="rect" id="Node000003" href="$dd/d1a/star__bus__i2c_8c.html#aff2961e205530246d5a602fa747a6e3c" title="Write data to an I2C device specified by a bus configuration, preceded by a register address." alt="" coords="234,55,364,80"/>
-<area shape="poly" id="edge2_Node000001_Node000003" title=" " alt="" coords="183,51,222,58,216,58,183,57"/>
-<area shape="rect" id="Node000004" href="$d7/d60/star__bus__manager_8c.html#a966853e8a343920b499e6f7de13b3257" title="Find an I2C bus configuration by its unique name." alt="" coords="416,55,600,80"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="365,65,403,67,398,68,365,70"/>
-</map>

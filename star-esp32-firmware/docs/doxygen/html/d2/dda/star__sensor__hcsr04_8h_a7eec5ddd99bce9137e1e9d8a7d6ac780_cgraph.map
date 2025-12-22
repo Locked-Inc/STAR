@@ -1,5 +1,0 @@
-<map id="star_sensor_hcsr04_get_result" name="star_sensor_hcsr04_get_result">
-<area shape="rect" id="Node000001" title="Get measurement result (non&#45;blocking)." alt="" coords="5,5,141,46"/>
-<area shape="rect" id="Node000002" href="$de/de2/star__sensor__hcsr04_8c.html#abf589bd5a636689a8cdcb1e6778765ce" title="Calculate distance with temperature compensation." alt="" coords="189,5,325,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="141,23,176,25,170,26,141,28"/>
-</map>

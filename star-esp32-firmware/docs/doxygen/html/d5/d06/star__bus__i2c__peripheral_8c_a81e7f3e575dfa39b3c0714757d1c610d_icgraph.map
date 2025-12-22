@@ -1,5 +1,0 @@
-<map id="internal_stop_peripheral_task" name="internal_stop_peripheral_task">
-<area shape="rect" id="Node000001" title="Stop peripheral task." alt="" coords="212,13,402,38"/>
-<area shape="rect" id="Node000002" href="$d5/d06/star__bus__i2c__peripheral_8c.html#a4c9749bc7d68f8854ae4da219d61995f" title="Disable I2C peripheral mode on a bus." alt="" coords="5,5,164,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="193,26,164,28,164,23,199,25"/>
-</map>

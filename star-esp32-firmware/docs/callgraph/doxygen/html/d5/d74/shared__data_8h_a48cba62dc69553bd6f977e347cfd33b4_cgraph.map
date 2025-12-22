@@ -1,5 +1,0 @@
-<map id="shared_data_get_sensor_reading" name="shared_data_get_sensor_reading">
-<area shape="rect" id="Node000001" title="Get latest sensor reading." alt="" coords="5,5,169,46"/>
-<area shape="rect" id="Node000002" href="$d4/d7e/system__config_8h.html#aee59613b222c590cb8080f4f732f758f" title="Validate sensor index." alt="" coords="217,5,358,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="169,23,204,25,198,26,169,28"/>
-</map>

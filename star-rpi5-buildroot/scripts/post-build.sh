@@ -1,7 +1,6 @@
 #!/bin/bash
 # STAR Robot OS Post-Build Script
 # Fixes shadow file format for proper root login
-# Installs native GCC toolchain
 
 set -u
 set -e
@@ -57,11 +56,6 @@ if [ -d "${SYSTEMD_DIR}" ]; then
         ln -sf "../wpa_supplicant@wlan0.service" "${WANTS_DIR}/wpa_supplicant@wlan0.service"
     fi
 fi
-
-# NOTE: Native GCC toolchain is now provided via prebuilt ARM GNU Toolchain
-# installed in overlays/usr/local/gcc. The old install-native-toolchain.sh
-# approach didn't work because Buildroot's cross-compiler is x86-64.
-# Prebuilt GCC 14.2 for aarch64 is now used instead.
 
 # Make Python 3.11 the default (for ROS2), but keep Python 3.12 available (for Avahi bindings)
 # Python 3.11 is at /opt/python3.11, Python 3.12 is Buildroot's default

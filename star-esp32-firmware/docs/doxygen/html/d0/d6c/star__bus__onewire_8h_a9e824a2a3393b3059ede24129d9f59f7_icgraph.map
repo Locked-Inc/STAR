@@ -1,5 +1,0 @@
-<map id="star_bus_onewire_search" name="star_bus_onewire_search">
-<area shape="rect" id="Node000001" title="Search for all devices on the bus." alt="" coords="223,13,392,38"/>
-<area shape="rect" id="Node000002" href="$d9/dd6/star__bus__onewire_8c.html#a77482610444b896ddb6f74aa04b44b1c" title="Search for devices with active alarms." alt="" coords="5,5,175,46"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="205,26,175,28,175,23,210,25"/>
-</map>

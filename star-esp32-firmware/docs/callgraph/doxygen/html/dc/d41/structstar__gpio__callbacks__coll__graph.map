@@ -1,9 +1,0 @@
-<map id="star_gpio_callbacks" name="star_gpio_callbacks">
-<area shape="rect" id="Node000001" title="GPIO callback functions structure." alt="" coords="88,219,224,245"/>
-<area shape="rect" id="Node000002" href="$d5/dcd/structstar__bus__event.html" title="Bus event structure passed to callback functions." alt="" coords="101,102,211,128"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="158,142,158,220,153,218,154,145"/>
-<area shape="rect" id="Node000003" href="$d2/d88/structstar__i2c__event__data.html" title="I2C bus event data structure." alt="" coords="5,5,144,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="95,40,148,101,143,102,94,46"/>
-<area shape="rect" id="Node000004" href="$d6/d01/structstar__spi__event__data.html" title="SPI bus event data structure." alt="" coords="168,5,306,31"/>
-<area shape="poly" id="edge3_Node000002_Node000004" title=" " alt="" coords="219,41,168,103,164,100,215,45"/>
-</map>

@@ -1,9 +1,0 @@
-<map id="priv_dht22_task_loop" name="priv_dht22_task_loop">
-<area shape="rect" id="Node000001" title=" " alt="" coords="481,5,626,31"/>
-<area shape="rect" id="Node000002" href="$d0/d9c/dht22__task_8c.html#a9d856aeaa4dfc864b2d6446139430971" title="Initialize DHT22 monitoring task." alt="" coords="315,5,433,31"/>
-<area shape="poly" id="edge1_Node000001_Node000002" title=" " alt="" coords="463,18,434,21,434,16,468,18"/>
-<area shape="rect" id="Node000003" href="$d0/d29/main_8c.html#aa87e4fd00d5047876500f1686540c257" title=" " alt="" coords="131,5,267,31"/>
-<area shape="poly" id="edge2_Node000002_Node000003" title=" " alt="" coords="297,18,268,21,267,16,302,18"/>
-<area shape="rect" id="Node000004" href="$d0/d29/main_8c.html#a630544a7f0a2cc40d8a7fefab7e2fe70" title=" " alt="" coords="5,5,83,31"/>
-<area shape="poly" id="edge3_Node000003_Node000004" title=" " alt="" coords="112,19,83,21,83,16,118,18"/>
-</map>
