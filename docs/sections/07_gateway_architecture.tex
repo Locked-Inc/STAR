@@ -6,7 +6,7 @@
 \section{Gateway Architecture}
 \label{sec:gateway-architecture}
 
-This section documents the \texttt{star-gateway} Go service that bridges the Raspberry Pi 5 control stack with the ESP32-S3 motor controller.
+This section documents the \texttt{star-gateway} Go service that bridges the Raspberry Pi 5 control stack with the RX72N motor controller.
 
 \subsection{Overview}
 
@@ -14,7 +14,7 @@ The gateway service runs on the Raspberry Pi 5 and serves as the communication b
 
 \begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
     \item \textbf{High-level side:} gRPC clients (Nav2/ROS2 for autonomous navigation, UI for manual control)
-    \item \textbf{Low-level side:} ESP32-S3 motor controller via SPI at 10 MHz
+    \item \textbf{Low-level side:} RX72N motor controller via SPI at 10 MHz
 \end{itemize}
 
 \noindent\makebox[\textwidth]{%
@@ -37,8 +37,8 @@ The gateway service runs on the Raspberry Pi 5 and serves as the communication b
     % Gateway
     \node[box, fill=orange!30, below=1cm of $(nav2)!0.5!(ui)$, minimum width=8cm] (gateway) {\textbf{star-gateway}\\gRPC Server + SPI Controller};
 
-    % ESP32
-    \node[box, fill=cyan!20, below=1cm of gateway, minimum width=8cm] (esp32) {\textbf{ESP32-S3}\\Motor Controller + Sensors};
+    % RX72N
+    \node[box, fill=cyan!20, below=1cm of gateway, minimum width=8cm] (esp32) {\textbf{RX72N}\\Motor Controller + Sensors};
 
     % Arrows
     \draw[->, thick] (nav2.south) -- ++(0,-0.3) -| (gateway.north west);
