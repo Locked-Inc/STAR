@@ -6,7 +6,7 @@
 \section{C Style Guide}
 \label{sec:c-style}
 
-This section defines comprehensive style guidelines for C firmware development in the STAR project. All firmware code (ESP32, RX72N, and future platforms) must follow these conventions to ensure consistency, maintainability, and safety in embedded systems development.
+This section defines comprehensive style guidelines for C firmware development in the STAR project. All firmware code for the RX72N and future platforms must follow these conventions to ensure consistency, maintainability, and safety in embedded systems development.
 
 
 
@@ -1281,7 +1281,7 @@ String function & \texttt{\_to\_string} & \texttt{star\_bus\_type\_to\_string} \
 
 
 
-This section establishes error handling patterns for the STAR firmware codebase across all platforms (ESP32, RX72N, and future targets).
+This section establishes error handling patterns for the STAR firmware codebase (RX72N and future targets).
 
 \subsection{General Principles}
 
@@ -1333,7 +1333,7 @@ Use platform-provided validation macros for parameter checking and early returns
 Returns an error if condition is false, with logging. ESP32 platforms use \texttt{ESP\_RETURN\_ON\_FALSE}, RX72N uses \texttt{RX\_RETURN\_ON\_FALSE}.
 
 \begin{lstlisting}[language=C]
-/* Platform-specific: ESP32 uses esp_check.h, RX72N uses rx_check.h */
+/* Platform-specific: RX72N uses rx_check.h */
 #include "rx_check.h"
 
 rx_err_t star_bus_manager_init(star_bus_manager_t*     manager,
@@ -2532,7 +2532,7 @@ Includes should be ordered in groups, separated by blank lines:
 /* 4. Platform HAL includes (ESP-IDF, Renesas, etc.) */
 #include "driver/gpio.h"
 #include "driver/i2c.h"
-/* Platform-specific: ESP32 uses esp_check.h, RX72N uses rx_check.h */
+/* Platform-specific: RX72N uses rx_check.h */
 #include "rx_check.h"
 #include "esp_err.h"
 #include "esp_log.h"
@@ -3033,7 +3033,7 @@ Includes should be ordered in these groups, separated by blank lines:
 #include <string.h>
 
 /* 4. Platform HAL includes (ESP-IDF, Renesas, etc.) */
-/* Platform-specific: ESP32 uses esp_check.h, RX72N uses rx_check.h */
+/* Platform-specific: RX72N uses rx_check.h */
 #include "rx_check.h"
 #include "esp_log.h"
 
@@ -3060,7 +3060,7 @@ Includes should be ordered in these groups, separated by blank lines:
 #include <string.h>
 
 /* Platform HAL (ESP-IDF, Renesas, etc.) */
-/* Platform-specific: ESP32 uses esp_check.h, RX72N uses rx_check.h */
+/* Platform-specific: RX72N uses rx_check.h */
 #include "rx_check.h"
 #include "esp_log.h"
 #include "sdkconfig.h"
@@ -3117,7 +3117,7 @@ Platform HAL headers (ESP-IDF, Renesas, etc.) use quotation marks and are groupe
 #include "driver/uart.h"
 
 /* Platform system includes */
-/* Platform-specific: ESP32 uses esp_check.h, RX72N uses rx_check.h */
+/* Platform-specific: RX72N uses rx_check.h */
 #include "rx_check.h"
 #include "rx_err.h"     /* Platform error types */
 #include "rx_log.h"     /* Platform logging */
@@ -3209,7 +3209,7 @@ Add comments for non-obvious includes explaining why they are needed.
 #include <inttypes.h>
 #include <string.h>
 
-/* Platform-specific: ESP32 uses esp_check.h, RX72N uses rx_check.h */
+/* Platform-specific: RX72N uses rx_check.h */
 #include "rx_check.h"
 #include "esp_log.h"
 #include "star_bus_manager.h" /* Needed for star_bus_manager_find_bus */
@@ -4133,7 +4133,7 @@ Source files follow a consistent internal structure.
 #include <string.h>
 
 /* === Platform HAL Includes === */
-/* Platform-specific: ESP32 uses esp_check.h, RX72N uses rx_check.h */
+/* Platform-specific: RX72N uses rx_check.h */
 #include "rx_check.h"
 #include "esp_log.h"
 #include "sdkconfig.h"
@@ -5432,7 +5432,7 @@ float scale_temp(float temp);  /* What units? */
 This convention eliminates an entire class of bugs caused by unit ambiguity and makes the codebase more maintainable.
 
 
-This section establishes memory management rules for STAR firmware across all platforms. Embedded platforms have limited RAM (e.g., ESP32-S3: 512KB SRAM, RX72N: 1MB SRAM), making proper memory management critical for system stability and performance.
+This section establishes memory management rules for STAR firmware across all platforms. Embedded platforms have limited RAM (e.g., RX72N: 1MB SRAM), making proper memory management critical for system stability and performance.
 
 \subsection{No Dynamic Allocation}
 
@@ -5592,7 +5592,7 @@ void calculate_checksum(const uint8_t* data, size_t len)
 \subsubsection{Rationale}
 
 \begin{itemize}
-\item Embedded platforms typically have large flash but limited RAM (e.g., ESP32: 16MB flash / 512KB RAM, RX72N: 4MB flash / 1MB RAM)
+\item Embedded platforms typically have large flash but limited RAM (e.g., RX72N: 4MB flash / 1MB RAM)
 \item \texttt{const} data is stored in flash and accessed directly (no RAM copy)
 \item Saves precious SRAM for runtime variables
 \end{itemize}
@@ -6375,7 +6375,7 @@ Following these real-time and embedded best practices ensures:
 These practices are the foundation of reliable embedded systems for robotics.
 
 
-This section establishes configuration requirements for Protocol Buffer messages used in STAR embedded firmware (ESP32, RX72N). The STAR project uses \textbf{nanopb} (Nano Protocol Buffers) for embedded systems, which requires static memory allocation.
+This section establishes configuration requirements for Protocol Buffer messages used in STAR embedded firmware. The STAR project uses \textbf{nanopb} (Nano Protocol Buffers) for embedded systems, which requires static memory allocation.
 
 \subsection{nanopb Overview}
 
@@ -6725,4 +6725,4 @@ battery.cell_mv_count = 3;  /* Set actual element count (3S LiPo) */
 \item \textbf{Set array count fields} for repeated fields
 \end{itemize}
 
-Properly configured nanopb constraints enable reliable, predictable Protocol Buffer communication on resource-constrained embedded hardware (ESP32, RX72N, and future platforms).
+Properly configured nanopb constraints enable reliable, predictable Protocol Buffer communication on resource-constrained embedded hardware.

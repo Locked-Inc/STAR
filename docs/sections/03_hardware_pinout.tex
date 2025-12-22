@@ -8,7 +8,7 @@
 \subsection{RX72N Microcontroller Pinout (R5F572NNHGFP\#30)}
 
 \noindent\colorbox{keyinsightcolor}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
-\textbf{Hardware Advantage:} The RX72N provides \textbf{182 direct GPIO pins} with dedicated peripheral functions. Unlike the ESP32 design, \textbf{no multiplexers or decoders are required} - each motor gets its own dedicated MTU channels for both PWM and encoder, with direct GPIO access to fault lines and current sense ADC channels.
+\textbf{Hardware Advantage:} The RX72N provides \textbf{182 direct GPIO pins} with dedicated peripheral functions. \textbf{No multiplexers or decoders are required} - each motor gets its own dedicated MTU channels for both PWM and encoder, with direct GPIO access to fault lines and current sense ADC channels.
 }}
 
 \vspace{0.3cm}
@@ -152,38 +152,6 @@ PCLKB & 60 MHz & CMT (Timers), SCI (UART) \\
 \caption{RX72N clock configuration}
 \label{tab:rx72n-clocks}
 \end{table}
-
-\subsection{Comparison: RX72N vs ESP32-S3 Architecture}
-
-\begin{table}[H]
-\centering
-\small
-\begin{tabular}{|l|c|c|}
-\hline
-\textbf{Feature} & \textbf{ESP32-S3} & \textbf{RX72N} \\
-\hline
-GPIO Pins & 35 usable & \textbf{182 direct} \\
-\hline
-Motor PWM & MCPWM (shared) & MTU3a (dedicated) \\
-\hline
-Encoders & 4x 4:1 mux + PCNT & \textbf{4x dedicated MTU} \\
-\hline
-Motor CS Lines & 74HC238 decoder & \textbf{Direct GPIO} \\
-\hline
-Fault Detection & Via decoder outputs & \textbf{Direct GPIO} \\
-\hline
-Control Loop & 250 Hz (mux overhead) & \textbf{250 Hz (no mux)} \\
-\hline
-Encoder Latency & $\sim$40 $\mu$s (mux switching) & \textbf{$\sim$10 $\mu$s (direct)} \\
-\hline
-\end{tabular}
-\caption{Hardware architecture comparison}
-\label{tab:architecture-comparison}
-\end{table}
-
-\noindent\colorbox{keyinsightcolor}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
-\textbf{Key Advantage:} The RX72N eliminates all multiplexing overhead from the ESP32 design. Each motor has dedicated hardware resources with direct GPIO access, reducing control loop latency by 75\% and simplifying the PCB design (no external decoder/mux ICs required).
-}}
 
 \subsection{Raspberry Pi 5 Pinout}
 
