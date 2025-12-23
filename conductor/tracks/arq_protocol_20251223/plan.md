@@ -1,7 +1,7 @@
 # Track Plan: ARQ Protocol Implementation
 
 ## Phase 1: Test Infrastructure and Basic Logic
-- [ ] Task: Create mock dependencies for `Transport`, `Encoder`, and `Decoder` in `mock_transport_test.go` to facilitate isolated testing.
+- [x] Task: Create mock dependencies for `Transport`, `Encoder`, and `Decoder` in `mock_transport_test.go` to facilitate isolated testing. f57e48d3
 - [ ] Task: Create `arq_test.go` and implement tests for the `Send` method:
     - [ ] Sub-task: Write test for successful transmission (receiving ACK).
     - [ ] Sub-task: Implement test logic.
