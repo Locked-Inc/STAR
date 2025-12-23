@@ -6,7 +6,7 @@ This file provides guidance to Claude Code when working with the star-gateway mo
 
 **star-gateway** is the Go gateway service running on Raspberry Pi 5 that bridges:
 - **gRPC clients** (Nav2/ROS2, UI) on the high-level side
-- **ESP32-S3 motor controller** via SPI on the low-level side
+- **RX72N motor controller** via SPI on the low-level side
 
 ## Architecture
 
