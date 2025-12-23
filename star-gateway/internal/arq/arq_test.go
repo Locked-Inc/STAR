@@ -572,15 +572,14 @@ func TestSendControlFrame_Errors(t *testing.T) {
 		}
 		arq := NewStopAndWait(nil, mock, encoder, frame.NewDecoder())
 		mock.QueueResponse(createCommandFrame(0, []byte{0x01}))
-		_, err := arq.Receive()
-		if err == nil || !errors.Is(err, err) { // Just checking it returns an error
-			// The error returned from Receive() will be nil if ACK fails?
-			// Actually Receive() doesn't return the sendControlFrame error if it happens after successful data processing.
-			// Wait, Receive() returns:
-			// return f.Payload, nil
-			// But it calls sendAckUnlocked before that.
-			// if err := s.sendAckUnlocked(receivedSeq); err != nil { return nil, err }
-			// Let's check Receive() implementation.
+		payload, err := arq.Receive()
+		// With best-effort ACK, encoding errors are ignored.
+		// The payload should still be returned successfully.
+		if err != nil {
+			t.Errorf("Receive() error = %v, want nil (ACK errors are best-effort)", err)
+		}
+		if payload == nil {
+			t.Error("Receive() payload = nil, want payload despite ACK encode failure")
 		}
 	})
 }
@@ -750,11 +749,15 @@ func TestReceive_AckError(t *testing.T) {
 	mock.QueueResponse(createCommandFrame(0, []byte{0x01}))
 	mock.SetSendError(errors.New("ack failed"))
 
-	_, err := arq.Receive()
+	payload, err := arq.Receive()
 
-	if err == nil || !errors.Is(err, err) { // Checking for error
-		if !errors.Is(err, err) { // This is just to use the variable
-		}
+	// With best-effort ACK, send errors are ignored.
+	// The payload should still be returned successfully.
+	if err != nil {
+		t.Errorf("Receive() error = %v, want nil (ACK errors are best-effort)", err)
+	}
+	if payload == nil {
+		t.Error("Receive() payload = nil, want payload despite ACK send failure")
 	}
 }
 
@@ -766,8 +769,10 @@ func TestReceive_NackError(t *testing.T) {
 
 	_, err := arq.Receive()
 
-	if err == nil {
-		t.Error("Receive() error = nil, want error for failed nack")
+	// With best-effort NACK, send errors are ignored.
+	// But ErrInvalidSequence is still returned for out-of-sequence frames.
+	if !errors.Is(err, ErrInvalidSequence) {
+		t.Errorf("Receive() error = %v, want ErrInvalidSequence", err)
 	}
 }
 
@@ -779,8 +784,10 @@ func TestReceive_DuplicateAckError(t *testing.T) {
 
 	_, err := arq.Receive()
 
-	if err == nil {
-		t.Error("Receive() error = nil, want error for failed duplicate ack")
+	// With best-effort ACK, send errors are ignored.
+	// But ErrDuplicateFrame is still returned for duplicate frames.
+	if !errors.Is(err, ErrDuplicateFrame) {
+		t.Errorf("Receive() error = %v, want ErrDuplicateFrame", err)
 	}
 }
 

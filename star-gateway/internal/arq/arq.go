@@ -312,13 +312,11 @@ func (s *StopAndWait) Receive() ([]byte, error) {
 	// Decode frame (CRC validated by decoder)
 	f, err := s.decoder.Decode(data)
 	if err != nil {
-		// CRC error or malformed frame - send NACK
+		// CRC error or malformed frame - send NACK (best-effort)
 		s.mu.Lock()
 		seq := s.rxSequence
 		s.mu.Unlock()
-		if nackErr := s.sendNack(seq); nackErr != nil {
-			return nil, fmt.Errorf("arq: receive failed (%w) and nack failed (%v)", err, nackErr)
-		}
+		_ = s.sendNack(seq) // Best-effort, ignore errors
 		return nil, err
 	}
 
@@ -329,33 +327,33 @@ func (s *StopAndWait) Receive() ([]byte, error) {
 	}
 
 	s.mu.Lock()
-	defer s.mu.Unlock()
 
 	receivedSeq := f.Header.Sequence
 	expectedSeq := s.rxSequence
 	previousSeq := decrementSequence(s.rxSequence)
 
 	if receivedSeq == expectedSeq {
-		// New valid frame
-		if err := s.sendAckUnlocked(receivedSeq); err != nil {
-			return nil, fmt.Errorf("arq: failed to send ack: %w", err)
-		}
+		// New valid frame - increment sequence and prepare payload
 		s.rxSequence = incrementSequence(s.rxSequence)
-		return f.Payload, nil
+		payload := f.Payload
+		s.mu.Unlock() // Release lock before I/O
+
+		// Best-effort ACK. If this fails, the sender will retransmit,
+		// and we'll correctly handle it as a duplicate.
+		_ = s.sendAck(receivedSeq)
+		return payload, nil
 	}
 
 	if receivedSeq == previousSeq {
-		// Duplicate - resend ACK but don't deliver again
-		if err := s.sendAckUnlocked(receivedSeq); err != nil {
-			return nil, fmt.Errorf("arq: failed to resend ack for duplicate: %w", err)
-		}
+		// Duplicate frame
+		s.mu.Unlock() // Release lock before I/O
+		_ = s.sendAck(receivedSeq) // Best-effort
 		return nil, ErrDuplicateFrame
 	}
 
-	// Out of sequence
-	if err := s.sendNackUnlocked(receivedSeq); err != nil {
-		return nil, fmt.Errorf("arq: invalid sequence (%d) and nack failed (%v)", receivedSeq, err)
-	}
+	// Out of sequence frame
+	s.mu.Unlock() // Release lock before I/O
+	_ = s.sendNack(receivedSeq) // Best-effort
 	return nil, ErrInvalidSequence
 }
 
@@ -444,15 +442,23 @@ func (s *StopAndWait) sendNackUnlocked(seq uint16) error {
 	return s.sendControlFrame(frame.FrameTypeNack, seq)
 }
 
-// sendNack sends a NACK frame (acquires mutex internally).
+// sendNack sends a NACK frame.
 func (s *StopAndWait) sendNack(seq uint16) error {
 	return s.sendControlFrame(frame.FrameTypeNack, seq)
 }
 
+// sendAck sends an ACK frame.
+func (s *StopAndWait) sendAck(seq uint16) error {
+	return s.sendControlFrame(frame.FrameTypeAck, seq)
+}
+
 // sendControlFrame sends an ACK or NACK frame.
 func (s *StopAndWait) sendControlFrame(frameType frame.FrameType, seq uint16) error {
-	if s.transport == nil || s.encoder == nil {
+	if s.transport == nil {
 		return ErrTransportNil
+	}
+	if s.encoder == nil {
+		return ErrEncoderNil
 	}
 
 	f, err := frame.NewFrame(frameType, nil)
