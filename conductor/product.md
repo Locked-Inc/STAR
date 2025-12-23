@@ -1,7 +1,7 @@
 # Product Guide
 
 ## Initial Concept
-**STAR (Simultaneous Tracking and Autonomous Roaming)** is a distributed robotics platform designed as a capstone engineering project for the Texas A&M University (TAMU) Electronic Systems Engineering Technology (ESET) program. The project aims for completion by the Spring 2026 semester.
+**STAR (Simultaneous Tracking and Robotics)** is a distributed robotics platform designed as a capstone engineering project for the Texas A&M University (TAMU) Electronic Systems Engineering Technology (ESET) program. The project aims for completion by the Spring 2026 semester.
 
 ## Target Users
 - **Robotics Researchers & Students:** Providing a modular platform for experimenting with algorithms, control systems, and sensor fusion.
