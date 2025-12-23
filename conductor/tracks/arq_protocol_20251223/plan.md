@@ -10,9 +10,9 @@
     - [x] Sub-task: Write test for NACK and retry.
     - [x] Sub-task: Write test for max retries exceeded.
     - [x] Implement test logic.
-- [~] Task: Conductor - User Manual Verification 'Test Infrastructure and Basic Logic' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Test Infrastructure and Basic Logic' (Protocol in workflow.md) e6d10ab7
 
-## Phase 2: Receive Logic and Edge Cases
+## Phase 2: Receive Logic and Edge Cases [checkpoint: e6d10ab7]
 - [x] Task: Implement tests for the `Receive` method: 33f07e6a
     - [x] Sub-task: Write test for successful reception (sending ACK).
     - [x] Sub-task: Write test for duplicate frame detection (sending ACK, discarding data).
@@ -22,7 +22,7 @@
     - [x] Sub-task: Write test for sequence wrap from `DefaultSequenceMax` to 0.
     - [x] Implement test logic.
 - [x] Task: Run `go test -race` and fix any detected race conditions. 33f07e6a
-- [~] Task: Conductor - User Manual Verification 'Receive Logic and Edge Cases' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Receive Logic and Edge Cases' (Protocol in workflow.md) e6d10ab7
 
 ## Phase 3: Final Verification and Documentation
 - [ ] Task: Generate code coverage report and ensure >80% coverage.
