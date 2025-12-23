@@ -31,6 +31,7 @@
   (lib (name "CAT24C512WI-GT3")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/CAT24C512WI-GT3/CAT24C512WI-GT3.kicad_sym")(options "")(descr ""))
   (lib (name "CL10B104MB8NNNC")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/CL10B104MB8NNNC/CL10B104MB8NNNC.kicad_sym")(options "")(descr ""))
   (lib (name "CSD19531Q5AT")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/CSD19531Q5AT/CSD19531Q5AT.kicad_sym")(options "")(descr ""))
+  (lib (name "CY7C65213A-28PVXI")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/CY7C65213A-28PVXI/CY7C65213A-28PVXI.kicad_sym")(options "")(descr ""))
   (lib (name "DDZ5V6ASF-7")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/DDZ5V6ASF-7/DDZ5V6ASF-7.kicad_sym")(options "")(descr ""))
   (lib (name "DMN2004K-7")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/DMN2004K-7/DMN2004K-7.kicad_sym")(options "")(descr ""))
   (lib (name "DRV8243SQDGQRQ1")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/DRV8243SQDGQRQ1/DRV8243SQDGQRQ1.kicad_sym")(options "")(descr ""))
