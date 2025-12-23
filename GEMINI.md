@@ -80,7 +80,7 @@ STAR/
 ## Hardware Specifications
 
 ### RX72N Motor Controller
-- **MCU:** Renesas RX72N (R5F572NNHGFP)
+- **MCU:** Renesas RX72N (R5F572NNHGFP#30)
 - **RAM:** 1 MB SRAM
 - **Flash:** 4 MB
 - **Control Frequency:** 250 Hz (4 ms period)
