@@ -35,6 +35,7 @@
   (lib (name "DMN2004K-7")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/DMN2004K-7/DMN2004K-7.kicad_sym")(options "")(descr ""))
   (lib (name "DRV8243SQDGQRQ1")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/DRV8243SQDGQRQ1/DRV8243SQDGQRQ1.kicad_sym")(options "")(descr ""))
   (lib (name "FDD4141")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/FDD4141/FDD4141.kicad_sym")(options "")(descr ""))
+  (lib (name "HTST-107-01-T-DV")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/HTST-107-01-T-DV/SAMTEC-HTST-107-01-X-DV.kicad_sym")(options "")(descr ""))
   (lib (name "LIFCL-17-9BG256C")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/LIFCL-17-9BG256C/LIFCL-17-9BG256C.kicad_sym")(options "")(descr ""))
   (lib (name "LIFCL-40-9BG256C")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/LIFCL-40-9BG256C/LIFCL-40-9BG256C.kicad_sym")(options "")(descr ""))
   (lib (name "MAX809TEUR+T")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/MAX809TEUR+T/MAX809TEUR+T.kicad_sym")(options "")(descr ""))
