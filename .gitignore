@@ -108,6 +108,10 @@ star-gateway/star-gateway
 *.exe
 go.work.sum
 
+# Go coverage reports
+coverage.html
+*.coverprofile
+
 # Generated documentation (Doxygen, call graphs, etc.)
 # These should be built locally and never committed
 docs/doxygen/
