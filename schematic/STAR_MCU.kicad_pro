@@ -479,7 +479,7 @@
         "line_style": 0,
         "name": "3V3",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 16,
+        "priority": 18,
         "schematic_color": "rgb(255, 3, 0)",
         "wire_width": 6
       },
@@ -488,8 +488,17 @@
         "line_style": 0,
         "name": "5V0",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 2,
+        "priority": 4,
         "schematic_color": "rgb(230, 28, 61)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "Board 3v3",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 1,
+        "schematic_color": "rgb(255, 95, 0)",
         "wire_width": 6
       },
       {
@@ -497,7 +506,7 @@
         "line_style": 0,
         "name": "Board to Board SPI",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 10,
+        "priority": 12,
         "schematic_color": "rgb(206, 10, 220)",
         "wire_width": 6
       },
@@ -506,7 +515,7 @@
         "line_style": 0,
         "name": "ESP to Pi",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 4,
+        "priority": 6,
         "schematic_color": "rgb(189, 113, 54)",
         "wire_width": 6
       },
@@ -515,7 +524,7 @@
         "line_style": 0,
         "name": "GND",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 15,
+        "priority": 17,
         "schematic_color": "rgb(0, 40, 116)",
         "wire_width": 6
       },
@@ -524,7 +533,7 @@
         "line_style": 0,
         "name": "IMU",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 3,
+        "priority": 5,
         "schematic_color": "rgb(44, 155, 116)",
         "wire_width": 6
       },
@@ -533,7 +542,7 @@
         "line_style": 0,
         "name": "LiDAR",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 1,
+        "priority": 3,
         "schematic_color": "rgb(184, 52, 224)",
         "wire_width": 6
       },
@@ -542,7 +551,7 @@
         "line_style": 0,
         "name": "Motor Driver EN PH",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 9,
+        "priority": 11,
         "schematic_color": "rgb(7, 150, 88)",
         "wire_width": 6
       },
@@ -551,7 +560,7 @@
         "line_style": 0,
         "name": "Motor Driver Encoders",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 7,
+        "priority": 9,
         "schematic_color": "rgb(235, 139, 86)",
         "wire_width": 6
       },
@@ -560,7 +569,7 @@
         "line_style": 0,
         "name": "Motor Driver IPROPI",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 11,
+        "priority": 13,
         "schematic_color": "rgb(0, 196, 203)",
         "wire_width": 6
       },
@@ -569,7 +578,7 @@
         "line_style": 0,
         "name": "Motor Driver SPI",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 8,
+        "priority": 10,
         "schematic_color": "rgb(104, 173, 149)",
         "wire_width": 6
       },
@@ -578,7 +587,7 @@
         "line_style": 0,
         "name": "Motor Driver nFault",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 12,
+        "priority": 14,
         "schematic_color": "rgb(5, 94, 192)",
         "wire_width": 6
       },
@@ -587,7 +596,7 @@
         "line_style": 0,
         "name": "Motor Encoder",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 6,
+        "priority": 8,
         "schematic_color": "rgb(113, 160, 194)",
         "wire_width": 6
       },
@@ -596,7 +605,7 @@
         "line_style": 0,
         "name": "Pi I2c",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 13,
+        "priority": 15,
         "schematic_color": "rgb(202, 36, 94)",
         "wire_width": 6
       },
@@ -605,7 +614,7 @@
         "line_style": 0,
         "name": "SMB",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 14,
+        "priority": 16,
         "schematic_color": "rgb(206, 174, 155)",
         "wire_width": 6
       },
@@ -614,7 +623,7 @@
         "line_style": 0,
         "name": "Sonar Array",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 17,
+        "priority": 19,
         "schematic_color": "rgb(105, 108, 255)",
         "wire_width": 6
       },
@@ -623,8 +632,17 @@
         "line_style": 0,
         "name": "Temperature Sensor",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 0,
+        "priority": 2,
         "schematic_color": "rgb(233, 191, 135)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "UC_VCC",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 0,
+        "schematic_color": "rgb(255, 24, 31)",
         "wire_width": 6
       },
       {
@@ -632,7 +650,7 @@
         "line_style": 0,
         "name": "USB-C",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 5,
+        "priority": 7,
         "schematic_color": "rgb(157, 144, 125)",
         "wire_width": 6
       }
@@ -718,6 +736,14 @@
       {
         "netclass": "Temperature Sensor",
         "pattern": "/TEMPERATURE_SENSOR"
+      },
+      {
+        "netclass": "Board 3v3",
+        "pattern": "/BOARD_3V3"
+      },
+      {
+        "netclass": "UC_VCC",
+        "pattern": "/UC_VCC"
       }
     ]
   },
