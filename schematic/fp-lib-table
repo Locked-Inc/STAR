@@ -34,6 +34,7 @@
   (lib (name "DDZ5V6ASF-7")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/DDZ5V6ASF-7")(options "")(descr ""))
   (lib (name "DMN2004K-7")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/DMN2004K-7")(options "")(descr ""))
   (lib (name "DRV8243SQDGQRQ1")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/DRV8243SQDGQRQ1")(options "")(descr ""))
+  (lib (name "E1E2-Emulator-Interface")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/E1E2-Emulator-Interface")(options "")(descr ""))
   (lib (name "FDD4141")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/FDD4141")(options "")(descr ""))
   (lib (name "HTST-107-01-T-DV")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/HTST-107-01-T-DV")(options "")(descr ""))
   (lib (name "LIFCL-17-9BG256C")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/LIFCL-17-9BG256C")(options "")(descr ""))
