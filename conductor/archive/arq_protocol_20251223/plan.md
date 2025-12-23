@@ -1,6 +1,6 @@
 # Track Plan: ARQ Protocol Implementation
 
-## Phase 1: Test Infrastructure and Basic Logic
+## Phase 1: Test Infrastructure and Basic Logic [checkpoint: e6d10ab7]
 - [x] Task: Create mock dependencies for `Transport`, `Encoder`, and `Decoder` in `mock_transport_test.go` to facilitate isolated testing. f57e48d3
 - [x] Task: Create `arq_test.go` and implement tests for the `Send` method: 33f07e6a
     - [x] Sub-task: Write test for successful transmission (receiving ACK).
@@ -25,7 +25,7 @@
 - [x] Task: Conductor - User Manual Verification 'Receive Logic and Edge Cases' (Protocol in workflow.md) e6d10ab7
 
 ## Phase 3: Final Verification and Documentation
-- [ ] Task: Generate code coverage report and ensure >80% coverage.
-- [ ] Task: Verify thread safety of `Reset` and state getters.
-- [ ] Task: Update `docs/sections/01_nanopb_protocol.tex` if any implementation details diverged from the spec.
-- [ ] Task: Conductor - User Manual Verification 'Final Verification and Documentation' (Protocol in workflow.md)
+- [x] Task: Generate code coverage report and ensure >80% coverage. 33f07e6a
+- [x] Task: Verify thread safety of `Reset` and state getters. 33f07e6a
+- [x] Task: Update `docs/sections/01_nanopb_protocol.tex` if any implementation details diverged from the spec. 22971bf3
+- [x] Task: Conductor - User Manual Verification 'Final Verification and Documentation' (Protocol in workflow.md) be69687d

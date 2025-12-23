@@ -17,9 +17,9 @@ This section documents the NASA/JPL Power of 10 coding rules developed by Gerard
 \hline
 \textbf{Symbol} & \textbf{Meaning} \\
 \hline
-\textcolor{green}{\textbf{✓ COMPLIANT}} & STAR follows this rule \\
+\textcolor{green}{\textbf{$\checkmark$ COMPLIANT}} & STAR follows this rule \\
 \hline
-\textcolor{orange}{\textbf{⚠ INTENTIONAL DEVIATION}} & Architectural choice (DIP pattern) \\
+\textcolor{orange}{\textbf{$\triangle$! INTENTIONAL DEVIATION}} & Architectural choice (DIP pattern) \\
 \hline
 \end{tabular}
 \end{table}
@@ -30,7 +30,7 @@ This section documents the NASA/JPL Power of 10 coding rules developed by Gerard
 
 \textbf{Rationale:} Creates predictable program structure for human understanding and static analysis. Recursion causes unbounded stack usage — dangerous in embedded systems.
 
-\textbf{STAR Compliance:} \textcolor{green}{\textbf{✓ COMPLIANT}}
+\textbf{STAR Compliance:} \textcolor{green}{\textbf{$\checkmark$ COMPLIANT}}
 
 \begin{lstlisting}[language=C]
 /* COMPLIANT - No goto, no recursion */
@@ -57,7 +57,7 @@ esp_err_t star_motor_init(star_motor_handle_t* handle,
 
 \textbf{Rationale:} Prevents runaway code, guarantees termination, enables real-time deadline verification.
 
-\textbf{STAR Compliance:} \textcolor{green}{\textbf{✓ COMPLIANT}}
+\textbf{STAR Compliance:} \textcolor{green}{\textbf{$\checkmark$ COMPLIANT}}
 
 \begin{lstlisting}[language=C]
 /* COMPLIANT - Fixed iteration count */
@@ -84,7 +84,7 @@ for (uint8_t cell = 0; cell < BQ7850_MAX_CELLS; cell++) {
 
 \textbf{Rationale:} Dynamic allocation causes unpredictable performance, memory leaks, fragmentation, and corruption.
 
-\textbf{STAR Compliance:} \textcolor{green}{\textbf{✓ COMPLIANT}}
+\textbf{STAR Compliance:} \textcolor{green}{\textbf{$\checkmark$ COMPLIANT}}
 
 \textbf{Best Practice:} Use pre-allocated static pools instead of runtime memory requests.
 
@@ -113,7 +113,7 @@ pool->item_count++;
 
 \textbf{Rationale:} Represents single verifiable logical units; improves comprehension, review, and testability.
 
-\textbf{STAR Compliance:} \textcolor{green}{\textbf{✓ MOSTLY COMPLIANT}}
+\textbf{STAR Compliance:} \textcolor{green}{\textbf{$\checkmark$ MOSTLY COMPLIANT}}
 
 \begin{lstlisting}[language=C]
 /* COMPLIANT - Single responsibility, short function */
@@ -141,7 +141,7 @@ esp_err_t star_drv8243_read_current(star_drv8243_handle_t* handle,
 
 \textbf{Rationale:} Acts as executable documentation verifying pre-conditions, post-conditions, and invariants.
 
-\textbf{STAR Compliance:} \textcolor{green}{\textbf{✓ COMPLIANT}}
+\textbf{STAR Compliance:} \textcolor{green}{\textbf{$\checkmark$ COMPLIANT}}
 
 \textbf{Note:} STAR uses explicit parameter validation instead of assertions for production code (assertions disabled in release builds).
 
@@ -186,7 +186,7 @@ esp_err_t star_pid_compute(star_pid_handle_t* handle, float setpoint,
 
 \textbf{Rationale:} Limits chances of accidental reference or corruption from other code.
 
-\textbf{STAR Compliance:} \textcolor{green}{\textbf{✓ COMPLIANT}}
+\textbf{STAR Compliance:} \textcolor{green}{\textbf{$\checkmark$ COMPLIANT}}
 
 \begin{lstlisting}[language=C]
 /* COMPLIANT - Variables declared at minimal scope */
@@ -210,7 +210,7 @@ void process_sensors(void)
 
 \textbf{Rationale:} Forces explicit failure-condition handling rather than ignoring error codes.
 
-\textbf{STAR Compliance:} \textcolor{green}{\textbf{✓ COMPLIANT}}
+\textbf{STAR Compliance:} \textcolor{green}{\textbf{$\checkmark$ COMPLIANT}}
 
 \begin{lstlisting}[language=C]
 /* COMPLIANT - All returns checked, all parameters validated */
@@ -249,7 +249,7 @@ esp_err_t star_bus_manager_add_bus(star_bus_manager_t* manager,
 
 \textbf{Rationale:} Preprocessor complexity obscures operations, fooling developers and static analysis tools.
 
-\textbf{STAR Compliance:} \textcolor{green}{\textbf{✓ COMPLIANT}}
+\textbf{STAR Compliance:} \textcolor{green}{\textbf{$\checkmark$ COMPLIANT}}
 
 \begin{lstlisting}[language=C]
 /* COMPLIANT - Simple constant macros */
@@ -273,7 +273,7 @@ static inline float voltage_mv_to_v(uint16_t mv)
 
 \textbf{Rationale:} Multiple indirection and function pointers make static data-flow analysis impossible.
 
-\textbf{STAR Compliance:} \textcolor{orange}{\textbf{⚠ INTENTIONAL DEVIATION}}
+\textbf{STAR Compliance:} \textcolor{orange}{\textbf{$\triangle$! INTENTIONAL DEVIATION}}
 
 \textbf{Intentional Architectural Deviation:} STAR uses function pointers for \textbf{Dependency Inversion Principle (DIP)} — an industry-standard pattern for testability and modularity. This is a conscious trade-off for better architecture.
 
@@ -303,7 +303,7 @@ typedef struct star_error_interface {
 
 \textbf{Rationale:} Modern compilers catch bugs before runtime. Zero warnings, no excuses.
 
-\textbf{STAR Compliance:} \textcolor{green}{\textbf{✓ COMPLIANT}}
+\textbf{STAR Compliance:} \textcolor{green}{\textbf{$\checkmark$ COMPLIANT}}
 
 \begin{lstlisting}[language=bash]
 # platformio.ini - Compiler flags
@@ -327,25 +327,25 @@ build_flags =
 \hline
 \textbf{Rule} & \textbf{Description} & \textbf{STAR Status} \\
 \hline
-1 & No \texttt{goto}/recursion & \textcolor{green}{✓ COMPLIANT} \\
+1 & No \texttt{goto}/recursion & \textcolor{green}{$\checkmark$ COMPLIANT} \\
 \hline
-2 & Fixed loop bounds & \textcolor{green}{✓ COMPLIANT} \\
+2 & Fixed loop bounds & \textcolor{green}{$\checkmark$ COMPLIANT} \\
 \hline
-3 & No dynamic memory & \textcolor{green}{✓ COMPLIANT} \\
+3 & No dynamic memory & \textcolor{green}{$\checkmark$ COMPLIANT} \\
 \hline
-4 & Short functions ($<$60 lines) & \textcolor{green}{✓ COMPLIANT} \\
+4 & Short functions ($<$60 lines) & \textcolor{green}{$\checkmark$ COMPLIANT} \\
 \hline
-5 & Use assertions & \textcolor{green}{✓ COMPLIANT} \\
+5 & Use assertions & \textcolor{green}{$\checkmark$ COMPLIANT} \\
 \hline
-6 & Minimal variable scope & \textcolor{green}{✓ COMPLIANT} \\
+6 & Minimal variable scope & \textcolor{green}{$\checkmark$ COMPLIANT} \\
 \hline
-7 & Check all returns & \textcolor{green}{✓ COMPLIANT} \\
+7 & Check all returns & \textcolor{green}{$\checkmark$ COMPLIANT} \\
 \hline
-8 & Limit preprocessor & \textcolor{green}{✓ COMPLIANT} \\
+8 & Limit preprocessor & \textcolor{green}{$\checkmark$ COMPLIANT} \\
 \hline
-9 & Restrict pointers & \textcolor{orange}{⚠ INTENTIONAL (DIP)} \\
+9 & Restrict pointers & \textcolor{orange}{$\triangle$! INTENTIONAL (DIP)} \\
 \hline
-10 & Maximum warnings & \textcolor{green}{✓ COMPLIANT} \\
+10 & Maximum warnings & \textcolor{green}{$\checkmark$ COMPLIANT} \\
 \hline
 \end{tabular}
 \end{table}
