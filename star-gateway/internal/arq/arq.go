@@ -316,7 +316,9 @@ func (s *StopAndWait) Receive() ([]byte, error) {
 		s.mu.Lock()
 		seq := s.rxSequence
 		s.mu.Unlock()
-		_ = s.sendNack(seq)
+		if nackErr := s.sendNack(seq); nackErr != nil {
+			return nil, fmt.Errorf("arq: receive failed (%w) and nack failed (%v)", err, nackErr)
+		}
 		return nil, err
 	}
 
@@ -335,19 +337,25 @@ func (s *StopAndWait) Receive() ([]byte, error) {
 
 	if receivedSeq == expectedSeq {
 		// New valid frame
-		_ = s.sendAckUnlocked(receivedSeq)
+		if err := s.sendAckUnlocked(receivedSeq); err != nil {
+			return nil, fmt.Errorf("arq: failed to send ack: %w", err)
+		}
 		s.rxSequence = incrementSequence(s.rxSequence)
 		return f.Payload, nil
 	}
 
 	if receivedSeq == previousSeq {
 		// Duplicate - resend ACK but don't deliver again
-		_ = s.sendAckUnlocked(receivedSeq)
+		if err := s.sendAckUnlocked(receivedSeq); err != nil {
+			return nil, fmt.Errorf("arq: failed to resend ack for duplicate: %w", err)
+		}
 		return nil, ErrDuplicateFrame
 	}
 
 	// Out of sequence
-	_ = s.sendNackUnlocked(receivedSeq)
+	if err := s.sendNackUnlocked(receivedSeq); err != nil {
+		return nil, fmt.Errorf("arq: invalid sequence (%d) and nack failed (%v)", receivedSeq, err)
+	}
 	return nil, ErrInvalidSequence
 }
 
