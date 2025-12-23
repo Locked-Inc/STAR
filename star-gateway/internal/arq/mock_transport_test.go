@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Locked-Inc/STAR/star-gateway/internal/frame"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/transport"
 )
 
@@ -32,6 +33,48 @@ func NewMockTransport() *MockTransport {
 		receiveQueue: make([][]byte, 0),
 		isOpen:       true,
 	}
+}
+
+// MockEncoder implements frame.Encoder for testing.
+type MockEncoder struct {
+	mu       sync.Mutex
+	encodeFn func(frame *frame.Frame) ([]byte, error)
+	calls    []*frame.Frame
+}
+
+// Verify MockEncoder implements frame.Encoder.
+var _ frame.Encoder = (*MockEncoder)(nil)
+
+func (m *MockEncoder) Encode(f *frame.Frame) ([]byte, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.calls = append(m.calls, f)
+	if m.encodeFn != nil {
+		return m.encodeFn(f)
+	}
+	// Default behavior: return empty bytes
+	return []byte{}, nil
+}
+
+// MockDecoder implements frame.Decoder for testing.
+type MockDecoder struct {
+	mu       sync.Mutex
+	decodeFn func(data []byte) (*frame.Frame, error)
+	calls    [][]byte
+}
+
+// Verify MockDecoder implements frame.Decoder.
+var _ frame.Decoder = (*MockDecoder)(nil)
+
+func (m *MockDecoder) Decode(data []byte) (*frame.Frame, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	m.calls = append(m.calls, data)
+	if m.decodeFn != nil {
+		return m.decodeFn(data)
+	}
+	// Default behavior: return empty frame
+	return &frame.Frame{}, nil
 }
 
 // Send records the data and returns the configured error.
