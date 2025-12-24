@@ -2,7 +2,7 @@
 //
 // This service acts as a bridge between:
 //   - gRPC clients (Nav2/ROS2, UI) on the RPi5
-//   - ESP32-S3 motor controller via SPI
+//   - RX72N motor controller via SPI
 //
 // Protocol Stack (from docs/sections/01_nanopb_protocol.tex):
 //   Layer 5: Application (gRPC services)
