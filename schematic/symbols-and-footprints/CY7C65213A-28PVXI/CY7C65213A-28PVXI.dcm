@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP CY7C65213A-28PVXI
+D USB Interface IC USB FULL-SPEED PERIPHERALS
+K
+F https://www.infineon.com/dgdl/Infineon-CY7C65213_USB-UART_LP_Bridge_Controller-DataSheet-v17_00-EN.pdf?fileId=8ac78c8c7d0d8da4017d0eca8430435c
+$ENDCMP
+#
+#End Doc Library
