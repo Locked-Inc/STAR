@@ -20,7 +20,7 @@ When writing or modifying code, documentation, or comments:
 2. Never use MOSI/MISO - always use COPI/CIPO
 3. Use "primary" or "main" for configuration structures instead of "master"
 
-Note: ESP-IDF and other external APIs may still use legacy terminology internally. Map these to our terminology in comments and documentation.
+Note: Renesas RX and other external APIs may still use legacy terminology internally. Map these to our terminology in comments and documentation.
 
 ## Project Overview
 
@@ -31,27 +31,27 @@ Note: ESP-IDF and other external APIs may still use legacy terminology internall
 The STAR platform consists of multiple integrated components:
 
 #### Hardware
-- **Main Controller:** Raspberry Pi 5 (quad-core Arm Cortex-A76)
-- **Motor Controller:** ESP32-S3-WROOM-1-N16 (dual-core Xtensa LX7 @ 240 MHz, 512 KB SRAM, 16 MB Flash)
+- **Main Controller:** Raspberry Pi 5 (quad-core ARM Cortex-A76)
+- **Real-Time Controller:** Renesas RX72N (RXv3 core @ 240 MHz, 4 MB Flash, 1 MB SRAM)
 - **Motors:** 4× 6V brushed DC gearmotors (210 RPM, 1:34 gear ratio, 341 PPR Hall encoders)
 - **Motor Drivers:** 4× DRV8243S H-bridge with current sensing
 - **Lidar:** RPLiDAR C1 - DTOF LiDAR 360° Laser Range Scanner (12m range, IP54)
 - **Battery Management:** BQ7850 (custom BMS PCB)
-- **Communication:** 10 Mbps SPI (RPi5 ↔ ESP32), custom PCB with <15cm traces
+- **Communication:** 10 Mbps SPI (RPi5 ↔ RX72N), custom PCB with <15cm traces
 
-#### Firmware (`star-esp32-firmware/`)
-- **Platform:** ESP32-IDF with PlatformIO
-- **Architecture:** Modular framework with Dependency Inversion Principle (DIP)
-- **Control:** 100 Hz closed-loop PID velocity control
+#### Firmware (`star-rx72n-firmware/`)
+- **Platform:** CMake with Renesas RX Toolchain
+- **Architecture:** ThreadX-based modular framework with Dependency Inversion Principle (DIP)
+- **Control:** 250 Hz closed-loop PID velocity control
 - **Protocol:** nanopb (Protocol Buffers) with Stop-and-Wait ARQ and CRC-32
-- **Key Libraries:** star_motor, star_drv8243, star_encoder, star_pid, star_sensor_ds18b20, star_bus
+- **Key Libraries:** rx_motor, rx_drv8243, rx_encoder, rx_pid, rx_bus
 
 #### Operating System (`star-rpi5-buildroot/`)
 - **Platform:** Custom Buildroot Linux for Raspberry Pi 5
 - **Purpose:** Lightweight embedded Linux optimized for SLAM and motor control coordination
 
 #### Protocol (`star-proto/`)
-- **Format:** Protocol Buffers (nanopb for ESP32, standard protobuf for RPi5)
+- **Format:** Protocol Buffers (nanopb for RX72N, standard protobuf for RPi5)
 - **Transport:** SPI peripheral mode (10 Mbps)
 - **Reliability:** Stop-and-Wait ARQ with hardware-accelerated CRC-32
 - **Messages:** Motor commands, telemetry, PID tuning, OTA updates
@@ -66,11 +66,11 @@ The STAR platform consists of multiple integrated components:
 ```
 STAR/
 ├── schematic/              # KiCad hardware designs (PCBs, schematics)
-├── star-esp32-firmware/    # ESP32-S3 motor control firmware
+├── star-rx72n-firmware/    # RX72N motor control firmware
 ├── star-rpi5-buildroot/    # Custom Linux image for Raspberry Pi 5
 ├── star-proto/             # Protocol Buffers schemas (SPI communication)
-├── star-gateway/           # Gateway service (if applicable)
-├── star-ui/                # User interface (if applicable)
+├── star-gateway/           # Gateway service (Go)
+├── star-ui/                # User interface (TypeScript)
 ├── matlab/                 # Motor modeling and PID design
 ├── docs/                   # Technical documentation
 ├── test-scripts/           # Integration and hardware test scripts
@@ -79,11 +79,11 @@ STAR/
 
 ## Hardware Specifications
 
-### ESP32-S3 Motor Controller
-- **MCU:** ESP32-S3-WROOM-1-N16
-- **RAM:** 512 KB SRAM (NO PSRAM)
-- **Flash:** 16 MB
-- **Control Frequency:** 100 Hz (10 ms period)
+### RX72N Motor Controller
+- **MCU:** Renesas RX72N (R5F572NNHGFP#30)
+- **RAM:** 1 MB SRAM
+- **Flash:** 4 MB
+- **Control Frequency:** 250 Hz (4 ms period)
 - **Protocol:** SPI peripheral mode @ 10 Mbps
 
 ### Motor System
@@ -100,22 +100,22 @@ STAR/
 
 ## Development Workflow
 
-### ESP32 Firmware Development
+### RX72N Firmware Development
 
 **Build:**
 ```bash
-cd star-esp32-firmware
-pio run -e esp32s3
+cd star-rx72n-firmware
+./build.sh
 ```
 
-**Upload:**
+**Flash:**
 ```bash
-pio run -e esp32s3 --target upload
+./flash.sh
 ```
 
 **Monitor:**
 ```bash
-pio device monitor
+# Use serial monitor / terminal
 ```
 
 ### Buildroot Development
@@ -141,15 +141,14 @@ sudo dd if=output/images/sdcard.img of=/dev/sdX bs=4M status=progress
 **Generate protobuf code:**
 ```bash
 cd star-proto
-protoc --nanopb_out=. messages.proto  # For ESP32
-protoc --python_out=. messages.proto  # For RPi5
+buf generate
 ```
 
 ## Design Principles
 
-### Embedded Firmware (ESP32)
+### Embedded Firmware (RX72N)
 - **Zero dynamic allocation:** No malloc/free (safety-critical)
-- **Deterministic timing:** Fixed-priority tasks with FreeRTOS
+- **Deterministic timing:** Fixed-priority tasks with ThreadX RTOS
 - **Dependency injection:** DIP architecture for testability
 - **Hardware abstraction:** Unified bus manager for I2C/SPI/UART/GPIO/ADC
 - **Error handling:** Centralized error interface with retry logic
@@ -158,19 +157,18 @@ protoc --python_out=. messages.proto  # For RPi5
 - **Serialization:** nanopb (Protocol Buffers with zero malloc)
 - **Framing:** SYNC marker + 8-byte header + payload + CRC-32
 - **ARQ:** Stop-and-Wait (27× throughput margin)
-- **Error Detection:** CRC-32 with ESP32 hardware acceleration (99.9999% reliability)
+- **Error Detection:** CRC-32 with RX hardware acceleration (99.9999% reliability)
 
 ### Motor Control
-- **Frequency:** 100 Hz (4.7× motor time constant)
+- **Frequency:** 250 Hz
 - **Algorithm:** Discrete PID with anti-windup
 - **Tuning:** MATLAB-based system identification and controller design
 - **Safety:** Watchdog timeout 500ms, emergency stop <20ms
 
 ## Key Files
 
-- `star-esp32-firmware/CLAUDE.md` - ESP32 firmware development guide
-- `docs/Protobuf_Protocol_Design_Analysis.pdf` - Communication protocol specification
-- `docs/Protocol_Implementation_Guide.pdf` - Protocol implementation guide
+- `star-rx72n-firmware/CLAUDE.md` - RX72N firmware development guide
+- `docs/star_documentation.pdf` - Complete system documentation
 - `matlab/README.md` - Motor control design workflow
 - `schematic/STAR_MCU.kicad_sch` - Main MCU schematic
 - `schematic/STAR_MOTOR_DRIVER.kicad_sch` - Motor driver schematic
@@ -187,8 +185,8 @@ cd test-scripts
 
 ### Firmware Unit Tests
 ```bash
-cd star-esp32-firmware
-pio test -e esp32s3
+cd star-rx72n-firmware
+# Run CMake tests
 ```
 
 ## Common Tasks
@@ -196,14 +194,13 @@ pio test -e esp32s3
 ### Motor PID Tuning
 1. Measure motor step response to estimate time constant
 2. Run MATLAB scripts: `motor_model_1st_order.m` → `pid_design_velocity.m`
-3. Update ESP32 firmware with new gains
+3. Update RX72N firmware with new gains
 4. Test closed-loop performance
 
 ### Protocol Updates
 1. Modify `.proto` schema in `star-proto/`
-2. Regenerate nanopb code for ESP32
-3. Regenerate Python code for RPi5
-4. Update message handlers in firmware and gateway
+2. Regenerate code using buf
+3. Update message handlers in firmware and gateway
 
 ### Hardware Debugging
 - Use logic analyzer for SPI signals
@@ -213,16 +210,17 @@ pio test -e esp32s3
 
 ## Project Status
 
-- ✅ ESP32-S3 firmware: Motor control, PID, encoders, bus abstraction
+- ✅ RX72N firmware: Motor control, PID, encoders, bus abstraction
 - ✅ MATLAB toolchain: Transfer function modeling, PID design
 - ✅ Protocol design: nanopb + ARQ + CRC-32 specification
-- 🚧 Protocol implementation: In progress (see Protocol_Implementation_Guide.pdf)
+- ✅ ARQ Implementation in Go (star-gateway)
+- 🚧 Protocol implementation: In progress (see star-gateway implementation)
 - 🚧 RPi5 buildroot: Custom Linux image development
 - 🚧 SLAM integration: RPLiDAR C1 integration with Nav2
 
 ## References
 
-- ESP32-S3 Technical Reference Manual (Espressif Systems)
+- RX72N Technical Reference Manual (Renesas)
 - DRV8243 Datasheet (Texas Instruments)
 - nanopb Documentation (https://jpa.kapsi.fi/nanopb/)
 - RPLiDAR C1 User Manual (SLAMTEC)

@@ -1,6 +1,6 @@
 // Package transport provides the SPI transport layer for RPi5 <-> ESP32 communication.
 //
-// The Raspberry Pi 5 acts as the SPI controller, communicating with the ESP32-S3
+// The Raspberry Pi 5 acts as the SPI controller, communicating with the RX72N
 // peripheral at 10 MHz using SPI Mode 0.
 //
 // Reference: docs/sections/01_nanopb_protocol.tex
