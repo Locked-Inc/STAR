@@ -14,7 +14,7 @@
 - **Traceability:** Maintain clear links between project requirements, design specifications, and test results.
 
 ## Terminology & Naming
-- **Inclusive Hardware Standards:** Strictly adhere to OSHWA inclusive terminology. 
+- **Inclusive Hardware Standards:** Strictly adhere to OSHWA inclusive terminology.
     - Use **Controller/Peripheral** instead of Master/Slave.
     - Use **COPI/CIPO** (Controller Out, Peripheral In / Controller In, Peripheral Out) for SPI data lines.
 - **Functional Naming:** Name modules and variables based on their specific role within the STAR ecosystem (e.g., `MotorGateway`, `DriveController`) to ensure the intent is immediately obvious.
