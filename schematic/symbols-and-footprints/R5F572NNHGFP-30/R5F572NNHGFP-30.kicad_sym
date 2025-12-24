@@ -1126,7 +1126,7 @@
 			(pin passive line
 				(at 57.15 -6.35 180)
 				(length 5.08)
-				(name "PD2/SDHI_D2"
+				(name "PD2"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -1144,7 +1144,7 @@
 			(pin passive line
 				(at 57.15 -8.89 180)
 				(length 5.08)
-				(name "PD3/SDHI_D3"
+				(name "PD3"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -1162,7 +1162,7 @@
 			(pin passive line
 				(at 57.15 -11.43 180)
 				(length 5.08)
-				(name "PD4/SDHI_CMD"
+				(name "PD4"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -1180,7 +1180,7 @@
 			(pin passive line
 				(at 57.15 -13.97 180)
 				(length 5.08)
-				(name "PD5/SDHI_CLK"
+				(name "PD5"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -1198,7 +1198,7 @@
 			(pin passive line
 				(at 57.15 -16.51 180)
 				(length 5.08)
-				(name "PD6/SDHI_D0"
+				(name "PD6"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -1216,7 +1216,7 @@
 			(pin passive line
 				(at 57.15 -19.05 180)
 				(length 5.08)
-				(name "PD7/SDHI_D1"
+				(name "PD7"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -1342,7 +1342,7 @@
 			(pin passive line
 				(at 57.15 -38.1 180)
 				(length 5.08)
-				(name "PE6/SDHI_CD"
+				(name "PE6"
 					(effects
 						(font
 							(size 1.27 1.27)
@@ -1360,7 +1360,7 @@
 			(pin passive line
 				(at 57.15 -40.64 180)
 				(length 5.08)
-				(name "PE7/SDHI_WP"
+				(name "PE7"
 					(effects
 						(font
 							(size 1.27 1.27)
