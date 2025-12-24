@@ -64,6 +64,7 @@
   (lib (name "T6VJ11GQR")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/T6VJ11GQR/T6VJ11GQR.kicad_sym")(options "")(descr ""))
   (lib (name "TLV62569ADRLR")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/TLV62569ADRLR/TLV62569ADRLR.kicad_sym")(options "")(descr ""))
   (lib (name "TPS2115AIPWRQ1")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/TPS2115AIPWRQ1/TPS2115AIPWRQ1.kicad_sym")(options "")(descr ""))
+  (lib (name "TPS2116DRLR")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/TPS2116DRLR/TPS2116DRLR.kicad_sym")(options "")(descr ""))
   (lib (name "TPS25751DREFR")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/TPS25751DREFR/TPS25751DREFR.kicad_sym")(options "")(descr ""))
   (lib (name "TPS40305DRCT")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/TPS40305DRCT/TPS40305DRCT.kicad_sym")(options "")(descr ""))
   (lib (name "TPS54531DDAR")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/TPS54531DDAR/TPS54531DDAR.kicad_sym")(options "")(descr ""))
