@@ -75,29 +75,29 @@ The gateway implements Layers 1--4 of the communication protocol (see Section~\r
 
 \begin{verbatim}
 star-gateway/
-├── cmd/
-│   └── star-gateway/
-│       └── main.go              # Entry point
-├── internal/
-│   ├── transport/               # Layer 1: SPI transport
-│   │   ├── spi.go               # Transport interface
-│   │   └── spi_test.go
-│   ├── frame/                   # Layer 2: Frame protocol
-│   │   ├── frame.go             # Constants and types
-│   │   ├── encoder.go           # Frame encoder
-│   │   ├── decoder.go           # Frame decoder
-│   │   └── frame_test.go
-│   ├── arq/                     # Layer 3: ARQ protocol
-│   │   ├── arq.go               # Stop-and-Wait ARQ
-│   │   └── arq_test.go
-│   └── service/                 # Layer 5: gRPC services
-│       ├── motor_control.go
-│       ├── telemetry.go
-│       ├── battery.go
-│       ├── configuration.go
-│       └── firmware.go
-├── go.mod
-└── CLAUDE.md
++-- cmd/
+|   +-- star-gateway/
+|       +-- main.go              # Entry point
++-- internal/
+|   +-- transport/               # Layer 1: SPI transport
+|   |   +-- spi.go               # Transport interface
+|   |   +-- spi_test.go
+|   +-- frame/                   # Layer 2: Frame protocol
+|   |   +-- frame.go             # Constants and types
+|   |   +-- encoder.go           # Frame encoder
+|   |   +-- decoder.go           # Frame decoder
+|   |   +-- frame_test.go
+|   +-- arq/                     # Layer 3: ARQ protocol
+|   |   +-- arq.go               # Stop-and-Wait ARQ
+|   |   +-- arq_test.go
+|   +-- service/                 # Layer 5: gRPC services
+|       +-- motor_control.go
+|       +-- telemetry.go
+|       +-- battery.go
+|       +-- configuration.go
+|       +-- firmware.go
++-- go.mod
++-- CLAUDE.md
 \end{verbatim}
 
 \subsection{Frame Package}
