@@ -59,6 +59,7 @@
   (lib (name "SLC1480-441MLD")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/SLC1480-441MLD")(options "")(descr ""))
   (lib (name "SML-D12Y1WT86")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/SML-D12Y1WT86")(options "")(descr ""))
   (lib (name "SN74HC153DR")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/SN74HC153DR")(options "")(descr ""))
+  (lib (name "SN74LVC1G125DCKT")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/SN74LVC1G125DCKT")(options "")(descr ""))
   (lib (name "SP0402B-ULC-01ETG")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/SP0402B-ULC-01ETG")(options "")(descr ""))
   (lib (name "SPB1308-R44M")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/SPB1308-R44M")(options "")(descr ""))
   (lib (name "SS-52400-002")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/SS-52400-002")(options "")(descr ""))
