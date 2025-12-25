@@ -9,7 +9,7 @@ This section documents the Protocol Buffer schema architecture for RPi5$\leftrig
 
 \subsection{Architecture Overview}
 
-\textbf{Overview:} Six gRPC services define the complete API surface for robot control, organized by functional domain. Services communicate via the nanopb-serialized frames described in Section 1.
+\textbf{Overview:} Five gRPC services define the complete API surface for robot control, organized by functional domain. Services communicate via the nanopb-serialized frames described in Section 1.
 
 \noindent\makebox[\textwidth]{%
 \begin{tikzpicture}[
@@ -40,7 +40,6 @@ This section documents the Protocol Buffer schema architecture for RPi5$\leftrig
     % Right column - Support Services
     \node[service, fill=orange!20] (battery) at (4,0) {\textbf{BatteryManagementService}\\BMS state, protection, balancing};
     \node[service, fill=yellow!20, below=of battery] (config) {\textbf{ConfigurationService}\\PID gains, calibration, NVS};
-    \node[service, fill=red!20, below=of config] (firmware) {\textbf{FirmwareUpdateService}\\OTA chunks, progress, rollback};
 
     % Common proto spans bottom
     \node[common, below=0.8cm of telemetry, xshift=4cm] (common) {\textbf{common.proto}\\Headers, status codes, geometry types};
@@ -54,7 +53,6 @@ This section documents the Protocol Buffer schema architecture for RPi5$\leftrig
     \draw[->, thick, gray] (telemetry.south) -- (telemetry.south |- common.north);
     \draw[->, thick, gray] (battery.east) -- ++(0.5,0) |- (common.east);
     \draw[->, thick, gray] (config.south) -- (config.south |- common.north);
-    \draw[->, thick, gray] (firmware.south) -- (firmware.south |- common.north);
 \end{tikzpicture}%
 }
 
@@ -202,42 +200,6 @@ Get/SetMotorPidConfig & Unary & Per-motor PID tuning \\
     \item \texttt{SafetyThresholds} -- Overcurrent, thermal shutdown, cell imbalance limits
     \item \texttt{TimingConfig} -- Motor period, telemetry period, communication timeout
 \end{itemize}
-
-\subsubsection{FirmwareUpdateService}
-
-\textbf{Purpose:} Over-the-air (OTA) firmware updates with validation and rollback support.
-
-\textbf{Chunk Size:} 1KB optimal for SPI transfer efficiency.
-
-\begin{table}[H]
-\centering
-\caption{FirmwareUpdateService RPCs}
-\label{tab:firmware-rpcs}
-\begin{tabular}{|l|l|p{6cm}|}
-\hline
-\textbf{RPC} & \textbf{Type} & \textbf{Description} \\
-\hline
-BeginUpdate & Unary & Initialize OTA partition, set expected size/CRC \\
-WriteChunk & Unary & Write single firmware chunk \\
-StreamChunks & Client stream & Bulk chunk transfer \\
-FinalizeUpdate & Unary & Validate firmware, prepare for reboot \\
-AbortUpdate & Unary & Cancel and cleanup \\
-Get/StreamUpdateProgress & Unary/Stream & Transfer progress and state \\
-Reboot & Unary & Boot into new firmware \\
-Rollback & Unary & Revert to previous firmware \\
-MarkValid & Unary & Confirm firmware stability \\
-\hline
-\end{tabular}
-\end{table}
-
-\textbf{Key Messages:}
-\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
-    \item \texttt{FirmwareChunk} -- Data bytes, sequence number, offset
-    \item \texttt{FirmwareUpdateProgress} -- Total size, bytes received, state, CRC32
-    \item \texttt{FirmwareInfo} -- Version string, build date, git hash
-\end{itemize}
-
-\textbf{Update States:} IDLE $\rightarrow$ RECEIVING $\rightarrow$ VALIDATING $\rightarrow$ COMPLETE (or ERROR)
 
 \subsection{common.proto -- Shared Types}
 
