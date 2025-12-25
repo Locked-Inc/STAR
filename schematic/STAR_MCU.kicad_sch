@@ -9200,18 +9200,6 @@
 		)
 		(uuid "8129845b-3172-463e-a75a-7f73455eaefe")
 	)
-	(text "verify this pin can work"
-		(exclude_from_sim no)
-		(at 575.564 309.118 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-				(thickness 0.254)
-				(bold yes)
-			)
-		)
-		(uuid "8411a8f7-ba54-4ea6-b051-9f69d8892647")
-	)
 	(text "1,17 3v3\n2,4 5v"
 		(exclude_from_sim no)
 		(at 86.868 36.576 0)
@@ -31481,10 +31469,9 @@
 		(in_bom yes)
 		(on_board yes)
 		(dnp no)
-		(fields_autoplaced yes)
 		(uuid "2af5b2b9-2279-4279-b466-8803ceef4104")
 		(property "Reference" "U1"
-			(at 652.78 207.01 0)
+			(at 684.784 211.074 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -31492,7 +31479,7 @@
 			)
 		)
 		(property "Value" "R5F572NNHGFP-30"
-			(at 652.78 209.55 0)
+			(at 676.91 372.364 0)
 			(effects
 				(font
 					(size 1.27 1.27)
