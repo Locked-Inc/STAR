@@ -9570,6 +9570,12 @@
 		(uuid "3f577825-fc95-464e-9d96-d30055a9a005")
 	)
 	(junction
+		(at 558.8 274.32)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "402c37c8-d02b-4141-a7f8-5df27e4e83f4")
+	)
+	(junction
 		(at 581.66 240.03)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -15381,6 +15387,16 @@
 	)
 	(wire
 		(pts
+			(xy 558.8 274.32) (xy 558.8 309.88)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "a53e250f-75bc-4a7f-82ec-0a0a1cfb1117")
+	)
+	(wire
+		(pts
 			(xy 218.44 199.39) (xy 228.6 199.39)
 		)
 		(stroke
@@ -15631,6 +15647,16 @@
 	)
 	(wire
 		(pts
+			(xy 558.8 309.88) (xy 614.68 309.88)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "b0fef508-99ad-44f0-a528-6bc901b23d8c")
+	)
+	(wire
+		(pts
 			(xy 551.18 215.9) (xy 551.18 224.79)
 		)
 		(stroke
@@ -15798,16 +15824,6 @@
 			(type default)
 		)
 		(uuid "b592ce9e-290e-452f-a26c-698194bb799f")
-	)
-	(wire
-		(pts
-			(xy 588.01 309.88) (xy 614.68 309.88)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b6d16362-a550-4070-ade8-d53233af13f0")
 	)
 	(wire
 		(pts
@@ -18966,16 +18982,6 @@
 			(justify right bottom)
 		)
 		(uuid "5ab03aa9-4c42-4d0b-b16e-c7a42e286652")
-	)
-	(label "JA2_NMIn"
-		(at 588.01 304.8 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "5c8f062c-e858-41ea-bfa4-b952c90675ed")
 	)
 	(label "PI_SDA"
 		(at 21.59 180.34 0)
