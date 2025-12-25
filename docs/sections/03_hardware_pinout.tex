@@ -7,6 +7,40 @@
 
 \subsection{RX72N Microcontroller Pinout (R5F572NNHGFP\#30)}
 
+\textbf{Color Legend:}
+
+\begin{table}[H]
+\centering
+\small
+\begin{tabular}{|l|c|}
+\hline
+\textbf{Function Category} & \textbf{Color} \\
+\hline
+\rowcolor{blue!20} PWM Motor Control (GPTW) & Blue \\
+\hline
+\rowcolor{green!20} Encoder Inputs (MTU) & Green \\
+\hline
+\rowcolor{orange!20} SPI Communication & Orange \\
+\hline
+\rowcolor{violet!15} SMBUS (BMS) & Violet \\
+\hline
+\rowcolor{red!15} ADC Current Sensing & Red \\
+\hline
+\rowcolor{cyan!15} Sonar Array & Cyan \\
+\hline
+\rowcolor{yellow!15} Debug/JTAG/Boot & Yellow \\
+\hline
+\rowcolor{gray!15} Power/Ground & Gray \\
+\hline
+\rowcolor{magenta!15} Status LEDs & Magenta \\
+\hline
+\rowcolor{lime!10} Temperature/nFAULT & Lime \\
+\hline
+Unused/Available & White \\
+\hline
+\end{tabular}
+\end{table}
+
 \begin{longtable}{|c|l|l|p{5cm}|}
 \hline
 \textbf{Pin} & \textbf{Pin Name} & \textbf{Connected To} & \textbf{Note/Comment} \\
@@ -25,95 +59,95 @@
 \hline
 \endlastfoot
 
-1 & AVCC1 & Bypass caps & Power supply (analog) \\
+\rowcolor{gray!15} 1 & AVCC1 & Bypass caps & Power supply (analog) \\
 \hline
-2 & EMLE & Emulator Configuration jumper & See Table~\ref{tab:emulator-config} \\
+\rowcolor{yellow!15} 2 & EMLE & Emulator Configuration jumper & See Table~\ref{tab:emulator-config} \\
 \hline
-3 & AVSS1 & Ground & Power supply (analog) \\
+\rowcolor{gray!15} 3 & AVSS1 & Ground & Power supply (analog) \\
 \hline
 4 & PJ3 & & \\
 \hline
-5 & VCL & 220nF cap to ground & Voltage regulator \\
+\rowcolor{gray!15} 5 & VCL & 220nF cap to ground & Voltage regulator \\
 \hline
-6 & VBATT & Boards 3v3 & Battery backup \\
+\rowcolor{gray!15} 6 & VBATT & Boards 3v3 & Battery backup \\
 \hline
-7 & MD/FINED & E1E2-Emulator-Interface, DIP switch & See Table~\ref{tab:op-mode-config}. Default: OFF,OFF \\
+\rowcolor{yellow!15} 7 & MD/FINED & E1E2-Emulator-Interface, DIP switch & See Table~\ref{tab:op-mode-config}. Default: OFF,OFF \\
 \hline
-8 & XCIN & 10k resistor to ground & RTC crystal input (not used) \\
+\rowcolor{yellow!15} 8 & XCIN & 10k resistor to ground & RTC crystal input (not used) \\
 \hline
-9 & XCOUT & Floating & RTC crystal output (not used) \\
+\rowcolor{yellow!15} 9 & XCOUT & Floating & RTC crystal output (not used) \\
 \hline
-10 & RES\# & E1E2-Emulator-Interface, Reset button & MCU reset \\
+\rowcolor{yellow!15} 10 & RES\# & E1E2-Emulator-Interface, Reset button & MCU reset \\
 \hline
-11 & P37/XTAL & 24MHz crystal (to pin 13) & System clock crystal \\
+\rowcolor{yellow!15} 11 & P37/XTAL & 24MHz crystal (to pin 13) & System clock crystal \\
 \hline
-12 & VSS & Ground & Power supply \\
+\rowcolor{gray!15} 12 & VSS & Ground & Power supply \\
 \hline
-13 & P36/EXTAL & 24MHz crystal (to pin 11) & System clock crystal \\
+\rowcolor{yellow!15} 13 & P36/EXTAL & 24MHz crystal (to pin 11) & System clock crystal \\
 \hline
-14 & VCC & Boards 3v3 & Power supply \\
+\rowcolor{gray!15} 14 & VCC & Boards 3v3 & Power supply \\
 \hline
-15 & P35/NMI/UPSEL & UPSEL configuration jumper & Can be used for NMI (not used). See Table~\ref{tab:upsel-config} \\
+\rowcolor{yellow!15} 15 & P35/NMI/UPSEL & UPSEL configuration jumper & Can be used for NMI (not used). See Table~\ref{tab:upsel-config} \\
 \hline
-16 & P34/TST\# & E1E2-Emulator-Interface & JTAG (TRST\#) \\
+\rowcolor{yellow!15} 16 & P34/TST\# & E1E2-Emulator-Interface & JTAG (TRST\#) \\
 \hline
-17 & P33 & RES\#, CY7C65213A-28PVXI & USB to UART IC for flashing (resets system before firmware flash) \\
+\rowcolor{yellow!15} 17 & P33 & RES\#, CY7C65213A-28PVXI & USB to UART IC for flashing (resets system before firmware flash) \\
 \hline
 18 & P32 & & \\
 \hline
-19 & P31/TMS & E1E2-Emulator-Interface & JTAG (TMS) \\
+\rowcolor{yellow!15} 19 & P31/TMS & E1E2-Emulator-Interface & JTAG (TMS) \\
 \hline
-20 & P30/TDI & E1E2-Emulator-Interface & JTAG (TDI) \\
+\rowcolor{yellow!15} 20 & P30/TDI & E1E2-Emulator-Interface & JTAG (TDI) \\
 \hline
-21 & P27/TCK & E1E2-Emulator-Interface & JTAG (TCK) \\
+\rowcolor{yellow!15} 21 & P27/TCK & E1E2-Emulator-Interface & JTAG (TCK) \\
 \hline
-22 & P26/TDO & E1E2-Emulator-Interface & JTAG (TDO) \\
+\rowcolor{yellow!15} 22 & P26/TDO & E1E2-Emulator-Interface & JTAG (TDO) \\
 \hline
-23 & P25/MTCLKB & Encoder 3 Phase A & MTU4 encoder (quadrature counting) \\
+\rowcolor{green!20} 23 & P25/MTCLKB & Encoder 3 Phase A & MTU4 encoder (quadrature counting) \\
 \hline
-24 & P24/MTCLKA & Encoder 0 Phase A & MTU1 encoder (quadrature counting) \\
+\rowcolor{green!20} 24 & P24/MTCLKA & Encoder 0 Phase A & MTU1 encoder (quadrature counting) \\
 \hline
 25 & P23 & & \\
 \hline
-26 & P22/MTCLKC & Encoder 1 Phase B & MTU2 encoder (quadrature counting) \\
+\rowcolor{green!20} 26 & P22/MTCLKC & Encoder 1 Phase B & MTU2 encoder (quadrature counting) \\
 \hline
-27 & P21/SCL1 & BMS I2C Clock & RIIC1 for BMS device 2 \\
+\rowcolor{violet!15} 27 & P21/SMBC1 & BMS SMBUS Clock & RIIC1 for BMS device 2 \\
 \hline
-28 & P20/SDA1 & BMS I2C Data & RIIC1 for BMS device 2 \\
+\rowcolor{violet!15} 28 & P20/SMBD1 & BMS SMBUS Data & RIIC1 for BMS device 2 \\
 \hline
 29 & P17 & & \\
 \hline
-30 & P16/USB0\_VBUS & USB0 VBUS & Optional USB boot \\
+\rowcolor{yellow!15} 30 & P16/USB0\_VBUS & USB0 VBUS & Optional USB boot \\
 \hline
-31 & P15/MTCLKB & Encoder 0 Phase B & MTU1 encoder (quadrature counting) \\
+\rowcolor{green!20} 31 & P15/MTCLKB & Encoder 0 Phase B & MTU1 encoder (quadrature counting) \\
 \hline
-32 & P14/MTCLKA & Encoder 1 Phase A & MTU2 encoder (quadrature counting) \\
+\rowcolor{green!20} 32 & P14/MTCLKA & Encoder 1 Phase A & MTU2 encoder (quadrature counting) \\
 \hline
-33 & P13/SDA0 & BMS I2C Data & RIIC0 for BMS device 1 (FM+ capable) \\
+\rowcolor{violet!15} 33 & P13/SMBD0 & BMS SMBUS Data & RIIC0 for BMS device 1 (FM+ capable) \\
 \hline
-34 & P12/SCL0 & BMS I2C Clock & RIIC0 for BMS device 1 (FM+ capable) \\
+\rowcolor{violet!15} 34 & P12/SMBC0 & BMS SMBUS Clock & RIIC0 for BMS device 1 (FM+ capable) \\
 \hline
-35 & VCC\_USB & Boards 3v3 & USB power supply \\
+\rowcolor{gray!15} 35 & VCC\_USB & Boards 3v3 & USB power supply \\
 \hline
-36 & USB0\_DM & USB0 DN (27R resistor) & USB data - \\
+\rowcolor{yellow!15} 36 & USB0\_DM & USB0 DN (27R resistor) & USB data - \\
 \hline
-37 & USB0\_DP & USB0 DP (27R resistor) & USB data + \\
+\rowcolor{yellow!15} 37 & USB0\_DP & USB0 DP (27R resistor) & USB data + \\
 \hline
-38 & VSS\_USB & Ground & USB ground \\
+\rowcolor{gray!15} 38 & VSS\_USB & Ground & USB ground \\
 \hline
-39 & P55 & Motor 0 nFAULT & DRV8243S fault signal (active low) \\
+39 & P55 & & \\
 \hline
-40 & P54 & Motor 1 nFAULT & DRV8243S fault signal (active low) \\
+40 & P54 & & \\
 \hline
-41 & P53 & Motor 2 nFAULT & DRV8243S fault signal (active low) \\
+\rowcolor{cyan!15} 41 & P53 & Sonar 0 Trigger & HC-SR04 trigger pulse \\
 \hline
-42 & P52 & Motor 3 nFAULT & DRV8243S fault signal (active low) \\
+\rowcolor{cyan!15} 42 & P52 & Sonar 0 Echo & HC-SR04 echo response \\
 \hline
-43 & P51 & Sonar 0 Trigger & HC-SR04 trigger pulse \\
+\rowcolor{cyan!15} 43 & P51 & Sonar 1 Trigger & HC-SR04 trigger pulse \\
 \hline
-44 & P50 & Sonar 0 Echo & HC-SR04 echo response \\
+\rowcolor{cyan!15} 44 & P50 & Sonar 1 Echo & HC-SR04 echo response \\
 \hline
-45 & PC7/UB & E1E2-Emulator-Interface, DIP switch & Operation mode configuration. See Table~\ref{tab:op-mode-config}. Also GTIOC3A alternate \\
+\rowcolor{yellow!15} 45 & PC7/UB & E1E2-Emulator-Interface, DIP switch & Operation mode configuration. See Table~\ref{tab:op-mode-config}. Also GTIOC3A alternate \\
 \hline
 46 & PC6 & & \\
 \hline
@@ -125,51 +159,51 @@
 \hline
 50 & PC2 & & \\
 \hline
-51 & PC1 & & \\
+\rowcolor{green!20} 51 & PC1/MTIOC3A & Encoder 2 Phase A & MTU3 encoder (quadrature counting) \\
 \hline
-52 & PC0 & & \\
+\rowcolor{green!20} 52 & PC0/MTIOC3C & Encoder 2 Phase B & MTU3 encoder (quadrature counting) \\
 \hline
-53 & PB7/TXD9 & Debug SCI USB-C RX & UART crossed. See Table~\ref{tab:sci9-config} \\
+\rowcolor{yellow!15} 53 & PB7/TXD9 & Debug SCI USB-C RX & UART crossed. See Table~\ref{tab:sci9-config} \\
 \hline
-54 & PB6/RXD9 & Debug SCI USB-C TX & UART crossed. See Table~\ref{tab:sci9-config} \\
+\rowcolor{yellow!15} 54 & PB6/RXD9 & Debug SCI USB-C TX & UART crossed. See Table~\ref{tab:sci9-config} \\
 \hline
-55 & PB5 & Sonar 1 Trigger & HC-SR04 trigger pulse \\
+\rowcolor{cyan!15} 55 & PB5 & Sonar 2 Trigger & HC-SR04 trigger pulse \\
 \hline
-56 & PB4 & Sonar 1 Echo & HC-SR04 echo response \\
+\rowcolor{cyan!15} 56 & PB4 & Sonar 2 Echo & HC-SR04 echo response \\
 \hline
-57 & PB3 & Sonar 2 Trigger & HC-SR04 trigger pulse \\
+\rowcolor{cyan!15} 57 & PB3 & Sonar 3 Trigger & HC-SR04 trigger pulse \\
 \hline
-58 & PB2 & Sonar 2 Echo & HC-SR04 echo response \\
+\rowcolor{cyan!15} 58 & PB2 & Sonar 3 Echo & HC-SR04 echo response \\
 \hline
-59 & PB1 & Sonar 3 Trigger & HC-SR04 trigger pulse \\
+\rowcolor{cyan!15} 59 & PB1 & Sonar 4 Trigger & HC-SR04 trigger pulse \\
 \hline
-60 & VCC & Boards 3v3 & Power supply \\
+\rowcolor{gray!15} 60 & VCC & Boards 3v3 & Power supply \\
 \hline
-61 & PB0 & Sonar 3 Echo & HC-SR04 echo response \\
+\rowcolor{cyan!15} 61 & PB0 & Sonar 4 Echo & HC-SR04 echo response \\
 \hline
-62 & VSS & Ground & Power supply \\
+\rowcolor{gray!15} 62 & VSS & Ground & Power supply \\
 \hline
-63 & PA7/MISOA-B & RPi5 SPI CIPO & SPI Controller In Peripheral Out \\
+\rowcolor{orange!20} 63 & PA7/MISOA-B & RPi5 SPI CIPO & SPI Controller In Peripheral Out \\
 \hline
-64 & PA6/MOSIA-B & RPi5 SPI COPI & SPI Controller Out Peripheral In \\
+\rowcolor{orange!20} 64 & PA6/MOSIA-B & RPi5 SPI COPI & SPI Controller Out Peripheral In \\
 \hline
-65 & PA5/RSPCKA-B & RPi5 SPI SCLK & SPI clock \\
+\rowcolor{orange!20} 65 & PA5/RSPCKA-B & RPi5 SPI SCLK & SPI clock \\
 \hline
-66 & PA4/SSLA0-B & RPi5 SPI CS & SPI chip select \\
+\rowcolor{orange!20} 66 & PA4/SSLA0-B & RPi5 SPI CS & SPI chip select \\
 \hline
-67 & PA3/MTCLKD & Encoder 3 Phase B & MTU4 encoder (quadrature counting) \\
+\rowcolor{green!20} 67 & PA3/MTCLKD & Encoder 3 Phase B & MTU4 encoder (quadrature counting) \\
 \hline
-68 & PA2/GTIOC1A & Motor 1 PH (Phase) & GPTW PWM channel 1A (32-bit) \\
+\rowcolor{blue!20} 68 & PA2/GTIOC1A & Motor 1 PH (Phase) & GPTW PWM channel 1A (32-bit) \\
 \hline
-69 & PA1/GTIOC2A & Motor 2 PH (Phase) & GPTW PWM channel 2A (32-bit) \\
+\rowcolor{blue!20} 69 & PA1/GTIOC2A & Motor 2 PH (Phase) & GPTW PWM channel 2A (32-bit) \\
 \hline
-70 & PA0/GTIOC0B & Motor 0 EN (Enable) & GPTW PWM channel 0B (32-bit) \\
+\rowcolor{blue!20} 70 & PA0/GTIOC0B & Motor 0 EN (Enable) & GPTW PWM channel 0B (32-bit) \\
 \hline
-71 & PE7/GTIOC3A & Motor 3 PH (Phase) & GPTW PWM channel 3A (32-bit) \\
+\rowcolor{blue!20} 71 & PE7/GTIOC3A & Motor 3 PH (Phase) & GPTW PWM channel 3A (32-bit) \\
 \hline
-72 & PE6/GTIOC3B & Motor 3 EN (Enable) & GPTW PWM channel 3B (32-bit) \\
+\rowcolor{blue!20} 72 & PE6/GTIOC3B & Motor 3 EN (Enable) & GPTW PWM channel 3B (32-bit) \\
 \hline
-73 & PE5/GTIOC0A & Motor 0 PH (Phase) & GPTW PWM channel 0A (32-bit) \\
+\rowcolor{blue!20} 73 & PE5/GTIOC0A & Motor 0 PH (Phase) & GPTW PWM channel 0A (32-bit) \\
 \hline
 74 & PE4 & & \\
 \hline
@@ -177,53 +211,53 @@
 \hline
 76 & PE2 & & \\
 \hline
-77 & PE1/GTIOC1B & Motor 1 EN (Enable) & GPTW PWM channel 1B (32-bit) \\
+\rowcolor{blue!20} 77 & PE1/GTIOC1B & Motor 1 EN (Enable) & GPTW PWM channel 1B (32-bit) \\
 \hline
-78 & PE0/GTIOC2B & Motor 2 EN (Enable) & GPTW PWM channel 2B (32-bit) \\
+\rowcolor{blue!20} 78 & PE0/GTIOC2B & Motor 2 EN (Enable) & GPTW PWM channel 2B (32-bit) \\
 \hline
-79 & PD7 & Sonar 4 Trigger & HC-SR04 trigger pulse \\
+\rowcolor{cyan!15} 79 & PD7 & Sonar 5 Trigger & HC-SR04 trigger pulse \\
 \hline
-80 & PD6 & Sonar 4 Echo & HC-SR04 echo response \\
+\rowcolor{cyan!15} 80 & PD6 & Sonar 5 Echo & HC-SR04 echo response \\
 \hline
-81 & PD5 & Sonar 5 Trigger & HC-SR04 trigger pulse \\
+\rowcolor{cyan!15} 81 & PD5 & Sonar 6 Trigger & HC-SR04 trigger pulse \\
 \hline
-82 & PD4 & Sonar 5 Echo & HC-SR04 echo response \\
+\rowcolor{cyan!15} 82 & PD4 & Sonar 6 Echo & HC-SR04 echo response \\
 \hline
-83 & PD3 & Sonar 6 Trigger & HC-SR04 trigger pulse \\
+\rowcolor{cyan!15} 83 & PD3 & Sonar 7 Trigger & HC-SR04 trigger pulse \\
 \hline
-84 & PD2 & Sonar 6 Echo & HC-SR04 echo response \\
+\rowcolor{cyan!15} 84 & PD2 & Sonar 7 Echo & HC-SR04 echo response \\
 \hline
-85 & PD1 & Sonar 7 Trigger & HC-SR04 trigger pulse \\
+85 & PD1 & & \\
 \hline
-86 & PD0 & Sonar 7 Echo & HC-SR04 echo response \\
+86 & PD0 & & \\
 \hline
-87 & P47 & DS18B20+ Temperature & 1-Wire temperature sensor (open-drain) \\
+\rowcolor{lime!10} 87 & P47/IRQ15-DS & Motor 3 nFAULT & DRV8243S fault signal (active low, interrupt-capable) \\
 \hline
-88 & P46 & Power LED & Status indicator \\
+\rowcolor{lime!10} 88 & P46/IRQ14-DS & Motor 2 nFAULT & DRV8243S fault signal (active low, interrupt-capable) \\
 \hline
-89 & P45 & & \\
+\rowcolor{lime!10} 89 & P45/IRQ13-DS & Motor 1 nFAULT & DRV8243S fault signal (active low, interrupt-capable) \\
 \hline
-90 & P44 & & \\
+\rowcolor{lime!10} 90 & P44/IRQ12-DS & Motor 0 nFAULT & DRV8243S fault signal (active low, interrupt-capable) \\
 \hline
-91 & P43/AN003 & Motor 3 Current Sense & ADC Unit 0, 12-bit, 2.0A max (IPROPI from DRV8243S) \\
+\rowcolor{red!15} 91 & P43/AN003 & Motor 3 Current Sense & ADC Unit 0, 12-bit, 2.0A max (IPROPI from DRV8243S) \\
 \hline
-92 & P42/AN002 & Motor 2 Current Sense & ADC Unit 0, 12-bit, 2.0A max (IPROPI from DRV8243S) \\
+\rowcolor{red!15} 92 & P42/AN002 & Motor 2 Current Sense & ADC Unit 0, 12-bit, 2.0A max (IPROPI from DRV8243S) \\
 \hline
-93 & P41/AN001 & Motor 1 Current Sense & ADC Unit 0, 12-bit, 2.0A max (IPROPI from DRV8243S) \\
+\rowcolor{red!15} 93 & P41/AN001 & Motor 1 Current Sense & ADC Unit 0, 12-bit, 2.0A max (IPROPI from DRV8243S) \\
 \hline
-94 & VREFL0 & Ground & ADC reference low \\
+\rowcolor{gray!15} 94 & VREFL0 & Ground & ADC reference low \\
 \hline
-95 & P40/AN000 & Motor 0 Current Sense & ADC Unit 0, 12-bit, 2.0A max (IPROPI from DRV8243S) \\
+\rowcolor{red!15} 95 & P40/AN000 & Motor 0 Current Sense & ADC Unit 0, 12-bit, 2.0A max (IPROPI from DRV8243S) \\
 \hline
-96 & VREFH0 & 3.3V & ADC reference high \\
+\rowcolor{gray!15} 96 & VREFH0 & 3.3V & ADC reference high \\
 \hline
-97 & AVCC0 & Boards 3v3 & ADC power supply \\
+\rowcolor{gray!15} 97 & AVCC0 & Boards 3v3 & ADC power supply \\
 \hline
-98 & P07 & Status LED & Status indicator \\
+\rowcolor{magenta!15} 98 & P07 & Status LED & Status indicator \\
 \hline
-99 & AVSS0 & Ground & ADC ground \\
+\rowcolor{gray!15} 99 & AVSS0 & Ground & ADC ground \\
 \hline
-100 & P05 & Error LED & Error indicator \\
+\rowcolor{magenta!15} 100 & P05 & Error LED & Error indicator \\
 \hline
 \end{longtable}
 
