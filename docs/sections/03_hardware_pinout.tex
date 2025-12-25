@@ -7,7 +7,335 @@
 
 \subsection{RX72N Microcontroller Pinout (R5F572NNHGFP\#30)}
 
-\textbf{Status:} Pin assignments are pending hardware verification and will be documented once validated.
+\begin{longtable}{|c|l|l|p{5cm}|}
+\hline
+\textbf{Pin} & \textbf{Pin Name} & \textbf{Connected To} & \textbf{Note/Comment} \\
+\hline
+\endfirsthead
+
+\hline
+\textbf{Pin} & \textbf{Pin Name} & \textbf{Connected To} & \textbf{Note/Comment} \\
+\hline
+\endhead
+
+\hline
+\multicolumn{4}{r}{\textit{Continued on next page}} \\
+\endfoot
+
+\hline
+\endlastfoot
+
+1 & AVCC1 & Bypass caps & \\
+\hline
+2 & EMLE & Emulator Configuration jumper & See Table~\ref{tab:emulator-config} \\
+\hline
+3 & AVSS1 & Ground & \\
+\hline
+4 & PJ3 & & \\
+\hline
+5 & VCL & 220nF cap to ground & \\
+\hline
+6 & VBATT & Boards 3v3 & \\
+\hline
+7 & MD/FINED & E1E2-Emulator-Interface, DIP switch & See Table~\ref{tab:op-mode-config}. Default: OFF,OFF \\
+\hline
+8 & XCIN & 10k resistor to ground & RTC crystal input (not used) \\
+\hline
+9 & XCOUT & Floating & Left floating per datasheet \\
+\hline
+10 & RES\# & E1E2-Emulator-Interface, Reset button & MCU reset \\
+\hline
+11 & P37/XTAL & 24MHz crystal (to pin 13) & System clock crystal \\
+\hline
+12 & VSS & Ground & \\
+\hline
+13 & P36/EXTAL & 24MHz crystal (to pin 11) & System clock crystal \\
+\hline
+14 & VCC & Boards 3v3 & \\
+\hline
+15 & P35/NMI/UPSEL & UPSEL configuration jumper & Can be used for NMI (not currently used). See Table~\ref{tab:upsel-config} \\
+\hline
+16 & P34/TST\# & E1E2-Emulator-Interface & \\
+\hline
+17 & P33 & RES\#, CY7C65213A-28PVXI & USB to UART IC for flashing (resets system before firmware flash). See Table~\ref{tab:reset-pin-states} \\
+\hline
+18 & & & \\
+\hline
+19 & P31/TMS & E1E2-Emulator-Interface & \\
+\hline
+20 & P30/TDI & E1E2-Emulator-Interface & \\
+\hline
+21 & P27/TCK & E1E2-Emulator-Interface & \\
+\hline
+22 & P26/TDO & E1E2-Emulator-Interface & \\
+\hline
+23 & & & \\
+\hline
+24 & & & \\
+\hline
+25 & & & \\
+\hline
+26 & & & \\
+\hline
+27 & & & \\
+\hline
+28 & & & \\
+\hline
+29 & & & \\
+\hline
+30 & P16/USB0\_VBUS & USB0 VBUS & \\
+\hline
+31 & & & \\
+\hline
+32 & & & \\
+\hline
+33 & & & \\
+\hline
+34 & & & \\
+\hline
+35 & VCC\_USB & Boards 3v3 & \\
+\hline
+36 & USB0\_DM & USB0 DN (27R resistor) & \\
+\hline
+37 & USB0\_DP & USB0 DP (27R resistor) & \\
+\hline
+38 & VSS\_USB & Ground & \\
+\hline
+39 & & & \\
+\hline
+40 & & & \\
+\hline
+41 & & & \\
+\hline
+42 & & & \\
+\hline
+43 & & & \\
+\hline
+44 & & & \\
+\hline
+45 & PC7/UB & E1E2-Emulator-Interface, DIP switch & Operation mode configuration. See Table~\ref{tab:op-mode-config} \\
+\hline
+46 & & & \\
+\hline
+47 & & & \\
+\hline
+48 & & & \\
+\hline
+49 & & & \\
+\hline
+50 & & & \\
+\hline
+51 & & & \\
+\hline
+52 & & & \\
+\hline
+53 & PB7/TXD9 & Debug SCI USB-C RX & UART crossed. See Table~\ref{tab:sci9-config} \\
+\hline
+54 & PB6/RXD9 & Debug SCI USB-C TX & UART crossed. See Table~\ref{tab:sci9-config} \\
+\hline
+55 & & & \\
+\hline
+56 & & & \\
+\hline
+57 & & & \\
+\hline
+58 & & & \\
+\hline
+59 & & & \\
+\hline
+60 & VCC & Boards 3v3 & \\
+\hline
+61 & & & \\
+\hline
+62 & VSS & Ground & \\
+\hline
+63 & & & \\
+\hline
+64 & & & \\
+\hline
+65 & & & \\
+\hline
+66 & & & \\
+\hline
+67 & & & \\
+\hline
+68 & & & \\
+\hline
+69 & & & \\
+\hline
+70 & & & \\
+\hline
+71 & & & \\
+\hline
+72 & & & \\
+\hline
+73 & & & \\
+\hline
+74 & & & \\
+\hline
+75 & & & \\
+\hline
+76 & & & \\
+\hline
+77 & & & \\
+\hline
+78 & & & \\
+\hline
+79 & & & \\
+\hline
+80 & & & \\
+\hline
+81 & & & \\
+\hline
+82 & & & \\
+\hline
+83 & & & \\
+\hline
+84 & & & \\
+\hline
+85 & & & \\
+\hline
+86 & & & \\
+\hline
+87 & & & \\
+\hline
+88 & & & \\
+\hline
+89 & & & \\
+\hline
+90 & & & \\
+\hline
+91 & & & \\
+\hline
+92 & & & \\
+\hline
+93 & & & \\
+\hline
+94 & & & \\
+\hline
+95 & & & \\
+\hline
+96 & & & \\
+\hline
+97 & & & \\
+\hline
+98 & & & \\
+\hline
+99 & & & \\
+\hline
+100 & & & \\
+\hline
+\end{longtable}
+
+\begin{table}[H]
+\centering
+\caption{Emulator Configuration Jumper Settings}
+\label{tab:emulator-config}
+\begin{tabular}{|p{6cm}|p{8cm}|}
+\hline
+\textbf{Jumper Position} & \textbf{Configuration} \\
+\hline
+Shorted Pin 1-2 (normal Operation) & E1/E2 Lite normal debugging (use this mode for normal operation). Microcontroller single operation (without emulator) \\
+\hline
+Shorted Pin 2-3 (debug with E1/E2) & E1/E2 Lite debugging with Hot plug-in \\
+\hline
+All open & DO NOT SET \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Operation Configuration Mode DIP Switch Settings}
+\label{tab:op-mode-config}
+\small
+\textbf{Note:} There are 2 USB-C ports. To flash we can use the SCI boot mode if we want to flash with the SCI USB-C. To flash we can use the USB0 boot mode if we want to flash with the USB0 USB-C.
+
+\vspace{0.2cm}
+
+\begin{tabular}{|c|c|c|l|}
+\hline
+\textbf{Pin1} & \textbf{Pin2} & \textbf{UPSEL\_CFG} & \textbf{OP Mode} \\
+\hline
+OFF & X & X & Single Chip Mode \\
+\hline
+ON & OFF & X & SCI Boot Mode (SCI1) \\
+\hline
+ON & ON & 1/2 & USB (Bus Powered) (USB0) \\
+\hline
+ON & ON & 2/3 & USB (Self Powered) (USB0) \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{UPSEL Power Configuration for USB Boot Mode}
+\label{tab:upsel-config}
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Jumper Position} & \textbf{Power Configuration for USB Boot Mode} \\
+\hline
+Shorted Pin 1-2 (No battery pack) & Bus Powered \\
+\hline
+Shorted Pin 2-3 (Battery Pack) & Self Powered \\
+\hline
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Required Pin States Upon Reset Release}
+\label{tab:reset-pin-states}
+\small
+To enter a mode capable of flashing firmware, the following pin configurations must be held when the \textbf{RES\# pin} goes from Low to High:
+
+\vspace{0.2cm}
+
+\begin{tabular}{|l|l|l|l|}
+\hline
+\textbf{Desired Flashing Mode} & \textbf{MD Pin Level} & \textbf{UB Pin Level} & \textbf{Interface Used} \\
+\hline
+Boot Mode (SCI) & Low & Low & Serial (SCI1) \\
+\hline
+Boot Mode (USB) & Low & High & USB \\
+\hline
+Boot Mode (FINE) & Low $\rightarrow$ High* & Low & FINE Interface \\
+\hline
+\end{tabular}
+
+\vspace{0.2cm}
+
+\small
+*For FINE interface, the MD pin must be Low at reset release and then switched to High within 20 to 100 ms.
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{SCI9 Firmware Configuration (MPC Settings)}
+\label{tab:sci9-config}
+\small
+\textbf{Note:} Pins are multiplexed. Firmware must explicitly configure the Multi-Function Pin Controller (MPC) as follows:
+
+\vspace{0.2cm}
+
+\begin{tabular}{|l|p{11cm}|}
+\hline
+\textbf{Step} & \textbf{Configuration} \\
+\hline
+1. UNLOCK MPC & Unlock registers using the Write-Protect Register (PWPR) \\
+\hline
+2. PIN FUNCTION SELECT & \textbf{PIN 53 (PB7) $\rightarrow$ TXD9:} Set PB7PFS.PSEL[5:0] = 001010b (0x0A) \newline \textbf{PIN 54 (PB6) $\rightarrow$ RXD9:} Set PB6PFS.PSEL[5:0] = 001010b (0x0A) \\
+\hline
+3. ENABLE PERIPHERAL & Set Port Mode Register (PMR) bit to '1' for both PB7 and PB6 \\
+\hline
+\end{tabular}
+
+\vspace{0.2cm}
+
+\small
+\textbf{USB-UART IC Configuration:} Use Cypress configuration utility to enable BUSDETECT.
+\end{table}
 
 \subsection{Raspberry Pi 5 Pinout}
 
