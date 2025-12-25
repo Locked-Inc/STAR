@@ -120,7 +120,7 @@ For context, control loop frequencies should match system dynamics:
         text width=14.5cm
     },
 ]
-    \node[layer, fill=red!20] (app) at (0,0) {\textbf{Application} \hfill Motor Commands, Telemetry, OTA Updates};
+    \node[layer, fill=red!20] (app) at (0,0) {\textbf{Application} \hfill Motor Commands, Telemetry};
     \node[layer, fill=orange!20, below=of app] (serial) {\textbf{Serialization} \hfill nanopb (Protocol Buffers) with static allocation};
     \node[layer, fill=yellow!20, below=of serial] (arq) {\textbf{ARQ} \hfill Stop-and-Wait (SEQ/ACK/NACK, 8ms timeout)};
     \node[layer, fill=green!20, below=of arq] (frame) {\textbf{Frame} \hfill SYNC (2B) + Header (6B) + Payload + CRC-32 (4B)};
