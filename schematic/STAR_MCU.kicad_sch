@@ -15602,16 +15602,6 @@
 	)
 	(wire
 		(pts
-			(xy 139.7 88.9) (xy 91.44 88.9)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "a38549de-1e9e-4233-b456-4fb147c50424")
-	)
-	(wire
-		(pts
 			(xy 427.99 190.5) (xy 443.23 190.5)
 		)
 		(stroke
@@ -16789,16 +16779,6 @@
 			(type default)
 		)
 		(uuid "d05f34a9-5fc0-4272-be74-2fd892310e06")
-	)
-	(wire
-		(pts
-			(xy 91.44 91.44) (xy 139.7 91.44)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "d0eff54a-7cbd-4bb7-b2cb-fef5be8ac9b8")
 	)
 	(wire
 		(pts
@@ -19005,16 +18985,6 @@
 			)
 		)
 	)
-	(label "ESP_PI_SPI3_PM_SCLK"
-		(at 29.21 71.12 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "00455343-41ac-4311-a71c-51939c499b1b")
-	)
 	(label "SCI9_TXD9"
 		(at 354.33 226.06 0)
 		(effects
@@ -19065,6 +19035,16 @@
 			(justify right bottom)
 		)
 		(uuid "09ec1efe-1ffc-46ef-9c7c-ef8d4d73716c")
+	)
+	(label "RSPIC_MOTOR0_nCS"
+		(at 593.09 342.9 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "0d4f8368-a1cb-48db-8175-466aa690cbf1")
 	)
 	(label "EMU_TMS"
 		(at 593.09 314.96 0)
@@ -19126,6 +19106,16 @@
 			(justify left bottom)
 		)
 		(uuid "1908f4e1-f8f9-4300-8e42-8b806f20da28")
+	)
+	(label "RSPIC_MOTOR1_nCS"
+		(at 593.09 331.47 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "19b0a34a-553e-4fe8-8029-a24f3de9ba6c")
 	)
 	(label "EMU_TDI_RXD"
 		(at 351.79 336.55 0)
@@ -19287,6 +19277,16 @@
 		)
 		(uuid "2f0f3595-7854-4128-b345-0f6c6a03d3ec")
 	)
+	(label "RSPIC_MOTOR3_nCS"
+		(at 722.63 288.29 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "30c0d7af-477d-4c8b-96a4-491ec64b589f")
+	)
 	(label "PMOD_JB_INT1"
 		(at 722.63 341.63 180)
 		(effects
@@ -19326,16 +19326,6 @@
 			(justify left bottom)
 		)
 		(uuid "3386173a-3527-4dbc-bbf8-9a8ee68f94fd")
-	)
-	(label "ESP_PI_SPI3_PM_CIPO"
-		(at 29.21 68.58 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "359072cd-b39e-451b-865d-362f9bd06a29")
 	)
 	(label "USB0_USBC_VBUS"
 		(at 266.7 165.1 180)
@@ -19710,6 +19700,16 @@
 		)
 		(uuid "60f9f6f9-2e0a-448d-8e90-5d8a99d243df")
 	)
+	(label "RPI5_RSPIA_COPI"
+		(at 29.21 66.04 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "62f25cd6-0ae8-472d-ba13-821e9939897e")
+	)
 	(label "MOTOR1_EN"
 		(at 722.63 266.7 180)
 		(effects
@@ -19729,16 +19729,6 @@
 			(justify right bottom)
 		)
 		(uuid "657561cd-e7d2-4616-b8db-b34553dc54c2")
-	)
-	(label "ESP_PI_SPI3_PM_DRDY2"
-		(at 139.7 91.44 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "65b5cd37-8aea-45ab-bf5c-6171b9954f2b")
 	)
 	(label "MOTOR0_EN"
 		(at 722.63 269.24 180)
@@ -20051,6 +20041,16 @@
 		)
 		(uuid "998b8b77-099c-4d16-9f38-07827165b48f")
 	)
+	(label "RPI5_RSPIA_SCLK"
+		(at 29.21 71.12 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "99ae1ef2-97c8-4bf7-be01-3c0e5a2f8c01")
+	)
 	(label "RSPIC_COPI"
 		(at 722.63 247.65 180)
 		(effects
@@ -20070,6 +20070,16 @@
 			(justify right bottom)
 		)
 		(uuid "9b1f4e1e-9a72-4343-b057-aff9e20e090b")
+	)
+	(label "RPI5_RSPIA_CS"
+		(at 139.7 71.12 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "9b69f13e-1ede-4bda-a2f6-9a80df9bc4a4")
 	)
 	(label "P3V3_MOTOR_DRIVER"
 		(at 676.91 443.23 0)
@@ -20465,16 +20475,6 @@
 		)
 		(uuid "c81a5565-e6b3-4d60-9b7e-ffe918d0636b")
 	)
-	(label "ESP_PI_SPI3_PM_DRDY1"
-		(at 139.7 88.9 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "cb6090cf-1fe9-4942-a97d-93c062455c4a")
-	)
 	(label "MOTOR0_nFAULT"
 		(at 722.63 233.68 180)
 		(effects
@@ -20514,6 +20514,16 @@
 			(justify right bottom)
 		)
 		(uuid "cf8242bf-15f2-413c-8a11-a70d4be9eecb")
+	)
+	(label "RPI5_RSPIA_CIPO"
+		(at 29.21 68.58 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "d0bd34ff-a914-4146-8fa8-ed612179f83a")
 	)
 	(label "ENCODER0_PHASE_A"
 		(at 593.09 328.93 0)
@@ -20575,16 +20585,6 @@
 		)
 		(uuid "da1e6c74-d111-44ab-843e-78ce197d7a0d")
 	)
-	(label "ESP_PI_SPI3_PM_CS"
-		(at 139.7 71.12 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "dad964c2-5cfc-4ff0-af40-3c8b03fb8f3e")
-	)
 	(label "RSPIC_SCLK"
 		(at 722.63 252.73 180)
 		(effects
@@ -20594,6 +20594,16 @@
 			(justify right bottom)
 		)
 		(uuid "dc96f9ac-0b58-4f37-a79f-caab25891ab1")
+	)
+	(label "RSPIC_MOTOR2_nCS"
+		(at 593.09 312.42 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "ddb1397c-b3ca-4f68-b38e-0557fc6c2e2c")
 	)
 	(label "EMU_TRSTn"
 		(at 351.79 326.39 0)
@@ -20728,16 +20738,6 @@
 			(justify right bottom)
 		)
 		(uuid "ed176cbc-98c6-450f-a7da-15d9c3ec06e6")
-	)
-	(label "ESP_PI_SPI3_PM_COPI"
-		(at 29.21 66.04 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "edbdb7b7-22be-4ad8-9fa2-858e895943ad")
 	)
 	(label "PMOD_JC_UART_RX"
 		(at 722.63 260.35 180)
