@@ -19457,7 +19457,7 @@
 		)
 		(uuid "438dc0ce-55b1-4d08-abfd-860a2eafccf4")
 	)
-	(label "MOTOR_DRIVER_SPI2_CM_COPI"
+	(label "MOTOR_DRIVER_RSPIC_CM_COPI"
 		(at 775.97 461.01 180)
 		(effects
 			(font
@@ -20121,7 +20121,7 @@
 		)
 		(uuid "a2033e30-eb05-473a-8b0d-645f10b181d6")
 	)
-	(label "MOTOR_DRIVER_SPI2_CM_CIPO"
+	(label "MOTOR_DRIVER_RSPIC_CM_CIPO"
 		(at 775.97 466.09 180)
 		(effects
 			(font
@@ -20709,7 +20709,7 @@
 		)
 		(uuid "f0943677-0450-4d85-9a3c-e32983615c23")
 	)
-	(label "MOTOR_DRIVER_SPI2_CM_SCLK"
+	(label "MOTOR_DRIVER_RSPIC_CM_SCLK"
 		(at 775.97 463.55 180)
 		(effects
 			(font
