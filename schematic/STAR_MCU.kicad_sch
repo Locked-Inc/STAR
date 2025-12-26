@@ -19106,7 +19106,7 @@
 		)
 		(uuid "12ce438b-f929-4c51-b01e-a39c854a3b33")
 	)
-	(label "MOTOR_DRIVER_MOTOR3_IPROPI"
+	(label "MOTOR3_IPROPI"
 		(at 777.24 506.73 180)
 		(effects
 			(font
@@ -19127,7 +19127,7 @@
 		)
 		(uuid "15c7c6be-066c-4254-bd63-6cd9773d41fb")
 	)
-	(label "MOTOR_DRIVER_RSPIC_CM_COPI"
+	(label "RSPIC_COPI"
 		(at 722.63 247.65 180)
 		(effects
 			(font
@@ -19137,7 +19137,7 @@
 		)
 		(uuid "182cc772-d2b3-427d-bd40-0a8b48f60679")
 	)
-	(label "MOTOR_DRIVER_MOTOR1_EN_IN1"
+	(label "MOTOR1_EN"
 		(at 683.26 520.7 0)
 		(effects
 			(font
@@ -19287,7 +19287,7 @@
 		)
 		(uuid "2d883cbc-bb7e-4d47-88b0-b04ff9340a62")
 	)
-	(label "MOTOR_DRIVER_MOTOR2_EN_IN1"
+	(label "MOTOR2_EN"
 		(at 683.26 523.24 0)
 		(effects
 			(font
@@ -19337,7 +19337,7 @@
 		)
 		(uuid "335d08b5-9742-44f3-94bc-93d6e5e67eb8")
 	)
-	(label "MOTOR_DRIVER_RSPIC_MOTOR3_nCS"
+	(label "RSPIC_MOTOR3_nCS"
 		(at 684.53 468.63 0)
 		(effects
 			(font
@@ -19377,7 +19377,7 @@
 		)
 		(uuid "37243e91-bd4e-4de0-8648-0be1b29e680e")
 	)
-	(label "MOTOR_DRIVER_MOTOR3_EN_IN1"
+	(label "MOTOR3_EN"
 		(at 683.26 525.78 0)
 		(effects
 			(font
@@ -19387,7 +19387,7 @@
 		)
 		(uuid "37bb7d9a-d8c0-403e-96c3-4c14ea06cdd6")
 	)
-	(label "MOTOR_DRIVER_MOTOR3_PH_IN2"
+	(label "MOTOR3_PH"
 		(at 783.59 525.78 180)
 		(effects
 			(font
@@ -19457,7 +19457,7 @@
 		)
 		(uuid "4368c134-269b-474d-9025-b24b9bd737bf")
 	)
-	(label "MOTOR_DRIVER_RSPIC_MOTOR2_nCS"
+	(label "RSPIC_MOTOR2_nCS"
 		(at 684.53 466.09 0)
 		(effects
 			(font
@@ -19467,7 +19467,7 @@
 		)
 		(uuid "438dc0ce-55b1-4d08-abfd-860a2eafccf4")
 	)
-	(label "MOTOR_DRIVER_RSPIC_CM_COPI"
+	(label "RSPIC_COPI"
 		(at 775.97 461.01 180)
 		(effects
 			(font
@@ -19507,7 +19507,7 @@
 		)
 		(uuid "4a29b3e1-c436-4cca-b9b3-4d75679c7cc0")
 	)
-	(label "MOTOR_DRIVER_ENCODER3_OUTPUT_B"
+	(label "ENCODER3_PHASE_B"
 		(at 779.78 486.41 180)
 		(effects
 			(font
@@ -19537,7 +19537,7 @@
 		)
 		(uuid "4c96855c-d270-40d8-acd9-b0660aaf86f5")
 	)
-	(label "MOTOR_DRIVER_RSPIC_MOTOR0_nCS"
+	(label "RSPIC_MOTOR0_nCS"
 		(at 684.53 461.01 0)
 		(effects
 			(font
@@ -19648,7 +19648,7 @@
 		)
 		(uuid "5a9c06e8-1b47-4cef-bff9-49a7f7f09e47")
 	)
-	(label "MOTOR_DRIVER_ENCODER0_OUTPUT_B"
+	(label "ENCODER0_PHASE_B"
 		(at 779.78 478.79 180)
 		(effects
 			(font
@@ -19709,7 +19709,7 @@
 		)
 		(uuid "5fb1d26f-af30-4145-b8bd-8aea0a60580f")
 	)
-	(label "MOTOR_DRIVER_MOTOR2_IPROPI"
+	(label "MOTOR2_IPROPI"
 		(at 777.24 504.19 180)
 		(effects
 			(font
@@ -19870,7 +19870,7 @@
 		)
 		(uuid "72944c02-54bc-489f-84ad-458d2ddcb56d")
 	)
-	(label "MOTOR_DRIVER_RSPIC_MOTOR1_nCS"
+	(label "RSPIC_MOTOR1_nCS"
 		(at 684.53 463.55 0)
 		(effects
 			(font
@@ -19900,7 +19900,7 @@
 		)
 		(uuid "74e5834a-7203-4dbf-8998-e16893a7cff9")
 	)
-	(label "MOTOR_DRIVER_ENCODER0_OUTPUT_A"
+	(label "ENCODER0_PHASE_A"
 		(at 687.07 478.79 0)
 		(effects
 			(font
@@ -19920,7 +19920,7 @@
 		)
 		(uuid "772052f5-082f-48ec-b63e-61f4da1885d6")
 	)
-	(label "MOTOR_DRIVER_MOTOR1_IPROPI"
+	(label "MOTOR1_IPROPI"
 		(at 777.24 501.65 180)
 		(effects
 			(font
@@ -19940,7 +19940,7 @@
 		)
 		(uuid "78a113ea-2132-404f-a49c-04e3b64d5dda")
 	)
-	(label "MOTOR_DRIVER_MOTOR1_nFAULT"
+	(label "MOTOR1_nFAULT"
 		(at 685.8 501.65 0)
 		(effects
 			(font
@@ -20041,7 +20041,7 @@
 		)
 		(uuid "90e6c575-558b-4f40-b703-54c6453a8dab")
 	)
-	(label "MOTOR_DRIVER_MOTOR2_PH_IN2"
+	(label "MOTOR2_PH"
 		(at 783.59 523.24 180)
 		(effects
 			(font
@@ -20081,7 +20081,7 @@
 		)
 		(uuid "998b8b77-099c-4d16-9f38-07827165b48f")
 	)
-	(label "MOTOR_DRIVER_RSPIC_CM_COPI"
+	(label "RSPIC_COPI"
 		(at 722.63 247.65 180)
 		(effects
 			(font
@@ -20101,7 +20101,7 @@
 		)
 		(uuid "9b1f4e1e-9a72-4343-b057-aff9e20e090b")
 	)
-	(label "MOTOR_DRIVER_P3V3"
+	(label "P3V3_MOTOR_DRIVER"
 		(at 676.91 443.23 0)
 		(effects
 			(font
@@ -20181,7 +20181,7 @@
 		)
 		(uuid "a2197856-ceab-453a-92db-5009d11c9474")
 	)
-	(label "MOTOR_DRIVER_RSPIC_CM_CIPO"
+	(label "RSPIC_CIPO"
 		(at 775.97 466.09 180)
 		(effects
 			(font
@@ -20385,7 +20385,7 @@
 		)
 		(uuid "b6baafca-1499-424d-83b8-6edbc7f1811f")
 	)
-	(label "MOTOR_DRIVER_ENCODER3_OUTPUT_A"
+	(label "ENCODER3_PHASE_A"
 		(at 687.07 486.41 0)
 		(effects
 			(font
@@ -20425,7 +20425,7 @@
 		)
 		(uuid "bef92cce-bd97-4d43-8543-b5ead74b688d")
 	)
-	(label "MOTOR_DRIVER_MOTOR2_nFAULT"
+	(label "MOTOR2_nFAULT"
 		(at 685.8 504.19 0)
 		(effects
 			(font
@@ -20445,7 +20445,7 @@
 		)
 		(uuid "bf36d449-404c-4036-8b82-aae2072d2482")
 	)
-	(label "MOTOR_DRIVER_MOTOR0_EN_IN1"
+	(label "MOTOR0_EN"
 		(at 683.26 518.16 0)
 		(effects
 			(font
@@ -20455,7 +20455,7 @@
 		)
 		(uuid "bf8fb2af-c974-4cf6-86eb-8dc94c61a215")
 	)
-	(label "MOTOR_DRIVER_ENCODER1_OUTPUT_A"
+	(label "ENCODER1_PHASE_A"
 		(at 687.07 481.33 0)
 		(effects
 			(font
@@ -20515,7 +20515,7 @@
 		)
 		(uuid "cb70821f-25e8-4ba6-9e64-db3ab8cf37fa")
 	)
-	(label "MOTOR_DRIVER_ENCODER1_OUTPUT_B"
+	(label "ENCODER1_PHASE_B"
 		(at 779.78 481.33 180)
 		(effects
 			(font
@@ -20525,7 +20525,7 @@
 		)
 		(uuid "cd6a33a5-cda0-4fa8-a2fa-058b497b67a7")
 	)
-	(label "MOTOR_DRIVER_MOTOR0_nFAULT"
+	(label "MOTOR0_nFAULT"
 		(at 685.8 499.11 0)
 		(effects
 			(font
@@ -20555,7 +20555,7 @@
 		)
 		(uuid "d13b7196-d55b-41ec-9a30-84addabdd4d7")
 	)
-	(label "MOTOR_DRIVER_MOTOR0_PH_IN2"
+	(label "MOTOR0_PH"
 		(at 783.59 518.16 180)
 		(effects
 			(font
@@ -20595,7 +20595,7 @@
 		)
 		(uuid "d8f7a1e5-7f87-4799-bdf0-8a4196b9308f")
 	)
-	(label "MOTOR_DRIVER_ENCODER2_OUTPUT_A"
+	(label "ENCODER2_PHASE_A"
 		(at 687.07 483.87 0)
 		(effects
 			(font
@@ -20615,7 +20615,7 @@
 		)
 		(uuid "dad964c2-5cfc-4ff0-af40-3c8b03fb8f3e")
 	)
-	(label "MOTOR_DRIVER_RSPIC_CM_SCLK"
+	(label "RSPIC_SCLK"
 		(at 722.63 252.73 180)
 		(effects
 			(font
@@ -20718,7 +20718,7 @@
 		)
 		(uuid "e7c38674-0572-460d-8688-3492e91aeafc")
 	)
-	(label "MOTOR_DRIVER_RSPIC_CM_CIPO"
+	(label "RSPIC_CIPO"
 		(at 722.63 250.19 180)
 		(effects
 			(font
@@ -20789,7 +20789,7 @@
 		)
 		(uuid "ee8d02d7-f15b-44eb-9017-4ed8fd9172bd")
 	)
-	(label "MOTOR_DRIVER_ENCODER2_OUTPUT_B"
+	(label "ENCODER2_PHASE_B"
 		(at 779.78 483.87 180)
 		(effects
 			(font
@@ -20799,7 +20799,7 @@
 		)
 		(uuid "f0943677-0450-4d85-9a3c-e32983615c23")
 	)
-	(label "MOTOR_DRIVER_RSPIC_CM_SCLK"
+	(label "RSPIC_SCLK"
 		(at 775.97 463.55 180)
 		(effects
 			(font
@@ -20809,7 +20809,7 @@
 		)
 		(uuid "f3af2131-57ef-48bb-8694-394df1d69662")
 	)
-	(label "MOTOR_DRIVER_MOTOR1_PH_IN2"
+	(label "MOTOR1_PH"
 		(at 783.59 520.7 180)
 		(effects
 			(font
@@ -20819,7 +20819,7 @@
 		)
 		(uuid "f3cbdd81-9fde-40ba-8f53-1d2051b73722")
 	)
-	(label "MOTOR_DRIVER_MOTOR3_nFAULT"
+	(label "MOTOR3_nFAULT"
 		(at 685.8 506.73 0)
 		(effects
 			(font
@@ -20869,7 +20869,7 @@
 		)
 		(uuid "fa4e429d-c539-475e-8695-89a86fc0aa89")
 	)
-	(label "MOTOR_DRIVER_MOTOR0_IPROPI"
+	(label "MOTOR0_IPROPI"
 		(at 777.24 499.11 180)
 		(effects
 			(font
