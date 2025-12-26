@@ -19287,7 +19287,7 @@
 		)
 		(uuid "2f4d1dd0-0b13-435a-a1da-689384b11ec9")
 	)
-	(label "RPI5_SPI_SCLK"
+	(label "RPI5_RSPIA_SCLK"
 		(at 722.63 300.99 180)
 		(effects
 			(font
@@ -20011,7 +20011,7 @@
 		)
 		(uuid "90e6c575-558b-4f40-b703-54c6453a8dab")
 	)
-	(label "RPI5_SPI_COPI"
+	(label "RPI5_RSPIA_COPI"
 		(at 722.63 303.53 180)
 		(effects
 			(font
@@ -20405,7 +20405,7 @@
 		)
 		(uuid "c17aa436-c8fe-4488-a272-d8225b826840")
 	)
-	(label "RPI5_SPI_CIPO"
+	(label "RPI5_RSPIA_CIPO"
 		(at 722.63 306.07 180)
 		(effects
 			(font
@@ -20829,7 +20829,7 @@
 		)
 		(uuid "fb5c47b5-7e8b-46b0-8f99-6555fef643ad")
 	)
-	(label "RPI5_SPI_CS"
+	(label "RPI5_RSPIA_CS"
 		(at 722.63 298.45 180)
 		(effects
 			(font
