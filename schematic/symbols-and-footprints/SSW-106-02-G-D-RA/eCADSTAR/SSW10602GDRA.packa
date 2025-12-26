@@ -1,0 +1,13 @@
+(unit MM)
+
+(package "SSW-106-02-G-D-RA"
+    (type UNDEF)
+    (uver 2)
+    (cuser "SamacSys")
+    (uuser "SamacSys")
+    (utime 2024-06-18-07:12:23)
+    (mountForm default
+        (footprintRef "SSW10602GDRA")
+        (spec "System")
+    )
+)
