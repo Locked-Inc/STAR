@@ -657,15 +657,6 @@
       {
         "bus_width": 12,
         "line_style": 0,
-        "name": "Temperature Sensor",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 16,
-        "schematic_color": "rgb(144, 238, 144)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
         "name": "Power/Ground",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 1,
@@ -715,6 +706,15 @@
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 23,
         "schematic_color": "rgb(135, 206, 250)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "Temperature Sensor",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 16,
+        "schematic_color": "rgb(144, 238, 144)",
         "wire_width": 6
       },
       {
