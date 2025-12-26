@@ -573,26 +573,26 @@ Additional GPIO expansion for custom peripherals, control signals, or future fea
 
 \textbf{Connector Placement:}
 \begin{itemize}
-    \item Place PMOD JA (SPI) and JB (I2C) on top edge of board for sensor access
-    \item Place PMOD JC (UART) on bottom edge for wireless modules
+    \item Place PMOD JA (SPI) and JC (I2C) on top edge of board for sensor access
+    \item Place PMOD JB and JD (GPIO) on side edges for expansion modules
     \item Maintain minimum 0.5" spacing between connectors for module clearance
     \item Orient all connectors with Pin 1 in same direction for consistency
 \end{itemize}
 
 \textbf{Circuit Protection:}
 \begin{itemize}
-    \item \textbf{I2C Pull-ups (JB):} 2.2k$\Omega$ to 4.7k$\Omega$ resistors on SCL/SDA
+    \item \textbf{I2C Pull-ups (JC):} 2.2k$\Omega$ to 4.7k$\Omega$ resistors on SCL/SDA
     \item \textbf{Series Resistors:} 33$\Omega$ on all signal lines for ESD protection
     \item \textbf{Power Filtering:} 0.1$\mu$F ceramic + 10$\mu$F tantalum per connector
-    \item \textbf{5V Option (JC):} TPS62133 buck converter or TLV62569 for 5V wireless modules
+    \item \textbf{5V Option:} TPS62133 buck converter or TLV62569 if 5V modules required
     \item \textbf{Overcurrent:} Resetable PTC fuses (500mA) on VCC lines
 \end{itemize}
 
 \textbf{Trace Routing:}
 \begin{itemize}
     \item \textbf{JA (High-Speed SPI):} 50$\Omega$ impedance-controlled traces, length match $\pm$5mm
-    \item \textbf{JB (I2C):} Keep traces $<$6 inches, avoid routing near PWM signals
-    \item \textbf{JC (UART):} Cross TX/RX for DTE $\leftrightarrow$ DCE direct connection
+    \item \textbf{JC (I2C):} Keep traces $<$6 inches, avoid routing near PWM signals
+    \item \textbf{JB/JD (GPIO):} Standard routing, adequate spacing from high-frequency signals
 \end{itemize}
 
 \subsection{Motor Driver Dual-Interface Architecture}
@@ -608,7 +608,7 @@ The DRV8243S motor drivers use two separate interfaces:
 
 \textbf{Configuration (SPI):}
 \begin{itemize}
-    \item \textbf{Peripheral:} RSPIC using PMOD JC GPIO pins (PD3, PD2, PD1, PA0, P17, P23, P32)
+    \item \textbf{Peripheral:} RSPIC using dedicated motor driver SPI pins
     \item \textbf{Purpose:} Configure current limits, fault thresholds, slew rates, dead-time insertion
     \item \textbf{Update rate:} Startup only, or when changing operating parameters
     \item \textbf{Speed:} 1 MHz SPI clock (configuration is not time-critical)
