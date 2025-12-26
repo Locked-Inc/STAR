@@ -477,181 +477,127 @@
       {
         "bus_width": 12,
         "line_style": 0,
-        "name": "3V3",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 18,
-        "schematic_color": "rgb(255, 3, 0)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "5V0",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 4,
-        "schematic_color": "rgb(230, 28, 61)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "Board 3v3",
+        "name": "Debug/Programming",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 1,
-        "schematic_color": "rgb(255, 95, 0)",
+        "schematic_color": "rgb(255, 249, 217)",
         "wire_width": 6
       },
       {
         "bus_width": 12,
         "line_style": 0,
-        "name": "Board to Board SPI",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 12,
-        "schematic_color": "rgb(220, 74, 69)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "ESP to Pi",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 6,
-        "schematic_color": "rgb(189, 113, 54)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "GND",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 17,
-        "schematic_color": "rgb(0, 40, 116)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "IMU",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 5,
-        "schematic_color": "rgb(44, 155, 116)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "LiDAR",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 3,
-        "schematic_color": "rgb(143, 143, 224)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "Motor Driver EN PH",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 11,
-        "schematic_color": "rgb(7, 150, 88)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "Motor Driver Encoders",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 9,
-        "schematic_color": "rgb(235, 139, 86)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "Motor Driver IPROPI",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 13,
-        "schematic_color": "rgb(0, 196, 203)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "Motor Driver SPI",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 10,
-        "schematic_color": "rgb(104, 173, 149)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "Motor Driver nFault",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 14,
-        "schematic_color": "rgb(5, 94, 192)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "Motor Encoder",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 8,
-        "schematic_color": "rgb(113, 160, 194)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "Pi I2c",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 15,
-        "schematic_color": "rgb(202, 36, 94)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "SMB",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 16,
-        "schematic_color": "rgb(206, 174, 155)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "Sonar Array",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 19,
-        "schematic_color": "rgb(105, 108, 255)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "Temperature Sensor",
+        "name": "Power/Ground",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 2,
-        "schematic_color": "rgb(233, 191, 135)",
+        "schematic_color": "rgb(217, 217, 217)",
         "wire_width": 6
       },
       {
         "bus_width": 12,
         "line_style": 0,
-        "name": "UC_VCC",
+        "name": "RPi5 SPI",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 0,
-        "schematic_color": "rgb(255, 24, 31)",
+        "priority": 3,
+        "schematic_color": "rgb(255, 204, 153)",
         "wire_width": 6
       },
       {
         "bus_width": 12,
         "line_style": 0,
-        "name": "USB-C",
+        "name": "Motor PWM Control",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 4,
+        "schematic_color": "rgb(204, 204, 255)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "Motor Fault Signals",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 5,
+        "schematic_color": "rgb(230, 255, 230)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "Motor Current Sensing",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 6,
+        "schematic_color": "rgb(255, 217, 217)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "Encoders",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 7,
-        "schematic_color": "rgb(157, 144, 125)",
+        "schematic_color": "rgb(204, 255, 204)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "Motor Driver SPI Config",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 8,
+        "schematic_color": "rgb(229, 204, 255)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "I2C Charger",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 9,
+        "schematic_color": "rgb(204, 255, 255)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "SMBus BMS",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 10,
+        "schematic_color": "rgb(238, 217, 238)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "PMOD JB",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 11,
+        "schematic_color": "rgb(194, 166, 128)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "PMOD JA",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 12,
+        "schematic_color": "rgb(206, 229, 179)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "PMOD JC",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 13,
+        "schematic_color": "rgb(166, 255, 255)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "Status LEDs",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 14,
+        "schematic_color": "rgb(255, 217, 238)",
         "wire_width": 6
       }
     ],
@@ -662,128 +608,192 @@
     "netclass_assignments": null,
     "netclass_patterns": [
       {
-        "netclass": "GND",
+        "netclass": "Power/Ground",
         "pattern": "GND"
       },
       {
-        "netclass": "Pi I2c",
-        "pattern": "/PI_*"
+        "netclass": "Power/Ground",
+        "pattern": "VCC"
       },
       {
-        "netclass": "3V3",
-        "pattern": "/*P3V3*"
+        "netclass": "Power/Ground",
+        "pattern": "/+3V3"
       },
       {
-        "netclass": "Motor Driver SPI",
-        "pattern": "/MOTOR_DRIVER_SPI2_*"
+        "netclass": "Power/Ground",
+        "pattern": "/+5V"
       },
       {
-        "netclass": "Motor Driver nFault",
-        "pattern": "/MOTOR_DRIVER_*nFAULT"
+        "netclass": "Debug/Programming",
+        "pattern": "/SCI9_*"
       },
       {
-        "netclass": "Motor Driver EN PH",
-        "pattern": "/MOTOR_DRIVER_*_PH_*"
+        "netclass": "Debug/Programming",
+        "pattern": "/USB0_*"
       },
       {
-        "netclass": "Motor Driver EN PH",
-        "pattern": "/MOTOR_DRIVER_*_EN_*"
+        "netclass": "Debug/Programming",
+        "pattern": "/EMU_*"
       },
       {
-        "netclass": "Motor Driver IPROPI",
-        "pattern": "/MOTOR_DRIVER_*IPROPI"
+        "netclass": "RPi5 SPI",
+        "pattern": "/RPI5_RSPIA_*"
       },
       {
-        "netclass": "Sonar Array",
-        "pattern": "/HCSR04*"
+        "netclass": "Motor PWM Control",
+        "pattern": "/MOTOR0_PH"
       },
       {
-        "netclass": "SMB",
-        "pattern": "/FUEL_GUAGE_SMB*"
+        "netclass": "Motor PWM Control",
+        "pattern": "/MOTOR0_EN"
       },
       {
-        "netclass": "Board to Board SPI",
-        "pattern": "/ESP_PI_SPI3*"
+        "netclass": "Motor PWM Control",
+        "pattern": "/MOTOR1_PH"
       },
       {
-        "netclass": "Motor Driver Encoders",
-        "pattern": "/MOTOR_DRIVER_ENCODER*"
+        "netclass": "Motor PWM Control",
+        "pattern": "/MOTOR1_EN"
       },
       {
-        "netclass": "Motor Encoder",
-        "pattern": "/MOTOR_ENCODER_*"
+        "netclass": "Motor PWM Control",
+        "pattern": "/MOTOR2_PH"
       },
       {
-        "netclass": "USB-C",
-        "pattern": "/USB_C*"
+        "netclass": "Motor PWM Control",
+        "pattern": "/MOTOR2_EN"
       },
       {
-        "netclass": "ESP to Pi",
-        "pattern": "/ESP_*_PI_*"
+        "netclass": "Motor PWM Control",
+        "pattern": "/MOTOR3_PH"
       },
       {
-        "netclass": "IMU",
-        "pattern": "/IMU*"
+        "netclass": "Motor PWM Control",
+        "pattern": "/MOTOR3_EN"
       },
       {
-        "netclass": "5V0",
-        "pattern": "/P5V0*"
+        "netclass": "Motor Fault Signals",
+        "pattern": "/MOTOR0_nFAULT"
       },
       {
-        "netclass": "LiDAR",
-        "pattern": "/LiDAR*"
+        "netclass": "Motor Fault Signals",
+        "pattern": "/MOTOR1_nFAULT"
       },
       {
-        "netclass": "Temperature Sensor",
-        "pattern": "/TEMPERATURE_SENSOR"
+        "netclass": "Motor Fault Signals",
+        "pattern": "/MOTOR2_nFAULT"
       },
       {
-        "netclass": "Board 3v3",
-        "pattern": "/BOARD_3V3"
+        "netclass": "Motor Fault Signals",
+        "pattern": "/MOTOR3_nFAULT"
       },
       {
-        "netclass": "UC_VCC",
-        "pattern": "/UC_VCC"
+        "netclass": "Motor Current Sensing",
+        "pattern": "/MOTOR0_IPROPI"
       },
       {
-        "netclass": "SMB",
-        "pattern": "/BMS_SMBUS_*"
+        "netclass": "Motor Current Sensing",
+        "pattern": "/MOTOR1_IPROPI"
       },
       {
-        "netclass": "Motor Encoder",
-        "pattern": "/ENCODER*"
+        "netclass": "Motor Current Sensing",
+        "pattern": "/MOTOR2_IPROPI"
       },
       {
-        "netclass": "Motor Driver EN PH",
-        "pattern": "/MOTOR*_EN"
+        "netclass": "Motor Current Sensing",
+        "pattern": "/MOTOR3_IPROPI"
       },
       {
-        "netclass": "Motor Driver EN PH",
-        "pattern": "/MOTOR*_PH"
+        "netclass": "Encoders",
+        "pattern": "/ENCODER0_PHASE_A"
       },
       {
-        "netclass": "Motor Driver IPROPI",
-        "pattern": "/MOTOR*_IPROPI"
+        "netclass": "Encoders",
+        "pattern": "/ENCODER0_PHASE_B"
       },
       {
-        "netclass": "Motor Driver nFault",
-        "pattern": "/MOTOR*_nFAULT"
+        "netclass": "Encoders",
+        "pattern": "/ENCODER1_PHASE_A"
       },
       {
-        "netclass": "Motor Driver SPI",
-        "pattern": "/MOTOR_DRIVER_nCS*"
+        "netclass": "Encoders",
+        "pattern": "/ENCODER1_PHASE_B"
       },
       {
-        "netclass": "Motor Driver SPI",
-        "pattern": "/MOTOR_DRIVER_SCLK"
+        "netclass": "Encoders",
+        "pattern": "/ENCODER2_PHASE_A"
       },
       {
-        "netclass": "Motor Driver SPI",
-        "pattern": "/MOTOR_DRIVER_COPI"
+        "netclass": "Encoders",
+        "pattern": "/ENCODER2_PHASE_B"
       },
       {
-        "netclass": "Motor Driver SPI",
-        "pattern": "/MOTOR_DRIVER_CIPO"
+        "netclass": "Encoders",
+        "pattern": "/ENCODER3_PHASE_A"
+      },
+      {
+        "netclass": "Encoders",
+        "pattern": "/ENCODER3_PHASE_B"
+      },
+      {
+        "netclass": "Motor Driver SPI Config",
+        "pattern": "/RSPIC_SCLK"
+      },
+      {
+        "netclass": "Motor Driver SPI Config",
+        "pattern": "/RSPIC_COPI"
+      },
+      {
+        "netclass": "Motor Driver SPI Config",
+        "pattern": "/RSPIC_CIPO"
+      },
+      {
+        "netclass": "Motor Driver SPI Config",
+        "pattern": "/RSPIC_MOTOR0_nCS"
+      },
+      {
+        "netclass": "Motor Driver SPI Config",
+        "pattern": "/RSPIC_MOTOR1_nCS"
+      },
+      {
+        "netclass": "Motor Driver SPI Config",
+        "pattern": "/RSPIC_MOTOR2_nCS"
+      },
+      {
+        "netclass": "Motor Driver SPI Config",
+        "pattern": "/RSPIC_MOTOR3_nCS"
+      },
+      {
+        "netclass": "I2C Charger",
+        "pattern": "/CHARGER_I2C_CLOCK"
+      },
+      {
+        "netclass": "I2C Charger",
+        "pattern": "/CHARGER_I2C_DATA"
+      },
+      {
+        "netclass": "SMBus BMS",
+        "pattern": "/BMS_SMBUS_CLK"
+      },
+      {
+        "netclass": "SMBus BMS",
+        "pattern": "/BMS_SMBUS_DATA"
+      },
+      {
+        "netclass": "PMOD JA",
+        "pattern": "/PMOD_JA_*"
+      },
+      {
+        "netclass": "PMOD JB",
+        "pattern": "/PMOD_JB_*"
+      },
+      {
+        "netclass": "PMOD JC",
+        "pattern": "/PMOD_JC_*"
+      },
+      {
+        "netclass": "Status LEDs",
+        "pattern": "/LED_*"
       }
     ]
   },
