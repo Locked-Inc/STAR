@@ -599,6 +599,96 @@
         "priority": 14,
         "schematic_color": "rgb(255, 20, 147)",
         "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "3V3 Main Rail",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 15,
+        "schematic_color": "rgb(255, 0, 255)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "3V3 Buck Converter",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 16,
+        "schematic_color": "rgb(148, 0, 211)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "3V3 Motor Driver",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 17,
+        "schematic_color": "rgb(255, 69, 0)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "5V Buck Converter",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 18,
+        "schematic_color": "rgb(0, 255, 255)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "USB SCI Data",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 19,
+        "schematic_color": "rgb(255, 215, 0)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "RPi5 I2C",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 20,
+        "schematic_color": "rgb(50, 205, 50)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "LiDAR UART",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 21,
+        "schematic_color": "rgb(255, 105, 180)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "Fuel Gauge SMBus",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 22,
+        "schematic_color": "rgb(0, 255, 127)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "IMU Control",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 23,
+        "schematic_color": "rgb(255, 99, 71)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "System Config",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 24,
+        "schematic_color": "rgb(135, 206, 250)",
+        "wire_width": 6
       }
     ],
     "meta": {
@@ -794,6 +884,98 @@
       {
         "netclass": "Status LEDs",
         "pattern": "/LED_*"
+      },
+      {
+        "netclass": "3V3 Main Rail",
+        "pattern": "/BOARD_3V3"
+      },
+      {
+        "netclass": "3V3 Main Rail",
+        "pattern": "/BUS_3V3"
+      },
+      {
+        "netclass": "3V3 Buck Converter",
+        "pattern": "/P3V3_BUCK"
+      },
+      {
+        "netclass": "3V3 Motor Driver",
+        "pattern": "/P3V3_MOTOR_DRIVER"
+      },
+      {
+        "netclass": "5V Buck Converter",
+        "pattern": "/P5V0_BUCK"
+      },
+      {
+        "netclass": "USB SCI Data",
+        "pattern": "/SCI_USBC_USBDN"
+      },
+      {
+        "netclass": "USB SCI Data",
+        "pattern": "/SCI_USBC_USBDP"
+      },
+      {
+        "netclass": "USB SCI Data",
+        "pattern": "/USB0_USBC_USBDN"
+      },
+      {
+        "netclass": "USB SCI Data",
+        "pattern": "/USB0_USBC_USBDP"
+      },
+      {
+        "netclass": "RPi5 I2C",
+        "pattern": "/PI_SCL"
+      },
+      {
+        "netclass": "RPi5 I2C",
+        "pattern": "/PI_SDA"
+      },
+      {
+        "netclass": "LiDAR UART",
+        "pattern": "/LiDAR_RX_PI5_TX"
+      },
+      {
+        "netclass": "LiDAR UART",
+        "pattern": "/LiDAR_TX_PI5_RX"
+      },
+      {
+        "netclass": "Fuel Gauge SMBus",
+        "pattern": "/FUEL_GUAGE_SMBC_SCL"
+      },
+      {
+        "netclass": "Fuel Gauge SMBus",
+        "pattern": "/FUEL_GUAGE_SMBD_SDA"
+      },
+      {
+        "netclass": "IMU Control",
+        "pattern": "/IMU_INT"
+      },
+      {
+        "netclass": "IMU Control",
+        "pattern": "/IMU_RST"
+      },
+      {
+        "netclass": "System Config",
+        "pattern": "/DBG_RESETn"
+      },
+      {
+        "netclass": "System Config",
+        "pattern": "/DSW_MD_FINED"
+      },
+      {
+        "netclass": "System Config",
+        "pattern": "/DSW_UB"
+      },
+      {
+        "netclass": "System Config",
+        "pattern": "/JP_UPSEL"
+      },
+      {
+        "netclass": "System Config",
+        "pattern": "/SW_RESn"
+      },
+      {
+        "netclass": "System Config",
+        "pattern": "/EMU_EMLE"
       }
     ]
   },
