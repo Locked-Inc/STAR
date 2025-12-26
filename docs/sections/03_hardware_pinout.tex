@@ -42,8 +42,6 @@
 \hline
 \rowcolor{cyan!35} PMOD JC (UART/Wireless) & Bright Cyan \\
 \hline
-\rowcolor{black!25} PMOD JD (PWM/GPIO) & Light Gray \\
-\hline
 \rowcolor{purple!20} Motor Driver SPI (Config) & Purple \\
 \hline
 Unused/Available & White \\
@@ -75,7 +73,7 @@ Unused/Available & White \\
 \hline
 \rowcolor{gray!15} 3 & AVSS1 & Ground & Power supply (analog) \\
 \hline
-\rowcolor{black!25} 4 & PJ3 & PMOD JD GPIO3 & See Table~\ref{tab:pmod-jd} \\
+4 & PJ3 & Unused/Spare & Available for future use \\
 \hline
 \rowcolor{gray!15} 5 & VCL & 220nF cap to ground & Voltage regulator \\
 \hline
@@ -205,7 +203,7 @@ Unused/Available & White \\
 \hline
 \rowcolor{brown!35} 68 & PA2 & PMOD JB GPIO3 & See Table~\ref{tab:pmod-jb} \\
 \hline
-\rowcolor{purple!20} 69 & PA1 & Motor Driver SPI CIPO & RSPI2 controller in peripheral out (DRV8243S to MCU) \\
+\rowcolor{cyan!35} 69 & PA1 & PMOD JC PWM3 & PWM/Timer output. See Table~\ref{tab:pmod-jc} \\
 \hline
 \rowcolor{purple!20} 70 & PA0 & Motor Driver SPI nCS3 & RSPI2 chip select for Motor 3 (DRV8243S) \\
 \hline
@@ -233,13 +231,13 @@ Unused/Available & White \\
 \hline
 \rowcolor{cyan!35} 82 & PD4 & PMOD JC CTS & Clear to Send. See Table~\ref{tab:pmod-jc} \\
 \hline
-\rowcolor{cyan!35} 83 & PD3 & PMOD JC GPIO0 & Enable/Reset. See Table~\ref{tab:pmod-jc} \\
+\rowcolor{purple!20} 83 & PD3 & Motor Driver SPI SCLK & RSPI2 clock (RSPCKC-A) to all 4 DRV8243S drivers \\
 \hline
-\rowcolor{cyan!35} 84 & PD2 & PMOD JC GPIO1 & Interrupt/Event. See Table~\ref{tab:pmod-jc} \\
+\rowcolor{purple!20} 84 & PD2 & Motor Driver SPI CIPO & RSPI2 controller in (MISOC-A) from DRV8243S \\
 \hline
-\rowcolor{purple!20} 85 & PD1 & Motor Driver SPI SCLK & RSPI2 clock to all 4 DRV8243S drivers \\
+\rowcolor{purple!20} 85 & PD1 & Motor Driver SPI COPI & RSPI2 controller out (MOSIC-A) to DRV8243S \\
 \hline
-\rowcolor{purple!20} 86 & PD0 & Motor Driver SPI COPI & RSPI2 controller out peripheral in (MCU to DRV8243S) \\
+\rowcolor{cyan!35} 86 & PD0 & PMOD JC PWM1 & PWM/Timer output. See Table~\ref{tab:pmod-jc} \\
 \hline
 \rowcolor{lime!10} 87 & P47/IRQ15-DS & Motor 3 nFAULT & DRV8243S fault signal (active low, interrupt-capable) \\
 \hline
@@ -507,7 +505,7 @@ The STAR platform includes four standard 12-pin PMOD (Peripheral Module) connect
 
 \begin{table}[H]
 \centering
-\caption{PMOD JC Pinout (UART with Flow Control)}
+\caption{PMOD JC Pinout (UART + Motor Driver SPI)}
 \label{tab:pmod-jc}
 \small
 \begin{tabular}{|c|l|l|l|p{5cm}|}
@@ -526,9 +524,9 @@ The STAR platform includes four standard 12-pin PMOD (Peripheral Module) connect
 \hline
 6 & VCC & - & 3.3V/5V Power & Can be 5V with regulator \\
 \hline
-7 & GPIO0 & PD3 & Enable/Reset & D3, GTIOC0A alt, QSPI \\
+7 & MOTOR\_SCLK & PD3 & Motor Driver SPI Clock & RSPCKC-A (repurposed from GPIO0) \\
 \hline
-8 & GPIO1 & PD2 & Interrupt/Event & D2, GTIOC0B alt, MISOC-A \\
+8 & MOTOR\_CIPO & PD2 & Motor Driver SPI In & MISOC-A (repurposed from GPIO1) \\
 \hline
 9 & GPIO2 & PB1 & Extra GPIO & A9, LCD control \\
 \hline
@@ -540,6 +538,8 @@ The STAR platform includes four standard 12-pin PMOD (Peripheral Module) connect
 \hline
 \end{tabular}
 \end{table}
+
+\textbf{Note:} Pins 7 and 8 (PD3, PD2) have been repurposed for motor driver SPI configuration. PMOD JC still provides UART with flow control on pins 1-4 and two GPIO pins (9-10). For modules requiring GPIO0/GPIO1, use PMOD JA or JB instead.
 
 \textbf{Compatible Modules:}
 \begin{itemize}
@@ -590,11 +590,11 @@ The DRV8243S motor drivers use two separate interfaces:
 
 \textbf{Configuration (SPI):}
 \begin{itemize}
-    \item \textbf{Peripheral:} RSPI2 on former PMOD JD pins (PD0, PD1, PA0, PA1, P17, P23, P32)
+    \item \textbf{Peripheral:} RSPI2 using PMOD JC GPIO pins (PD3, PD2, PD1, PA0, P17, P23, P32)
     \item \textbf{Purpose:} Configure current limits, fault thresholds, slew rates, dead-time insertion
     \item \textbf{Update rate:} Startup only, or when changing operating parameters
     \item \textbf{Speed:} 1 MHz SPI clock (configuration is not time-critical)
-    \item \textbf{Signals:} SCLK (PD1), COPI (PD0), CIPO (PA1), nCS0 (P17), nCS1 (P23), nCS2 (P32), nCS3 (PA0)
+    \item \textbf{Signals:} SCLK (PD3), COPI (PD1), CIPO (PD2), nCS0 (P17), nCS1 (P23), nCS2 (P32), nCS3 (PA0)
 \end{itemize}
 
 \textbf{Design Rationale:}
