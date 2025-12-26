@@ -2,11 +2,11 @@
 % NANOPB PROTOCOL SPECIFICATION
 % =============================================================================
 
-\section{Nanopb (Protobuf) Protocol with ARQ and CRC for SPI Communication}
+\section{Nanopb (Protobuf) Protocol with HARQ and CRC for SPI Communication}
 
 \subsection{Executive Summary}
 
-\textbf{Overview:} Protocol Buffers (nanopb) encapsulated in frames with CRC-32 and Automatic Repeat Request (ARQ) for reliable SPI communication between RPi5 and RX72N.
+\textbf{Overview:} Protocol Buffers (nanopb) encapsulated in frames with CRC-32 and Hybrid Automatic Repeat Request (HARQ) with Forward Error Correction (FEC) for reliable SPI/USB communication between RPi5 and RX72N.
 
 \noindent\makebox[\textwidth]{%
 \begin{tikzpicture}[
@@ -122,7 +122,7 @@ For context, control loop frequencies should match system dynamics:
 ]
     \node[layer, fill=red!20] (app) at (0,0) {\textbf{Application} \hfill Motor Commands, Telemetry};
     \node[layer, fill=orange!20, below=of app] (serial) {\textbf{Serialization} \hfill nanopb (Protocol Buffers) with static allocation};
-    \node[layer, fill=yellow!20, below=of serial] (arq) {\textbf{ARQ} \hfill Stop-and-Wait (SEQ/ACK/NACK, 8ms timeout)};
+    \node[layer, fill=yellow!20, below=of serial] (arq) {\textbf{HARQ} \hfill Chase Combining with FEC (Rate-1/2 Convolutional, K=7)};
     \node[layer, fill=green!20, below=of arq] (frame) {\textbf{Frame} \hfill SYNC (2B) + Header (6B) + Payload + CRC-32 (4B)};
     \node[layer, fill=blue!20, below=of frame] (transport) {\textbf{Transport} \hfill SPI peripheral mode with DMA (10 Mbps)};
     \draw[->, very thick, gray] (-8, 1) -- (-8, -6) node[midway, left, rotate=90, xshift=-0.5cm, yshift=0.5cm] {Data Flow};
@@ -182,9 +182,11 @@ CRC-32 & Little-endian & IEEE 802.3 & Standard CRC-32 polynomial \\
             DMA double-buffer & 8.0 & 1.56 \\
             RX/TX buffers & 2.0 & 0.39 \\
             Protobuf structs & 1.5 & 0.29 \\
-            ARQ state & 4.0 & 0.78 \\
+            HARQ state & 4.0 & 0.78 \\
+            HARQ soft buffers (3x) & 48.0 & 9.38 \\
+            Viterbi decoder & 3.0 & 0.59 \\
             \midrule
-            \textbf{Total} & \textbf{15.5} & \textbf{3.03} \\
+            \textbf{Total} & \textbf{66.5} & \textbf{12.99} \\
             \bottomrule
         \end{tabular}}
     \end{minipage}\hfill%
@@ -200,10 +202,10 @@ CRC-32 & Little-endian & IEEE 802.3 & Standard CRC-32 polynomial \\
             \midrule
             Generated protobuf & 80 & 0.49 \\
             Nanopb runtime & 12 & 0.07 \\
-            Frame + ARQ layers & 8 & 0.05 \\
-            \textbf{} & & \\ % Spacer
+            Frame + HARQ layers & 12 & 0.07 \\
+            FEC codec (Conv+Viterbi) & 8 & 0.05 \\
             \midrule
-            \textbf{Total} & \textbf{100} & \textbf{0.61} \\
+            \textbf{Total} & \textbf{112} & \textbf{0.68} \\
             \bottomrule
         \end{tabular}}
     \end{minipage}
@@ -225,12 +227,20 @@ CRC-32 & Little-endian & IEEE 802.3 & Standard CRC-32 polynomial \\
           \textit{Calculation:} Largest message structures (SetVelocityResponse $\approx$ 600 bytes, TelemetryData $\approx$ 400 bytes) \\
           \textit{Usage:} $\frac{1.5}{512} \times 100 = 0.29\%$
 
-    \item \textbf{ARQ state:} $4 + 4 + 8 + 4 + 4092 = 4112\text{ bytes} \approx 4.0\text{ KB}$ \\
+    \item \textbf{HARQ state:} $4 + 4 + 8 + 4 + 4092 = 4112\text{ bytes} \approx 4.0\text{ KB}$ \\
           \textit{Calculation:} Sequence number (4B) + retry counter (4B) + timestamp (8B) + state (4B) + retry buffer (4092B) \\
           \textit{Usage:} $\frac{4.0}{512} \times 100 = 0.78\%$
 
-    \item \textbf{Total SRAM:} $8.0 + 2.0 + 1.5 + 4.0 = 15.5\text{ KB}$ \\
-          \textit{Total usage:} $\frac{15.5}{512} \times 100 = 3.03\%$
+    \item \textbf{HARQ soft buffers (3x):} $3 \times 1024 \times 16 = 49152\text{ bytes} \approx 48.0\text{ KB}$ \\
+          \textit{Calculation:} 3 combining buffers $\times$ 1024B max payload $\times$ 16 soft bits/byte (rate 1/2 FEC, 8 input bits) \\
+          \textit{Usage:} $\frac{48.0}{512} \times 100 = 9.38\%$
+
+    \item \textbf{Viterbi decoder:} $64 \times 2 + 35 \times 8 = 408\text{ bytes} \approx 3.0\text{ KB}$ \\
+          \textit{Calculation:} 64-state path metrics (128B) + traceback survivors (280B) + working buffers \\
+          \textit{Usage:} $\frac{3.0}{512} \times 100 = 0.59\%$
+
+    \item \textbf{Total SRAM:} $8.0 + 2.0 + 1.5 + 4.0 + 48.0 + 3.0 = 66.5\text{ KB}$ \\
+          \textit{Total usage:} $\frac{66.5}{512} \times 100 = 12.99\%$
 \end{itemize}
 
 \textbf{Flash (16 MB = 16384 KB total):}
@@ -243,12 +253,16 @@ CRC-32 & Little-endian & IEEE 802.3 & Standard CRC-32 polynomial \\
           \textit{Calculation:} Compiled size of pb\_encode.c, pb\_decode.c, pb\_common.c \\
           \textit{Usage:} $\frac{12}{16384} \times 100 = 0.07\%$
 
-    \item \textbf{Frame + ARQ layers:} $8\text{ KB}$ \\
-          \textit{Calculation:} Framing logic + CRC-32 + ARQ state machine + retransmission logic \\
+    \item \textbf{Frame + HARQ layers:} $12\text{ KB}$ \\
+          \textit{Calculation:} Framing logic + CRC-32 + HARQ state machine + Chase combining logic \\
+          \textit{Usage:} $\frac{12}{16384} \times 100 = 0.07\%$
+
+    \item \textbf{FEC codec (Conv+Viterbi):} $8\text{ KB}$ \\
+          \textit{Calculation:} Convolutional encoder + Viterbi decoder (K=7, rate 1/2) \\
           \textit{Usage:} $\frac{8}{16384} \times 100 = 0.05\%$
 
-    \item \textbf{Total Flash:} $80 + 12 + 8 = 100\text{ KB}$ \\
-          \textit{Total usage:} $\frac{100}{16384} \times 100 = 0.61\%$
+    \item \textbf{Total Flash:} $80 + 12 + 12 + 8 = 112\text{ KB}$ \\
+          \textit{Total usage:} $\frac{112}{16384} \times 100 = 0.68\%$
 \end{itemize}
 
 \subsection{Implementation Requirements}
@@ -269,7 +283,7 @@ The protocol is implemented as a layered stack on both the RPi5 (SPI controller)
 \hline
 4. Protobuf & Message encode/decode (nanopb) & Both sides \\
 \hline
-3. ARQ & Sequence numbering, ACK/NACK, retry logic & Both sides (symmetric) \\
+3. HARQ+FEC & Chase Combining, Convolutional FEC, soft decode & Both sides (symmetric) \\
 \hline
 2. Framing & Header/footer, CRC-32 verification & Both sides (identical) \\
 \hline
@@ -331,25 +345,26 @@ The protocol is implemented as a layered stack on both the RPi5 (SPI controller)
 \vspace{0.25cm}
 
 \noindent\colorbox{layer3color}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
-\textbf{Layer 3: ARQ Layer (Custom Code)}
+\textbf{Layer 3: HARQ Layer with FEC (Custom Code)}
 \vspace{0.1cm}
 
-\noindent\textit{RX Path:}
+\noindent\textit{RX Path (with Chase Combining):}
 \begin{itemize}[leftmargin=1.5em,topsep=0pt,itemsep=2pt,parsep=0pt]
-    \item Check sequence number against \texttt{last\_acked\_rx}
-    \item If duplicate (\texttt{seq} $\leq$ \texttt{last\_acked\_rx}) $\rightarrow$ send ACK, discard payload
-    \item If expected (\texttt{seq} = \texttt{last\_acked\_rx} + 1) $\rightarrow$ accept, send ACK
-    \item If out-of-order $\rightarrow$ send NACK, request retransmission
+    \item Extract soft bits from received signal
+    \item If first attempt: Viterbi decode, verify CRC
+    \item If CRC fails: Store soft bits in combining buffer, send NACK
+    \item On retransmission: Combine soft bits with buffer, Viterbi decode
+    \item If decode success: send ACK, pass payload to application
 \end{itemize}
 
 \vspace{0.1cm}
-\noindent\textit{TX Path:}
+\noindent\textit{TX Path (with FEC Encoding):}
 \begin{itemize}[leftmargin=1.5em,topsep=0pt,itemsep=2pt,parsep=0pt]
-    \item Assign \texttt{tx\_sequence\_number} to outgoing frame
-    \item Store frame in retry buffer
-    \item Start timeout timer (e.g., 10ms)
-    \item On timeout $\rightarrow$ retransmit (up to 3 attempts)
-    \item On ACK received $\rightarrow$ clear retry buffer, increment \texttt{tx\_seq}
+    \item Encode payload with rate-1/2 convolutional code (K=7)
+    \item Assign \texttt{tx\_sequence\_number}, store in retry buffer
+    \item Start timeout timer (10ms), retransmit same frame on NACK
+    \item Chase Combining: receiver accumulates soft bits across retries
+    \item On ACK: clear retry buffer, increment \texttt{tx\_seq}
 \end{itemize}
 \vspace{0.05cm}
 }}
@@ -416,13 +431,13 @@ The protocol is implemented as a layered stack on both the RPi5 (SPI controller)
 \vspace{0.25cm}
 
 \noindent\colorbox{layer3color}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
-\textbf{Layer 3: ARQ Layer} \textit{(Custom Code - SAME AS RX72N)}
+\textbf{Layer 3: HARQ Layer with FEC} \textit{(Custom Code - SAME AS RX72N)}
 \vspace{0.1cm}
 
-\noindent\textit{RX Path:} Check sequence number, detect duplicates $\rightarrow$ ACK and discard, detect out-of-order $\rightarrow$ NACK
+\noindent\textit{RX Path:} Extract soft bits, Viterbi decode, Chase Combining on retry, verify CRC, send ACK/NACK
 
 \vspace{0.05cm}
-\noindent\textit{TX Path:} Assign sequence number, store in retry buffer, timeout and retry logic, handle ACKs
+\noindent\textit{TX Path:} FEC encode (rate-1/2, K=7), assign sequence, store in retry buffer, retransmit identical frame on NACK
 \vspace{0.05cm}
 }}
 
@@ -455,25 +470,27 @@ The protocol is implemented as a layered stack on both the RPi5 (SPI controller)
 
 \vspace{0.4cm}
 
-\subsubsection{ARQ Symmetry and State Management}
+\subsubsection{HARQ Symmetry and State Management}
 
-The ARQ layer uses \textbf{Stop-and-Wait} protocol (also called alternating bit protocol). This means each side sends one frame at a time, waits for acknowledgment (ACK) with a timeout, and retries up to 3 times before declaring failure. This approach provides:
+The HARQ layer uses \textbf{Chase Combining} with Stop-and-Wait protocol. Each side sends one FEC-encoded frame at a time, waits for acknowledgment (ACK) with a timeout, and retries up to 3 times. On the receiver side, soft bits from failed transmissions are stored and combined with subsequent retries, improving decode probability with each attempt. This approach provides:
 
 \begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
     \item Simple implementation suitable for embedded systems
     \item Predictable worst-case latency for real-time control
-    \item Low memory overhead (single retry buffer, not a window of frames)
+    \item 4-5 dB coding gain from FEC reduces retry frequency
+    \item Soft combining improves success probability with each retry
     \item Sufficient throughput for 10 Mbps SPI with <1ms frame time
 \end{itemize}
 
-The ARQ protocol is \textbf{symmetric} — both sides implement identical Stop-and-Wait logic but maintain separate state for their own transmissions and receptions.
+The HARQ protocol is \textbf{symmetric} — both sides implement identical Chase Combining logic with FEC encode/decode but maintain separate state for their own transmissions and receptions.
 
 \vspace{0.2cm}
 \noindent\textbf{Each Side Maintains:}
 \begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=4pt]
     \item \textbf{TX sequence number} (\texttt{tx\_seq}): For packets it sends
     \item \textbf{RX last acknowledged} (\texttt{rx\_last\_ack}): For packets it receives
-    \item \textbf{Retry buffer}: Stores unacknowledged outgoing packets
+    \item \textbf{Retry buffer}: Stores FEC-encoded outgoing packets for retransmission
+    \item \textbf{Soft combining buffer}: Stores soft bits from failed RX attempts (3 slots)
     \item \textbf{Timeout timer}: Triggers retransmission if no ACK received
 \end{itemize}
 
@@ -496,14 +513,14 @@ Retry logic & Retries if no ACK & Retries if no ACK \\
 Duplicate detection & Checks RPi5's \texttt{seq} & Checks RX72N's \texttt{seq} \\
 \hline
 \end{tabular}
-\caption{ARQ role distribution between controller and peripheral}
-\label{tab:arq-roles}
+\caption{HARQ role distribution between controller and peripheral}
+\label{tab:harq-roles}
 \end{table}
 
 \vspace{0.2cm}
 
 \noindent\colorbox{importantcolor}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
-\textbf{Important:} The SPI controller/peripheral roles (Layer 1) are \textbf{hardware-level only}. The ARQ layer (Layer 3) treats both sides as equals — each can send, ACK, and retry independently.
+\textbf{Important:} The SPI controller/peripheral roles (Layer 1) are \textbf{hardware-level only}. The HARQ layer (Layer 3) treats both sides as equals — each can send, FEC encode/decode, combine soft bits, and retry independently.
 }}
 
 \vspace{0.3cm}
@@ -515,29 +532,29 @@ Duplicate detection & Checks RPi5's \texttt{seq} & Checks RX72N's \texttt{seq} \
 \begin{enumerate}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
     \item \textbf{RPi5 Application:} Create \texttt{SetVelocityRequest} (left=1.0 m/s, right=1.0 m/s)
     \item \textbf{RPi5 Protobuf:} Encode to binary (nanopb)
-    \item \textbf{RPi5 ARQ:} Assign \texttt{seq=42}, save to retry buffer, start 10ms timeout
+    \item \textbf{RPi5 HARQ:} FEC encode (rate-1/2, K=7), assign \texttt{seq=42}, save to retry buffer, start 10ms timeout
     \item \textbf{RPi5 Frame:} Build packet with header, CRC-32, footer
     \item \textbf{RPi5 SPI:} DMA transfer to RX72N (controller initiates)
     \item \textbf{RX72N SPI:} DMA receives packet in double-buffer
-    \item \textbf{RX72N Frame:} Verify CRC-32 $\rightarrow$ valid
-    \item \textbf{RX72N ARQ:} Check \texttt{seq=42} = \texttt{rx\_last\_ack+1} $\rightarrow$ accept
+    \item \textbf{RX72N Frame:} Extract soft bits from received signal
+    \item \textbf{RX72N HARQ:} Viterbi decode, verify CRC-32 $\rightarrow$ valid, check \texttt{seq=42} = \texttt{rx\_last\_ack+1} $\rightarrow$ accept
     \item \textbf{RX72N Protobuf:} Decode to \texttt{SetVelocityRequest} struct
     \item \textbf{RX72N Application:} Update motor setpoints, execute PID control
-    \item \textbf{RX72N ARQ:} Build ACK packet with \texttt{ack\_seq=42}
+    \item \textbf{RX72N HARQ:} Build ACK packet with \texttt{ack\_seq=42}
     \item \textbf{RX72N Frame:} Wrap ACK in frame with CRC-32
     \item \textbf{RX72N SPI:} DMA transmits ACK (peripheral responds)
     \item \textbf{RPi5 SPI:} DMA receives ACK packet
     \item \textbf{RPi5 Frame:} Verify CRC-32 $\rightarrow$ valid
-    \item \textbf{RPi5 ARQ:} Got \texttt{ACK(42)} $\rightarrow$ clear retry buffer, cancel timeout
+    \item \textbf{RPi5 HARQ:} Got \texttt{ACK(42)} $\rightarrow$ clear retry buffer, cancel timeout
 \end{enumerate}
 
 \vspace{0.2cm}
 
-\noindent\textbf{Outcome:} Command successfully delivered with guaranteed delivery via ARQ. If ACK was lost or CRC failed, RPi5 would retransmit after 10ms timeout.
+\noindent\textbf{Outcome:} Command successfully delivered with guaranteed delivery via HARQ. If CRC failed, RX72N would store soft bits and NACK; on retry, it combines soft bits from both attempts before Viterbi decoding, improving decode probability.
 
 \vspace{0.3cm}
 
-\subsection{ARQ Communication Flow}
+\subsection{HARQ Communication Flow}
 
 \subsubsection{Normal Operation (No Retransmission)}
 
@@ -572,7 +589,7 @@ Duplicate detection & Checks RPi5's \texttt{seq} & Checks RX72N's \texttt{seq} \
         % Success note
         \node[font=\scriptsize, fill=green!20, draw=green!60!black, thick, rounded corners, inner sep=3pt] at (3, -7.5) {All frames acknowledged on first attempt};
     \end{tikzpicture}
-    \caption{Normal ARQ Flow - Three Successful Transactions}
+    \caption{Normal HARQ Flow - Three Successful Transactions}
 \end{figure}
 
 \subsubsection{Error Recovery Scenarios}
