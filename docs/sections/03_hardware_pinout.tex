@@ -42,7 +42,7 @@
 \hline
 \rowcolor{orange!25} PMOD JE (GPIO) & Orange \\
 \hline
-\rowcolor{teal!25} PMOD JF (GPIO) & Teal \\
+\rowcolor{teal!25} PMOD JF (I2C + GPIO) & Teal \\
 \hline
 \rowcolor{purple!20} Motor Driver SPI (Config) & Purple \\
 \hline
@@ -121,9 +121,9 @@ Unused/Available & White \\
 \hline
 \rowcolor{green!20} 26 & P22/MTCLKC & Encoder 1 Phase B & MTU2 encoder (quadrature counting) \\
 \hline
-\rowcolor{teal!25} 27 & P21 & PMOD JF GPIO2 & General Purpose I/O (SCL1 alt). See Table~\ref{tab:pmod-jf} \\
+\rowcolor{teal!25} 27 & P21 & PMOD JF SCL & I2C Clock (RIIC1). See Table~\ref{tab:pmod-jf} \\
 \hline
-\rowcolor{teal!25} 28 & P20 & PMOD JF GPIO3 & General Purpose I/O (SDA1 alt). See Table~\ref{tab:pmod-jf} \\
+\rowcolor{teal!25} 28 & P20 & PMOD JF SDA & I2C Data (RIIC1). See Table~\ref{tab:pmod-jf} \\
 \hline
 \rowcolor{purple!20} 29 & P17 & Motor Driver SPI nCS0 & RSPIC chip select for Motor 0 (DRV8243S) \\
 \hline
@@ -607,11 +607,11 @@ General-purpose I/O expansion with IRQ-capable pins for interrupt-driven applica
     \item SCI6 UART modules (can use PB0/PB1 alternate function)
 \end{itemize}
 
-\subsubsection{PMOD JF - GPIO Expansion with I2C Option}
+\subsubsection{PMOD JF - I2C Expansion with GPIO}
 
 \begin{table}[H]
 \centering
-\caption{PMOD JF Pinout (4x GPIO / I2C)}
+\caption{PMOD JF Pinout (I2C + 2x GPIO)}
 \label{tab:pmod-jf}
 \small
 \begin{tabular}{|c|l|l|l|p{5cm}|}
@@ -622,9 +622,9 @@ General-purpose I/O expansion with IRQ-capable pins for interrupt-driven applica
 \hline
 2 & GPIO1 & P07 & General Purpose I/O & IRQ15, ADTRG0\# \\
 \hline
-3 & GPIO2 & P21 & General Purpose I/O & \textbf{RIIC1 SCL alt}, GTIOC2A, IRQ9 \\
+3 & SCL & P21 & I2C Clock & RIIC1 SCL, GTIOC2A, IRQ9, GPIO alt \\
 \hline
-4 & GPIO3 & P20 & General Purpose I/O & \textbf{RIIC1 SDA alt}, IRQ8 \\
+4 & SDA & P20 & I2C Data & RIIC1 SDA, IRQ8, GPIO alt \\
 \hline
 5 & GND & - & Ground & - \\
 \hline
@@ -634,24 +634,25 @@ General-purpose I/O expansion with IRQ-capable pins for interrupt-driven applica
 \end{table}
 
 \textbf{Purpose:}
-Flexible GPIO expansion with optional I2C capability via RIIC1 alternate function on P20/P21. Can be used for general GPIO or secondary I2C bus.
+I2C expansion connector using RIIC1 peripheral, with 2 additional GPIO pins. Secondary I2C bus for sensors, EEPROMs, or other peripherals.
 
 \textbf{Compatible Modules:}
 \begin{itemize}
-    \item PMOD BTN (4 push buttons)
-    \item PMOD SWT (4 slide switches)
-    \item I2C sensor modules (using P20/P21 as SCL/SDA with external pull-ups)
-    \item Activity indicator LEDs
-    \item Custom breakout boards
+    \item I2C sensor modules (temperature, humidity, pressure, IMU, etc.)
+    \item I2C OLED displays
+    \item I2C EEPROMs or RTCs
+    \item PMOD TMP3 (TCN75A temperature sensor)
+    \item PMOD HYGRO (HDC1080 humidity/temperature)
+    \item Any I2C peripheral (with external pull-ups)
 \end{itemize}
 
 \textbf{I2C Configuration:}
-If using P20/P21 for RIIC1 I2C:
 \begin{itemize}
-    \item Add 2.2k$\Omega$ to 4.7k$\Omega$ pull-up resistors on SCL (P21) and SDA (P20)
-    \item Configure via MPC (Multi-Function Pin Controller) in firmware
-    \item Supports Fast Mode Plus (1 MHz) when configured as RIIC1
-    \item Can coexist with primary I2C bus on PMOD JC (RIIC2)
+    \item \textbf{Pull-up Resistors:} 2.2k$\Omega$ to 4.7k$\Omega$ on SCL (P21) and SDA (P20)
+    \item \textbf{Bus Speed:} Supports Fast Mode Plus (1 MHz) via RIIC1
+    \item \textbf{Dual I2C:} Can coexist with PMOD JC (RIIC2) for independent I2C buses
+    \item \textbf{Addressing:} Standard 7-bit and 10-bit I2C addressing
+    \item \textbf{GPIO Fallback:} P20/P21 can be reconfigured as GPIO if I2C not needed
 \end{itemize}
 
 \subsubsection{DS18B20+ Temperature Sensor}
