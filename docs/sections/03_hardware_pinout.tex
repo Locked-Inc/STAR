@@ -44,6 +44,8 @@
 \hline
 \rowcolor{black!25} PMOD JD (PWM/GPIO) & Light Gray \\
 \hline
+\rowcolor{purple!20} Motor Driver SPI (Config) & Purple \\
+\hline
 Unused/Available & White \\
 \hline
 \end{tabular}
@@ -101,7 +103,7 @@ Unused/Available & White \\
 \hline
 \rowcolor{yellow!15} 17 & P33 & RES\#, CY7C65213A-28PVXI & USB to UART IC for flashing (resets system before firmware flash) \\
 \hline
-\rowcolor{black!25} 18 & P32 & PMOD JD GPIO2 & See Table~\ref{tab:pmod-jd} \\
+\rowcolor{purple!20} 18 & P32 & Motor Driver SPI nCS2 & RSPI2 chip select for Motor 2 (DRV8243S) \\
 \hline
 \rowcolor{yellow!15} 19 & P31/TMS & E1E2-Emulator-Interface & JTAG (TMS) \\
 \hline
@@ -115,7 +117,7 @@ Unused/Available & White \\
 \hline
 \rowcolor{green!20} 24 & P24/MTCLKA & Encoder 0 Phase A & MTU1 encoder (quadrature counting) \\
 \hline
-\rowcolor{black!25} 25 & P23 & PMOD JD GPIO1 & See Table~\ref{tab:pmod-jd} \\
+\rowcolor{purple!20} 25 & P23 & Motor Driver SPI nCS1 & RSPI2 chip select for Motor 1 (DRV8243S) \\
 \hline
 \rowcolor{green!20} 26 & P22/MTCLKC & Encoder 1 Phase B & MTU2 encoder (quadrature counting) \\
 \hline
@@ -123,7 +125,7 @@ Unused/Available & White \\
 \hline
 \rowcolor{teal!20} 28 & P20/SDA1 & Charger I2C Data & RIIC1 for battery charger \\
 \hline
-\rowcolor{black!25} 29 & P17 & PMOD JD GPIO0 & See Table~\ref{tab:pmod-jd} \\
+\rowcolor{purple!20} 29 & P17 & Motor Driver SPI nCS0 & RSPI2 chip select for Motor 0 (DRV8243S) \\
 \hline
 \rowcolor{yellow!15} 30 & P16/USB0\_VBUS & USB0 VBUS & Optional USB boot \\
 \hline
@@ -203,9 +205,9 @@ Unused/Available & White \\
 \hline
 \rowcolor{brown!35} 68 & PA2 & PMOD JB GPIO3 & See Table~\ref{tab:pmod-jb} \\
 \hline
-\rowcolor{black!25} 69 & PA1 & PMOD JD PWM3 & PWM/Servo 3. See Table~\ref{tab:pmod-jd} \\
+\rowcolor{purple!20} 69 & PA1 & Motor Driver SPI CIPO & RSPI2 controller in peripheral out (DRV8243S to MCU) \\
 \hline
-\rowcolor{black!25} 70 & PA0 & PMOD JD PWM2 & PWM/Servo 2. See Table~\ref{tab:pmod-jd} \\
+\rowcolor{purple!20} 70 & PA0 & Motor Driver SPI nCS3 & RSPI2 chip select for Motor 3 (DRV8243S) \\
 \hline
 \rowcolor{blue!20} 71 & PE7/GTIOC3A & Motor 3 PH (Phase) & GPTW PWM channel 3A (32-bit) \\
 \hline
@@ -235,9 +237,9 @@ Unused/Available & White \\
 \hline
 \rowcolor{cyan!35} 84 & PD2 & PMOD JC GPIO1 & Interrupt/Event. See Table~\ref{tab:pmod-jc} \\
 \hline
-\rowcolor{black!25} 85 & PD1 & PMOD JD PWM0 & PWM/Servo 0. See Table~\ref{tab:pmod-jd} \\
+\rowcolor{purple!20} 85 & PD1 & Motor Driver SPI SCLK & RSPI2 clock to all 4 DRV8243S drivers \\
 \hline
-\rowcolor{black!25} 86 & PD0 & PMOD JD PWM1 & PWM/Servo 1. See Table~\ref{tab:pmod-jd} \\
+\rowcolor{purple!20} 86 & PD0 & Motor Driver SPI COPI & RSPI2 controller out peripheral in (MCU to DRV8243S) \\
 \hline
 \rowcolor{lime!10} 87 & P47/IRQ15-DS & Motor 3 nFAULT & DRV8243S fault signal (active low, interrupt-capable) \\
 \hline
@@ -549,60 +551,12 @@ The STAR platform includes four standard 12-pin PMOD (Peripheral Module) connect
     \item LoRa modules (RFM95W with breakout)
 \end{itemize}
 
-\subsubsection{PMOD JD - PWM/Servo/GPIO Expansion}
-
-\begin{table}[H]
-\centering
-\caption{PMOD JD Pinout (PWM and General GPIO)}
-\label{tab:pmod-jd}
-\small
-\begin{tabular}{|c|l|l|l|p{5cm}|}
-\hline
-\textbf{Pin} & \textbf{Signal} & \textbf{RX72N} & \textbf{Function} & \textbf{Notes} \\
-\hline
-1 & PWM0 & PD1 & PWM/Servo 0 & D1, TPU/MTU capable, GTIOC1A alt \\
-\hline
-2 & PWM1 & PD0 & PWM/Servo 1 & D0, TPU/MTU capable, GTIOC1B alt \\
-\hline
-3 & PWM2 & PA0 & PWM/Servo 2 & \textbf{Bus-free!} GTIOC0B alt \\
-\hline
-4 & PWM3 & PA1 & PWM/Servo 3 & \textbf{Bus-free!} GTIOC2A alt \\
-\hline
-5 & GND & - & Ground & - \\
-\hline
-6 & VCC & - & 3.3V/5V Power & Switchable for 5V servos \\
-\hline
-7 & GPIO0 & P17 & General I/O & \textbf{Bus-free!} MTU/GPTW/SCI alt \\
-\hline
-8 & GPIO1 & P23 & General I/O & \textbf{Bus-free!} MTU/GPTW alt \\
-\hline
-9 & GPIO2 & P32 & General I/O & \textbf{Bus-free!} MTU/SCI/CAN alt \\
-\hline
-10 & GPIO3 & PJ3 & General I/O & \textbf{Bus-free!} MTU/SCI alt \\
-\hline
-11 & GND & - & Ground & - \\
-\hline
-12 & VCC & - & 3.3V/5V Power & - \\
-\hline
-\end{tabular}
-\end{table}
-
-\textbf{Compatible Modules:}
-\begin{itemize}
-    \item PMOD CON3 (4-channel R/C servo controller)
-    \item PMOD STEP (Stepper motor driver)
-    \item PMOD 8LD (8 LED array)
-    \item PMOD RELAY (Electromechanical relay)
-    \item PMOD KYPD (4x4 keypad)
-    \item Custom servo/PWM breakouts
-\end{itemize}
-
 \subsubsection{PCB Layout Recommendations}
 
 \textbf{Connector Placement:}
 \begin{itemize}
     \item Place PMOD JA (SPI) and JB (I2C) on top edge of board for sensor access
-    \item Place PMOD JC (UART) and JD (PWM) on bottom edge for wireless/servo modules
+    \item Place PMOD JC (UART) on bottom edge for wireless modules
     \item Maintain minimum 0.5" spacing between connectors for module clearance
     \item Orient all connectors with Pin 1 in same direction for consistency
 \end{itemize}
@@ -612,7 +566,7 @@ The STAR platform includes four standard 12-pin PMOD (Peripheral Module) connect
     \item \textbf{I2C Pull-ups (JB):} 2.2k$\Omega$ to 4.7k$\Omega$ resistors on SCL/SDA
     \item \textbf{Series Resistors:} 33$\Omega$ on all signal lines for ESD protection
     \item \textbf{Power Filtering:} 0.1$\mu$F ceramic + 10$\mu$F tantalum per connector
-    \item \textbf{5V Option (JC, JD):} TPS62133 buck converter or TLV62569 for 5V servos
+    \item \textbf{5V Option (JC):} TPS62133 buck converter or TLV62569 for 5V wireless modules
     \item \textbf{Overcurrent:} Resetable PTC fuses (500mA) on VCC lines
 \end{itemize}
 
@@ -621,7 +575,34 @@ The STAR platform includes four standard 12-pin PMOD (Peripheral Module) connect
     \item \textbf{JA (High-Speed SPI):} 50$\Omega$ impedance-controlled traces, length match $\pm$5mm
     \item \textbf{JB (I2C):} Keep traces $<$6 inches, avoid routing near PWM signals
     \item \textbf{JC (UART):} Cross TX/RX for DTE $\leftrightarrow$ DCE direct connection
-    \item \textbf{JD (PWM):} Include RC filters (100$\Omega$ + 100nF) if driving servos directly
+\end{itemize}
+
+\subsection{Motor Driver Dual-Interface Architecture}
+
+The DRV8243S motor drivers use two separate interfaces:
+
+\textbf{Real-Time Control (PWM):}
+\begin{itemize}
+    \item \textbf{Signals:} PH (Phase) and EN (Enable) on PE0-PE7
+    \item \textbf{Purpose:} Motor speed/direction control at 20 kHz PWM frequency
+    \item \textbf{Update rate:} 100 Hz velocity commands from RPi5
+\end{itemize}
+
+\textbf{Configuration (SPI):}
+\begin{itemize}
+    \item \textbf{Peripheral:} RSPI2 on former PMOD JD pins (PD0, PD1, PA0, PA1, P17, P23, P32)
+    \item \textbf{Purpose:} Configure current limits, fault thresholds, slew rates, dead-time insertion
+    \item \textbf{Update rate:} Startup only, or when changing operating parameters
+    \item \textbf{Speed:} 1 MHz SPI clock (configuration is not time-critical)
+    \item \textbf{Signals:} SCLK (PD1), COPI (PD0), CIPO (PA1), nCS0 (P17), nCS1 (P23), nCS2 (P32), nCS3 (PA0)
+\end{itemize}
+
+\textbf{Design Rationale:}
+\begin{itemize}
+    \item PWM provides low-latency real-time control for motor speed/direction
+    \item SPI allows runtime configuration of driver protection features
+    \item Separation of concerns: high-frequency control vs. low-frequency configuration
+    \item Uses RSPI2 to keep RSPI0 available for RPi5 communication
 \end{itemize}
 
 \subsection{RX72N Configuration Tables}

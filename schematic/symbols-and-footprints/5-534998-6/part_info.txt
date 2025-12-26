@@ -1,0 +1,9 @@
+Manufacturer=TE Connectivity
+PartNumber=5-534998-6
+PartCategory=Connector
+PackageCategory=Header, Receptacle - Straight PTH Box
+PinCount=12
+Version=2.1
+Released=2020-05-20 10:55:54
+Downloaded=2025-12-26 08:18:14
+3D=Y
