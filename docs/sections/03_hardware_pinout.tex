@@ -73,7 +73,7 @@ Unused/Available & White \\
 \hline
 \rowcolor{gray!15} 3 & AVSS1 & Ground & Power supply (analog) \\
 \hline
-4 & PJ3 & Unused/Available & Not connected (has SCI/SPI/SSI/Ethernet if needed) \\
+\rowcolor{magenta!15} 4 & PJ3 & SPI to RPi5 LED & Activity indicator for RSPIA communication \\
 \hline
 \rowcolor{gray!15} 5 & VCL & 220nF cap to ground & Voltage regulator \\
 \hline
@@ -203,7 +203,7 @@ Unused/Available & White \\
 \hline
 \rowcolor{brown!35} 68 & PA2 & PMOD JB GPIO3 & See Table~\ref{tab:pmod-jb} \\
 \hline
-69 & PA1 & Unused/Available & Not connected (has SCK5, GTIOC2A, IRQ11 if needed) \\
+\rowcolor{magenta!15} 69 & PA1 & USB to RPi5 LED & Activity indicator for USB communication \\
 \hline
 \rowcolor{purple!20} 70 & PA0 & Motor Driver SPI nCS3 & RSPIC chip select for Motor 3 (DRV8243S) \\
 \hline
@@ -237,7 +237,7 @@ Unused/Available & White \\
 \hline
 \rowcolor{purple!20} 85 & PD1 & Motor Driver SPI COPI & RSPIC controller out (MOSIC-A) to DRV8243S \\
 \hline
-\rowcolor{magenta!15} 86 & PD0 & Status LED & User status indicator (active high, can also use IRQ0 or ADC AN108) \\
+\rowcolor{magenta!15} 86 & PD0 & Motor Driver SPI LED & Activity indicator for RSPIC to DRV8243S \\
 \hline
 \rowcolor{lime!10} 87 & P47/IRQ15-DS & Motor 3 nFAULT & DRV8243S fault signal (active low, interrupt-capable) \\
 \hline
@@ -261,11 +261,11 @@ Unused/Available & White \\
 \hline
 \rowcolor{gray!15} 97 & AVCC0 & Boards 3v3 & ADC power supply \\
 \hline
-\rowcolor{magenta!15} 98 & P07 & Status LED & Status indicator \\
+\rowcolor{magenta!15} 98 & P07 & Buck Boost I2C LED & Activity indicator for I2C to buck boost charger \\
 \hline
 \rowcolor{gray!15} 99 & AVSS0 & Ground & ADC ground \\
 \hline
-\rowcolor{magenta!15} 100 & P05 & Error LED & Error indicator \\
+\rowcolor{magenta!15} 100 & P05 & BMS SMBus LED & Activity indicator for SMBus to battery management system \\
 \hline
 \end{longtable}
 
