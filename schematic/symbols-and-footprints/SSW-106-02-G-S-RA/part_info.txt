@@ -1,0 +1,9 @@
+Manufacturer=SAMTEC
+PartNumber=SSW-106-02-G-S-RA
+PartCategory=Connector
+PackageCategory=Other
+PinCount=6
+Version=2.1
+Released=2017-06-21 12:01:24
+Downloaded=2025-12-26 14:33:44
+3D=Y

@@ -93,4 +93,7 @@
   (lib (name "S5B-XH-A")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/S5B_XH_A")(options "")(descr ""))
   (lib (name "DS18B20+")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/DS18B20+")(options "")(descr ""))
   (lib (name "rp2xxx")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/rp2xxx_stamp_footprints/KiCad/RP2xxx_Stamp.pretty")(options "")(descr ""))
+  (lib (name "5-534998-6")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/5-534998-6")(options "")(descr ""))
+  (lib (name "SSW-106-02-G-D-RA")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/SSW-106-02-G-D-RA")(options "")(descr ""))
+  (lib (name "SSW-106-02-G-S-RA")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/SSW-106-02-G-S-RA")(options "")(descr ""))
 )

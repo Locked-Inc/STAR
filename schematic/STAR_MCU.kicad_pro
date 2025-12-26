@@ -430,7 +430,7 @@
       "no_connect_dangling": "warning",
       "pin_not_connected": "error",
       "pin_not_driven": "error",
-      "pin_to_pin": "warning",
+      "pin_to_pin": "error",
       "power_pin_not_driven": "error",
       "same_local_global_label": "warning",
       "similar_label_and_power": "warning",
@@ -477,127 +477,10 @@
       {
         "bus_width": 12,
         "line_style": 0,
-        "name": "Debug/Programming",
+        "name": "3V3 Buck Converter",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 1,
-        "schematic_color": "rgb(218, 165, 32)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "Encoders",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 7,
-        "schematic_color": "rgb(34, 139, 34)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "I2C Charger",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 9,
-        "schematic_color": "rgb(0, 139, 139)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "Motor Current Sensing",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 6,
-        "schematic_color": "rgb(220, 20, 60)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "Motor Driver SPI Config",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 8,
-        "schematic_color": "rgb(138, 43, 226)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "Motor Fault Signals",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 5,
-        "schematic_color": "rgb(124, 252, 0)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "Motor PWM Control",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 4,
-        "schematic_color": "rgb(30, 144, 255)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "PMOD JA",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 12,
-        "schematic_color": "rgb(107, 142, 35)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "PMOD JB",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 11,
-        "schematic_color": "rgb(139, 69, 19)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "PMOD JC",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 13,
-        "schematic_color": "rgb(0, 191, 255)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "Power/Ground",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 2,
-        "schematic_color": "rgb(105, 105, 105)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "RPi5 SPI",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 3,
-        "schematic_color": "rgb(255, 140, 0)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "SMBus BMS",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 10,
-        "schematic_color": "rgb(186, 85, 211)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "Status LEDs",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 14,
-        "schematic_color": "rgb(255, 20, 147)",
+        "priority": 15,
+        "schematic_color": "rgb(148, 0, 211)",
         "wire_width": 6
       },
       {
@@ -605,17 +488,8 @@
         "line_style": 0,
         "name": "3V3 Main Rail",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 15,
-        "schematic_color": "rgb(255, 255, 0)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "3V3 Buck Converter",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 16,
-        "schematic_color": "rgb(148, 0, 211)",
+        "priority": 14,
+        "schematic_color": "rgb(255, 98, 240)",
         "wire_width": 6
       },
       {
@@ -623,7 +497,7 @@
         "line_style": 0,
         "name": "3V3 Motor Driver",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 17,
+        "priority": 16,
         "schematic_color": "rgb(255, 69, 0)",
         "wire_width": 6
       },
@@ -632,35 +506,26 @@
         "line_style": 0,
         "name": "5V Buck Converter",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 18,
+        "priority": 17,
         "schematic_color": "rgb(0, 255, 255)",
         "wire_width": 6
       },
       {
         "bus_width": 12,
         "line_style": 0,
-        "name": "USB SCI Data",
+        "name": "Debug/Programming",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 19,
-        "schematic_color": "rgb(255, 215, 0)",
+        "priority": 0,
+        "schematic_color": "rgb(218, 165, 32)",
         "wire_width": 6
       },
       {
         "bus_width": 12,
         "line_style": 0,
-        "name": "RPi5 I2C",
+        "name": "Encoders",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 20,
-        "schematic_color": "rgb(50, 205, 50)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "LiDAR UART",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 21,
-        "schematic_color": "rgb(255, 105, 180)",
+        "priority": 6,
+        "schematic_color": "rgb(34, 139, 34)",
         "wire_width": 6
       },
       {
@@ -668,8 +533,17 @@
         "line_style": 0,
         "name": "Fuel Gauge SMBus",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 22,
+        "priority": 21,
         "schematic_color": "rgb(0, 255, 127)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "I2C Charger",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 8,
+        "schematic_color": "rgb(0, 139, 139)",
         "wire_width": 6
       },
       {
@@ -677,8 +551,134 @@
         "line_style": 0,
         "name": "IMU Control",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 23,
+        "priority": 22,
         "schematic_color": "rgb(255, 99, 71)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "LiDAR UART",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 20,
+        "schematic_color": "rgb(255, 105, 180)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "Motor Current Sensing",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 5,
+        "schematic_color": "rgb(220, 20, 60)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "Motor Driver SPI Config",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 7,
+        "schematic_color": "rgb(138, 43, 226)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "Motor Fault Signals",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 4,
+        "schematic_color": "rgb(124, 252, 0)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "Motor PWM Control",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 3,
+        "schematic_color": "rgb(30, 144, 255)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "PMOD JA",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 11,
+        "schematic_color": "rgb(107, 142, 35)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "PMOD JB",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 10,
+        "schematic_color": "rgb(139, 69, 19)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "PMOD JC",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 12,
+        "schematic_color": "rgb(0, 191, 255)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "PMOD JD",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 13,
+        "schematic_color": "rgb(255, 192, 203)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "Power/Ground",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 1,
+        "schematic_color": "rgb(105, 105, 105)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "RPi5 I2C",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 19,
+        "schematic_color": "rgb(50, 205, 50)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "RPi5 SPI",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 2,
+        "schematic_color": "rgb(255, 140, 0)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "SMBus BMS",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 9,
+        "schematic_color": "rgb(186, 85, 211)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "Status LEDs",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 13,
+        "schematic_color": "rgb(255, 20, 147)",
         "wire_width": 6
       },
       {
@@ -686,8 +686,17 @@
         "line_style": 0,
         "name": "System Config",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 24,
+        "priority": 23,
         "schematic_color": "rgb(135, 206, 250)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "USB SCI Data",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 18,
+        "schematic_color": "rgb(255, 215, 0)",
         "wire_width": 6
       }
     ],
@@ -882,8 +891,20 @@
         "pattern": "/PMOD_JC_*"
       },
       {
+        "netclass": "PMOD JD",
+        "pattern": "/PMOD_JD_*"
+      },
+      {
         "netclass": "Status LEDs",
         "pattern": "/LED_*"
+      },
+      {
+        "netclass": "Status LEDs",
+        "pattern": "/ERROR_STATUS_LED"
+      },
+      {
+        "netclass": "Status LEDs",
+        "pattern": "/SYSTEM_HEARTBEAT_LED"
       },
       {
         "netclass": "3V3 Main Rail",

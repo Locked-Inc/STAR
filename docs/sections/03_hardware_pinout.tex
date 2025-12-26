@@ -38,9 +38,11 @@
 \hline
 \rowcolor{olive!30} PMOD JA (SPI/Display) & Olive \\
 \hline
-\rowcolor{brown!35} PMOD JB (I2C Sensors) & Dark Brown \\
+\rowcolor{brown!35} PMOD JB (GPIO) & Dark Brown \\
 \hline
-\rowcolor{cyan!35} PMOD JC (UART/Wireless) & Bright Cyan \\
+\rowcolor{cyan!35} PMOD JC (I2C Sensors) & Bright Cyan \\
+\hline
+\rowcolor{pink!25} PMOD JD (GPIO) & Pink \\
 \hline
 \rowcolor{purple!20} Motor Driver SPI (Config) & Purple \\
 \hline
@@ -159,13 +161,13 @@ Unused/Available & White \\
 \hline
 \rowcolor{brown!35} 46 & PC6 & PMOD JB GPIO0 & See Table~\ref{tab:pmod-jb} \\
 \hline
-\rowcolor{brown!35} 47 & PC5 & PMOD JB INT2 & I2C Interrupt 2. See Table~\ref{tab:pmod-jb} \\
+\rowcolor{cyan!35} 47 & PC5 & PMOD JC INT2 & I2C Interrupt 2. See Table~\ref{tab:pmod-jc} \\
 \hline
-\rowcolor{brown!35} 48 & PC4 & PMOD JB INT1 & I2C Interrupt 1. See Table~\ref{tab:pmod-jb} \\
+\rowcolor{cyan!35} 48 & PC4 & PMOD JC INT1 & I2C Interrupt 1. See Table~\ref{tab:pmod-jc} \\
 \hline
-\rowcolor{brown!35} 49 & PC3 & PMOD JB SDA & I2C Data. See Table~\ref{tab:pmod-jb} \\
+\rowcolor{cyan!35} 49 & PC3 & PMOD JC SDA & I2C Data. See Table~\ref{tab:pmod-jc} \\
 \hline
-\rowcolor{brown!35} 50 & PC2 & PMOD JB SCL & I2C Clock. See Table~\ref{tab:pmod-jb} \\
+\rowcolor{cyan!35} 50 & PC2 & PMOD JC SCL & I2C Clock. See Table~\ref{tab:pmod-jc} \\
 \hline
 \rowcolor{green!20} 51 & PC1/MTIOC3A & Encoder 2 Phase A & MTU3 encoder (quadrature counting) \\
 \hline
@@ -183,11 +185,11 @@ Unused/Available & White \\
 \hline
 \rowcolor{olive!30} 58 & PB2 & PMOD JA GPIO & Extra GPIO. See Table~\ref{tab:pmod-ja} \\
 \hline
-\rowcolor{cyan!35} 59 & PB1 & PMOD JC GPIO2 & See Table~\ref{tab:pmod-jc} \\
+\rowcolor{magenta!15} 59 & PB1 & Error Status LED & Indicates system errors (motor faults, communication failures) \\
 \hline
 \rowcolor{gray!15} 60 & VCC & Boards 3v3 & Power supply \\
 \hline
-\rowcolor{cyan!35} 61 & PB0 & PMOD JC GPIO3 & See Table~\ref{tab:pmod-jc} \\
+\rowcolor{magenta!15} 61 & PB0 & System Heartbeat LED & Blinks periodically to show MCU is running \\
 \hline
 \rowcolor{gray!15} 62 & VSS & Ground & Power supply \\
 \hline
@@ -223,13 +225,13 @@ Unused/Available & White \\
 \hline
 \rowcolor{blue!20} 78 & PE0/GTIOC2B & Motor 2 EN (Enable) & GPTW PWM channel 2B (32-bit) \\
 \hline
-\rowcolor{cyan!35} 79 & PD7 & PMOD JC UART\_TX & UART Transmit. See Table~\ref{tab:pmod-jc} \\
+\rowcolor{pink!25} 79 & PD7 & PMOD JD GPIO0 & General Purpose I/O. See Table~\ref{tab:pmod-jd} \\
 \hline
-\rowcolor{cyan!35} 80 & PD6 & PMOD JC UART\_RX & UART Receive. See Table~\ref{tab:pmod-jc} \\
+\rowcolor{pink!25} 80 & PD6 & PMOD JD GPIO1 & General Purpose I/O. See Table~\ref{tab:pmod-jd} \\
 \hline
-\rowcolor{cyan!35} 81 & PD5 & PMOD JC RTS & Request to Send. See Table~\ref{tab:pmod-jc} \\
+\rowcolor{pink!25} 81 & PD5 & PMOD JD GPIO2 & General Purpose I/O. See Table~\ref{tab:pmod-jd} \\
 \hline
-\rowcolor{cyan!35} 82 & PD4 & PMOD JC CTS & Clear to Send. See Table~\ref{tab:pmod-jc} \\
+\rowcolor{pink!25} 82 & PD4 & PMOD JD GPIO3 & General Purpose I/O. See Table~\ref{tab:pmod-jd} \\
 \hline
 \rowcolor{purple!20} 83 & PD3 & Motor Driver SPI SCLK & RSPIC clock (RSPCKC-A) to all 4 DRV8243S drivers \\
 \hline
@@ -429,13 +431,13 @@ The STAR platform includes four standard 12-pin PMOD (Peripheral Module) connect
 \hline
 6 & VCC & - & 3.3V Power & - \\
 \hline
-7 & CS1 & PB5 & SPI Chip Select 1 & A13, SCI9 SCK \\
+7 & DC & PB4 & Data/Command & A12, Display control. Many display Pmods expect D/C on Pin 7 \\
 \hline
-8 & DC & PB4 & Data/Command & A12, Display control \\
+8 & RST & PB3 & Reset & A11, SCI6 SCK. Standard Pmod location for Reset is Pin 8 \\
 \hline
-9 & RST & PB3 & Reset & A11, SCI6 SCK \\
+9 & GPIO & PB2 & General Purpose I/O & A10 \\
 \hline
-10 & GPIO & PB2 & Extra GPIO & A10 \\
+10 & CS1 & PB5 & Secondary Chip Select & A13, SCI9 SCK. Often used for dual devices \\
 \hline
 11 & GND & - & Ground & - \\
 \hline
@@ -453,43 +455,71 @@ The STAR platform includes four standard 12-pin PMOD (Peripheral Module) connect
     \item PMOD ACL2 (3-axis accelerometer via SPI)
 \end{itemize}
 
-\subsubsection{PMOD JB - I2C Sensor Hub}
+\subsubsection{PMOD JB - GPIO Expansion}
 
 \begin{table}[H]
 \centering
-\caption{PMOD JB Pinout (I2C Interface)}
+\caption{PMOD JB Pinout (4x GPIO)}
 \label{tab:pmod-jb}
 \small
 \begin{tabular}{|c|l|l|l|p{5cm}|}
 \hline
 \textbf{Pin} & \textbf{Signal} & \textbf{RX72N} & \textbf{Function} & \textbf{Notes} \\
 \hline
-1 & SCL & PC2 & I2C Clock & RIIC2 capable, A18 bus conflict \\
+1 & GPIO0 & PC6 & General Purpose I/O & A22/CS1\#, can be input/output \\
 \hline
-2 & SDA & PC3 & I2C Data & RIIC2 capable, A19 bus conflict \\
+2 & GPIO1 & P55 & General Purpose I/O & D0, WAIT\#, EDREQ0 \\
 \hline
-3 & INT1 & PC4 & Interrupt 1 & IRQ-capable, A20/CS3\# \\
+3 & GPIO2 & P54 & General Purpose I/O & ALE, D1, EDACK0 \\
 \hline
-4 & INT2 & PC5 & Interrupt 2 & IRQ-capable, A21/CS2\#/WAIT\# \\
+4 & GPIO3 & PA2 & General Purpose I/O & \textbf{Bus-free!} GTIOC1A alt \\
 \hline
 5 & GND & - & Ground & - \\
 \hline
 6 & VCC & - & 3.3V Power & - \\
 \hline
-7 & GPIO0 & PC6 & Enable/Reset & A22/CS1\#, D2 bus conflict \\
+\end{tabular}
+\end{table}
+
+\textbf{Purpose:}
+General-purpose GPIO expansion for custom peripherals, buttons, sensors, or control signals.
+
+\textbf{Compatible Modules:}
+\begin{itemize}
+    \item PMOD BTN (4 push buttons)
+    \item PMOD SWT (4 slide switches)
+    \item PMOD 8LD (8 LEDs - uses both rows)
+    \item Custom GPIO breakout boards
+\end{itemize}
+
+\subsubsection{PMOD JC - I2C Sensor Interface}
+
+\begin{table}[H]
+\centering
+\caption{PMOD JC Pinout (I2C with Interrupts)}
+\label{tab:pmod-jc}
+\small
+\begin{tabular}{|c|l|l|l|p{5cm}|}
 \hline
-8 & GPIO1 & P55 & General I/O & D0, WAIT\#, EDREQ0 \\
+\textbf{Pin} & \textbf{Signal} & \textbf{RX72N} & \textbf{Function} & \textbf{Notes} \\
 \hline
-9 & GPIO2 & P54 & General I/O & ALE, D1, EDACK0 \\
+1 & INT1 & PC4 & Interrupt 1 & IRQ-capable, A20/CS3\#, active-low \\
 \hline
-10 & GPIO3 & PA2 & General I/O & \textbf{Bus-free!} GTIOC1A alt \\
+2 & INT2 & PC5 & Interrupt 2 & IRQ-capable, A21/CS2\#/WAIT\#, active-low \\
 \hline
-11 & GND & - & Ground & - \\
+3 & SCL & PC2 & I2C Clock & RIIC2 capable, A18 bus conflict \\
 \hline
-12 & VCC & - & 3.3V Power & - \\
+4 & SDA & PC3 & I2C Data & RIIC2 capable, A19 bus conflict \\
+\hline
+5 & GND & - & Ground & - \\
+\hline
+6 & VCC & - & 3.3V Power & - \\
 \hline
 \end{tabular}
 \end{table}
+
+\textbf{Purpose:}
+I2C sensor interface with dedicated interrupt pins for sensor events (data ready, thresholds, motion detection).
 
 \textbf{Compatible Modules:}
 \begin{itemize}
@@ -501,54 +531,42 @@ The STAR platform includes four standard 12-pin PMOD (Peripheral Module) connect
     \item Any I2C sensor breakout board
 \end{itemize}
 
-\subsubsection{PMOD JC - UART/Wireless Interface}
+\subsubsection{PMOD JD - GPIO Expansion}
 
 \begin{table}[H]
 \centering
-\caption{PMOD JC Pinout (UART + Motor Driver SPI)}
-\label{tab:pmod-jc}
+\caption{PMOD JD Pinout (4x GPIO)}
+\label{tab:pmod-jd}
 \small
 \begin{tabular}{|c|l|l|l|p{5cm}|}
 \hline
-\textbf{Pin} & \textbf{Signal} & \textbf{RX72N} & \textbf{Function} & \textbf{Alternate Peripherals} \\
+\textbf{Pin} & \textbf{Signal} & \textbf{RX72N} & \textbf{Function} & \textbf{Notes} \\
 \hline
-1 & UART\_TX & PD7 & Transmit & D7, SCI12 TX, GLCDC \\
+1 & GPIO0 & PD7 & General Purpose I/O & D7, SCI12 TX, GLCDC \\
 \hline
-2 & UART\_RX & PD6 & Receive & D6, SCI12 RX, GLCDC \\
+2 & GPIO1 & PD6 & General Purpose I/O & D6, SCI12 RX, GLCDC \\
 \hline
-3 & RTS & PD5 & Request to Send & D5, SCI12 flow control, QSPI \\
+3 & GPIO2 & PD5 & General Purpose I/O & D5, SCI12 flow control, QSPI \\
 \hline
-4 & CTS & PD4 & Clear to Send & D4, SCI12 flow control, QSPI \\
+4 & GPIO3 & PD4 & General Purpose I/O & D4, SCI12 flow control, QSPI \\
 \hline
 5 & GND & - & Ground & - \\
 \hline
-6 & VCC & - & 3.3V/5V Power & Can be 5V with regulator \\
-\hline
-7 & MOTOR\_SCLK & PD3 & Motor Driver SPI Clock & RSPCKC-A (repurposed from GPIO0) \\
-\hline
-8 & MOTOR\_CIPO & PD2 & Motor Driver SPI In & MISOC-A (repurposed from GPIO1) \\
-\hline
-9 & GPIO2 & PB1 & Extra GPIO & A9, LCD control \\
-\hline
-10 & GPIO3 & PB0 & Extra GPIO & A8, LCD control \\
-\hline
-11 & GND & - & Ground & - \\
-\hline
-12 & VCC & - & 3.3V/5V Power & - \\
+6 & VCC & - & 3.3V Power & - \\
 \hline
 \end{tabular}
 \end{table}
 
-\textbf{Note:} Pins 7 and 8 (PD3, PD2) have been repurposed for motor driver SPI configuration. PMOD JC still provides UART with flow control on pins 1-4 and two GPIO pins (9-10). For modules requiring GPIO0/GPIO1, use PMOD JA or JB instead.
+\textbf{Purpose:}
+Additional GPIO expansion for custom peripherals, control signals, or future features.
 
 \textbf{Compatible Modules:}
 \begin{itemize}
-    \item PMOD GPS (u-blox NEO-6M/7M GPS)
-    \item PMOD BT2 (Roving Networks RN-42 Bluetooth)
-    \item PMOD ESP32 (WiFi + Bluetooth module)
-    \item PMOD USBUART (USB to UART bridge)
-    \item XBee modules (with adapter)
-    \item LoRa modules (RFM95W with breakout)
+    \item PMOD BTN (4 push buttons)
+    \item PMOD SWT (4 slide switches)
+    \item PMOD 8LD (8 LEDs - uses both rows)
+    \item Custom GPIO breakout boards
+    \item UART modules (can use SCI12 alternate function on PD7/PD6)
 \end{itemize}
 
 \subsubsection{PCB Layout Recommendations}
