@@ -6829,7 +6829,7 @@
 		)
 		(uuid edcdfc06-5e48-49ba-80f4-8ca6f15ab4a1)
 	)
-	(text "MOTOR2"
+	(text "MOTOR1"
 		(exclude_from_sim no)
 		(at 361.95 69.342 0)
 		(effects
@@ -6849,7 +6849,7 @@
 		)
 		(uuid "1b8c5962-a563-431d-bccb-055d73de29f7")
 	)
-	(text "MOTOR4\n"
+	(text "MOTOR3\n"
 		(exclude_from_sim no)
 		(at 361.696 118.364 0)
 		(effects
@@ -6859,7 +6859,7 @@
 		)
 		(uuid "264d8834-30d8-424d-96b2-b8640b3262a5")
 	)
-	(text "MOTOR1"
+	(text "MOTOR0"
 		(exclude_from_sim no)
 		(at 279.4 69.596 0)
 		(effects
@@ -6920,7 +6920,7 @@
 		)
 		(uuid "cc2ac83a-bd65-4d3c-a8a5-194f6af17a3d")
 	)
-	(text "MOTOR3\n"
+	(text "MOTOR2\n"
 		(exclude_from_sim no)
 		(at 281.94 119.38 0)
 		(effects
@@ -11203,7 +11203,7 @@
 		)
 		(uuid "03c967db-a6d0-46ae-9904-06d4f11579b3")
 	)
-	(label "MOTOR4_VEE"
+	(label "MOTOR3_VEE"
 		(at 146.05 251.46 180)
 		(effects
 			(font
@@ -11213,7 +11213,7 @@
 		)
 		(uuid "04b8b425-a814-4a2b-9de5-db21f5f695d4")
 	)
-	(label "MCU_MOTOR4_nCS"
+	(label "MCU_MOTOR3_nCS"
 		(at 313.69 222.25 0)
 		(effects
 			(font
@@ -11243,7 +11243,7 @@
 		)
 		(uuid "082e57af-d896-4b08-9245-dc3b16644643")
 	)
-	(label "MCU_MOTOR3_nFAULT"
+	(label "MCU_MOTOR2_nFAULT"
 		(at 140.97 165.1 180)
 		(effects
 			(font
@@ -11273,7 +11273,7 @@
 		)
 		(uuid "0b25bc1d-8658-4e5b-910b-79a5afb47d69")
 	)
-	(label "MCU_MOTOR3_IPROPI"
+	(label "MCU_MOTOR2_IPROPI"
 		(at 140.97 167.64 180)
 		(effects
 			(font
@@ -11283,7 +11283,7 @@
 		)
 		(uuid "140630ad-b3fe-4034-b3e9-4fabfc909fe5")
 	)
-	(label "MOTOR1_VCC"
+	(label "MOTOR0_VCC"
 		(at 262.89 59.69 0)
 		(effects
 			(font
@@ -11293,7 +11293,7 @@
 		)
 		(uuid "1407aa45-89cc-4378-b562-326ba36f39fc")
 	)
-	(label "MOTOR2_VEE"
+	(label "MOTOR1_VEE"
 		(at 140.97 124.46 180)
 		(effects
 			(font
@@ -11333,7 +11333,7 @@
 		)
 		(uuid "1fe6b0cd-6c19-4b91-9134-aba0c23475c2")
 	)
-	(label "MCU_MOTOR3_PH_IN2"
+	(label "MCU_MOTOR2_PH_IN2"
 		(at 368.3 175.26 180)
 		(effects
 			(font
@@ -11373,7 +11373,7 @@
 		)
 		(uuid "29b3153c-9025-4cbb-b522-0790d4ccf6d8")
 	)
-	(label "MCU_MOTOR3_EN_IN1"
+	(label "MCU_MOTOR2_EN_IN1"
 		(at 314.96 175.26 0)
 		(effects
 			(font
@@ -11383,7 +11383,7 @@
 		)
 		(uuid "2a3587de-15a9-4e57-affc-7d43571d0b53")
 	)
-	(label "MCU_MOTOR2_IPROPI"
+	(label "MCU_MOTOR1_IPROPI"
 		(at 367.03 191.77 180)
 		(effects
 			(font
@@ -11403,7 +11403,7 @@
 		)
 		(uuid "2b925251-6e3a-473d-a88e-631c078c60a3")
 	)
-	(label "MOTOR1_VCC"
+	(label "MOTOR0_VCC"
 		(at 43.18 53.34 0)
 		(effects
 			(font
@@ -11443,7 +11443,7 @@
 		)
 		(uuid "34353865-4354-4978-8079-531a4ee32df6")
 	)
-	(label "MCU_MOTOR1_nCS"
+	(label "MCU_MOTOR0_nCS"
 		(at 313.69 214.63 0)
 		(effects
 			(font
@@ -11453,7 +11453,7 @@
 		)
 		(uuid "357f2d30-15e5-4a14-b284-f945827cdbc6")
 	)
-	(label "MCU_MOTOR2_nCS"
+	(label "MCU_MOTOR1_nCS"
 		(at 41.91 101.6 0)
 		(effects
 			(font
@@ -11473,7 +11473,7 @@
 		)
 		(uuid "38e46da7-c1e1-47dc-873d-af3a1e07abdd")
 	)
-	(label "MCU_MOTOR2_EN_IN1"
+	(label "MCU_MOTOR1_EN_IN1"
 		(at 314.96 172.72 0)
 		(effects
 			(font
@@ -11503,7 +11503,7 @@
 		)
 		(uuid "455cba14-440c-4d67-ae78-2a845e395137")
 	)
-	(label "MCU_MOTOR3_nFAULT"
+	(label "MCU_MOTOR2_nFAULT"
 		(at 313.69 194.31 0)
 		(effects
 			(font
@@ -11513,7 +11513,7 @@
 		)
 		(uuid "46d2877f-7f87-4d30-9697-b3895a6033ab")
 	)
-	(label "MCU_MOTOR2_nCS"
+	(label "MCU_MOTOR1_nCS"
 		(at 313.69 217.17 0)
 		(effects
 			(font
@@ -11543,7 +11543,7 @@
 		)
 		(uuid "4b68242b-937b-418d-aeeb-2161b837f6f7")
 	)
-	(label "MCU_MOTOR1_EN_IN1"
+	(label "MCU_MOTOR0_EN_IN1"
 		(at 314.96 170.18 0)
 		(effects
 			(font
@@ -11603,7 +11603,7 @@
 		)
 		(uuid "59acc151-e1ec-486f-9d3e-c44848a9d403")
 	)
-	(label "MOTOR4_VCC"
+	(label "MOTOR3_VCC"
 		(at 342.9 109.22 0)
 		(effects
 			(font
@@ -11613,7 +11613,7 @@
 		)
 		(uuid "5bd6f149-aff6-499f-ba5b-7347faa6cdae")
 	)
-	(label "MOTOR1_VEE"
+	(label "MOTOR0_VEE"
 		(at 262.89 46.99 0)
 		(effects
 			(font
@@ -11633,7 +11633,7 @@
 		)
 		(uuid "613f343e-4d78-46be-94e2-b33e9cef1a27")
 	)
-	(label "MOTOR4_VCC"
+	(label "MOTOR3_VCC"
 		(at 39.37 248.92 0)
 		(effects
 			(font
@@ -11663,7 +11663,7 @@
 		)
 		(uuid "6ad2aa62-e9aa-43df-8b9f-1f065fedfa37")
 	)
-	(label "MOTOR2_VCC"
+	(label "MOTOR1_VCC"
 		(at 43.18 121.92 0)
 		(effects
 			(font
@@ -11673,7 +11673,7 @@
 		)
 		(uuid "6c333763-9431-4b07-bb06-90c02ea90f42")
 	)
-	(label "MCU_MOTOR2_nFAULT"
+	(label "MCU_MOTOR1_nFAULT"
 		(at 140.97 106.68 180)
 		(effects
 			(font
@@ -11683,7 +11683,7 @@
 		)
 		(uuid "6d561cf2-23f2-4593-b65c-721e49fe0a86")
 	)
-	(label "MOTOR3_VEE"
+	(label "MOTOR2_VEE"
 		(at 142.24 182.88 180)
 		(effects
 			(font
@@ -11693,7 +11693,7 @@
 		)
 		(uuid "6d7cd2e4-9c76-4e84-a077-07e4748a1a0a")
 	)
-	(label "MCU_MOTOR3_nCS"
+	(label "MCU_MOTOR2_nCS"
 		(at 41.91 160.02 0)
 		(effects
 			(font
@@ -11703,7 +11703,7 @@
 		)
 		(uuid "739f7e44-d038-442d-99bf-eabd4b1079e9")
 	)
-	(label "MOTOR2_VCC"
+	(label "MOTOR1_VCC"
 		(at 262.89 110.49 0)
 		(effects
 			(font
@@ -11713,7 +11713,7 @@
 		)
 		(uuid "767cedb8-5dc3-4b38-a8be-170f9e600c93")
 	)
-	(label "MCU_MOTOR2_IPROPI"
+	(label "MCU_MOTOR1_IPROPI"
 		(at 140.97 109.22 180)
 		(effects
 			(font
@@ -11723,7 +11723,7 @@
 		)
 		(uuid "7744a495-8d13-4686-aa7b-21d8ed0d7f0b")
 	)
-	(label "MCU_MOTOR4_IPROPI"
+	(label "MCU_MOTOR3_IPROPI"
 		(at 137.16 236.22 180)
 		(effects
 			(font
@@ -11733,7 +11733,7 @@
 		)
 		(uuid "77e20832-4e0e-4740-8612-b8ba7f339b3d")
 	)
-	(label "MCU_MOTOR3_IPROPI"
+	(label "MCU_MOTOR2_IPROPI"
 		(at 367.03 194.31 180)
 		(effects
 			(font
@@ -11743,7 +11743,7 @@
 		)
 		(uuid "78903ddd-4df9-4530-84c2-7f00e223be35")
 	)
-	(label "MCU_MOTOR2_nFAULT"
+	(label "MCU_MOTOR1_nFAULT"
 		(at 313.69 191.77 0)
 		(effects
 			(font
@@ -11753,7 +11753,7 @@
 		)
 		(uuid "793aca0c-03d3-44d2-896c-df69e76fd3c4")
 	)
-	(label "MCU_MOTOR1_PH_IN2"
+	(label "MCU_MOTOR0_PH_IN2"
 		(at 368.3 170.18 180)
 		(effects
 			(font
@@ -11763,7 +11763,7 @@
 		)
 		(uuid "7a87d527-99ce-4ca7-8866-467176ee893f")
 	)
-	(label "MCU_MOTOR4_EN_IN1"
+	(label "MCU_MOTOR3_EN_IN1"
 		(at 314.96 177.8 0)
 		(effects
 			(font
@@ -11803,7 +11803,7 @@
 		)
 		(uuid "83acc1e0-42cd-4467-80cb-7c83721f6367")
 	)
-	(label "MCU_MOTOR4_nFAULT"
+	(label "MCU_MOTOR3_nFAULT"
 		(at 313.69 196.85 0)
 		(effects
 			(font
@@ -11813,7 +11813,7 @@
 		)
 		(uuid "8645b32b-850e-41d3-8209-26aa98cd798f")
 	)
-	(label "MCU_MOTOR4_EN_IN1"
+	(label "MCU_MOTOR3_EN_IN1"
 		(at 41.91 233.68 0)
 		(effects
 			(font
@@ -11823,7 +11823,7 @@
 		)
 		(uuid "8bf46250-17d2-493a-aab3-c939efa4adb3")
 	)
-	(label "MCU_MOTOR1_PH_IN2"
+	(label "MCU_MOTOR0_PH_IN2"
 		(at 41.91 35.56 0)
 		(effects
 			(font
@@ -11833,7 +11833,7 @@
 		)
 		(uuid "8de159ca-a53d-4e26-a4d9-2a2e02ca5209")
 	)
-	(label "MOTOR3_VCC"
+	(label "MOTOR2_VCC"
 		(at 342.9 60.96 0)
 		(effects
 			(font
@@ -11883,7 +11883,7 @@
 		)
 		(uuid "95fcdd74-e6aa-4508-b558-d38144917cf9")
 	)
-	(label "MCU_MOTOR1_nFAULT"
+	(label "MCU_MOTOR0_nFAULT"
 		(at 313.69 189.23 0)
 		(effects
 			(font
@@ -11893,7 +11893,7 @@
 		)
 		(uuid "96f35615-9f5b-499a-9b84-24d1efe28945")
 	)
-	(label "MOTOR1_VEE"
+	(label "MOTOR0_VEE"
 		(at 139.7 55.88 180)
 		(effects
 			(font
@@ -11943,7 +11943,7 @@
 		)
 		(uuid "9e2cb5cd-8978-4da9-9c70-1b4c39d736e0")
 	)
-	(label "MCU_MOTOR2_PH_IN2"
+	(label "MCU_MOTOR1_PH_IN2"
 		(at 368.3 172.72 180)
 		(effects
 			(font
@@ -11953,7 +11953,7 @@
 		)
 		(uuid "9e711c70-6760-4e1e-afd8-b7a701b497ad")
 	)
-	(label "MCU_MOTOR3_nCS"
+	(label "MCU_MOTOR2_nCS"
 		(at 313.69 219.71 0)
 		(effects
 			(font
@@ -11963,7 +11963,7 @@
 		)
 		(uuid "9eacf8d5-e828-42d7-96d8-c3ad1b7554db")
 	)
-	(label "MOTOR3_VCC"
+	(label "MOTOR2_VCC"
 		(at 43.18 180.34 0)
 		(effects
 			(font
@@ -11973,7 +11973,7 @@
 		)
 		(uuid "9ed2e702-f3e5-4bc2-a3e7-ac7876d309cb")
 	)
-	(label "MCU_MOTOR1_IPROPI"
+	(label "MCU_MOTOR0_IPROPI"
 		(at 140.97 40.64 180)
 		(effects
 			(font
@@ -12003,7 +12003,7 @@
 		)
 		(uuid "a7ce49bb-3e04-4ca3-a8bc-19b2c7bf1f3c")
 	)
-	(label "MCU_MOTOR1_nCS"
+	(label "MCU_MOTOR0_nCS"
 		(at 41.91 33.02 0)
 		(effects
 			(font
@@ -12043,7 +12043,7 @@
 		)
 		(uuid "b7130ee5-33ac-447f-b2ca-275ae6ae3eb2")
 	)
-	(label "MCU_MOTOR4_PH_IN2"
+	(label "MCU_MOTOR3_PH_IN2"
 		(at 368.3 177.8 180)
 		(effects
 			(font
@@ -12053,7 +12053,7 @@
 		)
 		(uuid "b9c35882-8f53-4019-9009-500345dc86d8")
 	)
-	(label "MCU_MOTOR1_IPROPI"
+	(label "MCU_MOTOR0_IPROPI"
 		(at 367.03 189.23 180)
 		(effects
 			(font
@@ -12083,7 +12083,7 @@
 		)
 		(uuid "c45a985b-cb5a-49f2-84a3-e3b8e662eaa8")
 	)
-	(label "MCU_MOTOR4_PH_IN2"
+	(label "MCU_MOTOR3_PH_IN2"
 		(at 41.91 231.14 0)
 		(effects
 			(font
@@ -12093,7 +12093,7 @@
 		)
 		(uuid "c689a840-60ec-4ebd-8f8c-ec8c5307326a")
 	)
-	(label "MCU_MOTOR4_nCS"
+	(label "MCU_MOTOR3_nCS"
 		(at 41.91 228.6 0)
 		(effects
 			(font
@@ -12113,7 +12113,7 @@
 		)
 		(uuid "ce4bda3a-9b6a-447a-8976-327b72191330")
 	)
-	(label "MOTOR2_VEE"
+	(label "MOTOR1_VEE"
 		(at 262.89 97.79 0)
 		(effects
 			(font
@@ -12123,7 +12123,7 @@
 		)
 		(uuid "cf1bcd8c-31c0-4fe3-be5f-aed30d2df580")
 	)
-	(label "MCU_MOTOR3_PH_IN2"
+	(label "MCU_MOTOR2_PH_IN2"
 		(at 41.91 162.56 0)
 		(effects
 			(font
@@ -12133,7 +12133,7 @@
 		)
 		(uuid "d25cf51d-b7a9-429a-bc9f-3a65d96bfcea")
 	)
-	(label "MCU_MOTOR1_EN_IN1"
+	(label "MCU_MOTOR0_EN_IN1"
 		(at 41.91 38.1 0)
 		(effects
 			(font
@@ -12143,7 +12143,7 @@
 		)
 		(uuid "d5b55fdf-9d25-4887-b700-1b5f8f4e1030")
 	)
-	(label "MCU_MOTOR1_nFAULT"
+	(label "MCU_MOTOR0_nFAULT"
 		(at 140.97 38.1 180)
 		(effects
 			(font
@@ -12163,7 +12163,7 @@
 		)
 		(uuid "dec3dd94-7131-4888-8eb6-56c4f59686b1")
 	)
-	(label "MCU_MOTOR4_IPROPI"
+	(label "MCU_MOTOR3_IPROPI"
 		(at 367.03 196.85 180)
 		(effects
 			(font
@@ -12183,7 +12183,7 @@
 		)
 		(uuid "e4a73ed5-c089-48f8-8357-28b2f3df5d57")
 	)
-	(label "MCU_MOTOR4_nFAULT"
+	(label "MCU_MOTOR3_nFAULT"
 		(at 137.16 233.68 180)
 		(effects
 			(font
@@ -12193,7 +12193,7 @@
 		)
 		(uuid "e638d67f-09d4-45e8-b8b5-3c98b7583e01")
 	)
-	(label "MCU_MOTOR2_PH_IN2"
+	(label "MCU_MOTOR1_PH_IN2"
 		(at 41.91 104.14 0)
 		(effects
 			(font
@@ -12203,7 +12203,7 @@
 		)
 		(uuid "e7255c1c-e7cb-4a79-b2d5-559dcc4154fa")
 	)
-	(label "MOTOR4_VEE"
+	(label "MOTOR3_VEE"
 		(at 342.9 96.52 0)
 		(effects
 			(font
@@ -12213,7 +12213,7 @@
 		)
 		(uuid "ed9f316e-22a6-4a52-8c88-f41a428cee1a")
 	)
-	(label "MCU_MOTOR3_EN_IN1"
+	(label "MCU_MOTOR2_EN_IN1"
 		(at 41.91 165.1 0)
 		(effects
 			(font
@@ -12223,7 +12223,7 @@
 		)
 		(uuid "ee250ab8-541e-4c00-bf3e-16bfb503cd32")
 	)
-	(label "MOTOR3_VEE"
+	(label "MOTOR2_VEE"
 		(at 342.9 48.26 0)
 		(effects
 			(font
@@ -12253,7 +12253,7 @@
 		)
 		(uuid "f8b99f89-1a32-403b-a469-43629f52b0c6")
 	)
-	(label "MCU_MOTOR2_EN_IN1"
+	(label "MCU_MOTOR1_EN_IN1"
 		(at 41.91 106.68 0)
 		(effects
 			(font
