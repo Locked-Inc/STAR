@@ -24,9 +24,9 @@
 \hline
 \rowcolor{violet!15} SMBUS (BMS) & Violet \\
 \hline
-\rowcolor{red!15} ADC Current Sensing & Red \\
+\rowcolor{teal!20} I2C (Charger) & Teal \\
 \hline
-\rowcolor{cyan!15} Sonar Array & Cyan \\
+\rowcolor{red!15} ADC Current Sensing & Red \\
 \hline
 \rowcolor{yellow!15} Debug/JTAG/Boot & Yellow \\
 \hline
@@ -35,6 +35,14 @@
 \rowcolor{magenta!15} Status LEDs & Magenta \\
 \hline
 \rowcolor{lime!10} Temperature/nFAULT & Lime \\
+\hline
+\rowcolor{olive!30} PMOD JA (SPI/Display) & Olive \\
+\hline
+\rowcolor{brown!35} PMOD JB (I2C Sensors) & Dark Brown \\
+\hline
+\rowcolor{cyan!35} PMOD JC (UART/Wireless) & Bright Cyan \\
+\hline
+\rowcolor{black!25} PMOD JD (PWM/GPIO) & Light Gray \\
 \hline
 Unused/Available & White \\
 \hline
@@ -65,7 +73,7 @@ Unused/Available & White \\
 \hline
 \rowcolor{gray!15} 3 & AVSS1 & Ground & Power supply (analog) \\
 \hline
-4 & PJ3 & & \\
+\rowcolor{black!25} 4 & PJ3 & PMOD JD GPIO3 & See Table~\ref{tab:pmod-jd} \\
 \hline
 \rowcolor{gray!15} 5 & VCL & 220nF cap to ground & Voltage regulator \\
 \hline
@@ -93,7 +101,7 @@ Unused/Available & White \\
 \hline
 \rowcolor{yellow!15} 17 & P33 & RES\#, CY7C65213A-28PVXI & USB to UART IC for flashing (resets system before firmware flash) \\
 \hline
-18 & P32 & & \\
+\rowcolor{black!25} 18 & P32 & PMOD JD GPIO2 & See Table~\ref{tab:pmod-jd} \\
 \hline
 \rowcolor{yellow!15} 19 & P31/TMS & E1E2-Emulator-Interface & JTAG (TMS) \\
 \hline
@@ -107,15 +115,15 @@ Unused/Available & White \\
 \hline
 \rowcolor{green!20} 24 & P24/MTCLKA & Encoder 0 Phase A & MTU1 encoder (quadrature counting) \\
 \hline
-25 & P23 & & \\
+\rowcolor{black!25} 25 & P23 & PMOD JD GPIO1 & See Table~\ref{tab:pmod-jd} \\
 \hline
 \rowcolor{green!20} 26 & P22/MTCLKC & Encoder 1 Phase B & MTU2 encoder (quadrature counting) \\
 \hline
-\rowcolor{violet!15} 27 & P21/SMBC1 & BMS SMBUS Clock & RIIC1 for BMS device 2 \\
+\rowcolor{teal!20} 27 & P21/SCL1 & Charger I2C Clock & RIIC1 for battery charger \\
 \hline
-\rowcolor{violet!15} 28 & P20/SMBD1 & BMS SMBUS Data & RIIC1 for BMS device 2 \\
+\rowcolor{teal!20} 28 & P20/SDA1 & Charger I2C Data & RIIC1 for battery charger \\
 \hline
-29 & P17 & & \\
+\rowcolor{black!25} 29 & P17 & PMOD JD GPIO0 & See Table~\ref{tab:pmod-jd} \\
 \hline
 \rowcolor{yellow!15} 30 & P16/USB0\_VBUS & USB0 VBUS & Optional USB boot \\
 \hline
@@ -123,9 +131,9 @@ Unused/Available & White \\
 \hline
 \rowcolor{green!20} 32 & P14/MTCLKA & Encoder 1 Phase A & MTU2 encoder (quadrature counting) \\
 \hline
-\rowcolor{violet!15} 33 & P13/SMBD0 & BMS SMBUS Data & RIIC0 for BMS device 1 (FM+ capable) \\
+\rowcolor{violet!15} 33 & P13/SMBD0 & BMS SMBUS Data & RIIC0 for BMS (FM+ capable) \\
 \hline
-\rowcolor{violet!15} 34 & P12/SMBC0 & BMS SMBUS Clock & RIIC0 for BMS device 1 (FM+ capable) \\
+\rowcolor{violet!15} 34 & P12/SMBC0 & BMS SMBUS Clock & RIIC0 for BMS (FM+ capable) \\
 \hline
 \rowcolor{gray!15} 35 & VCC\_USB & Boards 3v3 & USB power supply \\
 \hline
@@ -135,29 +143,29 @@ Unused/Available & White \\
 \hline
 \rowcolor{gray!15} 38 & VSS\_USB & Ground & USB ground \\
 \hline
-39 & P55 & & \\
+\rowcolor{brown!35} 39 & P55 & PMOD JB GPIO1 & See Table~\ref{tab:pmod-jb} \\
 \hline
-40 & P54 & & \\
+\rowcolor{brown!35} 40 & P54 & PMOD JB GPIO2 & See Table~\ref{tab:pmod-jb} \\
 \hline
-\rowcolor{cyan!15} 41 & P53 & Sonar 0 Trigger & HC-SR04 trigger pulse \\
+\rowcolor{olive!30} 41 & P53 & PMOD JA SCK & SPI Clock. See Table~\ref{tab:pmod-ja} \\
 \hline
-\rowcolor{cyan!15} 42 & P52 & Sonar 0 Echo & HC-SR04 echo response \\
+\rowcolor{olive!30} 42 & P52 & PMOD JA CS0 & SPI Chip Select 0. See Table~\ref{tab:pmod-ja} \\
 \hline
-\rowcolor{cyan!15} 43 & P51 & Sonar 1 Trigger & HC-SR04 trigger pulse \\
+\rowcolor{olive!30} 43 & P51 & PMOD JA CIPO & SPI Controller In. See Table~\ref{tab:pmod-ja} \\
 \hline
-\rowcolor{cyan!15} 44 & P50 & Sonar 1 Echo & HC-SR04 echo response \\
+\rowcolor{olive!30} 44 & P50 & PMOD JA COPI & SPI Controller Out. See Table~\ref{tab:pmod-ja} \\
 \hline
 \rowcolor{yellow!15} 45 & PC7/UB & E1E2-Emulator-Interface, DIP switch & Operation mode configuration. See Table~\ref{tab:op-mode-config}. Also GTIOC3A alternate \\
 \hline
-46 & PC6 & & \\
+\rowcolor{brown!35} 46 & PC6 & PMOD JB GPIO0 & See Table~\ref{tab:pmod-jb} \\
 \hline
-47 & PC5 & & \\
+\rowcolor{brown!35} 47 & PC5 & PMOD JB INT2 & I2C Interrupt 2. See Table~\ref{tab:pmod-jb} \\
 \hline
-48 & PC4 & & \\
+\rowcolor{brown!35} 48 & PC4 & PMOD JB INT1 & I2C Interrupt 1. See Table~\ref{tab:pmod-jb} \\
 \hline
-49 & PC3 & & \\
+\rowcolor{brown!35} 49 & PC3 & PMOD JB SDA & I2C Data. See Table~\ref{tab:pmod-jb} \\
 \hline
-50 & PC2 & & \\
+\rowcolor{brown!35} 50 & PC2 & PMOD JB SCL & I2C Clock. See Table~\ref{tab:pmod-jb} \\
 \hline
 \rowcolor{green!20} 51 & PC1/MTIOC3A & Encoder 2 Phase A & MTU3 encoder (quadrature counting) \\
 \hline
@@ -167,19 +175,19 @@ Unused/Available & White \\
 \hline
 \rowcolor{yellow!15} 54 & PB6/RXD9 & Debug SCI USB-C TX & UART crossed. See Table~\ref{tab:sci9-config} \\
 \hline
-\rowcolor{cyan!15} 55 & PB5 & Sonar 2 Trigger & HC-SR04 trigger pulse \\
+\rowcolor{olive!30} 55 & PB5 & PMOD JA CS1 & SPI Chip Select 1. See Table~\ref{tab:pmod-ja} \\
 \hline
-\rowcolor{cyan!15} 56 & PB4 & Sonar 2 Echo & HC-SR04 echo response \\
+\rowcolor{olive!30} 56 & PB4 & PMOD JA DC & Data/Command (displays). See Table~\ref{tab:pmod-ja} \\
 \hline
-\rowcolor{cyan!15} 57 & PB3 & Sonar 3 Trigger & HC-SR04 trigger pulse \\
+\rowcolor{olive!30} 57 & PB3 & PMOD JA RST & Reset signal. See Table~\ref{tab:pmod-ja} \\
 \hline
-\rowcolor{cyan!15} 58 & PB2 & Sonar 3 Echo & HC-SR04 echo response \\
+\rowcolor{olive!30} 58 & PB2 & PMOD JA GPIO & Extra GPIO. See Table~\ref{tab:pmod-ja} \\
 \hline
-\rowcolor{cyan!15} 59 & PB1 & Sonar 4 Trigger & HC-SR04 trigger pulse \\
+\rowcolor{cyan!35} 59 & PB1 & PMOD JC GPIO2 & See Table~\ref{tab:pmod-jc} \\
 \hline
 \rowcolor{gray!15} 60 & VCC & Boards 3v3 & Power supply \\
 \hline
-\rowcolor{cyan!15} 61 & PB0 & Sonar 4 Echo & HC-SR04 echo response \\
+\rowcolor{cyan!35} 61 & PB0 & PMOD JC GPIO3 & See Table~\ref{tab:pmod-jc} \\
 \hline
 \rowcolor{gray!15} 62 & VSS & Ground & Power supply \\
 \hline
@@ -193,11 +201,11 @@ Unused/Available & White \\
 \hline
 \rowcolor{green!20} 67 & PA3/MTCLKD & Encoder 3 Phase B & MTU4 encoder (quadrature counting) \\
 \hline
-\rowcolor{blue!20} 68 & PA2/GTIOC1A & Motor 1 PH (Phase) & GPTW PWM channel 1A (32-bit) \\
+\rowcolor{brown!35} 68 & PA2 & PMOD JB GPIO3 & See Table~\ref{tab:pmod-jb} \\
 \hline
-\rowcolor{blue!20} 69 & PA1/GTIOC2A & Motor 2 PH (Phase) & GPTW PWM channel 2A (32-bit) \\
+\rowcolor{black!25} 69 & PA1 & PMOD JD PWM3 & PWM/Servo 3. See Table~\ref{tab:pmod-jd} \\
 \hline
-\rowcolor{blue!20} 70 & PA0/GTIOC0B & Motor 0 EN (Enable) & GPTW PWM channel 0B (32-bit) \\
+\rowcolor{black!25} 70 & PA0 & PMOD JD PWM2 & PWM/Servo 2. See Table~\ref{tab:pmod-jd} \\
 \hline
 \rowcolor{blue!20} 71 & PE7/GTIOC3A & Motor 3 PH (Phase) & GPTW PWM channel 3A (32-bit) \\
 \hline
@@ -205,31 +213,31 @@ Unused/Available & White \\
 \hline
 \rowcolor{blue!20} 73 & PE5/GTIOC0A & Motor 0 PH (Phase) & GPTW PWM channel 0A (32-bit) \\
 \hline
-74 & PE4 & & \\
+\rowcolor{blue!20} 74 & PE4/GTIOC1A & Motor 1 PH (Phase) & GPTW PWM channel 1A (32-bit) \\
 \hline
-75 & PE3 & & \\
+\rowcolor{blue!20} 75 & PE3/GTIOC2A & Motor 2 PH (Phase) & GPTW PWM channel 2A (32-bit) \\
 \hline
-76 & PE2 & & \\
+\rowcolor{blue!20} 76 & PE2/GTIOC0B & Motor 0 EN (Enable) & GPTW PWM channel 0B (32-bit) \\
 \hline
 \rowcolor{blue!20} 77 & PE1/GTIOC1B & Motor 1 EN (Enable) & GPTW PWM channel 1B (32-bit) \\
 \hline
 \rowcolor{blue!20} 78 & PE0/GTIOC2B & Motor 2 EN (Enable) & GPTW PWM channel 2B (32-bit) \\
 \hline
-\rowcolor{cyan!15} 79 & PD7 & Sonar 5 Trigger & HC-SR04 trigger pulse \\
+\rowcolor{cyan!35} 79 & PD7 & PMOD JC UART\_TX & UART Transmit. See Table~\ref{tab:pmod-jc} \\
 \hline
-\rowcolor{cyan!15} 80 & PD6 & Sonar 5 Echo & HC-SR04 echo response \\
+\rowcolor{cyan!35} 80 & PD6 & PMOD JC UART\_RX & UART Receive. See Table~\ref{tab:pmod-jc} \\
 \hline
-\rowcolor{cyan!15} 81 & PD5 & Sonar 6 Trigger & HC-SR04 trigger pulse \\
+\rowcolor{cyan!35} 81 & PD5 & PMOD JC RTS & Request to Send. See Table~\ref{tab:pmod-jc} \\
 \hline
-\rowcolor{cyan!15} 82 & PD4 & Sonar 6 Echo & HC-SR04 echo response \\
+\rowcolor{cyan!35} 82 & PD4 & PMOD JC CTS & Clear to Send. See Table~\ref{tab:pmod-jc} \\
 \hline
-\rowcolor{cyan!15} 83 & PD3 & Sonar 7 Trigger & HC-SR04 trigger pulse \\
+\rowcolor{cyan!35} 83 & PD3 & PMOD JC GPIO0 & Enable/Reset. See Table~\ref{tab:pmod-jc} \\
 \hline
-\rowcolor{cyan!15} 84 & PD2 & Sonar 7 Echo & HC-SR04 echo response \\
+\rowcolor{cyan!35} 84 & PD2 & PMOD JC GPIO1 & Interrupt/Event. See Table~\ref{tab:pmod-jc} \\
 \hline
-85 & PD1 & & \\
+\rowcolor{black!25} 85 & PD1 & PMOD JD PWM0 & PWM/Servo 0. See Table~\ref{tab:pmod-jd} \\
 \hline
-86 & PD0 & & \\
+\rowcolor{black!25} 86 & PD0 & PMOD JD PWM1 & PWM/Servo 1. See Table~\ref{tab:pmod-jd} \\
 \hline
 \rowcolor{lime!10} 87 & P47/IRQ15-DS & Motor 3 nFAULT & DRV8243S fault signal (active low, interrupt-capable) \\
 \hline
@@ -305,9 +313,9 @@ The RX72N provides two timer peripherals suitable for motor control PWM generati
 \begin{enumerate}
     \item \textbf{Peripheral Grouping:} Place related functions on contiguous port pins
     \begin{itemize}
-        \item GPTW PWM: PE0/1/5/6/7 and PA0/1/2 (logically grouped ports)
+        \item GPTW PWM: PE0-PE7 (8 consecutive pins, pins 71-78)
         \item SPI to RPi5: PA4-PA7 (4 adjacent pins for optimal PCB routing)
-        \item MTU Encoders: P14-P15, P21-P27 (P2X port group)
+        \item MTU Encoders: P14-P15, P22-P27 (P2X port group)
         \item I2C/SMBUS: P12-P13 (RIIC0), P20-P21 (RIIC1)
     \end{itemize}
 
@@ -315,20 +323,23 @@ The RX72N provides two timer peripherals suitable for motor control PWM generati
     \begin{itemize}
         \item Initial pin selection caused conflicts between GPTW, I2C, and SPI
         \item Table 1.10 analysis revealed all peripherals have 2-4 alternate pin locations
-        \item Moved GPTW from P17/P21-P23/PC6-PC7 to PE/PA ports
+        \item Consolidated all GPTW signals to Port E (PE0-PE7) for continuous block
+        \item Freed PA0-PA2 for future expansion (3 additional GPIO pins)
         \item Freed critical pins for I2C (P20-P21) and encoders (P22-P27)
     \end{itemize}
 
     \item \textbf{PCB Routing Optimization:}
     \begin{itemize}
         \item Contiguous pin blocks minimize trace crossings
+        \item All 8 motor PWM signals on consecutive pins (PE0-PE7, pins 71-78)
         \item SPI signals on PA4-PA7 enable compact layout
-        \item Motor control signals grouped by motor (PH + EN adjacent)
+        \item Simplified PCB layout with Port E dedicated to motor control
     \end{itemize}
 
     \item \textbf{Future Expandability:}
     \begin{itemize}
-        \item 42 GPIO pins available after critical allocations
+        \item 35 GPIO pins available after critical allocations
+        \item PA0-PA2 freed by continuous GPTW block design
         \item Unused peripherals documented: Ethernet, QSPI, SDHI, additional SCI/RSPI channels
         \item Alternate pin functions reserved for hardware revisions
     \end{itemize}
@@ -378,6 +389,239 @@ $$\frac{161.3 \text{ Kbps}}{10 \text{ Mbps}} = \textbf{1.6\% utilization}$$
     \item No need for Ethernet (would add PHY chip, 9+ pins, PCB complexity)
     \item No need for QSPI (RPi5 doesn't support quad-lane SPI natively)
     \item 10 Mbps provides excellent margin for future features (camera data, additional sensors)
+\end{itemize}
+
+\subsection{PMOD Expansion Connectors}
+
+\subsubsection{Overview}
+
+The STAR platform includes four standard 12-pin PMOD (Peripheral Module) connectors for maximum expandability. PMODs are standardized interfaces developed by Digilent for easy peripheral connectivity without requiring external bus capability (SRAM/Flash). All 32 unused GPIO pins are allocated to PMOD connectors.
+
+\textbf{PMOD Standard:}
+\begin{itemize}
+    \item 12-pin dual-row header (2x6, 0.1" pitch)
+    \item Pins 5, 11: GND
+    \item Pins 6, 12: VCC (3.3V, optionally 5V with level shifters)
+    \item Pins 1-4, 7-10: Configurable signals (GPIO, SPI, I2C, UART, PWM, etc.)
+    \item Compatible with 200+ commercial Digilent PMOD modules
+\end{itemize}
+
+\subsubsection{PMOD JA - High-Speed SPI/Display Interface}
+
+\begin{table}[H]
+\centering
+\caption{PMOD JA Pinout (High-Speed SPI)}
+\label{tab:pmod-ja}
+\small
+\begin{tabular}{|c|l|l|l|p{5cm}|}
+\hline
+\textbf{Pin} & \textbf{Signal} & \textbf{RX72N} & \textbf{Function} & \textbf{Alternate Peripherals} \\
+\hline
+1 & CS0 & P52 & SPI Chip Select 0 & RD\#, SCI2 RX \\
+\hline
+2 & COPI & P50 & SPI Controller Out & WR\#, SCI2 TX \\
+\hline
+3 & CIPO & P51 & SPI Controller In & WR1\#/BC1\#/WAIT\# \\
+\hline
+4 & SCK & P53 & SPI Clock & BCLK (bus clock) \\
+\hline
+5 & GND & - & Ground & - \\
+\hline
+6 & VCC & - & 3.3V Power & - \\
+\hline
+7 & CS1 & PB5 & SPI Chip Select 1 & A13, SCI9 SCK \\
+\hline
+8 & DC & PB4 & Data/Command & A12, Display control \\
+\hline
+9 & RST & PB3 & Reset & A11, SCI6 SCK \\
+\hline
+10 & GPIO & PB2 & Extra GPIO & A10 \\
+\hline
+11 & GND & - & Ground & - \\
+\hline
+12 & VCC & - & 3.3V Power & - \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Compatible Modules:}
+\begin{itemize}
+    \item PMOD OLED (128x32 monochrome display)
+    \item PMOD OLEDRGB (96x64 RGB display)
+    \item PMOD SD (SD card reader)
+    \item PMOD ALS (Ambient light sensor)
+    \item PMOD ACL2 (3-axis accelerometer via SPI)
+\end{itemize}
+
+\subsubsection{PMOD JB - I2C Sensor Hub}
+
+\begin{table}[H]
+\centering
+\caption{PMOD JB Pinout (I2C Interface)}
+\label{tab:pmod-jb}
+\small
+\begin{tabular}{|c|l|l|l|p{5cm}|}
+\hline
+\textbf{Pin} & \textbf{Signal} & \textbf{RX72N} & \textbf{Function} & \textbf{Notes} \\
+\hline
+1 & SCL & PC2 & I2C Clock & RIIC2 capable, A18 bus conflict \\
+\hline
+2 & SDA & PC3 & I2C Data & RIIC2 capable, A19 bus conflict \\
+\hline
+3 & INT1 & PC4 & Interrupt 1 & IRQ-capable, A20/CS3\# \\
+\hline
+4 & INT2 & PC5 & Interrupt 2 & IRQ-capable, A21/CS2\#/WAIT\# \\
+\hline
+5 & GND & - & Ground & - \\
+\hline
+6 & VCC & - & 3.3V Power & - \\
+\hline
+7 & GPIO0 & PC6 & Enable/Reset & A22/CS1\#, D2 bus conflict \\
+\hline
+8 & GPIO1 & P55 & General I/O & D0, WAIT\#, EDREQ0 \\
+\hline
+9 & GPIO2 & P54 & General I/O & ALE, D1, EDACK0 \\
+\hline
+10 & GPIO3 & PA2 & General I/O & \textbf{Bus-free!} GTIOC1A alt \\
+\hline
+11 & GND & - & Ground & - \\
+\hline
+12 & VCC & - & 3.3V Power & - \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Compatible Modules:}
+\begin{itemize}
+    \item PMOD NAV (MPU-9250 9-DOF IMU)
+    \item PMOD CMPS2 (HMC5883L 3-axis compass)
+    \item PMOD TMP3 (TCN75A temperature sensor)
+    \item PMOD AQS (iAQ-Core air quality sensor)
+    \item PMOD HYGRO (HDC1080 humidity/temperature)
+    \item Any I2C sensor breakout board
+\end{itemize}
+
+\subsubsection{PMOD JC - UART/Wireless Interface}
+
+\begin{table}[H]
+\centering
+\caption{PMOD JC Pinout (UART with Flow Control)}
+\label{tab:pmod-jc}
+\small
+\begin{tabular}{|c|l|l|l|p{5cm}|}
+\hline
+\textbf{Pin} & \textbf{Signal} & \textbf{RX72N} & \textbf{Function} & \textbf{Alternate Peripherals} \\
+\hline
+1 & UART\_TX & PD7 & Transmit & D7, SCI12 TX, GLCDC \\
+\hline
+2 & UART\_RX & PD6 & Receive & D6, SCI12 RX, GLCDC \\
+\hline
+3 & RTS & PD5 & Request to Send & D5, SCI12 flow control, QSPI \\
+\hline
+4 & CTS & PD4 & Clear to Send & D4, SCI12 flow control, QSPI \\
+\hline
+5 & GND & - & Ground & - \\
+\hline
+6 & VCC & - & 3.3V/5V Power & Can be 5V with regulator \\
+\hline
+7 & GPIO0 & PD3 & Enable/Reset & D3, GTIOC0A alt, QSPI \\
+\hline
+8 & GPIO1 & PD2 & Interrupt/Event & D2, GTIOC0B alt, MISOC-A \\
+\hline
+9 & GPIO2 & PB1 & Extra GPIO & A9, LCD control \\
+\hline
+10 & GPIO3 & PB0 & Extra GPIO & A8, LCD control \\
+\hline
+11 & GND & - & Ground & - \\
+\hline
+12 & VCC & - & 3.3V/5V Power & - \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Compatible Modules:}
+\begin{itemize}
+    \item PMOD GPS (u-blox NEO-6M/7M GPS)
+    \item PMOD BT2 (Roving Networks RN-42 Bluetooth)
+    \item PMOD ESP32 (WiFi + Bluetooth module)
+    \item PMOD USBUART (USB to UART bridge)
+    \item XBee modules (with adapter)
+    \item LoRa modules (RFM95W with breakout)
+\end{itemize}
+
+\subsubsection{PMOD JD - PWM/Servo/GPIO Expansion}
+
+\begin{table}[H]
+\centering
+\caption{PMOD JD Pinout (PWM and General GPIO)}
+\label{tab:pmod-jd}
+\small
+\begin{tabular}{|c|l|l|l|p{5cm}|}
+\hline
+\textbf{Pin} & \textbf{Signal} & \textbf{RX72N} & \textbf{Function} & \textbf{Notes} \\
+\hline
+1 & PWM0 & PD1 & PWM/Servo 0 & D1, TPU/MTU capable, GTIOC1A alt \\
+\hline
+2 & PWM1 & PD0 & PWM/Servo 1 & D0, TPU/MTU capable, GTIOC1B alt \\
+\hline
+3 & PWM2 & PA0 & PWM/Servo 2 & \textbf{Bus-free!} GTIOC0B alt \\
+\hline
+4 & PWM3 & PA1 & PWM/Servo 3 & \textbf{Bus-free!} GTIOC2A alt \\
+\hline
+5 & GND & - & Ground & - \\
+\hline
+6 & VCC & - & 3.3V/5V Power & Switchable for 5V servos \\
+\hline
+7 & GPIO0 & P17 & General I/O & \textbf{Bus-free!} MTU/GPTW/SCI alt \\
+\hline
+8 & GPIO1 & P23 & General I/O & \textbf{Bus-free!} MTU/GPTW alt \\
+\hline
+9 & GPIO2 & P32 & General I/O & \textbf{Bus-free!} MTU/SCI/CAN alt \\
+\hline
+10 & GPIO3 & PJ3 & General I/O & \textbf{Bus-free!} MTU/SCI alt \\
+\hline
+11 & GND & - & Ground & - \\
+\hline
+12 & VCC & - & 3.3V/5V Power & - \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Compatible Modules:}
+\begin{itemize}
+    \item PMOD CON3 (4-channel R/C servo controller)
+    \item PMOD STEP (Stepper motor driver)
+    \item PMOD 8LD (8 LED array)
+    \item PMOD RELAY (Electromechanical relay)
+    \item PMOD KYPD (4x4 keypad)
+    \item Custom servo/PWM breakouts
+\end{itemize}
+
+\subsubsection{PCB Layout Recommendations}
+
+\textbf{Connector Placement:}
+\begin{itemize}
+    \item Place PMOD JA (SPI) and JB (I2C) on top edge of board for sensor access
+    \item Place PMOD JC (UART) and JD (PWM) on bottom edge for wireless/servo modules
+    \item Maintain minimum 0.5" spacing between connectors for module clearance
+    \item Orient all connectors with Pin 1 in same direction for consistency
+\end{itemize}
+
+\textbf{Circuit Protection:}
+\begin{itemize}
+    \item \textbf{I2C Pull-ups (JB):} 2.2k$\Omega$ to 4.7k$\Omega$ resistors on SCL/SDA
+    \item \textbf{Series Resistors:} 33$\Omega$ on all signal lines for ESD protection
+    \item \textbf{Power Filtering:} 0.1$\mu$F ceramic + 10$\mu$F tantalum per connector
+    \item \textbf{5V Option (JC, JD):} TPS62133 buck converter or TLV62569 for 5V servos
+    \item \textbf{Overcurrent:} Resetable PTC fuses (500mA) on VCC lines
+\end{itemize}
+
+\textbf{Trace Routing:}
+\begin{itemize}
+    \item \textbf{JA (High-Speed SPI):} 50$\Omega$ impedance-controlled traces, length match $\pm$5mm
+    \item \textbf{JB (I2C):} Keep traces $<$6 inches, avoid routing near PWM signals
+    \item \textbf{JC (UART):} Cross TX/RX for DTE $\leftrightarrow$ DCE direct connection
+    \item \textbf{JD (PWM):} Include RC filters (100$\Omega$ + 100nF) if driving servos directly
 \end{itemize}
 
 \subsection{RX72N Configuration Tables}
