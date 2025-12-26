@@ -507,7 +507,7 @@
         "name": "Board to Board SPI",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 12,
-        "schematic_color": "rgb(206, 10, 220)",
+        "schematic_color": "rgb(220, 74, 69)",
         "wire_width": 6
       },
       {
@@ -543,7 +543,7 @@
         "name": "LiDAR",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 3,
-        "schematic_color": "rgb(184, 52, 224)",
+        "schematic_color": "rgb(143, 143, 224)",
         "wire_width": 6
       },
       {
@@ -744,6 +744,46 @@
       {
         "netclass": "UC_VCC",
         "pattern": "/UC_VCC"
+      },
+      {
+        "netclass": "SMB",
+        "pattern": "/BMS_SMBUS_*"
+      },
+      {
+        "netclass": "Motor Encoder",
+        "pattern": "/ENCODER*"
+      },
+      {
+        "netclass": "Motor Driver EN PH",
+        "pattern": "/MOTOR*_EN"
+      },
+      {
+        "netclass": "Motor Driver EN PH",
+        "pattern": "/MOTOR*_PH"
+      },
+      {
+        "netclass": "Motor Driver IPROPI",
+        "pattern": "/MOTOR*_IPROPI"
+      },
+      {
+        "netclass": "Motor Driver nFault",
+        "pattern": "/MOTOR*_nFAULT"
+      },
+      {
+        "netclass": "Motor Driver SPI",
+        "pattern": "/MOTOR_DRIVER_nCS*"
+      },
+      {
+        "netclass": "Motor Driver SPI",
+        "pattern": "/MOTOR_DRIVER_SCLK"
+      },
+      {
+        "netclass": "Motor Driver SPI",
+        "pattern": "/MOTOR_DRIVER_COPI"
+      },
+      {
+        "netclass": "Motor Driver SPI",
+        "pattern": "/MOTOR_DRIVER_CIPO"
       }
     ]
   },
