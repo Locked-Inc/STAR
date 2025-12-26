@@ -480,52 +480,7 @@
         "name": "Debug/Programming",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 1,
-        "schematic_color": "rgb(255, 249, 217)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "Power/Ground",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 2,
-        "schematic_color": "rgb(217, 217, 217)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "RPi5 SPI",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 3,
-        "schematic_color": "rgb(255, 204, 153)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "Motor PWM Control",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 4,
-        "schematic_color": "rgb(204, 204, 255)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "Motor Fault Signals",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 5,
-        "schematic_color": "rgb(230, 255, 230)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "Motor Current Sensing",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 6,
-        "schematic_color": "rgb(255, 217, 217)",
+        "schematic_color": "rgb(218, 165, 32)",
         "wire_width": 6
       },
       {
@@ -534,16 +489,7 @@
         "name": "Encoders",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 7,
-        "schematic_color": "rgb(204, 255, 204)",
-        "wire_width": 6
-      },
-      {
-        "bus_width": 12,
-        "line_style": 0,
-        "name": "Motor Driver SPI Config",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 8,
-        "schematic_color": "rgb(229, 204, 255)",
+        "schematic_color": "rgb(34, 139, 34)",
         "wire_width": 6
       },
       {
@@ -552,25 +498,43 @@
         "name": "I2C Charger",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 9,
-        "schematic_color": "rgb(204, 255, 255)",
+        "schematic_color": "rgb(0, 139, 139)",
         "wire_width": 6
       },
       {
         "bus_width": 12,
         "line_style": 0,
-        "name": "SMBus BMS",
+        "name": "Motor Current Sensing",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 10,
-        "schematic_color": "rgb(238, 217, 238)",
+        "priority": 6,
+        "schematic_color": "rgb(220, 20, 60)",
         "wire_width": 6
       },
       {
         "bus_width": 12,
         "line_style": 0,
-        "name": "PMOD JB",
+        "name": "Motor Driver SPI Config",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 11,
-        "schematic_color": "rgb(194, 166, 128)",
+        "priority": 8,
+        "schematic_color": "rgb(138, 43, 226)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "Motor Fault Signals",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 5,
+        "schematic_color": "rgb(124, 252, 0)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "Motor PWM Control",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 4,
+        "schematic_color": "rgb(30, 144, 255)",
         "wire_width": 6
       },
       {
@@ -579,7 +543,16 @@
         "name": "PMOD JA",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 12,
-        "schematic_color": "rgb(206, 229, 179)",
+        "schematic_color": "rgb(107, 142, 35)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "PMOD JB",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 11,
+        "schematic_color": "rgb(139, 69, 19)",
         "wire_width": 6
       },
       {
@@ -588,7 +561,34 @@
         "name": "PMOD JC",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 13,
-        "schematic_color": "rgb(166, 255, 255)",
+        "schematic_color": "rgb(0, 191, 255)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "Power/Ground",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 2,
+        "schematic_color": "rgb(105, 105, 105)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "RPi5 SPI",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 3,
+        "schematic_color": "rgb(255, 140, 0)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "SMBus BMS",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 10,
+        "schematic_color": "rgb(186, 85, 211)",
         "wire_width": 6
       },
       {
@@ -597,7 +597,7 @@
         "name": "Status LEDs",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 14,
-        "schematic_color": "rgb(255, 217, 238)",
+        "schematic_color": "rgb(255, 20, 147)",
         "wire_width": 6
       }
     ],
