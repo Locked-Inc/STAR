@@ -19056,7 +19056,7 @@
 		)
 		(uuid "1070848c-0f82-48c3-903b-8b9764159eb3")
 	)
-	(label "PMOD_JD_PWM0"
+	(label "MOTOR_DRIVER_RSPIC_CM_COPI"
 		(at 712.47 247.65 180)
 		(effects
 			(font
@@ -19307,7 +19307,7 @@
 		)
 		(uuid "32da3a3e-c406-434d-a74c-ca614a9524be")
 	)
-	(label "MOTOR_DRIVER_SPI2_MOTOR4_nCS"
+	(label "MOTOR_DRIVER_RSPIC_MOTOR4_nCS"
 		(at 684.53 468.63 0)
 		(effects
 			(font
@@ -19447,7 +19447,7 @@
 		)
 		(uuid "4368c134-269b-474d-9025-b24b9bd737bf")
 	)
-	(label "MOTOR_DRIVER_SPI2_MOTOR3_nCS"
+	(label "MOTOR_DRIVER_RSPIC_MOTOR3_nCS"
 		(at 684.53 466.09 0)
 		(effects
 			(font
@@ -19517,7 +19517,7 @@
 		)
 		(uuid "4b84f39d-3b70-433b-b404-4536abe601b2")
 	)
-	(label "MOTOR_DRIVER_SPI2_MOTOR1_nCS"
+	(label "MOTOR_DRIVER_RSPIC_MOTOR1_nCS"
 		(at 684.53 461.01 0)
 		(effects
 			(font
@@ -19557,7 +19557,7 @@
 		)
 		(uuid "51cea5f2-1e85-4c1f-9666-080b5b50e1d4")
 	)
-	(label "PMOD_JC_GPIO1"
+	(label "MOTOR_DRIVER_RSPIC_CM_CIPO"
 		(at 712.47 250.19 180)
 		(effects
 			(font
@@ -19850,7 +19850,7 @@
 		)
 		(uuid "72944c02-54bc-489f-84ad-458d2ddcb56d")
 	)
-	(label "MOTOR_DRIVER_SPI2_MOTOR2_nCS"
+	(label "MOTOR_DRIVER_RSPIC_MOTOR2_nCS"
 		(at 684.53 463.55 0)
 		(effects
 			(font
@@ -20171,7 +20171,7 @@
 		)
 		(uuid "a5bf23c1-c72a-4331-9a87-daa5804e20cf")
 	)
-	(label "PMOD_JC_GPIO0"
+	(label "MOTOR_DRIVER_RSPIC_CM_SCLK"
 		(at 712.47 252.73 180)
 		(effects
 			(font
