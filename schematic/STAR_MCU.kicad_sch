@@ -19497,7 +19497,7 @@
 		)
 		(uuid "4a29b3e1-c436-4cca-b9b3-4d75679c7cc0")
 	)
-	(label "MOTOR_DRIVER_ENCODER4_OUTPUT_B"
+	(label "MOTOR_DRIVER_ENCODER3_OUTPUT_B"
 		(at 779.78 486.41 180)
 		(effects
 			(font
@@ -19648,7 +19648,7 @@
 		)
 		(uuid "5a9c06e8-1b47-4cef-bff9-49a7f7f09e47")
 	)
-	(label "MOTOR_DRIVER_ENCODER1_OUTPUT_B"
+	(label "MOTOR_DRIVER_ENCODER0_OUTPUT_B"
 		(at 779.78 478.79 180)
 		(effects
 			(font
@@ -19870,7 +19870,7 @@
 		)
 		(uuid "74e5834a-7203-4dbf-8998-e16893a7cff9")
 	)
-	(label "MOTOR_DRIVER_ENCODER1_OUTPUT_A"
+	(label "MOTOR_DRIVER_ENCODER0_OUTPUT_A"
 		(at 687.07 478.79 0)
 		(effects
 			(font
@@ -20315,7 +20315,7 @@
 		)
 		(uuid "b6baafca-1499-424d-83b8-6edbc7f1811f")
 	)
-	(label "MOTOR_DRIVER_ENCODER4_OUTPUT_A"
+	(label "MOTOR_DRIVER_ENCODER3_OUTPUT_A"
 		(at 687.07 486.41 0)
 		(effects
 			(font
@@ -20395,7 +20395,7 @@
 		)
 		(uuid "bf8fb2af-c974-4cf6-86eb-8dc94c61a215")
 	)
-	(label "MOTOR_DRIVER_ENCODER2_OUTPUT_A"
+	(label "MOTOR_DRIVER_ENCODER1_OUTPUT_A"
 		(at 687.07 481.33 0)
 		(effects
 			(font
@@ -20445,7 +20445,7 @@
 		)
 		(uuid "cb6090cf-1fe9-4942-a97d-93c062455c4a")
 	)
-	(label "MOTOR_DRIVER_ENCODER2_OUTPUT_B"
+	(label "MOTOR_DRIVER_ENCODER1_OUTPUT_B"
 		(at 779.78 481.33 180)
 		(effects
 			(font
@@ -20495,7 +20495,7 @@
 		)
 		(uuid "d8f7a1e5-7f87-4799-bdf0-8a4196b9308f")
 	)
-	(label "MOTOR_DRIVER_ENCODER3_OUTPUT_A"
+	(label "MOTOR_DRIVER_ENCODER2_OUTPUT_A"
 		(at 687.07 483.87 0)
 		(effects
 			(font
@@ -20699,7 +20699,7 @@
 		)
 		(uuid "edbdb7b7-22be-4ad8-9fa2-858e895943ad")
 	)
-	(label "MOTOR_DRIVER_ENCODER3_OUTPUT_B"
+	(label "MOTOR_DRIVER_ENCODER2_OUTPUT_B"
 		(at 779.78 483.87 180)
 		(effects
 			(font
