@@ -606,7 +606,7 @@
         "name": "3V3 Main Rail",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 15,
-        "schematic_color": "rgb(255, 0, 255)",
+        "schematic_color": "rgb(255, 255, 0)",
         "wire_width": 6
       },
       {
