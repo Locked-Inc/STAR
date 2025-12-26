@@ -44,6 +44,8 @@
 \hline
 \rowcolor{purple!20} Motor Driver SPI (Config) & Purple \\
 \hline
+\rowcolor{teal!20} Expansion GPIO & Teal \\
+\hline
 Unused/Available & White \\
 \hline
 \end{tabular}
@@ -73,7 +75,7 @@ Unused/Available & White \\
 \hline
 \rowcolor{gray!15} 3 & AVSS1 & Ground & Power supply (analog) \\
 \hline
-4 & PJ3 & Unused/Spare & Available for future use \\
+\rowcolor{teal!20} 4 & PJ3 & Expansion GPIO & General purpose I/O for custom hardware (has SCI/SPI/SSI/Ethernet peripherals) \\
 \hline
 \rowcolor{gray!15} 5 & VCL & 220nF cap to ground & Voltage regulator \\
 \hline
@@ -237,7 +239,7 @@ Unused/Available & White \\
 \hline
 \rowcolor{purple!20} 85 & PD1 & Motor Driver SPI COPI & RSPIC controller out (MOSIC-A) to DRV8243S \\
 \hline
-\rowcolor{cyan!35} 86 & PD0 & PMOD JC PWM1 & PWM/Timer output. See Table~\ref{tab:pmod-jc} \\
+\rowcolor{magenta!15} 86 & PD0 & Status LED & User status indicator (active high, can also use IRQ0 or ADC AN108) \\
 \hline
 \rowcolor{lime!10} 87 & P47/IRQ15-DS & Motor 3 nFAULT & DRV8243S fault signal (active low, interrupt-capable) \\
 \hline
