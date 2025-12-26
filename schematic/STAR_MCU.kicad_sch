@@ -19015,16 +19015,6 @@
 		)
 		(uuid "00455343-41ac-4311-a71c-51939c499b1b")
 	)
-	(label "PMOD_JD_GPIO2"
-		(at 593.09 312.42 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "033e44bd-431b-4e8b-93aa-ebdbde2f5288")
-	)
 	(label "SCI9_TXD9"
 		(at 354.33 226.06 0)
 		(effects
@@ -19085,16 +19075,6 @@
 			(justify left bottom)
 		)
 		(uuid "0dd702f1-33b0-4100-9819-de0c77b4b8ea")
-	)
-	(label "PMOD_JD_GPIO1"
-		(at 593.09 331.47 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "0e48d474-c0a4-482f-b394-6f0690f4763d")
 	)
 	(label "P3V3_BUCK"
 		(at 30.48 119.38 0)
@@ -20011,16 +19991,6 @@
 		)
 		(uuid "8db37be4-c525-457a-b57a-22fef7865cc7")
 	)
-	(label "PMOD_JD_GPIO0"
-		(at 593.09 342.9 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "8ef4415c-7384-4606-9ace-451930247f7c")
-	)
 	(label "PMOD_JA_CS1"
 		(at 722.63 322.58 180)
 		(effects
@@ -20778,16 +20748,6 @@
 			(justify right bottom)
 		)
 		(uuid "ee85f6ed-f6fe-4ba9-9bb8-1d050da50755")
-	)
-	(label "PMOD_JD_PWM2"
-		(at 722.63 288.29 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "ee8d02d7-f15b-44eb-9017-4ed8fd9172bd")
 	)
 	(label "ENCODER2_PHASE_B"
 		(at 779.78 483.87 180)
