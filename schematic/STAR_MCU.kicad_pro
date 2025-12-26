@@ -479,7 +479,7 @@
         "line_style": 0,
         "name": "3V3 Buck Converter",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 15,
+        "priority": 17,
         "schematic_color": "rgb(148, 0, 211)",
         "wire_width": 6
       },
@@ -488,8 +488,8 @@
         "line_style": 0,
         "name": "3V3 Main Rail",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 14,
-        "schematic_color": "rgb(255, 98, 240)",
+        "priority": 15,
+        "schematic_color": "rgb(255, 106, 137)",
         "wire_width": 6
       },
       {
@@ -497,7 +497,7 @@
         "line_style": 0,
         "name": "3V3 Motor Driver",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 16,
+        "priority": 19,
         "schematic_color": "rgb(255, 69, 0)",
         "wire_width": 6
       },
@@ -506,7 +506,7 @@
         "line_style": 0,
         "name": "5V Buck Converter",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 17,
+        "priority": 21,
         "schematic_color": "rgb(0, 255, 255)",
         "wire_width": 6
       },
@@ -533,7 +533,7 @@
         "line_style": 0,
         "name": "Fuel Gauge SMBus",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 21,
+        "priority": 25,
         "schematic_color": "rgb(0, 255, 127)",
         "wire_width": 6
       },
@@ -551,7 +551,7 @@
         "line_style": 0,
         "name": "IMU Control",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 22,
+        "priority": 26,
         "schematic_color": "rgb(255, 99, 71)",
         "wire_width": 6
       },
@@ -560,7 +560,7 @@
         "line_style": 0,
         "name": "LiDAR UART",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 20,
+        "priority": 24,
         "schematic_color": "rgb(255, 105, 180)",
         "wire_width": 6
       },
@@ -633,7 +633,7 @@
         "name": "PMOD JD",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 13,
-        "schematic_color": "rgb(255, 192, 203)",
+        "schematic_color": "rgb(223, 168, 178)",
         "wire_width": 6
       },
       {
@@ -641,7 +641,7 @@
         "line_style": 0,
         "name": "PMOD JE",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 14,
+        "priority": 16,
         "schematic_color": "rgb(255, 165, 0)",
         "wire_width": 6
       },
@@ -650,7 +650,7 @@
         "line_style": 0,
         "name": "PMOD JF",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 15,
+        "priority": 18,
         "schematic_color": "rgb(0, 128, 128)",
         "wire_width": 6
       },
@@ -668,7 +668,7 @@
         "line_style": 0,
         "name": "RPi5 I2C",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 19,
+        "priority": 23,
         "schematic_color": "rgb(50, 205, 50)",
         "wire_width": 6
       },
@@ -695,7 +695,7 @@
         "line_style": 0,
         "name": "Status LEDs",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 13,
+        "priority": 14,
         "schematic_color": "rgb(255, 20, 147)",
         "wire_width": 6
       },
@@ -704,7 +704,7 @@
         "line_style": 0,
         "name": "System Config",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 23,
+        "priority": 27,
         "schematic_color": "rgb(135, 206, 250)",
         "wire_width": 6
       },
@@ -713,7 +713,7 @@
         "line_style": 0,
         "name": "Temperature Sensor",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 16,
+        "priority": 20,
         "schematic_color": "rgb(144, 238, 144)",
         "wire_width": 6
       },
@@ -722,7 +722,7 @@
         "line_style": 0,
         "name": "USB SCI Data",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 18,
+        "priority": 22,
         "schematic_color": "rgb(255, 215, 0)",
         "wire_width": 6
       }
