@@ -101,7 +101,7 @@ Unused/Available & White \\
 \hline
 \rowcolor{yellow!15} 17 & P33 & RES\#, CY7C65213A-28PVXI & USB to UART IC for flashing (resets system before firmware flash) \\
 \hline
-\rowcolor{purple!20} 18 & P32 & Motor Driver SPI nCS2 & RSPI2 chip select for Motor 2 (DRV8243S) \\
+\rowcolor{purple!20} 18 & P32 & Motor Driver SPI nCS2 & RSPIC chip select for Motor 1 (DRV8243S) \\
 \hline
 \rowcolor{yellow!15} 19 & P31/TMS & E1E2-Emulator-Interface & JTAG (TMS) \\
 \hline
@@ -115,7 +115,7 @@ Unused/Available & White \\
 \hline
 \rowcolor{green!20} 24 & P24/MTCLKA & Encoder 0 Phase A & MTU1 encoder (quadrature counting) \\
 \hline
-\rowcolor{purple!20} 25 & P23 & Motor Driver SPI nCS1 & RSPI2 chip select for Motor 1 (DRV8243S) \\
+\rowcolor{purple!20} 25 & P23 & Motor Driver SPI nCS1 & RSPIC chip select for Motor 0 (DRV8243S) \\
 \hline
 \rowcolor{green!20} 26 & P22/MTCLKC & Encoder 1 Phase B & MTU2 encoder (quadrature counting) \\
 \hline
@@ -123,7 +123,7 @@ Unused/Available & White \\
 \hline
 \rowcolor{teal!20} 28 & P20/SDA1 & Charger I2C Data & RIIC1 for battery charger \\
 \hline
-\rowcolor{purple!20} 29 & P17 & Motor Driver SPI nCS0 & RSPI2 chip select for Motor 0 (DRV8243S) \\
+\rowcolor{purple!20} 29 & P17 & Motor Driver SPI nCS0 & RSPIC chip select for Motor 0 (DRV8243S) \\
 \hline
 \rowcolor{yellow!15} 30 & P16/USB0\_VBUS & USB0 VBUS & Optional USB boot \\
 \hline
@@ -191,13 +191,13 @@ Unused/Available & White \\
 \hline
 \rowcolor{gray!15} 62 & VSS & Ground & Power supply \\
 \hline
-\rowcolor{orange!20} 63 & PA7/MISOA-B & RPi5 SPI CIPO & SPI Controller In Peripheral Out \\
+\rowcolor{orange!20} 63 & PA7/MISOA-B & RPi5 RSPIA CIPO & RSPIA-B Controller In Peripheral Out \\
 \hline
-\rowcolor{orange!20} 64 & PA6/MOSIA-B & RPi5 SPI COPI & SPI Controller Out Peripheral In \\
+\rowcolor{orange!20} 64 & PA6/MOSIA-B & RPi5 RSPIA COPI & RSPIA-B Controller Out Peripheral In \\
 \hline
-\rowcolor{orange!20} 65 & PA5/RSPCKA-B & RPi5 SPI SCLK & SPI clock \\
+\rowcolor{orange!20} 65 & PA5/RSPCKA-B & RPi5 RSPIA SCLK & RSPIA-B clock \\
 \hline
-\rowcolor{orange!20} 66 & PA4/SSLA0-B & RPi5 SPI CS & SPI chip select \\
+\rowcolor{orange!20} 66 & PA4/SSLA0-B & RPi5 RSPIA CS & RSPIA-B chip select \\
 \hline
 \rowcolor{green!20} 67 & PA3/MTCLKD & Encoder 3 Phase B & MTU4 encoder (quadrature counting) \\
 \hline
@@ -205,7 +205,7 @@ Unused/Available & White \\
 \hline
 \rowcolor{cyan!35} 69 & PA1 & PMOD JC PWM3 & PWM/Timer output. See Table~\ref{tab:pmod-jc} \\
 \hline
-\rowcolor{purple!20} 70 & PA0 & Motor Driver SPI nCS3 & RSPI2 chip select for Motor 3 (DRV8243S) \\
+\rowcolor{purple!20} 70 & PA0 & Motor Driver SPI nCS3 & RSPIC chip select for Motor 3 (DRV8243S) \\
 \hline
 \rowcolor{blue!20} 71 & PE7/GTIOC3A & Motor 3 PH (Phase) & GPTW PWM channel 3A (32-bit) \\
 \hline
@@ -231,11 +231,11 @@ Unused/Available & White \\
 \hline
 \rowcolor{cyan!35} 82 & PD4 & PMOD JC CTS & Clear to Send. See Table~\ref{tab:pmod-jc} \\
 \hline
-\rowcolor{purple!20} 83 & PD3 & Motor Driver SPI SCLK & RSPI2 clock (RSPCKC-A) to all 4 DRV8243S drivers \\
+\rowcolor{purple!20} 83 & PD3 & Motor Driver SPI SCLK & RSPIC clock (RSPCKC-A) to all 4 DRV8243S drivers \\
 \hline
-\rowcolor{purple!20} 84 & PD2 & Motor Driver SPI CIPO & RSPI2 controller in (MISOC-A) from DRV8243S \\
+\rowcolor{purple!20} 84 & PD2 & Motor Driver SPI CIPO & RSPIC controller in (MISOC-A) from DRV8243S \\
 \hline
-\rowcolor{purple!20} 85 & PD1 & Motor Driver SPI COPI & RSPI2 controller out (MOSIC-A) to DRV8243S \\
+\rowcolor{purple!20} 85 & PD1 & Motor Driver SPI COPI & RSPIC controller out (MOSIC-A) to DRV8243S \\
 \hline
 \rowcolor{cyan!35} 86 & PD0 & PMOD JC PWM1 & PWM/Timer output. See Table~\ref{tab:pmod-jc} \\
 \hline
@@ -590,7 +590,7 @@ The DRV8243S motor drivers use two separate interfaces:
 
 \textbf{Configuration (SPI):}
 \begin{itemize}
-    \item \textbf{Peripheral:} RSPI2 using PMOD JC GPIO pins (PD3, PD2, PD1, PA0, P17, P23, P32)
+    \item \textbf{Peripheral:} RSPIC using PMOD JC GPIO pins (PD3, PD2, PD1, PA0, P17, P23, P32)
     \item \textbf{Purpose:} Configure current limits, fault thresholds, slew rates, dead-time insertion
     \item \textbf{Update rate:} Startup only, or when changing operating parameters
     \item \textbf{Speed:} 1 MHz SPI clock (configuration is not time-critical)
@@ -602,7 +602,7 @@ The DRV8243S motor drivers use two separate interfaces:
     \item PWM provides low-latency real-time control for motor speed/direction
     \item SPI allows runtime configuration of driver protection features
     \item Separation of concerns: high-frequency control vs. low-frequency configuration
-    \item Uses RSPI2 to keep RSPI0 available for RPi5 communication
+    \item Uses RSPIC to keep RSPIA available for RPi5 communication
 \end{itemize}
 
 \subsection{RX72N Configuration Tables}
