@@ -1,0 +1,10 @@
+(unit MM)
+
+(package "SSW10602GDRA"
+    (type UNDEF)
+    (uver 2)
+    (mountForm default
+        (footprintRef "SSW10602GDRA")
+        (spec "default")
+    )
+)

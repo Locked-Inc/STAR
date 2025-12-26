@@ -1,0 +1,11 @@
+FILE_TYPE = MULTI_PHYS_TABLE;
+
+PART 'SSW_106_02_G_D_RA'
+CLASS = IO
+{========================================================================================}
+:"MANUFACTURER_NAME", "MANUFACTURER_PART_NUMBER"= "PART_NUMBER", "JEDEC_TYPE", "PACK_TYPE", "MOUSER_PART_NUMBER", "MOUSER_PRICE/STOCK", "DESCRIPTION", "DATASHEET", "HEIGHT";
+{========================================================================================}
+ "SAMTEC", "SSW-106-02-G-D-RA" (!) = "", "SSW10602GDRA", "Other", "200-SSW10602GDRA", "https://www.mouser.co.uk/ProductDetail/Samtec/SSW-106-02-G-D-RA?qs=rU5fayqh%252BE3y2WIzbQXf2g%3D%3D", "12 Position Receptacle Connector 0.100" (2.54mm) Through Hole, Right Angle Gold", "http://suddendocs.samtec.com/prints/ssw-1xx-xx-xxx-x-xx-xxx-xx-mkt.pdf", "5.25 mm"
+END_PART
+
+END.
