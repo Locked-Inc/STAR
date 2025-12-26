@@ -639,6 +639,33 @@
       {
         "bus_width": 12,
         "line_style": 0,
+        "name": "PMOD JE",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 14,
+        "schematic_color": "rgb(255, 165, 0)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "PMOD JF",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 15,
+        "schematic_color": "rgb(0, 128, 128)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "Temperature Sensor",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 16,
+        "schematic_color": "rgb(144, 238, 144)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
         "name": "Power/Ground",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 1,
@@ -895,16 +922,16 @@
         "pattern": "/PMOD_JD_*"
       },
       {
-        "netclass": "Status LEDs",
-        "pattern": "/LED_*"
+        "netclass": "PMOD JE",
+        "pattern": "/PMOD_JE_*"
       },
       {
-        "netclass": "Status LEDs",
-        "pattern": "/ERROR_STATUS_LED"
+        "netclass": "PMOD JF",
+        "pattern": "/PMOD_JF_*"
       },
       {
-        "netclass": "Status LEDs",
-        "pattern": "/SYSTEM_HEARTBEAT_LED"
+        "netclass": "Temperature Sensor",
+        "pattern": "/DS18B20_DQ"
       },
       {
         "netclass": "3V3 Main Rail",
