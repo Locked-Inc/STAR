@@ -129,11 +129,13 @@ func (d *ViterbiDecoder) DecodeSoft(softBits []SoftBit, expectedOutputLen int) (
 				// Compare and select
 				if newMetric < d.newPathMetrics[nextState] {
 					d.newPathMetrics[nextState] = newMetric
-					// Store survivor: predecessor's LSB (determines which predecessor)
-					// Clear the bit first, then set if predecessor LSB is 1
-					d.survivors[t] &^= 1 << nextState
+					// Store the LSB of the winning predecessor state (`state`) for the given `nextState`.
+					// This bit-packed `survivors[t]` field holds the LSB of the winning
+					// predecessor for each of the 64 possible destination states at this time step.
+					// This is used during traceback to reconstruct the most likely path.
+					d.survivors[t] &^= 1 << uint(nextState) // Clear the bit for this state
 					if state&1 == 1 {
-						d.survivors[t] |= 1 << nextState
+						d.survivors[t] |= 1 << uint(nextState) // Set the bit if predecessor's LSB is 1
 					}
 				}
 			}

@@ -434,30 +434,18 @@ func (h *ChaseCombining) Receive() ([]byte, error) {
 	}
 
 	if receivedSeq == previousSeq {
-		// Duplicate/retransmission - combine and retry decode
-		if h.state == StateCombining && h.config.FECEnabled {
-			softBits := bytesToSoftBits(f.Payload)
-			h.softCombiner.Add(softBits)
-
-			// Try decode again with combined soft bits
-			decoded, _, err := h.fecDecoder.DecodeSoft(h.softCombiner.Combined(), h.expectedLen)
-			if err != nil {
-				// Still failing - need more retransmissions
-				h.mu.Unlock()
-				_ = h.sendNack(receivedSeq)
-				return nil, ErrDecodeFailed
-			}
-
-			// Success with combining!
-			h.softCombiner.Reset()
-			h.rxSequence = incrementSequence(h.rxSequence)
-			h.state = StateIdle
-			h.mu.Unlock()
-			_ = h.sendAck(receivedSeq)
-			return decoded, nil
-		}
-
-		// Not in combining state - true duplicate
+		// Duplicate frame detected - treat as true duplicate at the HARQ layer.
+		//
+		// NOTE: This branch is taken when the initial transmission was successfully
+		// decoded (so we never entered StateCombining), the ACK was lost on the wire,
+		// and the sender retransmits with previousSeq. We still send an ACK for
+		// protocol correctness but return ErrDuplicateFrame so higher layers do not
+		// deliver the same payload twice.
+		//
+		// StateCombining case: When a frame fails to decode (receivedSeq == expectedSeq),
+		// we enter StateCombining but do NOT increment rxSequence. Retransmissions
+		// will therefore have receivedSeq == expectedSeq (not previousSeq) and are
+		// handled by the block above, which adds to the combiner and retries decode.
 		h.mu.Unlock()
 		_ = h.sendAck(receivedSeq)
 		return nil, ErrDuplicateFrame
