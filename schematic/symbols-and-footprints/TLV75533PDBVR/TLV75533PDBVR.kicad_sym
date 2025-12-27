@@ -1,6 +1,6 @@
 (kicad_symbol_lib (version 20211014) (generator SamacSys_ECAD_Model)
   (symbol "TLV75533PDBVR" (in_bom yes) (on_board yes)
-    (property "Reference" "IC" (at 21.59 7.62 0)
+    (property "Reference" "U" (at 21.59 7.62 0)
       (effects (font (size 1.27 1.27)) (justify left top))
     )
     (property "Value" "TLV75533PDBVR" (at 21.59 5.08 0)
