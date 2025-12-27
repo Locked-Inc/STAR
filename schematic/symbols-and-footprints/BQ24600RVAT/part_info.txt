@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=BQ24600RVAT
+PartCategory=Integrated Circuit
+PackageCategory=Quad Flat No-Lead
+PinCount=17
+Version=2.1
+Released=2017-01-12 12:59:53
+Downloaded=2025-12-27 18:42:14
+3D=Y
