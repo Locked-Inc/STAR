@@ -3008,8 +3008,8 @@
 		(uuid 38c638c6-2d63-45b3-9bd8-1f76b566d648)
 	)
 	(rectangle
-		(start 347.98 229.87)
-		(end 405.13 248.92)
+		(start 262.89 48.26)
+		(end 320.04 67.31)
 		(stroke
 			(width 0)
 			(type default)
@@ -3322,7 +3322,7 @@
 		(uuid "43a6b348-374f-4a99-a8d6-4a972939762c")
 	)
 	(junction
-		(at 354.33 242.57)
+		(at 269.24 60.96)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "45237e0c-f8ad-491f-b800-a12354582057")
@@ -3346,7 +3346,7 @@
 		(uuid "4b4a50f7-495e-4027-9853-dabbb490b07b")
 	)
 	(junction
-		(at 379.73 242.57)
+		(at 294.64 60.96)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "4c997a59-ad30-4d58-b639-b061ffb66dd0")
@@ -3652,7 +3652,7 @@
 		(uuid "cbe1b9be-1080-492e-be6e-7a2b11d80901")
 	)
 	(junction
-		(at 367.03 242.57)
+		(at 281.94 60.96)
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "cefbbe2f-bc61-4c51-8ed5-0f4bb5afeba9")
@@ -4009,7 +4009,7 @@
 	)
 	(wire
 		(pts
-			(xy 392.43 240.03) (xy 392.43 242.57)
+			(xy 307.34 58.42) (xy 307.34 60.96)
 		)
 		(stroke
 			(width 0)
@@ -4059,7 +4059,7 @@
 	)
 	(wire
 		(pts
-			(xy 354.33 240.03) (xy 354.33 242.57)
+			(xy 269.24 58.42) (xy 269.24 60.96)
 		)
 		(stroke
 			(width 0)
@@ -4259,7 +4259,7 @@
 	)
 	(wire
 		(pts
-			(xy 367.03 242.57) (xy 354.33 242.57)
+			(xy 281.94 60.96) (xy 269.24 60.96)
 		)
 		(stroke
 			(width 0)
@@ -4689,7 +4689,7 @@
 	)
 	(wire
 		(pts
-			(xy 392.43 242.57) (xy 379.73 242.57)
+			(xy 307.34 60.96) (xy 294.64 60.96)
 		)
 		(stroke
 			(width 0)
@@ -5259,7 +5259,7 @@
 	)
 	(wire
 		(pts
-			(xy 367.03 242.57) (xy 379.73 242.57)
+			(xy 281.94 60.96) (xy 294.64 60.96)
 		)
 		(stroke
 			(width 0)
@@ -5429,7 +5429,7 @@
 	)
 	(wire
 		(pts
-			(xy 379.73 240.03) (xy 379.73 242.57)
+			(xy 294.64 58.42) (xy 294.64 60.96)
 		)
 		(stroke
 			(width 0)
@@ -5789,7 +5789,7 @@
 	)
 	(wire
 		(pts
-			(xy 367.03 240.03) (xy 367.03 242.57)
+			(xy 281.94 58.42) (xy 281.94 60.96)
 		)
 		(stroke
 			(width 0)
@@ -8160,7 +8160,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 354.33 242.57 0)
+		(at 269.24 60.96 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -8168,7 +8168,7 @@
 		(dnp no)
 		(uuid "03d94915-acf6-43ee-a7b3-aaa346985899")
 		(property "Reference" "#PWR01"
-			(at 354.33 248.92 0)
+			(at 269.24 67.31 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8177,7 +8177,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 356.362 246.126 0)
+			(at 271.272 64.516 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8186,7 +8186,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 354.33 242.57 0)
+			(at 269.24 60.96 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8195,7 +8195,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 354.33 242.57 0)
+			(at 269.24 60.96 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -8204,7 +8204,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 354.33 242.57 0)
+			(at 269.24 60.96 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -10954,7 +10954,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Q3A"
+		(property "Footprint" "Q3A:Q3A"
 			(at 154.94 317.17 0)
 			(effects
 				(font
@@ -11142,7 +11142,7 @@
 	)
 	(symbol
 		(lib_id "Mechanical:MountingHole_Pad")
-		(at 367.03 237.49 0)
+		(at 281.94 55.88 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -11151,7 +11151,7 @@
 		(fields_autoplaced yes)
 		(uuid "26d4bbf6-45d1-426f-8738-11cf06ff8b84")
 		(property "Reference" "H2"
-			(at 369.57 234.9499 0)
+			(at 284.48 53.3399 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11160,7 +11160,7 @@
 			)
 		)
 		(property "Value" "M3 Via"
-			(at 369.57 237.4899 0)
+			(at 284.48 55.8799 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11169,7 +11169,7 @@
 			)
 		)
 		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
-			(at 367.03 237.49 0)
+			(at 281.94 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11178,7 +11178,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 367.03 237.49 0)
+			(at 281.94 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11187,7 +11187,7 @@
 			)
 		)
 		(property "Description" "Mounting Hole with connection"
-			(at 367.03 237.49 0)
+			(at 281.94 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11196,7 +11196,7 @@
 			)
 		)
 		(property "SNAPEDA_PN" ""
-			(at 367.03 237.49 0)
+			(at 281.94 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11205,7 +11205,7 @@
 			)
 		)
 		(property "Sim.Type" ""
-			(at 367.03 237.49 0)
+			(at 281.94 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11293,7 +11293,7 @@
 	)
 	(symbol
 		(lib_id "Mechanical:MountingHole_Pad")
-		(at 392.43 237.49 0)
+		(at 307.34 55.88 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -11302,7 +11302,7 @@
 		(fields_autoplaced yes)
 		(uuid "2f3c5d24-abf9-4656-8269-3ed0a8b009eb")
 		(property "Reference" "H4"
-			(at 394.97 234.9499 0)
+			(at 309.88 53.3399 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11311,7 +11311,7 @@
 			)
 		)
 		(property "Value" "M3 Via"
-			(at 394.97 237.4899 0)
+			(at 309.88 55.8799 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11320,7 +11320,7 @@
 			)
 		)
 		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
-			(at 392.43 237.49 0)
+			(at 307.34 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11329,7 +11329,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 392.43 237.49 0)
+			(at 307.34 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11338,7 +11338,7 @@
 			)
 		)
 		(property "Description" "Mounting Hole with connection"
-			(at 392.43 237.49 0)
+			(at 307.34 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11347,7 +11347,7 @@
 			)
 		)
 		(property "SNAPEDA_PN" ""
-			(at 392.43 237.49 0)
+			(at 307.34 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -11356,7 +11356,7 @@
 			)
 		)
 		(property "Sim.Type" ""
-			(at 392.43 237.49 0)
+			(at 307.34 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15805,7 +15805,7 @@
 	)
 	(symbol
 		(lib_id "Mechanical:MountingHole_Pad")
-		(at 379.73 237.49 0)
+		(at 294.64 55.88 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -15814,7 +15814,7 @@
 		(fields_autoplaced yes)
 		(uuid "527082be-4761-49bc-bbca-163e4d17e70b")
 		(property "Reference" "H3"
-			(at 382.27 234.9499 0)
+			(at 297.18 53.3399 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15823,7 +15823,7 @@
 			)
 		)
 		(property "Value" "M3 Via"
-			(at 382.27 237.4899 0)
+			(at 297.18 55.8799 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15832,7 +15832,7 @@
 			)
 		)
 		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
-			(at 379.73 237.49 0)
+			(at 294.64 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15841,7 +15841,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 379.73 237.49 0)
+			(at 294.64 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15850,7 +15850,7 @@
 			)
 		)
 		(property "Description" "Mounting Hole with connection"
-			(at 379.73 237.49 0)
+			(at 294.64 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15859,7 +15859,7 @@
 			)
 		)
 		(property "SNAPEDA_PN" ""
-			(at 379.73 237.49 0)
+			(at 294.64 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -15868,7 +15868,7 @@
 			)
 		)
 		(property "Sim.Type" ""
-			(at 379.73 237.49 0)
+			(at 294.64 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -24148,7 +24148,7 @@
 				)
 			)
 		)
-		(property "Footprint" "INDPM110100X400N"
+		(property "Footprint" "INDPM110100X400N:INDPM110100X400N"
 			(at 166.37 201.93 0)
 			(effects
 				(font
@@ -25172,7 +25172,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" "CAPC7866X950N:CAPC7866X950N"
+		(property "Footprint" "CAPC7866X950N"
 			(at 199.0852 229.87 0)
 			(effects
 				(font
@@ -25815,7 +25815,7 @@
 				)
 			)
 		)
-		(property "Footprint" "DNK0008A"
+		(property "Footprint" "DNK0008A:DNK0008A"
 			(at 175.26 286.69 0)
 			(effects
 				(font
@@ -26851,7 +26851,7 @@
 				)
 			)
 		)
-		(property "Footprint" "DNK0008A"
+		(property "Footprint" "DNK0008A:DNK0008A"
 			(at 154.94 286.69 0)
 			(effects
 				(font
@@ -30638,7 +30638,7 @@
 				)
 			)
 		)
-		(property "Footprint" "Q3A"
+		(property "Footprint" "Q3A:Q3A"
 			(at 170.18 308.28 0)
 			(effects
 				(font
@@ -33462,7 +33462,7 @@
 	)
 	(symbol
 		(lib_id "Mechanical:MountingHole_Pad")
-		(at 354.33 237.49 0)
+		(at 269.24 55.88 0)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom no)
@@ -33471,7 +33471,7 @@
 		(fields_autoplaced yes)
 		(uuid "ce3f0c45-5db4-457e-acb3-2c2f40a22354")
 		(property "Reference" "H1"
-			(at 356.87 234.9499 0)
+			(at 271.78 53.3399 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -33480,7 +33480,7 @@
 			)
 		)
 		(property "Value" "M3 Via"
-			(at 356.87 237.4899 0)
+			(at 271.78 55.8799 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -33489,7 +33489,7 @@
 			)
 		)
 		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
-			(at 354.33 237.49 0)
+			(at 269.24 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -33498,7 +33498,7 @@
 			)
 		)
 		(property "Datasheet" "~"
-			(at 354.33 237.49 0)
+			(at 269.24 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -33507,7 +33507,7 @@
 			)
 		)
 		(property "Description" "Mounting Hole with connection"
-			(at 354.33 237.49 0)
+			(at 269.24 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -33516,7 +33516,7 @@
 			)
 		)
 		(property "SNAPEDA_PN" ""
-			(at 354.33 237.49 0)
+			(at 269.24 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -33525,7 +33525,7 @@
 			)
 		)
 		(property "Sim.Type" ""
-			(at 354.33 237.49 0)
+			(at 269.24 55.88 0)
 			(effects
 				(font
 					(size 1.27 1.27)
