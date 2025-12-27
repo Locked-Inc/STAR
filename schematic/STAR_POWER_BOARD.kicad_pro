@@ -451,7 +451,7 @@
     "pinned_symbol_libs": []
   },
   "meta": {
-    "filename": "POWER.kicad_pro",
+    "filename": "STAR_POWER_BOARD.kicad_pro",
     "version": 3
   },
   "net_settings": {
@@ -475,40 +475,256 @@
         "wire_width": 6
       },
       {
-        "name": "3V3 BST",
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "5V0 Buck",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 3,
-        "schematic_color": "rgb(255, 130, 0)"
+        "priority": 21,
+        "schematic_color": "rgb(255, 117, 130)",
+        "wire_width": 6
       },
       {
-        "name": "3V3 SW",
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "6V0 Buck",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 5,
-        "schematic_color": "rgb(27, 0, 255)"
+        "priority": 20,
+        "schematic_color": "rgb(255, 83, 64)",
+        "wire_width": 6
       },
       {
-        "name": "5V0 BST",
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "6V0 HDRV",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 19,
+        "schematic_color": "rgb(41, 205, 255)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "6V0 LDRV",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 18,
+        "schematic_color": "rgb(39, 165, 187)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "BB_BTST1",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 12,
+        "schematic_color": "rgb(127, 216, 143)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "BB_BTST2",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 11,
+        "schematic_color": "rgb(59, 142, 175)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "BB_SDRV",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 13,
+        "schematic_color": "rgb(177, 91, 183)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "BB_STAT",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 14,
+        "schematic_color": "rgb(55, 140, 183)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "BB_SW1",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 9,
+        "schematic_color": "rgb(154, 131, 206)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "BB_SW2",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 8,
+        "schematic_color": "rgb(153, 196, 195)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "BB_TS",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 10,
+        "schematic_color": "rgb(208, 143, 111)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "BST",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 24,
+        "schematic_color": "rgb(58, 197, 255)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "C_CC1",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 2,
-        "schematic_color": "rgb(255, 125, 21)"
+        "schematic_color": "rgb(92, 98, 169)",
+        "wire_width": 6
       },
       {
-        "name": "5V0 SW",
-        "pcb_color": "rgba(0, 0, 0, 0.000)",
-        "priority": 4,
-        "schematic_color": "rgb(13, 0, 255)"
-      },
-      {
-        "name": "6V0 SW",
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "C_CC2",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 1,
-        "schematic_color": "rgb(65, 54, 255)"
+        "schematic_color": "rgb(196, 60, 177)",
+        "wire_width": 6
       },
       {
-        "name": "USBC VBUS",
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "FB",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 22,
+        "schematic_color": "rgb(176, 168, 59)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "Ground",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 26,
+        "schematic_color": "rgb(61, 4, 86)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "P3V3 Buck",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 25,
+        "schematic_color": "rgb(255, 124, 37)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "PACK+",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 0,
-        "schematic_color": "rgb(199, 0, 255)"
+        "schematic_color": "rgb(255, 91, 166)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "SW",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 23,
+        "schematic_color": "rgb(73, 128, 255)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "System Voltage",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 27,
+        "schematic_color": "rgb(255, 32, 80)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "USBC Drain",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 17,
+        "schematic_color": "rgb(115, 84, 255)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "USBC LDO",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 16,
+        "schematic_color": "rgb(255, 63, 144)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "USBC PPHV",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 15,
+        "schematic_color": "rgb(255, 0, 90)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "USBC_N",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 4,
+        "schematic_color": "rgb(141, 174, 113)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "USBC_P",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 3,
+        "schematic_color": "rgb(78, 172, 216)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "USBC_SCL",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 7,
+        "schematic_color": "rgb(68, 150, 255)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "USBC_SDA",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 6,
+        "schematic_color": "rgb(213, 124, 162)",
+        "wire_width": 6
+      },
+      {
+        "bus_width": 12,
+        "line_style": 0,
+        "name": "USBC_VBUS",
+        "pcb_color": "rgba(0, 0, 0, 0.000)",
+        "priority": 5,
+        "schematic_color": "rgb(255, 56, 60)",
+        "wire_width": 6
       }
     ],
     "meta": {
@@ -518,28 +734,116 @@
     "netclass_assignments": null,
     "netclass_patterns": [
       {
-        "netclass": "3V3 SW",
-        "pattern": "/3V3 SW*"
+        "netclass": "System Voltage",
+        "pattern": "/SYS_VOLTAGE"
       },
       {
-        "netclass": "5V0 SW",
-        "pattern": "/5V0 SW*"
+        "netclass": "Ground",
+        "pattern": "*GND*"
       },
       {
-        "netclass": "5V0 BST",
-        "pattern": "/5V0 BST*"
+        "netclass": "P3V3 Buck",
+        "pattern": "/P3V3_BUCK"
       },
       {
-        "netclass": "3V3 BST",
-        "pattern": "/3V3 BST*"
+        "netclass": "BST",
+        "pattern": "/*BST"
       },
       {
-        "netclass": "6V0 SW",
-        "pattern": "/6V0 SW*"
+        "netclass": "SW",
+        "pattern": "/*SW"
       },
       {
-        "netclass": "USBC VBUS",
-        "pattern": "/USBC VBUS*"
+        "netclass": "FB",
+        "pattern": "/*FB"
+      },
+      {
+        "netclass": "5V0 Buck",
+        "pattern": "/P5V0_BUCK"
+      },
+      {
+        "netclass": "6V0 Buck",
+        "pattern": "/P6V0_BUCK"
+      },
+      {
+        "netclass": "6V0 HDRV",
+        "pattern": "/6V0_HDRV"
+      },
+      {
+        "netclass": "6V0 LDRV",
+        "pattern": "/6V0_LDRV"
+      },
+      {
+        "netclass": "USBC Drain",
+        "pattern": "/USBC_DRAIN"
+      },
+      {
+        "netclass": "USBC LDO",
+        "pattern": "/USBC_LDO_3V3"
+      },
+      {
+        "netclass": "USBC PPHV",
+        "pattern": "/USBC_PPHV"
+      },
+      {
+        "netclass": "BB_STAT",
+        "pattern": "/BB_STAT"
+      },
+      {
+        "netclass": "BB_SDRV",
+        "pattern": "/BB_SDRV"
+      },
+      {
+        "netclass": "BB_BTST1",
+        "pattern": "/BB_BTST1"
+      },
+      {
+        "netclass": "BB_BTST2",
+        "pattern": "/BB_BTST2"
+      },
+      {
+        "netclass": "BB_TS",
+        "pattern": "/BB_TS"
+      },
+      {
+        "netclass": "BB_SW1",
+        "pattern": "/BB_SW1"
+      },
+      {
+        "netclass": "BB_SW2",
+        "pattern": "/BB_SW2"
+      },
+      {
+        "netclass": "USBC_SDA",
+        "pattern": "/USBC_SDA"
+      },
+      {
+        "netclass": "USBC_SCL",
+        "pattern": "/USBC_SCL"
+      },
+      {
+        "netclass": "USBC_VBUS",
+        "pattern": "/USBC_VBUS"
+      },
+      {
+        "netclass": "USBC_N",
+        "pattern": "/USBC_N"
+      },
+      {
+        "netclass": "USBC_P",
+        "pattern": "/USBC_P"
+      },
+      {
+        "netclass": "C_CC1",
+        "pattern": "/C_CC1"
+      },
+      {
+        "netclass": "C_CC2",
+        "pattern": "/C_CC2"
+      },
+      {
+        "netclass": "PACK+",
+        "pattern": "/PACK+"
       }
     ]
   },
