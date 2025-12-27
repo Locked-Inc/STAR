@@ -542,7 +542,7 @@
       },
       {
         "netclass": "P3V3 Buck",
-        "pattern": "/P3V3_BUCK"
+        "pattern": "/INTERNAL_P3V3_LDO"
       },
       {
         "netclass": "BST",
@@ -558,7 +558,7 @@
       },
       {
         "netclass": "5V0 Buck",
-        "pattern": "/P5V0_BUCK"
+        "pattern": "/INTERNAL_P5V0_BUCK"
       },
       {
         "netclass": "6V0 Buck",
