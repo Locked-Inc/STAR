@@ -1,0 +1,9 @@
+Manufacturer=onsemi
+PartNumber=BAT54HT1G
+PartCategory=Schottky Diode
+PackageCategory=Small Outline Diode
+PinCount=2
+Version=4.2
+Released=2017-05-03 13:47:37
+Downloaded=2025-12-27 04:11:29
+3D=Y
