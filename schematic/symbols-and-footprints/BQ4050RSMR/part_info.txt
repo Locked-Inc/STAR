@@ -1,0 +1,9 @@
+Manufacturer=Texas Instruments
+PartNumber=BQ4050RSMR
+PartCategory=Integrated Circuit
+PackageCategory=Quad Flat No-Lead
+PinCount=33
+Version=1.1
+Released=2019-09-29 18:49:31
+Downloaded=2025-12-27 04:10:19
+3D=Y
