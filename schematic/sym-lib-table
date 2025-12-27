@@ -65,6 +65,7 @@
   (lib (name "SML-D12Y1WT86")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/SML-D12Y1WT86/SML-D12Y1WT86.kicad_sym")(options "")(descr ""))
   (lib (name "SN74HC153DR")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/SN74HC153DR/SN74HC153DR.kicad_sym")(options "")(descr ""))
   (lib (name "SN74LVC1G125DCKT")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/SN74LVC1G125DCKT/SN74LVC1G125DCKT.kicad_sym")(options "")(descr ""))
+  (lib (name "SSM6J507NU-LF")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/SSM6J507NU-LF/SSM6J507NU_LF.kicad_sym")(options "")(descr ""))
   (lib (name "SP0402B-ULC-01ETG")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/SP0402B-ULC-01ETG/SP0402B-ULC-01ETG.kicad_sym")(options "")(descr ""))
   (lib (name "SPB1308-R44M")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/SPB1308-R44M/SPB1308-R44M.kicad_sym")(options "")(descr ""))
   (lib (name "SS-52400-002")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/SS-52400-002/SS-52400-002.kicad_sym")(options "")(descr ""))
