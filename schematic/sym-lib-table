@@ -44,6 +44,7 @@
   (lib (name "DRV8243SQDGQRQ1")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/DRV8243SQDGQRQ1/DRV8243SQDGQRQ1.kicad_sym")(options "")(descr ""))
   (lib (name "E1E2-Emulator-Interface")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/E1E2-Emulator-Interface/E1E2-Emulator-Interface.kicad_sym")(options "")(descr ""))
   (lib (name "FDD4141")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/FDD4141/FDD4141.kicad_sym")(options "")(descr ""))
+  (lib (name "FDN358P")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/FDN358P/FDN358P.kicad_sym")(options "")(descr ""))
   (lib (name "HTST-107-01-T-DV")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/HTST-107-01-T-DV/SAMTEC-HTST-107-01-X-DV.kicad_sym")(options "")(descr ""))
   (lib (name "ISL61861BIBZ")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/ISL61861BIBZ/ISL61861BIBZ.kicad_sym")(options "")(descr ""))
   (lib (name "LIFCL-17-9BG256C")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/LIFCL-17-9BG256C/LIFCL-17-9BG256C.kicad_sym")(options "")(descr ""))
