@@ -76,6 +76,7 @@
   (lib (name "Sparkgap")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/Sparkgap/KiCad/Sparkgap.pretty")(options "")(descr ""))
   (lib (name "T6VJ11GQR")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/T6VJ11GQR")(options "")(descr ""))
   (lib (name "TLV62569ADRLR")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/TLV62569ADRLR")(options "")(descr ""))
+  (lib (name "TLV75533PDBVR")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/TLV75533PDBVR")(options "")(descr ""))
   (lib (name "TPS2115AIPWRQ1")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/TPS2115AIPWRQ1")(options "")(descr ""))
   (lib (name "TPS2116DRLR")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/TPS2116DRLR")(options "")(descr ""))
   (lib (name "TPS25751DREFR")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/TPS25751DREFR")(options "")(descr ""))
