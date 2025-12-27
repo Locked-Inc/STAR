@@ -27,6 +27,7 @@
   (lib (name "BMI323")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/BMI323/BMI323.kicad_sym")(options "")(descr ""))
   (lib (name "BQ25713RSNR")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/BQ25713RSNR/BQ25713RSNR.kicad_sym")(options "")(descr ""))
   (lib (name "BQ25798RQMR")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/BQ25798RQMR/BQ25798RQMR.kicad_sym")(options "")(descr ""))
+  (lib (name "BQ24600RVAT")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/BQ24600RVAT/BQ24600RVAT.kicad_sym")(options "")(descr ""))
   (lib (name "BQ76200PWR")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/BQ76200PWR/BQ76200PWR.kicad_sym")(options "")(descr ""))
   (lib (name "BQ78350DBT-R1A")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/BQ78350DBT-R1A/BQ78350DBT-R1A.kicad_sym")(options "")(descr ""))
   (lib (name "BQ4050RSMR")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/BQ4050RSMR/BQ4050RSMR.kicad_sym")(options "")(descr ""))
