@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/Locked-Inc/STAR/star-gateway/internal/fec"
 	"github.com/Locked-Inc/STAR/star-gateway/internal/frame"
 )
 
@@ -898,5 +899,270 @@ func TestBytesToSoftBits(t *testing.T) {
 				}
 			}
 		})
+	}
+}
+
+// ============================================================================
+// FEC-Enabled ChaseCombining Tests
+// ============================================================================
+
+// createFECCommandFrame creates an FEC-encoded command frame.
+func createFECCommandFrame(seq uint16, fecEncodedPayload []byte) []byte {
+	encoder := frame.NewEncoder()
+	f, _ := frame.NewFrame(frame.FrameTypeCommand, fecEncodedPayload)
+	f.Header.Sequence = seq
+	f.Header.Flags = frame.FlagFECEnabled
+	encoded, _ := encoder.Encode(f)
+	return encoded
+}
+
+// MockFECEncoder implements fec.Encoder for testing.
+type MockFECEncoder struct {
+	encodeFn func(data []byte) ([]byte, error)
+}
+
+func (m *MockFECEncoder) Encode(data []byte) ([]byte, error) {
+	if m.encodeFn != nil {
+		return m.encodeFn(data)
+	}
+	// Default: double the data (simulating rate 1/2)
+	result := make([]byte, len(data)*2)
+	for i, b := range data {
+		result[i*2] = b
+		result[i*2+1] = ^b // Simple encoding for testing
+	}
+	return result, nil
+}
+
+func (m *MockFECEncoder) Rate() float64 {
+	return 0.5
+}
+
+func (m *MockFECEncoder) OutputLength(inputLen int) int {
+	return inputLen * 2
+}
+
+// MockFECDecoder implements fec.Decoder for testing.
+type MockFECDecoder struct {
+	decodeSoftFn     func(softBits []fec.SoftBit, expectedLen int) ([]byte, int, error)
+	decodeHardFn     func(data []byte, expectedLen int) ([]byte, error)
+	decodeCallCount  int
+	failUntilCombine int // Number of decodes to fail before succeeding
+}
+
+func (m *MockFECDecoder) DecodeSoft(softBits []fec.SoftBit, expectedLen int) ([]byte, int, error) {
+	m.decodeCallCount++
+	if m.decodeSoftFn != nil {
+		return m.decodeSoftFn(softBits, expectedLen)
+	}
+	// Default: fail if failUntilCombine > 0
+	if m.decodeCallCount <= m.failUntilCombine {
+		return nil, 0, fec.ErrDecodeFailed
+	}
+	// Success: return mock decoded data
+	outputLen := len(softBits) / 16 // Rough approximation
+	if outputLen == 0 {
+		outputLen = 1
+	}
+	return make([]byte, outputLen), 0, nil
+}
+
+func (m *MockFECDecoder) DecodeHard(data []byte, expectedLen int) ([]byte, error) {
+	if m.decodeHardFn != nil {
+		return m.decodeHardFn(data, expectedLen)
+	}
+	return data[:len(data)/2], nil
+}
+
+func (m *MockFECDecoder) InputLength(outputLen int) int {
+	return outputLen * 16
+}
+
+// createTestChaseCombining creates a ChaseCombining HARQ with mock FEC.
+func createTestChaseCombining(config *Config, fecEncoder *MockFECEncoder, fecDecoder *MockFECDecoder) (*ChaseCombining, *MockTransport) {
+	mock := NewMockTransport()
+	encoder := frame.NewEncoder()
+	decoder := frame.NewDecoder()
+	if config == nil {
+		config = &Config{
+			MaxRetries: DefaultMaxRetries,
+			Timeout:    DefaultTimeout,
+			FECEnabled: true,
+		}
+	}
+	harq := NewChaseCombining(config, mock, encoder, decoder, fecEncoder, fecDecoder)
+	return harq, mock
+}
+
+func TestChaseCombining_FEC_FirstTrySuccess(t *testing.T) {
+	fecEncoder := &MockFECEncoder{}
+	fecDecoder := &MockFECDecoder{
+		failUntilCombine: 0, // Success on first try
+	}
+	harq, mock := createTestChaseCombining(nil, fecEncoder, fecDecoder)
+
+	// Queue ACK response
+	mock.QueueResponse(createAckFrame(0))
+
+	payload := []byte{0x01, 0x02, 0x03}
+	err := harq.Send(payload)
+
+	if err != nil {
+		t.Errorf("Send() error = %v, want nil", err)
+	}
+	if harq.GetState() != StateIdle {
+		t.Errorf("GetState() = %v, want StateIdle", harq.GetState())
+	}
+	if harq.GetTxSequence() != 1 {
+		t.Errorf("GetTxSequence() = %d, want 1", harq.GetTxSequence())
+	}
+
+	// Verify FEC encoding was applied
+	sentData := mock.GetSentData()
+	if len(sentData) != 1 {
+		t.Fatalf("expected 1 sent frame, got %d", len(sentData))
+	}
+
+	// Decode frame and verify FEC flag
+	frameDecoder := frame.NewDecoder()
+	f, err := frameDecoder.Decode(sentData[0])
+	if err != nil {
+		t.Fatalf("failed to decode sent frame: %v", err)
+	}
+	if f.Header.Flags&frame.FlagFECEnabled == 0 {
+		t.Error("sent frame should have FlagFECEnabled set")
+	}
+}
+
+func TestChaseCombining_FEC_SuccessAfterCombining(t *testing.T) {
+	fecEncoder := &MockFECEncoder{}
+	fecDecoder := &MockFECDecoder{
+		failUntilCombine: 1, // Fail first decode, succeed on second (after combining)
+	}
+	config := &Config{
+		MaxRetries: 3,
+		Timeout:    50 * time.Millisecond,
+		FECEnabled: true,
+	}
+	harq, mock := createTestChaseCombining(config, fecEncoder, fecDecoder)
+
+	// Create FEC-encoded payload for receive test
+	fecEncodedPayload := []byte{0x01, 0x02, 0x03, 0x04, 0x05, 0x06} // Mock FEC encoded
+
+	// First frame (will fail to decode, triggers StateCombining)
+	mock.QueueResponse(createFECCommandFrame(0, fecEncodedPayload))
+
+	// First receive attempt - should fail and enter StateCombining
+	_, err := harq.Receive()
+	if !errors.Is(err, ErrDecodeFailed) {
+		t.Errorf("First Receive() error = %v, want ErrDecodeFailed", err)
+	}
+	if harq.GetState() != StateCombining {
+		t.Errorf("GetState() = %v, want StateCombining", harq.GetState())
+	}
+
+	// Second frame (retransmission, combining should succeed)
+	mock.QueueResponse(createFECCommandFrame(0, fecEncodedPayload))
+
+	// Second receive - should succeed after combining
+	payload, err := harq.Receive()
+	if err != nil {
+		t.Errorf("Second Receive() error = %v, want nil", err)
+	}
+	if payload == nil {
+		t.Error("payload should not be nil after successful combining")
+	}
+	if harq.GetState() != StateIdle {
+		t.Errorf("GetState() = %v, want StateIdle after success", harq.GetState())
+	}
+	if harq.GetRxSequence() != 1 {
+		t.Errorf("GetRxSequence() = %d, want 1", harq.GetRxSequence())
+	}
+}
+
+func TestChaseCombining_FEC_FailureAfterMaxRetries(t *testing.T) {
+	fecEncoder := &MockFECEncoder{}
+	fecDecoder := &MockFECDecoder{
+		failUntilCombine: 100, // Always fail
+	}
+	config := &Config{
+		MaxRetries: 2,
+		Timeout:    50 * time.Millisecond,
+		FECEnabled: true,
+	}
+	harq, mock := createTestChaseCombining(config, fecEncoder, fecDecoder)
+
+	fecEncodedPayload := []byte{0x01, 0x02, 0x03, 0x04}
+
+	// Queue multiple frames (all will fail to decode)
+	for i := 0; i < 3; i++ {
+		mock.QueueResponse(createFECCommandFrame(0, fecEncodedPayload))
+	}
+
+	// All receive attempts should fail
+	for i := 0; i < 3; i++ {
+		_, err := harq.Receive()
+		if !errors.Is(err, ErrDecodeFailed) {
+			t.Errorf("Receive() attempt %d error = %v, want ErrDecodeFailed", i+1, err)
+		}
+	}
+
+	// Should still be in combining state (waiting for more retries)
+	if harq.GetState() != StateCombining {
+		t.Errorf("GetState() = %v, want StateCombining", harq.GetState())
+	}
+}
+
+func TestChaseCombining_FEC_Send_EncoderError(t *testing.T) {
+	fecEncoder := &MockFECEncoder{
+		encodeFn: func(data []byte) ([]byte, error) {
+			return nil, errors.New("FEC encode failed")
+		},
+	}
+	fecDecoder := &MockFECDecoder{}
+	harq, _ := createTestChaseCombining(nil, fecEncoder, fecDecoder)
+
+	err := harq.Send([]byte{0x01})
+
+	if err == nil {
+		t.Error("Send() error = nil, want FEC encode error")
+	}
+}
+
+func TestChaseCombining_FEC_NilFECEncoder(t *testing.T) {
+	config := &Config{
+		MaxRetries: 3,
+		Timeout:    DefaultTimeout,
+		FECEnabled: true,
+	}
+	mock := NewMockTransport()
+	encoder := frame.NewEncoder()
+	decoder := frame.NewDecoder()
+	harq := NewChaseCombining(config, mock, encoder, decoder, nil, &MockFECDecoder{})
+
+	err := harq.Send([]byte{0x01})
+
+	if !errors.Is(err, ErrFECEncoderNil) {
+		t.Errorf("Send() error = %v, want ErrFECEncoderNil", err)
+	}
+}
+
+func TestChaseCombining_FEC_NilFECDecoder(t *testing.T) {
+	config := &Config{
+		MaxRetries: 3,
+		Timeout:    DefaultTimeout,
+		FECEnabled: true,
+	}
+	mock := NewMockTransport()
+	encoder := frame.NewEncoder()
+	decoder := frame.NewDecoder()
+	harq := NewChaseCombining(config, mock, encoder, decoder, &MockFECEncoder{}, nil)
+
+	mock.QueueResponse(createFECCommandFrame(0, []byte{0x01, 0x02}))
+
+	_, err := harq.Receive()
+
+	if !errors.Is(err, ErrFECDecoderNil) {
+		t.Errorf("Receive() error = %v, want ErrFECDecoderNil", err)
 	}
 }
