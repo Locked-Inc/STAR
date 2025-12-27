@@ -7771,29 +7771,16 @@
 		(effects
 			(font
 				(size 1.27 1.27)
-			(color 217 217 217 1)
 			)
 			(justify left bottom)
 		)
 		(uuid "2a299d74-3664-4e6a-b94a-0db8def3a12f")
-	)
-	(label "BUCK_BOOST_PPHV"
-		(at 40.64 182.88 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			(color 217 217 217 1)
-			)
-			(justify left bottom)
-		)
-		(uuid "2cbb51d3-3cbe-48bb-ae74-d17bab460d94")
 	)
 	(label "BUCK_BOOST_SCL"
 		(at 102.87 92.71 180)
 		(effects
 			(font
 				(size 1.27 1.27)
-			(color 102 204 204 1)
 			)
 			(justify right bottom)
 		)
@@ -7804,7 +7791,6 @@
 		(effects
 			(font
 				(size 1.27 1.27)
-			(color 255 255 153 1)
 				(thickness 0.1588)
 			)
 			(justify left bottom)
@@ -7816,7 +7802,7 @@
 		(effects
 			(font
 				(size 1.27 1.27)
-			(color 217 217 217 1)
+				(color 217 217 217 1)
 			)
 			(justify left bottom)
 		)
@@ -7827,7 +7813,6 @@
 		(effects
 			(font
 				(size 1.27 1.27)
-			(color 255 255 153 1)
 				(thickness 0.1588)
 			)
 			(justify left bottom)
@@ -7849,7 +7834,6 @@
 		(effects
 			(font
 				(size 1.27 1.27)
-			(color 217 217 217 1)
 			)
 			(justify left bottom)
 		)
@@ -7860,7 +7844,6 @@
 		(effects
 			(font
 				(size 1.27 1.27)
-			(color 255 255 153 1)
 				(thickness 0.1588)
 			)
 			(justify right bottom)
@@ -7872,7 +7855,6 @@
 		(effects
 			(font
 				(size 1.27 1.27)
-			(color 255 255 153 1)
 			)
 			(justify right bottom)
 		)
@@ -7893,11 +7875,21 @@
 		(effects
 			(font
 				(size 1.27 1.27)
-			(color 255 255 153 1)
+				(color 255 255 153 1)
 			)
 			(justify left bottom)
 		)
 		(uuid "71f2fc63-4fee-4ee3-8f89-7b53c759ac0a")
+	)
+	(label "BUCK_BOOST_PPHV"
+		(at 40.64 182.88 0)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify left bottom)
+		)
+		(uuid "723db984-6d8f-4377-8d6f-114892027459")
 	)
 	(label "C_CC2"
 		(at 398.78 180.34 180)
@@ -7914,7 +7906,6 @@
 		(effects
 			(font
 				(size 1.27 1.27)
-			(color 255 255 153 1)
 			)
 			(justify right bottom)
 		)
@@ -7935,7 +7926,6 @@
 		(effects
 			(font
 				(size 1.27 1.27)
-			(color 217 217 217 1)
 			)
 			(justify left bottom)
 		)
@@ -7946,7 +7936,6 @@
 		(effects
 			(font
 				(size 1.27 1.27)
-			(color 255 255 153 1)
 			)
 			(justify right bottom)
 		)
@@ -7957,7 +7946,6 @@
 		(effects
 			(font
 				(size 1.27 1.27)
-			(color 217 217 217 1)
 			)
 			(justify left bottom)
 		)
@@ -7998,7 +7986,6 @@
 		(effects
 			(font
 				(size 1.27 1.27)
-			(color 255 255 153 1)
 			)
 			(justify left bottom)
 		)
@@ -8009,7 +7996,6 @@
 		(effects
 			(font
 				(size 1.27 1.27)
-			(color 217 217 217 1)
 			)
 			(justify left bottom)
 		)
@@ -8020,7 +8006,6 @@
 		(effects
 			(font
 				(size 1.27 1.27)
-			(color 255 255 153 1)
 				(thickness 0.1588)
 			)
 			(justify right bottom)
@@ -8032,7 +8017,6 @@
 		(effects
 			(font
 				(size 1.27 1.27)
-			(color 217 217 217 1)
 			)
 			(justify right bottom)
 		)
@@ -8043,7 +8027,6 @@
 		(effects
 			(font
 				(size 1.27 1.27)
-			(color 102 204 204 1)
 			)
 			(justify right bottom)
 		)
