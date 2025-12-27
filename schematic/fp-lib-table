@@ -14,6 +14,7 @@
   (lib (name "61200821621")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/61200821621")(options "")(descr ""))
   (lib (name "694106301002")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/694106301002")(options "")(descr ""))
   (lib (name "7-534206-0")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/7-534206-0")(options "")(descr ""))
+  (lib (name "74437349033")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/74437349033")(options "")(descr ""))
   (lib (name "74HC139D-653")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/74HC139D-653")(options "")(descr ""))
   (lib (name "74LVC125APW-118")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/74LVC125APW-118")(options "")(descr ""))
   (lib (name "796739-2")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/796739-2")(options "")(descr ""))
