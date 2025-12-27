@@ -1,0 +1,9 @@
+Manufacturer=Diodes Incorporated
+PartNumber=BZT52C8V2T-7
+PartCategory=Zener Diode
+PackageCategory=Other
+PinCount=2
+Version=2.3
+Released=2025-05-20 03:47:11
+Downloaded=2025-12-27 18:43:59
+3D=Y
