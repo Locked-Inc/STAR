@@ -6839,7 +6839,7 @@
 		)
 		(uuid "05f2f841-5a8f-4615-bd95-9c951b31e9eb")
 	)
-	(text "3V0 BUCK"
+	(text "3V3 BUCK"
 		(exclude_from_sim no)
 		(at 270.002 189.484 0)
 		(effects
