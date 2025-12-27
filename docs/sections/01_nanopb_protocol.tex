@@ -232,11 +232,12 @@ CRC-32 & Little-endian & IEEE 802.3 & Standard CRC-32 polynomial \\
           \textit{Usage:} $\frac{4.0}{512} \times 100 = 0.78\%$
 
     \item \textbf{HARQ soft buffers (3x):} $3 \times 1024 \times 16 = 49152\text{ bytes} \approx 48.0\text{ KB}$ \\
-          \textit{Calculation:} 3 combining buffers $\times$ 1024B max payload $\times$ 16 soft bits/byte (rate 1/2 FEC, 8 input bits) \\
+          \textit{Calculation:} 3 combining buffers $\times$ 1024B max payload $\times$ (2 output bits per input bit $\times$ 8 bits/byte = 16 encoded bits/byte) \\
           \textit{Usage:} $\frac{48.0}{512} \times 100 = 9.38\%$
 
-    \item \textbf{Viterbi decoder:} $64 \times 2 + 35 \times 8 = 408\text{ bytes} \approx 3.0\text{ KB}$ \\
-          \textit{Calculation:} 64-state path metrics (128B) + traceback survivors (280B) + working buffers \\
+    \item \textbf{Viterbi decoder:} $\approx 3.0\text{ KB}$ \\
+          \textit{Core state:} 64-state path metrics (128B) + traceback survivors (280B) = 408B \\
+          \textit{Working buffers:} New path metrics (128B) + decoded bits ($\sim$1KB for max payload) + temp buffers $\approx$ 2.5 KB \\
           \textit{Usage:} $\frac{3.0}{512} \times 100 = 0.59\%$
 
     \item \textbf{Total SRAM:} $8.0 + 2.0 + 1.5 + 4.0 + 48.0 + 3.0 = 66.5\text{ KB}$ \\

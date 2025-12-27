@@ -415,7 +415,7 @@ func TestChaseCombiner_AddMultipleTransmissions(t *testing.T) {
 	combined := c.Combined()
 
 	// Expected: element-wise sum, clamped
-	expected := []SoftBit{100, -100, 0, 127} // 127 is clamped from 127
+	expected := []SoftBit{100, -100, 0, 127} // last element: 100 + 27 = 127 (at SoftBitMax limit)
 	for i, exp := range expected {
 		if combined[i] != exp {
 			t.Errorf("Combined()[%d] = %d, want %d", i, combined[i], exp)
