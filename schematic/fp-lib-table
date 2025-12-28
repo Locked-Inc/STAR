@@ -39,6 +39,7 @@
   (lib (name "CAT24C512WI-GT3")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/CAT24C512WI-GT3")(options "")(descr ""))
   (lib (name "CAPC7866X950N")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/CAPC7866X950N")(options "")(descr ""))
   (lib (name "CL10B104MB8NNNC")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/CL10B104MB8NNNC")(options "")(descr ""))
+  (lib (name "CRF2512-FZ-R001ELF")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/CRF2512-FZ-R001ELF")(options "")(descr ""))
   (lib (name "CSD19531Q5AT")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/CSD19531Q5AT")(options "")(descr ""))
   (lib (name "CY7C65213A-28PVXI")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/CY7C65213A-28PVXI")(options "")(descr ""))
   (lib (name "DDZ5V6ASF-7")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/DDZ5V6ASF-7")(options "")(descr ""))
