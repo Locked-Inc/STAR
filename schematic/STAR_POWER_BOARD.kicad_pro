@@ -455,6 +455,7 @@
     "version": 3
   },
   "net_settings": {
+    "class_assignments": [],
     "classes": [
       {
         "bus_width": 12,
@@ -1423,15 +1424,14 @@
         "netclass": "USBC_VBUS",
         "pattern": "/USBC_VBUS"
       }
-    ],
-    "class_assignments": []
+    ]
   },
   "pcbnew": {
     "last_paths": {
       "gencad": "",
       "idf": "",
       "netlist": "./",
-      "plot": "",
+      "plot": "output/STAR_POWER_BOARD/",
       "pos_files": "",
       "specctra_dsn": "",
       "step": "",
@@ -1917,6 +1917,12 @@
           "group_by": false,
           "label": "Sim.Type",
           "name": "Sim.Type",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "Manufacturer Part Number",
+          "name": "Manufacturer Part Number",
           "show": false
         }
       ],
