@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP BQ296103DSGR
+D 2-4S Overvoltage Protector with LDO Output
+K
+F http://www.ti.com/lit/gpn/BQ2961
+$ENDCMP
+#
+#End Doc Library
