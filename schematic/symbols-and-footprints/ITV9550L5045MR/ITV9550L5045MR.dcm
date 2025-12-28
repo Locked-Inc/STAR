@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP ITV9550L5045MR
+D Chip type surface mountable device that can protect against both overcurrent and overcharging
+K
+F https://www.littelfuse.com/media?resourcetype=datasheets&itemid=2649024c-cf15-4208-9c44-aa05ef9646a2&filename=littelfuse-itv9550-30a-45a-datasheet
+$ENDCMP
+#
+#End Doc Library

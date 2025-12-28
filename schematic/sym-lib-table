@@ -48,6 +48,7 @@
   (lib (name "FDN358P")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/FDN358P/FDN358P.kicad_sym")(options "")(descr ""))
   (lib (name "HTST-107-01-T-DV")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/HTST-107-01-T-DV/SAMTEC-HTST-107-01-X-DV.kicad_sym")(options "")(descr ""))
   (lib (name "ISL61861BIBZ")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/ISL61861BIBZ/ISL61861BIBZ.kicad_sym")(options "")(descr ""))
+  (lib (name "ITV9550L5045MR")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/ITV9550L5045MR/ITV9550L5045MR.kicad_sym")(options "")(descr ""))
   (lib (name "LIFCL-17-9BG256C")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/LIFCL-17-9BG256C/LIFCL-17-9BG256C.kicad_sym")(options "")(descr ""))
   (lib (name "LIFCL-40-9BG256C")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/LIFCL-40-9BG256C/LIFCL-40-9BG256C.kicad_sym")(options "")(descr ""))
   (lib (name "LDL1117S33R")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/LDL1117S33R/LDL1117S33R.kicad_sym")(options "")(descr ""))
