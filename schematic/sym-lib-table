@@ -22,6 +22,7 @@
   (lib (name "82306050029")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/82306050029/82306050029.kicad_sym")(options "")(descr ""))
   (lib (name "AHA0810560M040R")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/AHA0810560M040R/AHA0810560M040R.kicad_sym")(options "")(descr ""))
   (lib (name "ASMM-CR03-BU802")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/ASMM-CR03-BU802/ASMM-CR03-BU802.kicad_sym")(options "")(descr ""))
+  (lib (name "B3B-XH-A_LF__SN_")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/B3B-XH-A_LF__SN_/B3B-XH-A_LF__SN_.kicad_sym")(options "")(descr ""))
   (lib (name "ASV-30.000MHZ-E-T")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/ASV-30.000MHZ-E-T/ASV-30_000MHZ-E-T.kicad_sym")(options "")(descr ""))
   (lib (name "BAT-HLD-007-SMT-TR")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/BAT-HLD-007-SMT-TR/BAT-HLD-007-SMT-TR.kicad_sym")(options "")(descr ""))
   (lib (name "BAT54HT1G")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/BAT54HT1G/BAT54HT1G.kicad_sym")(options "")(descr ""))
