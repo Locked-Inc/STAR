@@ -1004,32 +1004,32 @@
     "netclass_assignments": null,
     "netclass_patterns": [
       {
-        "netclass": "System Voltage",
-        "pattern": "/SYS_VOLTAGE"
+        "netclass": "3V3 Buck Converter",
+        "pattern": "/P3V3_BUCK"
       },
       {
-        "netclass": "Ground",
-        "pattern": "*GND*"
+        "netclass": "3V3 Main Rail",
+        "pattern": "/BOARD_3V3"
       },
       {
-        "netclass": "P3V3 Buck",
-        "pattern": "/INTERNAL_P3V3_LDO"
+        "netclass": "3V3 Main Rail",
+        "pattern": "/BUS_3V3"
       },
       {
-        "netclass": "BST",
-        "pattern": "/*BST"
+        "netclass": "3V3 Motor Driver",
+        "pattern": "/P3V3_MOTOR_DRIVER"
       },
       {
-        "netclass": "SW",
-        "pattern": "/*SW"
-      },
-      {
-        "netclass": "FB",
-        "pattern": "/*FB"
+        "netclass": "5V Buck Converter",
+        "pattern": "/P5V0_BUCK"
       },
       {
         "netclass": "5V0 Buck",
         "pattern": "/INTERNAL_P5V0_BUCK"
+      },
+      {
+        "netclass": "5V0 Buck",
+        "pattern": "/P5V0_BUCK"
       },
       {
         "netclass": "6V0 Buck",
@@ -1044,6 +1044,354 @@
         "pattern": "/6V0_LDRV"
       },
       {
+        "netclass": "BARREL_IN",
+        "pattern": "/BARREL_IN"
+      },
+      {
+        "netclass": "BB_BTST1",
+        "pattern": "/BB_BTST1"
+      },
+      {
+        "netclass": "BB_BTST2",
+        "pattern": "/BB_BTST2"
+      },
+      {
+        "netclass": "BB_SDRV",
+        "pattern": "/BB_SDRV"
+      },
+      {
+        "netclass": "BB_STAT",
+        "pattern": "/BB_STAT"
+      },
+      {
+        "netclass": "BB_SW1",
+        "pattern": "/BB_SW1"
+      },
+      {
+        "netclass": "BB_SW2",
+        "pattern": "/BB_SW2"
+      },
+      {
+        "netclass": "BB_TS",
+        "pattern": "/BB_TS"
+      },
+      {
+        "netclass": "BST",
+        "pattern": "/*BST"
+      },
+      {
+        "netclass": "CHG_OUT",
+        "pattern": "/CHG_OUT"
+      },
+      {
+        "netclass": "C_CC1",
+        "pattern": "/C_CC1"
+      },
+      {
+        "netclass": "C_CC2",
+        "pattern": "/C_CC2"
+      },
+      {
+        "netclass": "Debug/Programming",
+        "pattern": "/EMU_*"
+      },
+      {
+        "netclass": "Debug/Programming",
+        "pattern": "/SCI9_*"
+      },
+      {
+        "netclass": "Debug/Programming",
+        "pattern": "/USB0_*"
+      },
+      {
+        "netclass": "Encoders",
+        "pattern": "/ENCODER0_PHASE_A"
+      },
+      {
+        "netclass": "Encoders",
+        "pattern": "/ENCODER0_PHASE_B"
+      },
+      {
+        "netclass": "Encoders",
+        "pattern": "/ENCODER1_PHASE_A"
+      },
+      {
+        "netclass": "Encoders",
+        "pattern": "/ENCODER1_PHASE_B"
+      },
+      {
+        "netclass": "Encoders",
+        "pattern": "/ENCODER2_PHASE_A"
+      },
+      {
+        "netclass": "Encoders",
+        "pattern": "/ENCODER2_PHASE_B"
+      },
+      {
+        "netclass": "Encoders",
+        "pattern": "/ENCODER3_PHASE_A"
+      },
+      {
+        "netclass": "Encoders",
+        "pattern": "/ENCODER3_PHASE_B"
+      },
+      {
+        "netclass": "FB",
+        "pattern": "/*FB"
+      },
+      {
+        "netclass": "Fuel Gauge SMBus",
+        "pattern": "/FUEL_GUAGE_SMBC_SCL"
+      },
+      {
+        "netclass": "Fuel Gauge SMBus",
+        "pattern": "/FUEL_GUAGE_SMBD_SDA"
+      },
+      {
+        "netclass": "Ground",
+        "pattern": "*GND*"
+      },
+      {
+        "netclass": "I2C Charger",
+        "pattern": "/CHARGER_I2C_CLOCK"
+      },
+      {
+        "netclass": "I2C Charger",
+        "pattern": "/CHARGER_I2C_DATA"
+      },
+      {
+        "netclass": "IMU Control",
+        "pattern": "/IMU_INT"
+      },
+      {
+        "netclass": "IMU Control",
+        "pattern": "/IMU_RST"
+      },
+      {
+        "netclass": "LiDAR UART",
+        "pattern": "/LiDAR_RX_PI5_TX"
+      },
+      {
+        "netclass": "LiDAR UART",
+        "pattern": "/LiDAR_TX_PI5_RX"
+      },
+      {
+        "netclass": "Motor Current Sensing",
+        "pattern": "/MOTOR0_IPROPI"
+      },
+      {
+        "netclass": "Motor Current Sensing",
+        "pattern": "/MOTOR1_IPROPI"
+      },
+      {
+        "netclass": "Motor Current Sensing",
+        "pattern": "/MOTOR2_IPROPI"
+      },
+      {
+        "netclass": "Motor Current Sensing",
+        "pattern": "/MOTOR3_IPROPI"
+      },
+      {
+        "netclass": "Motor Driver SPI Config",
+        "pattern": "/RSPIC_CIPO"
+      },
+      {
+        "netclass": "Motor Driver SPI Config",
+        "pattern": "/RSPIC_COPI"
+      },
+      {
+        "netclass": "Motor Driver SPI Config",
+        "pattern": "/RSPIC_MOTOR0_nCS"
+      },
+      {
+        "netclass": "Motor Driver SPI Config",
+        "pattern": "/RSPIC_MOTOR1_nCS"
+      },
+      {
+        "netclass": "Motor Driver SPI Config",
+        "pattern": "/RSPIC_MOTOR2_nCS"
+      },
+      {
+        "netclass": "Motor Driver SPI Config",
+        "pattern": "/RSPIC_MOTOR3_nCS"
+      },
+      {
+        "netclass": "Motor Driver SPI Config",
+        "pattern": "/RSPIC_SCLK"
+      },
+      {
+        "netclass": "Motor Fault Signals",
+        "pattern": "/MOTOR0_nFAULT"
+      },
+      {
+        "netclass": "Motor Fault Signals",
+        "pattern": "/MOTOR1_nFAULT"
+      },
+      {
+        "netclass": "Motor Fault Signals",
+        "pattern": "/MOTOR2_nFAULT"
+      },
+      {
+        "netclass": "Motor Fault Signals",
+        "pattern": "/MOTOR3_nFAULT"
+      },
+      {
+        "netclass": "Motor PWM Control",
+        "pattern": "/MOTOR0_EN"
+      },
+      {
+        "netclass": "Motor PWM Control",
+        "pattern": "/MOTOR0_PH"
+      },
+      {
+        "netclass": "Motor PWM Control",
+        "pattern": "/MOTOR1_EN"
+      },
+      {
+        "netclass": "Motor PWM Control",
+        "pattern": "/MOTOR1_PH"
+      },
+      {
+        "netclass": "Motor PWM Control",
+        "pattern": "/MOTOR2_EN"
+      },
+      {
+        "netclass": "Motor PWM Control",
+        "pattern": "/MOTOR2_PH"
+      },
+      {
+        "netclass": "Motor PWM Control",
+        "pattern": "/MOTOR3_EN"
+      },
+      {
+        "netclass": "Motor PWM Control",
+        "pattern": "/MOTOR3_PH"
+      },
+      {
+        "netclass": "P3V3 Buck",
+        "pattern": "/INTERNAL_P3V3_LDO"
+      },
+      {
+        "netclass": "P3V3 Buck",
+        "pattern": "/P3V3_BUCK"
+      },
+      {
+        "netclass": "PACK+",
+        "pattern": "/PACK+"
+      },
+      {
+        "netclass": "PMOD JA",
+        "pattern": "/PMOD_JA_*"
+      },
+      {
+        "netclass": "PMOD JB",
+        "pattern": "/PMOD_JB_*"
+      },
+      {
+        "netclass": "PMOD JC",
+        "pattern": "/PMOD_JC_*"
+      },
+      {
+        "netclass": "PMOD JD",
+        "pattern": "/PMOD_JD_*"
+      },
+      {
+        "netclass": "PMOD JE",
+        "pattern": "/PMOD_JE_*"
+      },
+      {
+        "netclass": "PMOD JF",
+        "pattern": "/PMOD_JF_*"
+      },
+      {
+        "netclass": "Power/Ground",
+        "pattern": "/+3V3"
+      },
+      {
+        "netclass": "Power/Ground",
+        "pattern": "/+5V"
+      },
+      {
+        "netclass": "Power/Ground",
+        "pattern": "GND"
+      },
+      {
+        "netclass": "Power/Ground",
+        "pattern": "VCC"
+      },
+      {
+        "netclass": "RPi5 I2C",
+        "pattern": "/PI_SCL"
+      },
+      {
+        "netclass": "RPi5 I2C",
+        "pattern": "/PI_SDA"
+      },
+      {
+        "netclass": "RPi5 SPI",
+        "pattern": "/RPI5_RSPIA_*"
+      },
+      {
+        "netclass": "SMBus BMS",
+        "pattern": "/BMS_SMBUS_CLK"
+      },
+      {
+        "netclass": "SMBus BMS",
+        "pattern": "/BMS_SMBUS_DATA"
+      },
+      {
+        "netclass": "SW",
+        "pattern": "/*SW"
+      },
+      {
+        "netclass": "System Config",
+        "pattern": "/DBG_RESETn"
+      },
+      {
+        "netclass": "System Config",
+        "pattern": "/DSW_MD_FINED"
+      },
+      {
+        "netclass": "System Config",
+        "pattern": "/DSW_UB"
+      },
+      {
+        "netclass": "System Config",
+        "pattern": "/EMU_EMLE"
+      },
+      {
+        "netclass": "System Config",
+        "pattern": "/JP_UPSEL"
+      },
+      {
+        "netclass": "System Config",
+        "pattern": "/SW_RESn"
+      },
+      {
+        "netclass": "System Voltage",
+        "pattern": "/SYS_VOLTAGE"
+      },
+      {
+        "netclass": "Temperature Sensor",
+        "pattern": "/DS18B20_DQ"
+      },
+      {
+        "netclass": "USB SCI Data",
+        "pattern": "/SCI_USBC_USBDN"
+      },
+      {
+        "netclass": "USB SCI Data",
+        "pattern": "/SCI_USBC_USBDP"
+      },
+      {
+        "netclass": "USB SCI Data",
+        "pattern": "/USB0_USBC_USBDN"
+      },
+      {
+        "netclass": "USB SCI Data",
+        "pattern": "/USB0_USBC_USBDP"
+      },
+      {
         "netclass": "USBC Drain",
         "pattern": "/USBC_DRAIN"
       },
@@ -1056,46 +1404,6 @@
         "pattern": "/USBC_PPHV"
       },
       {
-        "netclass": "BB_STAT",
-        "pattern": "/BB_STAT"
-      },
-      {
-        "netclass": "BB_SDRV",
-        "pattern": "/BB_SDRV"
-      },
-      {
-        "netclass": "BB_BTST1",
-        "pattern": "/BB_BTST1"
-      },
-      {
-        "netclass": "BB_BTST2",
-        "pattern": "/BB_BTST2"
-      },
-      {
-        "netclass": "BB_TS",
-        "pattern": "/BB_TS"
-      },
-      {
-        "netclass": "BB_SW1",
-        "pattern": "/BB_SW1"
-      },
-      {
-        "netclass": "BB_SW2",
-        "pattern": "/BB_SW2"
-      },
-      {
-        "netclass": "USBC_SDA",
-        "pattern": "/USBC_SDA"
-      },
-      {
-        "netclass": "USBC_SCL",
-        "pattern": "/USBC_SCL"
-      },
-      {
-        "netclass": "USBC_VBUS",
-        "pattern": "/USBC_VBUS"
-      },
-      {
         "netclass": "USBC_N",
         "pattern": "/USBC_N"
       },
@@ -1104,26 +1412,19 @@
         "pattern": "/USBC_P"
       },
       {
-        "netclass": "C_CC1",
-        "pattern": "/C_CC1"
+        "netclass": "USBC_SCL",
+        "pattern": "/USBC_SCL"
       },
       {
-        "netclass": "C_CC2",
-        "pattern": "/C_CC2"
+        "netclass": "USBC_SDA",
+        "pattern": "/USBC_SDA"
       },
       {
-        "netclass": "PACK+",
-        "pattern": "/PACK+"
-      },
-      {
-        "netclass": "BARREL_IN",
-        "pattern": "/BARREL_IN"
-      },
-      {
-        "netclass": "CHG_OUT",
-        "pattern": "/CHG_OUT"
+        "netclass": "USBC_VBUS",
+        "pattern": "/USBC_VBUS"
       }
-    ]
+    ],
+    "class_assignments": []
   },
   "pcbnew": {
     "last_paths": {
