@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP 2N7002K
+D Low RDS(on); Surface Mount Package; This is a Pb-Free Device; ESD Protected; RoHS Compliant
+K
+F https://www.onsemi.com/pub/Collateral/2N7002K-FSC-D.PDF
+$ENDCMP
+#
+#End Doc Library
