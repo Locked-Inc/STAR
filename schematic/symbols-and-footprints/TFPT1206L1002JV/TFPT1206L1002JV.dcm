@@ -1,0 +1,9 @@
+EESchema-DOCLIB  Version 2.0
+#
+$CMP TFPT1206L1002JV
+D VISHAY - TFPT1206L1002JV - PTC THERMISTOR, 10KOHM, +5%, 4110, 1206, FULL REEL
+K
+F https://www.vishay.com/docs/33017/tfpt.pdf
+$ENDCMP
+#
+#End Doc Library

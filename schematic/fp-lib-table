@@ -95,6 +95,7 @@
   (lib (name "TPS55289RYQR")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/TPS55289RYQR")(options "")(descr ""))
   (lib (name "TPS566238PRQFR")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/TPS566238PRQFR")(options "")(descr ""))
   (lib (name "TPS7A9101DSKR")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/TPS7A9101DSKR")(options "")(descr ""))
+  (lib (name "TFPT1206L1002JV")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/TFPT1206L1002JV")(options "")(descr ""))
   (lib (name "TPHR6503PL1-LQ")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/TPHR6503PL1-LQ")(options "")(descr ""))
   (lib (name "TVS2200DRVR")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/TVS2200DRVR")(options "")(descr ""))
   (lib (name "USB4216-03-A")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/USB4216-03-A")(options "")(descr ""))
