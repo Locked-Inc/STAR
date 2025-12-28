@@ -38,6 +38,7 @@
   (lib (name "BZT52C8V2T-7")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/BZT52C8V2T-7/BZT52C8V2T-7.kicad_sym")(options "")(descr ""))
   (lib (name "CAT24C512WI-GT3")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/CAT24C512WI-GT3/CAT24C512WI-GT3.kicad_sym")(options "")(descr ""))
   (lib (name "CL10B104MB8NNNC")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/CL10B104MB8NNNC/CL10B104MB8NNNC.kicad_sym")(options "")(descr ""))
+  (lib (name "CRF2512-FZ-R001ELF")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/CRF2512-FZ-R001ELF/CRF2512-FZ-R001ELF.kicad_sym")(options "")(descr ""))
   (lib (name "CSD19531Q5AT")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/CSD19531Q5AT/CSD19531Q5AT.kicad_sym")(options "")(descr ""))
   (lib (name "CY7C65213A-28PVXI")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/CY7C65213A-28PVXI/CY7C65213A-28PVXI.kicad_sym")(options "")(descr ""))
   (lib (name "DDZ5V6ASF-7")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/DDZ5V6ASF-7/DDZ5V6ASF-7.kicad_sym")(options "")(descr ""))
