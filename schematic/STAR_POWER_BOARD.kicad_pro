@@ -507,7 +507,7 @@
         "name": "5V Buck Converter",
         "pcb_color": "rgba(0, 0, 0, 0.000)",
         "priority": 21,
-        "schematic_color": "rgb(0, 255, 255)",
+        "schematic_color": "rgb(0, 128, 128)",
         "wire_width": 6
       },
       {
