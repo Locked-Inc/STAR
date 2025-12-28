@@ -98,6 +98,12 @@ const (
 
 	// FlagPriority indicates high-priority frame (e.g., emergency stop).
 	FlagPriority FrameFlags = 0x04
+
+	// FlagFECEnabled indicates the payload is FEC-encoded (HARQ).
+	FlagFECEnabled FrameFlags = 0x08
+
+	// FlagSoftNACK indicates NACK with soft bit information (HARQ).
+	FlagSoftNACK FrameFlags = 0x10
 )
 
 // Header contains the frame header fields.

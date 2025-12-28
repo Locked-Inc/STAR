@@ -18,7 +18,7 @@ The gateway implements Layers 1-4 of the communication protocol:
 |-------|------|----------------------------|
 | 5 | Application | gRPC service handlers (`internal/service/`) |
 | 4 | Serialization | protobuf via generated code (`star-proto/gen/go/`) |
-| 3 | ARQ | Stop-and-Wait (`internal/arq/`) |
+| 3 | HARQ + FEC | Chase Combining HARQ (`internal/harq/`) + Convolutional FEC (`internal/fec/`) |
 | 2 | Framing | SYNC + Header + CRC-32 (`internal/frame/`) |
 | 1 | Transport | SPI at 10 MHz (`internal/transport/`) |
 
@@ -38,8 +38,17 @@ star-gateway/
 │   │   ├── encoder.go       # Frame encoder
 │   │   ├── decoder.go       # Frame decoder
 │   │   └── frame_test.go
-│   ├── arq/                 # Layer 3: ARQ protocol
-│   │   ├── arq.go           # ARQ interface and StopAndWait
+│   ├── harq/                # Layer 3: HARQ protocol (Chase Combining)
+│   │   ├── harq.go          # HARQ interface and ChaseCombining
+│   │   └── harq_test.go
+│   ├── fec/                 # Forward Error Correction
+│   │   ├── fec.go           # FEC interfaces and SoftBit type
+│   │   ├── convolutional.go # Rate-1/2, K=7 convolutional encoder
+│   │   ├── viterbi.go       # Soft Viterbi decoder
+│   │   ├── combiner.go      # Chase Combiner for soft bit combining
+│   │   └── fec_test.go
+│   ├── arq/                 # Legacy ARQ (deprecated, use harq/)
+│   │   ├── arq.go
 │   │   └── arq_test.go
 │   └── service/             # Layer 5: gRPC services
 │       ├── motor_control.go
@@ -109,12 +118,24 @@ replace github.com/Locked-Inc/star-proto/gen/go => ../star-proto/gen/go
 | `DefaultSpeedHz` | 10,000,000 | 10 MHz clock |
 | `DefaultMode` | 0 | SPI Mode 0 |
 
-### ARQ Parameters (from `internal/arq/arq.go`)
+### HARQ Parameters (from `internal/harq/harq.go`)
 
 | Constant | Value | Description |
 |----------|-------|-------------|
 | `DefaultMaxRetries` | 3 | Max transmission attempts |
 | `DefaultTimeout` | 10ms | ACK wait timeout |
+| `FECEnabled` | true | FEC encoding/decoding active |
+
+### FEC Parameters (from `internal/fec/`)
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `ConstraintLength` | 7 | K=7 convolutional code |
+| `NumStates` | 64 | 2^(K-1) trellis states |
+| `G1Octal` | 0171 | Generator polynomial 1 (NASA) |
+| `G2Octal` | 0133 | Generator polynomial 2 (NASA) |
+| `TailBits` | 6 | Zero bits to flush encoder |
+| `Rate` | 0.5 | Code rate (1/2) |
 
 ## gRPC Services
 
@@ -134,7 +155,9 @@ The gateway exposes 5 gRPC services:
 | Frame constants/types | Done |
 | Transport interface | Done (placeholder) |
 | Frame encoder/decoder | Done |
-| ARQ protocol | Placeholder |
+| FEC encoder/decoder | Done |
+| HARQ protocol | Done (Chase Combining) |
+| Legacy ARQ | Done (deprecated) |
 | gRPC services | Placeholder |
 | SPI implementation | Not started |
 | Integration tests | Not started |
