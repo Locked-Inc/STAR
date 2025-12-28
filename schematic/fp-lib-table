@@ -51,6 +51,7 @@
   (lib (name "HTST-107-01-T-DV")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/HTST-107-01-T-DV")(options "")(descr ""))
   (lib (name "INDPM110100X400N")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/INDPM110100X400N")(options "")(descr ""))
   (lib (name "ISL61861BIBZ")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/ISL61861BIBZ")(options "")(descr ""))
+  (lib (name "ITV9550L5045MR")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/ITV9550L5045MR")(options "")(descr ""))
   (lib (name "LIFCL-17-9BG256C")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/LIFCL-17-9BG256C")(options "")(descr ""))
   (lib (name "LIFCL-40-9BG256C")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/LIFCL-40-9BG256C")(options "")(descr ""))
   (lib (name "LDL1117S33R")(type "KiCad")(uri "${KIPRJMOD}/symbols-and-footprints/LDL1117S33R")(options "")(descr ""))
