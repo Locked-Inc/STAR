@@ -11,904 +11,6 @@
 		(company "Locked Inc.")
 	)
 	(lib_symbols
-		(symbol "1017491:1017491"
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "J"
-				(at 21.59 7.62 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-				)
-			)
-			(property "Value" "1017491"
-				(at 21.59 5.08 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-				)
-			)
-			(property "Footprint" "1017491"
-				(at 21.59 -94.92 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "http://www.phoenixcontact.com/de/produkte/1017491/pdf"
-				(at 21.59 -194.92 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Description" "PCB terminal block, nominal current: 24 A, rated voltage (III/2): 400 V, nominal cross section: 2.5 mm?, Number of potentials: 2, Number of rows: 1, Number of positions per row: 2, product range: TDPT 2,5/..-SC, pitch: 5.08 mm, connection method: Screw connection with tension sleeve, mounting: Wave soldering, conductor/PCB connection direction: 0 ?, color: green, Pin layout: Linear double pinning, Solder pin [P]: 3.5 mm, type of packaging: packed in cardboard"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Height" "19.2"
-				(at 21.59 -394.92 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Mouser Part Number" "651-1017491"
-				(at 21.59 -494.92 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Phoenix-Contact/1017491?qs=F5EMLAvA7IAChddKvolITg%3D%3D"
-				(at 21.59 -594.92 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Manufacturer_Name" "Phoenix Contact"
-				(at 21.59 -694.92 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(property "Manufacturer_Part_Number" "1017491"
-				(at 21.59 -794.92 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-					(hide yes)
-				)
-			)
-			(symbol "1017491_1_1"
-				(rectangle
-					(start 5.08 2.54)
-					(end 20.32 -5.08)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(pin passive line
-					(at 0 0 0)
-					(length 5.08)
-					(name "1.1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 -2.54 0)
-					(length 5.08)
-					(name "1.2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 25.4 0 180)
-					(length 5.08)
-					(name "2.1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 25.4 -2.54 180)
-					(length 5.08)
-					(name "2.2"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "61200621621:6120XX21621_61200621621"
-			(pin_names
-				(offset 1.016)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "J"
-				(at -6.26 0.35 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify right bottom)
-				)
-			)
-			(property "Value" "6120XX21621_61200621621"
-				(at -6.12 -1.87 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify right bottom)
-				)
-			)
-			(property "Footprint" "6120XX21621_61200621621:61200621621"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify bottom)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" ""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Description" ""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "6120XX21621_61200621621_0_0"
-				(rectangle
-					(start -5.08 -2.54)
-					(end 5.08 2.54)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(circle
-					(center -2.54 1.27)
-					(radius 0.254)
-					(stroke
-						(width 0.635)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -2.54 1.27) (xy -2.54 2.54)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center -2.54 -1.27)
-					(radius 0.254)
-					(stroke
-						(width 0.635)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -2.54 -1.27) (xy -2.54 -2.54)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 0 1.27)
-					(radius 0.254)
-					(stroke
-						(width 0.635)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 1.27) (xy 0 2.54)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 -1.27) (xy 0 -2.54)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 0 -1.27)
-					(radius 0.254)
-					(stroke
-						(width 0.635)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 2.54 1.27) (xy 2.54 2.54)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 2.54 1.27)
-					(radius 0.254)
-					(stroke
-						(width 0.635)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 2.54 -1.27) (xy 2.54 -2.54)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 2.54 -1.27)
-					(radius 0.254)
-					(stroke
-						(width 0.635)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(pin passive line
-					(at -2.54 5.08 270)
-					(length 2.54)
-					(name "~"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -2.54 -5.08 90)
-					(length 2.54)
-					(name "~"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 5.08 270)
-					(length 2.54)
-					(name "~"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 -5.08 90)
-					(length 2.54)
-					(name "~"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 2.54 5.08 270)
-					(length 2.54)
-					(name "~"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-					(number "6"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 2.54 -5.08 90)
-					(length 2.54)
-					(name "~"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-					(number "5"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
-		(symbol "61200821621:6120XX21621_61200821621"
-			(pin_names
-				(offset 1.016)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "J"
-				(at -6.26 0.35 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify right bottom)
-				)
-			)
-			(property "Value" "6120XX21621_61200821621"
-				(at -6.12 -1.87 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify right bottom)
-				)
-			)
-			(property "Footprint" "6120XX21621_61200821621:61200821621"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify bottom)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" ""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Description" ""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "6120XX21621_61200821621_0_0"
-				(rectangle
-					(start -5.08 -2.54)
-					(end 7.62 2.54)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type background)
-					)
-				)
-				(circle
-					(center -2.54 1.27)
-					(radius 0.254)
-					(stroke
-						(width 0.635)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -2.54 1.27) (xy -2.54 2.54)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center -2.54 -1.27)
-					(radius 0.254)
-					(stroke
-						(width 0.635)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy -2.54 -1.27) (xy -2.54 -2.54)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 0 1.27)
-					(radius 0.254)
-					(stroke
-						(width 0.635)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 1.27) (xy 0 2.54)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 0 -1.27) (xy 0 -2.54)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 0 -1.27)
-					(radius 0.254)
-					(stroke
-						(width 0.635)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 2.54 1.27) (xy 2.54 2.54)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 2.54 1.27)
-					(radius 0.254)
-					(stroke
-						(width 0.635)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 2.54 -1.27) (xy 2.54 -2.54)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 2.54 -1.27)
-					(radius 0.254)
-					(stroke
-						(width 0.635)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 5.08 1.27) (xy 5.08 2.54)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 5.08 1.27)
-					(radius 0.254)
-					(stroke
-						(width 0.635)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(polyline
-					(pts
-						(xy 5.08 -1.27) (xy 5.08 -2.54)
-					)
-					(stroke
-						(width 0.254)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(circle
-					(center 5.08 -1.27)
-					(radius 0.254)
-					(stroke
-						(width 0.635)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-				(pin passive line
-					(at -2.54 5.08 270)
-					(length 2.54)
-					(name "~"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-					(number "2"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at -2.54 -5.08 90)
-					(length 2.54)
-					(name "~"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 5.08 270)
-					(length 2.54)
-					(name "~"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-					(number "4"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 0 -5.08 90)
-					(length 2.54)
-					(name "~"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-					(number "3"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 2.54 5.08 270)
-					(length 2.54)
-					(name "~"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-					(number "6"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 2.54 -5.08 90)
-					(length 2.54)
-					(name "~"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-					(number "5"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 5.08 5.08 270)
-					(length 2.54)
-					(name "~"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-					(number "8"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-				)
-				(pin passive line
-					(at 5.08 -5.08 90)
-					(length 2.54)
-					(name "~"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-					(number "7"
-						(effects
-							(font
-								(size 1.016 1.016)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 		(symbol "B6B-XH-A:B6B-XH-A"
 			(pin_names
 				(offset 1.016)
@@ -6196,113 +5298,6 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "Mechanical:MountingHole_Pad"
-			(pin_numbers
-				(hide yes)
-			)
-			(pin_names
-				(offset 1.016)
-				(hide yes)
-			)
-			(exclude_from_sim no)
-			(in_bom no)
-			(on_board yes)
-			(property "Reference" "H"
-				(at 0 6.35 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Value" "MountingHole_Pad"
-				(at 0 4.445 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "~"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Description" "Mounting Hole with connection"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "mounting hole"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_fp_filters" "MountingHole*Pad*"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "MountingHole_Pad_0_1"
-				(circle
-					(center 0 1.27)
-					(radius 1.27)
-					(stroke
-						(width 1.27)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(symbol "MountingHole_Pad_1_1"
-				(pin input line
-					(at 0 -2.54 90)
-					(length 2.54)
-					(name "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 		(symbol "PCM_SL_Devices:LED"
 			(exclude_from_sim no)
 			(in_bom yes)
@@ -6631,107 +5626,6 @@
 			)
 			(embedded_fonts no)
 		)
-		(symbol "power:PWR_FLAG"
-			(power)
-			(pin_numbers
-				(hide yes)
-			)
-			(pin_names
-				(offset 0)
-				(hide yes)
-			)
-			(exclude_from_sim no)
-			(in_bom yes)
-			(on_board yes)
-			(property "Reference" "#FLG"
-				(at 0 1.905 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Value" "PWR_FLAG"
-				(at 0 3.81 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-				)
-			)
-			(property "Footprint" ""
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Datasheet" "~"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "Description" "Special symbol for telling ERC where power comes from"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(property "ki_keywords" "flag power"
-				(at 0 0 0)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(hide yes)
-				)
-			)
-			(symbol "PWR_FLAG_0_0"
-				(pin power_out line
-					(at 0 0 90)
-					(length 0)
-					(name "~"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-					(number "1"
-						(effects
-							(font
-								(size 1.27 1.27)
-							)
-						)
-					)
-				)
-			)
-			(symbol "PWR_FLAG_0_1"
-				(polyline
-					(pts
-						(xy 0 0) (xy 0 1.27) (xy -1.016 1.905) (xy 0 2.54) (xy 1.016 1.905) (xy 0 1.27)
-					)
-					(stroke
-						(width 0)
-						(type default)
-					)
-					(fill
-						(type none)
-					)
-				)
-			)
-			(embedded_fonts no)
-		)
 	)
 	(rectangle
 		(start 304.8 143.51)
@@ -6770,18 +5664,6 @@
 		(uuid 16a66282-765e-4310-9aac-9c446e237aec)
 	)
 	(rectangle
-		(start 231.14 153.67)
-		(end 300.99 194.31)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(fill
-			(type none)
-		)
-		(uuid 48e25839-0fbb-4808-97f3-e154d4dbb5dd)
-	)
-	(rectangle
 		(start 254 88.9)
 		(end 316.23 124.46)
 		(stroke
@@ -6792,30 +5674,6 @@
 			(type none)
 		)
 		(uuid 62434c79-fc38-491a-9019-976f2e46c594)
-	)
-	(rectangle
-		(start 196.85 240.03)
-		(end 256.54 264.16)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(fill
-			(type none)
-		)
-		(uuid 8b05b581-ed2e-4243-b41c-968cf2fed5ae)
-	)
-	(rectangle
-		(start 224.79 199.39)
-		(end 302.26 228.6)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(fill
-			(type none)
-		)
-		(uuid e2a25a53-8b73-48a2-9fe8-1b55b0ee4313)
 	)
 	(rectangle
 		(start 332.74 40.64)
@@ -6839,16 +5697,6 @@
 		)
 		(uuid "05f2f841-5a8f-4615-bd95-9c951b31e9eb")
 	)
-	(text "3V3 BUCK"
-		(exclude_from_sim no)
-		(at 270.002 189.484 0)
-		(effects
-			(font
-				(size 3.81 3.81)
-			)
-		)
-		(uuid "1b8c5962-a563-431d-bccb-055d73de29f7")
-	)
 	(text "MOTOR3\n"
 		(exclude_from_sim no)
 		(at 361.696 118.364 0)
@@ -6868,16 +5716,6 @@
 			)
 		)
 		(uuid "48f71add-442b-4c6d-8dcd-23e9403883af")
-	)
-	(text "6V0 BUCK"
-		(exclude_from_sim no)
-		(at 262.89 221.742 0)
-		(effects
-			(font
-				(size 3.81 3.81)
-			)
-		)
-		(uuid "52585267-ccbd-4eac-ae44-95ef5b774ab4")
 	)
 	(text "MCU"
 		(exclude_from_sim no)
@@ -6967,18 +5805,6 @@
 		(uuid "0a0d96d4-aaf1-4b46-b369-6a85f1f5fda1")
 	)
 	(junction
-		(at 215.9 251.46)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "177fac6a-00e2-4b92-bf89-712d11f0b09a")
-	)
-	(junction
-		(at 283.21 175.26)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "17ed184a-2128-4f52-9e98-0b67eceef51a")
-	)
-	(junction
 		(at 29.21 270.51)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -7033,12 +5859,6 @@
 		(uuid "2bc3e4ce-7670-48f8-8354-eb3fbfa43c07")
 	)
 	(junction
-		(at 201.93 251.46)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "2d58d523-1c0c-4750-877a-cc211fb514e3")
-	)
-	(junction
 		(at 29.21 74.93)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -7075,12 +5895,6 @@
 		(uuid "4bc45d66-6ac1-40ba-b8a4-1c953c5e4a7b")
 	)
 	(junction
-		(at 290.83 208.28)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "4dce8a9d-e7fa-4e66-8b14-6c47901cab76")
-	)
-	(junction
 		(at 153.67 233.68)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -7109,12 +5923,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "62ab1753-0912-4536-bfeb-b9c12e012024")
-	)
-	(junction
-		(at 228.6 207.01)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "67ab41df-0ad7-4b34-8471-be6d2298c051")
 	)
 	(junction
 		(at 152.4 27.94)
@@ -7169,12 +5977,6 @@
 		(diameter 0)
 		(color 0 0 0 0)
 		(uuid "a3cb63cb-9c32-438a-a9c2-2b74c5c7d14a")
-	)
-	(junction
-		(at 256.54 175.26)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "a503e945-b7d8-4424-b33b-fab2a88a0e7f")
 	)
 	(junction
 		(at 35.56 201.93)
@@ -7345,12 +6147,6 @@
 		(uuid "f315582b-e472-4f25-921d-a596b22aa482")
 	)
 	(junction
-		(at 229.87 251.46)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "f9fc249a-61f0-470d-bddd-18000b7e6929")
-	)
-	(junction
 		(at 119.38 190.5)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -7485,16 +6281,6 @@
 			(type default)
 		)
 		(uuid "07114d0b-5e0b-417e-8e17-378f77585822")
-	)
-	(wire
-		(pts
-			(xy 256.54 172.72) (xy 256.54 175.26)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "08b81ba0-60c9-4d1b-97bb-26300bb0a0e0")
 	)
 	(wire
 		(pts
@@ -7788,16 +6574,6 @@
 	)
 	(wire
 		(pts
-			(xy 228.6 207.01) (xy 251.46 207.01)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1df2a140-ff93-4c8e-a29b-3736629f0867")
-	)
-	(wire
-		(pts
 			(xy 63.5 55.88) (xy 66.04 55.88)
 		)
 		(stroke
@@ -7815,16 +6591,6 @@
 			(type default)
 		)
 		(uuid "1f0257eb-9ff6-495a-87fd-298ca68cc47d")
-	)
-	(wire
-		(pts
-			(xy 290.83 208.28) (xy 290.83 209.55)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "1f896b7c-d4de-475a-b6a1-6e880ec9b46f")
 	)
 	(wire
 		(pts
@@ -7855,16 +6621,6 @@
 			(type default)
 		)
 		(uuid "23b83b2b-539b-48bf-877d-cef9c2a75949")
-	)
-	(wire
-		(pts
-			(xy 229.87 251.46) (xy 243.84 251.46)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "268195c3-1a2f-4c52-ba9b-ba8ff408839a")
 	)
 	(wire
 		(pts
@@ -7958,16 +6714,6 @@
 	)
 	(wire
 		(pts
-			(xy 215.9 251.46) (xy 229.87 251.46)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "2a0c9ad5-9fe5-4782-aa38-96045a7501a8")
-	)
-	(wire
-		(pts
 			(xy 153.67 223.52) (xy 160.02 223.52)
 		)
 		(stroke
@@ -8015,16 +6761,6 @@
 			(type default)
 		)
 		(uuid "2cfe3c8e-f94b-48f9-8609-89e6cf82e4a9")
-	)
-	(wire
-		(pts
-			(xy 275.59 172.72) (xy 283.21 172.72)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "2de0915f-04a9-4cc5-b52d-b6147c1a19e4")
 	)
 	(wire
 		(pts
@@ -8095,16 +6831,6 @@
 			(type default)
 		)
 		(uuid "34519776-6890-4362-abde-da9494bd7dab")
-	)
-	(wire
-		(pts
-			(xy 228.6 207.01) (xy 228.6 209.55)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "35e12693-5382-4d03-856e-e56410d8772b")
 	)
 	(wire
 		(pts
@@ -8335,16 +7061,6 @@
 			(type default)
 		)
 		(uuid "44c436ad-dad3-41ef-b71f-679da7d5ea2e")
-	)
-	(wire
-		(pts
-			(xy 243.84 175.26) (xy 256.54 175.26)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "45327173-e2ae-434d-9413-97c6b3ec5fd6")
 	)
 	(wire
 		(pts
@@ -8608,16 +7324,6 @@
 	)
 	(wire
 		(pts
-			(xy 275.59 177.8) (xy 283.21 177.8)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "531cfc34-5c10-4f80-974b-c604df160cd7")
-	)
-	(wire
-		(pts
 			(xy 63.5 238.76) (xy 66.04 238.76)
 		)
 		(stroke
@@ -8808,16 +7514,6 @@
 	)
 	(wire
 		(pts
-			(xy 290.83 207.01) (xy 276.86 207.01)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "65000d09-e974-49cf-823c-d8b3e89e93f4")
-	)
-	(wire
-		(pts
 			(xy 344.17 189.23) (xy 367.03 189.23)
 		)
 		(stroke
@@ -8955,16 +7651,6 @@
 			(type default)
 		)
 		(uuid "6eef174e-2d02-4c88-a233-4ce9f25eef36")
-	)
-	(wire
-		(pts
-			(xy 201.93 251.46) (xy 201.93 256.54)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "6f09668e-3e9a-4885-9ab6-bbee753a594c")
 	)
 	(wire
 		(pts
@@ -9778,16 +8464,6 @@
 	)
 	(wire
 		(pts
-			(xy 290.83 207.01) (xy 290.83 208.28)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "add29515-8481-4e2e-8bac-4c824f552820")
-	)
-	(wire
-		(pts
 			(xy 116.84 43.18) (xy 138.43 43.18)
 		)
 		(stroke
@@ -9898,16 +8574,6 @@
 	)
 	(wire
 		(pts
-			(xy 201.93 251.46) (xy 215.9 251.46)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "b7ebd68a-03f9-4ef0-b7af-2ce2b5a4ef79")
-	)
-	(wire
-		(pts
 			(xy 29.21 124.46) (xy 29.21 143.51)
 		)
 		(stroke
@@ -9945,16 +8611,6 @@
 			(type default)
 		)
 		(uuid "b9ecf194-2bb0-4e0c-b99d-37972be26b57")
-	)
-	(wire
-		(pts
-			(xy 283.21 177.8) (xy 283.21 175.26)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "ba196076-48f9-4280-9a09-d89c25370848")
 	)
 	(wire
 		(pts
@@ -10068,16 +8724,6 @@
 	)
 	(wire
 		(pts
-			(xy 265.43 175.26) (xy 256.54 175.26)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c18adf44-4ebe-4878-8eaf-918d57b4d115")
-	)
-	(wire
-		(pts
 			(xy 146.05 251.46) (xy 119.38 251.46)
 		)
 		(stroke
@@ -10188,16 +8834,6 @@
 	)
 	(wire
 		(pts
-			(xy 283.21 172.72) (xy 283.21 175.26)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "c9df6223-ec5a-4cdd-9dd2-4ee59a15d0ac")
-	)
-	(wire
-		(pts
 			(xy 63.5 170.18) (xy 66.04 170.18)
 		)
 		(stroke
@@ -10235,16 +8871,6 @@
 			(type default)
 		)
 		(uuid "cad6f23c-5e75-4ee2-bbb7-bc417a2d15cd")
-	)
-	(wire
-		(pts
-			(xy 256.54 177.8) (xy 265.43 177.8)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "cbbcc43f-e638-4b53-8f40-8185587d44bd")
 	)
 	(wire
 		(pts
@@ -10315,16 +8941,6 @@
 			(type default)
 		)
 		(uuid "d19bfaae-2967-440d-96fb-4924171732ad")
-	)
-	(wire
-		(pts
-			(xy 276.86 209.55) (xy 290.83 209.55)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "d28895f2-1984-4daf-94e9-295de07c35b5")
 	)
 	(wire
 		(pts
@@ -10425,16 +9041,6 @@
 			(type default)
 		)
 		(uuid "da7e74f1-6943-415d-a236-db52029b9f6a")
-	)
-	(wire
-		(pts
-			(xy 283.21 175.26) (xy 288.29 175.26)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "daceaeaa-773a-421c-b67f-e6df7ffef848")
 	)
 	(wire
 		(pts
@@ -10708,26 +9314,6 @@
 	)
 	(wire
 		(pts
-			(xy 256.54 175.26) (xy 256.54 177.8)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f372c2a5-eaa2-4af5-9090-8cf9f6a2c581")
-	)
-	(wire
-		(pts
-			(xy 283.21 175.26) (xy 275.59 175.26)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f4059f1b-80d1-46d3-a642-f90d0f8bf4b1")
-	)
-	(wire
-		(pts
 			(xy 119.38 175.26) (xy 119.38 177.8)
 		)
 		(stroke
@@ -10738,16 +9324,6 @@
 	)
 	(wire
 		(pts
-			(xy 228.6 209.55) (xy 251.46 209.55)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f53025a2-865a-4322-958b-7945dbae2da7")
-	)
-	(wire
-		(pts
 			(xy 64.77 167.64) (xy 66.04 167.64)
 		)
 		(stroke
@@ -10755,16 +9331,6 @@
 			(type default)
 		)
 		(uuid "f5b6d413-e80b-4c4d-b2c3-af834b076e46")
-	)
-	(wire
-		(pts
-			(xy 265.43 172.72) (xy 256.54 172.72)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "f626e189-63b1-4323-aa91-458d44344e8b")
 	)
 	(wire
 		(pts
@@ -11423,16 +9989,6 @@
 		)
 		(uuid "2fd54e00-429e-47a1-b33f-2d19081bf124")
 	)
-	(label "P6V0_BUCK"
-		(at 228.6 207.01 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "31de3e6b-a514-42dd-bc8b-f54181f471f4")
-	)
 	(label "P3V3_BUCK"
 		(at 140.97 27.94 0)
 		(effects
@@ -11652,16 +10208,6 @@
 			(justify left bottom)
 		)
 		(uuid "68a9cb52-8a17-45a9-81ff-766be7febb7e")
-	)
-	(label "P3V3_BUCK"
-		(at 243.84 175.26 0)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify left bottom)
-		)
-		(uuid "6ad2aa62-e9aa-43df-8b9f-1f065fedfa37")
 	)
 	(label "MOTOR1_VCC"
 		(at 43.18 121.92 0)
@@ -12946,149 +11492,6 @@
 		)
 	)
 	(symbol
-		(lib_id "61200621621:6120XX21621_61200621621")
-		(at 270.51 175.26 270)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "024452a5-0630-4972-935c-89285335c637")
-		(property "Reference" "J2"
-			(at 270.51 168.91 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "6120XX21621_61200621621"
-			(at 271.272 181.864 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "61200621621:61200621621"
-			(at 270.51 175.26 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 270.51 175.26 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "6p header"
-			(at 270.51 175.26 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Link" "https://www.digikey.com/short/r8mfmh49"
-			(at 270.51 175.26 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Part Number" "732-5394-ND "
-			(at 270.51 175.26 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Price per Unit" "0.43"
-			(at 270.51 175.26 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Part Number" "  61200621621"
-			(at 270.51 175.26 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Link" "https://mou.sr/4a2Gtty"
-			(at 270.51 175.26 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "710-61200621621 "
-			(at 270.51 175.26 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price per Unit" "0.47"
-			(at 270.51 175.26 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "b15c51cf-d736-4945-9c1f-bab25b435b65")
-		)
-		(pin "1"
-			(uuid "e830c13c-8fba-4f86-8f6e-2339f614e596")
-		)
-		(pin "4"
-			(uuid "05f9b31e-0abf-48c5-a9a3-78a97e6c934c")
-		)
-		(pin "3"
-			(uuid "406f552e-16fc-4525-9c71-a80b5dd9e353")
-		)
-		(pin "6"
-			(uuid "6a1acd24-a5de-4879-a49e-c07ea0a3e9a1")
-		)
-		(pin "5"
-			(uuid "35d80df7-8acf-4b1a-80c1-ac62f0ec336b")
-		)
-		(instances
-			(project ""
-				(path "/ca1a5300-a097-400d-a75e-2552b2209d6a"
-					(reference "J2")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:C")
 		(at 35.56 52.07 0)
 		(unit 1)
@@ -13674,73 +12077,6 @@
 			(project "STAR_MOTOR_DRIVER"
 				(path "/ca1a5300-a097-400d-a75e-2552b2209d6a"
 					(reference "C9")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Mechanical:MountingHole_Pad")
-		(at 215.9 248.92 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "0afe16ab-d80c-4eda-8c2e-e0ee1b942363")
-		(property "Reference" "MP2"
-			(at 218.44 246.3799 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "M3 Via"
-			(at 218.44 248.9199 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
-			(at 215.9 248.92 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 215.9 248.92 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Mounting Hole with connection"
-			(at 215.9 248.92 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "983a9cc6-161d-4d52-beb8-f21b8bd64412")
-		)
-		(instances
-			(project "STAR_MOTOR_DRIVER"
-				(path "/ca1a5300-a097-400d-a75e-2552b2209d6a"
-					(reference "MP2")
 					(unit 1)
 				)
 			)
@@ -14344,7 +12680,7 @@
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "103abdcc-17b0-4321-9f7d-47acf46e9b0c")
 		(property "Reference" "C3"
 			(at 23.114 177.038 0)
@@ -15929,73 +14265,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Mechanical:MountingHole_Pad")
-		(at 229.87 248.92 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "225997b1-6e79-4478-9001-6efb8bcb3a12")
-		(property "Reference" "MP3"
-			(at 232.41 246.3799 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "M3 Via"
-			(at 232.41 248.9199 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
-			(at 229.87 248.92 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 229.87 248.92 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Mounting Hole with connection"
-			(at 229.87 248.92 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "acc12379-4fd2-4bd6-911c-7e2dc8c4ea33")
-		)
-		(instances
-			(project "STAR_MOTOR_DRIVER"
-				(path "/ca1a5300-a097-400d-a75e-2552b2209d6a"
-					(reference "MP3")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:GND")
 		(at 118.11 30.48 90)
 		(unit 1)
@@ -17275,7 +15544,7 @@
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "323cca4d-a54d-4186-878d-29cc52724ed9")
 		(property "Reference" "C1"
 			(at 23.114 50.038 0)
@@ -17920,155 +16189,6 @@
 			(project "STAR_MOTOR_DRIVER"
 				(path "/ca1a5300-a097-400d-a75e-2552b2209d6a"
 					(reference "#PWR04")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "61200821621:6120XX21621_61200821621")
-		(at 339.09 191.77 270)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "37811e17-b00c-47cf-ac24-12dda0812295")
-		(property "Reference" "J5"
-			(at 339.09 185.42 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "6120XX21621_61200821621"
-			(at 339.344 201.168 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "61200821621:61200821621"
-			(at 339.09 191.77 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 339.09 191.77 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "8p header"
-			(at 339.09 191.77 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Link" "https://www.digikey.com/short/5bh9z1wz"
-			(at 339.09 191.77 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Part Number" "732-5395-ND "
-			(at 339.09 191.77 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Price per Unit" "0.97"
-			(at 339.09 191.77 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Part Number" "61200821621"
-			(at 339.09 191.77 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Link" "https://mou.sr/4rJy3xv"
-			(at 339.09 191.77 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "710-61200821621 "
-			(at 339.09 191.77 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price per Unit" "1.08"
-			(at 339.09 191.77 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "7"
-			(uuid "b024a9c3-1b4b-45c1-a891-fa7f3a8a3214")
-		)
-		(pin "5"
-			(uuid "b15804e6-3531-4cc7-975d-1f8864402a58")
-		)
-		(pin "3"
-			(uuid "4781c537-01d4-4606-8f3d-31e7a3279a9c")
-		)
-		(pin "6"
-			(uuid "af9f2cfe-ec72-4370-a886-6eb82818611e")
-		)
-		(pin "8"
-			(uuid "ce6ea378-7497-4da1-9551-098bcb389f04")
-		)
-		(pin "4"
-			(uuid "f7fe52cc-3e54-4084-a339-7850eaae2160")
-		)
-		(pin "1"
-			(uuid "38e5cbe3-585d-4d87-8534-8366cbe7af60")
-		)
-		(pin "2"
-			(uuid "681d1594-7062-4d35-9160-e28d799035da")
-		)
-		(instances
-			(project ""
-				(path "/ca1a5300-a097-400d-a75e-2552b2209d6a"
-					(reference "J5")
 					(unit 1)
 				)
 			)
@@ -19401,7 +17521,7 @@
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "483f30a7-552e-4ecb-b4c2-fcd8b5a845ca")
 		(property "Reference" "C2"
 			(at 23.114 118.618 0)
@@ -21679,251 +19799,6 @@
 		)
 	)
 	(symbol
-		(lib_id "1017491:1017491")
-		(at 251.46 207.01 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board no)
-		(dnp no)
-		(uuid "56e23a0d-e2ac-4951-ad1b-2132d7c9916a")
-		(property "Reference" "J7"
-			(at 257.556 203.2 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "1017491"
-			(at 264.668 213.36 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "1017491"
-			(at 273.05 301.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "http://www.phoenixcontact.com/de/produkte/1017491/pdf"
-			(at 273.05 401.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Description" "PCB terminal block, nominal current: 24 A, rated voltage (III/2): 400 V, nominal cross section: 2.5 mm?, Number of potentials: 2, Number of rows: 1, Number of positions per row: 2, product range: TDPT 2,5/..-SC, pitch: 5.08 mm, connection method: Screw connection with tension sleeve, mounting: Wave soldering, conductor/PCB connection direction: 0 ?, color: green, Pin layout: Linear double pinning, Solder pin [P]: 3.5 mm, type of packaging: packed in cardboard"
-			(at 251.46 207.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Height" "19.2"
-			(at 273.05 601.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "651-1017491"
-			(at 273.05 701.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Phoenix-Contact/1017491?qs=F5EMLAvA7IAChddKvolITg%3D%3D"
-			(at 273.05 801.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Name" "Phoenix Contact"
-			(at 273.05 901.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" "1017491"
-			(at 273.05 1001.93 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Link" "https://www.digikey.com/short/297znmhj"
-			(at 251.46 207.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Part Number" "277-17493-ND "
-			(at 251.46 207.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Price per Unit" "1.06"
-			(at 251.46 207.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Part Number" "1017491"
-			(at 251.46 207.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Link" "https://mou.sr/4pNdQFk"
-			(at 251.46 207.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price per Unit" "0.72"
-			(at 251.46 207.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "4"
-			(uuid "c832d137-5ed9-4b79-8351-13be1fd4472a")
-		)
-		(pin "2"
-			(uuid "f235c94d-c66f-422e-bfa4-a2f86024a0fb")
-		)
-		(pin "3"
-			(uuid "9f781d6e-acb6-47ce-8870-0f98a1994df3")
-		)
-		(pin "1"
-			(uuid "c28cbc70-54fb-4525-8862-728d76c11a70")
-		)
-		(instances
-			(project "STAR_MOTOR_DRIVER"
-				(path "/ca1a5300-a097-400d-a75e-2552b2209d6a"
-					(reference "J7")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 201.93 256.54 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "5772813e-653f-4327-a0f6-7b7371a30f79")
-		(property "Reference" "#PWR020"
-			(at 201.93 262.89 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 201.93 261.62 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 201.93 256.54 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 201.93 256.54 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 201.93 256.54 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "8d737775-1727-4c63-8ca1-b39d1a58d0a9")
-		)
-		(instances
-			(project ""
-				(path "/ca1a5300-a097-400d-a75e-2552b2209d6a"
-					(reference "#PWR020")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:GND")
 		(at 349.25 222.25 90)
 		(unit 1)
@@ -23262,155 +21137,6 @@
 		)
 	)
 	(symbol
-		(lib_id "61200821621:6120XX21621_61200821621")
-		(at 340.36 233.68 270)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "60c378b1-7b06-41e0-b5c3-ce7133581f31")
-		(property "Reference" "J6"
-			(at 340.36 227.33 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "6120XX21621_61200821621"
-			(at 340.614 243.078 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "61200821621:61200821621"
-			(at 340.36 233.68 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 340.36 233.68 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "8p header"
-			(at 340.36 233.68 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Link" "https://www.digikey.com/short/5bh9z1wz"
-			(at 340.36 233.68 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Part Number" "732-5395-ND "
-			(at 340.36 233.68 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Price per Unit" "0.97"
-			(at 340.36 233.68 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Part Number" "61200821621"
-			(at 340.36 233.68 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Link" "https://mou.sr/4rJy3xv"
-			(at 340.36 233.68 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "710-61200821621 "
-			(at 340.36 233.68 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price per Unit" "1.08"
-			(at 340.36 233.68 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "7"
-			(uuid "7d0e9046-f710-4df5-8401-a0120124a333")
-		)
-		(pin "5"
-			(uuid "b15c333b-9a20-4f51-8fd7-dd3df3f8b8f6")
-		)
-		(pin "3"
-			(uuid "e1a13f7a-72b5-4b56-a3e3-7166f8cd3ab4")
-		)
-		(pin "6"
-			(uuid "69e09046-27b8-428e-8c28-1b10bf76aa6c")
-		)
-		(pin "8"
-			(uuid "01c120cb-9b1a-4338-8fc4-2c0ec25d17f8")
-		)
-		(pin "4"
-			(uuid "8f4376bc-dbcd-40c0-a461-66add2685f6a")
-		)
-		(pin "1"
-			(uuid "f7c0d88e-9498-40c6-8a44-a459f5f1b230")
-		)
-		(pin "2"
-			(uuid "e8ce1b8b-3d93-4b47-8962-4d8a672073ff")
-		)
-		(instances
-			(project "STAR_MOTOR_DRIVER"
-				(path "/ca1a5300-a097-400d-a75e-2552b2209d6a"
-					(reference "J6")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "PCM_SL_Devices:LED")
 		(at 177.8 27.94 0)
 		(mirror x)
@@ -24096,156 +21822,6 @@
 		)
 	)
 	(symbol
-		(lib_id "61200821621:6120XX21621_61200821621")
-		(at 339.09 217.17 270)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "7bca9c20-33ea-44ea-97b1-4c5bb35c72d2")
-		(property "Reference" "J1"
-			(at 339.09 207.01 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "6120XX21621_61200821621"
-			(at 339.09 209.55 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "61200821621:61200821621"
-			(at 339.09 217.17 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 339.09 217.17 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "8p header"
-			(at 339.09 217.17 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Link" "https://www.digikey.com/short/5bh9z1wz"
-			(at 339.09 217.17 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Part Number" "732-5395-ND "
-			(at 339.09 217.17 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Price per Unit" "0.97"
-			(at 339.09 217.17 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Part Number" "61200821621"
-			(at 339.09 217.17 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Link" "https://mou.sr/4rJy3xv"
-			(at 339.09 217.17 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "710-61200821621 "
-			(at 339.09 217.17 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price per Unit" "1.08"
-			(at 339.09 217.17 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "2"
-			(uuid "389b1f02-c22d-4762-b312-ee49766bcac5")
-		)
-		(pin "1"
-			(uuid "dfa3a10b-4cae-4c12-83a4-0f421e1e51e0")
-		)
-		(pin "7"
-			(uuid "531362ba-f312-49ee-89f7-e718f9b1c3cc")
-		)
-		(pin "8"
-			(uuid "2da45ea5-9c89-49d5-8689-aff5612b93bb")
-		)
-		(pin "5"
-			(uuid "f74e01b3-ff2f-40a6-8c58-85f80e0aeaad")
-		)
-		(pin "6"
-			(uuid "0ce6fe09-aebc-422f-a2e2-5b56f1bf45ec")
-		)
-		(pin "4"
-			(uuid "aae4e0d6-b29b-4926-97b2-f2dcf94d1e38")
-		)
-		(pin "3"
-			(uuid "d32ff925-2aea-4679-a066-0e531f45f3ae")
-		)
-		(instances
-			(project ""
-				(path "/ca1a5300-a097-400d-a75e-2552b2209d6a"
-					(reference "J1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:C")
 		(at 35.56 120.65 0)
 		(unit 1)
@@ -24837,73 +22413,6 @@
 		)
 	)
 	(symbol
-		(lib_id "Mechanical:MountingHole_Pad")
-		(at 201.93 248.92 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "82f820af-fe64-4083-bb44-f3e0fe164f48")
-		(property "Reference" "MP1"
-			(at 204.47 246.3799 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "M3 Via"
-			(at 204.47 248.9199 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
-			(at 201.93 248.92 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 201.93 248.92 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Mounting Hole with connection"
-			(at 201.93 248.92 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "3e7e6b88-dc69-4183-885c-de404e1eaa59")
-		)
-		(instances
-			(project ""
-				(path "/ca1a5300-a097-400d-a75e-2552b2209d6a"
-					(reference "MP1")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "power:GND")
 		(at 64.77 167.64 270)
 		(unit 1)
@@ -24964,73 +22473,6 @@
 			(project "STAR_MOTOR_DRIVER"
 				(path "/ca1a5300-a097-400d-a75e-2552b2209d6a"
 					(reference "#PWR03")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "Mechanical:MountingHole_Pad")
-		(at 243.84 248.92 0)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom no)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "883e08f4-1501-48a4-9427-05bf253d6c77")
-		(property "Reference" "MP4"
-			(at 246.38 246.3799 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Value" "M3 Via"
-			(at 246.38 248.9199 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left)
-			)
-		)
-		(property "Footprint" "MountingHole:MountingHole_3.2mm_M3_Pad_Via"
-			(at 243.84 248.92 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 243.84 248.92 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Mounting Hole with connection"
-			(at 243.84 248.92 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "8d82cb23-8758-43a5-b471-688c64bcb2f0")
-		)
-		(instances
-			(project "STAR_MOTOR_DRIVER"
-				(path "/ca1a5300-a097-400d-a75e-2552b2209d6a"
-					(reference "MP4")
 					(unit 1)
 				)
 			)
@@ -25109,7 +22551,7 @@
 		(exclude_from_sim no)
 		(in_bom yes)
 		(on_board yes)
-		(dnp no)
+		(dnp yes)
 		(uuid "91cedd5a-6b12-4844-ae3b-590f1b321016")
 		(property "Reference" "C4"
 			(at 23.114 245.618 0)
@@ -28040,73 +25482,6 @@
 			(project ""
 				(path "/ca1a5300-a097-400d-a75e-2552b2209d6a"
 					(reference "#PWR023")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:PWR_FLAG")
-		(at 228.6 207.01 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "c2b25ef3-7c12-4643-ab3e-fb1dbfc8380b")
-		(property "Reference" "#FLG03"
-			(at 226.695 207.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "PWR_FLAG"
-			(at 223.52 207.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Footprint" ""
-			(at 228.6 207.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "~"
-			(at 228.6 207.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Special symbol for telling ERC where power comes from"
-			(at 228.6 207.01 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "95d7b0b7-a471-4b1c-a066-775540b5570d")
-		)
-		(instances
-			(project ""
-				(path "/ca1a5300-a097-400d-a75e-2552b2209d6a"
-					(reference "#FLG03")
 					(unit 1)
 				)
 			)
@@ -31548,289 +28923,6 @@
 			(project "STAR_MOTOR_DRIVER"
 				(path "/ca1a5300-a097-400d-a75e-2552b2209d6a"
 					(reference "R11")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 288.29 175.26 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "de840e98-b8f4-4a83-ab77-c088b207e2e5")
-		(property "Reference" "#PWR017"
-			(at 294.64 175.26 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 292.1 175.2599 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" ""
-			(at 288.29 175.26 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 288.29 175.26 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 288.29 175.26 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "c7718fa9-84c1-4c91-aa90-6450c0889399")
-		)
-		(instances
-			(project ""
-				(path "/ca1a5300-a097-400d-a75e-2552b2209d6a"
-					(reference "#PWR017")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "61200821621:6120XX21621_61200821621")
-		(at 340.36 172.72 270)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "e2a460ee-fc1f-483f-8f7a-127dc0468992")
-		(property "Reference" "J4"
-			(at 340.36 166.37 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "6120XX21621_61200821621"
-			(at 340.614 182.118 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "61200821621:61200821621"
-			(at 340.36 172.72 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify bottom)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 340.36 172.72 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "8p header"
-			(at 340.36 172.72 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Link" "https://www.digikey.com/short/5bh9z1wz"
-			(at 340.36 172.72 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Part Number" "732-5395-ND "
-			(at 340.36 172.72 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "DigiKey Price per Unit" "0.97"
-			(at 340.36 172.72 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Part Number" "61200821621"
-			(at 340.36 172.72 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Link" "https://mou.sr/4rJy3xv"
-			(at 340.36 172.72 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "710-61200821621 "
-			(at 340.36 172.72 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price per Unit" "1.08"
-			(at 340.36 172.72 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "7"
-			(uuid "6409c2f8-dcb0-4c0a-bc85-d23e7f9fe1da")
-		)
-		(pin "5"
-			(uuid "0099a050-4d02-48c1-a743-b22eaf059b07")
-		)
-		(pin "3"
-			(uuid "01401a58-41c4-443a-8c54-9605dcf835ad")
-		)
-		(pin "6"
-			(uuid "c9299330-fbca-4669-84ff-fd29f02a6cd2")
-		)
-		(pin "8"
-			(uuid "935ad6a3-4ee3-4dc1-9459-6ab70e706caa")
-		)
-		(pin "4"
-			(uuid "12414dfb-b201-4732-bd1e-759afa22f9c2")
-		)
-		(pin "1"
-			(uuid "c00df208-2b5d-4552-9c37-e7b68795ce5f")
-		)
-		(pin "2"
-			(uuid "70f3d536-d1c2-45be-8b8f-5bb8a74707dc")
-		)
-		(instances
-			(project "STAR_MOTOR_DRIVER"
-				(path "/ca1a5300-a097-400d-a75e-2552b2209d6a"
-					(reference "J4")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 290.83 208.28 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "e5bf5d75-5905-4d2c-8f02-90957bfa20ee")
-		(property "Reference" "#PWR019"
-			(at 297.18 208.28 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 294.64 208.2799 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" ""
-			(at 290.83 208.28 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 290.83 208.28 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 290.83 208.28 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "f00a97ce-1b54-4f28-abae-ae3f2edac4e6")
-		)
-		(instances
-			(project ""
-				(path "/ca1a5300-a097-400d-a75e-2552b2209d6a"
-					(reference "#PWR019")
 					(unit 1)
 				)
 			)
