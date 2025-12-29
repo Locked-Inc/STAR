@@ -144,9 +144,9 @@ size_t rx_fec_encoded_len(size_t input_len);
  * @brief Maximum symbols for decoder (for static allocation)
  *
  * With 1024 byte max payload, encoded = (1024*8+6)*2 = 16396 bits = 8198 symbols
- * Round up to 8192 for power-of-2 alignment.
+ * Round up to 8200 for safe margin.
  */
-#define RX_FEC_MAX_SYMBOLS 8192
+#define RX_FEC_MAX_SYMBOLS 8200
 
 /**
  * @brief FEC decoder state
