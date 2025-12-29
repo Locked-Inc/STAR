@@ -140,6 +140,7 @@ CMT0.CMCR = 0x0042;    // Configure timer
 - `PORT0`-`PORTJ` - GPIO ports
 - `SCI0`-`SCI12` - Serial Communication Interface (UART)
 - `MTU0`-`MTU7` - Multi-Function Timer Units (PWM)
+- `CRC` - CRC Calculator peripheral (hardware CRC-32)
 
 #### 3. Interrupt Handlers
 
@@ -313,6 +314,67 @@ void uart_putint(int32_t value);            // Send integer
 ```c
 void timer_init(void);          // Initialize CMT0 for ThreadX tick (100 Hz)
 void cmt0_isr(void);            // CMT0 interrupt handler
+```
+
+## Protocol Stack Libraries
+
+The firmware includes protocol stack libraries for reliable SPI communication:
+
+| Library | Location | Description |
+|---------|----------|-------------|
+| `rx_frame` | `lib/rx_frame/` | Frame encoding/decoding with CRC-32 |
+| `rx_fec` | `lib/rx_fec/` | Forward Error Correction (Hamming codes) |
+| `rx_harq` | `lib/rx_harq/` | Hybrid ARQ with soft combining |
+
+### CRC-32 Module (`rx_frame`)
+
+IEEE 802.3 CRC-32 implementation with **compile-time hardware/software selection**.
+
+**Public API:**
+```c
+#include "rx_frame.h"
+
+uint32_t rx_crc32_ieee(const uint8_t *data, size_t len);
+uint32_t rx_crc32_update(uint32_t crc, const uint8_t *data, size_t len);
+```
+
+**Hardware/Software Selection:**
+
+| Build Target | Default | Override |
+|--------------|---------|----------|
+| RX72N (`__RX__` defined) | Hardware CRC | Define `RX_CRC32_USE_SOFTWARE` |
+| Host (testing) | Software CRC | N/A |
+
+```c
+// Force software CRC (useful for debugging or comparison)
+#define RX_CRC32_USE_SOFTWARE
+#include "rx_crc_internal.h"
+
+// Or via compiler flag:
+// gcc -DRX_CRC32_USE_SOFTWARE ...
+```
+
+**Hardware CRC Details:**
+- Peripheral: RX72N CRC Calculator at 0x00088280
+- Polynomial: IEEE 802.3 (0x04C11DB7)
+- Module stop: MSTPCRB bit 23
+- Bit-exact compatible with Go's `crc32.ChecksumIEEE()`
+
+**References:**
+- [RX72N Hardware Manual](https://www.renesas.com/en/products/rx72n) - CRC Calculator section
+- [Renesas FSP CRC Module](https://renesas.github.io/fsp/group___c_r_c.html)
+
+**File Structure:**
+```
+lib/rx_frame/
+├── inc/
+│   ├── rx_frame.h          # Public API
+│   └── rx_crc_internal.h   # Internal abstraction (hw/sw selection)
+└── src/
+    ├── rx_crc32.c          # Public API wrapper
+    ├── rx_crc32_sw.c       # Software implementation (lookup table)
+    ├── rx_crc32_hw.c       # Hardware implementation (RX72N peripheral)
+    └── rx_frame.c          # Frame encoding/decoding
 ```
 
 ## ThreadX Patterns
@@ -503,6 +565,7 @@ Peripherals:
 0x00080000 - 0x000FFFFF    Peripheral registers
 0x00088000 - ICU
 0x00088200 - CMT
+0x00088280 - CRC (CRC Calculator)
 0x000C0000 - GPIO (PORT)
 0x000D0000 - MTU3a
 0x000E0000 - S12AD
@@ -557,6 +620,7 @@ ICU.IR[28] = 0;
 ## References
 
 - [RX72N Hardware Manual](https://www.renesas.com/en/products/rx72n) - Complete peripheral reference
+- [RX72N CRC Calculator](https://renesas.github.io/fsp/group___c_r_c.html) - Hardware CRC-32 documentation
 - [ThreadX Documentation](https://github.com/eclipse-threadx/rtos-docs) - RTOS API reference
 - [GNURX Toolchain](https://llvm-gcc-renesas.com/) - Compiler documentation
 - [Main STAR Style Guide](../CLAUDE.md) - Project-wide coding standards
