@@ -380,6 +380,57 @@ typedef struct {
 #define IPR_LEVEL_MAX     15
 
 /* =============================================================================
+ * CRC Calculator - Hardware CRC-32 Acceleration
+ *
+ * References:
+ * - RX72N Group User's Manual: Hardware (CRC Calculator section)
+ * - https://renesas.github.io/fsp/group___c_r_c.html
+ * - https://tool-support.renesas.com/autoupdate/support/onlinehelp/csp/V8.12.00/
+ *   CS+.chm/CodeGenerator-API-RX.chm/Documents/crccalculatorcrc.htm
+ *
+ * Supported polynomials:
+ * - CRC-8:    X^8+X^2+X+1
+ * - CRC-16:   X^16+X^15+X^2+1
+ * - CRC-CCITT: X^16+X^12+X^5+1
+ * - CRC-32:   X^32+X^26+X^23+X^22+X^16+X^12+X^11+X^10+X^8+X^7+X^5+X^4+X^2+X+1
+ *             (IEEE 802.3 - 0x04C11DB7, compatible with Go's crc32.ChecksumIEEE)
+ * - CRC-32C:  Castagnoli polynomial (iSCSI)
+ * =============================================================================
+ */
+
+typedef struct {
+  volatile uint8_t CRCCR; /* 0x00 - CRC Control Register */
+  uint8_t          RESERVED0[3];
+  union {
+    volatile uint32_t LONG; /* 32-bit access for CRC-32 */
+    volatile uint8_t  BYTE; /* 8-bit access for CRC-8/16 */
+  } CRCDIR;                 /* 0x04 - CRC Data Input Register */
+  union {
+    volatile uint32_t LONG; /* 32-bit access for CRC-32 */
+    volatile uint16_t WORD; /* 16-bit access for CRC-16 */
+    volatile uint8_t  BYTE; /* 8-bit access for CRC-8 */
+  } CRCDOR;                 /* 0x08 - CRC Data Output Register */
+} CRC_Type;
+
+#define CRC_BASE ((CRC_Type*)0x00088280)
+#define CRC      (*CRC_BASE)
+
+/* CRC Control Register (CRCCR) bit definitions */
+typedef enum {
+  k_crc_crccr_gps_mask   = 0x07,     /* Generator Polynomial Select mask */
+  k_crc_crccr_gps_crc8   = 0x00,     /* CRC-8 */
+  k_crc_crccr_gps_crc16  = 0x01,     /* CRC-16 */
+  k_crc_crccr_gps_ccitt  = 0x02,     /* CRC-CCITT */
+  k_crc_crccr_gps_crc32  = 0x03,     /* CRC-32 IEEE 802.3 */
+  k_crc_crccr_gps_crc32c = 0x04,     /* CRC-32C Castagnoli */
+  k_crc_crccr_lms        = (1 << 6), /* LSB/MSB First (1=LSB first, reflected) */
+  k_crc_crccr_dorclr     = (1 << 7), /* Data Output Register Clear */
+} crc_crccr_bits_t;
+
+/* Module stop bit for CRC (in MSTPCRB) */
+#define MSTPB_CRC 23
+
+/* =============================================================================
  * Multi-Function Timer Unit (MTU3a)
  * =============================================================================
  */

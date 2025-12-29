@@ -22,15 +22,20 @@ FetchContent_MakeAvailable(unity)
 # Library Sources (copied for host compilation)
 # =============================================================================
 
-# rx_crc32 source (self-contained)
+# Force software CRC for host testing (hardware CRC not available)
+add_compile_definitions(RX_CRC32_USE_SOFTWARE)
+
+# rx_crc32 source (public API + software implementation)
 set(RX_CRC32_SRC
     ${CMAKE_SOURCE_DIR}/../lib/rx_frame/src/rx_crc32.c
+    ${CMAKE_SOURCE_DIR}/../lib/rx_frame/src/rx_crc32_sw.c
 )
 
 # rx_frame source
 set(RX_FRAME_SRC
     ${CMAKE_SOURCE_DIR}/../lib/rx_frame/src/rx_frame.c
     ${CMAKE_SOURCE_DIR}/../lib/rx_frame/src/rx_crc32.c
+    ${CMAKE_SOURCE_DIR}/../lib/rx_frame/src/rx_crc32_sw.c
 )
 
 # rx_fec source
