@@ -141,6 +141,56 @@ add_library(rx_pid STATIC
 target_include_directories(rx_pid PUBLIC lib/rx_pid/inc)
 target_link_libraries(rx_pid PUBLIC rx_core)
 
+# rx_fec - Forward Error Correction (convolutional encoder + Viterbi decoder)
+add_library(rx_fec STATIC
+    lib/rx_fec/src/rx_fec.c
+)
+target_include_directories(rx_fec PUBLIC lib/rx_fec/inc)
+target_link_libraries(rx_fec PUBLIC rx_core)
+
+# rx_harq - Hybrid Automatic Repeat Request (Chase Combining)
+add_library(rx_harq STATIC
+    lib/rx_harq/src/rx_harq.c
+)
+target_include_directories(rx_harq PUBLIC lib/rx_harq/inc)
+target_link_libraries(rx_harq PUBLIC rx_fec rx_core)
+
+# rx_frame - Frame Layer (SYNC, CRC-32, header)
+add_library(rx_frame STATIC
+    lib/rx_frame/src/rx_frame.c
+    lib/rx_frame/src/rx_crc32.c
+)
+target_include_directories(rx_frame PUBLIC lib/rx_frame/inc)
+target_link_libraries(rx_frame PUBLIC rx_core)
+
+# rx_nanopb - nanopb Protocol Buffers Integration
+add_library(rx_nanopb STATIC
+    lib/rx_nanopb/src/rx_nanopb.c
+    lib/rx_nanopb/nanopb/pb_common.c
+    lib/rx_nanopb/nanopb/pb_encode.c
+    lib/rx_nanopb/nanopb/pb_decode.c
+    lib/rx_nanopb/inc/gen/google/protobuf/timestamp.pb.c
+    lib/rx_nanopb/inc/gen/google/protobuf/duration.pb.c
+    lib/rx_nanopb/inc/gen/star/v1/common.pb.c
+    lib/rx_nanopb/inc/gen/star/v1/motor_control.pb.c
+    lib/rx_nanopb/inc/gen/star/v1/telemetry.pb.c
+)
+target_include_directories(rx_nanopb PUBLIC
+    lib/rx_nanopb/inc
+    lib/rx_nanopb/inc/gen
+    lib/rx_nanopb/nanopb
+)
+# RX72N uses 4-byte double (same as float) - tell nanopb to handle conversion
+target_compile_definitions(rx_nanopb PUBLIC PB_CONVERT_DOUBLE_FLOAT=1)
+target_link_libraries(rx_nanopb PUBLIC rx_core)
+
+# rx_spi_comm - High-Level SPI Communication Layer
+add_library(rx_spi_comm STATIC
+    lib/rx_spi_comm/src/rx_spi_comm.c
+)
+target_include_directories(rx_spi_comm PUBLIC lib/rx_spi_comm/inc)
+target_link_libraries(rx_spi_comm PUBLIC rx_frame rx_hal rx_core)
+
 # rx_motor - MTU3a motor control
 add_library(rx_motor STATIC
     lib/rx_motor/src/rx_motor.c
@@ -171,6 +221,7 @@ set(APP_SOURCES
     src/main.c
     src/motor_shared_state.c
     src/tasks/motor_control_task.c
+    src/tasks/spi_comm_task.c
 )
 
 # =============================================================================
@@ -195,6 +246,11 @@ target_link_libraries(${PROJECT_NAME}.elf
     rx_motor
     rx_encoder
     rx_pid
+    rx_fec
+    rx_harq
+    rx_frame
+    rx_nanopb
+    rx_spi_comm
     rx_drv8243
     rx_fuel_gauge
 )
@@ -237,6 +293,11 @@ message(STATUS "  rx_bus         - Bus manager (GPIO, ADC, I2C, SMBUS)")
 message(STATUS "  rx_motor       - Motor control (MTU3a PWM)")
 message(STATUS "  rx_encoder     - Encoder (MTU phase counting)")
 message(STATUS "  rx_pid         - PID controller")
+message(STATUS "  rx_fec         - FEC codec (K=7 convolutional + Viterbi)")
+message(STATUS "  rx_harq        - HARQ protocol (Chase Combining)")
+message(STATUS "  rx_frame       - Frame layer (SYNC, CRC-32, header)")
+message(STATUS "  rx_nanopb      - Protocol Buffers (nanopb integration)")
+message(STATUS "  rx_spi_comm    - SPI communication layer")
 message(STATUS "  rx_drv8243     - DRV8243 H-bridge driver")
 message(STATUS "  rx_fuel_gauge  - Battery management (BQ25798)")
 message(STATUS "==============================================")
