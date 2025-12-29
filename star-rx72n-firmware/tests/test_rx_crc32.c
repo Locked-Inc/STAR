@@ -11,6 +11,7 @@
 
 #include "unity.h"
 #include "rx_frame.h"
+#include "rx_crc_internal.h"
 #include <string.h>
 
 void setUp(void) {
@@ -178,6 +179,122 @@ void test_crc32_incremental_single_bytes(void) {
 }
 
 /* =============================================================================
+ * Abstraction Layer Tests
+ *
+ * Tests for rx_crc_init(), rx_crc_deinit(), and implementation internals.
+ * =============================================================================
+ */
+
+/**
+ * @brief Test CRC init/deinit cycle completes without error
+ */
+void test_crc32_init_deinit(void) {
+    rx_err_t err;
+
+    err = rx_crc_init();
+    TEST_ASSERT_EQUAL(RX_OK, err);
+
+    err = rx_crc_deinit();
+    TEST_ASSERT_EQUAL(RX_OK, err);
+}
+
+/**
+ * @brief Test that multiple init calls are safe (idempotent)
+ */
+void test_crc32_double_init_safe(void) {
+    rx_err_t err;
+
+    /* First init */
+    err = rx_crc_init();
+    TEST_ASSERT_EQUAL(RX_OK, err);
+
+    /* Second init should also succeed (idempotent) */
+    err = rx_crc_init();
+    TEST_ASSERT_EQUAL(RX_OK, err);
+
+    /* Cleanup */
+    rx_crc_deinit();
+}
+
+/**
+ * @brief Test CRC-32 of large buffer (1KB)
+ *
+ * Verifies CRC calculation works correctly for larger data sizes.
+ * Pattern: repeating 0x00-0xFF sequence (4x256 = 1024 bytes)
+ *
+ * Go verification:
+ *   data := make([]byte, 1024)
+ *   for i := range data { data[i] = byte(i) }
+ *   crc32.ChecksumIEEE(data) = 0xB70B4C26
+ */
+void test_crc32_large_buffer_1kb(void) {
+    uint8_t data[1024];
+
+    /* Fill with repeating pattern 0x00-0xFF */
+    for (size_t i = 0; i < sizeof(data); i++) {
+        data[i] = (uint8_t)(i & 0xFF);
+    }
+
+    uint32_t crc = rx_crc32_ieee(data, sizeof(data));
+    TEST_ASSERT_EQUAL_HEX32(0xB70B4C26, crc);
+}
+
+/**
+ * @brief Test CRC-32 with various unaligned data sizes
+ *
+ * Ensures CRC works correctly for non-32-bit-aligned buffer sizes.
+ * This is important for hardware implementations that might optimize
+ * for 32-bit word access.
+ *
+ * Verified against IEEE 802.3 CRC-32 implementation.
+ */
+void test_crc32_unaligned_data(void) {
+    /* Test various sizes: 1, 3, 5, 7 bytes (not 32-bit aligned) */
+    uint8_t data[] = {0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC, 0xDE};
+
+    /* 1 byte */
+    uint32_t crc1 = rx_crc32_ieee(data, 1);
+    TEST_ASSERT_EQUAL_HEX32(0x21BB9EC5, crc1);
+
+    /* 3 bytes - verify incremental calculation matches single-shot */
+    uint32_t crc3_single = rx_crc32_ieee(data, 3);
+    uint32_t crc3_incr = rx_crc32_ieee(data, 1);
+    crc3_incr = rx_crc32_update(crc3_incr, data + 1, 2);
+    TEST_ASSERT_EQUAL_HEX32(crc3_single, crc3_incr);
+
+    /* 5 bytes - verify incremental calculation matches single-shot */
+    uint32_t crc5_single = rx_crc32_ieee(data, 5);
+    uint32_t crc5_incr = rx_crc32_ieee(data, 2);
+    crc5_incr = rx_crc32_update(crc5_incr, data + 2, 3);
+    TEST_ASSERT_EQUAL_HEX32(crc5_single, crc5_incr);
+
+    /* 7 bytes - verify all data processes correctly */
+    uint32_t crc7_single = rx_crc32_ieee(data, 7);
+    uint32_t crc7_incr = rx_crc32_ieee(data, 4);
+    crc7_incr = rx_crc32_update(crc7_incr, data + 4, 3);
+    TEST_ASSERT_EQUAL_HEX32(crc7_single, crc7_incr);
+}
+
+/**
+ * @brief Test rx_crc32_update with NULL data returns original CRC
+ */
+void test_crc32_update_null_returns_original(void) {
+    uint32_t original_crc = 0x12345678;
+    uint32_t result = rx_crc32_update(original_crc, NULL, 10);
+    TEST_ASSERT_EQUAL_HEX32(original_crc, result);
+}
+
+/**
+ * @brief Test rx_crc32_update with zero length returns original CRC
+ */
+void test_crc32_update_zero_len_returns_original(void) {
+    uint8_t data[] = {0x01, 0x02, 0x03};
+    uint32_t original_crc = 0xDEADBEEF;
+    uint32_t result = rx_crc32_update(original_crc, data, 0);
+    TEST_ASSERT_EQUAL_HEX32(original_crc, result);
+}
+
+/* =============================================================================
  * Main
  * =============================================================================
  */
@@ -202,6 +319,14 @@ int main(void) {
     /* Incremental CRC tests */
     RUN_TEST(test_crc32_incremental_matches_single);
     RUN_TEST(test_crc32_incremental_single_bytes);
+
+    /* Abstraction layer tests */
+    RUN_TEST(test_crc32_init_deinit);
+    RUN_TEST(test_crc32_double_init_safe);
+    RUN_TEST(test_crc32_large_buffer_1kb);
+    RUN_TEST(test_crc32_unaligned_data);
+    RUN_TEST(test_crc32_update_null_returns_original);
+    RUN_TEST(test_crc32_update_zero_len_returns_original);
 
     return UNITY_END();
 }
