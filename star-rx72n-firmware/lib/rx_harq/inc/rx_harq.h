@@ -52,8 +52,9 @@ typedef enum {
  *
  * With 1024 byte max payload, encoded = (1024*8+6)*2 = 16396 bits
  * Each bit needs 1 soft bit, so max 16396 soft bits.
+ * Round up to 16400 for safe margin.
  */
-#define RX_HARQ_SOFT_BUFFER_SIZE 16384
+#define RX_HARQ_SOFT_BUFFER_SIZE 16400
 
 /* =============================================================================
  * HARQ State Machine

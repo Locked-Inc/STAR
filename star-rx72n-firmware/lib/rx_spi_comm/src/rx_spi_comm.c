@@ -287,7 +287,17 @@ rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t *handle, rx_frame_t *frame,
             return RX_ERR_TIMEOUT;
         }
 
-        /* Simple polling loop - in production, use ThreadX semaphore */
+        /*
+         * TODO: Replace busy-wait with ThreadX semaphore
+         *
+         * Current implementation uses polling for simplicity during initial
+         * development. In production, use tx_semaphore_get() with SPI RX
+         * interrupt callback.
+         *
+         * NOTE: spi_comm_task calls with timeout_ms=0 (immediate check), so
+         * this loop is not entered in normal operation. The task uses
+         * tx_thread_sleep() for its 100Hz polling rate instead.
+         */
         uint32_t elapsed = 0;
         while (!available && elapsed < timeout_ms) {
             /* Simple delay - replace with tx_thread_sleep in ThreadX */

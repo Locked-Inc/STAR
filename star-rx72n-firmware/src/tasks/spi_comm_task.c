@@ -107,12 +107,14 @@ static rx_err_t internal_handle_velocity_command(const uint8_t *payload,
     RX_LOG_DEBUG(s_tag, "Velocity cmd: L/R in m/s");
 
     /* Update shared state for skid-steer (4 motors) */
-    /* Left motors: indices 0 and 2 */
-    /* Right motors: indices 1 and 3 */
-    motor_shared_state_set_velocity(s_shared_state, 0, left_mps);
-    motor_shared_state_set_velocity(s_shared_state, 1, right_mps);
-    motor_shared_state_set_velocity(s_shared_state, 2, left_mps);
-    motor_shared_state_set_velocity(s_shared_state, 3, right_mps);
+    motor_shared_state_set_velocity(s_shared_state, k_motor_idx_front_left,
+                                    left_mps);
+    motor_shared_state_set_velocity(s_shared_state, k_motor_idx_front_right,
+                                    right_mps);
+    motor_shared_state_set_velocity(s_shared_state, k_motor_idx_rear_left,
+                                    left_mps);
+    motor_shared_state_set_velocity(s_shared_state, k_motor_idx_rear_right,
+                                    right_mps);
 
     return RX_OK;
 }
