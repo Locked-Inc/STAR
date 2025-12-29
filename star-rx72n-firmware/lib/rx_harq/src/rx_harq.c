@@ -126,9 +126,8 @@ void rx_chase_combiner_reset(rx_chase_combiner_t *combiner)
         return;
     }
 
-    /* Clear accumulator */
-    memset(combiner->accumulated, 0,
-           combiner->expected_len * sizeof(int16_t));
+    /* Clear the entire accumulator to prevent stale data */
+    memset(combiner->accumulated, 0, sizeof(combiner->accumulated));
     combiner->count        = 0;
     combiner->expected_len = 0;
 }
