@@ -1574,6 +1574,9 @@
 			(embedded_fonts no)
 		)
 		(symbol "BAT54HT1G:BAT54HT1G"
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
 				(hide yes)
 			)
@@ -1726,7 +1729,7 @@
 							)
 						)
 					)
-					(number ""
+					(number "1"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1744,7 +1747,7 @@
 							)
 						)
 					)
-					(number ""
+					(number "2"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1756,6 +1759,9 @@
 			(embedded_fonts no)
 		)
 		(symbol "BAT54HT1G_1"
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
 				(hide yes)
 			)
@@ -1908,7 +1914,7 @@
 							)
 						)
 					)
-					(number ""
+					(number "1"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -1926,7 +1932,7 @@
 							)
 						)
 					)
-					(number ""
+					(number "2"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -3533,6 +3539,9 @@
 			(embedded_fonts no)
 		)
 		(symbol "CRF2512-FZ-R001ELF:CRF2512-FZ-R001ELF"
+			(pin_numbers
+				(hide yes)
+			)
 			(pin_names
 				(hide yes)
 			)
@@ -3651,14 +3660,14 @@
 				(pin passive line
 					(at 6.35 0 0)
 					(length 1.27)
-					(name "1"
+					(name ""
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number ""
+					(number "1"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -3669,14 +3678,14 @@
 				(pin passive line
 					(at 13.97 0 180)
 					(length 1.27)
-					(name "2"
+					(name ""
 						(effects
 							(font
 								(size 1.27 1.27)
 							)
 						)
 					)
-					(number ""
+					(number "2"
 						(effects
 							(font
 								(size 1.27 1.27)
@@ -7540,6 +7549,12 @@
 		(uuid "150fcf0e-c341-4e0e-84af-2d0316e54482")
 	)
 	(junction
+		(at 490.22 238.76)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "15c2bbc8-c989-4191-acc6-fe7ba4814bcc")
+	)
+	(junction
 		(at 490.22 246.38)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -7948,12 +7963,6 @@
 		(uuid "8e3b1eda-5c48-468b-8f87-21f5e0d0593d")
 	)
 	(junction
-		(at 468.63 246.38)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "909ded5a-575a-4101-8218-96438ff5b89d")
-	)
-	(junction
 		(at 109.22 99.06)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -8218,6 +8227,12 @@
 		(uuid "fa8368d4-2bb1-411a-a3fa-66ea6e770496")
 	)
 	(junction
+		(at 468.63 246.38)
+		(diameter 0)
+		(color 0 0 0 0)
+		(uuid "fee077e6-2802-477d-99cd-1443b233bc8b")
+	)
+	(junction
 		(at 321.31 133.35)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -8443,7 +8458,7 @@
 	)
 	(wire
 		(pts
-			(xy 464.82 233.68) (xy 463.55 233.68)
+			(xy 463.55 233.68) (xy 490.22 233.68)
 		)
 		(stroke
 			(width 0)
@@ -10273,7 +10288,7 @@
 	)
 	(wire
 		(pts
-			(xy 468.63 254) (xy 468.63 256.54)
+			(xy 468.63 255.27) (xy 468.63 256.54)
 		)
 		(stroke
 			(width 0)
@@ -10300,6 +10315,16 @@
 			(type default)
 		)
 		(uuid "7c64f4f8-b9ec-407f-840b-640574715dff")
+	)
+	(wire
+		(pts
+			(xy 468.63 247.65) (xy 468.63 246.38)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "7cadf5d6-46cd-4d79-bccd-bd854439a664")
 	)
 	(wire
 		(pts
@@ -11220,6 +11245,16 @@
 			(type default)
 		)
 		(uuid "aed400d4-ff3b-4257-8491-1fd43fb4139a")
+	)
+	(wire
+		(pts
+			(xy 490.22 233.68) (xy 490.22 238.76)
+		)
+		(stroke
+			(width 0)
+			(type default)
+		)
+		(uuid "af297f54-1655-4b4b-b503-11c3534ea62c")
 	)
 	(wire
 		(pts
@@ -12949,7 +12984,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 398.78 168.402 90)
 			(effects
 				(font
@@ -13038,7 +13073,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "NetTie:NetTie-2_SMD_Pad0.5mm"
 			(at 480.06 297.18 0)
 			(effects
 				(font
@@ -13125,7 +13160,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 229.87 90.678 90)
 			(effects
 				(font
@@ -13849,7 +13884,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 401.32 272.288 90)
 			(effects
 				(font
@@ -14758,6 +14793,51 @@
 				(hide yes)
 			)
 		)
+		(property "DigiKey Link" "https://www.digikey.com/short/dvjwz3j4"
+			(at 448.31 220.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "296-48498-1-ND"
+			(at 448.31 220.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "3.01"
+			(at 448.31 220.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/46kKB2y"
+			(at 448.31 220.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "2.12"
+			(at 448.31 220.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "14"
 			(uuid "3856e297-f169-4323-bbb2-cecbb25ce148")
 		)
@@ -14893,7 +14973,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 148.59 57.658 90)
 			(effects
 				(font
@@ -14938,6 +15018,69 @@
 				(hide yes)
 			)
 		)
+		(property "DigiKey Link" "https://www.digikey.com/short/r8130h84"
+			(at 148.59 55.88 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "541-100GCT-ND"
+			(at 148.59 55.88 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.10"
+			(at 148.59 55.88 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" "CRCW0603100RJNEA"
+			(at 148.59 55.88 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3IoWmio"
+			(at 148.59 55.88 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "71-CRCW0603J-100-E3"
+			(at 148.59 55.88 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "0.10"
+			(at 148.59 55.88 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "ea79b62b-5047-483e-a370-eedfe976c9a2")
 		)
@@ -14948,143 +15091,6 @@
 			(project "STAR_BMS"
 				(path "/1d46f959-5b1b-4628-8073-2d3f06ff3b38"
 					(reference "R7")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "BAT54HT1G:BAT54HT1G")
-		(at 184.15 92.71 180)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "0a823e6f-01db-463a-82b6-dc8bb6d599d0")
-		(property "Reference" "D2"
-			(at 175.006 91.694 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "BAT54HT1G"
-			(at 184.658 91.694 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "SOD2512X110N"
-			(at 171.45 -0.94 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "https://www.onsemi.com/pub/Collateral/BAT54HT1-D.PDF"
-			(at 171.45 -100.94 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Description" "Low Forward Voltage - 0.35 Volts (Typ) @ IF = 10 mAdc; Extremely Fast Switching Speed; Device Marking: JV; NSV Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements; AEC Qualified and PPAP Capable"
-			(at 184.15 92.71 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Height" "1.1"
-			(at 171.45 -300.94 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "863-BAT54HT1G"
-			(at 171.45 -400.94 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/onsemi/BAT54HT1G?qs=vLkC5FC1VN%252BK3ZQA%252ByHPIA%3D%3D"
-			(at 171.45 -500.94 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Name" "onsemi"
-			(at 171.45 -600.94 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Part Number" "BAT54HT1G"
-			(at 171.45 -700.94 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Name" ""
-			(at 184.15 92.71 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" ""
-			(at 184.15 92.71 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin ""
-			(uuid "e58b65b8-8813-4291-8692-71c782621d34")
-		)
-		(pin ""
-			(uuid "a23bc258-6ac4-4f52-bebf-b05cffaf7772")
-		)
-		(instances
-			(project ""
-				(path "/1d46f959-5b1b-4628-8073-2d3f06ff3b38"
-					(reference "D2")
 					(unit 1)
 				)
 			)
@@ -15403,6 +15409,51 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" ""
+			(at 355.6 110.49 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/short/8zr54180"
+			(at 355.6 110.49 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "FDN358PCT-ND"
+			(at 355.6 110.49 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.77"
+			(at 355.6 110.49 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/4ska6No"
+			(at 355.6 110.49 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "0.53"
 			(at 355.6 110.49 90)
 			(effects
 				(font
@@ -16929,7 +16980,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 337.058 142.24 90)
 			(effects
 				(font
@@ -17912,7 +17963,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 107.442 107.95 90)
 			(effects
 				(font
@@ -19348,6 +19399,51 @@
 				(hide yes)
 			)
 		)
+		(property "DigiKey Link" "https://www.digikey.com/short/j2qq05w4"
+			(at 161.29 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "455-2248-ND"
+			(at 161.29 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.11"
+			(at 161.29 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/4qwVNVb"
+			(at 161.29 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "0.11"
+			(at 161.29 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "be67cb05-61fe-4a47-965d-ca0cf0f6e22d")
 		)
@@ -19485,7 +19581,7 @@
 				(hide yes)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "NetTie:NetTie-2_SMD_Pad0.5mm"
 			(at 497.84 297.18 0)
 			(effects
 				(font
@@ -20209,7 +20305,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 472.44 225.298 90)
 			(effects
 				(font
@@ -20246,6 +20342,69 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" ""
+			(at 472.44 223.52 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/short/r8130h84"
+			(at 472.44 223.52 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "541-100GCT-ND"
+			(at 472.44 223.52 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.10"
+			(at 472.44 223.52 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" "CRCW0603100RJNEA"
+			(at 472.44 223.52 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3IoWmio"
+			(at 472.44 223.52 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "71-CRCW0603J-100-E3"
+			(at 472.44 223.52 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "0.10"
 			(at 472.44 223.52 90)
 			(effects
 				(font
@@ -22194,7 +22353,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder"
 			(at 110.1852 121.92 0)
 			(effects
 				(font
@@ -22282,7 +22441,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 369.57 103.632 90)
 			(effects
 				(font
@@ -22337,6 +22496,125 @@
 			(project "STAR_BMS"
 				(path "/1d46f959-5b1b-4628-8073-2d3f06ff3b38"
 					(reference "R29")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "BAT54HT1G:BAT54HT1G")
+		(at 184.15 92.71 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "3584ad5a-dd69-462c-b68a-ae1118cc8f3a")
+		(property "Reference" "D2"
+			(at 174.752 91.694 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "BAT54HT1G"
+			(at 184.658 91.948 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "SOD2512X110N"
+			(at 171.45 -0.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://www.onsemi.com/pub/Collateral/BAT54HT1-D.PDF"
+			(at 171.45 -100.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Description" "Low Forward Voltage - 0.35 Volts (Typ) @ IF = 10 mAdc; Extremely Fast Switching Speed; Device Marking: JV; NSV Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements; AEC Qualified and PPAP Capable"
+			(at 184.15 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Height" "1.1"
+			(at 171.45 -300.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "863-BAT54HT1G"
+			(at 171.45 -400.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/onsemi/BAT54HT1G?qs=vLkC5FC1VN%252BK3ZQA%252ByHPIA%3D%3D"
+			(at 171.45 -500.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Name" "onsemi"
+			(at 171.45 -600.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" "BAT54HT1G"
+			(at 171.45 -700.94 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "cd657d5d-b105-46d9-b0d6-183f580002a5")
+		)
+		(pin "2"
+			(uuid "dcafdbd8-2ea2-40cf-8653-c9532f235dd4")
+		)
+		(instances
+			(project ""
+				(path "/1d46f959-5b1b-4628-8073-2d3f06ff3b38"
+					(reference "D2")
 					(unit 1)
 				)
 			)
@@ -22980,72 +23258,6 @@
 		)
 	)
 	(symbol
-		(lib_id "power:GND")
-		(at 464.82 233.68 90)
-		(mirror x)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "3829acf2-e9fd-49e5-8db5-5fae5e0a27e3")
-		(property "Reference" "#PWR05"
-			(at 471.17 233.68 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 469.392 233.68 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 464.82 233.68 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 464.82 233.68 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 464.82 233.68 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "d777723f-e13f-4c6d-afe5-57d1e3027917")
-		)
-		(instances
-			(project "STAR_BMS"
-				(path "/1d46f959-5b1b-4628-8073-2d3f06ff3b38"
-					(reference "#PWR05")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "82306050029:82306050029")
 		(at 359.41 299.72 90)
 		(unit 1)
@@ -23381,7 +23593,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder"
 			(at 406.7048 191.77 0)
 			(effects
 				(font
@@ -23436,145 +23648,6 @@
 			(project "STAR_BMS"
 				(path "/1d46f959-5b1b-4628-8073-2d3f06ff3b38"
 					(reference "C21")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_name "BAT54HT1G_1")
-		(lib_id "BAT54HT1G:BAT54HT1G")
-		(at 424.18 199.39 0)
-		(mirror x)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "3cbb47ae-0a65-4146-bd87-ffb9a1ab3dd9")
-		(property "Reference" "D12"
-			(at 434.34 198.374 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Value" "BAT54HT1G"
-			(at 423.672 198.374 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" "SOD2512X110N"
-			(at 436.88 105.74 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "https://www.onsemi.com/pub/Collateral/BAT54HT1-D.PDF"
-			(at 436.88 5.74 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Description" "Low Forward Voltage - 0.35 Volts (Typ) @ IF = 10 mAdc; Extremely Fast Switching Speed; Device Marking: JV; NSV Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements; AEC Qualified and PPAP Capable"
-			(at 424.18 199.39 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Height" "1.1"
-			(at 436.88 -194.26 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "863-BAT54HT1G"
-			(at 436.88 -294.26 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/onsemi/BAT54HT1G?qs=vLkC5FC1VN%252BK3ZQA%252ByHPIA%3D%3D"
-			(at 436.88 -394.26 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Name" "onsemi"
-			(at 436.88 -494.26 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Part Number" "BAT54HT1G"
-			(at 436.88 -594.26 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Name" ""
-			(at 424.18 199.39 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" ""
-			(at 424.18 199.39 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin ""
-			(uuid "6ebcc0c2-c5c5-417a-82c1-76e2d7a14bd5")
-		)
-		(pin ""
-			(uuid "f5a975d7-b8fd-404a-8e8b-5d10b8d13915")
-		)
-		(instances
-			(project "STAR_BMS"
-				(path "/1d46f959-5b1b-4628-8073-2d3f06ff3b38"
-					(reference "D12")
 					(unit 1)
 				)
 			)
@@ -23696,6 +23769,51 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" ""
+			(at 198.12 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/short/h720tb9j"
+			(at 198.12 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "264-TPHR6503PL1LQCT-ND"
+			(at 198.12 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "2.93"
+			(at 198.12 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://www.mouser.com/ProductDetail/Toshiba/TPHR6503PL1LQ?qs=QNEnbhJQKvYzrm%252BVKo%252BntQ%3D%3D"
+			(at 198.12 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "2.67"
 			(at 198.12 96.52 0)
 			(effects
 				(font
@@ -24493,6 +24611,51 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" ""
+			(at 198.12 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/short/h720tb9j"
+			(at 198.12 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "264-TPHR6503PL1LQCT-ND"
+			(at 198.12 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "2.93"
+			(at 198.12 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://www.mouser.com/ProductDetail/Toshiba/TPHR6503PL1LQ?qs=QNEnbhJQKvYzrm%252BVKo%252BntQ%3D%3D"
+			(at 198.12 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "2.67"
 			(at 198.12 80.01 0)
 			(effects
 				(font
@@ -25542,6 +25705,51 @@
 				(hide yes)
 			)
 		)
+		(property "DigiKey Link" "https://www.digikey.com/short/h720tb9j"
+			(at 335.28 118.11 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "264-TPHR6503PL1LQCT-ND"
+			(at 335.28 118.11 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "2.93"
+			(at 335.28 118.11 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://www.mouser.com/ProductDetail/Toshiba/TPHR6503PL1LQ?qs=QNEnbhJQKvYzrm%252BVKo%252BntQ%3D%3D"
+			(at 335.28 118.11 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "2.67"
+			(at 335.28 118.11 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "c6571873-af63-4d9d-9439-3ad0f8b87c15")
 		)
@@ -25579,146 +25787,6 @@
 		)
 	)
 	(symbol
-		(lib_id "CRF2512-FZ-R001ELF:CRF2512-FZ-R001ELF")
-		(at 468.63 260.35 270)
-		(mirror x)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "53bc6c35-f393-43df-b5ae-19e51d932aa4")
-		(property "Reference" "R40"
-			(at 468.376 246.634 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Value" "CRF2512-FZ-R001ELF"
-			(at 481.076 253.746 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify right)
-			)
-		)
-		(property "Footprint" "RESC6432X80N"
-			(at 372.44 246.38 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" "https://componentsearchengine.com/Datasheets/2/CRF2512-FZ-R001ELF.pdf"
-			(at 272.44 246.38 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Description" "Current Sense Resistors - SMD 0.001ohms 1% 75PPM"
-			(at 457.962 260.858 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Height" "0.8"
-			(at 72.44 246.38 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Mouser Part Number" "652-CRF2512FZR001ELF"
-			(at -27.56 246.38 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Bourns/CRF2512-FZ-R001ELF?qs=iHX4uCgIbgPCaKpEZKEgSg%3D%3D"
-			(at -127.56 246.38 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Name" "Bourns"
-			(at -227.56 246.38 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer Part Number" "CRF2512-FZ-R001ELF"
-			(at -327.56 246.38 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(justify left top)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Name" ""
-			(at 468.63 260.35 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Manufacturer_Part_Number" ""
-			(at 468.63 260.35 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin ""
-			(uuid "6738f334-80ac-4a5c-849a-dc4d7a2e6657")
-		)
-		(pin ""
-			(uuid "04032763-8736-40cc-8b88-1cedf8696da1")
-		)
-		(instances
-			(project ""
-				(path "/1d46f959-5b1b-4628-8073-2d3f06ff3b38"
-					(reference "R40")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
 		(lib_id "Device:R")
 		(at 295.91 142.24 0)
 		(unit 1)
@@ -25745,7 +25813,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 294.132 142.24 90)
 			(effects
 				(font
@@ -25965,7 +26033,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 383.54 168.402 90)
 			(effects
 				(font
@@ -26052,7 +26120,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 123.952 102.87 90)
 			(effects
 				(font
@@ -27469,7 +27537,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 350.52 135.128 90)
 			(effects
 				(font
@@ -29504,6 +29572,126 @@
 		)
 	)
 	(symbol
+		(lib_name "BAT54HT1G_1")
+		(lib_id "BAT54HT1G:BAT54HT1G")
+		(at 424.18 199.39 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "70f99d4f-4eb4-4b57-b2c1-88bb2bf29a04")
+		(property "Reference" "D12"
+			(at 426.72 198.374 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Value" "BAT54HT1G"
+			(at 437.642 198.374 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" "SOD2512X110N"
+			(at 436.88 293.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://www.onsemi.com/pub/Collateral/BAT54HT1-D.PDF"
+			(at 436.88 393.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Description" "Low Forward Voltage - 0.35 Volts (Typ) @ IF = 10 mAdc; Extremely Fast Switching Speed; Device Marking: JV; NSV Prefix for Automotive and Other Applications Requiring Unique Site and Control Change Requirements; AEC Qualified and PPAP Capable"
+			(at 424.18 199.39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Height" "1.1"
+			(at 436.88 593.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "863-BAT54HT1G"
+			(at 436.88 693.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/onsemi/BAT54HT1G?qs=vLkC5FC1VN%252BK3ZQA%252ByHPIA%3D%3D"
+			(at 436.88 793.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Name" "onsemi"
+			(at 436.88 893.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" "BAT54HT1G"
+			(at 436.88 993.04 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "5526488f-2692-4c57-8ef2-30ea1a17a9f5")
+		)
+		(pin "2"
+			(uuid "93ca6a9f-5023-40c3-93b1-f93c66101212")
+		)
+		(instances
+			(project ""
+				(path "/1d46f959-5b1b-4628-8073-2d3f06ff3b38"
+					(reference "D12")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "Device:R")
 		(at 264.16 115.57 0)
 		(unit 1)
@@ -31512,7 +31700,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 373.38 87.122 90)
 			(effects
 				(font
@@ -32325,6 +32513,51 @@
 				(hide yes)
 			)
 		)
+		(property "DigiKey Link" "https://www.digikey.com/short/bvntm4dz"
+			(at 313.69 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "2N7002KCT-ND"
+			(at 313.69 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.31"
+			(at 313.69 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/4jiZbQd"
+			(at 313.69 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "0.31"
+			(at 313.69 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "1c4046ea-e612-43ee-8910-b6bd77209293")
 		)
@@ -32502,7 +32735,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 367.538 142.24 90)
 			(effects
 				(font
@@ -32897,7 +33130,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 156.972 62.23 90)
 			(effects
 				(font
@@ -33072,6 +33305,51 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" ""
+			(at 439.42 168.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/short/ttnt0m8p"
+			(at 439.42 168.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "296-49563-1-ND"
+			(at 439.42 168.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.61"
+			(at 439.42 168.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/4jtdNwn"
+			(at 439.42 168.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "0.61"
 			(at 439.42 168.91 0)
 			(effects
 				(font
@@ -33847,7 +34125,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder"
 			(at 449.58 232.7148 0)
 			(effects
 				(font
@@ -36202,6 +36480,51 @@
 				(hide yes)
 			)
 		)
+		(property "DigiKey Link" "https://www.digikey.com/short/75hbft73"
+			(at 134.62 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "296-27208-1-ND"
+			(at 134.62 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "5.51"
+			(at 134.62 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3Yl7Fwu"
+			(at 134.62 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "5.51"
+			(at 134.62 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "10"
 			(uuid "807408e0-6ac1-40b7-818d-48c64d080f8c")
 		)
@@ -36290,7 +36613,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 357.378 142.24 90)
 			(effects
 				(font
@@ -36574,7 +36897,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 262.382 105.41 90)
 			(effects
 				(font
@@ -36662,7 +36985,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 472.44 213.868 90)
 			(effects
 				(font
@@ -36699,6 +37022,69 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" ""
+			(at 472.44 212.09 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/short/r8130h84"
+			(at 472.44 212.09 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "541-100GCT-ND"
+			(at 472.44 212.09 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.10"
+			(at 472.44 212.09 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" "CRCW0603100RJNEA"
+			(at 472.44 212.09 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3IoWmio"
+			(at 472.44 212.09 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "71-CRCW0603J-100-E3"
+			(at 472.44 212.09 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "0.10"
 			(at 472.44 212.09 90)
 			(effects
 				(font
@@ -36750,7 +37136,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 474.98 168.148 90)
 			(effects
 				(font
@@ -36787,6 +37173,69 @@
 			)
 		)
 		(property "Manufacturer_Part_Number" ""
+			(at 474.98 166.37 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Link" "https://www.digikey.com/short/r8130h84"
+			(at 474.98 166.37 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "541-100GCT-ND"
+			(at 474.98 166.37 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.10"
+			(at 474.98 166.37 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" "CRCW0603100RJNEA"
+			(at 474.98 166.37 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3IoWmio"
+			(at 474.98 166.37 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "71-CRCW0603J-100-E3"
+			(at 474.98 166.37 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "0.10"
 			(at 474.98 166.37 90)
 			(effects
 				(font
@@ -38507,7 +38956,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 401.32 274.828 90)
 			(effects
 				(font
@@ -38691,6 +39140,51 @@
 				(hide yes)
 			)
 		)
+		(property "DigiKey Link" "https://www.digikey.com/short/j2qq05w4"
+			(at 161.29 212.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "455-2248-ND"
+			(at 161.29 212.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.11"
+			(at 161.29 212.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/4qwVNVb"
+			(at 161.29 212.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "0.11"
+			(at 161.29 212.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "1dc2e8e3-3163-4e91-8962-c20abca8cb8d")
 		)
@@ -38736,7 +39230,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 319.532 127 90)
 			(effects
 				(font
@@ -38823,7 +39317,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 123.952 92.71 90)
 			(effects
 				(font
@@ -39679,7 +40173,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder"
 			(at 449.8848 254 0)
 			(effects
 				(font
@@ -39856,7 +40350,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 148.59 52.578 90)
 			(effects
 				(font
@@ -40711,7 +41205,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 262.382 95.25 90)
 			(effects
 				(font
@@ -42148,6 +42642,51 @@
 				(hide yes)
 			)
 		)
+		(property "DigiKey Link" "https://www.digikey.com/short/h720tb9j"
+			(at 365.76 118.11 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "264-TPHR6503PL1LQCT-ND"
+			(at 365.76 118.11 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "2.93"
+			(at 365.76 118.11 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://www.mouser.com/ProductDetail/Toshiba/TPHR6503PL1LQ?qs=QNEnbhJQKvYzrm%252BVKo%252BntQ%3D%3D"
+			(at 365.76 118.11 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "2.67"
+			(at 365.76 118.11 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "7df4f31a-ac7b-4b44-9159-83abf35a989d")
 		)
@@ -42847,7 +43386,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Capacitor_SMD:C_0603_1608Metric_Pad1.08x0.95mm_HandSolder"
 			(at 86.0552 121.92 0)
 			(effects
 				(font
@@ -42932,7 +43471,7 @@
 				)
 			)
 		)
-		(property "Footprint" "WE-LHMI_7030/705048"
+		(property "Footprint" "WE-LHMI_7030:WE-LHMI_7030_705048"
 			(at 312.09 72.39 0)
 			(effects
 				(font
@@ -43029,6 +43568,51 @@
 				(hide yes)
 			)
 		)
+		(property "DigiKey Link" "https://www.digikey.com/short/n4t93pj5"
+			(at 215.9 88.9 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "732-3353-1-ND"
+			(at 215.9 88.9 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "2.31"
+			(at 215.9 88.9 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/4jko65Y"
+			(at 215.9 88.9 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "2.31"
+			(at 215.9 88.9 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "a4c027e0-fef8-45c4-80a6-e071d82676d7")
 		)
@@ -43072,7 +43656,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 409.448 179.07 90)
 			(effects
 				(font
@@ -44953,6 +45537,51 @@
 				(hide yes)
 			)
 		)
+		(property "DigiKey Link" "https://www.digikey.com/short/jfw5rrqb"
+			(at 407.67 138.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "DMN3042L-7DICT-ND"
+			(at 407.67 138.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.45"
+			(at 407.67 138.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/4bvlbm2"
+			(at 407.67 138.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "0.37"
+			(at 407.67 138.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "045c41a1-cb74-4116-9403-1ff2d955a144")
 		)
@@ -45719,6 +46348,51 @@
 				(hide yes)
 			)
 		)
+		(property "DigiKey Link" "https://www.digikey.com/short/70jzf020"
+			(at 105.41 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "BZT52C8V2T-7DICT-ND"
+			(at 105.41 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.21"
+			(at 105.41 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3Ld35xo"
+			(at 105.41 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "0.21"
+			(at 105.41 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "1cd3311e-7e3e-44e0-8743-fa9c9cc41718")
 		)
@@ -45856,6 +46530,51 @@
 				(hide yes)
 			)
 		)
+		(property "DigiKey Link" "https://www.digikey.com/short/77nh02fp"
+			(at 99.06 90.17 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "SSM6J507NULFCT-ND"
+			(at 99.06 90.17 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.71"
+			(at 99.06 90.17 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3YaJUaq"
+			(at 99.06 90.17 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "0.73"
+			(at 99.06 90.17 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "8"
 			(uuid "1b9573f7-c4ee-4da4-a04c-eba8cff239d5")
 		)
@@ -45917,7 +46636,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 382.778 127 90)
 			(effects
 				(font
@@ -46488,7 +47207,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Part Number" "732-3040-1-ND"
+		(property "DigiKey Part Number" ""
 			(at 332.74 273.05 0)
 			(effects
 				(font
@@ -46497,7 +47216,7 @@
 				(hide yes)
 			)
 		)
-		(property "DigiKey Price per Unit" "0.73"
+		(property "DigiKey Price per Unit" ""
 			(at 332.74 273.05 0)
 			(effects
 				(font
@@ -46506,7 +47225,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" "82306050029"
+		(property "Manufacturer Part Number" ""
 			(at 332.74 273.05 0)
 			(effects
 				(font
@@ -46515,7 +47234,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Link" "https://mou.sr/4nmVvNY"
+		(property "Mouser Link" ""
 			(at 332.74 273.05 0)
 			(effects
 				(font
@@ -46524,7 +47243,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Part Number" "710-82306050029"
+		(property "Mouser Part Number" ""
 			(at 332.74 273.05 0)
 			(effects
 				(font
@@ -46533,7 +47252,7 @@
 				(hide yes)
 			)
 		)
-		(property "Mouser Price per Unit" "0.73"
+		(property "Mouser Price per Unit" ""
 			(at 332.74 273.05 0)
 			(effects
 				(font
@@ -46608,7 +47327,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 303.022 132.08 90)
 			(effects
 				(font
@@ -47429,6 +48148,51 @@
 				(hide yes)
 			)
 		)
+		(property "DigiKey Link" "https://www.digikey.com/short/bq3j8fqd"
+			(at 389.89 218.44 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "541-1190-1-ND"
+			(at 389.89 218.44 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "1.03"
+			(at 389.89 218.44 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/4seG2Db"
+			(at 389.89 218.44 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "0.91"
+			(at 389.89 218.44 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "e0d4e2d7-0920-44f3-aac0-ba32fd1b1145")
 		)
@@ -48109,7 +48873,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 403.098 144.78 90)
 			(effects
 				(font
@@ -48196,7 +48960,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 83.312 97.79 90)
 			(effects
 				(font
@@ -48284,7 +49048,7 @@
 				(justify left)
 			)
 		)
-		(property "Footprint" ""
+		(property "Footprint" "Resistor_SMD:R_0603_1608Metric_Pad0.98x0.95mm_HandSolder"
 			(at 347.218 142.24 90)
 			(effects
 				(font
@@ -48329,6 +49093,69 @@
 				(hide yes)
 			)
 		)
+		(property "DigiKey Link" "https://www.digikey.com/short/r8130h84"
+			(at 345.44 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Part Number" "541-100GCT-ND"
+			(at 345.44 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "DigiKey Price per Unit" "0.10"
+			(at 345.44 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" "CRCW0603100RJNEA"
+			(at 345.44 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Link" "https://mou.sr/3IoWmio"
+			(at 345.44 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "71-CRCW0603J-100-E3"
+			(at 345.44 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price per Unit" "0.10"
+			(at 345.44 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "6e7883ae-cefa-484d-9e50-c829e1d78485")
 		)
@@ -48339,6 +49166,127 @@
 			(project "STAR_BMS"
 				(path "/1d46f959-5b1b-4628-8073-2d3f06ff3b38"
 					(reference "R31")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "CRF2512-FZ-R001ELF:CRF2512-FZ-R001ELF")
+		(at 468.63 261.62 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "ff540568-07a1-4107-912a-a71fa72ba7b1")
+		(property "Reference" "R40"
+			(at 468.63 247.65 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Value" "CRF2512-FZ-R001ELF"
+			(at 468.884 255.016 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify right)
+			)
+		)
+		(property "Footprint" "RESC6432X80N"
+			(at 564.82 247.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" "https://componentsearchengine.com/Datasheets/2/CRF2512-FZ-R001ELF.pdf"
+			(at 664.82 247.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Description" "Current Sense Resistors - SMD 0.001ohms 1% 75PPM"
+			(at 479.298 262.128 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Height" "0.8"
+			(at 864.82 247.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Mouser Part Number" "652-CRF2512FZR001ELF"
+			(at 964.82 247.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Bourns/CRF2512-FZ-R001ELF?qs=iHX4uCgIbgPCaKpEZKEgSg%3D%3D"
+			(at 1064.82 247.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Name" "Bourns"
+			(at 1164.82 247.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer Part Number" "CRF2512-FZ-R001ELF"
+			(at 1264.82 247.65 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(justify left top)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "c6f12f64-b570-49dd-8eab-631c5f29be15")
+		)
+		(pin "2"
+			(uuid "7f9b7296-b669-42b5-9c40-184dfd723f9c")
+		)
+		(instances
+			(project ""
+				(path "/1d46f959-5b1b-4628-8073-2d3f06ff3b38"
+					(reference "R40")
 					(unit 1)
 				)
 			)
