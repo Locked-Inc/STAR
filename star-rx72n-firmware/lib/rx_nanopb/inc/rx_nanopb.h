@@ -67,8 +67,9 @@ rx_err_t rx_nanopb_init(void);
  * @return RX_ERR_INVALID_ARG if any pointer is NULL
  * @return RX_ERR_INVALID_SIZE if encoding fails
  */
-rx_err_t rx_nanopb_encode_velocity_request(
-    const star_v1_SetVelocityRequest *msg, uint8_t *buffer, size_t *len);
+rx_err_t rx_nanopb_encode_velocity_request(const star_v1_SetVelocityRequest* msg,
+                                           uint8_t*                          buffer,
+                                           size_t*                           len);
 
 /**
  * @brief Decode SetVelocityRequest from bytes
@@ -81,8 +82,9 @@ rx_err_t rx_nanopb_encode_velocity_request(
  * @return RX_ERR_INVALID_ARG if any pointer is NULL
  * @return RX_ERR_PROTOCOL_ERROR if decoding fails
  */
-rx_err_t rx_nanopb_decode_velocity_request(const uint8_t *buffer, size_t len,
-                                           star_v1_SetVelocityRequest *msg);
+rx_err_t rx_nanopb_decode_velocity_request(const uint8_t*              buffer,
+                                           size_t                      len,
+                                           star_v1_SetVelocityRequest* msg);
 
 /* =============================================================================
  * SetVelocityResponse Encode/Decode
@@ -98,8 +100,9 @@ rx_err_t rx_nanopb_decode_velocity_request(const uint8_t *buffer, size_t len,
  *
  * @return RX_OK on success
  */
-rx_err_t rx_nanopb_encode_velocity_response(
-    const star_v1_SetVelocityResponse *msg, uint8_t *buffer, size_t *len);
+rx_err_t rx_nanopb_encode_velocity_response(const star_v1_SetVelocityResponse* msg,
+                                            uint8_t*                           buffer,
+                                            size_t*                            len);
 
 /* =============================================================================
  * EmergencyStopRequest Encode/Decode
@@ -115,8 +118,9 @@ rx_err_t rx_nanopb_encode_velocity_response(
  *
  * @return RX_OK on success
  */
-rx_err_t rx_nanopb_decode_estop_request(const uint8_t *buffer, size_t len,
-                                        star_v1_EmergencyStopRequest *msg);
+rx_err_t rx_nanopb_decode_estop_request(const uint8_t*                buffer,
+                                        size_t                        len,
+                                        star_v1_EmergencyStopRequest* msg);
 
 /**
  * @brief Encode EmergencyStopResponse to bytes
@@ -127,8 +131,9 @@ rx_err_t rx_nanopb_decode_estop_request(const uint8_t *buffer, size_t len,
  *
  * @return RX_OK on success
  */
-rx_err_t rx_nanopb_encode_estop_response(
-    const star_v1_EmergencyStopResponse *msg, uint8_t *buffer, size_t *len);
+rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* msg,
+                                         uint8_t*                             buffer,
+                                         size_t*                              len);
 
 /* =============================================================================
  * Telemetry Encode/Decode
@@ -144,8 +149,7 @@ rx_err_t rx_nanopb_encode_estop_response(
  *
  * @return RX_OK on success
  */
-rx_err_t rx_nanopb_encode_telemetry(const star_v1_TelemetryData *msg,
-                                    uint8_t *buffer, size_t *len);
+rx_err_t rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg, uint8_t* buffer, size_t* len);
 
 /* =============================================================================
  * Helper Functions
@@ -160,9 +164,10 @@ rx_err_t rx_nanopb_encode_telemetry(const star_v1_TelemetryData *msg,
  * @param[in]  right_mps Right wheel velocity (m/s)
  * @param[in]  sequence Command sequence number
  */
-void rx_nanopb_create_velocity_command(star_v1_VelocityCommand *cmd,
-                                       double left_mps, double right_mps,
-                                       uint32_t sequence);
+void rx_nanopb_create_velocity_command(star_v1_VelocityCommand* cmd,
+                                       double                   left_mps,
+                                       double                   right_mps,
+                                       uint32_t                 sequence);
 
 /**
  * @brief Create ResponseHeader with status
@@ -171,9 +176,9 @@ void rx_nanopb_create_velocity_command(star_v1_VelocityCommand *cmd,
  * @param[in]  status Response status
  * @param[in]  request_id Original request ID (can be NULL)
  */
-void rx_nanopb_create_response_header(star_v1_ResponseHeader *header,
-                                      star_v1_Status status,
-                                      const char *request_id);
+void rx_nanopb_create_response_header(star_v1_ResponseHeader* header,
+                                      star_v1_Status          status,
+                                      const char*             request_id);
 
 #ifdef __cplusplus
 }

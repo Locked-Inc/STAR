@@ -171,7 +171,7 @@ static rx_err_t impl_release_pin(void* ctx, uint8_t port, uint8_t pin)
   }
 
   /* Release the pin */
-  validator->reserved_pins[index]    = false;
+  validator->reserved_pins[index]     = false;
   validator->function_names[index][0] = '\0';
   validator->release_call_count++;
 
@@ -254,7 +254,7 @@ static rx_err_t impl_clear_all_reservations(void* ctx)
 
   /* Clear all reservations (but keep validation and call count tracking) */
   for (uint32_t i = 0; i < MOCK_PIN_VALIDATOR_MAX_PINS; i++) {
-    validator->reserved_pins[i]    = false;
+    validator->reserved_pins[i]     = false;
     validator->function_names[i][0] = '\0';
   }
 
@@ -279,7 +279,7 @@ rx_err_t mock_pin_validator_init(mock_pin_validator_t* validator)
 }
 
 rx_err_t mock_pin_validator_get_interface(rx_pin_interface_t*   iface,
-                                           mock_pin_validator_t* validator)
+                                          mock_pin_validator_t* validator)
 {
   RX_CHECK_NULL_PTR(iface, "MOCK_PIN", "Interface pointer is NULL");
   RX_CHECK_NULL_PTR(validator, "MOCK_PIN", "Validator pointer is NULL");
@@ -350,9 +350,8 @@ bool mock_pin_validator_was_reserved(mock_pin_validator_t* validator, uint8_t po
   return validator->reserved_pins[index] || (validator->function_names[index][0] != '\0');
 }
 
-const char* mock_pin_validator_get_function(mock_pin_validator_t* validator,
-                                             uint8_t               port,
-                                             uint8_t               pin)
+const char*
+mock_pin_validator_get_function(mock_pin_validator_t* validator, uint8_t port, uint8_t pin)
 {
   if (validator == NULL) {
     return NULL;

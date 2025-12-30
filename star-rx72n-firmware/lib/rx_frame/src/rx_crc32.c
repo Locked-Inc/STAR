@@ -22,8 +22,8 @@
  * December 2025
  */
 
-#include "rx_frame.h"
 #include "rx_crc_internal.h"
+#include "rx_frame.h"
 
 /* =============================================================================
  * Public API
@@ -40,9 +40,9 @@
  * @param[in] len  Data length in bytes
  * @return CRC-32 checksum (0 if data is NULL or len is 0)
  */
-uint32_t rx_crc32_ieee(const uint8_t *data, size_t len)
+uint32_t rx_crc32_ieee(const uint8_t* data, uint32_t len)
 {
-    return rx_crc32_ieee_impl(data, len);
+  return rx_crc32_ieee_impl(data, len);
 }
 
 /**
@@ -61,7 +61,7 @@ uint32_t rx_crc32_ieee(const uint8_t *data, size_t len)
  * @param[in] len  Data length in bytes
  * @return Updated CRC-32 checksum
  */
-uint32_t rx_crc32_update(uint32_t crc, const uint8_t *data, size_t len)
+uint32_t rx_crc32_update(uint32_t crc, const uint8_t* data, uint32_t len)
 {
-    return rx_crc32_update_impl(crc, data, len);
+  return rx_crc32_update_impl(crc, data, len);
 }

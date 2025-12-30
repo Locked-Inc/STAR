@@ -40,40 +40,40 @@ extern "C" {
  * @brief Frame structure constants
  */
 typedef enum {
-    k_frame_sync_word   = 0x55AA, /**< Frame sync marker */
-    k_frame_sync_size   = 2,      /**< SYNC field size */
-    k_frame_seq_size    = 2,      /**< SEQ field size */
-    k_frame_len_size    = 2,      /**< LEN field size */
-    k_frame_type_size   = 1,      /**< TYPE field size */
-    k_frame_flags_size  = 1,      /**< FLAGS field size */
-    k_frame_crc_size    = 4,      /**< CRC-32 field size */
-    k_frame_header_size = 6,      /**< SEQ+LEN+TYPE+FLAGS */
-    k_frame_max_payload = 1024,   /**< Maximum payload bytes */
-    k_frame_min_size    = 12,     /**< SYNC+Header+CRC (no payload) */
-    k_frame_max_size    = 1036,   /**< Min + MaxPayload */
+  k_frame_sync_word   = 0x55AA, /**< Frame sync marker */
+  k_frame_sync_size   = 2,      /**< SYNC field size */
+  k_frame_seq_size    = 2,      /**< SEQ field size */
+  k_frame_len_size    = 2,      /**< LEN field size */
+  k_frame_type_size   = 1,      /**< TYPE field size */
+  k_frame_flags_size  = 1,      /**< FLAGS field size */
+  k_frame_crc_size    = 4,      /**< CRC-32 field size */
+  k_frame_header_size = 6,      /**< SEQ+LEN+TYPE+FLAGS */
+  k_frame_max_payload = 1024,   /**< Maximum payload bytes */
+  k_frame_min_size    = 12,     /**< SYNC+Header+CRC (no payload) */
+  k_frame_max_size    = 1036,   /**< Min + MaxPayload */
 } rx_frame_constants_t;
 
 /**
  * @brief Frame types (matches Go FrameType)
  */
 typedef enum {
-    k_frame_type_unknown  = 0, /**< Invalid frame type */
-    k_frame_type_command  = 1, /**< Command from controller */
-    k_frame_type_response = 2, /**< Response from peripheral */
-    k_frame_type_ack      = 3, /**< Acknowledgment */
-    k_frame_type_nack     = 4, /**< Negative acknowledgment */
+  k_frame_type_unknown  = 0, /**< Invalid frame type */
+  k_frame_type_command  = 1, /**< Command from controller */
+  k_frame_type_response = 2, /**< Response from peripheral */
+  k_frame_type_ack      = 3, /**< Acknowledgment */
+  k_frame_type_nack     = 4, /**< Negative acknowledgment */
 } rx_frame_type_t;
 
 /**
  * @brief Frame flags (matches Go FrameFlags)
  */
 typedef enum {
-    k_frame_flag_none         = 0x00, /**< No flags */
-    k_frame_flag_requires_ack = 0x01, /**< Frame requires ACK */
-    k_frame_flag_retransmit   = 0x02, /**< Retransmission */
-    k_frame_flag_priority     = 0x04, /**< High priority */
-    k_frame_flag_fec_enabled  = 0x08, /**< FEC encoded payload */
-    k_frame_flag_soft_nack    = 0x10, /**< NACK with soft bits */
+  k_frame_flag_none         = 0x00, /**< No flags */
+  k_frame_flag_requires_ack = 0x01, /**< Frame requires ACK */
+  k_frame_flag_retransmit   = 0x02, /**< Retransmission */
+  k_frame_flag_priority     = 0x04, /**< High priority */
+  k_frame_flag_fec_enabled  = 0x08, /**< FEC encoded payload */
+  k_frame_flag_soft_nack    = 0x10, /**< NACK with soft bits */
 } rx_frame_flags_t;
 
 /* =============================================================================
@@ -85,33 +85,33 @@ typedef enum {
  * @brief Frame header structure
  */
 typedef struct {
-    uint16_t sequence; /**< Sequence number (big-endian on wire) */
-    uint16_t length;   /**< Payload length (big-endian on wire) */
-    uint8_t type;      /**< Frame type */
-    uint8_t flags;     /**< Frame flags */
+  uint16_t sequence; /**< Sequence number (big-endian on wire) */
+  uint16_t length;   /**< Payload length (big-endian on wire) */
+  uint8_t  type;     /**< Frame type */
+  uint8_t  flags;    /**< Frame flags */
 } rx_frame_header_t;
 
 /**
  * @brief Complete frame structure
  */
 typedef struct {
-    rx_frame_header_t header;                      /**< Frame header */
-    uint8_t payload[k_frame_max_payload];          /**< Payload buffer */
-    uint32_t crc;                                  /**< CRC-32 checksum */
+  rx_frame_header_t header;                       /**< Frame header */
+  uint8_t           payload[k_frame_max_payload]; /**< Payload buffer */
+  uint32_t          crc;                          /**< CRC-32 checksum */
 } rx_frame_t;
 
 /**
  * @brief Frame encoder handle
  */
 typedef struct {
-    uint8_t initialized; /**< Non-zero if initialized */
+  uint8_t initialized; /**< Non-zero if initialized */
 } rx_frame_encoder_t;
 
 /**
  * @brief Frame decoder handle
  */
 typedef struct {
-    uint8_t initialized; /**< Non-zero if initialized */
+  uint8_t initialized; /**< Non-zero if initialized */
 } rx_frame_decoder_t;
 
 /* =============================================================================
@@ -125,7 +125,7 @@ typedef struct {
  * @param[out] enc Pointer to encoder handle
  * @return RX_OK on success, RX_ERR_INVALID_ARG if enc is NULL
  */
-rx_err_t rx_frame_encoder_init(rx_frame_encoder_t *enc);
+rx_err_t rx_frame_encoder_init(rx_frame_encoder_t* enc);
 
 /**
  * @brief Deinitialize frame encoder
@@ -133,7 +133,7 @@ rx_err_t rx_frame_encoder_init(rx_frame_encoder_t *enc);
  * @param[in,out] enc Pointer to encoder handle
  * @return RX_OK on success
  */
-rx_err_t rx_frame_encoder_deinit(rx_frame_encoder_t *enc);
+rx_err_t rx_frame_encoder_deinit(rx_frame_encoder_t* enc);
 
 /**
  * @brief Encode frame to wire format
@@ -151,8 +151,24 @@ rx_err_t rx_frame_encoder_deinit(rx_frame_encoder_t *enc);
  * @return RX_ERR_INVALID_STATE if encoder not initialized
  * @return RX_ERR_INVALID_SIZE if payload exceeds max
  */
-rx_err_t rx_frame_encode(rx_frame_encoder_t *enc, const rx_frame_t *frame,
-                         uint8_t *output, size_t *output_len);
+rx_err_t rx_frame_encode(rx_frame_encoder_t* enc,
+                         const rx_frame_t*   frame,
+                         uint8_t*            output,
+                         uint32_t*           output_len);
+
+/* =============================================================================
+ * Utility Functions (Static Inline)
+ *
+ * NOTE: These are intentionally static inline in the header because:
+ * 1. They are trivial one-liner calculations (single arithmetic operation)
+ * 2. They may be called in performance-sensitive code paths
+ * 3. They need to be available across multiple translation units
+ * 4. Function call overhead would exceed the actual computation cost
+ *
+ * For such trivial operations, static inline is the standard C pattern and
+ * results in better performance with no binary size increase.
+ * =============================================================================
+ */
 
 /**
  * @brief Calculate encoded frame size
@@ -160,10 +176,9 @@ rx_err_t rx_frame_encode(rx_frame_encoder_t *enc, const rx_frame_t *frame,
  * @param[in] payload_len Payload length
  * @return Total frame size in bytes
  */
-static inline size_t rx_frame_encoded_size(size_t payload_len)
+static inline uint32_t rx_frame_encoded_size(uint32_t payload_len)
 {
-    return k_frame_sync_size + k_frame_header_size + payload_len +
-           k_frame_crc_size;
+  return k_frame_sync_size + k_frame_header_size + payload_len + k_frame_crc_size;
 }
 
 /* =============================================================================
@@ -177,7 +192,7 @@ static inline size_t rx_frame_encoded_size(size_t payload_len)
  * @param[out] dec Pointer to decoder handle
  * @return RX_OK on success, RX_ERR_INVALID_ARG if dec is NULL
  */
-rx_err_t rx_frame_decoder_init(rx_frame_decoder_t *dec);
+rx_err_t rx_frame_decoder_init(rx_frame_decoder_t* dec);
 
 /**
  * @brief Deinitialize frame decoder
@@ -185,7 +200,7 @@ rx_err_t rx_frame_decoder_init(rx_frame_decoder_t *dec);
  * @param[in,out] dec Pointer to decoder handle
  * @return RX_OK on success
  */
-rx_err_t rx_frame_decoder_deinit(rx_frame_decoder_t *dec);
+rx_err_t rx_frame_decoder_deinit(rx_frame_decoder_t* dec);
 
 /**
  * @brief Decode wire format to frame
@@ -204,8 +219,8 @@ rx_err_t rx_frame_decoder_deinit(rx_frame_decoder_t *dec);
  * @return RX_ERR_PROTOCOL_ERROR if SYNC word invalid
  * @return RX_ERR_CRC_MISMATCH if CRC validation fails
  */
-rx_err_t rx_frame_decode(rx_frame_decoder_t *dec, const uint8_t *data,
-                         size_t data_len, rx_frame_t *frame);
+rx_err_t
+rx_frame_decode(rx_frame_decoder_t* dec, const uint8_t* data, uint32_t data_len, rx_frame_t* frame);
 
 /* =============================================================================
  * CRC-32 Functions
@@ -222,7 +237,7 @@ rx_err_t rx_frame_decode(rx_frame_decoder_t *dec, const uint8_t *data,
  * @param[in] len Data length
  * @return CRC-32 checksum
  */
-uint32_t rx_crc32_ieee(const uint8_t *data, size_t len);
+uint32_t rx_crc32_ieee(const uint8_t* data, uint32_t len);
 
 /**
  * @brief Update CRC-32 with additional data
@@ -234,10 +249,10 @@ uint32_t rx_crc32_ieee(const uint8_t *data, size_t len);
  * @param[in] len Data length
  * @return Updated CRC-32 checksum
  */
-uint32_t rx_crc32_update(uint32_t crc, const uint8_t *data, size_t len);
+uint32_t rx_crc32_update(uint32_t crc, const uint8_t* data, uint32_t len);
 
 /* =============================================================================
- * Utility Functions
+ * Frame Helper Functions
  * =============================================================================
  */
 
@@ -248,7 +263,7 @@ uint32_t rx_crc32_update(uint32_t crc, const uint8_t *data, size_t len);
  * @param[in]  sequence Sequence number to acknowledge
  * @return RX_OK on success
  */
-rx_err_t rx_frame_create_ack(rx_frame_t *frame, uint16_t sequence);
+rx_err_t rx_frame_create_ack(rx_frame_t* frame, uint16_t sequence);
 
 /**
  * @brief Create NACK frame for given sequence
@@ -258,18 +273,19 @@ rx_err_t rx_frame_create_ack(rx_frame_t *frame, uint16_t sequence);
  * @param[in]  flags Additional flags (e.g., k_frame_flag_soft_nack)
  * @return RX_OK on success
  */
-rx_err_t rx_frame_create_nack(rx_frame_t *frame, uint16_t sequence,
-                              uint8_t flags);
+rx_err_t rx_frame_create_nack(rx_frame_t* frame, uint16_t sequence, uint8_t flags);
 
 /**
  * @brief Check if frame type is valid
+ *
+ * Static inline for same reasons as rx_frame_encoded_size() above.
  *
  * @param[in] type Frame type to check
  * @return true if valid, false otherwise
  */
 static inline bool rx_frame_type_valid(uint8_t type)
 {
-    return (type >= k_frame_type_command && type <= k_frame_type_nack);
+  return (type >= k_frame_type_command && type <= k_frame_type_nack);
 }
 
 #ifdef __cplusplus
