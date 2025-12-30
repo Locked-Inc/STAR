@@ -1773,14 +1773,14 @@
         },
         {
           "group_by": false,
-          "label": "Manufacturer_Name",
-          "name": "Manufacturer_Name",
+          "label": "Manufacturer Name",
+          "name": "Manufacturer Name",
           "show": false
         },
         {
           "group_by": false,
-          "label": "Manufacturer_Part_Number",
-          "name": "Manufacturer_Part_Number",
+          "label": "Manufacturer Part Number",
+          "name": "Manufacturer Part Number",
           "show": false
         },
         {
