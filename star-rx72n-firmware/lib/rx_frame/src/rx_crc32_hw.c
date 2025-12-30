@@ -41,16 +41,16 @@ static bool s_crc_initialized = false;
 
 rx_err_t rx_crc_init(void)
 {
-    if (s_crc_initialized) {
-        return RX_OK;
-    }
+  if (s_crc_initialized) {
+    return RX_OK;
+  }
 
-    /* Enable CRC module by clearing module stop bit */
-    SYSTEM.PRCR = 0xA50B;                     /* Unlock protection for MSTPCR */
-    SYSTEM.MSTPCRB &= ~(1UL << MSTPB_CRC);    /* Clear bit 23 to enable CRC */
-    SYSTEM.PRCR = 0xA500;                     /* Lock protection */
+  /* Enable CRC module by clearing module stop bit */
+  SYSTEM.PRCR = 0xA50B;                  /* Unlock protection for MSTPCR */
+  SYSTEM.MSTPCRB &= ~(1UL << MSTPB_CRC); /* Clear bit 23 to enable CRC */
+  SYSTEM.PRCR = 0xA500;                  /* Lock protection */
 
-    /*
+  /*
      * Configure CRC peripheral for IEEE 802.3:
      * - GPS = 0x03 (CRC-32)
      * - LMS = 1 (LSB first / reflected mode for IEEE 802.3 compatibility)
@@ -58,15 +58,15 @@ rx_err_t rx_crc_init(void)
      * The RX72N CRC calculator in this configuration produces output
      * bit-exact with Go's crc32.ChecksumIEEE() when properly initialized.
      */
-    CRC.CRCCR = k_crc_crccr_lms | k_crc_crccr_gps_crc32;
+  CRC.CRCCR = k_crc_crccr_lms | k_crc_crccr_gps_crc32;
 
-    s_crc_initialized = true;
-    return RX_OK;
+  s_crc_initialized = true;
+  return RX_OK;
 }
 
 rx_err_t rx_crc_deinit(void)
 {
-    /*
+  /*
      * Note: We intentionally do NOT disable the CRC module after initialization.
      *
      * Rationale:
@@ -81,54 +81,55 @@ rx_err_t rx_crc_deinit(void)
      * s_crc_initialized = false;
      */
 
-    return RX_OK;
+  return RX_OK;
 }
 
-uint32_t rx_crc32_ieee_impl(const uint8_t *data, size_t len)
+uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
 {
-    if (data == NULL || len == 0) {
-        return 0;
-    }
+  if (data == NULL || len == 0) {
+    return 0;
+  }
 
-    /* Ensure CRC module is initialized */
-    if (!s_crc_initialized) {
-        rx_crc_init();
-    }
+  /* Ensure CRC module is initialized */
+  if (!s_crc_initialized) {
+    rx_crc_init();
+  }
 
-    /*
+  /*
      * Clear the CRC data output register to start fresh calculation.
      * Setting DORCLR bit resets the internal CRC state to the initial value.
      *
      * For IEEE 802.3, the initial value is 0xFFFFFFFF. The RX72N hardware
      * handles this automatically when DORCLR is set.
      */
-    CRC.CRCCR |= k_crc_crccr_dorclr;
+  CRC.CRCCR |= k_crc_crccr_dorclr;
 
-    /*
+  /*
      * Feed data bytes to the CRC calculator.
      *
      * The hardware processes each byte through the CRC polynomial.
-     * Using byte-wise input for flexibility with unaligned data.
+     * We write bytes via pointer cast to the CRCDIR register address.
      *
-     * Note: For large aligned buffers, 32-bit word writes to CRCDIR.LONG
-     * could be faster, but byte-wise ensures correctness for all cases.
+     * Note: For large aligned buffers, 32-bit word writes could be faster,
+     * but byte-wise ensures correctness for all cases.
      */
-    for (size_t i = 0; i < len; i++) {
-        CRC.CRCDIR.BYTE = data[i];
-    }
+  volatile uint8_t* crcdir_byte = (volatile uint8_t*)&CRC.CRCDIR;
+  for (uint32_t i = 0; i < len; i++) {
+    *crcdir_byte = data[i];
+  }
 
-    /*
+  /*
      * Read result and apply IEEE 802.3 finalization.
      *
      * IEEE 802.3 requires XOR with 0xFFFFFFFF after calculation.
      * The hardware outputs the raw CRC value, so we apply the final XOR.
      */
-    return CRC.CRCDOR.LONG ^ 0xFFFFFFFF;
+  return CRC.CRCDOR ^ 0xFFFFFFFF;
 }
 
-uint32_t rx_crc32_update_impl(uint32_t crc, const uint8_t *data, size_t len)
+uint32_t rx_crc32_update_impl(uint32_t crc, const uint8_t* data, uint32_t len)
 {
-    /*
+  /*
      * Use software fallback for incremental CRC.
      *
      * Rationale:
@@ -147,7 +148,7 @@ uint32_t rx_crc32_update_impl(uint32_t crc, const uint8_t *data, size_t len)
      * Performance note: Incremental CRC is typically used for small chunks
      * in streaming scenarios, where the software overhead is acceptable.
      */
-    return rx_crc32_update_sw(crc, data, len);
+  return rx_crc32_update_sw(crc, data, len);
 }
 
 #endif /* RX_CRC32_USE_HARDWARE */

@@ -310,8 +310,7 @@ typedef struct {
  *
  * @return RX_OK on success, error code on failure
  */
-__attribute__((unused))
-static rx_err_t gpio_write_command_execute(rx_bus_config_t* bus, void* data)
+__attribute__((unused)) static rx_err_t gpio_write_command_execute(rx_bus_config_t* bus, void* data)
 {
   gpio_write_command_data_t* write_data = (gpio_write_command_data_t*)data;
 
@@ -362,8 +361,7 @@ typedef struct {
  *
  * @return RX_OK on success, error code on failure
  */
-__attribute__((unused))
-static rx_err_t gpio_read_command_execute(rx_bus_config_t* bus, void* data)
+__attribute__((unused)) static rx_err_t gpio_read_command_execute(rx_bus_config_t* bus, void* data)
 {
   gpio_read_command_data_t* read_data = (gpio_read_command_data_t*)data;
 

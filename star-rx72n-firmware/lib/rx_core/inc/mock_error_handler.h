@@ -199,7 +199,8 @@ rx_err_t mock_error_handler_init(mock_error_handler_t* handler, uint32_t max_err
  *         RX_ERR_NULL_POINTER if either parameter is NULL,
  *         RX_ERR_INVALID_STATE if handler not initialized
  */
-rx_err_t mock_error_handler_get_interface(rx_error_interface_t* iface, mock_error_handler_t* handler);
+rx_err_t mock_error_handler_get_interface(rx_error_interface_t* iface,
+                                          mock_error_handler_t* handler);
 
 /* =============================================================================
  * Testing Helper Functions
@@ -222,9 +223,9 @@ rx_err_t mock_error_handler_get_interface(rx_error_interface_t* iface, mock_erro
  *       Do not modify or free them. Copy if needed.
  */
 rx_err_t mock_error_handler_get_last_error(mock_error_handler_t* handler,
-                                            rx_err_t*             out_error,
-                                            const char**          out_component,
-                                            const char**          out_message);
+                                           rx_err_t*             out_error,
+                                           const char**          out_component,
+                                           const char**          out_message);
 
 /**
  * @brief Get error at specific index (0 = oldest, count-1 = newest)
@@ -240,10 +241,10 @@ rx_err_t mock_error_handler_get_last_error(mock_error_handler_t* handler,
  *         RX_ERR_INVALID_ARG if index out of range
  */
 rx_err_t mock_error_handler_get_error_at(mock_error_handler_t* handler,
-                                          uint32_t              index,
-                                          rx_err_t*             out_error,
-                                          const char**          out_component,
-                                          const char**          out_message);
+                                         uint32_t              index,
+                                         rx_err_t*             out_error,
+                                         const char**          out_component,
+                                         const char**          out_message);
 
 /**
  * @brief Check if a specific error was recorded
@@ -255,8 +256,8 @@ rx_err_t mock_error_handler_get_error_at(mock_error_handler_t* handler,
  * @return true if error was recorded, false otherwise
  */
 bool mock_error_handler_has_error(mock_error_handler_t* handler,
-                                   rx_err_t              error_code,
-                                   const char*           component);
+                                  rx_err_t              error_code,
+                                  const char*           component);
 
 /**
  * @brief Clear all recorded errors

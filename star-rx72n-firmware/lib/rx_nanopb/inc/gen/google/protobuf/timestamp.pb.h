@@ -14,12 +14,12 @@
    or calendar, represented as seconds and fractions of seconds at
    nanosecond resolution in UTC Epoch time. */
 typedef struct _google_protobuf_Timestamp {
-    /* Represents seconds of UTC time since Unix epoch
+  /* Represents seconds of UTC time since Unix epoch
        1970-01-01T00:00:00Z. Must be from 0001-01-01T00:00:00Z to
        9999-12-31T23:59:59Z inclusive. */
-    int64_t seconds;
-    /* Non-negative fractions of a second at nanosecond resolution. */
-    int32_t nanos;
+  int64_t seconds;
+  /* Non-negative fractions of a second at nanosecond resolution. */
+  int32_t nanos;
 } google_protobuf_Timestamp;
 
 #ifdef __cplusplus
@@ -27,19 +27,19 @@ extern "C" {
 #endif
 
 /* Initializer values for message structs */
-#define google_protobuf_Timestamp_init_default   {0, 0}
-#define google_protobuf_Timestamp_init_zero      {0, 0}
+#define google_protobuf_Timestamp_init_default {0, 0}
+#define google_protobuf_Timestamp_init_zero    {0, 0}
 
 /* Field tags (for use in manual encoding/decoding) */
-#define google_protobuf_Timestamp_seconds_tag    1
-#define google_protobuf_Timestamp_nanos_tag      2
+#define google_protobuf_Timestamp_seconds_tag 1
+#define google_protobuf_Timestamp_nanos_tag   2
 
 /* Struct field encoding specification for nanopb */
-#define google_protobuf_Timestamp_FIELDLIST(X, a) \
-X(a, STATIC,   SINGULAR, INT64,    seconds,           1) \
-X(a, STATIC,   SINGULAR, INT32,    nanos,             2)
+#define google_protobuf_Timestamp_FIELDLIST(X, a)                                                  \
+  X(a, STATIC, SINGULAR, INT64, seconds, 1)                                                        \
+  X(a, STATIC, SINGULAR, INT32, nanos, 2)
 #define google_protobuf_Timestamp_CALLBACK NULL
-#define google_protobuf_Timestamp_DEFAULT NULL
+#define google_protobuf_Timestamp_DEFAULT  NULL
 
 extern const pb_msgdesc_t google_protobuf_Timestamp_msg;
 
@@ -47,7 +47,7 @@ extern const pb_msgdesc_t google_protobuf_Timestamp_msg;
 #define google_protobuf_Timestamp_fields &google_protobuf_Timestamp_msg
 
 /* Maximum encoded size of messages (where known) */
-#define google_protobuf_Timestamp_size           22
+#define google_protobuf_Timestamp_size 22
 
 #ifdef __cplusplus
 } /* extern "C" */

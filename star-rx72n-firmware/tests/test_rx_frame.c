@@ -74,7 +74,7 @@ void test_decoder_init_success(void) {
 void test_encode_null_args(void) {
     rx_frame_t frame = {0};
     uint8_t buffer[64];
-    size_t len;
+    uint32_t len;
 
     TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG,
                       rx_frame_encode(NULL, &frame, buffer, &len));
@@ -90,7 +90,7 @@ void test_encode_uninitialized(void) {
     rx_frame_encoder_t enc = {0};
     rx_frame_t frame       = {0};
     uint8_t buffer[64];
-    size_t len;
+    uint32_t len;
 
     rx_err_t err = rx_frame_encode(&enc, &frame, buffer, &len);
     TEST_ASSERT_EQUAL(RX_ERR_INVALID_STATE, err);
@@ -101,7 +101,7 @@ void test_encode_payload_too_large(void) {
     frame.header.length =
         k_frame_max_payload + 1; /* 1025 bytes (exceeds max) */
     uint8_t buffer[2048];
-    size_t len;
+    uint32_t len;
 
     rx_err_t err = rx_frame_encode(&s_encoder, &frame, buffer, &len);
     TEST_ASSERT_EQUAL(RX_ERR_INVALID_SIZE, err);
@@ -115,7 +115,7 @@ void test_encode_empty_frame(void) {
     frame.header.flags    = k_frame_flag_none;
 
     uint8_t buffer[64];
-    size_t len;
+    uint32_t len;
 
     rx_err_t err = rx_frame_encode(&s_encoder, &frame, buffer, &len);
     TEST_ASSERT_EQUAL(RX_OK, err);
@@ -149,7 +149,7 @@ void test_encode_with_payload(void) {
     memcpy(frame.payload, "TEST", 4);
 
     uint8_t buffer[64];
-    size_t len;
+    uint32_t len;
 
     rx_err_t err = rx_frame_encode(&s_encoder, &frame, buffer, &len);
     TEST_ASSERT_EQUAL(RX_OK, err);
@@ -242,7 +242,7 @@ void test_roundtrip_empty_frame(void) {
     original.header.flags    = k_frame_flag_none;
 
     uint8_t buffer[64];
-    size_t len;
+    uint32_t len;
     TEST_ASSERT_EQUAL(RX_OK,
                       rx_frame_encode(&s_encoder, &original, buffer, &len));
 
@@ -265,7 +265,7 @@ void test_roundtrip_with_payload(void) {
     memcpy(original.payload, "DEADBEEF", 8);
 
     uint8_t buffer[64];
-    size_t len;
+    uint32_t len;
     TEST_ASSERT_EQUAL(RX_OK,
                       rx_frame_encode(&s_encoder, &original, buffer, &len));
 
@@ -290,7 +290,7 @@ void test_roundtrip_max_sequence(void) {
     original.payload[1]      = 0x34;
 
     uint8_t buffer[64];
-    size_t len;
+    uint32_t len;
     TEST_ASSERT_EQUAL(RX_OK,
                       rx_frame_encode(&s_encoder, &original, buffer, &len));
 
@@ -314,7 +314,7 @@ void test_roundtrip_large_payload(void) {
     }
 
     uint8_t buffer[512];
-    size_t len;
+    uint32_t len;
     TEST_ASSERT_EQUAL(RX_OK,
                       rx_frame_encode(&s_encoder, &original, buffer, &len));
     TEST_ASSERT_EQUAL(12 + 256, len);

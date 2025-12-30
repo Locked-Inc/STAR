@@ -43,11 +43,11 @@ extern "C" {
  * @brief SPI communication parameters
  */
 typedef enum {
-    k_spi_comm_default_channel   = 0,    /**< Default RSPI channel */
-    k_spi_comm_default_mode      = 0,    /**< SPI mode 0 (CPOL=0, CPHA=0) */
-    k_spi_comm_rx_buffer_size    = 2048, /**< RX staging buffer size */
-    k_spi_comm_tx_buffer_size    = 2048, /**< TX staging buffer size */
-    k_spi_comm_default_timeout   = 1000, /**< Default timeout in ms */
+  k_spi_comm_default_channel = 0,    /**< Default RSPI channel */
+  k_spi_comm_default_mode    = 0,    /**< SPI mode 0 (CPOL=0, CPHA=0) */
+  k_spi_comm_rx_buffer_size  = 2048, /**< RX staging buffer size */
+  k_spi_comm_tx_buffer_size  = 2048, /**< TX staging buffer size */
+  k_spi_comm_default_timeout = 1000, /**< Default timeout in ms */
 } rx_spi_comm_constants_t;
 
 /* =============================================================================
@@ -62,24 +62,24 @@ typedef enum {
  * sequence tracking, and staging buffers.
  */
 typedef struct {
-    rx_frame_encoder_t encoder;                        /**< Frame encoder */
-    rx_frame_decoder_t decoder;                        /**< Frame decoder */
-    uint8_t rx_buffer[k_spi_comm_rx_buffer_size];      /**< RX staging buffer */
-    uint8_t tx_buffer[k_spi_comm_tx_buffer_size];      /**< TX staging buffer */
-    uint16_t tx_sequence;                              /**< TX sequence counter */
-    uint16_t rx_sequence;                              /**< Expected RX sequence */
-    uint8_t channel;                                   /**< RSPI channel */
-    uint8_t fec_enabled;                               /**< FEC enabled flag */
-    uint8_t initialized;                               /**< Init flag */
+  rx_frame_encoder_t encoder;                              /**< Frame encoder */
+  rx_frame_decoder_t decoder;                              /**< Frame decoder */
+  uint8_t            rx_buffer[k_spi_comm_rx_buffer_size]; /**< RX staging buffer */
+  uint8_t            tx_buffer[k_spi_comm_tx_buffer_size]; /**< TX staging buffer */
+  uint16_t           tx_sequence;                          /**< TX sequence counter */
+  uint16_t           rx_sequence;                          /**< Expected RX sequence */
+  uint8_t            channel;                              /**< RSPI channel */
+  uint8_t            fec_enabled;                          /**< FEC enabled flag */
+  uint8_t            initialized;                          /**< Init flag */
 } rx_spi_comm_handle_t;
 
 /**
  * @brief SPI communication configuration
  */
 typedef struct {
-    uint8_t channel;     /**< RSPI channel (0-2, default 0) */
-    uint8_t spi_mode;    /**< SPI mode (0-3, default 0) */
-    uint8_t fec_enabled; /**< Enable FEC encoding (0 = disabled) */
+  uint8_t channel;     /**< RSPI channel (0-2, default 0) */
+  uint8_t spi_mode;    /**< SPI mode (0-3, default 0) */
+  uint8_t fec_enabled; /**< Enable FEC encoding (0 = disabled) */
 } rx_spi_comm_config_t;
 
 /* =============================================================================
@@ -99,8 +99,7 @@ typedef struct {
  * @return RX_OK on success
  * @return RX_ERR_INVALID_ARG if handle is NULL
  */
-rx_err_t rx_spi_comm_init(rx_spi_comm_handle_t *handle,
-                          const rx_spi_comm_config_t *config);
+rx_err_t rx_spi_comm_init(rx_spi_comm_handle_t* handle, const rx_spi_comm_config_t* config);
 
 /**
  * @brief Deinitialize SPI communication handle
@@ -108,7 +107,7 @@ rx_err_t rx_spi_comm_init(rx_spi_comm_handle_t *handle,
  * @param[in,out] handle Pointer to handle
  * @return RX_OK on success
  */
-rx_err_t rx_spi_comm_deinit(rx_spi_comm_handle_t *handle);
+rx_err_t rx_spi_comm_deinit(rx_spi_comm_handle_t* handle);
 
 /* =============================================================================
  * Send API
@@ -132,9 +131,11 @@ rx_err_t rx_spi_comm_deinit(rx_spi_comm_handle_t *handle);
  * @return RX_ERR_INVALID_STATE if not initialized
  * @return RX_ERR_INVALID_SIZE if payload exceeds maximum
  */
-rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t *handle, rx_frame_type_t type,
-                          uint8_t flags, const uint8_t *payload,
-                          size_t payload_len);
+rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
+                          rx_frame_type_t       type,
+                          uint8_t               flags,
+                          const uint8_t*        payload,
+                          size_t                payload_len);
 
 /**
  * @brief Send ACK for received frame
@@ -144,7 +145,7 @@ rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t *handle, rx_frame_type_t type,
  *
  * @return RX_OK on success
  */
-rx_err_t rx_spi_comm_send_ack(rx_spi_comm_handle_t *handle, uint16_t sequence);
+rx_err_t rx_spi_comm_send_ack(rx_spi_comm_handle_t* handle, uint16_t sequence);
 
 /**
  * @brief Send NACK for received frame
@@ -155,8 +156,7 @@ rx_err_t rx_spi_comm_send_ack(rx_spi_comm_handle_t *handle, uint16_t sequence);
  *
  * @return RX_OK on success
  */
-rx_err_t rx_spi_comm_send_nack(rx_spi_comm_handle_t *handle, uint16_t sequence,
-                               uint8_t flags);
+rx_err_t rx_spi_comm_send_nack(rx_spi_comm_handle_t* handle, uint16_t sequence, uint8_t flags);
 
 /* =============================================================================
  * Receive API
@@ -180,8 +180,7 @@ rx_err_t rx_spi_comm_send_nack(rx_spi_comm_handle_t *handle, uint16_t sequence,
  * @return RX_ERR_CRC_MISMATCH if CRC validation fails
  * @return RX_ERR_PROTOCOL_ERROR if frame format invalid
  */
-rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t *handle, rx_frame_t *frame,
-                             uint32_t timeout_ms);
+rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, uint32_t timeout_ms);
 
 /**
  * @brief Check if data is available for reading
@@ -191,8 +190,7 @@ rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t *handle, rx_frame_t *frame,
  *
  * @return RX_OK on success
  */
-rx_err_t rx_spi_comm_data_available(rx_spi_comm_handle_t *handle,
-                                    bool *available);
+rx_err_t rx_spi_comm_data_available(rx_spi_comm_handle_t* handle, bool* available);
 
 /* =============================================================================
  * Utility Functions
@@ -204,7 +202,7 @@ rx_err_t rx_spi_comm_data_available(rx_spi_comm_handle_t *handle,
  *
  * @param[in,out] handle Pointer to handle
  */
-void rx_spi_comm_reset_sequence(rx_spi_comm_handle_t *handle);
+void rx_spi_comm_reset_sequence(rx_spi_comm_handle_t* handle);
 
 /**
  * @brief Get current TX sequence number
@@ -212,7 +210,7 @@ void rx_spi_comm_reset_sequence(rx_spi_comm_handle_t *handle);
  * @param[in] handle Pointer to handle
  * @return Current TX sequence number
  */
-uint16_t rx_spi_comm_get_tx_sequence(const rx_spi_comm_handle_t *handle);
+uint16_t rx_spi_comm_get_tx_sequence(const rx_spi_comm_handle_t* handle);
 
 /**
  * @brief Get expected RX sequence number
@@ -220,7 +218,7 @@ uint16_t rx_spi_comm_get_tx_sequence(const rx_spi_comm_handle_t *handle);
  * @param[in] handle Pointer to handle
  * @return Expected RX sequence number
  */
-uint16_t rx_spi_comm_get_rx_sequence(const rx_spi_comm_handle_t *handle);
+uint16_t rx_spi_comm_get_rx_sequence(const rx_spi_comm_handle_t* handle);
 
 #ifdef __cplusplus
 }
