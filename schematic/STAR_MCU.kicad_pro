@@ -1779,12 +1779,6 @@
         },
         {
           "group_by": false,
-          "label": "Manufacturer Part Number",
-          "name": "Manufacturer Part Number",
-          "show": false
-        },
-        {
-          "group_by": false,
           "label": "Mouser Link",
           "name": "Mouser Link",
           "show": true
@@ -1937,6 +1931,12 @@
           "group_by": false,
           "label": "Manufacturer",
           "name": "Manufacturer",
+          "show": false
+        },
+        {
+          "group_by": false,
+          "label": "Manufactaurer Part Number",
+          "name": "Manufactaurer Part Number",
           "show": false
         }
       ],
