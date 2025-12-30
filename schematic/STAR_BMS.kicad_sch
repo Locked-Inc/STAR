@@ -86,7 +86,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Name" "Phoenix Contact"
+			(property "Manufacturer Name" "Phoenix Contact"
 				(at 21.59 -694.92 0)
 				(effects
 					(font
@@ -96,7 +96,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Part_Number" "1017491"
+			(property "Manufacturer Part Number" "1017491"
 				(at 21.59 -794.92 0)
 				(effects
 					(font
@@ -280,7 +280,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Name" "onsemi"
+			(property "Manufacturer Name" "onsemi"
 				(at 11.43 -698.73 0)
 				(effects
 					(font
@@ -290,7 +290,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Part_Number" "2N7002K"
+			(property "Manufacturer Part Number" "2N7002K"
 				(at 11.43 -798.73 0)
 				(effects
 					(font
@@ -920,7 +920,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Name" "Wurth Elektronik"
+			(property "Manufacturer Name" "Wurth Elektronik"
 				(at 26.67 -694.92 0)
 				(effects
 					(font
@@ -930,7 +930,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Part_Number" "694106301002"
+			(property "Manufacturer Part Number" "694106301002"
 				(at 26.67 -794.92 0)
 				(effects
 					(font
@@ -1096,7 +1096,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Name" "Wurth Elektronik"
+			(property "Manufacturer Name" "Wurth Elektronik"
 				(at 16.51 -696.19 0)
 				(effects
 					(font
@@ -1106,7 +1106,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Part_Number" "74437349033"
+			(property "Manufacturer Part Number" "74437349033"
 				(at 16.51 -796.19 0)
 				(effects
 					(font
@@ -1293,7 +1293,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Name" "Wurth Elektronik"
+			(property "Manufacturer Name" "Wurth Elektronik"
 				(at 13.97 -696.19 0)
 				(effects
 					(font
@@ -1303,7 +1303,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Part_Number" "82306050029"
+			(property "Manufacturer Part Number" "82306050029"
 				(at 13.97 -796.19 0)
 				(effects
 					(font
@@ -1484,7 +1484,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Name" "JST (JAPAN SOLDERLESS TERMINALS)"
+			(property "Manufacturer Name" "JST (JAPAN SOLDERLESS TERMINALS)"
 				(at 16.51 -694.92 0)
 				(effects
 					(font
@@ -1494,7 +1494,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Part_Number" "B3B-XH-A(LF)(SN)"
+			(property "Manufacturer Part Number" "B3B-XH-A(LF)(SN)"
 				(at 16.51 -794.92 0)
 				(effects
 					(font
@@ -1657,7 +1657,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Name" "onsemi"
+			(property "Manufacturer Name" "onsemi"
 				(at 12.7 -693.65 0)
 				(effects
 					(font
@@ -1667,7 +1667,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Part_Number" "BAT54HT1G"
+			(property "Manufacturer Part Number" "BAT54HT1G"
 				(at 12.7 -793.65 0)
 				(effects
 					(font
@@ -1839,7 +1839,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Name" "onsemi"
+			(property "Manufacturer Name" "onsemi"
 				(at 12.7 -693.65 0)
 				(effects
 					(font
@@ -1849,7 +1849,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Part_Number" "BAT54HT1G"
+			(property "Manufacturer Part Number" "BAT54HT1G"
 				(at 12.7 -793.65 0)
 				(effects
 					(font
@@ -2018,7 +2018,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Name" "Texas Instruments"
+			(property "Manufacturer Name" "Texas Instruments"
 				(at 26.67 -684.76 0)
 				(effects
 					(font
@@ -2028,7 +2028,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Part_Number" "BQ24600RVAT"
+			(property "Manufacturer Part Number" "BQ24600RVAT"
 				(at 26.67 -784.76 0)
 				(effects
 					(font
@@ -2440,7 +2440,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Name" "Texas Instruments"
+			(property "Manufacturer Name" "Texas Instruments"
 				(at 21.59 -694.92 0)
 				(effects
 					(font
@@ -2450,7 +2450,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Part_Number" "BQ296103DSGR"
+			(property "Manufacturer Part Number" "BQ296103DSGR"
 				(at 21.59 -794.92 0)
 				(effects
 					(font
@@ -2718,7 +2718,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Name" "Texas Instruments"
+			(property "Manufacturer Name" "Texas Instruments"
 				(at 31.75 -687.3 0)
 				(effects
 					(font
@@ -2728,7 +2728,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Part_Number" "BQ4050RSMR"
+			(property "Manufacturer Part Number" "BQ4050RSMR"
 				(at 31.75 -787.3 0)
 				(effects
 					(font
@@ -3434,7 +3434,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Name" "Diodes Incorporated"
+			(property "Manufacturer Name" "Diodes Incorporated"
 				(at 10.16 -693.65 0)
 				(effects
 					(font
@@ -3444,7 +3444,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Part_Number" "BZT52C8V2T-7"
+			(property "Manufacturer Part Number" "BZT52C8V2T-7"
 				(at 10.16 -793.65 0)
 				(effects
 					(font
@@ -3616,7 +3616,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Name" "Bourns"
+			(property "Manufacturer Name" "Bourns"
 				(at 13.97 -696.19 0)
 				(effects
 					(font
@@ -3626,7 +3626,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Part_Number" "CRF2512-FZ-R001ELF"
+			(property "Manufacturer Part Number" "CRF2512-FZ-R001ELF"
 				(at 13.97 -796.19 0)
 				(effects
 					(font
@@ -4116,7 +4116,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Name" "Diodes Incorporated"
+			(property "Manufacturer Name" "Diodes Incorporated"
 				(at 11.43 -698.73 0)
 				(effects
 					(font
@@ -4126,7 +4126,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Part_Number" "DMN3042L-7"
+			(property "Manufacturer Part Number" "DMN3042L-7"
 				(at 11.43 -798.73 0)
 				(effects
 					(font
@@ -4987,7 +4987,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Name" "onsemi"
+			(property "Manufacturer Name" "onsemi"
 				(at 11.43 -698.73 0)
 				(effects
 					(font
@@ -4997,7 +4997,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Part_Number" "FDN358P"
+			(property "Manufacturer Part Number" "FDN358P"
 				(at 11.43 -798.73 0)
 				(effects
 					(font
@@ -5540,7 +5540,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Name" "ALPS Electric"
+			(property "Manufacturer Name" "ALPS Electric"
 				(at 16.51 -694.92 0)
 				(effects
 					(font
@@ -5550,7 +5550,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Part_Number" "SKRPACE010"
+			(property "Manufacturer Part Number" "SKRPACE010"
 				(at 16.51 -794.92 0)
 				(effects
 					(font
@@ -5728,7 +5728,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Name" "Toshiba"
+			(property "Manufacturer Name" "Toshiba"
 				(at 21.59 -694.92 0)
 				(effects
 					(font
@@ -5738,7 +5738,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Part_Number" "SSM6J507NU,LF"
+			(property "Manufacturer Part Number" "SSM6J507NU,LF"
 				(at 21.59 -794.92 0)
 				(effects
 					(font
@@ -6155,7 +6155,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Name" "Vishay"
+			(property "Manufacturer Name" "Vishay"
 				(at 13.97 -696.19 0)
 				(effects
 					(font
@@ -6165,7 +6165,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Part_Number" "TFPT1206L1002JV"
+			(property "Manufacturer Part Number" "TFPT1206L1002JV"
 				(at 13.97 -796.19 0)
 				(effects
 					(font
@@ -6307,7 +6307,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Name" "Toshiba"
+			(property "Manufacturer Name" "Toshiba"
 				(at 21.59 -694.92 0)
 				(effects
 					(font
@@ -6317,7 +6317,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Part_Number" "TPHR6503PL1,LQ"
+			(property "Manufacturer Part Number" "TPHR6503PL1,LQ"
 				(at 21.59 -794.92 0)
 				(effects
 					(font
@@ -6750,7 +6750,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Name" "Toshiba"
+			(property "Manufacturer Name" "Toshiba"
 				(at 21.59 -694.92 0)
 				(effects
 					(font
@@ -6760,7 +6760,7 @@
 					(hide yes)
 				)
 			)
-			(property "Manufacturer_Part_Number" "TPHR6503PL1,LQ"
+			(property "Manufacturer Part Number" "TPHR6503PL1,LQ"
 				(at 21.59 -794.92 0)
 				(effects
 					(font
@@ -14377,7 +14377,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" " SML-D12M1WT86 "
+		(property "Manufacturer Part Number" "SML-D12M1WT86"
 			(at 306.07 257.81 0)
 			(effects
 				(font
@@ -14594,7 +14594,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Texas Instruments"
+		(property "Manufacturer Name" "Texas Instruments"
 			(at 416.56 908.28 0)
 			(effects
 				(font
@@ -14604,7 +14604,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "BQ4050RSMR"
+		(property "Manufacturer Part Number" "BQ4050RSMR"
 			(at 416.56 1008.28 0)
 			(effects
 				(font
@@ -14875,7 +14875,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "onsemi"
+		(property "Manufacturer Name" "onsemi"
 			(at 171.45 -600.94 0)
 			(effects
 				(font
@@ -14885,7 +14885,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "BAT54HT1G"
+		(property "Manufacturer Part Number" "BAT54HT1G"
 			(at 171.45 -700.94 0)
 			(effects
 				(font
@@ -14995,7 +14995,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "ALPS Electric"
+		(property "Manufacturer Name" "ALPS Electric"
 			(at 391.16 955.27 0)
 			(effects
 				(font
@@ -15005,7 +15005,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "SKRPACE010"
+		(property "Manufacturer Part Number" "SKRPACE010"
 			(at 391.16 1055.27 0)
 			(effects
 				(font
@@ -15175,7 +15175,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "onsemi"
+		(property "Manufacturer Name" "onsemi"
 			(at -343.13 99.06 0)
 			(effects
 				(font
@@ -15185,7 +15185,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "FDN358P"
+		(property "Manufacturer Part Number" "FDN358P"
 			(at -443.13 99.06 0)
 			(effects
 				(font
@@ -16391,7 +16391,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" " DDZ9690-7"
+		(property "Manufacturer Part Number" "DDZ9690-7"
 			(at 377.19 280.67 90)
 			(effects
 				(font
@@ -16536,7 +16536,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Phoenix Contact"
+		(property "Manufacturer Name" "Phoenix Contact"
 			(at 101.6 896.85 0)
 			(effects
 				(font
@@ -16546,7 +16546,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "1017491"
+		(property "Manufacturer Part Number" "1017491"
 			(at 101.6 996.85 0)
 			(effects
 				(font
@@ -17469,7 +17469,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Wurth Elektronik"
+		(property "Manufacturer Name" "Wurth Elektronik"
 			(at 72.39 781.28 0)
 			(effects
 				(font
@@ -17479,7 +17479,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "694106301002"
+		(property "Manufacturer Part Number" "694106301002"
 			(at 72.39 881.28 0)
 			(effects
 				(font
@@ -18932,7 +18932,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "JST (JAPAN SOLDERLESS TERMINALS)"
+		(property "Manufacturer Name" "JST (JAPAN SOLDERLESS TERMINALS)"
 			(at 177.8 922.25 0)
 			(effects
 				(font
@@ -18942,7 +18942,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "B3B-XH-A(LF)(SN)"
+		(property "Manufacturer Part Number" "B3B-XH-A(LF)(SN)"
 			(at 177.8 1022.25 0)
 			(effects
 				(font
@@ -19671,7 +19671,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" " SML-D12M1WT86 "
+		(property "Manufacturer Part Number" "SML-D12M1WT86"
 			(at 300.99 254 0)
 			(effects
 				(font
@@ -22343,7 +22343,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" " SML-D12M1WT86 "
+		(property "Manufacturer Part Number" "SML-D12M1WT86"
 			(at 311.15 247.65 0)
 			(effects
 				(font
@@ -22554,7 +22554,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Wurth Elektronik"
+		(property "Manufacturer Name" "Wurth Elektronik"
 			(at 1055.6 285.75 0)
 			(effects
 				(font
@@ -22915,7 +22915,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "onsemi"
+		(property "Manufacturer Name" "onsemi"
 			(at 436.88 -494.26 0)
 			(effects
 				(font
@@ -22925,7 +22925,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "BAT54HT1G"
+		(property "Manufacturer Part Number" "BAT54HT1G"
 			(at 436.88 -594.26 0)
 			(effects
 				(font
@@ -23036,7 +23036,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Toshiba"
+		(property "Manufacturer Name" "Toshiba"
 			(at 219.71 791.44 0)
 			(effects
 				(font
@@ -23046,7 +23046,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "TPHR6503PL1,LQ"
+		(property "Manufacturer Part Number" "TPHR6503PL1,LQ"
 			(at 219.71 891.44 0)
 			(effects
 				(font
@@ -23797,7 +23797,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Toshiba"
+		(property "Manufacturer Name" "Toshiba"
 			(at 219.71 774.93 0)
 			(effects
 				(font
@@ -23807,7 +23807,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "TPHR6503PL1,LQ"
+		(property "Manufacturer Part Number" "TPHR6503PL1,LQ"
 			(at 219.71 874.93 0)
 			(effects
 				(font
@@ -24766,7 +24766,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Toshiba"
+		(property "Manufacturer Name" "Toshiba"
 			(at -359.64 96.52 0)
 			(effects
 				(font
@@ -24776,7 +24776,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "TPHR6503PL1,LQ"
+		(property "Manufacturer Part Number" "TPHR6503PL1,LQ"
 			(at -459.64 96.52 0)
 			(effects
 				(font
@@ -24909,7 +24909,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Bourns"
+		(property "Manufacturer Name" "Bourns"
 			(at -227.56 246.38 0)
 			(effects
 				(font
@@ -24919,7 +24919,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "CRF2512-FZ-R001ELF"
+		(property "Manufacturer Part Number" "CRF2512-FZ-R001ELF"
 			(at -327.56 246.38 0)
 			(effects
 				(font
@@ -26451,7 +26451,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" " DDZ9690-7"
+		(property "Manufacturer Part Number" "DDZ9690-7"
 			(at 382.27 280.67 90)
 			(effects
 				(font
@@ -31261,7 +31261,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "onsemi"
+		(property "Manufacturer Name" "onsemi"
 			(at 325.12 -574.27 0)
 			(effects
 				(font
@@ -31271,7 +31271,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "2N7002K"
+		(property "Manufacturer Part Number" "2N7002K"
 			(at 325.12 -674.27 0)
 			(effects
 				(font
@@ -31585,7 +31585,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Wurth Elektronik"
+		(property "Manufacturer Name" "Wurth Elektronik"
 			(at 1051.79 285.75 0)
 			(effects
 				(font
@@ -31944,7 +31944,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Texas Instruments"
+		(property "Manufacturer Name" "Texas Instruments"
 			(at 417.83 863.83 0)
 			(effects
 				(font
@@ -31954,7 +31954,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "BQ296103DSGR"
+		(property "Manufacturer Part Number" "BQ296103DSGR"
 			(at 417.83 963.83 0)
 			(effects
 				(font
@@ -33458,7 +33458,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "ALPS Electric"
+		(property "Manufacturer Name" "ALPS Electric"
 			(at 471.17 933.68 0)
 			(effects
 				(font
@@ -33468,7 +33468,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "SKRPACE010"
+		(property "Manufacturer Part Number" "SKRPACE010"
 			(at 471.17 1033.68 0)
 			(effects
 				(font
@@ -34796,7 +34796,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" " SML-D12M1WT86 "
+		(property "Manufacturer Part Number" "SML-D12M1WT86"
 			(at 306.07 247.65 0)
 			(effects
 				(font
@@ -34940,7 +34940,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Texas Instruments"
+		(property "Manufacturer Name" "Texas Instruments"
 			(at 161.29 773.66 0)
 			(effects
 				(font
@@ -34950,7 +34950,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "BQ24600RVAT"
+		(property "Manufacturer Part Number" "BQ24600RVAT"
 			(at 161.29 873.66 0)
 			(effects
 				(font
@@ -35174,7 +35174,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "ALPS Electric"
+		(property "Manufacturer Name" "ALPS Electric"
 			(at 355.6 783.82 0)
 			(effects
 				(font
@@ -35184,7 +35184,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "SKRPACE010"
+		(property "Manufacturer Part Number" "SKRPACE010"
 			(at 355.6 883.82 0)
 			(effects
 				(font
@@ -35563,7 +35563,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Phoenix Contact"
+		(property "Manufacturer Name" "Phoenix Contact"
 			(at 210.82 923.52 0)
 			(effects
 				(font
@@ -35573,7 +35573,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "1017491"
+		(property "Manufacturer Part Number" "1017491"
 			(at 210.82 1023.52 0)
 			(effects
 				(font
@@ -36362,7 +36362,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Phoenix Contact"
+		(property "Manufacturer Name" "Phoenix Contact"
 			(at 210.82 912.09 0)
 			(effects
 				(font
@@ -36372,7 +36372,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "1017491"
+		(property "Manufacturer Part Number" "1017491"
 			(at 210.82 1012.09 0)
 			(effects
 				(font
@@ -37231,7 +37231,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "JST (JAPAN SOLDERLESS TERMINALS)"
+		(property "Manufacturer Name" "JST (JAPAN SOLDERLESS TERMINALS)"
 			(at 177.8 907.01 0)
 			(effects
 				(font
@@ -37241,7 +37241,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "B3B-XH-A(LF)(SN)"
+		(property "Manufacturer Part Number" "B3B-XH-A(LF)(SN)"
 			(at 177.8 1007.01 0)
 			(effects
 				(font
@@ -40490,7 +40490,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Toshiba"
+		(property "Manufacturer Name" "Toshiba"
 			(at 1060.68 96.52 0)
 			(effects
 				(font
@@ -40500,7 +40500,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "TPHR6503PL1,LQ"
+		(property "Manufacturer Part Number" "TPHR6503PL1,LQ"
 			(at 1160.68 96.52 0)
 			(effects
 				(font
@@ -41317,7 +41317,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Wurth Elektronik"
+		(property "Manufacturer Name" "Wurth Elektronik"
 			(at 912.09 72.39 0)
 			(effects
 				(font
@@ -41327,7 +41327,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "74437349033"
+		(property "Manufacturer Part Number" "74437349033"
 			(at 1012.09 72.39 0)
 			(effects
 				(font
@@ -43151,7 +43151,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Diodes Incorporated"
+		(property "Manufacturer Name" "Diodes Incorporated"
 			(at 419.1 837.16 0)
 			(effects
 				(font
@@ -43161,7 +43161,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "DMN3042L-7"
+		(property "Manufacturer Part Number" "DMN3042L-7"
 			(at 419.1 937.16 0)
 			(effects
 				(font
@@ -43881,7 +43881,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Diodes Incorporated"
+		(property "Manufacturer Name" "Diodes Incorporated"
 			(at 95.25 -595.86 0)
 			(effects
 				(font
@@ -43891,7 +43891,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "BZT52C8V2T-7"
+		(property "Manufacturer Part Number" "BZT52C8V2T-7"
 			(at 95.25 -695.86 0)
 			(effects
 				(font
@@ -44000,7 +44000,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Toshiba"
+		(property "Manufacturer Name" "Toshiba"
 			(at 793.98 68.58 0)
 			(effects
 				(font
@@ -44010,7 +44010,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "SSM6J507NU,LF"
+		(property "Manufacturer Part Number" "SSM6J507NU,LF"
 			(at 893.98 68.58 0)
 			(effects
 				(font
@@ -45337,7 +45337,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer Part Number" " SML-D12M1WT86 "
+		(property "Manufacturer Part Number" "SML-D12M1WT86"
 			(at 311.15 257.81 0)
 			(effects
 				(font
@@ -45483,7 +45483,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Vishay"
+		(property "Manufacturer Name" "Vishay"
 			(at 1086.08 204.47 0)
 			(effects
 				(font
@@ -45493,7 +45493,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "TFPT1206L1002JV"
+		(property "Manufacturer Part Number" "TFPT1206L1002JV"
 			(at 1186.08 204.47 0)
 			(effects
 				(font
