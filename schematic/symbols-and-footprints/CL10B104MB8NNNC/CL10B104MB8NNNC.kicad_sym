@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Samsung-Electro-Mechanics/CL10B104MB8NNNC?qs=xZ%2FP%252Ba9zWqZKjdh4mIsO7Q%3D%3D" (at 8.89 -596.19 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Name" "SAMSUNG" (at 8.89 -696.19 0)
+    (property "Manufacturer Name" "SAMSUNG" (at 8.89 -696.19 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Part_Number" "CL10B104MB8NNNC" (at 8.89 -796.19 0)
+    (property "Manufacturer Part Number" "CL10B104MB8NNNC" (at 8.89 -796.19 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
     (polyline

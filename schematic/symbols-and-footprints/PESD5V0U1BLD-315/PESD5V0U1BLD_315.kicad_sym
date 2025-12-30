@@ -86,7 +86,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Nexperia"
+		(property "Manufacturer Name" "Nexperia"
 			(at 15.24 -693.65 0)
 			(effects
 				(font
@@ -96,7 +96,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "PESD5V0U1BLD,315"
+		(property "Manufacturer Part Number" "PESD5V0U1BLD,315"
 			(at 15.24 -793.65 0)
 			(effects
 				(font

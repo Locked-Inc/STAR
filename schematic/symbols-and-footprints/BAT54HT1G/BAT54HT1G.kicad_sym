@@ -86,7 +86,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "onsemi"
+		(property "Manufacturer Name" "onsemi"
 			(at 12.7 -693.65 0)
 			(effects
 				(font
@@ -96,7 +96,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "BAT54HT1G"
+		(property "Manufacturer Part Number" "BAT54HT1G"
 			(at 12.7 -793.65 0)
 			(effects
 				(font

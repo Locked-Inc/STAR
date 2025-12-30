@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Nexperia/PTVS40VS1UTR115?qs=A1cBxND5mHJqdFhjXkR4Dw%3D%3D" (at 10.16 -593.65 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Name" "Nexperia" (at 10.16 -693.65 0)
+    (property "Manufacturer Name" "Nexperia" (at 10.16 -693.65 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Part_Number" "PTVS40VS1UTR,115" (at 10.16 -793.65 0)
+    (property "Manufacturer Part Number" "PTVS40VS1UTR,115" (at 10.16 -793.65 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
     (polyline

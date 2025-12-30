@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Diodes-Incorporated/DDZ5V6ASF-7?qs=gfe7vQ8txpUYmLC5UwT6yA%3D%3D" (at 10.16 -593.65 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Name" "Diodes Incorporated" (at 10.16 -693.65 0)
+    (property "Manufacturer Name" "Diodes Incorporated" (at 10.16 -693.65 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Part_Number" "DDZ5V6ASF-7" (at 10.16 -793.65 0)
+    (property "Manufacturer Part Number" "DDZ5V6ASF-7" (at 10.16 -793.65 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
     (polyline

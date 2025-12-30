@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Texas-Instruments/TPS2116DRLR?qs=aP1CjGhiNiGo3XAyXcVPaQ%3D%3D" (at 29.21 -594.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Name" "Texas Instruments" (at 29.21 -694.92 0)
+    (property "Manufacturer Name" "Texas Instruments" (at 29.21 -694.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Part_Number" "TPS2116DRLR" (at 29.21 -794.92 0)
+    (property "Manufacturer Part Number" "TPS2116DRLR" (at 29.21 -794.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
     (rectangle

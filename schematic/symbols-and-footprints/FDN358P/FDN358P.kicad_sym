@@ -86,7 +86,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "onsemi"
+		(property "Manufacturer Name" "onsemi"
 			(at 11.43 -698.73 0)
 			(effects
 				(font
@@ -96,7 +96,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "FDN358P"
+		(property "Manufacturer Part Number" "FDN358P"
 			(at 11.43 -798.73 0)
 			(effects
 				(font

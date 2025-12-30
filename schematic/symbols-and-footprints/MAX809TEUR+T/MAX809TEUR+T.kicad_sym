@@ -83,7 +83,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Analog Devices"
+		(property "Manufacturer Name" "Analog Devices"
 			(at 26.67 -694.92 0)
 			(effects
 				(font
@@ -93,7 +93,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "MAX809TEUR+T"
+		(property "Manufacturer Part Number" "MAX809TEUR+T"
 			(at 26.67 -794.92 0)
 			(effects
 				(font

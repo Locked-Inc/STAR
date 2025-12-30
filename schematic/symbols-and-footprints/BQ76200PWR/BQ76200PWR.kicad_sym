@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Texas-Instruments/BQ76200PWR?qs=3lX5AGUhm2%2FYEQiVvQpzAw%3D%3D" (at 31.75 -594.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Name" "Texas Instruments" (at 31.75 -694.92 0)
+    (property "Manufacturer Name" "Texas Instruments" (at 31.75 -694.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Part_Number" "BQ76200PWR" (at 31.75 -794.92 0)
+    (property "Manufacturer Part Number" "BQ76200PWR" (at 31.75 -794.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
     (rectangle

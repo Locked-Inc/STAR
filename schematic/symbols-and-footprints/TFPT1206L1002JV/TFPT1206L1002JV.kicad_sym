@@ -86,7 +86,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Vishay"
+		(property "Manufacturer Name" "Vishay"
 			(at 13.97 -696.19 0)
 			(effects
 				(font
@@ -96,7 +96,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "TFPT1206L1002JV"
+		(property "Manufacturer Part Number" "TFPT1206L1002JV"
 			(at 13.97 -796.19 0)
 			(effects
 				(font

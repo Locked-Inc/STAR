@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Phoenix-Contact/1991011?qs=HG6crFoccqogF%2FgHNXXc%252BQ%3D%3D" (at 21.59 -594.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Name" "Phoenix Contact" (at 21.59 -694.92 0)
+    (property "Manufacturer Name" "Phoenix Contact" (at 21.59 -694.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Part_Number" "1991011" (at 21.59 -794.92 0)
+    (property "Manufacturer Part Number" "1991011" (at 21.59 -794.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
     (rectangle

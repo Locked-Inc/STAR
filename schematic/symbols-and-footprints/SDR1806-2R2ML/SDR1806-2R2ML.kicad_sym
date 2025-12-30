@@ -86,7 +86,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Bourns"
+		(property "Manufacturer Name" "Bourns"
 			(at 16.51 -696.19 0)
 			(effects
 				(font
@@ -96,7 +96,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "SDR1806-2R2ML"
+		(property "Manufacturer Part Number" "SDR1806-2R2ML"
 			(at 16.51 -796.19 0)
 			(effects
 				(font

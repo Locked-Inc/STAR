@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/KYOCERA-AVX/AHA0810560M040R?qs=Wj%2FVkw3K%252BMC8gnCZ3P6Qsg%3D%3D" (at 8.89 -596.19 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Name" "Kyocera AVX" (at 8.89 -696.19 0)
+    (property "Manufacturer Name" "Kyocera AVX" (at 8.89 -696.19 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Part_Number" "AHA0810560M040R" (at 8.89 -796.19 0)
+    (property "Manufacturer Part Number" "AHA0810560M040R" (at 8.89 -796.19 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
     (rectangle

@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Texas-Instruments/BQ78350DBT-R1A?qs=xZ%2FP%252Ba9zWqarpkSh3dc77g%3D%3D" (at 31.75 -594.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Name" "Texas Instruments" (at 31.75 -694.92 0)
+    (property "Manufacturer Name" "Texas Instruments" (at 31.75 -694.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Part_Number" "BQ78350DBT-R1A" (at 31.75 -794.92 0)
+    (property "Manufacturer Part Number" "BQ78350DBT-R1A" (at 31.75 -794.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
     (rectangle

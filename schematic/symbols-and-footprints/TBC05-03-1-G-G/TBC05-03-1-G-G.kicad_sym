@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/GCT/TBC05-03-1-G-G?qs=bN4HulGPsrGLlfJySn%252B4uw%3D%3D" (at 16.51 -594.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Name" "GCT (GLOBAL CONNECTOR TECHNOLOGY)" (at 16.51 -694.92 0)
+    (property "Manufacturer Name" "GCT (GLOBAL CONNECTOR TECHNOLOGY)" (at 16.51 -694.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Part_Number" "TBC05-03-1-G-G" (at 16.51 -794.92 0)
+    (property "Manufacturer Part Number" "TBC05-03-1-G-G" (at 16.51 -794.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
     (rectangle

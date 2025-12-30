@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/onsemi-Fairchild/SS14?qs=mVVXn4M53U%252BvrBaFv5vr4w%3D%3D" (at 12.7 -593.65 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Name" "onsemi" (at 12.7 -693.65 0)
+    (property "Manufacturer Name" "onsemi" (at 12.7 -693.65 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Part_Number" "SS14" (at 12.7 -793.65 0)
+    (property "Manufacturer Part Number" "SS14" (at 12.7 -793.65 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
     (polyline
