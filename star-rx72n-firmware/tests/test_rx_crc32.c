@@ -171,7 +171,7 @@ void test_crc32_incremental_single_bytes(void) {
 
     /* Incremental CRC byte by byte */
     uint32_t crc_incr = rx_crc32_ieee(&data[0], 1);
-    for (size_t i = 1; i < 9; i++) {
+    for (uint32_t i = 1; i < 9; i++) {
         crc_incr = rx_crc32_update(crc_incr, &data[i], 1);
     }
 
@@ -231,7 +231,7 @@ void test_crc32_large_buffer_1kb(void) {
     uint8_t data[1024];
 
     /* Fill with repeating pattern 0x00-0xFF */
-    for (size_t i = 0; i < sizeof(data); i++) {
+    for (uint32_t i = 0; i < sizeof(data); i++) {
         data[i] = (uint8_t)(i & 0xFF);
     }
 
