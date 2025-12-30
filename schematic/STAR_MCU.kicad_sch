@@ -16608,12 +16608,6 @@
 		(uuid "a983fd9d-b613-41e7-a794-6846d46e6f99")
 	)
 	(junction
-		(at 411.48 401.32)
-		(diameter 0)
-		(color 0 0 0 0)
-		(uuid "aa4f0150-ec67-43c2-a307-dbe736d4f24a")
-	)
-	(junction
 		(at 679.45 511.81)
 		(diameter 0)
 		(color 0 0 0 0)
@@ -18109,7 +18103,7 @@
 	)
 	(wire
 		(pts
-			(xy 676.91 351.79) (xy 678.18 351.79)
+			(xy 676.91 351.79) (xy 679.45 351.79)
 		)
 		(stroke
 			(width 0)
@@ -22619,7 +22613,7 @@
 	)
 	(wire
 		(pts
-			(xy 411.48 403.86) (xy 411.48 401.32)
+			(xy 411.48 398.78) (xy 411.48 403.86)
 		)
 		(stroke
 			(width 0)
@@ -25806,16 +25800,6 @@
 			(type default)
 		)
 		(uuid "adbb4b0f-bcc3-46b2-a15a-61d558c827e6")
-	)
-	(wire
-		(pts
-			(xy 411.48 398.78) (xy 411.48 401.32)
-		)
-		(stroke
-			(width 0)
-			(type default)
-		)
-		(uuid "adecfb14-aec1-4161-8aa1-81113c77cc64")
 	)
 	(wire
 		(pts
@@ -29515,6 +29499,398 @@
 				(type solid)
 			)
 		)
+		(column_widths 21.59 26.67)
+		(row_heights 2.54 16.51 6.35 3.81)
+		(cells
+			(table_cell ""
+				(exclude_from_sim no)
+				(at 529.59 104.14 0)
+				(size 21.59 2.54)
+				(margins 0.9525 0.9525 0.9525 0.9525)
+				(span 1 1)
+				(fill
+					(type none)
+				)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+				(uuid "c9570616-a9ae-446e-b8e5-145c91111768")
+			)
+			(table_cell "Emulator Configuration"
+				(exclude_from_sim no)
+				(at 551.18 104.14 0)
+				(size 26.67 2.54)
+				(margins 0.9525 0.9525 0.9525 0.9525)
+				(span 1 1)
+				(fill
+					(type none)
+				)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+				(uuid "518837ca-17f3-4038-afbf-6f6ce2d08d28")
+			)
+			(table_cell "Shorted Pin 1-2 (normal operation)"
+				(exclude_from_sim no)
+				(at 529.59 106.68 0)
+				(size 21.59 16.51)
+				(margins 0.9525 0.9525 0.9525 0.9525)
+				(span 1 1)
+				(fill
+					(type none)
+				)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+				(uuid "38e3da7f-ff8e-46d1-bda9-9543f8c8ceb1")
+			)
+			(table_cell "E1/E2 Lite normal debugging (use this mode for normal operation). Microcontroller signle operation (without emulator)"
+				(exclude_from_sim no)
+				(at 551.18 106.68 0)
+				(size 26.67 16.51)
+				(margins 0.9525 0.9525 0.9525 0.9525)
+				(span 1 1)
+				(fill
+					(type none)
+				)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+				(uuid "56da71a6-5a30-42dd-91e1-6233c0700b81")
+			)
+			(table_cell "Shorted Pin 2-3 (debug with E1/E2)"
+				(exclude_from_sim no)
+				(at 529.59 123.19 0)
+				(size 21.59 6.35)
+				(margins 0.9525 0.9525 0.9525 0.9525)
+				(span 1 1)
+				(fill
+					(type none)
+				)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+				(uuid "fa9ca9bb-8641-4fe1-bec6-2f678eb0b0a4")
+			)
+			(table_cell "E1/E2 Lite debugging with Hot plug-in"
+				(exclude_from_sim no)
+				(at 551.18 123.19 0)
+				(size 26.67 6.35)
+				(margins 0.9525 0.9525 0.9525 0.9525)
+				(span 1 1)
+				(fill
+					(type none)
+				)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+				(uuid "a138bb84-59bd-44bb-8872-651ebfb6cd3b")
+			)
+			(table_cell "All open"
+				(exclude_from_sim no)
+				(at 529.59 129.54 0)
+				(size 21.59 3.81)
+				(margins 0.9525 0.9525 0.9525 0.9525)
+				(span 1 1)
+				(fill
+					(type none)
+				)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+				(uuid "8454ad01-25ad-4d15-b1da-c3361f78f015")
+			)
+			(table_cell "DO NOT SET"
+				(exclude_from_sim no)
+				(at 551.18 129.54 0)
+				(size 26.67 3.81)
+				(margins 0.9525 0.9525 0.9525 0.9525)
+				(span 1 1)
+				(fill
+					(type none)
+				)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+				(uuid "fe0d2862-ffff-433e-8a6b-2a35986cb894")
+			)
+		)
+	)
+	(table
+		(column_count 1)
+		(border
+			(external yes)
+			(header yes)
+			(stroke
+				(width 0)
+				(type solid)
+			)
+		)
+		(separators
+			(rows yes)
+			(cols yes)
+			(stroke
+				(width 0)
+				(type solid)
+			)
+		)
+		(column_widths 15.24)
+		(row_heights 2.54 2.54 2.54 2.54 2.54)
+		(cells
+			(table_cell "NC"
+				(exclude_from_sim no)
+				(at 186.69 184.15 0)
+				(size 15.24 2.54)
+				(margins 0.9525 0.9525 0.9525 0.9525)
+				(span 1 1)
+				(fill
+					(type none)
+				)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+				(uuid "a4f24f54-a8f8-417e-bc0b-77a115fabbbb")
+			)
+			(table_cell "GND"
+				(exclude_from_sim no)
+				(at 186.69 186.69 0)
+				(size 15.24 2.54)
+				(margins 0.9525 0.9525 0.9525 0.9525)
+				(span 1 1)
+				(fill
+					(type none)
+				)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+				(uuid "9f250b22-2f2b-40b5-a025-c3db8432d02b")
+			)
+			(table_cell "RX"
+				(exclude_from_sim no)
+				(at 186.69 189.23 0)
+				(size 15.24 2.54)
+				(margins 0.9525 0.9525 0.9525 0.9525)
+				(span 1 1)
+				(fill
+					(type none)
+				)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+				(uuid "37891788-d2db-4058-9eac-22e63ccd08c7")
+			)
+			(table_cell "TX\n"
+				(exclude_from_sim no)
+				(at 186.69 191.77 0)
+				(size 15.24 2.54)
+				(margins 0.9525 0.9525 0.9525 0.9525)
+				(span 1 1)
+				(fill
+					(type none)
+				)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+				(uuid "48dbe54c-d78d-48eb-acc9-7cba1b0b8911")
+			)
+			(table_cell "VCC (5V)"
+				(exclude_from_sim no)
+				(at 186.69 194.31 0)
+				(size 15.24 2.54)
+				(margins 0.9525 0.9525 0.9525 0.9525)
+				(span 1 1)
+				(fill
+					(type none)
+				)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+				(uuid "58c64efc-c4b4-423b-b9ce-66e205e626c4")
+			)
+		)
+	)
+	(table
+		(column_count 2)
+		(border
+			(external yes)
+			(header yes)
+			(stroke
+				(width 0)
+				(type solid)
+			)
+		)
+		(separators
+			(rows yes)
+			(cols yes)
+			(stroke
+				(width 0)
+				(type solid)
+			)
+		)
+		(column_widths 21.59 26.67)
+		(row_heights 6.35 6.35 6.35)
+		(cells
+			(table_cell ""
+				(exclude_from_sim no)
+				(at 528.32 166.37 0)
+				(size 21.59 6.35)
+				(margins 0.9525 0.9525 0.9525 0.9525)
+				(span 1 1)
+				(fill
+					(type none)
+				)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+				(uuid "c9570616-a9ae-446e-b8e5-145c91111768")
+			)
+			(table_cell "Power Configuration for USB Boot Mode"
+				(exclude_from_sim no)
+				(at 549.91 166.37 0)
+				(size 26.67 6.35)
+				(margins 0.9525 0.9525 0.9525 0.9525)
+				(span 1 1)
+				(fill
+					(type none)
+				)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+				(uuid "518837ca-17f3-4038-afbf-6f6ce2d08d28")
+			)
+			(table_cell "Shorted Pin 1-2 (No battery pack)"
+				(exclude_from_sim no)
+				(at 528.32 172.72 0)
+				(size 21.59 6.35)
+				(margins 0.9525 0.9525 0.9525 0.9525)
+				(span 1 1)
+				(fill
+					(type none)
+				)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+				(uuid "38e3da7f-ff8e-46d1-bda9-9543f8c8ceb1")
+			)
+			(table_cell "Bus Powered"
+				(exclude_from_sim no)
+				(at 549.91 172.72 0)
+				(size 26.67 6.35)
+				(margins 0.9525 0.9525 0.9525 0.9525)
+				(span 1 1)
+				(fill
+					(type none)
+				)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+				(uuid "56da71a6-5a30-42dd-91e1-6233c0700b81")
+			)
+			(table_cell "Shorted Pin 2-3 (Battery Pack)"
+				(exclude_from_sim no)
+				(at 528.32 179.07 0)
+				(size 21.59 6.35)
+				(margins 0.9525 0.9525 0.9525 0.9525)
+				(span 1 1)
+				(fill
+					(type none)
+				)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+				(uuid "fa9ca9bb-8641-4fe1-bec6-2f678eb0b0a4")
+			)
+			(table_cell "Self Powered"
+				(exclude_from_sim no)
+				(at 549.91 179.07 0)
+				(size 26.67 6.35)
+				(margins 0.9525 0.9525 0.9525 0.9525)
+				(span 1 1)
+				(fill
+					(type none)
+				)
+				(effects
+					(font
+						(size 1.27 1.27)
+					)
+					(justify left top)
+				)
+				(uuid "a138bb84-59bd-44bb-8872-651ebfb6cd3b")
+			)
+		)
+	)
+	(table
+		(column_count 2)
+		(border
+			(external yes)
+			(header yes)
+			(stroke
+				(width 0)
+				(type solid)
+			)
+		)
+		(separators
+			(rows yes)
+			(cols yes)
+			(stroke
+				(width 0)
+				(type solid)
+			)
+		)
 		(column_widths 27.94 26.67)
 		(row_heights 2.54 2.54 2.54 2.54 2.54 2.54)
 		(cells
@@ -29721,273 +30097,6 @@
 					(justify left top)
 				)
 				(uuid "dbd109e2-5350-433e-b272-0523f7e966ab")
-			)
-		)
-	)
-	(table
-		(column_count 1)
-		(border
-			(external yes)
-			(header yes)
-			(stroke
-				(width 0)
-				(type solid)
-			)
-		)
-		(separators
-			(rows yes)
-			(cols yes)
-			(stroke
-				(width 0)
-				(type solid)
-			)
-		)
-		(column_widths 15.24)
-		(row_heights 2.54 2.54 2.54 2.54 2.54)
-		(cells
-			(table_cell "NC"
-				(exclude_from_sim no)
-				(at 186.69 184.15 0)
-				(size 15.24 2.54)
-				(margins 0.9525 0.9525 0.9525 0.9525)
-				(span 1 1)
-				(fill
-					(type none)
-				)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-				)
-				(uuid "a4f24f54-a8f8-417e-bc0b-77a115fabbbb")
-			)
-			(table_cell "GND"
-				(exclude_from_sim no)
-				(at 186.69 186.69 0)
-				(size 15.24 2.54)
-				(margins 0.9525 0.9525 0.9525 0.9525)
-				(span 1 1)
-				(fill
-					(type none)
-				)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-				)
-				(uuid "9f250b22-2f2b-40b5-a025-c3db8432d02b")
-			)
-			(table_cell "RX"
-				(exclude_from_sim no)
-				(at 186.69 189.23 0)
-				(size 15.24 2.54)
-				(margins 0.9525 0.9525 0.9525 0.9525)
-				(span 1 1)
-				(fill
-					(type none)
-				)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-				)
-				(uuid "37891788-d2db-4058-9eac-22e63ccd08c7")
-			)
-			(table_cell "TX\n"
-				(exclude_from_sim no)
-				(at 186.69 191.77 0)
-				(size 15.24 2.54)
-				(margins 0.9525 0.9525 0.9525 0.9525)
-				(span 1 1)
-				(fill
-					(type none)
-				)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-				)
-				(uuid "48dbe54c-d78d-48eb-acc9-7cba1b0b8911")
-			)
-			(table_cell "VCC (5V)"
-				(exclude_from_sim no)
-				(at 186.69 194.31 0)
-				(size 15.24 2.54)
-				(margins 0.9525 0.9525 0.9525 0.9525)
-				(span 1 1)
-				(fill
-					(type none)
-				)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-				)
-				(uuid "58c64efc-c4b4-423b-b9ce-66e205e626c4")
-			)
-		)
-	)
-	(table
-		(column_count 2)
-		(border
-			(external yes)
-			(header yes)
-			(stroke
-				(width 0)
-				(type solid)
-			)
-		)
-		(separators
-			(rows yes)
-			(cols yes)
-			(stroke
-				(width 0)
-				(type solid)
-			)
-		)
-		(column_widths 21.59 26.67)
-		(row_heights 2.54 16.51 6.35 3.81)
-		(cells
-			(table_cell ""
-				(exclude_from_sim no)
-				(at 529.59 104.14 0)
-				(size 21.59 2.54)
-				(margins 0.9525 0.9525 0.9525 0.9525)
-				(span 1 1)
-				(fill
-					(type none)
-				)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-				)
-				(uuid "c9570616-a9ae-446e-b8e5-145c91111768")
-			)
-			(table_cell "Emulator Configuration"
-				(exclude_from_sim no)
-				(at 551.18 104.14 0)
-				(size 26.67 2.54)
-				(margins 0.9525 0.9525 0.9525 0.9525)
-				(span 1 1)
-				(fill
-					(type none)
-				)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-				)
-				(uuid "518837ca-17f3-4038-afbf-6f6ce2d08d28")
-			)
-			(table_cell "Shorted Pin 1-2 (normal operation)"
-				(exclude_from_sim no)
-				(at 529.59 106.68 0)
-				(size 21.59 16.51)
-				(margins 0.9525 0.9525 0.9525 0.9525)
-				(span 1 1)
-				(fill
-					(type none)
-				)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-				)
-				(uuid "38e3da7f-ff8e-46d1-bda9-9543f8c8ceb1")
-			)
-			(table_cell "E1/E2 Lite normal debugging (use this mode for normal operation). Microcontroller signle operation (without emulator)"
-				(exclude_from_sim no)
-				(at 551.18 106.68 0)
-				(size 26.67 16.51)
-				(margins 0.9525 0.9525 0.9525 0.9525)
-				(span 1 1)
-				(fill
-					(type none)
-				)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-				)
-				(uuid "56da71a6-5a30-42dd-91e1-6233c0700b81")
-			)
-			(table_cell "Shorted Pin 2-3 (debug with E1/E2)"
-				(exclude_from_sim no)
-				(at 529.59 123.19 0)
-				(size 21.59 6.35)
-				(margins 0.9525 0.9525 0.9525 0.9525)
-				(span 1 1)
-				(fill
-					(type none)
-				)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-				)
-				(uuid "fa9ca9bb-8641-4fe1-bec6-2f678eb0b0a4")
-			)
-			(table_cell "E1/E2 Lite debugging with Hot plug-in"
-				(exclude_from_sim no)
-				(at 551.18 123.19 0)
-				(size 26.67 6.35)
-				(margins 0.9525 0.9525 0.9525 0.9525)
-				(span 1 1)
-				(fill
-					(type none)
-				)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-				)
-				(uuid "a138bb84-59bd-44bb-8872-651ebfb6cd3b")
-			)
-			(table_cell "All open"
-				(exclude_from_sim no)
-				(at 529.59 129.54 0)
-				(size 21.59 3.81)
-				(margins 0.9525 0.9525 0.9525 0.9525)
-				(span 1 1)
-				(fill
-					(type none)
-				)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-				)
-				(uuid "8454ad01-25ad-4d15-b1da-c3361f78f015")
-			)
-			(table_cell "DO NOT SET"
-				(exclude_from_sim no)
-				(at 551.18 129.54 0)
-				(size 26.67 3.81)
-				(margins 0.9525 0.9525 0.9525 0.9525)
-				(span 1 1)
-				(fill
-					(type none)
-				)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-				)
-				(uuid "fe0d2862-ffff-433e-8a6b-2a35986cb894")
 			)
 		)
 	)
@@ -30354,131 +30463,6 @@
 			)
 		)
 	)
-	(table
-		(column_count 2)
-		(border
-			(external yes)
-			(header yes)
-			(stroke
-				(width 0)
-				(type solid)
-			)
-		)
-		(separators
-			(rows yes)
-			(cols yes)
-			(stroke
-				(width 0)
-				(type solid)
-			)
-		)
-		(column_widths 21.59 26.67)
-		(row_heights 6.35 6.35 6.35)
-		(cells
-			(table_cell ""
-				(exclude_from_sim no)
-				(at 528.32 166.37 0)
-				(size 21.59 6.35)
-				(margins 0.9525 0.9525 0.9525 0.9525)
-				(span 1 1)
-				(fill
-					(type none)
-				)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-				)
-				(uuid "c9570616-a9ae-446e-b8e5-145c91111768")
-			)
-			(table_cell "Power Configuration for USB Boot Mode"
-				(exclude_from_sim no)
-				(at 549.91 166.37 0)
-				(size 26.67 6.35)
-				(margins 0.9525 0.9525 0.9525 0.9525)
-				(span 1 1)
-				(fill
-					(type none)
-				)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-				)
-				(uuid "518837ca-17f3-4038-afbf-6f6ce2d08d28")
-			)
-			(table_cell "Shorted Pin 1-2 (No battery pack)"
-				(exclude_from_sim no)
-				(at 528.32 172.72 0)
-				(size 21.59 6.35)
-				(margins 0.9525 0.9525 0.9525 0.9525)
-				(span 1 1)
-				(fill
-					(type none)
-				)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-				)
-				(uuid "38e3da7f-ff8e-46d1-bda9-9543f8c8ceb1")
-			)
-			(table_cell "Bus Powered"
-				(exclude_from_sim no)
-				(at 549.91 172.72 0)
-				(size 26.67 6.35)
-				(margins 0.9525 0.9525 0.9525 0.9525)
-				(span 1 1)
-				(fill
-					(type none)
-				)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-				)
-				(uuid "56da71a6-5a30-42dd-91e1-6233c0700b81")
-			)
-			(table_cell "Shorted Pin 2-3 (Battery Pack)"
-				(exclude_from_sim no)
-				(at 528.32 179.07 0)
-				(size 21.59 6.35)
-				(margins 0.9525 0.9525 0.9525 0.9525)
-				(span 1 1)
-				(fill
-					(type none)
-				)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-				)
-				(uuid "fa9ca9bb-8641-4fe1-bec6-2f678eb0b0a4")
-			)
-			(table_cell "Self Powered"
-				(exclude_from_sim no)
-				(at 549.91 179.07 0)
-				(size 26.67 6.35)
-				(margins 0.9525 0.9525 0.9525 0.9525)
-				(span 1 1)
-				(fill
-					(type none)
-				)
-				(effects
-					(font
-						(size 1.27 1.27)
-					)
-					(justify left top)
-				)
-				(uuid "a138bb84-59bd-44bb-8872-651ebfb6cd3b")
-			)
-		)
-	)
 	(label "MOTOR2_PH"
 		(at 601.98 415.29 0)
 		(effects
@@ -30529,7 +30513,7 @@
 		)
 		(uuid "05364334-384a-4a42-b76b-ba7d833eac01")
 	)
-	(label "ENCODER2_PHASE_A"
+	(label "ENCODER3_PHASE_A"
 		(at 664.21 196.85 0)
 		(effects
 			(font
@@ -30811,7 +30795,7 @@
 		)
 		(uuid "19b0a34a-553e-4fe8-8029-a24f3de9ba6c")
 	)
-	(label "PMOD_JE_GPIO0"
+	(label "PMOD_JF_GPIO1"
 		(at 793.75 91.44 180)
 		(effects
 			(font
@@ -31031,7 +31015,7 @@
 		)
 		(uuid "2a6e5a92-4804-4bdc-887f-85bccda3b896")
 	)
-	(label "ENCODER2_PHASE_B"
+	(label "ENCODER3_PHASE_B"
 		(at 793.75 166.37 180)
 		(effects
 			(font
@@ -31181,7 +31165,7 @@
 		)
 		(uuid "36374b6a-edab-4a83-80e1-0a9a101f3291")
 	)
-	(label "MOTOR0_PH"
+	(label "MOTOR1_PH"
 		(at 793.75 147.32 180)
 		(effects
 			(font
@@ -31541,7 +31525,7 @@
 		)
 		(uuid "516a5ed4-fc7b-4a4f-bb60-6cc5613b39f5")
 	)
-	(label "SCI9_RXD1"
+	(label "SCI9_RXD9"
 		(at 425.45 86.36 0)
 		(effects
 			(font
@@ -31662,7 +31646,7 @@
 		)
 		(uuid "5ab03aa9-4c42-4d0b-b16e-c7a42e286652")
 	)
-	(label "PMOD_JE_GPIO1"
+	(label "PMOD_JF_GPIO0"
 		(at 793.75 115.57 180)
 		(effects
 			(font
@@ -31804,7 +31788,7 @@
 		)
 		(uuid "63a8df7f-952c-4dee-9400-a060f7775dc6")
 	)
-	(label "MOTOR1_EN"
+	(label "MOTOR2_EN"
 		(at 793.75 137.16 180)
 		(effects
 			(font
@@ -31814,7 +31798,7 @@
 		)
 		(uuid "6445a5fe-9714-4d76-a564-9168fd5ffd97")
 	)
-	(label "ENCODER1_PHASE_A"
+	(label "ENCODER2_PHASE_A"
 		(at 793.75 204.47 180)
 		(effects
 			(font
@@ -31854,7 +31838,7 @@
 		)
 		(uuid "6766b551-8cf6-4ef2-8476-cf71d7b6066a")
 	)
-	(label "MOTOR0_EN"
+	(label "MOTOR1_EN"
 		(at 793.75 139.7 180)
 		(effects
 			(font
@@ -31944,7 +31928,7 @@
 		)
 		(uuid "6dff789f-754e-4c4a-9507-b91482f7dcfd")
 	)
-	(label "MOTOR2_nFAULT"
+	(label "MOTOR3_nFAULT"
 		(at 793.75 111.76 180)
 		(effects
 			(font
@@ -31974,7 +31958,7 @@
 		)
 		(uuid "72944c02-54bc-489f-84ad-458d2ddcb56d")
 	)
-	(label "PMOD_JE_GPIO2"
+	(label "PMOD_JE_GPIO1"
 		(at 793.75 182.88 180)
 		(effects
 			(font
@@ -32175,7 +32159,7 @@
 		)
 		(uuid "884c0aab-b3f4-477b-9f39-90d2b5d5a900")
 	)
-	(label "MOTOR2_PH"
+	(label "MOTOR3_PH"
 		(at 793.75 154.94 180)
 		(effects
 			(font
@@ -32185,7 +32169,7 @@
 		)
 		(uuid "889db3f1-7725-4d6f-9db6-62795620cd63")
 	)
-	(label "ENCODER1_PHASE_B"
+	(label "ENCODER2_PHASE_B"
 		(at 793.75 201.93 180)
 		(effects
 			(font
@@ -32225,7 +32209,7 @@
 		)
 		(uuid "8fbe3353-3e9f-4029-81f9-2354c11d8835")
 	)
-	(label "PMOD_JE_GPIO3"
+	(label "PMOD_JE_GPIO0"
 		(at 660.4 121.92 0)
 		(effects
 			(font
@@ -32295,7 +32279,7 @@
 		)
 		(uuid "9980d946-d853-4674-a727-d0c0c37bdaa7")
 	)
-	(label "MOTOR2_EN"
+	(label "MOTOR3_EN"
 		(at 793.75 152.4 180)
 		(effects
 			(font
@@ -32345,7 +32329,7 @@
 		)
 		(uuid "9ae04c1c-348a-40e3-9d77-69b4b2476777")
 	)
-	(label "MOTOR1_IPROPI"
+	(label "MOTOR2_IPROPI"
 		(at 793.75 99.06 180)
 		(effects
 			(font
@@ -32415,16 +32399,6 @@
 		)
 		(uuid "9fb31142-642b-489d-bf19-000a3bdbfa00")
 	)
-	(label "PMOD_JF_GPIO0"
-		(at 793.75 88.9 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "a01f90b3-a5f1-435d-98c4-a99f0846a1f9")
-	)
 	(label "PMOD_JB_GPIO0"
 		(at 416.56 355.6 0)
 		(effects
@@ -32455,7 +32429,7 @@
 		)
 		(uuid "a2033e30-eb05-473a-8b0d-645f10b181d6")
 	)
-	(label "MOTOR0_IPROPI"
+	(label "MOTOR1_IPROPI"
 		(at 793.75 96.52 180)
 		(effects
 			(font
@@ -32617,6 +32591,16 @@
 		)
 		(uuid "a98a5a7e-73a3-40c9-b6ec-fd517f7a46d2")
 	)
+	(label "DS18B20_DQ"
+		(at 793.75 88.9 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "ab31eac1-3d1e-45e5-8ea9-46fe7d05e251")
+	)
 	(label "DBG_RESETn"
 		(at 524.51 109.22 180)
 		(effects
@@ -32659,7 +32643,7 @@
 		)
 		(uuid "ad71fa61-bf88-42a6-a0af-6133955da8fe")
 	)
-	(label "ENCODER0_PHASE_A"
+	(label "ENCODER1_PHASE_A"
 		(at 664.21 220.98 0)
 		(effects
 			(font
@@ -32679,7 +32663,7 @@
 		)
 		(uuid "aef241b3-d6a9-4259-a44f-c5997f6a3fff")
 	)
-	(label "MOTOR1_nFAULT"
+	(label "MOTOR2_nFAULT"
 		(at 793.75 109.22 180)
 		(effects
 			(font
@@ -32779,7 +32763,7 @@
 		)
 		(uuid "b889952e-b69e-4842-b79b-d8263bd3f5e3")
 	)
-	(label "MOTOR2_IPROPI"
+	(label "MOTOR3_IPROPI"
 		(at 793.75 101.6 180)
 		(effects
 			(font
@@ -32819,7 +32803,7 @@
 		)
 		(uuid "badad5e8-75f9-44ab-965b-ff6aaf51b434")
 	)
-	(label "PMOD_JF_GPIO1"
+	(label "PMOD_JE_GPIO3"
 		(at 793.75 161.29 180)
 		(effects
 			(font
@@ -32919,7 +32903,7 @@
 		)
 		(uuid "c5b1186f-ce48-48dd-bfac-829523c87c3a")
 	)
-	(label "MOTOR0_nFAULT"
+	(label "MOTOR1_nFAULT"
 		(at 793.75 106.68 180)
 		(effects
 			(font
@@ -33049,7 +33033,7 @@
 		)
 		(uuid "d31af26d-d384-47e1-abed-49593770ece7")
 	)
-	(label "MOTOR1_PH"
+	(label "MOTOR2_PH"
 		(at 793.75 144.78 180)
 		(effects
 			(font
@@ -33493,7 +33477,7 @@
 		)
 		(uuid "f6096663-2eda-47df-8ae4-ef59790486bb")
 	)
-	(label "DS18B20_DQ"
+	(label "PMOD_JE_GPIO2"
 		(at 793.75 180.34 180)
 		(effects
 			(font
@@ -33573,7 +33557,7 @@
 		)
 		(uuid "faac18d6-bbdb-432a-b01b-c46ecc826a0a")
 	)
-	(label "ENCODER0_PHASE_B"
+	(label "ENCODER1_PHASE_B"
 		(at 664.21 204.47 0)
 		(effects
 			(font
@@ -57690,6 +57674,73 @@
 		)
 	)
 	(symbol
+		(lib_id "PCM_4ms_Power-symbol:PWR_FLAG")
+		(at 595.63 298.45 0)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "39e1e2fb-344c-4b79-9954-ef84065b32d9")
+		(property "Reference" "#FLG01"
+			(at 595.63 296.545 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 595.63 293.37 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at 595.63 298.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 595.63 298.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 595.63 298.45 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "9eb49190-7e0b-4de5-8df0-e8c51ca5458e")
+		)
+		(instances
+			(project ""
+				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
+					(reference "#FLG01")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
 		(lib_id "1017491:1017491")
 		(at 453.39 439.42 0)
 		(mirror y)
@@ -64833,71 +64884,6 @@
 			(project "STAR_MCU"
 				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
 					(reference "D18")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "power:GND")
-		(at 763.27 405.13 270)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(uuid "481dd3ef-521f-4273-a79a-249f739394bf")
-		(property "Reference" "#PWR022"
-			(at 756.92 405.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "GND"
-			(at 758.698 405.13 90)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-			)
-		)
-		(property "Footprint" ""
-			(at 763.27 405.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 763.27 405.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 763.27 405.13 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "58016968-87ff-4d2a-a3da-3562185a50e4")
-		)
-		(instances
-			(project "STAR_MCU"
-				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
-					(reference "#PWR022")
 					(unit 1)
 				)
 			)
@@ -85692,6 +85678,73 @@
 			(project "STAR_MCU"
 				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
 					(reference "C5")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "PCM_4ms_Power-symbol:PWR_FLAG")
+		(at 627.38 110.49 90)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "75bbf9e6-acb9-44bf-92e4-fa2d09b09bc8")
+		(property "Reference" "#FLG03"
+			(at 625.475 110.49 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 622.3 110.49 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at 627.38 110.49 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 627.38 110.49 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 627.38 110.49 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "303f15a2-3d53-462e-af37-41ade1a4f139")
+		)
+		(instances
+			(project "STAR_MCU"
+				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
+					(reference "#FLG03")
 					(unit 1)
 				)
 			)
@@ -109176,6 +109229,71 @@
 	)
 	(symbol
 		(lib_id "power:GND")
+		(at 763.27 405.13 270)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(uuid "b1c3353c-c1b2-4145-a5f3-335681479bab")
+		(property "Reference" "#PWR093"
+			(at 756.92 405.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "GND"
+			(at 758.698 405.13 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+			)
+		)
+		(property "Footprint" ""
+			(at 763.27 405.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 763.27 405.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
+			(at 763.27 405.13 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "06bc6be3-a309-4c0c-816b-ce2ddd283fd9")
+		)
+		(instances
+			(project "STAR_MCU"
+				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
+					(reference "#PWR093")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "power:GND")
 		(at 514.35 224.79 0)
 		(unit 1)
 		(exclude_from_sim no)
@@ -120535,7 +120653,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "d454110c-7e0b-41bf-b0ab-9427d6e431b7")
-		(property "Reference" "#PWR016"
+		(property "Reference" "#PWR0103"
 			(at 728.98 509.27 0)
 			(effects
 				(font
@@ -120586,7 +120704,7 @@
 		(instances
 			(project "STAR_MCU"
 				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
-					(reference "#PWR016")
+					(reference "#PWR0103")
 					(unit 1)
 				)
 			)
@@ -121205,6 +121323,73 @@
 			(project "STAR_MCU"
 				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
 					(reference "C28")
+					(unit 1)
+				)
+			)
+		)
+	)
+	(symbol
+		(lib_id "PCM_4ms_Power-symbol:PWR_FLAG")
+		(at 659.13 110.49 180)
+		(unit 1)
+		(exclude_from_sim no)
+		(in_bom yes)
+		(on_board yes)
+		(dnp no)
+		(fields_autoplaced yes)
+		(uuid "d650ccb2-d7ef-4072-8d12-b180755e9879")
+		(property "Reference" "#FLG04"
+			(at 659.13 112.395 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Value" "PWR_FLAG"
+			(at 659.13 115.57 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Footprint" ""
+			(at 659.13 110.49 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Datasheet" ""
+			(at 659.13 110.49 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Description" ""
+			(at 659.13 110.49 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(pin "1"
+			(uuid "b9759899-6019-427a-a352-c2b6027df2fc")
+		)
+		(instances
+			(project "STAR_MCU"
+				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
+					(reference "#FLG04")
 					(unit 1)
 				)
 			)
@@ -130205,7 +130390,7 @@
 	)
 	(symbol
 		(lib_id "power:GND")
-		(at 678.18 351.79 90)
+		(at 679.45 351.79 90)
 		(unit 1)
 		(exclude_from_sim no)
 		(in_bom yes)
@@ -130213,7 +130398,7 @@
 		(dnp no)
 		(uuid "e9711bc5-e6f4-4a27-9845-af0148bb7514")
 		(property "Reference" "#PWR074"
-			(at 684.53 351.79 0)
+			(at 685.8 351.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -130222,7 +130407,7 @@
 			)
 		)
 		(property "Value" "GND"
-			(at 680.974 351.79 90)
+			(at 682.244 351.79 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -130231,7 +130416,7 @@
 			)
 		)
 		(property "Footprint" ""
-			(at 678.18 351.79 0)
+			(at 679.45 351.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -130240,7 +130425,7 @@
 			)
 		)
 		(property "Datasheet" ""
-			(at 678.18 351.79 0)
+			(at 679.45 351.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -130249,7 +130434,7 @@
 			)
 		)
 		(property "Description" "Power symbol creates a global label with name \"GND\" , ground"
-			(at 678.18 351.79 0)
+			(at 679.45 351.79 0)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -130707,7 +130892,7 @@
 		(on_board yes)
 		(dnp no)
 		(uuid "eba9138c-9e2c-4705-9bb9-ea684a6d9c8b")
-		(property "Reference" "#PWR07"
+		(property "Reference" "#PWR0101"
 			(at 523.24 474.98 0)
 			(effects
 				(font
@@ -130757,7 +130942,7 @@
 		(instances
 			(project "STAR_MCU"
 				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
-					(reference "#PWR07")
+					(reference "#PWR0101")
 					(unit 1)
 				)
 			)
@@ -131151,73 +131336,6 @@
 			(project "STAR_MCU"
 				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
 					(reference "#PWR060")
-					(unit 1)
-				)
-			)
-		)
-	)
-	(symbol
-		(lib_id "PCM_4ms_Power-symbol:PWR_FLAG")
-		(at 411.48 401.32 90)
-		(unit 1)
-		(exclude_from_sim no)
-		(in_bom yes)
-		(on_board yes)
-		(dnp no)
-		(fields_autoplaced yes)
-		(uuid "efe426dc-bbcc-448f-ae45-2d190c588557")
-		(property "Reference" "#FLG02"
-			(at 409.575 401.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Value" "PWR_FLAG"
-			(at 406.4 401.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Footprint" ""
-			(at 411.48 401.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Datasheet" ""
-			(at 411.48 401.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(property "Description" ""
-			(at 411.48 401.32 0)
-			(effects
-				(font
-					(size 1.27 1.27)
-				)
-				(hide yes)
-			)
-		)
-		(pin "1"
-			(uuid "62a02f54-50f6-406f-b20a-78973597c084")
-		)
-		(instances
-			(project "STAR_MCU"
-				(path "/ecf7f25e-fb61-4a34-8efe-359ece06c07e"
-					(reference "#FLG02")
 					(unit 1)
 				)
 			)
