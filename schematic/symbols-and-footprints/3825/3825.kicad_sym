@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Adafruit/3825?qs=%252BEew9%252B0nqrAn6n76%252BB5vZg%3D%3D" (at 16.51 -594.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Name" "Adafruit" (at 16.51 -694.92 0)
+    (property "Manufacturer Name" "Adafruit" (at 16.51 -694.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Part_Number" "3825" (at 16.51 -794.92 0)
+    (property "Manufacturer Part Number" "3825" (at 16.51 -794.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
     (rectangle

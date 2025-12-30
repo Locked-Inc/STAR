@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Texas-Instruments/TPS7A9101DSKR?qs=34RfhUjJmKdov7HQNWp7rg%3D%3D" (at 31.75 -594.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Name" "Texas Instruments" (at 31.75 -694.92 0)
+    (property "Manufacturer Name" "Texas Instruments" (at 31.75 -694.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Part_Number" "TPS7A9101DSKR" (at 31.75 -794.92 0)
+    (property "Manufacturer Part Number" "TPS7A9101DSKR" (at 31.75 -794.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
     (rectangle

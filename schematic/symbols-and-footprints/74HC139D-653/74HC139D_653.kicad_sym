@@ -83,7 +83,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Nexperia"
+		(property "Manufacturer Name" "Nexperia"
 			(at 24.13 -694.92 0)
 			(effects
 				(font
@@ -93,7 +93,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "74HC139D,653"
+		(property "Manufacturer Part Number" "74HC139D,653"
 			(at 24.13 -794.92 0)
 			(effects
 				(font

@@ -86,7 +86,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "TDK"
+		(property "Manufacturer Name" "TDK"
 			(at 13.97 -696.19 0)
 			(effects
 				(font
@@ -96,7 +96,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "NTCGS163JX103DT7"
+		(property "Manufacturer Part Number" "NTCGS163JX103DT7"
 			(at 13.97 -796.19 0)
 			(effects
 				(font

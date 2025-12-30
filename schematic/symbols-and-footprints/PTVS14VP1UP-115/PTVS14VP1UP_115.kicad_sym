@@ -86,7 +86,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Nexperia"
+		(property "Manufacturer Name" "Nexperia"
 			(at 10.16 -693.65 0)
 			(effects
 				(font
@@ -96,7 +96,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "PTVS14VP1UP,115"
+		(property "Manufacturer Part Number" "PTVS14VP1UP,115"
 			(at 10.16 -793.65 0)
 			(effects
 				(font

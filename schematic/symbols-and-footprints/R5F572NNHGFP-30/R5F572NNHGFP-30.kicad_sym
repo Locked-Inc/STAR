@@ -83,7 +83,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Renesas Electronics"
+		(property "Manufacturer Name" "Renesas Electronics"
 			(at 72.39 -684.76 0)
 			(effects
 				(font
@@ -93,7 +93,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "R5F572NNHGFP#30"
+		(property "Manufacturer Part Number" "R5F572NNHGFP#30"
 			(at 72.39 -784.76 0)
 			(effects
 				(font

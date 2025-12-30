@@ -88,7 +88,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "PULSE"
+		(property "Manufacturer Name" "PULSE"
 			(at 16.51 -696.19 0)
 			(effects
 				(font
@@ -98,7 +98,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "PA4343.222NLT"
+		(property "Manufacturer Part Number" "PA4343.222NLT"
 			(at 16.51 -796.19 0)
 			(effects
 				(font

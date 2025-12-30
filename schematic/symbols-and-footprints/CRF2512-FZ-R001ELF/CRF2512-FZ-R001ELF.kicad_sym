@@ -86,7 +86,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Bourns"
+		(property "Manufacturer Name" "Bourns"
 			(at 13.97 -696.19 0)
 			(effects
 				(font
@@ -96,7 +96,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "CRF2512-FZ-R001ELF"
+		(property "Manufacturer Part Number" "CRF2512-FZ-R001ELF"
 			(at 13.97 -796.19 0)
 			(effects
 				(font

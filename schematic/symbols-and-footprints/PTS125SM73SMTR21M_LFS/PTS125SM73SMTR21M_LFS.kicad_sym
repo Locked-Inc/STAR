@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/CK/PTS125SM73SMTR21M-LFS?qs=t7xnP681wgVp4NpaUUvA%252Bw%3D%3D" (at 26.67 -594.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Name" "C & K COMPONENTS" (at 26.67 -694.92 0)
+    (property "Manufacturer Name" "C & K COMPONENTS" (at 26.67 -694.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Part_Number" "PTS125SM73SMTR21M LFS" (at 26.67 -794.92 0)
+    (property "Manufacturer Part Number" "PTS125SM73SMTR21M LFS" (at 26.67 -794.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
     (rectangle

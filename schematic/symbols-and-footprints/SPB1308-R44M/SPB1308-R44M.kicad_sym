@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "" (at 16.51 -596.19 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Name" "Bourns" (at 16.51 -696.19 0)
+    (property "Manufacturer Name" "Bourns" (at 16.51 -696.19 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Part_Number" "SPB1308-R44M" (at 16.51 -796.19 0)
+    (property "Manufacturer Part Number" "SPB1308-R44M" (at 16.51 -796.19 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
     (arc

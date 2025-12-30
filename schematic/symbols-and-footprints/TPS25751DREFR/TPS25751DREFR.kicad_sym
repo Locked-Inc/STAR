@@ -83,7 +83,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Texas Instruments"
+		(property "Manufacturer Name" "Texas Instruments"
 			(at 44.45 -694.92 0)
 			(effects
 				(font
@@ -93,7 +93,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "TPS25751DREFR"
+		(property "Manufacturer Part Number" "TPS25751DREFR"
 			(at 44.45 -794.92 0)
 			(effects
 				(font

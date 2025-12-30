@@ -88,7 +88,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "COILCRAFT"
+		(property "Manufacturer Name" "COILCRAFT"
 			(at 16.51 -696.19 0)
 			(effects
 				(font
@@ -98,7 +98,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "SLC1480-441MLD"
+		(property "Manufacturer Part Number" "SLC1480-441MLD"
 			(at 16.51 -796.19 0)
 			(effects
 				(font

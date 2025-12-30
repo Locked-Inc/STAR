@@ -83,7 +83,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "MCC"
+		(property "Manufacturer Name" "MCC"
 			(at 21.59 -694.92 0)
 			(effects
 				(font
@@ -93,7 +93,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "BCX56-TP"
+		(property "Manufacturer Part Number" "BCX56-TP"
 			(at 21.59 -794.92 0)
 			(effects
 				(font

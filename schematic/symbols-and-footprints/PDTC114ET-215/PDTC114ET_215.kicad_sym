@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Nexperia/PDTC114ET215?qs=LOCUfHb8d9sz3EyBaiPkbg%3D%3D" (at 19.05 -587.3 0)
       (effects (font (size 1.27 1.27)) (justify left bottom) hide)
     )
-    (property "Manufacturer_Name" "Nexperia" (at 19.05 -687.3 0)
+    (property "Manufacturer Name" "Nexperia" (at 19.05 -687.3 0)
       (effects (font (size 1.27 1.27)) (justify left bottom) hide)
     )
-    (property "Manufacturer_Part_Number" "PDTC114ET,215" (at 19.05 -787.3 0)
+    (property "Manufacturer Part Number" "PDTC114ET,215" (at 19.05 -787.3 0)
       (effects (font (size 1.27 1.27)) (justify left bottom) hide)
     )
     (rectangle

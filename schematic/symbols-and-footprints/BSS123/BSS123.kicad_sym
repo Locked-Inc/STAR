@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/onsemi-Fairchild/BSS123?qs=FOlmdCx%252BAA2Kf8SEB3qLYA%3D%3D" (at 11.43 -598.73 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Name" "onsemi" (at 11.43 -698.73 0)
+    (property "Manufacturer Name" "onsemi" (at 11.43 -698.73 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Part_Number" "BSS123" (at 11.43 -798.73 0)
+    (property "Manufacturer Part Number" "BSS123" (at 11.43 -798.73 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
     (polyline

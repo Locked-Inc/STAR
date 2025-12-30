@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Texas-Instruments/TVS2200DRVR?qs=W0yvOO0ixfHPbvei2cYdIw%3D%3D" (at 26.67 -594.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Name" "Texas Instruments" (at 26.67 -694.92 0)
+    (property "Manufacturer Name" "Texas Instruments" (at 26.67 -694.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Part_Number" "TVS2200DRVR" (at 26.67 -794.92 0)
+    (property "Manufacturer Part Number" "TVS2200DRVR" (at 26.67 -794.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
     (rectangle

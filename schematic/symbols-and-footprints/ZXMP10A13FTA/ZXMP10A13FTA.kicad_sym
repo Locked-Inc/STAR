@@ -86,7 +86,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Diodes Incorporated"
+		(property "Manufacturer Name" "Diodes Incorporated"
 			(at 11.43 -698.73 0)
 			(effects
 				(font
@@ -96,7 +96,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "ZXMP10A13FTA"
+		(property "Manufacturer Part Number" "ZXMP10A13FTA"
 			(at 11.43 -798.73 0)
 			(effects
 				(font

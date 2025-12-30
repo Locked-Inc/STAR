@@ -83,7 +83,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "LITTELFUSE"
+		(property "Manufacturer Name" "LITTELFUSE"
 			(at 29.21 -694.92 0)
 			(effects
 				(font
@@ -93,7 +93,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "ITV9550L5045MR"
+		(property "Manufacturer Part Number" "ITV9550L5045MR"
 			(at 29.21 -794.92 0)
 			(effects
 				(font

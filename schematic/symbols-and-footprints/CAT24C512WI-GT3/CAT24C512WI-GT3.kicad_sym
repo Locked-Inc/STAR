@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/onsemi/CAT24C512WI-GT3?qs=NJQfjRgVp6ROyXrGKjEjgQ%3D%3D" (at 21.59 -594.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Name" "onsemi" (at 21.59 -694.92 0)
+    (property "Manufacturer Name" "onsemi" (at 21.59 -694.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Part_Number" "CAT24C512WI-GT3" (at 21.59 -794.92 0)
+    (property "Manufacturer Part Number" "CAT24C512WI-GT3" (at 21.59 -794.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
     (rectangle

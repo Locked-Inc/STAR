@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/KEMET/T521B106M025ATE100?qs=BA62vJVifGrQBWB52riCrQ%3D%3D" (at 8.89 -596.19 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Name" "KEMET" (at 8.89 -696.19 0)
+    (property "Manufacturer Name" "KEMET" (at 8.89 -696.19 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Part_Number" "T521B106M025ATE100" (at 8.89 -796.19 0)
+    (property "Manufacturer Part Number" "T521B106M025ATE100" (at 8.89 -796.19 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
     (rectangle

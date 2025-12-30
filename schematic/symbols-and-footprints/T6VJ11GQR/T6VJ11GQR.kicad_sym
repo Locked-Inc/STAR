@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Diptronics/T6VJ11GQR?qs=Z%252BL2brAPG1KYAhPS12Z%2FqQ%3D%3D" (at 26.67 -594.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Name" "Diptronics" (at 26.67 -694.92 0)
+    (property "Manufacturer Name" "Diptronics" (at 26.67 -694.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Part_Number" "T6VJ11GQR" (at 26.67 -794.92 0)
+    (property "Manufacturer Part Number" "T6VJ11GQR" (at 26.67 -794.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
     (rectangle

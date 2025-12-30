@@ -86,7 +86,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Diodes Incorporated"
+		(property "Manufacturer Name" "Diodes Incorporated"
 			(at 11.43 -698.73 0)
 			(effects
 				(font
@@ -96,7 +96,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "DMN3042L-7"
+		(property "Manufacturer Part Number" "DMN3042L-7"
 			(at 11.43 -798.73 0)
 			(effects
 				(font

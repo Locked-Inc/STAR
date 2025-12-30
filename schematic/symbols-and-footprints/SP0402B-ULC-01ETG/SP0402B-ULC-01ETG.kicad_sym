@@ -86,7 +86,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "LITTELFUSE"
+		(property "Manufacturer Name" "LITTELFUSE"
 			(at 12.7 -693.65 0)
 			(effects
 				(font
@@ -96,7 +96,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "SP0402B-ULC-01ETG"
+		(property "Manufacturer Part Number" "SP0402B-ULC-01ETG"
 			(at 12.7 -793.65 0)
 			(effects
 				(font

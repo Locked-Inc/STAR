@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/ROHM-Semiconductor/SML-D12Y1WT86?qs=M3jcYzEJUdG%2FAKvzZK%252Bz7w%3D%3D" (at 12.7 -593.65 0)
       (effects (font (size 1.27 1.27)) (justify left bottom) hide)
     )
-    (property "Manufacturer_Name" "ROHM Semiconductor" (at 12.7 -693.65 0)
+    (property "Manufacturer Name" "ROHM Semiconductor" (at 12.7 -693.65 0)
       (effects (font (size 1.27 1.27)) (justify left bottom) hide)
     )
-    (property "Manufacturer_Part_Number" "SML-D12Y1WT86" (at 12.7 -793.65 0)
+    (property "Manufacturer Part Number" "SML-D12Y1WT86" (at 12.7 -793.65 0)
       (effects (font (size 1.27 1.27)) (justify left bottom) hide)
     )
     (polyline

@@ -83,7 +83,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Texas Instruments"
+		(property "Manufacturer Name" "Texas Instruments"
 			(at 31.75 -687.3 0)
 			(effects
 				(font
@@ -93,7 +93,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "TPS40305DRCT"
+		(property "Manufacturer Part Number" "TPS40305DRCT"
 			(at 31.75 -787.3 0)
 			(effects
 				(font

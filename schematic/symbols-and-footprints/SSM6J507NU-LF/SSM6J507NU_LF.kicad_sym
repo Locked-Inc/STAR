@@ -83,7 +83,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Toshiba"
+		(property "Manufacturer Name" "Toshiba"
 			(at 21.59 -694.92 0)
 			(effects
 				(font
@@ -93,7 +93,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "SSM6J507NU,LF"
+		(property "Manufacturer Part Number" "SSM6J507NU,LF"
 			(at 21.59 -794.92 0)
 			(effects
 				(font
