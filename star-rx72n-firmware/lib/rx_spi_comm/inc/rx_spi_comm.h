@@ -24,7 +24,6 @@
 #define STAR_RX_SPI_COMM_H
 
 #include <stdbool.h>
-#include <stddef.h>
 #include <stdint.h>
 
 #include "rx_err.h"
@@ -135,7 +134,7 @@ rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
                           rx_frame_type_t       type,
                           uint8_t               flags,
                           const uint8_t*        payload,
-                          size_t                payload_len);
+                          uint32_t              payload_len);
 
 /**
  * @brief Send ACK for received frame

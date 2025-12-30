@@ -62,12 +62,12 @@ typedef enum {
  */
 static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
                                       const uint8_t*        tx_data,
-                                      size_t                tx_len,
+                                      uint32_t              tx_len,
                                       uint8_t*              rx_data,
-                                      size_t                rx_len)
+                                      uint32_t              rx_len)
 {
   /* Prepare TX buffer (pad with zeros if RX is larger) */
-  size_t transfer_len = (tx_len > rx_len) ? tx_len : rx_len;
+  uint32_t transfer_len = (tx_len > rx_len) ? tx_len : rx_len;
 
   if (transfer_len > k_spi_comm_tx_buffer_size) {
     return RX_ERR_INVALID_SIZE;
@@ -173,7 +173,7 @@ rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
                           rx_frame_type_t       type,
                           uint8_t               flags,
                           const uint8_t*        payload,
-                          size_t                payload_len)
+                          uint32_t              payload_len)
 {
   if (handle == NULL) {
     return RX_ERR_INVALID_ARG;
@@ -212,8 +212,8 @@ rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
   }
 
   /* Encode frame to wire format */
-  uint8_t wire_buffer[k_frame_max_size];
-  size_t  wire_len = 0;
+  uint8_t  wire_buffer[k_frame_max_size];
+  uint32_t wire_len = 0;
 
   rx_err_t err = rx_frame_encode(&handle->encoder, &frame, wire_buffer, &wire_len);
   if (err != RX_OK) {
@@ -252,8 +252,8 @@ rx_err_t rx_spi_comm_send_ack(rx_spi_comm_handle_t* handle, uint16_t sequence)
   }
 
   /* Encode and send */
-  uint8_t wire_buffer[k_frame_min_size];
-  size_t  wire_len = 0;
+  uint8_t  wire_buffer[k_frame_min_size];
+  uint32_t wire_len = 0;
 
   err = rx_frame_encode(&handle->encoder, &ack_frame, wire_buffer, &wire_len);
   if (err != RX_OK) {
@@ -281,8 +281,8 @@ rx_err_t rx_spi_comm_send_nack(rx_spi_comm_handle_t* handle, uint16_t sequence, 
   }
 
   /* Encode and send */
-  uint8_t wire_buffer[k_frame_min_size];
-  size_t  wire_len = 0;
+  uint8_t  wire_buffer[k_frame_min_size];
+  uint32_t wire_len = 0;
 
   err = rx_frame_encode(&handle->encoder, &nack_frame, wire_buffer, &wire_len);
   if (err != RX_OK) {
@@ -346,8 +346,8 @@ rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, ui
   }
 
   /* Read frame header first to determine length */
-  uint8_t header_buf[k_frame_sync_size + k_frame_header_size];
-  size_t  header_len = sizeof(header_buf);
+  uint8_t  header_buf[k_frame_sync_size + k_frame_header_size];
+  uint32_t header_len = sizeof(header_buf);
 
   /* For SPI peripheral mode, we receive what the controller sends */
   err = internal_spi_transfer(handle, NULL, 0, header_buf, header_len);
@@ -372,10 +372,10 @@ rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, ui
   }
 
   /* Calculate total frame size */
-  size_t total_size = k_frame_sync_size + k_frame_header_size + payload_len + k_frame_crc_size;
+  uint32_t total_size = k_frame_sync_size + k_frame_header_size + payload_len + k_frame_crc_size;
 
   /* Read remaining data (payload + CRC) */
-  size_t remaining = payload_len + k_frame_crc_size;
+  uint32_t remaining = payload_len + k_frame_crc_size;
   if (remaining > 0) {
     err = internal_spi_transfer(handle, NULL, 0, handle->rx_buffer + header_len, remaining);
     if (err != RX_OK) {

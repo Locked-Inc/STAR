@@ -49,7 +49,7 @@ internal_encode_string_callback(pb_ostream_t* stream, const pb_field_t* field, v
     return true; /* Empty string is valid */
   }
 
-  size_t len = strlen(str);
+  uint32_t len = strlen(str);
   if (!pb_encode_tag_for_field(stream, field)) {
     return false;
   }
@@ -74,7 +74,7 @@ rx_err_t rx_nanopb_init(void)
 
 rx_err_t rx_nanopb_encode_velocity_request(const star_v1_SetVelocityRequest* msg,
                                            uint8_t*                          buffer,
-                                           size_t*                           len)
+                                           uint32_t*                         len)
 {
   if (msg == NULL || buffer == NULL || len == NULL) {
     return RX_ERR_INVALID_ARG;
@@ -91,7 +91,7 @@ rx_err_t rx_nanopb_encode_velocity_request(const star_v1_SetVelocityRequest* msg
 }
 
 rx_err_t rx_nanopb_decode_velocity_request(const uint8_t*              buffer,
-                                           size_t                      len,
+                                           uint32_t                    len,
                                            star_v1_SetVelocityRequest* msg)
 {
   if (buffer == NULL || msg == NULL) {
@@ -117,7 +117,7 @@ rx_err_t rx_nanopb_decode_velocity_request(const uint8_t*              buffer,
 
 rx_err_t rx_nanopb_encode_velocity_response(const star_v1_SetVelocityResponse* msg,
                                             uint8_t*                           buffer,
-                                            size_t*                            len)
+                                            uint32_t*                          len)
 {
   if (msg == NULL || buffer == NULL || len == NULL) {
     return RX_ERR_INVALID_ARG;
@@ -138,8 +138,9 @@ rx_err_t rx_nanopb_encode_velocity_response(const star_v1_SetVelocityResponse* m
  * =============================================================================
  */
 
-rx_err_t
-rx_nanopb_decode_estop_request(const uint8_t* buffer, size_t len, star_v1_EmergencyStopRequest* msg)
+rx_err_t rx_nanopb_decode_estop_request(const uint8_t*                buffer,
+                                        uint32_t                      len,
+                                        star_v1_EmergencyStopRequest* msg)
 {
   if (buffer == NULL || msg == NULL) {
     return RX_ERR_INVALID_ARG;
@@ -159,7 +160,7 @@ rx_nanopb_decode_estop_request(const uint8_t* buffer, size_t len, star_v1_Emerge
 
 rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* msg,
                                          uint8_t*                             buffer,
-                                         size_t*                              len)
+                                         uint32_t*                            len)
 {
   if (msg == NULL || buffer == NULL || len == NULL) {
     return RX_ERR_INVALID_ARG;
@@ -180,7 +181,8 @@ rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* ms
  * =============================================================================
  */
 
-rx_err_t rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg, uint8_t* buffer, size_t* len)
+rx_err_t
+rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg, uint8_t* buffer, uint32_t* len)
 {
   if (msg == NULL || buffer == NULL || len == NULL) {
     return RX_ERR_INVALID_ARG;
