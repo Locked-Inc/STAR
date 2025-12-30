@@ -12976,6 +12976,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 398.78 170.18 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 398.78 170.18 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "7227b970-a6ca-40cd-b9c2-89cd80871099")
 		)
@@ -13047,6 +13065,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 480.06 297.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 480.06 297.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "8a72b730-a235-4a57-a675-f6aba57e477d")
 		)
@@ -13109,6 +13145,24 @@
 		)
 		(property "Description" "Resistor"
 			(at 229.87 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 229.87 88.9 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 229.87 88.9 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -13734,6 +13788,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 139.7 60.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 139.7 60.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "08718b17-0ec3-4ba7-a690-e95d983b6883")
 		)
@@ -13797,6 +13869,24 @@
 		)
 		(property "Description" "Resistor"
 			(at 401.32 270.51 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 401.32 270.51 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 401.32 270.51 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14422,6 +14512,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 306.07 257.81 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 306.07 257.81 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "c8abe43a-fa89-4e84-81fe-ff4cff95a76f")
 		)
@@ -14487,6 +14595,24 @@
 		)
 		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
 			(at 464.82 274.32 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 464.82 274.32 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 464.82 274.32 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -14611,6 +14737,24 @@
 					(size 1.27 1.27)
 				)
 				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 448.31 220.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 448.31 220.98 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 				(hide yes)
 			)
 		)
@@ -14776,6 +14920,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 148.59 55.88 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 148.59 55.88 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "ea79b62b-5047-483e-a370-eedfe976c9a2")
 		)
@@ -14892,6 +15054,24 @@
 					(size 1.27 1.27)
 				)
 				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 184.15 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 184.15 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 				(hide yes)
 			)
 		)
@@ -15069,6 +15249,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 407.67 260.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 407.67 260.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "d7f3990c-6029-450e-a786-c2bd25405b5b")
 		)
@@ -15192,6 +15390,24 @@
 					(size 1.27 1.27)
 				)
 				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 355.6 110.49 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 355.6 110.49 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 				(hide yes)
 			)
 		)
@@ -15809,6 +16025,24 @@
 			)
 		)
 		(property "DigiKey Price per Unit" "0.10"
+			(at 400.05 207.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 400.05 207.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 400.05 207.01 0)
 			(effects
 				(font
@@ -16436,6 +16670,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 377.19 280.67 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 377.19 280.67 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "49e8204d-62d8-4924-aba3-d52c5be06fca")
 		)
@@ -16610,6 +16862,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 123.19 201.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 123.19 201.93 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "4"
 			(uuid "a4ec64a3-ea7a-4d0d-a222-9cee90adad6c")
 		)
@@ -16678,6 +16948,24 @@
 			)
 		)
 		(property "Description" "Resistor"
+			(at 335.28 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 335.28 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 335.28 142.24 0)
 			(effects
 				(font
@@ -17370,6 +17658,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 190.5 88.9 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 190.5 88.9 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "18ce7be6-dfb3-4217-857f-80b3807cc479")
 		)
@@ -17543,6 +17849,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 45.72 86.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 45.72 86.36 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "afc5364c-df7a-4b49-9b91-94b0fa240b3b")
 		)
@@ -17607,6 +17931,24 @@
 			)
 		)
 		(property "Description" "Resistor"
+			(at 109.22 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 109.22 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 109.22 107.95 0)
 			(effects
 				(font
@@ -18223,6 +18565,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 369.57 270.51 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 369.57 270.51 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "fffc1ad7-2dcb-446b-bc5d-0edf1c960af4")
 		)
@@ -18831,6 +19191,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 461.01 243.84 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 461.01 243.84 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "e74bfff0-efd7-40b3-9454-06efb5f2e6c5")
 		)
@@ -18952,6 +19330,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 161.29 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 161.29 227.33 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "be67cb05-61fe-4a47-965d-ca0cf0f6e22d")
 		)
@@ -19027,6 +19423,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 464.82 264.16 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 464.82 264.16 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "9fce3ef5-adc0-4862-9819-674d01866244")
 		)
@@ -19090,6 +19504,24 @@
 			)
 		)
 		(property "Description" "Net tie, 2 pins"
+			(at 497.84 297.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 497.84 297.18 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 497.84 297.18 0)
 			(effects
 				(font
@@ -19716,6 +20148,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 300.99 254 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 300.99 254 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "31f2aa58-dcc0-4356-81ee-19f2acc5019f")
 		)
@@ -19779,6 +20229,24 @@
 		)
 		(property "Description" "Resistor"
 			(at 472.44 223.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 472.44 223.52 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 472.44 223.52 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -20386,6 +20854,24 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.10"
+			(at 461.01 256.54 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 461.01 256.54 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 461.01 256.54 90)
 			(effects
 				(font
@@ -21012,6 +21498,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 215.9 99.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 215.9 99.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "4241a7de-8c34-4e4d-b5ae-0dc13bbe5167")
 		)
@@ -21630,6 +22134,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 180.34 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 180.34 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "a3e879db-149c-4725-9b3c-e883e66486ca")
 		)
@@ -21691,6 +22213,24 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
+			(at 109.22 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 109.22 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 109.22 118.11 0)
 			(effects
 				(font
@@ -21762,6 +22302,24 @@
 		)
 		(property "Description" "Resistor"
 			(at 369.57 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 369.57 105.41 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 369.57 105.41 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -22388,6 +22946,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 311.15 247.65 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 311.15 247.65 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "59fef0f5-a00b-4e2f-9261-f00533842374")
 		)
@@ -22744,6 +23320,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 359.41 299.72 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 359.41 299.72 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "f9fbed79-d3dc-4dbc-b526-e3ed5e57478e")
 		)
@@ -22806,6 +23400,24 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
+			(at 407.67 187.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 407.67 187.96 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 407.67 187.96 0)
 			(effects
 				(font
@@ -22935,6 +23547,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 424.18 199.39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 424.18 199.39 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin ""
 			(uuid "6ebcc0c2-c5c5-417a-82c1-76e2d7a14bd5")
 		)
@@ -23053,6 +23683,24 @@
 					(size 1.27 1.27)
 				)
 				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 198.12 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 198.12 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 				(hide yes)
 			)
 		)
@@ -23696,6 +24344,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 396.24 144.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 396.24 144.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "35d223eb-c784-407e-b2d1-6ef2575b2846")
 		)
@@ -23814,6 +24480,24 @@
 					(size 1.27 1.27)
 				)
 				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 198.12 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 198.12 80.01 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 				(hide yes)
 			)
 		)
@@ -24457,6 +25141,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 317.5 99.06 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 317.5 99.06 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "811f1680-b531-4e4b-b788-ef1cd31b387b")
 		)
@@ -24521,6 +25223,24 @@
 		)
 		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
 			(at 171.45 49.53 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 171.45 49.53 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 171.45 49.53 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -24593,6 +25313,24 @@
 		)
 		(property "Description" "Generic connector, single row, 01x02, script generated (kicad-library-utils/schlib/autogen/connector/)"
 			(at 464.82 279.4 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 464.82 279.4 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 464.82 279.4 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -24786,6 +25524,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 335.28 118.11 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 335.28 118.11 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "c6571873-af63-4d9d-9439-3ad0f8b87c15")
 		)
@@ -24929,6 +25685,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 468.63 260.35 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 468.63 260.35 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin ""
 			(uuid "6738f334-80ac-4a5c-849a-dc4d7a2e6657")
 		)
@@ -24990,6 +25764,24 @@
 			)
 		)
 		(property "Description" "Resistor"
+			(at 295.91 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 295.91 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 295.91 142.24 0)
 			(effects
 				(font
@@ -25200,6 +25992,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 383.54 170.18 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 383.54 170.18 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "eb762448-c31e-4422-8d10-9adca8e59a1b")
 		)
@@ -25261,6 +26071,24 @@
 			)
 		)
 		(property "Description" "Resistor"
+			(at 125.73 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 125.73 102.87 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 125.73 102.87 0)
 			(effects
 				(font
@@ -25869,6 +26697,24 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.10"
+			(at 474.98 181.61 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 474.98 181.61 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 474.98 181.61 90)
 			(effects
 				(font
@@ -26496,6 +27342,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 382.27 280.67 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 382.27 280.67 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "1df8b9b9-6d1f-449c-83d5-219b619aca1e")
 		)
@@ -26625,6 +27489,24 @@
 		)
 		(property "Description" "Resistor"
 			(at 350.52 133.35 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 350.52 133.35 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 350.52 133.35 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -27242,6 +28124,24 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.10"
+			(at 172.72 115.57 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 172.72 115.57 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 172.72 115.57 0)
 			(effects
 				(font
@@ -27868,6 +28768,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 167.64 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 167.64 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "c3ca9984-7699-41df-9e47-61dc12c31204")
 		)
@@ -28480,6 +29398,24 @@
 		)
 		(property "DigiKey Price per Unit" "0.10"
 			(at 330.2 99.06 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 330.2 99.06 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 330.2 99.06 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -29177,6 +30113,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 264.16 115.57 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 264.16 115.57 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "1ad8d03d-7be0-43ba-a5d2-9e302857da0f")
 		)
@@ -29861,6 +30815,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 453.39 186.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 453.39 186.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "563beef8-2443-4a41-aa3a-c178757bcfb6")
 		)
@@ -30479,6 +31451,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 250.19 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 250.19 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "1ed5288e-ede0-400a-830a-3694e5e9a12a")
 		)
@@ -30542,6 +31532,24 @@
 		)
 		(property "Description" "Resistor"
 			(at 373.38 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 373.38 88.9 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 373.38 88.9 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -31159,6 +32167,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 392.43 280.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 392.43 280.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "789eb3bf-20f7-4d17-ad1b-a5711ede92b9")
 		)
@@ -31278,6 +32304,24 @@
 					(size 1.27 1.27)
 				)
 				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 313.69 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 313.69 124.46 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 				(hide yes)
 			)
 		)
@@ -31477,6 +32521,24 @@
 			)
 		)
 		(property "Description" "Resistor"
+			(at 365.76 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 365.76 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 365.76 142.24 0)
 			(effects
 				(font
@@ -31775,6 +32837,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 355.6 299.72 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 355.6 299.72 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "69c0ba39-dc90-4b7d-97fe-8ccc3a4b81d7")
 		)
@@ -31836,6 +32916,24 @@
 			)
 		)
 		(property "Description" "Resistor"
+			(at 158.75 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 158.75 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 158.75 62.23 0)
 			(effects
 				(font
@@ -31961,6 +33059,24 @@
 					(size 1.27 1.27)
 				)
 				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 439.42 168.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 439.42 168.91 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 				(hide yes)
 			)
 		)
@@ -32670,6 +33786,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 463.55 218.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 463.55 218.44 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "6c982586-2075-4299-8c46-0a1cf3bf7176")
 		)
@@ -32733,6 +33867,24 @@
 		)
 		(property "Description" "Unpolarized capacitor"
 			(at 453.39 233.68 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 453.39 233.68 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 453.39 233.68 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -33358,6 +34510,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 229.87 93.98 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 229.87 93.98 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "33cd4564-5f4a-40e2-a587-64125ca0c694")
 		)
@@ -33524,6 +34694,24 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.21"
+			(at 487.68 238.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 487.68 238.76 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 487.68 238.76 0)
 			(effects
 				(font
@@ -34149,6 +35337,24 @@
 			)
 		)
 		(property "DigiKey Price per Unit" "0.10"
+			(at 283.21 139.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 283.21 139.7 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 283.21 139.7 0)
 			(effects
 				(font
@@ -34841,6 +36047,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 306.07 247.65 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 306.07 247.65 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "cae23a43-00eb-4fc2-a0fd-4c0bbfa683c7")
 		)
@@ -34960,6 +36184,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 134.62 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 134.62 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "10"
 			(uuid "807408e0-6ac1-40b7-818d-48c64d080f8c")
 		)
@@ -35067,6 +36309,24 @@
 			)
 		)
 		(property "Description" "Resistor"
+			(at 355.6 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 355.6 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 355.6 142.24 0)
 			(effects
 				(font
@@ -35248,6 +36508,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 339.09 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 339.09 88.9 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "6c995632-ea38-472d-b735-8551bb51a574")
 		)
@@ -35315,6 +36593,24 @@
 			)
 		)
 		(property "Description" "Resistor"
+			(at 264.16 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 264.16 105.41 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 264.16 105.41 0)
 			(effects
 				(font
@@ -35393,6 +36689,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 472.44 212.09 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 472.44 212.09 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "0ad059b0-ff30-4ed8-af3d-9a37bfd68641")
 		)
@@ -35456,6 +36770,24 @@
 		)
 		(property "Description" "Resistor"
 			(at 474.98 166.37 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 474.98 166.37 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 474.98 166.37 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -35629,6 +36961,24 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.72 "
+			(at 232.41 228.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 232.41 228.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 232.41 228.6 0)
 			(effects
 				(font
@@ -36262,6 +37612,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 466.09 175.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 466.09 175.26 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "a3d30965-46a8-41b2-b104-f79bd2504879")
 		)
@@ -36428,6 +37796,24 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.72 "
+			(at 232.41 217.17 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 232.41 217.17 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 232.41 217.17 0)
 			(effects
 				(font
@@ -37060,6 +38446,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 243.84 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 243.84 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "58973a44-0a66-49ce-91b2-732eacc2c9b3")
 		)
@@ -37123,6 +38527,24 @@
 		)
 		(property "Description" "Resistor"
 			(at 401.32 273.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 401.32 273.05 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 401.32 273.05 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -37251,6 +38673,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 161.29 212.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 161.29 212.09 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "1dc2e8e3-3163-4e91-8962-c20abca8cb8d")
 		)
@@ -37323,6 +38763,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 321.31 127 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 321.31 127 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "0047ab35-5486-4acc-b7cd-1346de807331")
 		)
@@ -37384,6 +38842,24 @@
 			)
 		)
 		(property "Description" "Resistor"
+			(at 125.73 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 125.73 92.71 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 125.73 92.71 0)
 			(effects
 				(font
@@ -38076,6 +39552,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 256.54 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 256.54 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "f434741e-e0a6-48a8-b735-45d46d77905b")
 		)
@@ -38212,6 +39706,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 450.85 250.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 450.85 250.19 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "df11e91a-ef47-411b-821c-46b3701ce7a8")
 		)
@@ -38284,6 +39796,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 464.82 269.24 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 464.82 269.24 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "90fcf29e-4845-406c-9745-1a23b2ec35a4")
 		)
@@ -38346,6 +39876,24 @@
 		)
 		(property "Description" "Resistor"
 			(at 148.59 50.8 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 148.59 50.8 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 148.59 50.8 90)
 			(effects
 				(font
 					(size 1.27 1.27)
@@ -38972,6 +40520,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 466.09 186.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 466.09 186.69 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "fca77e95-c0fb-4459-ad3a-552cc811345a")
 		)
@@ -39164,6 +40730,24 @@
 			)
 		)
 		(property "Description" "Resistor"
+			(at 264.16 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 264.16 95.25 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 264.16 95.25 0)
 			(effects
 				(font
@@ -39772,6 +41356,24 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.10"
+			(at 369.57 273.05 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 369.57 273.05 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 369.57 273.05 90)
 			(effects
 				(font
@@ -40390,6 +41992,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 387.35 280.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 387.35 280.67 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "2225da44-ba9d-472f-bc9b-81df8bec3d05")
 		)
@@ -40507,6 +42127,24 @@
 					(size 1.27 1.27)
 				)
 				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 365.76 118.11 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 365.76 118.11 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 				(hide yes)
 			)
 		)
@@ -41149,6 +42787,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 119.38 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 119.38 96.52 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "999134ce-ec44-484f-b589-114e3da186f1")
 		)
@@ -41210,6 +42866,24 @@
 			)
 		)
 		(property "Description" "Unpolarized capacitor"
+			(at 85.09 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 85.09 118.11 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 85.09 118.11 0)
 			(effects
 				(font
@@ -41337,6 +43011,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 215.9 88.9 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 215.9 88.9 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "a4c027e0-fef8-45c4-80a6-e071d82676d7")
 		)
@@ -41399,6 +43091,24 @@
 			)
 		)
 		(property "Description" "Resistor"
+			(at 407.67 179.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 407.67 179.07 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 407.67 179.07 0)
 			(effects
 				(font
@@ -42082,6 +43792,24 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.28"
+			(at 186.69 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 186.69 62.23 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 186.69 62.23 0)
 			(effects
 				(font
@@ -42841,6 +44569,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 283.21 128.27 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 283.21 128.27 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "a78303c3-0abf-4d19-b454-417ea6d08eaa")
 		)
@@ -42964,6 +44710,24 @@
 			)
 		)
 		(property "Mouser Price per Unit" "0.47"
+			(at 110.49 236.22 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 110.49 236.22 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 110.49 236.22 90)
 			(effects
 				(font
@@ -43168,6 +44932,24 @@
 					(size 1.27 1.27)
 				)
 				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 407.67 138.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 407.67 138.43 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 				(hide yes)
 			)
 		)
@@ -43782,6 +45564,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 474.98 170.18 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 474.98 170.18 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "e77b0465-3ade-4352-8ca7-233db4b656c7")
 		)
@@ -43898,6 +45698,24 @@
 					(size 1.27 1.27)
 				)
 				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 105.41 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 105.41 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 				(hide yes)
 			)
 		)
@@ -44020,6 +45838,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 99.06 90.17 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 99.06 90.17 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "8"
 			(uuid "1b9573f7-c4ee-4da4-a04c-eba8cff239d5")
 		)
@@ -44100,6 +45936,24 @@
 			)
 		)
 		(property "Description" "Resistor"
+			(at 381 127 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 381 127 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 381 127 0)
 			(effects
 				(font
@@ -44688,6 +46542,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 332.74 273.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 332.74 273.05 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "2"
 			(uuid "b07c35c2-a84d-4c25-b1dc-cc7df5803652")
 		)
@@ -44755,6 +46627,24 @@
 			)
 		)
 		(property "Description" "Resistor"
+			(at 304.8 132.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 304.8 132.08 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 304.8 132.08 0)
 			(effects
 				(font
@@ -45382,6 +47272,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 311.15 257.81 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 311.15 257.81 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "d02a1d6e-688d-4dc3-a659-3e46c7bb55a2")
 		)
@@ -45500,6 +47408,24 @@
 					(size 1.27 1.27)
 				)
 				(justify left top)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 389.89 218.44 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 389.89 218.44 90)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
 				(hide yes)
 			)
 		)
@@ -46122,6 +48048,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 463.55 228.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 463.55 228.6 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "792fb0a9-5f7c-435d-9e3e-0ad55faf4961")
 		)
@@ -46184,6 +48128,24 @@
 			)
 		)
 		(property "Description" "Resistor"
+			(at 401.32 144.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 401.32 144.78 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 401.32 144.78 0)
 			(effects
 				(font
@@ -46261,6 +48223,24 @@
 				(hide yes)
 			)
 		)
+		(property "Manufacturer_Name" ""
+			(at 85.09 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
+			(at 85.09 97.79 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
 		(pin "1"
 			(uuid "e5858e9b-be6d-49d7-a37c-f17fa92d310c")
 		)
@@ -46323,6 +48303,24 @@
 			)
 		)
 		(property "Description" "Resistor"
+			(at 345.44 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 345.44 142.24 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 345.44 142.24 0)
 			(effects
 				(font
@@ -46948,6 +48946,24 @@
 			)
 		)
 		(property "Sim.Type" ""
+			(at 99.06 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Name" ""
+			(at 99.06 107.95 0)
+			(effects
+				(font
+					(size 1.27 1.27)
+				)
+				(hide yes)
+			)
+		)
+		(property "Manufacturer_Part_Number" ""
 			(at 99.06 107.95 0)
 			(effects
 				(font
