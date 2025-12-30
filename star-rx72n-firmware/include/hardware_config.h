@@ -124,18 +124,13 @@ typedef enum {
  */
 
 /**
- * @brief BMS I2C and GPIO configuration
+ * @brief BMS I2C and GPIO configuration (BQ4050RSMR fuel gauge)
  */
 typedef enum {
-  /* BQ25798 Charger */
-  k_bq25798_i2c_channel = 0, /**< RIIC0 (I2C bus 0) */
-  k_bq25798_int_port    = 5, /**< PORT5 */
-  k_bq25798_int_pin     = 0, /**< PORT5.0 = INT pin */
-
-  /* Fuel Gauge (SMBUS) */
-  k_fuel_gauge_smbus_channel = 1, /**< RIIC1 (I2C bus 1, SMBUS mode) */
+  /* BQ4050 Fuel Gauge (SMBUS) */
+  k_fuel_gauge_smbus_channel = 0, /**< RIIC0 (I2C bus 0, SMBUS mode) */
   k_fuel_gauge_alert_port    = 5, /**< PORT5 */
-  k_fuel_gauge_alert_pin     = 1, /**< PORT5.1 = ALERT pin */
+  k_fuel_gauge_alert_pin     = 0, /**< PORT5.0 = ALERT pin */
 } bms_hw_config_t;
 
 /* =============================================================================

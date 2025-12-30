@@ -155,10 +155,9 @@ add_library(rx_drv8243 STATIC
 target_include_directories(rx_drv8243 PUBLIC lib/rx_drv8243/inc)
 target_link_libraries(rx_drv8243 PUBLIC rx_bus rx_motor rx_core)
 
-# rx_fuel_gauge - Battery management
+# rx_fuel_gauge - Battery management (BQ4050 SMBUS)
 add_library(rx_fuel_gauge STATIC
     lib/rx_fuel_gauge/src/rx_fuel_gauge.c
-    lib/rx_fuel_gauge/src/rx_bq25798.c
 )
 target_include_directories(rx_fuel_gauge PUBLIC lib/rx_fuel_gauge/inc)
 target_link_libraries(rx_fuel_gauge PUBLIC rx_bus rx_core)
@@ -238,7 +237,7 @@ message(STATUS "  rx_motor       - Motor control (MTU3a PWM)")
 message(STATUS "  rx_encoder     - Encoder (MTU phase counting)")
 message(STATUS "  rx_pid         - PID controller")
 message(STATUS "  rx_drv8243     - DRV8243 H-bridge driver")
-message(STATUS "  rx_fuel_gauge  - Battery management (BQ25798)")
+message(STATUS "  rx_fuel_gauge  - Battery management (BQ4050 SMBUS)")
 message(STATUS "==============================================")
 
 # =============================================================================
