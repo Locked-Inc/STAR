@@ -284,16 +284,16 @@ rx_err_t rx_fec_encoder_deinit(rx_fec_encoder_t* enc)
   return RX_OK;
 }
 
-size_t rx_fec_encoded_len(size_t input_len)
+uint32_t rx_fec_encoded_len(uint32_t input_len)
 {
   if (input_len == 0) {
     return 0;
   }
 
   /* Output bits = (input bits + tail bits) * 2 */
-  size_t input_bits        = input_len * 8;
-  size_t total_input_bits  = input_bits + k_fec_tail_bits;
-  size_t total_output_bits = total_input_bits * 2;
+  uint32_t input_bits        = input_len * 8;
+  uint32_t total_input_bits  = input_bits + k_fec_tail_bits;
+  uint32_t total_output_bits = total_input_bits * 2;
 
   /* Round up to full bytes */
   return (total_output_bits + 7) / 8;
@@ -301,9 +301,9 @@ size_t rx_fec_encoded_len(size_t input_len)
 
 rx_err_t rx_fec_encode(rx_fec_encoder_t* enc,
                        const uint8_t*    input,
-                       size_t            input_len,
+                       uint32_t          input_len,
                        uint8_t*          output,
-                       size_t*           output_len)
+                       uint32_t*         output_len)
 {
   if (enc == NULL || input == NULL || output == NULL || output_len == NULL) {
     return RX_ERR_INVALID_ARG;
@@ -318,17 +318,17 @@ rx_err_t rx_fec_encode(rx_fec_encoder_t* enc,
   }
 
   /* Calculate output size */
-  size_t expected_output_len = rx_fec_encoded_len(input_len);
+  uint32_t expected_output_len = rx_fec_encoded_len(input_len);
 
   /* Clear output buffer */
   memset(output, 0, expected_output_len);
 
   /* Reset encoder state */
-  uint8_t state       = 0;
-  size_t  out_bit_idx = 0;
+  uint8_t  state       = 0;
+  uint32_t out_bit_idx = 0;
 
   /* Encode each input byte, MSB first */
-  for (size_t byte_idx = 0; byte_idx < input_len; byte_idx++) {
+  for (uint32_t byte_idx = 0; byte_idx < input_len; byte_idx++) {
     uint8_t b = input[byte_idx];
     for (int i = 7; i >= 0; i--) {
       uint8_t input_bit = (b >> i) & 1;
@@ -359,7 +359,7 @@ rx_err_t rx_fec_encode(rx_fec_encoder_t* enc,
  * =============================================================================
  */
 
-rx_err_t rx_fec_decoder_init(rx_fec_decoder_t* dec, uint64_t* survivors_buf, size_t survivors_len)
+rx_err_t rx_fec_decoder_init(rx_fec_decoder_t* dec, uint64_t* survivors_buf, uint32_t survivors_len)
 {
   if (dec == NULL || survivors_buf == NULL) {
     return RX_ERR_INVALID_ARG;
@@ -394,10 +394,10 @@ rx_err_t rx_fec_decoder_deinit(rx_fec_decoder_t* dec)
 
 rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*    dec,
                             const rx_soft_bit_t* soft_bits,
-                            size_t               soft_len,
-                            size_t               expected_output_len,
+                            uint32_t             soft_len,
+                            uint32_t             expected_output_len,
                             uint8_t*             output,
-                            size_t*              output_len)
+                            uint32_t*            output_len)
 {
   /* Validate arguments */
   if (dec == NULL || soft_bits == NULL || output == NULL || output_len == NULL) {
@@ -465,10 +465,10 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*    dec,
 
 rx_err_t rx_fec_decode_hard(rx_fec_decoder_t* dec,
                             const uint8_t*    data,
-                            size_t            data_len,
-                            size_t            expected_output_len,
+                            uint32_t          data_len,
+                            uint32_t          expected_output_len,
                             uint8_t*          output,
-                            size_t*           output_len)
+                            uint32_t*         output_len)
 {
   if (dec == NULL || data == NULL || output == NULL || output_len == NULL) {
     return RX_ERR_INVALID_ARG;

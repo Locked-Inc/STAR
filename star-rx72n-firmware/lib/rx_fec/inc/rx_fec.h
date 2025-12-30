@@ -22,7 +22,6 @@
 #define STAR_RX_FEC_H
 
 #include <stdbool.h>
-#include <stddef.h>
 #include <stdint.h>
 
 #include "rx_err.h"
@@ -128,9 +127,9 @@ rx_err_t rx_fec_encoder_deinit(rx_fec_encoder_t* enc);
  */
 rx_err_t rx_fec_encode(rx_fec_encoder_t* enc,
                        const uint8_t*    input,
-                       size_t            input_len,
+                       uint32_t          input_len,
                        uint8_t*          output,
-                       size_t*           output_len);
+                       uint32_t*         output_len);
 
 /**
  * @brief Calculate encoded output length
@@ -138,7 +137,7 @@ rx_err_t rx_fec_encode(rx_fec_encoder_t* enc,
  * @param[in] input_len Number of input bytes
  * @return Number of output bytes after encoding
  */
-size_t rx_fec_encoded_len(size_t input_len);
+uint32_t rx_fec_encoded_len(uint32_t input_len);
 
 /* =============================================================================
  * Decoder
@@ -163,7 +162,7 @@ typedef struct {
   int32_t   path_metrics[k_fec_num_states];     /**< Current path metrics */
   int32_t   new_path_metrics[k_fec_num_states]; /**< Next path metrics */
   uint64_t* survivors;                          /**< Survivor bits (caller-provided) */
-  size_t    survivors_len;                      /**< Length of survivors buffer */
+  uint32_t  survivors_len;                      /**< Length of survivors buffer */
   uint8_t   branch_table[k_fec_num_states][k_fec_num_input_values]
                       [k_fec_num_outputs]; /**< Precomputed outputs */
   uint8_t initialized;                     /**< Non-zero if initialized */
@@ -182,7 +181,8 @@ typedef struct {
  * @return RX_OK on success
  * @return RX_ERR_INVALID_ARG if any pointer is NULL or buffer too small
  */
-rx_err_t rx_fec_decoder_init(rx_fec_decoder_t* dec, uint64_t* survivors_buf, size_t survivors_len);
+rx_err_t
+rx_fec_decoder_init(rx_fec_decoder_t* dec, uint64_t* survivors_buf, uint32_t survivors_len);
 
 /**
  * @brief Deinitialize FEC decoder
@@ -212,10 +212,10 @@ rx_err_t rx_fec_decoder_deinit(rx_fec_decoder_t* dec);
  */
 rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*    dec,
                             const rx_soft_bit_t* soft_bits,
-                            size_t               soft_len,
-                            size_t               expected_output_len,
+                            uint32_t             soft_len,
+                            uint32_t             expected_output_len,
                             uint8_t*             output,
-                            size_t*              output_len);
+                            uint32_t*            output_len);
 
 /**
  * @brief Decode hard bits using Viterbi algorithm
@@ -236,10 +236,10 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*    dec,
  */
 rx_err_t rx_fec_decode_hard(rx_fec_decoder_t* dec,
                             const uint8_t*    data,
-                            size_t            data_len,
-                            size_t            expected_output_len,
+                            uint32_t          data_len,
+                            uint32_t          expected_output_len,
                             uint8_t*          output,
-                            size_t*           output_len);
+                            uint32_t*         output_len);
 
 /* =============================================================================
  * Utility Functions

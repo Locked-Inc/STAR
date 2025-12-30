@@ -47,7 +47,7 @@ rx_err_t rx_chase_combiner_deinit(rx_chase_combiner_t* combiner)
 }
 
 rx_err_t
-rx_chase_combiner_add(rx_chase_combiner_t* combiner, const rx_soft_bit_t* soft_bits, size_t len)
+rx_chase_combiner_add(rx_chase_combiner_t* combiner, const rx_soft_bit_t* soft_bits, uint32_t len)
 {
   if (combiner == NULL || soft_bits == NULL) {
     return RX_ERR_INVALID_ARG;
@@ -79,7 +79,7 @@ rx_chase_combiner_add(rx_chase_combiner_t* combiner, const rx_soft_bit_t* soft_b
   }
 
   /* Element-wise addition (accumulate) */
-  for (size_t i = 0; i < len; i++) {
+  for (uint32_t i = 0; i < len; i++) {
     combiner->accumulated[i] += (int16_t)soft_bits[i];
   }
 
@@ -88,7 +88,7 @@ rx_chase_combiner_add(rx_chase_combiner_t* combiner, const rx_soft_bit_t* soft_b
 }
 
 rx_err_t
-rx_chase_combiner_combined(rx_chase_combiner_t* combiner, rx_soft_bit_t* output, size_t* len)
+rx_chase_combiner_combined(rx_chase_combiner_t* combiner, rx_soft_bit_t* output, uint32_t* len)
 {
   if (combiner == NULL || output == NULL || len == NULL) {
     return RX_ERR_INVALID_ARG;
@@ -103,7 +103,7 @@ rx_chase_combiner_combined(rx_chase_combiner_t* combiner, rx_soft_bit_t* output,
   }
 
   /* Clamp accumulated values to SoftBit range [-127, +127] */
-  for (size_t i = 0; i < combiner->expected_len; i++) {
+  for (uint32_t i = 0; i < combiner->expected_len; i++) {
     int16_t acc = combiner->accumulated[i];
     if (acc > k_soft_bit_max) {
       output[i] = k_soft_bit_max;
@@ -240,9 +240,9 @@ void rx_harq_reset(rx_harq_handle_t* harq)
 
 rx_err_t rx_harq_encode(rx_harq_handle_t* harq,
                         const uint8_t*    payload,
-                        size_t            payload_len,
+                        uint32_t          payload_len,
                         uint8_t*          output,
-                        size_t*           output_len)
+                        uint32_t*         output_len)
 {
   if (harq == NULL || payload == NULL || output == NULL || output_len == NULL) {
     return RX_ERR_INVALID_ARG;
@@ -288,21 +288,21 @@ typedef enum {
  * @param[out] output_len  Actual output length
  */
 static void internal_soft_to_hard(const rx_soft_bit_t* soft_bits,
-                                  size_t               soft_len,
-                                  size_t               max_out_len,
+                                  uint32_t             soft_len,
+                                  uint32_t             max_out_len,
                                   uint8_t*             output,
-                                  size_t*              output_len)
+                                  uint32_t*            output_len)
 {
-  size_t out_bytes = (soft_len + (k_bits_per_byte - 1)) / k_bits_per_byte;
+  uint32_t out_bytes = (soft_len + (k_bits_per_byte - 1)) / k_bits_per_byte;
   if (out_bytes > max_out_len && max_out_len > 0) {
     out_bytes = max_out_len;
   }
   memset(output, 0, out_bytes);
 
-  for (size_t i = 0; i < soft_len && (i / k_bits_per_byte) < out_bytes; i++) {
+  for (uint32_t i = 0; i < soft_len && (i / k_bits_per_byte) < out_bytes; i++) {
     if (soft_bits[i] >= 0) {
-      size_t byte_idx = i / k_bits_per_byte;
-      size_t bit_pos  = k_msb_position - (i % k_bits_per_byte);
+      uint32_t byte_idx = i / k_bits_per_byte;
+      uint32_t bit_pos  = k_msb_position - (i % k_bits_per_byte);
       output[byte_idx] |= (uint8_t)(1U << bit_pos);
     }
   }
@@ -347,10 +347,10 @@ static rx_err_t internal_handle_fec_result(rx_harq_handle_t* harq, rx_err_t resu
 
 rx_err_t rx_harq_decode(rx_harq_handle_t*    harq,
                         const rx_soft_bit_t* soft_bits,
-                        size_t               soft_len,
-                        size_t               expected_output_len,
+                        uint32_t             soft_len,
+                        uint32_t             expected_output_len,
                         uint8_t*             output,
-                        size_t*              output_len)
+                        uint32_t*            output_len)
 {
   if (harq == NULL || soft_bits == NULL || output == NULL || output_len == NULL) {
     return RX_ERR_INVALID_ARG;
@@ -369,7 +369,7 @@ rx_err_t rx_harq_decode(rx_harq_handle_t*    harq,
   }
 
   /* Get combined soft bits into handle's buffer (thread-safe) */
-  size_t combined_len;
+  uint32_t combined_len;
 
   err = rx_chase_combiner_combined(&harq->combiner, harq->decode_buffer, &combined_len);
   if (err != RX_OK) {

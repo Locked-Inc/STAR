@@ -149,7 +149,7 @@ void test_combiner_combined_output(void) {
     rx_chase_combiner_add(&s_combiner, soft2, 2);
 
     rx_soft_bit_t output[2];
-    size_t len;
+    uint32_t len;
 
     rx_err_t err = rx_chase_combiner_combined(&s_combiner, output, &len);
     TEST_ASSERT_EQUAL(RX_OK, err);
@@ -163,7 +163,7 @@ void test_combiner_combined_output(void) {
 
 void test_combiner_combined_no_add(void) {
     rx_soft_bit_t output[10];
-    size_t len;
+    uint32_t len;
 
     rx_err_t err = rx_chase_combiner_combined(&s_combiner, output, &len);
     TEST_ASSERT_EQUAL(RX_ERR_INVALID_STATE, err);
@@ -295,7 +295,7 @@ void test_harq_encode_null_args(void) {
 
     uint8_t payload[] = {0x42};
     uint8_t output[64];
-    size_t len;
+    uint32_t len;
 
     TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG,
                       rx_harq_encode(NULL, payload, 1, output, &len));
@@ -311,7 +311,7 @@ void test_harq_encode_uninitialized(void) {
     rx_harq_handle_t harq = {0};
     uint8_t payload[]     = {0x42};
     uint8_t output[64];
-    size_t len;
+    uint32_t len;
 
     rx_err_t err = rx_harq_encode(&harq, payload, 1, output, &len);
     TEST_ASSERT_EQUAL(RX_ERR_INVALID_STATE, err);
@@ -322,7 +322,7 @@ void test_harq_encode_zero_payload(void) {
 
     uint8_t payload[1];
     uint8_t output[64];
-    size_t len;
+    uint32_t len;
 
     rx_err_t err = rx_harq_encode(&s_harq, payload, 0, output, &len);
     TEST_ASSERT_EQUAL(RX_ERR_INVALID_SIZE, err);
@@ -333,7 +333,7 @@ void test_harq_encode_too_large(void) {
 
     uint8_t payload[2048];
     uint8_t output[4096];
-    size_t len;
+    uint32_t len;
 
     rx_err_t err =
         rx_harq_encode(&s_harq, payload, k_harq_max_payload + 1, output, &len);
@@ -345,7 +345,7 @@ void test_harq_encode_with_fec(void) {
 
     uint8_t payload[] = {0x42};
     uint8_t output[64];
-    size_t len;
+    uint32_t len;
 
     rx_err_t err = rx_harq_encode(&s_harq, payload, 1, output, &len);
     TEST_ASSERT_EQUAL(RX_OK, err);
@@ -361,7 +361,7 @@ void test_harq_encode_without_fec(void) {
 
     uint8_t payload[] = {0x42, 0x43};
     uint8_t output[64];
-    size_t len;
+    uint32_t len;
 
     rx_err_t err = rx_harq_encode(&s_harq, payload, 2, output, &len);
     TEST_ASSERT_EQUAL(RX_OK, err);
@@ -413,7 +413,7 @@ void test_harq_decode_null_args(void) {
 
     rx_soft_bit_t soft[32] = {0};
     uint8_t output[16];
-    size_t len;
+    uint32_t len;
 
     /* NULL harq */
     TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG,
@@ -436,7 +436,7 @@ void test_harq_decode_uninitialized(void) {
     rx_harq_handle_t harq = {0};
     rx_soft_bit_t soft[32] = {0};
     uint8_t output[16];
-    size_t len;
+    uint32_t len;
 
     rx_err_t err = rx_harq_decode(&harq, soft, 32, 2, output, &len);
     TEST_ASSERT_EQUAL(RX_ERR_INVALID_STATE, err);
@@ -447,7 +447,7 @@ void test_harq_decode_zero_length(void) {
 
     rx_soft_bit_t soft[32] = {0};
     uint8_t output[16];
-    size_t len;
+    uint32_t len;
 
     /* Zero soft_len returns RX_ERR_INVALID_ARG */
     rx_err_t err = rx_harq_decode(&s_harq, soft, 0, 2, output, &len);
@@ -465,16 +465,16 @@ void test_harq_roundtrip_with_fec(void) {
     /* Encode */
     uint8_t payload[] = {0xDE, 0xAD};
     uint8_t encoded[64];
-    size_t enc_len;
+    uint32_t enc_len;
 
     rx_err_t err = rx_harq_encode(&s_harq, payload, 2, encoded, &enc_len);
     TEST_ASSERT_EQUAL(RX_OK, err);
 
     /* Convert encoded hard bits to soft bits */
     rx_soft_bit_t soft[128];
-    size_t soft_len = enc_len * 8;
+    uint32_t soft_len = enc_len * 8;
 
-    for (size_t i = 0; i < enc_len; i++) {
+    for (uint32_t i = 0; i < enc_len; i++) {
         for (int b = 7; b >= 0; b--) {
             uint8_t bit       = (encoded[i] >> b) & 1;
             soft[i * 8 + (7 - b)] = rx_fec_hard_to_soft(bit);
@@ -486,7 +486,7 @@ void test_harq_roundtrip_with_fec(void) {
 
     /* Decode */
     uint8_t decoded[64];
-    size_t dec_len;
+    uint32_t dec_len;
 
     err = rx_harq_decode(&s_harq, soft, soft_len, 2, decoded, &dec_len);
     TEST_ASSERT_EQUAL(RX_OK, err);
@@ -501,14 +501,14 @@ void test_harq_combining_improves_reception(void) {
     /* Encode a payload */
     uint8_t payload[] = {0x42};
     uint8_t encoded[64];
-    size_t enc_len;
+    uint32_t enc_len;
     rx_harq_encode(&s_harq, payload, 1, encoded, &enc_len);
 
     /* Create "perfect" soft bits from encoded data */
     rx_soft_bit_t soft[128];
-    size_t soft_len = enc_len * 8;
+    uint32_t soft_len = enc_len * 8;
 
-    for (size_t i = 0; i < enc_len; i++) {
+    for (uint32_t i = 0; i < enc_len; i++) {
         for (int b = 7; b >= 0; b--) {
             uint8_t bit       = (encoded[i] >> b) & 1;
             soft[i * 8 + (7 - b)] = rx_fec_hard_to_soft(bit);
@@ -519,7 +519,7 @@ void test_harq_combining_improves_reception(void) {
     rx_harq_reset(&s_harq);
 
     uint8_t decoded[64];
-    size_t dec_len;
+    uint32_t dec_len;
 
     rx_err_t err = rx_harq_decode(&s_harq, soft, soft_len, 1, decoded, &dec_len);
     TEST_ASSERT_EQUAL(RX_OK, err);
