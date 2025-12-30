@@ -29123,7 +29123,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "AC0603JR-07100KL"
+		(property "Manufacturer Part Number" "AC0603JR-07100KL"
 			(at 264.16 115.57 90)
 			(effects
 				(font
@@ -46902,7 +46902,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufactaurer Part Number" "AC0603JR-07100KL"
+		(property "Manufacturer Part Number" "AC0603JR-07100KL"
 			(at 99.06 107.95 90)
 			(effects
 				(font
