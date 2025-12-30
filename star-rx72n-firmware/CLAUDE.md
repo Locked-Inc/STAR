@@ -179,7 +179,33 @@ tx_thread_create(&led_thread, "LED", led_task_entry,
 uint8_t* stack = malloc(1024);  // Never do this!
 ```
 
-#### 5. Constants and Macros
+#### 5. Explicit Integer Types (No size_t)
+
+**Use explicit-width integers instead of `size_t`:**
+
+On the 32-bit RX72N platform, `size_t` is 32 bits, but using explicit types like `uint32_t` is preferred for:
+- Clarity about the actual width
+- Consistency across the codebase
+- Avoiding implicit conversions
+
+```c
+// CORRECT: Explicit width
+uint32_t rx_crc32_ieee(const uint8_t* data, uint32_t len);
+
+for (uint32_t i = 0; i < len; i++) {
+    // ...
+}
+
+// AVOID: size_t
+size_t rx_crc32_ieee(const uint8_t* data, size_t len);  // Don't use
+```
+
+**When to use each type:**
+- `uint32_t` - Buffer lengths, loop counters, sizes
+- `uint16_t` - Sequence numbers, frame lengths
+- `uint8_t` - Byte data, flags, small counters
+
+#### 6. Constants and Macros
 
 **Prefer enums over const over macros** (same as ESP32):
 
@@ -195,7 +221,37 @@ typedef enum {
 #define MOTOR_STATE_IDLE 0
 ```
 
-#### 6. ThreadX Configuration
+#### 7. Named Constants for Array Indices
+
+**Use enums for array indices instead of magic numbers:**
+
+When indexing into arrays (especially for byte serialization), use named constants to document what each index represents:
+
+```c
+// CORRECT: Named indices document the byte ordering
+typedef enum {
+    k_be16_byte_high = 0,  /**< High byte (MSB) at index 0 */
+    k_be16_byte_low  = 1,  /**< Low byte (LSB) at index 1 */
+} be16_byte_idx_t;
+
+static void internal_write_be16(uint8_t* buf, uint16_t val) {
+    buf[k_be16_byte_high] = (uint8_t)(val >> 8);
+    buf[k_be16_byte_low]  = (uint8_t)(val & 0xFF);
+}
+
+// AVOID: Magic number indices
+static void internal_write_be16(uint8_t* buf, uint16_t val) {
+    buf[0] = (uint8_t)(val >> 8);   // What does 0 mean?
+    buf[1] = (uint8_t)(val & 0xFF); // What does 1 mean?
+}
+```
+
+This improves:
+- **Readability** - Index meaning is self-documenting
+- **Maintainability** - Easier to understand byte ordering
+- **Debuggability** - Enum values visible in debugger
+
+#### 8. ThreadX Configuration
 
 **ThreadX config is in `include/tx_user.h`:**
 
@@ -210,7 +266,7 @@ typedef enum {
 #define TX_TIMER_PROCESS_IN_ISR           // Timer processing in ISR
 ```
 
-#### 7. Peripheral Initialization Order
+#### 9. Peripheral Initialization Order
 
 **Critical startup sequence for RX72N:**
 
@@ -329,6 +385,25 @@ The firmware includes protocol stack libraries for reliable SPI communication:
 ### CRC-32 Module (`rx_frame`)
 
 IEEE 802.3 CRC-32 implementation with **compile-time hardware/software selection**.
+
+**Design Rationale:**
+
+The CRC module uses a compile-time selection strategy with both implementations always compiled:
+
+1. **Hardware CRC** (default on RX72N):
+   - Uses RX72N CRC Calculator peripheral (~10x faster for large buffers)
+   - Automatically enabled when `__RX__` is defined
+
+2. **Software CRC** (default on host, always available):
+   - 256-entry lookup table implementation (1KB table in .rodata)
+   - Used for host-side unit testing (no hardware available)
+   - `rx_crc32_update_sw()` always compiled for incremental CRC operations
+   - Enables A/B comparison testing on hardware for validation
+
+**Why both implementations are always compiled:**
+- Host-side tests validate CRC correctness without hardware
+- Software can be forced on target (`-DRX_CRC32_USE_SOFTWARE`) for debugging
+- Incremental CRC uses software fallback (hardware state management is complex)
 
 **Public API:**
 ```c

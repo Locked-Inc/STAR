@@ -27,7 +27,8 @@
  *
  * @return Number of errors for the component
  */
-static uint32_t internal_count_component_errors(mock_error_handler_t* handler, const char* component)
+static uint32_t internal_count_component_errors(mock_error_handler_t* handler,
+                                                const char*           component)
 {
   uint32_t count = 0;
 
@@ -58,7 +59,7 @@ impl_report_error(void* ctx, rx_err_t err, const char* component, const char* me
   }
 
   /* Get next write position (circular buffer) */
-  uint32_t            index  = handler->write_index;
+  uint32_t             index  = handler->write_index;
   mock_error_record_t* record = &handler->errors[index];
 
   /* Record the error */
@@ -192,7 +193,8 @@ rx_err_t mock_error_handler_init(mock_error_handler_t* handler, uint32_t max_err
   return RX_OK;
 }
 
-rx_err_t mock_error_handler_get_interface(rx_error_interface_t* iface, mock_error_handler_t* handler)
+rx_err_t mock_error_handler_get_interface(rx_error_interface_t* iface,
+                                          mock_error_handler_t* handler)
 {
   RX_CHECK_NULL_PTR(iface, "MOCK_ERROR", "Interface pointer is NULL");
   RX_CHECK_NULL_PTR(handler, "MOCK_ERROR", "Handler pointer is NULL");
@@ -220,9 +222,9 @@ rx_err_t mock_error_handler_get_interface(rx_error_interface_t* iface, mock_erro
  */
 
 rx_err_t mock_error_handler_get_last_error(mock_error_handler_t* handler,
-                                            rx_err_t*             out_error,
-                                            const char**          out_component,
-                                            const char**          out_message)
+                                           rx_err_t*             out_error,
+                                           const char**          out_component,
+                                           const char**          out_message)
 {
   RX_CHECK_NULL_PTR(handler, "MOCK_ERROR", "Handler pointer is NULL");
 
@@ -231,9 +233,9 @@ rx_err_t mock_error_handler_get_last_error(mock_error_handler_t* handler,
   }
 
   /* Get most recent error (last stored) */
-  uint32_t            last_index = (handler->write_index == 0) ? (handler->stored_error_count - 1)
-                                                                : (handler->write_index - 1);
-  mock_error_record_t* record     = &handler->errors[last_index];
+  uint32_t last_index =
+    (handler->write_index == 0) ? (handler->stored_error_count - 1) : (handler->write_index - 1);
+  mock_error_record_t* record = &handler->errors[last_index];
 
   /* Fill output parameters if provided */
   if (out_error != NULL) {
@@ -252,10 +254,10 @@ rx_err_t mock_error_handler_get_last_error(mock_error_handler_t* handler,
 }
 
 rx_err_t mock_error_handler_get_error_at(mock_error_handler_t* handler,
-                                          uint32_t              index,
-                                          rx_err_t*             out_error,
-                                          const char**          out_component,
-                                          const char**          out_message)
+                                         uint32_t              index,
+                                         rx_err_t*             out_error,
+                                         const char**          out_component,
+                                         const char**          out_message)
 {
   RX_CHECK_NULL_PTR(handler, "MOCK_ERROR", "Handler pointer is NULL");
 
@@ -282,8 +284,8 @@ rx_err_t mock_error_handler_get_error_at(mock_error_handler_t* handler,
 }
 
 bool mock_error_handler_has_error(mock_error_handler_t* handler,
-                                   rx_err_t              error_code,
-                                   const char*           component)
+                                  rx_err_t              error_code,
+                                  const char*           component)
 {
   if (handler == NULL) {
     return false;

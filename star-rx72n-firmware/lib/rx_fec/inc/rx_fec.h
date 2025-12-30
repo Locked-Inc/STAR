@@ -12,7 +12,7 @@
  * - Hard-decision fallback
  * - Static memory allocation only (no malloc)
  *
- * @note Generator polynomials: G1=171₈ (0xF9), G2=133₈ (0x5B)
+ * @note Generator polynomials: G1=0o171 (0xF9), G2=0o133 (0x5B)
  *
  * @see star-gateway/internal/fec/ for Go reference implementation
  * @see docs/sections/01_nanopb_protocol.tex for protocol specification
@@ -45,12 +45,14 @@ extern "C" {
  * - Generator polynomials in octal: G1=171, G2=133
  */
 typedef enum {
-    k_fec_constraint_length = 7,          /**< K=7 constraint length */
-    k_fec_num_states        = 64,         /**< 2^(K-1) = 64 states */
-    k_fec_tail_bits         = 6,          /**< K-1 tail bits for termination */
-    k_fec_g1_octal          = 0171,       /**< Generator poly 1 (octal) */
-    k_fec_g2_octal          = 0133,       /**< Generator poly 2 (octal) */
-    k_fec_traceback_depth   = 35,         /**< 5*K traceback depth */
+  k_fec_constraint_length = 7,    /**< K=7 constraint length */
+  k_fec_num_states        = 64,   /**< 2^(K-1) = 64 states */
+  k_fec_tail_bits         = 6,    /**< K-1 tail bits for termination */
+  k_fec_g1_octal          = 0171, /**< Generator poly 1 (octal) */
+  k_fec_g2_octal          = 0133, /**< Generator poly 2 (octal) */
+  k_fec_traceback_depth   = 35,   /**< 5*K traceback depth */
+  k_fec_num_input_values  = 2,    /**< Input bit values (0 or 1) */
+  k_fec_num_outputs       = 2,    /**< Rate 1/2: 2 outputs per input (G1, G2) */
 } rx_fec_params_t;
 
 /* =============================================================================
@@ -72,9 +74,9 @@ typedef int8_t rx_soft_bit_t;
  * @brief Soft bit value limits
  */
 typedef enum {
-    k_soft_bit_max  = 127,   /**< Maximum soft bit value (confident 1) */
-    k_soft_bit_min  = -127,  /**< Minimum soft bit value (confident 0) */
-    k_soft_bit_zero = 0,     /**< No confidence (erasure) */
+  k_soft_bit_max  = 127,  /**< Maximum soft bit value (confident 1) */
+  k_soft_bit_min  = -127, /**< Minimum soft bit value (confident 0) */
+  k_soft_bit_zero = 0,    /**< No confidence (erasure) */
 } rx_soft_bit_limits_t;
 
 /* =============================================================================
@@ -89,7 +91,7 @@ typedef enum {
  * register. The handle tracks initialization status only.
  */
 typedef struct {
-    uint8_t initialized; /**< Non-zero if initialized */
+  uint8_t initialized; /**< Non-zero if initialized */
 } rx_fec_encoder_t;
 
 /**
@@ -98,7 +100,7 @@ typedef struct {
  * @param[out] enc Pointer to encoder handle
  * @return RX_OK on success, RX_ERR_INVALID_ARG if enc is NULL
  */
-rx_err_t rx_fec_encoder_init(rx_fec_encoder_t *enc);
+rx_err_t rx_fec_encoder_init(rx_fec_encoder_t* enc);
 
 /**
  * @brief Deinitialize FEC encoder
@@ -106,7 +108,7 @@ rx_err_t rx_fec_encoder_init(rx_fec_encoder_t *enc);
  * @param[in,out] enc Pointer to encoder handle
  * @return RX_OK on success, RX_ERR_INVALID_ARG if enc is NULL
  */
-rx_err_t rx_fec_encoder_deinit(rx_fec_encoder_t *enc);
+rx_err_t rx_fec_encoder_deinit(rx_fec_encoder_t* enc);
 
 /**
  * @brief Encode data using convolutional code
@@ -124,8 +126,11 @@ rx_err_t rx_fec_encoder_deinit(rx_fec_encoder_t *enc);
  * @return RX_ERR_INVALID_ARG if any pointer is NULL
  * @return RX_ERR_INVALID_STATE if encoder not initialized
  */
-rx_err_t rx_fec_encode(rx_fec_encoder_t *enc, const uint8_t *input,
-                       size_t input_len, uint8_t *output, size_t *output_len);
+rx_err_t rx_fec_encode(rx_fec_encoder_t* enc,
+                       const uint8_t*    input,
+                       size_t            input_len,
+                       uint8_t*          output,
+                       size_t*           output_len);
 
 /**
  * @brief Calculate encoded output length
@@ -155,12 +160,13 @@ size_t rx_fec_encoded_len(size_t input_len);
  * must be provided by the caller for static allocation.
  */
 typedef struct {
-    int32_t path_metrics[k_fec_num_states];     /**< Current path metrics */
-    int32_t new_path_metrics[k_fec_num_states]; /**< Next path metrics */
-    uint64_t *survivors;                         /**< Survivor bits (caller-provided) */
-    size_t survivors_len;                        /**< Length of survivors buffer */
-    uint8_t branch_table[k_fec_num_states][2][2]; /**< Precomputed outputs */
-    uint8_t initialized;                         /**< Non-zero if initialized */
+  int32_t   path_metrics[k_fec_num_states];     /**< Current path metrics */
+  int32_t   new_path_metrics[k_fec_num_states]; /**< Next path metrics */
+  uint64_t* survivors;                          /**< Survivor bits (caller-provided) */
+  size_t    survivors_len;                      /**< Length of survivors buffer */
+  uint8_t   branch_table[k_fec_num_states][k_fec_num_input_values]
+                      [k_fec_num_outputs]; /**< Precomputed outputs */
+  uint8_t initialized;                     /**< Non-zero if initialized */
 } rx_fec_decoder_t;
 
 /**
@@ -176,8 +182,7 @@ typedef struct {
  * @return RX_OK on success
  * @return RX_ERR_INVALID_ARG if any pointer is NULL or buffer too small
  */
-rx_err_t rx_fec_decoder_init(rx_fec_decoder_t *dec, uint64_t *survivors_buf,
-                             size_t survivors_len);
+rx_err_t rx_fec_decoder_init(rx_fec_decoder_t* dec, uint64_t* survivors_buf, size_t survivors_len);
 
 /**
  * @brief Deinitialize FEC decoder
@@ -185,7 +190,7 @@ rx_err_t rx_fec_decoder_init(rx_fec_decoder_t *dec, uint64_t *survivors_buf,
  * @param[in,out] dec Pointer to decoder handle
  * @return RX_OK on success
  */
-rx_err_t rx_fec_decoder_deinit(rx_fec_decoder_t *dec);
+rx_err_t rx_fec_decoder_deinit(rx_fec_decoder_t* dec);
 
 /**
  * @brief Decode soft bits using Viterbi algorithm
@@ -205,10 +210,12 @@ rx_err_t rx_fec_decoder_deinit(rx_fec_decoder_t *dec);
  * @return RX_ERR_INVALID_STATE if decoder not initialized
  * @return RX_ERR_INVALID_SIZE if output buffer too small
  */
-rx_err_t rx_fec_decode_soft(rx_fec_decoder_t *dec,
-                            const rx_soft_bit_t *soft_bits, size_t soft_len,
-                            size_t expected_output_len, uint8_t *output,
-                            size_t *output_len);
+rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*    dec,
+                            const rx_soft_bit_t* soft_bits,
+                            size_t               soft_len,
+                            size_t               expected_output_len,
+                            uint8_t*             output,
+                            size_t*              output_len);
 
 /**
  * @brief Decode hard bits using Viterbi algorithm
@@ -227,12 +234,26 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t *dec,
  * @return RX_ERR_INVALID_ARG if any pointer is NULL
  * @return RX_ERR_INVALID_STATE if decoder not initialized
  */
-rx_err_t rx_fec_decode_hard(rx_fec_decoder_t *dec, const uint8_t *data,
-                            size_t data_len, size_t expected_output_len,
-                            uint8_t *output, size_t *output_len);
+rx_err_t rx_fec_decode_hard(rx_fec_decoder_t* dec,
+                            const uint8_t*    data,
+                            size_t            data_len,
+                            size_t            expected_output_len,
+                            uint8_t*          output,
+                            size_t*           output_len);
 
 /* =============================================================================
  * Utility Functions
+ *
+ * NOTE: These are intentionally static inline in the header because:
+ * 1. They are trivial one-liner conversions (single ternary operation)
+ * 2. They are called in tight loops during encoding/decoding
+ * 3. They need to be available across multiple translation units (rx_fec.c,
+ *    rx_harq.c, tests)
+ * 4. Function call overhead would exceed the actual computation cost
+ *
+ * For such trivial operations, static inline is the standard C pattern and
+ * results in better performance with no binary size increase (the function
+ * body is smaller than the call setup/teardown).
  * =============================================================================
  */
 
@@ -244,7 +265,7 @@ rx_err_t rx_fec_decode_hard(rx_fec_decoder_t *dec, const uint8_t *data,
  */
 static inline rx_soft_bit_t rx_fec_hard_to_soft(uint8_t bit)
 {
-    return (bit != 0) ? k_soft_bit_max : k_soft_bit_min;
+  return (bit != 0) ? k_soft_bit_max : k_soft_bit_min;
 }
 
 /**
@@ -255,7 +276,7 @@ static inline rx_soft_bit_t rx_fec_hard_to_soft(uint8_t bit)
  */
 static inline uint8_t rx_fec_soft_to_hard(rx_soft_bit_t soft)
 {
-    return (soft >= 0) ? 1 : 0;
+  return (soft >= 0) ? 1 : 0;
 }
 
 #ifdef __cplusplus

@@ -47,12 +47,12 @@ extern "C" {
  * @brief SPI communication task configuration
  */
 typedef enum {
-    k_spi_comm_task_poll_hz     = 100, /**< SPI polling frequency (Hz) */
-    k_spi_comm_task_period_ms   = 10,  /**< Polling period (ms) - 1000/100 */
-    k_spi_comm_task_stack_size  = 4096, /**< Stack size (bytes) */
-    k_spi_comm_task_priority    = 8,    /**< Task priority (lower than motor) */
-    k_spi_comm_rspi_channel     = 0,    /**< RSPI channel for RPi5 */
-    k_spi_comm_spi_mode         = 0,    /**< SPI mode 0 (CPOL=0, CPHA=0) */
+  k_spi_comm_task_poll_hz    = 100,  /**< SPI polling frequency (Hz) */
+  k_spi_comm_task_period_ms  = 10,   /**< Polling period (ms) - 1000/100 */
+  k_spi_comm_task_stack_size = 4096, /**< Stack size (bytes) */
+  k_spi_comm_task_priority   = 8,    /**< Task priority (lower than motor) */
+  k_spi_comm_rspi_channel    = 0,    /**< RSPI channel for RPi5 */
+  k_spi_comm_spi_mode        = 0,    /**< SPI mode 0 (CPOL=0, CPHA=0) */
 } spi_comm_task_config_t;
 
 /* =============================================================================
@@ -83,7 +83,7 @@ typedef enum {
  * @note The shared state must be initialized before calling this function
  * @note SPI pins must be configured (via MPC) before task creation
  */
-rx_err_t spi_comm_task_create(motor_shared_state_t *shared_state);
+rx_err_t spi_comm_task_create(motor_shared_state_t* shared_state);
 
 /**
  * @brief Get SPI communication statistics
@@ -97,8 +97,10 @@ rx_err_t spi_comm_task_create(motor_shared_state_t *shared_state);
  *
  * @return RX_OK on success
  */
-rx_err_t spi_comm_task_get_stats(uint32_t *frames_rx, uint32_t *frames_tx,
-                                 uint32_t *crc_errors, uint32_t *decode_errors);
+rx_err_t spi_comm_task_get_stats(uint32_t* frames_rx,
+                                 uint32_t* frames_tx,
+                                 uint32_t* crc_errors,
+                                 uint32_t* decode_errors);
 
 /**
  * @brief Reset SPI communication statistics

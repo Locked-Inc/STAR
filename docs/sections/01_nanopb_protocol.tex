@@ -202,7 +202,7 @@ uint32_t rx_crc32_ieee(const uint8_t *data, size_t len);
 uint32_t rx_crc32_update(uint32_t crc, const uint8_t *data, size_t len);
 \end{lstlisting}
 
-\textbf{Go Compatibility:} Both implementations produce bit-exact results matching Go's \texttt{crc32.ChecksumIEEE()}, verified by 18 unit tests including the canonical test vector ``123456789'' = \texttt{0xCBF43926}.
+\textbf{Go Compatibility:} Both implementations produce bit-exact results matching Go's \texttt{crc32.ChecksumIEEE()}, verified by unit tests including the canonical test vector ``123456789'' = \texttt{0xCBF43926}.
 
 \vspace{0.2cm}
 

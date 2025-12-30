@@ -42,9 +42,9 @@ extern "C" {
  * @brief HARQ protocol parameters
  */
 typedef enum {
-    k_harq_max_payload      = 1024, /**< Maximum payload size in bytes */
-    k_harq_default_retries  = 3,    /**< Default maximum retries */
-    k_harq_default_combines = 3,    /**< Default max combining attempts */
+  k_harq_max_payload      = 1024, /**< Maximum payload size in bytes */
+  k_harq_default_retries  = 3,    /**< Default maximum retries */
+  k_harq_default_combines = 3,    /**< Default max combining attempts */
 } rx_harq_params_t;
 
 /**
@@ -65,10 +65,10 @@ typedef enum {
  * @brief HARQ state machine states
  */
 typedef enum {
-    k_harq_state_idle        = 0, /**< Ready for new transmission */
-    k_harq_state_waiting_ack = 1, /**< Waiting for ACK */
-    k_harq_state_combining   = 2, /**< Combining retransmissions */
-    k_harq_state_error       = 3, /**< Unrecoverable error */
+  k_harq_state_idle        = 0, /**< Ready for new transmission */
+  k_harq_state_waiting_ack = 1, /**< Waiting for ACK */
+  k_harq_state_combining   = 2, /**< Combining retransmissions */
+  k_harq_state_error       = 3, /**< Unrecoverable error */
 } rx_harq_state_t;
 
 /* =============================================================================
@@ -84,11 +84,11 @@ typedef enum {
  * prevent overflow.
  */
 typedef struct {
-    int16_t accumulated[RX_HARQ_SOFT_BUFFER_SIZE]; /**< Accumulated soft bits */
-    size_t expected_len;                           /**< Expected soft bits len */
-    uint8_t count;                                 /**< Transmissions combined */
-    uint8_t max_combines;                          /**< Max combining attempts */
-    uint8_t initialized;                           /**< Non-zero if initialized */
+  int16_t accumulated[RX_HARQ_SOFT_BUFFER_SIZE]; /**< Accumulated soft bits */
+  size_t  expected_len;                          /**< Expected soft bits len */
+  uint8_t count;                                 /**< Transmissions combined */
+  uint8_t max_combines;                          /**< Max combining attempts */
+  uint8_t initialized;                           /**< Non-zero if initialized */
 } rx_chase_combiner_t;
 
 /**
@@ -98,8 +98,7 @@ typedef struct {
  * @param[in]  max_combines Maximum number of combining attempts (0 = default)
  * @return RX_OK on success, RX_ERR_INVALID_ARG if combiner is NULL
  */
-rx_err_t rx_chase_combiner_init(rx_chase_combiner_t *combiner,
-                                uint8_t max_combines);
+rx_err_t rx_chase_combiner_init(rx_chase_combiner_t* combiner, uint8_t max_combines);
 
 /**
  * @brief Deinitialize Chase Combiner
@@ -107,7 +106,7 @@ rx_err_t rx_chase_combiner_init(rx_chase_combiner_t *combiner,
  * @param[in,out] combiner Pointer to combiner handle
  * @return RX_OK on success
  */
-rx_err_t rx_chase_combiner_deinit(rx_chase_combiner_t *combiner);
+rx_err_t rx_chase_combiner_deinit(rx_chase_combiner_t* combiner);
 
 /**
  * @brief Add soft bits from a transmission attempt
@@ -123,8 +122,8 @@ rx_err_t rx_chase_combiner_deinit(rx_chase_combiner_t *combiner);
  * @return RX_ERR_INVALID_SIZE if len doesn't match expected length
  * @return RX_ERR_BUSY if max combines reached
  */
-rx_err_t rx_chase_combiner_add(rx_chase_combiner_t *combiner,
-                               const rx_soft_bit_t *soft_bits, size_t len);
+rx_err_t
+rx_chase_combiner_add(rx_chase_combiner_t* combiner, const rx_soft_bit_t* soft_bits, size_t len);
 
 /**
  * @brief Get combined soft bits for decoding
@@ -139,8 +138,8 @@ rx_err_t rx_chase_combiner_add(rx_chase_combiner_t *combiner,
  * @return RX_ERR_INVALID_ARG if any pointer is NULL
  * @return RX_ERR_INVALID_STATE if no soft bits have been added
  */
-rx_err_t rx_chase_combiner_combined(rx_chase_combiner_t *combiner,
-                                    rx_soft_bit_t *output, size_t *len);
+rx_err_t
+rx_chase_combiner_combined(rx_chase_combiner_t* combiner, rx_soft_bit_t* output, size_t* len);
 
 /**
  * @brief Reset combiner for new frame
@@ -149,7 +148,7 @@ rx_err_t rx_chase_combiner_combined(rx_chase_combiner_t *combiner,
  *
  * @param[in,out] combiner Pointer to combiner handle
  */
-void rx_chase_combiner_reset(rx_chase_combiner_t *combiner);
+void rx_chase_combiner_reset(rx_chase_combiner_t* combiner);
 
 /**
  * @brief Check if more transmissions can be combined
@@ -157,7 +156,7 @@ void rx_chase_combiner_reset(rx_chase_combiner_t *combiner);
  * @param[in] combiner Pointer to combiner handle
  * @return true if count < max_combines
  */
-bool rx_chase_combiner_can_add(const rx_chase_combiner_t *combiner);
+bool rx_chase_combiner_can_add(const rx_chase_combiner_t* combiner);
 
 /**
  * @brief Get number of combined transmissions
@@ -165,7 +164,7 @@ bool rx_chase_combiner_can_add(const rx_chase_combiner_t *combiner);
  * @param[in] combiner Pointer to combiner handle
  * @return Number of transmissions combined
  */
-uint8_t rx_chase_combiner_count(const rx_chase_combiner_t *combiner);
+uint8_t rx_chase_combiner_count(const rx_chase_combiner_t* combiner);
 
 /* =============================================================================
  * HARQ Handle
@@ -179,26 +178,27 @@ uint8_t rx_chase_combiner_count(const rx_chase_combiner_t *combiner);
  * and Chase Combiner.
  */
 typedef struct {
-    rx_harq_state_t state;       /**< Current HARQ state */
-    uint16_t tx_sequence;        /**< TX sequence number */
-    uint16_t rx_sequence;        /**< RX sequence number */
-    uint8_t retry_count;         /**< Current retry count */
-    uint8_t max_retries;         /**< Maximum retries allowed */
-    rx_chase_combiner_t combiner; /**< Chase Combiner */
-    rx_fec_encoder_t encoder;    /**< FEC encoder */
-    rx_fec_decoder_t decoder;    /**< FEC decoder */
-    uint64_t decoder_survivors[RX_HARQ_SOFT_BUFFER_SIZE / 2]; /**< Decoder buf */
-    uint8_t fec_enabled;         /**< Non-zero if FEC is enabled */
-    uint8_t initialized;         /**< Non-zero if initialized */
+  rx_harq_state_t     state;       /**< Current HARQ state */
+  uint16_t            tx_sequence; /**< TX sequence number */
+  uint16_t            rx_sequence; /**< RX sequence number */
+  uint8_t             retry_count; /**< Current retry count */
+  uint8_t             max_retries; /**< Maximum retries allowed */
+  rx_chase_combiner_t combiner;    /**< Chase Combiner */
+  rx_fec_encoder_t    encoder;     /**< FEC encoder */
+  rx_fec_decoder_t    decoder;     /**< FEC decoder */
+  uint64_t            decoder_survivors[RX_HARQ_SOFT_BUFFER_SIZE / 2]; /**< Decoder buf */
+  rx_soft_bit_t       decode_buffer[RX_HARQ_SOFT_BUFFER_SIZE]; /**< Combined soft bits buf */
+  uint8_t             fec_enabled;                             /**< Non-zero if FEC is enabled */
+  uint8_t             initialized;                             /**< Non-zero if initialized */
 } rx_harq_handle_t;
 
 /**
  * @brief HARQ configuration
  */
 typedef struct {
-    uint8_t max_retries;  /**< Maximum transmission attempts (0 = default) */
-    uint8_t fec_enabled;  /**< Non-zero to enable FEC encoding/decoding */
-    uint8_t max_combines; /**< Maximum combining attempts (0 = default) */
+  uint8_t max_retries;  /**< Maximum transmission attempts (0 = default) */
+  uint8_t fec_enabled;  /**< Non-zero to enable FEC encoding/decoding */
+  uint8_t max_combines; /**< Maximum combining attempts (0 = default) */
 } rx_harq_config_t;
 
 /**
@@ -210,7 +210,7 @@ typedef struct {
  * @return RX_OK on success
  * @return RX_ERR_INVALID_ARG if harq is NULL
  */
-rx_err_t rx_harq_init(rx_harq_handle_t *harq, const rx_harq_config_t *config);
+rx_err_t rx_harq_init(rx_harq_handle_t* harq, const rx_harq_config_t* config);
 
 /**
  * @brief Deinitialize HARQ handle
@@ -218,7 +218,7 @@ rx_err_t rx_harq_init(rx_harq_handle_t *harq, const rx_harq_config_t *config);
  * @param[in,out] harq Pointer to HARQ handle
  * @return RX_OK on success
  */
-rx_err_t rx_harq_deinit(rx_harq_handle_t *harq);
+rx_err_t rx_harq_deinit(rx_harq_handle_t* harq);
 
 /**
  * @brief Get current HARQ state
@@ -226,7 +226,7 @@ rx_err_t rx_harq_deinit(rx_harq_handle_t *harq);
  * @param[in] harq Pointer to HARQ handle
  * @return Current HARQ state
  */
-rx_harq_state_t rx_harq_get_state(const rx_harq_handle_t *harq);
+rx_harq_state_t rx_harq_get_state(const rx_harq_handle_t* harq);
 
 /**
  * @brief Reset HARQ for new transaction
@@ -235,7 +235,7 @@ rx_harq_state_t rx_harq_get_state(const rx_harq_handle_t *harq);
  *
  * @param[in,out] harq Pointer to HARQ handle
  */
-void rx_harq_reset(rx_harq_handle_t *harq);
+void rx_harq_reset(rx_harq_handle_t* harq);
 
 /**
  * @brief Encode payload with FEC (if enabled)
@@ -250,8 +250,11 @@ void rx_harq_reset(rx_harq_handle_t *harq);
  * @return RX_ERR_INVALID_ARG if any pointer is NULL
  * @return RX_ERR_INVALID_STATE if not initialized
  */
-rx_err_t rx_harq_encode(rx_harq_handle_t *harq, const uint8_t *payload,
-                        size_t payload_len, uint8_t *output, size_t *output_len);
+rx_err_t rx_harq_encode(rx_harq_handle_t* harq,
+                        const uint8_t*    payload,
+                        size_t            payload_len,
+                        uint8_t*          output,
+                        size_t*           output_len);
 
 /**
  * @brief Decode soft bits with combining and FEC
@@ -270,9 +273,12 @@ rx_err_t rx_harq_encode(rx_harq_handle_t *harq, const uint8_t *payload,
  * @return RX_ERR_INVALID_ARG if any pointer is NULL
  * @return RX_ERR_INVALID_STATE if not initialized
  */
-rx_err_t rx_harq_decode(rx_harq_handle_t *harq, const rx_soft_bit_t *soft_bits,
-                        size_t soft_len, size_t expected_output_len,
-                        uint8_t *output, size_t *output_len);
+rx_err_t rx_harq_decode(rx_harq_handle_t*    harq,
+                        const rx_soft_bit_t* soft_bits,
+                        size_t               soft_len,
+                        size_t               expected_output_len,
+                        uint8_t*             output,
+                        size_t*              output_len);
 
 /**
  * @brief Get current retry count
@@ -280,7 +286,7 @@ rx_err_t rx_harq_decode(rx_harq_handle_t *harq, const rx_soft_bit_t *soft_bits,
  * @param[in] harq Pointer to HARQ handle
  * @return Current retry count
  */
-uint8_t rx_harq_get_retry_count(const rx_harq_handle_t *harq);
+uint8_t rx_harq_get_retry_count(const rx_harq_handle_t* harq);
 
 /**
  * @brief Check if more retries are available
@@ -288,7 +294,7 @@ uint8_t rx_harq_get_retry_count(const rx_harq_handle_t *harq);
  * @param[in] harq Pointer to HARQ handle
  * @return true if retry_count < max_retries
  */
-bool rx_harq_can_retry(const rx_harq_handle_t *harq);
+bool rx_harq_can_retry(const rx_harq_handle_t* harq);
 
 #ifdef __cplusplus
 }
