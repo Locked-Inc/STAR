@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Nexperia/74LVC125APW118?qs=me8TqzrmIYV8VAZOS5KVLw%3D%3D" (at 24.13 -594.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Name" "Nexperia" (at 24.13 -694.92 0)
+    (property "Manufacturer Name" "Nexperia" (at 24.13 -694.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Part_Number" "74LVC125APW,118" (at 24.13 -794.92 0)
+    (property "Manufacturer Part Number" "74LVC125APW,118" (at 24.13 -794.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
     (rectangle

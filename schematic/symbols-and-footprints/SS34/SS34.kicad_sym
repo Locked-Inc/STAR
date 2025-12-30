@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/onsemi-Fairchild/SS34?qs=2ONuHmP%2FXzb3ub11UdFfdQ%3D%3D" (at 12.7 -593.65 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Name" "onsemi" (at 12.7 -693.65 0)
+    (property "Manufacturer Name" "onsemi" (at 12.7 -693.65 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Part_Number" "SS34" (at 12.7 -793.65 0)
+    (property "Manufacturer Part Number" "SS34" (at 12.7 -793.65 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
     (polyline

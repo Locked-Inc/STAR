@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/ON-Semiconductor/MMSZ3V9T1G?qs=P4IOph%252Bbot%2FbmkSIuQEisg%3D%3D" (at 10.16 -593.65 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Name" "onsemi" (at 10.16 -693.65 0)
+    (property "Manufacturer Name" "onsemi" (at 10.16 -693.65 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Part_Number" "MMSZ3V9T1G" (at 10.16 -793.65 0)
+    (property "Manufacturer Part Number" "MMSZ3V9T1G" (at 10.16 -793.65 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
     (polyline

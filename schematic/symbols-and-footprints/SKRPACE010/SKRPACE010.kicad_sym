@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Alps-Alpine/SKRPACE010?qs=dHDuPHwQO79W8iY66hDbLQ%3D%3D" (at 16.51 -594.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Name" "ALPS Electric" (at 16.51 -694.92 0)
+    (property "Manufacturer Name" "ALPS Electric" (at 16.51 -694.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Part_Number" "SKRPACE010" (at 16.51 -794.92 0)
+    (property "Manufacturer Part Number" "SKRPACE010" (at 16.51 -794.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
     (rectangle

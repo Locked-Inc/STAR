@@ -88,7 +88,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "TDK"
+		(property "Manufacturer Name" "TDK"
 			(at 16.51 -696.19 0)
 			(effects
 				(font
@@ -98,7 +98,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "VLS6045EX-1R0N"
+		(property "Manufacturer Part Number" "VLS6045EX-1R0N"
 			(at 16.51 -796.19 0)
 			(effects
 				(font

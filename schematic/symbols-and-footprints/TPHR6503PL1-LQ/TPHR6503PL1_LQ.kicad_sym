@@ -83,7 +83,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Toshiba"
+		(property "Manufacturer Name" "Toshiba"
 			(at 21.59 -694.92 0)
 			(effects
 				(font
@@ -93,7 +93,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "TPHR6503PL1,LQ"
+		(property "Manufacturer Part Number" "TPHR6503PL1,LQ"
 			(at 21.59 -794.92 0)
 			(effects
 				(font

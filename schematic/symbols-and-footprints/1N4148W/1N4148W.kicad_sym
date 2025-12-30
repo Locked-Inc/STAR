@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Diotec-Semiconductor/1N4148W?qs=OlC7AqGiEDmsbkbAeXQtXg%3D%3D" (at 11.43 -597.46 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Name" "Diotec" (at 11.43 -697.46 0)
+    (property "Manufacturer Name" "Diotec" (at 11.43 -697.46 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Part_Number" "1N4148W" (at 11.43 -797.46 0)
+    (property "Manufacturer Part Number" "1N4148W" (at 11.43 -797.46 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
     (polyline

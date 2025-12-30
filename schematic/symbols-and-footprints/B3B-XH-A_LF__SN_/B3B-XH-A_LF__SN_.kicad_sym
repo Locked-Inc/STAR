@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/JST-Commercial/B3B-XH-ALFSN?qs=cdbOS8ANM9BVkoboCCIEMQ%3D%3D" (at 16.51 -594.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Name" "JST (JAPAN SOLDERLESS TERMINALS)" (at 16.51 -694.92 0)
+    (property "Manufacturer Name" "JST (JAPAN SOLDERLESS TERMINALS)" (at 16.51 -694.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Part_Number" "B3B-XH-A(LF)(SN)" (at 16.51 -794.92 0)
+    (property "Manufacturer Part Number" "B3B-XH-A(LF)(SN)" (at 16.51 -794.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
     (rectangle

@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/TE-Connectivity/5-534998-6?qs=Li%2F9gWHD5N6r5BiQ43bT%252Bw%3D%3D" (at 19.05 -594.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Name" "TE Connectivity" (at 19.05 -694.92 0)
+    (property "Manufacturer Name" "TE Connectivity" (at 19.05 -694.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Part_Number" "5-534998-6" (at 19.05 -794.92 0)
+    (property "Manufacturer Part Number" "5-534998-6" (at 19.05 -794.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
     (rectangle

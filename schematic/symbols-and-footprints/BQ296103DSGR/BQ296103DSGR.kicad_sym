@@ -83,7 +83,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Texas Instruments"
+		(property "Manufacturer Name" "Texas Instruments"
 			(at 21.59 -694.92 0)
 			(effects
 				(font
@@ -93,7 +93,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "BQ296103DSGR"
+		(property "Manufacturer Part Number" "BQ296103DSGR"
 			(at 21.59 -794.92 0)
 			(effects
 				(font

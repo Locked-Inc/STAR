@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Samtec/SSW-106-02-G-D-RA?qs=rU5fayqh%252BE3y2WIzbQXf2g%3D%3D" (at 19.05 -594.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Name" "SAMTEC" (at 19.05 -694.92 0)
+    (property "Manufacturer Name" "SAMTEC" (at 19.05 -694.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Part_Number" "SSW-106-02-G-D-RA" (at 19.05 -794.92 0)
+    (property "Manufacturer Part Number" "SSW-106-02-G-D-RA" (at 19.05 -794.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
     (rectangle

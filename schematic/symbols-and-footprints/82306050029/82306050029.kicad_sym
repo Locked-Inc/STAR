@@ -86,7 +86,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Wurth Elektronik"
+		(property "Manufacturer Name" "Wurth Elektronik"
 			(at 13.97 -696.19 0)
 			(effects
 				(font
@@ -96,7 +96,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "82306050029"
+		(property "Manufacturer Part Number" "82306050029"
 			(at 13.97 -796.19 0)
 			(effects
 				(font

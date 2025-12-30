@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "http://www.mouser.com/Search/ProductDetail.aspx?qs=NE97hfUNX0EUJhqscJ8bdQ%3d%3d" (at 54.61 -594.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Name" "ABRACON" (at 54.61 -694.92 0)
+    (property "Manufacturer Name" "ABRACON" (at 54.61 -694.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Part_Number" "ASV-30.000MHZ-E-T" (at 54.61 -794.92 0)
+    (property "Manufacturer Part Number" "ASV-30.000MHZ-E-T" (at 54.61 -794.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
     (rectangle

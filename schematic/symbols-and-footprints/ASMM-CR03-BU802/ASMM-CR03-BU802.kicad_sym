@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Broadcom-Avago/ASMM-CR03-BU802?qs=pUKx8fyJudDCJNaa5NKWFQ%3D%3D" (at 12.7 -593.65 0)
       (effects (font (size 1.27 1.27)) (justify left bottom) hide)
     )
-    (property "Manufacturer_Name" "Avago Technologies" (at 12.7 -693.65 0)
+    (property "Manufacturer Name" "Avago Technologies" (at 12.7 -693.65 0)
       (effects (font (size 1.27 1.27)) (justify left bottom) hide)
     )
-    (property "Manufacturer_Part_Number" "ASMM-CR03-BU802" (at 12.7 -793.65 0)
+    (property "Manufacturer Part Number" "ASMM-CR03-BU802" (at 12.7 -793.65 0)
       (effects (font (size 1.27 1.27)) (justify left bottom) hide)
     )
     (polyline

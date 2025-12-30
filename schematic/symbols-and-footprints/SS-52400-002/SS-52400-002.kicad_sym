@@ -24,10 +24,10 @@
     (property "Mouser Price/Stock" "https://www.mouser.co.uk/ProductDetail/Stewart-Connector-Bel/SS-52400-002?qs=BJlw7L4Cy79tL%252BoBpAWxLw%3D%3D" (at 29.21 -594.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Name" "BelFuse" (at 29.21 -694.92 0)
+    (property "Manufacturer Name" "BelFuse" (at 29.21 -694.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
-    (property "Manufacturer_Part_Number" "SS-52400-002" (at 29.21 -794.92 0)
+    (property "Manufacturer Part Number" "SS-52400-002" (at 29.21 -794.92 0)
       (effects (font (size 1.27 1.27)) (justify left top) hide)
     )
     (rectangle

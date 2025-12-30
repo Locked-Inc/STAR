@@ -86,7 +86,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Name" "Diodes Incorporated"
+		(property "Manufacturer Name" "Diodes Incorporated"
 			(at 10.16 -693.65 0)
 			(effects
 				(font
@@ -96,7 +96,7 @@
 				(hide yes)
 			)
 		)
-		(property "Manufacturer_Part_Number" "BZT52C8V2T-7"
+		(property "Manufacturer Part Number" "BZT52C8V2T-7"
 			(at 10.16 -793.65 0)
 			(effects
 				(font
