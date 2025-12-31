@@ -25,6 +25,8 @@
 
 #ifdef RX_CRC32_USE_HARDWARE
 
+#include <stddef.h>
+
 #include "rx72n_regs.h"
 
 /* =============================================================================

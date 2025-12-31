@@ -159,9 +159,11 @@ target_link_libraries(rx_harq PUBLIC rx_fec rx_core)
 add_library(rx_frame STATIC
     lib/rx_frame/src/rx_frame.c
     lib/rx_frame/src/rx_crc32.c
+    lib/rx_frame/src/rx_crc32_hw.c
+    lib/rx_frame/src/rx_crc32_sw.c
 )
 target_include_directories(rx_frame PUBLIC lib/rx_frame/inc)
-target_link_libraries(rx_frame PUBLIC rx_core)
+target_link_libraries(rx_frame PUBLIC rx_core rx_hal)
 
 # rx_nanopb - nanopb Protocol Buffers Integration
 add_library(rx_nanopb STATIC
@@ -190,6 +192,12 @@ add_library(rx_spi_comm STATIC
 )
 target_include_directories(rx_spi_comm PUBLIC lib/rx_spi_comm/inc)
 target_link_libraries(rx_spi_comm PUBLIC rx_frame rx_hal rx_core)
+
+# rx_usb - USB CDC-ACM Driver for RX72N
+add_subdirectory(lib/rx_usb)
+
+# rx_usb_comm - USB CDC Communication Layer
+add_subdirectory(lib/rx_usb_comm)
 
 # rx_motor - MTU3a motor control
 add_library(rx_motor STATIC
@@ -222,6 +230,7 @@ set(APP_SOURCES
     src/motor_shared_state.c
     src/tasks/motor_control_task.c
     src/tasks/spi_comm_task.c
+    src/tasks/usb_comm_task.c
 )
 
 # =============================================================================
@@ -251,6 +260,8 @@ target_link_libraries(${PROJECT_NAME}.elf
     rx_frame
     rx_nanopb
     rx_spi_comm
+    rx_usb
+    rx_usb_comm
     rx_drv8243
     rx_fuel_gauge
 )
@@ -298,6 +309,8 @@ message(STATUS "  rx_harq        - HARQ protocol (Chase Combining)")
 message(STATUS "  rx_frame       - Frame layer (SYNC, CRC-32, header)")
 message(STATUS "  rx_nanopb      - Protocol Buffers (nanopb integration)")
 message(STATUS "  rx_spi_comm    - SPI communication layer")
+message(STATUS "  rx_usb         - USB CDC-ACM driver")
+message(STATUS "  rx_usb_comm    - USB communication layer")
 message(STATUS "  rx_drv8243     - DRV8243 H-bridge driver")
 message(STATUS "  rx_fuel_gauge  - Battery management (BQ25798)")
 message(STATUS "==============================================")

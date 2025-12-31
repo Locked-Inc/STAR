@@ -35,10 +35,13 @@
 #include "system_config.h"
 #include "tasks/motor_control_task.h"
 #include "tasks/spi_comm_task.h"
+#include "tasks/usb_comm_task.h"
 
 /* Infrastructure */
 #include "rx_bus_manager.h"
+#include "rx_iwdt.h"
 #include "rx_log.h"
+#include "rx_register_guard.h"
 
 static const char* s_tag = "MAIN";
 
@@ -281,6 +284,13 @@ void tx_application_define(void* first_unused_memory)
     return;
   }
 
+  /* Create USB communication task (50Hz - telemetry and config) */
+  err = usb_comm_task_create(&s_shared_state);
+  if (err != RX_OK) {
+    RX_LOG_WARN(s_tag, "Failed to create USB comm task (optional)");
+    /* USB is optional - continue without it */
+  }
+
   RX_LOG_INFO(s_tag, "Motor control system created successfully");
 }
 
@@ -306,6 +316,29 @@ int main(void)
   /* Initialize UART first for logging */
   err = uart_init();
   RX_ERROR_CHECK(err);
+
+  /*
+   * Check and log watchdog reset cause BEFORE initializing new IWDT.
+   * This allows us to detect if the previous execution was hung.
+   */
+#ifdef __RX__
+  if (rx_iwdt_was_reset()) {
+    rx_iwdt_reset_cause_t cause = rx_iwdt_get_reset_cause();
+    if (cause == k_iwdt_reset_underflow) {
+      uart_puts("[WARN] Previous reset caused by watchdog timeout!\r\n");
+    } else if (cause == k_iwdt_reset_refresh_error) {
+      uart_puts("[WARN] Previous reset caused by watchdog refresh error!\r\n");
+    }
+    rx_iwdt_clear_status();
+  }
+
+  /* Initialize Independent Watchdog Timer (1 second timeout) */
+  err = rx_iwdt_init(k_watchdog_timeout_ms);
+  if (err != RX_OK) {
+    uart_puts("[WARN] Failed to init IWDT watchdog\r\n");
+    /* Continue without watchdog - log but don't fail boot */
+  }
+#endif
 
   /* Print startup banner */
   uart_puts("\r\n");
@@ -346,6 +379,20 @@ int main(void)
   RX_LOG_INFO(s_tag, "  Encoders: 4 x MTU phase counting");
   RX_LOG_INFO(s_tag, "  PIDs:     4 x velocity control");
   RX_LOG_INFO(s_tag, "  Control:  250 Hz (4ms period)");
+
+  /*
+   * Initialize register guard AFTER all peripheral configuration.
+   * This captures current register values as the "golden" reference
+   * that will be periodically restored to recover from ESD/EMI corruption.
+   */
+#ifdef __RX__
+  err = rx_register_guard_init();
+  if (err != RX_OK) {
+    uart_puts("[WARN] Failed to init register guard\r\n");
+  } else {
+    RX_LOG_INFO(s_tag, "Register guard initialized");
+  }
+#endif
 
   /* All systems ready */
   uart_puts("\r\n");
