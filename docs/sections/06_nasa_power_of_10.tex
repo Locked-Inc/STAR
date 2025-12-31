@@ -350,6 +350,47 @@ build_flags =
 \end{tabular}
 \end{table}
 
+\subsubsection{Defensive Coding Measures}
+
+Beyond the Power of 10 rules, STAR implements additional defensive coding measures for electrical noise resilience in the RX72N motor controller firmware.
+
+\textbf{Independent Watchdog Timer (IWDT):}
+\begin{itemize}
+\item 120 kHz dedicated oscillator (independent of main clock)
+\item 1 second timeout, fed every 4ms from 250Hz control loop
+\item Detects infinite loops, deadlocks, and system hangs
+\item Logs reset cause on startup for diagnostics
+\end{itemize}
+
+\textbf{Register Guard (ESD/EMI Protection):}
+\begin{itemize}
+\item Captures ``golden'' register values after initialization
+\item Periodically refreshes critical registers (PORT PDR, MSTPCR)
+\item Recovers from transient bit-flips caused by electrical noise
+\item Tracks correction count for field diagnostics
+\end{itemize}
+
+\textbf{IRQ Digital Filtering:}
+\begin{itemize}
+\item Hardware noise rejection on interrupt pins
+\item Configurable filter clock divisor (PCLK/1 to PCLK/64)
+\item 3-sample debounce prevents spurious interrupts
+\end{itemize}
+
+\begin{lstlisting}[language=C]
+/* Defensive coding in motor control loop */
+while (true) {
+  /* ... control logic ... */
+
+  rx_iwdt_feed();  /* Feed watchdog every 4ms */
+
+  if (++guard_counter >= 250) {  /* Every 1 second */
+    rx_register_guard_refresh();
+    guard_counter = 0;
+  }
+}
+\end{lstlisting}
+
 \subsubsection{References}
 
 \begin{itemize}
