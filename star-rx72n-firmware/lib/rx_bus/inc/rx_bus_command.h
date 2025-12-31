@@ -114,9 +114,8 @@ typedef struct rx_bus_command {
  * rx_bus_command_init(&cmd, gpio_write_execute, &data);
  * @endcode
  */
-static inline void rx_bus_command_init(rx_bus_command_t*         cmd,
-                                       rx_bus_command_execute_fn execute,
-                                       void*                     data)
+static inline void
+rx_bus_command_init(rx_bus_command_t* cmd, rx_bus_command_execute_fn execute, void* data)
 {
   cmd->execute = execute;
   cmd->data    = data;

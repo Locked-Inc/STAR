@@ -239,7 +239,9 @@ static void internal_motor_control_loop(motor_task_params_t* params)
       rx_err_t err = motor_shared_state_get_velocity(params->shared_state, i, &setpoints_mps[i]);
       if (err != RX_OK) {
         /* On timeout, use last known setpoint (already in setpoints_mps) */
-        rx_log_warn_int(s_tag, "Mutex timeout reading velocity setpoint for motor, using last known", i);
+        rx_log_warn_int(s_tag,
+                        "Mutex timeout reading velocity setpoint for motor, using last known",
+                        i);
       }
     }
 
@@ -294,7 +296,7 @@ static void internal_motor_control_loop(motor_task_params_t* params)
                                     i,
                                     velocities_mps[i],
                                     outputs[i],
-                                    0.0f,  /* Current: not implemented yet, see comment above */
+                                    0.0f, /* Current: not implemented yet, see comment above */
                                     motor_state);
     }
 

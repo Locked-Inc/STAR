@@ -45,6 +45,16 @@ typedef enum {
 } motor_count_t;
 
 /**
+ * @brief Motor indices for skid-steer 4WD configuration
+ */
+typedef enum {
+  k_motor_idx_front_left  = 0, /**< Front-left motor */
+  k_motor_idx_front_right = 1, /**< Front-right motor */
+  k_motor_idx_rear_left   = 2, /**< Rear-left motor */
+  k_motor_idx_rear_right  = 3, /**< Rear-right motor */
+} motor_idx_t;
+
+/**
  * @brief Mutex timeout configuration (in ThreadX ticks)
  *
  * ThreadX tick rate is configured in tx_user.h (typically 100 Hz = 10ms per tick).

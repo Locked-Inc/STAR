@@ -140,6 +140,7 @@ CMT0.CMCR = 0x0042;    // Configure timer
 - `PORT0`-`PORTJ` - GPIO ports
 - `SCI0`-`SCI12` - Serial Communication Interface (UART)
 - `MTU0`-`MTU7` - Multi-Function Timer Units (PWM)
+- `CRC` - CRC Calculator peripheral (hardware CRC-32)
 
 #### 3. Interrupt Handlers
 
@@ -178,7 +179,33 @@ tx_thread_create(&led_thread, "LED", led_task_entry,
 uint8_t* stack = malloc(1024);  // Never do this!
 ```
 
-#### 5. Constants and Macros
+#### 5. Explicit Integer Types (No size_t)
+
+**Use explicit-width integers instead of `size_t`:**
+
+On the 32-bit RX72N platform, `size_t` is 32 bits, but using explicit types like `uint32_t` is preferred for:
+- Clarity about the actual width
+- Consistency across the codebase
+- Avoiding implicit conversions
+
+```c
+// CORRECT: Explicit width
+uint32_t rx_crc32_ieee(const uint8_t* data, uint32_t len);
+
+for (uint32_t i = 0; i < len; i++) {
+    // ...
+}
+
+// AVOID: size_t
+size_t rx_crc32_ieee(const uint8_t* data, size_t len);  // Don't use
+```
+
+**When to use each type:**
+- `uint32_t` - Buffer lengths, loop counters, sizes
+- `uint16_t` - Sequence numbers, frame lengths
+- `uint8_t` - Byte data, flags, small counters
+
+#### 6. Constants and Macros
 
 **Prefer enums over const over macros** (same as ESP32):
 
@@ -194,7 +221,37 @@ typedef enum {
 #define MOTOR_STATE_IDLE 0
 ```
 
-#### 6. ThreadX Configuration
+#### 7. Named Constants for Array Indices
+
+**Use enums for array indices instead of magic numbers:**
+
+When indexing into arrays (especially for byte serialization), use named constants to document what each index represents:
+
+```c
+// CORRECT: Named indices document the byte ordering
+typedef enum {
+    k_be16_byte_high = 0,  /**< High byte (MSB) at index 0 */
+    k_be16_byte_low  = 1,  /**< Low byte (LSB) at index 1 */
+} be16_byte_idx_t;
+
+static void internal_write_be16(uint8_t* buf, uint16_t val) {
+    buf[k_be16_byte_high] = (uint8_t)(val >> 8);
+    buf[k_be16_byte_low]  = (uint8_t)(val & 0xFF);
+}
+
+// AVOID: Magic number indices
+static void internal_write_be16(uint8_t* buf, uint16_t val) {
+    buf[0] = (uint8_t)(val >> 8);   // What does 0 mean?
+    buf[1] = (uint8_t)(val & 0xFF); // What does 1 mean?
+}
+```
+
+This improves:
+- **Readability** - Index meaning is self-documenting
+- **Maintainability** - Easier to understand byte ordering
+- **Debuggability** - Enum values visible in debugger
+
+#### 8. ThreadX Configuration
 
 **ThreadX config is in `include/tx_user.h`:**
 
@@ -209,7 +266,7 @@ typedef enum {
 #define TX_TIMER_PROCESS_IN_ISR           // Timer processing in ISR
 ```
 
-#### 7. Peripheral Initialization Order
+#### 9. Peripheral Initialization Order
 
 **Critical startup sequence for RX72N:**
 
@@ -313,6 +370,86 @@ void uart_putint(int32_t value);            // Send integer
 ```c
 void timer_init(void);          // Initialize CMT0 for ThreadX tick (100 Hz)
 void cmt0_isr(void);            // CMT0 interrupt handler
+```
+
+## Protocol Stack Libraries
+
+The firmware includes protocol stack libraries for reliable SPI communication:
+
+| Library | Location | Description |
+|---------|----------|-------------|
+| `rx_frame` | `lib/rx_frame/` | Frame encoding/decoding with CRC-32 |
+| `rx_fec` | `lib/rx_fec/` | Forward Error Correction (Hamming codes) |
+| `rx_harq` | `lib/rx_harq/` | Hybrid ARQ with soft combining |
+
+### CRC-32 Module (`rx_frame`)
+
+IEEE 802.3 CRC-32 implementation with **compile-time hardware/software selection**.
+
+**Design Rationale:**
+
+The CRC module uses a compile-time selection strategy with both implementations always compiled:
+
+1. **Hardware CRC** (default on RX72N):
+   - Uses RX72N CRC Calculator peripheral (~10x faster for large buffers)
+   - Automatically enabled when `__RX__` is defined
+
+2. **Software CRC** (default on host, always available):
+   - 256-entry lookup table implementation (1KB table in .rodata)
+   - Used for host-side unit testing (no hardware available)
+   - `rx_crc32_update_sw()` always compiled for incremental CRC operations
+   - Enables A/B comparison testing on hardware for validation
+
+**Why both implementations are always compiled:**
+- Host-side tests validate CRC correctness without hardware
+- Software can be forced on target (`-DRX_CRC32_USE_SOFTWARE`) for debugging
+- Incremental CRC uses software fallback (hardware state management is complex)
+
+**Public API:**
+```c
+#include "rx_frame.h"
+
+uint32_t rx_crc32_ieee(const uint8_t *data, size_t len);
+uint32_t rx_crc32_update(uint32_t crc, const uint8_t *data, size_t len);
+```
+
+**Hardware/Software Selection:**
+
+| Build Target | Default | Override |
+|--------------|---------|----------|
+| RX72N (`__RX__` defined) | Hardware CRC | Define `RX_CRC32_USE_SOFTWARE` |
+| Host (testing) | Software CRC | N/A |
+
+```c
+// Force software CRC (useful for debugging or comparison)
+#define RX_CRC32_USE_SOFTWARE
+#include "rx_crc_internal.h"
+
+// Or via compiler flag:
+// gcc -DRX_CRC32_USE_SOFTWARE ...
+```
+
+**Hardware CRC Details:**
+- Peripheral: RX72N CRC Calculator at 0x00088280
+- Polynomial: IEEE 802.3 (0x04C11DB7)
+- Module stop: MSTPCRB bit 23
+- Bit-exact compatible with Go's `crc32.ChecksumIEEE()`
+
+**References:**
+- [RX72N Hardware Manual](https://www.renesas.com/en/products/rx72n) - CRC Calculator section
+- [Renesas FSP CRC Module](https://renesas.github.io/fsp/group___c_r_c.html)
+
+**File Structure:**
+```
+lib/rx_frame/
+├── inc/
+│   ├── rx_frame.h          # Public API
+│   └── rx_crc_internal.h   # Internal abstraction (hw/sw selection)
+└── src/
+    ├── rx_crc32.c          # Public API wrapper
+    ├── rx_crc32_sw.c       # Software implementation (lookup table)
+    ├── rx_crc32_hw.c       # Hardware implementation (RX72N peripheral)
+    └── rx_frame.c          # Frame encoding/decoding
 ```
 
 ## ThreadX Patterns
@@ -503,6 +640,7 @@ Peripherals:
 0x00080000 - 0x000FFFFF    Peripheral registers
 0x00088000 - ICU
 0x00088200 - CMT
+0x00088280 - CRC (CRC Calculator)
 0x000C0000 - GPIO (PORT)
 0x000D0000 - MTU3a
 0x000E0000 - S12AD
@@ -557,6 +695,7 @@ ICU.IR[28] = 0;
 ## References
 
 - [RX72N Hardware Manual](https://www.renesas.com/en/products/rx72n) - Complete peripheral reference
+- [RX72N CRC Calculator](https://renesas.github.io/fsp/group___c_r_c.html) - Hardware CRC-32 documentation
 - [ThreadX Documentation](https://github.com/eclipse-threadx/rtos-docs) - RTOS API reference
 - [GNURX Toolchain](https://llvm-gcc-renesas.com/) - Compiler documentation
 - [Main STAR Style Guide](../CLAUDE.md) - Project-wide coding standards
