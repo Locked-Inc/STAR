@@ -37,9 +37,9 @@
 
 /** @brief Timeout configuration lookup table entry */
 typedef struct {
-  uint32_t timeout_ms;  /**< Timeout in milliseconds */
-  uint16_t tops;        /**< TOPS bits (timeout period select) */
-  uint16_t cks;         /**< CKS bits (clock divisor) */
+  uint32_t timeout_ms; /**< Timeout in milliseconds */
+  uint16_t tops;       /**< TOPS bits (timeout period select) */
+  uint16_t cks;        /**< CKS bits (clock divisor) */
 } iwdt_timeout_entry_t;
 
 /**
@@ -57,12 +57,12 @@ typedef struct {
  */
 static const iwdt_timeout_entry_t s_timeout_table[] = {
   /* timeout_ms, TOPS (cycles),        CKS (divisor)           */
-  {128,          k_iwdt_tops_1024,     k_iwdt_cks_div_1  },  /* ~8.5ms actual  */
-  {512,          k_iwdt_tops_4096,     k_iwdt_cks_div_1  },  /* ~34ms actual   */
-  {1000,         k_iwdt_tops_8192,     k_iwdt_cks_div_1  },  /* ~68ms actual   */
-  {2048,         k_iwdt_tops_16384,    k_iwdt_cks_div_1  },  /* ~136ms actual  */
-  {8192,         k_iwdt_tops_16384,    k_iwdt_cks_div_128},  /* ~17s actual    */
-  {16384,        k_iwdt_tops_16384,    k_iwdt_cks_div_128},  /* ~17s actual    */
+  {128, k_iwdt_tops_1024, k_iwdt_cks_div_1},      /* ~8.5ms actual  */
+  {512, k_iwdt_tops_4096, k_iwdt_cks_div_1},      /* ~34ms actual   */
+  {1000, k_iwdt_tops_8192, k_iwdt_cks_div_1},     /* ~68ms actual   */
+  {2048, k_iwdt_tops_16384, k_iwdt_cks_div_1},    /* ~136ms actual  */
+  {8192, k_iwdt_tops_16384, k_iwdt_cks_div_128},  /* ~17s actual    */
+  {16384, k_iwdt_tops_16384, k_iwdt_cks_div_128}, /* ~17s actual    */
 };
 
 /** @brief Number of entries in timeout table */
@@ -90,7 +90,7 @@ static uint8_t s_iwdt_initialized = 0;
  * @return RX_OK if valid configuration found
  * @return RX_ERR_INVALID_ARG if timeout out of range
  */
-static rx_err_t internal_find_timeout_config(uint32_t                   timeout_ms,
+static rx_err_t internal_find_timeout_config(uint32_t                     timeout_ms,
                                              const iwdt_timeout_entry_t** entry)
 {
   if (entry == NULL) {
@@ -132,7 +132,7 @@ rx_err_t rx_iwdt_init(uint32_t timeout_ms)
 
   /* Find best timeout configuration */
   const iwdt_timeout_entry_t* config = NULL;
-  rx_err_t err = internal_find_timeout_config(timeout_ms, &config);
+  rx_err_t                    err    = internal_find_timeout_config(timeout_ms, &config);
   if (err != RX_OK) {
     return err;
   }
@@ -146,10 +146,10 @@ rx_err_t rx_iwdt_init(uint32_t timeout_ms)
    * Bits [13:12] RPSS  - Window Start Position (0x00 = 100%, full window)
    */
   uint16_t iwdtcr = 0;
-  iwdtcr |= config->tops;           /* Timeout period */
-  iwdtcr |= config->cks;            /* Clock divisor */
-  iwdtcr |= k_iwdt_rpes_0;          /* Window end at 0% (disabled) */
-  iwdtcr |= k_iwdt_rpss_100;        /* Window start at 100% (full) */
+  iwdtcr |= config->tops;    /* Timeout period */
+  iwdtcr |= config->cks;     /* Clock divisor */
+  iwdtcr |= k_iwdt_rpes_0;   /* Window end at 0% (disabled) */
+  iwdtcr |= k_iwdt_rpss_100; /* Window start at 100% (full) */
 
   IWDT.IWDTCR = iwdtcr;
 
@@ -213,8 +213,8 @@ void rx_iwdt_feed(void)
   __asm__ volatile("clrpsw i");
 
   /* Perform refresh sequence */
-  IWDT.IWDTRR = k_iwdt_refresh_start;  /* Write 0x00 */
-  IWDT.IWDTRR = k_iwdt_refresh_end;    /* Write 0xFF */
+  IWDT.IWDTRR = k_iwdt_refresh_start; /* Write 0x00 */
+  IWDT.IWDTRR = k_iwdt_refresh_end;   /* Write 0xFF */
 
   /* Restore interrupt state */
   __asm__ volatile("mvtc %0, psw" : : "r"(psw));

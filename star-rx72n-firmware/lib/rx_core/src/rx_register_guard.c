@@ -64,8 +64,8 @@ typedef struct {
  * @brief Module state
  */
 typedef struct {
-  pdr_golden_t    pdr;        /**< Golden PDR values */
-  mstpcr_golden_t mstpcr;     /**< Golden MSTPCR values */
+  pdr_golden_t    pdr;         /**< Golden PDR values */
+  mstpcr_golden_t mstpcr;      /**< Golden MSTPCR values */
   uint32_t        corrections; /**< Number of corrections made */
   uint8_t         initialized; /**< Module initialized flag */
 } register_guard_state_t;

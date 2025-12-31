@@ -6,12 +6,11 @@
  * It handles module initialization, clock configuration, and register access.
  */
 
-#include "rx_usb.h"
-
 #include <stddef.h>
 
 #include "rx72n_regs.h"
 #include "rx_log.h"
+#include "rx_usb.h"
 
 /* =============================================================================
  * Private Definitions
