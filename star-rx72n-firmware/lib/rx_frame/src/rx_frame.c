@@ -37,14 +37,6 @@ typedef enum {
 } byte_shift_t;
 
 /**
- * @brief Byte indices for 16-bit big-endian serialization
- */
-typedef enum {
-  k_be16_byte_high = 0, /**< High byte (MSB) at index 0 */
-  k_be16_byte_low  = 1, /**< Low byte (LSB) at index 1 */
-} be16_byte_idx_t;
-
-/**
  * @brief Byte indices for 32-bit little-endian serialization
  */
 typedef enum {
@@ -58,29 +50,6 @@ typedef enum {
  * Private Helper Functions
  * =============================================================================
  */
-
-/**
- * @brief Write uint16 in big-endian format
- *
- * @param[out] buf Output buffer (at least 2 bytes)
- * @param[in]  val Value to write
- */
-static void internal_write_be16(uint8_t* buf, uint16_t val)
-{
-  buf[k_be16_byte_high] = (uint8_t)(val >> k_shift_byte_1);
-  buf[k_be16_byte_low]  = (uint8_t)(val & BYTE_MASK);
-}
-
-/**
- * @brief Read uint16 in big-endian format
- *
- * @param[in] buf Input buffer (at least 2 bytes)
- * @return Decoded value
- */
-static uint16_t internal_read_be16(const uint8_t* buf)
-{
-  return ((uint16_t)buf[k_be16_byte_high] << k_shift_byte_1) | (uint16_t)buf[k_be16_byte_low];
-}
 
 /**
  * @brief Write uint32 in little-endian format (for CRC-32)
@@ -157,15 +126,15 @@ rx_err_t rx_frame_encode(rx_frame_encoder_t* enc,
   uint32_t offset     = 0;
 
   /* Write SYNC word (big-endian) */
-  internal_write_be16(&output[offset], k_frame_sync_word);
+  rx_write_be16(&output[offset], k_frame_sync_word);
   offset += k_frame_sync_size;
 
   /* Write SEQ (big-endian, network byte order per RFC 1700) */
-  internal_write_be16(&output[offset], frame->header.sequence);
+  rx_write_be16(&output[offset], frame->header.sequence);
   offset += k_frame_seq_size;
 
   /* Write LEN (big-endian, network byte order per RFC 1700) */
-  internal_write_be16(&output[offset], frame->header.length);
+  rx_write_be16(&output[offset], frame->header.length);
   offset += k_frame_len_size;
 
   /* Write TYPE (1 byte) */
@@ -237,18 +206,18 @@ rx_frame_decode(rx_frame_decoder_t* dec, const uint8_t* data, uint32_t data_len,
   uint32_t offset = 0;
 
   /* Verify SYNC word */
-  uint16_t sync_word = internal_read_be16(&data[offset]);
+  uint16_t sync_word = rx_read_be16(&data[offset]);
   if (sync_word != k_frame_sync_word) {
     return RX_ERR_PROTOCOL_ERROR;
   }
   offset += k_frame_sync_size;
 
   /* Read SEQ */
-  frame->header.sequence = internal_read_be16(&data[offset]);
+  frame->header.sequence = rx_read_be16(&data[offset]);
   offset += k_frame_seq_size;
 
   /* Read LEN */
-  frame->header.length = internal_read_be16(&data[offset]);
+  frame->header.length = rx_read_be16(&data[offset]);
   offset += k_frame_len_size;
 
   /* Validate payload length */
