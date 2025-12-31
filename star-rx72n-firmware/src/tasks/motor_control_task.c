@@ -40,7 +40,9 @@
 #include "hardware_config.h"
 #include "rx_check.h"
 #include "rx_cmt.h"
+#include "rx_iwdt.h"
 #include "rx_log.h"
+#include "rx_register_guard.h"
 
 static const char* s_tag = "MOTOR_CTRL";
 
@@ -205,6 +207,10 @@ static void internal_motor_control_loop(motor_task_params_t* params)
   memset(encoder_states, 0, sizeof(encoder_states));
   memset(setpoints_mps, 0, sizeof(setpoints_mps));
 
+  /* Register guard refresh counter (refresh every 1 second = 250 iterations) */
+  uint32_t register_guard_counter = 0;
+  #define REGISTER_GUARD_INTERVAL 250
+
   RX_LOG_INFO(s_tag, "Motor control loop initialized (250Hz, 4ms period)");
 
   while (true) {
@@ -300,7 +306,29 @@ static void internal_motor_control_loop(motor_task_params_t* params)
                                     motor_state);
     }
 
-    /* 7. Check emergency stop (~5us) */
+    /* 7. Feed watchdog - critical safety measure
+     *
+     * At 250Hz, we call this every 4ms. With 1000ms timeout, we have 250
+     * opportunities per timeout period to feed the watchdog. Any hang in
+     * this loop for >1 second triggers system reset.
+     */
+#ifdef __RX__
+    rx_iwdt_feed();
+#endif
+
+    /* 8. Periodic register refresh for ESD/EMI protection
+     *
+     * Check and restore critical registers every 1 second (250 iterations).
+     * This recovers from transient bit-flips caused by electrical noise.
+     */
+#ifdef __RX__
+    if (++register_guard_counter >= REGISTER_GUARD_INTERVAL) {
+      rx_register_guard_refresh();
+      register_guard_counter = 0;
+    }
+#endif
+
+    /* 9. Check emergency stop (~5us) */
     bool     estop_active;
     rx_err_t err = motor_shared_state_get_estop(params->shared_state, &estop_active);
 
