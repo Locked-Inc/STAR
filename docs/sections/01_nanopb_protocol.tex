@@ -163,6 +163,57 @@ CRC-32 & Little-endian & IEEE 802.3 & Standard CRC-32 polynomial \\
 \textbf{Key Insight:} Mixed byte orders are intentional — headers follow network standards for cross-platform compatibility, while CRC follows IEEE 802.3 for hardware acceleration and library compatibility.
 }}
 
+\subsubsection{CRC-32 Implementation}
+
+The CRC-32 module supports both hardware and software implementations with compile-time selection.
+
+\begin{table}[H]
+\centering
+\caption{CRC-32 Hardware/Software Selection}
+\label{tab:crc32-selection}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Build Target} & \textbf{Default Implementation} & \textbf{Override} \\
+\hline
+RX72N (\texttt{\_\_RX\_\_} defined) & Hardware CRC Calculator & \texttt{-DRX\_CRC32\_USE\_SOFTWARE} \\
+Host (testing) & Software lookup table & N/A (automatic) \\
+\hline
+\end{tabular}
+\end{table}
+
+\textbf{Hardware CRC (RX72N):}
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+    \item Peripheral: CRC Calculator at \texttt{0x00088280}
+    \item Module stop control: \texttt{MSTPCRB} bit 23
+    \item Polynomial: IEEE 802.3 (0x04C11DB7), LSB-first (reflected)
+    \item Configuration: \texttt{CRCCR = 0x43} (CRC-32 + LSB-first)
+\end{itemize}
+
+\textbf{Software CRC (Host/Fallback):}
+\begin{itemize}[leftmargin=*,topsep=2pt,itemsep=1pt]
+    \item Algorithm: 256-entry lookup table (1 KB)
+    \item Polynomial: Reflected form \texttt{0xEDB88320}
+    \item Always available for incremental CRC operations
+\end{itemize}
+
+\textbf{API (identical for both implementations):}
+\begin{lstlisting}[language=C, basicstyle=\ttfamily\scriptsize]
+uint32_t rx_crc32_ieee(const uint8_t *data, size_t len);
+uint32_t rx_crc32_update(uint32_t crc, const uint8_t *data, size_t len);
+\end{lstlisting}
+
+\textbf{Go Compatibility:} Both implementations produce bit-exact results matching Go's \texttt{crc32.ChecksumIEEE()}, verified by unit tests including the canonical test vector ``123456789'' = \texttt{0xCBF43926}.
+
+\vspace{0.2cm}
+
+\noindent\colorbox{keyinsightcolor}{\parbox{\dimexpr\linewidth-2\fboxsep}{%
+\textbf{References:}
+\begin{itemize}[leftmargin=*,topsep=0pt,itemsep=0pt]
+    \item RX72N Group User's Manual: Hardware (CRC Calculator section)
+    \item \url{https://renesas.github.io/fsp/group___c_r_c.html}
+\end{itemize}
+}}
+
 \vspace{0.3cm}
 
 \subsubsection{Memory Budget}

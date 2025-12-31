@@ -181,7 +181,7 @@ rx_err_t mock_pin_validator_init(mock_pin_validator_t* validator);
  *         RX_ERR_INVALID_STATE if validator not initialized
  */
 rx_err_t mock_pin_validator_get_interface(rx_pin_interface_t*   iface,
-                                           mock_pin_validator_t* validator);
+                                          mock_pin_validator_t* validator);
 
 /* =============================================================================
  * Testing Helper Functions
@@ -238,9 +238,8 @@ bool mock_pin_validator_was_reserved(mock_pin_validator_t* validator, uint8_t po
  *
  * @note Returns a pointer to internal buffer. Do not modify or free.
  */
-const char* mock_pin_validator_get_function(mock_pin_validator_t* validator,
-                                             uint8_t               port,
-                                             uint8_t               pin);
+const char*
+mock_pin_validator_get_function(mock_pin_validator_t* validator, uint8_t port, uint8_t pin);
 
 /**
  * @brief Get total number of validate_pin calls

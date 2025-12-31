@@ -1,0 +1,188 @@
+/**
+ * @file rx_nanopb.h
+ * @brief nanopb Integration Wrapper for RX72N
+ *
+ * Provides simplified encode/decode functions with static buffers
+ * for protocol buffer messages used in the STAR project.
+ *
+ * @see star-proto/proto/star/v1/ for message definitions
+ *
+ * STAR Project - Texas A&M University
+ * December 2025
+ */
+
+#ifndef STAR_RX_NANOPB_H
+#define STAR_RX_NANOPB_H
+
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
+#include "rx_err.h"
+
+/* Include generated protobuf headers */
+#include "gen/star/v1/common.pb.h"
+#include "gen/star/v1/motor_control.pb.h"
+#include "gen/star/v1/telemetry.pb.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* =============================================================================
+ * Buffer Configuration
+ * =============================================================================
+ */
+
+/**
+ * @brief Maximum encode/decode buffer size
+ */
+#define RX_NANOPB_BUFFER_SIZE 512
+
+/* =============================================================================
+ * Initialization
+ * =============================================================================
+ */
+
+/**
+ * @brief Initialize nanopb wrapper
+ *
+ * @return RX_OK on success
+ */
+rx_err_t rx_nanopb_init(void);
+
+/* =============================================================================
+ * SetVelocityRequest Encode/Decode
+ * =============================================================================
+ */
+
+/**
+ * @brief Encode SetVelocityRequest to bytes
+ *
+ * @param[in]  msg    Message to encode
+ * @param[out] buffer Output buffer (at least RX_NANOPB_BUFFER_SIZE bytes)
+ * @param[out] len    Actual encoded length
+ *
+ * @return RX_OK on success
+ * @return RX_ERR_INVALID_ARG if any pointer is NULL
+ * @return RX_ERR_INVALID_SIZE if encoding fails
+ */
+rx_err_t rx_nanopb_encode_velocity_request(const star_v1_SetVelocityRequest* msg,
+                                           uint8_t*                          buffer,
+                                           uint32_t*                         len);
+
+/**
+ * @brief Decode SetVelocityRequest from bytes
+ *
+ * @param[in]  buffer Input buffer
+ * @param[in]  len    Buffer length
+ * @param[out] msg    Decoded message
+ *
+ * @return RX_OK on success
+ * @return RX_ERR_INVALID_ARG if any pointer is NULL
+ * @return RX_ERR_PROTOCOL_ERROR if decoding fails
+ */
+rx_err_t rx_nanopb_decode_velocity_request(const uint8_t*              buffer,
+                                           uint32_t                    len,
+                                           star_v1_SetVelocityRequest* msg);
+
+/* =============================================================================
+ * SetVelocityResponse Encode/Decode
+ * =============================================================================
+ */
+
+/**
+ * @brief Encode SetVelocityResponse to bytes
+ *
+ * @param[in]  msg    Message to encode
+ * @param[out] buffer Output buffer
+ * @param[out] len    Actual encoded length
+ *
+ * @return RX_OK on success
+ */
+rx_err_t rx_nanopb_encode_velocity_response(const star_v1_SetVelocityResponse* msg,
+                                            uint8_t*                           buffer,
+                                            uint32_t*                          len);
+
+/* =============================================================================
+ * EmergencyStopRequest Encode/Decode
+ * =============================================================================
+ */
+
+/**
+ * @brief Decode EmergencyStopRequest from bytes
+ *
+ * @param[in]  buffer Input buffer
+ * @param[in]  len    Buffer length
+ * @param[out] msg    Decoded message
+ *
+ * @return RX_OK on success
+ */
+rx_err_t rx_nanopb_decode_estop_request(const uint8_t*                buffer,
+                                        uint32_t                      len,
+                                        star_v1_EmergencyStopRequest* msg);
+
+/**
+ * @brief Encode EmergencyStopResponse to bytes
+ *
+ * @param[in]  msg    Message to encode
+ * @param[out] buffer Output buffer
+ * @param[out] len    Actual encoded length
+ *
+ * @return RX_OK on success
+ */
+rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* msg,
+                                         uint8_t*                             buffer,
+                                         uint32_t*                            len);
+
+/* =============================================================================
+ * Telemetry Encode/Decode
+ * =============================================================================
+ */
+
+/**
+ * @brief Encode TelemetryData to bytes
+ *
+ * @param[in]  msg    Message to encode
+ * @param[out] buffer Output buffer
+ * @param[out] len    Actual encoded length
+ *
+ * @return RX_OK on success
+ */
+rx_err_t
+rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg, uint8_t* buffer, uint32_t* len);
+
+/* =============================================================================
+ * Helper Functions
+ * =============================================================================
+ */
+
+/**
+ * @brief Create VelocityCommand with given velocities
+ *
+ * @param[out] cmd Output command structure
+ * @param[in]  left_mps Left wheel velocity (m/s)
+ * @param[in]  right_mps Right wheel velocity (m/s)
+ * @param[in]  sequence Command sequence number
+ */
+void rx_nanopb_create_velocity_command(star_v1_VelocityCommand* cmd,
+                                       double                   left_mps,
+                                       double                   right_mps,
+                                       uint32_t                 sequence);
+
+/**
+ * @brief Create ResponseHeader with status
+ *
+ * @param[out] header Output header structure
+ * @param[in]  status Response status
+ * @param[in]  request_id Original request ID (can be NULL)
+ */
+void rx_nanopb_create_response_header(star_v1_ResponseHeader* header,
+                                      star_v1_Status          status,
+                                      const char*             request_id);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* STAR_RX_NANOPB_H */
