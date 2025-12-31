@@ -34,6 +34,7 @@
 #include "rx_pid.h"
 #include "system_config.h"
 #include "tasks/motor_control_task.h"
+#include "tasks/spi_comm_task.h"
 
 /* Infrastructure */
 #include "rx_bus_manager.h"
@@ -270,6 +271,13 @@ void tx_application_define(void* first_unused_memory)
   err = motor_control_task_create(&s_shared_state, s_motors, s_encoder_channels, s_pids);
   if (err != RX_OK) {
     RX_LOG_ERROR(s_tag, "Failed to create motor control task");
+    return;
+  }
+
+  /* Create SPI communication task (100Hz polling for RPi5 commands) */
+  err = spi_comm_task_create(&s_shared_state);
+  if (err != RX_OK) {
+    RX_LOG_ERROR(s_tag, "Failed to create SPI comm task");
     return;
   }
 
