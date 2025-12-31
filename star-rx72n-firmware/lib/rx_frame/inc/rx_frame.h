@@ -182,6 +182,43 @@ static inline uint32_t rx_frame_encoded_size(uint32_t payload_len)
 }
 
 /* =============================================================================
+ * Byte Ordering Utilities (Static Inline)
+ *
+ * Big-endian read/write for network byte order serialization.
+ * Used by both rx_frame and rx_usb_comm modules.
+ * =============================================================================
+ */
+
+/** @brief Bit shift for high byte in 16-bit value */
+#define RX_BE16_HIGH_SHIFT 8
+
+/** @brief Mask to extract one byte */
+#define RX_BYTE_MASK 0xFFU
+
+/**
+ * @brief Read uint16 from big-endian buffer
+ *
+ * @param[in] buf Input buffer (at least 2 bytes)
+ * @return Decoded 16-bit value
+ */
+static inline uint16_t rx_read_be16(const uint8_t* buf)
+{
+  return ((uint16_t)buf[0] << RX_BE16_HIGH_SHIFT) | (uint16_t)buf[1];
+}
+
+/**
+ * @brief Write uint16 to big-endian buffer
+ *
+ * @param[out] buf Output buffer (at least 2 bytes)
+ * @param[in]  val Value to write
+ */
+static inline void rx_write_be16(uint8_t* buf, uint16_t val)
+{
+  buf[0] = (uint8_t)(val >> RX_BE16_HIGH_SHIFT);
+  buf[1] = (uint8_t)(val & RX_BYTE_MASK);
+}
+
+/* =============================================================================
  * Decoder API
  * =============================================================================
  */

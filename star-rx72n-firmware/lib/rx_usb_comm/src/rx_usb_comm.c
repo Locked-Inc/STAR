@@ -38,14 +38,10 @@ static const char* s_tag = "USB_COMM";
 
 /** @brief Byte offsets within frame header buffer */
 typedef enum {
-  k_hdr_sync_high = 0, /**< SYNC word high byte */
-  k_hdr_sync_low  = 1, /**< SYNC word low byte */
-  k_hdr_len_high  = 4, /**< Payload length high byte */
-  k_hdr_len_low   = 5, /**< Payload length low byte */
+  k_hdr_sync_high  = 0, /**< SYNC word high byte */
+  k_hdr_sync_low   = 1, /**< SYNC word low byte */
+  k_hdr_len_offset = 4, /**< Payload length field offset */
 } frame_header_offset_t;
-
-/** @brief Bit shift for big-endian high byte */
-#define BE16_HIGH_SHIFT 8
 
 /** @brief Sleep interval for receive polling (ms) */
 #define SLEEP_INTERVAL_MS 10
@@ -407,9 +403,8 @@ rx_err_t rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, ui
     }
 
     /* Parse header to get payload length */
-    uint8_t* hdr = handle->rx_buffer + handle->rx_buffer_pos;
-    uint16_t payload_len =
-      ((uint16_t)hdr[k_hdr_len_high] << BE16_HIGH_SHIFT) | (uint16_t)hdr[k_hdr_len_low];
+    uint8_t* hdr         = handle->rx_buffer + handle->rx_buffer_pos;
+    uint16_t payload_len = rx_read_be16(&hdr[k_hdr_len_offset]);
 
     if (payload_len > k_frame_max_payload) {
       /* Invalid payload length - skip this sync and search for next */
