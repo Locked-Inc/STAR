@@ -17,10 +17,10 @@
 #else
 /* Mock includes for unit testing */
 #include "mock_usb0_regs.h"
-#define RX_LOG_INFO(tag, msg)        ((void)0)
-#define RX_LOG_WARN(tag, msg)        ((void)0)
-#define RX_LOG_ERROR(tag, msg)       ((void)0)
-#define RX_LOG_DEBUG(tag, msg)       ((void)0)
+#define RX_LOG_INFO(tag, msg)  ((void)0)
+#define RX_LOG_WARN(tag, msg)  ((void)0)
+#define RX_LOG_ERROR(tag, msg) ((void)0)
+#define RX_LOG_DEBUG(tag, msg) ((void)0)
 #endif
 
 /* =============================================================================
@@ -54,13 +54,13 @@ typedef struct {
 
 /* USB driver state */
 typedef struct {
-  bool              initialized;
-  rx_usb_state_t    state;
-  rx_usb_callback_t callback;
-  void*             callback_context;
-  ring_buffer_t     rx_buffer;
-  ring_buffer_t     tx_buffer;
-  rx_usb_stats_t    stats;
+  bool                 initialized;
+  rx_usb_state_t       state;
+  rx_usb_callback_t    callback;
+  void*                callback_context;
+  ring_buffer_t        rx_buffer;
+  ring_buffer_t        tx_buffer;
+  rx_usb_stats_t       stats;
   rx_usb_line_coding_t line_coding;
 } usb_driver_t;
 

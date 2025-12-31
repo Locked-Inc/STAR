@@ -43,11 +43,11 @@ extern "C" {
  * @brief Mock time state
  */
 typedef struct {
-  uint32_t current_time_ms;    /**< Simulated current time */
-  uint32_t sleep_call_count;   /**< Number of times sleep_ms was called */
-  uint32_t total_sleep_ms;     /**< Total sleep time requested */
-  bool     auto_advance;       /**< Auto-advance time on sleep */
-  bool     initialized;        /**< Initialization flag */
+  uint32_t current_time_ms;  /**< Simulated current time */
+  uint32_t sleep_call_count; /**< Number of times sleep_ms was called */
+  uint32_t total_sleep_ms;   /**< Total sleep time requested */
+  bool     auto_advance;     /**< Auto-advance time on sleep */
+  bool     initialized;      /**< Initialization flag */
 } mock_time_t;
 
 /* =============================================================================

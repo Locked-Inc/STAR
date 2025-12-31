@@ -209,7 +209,7 @@ static void internal_motor_control_loop(motor_task_params_t* params)
 
   /* Register guard refresh counter (refresh every 1 second = 250 iterations) */
   uint32_t register_guard_counter = 0;
-  #define REGISTER_GUARD_INTERVAL 250
+#define REGISTER_GUARD_INTERVAL 250
 
   RX_LOG_INFO(s_tag, "Motor control loop initialized (250Hz, 4ms period)");
 

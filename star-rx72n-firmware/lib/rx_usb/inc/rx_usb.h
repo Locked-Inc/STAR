@@ -109,22 +109,22 @@ typedef struct {
  * This structure matches the USB CDC SetLineCoding/GetLineCoding format.
  */
 typedef struct {
-  uint32_t baud_rate;   /**< Data terminal rate in bits per second */
-  uint8_t  stop_bits;   /**< 0=1 stop bit, 1=1.5 stop bits, 2=2 stop bits */
-  uint8_t  parity;      /**< 0=None, 1=Odd, 2=Even, 3=Mark, 4=Space */
-  uint8_t  data_bits;   /**< Data bits (5, 6, 7, 8, or 16) */
+  uint32_t baud_rate; /**< Data terminal rate in bits per second */
+  uint8_t  stop_bits; /**< 0=1 stop bit, 1=1.5 stop bits, 2=2 stop bits */
+  uint8_t  parity;    /**< 0=None, 1=Odd, 2=Even, 3=Mark, 4=Space */
+  uint8_t  data_bits; /**< Data bits (5, 6, 7, 8, or 16) */
 } rx_usb_line_coding_t;
 
 /**
  * @brief USB statistics
  */
 typedef struct {
-  uint32_t bytes_rx;      /**< Total bytes received from host */
-  uint32_t bytes_tx;      /**< Total bytes transmitted to host */
-  uint32_t rx_overruns;   /**< RX buffer overrun count */
-  uint32_t tx_underruns;  /**< TX underrun count (no data to send) */
-  uint32_t bus_resets;    /**< USB bus reset count */
-  uint32_t suspends;      /**< Suspend count */
+  uint32_t bytes_rx;     /**< Total bytes received from host */
+  uint32_t bytes_tx;     /**< Total bytes transmitted to host */
+  uint32_t rx_overruns;  /**< RX buffer overrun count */
+  uint32_t tx_underruns; /**< TX underrun count (no data to send) */
+  uint32_t bus_resets;   /**< USB bus reset count */
+  uint32_t suspends;     /**< Suspend count */
 } rx_usb_stats_t;
 
 /* =============================================================================
@@ -136,9 +136,9 @@ typedef struct {
  * @brief USB buffer and endpoint configuration
  */
 typedef enum {
-  k_usb_rx_buffer_size = 512, /**< Receive ring buffer size (bytes) */
-  k_usb_tx_buffer_size = 512, /**< Transmit ring buffer size (bytes) */
-  k_usb_max_packet_size = 64, /**< Full-speed bulk max packet size */
+  k_usb_rx_buffer_size  = 512, /**< Receive ring buffer size (bytes) */
+  k_usb_tx_buffer_size  = 512, /**< Transmit ring buffer size (bytes) */
+  k_usb_max_packet_size = 64,  /**< Full-speed bulk max packet size */
 } rx_usb_buffer_config_t;
 
 /* =============================================================================
