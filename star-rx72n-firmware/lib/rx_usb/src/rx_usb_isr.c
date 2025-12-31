@@ -9,10 +9,9 @@
  * - Buffer ready/empty for data pipes
  */
 
-#include "rx_usb.h"
-
 #include "rx72n_regs.h"
 #include "rx_log.h"
+#include "rx_usb.h"
 
 /* =============================================================================
  * Private Definitions
@@ -339,4 +338,3 @@ void usb0_usbr_isr(void)
   /* Handle resume */
   internal_handle_resume_interrupt();
 }
-

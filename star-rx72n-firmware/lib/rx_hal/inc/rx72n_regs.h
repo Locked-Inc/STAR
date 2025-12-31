@@ -397,11 +397,11 @@ typedef struct {
  */
 
 typedef struct {
-  volatile uint8_t  IWDTRR;    /* 0x00: Refresh Register */
+  volatile uint8_t  IWDTRR; /* 0x00: Refresh Register */
   uint8_t           RESERVED0[1];
-  volatile uint16_t IWDTCR;    /* 0x02: Control Register */
-  volatile uint16_t IWDTSR;    /* 0x04: Status Register */
-  volatile uint8_t  IWDTRCR;   /* 0x06: Reset Control Register */
+  volatile uint16_t IWDTCR;  /* 0x02: Control Register */
+  volatile uint16_t IWDTSR;  /* 0x04: Status Register */
+  volatile uint8_t  IWDTRCR; /* 0x06: Reset Control Register */
   uint8_t           RESERVED1[1];
   volatile uint8_t  IWDTCSTPR; /* 0x08: Count Stop Control Register */
 } IWDT_Type;
@@ -446,9 +446,9 @@ typedef enum {
 
 /* IWDT Status Register (IWDTSR) Bit Definitions */
 typedef enum {
-  k_iwdt_sr_cntval_mask = 0x3FFF,     /* Down counter value (bits 13:0) */
-  k_iwdt_sr_undff       = (1 << 14),  /* Underflow flag (reset occurred) */
-  k_iwdt_sr_refef       = (1 << 15),  /* Refresh error flag (window violation) */
+  k_iwdt_sr_cntval_mask = 0x3FFF,    /* Down counter value (bits 13:0) */
+  k_iwdt_sr_undff       = (1 << 14), /* Underflow flag (reset occurred) */
+  k_iwdt_sr_refef       = (1 << 15), /* Refresh error flag (window violation) */
 } iwdt_iwdtsr_bits_t;
 
 /* IWDT Reset Control Register (IWDTRCR) Bit Definitions */
@@ -570,7 +570,7 @@ typedef struct {
   volatile uint16_t DCPMAXP; /* 0x5E: DCP Max Packet Size Register */
   volatile uint16_t DCPCTR;  /* 0x60: DCP Control Register */
   uint8_t           RESERVED6[2];
-  volatile uint16_t PIPESEL;  /* 0x64: Pipe Window Select Register */
+  volatile uint16_t PIPESEL; /* 0x64: Pipe Window Select Register */
   uint8_t           RESERVED7[2];
   volatile uint16_t PIPECFG;  /* 0x68: Pipe Configuration Register */
   volatile uint16_t PIPEBUF;  /* 0x6A: Pipe Buffer Setting Register */
@@ -630,68 +630,68 @@ typedef enum {
 
 /* USB0 SYSSTS0 Register Bit Definitions */
 typedef enum {
-  k_usb_syssts0_lnst_mask = 0x0003, /* USB Data Line Status Mask */
-  k_usb_syssts0_lnst_se0  = 0x0000, /* SE0 (disconnected) */
-  k_usb_syssts0_lnst_fs_j = 0x0001, /* Full-Speed J-state */
-  k_usb_syssts0_lnst_fs_k = 0x0002, /* Full-Speed K-state */
-  k_usb_syssts0_lnst_se1  = 0x0003, /* SE1 (error) */
-  k_usb_syssts0_idmon     = (1 << 2), /* External ID0 Pin Monitor */
-  k_usb_syssts0_sofea     = (1 << 5), /* SOF Active Monitor */
-  k_usb_syssts0_htact     = (1 << 6), /* USB Host Sequencer Active */
+  k_usb_syssts0_lnst_mask = 0x0003,    /* USB Data Line Status Mask */
+  k_usb_syssts0_lnst_se0  = 0x0000,    /* SE0 (disconnected) */
+  k_usb_syssts0_lnst_fs_j = 0x0001,    /* Full-Speed J-state */
+  k_usb_syssts0_lnst_fs_k = 0x0002,    /* Full-Speed K-state */
+  k_usb_syssts0_lnst_se1  = 0x0003,    /* SE1 (error) */
+  k_usb_syssts0_idmon     = (1 << 2),  /* External ID0 Pin Monitor */
+  k_usb_syssts0_sofea     = (1 << 5),  /* SOF Active Monitor */
+  k_usb_syssts0_htact     = (1 << 6),  /* USB Host Sequencer Active */
   k_usb_syssts0_ovcmon    = (3 << 14), /* Overcurrent Monitor */
 } usb_syssts0_bits_t;
 
 /* USB0 DVSTCTR0 Register Bit Definitions */
 typedef enum {
-  k_usb_dvstctr0_rhst_mask   = 0x0007, /* USB Bus Reset Status Mask */
-  k_usb_dvstctr0_rhst_undecided = 0x00, /* Speed undecided */
-  k_usb_dvstctr0_rhst_ls     = 0x0001, /* Low-Speed connection */
-  k_usb_dvstctr0_rhst_fs     = 0x0002, /* Full-Speed connection */
-  k_usb_dvstctr0_rhst_reset  = 0x0004, /* USB bus reset in progress */
-  k_usb_dvstctr0_uact        = (1 << 4), /* USB Bus Enable */
-  k_usb_dvstctr0_resume      = (1 << 5), /* Resume Signal Output */
-  k_usb_dvstctr0_usbrst      = (1 << 6), /* USB Bus Reset Output */
-  k_usb_dvstctr0_rwupe       = (1 << 7), /* Wakeup Detection Enable */
-  k_usb_dvstctr0_wkup        = (1 << 8), /* Wakeup Output */
+  k_usb_dvstctr0_rhst_mask      = 0x0007,   /* USB Bus Reset Status Mask */
+  k_usb_dvstctr0_rhst_undecided = 0x00,     /* Speed undecided */
+  k_usb_dvstctr0_rhst_ls        = 0x0001,   /* Low-Speed connection */
+  k_usb_dvstctr0_rhst_fs        = 0x0002,   /* Full-Speed connection */
+  k_usb_dvstctr0_rhst_reset     = 0x0004,   /* USB bus reset in progress */
+  k_usb_dvstctr0_uact           = (1 << 4), /* USB Bus Enable */
+  k_usb_dvstctr0_resume         = (1 << 5), /* Resume Signal Output */
+  k_usb_dvstctr0_usbrst         = (1 << 6), /* USB Bus Reset Output */
+  k_usb_dvstctr0_rwupe          = (1 << 7), /* Wakeup Detection Enable */
+  k_usb_dvstctr0_wkup           = (1 << 8), /* Wakeup Output */
 } usb_dvstctr0_bits_t;
 
 /* USB0 INTENB0 Register Bit Definitions */
 typedef enum {
-  k_usb_intenb0_brdye  = (1 << 8),  /* Buffer Ready Interrupt Enable */
-  k_usb_intenb0_nrdye  = (1 << 9),  /* Buffer Not Ready Interrupt Enable */
-  k_usb_intenb0_bempe  = (1 << 10), /* Buffer Empty Interrupt Enable */
-  k_usb_intenb0_ctre   = (1 << 11), /* Control Transfer Stage Enable */
-  k_usb_intenb0_dvse   = (1 << 12), /* Device State Transition Enable */
-  k_usb_intenb0_sofe   = (1 << 13), /* Frame Number Update Enable */
-  k_usb_intenb0_rsme   = (1 << 14), /* Resume Interrupt Enable */
-  k_usb_intenb0_vbse   = (1 << 15), /* VBUS Interrupt Enable */
+  k_usb_intenb0_brdye = (1 << 8),  /* Buffer Ready Interrupt Enable */
+  k_usb_intenb0_nrdye = (1 << 9),  /* Buffer Not Ready Interrupt Enable */
+  k_usb_intenb0_bempe = (1 << 10), /* Buffer Empty Interrupt Enable */
+  k_usb_intenb0_ctre  = (1 << 11), /* Control Transfer Stage Enable */
+  k_usb_intenb0_dvse  = (1 << 12), /* Device State Transition Enable */
+  k_usb_intenb0_sofe  = (1 << 13), /* Frame Number Update Enable */
+  k_usb_intenb0_rsme  = (1 << 14), /* Resume Interrupt Enable */
+  k_usb_intenb0_vbse  = (1 << 15), /* VBUS Interrupt Enable */
 } usb_intenb0_bits_t;
 
 /* USB0 INTSTS0 Register Bit Definitions */
 typedef enum {
-  k_usb_intsts0_ctsq_mask = 0x0007, /* Control Transfer Stage Mask */
-  k_usb_intsts0_ctsq_idle = 0x0000, /* Idle or setup stage */
-  k_usb_intsts0_ctsq_rd_data  = 0x0001, /* Control read data stage */
-  k_usb_intsts0_ctsq_rd_status = 0x0002, /* Control read status stage */
-  k_usb_intsts0_ctsq_wr_data  = 0x0003, /* Control write data stage */
-  k_usb_intsts0_ctsq_wr_status = 0x0004, /* Control write status stage */
-  k_usb_intsts0_ctsq_wr_nd    = 0x0005, /* Control write (no data) status */
-  k_usb_intsts0_ctsq_seq_err  = 0x0006, /* Control sequence error */
-  k_usb_intsts0_valid    = (1 << 3),  /* USB Request Reception */
-  k_usb_intsts0_dvsq_mask = (7 << 4), /* Device State Mask */
-  k_usb_intsts0_dvsq_powered = (0 << 4), /* Powered state */
-  k_usb_intsts0_dvsq_default = (1 << 4), /* Default state */
-  k_usb_intsts0_dvsq_address = (2 << 4), /* Address state */
-  k_usb_intsts0_dvsq_configured = (3 << 4), /* Configured state */
-  k_usb_intsts0_dvsq_suspend = (4 << 4), /* Suspended state */
-  k_usb_intsts0_brdy    = (1 << 8),  /* Buffer Ready Interrupt Status */
-  k_usb_intsts0_nrdy    = (1 << 9),  /* Buffer Not Ready Interrupt Status */
-  k_usb_intsts0_bemp    = (1 << 10), /* Buffer Empty Interrupt Status */
-  k_usb_intsts0_ctrt    = (1 << 11), /* Control Transfer Stage Transition */
-  k_usb_intsts0_dvst    = (1 << 12), /* Device State Transition */
-  k_usb_intsts0_sofr    = (1 << 13), /* Frame Number Refresh */
-  k_usb_intsts0_resm    = (1 << 14), /* Resume Interrupt Status */
-  k_usb_intsts0_vbint   = (1 << 15), /* VBUS Interrupt Status */
+  k_usb_intsts0_ctsq_mask       = 0x0007,    /* Control Transfer Stage Mask */
+  k_usb_intsts0_ctsq_idle       = 0x0000,    /* Idle or setup stage */
+  k_usb_intsts0_ctsq_rd_data    = 0x0001,    /* Control read data stage */
+  k_usb_intsts0_ctsq_rd_status  = 0x0002,    /* Control read status stage */
+  k_usb_intsts0_ctsq_wr_data    = 0x0003,    /* Control write data stage */
+  k_usb_intsts0_ctsq_wr_status  = 0x0004,    /* Control write status stage */
+  k_usb_intsts0_ctsq_wr_nd      = 0x0005,    /* Control write (no data) status */
+  k_usb_intsts0_ctsq_seq_err    = 0x0006,    /* Control sequence error */
+  k_usb_intsts0_valid           = (1 << 3),  /* USB Request Reception */
+  k_usb_intsts0_dvsq_mask       = (7 << 4),  /* Device State Mask */
+  k_usb_intsts0_dvsq_powered    = (0 << 4),  /* Powered state */
+  k_usb_intsts0_dvsq_default    = (1 << 4),  /* Default state */
+  k_usb_intsts0_dvsq_address    = (2 << 4),  /* Address state */
+  k_usb_intsts0_dvsq_configured = (3 << 4),  /* Configured state */
+  k_usb_intsts0_dvsq_suspend    = (4 << 4),  /* Suspended state */
+  k_usb_intsts0_brdy            = (1 << 8),  /* Buffer Ready Interrupt Status */
+  k_usb_intsts0_nrdy            = (1 << 9),  /* Buffer Not Ready Interrupt Status */
+  k_usb_intsts0_bemp            = (1 << 10), /* Buffer Empty Interrupt Status */
+  k_usb_intsts0_ctrt            = (1 << 11), /* Control Transfer Stage Transition */
+  k_usb_intsts0_dvst            = (1 << 12), /* Device State Transition */
+  k_usb_intsts0_sofr            = (1 << 13), /* Frame Number Refresh */
+  k_usb_intsts0_resm            = (1 << 14), /* Resume Interrupt Status */
+  k_usb_intsts0_vbint           = (1 << 15), /* VBUS Interrupt Status */
 } usb_intsts0_bits_t;
 
 /* USB0 DCPCFG Register Bit Definitions */
@@ -702,75 +702,75 @@ typedef enum {
 
 /* USB0 DCPCTR Register Bit Definitions */
 typedef enum {
-  k_usb_dcpctr_pid_mask = 0x0003,  /* Response PID Mask */
-  k_usb_dcpctr_pid_nak  = 0x0000,  /* NAK response */
-  k_usb_dcpctr_pid_buf  = 0x0001,  /* BUF response (enable) */
-  k_usb_dcpctr_pid_stall = 0x0002, /* STALL response */
-  k_usb_dcpctr_ccpl     = (1 << 2), /* Control Transfer End */
-  k_usb_dcpctr_pbusy    = (1 << 5), /* Pipe Busy */
-  k_usb_dcpctr_sqmon    = (1 << 6), /* Sequence Toggle Bit Monitor */
-  k_usb_dcpctr_sqset    = (1 << 7), /* Sequence Toggle Bit Set */
-  k_usb_dcpctr_sqclr    = (1 << 8), /* Sequence Toggle Bit Clear */
-  k_usb_dcpctr_sureqclr = (1 << 11), /* SUREQ Bit Clear */
-  k_usb_dcpctr_sureq    = (1 << 14), /* Setup Token Transmission */
-  k_usb_dcpctr_bsts     = (1 << 15), /* Buffer Status */
+  k_usb_dcpctr_pid_mask  = 0x0003,    /* Response PID Mask */
+  k_usb_dcpctr_pid_nak   = 0x0000,    /* NAK response */
+  k_usb_dcpctr_pid_buf   = 0x0001,    /* BUF response (enable) */
+  k_usb_dcpctr_pid_stall = 0x0002,    /* STALL response */
+  k_usb_dcpctr_ccpl      = (1 << 2),  /* Control Transfer End */
+  k_usb_dcpctr_pbusy     = (1 << 5),  /* Pipe Busy */
+  k_usb_dcpctr_sqmon     = (1 << 6),  /* Sequence Toggle Bit Monitor */
+  k_usb_dcpctr_sqset     = (1 << 7),  /* Sequence Toggle Bit Set */
+  k_usb_dcpctr_sqclr     = (1 << 8),  /* Sequence Toggle Bit Clear */
+  k_usb_dcpctr_sureqclr  = (1 << 11), /* SUREQ Bit Clear */
+  k_usb_dcpctr_sureq     = (1 << 14), /* Setup Token Transmission */
+  k_usb_dcpctr_bsts      = (1 << 15), /* Buffer Status */
 } usb_dcpctr_bits_t;
 
 /* USB0 PIPECFG Register Bit Definitions */
 typedef enum {
-  k_usb_pipecfg_epnum_mask = 0x000F, /* Endpoint Number Mask */
-  k_usb_pipecfg_dir     = (1 << 4),  /* Transfer Direction (1=TX, 0=RX) */
-  k_usb_pipecfg_shtnak  = (1 << 7),  /* Pipe Disabled at End of Transfer */
-  k_usb_pipecfg_dblb    = (1 << 9),  /* Double Buffer Mode */
-  k_usb_pipecfg_bfre    = (1 << 10), /* BRDY Interrupt Operation */
-  k_usb_pipecfg_type_mask = (3 << 14), /* Transfer Type Mask */
-  k_usb_pipecfg_type_bulk = (1 << 14), /* Bulk Transfer */
-  k_usb_pipecfg_type_int  = (2 << 14), /* Interrupt Transfer */
-  k_usb_pipecfg_type_iso  = (3 << 14), /* Isochronous Transfer */
+  k_usb_pipecfg_epnum_mask = 0x000F,    /* Endpoint Number Mask */
+  k_usb_pipecfg_dir        = (1 << 4),  /* Transfer Direction (1=TX, 0=RX) */
+  k_usb_pipecfg_shtnak     = (1 << 7),  /* Pipe Disabled at End of Transfer */
+  k_usb_pipecfg_dblb       = (1 << 9),  /* Double Buffer Mode */
+  k_usb_pipecfg_bfre       = (1 << 10), /* BRDY Interrupt Operation */
+  k_usb_pipecfg_type_mask  = (3 << 14), /* Transfer Type Mask */
+  k_usb_pipecfg_type_bulk  = (1 << 14), /* Bulk Transfer */
+  k_usb_pipecfg_type_int   = (2 << 14), /* Interrupt Transfer */
+  k_usb_pipecfg_type_iso   = (3 << 14), /* Isochronous Transfer */
 } usb_pipecfg_bits_t;
 
 /* USB0 PIPEnCTR Register Bit Definitions (same for all pipes) */
 typedef enum {
-  k_usb_pipectr_pid_mask = 0x0003,  /* Response PID Mask */
-  k_usb_pipectr_pid_nak  = 0x0000,  /* NAK response */
-  k_usb_pipectr_pid_buf  = 0x0001,  /* BUF response (enable) */
-  k_usb_pipectr_pid_stall = 0x0002, /* STALL response */
-  k_usb_pipectr_pbusy   = (1 << 5), /* Pipe Busy */
-  k_usb_pipectr_sqmon   = (1 << 6), /* Sequence Toggle Bit Monitor */
-  k_usb_pipectr_sqset   = (1 << 7), /* Sequence Toggle Bit Set */
-  k_usb_pipectr_sqclr   = (1 << 8), /* Sequence Toggle Bit Clear */
-  k_usb_pipectr_aclrm   = (1 << 9), /* Auto Buffer Clear Mode */
-  k_usb_pipectr_atrepm  = (1 << 10), /* Auto Response Mode */
-  k_usb_pipectr_inbufm  = (1 << 14), /* IN Buffer Monitor */
-  k_usb_pipectr_bsts    = (1 << 15), /* Buffer Status */
+  k_usb_pipectr_pid_mask  = 0x0003,    /* Response PID Mask */
+  k_usb_pipectr_pid_nak   = 0x0000,    /* NAK response */
+  k_usb_pipectr_pid_buf   = 0x0001,    /* BUF response (enable) */
+  k_usb_pipectr_pid_stall = 0x0002,    /* STALL response */
+  k_usb_pipectr_pbusy     = (1 << 5),  /* Pipe Busy */
+  k_usb_pipectr_sqmon     = (1 << 6),  /* Sequence Toggle Bit Monitor */
+  k_usb_pipectr_sqset     = (1 << 7),  /* Sequence Toggle Bit Set */
+  k_usb_pipectr_sqclr     = (1 << 8),  /* Sequence Toggle Bit Clear */
+  k_usb_pipectr_aclrm     = (1 << 9),  /* Auto Buffer Clear Mode */
+  k_usb_pipectr_atrepm    = (1 << 10), /* Auto Response Mode */
+  k_usb_pipectr_inbufm    = (1 << 14), /* IN Buffer Monitor */
+  k_usb_pipectr_bsts      = (1 << 15), /* Buffer Status */
 } usb_pipectr_bits_t;
 
 /* USB0 FIFOSEL Register Bit Definitions (CFIFOSEL, D0FIFOSEL, D1FIFOSEL) */
 typedef enum {
-  k_usb_fifosel_curpipe_mask = 0x000F, /* Current Pipe Mask */
-  k_usb_fifosel_curpipe_dcp  = 0x0000, /* DCP (Default Control Pipe) */
-  k_usb_fifosel_isel    = (1 << 5),  /* Access Direction (1=write, 0=read) */
-  k_usb_fifosel_bigend  = (1 << 8),  /* Endian Mode (1=big, 0=little) */
-  k_usb_fifosel_mbw_8   = (0 << 10), /* 8-bit access */
-  k_usb_fifosel_mbw_16  = (1 << 10), /* 16-bit access */
-  k_usb_fifosel_mbw_32  = (2 << 10), /* 32-bit access */
-  k_usb_fifosel_rcl     = (1 << 14), /* Read Count Mode */
-  k_usb_fifosel_frdy    = (1 << 15), /* FIFO Port Ready */
+  k_usb_fifosel_curpipe_mask = 0x000F,    /* Current Pipe Mask */
+  k_usb_fifosel_curpipe_dcp  = 0x0000,    /* DCP (Default Control Pipe) */
+  k_usb_fifosel_isel         = (1 << 5),  /* Access Direction (1=write, 0=read) */
+  k_usb_fifosel_bigend       = (1 << 8),  /* Endian Mode (1=big, 0=little) */
+  k_usb_fifosel_mbw_8        = (0 << 10), /* 8-bit access */
+  k_usb_fifosel_mbw_16       = (1 << 10), /* 16-bit access */
+  k_usb_fifosel_mbw_32       = (2 << 10), /* 32-bit access */
+  k_usb_fifosel_rcl          = (1 << 14), /* Read Count Mode */
+  k_usb_fifosel_frdy         = (1 << 15), /* FIFO Port Ready */
 } usb_fifosel_bits_t;
 
 /* USB0 FIFOCTR Register Bit Definitions (CFIFOCTR, D0FIFOCTR, D1FIFOCTR) */
 typedef enum {
-  k_usb_fifoctr_dtln_mask = 0x0FFF, /* Receive Data Length Mask */
-  k_usb_fifoctr_frdy   = (1 << 13), /* FIFO Port Ready */
-  k_usb_fifoctr_bclr   = (1 << 14), /* CPU Buffer Clear */
-  k_usb_fifoctr_bval   = (1 << 15), /* Buffer Memory Valid */
+  k_usb_fifoctr_dtln_mask = 0x0FFF,    /* Receive Data Length Mask */
+  k_usb_fifoctr_frdy      = (1 << 13), /* FIFO Port Ready */
+  k_usb_fifoctr_bclr      = (1 << 14), /* CPU Buffer Clear */
+  k_usb_fifoctr_bval      = (1 << 15), /* Buffer Memory Valid */
 } usb_fifoctr_bits_t;
 
 /* USB Interrupt Vector Numbers */
-#define VECT_USB0_D0FIFO  34 /* USB0 D0FIFO interrupt */
-#define VECT_USB0_D1FIFO  35 /* USB0 D1FIFO interrupt */
-#define VECT_USB0_USBI    36 /* USB0 USBI interrupt */
-#define VECT_USB0_USBR    90 /* USB0 USBR (resume) interrupt */
+#define VECT_USB0_D0FIFO 34 /* USB0 D0FIFO interrupt */
+#define VECT_USB0_D1FIFO 35 /* USB0 D1FIFO interrupt */
+#define VECT_USB0_USBI   36 /* USB0 USBI interrupt */
+#define VECT_USB0_USBR   90 /* USB0 USBR (resume) interrupt */
 
 /* USB CDC-ACM Endpoint Configuration */
 typedef enum {
