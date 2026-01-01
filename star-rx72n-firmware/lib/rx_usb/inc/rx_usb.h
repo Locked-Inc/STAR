@@ -146,6 +146,19 @@ typedef enum {
   k_usb_max_packet_size = 64,  /**< Full-speed bulk max packet size */
 } rx_usb_buffer_config_t;
 
+/**
+ * @brief Default CDC line coding values
+ *
+ * These defaults are used during USB initialization before the host
+ * sends SET_LINE_CODING. They represent a standard 115200 8N1 configuration.
+ */
+typedef enum {
+  k_usb_default_baud_rate = 115200, /**< Default baud rate: 115200 bps */
+  k_usb_default_stop_bits = 0,      /**< Default stop bits: 1 stop bit */
+  k_usb_default_parity    = 0,      /**< Default parity: None */
+  k_usb_default_data_bits = 8,      /**< Default data bits: 8 bits */
+} rx_usb_line_coding_defaults_t;
+
 /* =============================================================================
  * Public API Functions
  * =============================================================================

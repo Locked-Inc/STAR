@@ -204,10 +204,10 @@ rx_err_t rx_usb_init(const rx_usb_config_t* config)
   internal_ring_buffer_init(&s_usb.tx_buffer);
 
   /* Set default line coding (115200 8N1) */
-  s_usb.line_coding.baud_rate = 115200;
-  s_usb.line_coding.stop_bits = 0; /* 1 stop bit */
-  s_usb.line_coding.parity    = 0; /* No parity */
-  s_usb.line_coding.data_bits = 8;
+  s_usb.line_coding.baud_rate = k_usb_default_baud_rate;
+  s_usb.line_coding.stop_bits = k_usb_default_stop_bits;
+  s_usb.line_coding.parity    = k_usb_default_parity;
+  s_usb.line_coding.data_bits = k_usb_default_data_bits;
 
   /* Initialize hardware */
   rx_err_t err = rx_usb_hw_init();
