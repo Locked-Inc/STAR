@@ -64,7 +64,7 @@ static rx_err_t internal_validate_port(uint8_t port)
  */
 static rx_err_t internal_validate_pin(uint8_t pin)
 {
-  if (pin >= RX_PIN_VALIDATOR_MAX_PINS) {
+  if (pin >= k_pin_validator_max_pins) {
     return k_rx_err_gpio_invalid_pin;
   }
   return k_rx_ok;
@@ -139,8 +139,8 @@ static rx_err_t impl_reserve_pin(void* ctx, uint8_t port, uint8_t pin, const cha
 
   /* Reserve the pin */
   reservation->reserved = true;
-  strncpy(reservation->function, function, RX_PIN_FUNCTION_NAME_MAX_LEN - 1);
-  reservation->function[RX_PIN_FUNCTION_NAME_MAX_LEN - 1] = '\0';
+  strncpy(reservation->function, function, k_pin_function_name_max_len - 1);
+  reservation->function[k_pin_function_name_max_len - 1] = '\0';
 
   /* Release mutex */
   tx_mutex_put(&validator->mutex);
@@ -242,7 +242,7 @@ impl_get_pin_function(void* ctx, uint8_t port, uint8_t pin, char* function_out, 
     return k_rx_err_null_pointer;
   }
 
-  if (function_len < RX_PIN_FUNCTION_NAME_MAX_LEN) {
+  if (function_len < k_pin_function_name_max_len) {
     return k_rx_err_invalid_size;
   }
 
@@ -296,8 +296,8 @@ static rx_err_t impl_clear_all_reservations(void* ctx)
   }
 
   /* Clear all reservations */
-  for (uint32_t port_idx = 0; port_idx < RX_PIN_VALIDATOR_MAX_PORTS; port_idx++) {
-    for (uint32_t pin_idx = 0; pin_idx < RX_PIN_VALIDATOR_MAX_PINS; pin_idx++) {
+  for (uint32_t port_idx = 0; port_idx < k_pin_validator_max_ports; port_idx++) {
+    for (uint32_t pin_idx = 0; pin_idx < k_pin_validator_max_pins; pin_idx++) {
       validator->reservations[port_idx][pin_idx].reserved    = false;
       validator->reservations[port_idx][pin_idx].function[0] = '\0';
     }

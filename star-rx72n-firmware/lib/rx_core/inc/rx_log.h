@@ -1,9 +1,9 @@
-/* include/rx_log.h */
+/* lib/rx_core/inc/rx_log.h */
 
 /**
  * @file rx_log.h
  * @brief Logging Macros for RX72N Firmware
- *
+ * @details
  * Provides ESP-IDF-style logging macros adapted for RX72N UART output.
  * Follows ESP_LOG* pattern for architectural consistency.
  *
@@ -19,8 +19,13 @@
  * Logs below the level are optimized out at compile time (zero overhead).
  *
  * Usage:
+ * @code
  *   RX_LOG_ERROR("MOTOR", "Failed to initialize: err=0x%X", err);
  *   RX_LOG_INFO("SYSTEM", "Starting firmware version %d.%d.%d", 1, 0, 0);
+ * @endcode
+ *
+ * @date 2025-12-21
+ * @copyright Copyright (c) 2025 STAR Project
  */
 
 #ifndef STAR_RX72N_LOG_H

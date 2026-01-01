@@ -1,9 +1,9 @@
-/* include/rx_pin_interface.h */
+/* lib/rx_core/inc/rx_pin_interface.h */
 
 /**
  * @file rx_pin_interface.h
  * @brief Pin Validator Interface (Dependency Inversion Principle)
- *
+ * @details
  * Defines the abstract interface for GPIO pin validation and reservation.
  * Follows ESP32 star_pin_interface_t pattern for architectural consistency.
  *
@@ -22,6 +22,7 @@
  * Pins within each port are numbered 0-7 (not all ports have all 8 pins).
  *
  * Usage:
+ * @code
  *   // 1. Create concrete implementation
  *   pin_validator_t validator;
  *   pin_validator_init(&validator);
@@ -38,6 +39,10 @@
  *   if (err != k_rx_ok) {
  *       // Pin already reserved or invalid
  *   }
+ * @endcode
+ *
+ * @date 2025-12-21
+ * @copyright Copyright (c) 2025 STAR Project
  */
 
 #ifndef STAR_RX72N_PIN_INTERFACE_H
@@ -62,9 +67,11 @@ typedef struct rx_pin_interface rx_pin_interface_t;
  */
 
 /**
- * @brief Maximum length of pin function name (e.g., "SPI_MOSI", "UART_TX")
+ * @brief Pin interface configuration constants
  */
-#define RX_PIN_FUNCTION_NAME_MAX_LEN 32
+typedef enum {
+  k_pin_function_name_max_len = 32, /**< Maximum length of pin function name (e.g., "SPI_MOSI", "UART_TX") */
+} pin_interface_limits_t;
 
 /* =============================================================================
  * Pin Interface Function Pointers
@@ -172,40 +179,13 @@ typedef rx_err_t (*rx_pin_clear_all_fn)(void* ctx);
  * All function pointers receive this context as their first parameter.
  */
 struct rx_pin_interface {
-  /**
-   * @brief Implementation context (opaque pointer to concrete validator)
-   */
-  void* ctx;
-
-  /**
-   * @brief Validate pin existence
-   */
-  rx_pin_validate_fn validate_pin;
-
-  /**
-   * @brief Reserve pin for function
-   */
-  rx_pin_reserve_fn reserve_pin;
-
-  /**
-   * @brief Release reserved pin
-   */
-  rx_pin_release_fn release_pin;
-
-  /**
-   * @brief Check if pin is reserved
-   */
-  rx_pin_is_reserved_fn is_pin_reserved;
-
-  /**
-   * @brief Get pin's function name
-   */
-  rx_pin_get_function_fn get_pin_function;
-
-  /**
-   * @brief Clear all reservations
-   */
-  rx_pin_clear_all_fn clear_all_reservations;
+  void*                  ctx;                     /**< Implementation context (opaque pointer to concrete validator) */
+  rx_pin_validate_fn     validate_pin;            /**< Validate pin existence */
+  rx_pin_reserve_fn      reserve_pin;             /**< Reserve pin for function */
+  rx_pin_release_fn      release_pin;             /**< Release reserved pin */
+  rx_pin_is_reserved_fn  is_pin_reserved;         /**< Check if pin is reserved */
+  rx_pin_get_function_fn get_pin_function;        /**< Get pin's function name */
+  rx_pin_clear_all_fn    clear_all_reservations;  /**< Clear all reservations */
 };
 
 /* =============================================================================

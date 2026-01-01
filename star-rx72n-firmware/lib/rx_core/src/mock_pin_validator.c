@@ -214,7 +214,7 @@ impl_get_pin_function(void* ctx, uint8_t port, uint8_t pin, char* function_out, 
     return k_rx_err_null_pointer;
   }
 
-  if (function_len < RX_PIN_FUNCTION_NAME_MAX_LEN) {
+  if (function_len < k_pin_function_name_max_len) {
     return k_rx_err_invalid_size;
   }
 

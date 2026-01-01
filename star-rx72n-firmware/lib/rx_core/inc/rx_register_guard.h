@@ -1,7 +1,9 @@
+/* lib/rx_core/inc/rx_register_guard.h */
+
 /**
  * @file rx_register_guard.h
  * @brief Register Guard - Periodic Refresh for ESD/EMI Protection
- *
+ * @details
  * Provides periodic refresh of critical hardware registers to recover from
  * ESD or EMI-induced bit flips that could corrupt system configuration.
  *
@@ -31,8 +33,8 @@
  * @note This module captures register values during init, so call after
  *       all peripheral initialization is complete.
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2025-12-21
+ * @copyright Copyright (c) 2025 STAR Project
  */
 
 #ifndef STAR_RX_REGISTER_GUARD_H
