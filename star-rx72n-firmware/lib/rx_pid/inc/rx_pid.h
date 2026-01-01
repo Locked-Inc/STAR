@@ -1,4 +1,4 @@
-/* include/rx_pid.h */
+/* lib/rx_pid/inc/rx_pid.h */
 
 /**
  * @file rx_pid.h
