@@ -153,7 +153,7 @@ rx_err_t rx_spi_comm_init(rx_spi_comm_handle_t* handle, const rx_spi_comm_config
   handle->tx_sequence = 0;
   handle->rx_sequence = 0;
 
-  handle->initialized = 1;
+  handle->initialized = true;
 
   rx_log_debug(s_tag, "SPI comm initialized");
   return k_rx_ok;
@@ -168,7 +168,7 @@ rx_err_t rx_spi_comm_deinit(rx_spi_comm_handle_t* handle)
   if (handle->initialized) {
     rx_frame_encoder_deinit(&handle->encoder);
     rx_frame_decoder_deinit(&handle->decoder);
-    handle->initialized = 0;
+    handle->initialized = false;
   }
 
   rx_log_debug(s_tag, "SPI comm deinitialized");
