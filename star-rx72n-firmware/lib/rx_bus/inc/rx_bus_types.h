@@ -158,8 +158,6 @@ typedef enum {
   k_adc_unit_count = 2, /**< ADC units 0-1 */
 } rx_adc_limits_t;
 
-/* GPIO port and pin constants are now defined in rx_gpio_constants.h */
-
 /**
  * @brief RX72N ADC channel limits
  */

@@ -13,21 +13,9 @@
 
 #ifdef __RX__
 
+#include "rx_gpio_constants.h"
 #include "rx_time_interface.h"
 #include "tx_api.h"
-
-/* =============================================================================
- * Constants
- * =============================================================================
- */
-
-/**
- * @brief Milliseconds per ThreadX tick
- *
- * ThreadX is configured at 100 Hz (TX_TIMER_TICKS_PER_SECOND = 100)
- * So each tick is 10ms.
- */
-#define MS_PER_TICK 10
 
 /* =============================================================================
  * Interface Implementation Functions
@@ -45,7 +33,7 @@ static void impl_sleep_ms(void* ctx, uint32_t ms)
   (void)ctx;
 
   /* Convert ms to ticks, rounding up */
-  uint32_t ticks = (ms + MS_PER_TICK - 1) / MS_PER_TICK;
+  uint32_t ticks = (ms + k_threadx_ms_per_tick - 1) / k_threadx_ms_per_tick;
 
   if (ticks > 0) {
     tx_thread_sleep(ticks);
@@ -61,7 +49,7 @@ static uint32_t impl_get_ms(void* ctx)
 {
   (void)ctx;
 
-  return tx_time_get() * MS_PER_TICK;
+  return tx_time_get() * k_threadx_ms_per_tick;
 }
 
 /**
@@ -73,7 +61,7 @@ static bool impl_is_elapsed(void* ctx, uint32_t start_ms, uint32_t timeout_ms)
 {
   (void)ctx;
 
-  uint32_t now     = tx_time_get() * MS_PER_TICK;
+  uint32_t now     = tx_time_get() * k_threadx_ms_per_tick;
   uint32_t elapsed = now - start_ms;
 
   return elapsed >= timeout_ms;
