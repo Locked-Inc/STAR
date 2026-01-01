@@ -195,10 +195,22 @@ target_include_directories(rx_spi_comm PUBLIC lib/rx_spi_comm/inc)
 target_link_libraries(rx_spi_comm PUBLIC rx_frame rx_hal rx_core)
 
 # rx_usb - USB CDC-ACM Driver for RX72N
-add_subdirectory(lib/rx_usb)
+add_library(rx_usb STATIC
+    lib/rx_usb/src/rx_usb.c
+    lib/rx_usb/src/rx_usb_hw.c
+    lib/rx_usb/src/rx_usb_cdc.c
+    lib/rx_usb/src/rx_usb_isr.c
+)
+target_include_directories(rx_usb PUBLIC lib/rx_usb/inc)
+target_link_libraries(rx_usb PUBLIC rx_core rx_hal)
+target_compile_options(rx_usb PRIVATE -Wno-unused-function)
 
 # rx_usb_comm - USB CDC Communication Layer
-add_subdirectory(lib/rx_usb_comm)
+add_library(rx_usb_comm STATIC
+    lib/rx_usb_comm/src/rx_usb_comm.c
+)
+target_include_directories(rx_usb_comm PUBLIC lib/rx_usb_comm/inc)
+target_link_libraries(rx_usb_comm PUBLIC rx_core rx_frame rx_usb)
 
 # rx_motor - MTU3a motor control
 add_library(rx_motor STATIC
