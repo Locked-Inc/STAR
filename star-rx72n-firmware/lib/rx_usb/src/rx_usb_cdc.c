@@ -375,7 +375,7 @@ static void internal_handle_set_address(uint16_t wValue)
     rx_usb_set_state(k_usb_state_addressed);
   }
 
-  star_log_debug(s_tag, "Address set");
+  rx_log_debug(s_tag, "Address set");
 }
 
 /**
@@ -403,7 +403,7 @@ static void internal_handle_set_configuration(uint16_t wValue)
     USB0.BEMPENB |= (1 << 1);
 
     rx_usb_set_state(k_usb_state_configured);
-    star_log_info(s_tag, "Device configured");
+    rx_log_info(s_tag, "Device configured");
   } else if (config == 0) {
     rx_usb_set_state(k_usb_state_addressed);
   }
@@ -431,7 +431,7 @@ static void internal_handle_set_line_coding(void)
 
     rx_usb_set_line_coding(&s_line_coding);
 
-    star_log_debug(s_tag, "Line coding set");
+    rx_log_debug(s_tag, "Line coding set");
   }
 
   /* Send zero-length status packet */
@@ -464,7 +464,7 @@ static void internal_handle_set_control_line_state(uint16_t wValue)
   s_control_line_state = wValue;
 
   /* DTR (bit 0) and RTS (bit 1) */
-  star_log_debug(s_tag, "Control line state set");
+  rx_log_debug(s_tag, "Control line state set");
 
   /* Send zero-length status packet */
   USB0.DCPCTR |= k_usb_dcpctr_ccpl;
@@ -484,7 +484,7 @@ rx_err_t rx_usb_cdc_init(void)
     return k_rx_ok;
   }
 
-  star_log_debug(s_tag, "Initializing USB CDC class");
+  rx_log_debug(s_tag, "Initializing USB CDC class");
 
   /* Reset line coding to defaults */
   s_line_coding.baud_rate = 115200;

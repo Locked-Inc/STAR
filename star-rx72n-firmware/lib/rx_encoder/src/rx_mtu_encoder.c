@@ -100,12 +100,12 @@ rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
   rx_mtu_channel_t channel = config->channel;
 
   if ((int32_t)channel >= k_encoder_max_channels) {
-    star_log_error(s_tag, "Error occurred");
+    rx_log_error(s_tag, "Error occurred");
     return k_rx_err_invalid_arg;
   }
 
   if (config->counts_per_rev == 0) {
-    star_log_error(s_tag, "Invalid counts per revolution");
+    rx_log_error(s_tag, "Invalid counts per revolution");
     return k_rx_err_invalid_arg;
   }
 
@@ -114,7 +114,7 @@ rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
     return k_rx_err_invalid_arg;
   }
 
-  star_log_info(s_tag, "Info");
+  rx_log_info(s_tag, "Info");
 
   /* Enable MTU module (clear module stop bit) */
   SYSTEM.PRCR = 0xA50B; /* Enable writes to MSTPCR */
@@ -162,7 +162,7 @@ rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
   /* Start counter */
   rx_mtu_start(channel);
 
-  star_log_info(s_tag, "Info");
+  rx_log_info(s_tag, "Info");
 
   return k_rx_ok;
 }
@@ -248,7 +248,7 @@ rx_err_t rx_encoder_read_velocity(rx_mtu_channel_t channel, float delta_time_s, 
   }
 
   if (delta_time_s <= 0.0f) {
-    star_log_error(s_tag, "Error occurred");
+    rx_log_error(s_tag, "Error occurred");
     return k_rx_err_invalid_arg;
   }
 
@@ -337,7 +337,7 @@ rx_err_t rx_encoder_deinit(rx_mtu_channel_t channel)
   s_encoder_initialized[channel] = false;
   s_counts_per_rev[channel]      = 0;
 
-  star_log_info(s_tag, "MTU encoder deinitialized");
+  rx_log_info(s_tag, "MTU encoder deinitialized");
 
   return k_rx_ok;
 }

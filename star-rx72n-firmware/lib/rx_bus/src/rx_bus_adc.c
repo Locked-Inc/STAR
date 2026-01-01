@@ -68,7 +68,7 @@ static rx_err_t internal_adc_init_callback(rx_bus_config_t* bus_config, void* us
 
   /* Validate bus type */
   if (bus_config->type != k_bus_type_adc) {
-    star_log_error(s_tag, "Bus is not ADC type");
+    rx_log_error(s_tag, "Bus is not ADC type");
     ctx->result = k_rx_err_invalid_arg;
     return k_rx_err_invalid_arg;
   }
@@ -78,7 +78,7 @@ static rx_err_t internal_adc_init_callback(rx_bus_config_t* bus_config, void* us
     adc_init(bus_config->proto.adc.unit, bus_config->proto.adc.channel, bus_config->proto.adc.bits);
 
   if (err != k_rx_ok) {
-    star_log_error(s_tag, "ADC HAL initialization failed");
+    rx_log_error(s_tag, "ADC HAL initialization failed");
     ctx->result = err;
     return err;
   }
@@ -110,7 +110,7 @@ static rx_err_t internal_adc_read_callback(rx_bus_config_t* bus_config, void* us
 
   /* Validate bus is initialized */
   if (!bus_config->initialized) {
-    star_log_error(s_tag, "Bus not initialized");
+    rx_log_error(s_tag, "Bus not initialized");
     ctx->result = k_rx_err_invalid_state;
     return k_rx_err_invalid_state;
   }
@@ -119,7 +119,7 @@ static rx_err_t internal_adc_read_callback(rx_bus_config_t* bus_config, void* us
   rx_err_t err = adc_read(bus_config->proto.adc.unit, bus_config->proto.adc.channel, ctx->value);
 
   if (err != k_rx_ok) {
-    star_log_error(s_tag, "ADC read failed");
+    rx_log_error(s_tag, "ADC read failed");
     ctx->result = err;
     return err;
   }
@@ -142,7 +142,7 @@ static rx_err_t internal_adc_voltage_callback(rx_bus_config_t* bus_config, void*
 
   /* Validate bus is initialized */
   if (!bus_config->initialized) {
-    star_log_error(s_tag, "Bus not initialized");
+    rx_log_error(s_tag, "Bus not initialized");
     ctx->result = k_rx_err_invalid_state;
     return k_rx_err_invalid_state;
   }
@@ -154,7 +154,7 @@ static rx_err_t internal_adc_voltage_callback(rx_bus_config_t* bus_config, void*
                                      ctx->voltage_mv);
 
   if (err != k_rx_ok) {
-    star_log_error(s_tag, "ADC voltage read failed");
+    rx_log_error(s_tag, "ADC voltage read failed");
     ctx->result = err;
     return err;
   }

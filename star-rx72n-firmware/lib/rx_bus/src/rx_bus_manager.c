@@ -39,7 +39,7 @@ static rx_err_t internal_execute_command_callback(rx_bus_config_t* bus_config, v
 
   /* Validate command has execution function */
   if (command->execute == NULL) {
-    star_log_error(s_tag, "Command execute function is NULL");
+    rx_log_error(s_tag, "Command execute function is NULL");
     command->result = k_rx_err_null_pointer;
     return k_rx_err_null_pointer;
   }
@@ -69,13 +69,13 @@ rx_err_t bus_manager_init(rx_bus_manager_t*     manager,
   /* Validate interfaces */
   rx_err_t err = rx_error_interface_validate(error_iface);
   if (err != k_rx_ok) {
-    star_log_error(s_tag, "Error interface validation failed");
+    rx_log_error(s_tag, "Error interface validation failed");
     return err;
   }
 
   err = rx_pin_interface_validate(pin_iface);
   if (err != k_rx_ok) {
-    star_log_error(s_tag, "Pin interface validation failed");
+    rx_log_error(s_tag, "Pin interface validation failed");
     return err;
   }
 
@@ -86,7 +86,7 @@ rx_err_t bus_manager_init(rx_bus_manager_t*     manager,
   manager->error_iface = error_iface;
   manager->pin_iface   = pin_iface;
 
-  star_log_info(s_tag, "Bus manager initialized (skeleton)");
+  rx_log_info(s_tag, "Bus manager initialized (skeleton)");
 
   return k_rx_ok;
 }
@@ -97,7 +97,7 @@ rx_err_t bus_manager_deinit(rx_bus_manager_t* manager)
 
   /* Future: Cleanup bus instances here */
 
-  star_log_info(s_tag, "Bus manager deinitialized");
+  rx_log_info(s_tag, "Bus manager deinitialized");
 
   return k_rx_ok;
 }
@@ -117,7 +117,7 @@ rx_err_t rx_bus_manager_execute_command(rx_bus_manager_t* manager,
 
   /* Validate command has execution function */
   if (command->execute == NULL) {
-    star_log_error(s_tag, "Command execute function is NULL");
+    rx_log_error(s_tag, "Command execute function is NULL");
     return k_rx_err_null_pointer;
   }
 
