@@ -15,6 +15,7 @@
 
 #include "hardware.h"
 #include "rx_bus_i2c.h"
+#include "rx_bus_types.h"
 #include "rx_check.h"
 #include "rx_log.h"
 
@@ -46,11 +47,11 @@ static uint8_t internal_crc8(uint8_t crc, const uint8_t* data, uint16_t length)
 {
   for (uint16_t i = 0; i < length; i++) {
     crc ^= data[i];
-    for (uint8_t bit = 0; bit < 8; bit++) {
+    for (uint8_t bit = 0; bit < k_bits_per_byte; bit++) {
       if (crc & 0x80) {
-        crc = (crc << 1) ^ k_smbus_crc8_poly;
+        crc = (crc << k_i2c_addr_shift) ^ k_smbus_crc8_poly;
       } else {
-        crc = (crc << 1);
+        crc = (crc << k_i2c_addr_shift);
       }
     }
   }
@@ -151,16 +152,17 @@ static rx_err_t internal_smbus_write_byte_callback(rx_bus_config_t* bus_config, 
   uint8_t data[2];
   uint8_t length = 1;
 
-  data[0] = ctx->command;
+  data[k_smbus_byte_data] = ctx->command;
 
   /* Calculate PEC if enabled */
   if (bus_config->proto.smbus.use_pec) {
     uint8_t crc       = k_smbus_crc8_init;
-    uint8_t addr_byte = (bus_config->proto.smbus.i2c_config.device_addr << 1) | 0; /* Write */
-    crc               = internal_crc8(crc, &addr_byte, 1);
-    crc               = internal_crc8(crc, data, 1);
-    data[1]           = crc;
-    length            = 2;
+    uint8_t addr_byte = (bus_config->proto.smbus.i2c_config.device_addr << k_i2c_addr_shift) |
+                        k_i2c_write_bit;
+    crc = internal_crc8(crc, &addr_byte, 1);
+    crc                     = internal_crc8(crc, data, 1);
+    data[k_smbus_byte_pec]  = crc;
+    length                  = 2;
   }
 
   rx_err_t err = riic_write(bus_config->proto.smbus.i2c_config.channel,
@@ -197,18 +199,19 @@ static rx_err_t internal_smbus_read_byte_callback(rx_bus_config_t* bus_config, v
   /* Verify PEC if enabled */
   if (bus_config->proto.smbus.use_pec) {
     uint8_t crc       = k_smbus_crc8_init;
-    uint8_t addr_byte = (bus_config->proto.smbus.i2c_config.device_addr << 1) | 1; /* Read */
-    crc               = internal_crc8(crc, &addr_byte, 1);
-    crc               = internal_crc8(crc, data, 1);
+    uint8_t addr_byte = (bus_config->proto.smbus.i2c_config.device_addr << k_i2c_addr_shift) |
+                        k_i2c_read_bit;
+    crc = internal_crc8(crc, &addr_byte, 1);
+    crc = internal_crc8(crc, data, 1);
 
-    if (crc != data[1]) {
+    if (crc != data[k_smbus_byte_pec]) {
       RX_LOG_ERROR(s_tag, "PEC mismatch");
       ctx->result = RX_ERR_CRC_MISMATCH;
       return RX_ERR_CRC_MISMATCH;
     }
   }
 
-  *ctx->data  = data[0];
+  *ctx->data  = data[k_smbus_byte_data];
   ctx->result = RX_OK;
   return RX_OK;
 }
@@ -241,14 +244,16 @@ static rx_err_t internal_smbus_read_word_data_callback(rx_bus_config_t* bus_conf
   /* Verify PEC if enabled */
   if (bus_config->proto.smbus.use_pec) {
     uint8_t crc       = k_smbus_crc8_init;
-    uint8_t addr_byte = (bus_config->proto.smbus.i2c_config.device_addr << 1) | 0;
-    crc               = internal_crc8(crc, &addr_byte, 1);
-    crc               = internal_crc8(crc, &write_data, 1);
-    addr_byte         = (bus_config->proto.smbus.i2c_config.device_addr << 1) | 1;
-    crc               = internal_crc8(crc, &addr_byte, 1);
-    crc               = internal_crc8(crc, read_data, 2);
+    uint8_t addr_byte = (bus_config->proto.smbus.i2c_config.device_addr << k_i2c_addr_shift) |
+                        k_i2c_write_bit;
+    crc       = internal_crc8(crc, &addr_byte, 1);
+    crc       = internal_crc8(crc, &write_data, 1);
+    addr_byte = (bus_config->proto.smbus.i2c_config.device_addr << k_i2c_addr_shift) |
+                k_i2c_read_bit;
+    crc = internal_crc8(crc, &addr_byte, 1);
+    crc = internal_crc8(crc, read_data, 2);
 
-    if (crc != read_data[2]) {
+    if (crc != read_data[k_smbus_word_pec]) {
       RX_LOG_ERROR(s_tag, "PEC mismatch");
       ctx->result = RX_ERR_CRC_MISMATCH;
       return RX_ERR_CRC_MISMATCH;
@@ -256,7 +261,7 @@ static rx_err_t internal_smbus_read_word_data_callback(rx_bus_config_t* bus_conf
   }
 
   /* Little-endian */
-  *ctx->data  = (uint16_t)read_data[0] | ((uint16_t)read_data[1] << 8);
+  *ctx->data  = (uint16_t)read_data[k_smbus_word_lsb] | ((uint16_t)read_data[k_smbus_word_msb] << 8);
   ctx->result = RX_OK;
   return RX_OK;
 }
