@@ -1,3 +1,5 @@
+/* lib/rx_frame/src/rx_crc32.c */
+
 /**
  * @file rx_crc32.c
  * @brief IEEE 802.3 CRC-32 Public API
@@ -18,8 +20,8 @@
  * - RX72N Group User's Manual: Hardware (CRC Calculator section)
  * - https://renesas.github.io/fsp/group___c_r_c.html
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "rx_crc_internal.h"
