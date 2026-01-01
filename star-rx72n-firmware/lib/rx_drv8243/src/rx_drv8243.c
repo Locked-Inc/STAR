@@ -1,4 +1,4 @@
-/* src/rx_drv8243.c */
+/* lib/rx_drv8243/src/rx_drv8243.c */
 
 /**
  * @file rx_drv8243.c

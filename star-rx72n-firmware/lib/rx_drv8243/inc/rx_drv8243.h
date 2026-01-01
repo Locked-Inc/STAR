@@ -1,4 +1,4 @@
-/* include/rx_drv8243.h */
+/* lib/rx_drv8243/inc/rx_drv8243.h */
 
 /**
  * @file rx_drv8243.h

@@ -1,3 +1,5 @@
+/* lib/rx_fec/inc/rx_fec.h */
+
 /**
  * @file rx_fec.h
  * @brief Forward Error Correction (FEC) Codec for RX72N
@@ -16,6 +18,9 @@
  *
  * @see star-gateway/internal/fec/ for Go reference implementation
  * @see docs/sections/01_nanopb_protocol.tex for protocol specification
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef STAR_RX_FEC_H
