@@ -65,9 +65,9 @@ static error_component_state_t* internal_find_or_create_component(error_handler_
       /* Initialize new component entry */
       strncpy(handler->components[i].name, component, k_error_handler_component_name_max - 1);
       handler->components[i].name[k_error_handler_component_name_max - 1] = '\0';
-      handler->components[i].error_count                                   = 0;
-      handler->components[i].retry_count                                   = 0;
-      handler->components[i].in_use                                        = true;
+      handler->components[i].error_count                                  = 0;
+      handler->components[i].retry_count                                  = 0;
+      handler->components[i].in_use                                       = true;
       return &handler->components[i];
     }
   }

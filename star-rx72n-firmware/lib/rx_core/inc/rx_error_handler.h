@@ -71,8 +71,9 @@ extern "C" {
  * @brief Error handler configuration constants
  */
 typedef enum {
-  k_error_handler_max_components      = 16, /**< Maximum number of components to track (each gets error counter and retry state) */
-  k_error_handler_component_name_max = 32,  /**< Maximum component name length */
+  k_error_handler_max_components =
+    16, /**< Maximum number of components to track (each gets error counter and retry state) */
+  k_error_handler_component_name_max = 32, /**< Maximum component name length */
 } error_handler_limits_t;
 
 /* =============================================================================
@@ -84,10 +85,11 @@ typedef enum {
  * @brief Per-component error tracking state
  */
 typedef struct {
-  char     name[k_error_handler_component_name_max]; /**< Component name (e.g., "SPI", "GPIO", "UART") */
-  uint32_t error_count;                               /**< Error count for this component */
-  uint32_t retry_count;                               /**< Retry attempt count */
-  bool     in_use;                                    /**< Is this slot in use? */
+  char
+    name[k_error_handler_component_name_max]; /**< Component name (e.g., "SPI", "GPIO", "UART") */
+  uint32_t error_count;                       /**< Error count for this component */
+  uint32_t retry_count;                       /**< Retry attempt count */
+  bool     in_use;                            /**< Is this slot in use? */
 } error_component_state_t;
 
 /* =============================================================================
@@ -102,13 +104,14 @@ typedef struct {
  * It implements the rx_error_interface_t.
  */
 typedef struct {
-  TX_MUTEX                mutex;                                               /**< ThreadX mutex for thread-safe operation */
-  uint32_t                total_error_count;                                   /**< Total error count across all components */
-  error_component_state_t components[k_error_handler_max_components];         /**< Per-component error tracking */
-  uint32_t                max_retries;                                         /**< Maximum retry attempts before giving up */
-  uint32_t                initial_backoff_ms;                                  /**< Initial backoff delay in milliseconds */
-  uint32_t                max_backoff_ms;                                      /**< Maximum backoff delay in milliseconds */
-  bool                    initialized;                                         /**< Is the handler initialized? */
+  TX_MUTEX mutex;             /**< ThreadX mutex for thread-safe operation */
+  uint32_t total_error_count; /**< Total error count across all components */
+  error_component_state_t
+           components[k_error_handler_max_components]; /**< Per-component error tracking */
+  uint32_t max_retries;        /**< Maximum retry attempts before giving up */
+  uint32_t initial_backoff_ms; /**< Initial backoff delay in milliseconds */
+  uint32_t max_backoff_ms;     /**< Maximum backoff delay in milliseconds */
+  bool     initialized;        /**< Is the handler initialized? */
 } error_handler_t;
 
 /* =============================================================================

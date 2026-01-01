@@ -70,7 +70,8 @@ typedef struct rx_pin_interface rx_pin_interface_t;
  * @brief Pin interface configuration constants
  */
 typedef enum {
-  k_pin_function_name_max_len = 32, /**< Maximum length of pin function name (e.g., "SPI_MOSI", "UART_TX") */
+  k_pin_function_name_max_len =
+    32, /**< Maximum length of pin function name (e.g., "SPI_MOSI", "UART_TX") */
 } pin_interface_limits_t;
 
 /* =============================================================================
@@ -179,13 +180,13 @@ typedef rx_err_t (*rx_pin_clear_all_fn)(void* ctx);
  * All function pointers receive this context as their first parameter.
  */
 struct rx_pin_interface {
-  void*                  ctx;                     /**< Implementation context (opaque pointer to concrete validator) */
-  rx_pin_validate_fn     validate_pin;            /**< Validate pin existence */
-  rx_pin_reserve_fn      reserve_pin;             /**< Reserve pin for function */
-  rx_pin_release_fn      release_pin;             /**< Release reserved pin */
-  rx_pin_is_reserved_fn  is_pin_reserved;         /**< Check if pin is reserved */
-  rx_pin_get_function_fn get_pin_function;        /**< Get pin's function name */
-  rx_pin_clear_all_fn    clear_all_reservations;  /**< Clear all reservations */
+  void*                  ctx; /**< Implementation context (opaque pointer to concrete validator) */
+  rx_pin_validate_fn     validate_pin;           /**< Validate pin existence */
+  rx_pin_reserve_fn      reserve_pin;            /**< Reserve pin for function */
+  rx_pin_release_fn      release_pin;            /**< Release reserved pin */
+  rx_pin_is_reserved_fn  is_pin_reserved;        /**< Check if pin is reserved */
+  rx_pin_get_function_fn get_pin_function;       /**< Get pin's function name */
+  rx_pin_clear_all_fn    clear_all_reservations; /**< Clear all reservations */
 };
 
 /* =============================================================================

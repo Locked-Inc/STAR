@@ -97,8 +97,9 @@ extern "C" {
  * @brief Mock pin validator configuration constants
  */
 typedef enum {
-  k_mock_pin_validator_max_pins          = 256, /**< Maximum number of pins to track (covers RX72N's 182 pins) */
-  k_mock_pin_validator_function_name_max = 32,  /**< Maximum function name length */
+  k_mock_pin_validator_max_pins =
+    256, /**< Maximum number of pins to track (covers RX72N's 182 pins) */
+  k_mock_pin_validator_function_name_max = 32, /**< Maximum function name length */
 } mock_pin_validator_limits_t;
 
 /* =============================================================================
@@ -117,14 +118,17 @@ typedef enum {
  *       Example: Port A (0xA), Pin 5 = 0xA * 8 + 5 = 85
  */
 typedef struct {
-  bool validated_pins[k_mock_pin_validator_max_pins]; /**< Track validated pins (indexed: port*8+pin, where 8 = pins per port) */
-  bool reserved_pins[k_mock_pin_validator_max_pins];  /**< Track currently reserved pins (indexed: port*8+pin) */
-  char function_names[k_mock_pin_validator_max_pins]
-                     [k_mock_pin_validator_function_name_max]; /**< Function names for reserved pins (indexed: port*8+pin) */
-  uint32_t validate_call_count; /**< Total number of validate_pin calls */
-  uint32_t reserve_call_count;  /**< Total number of reserve_pin calls */
-  uint32_t release_call_count;  /**< Total number of release_pin calls */
-  bool     initialized;         /**< Is the validator initialized? */
+  bool validated_pins
+    [k_mock_pin_validator_max_pins]; /**< Track validated pins (indexed: port*8+pin, where 8 = pins per port) */
+  bool reserved_pins
+    [k_mock_pin_validator_max_pins]; /**< Track currently reserved pins (indexed: port*8+pin) */
+  char function_names
+    [k_mock_pin_validator_max_pins]
+    [k_mock_pin_validator_function_name_max]; /**< Function names for reserved pins (indexed: port*8+pin) */
+  uint32_t validate_call_count;               /**< Total number of validate_pin calls */
+  uint32_t reserve_call_count;                /**< Total number of reserve_pin calls */
+  uint32_t release_call_count;                /**< Total number of release_pin calls */
+  bool     initialized;                       /**< Is the validator initialized? */
 } mock_pin_validator_t;
 
 /* =============================================================================

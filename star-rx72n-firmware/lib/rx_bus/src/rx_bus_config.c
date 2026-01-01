@@ -32,8 +32,7 @@ rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, uint8_t port,
   RX_CHECK_NULL_PTR(name, s_tag, "name pointer is NULL");
 
   /* Validate port (0-9 or 0xA-0x10 for A-G) */
-  if (port > k_hex_port_end ||
-      (port > k_max_decimal_port && port < k_hex_port_start)) {
+  if (port > k_hex_port_end || (port > k_max_decimal_port && port < k_hex_port_start)) {
     rx_log_error(s_tag, "Invalid GPIO port");
     return k_rx_err_invalid_arg;
   }

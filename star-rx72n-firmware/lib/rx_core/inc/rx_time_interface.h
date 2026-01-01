@@ -106,7 +106,7 @@ typedef bool (*rx_time_is_elapsed_fn)(void* ctx, uint32_t start_ms, uint32_t tim
  * All function pointers receive this context as their first parameter.
  */
 struct rx_time_interface {
-  void*                 ctx;        /**< Implementation context (opaque pointer to concrete handler) */
+  void*                 ctx; /**< Implementation context (opaque pointer to concrete handler) */
   rx_time_sleep_ms_fn   sleep_ms;   /**< Sleep for specified milliseconds */
   rx_time_get_ms_fn     get_ms;     /**< Get current time in milliseconds */
   rx_time_is_elapsed_fn is_elapsed; /**< Check if timeout has elapsed */

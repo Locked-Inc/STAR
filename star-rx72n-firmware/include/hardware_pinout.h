@@ -90,16 +90,16 @@ typedef enum {
  */
 typedef enum {
   /* Encoder 0 - MTU1 */
-  k_pin_encoder0_a_port = 2,  /**< Port 2 */
-  k_pin_encoder0_a_pin  = 4,  /**< P24/MTCLKA (pin 24) - Phase A */
-  k_pin_encoder0_b_port = 1,  /**< Port 1 */
-  k_pin_encoder0_b_pin  = 5,  /**< P15/MTCLKB (pin 31) - Phase B */
+  k_pin_encoder0_a_port = 2, /**< Port 2 */
+  k_pin_encoder0_a_pin  = 4, /**< P24/MTCLKA (pin 24) - Phase A */
+  k_pin_encoder0_b_port = 1, /**< Port 1 */
+  k_pin_encoder0_b_pin  = 5, /**< P15/MTCLKB (pin 31) - Phase B */
 
   /* Encoder 1 - MTU2 */
-  k_pin_encoder1_a_port = 1,  /**< Port 1 */
-  k_pin_encoder1_a_pin  = 4,  /**< P14/MTCLKA (pin 32) - Phase A */
-  k_pin_encoder1_b_port = 2,  /**< Port 2 */
-  k_pin_encoder1_b_pin  = 2,  /**< P22/MTCLKC (pin 26) - Phase B */
+  k_pin_encoder1_a_port = 1, /**< Port 1 */
+  k_pin_encoder1_a_pin  = 4, /**< P14/MTCLKA (pin 32) - Phase A */
+  k_pin_encoder1_b_port = 2, /**< Port 2 */
+  k_pin_encoder1_b_pin  = 2, /**< P22/MTCLKC (pin 26) - Phase B */
 
   /* Encoder 2 - MTU3 */
   k_pin_encoder2_a_port = 0xC, /**< Port C */
@@ -108,10 +108,10 @@ typedef enum {
   k_pin_encoder2_b_pin  = 0,   /**< PC0/MTIOC3C (pin 52) - Phase B */
 
   /* Encoder 3 - MTU4 */
-  k_pin_encoder3_a_port = 2,  /**< Port 2 */
-  k_pin_encoder3_a_pin  = 5,  /**< P25/MTCLKB (pin 23) - Phase A */
+  k_pin_encoder3_a_port = 2,   /**< Port 2 */
+  k_pin_encoder3_a_pin  = 5,   /**< P25/MTCLKB (pin 23) - Phase A */
   k_pin_encoder3_b_port = 0xA, /**< Port A */
-  k_pin_encoder3_b_pin  = 3,  /**< PA3/MTCLKD (pin 67) - Phase B */
+  k_pin_encoder3_b_pin  = 3,   /**< PA3/MTCLKD (pin 67) - Phase B */
 } encoder_pins_t;
 
 /* =============================================================================
@@ -156,17 +156,17 @@ typedef enum {
  * - Read via PORT.PIDR register
  */
 typedef enum {
-  k_pin_motor0_nfault_port = 4,  /**< Port 4 */
-  k_pin_motor0_nfault_pin  = 4,  /**< P44/IRQ12-DS (pin 90) */
+  k_pin_motor0_nfault_port = 4, /**< Port 4 */
+  k_pin_motor0_nfault_pin  = 4, /**< P44/IRQ12-DS (pin 90) */
 
-  k_pin_motor1_nfault_port = 4,  /**< Port 4 */
-  k_pin_motor1_nfault_pin  = 5,  /**< P45/IRQ13-DS (pin 89) */
+  k_pin_motor1_nfault_port = 4, /**< Port 4 */
+  k_pin_motor1_nfault_pin  = 5, /**< P45/IRQ13-DS (pin 89) */
 
-  k_pin_motor2_nfault_port = 4,  /**< Port 4 */
-  k_pin_motor2_nfault_pin  = 6,  /**< P46/IRQ14-DS (pin 88) */
+  k_pin_motor2_nfault_port = 4, /**< Port 4 */
+  k_pin_motor2_nfault_pin  = 6, /**< P46/IRQ14-DS (pin 88) */
 
-  k_pin_motor3_nfault_port = 4,  /**< Port 4 */
-  k_pin_motor3_nfault_pin  = 7,  /**< P47/IRQ15-DS (pin 87) */
+  k_pin_motor3_nfault_port = 4, /**< Port 4 */
+  k_pin_motor3_nfault_pin  = 7, /**< P47/IRQ15-DS (pin 87) */
 } motor_fault_pins_t;
 
 /* =============================================================================
@@ -223,14 +223,14 @@ typedef enum {
   k_pin_motor_spi_cipo_pin  = 2,   /**< PD2/MISOC-A (pin 84) - Controller In */
 
   /* Individual chip selects */
-  k_pin_motor0_spi_cs_port = 1,  /**< Port 1 */
-  k_pin_motor0_spi_cs_pin  = 7,  /**< P17 (pin 29) - Motor 0 nCS */
-  k_pin_motor1_spi_cs_port = 2,  /**< Port 2 */
-  k_pin_motor1_spi_cs_pin  = 3,  /**< P23 (pin 25) - Motor 1 nCS */
-  k_pin_motor2_spi_cs_port = 3,  /**< Port 3 */
-  k_pin_motor2_spi_cs_pin  = 2,  /**< P32 (pin 18) - Motor 2 nCS */
+  k_pin_motor0_spi_cs_port = 1,   /**< Port 1 */
+  k_pin_motor0_spi_cs_pin  = 7,   /**< P17 (pin 29) - Motor 0 nCS */
+  k_pin_motor1_spi_cs_port = 2,   /**< Port 2 */
+  k_pin_motor1_spi_cs_pin  = 3,   /**< P23 (pin 25) - Motor 1 nCS */
+  k_pin_motor2_spi_cs_port = 3,   /**< Port 3 */
+  k_pin_motor2_spi_cs_pin  = 2,   /**< P32 (pin 18) - Motor 2 nCS */
   k_pin_motor3_spi_cs_port = 0xA, /**< Port A */
-  k_pin_motor3_spi_cs_pin  = 0,  /**< PA0 (pin 70) - Motor 3 nCS */
+  k_pin_motor3_spi_cs_pin  = 0,   /**< PA0 (pin 70) - Motor 3 nCS */
 } motor_spi_pins_t;
 
 /* =============================================================================
@@ -315,22 +315,22 @@ typedef enum {
  * sensors). Supports 2 chip selects for dual-device configurations.
  */
 typedef enum {
-  k_pmod_ja_cs0_port  = 5,    /**< Port 5 */
-  k_pmod_ja_cs0_pin   = 2,    /**< P52 (pin 42) - SPI CS0 */
-  k_pmod_ja_copi_port = 5,    /**< Port 5 */
-  k_pmod_ja_copi_pin  = 0,    /**< P50 (pin 44) - SPI COPI */
-  k_pmod_ja_cipo_port = 5,    /**< Port 5 */
-  k_pmod_ja_cipo_pin  = 1,    /**< P51 (pin 43) - SPI CIPO */
-  k_pmod_ja_sck_port  = 5,    /**< Port 5 */
-  k_pmod_ja_sck_pin   = 3,    /**< P53 (pin 41) - SPI SCK */
-  k_pmod_ja_dc_port   = 0xB,  /**< Port B */
-  k_pmod_ja_dc_pin    = 4,    /**< PB4 (pin 57) - Data/Command */
-  k_pmod_ja_rst_port  = 0xB,  /**< Port B */
-  k_pmod_ja_rst_pin   = 3,    /**< PB3 (pin 58) - Reset */
-  k_pmod_ja_gpio_port = 0xB,  /**< Port B */
-  k_pmod_ja_gpio_pin  = 2,    /**< PB2 (pin 59) - General Purpose */
-  k_pmod_ja_cs1_port  = 0xB,  /**< Port B */
-  k_pmod_ja_cs1_pin   = 5,    /**< PB5 (pin 55) - SPI CS1 */
+  k_pmod_ja_cs0_port  = 5,   /**< Port 5 */
+  k_pmod_ja_cs0_pin   = 2,   /**< P52 (pin 42) - SPI CS0 */
+  k_pmod_ja_copi_port = 5,   /**< Port 5 */
+  k_pmod_ja_copi_pin  = 0,   /**< P50 (pin 44) - SPI COPI */
+  k_pmod_ja_cipo_port = 5,   /**< Port 5 */
+  k_pmod_ja_cipo_pin  = 1,   /**< P51 (pin 43) - SPI CIPO */
+  k_pmod_ja_sck_port  = 5,   /**< Port 5 */
+  k_pmod_ja_sck_pin   = 3,   /**< P53 (pin 41) - SPI SCK */
+  k_pmod_ja_dc_port   = 0xB, /**< Port B */
+  k_pmod_ja_dc_pin    = 4,   /**< PB4 (pin 57) - Data/Command */
+  k_pmod_ja_rst_port  = 0xB, /**< Port B */
+  k_pmod_ja_rst_pin   = 3,   /**< PB3 (pin 58) - Reset */
+  k_pmod_ja_gpio_port = 0xB, /**< Port B */
+  k_pmod_ja_gpio_pin  = 2,   /**< PB2 (pin 59) - General Purpose */
+  k_pmod_ja_cs1_port  = 0xB, /**< Port B */
+  k_pmod_ja_cs1_pin   = 5,   /**< PB5 (pin 55) - SPI CS1 */
 } pmod_ja_pins_t;
 
 /**
@@ -430,16 +430,16 @@ typedef enum {
  * - Required for GDB debugging and flash programming
  */
 typedef enum {
-  k_pin_jtag_tms_port  = 3,  /**< Port 3 */
-  k_pin_jtag_tms_pin   = 1,  /**< P31/TMS (pin 19) - JTAG Test Mode Select */
-  k_pin_jtag_tdi_port  = 3,  /**< Port 3 */
-  k_pin_jtag_tdi_pin   = 0,  /**< P30/TDI (pin 20) - JTAG Test Data In */
-  k_pin_jtag_tdo_port  = 2,  /**< Port 2 */
-  k_pin_jtag_tdo_pin   = 6,  /**< P26/TDO (pin 22) - JTAG Test Data Out */
-  k_pin_jtag_tck_port  = 2,  /**< Port 2 */
-  k_pin_jtag_tck_pin   = 7,  /**< P27/TCK (pin 21) - JTAG Test Clock */
-  k_pin_jtag_trst_port = 3,  /**< Port 3 */
-  k_pin_jtag_trst_pin  = 4,  /**< P34/TST# (pin 16) - JTAG Test Reset */
+  k_pin_jtag_tms_port  = 3, /**< Port 3 */
+  k_pin_jtag_tms_pin   = 1, /**< P31/TMS (pin 19) - JTAG Test Mode Select */
+  k_pin_jtag_tdi_port  = 3, /**< Port 3 */
+  k_pin_jtag_tdi_pin   = 0, /**< P30/TDI (pin 20) - JTAG Test Data In */
+  k_pin_jtag_tdo_port  = 2, /**< Port 2 */
+  k_pin_jtag_tdo_pin   = 6, /**< P26/TDO (pin 22) - JTAG Test Data Out */
+  k_pin_jtag_tck_port  = 2, /**< Port 2 */
+  k_pin_jtag_tck_pin   = 7, /**< P27/TCK (pin 21) - JTAG Test Clock */
+  k_pin_jtag_trst_port = 3, /**< Port 3 */
+  k_pin_jtag_trst_pin  = 4, /**< P34/TST# (pin 16) - JTAG Test Reset */
 } jtag_pins_t;
 
 #ifdef __cplusplus

@@ -207,10 +207,8 @@ internal_rx_log_error_hex(const char* tag, const char* message, uint32_t value, 
 /**
  * @brief Log error with string value (bounded length)
  */
-static inline void internal_rx_log_error_str(const char*  tag,
-                                             const char*  message,
-                                             const char*  str_value,
-                                             uint32_t len)
+static inline void
+internal_rx_log_error_str(const char* tag, const char* message, const char* str_value, uint32_t len)
 {
   internal_log_header("ERROR", tag);
   uart_puts(message);
@@ -527,10 +525,8 @@ internal_rx_log_debug_hex(const char* tag, const char* message, uint32_t value, 
 /**
  * @brief Log debug with string value (bounded length)
  */
-static inline void internal_rx_log_debug_str(const char*  tag,
-                                             const char*  message,
-                                             const char*  str_value,
-                                             uint32_t len)
+static inline void
+internal_rx_log_debug_str(const char* tag, const char* message, const char* str_value, uint32_t len)
 {
   internal_log_header("DEBUG", tag);
   uart_puts(message);
@@ -574,8 +570,7 @@ static inline void internal_rx_log_verbose_u8(const char* tag, const char* messa
 /**
  * @brief Log verbose with uint16_t value
  */
-static inline void
-internal_rx_log_verbose_u16(const char* tag, const char* message, uint16_t value)
+static inline void internal_rx_log_verbose_u16(const char* tag, const char* message, uint16_t value)
 {
   internal_log_header("VERBOSE", tag);
   uart_puts(message);
@@ -587,8 +582,7 @@ internal_rx_log_verbose_u16(const char* tag, const char* message, uint16_t value
 /**
  * @brief Log verbose with uint32_t value
  */
-static inline void
-internal_rx_log_verbose_u32(const char* tag, const char* message, uint32_t value)
+static inline void internal_rx_log_verbose_u32(const char* tag, const char* message, uint32_t value)
 {
   internal_log_header("VERBOSE", tag);
   uart_puts(message);
@@ -637,10 +631,10 @@ internal_rx_log_verbose_hex(const char* tag, const char* message, uint32_t value
 /**
  * @brief Log verbose with string value (bounded length)
  */
-static inline void internal_rx_log_verbose_str(const char*  tag,
-                                               const char*  message,
-                                               const char*  str_value,
-                                               uint32_t len)
+static inline void internal_rx_log_verbose_str(const char* tag,
+                                               const char* message,
+                                               const char* str_value,
+                                               uint32_t    len)
 {
   internal_log_header("VERBOSE", tag);
   uart_puts(message);
@@ -675,11 +669,10 @@ static inline void internal_rx_log_verbose_str(const char*  tag,
  */
 #define RX_LOG_VAL_IMPL(level, tag, msg, val)                                                      \
   _Generic((val),                                                                                  \
-      uint8_t:  internal_rx_log_##level##_u8,                                                      \
-      uint16_t: internal_rx_log_##level##_u16,                                                     \
-      uint32_t: internal_rx_log_##level##_u32,                                                     \
-      int32_t:  internal_rx_log_##level##_err                                                      \
-  )(tag, msg, val)
+    uint8_t: internal_rx_log_##level##_u8,                                                         \
+    uint16_t: internal_rx_log_##level##_u16,                                                       \
+    uint32_t: internal_rx_log_##level##_u32,                                                       \
+    int32_t: internal_rx_log_##level##_err)(tag, msg, val)
 
 /* =============================================================================
  * Public API - ERROR Level
@@ -752,15 +745,14 @@ static inline void internal_rx_log_verbose_str(const char*  tag,
  *   rx_log_error_str("CONFIG", "Unknown param", param_name, strlen(param_name));
  * @endcode
  */
-#define rx_log_error_str(tag, msg, str, len)                                                       \
-  internal_rx_log_error_str((tag), (msg), (str), (len))
+#define rx_log_error_str(tag, msg, str, len) internal_rx_log_error_str((tag), (msg), (str), (len))
 
 #else
 
-#define rx_log_error(tag, msg)                ((void)0)
-#define rx_log_error_val(tag, msg, val)       ((void)0)
-#define rx_log_error_hex(tag, msg, val, d)    ((void)0)
-#define rx_log_error_str(tag, msg, str, len)  ((void)0)
+#define rx_log_error(tag, msg)               ((void)0)
+#define rx_log_error_val(tag, msg, val)      ((void)0)
+#define rx_log_error_hex(tag, msg, val, d)   ((void)0)
+#define rx_log_error_str(tag, msg, str, len) ((void)0)
 
 #endif /* LOG_LEVEL >= k_log_error */
 
@@ -784,7 +776,8 @@ static inline void internal_rx_log_verbose_str(const char*  tag,
 /**
  * @brief Log warning with hex value
  */
-#define rx_log_warn_hex(tag, msg, val, digits) internal_rx_log_warn_hex((tag), (msg), (val), (digits))
+#define rx_log_warn_hex(tag, msg, val, digits)                                                     \
+  internal_rx_log_warn_hex((tag), (msg), (val), (digits))
 
 /**
  * @brief Log warning with string value (bounded length)
@@ -793,10 +786,10 @@ static inline void internal_rx_log_verbose_str(const char*  tag,
 
 #else
 
-#define rx_log_warn(tag, msg)                 ((void)0)
-#define rx_log_warn_val(tag, msg, val)        ((void)0)
-#define rx_log_warn_hex(tag, msg, val, d)     ((void)0)
-#define rx_log_warn_str(tag, msg, str, len)   ((void)0)
+#define rx_log_warn(tag, msg)               ((void)0)
+#define rx_log_warn_val(tag, msg, val)      ((void)0)
+#define rx_log_warn_hex(tag, msg, val, d)   ((void)0)
+#define rx_log_warn_str(tag, msg, str, len) ((void)0)
 
 #endif /* LOG_LEVEL >= k_log_warn */
 
@@ -820,7 +813,8 @@ static inline void internal_rx_log_verbose_str(const char*  tag,
 /**
  * @brief Log info with hex value
  */
-#define rx_log_info_hex(tag, msg, val, digits) internal_rx_log_info_hex((tag), (msg), (val), (digits))
+#define rx_log_info_hex(tag, msg, val, digits)                                                     \
+  internal_rx_log_info_hex((tag), (msg), (val), (digits))
 
 /**
  * @brief Log info with string value (bounded length)
@@ -829,10 +823,10 @@ static inline void internal_rx_log_verbose_str(const char*  tag,
 
 #else
 
-#define rx_log_info(tag, msg)                 ((void)0)
-#define rx_log_info_val(tag, msg, val)        ((void)0)
-#define rx_log_info_hex(tag, msg, val, d)     ((void)0)
-#define rx_log_info_str(tag, msg, str, len)   ((void)0)
+#define rx_log_info(tag, msg)               ((void)0)
+#define rx_log_info_val(tag, msg, val)      ((void)0)
+#define rx_log_info_hex(tag, msg, val, d)   ((void)0)
+#define rx_log_info_str(tag, msg, str, len) ((void)0)
 
 #endif /* LOG_LEVEL >= k_log_info */
 
@@ -866,10 +860,10 @@ static inline void internal_rx_log_verbose_str(const char*  tag,
 
 #else
 
-#define rx_log_debug(tag, msg)                ((void)0)
-#define rx_log_debug_val(tag, msg, val)       ((void)0)
-#define rx_log_debug_hex(tag, msg, val, d)    ((void)0)
-#define rx_log_debug_str(tag, msg, str, len)  ((void)0)
+#define rx_log_debug(tag, msg)               ((void)0)
+#define rx_log_debug_val(tag, msg, val)      ((void)0)
+#define rx_log_debug_hex(tag, msg, val, d)   ((void)0)
+#define rx_log_debug_str(tag, msg, str, len) ((void)0)
 
 #endif /* LOG_LEVEL >= k_log_debug */
 
@@ -904,10 +898,10 @@ static inline void internal_rx_log_verbose_str(const char*  tag,
 
 #else
 
-#define rx_log_verbose(tag, msg)                ((void)0)
-#define rx_log_verbose_val(tag, msg, val)       ((void)0)
-#define rx_log_verbose_hex(tag, msg, val, d)    ((void)0)
-#define rx_log_verbose_str(tag, msg, str, len)  ((void)0)
+#define rx_log_verbose(tag, msg)               ((void)0)
+#define rx_log_verbose_val(tag, msg, val)      ((void)0)
+#define rx_log_verbose_hex(tag, msg, val, d)   ((void)0)
+#define rx_log_verbose_str(tag, msg, str, len) ((void)0)
 
 #endif /* LOG_LEVEL >= k_log_verbose */
 
