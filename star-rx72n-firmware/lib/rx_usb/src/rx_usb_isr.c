@@ -1,12 +1,17 @@
+/* lib/rx_usb/src/rx_usb_isr.c */
+
 /**
  * @file rx_usb_isr.c
  * @brief USB0 Interrupt Service Routine for RX72N
- *
+ * @details
  * This file handles all USB0 interrupts:
  * - VBUS detection (cable connect/disconnect)
  * - Device state transitions (reset, suspend, resume)
  * - Control transfer stage transitions (SETUP, DATA, STATUS)
  * - Buffer ready/empty for data pipes
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "rx72n_regs.h"

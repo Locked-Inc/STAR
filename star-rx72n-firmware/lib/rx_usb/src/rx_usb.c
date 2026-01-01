@@ -1,10 +1,15 @@
+/* lib/rx_usb/src/rx_usb.c */
+
 /**
  * @file rx_usb.c
  * @brief USB CDC-ACM Driver Implementation for RX72N
- *
+ * @details
  * This file implements the public API for the USB CDC driver.
  * It manages USB state, ring buffers for TX/RX, and coordinates
  * with the hardware layer and CDC class implementation.
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "rx_usb.h"

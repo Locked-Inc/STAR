@@ -1,9 +1,14 @@
+/* lib/rx_usb/src/rx_usb_hw.c */
+
 /**
  * @file rx_usb_hw.c
  * @brief USB0 Hardware Layer for RX72N
- *
+ * @details
  * This file provides low-level hardware access to the USB0 peripheral.
  * It handles module initialization, clock configuration, and register access.
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include <stddef.h>
@@ -19,8 +24,12 @@
 
 static const char* s_tag = "USB_HW";
 
-/* USB clock stabilization wait time (in loop iterations) */
-#define USB_PLL_WAIT_COUNT 1000
+/** @brief USB hardware timing and protection constants */
+typedef enum {
+  k_usb_pll_wait_count = 1000,   /**< USB clock stabilization wait (loop iterations) */
+  k_prcr_unlock        = 0xA50B, /**< Protection register unlock value */
+  k_prcr_lock          = 0xA500, /**< Protection register lock value */
+} usb_hw_constants_t;
 
 /* =============================================================================
  * Private Variables
@@ -53,20 +62,20 @@ rx_err_t rx_usb_hw_init(void)
 
   /* 1. Enable USB0 module clock */
   /* Unlock protection */
-  SYSTEM.PRCR = 0xA50B;
+  SYSTEM.PRCR = k_prcr_unlock;
 
   /* Clear module stop bit for USB0 (bit 19 in MSTPCRB) */
   SYSTEM.MSTPCRB &= ~(1UL << k_mstpb_usb0);
 
   /* Lock protection */
-  SYSTEM.PRCR = 0xA500;
+  SYSTEM.PRCR = k_prcr_lock;
 
   /* 2. Disable USB module before configuration */
   USB0.SYSCFG = 0x0000;
 
   /* 3. Wait for USB clock to stabilize (if using PLL) */
   /* Note: USB requires 48 MHz clock from main PLL */
-  volatile uint32_t wait = USB_PLL_WAIT_COUNT;
+  volatile uint32_t wait = k_usb_pll_wait_count;
   while (wait--) {
     __asm__ volatile("nop");
   }
@@ -83,7 +92,7 @@ rx_err_t rx_usb_hw_init(void)
   USB0.SYSCFG |= k_usb_syscfg_scke;
 
   /* Wait for clock to stabilize */
-  wait = USB_PLL_WAIT_COUNT;
+  wait = k_usb_pll_wait_count;
   while (wait--) {
     __asm__ volatile("nop");
   }
@@ -135,9 +144,9 @@ rx_err_t rx_usb_hw_deinit(void)
   ICU.IR[k_vect_usb0_usbi] = 0;
 
   /* Disable USB0 module clock */
-  SYSTEM.PRCR = 0xA50B;
+  SYSTEM.PRCR = k_prcr_unlock;
   SYSTEM.MSTPCRB |= (1UL << k_mstpb_usb0);
-  SYSTEM.PRCR = 0xA500;
+  SYSTEM.PRCR = k_prcr_lock;
 
   s_hw_initialized = false;
 
