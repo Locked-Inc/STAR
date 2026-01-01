@@ -48,6 +48,12 @@ typedef enum {
   k_hdr_len_offset = 4, /**< Payload length field offset */
 } frame_header_offset_t;
 
+/** @brief Big-endian conversion constants */
+typedef enum {
+  k_be16_high_shift = 8,    /**< Bit shift for big-endian high byte extraction */
+  k_byte_mask       = 0xFF, /**< Byte mask for 8-bit extraction */
+} byte_conversion_t;
+
 /* =============================================================================
  * Internal Helpers
  * =============================================================================
@@ -105,8 +111,8 @@ static void internal_compact_rx_buffer(rx_usb_comm_handle_t* handle)
  */
 static int32_t internal_find_sync(rx_usb_comm_handle_t* handle)
 {
-  uint8_t sync_high = (uint8_t)(k_frame_sync_word >> 8);
-  uint8_t sync_low  = (uint8_t)(k_frame_sync_word & 0xFF);
+  uint8_t sync_high = (uint8_t)(k_frame_sync_word >> k_be16_high_shift);
+  uint8_t sync_low  = (uint8_t)(k_frame_sync_word & k_byte_mask);
 
   for (uint32_t i = handle->rx_buffer_pos; i + 1 < handle->rx_buffer_len; i++) {
     if (handle->rx_buffer[i] == sync_high && handle->rx_buffer[i + 1] == sync_low) {
@@ -163,7 +169,7 @@ rx_err_t rx_usb_comm_init(rx_usb_comm_handle_t* handle, const rx_usb_comm_config
   handle->rx_buffer_len = 0;
   handle->rx_buffer_pos = 0;
 
-  handle->initialized = 1;
+  handle->initialized = true;
 
   rx_log_debug(s_tag, "USB comm initialized");
   return k_rx_ok;
@@ -178,7 +184,7 @@ rx_err_t rx_usb_comm_deinit(rx_usb_comm_handle_t* handle)
   if (handle->initialized) {
     rx_frame_encoder_deinit(&handle->encoder);
     rx_frame_decoder_deinit(&handle->decoder);
-    handle->initialized = 0;
+    handle->initialized = false;
   }
 
   rx_log_debug(s_tag, "USB comm deinitialized");
