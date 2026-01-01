@@ -1,4 +1,4 @@
-/* src/rx_motor.c */
+/* lib/rx_motor/src/rx_motor.c */
 
 /**
  * @file rx_motor.c
