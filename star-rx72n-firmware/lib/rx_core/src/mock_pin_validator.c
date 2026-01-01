@@ -29,7 +29,7 @@
  * @param[in] port Port number (0-9, 0xA-0x10 for A-G)
  * @param[in] pin Pin number (0-7)
  *
- * @return Array index (0-255), or 0xFFFF if invalid
+ * @return Array index (0-255), or k_invalid_pin_index if invalid
  */
 static uint16_t internal_pin_to_index(uint8_t port, uint8_t pin)
 {
@@ -199,7 +199,7 @@ static bool impl_is_pin_reserved(void* ctx, uint8_t port, uint8_t pin)
   }
 
   uint16_t index = internal_pin_to_index(port, pin);
-  if (index == 0xFFFF) {
+  if (index == k_invalid_pin_index) {
     return false;
   }
 
