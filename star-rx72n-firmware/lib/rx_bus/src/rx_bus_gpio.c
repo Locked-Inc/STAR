@@ -1,4 +1,4 @@
-/* src/rx_bus_gpio.c */
+/* lib/rx_bus/src/rx_bus_gpio.c */
 
 /**
  * @file rx_bus_gpio.c

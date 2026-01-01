@@ -1,4 +1,4 @@
-/* src/rx_bus_adc.c */
+/* lib/rx_bus/src/rx_bus_adc.c */
 
 /**
  * @file rx_bus_adc.c
