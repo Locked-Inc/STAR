@@ -97,13 +97,13 @@ static rx_err_t internal_validate_port_pin(uint8_t port, uint8_t pin)
   /* Validate port */
   volatile PORT_Type* port_base = internal_get_port_base(port);
   if (port_base == NULL) {
-    star_log_error("GPIO", "Invalid port number");
+    rx_log_error("GPIO", "Invalid port number");
     return k_rx_err_gpio_invalid_port;
   }
 
   /* Validate pin */
   if (pin > 7) {
-    star_log_error("GPIO", "Invalid pin number");
+    rx_log_error("GPIO", "Invalid pin number");
     return k_rx_err_gpio_invalid_pin;
   }
 
@@ -140,7 +140,7 @@ rx_err_t gpio_set_output(uint8_t port, uint8_t pin)
   /* Set as output */
   port_base->PDR |= (1 << pin);
 
-  star_log_debug("GPIO", "Pin configured as output");
+  rx_log_debug("GPIO", "Pin configured as output");
 
   return k_rx_ok;
 }
@@ -170,7 +170,7 @@ rx_err_t gpio_set_input(uint8_t port, uint8_t pin)
   /* Set as input */
   port_base->PDR &= ~(1 << pin);
 
-  star_log_debug("GPIO", "Pin configured as input");
+  rx_log_debug("GPIO", "Pin configured as input");
 
   return k_rx_ok;
 }

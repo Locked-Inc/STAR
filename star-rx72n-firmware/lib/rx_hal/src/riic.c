@@ -87,7 +87,7 @@ static rx_err_t internal_calculate_bit_rate(uint32_t frequency_hz, uint8_t* icbr
   uint32_t divisor = (pclk / frequency_hz) / 3;
 
   if (divisor < 1 || divisor > 255) {
-    star_log_error(s_tag, "Invalid frequency for PCLKB");
+    rx_log_error(s_tag, "Invalid frequency for PCLKB");
     return k_rx_err_invalid_arg;
   }
 
@@ -113,7 +113,7 @@ static rx_err_t internal_wait_bus_ready(volatile RIIC_Type* riic)
   }
 
   if (timeout == 0) {
-    star_log_error(s_tag, "I2C bus busy timeout");
+    rx_log_error(s_tag, "I2C bus busy timeout");
     return k_rx_err_timeout;
   }
 
@@ -139,7 +139,7 @@ static rx_err_t internal_send_start(volatile RIIC_Type* riic)
   }
 
   if (timeout == 0) {
-    star_log_error(s_tag, "Start condition timeout");
+    rx_log_error(s_tag, "Start condition timeout");
     return k_rx_err_timeout;
   }
 
@@ -168,7 +168,7 @@ static rx_err_t internal_send_stop(volatile RIIC_Type* riic)
   }
 
   if (timeout == 0) {
-    star_log_error(s_tag, "Stop condition timeout");
+    rx_log_error(s_tag, "Stop condition timeout");
     return k_rx_err_timeout;
   }
 
@@ -195,7 +195,7 @@ static rx_err_t internal_write_byte(volatile RIIC_Type* riic, uint8_t data)
   }
 
   if (timeout == 0) {
-    star_log_error(s_tag, "Write timeout");
+    rx_log_error(s_tag, "Write timeout");
     return k_rx_err_timeout;
   }
 
@@ -211,7 +211,7 @@ static rx_err_t internal_write_byte(volatile RIIC_Type* riic, uint8_t data)
   /* Check for NACK */
   if (riic->ICSR2 & k_riic_icsr2_nackf) {
     riic->ICSR2 &= ~k_riic_icsr2_nackf;
-    star_log_error(s_tag, "NACK received");
+    rx_log_error(s_tag, "NACK received");
     return k_rx_err_nack;
   }
 
@@ -236,7 +236,7 @@ static rx_err_t internal_read_byte(volatile RIIC_Type* riic, uint8_t* data, bool
   }
 
   if (timeout == 0) {
-    star_log_error(s_tag, "Read timeout");
+    rx_log_error(s_tag, "Read timeout");
     return k_rx_err_timeout;
   }
 
@@ -262,13 +262,13 @@ rx_err_t riic_init(uint8_t channel, uint32_t frequency_hz)
 {
   /* Validate channel */
   if (channel >= k_riic_max_channels) {
-    star_log_error(s_tag, "Invalid RIIC channel");
+    rx_log_error(s_tag, "Invalid RIIC channel");
     return k_rx_err_invalid_arg;
   }
 
   /* Validate frequency (100kHz, 400kHz, or 1MHz) */
   if (frequency_hz != 100000 && frequency_hz != 400000 && frequency_hz != 1000000) {
-    star_log_error(s_tag, "Invalid I2C frequency (use 100000, 400000, or 1000000)");
+    rx_log_error(s_tag, "Invalid I2C frequency (use 100000, 400000, or 1000000)");
     return k_rx_err_invalid_arg;
   }
 
@@ -315,7 +315,7 @@ rx_err_t riic_init(uint8_t channel, uint32_t frequency_hz)
   /* Mark channel as initialized */
   s_riic_channel_initialized[channel] = true;
 
-  star_log_debug(s_tag, "RIIC channel initialized");
+  rx_log_debug(s_tag, "RIIC channel initialized");
 
   return k_rx_ok;
 }
@@ -326,7 +326,7 @@ rx_err_t riic_write(uint8_t channel, uint8_t device_addr, const uint8_t* data, u
 
   /* Validate channel */
   if (channel >= k_riic_max_channels || !s_riic_channel_initialized[channel]) {
-    star_log_error(s_tag, "RIIC channel not initialized");
+    rx_log_error(s_tag, "RIIC channel not initialized");
     return k_rx_err_invalid_state;
   }
 
@@ -373,7 +373,7 @@ rx_err_t riic_read(uint8_t channel, uint8_t device_addr, uint8_t* data, uint16_t
 
   /* Validate channel */
   if (channel >= k_riic_max_channels || !s_riic_channel_initialized[channel]) {
-    star_log_error(s_tag, "RIIC channel not initialized");
+    rx_log_error(s_tag, "RIIC channel not initialized");
     return k_rx_err_invalid_state;
   }
 
@@ -427,7 +427,7 @@ rx_err_t riic_write_read(uint8_t        channel,
 
   /* Validate channel */
   if (channel >= k_riic_max_channels || !s_riic_channel_initialized[channel]) {
-    star_log_error(s_tag, "RIIC channel not initialized");
+    rx_log_error(s_tag, "RIIC channel not initialized");
     return k_rx_err_invalid_state;
   }
 
@@ -475,7 +475,7 @@ rx_err_t riic_write_read(uint8_t        channel,
 
   if (timeout == 0) {
     internal_send_stop(riic);
-    star_log_error(s_tag, "Repeated start timeout");
+    rx_log_error(s_tag, "Repeated start timeout");
     return k_rx_err_timeout;
   }
 

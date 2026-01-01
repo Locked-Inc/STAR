@@ -118,7 +118,7 @@ internal_calculate_cmt_params(uint32_t frequency_hz, uint8_t* divider, uint16_t*
     }
   }
 
-  star_log_error(s_tag, "Error occurred");
+  rx_log_error(s_tag, "Error occurred");
   return k_rx_err_invalid_arg;
 }
 
@@ -170,18 +170,18 @@ rx_err_t rx_cmt_init(rx_cmt_channel_t channel, const rx_cmt_config_t* config)
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
 
   if ((int32_t)channel >= k_cmt_max_channels) {
-    star_log_error(s_tag, "Error occurred");
+    rx_log_error(s_tag, "Error occurred");
     return k_rx_err_invalid_arg;
   }
 
   /* CMT0 is reserved for ThreadX system tick */
   if (channel == k_cmt_channel_0) {
-    star_log_error(s_tag, "CMT0 is reserved for ThreadX");
+    rx_log_error(s_tag, "CMT0 is reserved for ThreadX");
     return k_rx_err_conflict;
   }
 
   if (config->priority > IPR_LEVEL_MAX) {
-    star_log_error(s_tag, "Error occurred");
+    rx_log_error(s_tag, "Error occurred");
     return k_rx_err_invalid_arg;
   }
 
@@ -198,7 +198,7 @@ rx_err_t rx_cmt_init(rx_cmt_channel_t channel, const rx_cmt_config_t* config)
     return err;
   }
 
-  star_log_info(s_tag, "CMT initialized");
+  rx_log_info(s_tag, "CMT initialized");
 
   /* Enable CMT module (clear module stop bit) */
   SYSTEM.PRCR = 0xA50B;         /* Enable writes to MSTPCR */
@@ -243,7 +243,7 @@ rx_err_t rx_cmt_init(rx_cmt_channel_t channel, const rx_cmt_config_t* config)
   /* Start timer */
   rx_cmt_start(channel);
 
-  star_log_info(s_tag, "Info");
+  rx_log_info(s_tag, "Info");
 
   return k_rx_ok;
 }
@@ -339,7 +339,7 @@ rx_err_t rx_cmt_deinit(rx_cmt_channel_t channel)
   s_cmt_user_data[channel]   = NULL;
   s_cmt_initialized[channel] = false;
 
-  star_log_info(s_tag, "CMT deinitialized");
+  rx_log_info(s_tag, "CMT deinitialized");
 
   return k_rx_ok;
 }

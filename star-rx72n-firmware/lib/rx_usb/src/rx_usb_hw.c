@@ -49,7 +49,7 @@ rx_err_t rx_usb_hw_init(void)
     return k_rx_ok;
   }
 
-  star_log_debug(s_tag, "Initializing USB0 hardware");
+  rx_log_debug(s_tag, "Initializing USB0 hardware");
 
   /* 1. Enable USB0 module clock */
   /* Unlock protection */
@@ -111,7 +111,7 @@ rx_err_t rx_usb_hw_init(void)
 
   s_hw_initialized = true;
 
-  star_log_info(s_tag, "USB0 hardware initialized");
+  rx_log_info(s_tag, "USB0 hardware initialized");
 
   return k_rx_ok;
 }
@@ -125,7 +125,7 @@ rx_err_t rx_usb_hw_deinit(void)
     return k_rx_ok;
   }
 
-  star_log_debug(s_tag, "Deinitializing USB0 hardware");
+  rx_log_debug(s_tag, "Deinitializing USB0 hardware");
 
   /* Disable USB module */
   USB0.SYSCFG = 0x0000;
@@ -155,7 +155,7 @@ rx_err_t rx_usb_hw_attach(void)
     return k_rx_err_invalid_state;
   }
 
-  star_log_debug(s_tag, "Attaching to USB bus");
+  rx_log_debug(s_tag, "Attaching to USB bus");
 
   /* Enable D+ pull-up resistor to signal device presence */
   USB0.SYSCFG |= k_usb_syscfg_dprpu;
@@ -172,7 +172,7 @@ rx_err_t rx_usb_hw_detach(void)
     return k_rx_ok;
   }
 
-  star_log_debug(s_tag, "Detaching from USB bus");
+  rx_log_debug(s_tag, "Detaching from USB bus");
 
   /* Disable D+ pull-up resistor */
   USB0.SYSCFG &= ~k_usb_syscfg_dprpu;
@@ -292,7 +292,7 @@ rx_usb_state_t rx_usb_hw_get_bus_state(void)
 void rx_usb_hw_set_address(uint8_t address)
 {
   USB0.USBADDR = address & 0x7F;
-  star_log_debug(s_tag, "USB address set");
+  rx_log_debug(s_tag, "USB address set");
 }
 
 /**

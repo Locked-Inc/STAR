@@ -110,8 +110,8 @@ impl_report_error(void* ctx, rx_err_t err, const char* component, const char* me
   tx_mutex_put(&handler->mutex);
 
   /* Log the error */
-  star_log_error(component, message);
-  star_log_error_val(component, "Error", err);
+  rx_log_error(component, message);
+  rx_log_error_val(component, "Error", err);
 
   return k_rx_ok;
 }
@@ -325,13 +325,13 @@ rx_err_t error_handler_init(error_handler_t* handler,
   /* Create mutex */
   UINT status = tx_mutex_create(&handler->mutex, "ErrorHandlerMutex", TX_NO_INHERIT);
   if (status != TX_SUCCESS) {
-    star_log_error("ERROR_HANDLER", "Failed to create mutex");
+    rx_log_error("ERROR_HANDLER", "Failed to create mutex");
     return k_rx_err_rtos_mutex;
   }
 
   handler->initialized = true;
 
-  star_log_info("ERROR_HANDLER", "Error handler initialized");
+  rx_log_info("ERROR_HANDLER", "Error handler initialized");
 
   return k_rx_ok;
 }
@@ -342,7 +342,7 @@ rx_err_t error_handler_get_interface(rx_error_interface_t* iface, error_handler_
   RX_CHECK_NULL_PTR(handler, "ERROR_HANDLER", "Handler pointer is NULL");
 
   if (!handler->initialized) {
-    star_log_error("ERROR_HANDLER", "Handler not initialized");
+    rx_log_error("ERROR_HANDLER", "Handler not initialized");
     return k_rx_err_invalid_state;
   }
 
@@ -373,7 +373,7 @@ rx_err_t error_handler_deinit(error_handler_t* handler)
   /* Clear state */
   handler->initialized = false;
 
-  star_log_info("ERROR_HANDLER", "Error handler deinitialized");
+  rx_log_info("ERROR_HANDLER", "Error handler deinitialized");
 
   return k_rx_ok;
 }

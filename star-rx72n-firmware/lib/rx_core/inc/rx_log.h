@@ -14,7 +14,7 @@
  * - Type-safe with explicit-width integer types (uint8_t, uint16_t, uint32_t, int32_t)
  * - Bounded string safety (explicit lengths required, NASA Power of 10 compliant)
  * - UART-only output (no printf, suitable for bare-metal)
- * - Clean star_ namespace prefix (clear project ownership)
+ * - Clean rx_ namespace prefix (clear project ownership)
  *
  * Log Levels (from highest to lowest priority):
  * - ERROR: Critical errors that prevent operation
@@ -26,21 +26,21 @@
  * Usage Examples:
  * @code
  *   // Basic message (no value)
- *   star_log_error("MOTOR", "Initialization failed");
+ *   rx_log_error("MOTOR", "Initialization failed");
  *
  *   // With typed value (automatic dispatch via _Generic)
  *   uint8_t status = get_status();
- *   star_log_error_val("MOTOR", "Invalid status", status);  // Auto-dispatches to _u8
+ *   rx_log_error_val("MOTOR", "Invalid status", status);  // Auto-dispatches to _u8
  *
  *   // With error code
  *   rx_err_t err = init_motor();
- *   star_log_error_val("MOTOR", "Init failed", err);  // Auto-dispatches to _err
+ *   rx_log_error_val("MOTOR", "Init failed", err);  // Auto-dispatches to _err
  *
  *   // With hex value
- *   star_log_error_hex("GPIO", "Register value", reg_val, 8);
+ *   rx_log_error_hex("GPIO", "Register value", reg_val, 8);
  *
  *   // With string (explicit length for safety)
- *   star_log_error_str("CONFIG", "Unknown parameter", param_name, strlen(param_name));
+ *   rx_log_error_str("CONFIG", "Unknown parameter", param_name, strlen(param_name));
  * @endcode
  *
  * @date 2026-01-01
@@ -124,7 +124,7 @@ static inline void internal_log_header(const char* level_str, const char* tag)
 /**
  * @brief Log error message (no value)
  */
-static inline void internal_star_log_error(const char* tag, const char* message)
+static inline void internal_rx_log_error(const char* tag, const char* message)
 {
   internal_log_header("ERROR", tag);
   uart_puts(message);
@@ -134,7 +134,7 @@ static inline void internal_star_log_error(const char* tag, const char* message)
 /**
  * @brief Log error with uint8_t value
  */
-static inline void internal_star_log_error_u8(const char* tag, const char* message, uint8_t value)
+static inline void internal_rx_log_error_u8(const char* tag, const char* message, uint8_t value)
 {
   internal_log_header("ERROR", tag);
   uart_puts(message);
@@ -146,7 +146,7 @@ static inline void internal_star_log_error_u8(const char* tag, const char* messa
 /**
  * @brief Log error with uint16_t value
  */
-static inline void internal_star_log_error_u16(const char* tag, const char* message, uint16_t value)
+static inline void internal_rx_log_error_u16(const char* tag, const char* message, uint16_t value)
 {
   internal_log_header("ERROR", tag);
   uart_puts(message);
@@ -158,7 +158,7 @@ static inline void internal_star_log_error_u16(const char* tag, const char* mess
 /**
  * @brief Log error with uint32_t value
  */
-static inline void internal_star_log_error_u32(const char* tag, const char* message, uint32_t value)
+static inline void internal_rx_log_error_u32(const char* tag, const char* message, uint32_t value)
 {
   internal_log_header("ERROR", tag);
   uart_puts(message);
@@ -170,7 +170,7 @@ static inline void internal_star_log_error_u32(const char* tag, const char* mess
 /**
  * @brief Log error with int32_t value
  */
-static inline void internal_star_log_error_i32(const char* tag, const char* message, int32_t value)
+static inline void internal_rx_log_error_i32(const char* tag, const char* message, int32_t value)
 {
   internal_log_header("ERROR", tag);
   uart_puts(message);
@@ -182,7 +182,7 @@ static inline void internal_star_log_error_i32(const char* tag, const char* mess
 /**
  * @brief Log error with error code (rx_err_t)
  */
-static inline void internal_star_log_error_err(const char* tag, const char* message, rx_err_t err)
+static inline void internal_rx_log_error_err(const char* tag, const char* message, rx_err_t err)
 {
   internal_log_header("ERROR", tag);
   uart_puts(message);
@@ -195,7 +195,7 @@ static inline void internal_star_log_error_err(const char* tag, const char* mess
  * @brief Log error with hex value
  */
 static inline void
-internal_star_log_error_hex(const char* tag, const char* message, uint32_t value, uint8_t digits)
+internal_rx_log_error_hex(const char* tag, const char* message, uint32_t value, uint8_t digits)
 {
   internal_log_header("ERROR", tag);
   uart_puts(message);
@@ -207,10 +207,10 @@ internal_star_log_error_hex(const char* tag, const char* message, uint32_t value
 /**
  * @brief Log error with string value (bounded length)
  */
-static inline void internal_star_log_error_str(const char*  tag,
-                                                const char*  message,
-                                                const char*  str_value,
-                                                uint32_t len)
+static inline void internal_rx_log_error_str(const char*  tag,
+                                             const char*  message,
+                                             const char*  str_value,
+                                             uint32_t len)
 {
   internal_log_header("ERROR", tag);
   uart_puts(message);
@@ -232,7 +232,7 @@ static inline void internal_star_log_error_str(const char*  tag,
 /**
  * @brief Log warning message (no value)
  */
-static inline void internal_star_log_warn(const char* tag, const char* message)
+static inline void internal_rx_log_warn(const char* tag, const char* message)
 {
   internal_log_header("WARN", tag);
   uart_puts(message);
@@ -242,7 +242,7 @@ static inline void internal_star_log_warn(const char* tag, const char* message)
 /**
  * @brief Log warning with uint8_t value
  */
-static inline void internal_star_log_warn_u8(const char* tag, const char* message, uint8_t value)
+static inline void internal_rx_log_warn_u8(const char* tag, const char* message, uint8_t value)
 {
   internal_log_header("WARN", tag);
   uart_puts(message);
@@ -254,7 +254,7 @@ static inline void internal_star_log_warn_u8(const char* tag, const char* messag
 /**
  * @brief Log warning with uint16_t value
  */
-static inline void internal_star_log_warn_u16(const char* tag, const char* message, uint16_t value)
+static inline void internal_rx_log_warn_u16(const char* tag, const char* message, uint16_t value)
 {
   internal_log_header("WARN", tag);
   uart_puts(message);
@@ -266,7 +266,7 @@ static inline void internal_star_log_warn_u16(const char* tag, const char* messa
 /**
  * @brief Log warning with uint32_t value
  */
-static inline void internal_star_log_warn_u32(const char* tag, const char* message, uint32_t value)
+static inline void internal_rx_log_warn_u32(const char* tag, const char* message, uint32_t value)
 {
   internal_log_header("WARN", tag);
   uart_puts(message);
@@ -278,7 +278,7 @@ static inline void internal_star_log_warn_u32(const char* tag, const char* messa
 /**
  * @brief Log warning with int32_t value
  */
-static inline void internal_star_log_warn_i32(const char* tag, const char* message, int32_t value)
+static inline void internal_rx_log_warn_i32(const char* tag, const char* message, int32_t value)
 {
   internal_log_header("WARN", tag);
   uart_puts(message);
@@ -290,7 +290,7 @@ static inline void internal_star_log_warn_i32(const char* tag, const char* messa
 /**
  * @brief Log warning with error code (rx_err_t)
  */
-static inline void internal_star_log_warn_err(const char* tag, const char* message, rx_err_t err)
+static inline void internal_rx_log_warn_err(const char* tag, const char* message, rx_err_t err)
 {
   internal_log_header("WARN", tag);
   uart_puts(message);
@@ -303,7 +303,7 @@ static inline void internal_star_log_warn_err(const char* tag, const char* messa
  * @brief Log warning with hex value
  */
 static inline void
-internal_star_log_warn_hex(const char* tag, const char* message, uint32_t value, uint8_t digits)
+internal_rx_log_warn_hex(const char* tag, const char* message, uint32_t value, uint8_t digits)
 {
   internal_log_header("WARN", tag);
   uart_puts(message);
@@ -316,7 +316,7 @@ internal_star_log_warn_hex(const char* tag, const char* message, uint32_t value,
  * @brief Log warning with string value (bounded length)
  */
 static inline void
-internal_star_log_warn_str(const char* tag, const char* message, const char* str_value, uint32_t len)
+internal_rx_log_warn_str(const char* tag, const char* message, const char* str_value, uint32_t len)
 {
   internal_log_header("WARN", tag);
   uart_puts(message);
@@ -338,7 +338,7 @@ internal_star_log_warn_str(const char* tag, const char* message, const char* str
 /**
  * @brief Log info message (no value)
  */
-static inline void internal_star_log_info(const char* tag, const char* message)
+static inline void internal_rx_log_info(const char* tag, const char* message)
 {
   internal_log_header("INFO", tag);
   uart_puts(message);
@@ -348,7 +348,7 @@ static inline void internal_star_log_info(const char* tag, const char* message)
 /**
  * @brief Log info with uint8_t value
  */
-static inline void internal_star_log_info_u8(const char* tag, const char* message, uint8_t value)
+static inline void internal_rx_log_info_u8(const char* tag, const char* message, uint8_t value)
 {
   internal_log_header("INFO", tag);
   uart_puts(message);
@@ -360,7 +360,7 @@ static inline void internal_star_log_info_u8(const char* tag, const char* messag
 /**
  * @brief Log info with uint16_t value
  */
-static inline void internal_star_log_info_u16(const char* tag, const char* message, uint16_t value)
+static inline void internal_rx_log_info_u16(const char* tag, const char* message, uint16_t value)
 {
   internal_log_header("INFO", tag);
   uart_puts(message);
@@ -372,7 +372,7 @@ static inline void internal_star_log_info_u16(const char* tag, const char* messa
 /**
  * @brief Log info with uint32_t value
  */
-static inline void internal_star_log_info_u32(const char* tag, const char* message, uint32_t value)
+static inline void internal_rx_log_info_u32(const char* tag, const char* message, uint32_t value)
 {
   internal_log_header("INFO", tag);
   uart_puts(message);
@@ -384,7 +384,7 @@ static inline void internal_star_log_info_u32(const char* tag, const char* messa
 /**
  * @brief Log info with int32_t value
  */
-static inline void internal_star_log_info_i32(const char* tag, const char* message, int32_t value)
+static inline void internal_rx_log_info_i32(const char* tag, const char* message, int32_t value)
 {
   internal_log_header("INFO", tag);
   uart_puts(message);
@@ -396,7 +396,7 @@ static inline void internal_star_log_info_i32(const char* tag, const char* messa
 /**
  * @brief Log info with error code (rx_err_t)
  */
-static inline void internal_star_log_info_err(const char* tag, const char* message, rx_err_t err)
+static inline void internal_rx_log_info_err(const char* tag, const char* message, rx_err_t err)
 {
   internal_log_header("INFO", tag);
   uart_puts(message);
@@ -409,7 +409,7 @@ static inline void internal_star_log_info_err(const char* tag, const char* messa
  * @brief Log info with hex value
  */
 static inline void
-internal_star_log_info_hex(const char* tag, const char* message, uint32_t value, uint8_t digits)
+internal_rx_log_info_hex(const char* tag, const char* message, uint32_t value, uint8_t digits)
 {
   internal_log_header("INFO", tag);
   uart_puts(message);
@@ -422,7 +422,7 @@ internal_star_log_info_hex(const char* tag, const char* message, uint32_t value,
  * @brief Log info with string value (bounded length)
  */
 static inline void
-internal_star_log_info_str(const char* tag, const char* message, const char* str_value, uint32_t len)
+internal_rx_log_info_str(const char* tag, const char* message, const char* str_value, uint32_t len)
 {
   internal_log_header("INFO", tag);
   uart_puts(message);
@@ -444,7 +444,7 @@ internal_star_log_info_str(const char* tag, const char* message, const char* str
 /**
  * @brief Log debug message (no value)
  */
-static inline void internal_star_log_debug(const char* tag, const char* message)
+static inline void internal_rx_log_debug(const char* tag, const char* message)
 {
   internal_log_header("DEBUG", tag);
   uart_puts(message);
@@ -454,7 +454,7 @@ static inline void internal_star_log_debug(const char* tag, const char* message)
 /**
  * @brief Log debug with uint8_t value
  */
-static inline void internal_star_log_debug_u8(const char* tag, const char* message, uint8_t value)
+static inline void internal_rx_log_debug_u8(const char* tag, const char* message, uint8_t value)
 {
   internal_log_header("DEBUG", tag);
   uart_puts(message);
@@ -466,7 +466,7 @@ static inline void internal_star_log_debug_u8(const char* tag, const char* messa
 /**
  * @brief Log debug with uint16_t value
  */
-static inline void internal_star_log_debug_u16(const char* tag, const char* message, uint16_t value)
+static inline void internal_rx_log_debug_u16(const char* tag, const char* message, uint16_t value)
 {
   internal_log_header("DEBUG", tag);
   uart_puts(message);
@@ -478,7 +478,7 @@ static inline void internal_star_log_debug_u16(const char* tag, const char* mess
 /**
  * @brief Log debug with uint32_t value
  */
-static inline void internal_star_log_debug_u32(const char* tag, const char* message, uint32_t value)
+static inline void internal_rx_log_debug_u32(const char* tag, const char* message, uint32_t value)
 {
   internal_log_header("DEBUG", tag);
   uart_puts(message);
@@ -490,7 +490,7 @@ static inline void internal_star_log_debug_u32(const char* tag, const char* mess
 /**
  * @brief Log debug with int32_t value
  */
-static inline void internal_star_log_debug_i32(const char* tag, const char* message, int32_t value)
+static inline void internal_rx_log_debug_i32(const char* tag, const char* message, int32_t value)
 {
   internal_log_header("DEBUG", tag);
   uart_puts(message);
@@ -502,7 +502,7 @@ static inline void internal_star_log_debug_i32(const char* tag, const char* mess
 /**
  * @brief Log debug with error code (rx_err_t)
  */
-static inline void internal_star_log_debug_err(const char* tag, const char* message, rx_err_t err)
+static inline void internal_rx_log_debug_err(const char* tag, const char* message, rx_err_t err)
 {
   internal_log_header("DEBUG", tag);
   uart_puts(message);
@@ -515,7 +515,7 @@ static inline void internal_star_log_debug_err(const char* tag, const char* mess
  * @brief Log debug with hex value
  */
 static inline void
-internal_star_log_debug_hex(const char* tag, const char* message, uint32_t value, uint8_t digits)
+internal_rx_log_debug_hex(const char* tag, const char* message, uint32_t value, uint8_t digits)
 {
   internal_log_header("DEBUG", tag);
   uart_puts(message);
@@ -527,10 +527,10 @@ internal_star_log_debug_hex(const char* tag, const char* message, uint32_t value
 /**
  * @brief Log debug with string value (bounded length)
  */
-static inline void internal_star_log_debug_str(const char*  tag,
-                                                const char*  message,
-                                                const char*  str_value,
-                                                uint32_t len)
+static inline void internal_rx_log_debug_str(const char*  tag,
+                                             const char*  message,
+                                             const char*  str_value,
+                                             uint32_t len)
 {
   internal_log_header("DEBUG", tag);
   uart_puts(message);
@@ -552,7 +552,7 @@ static inline void internal_star_log_debug_str(const char*  tag,
 /**
  * @brief Log verbose message (no value)
  */
-static inline void internal_star_log_verbose(const char* tag, const char* message)
+static inline void internal_rx_log_verbose(const char* tag, const char* message)
 {
   internal_log_header("VERBOSE", tag);
   uart_puts(message);
@@ -562,7 +562,7 @@ static inline void internal_star_log_verbose(const char* tag, const char* messag
 /**
  * @brief Log verbose with uint8_t value
  */
-static inline void internal_star_log_verbose_u8(const char* tag, const char* message, uint8_t value)
+static inline void internal_rx_log_verbose_u8(const char* tag, const char* message, uint8_t value)
 {
   internal_log_header("VERBOSE", tag);
   uart_puts(message);
@@ -575,7 +575,7 @@ static inline void internal_star_log_verbose_u8(const char* tag, const char* mes
  * @brief Log verbose with uint16_t value
  */
 static inline void
-internal_star_log_verbose_u16(const char* tag, const char* message, uint16_t value)
+internal_rx_log_verbose_u16(const char* tag, const char* message, uint16_t value)
 {
   internal_log_header("VERBOSE", tag);
   uart_puts(message);
@@ -588,7 +588,7 @@ internal_star_log_verbose_u16(const char* tag, const char* message, uint16_t val
  * @brief Log verbose with uint32_t value
  */
 static inline void
-internal_star_log_verbose_u32(const char* tag, const char* message, uint32_t value)
+internal_rx_log_verbose_u32(const char* tag, const char* message, uint32_t value)
 {
   internal_log_header("VERBOSE", tag);
   uart_puts(message);
@@ -600,7 +600,7 @@ internal_star_log_verbose_u32(const char* tag, const char* message, uint32_t val
 /**
  * @brief Log verbose with int32_t value
  */
-static inline void internal_star_log_verbose_i32(const char* tag, const char* message, int32_t value)
+static inline void internal_rx_log_verbose_i32(const char* tag, const char* message, int32_t value)
 {
   internal_log_header("VERBOSE", tag);
   uart_puts(message);
@@ -612,7 +612,7 @@ static inline void internal_star_log_verbose_i32(const char* tag, const char* me
 /**
  * @brief Log verbose with error code (rx_err_t)
  */
-static inline void internal_star_log_verbose_err(const char* tag, const char* message, rx_err_t err)
+static inline void internal_rx_log_verbose_err(const char* tag, const char* message, rx_err_t err)
 {
   internal_log_header("VERBOSE", tag);
   uart_puts(message);
@@ -625,7 +625,7 @@ static inline void internal_star_log_verbose_err(const char* tag, const char* me
  * @brief Log verbose with hex value
  */
 static inline void
-internal_star_log_verbose_hex(const char* tag, const char* message, uint32_t value, uint8_t digits)
+internal_rx_log_verbose_hex(const char* tag, const char* message, uint32_t value, uint8_t digits)
 {
   internal_log_header("VERBOSE", tag);
   uart_puts(message);
@@ -637,10 +637,10 @@ internal_star_log_verbose_hex(const char* tag, const char* message, uint32_t val
 /**
  * @brief Log verbose with string value (bounded length)
  */
-static inline void internal_star_log_verbose_str(const char*  tag,
-                                                  const char*  message,
-                                                  const char*  str_value,
-                                                  uint32_t len)
+static inline void internal_rx_log_verbose_str(const char*  tag,
+                                               const char*  message,
+                                               const char*  str_value,
+                                               uint32_t len)
 {
   internal_log_header("VERBOSE", tag);
   uart_puts(message);
@@ -673,12 +673,12 @@ static inline void internal_star_log_verbose_str(const char*  tag,
  * @param[in] msg Log message string
  * @param[in] val Value to log (type dispatch based on this)
  */
-#define STAR_LOG_VAL_IMPL(level, tag, msg, val)                                                    \
+#define RX_LOG_VAL_IMPL(level, tag, msg, val)                                                      \
   _Generic((val),                                                                                  \
-      uint8_t:  internal_star_log_##level##_u8,                                                    \
-      uint16_t: internal_star_log_##level##_u16,                                                   \
-      uint32_t: internal_star_log_##level##_u32,                                                   \
-      int32_t:  internal_star_log_##level##_err                                                    \
+      uint8_t:  internal_rx_log_##level##_u8,                                                      \
+      uint16_t: internal_rx_log_##level##_u16,                                                     \
+      uint32_t: internal_rx_log_##level##_u32,                                                     \
+      int32_t:  internal_rx_log_##level##_err                                                      \
   )(tag, msg, val)
 
 /* =============================================================================
@@ -696,10 +696,10 @@ static inline void internal_star_log_verbose_str(const char*  tag,
  *
  * Example:
  * @code
- *   star_log_error("MOTOR", "Initialization failed");
+ *   rx_log_error("MOTOR", "Initialization failed");
  * @endcode
  */
-#define star_log_error(tag, msg) internal_star_log_error((tag), (msg))
+#define rx_log_error(tag, msg) internal_rx_log_error((tag), (msg))
 
 /**
  * @brief Log error with typed value (automatic type dispatch)
@@ -715,13 +715,13 @@ static inline void internal_star_log_verbose_str(const char*  tag,
  * Examples:
  * @code
  *   uint8_t status = get_status();
- *   star_log_error_val("MOTOR", "Invalid status", status);  // Dispatches to _u8
+ *   rx_log_error_val("MOTOR", "Invalid status", status);  // Dispatches to _u8
  *
  *   rx_err_t err = init();
- *   star_log_error_val("MOTOR", "Init failed", err);  // Dispatches to _err
+ *   rx_log_error_val("MOTOR", "Init failed", err);  // Dispatches to _err
  * @endcode
  */
-#define star_log_error_val(tag, msg, val) STAR_LOG_VAL_IMPL(error, (tag), (msg), (val))
+#define rx_log_error_val(tag, msg, val) RX_LOG_VAL_IMPL(error, (tag), (msg), (val))
 
 /**
  * @brief Log error with hex value
@@ -733,11 +733,11 @@ static inline void internal_star_log_verbose_str(const char*  tag,
  *
  * Example:
  * @code
- *   star_log_error_hex("GPIO", "Register value", reg_val, 8);
+ *   rx_log_error_hex("GPIO", "Register value", reg_val, 8);
  * @endcode
  */
-#define star_log_error_hex(tag, msg, val, digits)                                                  \
-  internal_star_log_error_hex((tag), (msg), (val), (digits))
+#define rx_log_error_hex(tag, msg, val, digits)                                                    \
+  internal_rx_log_error_hex((tag), (msg), (val), (digits))
 
 /**
  * @brief Log error with string value (bounded length)
@@ -749,18 +749,18 @@ static inline void internal_star_log_verbose_str(const char*  tag,
  *
  * Example:
  * @code
- *   star_log_error_str("CONFIG", "Unknown param", param_name, strlen(param_name));
+ *   rx_log_error_str("CONFIG", "Unknown param", param_name, strlen(param_name));
  * @endcode
  */
-#define star_log_error_str(tag, msg, str, len)                                                     \
-  internal_star_log_error_str((tag), (msg), (str), (len))
+#define rx_log_error_str(tag, msg, str, len)                                                       \
+  internal_rx_log_error_str((tag), (msg), (str), (len))
 
 #else
 
-#define star_log_error(tag, msg)              ((void)0)
-#define star_log_error_val(tag, msg, val)     ((void)0)
-#define star_log_error_hex(tag, msg, val, d)  ((void)0)
-#define star_log_error_str(tag, msg, str, len) ((void)0)
+#define rx_log_error(tag, msg)                ((void)0)
+#define rx_log_error_val(tag, msg, val)       ((void)0)
+#define rx_log_error_hex(tag, msg, val, d)    ((void)0)
+#define rx_log_error_str(tag, msg, str, len)  ((void)0)
 
 #endif /* LOG_LEVEL >= k_log_error */
 
@@ -774,29 +774,29 @@ static inline void internal_star_log_verbose_str(const char*  tag,
 /**
  * @brief Log warning message (no value)
  */
-#define star_log_warn(tag, msg) internal_star_log_warn((tag), (msg))
+#define rx_log_warn(tag, msg) internal_rx_log_warn((tag), (msg))
 
 /**
  * @brief Log warning with typed value (automatic type dispatch)
  */
-#define star_log_warn_val(tag, msg, val) STAR_LOG_VAL_IMPL(warn, (tag), (msg), (val))
+#define rx_log_warn_val(tag, msg, val) RX_LOG_VAL_IMPL(warn, (tag), (msg), (val))
 
 /**
  * @brief Log warning with hex value
  */
-#define star_log_warn_hex(tag, msg, val, digits) internal_star_log_warn_hex((tag), (msg), (val), (digits))
+#define rx_log_warn_hex(tag, msg, val, digits) internal_rx_log_warn_hex((tag), (msg), (val), (digits))
 
 /**
  * @brief Log warning with string value (bounded length)
  */
-#define star_log_warn_str(tag, msg, str, len) internal_star_log_warn_str((tag), (msg), (str), (len))
+#define rx_log_warn_str(tag, msg, str, len) internal_rx_log_warn_str((tag), (msg), (str), (len))
 
 #else
 
-#define star_log_warn(tag, msg)               ((void)0)
-#define star_log_warn_val(tag, msg, val)      ((void)0)
-#define star_log_warn_hex(tag, msg, val, d)   ((void)0)
-#define star_log_warn_str(tag, msg, str, len) ((void)0)
+#define rx_log_warn(tag, msg)                 ((void)0)
+#define rx_log_warn_val(tag, msg, val)        ((void)0)
+#define rx_log_warn_hex(tag, msg, val, d)     ((void)0)
+#define rx_log_warn_str(tag, msg, str, len)   ((void)0)
 
 #endif /* LOG_LEVEL >= k_log_warn */
 
@@ -810,29 +810,29 @@ static inline void internal_star_log_verbose_str(const char*  tag,
 /**
  * @brief Log info message (no value)
  */
-#define star_log_info(tag, msg) internal_star_log_info((tag), (msg))
+#define rx_log_info(tag, msg) internal_rx_log_info((tag), (msg))
 
 /**
  * @brief Log info with typed value (automatic type dispatch)
  */
-#define star_log_info_val(tag, msg, val) STAR_LOG_VAL_IMPL(info, (tag), (msg), (val))
+#define rx_log_info_val(tag, msg, val) RX_LOG_VAL_IMPL(info, (tag), (msg), (val))
 
 /**
  * @brief Log info with hex value
  */
-#define star_log_info_hex(tag, msg, val, digits) internal_star_log_info_hex((tag), (msg), (val), (digits))
+#define rx_log_info_hex(tag, msg, val, digits) internal_rx_log_info_hex((tag), (msg), (val), (digits))
 
 /**
  * @brief Log info with string value (bounded length)
  */
-#define star_log_info_str(tag, msg, str, len) internal_star_log_info_str((tag), (msg), (str), (len))
+#define rx_log_info_str(tag, msg, str, len) internal_rx_log_info_str((tag), (msg), (str), (len))
 
 #else
 
-#define star_log_info(tag, msg)               ((void)0)
-#define star_log_info_val(tag, msg, val)      ((void)0)
-#define star_log_info_hex(tag, msg, val, d)   ((void)0)
-#define star_log_info_str(tag, msg, str, len) ((void)0)
+#define rx_log_info(tag, msg)                 ((void)0)
+#define rx_log_info_val(tag, msg, val)        ((void)0)
+#define rx_log_info_hex(tag, msg, val, d)     ((void)0)
+#define rx_log_info_str(tag, msg, str, len)   ((void)0)
 
 #endif /* LOG_LEVEL >= k_log_info */
 
@@ -846,30 +846,30 @@ static inline void internal_star_log_verbose_str(const char*  tag,
 /**
  * @brief Log debug message (no value)
  */
-#define star_log_debug(tag, msg) internal_star_log_debug((tag), (msg))
+#define rx_log_debug(tag, msg) internal_rx_log_debug((tag), (msg))
 
 /**
  * @brief Log debug with typed value (automatic type dispatch)
  */
-#define star_log_debug_val(tag, msg, val) STAR_LOG_VAL_IMPL(debug, (tag), (msg), (val))
+#define rx_log_debug_val(tag, msg, val) RX_LOG_VAL_IMPL(debug, (tag), (msg), (val))
 
 /**
  * @brief Log debug with hex value
  */
-#define star_log_debug_hex(tag, msg, val, digits)                                                  \
-  internal_star_log_debug_hex((tag), (msg), (val), (digits))
+#define rx_log_debug_hex(tag, msg, val, digits)                                                    \
+  internal_rx_log_debug_hex((tag), (msg), (val), (digits))
 
 /**
  * @brief Log debug with string value (bounded length)
  */
-#define star_log_debug_str(tag, msg, str, len) internal_star_log_debug_str((tag), (msg), (str), (len))
+#define rx_log_debug_str(tag, msg, str, len) internal_rx_log_debug_str((tag), (msg), (str), (len))
 
 #else
 
-#define star_log_debug(tag, msg)              ((void)0)
-#define star_log_debug_val(tag, msg, val)     ((void)0)
-#define star_log_debug_hex(tag, msg, val, d)  ((void)0)
-#define star_log_debug_str(tag, msg, str, len) ((void)0)
+#define rx_log_debug(tag, msg)                ((void)0)
+#define rx_log_debug_val(tag, msg, val)       ((void)0)
+#define rx_log_debug_hex(tag, msg, val, d)    ((void)0)
+#define rx_log_debug_str(tag, msg, str, len)  ((void)0)
 
 #endif /* LOG_LEVEL >= k_log_debug */
 
@@ -883,31 +883,31 @@ static inline void internal_star_log_verbose_str(const char*  tag,
 /**
  * @brief Log verbose message (no value)
  */
-#define star_log_verbose(tag, msg) internal_star_log_verbose((tag), (msg))
+#define rx_log_verbose(tag, msg) internal_rx_log_verbose((tag), (msg))
 
 /**
  * @brief Log verbose with typed value (automatic type dispatch)
  */
-#define star_log_verbose_val(tag, msg, val) STAR_LOG_VAL_IMPL(verbose, (tag), (msg), (val))
+#define rx_log_verbose_val(tag, msg, val) RX_LOG_VAL_IMPL(verbose, (tag), (msg), (val))
 
 /**
  * @brief Log verbose with hex value
  */
-#define star_log_verbose_hex(tag, msg, val, digits)                                                \
-  internal_star_log_verbose_hex((tag), (msg), (val), (digits))
+#define rx_log_verbose_hex(tag, msg, val, digits)                                                  \
+  internal_rx_log_verbose_hex((tag), (msg), (val), (digits))
 
 /**
  * @brief Log verbose with string value (bounded length)
  */
-#define star_log_verbose_str(tag, msg, str, len)                                                   \
-  internal_star_log_verbose_str((tag), (msg), (str), (len))
+#define rx_log_verbose_str(tag, msg, str, len)                                                     \
+  internal_rx_log_verbose_str((tag), (msg), (str), (len))
 
 #else
 
-#define star_log_verbose(tag, msg)              ((void)0)
-#define star_log_verbose_val(tag, msg, val)     ((void)0)
-#define star_log_verbose_hex(tag, msg, val, d)  ((void)0)
-#define star_log_verbose_str(tag, msg, str, len) ((void)0)
+#define rx_log_verbose(tag, msg)                ((void)0)
+#define rx_log_verbose_val(tag, msg, val)       ((void)0)
+#define rx_log_verbose_hex(tag, msg, val, d)    ((void)0)
+#define rx_log_verbose_str(tag, msg, str, len)  ((void)0)
 
 #endif /* LOG_LEVEL >= k_log_verbose */
 

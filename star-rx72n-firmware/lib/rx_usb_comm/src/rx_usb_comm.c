@@ -141,14 +141,14 @@ rx_err_t rx_usb_comm_init(rx_usb_comm_handle_t* handle, const rx_usb_comm_config
   /* Initialize frame encoder */
   rx_err_t err = rx_frame_encoder_init(&handle->encoder);
   if (err != k_rx_ok) {
-    star_log_error(s_tag, "Failed to init frame encoder");
+    rx_log_error(s_tag, "Failed to init frame encoder");
     return err;
   }
 
   /* Initialize frame decoder */
   err = rx_frame_decoder_init(&handle->decoder);
   if (err != k_rx_ok) {
-    star_log_error(s_tag, "Failed to init frame decoder");
+    rx_log_error(s_tag, "Failed to init frame decoder");
     rx_frame_encoder_deinit(&handle->encoder);
     return err;
   }
@@ -163,7 +163,7 @@ rx_err_t rx_usb_comm_init(rx_usb_comm_handle_t* handle, const rx_usb_comm_config
 
   handle->initialized = 1;
 
-  star_log_debug(s_tag, "USB comm initialized");
+  rx_log_debug(s_tag, "USB comm initialized");
   return k_rx_ok;
 }
 
@@ -179,7 +179,7 @@ rx_err_t rx_usb_comm_deinit(rx_usb_comm_handle_t* handle)
     handle->initialized = 0;
   }
 
-  star_log_debug(s_tag, "USB comm deinitialized");
+  rx_log_debug(s_tag, "USB comm deinitialized");
   return k_rx_ok;
 }
 
@@ -199,13 +199,13 @@ rx_err_t rx_usb_comm_send(rx_usb_comm_handle_t* handle,
   }
 
   if (!handle->initialized) {
-    star_log_error(s_tag, "Handle not initialized");
+    rx_log_error(s_tag, "Handle not initialized");
     return k_rx_err_invalid_state;
   }
 
   /* Check USB is ready */
   if (!rx_usb_is_configured()) {
-    star_log_error(s_tag, "USB not configured");
+    rx_log_error(s_tag, "USB not configured");
     return k_rx_err_invalid_state;
   }
 
@@ -214,7 +214,7 @@ rx_err_t rx_usb_comm_send(rx_usb_comm_handle_t* handle,
   }
 
   if (payload_len > k_frame_max_payload) {
-    star_log_error(s_tag, "Payload too large");
+    rx_log_error(s_tag, "Payload too large");
     return k_rx_err_invalid_size;
   }
 
@@ -241,14 +241,14 @@ rx_err_t rx_usb_comm_send(rx_usb_comm_handle_t* handle,
 
   rx_err_t err = rx_frame_encode(&handle->encoder, &frame, handle->tx_buffer, &wire_len);
   if (err != k_rx_ok) {
-    star_log_error(s_tag, "Frame encode failed");
+    rx_log_error(s_tag, "Frame encode failed");
     return err;
   }
 
   /* Send via USB */
   err = rx_usb_write(handle->tx_buffer, wire_len);
   if (err != k_rx_ok) {
-    star_log_error(s_tag, "USB write failed");
+    rx_log_error(s_tag, "USB write failed");
     return err;
   }
 
@@ -408,7 +408,7 @@ rx_err_t rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, ui
 
     if (payload_len > k_frame_max_payload) {
       /* Invalid payload length - skip this sync and search for next */
-      star_log_warn(s_tag, "Invalid payload length, skipping");
+      rx_log_warn(s_tag, "Invalid payload length, skipping");
       handle->rx_buffer_pos += k_frame_sync_size;
       continue;
     }
@@ -441,7 +441,7 @@ rx_err_t rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, ui
     internal_compact_rx_buffer(handle);
 
     if (err != k_rx_ok) {
-      star_log_error(s_tag, "Frame decode failed");
+      rx_log_error(s_tag, "Frame decode failed");
       return err;
     }
 

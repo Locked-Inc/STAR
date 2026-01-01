@@ -59,7 +59,7 @@ void cmt0_isr(void)
  */
 rx_err_t timer_init(void)
 {
-  star_log_info("TIMER", "Initializing CMT0 for ThreadX tick");
+  rx_log_info("TIMER", "Initializing CMT0 for ThreadX tick");
 
   /* Stop CMT0 if running */
   CMT_CTRL.CMSTR0 &= ~0x01;
@@ -91,7 +91,7 @@ rx_err_t timer_init(void)
   /* Enable interrupts globally (set I flag in PSW) */
   __asm__ volatile("setpsw i");
 
-  star_log_info("TIMER", "CMT0 initialized successfully");
+  rx_log_info("TIMER", "CMT0 initialized successfully");
 
   return k_rx_ok;
 }
@@ -103,7 +103,7 @@ rx_err_t timer_init(void)
  */
 rx_err_t timer_stop(void)
 {
-  star_log_info("TIMER", "Stopping CMT0");
+  rx_log_info("TIMER", "Stopping CMT0");
 
   /* Stop CMT0 */
   CMT_CTRL.CMSTR0 &= ~0x01;

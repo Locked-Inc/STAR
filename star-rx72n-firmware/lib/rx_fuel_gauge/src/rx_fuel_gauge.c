@@ -112,12 +112,12 @@ rx_err_t rx_fuel_gauge_init(rx_bus_manager_t*             manager,
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
 
-  star_log_info(s_tag, "Initializing fuel gauge");
+  rx_log_info(s_tag, "Initializing fuel gauge");
 
   /* Initialize SMBUS */
   rx_err_t err = rx_bus_smbus_init(manager, bus_name);
   if (err != k_rx_ok) {
-    star_log_error(s_tag, "SMBUS initialization failed");
+    rx_log_error(s_tag, "SMBUS initialization failed");
     return err;
   }
 
@@ -128,7 +128,7 @@ rx_err_t rx_fuel_gauge_init(rx_bus_manager_t*             manager,
                                        k_reg_design_capacity,
                                        config->design_capacity_mah);
     if (err != k_rx_ok) {
-      star_log_warn(s_tag, "Failed to write design capacity");
+      rx_log_warn(s_tag, "Failed to write design capacity");
       /* Non-fatal - continue */
     }
   }
@@ -137,11 +137,11 @@ rx_err_t rx_fuel_gauge_init(rx_bus_manager_t*             manager,
   uint16_t voltage_mv;
   err = rx_fuel_gauge_read_voltage(manager, bus_name, &voltage_mv);
   if (err != k_rx_ok) {
-    star_log_error(s_tag, "Failed to communicate with fuel gauge");
+    rx_log_error(s_tag, "Failed to communicate with fuel gauge");
     return err;
   }
 
-  star_log_info(s_tag, "Info");
+  rx_log_info(s_tag, "Info");
 
   return k_rx_ok;
 }
@@ -224,28 +224,28 @@ rx_err_t rx_fuel_gauge_read_status(rx_bus_manager_t*       manager,
   /* Read voltage */
   err = rx_fuel_gauge_read_voltage(manager, bus_name, &status->voltage_mv);
   if (err != k_rx_ok) {
-    star_log_error(s_tag, "Failed to read voltage");
+    rx_log_error(s_tag, "Failed to read voltage");
     return err;
   }
 
   /* Read current */
   err = rx_fuel_gauge_read_current(manager, bus_name, &status->current_ma);
   if (err != k_rx_ok) {
-    star_log_error(s_tag, "Failed to read current");
+    rx_log_error(s_tag, "Failed to read current");
     return err;
   }
 
   /* Read state of charge */
   err = rx_fuel_gauge_read_soc(manager, bus_name, &status->state_of_charge);
   if (err != k_rx_ok) {
-    star_log_error(s_tag, "Failed to read state of charge");
+    rx_log_error(s_tag, "Failed to read state of charge");
     return err;
   }
 
   /* Read temperature */
   err = rx_fuel_gauge_read_temperature(manager, bus_name, &status->temperature_c);
   if (err != k_rx_ok) {
-    star_log_error(s_tag, "Failed to read temperature");
+    rx_log_error(s_tag, "Failed to read temperature");
     return err;
   }
 
@@ -253,7 +253,7 @@ rx_err_t rx_fuel_gauge_read_status(rx_bus_manager_t*       manager,
   err =
     rx_bus_smbus_read_word_data(manager, bus_name, k_reg_remaining_capacity, &status->capacity_mah);
   if (err != k_rx_ok) {
-    star_log_error(s_tag, "Failed to read remaining capacity");
+    rx_log_error(s_tag, "Failed to read remaining capacity");
     return err;
   }
 
@@ -261,7 +261,7 @@ rx_err_t rx_fuel_gauge_read_status(rx_bus_manager_t*       manager,
   err =
     rx_bus_smbus_read_word_data(manager, bus_name, k_reg_full_capacity, &status->full_capacity_mah);
   if (err != k_rx_ok) {
-    star_log_error(s_tag, "Failed to read full capacity");
+    rx_log_error(s_tag, "Failed to read full capacity");
     return err;
   }
 
@@ -269,7 +269,7 @@ rx_err_t rx_fuel_gauge_read_status(rx_bus_manager_t*       manager,
   err =
     rx_bus_smbus_read_word_data(manager, bus_name, k_reg_time_to_empty, &status->time_to_empty_min);
   if (err != k_rx_ok) {
-    star_log_error(s_tag, "Failed to read time to empty");
+    rx_log_error(s_tag, "Failed to read time to empty");
     return err;
   }
 
@@ -277,14 +277,14 @@ rx_err_t rx_fuel_gauge_read_status(rx_bus_manager_t*       manager,
   err =
     rx_bus_smbus_read_word_data(manager, bus_name, k_reg_time_to_full, &status->time_to_full_min);
   if (err != k_rx_ok) {
-    star_log_error(s_tag, "Failed to read time to full");
+    rx_log_error(s_tag, "Failed to read time to full");
     return err;
   }
 
   /* Read cycle count */
   err = rx_bus_smbus_read_word_data(manager, bus_name, k_reg_cycle_count, &status->cycle_count);
   if (err != k_rx_ok) {
-    star_log_error(s_tag, "Failed to read cycle count");
+    rx_log_error(s_tag, "Failed to read cycle count");
     return err;
   }
 
@@ -292,7 +292,7 @@ rx_err_t rx_fuel_gauge_read_status(rx_bus_manager_t*       manager,
   uint16_t flags;
   err = rx_bus_smbus_read_word_data(manager, bus_name, k_reg_flags, &flags);
   if (err != k_rx_ok) {
-    star_log_error(s_tag, "Failed to read flags");
+    rx_log_error(s_tag, "Failed to read flags");
     return err;
   }
 
@@ -312,7 +312,7 @@ rx_err_t rx_fuel_gauge_set_low_threshold(rx_bus_manager_t* manager,
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
 
   if (threshold_percent > 100) {
-    star_log_error(s_tag, "Error occurred");
+    rx_log_error(s_tag, "Error occurred");
     return k_rx_err_invalid_arg;
   }
 
@@ -320,7 +320,7 @@ rx_err_t rx_fuel_gauge_set_low_threshold(rx_bus_manager_t* manager,
    * This is a placeholder that would need to be customized
    * for specific fuel gauge ICs.
    */
-  star_log_warn(s_tag, "Low threshold setting not implemented for this device");
+  rx_log_warn(s_tag, "Low threshold setting not implemented for this device");
 
   return k_rx_ok;
 }
@@ -334,7 +334,7 @@ rx_err_t rx_fuel_gauge_start_learning(rx_bus_manager_t* manager, const char* bus
    * This is a placeholder that would need to be customized
    * for specific fuel gauge ICs (e.g., BQ27441 uses AtRate() commands).
    */
-  star_log_warn(s_tag, "Learning cycle not implemented for this device");
+  rx_log_warn(s_tag, "Learning cycle not implemented for this device");
 
   return k_rx_ok;
 }
