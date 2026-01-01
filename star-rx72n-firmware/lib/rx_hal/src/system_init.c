@@ -16,6 +16,43 @@
 #include "rx72n_regs.h"
 
 /* =============================================================================
+ * Private Definitions
+ * =============================================================================
+ */
+
+/** @brief Protection register unlock/lock values */
+typedef enum {
+  k_prcr_unlock = 0xA50F, /**< Unlock protection (PRC0-PRC3, PRKEY) */
+  k_prcr_lock   = 0xA500, /**< Lock protection (PRKEY only) */
+} protection_register_t;
+
+/** @brief Oscillator stabilization timing constants */
+typedef enum {
+  k_main_osc_stabilization_cycles = 2400000, /**< Main oscillator delay (~10ms at 240MHz) */
+  k_pll_stabilization_timeout     = 1000000, /**< PLL stabilization max wait iterations */
+  k_pll_stabilization_timeout_expired = 0,   /**< PLL timeout expiration value */
+} oscillator_timing_t;
+
+/** @brief Oscillator control register values */
+typedef enum {
+  k_sub_clock_stopped  = 0x01, /**< SOSCCR: Stop sub-clock oscillator */
+  k_main_osc_enabled   = 0x00, /**< MOSCCR: Enable main oscillator */
+  k_pll_enabled        = 0x00, /**< PLLCR2: Enable PLL */
+} oscillator_control_t;
+
+/** @brief PLL configuration values */
+typedef enum {
+  k_pll_multiplier_30_div_2 = 0x1D01, /**< PLLCR: 30x multiplier, divide by 2 (240MHz from 16MHz) */
+  k_pll_stable_flag         = 0x04,   /**< OSCOVFSR: PLL stabilization flag bit */
+} pll_config_t;
+
+/** @brief System clock configuration */
+typedef enum {
+  k_system_clock_dividers = 0x21C21211, /**< SCKCR: ICLK=240MHz, PCLKA=120MHz, others=60MHz */
+  k_system_clock_source_pll = 0x0400,   /**< SCKCR3: Select PLL as system clock source */
+} system_clock_config_t;
+
+/* =============================================================================
  * Clock Configuration
  * =============================================================================
  */
@@ -35,50 +72,50 @@
  */
 static rx_err_t clock_init(void)
 {
-  /* Protect off for clock registers */
-  SYSTEM.PRCR = 0xA50F;
+  /* Unlock protection for clock registers */
+  SYSTEM.PRCR = k_prcr_unlock;
 
   /* Stop sub-clock oscillator (not used) */
-  SYSTEM.SOSCCR = 0x01;
+  SYSTEM.SOSCCR = k_sub_clock_stopped;
 
   /* Start main oscillator (16 MHz external crystal) */
-  SYSTEM.MOSCCR = 0x00; /* Enable main oscillator */
+  SYSTEM.MOSCCR = k_main_osc_enabled;
 
   /* Wait for main oscillator stabilization (typically 10ms) */
-  /* Simple delay loop - should be ~2.4M cycles at default 240MHz */
-  for (volatile uint32_t i = 0; i < 2400000; i++) {
+  /* NOTE: Busy-wait required - runs before ThreadX initialization */
+  for (volatile uint32_t i = 0; i < k_main_osc_stabilization_cycles; i++) {
     __asm__ volatile("nop");
   }
 
   /* Configure PLL */
   /* PLL = (Main OSC x PLIDIV) / PLLSTBY */
   /* 240 MHz = (16 MHz x 30) / 2 */
-  SYSTEM.PLLCR  = 0x1D01; /* PLIDIV=30-1=29(0x1D), STC=1 (div by 2) */
-  SYSTEM.PLLCR2 = 0x00;   /* Enable PLL */
+  SYSTEM.PLLCR  = k_pll_multiplier_30_div_2;
+  SYSTEM.PLLCR2 = k_pll_enabled;
 
   /* Wait for PLL stabilization */
-  uint32_t timeout = 1000000;
-  while ((SYSTEM.OSCOVFSR & 0x04) == 0 && timeout > 0) {
+  /* NOTE: Busy-wait polling required - runs before ThreadX initialization */
+  uint32_t timeout = k_pll_stabilization_timeout;
+  while ((SYSTEM.OSCOVFSR & k_pll_stable_flag) == 0 && timeout > 0) {
     timeout--;
-    /* Wait for PLL stable */
   }
 
-  if (timeout == 0) {
+  if (timeout == k_pll_stabilization_timeout_expired) {
     /* PLL failed to stabilize - but can't log yet (UART not initialized) */
-    SYSTEM.PRCR = 0xA500;
+    SYSTEM.PRCR = k_prcr_lock;
     return k_rx_err_hw_timeout;
   }
 
   /* Configure system clocks */
   /* ICLK=240MHz, PCLKA=120MHz, PCLKB=60MHz, PCLKC=60MHz,
      * PCLKD=60MHz, BCLK=120MHz, FCLK=60MHz */
-  SYSTEM.SCKCR = 0x21C21211;
+  SYSTEM.SCKCR = k_system_clock_dividers;
 
   /* Select PLL as system clock */
-  SYSTEM.SCKCR3 = 0x0400; /* CKSEL[2:0] = 100b (PLL) */
+  SYSTEM.SCKCR3 = k_system_clock_source_pll;
 
-  /* Protect on */
-  SYSTEM.PRCR = 0xA500;
+  /* Lock protection */
+  SYSTEM.PRCR = k_prcr_lock;
 
   return k_rx_ok;
 }

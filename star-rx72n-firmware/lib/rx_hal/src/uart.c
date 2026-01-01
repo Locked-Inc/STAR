@@ -15,19 +15,29 @@
 #include "rx72n_regs.h"
 
 /* =============================================================================
- * Configuration
+ * Private Definitions
  * =============================================================================
  */
 
-/* UART baud rate (115200 bps) */
-#define UART_BAUDRATE 115200
+/** @brief UART configuration constants */
+typedef enum {
+  k_uart_baudrate = 115200, /**< Baud rate: 115200 bps */
+  k_uart_brr_value = 7,     /**< BRR register value for 115200 bps at 60MHz PCLKB */
+} uart_config_t;
 
-/* Calculate BRR value for baud rate
- * BRR = (PCLKB / (32 * 2^(2n-1) * baudrate)) - 1
- * For SCI with n=0 (PCLK/1):
- * BRR = (60,000,000 / (64 * 115200)) - 1 = 7.13 ~= 7
- */
-#define UART_BRR_VALUE 7
+/** @brief UART timing constants */
+typedef enum {
+  k_uart_bit_time_delay_cycles = 1000, /**< Bit time delay (~8.68us at 115200 bps, >520 cycles at 60MHz) */
+} uart_timing_t;
+
+/** @brief SCI register values */
+typedef enum {
+  k_sci_scr_disabled      = 0x00, /**< SCR: All functions disabled */
+  k_sci_scr_tx_enabled    = 0x20, /**< SCR: Transmit enabled (TE=1) */
+  k_sci_smr_async_8n1     = 0x00, /**< SMR: Async mode, 8 data bits, no parity, 1 stop bit, PCLK/1 */
+  k_sci_semr_default      = 0x00, /**< SEMR: Default extended mode */
+  k_sci_ssr_tdre_flag     = 0x80, /**< SSR: Transmit data register empty flag */
+} sci_register_values_t;
 
 /* =============================================================================
  * UART Initialization
@@ -48,27 +58,25 @@
 rx_err_t uart_init(void)
 {
   /* Disable SCI5 transmit/receive */
-  SCI5.SCR = 0x00;
+  SCI5.SCR = k_sci_scr_disabled;
 
-  /* Configure serial mode:
-     * SMR: Async, 8-bit, no parity, 1 stop, PCLK/1 */
-  SCI5.SMR = 0x00;
+  /* Configure serial mode: Async, 8-bit, no parity, 1 stop, PCLK/1 */
+  SCI5.SMR = k_sci_smr_async_8n1;
 
   /* Set baud rate */
-  SCI5.BRR = UART_BRR_VALUE;
+  SCI5.BRR = k_uart_brr_value;
 
-  /* Wait for at least 1 bit time (at least 8.68 us at 115200 bps)
-     * Simple delay loop - should be > 520 cycles at 60 MHz */
-  for (volatile int32_t i = 0; i < 1000; i++) {
+  /* Wait for at least 1 bit time (at least 8.68us at 115200 bps) */
+  /* NOTE: Busy-wait required - may run before ThreadX initialization */
+  for (volatile int32_t i = 0; i < k_uart_bit_time_delay_cycles; i++) {
     __asm__ volatile("nop");
   }
 
-  /* Configure serial control:
-     * SCR: Enable transmit, enable transmit interrupt if needed */
-  SCI5.SCR = 0x20; /* TE=1 (transmit enable), RE=0, interrupts disabled */
+  /* Configure serial control: Enable transmit */
+  SCI5.SCR = k_sci_scr_tx_enabled;
 
-  /* Configure serial extended mode (default is fine) */
-  SCI5.SEMR = 0x00;
+  /* Configure serial extended mode */
+  SCI5.SEMR = k_sci_semr_default;
 
   /* Note: GPIO pins for SCI5 TX/RX need to be configured in PMR/MPC
      * This would require MPC (Multi-Function Pin Controller) registers
@@ -93,7 +101,7 @@ rx_err_t uart_init(void)
 void uart_putc(char data)
 {
   /* Wait for transmit buffer to be empty (TDRE flag) */
-  while ((SCI5.SSR & 0x80) == 0) {
+  while ((SCI5.SSR & k_sci_ssr_tdre_flag) == 0) {
     /* Wait */
   }
 
