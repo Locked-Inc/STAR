@@ -152,16 +152,16 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
   }
 
   /* Start with all bits set (standard IEEE 802.3 initialization) */
-  uint32_t crc = 0xFFFFFFFF;
+  uint32_t crc = k_crc_ieee_final_xor;
 
   /* Process each byte using the lookup table */
   for (uint32_t i = 0; i < len; i++) {
     uint8_t table_idx = (uint8_t)(crc ^ data[i]);
-    crc               = s_crc32_table[table_idx] ^ (crc >> 8);
+    crc               = s_crc32_table[table_idx] ^ (crc >> k_crc_byte_shift);
   }
 
   /* Final XOR with all bits set (standard IEEE 802.3 finalization) */
-  return crc ^ 0xFFFFFFFF;
+  return crc ^ k_crc_ieee_final_xor;
 }
 
 uint32_t rx_crc32_update_impl(uint32_t crc, const uint8_t* data, uint32_t len)
