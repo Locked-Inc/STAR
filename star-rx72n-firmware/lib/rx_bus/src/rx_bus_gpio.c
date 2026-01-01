@@ -301,7 +301,7 @@ typedef struct {
  * It demonstrates the command pattern approach where operations
  * are self-contained and can be added without modifying the bus manager.
  *
- * NOTE: This is example/demonstration code showing how to implement
+ * @note This is example/demonstration code showing how to implement
  * the command pattern. It's intentionally not called directly but serves
  * as a template for actual implementations.
  *
@@ -352,7 +352,7 @@ typedef struct {
 /**
  * @brief Command execution function for GPIO read
  *
- * NOTE: This is example/demonstration code showing how to implement
+ * @note This is example/demonstration code showing how to implement
  * the command pattern. It's intentionally not called directly but serves
  * as a template for actual implementations.
  *

@@ -1,4 +1,4 @@
-/* src/rx_bus_smbus.c */
+* src/rx_bus_smbus.c */
 
 /**
  * @file rx_bus_smbus.c
@@ -149,8 +149,8 @@ static rx_err_t internal_smbus_write_byte_callback(rx_bus_config_t* bus_config, 
     return RX_ERR_INVALID_STATE;
   }
 
-  uint8_t data[2];
-  uint8_t length = 1;
+  uint8_t data[k_smbus_byte_buf_size];
+  uint8_t length = k_smbus_single_byte;
 
   data[k_smbus_byte_data] = ctx->command;
 
@@ -159,10 +159,10 @@ static rx_err_t internal_smbus_write_byte_callback(rx_bus_config_t* bus_config, 
     uint8_t crc       = k_smbus_crc8_init;
     uint8_t addr_byte = (bus_config->proto.smbus.i2c_config.device_addr << k_i2c_addr_shift) |
                         k_i2c_write_bit;
-    crc = internal_crc8(crc, &addr_byte, 1);
-    crc                     = internal_crc8(crc, data, 1);
+    crc                     = internal_crc8(crc, &addr_byte, k_smbus_single_byte);
+    crc                     = internal_crc8(crc, data, k_smbus_single_byte);
     data[k_smbus_byte_pec]  = crc;
-    length                  = 2;
+    length                  = k_smbus_byte_buf_size;
   }
 
   rx_err_t err = riic_write(bus_config->proto.smbus.i2c_config.channel,
@@ -184,9 +184,10 @@ static rx_err_t internal_smbus_read_byte_callback(rx_bus_config_t* bus_config, v
     return RX_ERR_INVALID_STATE;
   }
 
-  uint8_t  data[2];
-  uint8_t  length = bus_config->proto.smbus.use_pec ? 2 : 1;
-  rx_err_t err    = riic_read(bus_config->proto.smbus.i2c_config.channel,
+  uint8_t data[k_smbus_byte_buf_size];
+  uint8_t length =
+    bus_config->proto.smbus.use_pec ? k_smbus_byte_buf_size : k_smbus_single_byte;
+  rx_err_t err = riic_read(bus_config->proto.smbus.i2c_config.channel,
                            bus_config->proto.smbus.i2c_config.device_addr,
                            data,
                            length);
@@ -201,8 +202,8 @@ static rx_err_t internal_smbus_read_byte_callback(rx_bus_config_t* bus_config, v
     uint8_t crc       = k_smbus_crc8_init;
     uint8_t addr_byte = (bus_config->proto.smbus.i2c_config.device_addr << k_i2c_addr_shift) |
                         k_i2c_read_bit;
-    crc = internal_crc8(crc, &addr_byte, 1);
-    crc = internal_crc8(crc, data, 1);
+    crc = internal_crc8(crc, &addr_byte, k_smbus_single_byte);
+    crc = internal_crc8(crc, data, k_smbus_single_byte);
 
     if (crc != data[k_smbus_byte_pec]) {
       RX_LOG_ERROR(s_tag, "PEC mismatch");
@@ -227,12 +228,13 @@ static rx_err_t internal_smbus_read_word_data_callback(rx_bus_config_t* bus_conf
   }
 
   uint8_t  write_data = ctx->command;
-  uint8_t  read_data[3];
-  uint8_t  read_length = bus_config->proto.smbus.use_pec ? 3 : 2;
-  rx_err_t err         = riic_write_read(bus_config->proto.smbus.i2c_config.channel,
+  uint8_t  read_data[k_smbus_word_buf_size];
+  uint8_t read_length =
+    bus_config->proto.smbus.use_pec ? k_smbus_word_buf_size : k_smbus_word_data_bytes;
+  rx_err_t err = riic_write_read(bus_config->proto.smbus.i2c_config.channel,
                                  bus_config->proto.smbus.i2c_config.device_addr,
                                  &write_data,
-                                 1,
+                                 k_smbus_single_byte,
                                  read_data,
                                  read_length);
 
@@ -246,12 +248,12 @@ static rx_err_t internal_smbus_read_word_data_callback(rx_bus_config_t* bus_conf
     uint8_t crc       = k_smbus_crc8_init;
     uint8_t addr_byte = (bus_config->proto.smbus.i2c_config.device_addr << k_i2c_addr_shift) |
                         k_i2c_write_bit;
-    crc       = internal_crc8(crc, &addr_byte, 1);
-    crc       = internal_crc8(crc, &write_data, 1);
+    crc       = internal_crc8(crc, &addr_byte, k_smbus_single_byte);
+    crc       = internal_crc8(crc, &write_data, k_smbus_single_byte);
     addr_byte = (bus_config->proto.smbus.i2c_config.device_addr << k_i2c_addr_shift) |
                 k_i2c_read_bit;
-    crc = internal_crc8(crc, &addr_byte, 1);
-    crc = internal_crc8(crc, read_data, 2);
+    crc = internal_crc8(crc, &addr_byte, k_smbus_single_byte);
+    crc = internal_crc8(crc, read_data, k_smbus_word_data_bytes);
 
     if (crc != read_data[k_smbus_word_pec]) {
       RX_LOG_ERROR(s_tag, "PEC mismatch");
@@ -316,8 +318,8 @@ rx_err_t rx_bus_smbus_write_byte_data(rx_bus_manager_t* manager,
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
 
   /* Use I2C write for byte data (command + data) */
-  uint8_t write_buf[2] = {command, data};
-  return rx_bus_i2c_write(manager, bus_name, write_buf, 2);
+  uint8_t write_buf[k_smbus_byte_buf_size] = {command, data};
+  return rx_bus_i2c_write(manager, bus_name, write_buf, k_smbus_byte_buf_size);
 }
 
 rx_err_t rx_bus_smbus_read_byte_data(rx_bus_manager_t* manager,
@@ -330,7 +332,7 @@ rx_err_t rx_bus_smbus_read_byte_data(rx_bus_manager_t* manager,
   RX_CHECK_NULL_PTR(data, s_tag, "data pointer is NULL");
 
   /* Use I2C write-read for byte data */
-  return rx_bus_i2c_write_read(manager, bus_name, &command, 1, data, 1);
+  return rx_bus_i2c_write_read(manager, bus_name, &command, k_smbus_single_byte, data, k_smbus_single_byte);
 }
 
 rx_err_t rx_bus_smbus_write_word_data(rx_bus_manager_t* manager,
@@ -342,8 +344,8 @@ rx_err_t rx_bus_smbus_write_word_data(rx_bus_manager_t* manager,
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
 
   /* Little-endian */
-  uint8_t write_buf[3] = {command, (uint8_t)(data & 0xFF), (uint8_t)(data >> 8)};
-  return rx_bus_i2c_write(manager, bus_name, write_buf, 3);
+  uint8_t write_buf[k_smbus_word_buf_size] = {command, (uint8_t)(data & 0xFF), (uint8_t)(data >> 8)};
+  return rx_bus_i2c_write(manager, bus_name, write_buf, k_smbus_word_buf_size);
 }
 
 rx_err_t rx_bus_smbus_read_word_data(rx_bus_manager_t* manager,
@@ -376,7 +378,7 @@ rx_err_t rx_bus_smbus_read_block_data(rx_bus_manager_t* manager,
 
   /* Read length byte first, then data */
   uint8_t  len_byte;
-  rx_err_t err = rx_bus_i2c_write_read(manager, bus_name, &command, 1, &len_byte, 1);
+  rx_err_t err = rx_bus_i2c_write_read(manager, bus_name, &command, k_smbus_single_byte, &len_byte, k_smbus_single_byte);
   if (err != RX_OK) {
     return err;
   }

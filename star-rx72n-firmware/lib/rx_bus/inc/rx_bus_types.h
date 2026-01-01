@@ -202,6 +202,16 @@ typedef enum {
 } rx_i2c_constants_t;
 
 /**
+ * @brief SMBUS buffer and transfer sizes
+ */
+typedef enum {
+  k_smbus_single_byte      = 1, /* Single byte transfer size */
+  k_smbus_byte_buf_size    = 2, /* Byte operation buffer (data + PEC) */
+  k_smbus_word_data_bytes  = 2, /* Word data size (LSB + MSB) */
+  k_smbus_word_buf_size    = 3, /* Word operation buffer (LSB + MSB + PEC) */
+} smbus_sizes_t;
+
+/**
  * @brief SMBUS byte operation buffer indices (data + optional PEC)
  */
 typedef enum {
