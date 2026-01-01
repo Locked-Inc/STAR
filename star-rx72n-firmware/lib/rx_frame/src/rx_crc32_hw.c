@@ -70,7 +70,7 @@ rx_err_t rx_crc_init(void)
   /* Enable CRC module by clearing module stop bit */
   SYSTEM.PRCR =
     (k_prcr_key << k_prcr_key_shift) | k_prcr_unlock_crc; /* Unlock protection for MSTPCR */
-  SYSTEM.MSTPCRB &= ~(1UL << MSTPB_CRC);                  /* Clear bit 23 to enable CRC */
+  SYSTEM.MSTPCRB &= ~(1UL << k_mstpb_crc);                 /* Clear bit 23 to enable CRC */
   SYSTEM.PRCR = (k_prcr_key << k_prcr_key_shift) | k_prcr_lock_all; /* Lock protection */
 
   /*
@@ -99,7 +99,7 @@ rx_err_t rx_crc_deinit(void)
      *
      * If power optimization is critical, enable the module stop here:
      * SYSTEM.PRCR = 0xA50B;
-     * SYSTEM.MSTPCRB |= (1UL << MSTPB_CRC);
+     * SYSTEM.MSTPCRB |= (1UL << k_mstpb_crc);
      * SYSTEM.PRCR = 0xA500;
      * s_crc_initialized = false;
      */

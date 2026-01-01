@@ -293,7 +293,7 @@ void rx_usb_isr_handler(void)
 void usb0_usbi_isr(void)
 {
   /* Clear interrupt request flag in ICU */
-  ICU.IR[VECT_USB0_USBI] = 0;
+  ICU.IR[k_vect_usb0_usbi] = 0;
 
   /* Call main USB handler */
   rx_usb_isr_handler();
@@ -307,7 +307,7 @@ void usb0_usbi_isr(void)
 void usb0_d0fifo_isr(void)
 {
   /* Clear interrupt request flag */
-  ICU.IR[VECT_USB0_D0FIFO] = 0;
+  ICU.IR[k_vect_usb0_d0fifo] = 0;
 
   /* D0FIFO DMA not implemented - clear and ignore */
 }
@@ -320,7 +320,7 @@ void usb0_d0fifo_isr(void)
 void usb0_d1fifo_isr(void)
 {
   /* Clear interrupt request flag */
-  ICU.IR[VECT_USB0_D1FIFO] = 0;
+  ICU.IR[k_vect_usb0_d1fifo] = 0;
 
   /* D1FIFO DMA not implemented - clear and ignore */
 }
@@ -333,7 +333,7 @@ void usb0_d1fifo_isr(void)
 void usb0_usbr_isr(void)
 {
   /* Clear interrupt request flag */
-  ICU.IR[VECT_USB0_USBR] = 0;
+  ICU.IR[k_vect_usb0_usbr] = 0;
 
   /* Handle resume */
   internal_handle_resume_interrupt();
