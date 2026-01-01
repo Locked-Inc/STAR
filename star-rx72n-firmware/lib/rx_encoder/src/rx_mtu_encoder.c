@@ -1,5 +1,4 @@
-#include <stddef.h>
-/* src/drivers/rx_mtu_encoder.c */
+/* lib/rx_encoder/src/rx_mtu_encoder.c */
 
 /**
  * @file rx_mtu_encoder.c
