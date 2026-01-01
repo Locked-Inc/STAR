@@ -1,4 +1,4 @@
-/* include/rx_mpc.h */
+/* lib/rx_hal/inc/rx_mpc.h */
 
 /**
  * @file rx_mpc.h

@@ -1,3 +1,5 @@
+/* lib/rx_hal/inc/rx_iwdt.h */
+
 /**
  * @file rx_iwdt.h
  * @brief Independent Watchdog Timer (IWDT) Driver for RX72N
@@ -30,8 +32,8 @@
  *
  * @see RX72N Hardware Manual, Section 25 - Independent Watchdog Timer
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef STAR_RX_IWDT_H
