@@ -1,0 +1,63 @@
+#!/bin/sh
+# Simple WiFi setup script for STAR robot
+# Usage: wifi-setup <SSID> <PASSWORD>
+#    or: wifi-setup (interactive)
+
+CONF="/etc/wpa_supplicant/wpa_supplicant-wlan0.conf"
+
+if [ "$1" = "-h" ] || [ "$1" = "--help" ]; then
+    echo "Usage: wifi-setup [SSID] [PASSWORD]"
+    echo "  wifi-setup Zone mypassword   # Set WiFi directly"
+    echo "  wifi-setup                   # Interactive mode"
+    echo "  wifi-setup --status          # Show current status"
+    exit 0
+fi
+
+if [ "$1" = "--status" ]; then
+    echo "=== WiFi Status ==="
+    ip addr show wlan0 2>/dev/null | grep -E "state|inet " || echo "wlan0 not found"
+    echo ""
+    echo "=== Current Network ==="
+    grep -E "ssid=" "$CONF" 2>/dev/null || echo "Not configured"
+    exit 0
+fi
+
+if [ -n "$1" ] && [ -n "$2" ]; then
+    SSID="$1"
+    PSK="$2"
+else
+    printf "SSID: "
+    read SSID
+    printf "Password: "
+    read PSK
+fi
+
+echo "Configuring WiFi for: $SSID"
+
+mkdir -p /etc/wpa_supplicant
+
+cat > "$CONF" << EOF
+ctrl_interface=/var/run/wpa_supplicant
+ctrl_interface_group=0
+update_config=1
+country=US
+
+network={
+    ssid="$SSID"
+    psk="$PSK"
+    key_mgmt=WPA-PSK
+}
+EOF
+
+# Restart wpa_supplicant
+killall wpa_supplicant 2>/dev/null
+sleep 1
+wpa_supplicant -B -i wlan0 -c "$CONF"
+sleep 2
+
+# Get IP via DHCP
+udhcpc -i wlan0 -q 2>/dev/null || dhclient wlan0 2>/dev/null
+
+echo ""
+echo "=== Result ==="
+ip addr show wlan0 | grep "inet " && echo "WiFi connected!" || echo "Check credentials and try again"
