@@ -80,200 +80,404 @@ typedef enum {
   k_usb_pid = 0x0234, /**< Product ID: CDC-ACM device (test PID) */
 } usb_device_id_t;
 
+/** @brief USB Version Numbers (BCD format) */
+typedef enum {
+  k_usb_version_2_0  = 0x0200, /**< USB 2.0 specification */
+  k_usb_version_1_1  = 0x0110, /**< USB 1.1 specification (for CDC) */
+  k_device_version   = 0x0100, /**< Device release version 1.0 */
+  k_usb_langid_en_us = 0x0409, /**< Language ID: English (United States) */
+} usb_version_t;
+
+/** @brief CDC Functional Descriptor Subtypes */
+typedef enum {
+  k_cdc_subtype_header          = 0x00, /**< Header functional descriptor */
+  k_cdc_subtype_call_management = 0x01, /**< Call management functional descriptor */
+  k_cdc_subtype_acm             = 0x02, /**< ACM functional descriptor */
+  k_cdc_subtype_union           = 0x06, /**< Union functional descriptor */
+} cdc_descriptor_subtype_t;
+
+/** @brief USB Endpoint Addresses */
+typedef enum {
+  k_usb_ep0_out      = 0x00, /**< Control endpoint 0 OUT */
+  k_usb_ep0_in       = 0x80, /**< Control endpoint 0 IN */
+  k_usb_ep1_bulk_in  = 0x81, /**< Bulk IN endpoint 1 (data to host) */
+  k_usb_ep2_bulk_out = 0x02, /**< Bulk OUT endpoint 2 (data from host) */
+  k_usb_ep3_int_in   = 0x83, /**< Interrupt IN endpoint 3 (notifications) */
+} usb_endpoint_address_t;
+
+/** @brief USB Endpoint Transfer Types (bmAttributes) */
+typedef enum {
+  k_usb_ep_type_control     = 0x00, /**< Control transfer */
+  k_usb_ep_type_isochronous = 0x01, /**< Isochronous transfer */
+  k_usb_ep_type_bulk        = 0x02, /**< Bulk transfer */
+  k_usb_ep_type_interrupt   = 0x03, /**< Interrupt transfer */
+} usb_endpoint_type_t;
+
+/** @brief USB Configuration Attributes */
+typedef enum {
+  k_usb_cfg_attr_bus_powered  = 0x80, /**< Bus-powered device */
+  k_usb_cfg_attr_self_powered = 0xC0, /**< Self-powered device */
+} usb_config_attributes_t;
+
+/** @brief USB Power Consumption (in 2mA units) */
+typedef enum {
+  k_usb_max_power_100ma = 50, /**< 100mA (50 * 2mA) */
+  k_usb_max_power_500ma = 250, /**< 500mA (250 * 2mA) */
+} usb_max_power_t;
+
+/** @brief CDC Capabilities */
+typedef enum {
+  k_cdc_acm_cap_line_coding = 0x02, /**< Supports SET/GET_LINE_CODING and serial state */
+} cdc_acm_capabilities_t;
+
+/** @brief USB Descriptor Field Indices */
+typedef enum {
+  k_usb_string_index_langid        = 0, /**< Language ID string index */
+  k_usb_string_index_manufacturer  = 1, /**< Manufacturer string index */
+  k_usb_string_index_product       = 2, /**< Product string index */
+  k_usb_string_index_serial_number = 3, /**< Serial number string index */
+} usb_string_index_t;
+
+/** @brief USB Endpoint Packet Sizes */
+typedef enum {
+  k_usb_ep0_packet_size      = 64, /**< Control endpoint max packet size */
+  k_usb_bulk_packet_size     = 64, /**< Bulk endpoint max packet size (Full-Speed) */
+  k_usb_interrupt_packet_size = 8, /**< Interrupt endpoint max packet size */
+} usb_packet_size_t;
+
+/** @brief USB Polling Intervals */
+typedef enum {
+  k_usb_bulk_interval      = 0,  /**< Bulk endpoints don't use polling */
+  k_usb_interrupt_interval = 10, /**< Interrupt endpoint polling interval (10ms) */
+} usb_polling_interval_t;
+
+/** @brief USB String Descriptor Sizes */
+typedef enum {
+  k_usb_string_header_size   = 2,  /**< bLength + bDescriptorType */
+  k_usb_string_char_size     = 2,  /**< UTF-16LE character size (2 bytes) */
+  k_usb_string_langid_chars  = 1,  /**< Language ID is 1 uint16_t */
+  k_usb_string_mfr_chars     = 7,  /**< "Renesas" = 7 characters */
+  k_usb_string_product_chars = 14, /**< "STAR RX72N CDC" = 14 characters */
+  k_usb_string_serial_chars  = 8,  /**< "00000001" = 8 characters */
+} usb_string_size_t;
+
 /* =============================================================================
- * USB Descriptors
+ * USB Descriptor Type Definitions
  * =============================================================================
  */
 
-/* Device Descriptor */
-static const uint8_t s_device_desc[] = {
-  18,                   /* bLength */
-  k_usb_desc_type_device, /* bDescriptorType */
-  0x00,
-  0x02,             /* bcdUSB = 2.00 */
-  k_usb_class_cdc,    /* bDeviceClass */
-  0x00,             /* bDeviceSubClass */
-  0x00,             /* bDeviceProtocol */
-  64,               /* bMaxPacketSize0 */
-  (k_usb_vid & 0xFF), /* idVendor (low) */
-  (k_usb_vid >> 8),   /* idVendor (high) */
-  (k_usb_pid & 0xFF), /* idProduct (low) */
-  (k_usb_pid >> 8),   /* idProduct (high) */
-  0x00,
-  0x01, /* bcdDevice = 1.00 */
-  1,    /* iManufacturer */
-  2,    /* iProduct */
-  3,    /* iSerialNumber */
-  1     /* bNumConfigurations */
+/**
+ * @brief USB Device Descriptor (18 bytes)
+ *
+ * USB spec field names (camelCase) are documented in comments for reference.
+ */
+typedef struct __attribute__((packed)) {
+  uint8_t  length;              /**< bLength: Size of this descriptor in bytes */
+  uint8_t  descriptor_type;     /**< bDescriptorType: DEVICE descriptor type */
+  uint16_t usb_version;         /**< bcdUSB: USB Specification Release Number (BCD) */
+  uint8_t  device_class;        /**< bDeviceClass: Class code (assigned by USB-IF) */
+  uint8_t  device_sub_class;    /**< bDeviceSubClass: Subclass code */
+  uint8_t  device_protocol;     /**< bDeviceProtocol: Protocol code */
+  uint8_t  max_packet_size_ep0; /**< bMaxPacketSize0: Max packet size for EP0 */
+  uint16_t vendor_id;           /**< idVendor: Vendor ID (assigned by USB-IF) */
+  uint16_t product_id;          /**< idProduct: Product ID (assigned by manufacturer) */
+  uint16_t device_version;      /**< bcdDevice: Device release number (BCD) */
+  uint8_t  manufacturer_index;  /**< iManufacturer: Manufacturer string index */
+  uint8_t  product_index;       /**< iProduct: Product string index */
+  uint8_t  serial_number_index; /**< iSerialNumber: Serial number string index */
+  uint8_t  num_configurations;  /**< bNumConfigurations: Number of configurations */
+} usb_device_descriptor_t;
+
+/**
+ * @brief USB Configuration Descriptor (9 bytes)
+ */
+typedef struct __attribute__((packed)) {
+  uint8_t  length;              /**< bLength: Size of this descriptor */
+  uint8_t  descriptor_type;     /**< bDescriptorType: CONFIGURATION type */
+  uint16_t total_length;        /**< wTotalLength: Total data length */
+  uint8_t  num_interfaces;      /**< bNumInterfaces: Number of interfaces */
+  uint8_t  configuration_value; /**< bConfigurationValue: Config select value */
+  uint8_t  configuration_index; /**< iConfiguration: String index */
+  uint8_t  attributes;          /**< bmAttributes: Configuration characteristics */
+  uint8_t  max_power;           /**< bMaxPower: Power consumption (2mA units) */
+} usb_configuration_descriptor_t;
+
+/**
+ * @brief USB Interface Descriptor (9 bytes)
+ */
+typedef struct __attribute__((packed)) {
+  uint8_t length;             /**< bLength: Size of this descriptor */
+  uint8_t descriptor_type;    /**< bDescriptorType: INTERFACE type */
+  uint8_t interface_number;   /**< bInterfaceNumber: Interface number */
+  uint8_t alternate_setting;  /**< bAlternateSetting: Alternate setting */
+  uint8_t num_endpoints;      /**< bNumEndpoints: Number of endpoints */
+  uint8_t interface_class;    /**< bInterfaceClass: Class code */
+  uint8_t interface_subclass; /**< bInterfaceSubClass: Subclass code */
+  uint8_t interface_protocol; /**< bInterfaceProtocol: Protocol code */
+  uint8_t interface_index;    /**< iInterface: String index */
+} usb_interface_descriptor_t;
+
+/**
+ * @brief USB Endpoint Descriptor (7 bytes)
+ */
+typedef struct __attribute__((packed)) {
+  uint8_t  length;          /**< bLength: Size of this descriptor */
+  uint8_t  descriptor_type; /**< bDescriptorType: ENDPOINT type */
+  uint8_t  endpoint_address; /**< bEndpointAddress: Endpoint address */
+  uint8_t  attributes;      /**< bmAttributes: Endpoint attributes */
+  uint16_t max_packet_size; /**< wMaxPacketSize: Maximum packet size */
+  uint8_t  interval;        /**< bInterval: Polling interval */
+} usb_endpoint_descriptor_t;
+
+/**
+ * @brief CDC Header Functional Descriptor (5 bytes)
+ */
+typedef struct __attribute__((packed)) {
+  uint8_t  length;            /**< bFunctionLength: Size of descriptor */
+  uint8_t  descriptor_type;   /**< bDescriptorType: CS_INTERFACE type */
+  uint8_t  descriptor_subtype; /**< bDescriptorSubtype: Header subtype */
+  uint16_t cdc_version;       /**< bcdCDC: CDC specification release (BCD) */
+} cdc_header_descriptor_t;
+
+/**
+ * @brief CDC Call Management Functional Descriptor (5 bytes)
+ */
+typedef struct __attribute__((packed)) {
+  uint8_t length;             /**< bFunctionLength: Size of descriptor */
+  uint8_t descriptor_type;    /**< bDescriptorType: CS_INTERFACE type */
+  uint8_t descriptor_subtype; /**< bDescriptorSubtype: Call Management */
+  uint8_t capabilities;       /**< bmCapabilities: Call management capabilities */
+  uint8_t data_interface;     /**< bDataInterface: Data class interface number */
+} cdc_call_management_descriptor_t;
+
+/**
+ * @brief CDC ACM Functional Descriptor (4 bytes)
+ */
+typedef struct __attribute__((packed)) {
+  uint8_t length;             /**< bFunctionLength: Size of descriptor */
+  uint8_t descriptor_type;    /**< bDescriptorType: CS_INTERFACE type */
+  uint8_t descriptor_subtype; /**< bDescriptorSubtype: ACM subtype */
+  uint8_t capabilities;       /**< bmCapabilities: ACM capabilities */
+} cdc_acm_descriptor_t;
+
+/**
+ * @brief CDC Union Functional Descriptor (5 bytes)
+ */
+typedef struct __attribute__((packed)) {
+  uint8_t length;                /**< bFunctionLength: Size of descriptor */
+  uint8_t descriptor_type;       /**< bDescriptorType: CS_INTERFACE type */
+  uint8_t descriptor_subtype;    /**< bDescriptorSubtype: Union subtype */
+  uint8_t control_interface;     /**< bControlInterface: Control interface number */
+  uint8_t subordinate_interface; /**< bSubordinateInterface: Subordinate interface */
+} cdc_union_descriptor_t;
+
+/**
+ * @brief USB String Descriptor Header (variable length)
+ */
+typedef struct __attribute__((packed)) {
+  uint8_t  length;          /**< bLength: Size of descriptor */
+  uint8_t  descriptor_type; /**< bDescriptorType: STRING type */
+  uint16_t data[];          /**< wData: UTF-16LE string data */
+} usb_string_descriptor_t;
+
+/* Compile-time size verification */
+_Static_assert(sizeof(usb_device_descriptor_t) == 18, "Device descriptor must be 18 bytes");
+_Static_assert(sizeof(usb_configuration_descriptor_t) == 9, "Configuration descriptor must be 9 bytes");
+_Static_assert(sizeof(usb_interface_descriptor_t) == 9, "Interface descriptor must be 9 bytes");
+_Static_assert(sizeof(usb_endpoint_descriptor_t) == 7, "Endpoint descriptor must be 7 bytes");
+_Static_assert(sizeof(cdc_header_descriptor_t) == 5, "CDC Header descriptor must be 5 bytes");
+_Static_assert(sizeof(cdc_call_management_descriptor_t) == 5, "CDC Call Management descriptor must be 5 bytes");
+_Static_assert(sizeof(cdc_acm_descriptor_t) == 4, "CDC ACM descriptor must be 4 bytes");
+_Static_assert(sizeof(cdc_union_descriptor_t) == 5, "CDC Union descriptor must be 5 bytes");
+
+/* =============================================================================
+ * USB Descriptor Instances
+ * =============================================================================
+ */
+
+/** @brief Device Descriptor */
+static const usb_device_descriptor_t s_device_desc = {
+  .length              = sizeof(usb_device_descriptor_t),
+  .descriptor_type     = k_usb_desc_type_device,
+  .usb_version         = k_usb_version_2_0,
+  .device_class        = k_usb_class_cdc,
+  .device_sub_class    = 0x00,
+  .device_protocol     = 0x00,
+  .max_packet_size_ep0 = k_usb_ep0_packet_size,
+  .vendor_id           = k_usb_vid,
+  .product_id          = k_usb_pid,
+  .device_version      = k_device_version,
+  .manufacturer_index  = k_usb_string_index_manufacturer,
+  .product_index       = k_usb_string_index_product,
+  .serial_number_index = k_usb_string_index_serial_number,
+  .num_configurations  = 1,
 };
 
-/* Configuration Descriptor (includes interface, CDC, and endpoint descriptors) */
-static const uint8_t s_config_desc[] = {
-  /* Configuration Descriptor */
-  9,                           /* bLength */
-  k_usb_desc_type_configuration, /* bDescriptorType */
-  67,
-  0,    /* wTotalLength (67 bytes) */
-  2,    /* bNumInterfaces */
-  1,    /* bConfigurationValue */
-  0,    /* iConfiguration */
-  0x80, /* bmAttributes (bus powered) */
-  50,   /* bMaxPower (100mA) */
+/**
+ * @brief Complete Configuration Descriptor
+ *
+ * USB configuration descriptors are composite structures containing:
+ * - Configuration descriptor (9 bytes)
+ * - Interface descriptors (9 bytes each)
+ * - CDC functional descriptors (4-5 bytes each)
+ * - Endpoint descriptors (7 bytes each)
+ *
+ * Total: 67 bytes for CDC-ACM with 2 interfaces and 3 endpoints
+ */
+typedef struct __attribute__((packed)) {
+  usb_configuration_descriptor_t   config;
+  usb_interface_descriptor_t       cdc_interface;
+  cdc_header_descriptor_t          cdc_header;
+  cdc_call_management_descriptor_t cdc_call_mgmt;
+  cdc_acm_descriptor_t             cdc_acm;
+  cdc_union_descriptor_t           cdc_union;
+  usb_endpoint_descriptor_t        ep3_interrupt_in;
+  usb_interface_descriptor_t       data_interface;
+  usb_endpoint_descriptor_t        ep1_bulk_in;
+  usb_endpoint_descriptor_t        ep2_bulk_out;
+} usb_cdc_config_descriptor_t;
 
-  /* Interface 0: CDC Control Interface */
-  9,                       /* bLength */
-  k_usb_desc_type_interface, /* bDescriptorType */
-  0,                       /* bInterfaceNumber */
-  0,                       /* bAlternateSetting */
-  1,                       /* bNumEndpoints */
-  k_usb_class_cdc,           /* bInterfaceClass */
-  k_usb_subclass_acm,        /* bInterfaceSubClass */
-  k_usb_protocol_at,         /* bInterfaceProtocol */
-  0,                       /* iInterface */
+_Static_assert(sizeof(usb_cdc_config_descriptor_t) == 67, "CDC config descriptor must be 67 bytes");
 
-  /* CDC Header Functional Descriptor */
-  5,                          /* bLength */
-  k_usb_desc_type_cs_interface, /* bDescriptorType */
-  0x00,                       /* bDescriptorSubtype (Header) */
-  0x10,
-  0x01, /* bcdCDC = 1.10 */
-
-  /* CDC Call Management Functional Descriptor */
-  5,                          /* bLength */
-  k_usb_desc_type_cs_interface, /* bDescriptorType */
-  0x01,                       /* bDescriptorSubtype (Call Management) */
-  0x00,                       /* bmCapabilities */
-  1,                          /* bDataInterface */
-
-  /* CDC ACM Functional Descriptor */
-  4,                          /* bLength */
-  k_usb_desc_type_cs_interface, /* bDescriptorType */
-  0x02,                       /* bDescriptorSubtype (ACM) */
-  0x02,                       /* bmCapabilities (line coding, serial state) */
-
-  /* CDC Union Functional Descriptor */
-  5,                          /* bLength */
-  k_usb_desc_type_cs_interface, /* bDescriptorType */
-  0x06,                       /* bDescriptorSubtype (Union) */
-  0,                          /* bControlInterface */
-  1,                          /* bSubordinateInterface0 */
-
-  /* Endpoint 3: Interrupt IN (notifications) */
-  7,                      /* bLength */
-  k_usb_desc_type_endpoint, /* bDescriptorType */
-  0x83,                   /* bEndpointAddress (EP3 IN) */
-  0x03,                   /* bmAttributes (Interrupt) */
-  8,
-  0,  /* wMaxPacketSize */
-  10, /* bInterval (10ms) */
-
-  /* Interface 1: CDC Data Interface */
-  9,                       /* bLength */
-  k_usb_desc_type_interface, /* bDescriptorType */
-  1,                       /* bInterfaceNumber */
-  0,                       /* bAlternateSetting */
-  2,                       /* bNumEndpoints */
-  k_usb_class_cdc_data,      /* bInterfaceClass */
-  0,                       /* bInterfaceSubClass */
-  0,                       /* bInterfaceProtocol */
-  0,                       /* iInterface */
-
-  /* Endpoint 1: Bulk IN (data to host) */
-  7,                      /* bLength */
-  k_usb_desc_type_endpoint, /* bDescriptorType */
-  0x81,                   /* bEndpointAddress (EP1 IN) */
-  0x02,                   /* bmAttributes (Bulk) */
-  64,
-  0, /* wMaxPacketSize */
-  0, /* bInterval */
-
-  /* Endpoint 2: Bulk OUT (data from host) */
-  7,                      /* bLength */
-  k_usb_desc_type_endpoint, /* bDescriptorType */
-  0x02,                   /* bEndpointAddress (EP2 OUT) */
-  0x02,                   /* bmAttributes (Bulk) */
-  64,
-  0, /* wMaxPacketSize */
-  0  /* bInterval */
+/** @brief Configuration Descriptor Instance */
+static const usb_cdc_config_descriptor_t s_config_desc = {
+  .config =
+    {
+      .length              = sizeof(usb_configuration_descriptor_t),
+      .descriptor_type     = k_usb_desc_type_configuration,
+      .total_length        = sizeof(usb_cdc_config_descriptor_t),
+      .num_interfaces      = 2,
+      .configuration_value = 1,
+      .configuration_index = 0,
+      .attributes          = k_usb_cfg_attr_bus_powered,
+      .max_power           = k_usb_max_power_100ma,
+    },
+  .cdc_interface =
+    {
+      .length             = sizeof(usb_interface_descriptor_t),
+      .descriptor_type    = k_usb_desc_type_interface,
+      .interface_number   = 0,
+      .alternate_setting  = 0,
+      .num_endpoints      = 1,
+      .interface_class    = k_usb_class_cdc,
+      .interface_subclass = k_usb_subclass_acm,
+      .interface_protocol = k_usb_protocol_at,
+      .interface_index    = 0,
+    },
+  .cdc_header =
+    {
+      .length             = sizeof(cdc_header_descriptor_t),
+      .descriptor_type    = k_usb_desc_type_cs_interface,
+      .descriptor_subtype = k_cdc_subtype_header,
+      .cdc_version        = k_usb_version_1_1,
+    },
+  .cdc_call_mgmt =
+    {
+      .length             = sizeof(cdc_call_management_descriptor_t),
+      .descriptor_type    = k_usb_desc_type_cs_interface,
+      .descriptor_subtype = k_cdc_subtype_call_management,
+      .capabilities       = 0x00,
+      .data_interface     = 1,
+    },
+  .cdc_acm =
+    {
+      .length             = sizeof(cdc_acm_descriptor_t),
+      .descriptor_type    = k_usb_desc_type_cs_interface,
+      .descriptor_subtype = k_cdc_subtype_acm,
+      .capabilities       = k_cdc_acm_cap_line_coding,
+    },
+  .cdc_union =
+    {
+      .length                = sizeof(cdc_union_descriptor_t),
+      .descriptor_type       = k_usb_desc_type_cs_interface,
+      .descriptor_subtype    = k_cdc_subtype_union,
+      .control_interface     = 0,
+      .subordinate_interface = 1,
+    },
+  .ep3_interrupt_in =
+    {
+      .length           = sizeof(usb_endpoint_descriptor_t),
+      .descriptor_type  = k_usb_desc_type_endpoint,
+      .endpoint_address = k_usb_ep3_int_in,
+      .attributes       = k_usb_ep_type_interrupt,
+      .max_packet_size  = k_usb_interrupt_packet_size,
+      .interval         = k_usb_interrupt_interval,
+    },
+  .data_interface =
+    {
+      .length             = sizeof(usb_interface_descriptor_t),
+      .descriptor_type    = k_usb_desc_type_interface,
+      .interface_number   = 1,
+      .alternate_setting  = 0,
+      .num_endpoints      = 2,
+      .interface_class    = k_usb_class_cdc_data,
+      .interface_subclass = 0,
+      .interface_protocol = 0,
+      .interface_index    = 0,
+    },
+  .ep1_bulk_in =
+    {
+      .length           = sizeof(usb_endpoint_descriptor_t),
+      .descriptor_type  = k_usb_desc_type_endpoint,
+      .endpoint_address = k_usb_ep1_bulk_in,
+      .attributes       = k_usb_ep_type_bulk,
+      .max_packet_size  = k_usb_bulk_packet_size,
+      .interval         = k_usb_bulk_interval,
+    },
+  .ep2_bulk_out =
+    {
+      .length           = sizeof(usb_endpoint_descriptor_t),
+      .descriptor_type  = k_usb_desc_type_endpoint,
+      .endpoint_address = k_usb_ep2_bulk_out,
+      .attributes       = k_usb_ep_type_bulk,
+      .max_packet_size  = k_usb_bulk_packet_size,
+      .interval         = k_usb_bulk_interval,
+    },
 };
 
-/* String Descriptor 0: Language ID */
-static const uint8_t s_string_langid[] = {
-  4,                    /* bLength */
-  k_usb_desc_type_string, /* bDescriptorType */
-  0x09,
-  0x04 /* wLANGID (English US) */
+/** @brief String Descriptor 0: Language ID (English US) */
+static const struct __attribute__((packed)) {
+  uint8_t  length;
+  uint8_t  descriptor_type;
+  uint16_t langid;
+} s_string_langid = {
+  .length          = k_usb_string_header_size + (k_usb_string_langid_chars * k_usb_string_char_size),
+  .descriptor_type = k_usb_desc_type_string,
+  .langid          = k_usb_langid_en_us,
 };
 
-/* String Descriptor 1: Manufacturer */
-static const uint8_t s_string_manufacturer[] = {16,                   /* bLength */
-                                                k_usb_desc_type_string, /* bDescriptorType */
-                                                'R',
-                                                0,
-                                                'e',
-                                                0,
-                                                'n',
-                                                0,
-                                                'e',
-                                                0,
-                                                's',
-                                                0,
-                                                'a',
-                                                0,
-                                                's',
-                                                0};
+/** @brief String Descriptor 1: Manufacturer ("Renesas") */
+static const struct __attribute__((packed)) {
+  uint8_t  length;
+  uint8_t  descriptor_type;
+  uint16_t string[k_usb_string_mfr_chars]; /* "Renesas" in UTF-16LE */
+} s_string_manufacturer = {
+  .length          = k_usb_string_header_size + (k_usb_string_mfr_chars * k_usb_string_char_size),
+  .descriptor_type = k_usb_desc_type_string,
+  .string          = {'R', 'e', 'n', 'e', 's', 'a', 's'},
+};
 
-/* String Descriptor 2: Product */
-static const uint8_t s_string_product[] = {28,                   /* bLength */
-                                           k_usb_desc_type_string, /* bDescriptorType */
-                                           'S',
-                                           0,
-                                           'T',
-                                           0,
-                                           'A',
-                                           0,
-                                           'R',
-                                           0,
-                                           ' ',
-                                           0,
-                                           'R',
-                                           0,
-                                           'X',
-                                           0,
-                                           '7',
-                                           0,
-                                           '2',
-                                           0,
-                                           'N',
-                                           0,
-                                           ' ',
-                                           0,
-                                           'C',
-                                           0,
-                                           'D',
-                                           0,
-                                           'C',
-                                           0};
+/** @brief String Descriptor 2: Product ("STAR RX72N CDC") */
+static const struct __attribute__((packed)) {
+  uint8_t  length;
+  uint8_t  descriptor_type;
+  uint16_t string[k_usb_string_product_chars]; /* "STAR RX72N CDC" in UTF-16LE */
+} s_string_product = {
+  .length          = k_usb_string_header_size + (k_usb_string_product_chars * k_usb_string_char_size),
+  .descriptor_type = k_usb_desc_type_string,
+  .string          = {'S', 'T', 'A', 'R', ' ', 'R', 'X', '7', '2', 'N', ' ', 'C', 'D', 'C'},
+};
 
-/* String Descriptor 3: Serial Number */
-static const uint8_t s_string_serial[] = {18,                   /* bLength */
-                                          k_usb_desc_type_string, /* bDescriptorType */
-                                          '0',
-                                          0,
-                                          '0',
-                                          0,
-                                          '0',
-                                          0,
-                                          '0',
-                                          0,
-                                          '0',
-                                          0,
-                                          '0',
-                                          0,
-                                          '0',
-                                          0,
-                                          '1',
-                                          0};
+/** @brief String Descriptor 3: Serial Number ("00000001") */
+static const struct __attribute__((packed)) {
+  uint8_t  length;
+  uint8_t  descriptor_type;
+  uint16_t string[k_usb_string_serial_chars]; /* "00000001" in UTF-16LE */
+} s_string_serial = {
+  .length          = k_usb_string_header_size + (k_usb_string_serial_chars * k_usb_string_char_size),
+  .descriptor_type = k_usb_desc_type_string,
+  .string          = {'0', '0', '0', '0', '0', '0', '0', '1'},
+};
 
 /* =============================================================================
  * Private Variables
@@ -337,26 +541,28 @@ static void internal_handle_get_descriptor(uint16_t wValue, uint16_t wLength)
 
   switch (desc_type) {
     case k_usb_desc_type_device:
-      internal_send_descriptor(s_device_desc, sizeof(s_device_desc), wLength);
+      internal_send_descriptor((const uint8_t*)&s_device_desc, sizeof(s_device_desc), wLength);
       break;
 
     case k_usb_desc_type_configuration:
-      internal_send_descriptor(s_config_desc, sizeof(s_config_desc), wLength);
+      internal_send_descriptor((const uint8_t*)&s_config_desc, sizeof(s_config_desc), wLength);
       break;
 
     case k_usb_desc_type_string:
       switch (desc_index) {
         case 0:
-          internal_send_descriptor(s_string_langid, sizeof(s_string_langid), wLength);
+          internal_send_descriptor((const uint8_t*)&s_string_langid, sizeof(s_string_langid), wLength);
           break;
         case 1:
-          internal_send_descriptor(s_string_manufacturer, sizeof(s_string_manufacturer), wLength);
+          internal_send_descriptor((const uint8_t*)&s_string_manufacturer,
+                                   sizeof(s_string_manufacturer),
+                                   wLength);
           break;
         case 2:
-          internal_send_descriptor(s_string_product, sizeof(s_string_product), wLength);
+          internal_send_descriptor((const uint8_t*)&s_string_product, sizeof(s_string_product), wLength);
           break;
         case 3:
-          internal_send_descriptor(s_string_serial, sizeof(s_string_serial), wLength);
+          internal_send_descriptor((const uint8_t*)&s_string_serial, sizeof(s_string_serial), wLength);
           break;
         default:
           /* STALL for unknown string index */
