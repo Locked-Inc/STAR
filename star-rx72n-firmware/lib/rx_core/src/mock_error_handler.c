@@ -64,10 +64,10 @@ impl_report_error(void* ctx, rx_err_t err, const char* component, const char* me
 
   /* Record the error */
   record->error_code = err;
-  strncpy(record->component, component, MOCK_ERROR_HANDLER_COMPONENT_NAME_MAX - 1);
-  record->component[MOCK_ERROR_HANDLER_COMPONENT_NAME_MAX - 1] = '\0';
-  strncpy(record->message, message, MOCK_ERROR_HANDLER_MESSAGE_MAX - 1);
-  record->message[MOCK_ERROR_HANDLER_MESSAGE_MAX - 1] = '\0';
+  strncpy(record->component, component, k_mock_error_handler_component_name_max - 1);
+  record->component[k_mock_error_handler_component_name_max - 1] = '\0';
+  strncpy(record->message, message, k_mock_error_handler_message_max - 1);
+  record->message[k_mock_error_handler_message_max - 1] = '\0';
 
   /* Update indices */
   handler->write_index = (handler->write_index + 1) % handler->max_errors;
@@ -179,7 +179,7 @@ rx_err_t mock_error_handler_init(mock_error_handler_t* handler, uint32_t max_err
 {
   RX_CHECK_NULL_PTR(handler, "MOCK_ERROR", "Handler pointer is NULL");
 
-  if (max_errors == 0 || max_errors > MOCK_ERROR_HANDLER_DEFAULT_MAX_ERRORS) {
+  if (max_errors == 0 || max_errors > k_mock_error_handler_default_max_errors) {
     return RX_ERR_INVALID_ARG;
   }
 
