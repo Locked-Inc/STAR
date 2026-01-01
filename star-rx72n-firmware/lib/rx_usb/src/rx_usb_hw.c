@@ -16,6 +16,7 @@
 #include "rx72n_regs.h"
 #include "rx_log.h"
 #include "rx_usb.h"
+#include "tx_api.h"
 
 /* =============================================================================
  * Private Definitions
@@ -24,12 +25,19 @@
 
 static const char* s_tag = "USB_HW";
 
-/** @brief USB hardware timing and protection constants */
+/** @brief ThreadX timing constants for USB initialization delays */
 typedef enum {
-  k_usb_pll_wait_count = 1000,   /**< USB clock stabilization wait (loop iterations) */
-  k_prcr_unlock        = 0xA50B, /**< Protection register unlock value */
-  k_prcr_lock          = 0xA500, /**< Protection register lock value */
-} usb_hw_constants_t;
+  k_threadx_tick_rate_hz      = 100, /**< ThreadX tick rate (100 Hz) */
+  k_threadx_ms_per_tick       = 10,  /**< Milliseconds per tick at 100 Hz */
+  k_usb_pll_stabilization_ms  = 10,  /**< USB PLL stabilization time (10ms) */
+  k_usb_clock_stabilization_ms = 10, /**< USB clock stabilization time (10ms) */
+} usb_hw_timing_t;
+
+/** @brief USB hardware protection constants */
+typedef enum {
+  k_prcr_unlock = 0xA50B, /**< Protection register unlock value */
+  k_prcr_lock   = 0xA500, /**< Protection register lock value */
+} usb_hw_protection_t;
 
 /** @brief USB SYSCFG register values */
 typedef enum {
@@ -47,6 +55,12 @@ typedef enum {
 typedef enum {
   k_usb_address_mask_hw = 0x7F, /**< USB address mask (7 bits, 0-127) */
 } usb_address_mask_t;
+
+/** @brief Interrupt Controller (ICU) configuration constants */
+typedef enum {
+  k_icu_bits_per_ier_register = 8, /**< Number of interrupt enable bits per IER register */
+  k_usb_interrupt_priority    = 6, /**< USB interrupt priority (moderate, below motor control) */
+} usb_icu_config_t;
 
 /* =============================================================================
  * Private Variables
@@ -90,12 +104,13 @@ rx_err_t rx_usb_hw_init(void)
   /* 2. Disable USB module before configuration */
   USB0.SYSCFG = k_usb_syscfg_disabled;
 
-  /* 3. Wait for USB clock to stabilize (if using PLL) */
+  /* 3. Wait for USB PLL to stabilize */
   /* Note: USB requires 48 MHz clock from main PLL */
-  volatile uint32_t wait = k_usb_pll_wait_count;
-  while (wait--) {
-    __asm__ volatile("nop");
+  uint32_t pll_ticks = k_usb_pll_stabilization_ms / k_threadx_ms_per_tick;
+  if (pll_ticks == 0) {
+    pll_ticks = 1;
   }
+  tx_thread_sleep(pll_ticks);
 
   /* 4. Configure USB0 for Function (peripheral) mode */
   /* DCFM = 0: Function mode (not host) */
@@ -109,10 +124,11 @@ rx_err_t rx_usb_hw_init(void)
   USB0.SYSCFG |= k_usb_syscfg_scke;
 
   /* Wait for clock to stabilize */
-  wait = k_usb_pll_wait_count;
-  while (wait--) {
-    __asm__ volatile("nop");
+  uint32_t clock_ticks = k_usb_clock_stabilization_ms / k_threadx_ms_per_tick;
+  if (clock_ticks == 0) {
+    clock_ticks = 1;
   }
+  tx_thread_sleep(clock_ticks);
 
   /* 6. Enable USB module */
   USB0.SYSCFG |= k_usb_syscfg_usbe;
@@ -126,11 +142,12 @@ rx_err_t rx_usb_hw_init(void)
   /* Clear pending interrupt */
   ICU.IR[k_vect_usb0_usbi] = 0;
 
-  /* Set interrupt priority (6 = moderate, below motor control) */
-  ICU.IPR[k_vect_usb0_usbi] = 6;
+  /* Set interrupt priority */
+  ICU.IPR[k_vect_usb0_usbi] = k_usb_interrupt_priority;
 
   /* Enable interrupt in IER */
-  ICU.IER[k_vect_usb0_usbi / 8] |= (1 << (k_vect_usb0_usbi % 8));
+  ICU.IER[k_vect_usb0_usbi / k_icu_bits_per_ier_register] |=
+      (1 << (k_vect_usb0_usbi % k_icu_bits_per_ier_register));
 
   /* 9. Set default control pipe max packet size (64 bytes for FS) */
   USB0.DCPMAXP = k_usb_cdc_max_packet_fs;
@@ -157,7 +174,8 @@ rx_err_t rx_usb_hw_deinit(void)
   USB0.SYSCFG = k_usb_syscfg_disabled;
 
   /* Disable interrupt in ICU */
-  ICU.IER[k_vect_usb0_usbi / 8] &= ~(1 << (k_vect_usb0_usbi % 8));
+  ICU.IER[k_vect_usb0_usbi / k_icu_bits_per_ier_register] &=
+      ~(1 << (k_vect_usb0_usbi % k_icu_bits_per_ier_register));
   ICU.IR[k_vect_usb0_usbi] = 0;
 
   /* Disable USB0 module clock */
