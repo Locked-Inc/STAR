@@ -3,7 +3,7 @@
 /**
  * @file mock_error_handler.h
  * @brief Mock Error Handler for Testing DIP Pattern
- *
+ * @details
  * Mock implementation of the rx_error_interface_t for testing and validation.
  * Records errors in memory instead of logging, allowing tests to verify error handling.
  *
@@ -67,6 +67,9 @@
  * uint32_t count = iface.get_error_count(iface.ctx);
  * assert(count == 1);
  * @endcode
+ *
+ * @date 2025-12-21
+ * @copyright Copyright (c) 2025 STAR Project
  */
 
 #ifndef STAR_RX72N_MOCK_ERROR_HANDLER_H
@@ -89,21 +92,13 @@ extern "C" {
  */
 
 /**
- * @brief Maximum number of errors to record
- *
- * When this limit is reached, new errors will overwrite oldest errors.
+ * @brief Mock error handler configuration constants
  */
-#define MOCK_ERROR_HANDLER_DEFAULT_MAX_ERRORS 32
-
-/**
- * @brief Maximum component name length
- */
-#define MOCK_ERROR_HANDLER_COMPONENT_NAME_MAX 32
-
-/**
- * @brief Maximum error message length
- */
-#define MOCK_ERROR_HANDLER_MESSAGE_MAX 128
+typedef enum {
+  k_mock_error_handler_default_max_errors = 32,  /**< Default maximum errors to record */
+  k_mock_error_handler_component_name_max = 32,  /**< Maximum component name length */
+  k_mock_error_handler_message_max        = 128, /**< Maximum error message length */
+} mock_error_handler_limits_t;
 
 /* =============================================================================
  * Error Record Structure
@@ -114,20 +109,9 @@ extern "C" {
  * @brief Single error record
  */
 typedef struct {
-  /**
-   * @brief Error code
-   */
-  rx_err_t error_code;
-
-  /**
-   * @brief Component name
-   */
-  char component[MOCK_ERROR_HANDLER_COMPONENT_NAME_MAX];
-
-  /**
-   * @brief Error message
-   */
-  char message[MOCK_ERROR_HANDLER_MESSAGE_MAX];
+  rx_err_t error_code;                                         /**< Error code */
+  char     component[k_mock_error_handler_component_name_max]; /**< Component name */
+  char     message[k_mock_error_handler_message_max];          /**< Error message */
 } mock_error_record_t;
 
 /* =============================================================================
@@ -141,35 +125,12 @@ typedef struct {
  * Records errors in memory for testing. Implements rx_error_interface_t.
  */
 typedef struct {
-  /**
-   * @brief Array of recorded errors
-   */
-  mock_error_record_t errors[MOCK_ERROR_HANDLER_DEFAULT_MAX_ERRORS];
-
-  /**
-   * @brief Total number of errors recorded (may exceed max_errors)
-   */
-  uint32_t total_error_count;
-
-  /**
-   * @brief Number of errors currently stored (capped at max_errors)
-   */
-  uint32_t stored_error_count;
-
-  /**
-   * @brief Maximum number of errors to store
-   */
-  uint32_t max_errors;
-
-  /**
-   * @brief Next index to write (circular buffer)
-   */
-  uint32_t write_index;
-
-  /**
-   * @brief Is the handler initialized?
-   */
-  bool initialized;
+  mock_error_record_t errors[k_mock_error_handler_default_max_errors]; /**< Array of recorded errors */
+  uint32_t            total_error_count;  /**< Total number of errors recorded (may exceed max_errors) */
+  uint32_t            stored_error_count; /**< Number of errors currently stored (capped at max_errors) */
+  uint32_t            max_errors;         /**< Maximum number of errors to store */
+  uint32_t            write_index;        /**< Next index to write (circular buffer) */
+  bool                initialized;        /**< Is the handler initialized? */
 } mock_error_handler_t;
 
 /* =============================================================================

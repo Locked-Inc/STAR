@@ -1,9 +1,9 @@
-/* include/rx_check.h */
+/* lib/rx_core/inc/rx_check.h */
 
 /**
  * @file rx_check.h
  * @brief Error Checking Macros for RX72N Firmware
- *
+ * @details
  * Provides ESP-IDF-style error checking macros adapted for RX72N.
  * Follows ESP_ERROR_CHECK pattern for architectural consistency.
  *
@@ -14,6 +14,7 @@
  * - RX_GOTO_ON_ERROR: Jump to cleanup label on error
  *
  * Usage:
+ * @code
  *   rx_err_t err = gpio_init();
  *   RX_ERROR_CHECK(err);  // Halts on error
  *
@@ -22,6 +23,10 @@
  *
  *   err = critical_operation();
  *   RX_RETURN_ON_ERROR(err, "TAG", "Critical operation failed");
+ * @endcode
+ *
+ * @date 2025-12-21
+ * @copyright Copyright (c) 2025 STAR Project
  */
 
 #ifndef STAR_RX72N_CHECK_H
