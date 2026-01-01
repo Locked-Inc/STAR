@@ -1,4 +1,4 @@
-/* include/rx72n_regs.h */
+/* lib/rx_hal/inc/rx72n_regs.h */
 
 /**
  * @file rx72n_regs.h
@@ -6,6 +6,9 @@
  *
  * Hardware register definitions for Renesas RX72N (R5F572NNHGFP#30).
  * Based on RX72N Group Hardware Manual.
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef STAR_RX72N_REGS_H

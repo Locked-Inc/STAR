@@ -1,4 +1,4 @@
-/* include/rx_mtu3a.h */
+/* lib/rx_hal/inc/rx_mtu3a.h */
 
 /**
  * @file rx_mtu3a.h
