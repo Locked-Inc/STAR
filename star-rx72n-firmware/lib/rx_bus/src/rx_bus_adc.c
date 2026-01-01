@@ -14,6 +14,7 @@
 #include "rx_bus_adc.h"
 
 #include "hardware.h"
+#include "rx_bus_types.h"
 #include "rx_check.h"
 #include "rx_log.h"
 
@@ -83,7 +84,7 @@ static rx_err_t internal_adc_init_callback(rx_bus_config_t* bus_config, void* us
   }
 
   /* Mark ADC unit as initialized in bus manager */
-  if (bus_config->proto.adc.unit < 2) {
+  if (bus_config->proto.adc.unit < k_adc_unit_count) {
     /* Track initialization in manager (bus_config has parent pointer) */
     /* Note: This is handled by the ADC HAL internally */
   }
