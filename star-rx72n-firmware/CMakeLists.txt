@@ -57,6 +57,7 @@ add_compile_options(
     -Wno-unused-parameter
     -Wno-missing-braces    # nanopb generates these
     -Wno-comment           # ThreadX has nested comments in assembly
+    -fshort-enums          # Use smallest type for enums (embedded optimization)
 )
 
 # Optimization flags
@@ -227,10 +228,6 @@ target_link_libraries(rx_fuel_gauge PUBLIC rx_bus rx_core)
 
 set(APP_SOURCES
     src/main.c
-    src/motor_shared_state.c
-    src/tasks/motor_control_task.c
-    src/tasks/spi_comm_task.c
-    src/tasks/usb_comm_task.c
 )
 
 # =============================================================================
