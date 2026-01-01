@@ -63,50 +63,74 @@ static uint8_t internal_crc8(uint8_t crc, const uint8_t* data, uint16_t length)
  * =============================================================================
  */
 
+/**
+ * @brief Context for SMBUS init operation
+ */
 typedef struct {
-  rx_err_t result;
+  rx_err_t result; /**< Operation result */
 } smbus_init_ctx_t;
 
+/**
+ * @brief Context for SMBUS write byte operation
+ */
 typedef struct {
-  uint8_t  command;
-  rx_err_t result;
+  uint8_t  command; /**< Command byte to write */
+  rx_err_t result;  /**< Operation result */
 } smbus_write_byte_ctx_t;
 
+/**
+ * @brief Context for SMBUS read byte operation
+ */
 typedef struct {
-  uint8_t* data;
-  rx_err_t result;
+  uint8_t* data;   /**< Pointer to store received byte */
+  rx_err_t result; /**< Operation result */
 } smbus_read_byte_ctx_t;
 
+/**
+ * @brief Context for SMBUS write byte data operation
+ */
 typedef struct {
-  uint8_t  command;
-  uint8_t  data;
-  rx_err_t result;
+  uint8_t  command; /**< Register/command code */
+  uint8_t  data;    /**< Data byte to write */
+  rx_err_t result;  /**< Operation result */
 } smbus_write_byte_data_ctx_t;
 
+/**
+ * @brief Context for SMBUS read byte data operation
+ */
 typedef struct {
-  uint8_t  command;
-  uint8_t* data;
-  rx_err_t result;
+  uint8_t  command; /**< Register/command code */
+  uint8_t* data;    /**< Pointer to store received byte */
+  rx_err_t result;  /**< Operation result */
 } smbus_read_byte_data_ctx_t;
 
+/**
+ * @brief Context for SMBUS write word data operation
+ */
 typedef struct {
-  uint8_t  command;
-  uint16_t data;
-  rx_err_t result;
+  uint8_t  command; /**< Register/command code */
+  uint16_t data;    /**< Data word to write */
+  rx_err_t result;  /**< Operation result */
 } smbus_write_word_data_ctx_t;
 
+/**
+ * @brief Context for SMBUS read word data operation
+ */
 typedef struct {
-  uint8_t   command;
-  uint16_t* data;
-  rx_err_t  result;
+  uint8_t   command; /**< Register/command code */
+  uint16_t* data;    /**< Pointer to store received word */
+  rx_err_t  result;  /**< Operation result */
 } smbus_read_word_data_ctx_t;
 
+/**
+ * @brief Context for SMBUS read block data operation
+ */
 typedef struct {
-  uint8_t  command;
-  uint8_t* data;
-  uint8_t* length;
-  uint8_t  max_length;
-  rx_err_t result;
+  uint8_t  command;    /**< Register/command code */
+  uint8_t* data;       /**< Pointer to buffer for received data */
+  uint8_t* length;     /**< Pointer to store number of bytes read */
+  uint8_t  max_length; /**< Maximum buffer size */
+  rx_err_t result;     /**< Operation result */
 } smbus_read_block_data_ctx_t;
 
 /* =============================================================================
@@ -156,13 +180,13 @@ static rx_err_t internal_smbus_write_byte_callback(rx_bus_config_t* bus_config, 
 
   /* Calculate PEC if enabled */
   if (bus_config->proto.smbus.use_pec) {
-    uint8_t crc       = k_smbus_crc8_init;
-    uint8_t addr_byte = (bus_config->proto.smbus.i2c_config.device_addr << k_i2c_addr_shift) |
-                        k_i2c_write_bit;
-    crc                     = internal_crc8(crc, &addr_byte, k_smbus_single_byte);
-    crc                     = internal_crc8(crc, data, k_smbus_single_byte);
-    data[k_smbus_byte_pec]  = crc;
-    length                  = k_smbus_byte_buf_size;
+    uint8_t crc = k_smbus_crc8_init;
+    uint8_t addr_byte =
+      (bus_config->proto.smbus.i2c_config.device_addr << k_i2c_addr_shift) | k_i2c_write_bit;
+    crc                    = internal_crc8(crc, &addr_byte, k_smbus_single_byte);
+    crc                    = internal_crc8(crc, data, k_smbus_single_byte);
+    data[k_smbus_byte_pec] = crc;
+    length                 = k_smbus_byte_buf_size;
   }
 
   rx_err_t err = riic_write(bus_config->proto.smbus.i2c_config.channel,
@@ -184,10 +208,9 @@ static rx_err_t internal_smbus_read_byte_callback(rx_bus_config_t* bus_config, v
     return RX_ERR_INVALID_STATE;
   }
 
-  uint8_t data[k_smbus_byte_buf_size];
-  uint8_t length =
-    bus_config->proto.smbus.use_pec ? k_smbus_byte_buf_size : k_smbus_single_byte;
-  rx_err_t err = riic_read(bus_config->proto.smbus.i2c_config.channel,
+  uint8_t  data[k_smbus_byte_buf_size];
+  uint8_t  length = bus_config->proto.smbus.use_pec ? k_smbus_byte_buf_size : k_smbus_single_byte;
+  rx_err_t err    = riic_read(bus_config->proto.smbus.i2c_config.channel,
                            bus_config->proto.smbus.i2c_config.device_addr,
                            data,
                            length);
@@ -199,9 +222,9 @@ static rx_err_t internal_smbus_read_byte_callback(rx_bus_config_t* bus_config, v
 
   /* Verify PEC if enabled */
   if (bus_config->proto.smbus.use_pec) {
-    uint8_t crc       = k_smbus_crc8_init;
-    uint8_t addr_byte = (bus_config->proto.smbus.i2c_config.device_addr << k_i2c_addr_shift) |
-                        k_i2c_read_bit;
+    uint8_t crc = k_smbus_crc8_init;
+    uint8_t addr_byte =
+      (bus_config->proto.smbus.i2c_config.device_addr << k_i2c_addr_shift) | k_i2c_read_bit;
     crc = internal_crc8(crc, &addr_byte, k_smbus_single_byte);
     crc = internal_crc8(crc, data, k_smbus_single_byte);
 
@@ -227,8 +250,8 @@ static rx_err_t internal_smbus_read_word_data_callback(rx_bus_config_t* bus_conf
     return RX_ERR_INVALID_STATE;
   }
 
-  uint8_t  write_data = ctx->command;
-  uint8_t  read_data[k_smbus_word_buf_size];
+  uint8_t write_data = ctx->command;
+  uint8_t read_data[k_smbus_word_buf_size];
   uint8_t read_length =
     bus_config->proto.smbus.use_pec ? k_smbus_word_buf_size : k_smbus_word_data_bytes;
   rx_err_t err = riic_write_read(bus_config->proto.smbus.i2c_config.channel,
@@ -245,13 +268,13 @@ static rx_err_t internal_smbus_read_word_data_callback(rx_bus_config_t* bus_conf
 
   /* Verify PEC if enabled */
   if (bus_config->proto.smbus.use_pec) {
-    uint8_t crc       = k_smbus_crc8_init;
-    uint8_t addr_byte = (bus_config->proto.smbus.i2c_config.device_addr << k_i2c_addr_shift) |
-                        k_i2c_write_bit;
-    crc       = internal_crc8(crc, &addr_byte, k_smbus_single_byte);
-    crc       = internal_crc8(crc, &write_data, k_smbus_single_byte);
-    addr_byte = (bus_config->proto.smbus.i2c_config.device_addr << k_i2c_addr_shift) |
-                k_i2c_read_bit;
+    uint8_t crc = k_smbus_crc8_init;
+    uint8_t addr_byte =
+      (bus_config->proto.smbus.i2c_config.device_addr << k_i2c_addr_shift) | k_i2c_write_bit;
+    crc = internal_crc8(crc, &addr_byte, k_smbus_single_byte);
+    crc = internal_crc8(crc, &write_data, k_smbus_single_byte);
+    addr_byte =
+      (bus_config->proto.smbus.i2c_config.device_addr << k_i2c_addr_shift) | k_i2c_read_bit;
     crc = internal_crc8(crc, &addr_byte, k_smbus_single_byte);
     crc = internal_crc8(crc, read_data, k_smbus_word_data_bytes);
 
@@ -333,7 +356,12 @@ rx_err_t rx_bus_smbus_read_byte_data(rx_bus_manager_t* manager,
   RX_CHECK_NULL_PTR(data, s_tag, "data pointer is NULL");
 
   /* Use I2C write-read for byte data */
-  return rx_bus_i2c_write_read(manager, bus_name, &command, k_smbus_single_byte, data, k_smbus_single_byte);
+  return rx_bus_i2c_write_read(manager,
+                               bus_name,
+                               &command,
+                               k_smbus_single_byte,
+                               data,
+                               k_smbus_single_byte);
 }
 
 rx_err_t rx_bus_smbus_write_word_data(rx_bus_manager_t* manager,
@@ -346,8 +374,8 @@ rx_err_t rx_bus_smbus_write_word_data(rx_bus_manager_t* manager,
 
   /* Little-endian */
   uint8_t write_buf[k_smbus_word_buf_size] = {command,
-                                               (uint8_t)(data & k_byte_mask),
-                                               (uint8_t)(data >> k_bits_per_byte)};
+                                              (uint8_t)(data & k_byte_mask),
+                                              (uint8_t)(data >> k_bits_per_byte)};
   return rx_bus_i2c_write(manager, bus_name, write_buf, k_smbus_word_buf_size);
 }
 
@@ -381,7 +409,12 @@ rx_err_t rx_bus_smbus_read_block_data(rx_bus_manager_t* manager,
 
   /* Read length byte first, then data */
   uint8_t  len_byte;
-  rx_err_t err = rx_bus_i2c_write_read(manager, bus_name, &command, k_smbus_single_byte, &len_byte, k_smbus_single_byte);
+  rx_err_t err = rx_bus_i2c_write_read(manager,
+                                       bus_name,
+                                       &command,
+                                       k_smbus_single_byte,
+                                       &len_byte,
+                                       k_smbus_single_byte);
   if (err != RX_OK) {
     return err;
   }

@@ -29,24 +29,24 @@ static const char* s_tag = "BUS_ADC";
  * @brief Context for ADC init operation
  */
 typedef struct {
-  rx_err_t result;
+  rx_err_t result; /**< Operation result */
 } adc_init_ctx_t;
 
 /**
  * @brief Context for ADC read operation
  */
 typedef struct {
-  uint16_t* value;
-  rx_err_t  result;
+  uint16_t* value;  /**< Pointer to store ADC value */
+  rx_err_t  result; /**< Operation result */
 } adc_read_ctx_t;
 
 /**
  * @brief Context for ADC voltage read operation
  */
 typedef struct {
-  uint32_t* voltage_mv;
-  uint8_t   bits;
-  rx_err_t  result;
+  uint32_t* voltage_mv; /**< Pointer to store voltage in millivolts */
+  uint8_t   bits;       /**< ADC resolution in bits */
+  rx_err_t  result;     /**< Operation result */
 } adc_voltage_ctx_t;
 
 /* =============================================================================

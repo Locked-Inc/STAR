@@ -28,36 +28,36 @@ static const char* s_tag = "BUS_I2C";
  * @brief Context for I2C init operation
  */
 typedef struct {
-  rx_err_t result;
+  rx_err_t result; /**< Operation result */
 } i2c_init_ctx_t;
 
 /**
  * @brief Context for I2C write operation
  */
 typedef struct {
-  const uint8_t* data;
-  uint16_t       length;
-  rx_err_t       result;
+  const uint8_t* data;   /**< Pointer to data to write */
+  uint16_t       length; /**< Number of bytes to write */
+  rx_err_t       result; /**< Operation result */
 } i2c_write_ctx_t;
 
 /**
  * @brief Context for I2C read operation
  */
 typedef struct {
-  uint8_t* data;
-  uint16_t length;
-  rx_err_t result;
+  uint8_t* data;   /**< Pointer to buffer for received data */
+  uint16_t length; /**< Number of bytes to read */
+  rx_err_t result; /**< Operation result */
 } i2c_read_ctx_t;
 
 /**
  * @brief Context for I2C write-read operation
  */
 typedef struct {
-  const uint8_t* write_data;
-  uint16_t       write_length;
-  uint8_t*       read_data;
-  uint16_t       read_length;
-  rx_err_t       result;
+  const uint8_t* write_data;   /**< Pointer to data to write */
+  uint16_t       write_length; /**< Number of bytes to write */
+  uint8_t*       read_data;    /**< Pointer to buffer for received data */
+  uint16_t       read_length;  /**< Number of bytes to read */
+  rx_err_t       result;       /**< Operation result */
 } i2c_write_read_ctx_t;
 
 /* =============================================================================

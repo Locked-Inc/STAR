@@ -36,31 +36,31 @@ static const char* s_tag = "BUS_GPIO";
  * @brief Context for GPIO init operation
  */
 typedef struct {
-  bool     output;
-  rx_err_t result;
+  bool     output; /**< True for output, false for input */
+  rx_err_t result; /**< Operation result */
 } gpio_init_ctx_t;
 
 /**
  * @brief Context for GPIO write operation
  */
 typedef struct {
-  bool     value;
-  rx_err_t result;
+  bool     value;  /**< Value to write (true=high, false=low) */
+  rx_err_t result; /**< Operation result */
 } gpio_write_ctx_t;
 
 /**
  * @brief Context for GPIO read operation
  */
 typedef struct {
-  bool*    value;
-  rx_err_t result;
+  bool*    value;  /**< Pointer to store read value */
+  rx_err_t result; /**< Operation result */
 } gpio_read_ctx_t;
 
 /**
  * @brief Context for GPIO toggle operation
  */
 typedef struct {
-  rx_err_t result;
+  rx_err_t result; /**< Operation result */
 } gpio_toggle_ctx_t;
 
 /* =============================================================================
@@ -291,7 +291,7 @@ rx_err_t rx_bus_gpio_toggle(rx_bus_manager_t* manager, const char* bus_name)
  * for the command pattern. Each operation defines its own data type.
  */
 typedef struct {
-  bool value; /* GPIO value to write (true = high, false = low) */
+  bool value; /**< GPIO value to write (true = high, false = low) */
 } gpio_write_command_data_t;
 
 /**
@@ -346,7 +346,7 @@ __attribute__((unused)) static rx_err_t gpio_write_command_execute(rx_bus_config
  * @brief Command data structure for GPIO read operation
  */
 typedef struct {
-  bool* value; /* Pointer to store read value */
+  bool* value; /**< Pointer to store read value */
 } gpio_read_command_data_t;
 
 /**
