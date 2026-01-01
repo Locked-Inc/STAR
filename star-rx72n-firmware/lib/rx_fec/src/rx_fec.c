@@ -1,3 +1,5 @@
+/* lib/rx_fec/src/rx_fec.c */
+
 /**
  * @file rx_fec.c
  * @brief Forward Error Correction (FEC) Codec Implementation
@@ -5,8 +7,8 @@
  * Implements NASA-standard K=7 convolutional encoder and Viterbi decoder.
  * This is a C port of star-gateway/internal/fec/ for bit-exact compatibility.
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "rx_fec.h"
