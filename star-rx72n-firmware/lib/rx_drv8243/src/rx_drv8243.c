@@ -53,8 +53,8 @@ static const float s_mv_to_v_divisor = 1000.0f;
  * =============================================================================
  */
 
-static rx_err_t internal_drv8243_check_current_limit(rx_drv8243_handle_t* handle);
-static rx_err_t internal_drv8243_configure_fault_pin(rx_drv8243_handle_t* handle);
+static rx_err_t            internal_drv8243_check_current_limit(rx_drv8243_handle_t* handle);
+static rx_err_t            internal_drv8243_configure_fault_pin(rx_drv8243_handle_t* handle);
 static volatile PORT_Type* internal_get_port_base(uint8_t port);
 
 /* =============================================================================

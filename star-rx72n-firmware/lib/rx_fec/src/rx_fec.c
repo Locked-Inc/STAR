@@ -22,11 +22,11 @@
  * @brief FEC implementation constants
  */
 typedef enum {
-  k_fec_bits_per_byte        = 8,          /**< Bits in a byte */
-  k_fec_msb_bit_position     = 7,          /**< MSB position in byte (0-indexed) */
-  k_fec_shift_register_bits  = 6,          /**< K-1 shift register size */
-  k_fec_correlation_offset   = 32768,      /**< Correlation metric offset */
-  k_fec_max_path_metric      = 0x7FFFFFFF, /**< Maximum path metric (INT32_MAX) */
+  k_fec_bits_per_byte       = 8,          /**< Bits in a byte */
+  k_fec_msb_bit_position    = 7,          /**< MSB position in byte (0-indexed) */
+  k_fec_shift_register_bits = 6,          /**< K-1 shift register size */
+  k_fec_correlation_offset  = 32768,      /**< Correlation metric offset */
+  k_fec_max_path_metric     = 0x7FFFFFFF, /**< Maximum path metric (INT32_MAX) */
 } rx_fec_impl_constants_t;
 
 /**

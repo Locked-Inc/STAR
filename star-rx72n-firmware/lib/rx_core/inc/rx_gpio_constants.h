@@ -31,13 +31,13 @@ extern "C" {
  * 0xA-0x10). Each port has up to 8 pins (0-7).
  */
 typedef enum {
-  k_pins_per_port         = 8,    /**< Pins per GPIO port (0-7) */
-  k_max_decimal_port      = 9,    /**< Maximum decimal port number */
-  k_hex_port_start        = 0xA,  /**< First hex port (A) */
-  k_hex_port_end          = 0x10, /**< Last hex port (G) */
-  k_hex_port_offset       = 10,   /**< Offset for hex port mapping */
-  k_invalid_pin_index     = 0xFFFF, /**< Invalid pin array index (16-bit) */
-  k_invalid_port          = 0xFF,   /**< Invalid port number (8-bit) */
+  k_pins_per_port     = 8,      /**< Pins per GPIO port (0-7) */
+  k_max_decimal_port  = 9,      /**< Maximum decimal port number */
+  k_hex_port_start    = 0xA,    /**< First hex port (A) */
+  k_hex_port_end      = 0x10,   /**< Last hex port (G) */
+  k_hex_port_offset   = 10,     /**< Offset for hex port mapping */
+  k_invalid_pin_index = 0xFFFF, /**< Invalid pin array index (16-bit) */
+  k_invalid_port      = 0xFF,   /**< Invalid port number (8-bit) */
 } rx_gpio_constants_t;
 
 /* =============================================================================

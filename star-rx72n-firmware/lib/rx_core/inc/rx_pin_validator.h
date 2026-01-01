@@ -106,9 +106,11 @@ typedef struct {
  * It implements the rx_pin_interface_t.
  */
 typedef struct {
-  TX_MUTEX          mutex;                                                                     /**< ThreadX mutex for thread-safe operation */
-  pin_reservation_t reservations[k_pin_validator_max_ports][k_pin_validator_max_pins];       /**< Pin reservation tracking array (indexed: reservations[port][pin], Port 0-9: Decimal, Port 10-16: Hex A-G) */
-  bool              initialized;                                                               /**< Is the validator initialized? */
+  TX_MUTEX          mutex; /**< ThreadX mutex for thread-safe operation */
+  pin_reservation_t reservations
+    [k_pin_validator_max_ports]
+    [k_pin_validator_max_pins]; /**< Pin reservation tracking array (indexed: reservations[port][pin], Port 0-9: Decimal, Port 10-16: Hex A-G) */
+  bool initialized;             /**< Is the validator initialized? */
 } pin_validator_t;
 
 /* =============================================================================

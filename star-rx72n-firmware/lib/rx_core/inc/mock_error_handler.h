@@ -125,12 +125,13 @@ typedef struct {
  * Records errors in memory for testing. Implements rx_error_interface_t.
  */
 typedef struct {
-  mock_error_record_t errors[k_mock_error_handler_default_max_errors]; /**< Array of recorded errors */
-  uint32_t            total_error_count;  /**< Total number of errors recorded (may exceed max_errors) */
-  uint32_t            stored_error_count; /**< Number of errors currently stored (capped at max_errors) */
-  uint32_t            max_errors;         /**< Maximum number of errors to store */
-  uint32_t            write_index;        /**< Next index to write (circular buffer) */
-  bool                initialized;        /**< Is the handler initialized? */
+  mock_error_record_t
+           errors[k_mock_error_handler_default_max_errors]; /**< Array of recorded errors */
+  uint32_t total_error_count;  /**< Total number of errors recorded (may exceed max_errors) */
+  uint32_t stored_error_count; /**< Number of errors currently stored (capped at max_errors) */
+  uint32_t max_errors;         /**< Maximum number of errors to store */
+  uint32_t write_index;        /**< Next index to write (circular buffer) */
+  bool     initialized;        /**< Is the handler initialized? */
 } mock_error_handler_t;
 
 /* =============================================================================

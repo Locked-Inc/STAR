@@ -46,7 +46,8 @@ static uint16_t internal_pin_to_index(uint8_t port, uint8_t pin)
 
   /* Handle hex ports A-G (0xA-0x10, which is 10-16 decimal) */
   if (port >= k_hex_port_start && port <= k_hex_port_end) {
-    uint16_t index = (uint16_t)(((port - k_hex_port_start) + k_hex_port_offset) * k_pins_per_port + pin);
+    uint16_t index =
+      (uint16_t)(((port - k_hex_port_start) + k_hex_port_offset) * k_pins_per_port + pin);
     return (index < k_mock_pin_validator_max_pins) ? index : k_invalid_pin_index;
   }
 
