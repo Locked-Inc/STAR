@@ -1,3 +1,5 @@
+/* lib/rx_frame/inc/rx_frame.h */
+
 /**
  * @file rx_frame.h
  * @brief Frame Layer for SPI Protocol
@@ -14,8 +16,8 @@
  * @see star-gateway/internal/frame/ for Go reference implementation
  * @see docs/sections/01_nanopb_protocol.tex for protocol specification
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef STAR_RX_FRAME_H

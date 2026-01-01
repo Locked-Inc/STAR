@@ -1,3 +1,5 @@
+/* lib/rx_frame/src/rx_crc32_hw.c */
+
 /**
  * @file rx_crc32_hw.c
  * @brief Hardware CRC-32 Implementation for RX72N
@@ -17,8 +19,8 @@
  * - https://tool-support.renesas.com/autoupdate/support/onlinehelp/csp/V8.12.00/
  *   CS+.chm/CodeGenerator-API-RX.chm/Documents/crccalculatorcrc.htm
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "rx_crc_internal.h"

@@ -1,3 +1,5 @@
+/* lib/rx_frame/src/rx_crc32_sw.c */
+
 /**
  * @file rx_crc32_sw.c
  * @brief Software CRC-32 Implementation
@@ -17,8 +19,8 @@
  * - IEEE 802.3-2018 Section 3.2.9 (Frame check sequence)
  * - Go standard library: hash/crc32 package
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include <stddef.h> /* For NULL */

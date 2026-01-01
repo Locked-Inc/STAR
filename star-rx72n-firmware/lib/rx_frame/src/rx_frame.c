@@ -1,3 +1,5 @@
+/* lib/rx_frame/src/rx_frame.c */
+
 /**
  * @file rx_frame.c
  * @brief Frame Layer Implementation
@@ -5,8 +7,8 @@
  * Implements frame encoding/decoding with CRC-32 verification.
  * Bit-exact compatible with star-gateway/internal/frame/.
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "rx_frame.h"
