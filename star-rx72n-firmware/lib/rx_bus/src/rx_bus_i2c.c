@@ -1,4 +1,4 @@
-/* src/rx_bus_i2c.c */
+/* lib/rx_bus/src/rx_bus_i2c.c */
 
 /**
  * @file rx_bus_i2c.c

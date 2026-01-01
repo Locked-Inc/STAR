@@ -1,4 +1,4 @@
-/* include/rx_bus_types.h */
+/* lib/rx_bus/inc/rx_bus_types.h */
 
 /**
  * @file rx_bus_types.h
