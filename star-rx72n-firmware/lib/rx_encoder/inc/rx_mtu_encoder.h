@@ -1,4 +1,4 @@
-/* include/rx_mtu_encoder.h */
+/* lib/rx_encoder/inc/rx_mtu_encoder.h */
 
 /**
  * @file rx_mtu_encoder.h
