@@ -142,9 +142,9 @@ static void internal_encode_bit(uint8_t* state, uint8_t input_bit, uint8_t* out0
 static void internal_init_branch_table(
   uint8_t branch_table[k_fec_num_states][k_fec_num_input_values][k_fec_num_outputs])
 {
-  for (int state = 0; state < k_fec_num_states; state++) {
-    for (int input = 0; input < k_fec_num_input_values; input++) {
-      uint8_t combined = (uint8_t)(((unsigned)input << k_fec_shift_register_bits) | (unsigned)state);
+  for (uint8_t state = 0; state < k_fec_num_states; state++) {
+    for (uint8_t input = 0; input < k_fec_num_input_values; input++) {
+      uint8_t combined = (uint8_t)(((uint8_t)input << k_fec_shift_register_bits) | (uint8_t)state);
       branch_table[state][input][k_fec_output_g1] = internal_parity(combined & k_fec_g1_octal);
       branch_table[state][input][k_fec_output_g2] = internal_parity(combined & k_fec_g2_octal);
     }
@@ -193,7 +193,7 @@ static void internal_viterbi_process_symbol(rx_fec_decoder_t* dec,
                                             uint32_t          t)
 {
   /* Reset new path metrics */
-  for (int i = 0; i < k_fec_num_states; i++) {
+  for (uint8_t i = 0; i < k_fec_num_states; i++) {
     dec->new_path_metrics[i] = k_fec_max_path_metric;
   }
 
@@ -201,13 +201,13 @@ static void internal_viterbi_process_symbol(rx_fec_decoder_t* dec,
   dec->survivors[t] = 0;
 
   /* For each current state, compute transitions */
-  for (int state = 0; state < k_fec_num_states; state++) {
+  for (uint8_t state = 0; state < k_fec_num_states; state++) {
     if (dec->path_metrics[state] == k_fec_max_path_metric) {
       continue;
     }
 
     /* Try both input bits (0 and 1) */
-    for (int input = 0; input < k_fec_num_input_values; input++) {
+    for (uint8_t input = 0; input < k_fec_num_input_values; input++) {
       /* Get expected output bits for this transition */
       uint8_t exp0 = dec->branch_table[state][input][k_fec_output_g1];
       uint8_t exp1 = dec->branch_table[state][input][k_fec_output_g2];
@@ -216,7 +216,7 @@ static void internal_viterbi_process_symbol(rx_fec_decoder_t* dec,
       int32_t branch_metric = internal_branch_metric(soft0, soft1, exp0, exp1);
 
       /* Compute next state: shift right and insert input as MSB */
-      int next_state = (state >> 1) | ((unsigned)input << (k_fec_constraint_length - 2));
+      uint8_t next_state = (state >> 1) | ((uint8_t)input << (k_fec_constraint_length - 2));
 
       /* Compute new path metric */
       int32_t new_metric = dec->path_metrics[state] + branch_metric;
@@ -226,16 +226,16 @@ static void internal_viterbi_process_symbol(rx_fec_decoder_t* dec,
         dec->new_path_metrics[next_state] = new_metric;
 
         /* Store predecessor's LSB for traceback */
-        dec->survivors[t] &= ~(1ULL << (unsigned)next_state);
+        dec->survivors[t] &= ~(1ULL << (uint8_t)next_state);
         if ((state & 1) == 1) {
-          dec->survivors[t] |= (1ULL << (unsigned)next_state);
+          dec->survivors[t] |= (1ULL << (uint8_t)next_state);
         }
       }
     }
   }
 
   /* Swap path metrics */
-  for (int i = 0; i < k_fec_num_states; i++) {
+  for (uint8_t i = 0; i < k_fec_num_states; i++) {
     dec->path_metrics[i]     = dec->new_path_metrics[i];
     dec->new_path_metrics[i] = k_fec_max_path_metric;
   }
@@ -263,7 +263,7 @@ static void internal_viterbi_traceback(const rx_fec_decoder_t* dec,
   memset(output, 0, output_bytes);
 
   /* Start from state 0 (encoder is flushed to zero by tail bits) */
-  int state = 0;
+  uint8_t state = 0;
 
   /* Traceback: work backwards through the trellis */
   for (uint32_t t = num_symbols; t > 0; t--) {
@@ -282,7 +282,7 @@ static void internal_viterbi_traceback(const rx_fec_decoder_t* dec,
     }
 
     /* Get predecessor's LSB from survivors */
-    int predecessor_lsb = (int)((dec->survivors[t_idx] >> state) & 1);
+    uint8_t predecessor_lsb = (uint8_t)((dec->survivors[t_idx] >> state) & 1);
 
     /* Compute predecessor state: shift left and insert the LSB */
     state = ((state << 1) & (k_fec_num_states - 1)) | predecessor_lsb;
@@ -360,7 +360,7 @@ rx_err_t rx_fec_encode(rx_fec_encoder_t* enc,
   /* Encode each input byte, MSB first */
   for (uint32_t byte_idx = 0; byte_idx < input_len; byte_idx++) {
     uint8_t b = input[byte_idx];
-    for (int i = k_fec_msb_bit_position; i >= 0; i--) {
+    for (int8_t i = k_fec_msb_bit_position; i >= 0; i--) {
       uint8_t input_bit = (b >> i) & 1;
       uint8_t out0, out1;
 
@@ -373,7 +373,7 @@ rx_err_t rx_fec_encode(rx_fec_encoder_t* enc,
   }
 
   /* Append tail bits (zeros) to flush encoder to zero state */
-  for (int i = 0; i < k_fec_tail_bits; i++) {
+  for (uint8_t i = 0; i < k_fec_tail_bits; i++) {
     uint8_t out0, out1;
     internal_encode_bit(&state, 0, &out0, &out1);
     internal_set_output_bit(output, out_bit_idx++, out0);
@@ -466,7 +466,7 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*    dec,
   }
 
   /* Initialize path metrics: state 0 = 0, others = MAX */
-  for (int i = 0; i < k_fec_num_states; i++) {
+  for (uint8_t i = 0; i < k_fec_num_states; i++) {
     dec->path_metrics[i] = k_fec_max_path_metric;
   }
   dec->path_metrics[0] = 0;
