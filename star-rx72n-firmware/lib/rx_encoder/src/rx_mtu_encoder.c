@@ -25,11 +25,12 @@
  * @copyright Copyright (c) 2025 STAR Project
  */
 
+#include "rx_mtu_encoder.h"
+
 #include "rx72n_regs.h"
 #include "rx_check.h"
 #include "rx_gpio_constants.h"
 #include "rx_log.h"
-#include "rx_mtu_encoder.h"
 
 static const char* s_tag = "MTU_ENCODER";
 
@@ -143,7 +144,7 @@ rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
   rx_log_info(s_tag, "Info");
 
   /* Enable MTU module (clear module stop bit) */
-  SYSTEM.PRCR = (k_prcr_key << 8) | k_prcr_unlock_mtu; /* Enable writes to MSTPCR */
+  SYSTEM.PRCR = (k_prcr_key << k_prcr_key_shift) | k_prcr_unlock_mtu; /* Enable writes to MSTPCR */
 
   if (channel <= k_mtu_channel_4) {
     SYSTEM.MSTPCRA &= ~(1 << k_mtu_mstpcra_mtu0_4_bit); /* MTU0-MTU4 */
@@ -151,7 +152,7 @@ rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
     SYSTEM.MSTPCRA &= ~(1 << k_mtu_mstpcra_mtu6_7_bit); /* MTU6-MTU7 */
   }
 
-  SYSTEM.PRCR = (k_prcr_key << 8) | k_prcr_lock_all; /* Lock MSTPCR */
+  SYSTEM.PRCR = (k_prcr_key << k_prcr_key_shift) | k_prcr_lock_all; /* Lock MSTPCR */
 
   /* Stop timer before configuration */
   rx_mtu_stop(channel);
