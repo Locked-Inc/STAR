@@ -125,3 +125,9 @@ docs/doxygen/
 docs/callgraph/
 **/docs/doxygen/
 **/docs/callgraph/
+
+# Yocto build outputs (large, generated)
+star-yocto/
+yocto-downloads/
+yocto-sstate-cache/
+ros2_cross_ws/
