@@ -28,16 +28,16 @@ typedef enum {
 
 /** @brief Oscillator stabilization timing constants */
 typedef enum {
-  k_main_osc_stabilization_cycles = 2400000, /**< Main oscillator delay (~10ms at 240MHz) */
-  k_pll_stabilization_timeout     = 1000000, /**< PLL stabilization max wait iterations */
-  k_pll_stabilization_timeout_expired = 0,   /**< PLL timeout expiration value */
+  k_main_osc_stabilization_cycles     = 2400000, /**< Main oscillator delay (~10ms at 240MHz) */
+  k_pll_stabilization_timeout         = 1000000, /**< PLL stabilization max wait iterations */
+  k_pll_stabilization_timeout_expired = 0,       /**< PLL timeout expiration value */
 } oscillator_timing_t;
 
 /** @brief Oscillator control register values */
 typedef enum {
-  k_sub_clock_stopped  = 0x01, /**< SOSCCR: Stop sub-clock oscillator */
-  k_main_osc_enabled   = 0x00, /**< MOSCCR: Enable main oscillator */
-  k_pll_enabled        = 0x00, /**< PLLCR2: Enable PLL */
+  k_sub_clock_stopped = 0x01, /**< SOSCCR: Stop sub-clock oscillator */
+  k_main_osc_enabled  = 0x00, /**< MOSCCR: Enable main oscillator */
+  k_pll_enabled       = 0x00, /**< PLLCR2: Enable PLL */
 } oscillator_control_t;
 
 /** @brief PLL configuration values */
@@ -48,8 +48,8 @@ typedef enum {
 
 /** @brief System clock configuration */
 typedef enum {
-  k_system_clock_dividers = 0x21C21211, /**< SCKCR: ICLK=240MHz, PCLKA=120MHz, others=60MHz */
-  k_system_clock_source_pll = 0x0400,   /**< SCKCR3: Select PLL as system clock source */
+  k_system_clock_dividers   = 0x21C21211, /**< SCKCR: ICLK=240MHz, PCLKA=120MHz, others=60MHz */
+  k_system_clock_source_pll = 0x0400,     /**< SCKCR3: Select PLL as system clock source */
 } system_clock_config_t;
 
 /* =============================================================================
