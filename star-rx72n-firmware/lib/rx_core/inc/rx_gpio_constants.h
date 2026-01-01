@@ -74,6 +74,7 @@ typedef enum {
  */
 typedef enum {
   k_prcr_key       = 0xA5, /**< PRCR unlock key (upper byte) */
+  k_prcr_key_shift = 8,    /**< Bit shift for PRCR key into upper byte */
   k_prcr_lock_all  = 0x00, /**< Lock all protected registers */
   k_prcr_lock_prc1 = 0x02, /**< Unlock PRC1 (module stop control) */
 } rx_prcr_constants_t;

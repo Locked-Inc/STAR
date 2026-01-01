@@ -238,7 +238,7 @@ static void internal_refresh_mstpcr(void)
   __asm__ volatile("mvfc psw, %0" : "=r"(psw));
   __asm__ volatile("clrpsw i"); /* Disable interrupts during unlock */
 
-  SYSTEM.PRCR = (k_prcr_key << 8) | k_prcr_lock_prc1; /* Unlock MSTPCR writes */
+  SYSTEM.PRCR = (k_prcr_key << k_prcr_key_shift) | k_prcr_lock_prc1; /* Unlock MSTPCR writes */
 
   if (SYSTEM.MSTPCRA != s_state.mstpcr.mstpcra) {
     SYSTEM.MSTPCRA = s_state.mstpcr.mstpcra;
@@ -257,7 +257,7 @@ static void internal_refresh_mstpcr(void)
     s_state.corrections++;
   }
 
-  SYSTEM.PRCR = (k_prcr_key << 8) | k_prcr_lock_all; /* Lock MSTPCR writes */
+  SYSTEM.PRCR = (k_prcr_key << k_prcr_key_shift) | k_prcr_lock_all; /* Lock MSTPCR writes */
 
   __asm__ volatile("mvtc %0, psw" : : "r"(psw)); /* Restore interrupt state */
 }

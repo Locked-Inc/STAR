@@ -30,6 +30,7 @@
 #include <stddef.h>
 
 #include "rx72n_regs.h"
+#include "rx_gpio_constants.h"
 
 /* =============================================================================
  * CRC Hardware Constants
@@ -40,12 +41,12 @@
 static const uint32_t k_crc_ieee_final_xor = 0xFFFFFFFF;
 
 /**
- * @brief PRCR (Protect Register) values for CRC module access
+ * @brief CRC module-specific PRCR unlock value
+ *
+ * Note: k_prcr_key, k_prcr_key_shift, and k_prcr_lock_all are from rx_gpio_constants.h
  */
 typedef enum {
-  k_prcr_key        = 0xA5, /**< PRCR unlock key (upper byte) */
   k_prcr_unlock_crc = 0x0B, /**< Unlock PRC0, PRC1, PRC3 for CRC config */
-  k_prcr_lock_all   = 0x00, /**< Lock all protected registers */
 } rx_crc_prcr_constants_t;
 
 /* =============================================================================
@@ -67,9 +68,10 @@ rx_err_t rx_crc_init(void)
   }
 
   /* Enable CRC module by clearing module stop bit */
-  SYSTEM.PRCR = (k_prcr_key << 8) | k_prcr_unlock_crc; /* Unlock protection for MSTPCR */
-  SYSTEM.MSTPCRB &= ~(1UL << MSTPB_CRC);                /* Clear bit 23 to enable CRC */
-  SYSTEM.PRCR = (k_prcr_key << 8) | k_prcr_lock_all;    /* Lock protection */
+  SYSTEM.PRCR =
+    (k_prcr_key << k_prcr_key_shift) | k_prcr_unlock_crc; /* Unlock protection for MSTPCR */
+  SYSTEM.MSTPCRB &= ~(1UL << MSTPB_CRC);                  /* Clear bit 23 to enable CRC */
+  SYSTEM.PRCR = (k_prcr_key << k_prcr_key_shift) | k_prcr_lock_all; /* Lock protection */
 
   /*
      * Configure CRC peripheral for IEEE 802.3:

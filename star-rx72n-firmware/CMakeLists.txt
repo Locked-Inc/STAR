@@ -214,13 +214,12 @@ add_library(rx_drv8243 STATIC
 target_include_directories(rx_drv8243 PUBLIC lib/rx_drv8243/inc)
 target_link_libraries(rx_drv8243 PUBLIC rx_bus rx_motor rx_core)
 
-# rx_fuel_gauge - Battery management
-add_library(rx_fuel_gauge STATIC
-    lib/rx_fuel_gauge/src/rx_fuel_gauge.c
-    lib/rx_fuel_gauge/src/rx_bq25798.c
+# rx_bq4050 - BQ4050 battery fuel gauge (Smart Battery System)
+add_library(rx_bq4050 STATIC
+    lib/rx_bq4050/src/rx_bq4050.c
 )
-target_include_directories(rx_fuel_gauge PUBLIC lib/rx_fuel_gauge/inc)
-target_link_libraries(rx_fuel_gauge PUBLIC rx_bus rx_core)
+target_include_directories(rx_bq4050 PUBLIC lib/rx_bq4050/inc)
+target_link_libraries(rx_bq4050 PUBLIC rx_bus rx_core)
 
 # =============================================================================
 # Application Source Files
@@ -260,7 +259,7 @@ target_link_libraries(${PROJECT_NAME}.elf
     rx_usb
     rx_usb_comm
     rx_drv8243
-    rx_fuel_gauge
+    rx_bq4050
 )
 
 # Linker script
@@ -309,7 +308,7 @@ message(STATUS "  rx_spi_comm    - SPI communication layer")
 message(STATUS "  rx_usb         - USB CDC-ACM driver")
 message(STATUS "  rx_usb_comm    - USB communication layer")
 message(STATUS "  rx_drv8243     - DRV8243 H-bridge driver")
-message(STATUS "  rx_fuel_gauge  - Battery management (BQ25798)")
+message(STATUS "  rx_bq4050      - BQ4050 battery fuel gauge (SBS 1.1)")
 message(STATUS "==============================================")
 
 # =============================================================================

@@ -195,7 +195,7 @@ static inline uint32_t rx_frame_encoded_size(uint32_t payload_len)
  * @brief Byte manipulation constants for endianness conversions
  */
 typedef enum {
-  k_rx_be16_high_shift = 8,    /**< Bit shift for high byte in 16-bit value */
+  k_rx_be16_high_shift = 8,     /**< Bit shift for high byte in 16-bit value */
   k_rx_byte_mask       = 0xFFU, /**< Mask to extract one byte */
 } rx_byte_order_constants_t;
 
