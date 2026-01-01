@@ -7,8 +7,8 @@
  *
  * ThreadX tick rate: 100 Hz (10ms per tick)
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifdef __RX__

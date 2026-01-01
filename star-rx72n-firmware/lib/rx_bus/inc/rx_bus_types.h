@@ -25,6 +25,7 @@
 
 #include "rx_err.h"
 #include "rx_error_interface.h"
+#include "rx_gpio_constants.h"
 #include "rx_pin_interface.h"
 #include "tx_api.h" /* ThreadX */
 
@@ -157,21 +158,7 @@ typedef enum {
   k_adc_unit_count = 2, /**< ADC units 0-1 */
 } rx_adc_limits_t;
 
-/**
- * @brief RX72N GPIO port limits
- */
-typedef enum {
-  k_gpio_port_max_numeric = 9,    /**< Numeric ports 0-9 */
-  k_gpio_port_max_alpha   = 0x10, /**< Alpha ports A-G (0xA-0x10) */
-  k_gpio_port_min_alpha   = 0xA,  /**< First alpha port (A) */
-} rx_gpio_port_limits_t;
-
-/**
- * @brief RX72N GPIO pin count per port
- */
-typedef enum {
-  k_gpio_pin_count = 8, /**< Pins 0-7 per port */
-} rx_gpio_pin_limits_t;
+/* GPIO port and pin constants are now defined in rx_gpio_constants.h */
 
 /**
  * @brief RX72N ADC channel limits

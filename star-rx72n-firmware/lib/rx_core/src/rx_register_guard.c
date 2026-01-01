@@ -11,11 +11,13 @@
  *
  * @see RX72N Hardware Manual for register details
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "rx_register_guard.h"
+
+#include "rx_gpio_constants.h"
 
 #ifdef __RX__
 #include "rx72n_regs.h"
@@ -230,14 +232,13 @@ static void internal_refresh_mstpcr(void)
    * MSTPCR requires PRCR unlock to modify
    *
    * PRCR bit 1 (PRC1) controls module stop registers
-   * 0xA502 = unlock key (0xA5xx) + PRC1 set
-   * 0xA500 = unlock key + all bits clear (lock)
+   * Key is in upper byte, PRC1 bit enables module stop register writes
    */
   uint32_t psw;
   __asm__ volatile("mvfc psw, %0" : "=r"(psw));
   __asm__ volatile("clrpsw i"); /* Disable interrupts during unlock */
 
-  SYSTEM.PRCR = 0xA502; /* Unlock MSTPCR writes */
+  SYSTEM.PRCR = (k_prcr_key << 8) | k_prcr_lock_prc1; /* Unlock MSTPCR writes */
 
   if (SYSTEM.MSTPCRA != s_state.mstpcr.mstpcra) {
     SYSTEM.MSTPCRA = s_state.mstpcr.mstpcra;
@@ -256,7 +257,7 @@ static void internal_refresh_mstpcr(void)
     s_state.corrections++;
   }
 
-  SYSTEM.PRCR = 0xA500; /* Lock MSTPCR writes */
+  SYSTEM.PRCR = (k_prcr_key << 8) | k_prcr_lock_all; /* Lock MSTPCR writes */
 
   __asm__ volatile("mvtc %0, psw" : : "r"(psw)); /* Restore interrupt state */
 }

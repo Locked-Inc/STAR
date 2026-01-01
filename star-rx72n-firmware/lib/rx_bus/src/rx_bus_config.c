@@ -32,14 +32,14 @@ rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, uint8_t port,
   RX_CHECK_NULL_PTR(name, s_tag, "name pointer is NULL");
 
   /* Validate port (0-9 or 0xA-0x10 for A-G) */
-  if (port > k_gpio_port_max_alpha ||
-      (port > k_gpio_port_max_numeric && port < k_gpio_port_min_alpha)) {
+  if (port > k_hex_port_end ||
+      (port > k_max_decimal_port && port < k_hex_port_start)) {
     rx_log_error(s_tag, "Invalid GPIO port");
     return k_rx_err_invalid_arg;
   }
 
   /* Validate pin (0-7) */
-  if (pin >= k_gpio_pin_count) {
+  if (pin >= k_pins_per_port) {
     rx_log_error(s_tag, "Invalid GPIO pin");
     return k_rx_err_invalid_arg;
   }

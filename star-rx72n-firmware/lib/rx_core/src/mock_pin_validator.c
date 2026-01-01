@@ -6,6 +6,9 @@
  *
  * Implements the rx_pin_interface_t by tracking pin operations in memory.
  * Used for testing and validating the DIP pattern.
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "mock_pin_validator.h"
@@ -13,6 +16,7 @@
 #include <string.h>
 
 #include "rx_check.h"
+#include "rx_gpio_constants.h"
 
 /* =============================================================================
  * Internal Helper Functions
@@ -30,23 +34,23 @@
 static uint16_t internal_pin_to_index(uint8_t port, uint8_t pin)
 {
   /* Validate pin first (0-7) */
-  if (pin >= 8) {
-    return 0xFFFF;
+  if (pin >= k_pins_per_port) {
+    return k_invalid_pin_index;
   }
 
   /* Handle decimal ports 0-9 */
-  if (port <= 9) {
-    uint16_t index = (uint16_t)(port * 8 + pin);
-    return (index < k_mock_pin_validator_max_pins) ? index : 0xFFFF;
+  if (port <= k_max_decimal_port) {
+    uint16_t index = (uint16_t)(port * k_pins_per_port + pin);
+    return (index < k_mock_pin_validator_max_pins) ? index : k_invalid_pin_index;
   }
 
   /* Handle hex ports A-G (0xA-0x10, which is 10-16 decimal) */
-  if (port >= 0xA && port <= 0x10) {
-    uint16_t index = (uint16_t)(((port - 0xA) + 10) * 8 + pin);
-    return (index < k_mock_pin_validator_max_pins) ? index : 0xFFFF;
+  if (port >= k_hex_port_start && port <= k_hex_port_end) {
+    uint16_t index = (uint16_t)(((port - k_hex_port_start) + k_hex_port_offset) * k_pins_per_port + pin);
+    return (index < k_mock_pin_validator_max_pins) ? index : k_invalid_pin_index;
   }
 
-  return 0xFFFF; /* Invalid port */
+  return k_invalid_pin_index; /* Invalid port */
 }
 
 /**
@@ -59,16 +63,16 @@ static uint16_t internal_pin_to_index(uint8_t port, uint8_t pin)
  */
 static rx_err_t internal_validate_port_pin(uint8_t port, uint8_t pin)
 {
-  if (pin >= 8) {
+  if (pin >= k_pins_per_port) {
     return k_rx_err_gpio_invalid_pin;
   }
 
   /* Check port range */
-  if (port <= 9) {
+  if (port <= k_max_decimal_port) {
     return k_rx_ok; /* Decimal ports 0-9 */
   }
 
-  if (port >= 0xA && port <= 0x10) {
+  if (port >= k_hex_port_start && port <= k_hex_port_end) {
     return k_rx_ok; /* Hex ports A-G */
   }
 
@@ -99,7 +103,7 @@ static rx_err_t impl_validate_pin(void* ctx, uint8_t port, uint8_t pin)
 
   /* Track that this pin was validated */
   uint16_t index = internal_pin_to_index(port, pin);
-  if (index != 0xFFFF) {
+  if (index != k_invalid_pin_index) {
     validator->validated_pins[index] = true;
     validator->validate_call_count++;
   }
@@ -125,7 +129,7 @@ static rx_err_t impl_reserve_pin(void* ctx, uint8_t port, uint8_t pin, const cha
   }
 
   uint16_t index = internal_pin_to_index(port, pin);
-  if (index == 0xFFFF) {
+  if (index == k_invalid_pin_index) {
     return k_rx_err_gpio_invalid_pin;
   }
 
@@ -161,7 +165,7 @@ static rx_err_t impl_release_pin(void* ctx, uint8_t port, uint8_t pin)
   }
 
   uint16_t index = internal_pin_to_index(port, pin);
-  if (index == 0xFFFF) {
+  if (index == k_invalid_pin_index) {
     return k_rx_err_gpio_invalid_pin;
   }
 
@@ -225,7 +229,7 @@ impl_get_pin_function(void* ctx, uint8_t port, uint8_t pin, char* function_out, 
   }
 
   uint16_t index = internal_pin_to_index(port, pin);
-  if (index == 0xFFFF) {
+  if (index == k_invalid_pin_index) {
     return k_rx_err_gpio_invalid_pin;
   }
 
@@ -312,7 +316,7 @@ bool mock_pin_validator_was_validated(mock_pin_validator_t* validator, uint8_t p
   }
 
   uint16_t index = internal_pin_to_index(port, pin);
-  if (index == 0xFFFF) {
+  if (index == k_invalid_pin_index) {
     return false;
   }
 
@@ -326,7 +330,7 @@ bool mock_pin_validator_is_reserved(mock_pin_validator_t* validator, uint8_t por
   }
 
   uint16_t index = internal_pin_to_index(port, pin);
-  if (index == 0xFFFF) {
+  if (index == k_invalid_pin_index) {
     return false;
   }
 
@@ -340,7 +344,7 @@ bool mock_pin_validator_was_reserved(mock_pin_validator_t* validator, uint8_t po
   }
 
   uint16_t index = internal_pin_to_index(port, pin);
-  if (index == 0xFFFF) {
+  if (index == k_invalid_pin_index) {
     return false;
   }
 
@@ -358,7 +362,7 @@ mock_pin_validator_get_function(mock_pin_validator_t* validator, uint8_t port, u
   }
 
   uint16_t index = internal_pin_to_index(port, pin);
-  if (index == 0xFFFF) {
+  if (index == k_invalid_pin_index) {
     return NULL;
   }
 
