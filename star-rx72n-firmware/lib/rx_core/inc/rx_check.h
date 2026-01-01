@@ -120,7 +120,7 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
   do {                                                                                             \
     rx_err_t err_rc_ = (err);                                                                      \
     if (rx_err_is_error(err_rc_)) {                                                                \
-      rx_log_error_code("ERROR_CHECK", err_rc_);                                                   \
+      star_log_error_val("ERROR_CHECK", "Error", err_rc_);                                         \
     }                                                                                              \
   } while (0)
 
@@ -146,8 +146,8 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
   do {                                                                                             \
     rx_err_t err_rc_ = (err);                                                                      \
     if (rx_err_is_error(err_rc_)) {                                                                \
-      RX_LOG_ERROR(tag, message);                                                                  \
-      rx_log_error_code(tag, err_rc_);                                                             \
+      star_log_error(tag, message);                                                                \
+      star_log_error_val(tag, "Error", err_rc_);                                                   \
       return err_rc_;                                                                              \
     }                                                                                              \
   } while (0)
@@ -187,8 +187,8 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
   do {                                                                                             \
     rx_err_t err_rc_ = (err);                                                                      \
     if (rx_err_is_error(err_rc_)) {                                                                \
-      RX_LOG_ERROR(tag, message);                                                                  \
-      rx_log_error_code(tag, err_rc_);                                                             \
+      star_log_error(tag, message);                                                                \
+      star_log_error_val(tag, "Error", err_rc_);                                                   \
       err = err_rc_;                                                                               \
       goto label;                                                                                  \
     }                                                                                              \
@@ -215,8 +215,8 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
   do {                                                                                             \
     rx_err_t err_rc_ = (err);                                                                      \
     if (rx_err_is_error(err_rc_)) {                                                                \
-      RX_LOG_ERROR(tag, message);                                                                  \
-      rx_log_error_code(tag, err_rc_);                                                             \
+      star_log_error(tag, message);                                                                \
+      star_log_error_val(tag, "Error", err_rc_);                                                   \
       return;                                                                                      \
     }                                                                                              \
   } while (0)
@@ -243,8 +243,8 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
   do {                                                                                             \
     rx_err_t err_rc_ = (err);                                                                      \
     if (rx_err_is_error(err_rc_)) {                                                                \
-      RX_LOG_ERROR(tag, message);                                                                  \
-      rx_log_error_code(tag, err_rc_);                                                             \
+      star_log_error(tag, message);                                                                \
+      star_log_error_val(tag, "Error", err_rc_);                                                   \
       return NULL;                                                                                 \
     }                                                                                              \
   } while (0)
@@ -273,8 +273,8 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
 #define RX_CHECK_NULL_PTR(ptr, tag, message)                                                       \
   do {                                                                                             \
     if ((ptr) == NULL) {                                                                           \
-      RX_LOG_ERROR(tag, message);                                                                  \
-      return k_rx_err_null_pointer;                                                                  \
+      star_log_error(tag, message);                                                                \
+      return k_rx_err_null_pointer;                                                                \
     }                                                                                              \
   } while (0)
 

@@ -82,7 +82,7 @@ static rx_err_t internal_gpio_init_callback(rx_bus_config_t* bus_config, void* u
 
   /* Validate bus type */
   if (bus_config->type != k_bus_type_gpio) {
-    RX_LOG_ERROR(s_tag, "Bus is not GPIO type");
+    star_log_error(s_tag, "Bus is not GPIO type");
     ctx->result = k_rx_err_invalid_arg;
     return k_rx_err_invalid_arg;
   }
@@ -96,7 +96,7 @@ static rx_err_t internal_gpio_init_callback(rx_bus_config_t* bus_config, void* u
   }
 
   if (err != k_rx_ok) {
-    RX_LOG_ERROR(s_tag, "GPIO HAL initialization failed");
+    star_log_error(s_tag, "GPIO HAL initialization failed");
     ctx->result = err;
     return err;
   }
@@ -122,7 +122,7 @@ static rx_err_t internal_gpio_write_callback(rx_bus_config_t* bus_config, void* 
 
   /* Validate bus is initialized */
   if (!bus_config->initialized) {
-    RX_LOG_ERROR(s_tag, "Bus not initialized");
+    star_log_error(s_tag, "Bus not initialized");
     ctx->result = k_rx_err_invalid_state;
     return k_rx_err_invalid_state;
   }
@@ -136,7 +136,7 @@ static rx_err_t internal_gpio_write_callback(rx_bus_config_t* bus_config, void* 
   }
 
   if (err != k_rx_ok) {
-    RX_LOG_ERROR(s_tag, "GPIO write failed");
+    star_log_error(s_tag, "GPIO write failed");
     ctx->result = err;
     return err;
   }
@@ -159,7 +159,7 @@ static rx_err_t internal_gpio_read_callback(rx_bus_config_t* bus_config, void* u
 
   /* Validate bus is initialized */
   if (!bus_config->initialized) {
-    RX_LOG_ERROR(s_tag, "Bus not initialized");
+    star_log_error(s_tag, "Bus not initialized");
     ctx->result = k_rx_err_invalid_state;
     return k_rx_err_invalid_state;
   }
@@ -168,7 +168,7 @@ static rx_err_t internal_gpio_read_callback(rx_bus_config_t* bus_config, void* u
   rx_err_t err = gpio_read(bus_config->proto.gpio.port, bus_config->proto.gpio.pin, ctx->value);
 
   if (err != k_rx_ok) {
-    RX_LOG_ERROR(s_tag, "GPIO read failed");
+    star_log_error(s_tag, "GPIO read failed");
     ctx->result = err;
     return err;
   }
@@ -191,7 +191,7 @@ static rx_err_t internal_gpio_toggle_callback(rx_bus_config_t* bus_config, void*
 
   /* Validate bus is initialized */
   if (!bus_config->initialized) {
-    RX_LOG_ERROR(s_tag, "Bus not initialized");
+    star_log_error(s_tag, "Bus not initialized");
     ctx->result = k_rx_err_invalid_state;
     return k_rx_err_invalid_state;
   }
@@ -200,7 +200,7 @@ static rx_err_t internal_gpio_toggle_callback(rx_bus_config_t* bus_config, void*
   rx_err_t err = gpio_toggle(bus_config->proto.gpio.port, bus_config->proto.gpio.pin);
 
   if (err != k_rx_ok) {
-    RX_LOG_ERROR(s_tag, "GPIO toggle failed");
+    star_log_error(s_tag, "GPIO toggle failed");
     ctx->result = err;
     return err;
   }
@@ -316,13 +316,13 @@ __attribute__((unused)) static rx_err_t gpio_write_command_execute(rx_bus_config
 
   /* Validate bus type */
   if (bus->type != k_bus_type_gpio) {
-    RX_LOG_ERROR(s_tag, "Bus is not GPIO type");
+    star_log_error(s_tag, "Bus is not GPIO type");
     return k_rx_err_invalid_arg;
   }
 
   /* Validate bus is initialized */
   if (!bus->initialized) {
-    RX_LOG_ERROR(s_tag, "Bus not initialized");
+    star_log_error(s_tag, "Bus not initialized");
     return k_rx_err_invalid_state;
   }
 
@@ -335,7 +335,7 @@ __attribute__((unused)) static rx_err_t gpio_write_command_execute(rx_bus_config
   }
 
   if (err != k_rx_ok) {
-    RX_LOG_ERROR(s_tag, "GPIO write failed");
+    star_log_error(s_tag, "GPIO write failed");
     return err;
   }
 
@@ -367,13 +367,13 @@ __attribute__((unused)) static rx_err_t gpio_read_command_execute(rx_bus_config_
 
   /* Validate bus type */
   if (bus->type != k_bus_type_gpio) {
-    RX_LOG_ERROR(s_tag, "Bus is not GPIO type");
+    star_log_error(s_tag, "Bus is not GPIO type");
     return k_rx_err_invalid_arg;
   }
 
   /* Validate bus is initialized */
   if (!bus->initialized) {
-    RX_LOG_ERROR(s_tag, "Bus not initialized");
+    star_log_error(s_tag, "Bus not initialized");
     return k_rx_err_invalid_state;
   }
 
@@ -381,7 +381,7 @@ __attribute__((unused)) static rx_err_t gpio_read_command_execute(rx_bus_config_
   rx_err_t err = gpio_read(bus->proto.gpio.port, bus->proto.gpio.pin, read_data->value);
 
   if (err != k_rx_ok) {
-    RX_LOG_ERROR(s_tag, "GPIO read failed");
+    star_log_error(s_tag, "GPIO read failed");
     return err;
   }
 

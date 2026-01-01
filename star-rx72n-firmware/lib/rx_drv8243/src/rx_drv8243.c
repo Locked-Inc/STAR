@@ -94,13 +94,13 @@ rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t*
   RX_CHECK_NULL_PTR(config->adc_bus_name, s_tag, "adc_bus_name pointer is NULL");
 
   if (handle->initialized) {
-    RX_LOG_WARN(s_tag, "DRV8243 already initialized");
+    star_log_warn(s_tag, "DRV8243 already initialized");
     return k_rx_err_invalid_state;
   }
 
   /* Validate PWM frequency */
   if (config->pwm_freq_hz > k_drv8243_max_pwm_freq_hz) {
-    RX_LOG_ERROR(s_tag, "PWM frequency exceeds 25 kHz limit");
+    star_log_error(s_tag, "PWM frequency exceeds 25 kHz limit");
     return k_rx_err_invalid_arg;
   }
 
@@ -129,14 +129,14 @@ rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t*
 
   rx_err_t err = rx_motor_init(&handle->motor, &motor_config);
   if (err != k_rx_ok) {
-    RX_LOG_ERROR(s_tag, "Failed to initialize motor controller");
+    star_log_error(s_tag, "Failed to initialize motor controller");
     return err;
   }
 
   /* Configure nFAULT pin as input with pull-up (active low) */
   err = internal_drv8243_configure_fault_pin(handle);
   if (err != k_rx_ok) {
-    RX_LOG_ERROR(s_tag, "Failed to configure fault pin");
+    star_log_error(s_tag, "Failed to configure fault pin");
     rx_motor_deinit(&handle->motor);
     return err;
   }
@@ -145,7 +145,7 @@ rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t*
   handle->fault_active  = false;
   handle->initialized   = true;
 
-  RX_LOG_INFO(s_tag, "DRV8243 initialized");
+  star_log_info(s_tag, "DRV8243 initialized");
 
   return k_rx_ok;
 }
@@ -155,7 +155,7 @@ rx_err_t rx_drv8243_deinit(rx_drv8243_handle_t* handle)
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
 
   if (!handle->initialized) {
-    RX_LOG_WARN(s_tag, "DRV8243 not initialized");
+    star_log_warn(s_tag, "DRV8243 not initialized");
     return k_rx_err_invalid_state;
   }
 
@@ -168,7 +168,7 @@ rx_err_t rx_drv8243_deinit(rx_drv8243_handle_t* handle)
   /* Clear handle */
   memset(handle, 0, sizeof(rx_drv8243_handle_t));
 
-  RX_LOG_INFO(s_tag, "DRV8243 deinitialized");
+  star_log_info(s_tag, "DRV8243 deinitialized");
 
   return k_rx_ok;
 }
@@ -178,7 +178,7 @@ rx_err_t rx_drv8243_set_speed(rx_drv8243_handle_t* handle, float speed)
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
 
   if (!handle->initialized) {
-    RX_LOG_ERROR(s_tag, "DRV8243 not initialized");
+    star_log_error(s_tag, "DRV8243 not initialized");
     return k_rx_err_invalid_state;
   }
 
@@ -186,7 +186,7 @@ rx_err_t rx_drv8243_set_speed(rx_drv8243_handle_t* handle, float speed)
   bool     fault_active;
   rx_err_t err = rx_drv8243_get_fault_status(handle, &fault_active);
   if (err == k_rx_ok && fault_active) {
-    RX_LOG_WARN(s_tag, "Cannot set speed: fault condition active");
+    star_log_warn(s_tag, "Cannot set speed: fault condition active");
     return k_rx_err_invalid_state;
   }
 
@@ -194,7 +194,7 @@ rx_err_t rx_drv8243_set_speed(rx_drv8243_handle_t* handle, float speed)
   if (handle->current_limit_ma > 0) {
     err = internal_drv8243_check_current_limit(handle);
     if (err != k_rx_ok) {
-      RX_LOG_WARN(s_tag, "Current limit exceeded, reducing speed");
+      star_log_warn(s_tag, "Current limit exceeded, reducing speed");
       speed *= s_current_limit_reduction_factor;
     }
   }
@@ -202,13 +202,13 @@ rx_err_t rx_drv8243_set_speed(rx_drv8243_handle_t* handle, float speed)
   /* Set motor duty cycle */
   err = rx_motor_set_duty(&handle->motor, speed);
   if (err != k_rx_ok) {
-    RX_LOG_ERROR(s_tag, "Failed to set motor duty");
+    star_log_error(s_tag, "Failed to set motor duty");
     return err;
   }
 
   handle->current_speed = speed;
 
-  RX_LOG_DEBUG(s_tag, "Debug");
+  star_log_debug(s_tag, "Debug");
 
   return k_rx_ok;
 }
@@ -218,19 +218,19 @@ rx_err_t rx_drv8243_stop(rx_drv8243_handle_t* handle, bool brake)
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
 
   if (!handle->initialized) {
-    RX_LOG_ERROR(s_tag, "DRV8243 not initialized");
+    star_log_error(s_tag, "DRV8243 not initialized");
     return k_rx_err_invalid_state;
   }
 
   rx_err_t err = rx_motor_stop(&handle->motor, brake);
   if (err != k_rx_ok) {
-    RX_LOG_ERROR(s_tag, "Failed to stop motor");
+    star_log_error(s_tag, "Failed to stop motor");
     return err;
   }
 
   handle->current_speed = 0.0f;
 
-  RX_LOG_DEBUG(s_tag, "Debug");
+  star_log_debug(s_tag, "Debug");
 
   return k_rx_ok;
 }
@@ -241,7 +241,7 @@ rx_err_t rx_drv8243_read_current(rx_drv8243_handle_t* handle, float* out_current
   RX_CHECK_NULL_PTR(out_current, s_tag, "out_current pointer is NULL");
 
   if (!handle->initialized) {
-    RX_LOG_ERROR(s_tag, "DRV8243 not initialized");
+    star_log_error(s_tag, "DRV8243 not initialized");
     return k_rx_err_invalid_state;
   }
 
@@ -252,7 +252,7 @@ rx_err_t rx_drv8243_read_current(rx_drv8243_handle_t* handle, float* out_current
   uint32_t voltage_mv;
   rx_err_t err = rx_bus_adc_read_voltage_mv(handle->bus_manager, handle->adc_bus_name, &voltage_mv);
   if (err != k_rx_ok) {
-    RX_LOG_ERROR(s_tag, "Failed to read IPROPI ADC");
+    star_log_error(s_tag, "Failed to read IPROPI ADC");
     return err;
   }
 
@@ -269,7 +269,7 @@ rx_err_t rx_drv8243_read_current(rx_drv8243_handle_t* handle, float* out_current
    */
   *out_current = (float)(voltage_mv * handle->ki_propi) / s_mv_to_v_divisor;
 
-  RX_LOG_DEBUG(s_tag, "Debug");
+  star_log_debug(s_tag, "Debug");
 
   return k_rx_ok;
 }
@@ -280,14 +280,14 @@ rx_err_t rx_drv8243_get_fault_status(rx_drv8243_handle_t* handle, bool* out_faul
   RX_CHECK_NULL_PTR(out_fault, s_tag, "out_fault pointer is NULL");
 
   if (!handle->initialized) {
-    RX_LOG_ERROR(s_tag, "DRV8243 not initialized");
+    star_log_error(s_tag, "DRV8243 not initialized");
     return k_rx_err_invalid_state;
   }
 
   /* Read nFAULT pin (active low) using PORT register */
   volatile PORT_Type* port = internal_get_port_base(handle->port_nfault);
   if (port == NULL) {
-    RX_LOG_ERROR(s_tag, "Error occurred");
+    star_log_error(s_tag, "Error occurred");
     return k_rx_err_invalid_arg;
   }
 
@@ -298,7 +298,7 @@ rx_err_t rx_drv8243_get_fault_status(rx_drv8243_handle_t* handle, bool* out_faul
   handle->fault_active = *out_fault;
 
   if (*out_fault) {
-    RX_LOG_WARN(s_tag, "DRV8243 fault detected on nFAULT pin");
+    star_log_warn(s_tag, "DRV8243 fault detected on nFAULT pin");
   }
 
   return k_rx_ok;
@@ -310,7 +310,7 @@ rx_err_t rx_drv8243_get_speed(const rx_drv8243_handle_t* handle, float* out_spee
   RX_CHECK_NULL_PTR(out_speed, s_tag, "out_speed pointer is NULL");
 
   if (!handle->initialized) {
-    RX_LOG_ERROR(s_tag, "DRV8243 not initialized");
+    star_log_error(s_tag, "DRV8243 not initialized");
     return k_rx_err_invalid_state;
   }
 
@@ -324,13 +324,13 @@ rx_err_t rx_drv8243_set_current_limit(rx_drv8243_handle_t* handle, uint16_t limi
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
 
   if (!handle->initialized) {
-    RX_LOG_ERROR(s_tag, "DRV8243 not initialized");
+    star_log_error(s_tag, "DRV8243 not initialized");
     return k_rx_err_invalid_state;
   }
 
   handle->current_limit_ma = limit_ma;
 
-  RX_LOG_INFO(s_tag, "Info");
+  star_log_info(s_tag, "Info");
 
   return k_rx_ok;
 }
@@ -345,12 +345,12 @@ static rx_err_t internal_drv8243_check_current_limit(rx_drv8243_handle_t* handle
   float    current_ma;
   rx_err_t err = rx_drv8243_read_current(handle, &current_ma);
   if (err != k_rx_ok) {
-    RX_LOG_ERROR(s_tag, "Failed to read current for limit check");
+    star_log_error(s_tag, "Failed to read current for limit check");
     return err;
   }
 
   if (current_ma > (float)handle->current_limit_ma) {
-    RX_LOG_WARN(s_tag, "Current limit exceeded");
+    star_log_warn(s_tag, "Current limit exceeded");
     return k_rx_err_invalid_state;
   }
 
@@ -361,7 +361,7 @@ static rx_err_t internal_drv8243_configure_fault_pin(rx_drv8243_handle_t* handle
 {
   volatile PORT_Type* port = internal_get_port_base(handle->port_nfault);
   if (port == NULL) {
-    RX_LOG_ERROR(s_tag, "Error occurred");
+    star_log_error(s_tag, "Error occurred");
     return k_rx_err_invalid_arg;
   }
 

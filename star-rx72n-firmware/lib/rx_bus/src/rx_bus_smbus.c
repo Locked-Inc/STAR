@@ -143,7 +143,7 @@ static rx_err_t internal_smbus_init_callback(rx_bus_config_t* bus_config, void* 
   smbus_init_ctx_t* ctx = (smbus_init_ctx_t*)user_ctx;
 
   if (bus_config->type != k_bus_type_smbus) {
-    RX_LOG_ERROR(s_tag, "Bus is not SMBUS type");
+    star_log_error(s_tag, "Bus is not SMBUS type");
     ctx->result = k_rx_err_invalid_arg;
     return k_rx_err_invalid_arg;
   }
@@ -153,7 +153,7 @@ static rx_err_t internal_smbus_init_callback(rx_bus_config_t* bus_config, void* 
                            bus_config->proto.smbus.i2c_config.frequency_hz);
 
   if (err != k_rx_ok) {
-    RX_LOG_ERROR(s_tag, "RIIC initialization failed");
+    star_log_error(s_tag, "RIIC initialization failed");
     ctx->result = err;
     return err;
   }
@@ -168,7 +168,7 @@ static rx_err_t internal_smbus_write_byte_callback(rx_bus_config_t* bus_config, 
   smbus_write_byte_ctx_t* ctx = (smbus_write_byte_ctx_t*)user_ctx;
 
   if (!bus_config->initialized) {
-    RX_LOG_ERROR(s_tag, "Bus not initialized");
+    star_log_error(s_tag, "Bus not initialized");
     ctx->result = k_rx_err_invalid_state;
     return k_rx_err_invalid_state;
   }
@@ -203,7 +203,7 @@ static rx_err_t internal_smbus_read_byte_callback(rx_bus_config_t* bus_config, v
   smbus_read_byte_ctx_t* ctx = (smbus_read_byte_ctx_t*)user_ctx;
 
   if (!bus_config->initialized) {
-    RX_LOG_ERROR(s_tag, "Bus not initialized");
+    star_log_error(s_tag, "Bus not initialized");
     ctx->result = k_rx_err_invalid_state;
     return k_rx_err_invalid_state;
   }
@@ -229,7 +229,7 @@ static rx_err_t internal_smbus_read_byte_callback(rx_bus_config_t* bus_config, v
     crc = internal_crc8(crc, data, k_smbus_single_byte);
 
     if (crc != data[k_smbus_byte_pec]) {
-      RX_LOG_ERROR(s_tag, "PEC mismatch");
+      star_log_error(s_tag, "PEC mismatch");
       ctx->result = k_rx_err_crc_mismatch;
       return k_rx_err_crc_mismatch;
     }
@@ -245,7 +245,7 @@ static rx_err_t internal_smbus_read_word_data_callback(rx_bus_config_t* bus_conf
   smbus_read_word_data_ctx_t* ctx = (smbus_read_word_data_ctx_t*)user_ctx;
 
   if (!bus_config->initialized) {
-    RX_LOG_ERROR(s_tag, "Bus not initialized");
+    star_log_error(s_tag, "Bus not initialized");
     ctx->result = k_rx_err_invalid_state;
     return k_rx_err_invalid_state;
   }
@@ -279,7 +279,7 @@ static rx_err_t internal_smbus_read_word_data_callback(rx_bus_config_t* bus_conf
     crc = internal_crc8(crc, read_data, k_smbus_word_data_bytes);
 
     if (crc != read_data[k_smbus_word_pec]) {
-      RX_LOG_ERROR(s_tag, "PEC mismatch");
+      star_log_error(s_tag, "PEC mismatch");
       ctx->result = k_rx_err_crc_mismatch;
       return k_rx_err_crc_mismatch;
     }
@@ -420,7 +420,7 @@ rx_err_t rx_bus_smbus_read_block_data(rx_bus_manager_t* manager,
   }
 
   if (len_byte > max_length) {
-    RX_LOG_ERROR(s_tag, "Block length exceeds buffer");
+    star_log_error(s_tag, "Block length exceeds buffer");
     return k_rx_err_invalid_size;
   }
 
