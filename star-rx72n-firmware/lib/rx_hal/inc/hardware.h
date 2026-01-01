@@ -39,7 +39,7 @@ extern "C" {
  *
  * Call this before ThreadX initialization.
  *
- * @return RX_OK on success, error code on failure
+ * @return k_rx_ok on success, error code on failure
  */
 rx_err_t system_init(void);
 
@@ -54,10 +54,10 @@ rx_err_t system_init(void);
  * @param[in] port Port number (0-9, or 0xA-0x10 for A-G)
  * @param[in] pin Pin number (0-7)
  *
- * @return RX_OK on success,
- *         RX_ERR_GPIO_INVALID_PORT if port is invalid,
- *         RX_ERR_GPIO_INVALID_PIN if pin is invalid,
- *         RX_ERR_GPIO_CONFLICT if pin already reserved
+ * @return k_rx_ok on success,
+ *         k_rx_err_gpio_invalid_port if port is invalid,
+ *         k_rx_err_gpio_invalid_pin if pin is invalid,
+ *         k_rx_err_gpio_conflict if pin already reserved
  */
 rx_err_t gpio_set_output(uint8_t port, uint8_t pin);
 
@@ -67,10 +67,10 @@ rx_err_t gpio_set_output(uint8_t port, uint8_t pin);
  * @param[in] port Port number
  * @param[in] pin Pin number (0-7)
  *
- * @return RX_OK on success,
- *         RX_ERR_GPIO_INVALID_PORT if port is invalid,
- *         RX_ERR_GPIO_INVALID_PIN if pin is invalid,
- *         RX_ERR_GPIO_CONFLICT if pin already reserved
+ * @return k_rx_ok on success,
+ *         k_rx_err_gpio_invalid_port if port is invalid,
+ *         k_rx_err_gpio_invalid_pin if pin is invalid,
+ *         k_rx_err_gpio_conflict if pin already reserved
  */
 rx_err_t gpio_set_input(uint8_t port, uint8_t pin);
 
@@ -80,9 +80,9 @@ rx_err_t gpio_set_input(uint8_t port, uint8_t pin);
  * @param[in] port Port number
  * @param[in] pin Pin number (0-7)
  *
- * @return RX_OK on success,
- *         RX_ERR_GPIO_INVALID_PORT if port is invalid,
- *         RX_ERR_GPIO_INVALID_PIN if pin is invalid
+ * @return k_rx_ok on success,
+ *         k_rx_err_gpio_invalid_port if port is invalid,
+ *         k_rx_err_gpio_invalid_pin if pin is invalid
  */
 rx_err_t gpio_write_high(uint8_t port, uint8_t pin);
 
@@ -92,9 +92,9 @@ rx_err_t gpio_write_high(uint8_t port, uint8_t pin);
  * @param[in] port Port number
  * @param[in] pin Pin number (0-7)
  *
- * @return RX_OK on success,
- *         RX_ERR_GPIO_INVALID_PORT if port is invalid,
- *         RX_ERR_GPIO_INVALID_PIN if pin is invalid
+ * @return k_rx_ok on success,
+ *         k_rx_err_gpio_invalid_port if port is invalid,
+ *         k_rx_err_gpio_invalid_pin if pin is invalid
  */
 rx_err_t gpio_write_low(uint8_t port, uint8_t pin);
 
@@ -104,9 +104,9 @@ rx_err_t gpio_write_low(uint8_t port, uint8_t pin);
  * @param[in] port Port number
  * @param[in] pin Pin number (0-7)
  *
- * @return RX_OK on success,
- *         RX_ERR_GPIO_INVALID_PORT if port is invalid,
- *         RX_ERR_GPIO_INVALID_PIN if pin is invalid
+ * @return k_rx_ok on success,
+ *         k_rx_err_gpio_invalid_port if port is invalid,
+ *         k_rx_err_gpio_invalid_pin if pin is invalid
  */
 rx_err_t gpio_toggle(uint8_t port, uint8_t pin);
 
@@ -117,10 +117,10 @@ rx_err_t gpio_toggle(uint8_t port, uint8_t pin);
  * @param[in] pin Pin number (0-7)
  * @param[out] value Pointer to store pin value (true=high, false=low)
  *
- * @return RX_OK on success,
- *         RX_ERR_GPIO_INVALID_PORT if port is invalid,
- *         RX_ERR_GPIO_INVALID_PIN if pin is invalid,
- *         RX_ERR_NULL_POINTER if value is NULL
+ * @return k_rx_ok on success,
+ *         k_rx_err_gpio_invalid_port if port is invalid,
+ *         k_rx_err_gpio_invalid_pin if pin is invalid,
+ *         k_rx_err_null_pointer if value is NULL
  */
 rx_err_t gpio_read(uint8_t port, uint8_t pin, bool* value);
 
@@ -132,14 +132,14 @@ rx_err_t gpio_read(uint8_t port, uint8_t pin, bool* value);
 /**
  * @brief Initialize CMT0 for ThreadX system tick (100 Hz)
  *
- * @return RX_OK on success, error code on failure
+ * @return k_rx_ok on success, error code on failure
  */
 rx_err_t timer_init(void);
 
 /**
  * @brief Stop CMT0 timer
  *
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t timer_stop(void);
 
@@ -148,8 +148,8 @@ rx_err_t timer_stop(void);
  *
  * @param[out] count Pointer to store counter value
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if count is NULL
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if count is NULL
  */
 rx_err_t timer_get_count(uint16_t* count);
 
@@ -165,9 +165,9 @@ rx_err_t timer_get_count(uint16_t* count);
  * @param[in] channel ADC channel (0-7)
  * @param[in] bits Resolution (8, 10, or 12 bits)
  *
- * @return RX_OK on success,
- *         RX_ERR_INVALID_ARG if unit, channel, or bits is invalid,
- *         RX_ERR_GPIO_CONFLICT if pin already reserved
+ * @return k_rx_ok on success,
+ *         k_rx_err_invalid_arg if unit, channel, or bits is invalid,
+ *         k_rx_err_gpio_conflict if pin already reserved
  */
 rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits);
 
@@ -178,11 +178,11 @@ rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits);
  * @param[in] channel ADC channel (0-7)
  * @param[out] value Pointer to store ADC value
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if value is NULL,
- *         RX_ERR_INVALID_ARG if unit or channel is invalid,
- *         RX_ERR_INVALID_STATE if ADC unit not initialized,
- *         RX_ERR_TIMEOUT if conversion times out
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if value is NULL,
+ *         k_rx_err_invalid_arg if unit or channel is invalid,
+ *         k_rx_err_invalid_state if ADC unit not initialized,
+ *         k_rx_err_timeout if conversion times out
  */
 rx_err_t adc_read(uint8_t unit, uint8_t channel, uint16_t* value);
 
@@ -194,11 +194,11 @@ rx_err_t adc_read(uint8_t unit, uint8_t channel, uint16_t* value);
  * @param[in] bits Resolution used during init (8, 10, or 12)
  * @param[out] voltage_mv Pointer to store voltage in millivolts
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if voltage_mv is NULL,
- *         RX_ERR_INVALID_ARG if unit or channel is invalid,
- *         RX_ERR_INVALID_STATE if ADC unit not initialized,
- *         RX_ERR_TIMEOUT if conversion times out
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if voltage_mv is NULL,
+ *         k_rx_err_invalid_arg if unit or channel is invalid,
+ *         k_rx_err_invalid_state if ADC unit not initialized,
+ *         k_rx_err_timeout if conversion times out
  */
 rx_err_t adc_read_voltage_mv(uint8_t unit, uint8_t channel, uint8_t bits, uint32_t* voltage_mv);
 
@@ -213,8 +213,8 @@ rx_err_t adc_read_voltage_mv(uint8_t unit, uint8_t channel, uint8_t bits, uint32
  * @param[in] channel RIIC channel (0-2)
  * @param[in] frequency_hz Clock frequency (100000, 400000, or 1000000)
  *
- * @return RX_OK on success,
- *         RX_ERR_INVALID_ARG if channel or frequency is invalid
+ * @return k_rx_ok on success,
+ *         k_rx_err_invalid_arg if channel or frequency is invalid
  */
 rx_err_t riic_init(uint8_t channel, uint32_t frequency_hz);
 
@@ -226,11 +226,11 @@ rx_err_t riic_init(uint8_t channel, uint32_t frequency_hz);
  * @param[in] data Pointer to data to write
  * @param[in] length Number of bytes to write
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if data is NULL,
- *         RX_ERR_INVALID_STATE if channel not initialized,
- *         RX_ERR_TIMEOUT if bus timeout,
- *         RX_ERR_NACK if device NACK received
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if data is NULL,
+ *         k_rx_err_invalid_state if channel not initialized,
+ *         k_rx_err_timeout if bus timeout,
+ *         k_rx_err_nack if device NACK received
  */
 rx_err_t riic_write(uint8_t channel, uint8_t device_addr, const uint8_t* data, uint16_t length);
 
@@ -242,11 +242,11 @@ rx_err_t riic_write(uint8_t channel, uint8_t device_addr, const uint8_t* data, u
  * @param[out] data Pointer to buffer for received data
  * @param[in] length Number of bytes to read
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if data is NULL,
- *         RX_ERR_INVALID_STATE if channel not initialized,
- *         RX_ERR_TIMEOUT if bus timeout,
- *         RX_ERR_NACK if device NACK received
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if data is NULL,
+ *         k_rx_err_invalid_state if channel not initialized,
+ *         k_rx_err_timeout if bus timeout,
+ *         k_rx_err_nack if device NACK received
  */
 rx_err_t riic_read(uint8_t channel, uint8_t device_addr, uint8_t* data, uint16_t length);
 
@@ -262,11 +262,11 @@ rx_err_t riic_read(uint8_t channel, uint8_t device_addr, uint8_t* data, uint16_t
  * @param[out] read_data Pointer to buffer for received data
  * @param[in] read_length Number of bytes to read
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if write_data or read_data is NULL,
- *         RX_ERR_INVALID_STATE if channel not initialized,
- *         RX_ERR_TIMEOUT if bus timeout,
- *         RX_ERR_NACK if device NACK received
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if write_data or read_data is NULL,
+ *         k_rx_err_invalid_state if channel not initialized,
+ *         k_rx_err_timeout if bus timeout,
+ *         k_rx_err_nack if device NACK received
  */
 rx_err_t riic_write_read(uint8_t        channel,
                          uint8_t        device_addr,
@@ -287,8 +287,8 @@ rx_err_t riic_write_read(uint8_t        channel,
  * @param[in] mode SPI mode (0-3): CPOL and CPHA configuration
  * @param[in] use_16bit True for 16-bit frames, false for 8-bit frames
  *
- * @return RX_OK on success,
- *         RX_ERR_INVALID_ARG if channel or mode is invalid
+ * @return k_rx_ok on success,
+ *         k_rx_err_invalid_arg if channel or mode is invalid
  */
 rx_err_t rspi_init_peripheral(uint8_t channel, uint8_t mode, bool use_16bit);
 
@@ -300,10 +300,10 @@ rx_err_t rspi_init_peripheral(uint8_t channel, uint8_t mode, bool use_16bit);
  * @param[out] rx_data Pointer to receive buffer
  * @param[in] length Number of bytes to transfer
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if tx_data or rx_data is NULL,
- *         RX_ERR_INVALID_STATE if channel not initialized,
- *         RX_ERR_TIMEOUT if transfer timeout
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if tx_data or rx_data is NULL,
+ *         k_rx_err_invalid_state if channel not initialized,
+ *         k_rx_err_timeout if transfer timeout
  */
 rx_err_t rspi_peripheral_transfer(uint8_t        channel,
                                   const uint8_t* tx_data,
@@ -316,9 +316,9 @@ rx_err_t rspi_peripheral_transfer(uint8_t        channel,
  * @param[in] channel RSPI channel (0-2)
  * @param[out] available Pointer to store availability status
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if available is NULL,
- *         RX_ERR_INVALID_STATE if channel not initialized
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if available is NULL,
+ *         k_rx_err_invalid_state if channel not initialized
  */
 rx_err_t rspi_peripheral_read_available(uint8_t channel, bool* available);
 
@@ -328,9 +328,9 @@ rx_err_t rspi_peripheral_read_available(uint8_t channel, bool* available);
  * @param[in] channel RSPI channel (0-2)
  * @param[out] ready Pointer to store ready status
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if ready is NULL,
- *         RX_ERR_INVALID_STATE if channel not initialized
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if ready is NULL,
+ *         k_rx_err_invalid_state if channel not initialized
  */
 rx_err_t rspi_peripheral_write_ready(uint8_t channel, bool* ready);
 
@@ -339,8 +339,8 @@ rx_err_t rspi_peripheral_write_ready(uint8_t channel, bool* ready);
  *
  * @param[in] channel RSPI channel (0-2)
  *
- * @return RX_OK on success,
- *         RX_ERR_INVALID_ARG if channel is invalid
+ * @return k_rx_ok on success,
+ *         k_rx_err_invalid_arg if channel is invalid
  */
 rx_err_t rspi_deinit(uint8_t channel);
 
@@ -352,7 +352,7 @@ rx_err_t rspi_deinit(uint8_t channel);
 /**
  * @brief Initialize SCI5 UART (115200 bps, 8N1, TX only)
  *
- * @return RX_OK on success, error code on failure
+ * @return k_rx_ok on success, error code on failure
  */
 rx_err_t uart_init(void);
 

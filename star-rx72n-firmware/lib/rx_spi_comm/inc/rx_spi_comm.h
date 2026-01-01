@@ -95,8 +95,8 @@ typedef struct {
  * @param[out] handle Pointer to handle
  * @param[in]  config Configuration (NULL for defaults)
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if handle is NULL
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if handle is NULL
  */
 rx_err_t rx_spi_comm_init(rx_spi_comm_handle_t* handle, const rx_spi_comm_config_t* config);
 
@@ -104,7 +104,7 @@ rx_err_t rx_spi_comm_init(rx_spi_comm_handle_t* handle, const rx_spi_comm_config
  * @brief Deinitialize SPI communication handle
  *
  * @param[in,out] handle Pointer to handle
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t rx_spi_comm_deinit(rx_spi_comm_handle_t* handle);
 
@@ -125,10 +125,10 @@ rx_err_t rx_spi_comm_deinit(rx_spi_comm_handle_t* handle);
  * @param[in]     payload Payload data
  * @param[in]     payload_len Payload length
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if handle or payload is NULL
- * @return RX_ERR_INVALID_STATE if not initialized
- * @return RX_ERR_INVALID_SIZE if payload exceeds maximum
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if handle or payload is NULL
+ * @return k_rx_err_invalid_state if not initialized
+ * @return k_rx_err_invalid_size if payload exceeds maximum
  */
 rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
                           rx_frame_type_t       type,
@@ -142,7 +142,7 @@ rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
  * @param[in,out] handle Initialized handle
  * @param[in]     sequence Sequence number to acknowledge
  *
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t rx_spi_comm_send_ack(rx_spi_comm_handle_t* handle, uint16_t sequence);
 
@@ -153,7 +153,7 @@ rx_err_t rx_spi_comm_send_ack(rx_spi_comm_handle_t* handle, uint16_t sequence);
  * @param[in]     sequence Sequence number
  * @param[in]     flags Additional flags (e.g., k_frame_flag_soft_nack)
  *
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t rx_spi_comm_send_nack(rx_spi_comm_handle_t* handle, uint16_t sequence, uint8_t flags);
 
@@ -172,12 +172,12 @@ rx_err_t rx_spi_comm_send_nack(rx_spi_comm_handle_t* handle, uint16_t sequence, 
  * @param[out]    frame Decoded frame output
  * @param[in]     timeout_ms Timeout in milliseconds (0 = poll once)
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if handle or frame is NULL
- * @return RX_ERR_INVALID_STATE if not initialized
- * @return RX_ERR_TIMEOUT if no data received within timeout
- * @return RX_ERR_CRC_MISMATCH if CRC validation fails
- * @return RX_ERR_PROTOCOL_ERROR if frame format invalid
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if handle or frame is NULL
+ * @return k_rx_err_invalid_state if not initialized
+ * @return k_rx_err_timeout if no data received within timeout
+ * @return k_rx_err_crc_mismatch if CRC validation fails
+ * @return k_rx_err_protocol_error if frame format invalid
  */
 rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, uint32_t timeout_ms);
 
@@ -187,7 +187,7 @@ rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, ui
  * @param[in]  handle Initialized handle
  * @param[out] available True if data is waiting
  *
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t rx_spi_comm_data_available(rx_spi_comm_handle_t* handle, bool* available);
 

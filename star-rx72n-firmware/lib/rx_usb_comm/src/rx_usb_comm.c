@@ -59,19 +59,19 @@ static rx_err_t internal_read_usb_data(rx_usb_comm_handle_t* handle)
   /* Calculate available space in buffer */
   uint32_t space = k_usb_comm_rx_buffer_size - handle->rx_buffer_len;
   if (space == 0) {
-    return RX_OK; /* Buffer full */
+    return k_rx_ok; /* Buffer full */
   }
 
   /* Read from USB */
   uint32_t bytes_read = 0;
   rx_err_t err        = rx_usb_read(handle->rx_buffer + handle->rx_buffer_len, space, &bytes_read);
 
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
   handle->rx_buffer_len += bytes_read;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /**
@@ -123,7 +123,7 @@ static int32_t internal_find_sync(rx_usb_comm_handle_t* handle)
 rx_err_t rx_usb_comm_init(rx_usb_comm_handle_t* handle, const rx_usb_comm_config_t* config)
 {
   if (handle == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Clear handle */
@@ -140,14 +140,14 @@ rx_err_t rx_usb_comm_init(rx_usb_comm_handle_t* handle, const rx_usb_comm_config
 
   /* Initialize frame encoder */
   rx_err_t err = rx_frame_encoder_init(&handle->encoder);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR(s_tag, "Failed to init frame encoder");
     return err;
   }
 
   /* Initialize frame decoder */
   err = rx_frame_decoder_init(&handle->decoder);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR(s_tag, "Failed to init frame decoder");
     rx_frame_encoder_deinit(&handle->encoder);
     return err;
@@ -164,13 +164,13 @@ rx_err_t rx_usb_comm_init(rx_usb_comm_handle_t* handle, const rx_usb_comm_config
   handle->initialized = 1;
 
   RX_LOG_DEBUG(s_tag, "USB comm initialized");
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_usb_comm_deinit(rx_usb_comm_handle_t* handle)
 {
   if (handle == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (handle->initialized) {
@@ -180,7 +180,7 @@ rx_err_t rx_usb_comm_deinit(rx_usb_comm_handle_t* handle)
   }
 
   RX_LOG_DEBUG(s_tag, "USB comm deinitialized");
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -195,27 +195,27 @@ rx_err_t rx_usb_comm_send(rx_usb_comm_handle_t* handle,
                           uint32_t              payload_len)
 {
   if (handle == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (!handle->initialized) {
     RX_LOG_ERROR(s_tag, "Handle not initialized");
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Check USB is ready */
   if (!rx_usb_is_configured()) {
     RX_LOG_ERROR(s_tag, "USB not configured");
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   if (payload == NULL && payload_len > 0) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (payload_len > k_frame_max_payload) {
     RX_LOG_ERROR(s_tag, "Payload too large");
-    return RX_ERR_INVALID_SIZE;
+    return k_rx_err_invalid_size;
   }
 
   /* Build frame */
@@ -240,14 +240,14 @@ rx_err_t rx_usb_comm_send(rx_usb_comm_handle_t* handle,
   uint32_t wire_len = 0;
 
   rx_err_t err = rx_frame_encode(&handle->encoder, &frame, handle->tx_buffer, &wire_len);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR(s_tag, "Frame encode failed");
     return err;
   }
 
   /* Send via USB */
   err = rx_usb_write(handle->tx_buffer, wire_len);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR(s_tag, "USB write failed");
     return err;
   }
@@ -255,27 +255,27 @@ rx_err_t rx_usb_comm_send(rx_usb_comm_handle_t* handle,
   /* Increment TX sequence */
   handle->tx_sequence++;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_usb_comm_send_ack(rx_usb_comm_handle_t* handle, uint16_t sequence)
 {
   if (handle == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (!handle->initialized) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   if (!rx_usb_is_configured()) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Create ACK frame */
   rx_frame_t ack_frame;
   rx_err_t   err = rx_frame_create_ack(&ack_frame, sequence);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
@@ -283,7 +283,7 @@ rx_err_t rx_usb_comm_send_ack(rx_usb_comm_handle_t* handle, uint16_t sequence)
   uint32_t wire_len = 0;
 
   err = rx_frame_encode(&handle->encoder, &ack_frame, handle->tx_buffer, &wire_len);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
@@ -293,21 +293,21 @@ rx_err_t rx_usb_comm_send_ack(rx_usb_comm_handle_t* handle, uint16_t sequence)
 rx_err_t rx_usb_comm_send_nack(rx_usb_comm_handle_t* handle, uint16_t sequence, uint8_t flags)
 {
   if (handle == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (!handle->initialized) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   if (!rx_usb_is_configured()) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Create NACK frame */
   rx_frame_t nack_frame;
   rx_err_t   err = rx_frame_create_nack(&nack_frame, sequence, flags);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
@@ -315,7 +315,7 @@ rx_err_t rx_usb_comm_send_nack(rx_usb_comm_handle_t* handle, uint16_t sequence, 
   uint32_t wire_len = 0;
 
   err = rx_frame_encode(&handle->encoder, &nack_frame, handle->tx_buffer, &wire_len);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
@@ -330,15 +330,15 @@ rx_err_t rx_usb_comm_send_nack(rx_usb_comm_handle_t* handle, uint16_t sequence, 
 rx_err_t rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, uint32_t timeout_ms)
 {
   if (handle == NULL || frame == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (!handle->initialized) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   if (!rx_usb_is_configured()) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   uint32_t elapsed_ms = 0;
@@ -348,7 +348,7 @@ rx_err_t rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, ui
   while (1) {
     /* Read any available USB data */
     err = internal_read_usb_data(handle);
-    if (err != RX_OK && err != RX_ERR_TIMEOUT) {
+    if (err != k_rx_ok && err != k_rx_err_timeout) {
       return err;
     }
 
@@ -366,7 +366,7 @@ rx_err_t rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, ui
       internal_compact_rx_buffer(handle);
 
       if (timeout_ms == 0 || elapsed_ms >= timeout_ms) {
-        return RX_ERR_TIMEOUT;
+        return k_rx_err_timeout;
       }
 
       /* Sleep and retry if time interface available */
@@ -374,7 +374,7 @@ rx_err_t rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, ui
         handle->time_iface->sleep_ms(handle->time_iface->ctx, SLEEP_INTERVAL_MS);
         elapsed_ms += SLEEP_INTERVAL_MS;
       } else {
-        return RX_ERR_TIMEOUT;
+        return k_rx_err_timeout;
       }
       continue;
     }
@@ -389,7 +389,7 @@ rx_err_t rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, ui
     if (available < FRAME_HEADER_TOTAL) {
       /* Need more data for header */
       if (timeout_ms == 0 || elapsed_ms >= timeout_ms) {
-        return RX_ERR_TIMEOUT;
+        return k_rx_err_timeout;
       }
 
       /* Sleep and retry if time interface available */
@@ -397,7 +397,7 @@ rx_err_t rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, ui
         handle->time_iface->sleep_ms(handle->time_iface->ctx, SLEEP_INTERVAL_MS);
         elapsed_ms += SLEEP_INTERVAL_MS;
       } else {
-        return RX_ERR_TIMEOUT;
+        return k_rx_err_timeout;
       }
       continue;
     }
@@ -420,7 +420,7 @@ rx_err_t rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, ui
     if (available < total_size) {
       /* Need more data */
       if (timeout_ms == 0 || elapsed_ms >= timeout_ms) {
-        return RX_ERR_TIMEOUT;
+        return k_rx_err_timeout;
       }
 
       /* Sleep and retry if time interface available */
@@ -428,7 +428,7 @@ rx_err_t rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, ui
         handle->time_iface->sleep_ms(handle->time_iface->ctx, SLEEP_INTERVAL_MS);
         elapsed_ms += SLEEP_INTERVAL_MS;
       } else {
-        return RX_ERR_TIMEOUT;
+        return k_rx_err_timeout;
       }
       continue;
     }
@@ -440,7 +440,7 @@ rx_err_t rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, ui
     handle->rx_buffer_pos += total_size;
     internal_compact_rx_buffer(handle);
 
-    if (err != RX_OK) {
+    if (err != k_rx_ok) {
       RX_LOG_ERROR(s_tag, "Frame decode failed");
       return err;
     }
@@ -448,24 +448,24 @@ rx_err_t rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, ui
     /* Update expected RX sequence */
     handle->rx_sequence = frame->header.sequence + 1;
 
-    return RX_OK;
+    return k_rx_ok;
   }
 }
 
 rx_err_t rx_usb_comm_data_available(rx_usb_comm_handle_t* handle, bool* available)
 {
   if (handle == NULL || available == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (!handle->initialized) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Check USB CDC buffer */
   uint32_t usb_available = 0;
   rx_err_t err           = rx_usb_rx_available(&usb_available);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
@@ -473,22 +473,22 @@ rx_err_t rx_usb_comm_data_available(rx_usb_comm_handle_t* handle, bool* availabl
   uint32_t buffered = handle->rx_buffer_len - handle->rx_buffer_pos;
 
   *available = (usb_available > 0) || (buffered > 0);
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_usb_comm_is_ready(rx_usb_comm_handle_t* handle, bool* ready)
 {
   if (handle == NULL || ready == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (!handle->initialized) {
     *ready = false;
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   *ready = rx_usb_is_configured();
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================

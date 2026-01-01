@@ -150,7 +150,7 @@ typedef enum {
  * @param[in] reg_low Low byte register address
  * @param[out] value Pointer to store 16-bit value
  *
- * @return RX_OK on success, error code on failure
+ * @return k_rx_ok on success, error code on failure
  */
 static rx_err_t internal_read_word(rx_bus_manager_t* manager,
                                    const char*       bus_name,
@@ -162,19 +162,19 @@ static rx_err_t internal_read_word(rx_bus_manager_t* manager,
 
   /* Read low byte */
   err = rx_bus_i2c_write_read(manager, bus_name, &reg_low, 1, &data[0], 1);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
   /* Read high byte */
   uint8_t reg_high = reg_low + 1;
   err              = rx_bus_i2c_write_read(manager, bus_name, &reg_high, 1, &data[1], 1);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
   *value = ((uint16_t)data[1] << 8) | data[0];
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /**
@@ -185,7 +185,7 @@ static rx_err_t internal_read_word(rx_bus_manager_t* manager,
  * @param[in] reg_low Low byte register address
  * @param[in] value 16-bit value to write
  *
- * @return RX_OK on success, error code on failure
+ * @return k_rx_ok on success, error code on failure
  */
 static rx_err_t internal_write_word(rx_bus_manager_t* manager,
                                     const char*       bus_name,
@@ -199,7 +199,7 @@ static rx_err_t internal_write_word(rx_bus_manager_t* manager,
   write_data[0] = reg_low;
   write_data[1] = (uint8_t)(value & 0xFF);
   err           = rx_bus_i2c_write(manager, bus_name, write_data, 2);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
@@ -227,7 +227,7 @@ rx_bq25798_init(rx_bus_manager_t* manager, const char* bus_name, const bq25798_c
 
   /* Initialize I2C bus */
   rx_err_t err = rx_bus_i2c_init(manager, bus_name);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR(s_tag, "I2C initialization failed");
     return err;
   }
@@ -236,7 +236,7 @@ rx_bq25798_init(rx_bus_manager_t* manager, const char* bus_name, const bq25798_c
   uint8_t part_info;
   uint8_t reg_addr = k_reg_part_information;
   err              = rx_bus_i2c_write_read(manager, bus_name, &reg_addr, 1, &part_info, 1);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR(s_tag, "Failed to read part information");
     return err;
   }
@@ -246,7 +246,7 @@ rx_bq25798_init(rx_bus_manager_t* manager, const char* bus_name, const bq25798_c
   /* Configure charge voltage */
   if (config->charge_voltage_mv > 0) {
     err = rx_bq25798_set_charge_voltage(manager, bus_name, config->charge_voltage_mv);
-    if (err != RX_OK) {
+    if (err != k_rx_ok) {
       RX_LOG_ERROR(s_tag, "Failed to set charge voltage");
       return err;
     }
@@ -254,7 +254,7 @@ rx_bq25798_init(rx_bus_manager_t* manager, const char* bus_name, const bq25798_c
 
   /* Configure charge current */
   err = rx_bq25798_set_charge_current(manager, bus_name, config->charge_current_ma);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR(s_tag, "Failed to set charge current");
     return err;
   }
@@ -262,7 +262,7 @@ rx_bq25798_init(rx_bus_manager_t* manager, const char* bus_name, const bq25798_c
   /* Configure input voltage limit */
   if (config->input_voltage_limit_mv > 0) {
     err = rx_bq25798_set_input_voltage_limit(manager, bus_name, config->input_voltage_limit_mv);
-    if (err != RX_OK) {
+    if (err != k_rx_ok) {
       RX_LOG_ERROR(s_tag, "Failed to set input voltage limit");
       return err;
     }
@@ -271,7 +271,7 @@ rx_bq25798_init(rx_bus_manager_t* manager, const char* bus_name, const bq25798_c
   /* Configure input current limit */
   if (config->input_current_limit_ma > 0) {
     err = rx_bq25798_set_input_current_limit(manager, bus_name, config->input_current_limit_ma);
-    if (err != RX_OK) {
+    if (err != k_rx_ok) {
       RX_LOG_ERROR(s_tag, "Failed to set input current limit");
       return err;
     }
@@ -281,7 +281,7 @@ rx_bq25798_init(rx_bus_manager_t* manager, const char* bus_name, const bq25798_c
   if (config->enable_adc) {
     uint8_t write_data[2] = {k_reg_adc_control, k_adc_en | (1 << 6)}; /* Continuous mode */
     err                   = rx_bus_i2c_write(manager, bus_name, write_data, 2);
-    if (err != RX_OK) {
+    if (err != k_rx_ok) {
       RX_LOG_ERROR(s_tag, "Failed to enable ADC");
       return err;
     }
@@ -289,14 +289,14 @@ rx_bq25798_init(rx_bus_manager_t* manager, const char* bus_name, const bq25798_c
 
   /* Enable/disable charging */
   err = rx_bq25798_enable_charging(manager, bus_name, config->enable_charging);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR(s_tag, "Failed to configure charging enable");
     return err;
   }
 
   RX_LOG_INFO(s_tag, "BQ25798 initialized successfully");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_bq25798_enable_charging(rx_bus_manager_t* manager, const char* bus_name, bool enable)
@@ -308,7 +308,7 @@ rx_err_t rx_bq25798_enable_charging(rx_bus_manager_t* manager, const char* bus_n
   uint8_t  ctrl_reg;
   uint8_t  reg_addr = k_reg_charger_control_0;
   rx_err_t err      = rx_bus_i2c_write_read(manager, bus_name, &reg_addr, 1, &ctrl_reg, 1);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
@@ -332,7 +332,7 @@ rx_bq25798_set_charge_voltage(rx_bus_manager_t* manager, const char* bus_name, u
 
   if (voltage_mv < 3000 || voltage_mv > 18800) {
     RX_LOG_ERROR(s_tag, "Error occurred");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Convert to register value */
@@ -350,7 +350,7 @@ rx_bq25798_set_charge_current(rx_bus_manager_t* manager, const char* bus_name, u
 
   if (current_ma > 5000) {
     RX_LOG_ERROR(s_tag, "Error occurred");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Convert to register value */
@@ -369,7 +369,7 @@ rx_err_t rx_bq25798_set_input_voltage_limit(rx_bus_manager_t* manager,
 
   if (voltage_mv < 3600 || voltage_mv > 24000) {
     RX_LOG_ERROR(s_tag, "Error occurred");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Convert to register value */
@@ -387,7 +387,7 @@ rx_err_t rx_bq25798_set_input_current_limit(rx_bus_manager_t* manager,
 
   if (current_ma < 100 || current_ma > 3300) {
     RX_LOG_ERROR(s_tag, "Error occurred");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Convert to register value */
@@ -410,7 +410,7 @@ rx_bq25798_read_status(rx_bus_manager_t* manager, const char* bus_name, bq25798_
   for (uint8_t i = 0; i < 5; i++) {
     uint8_t reg_addr = k_reg_charger_status_0 + i;
     err              = rx_bus_i2c_write_read(manager, bus_name, &reg_addr, 1, &status_regs[i], 1);
-    if (err != RX_OK) {
+    if (err != k_rx_ok) {
       RX_LOG_ERROR(s_tag, "Error occurred");
       return err;
     }
@@ -431,7 +431,7 @@ rx_bq25798_read_status(rx_bus_manager_t* manager, const char* bus_name, bq25798_
   uint8_t ctrl_reg;
   uint8_t reg_addr = k_reg_charger_control_0;
   err              = rx_bus_i2c_write_read(manager, bus_name, &reg_addr, 1, &ctrl_reg, 1);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
   status->charging_enabled = (ctrl_reg & k_ctrl0_en_chg) != 0;
@@ -440,12 +440,12 @@ rx_bq25798_read_status(rx_bus_manager_t* manager, const char* bus_name, bq25798_
   uint8_t fault_reg;
   reg_addr = k_reg_fault_status_0;
   err      = rx_bus_i2c_write_read(manager, bus_name, &reg_addr, 1, &fault_reg, 1);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
   status->watchdog_fault = (fault_reg & (1 << 7)) != 0;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_bq25798_read_adc(rx_bus_manager_t* manager, const char* bus_name, bq25798_adc_t* adc)
@@ -459,54 +459,54 @@ rx_err_t rx_bq25798_read_adc(rx_bus_manager_t* manager, const char* bus_name, bq
   /* Read VBUS */
   uint16_t raw_val;
   err = internal_read_word(manager, bus_name, k_reg_adc_vbus_low, &raw_val);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
   adc->vbus_mv = raw_val * k_adc_vbus_step_mv;
 
   /* Read VBAT */
   err = internal_read_word(manager, bus_name, k_reg_adc_vbat_low, &raw_val);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
   adc->vbat_mv = raw_val * k_adc_vbat_step_mv;
 
   /* Read VSYS */
   err = internal_read_word(manager, bus_name, k_reg_adc_vsys_low, &raw_val);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
   adc->vsys_mv = raw_val * k_adc_vsys_step_mv;
 
   /* Read ICHG (signed) */
   err = internal_read_word(manager, bus_name, k_reg_adc_ichg_low, &raw_val);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
   adc->ichg_ma = (int16_t)raw_val * k_adc_ichg_step_ma;
 
   /* Read IBUS */
   err = internal_read_word(manager, bus_name, k_reg_adc_ibus_low, &raw_val);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
   adc->ibus_ma = raw_val * k_adc_ibus_step_ma;
 
   /* Read TS temperature (placeholder - conversion is device-specific) */
   err = internal_read_word(manager, bus_name, k_reg_adc_ts_low, &raw_val);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
   adc->ts_temp_c = 25; /* Placeholder */
 
   /* Read die temperature (placeholder - conversion is device-specific) */
   err = internal_read_word(manager, bus_name, k_reg_adc_tdie_low, &raw_val);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
   adc->tdie_temp_c = 25; /* Placeholder */
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_bq25798_reset_watchdog(rx_bus_manager_t* manager, const char* bus_name)
@@ -518,7 +518,7 @@ rx_err_t rx_bq25798_reset_watchdog(rx_bus_manager_t* manager, const char* bus_na
   uint8_t  ctrl_reg;
   uint8_t  reg_addr = k_reg_charger_control_0;
   rx_err_t err      = rx_bus_i2c_write_read(manager, bus_name, &reg_addr, 1, &ctrl_reg, 1);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 

@@ -55,7 +55,7 @@ void cmt0_isr(void)
  * - Compare: 4687 (100 Hz)
  * - Priority: 5
  *
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t timer_init(void)
 {
@@ -93,13 +93,13 @@ rx_err_t timer_init(void)
 
   RX_LOG_INFO("TIMER", "CMT0 initialized successfully");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /**
  * @brief Stop CMT0 timer
  *
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t timer_stop(void)
 {
@@ -108,7 +108,7 @@ rx_err_t timer_stop(void)
   /* Stop CMT0 */
   CMT_CTRL.CMSTR0 &= ~0x01;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /**
@@ -116,8 +116,8 @@ rx_err_t timer_stop(void)
  *
  * @param[out] count Pointer to store counter value
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if count is NULL
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if count is NULL
  */
 rx_err_t timer_get_count(uint16_t* count)
 {
@@ -125,5 +125,5 @@ rx_err_t timer_get_count(uint16_t* count)
 
   *count = CMT0.CMCNT;
 
-  return RX_OK;
+  return k_rx_ok;
 }

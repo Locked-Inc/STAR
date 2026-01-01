@@ -44,7 +44,7 @@ static bool s_crc_initialized = false;
 rx_err_t rx_crc_init(void)
 {
   if (s_crc_initialized) {
-    return RX_OK;
+    return k_rx_ok;
   }
 
   /* Enable CRC module by clearing module stop bit */
@@ -63,7 +63,7 @@ rx_err_t rx_crc_init(void)
   CRC.CRCCR = k_crc_crccr_lms | k_crc_crccr_gps_crc32;
 
   s_crc_initialized = true;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_crc_deinit(void)
@@ -83,7 +83,7 @@ rx_err_t rx_crc_deinit(void)
      * s_crc_initialized = false;
      */
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)

@@ -70,23 +70,23 @@ static volatile S12AD_Type* internal_get_adc_base(uint8_t unit)
  * @param[in] unit ADC unit number
  * @param[in] channel ADC channel number
  *
- * @return RX_OK if valid, error code otherwise
+ * @return k_rx_ok if valid, error code otherwise
  */
 static rx_err_t internal_validate_unit_channel(uint8_t unit, uint8_t channel)
 {
   /* Validate unit */
   if (unit >= k_adc_max_units) {
     RX_LOG_ERROR(s_tag, "Invalid ADC unit");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Validate channel */
   if (channel >= k_adc_max_channels) {
     RX_LOG_ERROR(s_tag, "Invalid ADC channel");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -103,13 +103,13 @@ rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits)
   /* Validate resolution */
   if (bits != 8 && bits != 10 && bits != 12) {
     RX_LOG_ERROR(s_tag, "Invalid resolution (must be 8, 10, or 12 bits)");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Get ADC base */
   volatile S12AD_Type* adc = internal_get_adc_base(unit);
   if (adc == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Initialize ADC unit if not already initialized */
@@ -154,7 +154,7 @@ rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits)
 
   RX_LOG_DEBUG(s_tag, "ADC channel enabled");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t adc_read(uint8_t unit, uint8_t channel, uint16_t* value)
@@ -168,13 +168,13 @@ rx_err_t adc_read(uint8_t unit, uint8_t channel, uint16_t* value)
   /* Check if unit is initialized */
   if (!s_adc_unit_initialized[unit]) {
     RX_LOG_ERROR(s_tag, "ADC unit not initialized");
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Get ADC base */
   volatile S12AD_Type* adc = internal_get_adc_base(unit);
   if (adc == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Start single-scan conversion */
@@ -188,7 +188,7 @@ rx_err_t adc_read(uint8_t unit, uint8_t channel, uint16_t* value)
 
   if (timeout == 0) {
     RX_LOG_ERROR(s_tag, "ADC conversion timeout");
-    return RX_ERR_TIMEOUT;
+    return k_rx_err_timeout;
   }
 
   /* Read conversion result from appropriate data register */
@@ -219,10 +219,10 @@ rx_err_t adc_read(uint8_t unit, uint8_t channel, uint16_t* value)
       break;
     default:
       RX_LOG_ERROR(s_tag, "Unsupported channel");
-      return RX_ERR_INVALID_ARG;
+      return k_rx_err_invalid_arg;
   }
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t adc_read_voltage_mv(uint8_t unit, uint8_t channel, uint8_t bits, uint32_t* voltage_mv)
@@ -238,5 +238,5 @@ rx_err_t adc_read_voltage_mv(uint8_t unit, uint8_t channel, uint8_t bits, uint32
   uint32_t max_value = (1 << bits) - 1;
   *voltage_mv        = ((uint32_t)raw_value * 3300) / max_value;
 
-  return RX_OK;
+  return k_rx_ok;
 }

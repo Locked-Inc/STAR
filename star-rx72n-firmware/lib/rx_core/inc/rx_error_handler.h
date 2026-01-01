@@ -33,7 +33,7 @@
  *   error_handler_get_interface(&error_iface, &s_error_handler);
  *
  *   // 4. Use through interface
- *   error_iface.report_error(error_iface.ctx, RX_FAIL, "SPI", "Transfer timeout");
+ *   error_iface.report_error(error_iface.ctx, k_rx_fail, "SPI", "Transfer timeout");
  *
  *   // 5. Check retry logic
  *   if (!error_iface.is_retry_limit_reached(error_iface.ctx, "SPI")) {
@@ -166,9 +166,9 @@ typedef struct {
  * @param[in] initial_backoff_ms Initial backoff delay in milliseconds
  * @param[in] max_backoff_ms Maximum backoff delay in milliseconds
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if handler is NULL,
- *         RX_ERR_RTOS_MUTEX if mutex creation fails
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if handler is NULL,
+ *         k_rx_err_rtos_mutex if mutex creation fails
  */
 rx_err_t error_handler_init(error_handler_t* handler,
                             uint32_t         max_retries,
@@ -181,9 +181,9 @@ rx_err_t error_handler_init(error_handler_t* handler,
  * @param[out] iface Interface to fill
  * @param[in,out] handler Concrete handler instance
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if either parameter is NULL,
- *         RX_ERR_INVALID_STATE if handler not initialized
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if either parameter is NULL,
+ *         k_rx_err_invalid_state if handler not initialized
  */
 rx_err_t error_handler_get_interface(rx_error_interface_t* iface, error_handler_t* handler);
 
@@ -192,8 +192,8 @@ rx_err_t error_handler_get_interface(rx_error_interface_t* iface, error_handler_
  *
  * @param[in,out] handler Handler to deinitialize
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if handler is NULL
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if handler is NULL
  */
 rx_err_t error_handler_deinit(error_handler_t* handler);
 

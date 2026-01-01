@@ -60,7 +60,7 @@ typedef struct {
  * @param[in] bus_config Bus configuration
  * @param[in] user_ctx User context (adc_init_ctx_t*)
  *
- * @return RX_OK on success, error code on failure
+ * @return k_rx_ok on success, error code on failure
  */
 static rx_err_t internal_adc_init_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
@@ -69,15 +69,15 @@ static rx_err_t internal_adc_init_callback(rx_bus_config_t* bus_config, void* us
   /* Validate bus type */
   if (bus_config->type != k_bus_type_adc) {
     RX_LOG_ERROR(s_tag, "Bus is not ADC type");
-    ctx->result = RX_ERR_INVALID_ARG;
-    return RX_ERR_INVALID_ARG;
+    ctx->result = k_rx_err_invalid_arg;
+    return k_rx_err_invalid_arg;
   }
 
   /* Initialize ADC channel */
   rx_err_t err =
     adc_init(bus_config->proto.adc.unit, bus_config->proto.adc.channel, bus_config->proto.adc.bits);
 
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR(s_tag, "ADC HAL initialization failed");
     ctx->result = err;
     return err;
@@ -92,8 +92,8 @@ static rx_err_t internal_adc_init_callback(rx_bus_config_t* bus_config, void* us
   /* Mark bus as initialized */
   bus_config->initialized = true;
 
-  ctx->result = RX_OK;
-  return RX_OK;
+  ctx->result = k_rx_ok;
+  return k_rx_ok;
 }
 
 /**
@@ -102,7 +102,7 @@ static rx_err_t internal_adc_init_callback(rx_bus_config_t* bus_config, void* us
  * @param[in] bus_config Bus configuration
  * @param[in] user_ctx User context (adc_read_ctx_t*)
  *
- * @return RX_OK on success, error code on failure
+ * @return k_rx_ok on success, error code on failure
  */
 static rx_err_t internal_adc_read_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
@@ -111,21 +111,21 @@ static rx_err_t internal_adc_read_callback(rx_bus_config_t* bus_config, void* us
   /* Validate bus is initialized */
   if (!bus_config->initialized) {
     RX_LOG_ERROR(s_tag, "Bus not initialized");
-    ctx->result = RX_ERR_INVALID_STATE;
-    return RX_ERR_INVALID_STATE;
+    ctx->result = k_rx_err_invalid_state;
+    return k_rx_err_invalid_state;
   }
 
   /* Read ADC value */
   rx_err_t err = adc_read(bus_config->proto.adc.unit, bus_config->proto.adc.channel, ctx->value);
 
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR(s_tag, "ADC read failed");
     ctx->result = err;
     return err;
   }
 
-  ctx->result = RX_OK;
-  return RX_OK;
+  ctx->result = k_rx_ok;
+  return k_rx_ok;
 }
 
 /**
@@ -134,7 +134,7 @@ static rx_err_t internal_adc_read_callback(rx_bus_config_t* bus_config, void* us
  * @param[in] bus_config Bus configuration
  * @param[in] user_ctx User context (adc_voltage_ctx_t*)
  *
- * @return RX_OK on success, error code on failure
+ * @return k_rx_ok on success, error code on failure
  */
 static rx_err_t internal_adc_voltage_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
@@ -143,8 +143,8 @@ static rx_err_t internal_adc_voltage_callback(rx_bus_config_t* bus_config, void*
   /* Validate bus is initialized */
   if (!bus_config->initialized) {
     RX_LOG_ERROR(s_tag, "Bus not initialized");
-    ctx->result = RX_ERR_INVALID_STATE;
-    return RX_ERR_INVALID_STATE;
+    ctx->result = k_rx_err_invalid_state;
+    return k_rx_err_invalid_state;
   }
 
   /* Read ADC voltage */
@@ -153,14 +153,14 @@ static rx_err_t internal_adc_voltage_callback(rx_bus_config_t* bus_config, void*
                                      bus_config->proto.adc.bits,
                                      ctx->voltage_mv);
 
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR(s_tag, "ADC voltage read failed");
     ctx->result = err;
     return err;
   }
 
-  ctx->result = RX_OK;
-  return RX_OK;
+  ctx->result = k_rx_ok;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -173,11 +173,11 @@ rx_err_t rx_bus_adc_init(rx_bus_manager_t* manager, const char* bus_name)
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
 
-  adc_init_ctx_t ctx = {.result = RX_ERR_HW_ERROR};
+  adc_init_ctx_t ctx = {.result = k_rx_err_hw_error};
 
   rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_adc_init_callback, &ctx);
 
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
@@ -190,11 +190,11 @@ rx_err_t rx_bus_adc_read(rx_bus_manager_t* manager, const char* bus_name, uint16
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
   RX_CHECK_NULL_PTR(value, s_tag, "value pointer is NULL");
 
-  adc_read_ctx_t ctx = {.value = value, .result = RX_ERR_HW_ERROR};
+  adc_read_ctx_t ctx = {.value = value, .result = k_rx_err_hw_error};
 
   rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_adc_read_callback, &ctx);
 
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
@@ -208,11 +208,11 @@ rx_bus_adc_read_voltage_mv(rx_bus_manager_t* manager, const char* bus_name, uint
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
   RX_CHECK_NULL_PTR(voltage_mv, s_tag, "voltage_mv pointer is NULL");
 
-  adc_voltage_ctx_t ctx = {.voltage_mv = voltage_mv, .result = RX_ERR_HW_ERROR};
+  adc_voltage_ctx_t ctx = {.voltage_mv = voltage_mv, .result = k_rx_err_hw_error};
 
   rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_adc_voltage_callback, &ctx);
 
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 

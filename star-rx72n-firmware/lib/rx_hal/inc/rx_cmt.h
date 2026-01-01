@@ -83,10 +83,10 @@ typedef struct {
  * @param[in] channel CMT channel (1-3, CMT0 reserved for ThreadX)
  * @param[in] config CMT configuration
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if config is NULL
- * @return RX_ERR_INVALID_ARG if channel, frequency, or priority is invalid
- * @return RX_ERR_CONFLICT if channel is CMT0 (reserved)
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if config is NULL
+ * @return k_rx_err_invalid_arg if channel, frequency, or priority is invalid
+ * @return k_rx_err_conflict if channel is CMT0 (reserved)
  */
 rx_err_t rx_cmt_init(rx_cmt_channel_t channel, const rx_cmt_config_t* config);
 
@@ -98,9 +98,9 @@ rx_err_t rx_cmt_init(rx_cmt_channel_t channel, const rx_cmt_config_t* config);
  *
  * @param[in] channel CMT channel
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if channel is invalid
- * @return RX_ERR_INVALID_STATE if channel not initialized
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if channel is invalid
+ * @return k_rx_err_invalid_state if channel not initialized
  */
 rx_err_t rx_cmt_start(rx_cmt_channel_t channel);
 
@@ -112,8 +112,8 @@ rx_err_t rx_cmt_start(rx_cmt_channel_t channel);
  *
  * @param[in] channel CMT channel
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if channel is invalid
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if channel is invalid
  */
 rx_err_t rx_cmt_stop(rx_cmt_channel_t channel);
 
@@ -123,10 +123,10 @@ rx_err_t rx_cmt_stop(rx_cmt_channel_t channel);
  * @param[in] channel CMT channel
  * @param[out] count Pointer to store counter value
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if count is NULL
- * @return RX_ERR_INVALID_ARG if channel is invalid
- * @return RX_ERR_INVALID_STATE if channel not initialized
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if count is NULL
+ * @return k_rx_err_invalid_arg if channel is invalid
+ * @return k_rx_err_invalid_state if channel not initialized
  */
 rx_err_t rx_cmt_get_count(rx_cmt_channel_t channel, uint16_t* count);
 
@@ -137,8 +137,8 @@ rx_err_t rx_cmt_get_count(rx_cmt_channel_t channel, uint16_t* count);
  *
  * @param[in] channel CMT channel
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if channel is invalid
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if channel is invalid
  */
 rx_err_t rx_cmt_deinit(rx_cmt_channel_t channel);
 

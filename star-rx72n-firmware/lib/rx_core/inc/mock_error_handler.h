@@ -60,7 +60,7 @@
  * const char* component;
  * const char* message;
  * mock_error_handler_get_last_error(&mock, &last_err, &component, &message);
- * assert(last_err == RX_ERR_TIMEOUT);
+ * assert(last_err == k_rx_err_timeout);
  * assert(strcmp(component, "SPI") == 0);
  *
  * // 5. Check error count
@@ -144,9 +144,9 @@ typedef struct {
  * @param[in,out] handler Handler instance to initialize
  * @param[in] max_errors Maximum number of errors to record (1-32)
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if handler is NULL,
- *         RX_ERR_INVALID_ARG if max_errors is 0 or > 32
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if handler is NULL,
+ *         k_rx_err_invalid_arg if max_errors is 0 or > 32
  */
 rx_err_t mock_error_handler_init(mock_error_handler_t* handler, uint32_t max_errors);
 
@@ -156,9 +156,9 @@ rx_err_t mock_error_handler_init(mock_error_handler_t* handler, uint32_t max_err
  * @param[out] iface Interface to fill
  * @param[in,out] handler Mock handler instance
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if either parameter is NULL,
- *         RX_ERR_INVALID_STATE if handler not initialized
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if either parameter is NULL,
+ *         k_rx_err_invalid_state if handler not initialized
  */
 rx_err_t mock_error_handler_get_interface(rx_error_interface_t* iface,
                                           mock_error_handler_t* handler);
@@ -176,9 +176,9 @@ rx_err_t mock_error_handler_get_interface(rx_error_interface_t* iface,
  * @param[out] out_component Component name pointer (can be NULL)
  * @param[out] out_message Error message pointer (can be NULL)
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if handler is NULL,
- *         RX_ERR_NOT_FOUND if no errors recorded
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if handler is NULL,
+ *         k_rx_err_not_found if no errors recorded
  *
  * @note out_component and out_message point to internal buffers.
  *       Do not modify or free them. Copy if needed.
@@ -197,9 +197,9 @@ rx_err_t mock_error_handler_get_last_error(mock_error_handler_t* handler,
  * @param[out] out_component Component name pointer (can be NULL)
  * @param[out] out_message Error message pointer (can be NULL)
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if handler is NULL,
- *         RX_ERR_INVALID_ARG if index out of range
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if handler is NULL,
+ *         k_rx_err_invalid_arg if index out of range
  */
 rx_err_t mock_error_handler_get_error_at(mock_error_handler_t* handler,
                                          uint32_t              index,
@@ -227,8 +227,8 @@ bool mock_error_handler_has_error(mock_error_handler_t* handler,
  *
  * @param[in,out] handler Handler to clear
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if handler is NULL
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if handler is NULL
  */
 rx_err_t mock_error_handler_clear(mock_error_handler_t* handler);
 
@@ -246,8 +246,8 @@ uint32_t mock_error_handler_get_stored_count(mock_error_handler_t* handler);
  *
  * @param[in,out] handler Handler to deinitialize
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if handler is NULL
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if handler is NULL
  */
 rx_err_t mock_error_handler_deinit(mock_error_handler_t* handler);
 

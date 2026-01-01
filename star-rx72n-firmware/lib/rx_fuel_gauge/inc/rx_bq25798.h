@@ -115,13 +115,13 @@ typedef struct {
  * @param[in] bus_name I2C bus name for charger
  * @param[in] config Charger configuration
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if manager, bus_name, or config is NULL
- * @return RX_ERR_NOT_FOUND if bus not found
- * @return RX_ERR_INVALID_STATE if bus not initialized
- * @return RX_ERR_TIMEOUT if I2C timeout
- * @return RX_ERR_NACK if device not responding
- * @return RX_ERR_INVALID_ARG if configuration values are out of range
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if manager, bus_name, or config is NULL
+ * @return k_rx_err_not_found if bus not found
+ * @return k_rx_err_invalid_state if bus not initialized
+ * @return k_rx_err_timeout if I2C timeout
+ * @return k_rx_err_nack if device not responding
+ * @return k_rx_err_invalid_arg if configuration values are out of range
  */
 rx_err_t
 rx_bq25798_init(rx_bus_manager_t* manager, const char* bus_name, const bq25798_config_t* config);
@@ -133,11 +133,11 @@ rx_bq25798_init(rx_bus_manager_t* manager, const char* bus_name, const bq25798_c
  * @param[in] bus_name I2C bus name
  * @param[in] enable True to enable charging, false to disable
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if manager or bus_name is NULL
- * @return RX_ERR_NOT_FOUND if bus not found
- * @return RX_ERR_INVALID_STATE if bus not initialized
- * @return RX_ERR_TIMEOUT if I2C timeout
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if manager or bus_name is NULL
+ * @return k_rx_err_not_found if bus not found
+ * @return k_rx_err_invalid_state if bus not initialized
+ * @return k_rx_err_timeout if I2C timeout
  */
 rx_err_t rx_bq25798_enable_charging(rx_bus_manager_t* manager, const char* bus_name, bool enable);
 
@@ -148,12 +148,12 @@ rx_err_t rx_bq25798_enable_charging(rx_bus_manager_t* manager, const char* bus_n
  * @param[in] bus_name I2C bus name
  * @param[in] voltage_mv Charge voltage in mV (3000-18800, step 10mV)
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if manager or bus_name is NULL
- * @return RX_ERR_INVALID_ARG if voltage is out of range
- * @return RX_ERR_NOT_FOUND if bus not found
- * @return RX_ERR_INVALID_STATE if bus not initialized
- * @return RX_ERR_TIMEOUT if I2C timeout
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if manager or bus_name is NULL
+ * @return k_rx_err_invalid_arg if voltage is out of range
+ * @return k_rx_err_not_found if bus not found
+ * @return k_rx_err_invalid_state if bus not initialized
+ * @return k_rx_err_timeout if I2C timeout
  */
 rx_err_t
 rx_bq25798_set_charge_voltage(rx_bus_manager_t* manager, const char* bus_name, uint16_t voltage_mv);
@@ -165,12 +165,12 @@ rx_bq25798_set_charge_voltage(rx_bus_manager_t* manager, const char* bus_name, u
  * @param[in] bus_name I2C bus name
  * @param[in] current_ma Charge current in mA (0-5000, step 10mA)
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if manager or bus_name is NULL
- * @return RX_ERR_INVALID_ARG if current is out of range
- * @return RX_ERR_NOT_FOUND if bus not found
- * @return RX_ERR_INVALID_STATE if bus not initialized
- * @return RX_ERR_TIMEOUT if I2C timeout
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if manager or bus_name is NULL
+ * @return k_rx_err_invalid_arg if current is out of range
+ * @return k_rx_err_not_found if bus not found
+ * @return k_rx_err_invalid_state if bus not initialized
+ * @return k_rx_err_timeout if I2C timeout
  */
 rx_err_t
 rx_bq25798_set_charge_current(rx_bus_manager_t* manager, const char* bus_name, uint16_t current_ma);
@@ -182,12 +182,12 @@ rx_bq25798_set_charge_current(rx_bus_manager_t* manager, const char* bus_name, u
  * @param[in] bus_name I2C bus name
  * @param[in] voltage_mv Input voltage limit in mV (3600-24000, step 100mV)
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if manager or bus_name is NULL
- * @return RX_ERR_INVALID_ARG if voltage is out of range
- * @return RX_ERR_NOT_FOUND if bus not found
- * @return RX_ERR_INVALID_STATE if bus not initialized
- * @return RX_ERR_TIMEOUT if I2C timeout
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if manager or bus_name is NULL
+ * @return k_rx_err_invalid_arg if voltage is out of range
+ * @return k_rx_err_not_found if bus not found
+ * @return k_rx_err_invalid_state if bus not initialized
+ * @return k_rx_err_timeout if I2C timeout
  */
 rx_err_t rx_bq25798_set_input_voltage_limit(rx_bus_manager_t* manager,
                                             const char*       bus_name,
@@ -200,12 +200,12 @@ rx_err_t rx_bq25798_set_input_voltage_limit(rx_bus_manager_t* manager,
  * @param[in] bus_name I2C bus name
  * @param[in] current_ma Input current limit in mA (100-3300, step 10mA)
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if manager or bus_name is NULL
- * @return RX_ERR_INVALID_ARG if current is out of range
- * @return RX_ERR_NOT_FOUND if bus not found
- * @return RX_ERR_INVALID_STATE if bus not initialized
- * @return RX_ERR_TIMEOUT if I2C timeout
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if manager or bus_name is NULL
+ * @return k_rx_err_invalid_arg if current is out of range
+ * @return k_rx_err_not_found if bus not found
+ * @return k_rx_err_invalid_state if bus not initialized
+ * @return k_rx_err_timeout if I2C timeout
  */
 rx_err_t rx_bq25798_set_input_current_limit(rx_bus_manager_t* manager,
                                             const char*       bus_name,
@@ -218,11 +218,11 @@ rx_err_t rx_bq25798_set_input_current_limit(rx_bus_manager_t* manager,
  * @param[in] bus_name I2C bus name
  * @param[out] status Pointer to status structure
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if manager, bus_name, or status is NULL
- * @return RX_ERR_NOT_FOUND if bus not found
- * @return RX_ERR_INVALID_STATE if bus not initialized
- * @return RX_ERR_TIMEOUT if I2C timeout
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if manager, bus_name, or status is NULL
+ * @return k_rx_err_not_found if bus not found
+ * @return k_rx_err_invalid_state if bus not initialized
+ * @return k_rx_err_timeout if I2C timeout
  */
 rx_err_t
 rx_bq25798_read_status(rx_bus_manager_t* manager, const char* bus_name, bq25798_status_t* status);
@@ -237,11 +237,11 @@ rx_bq25798_read_status(rx_bus_manager_t* manager, const char* bus_name, bq25798_
  * @param[in] bus_name I2C bus name
  * @param[out] adc Pointer to ADC measurement structure
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if manager, bus_name, or adc is NULL
- * @return RX_ERR_NOT_FOUND if bus not found
- * @return RX_ERR_INVALID_STATE if bus not initialized or ADC not enabled
- * @return RX_ERR_TIMEOUT if I2C timeout
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if manager, bus_name, or adc is NULL
+ * @return k_rx_err_not_found if bus not found
+ * @return k_rx_err_invalid_state if bus not initialized or ADC not enabled
+ * @return k_rx_err_timeout if I2C timeout
  */
 rx_err_t rx_bq25798_read_adc(rx_bus_manager_t* manager, const char* bus_name, bq25798_adc_t* adc);
 
@@ -254,11 +254,11 @@ rx_err_t rx_bq25798_read_adc(rx_bus_manager_t* manager, const char* bus_name, bq
  * @param[in] manager Bus manager instance
  * @param[in] bus_name I2C bus name
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if manager or bus_name is NULL
- * @return RX_ERR_NOT_FOUND if bus not found
- * @return RX_ERR_INVALID_STATE if bus not initialized
- * @return RX_ERR_TIMEOUT if I2C timeout
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if manager or bus_name is NULL
+ * @return k_rx_err_not_found if bus not found
+ * @return k_rx_err_invalid_state if bus not initialized
+ * @return k_rx_err_timeout if I2C timeout
  */
 rx_err_t rx_bq25798_reset_watchdog(rx_bus_manager_t* manager, const char* bus_name);
 
@@ -270,11 +270,11 @@ rx_err_t rx_bq25798_reset_watchdog(rx_bus_manager_t* manager, const char* bus_na
  * @param[in] manager Bus manager instance
  * @param[in] bus_name I2C bus name
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if manager or bus_name is NULL
- * @return RX_ERR_NOT_FOUND if bus not found
- * @return RX_ERR_INVALID_STATE if bus not initialized
- * @return RX_ERR_TIMEOUT if I2C timeout
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if manager or bus_name is NULL
+ * @return k_rx_err_not_found if bus not found
+ * @return k_rx_err_invalid_state if bus not initialized
+ * @return k_rx_err_timeout if I2C timeout
  */
 rx_err_t rx_bq25798_reset(rx_bus_manager_t* manager, const char* bus_name);
 

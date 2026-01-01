@@ -86,21 +86,21 @@ static uint32_t internal_read_le32(const uint8_t* buf)
 rx_err_t rx_frame_encoder_init(rx_frame_encoder_t* enc)
 {
   if (enc == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   enc->initialized = 1;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_frame_encoder_deinit(rx_frame_encoder_t* enc)
 {
   if (enc == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   enc->initialized = 0;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_frame_encode(rx_frame_encoder_t* enc,
@@ -109,16 +109,16 @@ rx_err_t rx_frame_encode(rx_frame_encoder_t* enc,
                          uint32_t*           output_len)
 {
   if (enc == NULL || frame == NULL || output == NULL || output_len == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (enc->initialized == 0) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Validate payload size */
   if (frame->header.length > k_frame_max_payload) {
-    return RX_ERR_INVALID_SIZE;
+    return k_rx_err_invalid_size;
   }
 
   /* Calculate total frame size */
@@ -159,7 +159,7 @@ rx_err_t rx_frame_encode(rx_frame_encoder_t* enc,
   offset += k_frame_crc_size;
 
   *output_len = frame_size;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -170,37 +170,37 @@ rx_err_t rx_frame_encode(rx_frame_encoder_t* enc,
 rx_err_t rx_frame_decoder_init(rx_frame_decoder_t* dec)
 {
   if (dec == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   dec->initialized = 1;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_frame_decoder_deinit(rx_frame_decoder_t* dec)
 {
   if (dec == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   dec->initialized = 0;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t
 rx_frame_decode(rx_frame_decoder_t* dec, const uint8_t* data, uint32_t data_len, rx_frame_t* frame)
 {
   if (dec == NULL || data == NULL || frame == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (dec->initialized == 0) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Check minimum frame size */
   if (data_len < k_frame_min_size) {
-    return RX_ERR_INVALID_SIZE;
+    return k_rx_err_invalid_size;
   }
 
   uint32_t offset = 0;
@@ -208,7 +208,7 @@ rx_frame_decode(rx_frame_decoder_t* dec, const uint8_t* data, uint32_t data_len,
   /* Verify SYNC word */
   uint16_t sync_word = rx_read_be16(&data[offset]);
   if (sync_word != k_frame_sync_word) {
-    return RX_ERR_PROTOCOL_ERROR;
+    return k_rx_err_protocol_error;
   }
   offset += k_frame_sync_size;
 
@@ -222,13 +222,13 @@ rx_frame_decode(rx_frame_decoder_t* dec, const uint8_t* data, uint32_t data_len,
 
   /* Validate payload length */
   if (frame->header.length > k_frame_max_payload) {
-    return RX_ERR_INVALID_SIZE;
+    return k_rx_err_invalid_size;
   }
 
   /* Verify we have enough data for the declared payload + CRC */
   uint32_t expected_size = rx_frame_encoded_size(frame->header.length);
   if (data_len < expected_size) {
-    return RX_ERR_INVALID_SIZE;
+    return k_rx_err_invalid_size;
   }
 
   /* Read TYPE */
@@ -253,11 +253,11 @@ rx_frame_decode(rx_frame_decoder_t* dec, const uint8_t* data, uint32_t data_len,
 
   /* Verify CRC */
   if (received_crc != calculated_crc) {
-    return RX_ERR_CRC_MISMATCH;
+    return k_rx_err_crc_mismatch;
   }
 
   frame->crc = received_crc;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -268,7 +268,7 @@ rx_frame_decode(rx_frame_decoder_t* dec, const uint8_t* data, uint32_t data_len,
 rx_err_t rx_frame_create_ack(rx_frame_t* frame, uint16_t sequence)
 {
   if (frame == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   memset(frame, 0, sizeof(rx_frame_t));
@@ -277,13 +277,13 @@ rx_err_t rx_frame_create_ack(rx_frame_t* frame, uint16_t sequence)
   frame->header.type     = k_frame_type_ack;
   frame->header.flags    = k_frame_flag_none;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_frame_create_nack(rx_frame_t* frame, uint16_t sequence, uint8_t flags)
 {
   if (frame == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   memset(frame, 0, sizeof(rx_frame_t));
@@ -292,5 +292,5 @@ rx_err_t rx_frame_create_nack(rx_frame_t* frame, uint16_t sequence, uint8_t flag
   frame->header.type     = k_frame_type_nack;
   frame->header.flags    = flags;
 
-  return RX_OK;
+  return k_rx_ok;
 }

@@ -89,12 +89,12 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
  *
  * @param[in] err Error code to check
  *
- * If err is not RX_OK, logs the error and halts execution.
+ * If err is not k_rx_ok, logs the error and halts execution.
  * This is a fatal error check - system will not continue.
  *
  * Example:
  *   rx_err_t err = critical_init();
- *   RX_ERROR_CHECK(err);  // Halts if err != RX_OK
+ *   RX_ERROR_CHECK(err);  // Halts if err != k_rx_ok
  */
 #define RX_ERROR_CHECK(err)                                                                        \
   do {                                                                                             \
@@ -109,7 +109,7 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
  *
  * @param[in] err Error code to check
  *
- * If err is not RX_OK, logs the error but continues execution.
+ * If err is not k_rx_ok, logs the error but continues execution.
  * Use this for non-critical errors where system can continue.
  *
  * Example:
@@ -131,7 +131,7 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
  * @param[in] tag Component tag for logging
  * @param[in] message Error message for logging
  *
- * If err is not RX_OK, logs the error and returns err from the function.
+ * If err is not k_rx_ok, logs the error and returns err from the function.
  * Use this for functions that return rx_err_t.
  *
  * Example:
@@ -139,7 +139,7 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
  *       rx_err_t err = gpio_init();
  *       RX_RETURN_ON_ERROR(err, "SUBSYS", "GPIO init failed");
  *       // Only reached if gpio_init succeeded
- *       return RX_OK;
+ *       return k_rx_ok;
  *   }
  */
 #define RX_RETURN_ON_ERROR(err, tag, message)                                                      \
@@ -160,7 +160,7 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
  * @param[in] tag Component tag for logging
  * @param[in] message Error message for logging
  *
- * If err is not RX_OK, logs the error and jumps to the specified label.
+ * If err is not k_rx_ok, logs the error and jumps to the specified label.
  * Use this for functions with cleanup requirements.
  *
  * Example:
@@ -174,7 +174,7 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
  *       err = configure_resource(resource);
  *       RX_GOTO_ON_ERROR(err, cleanup, "INIT", "Resource config failed");
  *
- *       return RX_OK;
+ *       return k_rx_ok;
  *
  *   cleanup:
  *       if (resource != NULL) {
@@ -201,7 +201,7 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
  * @param[in] tag Component tag for logging
  * @param[in] message Error message for logging
  *
- * If err is not RX_OK, logs the error and returns from the function.
+ * If err is not k_rx_ok, logs the error and returns from the function.
  * Use this for void functions that cannot return an error code.
  *
  * Example:
@@ -228,7 +228,7 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
  * @param[in] tag Component tag for logging
  * @param[in] message Error message for logging
  *
- * If err is not RX_OK, logs the error and returns NULL from the function.
+ * If err is not k_rx_ok, logs the error and returns NULL from the function.
  * Use this for functions that return pointers.
  *
  * Example:
@@ -261,20 +261,20 @@ static inline void internal_rx_fatal_error(const char* tag, const char* message,
  * @param[in] tag Component tag for logging
  * @param[in] message Error message for logging
  *
- * If ptr is NULL, logs the error and returns RX_ERR_NULL_POINTER.
+ * If ptr is NULL, logs the error and returns k_rx_err_null_pointer.
  *
  * Example:
  *   rx_err_t process_data(const uint8_t* data) {
  *       RX_CHECK_NULL_PTR(data, "PROCESS", "Data pointer is NULL");
  *       // Only reached if data != NULL
- *       return RX_OK;
+ *       return k_rx_ok;
  *   }
  */
 #define RX_CHECK_NULL_PTR(ptr, tag, message)                                                       \
   do {                                                                                             \
     if ((ptr) == NULL) {                                                                           \
       RX_LOG_ERROR(tag, message);                                                                  \
-      return RX_ERR_NULL_POINTER;                                                                  \
+      return k_rx_err_null_pointer;                                                                  \
     }                                                                                              \
   } while (0)
 

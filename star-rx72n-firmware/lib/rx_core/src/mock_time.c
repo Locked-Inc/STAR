@@ -86,7 +86,7 @@ rx_err_t mock_time_init(mock_time_t* mock)
   m->initialized  = true;
   m->auto_advance = false; /* Default: no auto-advance */
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t mock_time_deinit(mock_time_t* mock)
@@ -95,13 +95,13 @@ rx_err_t mock_time_deinit(mock_time_t* mock)
 
   memset(m, 0, sizeof(mock_time_t));
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t mock_time_get_interface(rx_time_interface_t* iface, mock_time_t* mock)
 {
   if (iface == NULL) {
-    return RX_ERR_NULL_POINTER;
+    return k_rx_err_null_pointer;
   }
 
   mock_time_t* m = internal_get_mock(mock);
@@ -111,7 +111,7 @@ rx_err_t mock_time_get_interface(rx_time_interface_t* iface, mock_time_t* mock)
   iface->get_ms     = impl_get_ms;
   iface->is_elapsed = impl_is_elapsed;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================

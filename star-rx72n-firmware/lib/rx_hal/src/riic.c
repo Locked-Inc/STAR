@@ -73,7 +73,7 @@ static volatile RIIC_Type* internal_get_riic_base(uint8_t channel)
  * @param[out] icbrl Pointer to store ICBRL value
  * @param[out] icbrh Pointer to store ICBRH value
  *
- * @return RX_OK on success, error code otherwise
+ * @return k_rx_ok on success, error code otherwise
  */
 static rx_err_t internal_calculate_bit_rate(uint32_t frequency_hz, uint8_t* icbrl, uint8_t* icbrh)
 {
@@ -88,13 +88,13 @@ static rx_err_t internal_calculate_bit_rate(uint32_t frequency_hz, uint8_t* icbr
 
   if (divisor < 1 || divisor > 255) {
     RX_LOG_ERROR(s_tag, "Invalid frequency for PCLKB");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   *icbrl = (uint8_t)divisor;
   *icbrh = (uint8_t)divisor;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /**
@@ -102,7 +102,7 @@ static rx_err_t internal_calculate_bit_rate(uint32_t frequency_hz, uint8_t* icbr
  *
  * @param[in] riic RIIC peripheral base
  *
- * @return RX_OK on success, RX_ERR_TIMEOUT on timeout
+ * @return k_rx_ok on success, k_rx_err_timeout on timeout
  */
 static rx_err_t internal_wait_bus_ready(volatile RIIC_Type* riic)
 {
@@ -114,10 +114,10 @@ static rx_err_t internal_wait_bus_ready(volatile RIIC_Type* riic)
 
   if (timeout == 0) {
     RX_LOG_ERROR(s_tag, "I2C bus busy timeout");
-    return RX_ERR_TIMEOUT;
+    return k_rx_err_timeout;
   }
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /**
@@ -125,7 +125,7 @@ static rx_err_t internal_wait_bus_ready(volatile RIIC_Type* riic)
  *
  * @param[in] riic RIIC peripheral base
  *
- * @return RX_OK on success, error code otherwise
+ * @return k_rx_ok on success, error code otherwise
  */
 static rx_err_t internal_send_start(volatile RIIC_Type* riic)
 {
@@ -140,13 +140,13 @@ static rx_err_t internal_send_start(volatile RIIC_Type* riic)
 
   if (timeout == 0) {
     RX_LOG_ERROR(s_tag, "Start condition timeout");
-    return RX_ERR_TIMEOUT;
+    return k_rx_err_timeout;
   }
 
   /* Clear start flag */
   riic->ICSR2 &= ~k_riic_icsr2_start;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /**
@@ -154,7 +154,7 @@ static rx_err_t internal_send_start(volatile RIIC_Type* riic)
  *
  * @param[in] riic RIIC peripheral base
  *
- * @return RX_OK on success, error code otherwise
+ * @return k_rx_ok on success, error code otherwise
  */
 static rx_err_t internal_send_stop(volatile RIIC_Type* riic)
 {
@@ -169,13 +169,13 @@ static rx_err_t internal_send_stop(volatile RIIC_Type* riic)
 
   if (timeout == 0) {
     RX_LOG_ERROR(s_tag, "Stop condition timeout");
-    return RX_ERR_TIMEOUT;
+    return k_rx_err_timeout;
   }
 
   /* Clear stop flag */
   riic->ICSR2 &= ~k_riic_icsr2_stop;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /**
@@ -184,7 +184,7 @@ static rx_err_t internal_send_stop(volatile RIIC_Type* riic)
  * @param[in] riic RIIC peripheral base
  * @param[in] data Byte to write
  *
- * @return RX_OK on success, RX_ERR_NACK if NACK received
+ * @return k_rx_ok on success, k_rx_err_nack if NACK received
  */
 static rx_err_t internal_write_byte(volatile RIIC_Type* riic, uint8_t data)
 {
@@ -196,7 +196,7 @@ static rx_err_t internal_write_byte(volatile RIIC_Type* riic, uint8_t data)
 
   if (timeout == 0) {
     RX_LOG_ERROR(s_tag, "Write timeout");
-    return RX_ERR_TIMEOUT;
+    return k_rx_err_timeout;
   }
 
   /* Write data */
@@ -212,10 +212,10 @@ static rx_err_t internal_write_byte(volatile RIIC_Type* riic, uint8_t data)
   if (riic->ICSR2 & k_riic_icsr2_nackf) {
     riic->ICSR2 &= ~k_riic_icsr2_nackf;
     RX_LOG_ERROR(s_tag, "NACK received");
-    return RX_ERR_NACK;
+    return k_rx_err_nack;
   }
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /**
@@ -225,7 +225,7 @@ static rx_err_t internal_write_byte(volatile RIIC_Type* riic, uint8_t data)
  * @param[out] data Pointer to store received byte
  * @param[in] send_ack True to send ACK, false for NACK
  *
- * @return RX_OK on success, error code otherwise
+ * @return k_rx_ok on success, error code otherwise
  */
 static rx_err_t internal_read_byte(volatile RIIC_Type* riic, uint8_t* data, bool send_ack)
 {
@@ -237,7 +237,7 @@ static rx_err_t internal_read_byte(volatile RIIC_Type* riic, uint8_t* data, bool
 
   if (timeout == 0) {
     RX_LOG_ERROR(s_tag, "Read timeout");
-    return RX_ERR_TIMEOUT;
+    return k_rx_err_timeout;
   }
 
   /* Configure ACK/NACK for next byte */
@@ -250,7 +250,7 @@ static rx_err_t internal_read_byte(volatile RIIC_Type* riic, uint8_t* data, bool
   /* Read data */
   *data = riic->ICDRR;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -263,19 +263,19 @@ rx_err_t riic_init(uint8_t channel, uint32_t frequency_hz)
   /* Validate channel */
   if (channel >= k_riic_max_channels) {
     RX_LOG_ERROR(s_tag, "Invalid RIIC channel");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Validate frequency (100kHz, 400kHz, or 1MHz) */
   if (frequency_hz != 100000 && frequency_hz != 400000 && frequency_hz != 1000000) {
     RX_LOG_ERROR(s_tag, "Invalid I2C frequency (use 100000, 400000, or 1000000)");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Get RIIC base */
   volatile RIIC_Type* riic = internal_get_riic_base(channel);
   if (riic == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Enable RIIC module (clear module stop bit) */
@@ -317,7 +317,7 @@ rx_err_t riic_init(uint8_t channel, uint32_t frequency_hz)
 
   RX_LOG_DEBUG(s_tag, "RIIC channel initialized");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t riic_write(uint8_t channel, uint8_t device_addr, const uint8_t* data, uint16_t length)
@@ -327,7 +327,7 @@ rx_err_t riic_write(uint8_t channel, uint8_t device_addr, const uint8_t* data, u
   /* Validate channel */
   if (channel >= k_riic_max_channels || !s_riic_channel_initialized[channel]) {
     RX_LOG_ERROR(s_tag, "RIIC channel not initialized");
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Get RIIC base */
@@ -346,7 +346,7 @@ rx_err_t riic_write(uint8_t channel, uint8_t device_addr, const uint8_t* data, u
 
   /* Send device address (write) */
   err = internal_write_byte(riic, (device_addr << 1) | 0);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     internal_send_stop(riic);
     return err;
   }
@@ -354,7 +354,7 @@ rx_err_t riic_write(uint8_t channel, uint8_t device_addr, const uint8_t* data, u
   /* Send data bytes */
   for (uint16_t i = 0; i < length; i++) {
     err = internal_write_byte(riic, data[i]);
-    if (err != RX_OK) {
+    if (err != k_rx_ok) {
       internal_send_stop(riic);
       return err;
     }
@@ -364,7 +364,7 @@ rx_err_t riic_write(uint8_t channel, uint8_t device_addr, const uint8_t* data, u
   err = internal_send_stop(riic);
   RX_RETURN_ON_ERROR(err, s_tag, "Stop condition failed");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t riic_read(uint8_t channel, uint8_t device_addr, uint8_t* data, uint16_t length)
@@ -374,7 +374,7 @@ rx_err_t riic_read(uint8_t channel, uint8_t device_addr, uint8_t* data, uint16_t
   /* Validate channel */
   if (channel >= k_riic_max_channels || !s_riic_channel_initialized[channel]) {
     RX_LOG_ERROR(s_tag, "RIIC channel not initialized");
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Get RIIC base */
@@ -393,7 +393,7 @@ rx_err_t riic_read(uint8_t channel, uint8_t device_addr, uint8_t* data, uint16_t
 
   /* Send device address (read) */
   err = internal_write_byte(riic, (device_addr << 1) | 1);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     internal_send_stop(riic);
     return err;
   }
@@ -402,7 +402,7 @@ rx_err_t riic_read(uint8_t channel, uint8_t device_addr, uint8_t* data, uint16_t
   for (uint16_t i = 0; i < length; i++) {
     bool send_ack = (i < length - 1); /* NACK on last byte */
     err           = internal_read_byte(riic, &data[i], send_ack);
-    if (err != RX_OK) {
+    if (err != k_rx_ok) {
       internal_send_stop(riic);
       return err;
     }
@@ -412,7 +412,7 @@ rx_err_t riic_read(uint8_t channel, uint8_t device_addr, uint8_t* data, uint16_t
   err = internal_send_stop(riic);
   RX_RETURN_ON_ERROR(err, s_tag, "Stop condition failed");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t riic_write_read(uint8_t        channel,
@@ -428,7 +428,7 @@ rx_err_t riic_write_read(uint8_t        channel,
   /* Validate channel */
   if (channel >= k_riic_max_channels || !s_riic_channel_initialized[channel]) {
     RX_LOG_ERROR(s_tag, "RIIC channel not initialized");
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Get RIIC base */
@@ -449,7 +449,7 @@ rx_err_t riic_write_read(uint8_t        channel,
 
   /* Send device address (write) */
   err = internal_write_byte(riic, (device_addr << 1) | 0);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     internal_send_stop(riic);
     return err;
   }
@@ -457,7 +457,7 @@ rx_err_t riic_write_read(uint8_t        channel,
   /* Send write data */
   for (uint16_t i = 0; i < write_length; i++) {
     err = internal_write_byte(riic, write_data[i]);
-    if (err != RX_OK) {
+    if (err != k_rx_ok) {
       internal_send_stop(riic);
       return err;
     }
@@ -476,7 +476,7 @@ rx_err_t riic_write_read(uint8_t        channel,
   if (timeout == 0) {
     internal_send_stop(riic);
     RX_LOG_ERROR(s_tag, "Repeated start timeout");
-    return RX_ERR_TIMEOUT;
+    return k_rx_err_timeout;
   }
 
   riic->ICSR2 &= ~k_riic_icsr2_start;
@@ -486,7 +486,7 @@ rx_err_t riic_write_read(uint8_t        channel,
 
   /* Send device address (read) */
   err = internal_write_byte(riic, (device_addr << 1) | 1);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     internal_send_stop(riic);
     return err;
   }
@@ -495,7 +495,7 @@ rx_err_t riic_write_read(uint8_t        channel,
   for (uint16_t i = 0; i < read_length; i++) {
     bool send_ack = (i < read_length - 1); /* NACK on last byte */
     err           = internal_read_byte(riic, &read_data[i], send_ack);
-    if (err != RX_OK) {
+    if (err != k_rx_ok) {
       internal_send_stop(riic);
       return err;
     }
@@ -505,5 +505,5 @@ rx_err_t riic_write_read(uint8_t        channel,
   err = internal_send_stop(riic);
   RX_RETURN_ON_ERROR(err, s_tag, "Stop condition failed");
 
-  return RX_OK;
+  return k_rx_ok;
 }

@@ -481,7 +481,7 @@ static void internal_handle_set_control_line_state(uint16_t wValue)
 rx_err_t rx_usb_cdc_init(void)
 {
   if (s_cdc_initialized) {
-    return RX_OK;
+    return k_rx_ok;
   }
 
   RX_LOG_DEBUG(s_tag, "Initializing USB CDC class");
@@ -495,7 +495,7 @@ rx_err_t rx_usb_cdc_init(void)
   s_control_line_state = 0;
   s_cdc_initialized    = true;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /**

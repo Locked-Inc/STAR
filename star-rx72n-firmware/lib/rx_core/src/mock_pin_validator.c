@@ -55,24 +55,24 @@ static uint16_t internal_pin_to_index(uint8_t port, uint8_t pin)
  * @param[in] port Port number
  * @param[in] pin Pin number
  *
- * @return RX_OK if valid, error code otherwise
+ * @return k_rx_ok if valid, error code otherwise
  */
 static rx_err_t internal_validate_port_pin(uint8_t port, uint8_t pin)
 {
   if (pin >= 8) {
-    return RX_ERR_GPIO_INVALID_PIN;
+    return k_rx_err_gpio_invalid_pin;
   }
 
   /* Check port range */
   if (port <= 9) {
-    return RX_OK; /* Decimal ports 0-9 */
+    return k_rx_ok; /* Decimal ports 0-9 */
   }
 
   if (port >= 0xA && port <= 0x10) {
-    return RX_OK; /* Hex ports A-G */
+    return k_rx_ok; /* Hex ports A-G */
   }
 
-  return RX_ERR_GPIO_INVALID_PORT;
+  return k_rx_err_gpio_invalid_port;
 }
 
 /* =============================================================================
@@ -88,12 +88,12 @@ static rx_err_t impl_validate_pin(void* ctx, uint8_t port, uint8_t pin)
   mock_pin_validator_t* validator = (mock_pin_validator_t*)ctx;
 
   if (validator == NULL) {
-    return RX_ERR_NULL_POINTER;
+    return k_rx_err_null_pointer;
   }
 
   /* Validate port/pin */
   rx_err_t err = internal_validate_port_pin(port, pin);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
@@ -104,7 +104,7 @@ static rx_err_t impl_validate_pin(void* ctx, uint8_t port, uint8_t pin)
     validator->validate_call_count++;
   }
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /**
@@ -115,23 +115,23 @@ static rx_err_t impl_reserve_pin(void* ctx, uint8_t port, uint8_t pin, const cha
   mock_pin_validator_t* validator = (mock_pin_validator_t*)ctx;
 
   if (validator == NULL || function == NULL) {
-    return RX_ERR_NULL_POINTER;
+    return k_rx_err_null_pointer;
   }
 
   /* Validate port/pin */
   rx_err_t err = internal_validate_port_pin(port, pin);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
   uint16_t index = internal_pin_to_index(port, pin);
   if (index == 0xFFFF) {
-    return RX_ERR_GPIO_INVALID_PIN;
+    return k_rx_err_gpio_invalid_pin;
   }
 
   /* Check if already reserved */
   if (validator->reserved_pins[index]) {
-    return RX_ERR_GPIO_CONFLICT;
+    return k_rx_err_gpio_conflict;
   }
 
   /* Reserve the pin */
@@ -140,7 +140,7 @@ static rx_err_t impl_reserve_pin(void* ctx, uint8_t port, uint8_t pin, const cha
   validator->function_names[index][k_mock_pin_validator_function_name_max - 1] = '\0';
   validator->reserve_call_count++;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /**
@@ -151,23 +151,23 @@ static rx_err_t impl_release_pin(void* ctx, uint8_t port, uint8_t pin)
   mock_pin_validator_t* validator = (mock_pin_validator_t*)ctx;
 
   if (validator == NULL) {
-    return RX_ERR_NULL_POINTER;
+    return k_rx_err_null_pointer;
   }
 
   /* Validate port/pin */
   rx_err_t err = internal_validate_port_pin(port, pin);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
   uint16_t index = internal_pin_to_index(port, pin);
   if (index == 0xFFFF) {
-    return RX_ERR_GPIO_INVALID_PIN;
+    return k_rx_err_gpio_invalid_pin;
   }
 
   /* Check if pin was reserved */
   if (!validator->reserved_pins[index]) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Release the pin */
@@ -175,7 +175,7 @@ static rx_err_t impl_release_pin(void* ctx, uint8_t port, uint8_t pin)
   validator->function_names[index][0] = '\0';
   validator->release_call_count++;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /**
@@ -190,7 +190,7 @@ static bool impl_is_pin_reserved(void* ctx, uint8_t port, uint8_t pin)
   }
 
   /* Validate port/pin */
-  if (internal_validate_port_pin(port, pin) != RX_OK) {
+  if (internal_validate_port_pin(port, pin) != k_rx_ok) {
     return false;
   }
 
@@ -211,34 +211,34 @@ impl_get_pin_function(void* ctx, uint8_t port, uint8_t pin, char* function_out, 
   mock_pin_validator_t* validator = (mock_pin_validator_t*)ctx;
 
   if (validator == NULL || function_out == NULL) {
-    return RX_ERR_NULL_POINTER;
+    return k_rx_err_null_pointer;
   }
 
   if (function_len < RX_PIN_FUNCTION_NAME_MAX_LEN) {
-    return RX_ERR_INVALID_SIZE;
+    return k_rx_err_invalid_size;
   }
 
   /* Validate port/pin */
   rx_err_t err = internal_validate_port_pin(port, pin);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
   uint16_t index = internal_pin_to_index(port, pin);
   if (index == 0xFFFF) {
-    return RX_ERR_GPIO_INVALID_PIN;
+    return k_rx_err_gpio_invalid_pin;
   }
 
   /* Check if pin is reserved */
   if (!validator->reserved_pins[index]) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Copy function name */
   strncpy(function_out, validator->function_names[index], function_len - 1);
   function_out[function_len - 1] = '\0';
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /**
@@ -249,7 +249,7 @@ static rx_err_t impl_clear_all_reservations(void* ctx)
   mock_pin_validator_t* validator = (mock_pin_validator_t*)ctx;
 
   if (validator == NULL) {
-    return RX_ERR_NULL_POINTER;
+    return k_rx_err_null_pointer;
   }
 
   /* Clear all reservations (but keep validation and call count tracking) */
@@ -258,7 +258,7 @@ static rx_err_t impl_clear_all_reservations(void* ctx)
     validator->function_names[i][0] = '\0';
   }
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -275,7 +275,7 @@ rx_err_t mock_pin_validator_init(mock_pin_validator_t* validator)
 
   validator->initialized = true;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t mock_pin_validator_get_interface(rx_pin_interface_t*   iface,
@@ -285,7 +285,7 @@ rx_err_t mock_pin_validator_get_interface(rx_pin_interface_t*   iface,
   RX_CHECK_NULL_PTR(validator, "MOCK_PIN", "Validator pointer is NULL");
 
   if (!validator->initialized) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Fill interface */
@@ -297,7 +297,7 @@ rx_err_t mock_pin_validator_get_interface(rx_pin_interface_t*   iface,
   iface->get_pin_function       = impl_get_pin_function;
   iface->clear_all_reservations = impl_clear_all_reservations;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -409,7 +409,7 @@ rx_err_t mock_pin_validator_clear(mock_pin_validator_t* validator)
   validator->reserve_call_count  = 0;
   validator->release_call_count  = 0;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t mock_pin_validator_deinit(mock_pin_validator_t* validator)
@@ -417,11 +417,11 @@ rx_err_t mock_pin_validator_deinit(mock_pin_validator_t* validator)
   RX_CHECK_NULL_PTR(validator, "MOCK_PIN", "Validator pointer is NULL");
 
   if (!validator->initialized) {
-    return RX_OK; /* Already deinitialized */
+    return k_rx_ok; /* Already deinitialized */
   }
 
   /* Clear state */
   validator->initialized = false;
 
-  return RX_OK;
+  return k_rx_ok;
 }

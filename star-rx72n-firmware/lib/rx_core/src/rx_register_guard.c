@@ -278,7 +278,7 @@ rx_err_t rx_register_guard_init(void)
   s_state.corrections = 0;
   s_state.initialized = 1;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 void rx_register_guard_refresh(void)

@@ -61,18 +61,18 @@ rx_err_t rx_pid_init(rx_pid_handle_t* handle, const rx_pid_config_t* config)
 
   if (handle->initialized) {
     RX_LOG_WARN(s_tag, "PID already initialized");
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Validate configuration */
   if (config->output_max <= config->output_min) {
     RX_LOG_ERROR(s_tag, "output_max must be > output_min");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (config->integral_max <= config->integral_min) {
     RX_LOG_ERROR(s_tag, "integral_max must be > integral_min");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Zero out handle */
@@ -92,7 +92,7 @@ rx_err_t rx_pid_init(rx_pid_handle_t* handle, const rx_pid_config_t* config)
 
   RX_LOG_INFO(s_tag, "PID initialized");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_pid_deinit(rx_pid_handle_t* handle)
@@ -101,7 +101,7 @@ rx_err_t rx_pid_deinit(rx_pid_handle_t* handle)
 
   if (!handle->initialized) {
     RX_LOG_WARN(s_tag, "PID not initialized");
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Clear handle */
@@ -109,7 +109,7 @@ rx_err_t rx_pid_deinit(rx_pid_handle_t* handle)
 
   RX_LOG_INFO(s_tag, "PID deinitialized");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t
@@ -120,12 +120,12 @@ rx_pid_compute(rx_pid_handle_t* handle, float setpoint, float measured, float dt
 
   if (!handle->initialized) {
     RX_LOG_ERROR(s_tag, "PID not initialized");
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   if (dt <= 0.0f) {
     RX_LOG_ERROR(s_tag, "dt must be > 0");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Calculate error */
@@ -154,7 +154,7 @@ rx_pid_compute(rx_pid_handle_t* handle, float setpoint, float measured, float dt
 
   RX_LOG_DEBUG(s_tag, "PID computation");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_pid_reset(rx_pid_handle_t* handle)
@@ -163,7 +163,7 @@ rx_err_t rx_pid_reset(rx_pid_handle_t* handle)
 
   if (!handle->initialized) {
     RX_LOG_ERROR(s_tag, "PID not initialized");
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Clear internal state */
@@ -172,7 +172,7 @@ rx_err_t rx_pid_reset(rx_pid_handle_t* handle)
 
   RX_LOG_DEBUG(s_tag, "PID state reset");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_pid_set_gains(rx_pid_handle_t* handle, float kp, float ki, float kd)
@@ -181,7 +181,7 @@ rx_err_t rx_pid_set_gains(rx_pid_handle_t* handle, float kp, float ki, float kd)
 
   if (!handle->initialized) {
     RX_LOG_ERROR(s_tag, "PID not initialized");
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   handle->kp = kp;
@@ -190,7 +190,7 @@ rx_err_t rx_pid_set_gains(rx_pid_handle_t* handle, float kp, float ki, float kd)
 
   RX_LOG_INFO(s_tag, "PID gains updated");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_pid_set_output_limits(rx_pid_handle_t* handle, float output_min, float output_max)
@@ -199,12 +199,12 @@ rx_err_t rx_pid_set_output_limits(rx_pid_handle_t* handle, float output_min, flo
 
   if (!handle->initialized) {
     RX_LOG_ERROR(s_tag, "PID not initialized");
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   if (output_max <= output_min) {
     RX_LOG_ERROR(s_tag, "output_max must be > output_min");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   handle->output_min = output_min;
@@ -212,7 +212,7 @@ rx_err_t rx_pid_set_output_limits(rx_pid_handle_t* handle, float output_min, flo
 
   RX_LOG_INFO(s_tag, "PID output limits updated");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_pid_set_integral_limits(rx_pid_handle_t* handle, float integral_min, float integral_max)
@@ -221,12 +221,12 @@ rx_err_t rx_pid_set_integral_limits(rx_pid_handle_t* handle, float integral_min,
 
   if (!handle->initialized) {
     RX_LOG_ERROR(s_tag, "PID not initialized");
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   if (integral_max <= integral_min) {
     RX_LOG_ERROR(s_tag, "integral_max must be > integral_min");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   handle->integral_min = integral_min;
@@ -237,5 +237,5 @@ rx_err_t rx_pid_set_integral_limits(rx_pid_handle_t* handle, float integral_min,
 
   RX_LOG_INFO(s_tag, "PID integral limits updated");
 
-  return RX_OK;
+  return k_rx_ok;
 }

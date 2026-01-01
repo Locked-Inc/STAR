@@ -47,7 +47,7 @@ extern "C" {
 /**
  * @brief Initialize nanopb wrapper
  *
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t rx_nanopb_init(void);
 
@@ -63,9 +63,9 @@ rx_err_t rx_nanopb_init(void);
  * @param[out] buffer Output buffer (at least RX_NANOPB_BUFFER_SIZE bytes)
  * @param[out] len    Actual encoded length
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if any pointer is NULL
- * @return RX_ERR_INVALID_SIZE if encoding fails
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if any pointer is NULL
+ * @return k_rx_err_invalid_size if encoding fails
  */
 rx_err_t rx_nanopb_encode_velocity_request(const star_v1_SetVelocityRequest* msg,
                                            uint8_t*                          buffer,
@@ -78,9 +78,9 @@ rx_err_t rx_nanopb_encode_velocity_request(const star_v1_SetVelocityRequest* msg
  * @param[in]  len    Buffer length
  * @param[out] msg    Decoded message
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if any pointer is NULL
- * @return RX_ERR_PROTOCOL_ERROR if decoding fails
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if any pointer is NULL
+ * @return k_rx_err_protocol_error if decoding fails
  */
 rx_err_t rx_nanopb_decode_velocity_request(const uint8_t*              buffer,
                                            uint32_t                    len,
@@ -98,7 +98,7 @@ rx_err_t rx_nanopb_decode_velocity_request(const uint8_t*              buffer,
  * @param[out] buffer Output buffer
  * @param[out] len    Actual encoded length
  *
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t rx_nanopb_encode_velocity_response(const star_v1_SetVelocityResponse* msg,
                                             uint8_t*                           buffer,
@@ -116,7 +116,7 @@ rx_err_t rx_nanopb_encode_velocity_response(const star_v1_SetVelocityResponse* m
  * @param[in]  len    Buffer length
  * @param[out] msg    Decoded message
  *
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t rx_nanopb_decode_estop_request(const uint8_t*                buffer,
                                         uint32_t                      len,
@@ -129,7 +129,7 @@ rx_err_t rx_nanopb_decode_estop_request(const uint8_t*                buffer,
  * @param[out] buffer Output buffer
  * @param[out] len    Actual encoded length
  *
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* msg,
                                          uint8_t*                             buffer,
@@ -147,7 +147,7 @@ rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* ms
  * @param[out] buffer Output buffer
  * @param[out] len    Actual encoded length
  *
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t
 rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg, uint8_t* buffer, uint32_t* len);

@@ -57,9 +57,9 @@ extern "C" {
  * @param[in] port GPIO port number (0-9, or 0xA-0x10 for A-G)
  * @param[in] pin GPIO pin number (0-7)
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if config or name is NULL
- * @return RX_ERR_INVALID_ARG if port or pin is invalid
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if config or name is NULL
+ * @return k_rx_err_invalid_arg if port or pin is invalid
  *
  * @note The config structure must remain valid for the lifetime of bus usage
  * @note The name string must remain valid (use string literals or static storage)
@@ -83,9 +83,9 @@ rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, uint8_t port,
  * @param[in] channel ADC channel (0-7)
  * @param[in] bits Resolution (8, 10, or 12 bits)
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if config or name is NULL
- * @return RX_ERR_INVALID_ARG if unit, channel, or bits is invalid
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if config or name is NULL
+ * @return k_rx_err_invalid_arg if unit, channel, or bits is invalid
  *
  * @note The config structure must remain valid for the lifetime of bus usage
  * @note The name string must remain valid (use string literals or static storage)
@@ -116,9 +116,9 @@ rx_err_t rx_bus_config_init_adc(rx_bus_config_t* config,
  * @param[in] scl_pin SCL pin number
  * @param[in] frequency_hz Clock frequency (100000, 400000, or 1000000)
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if config or name is NULL
- * @return RX_ERR_INVALID_ARG if parameters are invalid
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if config or name is NULL
+ * @return k_rx_err_invalid_arg if parameters are invalid
  *
  * @note Not yet implemented - Phase 1.4
  */
@@ -153,9 +153,9 @@ rx_err_t rx_bus_config_init_i2c(rx_bus_config_t* config,
  * @param[in] frequency_hz Clock frequency (typically 100000)
  * @param[in] use_pec Enable Packet Error Checking (CRC-8)
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if config or name is NULL
- * @return RX_ERR_INVALID_ARG if parameters are invalid
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if config or name is NULL
+ * @return k_rx_err_invalid_arg if parameters are invalid
  *
  * @note Not yet implemented - Phase 1.4
  */

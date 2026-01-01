@@ -70,7 +70,7 @@ static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
   uint32_t transfer_len = (tx_len > rx_len) ? tx_len : rx_len;
 
   if (transfer_len > k_spi_comm_tx_buffer_size) {
-    return RX_ERR_INVALID_SIZE;
+    return k_rx_err_invalid_size;
   }
 
   memset(handle->tx_buffer, 0, transfer_len);
@@ -88,7 +88,7 @@ static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
                                           handle->rx_buffer,
                                           (uint16_t)transfer_len);
 
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
@@ -97,7 +97,7 @@ static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
     memcpy(rx_data, handle->rx_buffer, rx_len);
   }
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -108,7 +108,7 @@ static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
 rx_err_t rx_spi_comm_init(rx_spi_comm_handle_t* handle, const rx_spi_comm_config_t* config)
 {
   if (handle == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Clear handle */
@@ -125,14 +125,14 @@ rx_err_t rx_spi_comm_init(rx_spi_comm_handle_t* handle, const rx_spi_comm_config
 
   /* Initialize frame encoder */
   rx_err_t err = rx_frame_encoder_init(&handle->encoder);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR(s_tag, "Failed to init frame encoder");
     return err;
   }
 
   /* Initialize frame decoder */
   err = rx_frame_decoder_init(&handle->decoder);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR(s_tag, "Failed to init frame decoder");
     rx_frame_encoder_deinit(&handle->encoder);
     return err;
@@ -145,13 +145,13 @@ rx_err_t rx_spi_comm_init(rx_spi_comm_handle_t* handle, const rx_spi_comm_config
   handle->initialized = 1;
 
   RX_LOG_DEBUG(s_tag, "SPI comm initialized");
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_spi_comm_deinit(rx_spi_comm_handle_t* handle)
 {
   if (handle == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (handle->initialized) {
@@ -161,7 +161,7 @@ rx_err_t rx_spi_comm_deinit(rx_spi_comm_handle_t* handle)
   }
 
   RX_LOG_DEBUG(s_tag, "SPI comm deinitialized");
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -176,21 +176,21 @@ rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
                           uint32_t              payload_len)
 {
   if (handle == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (!handle->initialized) {
     RX_LOG_ERROR(s_tag, "Handle not initialized");
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   if (payload == NULL && payload_len > 0) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (payload_len > k_frame_max_payload) {
     RX_LOG_ERROR(s_tag, "Payload too large");
-    return RX_ERR_INVALID_SIZE;
+    return k_rx_err_invalid_size;
   }
 
   /* Build frame */
@@ -216,14 +216,14 @@ rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
   uint32_t wire_len = 0;
 
   rx_err_t err = rx_frame_encode(&handle->encoder, &frame, wire_buffer, &wire_len);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR(s_tag, "Frame encode failed");
     return err;
   }
 
   /* Transfer via SPI */
   err = internal_spi_transfer(handle, wire_buffer, wire_len, NULL, 0);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR(s_tag, "SPI transfer failed");
     return err;
   }
@@ -231,23 +231,23 @@ rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
   /* Increment TX sequence */
   handle->tx_sequence++;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_spi_comm_send_ack(rx_spi_comm_handle_t* handle, uint16_t sequence)
 {
   if (handle == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (!handle->initialized) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Create ACK frame */
   rx_frame_t ack_frame;
   rx_err_t   err = rx_frame_create_ack(&ack_frame, sequence);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
@@ -256,7 +256,7 @@ rx_err_t rx_spi_comm_send_ack(rx_spi_comm_handle_t* handle, uint16_t sequence)
   uint32_t wire_len = 0;
 
   err = rx_frame_encode(&handle->encoder, &ack_frame, wire_buffer, &wire_len);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
@@ -266,17 +266,17 @@ rx_err_t rx_spi_comm_send_ack(rx_spi_comm_handle_t* handle, uint16_t sequence)
 rx_err_t rx_spi_comm_send_nack(rx_spi_comm_handle_t* handle, uint16_t sequence, uint8_t flags)
 {
   if (handle == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (!handle->initialized) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Create NACK frame */
   rx_frame_t nack_frame;
   rx_err_t   err = rx_frame_create_nack(&nack_frame, sequence, flags);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
@@ -285,7 +285,7 @@ rx_err_t rx_spi_comm_send_nack(rx_spi_comm_handle_t* handle, uint16_t sequence, 
   uint32_t wire_len = 0;
 
   err = rx_frame_encode(&handle->encoder, &nack_frame, wire_buffer, &wire_len);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
@@ -300,23 +300,23 @@ rx_err_t rx_spi_comm_send_nack(rx_spi_comm_handle_t* handle, uint16_t sequence, 
 rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, uint32_t timeout_ms)
 {
   if (handle == NULL || frame == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (!handle->initialized) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Check for available data */
   bool     available = false;
   rx_err_t err       = rspi_peripheral_read_available(handle->channel, &available);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
   if (!available) {
     if (timeout_ms == 0) {
-      return RX_ERR_TIMEOUT;
+      return k_rx_err_timeout;
     }
 
 #ifdef __RX__
@@ -331,7 +331,7 @@ rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, ui
       elapsed_ms += 10;   /* Approximate - actual depends on tick rate */
 
       err = rspi_peripheral_read_available(handle->channel, &available);
-      if (err != RX_OK) {
+      if (err != k_rx_ok) {
         return err;
       }
     }
@@ -341,7 +341,7 @@ rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, ui
 #endif
 
     if (!available) {
-      return RX_ERR_TIMEOUT;
+      return k_rx_err_timeout;
     }
   }
 
@@ -351,7 +351,7 @@ rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, ui
 
   /* For SPI peripheral mode, we receive what the controller sends */
   err = internal_spi_transfer(handle, NULL, 0, header_buf, header_len);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
@@ -360,7 +360,7 @@ rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, ui
                   (uint16_t)header_buf[k_hdr_sync_low];
   if (sync != k_frame_sync_word) {
     RX_LOG_ERROR(s_tag, "Invalid sync word");
-    return RX_ERR_PROTOCOL_ERROR;
+    return k_rx_err_protocol_error;
   }
 
   /* Extract payload length (big-endian) */
@@ -368,7 +368,7 @@ rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, ui
     ((uint16_t)header_buf[k_hdr_len_high] << BE16_HIGH_SHIFT) | (uint16_t)header_buf[k_hdr_len_low];
   if (payload_len > k_frame_max_payload) {
     RX_LOG_ERROR(s_tag, "Payload too large");
-    return RX_ERR_INVALID_SIZE;
+    return k_rx_err_invalid_size;
   }
 
   /* Calculate total frame size */
@@ -378,7 +378,7 @@ rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, ui
   uint32_t remaining = payload_len + k_frame_crc_size;
   if (remaining > 0) {
     err = internal_spi_transfer(handle, NULL, 0, handle->rx_buffer + header_len, remaining);
-    if (err != RX_OK) {
+    if (err != k_rx_ok) {
       return err;
     }
   }
@@ -388,7 +388,7 @@ rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, ui
 
   /* Decode frame */
   err = rx_frame_decode(&handle->decoder, handle->rx_buffer, total_size, frame);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR(s_tag, "Frame decode failed");
     return err;
   }
@@ -396,17 +396,17 @@ rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, ui
   /* Update expected RX sequence */
   handle->rx_sequence = frame->header.sequence + 1;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_spi_comm_data_available(rx_spi_comm_handle_t* handle, bool* available)
 {
   if (handle == NULL || available == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (!handle->initialized) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   return rspi_peripheral_read_available(handle->channel, available);

@@ -71,7 +71,7 @@ typedef enum {
  * Captures current values of critical registers as the "golden" reference.
  * These values will be restored during periodic refresh.
  *
- * @return RX_OK on success
+ * @return k_rx_ok on success
  *
  * @note Call AFTER all peripheral initialization is complete.
  * @note Can be called multiple times to update golden values.

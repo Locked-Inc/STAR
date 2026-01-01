@@ -96,9 +96,9 @@ typedef enum {
  *                       supported value (128, 512, 1024, 2048, 4096,
  *                       8192, or 16384 ms).
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if timeout is out of supported range
- * @return RX_ERR_INVALID_STATE if IWDT is already running
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if timeout is out of supported range
+ * @return k_rx_err_invalid_state if IWDT is already running
  *
  * @note This function starts the watchdog - rx_iwdt_feed() must be called
  *       within the timeout period to prevent reset.

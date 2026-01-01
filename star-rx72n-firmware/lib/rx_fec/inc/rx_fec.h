@@ -97,7 +97,7 @@ typedef struct {
  * @brief Initialize FEC encoder
  *
  * @param[out] enc Pointer to encoder handle
- * @return RX_OK on success, RX_ERR_INVALID_ARG if enc is NULL
+ * @return k_rx_ok on success, k_rx_err_invalid_arg if enc is NULL
  */
 rx_err_t rx_fec_encoder_init(rx_fec_encoder_t* enc);
 
@@ -105,7 +105,7 @@ rx_err_t rx_fec_encoder_init(rx_fec_encoder_t* enc);
  * @brief Deinitialize FEC encoder
  *
  * @param[in,out] enc Pointer to encoder handle
- * @return RX_OK on success, RX_ERR_INVALID_ARG if enc is NULL
+ * @return k_rx_ok on success, k_rx_err_invalid_arg if enc is NULL
  */
 rx_err_t rx_fec_encoder_deinit(rx_fec_encoder_t* enc);
 
@@ -121,9 +121,9 @@ rx_err_t rx_fec_encoder_deinit(rx_fec_encoder_t* enc);
  * @param[out] output     Output buffer (must be at least rx_fec_encoded_len())
  * @param[out] output_len Actual number of output bytes written
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if any pointer is NULL
- * @return RX_ERR_INVALID_STATE if encoder not initialized
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if any pointer is NULL
+ * @return k_rx_err_invalid_state if encoder not initialized
  */
 rx_err_t rx_fec_encode(rx_fec_encoder_t* enc,
                        const uint8_t*    input,
@@ -178,8 +178,8 @@ typedef struct {
  * @param[in]  survivors_buf  Caller-provided buffer for survivor bits
  * @param[in]  survivors_len  Number of uint64_t elements in survivors_buf
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if any pointer is NULL or buffer too small
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if any pointer is NULL or buffer too small
  */
 rx_err_t
 rx_fec_decoder_init(rx_fec_decoder_t* dec, uint64_t* survivors_buf, uint32_t survivors_len);
@@ -188,7 +188,7 @@ rx_fec_decoder_init(rx_fec_decoder_t* dec, uint64_t* survivors_buf, uint32_t sur
  * @brief Deinitialize FEC decoder
  *
  * @param[in,out] dec Pointer to decoder handle
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t rx_fec_decoder_deinit(rx_fec_decoder_t* dec);
 
@@ -205,10 +205,10 @@ rx_err_t rx_fec_decoder_deinit(rx_fec_decoder_t* dec);
  * @param[out] output              Decoded output buffer
  * @param[out] output_len          Actual decoded length
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if any pointer is NULL or soft_len is odd
- * @return RX_ERR_INVALID_STATE if decoder not initialized
- * @return RX_ERR_INVALID_SIZE if output buffer too small
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if any pointer is NULL or soft_len is odd
+ * @return k_rx_err_invalid_state if decoder not initialized
+ * @return k_rx_err_invalid_size if output buffer too small
  */
 rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*    dec,
                             const rx_soft_bit_t* soft_bits,
@@ -230,9 +230,9 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*    dec,
  * @param[out] output              Decoded output buffer
  * @param[out] output_len          Actual decoded length
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if any pointer is NULL
- * @return RX_ERR_INVALID_STATE if decoder not initialized
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if any pointer is NULL
+ * @return k_rx_err_invalid_state if decoder not initialized
  */
 rx_err_t rx_fec_decode_hard(rx_fec_decoder_t* dec,
                             const uint8_t*    data,

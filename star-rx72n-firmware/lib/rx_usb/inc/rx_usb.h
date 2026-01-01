@@ -154,8 +154,8 @@ typedef enum {
  * to be connected to a USB host.
  *
  * @param[in] config Configuration structure (NULL for defaults)
- * @return RX_OK on success
- * @return RX_ERR_INVALID_STATE if already initialized
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_state if already initialized
  */
 rx_err_t rx_usb_init(const rx_usb_config_t* config);
 
@@ -165,8 +165,8 @@ rx_err_t rx_usb_init(const rx_usb_config_t* config);
  * Stops USB operations and releases resources. The USB cable should be
  * disconnected before calling this function.
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_STATE if not initialized
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_state if not initialized
  */
 rx_err_t rx_usb_deinit(void);
 
@@ -196,10 +196,10 @@ rx_usb_state_t rx_usb_get_state(void);
  *
  * @param[in] data Data buffer to transmit
  * @param[in] len Number of bytes to transmit
- * @return RX_OK on success (all data queued)
- * @return RX_ERR_BUSY if TX buffer is full (partial or no data queued)
- * @return RX_ERR_INVALID_STATE if USB not configured
- * @return RX_ERR_NULL_POINTER if data is NULL
+ * @return k_rx_ok on success (all data queued)
+ * @return k_rx_err_busy if TX buffer is full (partial or no data queued)
+ * @return k_rx_err_invalid_state if USB not configured
+ * @return k_rx_err_null_pointer if data is NULL
  */
 rx_err_t rx_usb_write(const uint8_t* data, uint32_t len);
 
@@ -212,8 +212,8 @@ rx_err_t rx_usb_write(const uint8_t* data, uint32_t len);
  * @param[out] data Output buffer for received data
  * @param[in] max_len Maximum number of bytes to read
  * @param[out] actual_len Actual number of bytes read (can be 0)
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if data or actual_len is NULL
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if data or actual_len is NULL
  */
 rx_err_t rx_usb_read(uint8_t* data, uint32_t max_len, uint32_t* actual_len);
 
@@ -221,8 +221,8 @@ rx_err_t rx_usb_read(uint8_t* data, uint32_t max_len, uint32_t* actual_len);
  * @brief Check if RX data is available
  *
  * @param[out] available Number of bytes available in RX buffer
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if available is NULL
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if available is NULL
  */
 rx_err_t rx_usb_rx_available(uint32_t* available);
 
@@ -230,8 +230,8 @@ rx_err_t rx_usb_rx_available(uint32_t* available);
  * @brief Check TX buffer space available
  *
  * @param[out] available Number of bytes available in TX buffer
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if available is NULL
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if available is NULL
  */
 rx_err_t rx_usb_tx_available(uint32_t* available);
 
@@ -241,8 +241,8 @@ rx_err_t rx_usb_tx_available(uint32_t* available);
  * Blocks until all data in the TX buffer has been transmitted to the host.
  *
  * @param[in] timeout_ms Maximum time to wait in milliseconds (0 = no wait)
- * @return RX_OK on success
- * @return RX_ERR_TIMEOUT if timeout expired before buffer was flushed
+ * @return k_rx_ok on success
+ * @return k_rx_err_timeout if timeout expired before buffer was flushed
  */
 rx_err_t rx_usb_flush(uint32_t timeout_ms);
 
@@ -253,8 +253,8 @@ rx_err_t rx_usb_flush(uint32_t timeout_ms);
  * set by the host via SET_LINE_CODING request.
  *
  * @param[out] line_coding Line coding structure to fill
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if line_coding is NULL
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if line_coding is NULL
  */
 rx_err_t rx_usb_get_line_coding(rx_usb_line_coding_t* line_coding);
 
@@ -262,8 +262,8 @@ rx_err_t rx_usb_get_line_coding(rx_usb_line_coding_t* line_coding);
  * @brief Get USB statistics
  *
  * @param[out] stats Statistics structure to fill
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if stats is NULL
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if stats is NULL
  */
 rx_err_t rx_usb_get_stats(rx_usb_stats_t* stats);
 

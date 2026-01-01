@@ -95,7 +95,7 @@ typedef struct {
  *
  * @param[out] combiner Pointer to combiner handle
  * @param[in]  max_combines Maximum number of combining attempts (0 = default)
- * @return RX_OK on success, RX_ERR_INVALID_ARG if combiner is NULL
+ * @return k_rx_ok on success, k_rx_err_invalid_arg if combiner is NULL
  */
 rx_err_t rx_chase_combiner_init(rx_chase_combiner_t* combiner, uint8_t max_combines);
 
@@ -103,7 +103,7 @@ rx_err_t rx_chase_combiner_init(rx_chase_combiner_t* combiner, uint8_t max_combi
  * @brief Deinitialize Chase Combiner
  *
  * @param[in,out] combiner Pointer to combiner handle
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t rx_chase_combiner_deinit(rx_chase_combiner_t* combiner);
 
@@ -116,10 +116,10 @@ rx_err_t rx_chase_combiner_deinit(rx_chase_combiner_t* combiner);
  * @param[in]     soft_bits Received soft bits
  * @param[in]     len Number of soft bits
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if any pointer is NULL or len is 0
- * @return RX_ERR_INVALID_SIZE if len doesn't match expected length
- * @return RX_ERR_BUSY if max combines reached
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if any pointer is NULL or len is 0
+ * @return k_rx_err_invalid_size if len doesn't match expected length
+ * @return k_rx_err_busy if max combines reached
  */
 rx_err_t
 rx_chase_combiner_add(rx_chase_combiner_t* combiner, const rx_soft_bit_t* soft_bits, uint32_t len);
@@ -133,9 +133,9 @@ rx_chase_combiner_add(rx_chase_combiner_t* combiner, const rx_soft_bit_t* soft_b
  * @param[out] output Output buffer for combined soft bits
  * @param[out] len Number of combined soft bits
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if any pointer is NULL
- * @return RX_ERR_INVALID_STATE if no soft bits have been added
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if any pointer is NULL
+ * @return k_rx_err_invalid_state if no soft bits have been added
  */
 rx_err_t
 rx_chase_combiner_combined(rx_chase_combiner_t* combiner, rx_soft_bit_t* output, uint32_t* len);
@@ -206,8 +206,8 @@ typedef struct {
  * @param[out] harq Pointer to HARQ handle
  * @param[in]  config Configuration (NULL for defaults)
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if harq is NULL
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if harq is NULL
  */
 rx_err_t rx_harq_init(rx_harq_handle_t* harq, const rx_harq_config_t* config);
 
@@ -215,7 +215,7 @@ rx_err_t rx_harq_init(rx_harq_handle_t* harq, const rx_harq_config_t* config);
  * @brief Deinitialize HARQ handle
  *
  * @param[in,out] harq Pointer to HARQ handle
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t rx_harq_deinit(rx_harq_handle_t* harq);
 
@@ -245,9 +245,9 @@ void rx_harq_reset(rx_harq_handle_t* harq);
  * @param[out] output Output buffer (must be large enough for encoded data)
  * @param[out] output_len Actual output length
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if any pointer is NULL
- * @return RX_ERR_INVALID_STATE if not initialized
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if any pointer is NULL
+ * @return k_rx_err_invalid_state if not initialized
  */
 rx_err_t rx_harq_encode(rx_harq_handle_t* harq,
                         const uint8_t*    payload,
@@ -267,10 +267,10 @@ rx_err_t rx_harq_encode(rx_harq_handle_t* harq,
  * @param[out] output Decoded output buffer
  * @param[out] output_len Actual decoded length
  *
- * @return RX_OK on successful decode
- * @return RX_ERR_PROTOCOL_ERROR if decode failed (more retries possible)
- * @return RX_ERR_INVALID_ARG if any pointer is NULL
- * @return RX_ERR_INVALID_STATE if not initialized
+ * @return k_rx_ok on successful decode
+ * @return k_rx_err_protocol_error if decode failed (more retries possible)
+ * @return k_rx_err_invalid_arg if any pointer is NULL
+ * @return k_rx_err_invalid_state if not initialized
  */
 rx_err_t rx_harq_decode(rx_harq_handle_t*    harq,
                         const rx_soft_bit_t* soft_bits,
