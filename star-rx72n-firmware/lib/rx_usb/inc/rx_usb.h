@@ -96,16 +96,16 @@ typedef enum {
  * @brief USB callback function type
  *
  * @param event The USB event that occurred
- * @param context User-provided context pointer
+ * @param ctx User-provided context pointer
  */
-typedef void (*rx_usb_callback_t)(rx_usb_event_t event, void* context);
+typedef void (*rx_usb_callback_t)(rx_usb_event_t event, void* ctx);
 
 /**
  * @brief USB configuration structure
  */
 typedef struct {
   rx_usb_callback_t callback; /**< Event callback function (optional) */
-  void*             context;  /**< User context for callback */ /* TODO: change context to ctx to be consistant */
+  void*             ctx;      /**< User context for callback */
 } rx_usb_config_t;
 
 /**
