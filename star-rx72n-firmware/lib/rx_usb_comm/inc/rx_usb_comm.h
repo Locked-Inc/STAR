@@ -1,7 +1,9 @@
+/* lib/rx_usb_comm/inc/rx_usb_comm.h */
+
 /**
  * @file rx_usb_comm.h
  * @brief High-Level USB CDC Communication Layer for RX72N
- *
+ * @details
  * Integrates Frame Layer and USB CDC for reliable communication with the
  * RPi5 controller. Provides the same frame-based protocol as SPI but over
  * USB CDC-ACM virtual serial port.
@@ -18,8 +20,8 @@
  * @see rx_usb.h for USB CDC driver
  * @see docs/sections/01_nanopb_protocol.tex for protocol specification
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef STAR_RX_USB_COMM_H
