@@ -1,7 +1,0 @@
-# <file system> <mount point> <type> <options> <dump> <pass>
-# Note: nofail allows boot to continue in QEMU where mmcblk devices don't exist
-/dev/mmcblk0p1  /boot           vfat    defaults,nofail 0       2
-/dev/mmcblk0p2  /               ext4    defaults,nofail 0       1
-proc            /proc           proc    defaults        0       0
-sysfs           /sys            sysfs   defaults        0       0
-tmpfs           /tmp            tmpfs   defaults        0       0

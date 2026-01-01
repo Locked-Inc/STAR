@@ -1,2 +1,0 @@
-# Custom packages for RPI Minimal OS
-source "$BR2_EXTERNAL_RPI_MINIMAL_PATH/package/ros2-jazzy/Config.in"
