@@ -133,7 +133,7 @@ static rx_err_t impl_reserve_pin(void* ctx, uint8_t port, uint8_t pin, const cha
     /* Release mutex before returning error */
     tx_mutex_put(&validator->mutex);
 
-    star_log_warn("PIN_VALIDATOR", "Pin already reserved");
+    rx_log_warn("PIN_VALIDATOR", "Pin already reserved");
     return k_rx_err_gpio_conflict;
   }
 
@@ -145,7 +145,7 @@ static rx_err_t impl_reserve_pin(void* ctx, uint8_t port, uint8_t pin, const cha
   /* Release mutex */
   tx_mutex_put(&validator->mutex);
 
-  star_log_debug("PIN_VALIDATOR", "Pin reserved");
+  rx_log_debug("PIN_VALIDATOR", "Pin reserved");
 
   return k_rx_ok;
 }
@@ -182,7 +182,7 @@ static rx_err_t impl_release_pin(void* ctx, uint8_t port, uint8_t pin)
     /* Release mutex before returning error */
     tx_mutex_put(&validator->mutex);
 
-    star_log_warn("PIN_VALIDATOR", "Pin was not reserved");
+    rx_log_warn("PIN_VALIDATOR", "Pin was not reserved");
     return k_rx_err_invalid_state;
   }
 
@@ -193,7 +193,7 @@ static rx_err_t impl_release_pin(void* ctx, uint8_t port, uint8_t pin)
   /* Release mutex */
   tx_mutex_put(&validator->mutex);
 
-  star_log_debug("PIN_VALIDATOR", "Pin released");
+  rx_log_debug("PIN_VALIDATOR", "Pin released");
 
   return k_rx_ok;
 }
@@ -306,7 +306,7 @@ static rx_err_t impl_clear_all_reservations(void* ctx)
   /* Release mutex */
   tx_mutex_put(&validator->mutex);
 
-  star_log_debug("PIN_VALIDATOR", "All reservations cleared");
+  rx_log_debug("PIN_VALIDATOR", "All reservations cleared");
 
   return k_rx_ok;
 }
@@ -326,13 +326,13 @@ rx_err_t pin_validator_init(pin_validator_t* validator)
   /* Create mutex */
   UINT status = tx_mutex_create(&validator->mutex, "PinValidatorMutex", TX_NO_INHERIT);
   if (status != TX_SUCCESS) {
-    star_log_error("PIN_VALIDATOR", "Failed to create mutex");
+    rx_log_error("PIN_VALIDATOR", "Failed to create mutex");
     return k_rx_err_rtos_mutex;
   }
 
   validator->initialized = true;
 
-  star_log_info("PIN_VALIDATOR", "Pin validator initialized");
+  rx_log_info("PIN_VALIDATOR", "Pin validator initialized");
 
   return k_rx_ok;
 }
@@ -343,7 +343,7 @@ rx_err_t pin_validator_get_interface(rx_pin_interface_t* iface, pin_validator_t*
   RX_CHECK_NULL_PTR(validator, "PIN_VALIDATOR", "Validator pointer is NULL");
 
   if (!validator->initialized) {
-    star_log_error("PIN_VALIDATOR", "Validator not initialized");
+    rx_log_error("PIN_VALIDATOR", "Validator not initialized");
     return k_rx_err_invalid_state;
   }
 
@@ -373,7 +373,7 @@ rx_err_t pin_validator_deinit(pin_validator_t* validator)
   /* Clear state */
   validator->initialized = false;
 
-  star_log_info("PIN_VALIDATOR", "Pin validator deinitialized");
+  rx_log_info("PIN_VALIDATOR", "Pin validator deinitialized");
 
   return k_rx_ok;
 }

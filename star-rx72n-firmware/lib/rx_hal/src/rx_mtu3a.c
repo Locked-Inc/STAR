@@ -105,12 +105,12 @@ static rx_err_t internal_calculate_period(uint32_t frequency_hz, uint16_t* perio
 
   /* Check if period fits in 16-bit register */
   if (period_calc > 0xFFFF) {
-    star_log_error(s_tag, "Frequency too low");
+    rx_log_error(s_tag, "Frequency too low");
     return k_rx_err_invalid_arg;
   }
 
   if (period_calc < 10) {
-    star_log_error(s_tag, "Frequency too high");
+    rx_log_error(s_tag, "Frequency too high");
     return k_rx_err_invalid_arg;
   }
 
@@ -153,7 +153,7 @@ rx_err_t rx_mtu_init_pwm(rx_mtu_channel_t channel, const rx_mtu_config_t* config
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
 
   if ((int32_t)channel >= k_mtu_max_channels) {
-    star_log_error(s_tag, "Invalid MTU channel");
+    rx_log_error(s_tag, "Invalid MTU channel");
     return k_rx_err_invalid_arg;
   }
 
@@ -169,7 +169,7 @@ rx_err_t rx_mtu_init_pwm(rx_mtu_channel_t channel, const rx_mtu_config_t* config
     return err;
   }
 
-  star_log_info(s_tag, "Initializing MTU");
+  rx_log_info(s_tag, "Initializing MTU");
 
   /* Enable MTU module (clear module stop bit) */
   SYSTEM.PRCR = 0xA50B; /* Enable writes to MSTPCR */
@@ -224,7 +224,7 @@ rx_err_t rx_mtu_init_pwm(rx_mtu_channel_t channel, const rx_mtu_config_t* config
   /* Start timer */
   rx_mtu_start(channel);
 
-  star_log_info(s_tag, "MTU initialized successfully");
+  rx_log_info(s_tag, "MTU initialized successfully");
 
   return k_rx_ok;
 }
@@ -236,7 +236,7 @@ rx_err_t rx_mtu_set_duty(rx_mtu_channel_t channel, rx_mtu_output_t output, float
   }
 
   if (duty_percent < 0.0f || duty_percent > 100.0f) {
-    star_log_error(s_tag, "Invalid duty cycle");
+    rx_log_error(s_tag, "Invalid duty cycle");
     return k_rx_err_invalid_arg;
   }
 
@@ -374,7 +374,7 @@ rx_err_t rx_mtu_start(rx_mtu_channel_t channel)
     case k_mtu_channel_6:
     case k_mtu_channel_7:
       /* MTU6/7 have separate start control - simplified */
-      star_log_warn(s_tag, "MTU6/7 start not fully implemented");
+      rx_log_warn(s_tag, "MTU6/7 start not fully implemented");
       break;
     default:
       return k_rx_err_invalid_arg;
@@ -436,7 +436,7 @@ rx_err_t rx_mtu_deinit(rx_mtu_channel_t channel)
   s_mtu_initialized[channel] = false;
   s_mtu_period[channel]      = 0;
 
-  star_log_info(s_tag, "Info");
+  rx_log_info(s_tag, "Info");
 
   return k_rx_ok;
 }

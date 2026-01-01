@@ -80,13 +80,13 @@ rx_err_t rspi_init_peripheral(uint8_t channel, uint8_t mode, bool use_16bit)
 {
   /* Validate channel */
   if (channel >= k_rspi_max_channels) {
-    star_log_error(s_tag, "Invalid RSPI channel");
+    rx_log_error(s_tag, "Invalid RSPI channel");
     return k_rx_err_invalid_arg;
   }
 
   /* Validate mode (0-3) */
   if (mode > 3) {
-    star_log_error(s_tag, "Invalid SPI mode (must be 0-3)");
+    rx_log_error(s_tag, "Invalid SPI mode (must be 0-3)");
     return k_rx_err_invalid_arg;
   }
 
@@ -141,7 +141,7 @@ rx_err_t rspi_init_peripheral(uint8_t channel, uint8_t mode, bool use_16bit)
   /* Mark channel as initialized */
   s_rspi_channel_initialized[channel] = true;
 
-  star_log_debug(s_tag, "RSPI peripheral mode initialized");
+  rx_log_debug(s_tag, "RSPI peripheral mode initialized");
 
   return k_rx_ok;
 }
@@ -154,7 +154,7 @@ rspi_peripheral_transfer(uint8_t channel, const uint8_t* tx_data, uint8_t* rx_da
 
   /* Validate channel */
   if (channel >= k_rspi_max_channels || !s_rspi_channel_initialized[channel]) {
-    star_log_error(s_tag, "RSPI channel not initialized");
+    rx_log_error(s_tag, "RSPI channel not initialized");
     return k_rx_err_invalid_state;
   }
 
@@ -169,7 +169,7 @@ rspi_peripheral_transfer(uint8_t channel, const uint8_t* tx_data, uint8_t* rx_da
     }
 
     if (timeout == 0) {
-      star_log_error(s_tag, "SPI transmit timeout");
+      rx_log_error(s_tag, "SPI transmit timeout");
       return k_rx_err_timeout;
     }
 
@@ -183,7 +183,7 @@ rspi_peripheral_transfer(uint8_t channel, const uint8_t* tx_data, uint8_t* rx_da
     }
 
     if (timeout == 0) {
-      star_log_error(s_tag, "SPI receive timeout");
+      rx_log_error(s_tag, "SPI receive timeout");
       return k_rx_err_timeout;
     }
 
@@ -203,7 +203,7 @@ rx_err_t rspi_peripheral_read_available(uint8_t channel, bool* available)
 
   /* Validate channel */
   if (channel >= k_rspi_max_channels || !s_rspi_channel_initialized[channel]) {
-    star_log_error(s_tag, "RSPI channel not initialized");
+    rx_log_error(s_tag, "RSPI channel not initialized");
     return k_rx_err_invalid_state;
   }
 
@@ -222,7 +222,7 @@ rx_err_t rspi_peripheral_write_ready(uint8_t channel, bool* ready)
 
   /* Validate channel */
   if (channel >= k_rspi_max_channels || !s_rspi_channel_initialized[channel]) {
-    star_log_error(s_tag, "RSPI channel not initialized");
+    rx_log_error(s_tag, "RSPI channel not initialized");
     return k_rx_err_invalid_state;
   }
 
@@ -239,7 +239,7 @@ rx_err_t rspi_deinit(uint8_t channel)
 {
   /* Validate channel */
   if (channel >= k_rspi_max_channels) {
-    star_log_error(s_tag, "Invalid RSPI channel");
+    rx_log_error(s_tag, "Invalid RSPI channel");
     return k_rx_err_invalid_arg;
   }
 
@@ -268,7 +268,7 @@ rx_err_t rspi_deinit(uint8_t channel)
   /* Mark channel as uninitialized */
   s_rspi_channel_initialized[channel] = false;
 
-  star_log_debug(s_tag, "RSPI deinitialized");
+  rx_log_debug(s_tag, "RSPI deinitialized");
 
   return k_rx_ok;
 }
