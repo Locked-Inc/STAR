@@ -1,14 +1,16 @@
+/* lib/rx_nanopb/src/rx_nanopb.c */
+
 /**
  * @file rx_nanopb.c
  * @brief nanopb Integration Wrapper for RX72N
- *
+ * @details
  * Provides simplified encode/decode functions with static buffers
  * for protocol buffer messages used in the STAR project.
  *
  * @note All encoding/decoding uses static buffers - no dynamic allocation.
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "rx_nanopb.h"
@@ -80,7 +82,7 @@ rx_err_t rx_nanopb_encode_velocity_request(const star_v1_SetVelocityRequest* msg
     return k_rx_err_invalid_arg;
   }
 
-  pb_ostream_t stream = pb_ostream_from_buffer(buffer, RX_NANOPB_BUFFER_SIZE);
+  pb_ostream_t stream = pb_ostream_from_buffer(buffer, k_nanopb_buffer_size);
 
   if (!pb_encode(&stream, star_v1_SetVelocityRequest_fields, msg)) {
     return k_rx_err_invalid_size;
@@ -123,7 +125,7 @@ rx_err_t rx_nanopb_encode_velocity_response(const star_v1_SetVelocityResponse* m
     return k_rx_err_invalid_arg;
   }
 
-  pb_ostream_t stream = pb_ostream_from_buffer(buffer, RX_NANOPB_BUFFER_SIZE);
+  pb_ostream_t stream = pb_ostream_from_buffer(buffer, k_nanopb_buffer_size);
 
   if (!pb_encode(&stream, star_v1_SetVelocityResponse_fields, msg)) {
     return k_rx_err_invalid_size;
@@ -166,7 +168,7 @@ rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* ms
     return k_rx_err_invalid_arg;
   }
 
-  pb_ostream_t stream = pb_ostream_from_buffer(buffer, RX_NANOPB_BUFFER_SIZE);
+  pb_ostream_t stream = pb_ostream_from_buffer(buffer, k_nanopb_buffer_size);
 
   if (!pb_encode(&stream, star_v1_EmergencyStopResponse_fields, msg)) {
     return k_rx_err_invalid_size;
@@ -188,7 +190,7 @@ rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg, uint8_t* buffer, ui
     return k_rx_err_invalid_arg;
   }
 
-  pb_ostream_t stream = pb_ostream_from_buffer(buffer, RX_NANOPB_BUFFER_SIZE);
+  pb_ostream_t stream = pb_ostream_from_buffer(buffer, k_nanopb_buffer_size);
 
   if (!pb_encode(&stream, star_v1_TelemetryData_fields, msg)) {
     return k_rx_err_invalid_size;

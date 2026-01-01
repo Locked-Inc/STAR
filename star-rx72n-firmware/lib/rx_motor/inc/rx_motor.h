@@ -1,4 +1,4 @@
-/* include/rx_motor.h */
+/* lib/rx_motor/inc/rx_motor.h */
 
 /**
  * @file rx_motor.h
