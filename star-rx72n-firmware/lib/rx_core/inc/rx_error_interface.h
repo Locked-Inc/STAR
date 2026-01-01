@@ -147,14 +147,15 @@ typedef uint32_t (*rx_error_get_backoff_delay_fn)(void* ctx, const char* compone
  * All function pointers receive this context as their first parameter.
  */
 struct rx_error_interface {
-  void*                                  ctx;                          /**< Implementation context (opaque pointer to concrete handler) */
-  rx_error_report_fn                     report_error;                 /**< Report an error */
-  rx_error_get_count_fn                  get_error_count;              /**< Get total error count */
-  rx_error_get_component_count_fn        get_component_error_count;    /**< Get component-specific error count */
-  rx_error_clear_fn                      clear_errors;                 /**< Clear all error counters */
-  rx_error_is_retry_limit_reached_fn     is_retry_limit_reached;       /**< Check if retry limit reached */
-  rx_error_reset_retry_fn                reset_retry_counter;          /**< Reset retry counter */
-  rx_error_get_backoff_delay_fn          get_backoff_delay;            /**< Get backoff delay */
+  void*                 ctx; /**< Implementation context (opaque pointer to concrete handler) */
+  rx_error_report_fn    report_error;    /**< Report an error */
+  rx_error_get_count_fn get_error_count; /**< Get total error count */
+  rx_error_get_component_count_fn
+                    get_component_error_count; /**< Get component-specific error count */
+  rx_error_clear_fn clear_errors;              /**< Clear all error counters */
+  rx_error_is_retry_limit_reached_fn is_retry_limit_reached; /**< Check if retry limit reached */
+  rx_error_reset_retry_fn            reset_retry_counter;    /**< Reset retry counter */
+  rx_error_get_backoff_delay_fn      get_backoff_delay;      /**< Get backoff delay */
 };
 
 /* =============================================================================

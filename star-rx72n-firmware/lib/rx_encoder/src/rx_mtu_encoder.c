@@ -47,9 +47,9 @@ typedef enum {
   k_tmdr_phase_counting_mode_1 = 0x04, /**< Phase counting mode 1 (4x decoding) */
 
   /* 16-bit counter limits */
-  k_encoder_counter_max      = 65536, /**< 16-bit counter maximum value */
-  k_encoder_counter_half     = 32768, /**< Half of counter for wraparound detection */
-  k_encoder_16bit_mask       = 0xFFFF, /**< Bitmask for 16-bit values */
+  k_encoder_counter_max  = 65536,  /**< 16-bit counter maximum value */
+  k_encoder_counter_half = 32768,  /**< Half of counter for wraparound detection */
+  k_encoder_16bit_mask   = 0xFFFF, /**< Bitmask for 16-bit values */
 
   /* Module stop control bits */
   k_mtu_mstpcra_mtu0_4_bit = 9, /**< MSTPCRA bit for MTU0-MTU4 */
@@ -257,8 +257,9 @@ rx_err_t rx_encoder_read_count(rx_mtu_channel_t channel, rx_encoder_state_t* sta
   uint16_t counts_per_rev              = s_counts_per_rev[channel];
   s_encoder_state[channel].revolutions = s_encoder_state[channel].total_count / counts_per_rev;
 
-  int32_t remainder_counts              = s_encoder_state[channel].total_count % counts_per_rev;
-  s_encoder_state[channel].position_deg = (float)(remainder_counts * k_degrees_per_revolution) / counts_per_rev;
+  int32_t remainder_counts = s_encoder_state[channel].total_count % counts_per_rev;
+  s_encoder_state[channel].position_deg =
+    (float)(remainder_counts * k_degrees_per_revolution) / counts_per_rev;
 
   /* Copy to output */
   *state = s_encoder_state[channel];
@@ -345,8 +346,9 @@ rx_err_t rx_encoder_set_count(rx_mtu_channel_t channel, int32_t count)
   uint16_t counts_per_rev              = s_counts_per_rev[channel];
   s_encoder_state[channel].revolutions = count / counts_per_rev;
 
-  int32_t remainder_counts              = count % counts_per_rev;
-  s_encoder_state[channel].position_deg = (float)(remainder_counts * k_degrees_per_revolution) / counts_per_rev;
+  int32_t remainder_counts = count % counts_per_rev;
+  s_encoder_state[channel].position_deg =
+    (float)(remainder_counts * k_degrees_per_revolution) / counts_per_rev;
 
   return k_rx_ok;
 }

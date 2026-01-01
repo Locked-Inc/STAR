@@ -120,7 +120,7 @@ rx_pin_interface_t* rx_infrastructure_get_pin_interface(void);
  */
 #define RX_RESERVE_PIN(port, pin, function)                                                        \
   ({                                                                                               \
-    rx_err_t            err_   = k_rx_err_invalid_state;                                             \
+    rx_err_t            err_   = k_rx_err_invalid_state;                                           \
     rx_pin_interface_t* iface_ = rx_infrastructure_get_pin_interface();                            \
     if (iface_ != NULL) {                                                                          \
       err_ = iface_->reserve_pin(iface_->ctx, port, pin, function);                                \
@@ -138,7 +138,7 @@ rx_pin_interface_t* rx_infrastructure_get_pin_interface(void);
  */
 #define RX_RELEASE_PIN(port, pin)                                                                  \
   ({                                                                                               \
-    rx_err_t            err_   = k_rx_err_invalid_state;                                             \
+    rx_err_t            err_   = k_rx_err_invalid_state;                                           \
     rx_pin_interface_t* iface_ = rx_infrastructure_get_pin_interface();                            \
     if (iface_ != NULL) {                                                                          \
       err_ = iface_->release_pin(iface_->ctx, port, pin);                                          \
