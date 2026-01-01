@@ -1,9 +1,9 @@
-/* include/rx_error_interface.h */
+/* lib/rx_core/inc/rx_error_interface.h */
 
 /**
  * @file rx_error_interface.h
  * @brief Error Handler Interface (Dependency Inversion Principle)
- *
+ * @details
  * Defines the abstract interface for error handling in RX72N firmware.
  * Follows ESP32 star_error_interface_t pattern for architectural consistency.
  *
@@ -17,6 +17,7 @@
  * - Decoupling: Bus manager depends on interface, not concrete handler
  *
  * Usage:
+ * @code
  *   // 1. Create concrete implementation
  *   error_handler_t handler;
  *   error_handler_init(&handler, ...);
@@ -30,6 +31,10 @@
  *
  *   // 4. Use through interface
  *   iface.report_error(iface.ctx, k_rx_fail, "BUS", "Transfer failed");
+ * @endcode
+ *
+ * @date 2025-12-21
+ * @copyright Copyright (c) 2025 STAR Project
  */
 
 #ifndef STAR_RX72N_ERROR_INTERFACE_H
@@ -142,45 +147,14 @@ typedef uint32_t (*rx_error_get_backoff_delay_fn)(void* ctx, const char* compone
  * All function pointers receive this context as their first parameter.
  */
 struct rx_error_interface {
-  /**
-   * @brief Implementation context (opaque pointer to concrete handler)
-   */
-  void* ctx;
-
-  /**
-   * @brief Report an error
-   */
-  rx_error_report_fn report_error;
-
-  /**
-   * @brief Get total error count
-   */
-  rx_error_get_count_fn get_error_count;
-
-  /**
-   * @brief Get component-specific error count
-   */
-  rx_error_get_component_count_fn get_component_error_count;
-
-  /**
-   * @brief Clear all error counters
-   */
-  rx_error_clear_fn clear_errors;
-
-  /**
-   * @brief Check if retry limit reached
-   */
-  rx_error_is_retry_limit_reached_fn is_retry_limit_reached;
-
-  /**
-   * @brief Reset retry counter
-   */
-  rx_error_reset_retry_fn reset_retry_counter;
-
-  /**
-   * @brief Get backoff delay
-   */
-  rx_error_get_backoff_delay_fn get_backoff_delay;
+  void*                                  ctx;                          /**< Implementation context (opaque pointer to concrete handler) */
+  rx_error_report_fn                     report_error;                 /**< Report an error */
+  rx_error_get_count_fn                  get_error_count;              /**< Get total error count */
+  rx_error_get_component_count_fn        get_component_error_count;    /**< Get component-specific error count */
+  rx_error_clear_fn                      clear_errors;                 /**< Clear all error counters */
+  rx_error_is_retry_limit_reached_fn     is_retry_limit_reached;       /**< Check if retry limit reached */
+  rx_error_reset_retry_fn                reset_retry_counter;          /**< Reset retry counter */
+  rx_error_get_backoff_delay_fn          get_backoff_delay;            /**< Get backoff delay */
 };
 
 /* =============================================================================

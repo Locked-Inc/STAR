@@ -31,7 +31,7 @@
 static error_component_state_t* internal_find_component(error_handler_t* handler,
                                                         const char*      component)
 {
-  for (uint32_t i = 0; i < RX_ERROR_HANDLER_MAX_COMPONENTS; i++) {
+  for (uint32_t i = 0; i < k_error_handler_max_components; i++) {
     if (handler->components[i].in_use && strcmp(handler->components[i].name, component) == 0) {
       return &handler->components[i];
     }
@@ -57,11 +57,11 @@ static error_component_state_t* internal_find_or_create_component(error_handler_
   }
 
   /* Find empty slot */
-  for (uint32_t i = 0; i < RX_ERROR_HANDLER_MAX_COMPONENTS; i++) {
+  for (uint32_t i = 0; i < k_error_handler_max_components; i++) {
     if (!handler->components[i].in_use) {
       /* Initialize new component entry */
-      strncpy(handler->components[i].name, component, RX_ERROR_HANDLER_COMPONENT_NAME_MAX - 1);
-      handler->components[i].name[RX_ERROR_HANDLER_COMPONENT_NAME_MAX - 1] = '\0';
+      strncpy(handler->components[i].name, component, k_error_handler_component_name_max - 1);
+      handler->components[i].name[k_error_handler_component_name_max - 1] = '\0';
       handler->components[i].error_count                                   = 0;
       handler->components[i].retry_count                                   = 0;
       handler->components[i].in_use                                        = true;
@@ -191,7 +191,7 @@ static rx_err_t impl_clear_errors(void* ctx)
   handler->total_error_count = 0;
 
   /* Clear all component counts */
-  for (uint32_t i = 0; i < RX_ERROR_HANDLER_MAX_COMPONENTS; i++) {
+  for (uint32_t i = 0; i < k_error_handler_max_components; i++) {
     handler->components[i].error_count = 0;
     handler->components[i].retry_count = 0;
   }
