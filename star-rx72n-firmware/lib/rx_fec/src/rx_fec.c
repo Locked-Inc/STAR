@@ -22,12 +22,20 @@
  * @brief FEC implementation constants
  */
 typedef enum {
-  k_fec_bits_per_byte      = 8,          /**< Bits in a byte */
-  k_fec_msb_bit_position   = 7,          /**< MSB position in byte (0-indexed) */
-  k_fec_shift_register_bits = 6,          /**< K-1 shift register size */
-  k_fec_correlation_offset = 32768,      /**< Correlation metric offset */
-  k_fec_max_path_metric    = 0x7FFFFFFF, /**< Maximum path metric (INT32_MAX) */
+  k_fec_bits_per_byte        = 8,          /**< Bits in a byte */
+  k_fec_msb_bit_position     = 7,          /**< MSB position in byte (0-indexed) */
+  k_fec_shift_register_bits  = 6,          /**< K-1 shift register size */
+  k_fec_correlation_offset   = 32768,      /**< Correlation metric offset */
+  k_fec_max_path_metric      = 0x7FFFFFFF, /**< Maximum path metric (INT32_MAX) */
 } rx_fec_impl_constants_t;
+
+/**
+ * @brief FEC output indices for G1 and G2 generator polynomials
+ */
+typedef enum {
+  k_fec_output_g1 = 0, /**< G1 generator output (first encoded bit) */
+  k_fec_output_g2 = 1, /**< G2 generator output (second encoded bit) */
+} rx_fec_output_index_t;
 
 /* =============================================================================
  * Private Helper Functions
@@ -37,14 +45,28 @@ typedef enum {
 /**
  * @brief Calculate parity (XOR of all bits) of a byte
  *
+ * Uses parallel XOR reduction to compute parity in O(log n) operations.
+ * This is more efficient than looping through each bit.
+ *
+ * Algorithm:
+ * - Step 1 (x ^= x >> 4): XOR upper nibble with lower nibble
+ *   Original: [b7 b6 b5 b4][b3 b2 b1 b0]
+ *   Result:   [x  x  x  x ][b7^b3 b6^b2 b5^b1 b4^b0]
+ *
+ * - Step 2 (x ^= x >> 2): XOR pairs of bits
+ *   Result bits [1:0] now contain XOR of all 8 original bits
+ *
+ * - Step 3 (x ^= x >> 1): Final XOR to get single parity bit
+ *   Result bit [0] = XOR of all original bits
+ *
  * @param[in] x Input byte
- * @return 0 if even parity, 1 if odd parity
+ * @return 0 if even parity (even number of 1s), 1 if odd parity
  */
 static uint8_t internal_parity(uint8_t x)
 {
-  x ^= x >> 4;
-  x ^= x >> 2;
-  x ^= x >> 1;
+  x ^= x >> 4; /* XOR upper nibble with lower nibble */
+  x ^= x >> 2; /* XOR bit pairs */
+  x ^= x >> 1; /* XOR final pair */
   return x & 1;
 }
 
@@ -122,9 +144,9 @@ static void internal_init_branch_table(
 {
   for (int state = 0; state < k_fec_num_states; state++) {
     for (int input = 0; input < k_fec_num_input_values; input++) {
-      uint8_t combined              = (uint8_t)((input << k_fec_shift_register_bits) | state);
-      branch_table[state][input][0] = internal_parity(combined & k_fec_g1_octal);
-      branch_table[state][input][1] = internal_parity(combined & k_fec_g2_octal);
+      uint8_t combined = (uint8_t)(((unsigned)input << k_fec_shift_register_bits) | (unsigned)state);
+      branch_table[state][input][k_fec_output_g1] = internal_parity(combined & k_fec_g1_octal);
+      branch_table[state][input][k_fec_output_g2] = internal_parity(combined & k_fec_g2_octal);
     }
   }
 }
@@ -187,14 +209,14 @@ static void internal_viterbi_process_symbol(rx_fec_decoder_t* dec,
     /* Try both input bits (0 and 1) */
     for (int input = 0; input < k_fec_num_input_values; input++) {
       /* Get expected output bits for this transition */
-      uint8_t exp0 = dec->branch_table[state][input][0];
-      uint8_t exp1 = dec->branch_table[state][input][1];
+      uint8_t exp0 = dec->branch_table[state][input][k_fec_output_g1];
+      uint8_t exp1 = dec->branch_table[state][input][k_fec_output_g2];
 
       /* Compute branch metric */
       int32_t branch_metric = internal_branch_metric(soft0, soft1, exp0, exp1);
 
       /* Compute next state: shift right and insert input as MSB */
-      int next_state = (state >> 1) | (input << (k_fec_constraint_length - 2));
+      int next_state = (state >> 1) | ((unsigned)input << (k_fec_constraint_length - 2));
 
       /* Compute new path metric */
       int32_t new_metric = dec->path_metrics[state] + branch_metric;
