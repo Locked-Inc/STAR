@@ -25,6 +25,12 @@
 
 static const char* s_tag = "USB_ISR";
 
+/** @brief USB pipe number constants */
+typedef enum {
+  k_usb_pipe_dcp = 0, /**< Default Control Pipe (DCP) number */
+  k_usb_pipe_max = 9, /**< Maximum pipe number (pipes 0-9) */
+} usb_pipe_numbers_t;
+
 /* =============================================================================
  * Forward Declarations (internal functions from other modules)
  * =============================================================================
@@ -183,9 +189,9 @@ static void internal_handle_brdy_interrupt(void)
   uint16_t brdysts = USB0.BRDYSTS;
 
   /* Check each pipe for buffer ready */
-  for (uint8_t pipe = 0; pipe <= 9; pipe++) {
+  for (uint8_t pipe = k_usb_pipe_dcp; pipe <= k_usb_pipe_max; pipe++) {
     if (brdysts & (1U << pipe)) {
-      if (pipe == 0) {
+      if (pipe == k_usb_pipe_dcp) {
         /* DCP buffer ready - control transfer data */
         /* Handled in CTRT interrupt */
       } else if (pipe == k_usb_cdc_ep_bulk_out) {
@@ -207,9 +213,9 @@ static void internal_handle_bemp_interrupt(void)
   uint16_t bempsts = USB0.BEMPSTS;
 
   /* Check each pipe for buffer empty */
-  for (uint8_t pipe = 0; pipe <= 9; pipe++) {
+  for (uint8_t pipe = k_usb_pipe_dcp; pipe <= k_usb_pipe_max; pipe++) {
     if (bempsts & (1U << pipe)) {
-      if (pipe == 0) {
+      if (pipe == k_usb_pipe_dcp) {
         /* DCP buffer empty - control transfer complete */
         /* Handled in CTRT interrupt */
       } else if (pipe == k_usb_cdc_ep_bulk_in) {
