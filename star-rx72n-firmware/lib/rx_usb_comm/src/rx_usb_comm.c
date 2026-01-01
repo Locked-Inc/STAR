@@ -1,15 +1,17 @@
+/* lib/rx_usb_comm/src/rx_usb_comm.c */
+
 /**
  * @file rx_usb_comm.c
  * @brief High-Level USB CDC Communication Layer for RX72N
- *
+ * @details
  * Implements reliable USB communication by integrating the frame layer
  * and USB CDC driver. Handles frame encoding/decoding, CRC validation,
  * and sequence number management.
  *
  * @note USB CDC appears as /dev/ttyACM0 on RPi5 host.
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "rx_usb_comm.h"
@@ -33,8 +35,11 @@ static const char* s_tag = "USB_COMM";
  * =============================================================================
  */
 
-/** @brief Total header size including sync word */
-#define FRAME_HEADER_TOTAL (k_frame_sync_size + k_frame_header_size)
+/** @brief Internal timing and buffer constants */
+typedef enum {
+  k_frame_header_total = 10, /**< Total header size including sync word (2 + 8) */
+  k_sleep_interval_ms  = 10, /**< Sleep interval for receive polling (ms) */
+} rx_usb_comm_internal_t;
 
 /** @brief Byte offsets within frame header buffer */
 typedef enum {
@@ -42,9 +47,6 @@ typedef enum {
   k_hdr_sync_low   = 1, /**< SYNC word low byte */
   k_hdr_len_offset = 4, /**< Payload length field offset */
 } frame_header_offset_t;
-
-/** @brief Sleep interval for receive polling (ms) */
-#define SLEEP_INTERVAL_MS 10
 
 /* =============================================================================
  * Internal Helpers
@@ -371,8 +373,8 @@ rx_err_t rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, ui
 
       /* Sleep and retry if time interface available */
       if (handle->time_iface != NULL && handle->time_iface->sleep_ms != NULL) {
-        handle->time_iface->sleep_ms(handle->time_iface->ctx, SLEEP_INTERVAL_MS);
-        elapsed_ms += SLEEP_INTERVAL_MS;
+        handle->time_iface->sleep_ms(handle->time_iface->ctx, k_sleep_interval_ms);
+        elapsed_ms += k_sleep_interval_ms;
       } else {
         return k_rx_err_timeout;
       }
@@ -386,7 +388,7 @@ rx_err_t rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, ui
 
     /* Check if we have enough data for header */
     uint32_t available = handle->rx_buffer_len - handle->rx_buffer_pos;
-    if (available < FRAME_HEADER_TOTAL) {
+    if (available < k_frame_header_total) {
       /* Need more data for header */
       if (timeout_ms == 0 || elapsed_ms >= timeout_ms) {
         return k_rx_err_timeout;
@@ -394,8 +396,8 @@ rx_err_t rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, ui
 
       /* Sleep and retry if time interface available */
       if (handle->time_iface != NULL && handle->time_iface->sleep_ms != NULL) {
-        handle->time_iface->sleep_ms(handle->time_iface->ctx, SLEEP_INTERVAL_MS);
-        elapsed_ms += SLEEP_INTERVAL_MS;
+        handle->time_iface->sleep_ms(handle->time_iface->ctx, k_sleep_interval_ms);
+        elapsed_ms += k_sleep_interval_ms;
       } else {
         return k_rx_err_timeout;
       }
@@ -414,7 +416,7 @@ rx_err_t rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, ui
     }
 
     /* Calculate total frame size */
-    uint32_t total_size = FRAME_HEADER_TOTAL + payload_len + k_frame_crc_size;
+    uint32_t total_size = k_frame_header_total + payload_len + k_frame_crc_size;
 
     /* Check if we have complete frame */
     if (available < total_size) {
@@ -425,8 +427,8 @@ rx_err_t rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, ui
 
       /* Sleep and retry if time interface available */
       if (handle->time_iface != NULL && handle->time_iface->sleep_ms != NULL) {
-        handle->time_iface->sleep_ms(handle->time_iface->ctx, SLEEP_INTERVAL_MS);
-        elapsed_ms += SLEEP_INTERVAL_MS;
+        handle->time_iface->sleep_ms(handle->time_iface->ctx, k_sleep_interval_ms);
+        elapsed_ms += k_sleep_interval_ms;
       } else {
         return k_rx_err_timeout;
       }
