@@ -1,0 +1,90 @@
+# Minimal Raspberry Pi 5 64-bit Configuration
+# UART console only - systemd, bash, busybox
+
+# Architecture
+BR2_aarch64=y
+BR2_cortex_a76=y
+BR2_PACKAGE_HOST_LINUX_HEADERS_CUSTOM_6_6=y
+
+# Toolchain
+BR2_TOOLCHAIN_BUILDROOT_GLIBC=y
+BR2_TOOLCHAIN_BUILDROOT_CXX=y
+
+# System - systemd init
+BR2_INIT_SYSTEMD=y
+BR2_TARGET_GENERIC_HOSTNAME="star-pi5"
+BR2_TARGET_GENERIC_ISSUE="STAR Robot OS (Minimal)"
+BR2_TARGET_GENERIC_ROOT_PASSWD=""
+BR2_TARGET_ENABLE_ROOT_LOGIN=y
+
+# Serial console on ttyAMA0 (GPIO14/15)
+BR2_TARGET_GENERIC_GETTY_PORT="ttyAMA0"
+BR2_TARGET_GENERIC_GETTY_BAUDRATE_115200=y
+
+# Kernel
+BR2_LINUX_KERNEL=y
+BR2_LINUX_KERNEL_CUSTOM_TARBALL=y
+BR2_LINUX_KERNEL_CUSTOM_TARBALL_LOCATION="$(call github,raspberrypi,linux,576cc10e1ed50a9eacffc7a05c796051d7343ea4)/linux-576cc10e1ed50a9eacffc7a05c796051d7343ea4.tar.gz"
+BR2_LINUX_KERNEL_DEFCONFIG="bcm2712"
+BR2_LINUX_KERNEL_DTS_SUPPORT=y
+BR2_LINUX_KERNEL_INTREE_DTS_NAME="broadcom/bcm2712-rpi-5-b broadcom/bcm2712d0-rpi-5-b"
+BR2_LINUX_KERNEL_NEEDS_HOST_OPENSSL=y
+
+# Bootloader - Pi5 firmware
+BR2_PACKAGE_RPI_FIRMWARE=y
+BR2_PACKAGE_RPI_FIRMWARE_VARIANT_PI4=y
+BR2_PACKAGE_RPI_FIRMWARE_CONFIG_FILE="$(BR2_EXTERNAL_STAR_ROBOT_PATH)/configs/config_minimal.txt"
+BR2_PACKAGE_RPI_FIRMWARE_CMDLINE_FILE="$(BR2_EXTERNAL_STAR_ROBOT_PATH)/configs/cmdline_minimal.txt"
+
+# Post-build/image scripts
+BR2_ROOTFS_POST_BUILD_SCRIPT="board/raspberrypi/post-build.sh"
+BR2_ROOTFS_POST_IMAGE_SCRIPT="board/raspberrypi/post-image.sh"
+
+# Filesystem - 2GB for CV/ML stack
+BR2_TARGET_ROOTFS_EXT2=y
+BR2_TARGET_ROOTFS_EXT2_4=y
+BR2_TARGET_ROOTFS_EXT2_SIZE="2G"
+# BR2_TARGET_ROOTFS_TAR is not set
+
+# System tools - minimal
+BR2_PACKAGE_BASH=y
+BR2_PACKAGE_BUSYBOX_SHOW_OTHERS=y
+
+# Python 3.12 (required for ROS2 Jazzy)
+BR2_PACKAGE_PYTHON3=y
+BR2_PACKAGE_PYTHON3_PY_PYC=y
+
+# Python Scientific/ML Libraries (ROS2 cv_bridge dependencies)
+BR2_PACKAGE_PYTHON_NUMPY=y
+BR2_PACKAGE_PYTHON_PILLOW=y
+BR2_PACKAGE_PYTHON_PYYAML=y
+
+# Computer Vision - OpenCV4 with Python bindings
+BR2_PACKAGE_OPENCV4=y
+BR2_PACKAGE_OPENCV4_LIB_PYTHON=y
+BR2_PACKAGE_OPENCV4_WITH_JPEG=y
+BR2_PACKAGE_OPENCV4_WITH_PNG=y
+
+# Camera Support
+BR2_PACKAGE_LIBCAMERA=y
+BR2_PACKAGE_LIBV4L=y
+BR2_PACKAGE_LIBV4L_UTILS=y
+
+# Computer Vision - enable V4L in OpenCV
+BR2_PACKAGE_OPENCV4_WITH_V4L=y
+
+# AI Inference (C++ library - Python runtime via pip if needed)
+BR2_PACKAGE_TENSORFLOW_LITE=y
+BR2_PACKAGE_PYTHON_PIP=y
+
+# MCP (Model Context Protocol) support
+BR2_PACKAGE_PYTHON_AIOHTTP=y
+BR2_PACKAGE_PYTHON_WEBSOCKETS=y
+
+# Note: Go binaries are statically linked - no runtime needed on target
+# star-gateway will be cross-compiled using host-go when we add its package
+
+# Host tools for image generation
+BR2_PACKAGE_HOST_DOSFSTOOLS=y
+BR2_PACKAGE_HOST_GENIMAGE=y
+BR2_PACKAGE_HOST_MTOOLS=y

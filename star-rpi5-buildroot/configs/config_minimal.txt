@@ -1,0 +1,12 @@
+# Minimal Raspberry Pi 5 boot configuration
+# UART console on GPIO14/15
+
+# 64-bit kernel
+arm_64bit=1
+kernel=Image
+
+# Enable UART0 on GPIO14/15 for Pi 5 serial console
+dtparam=uart0_console
+
+# Disable overscan
+disable_overscan=1
