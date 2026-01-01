@@ -196,7 +196,7 @@ rx_err_t rx_usb_init(const rx_usb_config_t* config)
   /* Store callback if provided */
   if (config != NULL) {
     s_usb.callback         = config->callback;
-    s_usb.callback_context = config->context;
+    s_usb.callback_context = config->ctx;
   }
 
   /* Initialize ring buffers */
