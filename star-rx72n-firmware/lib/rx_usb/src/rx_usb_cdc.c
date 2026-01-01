@@ -195,14 +195,6 @@ typedef enum {
   k_line_coding_size             = 7, /**< Total line coding structure size */
 } cdc_line_coding_index_t;
 
-/** @brief Default CDC Line Coding Values */
-typedef enum {
-  k_default_baud_rate = 115200, /**< Default baud rate: 115200 bps */
-  k_default_stop_bits = 0,      /**< Default stop bits: 1 stop bit */
-  k_default_parity    = 0,      /**< Default parity: None */
-  k_default_data_bits = 8,      /**< Default data bits: 8 bits */
-} cdc_line_coding_defaults_t;
-
 /** @brief USB Pipe Numbers */
 typedef enum {
   k_usb_pipe_0 = 0, /**< Control pipe (DCP) */
@@ -778,10 +770,10 @@ rx_err_t rx_usb_cdc_init(void)
   rx_log_debug(s_tag, "Initializing USB CDC class");
 
   /* Reset line coding to defaults */
-  s_line_coding.baud_rate = k_default_baud_rate;
-  s_line_coding.stop_bits = k_default_stop_bits;
-  s_line_coding.parity    = k_default_parity;
-  s_line_coding.data_bits = k_default_data_bits;
+  s_line_coding.baud_rate = k_usb_default_baud_rate;
+  s_line_coding.stop_bits = k_usb_default_stop_bits;
+  s_line_coding.parity    = k_usb_default_parity;
+  s_line_coding.data_bits = k_usb_default_data_bits;
 
   s_control_line_state = k_usb_config_unconfigured;
   s_cdc_initialized    = true;
