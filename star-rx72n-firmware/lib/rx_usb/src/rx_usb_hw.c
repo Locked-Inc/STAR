@@ -241,7 +241,8 @@ uint32_t rx_usb_hw_fifo_read(uint8_t pipe, uint8_t* data, uint32_t max_len)
   /* Select pipe for CFIFO access */
   USB0.CFIFOSEL = (pipe & k_usb_fifosel_curpipe_mask);
 
-  /* Wait for FIFO ready */
+  /* Wait for FIFO ready (hardware polling) */
+  /* NOTE: Busy-wait appropriate - microsecond-scale hardware readiness check */
   volatile uint32_t timeout = k_usb_fifo_timeout_iterations;
   while (!(USB0.CFIFOCTR & k_usb_fifoctr_frdy) && timeout--) {
     __asm__ volatile("nop");
@@ -285,7 +286,8 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
   /* Select pipe for CFIFO access with write direction */
   USB0.CFIFOSEL = (pipe & k_usb_fifosel_curpipe_mask) | k_usb_fifosel_isel;
 
-  /* Wait for FIFO ready */
+  /* Wait for FIFO ready (hardware polling) */
+  /* NOTE: Busy-wait appropriate - microsecond-scale hardware readiness check */
   volatile uint32_t timeout = k_usb_fifo_timeout_iterations;
   while (!(USB0.CFIFOCTR & k_usb_fifoctr_frdy) && timeout--) {
     __asm__ volatile("nop");
