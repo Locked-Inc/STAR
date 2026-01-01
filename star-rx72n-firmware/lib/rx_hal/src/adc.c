@@ -76,13 +76,13 @@ static rx_err_t internal_validate_unit_channel(uint8_t unit, uint8_t channel)
 {
   /* Validate unit */
   if (unit >= k_adc_max_units) {
-    RX_LOG_ERROR(s_tag, "Invalid ADC unit");
+    star_log_error(s_tag, "Invalid ADC unit");
     return k_rx_err_invalid_arg;
   }
 
   /* Validate channel */
   if (channel >= k_adc_max_channels) {
-    RX_LOG_ERROR(s_tag, "Invalid ADC channel");
+    star_log_error(s_tag, "Invalid ADC channel");
     return k_rx_err_invalid_arg;
   }
 
@@ -102,7 +102,7 @@ rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits)
 
   /* Validate resolution */
   if (bits != 8 && bits != 10 && bits != 12) {
-    RX_LOG_ERROR(s_tag, "Invalid resolution (must be 8, 10, or 12 bits)");
+    star_log_error(s_tag, "Invalid resolution (must be 8, 10, or 12 bits)");
     return k_rx_err_invalid_arg;
   }
 
@@ -142,7 +142,7 @@ rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits)
     /* Mark unit as initialized */
     s_adc_unit_initialized[unit] = true;
 
-    RX_LOG_DEBUG(s_tag, "ADC unit initialized");
+    star_log_debug(s_tag, "ADC unit initialized");
   }
 
   /* Enable the specified channel */
@@ -152,7 +152,7 @@ rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits)
     adc->ADANSA1 |= (1 << (channel - 16));
   }
 
-  RX_LOG_DEBUG(s_tag, "ADC channel enabled");
+  star_log_debug(s_tag, "ADC channel enabled");
 
   return k_rx_ok;
 }
@@ -167,7 +167,7 @@ rx_err_t adc_read(uint8_t unit, uint8_t channel, uint16_t* value)
 
   /* Check if unit is initialized */
   if (!s_adc_unit_initialized[unit]) {
-    RX_LOG_ERROR(s_tag, "ADC unit not initialized");
+    star_log_error(s_tag, "ADC unit not initialized");
     return k_rx_err_invalid_state;
   }
 
@@ -187,7 +187,7 @@ rx_err_t adc_read(uint8_t unit, uint8_t channel, uint16_t* value)
   }
 
   if (timeout == 0) {
-    RX_LOG_ERROR(s_tag, "ADC conversion timeout");
+    star_log_error(s_tag, "ADC conversion timeout");
     return k_rx_err_timeout;
   }
 
@@ -218,7 +218,7 @@ rx_err_t adc_read(uint8_t unit, uint8_t channel, uint16_t* value)
       *value = adc->ADDR7;
       break;
     default:
-      RX_LOG_ERROR(s_tag, "Unsupported channel");
+      star_log_error(s_tag, "Unsupported channel");
       return k_rx_err_invalid_arg;
   }
 
