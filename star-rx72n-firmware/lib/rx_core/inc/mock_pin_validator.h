@@ -137,8 +137,8 @@ typedef struct {
  *
  * @param[in,out] validator Validator instance to initialize
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if validator is NULL
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if validator is NULL
  */
 rx_err_t mock_pin_validator_init(mock_pin_validator_t* validator);
 
@@ -148,9 +148,9 @@ rx_err_t mock_pin_validator_init(mock_pin_validator_t* validator);
  * @param[out] iface Interface to fill
  * @param[in,out] validator Mock validator instance
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if either parameter is NULL,
- *         RX_ERR_INVALID_STATE if validator not initialized
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if either parameter is NULL,
+ *         k_rx_err_invalid_state if validator not initialized
  */
 rx_err_t mock_pin_validator_get_interface(rx_pin_interface_t*   iface,
                                           mock_pin_validator_t* validator);
@@ -247,8 +247,8 @@ uint32_t mock_pin_validator_get_release_call_count(mock_pin_validator_t* validat
  *
  * @param[in,out] validator Validator to clear
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if validator is NULL
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if validator is NULL
  */
 rx_err_t mock_pin_validator_clear(mock_pin_validator_t* validator);
 
@@ -257,8 +257,8 @@ rx_err_t mock_pin_validator_clear(mock_pin_validator_t* validator);
  *
  * @param[in,out] validator Validator to deinitialize
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if validator is NULL
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if validator is NULL
  */
 rx_err_t mock_pin_validator_deinit(mock_pin_validator_t* validator);
 

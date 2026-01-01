@@ -180,7 +180,7 @@ rx_err_t rx_usb_init(const rx_usb_config_t* config)
 {
   if (s_usb.initialized) {
     RX_LOG_WARN(s_tag, "USB already initialized");
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   RX_LOG_INFO(s_tag, "Initializing USB CDC driver");
@@ -206,14 +206,14 @@ rx_err_t rx_usb_init(const rx_usb_config_t* config)
 
   /* Initialize hardware */
   rx_err_t err = rx_usb_hw_init();
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR(s_tag, "Failed to initialize USB hardware");
     return err;
   }
 
   /* Initialize CDC class */
   err = rx_usb_cdc_init();
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR(s_tag, "Failed to initialize USB CDC");
     rx_usb_hw_deinit();
     return err;
@@ -221,7 +221,7 @@ rx_err_t rx_usb_init(const rx_usb_config_t* config)
 
   /* Attach to USB bus (enable pull-up) */
   err = rx_usb_hw_attach();
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR(s_tag, "Failed to attach to USB bus");
     rx_usb_hw_deinit();
     return err;
@@ -232,13 +232,13 @@ rx_err_t rx_usb_init(const rx_usb_config_t* config)
 
   RX_LOG_INFO(s_tag, "USB CDC driver initialized");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_usb_deinit(void)
 {
   if (!s_usb.initialized) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   RX_LOG_INFO(s_tag, "Deinitializing USB CDC driver");
@@ -253,7 +253,7 @@ rx_err_t rx_usb_deinit(void)
   s_usb.initialized = false;
   s_usb.state       = k_usb_state_detached;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 bool rx_usb_is_configured(void)
@@ -269,15 +269,15 @@ rx_usb_state_t rx_usb_get_state(void)
 rx_err_t rx_usb_write(const uint8_t* data, uint32_t len)
 {
   if (data == NULL) {
-    return RX_ERR_NULL_POINTER;
+    return k_rx_err_null_pointer;
   }
 
   if (!s_usb.initialized) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   if (s_usb.state != k_usb_state_configured) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Write to TX ring buffer */
@@ -287,46 +287,46 @@ rx_err_t rx_usb_write(const uint8_t* data, uint32_t len)
 
   if (written < len) {
     s_usb.stats.tx_underruns++;
-    return RX_ERR_BUSY;
+    return k_rx_err_busy;
   }
 
   /* Trigger USB transmission if not already in progress */
   internal_trigger_tx_if_idle();
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_usb_read(uint8_t* data, uint32_t max_len, uint32_t* actual_len)
 {
   if (data == NULL || actual_len == NULL) {
-    return RX_ERR_NULL_POINTER;
+    return k_rx_err_null_pointer;
   }
 
   *actual_len = internal_ring_buffer_read(&s_usb.rx_buffer, data, max_len);
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_usb_rx_available(uint32_t* available)
 {
   if (available == NULL) {
-    return RX_ERR_NULL_POINTER;
+    return k_rx_err_null_pointer;
   }
 
   *available = internal_ring_buffer_available(&s_usb.rx_buffer);
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_usb_tx_available(uint32_t* available)
 {
   if (available == NULL) {
-    return RX_ERR_NULL_POINTER;
+    return k_rx_err_null_pointer;
   }
 
   *available = internal_ring_buffer_free(&s_usb.tx_buffer);
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_usb_flush(uint32_t timeout_ms)
@@ -335,37 +335,37 @@ rx_err_t rx_usb_flush(uint32_t timeout_ms)
   (void)timeout_ms;
 
   if (!s_usb.initialized) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* For now, just check if buffer is empty */
   if (internal_ring_buffer_available(&s_usb.tx_buffer) > 0) {
-    return RX_ERR_TIMEOUT;
+    return k_rx_err_timeout;
   }
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_usb_get_line_coding(rx_usb_line_coding_t* line_coding)
 {
   if (line_coding == NULL) {
-    return RX_ERR_NULL_POINTER;
+    return k_rx_err_null_pointer;
   }
 
   *line_coding = s_usb.line_coding;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_usb_get_stats(rx_usb_stats_t* stats)
 {
   if (stats == NULL) {
-    return RX_ERR_NULL_POINTER;
+    return k_rx_err_null_pointer;
   }
 
   *stats = s_usb.stats;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 void rx_usb_reset_stats(void)

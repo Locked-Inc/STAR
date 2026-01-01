@@ -140,7 +140,7 @@ extern mock_usb_hw_t g_mock_usb_hw;
  * Clears all state and sets default return values.
  *
  * @param mock Mock instance (use NULL for global g_mock_usb_hw)
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t mock_usb_hw_init(mock_usb_hw_t* mock);
 
@@ -148,7 +148,7 @@ rx_err_t mock_usb_hw_init(mock_usb_hw_t* mock);
  * @brief Deinitialize the mock USB hardware
  *
  * @param mock Mock instance (use NULL for global g_mock_usb_hw)
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t mock_usb_hw_deinit(mock_usb_hw_t* mock);
 
@@ -156,7 +156,7 @@ rx_err_t mock_usb_hw_deinit(mock_usb_hw_t* mock);
  * @brief Clear all mock state without full reinitialization
  *
  * @param mock Mock instance (use NULL for global g_mock_usb_hw)
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t mock_usb_hw_clear(mock_usb_hw_t* mock);
 
@@ -209,7 +209,7 @@ void mock_usb_hw_set_bus_state(mock_usb_hw_t* mock, rx_usb_state_t state);
  * @param pipe Pipe number (0-9)
  * @param data Data to inject
  * @param len Data length
- * @return RX_OK on success, RX_ERR_INVALID_ARG if pipe invalid
+ * @return k_rx_ok on success, k_rx_err_invalid_arg if pipe invalid
  */
 rx_err_t mock_usb_hw_inject_rx_data(mock_usb_hw_t* mock,
                                     uint8_t        pipe,
@@ -224,7 +224,7 @@ rx_err_t mock_usb_hw_inject_rx_data(mock_usb_hw_t* mock,
  * @param data Output buffer
  * @param max_len Maximum bytes to read
  * @param actual_len Actual bytes read
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t mock_usb_hw_get_tx_data(mock_usb_hw_t* mock,
                                  uint8_t        pipe,
@@ -269,7 +269,7 @@ uint32_t mock_usb_hw_get_call_count(mock_usb_hw_t* mock, const char* func);
  * @param mock Mock instance (use NULL for global)
  * @param func Function name
  * @param out_call Output call record
- * @return RX_OK on success, RX_ERR_NOT_FOUND if function never called
+ * @return k_rx_ok on success, k_rx_err_not_found if function never called
  */
 rx_err_t mock_usb_hw_get_last_call(mock_usb_hw_t*      mock,
                                    const char*         func,

@@ -157,10 +157,10 @@ typedef struct {
  * @param[out] handle Pointer to DRV8243 handle structure. Must not be NULL.
  * @param[in]  config Pointer to DRV8243 configuration. Must not be NULL.
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if handle or config is NULL
- * @return RX_ERR_INVALID_ARG if configuration is invalid
- * @return RX_ERR_INVALID_STATE if motor initialization fails
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if handle or config is NULL
+ * @return k_rx_err_invalid_arg if configuration is invalid
+ * @return k_rx_err_invalid_state if motor initialization fails
  */
 rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t* config);
 
@@ -169,9 +169,9 @@ rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t*
  *
  * @param[in] handle Pointer to initialized DRV8243 handle. Must not be NULL.
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if handle is NULL
- * @return RX_ERR_INVALID_STATE if not initialized
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_invalid_state if not initialized
  */
 rx_err_t rx_drv8243_deinit(rx_drv8243_handle_t* handle);
 
@@ -181,9 +181,9 @@ rx_err_t rx_drv8243_deinit(rx_drv8243_handle_t* handle);
  * @param[in] handle Pointer to initialized DRV8243 handle. Must not be NULL.
  * @param[in] speed  Speed percentage (-100.0 to +100.0)
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if handle is NULL
- * @return RX_ERR_INVALID_STATE if not initialized or fault active
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_invalid_state if not initialized or fault active
  */
 rx_err_t rx_drv8243_set_speed(rx_drv8243_handle_t* handle, float speed);
 
@@ -193,9 +193,9 @@ rx_err_t rx_drv8243_set_speed(rx_drv8243_handle_t* handle, float speed);
  * @param[in] handle Pointer to initialized DRV8243 handle. Must not be NULL.
  * @param[in] brake  True for brake, false for coast
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if handle is NULL
- * @return RX_ERR_INVALID_STATE if not initialized
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_invalid_state if not initialized
  */
 rx_err_t rx_drv8243_stop(rx_drv8243_handle_t* handle, bool brake);
 
@@ -205,9 +205,9 @@ rx_err_t rx_drv8243_stop(rx_drv8243_handle_t* handle, bool brake);
  * @param[in]  handle      Pointer to initialized DRV8243 handle. Must not be NULL.
  * @param[out] out_current Pointer to store current in milliamps. Must not be NULL.
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if handle or out_current is NULL
- * @return RX_ERR_INVALID_STATE if not initialized
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if handle or out_current is NULL
+ * @return k_rx_err_invalid_state if not initialized
  */
 rx_err_t rx_drv8243_read_current(rx_drv8243_handle_t* handle, float* out_current);
 
@@ -217,9 +217,9 @@ rx_err_t rx_drv8243_read_current(rx_drv8243_handle_t* handle, float* out_current
  * @param[in]  handle    Pointer to initialized DRV8243 handle. Must not be NULL.
  * @param[out] out_fault Pointer to store fault status. Must not be NULL.
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if handle or out_fault is NULL
- * @return RX_ERR_INVALID_STATE if not initialized
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if handle or out_fault is NULL
+ * @return k_rx_err_invalid_state if not initialized
  */
 rx_err_t rx_drv8243_get_fault_status(rx_drv8243_handle_t* handle, bool* out_fault);
 
@@ -229,9 +229,9 @@ rx_err_t rx_drv8243_get_fault_status(rx_drv8243_handle_t* handle, bool* out_faul
  * @param[in]  handle    Pointer to initialized DRV8243 handle. Must not be NULL.
  * @param[out] out_speed Pointer to store speed percentage. Must not be NULL.
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if handle or out_speed is NULL
- * @return RX_ERR_INVALID_STATE if not initialized
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if handle or out_speed is NULL
+ * @return k_rx_err_invalid_state if not initialized
  */
 rx_err_t rx_drv8243_get_speed(const rx_drv8243_handle_t* handle, float* out_speed);
 
@@ -241,9 +241,9 @@ rx_err_t rx_drv8243_get_speed(const rx_drv8243_handle_t* handle, float* out_spee
  * @param[in] handle   Pointer to initialized DRV8243 handle. Must not be NULL.
  * @param[in] limit_ma Current limit in milliamps (0 = disabled)
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if handle is NULL
- * @return RX_ERR_INVALID_STATE if not initialized
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_invalid_state if not initialized
  */
 rx_err_t rx_drv8243_set_current_limit(rx_drv8243_handle_t* handle, uint16_t limit_ma);
 

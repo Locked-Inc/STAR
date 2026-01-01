@@ -98,7 +98,7 @@ extern "C" {
  * For hardware: Enables CRC peripheral, configures for IEEE 802.3 CRC-32
  * For software: No-op (lookup table is static)
  *
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t rx_crc_init(void);
 
@@ -108,7 +108,7 @@ rx_err_t rx_crc_init(void);
  * For hardware: Optionally disables peripheral to save power
  * For software: No-op
  *
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t rx_crc_deinit(void);
 

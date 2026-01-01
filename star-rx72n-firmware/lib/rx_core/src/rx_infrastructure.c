@@ -51,7 +51,7 @@ rx_err_t rx_infrastructure_init(void)
 {
   if (s_infrastructure_initialized) {
     RX_LOG_WARN("INFRA", "Infrastructure already initialized");
-    return RX_OK;
+    return k_rx_ok;
   }
 
   RX_LOG_INFO("INFRA", "Initializing global infrastructure");
@@ -61,14 +61,14 @@ rx_err_t rx_infrastructure_init(void)
                                     3,     /* max_retries */
                                     100,   /* initial_backoff_ms */
                                     5000); /* max_backoff_ms */
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR("INFRA", "Failed to initialize error handler");
     return err;
   }
 
   /* Get error handler interface */
   err = error_handler_get_interface(&s_global_error_interface, &s_global_error_handler);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR("INFRA", "Failed to get error handler interface");
     error_handler_deinit(&s_global_error_handler);
     return err;
@@ -76,7 +76,7 @@ rx_err_t rx_infrastructure_init(void)
 
   /* Initialize pin validator */
   err = pin_validator_init(&s_global_pin_validator);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR("INFRA", "Failed to initialize pin validator");
     error_handler_deinit(&s_global_error_handler);
     return err;
@@ -84,7 +84,7 @@ rx_err_t rx_infrastructure_init(void)
 
   /* Get pin validator interface */
   err = pin_validator_get_interface(&s_global_pin_interface, &s_global_pin_validator);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR("INFRA", "Failed to get pin validator interface");
     pin_validator_deinit(&s_global_pin_validator);
     error_handler_deinit(&s_global_error_handler);
@@ -95,13 +95,13 @@ rx_err_t rx_infrastructure_init(void)
 
   RX_LOG_INFO("INFRA", "Global infrastructure initialized successfully");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_infrastructure_deinit(void)
 {
   if (!s_infrastructure_initialized) {
-    return RX_OK;
+    return k_rx_ok;
   }
 
   RX_LOG_INFO("INFRA", "Deinitializing global infrastructure");
@@ -116,7 +116,7 @@ rx_err_t rx_infrastructure_deinit(void)
 
   RX_LOG_INFO("INFRA", "Global infrastructure deinitialized");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_error_interface_t* rx_infrastructure_get_error_interface(void)

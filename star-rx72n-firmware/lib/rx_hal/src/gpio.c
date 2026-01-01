@@ -90,7 +90,7 @@ static volatile PORT_Type* internal_get_port_base(uint8_t port)
  * @param[in] port Port number
  * @param[in] pin Pin number
  *
- * @return RX_OK if valid, error code otherwise
+ * @return k_rx_ok if valid, error code otherwise
  */
 static rx_err_t internal_validate_port_pin(uint8_t port, uint8_t pin)
 {
@@ -98,16 +98,16 @@ static rx_err_t internal_validate_port_pin(uint8_t port, uint8_t pin)
   volatile PORT_Type* port_base = internal_get_port_base(port);
   if (port_base == NULL) {
     RX_LOG_ERROR("GPIO", "Invalid port number");
-    return RX_ERR_GPIO_INVALID_PORT;
+    return k_rx_err_gpio_invalid_port;
   }
 
   /* Validate pin */
   if (pin > 7) {
     RX_LOG_ERROR("GPIO", "Invalid pin number");
-    return RX_ERR_GPIO_INVALID_PIN;
+    return k_rx_err_gpio_invalid_pin;
   }
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -125,7 +125,7 @@ rx_err_t gpio_set_output(uint8_t port, uint8_t pin)
   rx_pin_interface_t* pin_iface = rx_infrastructure_get_pin_interface();
   if (pin_iface != NULL) {
     err = pin_iface->reserve_pin(pin_iface->ctx, port, pin, "GPIO_OUT");
-    if (err != RX_OK && err != RX_ERR_GPIO_CONFLICT) {
+    if (err != k_rx_ok && err != k_rx_err_gpio_conflict) {
       /* Allow conflict (pin already reserved), but fail on other errors */
       RX_RETURN_ON_ERROR(err, "GPIO", "Pin reservation failed");
     }
@@ -142,7 +142,7 @@ rx_err_t gpio_set_output(uint8_t port, uint8_t pin)
 
   RX_LOG_DEBUG("GPIO", "Pin configured as output");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t gpio_set_input(uint8_t port, uint8_t pin)
@@ -155,7 +155,7 @@ rx_err_t gpio_set_input(uint8_t port, uint8_t pin)
   rx_pin_interface_t* pin_iface = rx_infrastructure_get_pin_interface();
   if (pin_iface != NULL) {
     err = pin_iface->reserve_pin(pin_iface->ctx, port, pin, "GPIO_IN");
-    if (err != RX_OK && err != RX_ERR_GPIO_CONFLICT) {
+    if (err != k_rx_ok && err != k_rx_err_gpio_conflict) {
       /* Allow conflict (pin already reserved), but fail on other errors */
       RX_RETURN_ON_ERROR(err, "GPIO", "Pin reservation failed");
     }
@@ -172,7 +172,7 @@ rx_err_t gpio_set_input(uint8_t port, uint8_t pin)
 
   RX_LOG_DEBUG("GPIO", "Pin configured as input");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t gpio_write_high(uint8_t port, uint8_t pin)
@@ -186,7 +186,7 @@ rx_err_t gpio_write_high(uint8_t port, uint8_t pin)
 
   port_base->PODR |= (1 << pin);
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t gpio_write_low(uint8_t port, uint8_t pin)
@@ -200,7 +200,7 @@ rx_err_t gpio_write_low(uint8_t port, uint8_t pin)
 
   port_base->PODR &= ~(1 << pin);
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t gpio_toggle(uint8_t port, uint8_t pin)
@@ -214,7 +214,7 @@ rx_err_t gpio_toggle(uint8_t port, uint8_t pin)
 
   port_base->PODR ^= (1 << pin);
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t gpio_read(uint8_t port, uint8_t pin, bool* value)
@@ -231,5 +231,5 @@ rx_err_t gpio_read(uint8_t port, uint8_t pin, bool* value)
 
   *value = (port_base->PIDR & (1 << pin)) != 0;
 
-  return RX_OK;
+  return k_rx_ok;
 }

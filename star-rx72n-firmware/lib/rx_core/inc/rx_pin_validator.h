@@ -40,7 +40,7 @@
  *
  *   // 4. Reserve pins
  *   err = pin_iface.reserve_pin(pin_iface.ctx, 0xA, 5, "SPI_MOSI");
- *   if (err == RX_ERR_GPIO_CONFLICT) {
+ *   if (err == k_rx_err_gpio_conflict) {
  *       // Pin already reserved
  *   }
  *
@@ -140,9 +140,9 @@ typedef struct {
  *
  * @param[in,out] validator Validator instance to initialize
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if validator is NULL,
- *         RX_ERR_RTOS_MUTEX if mutex creation fails
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if validator is NULL,
+ *         k_rx_err_rtos_mutex if mutex creation fails
  */
 rx_err_t pin_validator_init(pin_validator_t* validator);
 
@@ -152,9 +152,9 @@ rx_err_t pin_validator_init(pin_validator_t* validator);
  * @param[out] iface Interface to fill
  * @param[in,out] validator Concrete validator instance
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if either parameter is NULL,
- *         RX_ERR_INVALID_STATE if validator not initialized
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if either parameter is NULL,
+ *         k_rx_err_invalid_state if validator not initialized
  */
 rx_err_t pin_validator_get_interface(rx_pin_interface_t* iface, pin_validator_t* validator);
 
@@ -163,8 +163,8 @@ rx_err_t pin_validator_get_interface(rx_pin_interface_t* iface, pin_validator_t*
  *
  * @param[in,out] validator Validator to deinitialize
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if validator is NULL
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if validator is NULL
  */
 rx_err_t pin_validator_deinit(pin_validator_t* validator);
 

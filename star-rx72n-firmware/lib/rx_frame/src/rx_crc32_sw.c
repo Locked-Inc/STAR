@@ -121,13 +121,13 @@ uint32_t rx_crc32_update_sw(uint32_t crc, const uint8_t* data, uint32_t len)
 rx_err_t rx_crc_init(void)
 {
   /* Software CRC uses a static lookup table - no initialization needed */
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_crc_deinit(void)
 {
   /* Software CRC has no resources to release */
-  return RX_OK;
+  return k_rx_ok;
 }
 
 uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)

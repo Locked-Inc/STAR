@@ -69,7 +69,7 @@ void test_mock_time_get_interface_null_fails(void)
 {
   rx_err_t err = mock_time_get_interface(NULL, &s_mock);
 
-  TEST_ASSERT_EQUAL(RX_ERR_NULL_POINTER, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
 void test_mock_time_get_interface_populates_iface(void)
@@ -77,7 +77,7 @@ void test_mock_time_get_interface_populates_iface(void)
   rx_time_interface_t iface;
   rx_err_t            err = mock_time_get_interface(&iface, &s_mock);
 
-  TEST_ASSERT_EQUAL(RX_OK, err);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_NOT_NULL(iface.sleep_ms);
   TEST_ASSERT_NOT_NULL(iface.get_ms);
   TEST_ASSERT_NOT_NULL(iface.is_elapsed);
@@ -246,14 +246,14 @@ void test_time_interface_validate_null_fails(void)
 {
   rx_err_t err = rx_time_interface_validate(NULL);
 
-  TEST_ASSERT_EQUAL(RX_ERR_NULL_POINTER, err);
+  TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
 void test_time_interface_validate_success(void)
 {
   rx_err_t err = rx_time_interface_validate(&s_iface);
 
-  TEST_ASSERT_EQUAL(RX_OK, err);
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 
 void test_time_interface_validate_missing_sleep_fails(void)
@@ -265,7 +265,7 @@ void test_time_interface_validate_missing_sleep_fails(void)
 
   rx_err_t err = rx_time_interface_validate(&bad_iface);
 
-  TEST_ASSERT_EQUAL(RX_ERR_INVALID_STATE, err);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
 void test_time_interface_validate_missing_get_ms_fails(void)
@@ -277,7 +277,7 @@ void test_time_interface_validate_missing_get_ms_fails(void)
 
   rx_err_t err = rx_time_interface_validate(&bad_iface);
 
-  TEST_ASSERT_EQUAL(RX_ERR_INVALID_STATE, err);
+  TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
 /* =============================================================================

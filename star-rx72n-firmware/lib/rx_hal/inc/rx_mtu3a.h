@@ -93,9 +93,9 @@ typedef struct {
  * @param[in] channel MTU channel (0-4, 6-7)
  * @param[in] config PWM configuration
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if channel or config is invalid
- * @return RX_ERR_INVALID_STATE if MTU module not enabled
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if channel or config is invalid
+ * @return k_rx_err_invalid_state if MTU module not enabled
  */
 rx_err_t rx_mtu_init_pwm(rx_mtu_channel_t channel, const rx_mtu_config_t* config);
 
@@ -109,9 +109,9 @@ rx_err_t rx_mtu_init_pwm(rx_mtu_channel_t channel, const rx_mtu_config_t* config
  * @param[in] output Output channel (A/B/C/D)
  * @param[in] duty_percent Duty cycle in percent (0.0 - 100.0)
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if channel, output, or duty is invalid
- * @return RX_ERR_INVALID_STATE if channel not initialized
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if channel, output, or duty is invalid
+ * @return k_rx_err_invalid_state if channel not initialized
  */
 rx_err_t rx_mtu_set_duty(rx_mtu_channel_t channel, rx_mtu_output_t output, float duty_percent);
 
@@ -126,9 +126,9 @@ rx_err_t rx_mtu_set_duty(rx_mtu_channel_t channel, rx_mtu_output_t output, float
  * @param[in] output Output channel (A/B/C/D)
  * @param[in] duty_count Duty cycle count (0 - period_count)
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if channel, output, or count is invalid
- * @return RX_ERR_INVALID_STATE if channel not initialized
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if channel, output, or count is invalid
+ * @return k_rx_err_invalid_state if channel not initialized
  */
 rx_err_t rx_mtu_set_duty_raw(rx_mtu_channel_t channel, rx_mtu_output_t output, uint16_t duty_count);
 
@@ -139,10 +139,10 @@ rx_err_t rx_mtu_set_duty_raw(rx_mtu_channel_t channel, rx_mtu_output_t output, u
  * @param[in] output Output channel (A/B/C/D)
  * @param[out] duty_percent Pointer to store duty cycle in percent
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if duty_percent is NULL
- * @return RX_ERR_INVALID_ARG if channel or output is invalid
- * @return RX_ERR_INVALID_STATE if channel not initialized
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if duty_percent is NULL
+ * @return k_rx_err_invalid_arg if channel or output is invalid
+ * @return k_rx_err_invalid_state if channel not initialized
  */
 rx_err_t rx_mtu_get_duty(rx_mtu_channel_t channel, rx_mtu_output_t output, float* duty_percent);
 
@@ -154,10 +154,10 @@ rx_err_t rx_mtu_get_duty(rx_mtu_channel_t channel, rx_mtu_output_t output, float
  * @param[in] channel MTU channel (0-4, 6-7)
  * @param[out] period_count Pointer to store period count
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if period_count is NULL
- * @return RX_ERR_INVALID_ARG if channel is invalid
- * @return RX_ERR_INVALID_STATE if channel not initialized
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if period_count is NULL
+ * @return k_rx_err_invalid_arg if channel is invalid
+ * @return k_rx_err_invalid_state if channel not initialized
  */
 rx_err_t rx_mtu_get_period(rx_mtu_channel_t channel, uint16_t* period_count);
 
@@ -168,9 +168,9 @@ rx_err_t rx_mtu_get_period(rx_mtu_channel_t channel, uint16_t* period_count);
  * @param[in] output Output channel (A/B/C/D)
  * @param[in] enable True to enable output, false to disable
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if channel or output is invalid
- * @return RX_ERR_INVALID_STATE if channel not initialized
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if channel or output is invalid
+ * @return k_rx_err_invalid_state if channel not initialized
  */
 rx_err_t rx_mtu_enable_output(rx_mtu_channel_t channel, rx_mtu_output_t output, bool enable);
 
@@ -182,8 +182,8 @@ rx_err_t rx_mtu_enable_output(rx_mtu_channel_t channel, rx_mtu_output_t output, 
  *
  * @param[in] channel MTU channel (0-4, 6-7)
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if channel is invalid
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if channel is invalid
  */
 rx_err_t rx_mtu_start(rx_mtu_channel_t channel);
 
@@ -194,8 +194,8 @@ rx_err_t rx_mtu_start(rx_mtu_channel_t channel);
  *
  * @param[in] channel MTU channel (0-4, 6-7)
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if channel is invalid
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if channel is invalid
  */
 rx_err_t rx_mtu_stop(rx_mtu_channel_t channel);
 
@@ -206,8 +206,8 @@ rx_err_t rx_mtu_stop(rx_mtu_channel_t channel);
  *
  * @param[in] channel MTU channel (0-4, 6-7)
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if channel is invalid
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if channel is invalid
  */
 rx_err_t rx_mtu_deinit(rx_mtu_channel_t channel);
 

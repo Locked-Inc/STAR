@@ -44,15 +44,15 @@ static uint8_t internal_port_to_index(uint8_t port)
  *
  * @param[in] port Port number to validate
  *
- * @return RX_OK if valid, RX_ERR_GPIO_INVALID_PORT if invalid
+ * @return k_rx_ok if valid, k_rx_err_gpio_invalid_port if invalid
  */
 static rx_err_t internal_validate_port(uint8_t port)
 {
   uint8_t index = internal_port_to_index(port);
   if (index == 0xFF) {
-    return RX_ERR_GPIO_INVALID_PORT;
+    return k_rx_err_gpio_invalid_port;
   }
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /**
@@ -60,14 +60,14 @@ static rx_err_t internal_validate_port(uint8_t port)
  *
  * @param[in] pin Pin number to validate
  *
- * @return RX_OK if valid, RX_ERR_GPIO_INVALID_PIN if invalid
+ * @return k_rx_ok if valid, k_rx_err_gpio_invalid_pin if invalid
  */
 static rx_err_t internal_validate_pin(uint8_t pin)
 {
   if (pin >= RX_PIN_VALIDATOR_MAX_PINS) {
-    return RX_ERR_GPIO_INVALID_PIN;
+    return k_rx_err_gpio_invalid_pin;
   }
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -83,22 +83,22 @@ static rx_err_t impl_validate_pin(void* ctx, uint8_t port, uint8_t pin)
   pin_validator_t* validator = (pin_validator_t*)ctx;
 
   if (validator == NULL) {
-    return RX_ERR_NULL_POINTER;
+    return k_rx_err_null_pointer;
   }
 
   /* Validate port */
   rx_err_t err = internal_validate_port(port);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
   /* Validate pin */
   err = internal_validate_pin(pin);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /**
@@ -109,12 +109,12 @@ static rx_err_t impl_reserve_pin(void* ctx, uint8_t port, uint8_t pin, const cha
   pin_validator_t* validator = (pin_validator_t*)ctx;
 
   if (validator == NULL || function == NULL) {
-    return RX_ERR_NULL_POINTER;
+    return k_rx_err_null_pointer;
   }
 
   /* Validate port/pin */
   rx_err_t err = impl_validate_pin(ctx, port, pin);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
@@ -123,7 +123,7 @@ static rx_err_t impl_reserve_pin(void* ctx, uint8_t port, uint8_t pin, const cha
   /* Acquire mutex */
   UINT status = tx_mutex_get(&validator->mutex, TX_WAIT_FOREVER);
   if (status != TX_SUCCESS) {
-    return RX_ERR_RTOS_MUTEX;
+    return k_rx_err_rtos_mutex;
   }
 
   pin_reservation_t* reservation = &validator->reservations[port_index][pin];
@@ -134,7 +134,7 @@ static rx_err_t impl_reserve_pin(void* ctx, uint8_t port, uint8_t pin, const cha
     tx_mutex_put(&validator->mutex);
 
     RX_LOG_WARN("PIN_VALIDATOR", "Pin already reserved");
-    return RX_ERR_GPIO_CONFLICT;
+    return k_rx_err_gpio_conflict;
   }
 
   /* Reserve the pin */
@@ -147,7 +147,7 @@ static rx_err_t impl_reserve_pin(void* ctx, uint8_t port, uint8_t pin, const cha
 
   RX_LOG_DEBUG("PIN_VALIDATOR", "Pin reserved");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /**
@@ -158,12 +158,12 @@ static rx_err_t impl_release_pin(void* ctx, uint8_t port, uint8_t pin)
   pin_validator_t* validator = (pin_validator_t*)ctx;
 
   if (validator == NULL) {
-    return RX_ERR_NULL_POINTER;
+    return k_rx_err_null_pointer;
   }
 
   /* Validate port/pin */
   rx_err_t err = impl_validate_pin(ctx, port, pin);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
@@ -172,7 +172,7 @@ static rx_err_t impl_release_pin(void* ctx, uint8_t port, uint8_t pin)
   /* Acquire mutex */
   UINT status = tx_mutex_get(&validator->mutex, TX_WAIT_FOREVER);
   if (status != TX_SUCCESS) {
-    return RX_ERR_RTOS_MUTEX;
+    return k_rx_err_rtos_mutex;
   }
 
   pin_reservation_t* reservation = &validator->reservations[port_index][pin];
@@ -183,7 +183,7 @@ static rx_err_t impl_release_pin(void* ctx, uint8_t port, uint8_t pin)
     tx_mutex_put(&validator->mutex);
 
     RX_LOG_WARN("PIN_VALIDATOR", "Pin was not reserved");
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Release the pin */
@@ -195,7 +195,7 @@ static rx_err_t impl_release_pin(void* ctx, uint8_t port, uint8_t pin)
 
   RX_LOG_DEBUG("PIN_VALIDATOR", "Pin released");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /**
@@ -210,7 +210,7 @@ static bool impl_is_pin_reserved(void* ctx, uint8_t port, uint8_t pin)
   }
 
   /* Validate port/pin */
-  if (impl_validate_pin(ctx, port, pin) != RX_OK) {
+  if (impl_validate_pin(ctx, port, pin) != k_rx_ok) {
     return false;
   }
 
@@ -239,16 +239,16 @@ impl_get_pin_function(void* ctx, uint8_t port, uint8_t pin, char* function_out, 
   pin_validator_t* validator = (pin_validator_t*)ctx;
 
   if (validator == NULL || function_out == NULL) {
-    return RX_ERR_NULL_POINTER;
+    return k_rx_err_null_pointer;
   }
 
   if (function_len < RX_PIN_FUNCTION_NAME_MAX_LEN) {
-    return RX_ERR_INVALID_SIZE;
+    return k_rx_err_invalid_size;
   }
 
   /* Validate port/pin */
   rx_err_t err = impl_validate_pin(ctx, port, pin);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
@@ -257,7 +257,7 @@ impl_get_pin_function(void* ctx, uint8_t port, uint8_t pin, char* function_out, 
   /* Acquire mutex */
   UINT status = tx_mutex_get(&validator->mutex, TX_WAIT_FOREVER);
   if (status != TX_SUCCESS) {
-    return RX_ERR_RTOS_MUTEX;
+    return k_rx_err_rtos_mutex;
   }
 
   pin_reservation_t* reservation = &validator->reservations[port_index][pin];
@@ -265,7 +265,7 @@ impl_get_pin_function(void* ctx, uint8_t port, uint8_t pin, char* function_out, 
   /* Check if pin is reserved */
   if (!reservation->reserved) {
     tx_mutex_put(&validator->mutex);
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Copy function name */
@@ -275,7 +275,7 @@ impl_get_pin_function(void* ctx, uint8_t port, uint8_t pin, char* function_out, 
   /* Release mutex */
   tx_mutex_put(&validator->mutex);
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /**
@@ -286,13 +286,13 @@ static rx_err_t impl_clear_all_reservations(void* ctx)
   pin_validator_t* validator = (pin_validator_t*)ctx;
 
   if (validator == NULL) {
-    return RX_ERR_NULL_POINTER;
+    return k_rx_err_null_pointer;
   }
 
   /* Acquire mutex */
   UINT status = tx_mutex_get(&validator->mutex, TX_WAIT_FOREVER);
   if (status != TX_SUCCESS) {
-    return RX_ERR_RTOS_MUTEX;
+    return k_rx_err_rtos_mutex;
   }
 
   /* Clear all reservations */
@@ -308,7 +308,7 @@ static rx_err_t impl_clear_all_reservations(void* ctx)
 
   RX_LOG_DEBUG("PIN_VALIDATOR", "All reservations cleared");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -327,14 +327,14 @@ rx_err_t pin_validator_init(pin_validator_t* validator)
   UINT status = tx_mutex_create(&validator->mutex, "PinValidatorMutex", TX_NO_INHERIT);
   if (status != TX_SUCCESS) {
     RX_LOG_ERROR("PIN_VALIDATOR", "Failed to create mutex");
-    return RX_ERR_RTOS_MUTEX;
+    return k_rx_err_rtos_mutex;
   }
 
   validator->initialized = true;
 
   RX_LOG_INFO("PIN_VALIDATOR", "Pin validator initialized");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t pin_validator_get_interface(rx_pin_interface_t* iface, pin_validator_t* validator)
@@ -344,7 +344,7 @@ rx_err_t pin_validator_get_interface(rx_pin_interface_t* iface, pin_validator_t*
 
   if (!validator->initialized) {
     RX_LOG_ERROR("PIN_VALIDATOR", "Validator not initialized");
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Fill interface */
@@ -356,7 +356,7 @@ rx_err_t pin_validator_get_interface(rx_pin_interface_t* iface, pin_validator_t*
   iface->get_pin_function       = impl_get_pin_function;
   iface->clear_all_reservations = impl_clear_all_reservations;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t pin_validator_deinit(pin_validator_t* validator)
@@ -364,7 +364,7 @@ rx_err_t pin_validator_deinit(pin_validator_t* validator)
   RX_CHECK_NULL_PTR(validator, "PIN_VALIDATOR", "Validator pointer is NULL");
 
   if (!validator->initialized) {
-    return RX_OK; /* Already deinitialized */
+    return k_rx_ok; /* Already deinitialized */
   }
 
   /* Delete mutex */
@@ -375,5 +375,5 @@ rx_err_t pin_validator_deinit(pin_validator_t* validator)
 
   RX_LOG_INFO("PIN_VALIDATOR", "Pin validator deinitialized");
 
-  return RX_OK;
+  return k_rx_ok;
 }

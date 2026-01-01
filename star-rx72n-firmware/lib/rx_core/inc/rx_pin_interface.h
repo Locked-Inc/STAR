@@ -35,7 +35,7 @@
  *
  *   // 4. Use through interface
  *   rx_err_t err = iface.reserve_pin(iface.ctx, 0xA, 5, "SPI_MOSI");
- *   if (err != RX_OK) {
+ *   if (err != k_rx_ok) {
  *       // Pin already reserved or invalid
  *   }
  */
@@ -78,9 +78,9 @@ typedef struct rx_pin_interface rx_pin_interface_t;
  * @param[in] port Port number (0-9, 0xA-0x10 for A-G)
  * @param[in] pin Pin number (0-7)
  *
- * @return RX_OK if pin is valid,
- *         RX_ERR_GPIO_INVALID_PORT if port is invalid,
- *         RX_ERR_GPIO_INVALID_PIN if pin is invalid
+ * @return k_rx_ok if pin is valid,
+ *         k_rx_err_gpio_invalid_port if port is invalid,
+ *         k_rx_err_gpio_invalid_pin if pin is invalid
  */
 typedef rx_err_t (*rx_pin_validate_fn)(void* ctx, uint8_t port, uint8_t pin);
 
@@ -92,11 +92,11 @@ typedef rx_err_t (*rx_pin_validate_fn)(void* ctx, uint8_t port, uint8_t pin);
  * @param[in] pin Pin number
  * @param[in] function Function name (e.g., "SPI_MOSI", "GPIO_OUT")
  *
- * @return RX_OK if reserved successfully,
- *         RX_ERR_GPIO_CONFLICT if pin already reserved,
- *         RX_ERR_GPIO_INVALID_PORT if port invalid,
- *         RX_ERR_GPIO_INVALID_PIN if pin invalid,
- *         RX_ERR_INVALID_ARG if function is NULL
+ * @return k_rx_ok if reserved successfully,
+ *         k_rx_err_gpio_conflict if pin already reserved,
+ *         k_rx_err_gpio_invalid_port if port invalid,
+ *         k_rx_err_gpio_invalid_pin if pin invalid,
+ *         k_rx_err_invalid_arg if function is NULL
  */
 typedef rx_err_t (*rx_pin_reserve_fn)(void* ctx, uint8_t port, uint8_t pin, const char* function);
 
@@ -107,10 +107,10 @@ typedef rx_err_t (*rx_pin_reserve_fn)(void* ctx, uint8_t port, uint8_t pin, cons
  * @param[in] port Port number
  * @param[in] pin Pin number
  *
- * @return RX_OK if released successfully,
- *         RX_ERR_INVALID_STATE if pin was not reserved,
- *         RX_ERR_GPIO_INVALID_PORT if port invalid,
- *         RX_ERR_GPIO_INVALID_PIN if pin invalid
+ * @return k_rx_ok if released successfully,
+ *         k_rx_err_invalid_state if pin was not reserved,
+ *         k_rx_err_gpio_invalid_port if port invalid,
+ *         k_rx_err_gpio_invalid_pin if pin invalid
  */
 typedef rx_err_t (*rx_pin_release_fn)(void* ctx, uint8_t port, uint8_t pin);
 
@@ -134,12 +134,12 @@ typedef bool (*rx_pin_is_reserved_fn)(void* ctx, uint8_t port, uint8_t pin);
  * @param[out] function_out Buffer to store function name
  * @param[in] function_len Length of function_out buffer
  *
- * @return RX_OK if function retrieved,
- *         RX_ERR_INVALID_STATE if pin not reserved,
- *         RX_ERR_NULL_POINTER if function_out is NULL,
- *         RX_ERR_INVALID_SIZE if buffer too small,
- *         RX_ERR_GPIO_INVALID_PORT if port invalid,
- *         RX_ERR_GPIO_INVALID_PIN if pin invalid
+ * @return k_rx_ok if function retrieved,
+ *         k_rx_err_invalid_state if pin not reserved,
+ *         k_rx_err_null_pointer if function_out is NULL,
+ *         k_rx_err_invalid_size if buffer too small,
+ *         k_rx_err_gpio_invalid_port if port invalid,
+ *         k_rx_err_gpio_invalid_pin if pin invalid
  */
 typedef rx_err_t (*rx_pin_get_function_fn)(void*   ctx,
                                            uint8_t port,
@@ -152,7 +152,7 @@ typedef rx_err_t (*rx_pin_get_function_fn)(void*   ctx,
  *
  * @param[in] ctx Implementation context
  *
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 typedef rx_err_t (*rx_pin_clear_all_fn)(void* ctx);
 
@@ -218,22 +218,22 @@ struct rx_pin_interface {
  *
  * @param[in] iface Interface to validate
  *
- * @return RX_OK if valid, RX_ERR_NULL_POINTER if NULL,
- *         RX_ERR_INVALID_STATE if missing function pointers
+ * @return k_rx_ok if valid, k_rx_err_null_pointer if NULL,
+ *         k_rx_err_invalid_state if missing function pointers
  */
 static inline rx_err_t rx_pin_interface_validate(const rx_pin_interface_t* iface)
 {
   if (iface == NULL) {
-    return RX_ERR_NULL_POINTER;
+    return k_rx_err_null_pointer;
   }
 
   /* Check required function pointers */
   if (iface->validate_pin == NULL || iface->reserve_pin == NULL || iface->release_pin == NULL ||
       iface->is_pin_reserved == NULL) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 #ifdef __cplusplus

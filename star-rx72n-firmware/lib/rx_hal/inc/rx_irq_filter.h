@@ -88,8 +88,8 @@ typedef enum {
  * @param[in] irq_num IRQ number (0-15)
  * @param[in] filter_clk Clock divisor for filter sampling
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if irq_num > 15
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if irq_num > 15
  *
  * @note Filter applies to all edge types (rising, falling, both)
  * @note Filter continues operating during standby modes
@@ -104,8 +104,8 @@ rx_err_t rx_irq_filter_enable(uint8_t irq_num, rx_irq_filter_clk_t filter_clk);
  *
  * @param[in] irq_num IRQ number (0-15)
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if irq_num > 15
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if irq_num > 15
  */
 rx_err_t rx_irq_filter_disable(uint8_t irq_num);
 
@@ -115,8 +115,8 @@ rx_err_t rx_irq_filter_disable(uint8_t irq_num);
  * @param[in]  irq_num IRQ number (0-15)
  * @param[out] enabled Pointer to receive enable status
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if irq_num > 15 or enabled is NULL
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if irq_num > 15 or enabled is NULL
  */
 rx_err_t rx_irq_filter_is_enabled(uint8_t irq_num, bool* enabled);
 
@@ -126,8 +126,8 @@ rx_err_t rx_irq_filter_is_enabled(uint8_t irq_num, bool* enabled);
  * @param[in]  irq_num IRQ number (0-15)
  * @param[out] filter_clk Pointer to receive clock divisor setting
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if irq_num > 15 or filter_clk is NULL
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if irq_num > 15 or filter_clk is NULL
  */
 rx_err_t rx_irq_filter_get_clock(uint8_t irq_num, rx_irq_filter_clk_t* filter_clk);
 

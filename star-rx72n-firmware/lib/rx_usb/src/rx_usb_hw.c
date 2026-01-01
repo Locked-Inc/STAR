@@ -46,7 +46,7 @@ static bool s_hw_initialized = false;
 rx_err_t rx_usb_hw_init(void)
 {
   if (s_hw_initialized) {
-    return RX_OK;
+    return k_rx_ok;
   }
 
   RX_LOG_DEBUG(s_tag, "Initializing USB0 hardware");
@@ -113,7 +113,7 @@ rx_err_t rx_usb_hw_init(void)
 
   RX_LOG_INFO(s_tag, "USB0 hardware initialized");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /**
@@ -122,7 +122,7 @@ rx_err_t rx_usb_hw_init(void)
 rx_err_t rx_usb_hw_deinit(void)
 {
   if (!s_hw_initialized) {
-    return RX_OK;
+    return k_rx_ok;
   }
 
   RX_LOG_DEBUG(s_tag, "Deinitializing USB0 hardware");
@@ -141,7 +141,7 @@ rx_err_t rx_usb_hw_deinit(void)
 
   s_hw_initialized = false;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /**
@@ -152,7 +152,7 @@ rx_err_t rx_usb_hw_deinit(void)
 rx_err_t rx_usb_hw_attach(void)
 {
   if (!s_hw_initialized) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   RX_LOG_DEBUG(s_tag, "Attaching to USB bus");
@@ -160,7 +160,7 @@ rx_err_t rx_usb_hw_attach(void)
   /* Enable D+ pull-up resistor to signal device presence */
   USB0.SYSCFG |= k_usb_syscfg_dprpu;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /**
@@ -169,7 +169,7 @@ rx_err_t rx_usb_hw_attach(void)
 rx_err_t rx_usb_hw_detach(void)
 {
   if (!s_hw_initialized) {
-    return RX_OK;
+    return k_rx_ok;
   }
 
   RX_LOG_DEBUG(s_tag, "Detaching from USB bus");
@@ -177,7 +177,7 @@ rx_err_t rx_usb_hw_detach(void)
   /* Disable D+ pull-up resistor */
   USB0.SYSCFG &= ~k_usb_syscfg_dprpu;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /**
@@ -305,7 +305,7 @@ rx_err_t rx_usb_hw_configure_pipe(uint8_t  pipe,
                                   uint16_t max_packet)
 {
   if (pipe == 0 || pipe > 9) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Select pipe for configuration */
@@ -329,5 +329,5 @@ rx_err_t rx_usb_hw_configure_pipe(uint8_t  pipe,
   /* Enable pipe */
   *pipe_ctr = (*pipe_ctr & ~k_usb_pipectr_pid_mask) | k_usb_pipectr_pid_buf;
 
-  return RX_OK;
+  return k_rx_ok;
 }

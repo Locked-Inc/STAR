@@ -44,11 +44,11 @@
 rx_err_t rx_irq_filter_enable(uint8_t irq_num, rx_irq_filter_clk_t filter_clk)
 {
   if (irq_num > RX_IRQ_MAX) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (filter_clk > k_irq_filter_pclk_64) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
 #ifdef __RX__
@@ -90,13 +90,13 @@ rx_err_t rx_irq_filter_enable(uint8_t irq_num, rx_irq_filter_clk_t filter_clk)
   (void)filter_clk;
 #endif
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_irq_filter_disable(uint8_t irq_num)
 {
   if (irq_num > RX_IRQ_MAX) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
 #ifdef __RX__
@@ -108,17 +108,17 @@ rx_err_t rx_irq_filter_disable(uint8_t irq_num)
 
 #endif
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_irq_filter_is_enabled(uint8_t irq_num, bool* enabled)
 {
   if (irq_num > RX_IRQ_MAX) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (enabled == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
 #ifdef __RX__
@@ -131,17 +131,17 @@ rx_err_t rx_irq_filter_is_enabled(uint8_t irq_num, bool* enabled)
   *enabled = false;
 #endif
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_irq_filter_get_clock(uint8_t irq_num, rx_irq_filter_clk_t* filter_clk)
 {
   if (irq_num > RX_IRQ_MAX) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (filter_clk == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
 #ifdef __RX__
@@ -156,5 +156,5 @@ rx_err_t rx_irq_filter_get_clock(uint8_t irq_num, rx_irq_filter_clk_t* filter_cl
   *filter_clk = k_irq_filter_pclk_1;
 #endif
 
-  return RX_OK;
+  return k_rx_ok;
 }

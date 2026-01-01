@@ -93,7 +93,7 @@ static volatile CMT_Channel_Type* internal_get_cmt_base(rx_cmt_channel_t channel
  * @param[out] divider Pointer to store divider setting
  * @param[out] cmcor Pointer to store compare match value
  *
- * @return RX_OK on success, error code on failure
+ * @return k_rx_ok on success, error code on failure
  */
 static rx_err_t
 internal_calculate_cmt_params(uint32_t frequency_hz, uint8_t* divider, uint16_t* cmcor)
@@ -101,7 +101,7 @@ internal_calculate_cmt_params(uint32_t frequency_hz, uint8_t* divider, uint16_t*
   const uint32_t pclkb = PCLKB_HZ;
 
   if (frequency_hz == 0) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Try each divider to find one that fits in 16-bit */
@@ -114,12 +114,12 @@ internal_calculate_cmt_params(uint32_t frequency_hz, uint8_t* divider, uint16_t*
     if (period_calc > 0 && period_calc <= 0xFFFF) {
       *divider = i;
       *cmcor   = (uint16_t)period_calc;
-      return RX_OK;
+      return k_rx_ok;
     }
   }
 
   RX_LOG_ERROR(s_tag, "Error occurred");
-  return RX_ERR_INVALID_ARG;
+  return k_rx_err_invalid_arg;
 }
 
 /* =============================================================================
@@ -171,30 +171,30 @@ rx_err_t rx_cmt_init(rx_cmt_channel_t channel, const rx_cmt_config_t* config)
 
   if ((int32_t)channel >= k_cmt_max_channels) {
     RX_LOG_ERROR(s_tag, "Error occurred");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* CMT0 is reserved for ThreadX system tick */
   if (channel == k_cmt_channel_0) {
     RX_LOG_ERROR(s_tag, "CMT0 is reserved for ThreadX");
-    return RX_ERR_CONFLICT;
+    return k_rx_err_conflict;
   }
 
   if (config->priority > IPR_LEVEL_MAX) {
     RX_LOG_ERROR(s_tag, "Error occurred");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   volatile CMT_Channel_Type* cmt = internal_get_cmt_base(channel);
   if (cmt == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Calculate divider and compare value */
   uint8_t  divider;
   uint16_t cmcor;
   rx_err_t err = internal_calculate_cmt_params(config->frequency_hz, &divider, &cmcor);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
@@ -245,13 +245,13 @@ rx_err_t rx_cmt_init(rx_cmt_channel_t channel, const rx_cmt_config_t* config)
 
   RX_LOG_INFO(s_tag, "Info");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_cmt_start(rx_cmt_channel_t channel)
 {
   if ((int32_t)channel >= k_cmt_max_channels || !s_cmt_initialized[channel]) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Set corresponding bit in CMSTR register */
@@ -269,16 +269,16 @@ rx_err_t rx_cmt_start(rx_cmt_channel_t channel)
       CMT_CTRL.CMSTR1 |= (1 << 1);
       break;
     default:
-      return RX_ERR_INVALID_ARG;
+      return k_rx_err_invalid_arg;
   }
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_cmt_stop(rx_cmt_channel_t channel)
 {
   if ((int32_t)channel >= k_cmt_max_channels) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Clear corresponding bit in CMSTR register */
@@ -296,10 +296,10 @@ rx_err_t rx_cmt_stop(rx_cmt_channel_t channel)
       CMT_CTRL.CMSTR1 &= ~(1 << 1);
       break;
     default:
-      return RX_ERR_INVALID_ARG;
+      return k_rx_err_invalid_arg;
   }
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_cmt_get_count(rx_cmt_channel_t channel, uint16_t* count)
@@ -307,22 +307,22 @@ rx_err_t rx_cmt_get_count(rx_cmt_channel_t channel, uint16_t* count)
   RX_CHECK_NULL_PTR(count, s_tag, "count pointer is NULL");
 
   if ((int32_t)channel >= k_cmt_max_channels || !s_cmt_initialized[channel]) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   volatile CMT_Channel_Type* cmt = internal_get_cmt_base(channel);
   if (cmt == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   *count = cmt->CMCNT;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_cmt_deinit(rx_cmt_channel_t channel)
 {
   if ((int32_t)channel >= k_cmt_max_channels) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Stop timer */
@@ -341,5 +341,5 @@ rx_err_t rx_cmt_deinit(rx_cmt_channel_t channel)
 
   RX_LOG_INFO(s_tag, "CMT deinitialized");
 
-  return RX_OK;
+  return k_rx_ok;
 }

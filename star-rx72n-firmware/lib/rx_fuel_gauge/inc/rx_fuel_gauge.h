@@ -77,12 +77,12 @@ typedef struct {
  * @param[in] bus_name SMBUS bus name for fuel gauge
  * @param[in] config Fuel gauge configuration
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if manager, bus_name, or config is NULL
- * @return RX_ERR_NOT_FOUND if bus not found
- * @return RX_ERR_INVALID_STATE if bus not initialized
- * @return RX_ERR_TIMEOUT if SMBUS timeout
- * @return RX_ERR_NACK if device not responding
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if manager, bus_name, or config is NULL
+ * @return k_rx_err_not_found if bus not found
+ * @return k_rx_err_invalid_state if bus not initialized
+ * @return k_rx_err_timeout if SMBUS timeout
+ * @return k_rx_err_nack if device not responding
  */
 rx_err_t rx_fuel_gauge_init(rx_bus_manager_t*             manager,
                             const char*                   bus_name,
@@ -95,12 +95,12 @@ rx_err_t rx_fuel_gauge_init(rx_bus_manager_t*             manager,
  * @param[in] bus_name SMBUS bus name
  * @param[out] voltage_mv Pointer to store voltage in millivolts
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if manager, bus_name, or voltage_mv is NULL
- * @return RX_ERR_NOT_FOUND if bus not found
- * @return RX_ERR_INVALID_STATE if bus not initialized
- * @return RX_ERR_TIMEOUT if SMBUS timeout
- * @return RX_ERR_CRC_MISMATCH if PEC check fails
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if manager, bus_name, or voltage_mv is NULL
+ * @return k_rx_err_not_found if bus not found
+ * @return k_rx_err_invalid_state if bus not initialized
+ * @return k_rx_err_timeout if SMBUS timeout
+ * @return k_rx_err_crc_mismatch if PEC check fails
  */
 rx_err_t
 rx_fuel_gauge_read_voltage(rx_bus_manager_t* manager, const char* bus_name, uint16_t* voltage_mv);
@@ -113,12 +113,12 @@ rx_fuel_gauge_read_voltage(rx_bus_manager_t* manager, const char* bus_name, uint
  * @param[out] current_ma Pointer to store current in milliamps
  *                        Positive = charging, negative = discharging
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if manager, bus_name, or current_ma is NULL
- * @return RX_ERR_NOT_FOUND if bus not found
- * @return RX_ERR_INVALID_STATE if bus not initialized
- * @return RX_ERR_TIMEOUT if SMBUS timeout
- * @return RX_ERR_CRC_MISMATCH if PEC check fails
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if manager, bus_name, or current_ma is NULL
+ * @return k_rx_err_not_found if bus not found
+ * @return k_rx_err_invalid_state if bus not initialized
+ * @return k_rx_err_timeout if SMBUS timeout
+ * @return k_rx_err_crc_mismatch if PEC check fails
  */
 rx_err_t
 rx_fuel_gauge_read_current(rx_bus_manager_t* manager, const char* bus_name, int16_t* current_ma);
@@ -130,12 +130,12 @@ rx_fuel_gauge_read_current(rx_bus_manager_t* manager, const char* bus_name, int1
  * @param[in] bus_name SMBUS bus name
  * @param[out] soc_percent Pointer to store state of charge (0-100%)
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if manager, bus_name, or soc_percent is NULL
- * @return RX_ERR_NOT_FOUND if bus not found
- * @return RX_ERR_INVALID_STATE if bus not initialized
- * @return RX_ERR_TIMEOUT if SMBUS timeout
- * @return RX_ERR_CRC_MISMATCH if PEC check fails
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if manager, bus_name, or soc_percent is NULL
+ * @return k_rx_err_not_found if bus not found
+ * @return k_rx_err_invalid_state if bus not initialized
+ * @return k_rx_err_timeout if SMBUS timeout
+ * @return k_rx_err_crc_mismatch if PEC check fails
  */
 rx_err_t
 rx_fuel_gauge_read_soc(rx_bus_manager_t* manager, const char* bus_name, uint8_t* soc_percent);
@@ -147,12 +147,12 @@ rx_fuel_gauge_read_soc(rx_bus_manager_t* manager, const char* bus_name, uint8_t*
  * @param[in] bus_name SMBUS bus name
  * @param[out] temperature_c Pointer to store temperature in degrees Celsius
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if manager, bus_name, or temperature_c is NULL
- * @return RX_ERR_NOT_FOUND if bus not found
- * @return RX_ERR_INVALID_STATE if bus not initialized
- * @return RX_ERR_TIMEOUT if SMBUS timeout
- * @return RX_ERR_CRC_MISMATCH if PEC check fails
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if manager, bus_name, or temperature_c is NULL
+ * @return k_rx_err_not_found if bus not found
+ * @return k_rx_err_invalid_state if bus not initialized
+ * @return k_rx_err_timeout if SMBUS timeout
+ * @return k_rx_err_crc_mismatch if PEC check fails
  */
 rx_err_t rx_fuel_gauge_read_temperature(rx_bus_manager_t* manager,
                                         const char*       bus_name,
@@ -168,12 +168,12 @@ rx_err_t rx_fuel_gauge_read_temperature(rx_bus_manager_t* manager,
  * @param[in] bus_name SMBUS bus name
  * @param[out] status Pointer to status structure
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if manager, bus_name, or status is NULL
- * @return RX_ERR_NOT_FOUND if bus not found
- * @return RX_ERR_INVALID_STATE if bus not initialized
- * @return RX_ERR_TIMEOUT if SMBUS timeout
- * @return RX_ERR_CRC_MISMATCH if PEC check fails
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if manager, bus_name, or status is NULL
+ * @return k_rx_err_not_found if bus not found
+ * @return k_rx_err_invalid_state if bus not initialized
+ * @return k_rx_err_timeout if SMBUS timeout
+ * @return k_rx_err_crc_mismatch if PEC check fails
  */
 rx_err_t rx_fuel_gauge_read_status(rx_bus_manager_t*       manager,
                                    const char*             bus_name,
@@ -188,12 +188,12 @@ rx_err_t rx_fuel_gauge_read_status(rx_bus_manager_t*       manager,
  * @param[in] bus_name SMBUS bus name
  * @param[in] threshold_percent Low battery threshold (0-100%)
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if manager or bus_name is NULL
- * @return RX_ERR_INVALID_ARG if threshold_percent > 100
- * @return RX_ERR_NOT_FOUND if bus not found
- * @return RX_ERR_INVALID_STATE if bus not initialized
- * @return RX_ERR_TIMEOUT if SMBUS timeout
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if manager or bus_name is NULL
+ * @return k_rx_err_invalid_arg if threshold_percent > 100
+ * @return k_rx_err_not_found if bus not found
+ * @return k_rx_err_invalid_state if bus not initialized
+ * @return k_rx_err_timeout if SMBUS timeout
  */
 rx_err_t rx_fuel_gauge_set_low_threshold(rx_bus_manager_t* manager,
                                          const char*       bus_name,
@@ -208,11 +208,11 @@ rx_err_t rx_fuel_gauge_set_low_threshold(rx_bus_manager_t* manager,
  * @param[in] manager Bus manager instance
  * @param[in] bus_name SMBUS bus name
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if manager or bus_name is NULL
- * @return RX_ERR_NOT_FOUND if bus not found
- * @return RX_ERR_INVALID_STATE if bus not initialized
- * @return RX_ERR_TIMEOUT if SMBUS timeout
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if manager or bus_name is NULL
+ * @return k_rx_err_not_found if bus not found
+ * @return k_rx_err_invalid_state if bus not initialized
+ * @return k_rx_err_timeout if SMBUS timeout
  */
 rx_err_t rx_fuel_gauge_start_learning(rx_bus_manager_t* manager, const char* bus_name);
 

@@ -68,7 +68,7 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
 
   if (handle->initialized) {
     RX_LOG_WARN(s_tag, "Motor already initialized");
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   RX_LOG_INFO(s_tag, "Initializing motor");
@@ -82,7 +82,7 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
   };
 
   rx_err_t err = rx_mtu_init_pwm(config->channel, &mtu_config);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR(s_tag, "Failed to initialize MTU PWM");
     return err;
   }
@@ -102,7 +102,7 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
 
   RX_LOG_INFO(s_tag, "Motor initialized successfully");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
@@ -111,7 +111,7 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
 
   if (!handle->initialized) {
     RX_LOG_WARN(s_tag, "Motor not initialized");
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Stop motor before deinit */
@@ -124,7 +124,7 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
 
   RX_LOG_INFO(s_tag, "Motor deinitialized");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
@@ -133,7 +133,7 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
 
   if (!handle->initialized) {
     RX_LOG_ERROR(s_tag, "Motor not initialized");
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Clamp duty cycle to valid range */
@@ -157,7 +157,7 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
 
   handle->current_duty = duty;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_motor_stop(rx_motor_handle_t* handle, bool brake)
@@ -166,7 +166,7 @@ rx_err_t rx_motor_stop(rx_motor_handle_t* handle, bool brake)
 
   if (!handle->initialized) {
     RX_LOG_ERROR(s_tag, "Motor not initialized");
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   if (brake) {
@@ -181,7 +181,7 @@ rx_err_t rx_motor_stop(rx_motor_handle_t* handle, bool brake)
 
   handle->current_duty = 0.0f;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_motor_get_duty(const rx_motor_handle_t* handle, float* out_duty)
@@ -191,10 +191,10 @@ rx_err_t rx_motor_get_duty(const rx_motor_handle_t* handle, float* out_duty)
 
   if (!handle->initialized) {
     RX_LOG_ERROR(s_tag, "Motor not initialized");
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   *out_duty = handle->current_duty;
 
-  return RX_OK;
+  return k_rx_ok;
 }

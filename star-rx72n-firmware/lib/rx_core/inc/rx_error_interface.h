@@ -29,7 +29,7 @@
  *   bus_manager_init(&bus_mgr, &iface);
  *
  *   // 4. Use through interface
- *   iface.report_error(iface.ctx, RX_FAIL, "BUS", "Transfer failed");
+ *   iface.report_error(iface.ctx, k_rx_fail, "BUS", "Transfer failed");
  */
 
 #ifndef STAR_RX72N_ERROR_INTERFACE_H
@@ -61,7 +61,7 @@ typedef struct rx_error_interface rx_error_interface_t;
  * @param[in] component Component name (e.g., "SPI", "GPIO")
  * @param[in] message Error message
  *
- * @return RX_OK on success, error code on failure
+ * @return k_rx_ok on success, error code on failure
  */
 typedef rx_err_t (*rx_error_report_fn)(void*       ctx,
                                        rx_err_t    err,
@@ -92,7 +92,7 @@ typedef uint32_t (*rx_error_get_component_count_fn)(void* ctx, const char* compo
  *
  * @param[in] ctx Implementation context
  *
- * @return RX_OK on success, error code on failure
+ * @return k_rx_ok on success, error code on failure
  */
 typedef rx_err_t (*rx_error_clear_fn)(void* ctx);
 
@@ -112,7 +112,7 @@ typedef bool (*rx_error_is_retry_limit_reached_fn)(void* ctx, const char* compon
  * @param[in] ctx Implementation context
  * @param[in] component Component name
  *
- * @return RX_OK on success, error code on failure
+ * @return k_rx_ok on success, error code on failure
  */
 typedef rx_err_t (*rx_error_reset_retry_fn)(void* ctx, const char* component);
 
@@ -193,22 +193,22 @@ struct rx_error_interface {
  *
  * @param[in] iface Interface to validate
  *
- * @return RX_OK if valid, RX_ERR_NULL_POINTER if NULL,
- *         RX_ERR_INVALID_STATE if missing function pointers
+ * @return k_rx_ok if valid, k_rx_err_null_pointer if NULL,
+ *         k_rx_err_invalid_state if missing function pointers
  */
 static inline rx_err_t rx_error_interface_validate(const rx_error_interface_t* iface)
 {
   if (iface == NULL) {
-    return RX_ERR_NULL_POINTER;
+    return k_rx_err_null_pointer;
   }
 
   /* Check required function pointers */
   if (iface->report_error == NULL || iface->get_error_count == NULL ||
       iface->clear_errors == NULL) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 #ifdef __cplusplus
