@@ -1,4 +1,4 @@
-/* src/core/rx_bus_manager.c */
+/* lib/rx_bus/src/rx_bus_manager.c */
 
 /**
  * @file rx_bus_manager.c
