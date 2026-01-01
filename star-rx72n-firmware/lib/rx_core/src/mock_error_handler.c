@@ -6,6 +6,9 @@
  *
  * Implements the rx_error_interface_t by recording errors in memory.
  * Used for testing and validating the DIP pattern.
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "mock_error_handler.h"
