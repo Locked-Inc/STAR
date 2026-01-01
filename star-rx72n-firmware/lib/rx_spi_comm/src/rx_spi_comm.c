@@ -56,6 +56,13 @@ typedef enum {
   k_be16_high_shift = 8, /**< Bit shift for big-endian high byte */
 } be_conversion_t;
 
+/** @brief ThreadX timing constants for receive polling */
+typedef enum {
+  k_threadx_tick_rate_hz = 100, /**< ThreadX tick rate (100 Hz) */
+  k_threadx_ms_per_tick  = 10,  /**< Milliseconds per tick at 100 Hz */
+  k_poll_sleep_ticks     = 1,   /**< Sleep duration for polling loop (1 tick) */
+} threadx_timing_t;
+
 /* =============================================================================
  * Internal Helpers
  * =============================================================================
@@ -326,13 +333,13 @@ rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, ui
 #ifdef __RX__
     /*
      * Wait for data using ThreadX sleep.
-     * Each tick is 10ms at 100Hz tick rate, so we sleep 1 tick per iteration.
-     * This yields CPU to other threads instead of busy-waiting.
+     * Yields CPU to other threads instead of busy-waiting.
+     * Sleep duration and tick rate are defined by threadx_timing_t constants.
      */
     uint32_t elapsed_ms = 0;
     while (!available && elapsed_ms < timeout_ms) {
-      tx_thread_sleep(1); /* Sleep 1 tick (10ms @ 100Hz) */
-      elapsed_ms += 10;   /* Approximate - actual depends on tick rate */
+      tx_thread_sleep(k_poll_sleep_ticks);
+      elapsed_ms += k_threadx_ms_per_tick;
 
       err = rspi_peripheral_read_available(handle->channel, &available);
       if (err != k_rx_ok) {
