@@ -17,10 +17,10 @@
 #else
 /* Mock includes for unit testing */
 #include "mock_usb0_regs.h"
-#define RX_LOG_INFO(tag, msg)  ((void)0)
-#define RX_LOG_WARN(tag, msg)  ((void)0)
-#define RX_LOG_ERROR(tag, msg) ((void)0)
-#define RX_LOG_DEBUG(tag, msg) ((void)0)
+#define star_log_info(tag, msg)  ((void)0)
+#define star_log_warn(tag, msg)  ((void)0)
+#define star_log_error(tag, msg) ((void)0)
+#define star_log_debug(tag, msg) ((void)0)
 #endif
 
 /* =============================================================================
@@ -179,11 +179,11 @@ static void internal_trigger_tx_if_idle(void)
 rx_err_t rx_usb_init(const rx_usb_config_t* config)
 {
   if (s_usb.initialized) {
-    RX_LOG_WARN(s_tag, "USB already initialized");
+    star_log_warn(s_tag, "USB already initialized");
     return k_rx_err_invalid_state;
   }
 
-  RX_LOG_INFO(s_tag, "Initializing USB CDC driver");
+  star_log_info(s_tag, "Initializing USB CDC driver");
 
   /* Clear driver state */
   memset(&s_usb, 0, sizeof(s_usb));
@@ -207,14 +207,14 @@ rx_err_t rx_usb_init(const rx_usb_config_t* config)
   /* Initialize hardware */
   rx_err_t err = rx_usb_hw_init();
   if (err != k_rx_ok) {
-    RX_LOG_ERROR(s_tag, "Failed to initialize USB hardware");
+    star_log_error(s_tag, "Failed to initialize USB hardware");
     return err;
   }
 
   /* Initialize CDC class */
   err = rx_usb_cdc_init();
   if (err != k_rx_ok) {
-    RX_LOG_ERROR(s_tag, "Failed to initialize USB CDC");
+    star_log_error(s_tag, "Failed to initialize USB CDC");
     rx_usb_hw_deinit();
     return err;
   }
@@ -222,7 +222,7 @@ rx_err_t rx_usb_init(const rx_usb_config_t* config)
   /* Attach to USB bus (enable pull-up) */
   err = rx_usb_hw_attach();
   if (err != k_rx_ok) {
-    RX_LOG_ERROR(s_tag, "Failed to attach to USB bus");
+    star_log_error(s_tag, "Failed to attach to USB bus");
     rx_usb_hw_deinit();
     return err;
   }
@@ -230,7 +230,7 @@ rx_err_t rx_usb_init(const rx_usb_config_t* config)
   s_usb.state       = k_usb_state_attached;
   s_usb.initialized = true;
 
-  RX_LOG_INFO(s_tag, "USB CDC driver initialized");
+  star_log_info(s_tag, "USB CDC driver initialized");
 
   return k_rx_ok;
 }
@@ -241,7 +241,7 @@ rx_err_t rx_usb_deinit(void)
     return k_rx_err_invalid_state;
   }
 
-  RX_LOG_INFO(s_tag, "Deinitializing USB CDC driver");
+  star_log_info(s_tag, "Deinitializing USB CDC driver");
 
   /* Detach from USB bus */
   rx_usb_hw_detach();
@@ -384,7 +384,7 @@ void rx_usb_reset_stats(void)
 void rx_usb_set_state(rx_usb_state_t state)
 {
   if (s_usb.state != state) {
-    RX_LOG_DEBUG(s_tag, "USB state change");
+    star_log_debug(s_tag, "USB state change");
     s_usb.state = state;
 
     /* Notify via callback */
@@ -418,7 +418,7 @@ void rx_usb_set_line_coding(const rx_usb_line_coding_t* coding)
 {
   if (coding != NULL) {
     s_usb.line_coding = *coding;
-    RX_LOG_DEBUG(s_tag, "Line coding updated");
+    star_log_debug(s_tag, "Line coding updated");
   }
 }
 

@@ -55,10 +55,10 @@ static void internal_handle_vbus_interrupt(void)
 
   if (lnst == k_usb_syssts0_lnst_se0) {
     /* SE0 = disconnected or reset in progress */
-    RX_LOG_DEBUG(s_tag, "VBUS: SE0 detected");
+    star_log_debug(s_tag, "VBUS: SE0 detected");
   } else if (lnst == k_usb_syssts0_lnst_fs_j) {
     /* Full-Speed J-state = idle, cable connected */
-    RX_LOG_DEBUG(s_tag, "VBUS: FS J-state (connected)");
+    star_log_debug(s_tag, "VBUS: FS J-state (connected)");
     rx_usb_set_state(k_usb_state_attached);
   }
 
@@ -76,34 +76,34 @@ static void internal_handle_dvst_interrupt(void)
 
   switch (dvsq) {
     case k_usb_intsts0_dvsq_powered:
-      RX_LOG_DEBUG(s_tag, "DVST: Powered state");
+      star_log_debug(s_tag, "DVST: Powered state");
       rx_usb_set_state(k_usb_state_powered);
       break;
 
     case k_usb_intsts0_dvsq_default:
-      RX_LOG_DEBUG(s_tag, "DVST: Default state (bus reset complete)");
+      star_log_debug(s_tag, "DVST: Default state (bus reset complete)");
       rx_usb_set_state(k_usb_state_default);
       rx_usb_count_bus_reset();
       break;
 
     case k_usb_intsts0_dvsq_address:
-      RX_LOG_DEBUG(s_tag, "DVST: Address state");
+      star_log_debug(s_tag, "DVST: Address state");
       rx_usb_set_state(k_usb_state_addressed);
       break;
 
     case k_usb_intsts0_dvsq_configured:
-      RX_LOG_DEBUG(s_tag, "DVST: Configured state");
+      star_log_debug(s_tag, "DVST: Configured state");
       rx_usb_set_state(k_usb_state_configured);
       break;
 
     case k_usb_intsts0_dvsq_suspend:
-      RX_LOG_DEBUG(s_tag, "DVST: Suspended state");
+      star_log_debug(s_tag, "DVST: Suspended state");
       rx_usb_set_state(k_usb_state_suspended);
       rx_usb_count_suspend();
       break;
 
     default:
-      RX_LOG_WARN(s_tag, "DVST: Unknown state");
+      star_log_warn(s_tag, "DVST: Unknown state");
       break;
   }
 
@@ -158,7 +158,7 @@ static void internal_handle_ctrt_interrupt(void)
 
     case k_usb_intsts0_ctsq_seq_err:
       /* Sequence error - stall the pipe */
-      RX_LOG_WARN(s_tag, "CTRT: Sequence error");
+      star_log_warn(s_tag, "CTRT: Sequence error");
       USB0.DCPCTR = (USB0.DCPCTR & ~k_usb_dcpctr_pid_mask) | k_usb_dcpctr_pid_stall;
       break;
 
@@ -223,7 +223,7 @@ static void internal_handle_bemp_interrupt(void)
  */
 static void internal_handle_resume_interrupt(void)
 {
-  RX_LOG_DEBUG(s_tag, "Resume detected");
+  star_log_debug(s_tag, "Resume detected");
 
   /* Update state based on hardware */
   rx_usb_state_t state = rx_usb_hw_get_bus_state();

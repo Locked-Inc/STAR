@@ -223,12 +223,12 @@ rx_bq25798_init(rx_bus_manager_t* manager, const char* bus_name, const bq25798_c
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
 
-  RX_LOG_INFO(s_tag, "Initializing BQ25798 charger");
+  star_log_info(s_tag, "Initializing BQ25798 charger");
 
   /* Initialize I2C bus */
   rx_err_t err = rx_bus_i2c_init(manager, bus_name);
   if (err != k_rx_ok) {
-    RX_LOG_ERROR(s_tag, "I2C initialization failed");
+    star_log_error(s_tag, "I2C initialization failed");
     return err;
   }
 
@@ -237,17 +237,17 @@ rx_bq25798_init(rx_bus_manager_t* manager, const char* bus_name, const bq25798_c
   uint8_t reg_addr = k_reg_part_information;
   err              = rx_bus_i2c_write_read(manager, bus_name, &reg_addr, 1, &part_info, 1);
   if (err != k_rx_ok) {
-    RX_LOG_ERROR(s_tag, "Failed to read part information");
+    star_log_error(s_tag, "Failed to read part information");
     return err;
   }
 
-  RX_LOG_INFO(s_tag, "Info");
+  star_log_info(s_tag, "Info");
 
   /* Configure charge voltage */
   if (config->charge_voltage_mv > 0) {
     err = rx_bq25798_set_charge_voltage(manager, bus_name, config->charge_voltage_mv);
     if (err != k_rx_ok) {
-      RX_LOG_ERROR(s_tag, "Failed to set charge voltage");
+      star_log_error(s_tag, "Failed to set charge voltage");
       return err;
     }
   }
@@ -255,7 +255,7 @@ rx_bq25798_init(rx_bus_manager_t* manager, const char* bus_name, const bq25798_c
   /* Configure charge current */
   err = rx_bq25798_set_charge_current(manager, bus_name, config->charge_current_ma);
   if (err != k_rx_ok) {
-    RX_LOG_ERROR(s_tag, "Failed to set charge current");
+    star_log_error(s_tag, "Failed to set charge current");
     return err;
   }
 
@@ -263,7 +263,7 @@ rx_bq25798_init(rx_bus_manager_t* manager, const char* bus_name, const bq25798_c
   if (config->input_voltage_limit_mv > 0) {
     err = rx_bq25798_set_input_voltage_limit(manager, bus_name, config->input_voltage_limit_mv);
     if (err != k_rx_ok) {
-      RX_LOG_ERROR(s_tag, "Failed to set input voltage limit");
+      star_log_error(s_tag, "Failed to set input voltage limit");
       return err;
     }
   }
@@ -272,7 +272,7 @@ rx_bq25798_init(rx_bus_manager_t* manager, const char* bus_name, const bq25798_c
   if (config->input_current_limit_ma > 0) {
     err = rx_bq25798_set_input_current_limit(manager, bus_name, config->input_current_limit_ma);
     if (err != k_rx_ok) {
-      RX_LOG_ERROR(s_tag, "Failed to set input current limit");
+      star_log_error(s_tag, "Failed to set input current limit");
       return err;
     }
   }
@@ -282,7 +282,7 @@ rx_bq25798_init(rx_bus_manager_t* manager, const char* bus_name, const bq25798_c
     uint8_t write_data[2] = {k_reg_adc_control, k_adc_en | (1 << 6)}; /* Continuous mode */
     err                   = rx_bus_i2c_write(manager, bus_name, write_data, 2);
     if (err != k_rx_ok) {
-      RX_LOG_ERROR(s_tag, "Failed to enable ADC");
+      star_log_error(s_tag, "Failed to enable ADC");
       return err;
     }
   }
@@ -290,11 +290,11 @@ rx_bq25798_init(rx_bus_manager_t* manager, const char* bus_name, const bq25798_c
   /* Enable/disable charging */
   err = rx_bq25798_enable_charging(manager, bus_name, config->enable_charging);
   if (err != k_rx_ok) {
-    RX_LOG_ERROR(s_tag, "Failed to configure charging enable");
+    star_log_error(s_tag, "Failed to configure charging enable");
     return err;
   }
 
-  RX_LOG_INFO(s_tag, "BQ25798 initialized successfully");
+  star_log_info(s_tag, "BQ25798 initialized successfully");
 
   return k_rx_ok;
 }
@@ -331,7 +331,7 @@ rx_bq25798_set_charge_voltage(rx_bus_manager_t* manager, const char* bus_name, u
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
 
   if (voltage_mv < 3000 || voltage_mv > 18800) {
-    RX_LOG_ERROR(s_tag, "Error occurred");
+    star_log_error(s_tag, "Error occurred");
     return k_rx_err_invalid_arg;
   }
 
@@ -349,7 +349,7 @@ rx_bq25798_set_charge_current(rx_bus_manager_t* manager, const char* bus_name, u
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
 
   if (current_ma > 5000) {
-    RX_LOG_ERROR(s_tag, "Error occurred");
+    star_log_error(s_tag, "Error occurred");
     return k_rx_err_invalid_arg;
   }
 
@@ -368,7 +368,7 @@ rx_err_t rx_bq25798_set_input_voltage_limit(rx_bus_manager_t* manager,
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
 
   if (voltage_mv < 3600 || voltage_mv > 24000) {
-    RX_LOG_ERROR(s_tag, "Error occurred");
+    star_log_error(s_tag, "Error occurred");
     return k_rx_err_invalid_arg;
   }
 
@@ -386,7 +386,7 @@ rx_err_t rx_bq25798_set_input_current_limit(rx_bus_manager_t* manager,
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
 
   if (current_ma < 100 || current_ma > 3300) {
-    RX_LOG_ERROR(s_tag, "Error occurred");
+    star_log_error(s_tag, "Error occurred");
     return k_rx_err_invalid_arg;
   }
 
@@ -411,7 +411,7 @@ rx_bq25798_read_status(rx_bus_manager_t* manager, const char* bus_name, bq25798_
     uint8_t reg_addr = k_reg_charger_status_0 + i;
     err              = rx_bus_i2c_write_read(manager, bus_name, &reg_addr, 1, &status_regs[i], 1);
     if (err != k_rx_ok) {
-      RX_LOG_ERROR(s_tag, "Error occurred");
+      star_log_error(s_tag, "Error occurred");
       return err;
     }
   }

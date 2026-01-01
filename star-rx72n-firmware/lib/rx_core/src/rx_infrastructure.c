@@ -50,11 +50,11 @@ static bool s_infrastructure_initialized = false;
 rx_err_t rx_infrastructure_init(void)
 {
   if (s_infrastructure_initialized) {
-    RX_LOG_WARN("INFRA", "Infrastructure already initialized");
+    star_log_warn("INFRA", "Infrastructure already initialized");
     return k_rx_ok;
   }
 
-  RX_LOG_INFO("INFRA", "Initializing global infrastructure");
+  star_log_info("INFRA", "Initializing global infrastructure");
 
   /* Initialize error handler */
   rx_err_t err = error_handler_init(&s_global_error_handler,
@@ -62,14 +62,14 @@ rx_err_t rx_infrastructure_init(void)
                                     100,   /* initial_backoff_ms */
                                     5000); /* max_backoff_ms */
   if (err != k_rx_ok) {
-    RX_LOG_ERROR("INFRA", "Failed to initialize error handler");
+    star_log_error("INFRA", "Failed to initialize error handler");
     return err;
   }
 
   /* Get error handler interface */
   err = error_handler_get_interface(&s_global_error_interface, &s_global_error_handler);
   if (err != k_rx_ok) {
-    RX_LOG_ERROR("INFRA", "Failed to get error handler interface");
+    star_log_error("INFRA", "Failed to get error handler interface");
     error_handler_deinit(&s_global_error_handler);
     return err;
   }
@@ -77,7 +77,7 @@ rx_err_t rx_infrastructure_init(void)
   /* Initialize pin validator */
   err = pin_validator_init(&s_global_pin_validator);
   if (err != k_rx_ok) {
-    RX_LOG_ERROR("INFRA", "Failed to initialize pin validator");
+    star_log_error("INFRA", "Failed to initialize pin validator");
     error_handler_deinit(&s_global_error_handler);
     return err;
   }
@@ -85,7 +85,7 @@ rx_err_t rx_infrastructure_init(void)
   /* Get pin validator interface */
   err = pin_validator_get_interface(&s_global_pin_interface, &s_global_pin_validator);
   if (err != k_rx_ok) {
-    RX_LOG_ERROR("INFRA", "Failed to get pin validator interface");
+    star_log_error("INFRA", "Failed to get pin validator interface");
     pin_validator_deinit(&s_global_pin_validator);
     error_handler_deinit(&s_global_error_handler);
     return err;
@@ -93,7 +93,7 @@ rx_err_t rx_infrastructure_init(void)
 
   s_infrastructure_initialized = true;
 
-  RX_LOG_INFO("INFRA", "Global infrastructure initialized successfully");
+  star_log_info("INFRA", "Global infrastructure initialized successfully");
 
   return k_rx_ok;
 }
@@ -104,7 +104,7 @@ rx_err_t rx_infrastructure_deinit(void)
     return k_rx_ok;
   }
 
-  RX_LOG_INFO("INFRA", "Deinitializing global infrastructure");
+  star_log_info("INFRA", "Deinitializing global infrastructure");
 
   /* Deinitialize pin validator */
   pin_validator_deinit(&s_global_pin_validator);
@@ -114,7 +114,7 @@ rx_err_t rx_infrastructure_deinit(void)
 
   s_infrastructure_initialized = false;
 
-  RX_LOG_INFO("INFRA", "Global infrastructure deinitialized");
+  star_log_info("INFRA", "Global infrastructure deinitialized");
 
   return k_rx_ok;
 }

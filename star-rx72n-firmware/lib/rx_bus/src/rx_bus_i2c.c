@@ -79,7 +79,7 @@ static rx_err_t internal_i2c_init_callback(rx_bus_config_t* bus_config, void* us
 
   /* Validate bus type */
   if (bus_config->type != k_bus_type_i2c) {
-    RX_LOG_ERROR(s_tag, "Bus is not I2C type");
+    star_log_error(s_tag, "Bus is not I2C type");
     ctx->result = k_rx_err_invalid_arg;
     return k_rx_err_invalid_arg;
   }
@@ -88,7 +88,7 @@ static rx_err_t internal_i2c_init_callback(rx_bus_config_t* bus_config, void* us
   rx_err_t err = riic_init(bus_config->proto.i2c.channel, bus_config->proto.i2c.frequency_hz);
 
   if (err != k_rx_ok) {
-    RX_LOG_ERROR(s_tag, "RIIC HAL initialization failed");
+    star_log_error(s_tag, "RIIC HAL initialization failed");
     ctx->result = err;
     return err;
   }
@@ -114,7 +114,7 @@ static rx_err_t internal_i2c_write_callback(rx_bus_config_t* bus_config, void* u
 
   /* Validate bus is initialized */
   if (!bus_config->initialized) {
-    RX_LOG_ERROR(s_tag, "Bus not initialized");
+    star_log_error(s_tag, "Bus not initialized");
     ctx->result = k_rx_err_invalid_state;
     return k_rx_err_invalid_state;
   }
@@ -126,7 +126,7 @@ static rx_err_t internal_i2c_write_callback(rx_bus_config_t* bus_config, void* u
                             ctx->length);
 
   if (err != k_rx_ok) {
-    RX_LOG_ERROR(s_tag, "I2C write failed");
+    star_log_error(s_tag, "I2C write failed");
     ctx->result = err;
     return err;
   }
@@ -149,7 +149,7 @@ static rx_err_t internal_i2c_read_callback(rx_bus_config_t* bus_config, void* us
 
   /* Validate bus is initialized */
   if (!bus_config->initialized) {
-    RX_LOG_ERROR(s_tag, "Bus not initialized");
+    star_log_error(s_tag, "Bus not initialized");
     ctx->result = k_rx_err_invalid_state;
     return k_rx_err_invalid_state;
   }
@@ -161,7 +161,7 @@ static rx_err_t internal_i2c_read_callback(rx_bus_config_t* bus_config, void* us
                            ctx->length);
 
   if (err != k_rx_ok) {
-    RX_LOG_ERROR(s_tag, "I2C read failed");
+    star_log_error(s_tag, "I2C read failed");
     ctx->result = err;
     return err;
   }
@@ -184,7 +184,7 @@ static rx_err_t internal_i2c_write_read_callback(rx_bus_config_t* bus_config, vo
 
   /* Validate bus is initialized */
   if (!bus_config->initialized) {
-    RX_LOG_ERROR(s_tag, "Bus not initialized");
+    star_log_error(s_tag, "Bus not initialized");
     ctx->result = k_rx_err_invalid_state;
     return k_rx_err_invalid_state;
   }
@@ -198,7 +198,7 @@ static rx_err_t internal_i2c_write_read_callback(rx_bus_config_t* bus_config, vo
                                  ctx->read_length);
 
   if (err != k_rx_ok) {
-    RX_LOG_ERROR(s_tag, "I2C write-read failed");
+    star_log_error(s_tag, "I2C write-read failed");
     ctx->result = err;
     return err;
   }

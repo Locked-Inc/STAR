@@ -92,10 +92,10 @@ static volatile uint8_t* internal_get_pfs_register(uint8_t port, uint8_t pin)
     case 0x11: /* Port H */
     case 0x12: /* Port J */
       /* For simplicity, only implement ports 0-5 which cover motor control pins */
-      RX_LOG_ERROR(s_tag, "Error occurred");
+      star_log_error(s_tag, "Error occurred");
       return NULL;
     default:
-      RX_LOG_ERROR(s_tag, "Error occurred");
+      star_log_error(s_tag, "Error occurred");
       return NULL;
   }
 
@@ -166,7 +166,7 @@ rx_err_t rx_mpc_set_gpio(uint8_t port, uint8_t pin)
 rx_err_t rx_mpc_set_peripheral(uint8_t port, uint8_t pin, uint8_t psel)
 {
   if (psel > 0x1F) {
-    RX_LOG_ERROR(s_tag, "Error occurred");
+    star_log_error(s_tag, "Error occurred");
     return k_rx_err_invalid_arg;
   }
 

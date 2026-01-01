@@ -67,11 +67,11 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
   RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
 
   if (handle->initialized) {
-    RX_LOG_WARN(s_tag, "Motor already initialized");
+    star_log_warn(s_tag, "Motor already initialized");
     return k_rx_err_invalid_state;
   }
 
-  RX_LOG_INFO(s_tag, "Initializing motor");
+  star_log_info(s_tag, "Initializing motor");
 
   /* Initialize MTU PWM */
   rx_mtu_config_t mtu_config = {
@@ -83,7 +83,7 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
 
   rx_err_t err = rx_mtu_init_pwm(config->channel, &mtu_config);
   if (err != k_rx_ok) {
-    RX_LOG_ERROR(s_tag, "Failed to initialize MTU PWM");
+    star_log_error(s_tag, "Failed to initialize MTU PWM");
     return err;
   }
 
@@ -100,7 +100,7 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
   handle->invert_pwm   = config->invert_pwm;
   handle->initialized  = true;
 
-  RX_LOG_INFO(s_tag, "Motor initialized successfully");
+  star_log_info(s_tag, "Motor initialized successfully");
 
   return k_rx_ok;
 }
@@ -110,7 +110,7 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
 
   if (!handle->initialized) {
-    RX_LOG_WARN(s_tag, "Motor not initialized");
+    star_log_warn(s_tag, "Motor not initialized");
     return k_rx_err_invalid_state;
   }
 
@@ -122,7 +122,7 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
 
   handle->initialized = false;
 
-  RX_LOG_INFO(s_tag, "Motor deinitialized");
+  star_log_info(s_tag, "Motor deinitialized");
 
   return k_rx_ok;
 }
@@ -132,7 +132,7 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
 
   if (!handle->initialized) {
-    RX_LOG_ERROR(s_tag, "Motor not initialized");
+    star_log_error(s_tag, "Motor not initialized");
     return k_rx_err_invalid_state;
   }
 
@@ -165,7 +165,7 @@ rx_err_t rx_motor_stop(rx_motor_handle_t* handle, bool brake)
   RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
 
   if (!handle->initialized) {
-    RX_LOG_ERROR(s_tag, "Motor not initialized");
+    star_log_error(s_tag, "Motor not initialized");
     return k_rx_err_invalid_state;
   }
 
@@ -190,7 +190,7 @@ rx_err_t rx_motor_get_duty(const rx_motor_handle_t* handle, float* out_duty)
   RX_CHECK_NULL_PTR(out_duty, s_tag, "out_duty pointer is NULL");
 
   if (!handle->initialized) {
-    RX_LOG_ERROR(s_tag, "Motor not initialized");
+    star_log_error(s_tag, "Motor not initialized");
     return k_rx_err_invalid_state;
   }
 
