@@ -90,7 +90,7 @@ typedef enum {
  * register. The handle tracks initialization status only.
  */
 typedef struct {
-  uint8_t initialized; /**< Non-zero if initialized */
+  bool initialized; /**< True if initialized */
 } rx_fec_encoder_t;
 
 /**
@@ -150,7 +150,9 @@ uint32_t rx_fec_encoded_len(uint32_t input_len);
  * With 1024 byte max payload, encoded = (1024*8+6)*2 = 16396 bits = 8198 symbols
  * Round up to 8200 for safe margin.
  */
-#define RX_FEC_MAX_SYMBOLS 8200
+typedef enum {
+  k_fec_max_symbols = 8200, /**< Maximum symbols for static allocation */
+} rx_fec_buffer_limits_t;
 
 /**
  * @brief FEC decoder state
@@ -165,7 +167,7 @@ typedef struct {
   uint32_t  survivors_len;                      /**< Length of survivors buffer */
   uint8_t   branch_table[k_fec_num_states][k_fec_num_input_values]
                       [k_fec_num_outputs]; /**< Precomputed outputs */
-  uint8_t initialized;                     /**< Non-zero if initialized */
+  bool initialized;                        /**< True if initialized */
 } rx_fec_decoder_t;
 
 /**
