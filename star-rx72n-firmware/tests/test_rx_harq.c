@@ -89,7 +89,7 @@ void test_combiner_add_zero_length(void) {
 void test_combiner_add_too_large(void) {
     rx_soft_bit_t soft[10] = {0};
     rx_err_t err =
-        rx_chase_combiner_add(&s_combiner, soft, RX_HARQ_SOFT_BUFFER_SIZE + 1);
+        rx_chase_combiner_add(&s_combiner, soft, k_harq_soft_buffer_size + 1);
     TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 

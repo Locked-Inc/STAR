@@ -27,10 +27,10 @@ static const char* s_tag = "USB_HW";
 
 /** @brief ThreadX timing constants for USB initialization delays */
 typedef enum {
-  k_threadx_tick_rate_hz      = 100, /**< ThreadX tick rate (100 Hz) */
-  k_threadx_ms_per_tick       = 10,  /**< Milliseconds per tick at 100 Hz */
-  k_usb_pll_stabilization_ms  = 10,  /**< USB PLL stabilization time (10ms) */
-  k_usb_clock_stabilization_ms = 10, /**< USB clock stabilization time (10ms) */
+  k_threadx_tick_rate_hz       = 100, /**< ThreadX tick rate (100 Hz) */
+  k_threadx_ms_per_tick        = 10,  /**< Milliseconds per tick at 100 Hz */
+  k_usb_pll_stabilization_ms   = 10,  /**< USB PLL stabilization time (10ms) */
+  k_usb_clock_stabilization_ms = 10,  /**< USB clock stabilization time (10ms) */
 } usb_hw_timing_t;
 
 /** @brief USB hardware protection constants */
@@ -147,7 +147,7 @@ rx_err_t rx_usb_hw_init(void)
 
   /* Enable interrupt in IER */
   ICU.IER[k_vect_usb0_usbi / k_icu_bits_per_ier_register] |=
-      (1 << (k_vect_usb0_usbi % k_icu_bits_per_ier_register));
+    (1 << (k_vect_usb0_usbi % k_icu_bits_per_ier_register));
 
   /* 9. Set default control pipe max packet size (64 bytes for FS) */
   USB0.DCPMAXP = k_usb_cdc_max_packet_fs;
@@ -175,7 +175,7 @@ rx_err_t rx_usb_hw_deinit(void)
 
   /* Disable interrupt in ICU */
   ICU.IER[k_vect_usb0_usbi / k_icu_bits_per_ier_register] &=
-      ~(1 << (k_vect_usb0_usbi % k_icu_bits_per_ier_register));
+    ~(1 << (k_vect_usb0_usbi % k_icu_bits_per_ier_register));
   ICU.IR[k_vect_usb0_usbi] = 0;
 
   /* Disable USB0 module clock */

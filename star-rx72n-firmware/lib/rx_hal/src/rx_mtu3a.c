@@ -127,7 +127,7 @@ static rx_err_t internal_calculate_period(uint32_t frequency_hz, uint16_t* perio
  * @return Pointer to TGR register, or NULL if invalid
  */
 static volatile uint16_t* internal_get_tgr_register(volatile rx_mtu_channel_regs_t* mtu,
-                                                    rx_mtu_output_t            output)
+                                                    rx_mtu_output_t                 output)
 {
   switch (output) {
     case k_mtu_output_a:
@@ -157,7 +157,8 @@ rx_err_t rx_mtu_init_pwm(rx_mtu_channel_t channel, const rx_mtu_config_t* config
     return k_rx_err_invalid_arg;
   }
 
-  volatile rx_mtu_channel_regs_t* mtu = (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
+  volatile rx_mtu_channel_regs_t* mtu =
+    (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
   if (mtu == NULL) {
     return k_rx_err_invalid_arg;
   }
@@ -253,7 +254,8 @@ rx_err_t rx_mtu_set_duty_raw(rx_mtu_channel_t channel, rx_mtu_output_t output, u
     return k_rx_err_invalid_state;
   }
 
-  volatile rx_mtu_channel_regs_t* mtu = (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
+  volatile rx_mtu_channel_regs_t* mtu =
+    (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
   if (mtu == NULL) {
     return k_rx_err_invalid_arg;
   }
@@ -284,7 +286,8 @@ rx_err_t rx_mtu_get_duty(rx_mtu_channel_t channel, rx_mtu_output_t output, float
     return k_rx_err_invalid_state;
   }
 
-  volatile rx_mtu_channel_regs_t* mtu = (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
+  volatile rx_mtu_channel_regs_t* mtu =
+    (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
   if (mtu == NULL) {
     return k_rx_err_invalid_arg;
   }
@@ -320,7 +323,8 @@ rx_err_t rx_mtu_enable_output(rx_mtu_channel_t channel, rx_mtu_output_t output, 
     return k_rx_err_invalid_state;
   }
 
-  volatile rx_mtu_channel_regs_t* mtu = (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
+  volatile rx_mtu_channel_regs_t* mtu =
+    (volatile rx_mtu_channel_regs_t*)internal_get_mtu_base(channel);
   if (mtu == NULL) {
     return k_rx_err_invalid_arg;
   }

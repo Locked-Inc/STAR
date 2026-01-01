@@ -347,7 +347,7 @@ void test_usb_init_with_callback(void)
 {
   rx_usb_config_t config = {0};
   config.callback        = test_callback;
-  config.context         = (void*)0xDEADBEEF;
+  config.ctx         = (void*)0xDEADBEEF;
 
   rx_err_t err = rx_usb_init(&config);
 
@@ -659,7 +659,7 @@ void test_usb_set_state_triggers_callback(void)
 {
   rx_usb_config_t config = {0};
   config.callback        = test_callback;
-  config.context         = (void*)0xCAFEBABE;
+  config.ctx         = (void*)0xCAFEBABE;
   rx_usb_init(&config);
 
   rx_usb_set_state(k_usb_state_configured);
