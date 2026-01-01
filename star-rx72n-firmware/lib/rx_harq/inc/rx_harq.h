@@ -1,7 +1,9 @@
+/* lib/rx_harq/inc/rx_harq.h */
+
 /**
  * @file rx_harq.h
  * @brief Hybrid Automatic Repeat Request (HARQ) Protocol for RX72N
- *
+ * @details
  * Implements Chase Combining HARQ Type I for reliable communication.
  * This is a C port of the Go implementation in star-gateway for
  * bit-exact compatibility.
@@ -17,6 +19,9 @@
  * @see star-gateway/internal/harq/ for Go reference implementation
  * @see star-gateway/internal/fec/combiner.go for Chase Combiner
  * @see docs/sections/01_nanopb_protocol.tex for protocol specification
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef STAR_RX_HARQ_H
@@ -41,19 +46,12 @@ extern "C" {
  * @brief HARQ protocol parameters
  */
 typedef enum {
-  k_harq_max_payload      = 1024, /**< Maximum payload size in bytes */
-  k_harq_default_retries  = 3,    /**< Default maximum retries */
-  k_harq_default_combines = 3,    /**< Default max combining attempts */
+  k_harq_max_payload      = 1024,  /**< Maximum payload size in bytes */
+  k_harq_default_retries  = 3,     /**< Default maximum retries */
+  k_harq_default_combines = 3,     /**< Default max combining attempts */
+  k_harq_soft_buffer_size = 16400, /**< Max soft buffer size for Chase Combining
+                                     * (1024*8+6)*2 = 16396 bits, rounded to 16400 */
 } rx_harq_params_t;
-
-/**
- * @brief Maximum soft buffer size for Chase Combining
- *
- * With 1024 byte max payload, encoded = (1024*8+6)*2 = 16396 bits
- * Each bit needs 1 soft bit, so max 16396 soft bits.
- * Round up to 16400 for safe margin.
- */
-#define RX_HARQ_SOFT_BUFFER_SIZE 16400
 
 /* =============================================================================
  * HARQ State Machine
@@ -83,11 +81,11 @@ typedef enum {
  * prevent overflow.
  */
 typedef struct {
-  int16_t  accumulated[RX_HARQ_SOFT_BUFFER_SIZE]; /**< Accumulated soft bits */
-  uint32_t expected_len;                          /**< Expected soft bits len */
-  uint8_t  count;                                 /**< Transmissions combined */
-  uint8_t  max_combines;                          /**< Max combining attempts */
-  uint8_t  initialized;                           /**< Non-zero if initialized */
+  int16_t  accumulated[k_harq_soft_buffer_size]; /**< Accumulated soft bits */
+  uint32_t expected_len;                         /**< Expected soft bits len */
+  uint8_t  count;                                /**< Transmissions combined */
+  uint8_t  max_combines;                         /**< Max combining attempts */
+  uint8_t  initialized;                          /**< Non-zero if initialized */
 } rx_chase_combiner_t;
 
 /**
@@ -185,10 +183,10 @@ typedef struct {
   rx_chase_combiner_t combiner;    /**< Chase Combiner */
   rx_fec_encoder_t    encoder;     /**< FEC encoder */
   rx_fec_decoder_t    decoder;     /**< FEC decoder */
-  uint64_t            decoder_survivors[RX_HARQ_SOFT_BUFFER_SIZE / 2]; /**< Decoder buf */
-  rx_soft_bit_t       decode_buffer[RX_HARQ_SOFT_BUFFER_SIZE]; /**< Combined soft bits buf */
-  uint8_t             fec_enabled;                             /**< Non-zero if FEC is enabled */
-  uint8_t             initialized;                             /**< Non-zero if initialized */
+  uint64_t            decoder_survivors[k_harq_soft_buffer_size / 2]; /**< Decoder buf */
+  rx_soft_bit_t       decode_buffer[k_harq_soft_buffer_size]; /**< Combined soft bits buf */
+  uint8_t             fec_enabled;                            /**< Non-zero if FEC is enabled */
+  uint8_t             initialized;                            /**< Non-zero if initialized */
 } rx_harq_handle_t;
 
 /**
