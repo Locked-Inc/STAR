@@ -132,6 +132,93 @@ typedef struct {
 } rx_onewire_bus_config_t;
 
 /* =============================================================================
+ * Hardware Limits (RX72N)
+ * =============================================================================
+ */
+
+/**
+ * @brief RX72N RIIC channel count
+ */
+typedef enum {
+  k_riic_channel_count = 3, /* RIIC channels 0-2 */
+} rx_riic_limits_t;
+
+/**
+ * @brief RX72N RSPI channel count
+ */
+typedef enum {
+  k_rspi_channel_count = 3, /* RSPI channels 0-2 */
+} rx_rspi_limits_t;
+
+/**
+ * @brief RX72N ADC unit count
+ */
+typedef enum {
+  k_adc_unit_count = 2, /* ADC units 0-1 */
+} rx_adc_limits_t;
+
+/**
+ * @brief RX72N GPIO port limits
+ */
+typedef enum {
+  k_gpio_port_max_numeric = 9,    /* Numeric ports 0-9 */
+  k_gpio_port_max_alpha   = 0x10, /* Alpha ports A-G (0xA-0x10) */
+  k_gpio_port_min_alpha   = 0xA,  /* First alpha port (A) */
+} rx_gpio_port_limits_t;
+
+/**
+ * @brief RX72N GPIO pin count per port
+ */
+typedef enum {
+  k_gpio_pin_count = 8, /* Pins 0-7 per port */
+} rx_gpio_pin_limits_t;
+
+/**
+ * @brief RX72N ADC channel limits
+ */
+typedef enum {
+  k_adc_channel_max = 7, /* ADC channels 0-7 */
+} rx_adc_channel_limits_t;
+
+/**
+ * @brief RX72N ADC resolution options
+ */
+typedef enum {
+  k_adc_resolution_8bit  = 8,  /* 8-bit resolution */
+  k_adc_resolution_10bit = 10, /* 10-bit resolution */
+  k_adc_resolution_12bit = 12, /* 12-bit resolution */
+} rx_adc_resolution_t;
+
+/**
+ * @brief I2C/SMBUS protocol constants
+ */
+typedef enum {
+  k_i2c_write_bit        = 0,    /* I2C write bit (R/W = 0) */
+  k_i2c_read_bit         = 1,    /* I2C read bit (R/W = 1) */
+  k_i2c_addr_shift       = 1,    /* Bit shift for 7-bit address */
+  k_i2c_addr_max_7bit    = 0x7F, /* Maximum 7-bit I2C address (127) */
+  k_bits_per_byte        = 8,    /* Bits per byte */
+  k_smbus_max_block_size = 32,   /* SMBUS maximum block transfer size */
+} rx_i2c_constants_t;
+
+/**
+ * @brief SMBUS byte operation buffer indices (data + optional PEC)
+ */
+typedef enum {
+  k_smbus_byte_data = 0, /* Data byte index */
+  k_smbus_byte_pec  = 1, /* PEC (CRC-8) index */
+} smbus_byte_pec_idx_t;
+
+/**
+ * @brief SMBUS word operation buffer indices (LSB + MSB + optional PEC)
+ */
+typedef enum {
+  k_smbus_word_lsb = 0, /* Low byte (LSB) index */
+  k_smbus_word_msb = 1, /* High byte (MSB) index */
+  k_smbus_word_pec = 2, /* PEC (CRC-8) index */
+} smbus_word_pec_idx_t;
+
+/* =============================================================================
  * Bus Configuration Node (Linked List)
  * =============================================================================
  */
@@ -189,9 +276,9 @@ typedef struct {
   rx_pin_interface_t*   pin_iface;   /* Pin validator (DIP) */
 
   /* Resource tracking */
-  bool riic_initialized[3];     /* RIIC channels 0-2 initialized? */
-  bool rspi_initialized[3];     /* RSPI channels 0-2 initialized? */
-  bool adc_unit_initialized[2]; /* ADC units 0-1 initialized? */
+  bool riic_initialized[k_riic_channel_count];     /* RIIC channels 0-2 initialized? */
+  bool rspi_initialized[k_rspi_channel_count];     /* RSPI channels 0-2 initialized? */
+  bool adc_unit_initialized[k_adc_unit_count];     /* ADC units 0-1 initialized? */
 
   uint8_t bus_count; /* Number of buses registered */
 } rx_bus_manager_t;
