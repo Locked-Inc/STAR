@@ -53,31 +53,8 @@ static const float s_mv_to_v_divisor = 1000.0f;
  * =============================================================================
  */
 
-/**
- * @brief Check if current limit is exceeded
- *
- * @param[in] handle Pointer to DRV8243 handle
- *
- * @return k_rx_ok if within limit, k_rx_err_invalid_state if exceeded
- */
 static rx_err_t internal_drv8243_check_current_limit(rx_drv8243_handle_t* handle);
-
-/**
- * @brief Configure nFAULT pin as input with pull-up
- *
- * @param[in] handle Pointer to DRV8243 handle
- *
- * @return k_rx_ok on success
- */
 static rx_err_t internal_drv8243_configure_fault_pin(rx_drv8243_handle_t* handle);
-
-/**
- * @brief Get PORT register base address
- *
- * @param[in] port Port number (0-9, J=10)
- *
- * @return Pointer to PORT register or NULL
- */
 static volatile PORT_Type* internal_get_port_base(uint8_t port);
 
 /* =============================================================================
@@ -340,6 +317,17 @@ rx_err_t rx_drv8243_set_current_limit(rx_drv8243_handle_t* handle, uint16_t limi
  * =============================================================================
  */
 
+/**
+ * @brief Check if current limit is exceeded
+ *
+ * Reads the motor current via IPROPI ADC and compares against the configured
+ * current limit. Used for software current limiting protection.
+ *
+ * @param[in] handle Pointer to DRV8243 handle
+ *
+ * @return k_rx_ok if within limit
+ * @return k_rx_err_invalid_state if current exceeds limit
+ */
 static rx_err_t internal_drv8243_check_current_limit(rx_drv8243_handle_t* handle)
 {
   float    current_ma;
@@ -357,6 +345,17 @@ static rx_err_t internal_drv8243_check_current_limit(rx_drv8243_handle_t* handle
   return k_rx_ok;
 }
 
+/**
+ * @brief Configure nFAULT pin as input with pull-up
+ *
+ * Configures the specified GPIO pin to monitor the DRV8243 nFAULT signal.
+ * The pin is set as input with internal pull-up enabled (fault signal is active low).
+ *
+ * @param[in] handle Pointer to DRV8243 handle
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if invalid port number
+ */
 static rx_err_t internal_drv8243_configure_fault_pin(rx_drv8243_handle_t* handle)
 {
   volatile PORT_Type* port = internal_get_port_base(handle->port_nfault);
@@ -374,6 +373,17 @@ static rx_err_t internal_drv8243_configure_fault_pin(rx_drv8243_handle_t* handle
   return k_rx_ok;
 }
 
+/**
+ * @brief Get PORT register base address
+ *
+ * Returns the base address of the PORT register structure for the specified
+ * port number. Supports decimal ports (0-9) and port J (10).
+ *
+ * @param[in] port Port number (0-9 for PORT0-PORT9, 10 for PORTJ)
+ *
+ * @return Pointer to PORT register structure
+ * @return NULL if port number is invalid
+ */
 static volatile PORT_Type* internal_get_port_base(uint8_t port)
 {
   switch (port) {
