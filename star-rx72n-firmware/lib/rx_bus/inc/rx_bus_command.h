@@ -87,9 +87,9 @@ typedef rx_err_t (*rx_bus_command_execute_fn)(rx_bus_config_t* bus, void* data);
  * Command design pattern.
  */
 typedef struct rx_bus_command {
-  rx_bus_command_execute_fn execute; /* Command execution function */
-  void*                     data;    /* Command-specific data */
-  rx_err_t                  result;  /* Execution result (output) */
+  rx_bus_command_execute_fn execute; /**< Command execution function */
+  void*                     data;    /**< Command-specific data */
+  rx_err_t                  result;  /**< Execution result (output) */
 } rx_bus_command_t;
 
 /* =============================================================================
