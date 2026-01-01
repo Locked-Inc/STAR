@@ -1,4 +1,4 @@
-/* src/rx_pid.c */
+/* lib/rx_pid/src/rx_pid.c */
 
 /**
  * @file rx_pid.c
