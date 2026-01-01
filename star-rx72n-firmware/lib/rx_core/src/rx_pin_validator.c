@@ -5,6 +5,9 @@
  * @brief Pin Validator Concrete Implementation
  *
  * Implements the rx_pin_interface_t with pin validation and reservation tracking.
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "rx_pin_validator.h"
@@ -12,6 +15,7 @@
 #include <string.h>
 
 #include "rx_check.h"
+#include "rx_gpio_constants.h"
 #include "rx_log.h"
 
 /* =============================================================================
@@ -28,15 +32,15 @@
  */
 static uint8_t internal_port_to_index(uint8_t port)
 {
-  if (port <= 9) {
+  if (port <= k_max_decimal_port) {
     return port; /* Ports 0-9 map directly */
   }
 
-  if (port >= 0xA && port <= 0x10) {
-    return (port - 0xA) + 10; /* Ports A-G (0xA-0x10) map to 10-16 */
+  if (port >= k_hex_port_start && port <= k_hex_port_end) {
+    return (port - k_hex_port_start) + k_hex_port_offset; /* Ports A-G (0xA-0x10) map to 10-16 */
   }
 
-  return 0xFF; /* Invalid port */
+  return k_invalid_port; /* Invalid port */
 }
 
 /**
@@ -49,7 +53,7 @@ static uint8_t internal_port_to_index(uint8_t port)
 static rx_err_t internal_validate_port(uint8_t port)
 {
   uint8_t index = internal_port_to_index(port);
-  if (index == 0xFF) {
+  if (index == k_invalid_port) {
     return k_rx_err_gpio_invalid_port;
   }
   return k_rx_ok;
@@ -64,7 +68,7 @@ static rx_err_t internal_validate_port(uint8_t port)
  */
 static rx_err_t internal_validate_pin(uint8_t pin)
 {
-  if (pin >= k_pin_validator_max_pins) {
+  if (pin >= k_pins_per_port) {
     return k_rx_err_gpio_invalid_pin;
   }
   return k_rx_ok;

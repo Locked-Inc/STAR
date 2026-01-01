@@ -6,6 +6,9 @@
  *
  * Implements the rx_error_interface_t with error tracking, retry logic,
  * and exponential backoff.
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "rx_error_handler.h"

@@ -5,8 +5,8 @@
  * Mock implementation of rx_time_interface_t for testing.
  * Allows tests to control time progression without real delays.
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "mock_time.h"

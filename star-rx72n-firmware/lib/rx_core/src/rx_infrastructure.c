@@ -3,12 +3,16 @@
 /**
  * @file rx_infrastructure.c
  * @brief Global Infrastructure Initialization Implementation
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "rx_infrastructure.h"
 
 #include "rx_check.h"
 #include "rx_error_handler.h"
+#include "rx_gpio_constants.h"
 #include "rx_log.h"
 #include "rx_pin_validator.h"
 
@@ -58,9 +62,9 @@ rx_err_t rx_infrastructure_init(void)
 
   /* Initialize error handler */
   rx_err_t err = error_handler_init(&s_global_error_handler,
-                                    3,     /* max_retries */
-                                    100,   /* initial_backoff_ms */
-                                    5000); /* max_backoff_ms */
+                                    k_error_handler_default_max_retries,
+                                    k_error_handler_default_initial_backoff_ms,
+                                    k_error_handler_default_max_backoff_ms);
   if (err != k_rx_ok) {
     rx_log_error("INFRA", "Failed to initialize error handler");
     return err;
