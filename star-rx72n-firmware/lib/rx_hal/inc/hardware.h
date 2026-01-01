@@ -1,4 +1,4 @@
-/* include/hardware.h */
+/* lib/rx_hal/inc/hardware.h */
 
 /**
  * @file hardware.h
@@ -6,6 +6,9 @@
  *
  * Public interface for RX72N hardware drivers.
  * Includes core infrastructure (error codes, logging, interfaces).
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef STAR_RX72N_HARDWARE_H

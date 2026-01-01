@@ -1,4 +1,4 @@
-/* include/rx_cmt.h */
+/* lib/rx_hal/inc/rx_cmt.h */
 
 /**
  * @file rx_cmt.h
