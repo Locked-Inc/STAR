@@ -1,7 +1,9 @@
+/* lib/rx_usb/inc/rx_usb.h */
+
 /**
  * @file rx_usb.h
  * @brief USB CDC-ACM Driver for RX72N
- *
+ * @details
  * This module provides a USB CDC-ACM (Communications Device Class - Abstract
  * Control Model) driver for the RX72N USB0 peripheral. When connected to a
  * host (e.g., Raspberry Pi 5), the device appears as a virtual serial port
@@ -41,6 +43,9 @@
  * - RX72N Group User's Manual: Hardware, Section 32 (USB 2.0 Module)
  * - USB CDC-ACM Specification (USB Class Definitions for Communications)
  * - Renesas RX Family USB Basic Driver Application Note (R01AN2025)
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef STAR_RX_USB_H
@@ -100,7 +105,7 @@ typedef void (*rx_usb_callback_t)(rx_usb_event_t event, void* context);
  */
 typedef struct {
   rx_usb_callback_t callback; /**< Event callback function (optional) */
-  void*             context;  /**< User context for callback */
+  void*             context;  /**< User context for callback */ /* TODO: change context to ctx to be consistant */
 } rx_usb_config_t;
 
 /**

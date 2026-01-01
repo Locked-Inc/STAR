@@ -1,7 +1,9 @@
+/* lib/rx_usb/src/rx_usb_cdc.c */
+
 /**
  * @file rx_usb_cdc.c
  * @brief USB CDC-ACM Class Implementation for RX72N
- *
+ * @details
  * This file implements the USB Communications Device Class (CDC)
  * with Abstract Control Model (ACM) for virtual COM port functionality.
  *
@@ -15,6 +17,9 @@
  * - SET_LINE_CODING (0x20)
  * - GET_LINE_CODING (0x21)
  * - SET_CONTROL_LINE_STATE (0x22)
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include <string.h>
@@ -30,41 +35,50 @@
 
 static const char* s_tag = "USB_CDC";
 
-/* USB Descriptor Types */
-#define USB_DESC_TYPE_DEVICE        0x01
-#define USB_DESC_TYPE_CONFIGURATION 0x02
-#define USB_DESC_TYPE_STRING        0x03
-#define USB_DESC_TYPE_INTERFACE     0x04
-#define USB_DESC_TYPE_ENDPOINT      0x05
-#define USB_DESC_TYPE_CS_INTERFACE  0x24
+/** @brief USB Descriptor Types */
+typedef enum {
+  k_usb_desc_type_device        = 0x01, /**< Device descriptor */
+  k_usb_desc_type_configuration = 0x02, /**< Configuration descriptor */
+  k_usb_desc_type_string        = 0x03, /**< String descriptor */
+  k_usb_desc_type_interface     = 0x04, /**< Interface descriptor */
+  k_usb_desc_type_endpoint      = 0x05, /**< Endpoint descriptor */
+  k_usb_desc_type_cs_interface  = 0x24, /**< Class-specific interface descriptor */
+} usb_descriptor_type_t;
 
-/* USB Class Codes */
-#define USB_CLASS_CDC      0x02
-#define USB_CLASS_CDC_DATA 0x0A
-#define USB_SUBCLASS_ACM   0x02
-#define USB_PROTOCOL_AT    0x01
+/** @brief USB Class Codes */
+typedef enum {
+  k_usb_class_cdc      = 0x02, /**< Communications Device Class */
+  k_usb_class_cdc_data = 0x0A, /**< CDC Data Class */
+  k_usb_subclass_acm   = 0x02, /**< Abstract Control Model subclass */
+  k_usb_protocol_at    = 0x01, /**< AT command protocol */
+} usb_class_code_t;
 
-/* CDC Class Request Codes */
-#define CDC_SET_LINE_CODING        0x20
-#define CDC_GET_LINE_CODING        0x21
-#define CDC_SET_CONTROL_LINE_STATE 0x22
+/** @brief CDC Class Request Codes */
+typedef enum {
+  k_cdc_set_line_coding        = 0x20, /**< Set line coding (baud rate, parity, etc.) */
+  k_cdc_get_line_coding        = 0x21, /**< Get current line coding */
+  k_cdc_set_control_line_state = 0x22, /**< Set control line state (DTR/RTS) */
+} cdc_request_code_t;
 
-/* USB Standard Request Codes */
-#define USB_REQ_GET_STATUS        0x00
-#define USB_REQ_CLEAR_FEATURE     0x01
-#define USB_REQ_SET_FEATURE       0x03
-#define USB_REQ_SET_ADDRESS       0x05
-#define USB_REQ_GET_DESCRIPTOR    0x06
-#define USB_REQ_SET_DESCRIPTOR    0x07
-#define USB_REQ_GET_CONFIGURATION 0x08
-#define USB_REQ_SET_CONFIGURATION 0x09
-#define USB_REQ_GET_INTERFACE     0x0A
-#define USB_REQ_SET_INTERFACE     0x0B
+/** @brief USB Standard Request Codes */
+typedef enum {
+  k_usb_req_get_status        = 0x00, /**< Get device/interface/endpoint status */
+  k_usb_req_clear_feature     = 0x01, /**< Clear feature */
+  k_usb_req_set_feature       = 0x03, /**< Set feature */
+  k_usb_req_set_address       = 0x05, /**< Set device address */
+  k_usb_req_get_descriptor    = 0x06, /**< Get descriptor */
+  k_usb_req_set_descriptor    = 0x07, /**< Set descriptor */
+  k_usb_req_get_configuration = 0x08, /**< Get configuration */
+  k_usb_req_set_configuration = 0x09, /**< Set configuration */
+  k_usb_req_get_interface     = 0x0A, /**< Get interface */
+  k_usb_req_set_interface     = 0x0B, /**< Set interface */
+} usb_request_code_t;
 
-/* Vendor ID and Product ID */
-/* Using Renesas test VID/PID - should be changed for production */
-#define USB_VID 0x045B /* Renesas Electronics */
-#define USB_PID 0x0234 /* CDC-ACM device */
+/** @brief Vendor and Product IDs */
+typedef enum {
+  k_usb_vid = 0x045B, /**< Vendor ID: Renesas Electronics (test VID) */
+  k_usb_pid = 0x0234, /**< Product ID: CDC-ACM device (test PID) */
+} usb_device_id_t;
 
 /* =============================================================================
  * USB Descriptors
@@ -74,17 +88,17 @@ static const char* s_tag = "USB_CDC";
 /* Device Descriptor */
 static const uint8_t s_device_desc[] = {
   18,                   /* bLength */
-  USB_DESC_TYPE_DEVICE, /* bDescriptorType */
+  k_usb_desc_type_device, /* bDescriptorType */
   0x00,
   0x02,             /* bcdUSB = 2.00 */
-  USB_CLASS_CDC,    /* bDeviceClass */
+  k_usb_class_cdc,    /* bDeviceClass */
   0x00,             /* bDeviceSubClass */
   0x00,             /* bDeviceProtocol */
   64,               /* bMaxPacketSize0 */
-  (USB_VID & 0xFF), /* idVendor (low) */
-  (USB_VID >> 8),   /* idVendor (high) */
-  (USB_PID & 0xFF), /* idProduct (low) */
-  (USB_PID >> 8),   /* idProduct (high) */
+  (k_usb_vid & 0xFF), /* idVendor (low) */
+  (k_usb_vid >> 8),   /* idVendor (high) */
+  (k_usb_pid & 0xFF), /* idProduct (low) */
+  (k_usb_pid >> 8),   /* idProduct (high) */
   0x00,
   0x01, /* bcdDevice = 1.00 */
   1,    /* iManufacturer */
@@ -97,7 +111,7 @@ static const uint8_t s_device_desc[] = {
 static const uint8_t s_config_desc[] = {
   /* Configuration Descriptor */
   9,                           /* bLength */
-  USB_DESC_TYPE_CONFIGURATION, /* bDescriptorType */
+  k_usb_desc_type_configuration, /* bDescriptorType */
   67,
   0,    /* wTotalLength (67 bytes) */
   2,    /* bNumInterfaces */
@@ -108,45 +122,45 @@ static const uint8_t s_config_desc[] = {
 
   /* Interface 0: CDC Control Interface */
   9,                       /* bLength */
-  USB_DESC_TYPE_INTERFACE, /* bDescriptorType */
+  k_usb_desc_type_interface, /* bDescriptorType */
   0,                       /* bInterfaceNumber */
   0,                       /* bAlternateSetting */
   1,                       /* bNumEndpoints */
-  USB_CLASS_CDC,           /* bInterfaceClass */
-  USB_SUBCLASS_ACM,        /* bInterfaceSubClass */
-  USB_PROTOCOL_AT,         /* bInterfaceProtocol */
+  k_usb_class_cdc,           /* bInterfaceClass */
+  k_usb_subclass_acm,        /* bInterfaceSubClass */
+  k_usb_protocol_at,         /* bInterfaceProtocol */
   0,                       /* iInterface */
 
   /* CDC Header Functional Descriptor */
   5,                          /* bLength */
-  USB_DESC_TYPE_CS_INTERFACE, /* bDescriptorType */
+  k_usb_desc_type_cs_interface, /* bDescriptorType */
   0x00,                       /* bDescriptorSubtype (Header) */
   0x10,
   0x01, /* bcdCDC = 1.10 */
 
   /* CDC Call Management Functional Descriptor */
   5,                          /* bLength */
-  USB_DESC_TYPE_CS_INTERFACE, /* bDescriptorType */
+  k_usb_desc_type_cs_interface, /* bDescriptorType */
   0x01,                       /* bDescriptorSubtype (Call Management) */
   0x00,                       /* bmCapabilities */
   1,                          /* bDataInterface */
 
   /* CDC ACM Functional Descriptor */
   4,                          /* bLength */
-  USB_DESC_TYPE_CS_INTERFACE, /* bDescriptorType */
+  k_usb_desc_type_cs_interface, /* bDescriptorType */
   0x02,                       /* bDescriptorSubtype (ACM) */
   0x02,                       /* bmCapabilities (line coding, serial state) */
 
   /* CDC Union Functional Descriptor */
   5,                          /* bLength */
-  USB_DESC_TYPE_CS_INTERFACE, /* bDescriptorType */
+  k_usb_desc_type_cs_interface, /* bDescriptorType */
   0x06,                       /* bDescriptorSubtype (Union) */
   0,                          /* bControlInterface */
   1,                          /* bSubordinateInterface0 */
 
   /* Endpoint 3: Interrupt IN (notifications) */
   7,                      /* bLength */
-  USB_DESC_TYPE_ENDPOINT, /* bDescriptorType */
+  k_usb_desc_type_endpoint, /* bDescriptorType */
   0x83,                   /* bEndpointAddress (EP3 IN) */
   0x03,                   /* bmAttributes (Interrupt) */
   8,
@@ -155,18 +169,18 @@ static const uint8_t s_config_desc[] = {
 
   /* Interface 1: CDC Data Interface */
   9,                       /* bLength */
-  USB_DESC_TYPE_INTERFACE, /* bDescriptorType */
+  k_usb_desc_type_interface, /* bDescriptorType */
   1,                       /* bInterfaceNumber */
   0,                       /* bAlternateSetting */
   2,                       /* bNumEndpoints */
-  USB_CLASS_CDC_DATA,      /* bInterfaceClass */
+  k_usb_class_cdc_data,      /* bInterfaceClass */
   0,                       /* bInterfaceSubClass */
   0,                       /* bInterfaceProtocol */
   0,                       /* iInterface */
 
   /* Endpoint 1: Bulk IN (data to host) */
   7,                      /* bLength */
-  USB_DESC_TYPE_ENDPOINT, /* bDescriptorType */
+  k_usb_desc_type_endpoint, /* bDescriptorType */
   0x81,                   /* bEndpointAddress (EP1 IN) */
   0x02,                   /* bmAttributes (Bulk) */
   64,
@@ -175,7 +189,7 @@ static const uint8_t s_config_desc[] = {
 
   /* Endpoint 2: Bulk OUT (data from host) */
   7,                      /* bLength */
-  USB_DESC_TYPE_ENDPOINT, /* bDescriptorType */
+  k_usb_desc_type_endpoint, /* bDescriptorType */
   0x02,                   /* bEndpointAddress (EP2 OUT) */
   0x02,                   /* bmAttributes (Bulk) */
   64,
@@ -186,14 +200,14 @@ static const uint8_t s_config_desc[] = {
 /* String Descriptor 0: Language ID */
 static const uint8_t s_string_langid[] = {
   4,                    /* bLength */
-  USB_DESC_TYPE_STRING, /* bDescriptorType */
+  k_usb_desc_type_string, /* bDescriptorType */
   0x09,
   0x04 /* wLANGID (English US) */
 };
 
 /* String Descriptor 1: Manufacturer */
 static const uint8_t s_string_manufacturer[] = {16,                   /* bLength */
-                                                USB_DESC_TYPE_STRING, /* bDescriptorType */
+                                                k_usb_desc_type_string, /* bDescriptorType */
                                                 'R',
                                                 0,
                                                 'e',
@@ -211,7 +225,7 @@ static const uint8_t s_string_manufacturer[] = {16,                   /* bLength
 
 /* String Descriptor 2: Product */
 static const uint8_t s_string_product[] = {28,                   /* bLength */
-                                           USB_DESC_TYPE_STRING, /* bDescriptorType */
+                                           k_usb_desc_type_string, /* bDescriptorType */
                                            'S',
                                            0,
                                            'T',
@@ -243,7 +257,7 @@ static const uint8_t s_string_product[] = {28,                   /* bLength */
 
 /* String Descriptor 3: Serial Number */
 static const uint8_t s_string_serial[] = {18,                   /* bLength */
-                                          USB_DESC_TYPE_STRING, /* bDescriptorType */
+                                          k_usb_desc_type_string, /* bDescriptorType */
                                           '0',
                                           0,
                                           '0',
@@ -322,15 +336,15 @@ static void internal_handle_get_descriptor(uint16_t wValue, uint16_t wLength)
   uint8_t desc_index = wValue & 0xFF;
 
   switch (desc_type) {
-    case USB_DESC_TYPE_DEVICE:
+    case k_usb_desc_type_device:
       internal_send_descriptor(s_device_desc, sizeof(s_device_desc), wLength);
       break;
 
-    case USB_DESC_TYPE_CONFIGURATION:
+    case k_usb_desc_type_configuration:
       internal_send_descriptor(s_config_desc, sizeof(s_config_desc), wLength);
       break;
 
-    case USB_DESC_TYPE_STRING:
+    case k_usb_desc_type_string:
       switch (desc_index) {
         case 0:
           internal_send_descriptor(s_string_langid, sizeof(s_string_langid), wLength);
@@ -522,19 +536,19 @@ void rx_usb_cdc_handle_setup(void)
   if (type == 0x00) {
     /* Standard request */
     switch (bRequest) {
-      case USB_REQ_GET_DESCRIPTOR:
+      case k_usb_req_get_descriptor:
         internal_handle_get_descriptor(wValue, wLength);
         break;
 
-      case USB_REQ_SET_ADDRESS:
+      case k_usb_req_set_address:
         internal_handle_set_address(wValue);
         break;
 
-      case USB_REQ_SET_CONFIGURATION:
+      case k_usb_req_set_configuration:
         internal_handle_set_configuration(wValue);
         break;
 
-      case USB_REQ_GET_CONFIGURATION:
+      case k_usb_req_get_configuration:
         /* Return current configuration (1 = configured, 0 = not) */
         {
           uint8_t cfg = (rx_usb_get_state() == k_usb_state_configured) ? 1 : 0;
@@ -550,15 +564,15 @@ void rx_usb_cdc_handle_setup(void)
   } else if (type == 0x20) {
     /* Class request (CDC) */
     switch (bRequest) {
-      case CDC_SET_LINE_CODING:
+      case k_cdc_set_line_coding:
         internal_handle_set_line_coding();
         break;
 
-      case CDC_GET_LINE_CODING:
+      case k_cdc_get_line_coding:
         internal_handle_get_line_coding();
         break;
 
-      case CDC_SET_CONTROL_LINE_STATE:
+      case k_cdc_set_control_line_state:
         internal_handle_set_control_line_state(wValue);
         break;
 
