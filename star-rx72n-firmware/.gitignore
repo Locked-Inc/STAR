@@ -1,6 +1,7 @@
 # Build artifacts
 build/
 cmake-build-*/
+Testing/
 *.elf
 *.hex
 *.bin
