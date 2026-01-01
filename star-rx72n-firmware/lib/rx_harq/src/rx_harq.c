@@ -22,7 +22,7 @@
 rx_err_t rx_chase_combiner_init(rx_chase_combiner_t* combiner, uint8_t max_combines)
 {
   if (combiner == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Clear accumulator */
@@ -33,40 +33,40 @@ rx_err_t rx_chase_combiner_init(rx_chase_combiner_t* combiner, uint8_t max_combi
   combiner->max_combines = (max_combines > 0) ? max_combines : k_harq_default_combines;
   combiner->initialized  = 1;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_chase_combiner_deinit(rx_chase_combiner_t* combiner)
 {
   if (combiner == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   combiner->initialized = 0;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t
 rx_chase_combiner_add(rx_chase_combiner_t* combiner, const rx_soft_bit_t* soft_bits, uint32_t len)
 {
   if (combiner == NULL || soft_bits == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (combiner->initialized == 0) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   if (len == 0) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (len > RX_HARQ_SOFT_BUFFER_SIZE) {
-    return RX_ERR_INVALID_SIZE;
+    return k_rx_err_invalid_size;
   }
 
   if (combiner->count >= combiner->max_combines) {
-    return RX_ERR_BUSY;
+    return k_rx_err_busy;
   }
 
   /* First transmission sets the expected length */
@@ -75,7 +75,7 @@ rx_chase_combiner_add(rx_chase_combiner_t* combiner, const rx_soft_bit_t* soft_b
     /* Clear accumulator for new frame */
     memset(combiner->accumulated, 0, len * sizeof(int16_t));
   } else if (len != combiner->expected_len) {
-    return RX_ERR_INVALID_SIZE;
+    return k_rx_err_invalid_size;
   }
 
   /* Element-wise addition (accumulate) */
@@ -84,22 +84,22 @@ rx_chase_combiner_add(rx_chase_combiner_t* combiner, const rx_soft_bit_t* soft_b
   }
 
   combiner->count++;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t
 rx_chase_combiner_combined(rx_chase_combiner_t* combiner, rx_soft_bit_t* output, uint32_t* len)
 {
   if (combiner == NULL || output == NULL || len == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (combiner->initialized == 0) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   if (combiner->count == 0 || combiner->expected_len == 0) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Clamp accumulated values to SoftBit range [-127, +127] */
@@ -115,7 +115,7 @@ rx_chase_combiner_combined(rx_chase_combiner_t* combiner, rx_soft_bit_t* output,
   }
 
   *len = combiner->expected_len;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 void rx_chase_combiner_reset(rx_chase_combiner_t* combiner)
@@ -154,7 +154,7 @@ uint8_t rx_chase_combiner_count(const rx_chase_combiner_t* combiner)
 rx_err_t rx_harq_init(rx_harq_handle_t* harq, const rx_harq_config_t* config)
 {
   if (harq == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   rx_err_t err;
@@ -178,34 +178,34 @@ rx_err_t rx_harq_init(rx_harq_handle_t* harq, const rx_harq_config_t* config)
   uint8_t max_combines =
     (config != NULL && config->max_combines > 0) ? config->max_combines : k_harq_default_combines;
   err = rx_chase_combiner_init(&harq->combiner, max_combines);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
   /* Initialize FEC encoder if enabled */
   if (harq->fec_enabled) {
     err = rx_fec_encoder_init(&harq->encoder);
-    if (err != RX_OK) {
+    if (err != k_rx_ok) {
       return err;
     }
 
     /* Initialize FEC decoder with survivors buffer */
     err =
       rx_fec_decoder_init(&harq->decoder, harq->decoder_survivors, RX_HARQ_SOFT_BUFFER_SIZE / 2);
-    if (err != RX_OK) {
+    if (err != k_rx_ok) {
       rx_fec_encoder_deinit(&harq->encoder);
       return err;
     }
   }
 
   harq->initialized = 1;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_harq_deinit(rx_harq_handle_t* harq)
 {
   if (harq == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (harq->fec_enabled) {
@@ -216,7 +216,7 @@ rx_err_t rx_harq_deinit(rx_harq_handle_t* harq)
   rx_chase_combiner_deinit(&harq->combiner);
 
   harq->initialized = 0;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_harq_state_t rx_harq_get_state(const rx_harq_handle_t* harq)
@@ -245,22 +245,22 @@ rx_err_t rx_harq_encode(rx_harq_handle_t* harq,
                         uint32_t*         output_len)
 {
   if (harq == NULL || payload == NULL || output == NULL || output_len == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (harq->initialized == 0) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   if (payload_len == 0 || payload_len > k_harq_max_payload) {
-    return RX_ERR_INVALID_SIZE;
+    return k_rx_err_invalid_size;
   }
 
   /* If FEC is disabled, just copy payload */
   if (harq->fec_enabled == 0) {
     memcpy(output, payload, payload_len);
     *output_len = payload_len;
-    return RX_OK;
+    return k_rx_ok;
   }
 
   /* FEC encode */
@@ -316,22 +316,22 @@ static void internal_soft_to_hard(const rx_soft_bit_t* soft_bits,
  * @param[in,out] harq   HARQ handle
  * @param[in]     result Decode result from FEC decoder
  *
- * @return RX_OK on success, error code otherwise
+ * @return k_rx_ok on success, error code otherwise
  */
 static rx_err_t internal_handle_fec_result(rx_harq_handle_t* harq, rx_err_t result)
 {
   harq->retry_count++;
 
-  if (result == RX_OK) {
+  if (result == k_rx_ok) {
     rx_chase_combiner_reset(&harq->combiner);
     harq->state = k_harq_state_idle;
-    return RX_OK;
+    return k_rx_ok;
   }
 
   /* Decode failed - check if we can retry */
   if (rx_chase_combiner_can_add(&harq->combiner) && harq->retry_count < harq->max_retries) {
     harq->state = k_harq_state_combining;
-    return RX_ERR_PROTOCOL_ERROR; /* Need more retransmissions */
+    return k_rx_err_protocol_error; /* Need more retransmissions */
   }
 
   /* Max retries reached */
@@ -353,18 +353,18 @@ rx_err_t rx_harq_decode(rx_harq_handle_t*    harq,
                         uint32_t*            output_len)
 {
   if (harq == NULL || soft_bits == NULL || output == NULL || output_len == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
   if (harq->initialized == 0) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
   if (soft_len == 0) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Add soft bits to combiner */
   rx_err_t err = rx_chase_combiner_add(&harq->combiner, soft_bits, soft_len);
-  if (err != RX_OK && err != RX_ERR_BUSY) {
+  if (err != k_rx_ok && err != k_rx_err_busy) {
     return err;
   }
 
@@ -372,7 +372,7 @@ rx_err_t rx_harq_decode(rx_harq_handle_t*    harq,
   uint32_t combined_len;
 
   err = rx_chase_combiner_combined(&harq->combiner, harq->decode_buffer, &combined_len);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
@@ -386,7 +386,7 @@ rx_err_t rx_harq_decode(rx_harq_handle_t*    harq,
     harq->retry_count++;
     rx_chase_combiner_reset(&harq->combiner);
     harq->state = k_harq_state_idle;
-    return RX_OK;
+    return k_rx_ok;
   }
 
   /* FEC path: decode combined soft bits */

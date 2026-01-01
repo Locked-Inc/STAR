@@ -101,17 +101,17 @@ rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
 
   if ((int32_t)channel >= k_encoder_max_channels) {
     RX_LOG_ERROR(s_tag, "Error occurred");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (config->counts_per_rev == 0) {
     RX_LOG_ERROR(s_tag, "Invalid counts per revolution");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   volatile MTU_Channel_Type* mtu = internal_get_mtu_base(channel);
   if (mtu == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   RX_LOG_INFO(s_tag, "Info");
@@ -164,7 +164,7 @@ rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
 
   RX_LOG_INFO(s_tag, "Info");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_encoder_read_raw(rx_mtu_channel_t channel, uint16_t* count)
@@ -172,16 +172,16 @@ rx_err_t rx_encoder_read_raw(rx_mtu_channel_t channel, uint16_t* count)
   RX_CHECK_NULL_PTR(count, s_tag, "count pointer is NULL");
 
   if ((int32_t)channel >= k_encoder_max_channels || !s_encoder_initialized[channel]) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   volatile MTU_Channel_Type* mtu = internal_get_mtu_base(channel);
   if (mtu == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   *count = mtu->TCNT;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_encoder_read_count(rx_mtu_channel_t channel, rx_encoder_state_t* state)
@@ -189,12 +189,12 @@ rx_err_t rx_encoder_read_count(rx_mtu_channel_t channel, rx_encoder_state_t* sta
   RX_CHECK_NULL_PTR(state, s_tag, "state pointer is NULL");
 
   if ((int32_t)channel >= k_encoder_max_channels || !s_encoder_initialized[channel]) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   volatile MTU_Channel_Type* mtu = internal_get_mtu_base(channel);
   if (mtu == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Read current counter value */
@@ -236,7 +236,7 @@ rx_err_t rx_encoder_read_count(rx_mtu_channel_t channel, rx_encoder_state_t* sta
   /* Copy to output */
   *state = s_encoder_state[channel];
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_encoder_read_velocity(rx_mtu_channel_t channel, float delta_time_s, float* velocity_rps)
@@ -244,18 +244,18 @@ rx_err_t rx_encoder_read_velocity(rx_mtu_channel_t channel, float delta_time_s, 
   RX_CHECK_NULL_PTR(velocity_rps, s_tag, "velocity_rps pointer is NULL");
 
   if ((int32_t)channel >= k_encoder_max_channels || !s_encoder_initialized[channel]) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   if (delta_time_s <= 0.0f) {
     RX_LOG_ERROR(s_tag, "Error occurred");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Read current count */
   rx_encoder_state_t state;
   rx_err_t           err = rx_encoder_read_count(channel, &state);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
@@ -268,18 +268,18 @@ rx_err_t rx_encoder_read_velocity(rx_mtu_channel_t channel, float delta_time_s, 
   float    delta_revs     = (float)delta_count / counts_per_rev;
   *velocity_rps           = delta_revs / delta_time_s;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_encoder_reset(rx_mtu_channel_t channel)
 {
   if ((int32_t)channel >= k_encoder_max_channels || !s_encoder_initialized[channel]) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   volatile MTU_Channel_Type* mtu = internal_get_mtu_base(channel);
   if (mtu == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Reset hardware counter */
@@ -292,18 +292,18 @@ rx_err_t rx_encoder_reset(rx_mtu_channel_t channel)
   s_encoder_state[channel].position_deg   = 0.0f;
   s_last_count[channel]                   = 0;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_encoder_set_count(rx_mtu_channel_t channel, int32_t count)
 {
   if ((int32_t)channel >= k_encoder_max_channels || !s_encoder_initialized[channel]) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   volatile MTU_Channel_Type* mtu = internal_get_mtu_base(channel);
   if (mtu == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Set hardware counter (limited to 16-bit) */
@@ -321,13 +321,13 @@ rx_err_t rx_encoder_set_count(rx_mtu_channel_t channel, int32_t count)
   int32_t remainder_counts              = count % counts_per_rev;
   s_encoder_state[channel].position_deg = (float)(remainder_counts * 360.0f) / counts_per_rev;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_encoder_deinit(rx_mtu_channel_t channel)
 {
   if ((int32_t)channel >= k_encoder_max_channels) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Stop timer */
@@ -339,5 +339,5 @@ rx_err_t rx_encoder_deinit(rx_mtu_channel_t channel)
 
   RX_LOG_INFO(s_tag, "MTU encoder deinitialized");
 
-  return RX_OK;
+  return k_rx_ok;
 }

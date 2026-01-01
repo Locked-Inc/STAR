@@ -135,13 +135,13 @@ static void internal_mpc_lock(void)
  * @param[in] pin Pin number (0-7)
  * @param[in] value Value to write to PFS register
  *
- * @return RX_OK on success, error code on failure
+ * @return k_rx_ok on success, error code on failure
  */
 static rx_err_t internal_write_pfs(uint8_t port, uint8_t pin, uint8_t value)
 {
   volatile uint8_t* pfs_reg = internal_get_pfs_register(port, pin);
   if (pfs_reg == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Unlock, write, lock */
@@ -149,7 +149,7 @@ static rx_err_t internal_write_pfs(uint8_t port, uint8_t pin, uint8_t value)
   *pfs_reg = value;
   internal_mpc_lock();
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -167,7 +167,7 @@ rx_err_t rx_mpc_set_peripheral(uint8_t port, uint8_t pin, uint8_t psel)
 {
   if (psel > 0x1F) {
     RX_LOG_ERROR(s_tag, "Error occurred");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Peripheral mode: PSEL = specified, ISEL = 0, ASEL = 0 */

@@ -36,11 +36,11 @@ extern "C" {
  * @param[in] manager Bus manager instance
  * @param[in] bus_name I2C bus name
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if manager or bus_name is NULL
- * @return RX_ERR_NOT_FOUND if bus not found
- * @return RX_ERR_INVALID_ARG if bus is not I2C type
- * @return RX_ERR_TIMEOUT if mutex timeout
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if manager or bus_name is NULL
+ * @return k_rx_err_not_found if bus not found
+ * @return k_rx_err_invalid_arg if bus is not I2C type
+ * @return k_rx_err_timeout if mutex timeout
  */
 rx_err_t rx_bus_i2c_init(rx_bus_manager_t* manager, const char* bus_name);
 
@@ -52,12 +52,12 @@ rx_err_t rx_bus_i2c_init(rx_bus_manager_t* manager, const char* bus_name);
  * @param[in] data Pointer to data to write
  * @param[in] length Number of bytes to write
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if manager, bus_name, or data is NULL
- * @return RX_ERR_NOT_FOUND if bus not found
- * @return RX_ERR_INVALID_STATE if bus not initialized
- * @return RX_ERR_TIMEOUT if I2C timeout or mutex timeout
- * @return RX_ERR_NACK if device NACK received
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if manager, bus_name, or data is NULL
+ * @return k_rx_err_not_found if bus not found
+ * @return k_rx_err_invalid_state if bus not initialized
+ * @return k_rx_err_timeout if I2C timeout or mutex timeout
+ * @return k_rx_err_nack if device NACK received
  */
 rx_err_t rx_bus_i2c_write(rx_bus_manager_t* manager,
                           const char*       bus_name,
@@ -72,12 +72,12 @@ rx_err_t rx_bus_i2c_write(rx_bus_manager_t* manager,
  * @param[out] data Pointer to buffer for received data
  * @param[in] length Number of bytes to read
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if manager, bus_name, or data is NULL
- * @return RX_ERR_NOT_FOUND if bus not found
- * @return RX_ERR_INVALID_STATE if bus not initialized
- * @return RX_ERR_TIMEOUT if I2C timeout or mutex timeout
- * @return RX_ERR_NACK if device NACK received
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if manager, bus_name, or data is NULL
+ * @return k_rx_err_not_found if bus not found
+ * @return k_rx_err_invalid_state if bus not initialized
+ * @return k_rx_err_timeout if I2C timeout or mutex timeout
+ * @return k_rx_err_nack if device NACK received
  */
 rx_err_t
 rx_bus_i2c_read(rx_bus_manager_t* manager, const char* bus_name, uint8_t* data, uint16_t length);
@@ -94,12 +94,12 @@ rx_bus_i2c_read(rx_bus_manager_t* manager, const char* bus_name, uint8_t* data, 
  * @param[out] read_data Pointer to buffer for received data
  * @param[in] read_length Number of bytes to read
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if any pointer parameter is NULL
- * @return RX_ERR_NOT_FOUND if bus not found
- * @return RX_ERR_INVALID_STATE if bus not initialized
- * @return RX_ERR_TIMEOUT if I2C timeout or mutex timeout
- * @return RX_ERR_NACK if device NACK received
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if any pointer parameter is NULL
+ * @return k_rx_err_not_found if bus not found
+ * @return k_rx_err_invalid_state if bus not initialized
+ * @return k_rx_err_timeout if I2C timeout or mutex timeout
+ * @return k_rx_err_nack if device NACK received
  */
 rx_err_t rx_bus_i2c_write_read(rx_bus_manager_t* manager,
                                const char*       bus_name,

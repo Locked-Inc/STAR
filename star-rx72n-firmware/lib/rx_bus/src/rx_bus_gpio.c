@@ -74,7 +74,7 @@ typedef struct {
  * @param[in] bus_config Bus configuration
  * @param[in] user_ctx User context (gpio_init_ctx_t*)
  *
- * @return RX_OK on success, error code on failure
+ * @return k_rx_ok on success, error code on failure
  */
 static rx_err_t internal_gpio_init_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
@@ -83,8 +83,8 @@ static rx_err_t internal_gpio_init_callback(rx_bus_config_t* bus_config, void* u
   /* Validate bus type */
   if (bus_config->type != k_bus_type_gpio) {
     RX_LOG_ERROR(s_tag, "Bus is not GPIO type");
-    ctx->result = RX_ERR_INVALID_ARG;
-    return RX_ERR_INVALID_ARG;
+    ctx->result = k_rx_err_invalid_arg;
+    return k_rx_err_invalid_arg;
   }
 
   /* Initialize GPIO pin */
@@ -95,7 +95,7 @@ static rx_err_t internal_gpio_init_callback(rx_bus_config_t* bus_config, void* u
     err = gpio_set_input(bus_config->proto.gpio.port, bus_config->proto.gpio.pin);
   }
 
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR(s_tag, "GPIO HAL initialization failed");
     ctx->result = err;
     return err;
@@ -104,8 +104,8 @@ static rx_err_t internal_gpio_init_callback(rx_bus_config_t* bus_config, void* u
   /* Mark bus as initialized */
   bus_config->initialized = true;
 
-  ctx->result = RX_OK;
-  return RX_OK;
+  ctx->result = k_rx_ok;
+  return k_rx_ok;
 }
 
 /**
@@ -114,7 +114,7 @@ static rx_err_t internal_gpio_init_callback(rx_bus_config_t* bus_config, void* u
  * @param[in] bus_config Bus configuration
  * @param[in] user_ctx User context (gpio_write_ctx_t*)
  *
- * @return RX_OK on success, error code on failure
+ * @return k_rx_ok on success, error code on failure
  */
 static rx_err_t internal_gpio_write_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
@@ -123,8 +123,8 @@ static rx_err_t internal_gpio_write_callback(rx_bus_config_t* bus_config, void* 
   /* Validate bus is initialized */
   if (!bus_config->initialized) {
     RX_LOG_ERROR(s_tag, "Bus not initialized");
-    ctx->result = RX_ERR_INVALID_STATE;
-    return RX_ERR_INVALID_STATE;
+    ctx->result = k_rx_err_invalid_state;
+    return k_rx_err_invalid_state;
   }
 
   /* Write GPIO value */
@@ -135,14 +135,14 @@ static rx_err_t internal_gpio_write_callback(rx_bus_config_t* bus_config, void* 
     err = gpio_write_low(bus_config->proto.gpio.port, bus_config->proto.gpio.pin);
   }
 
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR(s_tag, "GPIO write failed");
     ctx->result = err;
     return err;
   }
 
-  ctx->result = RX_OK;
-  return RX_OK;
+  ctx->result = k_rx_ok;
+  return k_rx_ok;
 }
 
 /**
@@ -151,7 +151,7 @@ static rx_err_t internal_gpio_write_callback(rx_bus_config_t* bus_config, void* 
  * @param[in] bus_config Bus configuration
  * @param[in] user_ctx User context (gpio_read_ctx_t*)
  *
- * @return RX_OK on success, error code on failure
+ * @return k_rx_ok on success, error code on failure
  */
 static rx_err_t internal_gpio_read_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
@@ -160,21 +160,21 @@ static rx_err_t internal_gpio_read_callback(rx_bus_config_t* bus_config, void* u
   /* Validate bus is initialized */
   if (!bus_config->initialized) {
     RX_LOG_ERROR(s_tag, "Bus not initialized");
-    ctx->result = RX_ERR_INVALID_STATE;
-    return RX_ERR_INVALID_STATE;
+    ctx->result = k_rx_err_invalid_state;
+    return k_rx_err_invalid_state;
   }
 
   /* Read GPIO value */
   rx_err_t err = gpio_read(bus_config->proto.gpio.port, bus_config->proto.gpio.pin, ctx->value);
 
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR(s_tag, "GPIO read failed");
     ctx->result = err;
     return err;
   }
 
-  ctx->result = RX_OK;
-  return RX_OK;
+  ctx->result = k_rx_ok;
+  return k_rx_ok;
 }
 
 /**
@@ -183,7 +183,7 @@ static rx_err_t internal_gpio_read_callback(rx_bus_config_t* bus_config, void* u
  * @param[in] bus_config Bus configuration
  * @param[in] user_ctx User context (gpio_toggle_ctx_t*)
  *
- * @return RX_OK on success, error code on failure
+ * @return k_rx_ok on success, error code on failure
  */
 static rx_err_t internal_gpio_toggle_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
@@ -192,21 +192,21 @@ static rx_err_t internal_gpio_toggle_callback(rx_bus_config_t* bus_config, void*
   /* Validate bus is initialized */
   if (!bus_config->initialized) {
     RX_LOG_ERROR(s_tag, "Bus not initialized");
-    ctx->result = RX_ERR_INVALID_STATE;
-    return RX_ERR_INVALID_STATE;
+    ctx->result = k_rx_err_invalid_state;
+    return k_rx_err_invalid_state;
   }
 
   /* Toggle GPIO */
   rx_err_t err = gpio_toggle(bus_config->proto.gpio.port, bus_config->proto.gpio.pin);
 
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR(s_tag, "GPIO toggle failed");
     ctx->result = err;
     return err;
   }
 
-  ctx->result = RX_OK;
-  return RX_OK;
+  ctx->result = k_rx_ok;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -219,11 +219,11 @@ rx_err_t rx_bus_gpio_init(rx_bus_manager_t* manager, const char* bus_name, bool 
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
 
-  gpio_init_ctx_t ctx = {.output = output, .result = RX_ERR_HW_ERROR};
+  gpio_init_ctx_t ctx = {.output = output, .result = k_rx_err_hw_error};
 
   rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_gpio_init_callback, &ctx);
 
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
@@ -235,11 +235,11 @@ rx_err_t rx_bus_gpio_write(rx_bus_manager_t* manager, const char* bus_name, bool
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
 
-  gpio_write_ctx_t ctx = {.value = value, .result = RX_ERR_HW_ERROR};
+  gpio_write_ctx_t ctx = {.value = value, .result = k_rx_err_hw_error};
 
   rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_gpio_write_callback, &ctx);
 
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
@@ -252,11 +252,11 @@ rx_err_t rx_bus_gpio_read(rx_bus_manager_t* manager, const char* bus_name, bool*
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
   RX_CHECK_NULL_PTR(value, s_tag, "value pointer is NULL");
 
-  gpio_read_ctx_t ctx = {.value = value, .result = RX_ERR_HW_ERROR};
+  gpio_read_ctx_t ctx = {.value = value, .result = k_rx_err_hw_error};
 
   rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_gpio_read_callback, &ctx);
 
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
@@ -268,11 +268,11 @@ rx_err_t rx_bus_gpio_toggle(rx_bus_manager_t* manager, const char* bus_name)
   RX_CHECK_NULL_PTR(manager, s_tag, "manager pointer is NULL");
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
 
-  gpio_toggle_ctx_t ctx = {.result = RX_ERR_HW_ERROR};
+  gpio_toggle_ctx_t ctx = {.result = k_rx_err_hw_error};
 
   rx_err_t err = rx_bus_manager_with_bus(manager, bus_name, internal_gpio_toggle_callback, &ctx);
 
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
@@ -308,7 +308,7 @@ typedef struct {
  * @param[in,out] bus Bus configuration
  * @param[in] data Command data (gpio_write_command_data_t*)
  *
- * @return RX_OK on success, error code on failure
+ * @return k_rx_ok on success, error code on failure
  */
 __attribute__((unused)) static rx_err_t gpio_write_command_execute(rx_bus_config_t* bus, void* data)
 {
@@ -317,13 +317,13 @@ __attribute__((unused)) static rx_err_t gpio_write_command_execute(rx_bus_config
   /* Validate bus type */
   if (bus->type != k_bus_type_gpio) {
     RX_LOG_ERROR(s_tag, "Bus is not GPIO type");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Validate bus is initialized */
   if (!bus->initialized) {
     RX_LOG_ERROR(s_tag, "Bus not initialized");
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Execute GPIO write operation */
@@ -334,12 +334,12 @@ __attribute__((unused)) static rx_err_t gpio_write_command_execute(rx_bus_config
     err = gpio_write_low(bus->proto.gpio.port, bus->proto.gpio.pin);
   }
 
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR(s_tag, "GPIO write failed");
     return err;
   }
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /**
@@ -359,7 +359,7 @@ typedef struct {
  * @param[in,out] bus Bus configuration
  * @param[in] data Command data (gpio_read_command_data_t*)
  *
- * @return RX_OK on success, error code on failure
+ * @return k_rx_ok on success, error code on failure
  */
 __attribute__((unused)) static rx_err_t gpio_read_command_execute(rx_bus_config_t* bus, void* data)
 {
@@ -368,24 +368,24 @@ __attribute__((unused)) static rx_err_t gpio_read_command_execute(rx_bus_config_
   /* Validate bus type */
   if (bus->type != k_bus_type_gpio) {
     RX_LOG_ERROR(s_tag, "Bus is not GPIO type");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Validate bus is initialized */
   if (!bus->initialized) {
     RX_LOG_ERROR(s_tag, "Bus not initialized");
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Execute GPIO read operation */
   rx_err_t err = gpio_read(bus->proto.gpio.port, bus->proto.gpio.pin, read_data->value);
 
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR(s_tag, "GPIO read failed");
     return err;
   }
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -406,7 +406,7 @@ __attribute__((unused)) static rx_err_t gpio_read_command_execute(rx_bus_config_
  *
  * // Execute command
  * rx_err_t err = rx_bus_manager_execute_command(manager, "led", &cmd);
- * if (err == RX_OK && cmd.result == RX_OK) {
+ * if (err == k_rx_ok && cmd.result == k_rx_ok) {
  *   // GPIO write successful
  * }
  * @endcode
@@ -420,7 +420,7 @@ __attribute__((unused)) static rx_err_t gpio_read_command_execute(rx_bus_config_
  * rx_bus_command_init(&cmd, gpio_read_command_execute, &read_data);
  *
  * rx_err_t err = rx_bus_manager_execute_command(manager, "button", &cmd);
- * if (err == RX_OK && cmd.result == RX_OK) {
+ * if (err == k_rx_ok && cmd.result == k_rx_ok) {
  *   // button_state now contains the GPIO value
  * }
  * @endcode

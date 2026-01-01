@@ -87,31 +87,31 @@ static uint8_t s_iwdt_initialized = 0;
  * @param[in]  timeout_ms Requested timeout in milliseconds
  * @param[out] entry      Pointer to receive configuration entry
  *
- * @return RX_OK if valid configuration found
- * @return RX_ERR_INVALID_ARG if timeout out of range
+ * @return k_rx_ok if valid configuration found
+ * @return k_rx_err_invalid_arg if timeout out of range
  */
 static rx_err_t internal_find_timeout_config(uint32_t                     timeout_ms,
                                              const iwdt_timeout_entry_t** entry)
 {
   if (entry == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Find first entry with timeout >= requested */
   for (uint32_t i = 0; i < TIMEOUT_TABLE_SIZE; i++) {
     if (s_timeout_table[i].timeout_ms >= timeout_ms) {
       *entry = &s_timeout_table[i];
-      return RX_OK;
+      return k_rx_ok;
     }
   }
 
   /* Use maximum timeout if requested is too large */
   if (timeout_ms > s_timeout_table[TIMEOUT_TABLE_SIZE - 1].timeout_ms) {
     *entry = &s_timeout_table[TIMEOUT_TABLE_SIZE - 1];
-    return RX_OK;
+    return k_rx_ok;
   }
 
-  return RX_ERR_INVALID_ARG;
+  return k_rx_err_invalid_arg;
 }
 
 /* =============================================================================
@@ -123,17 +123,17 @@ rx_err_t rx_iwdt_init(uint32_t timeout_ms)
 {
 #ifdef __RX__
   if (s_iwdt_initialized) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   if (timeout_ms == 0) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Find best timeout configuration */
   const iwdt_timeout_entry_t* config = NULL;
   rx_err_t                    err    = internal_find_timeout_config(timeout_ms, &config);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     return err;
   }
 
@@ -184,13 +184,13 @@ rx_err_t rx_iwdt_init(uint32_t timeout_ms)
   rx_iwdt_feed();
 
   s_iwdt_initialized = 1;
-  return RX_OK;
+  return k_rx_ok;
 
 #else
   /* Host-side stub for unit testing */
   (void)timeout_ms;
   s_iwdt_initialized = 1;
-  return RX_OK;
+  return k_rx_ok;
 #endif
 }
 

@@ -43,7 +43,7 @@
  * - TX only (no RX)
  * - Clock: PCLKB (60 MHz)
  *
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t uart_init(void)
 {
@@ -77,7 +77,7 @@ rx_err_t uart_init(void)
 
   /* UART init complete - can't use RX_LOG yet since UART is just now ready */
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================

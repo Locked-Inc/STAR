@@ -43,19 +43,19 @@ rx_err_t mock_usb_hw_init(mock_usb_hw_t* mock)
   memset(m, 0, sizeof(mock_usb_hw_t));
 
   /* Set default return values (success) */
-  m->next_init_return   = RX_OK;
-  m->next_attach_return = RX_OK;
+  m->next_init_return   = k_rx_ok;
+  m->next_attach_return = k_rx_ok;
   m->fifo_ready         = true;
   m->bus_state          = k_usb_state_detached;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t mock_usb_hw_deinit(mock_usb_hw_t* mock)
 {
   mock_usb_hw_t* m = internal_get_mock(mock);
   memset(m, 0, sizeof(mock_usb_hw_t));
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t mock_usb_hw_clear(mock_usb_hw_t* mock)
@@ -73,7 +73,7 @@ rx_err_t mock_usb_hw_clear(mock_usb_hw_t* mock)
   m->next_attach_return = saved_attach_ret;
   m->fifo_ready         = saved_fifo_ready;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -118,11 +118,11 @@ rx_err_t mock_usb_hw_inject_rx_data(mock_usb_hw_t* mock,
   mock_usb_hw_t* m = internal_get_mock(mock);
 
   if (pipe >= MOCK_USB_HW_MAX_PIPES) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (data == NULL || len == 0) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   mock_pipe_state_t* p = &m->pipes[pipe];
@@ -137,7 +137,7 @@ rx_err_t mock_usb_hw_inject_rx_data(mock_usb_hw_t* mock,
   memcpy(p->rx_data + p->rx_len, data, len);
   p->rx_len += len;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t mock_usb_hw_get_tx_data(mock_usb_hw_t* mock,
@@ -149,11 +149,11 @@ rx_err_t mock_usb_hw_get_tx_data(mock_usb_hw_t* mock,
   mock_usb_hw_t* m = internal_get_mock(mock);
 
   if (pipe >= MOCK_USB_HW_MAX_PIPES) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (data == NULL || actual_len == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   mock_pipe_state_t* p = &m->pipes[pipe];
@@ -169,7 +169,7 @@ rx_err_t mock_usb_hw_get_tx_data(mock_usb_hw_t* mock,
   }
   p->tx_len -= to_read;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 void mock_usb_hw_clear_pipe(mock_usb_hw_t* mock, uint8_t pipe)
@@ -237,7 +237,7 @@ rx_err_t mock_usb_hw_get_last_call(mock_usb_hw_t*      mock,
   mock_usb_hw_t* m = internal_get_mock(mock);
 
   if (out_call == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   uint32_t history_size =
@@ -250,11 +250,11 @@ rx_err_t mock_usb_hw_get_last_call(mock_usb_hw_t*      mock,
 
     if (strcmp(m->call_history[idx].function, func) == 0) {
       *out_call = m->call_history[idx];
-      return RX_OK;
+      return k_rx_ok;
     }
   }
 
-  return RX_ERR_NOT_FOUND;
+  return k_rx_err_not_found;
 }
 
 void mock_usb_hw_clear_calls(mock_usb_hw_t* mock)
@@ -282,12 +282,12 @@ rx_err_t rx_usb_hw_init(void)
   mock_usb_hw_record_call(m, "rx_usb_hw_init", 0, 0, 0, ret);
   m->init_calls++;
 
-  if (ret == RX_OK) {
+  if (ret == k_rx_ok) {
     m->initialized = true;
   }
 
   /* Reset to default for next call */
-  m->next_init_return = RX_OK;
+  m->next_init_return = k_rx_ok;
 
   return ret;
 }
@@ -296,7 +296,7 @@ rx_err_t rx_usb_hw_deinit(void)
 {
   mock_usb_hw_t* m = &g_mock_usb_hw;
 
-  rx_err_t ret = RX_OK;
+  rx_err_t ret = k_rx_ok;
   mock_usb_hw_record_call(m, "rx_usb_hw_deinit", 0, 0, 0, ret);
   m->deinit_calls++;
 
@@ -314,12 +314,12 @@ rx_err_t rx_usb_hw_attach(void)
   mock_usb_hw_record_call(m, "rx_usb_hw_attach", 0, 0, 0, ret);
   m->attach_calls++;
 
-  if (ret == RX_OK) {
+  if (ret == k_rx_ok) {
     m->attached = true;
   }
 
   /* Reset to default for next call */
-  m->next_attach_return = RX_OK;
+  m->next_attach_return = k_rx_ok;
 
   return ret;
 }
@@ -328,7 +328,7 @@ rx_err_t rx_usb_hw_detach(void)
 {
   mock_usb_hw_t* m = &g_mock_usb_hw;
 
-  rx_err_t ret = RX_OK;
+  rx_err_t ret = k_rx_ok;
   mock_usb_hw_record_call(m, "rx_usb_hw_detach", 0, 0, 0, ret);
   m->detach_calls++;
 
@@ -344,7 +344,7 @@ uint32_t rx_usb_hw_fifo_read(uint8_t pipe, uint8_t* data, uint32_t max_len)
   m->fifo_read_calls++;
 
   if (!m->fifo_ready || pipe >= MOCK_USB_HW_MAX_PIPES) {
-    mock_usb_hw_record_call(m, "rx_usb_hw_fifo_read", pipe, max_len, 0, RX_ERR_TIMEOUT);
+    mock_usb_hw_record_call(m, "rx_usb_hw_fifo_read", pipe, max_len, 0, k_rx_err_timeout);
     return 0;
   }
 
@@ -359,7 +359,7 @@ uint32_t rx_usb_hw_fifo_read(uint8_t pipe, uint8_t* data, uint32_t max_len)
     p->rx_pos += to_read;
   }
 
-  mock_usb_hw_record_call(m, "rx_usb_hw_fifo_read", pipe, max_len, to_read, RX_OK);
+  mock_usb_hw_record_call(m, "rx_usb_hw_fifo_read", pipe, max_len, to_read, k_rx_ok);
 
   return to_read;
 }
@@ -371,7 +371,7 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
   m->fifo_write_calls++;
 
   if (!m->fifo_ready || pipe >= MOCK_USB_HW_MAX_PIPES) {
-    mock_usb_hw_record_call(m, "rx_usb_hw_fifo_write", pipe, len, 0, RX_ERR_TIMEOUT);
+    mock_usb_hw_record_call(m, "rx_usb_hw_fifo_write", pipe, len, 0, k_rx_err_timeout);
     return 0;
   }
 
@@ -386,7 +386,7 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
     p->tx_len += to_write;
   }
 
-  mock_usb_hw_record_call(m, "rx_usb_hw_fifo_write", pipe, len, to_write, RX_OK);
+  mock_usb_hw_record_call(m, "rx_usb_hw_fifo_write", pipe, len, to_write, k_rx_ok);
 
   return to_write;
 }
@@ -395,7 +395,7 @@ rx_usb_state_t rx_usb_hw_get_bus_state(void)
 {
   mock_usb_hw_t* m = &g_mock_usb_hw;
 
-  mock_usb_hw_record_call(m, "rx_usb_hw_get_bus_state", 0, 0, (uint32_t)m->bus_state, RX_OK);
+  mock_usb_hw_record_call(m, "rx_usb_hw_get_bus_state", 0, 0, (uint32_t)m->bus_state, k_rx_ok);
 
   return m->bus_state;
 }
@@ -405,7 +405,7 @@ void rx_usb_hw_set_address(uint8_t address)
   mock_usb_hw_t* m = &g_mock_usb_hw;
 
   m->address = address;
-  mock_usb_hw_record_call(m, "rx_usb_hw_set_address", address, 0, 0, RX_OK);
+  mock_usb_hw_record_call(m, "rx_usb_hw_set_address", address, 0, 0, k_rx_ok);
 }
 
 rx_err_t rx_usb_hw_configure_pipe(uint8_t  pipe,
@@ -417,8 +417,8 @@ rx_err_t rx_usb_hw_configure_pipe(uint8_t  pipe,
   mock_usb_hw_t* m = &g_mock_usb_hw;
 
   if (pipe == 0 || pipe >= MOCK_USB_HW_MAX_PIPES) {
-    mock_usb_hw_record_call(m, "rx_usb_hw_configure_pipe", pipe, endpoint, type, RX_ERR_INVALID_ARG);
-    return RX_ERR_INVALID_ARG;
+    mock_usb_hw_record_call(m, "rx_usb_hw_configure_pipe", pipe, endpoint, type, k_rx_err_invalid_arg);
+    return k_rx_err_invalid_arg;
   }
 
   mock_pipe_state_t* p = &m->pipes[pipe];
@@ -428,9 +428,9 @@ rx_err_t rx_usb_hw_configure_pipe(uint8_t  pipe,
   p->type              = type;
   p->max_packet        = max_packet;
 
-  mock_usb_hw_record_call(m, "rx_usb_hw_configure_pipe", pipe, endpoint, type, RX_OK);
+  mock_usb_hw_record_call(m, "rx_usb_hw_configure_pipe", pipe, endpoint, type, k_rx_ok);
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -444,7 +444,7 @@ rx_err_t rx_usb_cdc_init(void)
 {
   mock_usb_hw_t* m = &g_mock_usb_hw;
 
-  rx_err_t ret = RX_OK; /* CDC init always succeeds in mock */
+  rx_err_t ret = k_rx_ok; /* CDC init always succeeds in mock */
   mock_usb_hw_record_call(m, "rx_usb_cdc_init", 0, 0, 0, ret);
 
   return ret;
@@ -454,7 +454,7 @@ void rx_usb_cdc_handle_bulk_in(void)
 {
   mock_usb_hw_t* m = &g_mock_usb_hw;
 
-  mock_usb_hw_record_call(m, "rx_usb_cdc_handle_bulk_in", 0, 0, 0, RX_OK);
+  mock_usb_hw_record_call(m, "rx_usb_cdc_handle_bulk_in", 0, 0, 0, k_rx_ok);
 
   /* In real implementation, this pops from TX buffer and writes to FIFO.
    * For testing, we just record that it was called. */

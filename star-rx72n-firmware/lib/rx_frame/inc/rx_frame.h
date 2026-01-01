@@ -123,7 +123,7 @@ typedef struct {
  * @brief Initialize frame encoder
  *
  * @param[out] enc Pointer to encoder handle
- * @return RX_OK on success, RX_ERR_INVALID_ARG if enc is NULL
+ * @return k_rx_ok on success, k_rx_err_invalid_arg if enc is NULL
  */
 rx_err_t rx_frame_encoder_init(rx_frame_encoder_t* enc);
 
@@ -131,7 +131,7 @@ rx_err_t rx_frame_encoder_init(rx_frame_encoder_t* enc);
  * @brief Deinitialize frame encoder
  *
  * @param[in,out] enc Pointer to encoder handle
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t rx_frame_encoder_deinit(rx_frame_encoder_t* enc);
 
@@ -146,10 +146,10 @@ rx_err_t rx_frame_encoder_deinit(rx_frame_encoder_t* enc);
  * @param[out] output     Output buffer (min k_frame_min_size + payload bytes)
  * @param[out] output_len Actual number of bytes written
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if any pointer is NULL
- * @return RX_ERR_INVALID_STATE if encoder not initialized
- * @return RX_ERR_INVALID_SIZE if payload exceeds max
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if any pointer is NULL
+ * @return k_rx_err_invalid_state if encoder not initialized
+ * @return k_rx_err_invalid_size if payload exceeds max
  */
 rx_err_t rx_frame_encode(rx_frame_encoder_t* enc,
                          const rx_frame_t*   frame,
@@ -227,7 +227,7 @@ static inline void rx_write_be16(uint8_t* buf, uint16_t val)
  * @brief Initialize frame decoder
  *
  * @param[out] dec Pointer to decoder handle
- * @return RX_OK on success, RX_ERR_INVALID_ARG if dec is NULL
+ * @return k_rx_ok on success, k_rx_err_invalid_arg if dec is NULL
  */
 rx_err_t rx_frame_decoder_init(rx_frame_decoder_t* dec);
 
@@ -235,7 +235,7 @@ rx_err_t rx_frame_decoder_init(rx_frame_decoder_t* dec);
  * @brief Deinitialize frame decoder
  *
  * @param[in,out] dec Pointer to decoder handle
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t rx_frame_decoder_deinit(rx_frame_decoder_t* dec);
 
@@ -249,12 +249,12 @@ rx_err_t rx_frame_decoder_deinit(rx_frame_decoder_t* dec);
  * @param[in]  data_len Data length
  * @param[out] frame    Decoded frame
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if any pointer is NULL
- * @return RX_ERR_INVALID_STATE if decoder not initialized
- * @return RX_ERR_INVALID_SIZE if data too short
- * @return RX_ERR_PROTOCOL_ERROR if SYNC word invalid
- * @return RX_ERR_CRC_MISMATCH if CRC validation fails
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if any pointer is NULL
+ * @return k_rx_err_invalid_state if decoder not initialized
+ * @return k_rx_err_invalid_size if data too short
+ * @return k_rx_err_protocol_error if SYNC word invalid
+ * @return k_rx_err_crc_mismatch if CRC validation fails
  */
 rx_err_t
 rx_frame_decode(rx_frame_decoder_t* dec, const uint8_t* data, uint32_t data_len, rx_frame_t* frame);
@@ -298,7 +298,7 @@ uint32_t rx_crc32_update(uint32_t crc, const uint8_t* data, uint32_t len);
  *
  * @param[out] frame Frame to initialize
  * @param[in]  sequence Sequence number to acknowledge
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t rx_frame_create_ack(rx_frame_t* frame, uint16_t sequence);
 
@@ -308,7 +308,7 @@ rx_err_t rx_frame_create_ack(rx_frame_t* frame, uint16_t sequence);
  * @param[out] frame Frame to initialize
  * @param[in]  sequence Sequence number
  * @param[in]  flags Additional flags (e.g., k_frame_flag_soft_nack)
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t rx_frame_create_nack(rx_frame_t* frame, uint16_t sequence, uint8_t flags);
 

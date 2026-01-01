@@ -51,7 +51,7 @@ extern "C" {
  * This must be called once during system initialization, before any
  * other modules are initialized.
  *
- * @return RX_OK on success, error code on failure
+ * @return k_rx_ok on success, error code on failure
  */
 rx_err_t rx_infrastructure_init(void);
 
@@ -61,7 +61,7 @@ rx_err_t rx_infrastructure_init(void);
  * Cleans up all infrastructure resources.
  * Should be called during shutdown (if ever).
  *
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t rx_infrastructure_deinit(void);
 
@@ -115,7 +115,7 @@ rx_pin_interface_t* rx_infrastructure_get_pin_interface(void);
  */
 #define RX_RESERVE_PIN(port, pin, function)                                                        \
   ({                                                                                               \
-    rx_err_t            err_   = RX_ERR_INVALID_STATE;                                             \
+    rx_err_t            err_   = k_rx_err_invalid_state;                                             \
     rx_pin_interface_t* iface_ = rx_infrastructure_get_pin_interface();                            \
     if (iface_ != NULL) {                                                                          \
       err_ = iface_->reserve_pin(iface_->ctx, port, pin, function);                                \
@@ -133,7 +133,7 @@ rx_pin_interface_t* rx_infrastructure_get_pin_interface(void);
  */
 #define RX_RELEASE_PIN(port, pin)                                                                  \
   ({                                                                                               \
-    rx_err_t            err_   = RX_ERR_INVALID_STATE;                                             \
+    rx_err_t            err_   = k_rx_err_invalid_state;                                             \
     rx_pin_interface_t* iface_ = rx_infrastructure_get_pin_interface();                            \
     if (iface_ != NULL) {                                                                          \
       err_ = iface_->release_pin(iface_->ctx, port, pin);                                          \

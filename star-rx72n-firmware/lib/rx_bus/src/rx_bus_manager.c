@@ -31,7 +31,7 @@ static const char* s_tag = "BUS_MANAGER";
  * @param[in] bus_config Bus configuration
  * @param[in] user_ctx User context (rx_bus_command_t*)
  *
- * @return RX_OK on success, error code on failure
+ * @return k_rx_ok on success, error code on failure
  */
 static rx_err_t internal_execute_command_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
@@ -40,8 +40,8 @@ static rx_err_t internal_execute_command_callback(rx_bus_config_t* bus_config, v
   /* Validate command has execution function */
   if (command->execute == NULL) {
     RX_LOG_ERROR(s_tag, "Command execute function is NULL");
-    command->result = RX_ERR_NULL_POINTER;
-    return RX_ERR_NULL_POINTER;
+    command->result = k_rx_err_null_pointer;
+    return k_rx_err_null_pointer;
   }
 
   /* Execute the command */
@@ -68,13 +68,13 @@ rx_err_t bus_manager_init(rx_bus_manager_t*     manager,
 
   /* Validate interfaces */
   rx_err_t err = rx_error_interface_validate(error_iface);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR(s_tag, "Error interface validation failed");
     return err;
   }
 
   err = rx_pin_interface_validate(pin_iface);
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     RX_LOG_ERROR(s_tag, "Pin interface validation failed");
     return err;
   }
@@ -88,7 +88,7 @@ rx_err_t bus_manager_init(rx_bus_manager_t*     manager,
 
   RX_LOG_INFO(s_tag, "Bus manager initialized (skeleton)");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t bus_manager_deinit(rx_bus_manager_t* manager)
@@ -99,7 +99,7 @@ rx_err_t bus_manager_deinit(rx_bus_manager_t* manager)
 
   RX_LOG_INFO(s_tag, "Bus manager deinitialized");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -118,7 +118,7 @@ rx_err_t rx_bus_manager_execute_command(rx_bus_manager_t* manager,
   /* Validate command has execution function */
   if (command->execute == NULL) {
     RX_LOG_ERROR(s_tag, "Command execute function is NULL");
-    return RX_ERR_NULL_POINTER;
+    return k_rx_err_null_pointer;
   }
 
   /* Execute command using existing with_bus infrastructure */

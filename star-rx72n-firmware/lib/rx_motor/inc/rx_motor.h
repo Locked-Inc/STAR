@@ -101,10 +101,10 @@ typedef struct {
  * @param[out] handle Pointer to motor handle structure. Must not be NULL.
  * @param[in]  config Pointer to motor configuration. Must not be NULL.
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if handle or config is NULL
- * @return RX_ERR_INVALID_ARG if configuration is invalid
- * @return RX_ERR_INVALID_STATE if MTU initialization fails
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if handle or config is NULL
+ * @return k_rx_err_invalid_arg if configuration is invalid
+ * @return k_rx_err_invalid_state if MTU initialization fails
  */
 rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* config);
 
@@ -115,9 +115,9 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
  *
  * @param[in] handle Pointer to initialized motor handle. Must not be NULL.
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if handle is NULL
- * @return RX_ERR_INVALID_STATE if motor not initialized
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_invalid_state if motor not initialized
  */
 rx_err_t rx_motor_deinit(rx_motor_handle_t* handle);
 
@@ -133,9 +133,9 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle);
  *                   - Negative: Reverse rotation (output_b active)
  *                   - Zero: Coast (both outputs low)
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if handle is NULL
- * @return RX_ERR_INVALID_STATE if motor not initialized
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_invalid_state if motor not initialized
  */
 rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty);
 
@@ -149,9 +149,9 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty);
  * @param[in] brake  If true, apply brake (both outputs high).
  *                   If false, coast (both outputs low).
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if handle is NULL
- * @return RX_ERR_INVALID_STATE if motor not initialized
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if handle is NULL
+ * @return k_rx_err_invalid_state if motor not initialized
  */
 rx_err_t rx_motor_stop(rx_motor_handle_t* handle, bool brake);
 
@@ -161,9 +161,9 @@ rx_err_t rx_motor_stop(rx_motor_handle_t* handle, bool brake);
  * @param[in]  handle   Pointer to initialized motor handle. Must not be NULL.
  * @param[out] out_duty Pointer to store current duty cycle. Must not be NULL.
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if handle or out_duty is NULL
- * @return RX_ERR_INVALID_STATE if motor not initialized
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if handle or out_duty is NULL
+ * @return k_rx_err_invalid_state if motor not initialized
  */
 rx_err_t rx_motor_get_duty(const rx_motor_handle_t* handle, float* out_duty);
 

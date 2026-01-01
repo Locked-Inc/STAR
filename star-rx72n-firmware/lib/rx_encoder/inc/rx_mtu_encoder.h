@@ -77,9 +77,9 @@ typedef struct {
  *
  * @param[in] config Encoder configuration
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if config is NULL
- * @return RX_ERR_INVALID_ARG if channel or counts_per_rev is invalid
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if config is NULL
+ * @return k_rx_err_invalid_arg if channel or counts_per_rev is invalid
  */
 rx_err_t rx_encoder_init(const rx_encoder_config_t* config);
 
@@ -92,10 +92,10 @@ rx_err_t rx_encoder_init(const rx_encoder_config_t* config);
  * @param[in] channel MTU channel
  * @param[out] count Pointer to store raw count (0-65535)
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if count is NULL
- * @return RX_ERR_INVALID_ARG if channel is invalid
- * @return RX_ERR_INVALID_STATE if encoder not initialized
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if count is NULL
+ * @return k_rx_err_invalid_arg if channel is invalid
+ * @return k_rx_err_invalid_state if encoder not initialized
  */
 rx_err_t rx_encoder_read_raw(rx_mtu_channel_t channel, uint16_t* count);
 
@@ -108,10 +108,10 @@ rx_err_t rx_encoder_read_raw(rx_mtu_channel_t channel, uint16_t* count);
  * @param[in] channel MTU channel
  * @param[out] state Pointer to encoder state structure
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if state is NULL
- * @return RX_ERR_INVALID_ARG if channel is invalid
- * @return RX_ERR_INVALID_STATE if encoder not initialized
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if state is NULL
+ * @return k_rx_err_invalid_arg if channel is invalid
+ * @return k_rx_err_invalid_state if encoder not initialized
  */
 rx_err_t rx_encoder_read_count(rx_mtu_channel_t channel, rx_encoder_state_t* state);
 
@@ -125,10 +125,10 @@ rx_err_t rx_encoder_read_count(rx_mtu_channel_t channel, rx_encoder_state_t* sta
  * @param[in] delta_time_s Time since last call in seconds
  * @param[out] velocity_rps Pointer to store velocity in revolutions per second
  *
- * @return RX_OK on success
- * @return RX_ERR_NULL_POINTER if velocity_rps is NULL
- * @return RX_ERR_INVALID_ARG if channel or delta_time_s is invalid
- * @return RX_ERR_INVALID_STATE if encoder not initialized
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if velocity_rps is NULL
+ * @return k_rx_err_invalid_arg if channel or delta_time_s is invalid
+ * @return k_rx_err_invalid_state if encoder not initialized
  */
 rx_err_t
 rx_encoder_read_velocity(rx_mtu_channel_t channel, float delta_time_s, float* velocity_rps);
@@ -140,9 +140,9 @@ rx_encoder_read_velocity(rx_mtu_channel_t channel, float delta_time_s, float* ve
  *
  * @param[in] channel MTU channel
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if channel is invalid
- * @return RX_ERR_INVALID_STATE if encoder not initialized
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if channel is invalid
+ * @return k_rx_err_invalid_state if encoder not initialized
  */
 rx_err_t rx_encoder_reset(rx_mtu_channel_t channel);
 
@@ -155,9 +155,9 @@ rx_err_t rx_encoder_reset(rx_mtu_channel_t channel);
  * @param[in] channel MTU channel
  * @param[in] count Count value to set
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if channel is invalid
- * @return RX_ERR_INVALID_STATE if encoder not initialized
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if channel is invalid
+ * @return k_rx_err_invalid_state if encoder not initialized
  */
 rx_err_t rx_encoder_set_count(rx_mtu_channel_t channel, int32_t count);
 
@@ -168,8 +168,8 @@ rx_err_t rx_encoder_set_count(rx_mtu_channel_t channel, int32_t count);
  *
  * @param[in] channel MTU channel
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if channel is invalid
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if channel is invalid
  */
 rx_err_t rx_encoder_deinit(rx_mtu_channel_t channel);
 

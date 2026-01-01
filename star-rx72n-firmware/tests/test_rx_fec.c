@@ -37,19 +37,19 @@ void tearDown(void) {
 
 void test_encoder_init_null(void) {
     rx_err_t err = rx_fec_encoder_init(NULL);
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG, err);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 void test_encoder_init_success(void) {
     rx_fec_encoder_t enc;
     rx_err_t err = rx_fec_encoder_init(&enc);
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_NOT_EQUAL(0, enc.initialized);
 }
 
 void test_encoder_deinit_null(void) {
     rx_err_t err = rx_fec_encoder_deinit(NULL);
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG, err);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 /* =============================================================================
@@ -59,25 +59,25 @@ void test_encoder_deinit_null(void) {
 
 void test_decoder_init_null_dec(void) {
     rx_err_t err = rx_fec_decoder_init(NULL, s_survivors, 100);
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG, err);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 void test_decoder_init_null_buffer(void) {
     rx_fec_decoder_t dec;
     rx_err_t err = rx_fec_decoder_init(&dec, NULL, 100);
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG, err);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 void test_decoder_init_zero_length(void) {
     rx_fec_decoder_t dec;
     rx_err_t err = rx_fec_decoder_init(&dec, s_survivors, 0);
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_SIZE, err);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
 void test_decoder_init_success(void) {
     rx_fec_decoder_t dec;
     rx_err_t err = rx_fec_decoder_init(&dec, s_survivors, 100);
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_NOT_EQUAL(0, dec.initialized);
 }
 
@@ -116,13 +116,13 @@ void test_encode_null_args(void) {
     uint8_t output[16];
     uint32_t len;
 
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG,
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
                       rx_fec_encode(NULL, input, 1, output, &len));
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG,
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
                       rx_fec_encode(&s_encoder, NULL, 1, output, &len));
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG,
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
                       rx_fec_encode(&s_encoder, input, 1, NULL, &len));
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG,
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
                       rx_fec_encode(&s_encoder, input, 1, output, NULL));
 }
 
@@ -133,7 +133,7 @@ void test_encode_uninitialized(void) {
     uint32_t len;
 
     rx_err_t err = rx_fec_encode(&enc, input, 1, output, &len);
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_STATE, err);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
 void test_encode_zero_length(void) {
@@ -142,7 +142,7 @@ void test_encode_zero_length(void) {
     uint32_t len;
 
     rx_err_t err = rx_fec_encode(&s_encoder, input, 0, output, &len);
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG, err);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 void test_encode_single_byte(void) {
@@ -151,7 +151,7 @@ void test_encode_single_byte(void) {
     uint32_t len;
 
     rx_err_t err = rx_fec_encode(&s_encoder, input, 1, output, &len);
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL(4, len); /* (8+6)*2/8 = 4 bytes */
 }
 
@@ -202,13 +202,13 @@ void test_decode_null_args(void) {
     uint8_t output[16];
     uint32_t len;
 
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG,
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
                       rx_fec_decode_soft(NULL, soft, 32, 2, output, &len));
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG,
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
                       rx_fec_decode_soft(&s_decoder, NULL, 32, 2, output, &len));
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG,
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
                       rx_fec_decode_soft(&s_decoder, soft, 32, 2, NULL, &len));
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG,
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
                       rx_fec_decode_soft(&s_decoder, soft, 32, 2, output, NULL));
 }
 
@@ -219,7 +219,7 @@ void test_decode_uninitialized(void) {
     uint32_t len;
 
     rx_err_t err = rx_fec_decode_soft(&dec, soft, 32, 2, output, &len);
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_STATE, err);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
 void test_decode_odd_soft_length(void) {
@@ -229,7 +229,7 @@ void test_decode_odd_soft_length(void) {
 
     /* Soft bits must come in pairs */
     rx_err_t err = rx_fec_decode_soft(&s_decoder, soft, 33, 2, output, &len);
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG, err);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 void test_decode_zero_length(void) {
@@ -238,7 +238,7 @@ void test_decode_zero_length(void) {
     uint32_t len;
 
     rx_err_t err = rx_fec_decode_soft(&s_decoder, soft, 0, 2, output, &len);
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG, err);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 /* =============================================================================
@@ -252,19 +252,19 @@ void test_decode_hard_null_args(void) {
     uint32_t len;
 
     /* NULL decoder */
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG,
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
                       rx_fec_decode_hard(NULL, hard, 16, 2, output, &len));
 
     /* NULL hard_bits */
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG,
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
                       rx_fec_decode_hard(&s_decoder, NULL, 16, 2, output, &len));
 
     /* NULL output */
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG,
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
                       rx_fec_decode_hard(&s_decoder, hard, 16, 2, NULL, &len));
 
     /* NULL output_len */
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG,
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
                       rx_fec_decode_hard(&s_decoder, hard, 16, 2, output, NULL));
 }
 
@@ -275,7 +275,7 @@ void test_decode_hard_uninitialized(void) {
     uint32_t len;
 
     rx_err_t err = rx_fec_decode_hard(&dec, hard, 16, 2, output, &len);
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_STATE, err);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
 void test_decode_hard_zero_length(void) {
@@ -284,7 +284,7 @@ void test_decode_hard_zero_length(void) {
     uint32_t len;
 
     rx_err_t err = rx_fec_decode_hard(&s_decoder, hard, 0, 2, output, &len);
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG, err);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 /* =============================================================================
@@ -300,11 +300,11 @@ void test_roundtrip_single_byte(void) {
 
     /* Encode */
     rx_err_t err = rx_fec_encode(&s_encoder, input, 1, encoded, &enc_len);
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
 
     /* Decode using hard decision */
     err = rx_fec_decode_hard(&s_decoder, encoded, enc_len, 1, decoded, &dec_len);
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL(1, dec_len);
     TEST_ASSERT_EQUAL_HEX8(0x42, decoded[0]);
 }
@@ -317,11 +317,11 @@ void test_roundtrip_multi_byte(void) {
 
     /* Encode */
     rx_err_t err = rx_fec_encode(&s_encoder, input, 4, encoded, &enc_len);
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
 
     /* Decode */
     err = rx_fec_decode_hard(&s_decoder, encoded, enc_len, 4, decoded, &dec_len);
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL(4, dec_len);
     TEST_ASSERT_EQUAL_MEMORY(input, decoded, 4);
 }
@@ -336,11 +336,11 @@ void test_roundtrip_all_zeros(void) {
 
     /* Encode */
     rx_err_t err = rx_fec_encode(&s_encoder, input, 8, encoded, &enc_len);
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
 
     /* Decode */
     err = rx_fec_decode_hard(&s_decoder, encoded, enc_len, 8, decoded, &dec_len);
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL(8, dec_len);
     TEST_ASSERT_EQUAL_MEMORY(input, decoded, 8);
 }
@@ -355,11 +355,11 @@ void test_roundtrip_all_ones(void) {
 
     /* Encode */
     rx_err_t err = rx_fec_encode(&s_encoder, input, 8, encoded, &enc_len);
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
 
     /* Decode */
     err = rx_fec_decode_hard(&s_decoder, encoded, enc_len, 8, decoded, &dec_len);
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL(8, dec_len);
     TEST_ASSERT_EQUAL_MEMORY(input, decoded, 8);
 }
@@ -372,11 +372,11 @@ void test_roundtrip_alternating_pattern(void) {
 
     /* Encode */
     rx_err_t err = rx_fec_encode(&s_encoder, input, 4, encoded, &enc_len);
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
 
     /* Decode */
     err = rx_fec_decode_hard(&s_decoder, encoded, enc_len, 4, decoded, &dec_len);
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL(4, dec_len);
     TEST_ASSERT_EQUAL_MEMORY(input, decoded, 4);
 }
@@ -394,11 +394,11 @@ void test_roundtrip_larger_payload(void) {
 
     /* Encode */
     rx_err_t err = rx_fec_encode(&s_encoder, input, 32, encoded, &enc_len);
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
 
     /* Decode */
     err = rx_fec_decode_hard(&s_decoder, encoded, enc_len, 32, decoded, &dec_len);
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL(32, dec_len);
     TEST_ASSERT_EQUAL_MEMORY(input, decoded, 32);
 }
@@ -423,7 +423,7 @@ void test_single_bit_error_correction(void) {
     /* Decode should still recover the original */
     rx_err_t err =
         rx_fec_decode_hard(&s_decoder, encoded, enc_len, 1, decoded, &dec_len);
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL_HEX8(0x42, decoded[0]);
 }
 
@@ -443,7 +443,7 @@ void test_multiple_bit_error_correction(void) {
     /* K=7 Viterbi can typically correct multiple scattered errors */
     rx_err_t err =
         rx_fec_decode_hard(&s_decoder, encoded, enc_len, 2, decoded, &dec_len);
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL_MEMORY(input, decoded, 2);
 }
 

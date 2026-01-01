@@ -31,7 +31,7 @@
  * - PCLKB/C/D: 60 MHz
  * - FCLK (Flash): 60 MHz
  *
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 static rx_err_t clock_init(void)
 {
@@ -66,7 +66,7 @@ static rx_err_t clock_init(void)
   if (timeout == 0) {
     /* PLL failed to stabilize - but can't log yet (UART not initialized) */
     SYSTEM.PRCR = 0xA500;
-    return RX_ERR_HW_TIMEOUT;
+    return k_rx_err_hw_timeout;
   }
 
   /* Configure system clocks */
@@ -80,7 +80,7 @@ static rx_err_t clock_init(void)
   /* Protect on */
   SYSTEM.PRCR = 0xA500;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -97,7 +97,7 @@ static rx_err_t clock_init(void)
  * - MTU (motor PWM)
  * - S12AD (ADC)
  *
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 static rx_err_t module_stop_init(void)
 {
@@ -122,7 +122,7 @@ static rx_err_t module_stop_init(void)
   /* Protect on */
   SYSTEM.PRCR = 0xA500;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -135,25 +135,25 @@ static rx_err_t module_stop_init(void)
  *
  * Call this early in startup, before ThreadX initialization.
  *
- * @return RX_OK on success, error code on failure
+ * @return k_rx_ok on success, error code on failure
  */
 rx_err_t system_init(void)
 {
   /* Initialize clock to 240 MHz */
   rx_err_t err = clock_init();
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     /* Can't log - UART not initialized yet */
     return err;
   }
 
   /* Enable peripheral modules */
   err = module_stop_init();
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     /* Can't log - UART not initialized yet */
     return err;
   }
 
   /* System init complete - but still can't log until UART is initialized */
 
-  return RX_OK;
+  return k_rx_ok;
 }

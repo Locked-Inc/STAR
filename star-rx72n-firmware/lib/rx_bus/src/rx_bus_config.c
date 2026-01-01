@@ -35,13 +35,13 @@ rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, uint8_t port,
   if (port > k_gpio_port_max_alpha ||
       (port > k_gpio_port_max_numeric && port < k_gpio_port_min_alpha)) {
     RX_LOG_ERROR(s_tag, "Invalid GPIO port");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Validate pin (0-7) */
   if (pin >= k_gpio_pin_count) {
     RX_LOG_ERROR(s_tag, "Invalid GPIO pin");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Zero out config structure */
@@ -61,7 +61,7 @@ rx_bus_config_init_gpio(rx_bus_config_t* config, const char* name, uint8_t port,
 
   RX_LOG_DEBUG(s_tag, "GPIO bus config initialized");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -81,20 +81,20 @@ rx_err_t rx_bus_config_init_adc(rx_bus_config_t* config,
   /* Validate unit (0 or 1) */
   if (unit >= k_adc_unit_count) {
     RX_LOG_ERROR(s_tag, "Invalid ADC unit");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Validate channel (0-7) */
   if (channel > k_adc_channel_max) {
     RX_LOG_ERROR(s_tag, "Invalid ADC channel");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Validate resolution */
   if (bits != k_adc_resolution_8bit && bits != k_adc_resolution_10bit &&
       bits != k_adc_resolution_12bit) {
     RX_LOG_ERROR(s_tag, "Invalid ADC resolution (must be 8, 10, or 12)");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Zero out config structure */
@@ -115,7 +115,7 @@ rx_err_t rx_bus_config_init_adc(rx_bus_config_t* config,
 
   RX_LOG_DEBUG(s_tag, "ADC bus config initialized");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -139,13 +139,13 @@ rx_err_t rx_bus_config_init_i2c(rx_bus_config_t* config,
   /* Validate channel (0-2) */
   if (channel >= k_riic_channel_count) {
     RX_LOG_ERROR(s_tag, "Invalid I2C channel");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Validate device address (7-bit) */
   if (device_addr > k_i2c_addr_max_7bit) {
     RX_LOG_ERROR(s_tag, "Invalid I2C device address");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Zero out config structure */
@@ -170,7 +170,7 @@ rx_err_t rx_bus_config_init_i2c(rx_bus_config_t* config,
 
   RX_LOG_DEBUG(s_tag, "I2C bus config initialized");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -195,13 +195,13 @@ rx_err_t rx_bus_config_init_smbus(rx_bus_config_t* config,
   /* Validate channel (0-2) */
   if (channel >= k_riic_channel_count) {
     RX_LOG_ERROR(s_tag, "Invalid SMBUS channel");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Validate device address (7-bit) */
   if (device_addr > k_i2c_addr_max_7bit) {
     RX_LOG_ERROR(s_tag, "Invalid SMBUS device address");
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Zero out config structure */
@@ -227,5 +227,5 @@ rx_err_t rx_bus_config_init_smbus(rx_bus_config_t* config,
 
   RX_LOG_DEBUG(s_tag, "SMBUS bus config initialized");
 
-  return RX_OK;
+  return k_rx_ok;
 }

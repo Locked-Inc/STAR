@@ -133,21 +133,21 @@ struct rx_time_interface {
  *
  * @param[in] iface Interface to validate
  *
- * @return RX_OK if valid, RX_ERR_NULL_POINTER if NULL,
- *         RX_ERR_INVALID_STATE if missing required function pointers
+ * @return k_rx_ok if valid, k_rx_err_null_pointer if NULL,
+ *         k_rx_err_invalid_state if missing required function pointers
  */
 static inline rx_err_t rx_time_interface_validate(const rx_time_interface_t* iface)
 {
   if (iface == NULL) {
-    return RX_ERR_NULL_POINTER;
+    return k_rx_err_null_pointer;
   }
 
   /* Check required function pointers */
   if (iface->sleep_ms == NULL || iface->get_ms == NULL) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 #ifdef __cplusplus

@@ -267,21 +267,21 @@ static void internal_viterbi_traceback(const rx_fec_decoder_t* dec,
 rx_err_t rx_fec_encoder_init(rx_fec_encoder_t* enc)
 {
   if (enc == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   enc->initialized = 1;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_fec_encoder_deinit(rx_fec_encoder_t* enc)
 {
   if (enc == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   enc->initialized = 0;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 uint32_t rx_fec_encoded_len(uint32_t input_len)
@@ -306,15 +306,15 @@ rx_err_t rx_fec_encode(rx_fec_encoder_t* enc,
                        uint32_t*         output_len)
 {
   if (enc == NULL || input == NULL || output == NULL || output_len == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (enc->initialized == 0) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   if (input_len == 0) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Calculate output size */
@@ -351,7 +351,7 @@ rx_err_t rx_fec_encode(rx_fec_encoder_t* enc,
   }
 
   *output_len = expected_output_len;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -362,12 +362,12 @@ rx_err_t rx_fec_encode(rx_fec_encoder_t* enc,
 rx_err_t rx_fec_decoder_init(rx_fec_decoder_t* dec, uint64_t* survivors_buf, uint32_t survivors_len)
 {
   if (dec == NULL || survivors_buf == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Minimum survivors buffer size: at least 1 entry per symbol */
   if (survivors_len == 0) {
-    return RX_ERR_INVALID_SIZE;
+    return k_rx_err_invalid_size;
   }
 
   dec->survivors     = survivors_buf;
@@ -377,19 +377,19 @@ rx_err_t rx_fec_decoder_init(rx_fec_decoder_t* dec, uint64_t* survivors_buf, uin
   internal_init_branch_table(dec->branch_table);
 
   dec->initialized = 1;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_fec_decoder_deinit(rx_fec_decoder_t* dec)
 {
   if (dec == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   dec->survivors     = NULL;
   dec->survivors_len = 0;
   dec->initialized   = 0;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*    dec,
@@ -401,16 +401,16 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*    dec,
 {
   /* Validate arguments */
   if (dec == NULL || soft_bits == NULL || output == NULL || output_len == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (dec->initialized == 0) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Soft bits must come in pairs (G1, G2) */
   if (soft_len == 0 || (soft_len % k_fec_num_outputs) != 0) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Calculate number of symbols */
@@ -422,7 +422,7 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*    dec,
   }
 
   if (num_symbols < k_fec_tail_bits) {
-    return RX_ERR_INVALID_SIZE;
+    return k_rx_err_invalid_size;
   }
 
   /* Ensure we have enough soft bits */
@@ -432,7 +432,7 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*    dec,
 
   /* Check survivors buffer is large enough */
   if (num_symbols > dec->survivors_len) {
-    return RX_ERR_INVALID_SIZE;
+    return k_rx_err_invalid_size;
   }
 
   /* Initialize path metrics: state 0 = 0, others = MAX */
@@ -451,7 +451,7 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*    dec,
   /* Calculate data bits and output size */
   uint32_t data_bits = num_symbols - k_fec_tail_bits;
   if (data_bits == 0) {
-    return RX_ERR_INVALID_SIZE;
+    return k_rx_err_invalid_size;
   }
 
   uint32_t output_bytes = (data_bits + 7) / 8;
@@ -460,7 +460,7 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*    dec,
   internal_viterbi_traceback(dec, num_symbols, data_bits, output, output_bytes);
 
   *output_len = output_bytes;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_fec_decode_hard(rx_fec_decoder_t* dec,
@@ -471,15 +471,15 @@ rx_err_t rx_fec_decode_hard(rx_fec_decoder_t* dec,
                             uint32_t*         output_len)
 {
   if (dec == NULL || data == NULL || output == NULL || output_len == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (dec->initialized == 0) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   if (data_len == 0) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Convert hard bits to soft bits */
@@ -497,7 +497,7 @@ rx_err_t rx_fec_decode_hard(rx_fec_decoder_t* dec,
   static rx_soft_bit_t soft_bits_buffer[RX_FEC_MAX_SYMBOLS * k_fec_num_outputs];
 
   if (num_bits > RX_FEC_MAX_SYMBOLS * k_fec_num_outputs) {
-    return RX_ERR_INVALID_SIZE;
+    return k_rx_err_invalid_size;
   }
 
   for (uint32_t i = 0; i < num_bits; i++) {
