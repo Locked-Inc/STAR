@@ -19,6 +19,7 @@
 #ifndef UNIT_TEST
 #include "rx72n_regs.h"
 #include "rx_log.h"
+#include "tx_api.h"
 #else
 /* Mock includes for unit testing */
 #include "mock_usb0_regs.h"
@@ -26,6 +27,7 @@
 #define rx_log_warn(tag, msg)  ((void)0)
 #define rx_log_error(tag, msg) ((void)0)
 #define rx_log_debug(tag, msg) ((void)0)
+#define tx_thread_sleep(ticks) ((void)0)
 #endif
 
 /* =============================================================================
@@ -48,6 +50,13 @@
  */
 
 static const char* s_tag = "USB";
+
+/** @brief ThreadX timing constants for flush operation */
+typedef enum {
+  k_threadx_tick_rate_hz   = 100, /**< ThreadX tick rate (100 Hz) */
+  k_threadx_ms_per_tick    = 10,  /**< Milliseconds per tick at 100 Hz */
+  k_flush_poll_interval_ms = 10,  /**< Poll TX buffer every 10ms */
+} threadx_flush_timing_t;
 
 /* Ring buffer structure */
 typedef struct {
@@ -336,16 +345,36 @@ rx_err_t rx_usb_tx_available(uint32_t* available)
 
 rx_err_t rx_usb_flush(uint32_t timeout_ms)
 {
-  /* TODO: Implement blocking flush with timeout */
-  (void)timeout_ms;
-
   if (!s_usb.initialized) {
     return k_rx_err_invalid_state;
   }
 
-  /* For now, just check if buffer is empty */
-  if (internal_ring_buffer_available(&s_usb.tx_buffer) > 0) {
-    return k_rx_err_timeout;
+  /* If timeout is 0, just check once and return immediately */
+  if (timeout_ms == 0) {
+    if (internal_ring_buffer_available(&s_usb.tx_buffer) > 0) {
+      return k_rx_err_timeout;
+    }
+    return k_rx_ok;
+  }
+
+  /* Blocking flush: poll until buffer is empty or timeout expires */
+  uint32_t elapsed_ms = 0;
+
+  while (internal_ring_buffer_available(&s_usb.tx_buffer) > 0) {
+    /* Check if timeout has expired */
+    if (elapsed_ms >= timeout_ms) {
+      return k_rx_err_timeout;
+    }
+
+    /* Sleep for poll interval (1 tick = 10ms) */
+    uint32_t sleep_ticks = k_flush_poll_interval_ms / k_threadx_ms_per_tick;
+    if (sleep_ticks == 0) {
+      sleep_ticks = 1;
+    }
+    tx_thread_sleep(sleep_ticks);
+
+    /* Update elapsed time */
+    elapsed_ms += k_flush_poll_interval_ms;
   }
 
   return k_rx_ok;
