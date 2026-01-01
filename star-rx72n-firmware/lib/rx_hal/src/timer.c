@@ -13,7 +13,27 @@
 #include "hardware.h"
 #include "rx72n_regs.h"
 #include "tx_api.h"
-#include "tx_user.h"
+
+/* =============================================================================
+ * CMT0 Configuration Constants
+ * =============================================================================
+ */
+
+/**
+ * @brief CMT0 timer configuration for 100 Hz system tick
+ *
+ * Clock Configuration:
+ * - PCLKB = 60 MHz (peripheral clock)
+ * - Divider = 128
+ * - Target frequency = 100 Hz (10ms tick)
+ * - CMCOR = (PCLKB / divider / frequency) - 1
+ *         = (60,000,000 / 128 / 100) - 1
+ *         = 4687
+ */
+typedef enum {
+  k_cmt0_compare_match = 4687, /**< Compare match value for 100 Hz */
+  k_cmt0_irq_priority  = 3,    /**< Interrupt priority (0-15, higher = more urgent) */
+} cmt0_config_t;
 
 /* ThreadX timer interrupt handler (defined in ThreadX port) */
 extern void _tx_timer_interrupt(void);
@@ -53,7 +73,7 @@ void cmt0_isr(void)
  * - Clock: PCLKB (60 MHz)
  * - Divider: /128 (468.75 kHz)
  * - Compare: 4687 (100 Hz)
- * - Priority: 5
+ * - Priority: 3
  *
  * @return k_rx_ok on success
  */
@@ -70,7 +90,7 @@ rx_err_t timer_init(void)
 
   /* Set compare match value for 100 Hz tick
      * CMCOR = (60,000,000 / 128 / 100) - 1 = 4687 */
-  CMT0.CMCOR = TX_RX72N_CMT_CMCOR;
+  CMT0.CMCOR = k_cmt0_compare_match;
 
   /* Reset counter */
   CMT0.CMCNT = 0;
@@ -79,8 +99,8 @@ rx_err_t timer_init(void)
   /* Clear any pending interrupt */
   ICU.IR[VECT_CMT0_CMI0] = 0;
 
-  /* Set interrupt priority (5 out of 15) */
-  ICU.IPR[VECT_CMT0_CMI0] = TX_RX72N_CMT_PRIORITY;
+  /* Set interrupt priority (3 out of 15) */
+  ICU.IPR[VECT_CMT0_CMI0] = k_cmt0_irq_priority;
 
   /* Enable CMT0 interrupt in ICU */
   ICU.IER[VECT_CMT0_CMI0 / 8] |= (1 << (VECT_CMT0_CMI0 % 8));
