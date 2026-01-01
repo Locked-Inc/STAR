@@ -31,6 +31,23 @@ typedef enum {
   k_prcr_lock          = 0xA500, /**< Protection register lock value */
 } usb_hw_constants_t;
 
+/** @brief USB SYSCFG register values */
+typedef enum {
+  k_usb_syscfg_disabled = 0x0000, /**< USB module disabled (all bits clear) */
+} usb_syscfg_value_t;
+
+/** @brief FIFO operation timeouts and masks */
+typedef enum {
+  k_usb_fifo_timeout_iterations = 1000, /**< FIFO ready timeout (busy-wait iterations) */
+  k_usb_fifo_timeout_expired    = 0,    /**< Timeout counter expired */
+  k_usb_fifo_byte_mask          = 0xFF, /**< Byte mask for 8-bit FIFO read */
+} usb_fifo_constants_t;
+
+/** @brief USB address mask */
+typedef enum {
+  k_usb_address_mask_hw = 0x7F, /**< USB address mask (7 bits, 0-127) */
+} usb_address_mask_t;
+
 /* =============================================================================
  * Private Variables
  * =============================================================================
@@ -71,7 +88,7 @@ rx_err_t rx_usb_hw_init(void)
   SYSTEM.PRCR = k_prcr_lock;
 
   /* 2. Disable USB module before configuration */
-  USB0.SYSCFG = 0x0000;
+  USB0.SYSCFG = k_usb_syscfg_disabled;
 
   /* 3. Wait for USB clock to stabilize (if using PLL) */
   /* Note: USB requires 48 MHz clock from main PLL */
@@ -85,7 +102,7 @@ rx_err_t rx_usb_hw_init(void)
   /* DRPD = 0: Disable D+/D- pull-down (function mode) */
   /* DPRPU = 0: D+ pull-up disabled initially (enabled on attach) */
   /* USBE = 0: USB module disabled initially */
-  USB0.SYSCFG = 0x0000;
+  USB0.SYSCFG = k_usb_syscfg_disabled;
 
   /* 5. Configure USB clock */
   /* SCKE = 1: Enable USB clock */
@@ -137,7 +154,7 @@ rx_err_t rx_usb_hw_deinit(void)
   rx_log_debug(s_tag, "Deinitializing USB0 hardware");
 
   /* Disable USB module */
-  USB0.SYSCFG = 0x0000;
+  USB0.SYSCFG = k_usb_syscfg_disabled;
 
   /* Disable interrupt in ICU */
   ICU.IER[k_vect_usb0_usbi / 8] &= ~(1 << (k_vect_usb0_usbi % 8));
@@ -207,12 +224,12 @@ uint32_t rx_usb_hw_fifo_read(uint8_t pipe, uint8_t* data, uint32_t max_len)
   USB0.CFIFOSEL = (pipe & k_usb_fifosel_curpipe_mask);
 
   /* Wait for FIFO ready */
-  volatile uint32_t timeout = 1000;
+  volatile uint32_t timeout = k_usb_fifo_timeout_iterations;
   while (!(USB0.CFIFOCTR & k_usb_fifoctr_frdy) && timeout--) {
     __asm__ volatile("nop");
   }
 
-  if (timeout == 0) {
+  if (timeout == k_usb_fifo_timeout_expired) {
     return 0;
   }
 
@@ -224,7 +241,7 @@ uint32_t rx_usb_hw_fifo_read(uint8_t pipe, uint8_t* data, uint32_t max_len)
 
   /* Read data from FIFO */
   for (uint32_t i = 0; i < len; i++) {
-    data[i] = (uint8_t)(USB0.CFIFO & 0xFF);
+    data[i] = (uint8_t)(USB0.CFIFO & k_usb_fifo_byte_mask);
   }
 
   /* Clear buffer */
@@ -251,12 +268,12 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
   USB0.CFIFOSEL = (pipe & k_usb_fifosel_curpipe_mask) | k_usb_fifosel_isel;
 
   /* Wait for FIFO ready */
-  volatile uint32_t timeout = 1000;
+  volatile uint32_t timeout = k_usb_fifo_timeout_iterations;
   while (!(USB0.CFIFOCTR & k_usb_fifoctr_frdy) && timeout--) {
     __asm__ volatile("nop");
   }
 
-  if (timeout == 0) {
+  if (timeout == k_usb_fifo_timeout_expired) {
     return 0;
   }
 
@@ -300,7 +317,7 @@ rx_usb_state_t rx_usb_hw_get_bus_state(void)
  */
 void rx_usb_hw_set_address(uint8_t address)
 {
-  USB0.USBADDR = address & 0x7F;
+  USB0.USBADDR = address & k_usb_address_mask_hw;
   rx_log_debug(s_tag, "USB address set");
 }
 
