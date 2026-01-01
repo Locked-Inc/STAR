@@ -32,6 +32,23 @@
 #include "rx72n_regs.h"
 
 /* =============================================================================
+ * CRC Hardware Constants
+ * =============================================================================
+ */
+
+/** @brief IEEE 802.3 CRC-32 final XOR value */
+static const uint32_t k_crc_ieee_final_xor = 0xFFFFFFFF;
+
+/**
+ * @brief PRCR (Protect Register) values for CRC module access
+ */
+typedef enum {
+  k_prcr_key        = 0xA5, /**< PRCR unlock key (upper byte) */
+  k_prcr_unlock_crc = 0x0B, /**< Unlock PRC0, PRC1, PRC3 for CRC config */
+  k_prcr_lock_all   = 0x00, /**< Lock all protected registers */
+} rx_crc_prcr_constants_t;
+
+/* =============================================================================
  * Module State
  * =============================================================================
  */
@@ -50,9 +67,9 @@ rx_err_t rx_crc_init(void)
   }
 
   /* Enable CRC module by clearing module stop bit */
-  SYSTEM.PRCR = 0xA50B;                  /* Unlock protection for MSTPCR */
-  SYSTEM.MSTPCRB &= ~(1UL << MSTPB_CRC); /* Clear bit 23 to enable CRC */
-  SYSTEM.PRCR = 0xA500;                  /* Lock protection */
+  SYSTEM.PRCR = (k_prcr_key << 8) | k_prcr_unlock_crc; /* Unlock protection for MSTPCR */
+  SYSTEM.MSTPCRB &= ~(1UL << MSTPB_CRC);                /* Clear bit 23 to enable CRC */
+  SYSTEM.PRCR = (k_prcr_key << 8) | k_prcr_lock_all;    /* Lock protection */
 
   /*
      * Configure CRC peripheral for IEEE 802.3:
@@ -128,7 +145,7 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
      * IEEE 802.3 requires XOR with 0xFFFFFFFF after calculation.
      * The hardware outputs the raw CRC value, so we apply the final XOR.
      */
-  return CRC.CRCDOR ^ 0xFFFFFFFF;
+  return CRC.CRCDOR ^ k_crc_ieee_final_xor;
 }
 
 uint32_t rx_crc32_update_impl(uint32_t crc, const uint8_t* data, uint32_t len)

@@ -191,11 +191,13 @@ static inline uint32_t rx_frame_encoded_size(uint32_t payload_len)
  * =============================================================================
  */
 
-/** @brief Bit shift for high byte in 16-bit value */
-#define RX_BE16_HIGH_SHIFT 8
-
-/** @brief Mask to extract one byte */
-#define RX_BYTE_MASK 0xFFU
+/**
+ * @brief Byte manipulation constants for endianness conversions
+ */
+typedef enum {
+  k_rx_be16_high_shift = 8,    /**< Bit shift for high byte in 16-bit value */
+  k_rx_byte_mask       = 0xFFU, /**< Mask to extract one byte */
+} rx_byte_order_constants_t;
 
 /**
  * @brief Read uint16 from big-endian buffer
@@ -205,7 +207,7 @@ static inline uint32_t rx_frame_encoded_size(uint32_t payload_len)
  */
 static inline uint16_t rx_read_be16(const uint8_t* buf)
 {
-  return ((uint16_t)buf[0] << RX_BE16_HIGH_SHIFT) | (uint16_t)buf[1];
+  return ((uint16_t)buf[0] << k_rx_be16_high_shift) | (uint16_t)buf[1];
 }
 
 /**
@@ -216,8 +218,8 @@ static inline uint16_t rx_read_be16(const uint8_t* buf)
  */
 static inline void rx_write_be16(uint8_t* buf, uint16_t val)
 {
-  buf[0] = (uint8_t)(val >> RX_BE16_HIGH_SHIFT);
-  buf[1] = (uint8_t)(val & RX_BYTE_MASK);
+  buf[0] = (uint8_t)(val >> k_rx_be16_high_shift);
+  buf[1] = (uint8_t)(val & k_rx_byte_mask);
 }
 
 /* =============================================================================
