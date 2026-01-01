@@ -1,14 +1,16 @@
+/* lib/rx_nanopb/inc/rx_nanopb.h */
+
 /**
  * @file rx_nanopb.h
  * @brief nanopb Integration Wrapper for RX72N
- *
+ * @details
  * Provides simplified encode/decode functions with static buffers
  * for protocol buffer messages used in the STAR project.
  *
  * @see star-proto/proto/star/v1/ for message definitions
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef STAR_RX_NANOPB_H
@@ -35,9 +37,11 @@ extern "C" {
  */
 
 /**
- * @brief Maximum encode/decode buffer size
+ * @brief nanopb buffer configuration
  */
-#define RX_NANOPB_BUFFER_SIZE 512
+typedef enum {
+  k_nanopb_buffer_size = 512, /**< Maximum encode/decode buffer size */
+} rx_nanopb_params_t;
 
 /* =============================================================================
  * Initialization
@@ -60,7 +64,7 @@ rx_err_t rx_nanopb_init(void);
  * @brief Encode SetVelocityRequest to bytes
  *
  * @param[in]  msg    Message to encode
- * @param[out] buffer Output buffer (at least RX_NANOPB_BUFFER_SIZE bytes)
+ * @param[out] buffer Output buffer (at least k_nanopb_buffer_size bytes)
  * @param[out] len    Actual encoded length
  *
  * @return k_rx_ok on success
