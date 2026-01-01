@@ -53,7 +53,7 @@ static bool s_rspi_channel_initialized[k_rspi_max_channels] = {false, false, fal
  *
  * @return Pointer to RSPI register base, or NULL if invalid channel
  */
-static volatile RSPI_Type* internal_get_rspi_base(uint8_t channel)
+static volatile rx_rspi_regs_t* internal_get_rspi_base(uint8_t channel)
 {
   switch (channel) {
     case 0: {
@@ -91,7 +91,7 @@ rx_err_t rspi_init_peripheral(uint8_t channel, uint8_t mode, bool use_16bit)
   }
 
   /* Get RSPI base */
-  volatile RSPI_Type* rspi = internal_get_rspi_base(channel);
+  volatile rx_rspi_regs_t* rspi = internal_get_rspi_base(channel);
   if (rspi == NULL) {
     return k_rx_err_invalid_arg;
   }
@@ -159,7 +159,7 @@ rspi_peripheral_transfer(uint8_t channel, const uint8_t* tx_data, uint8_t* rx_da
   }
 
   /* Get RSPI base */
-  volatile RSPI_Type* rspi = internal_get_rspi_base(channel);
+  volatile rx_rspi_regs_t* rspi = internal_get_rspi_base(channel);
 
   for (uint16_t i = 0; i < length; i++) {
     /* Wait for transmit buffer empty */
@@ -208,7 +208,7 @@ rx_err_t rspi_peripheral_read_available(uint8_t channel, bool* available)
   }
 
   /* Get RSPI base */
-  volatile RSPI_Type* rspi = internal_get_rspi_base(channel);
+  volatile rx_rspi_regs_t* rspi = internal_get_rspi_base(channel);
 
   /* Check if receive buffer has data */
   *available = (rspi->SPSR & k_rspi_spsr_sprf) != 0;
@@ -227,7 +227,7 @@ rx_err_t rspi_peripheral_write_ready(uint8_t channel, bool* ready)
   }
 
   /* Get RSPI base */
-  volatile RSPI_Type* rspi = internal_get_rspi_base(channel);
+  volatile rx_rspi_regs_t* rspi = internal_get_rspi_base(channel);
 
   /* Check if transmit buffer is empty */
   *ready = (rspi->SPSR & k_rspi_spsr_sptef) != 0;
@@ -244,7 +244,7 @@ rx_err_t rspi_deinit(uint8_t channel)
   }
 
   /* Get RSPI base */
-  volatile RSPI_Type* rspi = internal_get_rspi_base(channel);
+  volatile rx_rspi_regs_t* rspi = internal_get_rspi_base(channel);
   if (rspi == NULL) {
     return k_rx_err_invalid_arg;
   }
