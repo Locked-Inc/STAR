@@ -48,7 +48,7 @@ static bool s_riic_channel_initialized[k_riic_max_channels] = {false, false, fal
  *
  * @return Pointer to RIIC register base, or NULL if invalid channel
  */
-static volatile RIIC_Type* internal_get_riic_base(uint8_t channel)
+static volatile rx_riic_regs_t* internal_get_riic_base(uint8_t channel)
 {
   switch (channel) {
     case 0: {
@@ -78,7 +78,7 @@ static volatile RIIC_Type* internal_get_riic_base(uint8_t channel)
 static rx_err_t internal_calculate_bit_rate(uint32_t frequency_hz, uint8_t* icbrl, uint8_t* icbrh)
 {
   /* PCLKB is used for RIIC (60 MHz on RX72N) */
-  const uint32_t pclk = PCLKB_HZ;
+  const uint32_t pclk = k_pclkb_hz;
 
   /* Calculate bit rate for standard formula:
    * I2C_CLK = PCLK / (2 * (ICBRL + 1) + (ICBRH + 1))
@@ -104,7 +104,7 @@ static rx_err_t internal_calculate_bit_rate(uint32_t frequency_hz, uint8_t* icbr
  *
  * @return k_rx_ok on success, k_rx_err_timeout on timeout
  */
-static rx_err_t internal_wait_bus_ready(volatile RIIC_Type* riic)
+static rx_err_t internal_wait_bus_ready(volatile rx_riic_regs_t* riic)
 {
   uint32_t timeout = k_riic_timeout_us;
 
@@ -127,7 +127,7 @@ static rx_err_t internal_wait_bus_ready(volatile RIIC_Type* riic)
  *
  * @return k_rx_ok on success, error code otherwise
  */
-static rx_err_t internal_send_start(volatile RIIC_Type* riic)
+static rx_err_t internal_send_start(volatile rx_riic_regs_t* riic)
 {
   /* Issue start condition */
   riic->ICCR2 |= k_riic_iccr2_st;
@@ -156,7 +156,7 @@ static rx_err_t internal_send_start(volatile RIIC_Type* riic)
  *
  * @return k_rx_ok on success, error code otherwise
  */
-static rx_err_t internal_send_stop(volatile RIIC_Type* riic)
+static rx_err_t internal_send_stop(volatile rx_riic_regs_t* riic)
 {
   /* Issue stop condition */
   riic->ICCR2 |= k_riic_iccr2_sp;
@@ -186,7 +186,7 @@ static rx_err_t internal_send_stop(volatile RIIC_Type* riic)
  *
  * @return k_rx_ok on success, k_rx_err_nack if NACK received
  */
-static rx_err_t internal_write_byte(volatile RIIC_Type* riic, uint8_t data)
+static rx_err_t internal_write_byte(volatile rx_riic_regs_t* riic, uint8_t data)
 {
   /* Wait for transmit data empty */
   uint32_t timeout = k_riic_timeout_us;
@@ -227,7 +227,7 @@ static rx_err_t internal_write_byte(volatile RIIC_Type* riic, uint8_t data)
  *
  * @return k_rx_ok on success, error code otherwise
  */
-static rx_err_t internal_read_byte(volatile RIIC_Type* riic, uint8_t* data, bool send_ack)
+static rx_err_t internal_read_byte(volatile rx_riic_regs_t* riic, uint8_t* data, bool send_ack)
 {
   /* Wait for receive data full */
   uint32_t timeout = k_riic_timeout_us;
@@ -273,7 +273,7 @@ rx_err_t riic_init(uint8_t channel, uint32_t frequency_hz)
   }
 
   /* Get RIIC base */
-  volatile RIIC_Type* riic = internal_get_riic_base(channel);
+  volatile rx_riic_regs_t* riic = internal_get_riic_base(channel);
   if (riic == NULL) {
     return k_rx_err_invalid_arg;
   }
@@ -331,7 +331,7 @@ rx_err_t riic_write(uint8_t channel, uint8_t device_addr, const uint8_t* data, u
   }
 
   /* Get RIIC base */
-  volatile RIIC_Type* riic = internal_get_riic_base(channel);
+  volatile rx_riic_regs_t* riic = internal_get_riic_base(channel);
 
   /* Wait for bus ready */
   rx_err_t err = internal_wait_bus_ready(riic);
@@ -378,7 +378,7 @@ rx_err_t riic_read(uint8_t channel, uint8_t device_addr, uint8_t* data, uint16_t
   }
 
   /* Get RIIC base */
-  volatile RIIC_Type* riic = internal_get_riic_base(channel);
+  volatile rx_riic_regs_t* riic = internal_get_riic_base(channel);
 
   /* Wait for bus ready */
   rx_err_t err = internal_wait_bus_ready(riic);
@@ -432,7 +432,7 @@ rx_err_t riic_write_read(uint8_t        channel,
   }
 
   /* Get RIIC base */
-  volatile RIIC_Type* riic = internal_get_riic_base(channel);
+  volatile rx_riic_regs_t* riic = internal_get_riic_base(channel);
 
   /* Wait for bus ready */
   rx_err_t err = internal_wait_bus_ready(riic);

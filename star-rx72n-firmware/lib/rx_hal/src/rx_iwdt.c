@@ -237,7 +237,7 @@ bool rx_iwdt_was_reset(void)
    *   1 = Refresh error occurred
    */
   uint16_t status = IWDT.IWDTSR;
-  return ((status & k_iwdt_undff) != 0) || ((status & k_iwdt_refef) != 0);
+  return ((status & k_iwdt_sr_undff) != 0) || ((status & k_iwdt_sr_refef) != 0);
 
 #else
   return false;
@@ -249,11 +249,11 @@ rx_iwdt_reset_cause_t rx_iwdt_get_reset_cause(void)
 #ifdef __RX__
   uint16_t status = IWDT.IWDTSR;
 
-  if (status & k_iwdt_refef) {
+  if (status & k_iwdt_sr_refef) {
     return k_iwdt_reset_refresh_error;
   }
 
-  if (status & k_iwdt_undff) {
+  if (status & k_iwdt_sr_undff) {
     return k_iwdt_reset_underflow;
   }
 
@@ -272,7 +272,7 @@ void rx_iwdt_clear_status(void)
    *
    * Bits 14-15 are write-0-to-clear
    */
-  IWDT.IWDTSR &= ~(k_iwdt_undff | k_iwdt_refef);
+  IWDT.IWDTSR &= ~(k_iwdt_sr_undff | k_iwdt_sr_refef);
 
 #else
   /* Host-side stub - no operation */

@@ -24,7 +24,7 @@
  *
  * @return Pointer to PORT register base, or NULL if invalid port
  */
-static volatile PORT_Type* internal_get_port_base(uint8_t port)
+static volatile rx_port_regs_t* internal_get_port_base(uint8_t port)
 {
   switch (port) {
     case 0: {
@@ -95,7 +95,7 @@ static volatile PORT_Type* internal_get_port_base(uint8_t port)
 static rx_err_t internal_validate_port_pin(uint8_t port, uint8_t pin)
 {
   /* Validate port */
-  volatile PORT_Type* port_base = internal_get_port_base(port);
+  volatile rx_port_regs_t* port_base = internal_get_port_base(port);
   if (port_base == NULL) {
     rx_log_error("GPIO", "Invalid port number");
     return k_rx_err_gpio_invalid_port;
@@ -132,7 +132,7 @@ rx_err_t gpio_set_output(uint8_t port, uint8_t pin)
   }
 
   /* Get port base address */
-  volatile PORT_Type* port_base = internal_get_port_base(port);
+  volatile rx_port_regs_t* port_base = internal_get_port_base(port);
 
   /* Set as GPIO mode (not peripheral) */
   port_base->PMR &= ~(1 << pin);
@@ -162,7 +162,7 @@ rx_err_t gpio_set_input(uint8_t port, uint8_t pin)
   }
 
   /* Get port base address */
-  volatile PORT_Type* port_base = internal_get_port_base(port);
+  volatile rx_port_regs_t* port_base = internal_get_port_base(port);
 
   /* Set as GPIO mode */
   port_base->PMR &= ~(1 << pin);
@@ -182,7 +182,7 @@ rx_err_t gpio_write_high(uint8_t port, uint8_t pin)
   RX_RETURN_ON_ERROR(err, "GPIO", "Port/pin validation failed");
 
   /* Get port base address */
-  volatile PORT_Type* port_base = internal_get_port_base(port);
+  volatile rx_port_regs_t* port_base = internal_get_port_base(port);
 
   port_base->PODR |= (1 << pin);
 
@@ -196,7 +196,7 @@ rx_err_t gpio_write_low(uint8_t port, uint8_t pin)
   RX_RETURN_ON_ERROR(err, "GPIO", "Port/pin validation failed");
 
   /* Get port base address */
-  volatile PORT_Type* port_base = internal_get_port_base(port);
+  volatile rx_port_regs_t* port_base = internal_get_port_base(port);
 
   port_base->PODR &= ~(1 << pin);
 
@@ -210,7 +210,7 @@ rx_err_t gpio_toggle(uint8_t port, uint8_t pin)
   RX_RETURN_ON_ERROR(err, "GPIO", "Port/pin validation failed");
 
   /* Get port base address */
-  volatile PORT_Type* port_base = internal_get_port_base(port);
+  volatile rx_port_regs_t* port_base = internal_get_port_base(port);
 
   port_base->PODR ^= (1 << pin);
 
@@ -227,7 +227,7 @@ rx_err_t gpio_read(uint8_t port, uint8_t pin, bool* value)
   RX_RETURN_ON_ERROR(err, "GPIO", "Port/pin validation failed");
 
   /* Get port base address */
-  volatile PORT_Type* port_base = internal_get_port_base(port);
+  volatile rx_port_regs_t* port_base = internal_get_port_base(port);
 
   *value = (port_base->PIDR & (1 << pin)) != 0;
 

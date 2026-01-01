@@ -93,23 +93,23 @@ static int32_t            s_last_count[k_encoder_max_channels]          = {0};
  *
  * @return Pointer to MTU register base, or NULL if invalid
  */
-static volatile MTU_Channel_Type* internal_get_mtu_base(rx_mtu_channel_t channel)
+static volatile rx_mtu_channel_regs_t* internal_get_mtu_base(rx_mtu_channel_t channel)
 {
   switch (channel) {
     case k_mtu_channel_0:
-      return (volatile MTU_Channel_Type*)MTU0_BASE;
+      return (volatile rx_mtu_channel_regs_t*)MTU0_BASE;
     case k_mtu_channel_1:
-      return (volatile MTU_Channel_Type*)MTU1_BASE;
+      return (volatile rx_mtu_channel_regs_t*)MTU1_BASE;
     case k_mtu_channel_2:
-      return (volatile MTU_Channel_Type*)MTU2_BASE;
+      return (volatile rx_mtu_channel_regs_t*)MTU2_BASE;
     case k_mtu_channel_3:
-      return (volatile MTU_Channel_Type*)((volatile uint8_t*)MTU3_BASE);
+      return (volatile rx_mtu_channel_regs_t*)((volatile uint8_t*)MTU3_BASE);
     case k_mtu_channel_4:
-      return (volatile MTU_Channel_Type*)((volatile uint8_t*)MTU4_BASE);
+      return (volatile rx_mtu_channel_regs_t*)((volatile uint8_t*)MTU4_BASE);
     case k_mtu_channel_6:
-      return (volatile MTU_Channel_Type*)MTU6_BASE;
+      return (volatile rx_mtu_channel_regs_t*)MTU6_BASE;
     case k_mtu_channel_7:
-      return (volatile MTU_Channel_Type*)MTU7_BASE;
+      return (volatile rx_mtu_channel_regs_t*)MTU7_BASE;
     default:
       return NULL;
   }
@@ -136,7 +136,7 @@ rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
     return k_rx_err_invalid_arg;
   }
 
-  volatile MTU_Channel_Type* mtu = internal_get_mtu_base(channel);
+  volatile rx_mtu_channel_regs_t* mtu = internal_get_mtu_base(channel);
   if (mtu == NULL) {
     return k_rx_err_invalid_arg;
   }
@@ -202,7 +202,7 @@ rx_err_t rx_encoder_read_raw(rx_mtu_channel_t channel, uint16_t* count)
     return k_rx_err_invalid_state;
   }
 
-  volatile MTU_Channel_Type* mtu = internal_get_mtu_base(channel);
+  volatile rx_mtu_channel_regs_t* mtu = internal_get_mtu_base(channel);
   if (mtu == NULL) {
     return k_rx_err_invalid_arg;
   }
@@ -219,7 +219,7 @@ rx_err_t rx_encoder_read_count(rx_mtu_channel_t channel, rx_encoder_state_t* sta
     return k_rx_err_invalid_state;
   }
 
-  volatile MTU_Channel_Type* mtu = internal_get_mtu_base(channel);
+  volatile rx_mtu_channel_regs_t* mtu = internal_get_mtu_base(channel);
   if (mtu == NULL) {
     return k_rx_err_invalid_arg;
   }
@@ -305,7 +305,7 @@ rx_err_t rx_encoder_reset(rx_mtu_channel_t channel)
     return k_rx_err_invalid_state;
   }
 
-  volatile MTU_Channel_Type* mtu = internal_get_mtu_base(channel);
+  volatile rx_mtu_channel_regs_t* mtu = internal_get_mtu_base(channel);
   if (mtu == NULL) {
     return k_rx_err_invalid_arg;
   }
@@ -329,7 +329,7 @@ rx_err_t rx_encoder_set_count(rx_mtu_channel_t channel, int32_t count)
     return k_rx_err_invalid_state;
   }
 
-  volatile MTU_Channel_Type* mtu = internal_get_mtu_base(channel);
+  volatile rx_mtu_channel_regs_t* mtu = internal_get_mtu_base(channel);
   if (mtu == NULL) {
     return k_rx_err_invalid_arg;
   }

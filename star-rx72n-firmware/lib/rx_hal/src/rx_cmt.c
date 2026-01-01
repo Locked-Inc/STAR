@@ -70,7 +70,7 @@ static void*             s_cmt_user_data[k_cmt_max_channels]   = {NULL};
  *
  * @return Pointer to CMT register base, or NULL if invalid
  */
-static volatile CMT_Channel_Type* internal_get_cmt_base(rx_cmt_channel_t channel)
+static volatile rx_cmt_channel_regs_t* internal_get_cmt_base(rx_cmt_channel_t channel)
 {
   switch (channel) {
     case k_cmt_channel_0:
@@ -98,7 +98,7 @@ static volatile CMT_Channel_Type* internal_get_cmt_base(rx_cmt_channel_t channel
 static rx_err_t
 internal_calculate_cmt_params(uint32_t frequency_hz, uint8_t* divider, uint16_t* cmcor)
 {
-  const uint32_t pclkb = PCLKB_HZ;
+  const uint32_t pclkb = k_pclkb_hz;
 
   if (frequency_hz == 0) {
     return k_rx_err_invalid_arg;
@@ -180,12 +180,12 @@ rx_err_t rx_cmt_init(rx_cmt_channel_t channel, const rx_cmt_config_t* config)
     return k_rx_err_conflict;
   }
 
-  if (config->priority > IPR_LEVEL_MAX) {
+  if (config->priority > k_ipr_level_max) {
     rx_log_error(s_tag, "Error occurred");
     return k_rx_err_invalid_arg;
   }
 
-  volatile CMT_Channel_Type* cmt = internal_get_cmt_base(channel);
+  volatile rx_cmt_channel_regs_t* cmt = internal_get_cmt_base(channel);
   if (cmt == NULL) {
     return k_rx_err_invalid_arg;
   }
@@ -222,7 +222,7 @@ rx_err_t rx_cmt_init(rx_cmt_channel_t channel, const rx_cmt_config_t* config)
   cmt->CMCNT = 0;
 
   /* Configure interrupt */
-  uint8_t vector = VECT_CMT0_CMI0 + channel;
+  uint8_t vector = k_vect_cmt0_cmi0 + channel;
 
   /* Set interrupt priority */
   ICU.IPR[vector] = config->priority;
@@ -310,7 +310,7 @@ rx_err_t rx_cmt_get_count(rx_cmt_channel_t channel, uint16_t* count)
     return k_rx_err_invalid_state;
   }
 
-  volatile CMT_Channel_Type* cmt = internal_get_cmt_base(channel);
+  volatile rx_cmt_channel_regs_t* cmt = internal_get_cmt_base(channel);
   if (cmt == NULL) {
     return k_rx_err_invalid_arg;
   }
@@ -329,7 +329,7 @@ rx_err_t rx_cmt_deinit(rx_cmt_channel_t channel)
   rx_cmt_stop(channel);
 
   /* Disable interrupt */
-  uint8_t vector    = VECT_CMT0_CMI0 + channel;
+  uint8_t vector    = k_vect_cmt0_cmi0 + channel;
   uint8_t ier_index = vector / 8;
   uint8_t ier_bit   = vector % 8;
   ICU.IER[ier_index] &= ~(1 << ier_bit);

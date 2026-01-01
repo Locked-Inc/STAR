@@ -49,7 +49,7 @@ static bool s_adc_unit_initialized[k_adc_max_units] = {false, false};
  *
  * @return Pointer to ADC register base, or NULL if invalid unit
  */
-static volatile S12AD_Type* internal_get_adc_base(uint8_t unit)
+static volatile rx_s12ad_regs_t* internal_get_adc_base(uint8_t unit)
 {
   switch (unit) {
     case 0: {
@@ -107,7 +107,7 @@ rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits)
   }
 
   /* Get ADC base */
-  volatile S12AD_Type* adc = internal_get_adc_base(unit);
+  volatile rx_s12ad_regs_t* adc = internal_get_adc_base(unit);
   if (adc == NULL) {
     return k_rx_err_invalid_arg;
   }
@@ -172,7 +172,7 @@ rx_err_t adc_read(uint8_t unit, uint8_t channel, uint16_t* value)
   }
 
   /* Get ADC base */
-  volatile S12AD_Type* adc = internal_get_adc_base(unit);
+  volatile rx_s12ad_regs_t* adc = internal_get_adc_base(unit);
   if (adc == NULL) {
     return k_rx_err_invalid_arg;
   }

@@ -55,7 +55,7 @@ static const float s_mv_to_v_divisor = 1000.0f;
 
 static rx_err_t            internal_drv8243_check_current_limit(rx_drv8243_handle_t* handle);
 static rx_err_t            internal_drv8243_configure_fault_pin(rx_drv8243_handle_t* handle);
-static volatile PORT_Type* internal_get_port_base(uint8_t port);
+static volatile rx_port_regs_t* internal_get_port_base(uint8_t port);
 
 /* =============================================================================
  * Public API Implementation
@@ -262,7 +262,7 @@ rx_err_t rx_drv8243_get_fault_status(rx_drv8243_handle_t* handle, bool* out_faul
   }
 
   /* Read nFAULT pin (active low) using PORT register */
-  volatile PORT_Type* port = internal_get_port_base(handle->port_nfault);
+  volatile rx_port_regs_t* port = internal_get_port_base(handle->port_nfault);
   if (port == NULL) {
     rx_log_error(s_tag, "Error occurred");
     return k_rx_err_invalid_arg;
@@ -358,7 +358,7 @@ static rx_err_t internal_drv8243_check_current_limit(rx_drv8243_handle_t* handle
  */
 static rx_err_t internal_drv8243_configure_fault_pin(rx_drv8243_handle_t* handle)
 {
-  volatile PORT_Type* port = internal_get_port_base(handle->port_nfault);
+  volatile rx_port_regs_t* port = internal_get_port_base(handle->port_nfault);
   if (port == NULL) {
     rx_log_error(s_tag, "Error occurred");
     return k_rx_err_invalid_arg;
@@ -384,7 +384,7 @@ static rx_err_t internal_drv8243_configure_fault_pin(rx_drv8243_handle_t* handle
  * @return Pointer to PORT register structure
  * @return NULL if port number is invalid
  */
-static volatile PORT_Type* internal_get_port_base(uint8_t port)
+static volatile rx_port_regs_t* internal_get_port_base(uint8_t port)
 {
   switch (port) {
     case 0:

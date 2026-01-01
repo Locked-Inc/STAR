@@ -26,7 +26,7 @@ extern "C" {
 
 /* =============================================================================
  * Mock USB0 Register Structure
- * Mirrors USB0_Type from rx72n_regs.h
+ * Mirrors rx_usb_regs_t from rx72n_regs.h
  * =============================================================================
  */
 
@@ -96,7 +96,7 @@ typedef struct {
 
 /* =============================================================================
  * Mock ICU Register Structure
- * Mirrors ICU_Type from rx72n_regs.h (simplified for USB testing)
+ * Mirrors rx_icu_regs_t from rx72n_regs.h (simplified for USB testing)
  * =============================================================================
  */
 
@@ -108,7 +108,7 @@ typedef struct {
 
 /* =============================================================================
  * Mock SYSTEM Register Structure
- * Mirrors SYSTEM_Type from rx72n_regs.h (subset for USB testing)
+ * Mirrors rx_system_regs_t from rx72n_regs.h (subset for USB testing)
  * =============================================================================
  */
 

@@ -56,7 +56,7 @@ rx_err_t rx_usb_hw_init(void)
   SYSTEM.PRCR = 0xA50B;
 
   /* Clear module stop bit for USB0 (bit 19 in MSTPCRB) */
-  SYSTEM.MSTPCRB &= ~(1UL << MSTPB_USB0);
+  SYSTEM.MSTPCRB &= ~(1UL << k_mstpb_usb0);
 
   /* Lock protection */
   SYSTEM.PRCR = 0xA500;
@@ -98,13 +98,13 @@ rx_err_t rx_usb_hw_init(void)
 
   /* 8. Configure Interrupt Controller (ICU) */
   /* Clear pending interrupt */
-  ICU.IR[VECT_USB0_USBI] = 0;
+  ICU.IR[k_vect_usb0_usbi] = 0;
 
   /* Set interrupt priority (6 = moderate, below motor control) */
-  ICU.IPR[VECT_USB0_USBI] = 6;
+  ICU.IPR[k_vect_usb0_usbi] = 6;
 
   /* Enable interrupt in IER */
-  ICU.IER[VECT_USB0_USBI / 8] |= (1 << (VECT_USB0_USBI % 8));
+  ICU.IER[k_vect_usb0_usbi / 8] |= (1 << (k_vect_usb0_usbi % 8));
 
   /* 9. Set default control pipe max packet size (64 bytes for FS) */
   USB0.DCPMAXP = k_usb_cdc_max_packet_fs;
@@ -131,12 +131,12 @@ rx_err_t rx_usb_hw_deinit(void)
   USB0.SYSCFG = 0x0000;
 
   /* Disable interrupt in ICU */
-  ICU.IER[VECT_USB0_USBI / 8] &= ~(1 << (VECT_USB0_USBI % 8));
-  ICU.IR[VECT_USB0_USBI] = 0;
+  ICU.IER[k_vect_usb0_usbi / 8] &= ~(1 << (k_vect_usb0_usbi % 8));
+  ICU.IR[k_vect_usb0_usbi] = 0;
 
   /* Disable USB0 module clock */
   SYSTEM.PRCR = 0xA50B;
-  SYSTEM.MSTPCRB |= (1UL << MSTPB_USB0);
+  SYSTEM.MSTPCRB |= (1UL << k_mstpb_usb0);
   SYSTEM.PRCR = 0xA500;
 
   s_hw_initialized = false;

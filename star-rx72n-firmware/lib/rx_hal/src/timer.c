@@ -97,13 +97,13 @@ rx_err_t timer_init(void)
 
   /* Configure interrupt controller (ICU) */
   /* Clear any pending interrupt */
-  ICU.IR[VECT_CMT0_CMI0] = 0;
+  ICU.IR[k_vect_cmt0_cmi0] = 0;
 
   /* Set interrupt priority (3 out of 15) */
-  ICU.IPR[VECT_CMT0_CMI0] = k_cmt0_irq_priority;
+  ICU.IPR[k_vect_cmt0_cmi0] = k_cmt0_irq_priority;
 
   /* Enable CMT0 interrupt in ICU */
-  ICU.IER[VECT_CMT0_CMI0 / 8] |= (1 << (VECT_CMT0_CMI0 % 8));
+  ICU.IER[k_vect_cmt0_cmi0 / 8] |= (1 << (k_vect_cmt0_cmi0 % 8));
 
   /* Start CMT0 */
   CMT_CTRL.CMSTR0 |= 0x01;
