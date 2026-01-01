@@ -1,9 +1,9 @@
-/* include/rx_infrastructure.h */
+/* lib/rx_core/inc/rx_infrastructure.h */
 
 /**
  * @file rx_infrastructure.h
  * @brief Global Infrastructure Initialization
- *
+ * @details
  * Provides global instances of error handler and pin validator.
  * Centralizes initialization of core infrastructure components.
  *
@@ -12,6 +12,7 @@
  * not the concrete types.
  *
  * Usage:
+ * @code
  *   // In main.c, before any other initialization:
  *   rx_err_t err = rx_infrastructure_init();
  *   RX_ERROR_CHECK(err);
@@ -23,6 +24,10 @@
  *   // Use through interfaces:
  *   error_iface->report_error(error_iface->ctx, err, "MODULE", "Operation failed");
  *   pin_iface->reserve_pin(pin_iface->ctx, 0xA, 5, "SPI_MOSI");
+ * @endcode
+ *
+ * @date 2025-12-21
+ * @copyright Copyright (c) 2025 STAR Project
  */
 
 #ifndef STAR_RX72N_INFRASTRUCTURE_H

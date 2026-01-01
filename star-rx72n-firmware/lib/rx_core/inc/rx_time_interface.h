@@ -1,7 +1,9 @@
+/* lib/rx_core/inc/rx_time_interface.h */
+
 /**
  * @file rx_time_interface.h
  * @brief Time Interface (Dependency Inversion Principle)
- *
+ * @details
  * Defines the abstract interface for time operations in RX72N firmware.
  * Follows rx_error_interface_t pattern for architectural consistency.
  *
@@ -14,6 +16,7 @@
  * - Decoupling: Communication layers depend on interface, not ThreadX
  *
  * Usage:
+ * @code
  *   // 1. Create concrete implementation (ThreadX or mock)
  *   rx_time_interface_t time_iface;
  *   rx_time_threadx_get_interface(&time_iface);  // or mock_time_get_interface()
@@ -23,9 +26,10 @@
  *
  *   // 3. Use through interface
  *   time_iface.sleep_ms(time_iface.ctx, 10);
+ * @endcode
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2025-12-21
+ * @copyright Copyright (c) 2025 STAR Project
  */
 
 #ifndef STAR_RX72N_TIME_INTERFACE_H
@@ -102,25 +106,10 @@ typedef bool (*rx_time_is_elapsed_fn)(void* ctx, uint32_t start_ms, uint32_t tim
  * All function pointers receive this context as their first parameter.
  */
 struct rx_time_interface {
-  /**
-   * @brief Implementation context (opaque pointer to concrete handler)
-   */
-  void* ctx;
-
-  /**
-   * @brief Sleep for specified milliseconds
-   */
-  rx_time_sleep_ms_fn sleep_ms;
-
-  /**
-   * @brief Get current time in milliseconds
-   */
-  rx_time_get_ms_fn get_ms;
-
-  /**
-   * @brief Check if timeout has elapsed
-   */
-  rx_time_is_elapsed_fn is_elapsed;
+  void*                 ctx;        /**< Implementation context (opaque pointer to concrete handler) */
+  rx_time_sleep_ms_fn   sleep_ms;   /**< Sleep for specified milliseconds */
+  rx_time_get_ms_fn     get_ms;     /**< Get current time in milliseconds */
+  rx_time_is_elapsed_fn is_elapsed; /**< Check if timeout has elapsed */
 };
 
 /* =============================================================================
