@@ -375,8 +375,8 @@ rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, ui
   }
 
   /* Extract payload length (big-endian) */
-  uint16_t payload_len =
-    ((uint16_t)header_buf[k_hdr_len_high] << k_be16_high_shift) | (uint16_t)header_buf[k_hdr_len_low];
+  uint16_t payload_len = ((uint16_t)header_buf[k_hdr_len_high] << k_be16_high_shift) |
+                         (uint16_t)header_buf[k_hdr_len_low];
   if (payload_len > k_frame_max_payload) {
     rx_log_error(s_tag, "Payload too large");
     return k_rx_err_invalid_size;

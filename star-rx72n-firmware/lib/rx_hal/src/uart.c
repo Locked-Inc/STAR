@@ -21,22 +21,23 @@
 
 /** @brief UART configuration constants */
 typedef enum {
-  k_uart_baudrate = 115200, /**< Baud rate: 115200 bps */
-  k_uart_brr_value = 7,     /**< BRR register value for 115200 bps at 60MHz PCLKB */
+  k_uart_baudrate  = 115200, /**< Baud rate: 115200 bps */
+  k_uart_brr_value = 7,      /**< BRR register value for 115200 bps at 60MHz PCLKB */
 } uart_config_t;
 
 /** @brief UART timing constants */
 typedef enum {
-  k_uart_bit_time_delay_cycles = 1000, /**< Bit time delay (~8.68us at 115200 bps, >520 cycles at 60MHz) */
+  k_uart_bit_time_delay_cycles =
+    1000, /**< Bit time delay (~8.68us at 115200 bps, >520 cycles at 60MHz) */
 } uart_timing_t;
 
 /** @brief SCI register values */
 typedef enum {
-  k_sci_scr_disabled      = 0x00, /**< SCR: All functions disabled */
-  k_sci_scr_tx_enabled    = 0x20, /**< SCR: Transmit enabled (TE=1) */
-  k_sci_smr_async_8n1     = 0x00, /**< SMR: Async mode, 8 data bits, no parity, 1 stop bit, PCLK/1 */
-  k_sci_semr_default      = 0x00, /**< SEMR: Default extended mode */
-  k_sci_ssr_tdre_flag     = 0x80, /**< SSR: Transmit data register empty flag */
+  k_sci_scr_disabled   = 0x00, /**< SCR: All functions disabled */
+  k_sci_scr_tx_enabled = 0x20, /**< SCR: Transmit enabled (TE=1) */
+  k_sci_smr_async_8n1  = 0x00, /**< SMR: Async mode, 8 data bits, no parity, 1 stop bit, PCLK/1 */
+  k_sci_semr_default   = 0x00, /**< SEMR: Default extended mode */
+  k_sci_ssr_tdre_flag  = 0x80, /**< SSR: Transmit data register empty flag */
 } sci_register_values_t;
 
 /* =============================================================================

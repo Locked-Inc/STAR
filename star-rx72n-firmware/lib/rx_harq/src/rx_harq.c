@@ -192,8 +192,7 @@ rx_err_t rx_harq_init(rx_harq_handle_t* harq, const rx_harq_config_t* config)
     }
 
     /* Initialize FEC decoder with survivors buffer */
-    err =
-      rx_fec_decoder_init(&harq->decoder, harq->decoder_survivors, k_harq_soft_buffer_size / 2);
+    err = rx_fec_decoder_init(&harq->decoder, harq->decoder_survivors, k_harq_soft_buffer_size / 2);
     if (err != k_rx_ok) {
       rx_fec_encoder_deinit(&harq->encoder);
       return err;

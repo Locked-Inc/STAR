@@ -18,11 +18,11 @@ static rx_fec_encoder_t s_encoder;
 static rx_fec_decoder_t s_decoder;
 
 /* Decoder survivors buffer (large enough for max test) */
-static uint64_t s_survivors[RX_FEC_MAX_SYMBOLS];
+static uint64_t s_survivors[k_fec_max_symbols];
 
 void setUp(void) {
     rx_fec_encoder_init(&s_encoder);
-    rx_fec_decoder_init(&s_decoder, s_survivors, RX_FEC_MAX_SYMBOLS);
+    rx_fec_decoder_init(&s_decoder, s_survivors, k_fec_max_symbols);
 }
 
 void tearDown(void) {

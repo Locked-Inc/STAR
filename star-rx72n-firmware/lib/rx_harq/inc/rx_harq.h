@@ -184,9 +184,9 @@ typedef struct {
   rx_fec_encoder_t    encoder;     /**< FEC encoder */
   rx_fec_decoder_t    decoder;     /**< FEC decoder */
   uint64_t            decoder_survivors[k_harq_soft_buffer_size / 2]; /**< Decoder buf */
-  rx_soft_bit_t       decode_buffer[k_harq_soft_buffer_size]; /**< Combined soft bits buf */
-  uint8_t             fec_enabled;                            /**< Non-zero if FEC is enabled */
-  uint8_t             initialized;                            /**< Non-zero if initialized */
+  rx_soft_bit_t       decode_buffer[k_harq_soft_buffer_size];         /**< Combined soft bits buf */
+  uint8_t             fec_enabled; /**< Non-zero if FEC is enabled */
+  uint8_t             initialized; /**< Non-zero if initialized */
 } rx_harq_handle_t;
 
 /**
