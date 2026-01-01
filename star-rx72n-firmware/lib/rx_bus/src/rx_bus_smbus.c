@@ -48,7 +48,7 @@ static uint8_t internal_crc8(uint8_t crc, const uint8_t* data, uint16_t length)
   for (uint16_t i = 0; i < length; i++) {
     crc ^= data[i];
     for (uint8_t bit = 0; bit < k_bits_per_byte; bit++) {
-      if (crc & 0x80) {
+      if (crc & k_byte_msb_mask) {
         crc = (crc << k_i2c_addr_shift) ^ k_smbus_crc8_poly;
       } else {
         crc = (crc << k_i2c_addr_shift);
@@ -263,7 +263,8 @@ static rx_err_t internal_smbus_read_word_data_callback(rx_bus_config_t* bus_conf
   }
 
   /* Little-endian */
-  *ctx->data  = (uint16_t)read_data[k_smbus_word_lsb] | ((uint16_t)read_data[k_smbus_word_msb] << 8);
+  *ctx->data = (uint16_t)read_data[k_smbus_word_lsb] |
+               ((uint16_t)read_data[k_smbus_word_msb] << k_bits_per_byte);
   ctx->result = RX_OK;
   return RX_OK;
 }
@@ -344,7 +345,9 @@ rx_err_t rx_bus_smbus_write_word_data(rx_bus_manager_t* manager,
   RX_CHECK_NULL_PTR(bus_name, s_tag, "bus_name pointer is NULL");
 
   /* Little-endian */
-  uint8_t write_buf[k_smbus_word_buf_size] = {command, (uint8_t)(data & 0xFF), (uint8_t)(data >> 8)};
+  uint8_t write_buf[k_smbus_word_buf_size] = {command,
+                                               (uint8_t)(data & k_byte_mask),
+                                               (uint8_t)(data >> k_bits_per_byte)};
   return rx_bus_i2c_write(manager, bus_name, write_buf, k_smbus_word_buf_size);
 }
 

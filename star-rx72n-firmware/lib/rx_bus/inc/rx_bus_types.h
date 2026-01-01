@@ -202,6 +202,14 @@ typedef enum {
 } rx_i2c_constants_t;
 
 /**
+ * @brief Bit manipulation masks
+ */
+typedef enum {
+  k_byte_mask     = 0xFF, /* Full byte mask (all 8 bits) */
+  k_byte_msb_mask = 0x80, /* Most significant bit of a byte (bit 7) */
+} bit_masks_t;
+
+/**
  * @brief SMBUS buffer and transfer sizes
  */
 typedef enum {
