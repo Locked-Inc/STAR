@@ -1,13 +1,15 @@
+/* lib/rx_harq/src/rx_harq.c */
+
 /**
  * @file rx_harq.c
  * @brief Hybrid Automatic Repeat Request (HARQ) Protocol Implementation
- *
+ * @details
  * Implements Chase Combining HARQ Type I for reliable communication.
  * This is a C port of star-gateway/internal/harq/ and fec/combiner.go
  * for bit-exact compatibility.
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "rx_harq.h"
@@ -61,7 +63,7 @@ rx_chase_combiner_add(rx_chase_combiner_t* combiner, const rx_soft_bit_t* soft_b
     return k_rx_err_invalid_arg;
   }
 
-  if (len > RX_HARQ_SOFT_BUFFER_SIZE) {
+  if (len > k_harq_soft_buffer_size) {
     return k_rx_err_invalid_size;
   }
 
@@ -191,7 +193,7 @@ rx_err_t rx_harq_init(rx_harq_handle_t* harq, const rx_harq_config_t* config)
 
     /* Initialize FEC decoder with survivors buffer */
     err =
-      rx_fec_decoder_init(&harq->decoder, harq->decoder_survivors, RX_HARQ_SOFT_BUFFER_SIZE / 2);
+      rx_fec_decoder_init(&harq->decoder, harq->decoder_survivors, k_harq_soft_buffer_size / 2);
     if (err != k_rx_ok) {
       rx_fec_encoder_deinit(&harq->encoder);
       return err;
