@@ -1,15 +1,17 @@
+/* lib/rx_spi_comm/src/rx_spi_comm.c */
+
 /**
  * @file rx_spi_comm.c
  * @brief High-Level SPI Communication Layer for RX72N
- *
+ * @details
  * Implements reliable SPI communication by integrating the frame layer
  * and SPI HAL. Handles frame encoding/decoding, CRC validation, and
  * sequence number management.
  *
  * @note RX72N operates as SPI peripheral, RPi5 as SPI controller.
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "rx_spi_comm.h"
@@ -49,8 +51,10 @@ typedef enum {
   k_hdr_flags     = 7, /**< Frame flags */
 } frame_header_offset_t;
 
-/** @brief Bit shift for big-endian high byte */
-#define BE16_HIGH_SHIFT 8
+/** @brief Big-endian conversion constants */
+typedef enum {
+  k_be16_high_shift = 8, /**< Bit shift for big-endian high byte */
+} be_conversion_t;
 
 /* =============================================================================
  * Internal Helpers
@@ -356,7 +360,7 @@ rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, ui
   }
 
   /* Validate sync word (big-endian) */
-  uint16_t sync = ((uint16_t)header_buf[k_hdr_sync_high] << BE16_HIGH_SHIFT) |
+  uint16_t sync = ((uint16_t)header_buf[k_hdr_sync_high] << k_be16_high_shift) |
                   (uint16_t)header_buf[k_hdr_sync_low];
   if (sync != k_frame_sync_word) {
     rx_log_error(s_tag, "Invalid sync word");
@@ -365,7 +369,7 @@ rx_err_t rx_spi_comm_receive(rx_spi_comm_handle_t* handle, rx_frame_t* frame, ui
 
   /* Extract payload length (big-endian) */
   uint16_t payload_len =
-    ((uint16_t)header_buf[k_hdr_len_high] << BE16_HIGH_SHIFT) | (uint16_t)header_buf[k_hdr_len_low];
+    ((uint16_t)header_buf[k_hdr_len_high] << k_be16_high_shift) | (uint16_t)header_buf[k_hdr_len_low];
   if (payload_len > k_frame_max_payload) {
     rx_log_error(s_tag, "Payload too large");
     return k_rx_err_invalid_size;

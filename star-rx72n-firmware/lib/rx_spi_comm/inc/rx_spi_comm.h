@@ -1,7 +1,9 @@
+/* lib/rx_spi_comm/inc/rx_spi_comm.h */
+
 /**
  * @file rx_spi_comm.h
  * @brief High-Level SPI Communication Layer for RX72N
- *
+ * @details
  * Integrates Frame Layer, HARQ/FEC, and SPI HAL for reliable communication
  * with the RPi5 controller. Handles:
  * - Frame encoding/decoding with CRC-32
@@ -16,8 +18,8 @@
  * @see hardware.h for SPI HAL
  * @see docs/sections/01_nanopb_protocol.tex for protocol specification
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef STAR_RX_SPI_COMM_H
