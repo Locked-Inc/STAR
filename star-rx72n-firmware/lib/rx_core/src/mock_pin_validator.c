@@ -37,13 +37,13 @@ static uint16_t internal_pin_to_index(uint8_t port, uint8_t pin)
   /* Handle decimal ports 0-9 */
   if (port <= 9) {
     uint16_t index = (uint16_t)(port * 8 + pin);
-    return (index < MOCK_PIN_VALIDATOR_MAX_PINS) ? index : 0xFFFF;
+    return (index < k_mock_pin_validator_max_pins) ? index : 0xFFFF;
   }
 
   /* Handle hex ports A-G (0xA-0x10, which is 10-16 decimal) */
   if (port >= 0xA && port <= 0x10) {
     uint16_t index = (uint16_t)(((port - 0xA) + 10) * 8 + pin);
-    return (index < MOCK_PIN_VALIDATOR_MAX_PINS) ? index : 0xFFFF;
+    return (index < k_mock_pin_validator_max_pins) ? index : 0xFFFF;
   }
 
   return 0xFFFF; /* Invalid port */
@@ -136,8 +136,8 @@ static rx_err_t impl_reserve_pin(void* ctx, uint8_t port, uint8_t pin, const cha
 
   /* Reserve the pin */
   validator->reserved_pins[index] = true;
-  strncpy(validator->function_names[index], function, MOCK_PIN_VALIDATOR_FUNCTION_NAME_MAX - 1);
-  validator->function_names[index][MOCK_PIN_VALIDATOR_FUNCTION_NAME_MAX - 1] = '\0';
+  strncpy(validator->function_names[index], function, k_mock_pin_validator_function_name_max - 1);
+  validator->function_names[index][k_mock_pin_validator_function_name_max - 1] = '\0';
   validator->reserve_call_count++;
 
   return RX_OK;
@@ -253,7 +253,7 @@ static rx_err_t impl_clear_all_reservations(void* ctx)
   }
 
   /* Clear all reservations (but keep validation and call count tracking) */
-  for (uint32_t i = 0; i < MOCK_PIN_VALIDATOR_MAX_PINS; i++) {
+  for (uint32_t i = 0; i < k_mock_pin_validator_max_pins; i++) {
     validator->reserved_pins[i]     = false;
     validator->function_names[i][0] = '\0';
   }

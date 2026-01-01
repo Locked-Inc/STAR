@@ -1,7 +1,9 @@
+/* lib/rx_core/inc/mock_time.h */
+
 /**
  * @file mock_time.h
  * @brief Mock Time Implementation for Testing
- *
+ * @details
  * Mock implementation of rx_time_interface_t for testing.
  * Allows tests to control time progression without real delays.
  *
@@ -11,6 +13,7 @@
  * - Call tracking for verification
  *
  * Usage:
+ * @code
  *   mock_time_t mock;
  *   mock_time_init(&mock);
  *   mock_time_set_auto_advance(&mock, true);  // Auto-advance on sleep
@@ -20,9 +23,10 @@
  *
  *   iface.sleep_ms(iface.ctx, 50);  // Simulates 50ms passing
  *   uint32_t now = iface.get_ms(iface.ctx);  // Returns 50
+ * @endcode
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2025-12-21
+ * @copyright Copyright (c) 2025 STAR Project
  */
 
 #ifndef STAR_RX72N_MOCK_TIME_H
