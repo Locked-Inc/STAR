@@ -28,6 +28,7 @@
 
 #include "rx72n_regs.h"
 #include "rx_check.h"
+#include "rx_gpio_constants.h"
 #include "rx_log.h"
 #include "rx_mtu_encoder.h"
 
@@ -38,10 +39,36 @@ static const char* s_tag = "MTU_ENCODER";
  * =============================================================================
  */
 
+/**
+ * @brief Encoder configuration and hardware constants
+ */
 typedef enum {
-  k_encoder_max_channels       = 7,
-  k_tmdr_phase_counting_mode_1 = 0x04, /* Phase counting mode 1 (4x decoding) */
+  k_encoder_max_channels       = 7,    /**< Maximum MTU channels for encoders */
+  k_tmdr_phase_counting_mode_1 = 0x04, /**< Phase counting mode 1 (4x decoding) */
+
+  /* 16-bit counter limits */
+  k_encoder_counter_max      = 65536, /**< 16-bit counter maximum value */
+  k_encoder_counter_half     = 32768, /**< Half of counter for wraparound detection */
+  k_encoder_16bit_mask       = 0xFFFF, /**< Bitmask for 16-bit values */
+
+  /* Module stop control bits */
+  k_mtu_mstpcra_mtu0_4_bit = 9, /**< MSTPCRA bit for MTU0-MTU4 */
+  k_mtu_mstpcra_mtu6_7_bit = 8, /**< MSTPCRA bit for MTU6-MTU7 */
+
+  /* PRCR (Protect Register) values */
+  k_prcr_unlock_mtu = 0x0B, /**< Unlock PRC0, PRC1, PRC3 for MTU config */
+
+  /* Timer control defaults */
+  k_tcr_external_clock_no_prescaler = 0x00, /**< External clock, no prescaler */
+  k_tior_disabled                   = 0x00, /**< I/O control disabled */
 } encoder_constants_t;
+
+/**
+ * @brief Encoder calculation constants
+ */
+typedef enum {
+  k_degrees_per_revolution = 360, /**< Degrees in one full revolution */
+} encoder_calc_constants_t;
 
 /* =============================================================================
  * Static Variables
@@ -117,15 +144,15 @@ rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
   rx_log_info(s_tag, "Info");
 
   /* Enable MTU module (clear module stop bit) */
-  SYSTEM.PRCR = 0xA50B; /* Enable writes to MSTPCR */
+  SYSTEM.PRCR = (k_prcr_key << 8) | k_prcr_unlock_mtu; /* Enable writes to MSTPCR */
 
   if (channel <= k_mtu_channel_4) {
-    SYSTEM.MSTPCRA &= ~(1 << 9); /* MTU0-MTU4 */
+    SYSTEM.MSTPCRA &= ~(1 << k_mtu_mstpcra_mtu0_4_bit); /* MTU0-MTU4 */
   } else {
-    SYSTEM.MSTPCRA &= ~(1 << 8); /* MTU6-MTU7 */
+    SYSTEM.MSTPCRA &= ~(1 << k_mtu_mstpcra_mtu6_7_bit); /* MTU6-MTU7 */
   }
 
-  SYSTEM.PRCR = 0xA500; /* Lock MSTPCR */
+  SYSTEM.PRCR = (k_prcr_key << 8) | k_prcr_lock_all; /* Lock MSTPCR */
 
   /* Stop timer before configuration */
   rx_mtu_stop(channel);
@@ -134,7 +161,7 @@ rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
    * - No prescaler (count directly on phase inputs)
    * - External clock on MTCLKA/B
    */
-  mtu->TCR = 0x00; /* External clock, no prescaler */
+  mtu->TCR = k_tcr_external_clock_no_prescaler;
 
   /* Configure Phase Counting Mode 1 (4x decoding)
    * TMDR.MD = 0100
@@ -142,8 +169,8 @@ rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
   mtu->TMDR = k_tmdr_phase_counting_mode_1;
 
   /* Configure I/O control (not used in phase counting mode) */
-  mtu->TIORH = 0x00;
-  mtu->TIORL = 0x00;
+  mtu->TIORH = k_tior_disabled;
+  mtu->TIORL = k_tior_disabled;
 
   /* Clear counter */
   mtu->TCNT = 0;
@@ -208,13 +235,13 @@ rx_err_t rx_encoder_read_count(rx_mtu_channel_t channel, rx_encoder_state_t* sta
     delta = current_count - last_count;
   } else {
     /* Wraparound occurred */
-    delta = (65536 - last_count) + current_count;
+    delta = (k_encoder_counter_max - last_count) + current_count;
   }
 
   /* Check for reverse wraparound */
-  if (delta > 32768) {
+  if (delta > k_encoder_counter_half) {
     /* Large positive delta means we actually went backwards */
-    delta = delta - 65536;
+    delta = delta - k_encoder_counter_max;
   }
 
   /* Invert direction if configured */
@@ -231,7 +258,7 @@ rx_err_t rx_encoder_read_count(rx_mtu_channel_t channel, rx_encoder_state_t* sta
   s_encoder_state[channel].revolutions = s_encoder_state[channel].total_count / counts_per_rev;
 
   int32_t remainder_counts              = s_encoder_state[channel].total_count % counts_per_rev;
-  s_encoder_state[channel].position_deg = (float)(remainder_counts * 360.0f) / counts_per_rev;
+  s_encoder_state[channel].position_deg = (float)(remainder_counts * k_degrees_per_revolution) / counts_per_rev;
 
   /* Copy to output */
   *state = s_encoder_state[channel];
@@ -307,11 +334,11 @@ rx_err_t rx_encoder_set_count(rx_mtu_channel_t channel, int32_t count)
   }
 
   /* Set hardware counter (limited to 16-bit) */
-  mtu->TCNT = (uint16_t)(count & 0xFFFF);
+  mtu->TCNT = (uint16_t)(count & k_encoder_16bit_mask);
 
   /* Set software state */
   s_encoder_state[channel].total_count    = count;
-  s_encoder_state[channel].last_raw_count = (uint16_t)(count & 0xFFFF);
+  s_encoder_state[channel].last_raw_count = (uint16_t)(count & k_encoder_16bit_mask);
   s_last_count[channel]                   = count;
 
   /* Recalculate position */
@@ -319,7 +346,7 @@ rx_err_t rx_encoder_set_count(rx_mtu_channel_t channel, int32_t count)
   s_encoder_state[channel].revolutions = count / counts_per_rev;
 
   int32_t remainder_counts              = count % counts_per_rev;
-  s_encoder_state[channel].position_deg = (float)(remainder_counts * 360.0f) / counts_per_rev;
+  s_encoder_state[channel].position_deg = (float)(remainder_counts * k_degrees_per_revolution) / counts_per_rev;
 
   return k_rx_ok;
 }
