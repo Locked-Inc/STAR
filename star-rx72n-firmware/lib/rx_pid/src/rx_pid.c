@@ -10,8 +10,8 @@
  *
  * Direct port from ESP32 star_pid library - pure algorithm, no hardware dependencies.
  *
- * @date 2025-12-21
- * @copyright Copyright (c) 2025 STAR Project
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "rx_pid.h"

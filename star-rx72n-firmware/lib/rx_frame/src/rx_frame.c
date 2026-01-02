@@ -132,15 +132,15 @@ rx_err_t rx_frame_encode(rx_frame_encoder_t* enc,
   uint32_t offset     = 0;
 
   /* Write SYNC word (big-endian) */
-  rx_write_be16(&output[offset], k_frame_sync_word);
+  rx_frame_write_be16(&output[offset], k_frame_sync_word);
   offset += k_frame_sync_size;
 
   /* Write SEQ (big-endian, network byte order per RFC 1700) */
-  rx_write_be16(&output[offset], frame->header.sequence);
+  rx_frame_write_be16(&output[offset], frame->header.sequence);
   offset += k_frame_seq_size;
 
   /* Write LEN (big-endian, network byte order per RFC 1700) */
-  rx_write_be16(&output[offset], frame->header.length);
+  rx_frame_write_be16(&output[offset], frame->header.length);
   offset += k_frame_len_size;
 
   /* Write TYPE (1 byte) */
@@ -212,18 +212,18 @@ rx_frame_decode(rx_frame_decoder_t* dec, const uint8_t* data, uint32_t data_len,
   uint32_t offset = 0;
 
   /* Verify SYNC word */
-  uint16_t sync_word = rx_read_be16(&data[offset]);
+  uint16_t sync_word = rx_frame_read_be16(&data[offset]);
   if (sync_word != k_frame_sync_word) {
     return k_rx_err_protocol_error;
   }
   offset += k_frame_sync_size;
 
   /* Read SEQ */
-  frame->header.sequence = rx_read_be16(&data[offset]);
+  frame->header.sequence = rx_frame_read_be16(&data[offset]);
   offset += k_frame_seq_size;
 
   /* Read LEN */
-  frame->header.length = rx_read_be16(&data[offset]);
+  frame->header.length = rx_frame_read_be16(&data[offset]);
   offset += k_frame_len_size;
 
   /* Validate payload length */
