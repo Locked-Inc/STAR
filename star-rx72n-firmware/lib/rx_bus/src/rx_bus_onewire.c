@@ -57,33 +57,86 @@ typedef struct {
 static onewire_state_entry_t s_state_pool[k_onewire_max_instances];
 
 /* =============================================================================
- * Busy-Wait Delay Helpers
+ * Timer-Based Delay Helpers
  * =============================================================================
  */
 
 /**
- * @brief Delay calibration constants (empirical tuning).
+ * @brief Hardware timer configuration for microsecond delays.
  *
- * Loop iterations are tuned to be in the single-digit microsecond range when
- * running at 240 MHz. Exact timing should be validated on hardware.
+ * Uses CMT channel 3 in free-run mode (no interrupts) as a 16-bit counter
+ * clocked from PCLKB/8 (7.5 MHz). Delays are implemented by measuring elapsed
+ * ticks to ensure consistent timing independent of compiler optimizations.
  */
 typedef enum {
-  k_onewire_delay_loops_per_us = 40, /**< Rough loops needed for ~1us delay */
-} onewire_delay_constants_t;
+  k_onewire_prcr_unlock          = 0xA50B,
+  k_onewire_prcr_lock            = 0xA500,
+  k_onewire_mstpb_cmt_bit        = 15,          /**< CMT module stop bit in MSTPCRB */
+  k_onewire_cmt3_start_bit       = 1,           /**< CMSTR1 bit controlling CMT3 */
+  k_onewire_cmt_divider_setting  = 0,           /**< CKS = 0 -> PCLKB/8 */
+  k_onewire_cmt_divider_value    = 8,           /**< Actual divider value */
+  k_onewire_cmt_clk_shift        = 0,           /**< CMCR clock select shift */
+  k_onewire_timer_counter_max    = 0xFFFF,
+  k_onewire_us_per_second        = 1000000UL,
+  k_onewire_timer_rounding       = k_onewire_us_per_second - 1UL,
+} onewire_delay_hw_constants_t;
+
+static bool s_delay_timer_initialized = false;
 
 /**
- * @brief Busy-wait for approximate number of microseconds.
- *
- * OneWire timing requirements are in the 1-500us range, so a simple loop is
- * sufficient (RTOS sleeps are too coarse).
- *
- * @param[in] microseconds Duration to delay
+ * @brief Initialize the dedicated CMT3 timer for microsecond delays.
+ */
+static void internal_delay_timer_init(void)
+{
+  if (s_delay_timer_initialized) {
+    return;
+  }
+
+  /* Enable CMT module clock */
+  SYSTEM.prcr   = k_onewire_prcr_unlock;
+  SYSTEM.mstpcrb &= ~(1UL << k_onewire_mstpb_cmt_bit);
+  SYSTEM.prcr   = k_onewire_prcr_lock;
+
+  /* Stop CMT3 before reconfiguration */
+  CMT_CTRL.cmstr1 &= ~(1U << k_onewire_cmt3_start_bit);
+
+  /* Configure free-running counter (no interrupts) */
+  CMT3.cmcr  = (uint16_t)(k_onewire_cmt_divider_setting << k_onewire_cmt_clk_shift);
+  CMT3.cmcor = k_onewire_timer_counter_max;
+  CMT3.cmcnt = 0;
+
+  /* Start timer */
+  CMT_CTRL.cmstr1 |= (1U << k_onewire_cmt3_start_bit);
+
+  s_delay_timer_initialized = true;
+}
+
+/**
+ * @brief Delay for the specified number of microseconds using CMT3.
  */
 static void internal_delay_us(uint32_t microseconds)
 {
-  uint32_t iterations = microseconds * k_onewire_delay_loops_per_us;
-  while (iterations-- > 0U) {
-    __asm__ volatile("nop");
+  if (microseconds == 0U) {
+    return;
+  }
+
+  internal_delay_timer_init();
+
+  const uint32_t timer_hz = k_pclkb_hz / k_onewire_cmt_divider_value;
+  uint64_t ticks = ((uint64_t)microseconds * (uint64_t)timer_hz + k_onewire_timer_rounding) /
+                   k_onewire_us_per_second;
+  if (ticks == 0ULL) {
+    ticks = 1ULL;
+  }
+
+  while (ticks > 0ULL) {
+    uint32_t wait_ticks =
+      (ticks > k_onewire_timer_counter_max) ? k_onewire_timer_counter_max : (uint32_t)ticks;
+    uint16_t start = CMT3.cmcnt;
+    while ((uint16_t)(CMT3.cmcnt - start) < wait_ticks) {
+      __asm__ volatile("nop");
+    }
+    ticks -= wait_ticks;
   }
 }
 
