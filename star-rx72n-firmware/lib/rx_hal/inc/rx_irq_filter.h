@@ -70,10 +70,10 @@ typedef enum {
   k_irq_filter_pclk_64 = 3, /**< PCLKB/64 (maximum filtering, best for buttons) */
 } rx_irq_filter_clk_t;
 
-/**
- * @brief Maximum IRQ number (0-15)
- */
-#define RX_IRQ_MAX 15
+/** @brief IRQ pin limits */
+typedef enum {
+  k_irq_max = 15, /**< Maximum IRQ number (0-15) */
+} rx_irq_limits_t;
 
 /* =============================================================================
  * Public API
