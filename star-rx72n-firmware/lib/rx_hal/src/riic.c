@@ -57,9 +57,9 @@ typedef enum {
 
 /** @brief RIIC bit rate calculation constants */
 typedef enum {
-  k_riic_brr_divisor   = 3,   /**< Bit rate divisor for 50% duty cycle */
-  k_riic_brr_min       = 1,   /**< Minimum valid bit rate divisor */
-  k_riic_brr_max       = 255, /**< Maximum valid bit rate divisor (8-bit register) */
+  k_riic_brr_divisor = 3,   /**< Bit rate divisor for 50% duty cycle */
+  k_riic_brr_min     = 1,   /**< Minimum valid bit rate divisor */
+  k_riic_brr_max     = 255, /**< Maximum valid bit rate divisor (8-bit register) */
 } riic_bit_rate_t;
 
 /** @brief ICMR1 register configuration values */

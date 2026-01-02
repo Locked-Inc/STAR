@@ -29,9 +29,9 @@
 
 /** @brief IRQ filter register organization constants */
 typedef enum {
-  k_irq_filter_irqs_per_reg    = 8,    /**< IRQs per register (IRQ0-7 in reg 0, IRQ8-15 in reg 1) */
-  k_irq_filter_clock_bits      = 2,    /**< Bits per filter clock setting */
-  k_irq_filter_clock_mask      = 0x03, /**< Mask for filter clock setting (2 bits) */
+  k_irq_filter_irqs_per_reg = 8,    /**< IRQs per register (IRQ0-7 in reg 0, IRQ8-15 in reg 1) */
+  k_irq_filter_clock_bits   = 2,    /**< Bits per filter clock setting */
+  k_irq_filter_clock_mask   = 0x03, /**< Mask for filter clock setting (2 bits) */
 } irq_filter_constants_t;
 
 /* =============================================================================
