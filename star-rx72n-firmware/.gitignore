@@ -1,5 +1,6 @@
 # Build artifacts
 build/
+build-local/
 cmake-build-*/
 Testing/
 *.elf

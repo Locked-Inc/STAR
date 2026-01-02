@@ -1,2 +1,0 @@
-/usr/bin/ar qc librx_core.a CMakeFiles/rx_core.dir/lib/rx_core/src/rx_error_handler.c.o CMakeFiles/rx_core.dir/lib/rx_core/src/rx_pin_validator.c.o CMakeFiles/rx_core.dir/lib/rx_core/src/rx_infrastructure.c.o
-/usr/bin/ranlib librx_core.a

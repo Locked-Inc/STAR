@@ -1,2 +1,0 @@
-/usr/bin/ar qc librx_pid.a CMakeFiles/rx_pid.dir/lib/rx_pid/src/rx_pid.c.o
-/usr/bin/ranlib librx_pid.a
