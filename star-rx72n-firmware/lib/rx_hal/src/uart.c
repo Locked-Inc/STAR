@@ -1,4 +1,4 @@
-/* src/hardware/uart.c */
+/* lib/rx_hal/src/uart.c */
 
 /**
  * @file uart.c
@@ -6,6 +6,9 @@
  *
  * Simple UART driver for SCI5 (Serial Communication Interface 5).
  * Provides basic transmit-only functionality for printf debugging.
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include <stdbool.h>
@@ -15,19 +18,45 @@
 #include "rx72n_regs.h"
 
 /* =============================================================================
- * Configuration
+ * Private Definitions
  * =============================================================================
  */
 
-/* UART baud rate (115200 bps) */
-#define UART_BAUDRATE 115200
+/** @brief UART configuration constants */
+typedef enum {
+  k_uart_baudrate  = 115200, /**< Baud rate: 115200 bps */
+  k_uart_brr_value = 7,      /**< BRR register value for 115200 bps at 60MHz PCLKB */
+} uart_config_t;
 
-/* Calculate BRR value for baud rate
- * BRR = (PCLKB / (32 * 2^(2n-1) * baudrate)) - 1
- * For SCI with n=0 (PCLK/1):
- * BRR = (60,000,000 / (64 * 115200)) - 1 = 7.13 ~= 7
- */
-#define UART_BRR_VALUE 7
+/** @brief UART timing constants */
+typedef enum {
+  k_uart_bit_time_delay_cycles =
+    1000, /**< Bit time delay (~8.68us at 115200 bps, >520 cycles at 60MHz) */
+} uart_timing_t;
+
+/** @brief SCI register values */
+typedef enum {
+  k_sci_scr_disabled   = 0x00, /**< SCR: All functions disabled */
+  k_sci_scr_tx_enabled = 0x20, /**< SCR: Transmit enabled (TE=1) */
+  k_sci_smr_async_8n1  = 0x00, /**< SMR: Async mode, 8 data bits, no parity, 1 stop bit, PCLK/1 */
+  k_sci_semr_default   = 0x00, /**< SEMR: Default extended mode */
+  k_sci_ssr_tdre_flag  = 0x80, /**< SSR: Transmit data register empty flag */
+} sci_register_values_t;
+
+/** @brief Integer to string buffer constants */
+typedef enum {
+  k_uart_int_buffer_size = 12, /**< Buffer size for int32 to string (enough for -2147483648) */
+  k_uart_base_10         = 10, /**< Base 10 for decimal conversion */
+} uart_int_constants_t;
+
+/** @brief Hex digit constants */
+typedef enum {
+  k_uart_hex_max_digits  = 8,    /**< Maximum hex digits to print (32-bit value) */
+  k_uart_hex_min_digits  = 1,    /**< Minimum hex digits to print */
+  k_uart_hex_zero_digits = 0,    /**< Zero digits value */
+  k_uart_hex_nibble_bits = 4,    /**< Bits per hex nibble */
+  k_uart_hex_nibble_mask = 0x0F, /**< Mask for hex nibble */
+} uart_hex_constants_t;
 
 /* =============================================================================
  * UART Initialization
@@ -43,32 +72,30 @@
  * - TX only (no RX)
  * - Clock: PCLKB (60 MHz)
  *
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t uart_init(void)
 {
   /* Disable SCI5 transmit/receive */
-  SCI5.SCR = 0x00;
+  SCI5.scr = k_sci_scr_disabled;
 
-  /* Configure serial mode:
-     * SMR: Async, 8-bit, no parity, 1 stop, PCLK/1 */
-  SCI5.SMR = 0x00;
+  /* Configure serial mode: Async, 8-bit, no parity, 1 stop, PCLK/1 */
+  SCI5.smr = k_sci_smr_async_8n1;
 
   /* Set baud rate */
-  SCI5.BRR = UART_BRR_VALUE;
+  SCI5.brr = k_uart_brr_value;
 
-  /* Wait for at least 1 bit time (at least 8.68 us at 115200 bps)
-     * Simple delay loop - should be > 520 cycles at 60 MHz */
-  for (volatile int32_t i = 0; i < 1000; i++) {
+  /* Wait for at least 1 bit time (at least 8.68us at 115200 bps) */
+  /* NOTE: Busy-wait required - may run before ThreadX initialization */
+  for (volatile int32_t i = 0; i < k_uart_bit_time_delay_cycles; i++) {
     __asm__ volatile("nop");
   }
 
-  /* Configure serial control:
-     * SCR: Enable transmit, enable transmit interrupt if needed */
-  SCI5.SCR = 0x20; /* TE=1 (transmit enable), RE=0, interrupts disabled */
+  /* Configure serial control: Enable transmit */
+  SCI5.scr = k_sci_scr_tx_enabled;
 
-  /* Configure serial extended mode (default is fine) */
-  SCI5.SEMR = 0x00;
+  /* Configure serial extended mode */
+  SCI5.semr = k_sci_semr_default;
 
   /* Note: GPIO pins for SCI5 TX/RX need to be configured in PMR/MPC
      * This would require MPC (Multi-Function Pin Controller) registers
@@ -77,7 +104,7 @@ rx_err_t uart_init(void)
 
   /* UART init complete - can't use RX_LOG yet since UART is just now ready */
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -93,16 +120,16 @@ rx_err_t uart_init(void)
 void uart_putc(char data)
 {
   /* Wait for transmit buffer to be empty (TDRE flag) */
-  while ((SCI5.SSR & 0x80) == 0) {
+  while ((SCI5.ssr & k_sci_ssr_tdre_flag) == 0) {
     /* Wait */
   }
 
   /* Write data to transmit register */
-  SCI5.TDR = (uint8_t)data;
+  SCI5.tdr = (uint8_t)data;
 
   /* Clear TDRE flag by reading SSR then writing 0 */
-  (void)SCI5.SSR;
-  SCI5.SSR &= ~0x80;
+  (void)SCI5.ssr;
+  SCI5.ssr &= ~k_sci_ssr_tdre_flag;
 }
 
 /**
@@ -132,7 +159,7 @@ void uart_puts(const char* str)
  */
 void uart_putint(int32_t value)
 {
-  char     buffer[12]; /* Enough for -2147483648 */
+  char     buffer[k_uart_int_buffer_size]; /* Enough for -2147483648 */
   char*    p = buffer + sizeof(buffer) - 1;
   uint32_t abs_value;
   bool     is_negative = false;
@@ -150,8 +177,8 @@ void uart_putint(int32_t value)
 
   /* Convert to string (reverse order) */
   do {
-    *--p = '0' + (abs_value % 10);
-    abs_value /= 10;
+    *--p = '0' + (abs_value % k_uart_base_10);
+    abs_value /= k_uart_base_10;
   } while (abs_value > 0);
 
   /* Add minus sign if negative */
@@ -176,16 +203,16 @@ void uart_puthex(uint32_t value, uint8_t digits)
   uart_puts("0x");
 
   /* Clamp digits to valid range */
-  if (digits > 8) {
-    digits = 8;
+  if (digits > k_uart_hex_max_digits) {
+    digits = k_uart_hex_max_digits;
   }
-  if (digits == 0) {
-    digits = 1;
+  if (digits == k_uart_hex_zero_digits) {
+    digits = k_uart_hex_min_digits;
   }
 
   /* Print hex digits from most significant */
   for (int32_t i = digits - 1; i >= 0; i--) {
-    uint8_t nibble = (value >> (i * 4)) & 0x0F;
+    uint8_t nibble = (value >> (i * k_uart_hex_nibble_bits)) & k_uart_hex_nibble_mask;
     uart_putc(s_hex[nibble]);
   }
 }

@@ -1,4 +1,4 @@
-/* src/core/rx_bus_manager.c */
+/* lib/rx_bus/src/rx_bus_manager.c */
 
 /**
  * @file rx_bus_manager.c
@@ -6,6 +6,9 @@
  *
  * Skeleton implementation demonstrating Dependency Inversion Principle (DIP).
  * Full bus management functionality will be added in future commits.
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "rx_bus_manager.h"
@@ -31,7 +34,7 @@ static const char* s_tag = "BUS_MANAGER";
  * @param[in] bus_config Bus configuration
  * @param[in] user_ctx User context (rx_bus_command_t*)
  *
- * @return RX_OK on success, error code on failure
+ * @return k_rx_ok on success, error code on failure
  */
 static rx_err_t internal_execute_command_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
@@ -39,9 +42,9 @@ static rx_err_t internal_execute_command_callback(rx_bus_config_t* bus_config, v
 
   /* Validate command has execution function */
   if (command->execute == NULL) {
-    RX_LOG_ERROR(s_tag, "Command execute function is NULL");
-    command->result = RX_ERR_NULL_POINTER;
-    return RX_ERR_NULL_POINTER;
+    rx_log_error(s_tag, "Command execute function is NULL");
+    command->result = k_rx_err_null_pointer;
+    return k_rx_err_null_pointer;
   }
 
   /* Execute the command */
@@ -68,14 +71,14 @@ rx_err_t bus_manager_init(rx_bus_manager_t*     manager,
 
   /* Validate interfaces */
   rx_err_t err = rx_error_interface_validate(error_iface);
-  if (err != RX_OK) {
-    RX_LOG_ERROR(s_tag, "Error interface validation failed");
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Error interface validation failed");
     return err;
   }
 
   err = rx_pin_interface_validate(pin_iface);
-  if (err != RX_OK) {
-    RX_LOG_ERROR(s_tag, "Pin interface validation failed");
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Pin interface validation failed");
     return err;
   }
 
@@ -86,9 +89,9 @@ rx_err_t bus_manager_init(rx_bus_manager_t*     manager,
   manager->error_iface = error_iface;
   manager->pin_iface   = pin_iface;
 
-  RX_LOG_INFO(s_tag, "Bus manager initialized (skeleton)");
+  rx_log_info(s_tag, "Bus manager initialized (skeleton)");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t bus_manager_deinit(rx_bus_manager_t* manager)
@@ -97,9 +100,9 @@ rx_err_t bus_manager_deinit(rx_bus_manager_t* manager)
 
   /* Future: Cleanup bus instances here */
 
-  RX_LOG_INFO(s_tag, "Bus manager deinitialized");
+  rx_log_info(s_tag, "Bus manager deinitialized");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -117,8 +120,8 @@ rx_err_t rx_bus_manager_execute_command(rx_bus_manager_t* manager,
 
   /* Validate command has execution function */
   if (command->execute == NULL) {
-    RX_LOG_ERROR(s_tag, "Command execute function is NULL");
-    return RX_ERR_NULL_POINTER;
+    rx_log_error(s_tag, "Command execute function is NULL");
+    return k_rx_err_null_pointer;
   }
 
   /* Execute command using existing with_bus infrastructure */

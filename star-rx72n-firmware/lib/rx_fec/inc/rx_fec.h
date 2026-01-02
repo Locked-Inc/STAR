@@ -1,3 +1,5 @@
+/* lib/rx_fec/inc/rx_fec.h */
+
 /**
  * @file rx_fec.h
  * @brief Forward Error Correction (FEC) Codec for RX72N
@@ -16,6 +18,9 @@
  *
  * @see star-gateway/internal/fec/ for Go reference implementation
  * @see docs/sections/01_nanopb_protocol.tex for protocol specification
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef STAR_RX_FEC_H
@@ -90,14 +95,14 @@ typedef enum {
  * register. The handle tracks initialization status only.
  */
 typedef struct {
-  uint8_t initialized; /**< Non-zero if initialized */
+  bool initialized; /**< True if initialized */
 } rx_fec_encoder_t;
 
 /**
  * @brief Initialize FEC encoder
  *
  * @param[out] enc Pointer to encoder handle
- * @return RX_OK on success, RX_ERR_INVALID_ARG if enc is NULL
+ * @return k_rx_ok on success, k_rx_err_invalid_arg if enc is NULL
  */
 rx_err_t rx_fec_encoder_init(rx_fec_encoder_t* enc);
 
@@ -105,7 +110,7 @@ rx_err_t rx_fec_encoder_init(rx_fec_encoder_t* enc);
  * @brief Deinitialize FEC encoder
  *
  * @param[in,out] enc Pointer to encoder handle
- * @return RX_OK on success, RX_ERR_INVALID_ARG if enc is NULL
+ * @return k_rx_ok on success, k_rx_err_invalid_arg if enc is NULL
  */
 rx_err_t rx_fec_encoder_deinit(rx_fec_encoder_t* enc);
 
@@ -121,9 +126,9 @@ rx_err_t rx_fec_encoder_deinit(rx_fec_encoder_t* enc);
  * @param[out] output     Output buffer (must be at least rx_fec_encoded_len())
  * @param[out] output_len Actual number of output bytes written
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if any pointer is NULL
- * @return RX_ERR_INVALID_STATE if encoder not initialized
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if any pointer is NULL
+ * @return k_rx_err_invalid_state if encoder not initialized
  */
 rx_err_t rx_fec_encode(rx_fec_encoder_t* enc,
                        const uint8_t*    input,
@@ -150,7 +155,9 @@ uint32_t rx_fec_encoded_len(uint32_t input_len);
  * With 1024 byte max payload, encoded = (1024*8+6)*2 = 16396 bits = 8198 symbols
  * Round up to 8200 for safe margin.
  */
-#define RX_FEC_MAX_SYMBOLS 8200
+typedef enum {
+  k_fec_max_symbols = 8200, /**< Maximum symbols for static allocation */
+} rx_fec_buffer_limits_t;
 
 /**
  * @brief FEC decoder state
@@ -165,7 +172,7 @@ typedef struct {
   uint32_t  survivors_len;                      /**< Length of survivors buffer */
   uint8_t   branch_table[k_fec_num_states][k_fec_num_input_values]
                       [k_fec_num_outputs]; /**< Precomputed outputs */
-  uint8_t initialized;                     /**< Non-zero if initialized */
+  bool initialized;                        /**< True if initialized */
 } rx_fec_decoder_t;
 
 /**
@@ -178,8 +185,8 @@ typedef struct {
  * @param[in]  survivors_buf  Caller-provided buffer for survivor bits
  * @param[in]  survivors_len  Number of uint64_t elements in survivors_buf
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if any pointer is NULL or buffer too small
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if any pointer is NULL or buffer too small
  */
 rx_err_t
 rx_fec_decoder_init(rx_fec_decoder_t* dec, uint64_t* survivors_buf, uint32_t survivors_len);
@@ -188,7 +195,7 @@ rx_fec_decoder_init(rx_fec_decoder_t* dec, uint64_t* survivors_buf, uint32_t sur
  * @brief Deinitialize FEC decoder
  *
  * @param[in,out] dec Pointer to decoder handle
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t rx_fec_decoder_deinit(rx_fec_decoder_t* dec);
 
@@ -205,10 +212,10 @@ rx_err_t rx_fec_decoder_deinit(rx_fec_decoder_t* dec);
  * @param[out] output              Decoded output buffer
  * @param[out] output_len          Actual decoded length
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if any pointer is NULL or soft_len is odd
- * @return RX_ERR_INVALID_STATE if decoder not initialized
- * @return RX_ERR_INVALID_SIZE if output buffer too small
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if any pointer is NULL or soft_len is odd
+ * @return k_rx_err_invalid_state if decoder not initialized
+ * @return k_rx_err_invalid_size if output buffer too small
  */
 rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*    dec,
                             const rx_soft_bit_t* soft_bits,
@@ -223,23 +230,31 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*    dec,
  * Converts hard bits to soft bits internally, then performs Viterbi decoding.
  * Less accurate than soft-decision decoding but useful for testing.
  *
+ * The caller must provide a working buffer for soft bit conversion to ensure
+ * thread safety. Size should be at least k_fec_max_symbols * k_fec_num_outputs.
+ *
  * @param[in]  dec                 Initialized decoder handle
  * @param[in]  data                Received hard bits (packed bytes)
  * @param[in]  data_len            Number of bytes
  * @param[in]  expected_output_len Expected decoded length in bytes
  * @param[out] output              Decoded output buffer
  * @param[out] output_len          Actual decoded length
+ * @param[in]  soft_bits_buffer    Working buffer for soft bit conversion
+ * @param[in]  soft_buffer_len     Length of soft_bits_buffer (must be >= num_bits)
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if any pointer is NULL
- * @return RX_ERR_INVALID_STATE if decoder not initialized
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if any pointer is NULL
+ * @return k_rx_err_invalid_state if decoder not initialized
+ * @return k_rx_err_invalid_size if soft_bits_buffer is too small
  */
 rx_err_t rx_fec_decode_hard(rx_fec_decoder_t* dec,
                             const uint8_t*    data,
                             uint32_t          data_len,
                             uint32_t          expected_output_len,
                             uint8_t*          output,
-                            uint32_t*         output_len);
+                            uint32_t*         output_len,
+                            rx_soft_bit_t*    soft_bits_buffer,
+                            uint32_t          soft_buffer_len);
 
 /* =============================================================================
  * Utility Functions

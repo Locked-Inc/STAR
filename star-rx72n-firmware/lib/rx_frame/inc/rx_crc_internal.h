@@ -1,3 +1,5 @@
+/* lib/rx_frame/inc/rx_crc_internal.h */
+
 /**
  * @file rx_crc_internal.h
  * @brief Internal CRC-32 Abstraction Layer
@@ -39,8 +41,8 @@
  * - RX72N Group User's Manual: Hardware (CRC Calculator section)
  * - https://renesas.github.io/fsp/group___c_r_c.html
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef STAR_RX_CRC_INTERNAL_H
@@ -98,7 +100,7 @@ extern "C" {
  * For hardware: Enables CRC peripheral, configures for IEEE 802.3 CRC-32
  * For software: No-op (lookup table is static)
  *
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t rx_crc_init(void);
 
@@ -108,7 +110,7 @@ rx_err_t rx_crc_init(void);
  * For hardware: Optionally disables peripheral to save power
  * For software: No-op
  *
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 rx_err_t rx_crc_deinit(void);
 

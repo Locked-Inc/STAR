@@ -1,15 +1,15 @@
-/* include/rx_error_handler.h */
+/* lib/rx_core/inc/rx_error_handler.h */
 
 /**
  * @file rx_error_handler.h
  * @brief Error Handler Concrete Implementation
- *
+ * @details
  * Concrete implementation of the rx_error_interface_t.
  * Provides error tracking, retry logic, and exponential backoff.
  *
  * Features:
  * - Global error counter
- * - Per-component error tracking (up to RX_ERROR_HANDLER_MAX_COMPONENTS)
+ * - Per-component error tracking (up to k_error_handler_max_components)
  * - Retry counting with configurable limits
  * - Exponential backoff calculation
  * - Thread-safe operation (ThreadX mutex)
@@ -21,6 +21,7 @@
  * Total: ~1.3KB RAM
  *
  * Usage:
+ * @code
  *   // 1. Declare handler
  *   static error_handler_t s_error_handler;
  *
@@ -33,7 +34,7 @@
  *   error_handler_get_interface(&error_iface, &s_error_handler);
  *
  *   // 4. Use through interface
- *   error_iface.report_error(error_iface.ctx, RX_FAIL, "SPI", "Transfer timeout");
+ *   error_iface.report_error(error_iface.ctx, k_rx_fail, "SPI", "Transfer timeout");
  *
  *   // 5. Check retry logic
  *   if (!error_iface.is_retry_limit_reached(error_iface.ctx, "SPI")) {
@@ -41,6 +42,10 @@
  *       tx_thread_sleep(delay_ms / 10);  // Convert ms to ThreadX ticks
  *       // ... retry operation ...
  *   }
+ * @endcode
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef STAR_RX72N_ERROR_HANDLER_H
@@ -63,17 +68,13 @@ extern "C" {
  */
 
 /**
- * @brief Maximum number of components to track
- *
- * Each component gets its own error counter and retry state.
- * Increase this if you have more than 16 components reporting errors.
+ * @brief Error handler configuration constants
  */
-#define RX_ERROR_HANDLER_MAX_COMPONENTS 16
-
-/**
- * @brief Maximum component name length
- */
-#define RX_ERROR_HANDLER_COMPONENT_NAME_MAX 32
+typedef enum {
+  k_error_handler_max_components =
+    16, /**< Maximum number of components to track (each gets error counter and retry state) */
+  k_error_handler_component_name_max = 32, /**< Maximum component name length */
+} error_handler_limits_t;
 
 /* =============================================================================
  * Component Error Tracking
@@ -84,25 +85,11 @@ extern "C" {
  * @brief Per-component error tracking state
  */
 typedef struct {
-  /**
-   * @brief Component name (e.g., "SPI", "GPIO", "UART")
-   */
-  char name[RX_ERROR_HANDLER_COMPONENT_NAME_MAX];
-
-  /**
-   * @brief Error count for this component
-   */
-  uint32_t error_count;
-
-  /**
-   * @brief Retry attempt count
-   */
-  uint32_t retry_count;
-
-  /**
-   * @brief Is this slot in use?
-   */
-  bool in_use;
+  char
+    name[k_error_handler_component_name_max]; /**< Component name (e.g., "SPI", "GPIO", "UART") */
+  uint32_t error_count;                       /**< Error count for this component */
+  uint32_t retry_count;                       /**< Retry attempt count */
+  bool     in_use;                            /**< Is this slot in use? */
 } error_component_state_t;
 
 /* =============================================================================
@@ -117,40 +104,14 @@ typedef struct {
  * It implements the rx_error_interface_t.
  */
 typedef struct {
-  /**
-   * @brief ThreadX mutex for thread-safe operation
-   */
-  TX_MUTEX mutex;
-
-  /**
-   * @brief Total error count across all components
-   */
-  uint32_t total_error_count;
-
-  /**
-   * @brief Per-component error tracking
-   */
-  error_component_state_t components[RX_ERROR_HANDLER_MAX_COMPONENTS];
-
-  /**
-   * @brief Maximum retry attempts before giving up
-   */
-  uint32_t max_retries;
-
-  /**
-   * @brief Initial backoff delay in milliseconds
-   */
-  uint32_t initial_backoff_ms;
-
-  /**
-   * @brief Maximum backoff delay in milliseconds
-   */
-  uint32_t max_backoff_ms;
-
-  /**
-   * @brief Is the handler initialized?
-   */
-  bool initialized;
+  TX_MUTEX mutex;             /**< ThreadX mutex for thread-safe operation */
+  uint32_t total_error_count; /**< Total error count across all components */
+  error_component_state_t
+           components[k_error_handler_max_components]; /**< Per-component error tracking */
+  uint32_t max_retries;        /**< Maximum retry attempts before giving up */
+  uint32_t initial_backoff_ms; /**< Initial backoff delay in milliseconds */
+  uint32_t max_backoff_ms;     /**< Maximum backoff delay in milliseconds */
+  bool     initialized;        /**< Is the handler initialized? */
 } error_handler_t;
 
 /* =============================================================================
@@ -166,9 +127,9 @@ typedef struct {
  * @param[in] initial_backoff_ms Initial backoff delay in milliseconds
  * @param[in] max_backoff_ms Maximum backoff delay in milliseconds
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if handler is NULL,
- *         RX_ERR_RTOS_MUTEX if mutex creation fails
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if handler is NULL,
+ *         k_rx_err_rtos_mutex if mutex creation fails
  */
 rx_err_t error_handler_init(error_handler_t* handler,
                             uint32_t         max_retries,
@@ -181,9 +142,9 @@ rx_err_t error_handler_init(error_handler_t* handler,
  * @param[out] iface Interface to fill
  * @param[in,out] handler Concrete handler instance
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if either parameter is NULL,
- *         RX_ERR_INVALID_STATE if handler not initialized
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if either parameter is NULL,
+ *         k_rx_err_invalid_state if handler not initialized
  */
 rx_err_t error_handler_get_interface(rx_error_interface_t* iface, error_handler_t* handler);
 
@@ -192,8 +153,8 @@ rx_err_t error_handler_get_interface(rx_error_interface_t* iface, error_handler_
  *
  * @param[in,out] handler Handler to deinitialize
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if handler is NULL
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if handler is NULL
  */
 rx_err_t error_handler_deinit(error_handler_t* handler);
 

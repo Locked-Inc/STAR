@@ -26,7 +26,7 @@
  *   gpio_write_data_t* write_data = (gpio_write_data_t*)data;
  *
  *   if (bus->type != k_bus_type_gpio) {
- *     return RX_ERR_INVALID_ARG;
+ *     return k_rx_err_invalid_arg;
  *   }
  *
  *   if (write_data->value) {
@@ -43,8 +43,8 @@
  * rx_err_t err = rx_bus_manager_execute_command(manager, "led", &cmd);
  * @endcode
  *
- * @date 2025-12-21
- * @copyright Copyright (c) 2025 STAR Project
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef STAR_RX72N_BUS_COMMAND_H
@@ -73,10 +73,10 @@ typedef struct rx_bus_config rx_bus_config_t;
  * @param[in,out] bus Bus configuration to operate on
  * @param[in,out] data Command-specific data (can be read/written)
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if bus type doesn't match expected type
- * @return RX_ERR_INVALID_STATE if bus is not initialized
- * @return RX_ERR_HW_ERROR if hardware operation fails
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if bus type doesn't match expected type
+ * @return k_rx_err_invalid_state if bus is not initialized
+ * @return k_rx_err_hw_error if hardware operation fails
  */
 typedef rx_err_t (*rx_bus_command_execute_fn)(rx_bus_config_t* bus, void* data);
 
@@ -87,9 +87,9 @@ typedef rx_err_t (*rx_bus_command_execute_fn)(rx_bus_config_t* bus, void* data);
  * Command design pattern.
  */
 typedef struct rx_bus_command {
-  rx_bus_command_execute_fn execute; /* Command execution function */
-  void*                     data;    /* Command-specific data */
-  rx_err_t                  result;  /* Execution result (output) */
+  rx_bus_command_execute_fn execute; /**< Command execution function */
+  void*                     data;    /**< Command-specific data */
+  rx_err_t                  result;  /**< Execution result (output) */
 } rx_bus_command_t;
 
 /* =============================================================================
@@ -119,7 +119,7 @@ rx_bus_command_init(rx_bus_command_t* cmd, rx_bus_command_execute_fn execute, vo
 {
   cmd->execute = execute;
   cmd->data    = data;
-  cmd->result  = RX_OK;
+  cmd->result  = k_rx_ok;
 }
 
 #ifdef __cplusplus

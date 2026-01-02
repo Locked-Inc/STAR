@@ -372,6 +372,31 @@ void timer_init(void);          // Initialize CMT0 for ThreadX tick (100 Hz)
 void cmt0_isr(void);            // CMT0 interrupt handler
 ```
 
+### Defensive Coding Modules
+
+#### IWDT Watchdog (`rx_iwdt.h`)
+
+```c
+rx_err_t rx_iwdt_init(uint32_t timeout_ms);  // Initialize with timeout
+void rx_iwdt_feed(void);                      // Feed watchdog
+bool rx_iwdt_was_reset(void);                 // Check reset cause
+```
+
+#### IRQ Filter (`rx_irq_filter.h`)
+
+```c
+rx_err_t rx_irq_filter_enable(uint8_t irq_num, rx_irq_filter_clk_t clk);
+rx_err_t rx_irq_filter_disable(uint8_t irq_num);
+```
+
+#### Register Guard (`rx_register_guard.h`)
+
+```c
+rx_err_t rx_register_guard_init(void);        // Capture golden values
+void rx_register_guard_refresh(void);          // Restore corrupted registers
+uint32_t rx_register_guard_get_correction_count(void);
+```
+
 ## Protocol Stack Libraries
 
 The firmware includes protocol stack libraries for reliable SPI communication:

@@ -1,3 +1,5 @@
+/* lib/rx_frame/src/rx_crc32_hw.c */
+
 /**
  * @file rx_crc32_hw.c
  * @brief Hardware CRC-32 Implementation for RX72N
@@ -17,15 +19,35 @@
  * - https://tool-support.renesas.com/autoupdate/support/onlinehelp/csp/V8.12.00/
  *   CS+.chm/CodeGenerator-API-RX.chm/Documents/crccalculatorcrc.htm
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "rx_crc_internal.h"
 
 #ifdef RX_CRC32_USE_HARDWARE
 
+#include <stddef.h>
+
 #include "rx72n_regs.h"
+#include "rx_gpio_constants.h"
+
+/* =============================================================================
+ * CRC Hardware Constants
+ * =============================================================================
+ */
+
+/** @brief IEEE 802.3 CRC-32 final XOR value */
+static const uint32_t k_crc_ieee_final_xor = 0xFFFFFFFF;
+
+/**
+ * @brief CRC module-specific PRCR unlock value
+ *
+ * Note: k_prcr_key, k_prcr_key_shift, and k_prcr_lock_all are from rx_gpio_constants.h
+ */
+typedef enum {
+  k_prcr_unlock_crc = 0x0B, /**< Unlock PRC0, PRC1, PRC3 for CRC config */
+} rx_crc_prcr_constants_t;
 
 /* =============================================================================
  * Module State
@@ -42,13 +64,14 @@ static bool s_crc_initialized = false;
 rx_err_t rx_crc_init(void)
 {
   if (s_crc_initialized) {
-    return RX_OK;
+    return k_rx_ok;
   }
 
   /* Enable CRC module by clearing module stop bit */
-  SYSTEM.PRCR = 0xA50B;                  /* Unlock protection for MSTPCR */
-  SYSTEM.MSTPCRB &= ~(1UL << MSTPB_CRC); /* Clear bit 23 to enable CRC */
-  SYSTEM.PRCR = 0xA500;                  /* Lock protection */
+  SYSTEM.prcr =
+    (k_prcr_key << k_prcr_key_shift) | k_prcr_unlock_crc; /* Unlock protection for MSTPCR */
+  SYSTEM.mstpcrb &= ~(1UL << k_mstpb_crc);                /* Clear bit 23 to enable CRC */
+  SYSTEM.prcr = (k_prcr_key << k_prcr_key_shift) | k_prcr_lock_all; /* Lock protection */
 
   /*
      * Configure CRC peripheral for IEEE 802.3:
@@ -58,10 +81,10 @@ rx_err_t rx_crc_init(void)
      * The RX72N CRC calculator in this configuration produces output
      * bit-exact with Go's crc32.ChecksumIEEE() when properly initialized.
      */
-  CRC.CRCCR = k_crc_crccr_lms | k_crc_crccr_gps_crc32;
+  CRC.crccr = k_crc_crccr_lms | k_crc_crccr_gps_crc32;
 
   s_crc_initialized = true;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_crc_deinit(void)
@@ -76,12 +99,12 @@ rx_err_t rx_crc_deinit(void)
      *
      * If power optimization is critical, enable the module stop here:
      * SYSTEM.PRCR = 0xA50B;
-     * SYSTEM.MSTPCRB |= (1UL << MSTPB_CRC);
+     * SYSTEM.MSTPCRB |= (1UL << k_mstpb_crc);
      * SYSTEM.PRCR = 0xA500;
      * s_crc_initialized = false;
      */
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
@@ -102,7 +125,7 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
      * For IEEE 802.3, the initial value is 0xFFFFFFFF. The RX72N hardware
      * handles this automatically when DORCLR is set.
      */
-  CRC.CRCCR |= k_crc_crccr_dorclr;
+  CRC.crccr |= k_crc_crccr_dorclr;
 
   /*
      * Feed data bytes to the CRC calculator.
@@ -113,7 +136,7 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
      * Note: For large aligned buffers, 32-bit word writes could be faster,
      * but byte-wise ensures correctness for all cases.
      */
-  volatile uint8_t* crcdir_byte = (volatile uint8_t*)&CRC.CRCDIR;
+  volatile uint8_t* crcdir_byte = (volatile uint8_t*)&CRC.crcdir;
   for (uint32_t i = 0; i < len; i++) {
     *crcdir_byte = data[i];
   }
@@ -124,7 +147,7 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
      * IEEE 802.3 requires XOR with 0xFFFFFFFF after calculation.
      * The hardware outputs the raw CRC value, so we apply the final XOR.
      */
-  return CRC.CRCDOR ^ 0xFFFFFFFF;
+  return CRC.crcdor ^ k_crc_ieee_final_xor;
 }
 
 uint32_t rx_crc32_update_impl(uint32_t crc, const uint8_t* data, uint32_t len)

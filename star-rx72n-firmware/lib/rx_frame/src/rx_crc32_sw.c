@@ -1,3 +1,5 @@
+/* lib/rx_frame/src/rx_crc32_sw.c */
+
 /**
  * @file rx_crc32_sw.c
  * @brief Software CRC-32 Implementation
@@ -17,13 +19,29 @@
  * - IEEE 802.3-2018 Section 3.2.9 (Frame check sequence)
  * - Go standard library: hash/crc32 package
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include <stddef.h> /* For NULL */
 
 #include "rx_crc_internal.h"
+
+/* =============================================================================
+ * CRC-32 Software Constants
+ * =============================================================================
+ */
+
+/**
+ * @brief CRC-32 software implementation constants
+ */
+typedef enum {
+  k_crc32_table_size = 256, /**< Number of entries in lookup table */
+  k_crc_byte_shift   = 8,   /**< Bit shift for table lookup */
+} rx_crc32_sw_constants_t;
+
+/** @brief IEEE 802.3 CRC-32 final XOR value */
+static const uint32_t k_crc_ieee_final_xor = 0xFFFFFFFF;
 
 /* =============================================================================
  * CRC-32 Lookup Table
@@ -35,16 +53,13 @@
  * =============================================================================
  */
 
-/** @brief Number of entries in CRC lookup table (one per possible byte value) */
-#define CRC32_TABLE_SIZE (256)
-
 /**
  * @brief Precomputed CRC-32 lookup table (reflected polynomial)
  *
  * Generated for polynomial 0xEDB88320 (IEEE 802.3 reflected).
  * Each entry is the CRC for a single byte value 0-255.
  */
-static const uint32_t s_crc32_table[CRC32_TABLE_SIZE] = {
+static const uint32_t s_crc32_table[k_crc32_table_size] = {
   0x00000000, 0x77073096, 0xEE0E612C, 0x990951BA, 0x076DC419, 0x706AF48F, 0xE963A535, 0x9E6495A3,
   0x0EDB8832, 0x79DCB8A4, 0xE0D5E91E, 0x97D2D988, 0x09B64C2B, 0x7EB17CBD, 0xE7B82D07, 0x90BF1D91,
   0x1DB71064, 0x6AB020F2, 0xF3B97148, 0x84BE41DE, 0x1ADAD47D, 0x6DDDE4EB, 0xF4D4B551, 0x83D385C7,
@@ -95,16 +110,16 @@ uint32_t rx_crc32_update_sw(uint32_t crc, const uint8_t* data, uint32_t len)
   }
 
   /* Continue from previous CRC state (invert to get internal state) */
-  crc = crc ^ 0xFFFFFFFF;
+  crc = crc ^ k_crc_ieee_final_xor;
 
   /* Process each byte using the lookup table */
   for (uint32_t i = 0; i < len; i++) {
     uint8_t table_idx = (uint8_t)(crc ^ data[i]);
-    crc               = s_crc32_table[table_idx] ^ (crc >> 8);
+    crc               = s_crc32_table[table_idx] ^ (crc >> k_crc_byte_shift);
   }
 
   /* Finalize */
-  return crc ^ 0xFFFFFFFF;
+  return crc ^ k_crc_ieee_final_xor;
 }
 
 /* =============================================================================
@@ -121,13 +136,13 @@ uint32_t rx_crc32_update_sw(uint32_t crc, const uint8_t* data, uint32_t len)
 rx_err_t rx_crc_init(void)
 {
   /* Software CRC uses a static lookup table - no initialization needed */
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_crc_deinit(void)
 {
   /* Software CRC has no resources to release */
-  return RX_OK;
+  return k_rx_ok;
 }
 
 uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
@@ -137,16 +152,16 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
   }
 
   /* Start with all bits set (standard IEEE 802.3 initialization) */
-  uint32_t crc = 0xFFFFFFFF;
+  uint32_t crc = k_crc_ieee_final_xor;
 
   /* Process each byte using the lookup table */
   for (uint32_t i = 0; i < len; i++) {
     uint8_t table_idx = (uint8_t)(crc ^ data[i]);
-    crc               = s_crc32_table[table_idx] ^ (crc >> 8);
+    crc               = s_crc32_table[table_idx] ^ (crc >> k_crc_byte_shift);
   }
 
   /* Final XOR with all bits set (standard IEEE 802.3 finalization) */
-  return crc ^ 0xFFFFFFFF;
+  return crc ^ k_crc_ieee_final_xor;
 }
 
 uint32_t rx_crc32_update_impl(uint32_t crc, const uint8_t* data, uint32_t len)

@@ -6,6 +6,9 @@
  *
  * Implements the rx_error_interface_t by recording errors in memory.
  * Used for testing and validating the DIP pattern.
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "mock_error_handler.h"
@@ -55,7 +58,7 @@ impl_report_error(void* ctx, rx_err_t err, const char* component, const char* me
   mock_error_handler_t* handler = (mock_error_handler_t*)ctx;
 
   if (handler == NULL || component == NULL || message == NULL) {
-    return RX_ERR_NULL_POINTER;
+    return k_rx_err_null_pointer;
   }
 
   /* Get next write position (circular buffer) */
@@ -64,10 +67,10 @@ impl_report_error(void* ctx, rx_err_t err, const char* component, const char* me
 
   /* Record the error */
   record->error_code = err;
-  strncpy(record->component, component, MOCK_ERROR_HANDLER_COMPONENT_NAME_MAX - 1);
-  record->component[MOCK_ERROR_HANDLER_COMPONENT_NAME_MAX - 1] = '\0';
-  strncpy(record->message, message, MOCK_ERROR_HANDLER_MESSAGE_MAX - 1);
-  record->message[MOCK_ERROR_HANDLER_MESSAGE_MAX - 1] = '\0';
+  strncpy(record->component, component, k_mock_error_handler_component_name_max - 1);
+  record->component[k_mock_error_handler_component_name_max - 1] = '\0';
+  strncpy(record->message, message, k_mock_error_handler_message_max - 1);
+  record->message[k_mock_error_handler_message_max - 1] = '\0';
 
   /* Update indices */
   handler->write_index = (handler->write_index + 1) % handler->max_errors;
@@ -77,7 +80,7 @@ impl_report_error(void* ctx, rx_err_t err, const char* component, const char* me
     handler->stored_error_count++;
   }
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /**
@@ -116,7 +119,7 @@ static rx_err_t impl_clear_errors(void* ctx)
   mock_error_handler_t* handler = (mock_error_handler_t*)ctx;
 
   if (handler == NULL) {
-    return RX_ERR_NULL_POINTER;
+    return k_rx_err_null_pointer;
   }
 
   /* Clear all error records */
@@ -125,7 +128,7 @@ static rx_err_t impl_clear_errors(void* ctx)
   handler->stored_error_count = 0;
   handler->write_index        = 0;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /**
@@ -153,7 +156,7 @@ static rx_err_t impl_reset_retry_counter(void* ctx, const char* component)
   (void)component;
 
   /* Mock handler has no retry counter */
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /**
@@ -179,8 +182,8 @@ rx_err_t mock_error_handler_init(mock_error_handler_t* handler, uint32_t max_err
 {
   RX_CHECK_NULL_PTR(handler, "MOCK_ERROR", "Handler pointer is NULL");
 
-  if (max_errors == 0 || max_errors > MOCK_ERROR_HANDLER_DEFAULT_MAX_ERRORS) {
-    return RX_ERR_INVALID_ARG;
+  if (max_errors == 0 || max_errors > k_mock_error_handler_default_max_errors) {
+    return k_rx_err_invalid_arg;
   }
 
   /* Clear all state */
@@ -190,7 +193,7 @@ rx_err_t mock_error_handler_init(mock_error_handler_t* handler, uint32_t max_err
   handler->max_errors  = max_errors;
   handler->initialized = true;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t mock_error_handler_get_interface(rx_error_interface_t* iface,
@@ -200,7 +203,7 @@ rx_err_t mock_error_handler_get_interface(rx_error_interface_t* iface,
   RX_CHECK_NULL_PTR(handler, "MOCK_ERROR", "Handler pointer is NULL");
 
   if (!handler->initialized) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Fill interface */
@@ -213,7 +216,7 @@ rx_err_t mock_error_handler_get_interface(rx_error_interface_t* iface,
   iface->reset_retry_counter       = impl_reset_retry_counter;
   iface->get_backoff_delay         = impl_get_backoff_delay;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -229,7 +232,7 @@ rx_err_t mock_error_handler_get_last_error(mock_error_handler_t* handler,
   RX_CHECK_NULL_PTR(handler, "MOCK_ERROR", "Handler pointer is NULL");
 
   if (handler->stored_error_count == 0) {
-    return RX_ERR_NOT_FOUND;
+    return k_rx_err_not_found;
   }
 
   /* Get most recent error (last stored) */
@@ -250,7 +253,7 @@ rx_err_t mock_error_handler_get_last_error(mock_error_handler_t* handler,
     *out_message = record->message;
   }
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t mock_error_handler_get_error_at(mock_error_handler_t* handler,
@@ -262,7 +265,7 @@ rx_err_t mock_error_handler_get_error_at(mock_error_handler_t* handler,
   RX_CHECK_NULL_PTR(handler, "MOCK_ERROR", "Handler pointer is NULL");
 
   if (index >= handler->stored_error_count) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   mock_error_record_t* record = &handler->errors[index];
@@ -280,7 +283,7 @@ rx_err_t mock_error_handler_get_error_at(mock_error_handler_t* handler,
     *out_message = record->message;
   }
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 bool mock_error_handler_has_error(mock_error_handler_t* handler,
@@ -330,11 +333,11 @@ rx_err_t mock_error_handler_deinit(mock_error_handler_t* handler)
   RX_CHECK_NULL_PTR(handler, "MOCK_ERROR", "Handler pointer is NULL");
 
   if (!handler->initialized) {
-    return RX_OK; /* Already deinitialized */
+    return k_rx_ok; /* Already deinitialized */
   }
 
   /* Clear state */
   handler->initialized = false;
 
-  return RX_OK;
+  return k_rx_ok;
 }
