@@ -66,8 +66,30 @@ _relocatable_vectors:
     /* Vector 29: CMT1 CMI1 */
     .long   _Default_Handler
 
-    /* Vectors 30-255: Other peripherals */
-    .rept 226
+    /* Vectors 30-33: Reserved */
+    .rept 4
+    .long   _Default_Handler
+    .endr
+
+    /* Vector 34: USB0 D0FIFO interrupt */
+    .long   _usb0_d0fifo_isr
+
+    /* Vector 35: USB0 D1FIFO interrupt */
+    .long   _usb0_d1fifo_isr
+
+    /* Vector 36: USB0 USBI interrupt (main USB interrupt) */
+    .long   _usb0_usbi_isr
+
+    /* Vectors 37-89: Other peripherals */
+    .rept 53
+    .long   _Default_Handler
+    .endr
+
+    /* Vector 90: USB0 USBR (resume) interrupt */
+    .long   _usb0_usbr_isr
+
+    /* Vectors 91-255: Other peripherals */
+    .rept 165
     .long   _Default_Handler
     .endr
 
@@ -151,3 +173,7 @@ _Default_Handler:
 /* External symbols defined in C code */
     .extern _main
     .extern _cmt0_isr
+    .extern _usb0_d0fifo_isr
+    .extern _usb0_d1fifo_isr
+    .extern _usb0_usbi_isr
+    .extern _usb0_usbr_isr

@@ -1,3 +1,5 @@
+/* lib/rx_frame/src/rx_frame.c */
+
 /**
  * @file rx_frame.c
  * @brief Frame Layer Implementation
@@ -5,8 +7,8 @@
  * Implements frame encoding/decoding with CRC-32 verification.
  * Bit-exact compatible with star-gateway/internal/frame/.
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "rx_frame.h"
@@ -21,8 +23,12 @@
  * =============================================================================
  */
 
-/** @brief Mask to extract one byte from a multi-byte value */
-#define BYTE_MASK (0xFFU)
+/**
+ * @brief Byte manipulation constants
+ */
+typedef enum {
+  k_byte_mask = 0xFFU, /**< Mask to extract one byte from a multi-byte value */
+} byte_mask_t;
 
 /**
  * @brief Bit shift amounts for extracting bytes from multi-byte values
@@ -35,14 +41,6 @@ typedef enum {
   k_shift_byte_2 = 16, /**< Shift 16 bits for byte 2 */
   k_shift_byte_3 = 24, /**< Shift 24 bits for byte 3 (MSB) */
 } byte_shift_t;
-
-/**
- * @brief Byte indices for 16-bit big-endian serialization
- */
-typedef enum {
-  k_be16_byte_high = 0, /**< High byte (MSB) at index 0 */
-  k_be16_byte_low  = 1, /**< Low byte (LSB) at index 1 */
-} be16_byte_idx_t;
 
 /**
  * @brief Byte indices for 32-bit little-endian serialization
@@ -60,29 +58,6 @@ typedef enum {
  */
 
 /**
- * @brief Write uint16 in big-endian format
- *
- * @param[out] buf Output buffer (at least 2 bytes)
- * @param[in]  val Value to write
- */
-static void internal_write_be16(uint8_t* buf, uint16_t val)
-{
-  buf[k_be16_byte_high] = (uint8_t)(val >> k_shift_byte_1);
-  buf[k_be16_byte_low]  = (uint8_t)(val & BYTE_MASK);
-}
-
-/**
- * @brief Read uint16 in big-endian format
- *
- * @param[in] buf Input buffer (at least 2 bytes)
- * @return Decoded value
- */
-static uint16_t internal_read_be16(const uint8_t* buf)
-{
-  return ((uint16_t)buf[k_be16_byte_high] << k_shift_byte_1) | (uint16_t)buf[k_be16_byte_low];
-}
-
-/**
  * @brief Write uint32 in little-endian format (for CRC-32)
  *
  * @param[out] buf Output buffer (at least 4 bytes)
@@ -90,10 +65,10 @@ static uint16_t internal_read_be16(const uint8_t* buf)
  */
 static void internal_write_le32(uint8_t* buf, uint32_t val)
 {
-  buf[k_le32_byte_0] = (uint8_t)(val & BYTE_MASK);
-  buf[k_le32_byte_1] = (uint8_t)((val >> k_shift_byte_1) & BYTE_MASK);
-  buf[k_le32_byte_2] = (uint8_t)((val >> k_shift_byte_2) & BYTE_MASK);
-  buf[k_le32_byte_3] = (uint8_t)((val >> k_shift_byte_3) & BYTE_MASK);
+  buf[k_le32_byte_0] = (uint8_t)(val & k_byte_mask);
+  buf[k_le32_byte_1] = (uint8_t)((val >> k_shift_byte_1) & k_byte_mask);
+  buf[k_le32_byte_2] = (uint8_t)((val >> k_shift_byte_2) & k_byte_mask);
+  buf[k_le32_byte_3] = (uint8_t)((val >> k_shift_byte_3) & k_byte_mask);
 }
 
 /**
@@ -117,21 +92,21 @@ static uint32_t internal_read_le32(const uint8_t* buf)
 rx_err_t rx_frame_encoder_init(rx_frame_encoder_t* enc)
 {
   if (enc == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   enc->initialized = 1;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_frame_encoder_deinit(rx_frame_encoder_t* enc)
 {
   if (enc == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   enc->initialized = 0;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_frame_encode(rx_frame_encoder_t* enc,
@@ -140,16 +115,16 @@ rx_err_t rx_frame_encode(rx_frame_encoder_t* enc,
                          uint32_t*           output_len)
 {
   if (enc == NULL || frame == NULL || output == NULL || output_len == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (enc->initialized == 0) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Validate payload size */
   if (frame->header.length > k_frame_max_payload) {
-    return RX_ERR_INVALID_SIZE;
+    return k_rx_err_invalid_size;
   }
 
   /* Calculate total frame size */
@@ -157,15 +132,15 @@ rx_err_t rx_frame_encode(rx_frame_encoder_t* enc,
   uint32_t offset     = 0;
 
   /* Write SYNC word (big-endian) */
-  internal_write_be16(&output[offset], k_frame_sync_word);
+  rx_frame_write_be16(&output[offset], k_frame_sync_word);
   offset += k_frame_sync_size;
 
   /* Write SEQ (big-endian, network byte order per RFC 1700) */
-  internal_write_be16(&output[offset], frame->header.sequence);
+  rx_frame_write_be16(&output[offset], frame->header.sequence);
   offset += k_frame_seq_size;
 
   /* Write LEN (big-endian, network byte order per RFC 1700) */
-  internal_write_be16(&output[offset], frame->header.length);
+  rx_frame_write_be16(&output[offset], frame->header.length);
   offset += k_frame_len_size;
 
   /* Write TYPE (1 byte) */
@@ -190,7 +165,7 @@ rx_err_t rx_frame_encode(rx_frame_encoder_t* enc,
   offset += k_frame_crc_size;
 
   *output_len = frame_size;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -201,65 +176,65 @@ rx_err_t rx_frame_encode(rx_frame_encoder_t* enc,
 rx_err_t rx_frame_decoder_init(rx_frame_decoder_t* dec)
 {
   if (dec == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   dec->initialized = 1;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_frame_decoder_deinit(rx_frame_decoder_t* dec)
 {
   if (dec == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   dec->initialized = 0;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t
 rx_frame_decode(rx_frame_decoder_t* dec, const uint8_t* data, uint32_t data_len, rx_frame_t* frame)
 {
   if (dec == NULL || data == NULL || frame == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   if (dec->initialized == 0) {
-    return RX_ERR_INVALID_STATE;
+    return k_rx_err_invalid_state;
   }
 
   /* Check minimum frame size */
   if (data_len < k_frame_min_size) {
-    return RX_ERR_INVALID_SIZE;
+    return k_rx_err_invalid_size;
   }
 
   uint32_t offset = 0;
 
   /* Verify SYNC word */
-  uint16_t sync_word = internal_read_be16(&data[offset]);
+  uint16_t sync_word = rx_frame_read_be16(&data[offset]);
   if (sync_word != k_frame_sync_word) {
-    return RX_ERR_PROTOCOL_ERROR;
+    return k_rx_err_protocol_error;
   }
   offset += k_frame_sync_size;
 
   /* Read SEQ */
-  frame->header.sequence = internal_read_be16(&data[offset]);
+  frame->header.sequence = rx_frame_read_be16(&data[offset]);
   offset += k_frame_seq_size;
 
   /* Read LEN */
-  frame->header.length = internal_read_be16(&data[offset]);
+  frame->header.length = rx_frame_read_be16(&data[offset]);
   offset += k_frame_len_size;
 
   /* Validate payload length */
   if (frame->header.length > k_frame_max_payload) {
-    return RX_ERR_INVALID_SIZE;
+    return k_rx_err_invalid_size;
   }
 
   /* Verify we have enough data for the declared payload + CRC */
   uint32_t expected_size = rx_frame_encoded_size(frame->header.length);
   if (data_len < expected_size) {
-    return RX_ERR_INVALID_SIZE;
+    return k_rx_err_invalid_size;
   }
 
   /* Read TYPE */
@@ -284,11 +259,11 @@ rx_frame_decode(rx_frame_decoder_t* dec, const uint8_t* data, uint32_t data_len,
 
   /* Verify CRC */
   if (received_crc != calculated_crc) {
-    return RX_ERR_CRC_MISMATCH;
+    return k_rx_err_crc_mismatch;
   }
 
   frame->crc = received_crc;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -299,7 +274,7 @@ rx_frame_decode(rx_frame_decoder_t* dec, const uint8_t* data, uint32_t data_len,
 rx_err_t rx_frame_create_ack(rx_frame_t* frame, uint16_t sequence)
 {
   if (frame == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   memset(frame, 0, sizeof(rx_frame_t));
@@ -308,13 +283,13 @@ rx_err_t rx_frame_create_ack(rx_frame_t* frame, uint16_t sequence)
   frame->header.type     = k_frame_type_ack;
   frame->header.flags    = k_frame_flag_none;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_frame_create_nack(rx_frame_t* frame, uint16_t sequence, uint8_t flags)
 {
   if (frame == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   memset(frame, 0, sizeof(rx_frame_t));
@@ -323,5 +298,5 @@ rx_err_t rx_frame_create_nack(rx_frame_t* frame, uint16_t sequence, uint8_t flag
   frame->header.type     = k_frame_type_nack;
   frame->header.flags    = flags;
 
-  return RX_OK;
+  return k_rx_ok;
 }

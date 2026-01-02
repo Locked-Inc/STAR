@@ -1,14 +1,14 @@
-/* src/hardware/adc.c */
+/* lib/rx_hal/src/adc.c */
 
 /**
  * @file adc.c
  * @brief ADC Driver for RX72N S12ADFa
- * @details
+ *
  * Provides 12-bit A/D conversion on RX72N using S12ADFa peripheral.
  * Supports ADC unit 0 and 1 with multiple channels.
  *
- * @date 2025-12-21
- * @copyright Copyright (c) 2025 STAR Project
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include <string.h>
@@ -21,11 +21,58 @@
  * =============================================================================
  */
 
+/** @brief ADC hardware limits */
 typedef enum {
-  k_adc_max_units    = 2,   /* S12AD0, S12AD1 */
-  k_adc_max_channels = 8,   /* Channels 0-7 per unit */
-  k_adc_timeout_ms   = 100, /* ADC conversion timeout */
+  k_adc_max_units    = 2,   /**< S12AD0, S12AD1 */
+  k_adc_max_channels = 8,   /**< Channels 0-7 per unit */
+  k_adc_timeout_ms   = 100, /**< ADC conversion timeout (ms) */
 } adc_constants_t;
+
+/** @brief ADC resolution options */
+typedef enum {
+  k_adc_resolution_8bit  = 8,  /**< 8-bit ADC resolution */
+  k_adc_resolution_10bit = 10, /**< 10-bit ADC resolution */
+  k_adc_resolution_12bit = 12, /**< 12-bit ADC resolution (default) */
+} adc_resolution_t;
+
+/** @brief System protection register values (from rx72n_system_regs.h) */
+typedef enum {
+  k_adc_prcr_unlock = 0xA50B, /**< Enable writes to MSTPCR */
+  k_adc_prcr_lock   = 0xA500, /**< Disable writes to MSTPCR */
+} adc_prcr_values_t;
+
+/** @brief ADC module stop bit positions in MSTPCRA */
+typedef enum {
+  k_adc_mstpra_s12ad1 = 16, /**< S12AD1 module stop bit */
+  k_adc_mstpra_s12ad0 = 17, /**< S12AD0 module stop bit */
+} adc_module_stop_bits_t;
+
+/** @brief ADC Control Extended Register (ADCER) bit masks and values */
+typedef enum {
+  k_adc_adcer_adprc_mask  = 0x03,        /**< ADPRC bit mask (bits 1:0) */
+  k_adc_adcer_adprc_shift = 0,           /**< ADPRC bit shift position */
+  k_adc_adcer_adprc_12bit = (0x00 << 0), /**< 12-bit resolution */
+  k_adc_adcer_adprc_10bit = (0x01 << 0), /**< 10-bit resolution */
+  k_adc_adcer_adprc_8bit  = (0x02 << 0), /**< 8-bit resolution */
+} adc_adcer_bits_t;
+
+/** @brief ADC Control/Status Register (ADCSR) bit masks */
+typedef enum {
+  k_adc_adcsr_adst = 0x1000, /**< A/D Conversion Start (bit 12) */
+} adc_adcsr_bits_t;
+
+/** @brief ADC channel register boundaries */
+typedef enum {
+  k_adc_channel_adansa0_max  = 15, /**< Maximum channel for ADANSA0 (channels 0-15) */
+  k_adc_channel_adansa1_base = 16, /**< Base channel for ADANSA1 (channels 16+) */
+} adc_channel_boundaries_t;
+
+/** @brief ADC timeout and voltage constants */
+typedef enum {
+  k_adc_timeout_multiplier   = 1000, /**< Timeout loop multiplier */
+  k_adc_timeout_expired      = 0,    /**< Timeout counter expired */
+  k_adc_reference_voltage_mv = 3300, /**< ADC reference voltage (3.3V) */
+} adc_misc_constants_t;
 
 /* =============================================================================
  * Static Variables
@@ -49,7 +96,7 @@ static bool s_adc_unit_initialized[k_adc_max_units] = {false, false};
  *
  * @return Pointer to ADC register base, or NULL if invalid unit
  */
-static volatile S12AD_Type* internal_get_adc_base(uint8_t unit)
+static volatile rx_s12ad_regs_t* internal_get_adc_base(uint8_t unit)
 {
   switch (unit) {
     case 0: {
@@ -70,23 +117,23 @@ static volatile S12AD_Type* internal_get_adc_base(uint8_t unit)
  * @param[in] unit ADC unit number
  * @param[in] channel ADC channel number
  *
- * @return RX_OK if valid, error code otherwise
+ * @return k_rx_ok if valid, error code otherwise
  */
 static rx_err_t internal_validate_unit_channel(uint8_t unit, uint8_t channel)
 {
   /* Validate unit */
   if (unit >= k_adc_max_units) {
-    RX_LOG_ERROR(s_tag, "Invalid ADC unit");
-    return RX_ERR_INVALID_ARG;
+    rx_log_error(s_tag, "Invalid ADC unit");
+    return k_rx_err_invalid_arg;
   }
 
   /* Validate channel */
   if (channel >= k_adc_max_channels) {
-    RX_LOG_ERROR(s_tag, "Invalid ADC channel");
-    return RX_ERR_INVALID_ARG;
+    rx_log_error(s_tag, "Invalid ADC channel");
+    return k_rx_err_invalid_arg;
   }
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -101,60 +148,61 @@ rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits)
   RX_RETURN_ON_ERROR(err, s_tag, "Unit/channel validation failed");
 
   /* Validate resolution */
-  if (bits != 8 && bits != 10 && bits != 12) {
-    RX_LOG_ERROR(s_tag, "Invalid resolution (must be 8, 10, or 12 bits)");
-    return RX_ERR_INVALID_ARG;
+  if (bits != k_adc_resolution_8bit && bits != k_adc_resolution_10bit &&
+      bits != k_adc_resolution_12bit) {
+    rx_log_error(s_tag, "Invalid resolution (must be 8, 10, or 12 bits)");
+    return k_rx_err_invalid_arg;
   }
 
   /* Get ADC base */
-  volatile S12AD_Type* adc = internal_get_adc_base(unit);
+  volatile rx_s12ad_regs_t* adc = internal_get_adc_base(unit);
   if (adc == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Initialize ADC unit if not already initialized */
   if (!s_adc_unit_initialized[unit]) {
     /* Unlock module stop control */
-    SYSTEM.PRCR = 0xA50B; /* Enable writes to MSTPCR */
+    SYSTEM.prcr = k_adc_prcr_unlock;
 
     /* Enable ADC module (clear module stop bit) */
     if (unit == 0) {
-      SYSTEM.MSTPCRA &= ~(1 << 17); /* S12AD0 */
+      SYSTEM.mstpcra &= ~(1UL << k_adc_mstpra_s12ad0);
     } else {
-      SYSTEM.MSTPCRA &= ~(1 << 16); /* S12AD1 */
+      SYSTEM.mstpcra &= ~(1UL << k_adc_mstpra_s12ad1);
     }
 
     /* Lock module stop control */
-    SYSTEM.PRCR = 0xA500;
+    SYSTEM.prcr = k_adc_prcr_lock;
 
     /* Configure ADC resolution */
-    uint16_t adcer = adc->ADCER;
-    adcer &= ~(0x03 << 0); /* Clear ADPRC bits */
-    if (bits == 8) {
-      adcer |= (0x02 << 0); /* 8-bit mode */
-    } else if (bits == 10) {
-      adcer |= (0x01 << 0); /* 10-bit mode */
+    uint16_t adcer = adc->adcer;
+    adcer &= ~(k_adc_adcer_adprc_mask << k_adc_adcer_adprc_shift);
+    if (bits == k_adc_resolution_8bit) {
+      adcer |= k_adc_adcer_adprc_8bit;
+    } else if (bits == k_adc_resolution_10bit) {
+      adcer |= k_adc_adcer_adprc_10bit;
     } else {
-      adcer |= (0x00 << 0); /* 12-bit mode */
+      adcer |= k_adc_adcer_adprc_12bit;
     }
-    adc->ADCER = adcer;
+    adc->adcer = adcer;
 
     /* Mark unit as initialized */
     s_adc_unit_initialized[unit] = true;
 
-    RX_LOG_DEBUG(s_tag, "ADC unit initialized");
+    rx_log_debug(s_tag, "ADC unit initialized");
   }
 
   /* Enable the specified channel */
-  if (channel < 16) {
-    adc->ADANSA0 |= (1 << channel);
+  if (channel <= k_adc_channel_adansa0_max) {
+    adc->adansa0 |= (1 << channel);
   } else {
-    adc->ADANSA1 |= (1 << (channel - 16));
+    adc->adansa1 |= (1 << (channel - k_adc_channel_adansa1_base));
   }
 
-  RX_LOG_DEBUG(s_tag, "ADC channel enabled");
+  rx_log_debug(s_tag, "ADC channel enabled");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t adc_read(uint8_t unit, uint8_t channel, uint16_t* value)
@@ -167,62 +215,62 @@ rx_err_t adc_read(uint8_t unit, uint8_t channel, uint16_t* value)
 
   /* Check if unit is initialized */
   if (!s_adc_unit_initialized[unit]) {
-    RX_LOG_ERROR(s_tag, "ADC unit not initialized");
-    return RX_ERR_INVALID_STATE;
+    rx_log_error(s_tag, "ADC unit not initialized");
+    return k_rx_err_invalid_state;
   }
 
   /* Get ADC base */
-  volatile S12AD_Type* adc = internal_get_adc_base(unit);
+  volatile rx_s12ad_regs_t* adc = internal_get_adc_base(unit);
   if (adc == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Start single-scan conversion */
-  adc->ADCSR = 0x1000; /* ADST=1, start conversion */
+  adc->adcsr = k_adc_adcsr_adst;
 
   /* Wait for conversion to complete (poll ADCSR.ADST bit) */
-  uint32_t timeout = k_adc_timeout_ms * 1000; /* Convert to loops */
-  while ((adc->ADCSR & 0x1000) != 0 && timeout > 0) {
+  uint32_t timeout = k_adc_timeout_ms * k_adc_timeout_multiplier;
+  while ((adc->adcsr & k_adc_adcsr_adst) != 0 && timeout > k_adc_timeout_expired) {
     timeout--;
   }
 
-  if (timeout == 0) {
-    RX_LOG_ERROR(s_tag, "ADC conversion timeout");
-    return RX_ERR_TIMEOUT;
+  if (timeout == k_adc_timeout_expired) {
+    rx_log_error(s_tag, "ADC conversion timeout");
+    return k_rx_err_timeout;
   }
 
   /* Read conversion result from appropriate data register */
   switch (channel) {
     case 0:
-      *value = adc->ADDR0;
+      *value = adc->addr0;
       break;
     case 1:
-      *value = adc->ADDR1;
+      *value = adc->addr1;
       break;
     case 2:
-      *value = adc->ADDR2;
+      *value = adc->addr2;
       break;
     case 3:
-      *value = adc->ADDR3;
+      *value = adc->addr3;
       break;
     case 4:
-      *value = adc->ADDR4;
+      *value = adc->addr4;
       break;
     case 5:
-      *value = adc->ADDR5;
+      *value = adc->addr5;
       break;
     case 6:
-      *value = adc->ADDR6;
+      *value = adc->addr6;
       break;
     case 7:
-      *value = adc->ADDR7;
+      *value = adc->addr7;
       break;
     default:
-      RX_LOG_ERROR(s_tag, "Unsupported channel");
-      return RX_ERR_INVALID_ARG;
+      rx_log_error(s_tag, "Unsupported channel");
+      return k_rx_err_invalid_arg;
   }
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t adc_read_voltage_mv(uint8_t unit, uint8_t channel, uint8_t bits, uint32_t* voltage_mv)
@@ -234,9 +282,9 @@ rx_err_t adc_read_voltage_mv(uint8_t unit, uint8_t channel, uint8_t bits, uint32
   rx_err_t err = adc_read(unit, channel, &raw_value);
   RX_RETURN_ON_ERROR(err, s_tag, "ADC read failed");
 
-  /* Calculate voltage (assuming 3.3V reference) */
+  /* Calculate voltage (using ADC reference voltage) */
   uint32_t max_value = (1 << bits) - 1;
-  *voltage_mv        = ((uint32_t)raw_value * 3300) / max_value;
+  *voltage_mv        = ((uint32_t)raw_value * k_adc_reference_voltage_mv) / max_value;
 
-  return RX_OK;
+  return k_rx_ok;
 }

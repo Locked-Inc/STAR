@@ -1,4 +1,4 @@
-/* include/rx_mpc.h */
+/* lib/rx_hal/inc/rx_mpc.h */
 
 /**
  * @file rx_mpc.h
@@ -19,8 +19,8 @@
  * - GPIO for motor driver control
  * - ADC for current sensing
  *
- * @date 2025-12-21
- * @copyright Copyright (c) 2025 STAR Project
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef STAR_RX72N_MPC_H
@@ -109,8 +109,8 @@ typedef enum {
  * @param[in] port Port number (0-9 or 0x0A-0x12 for A-J)
  * @param[in] pin Pin number (0-7)
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if port or pin is invalid
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if port or pin is invalid
  */
 rx_err_t rx_mpc_set_gpio(uint8_t port, uint8_t pin);
 
@@ -123,8 +123,8 @@ rx_err_t rx_mpc_set_gpio(uint8_t port, uint8_t pin);
  * @param[in] pin Pin number (0-7)
  * @param[in] psel Peripheral select code (see hardware manual)
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if port or pin is invalid
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if port or pin is invalid
  */
 rx_err_t rx_mpc_set_peripheral(uint8_t port, uint8_t pin, uint8_t psel);
 
@@ -137,8 +137,8 @@ rx_err_t rx_mpc_set_peripheral(uint8_t port, uint8_t pin, uint8_t psel);
  * @param[in] port Port number
  * @param[in] pin Pin number (0-7)
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if port or pin is invalid
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if port or pin is invalid
  */
 rx_err_t rx_mpc_set_mtu_pwm(uint8_t port, uint8_t pin);
 
@@ -151,8 +151,8 @@ rx_err_t rx_mpc_set_mtu_pwm(uint8_t port, uint8_t pin);
  * @param[in] port Port number
  * @param[in] pin Pin number (0-7)
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if port or pin is invalid
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if port or pin is invalid
  */
 rx_err_t rx_mpc_set_mtu_encoder(uint8_t port, uint8_t pin);
 
@@ -165,8 +165,8 @@ rx_err_t rx_mpc_set_mtu_encoder(uint8_t port, uint8_t pin);
  * @param[in] port Port number
  * @param[in] pin Pin number (0-7)
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if port or pin is invalid
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if port or pin is invalid
  */
 rx_err_t rx_mpc_set_adc(uint8_t port, uint8_t pin);
 
@@ -179,8 +179,8 @@ rx_err_t rx_mpc_set_adc(uint8_t port, uint8_t pin);
  * @param[in] pin Pin number (0-7)
  * @param[in] is_tx True for TX, false for RX
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if port or pin is invalid
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if port or pin is invalid
  */
 rx_err_t rx_mpc_set_sci(uint8_t port, uint8_t pin, bool is_tx);
 
@@ -193,8 +193,8 @@ rx_err_t rx_mpc_set_sci(uint8_t port, uint8_t pin, bool is_tx);
  * @param[in] pin Pin number (0-7)
  * @param[in] is_scl True for SCL, false for SDA
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if port or pin is invalid
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if port or pin is invalid
  */
 rx_err_t rx_mpc_set_riic(uint8_t port, uint8_t pin, bool is_scl);
 
@@ -206,8 +206,8 @@ rx_err_t rx_mpc_set_riic(uint8_t port, uint8_t pin, bool is_scl);
  * @param[in] port Port number
  * @param[in] pin Pin number (0-7)
  *
- * @return RX_OK on success
- * @return RX_ERR_INVALID_ARG if port or pin is invalid
+ * @return k_rx_ok on success
+ * @return k_rx_err_invalid_arg if port or pin is invalid
  */
 rx_err_t rx_mpc_set_rspi(uint8_t port, uint8_t pin);
 

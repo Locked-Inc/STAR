@@ -1,0 +1,91 @@
+/* lib/rx_hal/inc/rx72n_system_regs.h */
+
+/**
+ * @file rx72n_system_regs.h
+ * @brief RX72N System Control Register Definitions
+ *
+ * System control registers for clock, power, and module stop control.
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
+ */
+
+#ifndef STAR_RX72N_SYSTEM_REGS_H
+#define STAR_RX72N_SYSTEM_REGS_H
+
+#include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* =============================================================================
+ * System Control Registers
+ * =============================================================================
+ */
+
+/** @brief System register reserved field sizes */
+typedef enum {
+  k_system_reserved_after_syscr1_bytes   = 2, /**< Reserved bytes after SYSCR1 */
+  k_system_reserved_after_sbycr_bytes    = 2, /**< Reserved bytes after SBYCR */
+  k_system_reserved_after_prcr_bytes     = 2, /**< Reserved bytes after PRCR */
+  k_system_reserved_after_pllcr2_bytes   = 5, /**< Reserved bytes after PLLCR2 */
+  k_system_reserved_after_bckcr_bytes    = 1, /**< Reserved byte after BCKCR */
+  k_system_reserved_after_hococr2_bytes  = 4, /**< Reserved bytes after HOCOCR2 */
+  k_system_reserved_after_oscovfsr_bytes = 3, /**< Reserved bytes after OSCOVFSR */
+} system_reserved_sizes_t;
+
+/**
+ * @brief System Control Register Map
+ * @details
+ * System control registers for clock configuration, power management,
+ * and module stop control.
+ * Base address: 0x00080000
+ */
+typedef struct {
+  volatile uint16_t syscr0; /**< System Control Register 0 */
+  volatile uint16_t syscr1; /**< System Control Register 1 */
+  uint8_t           reserved0[k_system_reserved_after_syscr1_bytes]; /**< Reserved */
+  volatile uint16_t sbycr;                                          /**< Standby Control Register */
+  uint8_t           reserved1[k_system_reserved_after_sbycr_bytes]; /**< Reserved */
+  volatile uint16_t prcr;                                           /**< Protection Register */
+  uint8_t           reserved1a[k_system_reserved_after_prcr_bytes]; /**< Reserved */
+  volatile uint32_t mstpcra; /**< Module Stop Control Register A */
+  volatile uint32_t mstpcrb; /**< Module Stop Control Register B */
+  volatile uint32_t mstpcrc; /**< Module Stop Control Register C */
+  volatile uint32_t mstpcrd; /**< Module Stop Control Register D */
+  volatile uint32_t sckcr;   /**< System Clock Control Register */
+  volatile uint16_t sckcr2;  /**< System Clock Control Register 2 */
+  volatile uint16_t sckcr3;  /**< System Clock Control Register 3 */
+  volatile uint16_t pllcr;   /**< PLL Control Register */
+  volatile uint8_t  pllcr2;  /**< PLL Control Register 2 */
+  uint8_t           reserved2[k_system_reserved_after_pllcr2_bytes]; /**< Reserved */
+  volatile uint8_t  bckcr; /**< External Bus Clock Control Register */
+  uint8_t           reserved3[k_system_reserved_after_bckcr_bytes]; /**< Reserved */
+  volatile uint8_t  mosccr;  /**< Main Clock Oscillator Control */
+  volatile uint8_t  sosccr;  /**< Sub-Clock Oscillator Control */
+  volatile uint8_t  lococr;  /**< Low-Speed On-Chip Oscillator Control */
+  volatile uint8_t  ilococr; /**< IWDT-Dedicated On-Chip Oscillator Control */
+  volatile uint8_t  hococr;  /**< High-Speed On-Chip Oscillator Control */
+  volatile uint8_t  hococr2; /**< High-Speed On-Chip Oscillator Control 2 */
+  uint8_t           reserved4[k_system_reserved_after_hococr2_bytes]; /**< Reserved */
+  volatile uint8_t  oscovfsr; /**< Oscillation Stabilization Flag */
+  uint8_t           reserved5[k_system_reserved_after_oscovfsr_bytes]; /**< Reserved */
+  volatile uint8_t  ostdcr; /**< Oscillation Stop Detection Control */
+  volatile uint8_t  ostdsr; /**< Oscillation Stop Detection Status */
+} rx_system_regs_t;
+
+#define SYSTEM_BASE ((rx_system_regs_t*)0x00080000)
+#define SYSTEM      (*SYSTEM_BASE)
+
+/* Module stop bits for MSTPCRB register */
+typedef enum {
+  k_mstpb_usb0 = 19, /**< USB0 module stop bit in MSTPCRB */
+  k_mstpb_crc  = 23, /**< CRC module stop bit in MSTPCRB */
+} rx_module_stop_bits_t;
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* STAR_RX72N_SYSTEM_REGS_H */

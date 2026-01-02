@@ -1,0 +1,153 @@
+/* lib/rx_hal/inc/rx72n_mtu_regs.h */
+
+/**
+ * @file rx72n_mtu_regs.h
+ * @brief RX72N MTU Timer Register Definitions
+ *
+ * Register definitions for the Multi-Function Timer Unit (MTU3a) used for
+ * PWM generation and timer functions.
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
+ */
+
+#ifndef STAR_RX72N_MTU_REGS_H
+#define STAR_RX72N_MTU_REGS_H
+
+#include <stdint.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/* =============================================================================
+ * Multi-Function Timer Unit (MTU3a)
+ * =============================================================================
+ */
+
+/**
+ * @brief MTU Channel Register Map (MTU0-MTU2, MTU6-MTU7)
+ * @details
+ * Multi-Function Timer Unit channel registers for PWM and timer functions.
+ * Base addresses:
+ * - MTU0: 0x000D0600
+ * - MTU1: 0x000D0680
+ * - MTU2: 0x000D0700
+ * - MTU6: 0x000D0A00
+ * - MTU7: 0x000D0A80
+ */
+typedef struct {
+  volatile uint8_t  tcr;   /**< Timer Control Register (prescaler, edge, clear) */
+  volatile uint8_t  tmdr;  /**< Timer Mode Register (PWM mode select) */
+  volatile uint8_t  tiorh; /**< Timer I/O Control Register H (output compare A/B) */
+  volatile uint8_t  tiorl; /**< Timer I/O Control Register L (output compare C/D) */
+  volatile uint8_t  tier;  /**< Timer Interrupt Enable Register */
+  volatile uint8_t  tsr;   /**< Timer Status Register (interrupt flags) */
+  volatile uint16_t tcnt;  /**< Timer Counter (current count value) */
+  volatile uint16_t tgra;  /**< Timer General Register A (compare/capture) */
+  volatile uint16_t tgrb;  /**< Timer General Register B (compare/capture) */
+  volatile uint16_t tgrc;  /**< Timer General Register C (compare/capture) */
+  volatile uint16_t tgrd;  /**< Timer General Register D (compare/capture) */
+} rx_mtu_channel_regs_t;
+
+/**
+ * @brief MTU3/MTU4 Extended Channel Register Map
+ * @details
+ * MTU3 and MTU4 have additional registers for extended functionality.
+ * Base addresses:
+ * - MTU3: 0x000D0200
+ * - MTU4: 0x000D0201
+ */
+typedef struct {
+  volatile uint8_t  tcr;   /**< Timer Control Register (prescaler, edge, clear) */
+  volatile uint8_t  tmdr;  /**< Timer Mode Register (PWM mode select) */
+  volatile uint8_t  tiorh; /**< Timer I/O Control Register H (output compare A/B) */
+  volatile uint8_t  tiorl; /**< Timer I/O Control Register L (output compare C/D) */
+  volatile uint8_t  tier;  /**< Timer Interrupt Enable Register */
+  volatile uint8_t  tsr;   /**< Timer Status Register (interrupt flags) */
+  volatile uint16_t tcnt;  /**< Timer Counter (current count value) */
+  volatile uint16_t tgra;  /**< Timer General Register A (compare/capture) */
+  volatile uint16_t tgrb;  /**< Timer General Register B (compare/capture) */
+  volatile uint16_t tgrc;  /**< Timer General Register C (compare/capture) */
+  volatile uint16_t tgrd;  /**< Timer General Register D (compare/capture) */
+  volatile uint16_t tgre;  /**< Timer General Register E (MTU3/4 only) */
+  volatile uint16_t tgrf;  /**< Timer General Register F (MTU3/4 only) */
+  volatile uint8_t  tier2; /**< Timer Interrupt Enable Register 2 */
+  volatile uint8_t  tsr2;  /**< Timer Status Register 2 */
+  volatile uint8_t  tbtm;  /**< Timer Buffer Transfer Mode Register */
+} rx_mtu34_channel_regs_t;
+
+/**
+ * @brief MTU Start Register Map
+ * @details
+ * Timer start/stop control register.
+ * Base address: 0x000D0880
+ */
+typedef struct {
+  volatile uint8_t tstr; /**< Timer Start Register (channel enable bits) */
+} rx_mtu_tstr_regs_t;
+
+#define MTU0_BASE ((rx_mtu_channel_regs_t*)0x000D0600)
+#define MTU1_BASE ((rx_mtu_channel_regs_t*)0x000D0680)
+#define MTU2_BASE ((rx_mtu_channel_regs_t*)0x000D0700)
+#define MTU3_BASE ((rx_mtu34_channel_regs_t*)0x000D0200)
+#define MTU4_BASE ((rx_mtu34_channel_regs_t*)0x000D0201)
+#define MTU6_BASE ((rx_mtu_channel_regs_t*)0x000D0A00)
+#define MTU7_BASE ((rx_mtu_channel_regs_t*)0x000D0A80)
+
+#define MTU0 (*MTU0_BASE)
+#define MTU1 (*MTU1_BASE)
+#define MTU2 (*MTU2_BASE)
+#define MTU3 (*MTU3_BASE)
+#define MTU4 (*MTU4_BASE)
+#define MTU6 (*MTU6_BASE)
+#define MTU7 (*MTU7_BASE)
+
+#define MTU_TSTR_BASE ((rx_mtu_tstr_regs_t*)0x000D0880)
+#define MTU_TSTR      (*MTU_TSTR_BASE)
+
+/* Timer Control Register (TCR) bits */
+typedef enum {
+  k_mtu_tcr_tpsc_mask = 0x07,        /**< Timer Prescaler mask (bits 0-2) */
+  k_mtu_tcr_ckeg_mask = 0x18,        /**< Clock Edge mask (bits 3-4) */
+  k_mtu_tcr_cclr_mask = 0xE0,        /**< Counter Clear Source mask (bits 5-7) */
+  k_mtu_tcr_tpsc_1    = 0x00,        /**< PCLKA/1 */
+  k_mtu_tcr_tpsc_4    = 0x01,        /**< PCLKA/4 */
+  k_mtu_tcr_tpsc_16   = 0x02,        /**< PCLKA/16 */
+  k_mtu_tcr_tpsc_64   = 0x03,        /**< PCLKA/64 */
+  k_mtu_tcr_cclr_tgra = (0x01 << 5), /**< Clear on TGRA compare match */
+} mtu_tcr_bits_t;
+
+/* Timer Mode Register (TMDR) bits */
+typedef enum {
+  k_mtu_tmdr_md_mask   = 0x0F,     /**< Mode select mask (bits 0-3) */
+  k_mtu_tmdr_md_normal = 0x00,     /**< Normal mode */
+  k_mtu_tmdr_md_pwm1   = 0x02,     /**< PWM mode 1 */
+  k_mtu_tmdr_md_pwm2   = 0x03,     /**< PWM mode 2 */
+  k_mtu_tmdr_bfa       = (1 << 4), /**< Buffer mode A */
+  k_mtu_tmdr_bfb       = (1 << 5), /**< Buffer mode B */
+} mtu_tmdr_bits_t;
+
+/* Timer I/O Control Register (TIOR) bits */
+typedef enum {
+  k_mtu_tior_ioa_mask  = 0x0F, /**< I/O Control A mask (bits 0-3) */
+  k_mtu_tior_iob_mask  = 0xF0, /**< I/O Control B mask (bits 4-7) */
+  k_mtu_tior_init_low  = 0x02, /**< Initial output low, compare match high */
+  k_mtu_tior_init_high = 0x05, /**< Initial output high, compare match low */
+  k_mtu_tior_toggle    = 0x03, /**< Toggle on compare match */
+} mtu_tior_bits_t;
+
+/* Timer Start Register (TSTR) bits */
+typedef enum {
+  k_mtu_tstr_cst0 = (1 << 0), /**< Counter Start 0 */
+  k_mtu_tstr_cst1 = (1 << 1), /**< Counter Start 1 */
+  k_mtu_tstr_cst2 = (1 << 2), /**< Counter Start 2 */
+  k_mtu_tstr_cst3 = (1 << 6), /**< Counter Start 3 */
+  k_mtu_tstr_cst4 = (1 << 7), /**< Counter Start 4 */
+} mtu_tstr_bits_t;
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif /* STAR_RX72N_MTU_REGS_H */

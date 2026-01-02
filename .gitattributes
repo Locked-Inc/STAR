@@ -9,4 +9,7 @@
 *.tex linguist-vendored
 *.sty linguist-vendored
 *.cls linguist-vendored
+# Exclude AGS Script and ASL
+*.asc linguist-vendored
+*.dsl linguist-vendored
 gcc-14.2.0.202511-GNURX-ELF.run filter=lfs diff=lfs merge=lfs -text

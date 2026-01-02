@@ -1,16 +1,56 @@
-/* src/hardware/gpio.c */
+/* lib/rx_hal/src/gpio.c */
 
 /**
  * @file gpio.c
  * @brief GPIO Driver for RX72N
  *
  * GPIO control with integrated error handling, logging, and pin validation.
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include <stddef.h>
 
 #include "hardware.h"
 #include "rx72n_regs.h"
+
+/* =============================================================================
+ * Constants
+ * =============================================================================
+ */
+
+/** @brief GPIO port number constants for switch statement cases */
+typedef enum {
+  k_gpio_port_0 = 0,    /**< Port 0 */
+  k_gpio_port_1 = 1,    /**< Port 1 */
+  k_gpio_port_2 = 2,    /**< Port 2 */
+  k_gpio_port_3 = 3,    /**< Port 3 */
+  k_gpio_port_4 = 4,    /**< Port 4 */
+  k_gpio_port_5 = 5,    /**< Port 5 */
+  k_gpio_port_6 = 6,    /**< Port 6 */
+  k_gpio_port_7 = 7,    /**< Port 7 */
+  k_gpio_port_8 = 8,    /**< Port 8 */
+  k_gpio_port_9 = 9,    /**< Port 9 */
+  k_gpio_port_a = 0x0A, /**< Port A */
+  k_gpio_port_b = 0x0B, /**< Port B */
+  k_gpio_port_c = 0x0C, /**< Port C */
+  k_gpio_port_d = 0x0D, /**< Port D */
+  k_gpio_port_e = 0x0E, /**< Port E */
+  k_gpio_port_f = 0x0F, /**< Port F */
+  k_gpio_port_g = 0x10, /**< Port G */
+} gpio_port_number_t;
+
+/** @brief GPIO pin validation constants */
+typedef enum {
+  k_gpio_max_pin = 7, /**< Maximum valid pin number (pins 0-7) */
+} gpio_pin_constants_t;
+
+/** @brief GPIO register bit manipulation constants */
+typedef enum {
+  k_gpio_bit_set   = 1, /**< Value used for setting a single bit */
+  k_gpio_bit_clear = 0, /**< Value for cleared bit comparison */
+} gpio_bit_constants_t;
 
 /* =============================================================================
  * Internal Helper Functions
@@ -24,58 +64,58 @@
  *
  * @return Pointer to PORT register base, or NULL if invalid port
  */
-static volatile PORT_Type* internal_get_port_base(uint8_t port)
+static volatile rx_port_regs_t* internal_get_port_base(uint8_t port)
 {
   switch (port) {
-    case 0: {
+    case k_gpio_port_0: {
       return PORT0_BASE;
     }
-    case 1: {
+    case k_gpio_port_1: {
       return PORT1_BASE;
     }
-    case 2: {
+    case k_gpio_port_2: {
       return PORT2_BASE;
     }
-    case 3: {
+    case k_gpio_port_3: {
       return PORT3_BASE;
     }
-    case 4: {
+    case k_gpio_port_4: {
       return PORT4_BASE;
     }
-    case 5: {
+    case k_gpio_port_5: {
       return PORT5_BASE;
     }
-    case 6: {
+    case k_gpio_port_6: {
       return PORT6_BASE;
     }
-    case 7: {
+    case k_gpio_port_7: {
       return PORT7_BASE;
     }
-    case 8: {
+    case k_gpio_port_8: {
       return PORT8_BASE;
     }
-    case 9: {
+    case k_gpio_port_9: {
       return PORT9_BASE;
     }
-    case 0xA: {
+    case k_gpio_port_a: {
       return PORTA_BASE;
     }
-    case 0xB: {
+    case k_gpio_port_b: {
       return PORTB_BASE;
     }
-    case 0xC: {
+    case k_gpio_port_c: {
       return PORTC_BASE;
     }
-    case 0xD: {
+    case k_gpio_port_d: {
       return PORTD_BASE;
     }
-    case 0xE: {
+    case k_gpio_port_e: {
       return PORTE_BASE;
     }
-    case 0xF: {
+    case k_gpio_port_f: {
       return PORTF_BASE;
     }
-    case 0x10: {
+    case k_gpio_port_g: {
       return PORTG_BASE;
     }
     default: {
@@ -90,24 +130,24 @@ static volatile PORT_Type* internal_get_port_base(uint8_t port)
  * @param[in] port Port number
  * @param[in] pin Pin number
  *
- * @return RX_OK if valid, error code otherwise
+ * @return k_rx_ok if valid, error code otherwise
  */
 static rx_err_t internal_validate_port_pin(uint8_t port, uint8_t pin)
 {
   /* Validate port */
-  volatile PORT_Type* port_base = internal_get_port_base(port);
+  volatile rx_port_regs_t* port_base = internal_get_port_base(port);
   if (port_base == NULL) {
-    RX_LOG_ERROR("GPIO", "Invalid port number");
-    return RX_ERR_GPIO_INVALID_PORT;
+    rx_log_error("GPIO", "Invalid port number");
+    return k_rx_err_gpio_invalid_port;
   }
 
   /* Validate pin */
-  if (pin > 7) {
-    RX_LOG_ERROR("GPIO", "Invalid pin number");
-    return RX_ERR_GPIO_INVALID_PIN;
+  if (pin > k_gpio_max_pin) {
+    rx_log_error("GPIO", "Invalid pin number");
+    return k_rx_err_gpio_invalid_pin;
   }
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -125,24 +165,24 @@ rx_err_t gpio_set_output(uint8_t port, uint8_t pin)
   rx_pin_interface_t* pin_iface = rx_infrastructure_get_pin_interface();
   if (pin_iface != NULL) {
     err = pin_iface->reserve_pin(pin_iface->ctx, port, pin, "GPIO_OUT");
-    if (err != RX_OK && err != RX_ERR_GPIO_CONFLICT) {
+    if (err != k_rx_ok && err != k_rx_err_gpio_conflict) {
       /* Allow conflict (pin already reserved), but fail on other errors */
       RX_RETURN_ON_ERROR(err, "GPIO", "Pin reservation failed");
     }
   }
 
   /* Get port base address */
-  volatile PORT_Type* port_base = internal_get_port_base(port);
+  volatile rx_port_regs_t* port_base = internal_get_port_base(port);
 
   /* Set as GPIO mode (not peripheral) */
-  port_base->PMR &= ~(1 << pin);
+  port_base->pmr &= ~(k_gpio_bit_set << pin);
 
   /* Set as output */
-  port_base->PDR |= (1 << pin);
+  port_base->pdr |= (k_gpio_bit_set << pin);
 
-  RX_LOG_DEBUG("GPIO", "Pin configured as output");
+  rx_log_debug("GPIO", "Pin configured as output");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t gpio_set_input(uint8_t port, uint8_t pin)
@@ -155,24 +195,24 @@ rx_err_t gpio_set_input(uint8_t port, uint8_t pin)
   rx_pin_interface_t* pin_iface = rx_infrastructure_get_pin_interface();
   if (pin_iface != NULL) {
     err = pin_iface->reserve_pin(pin_iface->ctx, port, pin, "GPIO_IN");
-    if (err != RX_OK && err != RX_ERR_GPIO_CONFLICT) {
+    if (err != k_rx_ok && err != k_rx_err_gpio_conflict) {
       /* Allow conflict (pin already reserved), but fail on other errors */
       RX_RETURN_ON_ERROR(err, "GPIO", "Pin reservation failed");
     }
   }
 
   /* Get port base address */
-  volatile PORT_Type* port_base = internal_get_port_base(port);
+  volatile rx_port_regs_t* port_base = internal_get_port_base(port);
 
   /* Set as GPIO mode */
-  port_base->PMR &= ~(1 << pin);
+  port_base->pmr &= ~(k_gpio_bit_set << pin);
 
   /* Set as input */
-  port_base->PDR &= ~(1 << pin);
+  port_base->pdr &= ~(k_gpio_bit_set << pin);
 
-  RX_LOG_DEBUG("GPIO", "Pin configured as input");
+  rx_log_debug("GPIO", "Pin configured as input");
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t gpio_write_high(uint8_t port, uint8_t pin)
@@ -182,11 +222,11 @@ rx_err_t gpio_write_high(uint8_t port, uint8_t pin)
   RX_RETURN_ON_ERROR(err, "GPIO", "Port/pin validation failed");
 
   /* Get port base address */
-  volatile PORT_Type* port_base = internal_get_port_base(port);
+  volatile rx_port_regs_t* port_base = internal_get_port_base(port);
 
-  port_base->PODR |= (1 << pin);
+  port_base->podr |= (k_gpio_bit_set << pin);
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t gpio_write_low(uint8_t port, uint8_t pin)
@@ -196,11 +236,11 @@ rx_err_t gpio_write_low(uint8_t port, uint8_t pin)
   RX_RETURN_ON_ERROR(err, "GPIO", "Port/pin validation failed");
 
   /* Get port base address */
-  volatile PORT_Type* port_base = internal_get_port_base(port);
+  volatile rx_port_regs_t* port_base = internal_get_port_base(port);
 
-  port_base->PODR &= ~(1 << pin);
+  port_base->podr &= ~(k_gpio_bit_set << pin);
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t gpio_toggle(uint8_t port, uint8_t pin)
@@ -210,11 +250,11 @@ rx_err_t gpio_toggle(uint8_t port, uint8_t pin)
   RX_RETURN_ON_ERROR(err, "GPIO", "Port/pin validation failed");
 
   /* Get port base address */
-  volatile PORT_Type* port_base = internal_get_port_base(port);
+  volatile rx_port_regs_t* port_base = internal_get_port_base(port);
 
-  port_base->PODR ^= (1 << pin);
+  port_base->podr ^= (k_gpio_bit_set << pin);
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t gpio_read(uint8_t port, uint8_t pin, bool* value)
@@ -227,9 +267,9 @@ rx_err_t gpio_read(uint8_t port, uint8_t pin, bool* value)
   RX_RETURN_ON_ERROR(err, "GPIO", "Port/pin validation failed");
 
   /* Get port base address */
-  volatile PORT_Type* port_base = internal_get_port_base(port);
+  volatile rx_port_regs_t* port_base = internal_get_port_base(port);
 
-  *value = (port_base->PIDR & (1 << pin)) != 0;
+  *value = (port_base->pidr & (k_gpio_bit_set << pin)) != k_gpio_bit_clear;
 
-  return RX_OK;
+  return k_rx_ok;
 }
