@@ -77,7 +77,7 @@ typedef struct {
   uint16_t dcpmaxp; /* 0x5E: DCP Max Packet Size Register */
   uint16_t dcpctr;  /* 0x60: DCP Control Register */
   uint8_t  reserved6[2];
-  uint16_t pipesel;  /* 0x64: Pipe Window Select Register */
+  uint16_t pipesel; /* 0x64: Pipe Window Select Register */
   uint8_t  reserved7[2];
   uint16_t pipecfg;  /* 0x68: Pipe Configuration Register */
   uint16_t pipebuf;  /* 0x6A: Pipe Buffer Setting Register */
@@ -135,9 +135,9 @@ extern mock_system_regs_t g_mock_system;
  * =============================================================================
  */
 
-#define USB0    g_mock_usb0
-#define ICU     g_mock_icu
-#define SYSTEM  g_mock_system
+#define USB0   g_mock_usb0
+#define ICU    g_mock_icu
+#define SYSTEM g_mock_system
 
 /* =============================================================================
  * Pipe Control Register Bits (from rx72n_regs.h)
@@ -145,11 +145,11 @@ extern mock_system_regs_t g_mock_system;
  */
 
 typedef enum {
-  k_usb_pipectr_pid_mask  = 0x0003, /* Response PID */
-  k_usb_pipectr_pid_nak   = 0x0000, /* NAK response */
-  k_usb_pipectr_pid_buf   = 0x0001, /* BUF response */
-  k_usb_pipectr_pid_stall = 0x0002, /* STALL response */
-  k_usb_pipectr_pbusy     = (1 << 5), /* Pipe Busy */
+  k_usb_pipectr_pid_mask  = 0x0003,    /* Response PID */
+  k_usb_pipectr_pid_nak   = 0x0000,    /* NAK response */
+  k_usb_pipectr_pid_buf   = 0x0001,    /* BUF response */
+  k_usb_pipectr_pid_stall = 0x0002,    /* STALL response */
+  k_usb_pipectr_pbusy     = (1 << 5),  /* Pipe Busy */
   k_usb_pipectr_bsts      = (1 << 15), /* Buffer Status */
 } usb_pipectr_bits_t;
 
