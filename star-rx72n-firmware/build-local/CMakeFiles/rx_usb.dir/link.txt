@@ -1,0 +1,2 @@
+/usr/bin/ar qc librx_usb.a CMakeFiles/rx_usb.dir/lib/rx_usb/src/rx_usb.c.o CMakeFiles/rx_usb.dir/lib/rx_usb/src/rx_usb_hw.c.o CMakeFiles/rx_usb.dir/lib/rx_usb/src/rx_usb_cdc.c.o CMakeFiles/rx_usb.dir/lib/rx_usb/src/rx_usb_isr.c.o
+/usr/bin/ranlib librx_usb.a

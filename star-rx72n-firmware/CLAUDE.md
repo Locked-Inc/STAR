@@ -432,7 +432,7 @@ The CRC module uses a compile-time selection strategy with both implementations 
 
 **Public API:**
 ```c
-#include "rx_frame.h"
+#include "rx_crc.h"
 
 uint32_t rx_crc32_ieee(const uint8_t *data, size_t len);
 uint32_t rx_crc32_update(uint32_t crc, const uint8_t *data, size_t len);
@@ -466,14 +466,17 @@ uint32_t rx_crc32_update(uint32_t crc, const uint8_t *data, size_t len);
 
 **File Structure:**
 ```
-lib/rx_frame/
+lib/rx_crc/
 ├── inc/
-│   ├── rx_frame.h          # Public API
+│   ├── rx_crc.h            # Public API
 │   └── rx_crc_internal.h   # Internal abstraction (hw/sw selection)
 └── src/
     ├── rx_crc32.c          # Public API wrapper
     ├── rx_crc32_sw.c       # Software implementation (lookup table)
-    ├── rx_crc32_hw.c       # Hardware implementation (RX72N peripheral)
+    └── rx_crc32_hw.c       # Hardware implementation (RX72N peripheral)
+
+lib/rx_frame/
+└── src/
     └── rx_frame.c          # Frame encoding/decoding
 ```
 

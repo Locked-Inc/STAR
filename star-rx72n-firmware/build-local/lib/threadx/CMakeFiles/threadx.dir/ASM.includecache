@@ -1,0 +1,24 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/Users/bsikar/Documents/git/STAR/star-rx72n-firmware/lib/threadx/ports/rxv3/gnu/src/tx_initialize_low_level.S
+
+/Users/bsikar/Documents/git/STAR/star-rx72n-firmware/lib/threadx/ports/rxv3/gnu/src/tx_thread_context_restore.S
+
+/Users/bsikar/Documents/git/STAR/star-rx72n-firmware/lib/threadx/ports/rxv3/gnu/src/tx_thread_context_save.S
+
+/Users/bsikar/Documents/git/STAR/star-rx72n-firmware/lib/threadx/ports/rxv3/gnu/src/tx_thread_interrupt_control.S
+
+/Users/bsikar/Documents/git/STAR/star-rx72n-firmware/lib/threadx/ports/rxv3/gnu/src/tx_thread_schedule.S
+
+/Users/bsikar/Documents/git/STAR/star-rx72n-firmware/lib/threadx/ports/rxv3/gnu/src/tx_thread_stack_build.S
+
+/Users/bsikar/Documents/git/STAR/star-rx72n-firmware/lib/threadx/ports/rxv3/gnu/src/tx_thread_system_return.S
+
+/Users/bsikar/Documents/git/STAR/star-rx72n-firmware/lib/threadx/ports/rxv3/gnu/src/tx_timer_interrupt.S
+
