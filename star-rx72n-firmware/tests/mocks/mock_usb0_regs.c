@@ -28,8 +28,8 @@ mock_system_regs_t g_mock_system;
  */
 
 /* INTSTS0 bit positions */
-#define INTSTS0_CTSQ_MASK (0x0007)
-#define INTSTS0_DVSQ_MASK (0x0070)
+#define INTSTS0_CTSQ_MASK  (0x0007)
+#define INTSTS0_DVSQ_MASK  (0x0070)
 #define INTSTS0_DVSQ_SHIFT (4)
 
 /* CFIFOCTR bit definitions */
@@ -86,8 +86,7 @@ void mock_usb0_set_fifo_ready(uint8_t ready)
 
 void mock_usb0_set_fifo_dtln(uint16_t len)
 {
-  g_mock_usb0.cfifoctr =
-    (g_mock_usb0.cfifoctr & ~CFIFOCTR_DTLN_MASK) | (len & CFIFOCTR_DTLN_MASK);
+  g_mock_usb0.cfifoctr = (g_mock_usb0.cfifoctr & ~CFIFOCTR_DTLN_MASK) | (len & CFIFOCTR_DTLN_MASK);
 }
 
 void mock_usb0_set_pipe1_busy(uint8_t busy)
