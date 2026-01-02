@@ -42,40 +42,40 @@ extern "C" {
  * @brief Frame structure constants
  */
 typedef enum {
-  k_frame_sync_word   = 0x55AA, /**< Frame sync marker */
-  k_frame_sync_size   = 2,      /**< SYNC field size */
-  k_frame_seq_size    = 2,      /**< SEQ field size */
-  k_frame_len_size    = 2,      /**< LEN field size */
-  k_frame_type_size   = 1,      /**< TYPE field size */
-  k_frame_flags_size  = 1,      /**< FLAGS field size */
-  k_frame_crc_size    = 4,      /**< CRC-32 field size */
-  k_frame_header_size = 6,      /**< SEQ+LEN+TYPE+FLAGS */
-  k_frame_max_payload = 1024,   /**< Maximum payload bytes */
-  k_frame_min_size    = 12,     /**< SYNC+Header+CRC (no payload) */
-  k_frame_max_size    = 1036,   /**< Min + MaxPayload */
+  k_frame_sync_word   = (0x55AA), /**< Frame sync marker */
+  k_frame_sync_size   = (2),      /**< SYNC field size */
+  k_frame_seq_size    = (2),      /**< SEQ field size */
+  k_frame_len_size    = (2),      /**< LEN field size */
+  k_frame_type_size   = (1),      /**< TYPE field size */
+  k_frame_flags_size  = (1),      /**< FLAGS field size */
+  k_frame_crc_size    = (4),      /**< CRC-32 field size */
+  k_frame_header_size = (6),      /**< SEQ+LEN+TYPE+FLAGS */
+  k_frame_max_payload = (1024),   /**< Maximum payload bytes */
+  k_frame_min_size    = (12),     /**< SYNC+Header+CRC (no payload) */
+  k_frame_max_size    = (1036),   /**< Min + MaxPayload */
 } rx_frame_constants_t;
 
 /**
  * @brief Frame types (matches Go FrameType)
  */
 typedef enum {
-  k_frame_type_unknown  = 0, /**< Invalid frame type */
-  k_frame_type_command  = 1, /**< Command from controller */
-  k_frame_type_response = 2, /**< Response from peripheral */
-  k_frame_type_ack      = 3, /**< Acknowledgment */
-  k_frame_type_nack     = 4, /**< Negative acknowledgment */
+  k_frame_type_unknown  = (0), /**< Invalid frame type */
+  k_frame_type_command  = (1), /**< Command from controller */
+  k_frame_type_response = (2), /**< Response from peripheral */
+  k_frame_type_ack      = (3), /**< Acknowledgment */
+  k_frame_type_nack     = (4), /**< Negative acknowledgment */
 } rx_frame_type_t;
 
 /**
  * @brief Frame flags (matches Go FrameFlags)
  */
 typedef enum {
-  k_frame_flag_none         = 0x00, /**< No flags */
-  k_frame_flag_requires_ack = 0x01, /**< Frame requires ACK */
-  k_frame_flag_retransmit   = 0x02, /**< Retransmission */
-  k_frame_flag_priority     = 0x04, /**< High priority */
-  k_frame_flag_fec_enabled  = 0x08, /**< FEC encoded payload */
-  k_frame_flag_soft_nack    = 0x10, /**< NACK with soft bits */
+  k_frame_flag_none         = (0x00), /**< No flags */
+  k_frame_flag_requires_ack = (0x01), /**< Frame requires ACK */
+  k_frame_flag_retransmit   = (0x02), /**< Retransmission */
+  k_frame_flag_priority     = (0x04), /**< High priority */
+  k_frame_flag_fec_enabled  = (0x08), /**< FEC encoded payload */
+  k_frame_flag_soft_nack    = (0x10), /**< NACK with soft bits */
 } rx_frame_flags_t;
 
 /* =============================================================================
@@ -195,8 +195,8 @@ static inline uint32_t rx_frame_encoded_size(uint32_t payload_len)
  * @brief Byte manipulation constants for endianness conversions
  */
 typedef enum {
-  k_rx_be16_high_shift = 8,     /**< Bit shift for high byte in 16-bit value */
-  k_rx_byte_mask       = 0xFFU, /**< Mask to extract one byte */
+  k_rx_be16_high_shift = (8),     /**< Bit shift for high byte in 16-bit value */
+  k_rx_byte_mask       = (0xFFU), /**< Mask to extract one byte */
 } rx_byte_order_constants_t;
 
 /**

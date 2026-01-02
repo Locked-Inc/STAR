@@ -91,7 +91,7 @@ typedef enum {
  * which means each tick is 10 milliseconds.
  */
 typedef enum {
-  k_threadx_ms_per_tick = 10, /**< Milliseconds per ThreadX tick (100 Hz = 10ms) */
+  k_threadx_ms_per_tick = (10), /**< Milliseconds per ThreadX tick (100 Hz = 10ms) */
 } rx_threadx_time_constants_t;
 
 #ifdef __cplusplus

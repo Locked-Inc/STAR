@@ -67,7 +67,11 @@ static bool impl_is_elapsed(void* ctx, uint32_t start_ms, uint32_t timeout_ms)
     m = &g_mock_time;
   }
 
-  /* Handle wrap-around correctly */
+  /*
+   * Handle wrap-around correctly using unsigned integer subtraction.
+   * Due to modular arithmetic (2^32), this works even when current_time_ms wraps.
+   * Example: current=5, start=4294967295 → elapsed = 5 - 4294967295 = 6 (correct)
+   */
   uint32_t elapsed = m->current_time_ms - start_ms;
 
   return elapsed >= timeout_ms;
