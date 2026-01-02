@@ -1,10 +1,9 @@
-#include <stddef.h>
-/* src/drivers/rx_mtu3a.c */
+/* lib/rx_hal/src/rx_mtu3a.c */
 
 /**
  * @file rx_mtu3a.c
  * @brief MTU3a PWM Driver Implementation for Motor Control
- * @details
+ *
  * Multi-Function Timer Unit PWM driver for brushed DC motors.
  *
  * PWM Mode 1 (Triangle Wave - Center-Aligned):
@@ -18,9 +17,11 @@
  * - Resolution = 3000 counts (approximately 12-bit)
  * - Duty cycle range: 0-3000
  *
- * @date 2025-12-21
- * @copyright Copyright (c) 2025 STAR Project
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
+
+#include <stddef.h>
 
 #include "rx72n_regs.h"
 #include "rx_check.h"
@@ -34,9 +35,54 @@ static const char* s_tag = "MTU3A";
  * =============================================================================
  */
 
+/** @brief MTU general constants */
 typedef enum {
-  k_mtu_max_channels = 7, /* MTU0-MTU4, MTU6-MTU7 (5 total, sparse) */
+  k_mtu_max_channels = 7, /**< MTU0-MTU4, MTU6-MTU7 (sparse indexing) */
 } mtu_constants_t;
+
+/** @brief System protection register values */
+typedef enum {
+  k_mtu_prcr_unlock = 0xA50B, /**< Enable writes to MSTPCR */
+  k_mtu_prcr_lock   = 0xA500, /**< Disable writes to MSTPCR */
+} mtu_prcr_values_t;
+
+/** @brief MTU module stop bit positions in MSTPCRA */
+typedef enum {
+  k_mtu_mstpa_mtu0_4 = 9, /**< MTU0-MTU4 module stop bit */
+  k_mtu_mstpa_mtu6_7 = 8, /**< MTU6-MTU7 module stop bit */
+} mtu_module_stop_bits_t;
+
+/** @brief Period calculation constants */
+typedef enum {
+  k_mtu_period_divisor = 2,      /**< Triangle wave period divisor */
+  k_mtu_period_max     = 0xFFFF, /**< Maximum valid period (16-bit) */
+  k_mtu_period_min     = 10,     /**< Minimum valid period */
+  k_mtu_period_zero    = 0,      /**< Zero period value */
+} mtu_period_constants_t;
+
+/** @brief TIOR register shift positions */
+typedef enum {
+  k_mtu_tior_low_shift  = 0, /**< Low nibble shift (MTIOCA/MTIOCC) */
+  k_mtu_tior_high_shift = 4, /**< High nibble shift (MTIOCB/MTIOCD) */
+} mtu_tior_shift_t;
+
+/** @brief TIOR register mask values */
+typedef enum {
+  k_mtu_tior_low_mask  = 0xF0, /**< Mask for low nibble */
+  k_mtu_tior_high_mask = 0x0F, /**< Mask for high nibble */
+} mtu_tior_mask_t;
+
+/** @brief TIOR output disabled value */
+typedef enum {
+  k_mtu_tior_disabled = 0x00, /**< Output disabled */
+} mtu_tior_disabled_t;
+
+/** @brief Duty cycle calculation constants */
+typedef enum {
+  k_mtu_duty_min     = 0,     /**< Minimum duty cycle (0%) */
+  k_mtu_duty_max     = 100,   /**< Maximum duty cycle (100%) */
+  k_mtu_duty_divisor = 100,   /**< Divisor for percentage conversion */
+} mtu_duty_constants_t;
 
 /* =============================================================================
  * Static Variables
@@ -97,19 +143,19 @@ static rx_err_t internal_calculate_period(uint32_t frequency_hz, uint16_t* perio
    */
   const uint32_t pclka = k_pclka_hz;
 
-  if (frequency_hz == 0) {
+  if (frequency_hz == k_mtu_period_zero) {
     return k_rx_err_invalid_arg;
   }
 
-  uint32_t period_calc = pclka / (2 * frequency_hz);
+  uint32_t period_calc = pclka / (k_mtu_period_divisor * frequency_hz);
 
   /* Check if period fits in 16-bit register */
-  if (period_calc > 0xFFFF) {
+  if (period_calc > k_mtu_period_max) {
     rx_log_error(s_tag, "Frequency too low");
     return k_rx_err_invalid_arg;
   }
 
-  if (period_calc < 10) {
+  if (period_calc < k_mtu_period_min) {
     rx_log_error(s_tag, "Frequency too high");
     return k_rx_err_invalid_arg;
   }
@@ -173,15 +219,15 @@ rx_err_t rx_mtu_init_pwm(rx_mtu_channel_t channel, const rx_mtu_config_t* config
   rx_log_info(s_tag, "Initializing MTU");
 
   /* Enable MTU module (clear module stop bit) */
-  SYSTEM.prcr = 0xA50B; /* Enable writes to MSTPCR */
+  SYSTEM.prcr = k_mtu_prcr_unlock;
 
   if (channel <= k_mtu_channel_4) {
-    SYSTEM.mstpcra &= ~(1 << 9); /* MTU0-MTU4 */
+    SYSTEM.mstpcra &= ~(1UL << k_mtu_mstpa_mtu0_4);
   } else {
-    SYSTEM.mstpcra &= ~(1 << 8); /* MTU6-MTU7 */
+    SYSTEM.mstpcra &= ~(1UL << k_mtu_mstpa_mtu6_7);
   }
 
-  SYSTEM.prcr = 0xA500; /* Lock MSTPCR */
+  SYSTEM.prcr = k_mtu_prcr_lock;
 
   /* Stop timer before configuration */
   rx_mtu_stop(channel);
@@ -202,21 +248,21 @@ rx_err_t rx_mtu_init_pwm(rx_mtu_channel_t channel, const rx_mtu_config_t* config
    * For PWM mode 1:
    * - Initial low, high on up-count compare, low on down-count compare
    */
-  mtu->tiorh = (k_mtu_tior_init_low << 0) | /* MTIOCA */
-               (k_mtu_tior_init_low << 4);  /* MTIOCB */
-  mtu->tiorl = (k_mtu_tior_init_low << 0) | /* MTIOCC */
-               (k_mtu_tior_init_low << 4);  /* MTIOCD */
+  mtu->tiorh = (k_mtu_tior_init_low << k_mtu_tior_low_shift) |  /* MTIOCA */
+               (k_mtu_tior_init_low << k_mtu_tior_high_shift);  /* MTIOCB */
+  mtu->tiorl = (k_mtu_tior_init_low << k_mtu_tior_low_shift) |  /* MTIOCC */
+               (k_mtu_tior_init_low << k_mtu_tior_high_shift);  /* MTIOCD */
 
   /* Set period (TGRA = top of triangle wave) */
   mtu->tgra = period;
 
   /* Set initial duty cycle to 0% for all outputs */
-  mtu->tgrb = 0; /* MTIOCB duty */
-  mtu->tgrc = 0; /* MTIOCC duty */
-  mtu->tgrd = 0; /* MTIOCD duty */
+  mtu->tgrb = k_mtu_period_zero; /* MTIOCB duty */
+  mtu->tgrc = k_mtu_period_zero; /* MTIOCC duty */
+  mtu->tgrd = k_mtu_period_zero; /* MTIOCD duty */
 
   /* Clear counter */
-  mtu->tcnt = 0;
+  mtu->tcnt = k_mtu_period_zero;
 
   /* Save period for duty cycle calculations */
   s_mtu_period[channel]      = period;
@@ -236,14 +282,14 @@ rx_err_t rx_mtu_set_duty(rx_mtu_channel_t channel, rx_mtu_output_t output, float
     return k_rx_err_invalid_state;
   }
 
-  if (duty_percent < 0.0f || duty_percent > 100.0f) {
+  if (duty_percent < (float)k_mtu_duty_min || duty_percent > (float)k_mtu_duty_max) {
     rx_log_error(s_tag, "Invalid duty cycle");
     return k_rx_err_invalid_arg;
   }
 
   /* Convert percentage to count value */
   uint16_t period     = s_mtu_period[channel];
-  uint16_t duty_count = (uint16_t)((duty_percent * period) / 100.0f);
+  uint16_t duty_count = (uint16_t)((duty_percent * period) / (float)k_mtu_duty_divisor);
 
   return rx_mtu_set_duty_raw(channel, output, duty_count);
 }
@@ -300,7 +346,7 @@ rx_err_t rx_mtu_get_duty(rx_mtu_channel_t channel, rx_mtu_output_t output, float
   uint16_t period     = s_mtu_period[channel];
   uint16_t duty_count = *tgr;
 
-  *duty_percent = (float)(duty_count * 100.0f) / period;
+  *duty_percent = (float)(duty_count * (float)k_mtu_duty_max) / period;
 
   return k_rx_ok;
 }
@@ -330,20 +376,20 @@ rx_err_t rx_mtu_enable_output(rx_mtu_channel_t channel, rx_mtu_output_t output, 
   }
 
   /* Enable/disable output by modifying TIOR registers */
-  uint8_t tior_value = enable ? k_mtu_tior_init_low : 0x00;
+  uint8_t tior_value = enable ? k_mtu_tior_init_low : k_mtu_tior_disabled;
 
   switch (output) {
     case k_mtu_output_a:
-      mtu->tiorh = (mtu->tiorh & 0xF0) | (tior_value << 0);
+      mtu->tiorh = (mtu->tiorh & k_mtu_tior_low_mask) | (tior_value << k_mtu_tior_low_shift);
       break;
     case k_mtu_output_b:
-      mtu->tiorh = (mtu->tiorh & 0x0F) | (tior_value << 4);
+      mtu->tiorh = (mtu->tiorh & k_mtu_tior_high_mask) | (tior_value << k_mtu_tior_high_shift);
       break;
     case k_mtu_output_c:
-      mtu->tiorl = (mtu->tiorl & 0xF0) | (tior_value << 0);
+      mtu->tiorl = (mtu->tiorl & k_mtu_tior_low_mask) | (tior_value << k_mtu_tior_low_shift);
       break;
     case k_mtu_output_d:
-      mtu->tiorl = (mtu->tiorl & 0x0F) | (tior_value << 4);
+      mtu->tiorl = (mtu->tiorl & k_mtu_tior_high_mask) | (tior_value << k_mtu_tior_high_shift);
       break;
     default:
       return k_rx_err_invalid_arg;
@@ -438,7 +484,7 @@ rx_err_t rx_mtu_deinit(rx_mtu_channel_t channel)
 
   /* Mark as uninitialized */
   s_mtu_initialized[channel] = false;
-  s_mtu_period[channel]      = 0;
+  s_mtu_period[channel]      = k_mtu_period_zero;
 
   rx_log_info(s_tag, "Info");
 

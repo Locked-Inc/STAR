@@ -1,3 +1,5 @@
+/* lib/rx_hal/src/rx_iwdt.c */
+
 /**
  * @file rx_iwdt.c
  * @brief Independent Watchdog Timer (IWDT) Driver Implementation for RX72N
@@ -15,10 +17,8 @@
  * - Reset action: Full chip reset (not NMI)
  * - Count in sleep: Enabled (continues counting during WAIT/STOP)
  *
- * @see RX72N Hardware Manual, Section 25 - Independent Watchdog Timer
- *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "rx_iwdt.h"
@@ -32,8 +32,10 @@
  * =============================================================================
  */
 
-/** @brief IWDT clock frequency in Hz */
-#define IWDT_CLOCK_HZ 120000
+/** @brief IWDT clock and size constants */
+typedef enum {
+  k_iwdt_clock_hz = 120000, /**< IWDT clock frequency in Hz */
+} iwdt_clock_constants_t;
 
 /** @brief Timeout configuration lookup table entry */
 typedef struct {
@@ -66,7 +68,8 @@ static const iwdt_timeout_entry_t s_timeout_table[] = {
 };
 
 /** @brief Number of entries in timeout table */
-#define TIMEOUT_TABLE_SIZE (sizeof(s_timeout_table) / sizeof(s_timeout_table[0]))
+static const uint32_t k_iwdt_timeout_table_size =
+  sizeof(s_timeout_table) / sizeof(s_timeout_table[0]);
 
 /* =============================================================================
  * Module State
@@ -98,7 +101,7 @@ static rx_err_t internal_find_timeout_config(uint32_t                     timeou
   }
 
   /* Find first entry with timeout >= requested */
-  for (uint32_t i = 0; i < TIMEOUT_TABLE_SIZE; i++) {
+  for (uint32_t i = 0; i < k_iwdt_timeout_table_size; i++) {
     if (s_timeout_table[i].timeout_ms >= timeout_ms) {
       *entry = &s_timeout_table[i];
       return k_rx_ok;
@@ -106,8 +109,8 @@ static rx_err_t internal_find_timeout_config(uint32_t                     timeou
   }
 
   /* Use maximum timeout if requested is too large */
-  if (timeout_ms > s_timeout_table[TIMEOUT_TABLE_SIZE - 1].timeout_ms) {
-    *entry = &s_timeout_table[TIMEOUT_TABLE_SIZE - 1];
+  if (timeout_ms > s_timeout_table[k_iwdt_timeout_table_size - 1].timeout_ms) {
+    *entry = &s_timeout_table[k_iwdt_timeout_table_size - 1];
     return k_rx_ok;
   }
 

@@ -1,4 +1,4 @@
-/* src/hardware/system_init.c */
+/* lib/rx_hal/src/system_init.c */
 
 /**
  * @file system_init.c
@@ -8,6 +8,9 @@
  * - Clock system (240 MHz from PLL)
  * - Module stop control
  * - Interrupt controller
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include <stdint.h>
@@ -51,6 +54,24 @@ typedef enum {
   k_system_clock_dividers   = 0x21C21211, /**< SCKCR: ICLK=240MHz, PCLKA=120MHz, others=60MHz */
   k_system_clock_source_pll = 0x0400,     /**< SCKCR3: Select PLL as system clock source */
 } system_clock_config_t;
+
+/** @brief Module stop bit positions in MSTPCRA */
+typedef enum {
+  k_mstpcra_cmt = 15, /**< CMT0, CMT1 module stop bit */
+  k_mstpcra_mtu = 9,  /**< MTU module stop bit */
+} mstpcra_bits_t;
+
+/** @brief Module stop bit positions in MSTPCRB */
+typedef enum {
+  k_mstpcrb_sci5  = 26, /**< SCI5 module stop bit */
+  k_mstpcrb_rspi0 = 17, /**< RSPI0 module stop bit */
+  k_mstpcrb_rspi1 = 16, /**< RSPI1 module stop bit */
+} mstpcrb_bits_t;
+
+/** @brief Module stop bit positions in MSTPCRC */
+typedef enum {
+  k_mstpcrc_s12ad = 17, /**< S12AD module stop bit */
+} mstpcrc_bits_t;
 
 /* =============================================================================
  * Clock Configuration
@@ -139,25 +160,25 @@ static rx_err_t clock_init(void)
 static rx_err_t module_stop_init(void)
 {
   /* Protect off */
-  SYSTEM.prcr = 0xA50F;
+  SYSTEM.prcr = k_prcr_unlock;
 
   /* Module Stop Control Register A */
-  SYSTEM.mstpcra &= ~((1 << 15) | /* CMT0, CMT1 */
-                      (1 << 9)    /* MTU */
+  SYSTEM.mstpcra &= ~((1UL << k_mstpcra_cmt) | /* CMT0, CMT1 */
+                      (1UL << k_mstpcra_mtu)   /* MTU */
   );
 
   /* Module Stop Control Register B */
-  SYSTEM.mstpcrb &= ~((1 << 26) | /* SCI5 */
-                      (1 << 17) | /* RSPI0 */
-                      (1 << 16)   /* RSPI1 */
+  SYSTEM.mstpcrb &= ~((1UL << k_mstpcrb_sci5) |  /* SCI5 */
+                      (1UL << k_mstpcrb_rspi0) | /* RSPI0 */
+                      (1UL << k_mstpcrb_rspi1)   /* RSPI1 */
   );
 
   /* Module Stop Control Register C */
-  SYSTEM.mstpcrc &= ~((1 << 17) /* S12AD */
+  SYSTEM.mstpcrc &= ~((1UL << k_mstpcrc_s12ad) /* S12AD */
   );
 
   /* Protect on */
-  SYSTEM.prcr = 0xA500;
+  SYSTEM.prcr = k_prcr_lock;
 
   return k_rx_ok;
 }
