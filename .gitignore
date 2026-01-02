@@ -40,6 +40,9 @@ local.properties
 **/.vscode/
 **/compile_commands.json
 
+# CMake/CTest artifacts
+Testing/
+
 *.zip
 
 # Exception: Track schematic output files for manufacturing
