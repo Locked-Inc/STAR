@@ -1,4 +1,4 @@
-/* src/hardware/timer.c */
+/* lib/rx_hal/src/timer.c */
 
 /**
  * @file timer.c
@@ -6,6 +6,9 @@
  *
  * Uses CMT0 (Compare Match Timer 0) to generate periodic interrupts
  * for ThreadX system tick at 100 Hz.
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include <stdint.h>
@@ -34,6 +37,26 @@ typedef enum {
   k_cmt0_compare_match = 4687, /**< Compare match value for 100 Hz */
   k_cmt0_irq_priority  = 3,    /**< Interrupt priority (0-15, higher = more urgent) */
 } cmt0_config_t;
+
+/** @brief CMT0 register configuration values */
+typedef enum {
+  k_cmt0_cmcr_config = 0x0042, /**< CMCR: CKS[1:0]=10 (PCLK/128), CMIE=1 (interrupt enable) */
+} cmt0_cmcr_values_t;
+
+/** @brief CMSTR0 register bit positions */
+typedef enum {
+  k_cmt0_cmstr_start_bit = 0x01, /**< CMT0 start bit in CMSTR0 */
+} cmt0_cmstr_bits_t;
+
+/** @brief ICU IER register calculation constants */
+typedef enum {
+  k_cmt0_ier_bits_per_reg = 8, /**< Bits per IER register */
+} cmt0_ier_constants_t;
+
+/** @brief Timer counter initial value */
+typedef enum {
+  k_cmt0_counter_init = 0, /**< Counter initial/clear value */
+} cmt0_counter_values_t;
 
 /* ThreadX timer interrupt handler (defined in ThreadX port) */
 extern void _tx_timer_interrupt(void);
@@ -82,31 +105,32 @@ rx_err_t timer_init(void)
   rx_log_info("TIMER", "Initializing CMT0 for ThreadX tick");
 
   /* Stop CMT0 if running */
-  CMT_CTRL.cmstr0 &= ~0x01;
+  CMT_CTRL.cmstr0 &= ~k_cmt0_cmstr_start_bit;
 
   /* Configure CMT0 */
   /* CMCR: Clock = PCLK/128, interrupt enabled */
-  CMT0.cmcr = 0x0042; /* CKS[1:0]=10 (PCLK/128), CMIE=1 (interrupt enable) */
+  CMT0.cmcr = k_cmt0_cmcr_config;
 
   /* Set compare match value for 100 Hz tick
      * CMCOR = (60,000,000 / 128 / 100) - 1 = 4687 */
   CMT0.cmcor = k_cmt0_compare_match;
 
   /* Reset counter */
-  CMT0.cmcnt = 0;
+  CMT0.cmcnt = k_cmt0_counter_init;
 
   /* Configure interrupt controller (ICU) */
   /* Clear any pending interrupt */
-  ICU.ir[k_vect_cmt0_cmi0] = 0;
+  ICU.ir[k_vect_cmt0_cmi0] = k_cmt0_counter_init;
 
   /* Set interrupt priority (3 out of 15) */
   ICU.ipr[k_vect_cmt0_cmi0] = k_cmt0_irq_priority;
 
   /* Enable CMT0 interrupt in ICU */
-  ICU.ier[k_vect_cmt0_cmi0 / 8] |= (1 << (k_vect_cmt0_cmi0 % 8));
+  ICU.ier[k_vect_cmt0_cmi0 / k_cmt0_ier_bits_per_reg] |=
+    (1 << (k_vect_cmt0_cmi0 % k_cmt0_ier_bits_per_reg));
 
   /* Start CMT0 */
-  CMT_CTRL.cmstr0 |= 0x01;
+  CMT_CTRL.cmstr0 |= k_cmt0_cmstr_start_bit;
 
   /* Enable interrupts globally (set I flag in PSW) */
   __asm__ volatile("setpsw i");
@@ -126,7 +150,7 @@ rx_err_t timer_stop(void)
   rx_log_info("TIMER", "Stopping CMT0");
 
   /* Stop CMT0 */
-  CMT_CTRL.cmstr0 &= ~0x01;
+  CMT_CTRL.cmstr0 &= ~k_cmt0_cmstr_start_bit;
 
   return k_rx_ok;
 }
