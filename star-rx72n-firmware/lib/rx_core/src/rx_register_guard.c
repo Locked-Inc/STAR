@@ -204,7 +204,10 @@ static void internal_refresh_pdr(void)
 /**
  * @brief Refresh MSTPCR values, counting corrections
  *
- * Requires PRCR unlock for write access
+ * Requires PRCR unlock for write access. Uses inline assembly to atomically
+ * save/restore interrupt state during the critical section where PRCR is
+ * unlocked. This is necessary because there's no C library function to
+ * manipulate the PSW (Program Status Word) register on RX architecture.
  */
 static void internal_refresh_mstpcr(void)
 {

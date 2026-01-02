@@ -20,6 +20,9 @@ static rx_fec_decoder_t s_decoder;
 /* Decoder survivors buffer (large enough for max test) */
 static uint64_t s_survivors[k_fec_max_symbols];
 
+/* Soft bits working buffer for rx_fec_decode_hard */
+static rx_soft_bit_t s_soft_bits_buffer[k_fec_max_symbols * k_fec_num_outputs];
+
 void setUp(void) {
     rx_fec_encoder_init(&s_encoder);
     rx_fec_decoder_init(&s_decoder, s_survivors, k_fec_max_symbols);
@@ -253,19 +256,23 @@ void test_decode_hard_null_args(void) {
 
     /* NULL decoder */
     TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
-                      rx_fec_decode_hard(NULL, hard, 16, 2, output, &len));
+                      rx_fec_decode_hard(NULL, hard, 16, 2, output, &len,
+                                         NULL, 0));
 
     /* NULL hard_bits */
     TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
-                      rx_fec_decode_hard(&s_decoder, NULL, 16, 2, output, &len));
+                      rx_fec_decode_hard(&s_decoder, NULL, 16, 2, output, &len,
+                                         NULL, 0));
 
     /* NULL output */
     TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
-                      rx_fec_decode_hard(&s_decoder, hard, 16, 2, NULL, &len));
+                      rx_fec_decode_hard(&s_decoder, hard, 16, 2, NULL, &len,
+                                         NULL, 0));
 
     /* NULL output_len */
     TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
-                      rx_fec_decode_hard(&s_decoder, hard, 16, 2, output, NULL));
+                      rx_fec_decode_hard(&s_decoder, hard, 16, 2, output, NULL,
+                                         NULL, 0));
 }
 
 void test_decode_hard_uninitialized(void) {
@@ -274,7 +281,9 @@ void test_decode_hard_uninitialized(void) {
     uint8_t output[16];
     uint32_t len;
 
-    rx_err_t err = rx_fec_decode_hard(&dec, hard, 16, 2, output, &len);
+    rx_err_t err = rx_fec_decode_hard(&dec, hard, 16, 2, output, &len,
+                                      s_soft_bits_buffer,
+                                      sizeof(s_soft_bits_buffer) / sizeof(s_soft_bits_buffer[0]));
     TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -283,7 +292,9 @@ void test_decode_hard_zero_length(void) {
     uint8_t output[16];
     uint32_t len;
 
-    rx_err_t err = rx_fec_decode_hard(&s_decoder, hard, 0, 2, output, &len);
+    rx_err_t err = rx_fec_decode_hard(&s_decoder, hard, 0, 2, output, &len,
+                                      s_soft_bits_buffer,
+                                      sizeof(s_soft_bits_buffer) / sizeof(s_soft_bits_buffer[0]));
     TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -303,7 +314,9 @@ void test_roundtrip_single_byte(void) {
     TEST_ASSERT_EQUAL(k_rx_ok, err);
 
     /* Decode using hard decision */
-    err = rx_fec_decode_hard(&s_decoder, encoded, enc_len, 1, decoded, &dec_len);
+    err = rx_fec_decode_hard(&s_decoder, encoded, enc_len, 1, decoded, &dec_len,
+                             s_soft_bits_buffer,
+                             sizeof(s_soft_bits_buffer) / sizeof(s_soft_bits_buffer[0]));
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL(1, dec_len);
     TEST_ASSERT_EQUAL_HEX8(0x42, decoded[0]);
@@ -320,7 +333,9 @@ void test_roundtrip_multi_byte(void) {
     TEST_ASSERT_EQUAL(k_rx_ok, err);
 
     /* Decode */
-    err = rx_fec_decode_hard(&s_decoder, encoded, enc_len, 4, decoded, &dec_len);
+    err = rx_fec_decode_hard(&s_decoder, encoded, enc_len, 4, decoded, &dec_len,
+                             s_soft_bits_buffer,
+                             sizeof(s_soft_bits_buffer) / sizeof(s_soft_bits_buffer[0]));
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL(4, dec_len);
     TEST_ASSERT_EQUAL_MEMORY(input, decoded, 4);
@@ -339,7 +354,9 @@ void test_roundtrip_all_zeros(void) {
     TEST_ASSERT_EQUAL(k_rx_ok, err);
 
     /* Decode */
-    err = rx_fec_decode_hard(&s_decoder, encoded, enc_len, 8, decoded, &dec_len);
+    err = rx_fec_decode_hard(&s_decoder, encoded, enc_len, 8, decoded, &dec_len,
+                             s_soft_bits_buffer,
+                             sizeof(s_soft_bits_buffer) / sizeof(s_soft_bits_buffer[0]));
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL(8, dec_len);
     TEST_ASSERT_EQUAL_MEMORY(input, decoded, 8);
@@ -358,7 +375,9 @@ void test_roundtrip_all_ones(void) {
     TEST_ASSERT_EQUAL(k_rx_ok, err);
 
     /* Decode */
-    err = rx_fec_decode_hard(&s_decoder, encoded, enc_len, 8, decoded, &dec_len);
+    err = rx_fec_decode_hard(&s_decoder, encoded, enc_len, 8, decoded, &dec_len,
+                             s_soft_bits_buffer,
+                             sizeof(s_soft_bits_buffer) / sizeof(s_soft_bits_buffer[0]));
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL(8, dec_len);
     TEST_ASSERT_EQUAL_MEMORY(input, decoded, 8);
@@ -375,7 +394,9 @@ void test_roundtrip_alternating_pattern(void) {
     TEST_ASSERT_EQUAL(k_rx_ok, err);
 
     /* Decode */
-    err = rx_fec_decode_hard(&s_decoder, encoded, enc_len, 4, decoded, &dec_len);
+    err = rx_fec_decode_hard(&s_decoder, encoded, enc_len, 4, decoded, &dec_len,
+                             s_soft_bits_buffer,
+                             sizeof(s_soft_bits_buffer) / sizeof(s_soft_bits_buffer[0]));
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL(4, dec_len);
     TEST_ASSERT_EQUAL_MEMORY(input, decoded, 4);
@@ -397,7 +418,9 @@ void test_roundtrip_larger_payload(void) {
     TEST_ASSERT_EQUAL(k_rx_ok, err);
 
     /* Decode */
-    err = rx_fec_decode_hard(&s_decoder, encoded, enc_len, 32, decoded, &dec_len);
+    err = rx_fec_decode_hard(&s_decoder, encoded, enc_len, 32, decoded, &dec_len,
+                             s_soft_bits_buffer,
+                             sizeof(s_soft_bits_buffer) / sizeof(s_soft_bits_buffer[0]));
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL(32, dec_len);
     TEST_ASSERT_EQUAL_MEMORY(input, decoded, 32);
@@ -422,7 +445,9 @@ void test_single_bit_error_correction(void) {
 
     /* Decode should still recover the original */
     rx_err_t err =
-        rx_fec_decode_hard(&s_decoder, encoded, enc_len, 1, decoded, &dec_len);
+        rx_fec_decode_hard(&s_decoder, encoded, enc_len, 1, decoded, &dec_len,
+                           s_soft_bits_buffer,
+                           sizeof(s_soft_bits_buffer) / sizeof(s_soft_bits_buffer[0]));
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL_HEX8(0x42, decoded[0]);
 }
@@ -442,7 +467,9 @@ void test_multiple_bit_error_correction(void) {
 
     /* K=7 Viterbi can typically correct multiple scattered errors */
     rx_err_t err =
-        rx_fec_decode_hard(&s_decoder, encoded, enc_len, 2, decoded, &dec_len);
+        rx_fec_decode_hard(&s_decoder, encoded, enc_len, 2, decoded, &dec_len,
+                           s_soft_bits_buffer,
+                           sizeof(s_soft_bits_buffer) / sizeof(s_soft_bits_buffer[0]));
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL_MEMORY(input, decoded, 2);
 }

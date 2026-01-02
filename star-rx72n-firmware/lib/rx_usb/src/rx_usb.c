@@ -53,9 +53,9 @@ static const char* s_tag = "USB";
 
 /** @brief ThreadX timing constants for flush operation */
 typedef enum {
-  k_threadx_tick_rate_hz   = 100, /**< ThreadX tick rate (100 Hz) */
-  k_threadx_ms_per_tick    = 10,  /**< Milliseconds per tick at 100 Hz */
-  k_flush_poll_interval_ms = 10,  /**< Poll TX buffer every 10ms */
+  k_threadx_tick_rate_hz   = (100), /**< ThreadX tick rate (100 Hz) */
+  k_threadx_ms_per_tick    = (10),  /**< Milliseconds per tick at 100 Hz */
+  k_flush_poll_interval_ms = (10),  /**< Poll TX buffer every 10ms */
 } threadx_flush_timing_t;
 
 /* Ring buffer structure */
