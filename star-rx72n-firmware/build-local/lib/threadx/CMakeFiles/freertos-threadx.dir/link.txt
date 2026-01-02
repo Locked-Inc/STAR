@@ -1,0 +1,2 @@
+/usr/bin/ar qc libfreertos-threadx.a "CMakeFiles/freertos-threadx.dir/utility/rtos_compatibility_layers/FreeRTOS/tx_freertos.c.o"
+/usr/bin/ranlib libfreertos-threadx.a

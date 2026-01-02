@@ -1,0 +1,2 @@
+/usr/bin/ar qc librx_crc.a CMakeFiles/rx_crc.dir/lib/rx_crc/src/rx_crc32.c.o CMakeFiles/rx_crc.dir/lib/rx_crc/src/rx_crc32_hw.c.o CMakeFiles/rx_crc.dir/lib/rx_crc/src/rx_crc32_sw.c.o CMakeFiles/rx_crc.dir/lib/rx_crc/src/rx_crc8.c.o
+/usr/bin/ranlib librx_crc.a

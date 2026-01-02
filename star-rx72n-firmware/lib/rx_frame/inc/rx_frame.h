@@ -301,35 +301,6 @@ rx_err_t
 rx_frame_decode(rx_frame_decoder_t* dec, const uint8_t* data, uint32_t data_len, rx_frame_t* frame);
 
 /* =============================================================================
- * CRC-32 Functions
- * =============================================================================
- */
-
-/**
- * @brief Calculate IEEE 802.3 CRC-32
- *
- * Uses polynomial 0x04C11DB7 (reflected: 0xEDB88320).
- * Compatible with Go's crc32.ChecksumIEEE().
- *
- * @param[in] data Input data
- * @param[in] len Data length
- * @return CRC-32 checksum
- */
-uint32_t rx_crc32_ieee(const uint8_t* data, uint32_t len);
-
-/**
- * @brief Update CRC-32 with additional data
- *
- * Allows incremental CRC calculation.
- *
- * @param[in] crc Previous CRC value (or 0 for first call)
- * @param[in] data Additional data
- * @param[in] len Data length
- * @return Updated CRC-32 checksum
- */
-uint32_t rx_crc32_update(uint32_t crc, const uint8_t* data, uint32_t len);
-
-/* =============================================================================
  * Frame Helper Functions
  * =============================================================================
  */

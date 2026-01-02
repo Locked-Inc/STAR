@@ -1,0 +1,2 @@
+/usr/bin/ar qc librx_drv8243.a CMakeFiles/rx_drv8243.dir/lib/rx_drv8243/src/rx_drv8243.c.o
+/usr/bin/ranlib librx_drv8243.a

@@ -1,0 +1,2 @@
+/usr/bin/ar qc librx_encoder.a CMakeFiles/rx_encoder.dir/lib/rx_encoder/src/rx_mtu_encoder.c.o
+/usr/bin/ranlib librx_encoder.a

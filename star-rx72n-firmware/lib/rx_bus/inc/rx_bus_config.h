@@ -170,6 +170,55 @@ rx_err_t rx_bus_config_init_smbus(rx_bus_config_t* config,
                                   uint32_t         frequency_hz,
                                   bool             use_pec);
 
+/* =============================================================================
+ * OneWire Bus Configuration
+ * =============================================================================
+ */
+
+/**
+ * @brief Initialize OneWire (1-Wire) bus configuration
+ *
+ * Configures a single GPIO pin for OneWire protocol communication.
+ * The pin should have an external 4.7k pullup resistor to VCC.
+ *
+ * OneWire uses bidirectional communication on a single wire:
+ * - Controller pulls line low to drive
+ * - Controller releases line (high-Z input) to allow peripheral to pull low
+ * - External pullup resistor pulls line high when not driven
+ *
+ * @param[out] config Pointer to bus config structure to initialize
+ * @param[in] name Unique bus name (must remain valid for lifetime)
+ * @param[in] port GPIO port number (0-9, or 0xA-0x10 for A-G)
+ * @param[in] pin GPIO pin number (0-7)
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if config or name is NULL
+ * @return k_rx_err_invalid_arg if port or pin is invalid
+ *
+ * @note The config structure must remain valid for the lifetime of bus usage
+ * @note The name string must remain valid (use string literals or static storage)
+ * @note Requires external 4.7k pullup resistor on the data line
+ *
+ * @example
+ * @code
+ * // Declare static config
+ * static rx_bus_config_t temp_sensor_config;
+ *
+ * // Initialize OneWire on Port 3, Pin 2
+ * rx_bus_config_init_onewire(&temp_sensor_config, "temp_sensor", 3, 2);
+ *
+ * // Add to bus manager
+ * rx_bus_manager_add_bus(&bus_manager, &temp_sensor_config);
+ *
+ * // Use OneWire operations
+ * bool presence;
+ * rx_bus_onewire_init(&bus_manager, "temp_sensor");
+ * rx_bus_onewire_reset(&bus_manager, "temp_sensor", &presence);
+ * @endcode
+ */
+rx_err_t
+rx_bus_config_init_onewire(rx_bus_config_t* config, const char* name, uint8_t port, uint8_t pin);
+
 #ifdef __cplusplus
 }
 #endif

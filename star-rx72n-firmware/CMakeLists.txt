@@ -124,6 +124,7 @@ add_library(rx_bus STATIC
     lib/rx_bus/src/rx_bus_adc.c
     lib/rx_bus/src/rx_bus_i2c.c
     lib/rx_bus/src/rx_bus_smbus.c
+    lib/rx_bus/src/rx_bus_onewire.c
 )
 target_include_directories(rx_bus PUBLIC lib/rx_bus/inc)
 target_link_libraries(rx_bus PUBLIC rx_core rx_hal)
@@ -156,15 +157,22 @@ add_library(rx_harq STATIC
 target_include_directories(rx_harq PUBLIC lib/rx_harq/inc)
 target_link_libraries(rx_harq PUBLIC rx_fec rx_core)
 
-# rx_frame - Frame Layer (SYNC, CRC-32, header)
+# rx_crc - Shared CRC helpers
+add_library(rx_crc STATIC
+    lib/rx_crc/src/rx_crc32.c
+    lib/rx_crc/src/rx_crc32_hw.c
+    lib/rx_crc/src/rx_crc32_sw.c
+    lib/rx_crc/src/rx_crc8.c
+)
+target_include_directories(rx_crc PUBLIC lib/rx_crc/inc)
+target_link_libraries(rx_crc PUBLIC rx_core rx_hal)
+
+# rx_frame - Frame Layer (SYNC + header + CRC usage)
 add_library(rx_frame STATIC
     lib/rx_frame/src/rx_frame.c
-    lib/rx_frame/src/rx_crc32.c
-    lib/rx_frame/src/rx_crc32_hw.c
-    lib/rx_frame/src/rx_crc32_sw.c
 )
 target_include_directories(rx_frame PUBLIC lib/rx_frame/inc)
-target_link_libraries(rx_frame PUBLIC rx_core rx_hal)
+target_link_libraries(rx_frame PUBLIC rx_core rx_hal rx_crc)
 
 # rx_nanopb - nanopb Protocol Buffers Integration
 add_library(rx_nanopb STATIC
