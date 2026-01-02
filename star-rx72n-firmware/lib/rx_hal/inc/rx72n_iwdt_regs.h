@@ -39,8 +39,8 @@ extern "C" {
 
 /** @brief IWDT register reserved field sizes */
 typedef enum {
-  k_iwdt_reserved_after_iwdtrr_bytes   = 1, /**< Reserved byte after IWDTRR */
-  k_iwdt_reserved_after_iwdtrcr_bytes  = 1, /**< Reserved byte after IWDTRCR */
+  k_iwdt_reserved_after_iwdtrr_bytes  = 1, /**< Reserved byte after IWDTRR */
+  k_iwdt_reserved_after_iwdtrcr_bytes = 1, /**< Reserved byte after IWDTRCR */
 } iwdt_reserved_sizes_t;
 
 /**
