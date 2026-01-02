@@ -1,0 +1,2 @@
+/usr/bin/ar qc librx_frame.a CMakeFiles/rx_frame.dir/lib/rx_frame/src/rx_frame.c.o
+/usr/bin/ranlib librx_frame.a

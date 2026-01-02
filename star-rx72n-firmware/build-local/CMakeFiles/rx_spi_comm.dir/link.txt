@@ -1,0 +1,2 @@
+/usr/bin/ar qc librx_spi_comm.a CMakeFiles/rx_spi_comm.dir/lib/rx_spi_comm/src/rx_spi_comm.c.o
+/usr/bin/ranlib librx_spi_comm.a

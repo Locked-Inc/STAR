@@ -1,0 +1,2 @@
+/usr/bin/ar qc librx_bus.a CMakeFiles/rx_bus.dir/lib/rx_bus/src/rx_bus_manager.c.o CMakeFiles/rx_bus.dir/lib/rx_bus/src/rx_bus_config.c.o CMakeFiles/rx_bus.dir/lib/rx_bus/src/rx_bus_gpio.c.o CMakeFiles/rx_bus.dir/lib/rx_bus/src/rx_bus_adc.c.o CMakeFiles/rx_bus.dir/lib/rx_bus/src/rx_bus_i2c.c.o CMakeFiles/rx_bus.dir/lib/rx_bus/src/rx_bus_smbus.c.o CMakeFiles/rx_bus.dir/lib/rx_bus/src/rx_bus_onewire.c.o
+/usr/bin/ranlib librx_bus.a
