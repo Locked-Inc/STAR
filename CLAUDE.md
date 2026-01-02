@@ -14,7 +14,7 @@ Note: External APIs may still use legacy terminology internally. Map these to ou
 
 ## Project Overview
 
-**STAR (Sensor and Actuator Abstraction Runtime)** - A distributed robotics platform with custom PCB hardware, Renesas RX72N motor control firmware, Raspberry Pi 5 control system, and Protocol Buffers communication.
+**STAR (Simultaneous Tracking and Robotics)** - A distributed robotics platform with custom PCB hardware, Renesas RX72N motor control firmware, Raspberry Pi 5 control system, and Protocol Buffers communication.
 
 ### Architecture
 

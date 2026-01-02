@@ -24,7 +24,7 @@ Note: Renesas RX and other external APIs may still use legacy terminology intern
 
 ## Project Overview
 
-**STAR (Sensor and Actuator Abstraction Runtime)** - A distributed robotics platform with custom PCB hardware, embedded firmware, and high-level control software.
+**STAR (Simultaneous Tracking and Robotics)** - A distributed robotics platform with custom PCB hardware, embedded firmware, and high-level control software.
 
 ### Architecture
 
