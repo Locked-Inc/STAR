@@ -43,16 +43,8 @@ typedef enum {
 
 /** @brief Byte offsets within frame header buffer */
 typedef enum {
-  k_hdr_sync_high  = 0, /**< SYNC word high byte */
-  k_hdr_sync_low   = 1, /**< SYNC word low byte */
   k_hdr_len_offset = 4, /**< Payload length field offset */
 } frame_header_offset_t;
-
-/** @brief Big-endian conversion constants */
-typedef enum {
-  k_be16_high_shift = 8,    /**< Bit shift for big-endian high byte extraction */
-  k_byte_mask       = 0xFF, /**< Byte mask for 8-bit extraction */
-} byte_conversion_t;
 
 /* =============================================================================
  * Internal Helpers
@@ -107,12 +99,17 @@ static void internal_compact_rx_buffer(rx_usb_comm_handle_t* handle)
 /**
  * @brief Search for sync word in receive buffer
  *
- * @return Index of sync word, or -1 if not found
+ * Scans the receive buffer for the frame sync word (0x55AA) stored in
+ * big-endian format. Uses the shared byte index constants from rx_frame.h.
+ *
+ * @param[in] handle USB communication handle
+ * @return Index of sync word in buffer, or -1 if not found
  */
 static int32_t internal_find_sync(rx_usb_comm_handle_t* handle)
 {
-  uint8_t sync_high = (uint8_t)(k_frame_sync_word >> k_be16_high_shift);
-  uint8_t sync_low  = (uint8_t)(k_frame_sync_word & k_byte_mask);
+  /* Extract sync word bytes using shared constants from rx_frame.h */
+  uint8_t sync_high = (uint8_t)(k_frame_sync_word >> k_rx_be16_high_shift);
+  uint8_t sync_low  = (uint8_t)(k_frame_sync_word & k_rx_byte_mask);
 
   for (uint32_t i = handle->rx_buffer_pos; i + 1 < handle->rx_buffer_len; i++) {
     if (handle->rx_buffer[i] == sync_high && handle->rx_buffer[i + 1] == sync_low) {
@@ -412,7 +409,7 @@ rx_err_t rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, ui
 
     /* Parse header to get payload length */
     uint8_t* hdr         = handle->rx_buffer + handle->rx_buffer_pos;
-    uint16_t payload_len = rx_read_be16(&hdr[k_hdr_len_offset]);
+    uint16_t payload_len = rx_frame_read_be16(&hdr[k_hdr_len_offset]);
 
     if (payload_len > k_frame_max_payload) {
       /* Invalid payload length - skip this sync and search for next */

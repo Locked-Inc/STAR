@@ -10,8 +10,8 @@
  *
  * Port of star_drv8243 from ESP32 to RX72N platform.
  *
- * @date 2025-12-21
- * @copyright Copyright (c) 2025 STAR Project
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "rx_drv8243.h"

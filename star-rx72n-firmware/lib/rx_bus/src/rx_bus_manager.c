@@ -6,6 +6,9 @@
  *
  * Skeleton implementation demonstrating Dependency Inversion Principle (DIP).
  * Full bus management functionality will be added in future commits.
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "rx_bus_manager.h"

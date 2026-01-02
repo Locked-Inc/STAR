@@ -7,8 +7,8 @@
  * Implements SMBUS protocol on top of I2C with CRC-8 PEC support.
  * Used for fuel gauge communication following SMBUS 2.0 specification.
  *
- * @date 2025-12-21
- * @copyright Copyright (c) 2025 STAR Project
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "rx_bus_smbus.h"

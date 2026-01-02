@@ -188,8 +188,28 @@ static inline uint32_t rx_frame_encoded_size(uint32_t payload_len)
  *
  * Big-endian read/write for network byte order serialization.
  * Used by both rx_frame and rx_usb_comm modules.
+ *
+ * Big-endian format stores the most significant byte (MSB) at the lowest
+ * memory address. For a 16-bit value:
+ *   - buf[0] = high byte (MSB)
+ *   - buf[1] = low byte (LSB)
+ *
+ * Example: 0x55AA stored in big-endian:
+ *   buf[0] = 0x55 (high byte)
+ *   buf[1] = 0xAA (low byte)
  * =============================================================================
  */
+
+/**
+ * @brief Byte indices for 16-bit big-endian serialization
+ *
+ * In big-endian format, the high byte (MSB) is stored at index 0 and the
+ * low byte (LSB) is stored at index 1.
+ */
+typedef enum {
+  k_be16_byte_high = 0, /**< High byte (MSB) at index 0 */
+  k_be16_byte_low  = 1, /**< Low byte (LSB) at index 1 */
+} rx_be16_byte_idx_t;
 
 /**
  * @brief Byte manipulation constants for endianness conversions
@@ -202,25 +222,42 @@ typedef enum {
 /**
  * @brief Read uint16 from big-endian buffer
  *
+ * Reads a 16-bit unsigned integer from a buffer in big-endian (network byte
+ * order) format. The high byte (MSB) is at index 0, the low byte (LSB) is at
+ * index 1.
+ *
  * @param[in] buf Input buffer (at least 2 bytes)
- * @return Decoded 16-bit value
+ * @return Decoded 16-bit value in host byte order
+ *
+ * @note This is the preferred function for parsing multi-byte protocol fields.
  */
-static inline uint16_t rx_read_be16(const uint8_t* buf)
+static inline uint16_t rx_frame_read_be16(const uint8_t* buf)
 {
-  return ((uint16_t)buf[0] << k_rx_be16_high_shift) | (uint16_t)buf[1];
+  return ((uint16_t)buf[k_be16_byte_high] << k_rx_be16_high_shift) | (uint16_t)buf[k_be16_byte_low];
 }
 
 /**
  * @brief Write uint16 to big-endian buffer
  *
+ * Writes a 16-bit unsigned integer to a buffer in big-endian (network byte
+ * order) format. The high byte (MSB) is written at index 0, the low byte (LSB)
+ * is written at index 1.
+ *
  * @param[out] buf Output buffer (at least 2 bytes)
- * @param[in]  val Value to write
+ * @param[in]  val Value to write in host byte order
+ *
+ * @note This is the preferred function for serializing multi-byte protocol
+ * fields.
  */
-static inline void rx_write_be16(uint8_t* buf, uint16_t val)
+static inline void rx_frame_write_be16(uint8_t* buf, uint16_t val)
 {
-  buf[0] = (uint8_t)(val >> k_rx_be16_high_shift);
-  buf[1] = (uint8_t)(val & k_rx_byte_mask);
+  buf[k_be16_byte_high] = (uint8_t)(val >> k_rx_be16_high_shift);
+  buf[k_be16_byte_low]  = (uint8_t)(val & k_rx_byte_mask);
 }
+
+/* Legacy aliases for backward compatibility - prefer rx_frame_* versions */
+#define rx_read_be16  rx_frame_read_be16
+#define rx_write_be16 rx_frame_write_be16
 
 /* =============================================================================
  * Decoder API

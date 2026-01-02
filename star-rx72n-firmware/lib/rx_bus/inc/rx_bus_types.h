@@ -12,8 +12,8 @@
  * Follows Dependency Inversion Principle by injecting error and pin
  * validation interfaces for testability.
  *
- * @date 2025-12-21
- * @copyright Copyright (c) 2025 STAR Project
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef STAR_RX72N_BUS_TYPES_H

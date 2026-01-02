@@ -21,8 +21,8 @@
  * - Counter clock = 60MHz/128 = 468.75kHz
  * - Period = 468750/250 = 1875 counts
  *
- * @date 2025-12-21
- * @copyright Copyright (c) 2025 STAR Project
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef STAR_RX72N_CMT_H

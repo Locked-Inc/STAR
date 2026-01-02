@@ -25,8 +25,8 @@
  * - Duty cycle: 0-100% (0-6000 counts)
  * - Deadtime: ~1 us (configurable)
  *
- * @date 2025-12-21
- * @copyright Copyright (c) 2025 STAR Project
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef STAR_RX72N_MTU3A_H
