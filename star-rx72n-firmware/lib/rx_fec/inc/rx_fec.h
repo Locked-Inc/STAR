@@ -230,23 +230,31 @@ rx_err_t rx_fec_decode_soft(rx_fec_decoder_t*    dec,
  * Converts hard bits to soft bits internally, then performs Viterbi decoding.
  * Less accurate than soft-decision decoding but useful for testing.
  *
+ * The caller must provide a working buffer for soft bit conversion to ensure
+ * thread safety. Size should be at least k_fec_max_symbols * k_fec_num_outputs.
+ *
  * @param[in]  dec                 Initialized decoder handle
  * @param[in]  data                Received hard bits (packed bytes)
  * @param[in]  data_len            Number of bytes
  * @param[in]  expected_output_len Expected decoded length in bytes
  * @param[out] output              Decoded output buffer
  * @param[out] output_len          Actual decoded length
+ * @param[in]  soft_bits_buffer    Working buffer for soft bit conversion
+ * @param[in]  soft_buffer_len     Length of soft_bits_buffer (must be >= num_bits)
  *
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if any pointer is NULL
  * @return k_rx_err_invalid_state if decoder not initialized
+ * @return k_rx_err_invalid_size if soft_bits_buffer is too small
  */
 rx_err_t rx_fec_decode_hard(rx_fec_decoder_t* dec,
                             const uint8_t*    data,
                             uint32_t          data_len,
                             uint32_t          expected_output_len,
                             uint8_t*          output,
-                            uint32_t*         output_len);
+                            uint32_t*         output_len,
+                            rx_soft_bit_t*    soft_bits_buffer,
+                            uint32_t          soft_buffer_len);
 
 /* =============================================================================
  * Utility Functions

@@ -30,7 +30,7 @@
  */
 static void impl_sleep_ms(void* ctx, uint32_t ms)
 {
-  (void)ctx;
+  (void)ctx; /* ThreadX uses global state - no context needed */
 
   /* Convert ms to ticks, rounding up */
   uint32_t ticks = (ms + k_threadx_ms_per_tick - 1) / k_threadx_ms_per_tick;
@@ -47,7 +47,7 @@ static void impl_sleep_ms(void* ctx, uint32_t ms)
  */
 static uint32_t impl_get_ms(void* ctx)
 {
-  (void)ctx;
+  (void)ctx; /* ThreadX uses global state - no context needed */
 
   return tx_time_get() * k_threadx_ms_per_tick;
 }
@@ -59,7 +59,7 @@ static uint32_t impl_get_ms(void* ctx)
  */
 static bool impl_is_elapsed(void* ctx, uint32_t start_ms, uint32_t timeout_ms)
 {
-  (void)ctx;
+  (void)ctx; /* ThreadX uses global state - no context needed */
 
   uint32_t now     = tx_time_get() * k_threadx_ms_per_tick;
   uint32_t elapsed = now - start_ms;

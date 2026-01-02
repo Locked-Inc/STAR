@@ -500,9 +500,12 @@ rx_err_t rx_fec_decode_hard(rx_fec_decoder_t* dec,
                             uint32_t          data_len,
                             uint32_t          expected_output_len,
                             uint8_t*          output,
-                            uint32_t*         output_len)
+                            uint32_t*         output_len,
+                            rx_soft_bit_t*    soft_bits_buffer,
+                            uint32_t          soft_buffer_len)
 {
-  if (dec == NULL || data == NULL || output == NULL || output_len == NULL) {
+  if (dec == NULL || data == NULL || output == NULL || output_len == NULL ||
+      soft_bits_buffer == NULL) {
     return k_rx_err_invalid_arg;
   }
 
@@ -517,18 +520,8 @@ rx_err_t rx_fec_decode_hard(rx_fec_decoder_t* dec,
   /* Convert hard bits to soft bits */
   uint32_t num_bits = (uint32_t)(data_len * k_fec_bits_per_byte);
 
-  /*
-   * Static buffer to avoid stack overflow on embedded systems.
-   * k_fec_max_symbols * k_fec_num_outputs = 8200 * 2 = 16400 soft bits.
-   * This buffer is ~16KB which would overflow typical embedded stacks.
-   * Static allocation places it in BSS instead.
-   *
-   * Thread safety: This function is NOT reentrant due to static buffer.
-   * For multi-threaded use, caller should provide their own buffer.
-   */
-  static rx_soft_bit_t soft_bits_buffer[k_fec_max_symbols * k_fec_num_outputs];
-
-  if (num_bits > k_fec_max_symbols * k_fec_num_outputs) {
+  /* Ensure soft bits buffer is large enough */
+  if (num_bits > soft_buffer_len) {
     return k_rx_err_invalid_size;
   }
 

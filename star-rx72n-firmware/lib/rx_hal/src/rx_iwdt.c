@@ -58,13 +58,14 @@ typedef struct {
  * - CKS=128: 16384 * 128 / 120000 = 17476ms (~16384ms)
  */
 static const iwdt_timeout_entry_t s_timeout_table[] = {
-  /* timeout_ms, TOPS (cycles),        CKS (divisor)           */
-  {128, k_iwdt_tops_1024, k_iwdt_cks_div_1},      /* ~8.5ms actual  */
-  {512, k_iwdt_tops_4096, k_iwdt_cks_div_1},      /* ~34ms actual   */
-  {1000, k_iwdt_tops_8192, k_iwdt_cks_div_1},     /* ~68ms actual   */
-  {2048, k_iwdt_tops_16384, k_iwdt_cks_div_1},    /* ~136ms actual  */
-  {8192, k_iwdt_tops_16384, k_iwdt_cks_div_128},  /* ~17s actual    */
-  {16384, k_iwdt_tops_16384, k_iwdt_cks_div_128}, /* ~17s actual    */
+  /* timeout_ms, TOPS (cycles),        CKS (divisor)            */
+  /* Actual timeout = (cycles * divisor) / 120kHz */
+  {128, k_iwdt_tops_16384, k_iwdt_cks_div_1},     /* ~136ms actual  */
+  {512, k_iwdt_tops_4096, k_iwdt_cks_div_16},     /* ~546ms actual  */
+  {1000, k_iwdt_tops_8192, k_iwdt_cks_div_16},    /* ~1.09s actual  */
+  {2048, k_iwdt_tops_16384, k_iwdt_cks_div_16},   /* ~2.18s actual  */
+  {8192, k_iwdt_tops_16384, k_iwdt_cks_div_64},   /* ~8.74s actual  */
+  {16384, k_iwdt_tops_16384, k_iwdt_cks_div_128}, /* ~17.48s actual */
 };
 
 /** @brief Number of entries in timeout table */
@@ -208,6 +209,9 @@ void rx_iwdt_feed(void)
    *
    * CRITICAL: This sequence must not be interrupted.
    * An incomplete sequence will trigger a refresh error.
+   *
+   * Uses inline assembly to save/restore PSW (Program Status Word) because
+   * there is no C library function to manipulate interrupt state on RX architecture.
    */
 
   /* Disable interrupts during refresh for atomicity */

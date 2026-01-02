@@ -69,27 +69,27 @@ extern "C" {
  * @brief USB event types for callback notification
  */
 typedef enum {
-  k_usb_event_attached   = 0, /**< USB cable attached (VBUS detected) */
-  k_usb_event_detached   = 1, /**< USB cable detached */
-  k_usb_event_reset      = 2, /**< USB bus reset received */
-  k_usb_event_configured = 3, /**< Host configured the device (ready to use) */
-  k_usb_event_suspended  = 4, /**< Host suspended the device */
-  k_usb_event_resumed    = 5, /**< Host resumed the device */
-  k_usb_event_data_rx    = 6, /**< Data received from host */
-  k_usb_event_data_tx    = 7, /**< Data transmission complete */
+  k_usb_event_attached   = (0), /**< USB cable attached (VBUS detected) */
+  k_usb_event_detached   = (1), /**< USB cable detached */
+  k_usb_event_reset      = (2), /**< USB bus reset received */
+  k_usb_event_configured = (3), /**< Host configured the device (ready to use) */
+  k_usb_event_suspended  = (4), /**< Host suspended the device */
+  k_usb_event_resumed    = (5), /**< Host resumed the device */
+  k_usb_event_data_rx    = (6), /**< Data received from host */
+  k_usb_event_data_tx    = (7), /**< Data transmission complete */
 } rx_usb_event_t;
 
 /**
  * @brief USB device state
  */
 typedef enum {
-  k_usb_state_detached   = 0, /**< No USB cable connected */
-  k_usb_state_attached   = 1, /**< Cable connected, waiting for reset */
-  k_usb_state_powered    = 2, /**< Powered, waiting for bus reset */
-  k_usb_state_default    = 3, /**< Bus reset complete, address not set */
-  k_usb_state_addressed  = 4, /**< Address assigned by host */
-  k_usb_state_configured = 5, /**< Configuration set, ready to transfer */
-  k_usb_state_suspended  = 6, /**< Host suspended the device */
+  k_usb_state_detached   = (0), /**< No USB cable connected */
+  k_usb_state_attached   = (1), /**< Cable connected, waiting for reset */
+  k_usb_state_powered    = (2), /**< Powered, waiting for bus reset */
+  k_usb_state_default    = (3), /**< Bus reset complete, address not set */
+  k_usb_state_addressed  = (4), /**< Address assigned by host */
+  k_usb_state_configured = (5), /**< Configuration set, ready to transfer */
+  k_usb_state_suspended  = (6), /**< Host suspended the device */
 } rx_usb_state_t;
 
 /**
@@ -141,9 +141,9 @@ typedef struct {
  * @brief USB buffer and endpoint configuration
  */
 typedef enum {
-  k_usb_rx_buffer_size  = 512, /**< Receive ring buffer size (bytes) */
-  k_usb_tx_buffer_size  = 512, /**< Transmit ring buffer size (bytes) */
-  k_usb_max_packet_size = 64,  /**< Full-speed bulk max packet size */
+  k_usb_rx_buffer_size  = (512), /**< Receive ring buffer size (bytes) */
+  k_usb_tx_buffer_size  = (512), /**< Transmit ring buffer size (bytes) */
+  k_usb_max_packet_size = (64),  /**< Full-speed bulk max packet size */
 } rx_usb_buffer_config_t;
 
 /**
@@ -153,10 +153,10 @@ typedef enum {
  * sends SET_LINE_CODING. They represent a standard 115200 8N1 configuration.
  */
 typedef enum {
-  k_usb_default_baud_rate = 115200, /**< Default baud rate: 115200 bps */
-  k_usb_default_stop_bits = 0,      /**< Default stop bits: 1 stop bit */
-  k_usb_default_parity    = 0,      /**< Default parity: None */
-  k_usb_default_data_bits = 8,      /**< Default data bits: 8 bits */
+  k_usb_default_baud_rate = (115200), /**< Default baud rate: 115200 bps */
+  k_usb_default_stop_bits = (0),      /**< Default stop bits: 1 stop bit */
+  k_usb_default_parity    = (0),      /**< Default parity: None */
+  k_usb_default_data_bits = (8),      /**< Default data bits: 8 bits */
 } rx_usb_line_coding_defaults_t;
 
 /* =============================================================================
