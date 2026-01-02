@@ -49,11 +49,11 @@ typedef enum {
 
 /** @brief ADC Control Extended Register (ADCER) bit masks and values */
 typedef enum {
-  k_adc_adcer_adprc_mask   = 0x03,       /**< ADPRC bit mask (bits 1:0) */
-  k_adc_adcer_adprc_shift  = 0,          /**< ADPRC bit shift position */
-  k_adc_adcer_adprc_12bit  = (0x00 << 0), /**< 12-bit resolution */
-  k_adc_adcer_adprc_10bit  = (0x01 << 0), /**< 10-bit resolution */
-  k_adc_adcer_adprc_8bit   = (0x02 << 0), /**< 8-bit resolution */
+  k_adc_adcer_adprc_mask  = 0x03,        /**< ADPRC bit mask (bits 1:0) */
+  k_adc_adcer_adprc_shift = 0,           /**< ADPRC bit shift position */
+  k_adc_adcer_adprc_12bit = (0x00 << 0), /**< 12-bit resolution */
+  k_adc_adcer_adprc_10bit = (0x01 << 0), /**< 10-bit resolution */
+  k_adc_adcer_adprc_8bit  = (0x02 << 0), /**< 8-bit resolution */
 } adc_adcer_bits_t;
 
 /** @brief ADC Control/Status Register (ADCSR) bit masks */
@@ -69,9 +69,9 @@ typedef enum {
 
 /** @brief ADC timeout and voltage constants */
 typedef enum {
-  k_adc_timeout_multiplier    = 1000, /**< Timeout loop multiplier */
-  k_adc_timeout_expired       = 0,    /**< Timeout counter expired */
-  k_adc_reference_voltage_mv  = 3300, /**< ADC reference voltage (3.3V) */
+  k_adc_timeout_multiplier   = 1000, /**< Timeout loop multiplier */
+  k_adc_timeout_expired      = 0,    /**< Timeout counter expired */
+  k_adc_reference_voltage_mv = 3300, /**< ADC reference voltage (3.3V) */
 } adc_misc_constants_t;
 
 /* =============================================================================

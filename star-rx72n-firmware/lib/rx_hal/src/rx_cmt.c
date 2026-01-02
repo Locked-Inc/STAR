@@ -28,11 +28,12 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
+#include "rx_cmt.h"
+
 #include <stddef.h>
 
 #include "rx72n_regs.h"
 #include "rx_check.h"
-#include "rx_cmt.h"
 #include "rx_log.h"
 
 static const char* s_tag = "CMT";
@@ -44,12 +45,12 @@ static const char* s_tag = "CMT";
 
 /** @brief CMT channel and divider constants */
 typedef enum {
-  k_cmt_max_channels = 4,   /**< CMT0, CMT1, CMT2, CMT3 */
-  k_cmt_div_8        = 0,   /**< PCLKB/8 divider setting */
-  k_cmt_div_32       = 1,   /**< PCLKB/32 divider setting */
-  k_cmt_div_128      = 2,   /**< PCLKB/128 divider setting */
-  k_cmt_div_512      = 3,   /**< PCLKB/512 divider setting */
-  k_cmt_num_dividers = 4,   /**< Number of available dividers */
+  k_cmt_max_channels = 4, /**< CMT0, CMT1, CMT2, CMT3 */
+  k_cmt_div_8        = 0, /**< PCLKB/8 divider setting */
+  k_cmt_div_32       = 1, /**< PCLKB/32 divider setting */
+  k_cmt_div_128      = 2, /**< PCLKB/128 divider setting */
+  k_cmt_div_512      = 3, /**< PCLKB/512 divider setting */
+  k_cmt_num_dividers = 4, /**< Number of available dividers */
 } cmt_constants_t;
 
 /** @brief CMT divider values (actual divisor values) */
@@ -68,7 +69,7 @@ typedef enum {
 
 /** @brief CMT module stop bit positions in MSTPCRB */
 typedef enum {
-  k_cmt_mstpb_cmt   = 15, /**< CMT0-CMT3 module stop bit */
+  k_cmt_mstpb_cmt = 15, /**< CMT0-CMT3 module stop bit */
 } cmt_module_stop_bits_t;
 
 /** @brief CMCR register bit positions */
@@ -79,9 +80,9 @@ typedef enum {
 
 /** @brief Period calculation constants */
 typedef enum {
-  k_cmt_period_min  = 0,      /**< Minimum valid period */
-  k_cmt_period_max  = 0xFFFF, /**< Maximum valid period (16-bit) */
-  k_cmt_period_adj  = 1,      /**< Period adjustment (period - 1) */
+  k_cmt_period_min = 0,      /**< Minimum valid period */
+  k_cmt_period_max = 0xFFFF, /**< Maximum valid period (16-bit) */
+  k_cmt_period_adj = 1,      /**< Period adjustment (period - 1) */
 } cmt_period_constants_t;
 
 /** @brief CMSTR register bit positions */
@@ -151,8 +152,10 @@ internal_calculate_cmt_params(uint32_t frequency_hz, uint8_t* divider, uint16_t*
   }
 
   /* Try each divider to find one that fits in 16-bit */
-  static const uint16_t dividers[] = {
-    k_cmt_divider_val_8, k_cmt_divider_val_32, k_cmt_divider_val_128, k_cmt_divider_val_512};
+  static const uint16_t dividers[] = {k_cmt_divider_val_8,
+                                      k_cmt_divider_val_32,
+                                      k_cmt_divider_val_128,
+                                      k_cmt_divider_val_512};
 
   for (uint8_t i = 0; i < k_cmt_num_dividers; i++) {
     uint32_t period_calc = (pclkb / dividers[i]) / frequency_hz;

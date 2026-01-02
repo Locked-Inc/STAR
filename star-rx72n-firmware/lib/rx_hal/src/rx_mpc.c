@@ -47,25 +47,25 @@ typedef enum {
 
 /** @brief MPC port number constants */
 typedef enum {
-  k_mpc_port_0  = 0,    /**< Port 0 */
-  k_mpc_port_1  = 1,    /**< Port 1 */
-  k_mpc_port_2  = 2,    /**< Port 2 */
-  k_mpc_port_3  = 3,    /**< Port 3 */
-  k_mpc_port_4  = 4,    /**< Port 4 */
-  k_mpc_port_5  = 5,    /**< Port 5 */
-  k_mpc_port_6  = 6,    /**< Port 6 */
-  k_mpc_port_7  = 7,    /**< Port 7 */
-  k_mpc_port_8  = 8,    /**< Port 8 */
-  k_mpc_port_9  = 9,    /**< Port 9 */
-  k_mpc_port_a  = 0x0A, /**< Port A */
-  k_mpc_port_b  = 0x0B, /**< Port B */
-  k_mpc_port_c  = 0x0C, /**< Port C */
-  k_mpc_port_d  = 0x0D, /**< Port D */
-  k_mpc_port_e  = 0x0E, /**< Port E */
-  k_mpc_port_f  = 0x0F, /**< Port F */
-  k_mpc_port_g  = 0x10, /**< Port G */
-  k_mpc_port_h  = 0x11, /**< Port H */
-  k_mpc_port_j  = 0x12, /**< Port J */
+  k_mpc_port_0 = 0,    /**< Port 0 */
+  k_mpc_port_1 = 1,    /**< Port 1 */
+  k_mpc_port_2 = 2,    /**< Port 2 */
+  k_mpc_port_3 = 3,    /**< Port 3 */
+  k_mpc_port_4 = 4,    /**< Port 4 */
+  k_mpc_port_5 = 5,    /**< Port 5 */
+  k_mpc_port_6 = 6,    /**< Port 6 */
+  k_mpc_port_7 = 7,    /**< Port 7 */
+  k_mpc_port_8 = 8,    /**< Port 8 */
+  k_mpc_port_9 = 9,    /**< Port 9 */
+  k_mpc_port_a = 0x0A, /**< Port A */
+  k_mpc_port_b = 0x0B, /**< Port B */
+  k_mpc_port_c = 0x0C, /**< Port C */
+  k_mpc_port_d = 0x0D, /**< Port D */
+  k_mpc_port_e = 0x0E, /**< Port E */
+  k_mpc_port_f = 0x0F, /**< Port F */
+  k_mpc_port_g = 0x10, /**< Port G */
+  k_mpc_port_h = 0x11, /**< Port H */
+  k_mpc_port_j = 0x12, /**< Port J */
 } mpc_port_number_t;
 
 /** @brief MPC PFS port offset values */

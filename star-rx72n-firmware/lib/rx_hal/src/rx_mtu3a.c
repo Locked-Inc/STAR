@@ -21,12 +21,13 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
+#include "rx_mtu3a.h"
+
 #include <stddef.h>
 
 #include "rx72n_regs.h"
 #include "rx_check.h"
 #include "rx_log.h"
-#include "rx_mtu3a.h"
 
 static const char* s_tag = "MTU3A";
 
@@ -79,9 +80,9 @@ typedef enum {
 
 /** @brief Duty cycle calculation constants */
 typedef enum {
-  k_mtu_duty_min     = 0,     /**< Minimum duty cycle (0%) */
-  k_mtu_duty_max     = 100,   /**< Maximum duty cycle (100%) */
-  k_mtu_duty_divisor = 100,   /**< Divisor for percentage conversion */
+  k_mtu_duty_min     = 0,   /**< Minimum duty cycle (0%) */
+  k_mtu_duty_max     = 100, /**< Maximum duty cycle (100%) */
+  k_mtu_duty_divisor = 100, /**< Divisor for percentage conversion */
 } mtu_duty_constants_t;
 
 /* =============================================================================
@@ -248,10 +249,10 @@ rx_err_t rx_mtu_init_pwm(rx_mtu_channel_t channel, const rx_mtu_config_t* config
    * For PWM mode 1:
    * - Initial low, high on up-count compare, low on down-count compare
    */
-  mtu->tiorh = (k_mtu_tior_init_low << k_mtu_tior_low_shift) |  /* MTIOCA */
-               (k_mtu_tior_init_low << k_mtu_tior_high_shift);  /* MTIOCB */
-  mtu->tiorl = (k_mtu_tior_init_low << k_mtu_tior_low_shift) |  /* MTIOCC */
-               (k_mtu_tior_init_low << k_mtu_tior_high_shift);  /* MTIOCD */
+  mtu->tiorh = (k_mtu_tior_init_low << k_mtu_tior_low_shift) | /* MTIOCA */
+               (k_mtu_tior_init_low << k_mtu_tior_high_shift); /* MTIOCB */
+  mtu->tiorl = (k_mtu_tior_init_low << k_mtu_tior_low_shift) | /* MTIOCC */
+               (k_mtu_tior_init_low << k_mtu_tior_high_shift); /* MTIOCD */
 
   /* Set period (TGRA = top of triangle wave) */
   mtu->tgra = period;
