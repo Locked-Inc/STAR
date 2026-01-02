@@ -1,2 +1,0 @@
-/usr/bin/ar qc librx_fec.a CMakeFiles/rx_fec.dir/lib/rx_fec/src/rx_fec.c.o
-/usr/bin/ranlib librx_fec.a

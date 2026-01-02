@@ -1,2 +1,0 @@
-/usr/bin/ar qc librx_harq.a CMakeFiles/rx_harq.dir/lib/rx_harq/src/rx_harq.c.o
-/usr/bin/ranlib librx_harq.a

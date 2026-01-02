@@ -1,2 +1,0 @@
-/usr/bin/ar qc librx_bq4050.a CMakeFiles/rx_bq4050.dir/lib/rx_bq4050/src/rx_bq4050.c.o
-/usr/bin/ranlib librx_bq4050.a
