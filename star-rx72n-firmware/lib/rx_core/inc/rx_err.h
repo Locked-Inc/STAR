@@ -15,8 +15,8 @@
  * - 0x4xx: Communication errors
  * - 0x5xx: Validation errors
  *
- * @date 2025-12-21
- * @copyright Copyright (c) 2025 STAR Project
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef STAR_RX72N_ERR_H

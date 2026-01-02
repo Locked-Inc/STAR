@@ -7,8 +7,8 @@
  * Provides thread-safe ADC operations through bus manager.
  * Wraps low-level ADC HAL with bus abstraction pattern.
  *
- * @date 2025-12-21
- * @copyright Copyright (c) 2025 STAR Project
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "rx_bus_adc.h"

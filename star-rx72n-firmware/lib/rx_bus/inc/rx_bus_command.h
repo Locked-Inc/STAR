@@ -43,8 +43,8 @@
  * rx_err_t err = rx_bus_manager_execute_command(manager, "led", &cmd);
  * @endcode
  *
- * @date 2025-12-21
- * @copyright Copyright (c) 2025 STAR Project
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef STAR_RX72N_BUS_COMMAND_H
