@@ -53,7 +53,7 @@ extern void _tx_timer_interrupt(void);
 void cmt0_isr(void)
 {
   /* Clear interrupt flag (write 0 to BSR bit) */
-  CMT0.CMCR; /* Read to clear interrupt flag */
+  CMT0.cmcr; /* Read to clear interrupt flag */
 
   /* Call ThreadX timer interrupt handler */
   _tx_timer_interrupt();
@@ -82,31 +82,31 @@ rx_err_t timer_init(void)
   rx_log_info("TIMER", "Initializing CMT0 for ThreadX tick");
 
   /* Stop CMT0 if running */
-  CMT_CTRL.CMSTR0 &= ~0x01;
+  CMT_CTRL.cmstr0 &= ~0x01;
 
   /* Configure CMT0 */
   /* CMCR: Clock = PCLK/128, interrupt enabled */
-  CMT0.CMCR = 0x0042; /* CKS[1:0]=10 (PCLK/128), CMIE=1 (interrupt enable) */
+  CMT0.cmcr = 0x0042; /* CKS[1:0]=10 (PCLK/128), CMIE=1 (interrupt enable) */
 
   /* Set compare match value for 100 Hz tick
      * CMCOR = (60,000,000 / 128 / 100) - 1 = 4687 */
-  CMT0.CMCOR = k_cmt0_compare_match;
+  CMT0.cmcor = k_cmt0_compare_match;
 
   /* Reset counter */
-  CMT0.CMCNT = 0;
+  CMT0.cmcnt = 0;
 
   /* Configure interrupt controller (ICU) */
   /* Clear any pending interrupt */
-  ICU.IR[k_vect_cmt0_cmi0] = 0;
+  ICU.ir[k_vect_cmt0_cmi0] = 0;
 
   /* Set interrupt priority (3 out of 15) */
-  ICU.IPR[k_vect_cmt0_cmi0] = k_cmt0_irq_priority;
+  ICU.ipr[k_vect_cmt0_cmi0] = k_cmt0_irq_priority;
 
   /* Enable CMT0 interrupt in ICU */
-  ICU.IER[k_vect_cmt0_cmi0 / 8] |= (1 << (k_vect_cmt0_cmi0 % 8));
+  ICU.ier[k_vect_cmt0_cmi0 / 8] |= (1 << (k_vect_cmt0_cmi0 % 8));
 
   /* Start CMT0 */
-  CMT_CTRL.CMSTR0 |= 0x01;
+  CMT_CTRL.cmstr0 |= 0x01;
 
   /* Enable interrupts globally (set I flag in PSW) */
   __asm__ volatile("setpsw i");
@@ -126,7 +126,7 @@ rx_err_t timer_stop(void)
   rx_log_info("TIMER", "Stopping CMT0");
 
   /* Stop CMT0 */
-  CMT_CTRL.CMSTR0 &= ~0x01;
+  CMT_CTRL.cmstr0 &= ~0x01;
 
   return k_rx_ok;
 }
@@ -143,7 +143,7 @@ rx_err_t timer_get_count(uint16_t* count)
 {
   RX_CHECK_NULL_PTR(count, "TIMER", "Count pointer is NULL");
 
-  *count = CMT0.CMCNT;
+  *count = CMT0.cmcnt;
 
   return k_rx_ok;
 }

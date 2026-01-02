@@ -622,14 +622,14 @@ static void internal_handle_get_descriptor(uint16_t w_value, uint16_t w_length)
           break;
         default:
           /* STALL for unknown string index */
-          USB0.DCPCTR |= k_usb_dcpctr_pid_stall;
+          USB0.dcpctr |= k_usb_dcpctr_pid_stall;
           break;
       }
       break;
 
     default:
       /* STALL for unknown descriptor type */
-      USB0.DCPCTR |= k_usb_dcpctr_pid_stall;
+      USB0.dcpctr |= k_usb_dcpctr_pid_stall;
       break;
   }
 }
@@ -642,7 +642,7 @@ static void internal_handle_set_address(uint16_t w_value)
   uint8_t address = w_value & k_usb_address_mask;
 
   /* Send zero-length status packet first */
-  USB0.DCPCTR |= k_usb_dcpctr_ccpl;
+  USB0.dcpctr |= k_usb_dcpctr_ccpl;
 
   /* Then set the address */
   rx_usb_hw_set_address(address);
@@ -685,10 +685,10 @@ static void internal_handle_set_configuration(uint16_t w_value)
                              k_usb_interrupt_packet_size);
 
     /* Enable BRDY interrupt for Pipe 2 (receive from host) */
-    USB0.BRDYENB |= (1 << k_usb_pipe_2);
+    USB0.brdyenb |= (1 << k_usb_pipe_2);
 
     /* Enable BEMP interrupt for Pipe 1 (transmit complete) */
-    USB0.BEMPENB |= (1 << k_usb_pipe_1);
+    USB0.bempenb |= (1 << k_usb_pipe_1);
 
     rx_usb_set_state(k_usb_state_configured);
     rx_log_info(s_tag, "Device configured");
@@ -697,7 +697,7 @@ static void internal_handle_set_configuration(uint16_t w_value)
   }
 
   /* Send zero-length status packet */
-  USB0.DCPCTR |= k_usb_dcpctr_ccpl;
+  USB0.dcpctr |= k_usb_dcpctr_ccpl;
 }
 
 /**
@@ -726,7 +726,7 @@ static void internal_handle_set_line_coding(void)
   }
 
   /* Send zero-length status packet */
-  USB0.DCPCTR |= k_usb_dcpctr_ccpl;
+  USB0.dcpctr |= k_usb_dcpctr_ccpl;
 }
 
 /**
@@ -762,7 +762,7 @@ static void internal_handle_set_control_line_state(uint16_t w_value)
   rx_log_debug(s_tag, "Control line state set");
 
   /* Send zero-length status packet */
-  USB0.DCPCTR |= k_usb_dcpctr_ccpl;
+  USB0.dcpctr |= k_usb_dcpctr_ccpl;
 }
 
 /* =============================================================================
@@ -801,10 +801,10 @@ rx_err_t rx_usb_cdc_init(void)
 void rx_usb_cdc_handle_setup(void)
 {
   /* Read SETUP packet from registers */
-  uint16_t bm_request_type_b_request = USB0.USBREQ;
-  uint16_t w_value                   = USB0.USBVAL;
-  uint16_t w_index                   = USB0.USBINDX;
-  uint16_t w_length                  = USB0.USBLENG;
+  uint16_t bm_request_type_b_request = USB0.usbreq;
+  uint16_t w_value                   = USB0.usbval;
+  uint16_t w_index                   = USB0.usbindx;
+  uint16_t w_length                  = USB0.usbleng;
 
   uint8_t bm_request_type = bm_request_type_b_request & k_byte_mask;
   uint8_t b_request       = (bm_request_type_b_request >> k_bit_shift_byte_1) & k_byte_mask;
@@ -838,7 +838,7 @@ void rx_usb_cdc_handle_setup(void)
 
       default:
         /* STALL unknown standard requests */
-        USB0.DCPCTR |= k_usb_dcpctr_pid_stall;
+        USB0.dcpctr |= k_usb_dcpctr_pid_stall;
         break;
     }
   } else if (type == k_usb_req_type_class) {
@@ -858,12 +858,12 @@ void rx_usb_cdc_handle_setup(void)
 
       default:
         /* STALL unknown class requests */
-        USB0.DCPCTR |= k_usb_dcpctr_pid_stall;
+        USB0.dcpctr |= k_usb_dcpctr_pid_stall;
         break;
     }
   } else {
     /* STALL vendor and reserved requests */
-    USB0.DCPCTR |= k_usb_dcpctr_pid_stall;
+    USB0.dcpctr |= k_usb_dcpctr_pid_stall;
   }
 }
 

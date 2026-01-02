@@ -144,15 +144,15 @@ rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
   rx_log_info(s_tag, "Info");
 
   /* Enable MTU module (clear module stop bit) */
-  SYSTEM.PRCR = (k_prcr_key << k_prcr_key_shift) | k_prcr_unlock_mtu; /* Enable writes to MSTPCR */
+  SYSTEM.prcr = (k_prcr_key << k_prcr_key_shift) | k_prcr_unlock_mtu; /* Enable writes to MSTPCR */
 
   if (channel <= k_mtu_channel_4) {
-    SYSTEM.MSTPCRA &= ~(1 << k_mtu_mstpcra_mtu0_4_bit); /* MTU0-MTU4 */
+    SYSTEM.mstpcra &= ~(1 << k_mtu_mstpcra_mtu0_4_bit); /* MTU0-MTU4 */
   } else {
-    SYSTEM.MSTPCRA &= ~(1 << k_mtu_mstpcra_mtu6_7_bit); /* MTU6-MTU7 */
+    SYSTEM.mstpcra &= ~(1 << k_mtu_mstpcra_mtu6_7_bit); /* MTU6-MTU7 */
   }
 
-  SYSTEM.PRCR = (k_prcr_key << k_prcr_key_shift) | k_prcr_lock_all; /* Lock MSTPCR */
+  SYSTEM.prcr = (k_prcr_key << k_prcr_key_shift) | k_prcr_lock_all; /* Lock MSTPCR */
 
   /* Stop timer before configuration */
   rx_mtu_stop(channel);
@@ -161,19 +161,19 @@ rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
    * - No prescaler (count directly on phase inputs)
    * - External clock on MTCLKA/B
    */
-  mtu->TCR = k_tcr_external_clock_no_prescaler;
+  mtu->tcr = k_tcr_external_clock_no_prescaler;
 
   /* Configure Phase Counting Mode 1 (4x decoding)
    * TMDR.MD = 0100
    */
-  mtu->TMDR = k_tmdr_phase_counting_mode_1;
+  mtu->tmdr = k_tmdr_phase_counting_mode_1;
 
   /* Configure I/O control (not used in phase counting mode) */
-  mtu->TIORH = k_tior_disabled;
-  mtu->TIORL = k_tior_disabled;
+  mtu->tiorh = k_tior_disabled;
+  mtu->tiorl = k_tior_disabled;
 
   /* Clear counter */
-  mtu->TCNT = 0;
+  mtu->tcnt = 0;
 
   /* Initialize state */
   s_encoder_state[channel].total_count    = 0;
@@ -207,7 +207,7 @@ rx_err_t rx_encoder_read_raw(rx_mtu_channel_t channel, uint16_t* count)
     return k_rx_err_invalid_arg;
   }
 
-  *count = mtu->TCNT;
+  *count = mtu->tcnt;
   return k_rx_ok;
 }
 
@@ -225,7 +225,7 @@ rx_err_t rx_encoder_read_count(rx_mtu_channel_t channel, rx_encoder_state_t* sta
   }
 
   /* Read current counter value */
-  uint16_t current_count = mtu->TCNT;
+  uint16_t current_count = mtu->tcnt;
   uint16_t last_count    = s_encoder_state[channel].last_raw_count;
 
   /* Calculate delta (handling 16-bit wraparound) */
@@ -311,7 +311,7 @@ rx_err_t rx_encoder_reset(rx_mtu_channel_t channel)
   }
 
   /* Reset hardware counter */
-  mtu->TCNT = 0;
+  mtu->tcnt = 0;
 
   /* Reset state */
   s_encoder_state[channel].total_count    = 0;
@@ -335,7 +335,7 @@ rx_err_t rx_encoder_set_count(rx_mtu_channel_t channel, int32_t count)
   }
 
   /* Set hardware counter (limited to 16-bit) */
-  mtu->TCNT = (uint16_t)(count & k_encoder_16bit_mask);
+  mtu->tcnt = (uint16_t)(count & k_encoder_16bit_mask);
 
   /* Set software state */
   s_encoder_state[channel].total_count    = count;

@@ -25,15 +25,26 @@ extern "C" {
  * =============================================================================
  */
 
+/**
+ * @brief SCI Register Map
+ * @details
+ * Serial Communication Interface (SCI) registers for UART communication.
+ * Base addresses:
+ * - SCI0: 0x0008A000
+ * - SCI1: 0x0008A020
+ * - SCI2: 0x0008A040
+ * - SCI5: 0x0008A0A0
+ * - SCI6: 0x0008A0C0
+ */
 typedef struct {
-  volatile uint8_t SMR;  /* Serial Mode Register */
-  volatile uint8_t BRR;  /* Bit Rate Register */
-  volatile uint8_t SCR;  /* Serial Control Register */
-  volatile uint8_t TDR;  /* Transmit Data Register */
-  volatile uint8_t SSR;  /* Serial Status Register */
-  volatile uint8_t RDR;  /* Receive Data Register */
-  volatile uint8_t SCMR; /* Smart Card Mode Register */
-  volatile uint8_t SEMR; /* Serial Extended Mode Register */
+  volatile uint8_t smr;  /**< Serial Mode Register (data length, parity, stop bits) */
+  volatile uint8_t brr;  /**< Bit Rate Register (baud rate divisor) */
+  volatile uint8_t scr;  /**< Serial Control Register (TX/RX enable, interrupts) */
+  volatile uint8_t tdr;  /**< Transmit Data Register (data to send) */
+  volatile uint8_t ssr;  /**< Serial Status Register (TX empty, RX full, errors) */
+  volatile uint8_t rdr;  /**< Receive Data Register (received data) */
+  volatile uint8_t scmr; /**< Smart Card Mode Register (smart card settings) */
+  volatile uint8_t semr; /**< Serial Extended Mode Register (noise filter, etc.) */
 } rx_sci_regs_t;
 
 #define SCI0_BASE ((rx_sci_regs_t*)0x0008A000)

@@ -97,20 +97,20 @@ rx_err_t rspi_init_peripheral(uint8_t channel, uint8_t mode, bool use_16bit)
   }
 
   /* Enable RSPI module (clear module stop bit) */
-  SYSTEM.PRCR = 0xA50B; /* Enable writes to MSTPCR */
+  SYSTEM.prcr = 0xA50B; /* Enable writes to MSTPCR */
 
   if (channel == 0) {
-    SYSTEM.MSTPCRB &= ~(1 << 17); /* RSPI0 */
+    SYSTEM.mstpcrb &= ~(1 << 17); /* RSPI0 */
   } else if (channel == 1) {
-    SYSTEM.MSTPCRB &= ~(1 << 16); /* RSPI1 */
+    SYSTEM.mstpcrb &= ~(1 << 16); /* RSPI1 */
   } else {
-    SYSTEM.MSTPCRB &= ~(1 << 15); /* RSPI2 */
+    SYSTEM.mstpcrb &= ~(1 << 15); /* RSPI2 */
   }
 
-  SYSTEM.PRCR = 0xA500; /* Lock MSTPCR */
+  SYSTEM.prcr = 0xA500; /* Lock MSTPCR */
 
   /* Disable SPI before configuration */
-  rspi->SPCR = 0;
+  rspi->spcr = 0;
 
   /* Configure SPI mode (CPOL and CPHA) */
   uint16_t spcmd = 0;
@@ -124,19 +124,19 @@ rx_err_t rspi_init_peripheral(uint8_t channel, uint8_t mode, bool use_16bit)
   /* Configure data length */
   if (use_16bit) {
     spcmd |= (0x0F << 8);   /* 16-bit data */
-    rspi->SPDCR = (1 << 4); /* Word access mode */
+    rspi->spdcr = (1 << 4); /* Word access mode */
   } else {
     spcmd |= (0x07 << 8); /* 8-bit data */
-    rspi->SPDCR = 0;      /* Byte access mode */
+    rspi->spdcr = 0;      /* Byte access mode */
   }
 
-  rspi->SPCMD0 = spcmd;
+  rspi->spcmd0 = spcmd;
 
   /* Configure peripheral mode */
-  rspi->SPCR = k_rspi_spcr_spe; /* Enable SPI in peripheral mode (MSTR=0) */
+  rspi->spcr = k_rspi_spcr_spe; /* Enable SPI in peripheral mode (MSTR=0) */
 
   /* Configure pin control (no loopback) */
-  rspi->SPPCR = 0;
+  rspi->sppcr = 0;
 
   /* Mark channel as initialized */
   s_rspi_channel_initialized[channel] = true;
@@ -164,7 +164,7 @@ rspi_peripheral_transfer(uint8_t channel, const uint8_t* tx_data, uint8_t* rx_da
   for (uint16_t i = 0; i < length; i++) {
     /* Wait for transmit buffer empty */
     uint32_t timeout = k_rspi_timeout_us;
-    while (!(rspi->SPSR & k_rspi_spsr_sptef) && timeout > 0) {
+    while (!(rspi->spsr & k_rspi_spsr_sptef) && timeout > 0) {
       timeout--;
     }
 
@@ -174,11 +174,11 @@ rspi_peripheral_transfer(uint8_t channel, const uint8_t* tx_data, uint8_t* rx_da
     }
 
     /* Write transmit data */
-    rspi->SPDR = tx_data[i];
+    rspi->spdr = tx_data[i];
 
     /* Wait for receive buffer full */
     timeout = k_rspi_timeout_us;
-    while (!(rspi->SPSR & k_rspi_spsr_sprf) && timeout > 0) {
+    while (!(rspi->spsr & k_rspi_spsr_sprf) && timeout > 0) {
       timeout--;
     }
 
@@ -188,10 +188,10 @@ rspi_peripheral_transfer(uint8_t channel, const uint8_t* tx_data, uint8_t* rx_da
     }
 
     /* Read receive data */
-    rx_data[i] = (uint8_t)rspi->SPDR;
+    rx_data[i] = (uint8_t)rspi->spdr;
 
     /* Clear status flags */
-    rspi->SPSR &= ~(k_rspi_spsr_sprf | k_rspi_spsr_ovrf);
+    rspi->spsr &= ~(k_rspi_spsr_sprf | k_rspi_spsr_ovrf);
   }
 
   return k_rx_ok;
@@ -211,7 +211,7 @@ rx_err_t rspi_peripheral_read_available(uint8_t channel, bool* available)
   volatile rx_rspi_regs_t* rspi = internal_get_rspi_base(channel);
 
   /* Check if receive buffer has data */
-  *available = (rspi->SPSR & k_rspi_spsr_sprf) != 0;
+  *available = (rspi->spsr & k_rspi_spsr_sprf) != 0;
 
   return k_rx_ok;
 }
@@ -230,7 +230,7 @@ rx_err_t rspi_peripheral_write_ready(uint8_t channel, bool* ready)
   volatile rx_rspi_regs_t* rspi = internal_get_rspi_base(channel);
 
   /* Check if transmit buffer is empty */
-  *ready = (rspi->SPSR & k_rspi_spsr_sptef) != 0;
+  *ready = (rspi->spsr & k_rspi_spsr_sptef) != 0;
 
   return k_rx_ok;
 }
@@ -250,20 +250,20 @@ rx_err_t rspi_deinit(uint8_t channel)
   }
 
   /* Disable SPI */
-  rspi->SPCR = 0;
+  rspi->spcr = 0;
 
   /* Disable RSPI module (set module stop bit) */
-  SYSTEM.PRCR = 0xA50B; /* Enable writes to MSTPCR */
+  SYSTEM.prcr = 0xA50B; /* Enable writes to MSTPCR */
 
   if (channel == 0) {
-    SYSTEM.MSTPCRB |= (1 << 17); /* RSPI0 */
+    SYSTEM.mstpcrb |= (1 << 17); /* RSPI0 */
   } else if (channel == 1) {
-    SYSTEM.MSTPCRB |= (1 << 16); /* RSPI1 */
+    SYSTEM.mstpcrb |= (1 << 16); /* RSPI1 */
   } else {
-    SYSTEM.MSTPCRB |= (1 << 15); /* RSPI2 */
+    SYSTEM.mstpcrb |= (1 << 15); /* RSPI2 */
   }
 
-  SYSTEM.PRCR = 0xA500; /* Lock MSTPCR */
+  SYSTEM.prcr = 0xA500; /* Lock MSTPCR */
 
   /* Mark channel as uninitialized */
   s_rspi_channel_initialized[channel] = false;

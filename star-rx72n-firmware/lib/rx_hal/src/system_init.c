@@ -73,13 +73,13 @@ typedef enum {
 static rx_err_t clock_init(void)
 {
   /* Unlock protection for clock registers */
-  SYSTEM.PRCR = k_prcr_unlock;
+  SYSTEM.prcr = k_prcr_unlock;
 
   /* Stop sub-clock oscillator (not used) */
-  SYSTEM.SOSCCR = k_sub_clock_stopped;
+  SYSTEM.sosccr = k_sub_clock_stopped;
 
   /* Start main oscillator (16 MHz external crystal) */
-  SYSTEM.MOSCCR = k_main_osc_enabled;
+  SYSTEM.mosccr = k_main_osc_enabled;
 
   /* Wait for main oscillator stabilization (typically 10ms) */
   /* NOTE: Busy-wait required - runs before ThreadX initialization */
@@ -90,32 +90,32 @@ static rx_err_t clock_init(void)
   /* Configure PLL */
   /* PLL = (Main OSC x PLIDIV) / PLLSTBY */
   /* 240 MHz = (16 MHz x 30) / 2 */
-  SYSTEM.PLLCR  = k_pll_multiplier_30_div_2;
-  SYSTEM.PLLCR2 = k_pll_enabled;
+  SYSTEM.pllcr  = k_pll_multiplier_30_div_2;
+  SYSTEM.pllcr2 = k_pll_enabled;
 
   /* Wait for PLL stabilization */
   /* NOTE: Busy-wait polling required - runs before ThreadX initialization */
   uint32_t timeout = k_pll_stabilization_timeout;
-  while ((SYSTEM.OSCOVFSR & k_pll_stable_flag) == 0 && timeout > 0) {
+  while ((SYSTEM.oscovfsr & k_pll_stable_flag) == 0 && timeout > 0) {
     timeout--;
   }
 
   if (timeout == k_pll_stabilization_timeout_expired) {
     /* PLL failed to stabilize - but can't log yet (UART not initialized) */
-    SYSTEM.PRCR = k_prcr_lock;
+    SYSTEM.prcr = k_prcr_lock;
     return k_rx_err_hw_timeout;
   }
 
   /* Configure system clocks */
   /* ICLK=240MHz, PCLKA=120MHz, PCLKB=60MHz, PCLKC=60MHz,
      * PCLKD=60MHz, BCLK=120MHz, FCLK=60MHz */
-  SYSTEM.SCKCR = k_system_clock_dividers;
+  SYSTEM.sckcr = k_system_clock_dividers;
 
   /* Select PLL as system clock */
-  SYSTEM.SCKCR3 = k_system_clock_source_pll;
+  SYSTEM.sckcr3 = k_system_clock_source_pll;
 
   /* Lock protection */
-  SYSTEM.PRCR = k_prcr_lock;
+  SYSTEM.prcr = k_prcr_lock;
 
   return k_rx_ok;
 }
@@ -139,25 +139,25 @@ static rx_err_t clock_init(void)
 static rx_err_t module_stop_init(void)
 {
   /* Protect off */
-  SYSTEM.PRCR = 0xA50F;
+  SYSTEM.prcr = 0xA50F;
 
   /* Module Stop Control Register A */
-  SYSTEM.MSTPCRA &= ~((1 << 15) | /* CMT0, CMT1 */
+  SYSTEM.mstpcra &= ~((1 << 15) | /* CMT0, CMT1 */
                       (1 << 9)    /* MTU */
   );
 
   /* Module Stop Control Register B */
-  SYSTEM.MSTPCRB &= ~((1 << 26) | /* SCI5 */
+  SYSTEM.mstpcrb &= ~((1 << 26) | /* SCI5 */
                       (1 << 17) | /* RSPI0 */
                       (1 << 16)   /* RSPI1 */
   );
 
   /* Module Stop Control Register C */
-  SYSTEM.MSTPCRC &= ~((1 << 17) /* S12AD */
+  SYSTEM.mstpcrc &= ~((1 << 17) /* S12AD */
   );
 
   /* Protect on */
-  SYSTEM.PRCR = 0xA500;
+  SYSTEM.prcr = 0xA500;
 
   return k_rx_ok;
 }
