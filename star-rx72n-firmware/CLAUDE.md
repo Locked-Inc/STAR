@@ -22,7 +22,7 @@ Note: Renesas APIs and ThreadX may still use legacy terminology internally. Map 
 
 **STAR RX72N Firmware** - ThreadX-based motor control firmware for Renesas RX72N microcontroller.
 
-This firmware is part of the STAR (Sensor and Actuator Abstraction Runtime) distributed robotics platform. It runs on the RX72N motor controller PCB and communicates with the Raspberry Pi 5 control system via SPI using Protocol Buffers.
+This firmware is part of the STAR (Simultaneous Tracking and Robotics) distributed robotics platform. It runs on the RX72N motor controller PCB and communicates with the Raspberry Pi 5 control system via SPI using Protocol Buffers.
 
 ### Key Differences from ESP32 Firmware
 
