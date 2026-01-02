@@ -1,14 +1,14 @@
-/* src/hardware/adc.c */
+/* lib/rx_hal/src/adc.c */
 
 /**
  * @file adc.c
  * @brief ADC Driver for RX72N S12ADFa
- * @details
+ *
  * Provides 12-bit A/D conversion on RX72N using S12ADFa peripheral.
  * Supports ADC unit 0 and 1 with multiple channels.
  *
- * @date 2025-12-21
- * @copyright Copyright (c) 2025 STAR Project
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include <string.h>

@@ -1,4 +1,4 @@
-/* src/hardware/uart.c */
+/* lib/rx_hal/src/uart.c */
 
 /**
  * @file uart.c
@@ -6,6 +6,9 @@
  *
  * Simple UART driver for SCI5 (Serial Communication Interface 5).
  * Provides basic transmit-only functionality for printf debugging.
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include <stdbool.h>
@@ -39,6 +42,21 @@ typedef enum {
   k_sci_semr_default   = 0x00, /**< SEMR: Default extended mode */
   k_sci_ssr_tdre_flag  = 0x80, /**< SSR: Transmit data register empty flag */
 } sci_register_values_t;
+
+/** @brief Integer to string buffer constants */
+typedef enum {
+  k_uart_int_buffer_size = 12, /**< Buffer size for int32 to string (enough for -2147483648) */
+  k_uart_base_10         = 10, /**< Base 10 for decimal conversion */
+} uart_int_constants_t;
+
+/** @brief Hex digit constants */
+typedef enum {
+  k_uart_hex_max_digits  = 8,    /**< Maximum hex digits to print (32-bit value) */
+  k_uart_hex_min_digits  = 1,    /**< Minimum hex digits to print */
+  k_uart_hex_zero_digits = 0,    /**< Zero digits value */
+  k_uart_hex_nibble_bits = 4,    /**< Bits per hex nibble */
+  k_uart_hex_nibble_mask = 0x0F, /**< Mask for hex nibble */
+} uart_hex_constants_t;
 
 /* =============================================================================
  * UART Initialization
@@ -111,7 +129,7 @@ void uart_putc(char data)
 
   /* Clear TDRE flag by reading SSR then writing 0 */
   (void)SCI5.ssr;
-  SCI5.ssr &= ~0x80;
+  SCI5.ssr &= ~k_sci_ssr_tdre_flag;
 }
 
 /**
@@ -141,7 +159,7 @@ void uart_puts(const char* str)
  */
 void uart_putint(int32_t value)
 {
-  char     buffer[12]; /* Enough for -2147483648 */
+  char     buffer[k_uart_int_buffer_size]; /* Enough for -2147483648 */
   char*    p = buffer + sizeof(buffer) - 1;
   uint32_t abs_value;
   bool     is_negative = false;
@@ -159,8 +177,8 @@ void uart_putint(int32_t value)
 
   /* Convert to string (reverse order) */
   do {
-    *--p = '0' + (abs_value % 10);
-    abs_value /= 10;
+    *--p = '0' + (abs_value % k_uart_base_10);
+    abs_value /= k_uart_base_10;
   } while (abs_value > 0);
 
   /* Add minus sign if negative */
@@ -185,16 +203,16 @@ void uart_puthex(uint32_t value, uint8_t digits)
   uart_puts("0x");
 
   /* Clamp digits to valid range */
-  if (digits > 8) {
-    digits = 8;
+  if (digits > k_uart_hex_max_digits) {
+    digits = k_uart_hex_max_digits;
   }
-  if (digits == 0) {
-    digits = 1;
+  if (digits == k_uart_hex_zero_digits) {
+    digits = k_uart_hex_min_digits;
   }
 
   /* Print hex digits from most significant */
   for (int32_t i = digits - 1; i >= 0; i--) {
-    uint8_t nibble = (value >> (i * 4)) & 0x0F;
+    uint8_t nibble = (value >> (i * k_uart_hex_nibble_bits)) & k_uart_hex_nibble_mask;
     uart_putc(s_hex[nibble]);
   }
 }

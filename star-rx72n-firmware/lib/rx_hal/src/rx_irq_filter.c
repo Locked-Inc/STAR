@@ -1,3 +1,5 @@
+/* lib/rx_hal/src/rx_irq_filter.c */
+
 /**
  * @file rx_irq_filter.c
  * @brief IRQ Digital Filter Driver Implementation for RX72N
@@ -10,10 +12,8 @@
  * - IRQFLTC[0]: Filter clock for IRQ0-7 (2 bits per IRQ)
  * - IRQFLTC[1]: Filter clock for IRQ8-15 (2 bits per IRQ)
  *
- * @see RX72N Hardware Manual, Section 13.3.15 - IRQ Digital Filter
- *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "rx_irq_filter.h"
@@ -27,14 +27,12 @@
  * =============================================================================
  */
 
-/** @brief IRQs per register (IRQ0-7 in register 0, IRQ8-15 in register 1) */
-#define IRQS_PER_REGISTER 8
-
-/** @brief Bits per filter clock setting */
-#define FILTER_CLOCK_BITS 2
-
-/** @brief Mask for filter clock setting */
-#define FILTER_CLOCK_MASK 0x03
+/** @brief IRQ filter register organization constants */
+typedef enum {
+  k_irq_filter_irqs_per_reg    = 8,    /**< IRQs per register (IRQ0-7 in reg 0, IRQ8-15 in reg 1) */
+  k_irq_filter_clock_bits      = 2,    /**< Bits per filter clock setting */
+  k_irq_filter_clock_mask      = 0x03, /**< Mask for filter clock setting (2 bits) */
+} irq_filter_constants_t;
 
 /* =============================================================================
  * Public API Implementation
@@ -57,9 +55,9 @@ rx_err_t rx_irq_filter_enable(uint8_t irq_num, rx_irq_filter_clk_t filter_clk)
    * - IRQ0-7:  IRQFLTE[0], IRQFLTC[0]
    * - IRQ8-15: IRQFLTE[1], IRQFLTC[1]
    */
-  uint8_t reg_idx   = irq_num / IRQS_PER_REGISTER;
-  uint8_t bit_pos   = irq_num % IRQS_PER_REGISTER;
-  uint8_t clock_pos = bit_pos * FILTER_CLOCK_BITS;
+  uint8_t reg_idx   = irq_num / k_irq_filter_irqs_per_reg;
+  uint8_t bit_pos   = irq_num % k_irq_filter_irqs_per_reg;
+  uint8_t clock_pos = bit_pos * k_irq_filter_clock_bits;
 
   /*
    * Set filter clock divisor first (before enabling)
@@ -70,7 +68,7 @@ rx_err_t rx_irq_filter_enable(uint8_t irq_num, rx_irq_filter_clk_t filter_clk)
    * - Bits [5:4]:   IRQ2/10 clock select
    * - etc.
    */
-  uint16_t clock_mask  = (uint16_t)(FILTER_CLOCK_MASK << clock_pos);
+  uint16_t clock_mask  = (uint16_t)(k_irq_filter_clock_mask << clock_pos);
   uint16_t clock_value = (uint16_t)(filter_clk << clock_pos);
 
   ICU.irqfltc[reg_idx] = (ICU.irqfltc[reg_idx] & ~clock_mask) | clock_value;
@@ -100,8 +98,8 @@ rx_err_t rx_irq_filter_disable(uint8_t irq_num)
   }
 
 #ifdef __RX__
-  uint8_t reg_idx = irq_num / IRQS_PER_REGISTER;
-  uint8_t bit_pos = irq_num % IRQS_PER_REGISTER;
+  uint8_t reg_idx = irq_num / k_irq_filter_irqs_per_reg;
+  uint8_t bit_pos = irq_num % k_irq_filter_irqs_per_reg;
 
   /* Clear filter enable bit */
   ICU.irqflte[reg_idx] &= (uint8_t)~(1 << bit_pos);
@@ -122,8 +120,8 @@ rx_err_t rx_irq_filter_is_enabled(uint8_t irq_num, bool* enabled)
   }
 
 #ifdef __RX__
-  uint8_t reg_idx = irq_num / IRQS_PER_REGISTER;
-  uint8_t bit_pos = irq_num % IRQS_PER_REGISTER;
+  uint8_t reg_idx = irq_num / k_irq_filter_irqs_per_reg;
+  uint8_t bit_pos = irq_num % k_irq_filter_irqs_per_reg;
 
   *enabled = (ICU.irqflte[reg_idx] & (1 << bit_pos)) != 0;
 
@@ -145,11 +143,11 @@ rx_err_t rx_irq_filter_get_clock(uint8_t irq_num, rx_irq_filter_clk_t* filter_cl
   }
 
 #ifdef __RX__
-  uint8_t reg_idx   = irq_num / IRQS_PER_REGISTER;
-  uint8_t bit_pos   = irq_num % IRQS_PER_REGISTER;
-  uint8_t clock_pos = bit_pos * FILTER_CLOCK_BITS;
+  uint8_t reg_idx   = irq_num / k_irq_filter_irqs_per_reg;
+  uint8_t bit_pos   = irq_num % k_irq_filter_irqs_per_reg;
+  uint8_t clock_pos = bit_pos * k_irq_filter_clock_bits;
 
-  uint16_t clock_value = (ICU.irqfltc[reg_idx] >> clock_pos) & FILTER_CLOCK_MASK;
+  uint16_t clock_value = (ICU.irqfltc[reg_idx] >> clock_pos) & k_irq_filter_clock_mask;
   *filter_clk          = (rx_irq_filter_clk_t)clock_value;
 
 #else
