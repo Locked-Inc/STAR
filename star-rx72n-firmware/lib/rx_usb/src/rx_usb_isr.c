@@ -59,7 +59,7 @@ extern rx_usb_state_t rx_usb_hw_get_bus_state(void);
  */
 static void internal_handle_vbus_interrupt(void)
 {
-  uint16_t syssts = USB0.SYSSTS0;
+  uint16_t syssts = USB0.syssts0;
 
   /* Check line state to determine if cable is connected */
   uint16_t lnst = syssts & k_usb_syssts0_lnst_mask;
@@ -74,7 +74,7 @@ static void internal_handle_vbus_interrupt(void)
   }
 
   /* Clear VBUS interrupt flag */
-  USB0.INTSTS0 = (uint16_t)~k_usb_intsts0_vbint;
+  USB0.intsts0 = (uint16_t)~k_usb_intsts0_vbint;
 }
 
 /**
@@ -82,7 +82,7 @@ static void internal_handle_vbus_interrupt(void)
  */
 static void internal_handle_dvst_interrupt(void)
 {
-  uint16_t intsts0 = USB0.INTSTS0;
+  uint16_t intsts0 = USB0.intsts0;
   uint16_t dvsq    = intsts0 & k_usb_intsts0_dvsq_mask;
 
   switch (dvsq) {
@@ -119,7 +119,7 @@ static void internal_handle_dvst_interrupt(void)
   }
 
   /* Clear DVST interrupt flag */
-  USB0.INTSTS0 = (uint16_t)~k_usb_intsts0_dvst;
+  USB0.intsts0 = (uint16_t)~k_usb_intsts0_dvst;
 }
 
 /**
@@ -127,7 +127,7 @@ static void internal_handle_dvst_interrupt(void)
  */
 static void internal_handle_ctrt_interrupt(void)
 {
-  uint16_t intsts0 = USB0.INTSTS0;
+  uint16_t intsts0 = USB0.intsts0;
   uint16_t ctsq    = intsts0 & k_usb_intsts0_ctsq_mask;
 
   switch (ctsq) {
@@ -136,7 +136,7 @@ static void internal_handle_ctrt_interrupt(void)
       if (intsts0 & k_usb_intsts0_valid) {
         rx_usb_cdc_handle_setup();
         /* Clear VALID flag */
-        USB0.INTSTS0 = (uint16_t)~k_usb_intsts0_valid;
+        USB0.intsts0 = (uint16_t)~k_usb_intsts0_valid;
       }
       break;
 
@@ -148,7 +148,7 @@ static void internal_handle_ctrt_interrupt(void)
     case k_usb_intsts0_ctsq_rd_status:
       /* Control read status stage - host sends ZLP ACK */
       /* Complete the control transfer */
-      USB0.DCPCTR |= k_usb_dcpctr_ccpl;
+      USB0.dcpctr |= k_usb_dcpctr_ccpl;
       break;
 
     case k_usb_intsts0_ctsq_wr_data:
@@ -159,18 +159,18 @@ static void internal_handle_ctrt_interrupt(void)
     case k_usb_intsts0_ctsq_wr_status:
       /* Control write status stage - send ZLP ACK */
       /* Complete the control transfer */
-      USB0.DCPCTR |= k_usb_dcpctr_ccpl;
+      USB0.dcpctr |= k_usb_dcpctr_ccpl;
       break;
 
     case k_usb_intsts0_ctsq_wr_nd:
       /* Control write with no data - status stage */
-      USB0.DCPCTR |= k_usb_dcpctr_ccpl;
+      USB0.dcpctr |= k_usb_dcpctr_ccpl;
       break;
 
     case k_usb_intsts0_ctsq_seq_err:
       /* Sequence error - stall the pipe */
       rx_log_warn(s_tag, "CTRT: Sequence error");
-      USB0.DCPCTR = (USB0.DCPCTR & ~k_usb_dcpctr_pid_mask) | k_usb_dcpctr_pid_stall;
+      USB0.dcpctr = (USB0.dcpctr & ~k_usb_dcpctr_pid_mask) | k_usb_dcpctr_pid_stall;
       break;
 
     default:
@@ -178,7 +178,7 @@ static void internal_handle_ctrt_interrupt(void)
   }
 
   /* Clear CTRT interrupt flag */
-  USB0.INTSTS0 = (uint16_t)~k_usb_intsts0_ctrt;
+  USB0.intsts0 = (uint16_t)~k_usb_intsts0_ctrt;
 }
 
 /**
@@ -186,7 +186,7 @@ static void internal_handle_ctrt_interrupt(void)
  */
 static void internal_handle_brdy_interrupt(void)
 {
-  uint16_t brdysts = USB0.BRDYSTS;
+  uint16_t brdysts = USB0.brdysts;
 
   /* Check each pipe for buffer ready */
   for (uint8_t pipe = k_usb_pipe_dcp; pipe <= k_usb_pipe_max; pipe++) {
@@ -200,7 +200,7 @@ static void internal_handle_brdy_interrupt(void)
       }
 
       /* Clear pipe buffer ready flag */
-      USB0.BRDYSTS = (uint16_t)~(1U << pipe);
+      USB0.brdysts = (uint16_t)~(1U << pipe);
     }
   }
 }
@@ -210,7 +210,7 @@ static void internal_handle_brdy_interrupt(void)
  */
 static void internal_handle_bemp_interrupt(void)
 {
-  uint16_t bempsts = USB0.BEMPSTS;
+  uint16_t bempsts = USB0.bempsts;
 
   /* Check each pipe for buffer empty */
   for (uint8_t pipe = k_usb_pipe_dcp; pipe <= k_usb_pipe_max; pipe++) {
@@ -224,7 +224,7 @@ static void internal_handle_bemp_interrupt(void)
       }
 
       /* Clear pipe buffer empty flag */
-      USB0.BEMPSTS = (uint16_t)~(1U << pipe);
+      USB0.bempsts = (uint16_t)~(1U << pipe);
     }
   }
 }
@@ -241,7 +241,7 @@ static void internal_handle_resume_interrupt(void)
   rx_usb_set_state(state);
 
   /* Clear resume interrupt flag */
-  USB0.INTSTS0 = (uint16_t)~k_usb_intsts0_resm;
+  USB0.intsts0 = (uint16_t)~k_usb_intsts0_resm;
 }
 
 /* =============================================================================
@@ -258,8 +258,8 @@ static void internal_handle_resume_interrupt(void)
  */
 void rx_usb_isr_handler(void)
 {
-  uint16_t intsts0 = USB0.INTSTS0;
-  uint16_t intenb0 = USB0.INTENB0;
+  uint16_t intsts0 = USB0.intsts0;
+  uint16_t intenb0 = USB0.intenb0;
 
   /* Only process enabled interrupts */
   uint16_t active = intsts0 & intenb0;
@@ -304,7 +304,7 @@ void rx_usb_isr_handler(void)
 void usb0_usbi_isr(void)
 {
   /* Clear interrupt request flag in ICU */
-  ICU.IR[k_vect_usb0_usbi] = 0;
+  ICU.ir[k_vect_usb0_usbi] = 0;
 
   /* Call main USB handler */
   rx_usb_isr_handler();
@@ -318,7 +318,7 @@ void usb0_usbi_isr(void)
 void usb0_d0fifo_isr(void)
 {
   /* Clear interrupt request flag */
-  ICU.IR[k_vect_usb0_d0fifo] = 0;
+  ICU.ir[k_vect_usb0_d0fifo] = 0;
 
   /* D0FIFO DMA not implemented - clear and ignore */
 }
@@ -331,7 +331,7 @@ void usb0_d0fifo_isr(void)
 void usb0_d1fifo_isr(void)
 {
   /* Clear interrupt request flag */
-  ICU.IR[k_vect_usb0_d1fifo] = 0;
+  ICU.ir[k_vect_usb0_d1fifo] = 0;
 
   /* D1FIFO DMA not implemented - clear and ignore */
 }
@@ -344,7 +344,7 @@ void usb0_d1fifo_isr(void)
 void usb0_usbr_isr(void)
 {
   /* Clear interrupt request flag */
-  ICU.IR[k_vect_usb0_usbr] = 0;
+  ICU.ir[k_vect_usb0_usbr] = 0;
 
   /* Handle resume */
   internal_handle_resume_interrupt();

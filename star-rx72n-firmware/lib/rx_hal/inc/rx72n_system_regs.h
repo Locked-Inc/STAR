@@ -24,38 +24,55 @@ extern "C" {
  * =============================================================================
  */
 
-/* System Control Register (SYSTEM) - Base: 0x00080000 */
+/** @brief System register reserved field sizes */
+typedef enum {
+  k_system_reserved_after_syscr1_bytes  = 2, /**< Reserved bytes after SYSCR1 */
+  k_system_reserved_after_sbycr_bytes   = 2, /**< Reserved bytes after SBYCR */
+  k_system_reserved_after_prcr_bytes    = 2, /**< Reserved bytes after PRCR */
+  k_system_reserved_after_pllcr2_bytes  = 5, /**< Reserved bytes after PLLCR2 */
+  k_system_reserved_after_bckcr_bytes   = 1, /**< Reserved byte after BCKCR */
+  k_system_reserved_after_hococr2_bytes = 4, /**< Reserved bytes after HOCOCR2 */
+  k_system_reserved_after_oscovfsr_bytes = 3, /**< Reserved bytes after OSCOVFSR */
+} system_reserved_sizes_t;
+
+/**
+ * @brief System Control Register Map
+ * @details
+ * System control registers for clock configuration, power management,
+ * and module stop control.
+ * Base address: 0x00080000
+ */
 typedef struct {
-  volatile uint16_t SYSCR0; /* 0x00 - System Control Register 0 */
-  volatile uint16_t SYSCR1; /* 0x02 - System Control Register 1 */
-  uint8_t           RESERVED0[2];
-  volatile uint16_t SBYCR; /* 0x06 - Standby Control Register */
-  uint8_t           RESERVED1[2];
-  volatile uint16_t PRCR; /* 0x0A - Protection Register */
-  uint8_t           RESERVED1A[2];
-  volatile uint32_t MSTPCRA; /* 0x0C - Module Stop Control Register A */
-  volatile uint32_t MSTPCRB; /* 0x10 - Module Stop Control Register B */
-  volatile uint32_t MSTPCRC; /* 0x14 - Module Stop Control Register C */
-  volatile uint32_t MSTPCRD; /* 0x18 - Module Stop Control Register D */
-  volatile uint32_t SCKCR;   /* 0x1C - System Clock Control Register */
-  volatile uint16_t SCKCR2;  /* 0x20 - System Clock Control Register 2 */
-  volatile uint16_t SCKCR3;  /* 0x22 - System Clock Control Register 3 */
-  volatile uint16_t PLLCR;   /* 0x24 - PLL Control Register */
-  volatile uint8_t  PLLCR2;  /* 0x26 - PLL Control Register 2 */
-  uint8_t           RESERVED2[5];
-  volatile uint8_t  BCKCR; /* 0x2C - External Bus Clock Control Register */
-  uint8_t           RESERVED3[1];
-  volatile uint8_t  MOSCCR;  /* 0x2E - Main Clock Oscillator Control */
-  volatile uint8_t  SOSCCR;  /* 0x2F - Sub-Clock Oscillator Control */
-  volatile uint8_t  LOCOCR;  /* 0x30 - Low-Speed On-Chip Oscillator Control */
-  volatile uint8_t  ILOCOCR; /* 0x31 - High-Speed On-Chip Oscillator Control */
-  volatile uint8_t  HOCOCR;  /* 0x32 - High-Speed On-Chip Oscillator Control */
-  volatile uint8_t  HOCOCR2; /* 0x33 - High-Speed On-Chip Oscillator Control 2 */
-  uint8_t           RESERVED4[4];
-  volatile uint8_t  OSCOVFSR; /* 0x38 - Oscillation Stabilization Flag */
-  uint8_t           RESERVED5[3];
-  volatile uint8_t  OSTDCR; /* 0x3C - Oscillation Stop Detection Control */
-  volatile uint8_t  OSTDSR; /* 0x3D - Oscillation Stop Detection Status */
+  volatile uint16_t syscr0;   /**< System Control Register 0 */
+  volatile uint16_t syscr1;   /**< System Control Register 1 */
+  uint8_t           reserved0[k_system_reserved_after_syscr1_bytes]; /**< Reserved */
+  volatile uint16_t sbycr;    /**< Standby Control Register */
+  uint8_t           reserved1[k_system_reserved_after_sbycr_bytes]; /**< Reserved */
+  volatile uint16_t prcr;     /**< Protection Register */
+  uint8_t           reserved1a[k_system_reserved_after_prcr_bytes]; /**< Reserved */
+  volatile uint32_t mstpcra;  /**< Module Stop Control Register A */
+  volatile uint32_t mstpcrb;  /**< Module Stop Control Register B */
+  volatile uint32_t mstpcrc;  /**< Module Stop Control Register C */
+  volatile uint32_t mstpcrd;  /**< Module Stop Control Register D */
+  volatile uint32_t sckcr;    /**< System Clock Control Register */
+  volatile uint16_t sckcr2;   /**< System Clock Control Register 2 */
+  volatile uint16_t sckcr3;   /**< System Clock Control Register 3 */
+  volatile uint16_t pllcr;    /**< PLL Control Register */
+  volatile uint8_t  pllcr2;   /**< PLL Control Register 2 */
+  uint8_t           reserved2[k_system_reserved_after_pllcr2_bytes]; /**< Reserved */
+  volatile uint8_t  bckcr;    /**< External Bus Clock Control Register */
+  uint8_t           reserved3[k_system_reserved_after_bckcr_bytes]; /**< Reserved */
+  volatile uint8_t  mosccr;   /**< Main Clock Oscillator Control */
+  volatile uint8_t  sosccr;   /**< Sub-Clock Oscillator Control */
+  volatile uint8_t  lococr;   /**< Low-Speed On-Chip Oscillator Control */
+  volatile uint8_t  ilococr;  /**< IWDT-Dedicated On-Chip Oscillator Control */
+  volatile uint8_t  hococr;   /**< High-Speed On-Chip Oscillator Control */
+  volatile uint8_t  hococr2;  /**< High-Speed On-Chip Oscillator Control 2 */
+  uint8_t           reserved4[k_system_reserved_after_hococr2_bytes]; /**< Reserved */
+  volatile uint8_t  oscovfsr; /**< Oscillation Stabilization Flag */
+  uint8_t           reserved5[k_system_reserved_after_oscovfsr_bytes]; /**< Reserved */
+  volatile uint8_t  ostdcr;   /**< Oscillation Stop Detection Control */
+  volatile uint8_t  ostdsr;   /**< Oscillation Stop Detection Status */
 } rx_system_regs_t;
 
 #define SYSTEM_BASE ((rx_system_regs_t*)0x00080000)

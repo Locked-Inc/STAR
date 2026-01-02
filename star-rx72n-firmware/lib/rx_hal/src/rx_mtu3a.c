@@ -131,13 +131,13 @@ static volatile uint16_t* internal_get_tgr_register(volatile rx_mtu_channel_regs
 {
   switch (output) {
     case k_mtu_output_a:
-      return &mtu->TGRA;
+      return &mtu->tgra;
     case k_mtu_output_b:
-      return &mtu->TGRB;
+      return &mtu->tgrb;
     case k_mtu_output_c:
-      return &mtu->TGRC;
+      return &mtu->tgrc;
     case k_mtu_output_d:
-      return &mtu->TGRD;
+      return &mtu->tgrd;
     default:
       return NULL;
   }
@@ -173,15 +173,15 @@ rx_err_t rx_mtu_init_pwm(rx_mtu_channel_t channel, const rx_mtu_config_t* config
   rx_log_info(s_tag, "Initializing MTU");
 
   /* Enable MTU module (clear module stop bit) */
-  SYSTEM.PRCR = 0xA50B; /* Enable writes to MSTPCR */
+  SYSTEM.prcr = 0xA50B; /* Enable writes to MSTPCR */
 
   if (channel <= k_mtu_channel_4) {
-    SYSTEM.MSTPCRA &= ~(1 << 9); /* MTU0-MTU4 */
+    SYSTEM.mstpcra &= ~(1 << 9); /* MTU0-MTU4 */
   } else {
-    SYSTEM.MSTPCRA &= ~(1 << 8); /* MTU6-MTU7 */
+    SYSTEM.mstpcra &= ~(1 << 8); /* MTU6-MTU7 */
   }
 
-  SYSTEM.PRCR = 0xA500; /* Lock MSTPCR */
+  SYSTEM.prcr = 0xA500; /* Lock MSTPCR */
 
   /* Stop timer before configuration */
   rx_mtu_stop(channel);
@@ -190,10 +190,10 @@ rx_err_t rx_mtu_init_pwm(rx_mtu_channel_t channel, const rx_mtu_config_t* config
    * - PCLKA/1 (120 MHz)
    * - Clear counter on TGRA compare match
    */
-  mtu->TCR = k_mtu_tcr_tpsc_1 | k_mtu_tcr_cclr_tgra;
+  mtu->tcr = k_mtu_tcr_tpsc_1 | k_mtu_tcr_cclr_tgra;
 
   /* Configure PWM mode 1 (triangle wave, center-aligned) */
-  mtu->TMDR = k_mtu_tmdr_md_pwm1;
+  mtu->tmdr = k_mtu_tmdr_md_pwm1;
 
   /* Configure I/O control registers for PWM outputs
    * TIORH: Controls MTIOCA (output A) and MTIOCB (output B)
@@ -202,21 +202,21 @@ rx_err_t rx_mtu_init_pwm(rx_mtu_channel_t channel, const rx_mtu_config_t* config
    * For PWM mode 1:
    * - Initial low, high on up-count compare, low on down-count compare
    */
-  mtu->TIORH = (k_mtu_tior_init_low << 0) | /* MTIOCA */
+  mtu->tiorh = (k_mtu_tior_init_low << 0) | /* MTIOCA */
                (k_mtu_tior_init_low << 4);  /* MTIOCB */
-  mtu->TIORL = (k_mtu_tior_init_low << 0) | /* MTIOCC */
+  mtu->tiorl = (k_mtu_tior_init_low << 0) | /* MTIOCC */
                (k_mtu_tior_init_low << 4);  /* MTIOCD */
 
   /* Set period (TGRA = top of triangle wave) */
-  mtu->TGRA = period;
+  mtu->tgra = period;
 
   /* Set initial duty cycle to 0% for all outputs */
-  mtu->TGRB = 0; /* MTIOCB duty */
-  mtu->TGRC = 0; /* MTIOCC duty */
-  mtu->TGRD = 0; /* MTIOCD duty */
+  mtu->tgrb = 0; /* MTIOCB duty */
+  mtu->tgrc = 0; /* MTIOCC duty */
+  mtu->tgrd = 0; /* MTIOCD duty */
 
   /* Clear counter */
-  mtu->TCNT = 0;
+  mtu->tcnt = 0;
 
   /* Save period for duty cycle calculations */
   s_mtu_period[channel]      = period;
@@ -334,16 +334,16 @@ rx_err_t rx_mtu_enable_output(rx_mtu_channel_t channel, rx_mtu_output_t output, 
 
   switch (output) {
     case k_mtu_output_a:
-      mtu->TIORH = (mtu->TIORH & 0xF0) | (tior_value << 0);
+      mtu->tiorh = (mtu->tiorh & 0xF0) | (tior_value << 0);
       break;
     case k_mtu_output_b:
-      mtu->TIORH = (mtu->TIORH & 0x0F) | (tior_value << 4);
+      mtu->tiorh = (mtu->tiorh & 0x0F) | (tior_value << 4);
       break;
     case k_mtu_output_c:
-      mtu->TIORL = (mtu->TIORL & 0xF0) | (tior_value << 0);
+      mtu->tiorl = (mtu->tiorl & 0xF0) | (tior_value << 0);
       break;
     case k_mtu_output_d:
-      mtu->TIORL = (mtu->TIORL & 0x0F) | (tior_value << 4);
+      mtu->tiorl = (mtu->tiorl & 0x0F) | (tior_value << 4);
       break;
     default:
       return k_rx_err_invalid_arg;
@@ -361,19 +361,19 @@ rx_err_t rx_mtu_start(rx_mtu_channel_t channel)
   /* Set corresponding bit in TSTR register */
   switch (channel) {
     case k_mtu_channel_0:
-      MTU_TSTR.TSTR |= k_mtu_tstr_cst0;
+      MTU_TSTR.tstr |= k_mtu_tstr_cst0;
       break;
     case k_mtu_channel_1:
-      MTU_TSTR.TSTR |= k_mtu_tstr_cst1;
+      MTU_TSTR.tstr |= k_mtu_tstr_cst1;
       break;
     case k_mtu_channel_2:
-      MTU_TSTR.TSTR |= k_mtu_tstr_cst2;
+      MTU_TSTR.tstr |= k_mtu_tstr_cst2;
       break;
     case k_mtu_channel_3:
-      MTU_TSTR.TSTR |= k_mtu_tstr_cst3;
+      MTU_TSTR.tstr |= k_mtu_tstr_cst3;
       break;
     case k_mtu_channel_4:
-      MTU_TSTR.TSTR |= k_mtu_tstr_cst4;
+      MTU_TSTR.tstr |= k_mtu_tstr_cst4;
       break;
     case k_mtu_channel_6:
     case k_mtu_channel_7:
@@ -396,19 +396,19 @@ rx_err_t rx_mtu_stop(rx_mtu_channel_t channel)
   /* Clear corresponding bit in TSTR register */
   switch (channel) {
     case k_mtu_channel_0:
-      MTU_TSTR.TSTR &= ~k_mtu_tstr_cst0;
+      MTU_TSTR.tstr &= ~k_mtu_tstr_cst0;
       break;
     case k_mtu_channel_1:
-      MTU_TSTR.TSTR &= ~k_mtu_tstr_cst1;
+      MTU_TSTR.tstr &= ~k_mtu_tstr_cst1;
       break;
     case k_mtu_channel_2:
-      MTU_TSTR.TSTR &= ~k_mtu_tstr_cst2;
+      MTU_TSTR.tstr &= ~k_mtu_tstr_cst2;
       break;
     case k_mtu_channel_3:
-      MTU_TSTR.TSTR &= ~k_mtu_tstr_cst3;
+      MTU_TSTR.tstr &= ~k_mtu_tstr_cst3;
       break;
     case k_mtu_channel_4:
-      MTU_TSTR.TSTR &= ~k_mtu_tstr_cst4;
+      MTU_TSTR.tstr &= ~k_mtu_tstr_cst4;
       break;
     case k_mtu_channel_6:
     case k_mtu_channel_7:

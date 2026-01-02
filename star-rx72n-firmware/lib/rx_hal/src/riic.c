@@ -108,7 +108,7 @@ static rx_err_t internal_wait_bus_ready(volatile rx_riic_regs_t* riic)
 {
   uint32_t timeout = k_riic_timeout_us;
 
-  while ((riic->ICCR2 & k_riic_iccr2_bbsy) && timeout > 0) {
+  while ((riic->iccr2 & k_riic_iccr2_bbsy) && timeout > 0) {
     timeout--;
   }
 
@@ -130,11 +130,11 @@ static rx_err_t internal_wait_bus_ready(volatile rx_riic_regs_t* riic)
 static rx_err_t internal_send_start(volatile rx_riic_regs_t* riic)
 {
   /* Issue start condition */
-  riic->ICCR2 |= k_riic_iccr2_st;
+  riic->iccr2 |= k_riic_iccr2_st;
 
   /* Wait for start condition to be issued */
   uint32_t timeout = k_riic_timeout_us;
-  while (!(riic->ICSR2 & k_riic_icsr2_start) && timeout > 0) {
+  while (!(riic->icsr2 & k_riic_icsr2_start) && timeout > 0) {
     timeout--;
   }
 
@@ -144,7 +144,7 @@ static rx_err_t internal_send_start(volatile rx_riic_regs_t* riic)
   }
 
   /* Clear start flag */
-  riic->ICSR2 &= ~k_riic_icsr2_start;
+  riic->icsr2 &= ~k_riic_icsr2_start;
 
   return k_rx_ok;
 }
@@ -159,11 +159,11 @@ static rx_err_t internal_send_start(volatile rx_riic_regs_t* riic)
 static rx_err_t internal_send_stop(volatile rx_riic_regs_t* riic)
 {
   /* Issue stop condition */
-  riic->ICCR2 |= k_riic_iccr2_sp;
+  riic->iccr2 |= k_riic_iccr2_sp;
 
   /* Wait for stop condition to be issued */
   uint32_t timeout = k_riic_timeout_us;
-  while (!(riic->ICSR2 & k_riic_icsr2_stop) && timeout > 0) {
+  while (!(riic->icsr2 & k_riic_icsr2_stop) && timeout > 0) {
     timeout--;
   }
 
@@ -173,7 +173,7 @@ static rx_err_t internal_send_stop(volatile rx_riic_regs_t* riic)
   }
 
   /* Clear stop flag */
-  riic->ICSR2 &= ~k_riic_icsr2_stop;
+  riic->icsr2 &= ~k_riic_icsr2_stop;
 
   return k_rx_ok;
 }
@@ -190,7 +190,7 @@ static rx_err_t internal_write_byte(volatile rx_riic_regs_t* riic, uint8_t data)
 {
   /* Wait for transmit data empty */
   uint32_t timeout = k_riic_timeout_us;
-  while (!(riic->ICSR2 & k_riic_icsr2_tdre) && timeout > 0) {
+  while (!(riic->icsr2 & k_riic_icsr2_tdre) && timeout > 0) {
     timeout--;
   }
 
@@ -200,17 +200,17 @@ static rx_err_t internal_write_byte(volatile rx_riic_regs_t* riic, uint8_t data)
   }
 
   /* Write data */
-  riic->ICDRT = data;
+  riic->icdrt = data;
 
   /* Wait for ACK/NACK */
   timeout = k_riic_timeout_us;
-  while ((riic->ICSR2 & k_riic_icsr2_tdre) && timeout > 0) {
+  while ((riic->icsr2 & k_riic_icsr2_tdre) && timeout > 0) {
     timeout--;
   }
 
   /* Check for NACK */
-  if (riic->ICSR2 & k_riic_icsr2_nackf) {
-    riic->ICSR2 &= ~k_riic_icsr2_nackf;
+  if (riic->icsr2 & k_riic_icsr2_nackf) {
+    riic->icsr2 &= ~k_riic_icsr2_nackf;
     rx_log_error(s_tag, "NACK received");
     return k_rx_err_nack;
   }
@@ -231,7 +231,7 @@ static rx_err_t internal_read_byte(volatile rx_riic_regs_t* riic, uint8_t* data,
 {
   /* Wait for receive data full */
   uint32_t timeout = k_riic_timeout_us;
-  while (!(riic->ICSR2 & k_riic_icsr2_rdrf) && timeout > 0) {
+  while (!(riic->icsr2 & k_riic_icsr2_rdrf) && timeout > 0) {
     timeout--;
   }
 
@@ -242,13 +242,13 @@ static rx_err_t internal_read_byte(volatile rx_riic_regs_t* riic, uint8_t* data,
 
   /* Configure ACK/NACK for next byte */
   if (!send_ack) {
-    riic->ICMR3 |= (1 << 3); /* ACKBT = 1 (NACK) */
+    riic->icmr3 |= (1 << 3); /* ACKBT = 1 (NACK) */
   } else {
-    riic->ICMR3 &= ~(1 << 3); /* ACKBT = 0 (ACK) */
+    riic->icmr3 &= ~(1 << 3); /* ACKBT = 0 (ACK) */
   }
 
   /* Read data */
-  *data = riic->ICDRR;
+  *data = riic->icdrr;
 
   return k_rx_ok;
 }
@@ -279,21 +279,21 @@ rx_err_t riic_init(uint8_t channel, uint32_t frequency_hz)
   }
 
   /* Enable RIIC module (clear module stop bit) */
-  SYSTEM.PRCR = 0xA50B; /* Enable writes to MSTPCR */
+  SYSTEM.prcr = 0xA50B; /* Enable writes to MSTPCR */
 
   if (channel == 0) {
-    SYSTEM.MSTPCRB &= ~(1 << 21); /* RIIC0 */
+    SYSTEM.mstpcrb &= ~(1 << 21); /* RIIC0 */
   } else if (channel == 1) {
-    SYSTEM.MSTPCRB &= ~(1 << 20); /* RIIC1 */
+    SYSTEM.mstpcrb &= ~(1 << 20); /* RIIC1 */
   } else {
-    SYSTEM.MSTPCRB &= ~(1 << 19); /* RIIC2 */
+    SYSTEM.mstpcrb &= ~(1 << 19); /* RIIC2 */
   }
 
-  SYSTEM.PRCR = 0xA500; /* Lock MSTPCR */
+  SYSTEM.prcr = 0xA500; /* Lock MSTPCR */
 
   /* Reset RIIC */
-  riic->ICCR1 = k_riic_iccr1_iicrst;
-  riic->ICCR1 = 0;
+  riic->iccr1 = k_riic_iccr1_iicrst;
+  riic->iccr1 = 0;
 
   /* Calculate bit rate */
   uint8_t  icbrl, icbrh;
@@ -301,16 +301,16 @@ rx_err_t riic_init(uint8_t channel, uint32_t frequency_hz)
   RX_RETURN_ON_ERROR(err, s_tag, "Bit rate calculation failed");
 
   /* Configure bit rate */
-  riic->ICBRL = icbrl;
-  riic->ICBRH = icbrh;
+  riic->icbrl = icbrl;
+  riic->icbrh = icbrh;
 
   /* Configure RIIC for controller mode */
-  riic->ICMR1 = 0x08; /* Controller mode, 7-bit addressing */
-  riic->ICMR2 = 0x00; /* No timeout, no clock sync */
-  riic->ICMR3 = 0x00; /* ACKBT = 0 (ACK) */
+  riic->icmr1 = 0x08; /* Controller mode, 7-bit addressing */
+  riic->icmr2 = 0x00; /* No timeout, no clock sync */
+  riic->icmr3 = 0x00; /* ACKBT = 0 (ACK) */
 
   /* Enable I2C bus interface */
-  riic->ICCR1 = k_riic_iccr1_ice;
+  riic->iccr1 = k_riic_iccr1_ice;
 
   /* Mark channel as initialized */
   s_riic_channel_initialized[channel] = true;
@@ -338,7 +338,7 @@ rx_err_t riic_write(uint8_t channel, uint8_t device_addr, const uint8_t* data, u
   RX_RETURN_ON_ERROR(err, s_tag, "Bus not ready");
 
   /* Set controller transmit mode */
-  riic->ICCR2 = k_riic_iccr2_mst | k_riic_iccr2_trx;
+  riic->iccr2 = k_riic_iccr2_mst | k_riic_iccr2_trx;
 
   /* Send start condition */
   err = internal_send_start(riic);
@@ -385,7 +385,7 @@ rx_err_t riic_read(uint8_t channel, uint8_t device_addr, uint8_t* data, uint16_t
   RX_RETURN_ON_ERROR(err, s_tag, "Bus not ready");
 
   /* Set controller receive mode */
-  riic->ICCR2 = k_riic_iccr2_mst;
+  riic->iccr2 = k_riic_iccr2_mst;
 
   /* Send start condition */
   err = internal_send_start(riic);
@@ -441,7 +441,7 @@ rx_err_t riic_write_read(uint8_t        channel,
   /* === Write Phase === */
 
   /* Set controller transmit mode */
-  riic->ICCR2 = k_riic_iccr2_mst | k_riic_iccr2_trx;
+  riic->iccr2 = k_riic_iccr2_mst | k_riic_iccr2_trx;
 
   /* Send start condition */
   err = internal_send_start(riic);
@@ -466,10 +466,10 @@ rx_err_t riic_write_read(uint8_t        channel,
   /* === Read Phase === */
 
   /* Send repeated start condition */
-  riic->ICCR2 |= k_riic_iccr2_rs;
+  riic->iccr2 |= k_riic_iccr2_rs;
 
   uint32_t timeout = k_riic_timeout_us;
-  while (!(riic->ICSR2 & k_riic_icsr2_start) && timeout > 0) {
+  while (!(riic->icsr2 & k_riic_icsr2_start) && timeout > 0) {
     timeout--;
   }
 
@@ -479,10 +479,10 @@ rx_err_t riic_write_read(uint8_t        channel,
     return k_rx_err_timeout;
   }
 
-  riic->ICSR2 &= ~k_riic_icsr2_start;
+  riic->icsr2 &= ~k_riic_icsr2_start;
 
   /* Set controller receive mode */
-  riic->ICCR2 = k_riic_iccr2_mst;
+  riic->iccr2 = k_riic_iccr2_mst;
 
   /* Send device address (read) */
   err = internal_write_byte(riic, (device_addr << 1) | 1);

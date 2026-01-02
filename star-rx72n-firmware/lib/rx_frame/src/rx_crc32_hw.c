@@ -68,10 +68,10 @@ rx_err_t rx_crc_init(void)
   }
 
   /* Enable CRC module by clearing module stop bit */
-  SYSTEM.PRCR =
+  SYSTEM.prcr =
     (k_prcr_key << k_prcr_key_shift) | k_prcr_unlock_crc; /* Unlock protection for MSTPCR */
-  SYSTEM.MSTPCRB &= ~(1UL << k_mstpb_crc);                /* Clear bit 23 to enable CRC */
-  SYSTEM.PRCR = (k_prcr_key << k_prcr_key_shift) | k_prcr_lock_all; /* Lock protection */
+  SYSTEM.mstpcrb &= ~(1UL << k_mstpb_crc);                /* Clear bit 23 to enable CRC */
+  SYSTEM.prcr = (k_prcr_key << k_prcr_key_shift) | k_prcr_lock_all; /* Lock protection */
 
   /*
      * Configure CRC peripheral for IEEE 802.3:
@@ -81,7 +81,7 @@ rx_err_t rx_crc_init(void)
      * The RX72N CRC calculator in this configuration produces output
      * bit-exact with Go's crc32.ChecksumIEEE() when properly initialized.
      */
-  CRC.CRCCR = k_crc_crccr_lms | k_crc_crccr_gps_crc32;
+  CRC.crccr = k_crc_crccr_lms | k_crc_crccr_gps_crc32;
 
   s_crc_initialized = true;
   return k_rx_ok;
@@ -125,7 +125,7 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
      * For IEEE 802.3, the initial value is 0xFFFFFFFF. The RX72N hardware
      * handles this automatically when DORCLR is set.
      */
-  CRC.CRCCR |= k_crc_crccr_dorclr;
+  CRC.crccr |= k_crc_crccr_dorclr;
 
   /*
      * Feed data bytes to the CRC calculator.
@@ -136,7 +136,7 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
      * Note: For large aligned buffers, 32-bit word writes could be faster,
      * but byte-wise ensures correctness for all cases.
      */
-  volatile uint8_t* crcdir_byte = (volatile uint8_t*)&CRC.CRCDIR;
+  volatile uint8_t* crcdir_byte = (volatile uint8_t*)&CRC.crcdir;
   for (uint32_t i = 0; i < len; i++) {
     *crcdir_byte = data[i];
   }
@@ -147,7 +147,7 @@ uint32_t rx_crc32_ieee_impl(const uint8_t* data, uint32_t len)
      * IEEE 802.3 requires XOR with 0xFFFFFFFF after calculation.
      * The hardware outputs the raw CRC value, so we apply the final XOR.
      */
-  return CRC.CRCDOR ^ k_crc_ieee_final_xor;
+  return CRC.crcdor ^ k_crc_ieee_final_xor;
 }
 
 uint32_t rx_crc32_update_impl(uint32_t crc, const uint8_t* data, uint32_t len)

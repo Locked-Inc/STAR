@@ -201,9 +201,9 @@ rx_err_t rx_cmt_init(rx_cmt_channel_t channel, const rx_cmt_config_t* config)
   rx_log_info(s_tag, "CMT initialized");
 
   /* Enable CMT module (clear module stop bit) */
-  SYSTEM.PRCR = 0xA50B;         /* Enable writes to MSTPCR */
-  SYSTEM.MSTPCRB &= ~(1 << 15); /* CMT0-CMT3 */
-  SYSTEM.PRCR = 0xA500;         /* Lock MSTPCR */
+  SYSTEM.prcr = 0xA50B;         /* Enable writes to MSTPCR */
+  SYSTEM.mstpcrb &= ~(1 << 15); /* CMT0-CMT3 */
+  SYSTEM.prcr = 0xA500;         /* Lock MSTPCR */
 
   /* Stop timer before configuration */
   rx_cmt_stop(channel);
@@ -212,28 +212,28 @@ rx_err_t rx_cmt_init(rx_cmt_channel_t channel, const rx_cmt_config_t* config)
    * - Set clock divider
    * - Enable compare match interrupt
    */
-  cmt->CMCR = (divider << 0) | /* CKS: Clock Select */
+  cmt->cmcr = (divider << 0) | /* CKS: Clock Select */
               (1 << 6);        /* CMIE: Compare Match Interrupt Enable */
 
   /* Set compare match value (period - 1) */
-  cmt->CMCOR = cmcor - 1;
+  cmt->cmcor = cmcor - 1;
 
   /* Clear counter */
-  cmt->CMCNT = 0;
+  cmt->cmcnt = 0;
 
   /* Configure interrupt */
   uint8_t vector = k_vect_cmt0_cmi0 + channel;
 
   /* Set interrupt priority */
-  ICU.IPR[vector] = config->priority;
+  ICU.ipr[vector] = config->priority;
 
   /* Enable interrupt in ICU */
   uint8_t ier_index = vector / 8;
   uint8_t ier_bit   = vector % 8;
-  ICU.IER[ier_index] |= (1 << ier_bit);
+  ICU.ier[ier_index] |= (1 << ier_bit);
 
   /* Clear interrupt flag */
-  ICU.IR[vector] = 0;
+  ICU.ir[vector] = 0;
 
   /* Save callback */
   s_cmt_callback[channel]    = config->callback;
@@ -257,16 +257,16 @@ rx_err_t rx_cmt_start(rx_cmt_channel_t channel)
   /* Set corresponding bit in CMSTR register */
   switch (channel) {
     case k_cmt_channel_0:
-      CMT_CTRL.CMSTR0 |= (1 << 0);
+      CMT_CTRL.cmstr0 |= (1 << 0);
       break;
     case k_cmt_channel_1:
-      CMT_CTRL.CMSTR0 |= (1 << 1);
+      CMT_CTRL.cmstr0 |= (1 << 1);
       break;
     case k_cmt_channel_2:
-      CMT_CTRL.CMSTR1 |= (1 << 0);
+      CMT_CTRL.cmstr1 |= (1 << 0);
       break;
     case k_cmt_channel_3:
-      CMT_CTRL.CMSTR1 |= (1 << 1);
+      CMT_CTRL.cmstr1 |= (1 << 1);
       break;
     default:
       return k_rx_err_invalid_arg;
@@ -284,16 +284,16 @@ rx_err_t rx_cmt_stop(rx_cmt_channel_t channel)
   /* Clear corresponding bit in CMSTR register */
   switch (channel) {
     case k_cmt_channel_0:
-      CMT_CTRL.CMSTR0 &= ~(1 << 0);
+      CMT_CTRL.cmstr0 &= ~(1 << 0);
       break;
     case k_cmt_channel_1:
-      CMT_CTRL.CMSTR0 &= ~(1 << 1);
+      CMT_CTRL.cmstr0 &= ~(1 << 1);
       break;
     case k_cmt_channel_2:
-      CMT_CTRL.CMSTR1 &= ~(1 << 0);
+      CMT_CTRL.cmstr1 &= ~(1 << 0);
       break;
     case k_cmt_channel_3:
-      CMT_CTRL.CMSTR1 &= ~(1 << 1);
+      CMT_CTRL.cmstr1 &= ~(1 << 1);
       break;
     default:
       return k_rx_err_invalid_arg;
@@ -315,7 +315,7 @@ rx_err_t rx_cmt_get_count(rx_cmt_channel_t channel, uint16_t* count)
     return k_rx_err_invalid_arg;
   }
 
-  *count = cmt->CMCNT;
+  *count = cmt->cmcnt;
   return k_rx_ok;
 }
 
@@ -332,7 +332,7 @@ rx_err_t rx_cmt_deinit(rx_cmt_channel_t channel)
   uint8_t vector    = k_vect_cmt0_cmi0 + channel;
   uint8_t ier_index = vector / 8;
   uint8_t ier_bit   = vector % 8;
-  ICU.IER[ier_index] &= ~(1 << ier_bit);
+  ICU.ier[ier_index] &= ~(1 << ier_bit);
 
   /* Clear callback */
   s_cmt_callback[channel]    = NULL;

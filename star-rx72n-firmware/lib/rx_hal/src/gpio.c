@@ -135,10 +135,10 @@ rx_err_t gpio_set_output(uint8_t port, uint8_t pin)
   volatile rx_port_regs_t* port_base = internal_get_port_base(port);
 
   /* Set as GPIO mode (not peripheral) */
-  port_base->PMR &= ~(1 << pin);
+  port_base->pmr &= ~(1 << pin);
 
   /* Set as output */
-  port_base->PDR |= (1 << pin);
+  port_base->pdr |= (1 << pin);
 
   rx_log_debug("GPIO", "Pin configured as output");
 
@@ -165,10 +165,10 @@ rx_err_t gpio_set_input(uint8_t port, uint8_t pin)
   volatile rx_port_regs_t* port_base = internal_get_port_base(port);
 
   /* Set as GPIO mode */
-  port_base->PMR &= ~(1 << pin);
+  port_base->pmr &= ~(1 << pin);
 
   /* Set as input */
-  port_base->PDR &= ~(1 << pin);
+  port_base->pdr &= ~(1 << pin);
 
   rx_log_debug("GPIO", "Pin configured as input");
 
@@ -184,7 +184,7 @@ rx_err_t gpio_write_high(uint8_t port, uint8_t pin)
   /* Get port base address */
   volatile rx_port_regs_t* port_base = internal_get_port_base(port);
 
-  port_base->PODR |= (1 << pin);
+  port_base->podr |= (1 << pin);
 
   return k_rx_ok;
 }
@@ -198,7 +198,7 @@ rx_err_t gpio_write_low(uint8_t port, uint8_t pin)
   /* Get port base address */
   volatile rx_port_regs_t* port_base = internal_get_port_base(port);
 
-  port_base->PODR &= ~(1 << pin);
+  port_base->podr &= ~(1 << pin);
 
   return k_rx_ok;
 }
@@ -212,7 +212,7 @@ rx_err_t gpio_toggle(uint8_t port, uint8_t pin)
   /* Get port base address */
   volatile rx_port_regs_t* port_base = internal_get_port_base(port);
 
-  port_base->PODR ^= (1 << pin);
+  port_base->podr ^= (1 << pin);
 
   return k_rx_ok;
 }
@@ -229,7 +229,7 @@ rx_err_t gpio_read(uint8_t port, uint8_t pin, bool* value)
   /* Get port base address */
   volatile rx_port_regs_t* port_base = internal_get_port_base(port);
 
-  *value = (port_base->PIDR & (1 << pin)) != 0;
+  *value = (port_base->pidr & (1 << pin)) != 0;
 
   return k_rx_ok;
 }

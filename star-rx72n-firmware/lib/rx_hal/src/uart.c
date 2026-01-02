@@ -59,13 +59,13 @@ typedef enum {
 rx_err_t uart_init(void)
 {
   /* Disable SCI5 transmit/receive */
-  SCI5.SCR = k_sci_scr_disabled;
+  SCI5.scr = k_sci_scr_disabled;
 
   /* Configure serial mode: Async, 8-bit, no parity, 1 stop, PCLK/1 */
-  SCI5.SMR = k_sci_smr_async_8n1;
+  SCI5.smr = k_sci_smr_async_8n1;
 
   /* Set baud rate */
-  SCI5.BRR = k_uart_brr_value;
+  SCI5.brr = k_uart_brr_value;
 
   /* Wait for at least 1 bit time (at least 8.68us at 115200 bps) */
   /* NOTE: Busy-wait required - may run before ThreadX initialization */
@@ -74,10 +74,10 @@ rx_err_t uart_init(void)
   }
 
   /* Configure serial control: Enable transmit */
-  SCI5.SCR = k_sci_scr_tx_enabled;
+  SCI5.scr = k_sci_scr_tx_enabled;
 
   /* Configure serial extended mode */
-  SCI5.SEMR = k_sci_semr_default;
+  SCI5.semr = k_sci_semr_default;
 
   /* Note: GPIO pins for SCI5 TX/RX need to be configured in PMR/MPC
      * This would require MPC (Multi-Function Pin Controller) registers
@@ -102,16 +102,16 @@ rx_err_t uart_init(void)
 void uart_putc(char data)
 {
   /* Wait for transmit buffer to be empty (TDRE flag) */
-  while ((SCI5.SSR & k_sci_ssr_tdre_flag) == 0) {
+  while ((SCI5.ssr & k_sci_ssr_tdre_flag) == 0) {
     /* Wait */
   }
 
   /* Write data to transmit register */
-  SCI5.TDR = (uint8_t)data;
+  SCI5.tdr = (uint8_t)data;
 
   /* Clear TDRE flag by reading SSR then writing 0 */
-  (void)SCI5.SSR;
-  SCI5.SSR &= ~0x80;
+  (void)SCI5.ssr;
+  SCI5.ssr &= ~0x80;
 }
 
 /**
