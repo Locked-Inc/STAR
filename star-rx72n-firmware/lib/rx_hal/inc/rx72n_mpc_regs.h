@@ -31,13 +31,33 @@ typedef enum {
 } mpc_reserved_sizes_t;
 
 /**
- * @brief Pin Function Select Register (bitfield)
+ * @brief Pin Function Select Register (C bitfield)
  * @details
  * Each pin has a PFS register controlling peripheral function selection.
+ *
+ * This struct uses C bitfields (the `: N` syntax) to pack multiple fields
+ * into a single byte, matching the hardware register layout exactly:
+ *
+ * Bit layout in hardware register (1 byte):
+ * ```
+ * 7       6       5   4   3   2   1   0
+ * +-----------------------------------------+
+ * | ASEL | ISEL | Reserved | PSEL[4:0]    |
+ * +-----------------------------------------+
+ * ```
+ *
+ * The syntax `volatile uint8_t name : bits` defines a bitfield where:
+ * - `name` is the field name (or omitted for padding/reserved bits)
+ * - `bits` is the number of bits the field occupies
+ *
+ * Example: `psel : 5` means psel occupies 5 bits (bits 0-4)
+ *
+ * This is standard C (not C++) and commonly used in embedded systems
+ * for hardware register definitions where bits are packed together.
  */
 typedef struct {
   volatile uint8_t psel : 5; /**< Peripheral Select (bits 0-4) */
-  volatile uint8_t : 1;      /**< Reserved */
+  volatile uint8_t : 1;      /**< Reserved bit (bit 5) - unnamed bitfield for padding */
   volatile uint8_t isel : 1; /**< Interrupt Input Select (bit 6) */
   volatile uint8_t asel : 1; /**< Analog Input Select (bit 7) */
 } rx_pfs_regs_t;
