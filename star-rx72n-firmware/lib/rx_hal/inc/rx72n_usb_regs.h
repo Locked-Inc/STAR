@@ -67,7 +67,7 @@ typedef struct {
   volatile uint16_t pllsta;   /**< PLL Status */
   volatile uint16_t dvstctr0; /**< Device State Control Register 0 */
   uint8_t           reserved0[k_usb_reserved_after_dvstctr0_bytes]; /**< Reserved */
-  volatile uint16_t testmode; /**< USB Test Mode */
+  volatile uint16_t testmode;                                       /**< USB Test Mode */
   uint8_t           reserved1[k_usb_reserved_after_testmode_bytes]; /**< Reserved */
   volatile uint16_t d0fbcfg;  /**< D0FIFO Port Configuration */
   volatile uint16_t d1fbcfg;  /**< D1FIFO Port Configuration */
@@ -77,29 +77,29 @@ typedef struct {
   volatile uint16_t cfifosel; /**< CFIFO Port Select */
   volatile uint16_t cfifoctr; /**< CFIFO Port Control */
   uint8_t           reserved2[k_usb_reserved_after_cfifoctr_bytes]; /**< Reserved */
-  volatile uint16_t d0fifosel; /**< D0FIFO Port Select */
-  volatile uint16_t d0fifoctr; /**< D0FIFO Port Control */
-  volatile uint16_t d1fifosel; /**< D1FIFO Port Select */
-  volatile uint16_t d1fifoctr; /**< D1FIFO Port Control */
-  volatile uint16_t intenb0;   /**< Interrupt Enable Register 0 */
-  volatile uint16_t intenb1;   /**< Interrupt Enable Register 1 */
+  volatile uint16_t d0fifosel;                                      /**< D0FIFO Port Select */
+  volatile uint16_t d0fifoctr;                                      /**< D0FIFO Port Control */
+  volatile uint16_t d1fifosel;                                      /**< D1FIFO Port Select */
+  volatile uint16_t d1fifoctr;                                      /**< D1FIFO Port Control */
+  volatile uint16_t intenb0; /**< Interrupt Enable Register 0 */
+  volatile uint16_t intenb1; /**< Interrupt Enable Register 1 */
   uint8_t           reserved3[k_usb_reserved_after_intenb1_bytes]; /**< Reserved */
-  volatile uint16_t brdyenb; /**< BRDY Interrupt Enable */
-  volatile uint16_t nrdyenb; /**< NRDY Interrupt Enable */
-  volatile uint16_t bempenb; /**< BEMP Interrupt Enable */
-  volatile uint16_t sofcfg;  /**< SOF Output Configuration */
-  volatile uint16_t physet;  /**< PHY Setting Register */
+  volatile uint16_t brdyenb;                                       /**< BRDY Interrupt Enable */
+  volatile uint16_t nrdyenb;                                       /**< NRDY Interrupt Enable */
+  volatile uint16_t bempenb;                                       /**< BEMP Interrupt Enable */
+  volatile uint16_t sofcfg;                                        /**< SOF Output Configuration */
+  volatile uint16_t physet;                                        /**< PHY Setting Register */
   volatile uint16_t intsts0; /**< Interrupt Status Register 0 */
   volatile uint16_t intsts1; /**< Interrupt Status Register 1 */
   uint8_t           reserved4[k_usb_reserved_after_intsts1_bytes]; /**< Reserved */
-  volatile uint16_t brdysts; /**< BRDY Interrupt Status */
-  volatile uint16_t nrdysts; /**< NRDY Interrupt Status */
-  volatile uint16_t bempsts; /**< BEMP Interrupt Status */
-  volatile uint16_t frmnum;  /**< Frame Number Register */
-  volatile uint16_t ufrmnum; /**< uFrame Number Register */
-  volatile uint16_t usbaddr; /**< USB Address Register */
+  volatile uint16_t brdysts;                                       /**< BRDY Interrupt Status */
+  volatile uint16_t nrdysts;                                       /**< NRDY Interrupt Status */
+  volatile uint16_t bempsts;                                       /**< BEMP Interrupt Status */
+  volatile uint16_t frmnum;                                        /**< Frame Number Register */
+  volatile uint16_t ufrmnum;                                       /**< uFrame Number Register */
+  volatile uint16_t usbaddr;                                       /**< USB Address Register */
   uint8_t           reserved5[k_usb_reserved_after_usbaddr_bytes]; /**< Reserved */
-  volatile uint16_t usbreq;  /**< USB Request Type Register */
+  volatile uint16_t usbreq;                                        /**< USB Request Type Register */
   volatile uint16_t usbval;  /**< USB Request Value Register */
   volatile uint16_t usbindx; /**< USB Request Index Register */
   volatile uint16_t usbleng; /**< USB Request Length Register */
