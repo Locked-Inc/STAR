@@ -75,6 +75,16 @@ set(RX_USB_COMM_SRC
     ${CMAKE_SOURCE_DIR}/../lib/rx_usb_comm/src/rx_usb_comm.c
 )
 
+# rx_hcsr04 source
+set(RX_HCSR04_SRC
+    ${CMAKE_SOURCE_DIR}/../lib/rx_hcsr04/src/rx_hcsr04.c
+)
+
+# HC-SR04 mock source
+set(MOCK_HCSR04_SRC
+    ${CMAKE_SOURCE_DIR}/mocks/mock_hcsr04_hw.c
+)
+
 # Include directories for library headers
 include_directories(
     ${CMAKE_SOURCE_DIR}/../lib/rx_frame/inc
@@ -84,6 +94,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/../lib/rx_core/inc
     ${CMAKE_SOURCE_DIR}/../lib/rx_usb/inc
     ${CMAKE_SOURCE_DIR}/../lib/rx_usb_comm/inc
+    ${CMAKE_SOURCE_DIR}/../lib/rx_hcsr04/inc
     ${CMAKE_SOURCE_DIR}/mocks
     ${unity_SOURCE_DIR}/src
 )
@@ -149,6 +160,15 @@ add_executable(test_rx_time
 )
 target_link_libraries(test_rx_time unity)
 
+# Test: HC-SR04 Ultrasonic Sensor
+add_executable(test_rx_hcsr04
+    test_rx_hcsr04.c
+    ${RX_HCSR04_SRC}
+    ${MOCK_HCSR04_SRC}
+)
+target_compile_definitions(test_rx_hcsr04 PRIVATE RX_HCSR04_USE_MOCK)
+target_link_libraries(test_rx_hcsr04 unity)
+
 # =============================================================================
 # CTest Integration
 # =============================================================================
@@ -162,6 +182,7 @@ add_test(NAME test_rx_harq COMMAND test_rx_harq)
 add_test(NAME test_rx_usb COMMAND test_rx_usb)
 add_test(NAME test_rx_usb_comm COMMAND test_rx_usb_comm)
 add_test(NAME test_rx_time COMMAND test_rx_time)
+add_test(NAME test_rx_hcsr04 COMMAND test_rx_hcsr04)
 
 # =============================================================================
 # Convenience Targets
@@ -169,7 +190,7 @@ add_test(NAME test_rx_time COMMAND test_rx_time)
 
 add_custom_target(run_all_tests
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS test_rx_crc32 test_rx_frame test_rx_fec test_rx_harq test_rx_usb test_rx_usb_comm test_rx_time
+    DEPENDS test_rx_crc32 test_rx_frame test_rx_fec test_rx_harq test_rx_usb test_rx_usb_comm test_rx_time test_rx_hcsr04
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running all unit tests..."
 )
