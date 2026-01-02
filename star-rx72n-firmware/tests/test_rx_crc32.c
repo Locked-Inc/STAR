@@ -192,10 +192,10 @@ void test_crc32_init_deinit(void) {
     rx_err_t err;
 
     err = rx_crc_init();
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
 
     err = rx_crc_deinit();
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 
 /**
@@ -206,11 +206,11 @@ void test_crc32_double_init_safe(void) {
 
     /* First init */
     err = rx_crc_init();
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
 
     /* Second init should also succeed (idempotent) */
     err = rx_crc_init();
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
 
     /* Cleanup */
     rx_crc_deinit();

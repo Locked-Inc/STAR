@@ -33,13 +33,13 @@ void tearDown(void) {
 
 void test_combiner_init_null(void) {
     rx_err_t err = rx_chase_combiner_init(NULL, 3);
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG, err);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 void test_combiner_init_success(void) {
     rx_chase_combiner_t comb;
     rx_err_t err = rx_chase_combiner_init(&comb, 5);
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_NOT_EQUAL(0, comb.initialized);
     TEST_ASSERT_EQUAL(5, comb.max_combines);
     TEST_ASSERT_EQUAL(0, comb.count);
@@ -48,13 +48,13 @@ void test_combiner_init_success(void) {
 void test_combiner_init_default_max(void) {
     rx_chase_combiner_t comb;
     rx_err_t err = rx_chase_combiner_init(&comb, 0); /* 0 = default */
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL(k_harq_default_combines, comb.max_combines);
 }
 
 void test_combiner_deinit_null(void) {
     rx_err_t err = rx_chase_combiner_deinit(NULL);
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG, err);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 /* =============================================================================
@@ -65,39 +65,39 @@ void test_combiner_deinit_null(void) {
 void test_combiner_add_null_combiner(void) {
     rx_soft_bit_t soft[10] = {0};
     rx_err_t err = rx_chase_combiner_add(NULL, soft, 10);
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG, err);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 void test_combiner_add_null_soft(void) {
     rx_err_t err = rx_chase_combiner_add(&s_combiner, NULL, 10);
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG, err);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 void test_combiner_add_uninitialized(void) {
     rx_chase_combiner_t comb = {0};
     rx_soft_bit_t soft[10]   = {0};
     rx_err_t err             = rx_chase_combiner_add(&comb, soft, 10);
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_STATE, err);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
 void test_combiner_add_zero_length(void) {
     rx_soft_bit_t soft[10] = {0};
     rx_err_t err = rx_chase_combiner_add(&s_combiner, soft, 0);
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG, err);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 void test_combiner_add_too_large(void) {
     rx_soft_bit_t soft[10] = {0};
     rx_err_t err =
-        rx_chase_combiner_add(&s_combiner, soft, RX_HARQ_SOFT_BUFFER_SIZE + 1);
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_SIZE, err);
+        rx_chase_combiner_add(&s_combiner, soft, k_harq_soft_buffer_size + 1);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
 void test_combiner_add_single(void) {
     rx_soft_bit_t soft[] = {10, 20, -30, 40};
 
     rx_err_t err = rx_chase_combiner_add(&s_combiner, soft, 4);
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL(1, s_combiner.count);
     TEST_ASSERT_EQUAL(4, s_combiner.expected_len);
 }
@@ -108,7 +108,7 @@ void test_combiner_add_length_mismatch(void) {
 
     rx_chase_combiner_add(&s_combiner, soft1, 4);
     rx_err_t err = rx_chase_combiner_add(&s_combiner, soft2, 2);
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_SIZE, err);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
 void test_combiner_add_max_reached(void) {
@@ -117,9 +117,9 @@ void test_combiner_add_max_reached(void) {
 
     rx_soft_bit_t soft[] = {10, 20};
 
-    TEST_ASSERT_EQUAL(RX_OK, rx_chase_combiner_add(&comb, soft, 2));
-    TEST_ASSERT_EQUAL(RX_OK, rx_chase_combiner_add(&comb, soft, 2));
-    TEST_ASSERT_EQUAL(RX_ERR_BUSY, rx_chase_combiner_add(&comb, soft, 2));
+    TEST_ASSERT_EQUAL(k_rx_ok, rx_chase_combiner_add(&comb, soft, 2));
+    TEST_ASSERT_EQUAL(k_rx_ok, rx_chase_combiner_add(&comb, soft, 2));
+    TEST_ASSERT_EQUAL(k_rx_err_busy, rx_chase_combiner_add(&comb, soft, 2));
 }
 
 /* =============================================================================
@@ -152,7 +152,7 @@ void test_combiner_combined_output(void) {
     uint32_t len;
 
     rx_err_t err = rx_chase_combiner_combined(&s_combiner, output, &len);
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL(2, len);
 
     /* 100+50=150, clamped to 127 */
@@ -166,7 +166,7 @@ void test_combiner_combined_no_add(void) {
     uint32_t len;
 
     rx_err_t err = rx_chase_combiner_combined(&s_combiner, output, &len);
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_STATE, err);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
 /* =============================================================================
@@ -228,12 +228,12 @@ void test_combiner_reset(void) {
 
 void test_harq_init_null(void) {
     rx_err_t err = rx_harq_init(NULL, NULL);
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG, err);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 void test_harq_init_default_config(void) {
     rx_err_t err = rx_harq_init(&s_harq, NULL);
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_NOT_EQUAL(0, s_harq.initialized);
     TEST_ASSERT_EQUAL(k_harq_default_retries, s_harq.max_retries);
     TEST_ASSERT_NOT_EQUAL(0, s_harq.fec_enabled); /* FEC enabled by default */
@@ -248,14 +248,14 @@ void test_harq_init_custom_config(void) {
     };
 
     rx_err_t err = rx_harq_init(&s_harq, &config);
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL(5, s_harq.max_retries);
     TEST_ASSERT_EQUAL(0, s_harq.fec_enabled);
 }
 
 void test_harq_deinit_null(void) {
     rx_err_t err = rx_harq_deinit(NULL);
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG, err);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 /* =============================================================================
@@ -297,13 +297,13 @@ void test_harq_encode_null_args(void) {
     uint8_t output[64];
     uint32_t len;
 
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG,
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
                       rx_harq_encode(NULL, payload, 1, output, &len));
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG,
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
                       rx_harq_encode(&s_harq, NULL, 1, output, &len));
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG,
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
                       rx_harq_encode(&s_harq, payload, 1, NULL, &len));
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG,
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
                       rx_harq_encode(&s_harq, payload, 1, output, NULL));
 }
 
@@ -314,7 +314,7 @@ void test_harq_encode_uninitialized(void) {
     uint32_t len;
 
     rx_err_t err = rx_harq_encode(&harq, payload, 1, output, &len);
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_STATE, err);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
 void test_harq_encode_zero_payload(void) {
@@ -325,7 +325,7 @@ void test_harq_encode_zero_payload(void) {
     uint32_t len;
 
     rx_err_t err = rx_harq_encode(&s_harq, payload, 0, output, &len);
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_SIZE, err);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
 void test_harq_encode_too_large(void) {
@@ -337,7 +337,7 @@ void test_harq_encode_too_large(void) {
 
     rx_err_t err =
         rx_harq_encode(&s_harq, payload, k_harq_max_payload + 1, output, &len);
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_SIZE, err);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
 void test_harq_encode_with_fec(void) {
@@ -348,7 +348,7 @@ void test_harq_encode_with_fec(void) {
     uint32_t len;
 
     rx_err_t err = rx_harq_encode(&s_harq, payload, 1, output, &len);
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
 
     /* With FEC, output should be larger than input */
     /* 1 byte = 8 bits + 6 tail = 14 bits * 2 = 28 bits = 4 bytes */
@@ -364,7 +364,7 @@ void test_harq_encode_without_fec(void) {
     uint32_t len;
 
     rx_err_t err = rx_harq_encode(&s_harq, payload, 2, output, &len);
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL(2, len); /* No FEC = same size */
     TEST_ASSERT_EQUAL_MEMORY(payload, output, 2);
 }
@@ -416,19 +416,19 @@ void test_harq_decode_null_args(void) {
     uint32_t len;
 
     /* NULL harq */
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG,
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
                       rx_harq_decode(NULL, soft, 32, 2, output, &len));
 
     /* NULL soft_bits */
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG,
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
                       rx_harq_decode(&s_harq, NULL, 32, 2, output, &len));
 
     /* NULL output */
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG,
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
                       rx_harq_decode(&s_harq, soft, 32, 2, NULL, &len));
 
     /* NULL output_len */
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG,
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg,
                       rx_harq_decode(&s_harq, soft, 32, 2, output, NULL));
 }
 
@@ -439,7 +439,7 @@ void test_harq_decode_uninitialized(void) {
     uint32_t len;
 
     rx_err_t err = rx_harq_decode(&harq, soft, 32, 2, output, &len);
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_STATE, err);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
 void test_harq_decode_zero_length(void) {
@@ -449,9 +449,9 @@ void test_harq_decode_zero_length(void) {
     uint8_t output[16];
     uint32_t len;
 
-    /* Zero soft_len returns RX_ERR_INVALID_ARG */
+    /* Zero soft_len returns k_rx_err_invalid_arg */
     rx_err_t err = rx_harq_decode(&s_harq, soft, 0, 2, output, &len);
-    TEST_ASSERT_EQUAL(RX_ERR_INVALID_ARG, err);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 /* =============================================================================
@@ -468,7 +468,7 @@ void test_harq_roundtrip_with_fec(void) {
     uint32_t enc_len;
 
     rx_err_t err = rx_harq_encode(&s_harq, payload, 2, encoded, &enc_len);
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
 
     /* Convert encoded hard bits to soft bits */
     rx_soft_bit_t soft[128];
@@ -489,7 +489,7 @@ void test_harq_roundtrip_with_fec(void) {
     uint32_t dec_len;
 
     err = rx_harq_decode(&s_harq, soft, soft_len, 2, decoded, &dec_len);
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL(2, dec_len);
     TEST_ASSERT_EQUAL_MEMORY(payload, decoded, 2);
 }
@@ -522,7 +522,7 @@ void test_harq_combining_improves_reception(void) {
     uint32_t dec_len;
 
     rx_err_t err = rx_harq_decode(&s_harq, soft, soft_len, 1, decoded, &dec_len);
-    TEST_ASSERT_EQUAL(RX_OK, err);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_EQUAL_HEX8(0x42, decoded[0]);
 }
 

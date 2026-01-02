@@ -3,7 +3,7 @@
 /**
  * @file mock_pin_validator.h
  * @brief Mock Pin Validator for Testing DIP Pattern
- *
+ * @details
  * Mock implementation of the rx_pin_interface_t for testing and validation.
  * Tracks pin operations in memory instead of validating against real hardware.
  *
@@ -69,6 +69,9 @@
  * spi_driver_deinit(&spi_drv);  // Should release pins
  * assert(!mock_pin_validator_is_reserved(&mock, 0xA, 5));
  * @endcode
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef STAR_RX72N_MOCK_PIN_VALIDATOR_H
@@ -91,14 +94,13 @@ extern "C" {
  */
 
 /**
- * @brief Maximum number of pins to track (256 covers RX72N's 182 pins)
+ * @brief Mock pin validator configuration constants
  */
-#define MOCK_PIN_VALIDATOR_MAX_PINS 256
-
-/**
- * @brief Maximum function name length
- */
-#define MOCK_PIN_VALIDATOR_FUNCTION_NAME_MAX 32
+typedef enum {
+  k_mock_pin_validator_max_pins =
+    256, /**< Maximum number of pins to track (covers RX72N's 182 pins) */
+  k_mock_pin_validator_function_name_max = 32, /**< Maximum function name length */
+} mock_pin_validator_limits_t;
 
 /* =============================================================================
  * Mock Pin Validator Structure
@@ -109,50 +111,24 @@ extern "C" {
  * @brief Mock pin validator implementation
  *
  * Tracks pin operations in memory for testing. Implements rx_pin_interface_t.
+ *
+ * @note Array indexing formula: port * 8 + pin
+ *       The factor 8 represents the number of pins per GPIO port on RX72N (pins 0-7).
+ *       This linearizes the 2D port/pin space into a flat array for efficient tracking.
+ *       Example: Port A (0xA), Pin 5 = 0xA * 8 + 5 = 85
  */
 typedef struct {
-  /**
-   * @brief Track which pins were validated
-   *
-   * Indexed as: validated_pins[port * 8 + pin]
-   * True = validate_pin was called for this port/pin
-   */
-  bool validated_pins[MOCK_PIN_VALIDATOR_MAX_PINS];
-
-  /**
-   * @brief Track which pins are currently reserved
-   *
-   * Indexed as: reserved_pins[port * 8 + pin]
-   * True = pin is currently reserved
-   */
-  bool reserved_pins[MOCK_PIN_VALIDATOR_MAX_PINS];
-
-  /**
-   * @brief Function names for reserved pins
-   *
-   * Indexed as: function_names[port * 8 + pin]
-   */
-  char function_names[MOCK_PIN_VALIDATOR_MAX_PINS][MOCK_PIN_VALIDATOR_FUNCTION_NAME_MAX];
-
-  /**
-   * @brief Total number of validate_pin calls
-   */
-  uint32_t validate_call_count;
-
-  /**
-   * @brief Total number of reserve_pin calls
-   */
-  uint32_t reserve_call_count;
-
-  /**
-   * @brief Total number of release_pin calls
-   */
-  uint32_t release_call_count;
-
-  /**
-   * @brief Is the validator initialized?
-   */
-  bool initialized;
+  bool validated_pins
+    [k_mock_pin_validator_max_pins]; /**< Track validated pins (indexed: port*8+pin, where 8 = pins per port) */
+  bool reserved_pins
+    [k_mock_pin_validator_max_pins]; /**< Track currently reserved pins (indexed: port*8+pin) */
+  char function_names
+    [k_mock_pin_validator_max_pins]
+    [k_mock_pin_validator_function_name_max]; /**< Function names for reserved pins (indexed: port*8+pin) */
+  uint32_t validate_call_count;               /**< Total number of validate_pin calls */
+  uint32_t reserve_call_count;                /**< Total number of reserve_pin calls */
+  uint32_t release_call_count;                /**< Total number of release_pin calls */
+  bool     initialized;                       /**< Is the validator initialized? */
 } mock_pin_validator_t;
 
 /* =============================================================================
@@ -165,8 +141,8 @@ typedef struct {
  *
  * @param[in,out] validator Validator instance to initialize
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if validator is NULL
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if validator is NULL
  */
 rx_err_t mock_pin_validator_init(mock_pin_validator_t* validator);
 
@@ -176,9 +152,9 @@ rx_err_t mock_pin_validator_init(mock_pin_validator_t* validator);
  * @param[out] iface Interface to fill
  * @param[in,out] validator Mock validator instance
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if either parameter is NULL,
- *         RX_ERR_INVALID_STATE if validator not initialized
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if either parameter is NULL,
+ *         k_rx_err_invalid_state if validator not initialized
  */
 rx_err_t mock_pin_validator_get_interface(rx_pin_interface_t*   iface,
                                           mock_pin_validator_t* validator);
@@ -275,8 +251,8 @@ uint32_t mock_pin_validator_get_release_call_count(mock_pin_validator_t* validat
  *
  * @param[in,out] validator Validator to clear
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if validator is NULL
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if validator is NULL
  */
 rx_err_t mock_pin_validator_clear(mock_pin_validator_t* validator);
 
@@ -285,8 +261,8 @@ rx_err_t mock_pin_validator_clear(mock_pin_validator_t* validator);
  *
  * @param[in,out] validator Validator to deinitialize
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if validator is NULL
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if validator is NULL
  */
 rx_err_t mock_pin_validator_deinit(mock_pin_validator_t* validator);
 

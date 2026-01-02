@@ -1,9 +1,9 @@
-/* include/rx_pin_validator.h */
+/* lib/rx_core/inc/rx_pin_validator.h */
 
 /**
  * @file rx_pin_validator.h
  * @brief Pin Validator Concrete Implementation
- *
+ * @details
  * Concrete implementation of the rx_pin_interface_t.
  * Provides pin validation and reservation tracking for RX72N GPIO.
  *
@@ -27,6 +27,7 @@
  * - Not all ports have all 8 pins available
  *
  * Usage:
+ * @code
  *   // 1. Declare validator
  *   static pin_validator_t s_pin_validator;
  *
@@ -40,12 +41,16 @@
  *
  *   // 4. Reserve pins
  *   err = pin_iface.reserve_pin(pin_iface.ctx, 0xA, 5, "SPI_MOSI");
- *   if (err == RX_ERR_GPIO_CONFLICT) {
+ *   if (err == k_rx_err_gpio_conflict) {
  *       // Pin already reserved
  *   }
  *
  *   // 5. Release when done
  *   pin_iface.release_pin(pin_iface.ctx, 0xA, 5);
+ * @endcode
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef STAR_RX72N_PIN_VALIDATOR_H
@@ -69,14 +74,12 @@ extern "C" {
  */
 
 /**
- * @brief Maximum port number (0-16 for 0-9, A-G)
+ * @brief Pin validator configuration constants
  */
-#define RX_PIN_VALIDATOR_MAX_PORTS 17
-
-/**
- * @brief Maximum pins per port
- */
-#define RX_PIN_VALIDATOR_MAX_PINS 8
+typedef enum {
+  k_pin_validator_max_ports = 17, /**< Maximum port number (0-16 for 0-9, A-G) */
+  k_pin_validator_max_pins  = 8,  /**< Maximum pins per port */
+} pin_validator_limits_t;
 
 /* =============================================================================
  * Pin Reservation State
@@ -87,15 +90,8 @@ extern "C" {
  * @brief Pin reservation state for a single pin
  */
 typedef struct {
-  /**
-   * @brief Is this pin reserved?
-   */
-  bool reserved;
-
-  /**
-   * @brief Function name (e.g., "SPI_MOSI", "GPIO_OUT")
-   */
-  char function[RX_PIN_FUNCTION_NAME_MAX_LEN];
+  bool reserved;                              /**< Is this pin reserved? */
+  char function[k_pin_function_name_max_len]; /**< Function name (e.g., "SPI_MOSI", "GPIO_OUT") */
 } pin_reservation_t;
 
 /* =============================================================================
@@ -110,24 +106,11 @@ typedef struct {
  * It implements the rx_pin_interface_t.
  */
 typedef struct {
-  /**
-   * @brief ThreadX mutex for thread-safe operation
-   */
-  TX_MUTEX mutex;
-
-  /**
-   * @brief Pin reservation tracking array
-   *
-   * Indexed as: reservations[port][pin]
-   * Port 0-9: Decimal ports 0-9
-   * Port 10-16: Hex ports A-G (0xA-0x10)
-   */
-  pin_reservation_t reservations[RX_PIN_VALIDATOR_MAX_PORTS][RX_PIN_VALIDATOR_MAX_PINS];
-
-  /**
-   * @brief Is the validator initialized?
-   */
-  bool initialized;
+  TX_MUTEX          mutex; /**< ThreadX mutex for thread-safe operation */
+  pin_reservation_t reservations
+    [k_pin_validator_max_ports]
+    [k_pin_validator_max_pins]; /**< Pin reservation tracking array (indexed: reservations[port][pin], Port 0-9: Decimal, Port 10-16: Hex A-G) */
+  bool initialized;             /**< Is the validator initialized? */
 } pin_validator_t;
 
 /* =============================================================================
@@ -140,9 +123,9 @@ typedef struct {
  *
  * @param[in,out] validator Validator instance to initialize
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if validator is NULL,
- *         RX_ERR_RTOS_MUTEX if mutex creation fails
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if validator is NULL,
+ *         k_rx_err_rtos_mutex if mutex creation fails
  */
 rx_err_t pin_validator_init(pin_validator_t* validator);
 
@@ -152,9 +135,9 @@ rx_err_t pin_validator_init(pin_validator_t* validator);
  * @param[out] iface Interface to fill
  * @param[in,out] validator Concrete validator instance
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if either parameter is NULL,
- *         RX_ERR_INVALID_STATE if validator not initialized
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if either parameter is NULL,
+ *         k_rx_err_invalid_state if validator not initialized
  */
 rx_err_t pin_validator_get_interface(rx_pin_interface_t* iface, pin_validator_t* validator);
 
@@ -163,8 +146,8 @@ rx_err_t pin_validator_get_interface(rx_pin_interface_t* iface, pin_validator_t*
  *
  * @param[in,out] validator Validator to deinitialize
  *
- * @return RX_OK on success,
- *         RX_ERR_NULL_POINTER if validator is NULL
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if validator is NULL
  */
 rx_err_t pin_validator_deinit(pin_validator_t* validator);
 

@@ -1,14 +1,16 @@
+/* lib/rx_nanopb/src/rx_nanopb.c */
+
 /**
  * @file rx_nanopb.c
  * @brief nanopb Integration Wrapper for RX72N
- *
+ * @details
  * Provides simplified encode/decode functions with static buffers
  * for protocol buffer messages used in the STAR project.
  *
  * @note All encoding/decoding uses static buffers - no dynamic allocation.
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "rx_nanopb.h"
@@ -64,7 +66,7 @@ internal_encode_string_callback(pb_ostream_t* stream, const pb_field_t* field, v
 rx_err_t rx_nanopb_init(void)
 {
   s_initialized = true;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -77,17 +79,17 @@ rx_err_t rx_nanopb_encode_velocity_request(const star_v1_SetVelocityRequest* msg
                                            uint32_t*                         len)
 {
   if (msg == NULL || buffer == NULL || len == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
-  pb_ostream_t stream = pb_ostream_from_buffer(buffer, RX_NANOPB_BUFFER_SIZE);
+  pb_ostream_t stream = pb_ostream_from_buffer(buffer, k_nanopb_buffer_size);
 
   if (!pb_encode(&stream, star_v1_SetVelocityRequest_fields, msg)) {
-    return RX_ERR_INVALID_SIZE;
+    return k_rx_err_invalid_size;
   }
 
   *len = stream.bytes_written;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_nanopb_decode_velocity_request(const uint8_t*              buffer,
@@ -95,7 +97,7 @@ rx_err_t rx_nanopb_decode_velocity_request(const uint8_t*              buffer,
                                            star_v1_SetVelocityRequest* msg)
 {
   if (buffer == NULL || msg == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Initialize message to default values */
@@ -104,10 +106,10 @@ rx_err_t rx_nanopb_decode_velocity_request(const uint8_t*              buffer,
   pb_istream_t stream = pb_istream_from_buffer(buffer, len);
 
   if (!pb_decode(&stream, star_v1_SetVelocityRequest_fields, msg)) {
-    return RX_ERR_PROTOCOL_ERROR;
+    return k_rx_err_protocol_error;
   }
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -120,17 +122,17 @@ rx_err_t rx_nanopb_encode_velocity_response(const star_v1_SetVelocityResponse* m
                                             uint32_t*                          len)
 {
   if (msg == NULL || buffer == NULL || len == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
-  pb_ostream_t stream = pb_ostream_from_buffer(buffer, RX_NANOPB_BUFFER_SIZE);
+  pb_ostream_t stream = pb_ostream_from_buffer(buffer, k_nanopb_buffer_size);
 
   if (!pb_encode(&stream, star_v1_SetVelocityResponse_fields, msg)) {
-    return RX_ERR_INVALID_SIZE;
+    return k_rx_err_invalid_size;
   }
 
   *len = stream.bytes_written;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -143,7 +145,7 @@ rx_err_t rx_nanopb_decode_estop_request(const uint8_t*                buffer,
                                         star_v1_EmergencyStopRequest* msg)
 {
   if (buffer == NULL || msg == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
   /* Initialize message to default values */
@@ -152,10 +154,10 @@ rx_err_t rx_nanopb_decode_estop_request(const uint8_t*                buffer,
   pb_istream_t stream = pb_istream_from_buffer(buffer, len);
 
   if (!pb_decode(&stream, star_v1_EmergencyStopRequest_fields, msg)) {
-    return RX_ERR_PROTOCOL_ERROR;
+    return k_rx_err_protocol_error;
   }
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* msg,
@@ -163,17 +165,17 @@ rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* ms
                                          uint32_t*                            len)
 {
   if (msg == NULL || buffer == NULL || len == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
-  pb_ostream_t stream = pb_ostream_from_buffer(buffer, RX_NANOPB_BUFFER_SIZE);
+  pb_ostream_t stream = pb_ostream_from_buffer(buffer, k_nanopb_buffer_size);
 
   if (!pb_encode(&stream, star_v1_EmergencyStopResponse_fields, msg)) {
-    return RX_ERR_INVALID_SIZE;
+    return k_rx_err_invalid_size;
   }
 
   *len = stream.bytes_written;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -185,17 +187,17 @@ rx_err_t
 rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg, uint8_t* buffer, uint32_t* len)
 {
   if (msg == NULL || buffer == NULL || len == NULL) {
-    return RX_ERR_INVALID_ARG;
+    return k_rx_err_invalid_arg;
   }
 
-  pb_ostream_t stream = pb_ostream_from_buffer(buffer, RX_NANOPB_BUFFER_SIZE);
+  pb_ostream_t stream = pb_ostream_from_buffer(buffer, k_nanopb_buffer_size);
 
   if (!pb_encode(&stream, star_v1_TelemetryData_fields, msg)) {
-    return RX_ERR_INVALID_SIZE;
+    return k_rx_err_invalid_size;
   }
 
   *len = stream.bytes_written;
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================

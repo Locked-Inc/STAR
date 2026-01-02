@@ -1,4 +1,4 @@
-/* src/hardware/system_init.c */
+/* lib/rx_hal/src/system_init.c */
 
 /**
  * @file system_init.c
@@ -8,12 +8,70 @@
  * - Clock system (240 MHz from PLL)
  * - Module stop control
  * - Interrupt controller
+ *
+ * @date 2026-01-01
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include <stdint.h>
 
 #include "hardware.h"
 #include "rx72n_regs.h"
+
+/* =============================================================================
+ * Private Definitions
+ * =============================================================================
+ */
+
+/** @brief Protection register unlock/lock values */
+typedef enum {
+  k_prcr_unlock = 0xA50F, /**< Unlock protection (PRC0-PRC3, PRKEY) */
+  k_prcr_lock   = 0xA500, /**< Lock protection (PRKEY only) */
+} protection_register_t;
+
+/** @brief Oscillator stabilization timing constants */
+typedef enum {
+  k_main_osc_stabilization_cycles     = 2400000, /**< Main oscillator delay (~10ms at 240MHz) */
+  k_pll_stabilization_timeout         = 1000000, /**< PLL stabilization max wait iterations */
+  k_pll_stabilization_timeout_expired = 0,       /**< PLL timeout expiration value */
+} oscillator_timing_t;
+
+/** @brief Oscillator control register values */
+typedef enum {
+  k_sub_clock_stopped = 0x01, /**< SOSCCR: Stop sub-clock oscillator */
+  k_main_osc_enabled  = 0x00, /**< MOSCCR: Enable main oscillator */
+  k_pll_enabled       = 0x00, /**< PLLCR2: Enable PLL */
+} oscillator_control_t;
+
+/** @brief PLL configuration values */
+typedef enum {
+  k_pll_multiplier_30_div_2 = 0x1D01, /**< PLLCR: 30x multiplier, divide by 2 (240MHz from 16MHz) */
+  k_pll_stable_flag         = 0x04,   /**< OSCOVFSR: PLL stabilization flag bit */
+} pll_config_t;
+
+/** @brief System clock configuration */
+typedef enum {
+  k_system_clock_dividers   = 0x21C21211, /**< SCKCR: ICLK=240MHz, PCLKA=120MHz, others=60MHz */
+  k_system_clock_source_pll = 0x0400,     /**< SCKCR3: Select PLL as system clock source */
+} system_clock_config_t;
+
+/** @brief Module stop bit positions in MSTPCRA */
+typedef enum {
+  k_mstpcra_cmt = 15, /**< CMT0, CMT1 module stop bit */
+  k_mstpcra_mtu = 9,  /**< MTU module stop bit */
+} mstpcra_bits_t;
+
+/** @brief Module stop bit positions in MSTPCRB */
+typedef enum {
+  k_mstpcrb_sci5  = 26, /**< SCI5 module stop bit */
+  k_mstpcrb_rspi0 = 17, /**< RSPI0 module stop bit */
+  k_mstpcrb_rspi1 = 16, /**< RSPI1 module stop bit */
+} mstpcrb_bits_t;
+
+/** @brief Module stop bit positions in MSTPCRC */
+typedef enum {
+  k_mstpcrc_s12ad = 17, /**< S12AD module stop bit */
+} mstpcrc_bits_t;
 
 /* =============================================================================
  * Clock Configuration
@@ -31,56 +89,56 @@
  * - PCLKB/C/D: 60 MHz
  * - FCLK (Flash): 60 MHz
  *
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 static rx_err_t clock_init(void)
 {
-  /* Protect off for clock registers */
-  SYSTEM.PRCR = 0xA50F;
+  /* Unlock protection for clock registers */
+  SYSTEM.prcr = k_prcr_unlock;
 
   /* Stop sub-clock oscillator (not used) */
-  SYSTEM.SOSCCR = 0x01;
+  SYSTEM.sosccr = k_sub_clock_stopped;
 
   /* Start main oscillator (16 MHz external crystal) */
-  SYSTEM.MOSCCR = 0x00; /* Enable main oscillator */
+  SYSTEM.mosccr = k_main_osc_enabled;
 
   /* Wait for main oscillator stabilization (typically 10ms) */
-  /* Simple delay loop - should be ~2.4M cycles at default 240MHz */
-  for (volatile uint32_t i = 0; i < 2400000; i++) {
+  /* NOTE: Busy-wait required - runs before ThreadX initialization */
+  for (volatile uint32_t i = 0; i < k_main_osc_stabilization_cycles; i++) {
     __asm__ volatile("nop");
   }
 
   /* Configure PLL */
   /* PLL = (Main OSC x PLIDIV) / PLLSTBY */
   /* 240 MHz = (16 MHz x 30) / 2 */
-  SYSTEM.PLLCR  = 0x1D01; /* PLIDIV=30-1=29(0x1D), STC=1 (div by 2) */
-  SYSTEM.PLLCR2 = 0x00;   /* Enable PLL */
+  SYSTEM.pllcr  = k_pll_multiplier_30_div_2;
+  SYSTEM.pllcr2 = k_pll_enabled;
 
   /* Wait for PLL stabilization */
-  uint32_t timeout = 1000000;
-  while ((SYSTEM.OSCOVFSR & 0x04) == 0 && timeout > 0) {
+  /* NOTE: Busy-wait polling required - runs before ThreadX initialization */
+  uint32_t timeout = k_pll_stabilization_timeout;
+  while ((SYSTEM.oscovfsr & k_pll_stable_flag) == 0 && timeout > 0) {
     timeout--;
-    /* Wait for PLL stable */
   }
 
-  if (timeout == 0) {
+  if (timeout == k_pll_stabilization_timeout_expired) {
     /* PLL failed to stabilize - but can't log yet (UART not initialized) */
-    SYSTEM.PRCR = 0xA500;
-    return RX_ERR_HW_TIMEOUT;
+    SYSTEM.prcr = k_prcr_lock;
+    return k_rx_err_hw_timeout;
   }
 
   /* Configure system clocks */
   /* ICLK=240MHz, PCLKA=120MHz, PCLKB=60MHz, PCLKC=60MHz,
      * PCLKD=60MHz, BCLK=120MHz, FCLK=60MHz */
-  SYSTEM.SCKCR = 0x21C21211;
+  SYSTEM.sckcr = k_system_clock_dividers;
 
   /* Select PLL as system clock */
-  SYSTEM.SCKCR3 = 0x0400; /* CKSEL[2:0] = 100b (PLL) */
+  SYSTEM.sckcr3 = k_system_clock_source_pll;
 
-  /* Protect on */
-  SYSTEM.PRCR = 0xA500;
+  /* Lock protection */
+  SYSTEM.prcr = k_prcr_lock;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -97,32 +155,32 @@ static rx_err_t clock_init(void)
  * - MTU (motor PWM)
  * - S12AD (ADC)
  *
- * @return RX_OK on success
+ * @return k_rx_ok on success
  */
 static rx_err_t module_stop_init(void)
 {
   /* Protect off */
-  SYSTEM.PRCR = 0xA50F;
+  SYSTEM.prcr = k_prcr_unlock;
 
   /* Module Stop Control Register A */
-  SYSTEM.MSTPCRA &= ~((1 << 15) | /* CMT0, CMT1 */
-                      (1 << 9)    /* MTU */
+  SYSTEM.mstpcra &= ~((1UL << k_mstpcra_cmt) | /* CMT0, CMT1 */
+                      (1UL << k_mstpcra_mtu)   /* MTU */
   );
 
   /* Module Stop Control Register B */
-  SYSTEM.MSTPCRB &= ~((1 << 26) | /* SCI5 */
-                      (1 << 17) | /* RSPI0 */
-                      (1 << 16)   /* RSPI1 */
+  SYSTEM.mstpcrb &= ~((1UL << k_mstpcrb_sci5) |  /* SCI5 */
+                      (1UL << k_mstpcrb_rspi0) | /* RSPI0 */
+                      (1UL << k_mstpcrb_rspi1)   /* RSPI1 */
   );
 
   /* Module Stop Control Register C */
-  SYSTEM.MSTPCRC &= ~((1 << 17) /* S12AD */
+  SYSTEM.mstpcrc &= ~((1UL << k_mstpcrc_s12ad) /* S12AD */
   );
 
   /* Protect on */
-  SYSTEM.PRCR = 0xA500;
+  SYSTEM.prcr = k_prcr_lock;
 
-  return RX_OK;
+  return k_rx_ok;
 }
 
 /* =============================================================================
@@ -135,25 +193,25 @@ static rx_err_t module_stop_init(void)
  *
  * Call this early in startup, before ThreadX initialization.
  *
- * @return RX_OK on success, error code on failure
+ * @return k_rx_ok on success, error code on failure
  */
 rx_err_t system_init(void)
 {
   /* Initialize clock to 240 MHz */
   rx_err_t err = clock_init();
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     /* Can't log - UART not initialized yet */
     return err;
   }
 
   /* Enable peripheral modules */
   err = module_stop_init();
-  if (err != RX_OK) {
+  if (err != k_rx_ok) {
     /* Can't log - UART not initialized yet */
     return err;
   }
 
   /* System init complete - but still can't log until UART is initialized */
 
-  return RX_OK;
+  return k_rx_ok;
 }

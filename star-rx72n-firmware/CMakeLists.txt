@@ -57,6 +57,7 @@ add_compile_options(
     -Wno-unused-parameter
     -Wno-missing-braces    # nanopb generates these
     -Wno-comment           # ThreadX has nested comments in assembly
+    -fshort-enums          # Use smallest type for enums (embedded optimization)
 )
 
 # Optimization flags
@@ -159,9 +160,11 @@ target_link_libraries(rx_harq PUBLIC rx_fec rx_core)
 add_library(rx_frame STATIC
     lib/rx_frame/src/rx_frame.c
     lib/rx_frame/src/rx_crc32.c
+    lib/rx_frame/src/rx_crc32_hw.c
+    lib/rx_frame/src/rx_crc32_sw.c
 )
 target_include_directories(rx_frame PUBLIC lib/rx_frame/inc)
-target_link_libraries(rx_frame PUBLIC rx_core)
+target_link_libraries(rx_frame PUBLIC rx_core rx_hal)
 
 # rx_nanopb - nanopb Protocol Buffers Integration
 add_library(rx_nanopb STATIC
@@ -191,6 +194,24 @@ add_library(rx_spi_comm STATIC
 target_include_directories(rx_spi_comm PUBLIC lib/rx_spi_comm/inc)
 target_link_libraries(rx_spi_comm PUBLIC rx_frame rx_hal rx_core)
 
+# rx_usb - USB CDC-ACM Driver for RX72N
+add_library(rx_usb STATIC
+    lib/rx_usb/src/rx_usb.c
+    lib/rx_usb/src/rx_usb_hw.c
+    lib/rx_usb/src/rx_usb_cdc.c
+    lib/rx_usb/src/rx_usb_isr.c
+)
+target_include_directories(rx_usb PUBLIC lib/rx_usb/inc)
+target_link_libraries(rx_usb PUBLIC rx_core rx_hal)
+target_compile_options(rx_usb PRIVATE -Wno-unused-function)
+
+# rx_usb_comm - USB CDC Communication Layer
+add_library(rx_usb_comm STATIC
+    lib/rx_usb_comm/src/rx_usb_comm.c
+)
+target_include_directories(rx_usb_comm PUBLIC lib/rx_usb_comm/inc)
+target_link_libraries(rx_usb_comm PUBLIC rx_core rx_frame rx_usb)
+
 # rx_motor - MTU3a motor control
 add_library(rx_motor STATIC
     lib/rx_motor/src/rx_motor.c
@@ -205,13 +226,12 @@ add_library(rx_drv8243 STATIC
 target_include_directories(rx_drv8243 PUBLIC lib/rx_drv8243/inc)
 target_link_libraries(rx_drv8243 PUBLIC rx_bus rx_motor rx_core)
 
-# rx_fuel_gauge - Battery management
-add_library(rx_fuel_gauge STATIC
-    lib/rx_fuel_gauge/src/rx_fuel_gauge.c
-    lib/rx_fuel_gauge/src/rx_bq25798.c
+# rx_bq4050 - BQ4050 battery fuel gauge (Smart Battery System)
+add_library(rx_bq4050 STATIC
+    lib/rx_bq4050/src/rx_bq4050.c
 )
-target_include_directories(rx_fuel_gauge PUBLIC lib/rx_fuel_gauge/inc)
-target_link_libraries(rx_fuel_gauge PUBLIC rx_bus rx_core)
+target_include_directories(rx_bq4050 PUBLIC lib/rx_bq4050/inc)
+target_link_libraries(rx_bq4050 PUBLIC rx_bus rx_core)
 
 # =============================================================================
 # Application Source Files
@@ -219,9 +239,6 @@ target_link_libraries(rx_fuel_gauge PUBLIC rx_bus rx_core)
 
 set(APP_SOURCES
     src/main.c
-    src/motor_shared_state.c
-    src/tasks/motor_control_task.c
-    src/tasks/spi_comm_task.c
 )
 
 # =============================================================================
@@ -251,8 +268,10 @@ target_link_libraries(${PROJECT_NAME}.elf
     rx_frame
     rx_nanopb
     rx_spi_comm
+    rx_usb
+    rx_usb_comm
     rx_drv8243
-    rx_fuel_gauge
+    rx_bq4050
 )
 
 # Linker script
@@ -298,8 +317,10 @@ message(STATUS "  rx_harq        - HARQ protocol (Chase Combining)")
 message(STATUS "  rx_frame       - Frame layer (SYNC, CRC-32, header)")
 message(STATUS "  rx_nanopb      - Protocol Buffers (nanopb integration)")
 message(STATUS "  rx_spi_comm    - SPI communication layer")
+message(STATUS "  rx_usb         - USB CDC-ACM driver")
+message(STATUS "  rx_usb_comm    - USB communication layer")
 message(STATUS "  rx_drv8243     - DRV8243 H-bridge driver")
-message(STATUS "  rx_fuel_gauge  - Battery management (BQ25798)")
+message(STATUS "  rx_bq4050      - BQ4050 battery fuel gauge (SBS 1.1)")
 message(STATUS "==============================================")
 
 # =============================================================================
