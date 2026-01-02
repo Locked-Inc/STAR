@@ -115,20 +115,20 @@ rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits)
   /* Initialize ADC unit if not already initialized */
   if (!s_adc_unit_initialized[unit]) {
     /* Unlock module stop control */
-    SYSTEM.PRCR = 0xA50B; /* Enable writes to MSTPCR */
+    SYSTEM.prcr = 0xA50B; /* Enable writes to MSTPCR */
 
     /* Enable ADC module (clear module stop bit) */
     if (unit == 0) {
-      SYSTEM.MSTPCRA &= ~(1 << 17); /* S12AD0 */
+      SYSTEM.mstpcra &= ~(1 << 17); /* S12AD0 */
     } else {
-      SYSTEM.MSTPCRA &= ~(1 << 16); /* S12AD1 */
+      SYSTEM.mstpcra &= ~(1 << 16); /* S12AD1 */
     }
 
     /* Lock module stop control */
-    SYSTEM.PRCR = 0xA500;
+    SYSTEM.prcr = 0xA500;
 
     /* Configure ADC resolution */
-    uint16_t adcer = adc->ADCER;
+    uint16_t adcer = adc->adcer;
     adcer &= ~(0x03 << 0); /* Clear ADPRC bits */
     if (bits == 8) {
       adcer |= (0x02 << 0); /* 8-bit mode */
@@ -137,7 +137,7 @@ rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits)
     } else {
       adcer |= (0x00 << 0); /* 12-bit mode */
     }
-    adc->ADCER = adcer;
+    adc->adcer = adcer;
 
     /* Mark unit as initialized */
     s_adc_unit_initialized[unit] = true;
@@ -147,9 +147,9 @@ rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits)
 
   /* Enable the specified channel */
   if (channel < 16) {
-    adc->ADANSA0 |= (1 << channel);
+    adc->adansa0 |= (1 << channel);
   } else {
-    adc->ADANSA1 |= (1 << (channel - 16));
+    adc->adansa1 |= (1 << (channel - 16));
   }
 
   rx_log_debug(s_tag, "ADC channel enabled");
@@ -178,11 +178,11 @@ rx_err_t adc_read(uint8_t unit, uint8_t channel, uint16_t* value)
   }
 
   /* Start single-scan conversion */
-  adc->ADCSR = 0x1000; /* ADST=1, start conversion */
+  adc->adcsr = 0x1000; /* ADST=1, start conversion */
 
   /* Wait for conversion to complete (poll ADCSR.ADST bit) */
   uint32_t timeout = k_adc_timeout_ms * 1000; /* Convert to loops */
-  while ((adc->ADCSR & 0x1000) != 0 && timeout > 0) {
+  while ((adc->adcsr & 0x1000) != 0 && timeout > 0) {
     timeout--;
   }
 
@@ -194,28 +194,28 @@ rx_err_t adc_read(uint8_t unit, uint8_t channel, uint16_t* value)
   /* Read conversion result from appropriate data register */
   switch (channel) {
     case 0:
-      *value = adc->ADDR0;
+      *value = adc->addr0;
       break;
     case 1:
-      *value = adc->ADDR1;
+      *value = adc->addr1;
       break;
     case 2:
-      *value = adc->ADDR2;
+      *value = adc->addr2;
       break;
     case 3:
-      *value = adc->ADDR3;
+      *value = adc->addr3;
       break;
     case 4:
-      *value = adc->ADDR4;
+      *value = adc->addr4;
       break;
     case 5:
-      *value = adc->ADDR5;
+      *value = adc->addr5;
       break;
     case 6:
-      *value = adc->ADDR6;
+      *value = adc->addr6;
       break;
     case 7:
-      *value = adc->ADDR7;
+      *value = adc->addr7;
       break;
     default:
       rx_log_error(s_tag, "Unsupported channel");

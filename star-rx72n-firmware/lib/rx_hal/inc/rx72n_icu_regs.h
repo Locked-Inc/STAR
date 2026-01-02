@@ -25,30 +25,58 @@ extern "C" {
  * =============================================================================
  */
 
-/* ICU Register Structure */
+/** @brief ICU register reserved field sizes */
+typedef enum {
+  k_icu_reserved_after_ier_bytes     = 192, /**< Reserved bytes after IER */
+  k_icu_reserved_after_swint2r_bytes = 14,  /**< Reserved bytes after SWINT2R */
+  k_icu_reserved_after_fir_bytes     = 14,  /**< Reserved bytes after FIR */
+  k_icu_reserved_after_dmrsr_bytes   = 248, /**< Reserved bytes after DMRSR */
+  k_icu_reserved_after_irqcr_bytes   = 16,  /**< Reserved bytes after IRQCR */
+  k_icu_reserved_after_irqfltc_bytes = 58,  /**< Reserved bytes after IRQFLTC */
+} icu_reserved_sizes_t;
+
+/** @brief ICU register array sizes */
+typedef enum {
+  k_icu_ir_count     = 256, /**< Number of Interrupt Request Registers */
+  k_icu_dtcer_count  = 256, /**< Number of DTC Enable Registers */
+  k_icu_ier_count    = 32,  /**< Number of Interrupt Enable Registers */
+  k_icu_ipr_count    = 256, /**< Number of Interrupt Priority Registers */
+  k_icu_dmrsr_count  = 8,   /**< Number of DMAC Module Start Registers */
+  k_icu_irqcr_count  = 16,  /**< Number of IRQ Control Registers */
+  k_icu_irqflte_count = 2,  /**< Number of IRQ Filter Enable Registers */
+  k_icu_irqfltc_count = 2,  /**< Number of IRQ Filter Clock Select Registers */
+} icu_array_sizes_t;
+
+/**
+ * @brief ICU Register Map
+ * @details
+ * Interrupt Controller Unit (ICU) registers for managing interrupts.
+ * Supports 256 interrupt sources with configurable priorities (0-15).
+ * Base address: 0x00087000
+ */
 typedef struct {
-  volatile uint8_t  IR[256];    /* 0x000-0x0FF: Interrupt Request Registers */
-  volatile uint8_t  DTCER[256]; /* 0x100-0x1FF: DTC Enable Registers */
-  volatile uint8_t  IER[32];    /* 0x200-0x21F: Interrupt Enable Registers */
-  uint8_t           RESERVED0[192];
-  volatile uint8_t  SWINTR;  /* 0x2E0: Software Interrupt Register */
-  volatile uint8_t  SWINT2R; /* 0x2E1: Software Interrupt 2 Register */
-  uint8_t           RESERVED1[14];
-  volatile uint16_t FIR; /* 0x2F0: Fast Interrupt Register */
-  uint8_t           RESERVED2[14];
-  volatile uint8_t  IPR[256]; /* 0x300-0x3FF: Interrupt Priority Registers */
-  volatile uint8_t  DMRSR[8]; /* 0x400-0x407: DMAC Module Start Registers */
-  uint8_t           RESERVED3[248];
-  volatile uint8_t  IRQCR[16]; /* 0x500-0x50F: IRQ Control Registers */
-  uint8_t           RESERVED4[16];
-  volatile uint8_t  IRQFLTE[2]; /* 0x520-0x521: IRQ Filter Enable Registers */
-  volatile uint16_t IRQFLTC[2]; /* 0x522-0x525: IRQ Filter Clock Select Registers */
-  uint8_t           RESERVED5[58];
-  volatile uint32_t NMICR;  /* 0x560: NMI Control Register */
-  volatile uint8_t  NMIER;  /* 0x564: NMI Enable Register */
-  volatile uint8_t  NMISR;  /* 0x565: NMI Status Register */
-  volatile uint8_t  NMICLR; /* 0x566: NMI Clear Register */
-  volatile uint8_t  NMIFLT; /* 0x567: NMI Filter Control Register */
+  volatile uint8_t  ir[k_icu_ir_count];       /**< Interrupt Request Registers */
+  volatile uint8_t  dtcer[k_icu_dtcer_count]; /**< DTC Enable Registers */
+  volatile uint8_t  ier[k_icu_ier_count];     /**< Interrupt Enable Registers */
+  uint8_t           reserved0[k_icu_reserved_after_ier_bytes]; /**< Reserved */
+  volatile uint8_t  swintr;  /**< Software Interrupt Register */
+  volatile uint8_t  swint2r; /**< Software Interrupt 2 Register */
+  uint8_t           reserved1[k_icu_reserved_after_swint2r_bytes]; /**< Reserved */
+  volatile uint16_t fir; /**< Fast Interrupt Register */
+  uint8_t           reserved2[k_icu_reserved_after_fir_bytes]; /**< Reserved */
+  volatile uint8_t  ipr[k_icu_ipr_count];    /**< Interrupt Priority Registers */
+  volatile uint8_t  dmrsr[k_icu_dmrsr_count]; /**< DMAC Module Start Registers */
+  uint8_t           reserved3[k_icu_reserved_after_dmrsr_bytes]; /**< Reserved */
+  volatile uint8_t  irqcr[k_icu_irqcr_count]; /**< IRQ Control Registers */
+  uint8_t           reserved4[k_icu_reserved_after_irqcr_bytes]; /**< Reserved */
+  volatile uint8_t  irqflte[k_icu_irqflte_count]; /**< IRQ Filter Enable Registers */
+  volatile uint16_t irqfltc[k_icu_irqfltc_count]; /**< IRQ Filter Clock Select Registers */
+  uint8_t           reserved5[k_icu_reserved_after_irqfltc_bytes]; /**< Reserved */
+  volatile uint32_t nmicr;  /**< NMI Control Register */
+  volatile uint8_t  nmier;  /**< NMI Enable Register */
+  volatile uint8_t  nmisr;  /**< NMI Status Register */
+  volatile uint8_t  nmiclr; /**< NMI Clear Register */
+  volatile uint8_t  nmiflt; /**< NMI Filter Control Register */
 } rx_icu_regs_t;
 
 #define ICU_BASE_ADDR ((rx_icu_regs_t*)0x00087000)

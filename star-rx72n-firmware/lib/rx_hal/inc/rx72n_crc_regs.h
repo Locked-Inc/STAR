@@ -35,11 +35,23 @@ extern "C" {
  * =============================================================================
  */
 
+/** @brief CRC register reserved field sizes */
+typedef enum {
+  k_crc_reserved_after_crccr_bytes = 3, /**< Reserved bytes after CRCCR */
+} crc_reserved_sizes_t;
+
+/**
+ * @brief CRC Register Map
+ * @details
+ * Hardware CRC Calculator registers for accelerated CRC computation.
+ * Supports CRC-32 IEEE 802.3 polynomial (0x04C11DB7).
+ * Base address: 0x00088280
+ */
 typedef struct {
-  volatile uint8_t  CRCCR; /* 0x00 - CRC Control Register */
-  uint8_t           RESERVED0[3];
-  volatile uint32_t CRCDIR; /* 0x04 - CRC Data Input Register (32-bit) */
-  volatile uint32_t CRCDOR; /* 0x08 - CRC Data Output Register (32-bit) */
+  volatile uint8_t  crccr; /**< CRC Control Register (polynomial, bit order) */
+  uint8_t           reserved0[k_crc_reserved_after_crccr_bytes]; /**< Reserved */
+  volatile uint32_t crcdir; /**< CRC Data Input Register (32-bit data input) */
+  volatile uint32_t crcdor; /**< CRC Data Output Register (32-bit CRC result) */
 } rx_crc_regs_t;
 
 #define CRC_BASE ((rx_crc_regs_t*)0x00088280)
@@ -47,9 +59,9 @@ typedef struct {
 
 /* CRC Control Register (CRCCR) bit definitions - CRC-32 only */
 typedef enum {
-  k_crc_crccr_gps_crc32 = 0x03,     /* CRC-32 IEEE 802.3 polynomial */
-  k_crc_crccr_lms       = (1 << 6), /* LSB/MSB First (1=LSB first, reflected) */
-  k_crc_crccr_dorclr    = (1 << 7), /* Data Output Register Clear */
+  k_crc_crccr_gps_crc32 = 0x03,     /**< CRC-32 IEEE 802.3 polynomial */
+  k_crc_crccr_lms       = (1 << 6), /**< LSB/MSB First (1=LSB first, reflected) */
+  k_crc_crccr_dorclr    = (1 << 7), /**< Data Output Register Clear */
 } crc_crccr_bits_t;
 
 #ifdef __cplusplus

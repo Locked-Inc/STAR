@@ -24,16 +24,26 @@ extern "C" {
  * =============================================================================
  */
 
-/* Port Data Register */
+/**
+ * @brief Port Register Map
+ * @details
+ * General Purpose I/O port registers for digital pin control.
+ * Each port has 8 pins (bits 0-7) for direction, output, input, and mode control.
+ * Base addresses:
+ * - PORT0: 0x0008C000
+ * - PORT1: 0x0008C008
+ * - PORT2: 0x0008C010
+ * - ... (offset 0x08 per port)
+ */
 typedef struct {
-  volatile uint8_t PDR;  /* Port Direction Register */
-  volatile uint8_t PODR; /* Port Output Data Register */
-  volatile uint8_t PIDR; /* Port Input Data Register */
-  volatile uint8_t PMR;  /* Port Mode Register */
-  volatile uint8_t ODR0; /* Open Drain Control Register 0 */
-  volatile uint8_t ODR1; /* Open Drain Control Register 1 */
-  volatile uint8_t PCR;  /* Pull-up Control Register */
-  volatile uint8_t DSCR; /* Drive Capacity Control Register */
+  volatile uint8_t pdr;  /**< Port Direction Register (0=input, 1=output) */
+  volatile uint8_t podr; /**< Port Output Data Register (output level) */
+  volatile uint8_t pidr; /**< Port Input Data Register (read pin state) */
+  volatile uint8_t pmr;  /**< Port Mode Register (0=GPIO, 1=peripheral) */
+  volatile uint8_t odr0; /**< Open Drain Control Register 0 (pins 0-3) */
+  volatile uint8_t odr1; /**< Open Drain Control Register 1 (pins 4-7) */
+  volatile uint8_t pcr;  /**< Pull-up Control Register (1=enable pull-up) */
+  volatile uint8_t dscr; /**< Drive Capacity Control Register (drive strength) */
 } rx_port_regs_t;
 
 /* Port base addresses */

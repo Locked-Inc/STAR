@@ -268,7 +268,7 @@ rx_err_t rx_drv8243_get_fault_status(rx_drv8243_handle_t* handle, bool* out_faul
     return k_rx_err_invalid_arg;
   }
 
-  uint8_t level = (port->PIDR >> handle->pin_nfault) & 0x01;
+  uint8_t level = (port->pidr >> handle->pin_nfault) & 0x01;
 
   /* Fault is active when pin is LOW */
   *out_fault           = (level == 0);
@@ -365,10 +365,10 @@ static rx_err_t internal_drv8243_configure_fault_pin(rx_drv8243_handle_t* handle
   }
 
   /* Configure as input */
-  port->PDR &= ~(1 << handle->pin_nfault);
+  port->pdr &= ~(1 << handle->pin_nfault);
 
   /* Enable pull-up (active low fault signal) */
-  port->PCR |= (1 << handle->pin_nfault);
+  port->pcr |= (1 << handle->pin_nfault);
 
   return k_rx_ok;
 }
