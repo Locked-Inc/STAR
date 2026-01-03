@@ -5,8 +5,8 @@
  * Tests the HC-SR04 driver using mock GPIO and timing functions.
  * All tests run on the host (not on RX72N hardware).
  *
- * STAR Project - Texas A&M University
- * January 2026
+ * @date 2026-01-02
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "unity.h"

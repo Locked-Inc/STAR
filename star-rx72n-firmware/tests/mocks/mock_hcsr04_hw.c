@@ -2,8 +2,8 @@
  * @file mock_hcsr04_hw.c
  * @brief Mock HC-SR04 Hardware Layer Implementation
  *
- * STAR Project - Texas A&M University
- * January 2026
+ * @date 2026-01-02
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "mock_hcsr04_hw.h"
