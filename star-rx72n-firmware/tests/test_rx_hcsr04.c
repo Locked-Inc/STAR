@@ -382,10 +382,56 @@ test_hcsr04_stats_reset(void)
   TEST_ASSERT_EQUAL_UINT32(0, measurements);
 }
 
+void
+test_hcsr04_measure_out_of_range_too_close(void)
+{
+  rx_hcsr04_init(&s_sensor, &s_config);
+
+  /* Simulate 1cm echo (too close, <2cm minimum) */
+  mock_hcsr04_hw_set_echo_time(NULL, 58); /* 58us = 1cm */
+  mock_hcsr04_hw_set_auto_advance(NULL, true, 10);
+
+  float    distance;
+  rx_err_t err = rx_hcsr04_measure_blocking(&s_sensor, &distance);
+
+  TEST_ASSERT_EQUAL(k_rx_err_out_of_range, err);
+}
+
 /* =============================================================================
- * Async API Tests (Basic)
+ * Async API Tests
  * =============================================================================
  */
+
+/* Callback tracking for async tests */
+static bool               s_async_callback_invoked = false;
+static rx_hcsr04_result_t s_async_callback_result;
+
+static void
+test_async_callback(rx_hcsr04_t* handle, const rx_hcsr04_result_t* result, void* user_data)
+{
+  (void)handle;
+  (void)user_data;
+  s_async_callback_invoked = true;
+  s_async_callback_result  = *result;
+}
+
+void
+test_hcsr04_measure_async_callback_invoked(void)
+{
+  s_async_callback_invoked = false;
+  rx_hcsr04_init(&s_sensor, &s_config);
+
+  /* Simulate 100cm echo */
+  mock_hcsr04_hw_set_echo_time(NULL, 5800); /* 5800us = 100cm */
+  mock_hcsr04_hw_set_auto_advance(NULL, true, 10);
+
+  rx_err_t err = rx_hcsr04_measure_async(&s_sensor, test_async_callback, NULL);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  TEST_ASSERT_TRUE(s_async_callback_invoked);
+  TEST_ASSERT_FLOAT_WITHIN(1.0f, 100.0f, s_async_callback_result.distance_cm);
+  TEST_ASSERT_EQUAL(k_rx_ok, s_async_callback_result.status);
+}
 
 void
 test_hcsr04_is_busy_initial_false(void)
@@ -429,6 +475,7 @@ main(void)
   RUN_TEST(test_hcsr04_measure_100cm);
   RUN_TEST(test_hcsr04_measure_max_range_400cm);
   RUN_TEST(test_hcsr04_measure_timeout);
+  RUN_TEST(test_hcsr04_measure_out_of_range_too_close);
   RUN_TEST(test_hcsr04_measure_null_handle_fails);
   RUN_TEST(test_hcsr04_measure_null_output_fails);
   RUN_TEST(test_hcsr04_measure_not_initialized_fails);
@@ -448,6 +495,7 @@ main(void)
   RUN_TEST(test_hcsr04_stats_reset);
 
   /* Async API tests */
+  RUN_TEST(test_hcsr04_measure_async_callback_invoked);
   RUN_TEST(test_hcsr04_is_busy_initial_false);
   RUN_TEST(test_hcsr04_is_busy_null_returns_false);
 

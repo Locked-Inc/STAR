@@ -215,16 +215,17 @@ rx_err_t rx_hcsr04_measure(rx_hcsr04_t* handle, rx_hcsr04_result_t* result);
 /**
  * @brief Start asynchronous measurement
  *
- * Initiates measurement and returns immediately. Callback is invoked
- * when measurement completes or times out.
+ * Initiates measurement and invokes callback with result.
  *
- * Implementation uses a ThreadX worker thread for simplicity.
+ * @note Current implementation is synchronous - the callback is invoked
+ *       before this function returns. True non-blocking operation with
+ *       ThreadX worker thread is a planned future enhancement.
  *
  * @param[in] handle    Sensor handle
  * @param[in] callback  Completion callback (required)
  * @param[in] user_data User context passed to callback (can be NULL)
  *
- * @return k_rx_ok if measurement started
+ * @return k_rx_ok if measurement completed and callback invoked
  * @return k_rx_err_null_pointer if handle or callback is NULL
  * @return k_rx_err_invalid_state if not initialized
  * @return k_rx_err_busy if measurement already in progress
