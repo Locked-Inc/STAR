@@ -17,8 +17,8 @@
 #include <string.h>
 
 #include "hardware.h"
-#include "rx72n_cmt_regs.h"
 #include "rx72n_clock.h"
+#include "rx72n_cmt_regs.h"
 #include "rx72n_regs.h"
 #include "rx_bus_types.h"
 #include "rx_check.h"
@@ -72,16 +72,16 @@ static onewire_state_entry_t s_state_pool[k_onewire_max_instances];
  * ticks to ensure consistent timing independent of compiler optimizations.
  */
 typedef enum {
-  k_onewire_prcr_unlock          = 0xA50B,
-  k_onewire_prcr_lock            = 0xA500,
-  k_onewire_mstpb_cmt_bit        = 15,          /**< CMT module stop bit in MSTPCRB */
-  k_onewire_cmt3_start_bit       = 1,           /**< CMSTR1 bit controlling CMT3 */
-  k_onewire_cmt_divider_setting  = 0,           /**< CKS = 0 -> PCLKB/8 */
-  k_onewire_cmt_divider_value    = 8,           /**< Actual divider value */
-  k_onewire_cmt_clk_shift        = 0,           /**< CMCR clock select shift */
-  k_onewire_timer_counter_max    = 0xFFFF,
-  k_onewire_us_per_second        = 1000000UL,
-  k_onewire_timer_rounding       = k_onewire_us_per_second - 1UL,
+  k_onewire_prcr_unlock         = 0xA50B,
+  k_onewire_prcr_lock           = 0xA500,
+  k_onewire_mstpb_cmt_bit       = 15, /**< CMT module stop bit in MSTPCRB */
+  k_onewire_cmt3_start_bit      = 1,  /**< CMSTR1 bit controlling CMT3 */
+  k_onewire_cmt_divider_setting = 0,  /**< CKS = 0 -> PCLKB/8 */
+  k_onewire_cmt_divider_value   = 8,  /**< Actual divider value */
+  k_onewire_cmt_clk_shift       = 0,  /**< CMCR clock select shift */
+  k_onewire_timer_counter_max   = 0xFFFF,
+  k_onewire_us_per_second       = 1000000UL,
+  k_onewire_timer_rounding      = k_onewire_us_per_second - 1UL,
 } onewire_delay_hw_constants_t;
 
 static bool s_delay_timer_initialized = false;
@@ -96,9 +96,9 @@ static void internal_delay_timer_init(void)
   }
 
   /* Enable CMT module clock */
-  SYSTEM.prcr   = k_onewire_prcr_unlock;
+  SYSTEM.prcr = k_onewire_prcr_unlock;
   SYSTEM.mstpcrb &= ~(1UL << k_onewire_mstpb_cmt_bit);
-  SYSTEM.prcr   = k_onewire_prcr_lock;
+  SYSTEM.prcr = k_onewire_prcr_lock;
 
   /* Stop CMT3 before reconfiguration */
   CMT_CTRL.cmstr1 &= ~(1U << k_onewire_cmt3_start_bit);
@@ -126,7 +126,7 @@ static void internal_delay_us(uint32_t microseconds)
   internal_delay_timer_init();
 
   const uint32_t timer_hz = k_pclkb_hz / k_onewire_cmt_divider_value;
-  uint64_t ticks = ((uint64_t)microseconds * (uint64_t)timer_hz + k_onewire_timer_rounding) /
+  uint64_t       ticks = ((uint64_t)microseconds * (uint64_t)timer_hz + k_onewire_timer_rounding) /
                    k_onewire_us_per_second;
   if (ticks == 0ULL) {
     ticks = 1ULL;
@@ -591,18 +591,18 @@ typedef struct {
  * @param[in,out] ctx Context structure with result field
  * @param[in] check_initialized True to also check initialization status
  */
-#define CHECK_ONEWIRE_BUS(bus_config, ctx, check_initialized)                   \
-  do {                                                                           \
-    if ((bus_config)->type != k_bus_type_onewire) {                              \
-      rx_log_error(s_tag, "Bus is not OneWire type");                            \
-      (ctx)->result = k_rx_err_invalid_arg;                                      \
-      return (ctx)->result;                                                      \
-    }                                                                            \
-    if ((check_initialized) && !(bus_config)->initialized) {                     \
-      rx_log_error(s_tag, "Bus not initialized");                                \
-      (ctx)->result = k_rx_err_invalid_state;                                    \
-      return (ctx)->result;                                                      \
-    }                                                                            \
+#define CHECK_ONEWIRE_BUS(bus_config, ctx, check_initialized)                                      \
+  do {                                                                                             \
+    if ((bus_config)->type != k_bus_type_onewire) {                                                \
+      rx_log_error(s_tag, "Bus is not OneWire type");                                              \
+      (ctx)->result = k_rx_err_invalid_arg;                                                        \
+      return (ctx)->result;                                                                        \
+    }                                                                                              \
+    if ((check_initialized) && !(bus_config)->initialized) {                                       \
+      rx_log_error(s_tag, "Bus not initialized");                                                  \
+      (ctx)->result = k_rx_err_invalid_state;                                                      \
+      return (ctx)->result;                                                                        \
+    }                                                                                              \
   } while (0)
 
 static rx_err_t internal_onewire_init_callback(rx_bus_config_t* bus_config, void* user_ctx)
