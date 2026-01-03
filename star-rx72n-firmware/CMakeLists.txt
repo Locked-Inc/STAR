@@ -241,6 +241,13 @@ add_library(rx_bq4050 STATIC
 target_include_directories(rx_bq4050 PUBLIC lib/rx_bq4050/inc)
 target_link_libraries(rx_bq4050 PUBLIC rx_bus rx_core)
 
+# rx_ds18b20 - DS18B20 temperature sensor driver
+add_library(rx_ds18b20 STATIC
+    lib/rx_ds18b20/src/rx_ds18b20.c
+)
+target_include_directories(rx_ds18b20 PUBLIC lib/rx_ds18b20/inc)
+target_link_libraries(rx_ds18b20 PUBLIC rx_core rx_bus)
+
 # =============================================================================
 # Application Source Files
 # =============================================================================
@@ -280,6 +287,7 @@ target_link_libraries(${PROJECT_NAME}.elf
     rx_usb_comm
     rx_drv8243
     rx_bq4050
+    rx_ds18b20
 )
 
 # Linker script
@@ -329,6 +337,7 @@ message(STATUS "  rx_usb         - USB CDC-ACM driver")
 message(STATUS "  rx_usb_comm    - USB communication layer")
 message(STATUS "  rx_drv8243     - DRV8243 H-bridge driver")
 message(STATUS "  rx_bq4050      - BQ4050 battery fuel gauge (SBS 1.1)")
+message(STATUS "  rx_ds18b20     - DS18B20 temperature sensor (1-Wire)")
 message(STATUS "==============================================")
 
 # =============================================================================
