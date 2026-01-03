@@ -39,38 +39,30 @@
 #include "hardware.h"
 #include "rx_time_interface.h"
 
-/* Real hardware GPIO wrappers */
+/* Real hardware GPIO wrappers - propagate errors from HAL */
 static rx_err_t internal_gpio_set_output(uint8_t port, uint8_t pin)
 {
-  gpio_set_output(port, pin);
-  return k_rx_ok;
+  return gpio_set_output(port, pin);
 }
 
 static rx_err_t internal_gpio_set_input(uint8_t port, uint8_t pin)
 {
-  gpio_set_input(port, pin);
-  return k_rx_ok;
+  return gpio_set_input(port, pin);
 }
 
 static rx_err_t internal_gpio_write_high(uint8_t port, uint8_t pin)
 {
-  gpio_write_high(port, pin);
-  return k_rx_ok;
+  return gpio_write_high(port, pin);
 }
 
 static rx_err_t internal_gpio_write_low(uint8_t port, uint8_t pin)
 {
-  gpio_write_low(port, pin);
-  return k_rx_ok;
+  return gpio_write_low(port, pin);
 }
 
 static rx_err_t internal_gpio_read(uint8_t port, uint8_t pin, bool* value)
 {
-  if (value == NULL) {
-    return k_rx_err_null_pointer;
-  }
-  *value = gpio_read(port, pin);
-  return k_rx_ok;
+  return gpio_read(port, pin, value);
 }
 
 /* Real timing functions (from CMT or timer) */
@@ -82,6 +74,10 @@ extern uint32_t get_time_us(void);
 #define GPIO_WRITE_HIGH(port, pin) internal_gpio_write_high(port, pin)
 #define GPIO_WRITE_LOW(port, pin)  internal_gpio_write_low(port, pin)
 #define GPIO_READ(port, pin, val)  internal_gpio_read(port, pin, val)
+/*
+ * GPIO_DEINIT is intentionally a no-op: the RX72N GPIO HAL does not provide
+ * pin deallocation. GPIO pins are static resources allocated at init time.
+ */
 #define GPIO_DEINIT(port, pin)     k_rx_ok
 #define DELAY_US(us)               delay_us(us)
 #define GET_TIME_US()              get_time_us()
@@ -292,7 +288,8 @@ rx_err_t rx_hcsr04_measure_blocking(rx_hcsr04_t* handle, float* distance_cm)
   *distance_cm = rx_hcsr04_echo_to_cm(echo_time_us);
 
   /* Validate range */
-  if (*distance_cm < (float)k_hcsr04_min_distance_cm) {
+  if (*distance_cm < (float)k_hcsr04_min_distance_cm ||
+      *distance_cm > (float)k_hcsr04_max_distance_cm) {
     handle->range_error_count++;
     return k_rx_err_out_of_range;
   }
@@ -342,7 +339,8 @@ rx_err_t rx_hcsr04_measure(rx_hcsr04_t* handle, rx_hcsr04_result_t* result)
   result->status      = k_rx_ok;
 
   /* Validate range */
-  if (result->distance_cm < (float)k_hcsr04_min_distance_cm) {
+  if (result->distance_cm < (float)k_hcsr04_min_distance_cm ||
+      result->distance_cm > (float)k_hcsr04_max_distance_cm) {
     handle->range_error_count++;
     result->status = k_rx_err_out_of_range;
     return k_rx_err_out_of_range;
