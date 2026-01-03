@@ -127,7 +127,7 @@ add_library(rx_bus STATIC
     lib/rx_bus/src/rx_bus_onewire.c
 )
 target_include_directories(rx_bus PUBLIC lib/rx_bus/inc)
-target_link_libraries(rx_bus PUBLIC rx_core rx_hal)
+target_link_libraries(rx_bus PUBLIC rx_core rx_hal rx_crc)
 
 # rx_encoder - MTU encoder driver
 add_library(rx_encoder STATIC

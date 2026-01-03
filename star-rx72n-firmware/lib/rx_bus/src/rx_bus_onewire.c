@@ -17,6 +17,9 @@
 #include <string.h>
 
 #include "hardware.h"
+#include "rx72n_cmt_regs.h"
+#include "rx72n_clock.h"
+#include "rx72n_regs.h"
 #include "rx_bus_types.h"
 #include "rx_check.h"
 #include "rx_crc.h"
@@ -504,7 +507,7 @@ static rx_err_t internal_search_iteration(rx_bus_config_t*         bus_config,
 
   uint8_t crc = rx_crc8_maxim(rom, k_onewire_rom_bytes - 1U);
   if (crc != rom[k_onewire_rom_bytes - 1U]) {
-    return k_rx_err_crc;
+    return k_rx_err_crc_mismatch;
   }
 
   *device_found = true;
@@ -579,15 +582,34 @@ typedef struct {
  * =============================================================================
  */
 
+/**
+ * @brief Helper macro to validate OneWire bus type and initialization state.
+ *
+ * Reduces repetitive validation code across callback functions.
+ *
+ * @param[in] bus_config Bus configuration to validate
+ * @param[in,out] ctx Context structure with result field
+ * @param[in] check_initialized True to also check initialization status
+ */
+#define CHECK_ONEWIRE_BUS(bus_config, ctx, check_initialized)                   \
+  do {                                                                           \
+    if ((bus_config)->type != k_bus_type_onewire) {                              \
+      rx_log_error(s_tag, "Bus is not OneWire type");                            \
+      (ctx)->result = k_rx_err_invalid_arg;                                      \
+      return (ctx)->result;                                                      \
+    }                                                                            \
+    if ((check_initialized) && !(bus_config)->initialized) {                     \
+      rx_log_error(s_tag, "Bus not initialized");                                \
+      (ctx)->result = k_rx_err_invalid_state;                                    \
+      return (ctx)->result;                                                      \
+    }                                                                            \
+  } while (0)
+
 static rx_err_t internal_onewire_init_callback(rx_bus_config_t* bus_config, void* user_ctx)
 {
   onewire_simple_ctx_t* ctx = (onewire_simple_ctx_t*)user_ctx;
 
-  if (bus_config->type != k_bus_type_onewire) {
-    rx_log_error(s_tag, "Bus is not OneWire type");
-    ctx->result = k_rx_err_invalid_arg;
-    return ctx->result;
-  }
+  CHECK_ONEWIRE_BUS(bus_config, ctx, false);
 
   onewire_runtime_state_t* state = NULL;
   rx_err_t                 err   = internal_acquire_state(bus_config, &state);
@@ -614,17 +636,7 @@ static rx_err_t internal_onewire_reset_callback(rx_bus_config_t* bus_config, voi
 {
   onewire_reset_ctx_t* ctx = (onewire_reset_ctx_t*)user_ctx;
 
-  if (bus_config->type != k_bus_type_onewire) {
-    rx_log_error(s_tag, "Bus is not OneWire type");
-    ctx->result = k_rx_err_invalid_arg;
-    return ctx->result;
-  }
-
-  if (!bus_config->initialized) {
-    rx_log_error(s_tag, "Bus not initialized");
-    ctx->result = k_rx_err_invalid_state;
-    return ctx->result;
-  }
+  CHECK_ONEWIRE_BUS(bus_config, ctx, true);
 
   onewire_runtime_state_t* state = internal_get_state(bus_config);
   if (state == NULL) {
@@ -931,7 +943,7 @@ static rx_err_t internal_onewire_read_rom_callback(rx_bus_config_t* bus_config, 
 
   uint8_t crc = rx_crc8_maxim(ctx->rom, k_onewire_rom_bytes - 1U);
   if (crc != ctx->rom[k_onewire_rom_bytes - 1U]) {
-    ctx->result = k_rx_err_crc;
+    ctx->result = k_rx_err_crc_mismatch;
     return ctx->result;
   }
 
