@@ -12,8 +12,8 @@
  * - Error injection for timeout and range error testing
  * - No actual hardware access (runs on host)
  *
- * STAR Project - Texas A&M University
- * January 2026
+ * @date 2026-01-02
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef MOCK_HCSR04_HW_H

@@ -4,8 +4,8 @@
  *
  * GPIO-based driver for HC-SR04 ultrasonic distance sensors.
  *
- * STAR Project - Texas A&M University
- * January 2026
+ * @date 2026-01-02
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "rx_hcsr04.h"
@@ -94,11 +94,9 @@ extern uint32_t get_time_us(void);
  */
 
 /**
- * @brief Conversion constants
+ * @brief Centimeters per inch * 100 (fixed point: 2.54 * 100 = 254)
  */
-typedef enum {
-  k_cm_per_inch_x100 = 254, /**< 2.54 cm/inch * 100 (fixed point) */
-} conversion_constants_t;
+static const uint32_t s_cm_per_inch_x100 = 254;
 
 /* =============================================================================
  * Internal Helper Functions
@@ -136,6 +134,7 @@ internal_wait_for_echo(const rx_hcsr04_t* handle, bool target_state, uint32_t ti
 {
   uint32_t start_time = GET_TIME_US();
   bool     pin_state  = false;
+  uint32_t elapsed    = 0;
 
   while (true) {
     GPIO_READ(handle->echo_port, handle->echo_pin, &pin_state);
@@ -145,7 +144,7 @@ internal_wait_for_echo(const rx_hcsr04_t* handle, bool target_state, uint32_t ti
     }
 
     /* Check for timeout */
-    uint32_t elapsed = GET_TIME_US() - start_time;
+    elapsed = GET_TIME_US() - start_time;
     if (elapsed >= timeout_us) {
       return k_rx_err_timeout;
     }
@@ -418,7 +417,7 @@ rx_err_t rx_hcsr04_cancel(rx_hcsr04_t* handle)
 float rx_hcsr04_cm_to_inches(float distance_cm)
 {
   /* 1 inch = 2.54 cm */
-  return distance_cm * 100.0f / (float)k_cm_per_inch_x100;
+  return distance_cm * 100.0f / (float)s_cm_per_inch_x100;
 }
 
 float rx_hcsr04_echo_to_cm(uint32_t echo_time_us)
