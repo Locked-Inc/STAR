@@ -17,77 +17,7 @@
 
 #include <stddef.h>
 
-/* =============================================================================
- * Platform Abstraction
- * =============================================================================
- */
-
-/*
- * When building for host testing, use mock functions.
- * When building for RX72N, use real hardware functions.
- */
-#ifdef RX_HCSR04_USE_MOCK
-
-#include "mock_hcsr04_hw.h"
-
-#define GPIO_SET_OUTPUT(port, pin) (mock_gpio_set_output((port), (pin)))
-#define GPIO_SET_INPUT(port, pin)  (mock_gpio_set_input((port), (pin)))
-#define GPIO_WRITE_HIGH(port, pin) (mock_gpio_write_high((port), (pin)))
-#define GPIO_WRITE_LOW(port, pin)  (mock_gpio_write_low((port), (pin)))
-#define GPIO_READ(port, pin, val)  (mock_gpio_read((port), (pin), (val)))
-#define GPIO_DEINIT(port, pin)     (mock_gpio_deinit((port), (pin)))
-#define DELAY_US(us)               (mock_delay_us((us)))
-#define GET_TIME_US()              (mock_get_time_us())
-
-#else
-
-#include "hardware.h"
-#include "rx_time_interface.h"
-
-/* Real hardware GPIO wrappers - propagate errors from HAL */
-static rx_err_t internal_gpio_set_output(uint8_t port, uint8_t pin)
-{
-  return gpio_set_output(port, pin);
-}
-
-static rx_err_t internal_gpio_set_input(uint8_t port, uint8_t pin)
-{
-  return gpio_set_input(port, pin);
-}
-
-static rx_err_t internal_gpio_write_high(uint8_t port, uint8_t pin)
-{
-  return gpio_write_high(port, pin);
-}
-
-static rx_err_t internal_gpio_write_low(uint8_t port, uint8_t pin)
-{
-  return gpio_write_low(port, pin);
-}
-
-static rx_err_t internal_gpio_read(uint8_t port, uint8_t pin, bool* value)
-{
-  return gpio_read(port, pin, value);
-}
-
-/* Real timing functions (from CMT or timer) */
-extern void     delay_us(uint32_t us);
-extern uint32_t get_time_us(void);
-
-#define GPIO_SET_OUTPUT(port, pin) (internal_gpio_set_output((port), (pin)))
-#define GPIO_SET_INPUT(port, pin)  (internal_gpio_set_input((port), (pin)))
-#define GPIO_WRITE_HIGH(port, pin) (internal_gpio_write_high((port), (pin)))
-#define GPIO_WRITE_LOW(port, pin)  (internal_gpio_write_low((port), (pin)))
-#define GPIO_READ(port, pin, val)  (internal_gpio_read((port), (pin), (val)))
-/*
- * GPIO_DEINIT is intentionally a no-op: the RX72N GPIO HAL does not provide
- * pin deallocation. GPIO pins are static resources allocated at init time.
- */
-#define GPIO_DEINIT(port, pin)     (k_rx_ok)
-#define DELAY_US(us)               (delay_us((us)))
-#define GET_TIME_US()              (get_time_us())
-
-#endif /* RX_HCSR04_USE_MOCK */
+#include "rx_hcsr04_hal.h"
 
 /* =============================================================================
  * Constants
@@ -112,13 +42,13 @@ static const uint32_t s_cm_per_inch_x100 = 254;
 static void internal_send_trigger_pulse(const rx_hcsr04_t* handle)
 {
   /* Ensure trigger is low initially */
-  GPIO_WRITE_LOW(handle->trigger_port, handle->trigger_pin);
-  DELAY_US(2);
+  hcsr04_hal_gpio_write_low(handle->trigger_port, handle->trigger_pin);
+  hcsr04_hal_delay_us(2);
 
   /* Send 10us HIGH pulse */
-  GPIO_WRITE_HIGH(handle->trigger_port, handle->trigger_pin);
-  DELAY_US(k_hcsr04_trigger_pulse_us);
-  GPIO_WRITE_LOW(handle->trigger_port, handle->trigger_pin);
+  hcsr04_hal_gpio_write_high(handle->trigger_port, handle->trigger_pin);
+  hcsr04_hal_delay_us(k_hcsr04_trigger_pulse_us);
+  hcsr04_hal_gpio_write_low(handle->trigger_port, handle->trigger_pin);
 }
 
 /**
@@ -133,19 +63,19 @@ static void internal_send_trigger_pulse(const rx_hcsr04_t* handle)
 static rx_err_t
 internal_wait_for_echo(const rx_hcsr04_t* handle, bool target_state, uint32_t timeout_us)
 {
-  uint32_t start_time = GET_TIME_US();
+  uint32_t start_time = hcsr04_hal_get_time_us();
   bool     pin_state  = false;
   uint32_t elapsed    = 0;
 
   while (true) {
-    GPIO_READ(handle->echo_port, handle->echo_pin, &pin_state);
+    hcsr04_hal_gpio_read(handle->echo_port, handle->echo_pin, &pin_state);
 
     if (pin_state == target_state) {
       return k_rx_ok;
     }
 
     /* Check for timeout */
-    elapsed = GET_TIME_US() - start_time;
+    elapsed = hcsr04_hal_get_time_us() - start_time;
     if (elapsed >= timeout_us) {
       return k_rx_err_timeout;
     }
@@ -170,7 +100,7 @@ static rx_err_t internal_measure_echo_pulse(rx_hcsr04_t* handle, uint32_t* durat
     return err;
   }
 
-  uint32_t pulse_start = GET_TIME_US();
+  uint32_t pulse_start = hcsr04_hal_get_time_us();
 
   /* Wait for echo to go LOW (pulse end) */
   err = internal_wait_for_echo(handle, false, handle->timeout_us);
@@ -178,7 +108,7 @@ static rx_err_t internal_measure_echo_pulse(rx_hcsr04_t* handle, uint32_t* durat
     return err;
   }
 
-  uint32_t pulse_end = GET_TIME_US();
+  uint32_t pulse_end = hcsr04_hal_get_time_us();
   *duration_us       = pulse_end - pulse_start;
 
   return k_rx_ok;
@@ -202,16 +132,16 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
   }
 
   /* Configure trigger pin as output */
-  err = GPIO_SET_OUTPUT(config->trigger_port, config->trigger_pin);
+  err = hcsr04_hal_gpio_set_output(config->trigger_port, config->trigger_pin);
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Configure echo pin as input */
-  err = GPIO_SET_INPUT(config->echo_port, config->echo_pin);
+  err = hcsr04_hal_gpio_set_input(config->echo_port, config->echo_pin);
   if (err != k_rx_ok) {
     /* Cleanup trigger pin */
-    GPIO_DEINIT(config->trigger_port, config->trigger_pin);
+    hcsr04_hal_gpio_deinit(config->trigger_port, config->trigger_pin);
     return err;
   }
 
@@ -230,7 +160,7 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
   handle->range_error_count = 0;
 
   /* Ensure trigger is low */
-  GPIO_WRITE_LOW(handle->trigger_port, handle->trigger_pin);
+  hcsr04_hal_gpio_write_low(handle->trigger_port, handle->trigger_pin);
 
   return k_rx_ok;
 }
@@ -246,8 +176,8 @@ rx_err_t rx_hcsr04_deinit(rx_hcsr04_t* handle)
   }
 
   /* Release GPIO pins */
-  GPIO_DEINIT(handle->trigger_port, handle->trigger_pin);
-  GPIO_DEINIT(handle->echo_port, handle->echo_pin);
+  hcsr04_hal_gpio_deinit(handle->trigger_port, handle->trigger_pin);
+  hcsr04_hal_gpio_deinit(handle->echo_port, handle->echo_pin);
 
   /* Clear handle */
   handle->initialized = false;
