@@ -219,6 +219,62 @@ rx_err_t rx_bus_config_init_smbus(rx_bus_config_t* config,
 rx_err_t
 rx_bus_config_init_onewire(rx_bus_config_t* config, const char* name, uint8_t port, uint8_t pin);
 
+/* =============================================================================
+ * UART Bus Configuration
+ * =============================================================================
+ */
+
+/**
+ * @brief Initialize UART bus configuration
+ *
+ * Configures a UART channel for bus manager control.
+ * Uses SCI peripheral for serial communication.
+ *
+ * @param[out] config Pointer to bus config structure to initialize
+ * @param[in] name Unique bus name (must remain valid for lifetime)
+ * @param[in] channel SCI channel (0-12)
+ * @param[in] tx_port TX pin port
+ * @param[in] tx_pin TX pin number
+ * @param[in] rx_port RX pin port
+ * @param[in] rx_pin RX pin number
+ * @param[in] baudrate Baud rate (e.g., 9600, 115200)
+ *
+ * @return k_rx_ok on success
+ * @return k_rx_err_null_pointer if config or name is NULL
+ * @return k_rx_err_invalid_arg if channel or pins are invalid
+ *
+ * @note The config structure must remain valid for the lifetime of bus usage
+ * @note The name string must remain valid (use string literals or static storage)
+ *
+ * @example
+ * @code
+ * // Declare static config for debug UART (SCI9)
+ * static rx_bus_config_t debug_uart_config;
+ *
+ * // Initialize UART on SCI9 (PB7/TXD9, PB6/RXD9)
+ * rx_bus_config_init_uart(&debug_uart_config, "debug_uart",
+ *                         9,        // SCI9
+ *                         0x0B, 7,  // TX: Port B, Pin 7
+ *                         0x0B, 6,  // RX: Port B, Pin 6
+ *                         115200);  // 115200 baud
+ *
+ * // Add to bus manager
+ * rx_bus_manager_add_bus(&bus_manager, &debug_uart_config);
+ *
+ * // Use UART operations
+ * rx_bus_uart_init(&bus_manager, "debug_uart");
+ * rx_bus_uart_puts(&bus_manager, "debug_uart", "Hello World\n");
+ * @endcode
+ */
+rx_err_t rx_bus_config_init_uart(rx_bus_config_t* config,
+                                 const char*      name,
+                                 uint8_t          channel,
+                                 uint8_t          tx_port,
+                                 uint8_t          tx_pin,
+                                 uint8_t          rx_port,
+                                 uint8_t          rx_pin,
+                                 uint32_t         baudrate);
+
 #ifdef __cplusplus
 }
 #endif

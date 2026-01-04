@@ -159,6 +159,13 @@ typedef enum {
 } rx_adc_limits_t;
 
 /**
+ * @brief RX72N SCI channel count
+ */
+typedef enum {
+  k_sci_channel_count = 13, /**< SCI channels 0-12 */
+} rx_sci_limits_t;
+
+/**
  * @brief RX72N ADC channel limits
  */
 typedef enum {

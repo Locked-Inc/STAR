@@ -73,6 +73,7 @@ typedef enum {
   k_rx_err_busy          = 0x109, /**< Resource busy */
   k_rx_err_would_block   = 0x10A, /**< Operation would block */
   k_rx_err_exists        = 0x10B, /**< Already exists */
+  k_rx_err_empty         = 0x10C, /**< Empty (no data available) */
 
   /* Hardware Errors (0x200 - 0x2FF) */
   k_rx_err_hw_init_failed    = 0x201, /**< Hardware initialization failed */
