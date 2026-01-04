@@ -49,9 +49,12 @@ for\s*\(\s*;\s*;\s*\)        # for(;;)
 
 **Compliant Example:**
 ```c
-#define MAX_RETRIES (3)
+/* PREFER: Enum for integer constant */
+typedef enum {
+    k_max_retries = 3
+} retry_limits_t;
 
-for (uint8_t i = 0; i < MAX_RETRIES; i++) {
+for (uint8_t i = 0; i < k_max_retries; i++) {
     if (sensor_read() == RX_OK) {
         break;
     }
@@ -77,11 +80,14 @@ for (uint8_t i = 0; i < MAX_RETRIES; i++) {
 
 **Compliant Example:**
 ```c
-#define MAX_ITEMS (8)
-#define MAX_DESC_LEN (64)
+/* PREFER: Enum for compile-time array sizes */
+typedef enum {
+    k_max_items    = 8,
+    k_max_desc_len = 64
+} pool_limits_t;
 
 typedef struct {
-    char items[MAX_ITEMS][MAX_DESC_LEN];
+    char items[k_max_items][k_max_desc_len];
     uint8_t item_count;
 } static_pool_t;
 ```
@@ -213,6 +219,21 @@ static const float s_max_velocity_mps = 2.5f;
 
 /* ACCEPTABLE: Compile-time macro */
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+```
+
+**Non-Compliant Example (AVOID):**
+```c
+/* BAD: Using macros for simple constants */
+#define MAX_RETRIES (3)        // Should be enum
+#define TIMEOUT_MS (1000)      // Should be enum or const
+#define MAX_VELOCITY (2.5f)    // Should be const
+
+/* WHY BAD:
+ * - No type safety
+ * - Not visible in debugger
+ * - Can't take address
+ * - Harder to namespace
+ */
 ```
 
 ### Rule 9: Restrict Pointer Use
