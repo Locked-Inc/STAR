@@ -292,6 +292,112 @@ int main(void) {
 }
 ```
 
+#### 10. Doxygen File Headers
+
+**All `.c` and `.h` files must include proper Doxygen metadata tags:**
+
+```c
+/**
+ * @file my_driver.c
+ * @brief Brief description of the file
+ *
+ * Detailed description if needed.
+ *
+ * @date 2026-01-02
+ * @copyright Copyright (c) 2026 STAR Project
+ */
+```
+
+**Do NOT use plain text dates:**
+```c
+// WRONG: Plain text, not Doxygen tags
+ * STAR Project - Texas A&M University
+ * January 2026
+
+// CORRECT: Proper Doxygen tags
+ * @date 2026-01-02
+ * @copyright Copyright (c) 2026 STAR Project
+```
+
+#### 11. Single-Value Enums
+
+**Use `static const` instead of single-value enums:**
+
+```c
+// AVOID: Single-value enum (unused typedef)
+typedef enum {
+  k_timeout_ms = 1000,
+} timeout_constants_t;
+
+// PREFER: static const with s_ prefix
+static const uint32_t s_timeout_ms = 1000;
+```
+
+Enums are for **groups of related constants**. A single constant should use `static const`.
+
+#### 12. Variable Declaration Placement
+
+**Declare all variables at function start, not mid-block:**
+
+```c
+// AVOID: Declaration inside loop
+static rx_err_t wait_for_event(uint32_t timeout_us)
+{
+  uint32_t start = get_time_us();
+  while (true) {
+    uint32_t elapsed = get_time_us() - start;  // declared mid-function
+    if (elapsed >= timeout_us) return k_rx_err_timeout;
+  }
+}
+
+// PREFER: All declarations at function start
+static rx_err_t wait_for_event(uint32_t timeout_us)
+{
+  uint32_t start   = get_time_us();
+  uint32_t elapsed = 0;
+
+  while (true) {
+    elapsed = get_time_us() - start;
+    if (elapsed >= timeout_us) return k_rx_err_timeout;
+  }
+}
+```
+
+#### 13. HAL Wrapper Error Propagation
+
+**HAL wrapper functions must propagate errors, never discard return values:**
+
+```c
+// WRONG: Discards HAL errors
+static rx_err_t wrapper_set_output(uint8_t port, uint8_t pin)
+{
+  gpio_set_output(port, pin);  // return value ignored!
+  return k_rx_ok;
+}
+
+// CORRECT: Propagate HAL errors
+static rx_err_t wrapper_set_output(uint8_t port, uint8_t pin)
+{
+  return gpio_set_output(port, pin);
+}
+```
+
+#### 14. Range Validation
+
+**Always check both minimum AND maximum bounds:**
+
+```c
+// INCOMPLETE: Only checks minimum
+if (distance_cm < MIN_DISTANCE_CM) {
+  return k_rx_err_out_of_range;
+}
+
+// COMPLETE: Checks both bounds
+if (distance_cm < MIN_DISTANCE_CM || distance_cm > MAX_DISTANCE_CM) {
+  return k_rx_err_out_of_range;
+}
+```
+
 ## Project Structure
 
 ```
