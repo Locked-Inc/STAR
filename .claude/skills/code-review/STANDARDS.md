@@ -267,7 +267,7 @@ typedef struct rx_error_interface {
 | `_mps2` | m/s^2 | `accel_mps2` |
 | `_rad` | radians | `angle_rad` |
 | `_rad_per_s` | rad/s | `omega_rad_per_s` |
-| `_celsius` | degrees C | `temp_celsius` |
+| `_celsius` | degrees C | `temperature_celsius` |
 | `_ms` | milliseconds | `timeout_ms` |
 | `_us` | microseconds | `delay_us` |
 | `_ma` | milliamps | `current_ma` |
