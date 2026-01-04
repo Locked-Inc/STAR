@@ -20,7 +20,8 @@ Review rx_pid.c for NASA Power of 10 compliance
 2. **Read each file** - Analyze source code content
 3. **Apply NASA Power of 10 rules** - Check each rule from the checklist
 4. **Apply SOLID principles** - Validate architecture patterns
-5. **Generate report** - Produce structured markdown with findings
+5. **Check for tests** - If `tests/` directory exists, verify unit tests and integration tests are present
+6. **Generate report** - Produce structured markdown with findings
 
 ## NASA Power of 10 Rules Checklist
 
@@ -38,9 +39,11 @@ Review rx_pid.c for NASA Power of 10 compliance
 
 ### Rule 3: No Dynamic Memory After Initialization
 - [ ] No `malloc`/`calloc`/`realloc`/`free` in runtime code
-- [ ] All buffers statically allocated
+- [ ] **Exception**: Dynamic allocation is permitted during initialization phase (before main control loop starts)
+- [ ] All runtime buffers statically allocated
 - [ ] Fixed-size arrays with defined limits
 - Search patterns: `\bmalloc\b`, `\bcalloc\b`, `\brealloc\b`, `\bfree\b`
+- **Important**: Verify allocation occurs in `*_init()` functions, not in control loops or ISRs
 
 ### Rule 4: Keep Functions Short (~60 lines)
 - [ ] Functions do not exceed 60 lines (excluding comments/blank lines)
@@ -49,10 +52,12 @@ Review rx_pid.c for NASA Power of 10 compliance
 
 ### Rule 5: Use Assertions/Validation
 - [ ] Minimum 2 validation checks per function
-- [ ] NULL pointer checks for all pointer parameters
-- [ ] Range validation for numeric inputs
-- [ ] State validation (e.g., `!handle->initialized`)
+- [ ] **Pre-conditions**: NULL pointer checks for all pointer parameters
+- [ ] **Pre-conditions**: Range validation for numeric inputs
+- [ ] **Pre-conditions**: State validation (e.g., `!handle->initialized`)
+- [ ] **Post-conditions**: Validate outputs and invariants where applicable
 - Patterns: `RX_CHECK_`, `assert(`, `if\s*\([^)]*==\s*NULL`
+- **Good example**: See `star-rx72n-firmware/lib/rx_pid/src/rx_pid.c::rx_pid_compute()` for comprehensive pre-condition and post-condition validation
 
 ### Rule 6: Declare Data at Smallest Scope
 - [ ] Variables declared close to first use
@@ -142,11 +147,18 @@ Generate a markdown report with:
 # Code Review Report: [Directory/File]
 
 ## Summary
-| Category | Status | Issues |
-|----------|--------|--------|
-| NASA Power of 10 | COMPLIANT/NON-COMPLIANT | N |
-| SOLID Principles | COMPLIANT/NON-COMPLIANT | N |
-| Style Guide | COMPLIANT/NON-COMPLIANT | N |
+| Category | Status | Critical | High | Medium | Low |
+|----------|--------|----------|------|--------|-----|
+| NASA Power of 10 | COMPLIANT/NON-COMPLIANT | N | N | N | N |
+| SOLID Principles | COMPLIANT/NON-COMPLIANT | N | N | N | N |
+| Style Guide | COMPLIANT/NON-COMPLIANT | N | N | N | N |
+| **Total** | | **N** | **N** | **N** | **N** |
+
+### Severity Legend
+- **CRITICAL**: Safety violation, undefined behavior, memory corruption (Rules 1, 3, 7, 9)
+- **HIGH**: Verification issue, could cause runtime failure (Rules 2, 4, 5, 10)
+- **MEDIUM**: Maintainability concern, style violation (Rule 6, 8, SOLID, naming)
+- **LOW**: Minor style inconsistency, documentation improvement
 
 ## NASA Power of 10 Findings
 
@@ -154,24 +166,30 @@ Generate a markdown report with:
 **Status:** COMPLIANT / NON-COMPLIANT / INTENTIONAL DEVIATION
 
 **Findings:**
-- `file.c:123` - Description of issue
-- `file.c:456` - Description of issue
+- **[SEVERITY]** `file.c:123` - Description of issue
+- **[SEVERITY]** `file.c:456` - Description of issue
 
 **Recommendation:** How to fix
 
 ## SOLID Principle Findings
-[Similar structure]
+[Similar structure with severity tags]
 
 ## Style Guide Findings
-[Similar structure]
+[Similar structure with severity tags]
+
+## Test Coverage
+- [ ] Unit tests present for module
+- [ ] Integration tests available
+- [ ] Test coverage: N%
 
 ## Positive Observations
 - What the code does well
 - Good patterns observed
 
 ## Recommendations
-1. Priority fixes with code examples
-2. References to documentation
+1. **Critical Priority**: [List critical fixes first]
+2. **High Priority**: [List high priority fixes]
+3. **Medium/Low Priority**: [List other improvements]
 ```
 
 ## Reference Documentation
