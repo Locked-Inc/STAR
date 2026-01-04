@@ -220,6 +220,7 @@ rx_err_t rx_hcsr04_measure(rx_hcsr04_t* handle, rx_hcsr04_result_t* result);
  * @note Current implementation is synchronous - the callback is invoked
  *       before this function returns. True non-blocking operation with
  *       ThreadX worker thread is a planned future enhancement.
+ *       See: https://github.com/Locked-Inc/STAR/issues/70
  *
  * @param[in] handle    Sensor handle
  * @param[in] callback  Completion callback (required)
