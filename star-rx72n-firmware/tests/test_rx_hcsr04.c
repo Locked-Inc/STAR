@@ -1,20 +1,32 @@
+/* tests/test_rx_hcsr04.c */
+
 /**
  * @file test_rx_hcsr04.c
  * @brief Unit Tests for HC-SR04 Ultrasonic Distance Sensor Driver
  *
- * Tests the HC-SR04 driver using mock GPIO and timing functions.
- * All tests run on the host (not on RX72N hardware).
+ * @details
+ * Comprehensive unit tests for the HC-SR04 ultrasonic distance sensor driver.
+ * Tests use mock GPIO and timing functions to simulate hardware behavior on the
+ * host without requiring actual RX72N hardware or HC-SR04 sensors.
+ *
+ * Test Coverage:
+ * - Initialization and deinitialization
+ * - Distance measurements (blocking and async)
+ * - Timeout handling
+ * - Range validation (too close/too far)
+ * - Unit conversions (cm to inches, echo time to distance)
+ * - Statistics tracking
+ * - Error conditions
  *
  * @date 2026-01-02
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#include "unity.h"
-
 #include <string.h>
 
 #include "mock_hcsr04_hw.h"
 #include "rx_hcsr04.h"
+#include "unity.h"
 
 /* =============================================================================
  * Test Fixtures
@@ -27,8 +39,7 @@ static rx_hcsr04_config_t s_config;
 /**
  * @brief Setup function run before each test
  */
-void
-setUp(void)
+void setUp(void)
 {
   /* Initialize mock hardware */
   mock_hcsr04_hw_init(NULL);
@@ -47,8 +58,7 @@ setUp(void)
 /**
  * @brief Teardown function run after each test
  */
-void
-tearDown(void)
+void tearDown(void)
 {
   mock_hcsr04_hw_deinit(NULL);
 }
@@ -58,8 +68,7 @@ tearDown(void)
  * =============================================================================
  */
 
-void
-test_hcsr04_init_success(void)
+void test_hcsr04_init_success(void)
 {
   rx_err_t err = rx_hcsr04_init(&s_sensor, &s_config);
 
@@ -71,22 +80,19 @@ test_hcsr04_init_success(void)
   TEST_ASSERT_EQUAL(s_config.echo_pin, s_sensor.echo_pin);
 }
 
-void
-test_hcsr04_init_null_handle_fails(void)
+void test_hcsr04_init_null_handle_fails(void)
 {
   rx_err_t err = rx_hcsr04_init(NULL, &s_config);
   TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
-void
-test_hcsr04_init_null_config_fails(void)
+void test_hcsr04_init_null_config_fails(void)
 {
   rx_err_t err = rx_hcsr04_init(&s_sensor, NULL);
   TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
-void
-test_hcsr04_init_configures_gpio(void)
+void test_hcsr04_init_configures_gpio(void)
 {
   rx_hcsr04_init(&s_sensor, &s_config);
 
@@ -95,8 +101,7 @@ test_hcsr04_init_configures_gpio(void)
   TEST_ASSERT_TRUE(mock_hcsr04_hw_was_called(NULL, "gpio_set_input"));
 }
 
-void
-test_hcsr04_init_gpio_error_fails(void)
+void test_hcsr04_init_gpio_error_fails(void)
 {
   mock_hcsr04_hw_set_gpio_error(NULL, true);
 
@@ -106,8 +111,7 @@ test_hcsr04_init_gpio_error_fails(void)
   TEST_ASSERT_FALSE(s_sensor.initialized);
 }
 
-void
-test_hcsr04_init_pin_conflict_fails(void)
+void test_hcsr04_init_pin_conflict_fails(void)
 {
   mock_hcsr04_hw_set_pin_conflict(NULL, true);
 
@@ -117,8 +121,7 @@ test_hcsr04_init_pin_conflict_fails(void)
   TEST_ASSERT_FALSE(s_sensor.initialized);
 }
 
-void
-test_hcsr04_init_twice_fails(void)
+void test_hcsr04_init_twice_fails(void)
 {
   rx_hcsr04_init(&s_sensor, &s_config);
 
@@ -132,8 +135,7 @@ test_hcsr04_init_twice_fails(void)
  * =============================================================================
  */
 
-void
-test_hcsr04_deinit_success(void)
+void test_hcsr04_deinit_success(void)
 {
   rx_hcsr04_init(&s_sensor, &s_config);
 
@@ -143,15 +145,13 @@ test_hcsr04_deinit_success(void)
   TEST_ASSERT_FALSE(s_sensor.initialized);
 }
 
-void
-test_hcsr04_deinit_null_fails(void)
+void test_hcsr04_deinit_null_fails(void)
 {
   rx_err_t err = rx_hcsr04_deinit(NULL);
   TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
-void
-test_hcsr04_deinit_not_initialized_fails(void)
+void test_hcsr04_deinit_not_initialized_fails(void)
 {
   rx_err_t err = rx_hcsr04_deinit(&s_sensor);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
@@ -162,8 +162,7 @@ test_hcsr04_deinit_not_initialized_fails(void)
  * =============================================================================
  */
 
-void
-test_hcsr04_measure_10cm(void)
+void test_hcsr04_measure_10cm(void)
 {
   rx_hcsr04_init(&s_sensor, &s_config);
 
@@ -178,8 +177,7 @@ test_hcsr04_measure_10cm(void)
   TEST_ASSERT_FLOAT_WITHIN(1.0f, 10.0f, distance_cm);
 }
 
-void
-test_hcsr04_measure_100cm(void)
+void test_hcsr04_measure_100cm(void)
 {
   rx_hcsr04_init(&s_sensor, &s_config);
 
@@ -193,8 +191,7 @@ test_hcsr04_measure_100cm(void)
   TEST_ASSERT_FLOAT_WITHIN(3.0f, 100.0f, distance_cm);
 }
 
-void
-test_hcsr04_measure_max_range_400cm(void)
+void test_hcsr04_measure_max_range_400cm(void)
 {
   rx_hcsr04_init(&s_sensor, &s_config);
 
@@ -208,8 +205,7 @@ test_hcsr04_measure_max_range_400cm(void)
   TEST_ASSERT_FLOAT_WITHIN(10.0f, 400.0f, distance_cm);
 }
 
-void
-test_hcsr04_measure_timeout(void)
+void test_hcsr04_measure_timeout(void)
 {
   rx_hcsr04_init(&s_sensor, &s_config);
 
@@ -222,16 +218,14 @@ test_hcsr04_measure_timeout(void)
   TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
 }
 
-void
-test_hcsr04_measure_null_handle_fails(void)
+void test_hcsr04_measure_null_handle_fails(void)
 {
   float    distance_cm;
   rx_err_t err = rx_hcsr04_measure_blocking(NULL, &distance_cm);
   TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
-void
-test_hcsr04_measure_null_output_fails(void)
+void test_hcsr04_measure_null_output_fails(void)
 {
   rx_hcsr04_init(&s_sensor, &s_config);
 
@@ -239,16 +233,14 @@ test_hcsr04_measure_null_output_fails(void)
   TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
-void
-test_hcsr04_measure_not_initialized_fails(void)
+void test_hcsr04_measure_not_initialized_fails(void)
 {
   float    distance_cm;
   rx_err_t err = rx_hcsr04_measure_blocking(&s_sensor, &distance_cm);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
-void
-test_hcsr04_measure_sends_trigger_pulse(void)
+void test_hcsr04_measure_sends_trigger_pulse(void)
 {
   rx_hcsr04_init(&s_sensor, &s_config);
 
@@ -266,8 +258,7 @@ test_hcsr04_measure_sends_trigger_pulse(void)
  * =============================================================================
  */
 
-void
-test_hcsr04_measure_full_result(void)
+void test_hcsr04_measure_full_result(void)
 {
   rx_hcsr04_init(&s_sensor, &s_config);
 
@@ -288,8 +279,7 @@ test_hcsr04_measure_full_result(void)
  * =============================================================================
  */
 
-void
-test_hcsr04_cm_to_inches(void)
+void test_hcsr04_cm_to_inches(void)
 {
   float inches = rx_hcsr04_cm_to_inches(2.54f);
   TEST_ASSERT_FLOAT_WITHIN(0.01f, 1.0f, inches);
@@ -298,8 +288,7 @@ test_hcsr04_cm_to_inches(void)
   TEST_ASSERT_FLOAT_WITHIN(0.1f, 39.37f, inches);
 }
 
-void
-test_hcsr04_echo_to_cm(void)
+void test_hcsr04_echo_to_cm(void)
 {
   /* 58us per cm */
   float cm = rx_hcsr04_echo_to_cm(580);
@@ -314,14 +303,12 @@ test_hcsr04_echo_to_cm(void)
  * =============================================================================
  */
 
-void
-test_hcsr04_stats_initial_zero(void)
+void test_hcsr04_stats_initial_zero(void)
 {
   rx_hcsr04_init(&s_sensor, &s_config);
 
   uint32_t measurements, timeouts, range_errors;
-  rx_err_t err =
-    rx_hcsr04_get_stats(&s_sensor, &measurements, &timeouts, &range_errors);
+  rx_err_t err = rx_hcsr04_get_stats(&s_sensor, &measurements, &timeouts, &range_errors);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL_UINT32(0, measurements);
@@ -329,8 +316,7 @@ test_hcsr04_stats_initial_zero(void)
   TEST_ASSERT_EQUAL_UINT32(0, range_errors);
 }
 
-void
-test_hcsr04_stats_increment_on_measurement(void)
+void test_hcsr04_stats_increment_on_measurement(void)
 {
   rx_hcsr04_init(&s_sensor, &s_config);
 
@@ -346,8 +332,7 @@ test_hcsr04_stats_increment_on_measurement(void)
   TEST_ASSERT_EQUAL_UINT32(1, measurements);
 }
 
-void
-test_hcsr04_stats_increment_timeout(void)
+void test_hcsr04_stats_increment_timeout(void)
 {
   rx_hcsr04_init(&s_sensor, &s_config);
 
@@ -363,8 +348,7 @@ test_hcsr04_stats_increment_timeout(void)
   TEST_ASSERT_EQUAL_UINT32(1, timeouts);
 }
 
-void
-test_hcsr04_stats_reset(void)
+void test_hcsr04_stats_reset(void)
 {
   rx_hcsr04_init(&s_sensor, &s_config);
 
@@ -382,8 +366,7 @@ test_hcsr04_stats_reset(void)
   TEST_ASSERT_EQUAL_UINT32(0, measurements);
 }
 
-void
-test_hcsr04_measure_out_of_range_too_close(void)
+void test_hcsr04_measure_out_of_range_too_close(void)
 {
   rx_hcsr04_init(&s_sensor, &s_config);
 
@@ -415,8 +398,7 @@ test_async_callback(rx_hcsr04_t* handle, const rx_hcsr04_result_t* result, void*
   s_async_callback_result  = *result;
 }
 
-void
-test_hcsr04_measure_async_callback_invoked(void)
+void test_hcsr04_measure_async_callback_invoked(void)
 {
   s_async_callback_invoked = false;
   rx_hcsr04_init(&s_sensor, &s_config);
@@ -433,15 +415,13 @@ test_hcsr04_measure_async_callback_invoked(void)
   TEST_ASSERT_EQUAL(k_rx_ok, s_async_callback_result.status);
 }
 
-void
-test_hcsr04_is_busy_initial_false(void)
+void test_hcsr04_is_busy_initial_false(void)
 {
   rx_hcsr04_init(&s_sensor, &s_config);
   TEST_ASSERT_FALSE(rx_hcsr04_is_busy(&s_sensor));
 }
 
-void
-test_hcsr04_is_busy_null_returns_false(void)
+void test_hcsr04_is_busy_null_returns_false(void)
 {
   TEST_ASSERT_FALSE(rx_hcsr04_is_busy(NULL));
 }
@@ -451,8 +431,7 @@ test_hcsr04_is_busy_null_returns_false(void)
  * =============================================================================
  */
 
-int
-main(void)
+int main(void)
 {
   UNITY_BEGIN();
 
