@@ -207,6 +207,18 @@ static rx_err_t internal_configure_mpc(rx_gptw_channel_t channel)
   return k_rx_ok;
 }
 
+/** @brief Port E pin indices for GPTW motor outputs */
+typedef enum {
+  k_porte_gptw0_a = 5, /**< PE5/GTIOC0A - Motor 0 phase */
+  k_porte_gptw0_b = 2, /**< PE2/GTIOC0B - Motor 0 enable */
+  k_porte_gptw1_a = 4, /**< PE4/GTIOC1A - Motor 1 phase */
+  k_porte_gptw1_b = 1, /**< PE1/GTIOC1B - Motor 1 enable */
+  k_porte_gptw2_a = 3, /**< PE3/GTIOC2A - Motor 2 phase */
+  k_porte_gptw2_b = 0, /**< PE0/GTIOC2B - Motor 2 enable */
+  k_porte_gptw3_a = 7, /**< PE7/GTIOC3A - Motor 3 phase */
+  k_porte_gptw3_b = 6, /**< PE6/GTIOC3B - Motor 3 enable */
+} porte_gptw_pin_t;
+
 /**
  * @brief Configure Port E pins as peripheral outputs
  *
@@ -219,24 +231,20 @@ static void internal_configure_port_pins(rx_gptw_channel_t channel)
    */
   switch (channel) {
     case k_gptw_channel_0:
-      /* PE5 and PE2 */
-      PORTE.pmr |= (1 << 5) | (1 << 2);
-      PORTE.pdr |= (1 << 5) | (1 << 2);
+      PORTE.pmr |= (1 << k_porte_gptw0_a) | (1 << k_porte_gptw0_b);
+      PORTE.pdr |= (1 << k_porte_gptw0_a) | (1 << k_porte_gptw0_b);
       break;
     case k_gptw_channel_1:
-      /* PE4 and PE1 */
-      PORTE.pmr |= (1 << 4) | (1 << 1);
-      PORTE.pdr |= (1 << 4) | (1 << 1);
+      PORTE.pmr |= (1 << k_porte_gptw1_a) | (1 << k_porte_gptw1_b);
+      PORTE.pdr |= (1 << k_porte_gptw1_a) | (1 << k_porte_gptw1_b);
       break;
     case k_gptw_channel_2:
-      /* PE3 and PE0 */
-      PORTE.pmr |= (1 << 3) | (1 << 0);
-      PORTE.pdr |= (1 << 3) | (1 << 0);
+      PORTE.pmr |= (1 << k_porte_gptw2_a) | (1 << k_porte_gptw2_b);
+      PORTE.pdr |= (1 << k_porte_gptw2_a) | (1 << k_porte_gptw2_b);
       break;
     case k_gptw_channel_3:
-      /* PE7 and PE6 */
-      PORTE.pmr |= (1 << 7) | (1 << 6);
-      PORTE.pdr |= (1 << 7) | (1 << 6);
+      PORTE.pmr |= (1 << k_porte_gptw3_a) | (1 << k_porte_gptw3_b);
+      PORTE.pdr |= (1 << k_porte_gptw3_a) | (1 << k_porte_gptw3_b);
       break;
     default:
       break;
