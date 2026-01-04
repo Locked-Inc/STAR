@@ -68,14 +68,27 @@ typedef enum {
   k_mpc_port_j = 0x12, /**< Port J */
 } mpc_port_number_t;
 
-/** @brief MPC PFS port offset values */
+/** @brief MPC PFS port offset values
+ *
+ * PFS registers are contiguous in memory. Each port has 8 register slots,
+ * even if not all pins are physically present.
+ */
 typedef enum {
-  k_mpc_port0_offset = 0,  /**< Port 0 offset (P00-P07 = 8 pins) */
-  k_mpc_port1_offset = 8,  /**< Port 1 offset (P10-P17 = 8 pins) */
-  k_mpc_port2_offset = 16, /**< Port 2 offset (P20-P27 = 8 pins) */
-  k_mpc_port3_offset = 24, /**< Port 3 offset (P30-P34 = 5 pins) */
-  k_mpc_port4_offset = 29, /**< Port 4 offset (P40-P47 = 8 pins) */
-  k_mpc_port5_offset = 37, /**< Port 5 offset */
+  k_mpc_port0_offset = 0,   /**< Port 0 offset (P00-P07 = 8 pins) */
+  k_mpc_port1_offset = 8,   /**< Port 1 offset (P10-P17 = 8 pins) */
+  k_mpc_port2_offset = 16,  /**< Port 2 offset (P20-P27 = 8 pins) */
+  k_mpc_port3_offset = 24,  /**< Port 3 offset (P30-P34 = 5 pins) */
+  k_mpc_port4_offset = 32,  /**< Port 4 offset (P40-P47 = 8 pins) */
+  k_mpc_port5_offset = 40,  /**< Port 5 offset (P50-P57 = 8 pins) */
+  k_mpc_port6_offset = 48,  /**< Port 6 offset (P60-P67 = 8 pins) */
+  k_mpc_port7_offset = 56,  /**< Port 7 offset (P70-P77 = 8 pins) */
+  k_mpc_port8_offset = 64,  /**< Port 8 offset (P80-P87 = 8 pins) */
+  k_mpc_port9_offset = 72,  /**< Port 9 offset (P90-P97 = 8 pins) */
+  k_mpc_porta_offset = 80,  /**< Port A offset (PA0-PA7 = 8 pins) */
+  k_mpc_portb_offset = 88,  /**< Port B offset (PB0-PB7 = 8 pins) */
+  k_mpc_portc_offset = 96,  /**< Port C offset (PC0-PC7 = 8 pins) */
+  k_mpc_portd_offset = 104, /**< Port D offset (PD0-PD7 = 8 pins) */
+  k_mpc_porte_offset = 112, /**< Port E offset (PE0-PE7 = 8 pins) */
 } mpc_port_offset_t;
 
 /** @brief MPC PSEL maximum value */
@@ -142,23 +155,41 @@ static volatile uint8_t* internal_get_pfs_register(uint8_t port, uint8_t pin)
       port_offset = k_mpc_port5_offset;
       break;
     case k_mpc_port_6:
+      port_offset = k_mpc_port6_offset;
+      break;
     case k_mpc_port_7:
+      port_offset = k_mpc_port7_offset;
+      break;
     case k_mpc_port_8:
+      port_offset = k_mpc_port8_offset;
+      break;
     case k_mpc_port_9:
+      port_offset = k_mpc_port9_offset;
+      break;
     case k_mpc_port_a:
+      port_offset = k_mpc_porta_offset;
+      break;
     case k_mpc_port_b:
+      port_offset = k_mpc_portb_offset;
+      break;
     case k_mpc_port_c:
+      port_offset = k_mpc_portc_offset;
+      break;
     case k_mpc_port_d:
+      port_offset = k_mpc_portd_offset;
+      break;
     case k_mpc_port_e:
+      port_offset = k_mpc_porte_offset;
+      break;
     case k_mpc_port_f:
     case k_mpc_port_g:
     case k_mpc_port_h:
     case k_mpc_port_j:
-      /* For simplicity, only implement ports 0-5 which cover motor control pins */
-      rx_log_error(s_tag, "Error occurred");
+      /* Ports F, G, H, J not yet implemented */
+      rx_log_error(s_tag, "Port not implemented");
       return NULL;
     default:
-      rx_log_error(s_tag, "Error occurred");
+      rx_log_error(s_tag, "Invalid port");
       return NULL;
   }
 
