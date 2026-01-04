@@ -107,6 +107,7 @@ add_library(rx_hal STATIC
     lib/rx_hal/src/riic.c
     lib/rx_hal/src/rspi.c
     lib/rx_hal/src/rx_mtu3a.c
+    lib/rx_hal/src/rx_gptw.c
     lib/rx_hal/src/rx_cmt.c
     lib/rx_hal/src/rx_mpc.c
 )
@@ -314,10 +315,10 @@ message(STATUS "Build Type:       ${CMAKE_BUILD_TYPE}")
 message(STATUS "C Compiler:       ${CMAKE_C_COMPILER}")
 message(STATUS "==============================================")
 message(STATUS "Libraries:")
-message(STATUS "  rx_hal         - Hardware abstraction (MTU, CMT, GPIO, UART)")
+message(STATUS "  rx_hal         - Hardware abstraction (GPTW, MTU, CMT, GPIO, UART)")
 message(STATUS "  rx_core        - Core infrastructure (error, logging, DIP)")
 message(STATUS "  rx_bus         - Bus manager (GPIO, ADC, I2C, SMBUS)")
-message(STATUS "  rx_motor       - Motor control (MTU3a PWM)")
+message(STATUS "  rx_motor       - Motor control (GPTW PWM)")
 message(STATUS "  rx_encoder     - Encoder (MTU phase counting)")
 message(STATUS "  rx_pid         - PID controller")
 message(STATUS "  rx_fec         - FEC codec (K=7 convolutional + Viterbi)")
