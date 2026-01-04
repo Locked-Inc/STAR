@@ -118,11 +118,11 @@ static int test_motor_set_duty_forward(void)
   rx_err_t err = rx_motor_set_duty(&motor, 50.0f);
   TEST_ASSERT_OK(err);
 
-  /* Forward: output_a = 50%, output_b = 0% */
-  TEST_ASSERT_FLOAT_EQ(mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_a), 50.0f,
-                       "Output A should be 50%");
-  TEST_ASSERT_FLOAT_EQ(mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_b), 0.0f,
-                       "Output B should be 0%");
+  /* Forward (PH/EN mode): PH (output_a) = 100%, EN (output_b) = 50% */
+  TEST_ASSERT_FLOAT_EQ(mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_a), 100.0f,
+                       "Output A (PH) should be 100%");
+  TEST_ASSERT_FLOAT_EQ(mock_gptw_get_duty(k_gptw_channel_0, k_gptw_output_b), 50.0f,
+                       "Output B (EN) should be 50%");
 
   printf("PASS: %s\n", __func__);
   return 0;
@@ -147,11 +147,11 @@ static int test_motor_set_duty_reverse(void)
   rx_err_t err = rx_motor_set_duty(&motor, -75.0f);
   TEST_ASSERT_OK(err);
 
-  /* Reverse: output_a = 0%, output_b = 75% */
+  /* Reverse (PH/EN mode): PH (output_a) = 0%, EN (output_b) = 75% */
   TEST_ASSERT_FLOAT_EQ(mock_gptw_get_duty(k_gptw_channel_1, k_gptw_output_a), 0.0f,
-                       "Output A should be 0%");
+                       "Output A (PH) should be 0%");
   TEST_ASSERT_FLOAT_EQ(mock_gptw_get_duty(k_gptw_channel_1, k_gptw_output_b), 75.0f,
-                       "Output B should be 75%");
+                       "Output B (EN) should be 75%");
 
   printf("PASS: %s\n", __func__);
   return 0;
@@ -177,11 +177,11 @@ static int test_motor_stop_brake(void)
   rx_err_t err = rx_motor_stop(&motor, true); /* brake = true */
   TEST_ASSERT_OK(err);
 
-  /* Brake: both outputs HIGH (100%) */
-  TEST_ASSERT_FLOAT_EQ(mock_gptw_get_duty(k_gptw_channel_2, k_gptw_output_a), 100.0f,
-                       "Output A should be 100% for brake");
-  TEST_ASSERT_FLOAT_EQ(mock_gptw_get_duty(k_gptw_channel_2, k_gptw_output_b), 100.0f,
-                       "Output B should be 100% for brake");
+  /* Brake not supported in PH/EN mode - falls back to coast (both 0%) */
+  TEST_ASSERT_FLOAT_EQ(mock_gptw_get_duty(k_gptw_channel_2, k_gptw_output_a), 0.0f,
+                       "Output A should be 0% (coast fallback)");
+  TEST_ASSERT_FLOAT_EQ(mock_gptw_get_duty(k_gptw_channel_2, k_gptw_output_b), 0.0f,
+                       "Output B should be 0% (coast fallback)");
 
   printf("PASS: %s\n", __func__);
   return 0;
@@ -207,11 +207,11 @@ static int test_motor_stop_coast(void)
   rx_err_t err = rx_motor_stop(&motor, false); /* brake = false (coast) */
   TEST_ASSERT_OK(err);
 
-  /* Coast: both outputs LOW (0%) */
+  /* Coast (PH/EN mode): EN = LOW for high impedance */
   TEST_ASSERT_FLOAT_EQ(mock_gptw_get_duty(k_gptw_channel_3, k_gptw_output_a), 0.0f,
-                       "Output A should be 0% for coast");
+                       "Output A (PH) should be 0% for coast");
   TEST_ASSERT_FLOAT_EQ(mock_gptw_get_duty(k_gptw_channel_3, k_gptw_output_b), 0.0f,
-                       "Output B should be 0% for coast");
+                       "Output B (EN) should be 0% for coast");
 
   printf("PASS: %s\n", __func__);
   return 0;
