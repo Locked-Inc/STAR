@@ -1,3 +1,5 @@
+/* include/star_hcsr04_config.h */
+
 /**
  * @file star_hcsr04_config.h
  * @brief STAR Motor Controller HC-SR04 Sensor Configuration
