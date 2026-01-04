@@ -453,8 +453,25 @@ rx_err_t rx_ds18b20_read_temperature_raw(rx_ds18b20_handle_t* handle, int16_t* r
   }
 
   /* Temperature is 16-bit signed, LSB first */
-  *raw_temp = (int16_t)((uint16_t)scratchpad[k_ds18b20_scratch_temp_msb] << 8U) |
-              (uint16_t)scratchpad[k_ds18b20_scratch_temp_lsb];
+  *raw_temp = (int16_t)(((uint16_t)scratchpad[k_ds18b20_scratch_temp_msb] << 8U) |
+                        (uint16_t)scratchpad[k_ds18b20_scratch_temp_lsb]);
+
+  /* Mask undefined bits for resolutions lower than 12-bit to ensure correct conversion */
+  switch (handle->resolution_bits) {
+    case k_ds18b20_resolution_9bit:
+      *raw_temp &= (int16_t)k_ds18b20_temp_mask_9bit;
+      break;
+    case k_ds18b20_resolution_10bit:
+      *raw_temp &= (int16_t)k_ds18b20_temp_mask_10bit;
+      break;
+    case k_ds18b20_resolution_11bit:
+      *raw_temp &= (int16_t)k_ds18b20_temp_mask_11bit;
+      break;
+    case k_ds18b20_resolution_12bit:
+    default:
+      /* No masking needed for 12-bit resolution */
+      break;
+  }
 
   return k_rx_ok;
 }

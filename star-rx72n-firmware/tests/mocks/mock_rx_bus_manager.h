@@ -1,12 +1,15 @@
+/* tests/mocks/mock_rx_bus_manager.h */
+
 /**
  * @file mock_rx_bus_manager.h
  * @brief Mock bus manager for unit testing
  *
+ * @details
  * Provides minimal mock implementation of bus manager for testing
  * device drivers without ThreadX or hardware dependencies.
  *
- * STAR Project - Texas A&M University
- * January 2026
+ * @date 2026-01-04
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef MOCK_RX_BUS_MANAGER_H

@@ -1,12 +1,15 @@
+/* tests/mocks/tx_api.h */
+
 /**
  * @file tx_api.h
  * @brief Mock ThreadX API for unit testing
  *
+ * @details
  * Provides minimal stub definitions to allow compiling drivers
  * that reference ThreadX types without linking ThreadX.
  *
- * STAR Project - Texas A&M University
- * January 2026
+ * @date 2026-01-04
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef MOCK_TX_API_H

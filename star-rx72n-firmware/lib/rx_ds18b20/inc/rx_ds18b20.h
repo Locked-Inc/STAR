@@ -142,6 +142,19 @@ typedef enum {
 } ds18b20_temp_limits_t;
 
 /**
+ * @brief DS18B20 temperature bit masks for different resolutions
+ *
+ * The DS18B20 leaves undefined bits in the temperature register for resolutions
+ * lower than 12-bit. These masks ensure only valid bits are used in calculations.
+ */
+typedef enum {
+  k_ds18b20_temp_mask_9bit  = 0xFFF8, /**< Mask bits 0-2 (9-bit resolution) */
+  k_ds18b20_temp_mask_10bit = 0xFFFC, /**< Mask bits 0-1 (10-bit resolution) */
+  k_ds18b20_temp_mask_11bit = 0xFFFE, /**< Mask bit 0 (11-bit resolution) */
+  k_ds18b20_temp_mask_12bit = 0xFFFF, /**< No masking (12-bit resolution) */
+} ds18b20_temp_mask_t;
+
+/**
  * @brief DS18B20 maximum devices per search
  */
 typedef enum {

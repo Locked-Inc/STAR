@@ -1,12 +1,15 @@
+/* tests/test_rx_ds18b20.c */
+
 /**
  * @file test_rx_ds18b20.c
  * @brief Unit Tests for DS18B20 Temperature Sensor Driver
  *
+ * @details
  * Tests the DS18B20 1-Wire digital temperature sensor driver using
  * mocked bus operations (Dependency Inversion Principle).
  *
- * STAR Project - Texas A&M University
- * January 2026
+ * @date 2026-01-04
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "unity.h"
@@ -332,6 +335,78 @@ void test_ds18b20_read_temperature_bad_crc(void)
   TEST_ASSERT_EQUAL(k_rx_err_crc_mismatch, err);
 }
 
+/**
+ * @brief Test reading temperature at 9-bit resolution (25C with undefined bits set)
+ *
+ * At 9-bit resolution, bits 0-2 are undefined. The driver should mask these bits.
+ * Raw value with junk: 0x0197 (407) would give 25.4375C if not masked
+ * Masked value: 0x0190 (400) gives correct 25.0C
+ */
+void test_ds18b20_read_temperature_9bit_resolution(void)
+{
+  /* Initialize sensor at 9-bit */
+  uint8_t scratchpad[9];
+  create_valid_scratchpad(scratchpad, 0x97, 0x01, 0x1F); /* 9-bit, junk in bits 0-2 */
+  mock_onewire_set_scratchpad(scratchpad);
+  rx_ds18b20_init(&s_sensor, &s_bus_manager, "temp_bus", NULL);
+
+  /* Read temperature - should mask bits 0-2 */
+  float temp_c = 0.0f;
+  rx_err_t err = rx_ds18b20_read_temperature(&s_sensor, &temp_c);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  /* After masking 0x0197 & 0xFFF8 = 0x0190 = 400 * 0.0625 = 25.0C */
+  TEST_ASSERT_FLOAT_WITHIN(0.001f, 25.0f, temp_c);
+}
+
+/**
+ * @brief Test reading temperature at 10-bit resolution (25C with undefined bits set)
+ *
+ * At 10-bit resolution, bits 0-1 are undefined. The driver should mask these bits.
+ * Raw value with junk: 0x0193 (403) would give 25.1875C if not masked
+ * Masked value: 0x0190 (400) gives correct 25.0C
+ */
+void test_ds18b20_read_temperature_10bit_resolution(void)
+{
+  /* Initialize sensor at 10-bit */
+  uint8_t scratchpad[9];
+  create_valid_scratchpad(scratchpad, 0x93, 0x01, 0x3F); /* 10-bit, junk in bits 0-1 */
+  mock_onewire_set_scratchpad(scratchpad);
+  rx_ds18b20_init(&s_sensor, &s_bus_manager, "temp_bus", NULL);
+
+  /* Read temperature - should mask bits 0-1 */
+  float temp_c = 0.0f;
+  rx_err_t err = rx_ds18b20_read_temperature(&s_sensor, &temp_c);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  /* After masking 0x0193 & 0xFFFC = 0x0190 = 400 * 0.0625 = 25.0C */
+  TEST_ASSERT_FLOAT_WITHIN(0.001f, 25.0f, temp_c);
+}
+
+/**
+ * @brief Test reading temperature at 11-bit resolution (25C with undefined bit set)
+ *
+ * At 11-bit resolution, bit 0 is undefined. The driver should mask this bit.
+ * Raw value with junk: 0x0191 (401) would give 25.0625C if not masked
+ * Masked value: 0x0190 (400) gives correct 25.0C
+ */
+void test_ds18b20_read_temperature_11bit_resolution(void)
+{
+  /* Initialize sensor at 11-bit */
+  uint8_t scratchpad[9];
+  create_valid_scratchpad(scratchpad, 0x91, 0x01, 0x5F); /* 11-bit, junk in bit 0 */
+  mock_onewire_set_scratchpad(scratchpad);
+  rx_ds18b20_init(&s_sensor, &s_bus_manager, "temp_bus", NULL);
+
+  /* Read temperature - should mask bit 0 */
+  float temp_c = 0.0f;
+  rx_err_t err = rx_ds18b20_read_temperature(&s_sensor, &temp_c);
+
+  TEST_ASSERT_EQUAL(k_rx_ok, err);
+  /* After masking 0x0191 & 0xFFFE = 0x0190 = 400 * 0.0625 = 25.0C */
+  TEST_ASSERT_FLOAT_WITHIN(0.001f, 25.0f, temp_c);
+}
+
 /* =============================================================================
  * Resolution Configuration Tests
  * =============================================================================
@@ -614,6 +689,9 @@ int main(void)
   RUN_TEST(test_ds18b20_read_temperature_not_initialized);
   RUN_TEST(test_ds18b20_read_temperature_null_pointer);
   RUN_TEST(test_ds18b20_read_temperature_bad_crc);
+  RUN_TEST(test_ds18b20_read_temperature_9bit_resolution);
+  RUN_TEST(test_ds18b20_read_temperature_10bit_resolution);
+  RUN_TEST(test_ds18b20_read_temperature_11bit_resolution);
 
   /* Resolution configuration tests */
   RUN_TEST(test_ds18b20_set_resolution_9bit);

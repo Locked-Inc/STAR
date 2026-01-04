@@ -1,15 +1,18 @@
+/* tests/mocks/mock_rx_bus_onewire.h */
+
 /**
  * @file mock_rx_bus_onewire.h
  * @brief Mock OneWire bus operations for unit testing
  *
+ * @details
  * Provides controllable mock implementations of OneWire bus operations
  * for testing the DS18B20 driver without hardware dependencies.
  *
  * NOTE: This header provides only the mock control functions.
  * The actual rx_bus_onewire_* function declarations come from rx_bus_onewire.h
  *
- * STAR Project - Texas A&M University
- * January 2026
+ * @date 2026-01-04
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef MOCK_RX_BUS_ONEWIRE_H
