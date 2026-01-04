@@ -1,4 +1,4 @@
-/* lib/rx_frame/src/rx_crc32.c */
+/* lib/rx_crc/src/rx_crc32.c */
 
 /**
  * @file rx_crc32.c
@@ -24,8 +24,8 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
+#include "rx_crc.h"
 #include "rx_crc_internal.h"
-#include "rx_frame.h"
 
 /* =============================================================================
  * Public API

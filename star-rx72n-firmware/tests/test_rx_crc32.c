@@ -10,7 +10,7 @@
  */
 
 #include "unity.h"
-#include "rx_frame.h"
+#include "rx_crc.h"
 #include "rx_crc_internal.h"
 #include <string.h>
 

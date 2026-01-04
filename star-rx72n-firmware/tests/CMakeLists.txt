@@ -25,17 +25,17 @@ FetchContent_MakeAvailable(unity)
 # Force software CRC for host testing (hardware CRC not available)
 add_compile_definitions(RX_CRC32_USE_SOFTWARE)
 
-# rx_crc32 source (public API + software implementation)
-set(RX_CRC32_SRC
-    ${CMAKE_SOURCE_DIR}/../lib/rx_frame/src/rx_crc32.c
-    ${CMAKE_SOURCE_DIR}/../lib/rx_frame/src/rx_crc32_sw.c
+# rx_crc source (public API + software implementation)
+set(RX_CRC_SRC
+    ${CMAKE_SOURCE_DIR}/../lib/rx_crc/src/rx_crc32.c
+    ${CMAKE_SOURCE_DIR}/../lib/rx_crc/src/rx_crc32_sw.c
+    ${CMAKE_SOURCE_DIR}/../lib/rx_crc/src/rx_crc8.c
 )
 
 # rx_frame source
 set(RX_FRAME_SRC
     ${CMAKE_SOURCE_DIR}/../lib/rx_frame/src/rx_frame.c
-    ${CMAKE_SOURCE_DIR}/../lib/rx_frame/src/rx_crc32.c
-    ${CMAKE_SOURCE_DIR}/../lib/rx_frame/src/rx_crc32_sw.c
+    ${RX_CRC_SRC}
 )
 
 # rx_fec source
@@ -78,6 +78,7 @@ set(RX_USB_COMM_SRC
 # Include directories for library headers
 include_directories(
     ${CMAKE_SOURCE_DIR}/../lib/rx_frame/inc
+    ${CMAKE_SOURCE_DIR}/../lib/rx_crc/inc
     ${CMAKE_SOURCE_DIR}/../lib/rx_fec/inc
     ${CMAKE_SOURCE_DIR}/../lib/rx_harq/inc
     ${CMAKE_SOURCE_DIR}/../lib/rx_core/inc
@@ -94,7 +95,7 @@ include_directories(
 # Test: CRC-32
 add_executable(test_rx_crc32
     test_rx_crc32.c
-    ${RX_CRC32_SRC}
+    ${RX_CRC_SRC}
 )
 target_link_libraries(test_rx_crc32 unity)
 
