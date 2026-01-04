@@ -29,6 +29,16 @@
  */
 static const uint32_t s_cm_per_inch_x100 = 254;
 
+/**
+ * @brief Speed of sound base constant (m/s at 0°C)
+ */
+static const float s_speed_of_sound_base_mps = 331.3f;
+
+/**
+ * @brief Speed of sound temperature coefficient (m/s per °C)
+ */
+static const float s_speed_of_sound_coeff = 0.606f;
+
 /* =============================================================================
  * Internal Helper Functions
  * =============================================================================
@@ -358,6 +368,37 @@ float rx_hcsr04_echo_to_cm(uint32_t echo_time_us)
    * Using integer constant for precision.
    */
   return (float)echo_time_us / (float)k_hcsr04_us_per_cm_roundtrip;
+}
+
+float rx_hcsr04_get_speed_of_sound(float temp_celsius)
+{
+  /*
+   * Speed of sound in dry air:
+   * v = 331.3 + (0.606 * temp_c) m/s
+   *
+   * Valid range: -40°C to +85°C (DS18B20 sensor range)
+   */
+  return s_speed_of_sound_base_mps + (s_speed_of_sound_coeff * temp_celsius);
+}
+
+float rx_hcsr04_echo_to_cm_with_temp(uint32_t echo_time_us, float temp_celsius)
+{
+  /*
+   * Temperature-compensated distance calculation:
+   * 1. Calculate speed of sound at given temperature
+   * 2. Convert speed to cm/us: speed_cm_us = speed_mps / 10000
+   * 3. Calculate distance: distance = (echo_us * speed_cm_us) / 2
+   *
+   * Example at 20°C:
+   * - Speed = 331.3 + (0.606 * 20) = 343.42 m/s
+   * - Speed = 0.034342 cm/us
+   * - For echo_us = 580: distance = (580 * 0.034342) / 2 = 9.96 cm ≈ 10 cm
+   */
+  float speed_mps   = rx_hcsr04_get_speed_of_sound(temp_celsius);
+  float speed_cm_us = speed_mps / 10000.0f; /* m/s to cm/us */
+  float distance_cm = ((float)echo_time_us * speed_cm_us) / 2.0f;
+
+  return distance_cm;
 }
 
 rx_err_t rx_hcsr04_get_stats(const rx_hcsr04_t* handle,
