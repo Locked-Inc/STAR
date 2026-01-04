@@ -2,10 +2,13 @@
 
 /**
  * @file uart.c
- * @brief UART Driver for RX72N Debug Output
+ * @brief Multi-Channel UART Driver for RX72N
  *
- * Simple UART driver for SCI5 (Serial Communication Interface 5).
- * Provides basic transmit-only functionality for printf debugging.
+ * UART driver for SCI peripherals (channels 0-12).
+ * Provides TX and RX functionality for any SCI channel.
+ *
+ * Default debug channel: SCI9 (PB7/TXD9, PB6/RXD9) connected to
+ * CY7C65213 USB-UART bridge.
  *
  * @date 2026-01-01
  * @copyright Copyright (c) 2026 STAR Project
@@ -16,6 +19,7 @@
 
 #include "hardware.h"
 #include "rx72n_regs.h"
+#include "rx_mpc.h"
 
 /* =============================================================================
  * Private Definitions
@@ -24,23 +28,30 @@
 
 /** @brief UART configuration constants */
 typedef enum {
-  k_uart_baudrate  = 115200, /**< Baud rate: 115200 bps */
-  k_uart_brr_value = 7,      /**< BRR register value for 115200 bps at 60MHz PCLKB */
+  k_uart_default_baudrate = 115200,   /**< Default baud rate: 115200 bps */
+  k_uart_pclkb_hz         = 60000000, /**< PCLKB clock: 60 MHz */
 } uart_config_t;
 
 /** @brief UART timing constants */
 typedef enum {
   k_uart_bit_time_delay_cycles =
-    1000, /**< Bit time delay (~8.68us at 115200 bps, >520 cycles at 60MHz) */
+      1000, /**< Bit time delay (~8.68us at 115200 bps, >520 cycles at 60MHz) */
 } uart_timing_t;
 
 /** @brief SCI register values */
 typedef enum {
-  k_sci_scr_disabled   = 0x00, /**< SCR: All functions disabled */
-  k_sci_scr_tx_enabled = 0x20, /**< SCR: Transmit enabled (TE=1) */
-  k_sci_smr_async_8n1  = 0x00, /**< SMR: Async mode, 8 data bits, no parity, 1 stop bit, PCLK/1 */
-  k_sci_semr_default   = 0x00, /**< SEMR: Default extended mode */
-  k_sci_ssr_tdre_flag  = 0x80, /**< SSR: Transmit data register empty flag */
+  k_sci_scr_disabled     = 0x00, /**< SCR: All functions disabled */
+  k_sci_scr_tx_enabled   = 0x20, /**< SCR: Transmit enabled (TE=1) */
+  k_sci_scr_rx_enabled   = 0x10, /**< SCR: Receive enabled (RE=1) */
+  k_sci_scr_txrx_enabled = 0x30, /**< SCR: TX + RX enabled (TE=1, RE=1) */
+  k_sci_smr_async_8n1    = 0x00, /**< SMR: Async mode, 8 data bits, no parity, 1 stop bit, PCLK/1 */
+  k_sci_semr_default     = 0x00, /**< SEMR: Default extended mode */
+  k_sci_ssr_tdre_flag    = 0x80, /**< SSR: Transmit data register empty flag */
+  k_sci_ssr_rdrf_flag    = 0x40, /**< SSR: Receive data register full flag */
+  k_sci_ssr_orer_flag    = 0x20, /**< SSR: Overrun error flag */
+  k_sci_ssr_fer_flag     = 0x10, /**< SSR: Framing error flag */
+  k_sci_ssr_per_flag     = 0x08, /**< SSR: Parity error flag */
+  k_sci_ssr_error_mask   = 0x38, /**< SSR: All error flags mask */
 } sci_register_values_t;
 
 /** @brief Integer to string buffer constants */
@@ -58,88 +69,561 @@ typedef enum {
   k_uart_hex_nibble_mask = 0x0F, /**< Mask for hex nibble */
 } uart_hex_constants_t;
 
+/** @brief BRR calculation constants */
+typedef enum {
+  k_brr_divisor_n0 = 32,  /**< Divisor for n=0 (CKS=00): 64 * 2^(2n-1) = 32 */
+  k_brr_multiplier = 4,   /**< Multiplier per CKS increment (2^2) */
+  k_brr_max_value  = 255, /**< Maximum BRR register value */
+  k_brr_min_value  = 0,   /**< Minimum BRR register value */
+} brr_constants_t;
+
+/** @brief Maximum SCI channels */
+typedef enum {
+  k_uart_max_channels = 13, /**< SCI channels 0-12 */
+} uart_channel_limits_t;
+
+/** @brief SCI module stop bit positions in MSTPCRB */
+typedef enum {
+  k_sci_mstpb_sci0  = 31, /**< SCI0 module stop bit */
+  k_sci_mstpb_sci1  = 30, /**< SCI1 module stop bit */
+  k_sci_mstpb_sci2  = 29, /**< SCI2 module stop bit */
+  k_sci_mstpb_sci3  = 28, /**< SCI3 module stop bit */
+  k_sci_mstpb_sci4  = 27, /**< SCI4 module stop bit */
+  k_sci_mstpb_sci5  = 26, /**< SCI5 module stop bit */
+  k_sci_mstpb_sci6  = 25, /**< SCI6 module stop bit */
+  k_sci_mstpb_sci7  = 24, /**< SCI7 module stop bit */
+  k_sci_mstpb_sci8  = 23, /**< SCI8 module stop bit */
+  k_sci_mstpb_sci9  = 22, /**< SCI9 module stop bit */
+  k_sci_mstpb_sci10 = 21, /**< SCI10 module stop bit */
+  k_sci_mstpb_sci11 = 20, /**< SCI11 module stop bit */
+} sci_mstpb_bits_t;
+
+/** @brief Protection register unlock/lock values */
+typedef enum {
+  k_uart_prcr_unlock = 0xA50F, /**< Unlock protection (PRC0-PRC3) */
+  k_uart_prcr_lock   = 0xA500, /**< Lock protection */
+} uart_prcr_t;
+
+/** @brief Debug UART pins (SCI9 on RX72N) */
+typedef enum {
+  k_uart_debug_tx_port = 0x0B, /**< Port B */
+  k_uart_debug_tx_pin  = 7,    /**< PB7 = TXD9 */
+  k_uart_debug_rx_port = 0x0B, /**< Port B */
+  k_uart_debug_rx_pin  = 6,    /**< PB6 = RXD9 */
+} uart_debug_pins_t;
+
+/** @brief GPIO register bit manipulation constants */
+typedef enum {
+  k_uart_gpio_bit_set = 1, /**< Value used for setting a single bit */
+} uart_gpio_constants_t;
+
 /* =============================================================================
- * UART Initialization
+ * Private State
+ * =============================================================================
+ */
+
+/** @brief Per-channel initialization state */
+static bool s_channel_initialized[k_uart_max_channels] = {false};
+
+/* =============================================================================
+ * Private Functions
  * =============================================================================
  */
 
 /**
- * @brief Initialize SCI5 for UART communication (TX only)
+ * @brief Calculate BRR value for given baud rate
  *
- * Configuration:
- * - Baud rate: 115200 bps
- * - 8 data bits, 1 stop bit, no parity
- * - TX only (no RX)
- * - Clock: PCLKB (60 MHz)
+ * BRR = (PCLKB / (64 * 2^(2n-1) * B)) - 1
+ * For n=0 (CKS=00, PCLK/1): BRR = (PCLKB / (32 * B)) - 1
  *
- * @return k_rx_ok on success
+ * @param[in] baudrate Target baud rate
+ * @return BRR register value
  */
-rx_err_t uart_init(void)
+static uint8_t internal_calculate_brr(uint32_t baudrate)
 {
-  /* Disable SCI5 transmit/receive */
-  sci5()->scr = k_sci_scr_disabled;
-
-  /* Configure serial mode: Async, 8-bit, no parity, 1 stop, PCLK/1 */
-  sci5()->smr = k_sci_smr_async_8n1;
-
-  /* Set baud rate */
-  sci5()->brr = k_uart_brr_value;
-
-  /* Wait for at least 1 bit time (at least 8.68us at 115200 bps) */
-  /* NOTE: Busy-wait required - may run before ThreadX initialization */
-  for (volatile int32_t i = 0; i < k_uart_bit_time_delay_cycles; i++) {
-    __asm__ volatile("nop");
+  if (baudrate == 0) {
+    return k_brr_max_value;
   }
 
-  /* Configure serial control: Enable transmit */
-  sci5()->scr = k_sci_scr_tx_enabled;
+  /* For n=0 (CKS=00): BRR = (PCLKB / (32 * B)) - 1 */
+  uint32_t brr_value = (k_uart_pclkb_hz / (k_brr_divisor_n0 * baudrate)) - 1;
 
-  /* Configure serial extended mode */
-  sci5()->semr = k_sci_semr_default;
+  if (brr_value > k_brr_max_value) {
+    return k_brr_max_value;
+  }
 
-  /* Note: GPIO pins for SCI5 TX/RX need to be configured in PMR/MPC
-     * This would require MPC (Multi-Function Pin Controller) registers
-     * which are not yet defined. For now, assume pins are configured
-     * by default or by external code. */
+  return (uint8_t)brr_value;
+}
 
-  /* UART init complete - can't use RX_LOG yet since UART is just now ready */
+/**
+ * @brief Clear error flags in SSR register
+ *
+ * @param[in] sci Pointer to SCI registers
+ */
+static void internal_clear_errors(volatile rx_sci_regs_t* sci)
+{
+  /* Read SSR then clear error flags */
+  volatile uint8_t ssr = sci->ssr;
+  (void)ssr; /* Suppress unused variable warning */
+  sci->ssr = (uint8_t)(ssr & ~k_sci_ssr_error_mask);
+}
+
+/**
+ * @brief Get MSTPCRB bit position for SCI channel
+ *
+ * @param[in] channel SCI channel (0-11)
+ *
+ * @return Bit position in MSTPCRB, or -1 if invalid channel
+ */
+static int8_t internal_get_mstpb_bit(uint8_t channel)
+{
+  /* SCI12 is in MSTPCRC, not supported here */
+  if (channel > 11) {
+    return -1;
+  }
+
+  /* MSTPCRB bits: SCI0=31, SCI1=30, ..., SCI11=20 */
+  return (int8_t)(k_sci_mstpb_sci0 - channel);
+}
+
+/**
+ * @brief Enable SCI module clock (clear module stop)
+ *
+ * @param[in] channel SCI channel (0-11)
+ *
+ * @return k_rx_ok on success, k_rx_err_invalid_arg if channel invalid
+ */
+static rx_err_t internal_enable_sci_clock(uint8_t channel)
+{
+  int8_t mstpb_bit = internal_get_mstpb_bit(channel);
+  if (mstpb_bit < 0) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Unlock protection */
+  system_regs()->prcr = k_uart_prcr_unlock;
+
+  /* Clear module stop bit to enable clock */
+  system_regs()->mstpcrb &= ~(1UL << (uint8_t)mstpb_bit);
+
+  /* Lock protection */
+  system_regs()->prcr = k_uart_prcr_lock;
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Get PORT base address from port number
+ *
+ * @param[in] port Port number (0-9, or 0xA-0x10 for A-G)
+ *
+ * @return Pointer to PORT register base, or NULL if invalid port
+ */
+static volatile rx_port_regs_t* internal_get_port_base(uint8_t port)
+{
+  switch (port) {
+    case 0:
+      return port0();
+    case 1:
+      return port1();
+    case 2:
+      return port2();
+    case 3:
+      return port3();
+    case 4:
+      return port4();
+    case 5:
+      return port5();
+    case 6:
+      return port6();
+    case 7:
+      return port7();
+    case 8:
+      return port8();
+    case 9:
+      return port9();
+    case 0x0A:
+      return porta();
+    case 0x0B:
+      return portb();
+    case 0x0C:
+      return portc();
+    case 0x0D:
+      return portd();
+    case 0x0E:
+      return porte();
+    case 0x0F:
+      return portf();
+    case 0x10:
+      return portg();
+    default:
+      return (volatile rx_port_regs_t*)0;
+  }
+}
+
+/**
+ * @brief Configure pins for SCI UART operation
+ *
+ * Sets up MPC (pin mux) and GPIO registers for TX/RX pins.
+ *
+ * @param[in] tx_port TX pin port
+ * @param[in] tx_pin TX pin number
+ * @param[in] rx_port RX pin port
+ * @param[in] rx_pin RX pin number
+ *
+ * @return k_rx_ok on success, error code on failure
+ */
+static rx_err_t internal_configure_uart_pins(uint8_t tx_port,
+                                             uint8_t tx_pin,
+                                             uint8_t rx_port,
+                                             uint8_t rx_pin)
+{
+  /* Validate pin numbers */
+  if (tx_pin > 7 || rx_pin > 7) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Get port bases */
+  volatile rx_port_regs_t* tx_port_base = internal_get_port_base(tx_port);
+  volatile rx_port_regs_t* rx_port_base = internal_get_port_base(rx_port);
+
+  if (tx_port_base == (volatile rx_port_regs_t*)0 ||
+      rx_port_base == (volatile rx_port_regs_t*)0) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Configure MPC for SCI function */
+  rx_err_t err = rx_mpc_set_sci(tx_port, tx_pin, true);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  err = rx_mpc_set_sci(rx_port, rx_pin, false);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Configure TX pin: output direction, peripheral mode */
+  tx_port_base->pdr |= (k_uart_gpio_bit_set << tx_pin); /* Output */
+  tx_port_base->pmr |= (k_uart_gpio_bit_set << tx_pin); /* Peripheral mode */
+
+  /* Configure RX pin: input direction, peripheral mode */
+  rx_port_base->pdr &= ~(k_uart_gpio_bit_set << rx_pin); /* Input */
+  rx_port_base->pmr |= (k_uart_gpio_bit_set << rx_pin);  /* Peripheral mode */
 
   return k_rx_ok;
 }
 
 /* =============================================================================
- * UART Transmit
+ * Multi-Channel UART Functions
  * =============================================================================
  */
 
-/**
- * @brief Transmit a single byte via UART
- *
- * @param[in] data Byte to transmit
- */
-void uart_putc(char data)
+rx_err_t uart_init_channel(uint8_t  channel,
+                           uint32_t baudrate,
+                           uint8_t  tx_port,
+                           uint8_t  tx_pin,
+                           uint8_t  rx_port,
+                           uint8_t  rx_pin)
 {
+  /* Validate channel */
+  if (channel >= k_uart_max_channels) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Get SCI register base */
+  volatile rx_sci_regs_t* sci = sci_get_channel(channel);
+  if (sci == (volatile rx_sci_regs_t*)0) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Check if already initialized */
+  if (s_channel_initialized[channel]) {
+    return k_rx_err_invalid_state;
+  }
+
+  /* Enable SCI module clock (clear module stop bit) */
+  rx_err_t err = internal_enable_sci_clock(channel);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Configure TX/RX pins (MPC and GPIO) */
+  err = internal_configure_uart_pins(tx_port, tx_pin, rx_port, rx_pin);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  /* Disable TX/RX */
+  sci->scr = k_sci_scr_disabled;
+
+  /* Configure serial mode: Async, 8-bit, no parity, 1 stop, PCLK/1 */
+  sci->smr = k_sci_smr_async_8n1;
+
+  /* Set baud rate */
+  sci->brr = internal_calculate_brr(baudrate);
+
+  /* Wait for at least 1 bit time */
+  /* NOTE: Busy-wait required - may run before ThreadX initialization */
+  for (volatile int32_t i = 0; i < k_uart_bit_time_delay_cycles; i++) {
+    __asm__ volatile("nop");
+  }
+
+  /* Configure serial control: Enable TX and RX */
+  sci->scr = k_sci_scr_txrx_enabled;
+
+  /* Configure serial extended mode */
+  sci->semr = k_sci_semr_default;
+
+  /* Mark channel as initialized */
+  s_channel_initialized[channel] = true;
+
+  return k_rx_ok;
+}
+
+rx_err_t uart_deinit_channel(uint8_t channel)
+{
+  /* Validate channel */
+  if (channel >= k_uart_max_channels) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Get SCI register base */
+  volatile rx_sci_regs_t* sci = sci_get_channel(channel);
+  if (sci == (volatile rx_sci_regs_t*)0) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Disable TX/RX */
+  sci->scr = k_sci_scr_disabled;
+
+  /* Mark channel as not initialized */
+  s_channel_initialized[channel] = false;
+
+  return k_rx_ok;
+}
+
+rx_err_t uart_putc_channel(uint8_t channel, char data)
+{
+  /* Validate channel */
+  if (channel >= k_uart_max_channels) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Check initialization */
+  if (!s_channel_initialized[channel]) {
+    return k_rx_err_invalid_state;
+  }
+
+  /* Get SCI register base */
+  volatile rx_sci_regs_t* sci = sci_get_channel(channel);
+  if (sci == (volatile rx_sci_regs_t*)0) {
+    return k_rx_err_invalid_arg;
+  }
+
   /* Wait for transmit buffer to be empty (TDRE flag) */
-  while ((sci5()->ssr & k_sci_ssr_tdre_flag) == 0) {
+  while ((sci->ssr & k_sci_ssr_tdre_flag) == 0) {
     /* Wait */
   }
 
   /* Write data to transmit register */
-  sci5()->tdr = (uint8_t)data;
+  sci->tdr = (uint8_t)data;
 
   /* Clear TDRE flag by reading SSR then writing 0 */
-  (void)sci5()->ssr;
-  sci5()->ssr &= ~k_sci_ssr_tdre_flag;
+  (void)sci->ssr;
+  sci->ssr &= ~k_sci_ssr_tdre_flag;
+
+  return k_rx_ok;
 }
 
-/**
- * @brief Transmit a null-terminated string via UART
- *
- * @param[in] str Pointer to string to transmit
+rx_err_t uart_puts_channel(uint8_t channel, const char* str)
+{
+  /* Validate parameters */
+  if (str == (const char*)0) {
+    return k_rx_err_null_pointer;
+  }
+
+  if (channel >= k_uart_max_channels) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!s_channel_initialized[channel]) {
+    return k_rx_err_invalid_state;
+  }
+
+  /* Transmit string with \n to \r\n conversion */
+  while (*str) {
+    if (*str == '\n') {
+      rx_err_t err = uart_putc_channel(channel, '\r');
+      if (err != k_rx_ok) {
+        return err;
+      }
+    }
+    rx_err_t err = uart_putc_channel(channel, *str++);
+    if (err != k_rx_ok) {
+      return err;
+    }
+  }
+
+  return k_rx_ok;
+}
+
+rx_err_t uart_write_channel(uint8_t channel, const uint8_t* data, uint16_t length)
+{
+  /* Validate parameters */
+  if (data == (const uint8_t*)0) {
+    return k_rx_err_null_pointer;
+  }
+
+  if (channel >= k_uart_max_channels) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!s_channel_initialized[channel]) {
+    return k_rx_err_invalid_state;
+  }
+
+  /* Write each byte */
+  for (uint16_t i = 0; i < length; i++) {
+    rx_err_t err = uart_putc_channel(channel, (char)data[i]);
+    if (err != k_rx_ok) {
+      return err;
+    }
+  }
+
+  return k_rx_ok;
+}
+
+rx_err_t uart_getc_channel(uint8_t channel, char* data)
+{
+  /* Validate parameters */
+  if (data == (char*)0) {
+    return k_rx_err_null_pointer;
+  }
+
+  if (channel >= k_uart_max_channels) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!s_channel_initialized[channel]) {
+    return k_rx_err_invalid_state;
+  }
+
+  /* Get SCI register base */
+  volatile rx_sci_regs_t* sci = sci_get_channel(channel);
+  if (sci == (volatile rx_sci_regs_t*)0) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Clear any error flags first */
+  if ((sci->ssr & k_sci_ssr_error_mask) != 0) {
+    internal_clear_errors(sci);
+  }
+
+  /* Check if receive data is available (RDRF flag) */
+  if ((sci->ssr & k_sci_ssr_rdrf_flag) == 0) {
+    return k_rx_err_empty;
+  }
+
+  /* Read received data */
+  *data = (char)sci->rdr;
+
+  /* Clear RDRF flag by reading RDR (already done above) */
+  /* Some RX MCUs require explicit clear */
+  (void)sci->ssr;
+  sci->ssr &= ~k_sci_ssr_rdrf_flag;
+
+  return k_rx_ok;
+}
+
+rx_err_t uart_read_channel(uint8_t   channel,
+                           uint8_t*  data,
+                           uint16_t  length,
+                           uint16_t* bytes_read)
+{
+  /* Validate parameters */
+  if (data == (uint8_t*)0 || bytes_read == (uint16_t*)0) {
+    return k_rx_err_null_pointer;
+  }
+
+  if (channel >= k_uart_max_channels) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!s_channel_initialized[channel]) {
+    return k_rx_err_invalid_state;
+  }
+
+  /* Read available bytes */
+  *bytes_read = 0;
+  for (uint16_t i = 0; i < length; i++) {
+    char     c;
+    rx_err_t err = uart_getc_channel(channel, &c);
+    if (err == k_rx_err_empty) {
+      /* No more data available */
+      break;
+    }
+    if (err != k_rx_ok) {
+      return err;
+    }
+    data[i] = (uint8_t)c;
+    (*bytes_read)++;
+  }
+
+  return k_rx_ok;
+}
+
+rx_err_t uart_rx_available(uint8_t channel, bool* available)
+{
+  /* Validate parameters */
+  if (available == (bool*)0) {
+    return k_rx_err_null_pointer;
+  }
+
+  if (channel >= k_uart_max_channels) {
+    return k_rx_err_invalid_arg;
+  }
+
+  if (!s_channel_initialized[channel]) {
+    return k_rx_err_invalid_state;
+  }
+
+  /* Get SCI register base */
+  volatile rx_sci_regs_t* sci = sci_get_channel(channel);
+  if (sci == (volatile rx_sci_regs_t*)0) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Check RDRF flag */
+  *available = ((sci->ssr & k_sci_ssr_rdrf_flag) != 0);
+
+  return k_rx_ok;
+}
+
+/* =============================================================================
+ * Legacy Debug UART Functions (SCI9)
+ * =============================================================================
  */
+
+rx_err_t uart_init(void)
+{
+  return uart_init_channel(k_uart_debug_channel,
+                           k_uart_default_baudrate,
+                           k_uart_debug_tx_port,
+                           k_uart_debug_tx_pin,
+                           k_uart_debug_rx_port,
+                           k_uart_debug_rx_pin);
+}
+
+void uart_putc(char data)
+{
+  /* For legacy function, ignore errors (used in early init before error handling) */
+  (void)uart_putc_channel(k_uart_debug_channel, data);
+}
+
 void uart_puts(const char* str)
 {
-  if (!str) {
+  if (str == (const char*)0) {
     return;
   }
 
@@ -152,11 +636,6 @@ void uart_puts(const char* str)
   }
 }
 
-/**
- * @brief Simple integer to string conversion and transmit
- *
- * @param[in] value Integer value to print
- */
 void uart_putint(int32_t value)
 {
   char     buffer[k_uart_int_buffer_size]; /* Enough for -2147483648 */
@@ -190,12 +669,6 @@ void uart_putint(int32_t value)
   uart_puts(p);
 }
 
-/**
- * @brief Print hexadecimal value
- *
- * @param[in] value Value to print in hex
- * @param[in] digits Number of hex digits to print (1-8)
- */
 void uart_puthex(uint32_t value, uint8_t digits)
 {
   static const char s_hex[] = "0123456789ABCDEF";

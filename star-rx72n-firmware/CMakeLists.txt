@@ -125,6 +125,7 @@ add_library(rx_bus STATIC
     lib/rx_bus/src/rx_bus_i2c.c
     lib/rx_bus/src/rx_bus_smbus.c
     lib/rx_bus/src/rx_bus_onewire.c
+    lib/rx_bus/src/rx_bus_uart.c
 )
 target_include_directories(rx_bus PUBLIC lib/rx_bus/inc)
 target_link_libraries(rx_bus PUBLIC rx_core rx_hal rx_crc)

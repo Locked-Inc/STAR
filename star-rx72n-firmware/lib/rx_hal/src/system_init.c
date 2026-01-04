@@ -63,9 +63,9 @@ typedef enum {
 
 /** @brief Module stop bit positions in MSTPCRB */
 typedef enum {
-  k_mstpcrb_sci5  = 26, /**< SCI5 module stop bit */
   k_mstpcrb_rspi0 = 17, /**< RSPI0 module stop bit */
   k_mstpcrb_rspi1 = 16, /**< RSPI1 module stop bit */
+  /* Note: SCI modules are enabled per-channel in uart_init_channel() */
 } mstpcrb_bits_t;
 
 /** @brief Module stop bit positions in MSTPCRC */
@@ -151,9 +151,10 @@ static rx_err_t clock_init(void)
  *
  * Disables module stop for peripherals we'll use:
  * - CMT0 (system tick timer)
- * - SCI5 (UART debug)
  * - MTU (motor PWM)
  * - S12AD (ADC)
+ *
+ * Note: SCI modules are enabled per-channel in uart_init_channel()
  *
  * @return k_rx_ok on success
  */
@@ -168,8 +169,8 @@ static rx_err_t module_stop_init(void)
   );
 
   /* Module Stop Control Register B */
-  system_regs()->mstpcrb &= ~((1UL << k_mstpcrb_sci5) |  /* SCI5 */
-                              (1UL << k_mstpcrb_rspi0) | /* RSPI0 */
+  /* Note: SCI modules are enabled per-channel in uart_init_channel() */
+  system_regs()->mstpcrb &= ~((1UL << k_mstpcrb_rspi0) | /* RSPI0 */
                               (1UL << k_mstpcrb_rspi1)   /* RSPI1 */
   );
 

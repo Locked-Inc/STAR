@@ -230,6 +230,83 @@ rx_err_t rx_bus_config_init_smbus(rx_bus_config_t* config,
 }
 
 /* =============================================================================
+ * UART Bus Configuration
+ * =============================================================================
+ */
+
+rx_err_t rx_bus_config_init_uart(rx_bus_config_t* config,
+                                 const char*      name,
+                                 uint8_t          channel,
+                                 uint8_t          tx_port,
+                                 uint8_t          tx_pin,
+                                 uint8_t          rx_port,
+                                 uint8_t          rx_pin,
+                                 uint32_t         baudrate)
+{
+  RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
+  RX_CHECK_NULL_PTR(name, s_tag, "name pointer is NULL");
+
+  /* Validate SCI channel (0-12) */
+  if (channel >= k_sci_channel_count) {
+    rx_log_error(s_tag, "Invalid UART channel");
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Validate TX port (0-9 or 0xA-0x10 for A-G) */
+  if (tx_port > k_hex_port_end || (tx_port > k_max_decimal_port && tx_port < k_hex_port_start)) {
+    rx_log_error(s_tag, "Invalid UART TX port");
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Validate TX pin (0-7) */
+  if (tx_pin >= k_pins_per_port) {
+    rx_log_error(s_tag, "Invalid UART TX pin");
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Validate RX port (0-9 or 0xA-0x10 for A-G) */
+  if (rx_port > k_hex_port_end || (rx_port > k_max_decimal_port && rx_port < k_hex_port_start)) {
+    rx_log_error(s_tag, "Invalid UART RX port");
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Validate RX pin (0-7) */
+  if (rx_pin >= k_pins_per_port) {
+    rx_log_error(s_tag, "Invalid UART RX pin");
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Validate baud rate */
+  if (baudrate == 0) {
+    rx_log_error(s_tag, "Invalid UART baud rate (cannot be 0)");
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Zero out config structure */
+  memset(config, 0, sizeof(rx_bus_config_t));
+
+  /* Set common fields */
+  config->name        = name;
+  config->type        = k_bus_type_uart;
+  config->initialized = false;
+  config->handle      = NULL;
+  config->user_ctx    = NULL;
+  config->next        = NULL;
+
+  /* Set UART-specific fields */
+  config->proto.uart.channel  = channel;
+  config->proto.uart.tx_port  = tx_port;
+  config->proto.uart.tx_pin   = tx_pin;
+  config->proto.uart.rx_port  = rx_port;
+  config->proto.uart.rx_pin   = rx_pin;
+  config->proto.uart.baudrate = baudrate;
+
+  rx_log_debug(s_tag, "UART bus config initialized");
+
+  return k_rx_ok;
+}
+
+/* =============================================================================
  * OneWire Bus Configuration
  * =============================================================================
  */
