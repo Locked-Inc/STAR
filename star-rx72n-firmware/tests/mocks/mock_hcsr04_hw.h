@@ -1,7 +1,10 @@
+/* tests/mocks/mock_hcsr04_hw.h */
+
 /**
  * @file mock_hcsr04_hw.h
  * @brief Mock HC-SR04 Hardware Layer for Host-Side Testing
  *
+ * @details
  * Mock implementation of GPIO and timing for HC-SR04 driver testing.
  * Provides call tracking, echo timing simulation, and error injection.
  *
@@ -12,7 +15,7 @@
  * - Error injection for timeout and range error testing
  * - No actual hardware access (runs on host)
  *
- * @date 2026-01-02
+ * @date 2026-01-04
  * @copyright Copyright (c) 2026 STAR Project
  */
 
@@ -37,9 +40,9 @@ extern "C" {
  * @brief Mock configuration constants
  */
 typedef enum {
-  k_mock_hcsr04_max_calls      = 64, /**< Maximum call records to track */
-  k_mock_hcsr04_func_name_max  = 32, /**< Max function name length */
-  k_mock_hcsr04_max_pins       = 8,  /**< Max pins per sensor tracked */
+  k_mock_hcsr04_max_calls     = 64, /**< Maximum call records to track */
+  k_mock_hcsr04_func_name_max = 32, /**< Max function name length */
+  k_mock_hcsr04_max_pins      = 8,  /**< Max pins per sensor tracked */
 } mock_hcsr04_constants_t;
 
 /* =============================================================================
@@ -81,13 +84,13 @@ typedef struct {
   uint32_t time_step_us;      /**< Time step per auto-advance */
 
   /* Error injection */
-  bool inject_timeout;       /**< Simulate timeout (no echo) */
-  bool inject_gpio_error;    /**< Simulate GPIO init failure */
-  bool inject_pin_conflict;  /**< Simulate pin already reserved */
+  bool inject_timeout;      /**< Simulate timeout (no echo) */
+  bool inject_gpio_error;   /**< Simulate GPIO init failure */
+  bool inject_pin_conflict; /**< Simulate pin already reserved */
 
   /* Call tracking */
   mock_hcsr04_call_t call_history[k_mock_hcsr04_max_calls]; /**< Call log */
-  uint32_t           call_count;  /**< Number of calls recorded */
+  uint32_t           call_count;                            /**< Number of calls recorded */
 
   /* Call counts by function */
   uint32_t trigger_pulse_count;   /**< Number of trigger pulses sent */
@@ -224,9 +227,7 @@ void mock_hcsr04_hw_advance_time(mock_hcsr04_hw_t* mock, uint32_t delta_us);
  * @param[in] enable        True to enable auto-advance
  * @param[in] step_us       Time step per call (e.g., 1us)
  */
-void mock_hcsr04_hw_set_auto_advance(mock_hcsr04_hw_t* mock,
-                                     bool              enable,
-                                     uint32_t          step_us);
+void mock_hcsr04_hw_set_auto_advance(mock_hcsr04_hw_t* mock, bool enable, uint32_t step_us);
 
 /* =============================================================================
  * Call Tracking Functions
@@ -251,8 +252,7 @@ bool mock_hcsr04_hw_was_called(mock_hcsr04_hw_t* mock, const char* function_name
  *
  * @return Number of times function was called
  */
-uint32_t mock_hcsr04_hw_get_call_count(mock_hcsr04_hw_t* mock,
-                                       const char*       function_name);
+uint32_t mock_hcsr04_hw_get_call_count(mock_hcsr04_hw_t* mock, const char* function_name);
 
 /**
  * @brief Get number of trigger pulses sent

@@ -78,6 +78,7 @@ set(RX_USB_COMM_SRC
 # rx_hcsr04 source
 set(RX_HCSR04_SRC
     ${CMAKE_SOURCE_DIR}/../lib/rx_hcsr04/src/rx_hcsr04.c
+    ${CMAKE_SOURCE_DIR}/../lib/rx_hcsr04/src/rx_hcsr04_hal_mock.c
 )
 
 # HC-SR04 mock source
@@ -95,6 +96,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/../lib/rx_usb/inc
     ${CMAKE_SOURCE_DIR}/../lib/rx_usb_comm/inc
     ${CMAKE_SOURCE_DIR}/../lib/rx_hcsr04/inc
+    ${CMAKE_SOURCE_DIR}/../lib/rx_hcsr04/src
     ${CMAKE_SOURCE_DIR}/mocks
     ${unity_SOURCE_DIR}/src
 )
@@ -166,7 +168,6 @@ add_executable(test_rx_hcsr04
     ${RX_HCSR04_SRC}
     ${MOCK_HCSR04_SRC}
 )
-target_compile_definitions(test_rx_hcsr04 PRIVATE RX_HCSR04_USE_MOCK)
 target_link_libraries(test_rx_hcsr04 unity)
 
 # =============================================================================
