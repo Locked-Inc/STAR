@@ -70,12 +70,14 @@ Review rx_pid.c for NASA Power of 10 compliance
 - [ ] Use of `RX_RETURN_ON_ERROR` macro
 
 ### Rule 8: Limit Preprocessor Use
-- [ ] Prefer `enum` over `#define` for constants
-- [ ] Prefer `static const` over `#define` for typed values
+- [ ] **ALWAYS use `enum` for integer constants** (never `#define`)
+- [ ] Use `static const` ONLY for floating-point values (enum can't hold floats)
+- [ ] `#define` is ONLY acceptable for token operations (e.g., `ARRAY_SIZE`)
 - [ ] No token pasting (`##`) except where necessary
 - [ ] No recursive macros
-- Good: `typedef enum { k_state_idle = 0 } state_t;`
-- Bad: `#define STATE_IDLE 0`
+- Good: `typedef enum { k_timeout_ms = 1000, k_max_retries = 3 } limits_t;`
+- Bad: `#define TIMEOUT_MS 1000` (should be enum!)
+- Bad: `#define MAX_VELOCITY 2.5f` (should be static const float!)
 
 ### Rule 9: Restrict Pointer Use
 - [ ] Maximum one level of dereferencing (exception: DIP interfaces)
