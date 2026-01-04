@@ -277,11 +277,44 @@ float rx_hcsr04_cm_to_inches(float distance_cm);
  * Uses formula: distance = (echo_us * speed_of_sound) / 2
  * Speed of sound at 20C = 343 m/s = 0.0343 cm/us
  *
+ * @note This function assumes 20°C. For temperature compensation, use
+ *       rx_hcsr04_echo_to_cm_with_temp() instead.
+ *
  * @param[in] echo_time_us Echo pulse duration in microseconds
  *
  * @return Distance in centimeters
  */
 float rx_hcsr04_echo_to_cm(uint32_t echo_time_us);
+
+/**
+ * @brief Convert echo time to distance with temperature compensation
+ *
+ * Calculates distance using temperature-compensated speed of sound.
+ * Speed of sound varies with temperature: v = 331.3 + (0.606 * temp_c) m/s
+ *
+ * Temperature compensation improves accuracy by ~0.17% per °C deviation from 20°C.
+ *
+ * Example: At 10°C, speed is ~337 m/s vs 343 m/s at 20°C (~1.75% difference)
+ *
+ * @param[in] echo_time_us  Echo pulse duration in microseconds
+ * @param[in] temp_celsius  Ambient temperature in degrees Celsius
+ *
+ * @return Distance in centimeters (temperature-compensated)
+ */
+float rx_hcsr04_echo_to_cm_with_temp(uint32_t echo_time_us, float temp_celsius);
+
+/**
+ * @brief Calculate speed of sound at given temperature
+ *
+ * Uses formula: v = 331.3 + (0.606 * temp_c) m/s
+ *
+ * Valid temperature range: -40°C to +85°C (DS18B20 operating range)
+ *
+ * @param[in] temp_celsius Ambient temperature in degrees Celsius
+ *
+ * @return Speed of sound in m/s
+ */
+float rx_hcsr04_get_speed_of_sound(float temp_celsius);
 
 /**
  * @brief Get sensor statistics
