@@ -52,7 +52,7 @@ Review rx_pid.c for NASA Power of 10 compliance
 - [ ] NULL pointer checks for all pointer parameters
 - [ ] Range validation for numeric inputs
 - [ ] State validation (e.g., `!handle->initialized`)
-- Patterns: `RX_CHECK_`, `assert(`, `if.*==.*NULL`
+- Patterns: `RX_CHECK_`, `assert(`, `if\s*\([^)]*==\s*NULL`
 
 ### Rule 6: Declare Data at Smallest Scope
 - [ ] Variables declared close to first use
