@@ -1,9 +1,8 @@
-/* include/star_hcsr04_config.h */
-
 /**
  * @file star_hcsr04_config.h
  * @brief STAR Motor Controller HC-SR04 Sensor Configuration
  *
+ * @details
  * Board-specific configuration for HC-SR04 ultrasonic distance sensors.
  * Defines the 4 sensor connectors (J24-J27) on the STAR Motor Controller PCB.
  *
@@ -13,9 +12,9 @@
  * - J26 (Sensor 3): PMOD JE GPIO0/GPIO1 - Rear Left
  * - J27 (Sensor 4): PMOD JE GPIO2/GPIO3 - Rear Right
  *
- * Pin assignments derived from docs/sections/03_hardware_pinout.tex
+ * @see docs/sections/03_hardware_pinout.tex for complete pin assignments
  *
- * @date 2026-01-02
+ * @date 2026-01-04
  * @copyright Copyright (c) 2026 STAR Project
  */
 
@@ -40,10 +39,10 @@ extern "C" {
  * Maps to the J24-J27 connectors on the PCB.
  */
 typedef enum {
-  k_star_hcsr04_sensor_1 = 0, /**< J24: PMOD JB GPIO0/GPIO1 */
-  k_star_hcsr04_sensor_2 = 1, /**< J25: PMOD JB GPIO2/GPIO3 */
-  k_star_hcsr04_sensor_3 = 2, /**< J26: PMOD JE GPIO0/GPIO1 */
-  k_star_hcsr04_sensor_4 = 3, /**< J27: PMOD JE GPIO2/GPIO3 */
+  k_star_hcsr04_sensor_1     = 0, /**< J24: PMOD JB GPIO0/GPIO1 */
+  k_star_hcsr04_sensor_2     = 1, /**< J25: PMOD JB GPIO2/GPIO3 */
+  k_star_hcsr04_sensor_3     = 2, /**< J26: PMOD JE GPIO0/GPIO1 */
+  k_star_hcsr04_sensor_4     = 3, /**< J27: PMOD JE GPIO2/GPIO3 */
   k_star_hcsr04_sensor_count = 4,
 } star_hcsr04_sensor_id_t;
 
@@ -53,80 +52,58 @@ typedef enum {
  */
 
 /**
- * @brief Default configuration for Sensor 1 (J24 - PMOD JB)
+ * @brief Default sensor configurations for all 4 HC-SR04 sensors
  *
- * TRIG: PC6 (PMOD JB GPIO0)
- * ECHO: P55 (PMOD JB GPIO1)
- */
-#define STAR_HCSR04_CONFIG_SENSOR_1                   \
-  {                                                   \
-    .trigger_port = k_pmod_jb_gpio0_port,             \
-    .trigger_pin  = k_pmod_jb_gpio0_pin,              \
-    .echo_port    = k_pmod_jb_gpio1_port,             \
-    .echo_pin     = k_pmod_jb_gpio1_pin,              \
-    .timeout_us   = k_hcsr04_echo_timeout_us,         \
-  }
-
-/**
- * @brief Default configuration for Sensor 2 (J25 - PMOD JB)
+ * Sensor 1 (J24 - PMOD JB):
+ *   TRIG: PC6 (PMOD JB GPIO0)
+ *   ECHO: P55 (PMOD JB GPIO1)
  *
- * TRIG: P54 (PMOD JB GPIO2)
- * ECHO: PA2 (PMOD JB GPIO3)
- */
-#define STAR_HCSR04_CONFIG_SENSOR_2                   \
-  {                                                   \
-    .trigger_port = k_pmod_jb_gpio2_port,             \
-    .trigger_pin  = k_pmod_jb_gpio2_pin,              \
-    .echo_port    = k_pmod_jb_gpio3_port,             \
-    .echo_pin     = k_pmod_jb_gpio3_pin,              \
-    .timeout_us   = k_hcsr04_echo_timeout_us,         \
-  }
-
-/**
- * @brief Default configuration for Sensor 3 (J26 - PMOD JE)
+ * Sensor 2 (J25 - PMOD JB):
+ *   TRIG: P54 (PMOD JB GPIO2)
+ *   ECHO: PA2 (PMOD JB GPIO3)
  *
- * TRIG: PJ3 (PMOD JE GPIO0)
- * ECHO: PB1 (PMOD JE GPIO1)
- */
-#define STAR_HCSR04_CONFIG_SENSOR_3                   \
-  {                                                   \
-    .trigger_port = k_pmod_je_gpio0_port,             \
-    .trigger_pin  = k_pmod_je_gpio0_pin,              \
-    .echo_port    = k_pmod_je_gpio1_port,             \
-    .echo_pin     = k_pmod_je_gpio1_pin,              \
-    .timeout_us   = k_hcsr04_echo_timeout_us,         \
-  }
-
-/**
- * @brief Default configuration for Sensor 4 (J27 - PMOD JE)
+ * Sensor 3 (J26 - PMOD JE):
+ *   TRIG: PJ3 (PMOD JE GPIO0)
+ *   ECHO: PB1 (PMOD JE GPIO1)
  *
- * TRIG: PB0 (PMOD JE GPIO2)
- * ECHO: PA1 (PMOD JE GPIO3)
+ * Sensor 4 (J27 - PMOD JE):
+ *   TRIG: PB0 (PMOD JE GPIO2)
+ *   ECHO: PA1 (PMOD JE GPIO3)
  */
-#define STAR_HCSR04_CONFIG_SENSOR_4                   \
-  {                                                   \
-    .trigger_port = k_pmod_je_gpio2_port,             \
-    .trigger_pin  = k_pmod_je_gpio2_pin,              \
-    .echo_port    = k_pmod_je_gpio3_port,             \
-    .echo_pin     = k_pmod_je_gpio3_pin,              \
-    .timeout_us   = k_hcsr04_echo_timeout_us,         \
-  }
-
-/**
- * @brief Array initializer for all 4 sensor configs
- *
- * Usage:
- * @code
- * static const rx_hcsr04_config_t configs[] = STAR_HCSR04_CONFIG_ALL;
- * @endcode
- */
-#define STAR_HCSR04_CONFIG_ALL                        \
-  {                                                   \
-    STAR_HCSR04_CONFIG_SENSOR_1,                      \
-    STAR_HCSR04_CONFIG_SENSOR_2,                      \
-    STAR_HCSR04_CONFIG_SENSOR_3,                      \
-    STAR_HCSR04_CONFIG_SENSOR_4,                      \
-  }
+static const rx_hcsr04_config_t k_star_hcsr04_default_configs[k_star_hcsr04_sensor_count] = {
+  [k_star_hcsr04_sensor_1] =
+    {
+      .trigger_port = k_pmod_jb_gpio0_port,
+      .trigger_pin  = k_pmod_jb_gpio0_pin,
+      .echo_port    = k_pmod_jb_gpio1_port,
+      .echo_pin     = k_pmod_jb_gpio1_pin,
+      .timeout_us   = k_hcsr04_echo_timeout_us,
+    },
+  [k_star_hcsr04_sensor_2] =
+    {
+      .trigger_port = k_pmod_jb_gpio2_port,
+      .trigger_pin  = k_pmod_jb_gpio2_pin,
+      .echo_port    = k_pmod_jb_gpio3_port,
+      .echo_pin     = k_pmod_jb_gpio3_pin,
+      .timeout_us   = k_hcsr04_echo_timeout_us,
+    },
+  [k_star_hcsr04_sensor_3] =
+    {
+      .trigger_port = k_pmod_je_gpio0_port,
+      .trigger_pin  = k_pmod_je_gpio0_pin,
+      .echo_port    = k_pmod_je_gpio1_port,
+      .echo_pin     = k_pmod_je_gpio1_pin,
+      .timeout_us   = k_hcsr04_echo_timeout_us,
+    },
+  [k_star_hcsr04_sensor_4] =
+    {
+      .trigger_port = k_pmod_je_gpio2_port,
+      .trigger_pin  = k_pmod_je_gpio2_pin,
+      .echo_port    = k_pmod_je_gpio3_port,
+      .echo_pin     = k_pmod_je_gpio3_pin,
+      .timeout_us   = k_hcsr04_echo_timeout_us,
+    },
+};
 
 /* =============================================================================
  * Convenience Functions
@@ -146,11 +123,8 @@ typedef enum {
  * @return k_rx_err_invalid_arg if sensor_id is out of range
  */
 static inline rx_err_t star_hcsr04_get_config(star_hcsr04_sensor_id_t sensor_id,
-                                               rx_hcsr04_config_t*     config)
+                                              rx_hcsr04_config_t*     config)
 {
-  static const rx_hcsr04_config_t s_configs[k_star_hcsr04_sensor_count] =
-      STAR_HCSR04_CONFIG_ALL;
-
   if (config == NULL) {
     return k_rx_err_null_pointer;
   }
@@ -159,7 +133,7 @@ static inline rx_err_t star_hcsr04_get_config(star_hcsr04_sensor_id_t sensor_id,
     return k_rx_err_invalid_arg;
   }
 
-  *config = s_configs[sensor_id];
+  *config = k_star_hcsr04_default_configs[sensor_id];
   return k_rx_ok;
 }
 

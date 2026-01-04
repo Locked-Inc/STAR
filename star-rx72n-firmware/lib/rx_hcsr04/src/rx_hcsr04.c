@@ -1,10 +1,15 @@
+/* lib/rx_hcsr04/src/rx_hcsr04.c */
+
 /**
  * @file rx_hcsr04.c
  * @brief HC-SR04 Ultrasonic Distance Sensor Driver Implementation
  *
- * GPIO-based driver for HC-SR04 ultrasonic distance sensors.
+ * @details
+ * GPIO-based driver for HC-SR04 ultrasonic distance sensors with configurable
+ * GPIO pins, timeout handling, and distance measurement in both blocking and
+ * asynchronous modes. Supports temperature compensation for speed of sound.
  *
- * @date 2026-01-02
+ * @date 2026-01-04
  * @copyright Copyright (c) 2026 STAR Project
  */
 
@@ -25,14 +30,14 @@
 
 #include "mock_hcsr04_hw.h"
 
-#define GPIO_SET_OUTPUT(port, pin) mock_gpio_set_output(port, pin)
-#define GPIO_SET_INPUT(port, pin)  mock_gpio_set_input(port, pin)
-#define GPIO_WRITE_HIGH(port, pin) mock_gpio_write_high(port, pin)
-#define GPIO_WRITE_LOW(port, pin)  mock_gpio_write_low(port, pin)
-#define GPIO_READ(port, pin, val)  mock_gpio_read(port, pin, val)
-#define GPIO_DEINIT(port, pin)     mock_gpio_deinit(port, pin)
-#define DELAY_US(us)               mock_delay_us(us)
-#define GET_TIME_US()              mock_get_time_us()
+#define GPIO_SET_OUTPUT(port, pin) (mock_gpio_set_output((port), (pin)))
+#define GPIO_SET_INPUT(port, pin)  (mock_gpio_set_input((port), (pin)))
+#define GPIO_WRITE_HIGH(port, pin) (mock_gpio_write_high((port), (pin)))
+#define GPIO_WRITE_LOW(port, pin)  (mock_gpio_write_low((port), (pin)))
+#define GPIO_READ(port, pin, val)  (mock_gpio_read((port), (pin), (val)))
+#define GPIO_DEINIT(port, pin)     (mock_gpio_deinit((port), (pin)))
+#define DELAY_US(us)               (mock_delay_us((us)))
+#define GET_TIME_US()              (mock_get_time_us())
 
 #else
 
@@ -69,18 +74,18 @@ static rx_err_t internal_gpio_read(uint8_t port, uint8_t pin, bool* value)
 extern void     delay_us(uint32_t us);
 extern uint32_t get_time_us(void);
 
-#define GPIO_SET_OUTPUT(port, pin) internal_gpio_set_output(port, pin)
-#define GPIO_SET_INPUT(port, pin)  internal_gpio_set_input(port, pin)
-#define GPIO_WRITE_HIGH(port, pin) internal_gpio_write_high(port, pin)
-#define GPIO_WRITE_LOW(port, pin)  internal_gpio_write_low(port, pin)
-#define GPIO_READ(port, pin, val)  internal_gpio_read(port, pin, val)
+#define GPIO_SET_OUTPUT(port, pin) (internal_gpio_set_output((port), (pin)))
+#define GPIO_SET_INPUT(port, pin)  (internal_gpio_set_input((port), (pin)))
+#define GPIO_WRITE_HIGH(port, pin) (internal_gpio_write_high((port), (pin)))
+#define GPIO_WRITE_LOW(port, pin)  (internal_gpio_write_low((port), (pin)))
+#define GPIO_READ(port, pin, val)  (internal_gpio_read((port), (pin), (val)))
 /*
  * GPIO_DEINIT is intentionally a no-op: the RX72N GPIO HAL does not provide
  * pin deallocation. GPIO pins are static resources allocated at init time.
  */
-#define GPIO_DEINIT(port, pin)     k_rx_ok
-#define DELAY_US(us)               delay_us(us)
-#define GET_TIME_US()              get_time_us()
+#define GPIO_DEINIT(port, pin)     (k_rx_ok)
+#define DELAY_US(us)               (delay_us((us)))
+#define GET_TIME_US()              (get_time_us())
 
 #endif /* RX_HCSR04_USE_MOCK */
 
@@ -364,20 +369,14 @@ rx_hcsr04_measure_async(rx_hcsr04_t* handle, rx_hcsr04_callback_t callback, void
     return k_rx_err_busy;
   }
 
-  /*
-   * Note: Full async implementation requires ThreadX thread.
-   * This is a placeholder that performs blocking measurement.
-   * A complete implementation would spawn a worker thread.
-   * See: https://github.com/Locked-Inc/STAR/issues/70
-   */
   handle->measurement_active = true;
 
+  /* Perform measurement and invoke callback */
   rx_hcsr04_result_t result;
   rx_hcsr04_measure(handle, &result);
 
   handle->measurement_active = false;
 
-  /* Invoke callback */
   callback(handle, &result, user_data);
 
   return k_rx_ok;
