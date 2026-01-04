@@ -1,4 +1,4 @@
-/* lib/rx_frame/src/rx_crc32_sw.c */
+/* lib/rx_crc/src/rx_crc32_sw.c */
 
 /**
  * @file rx_crc32_sw.c

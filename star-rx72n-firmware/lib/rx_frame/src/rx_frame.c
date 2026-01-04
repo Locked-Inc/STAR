@@ -15,6 +15,8 @@
 
 #include <string.h>
 
+#include "rx_crc.h"
+
 /* =============================================================================
  * Byte Serialization Constants
  *

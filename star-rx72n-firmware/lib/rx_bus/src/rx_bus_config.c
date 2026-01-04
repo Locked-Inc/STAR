@@ -228,3 +228,46 @@ rx_err_t rx_bus_config_init_smbus(rx_bus_config_t* config,
 
   return k_rx_ok;
 }
+
+/* =============================================================================
+ * OneWire Bus Configuration
+ * =============================================================================
+ */
+
+rx_err_t
+rx_bus_config_init_onewire(rx_bus_config_t* config, const char* name, uint8_t port, uint8_t pin)
+{
+  RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
+  RX_CHECK_NULL_PTR(name, s_tag, "name pointer is NULL");
+
+  /* Validate port (0-9 or 0xA-0x10 for A-G) */
+  if (port > k_hex_port_end || (port > k_max_decimal_port && port < k_hex_port_start)) {
+    rx_log_error(s_tag, "Invalid OneWire GPIO port");
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Validate pin (0-7) */
+  if (pin >= k_pins_per_port) {
+    rx_log_error(s_tag, "Invalid OneWire GPIO pin");
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Zero out config structure */
+  memset(config, 0, sizeof(rx_bus_config_t));
+
+  /* Set common fields */
+  config->name        = name;
+  config->type        = k_bus_type_onewire;
+  config->initialized = false;
+  config->handle      = NULL;
+  config->user_ctx    = NULL;
+  config->next        = NULL;
+
+  /* Set OneWire-specific fields */
+  config->proto.onewire.port = port;
+  config->proto.onewire.pin  = pin;
+
+  rx_log_debug(s_tag, "OneWire bus config initialized");
+
+  return k_rx_ok;
+}

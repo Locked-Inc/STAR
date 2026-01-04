@@ -1,11 +1,11 @@
-/* lib/rx_frame/inc/rx_crc_internal.h */
+/* lib/rx_crc/inc/rx_crc_internal.h */
 
 /**
  * @file rx_crc_internal.h
  * @brief Internal CRC-32 Abstraction Layer
  *
  * Provides compile-time selection between hardware and software CRC-32.
- * This header is internal to the rx_frame library.
+ * This header is internal to the rx_crc library.
  *
  * ## Design Rationale
  *
