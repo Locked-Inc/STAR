@@ -98,11 +98,18 @@ extern "C" {
 #include "rx72n_usb_regs.h"
 
 /* =============================================================================
- * Multi-Function Timer Unit (MTU3a)
+ * Multi-Function Timer Unit (MTU3a) - Encoder Quadrature Counting
  * =============================================================================
  */
 
 #include "rx72n_mtu_regs.h"
+
+/* =============================================================================
+ * General PWM Timer (GPTW) - Motor PWM Generation
+ * =============================================================================
+ */
+
+#include "rx72n_gptw_regs.h"
 
 /* =============================================================================
  * Multi-Function Pin Controller (MPC)

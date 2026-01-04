@@ -94,9 +94,9 @@ rx_err_t rx_drv8243_init(rx_drv8243_handle_t* handle, const rx_drv8243_config_t*
   handle->current_limit_ma = config->current_limit_ma;
   handle->ki_propi         = config->ki_propi > 0 ? config->ki_propi : k_drv8243_default_ki_propi;
 
-  /* Initialize motor control (MTU for H-bridge) */
+  /* Initialize motor control (GPTW for H-bridge) */
   rx_motor_config_t motor_config = {
-    .channel      = config->mtu_channel,
+    .channel      = config->gptw_channel,
     .output_a     = config->output_ph,
     .output_b     = config->output_en,
     .pwm_freq_hz  = config->pwm_freq_hz,
