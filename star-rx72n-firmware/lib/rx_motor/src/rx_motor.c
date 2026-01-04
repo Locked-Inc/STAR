@@ -6,11 +6,15 @@
  * @details
  * H-bridge motor control using GPTW PWM peripheral.
  *
- * Motor Control Modes:
- * 1. Forward: output_a = PWM, output_b = LOW
- * 2. Reverse: output_a = LOW, output_b = PWM
- * 3. Brake: output_a = HIGH, output_b = HIGH (short circuit)
- * 4. Coast: output_a = LOW, output_b = LOW (high impedance)
+ * Motor Control Modes (PH/EN for DRV8243):
+ * - PH (output_a) = direction (HIGH=forward, LOW=reverse)
+ * - EN (output_b) = speed (PWM duty cycle)
+ *
+ * States:
+ * 1. Forward: PH = HIGH (100%), EN = PWM (speed)
+ * 2. Reverse: PH = LOW (0%), EN = PWM (speed)
+ * 3. Coast: EN = LOW (0%) - motor in high impedance
+ * 4. Brake: NOT SUPPORTED in PH/EN mode (falls back to coast)
  *
  * PWM Frequency:
  * - Typical: 20 kHz (above human hearing, motor-friendly)
@@ -144,15 +148,19 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
     duty = -duty;
   }
 
-  /* Set PWM outputs based on direction */
+  /* Set PWM outputs based on direction (PH/EN mode)
+   * PH (output_a) = direction (HIGH=forward, LOW=reverse)
+   * EN (output_b) = speed (PWM duty cycle)
+   */
+  float speed_pwm = fabsf(duty);
   if (duty >= 0.0f) {
-    /* Forward: output_a = PWM, output_b = 0 */
-    rx_gptw_set_duty(handle->channel, handle->output_a, duty);
-    rx_gptw_set_duty(handle->channel, handle->output_b, 0.0f);
+    /* Forward: PH = HIGH, EN = PWM */
+    rx_gptw_set_duty(handle->channel, handle->output_a, 100.0f);
+    rx_gptw_set_duty(handle->channel, handle->output_b, speed_pwm);
   } else {
-    /* Reverse: output_a = 0, output_b = PWM */
+    /* Reverse: PH = LOW, EN = PWM */
     rx_gptw_set_duty(handle->channel, handle->output_a, 0.0f);
-    rx_gptw_set_duty(handle->channel, handle->output_b, fabsf(duty));
+    rx_gptw_set_duty(handle->channel, handle->output_b, speed_pwm);
   }
 
   handle->current_duty = duty;
@@ -170,14 +178,12 @@ rx_err_t rx_motor_stop(rx_motor_handle_t* handle, bool brake)
   }
 
   if (brake) {
-    /* Brake mode: both outputs HIGH (short circuit brake) */
-    rx_gptw_set_duty(handle->channel, handle->output_a, 100.0f);
-    rx_gptw_set_duty(handle->channel, handle->output_b, 100.0f);
-  } else {
-    /* Coast mode: both outputs LOW (high impedance) */
-    rx_gptw_set_duty(handle->channel, handle->output_a, 0.0f);
-    rx_gptw_set_duty(handle->channel, handle->output_b, 0.0f);
+    /* Brake mode not supported in PH/EN mode - coast instead */
+    rx_log_warn(s_tag, "Brake not supported in PH/EN mode, coasting");
   }
+  /* Coast mode: set EN (output_b) to LOW for high impedance */
+  rx_gptw_set_duty(handle->channel, handle->output_a, 0.0f);
+  rx_gptw_set_duty(handle->channel, handle->output_b, 0.0f);
 
   handle->current_duty = 0.0f;
 
