@@ -201,38 +201,48 @@ if (ret != RX_OK) {
 **Rationale:** Preprocessor complexity obscures operations, fooling developers and static analysis tools.
 
 **Preference Hierarchy:**
-1. **Enums** - For related integer constants
-2. **const variables** - For single typed values
-3. **Macros** - Only when compile-time evaluation required
+1. **Enums** - For ALL integer constants (preferred)
+2. **static const** - For floating-point values ONLY (enum limitation)
+3. **Macros** - NEVER use for constants (only for token operations)
 
 **Compliant Example:**
 ```c
-/* PREFER: Type-safe enum */
+/* ALWAYS PREFER: Enum for integer constants */
 typedef enum {
     k_motor_state_idle    = 0,
     k_motor_state_running = 1,
     k_motor_state_error   = 2,
-} motor_state_t;
+    k_timeout_ms          = 1000,  /* Integer - use enum! */
+    k_max_retries         = 3,     /* Integer - use enum! */
+    k_buffer_size         = 256    /* Integer - use enum! */
+} motor_config_t;
 
-/* PREFER: Typed const */
-static const float s_max_velocity_mps = 2.5f;
+/* ONLY for floating-point (enum can't hold float) */
+static const float s_max_velocity_mps = 2.5f;  /* Must be const - not integer */
+static const float s_pid_kp = 1.0f;            /* Must be const - not integer */
 
-/* ACCEPTABLE: Compile-time macro */
-#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+/* ACCEPTABLE: Token operation macros only */
+#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))  /* Token operation */
 ```
 
 **Non-Compliant Example (AVOID):**
 ```c
-/* BAD: Using macros for simple constants */
-#define MAX_RETRIES (3)        // Should be enum
-#define TIMEOUT_MS (1000)      // Should be enum or const
-#define MAX_VELOCITY (2.5f)    // Should be const
+/* BAD: Using macros for constants - NEVER DO THIS */
+#define MAX_RETRIES 3          // WRONG! Use enum
+#define TIMEOUT_MS 1000        // WRONG! Use enum
+#define BUFFER_SIZE 256        // WRONG! Use enum
+#define MAX_VELOCITY 2.5f      // WRONG! Use static const float
 
-/* WHY BAD:
- * - No type safety
+/* WHY MACROS ARE BAD:
+ * - No type safety (preprocessor text substitution)
  * - Not visible in debugger
- * - Can't take address
- * - Harder to namespace
+ * - Can't take address of value
+ * - No scoping/namespacing
+ * - Prone to macro expansion bugs
+ *
+ * RULE: If it's an integer constant, use enum. Always.
+ *       If it's floating-point, use static const.
+ *       Never use #define for constants.
  */
 ```
 
