@@ -368,6 +368,7 @@ rx_hcsr04_measure_async(rx_hcsr04_t* handle, rx_hcsr04_callback_t callback, void
    * Note: Full async implementation requires ThreadX thread.
    * This is a placeholder that performs blocking measurement.
    * A complete implementation would spawn a worker thread.
+   * See: https://github.com/Locked-Inc/STAR/issues/70
    */
   handle->measurement_active = true;
 
