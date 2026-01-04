@@ -1,0 +1,537 @@
+/* lib/rx_hal/src/rx_gptw.c */
+
+/**
+ * @file rx_gptw.c
+ * @brief GPTW PWM Driver Implementation for Motor Control
+ *
+ * General PWM Timer driver for brushed DC motors on RX72N.
+ *
+ * PWM Mode (Sawtooth Wave - Edge-Aligned):
+ * - Counter counts up from 0 to GTPR (period)
+ * - GTCCRA/GTCCRB control duty cycle
+ * - Efficient for H-bridge motor control
+ *
+ * For 20kHz PWM with PCLKA=120MHz:
+ * - Period = PCLKA / frequency = 120MHz / 20kHz = 6000
+ * - Resolution = 6000 counts (approximately 12.5-bit)
+ * - Duty cycle range: 0-6000
+ *
+ * @warning Base addresses derived from hirakuni45/RX framework.
+ * Verify against RX72N Hardware Manual before production use.
+ *
+ * @date 2026-01-04
+ * @copyright Copyright (c) 2026 STAR Project
+ */
+
+#include "rx_gptw.h"
+
+#include <stddef.h>
+
+#include "rx72n_regs.h"
+#include "rx_check.h"
+#include "rx_log.h"
+
+static const char* s_tag = "GPTW";
+
+/* =============================================================================
+ * Constants
+ * =============================================================================
+ */
+
+/** @brief GPTW general constants */
+typedef enum {
+  k_gptw_max_channels = 4, /**< GPTW0-GPTW3 */
+  k_gptw_outputs_per_channel = 2, /**< GTIOCA and GTIOCB */
+} gptw_constants_t;
+
+/** @brief System protection register values */
+typedef enum {
+  k_gptw_prcr_unlock = 0xA50B, /**< Enable writes to MSTPCR */
+  k_gptw_prcr_lock   = 0xA500, /**< Disable writes to MSTPCR */
+} gptw_prcr_values_t;
+
+/** @brief Period calculation constants */
+#define GPTW_PERIOD_MAX 0xFFFFFFFFUL /**< Maximum valid period (32-bit) */
+
+typedef enum {
+  k_gptw_period_min  = 10, /**< Minimum valid period */
+  k_gptw_period_zero = 0,  /**< Zero period value */
+} gptw_period_constants_t;
+
+/** @brief Duty cycle calculation constants */
+typedef enum {
+  k_gptw_duty_min     = 0,   /**< Minimum duty cycle (0%) */
+  k_gptw_duty_max     = 100, /**< Maximum duty cycle (100%) */
+  k_gptw_duty_divisor = 100, /**< Divisor for percentage conversion */
+} gptw_duty_constants_t;
+
+/** @brief MPC configuration constants */
+typedef enum {
+  k_mpc_pwpr_b0wi_clear = 0x00, /**< Clear B0WI to enable PFSWE write */
+  k_mpc_pwpr_pfswe_set  = 0x40, /**< Set PFSWE to enable PFS write */
+  k_mpc_pwpr_lock       = 0x80, /**< Set B0WI to lock PFS */
+} mpc_pwpr_constants_t;
+
+/* =============================================================================
+ * Static Variables
+ * =============================================================================
+ */
+
+/** @brief Track initialized channels */
+static bool     s_gptw_initialized[k_gptw_max_channels] = {false};
+/** @brief Period values for each channel */
+static uint32_t s_gptw_period[k_gptw_max_channels]      = {0};
+
+/* =============================================================================
+ * Internal Helper Functions
+ * =============================================================================
+ */
+
+/**
+ * @brief Get GPTW channel base address
+ *
+ * @param[in] channel GPTW channel
+ *
+ * @return Pointer to GPTW register base, or NULL if invalid
+ */
+static volatile rx_gptw_channel_regs_t* internal_get_gptw_base(rx_gptw_channel_t channel)
+{
+  switch (channel) {
+    case k_gptw_channel_0:
+      return GPTW0_BASE;
+    case k_gptw_channel_1:
+      return GPTW1_BASE;
+    case k_gptw_channel_2:
+      return GPTW2_BASE;
+    case k_gptw_channel_3:
+      return GPTW3_BASE;
+    default:
+      return NULL;
+  }
+}
+
+/**
+ * @brief Calculate period register value from frequency
+ *
+ * @param[in] frequency_hz Desired PWM frequency in Hz
+ * @param[out] period Pointer to store period value
+ *
+ * @return k_rx_ok on success, k_rx_err_invalid_arg if frequency too high/low
+ */
+static rx_err_t internal_calculate_period(uint32_t frequency_hz, uint32_t* period)
+{
+  /* For PWM mode (sawtooth wave):
+   * Period = PCLKA / frequency
+   * PCLKA = 120 MHz
+   */
+  const uint32_t pclka = k_pclka_hz;
+
+  if (frequency_hz == k_gptw_period_zero) {
+    return k_rx_err_invalid_arg;
+  }
+
+  uint32_t period_calc = pclka / frequency_hz;
+
+  /* Check if period fits in 32-bit register */
+  if (period_calc > GPTW_PERIOD_MAX) {
+    rx_log_error(s_tag, "Frequency too low");
+    return k_rx_err_invalid_arg;
+  }
+
+  if (period_calc < k_gptw_period_min) {
+    rx_log_error(s_tag, "Frequency too high");
+    return k_rx_err_invalid_arg;
+  }
+
+  *period = period_calc;
+  return k_rx_ok;
+}
+
+/**
+ * @brief Configure MPC for GPTW output pins
+ *
+ * Sets up Port E alternate functions for GPTW outputs.
+ *
+ * @param[in] channel GPTW channel to configure
+ *
+ * @return k_rx_ok on success
+ */
+static rx_err_t internal_configure_mpc(rx_gptw_channel_t channel)
+{
+  /* MPC Pin Function Select values for GPTW on Port E
+   * Each channel uses 2 pins (GTIOCA and GTIOCB)
+   *
+   * Pin mapping (from hardware_pinout.h):
+   * - GPTW0: PE5/GTIOC0A, PE2/GTIOC0B
+   * - GPTW1: PE4/GTIOC1A, PE1/GTIOC1B
+   * - GPTW2: PE3/GTIOC2A, PE0/GTIOC2B
+   * - GPTW3: PE7/GTIOC3A, PE6/GTIOC3B
+   */
+
+  /* Unlock MPC write protection */
+  MPC.pwpr = k_mpc_pwpr_b0wi_clear; /* Clear B0WI */
+  MPC.pwpr = k_mpc_pwpr_pfswe_set;  /* Set PFSWE to enable PFS write */
+
+  /* Configure PFS for the appropriate pins
+   * PSEL value for GPTW is 0x14 (verify against HW manual)
+   */
+  switch (channel) {
+    case k_gptw_channel_0:
+      /* PE5/GTIOC0A and PE2/GTIOC0B */
+      MPC_PE5PFS = k_pfs_psel_gptw;
+      MPC_PE2PFS = k_pfs_psel_gptw;
+      break;
+    case k_gptw_channel_1:
+      /* PE4/GTIOC1A and PE1/GTIOC1B */
+      MPC_PE4PFS = k_pfs_psel_gptw;
+      MPC_PE1PFS = k_pfs_psel_gptw;
+      break;
+    case k_gptw_channel_2:
+      /* PE3/GTIOC2A and PE0/GTIOC2B */
+      MPC_PE3PFS = k_pfs_psel_gptw;
+      MPC_PE0PFS = k_pfs_psel_gptw;
+      break;
+    case k_gptw_channel_3:
+      /* PE7/GTIOC3A and PE6/GTIOC3B */
+      MPC_PE7PFS = k_pfs_psel_gptw;
+      MPC_PE6PFS = k_pfs_psel_gptw;
+      break;
+    default:
+      MPC.pwpr = k_mpc_pwpr_lock; /* Lock before returning error */
+      return k_rx_err_invalid_arg;
+  }
+
+  /* Lock MPC write protection */
+  MPC.pwpr = k_mpc_pwpr_lock;
+
+  return k_rx_ok;
+}
+
+/**
+ * @brief Configure Port E pins as peripheral outputs
+ *
+ * @param[in] channel GPTW channel
+ */
+static void internal_configure_port_pins(rx_gptw_channel_t channel)
+{
+  /* Set pins as output and enable peripheral function
+   * PMR = 1 (peripheral mode), PDR = 1 (output)
+   */
+  switch (channel) {
+    case k_gptw_channel_0:
+      /* PE5 and PE2 */
+      PORTE.pmr |= (1 << 5) | (1 << 2);
+      PORTE.pdr |= (1 << 5) | (1 << 2);
+      break;
+    case k_gptw_channel_1:
+      /* PE4 and PE1 */
+      PORTE.pmr |= (1 << 4) | (1 << 1);
+      PORTE.pdr |= (1 << 4) | (1 << 1);
+      break;
+    case k_gptw_channel_2:
+      /* PE3 and PE0 */
+      PORTE.pmr |= (1 << 3) | (1 << 0);
+      PORTE.pdr |= (1 << 3) | (1 << 0);
+      break;
+    case k_gptw_channel_3:
+      /* PE7 and PE6 */
+      PORTE.pmr |= (1 << 7) | (1 << 6);
+      PORTE.pdr |= (1 << 7) | (1 << 6);
+      break;
+    default:
+      break;
+  }
+}
+
+/* =============================================================================
+ * Public API Implementation
+ * =============================================================================
+ */
+
+rx_err_t rx_gptw_init_pwm(rx_gptw_channel_t channel, const rx_gptw_config_t* config)
+{
+  RX_CHECK_NULL_PTR(config, s_tag, "config pointer is NULL");
+
+  if ((int32_t)channel >= k_gptw_max_channels) {
+    rx_log_error(s_tag, "Invalid GPTW channel");
+    return k_rx_err_invalid_arg;
+  }
+
+  volatile rx_gptw_channel_regs_t* gptw = internal_get_gptw_base(channel);
+  if (gptw == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Calculate period from frequency */
+  uint32_t period;
+  rx_err_t err = internal_calculate_period(config->frequency_hz, &period);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  rx_log_info(s_tag, "Initializing GPTW");
+
+  /* Enable GPTW module (clear module stop bit in MSTPCRC) */
+  SYSTEM.prcr = k_gptw_prcr_unlock;
+  SYSTEM.mstpcrc &= ~(1UL << k_mstpc_gptw);
+  SYSTEM.prcr = k_gptw_prcr_lock;
+
+  /* Stop timer before configuration */
+  rx_gptw_stop(channel);
+
+  /* Unlock write protection for this channel */
+  gptw->gtwp = k_gptw_gtwp_unlock;
+
+  /* Configure control register
+   * - PCLKA/1 (120 MHz)
+   * - Sawtooth wave continuous mode
+   */
+  gptw->gtcr = k_gptw_gtcr_tpcs_1 | k_gptw_gtcr_md_saw_cont;
+
+  /* Configure I/O control register
+   * - Initial low, toggle on compare match for both outputs
+   * - Enable both outputs
+   */
+  gptw->gtior = k_gptw_gtior_oa_init_low | k_gptw_gtior_oae |
+                k_gptw_gtior_ob_init_low | k_gptw_gtior_obe;
+
+  /* Set period (GTPR = PWM cycle) */
+  gptw->gtpr = period;
+
+  /* Set initial duty cycle to 0% for both outputs */
+  gptw->gtccra = k_gptw_period_zero;
+  gptw->gtccrb = k_gptw_period_zero;
+
+  /* Clear counter */
+  gptw->gtcnt = k_gptw_period_zero;
+
+  /* Enable buffer operation for glitch-free updates */
+  gptw->gtber = k_gptw_gtber_ccra_buf | k_gptw_gtber_ccrb_buf;
+
+  /* Configure dead time if requested */
+  if (config->deadtime_ns > 0) {
+    /* Calculate dead time count: deadtime_ns * (PCLKA / 1e9) */
+    uint32_t deadtime_count = (uint32_t)((uint64_t)config->deadtime_ns * k_pclka_hz / 1000000000ULL);
+    gptw->gtdvu = deadtime_count;
+    gptw->gtdvd = deadtime_count;
+    gptw->gtdtcr = k_gptw_gtdtcr_tde; /* Enable dead time */
+  }
+
+  /* Lock write protection */
+  gptw->gtwp = k_gptw_gtwp_lock;
+
+  /* Configure MPC for Port E alternate functions */
+  err = internal_configure_mpc(channel);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to configure MPC");
+    return err;
+  }
+
+  /* Configure port pins */
+  internal_configure_port_pins(channel);
+
+  /* Save period for duty cycle calculations */
+  s_gptw_period[channel]      = period;
+  s_gptw_initialized[channel] = true;
+
+  /* Start timer */
+  rx_gptw_start(channel);
+
+  rx_log_info(s_tag, "GPTW initialized successfully");
+
+  return k_rx_ok;
+}
+
+rx_err_t rx_gptw_set_duty(rx_gptw_channel_t channel, rx_gptw_output_t output, float duty_percent)
+{
+  if ((int32_t)channel >= k_gptw_max_channels || !s_gptw_initialized[channel]) {
+    return k_rx_err_invalid_state;
+  }
+
+  if (duty_percent < (float)k_gptw_duty_min || duty_percent > (float)k_gptw_duty_max) {
+    rx_log_error(s_tag, "Invalid duty cycle");
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Convert percentage to count value */
+  uint32_t period     = s_gptw_period[channel];
+  uint32_t duty_count = (uint32_t)((duty_percent * period) / (float)k_gptw_duty_divisor);
+
+  return rx_gptw_set_duty_raw(channel, output, duty_count);
+}
+
+rx_err_t rx_gptw_set_duty_raw(rx_gptw_channel_t channel, rx_gptw_output_t output, uint32_t duty_count)
+{
+  if ((int32_t)channel >= k_gptw_max_channels || !s_gptw_initialized[channel]) {
+    return k_rx_err_invalid_state;
+  }
+
+  volatile rx_gptw_channel_regs_t* gptw = internal_get_gptw_base(channel);
+  if (gptw == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Clamp to period */
+  uint32_t period = s_gptw_period[channel];
+  if (duty_count > period) {
+    duty_count = period;
+  }
+
+  /* Update duty cycle (buffered, takes effect on next period) */
+  switch (output) {
+    case k_gptw_output_a:
+      gptw->gtccra = duty_count;
+      break;
+    case k_gptw_output_b:
+      gptw->gtccrb = duty_count;
+      break;
+    default:
+      return k_rx_err_invalid_arg;
+  }
+
+  return k_rx_ok;
+}
+
+rx_err_t rx_gptw_get_duty(rx_gptw_channel_t channel, rx_gptw_output_t output, float* duty_percent)
+{
+  RX_CHECK_NULL_PTR(duty_percent, s_tag, "duty_percent pointer is NULL");
+
+  if ((int32_t)channel >= k_gptw_max_channels || !s_gptw_initialized[channel]) {
+    return k_rx_err_invalid_state;
+  }
+
+  volatile rx_gptw_channel_regs_t* gptw = internal_get_gptw_base(channel);
+  if (gptw == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  uint32_t period     = s_gptw_period[channel];
+  uint32_t duty_count = 0;
+
+  switch (output) {
+    case k_gptw_output_a:
+      duty_count = gptw->gtccra;
+      break;
+    case k_gptw_output_b:
+      duty_count = gptw->gtccrb;
+      break;
+    default:
+      return k_rx_err_invalid_arg;
+  }
+
+  *duty_percent = (float)(duty_count * (float)k_gptw_duty_max) / period;
+
+  return k_rx_ok;
+}
+
+rx_err_t rx_gptw_get_period(rx_gptw_channel_t channel, uint32_t* period_count)
+{
+  RX_CHECK_NULL_PTR(period_count, s_tag, "period_count pointer is NULL");
+
+  if ((int32_t)channel >= k_gptw_max_channels || !s_gptw_initialized[channel]) {
+    return k_rx_err_invalid_state;
+  }
+
+  *period_count = s_gptw_period[channel];
+  return k_rx_ok;
+}
+
+rx_err_t rx_gptw_enable_output(rx_gptw_channel_t channel, rx_gptw_output_t output, bool enable)
+{
+  if ((int32_t)channel >= k_gptw_max_channels || !s_gptw_initialized[channel]) {
+    return k_rx_err_invalid_state;
+  }
+
+  volatile rx_gptw_channel_regs_t* gptw = internal_get_gptw_base(channel);
+  if (gptw == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Unlock for modification */
+  gptw->gtwp = k_gptw_gtwp_unlock;
+
+  /* Modify GTIOR to enable/disable output */
+  switch (output) {
+    case k_gptw_output_a:
+      if (enable) {
+        gptw->gtior |= k_gptw_gtior_oae;
+      } else {
+        gptw->gtior &= ~k_gptw_gtior_oae;
+      }
+      break;
+    case k_gptw_output_b:
+      if (enable) {
+        gptw->gtior |= k_gptw_gtior_obe;
+      } else {
+        gptw->gtior &= ~k_gptw_gtior_obe;
+      }
+      break;
+    default:
+      gptw->gtwp = k_gptw_gtwp_lock;
+      return k_rx_err_invalid_arg;
+  }
+
+  gptw->gtwp = k_gptw_gtwp_lock;
+
+  return k_rx_ok;
+}
+
+rx_err_t rx_gptw_start(rx_gptw_channel_t channel)
+{
+  if ((int32_t)channel >= k_gptw_max_channels) {
+    return k_rx_err_invalid_arg;
+  }
+
+  volatile rx_gptw_channel_regs_t* gptw = internal_get_gptw_base(channel);
+  if (gptw == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Unlock and set CST bit in GTCR */
+  gptw->gtwp = k_gptw_gtwp_unlock;
+  gptw->gtcr |= k_gptw_gtcr_cst;
+  gptw->gtwp = k_gptw_gtwp_lock;
+
+  return k_rx_ok;
+}
+
+rx_err_t rx_gptw_stop(rx_gptw_channel_t channel)
+{
+  if ((int32_t)channel >= k_gptw_max_channels) {
+    return k_rx_err_invalid_arg;
+  }
+
+  volatile rx_gptw_channel_regs_t* gptw = internal_get_gptw_base(channel);
+  if (gptw == NULL) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Unlock and clear CST bit in GTCR */
+  gptw->gtwp = k_gptw_gtwp_unlock;
+  gptw->gtcr &= ~k_gptw_gtcr_cst;
+  gptw->gtwp = k_gptw_gtwp_lock;
+
+  return k_rx_ok;
+}
+
+rx_err_t rx_gptw_deinit(rx_gptw_channel_t channel)
+{
+  if ((int32_t)channel >= k_gptw_max_channels) {
+    return k_rx_err_invalid_arg;
+  }
+
+  /* Stop timer */
+  rx_gptw_stop(channel);
+
+  /* Disable outputs */
+  rx_gptw_enable_output(channel, k_gptw_output_a, false);
+  rx_gptw_enable_output(channel, k_gptw_output_b, false);
+
+  /* Mark as uninitialized */
+  s_gptw_initialized[channel] = false;
+  s_gptw_period[channel]      = k_gptw_period_zero;
+
+  rx_log_info(s_tag, "GPTW deinitialized");
+
+  return k_rx_ok;
+}

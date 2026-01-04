@@ -19,8 +19,8 @@
  * - PWM frequency: up to 25 kHz
  *
  * Hardware Connections:
- * - RX72N MTU PWM_A -> DRV8243 PH (Phase/Direction)
- * - RX72N MTU PWM_B -> DRV8243 EN (Enable/Speed)
+ * - RX72N GPTW PWM_A -> DRV8243 PH (Phase/Direction)
+ * - RX72N GPTW PWM_B -> DRV8243 EN (Enable/Speed)
  * - DRV8243 IPROPI -> RX72N ADC (Current sense)
  * - DRV8243 nFAULT -> RX72N GPIO (Fault detect)
  *
@@ -32,9 +32,9 @@
  *     .bus_manager = &bus_manager,
  *     .gpio_bus_name = "gpio_bus",
  *     .adc_bus_name = "adc_bus",
- *     .mtu_channel = k_mtu_channel_3,
- *     .output_ph = k_mtu_output_a,
- *     .output_en = k_mtu_output_b,
+ *     .gptw_channel = k_gptw_channel_3,
+ *     .output_ph = k_gptw_output_a,
+ *     .output_en = k_gptw_output_b,
  *     .pin_ipropi = k_adc_channel_0,
  *     .port_nfault = 3, .pin_nfault = 2,  // PORT3.2
  *     .pwm_freq_hz = 20000,
@@ -103,9 +103,9 @@ typedef struct {
   const char*       adc_bus_name;  /**< ADC bus name for current sense (required) */
 
   /* Motor control configuration */
-  rx_mtu_channel_t mtu_channel; /**< MTU channel for PWM */
-  rx_mtu_output_t  output_ph;   /**< PWM output for phase/direction (MTIOC) */
-  rx_mtu_output_t  output_en;   /**< PWM output for enable/speed (MTIOC) */
+  rx_gptw_channel_t gptw_channel; /**< GPTW channel for PWM */
+  rx_gptw_output_t  output_ph;    /**< PWM output for phase/direction (GTIOC) */
+  rx_gptw_output_t  output_en;    /**< PWM output for enable/speed (GTIOC) */
 
   /* Monitoring pins */
   uint8_t pin_ipropi;  /**< Current sense ADC channel (0-7) */
@@ -129,7 +129,7 @@ typedef struct {
   const char*       gpio_bus_name; /**< GPIO bus name (not owned) */
   const char*       adc_bus_name;  /**< ADC bus name (not owned) */
 
-  rx_motor_handle_t motor; /**< Underlying MTU motor control handle */
+  rx_motor_handle_t motor; /**< Underlying GPTW motor control handle */
 
   /* Pin assignments */
   uint8_t pin_ipropi;  /**< Current sense ADC channel (0-7) */
