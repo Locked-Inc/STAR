@@ -76,7 +76,9 @@ set(RX_USB_COMM_SRC
 )
 
 # Include directories for library headers
+# NOTE: mocks directory MUST come FIRST to shadow real headers like tx_api.h
 include_directories(
+    ${CMAKE_SOURCE_DIR}/mocks
     ${CMAKE_SOURCE_DIR}/../lib/rx_frame/inc
     ${CMAKE_SOURCE_DIR}/../lib/rx_crc/inc
     ${CMAKE_SOURCE_DIR}/../lib/rx_fec/inc
@@ -86,7 +88,6 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/../lib/rx_usb_comm/inc
     ${CMAKE_SOURCE_DIR}/../lib/rx_ds18b20/inc
     ${CMAKE_SOURCE_DIR}/../lib/rx_bus/inc
-    ${CMAKE_SOURCE_DIR}/mocks
     ${unity_SOURCE_DIR}/src
 )
 
@@ -154,8 +155,13 @@ target_link_libraries(test_rx_time unity)
 # Test: DS18B20 Temperature Sensor
 add_executable(test_rx_ds18b20
     test_rx_ds18b20.c
+    ${CMAKE_SOURCE_DIR}/../lib/rx_ds18b20/src/rx_ds18b20.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_bus_onewire.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_bus_manager.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_log.c
     ${RX_CRC_SRC}
 )
+target_compile_definitions(test_rx_ds18b20 PRIVATE UNIT_TEST)
 target_link_libraries(test_rx_ds18b20 unity)
 
 # =============================================================================
