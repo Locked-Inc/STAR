@@ -4,6 +4,7 @@
  * @file rx_hcsr04.h
  * @brief HC-SR04 Ultrasonic Distance Sensor Driver for RX72N
  *
+ * @details
  * GPIO-based driver for HC-SR04 ultrasonic distance sensors. Provides blocking
  * and non-blocking measurement APIs for obstacle detection and collision
  * avoidance applications.
