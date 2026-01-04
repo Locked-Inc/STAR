@@ -105,7 +105,7 @@ Review rx_pid.c for NASA Power of 10 compliance
 - [ ] High-level modules don't depend on low-level details
 - [ ] Use function pointer interfaces for hardware abstraction
 - [ ] Testable via mock injection
-- Pattern: `typedef struct { esp_err_t (*operation)(void* ctx, ...); void* ctx; } interface_t;`
+- Pattern: `typedef struct { rx_err_t (*operation)(void* ctx, ...); void* ctx; } interface_t;`
 
 ## C Style Guide Checklist
 
