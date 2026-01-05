@@ -18,6 +18,14 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(unity)
 
+# nanopb library (fetched from GitHub for host testing)
+FetchContent_Declare(
+    nanopb
+    GIT_REPOSITORY https://github.com/nanopb/nanopb.git
+    GIT_TAG 0.4.9
+)
+FetchContent_MakeAvailable(nanopb)
+
 # =============================================================================
 # Library Sources (copied for host compilation)
 # =============================================================================
@@ -150,6 +158,16 @@ set(RX_REGISTER_GUARD_SRC
     ${CMAKE_SOURCE_DIR}/../lib/rx_core/src/rx_register_guard.c
 )
 
+# rx_nanopb source (wrapper + generated protobuf files)
+set(RX_NANOPB_SRC
+    ${CMAKE_SOURCE_DIR}/../lib/rx_nanopb/src/rx_nanopb.c
+    ${CMAKE_SOURCE_DIR}/../lib/rx_nanopb/inc/gen/google/protobuf/timestamp.pb.c
+    ${CMAKE_SOURCE_DIR}/../lib/rx_nanopb/inc/gen/google/protobuf/duration.pb.c
+    ${CMAKE_SOURCE_DIR}/../lib/rx_nanopb/inc/gen/star/v1/common.pb.c
+    ${CMAKE_SOURCE_DIR}/../lib/rx_nanopb/inc/gen/star/v1/motor_control.pb.c
+    ${CMAKE_SOURCE_DIR}/../lib/rx_nanopb/inc/gen/star/v1/telemetry.pb.c
+)
+
 # Include directories for library headers
 include_directories(
     ${CMAKE_SOURCE_DIR}/../include
@@ -169,6 +187,9 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/../lib/rx_pid/inc
     ${CMAKE_SOURCE_DIR}/../lib/rx_encoder/inc
     ${CMAKE_SOURCE_DIR}/../lib/rx_bq4050/inc
+    ${CMAKE_SOURCE_DIR}/../lib/rx_nanopb/inc
+    ${CMAKE_SOURCE_DIR}/../lib/rx_nanopb/inc/gen
+    ${nanopb_SOURCE_DIR}
     ${CMAKE_SOURCE_DIR}/mocks
     ${unity_SOURCE_DIR}/src
 )
@@ -405,6 +426,29 @@ add_executable(test_rx_register_guard
 target_compile_definitions(test_rx_register_guard PRIVATE UNIT_TEST)
 target_link_libraries(test_rx_register_guard unity)
 
+# Test: nanopb Protocol Buffer Integration
+add_executable(test_rx_nanopb
+    test_rx_nanopb.c
+    ${RX_NANOPB_SRC}
+    ${nanopb_SOURCE_DIR}/pb_common.c
+    ${nanopb_SOURCE_DIR}/pb_encode.c
+    ${nanopb_SOURCE_DIR}/pb_decode.c
+)
+target_include_directories(test_rx_nanopb PRIVATE
+    ${CMAKE_SOURCE_DIR}/../lib/rx_nanopb/inc
+    ${CMAKE_SOURCE_DIR}/../lib/rx_nanopb/inc/gen
+    ${nanopb_SOURCE_DIR}
+)
+target_compile_definitions(test_rx_nanopb PRIVATE
+    UNIT_TEST
+    PB_CONVERT_DOUBLE_FLOAT=1
+)
+# Suppress nanopb-generated warnings
+target_compile_options(test_rx_nanopb PRIVATE
+    -Wno-missing-braces
+)
+target_link_libraries(test_rx_nanopb unity m)
+
 # =============================================================================
 # CTest Integration
 # =============================================================================
@@ -432,6 +476,7 @@ add_test(NAME test_rx_bq4050 COMMAND test_rx_bq4050)
 add_test(NAME test_rx_error_handler COMMAND test_rx_error_handler)
 add_test(NAME test_rx_pin_validator COMMAND test_rx_pin_validator)
 add_test(NAME test_rx_register_guard COMMAND test_rx_register_guard)
+add_test(NAME test_rx_nanopb COMMAND test_rx_nanopb)
 
 # =============================================================================
 # Convenience Targets
@@ -439,7 +484,7 @@ add_test(NAME test_rx_register_guard COMMAND test_rx_register_guard)
 
 add_custom_target(run_all_tests
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS test_rx_crc32 test_rx_crc8 test_rx_frame test_rx_fec test_rx_harq test_rx_usb test_rx_usb_comm test_rx_time test_rx_hcsr04 test_uart_hal test_rx_bus_uart test_rx_motor test_rx_bus_manager test_rx_bus_onewire test_rx_spi_comm test_rx_pid test_rx_encoder test_rx_bq4050 test_rx_error_handler test_rx_pin_validator test_rx_register_guard
+    DEPENDS test_rx_crc32 test_rx_crc8 test_rx_frame test_rx_fec test_rx_harq test_rx_usb test_rx_usb_comm test_rx_time test_rx_hcsr04 test_uart_hal test_rx_bus_uart test_rx_motor test_rx_bus_manager test_rx_bus_onewire test_rx_spi_comm test_rx_pid test_rx_encoder test_rx_bq4050 test_rx_error_handler test_rx_pin_validator test_rx_register_guard test_rx_nanopb
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running all unit tests..."
 )
