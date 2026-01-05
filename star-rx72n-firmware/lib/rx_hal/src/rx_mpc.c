@@ -117,7 +117,7 @@ static volatile uint8_t* internal_get_pfs_register(uint8_t port, uint8_t pin)
    * PFS registers start at MPC base + 0x21 (offset for P00PFS)
    * Each port has 8 pins, layout: P00-P07, P10-P17, P20-P27, etc.
    */
-  volatile uint8_t* pfs_base = (volatile uint8_t*)MPC_BASE + k_mpc_pfs_base_offset;
+  volatile uint8_t* pfs_base = (volatile uint8_t*)mpc() + k_mpc_pfs_base_offset;
 
   /* Port offset calculation */
   uint16_t port_offset = 0;
@@ -174,8 +174,8 @@ static void internal_mpc_unlock(void)
    * 1. Clear B0WI to allow PFSWE write
    * 2. Set PFSWE to allow PFS write
    */
-  MPC.pwpr = k_mpc_pwpr_clear; /* Clear B0WI */
-  MPC.pwpr = k_mpc_pwpr_pfswe; /* Set PFSWE */
+  mpc()->pwpr = k_mpc_pwpr_clear; /* Clear B0WI */
+  mpc()->pwpr = k_mpc_pwpr_pfswe; /* Set PFSWE */
 }
 
 /**
@@ -187,8 +187,8 @@ static void internal_mpc_lock(void)
    * 1. Clear PFSWE to protect PFS
    * 2. Set B0WI to protect PFSWE
    */
-  MPC.pwpr = k_mpc_pwpr_clear; /* Clear PFSWE */
-  MPC.pwpr = k_mpc_pwpr_b0wi;  /* Set B0WI */
+  mpc()->pwpr = k_mpc_pwpr_clear; /* Clear PFSWE */
+  mpc()->pwpr = k_mpc_pwpr_b0wi;  /* Set B0WI */
 }
 
 /**

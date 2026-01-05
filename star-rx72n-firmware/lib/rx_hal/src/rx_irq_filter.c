@@ -71,7 +71,7 @@ rx_err_t rx_irq_filter_enable(uint8_t irq_num, rx_irq_filter_clk_t filter_clk)
   uint16_t clock_mask  = (uint16_t)(k_irq_filter_clock_mask << clock_pos);
   uint16_t clock_value = (uint16_t)(filter_clk << clock_pos);
 
-  ICU.irqfltc[reg_idx] = (ICU.irqfltc[reg_idx] & ~clock_mask) | clock_value;
+  icu()->irqfltc[reg_idx] = (icu()->irqfltc[reg_idx] & ~clock_mask) | clock_value;
 
   /*
    * Enable filter for this IRQ
@@ -81,7 +81,7 @@ rx_err_t rx_irq_filter_enable(uint8_t irq_num, rx_irq_filter_clk_t filter_clk)
    * - Bit 1: IRQ1/9 filter enable
    * - etc.
    */
-  ICU.irqflte[reg_idx] |= (uint8_t)(1 << bit_pos);
+  icu()->irqflte[reg_idx] |= (uint8_t)(1 << bit_pos);
 
 #else
   /* Host-side stub for unit testing */
@@ -102,7 +102,7 @@ rx_err_t rx_irq_filter_disable(uint8_t irq_num)
   uint8_t bit_pos = irq_num % k_irq_filter_irqs_per_reg;
 
   /* Clear filter enable bit */
-  ICU.irqflte[reg_idx] &= (uint8_t)~(1 << bit_pos);
+  icu()->irqflte[reg_idx] &= (uint8_t)~(1 << bit_pos);
 
 #endif
 
@@ -123,7 +123,7 @@ rx_err_t rx_irq_filter_is_enabled(uint8_t irq_num, bool* enabled)
   uint8_t reg_idx = irq_num / k_irq_filter_irqs_per_reg;
   uint8_t bit_pos = irq_num % k_irq_filter_irqs_per_reg;
 
-  *enabled = (ICU.irqflte[reg_idx] & (1 << bit_pos)) != 0;
+  *enabled = (icu()->irqflte[reg_idx] & (1 << bit_pos)) != 0;
 
 #else
   *enabled = false;
@@ -147,7 +147,7 @@ rx_err_t rx_irq_filter_get_clock(uint8_t irq_num, rx_irq_filter_clk_t* filter_cl
   uint8_t bit_pos   = irq_num % k_irq_filter_irqs_per_reg;
   uint8_t clock_pos = bit_pos * k_irq_filter_clock_bits;
 
-  uint16_t clock_value = (ICU.irqfltc[reg_idx] >> clock_pos) & k_irq_filter_clock_mask;
+  uint16_t clock_value = (icu()->irqfltc[reg_idx] >> clock_pos) & k_irq_filter_clock_mask;
   *filter_clk          = (rx_irq_filter_clk_t)clock_value;
 
 #else

@@ -110,13 +110,13 @@ static volatile rx_riic_regs_t* internal_get_riic_base(uint8_t channel)
 {
   switch (channel) {
     case k_riic_channel_0: {
-      return &RIIC0;
+      return riic0();
     }
     case k_riic_channel_1: {
-      return &RIIC1;
+      return riic1();
     }
     case k_riic_channel_2: {
-      return &RIIC2;
+      return riic2();
     }
     default: {
       return NULL;
@@ -338,17 +338,17 @@ rx_err_t riic_init(uint8_t channel, uint32_t frequency_hz)
   }
 
   /* Enable RIIC module (clear module stop bit) */
-  SYSTEM.prcr = k_riic_prcr_unlock;
+  system_regs()->prcr = k_riic_prcr_unlock;
 
   if (channel == k_riic_channel_0) {
-    SYSTEM.mstpcrb &= ~(1UL << k_riic_mstpb_riic0);
+    system_regs()->mstpcrb &= ~(1UL << k_riic_mstpb_riic0);
   } else if (channel == k_riic_channel_1) {
-    SYSTEM.mstpcrb &= ~(1UL << k_riic_mstpb_riic1);
+    system_regs()->mstpcrb &= ~(1UL << k_riic_mstpb_riic1);
   } else {
-    SYSTEM.mstpcrb &= ~(1UL << k_riic_mstpb_riic2);
+    system_regs()->mstpcrb &= ~(1UL << k_riic_mstpb_riic2);
   }
 
-  SYSTEM.prcr = k_riic_prcr_lock;
+  system_regs()->prcr = k_riic_prcr_lock;
 
   /* Reset RIIC */
   riic->iccr1 = k_riic_iccr1_iicrst;

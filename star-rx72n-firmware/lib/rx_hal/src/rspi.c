@@ -111,13 +111,13 @@ static volatile rx_rspi_regs_t* internal_get_rspi_base(uint8_t channel)
 {
   switch (channel) {
     case k_rspi_channel_0: {
-      return &RSPI0;
+      return rspi0();
     }
     case k_rspi_channel_1: {
-      return &RSPI1;
+      return rspi1();
     }
     case k_rspi_channel_2: {
-      return &RSPI2;
+      return rspi2();
     }
     default: {
       return NULL;
@@ -151,17 +151,17 @@ rx_err_t rspi_init_peripheral(uint8_t channel, uint8_t mode, bool use_16bit)
   }
 
   /* Enable RSPI module (clear module stop bit) */
-  SYSTEM.prcr = k_rspi_prcr_unlock;
+  system_regs()->prcr = k_rspi_prcr_unlock;
 
   if (channel == k_rspi_channel_0) {
-    SYSTEM.mstpcrb &= ~(1UL << k_rspi_mstpb_rspi0);
+    system_regs()->mstpcrb &= ~(1UL << k_rspi_mstpb_rspi0);
   } else if (channel == k_rspi_channel_1) {
-    SYSTEM.mstpcrb &= ~(1UL << k_rspi_mstpb_rspi1);
+    system_regs()->mstpcrb &= ~(1UL << k_rspi_mstpb_rspi1);
   } else {
-    SYSTEM.mstpcrb &= ~(1UL << k_rspi_mstpb_rspi2);
+    system_regs()->mstpcrb &= ~(1UL << k_rspi_mstpb_rspi2);
   }
 
-  SYSTEM.prcr = k_rspi_prcr_lock;
+  system_regs()->prcr = k_rspi_prcr_lock;
 
   /* Disable SPI before configuration */
   rspi->spcr = k_rspi_spcr_disabled;
@@ -307,17 +307,17 @@ rx_err_t rspi_deinit(uint8_t channel)
   rspi->spcr = k_rspi_spcr_disabled;
 
   /* Disable RSPI module (set module stop bit) */
-  SYSTEM.prcr = k_rspi_prcr_unlock;
+  system_regs()->prcr = k_rspi_prcr_unlock;
 
   if (channel == k_rspi_channel_0) {
-    SYSTEM.mstpcrb |= (1UL << k_rspi_mstpb_rspi0);
+    system_regs()->mstpcrb |= (1UL << k_rspi_mstpb_rspi0);
   } else if (channel == k_rspi_channel_1) {
-    SYSTEM.mstpcrb |= (1UL << k_rspi_mstpb_rspi1);
+    system_regs()->mstpcrb |= (1UL << k_rspi_mstpb_rspi1);
   } else {
-    SYSTEM.mstpcrb |= (1UL << k_rspi_mstpb_rspi2);
+    system_regs()->mstpcrb |= (1UL << k_rspi_mstpb_rspi2);
   }
 
-  SYSTEM.prcr = k_rspi_prcr_lock;
+  system_regs()->prcr = k_rspi_prcr_lock;
 
   /* Mark channel as uninitialized */
   s_rspi_channel_initialized[channel] = false;

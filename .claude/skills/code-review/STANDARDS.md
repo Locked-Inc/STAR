@@ -208,12 +208,12 @@ if (ret != RX_OK) {
 **Allowed Macro Uses (Exhaustive List):**
 1. **Reducing duplicated code** - Function-like macros (e.g., `RX_RETURN_ON_ERROR`)
 2. **Conditional compilation** - Compile-time optimization (e.g., logging macros)
-3. **Hardware addresses** - Register pointers (can't use enum for addresses)
-4. **Build configuration flags** - Feature selection (e.g., `RX_CRC32_USE_HARDWARE`)
+3. **Build configuration flags** - Feature selection (e.g., `RX_CRC32_USE_HARDWARE`)
 
 **Forbidden Macro Uses:**
 - Simple integer constants (use enum)
 - Simple floating-point constants (use static const)
+- Hardware register addresses (use inline accessor functions instead)
 - Function aliases for backward compatibility (project has no releases, no backward compatibility needed)
 
 **No Magic Numbers Policy:**
@@ -296,16 +296,30 @@ static void parse_frame(const uint8_t* frame) {
 #define rx_log_error(tag, msg) ((void)0)  /* Optimized away at compile time */
 #endif
 
-/* ACCEPTABLE: Hardware register addresses */
-#define CMT0_BASE ((rx_cmt_channel_regs_t*)0x00088000)
-#define CMT0      (*CMT0_BASE)
-
 /* ACCEPTABLE: Build configuration flags */
 #ifdef __RX__
 #define RX_CRC32_USE_HARDWARE
 #else
 #define RX_CRC32_USE_SOFTWARE
 #endif
+
+/* PREFERRED: Hardware register access via inline accessors */
+typedef enum {
+    k_cmt0_base_addr  = 0x00088000,  /* CMT0 peripheral base address */
+    k_port0_base_addr = 0x000C0000,  /* PORT0 GPIO base address */
+} hw_addresses_t;
+
+static inline CMT_Type* cmt0(void) {
+    return (CMT_Type*)k_cmt0_base_addr;
+}
+
+static inline PORT_Type* port0(void) {
+    return (PORT_Type*)k_port0_base_addr;
+}
+
+/* Usage: Identical syntax to macro-based approach */
+cmt0()->CMCR = 0x0042;
+port0()->PDR |= (1 << 3);
 ```
 
 **Non-Compliant Example (AVOID):**
@@ -315,6 +329,10 @@ static void parse_frame(const uint8_t* frame) {
 #define TIMEOUT_MS 1000        // WRONG! Use enum
 #define BUFFER_SIZE 256        // WRONG! Use enum
 #define MAX_VELOCITY 2.5f      // WRONG! Use static const float
+
+/* BAD: Using macros for hardware addresses - NEVER DO THIS */
+#define CMT0_BASE ((CMT_Type*)0x00088000)  // WRONG! Use inline accessor
+#define CMT0 (*CMT0_BASE)                   // WRONG! Use inline accessor
 
 /* BAD: Magic numbers everywhere */
 static void write_be16_bad(uint8_t* buf, uint16_t val) {
@@ -339,16 +357,25 @@ static void config_register_bad(void) {
  * - Not searchable (can't grep for "sync offset")
  * - No semantic meaning in debugger
  *
- * WHY MACROS ARE BAD:
+ * WHY MACROS ARE BAD (for constants and hardware addresses):
  * - No type safety (preprocessor text substitution)
- * - Not visible in debugger
- * - Can't take address of value
+ * - Not visible in debugger (can't inspect value)
+ * - Can't take address of macro
  * - No scoping/namespacing
  * - Prone to macro expansion bugs
+ * - For hardware: inline accessors provide same zero-overhead with type safety
+ *
+ * WHY INLINE ACCESSORS ARE BETTER (for hardware registers):
+ * - Type-safe (function returns typed pointer)
+ * - Debugger-friendly (can step into, inspect)
+ * - Compiler optimizes to same code as macro (zero overhead)
+ * - Can add validation in debug builds
+ * - Address is enum constant (named, searchable)
  *
  * RULE: If it's an integer (even 0, 1, 8!), use enum. Always.
  *       If it's floating-point, use static const.
- *       Never use #define for constants.
+ *       If it's a hardware address, use inline accessor with enum address.
+ *       Never use #define for constants or hardware addresses.
  *       Never use literal numbers.
  */
 ```

@@ -100,10 +100,10 @@ static volatile rx_s12ad_regs_t* internal_get_adc_base(uint8_t unit)
 {
   switch (unit) {
     case 0: {
-      return &S12AD0;
+      return s12ad0();
     }
     case 1: {
-      return &S12AD1;
+      return s12ad1();
     }
     default: {
       return NULL;
@@ -163,17 +163,17 @@ rx_err_t adc_init(uint8_t unit, uint8_t channel, uint8_t bits)
   /* Initialize ADC unit if not already initialized */
   if (!s_adc_unit_initialized[unit]) {
     /* Unlock module stop control */
-    SYSTEM.prcr = k_adc_prcr_unlock;
+    system_regs()->prcr = k_adc_prcr_unlock;
 
     /* Enable ADC module (clear module stop bit) */
     if (unit == 0) {
-      SYSTEM.mstpcra &= ~(1UL << k_adc_mstpra_s12ad0);
+      system_regs()->mstpcra &= ~(1UL << k_adc_mstpra_s12ad0);
     } else {
-      SYSTEM.mstpcra &= ~(1UL << k_adc_mstpra_s12ad1);
+      system_regs()->mstpcra &= ~(1UL << k_adc_mstpra_s12ad1);
     }
 
     /* Lock module stop control */
-    SYSTEM.prcr = k_adc_prcr_lock;
+    system_regs()->prcr = k_adc_prcr_lock;
 
     /* Configure ADC resolution */
     uint16_t adcer = adc->adcer;

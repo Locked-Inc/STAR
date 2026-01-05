@@ -25,6 +25,18 @@ extern "C" {
  * =============================================================================
  */
 
+/** @brief MTU base addresses */
+typedef enum {
+  k_mtu0_base_addr    = 0x000D0600, /**< MTU0 register base address */
+  k_mtu1_base_addr    = 0x000D0680, /**< MTU1 register base address */
+  k_mtu2_base_addr    = 0x000D0700, /**< MTU2 register base address */
+  k_mtu3_base_addr    = 0x000D0200, /**< MTU3 register base address */
+  k_mtu4_base_addr    = 0x000D0201, /**< MTU4 register base address */
+  k_mtu6_base_addr    = 0x000D0A00, /**< MTU6 register base address */
+  k_mtu7_base_addr    = 0x000D0A80, /**< MTU7 register base address */
+  k_mtu_tstr_base_addr = 0x000D0880, /**< MTU TSTR register base address */
+} rx_mtu_addresses_t;
+
 /**
  * @brief MTU Channel Register Map (MTU0-MTU2, MTU6-MTU7)
  * @details
@@ -87,24 +99,77 @@ typedef struct {
   volatile uint8_t tstr; /**< Timer Start Register (channel enable bits) */
 } rx_mtu_tstr_regs_t;
 
-#define MTU0_BASE ((rx_mtu_channel_regs_t*)0x000D0600)
-#define MTU1_BASE ((rx_mtu_channel_regs_t*)0x000D0680)
-#define MTU2_BASE ((rx_mtu_channel_regs_t*)0x000D0700)
-#define MTU3_BASE ((rx_mtu34_channel_regs_t*)0x000D0200)
-#define MTU4_BASE ((rx_mtu34_channel_regs_t*)0x000D0201)
-#define MTU6_BASE ((rx_mtu_channel_regs_t*)0x000D0A00)
-#define MTU7_BASE ((rx_mtu_channel_regs_t*)0x000D0A80)
+/**
+ * @brief Get pointer to MTU0 registers
+ * @return Volatile pointer to MTU0 register structure
+ */
+static inline volatile rx_mtu_channel_regs_t* mtu0(void)
+{
+  return (volatile rx_mtu_channel_regs_t*)k_mtu0_base_addr;
+}
 
-#define MTU0 (*MTU0_BASE)
-#define MTU1 (*MTU1_BASE)
-#define MTU2 (*MTU2_BASE)
-#define MTU3 (*MTU3_BASE)
-#define MTU4 (*MTU4_BASE)
-#define MTU6 (*MTU6_BASE)
-#define MTU7 (*MTU7_BASE)
+/**
+ * @brief Get pointer to MTU1 registers
+ * @return Volatile pointer to MTU1 register structure
+ */
+static inline volatile rx_mtu_channel_regs_t* mtu1(void)
+{
+  return (volatile rx_mtu_channel_regs_t*)k_mtu1_base_addr;
+}
 
-#define MTU_TSTR_BASE ((rx_mtu_tstr_regs_t*)0x000D0880)
-#define MTU_TSTR      (*MTU_TSTR_BASE)
+/**
+ * @brief Get pointer to MTU2 registers
+ * @return Volatile pointer to MTU2 register structure
+ */
+static inline volatile rx_mtu_channel_regs_t* mtu2(void)
+{
+  return (volatile rx_mtu_channel_regs_t*)k_mtu2_base_addr;
+}
+
+/**
+ * @brief Get pointer to MTU3 registers
+ * @return Volatile pointer to MTU3 register structure
+ */
+static inline volatile rx_mtu34_channel_regs_t* mtu3(void)
+{
+  return (volatile rx_mtu34_channel_regs_t*)k_mtu3_base_addr;
+}
+
+/**
+ * @brief Get pointer to MTU4 registers
+ * @return Volatile pointer to MTU4 register structure
+ */
+static inline volatile rx_mtu34_channel_regs_t* mtu4(void)
+{
+  return (volatile rx_mtu34_channel_regs_t*)k_mtu4_base_addr;
+}
+
+/**
+ * @brief Get pointer to MTU6 registers
+ * @return Volatile pointer to MTU6 register structure
+ */
+static inline volatile rx_mtu_channel_regs_t* mtu6(void)
+{
+  return (volatile rx_mtu_channel_regs_t*)k_mtu6_base_addr;
+}
+
+/**
+ * @brief Get pointer to MTU7 registers
+ * @return Volatile pointer to MTU7 register structure
+ */
+static inline volatile rx_mtu_channel_regs_t* mtu7(void)
+{
+  return (volatile rx_mtu_channel_regs_t*)k_mtu7_base_addr;
+}
+
+/**
+ * @brief Get pointer to MTU TSTR registers
+ * @return Volatile pointer to MTU TSTR register structure
+ */
+static inline volatile rx_mtu_tstr_regs_t* mtu_tstr(void)
+{
+  return (volatile rx_mtu_tstr_regs_t*)k_mtu_tstr_base_addr;
+}
 
 /* Timer Control Register (TCR) bits */
 typedef enum {
