@@ -18,6 +18,7 @@
 #include <stdint.h>
 
 /* Core infrastructure */
+#include "hardware_pinout.h"
 #include "rx_check.h"
 #include "rx_err.h"
 #include "rx_infrastructure.h"
@@ -54,70 +55,64 @@ rx_err_t system_init(void);
 /**
  * @brief Configure GPIO pin as output
  *
- * @param[in] port Port number (0-9, or 0xA-0x10 for A-G)
- * @param[in] pin Pin number (0-7)
+ * @param[in] pin GPIO pin (type-safe enum from hardware_pinout.h)
  *
  * @return k_rx_ok on success,
  *         k_rx_err_gpio_invalid_port if port is invalid,
  *         k_rx_err_gpio_invalid_pin if pin is invalid,
  *         k_rx_err_gpio_conflict if pin already reserved
  */
-rx_err_t gpio_set_output(uint8_t port, uint8_t pin);
+rx_err_t gpio_set_output(gpio_pin_t pin);
 
 /**
  * @brief Configure GPIO pin as input
  *
- * @param[in] port Port number
- * @param[in] pin Pin number (0-7)
+ * @param[in] pin GPIO pin (type-safe enum from hardware_pinout.h)
  *
  * @return k_rx_ok on success,
  *         k_rx_err_gpio_invalid_port if port is invalid,
  *         k_rx_err_gpio_invalid_pin if pin is invalid,
  *         k_rx_err_gpio_conflict if pin already reserved
  */
-rx_err_t gpio_set_input(uint8_t port, uint8_t pin);
+rx_err_t gpio_set_input(gpio_pin_t pin);
 
 /**
  * @brief Set GPIO pin high
  *
- * @param[in] port Port number
- * @param[in] pin Pin number (0-7)
+ * @param[in] pin GPIO pin (type-safe enum from hardware_pinout.h)
  *
  * @return k_rx_ok on success,
  *         k_rx_err_gpio_invalid_port if port is invalid,
  *         k_rx_err_gpio_invalid_pin if pin is invalid
  */
-rx_err_t gpio_write_high(uint8_t port, uint8_t pin);
+rx_err_t gpio_write_high(gpio_pin_t pin);
 
 /**
  * @brief Set GPIO pin low
  *
- * @param[in] port Port number
- * @param[in] pin Pin number (0-7)
+ * @param[in] pin GPIO pin (type-safe enum from hardware_pinout.h)
  *
  * @return k_rx_ok on success,
  *         k_rx_err_gpio_invalid_port if port is invalid,
  *         k_rx_err_gpio_invalid_pin if pin is invalid
  */
-rx_err_t gpio_write_low(uint8_t port, uint8_t pin);
+rx_err_t gpio_write_low(gpio_pin_t pin);
 
 /**
  * @brief Toggle GPIO pin
  *
- * @param[in] port Port number
- * @param[in] pin Pin number (0-7)
+ * @param[in] pin GPIO pin (type-safe enum from hardware_pinout.h)
  *
  * @return k_rx_ok on success,
  *         k_rx_err_gpio_invalid_port if port is invalid,
  *         k_rx_err_gpio_invalid_pin if pin is invalid
  */
-rx_err_t gpio_toggle(uint8_t port, uint8_t pin);
+rx_err_t gpio_toggle(gpio_pin_t pin);
 
 /**
  * @brief Read GPIO pin
  *
- * @param[in] port Port number
- * @param[in] pin Pin number (0-7)
+ * @param[in] pin GPIO pin (type-safe enum from hardware_pinout.h)
  * @param[out] value Pointer to store pin value (true=high, false=low)
  *
  * @return k_rx_ok on success,
@@ -125,7 +120,7 @@ rx_err_t gpio_toggle(uint8_t port, uint8_t pin);
  *         k_rx_err_gpio_invalid_pin if pin is invalid,
  *         k_rx_err_null_pointer if value is NULL
  */
-rx_err_t gpio_read(uint8_t port, uint8_t pin, bool* value);
+rx_err_t gpio_read(gpio_pin_t pin, bool* value);
 
 /* =============================================================================
  * Timer Functions
