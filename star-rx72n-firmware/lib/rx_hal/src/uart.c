@@ -216,7 +216,7 @@ static rx_err_t internal_enable_sci_clock(uint8_t channel)
 /**
  * @brief Get PORT base address from port number
  *
- * @param[in] port Port number (0-9, or 0xA-0x10 for A-G)
+ * @param[in] port Port number (0-5, J, or A-E)
  *
  * @return Pointer to PORT register base, or NULL if invalid port
  */
@@ -235,14 +235,6 @@ static volatile rx_port_regs_t* internal_get_port_base(uint8_t port)
       return port4();
     case 5:
       return port5();
-    case 6:
-      return port6();
-    case 7:
-      return port7();
-    case 8:
-      return port8();
-    case 9:
-      return port9();
     case 0x0A:
       return porta();
     case 0x0B:
@@ -253,10 +245,8 @@ static volatile rx_port_regs_t* internal_get_port_base(uint8_t port)
       return portd();
     case 0x0E:
       return porte();
-    case 0x0F:
-      return portf();
-    case 0x10:
-      return portg();
+    case 0x12:
+      return portj();
     default:
       return (volatile rx_port_regs_t*)0;
   }
