@@ -164,19 +164,19 @@ extern "C" {
  */
 #if defined(RX72N_PACKAGE_100PIN)
 #define RX72N_PACKAGE_NAME "100-pin LFQFP"
-#define RX72N_IO_PIN_COUNT 63  /* 63 usable I/O pins (not counting power/clock) */
+#define RX72N_IO_PIN_COUNT (63)  /* 63 usable I/O pins (not counting power/clock) */
 #elif defined(RX72N_PACKAGE_144PIN)
 #define RX72N_PACKAGE_NAME "144-pin LFQFP"
-#define RX72N_IO_PIN_COUNT 111
+#define RX72N_IO_PIN_COUNT (111)
 #elif defined(RX72N_PACKAGE_145PIN)
 #define RX72N_PACKAGE_NAME "145-pin TFLGA"
-#define RX72N_IO_PIN_COUNT 111
+#define RX72N_IO_PIN_COUNT (111)
 #elif defined(RX72N_PACKAGE_176PIN)
 #define RX72N_PACKAGE_NAME "176-pin LFQFP/LFBGA"
-#define RX72N_IO_PIN_COUNT 136
+#define RX72N_IO_PIN_COUNT (136)
 #elif defined(RX72N_PACKAGE_224PIN)
 #define RX72N_PACKAGE_NAME "224-pin LFBGA"
-#define RX72N_IO_PIN_COUNT 182
+#define RX72N_IO_PIN_COUNT (182)
 #endif
 
 #ifdef __cplusplus
