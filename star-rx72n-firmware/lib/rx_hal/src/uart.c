@@ -18,6 +18,7 @@
 #include <stdint.h>
 
 #include "hardware.h"
+#include "hardware_pinout.h"
 #include "rx72n_regs.h"
 #include "rx_mpc.h"
 
@@ -293,12 +294,15 @@ static rx_err_t internal_configure_uart_pins(uint8_t tx_port,
   }
 
   /* Configure MPC for SCI function */
-  rx_err_t err = rx_mpc_set_sci(tx_port, tx_pin, true);
+  gpio_pin_t tx_gpio = gpio_pin_make(tx_port, tx_pin);
+  gpio_pin_t rx_gpio = gpio_pin_make(rx_port, rx_pin);
+
+  rx_err_t err = rx_mpc_set_sci(tx_gpio, true);
   if (err != k_rx_ok) {
     return err;
   }
 
-  err = rx_mpc_set_sci(rx_port, rx_pin, false);
+  err = rx_mpc_set_sci(rx_gpio, false);
   if (err != k_rx_ok) {
     return err;
   }

@@ -201,13 +201,13 @@ static rx_err_t
 internal_set_drive_mode(rx_bus_config_t* bus_config, onewire_runtime_state_t* state, bool output)
 {
   if (output && !state->line_is_output) {
-    rx_err_t err = gpio_set_output(bus_config->proto.onewire.port, bus_config->proto.onewire.pin);
+    rx_err_t err = gpio_set_output(bus_config->proto.onewire.pin);
     if (err != k_rx_ok) {
       return err;
     }
     state->line_is_output = true;
   } else if (!output && state->line_is_output) {
-    rx_err_t err = gpio_set_input(bus_config->proto.onewire.port, bus_config->proto.onewire.pin);
+    rx_err_t err = gpio_set_input(bus_config->proto.onewire.pin);
     if (err != k_rx_ok) {
       return err;
     }
@@ -226,7 +226,7 @@ static rx_err_t internal_drive_low(rx_bus_config_t* bus_config, onewire_runtime_
   if (err != k_rx_ok) {
     return err;
   }
-  return gpio_write_low(bus_config->proto.onewire.port, bus_config->proto.onewire.pin);
+  return gpio_write_low(bus_config->proto.onewire.pin);
 }
 
 /**
@@ -244,7 +244,7 @@ static rx_err_t internal_release_line(rx_bus_config_t* bus_config, onewire_runti
  */
 static rx_err_t internal_read_line(rx_bus_config_t* bus_config, bool* high)
 {
-  return gpio_read(bus_config->proto.onewire.port, bus_config->proto.onewire.pin, high);
+  return gpio_read(bus_config->proto.onewire.pin, high);
 }
 
 /**
@@ -618,7 +618,7 @@ static rx_err_t internal_onewire_init_callback(rx_bus_config_t* bus_config, void
     return err;
   }
 
-  err = gpio_set_input(bus_config->proto.onewire.port, bus_config->proto.onewire.pin);
+  err = gpio_set_input(bus_config->proto.onewire.pin);
   if (err != k_rx_ok) {
     ctx->result = err;
     return err;
