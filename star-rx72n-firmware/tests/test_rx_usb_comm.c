@@ -1,3 +1,5 @@
+/* tests/test_rx_usb_comm.c */
+
 /**
  * @file test_rx_usb_comm.c
  * @brief Unit Tests for USB Communication Layer
@@ -5,8 +7,8 @@
  * Tests the high-level USB CDC communication layer that integrates
  * frame encoding/decoding with the USB driver.
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-04
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "unity.h"

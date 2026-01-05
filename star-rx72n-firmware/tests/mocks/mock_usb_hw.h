@@ -1,3 +1,5 @@
+/* tests/mocks/mock_usb_hw.h */
+
 /**
  * @file mock_usb_hw.h
  * @brief Mock USB Hardware Layer for Host-Side Testing
@@ -13,8 +15,8 @@
  * - Provides FIFO data injection/extraction for data path testing
  * - No actual hardware access (runs on host)
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-04
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef MOCK_USB_HW_H
