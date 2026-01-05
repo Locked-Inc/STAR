@@ -115,6 +115,14 @@ set(RX_SPI_COMM_SRC
     ${CMAKE_SOURCE_DIR}/../lib/rx_spi_comm/src/rx_spi_comm.c
 )
 
+# Mock HAL sources for GPIO/ADC/RIIC testing
+set(MOCK_HAL_SRC
+    ${CMAKE_SOURCE_DIR}/mocks/mock_gpio_hal.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_adc_hal.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_riic_hal.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_hal_regs.c
+)
+
 # rx_motor source
 set(RX_MOTOR_SRC
     ${CMAKE_SOURCE_DIR}/../lib/rx_motor/src/rx_motor.c
@@ -277,6 +285,14 @@ add_executable(test_uart_hal
 )
 target_compile_definitions(test_uart_hal PRIVATE UNIT_TEST)
 target_link_libraries(test_uart_hal unity)
+
+# Test: GPIO HAL Driver
+add_executable(test_gpio_hal
+    test_gpio_hal.c
+    ${MOCK_HAL_SRC}
+)
+target_compile_definitions(test_gpio_hal PRIVATE UNIT_TEST)
+target_link_libraries(test_gpio_hal unity)
 
 # rx_bus sources for bus abstraction tests (using mock bus manager)
 set(RX_BUS_SRC
@@ -465,6 +481,7 @@ add_test(NAME test_rx_usb_comm COMMAND test_rx_usb_comm)
 add_test(NAME test_rx_time COMMAND test_rx_time)
 add_test(NAME test_rx_hcsr04 COMMAND test_rx_hcsr04)
 add_test(NAME test_uart_hal COMMAND test_uart_hal)
+add_test(NAME test_gpio_hal COMMAND test_gpio_hal)
 add_test(NAME test_rx_bus_uart COMMAND test_rx_bus_uart)
 add_test(NAME test_rx_motor COMMAND test_rx_motor)
 add_test(NAME test_rx_bus_manager COMMAND test_rx_bus_manager)
@@ -484,7 +501,7 @@ add_test(NAME test_rx_nanopb COMMAND test_rx_nanopb)
 
 add_custom_target(run_all_tests
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS test_rx_crc32 test_rx_crc8 test_rx_frame test_rx_fec test_rx_harq test_rx_usb test_rx_usb_comm test_rx_time test_rx_hcsr04 test_uart_hal test_rx_bus_uart test_rx_motor test_rx_bus_manager test_rx_bus_onewire test_rx_spi_comm test_rx_pid test_rx_encoder test_rx_bq4050 test_rx_error_handler test_rx_pin_validator test_rx_register_guard test_rx_nanopb
+    DEPENDS test_rx_crc32 test_rx_crc8 test_rx_frame test_rx_fec test_rx_harq test_rx_usb test_rx_usb_comm test_rx_time test_rx_hcsr04 test_uart_hal test_gpio_hal test_rx_bus_uart test_rx_motor test_rx_bus_manager test_rx_bus_onewire test_rx_spi_comm test_rx_pid test_rx_encoder test_rx_bq4050 test_rx_error_handler test_rx_pin_validator test_rx_register_guard test_rx_nanopb
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running all unit tests..."
 )
