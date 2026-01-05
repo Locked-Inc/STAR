@@ -37,4 +37,4 @@
 - [x] Task: Update `star-ui/UI_GUIDE.pdf` with controller instructions
 - [x] Task: Update `conductor/tech-stack.md` with WebSocket details
 - [x] Task: Add JSDoc to critical performance-sensitive paths (polling loop)
-- [~] Task: Conductor - User Manual Verification 'Phase 5: Integration & Documentation' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 5: Integration & Documentation' (Protocol in workflow.md) <!-- 73a5a342f23b672d2c8862b84ba0293cd7526c57 -->
