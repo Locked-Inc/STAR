@@ -6,8 +6,8 @@ import (
 
 func TestArcadeDrive(t *testing.T) {
 	tests := []struct {
-		name           string
-		linear, angular float32
+		name                string
+		linear, angular     float32
 		wantLeft, wantRight float32
 	}{
 		{"Stop", 0, 0, 0, 0},
