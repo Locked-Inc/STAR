@@ -100,10 +100,10 @@ static volatile rx_s12ad_regs_t* internal_get_adc_base(uint8_t unit)
 {
   switch (unit) {
     case 0: {
-      return &S12AD0;
+      return s12ad0();
     }
     case 1: {
-      return &S12AD1;
+      return s12ad1();
     }
     default: {
       return NULL;
