@@ -11,9 +11,9 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#include "rx_bus_manager.h"
-
 #include <string.h>
+
+#include "rx_bus_manager.h"
 
 static const char* s_tag = "MOCK_BUS_MGR";
 
@@ -56,8 +56,8 @@ rx_err_t rx_bus_manager_deinit(rx_bus_manager_t* manager)
   }
 
   /* Clear all state */
-  manager->buses     = NULL;
-  manager->bus_count = 0;
+  manager->buses             = NULL;
+  manager->bus_count         = 0;
   manager->mutex.tx_mutex_id = 0;
 
   return k_rx_ok;
@@ -105,8 +105,8 @@ rx_err_t rx_bus_manager_remove_bus(rx_bus_manager_t* manager, const char* name)
   while (*pp != NULL) {
     if (strcmp((*pp)->name, name) == 0) {
       rx_bus_config_t* to_remove = *pp;
-      *pp = to_remove->next;
-      to_remove->next = NULL;
+      *pp                        = to_remove->next;
+      to_remove->next            = NULL;
       manager->bus_count--;
       return k_rx_ok;
     }

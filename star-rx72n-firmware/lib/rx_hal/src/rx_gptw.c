@@ -40,7 +40,7 @@ static const char* s_tag = "GPTW";
 
 /** @brief GPTW general constants */
 typedef enum {
-  k_gptw_max_channels = 4, /**< GPTW0-GPTW3 */
+  k_gptw_max_channels        = 4, /**< GPTW0-GPTW3 */
   k_gptw_outputs_per_channel = 2, /**< GTIOCA and GTIOCB */
 } gptw_constants_t;
 
@@ -79,9 +79,9 @@ typedef enum {
  */
 
 /** @brief Track initialized channels */
-static bool     s_gptw_initialized[k_gptw_max_channels] = {false};
+static bool s_gptw_initialized[k_gptw_max_channels] = {false};
 /** @brief Period values for each channel */
-static uint32_t s_gptw_period[k_gptw_max_channels]      = {0};
+static uint32_t s_gptw_period[k_gptw_max_channels] = {0};
 
 /* =============================================================================
  * Internal Helper Functions
@@ -277,8 +277,8 @@ static void internal_enable_gptw_module_clock(void)
  * @param[in] period Calculated period value
  */
 static void internal_configure_gptw_hardware(volatile rx_gptw_channel_regs_t* gptw,
-                                              const rx_gptw_config_t* config,
-                                              uint32_t period)
+                                             const rx_gptw_config_t*          config,
+                                             uint32_t                         period)
 {
   /* Unlock write protection for this channel */
   gptw->gtwp = k_gptw_gtwp_unlock;
@@ -293,8 +293,8 @@ static void internal_configure_gptw_hardware(volatile rx_gptw_channel_regs_t* gp
    * - Initial low, toggle on compare match for both outputs
    * - Enable both outputs
    */
-  gptw->gtior = k_gptw_gtior_oa_init_low | k_gptw_gtior_oae |
-                k_gptw_gtior_ob_init_low | k_gptw_gtior_obe;
+  gptw->gtior =
+    k_gptw_gtior_oa_init_low | k_gptw_gtior_oae | k_gptw_gtior_ob_init_low | k_gptw_gtior_obe;
 
   /* Set period (GTPR = PWM cycle) */
   gptw->gtpr = period;
@@ -312,9 +312,10 @@ static void internal_configure_gptw_hardware(volatile rx_gptw_channel_regs_t* gp
   /* Configure dead time if requested */
   if (config->deadtime_ns > 0) {
     /* Calculate dead time count: deadtime_ns * (PCLKA / 1e9) */
-    uint32_t deadtime_count = (uint32_t)((uint64_t)config->deadtime_ns * k_pclka_hz / s_gptw_ns_per_second);
-    gptw->gtdvu = deadtime_count;
-    gptw->gtdvd = deadtime_count;
+    uint32_t deadtime_count =
+      (uint32_t)((uint64_t)config->deadtime_ns * k_pclka_hz / s_gptw_ns_per_second);
+    gptw->gtdvu  = deadtime_count;
+    gptw->gtdvd  = deadtime_count;
     gptw->gtdtcr = k_gptw_gtdtcr_tde; /* Enable dead time */
   }
 
@@ -401,7 +402,8 @@ rx_err_t rx_gptw_set_duty(rx_gptw_channel_t channel, rx_gptw_output_t output, fl
   return rx_gptw_set_duty_raw(channel, output, duty_count);
 }
 
-rx_err_t rx_gptw_set_duty_raw(rx_gptw_channel_t channel, rx_gptw_output_t output, uint32_t duty_count)
+rx_err_t
+rx_gptw_set_duty_raw(rx_gptw_channel_t channel, rx_gptw_output_t output, uint32_t duty_count)
 {
   if ((int32_t)channel >= k_gptw_max_channels || !s_gptw_initialized[channel]) {
     return k_rx_err_invalid_state;

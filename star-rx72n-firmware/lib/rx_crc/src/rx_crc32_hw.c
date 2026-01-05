@@ -71,8 +71,7 @@ rx_err_t rx_crc_init(void)
   system_regs()->prcr =
     (k_prcr_key << k_prcr_key_shift) | k_prcr_unlock_crc; /* Unlock protection for MSTPCR */
   system_regs()->mstpcrb &= ~(1UL << k_mstpb_crc);        /* Clear bit 23 to enable CRC */
-  system_regs()->prcr =
-    (k_prcr_key << k_prcr_key_shift) | k_prcr_lock_all; /* Lock protection */
+  system_regs()->prcr = (k_prcr_key << k_prcr_key_shift) | k_prcr_lock_all; /* Lock protection */
 
   /*
      * Configure CRC peripheral for IEEE 802.3:

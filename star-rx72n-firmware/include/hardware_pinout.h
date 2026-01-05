@@ -162,15 +162,15 @@ typedef enum {
   k_gpio_pj5 = k_rx_pj_5, /**< PJ5 (pin 2) - JTAG/TDO */
 
   /* Aliases for common use cases (point to same enum values) */
-  k_gpio_temp_sensor         = k_gpio_p05,  /**< 1-Wire Temperature Sensor (DS18B20+) */
-  k_gpio_pmod_jb_gpio0       = k_gpio_pc6,  /**< PMOD JB GPIO 0 */
-  k_gpio_pmod_jb_gpio1       = k_gpio_p55,  /**< PMOD JB GPIO 1 */
-  k_gpio_pmod_jb_gpio2       = k_gpio_p54,  /**< PMOD JB GPIO 2 */
-  k_gpio_pmod_jb_gpio3       = k_gpio_pa2,  /**< PMOD JB GPIO 3 */
-  k_gpio_pmod_je_gpio0       = k_gpio_pj3,  /**< PMOD JE GPIO 0 */
-  k_gpio_pmod_je_gpio1       = k_gpio_pb1,  /**< PMOD JE GPIO 1 */
-  k_gpio_pmod_je_gpio2       = k_gpio_pb0,  /**< PMOD JE GPIO 2 */
-  k_gpio_pmod_je_gpio3       = k_gpio_pa1,  /**< PMOD JE GPIO 3 */
+  k_gpio_temp_sensor   = k_gpio_p05, /**< 1-Wire Temperature Sensor (DS18B20+) */
+  k_gpio_pmod_jb_gpio0 = k_gpio_pc6, /**< PMOD JB GPIO 0 */
+  k_gpio_pmod_jb_gpio1 = k_gpio_p55, /**< PMOD JB GPIO 1 */
+  k_gpio_pmod_jb_gpio2 = k_gpio_p54, /**< PMOD JB GPIO 2 */
+  k_gpio_pmod_jb_gpio3 = k_gpio_pa2, /**< PMOD JB GPIO 3 */
+  k_gpio_pmod_je_gpio0 = k_gpio_pj3, /**< PMOD JE GPIO 0 */
+  k_gpio_pmod_je_gpio1 = k_gpio_pb1, /**< PMOD JE GPIO 1 */
+  k_gpio_pmod_je_gpio2 = k_gpio_pb0, /**< PMOD JE GPIO 2 */
+  k_gpio_pmod_je_gpio3 = k_gpio_pa1, /**< PMOD JE GPIO 3 */
 } gpio_pin_t;
 
 /**
@@ -234,20 +234,28 @@ static inline gpio_pin_t gpio_pin_make(uint8_t port, uint8_t pin)
  */
 typedef enum {
   /* Motor 0 - GPTW Channel 0 */
-  k_pin_motor0_ph = (k_rx_port_e << k_port_shift) | k_rx_pin_5, /**< PE5/GTIOC0A (pin 73) - Phase/Direction */
-  k_pin_motor0_en = (k_rx_port_e << k_port_shift) | k_rx_pin_2, /**< PE2/GTIOC0B (pin 76) - Enable/Speed */
+  k_pin_motor0_ph =
+    (k_rx_port_e << k_port_shift) | k_rx_pin_5, /**< PE5/GTIOC0A (pin 73) - Phase/Direction */
+  k_pin_motor0_en =
+    (k_rx_port_e << k_port_shift) | k_rx_pin_2, /**< PE2/GTIOC0B (pin 76) - Enable/Speed */
 
   /* Motor 1 - GPTW Channel 1 */
-  k_pin_motor1_ph = (k_rx_port_e << k_port_shift) | k_rx_pin_4, /**< PE4/GTIOC1A (pin 74) - Phase/Direction */
-  k_pin_motor1_en = (k_rx_port_e << k_port_shift) | k_rx_pin_1, /**< PE1/GTIOC1B (pin 77) - Enable/Speed */
+  k_pin_motor1_ph =
+    (k_rx_port_e << k_port_shift) | k_rx_pin_4, /**< PE4/GTIOC1A (pin 74) - Phase/Direction */
+  k_pin_motor1_en =
+    (k_rx_port_e << k_port_shift) | k_rx_pin_1, /**< PE1/GTIOC1B (pin 77) - Enable/Speed */
 
   /* Motor 2 - GPTW Channel 2 */
-  k_pin_motor2_ph = (k_rx_port_e << k_port_shift) | k_rx_pin_3, /**< PE3/GTIOC2A (pin 75) - Phase/Direction */
-  k_pin_motor2_en = (k_rx_port_e << k_port_shift) | k_rx_pin_0, /**< PE0/GTIOC2B (pin 78) - Enable/Speed */
+  k_pin_motor2_ph =
+    (k_rx_port_e << k_port_shift) | k_rx_pin_3, /**< PE3/GTIOC2A (pin 75) - Phase/Direction */
+  k_pin_motor2_en =
+    (k_rx_port_e << k_port_shift) | k_rx_pin_0, /**< PE0/GTIOC2B (pin 78) - Enable/Speed */
 
   /* Motor 3 - GPTW Channel 3 */
-  k_pin_motor3_ph = (k_rx_port_e << k_port_shift) | k_rx_pin_7, /**< PE7/GTIOC3A (pin 71) - Phase/Direction */
-  k_pin_motor3_en = (k_rx_port_e << k_port_shift) | k_rx_pin_6, /**< PE6/GTIOC3B (pin 72) - Enable/Speed */
+  k_pin_motor3_ph =
+    (k_rx_port_e << k_port_shift) | k_rx_pin_7, /**< PE7/GTIOC3A (pin 71) - Phase/Direction */
+  k_pin_motor3_en =
+    (k_rx_port_e << k_port_shift) | k_rx_pin_6, /**< PE6/GTIOC3B (pin 72) - Enable/Speed */
 } motor_pwm_pins_t;
 
 /* =============================================================================
@@ -269,20 +277,28 @@ typedef enum {
  */
 typedef enum {
   /* Encoder 0 - MTU1 */
-  k_pin_encoder0_a = (k_rx_port_2 << k_port_shift) | k_rx_pin_4, /**< P24/MTCLKA (pin 24) - Phase A */
-  k_pin_encoder0_b = (k_rx_port_1 << k_port_shift) | k_rx_pin_5, /**< P15/MTCLKB (pin 31) - Phase B */
+  k_pin_encoder0_a =
+    (k_rx_port_2 << k_port_shift) | k_rx_pin_4, /**< P24/MTCLKA (pin 24) - Phase A */
+  k_pin_encoder0_b =
+    (k_rx_port_1 << k_port_shift) | k_rx_pin_5, /**< P15/MTCLKB (pin 31) - Phase B */
 
   /* Encoder 1 - MTU2 */
-  k_pin_encoder1_a = (k_rx_port_1 << k_port_shift) | k_rx_pin_4, /**< P14/MTCLKA (pin 32) - Phase A */
-  k_pin_encoder1_b = (k_rx_port_2 << k_port_shift) | k_rx_pin_2, /**< P22/MTCLKC (pin 26) - Phase B */
+  k_pin_encoder1_a =
+    (k_rx_port_1 << k_port_shift) | k_rx_pin_4, /**< P14/MTCLKA (pin 32) - Phase A */
+  k_pin_encoder1_b =
+    (k_rx_port_2 << k_port_shift) | k_rx_pin_2, /**< P22/MTCLKC (pin 26) - Phase B */
 
   /* Encoder 2 - MTU3 */
-  k_pin_encoder2_a = (k_rx_port_c << k_port_shift) | k_rx_pin_1, /**< PC1/MTIOC3A (pin 51) - Phase A */
-  k_pin_encoder2_b = (k_rx_port_c << k_port_shift) | k_rx_pin_0, /**< PC0/MTIOC3C (pin 52) - Phase B */
+  k_pin_encoder2_a =
+    (k_rx_port_c << k_port_shift) | k_rx_pin_1, /**< PC1/MTIOC3A (pin 51) - Phase A */
+  k_pin_encoder2_b =
+    (k_rx_port_c << k_port_shift) | k_rx_pin_0, /**< PC0/MTIOC3C (pin 52) - Phase B */
 
   /* Encoder 3 - MTU4 */
-  k_pin_encoder3_a = (k_rx_port_2 << k_port_shift) | k_rx_pin_5, /**< P25/MTCLKB (pin 23) - Phase A */
-  k_pin_encoder3_b = (k_rx_port_a << k_port_shift) | k_rx_pin_3, /**< PA3/MTCLKD (pin 67) - Phase B */
+  k_pin_encoder3_a =
+    (k_rx_port_2 << k_port_shift) | k_rx_pin_5, /**< P25/MTCLKB (pin 23) - Phase A */
+  k_pin_encoder3_b =
+    (k_rx_port_a << k_port_shift) | k_rx_pin_3, /**< PA3/MTCLKD (pin 67) - Phase B */
 } encoder_pins_t;
 
 /* =============================================================================
@@ -351,10 +367,14 @@ typedef enum {
  * - RPi5 is controller, RX72N is peripheral
  */
 typedef enum {
-  k_pin_rpi5_spi_cs   = (k_rx_port_a << k_port_shift) | k_rx_pin_4, /**< PA4/SSLA0-B (pin 66) - Chip Select */
-  k_pin_rpi5_spi_sclk = (k_rx_port_a << k_port_shift) | k_rx_pin_5, /**< PA5/RSPCKA-B (pin 65) - Clock */
-  k_pin_rpi5_spi_copi = (k_rx_port_a << k_port_shift) | k_rx_pin_6, /**< PA6/MOSIA-B (pin 64) - Controller Out */
-  k_pin_rpi5_spi_cipo = (k_rx_port_a << k_port_shift) | k_rx_pin_7, /**< PA7/MISOA-B (pin 63) - Controller In */
+  k_pin_rpi5_spi_cs =
+    (k_rx_port_a << k_port_shift) | k_rx_pin_4, /**< PA4/SSLA0-B (pin 66) - Chip Select */
+  k_pin_rpi5_spi_sclk =
+    (k_rx_port_a << k_port_shift) | k_rx_pin_5, /**< PA5/RSPCKA-B (pin 65) - Clock */
+  k_pin_rpi5_spi_copi =
+    (k_rx_port_a << k_port_shift) | k_rx_pin_6, /**< PA6/MOSIA-B (pin 64) - Controller Out */
+  k_pin_rpi5_spi_cipo =
+    (k_rx_port_a << k_port_shift) | k_rx_pin_7, /**< PA7/MISOA-B (pin 63) - Controller In */
 } rpi5_spi_pins_t;
 
 /* =============================================================================
@@ -375,15 +395,22 @@ typedef enum {
  */
 typedef enum {
   /* Shared SPI signals */
-  k_pin_motor_spi_sclk = (k_rx_port_d << k_port_shift) | k_rx_pin_3, /**< PD3/RSPCKC-A (pin 83) - Clock */
-  k_pin_motor_spi_copi = (k_rx_port_d << k_port_shift) | k_rx_pin_1, /**< PD1/MOSIC-A (pin 85) - Controller Out */
-  k_pin_motor_spi_cipo = (k_rx_port_d << k_port_shift) | k_rx_pin_2, /**< PD2/MISOC-A (pin 84) - Controller In */
+  k_pin_motor_spi_sclk =
+    (k_rx_port_d << k_port_shift) | k_rx_pin_3, /**< PD3/RSPCKC-A (pin 83) - Clock */
+  k_pin_motor_spi_copi =
+    (k_rx_port_d << k_port_shift) | k_rx_pin_1, /**< PD1/MOSIC-A (pin 85) - Controller Out */
+  k_pin_motor_spi_cipo =
+    (k_rx_port_d << k_port_shift) | k_rx_pin_2, /**< PD2/MISOC-A (pin 84) - Controller In */
 
   /* Individual chip selects */
-  k_pin_motor0_spi_cs = (k_rx_port_1 << k_port_shift) | k_rx_pin_7, /**< P17 (pin 29) - Motor 0 nCS */
-  k_pin_motor1_spi_cs = (k_rx_port_2 << k_port_shift) | k_rx_pin_3, /**< P23 (pin 25) - Motor 1 nCS */
-  k_pin_motor2_spi_cs = (k_rx_port_3 << k_port_shift) | k_rx_pin_2, /**< P32 (pin 18) - Motor 2 nCS */
-  k_pin_motor3_spi_cs = (k_rx_port_a << k_port_shift) | k_rx_pin_0, /**< PA0 (pin 70) - Motor 3 nCS */
+  k_pin_motor0_spi_cs =
+    (k_rx_port_1 << k_port_shift) | k_rx_pin_7, /**< P17 (pin 29) - Motor 0 nCS */
+  k_pin_motor1_spi_cs =
+    (k_rx_port_2 << k_port_shift) | k_rx_pin_3, /**< P23 (pin 25) - Motor 1 nCS */
+  k_pin_motor2_spi_cs =
+    (k_rx_port_3 << k_port_shift) | k_rx_pin_2, /**< P32 (pin 18) - Motor 2 nCS */
+  k_pin_motor3_spi_cs =
+    (k_rx_port_a << k_port_shift) | k_rx_pin_0, /**< PA0 (pin 70) - Motor 3 nCS */
 } motor_spi_pins_t;
 
 /* =============================================================================
@@ -403,8 +430,10 @@ typedef enum {
  * - External 2.2kΩ pull-ups required
  */
 typedef enum {
-  k_pin_bms_scl = (k_rx_port_1 << k_port_shift) | k_rx_pin_2, /**< P12/SMBC0 (pin 34) - SMBUS Clock */
-  k_pin_bms_sda = (k_rx_port_1 << k_port_shift) | k_rx_pin_3, /**< P13/SMBD0 (pin 33) - SMBUS Data */
+  k_pin_bms_scl =
+    (k_rx_port_1 << k_port_shift) | k_rx_pin_2, /**< P12/SMBC0 (pin 34) - SMBUS Clock */
+  k_pin_bms_sda =
+    (k_rx_port_1 << k_port_shift) | k_rx_pin_3, /**< P13/SMBD0 (pin 33) - SMBUS Data */
 } bms_i2c_pins_t;
 
 /* =============================================================================
@@ -426,8 +455,10 @@ typedef enum {
  * Note: Requires MPC configuration (see Table 7 in hardware_pinout.tex)
  */
 typedef enum {
-  k_pin_debug_uart_tx = (k_rx_port_b << k_port_shift) | k_rx_pin_7, /**< PB7/TXD9 (pin 53) - UART TX */
-  k_pin_debug_uart_rx = (k_rx_port_b << k_port_shift) | k_rx_pin_6, /**< PB6/RXD9 (pin 54) - UART RX */
+  k_pin_debug_uart_tx =
+    (k_rx_port_b << k_port_shift) | k_rx_pin_7, /**< PB7/TXD9 (pin 53) - UART TX */
+  k_pin_debug_uart_rx =
+    (k_rx_port_b << k_port_shift) | k_rx_pin_6, /**< PB6/RXD9 (pin 54) - UART RX */
 } debug_uart_pins_t;
 
 /* =============================================================================
@@ -469,8 +500,9 @@ typedef enum {
   k_pmod_ja_sck  = (k_rx_port_5 << k_port_shift) | k_rx_pin_3, /**< P53 (pin 41) - SPI SCK */
   k_pmod_ja_dc   = (k_rx_port_b << k_port_shift) | k_rx_pin_4, /**< PB4 (pin 56) - Data/Command */
   k_pmod_ja_rst  = (k_rx_port_b << k_port_shift) | k_rx_pin_3, /**< PB3 (pin 57) - Reset */
-  k_pmod_ja_gpio = (k_rx_port_b << k_port_shift) | k_rx_pin_2, /**< PB2 (pin 58) - General Purpose */
-  k_pmod_ja_cs1  = (k_rx_port_b << k_port_shift) | k_rx_pin_5, /**< PB5 (pin 55) - SPI CS1 */
+  k_pmod_ja_gpio =
+    (k_rx_port_b << k_port_shift) | k_rx_pin_2,               /**< PB2 (pin 58) - General Purpose */
+  k_pmod_ja_cs1 = (k_rx_port_b << k_port_shift) | k_rx_pin_5, /**< PB5 (pin 55) - SPI CS1 */
 } pmod_ja_pins_t;
 
 /**
@@ -550,11 +582,16 @@ typedef enum {
  * - Required for GDB debugging and flash programming
  */
 typedef enum {
-  k_pin_jtag_tms  = (k_rx_port_3 << k_port_shift) | k_rx_pin_1, /**< P31/TMS (pin 19) - JTAG Test Mode Select */
-  k_pin_jtag_tdi  = (k_rx_port_3 << k_port_shift) | k_rx_pin_0, /**< P30/TDI (pin 20) - JTAG Test Data In */
-  k_pin_jtag_tdo  = (k_rx_port_2 << k_port_shift) | k_rx_pin_6, /**< P26/TDO (pin 22) - JTAG Test Data Out */
-  k_pin_jtag_tck  = (k_rx_port_2 << k_port_shift) | k_rx_pin_7, /**< P27/TCK (pin 21) - JTAG Test Clock */
-  k_pin_jtag_trst = (k_rx_port_3 << k_port_shift) | k_rx_pin_4, /**< P34/TST# (pin 16) - JTAG Test Reset */
+  k_pin_jtag_tms =
+    (k_rx_port_3 << k_port_shift) | k_rx_pin_1, /**< P31/TMS (pin 19) - JTAG Test Mode Select */
+  k_pin_jtag_tdi =
+    (k_rx_port_3 << k_port_shift) | k_rx_pin_0, /**< P30/TDI (pin 20) - JTAG Test Data In */
+  k_pin_jtag_tdo =
+    (k_rx_port_2 << k_port_shift) | k_rx_pin_6, /**< P26/TDO (pin 22) - JTAG Test Data Out */
+  k_pin_jtag_tck =
+    (k_rx_port_2 << k_port_shift) | k_rx_pin_7, /**< P27/TCK (pin 21) - JTAG Test Clock */
+  k_pin_jtag_trst =
+    (k_rx_port_3 << k_port_shift) | k_rx_pin_4, /**< P34/TST# (pin 16) - JTAG Test Reset */
 } jtag_pins_t;
 
 #ifdef __cplusplus

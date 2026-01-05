@@ -11,8 +11,6 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#include "unity.h"
-
 #include <string.h>
 
 #include "hardware_pinout.h"
@@ -21,6 +19,7 @@
 #include "rx_bus_manager.h"
 #include "rx_bus_uart.h"
 #include "rx_err.h"
+#include "unity.h"
 
 /* =============================================================================
  * Test Fixtures
@@ -51,10 +50,10 @@ void setUp(void)
   /* Create UART bus config for SCI9 (PB7/TXD9, PB6/RXD9) */
   err = rx_bus_config_init_uart(&s_uart_config,
                                 s_test_bus_name,
-                                9,            /* SCI9 */
-                                k_gpio_pb7,   /* TX: Port B, Pin 7 */
-                                k_gpio_pb6,   /* RX: Port B, Pin 6 */
-                                115200);      /* 115200 baud */
+                                9,          /* SCI9 */
+                                k_gpio_pb7, /* TX: Port B, Pin 7 */
+                                k_gpio_pb6, /* RX: Port B, Pin 6 */
+                                115200);    /* 115200 baud */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Add bus to manager */
@@ -149,11 +148,11 @@ void test_rx_bus_uart_write_success(void)
 
   /* Write data */
   uint8_t data[] = {0x01, 0x02, 0x03, 0x04, 0x05};
-  err = rx_bus_uart_write(&s_test_manager, s_test_bus_name, data, sizeof(data));
+  err            = rx_bus_uart_write(&s_test_manager, s_test_bus_name, data, sizeof(data));
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify data was transmitted */
-  uint8_t tx_buf[16];
+  uint8_t  tx_buf[16];
   uint16_t tx_count = mock_uart_hw_get_tx_data(9, tx_buf, sizeof(tx_buf));
   TEST_ASSERT_EQUAL(5, tx_count);
   TEST_ASSERT_EQUAL_UINT8_ARRAY(data, tx_buf, 5);
@@ -177,8 +176,8 @@ void test_rx_bus_uart_write_null_data(void)
 void test_rx_bus_uart_write_not_initialized(void)
 {
   /* Don't initialize bus - just try to write */
-  uint8_t data[] = {0x01, 0x02};
-  rx_err_t err = rx_bus_uart_write(&s_test_manager, s_test_bus_name, data, sizeof(data));
+  uint8_t  data[] = {0x01, 0x02};
+  rx_err_t err    = rx_bus_uart_write(&s_test_manager, s_test_bus_name, data, sizeof(data));
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -197,7 +196,7 @@ void test_rx_bus_uart_putc_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify character was transmitted */
-  uint8_t tx_buf[4];
+  uint8_t  tx_buf[4];
   uint16_t tx_count = mock_uart_hw_get_tx_data(9, tx_buf, sizeof(tx_buf));
   TEST_ASSERT_EQUAL(1, tx_count);
   TEST_ASSERT_EQUAL('A', tx_buf[0]);
@@ -218,7 +217,7 @@ void test_rx_bus_uart_puts_success(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify string was transmitted */
-  uint8_t tx_buf[32];
+  uint8_t  tx_buf[32];
   uint16_t tx_count = mock_uart_hw_get_tx_data(9, tx_buf, sizeof(tx_buf));
   TEST_ASSERT_EQUAL(5, tx_count);
   TEST_ASSERT_EQUAL_MEMORY("Hello", tx_buf, 5);
@@ -239,7 +238,7 @@ void test_rx_bus_uart_puts_newline_conversion(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify newline was converted to \r\n */
-  uint8_t tx_buf[32];
+  uint8_t  tx_buf[32];
   uint16_t tx_count = mock_uart_hw_get_tx_data(9, tx_buf, sizeof(tx_buf));
   TEST_ASSERT_EQUAL(4, tx_count); /* "Hi" + \r + \n */
   TEST_ASSERT_EQUAL('H', tx_buf[0]);
@@ -278,7 +277,7 @@ void test_rx_bus_uart_read_success(void)
   mock_uart_hw_inject_rx_data(9, inject_data, sizeof(inject_data));
 
   /* Read data */
-  uint8_t rx_buf[16];
+  uint8_t  rx_buf[16];
   uint16_t bytes_read = 0;
   err = rx_bus_uart_read(&s_test_manager, s_test_bus_name, rx_buf, sizeof(rx_buf), &bytes_read);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -295,7 +294,7 @@ void test_rx_bus_uart_read_no_data(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Don't inject any data - just try to read */
-  uint8_t rx_buf[16];
+  uint8_t  rx_buf[16];
   uint16_t bytes_read = 99; /* Set to non-zero to verify it gets set to 0 */
   err = rx_bus_uart_read(&s_test_manager, s_test_bus_name, rx_buf, sizeof(rx_buf), &bytes_read);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -315,7 +314,7 @@ void test_rx_bus_uart_read_partial(void)
   mock_uart_hw_inject_rx_data(9, inject_data, sizeof(inject_data));
 
   /* Request more bytes than available */
-  uint8_t rx_buf[100];
+  uint8_t  rx_buf[100];
   uint16_t bytes_read = 0;
   err = rx_bus_uart_read(&s_test_manager, s_test_bus_name, rx_buf, sizeof(rx_buf), &bytes_read);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -353,10 +352,10 @@ void test_rx_bus_uart_read_null_bytes_read(void)
  */
 void test_rx_bus_uart_read_not_initialized(void)
 {
-  uint8_t rx_buf[16];
+  uint8_t  rx_buf[16];
   uint16_t bytes_read;
   rx_err_t err =
-      rx_bus_uart_read(&s_test_manager, s_test_bus_name, rx_buf, sizeof(rx_buf), &bytes_read);
+    rx_bus_uart_read(&s_test_manager, s_test_bus_name, rx_buf, sizeof(rx_buf), &bytes_read);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -374,7 +373,7 @@ void test_rx_bus_uart_getc_success(void)
 
   /* Read character */
   char c = '\0';
-  err = rx_bus_uart_getc(&s_test_manager, s_test_bus_name, &c);
+  err    = rx_bus_uart_getc(&s_test_manager, s_test_bus_name, &c);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL('X', c);
 }
@@ -389,7 +388,7 @@ void test_rx_bus_uart_getc_no_data(void)
 
   /* Don't inject any data */
   char c = 'Z';
-  err = rx_bus_uart_getc(&s_test_manager, s_test_bus_name, &c);
+  err    = rx_bus_uart_getc(&s_test_manager, s_test_bus_name, &c);
   TEST_ASSERT_EQUAL(k_rx_err_empty, err);
 }
 
@@ -424,7 +423,7 @@ void test_rx_bus_uart_rx_available_true(void)
 
   /* Check availability */
   bool available = false;
-  err = rx_bus_uart_rx_available(&s_test_manager, s_test_bus_name, &available);
+  err            = rx_bus_uart_rx_available(&s_test_manager, s_test_bus_name, &available);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(available);
 }
@@ -439,7 +438,7 @@ void test_rx_bus_uart_rx_available_false(void)
 
   /* Don't inject any data */
   bool available = true;
-  err = rx_bus_uart_rx_available(&s_test_manager, s_test_bus_name, &available);
+  err            = rx_bus_uart_rx_available(&s_test_manager, s_test_bus_name, &available);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_FALSE(available);
 }
@@ -461,7 +460,7 @@ void test_rx_bus_uart_rx_available_null_pointer(void)
  */
 void test_rx_bus_uart_rx_available_not_initialized(void)
 {
-  bool available;
+  bool     available;
   rx_err_t err = rx_bus_uart_rx_available(&s_test_manager, s_test_bus_name, &available);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
@@ -478,12 +477,12 @@ void test_rx_bus_uart_multi_channel_isolation(void)
 {
   /* Create second bus for SCI0 */
   static rx_bus_config_t uart0_config;
-  rx_err_t err = rx_bus_config_init_uart(&uart0_config,
-                                          "uart0",
-                                          0,           /* SCI0 */
-                                          k_gpio_p17,  /* TX: Port 1, Pin 7 */
-                                          k_gpio_p16,  /* RX: Port 1, Pin 6 */
-                                          9600);       /* 9600 baud */
+  rx_err_t               err = rx_bus_config_init_uart(&uart0_config,
+                                         "uart0",
+                                         0,          /* SCI0 */
+                                         k_gpio_p17, /* TX: Port 1, Pin 7 */
+                                         k_gpio_p16, /* RX: Port 1, Pin 6 */
+                                         9600);      /* 9600 baud */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_manager_add_bus(&s_test_manager, &uart0_config);
@@ -516,7 +515,7 @@ void test_rx_bus_uart_multi_channel_isolation(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify data went to correct channels */
-  uint8_t tx_buf[4];
+  uint8_t  tx_buf[4];
   uint16_t count;
 
   count = mock_uart_hw_get_tx_data(9, tx_buf, sizeof(tx_buf));
@@ -554,7 +553,7 @@ void test_rx_bus_config_init_uart_invalid_port(void)
   rx_bus_config_t config;
   /* Create invalid gpio_pin_t: port 0x11 (beyond G), pin 0 */
   gpio_pin_t invalid_pin = (gpio_pin_t)0x1100;
-  rx_err_t err = rx_bus_config_init_uart(&config, "bad_uart", 9, invalid_pin, k_gpio_pb6, 115200);
+  rx_err_t   err = rx_bus_config_init_uart(&config, "bad_uart", 9, invalid_pin, k_gpio_pb6, 115200);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -569,7 +568,7 @@ void test_rx_bus_config_init_uart_invalid_pin(void)
   rx_bus_config_t config;
   /* Create invalid gpio_pin_t: port 0, pin 8 (beyond 0-7 range) */
   gpio_pin_t invalid_pin = (gpio_pin_t)0x0008;
-  rx_err_t err = rx_bus_config_init_uart(&config, "bad_uart", 9, invalid_pin, k_gpio_pb6, 115200);
+  rx_err_t   err = rx_bus_config_init_uart(&config, "bad_uart", 9, invalid_pin, k_gpio_pb6, 115200);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -579,7 +578,7 @@ void test_rx_bus_config_init_uart_invalid_pin(void)
 void test_rx_bus_config_init_uart_zero_baudrate(void)
 {
   rx_bus_config_t config;
-  rx_err_t err = rx_bus_config_init_uart(&config, "bad_uart", 9, k_gpio_pb7, k_gpio_pb6, 0);
+  rx_err_t        err = rx_bus_config_init_uart(&config, "bad_uart", 9, k_gpio_pb7, k_gpio_pb6, 0);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -598,7 +597,7 @@ void test_rx_bus_config_init_uart_null_config(void)
 void test_rx_bus_config_init_uart_null_name(void)
 {
   rx_bus_config_t config;
-  rx_err_t err = rx_bus_config_init_uart(&config, NULL, 9, k_gpio_pb7, k_gpio_pb6, 115200);
+  rx_err_t        err = rx_bus_config_init_uart(&config, NULL, 9, k_gpio_pb7, k_gpio_pb6, 115200);
   TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
