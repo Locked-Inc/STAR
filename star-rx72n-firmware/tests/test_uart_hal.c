@@ -9,8 +9,8 @@
  * - Multi-channel isolation
  * - Error handling
  *
- * STAR Project - Texas A&M University
- * January 2026
+ * @date 2026-01-04
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "unity.h"
