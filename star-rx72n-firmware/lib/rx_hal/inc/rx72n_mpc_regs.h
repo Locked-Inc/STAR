@@ -25,6 +25,11 @@ extern "C" {
  * =============================================================================
  */
 
+/** @brief MPC base address */
+typedef enum {
+  k_mpc_base_addr = 0x0008C100, /**< MPC register base address */
+} rx_mpc_addresses_t;
+
 /** @brief MPC register reserved field sizes */
 typedef enum {
   k_mpc_reserved_after_pwpr_bytes = 32, /**< Reserved bytes after PWPR */
@@ -121,8 +126,14 @@ typedef struct {
   /* Simplified for common motor control pins */
 } rx_mpc_regs_t;
 
-#define MPC_BASE ((rx_mpc_regs_t*)0x0008C100)
-#define MPC      (*MPC_BASE)
+/**
+ * @brief Get pointer to MPC registers
+ * @return Volatile pointer to MPC register structure
+ */
+static inline volatile rx_mpc_regs_t* mpc(void)
+{
+  return (volatile rx_mpc_regs_t*)k_mpc_base_addr;
+}
 
 /* MPC Write Protect Register (PWPR) bits */
 typedef enum {

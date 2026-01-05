@@ -155,7 +155,7 @@ rx_err_t rx_iwdt_init(uint32_t timeout_ms)
   iwdtcr |= k_iwdt_rpes_0;   /* Window end at 0% (disabled) */
   iwdtcr |= k_iwdt_rpss_100; /* Window start at 100% (full) */
 
-  IWDT.iwdtcr = iwdtcr;
+  iwdt()->iwdtcr = iwdtcr;
 
   /*
    * Configure Reset Control Register (IWDTRCR)
@@ -166,7 +166,7 @@ rx_err_t rx_iwdt_init(uint32_t timeout_ms)
    *
    * We use reset (1) for safety - NMI could be masked or ignored.
    */
-  IWDT.iwdtrcr = k_iwdt_rstirqs_reset;
+  iwdt()->iwdtrcr = k_iwdt_rstirqs_reset;
 
   /*
    * Configure Count Stop Control Register (IWDTCSTPR)
@@ -177,7 +177,7 @@ rx_err_t rx_iwdt_init(uint32_t timeout_ms)
    *
    * We continue counting during sleep for safety.
    */
-  IWDT.iwdtcstpr = k_iwdt_slcstp_continue;
+  iwdt()->iwdtcstpr = k_iwdt_slcstp_continue;
 
   /*
    * Start the IWDT by performing first refresh
@@ -220,8 +220,8 @@ void rx_iwdt_feed(void)
   __asm__ volatile("clrpsw i");
 
   /* Perform refresh sequence */
-  IWDT.iwdtrr = k_iwdt_refresh_start; /* Write 0x00 */
-  IWDT.iwdtrr = k_iwdt_refresh_end;   /* Write 0xFF */
+  iwdt()->iwdtrr = k_iwdt_refresh_start; /* Write 0x00 */
+  iwdt()->iwdtrr = k_iwdt_refresh_end;   /* Write 0xFF */
 
   /* Restore interrupt state */
   __asm__ volatile("mvtc %0, psw" : : "r"(psw));
@@ -243,7 +243,7 @@ bool rx_iwdt_was_reset(void)
    * Bit 15 REFEF - Refresh Error Flag
    *   1 = Refresh error occurred
    */
-  uint16_t status = IWDT.iwdtsr;
+  uint16_t status = iwdt()->iwdtsr;
   return ((status & k_iwdt_sr_undff) != 0) || ((status & k_iwdt_sr_refef) != 0);
 
 #else
@@ -254,7 +254,7 @@ bool rx_iwdt_was_reset(void)
 rx_iwdt_reset_cause_t rx_iwdt_get_reset_cause(void)
 {
 #ifdef __RX__
-  uint16_t status = IWDT.iwdtsr;
+  uint16_t status = iwdt()->iwdtsr;
 
   if (status & k_iwdt_sr_refef) {
     return k_iwdt_reset_refresh_error;
@@ -279,7 +279,7 @@ void rx_iwdt_clear_status(void)
    *
    * Bits 14-15 are write-0-to-clear
    */
-  IWDT.iwdtsr &= ~(k_iwdt_sr_undff | k_iwdt_sr_refef);
+  iwdt()->iwdtsr &= ~(k_iwdt_sr_undff | k_iwdt_sr_refef);
 
 #else
   /* Host-side stub - no operation */

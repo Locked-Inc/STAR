@@ -25,6 +25,12 @@ extern "C" {
  * =============================================================================
  */
 
+/** @brief S12ADFa base addresses */
+typedef enum {
+  k_s12ad0_base_addr = 0x00089000, /**< S12AD0 register base address */
+  k_s12ad1_base_addr = 0x00089100, /**< S12AD1 register base address */
+} rx_s12ad_addresses_t;
+
 /** @brief S12ADFa register reserved field sizes */
 typedef enum {
   k_s12ad_reserved_after_adcsr_bytes   = 2, /**< Reserved bytes after ADCSR */
@@ -62,11 +68,23 @@ typedef struct {
   volatile uint16_t addr7; /**< A/D Data Register 7 (conversion result for AN7) */
 } rx_s12ad_regs_t;
 
-#define S12AD0_BASE ((rx_s12ad_regs_t*)0x00089000)
-#define S12AD1_BASE ((rx_s12ad_regs_t*)0x00089100)
+/**
+ * @brief Get pointer to S12AD0 registers
+ * @return Volatile pointer to S12AD0 register structure
+ */
+static inline volatile rx_s12ad_regs_t* s12ad0(void)
+{
+  return (volatile rx_s12ad_regs_t*)k_s12ad0_base_addr;
+}
 
-#define S12AD0 (*S12AD0_BASE)
-#define S12AD1 (*S12AD1_BASE)
+/**
+ * @brief Get pointer to S12AD1 registers
+ * @return Volatile pointer to S12AD1 register structure
+ */
+static inline volatile rx_s12ad_regs_t* s12ad1(void)
+{
+  return (volatile rx_s12ad_regs_t*)k_s12ad1_base_addr;
+}
 
 #ifdef __cplusplus
 }
