@@ -32,6 +32,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 
+#include "hardware_pinout.h"
 #include "rx_err.h"
 
 #ifdef __cplusplus
@@ -74,15 +75,14 @@ typedef enum {
 /**
  * @brief HC-SR04 sensor configuration
  *
- * Specifies trigger and echo pin assignments. For board-specific default
- * configurations, see the application-layer config headers.
+ * Specifies trigger and echo pin assignments using type-safe GPIO pins.
+ * For board-specific default configurations, see the application-layer
+ * config headers.
  */
 typedef struct {
-  uint8_t  trigger_port; /**< Trigger pin port (0x0-0x10 for ports 0-J) */
-  uint8_t  trigger_pin;  /**< Trigger pin number (0-7) */
-  uint8_t  echo_port;    /**< Echo pin port (0x0-0x10 for ports 0-J) */
-  uint8_t  echo_pin;     /**< Echo pin number (0-7) */
-  uint32_t timeout_us;   /**< Measurement timeout (default: 30000us) */
+  gpio_pin_t trigger_pin; /**< Trigger pin (type-safe GPIO enum) */
+  gpio_pin_t echo_pin;    /**< Echo pin (type-safe GPIO enum) */
+  uint32_t   timeout_us;  /**< Measurement timeout (default: 30000us) */
 } rx_hcsr04_config_t;
 
 /**
@@ -93,11 +93,9 @@ typedef struct {
  */
 typedef struct {
   /* Configuration (set during init) */
-  uint8_t  trigger_port; /**< Trigger pin port */
-  uint8_t  trigger_pin;  /**< Trigger pin number */
-  uint8_t  echo_port;    /**< Echo pin port */
-  uint8_t  echo_pin;     /**< Echo pin number */
-  uint32_t timeout_us;   /**< Measurement timeout in microseconds */
+  gpio_pin_t trigger_pin; /**< Trigger pin (type-safe GPIO enum) */
+  gpio_pin_t echo_pin;    /**< Echo pin (type-safe GPIO enum) */
+  uint32_t   timeout_us;  /**< Measurement timeout in microseconds */
 
   /* State */
   bool initialized;        /**< True if handle is initialized */

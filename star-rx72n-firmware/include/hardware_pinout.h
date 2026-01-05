@@ -30,6 +30,175 @@ extern "C" {
 #include <stdint.h>
 
 /* =============================================================================
+ * Type-Safe GPIO Pin Enum
+ * =============================================================================
+ */
+
+/**
+ * @brief Type-safe GPIO pin enumeration
+ *
+ * Unified enum for all RX72N GPIO pins. Encodes both port and pin number
+ * in a single value for compile-time safety and better IDE autocomplete.
+ *
+ * Encoding: (port << 8) | pin
+ * - Upper byte: Port number (0x0-0x10 for ports 0-J)
+ * - Lower byte: Pin number (0-7)
+ *
+ * Benefits:
+ * - Compile-time validation (can't pass invalid port/pin combinations)
+ * - Self-documenting code (k_gpio_pc6 vs separate 0xC, 6)
+ * - IDE autocomplete shows all valid pins
+ * - Easy to extract port/pin with helper functions
+ *
+ * Use helper functions to extract port/pin:
+ * - gpio_pin_get_port(gpio_pin_t pin) -> uint8_t port
+ * - gpio_pin_get_pin(gpio_pin_t pin) -> uint8_t pin_num
+ */
+typedef enum {
+  /* Port 0 GPIO Pins */
+  k_gpio_p00 = 0x0000, /**< P00 (pin 103) */
+  k_gpio_p01 = 0x0001, /**< P01 (pin 102) */
+  k_gpio_p02 = 0x0002, /**< P02 (pin 101) */
+  k_gpio_p03 = 0x0003, /**< P03 (pin 99) - MD */
+  k_gpio_p05 = 0x0005, /**< P05 (pin 100) - 1-Wire Temperature Sensor */
+  k_gpio_p07 = 0x0007, /**< P07 (pin 98) - PMOD JF GPIO1 */
+
+  /* Port 1 GPIO Pins */
+  k_gpio_p10 = 0x0100, /**< P10 (pin 35) */
+  k_gpio_p11 = 0x0101, /**< P11 (pin 36) */
+  k_gpio_p12 = 0x0102, /**< P12 (pin 34) - BMS I2C SCL */
+  k_gpio_p13 = 0x0103, /**< P13 (pin 33) - BMS I2C SDA */
+  k_gpio_p14 = 0x0104, /**< P14 (pin 32) - Encoder 1 Phase A */
+  k_gpio_p15 = 0x0105, /**< P15 (pin 31) - Encoder 0 Phase B */
+  k_gpio_p16 = 0x0106, /**< P16 (pin 30) */
+  k_gpio_p17 = 0x0107, /**< P17 (pin 29) - Motor 0 SPI CS */
+
+  /* Port 2 GPIO Pins */
+  k_gpio_p20 = 0x0200, /**< P20 (pin 28) - PMOD JF I2C SDA */
+  k_gpio_p21 = 0x0201, /**< P21 (pin 27) - PMOD JF I2C SCL */
+  k_gpio_p22 = 0x0202, /**< P22 (pin 26) - Encoder 1 Phase B */
+  k_gpio_p23 = 0x0203, /**< P23 (pin 25) - Motor 1 SPI CS */
+  k_gpio_p24 = 0x0204, /**< P24 (pin 24) - Encoder 0 Phase A */
+  k_gpio_p25 = 0x0205, /**< P25 (pin 23) - Encoder 3 Phase A */
+  k_gpio_p26 = 0x0206, /**< P26 (pin 22) - JTAG TDO */
+  k_gpio_p27 = 0x0207, /**< P27 (pin 21) - JTAG TCK */
+
+  /* Port 3 GPIO Pins */
+  k_gpio_p30 = 0x0300, /**< P30 (pin 20) - JTAG TDI */
+  k_gpio_p31 = 0x0301, /**< P31 (pin 19) - JTAG TMS */
+  k_gpio_p32 = 0x0302, /**< P32 (pin 18) - Motor 2 SPI CS */
+  k_gpio_p33 = 0x0303, /**< P33 (pin 17) */
+  k_gpio_p34 = 0x0304, /**< P34 (pin 16) - JTAG TRST */
+
+  /* Port 4 GPIO Pins (ADC + nFAULT) */
+  k_gpio_p40 = 0x0400, /**< P40 (pin 95) - Motor 0 Current ADC */
+  k_gpio_p41 = 0x0401, /**< P41 (pin 93) - Motor 1 Current ADC */
+  k_gpio_p42 = 0x0402, /**< P42 (pin 92) - Motor 2 Current ADC */
+  k_gpio_p43 = 0x0403, /**< P43 (pin 91) - Motor 3 Current ADC */
+  k_gpio_p44 = 0x0404, /**< P44 (pin 90) - Motor 0 nFAULT */
+  k_gpio_p45 = 0x0405, /**< P45 (pin 89) - Motor 1 nFAULT */
+  k_gpio_p46 = 0x0406, /**< P46 (pin 88) - Motor 2 nFAULT */
+  k_gpio_p47 = 0x0407, /**< P47 (pin 87) - Motor 3 nFAULT */
+
+  /* Port 5 GPIO Pins (PMOD JA + PMOD JB) */
+  k_gpio_p50 = 0x0500, /**< P50 (pin 44) - PMOD JA COPI */
+  k_gpio_p51 = 0x0501, /**< P51 (pin 43) - PMOD JA CIPO */
+  k_gpio_p52 = 0x0502, /**< P52 (pin 42) - PMOD JA CS0 */
+  k_gpio_p53 = 0x0503, /**< P53 (pin 41) - PMOD JA SCK */
+  k_gpio_p54 = 0x0504, /**< P54 (pin 40) - PMOD JB GPIO2 */
+  k_gpio_p55 = 0x0505, /**< P55 (pin 39) - PMOD JB GPIO1 */
+
+  /* Port A GPIO Pins (SPI + PMOD) */
+  k_gpio_pa0 = 0x0A00, /**< PA0 (pin 70) - Motor 3 SPI CS */
+  k_gpio_pa1 = 0x0A01, /**< PA1 (pin 69) - PMOD JE GPIO3 */
+  k_gpio_pa2 = 0x0A02, /**< PA2 (pin 68) - PMOD JB GPIO3 */
+  k_gpio_pa3 = 0x0A03, /**< PA3 (pin 67) - Encoder 3 Phase B */
+  k_gpio_pa4 = 0x0A04, /**< PA4 (pin 66) - RPi5 SPI CS */
+  k_gpio_pa5 = 0x0A05, /**< PA5 (pin 65) - RPi5 SPI SCLK */
+  k_gpio_pa6 = 0x0A06, /**< PA6 (pin 64) - RPi5 SPI COPI */
+  k_gpio_pa7 = 0x0A07, /**< PA7 (pin 63) - RPi5 SPI CIPO */
+
+  /* Port B GPIO Pins (Debug UART + PMOD) */
+  k_gpio_pb0 = 0x0B00, /**< PB0 (pin 61) - PMOD JE GPIO2 */
+  k_gpio_pb1 = 0x0B01, /**< PB1 (pin 59) - PMOD JE GPIO1 */
+  k_gpio_pb2 = 0x0B02, /**< PB2 (pin 59) - PMOD JA GPIO */
+  k_gpio_pb3 = 0x0B03, /**< PB3 (pin 58) - PMOD JA RST */
+  k_gpio_pb4 = 0x0B04, /**< PB4 (pin 57) - PMOD JA DC */
+  k_gpio_pb5 = 0x0B05, /**< PB5 (pin 55) - PMOD JA CS1 */
+  k_gpio_pb6 = 0x0B06, /**< PB6 (pin 54) - Debug UART RX */
+  k_gpio_pb7 = 0x0B07, /**< PB7 (pin 53) - Debug UART TX */
+
+  /* Port C GPIO Pins (Encoder + PMOD) */
+  k_gpio_pc0 = 0x0C00, /**< PC0 (pin 52) - Encoder 2 Phase B */
+  k_gpio_pc1 = 0x0C01, /**< PC1 (pin 51) - Encoder 2 Phase A */
+  k_gpio_pc2 = 0x0C02, /**< PC2 (pin 50) - PMOD JC I2C SCL */
+  k_gpio_pc3 = 0x0C03, /**< PC3 (pin 49) - PMOD JC I2C SDA */
+  k_gpio_pc4 = 0x0C04, /**< PC4 (pin 48) - PMOD JC INT1 */
+  k_gpio_pc5 = 0x0C05, /**< PC5 (pin 47) - PMOD JC INT2 */
+  k_gpio_pc6 = 0x0C06, /**< PC6 (pin 46) - PMOD JB GPIO0 */
+  k_gpio_pc7 = 0x0C07, /**< PC7 (pin 45) */
+
+  /* Port D GPIO Pins (Motor SPI + PMOD JD + PMOD JF) */
+  k_gpio_pd0 = 0x0D00, /**< PD0 (pin 86) - PMOD JF GPIO0 */
+  k_gpio_pd1 = 0x0D01, /**< PD1 (pin 85) - Motor SPI COPI */
+  k_gpio_pd2 = 0x0D02, /**< PD2 (pin 84) - Motor SPI CIPO */
+  k_gpio_pd3 = 0x0D03, /**< PD3 (pin 83) - Motor SPI SCLK */
+  k_gpio_pd4 = 0x0D04, /**< PD4 (pin 82) - PMOD JD GPIO3 */
+  k_gpio_pd5 = 0x0D05, /**< PD5 (pin 81) - PMOD JD GPIO2 */
+  k_gpio_pd6 = 0x0D06, /**< PD6 (pin 80) - PMOD JD GPIO1 */
+  k_gpio_pd7 = 0x0D07, /**< PD7 (pin 79) - PMOD JD GPIO0 */
+
+  /* Port E GPIO Pins (Motor PWM) */
+  k_gpio_pe0 = 0x0E00, /**< PE0 (pin 78) - Motor 2 EN */
+  k_gpio_pe1 = 0x0E01, /**< PE1 (pin 77) - Motor 1 EN */
+  k_gpio_pe2 = 0x0E02, /**< PE2 (pin 76) - Motor 0 EN */
+  k_gpio_pe3 = 0x0E03, /**< PE3 (pin 75) - Motor 2 PH */
+  k_gpio_pe4 = 0x0E04, /**< PE4 (pin 74) - Motor 1 PH */
+  k_gpio_pe5 = 0x0E05, /**< PE5 (pin 73) - Motor 0 PH */
+  k_gpio_pe6 = 0x0E06, /**< PE6 (pin 72) - Motor 3 EN */
+  k_gpio_pe7 = 0x0E07, /**< PE7 (pin 71) - Motor 3 PH */
+
+  /* Port J GPIO Pins */
+  k_gpio_pj3 = 0x1003, /**< PJ3 (pin 4) - PMOD JE GPIO0 */
+  k_gpio_pj5 = 0x1005, /**< PJ5 (pin 2) - JTAG/TDO */
+
+  /* Aliases for common use cases (point to same enum values) */
+  k_gpio_temp_sensor         = k_gpio_p05,  /**< 1-Wire Temperature Sensor (DS18B20+) */
+  k_gpio_pmod_jb_gpio0       = k_gpio_pc6,  /**< PMOD JB GPIO 0 */
+  k_gpio_pmod_jb_gpio1       = k_gpio_p55,  /**< PMOD JB GPIO 1 */
+  k_gpio_pmod_jb_gpio2       = k_gpio_p54,  /**< PMOD JB GPIO 2 */
+  k_gpio_pmod_jb_gpio3       = k_gpio_pa2,  /**< PMOD JB GPIO 3 */
+  k_gpio_pmod_je_gpio0       = k_gpio_pj3,  /**< PMOD JE GPIO 0 */
+  k_gpio_pmod_je_gpio1       = k_gpio_pb1,  /**< PMOD JE GPIO 1 */
+  k_gpio_pmod_je_gpio2       = k_gpio_pb0,  /**< PMOD JE GPIO 2 */
+  k_gpio_pmod_je_gpio3       = k_gpio_pa1,  /**< PMOD JE GPIO 3 */
+} gpio_pin_t;
+
+/**
+ * @brief Extract GPIO port number from gpio_pin_t enum
+ *
+ * @param[in] pin GPIO pin enum value
+ *
+ * @return Port number (0x0-0x10 for ports 0-J)
+ */
+static inline uint8_t gpio_pin_get_port(gpio_pin_t pin)
+{
+  return (uint8_t)((uint16_t)pin >> 8);
+}
+
+/**
+ * @brief Extract GPIO pin number from gpio_pin_t enum
+ *
+ * @param[in] pin GPIO pin enum value
+ *
+ * @return Pin number (0-7)
+ */
+static inline uint8_t gpio_pin_get_pin(gpio_pin_t pin)
+{
+  return (uint8_t)((uint16_t)pin & 0xFF);
+}
+
+/* =============================================================================
  * Motor Control - PWM Outputs (GPTW Channels)
  * =============================================================================
  */

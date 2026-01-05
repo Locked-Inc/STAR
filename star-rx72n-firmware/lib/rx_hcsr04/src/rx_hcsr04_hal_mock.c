@@ -20,34 +20,34 @@
  * =============================================================================
  */
 
-rx_err_t hcsr04_hal_gpio_set_output(uint8_t port, uint8_t pin)
+rx_err_t hcsr04_hal_gpio_set_output(gpio_pin_t pin)
 {
-  return mock_gpio_set_output(port, pin);
+  return mock_gpio_set_output(gpio_pin_get_port(pin), gpio_pin_get_pin(pin));
 }
 
-rx_err_t hcsr04_hal_gpio_set_input(uint8_t port, uint8_t pin)
+rx_err_t hcsr04_hal_gpio_set_input(gpio_pin_t pin)
 {
-  return mock_gpio_set_input(port, pin);
+  return mock_gpio_set_input(gpio_pin_get_port(pin), gpio_pin_get_pin(pin));
 }
 
-rx_err_t hcsr04_hal_gpio_write_high(uint8_t port, uint8_t pin)
+rx_err_t hcsr04_hal_gpio_write_high(gpio_pin_t pin)
 {
-  return mock_gpio_write_high(port, pin);
+  return mock_gpio_write_high(gpio_pin_get_port(pin), gpio_pin_get_pin(pin));
 }
 
-rx_err_t hcsr04_hal_gpio_write_low(uint8_t port, uint8_t pin)
+rx_err_t hcsr04_hal_gpio_write_low(gpio_pin_t pin)
 {
-  return mock_gpio_write_low(port, pin);
+  return mock_gpio_write_low(gpio_pin_get_port(pin), gpio_pin_get_pin(pin));
 }
 
-rx_err_t hcsr04_hal_gpio_read(uint8_t port, uint8_t pin, bool* value)
+rx_err_t hcsr04_hal_gpio_read(gpio_pin_t pin, bool* value)
 {
-  return mock_gpio_read(port, pin, value);
+  return mock_gpio_read(gpio_pin_get_port(pin), gpio_pin_get_pin(pin), value);
 }
 
-rx_err_t hcsr04_hal_gpio_deinit(uint8_t port, uint8_t pin)
+rx_err_t hcsr04_hal_gpio_deinit(gpio_pin_t pin)
 {
-  return mock_gpio_deinit(port, pin);
+  return mock_gpio_deinit(gpio_pin_get_port(pin), gpio_pin_get_pin(pin));
 }
 
 /* =============================================================================
