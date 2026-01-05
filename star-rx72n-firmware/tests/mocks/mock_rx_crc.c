@@ -11,6 +11,7 @@
 #include "mock_rx_crc.h"
 
 #include <stdbool.h>
+#include <stddef.h>
 
 /* =============================================================================
  * Constants
@@ -54,7 +55,7 @@ void mock_crc8_set_override(bool enable)
  * =============================================================================
  */
 
-uint8_t rx_crc8_maxim(const uint8_t* data, size_t length)
+uint8_t rx_crc8_maxim(const uint8_t* data, uint32_t length)
 {
   if (s_override_enabled) {
     return s_mock_crc_value;
@@ -66,7 +67,7 @@ uint8_t rx_crc8_maxim(const uint8_t* data, size_t length)
 
   uint8_t crc = 0;
 
-  for (size_t i = 0; i < length; ++i) {
+  for (uint32_t i = 0; i < length; ++i) {
     crc ^= data[i];
 
     for (uint8_t j = 0; j < k_bits_per_byte; ++j) {
