@@ -72,8 +72,9 @@ Review rx_pid.c for NASA Power of 10 compliance
 ### Rule 8: Limit Preprocessor Use
 - [ ] **ALWAYS use `enum` for integer constants** (never `#define`)
 - [ ] Use `static const` ONLY for floating-point values (enum can't hold floats)
-- [ ] Macros ONLY allowed for: (1) reducing duplicated code, (2) conditional compilation, (3) hardware addresses, (4) build flags
-- [ ] **FORBIDDEN**: Macros for simple constants or backward compatibility (no releases = no compatibility needed)
+- [ ] Macros ONLY allowed for: (1) reducing duplicated code, (2) conditional compilation, (3) build flags
+- [ ] **FORBIDDEN**: Macros for simple constants, hardware addresses, or backward compatibility
+- [ ] **Hardware register access**: Use inline accessor functions with enum addresses (never macros)
 - [ ] **NO MAGIC NUMBERS**: All numeric literals must be named enums (including array indices, bit shifts, offsets)
 - [ ] No token pasting (`##`) except in allowed macro cases
 - [ ] No recursive macros
@@ -81,9 +82,11 @@ Review rx_pid.c for NASA Power of 10 compliance
 - Good: `typedef enum { k_idx_high_byte = 0, k_idx_low_byte = 1 } be16_idx_t;`
 - Good: `typedef enum { k_shift_enable = 7, k_shift_mode = 3 } reg_shifts_t;`
 - Good: `#define RX_RETURN_ON_ERROR(err, tag, msg) /* multi-line validation */`
+- Good: `static inline CMT_Type* cmt0(void) { return (CMT_Type*)k_cmt0_base; }` (hardware accessor)
 - Bad: `buf[0] = (val >> 8);` (magic 0 and 8 - use enums!)
 - Bad: `#define TIMEOUT_MS 1000` (should be enum!)
 - Bad: `#define MAX_VELOCITY 2.5f` (should be static const float!)
+- Bad: `#define CMT0 ((CMT_Type*)0x00088000)` (should be inline accessor!)
 - Bad: `#define old_func new_func` (no backward compatibility - just update call sites!)
 
 ### Rule 9: Restrict Pointer Use

@@ -24,6 +24,11 @@ extern "C" {
  * =============================================================================
  */
 
+/** @brief System register base address */
+typedef enum {
+  k_system_base_addr = 0x00080000, /**< System register base address */
+} rx_system_addresses_t;
+
 /** @brief System register reserved field sizes */
 typedef enum {
   k_system_reserved_after_syscr1_bytes   = 2, /**< Reserved bytes after SYSCR1 */
@@ -75,8 +80,15 @@ typedef struct {
   volatile uint8_t  ostdsr; /**< Oscillation Stop Detection Status */
 } rx_system_regs_t;
 
-#define SYSTEM_BASE ((rx_system_regs_t*)0x00080000)
-#define SYSTEM      (*SYSTEM_BASE)
+/**
+ * @brief Get pointer to system registers
+ * @return Volatile pointer to system register structure
+ * @note Named system_regs() instead of system() to avoid naming conflicts
+ */
+static inline volatile rx_system_regs_t* system_regs(void)
+{
+  return (volatile rx_system_regs_t*)k_system_base_addr;
+}
 
 /* Module stop bits for MSTPCRB register */
 typedef enum {

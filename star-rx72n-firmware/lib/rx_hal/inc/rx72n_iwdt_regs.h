@@ -37,6 +37,11 @@ extern "C" {
  * =============================================================================
  */
 
+/** @brief IWDT base address */
+typedef enum {
+  k_iwdt_base_addr = 0x00088030, /**< IWDT register base address */
+} rx_iwdt_addresses_t;
+
 /** @brief IWDT register reserved field sizes */
 typedef enum {
   k_iwdt_reserved_after_iwdtrr_bytes  = 1, /**< Reserved byte after IWDTRR */
@@ -60,8 +65,14 @@ typedef struct {
   volatile uint8_t  iwdtcstpr; /**< Count Stop Control Register (sleep mode) */
 } rx_iwdt_regs_t;
 
-#define IWDT_BASE ((rx_iwdt_regs_t*)0x00088030)
-#define IWDT      (*IWDT_BASE)
+/**
+ * @brief Get pointer to IWDT registers
+ * @return Volatile pointer to IWDT register structure
+ */
+static inline volatile rx_iwdt_regs_t* iwdt(void)
+{
+  return (volatile rx_iwdt_regs_t*)k_iwdt_base_addr;
+}
 
 /* IWDT Refresh Register (IWDTRR) - Write sequence to refresh */
 typedef enum {

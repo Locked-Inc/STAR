@@ -25,6 +25,13 @@ extern "C" {
  * =============================================================================
  */
 
+/** @brief RIIC base addresses */
+typedef enum {
+  k_riic0_base_addr = 0x00088300, /**< RIIC0 register base address */
+  k_riic1_base_addr = 0x00088320, /**< RIIC1 register base address */
+  k_riic2_base_addr = 0x00088340, /**< RIIC2 register base address */
+} rx_riic_addresses_t;
+
 /**
  * @brief RIIC Register Map
  * @details
@@ -57,13 +64,32 @@ typedef struct {
   volatile uint8_t icdrr; /**< I2C Bus Receive Data Register */
 } rx_riic_regs_t;
 
-#define RIIC0_BASE ((rx_riic_regs_t*)0x00088300)
-#define RIIC1_BASE ((rx_riic_regs_t*)0x00088320)
-#define RIIC2_BASE ((rx_riic_regs_t*)0x00088340)
+/**
+ * @brief Get pointer to RIIC0 registers
+ * @return Volatile pointer to RIIC0 register structure
+ */
+static inline volatile rx_riic_regs_t* riic0(void)
+{
+  return (volatile rx_riic_regs_t*)k_riic0_base_addr;
+}
 
-#define RIIC0 (*RIIC0_BASE)
-#define RIIC1 (*RIIC1_BASE)
-#define RIIC2 (*RIIC2_BASE)
+/**
+ * @brief Get pointer to RIIC1 registers
+ * @return Volatile pointer to RIIC1 register structure
+ */
+static inline volatile rx_riic_regs_t* riic1(void)
+{
+  return (volatile rx_riic_regs_t*)k_riic1_base_addr;
+}
+
+/**
+ * @brief Get pointer to RIIC2 registers
+ * @return Volatile pointer to RIIC2 register structure
+ */
+static inline volatile rx_riic_regs_t* riic2(void)
+{
+  return (volatile rx_riic_regs_t*)k_riic2_base_addr;
+}
 
 /* RIIC Control Register 1 (ICCR1) Bit Definitions */
 typedef enum {
