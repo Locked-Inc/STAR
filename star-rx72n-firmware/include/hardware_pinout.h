@@ -56,16 +56,10 @@ extern "C" {
  */
 typedef enum {
   /* Port 0 GPIO Pins */
-  k_gpio_p00 = 0x0000, /**< P00 (pin 103) */
-  k_gpio_p01 = 0x0001, /**< P01 (pin 102) */
-  k_gpio_p02 = 0x0002, /**< P02 (pin 101) */
-  k_gpio_p03 = 0x0003, /**< P03 (pin 99) - MD */
-  k_gpio_p05 = 0x0005, /**< P05 (pin 100) - 1-Wire Temperature Sensor */
+  k_gpio_p05 = 0x0005, /**< P05 (pin 100) - 1-Wire Temperature Sensor (DS18B20) */
   k_gpio_p07 = 0x0007, /**< P07 (pin 98) - PMOD JF GPIO1 */
 
   /* Port 1 GPIO Pins */
-  k_gpio_p10 = 0x0100, /**< P10 (pin 35) */
-  k_gpio_p11 = 0x0101, /**< P11 (pin 36) */
   k_gpio_p12 = 0x0102, /**< P12 (pin 34) - BMS I2C SCL */
   k_gpio_p13 = 0x0103, /**< P13 (pin 33) - BMS I2C SDA */
   k_gpio_p14 = 0x0104, /**< P14 (pin 32) - Encoder 1 Phase A */
@@ -87,8 +81,11 @@ typedef enum {
   k_gpio_p30 = 0x0300, /**< P30 (pin 20) - JTAG TDI */
   k_gpio_p31 = 0x0301, /**< P31 (pin 19) - JTAG TMS */
   k_gpio_p32 = 0x0302, /**< P32 (pin 18) - Motor 2 SPI CS */
-  k_gpio_p33 = 0x0303, /**< P33 (pin 17) */
+  k_gpio_p33 = 0x0303, /**< P33 (pin 17) - USB UART Reset */
   k_gpio_p34 = 0x0304, /**< P34 (pin 16) - JTAG TRST */
+  k_gpio_p35 = 0x0305, /**< P35 (pin 15) - NMI/UPSEL */
+  k_gpio_p36 = 0x0306, /**< P36 (pin 13) - EXTAL (24MHz Crystal) */
+  k_gpio_p37 = 0x0307, /**< P37 (pin 11) - XTAL (24MHz Crystal) */
 
   /* Port 4 GPIO Pins (ADC + nFAULT) */
   k_gpio_p40 = 0x0400, /**< P40 (pin 95) - Motor 0 Current ADC */
