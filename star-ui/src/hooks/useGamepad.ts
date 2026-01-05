@@ -15,6 +15,11 @@ export const useGamepad = () => {
 
   const requestRef = useRef<number>(0);
 
+  /**
+   * Main polling loop for gamepad input. 
+   * Runs at display refresh rate (~60Hz).
+   * Uses zero-allocation logic where possible to avoid GC spikes.
+   */
   const updateGamepadState = useCallback(() => {
     const gamepads = navigator.getGamepads();
     // Use the first available gamepad

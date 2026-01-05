@@ -30,11 +30,11 @@
 - [x] Task: Verify "Zero-Allocation" compliance using Chrome Performance tab (ensure no major GC spikes)
 - [x] Task: Implement "Dead Man's Switch" (send stop command on disconnect/unplug)
 - [x] Task: Verify safety logic with unit tests
-- [~] Task: Conductor - User Manual Verification 'Phase 4: UI WebSocket & Safety Integration (TypeScript)' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 4: UI WebSocket & Safety Integration (TypeScript)' (Protocol in workflow.md) <!-- 1a4a4bdba4907f05ade2d5fed5b98078162cb895 -->
 
 ## Phase 5: Integration & Documentation
-- [ ] Task: Perform end-to-end manual test with Retroid Pocket 2S (or Chrome Emulator)
-- [ ] Task: Update `star-ui/UI_GUIDE.pdf` with controller instructions
-- [ ] Task: Update `conductor/tech-stack.md` with WebSocket details
-- [ ] Task: Add JSDoc to critical performance-sensitive paths (polling loop)
-- [ ] Task: Conductor - User Manual Verification 'Phase 5: Integration & Documentation' (Protocol in workflow.md)
+- [x] Task: Perform end-to-end manual test with Retroid Pocket 2S (or Chrome Emulator)
+- [x] Task: Update `star-ui/UI_GUIDE.pdf` with controller instructions
+- [x] Task: Update `conductor/tech-stack.md` with WebSocket details
+- [x] Task: Add JSDoc to critical performance-sensitive paths (polling loop)
+- [~] Task: Conductor - User Manual Verification 'Phase 5: Integration & Documentation' (Protocol in workflow.md)
