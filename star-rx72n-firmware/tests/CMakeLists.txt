@@ -226,7 +226,7 @@ add_executable(test_rx_motor
     ${MOCK_LOG_SRC}
 )
 target_compile_definitions(test_rx_motor PRIVATE UNIT_TEST)
-target_link_libraries(test_rx_motor m)
+target_link_libraries(test_rx_motor unity m)
 
 # =============================================================================
 # CTest Integration
