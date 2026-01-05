@@ -74,7 +74,61 @@ typedef enum {
  */
 
 /**
+ * @brief Wait for host ACK/ready signal before transmitting
+ *
+ * Prevents infinite wait states when host never signals readiness.
+ * Uses precise time measurement on RX72N and iteration count for host tests.
+ */
+static rx_err_t internal_wait_for_ack(rx_spi_comm_handle_t* handle, uint32_t timeout_ms)
+{
+#ifdef __RX__
+  /* RX72N: Use ThreadX time measurement for precise timeout */
+  ULONG timeout_ticks = (timeout_ms + k_threadx_ms_per_tick - 1) / k_threadx_ms_per_tick;
+  ULONG start_ticks   = tx_time_get();
+
+  while ((tx_time_get() - start_ticks) < timeout_ticks) {
+    bool     ready = false;
+    rx_err_t err   = rspi_peripheral_write_ready(handle->channel, &ready);
+    if (err != k_rx_ok) {
+      return err;
+    }
+
+    if (ready) {
+      return k_rx_ok;
+    }
+
+    /* Yield to other threads while waiting */
+    tx_thread_sleep(k_poll_sleep_ticks);
+  }
+#else
+  /* Host build (testing): Use iteration counter to simulate time */
+  uint32_t elapsed_ms = 0;
+
+  while (elapsed_ms < timeout_ms) {
+    bool     ready = false;
+    rx_err_t err   = rspi_peripheral_write_ready(handle->channel, &ready);
+    if (err != k_rx_ok) {
+      return err;
+    }
+
+    if (ready) {
+      return k_rx_ok;
+    }
+
+    /* Simulate time passing in tests */
+    elapsed_ms += k_threadx_ms_per_tick;
+  }
+#endif
+
+  rx_log_error(s_tag, "SPI ACK timeout waiting for host ready");
+  return k_rx_err_timeout;
+}
+
+/**
  * @brief Perform raw SPI transfer using staging buffers
+ *
+ * For transmit operations (tx_data != NULL), waits for host ready signal
+ * before transferring to prevent infinite wait states.
  */
 static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
                                       const uint8_t*        tx_data,
@@ -82,6 +136,14 @@ static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
                                       uint8_t*              rx_data,
                                       uint32_t              rx_len)
 {
+  /* Wait for host ready signal before transmit operations */
+  if (tx_data != NULL && tx_len > 0) {
+    rx_err_t wait_err = internal_wait_for_ack(handle, k_ack_wait_timeout_ms);
+    if (wait_err != k_rx_ok) {
+      return wait_err;
+    }
+  }
+
   /* Prepare TX buffer (pad with zeros if RX is larger) */
   uint32_t transfer_len = (tx_len > rx_len) ? tx_len : rx_len;
 
@@ -114,36 +176,6 @@ static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
   }
 
   return k_rx_ok;
-}
-
-/**
- * @brief Wait for host ACK/ready signal before transmitting
- *
- * Prevents infinite wait states when host never signals readiness.
- */
-static rx_err_t internal_wait_for_ack(rx_spi_comm_handle_t* handle, uint32_t timeout_ms)
-{
-  uint32_t elapsed_ms = 0;
-
-  while (elapsed_ms < timeout_ms) {
-    bool     ready = false;
-    rx_err_t err   = rspi_peripheral_write_ready(handle->channel, &ready);
-    if (err != k_rx_ok) {
-      return err;
-    }
-
-    if (ready) {
-      return k_rx_ok;
-    }
-
-#ifdef __RX__
-    tx_thread_sleep(k_poll_sleep_ticks);
-#endif
-    elapsed_ms += k_threadx_ms_per_tick;
-  }
-
-  rx_log_error(s_tag, "SPI ACK timeout waiting for host ready");
-  return k_rx_err_timeout;
 }
 
 /* =============================================================================
@@ -267,12 +299,7 @@ rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
     return err;
   }
 
-  err = internal_wait_for_ack(handle, k_ack_wait_timeout_ms);
-  if (err != k_rx_ok) {
-    return err;
-  }
-
-  /* Transfer via SPI */
+  /* Transfer via SPI (waits for host ACK internally) */
   err = internal_spi_transfer(handle, wire_buffer, wire_len, NULL, 0);
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "SPI transfer failed");
@@ -311,11 +338,7 @@ rx_err_t rx_spi_comm_send_ack(rx_spi_comm_handle_t* handle, uint16_t sequence)
     return err;
   }
 
-  err = internal_wait_for_ack(handle, k_ack_wait_timeout_ms);
-  if (err != k_rx_ok) {
-    return err;
-  }
-
+  /* Transfer via SPI (waits for host ACK internally) */
   return internal_spi_transfer(handle, wire_buffer, wire_len, NULL, 0);
 }
 
@@ -345,11 +368,7 @@ rx_err_t rx_spi_comm_send_nack(rx_spi_comm_handle_t* handle, uint16_t sequence, 
     return err;
   }
 
-  err = internal_wait_for_ack(handle, k_ack_wait_timeout_ms);
-  if (err != k_rx_ok) {
-    return err;
-  }
-
+  /* Transfer via SPI (waits for host ACK internally) */
   return internal_spi_transfer(handle, wire_buffer, wire_len, NULL, 0);
 }
 
