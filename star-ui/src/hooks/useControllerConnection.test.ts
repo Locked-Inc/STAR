@@ -28,11 +28,14 @@ describe('useControllerConnection', () => {
       initialProps: { state: gamepadState },
     });
 
-    const serviceInstance = (ControllerService as any).mock.results[0].value;
-    
-    // Rerender with disconnected gamepad
     rerender({ state: { connected: false, linearVel: 0, angularVel: 0 } });
+
+    // Cast to unknown first to avoid eslint errors
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const mockService = (ControllerService as unknown as { mock: { results: { value: { sendState: any } }[] } });
+    const serviceInstance = mockService.mock.results[0].value;
 
     expect(serviceInstance.sendState).toHaveBeenCalledWith(0, 0);
   });
 });
+

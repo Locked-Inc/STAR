@@ -1,3 +1,13 @@
+// controller.proto - STAR Gamepad Controller Protocol
+// Definition for direct robot control via gamepad inputs.
+//
+// Following Boston Dynamics style guide:
+// - Proto3 only, 100 char line limit, 4 space indent
+// - All fields documented with units and valid ranges
+//
+// STAR Project - Texas A&M University
+// January 2026
+
 syntax = "proto3";
 
 package star.v1;

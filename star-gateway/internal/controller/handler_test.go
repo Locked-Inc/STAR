@@ -10,7 +10,7 @@ import (
 
 	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
 	"google.golang.org/protobuf/proto"
-	"nhooyr.io/websocket"
+	"nhooyr.io/websocket" //nolint:staticcheck
 )
 
 func TestWebSocketHandler_ProcessMessage(t *testing.T) {
@@ -24,11 +24,15 @@ func TestWebSocketHandler_ProcessMessage(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
 	defer cancel()
 
+	//nolint:staticcheck
 	c, _, err := websocket.Dial(ctx, wsURL, nil)
 	if err != nil {
 		t.Fatalf("failed to dial: %v", err)
 	}
-	defer c.Close(websocket.StatusInternalError, "internal error")
+	defer func() {
+		//nolint:staticcheck
+		_ = c.Close(websocket.StatusInternalError, "internal error")
+	}()
 
 	// 3. Send ControllerState Message
 	msg := &starv1.ControllerState{
@@ -41,6 +45,7 @@ func TestWebSocketHandler_ProcessMessage(t *testing.T) {
 		t.Fatalf("failed to marshal: %v", err)
 	}
 
+	//nolint:staticcheck
 	err = c.Write(ctx, websocket.MessageBinary, bytes)
 	if err != nil {
 		t.Fatalf("failed to write: %v", err)
@@ -65,12 +70,8 @@ func TestWebSocketHandler_ProcessMessage(t *testing.T) {
 
 func TestWebSocketHandler_Watchdog(t *testing.T) {
 	handler := NewHandler()
-	
-	// manually inject state to avoid setting up full WS server for this unit test
-	// assuming we can access internal fields or adding a helper
-	// Since we are in the same package 'controller', we can access private fields?
-	// No, the test file is package controller (same package), so yes we can.
-	
+
+	// Inject state directly to test watchdog logic without full WS overhead
 	handler.mu.Lock()
 	handler.lastState = &starv1.ControllerState{LinearVel: 1.0}
 	handler.lastReceived = time.Now()
