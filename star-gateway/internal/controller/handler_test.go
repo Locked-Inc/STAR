@@ -1,0 +1,146 @@
+package controller
+
+import (
+	"context"
+	"net/http"
+	"net/http/httptest"
+	"strings"
+	"testing"
+	"time"
+
+	starv1 "github.com/Locked-Inc/star-proto/gen/go/star/v1"
+	"google.golang.org/protobuf/proto"
+	"nhooyr.io/websocket" //nolint:staticcheck
+)
+
+func TestWebSocketHandler_ProcessMessage(t *testing.T) {
+	// 1. Setup Server
+	handler := NewHandler()
+	s := httptest.NewServer(http.HandlerFunc(handler.ServeHTTP))
+	defer s.Close()
+
+	// 2. Connect Client
+	wsURL := "ws" + strings.TrimPrefix(s.URL, "http")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	//nolint:staticcheck
+	c, _, err := websocket.Dial(ctx, wsURL, nil)
+	if err != nil {
+		t.Fatalf("failed to dial: %v", err)
+	}
+	defer func() {
+		//nolint:staticcheck
+		_ = c.Close(websocket.StatusInternalError, "internal error")
+	}()
+
+	// 3. Send ControllerState Message
+	msg := &starv1.ControllerState{
+		LinearVel:  1.0,
+		AngularVel: 0.5,
+		Timestamp:  time.Now().UnixMilli(),
+	}
+	bytes, err := proto.Marshal(msg)
+	if err != nil {
+		t.Fatalf("failed to marshal: %v", err)
+	}
+
+	//nolint:staticcheck
+	err = c.Write(ctx, websocket.MessageBinary, bytes)
+	if err != nil {
+		t.Fatalf("failed to write: %v", err)
+	}
+
+	// 4. Verify Side Effect (e.g., checking last received state)
+	// We'll wait a bit for async processing
+	time.Sleep(100 * time.Millisecond)
+
+	lastState := handler.GetLastState()
+	if lastState == nil {
+		t.Fatal("handler did not process message")
+	}
+
+	if lastState.LinearVel != 1.0 {
+		t.Errorf("got LinearVel %v, want 1.0", lastState.LinearVel)
+	}
+	if lastState.AngularVel != 0.5 {
+		t.Errorf("got AngularVel %v, want 0.5", lastState.AngularVel)
+	}
+}
+
+func TestWebSocketHandler_DebugFlag(t *testing.T) {
+	// 1. Setup Server
+	handler := NewHandler()
+	s := httptest.NewServer(http.HandlerFunc(handler.ServeHTTP))
+	defer s.Close()
+
+	// 2. Connect Client
+	wsURL := "ws" + strings.TrimPrefix(s.URL, "http")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	//nolint:staticcheck
+	c, _, err := websocket.Dial(ctx, wsURL, nil)
+	if err != nil {
+		t.Fatalf("failed to dial: %v", err)
+	}
+	defer func() {
+		//nolint:staticcheck
+		_ = c.Close(websocket.StatusInternalError, "internal error")
+	}()
+
+	// 3. Send Message with Debug = true
+	msg := &starv1.ControllerState{
+		LinearVel:  0.5,
+		AngularVel: -0.5,
+		Timestamp:  time.Now().UnixMilli(),
+		Debug:      true,
+	}
+	bytes, err := proto.Marshal(msg)
+	if err != nil {
+		t.Fatalf("failed to marshal: %v", err)
+	}
+
+	//nolint:staticcheck
+	err = c.Write(ctx, websocket.MessageBinary, bytes)
+	if err != nil {
+		t.Fatalf("failed to write: %v", err)
+	}
+
+	// 4. Verify State
+	time.Sleep(100 * time.Millisecond)
+
+	lastState := handler.GetLastState()
+	if lastState == nil {
+		t.Fatal("handler did not process message")
+	}
+
+	if !lastState.Debug {
+		t.Error("expected Debug flag to be true, got false")
+	}
+}
+
+func TestWebSocketHandler_Watchdog(t *testing.T) {
+	handler := NewHandler()
+
+	// Inject state directly to test watchdog logic without full WS overhead
+	handler.mu.Lock()
+	handler.lastState = &starv1.ControllerState{LinearVel: 1.0}
+	handler.lastReceived = time.Now()
+	handler.mu.Unlock()
+
+	// 1. Check immediate access
+	state := handler.GetSafeState() // Method we will implement
+	if state.LinearVel != 1.0 {
+		t.Errorf("Immediate: got %v, want 1.0", state.LinearVel)
+	}
+
+	// 2. Wait for timeout > 200ms
+	time.Sleep(250 * time.Millisecond)
+
+	// 3. Check watchdog trigger
+	state = handler.GetSafeState()
+	if state.LinearVel != 0.0 {
+		t.Errorf("After timeout: got %v, want 0.0", state.LinearVel)
+	}
+}

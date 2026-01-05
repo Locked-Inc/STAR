@@ -881,8 +881,8 @@ func TestBytesToSoftBits(t *testing.T) {
 			expected: []int8{127, 127, 127, 127, 127, 127, 127, 127},
 		},
 		{
-			name:  "alternating",
-			input: []byte{0xAA}, // 10101010
+			name:     "alternating",
+			input:    []byte{0xAA}, // 10101010
 			expected: []int8{127, -127, 127, -127, 127, -127, 127, -127},
 		},
 	}
