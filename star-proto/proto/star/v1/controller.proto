@@ -12,7 +12,9 @@ syntax = "proto3";
 
 package star.v1;
 
-option go_package = "github.com/Locked-Inc/star-proto/gen/go/star/v1";
+option go_package = "github.com/Locked-Inc/star-proto/gen/go/star/v1;starv1";
+option java_multiple_files = true;
+option java_package = "com.star.proto.v1";
 
 // ControllerState represents the state of a gamepad controller for direct robot control.
 message ControllerState {
