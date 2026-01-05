@@ -25,6 +25,11 @@ extern "C" {
  * =============================================================================
  */
 
+/** @brief ICU base address */
+typedef enum {
+  k_icu_base_addr = 0x00087000, /**< ICU register base address */
+} rx_icu_addresses_t;
+
 /** @brief ICU register reserved field sizes */
 typedef enum {
   k_icu_reserved_after_ier_bytes     = 192, /**< Reserved bytes after IER */
@@ -79,8 +84,14 @@ typedef struct {
   volatile uint8_t  nmiflt; /**< NMI Filter Control Register */
 } rx_icu_regs_t;
 
-#define ICU_BASE_ADDR ((rx_icu_regs_t*)0x00087000)
-#define ICU           (*ICU_BASE_ADDR)
+/**
+ * @brief Get pointer to ICU registers
+ * @return Volatile pointer to ICU register structure
+ */
+static inline volatile rx_icu_regs_t* icu(void)
+{
+  return (volatile rx_icu_regs_t*)k_icu_base_addr;
+}
 
 /* Vector numbers */
 typedef enum {

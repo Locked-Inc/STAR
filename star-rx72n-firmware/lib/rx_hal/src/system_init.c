@@ -94,13 +94,13 @@ typedef enum {
 static rx_err_t clock_init(void)
 {
   /* Unlock protection for clock registers */
-  SYSTEM.prcr = k_prcr_unlock;
+  system_regs()->prcr = k_prcr_unlock;
 
   /* Stop sub-clock oscillator (not used) */
-  SYSTEM.sosccr = k_sub_clock_stopped;
+  system_regs()->sosccr = k_sub_clock_stopped;
 
   /* Start main oscillator (16 MHz external crystal) */
-  SYSTEM.mosccr = k_main_osc_enabled;
+  system_regs()->mosccr = k_main_osc_enabled;
 
   /* Wait for main oscillator stabilization (typically 10ms) */
   /* NOTE: Busy-wait required - runs before ThreadX initialization */
@@ -111,32 +111,32 @@ static rx_err_t clock_init(void)
   /* Configure PLL */
   /* PLL = (Main OSC x PLIDIV) / PLLSTBY */
   /* 240 MHz = (16 MHz x 30) / 2 */
-  SYSTEM.pllcr  = k_pll_multiplier_30_div_2;
-  SYSTEM.pllcr2 = k_pll_enabled;
+  system_regs()->pllcr  = k_pll_multiplier_30_div_2;
+  system_regs()->pllcr2 = k_pll_enabled;
 
   /* Wait for PLL stabilization */
   /* NOTE: Busy-wait polling required - runs before ThreadX initialization */
   uint32_t timeout = k_pll_stabilization_timeout;
-  while ((SYSTEM.oscovfsr & k_pll_stable_flag) == 0 && timeout > 0) {
+  while ((system_regs()->oscovfsr & k_pll_stable_flag) == 0 && timeout > 0) {
     timeout--;
   }
 
   if (timeout == k_pll_stabilization_timeout_expired) {
     /* PLL failed to stabilize - but can't log yet (UART not initialized) */
-    SYSTEM.prcr = k_prcr_lock;
+    system_regs()->prcr = k_prcr_lock;
     return k_rx_err_hw_timeout;
   }
 
   /* Configure system clocks */
   /* ICLK=240MHz, PCLKA=120MHz, PCLKB=60MHz, PCLKC=60MHz,
      * PCLKD=60MHz, BCLK=120MHz, FCLK=60MHz */
-  SYSTEM.sckcr = k_system_clock_dividers;
+  system_regs()->sckcr = k_system_clock_dividers;
 
   /* Select PLL as system clock */
-  SYSTEM.sckcr3 = k_system_clock_source_pll;
+  system_regs()->sckcr3 = k_system_clock_source_pll;
 
   /* Lock protection */
-  SYSTEM.prcr = k_prcr_lock;
+  system_regs()->prcr = k_prcr_lock;
 
   return k_rx_ok;
 }
@@ -160,25 +160,25 @@ static rx_err_t clock_init(void)
 static rx_err_t module_stop_init(void)
 {
   /* Protect off */
-  SYSTEM.prcr = k_prcr_unlock;
+  system_regs()->prcr = k_prcr_unlock;
 
   /* Module Stop Control Register A */
-  SYSTEM.mstpcra &= ~((1UL << k_mstpcra_cmt) | /* CMT0, CMT1 */
-                      (1UL << k_mstpcra_mtu)   /* MTU */
+  system_regs()->mstpcra &= ~((1UL << k_mstpcra_cmt) | /* CMT0, CMT1 */
+                              (1UL << k_mstpcra_mtu)   /* MTU */
   );
 
   /* Module Stop Control Register B */
-  SYSTEM.mstpcrb &= ~((1UL << k_mstpcrb_sci5) |  /* SCI5 */
-                      (1UL << k_mstpcrb_rspi0) | /* RSPI0 */
-                      (1UL << k_mstpcrb_rspi1)   /* RSPI1 */
+  system_regs()->mstpcrb &= ~((1UL << k_mstpcrb_sci5) |  /* SCI5 */
+                              (1UL << k_mstpcrb_rspi0) | /* RSPI0 */
+                              (1UL << k_mstpcrb_rspi1)   /* RSPI1 */
   );
 
   /* Module Stop Control Register C */
-  SYSTEM.mstpcrc &= ~((1UL << k_mstpcrc_s12ad) /* S12AD */
+  system_regs()->mstpcrc &= ~((1UL << k_mstpcrc_s12ad) /* S12AD */
   );
 
   /* Protect on */
-  SYSTEM.prcr = k_prcr_lock;
+  system_regs()->prcr = k_prcr_lock;
 
   return k_rx_ok;
 }

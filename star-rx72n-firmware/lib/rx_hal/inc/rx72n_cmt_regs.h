@@ -25,6 +25,15 @@ extern "C" {
  * =============================================================================
  */
 
+/** @brief CMT base addresses */
+typedef enum {
+  k_cmt0_base_addr      = 0x00088000, /**< CMT0 register base address */
+  k_cmt1_base_addr      = 0x00088008, /**< CMT1 register base address */
+  k_cmt2_base_addr      = 0x00088010, /**< CMT2 register base address */
+  k_cmt3_base_addr      = 0x00088018, /**< CMT3 register base address */
+  k_cmt_ctrl_base_addr  = 0x00088002, /**< CMT control register base address */
+} rx_cmt_addresses_t;
+
 /**
  * @brief CMT Channel Register Map
  * @details
@@ -53,17 +62,50 @@ typedef struct {
   volatile uint16_t cmstr1; /**< Compare Match Timer Start Register 1 (CMT2/3) */
 } rx_cmt_control_regs_t;
 
-#define CMT0_BASE     ((rx_cmt_channel_regs_t*)0x00088000)
-#define CMT1_BASE     ((rx_cmt_channel_regs_t*)0x00088008)
-#define CMT2_BASE     ((rx_cmt_channel_regs_t*)0x00088010)
-#define CMT3_BASE     ((rx_cmt_channel_regs_t*)0x00088018)
-#define CMT_CTRL_BASE ((rx_cmt_control_regs_t*)0x00088002)
+/**
+ * @brief Get pointer to CMT0 registers
+ * @return Volatile pointer to CMT0 register structure
+ */
+static inline volatile rx_cmt_channel_regs_t* cmt0(void)
+{
+  return (volatile rx_cmt_channel_regs_t*)k_cmt0_base_addr;
+}
 
-#define CMT0     (*CMT0_BASE)
-#define CMT1     (*CMT1_BASE)
-#define CMT2     (*CMT2_BASE)
-#define CMT3     (*CMT3_BASE)
-#define CMT_CTRL (*CMT_CTRL_BASE)
+/**
+ * @brief Get pointer to CMT1 registers
+ * @return Volatile pointer to CMT1 register structure
+ */
+static inline volatile rx_cmt_channel_regs_t* cmt1(void)
+{
+  return (volatile rx_cmt_channel_regs_t*)k_cmt1_base_addr;
+}
+
+/**
+ * @brief Get pointer to CMT2 registers
+ * @return Volatile pointer to CMT2 register structure
+ */
+static inline volatile rx_cmt_channel_regs_t* cmt2(void)
+{
+  return (volatile rx_cmt_channel_regs_t*)k_cmt2_base_addr;
+}
+
+/**
+ * @brief Get pointer to CMT3 registers
+ * @return Volatile pointer to CMT3 register structure
+ */
+static inline volatile rx_cmt_channel_regs_t* cmt3(void)
+{
+  return (volatile rx_cmt_channel_regs_t*)k_cmt3_base_addr;
+}
+
+/**
+ * @brief Get pointer to CMT control registers
+ * @return Volatile pointer to CMT control register structure
+ */
+static inline volatile rx_cmt_control_regs_t* cmt_ctrl(void)
+{
+  return (volatile rx_cmt_control_regs_t*)k_cmt_ctrl_base_addr;
+}
 
 #ifdef __cplusplus
 }

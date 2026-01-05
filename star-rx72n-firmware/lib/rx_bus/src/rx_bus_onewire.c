@@ -96,20 +96,20 @@ static void internal_delay_timer_init(void)
   }
 
   /* Enable CMT module clock */
-  SYSTEM.prcr = k_onewire_prcr_unlock;
-  SYSTEM.mstpcrb &= ~(1UL << k_onewire_mstpb_cmt_bit);
-  SYSTEM.prcr = k_onewire_prcr_lock;
+  system_regs()->prcr = k_onewire_prcr_unlock;
+  system_regs()->mstpcrb &= ~(1UL << k_onewire_mstpb_cmt_bit);
+  system_regs()->prcr = k_onewire_prcr_lock;
 
   /* Stop CMT3 before reconfiguration */
-  CMT_CTRL.cmstr1 &= ~(1U << k_onewire_cmt3_start_bit);
+  cmt_ctrl()->cmstr1 &= ~(1U << k_onewire_cmt3_start_bit);
 
   /* Configure free-running counter (no interrupts) */
-  CMT3.cmcr  = (uint16_t)(k_onewire_cmt_divider_setting << k_onewire_cmt_clk_shift);
-  CMT3.cmcor = k_onewire_timer_counter_max;
-  CMT3.cmcnt = 0;
+  cmt3()->cmcr  = (uint16_t)(k_onewire_cmt_divider_setting << k_onewire_cmt_clk_shift);
+  cmt3()->cmcor = k_onewire_timer_counter_max;
+  cmt3()->cmcnt = 0;
 
   /* Start timer */
-  CMT_CTRL.cmstr1 |= (1U << k_onewire_cmt3_start_bit);
+  cmt_ctrl()->cmstr1 |= (1U << k_onewire_cmt3_start_bit);
 
   s_delay_timer_initialized = true;
 }
@@ -135,8 +135,8 @@ static void internal_delay_us(uint32_t microseconds)
   while (ticks > 0ULL) {
     uint32_t wait_ticks =
       (ticks > k_onewire_timer_counter_max) ? k_onewire_timer_counter_max : (uint32_t)ticks;
-    uint16_t start = CMT3.cmcnt;
-    while ((uint16_t)(CMT3.cmcnt - start) < wait_ticks) {
+    uint16_t start = cmt3()->cmcnt;
+    while ((uint16_t)(cmt3()->cmcnt - start) < wait_ticks) {
       __asm__ volatile("nop");
     }
     ticks -= wait_ticks;

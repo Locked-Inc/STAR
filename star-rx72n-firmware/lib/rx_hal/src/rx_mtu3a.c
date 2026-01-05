@@ -220,15 +220,15 @@ rx_err_t rx_mtu_init_pwm(rx_mtu_channel_t channel, const rx_mtu_config_t* config
   rx_log_info(s_tag, "Initializing MTU");
 
   /* Enable MTU module (clear module stop bit) */
-  SYSTEM.prcr = k_mtu_prcr_unlock;
+  system_regs()->prcr = k_mtu_prcr_unlock;
 
   if (channel <= k_mtu_channel_4) {
-    SYSTEM.mstpcra &= ~(1UL << k_mtu_mstpa_mtu0_4);
+    system_regs()->mstpcra &= ~(1UL << k_mtu_mstpa_mtu0_4);
   } else {
-    SYSTEM.mstpcra &= ~(1UL << k_mtu_mstpa_mtu6_7);
+    system_regs()->mstpcra &= ~(1UL << k_mtu_mstpa_mtu6_7);
   }
 
-  SYSTEM.prcr = k_mtu_prcr_lock;
+  system_regs()->prcr = k_mtu_prcr_lock;
 
   /* Stop timer before configuration */
   rx_mtu_stop(channel);

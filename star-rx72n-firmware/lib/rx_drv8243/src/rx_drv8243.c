@@ -388,27 +388,27 @@ static volatile rx_port_regs_t* internal_get_port_base(uint8_t port)
 {
   switch (port) {
     case 0:
-      return &PORT0;
+      return port0();
     case 1:
-      return &PORT1;
+      return port1();
     case 2:
-      return &PORT2;
+      return port2();
     case 3:
-      return &PORT3;
+      return port3();
     case 4:
-      return &PORT4;
+      return port4();
     case 5:
-      return &PORT5;
+      return port5();
     case 6:
-      return &PORT6;
+      return port6();
     case 7:
-      return &PORT7;
+      return port7();
     case 8:
-      return &PORT8;
+      return port8();
     case 9:
-      return &PORT9;
+      return port9();
     case 10:
-      return &PORTJ;
+      return portj();
     default:
       return NULL;
   }
