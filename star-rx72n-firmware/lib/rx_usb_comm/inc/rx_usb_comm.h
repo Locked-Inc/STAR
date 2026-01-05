@@ -50,6 +50,7 @@ typedef enum {
   k_usb_comm_rx_buffer_size  = 2048, /**< RX staging buffer size */
   k_usb_comm_tx_buffer_size  = 2048, /**< TX staging buffer size */
   k_usb_comm_default_timeout = 1000, /**< Default timeout in ms */
+  k_usb_comm_max_receive_iterations = 1000, /**< Max receive loop iterations (Rule 2) */
 } rx_usb_comm_constants_t;
 
 /* =============================================================================
@@ -62,6 +63,21 @@ typedef enum {
  *
  * Contains all state for USB communication including frame encoder/decoder,
  * sequence tracking, and staging buffers.
+ *
+ * @warning Thread Safety: This handle is NOT thread-safe. External
+ *          synchronization (e.g., ThreadX mutex) is required for concurrent
+ *          access from multiple threads.
+ *
+ * Recommended usage pattern:
+ * @code
+ * static TX_MUTEX usb_comm_mutex;
+ * tx_mutex_create(&usb_comm_mutex, "USB_COMM", TX_NO_INHERIT);
+ *
+ * // In thread:
+ * tx_mutex_get(&usb_comm_mutex, TX_WAIT_FOREVER);
+ * rx_usb_comm_send(handle, ...);
+ * tx_mutex_put(&usb_comm_mutex);
+ * @endcode
  */
 typedef struct {
   rx_frame_encoder_t         encoder;                              /**< Frame encoder */
