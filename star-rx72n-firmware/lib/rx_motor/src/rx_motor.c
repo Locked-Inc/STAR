@@ -4,13 +4,17 @@
  * @file rx_motor.c
  * @brief Brushed DC motor control implementation for RX72N
  * @details
- * H-bridge motor control using MTU3a PWM peripheral.
+ * H-bridge motor control using GPTW PWM peripheral.
  *
- * Motor Control Modes:
- * 1. Forward: output_a = PWM, output_b = LOW
- * 2. Reverse: output_a = LOW, output_b = PWM
- * 3. Brake: output_a = HIGH, output_b = HIGH (short circuit)
- * 4. Coast: output_a = LOW, output_b = LOW (high impedance)
+ * Motor Control Modes (PH/EN for DRV8243):
+ * - PH (output_a) = direction (HIGH=forward, LOW=reverse)
+ * - EN (output_b) = speed (PWM duty cycle)
+ *
+ * States:
+ * 1. Forward: PH = HIGH (100%), EN = PWM (speed)
+ * 2. Reverse: PH = LOW (0%), EN = PWM (speed)
+ * 3. Coast: EN = LOW (0%) - motor in high impedance
+ * 4. Brake: NOT SUPPORTED in PH/EN mode (falls back to coast)
  *
  * PWM Frequency:
  * - Typical: 20 kHz (above human hearing, motor-friendly)
@@ -20,7 +24,7 @@
  * - Prevents shoot-through in H-bridge
  * - Typical: 500ns - 2us depending on FET switching speed
  *
- * @date 2026-01-01
+ * @date 2026-01-04
  * @copyright Copyright (c) 2026 STAR Project
  */
 
@@ -32,6 +36,15 @@
 #include "rx_log.h"
 
 static const char* s_tag = "MOTOR";
+
+/** @brief Motor control constants for DRV8243 PH/EN mode */
+typedef enum {
+  k_motor_duty_min  = -100, /**< Minimum duty cycle (full reverse) */
+  k_motor_duty_max  = 100,  /**< Maximum duty cycle (full forward) */
+  k_motor_duty_zero = 0,    /**< Zero duty cycle (stopped) */
+  k_motor_ph_high   = 100,  /**< PH signal for forward direction */
+  k_motor_ph_low    = 0,    /**< PH signal for reverse direction */
+} motor_constants_t;
 
 /* =============================================================================
  * Internal Helper Functions
@@ -47,11 +60,11 @@ static const char* s_tag = "MOTOR";
  */
 static float internal_clamp_duty(float duty)
 {
-  if (duty > 100.0f) {
-    return 100.0f;
+  if (duty > (float)k_motor_duty_max) {
+    return (float)k_motor_duty_max;
   }
-  if (duty < -100.0f) {
-    return -100.0f;
+  if (duty < (float)k_motor_duty_min) {
+    return (float)k_motor_duty_min;
   }
   return duty;
 }
@@ -73,23 +86,23 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
 
   rx_log_info(s_tag, "Initializing motor");
 
-  /* Initialize MTU PWM */
-  rx_mtu_config_t mtu_config = {
+  /* Initialize GPTW PWM */
+  rx_gptw_config_t gptw_config = {
     .frequency_hz         = config->pwm_freq_hz,
     .deadtime_ns          = config->dead_time_ns,
     .enable_complementary = false, /* We control direction manually */
     .invert_polarity      = config->invert_pwm,
   };
 
-  rx_err_t err = rx_mtu_init_pwm(config->channel, &mtu_config);
+  rx_err_t err = rx_gptw_init_pwm(config->channel, &gptw_config);
   if (err != k_rx_ok) {
-    rx_log_error(s_tag, "Failed to initialize MTU PWM");
+    rx_log_error(s_tag, "Failed to initialize GPTW PWM");
     return err;
   }
 
   /* Initialize both outputs to 0% duty (stopped) */
-  rx_mtu_set_duty(config->channel, config->output_a, 0.0f);
-  rx_mtu_set_duty(config->channel, config->output_b, 0.0f);
+  rx_gptw_set_duty(config->channel, config->output_a, 0.0f);
+  rx_gptw_set_duty(config->channel, config->output_b, 0.0f);
 
   /* Save configuration */
   handle->channel      = config->channel;
@@ -117,8 +130,8 @@ rx_err_t rx_motor_deinit(rx_motor_handle_t* handle)
   /* Stop motor before deinit */
   rx_motor_stop(handle, false);
 
-  /* Deinitialize MTU (note: this affects the entire channel) */
-  rx_mtu_deinit(handle->channel);
+  /* Deinitialize GPTW (note: this affects the entire channel) */
+  rx_gptw_deinit(handle->channel);
 
   handle->initialized = false;
 
@@ -144,15 +157,19 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
     duty = -duty;
   }
 
-  /* Set PWM outputs based on direction */
-  if (duty >= 0.0f) {
-    /* Forward: output_a = PWM, output_b = 0 */
-    rx_mtu_set_duty(handle->channel, handle->output_a, duty);
-    rx_mtu_set_duty(handle->channel, handle->output_b, 0.0f);
+  /* Set PWM outputs based on direction (PH/EN mode)
+   * PH (output_a) = direction (HIGH=forward, LOW=reverse)
+   * EN (output_b) = speed (PWM duty cycle)
+   */
+  float speed_pwm = fabsf(duty);
+  if (duty >= (float)k_motor_duty_zero) {
+    /* Forward: PH = HIGH, EN = PWM */
+    rx_gptw_set_duty(handle->channel, handle->output_a, (float)k_motor_ph_high);
+    rx_gptw_set_duty(handle->channel, handle->output_b, speed_pwm);
   } else {
-    /* Reverse: output_a = 0, output_b = PWM */
-    rx_mtu_set_duty(handle->channel, handle->output_a, 0.0f);
-    rx_mtu_set_duty(handle->channel, handle->output_b, fabsf(duty));
+    /* Reverse: PH = LOW, EN = PWM */
+    rx_gptw_set_duty(handle->channel, handle->output_a, (float)k_motor_ph_low);
+    rx_gptw_set_duty(handle->channel, handle->output_b, speed_pwm);
   }
 
   handle->current_duty = duty;
@@ -170,14 +187,12 @@ rx_err_t rx_motor_stop(rx_motor_handle_t* handle, bool brake)
   }
 
   if (brake) {
-    /* Brake mode: both outputs HIGH (short circuit brake) */
-    rx_mtu_set_duty(handle->channel, handle->output_a, 100.0f);
-    rx_mtu_set_duty(handle->channel, handle->output_b, 100.0f);
-  } else {
-    /* Coast mode: both outputs LOW (high impedance) */
-    rx_mtu_set_duty(handle->channel, handle->output_a, 0.0f);
-    rx_mtu_set_duty(handle->channel, handle->output_b, 0.0f);
+    /* Brake mode not supported in PH/EN mode - coast instead */
+    rx_log_warn(s_tag, "Brake not supported in PH/EN mode, coasting");
   }
+  /* Coast mode: set EN (output_b) to LOW for high impedance */
+  rx_gptw_set_duty(handle->channel, handle->output_a, 0.0f);
+  rx_gptw_set_duty(handle->channel, handle->output_b, 0.0f);
 
   handle->current_duty = 0.0f;
 
