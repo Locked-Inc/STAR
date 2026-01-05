@@ -117,6 +117,16 @@ set(RX_PID_SRC
     ${CMAKE_SOURCE_DIR}/../lib/rx_pid/src/rx_pid.c
 )
 
+# Mock MTU encoder source for encoder testing
+set(MOCK_MTU_ENCODER_SRC
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_mtu_encoder.c
+)
+
+# rx_encoder source
+set(RX_ENCODER_SRC
+    ${CMAKE_SOURCE_DIR}/../lib/rx_encoder/src/rx_mtu_encoder.c
+)
+
 # Include directories for library headers
 include_directories(
     ${CMAKE_SOURCE_DIR}/../include
@@ -134,6 +144,7 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/../lib/rx_bus/inc
     ${CMAKE_SOURCE_DIR}/../lib/rx_motor/inc
     ${CMAKE_SOURCE_DIR}/../lib/rx_pid/inc
+    ${CMAKE_SOURCE_DIR}/../lib/rx_encoder/inc
     ${CMAKE_SOURCE_DIR}/mocks
     ${unity_SOURCE_DIR}/src
 )
@@ -314,6 +325,20 @@ add_executable(test_rx_pid
 target_compile_definitions(test_rx_pid PRIVATE UNIT_TEST)
 target_link_libraries(test_rx_pid unity m)
 
+# Test: MTU Encoder Driver (Quadrature Phase Counting)
+# We need to use a wrapper source file that includes mock headers before the encoder
+add_executable(test_rx_encoder
+    test_rx_encoder.c
+    ${MOCK_MTU_ENCODER_SRC}
+    ${MOCK_LOG_SRC}
+)
+# Add mocks directory FIRST so mock headers override hardware headers
+target_include_directories(test_rx_encoder BEFORE PRIVATE
+    ${CMAKE_SOURCE_DIR}/mocks
+)
+target_compile_definitions(test_rx_encoder PRIVATE UNIT_TEST)
+target_link_libraries(test_rx_encoder unity)
+
 # =============================================================================
 # CTest Integration
 # =============================================================================
@@ -335,6 +360,7 @@ add_test(NAME test_rx_bus_manager COMMAND test_rx_bus_manager)
 add_test(NAME test_rx_bus_onewire COMMAND test_rx_bus_onewire)
 add_test(NAME test_rx_spi_comm COMMAND test_rx_spi_comm)
 add_test(NAME test_rx_pid COMMAND test_rx_pid)
+add_test(NAME test_rx_encoder COMMAND test_rx_encoder)
 
 # =============================================================================
 # Convenience Targets
@@ -342,7 +368,7 @@ add_test(NAME test_rx_pid COMMAND test_rx_pid)
 
 add_custom_target(run_all_tests
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS test_rx_crc32 test_rx_frame test_rx_fec test_rx_harq test_rx_usb test_rx_usb_comm test_rx_time test_rx_hcsr04 test_uart_hal test_rx_bus_uart test_rx_motor test_rx_bus_manager test_rx_bus_onewire test_rx_spi_comm test_rx_pid
+    DEPENDS test_rx_crc32 test_rx_frame test_rx_fec test_rx_harq test_rx_usb test_rx_usb_comm test_rx_time test_rx_hcsr04 test_uart_hal test_rx_bus_uart test_rx_motor test_rx_bus_manager test_rx_bus_onewire test_rx_spi_comm test_rx_pid test_rx_encoder
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running all unit tests..."
 )
