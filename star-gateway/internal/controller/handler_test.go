@@ -68,6 +68,58 @@ func TestWebSocketHandler_ProcessMessage(t *testing.T) {
 	}
 }
 
+func TestWebSocketHandler_DebugFlag(t *testing.T) {
+	// 1. Setup Server
+	handler := NewHandler()
+	s := httptest.NewServer(http.HandlerFunc(handler.ServeHTTP))
+	defer s.Close()
+
+	// 2. Connect Client
+	wsURL := "ws" + strings.TrimPrefix(s.URL, "http")
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*5)
+	defer cancel()
+
+	//nolint:staticcheck
+	c, _, err := websocket.Dial(ctx, wsURL, nil)
+	if err != nil {
+		t.Fatalf("failed to dial: %v", err)
+	}
+	defer func() {
+		//nolint:staticcheck
+		_ = c.Close(websocket.StatusInternalError, "internal error")
+	}()
+
+	// 3. Send Message with Debug = true
+	msg := &starv1.ControllerState{
+		LinearVel:  0.5,
+		AngularVel: -0.5,
+		Timestamp:  time.Now().UnixMilli(),
+		Debug:      true,
+	}
+	bytes, err := proto.Marshal(msg)
+	if err != nil {
+		t.Fatalf("failed to marshal: %v", err)
+	}
+
+	//nolint:staticcheck
+	err = c.Write(ctx, websocket.MessageBinary, bytes)
+	if err != nil {
+		t.Fatalf("failed to write: %v", err)
+	}
+
+	// 4. Verify State
+	time.Sleep(100 * time.Millisecond)
+
+	lastState := handler.GetLastState()
+	if lastState == nil {
+		t.Fatal("handler did not process message")
+	}
+
+	if !lastState.Debug {
+		t.Error("expected Debug flag to be true, got false")
+	}
+}
+
 func TestWebSocketHandler_Watchdog(t *testing.T) {
 	handler := NewHandler()
 

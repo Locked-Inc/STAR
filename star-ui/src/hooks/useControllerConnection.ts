@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { ControllerService } from '../services/ControllerService';
 import type { GamepadState } from './useGamepad';
 
-export const useControllerConnection = (gamepadState: GamepadState) => {
+export const useControllerConnection = (gamepadState: GamepadState, debug: boolean = false) => {
   const [connected, setConnected] = useState(false);
   const serviceRef = useRef<ControllerService | null>(null);
 
@@ -28,13 +28,13 @@ export const useControllerConnection = (gamepadState: GamepadState) => {
 
     if (!gamepadState.connected) {
       // Gamepad disconnected - send stop command for safety
-      serviceRef.current.sendState(0, 0);
+      serviceRef.current.sendState(0, 0, debug);
       return;
     }
 
-    serviceRef.current.sendState(gamepadState.linearVel, gamepadState.angularVel);
+    serviceRef.current.sendState(gamepadState.linearVel, gamepadState.angularVel, debug);
     
-  }, [connected, gamepadState]);
+  }, [connected, gamepadState, debug]);
 
   return { gatewayConnected: connected };
 };

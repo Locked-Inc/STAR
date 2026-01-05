@@ -26,7 +26,9 @@ func NewHandler() *Handler {
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	c, err := websocket.Accept(w, r, nil) //nolint:staticcheck // library is deprecated but migration is out of scope
+	c, err := websocket.Accept(w, r, &websocket.AcceptOptions{
+		InsecureSkipVerify: true,
+	}) //nolint:staticcheck // library is deprecated but migration is out of scope
 	if err != nil {
 		log.Printf("failed to accept websocket: %v", err)
 		return
@@ -43,6 +45,7 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}()
 
 	ctx := r.Context()
+	var lastDebug bool
 
 	for {
 		typ, bytes, err := c.Read(ctx) //nolint:staticcheck
@@ -59,6 +62,19 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		if err := proto.Unmarshal(bytes, &msg); err != nil {
 			log.Printf("failed to unmarshal: %v", err)
 			continue
+		}
+
+		// Handle debug state transitions
+		if msg.Debug && !lastDebug {
+			log.Println(">>> DEBUG MODE ENABLED")
+		} else if !msg.Debug && lastDebug {
+			log.Println(">>> DEBUG MODE DISABLED")
+		}
+		lastDebug = msg.Debug
+
+		// Debug log to verify data reception
+		if msg.Debug {
+			log.Printf("Received: Linear=%.2f, Angular=%.2f", msg.LinearVel, msg.AngularVel)
 		}
 
 		h.mu.Lock()
