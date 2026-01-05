@@ -39,13 +39,14 @@ export class ControllerService {
     };
   }
 
-  sendState(linearVel: number, angularVel: number) {
+  sendState(linearVel: number, angularVel: number, debug: boolean = false) {
     if (!this.socket || this.socket.readyState !== WebSocket.OPEN) return;
 
     const state: ControllerState = {
       linearVel,
       angularVel,
       timestamp: Date.now().toString(), // long_type_string option was used
+      debug,
     };
 
     const bytes = ControllerState.toBinary(state);
@@ -57,7 +58,7 @@ export class ControllerService {
     if (this.socket) {
       // Before closing, send a final stop command for safety
       if (this.socket.readyState === WebSocket.OPEN) {
-        this.sendState(0, 0);
+        this.sendState(0, 0, false);
       }
       this.socket.close();
       this.socket = null;

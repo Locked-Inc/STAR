@@ -3,6 +3,17 @@
 // @generated from protobuf file "star/v1/controller.proto" (package "star.v1", syntax proto3)
 // tslint:disable
 // @ts-nocheck
+//
+// controller.proto - STAR Gamepad Controller Protocol
+// Definition for direct robot control via gamepad inputs.
+//
+// Following Boston Dynamics style guide:
+// - Proto3 only, 100 char line limit, 4 space indent
+// - All fields documented with units and valid ranges
+//
+// STAR Project - Texas A&M University
+// January 2026
+//
 import type { BinaryWriteOptions } from "@protobuf-ts/runtime";
 import type { IBinaryWriter } from "@protobuf-ts/runtime";
 import { WireType } from "@protobuf-ts/runtime";
@@ -37,6 +48,12 @@ export interface ControllerState {
      * @generated from protobuf field: int64 timestamp = 3
      */
     timestamp: string;
+    /**
+     * Enable verbose debug logging on the gateway
+     *
+     * @generated from protobuf field: bool debug = 4
+     */
+    debug: boolean;
 }
 // @generated message type with reflection information, may provide speed optimized methods
 class ControllerState$Type extends MessageType<ControllerState> {
@@ -44,7 +61,8 @@ class ControllerState$Type extends MessageType<ControllerState> {
         super("star.v1.ControllerState", [
             { no: 1, name: "linear_vel", kind: "scalar", T: 2 /*ScalarType.FLOAT*/ },
             { no: 2, name: "angular_vel", kind: "scalar", T: 2 /*ScalarType.FLOAT*/ },
-            { no: 3, name: "timestamp", kind: "scalar", T: 3 /*ScalarType.INT64*/ }
+            { no: 3, name: "timestamp", kind: "scalar", T: 3 /*ScalarType.INT64*/ },
+            { no: 4, name: "debug", kind: "scalar", T: 8 /*ScalarType.BOOL*/ }
         ]);
     }
     create(value?: PartialMessage<ControllerState>): ControllerState {
@@ -52,6 +70,7 @@ class ControllerState$Type extends MessageType<ControllerState> {
         message.linearVel = 0;
         message.angularVel = 0;
         message.timestamp = "0";
+        message.debug = false;
         if (value !== undefined)
             reflectionMergePartial<ControllerState>(this, message, value);
         return message;
@@ -69,6 +88,9 @@ class ControllerState$Type extends MessageType<ControllerState> {
                     break;
                 case /* int64 timestamp */ 3:
                     message.timestamp = reader.int64().toString();
+                    break;
+                case /* bool debug */ 4:
+                    message.debug = reader.bool();
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -91,6 +113,9 @@ class ControllerState$Type extends MessageType<ControllerState> {
         /* int64 timestamp = 3; */
         if (message.timestamp !== "0")
             writer.tag(3, WireType.Varint).int64(message.timestamp);
+        /* bool debug = 4; */
+        if (message.debug !== false)
+            writer.tag(4, WireType.Varint).bool(message.debug);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);

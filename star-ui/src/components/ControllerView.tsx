@@ -1,16 +1,17 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useGamepad } from '../hooks/useGamepad';
 import { useControllerConnection } from '../hooks/useControllerConnection';
 
 export const ControllerView: React.FC = () => {
+  const [debugMode, setDebugMode] = useState(false);
   const gamepadState = useGamepad();
-  const { gatewayConnected } = useControllerConnection(gamepadState);
+  const { gatewayConnected } = useControllerConnection(gamepadState, debugMode);
 
   return (
     <div style={{ padding: '20px', textAlign: 'center', fontFamily: 'sans-serif' }}>
       <h1>STAR Robot Controller</h1>
 
-      <div style={{ marginBottom: '20px' }}>
+      <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '20px' }}>
         <span style={{ 
           padding: '5px 10px', 
           borderRadius: '4px', 
@@ -21,6 +22,16 @@ export const ControllerView: React.FC = () => {
         }}>
           Gateway: {gatewayConnected ? 'CONNECTED' : 'DISCONNECTED'}
         </span>
+
+        <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', fontSize: '0.9em' }}>
+          <input 
+            type="checkbox" 
+            checked={debugMode} 
+            onChange={(e) => setDebugMode(e.target.checked)}
+            style={{ marginRight: '5px' }}
+          />
+          Debug Mode (Verbose Logs)
+        </label>
       </div>
       
       {!gamepadState.connected ? (
