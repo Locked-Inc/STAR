@@ -3,7 +3,7 @@
 /**
  * @file rx_gptw.c
  * @brief GPTW PWM Driver Implementation for Motor Control
- *
+ * @details
  * General PWM Timer driver for brushed DC motors on RX72N.
  *
  * PWM Mode (Sawtooth Wave - Edge-Aligned):
@@ -51,7 +51,8 @@ typedef enum {
 } gptw_prcr_values_t;
 
 /** @brief Period calculation constants */
-#define GPTW_PERIOD_MAX 0xFFFFFFFFUL /**< Maximum valid period (32-bit) */
+#define GPTW_PERIOD_MAX       (0xFFFFFFFFUL) /**< Maximum valid period (32-bit) */
+#define GPTW_NS_PER_SECOND    (1000000000ULL) /**< Nanoseconds per second for deadtime calc */
 
 typedef enum {
   k_gptw_period_min  = 10, /**< Minimum valid period */
@@ -319,7 +320,7 @@ rx_err_t rx_gptw_init_pwm(rx_gptw_channel_t channel, const rx_gptw_config_t* con
   /* Configure dead time if requested */
   if (config->deadtime_ns > 0) {
     /* Calculate dead time count: deadtime_ns * (PCLKA / 1e9) */
-    uint32_t deadtime_count = (uint32_t)((uint64_t)config->deadtime_ns * k_pclka_hz / 1000000000ULL);
+    uint32_t deadtime_count = (uint32_t)((uint64_t)config->deadtime_ns * k_pclka_hz / GPTW_NS_PER_SECOND);
     gptw->gtdvu = deadtime_count;
     gptw->gtdvd = deadtime_count;
     gptw->gtdtcr = k_gptw_gtdtcr_tde; /* Enable dead time */
