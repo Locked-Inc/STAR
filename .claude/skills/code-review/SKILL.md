@@ -72,12 +72,15 @@ Review rx_pid.c for NASA Power of 10 compliance
 ### Rule 8: Limit Preprocessor Use
 - [ ] **ALWAYS use `enum` for integer constants** (never `#define`)
 - [ ] Use `static const` ONLY for floating-point values (enum can't hold floats)
-- [ ] `#define` is ONLY acceptable for token operations (e.g., `ARRAY_SIZE`)
-- [ ] No token pasting (`##`) except where necessary
+- [ ] Macros ONLY allowed for: (1) reducing duplicated code, (2) conditional compilation, (3) hardware addresses, (4) build flags
+- [ ] **FORBIDDEN**: Macros for simple constants or backward compatibility (no releases = no compatibility needed)
+- [ ] No token pasting (`##`) except in allowed macro cases
 - [ ] No recursive macros
 - Good: `typedef enum { k_timeout_ms = 1000, k_max_retries = 3 } limits_t;`
+- Good: `#define RX_RETURN_ON_ERROR(err, tag, msg) /* multi-line validation */`
 - Bad: `#define TIMEOUT_MS 1000` (should be enum!)
 - Bad: `#define MAX_VELOCITY 2.5f` (should be static const float!)
+- Bad: `#define old_func new_func` (no backward compatibility - just update call sites!)
 
 ### Rule 9: Restrict Pointer Use
 - [ ] Maximum one level of dereferencing (exception: DIP interfaces)

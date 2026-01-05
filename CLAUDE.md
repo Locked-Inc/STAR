@@ -12,6 +12,27 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 Note: External APIs may still use legacy terminology internally. Map these to our terminology in comments and documentation.
 
+## Backward Compatibility Policy
+
+**IMPORTANT:** This project has not released any versions yet. There is **NO backward compatibility requirement**.
+
+- Do NOT add function aliases or deprecation macros for renamed functions
+- Do NOT keep old API signatures "for compatibility"
+- When refactoring, update all call sites directly - no shims
+- Clean code now is better than technical debt for non-existent users
+
+**Example - What NOT to do:**
+```c
+// WRONG - No backward compatibility needed!
+#define old_function_name new_function_name  /* ❌ Delete old code instead */
+```
+
+**Example - What to do:**
+```c
+// CORRECT - Just update the function name and all call sites
+rx_err_t new_function_name(...)  /* ✓ Clean break, no compatibility layer */
+```
+
 ## Project Overview
 
 **STAR (Simultaneous Tracking and Robotics)** - A distributed robotics platform with custom PCB hardware, Renesas RX72N motor control firmware, Raspberry Pi 5 control system, and Protocol Buffers communication.
@@ -131,41 +152,63 @@ star.v1.RequestHeader.request_id max_size:64
 
 ### Constants and Macros
 
-Prefer enums over const variables over macros for defining constant values.
+**Strict preference hierarchy:**
 
-1. **Enums** - Use for related integer constants
+1. **Enums** - ALWAYS use for ALL integer constants
    ```c
-   // PREFER: Type-safe enums with debugger support
+   // CORRECT: Type-safe enums with debugger support
    typedef enum {
      k_motor_state_idle    = 0,
      k_motor_state_running = 1,
      k_motor_state_error   = 2,
-   } motor_state_t;
+     k_timeout_ms          = 1000,    // Integer constant → enum
+     k_max_retries         = 3        // Integer constant → enum
+   } motor_config_t;
 
-   // AVOID: Macros for related constants
-   #define MOTOR_STATE_IDLE    (0)
-   #define MOTOR_STATE_RUNNING (1)
-   #define MOTOR_STATE_ERROR   (2)
+   // WRONG: Never use macros for integer constants
+   #define TIMEOUT_MS (1000)  // ❌ Should be enum!
    ```
 
-2. **const variables** - Use for single typed values
+2. **const variables** - ONLY for floating-point (enum limitation)
    ```c
-   // PREFER: Type-safe const with scope
-   static const float    s_max_velocity_mps = 2.5f;
-   static const uint32_t s_timeout_ms       = 1000;
+   // CORRECT: Floating-point must use const (can't use enum)
+   static const float s_max_velocity_mps = 2.5f;
+   static const float s_pid_kp = 1.0f;
 
-   // AVOID: Macros for simple constants
-   #define MAX_VELOCITY_MPS (2.5f)
-   #define TIMEOUT_MS       (1000)
+   // WRONG: Never use macros for floats
+   #define MAX_VELOCITY_MPS (2.5f)  // ❌ Should be const!
    ```
 
-3. **Macros** - Only when compile-time evaluation or token pasting is required
+3. **Macros** - ONLY for these 4 specific cases:
    ```c
-   // ACCEPTABLE: Macro required for token pasting
-   #define CONCAT(a, b) a##b
+   // ✓ ALLOWED: Reducing duplicated code
+   #define RX_RETURN_ON_ERROR(err, tag, msg) \
+       do { \
+           rx_err_t _err = (err); \
+           if (_err != k_rx_ok) { \
+               rx_log_error((tag), (msg)); \
+               return _err; \
+           } \
+       } while (0)
 
-   // ACCEPTABLE: Macro required for compile-time size
-   #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
+   // ✓ ALLOWED: Conditional compilation (optimization)
+   #if LOG_LEVEL >= k_log_error
+   #define rx_log_error(tag, msg) internal_rx_log_error((tag), (msg))
+   #else
+   #define rx_log_error(tag, msg) ((void)0)
+   #endif
+
+   // ✓ ALLOWED: Hardware register addresses
+   #define CMT0_BASE ((rx_cmt_channel_regs_t*)0x00088000)
+   #define CMT0      (*CMT0_BASE)
+
+   // ✓ ALLOWED: Build configuration flags
+   #ifdef __RX__
+   #define RX_CRC32_USE_HARDWARE
+   #endif
+
+   // ❌ FORBIDDEN: Backward compatibility (no releases = no compatibility)
+   #define old_function new_function  // Wrong! Update call sites instead
    ```
 
 **Why this matters:**

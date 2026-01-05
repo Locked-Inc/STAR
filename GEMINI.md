@@ -22,6 +22,71 @@ When writing or modifying code, documentation, or comments:
 
 Note: Renesas RX and other external APIs may still use legacy terminology internally. Map these to our terminology in comments and documentation.
 
+## Backward Compatibility Policy
+
+**IMPORTANT:** This project has not released any versions yet. There is **NO backward compatibility requirement**.
+
+- Do NOT add function aliases or deprecation macros for renamed functions
+- Do NOT keep old API signatures "for compatibility"
+- When refactoring, update all call sites directly - no shims or compatibility layers
+- Clean code now is better than technical debt for non-existent users
+
+**Example - What NOT to do:**
+```c
+// WRONG - No backward compatibility needed!
+#define old_function_name new_function_name  /* ❌ Delete old code instead */
+```
+
+**Example - What to do:**
+```c
+// CORRECT - Just update the function name and all call sites
+rx_err_t new_function_name(...)  /* ✓ Clean break, no compatibility layer */
+```
+
+## Constants and Macros Policy
+
+**Strict hierarchy for constants:**
+
+1. **Enums** - ALWAYS use for ALL integer constants (mandatory)
+2. **static const** - ONLY for floating-point values (enum can't hold floats)
+3. **Macros** - ONLY for these 4 specific cases:
+   - Reducing duplicated code (function-like macros: `RX_RETURN_ON_ERROR`)
+   - Conditional compilation (optimization: `#if LOG_LEVEL >= k_log_error`)
+   - Hardware register addresses (`#define CMT0_BASE ((type*)0x00088000)`)
+   - Build configuration flags (`#ifdef __RX__`)
+
+**Never use macros for:**
+- Simple integer constants (use enum instead)
+- Simple floating-point constants (use static const instead)
+- Backward compatibility/function aliases (no releases = no compatibility)
+
+**Examples:**
+```c
+// ✓ CORRECT - Integer constants use enum
+typedef enum {
+    k_timeout_ms  = 1000,
+    k_max_retries = 3
+} limits_t;
+
+// ✓ CORRECT - Floats use const (enum limitation)
+static const float s_max_velocity_mps = 2.5f;
+
+// ✓ CORRECT - Function-like macro reduces duplication
+#define RX_RETURN_ON_ERROR(err, tag, msg) \
+    do { \
+        rx_err_t _err = (err); \
+        if (_err != k_rx_ok) { \
+            rx_log_error((tag), (msg)); \
+            return _err; \
+        } \
+    } while (0)
+
+// ❌ WRONG - Never use macro for simple constants
+#define TIMEOUT_MS 1000        // Should be enum!
+#define MAX_VELOCITY 2.5f      // Should be static const!
+#define old_func new_func      // No compatibility needed!
+```
+
 ## Project Overview
 
 **STAR (Simultaneous Tracking and Robotics)** - A distributed robotics platform with custom PCB hardware, embedded firmware, and high-level control software.
