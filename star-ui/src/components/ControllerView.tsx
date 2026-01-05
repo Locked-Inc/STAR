@@ -1,14 +1,29 @@
 import React from 'react';
 import { useGamepad } from '../hooks/useGamepad';
+import { useControllerConnection } from '../hooks/useControllerConnection';
 
 export const ControllerView: React.FC = () => {
-  const { connected, linearVel, angularVel } = useGamepad();
+  const gamepadState = useGamepad();
+  const { gatewayConnected } = useControllerConnection(gamepadState);
 
   return (
     <div style={{ padding: '20px', textAlign: 'center', fontFamily: 'sans-serif' }}>
       <h1>STAR Robot Controller</h1>
+
+      <div style={{ marginBottom: '20px' }}>
+        <span style={{ 
+          padding: '5px 10px', 
+          borderRadius: '4px', 
+          backgroundColor: gatewayConnected ? '#d4edda' : '#f8d7da',
+          color: gatewayConnected ? '#155724' : '#721c24',
+          fontSize: '0.9em',
+          fontWeight: 'bold'
+        }}>
+          Gateway: {gatewayConnected ? 'CONNECTED' : 'DISCONNECTED'}
+        </span>
+      </div>
       
-      {!connected ? (
+      {!gamepadState.connected ? (
         <div style={{ backgroundColor: '#fff3cd', padding: '20px', borderRadius: '8px', border: '1px solid #ffeeba' }}>
           <h2>Gamepad Disconnected</h2>
           <p>Please connect a gamepad and <strong>press any button</strong> to activate.</p>
@@ -20,30 +35,30 @@ export const ControllerView: React.FC = () => {
           <div style={{ display: 'flex', justifyContent: 'center', gap: '50px', marginTop: '30px' }}>
             <div>
               <h3>Linear (V)</h3>
-              <div style={{ fontSize: '2em', fontWeight: 'bold' }}>{linearVel.toFixed(2)}</div>
+              <div style={{ fontSize: '2em', fontWeight: 'bold' }}>{gamepadState.linearVel.toFixed(2)}</div>
               <div style={{ width: '20px', height: '100px', backgroundColor: '#eee', margin: '10px auto', position: 'relative' }}>
                 <div style={{ 
                   width: '100%', 
-                  height: `${Math.abs(linearVel) * 50}%`, 
-                  backgroundColor: linearVel >= 0 ? 'green' : 'red',
+                  height: `${Math.abs(gamepadState.linearVel) * 50}%`, 
+                  backgroundColor: gamepadState.linearVel >= 0 ? 'green' : 'red',
                   position: 'absolute',
-                  bottom: linearVel >= 0 ? '50%' : 'auto',
-                  top: linearVel < 0 ? '50%' : 'auto'
+                  bottom: gamepadState.linearVel >= 0 ? '50%' : 'auto',
+                  top: gamepadState.linearVel < 0 ? '50%' : 'auto'
                 }} />
               </div>
             </div>
 
             <div>
               <h3>Angular (ω)</h3>
-              <div style={{ fontSize: '2em', fontWeight: 'bold' }}>{angularVel.toFixed(2)}</div>
+              <div style={{ fontSize: '2em', fontWeight: 'bold' }}>{gamepadState.angularVel.toFixed(2)}</div>
               <div style={{ width: '100px', height: '20px', backgroundColor: '#eee', margin: '50px auto', position: 'relative' }}>
                 <div style={{ 
                   height: '100%', 
-                  width: `${Math.abs(angularVel) * 50}%`, 
+                  width: `${Math.abs(gamepadState.angularVel) * 50}%`, 
                   backgroundColor: 'blue',
                   position: 'absolute',
-                  left: angularVel >= 0 ? '50%' : 'auto',
-                  right: angularVel < 0 ? '50%' : 'auto'
+                  left: gamepadState.angularVel >= 0 ? '50%' : 'auto',
+                  right: gamepadState.angularVel < 0 ? '50%' : 'auto'
                 }} />
               </div>
             </div>
@@ -65,8 +80,8 @@ export const ControllerView: React.FC = () => {
                 borderRadius: '50%', 
                 backgroundColor: '#007bff', 
                 position: 'absolute',
-                top: `${50 - (linearVel * 40)}%`,
-                left: `${50 + (angularVel * 40)}%`,
+                top: `${50 - (gamepadState.linearVel * 40)}%`,
+                left: `${50 + (gamepadState.angularVel * 40)}%`,
                 transform: 'translate(-50%, -50%)',
                 transition: 'top 0.05s, left 0.05s'
               }} />
