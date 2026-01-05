@@ -24,7 +24,10 @@ extern "C" {
  * =============================================================================
  */
 
+#ifndef RX_SYSTEM_REGS_T_DEFINED
+#define RX_SYSTEM_REGS_T_DEFINED
 typedef mock_system_regs_t rx_system_regs_t;
+#endif
 
 /* Module stop bits for MSTPCRB register */
 typedef enum {
