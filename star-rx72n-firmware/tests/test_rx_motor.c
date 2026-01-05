@@ -1,7 +1,9 @@
+/* tests/test_rx_motor.c */
+
 /**
  * @file test_rx_motor.c
  * @brief Unit Tests for RX Motor Driver (GPTW-based)
- *
+ * @details
  * Tests motor initialization, duty cycle control, brake/coast modes
  * using the GPTW mock implementation.
  *

@@ -3,7 +3,7 @@
 /**
  * @file rx72n_gptw_regs.h
  * @brief RX72N GPTW (General PWM Timer) Register Definitions
- *
+ * @details
  * Register definitions for the General PWM Timer (GPTW) used for motor PWM
  * generation. The GPTW provides 32-bit resolution and is optimized for
  * motor control applications.
@@ -129,7 +129,7 @@ typedef struct {
  */
 
 /** @brief Channel spacing between GPTW registers */
-#define GPTW_CHANNEL_OFFSET 0x100
+#define GPTW_CHANNEL_OFFSET (0x100)
 
 /** @brief GPTW common registers base (tentative) */
 #define GPTW_COMMON_BASE ((rx_gptw_common_regs_t*)0x000D3000)
