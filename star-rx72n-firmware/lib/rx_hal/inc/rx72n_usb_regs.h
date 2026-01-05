@@ -147,8 +147,19 @@ typedef struct {
   volatile uint16_t lpsts;  /**< Low Power Status Register */
 } rx_usb_regs_t;
 
-#define USB0_BASE ((rx_usb_regs_t*)0x000A0000)
-#define USB0      (*USB0_BASE)
+/** @brief USB base address */
+typedef enum {
+  k_usb0_base_addr = 0x000A0000, /**< USB0 register base address */
+} rx_usb_addresses_t;
+
+/**
+ * @brief Get pointer to USB0 registers
+ * @return Volatile pointer to USB0 register structure
+ */
+static inline volatile rx_usb_regs_t* usb0(void)
+{
+  return (volatile rx_usb_regs_t*)k_usb0_base_addr;
+}
 
 /* USB0 SYSCFG Register Bit Definitions */
 typedef enum {

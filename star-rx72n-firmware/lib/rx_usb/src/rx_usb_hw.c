@@ -93,16 +93,16 @@ rx_err_t rx_usb_hw_init(void)
 
   /* 1. Enable USB0 module clock */
   /* Unlock protection */
-  SYSTEM.prcr = k_prcr_unlock;
+  system_regs()->prcr = k_prcr_unlock;
 
   /* Clear module stop bit for USB0 (bit 19 in MSTPCRB) */
-  SYSTEM.mstpcrb &= ~(1UL << k_mstpb_usb0);
+  system_regs()->mstpcrb &= ~(1UL << k_mstpb_usb0);
 
   /* Lock protection */
-  SYSTEM.prcr = k_prcr_lock;
+  system_regs()->prcr = k_prcr_lock;
 
   /* 2. Disable USB module before configuration */
-  USB0.syscfg = k_usb_syscfg_disabled;
+  usb0()->syscfg = k_usb_syscfg_disabled;
 
   /* 3. Wait for USB PLL to stabilize */
   /* Note: USB requires 48 MHz clock from main PLL */
@@ -117,11 +117,11 @@ rx_err_t rx_usb_hw_init(void)
   /* DRPD = 0: Disable D+/D- pull-down (function mode) */
   /* DPRPU = 0: D+ pull-up disabled initially (enabled on attach) */
   /* USBE = 0: USB module disabled initially */
-  USB0.syscfg = k_usb_syscfg_disabled;
+  usb0()->syscfg = k_usb_syscfg_disabled;
 
   /* 5. Configure USB clock */
   /* SCKE = 1: Enable USB clock */
-  USB0.syscfg |= k_usb_syscfg_scke;
+  usb0()->syscfg |= k_usb_syscfg_scke;
 
   /* Wait for clock to stabilize */
   uint32_t clock_ticks = k_usb_clock_stabilization_ms / k_threadx_ms_per_tick;
@@ -131,26 +131,26 @@ rx_err_t rx_usb_hw_init(void)
   tx_thread_sleep(clock_ticks);
 
   /* 6. Enable USB module */
-  USB0.syscfg |= k_usb_syscfg_usbe;
+  usb0()->syscfg |= k_usb_syscfg_usbe;
 
   /* 7. Configure interrupts */
   /* Enable: VBUS, device state, control transfer, buffer ready/empty */
-  USB0.intenb0 = k_usb_intenb0_vbse | k_usb_intenb0_dvse | k_usb_intenb0_ctre |
+  usb0()->intenb0 = k_usb_intenb0_vbse | k_usb_intenb0_dvse | k_usb_intenb0_ctre |
                  k_usb_intenb0_brdye | k_usb_intenb0_bempe;
 
   /* 8. Configure Interrupt Controller (ICU) */
   /* Clear pending interrupt */
-  ICU.ir[k_vect_usb0_usbi] = 0;
+  icu()->ir[k_vect_usb0_usbi] = 0;
 
   /* Set interrupt priority */
-  ICU.ipr[k_vect_usb0_usbi] = k_usb_interrupt_priority;
+  icu()->ipr[k_vect_usb0_usbi] = k_usb_interrupt_priority;
 
   /* Enable interrupt in IER */
-  ICU.ier[k_vect_usb0_usbi / k_icu_bits_per_ier_register] |=
+  icu()->ier[k_vect_usb0_usbi / k_icu_bits_per_ier_register] |=
     (1 << (k_vect_usb0_usbi % k_icu_bits_per_ier_register));
 
   /* 9. Set default control pipe max packet size (64 bytes for FS) */
-  USB0.dcpmaxp = k_usb_cdc_max_packet_fs;
+  usb0()->dcpmaxp = k_usb_cdc_max_packet_fs;
 
   s_hw_initialized = true;
 
@@ -171,17 +171,17 @@ rx_err_t rx_usb_hw_deinit(void)
   rx_log_debug(s_tag, "Deinitializing USB0 hardware");
 
   /* Disable USB module */
-  USB0.syscfg = k_usb_syscfg_disabled;
+  usb0()->syscfg = k_usb_syscfg_disabled;
 
   /* Disable interrupt in ICU */
-  ICU.ier[k_vect_usb0_usbi / k_icu_bits_per_ier_register] &=
+  icu()->ier[k_vect_usb0_usbi / k_icu_bits_per_ier_register] &=
     ~(1 << (k_vect_usb0_usbi % k_icu_bits_per_ier_register));
-  ICU.ir[k_vect_usb0_usbi] = 0;
+  icu()->ir[k_vect_usb0_usbi] = 0;
 
   /* Disable USB0 module clock */
-  SYSTEM.prcr = k_prcr_unlock;
-  SYSTEM.mstpcrb |= (1UL << k_mstpb_usb0);
-  SYSTEM.prcr = k_prcr_lock;
+  system_regs()->prcr = k_prcr_unlock;
+  system_regs()->mstpcrb |= (1UL << k_mstpb_usb0);
+  system_regs()->prcr = k_prcr_lock;
 
   s_hw_initialized = false;
 
@@ -202,7 +202,7 @@ rx_err_t rx_usb_hw_attach(void)
   rx_log_debug(s_tag, "Attaching to USB bus");
 
   /* Enable D+ pull-up resistor to signal device presence */
-  USB0.syscfg |= k_usb_syscfg_dprpu;
+  usb0()->syscfg |= k_usb_syscfg_dprpu;
 
   return k_rx_ok;
 }
@@ -219,7 +219,7 @@ rx_err_t rx_usb_hw_detach(void)
   rx_log_debug(s_tag, "Detaching from USB bus");
 
   /* Disable D+ pull-up resistor */
-  USB0.syscfg &= ~k_usb_syscfg_dprpu;
+  usb0()->syscfg &= ~k_usb_syscfg_dprpu;
 
   return k_rx_ok;
 }
@@ -239,12 +239,12 @@ uint32_t rx_usb_hw_fifo_read(uint8_t pipe, uint8_t* data, uint32_t max_len)
   }
 
   /* Select pipe for CFIFO access */
-  USB0.cfifosel = (pipe & k_usb_fifosel_curpipe_mask);
+  usb0()->cfifosel = (pipe & k_usb_fifosel_curpipe_mask);
 
   /* Wait for FIFO ready (hardware polling) */
   /* NOTE: Busy-wait appropriate - microsecond-scale hardware readiness check */
   volatile uint32_t timeout = k_usb_fifo_timeout_iterations;
-  while (!(USB0.cfifoctr & k_usb_fifoctr_frdy) && timeout--) {
+  while (!(usb0()->cfifoctr & k_usb_fifoctr_frdy) && timeout--) {
     __asm__ volatile("nop");
   }
 
@@ -253,18 +253,18 @@ uint32_t rx_usb_hw_fifo_read(uint8_t pipe, uint8_t* data, uint32_t max_len)
   }
 
   /* Get received data length */
-  uint32_t len = USB0.cfifoctr & k_usb_fifoctr_dtln_mask;
+  uint32_t len = usb0()->cfifoctr & k_usb_fifoctr_dtln_mask;
   if (len > max_len) {
     len = max_len;
   }
 
   /* Read data from FIFO */
   for (uint32_t i = 0; i < len; i++) {
-    data[i] = (uint8_t)(USB0.cfifo & k_usb_fifo_byte_mask);
+    data[i] = (uint8_t)(usb0()->cfifo & k_usb_fifo_byte_mask);
   }
 
   /* Clear buffer */
-  USB0.cfifoctr |= k_usb_fifoctr_bclr;
+  usb0()->cfifoctr |= k_usb_fifoctr_bclr;
 
   return len;
 }
@@ -284,12 +284,12 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
   }
 
   /* Select pipe for CFIFO access with write direction */
-  USB0.cfifosel = (pipe & k_usb_fifosel_curpipe_mask) | k_usb_fifosel_isel;
+  usb0()->cfifosel = (pipe & k_usb_fifosel_curpipe_mask) | k_usb_fifosel_isel;
 
   /* Wait for FIFO ready (hardware polling) */
   /* NOTE: Busy-wait appropriate - microsecond-scale hardware readiness check */
   volatile uint32_t timeout = k_usb_fifo_timeout_iterations;
-  while (!(USB0.cfifoctr & k_usb_fifoctr_frdy) && timeout--) {
+  while (!(usb0()->cfifoctr & k_usb_fifoctr_frdy) && timeout--) {
     __asm__ volatile("nop");
   }
 
@@ -299,11 +299,11 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
 
   /* Write data to FIFO */
   for (uint32_t i = 0; i < len; i++) {
-    USB0.cfifo = data[i];
+    usb0()->cfifo = data[i];
   }
 
   /* Set buffer valid to signal data ready for transmission */
-  USB0.cfifoctr |= k_usb_fifoctr_bval;
+  usb0()->cfifoctr |= k_usb_fifoctr_bval;
 
   return len;
 }
@@ -313,7 +313,7 @@ uint32_t rx_usb_hw_fifo_write(uint8_t pipe, const uint8_t* data, uint32_t len)
  */
 rx_usb_state_t rx_usb_hw_get_bus_state(void)
 {
-  uint16_t intsts0 = USB0.intsts0;
+  uint16_t intsts0 = usb0()->intsts0;
   uint16_t dvsq    = (intsts0 & k_usb_intsts0_dvsq_mask);
 
   switch (dvsq) {
@@ -337,7 +337,7 @@ rx_usb_state_t rx_usb_hw_get_bus_state(void)
  */
 void rx_usb_hw_set_address(uint8_t address)
 {
-  USB0.usbaddr = address & k_usb_address_mask_hw;
+  usb0()->usbaddr = address & k_usb_address_mask_hw;
   rx_log_debug(s_tag, "USB address set");
 }
 
@@ -355,7 +355,7 @@ rx_err_t rx_usb_hw_configure_pipe(uint8_t  pipe,
   }
 
   /* Select pipe for configuration */
-  USB0.pipesel = pipe;
+  usb0()->pipesel = pipe;
 
   /* Configure pipe */
   uint16_t cfg = (endpoint & k_usb_pipecfg_epnum_mask) | type;
@@ -364,11 +364,11 @@ rx_err_t rx_usb_hw_configure_pipe(uint8_t  pipe,
     cfg |= k_usb_pipecfg_dir; /* DIR=1 for IN (device to host) */
   }
 
-  USB0.pipecfg  = cfg;
-  USB0.pipemaxp = max_packet;
+  usb0()->pipecfg  = cfg;
+  usb0()->pipemaxp = max_packet;
 
   /* Clear pipe */
-  volatile uint16_t* pipe_ctr = &USB0.pipe1ctr + (pipe - 1);
+  volatile uint16_t* pipe_ctr = &usb0()->pipe1ctr + (pipe - 1);
   *pipe_ctr |= k_usb_pipectr_aclrm;
   *pipe_ctr &= ~k_usb_pipectr_aclrm;
 

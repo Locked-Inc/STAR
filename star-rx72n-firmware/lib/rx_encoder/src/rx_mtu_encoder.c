@@ -144,15 +144,17 @@ rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
   rx_log_info(s_tag, "Info");
 
   /* Enable MTU module (clear module stop bit) */
-  SYSTEM.prcr = (k_prcr_key << k_prcr_key_shift) | k_prcr_unlock_mtu; /* Enable writes to MSTPCR */
+  system_regs()->prcr =
+    (k_prcr_key << k_prcr_key_shift) | k_prcr_unlock_mtu; /* Enable writes to MSTPCR */
 
   if (channel <= k_mtu_channel_4) {
-    SYSTEM.mstpcra &= ~(1 << k_mtu_mstpcra_mtu0_4_bit); /* MTU0-MTU4 */
+    system_regs()->mstpcra &= ~(1 << k_mtu_mstpcra_mtu0_4_bit); /* MTU0-MTU4 */
   } else {
-    SYSTEM.mstpcra &= ~(1 << k_mtu_mstpcra_mtu6_7_bit); /* MTU6-MTU7 */
+    system_regs()->mstpcra &= ~(1 << k_mtu_mstpcra_mtu6_7_bit); /* MTU6-MTU7 */
   }
 
-  SYSTEM.prcr = (k_prcr_key << k_prcr_key_shift) | k_prcr_lock_all; /* Lock MSTPCR */
+  system_regs()->prcr =
+    (k_prcr_key << k_prcr_key_shift) | k_prcr_lock_all; /* Lock MSTPCR */
 
   /* Stop timer before configuration */
   rx_mtu_stop(channel);
