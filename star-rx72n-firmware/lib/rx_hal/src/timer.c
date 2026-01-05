@@ -76,7 +76,7 @@ extern void _tx_timer_interrupt(void);
 void cmt0_isr(void)
 {
   /* Clear interrupt flag (write 0 to BSR bit) */
-  CMT0.cmcr; /* Read to clear interrupt flag */
+  (void)cmt0()->cmcr; /* Read to clear interrupt flag */
 
   /* Call ThreadX timer interrupt handler */
   _tx_timer_interrupt();
@@ -105,32 +105,32 @@ rx_err_t timer_init(void)
   rx_log_info("TIMER", "Initializing CMT0 for ThreadX tick");
 
   /* Stop CMT0 if running */
-  CMT_CTRL.cmstr0 &= ~k_cmt0_cmstr_start_bit;
+  cmt_ctrl()->cmstr0 &= ~k_cmt0_cmstr_start_bit;
 
   /* Configure CMT0 */
   /* CMCR: Clock = PCLK/128, interrupt enabled */
-  CMT0.cmcr = k_cmt0_cmcr_config;
+  cmt0()->cmcr = k_cmt0_cmcr_config;
 
   /* Set compare match value for 100 Hz tick
      * CMCOR = (60,000,000 / 128 / 100) - 1 = 4687 */
-  CMT0.cmcor = k_cmt0_compare_match;
+  cmt0()->cmcor = k_cmt0_compare_match;
 
   /* Reset counter */
-  CMT0.cmcnt = k_cmt0_counter_init;
+  cmt0()->cmcnt = k_cmt0_counter_init;
 
   /* Configure interrupt controller (ICU) */
   /* Clear any pending interrupt */
-  ICU.ir[k_vect_cmt0_cmi0] = k_cmt0_counter_init;
+  icu()->ir[k_vect_cmt0_cmi0] = k_cmt0_counter_init;
 
   /* Set interrupt priority (3 out of 15) */
-  ICU.ipr[k_vect_cmt0_cmi0] = k_cmt0_irq_priority;
+  icu()->ipr[k_vect_cmt0_cmi0] = k_cmt0_irq_priority;
 
   /* Enable CMT0 interrupt in ICU */
-  ICU.ier[k_vect_cmt0_cmi0 / k_cmt0_ier_bits_per_reg] |=
+  icu()->ier[k_vect_cmt0_cmi0 / k_cmt0_ier_bits_per_reg] |=
     (1 << (k_vect_cmt0_cmi0 % k_cmt0_ier_bits_per_reg));
 
   /* Start CMT0 */
-  CMT_CTRL.cmstr0 |= k_cmt0_cmstr_start_bit;
+  cmt_ctrl()->cmstr0 |= k_cmt0_cmstr_start_bit;
 
   /* Enable interrupts globally (set I flag in PSW) */
   __asm__ volatile("setpsw i");
@@ -150,7 +150,7 @@ rx_err_t timer_stop(void)
   rx_log_info("TIMER", "Stopping CMT0");
 
   /* Stop CMT0 */
-  CMT_CTRL.cmstr0 &= ~k_cmt0_cmstr_start_bit;
+  cmt_ctrl()->cmstr0 &= ~k_cmt0_cmstr_start_bit;
 
   return k_rx_ok;
 }
@@ -167,7 +167,7 @@ rx_err_t timer_get_count(uint16_t* count)
 {
   RX_CHECK_NULL_PTR(count, "TIMER", "Count pointer is NULL");
 
-  *count = CMT0.cmcnt;
+  *count = cmt0()->cmcnt;
 
   return k_rx_ok;
 }

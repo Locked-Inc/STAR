@@ -179,7 +179,7 @@ static void internal_trigger_tx_if_idle(void)
   }
 
   /* Check if Pipe 1 is not busy (PBUSY bit = 0 means idle) */
-  if ((USB0.pipe1ctr & k_usb_pipectr_pbusy) == 0) {
+  if ((usb0()->pipe1ctr & k_usb_pipectr_pbusy) == 0) {
     /* Pipe is idle, trigger transmission */
     rx_usb_cdc_handle_bulk_in();
   }

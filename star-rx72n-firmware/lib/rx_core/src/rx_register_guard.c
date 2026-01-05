@@ -90,24 +90,24 @@ static register_guard_state_t s_state = {0};
  */
 static void internal_capture_pdr(void)
 {
-  s_state.pdr.port0_pdr = PORT0.PDR;
-  s_state.pdr.port1_pdr = PORT1.PDR;
-  s_state.pdr.port2_pdr = PORT2.PDR;
-  s_state.pdr.port3_pdr = PORT3.PDR;
-  s_state.pdr.port4_pdr = PORT4.PDR;
-  s_state.pdr.port5_pdr = PORT5.PDR;
-  s_state.pdr.port6_pdr = PORT6.PDR;
-  s_state.pdr.port7_pdr = PORT7.PDR;
-  s_state.pdr.port8_pdr = PORT8.PDR;
-  s_state.pdr.port9_pdr = PORT9.PDR;
-  s_state.pdr.porta_pdr = PORTA.PDR;
-  s_state.pdr.portb_pdr = PORTB.PDR;
-  s_state.pdr.portc_pdr = PORTC.PDR;
-  s_state.pdr.portd_pdr = PORTD.PDR;
-  s_state.pdr.porte_pdr = PORTE.PDR;
-  s_state.pdr.portf_pdr = PORTF.PDR;
-  s_state.pdr.portg_pdr = PORTG.PDR;
-  s_state.pdr.portj_pdr = PORTJ.PDR;
+  s_state.pdr.port0_pdr = port0()->pdr;
+  s_state.pdr.port1_pdr = port1()->pdr;
+  s_state.pdr.port2_pdr = port2()->pdr;
+  s_state.pdr.port3_pdr = port3()->pdr;
+  s_state.pdr.port4_pdr = port4()->pdr;
+  s_state.pdr.port5_pdr = port5()->pdr;
+  s_state.pdr.port6_pdr = port6()->pdr;
+  s_state.pdr.port7_pdr = port7()->pdr;
+  s_state.pdr.port8_pdr = port8()->pdr;
+  s_state.pdr.port9_pdr = port9()->pdr;
+  s_state.pdr.porta_pdr = porta()->pdr;
+  s_state.pdr.portb_pdr = portb()->pdr;
+  s_state.pdr.portc_pdr = portc()->pdr;
+  s_state.pdr.portd_pdr = portd()->pdr;
+  s_state.pdr.porte_pdr = porte()->pdr;
+  s_state.pdr.portf_pdr = portf()->pdr;
+  s_state.pdr.portg_pdr = portg()->pdr;
+  s_state.pdr.portj_pdr = portj()->pdr;
 }
 
 /**
@@ -115,10 +115,10 @@ static void internal_capture_pdr(void)
  */
 static void internal_capture_mstpcr(void)
 {
-  s_state.mstpcr.mstpcra = SYSTEM.MSTPCRA;
-  s_state.mstpcr.mstpcrb = SYSTEM.MSTPCRB;
-  s_state.mstpcr.mstpcrc = SYSTEM.MSTPCRC;
-  s_state.mstpcr.mstpcrd = SYSTEM.MSTPCRD;
+  s_state.mstpcr.mstpcra = system_regs()->mstpcra;
+  s_state.mstpcr.mstpcrb = system_regs()->mstpcrb;
+  s_state.mstpcr.mstpcrc = system_regs()->mstpcrc;
+  s_state.mstpcr.mstpcrd = system_regs()->mstpcrd;
 }
 
 /**
@@ -127,76 +127,76 @@ static void internal_capture_mstpcr(void)
 static void internal_refresh_pdr(void)
 {
   /* Check and restore each PORT PDR */
-  if (PORT0.PDR != s_state.pdr.port0_pdr) {
-    PORT0.PDR = s_state.pdr.port0_pdr;
+  if (port0()->pdr != s_state.pdr.port0_pdr) {
+    port0()->pdr = s_state.pdr.port0_pdr;
     s_state.corrections++;
   }
-  if (PORT1.PDR != s_state.pdr.port1_pdr) {
-    PORT1.PDR = s_state.pdr.port1_pdr;
+  if (port1()->pdr != s_state.pdr.port1_pdr) {
+    port1()->pdr = s_state.pdr.port1_pdr;
     s_state.corrections++;
   }
-  if (PORT2.PDR != s_state.pdr.port2_pdr) {
-    PORT2.PDR = s_state.pdr.port2_pdr;
+  if (port2()->pdr != s_state.pdr.port2_pdr) {
+    port2()->pdr = s_state.pdr.port2_pdr;
     s_state.corrections++;
   }
-  if (PORT3.PDR != s_state.pdr.port3_pdr) {
-    PORT3.PDR = s_state.pdr.port3_pdr;
+  if (port3()->pdr != s_state.pdr.port3_pdr) {
+    port3()->pdr = s_state.pdr.port3_pdr;
     s_state.corrections++;
   }
-  if (PORT4.PDR != s_state.pdr.port4_pdr) {
-    PORT4.PDR = s_state.pdr.port4_pdr;
+  if (port4()->pdr != s_state.pdr.port4_pdr) {
+    port4()->pdr = s_state.pdr.port4_pdr;
     s_state.corrections++;
   }
-  if (PORT5.PDR != s_state.pdr.port5_pdr) {
-    PORT5.PDR = s_state.pdr.port5_pdr;
+  if (port5()->pdr != s_state.pdr.port5_pdr) {
+    port5()->pdr = s_state.pdr.port5_pdr;
     s_state.corrections++;
   }
-  if (PORT6.PDR != s_state.pdr.port6_pdr) {
-    PORT6.PDR = s_state.pdr.port6_pdr;
+  if (port6()->pdr != s_state.pdr.port6_pdr) {
+    port6()->pdr = s_state.pdr.port6_pdr;
     s_state.corrections++;
   }
-  if (PORT7.PDR != s_state.pdr.port7_pdr) {
-    PORT7.PDR = s_state.pdr.port7_pdr;
+  if (port7()->pdr != s_state.pdr.port7_pdr) {
+    port7()->pdr = s_state.pdr.port7_pdr;
     s_state.corrections++;
   }
-  if (PORT8.PDR != s_state.pdr.port8_pdr) {
-    PORT8.PDR = s_state.pdr.port8_pdr;
+  if (port8()->pdr != s_state.pdr.port8_pdr) {
+    port8()->pdr = s_state.pdr.port8_pdr;
     s_state.corrections++;
   }
-  if (PORT9.PDR != s_state.pdr.port9_pdr) {
-    PORT9.PDR = s_state.pdr.port9_pdr;
+  if (port9()->pdr != s_state.pdr.port9_pdr) {
+    port9()->pdr = s_state.pdr.port9_pdr;
     s_state.corrections++;
   }
-  if (PORTA.PDR != s_state.pdr.porta_pdr) {
-    PORTA.PDR = s_state.pdr.porta_pdr;
+  if (porta()->pdr != s_state.pdr.porta_pdr) {
+    porta()->pdr = s_state.pdr.porta_pdr;
     s_state.corrections++;
   }
-  if (PORTB.PDR != s_state.pdr.portb_pdr) {
-    PORTB.PDR = s_state.pdr.portb_pdr;
+  if (portb()->pdr != s_state.pdr.portb_pdr) {
+    portb()->pdr = s_state.pdr.portb_pdr;
     s_state.corrections++;
   }
-  if (PORTC.PDR != s_state.pdr.portc_pdr) {
-    PORTC.PDR = s_state.pdr.portc_pdr;
+  if (portc()->pdr != s_state.pdr.portc_pdr) {
+    portc()->pdr = s_state.pdr.portc_pdr;
     s_state.corrections++;
   }
-  if (PORTD.PDR != s_state.pdr.portd_pdr) {
-    PORTD.PDR = s_state.pdr.portd_pdr;
+  if (portd()->pdr != s_state.pdr.portd_pdr) {
+    portd()->pdr = s_state.pdr.portd_pdr;
     s_state.corrections++;
   }
-  if (PORTE.PDR != s_state.pdr.porte_pdr) {
-    PORTE.PDR = s_state.pdr.porte_pdr;
+  if (porte()->pdr != s_state.pdr.porte_pdr) {
+    porte()->pdr = s_state.pdr.porte_pdr;
     s_state.corrections++;
   }
-  if (PORTF.PDR != s_state.pdr.portf_pdr) {
-    PORTF.PDR = s_state.pdr.portf_pdr;
+  if (portf()->pdr != s_state.pdr.portf_pdr) {
+    portf()->pdr = s_state.pdr.portf_pdr;
     s_state.corrections++;
   }
-  if (PORTG.PDR != s_state.pdr.portg_pdr) {
-    PORTG.PDR = s_state.pdr.portg_pdr;
+  if (portg()->pdr != s_state.pdr.portg_pdr) {
+    portg()->pdr = s_state.pdr.portg_pdr;
     s_state.corrections++;
   }
-  if (PORTJ.PDR != s_state.pdr.portj_pdr) {
-    PORTJ.PDR = s_state.pdr.portj_pdr;
+  if (portj()->pdr != s_state.pdr.portj_pdr) {
+    portj()->pdr = s_state.pdr.portj_pdr;
     s_state.corrections++;
   }
 }
@@ -214,16 +214,16 @@ static void internal_refresh_mstpcr(void)
   bool needs_update = false;
 
   /* Check if any MSTPCR needs update */
-  if (SYSTEM.MSTPCRA != s_state.mstpcr.mstpcra) {
+  if (system_regs()->mstpcra != s_state.mstpcr.mstpcra) {
     needs_update = true;
   }
-  if (SYSTEM.MSTPCRB != s_state.mstpcr.mstpcrb) {
+  if (system_regs()->mstpcrb != s_state.mstpcr.mstpcrb) {
     needs_update = true;
   }
-  if (SYSTEM.MSTPCRC != s_state.mstpcr.mstpcrc) {
+  if (system_regs()->mstpcrc != s_state.mstpcr.mstpcrc) {
     needs_update = true;
   }
-  if (SYSTEM.MSTPCRD != s_state.mstpcr.mstpcrd) {
+  if (system_regs()->mstpcrd != s_state.mstpcr.mstpcrd) {
     needs_update = true;
   }
 
@@ -241,26 +241,28 @@ static void internal_refresh_mstpcr(void)
   __asm__ volatile("mvfc psw, %0" : "=r"(psw));
   __asm__ volatile("clrpsw i"); /* Disable interrupts during unlock */
 
-  SYSTEM.PRCR = (k_prcr_key << k_prcr_key_shift) | k_prcr_lock_prc1; /* Unlock MSTPCR writes */
+  system_regs()->prcr =
+    (k_prcr_key << k_prcr_key_shift) | k_prcr_lock_prc1; /* Unlock MSTPCR writes */
 
-  if (SYSTEM.MSTPCRA != s_state.mstpcr.mstpcra) {
-    SYSTEM.MSTPCRA = s_state.mstpcr.mstpcra;
+  if (system_regs()->mstpcra != s_state.mstpcr.mstpcra) {
+    system_regs()->mstpcra = s_state.mstpcr.mstpcra;
     s_state.corrections++;
   }
-  if (SYSTEM.MSTPCRB != s_state.mstpcr.mstpcrb) {
-    SYSTEM.MSTPCRB = s_state.mstpcr.mstpcrb;
+  if (system_regs()->mstpcrb != s_state.mstpcr.mstpcrb) {
+    system_regs()->mstpcrb = s_state.mstpcr.mstpcrb;
     s_state.corrections++;
   }
-  if (SYSTEM.MSTPCRC != s_state.mstpcr.mstpcrc) {
-    SYSTEM.MSTPCRC = s_state.mstpcr.mstpcrc;
+  if (system_regs()->mstpcrc != s_state.mstpcr.mstpcrc) {
+    system_regs()->mstpcrc = s_state.mstpcr.mstpcrc;
     s_state.corrections++;
   }
-  if (SYSTEM.MSTPCRD != s_state.mstpcr.mstpcrd) {
-    SYSTEM.MSTPCRD = s_state.mstpcr.mstpcrd;
+  if (system_regs()->mstpcrd != s_state.mstpcr.mstpcrd) {
+    system_regs()->mstpcrd = s_state.mstpcr.mstpcrd;
     s_state.corrections++;
   }
 
-  SYSTEM.PRCR = (k_prcr_key << k_prcr_key_shift) | k_prcr_lock_all; /* Lock MSTPCR writes */
+  system_regs()->prcr =
+    (k_prcr_key << k_prcr_key_shift) | k_prcr_lock_all; /* Lock MSTPCR writes */
 
   __asm__ volatile("mvtc %0, psw" : : "r"(psw)); /* Restore interrupt state */
 }
