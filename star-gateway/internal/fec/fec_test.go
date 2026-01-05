@@ -192,7 +192,9 @@ func TestConvolutionalEncoder_Reset(t *testing.T) {
 	enc := NewConvolutionalEncoder()
 
 	// Encode something to change state
-	enc.Encode([]byte{0xFF})
+	if _, err := enc.Encode([]byte{0xFF}); err != nil {
+		t.Fatalf("Encode() error = %v", err)
+	}
 
 	// After encode, state should be 0 due to tail bits
 	if enc.state != 0 {
@@ -405,8 +407,12 @@ func TestChaseCombiner_AddMultipleTransmissions(t *testing.T) {
 	soft1 := []SoftBit{50, -50, 0, 100}
 	soft2 := []SoftBit{50, -50, 0, 27}
 
-	c.Add(soft1)
-	c.Add(soft2)
+	if err := c.Add(soft1); err != nil {
+		t.Fatalf("Add(soft1) error = %v", err)
+	}
+	if err := c.Add(soft2); err != nil {
+		t.Fatalf("Add(soft2) error = %v", err)
+	}
 
 	if c.Count() != 2 {
 		t.Errorf("Count() = %d, want 2", c.Count())
@@ -426,7 +432,9 @@ func TestChaseCombiner_AddMultipleTransmissions(t *testing.T) {
 func TestChaseCombiner_AddLengthMismatch(t *testing.T) {
 	c := NewChaseCombiner(nil)
 
-	c.Add([]SoftBit{1, 2, 3, 4})
+	if err := c.Add([]SoftBit{1, 2, 3, 4}); err != nil {
+		t.Fatalf("Add() error = %v", err)
+	}
 	err := c.Add([]SoftBit{1, 2, 3}) // Different length
 
 	if err != ErrSoftBitsLengthMismatch {
@@ -437,8 +445,12 @@ func TestChaseCombiner_AddLengthMismatch(t *testing.T) {
 func TestChaseCombiner_AddMaxExceeded(t *testing.T) {
 	c := NewChaseCombiner(&CombinerConfig{MaxCombines: 2})
 
-	c.Add([]SoftBit{1, 2})
-	c.Add([]SoftBit{3, 4})
+	if err := c.Add([]SoftBit{1, 2}); err != nil {
+		t.Fatalf("Add() error = %v", err)
+	}
+	if err := c.Add([]SoftBit{3, 4}); err != nil {
+		t.Fatalf("Add() error = %v", err)
+	}
 
 	err := c.Add([]SoftBit{5, 6})
 	if err != ErrCombinerFull {
@@ -453,8 +465,12 @@ func TestChaseCombiner_AddMaxExceeded(t *testing.T) {
 func TestChaseCombiner_Reset(t *testing.T) {
 	c := NewChaseCombiner(nil)
 
-	c.Add([]SoftBit{1, 2, 3})
-	c.Add([]SoftBit{4, 5, 6})
+	if err := c.Add([]SoftBit{1, 2, 3}); err != nil {
+		t.Fatalf("Add() error = %v", err)
+	}
+	if err := c.Add([]SoftBit{4, 5, 6}); err != nil {
+		t.Fatalf("Add() error = %v", err)
+	}
 
 	c.Reset()
 
@@ -481,12 +497,16 @@ func TestChaseCombiner_CanAdd(t *testing.T) {
 		t.Errorf("CanAdd() = false before any adds")
 	}
 
-	c.Add([]SoftBit{1})
+	if err := c.Add([]SoftBit{1}); err != nil {
+		t.Fatalf("Add() error = %v", err)
+	}
 	if !c.CanAdd() {
 		t.Errorf("CanAdd() = false after 1 add")
 	}
 
-	c.Add([]SoftBit{2})
+	if err := c.Add([]SoftBit{2}); err != nil {
+		t.Fatalf("Add() error = %v", err)
+	}
 	if c.CanAdd() {
 		t.Errorf("CanAdd() = true after max adds")
 	}
@@ -497,8 +517,12 @@ func TestChaseCombiner_Clamping(t *testing.T) {
 
 	// Add max positive values repeatedly to test clamping
 	maxSoft := []SoftBit{SoftBitMax, SoftBitMax}
-	c.Add(maxSoft)
-	c.Add(maxSoft)
+	if err := c.Add(maxSoft); err != nil {
+		t.Fatalf("Add() error = %v", err)
+	}
+	if err := c.Add(maxSoft); err != nil {
+		t.Fatalf("Add() error = %v", err)
+	}
 
 	combined := c.Combined()
 
@@ -513,8 +537,12 @@ func TestChaseCombiner_NegativeClamping(t *testing.T) {
 
 	// Add min negative values repeatedly to test clamping
 	minSoft := []SoftBit{SoftBitMin, SoftBitMin}
-	c.Add(minSoft)
-	c.Add(minSoft)
+	if err := c.Add(minSoft); err != nil {
+		t.Fatalf("Add() error = %v", err)
+	}
+	if err := c.Add(minSoft); err != nil {
+		t.Fatalf("Add() error = %v", err)
+	}
 
 	combined := c.Combined()
 
@@ -558,8 +586,12 @@ func TestChaseCombining_ImprovesDecode(t *testing.T) {
 
 	// Combine soft bits
 	combiner := NewChaseCombiner(nil)
-	combiner.Add(noisySoft1)
-	combiner.Add(noisySoft2)
+	if err := combiner.Add(noisySoft1); err != nil {
+		t.Fatalf("Add(noisySoft1) error = %v", err)
+	}
+	if err := combiner.Add(noisySoft2); err != nil {
+		t.Fatalf("Add(noisySoft2) error = %v", err)
+	}
 
 	combined := combiner.Combined()
 
