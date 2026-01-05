@@ -13,14 +13,14 @@
 - [x] Task: Implement message handler to pass tests (Green Phase)
 - [x] Task: Implement safety watchdog: Auto-stop robot if no packet received for >200ms
 - [x] Task: Add logging for received control packets
-- [~] Task: Conductor - User Manual Verification 'Phase 2: Gateway WebSocket Implementation (Go)' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 2: Gateway WebSocket Implementation (Go)' (Protocol in workflow.md) <!-- 215dab018859150692ac7de3e6691460bdac3529 -->
 
 ## Phase 3: UI Gamepad Integration (TypeScript)
-- [ ] Task: Implement `useGamepad` custom hook in `star-ui/src/hooks/useGamepad.ts`
-- [ ] Task: Write unit tests for `useGamepad` using mocked `navigator.getGamepads` (Red Phase)
-- [ ] Task: Implement polling loop and connection logic to pass tests (Green Phase)
-- [ ] Task: Create `ControllerView` component with "Press any button" prompt and stick visualization
-- [ ] Task: Conductor - User Manual Verification 'Phase 3: UI Gamepad Integration (TypeScript)' (Protocol in workflow.md)
+- [x] Task: Implement `useGamepad` custom hook in `star-ui/src/hooks/useGamepad.ts`
+- [x] Task: Write unit tests for `useGamepad` using mocked `navigator.getGamepads` (Red Phase)
+- [x] Task: Implement polling loop and connection logic to pass tests (Green Phase)
+- [x] Task: Create `ControllerView` component with "Press any button" prompt and stick visualization
+- [~] Task: Conductor - User Manual Verification 'Phase 3: UI Gamepad Integration (TypeScript)' (Protocol in workflow.md)
 
 ## Phase 4: UI WebSocket & Safety Integration (TypeScript)
 - [ ] Task: Implement `ControllerService` to manage the `/ws/controller` connection
