@@ -432,16 +432,6 @@ func (s *StopAndWait) waitForAck() (*frame.Frame, error) {
 	}
 }
 
-// sendAckUnlocked sends an ACK frame (caller must hold mutex).
-func (s *StopAndWait) sendAckUnlocked(seq uint16) error {
-	return s.sendControlFrame(frame.FrameTypeAck, seq)
-}
-
-// sendNackUnlocked sends a NACK frame (caller must hold mutex).
-func (s *StopAndWait) sendNackUnlocked(seq uint16) error {
-	return s.sendControlFrame(frame.FrameTypeNack, seq)
-}
-
 // sendNack sends a NACK frame.
 func (s *StopAndWait) sendNack(seq uint16) error {
 	return s.sendControlFrame(frame.FrameTypeNack, seq)
