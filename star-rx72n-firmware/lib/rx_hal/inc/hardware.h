@@ -348,40 +348,178 @@ rx_err_t rspi_peripheral_write_ready(uint8_t channel, bool* ready);
 rx_err_t rspi_deinit(uint8_t channel);
 
 /* =============================================================================
- * UART Functions (Debug Output)
+ * UART Functions (Multi-Channel)
  * =============================================================================
  */
 
 /**
- * @brief Initialize SCI5 UART (115200 bps, 8N1, TX only)
+ * @brief Default debug UART channel (SCI9 - CY7C65213 USB bridge)
+ */
+typedef enum {
+  k_uart_debug_channel = 9, /**< Debug UART on SCI9 (PB7/TXD9, PB6/RXD9) */
+} uart_defaults_t;
+
+/**
+ * @brief Initialize SCI channel for UART communication
+ *
+ * Performs full hardware initialization including:
+ * - Module stop control (MSTPCRB)
+ * - Pin function configuration (MPC)
+ * - GPIO direction setup (PDR/PMR)
+ * - SCI register configuration
+ *
+ * @param[in] channel SCI channel (0-12)
+ * @param[in] baudrate Baud rate (e.g., 9600, 115200)
+ * @param[in] tx_port TX pin port number
+ * @param[in] tx_pin TX pin number (0-7)
+ * @param[in] rx_port RX pin port number
+ * @param[in] rx_pin RX pin number (0-7)
+ *
+ * @return k_rx_ok on success,
+ *         k_rx_err_invalid_arg if channel or pins are invalid,
+ *         k_rx_err_invalid_state if channel already initialized
+ */
+rx_err_t uart_init_channel(uint8_t  channel,
+                           uint32_t baudrate,
+                           uint8_t  tx_port,
+                           uint8_t  tx_pin,
+                           uint8_t  rx_port,
+                           uint8_t  rx_pin);
+
+/**
+ * @brief Deinitialize SCI channel
+ *
+ * @param[in] channel SCI channel (0-12)
+ *
+ * @return k_rx_ok on success,
+ *         k_rx_err_invalid_arg if channel is invalid
+ */
+rx_err_t uart_deinit_channel(uint8_t channel);
+
+/**
+ * @brief Transmit a single character on specified channel
+ *
+ * @param[in] channel SCI channel (0-12)
+ * @param[in] data Character to transmit
+ *
+ * @return k_rx_ok on success,
+ *         k_rx_err_invalid_arg if channel is invalid,
+ *         k_rx_err_invalid_state if channel not initialized
+ */
+rx_err_t uart_putc_channel(uint8_t channel, char data);
+
+/**
+ * @brief Transmit a null-terminated string on specified channel
+ *
+ * @param[in] channel SCI channel (0-12)
+ * @param[in] str Pointer to string
+ *
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if str is NULL,
+ *         k_rx_err_invalid_arg if channel is invalid,
+ *         k_rx_err_invalid_state if channel not initialized
+ */
+rx_err_t uart_puts_channel(uint8_t channel, const char* str);
+
+/**
+ * @brief Write buffer to specified channel
+ *
+ * @param[in] channel SCI channel (0-12)
+ * @param[in] data Pointer to data buffer
+ * @param[in] length Number of bytes to write
+ *
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if data is NULL,
+ *         k_rx_err_invalid_arg if channel is invalid,
+ *         k_rx_err_invalid_state if channel not initialized
+ */
+rx_err_t uart_write_channel(uint8_t channel, const uint8_t* data, uint16_t length);
+
+/**
+ * @brief Receive a single character from specified channel (non-blocking)
+ *
+ * @param[in] channel SCI channel (0-12)
+ * @param[out] data Pointer to store received character
+ *
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if data is NULL,
+ *         k_rx_err_invalid_arg if channel is invalid,
+ *         k_rx_err_invalid_state if channel not initialized,
+ *         k_rx_err_empty if no data available
+ */
+rx_err_t uart_getc_channel(uint8_t channel, char* data);
+
+/**
+ * @brief Read available data from specified channel (non-blocking)
+ *
+ * Reads up to length bytes that are currently available.
+ *
+ * @param[in] channel SCI channel (0-12)
+ * @param[out] data Pointer to buffer for received data
+ * @param[in] length Maximum number of bytes to read
+ * @param[out] bytes_read Pointer to store actual bytes read
+ *
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if data or bytes_read is NULL,
+ *         k_rx_err_invalid_arg if channel is invalid,
+ *         k_rx_err_invalid_state if channel not initialized
+ */
+rx_err_t uart_read_channel(uint8_t   channel,
+                           uint8_t*  data,
+                           uint16_t  length,
+                           uint16_t* bytes_read);
+
+/**
+ * @brief Check if receive data is available on channel
+ *
+ * @param[in] channel SCI channel (0-12)
+ * @param[out] available Pointer to store availability status
+ *
+ * @return k_rx_ok on success,
+ *         k_rx_err_null_pointer if available is NULL,
+ *         k_rx_err_invalid_arg if channel is invalid,
+ *         k_rx_err_invalid_state if channel not initialized
+ */
+rx_err_t uart_rx_available(uint8_t channel, bool* available);
+
+/* =============================================================================
+ * UART Functions (Legacy Debug Output - SCI9)
+ * =============================================================================
+ */
+
+/**
+ * @brief Initialize debug UART (SCI9, 115200 bps, 8N1)
+ *
+ * Wrapper for uart_init_channel(k_uart_debug_channel, 115200).
+ * Used by rx_log before ThreadX is initialized.
  *
  * @return k_rx_ok on success, error code on failure
  */
 rx_err_t uart_init(void);
 
 /**
- * @brief Transmit a single character
+ * @brief Transmit a single character on debug UART (SCI9)
  *
  * @param[in] data Character to transmit
  */
 void uart_putc(char data);
 
 /**
- * @brief Transmit a null-terminated string
+ * @brief Transmit a null-terminated string on debug UART (SCI9)
  *
  * @param[in] str Pointer to string
  */
 void uart_puts(const char* str);
 
 /**
- * @brief Print a signed integer
+ * @brief Print a signed integer on debug UART (SCI9)
  *
  * @param[in] value Integer value to print
  */
 void uart_putint(int32_t value);
 
 /**
- * @brief Print a hexadecimal value
+ * @brief Print a hexadecimal value on debug UART (SCI9)
  *
  * @param[in] value Value to print
  * @param[in] digits Number of hex digits (1-8)
