@@ -45,15 +45,15 @@ typedef void VOID;
  */
 
 /** @brief ThreadX success status */
-#define TX_SUCCESS        ((UINT)0)
+#define TX_SUCCESS ((UINT)0)
 
 /** @brief ThreadX error status */
-#define TX_NOT_AVAILABLE  ((UINT)1)
-#define TX_NO_MEMORY      ((UINT)2)
-#define TX_DELETED        ((UINT)3)
-#define TX_WAIT_FOREVER   ((ULONG)0xFFFFFFFF)
-#define TX_NO_WAIT        ((ULONG)0)
-#define TX_NO_INHERIT     ((UINT)0)
+#define TX_NOT_AVAILABLE ((UINT)1)
+#define TX_NO_MEMORY     ((UINT)2)
+#define TX_DELETED       ((UINT)3)
+#define TX_WAIT_FOREVER  ((ULONG)0xFFFFFFFF)
+#define TX_NO_WAIT       ((ULONG)0)
+#define TX_NO_INHERIT    ((UINT)0)
 
 /* =============================================================================
  * ThreadX Mutex Structure (Mock)
@@ -64,9 +64,9 @@ typedef void VOID;
  * @brief Mock ThreadX mutex structure
  */
 typedef struct TX_MUTEX_STRUCT {
-  CHAR* tx_mutex_name;  /**< Mutex name */
-  UINT  tx_mutex_id;    /**< Mutex ID */
-  bool  locked;         /**< Lock state (mock) */
+  CHAR* tx_mutex_name; /**< Mutex name */
+  UINT  tx_mutex_id;   /**< Mutex ID */
+  bool  locked;        /**< Lock state (mock) */
 } TX_MUTEX;
 
 /* =============================================================================

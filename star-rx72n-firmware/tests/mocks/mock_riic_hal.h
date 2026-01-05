@@ -65,18 +65,18 @@ typedef struct {
 
 /** @brief Per-channel RIIC state */
 typedef struct {
-  bool     initialized;                     /**< Channel initialized */
-  uint32_t frequency_hz;                    /**< Configured frequency */
+  bool     initialized;                        /**< Channel initialized */
+  uint32_t frequency_hz;                       /**< Configured frequency */
   uint8_t  tx_buffer[k_mock_riic_buffer_size]; /**< Last transmitted data */
-  uint16_t tx_length;                       /**< Last transmit length */
+  uint16_t tx_length;                          /**< Last transmit length */
   uint8_t  rx_buffer[k_mock_riic_buffer_size]; /**< Data to return on read */
-  uint16_t rx_length;                       /**< Available read data length */
-  uint8_t  last_device_addr;                /**< Last device address used */
+  uint16_t rx_length;                          /**< Available read data length */
+  uint8_t  last_device_addr;                   /**< Last device address used */
 } mock_riic_channel_state_t;
 
 /** @brief Global mock RIIC state */
 typedef struct {
-  mock_riic_channel_state_t channels[k_mock_riic_max_channels]; /**< Per-channel state */
+  mock_riic_channel_state_t channels[k_mock_riic_max_channels];          /**< Per-channel state */
   mock_riic_call_t          call_history[k_mock_riic_call_history_size]; /**< Call history */
   uint16_t                  call_count;       /**< Number of calls recorded */
   rx_err_t                  next_error;       /**< Error to return on next call */

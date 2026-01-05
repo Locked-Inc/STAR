@@ -155,8 +155,7 @@ static rx_err_t internal_uart_write_callback(rx_bus_config_t* bus_config, void* 
   }
 
   /* Write UART data */
-  rx_err_t err =
-      uart_write_channel(bus_config->proto.uart.channel, ctx->data, ctx->length);
+  rx_err_t err = uart_write_channel(bus_config->proto.uart.channel, ctx->data, ctx->length);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "UART write failed");
@@ -188,10 +187,8 @@ static rx_err_t internal_uart_read_callback(rx_bus_config_t* bus_config, void* u
   }
 
   /* Read UART data */
-  rx_err_t err = uart_read_channel(bus_config->proto.uart.channel,
-                                   ctx->data,
-                                   ctx->length,
-                                   &ctx->bytes_read);
+  rx_err_t err =
+    uart_read_channel(bus_config->proto.uart.channel, ctx->data, ctx->length, &ctx->bytes_read);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "UART read failed");

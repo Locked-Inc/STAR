@@ -227,12 +227,10 @@ static rx_err_t mock_pin_release(void* ctx, uint8_t port, uint8_t pin)
 static struct {
   rx_err_t (*reserve_pin)(void* ctx, uint8_t port, uint8_t pin, const char* function);
   rx_err_t (*release_pin)(void* ctx, uint8_t port, uint8_t pin);
-  void*    ctx;
-} s_mock_pin_interface = {
-  .reserve_pin = mock_pin_reserve,
-  .release_pin = mock_pin_release,
-  .ctx = NULL
-};
+  void* ctx;
+} s_mock_pin_interface = {.reserve_pin = mock_pin_reserve,
+                          .release_pin = mock_pin_release,
+                          .ctx         = NULL};
 
 /**
  * @brief Get mock pin interface

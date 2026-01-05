@@ -14,10 +14,11 @@
  */
 
 /* Include mock regs header FIRST to define mock types before real headers */
-#include "mock_rx_mtu_regs.h"
 #include "mock_rx_mtu_encoder.h"
 
 #include <string.h>
+
+#include "mock_rx_mtu_regs.h"
 
 /* =============================================================================
  * Constants
@@ -109,7 +110,7 @@ void mock_encoder_set_counter(rx_mtu_channel_t channel, uint16_t count)
 {
   int32_t idx = internal_channel_to_index(channel);
   if (idx >= 0) {
-    g_mock_mtu_regs[idx].tcnt = count;
+    g_mock_mtu_regs[idx].tcnt               = count;
     g_mock_encoder_state.channels[idx].tcnt = count;
   }
 }
@@ -138,7 +139,7 @@ void mock_encoder_advance_counter(rx_mtu_channel_t channel, int32_t delta)
       new_val -= k_counter_max;
     }
 
-    g_mock_mtu_regs[idx].tcnt = (uint16_t)new_val;
+    g_mock_mtu_regs[idx].tcnt               = (uint16_t)new_val;
     g_mock_encoder_state.channels[idx].tcnt = (uint16_t)new_val;
   }
 }
@@ -231,4 +232,3 @@ rx_err_t rx_mtu_stop(rx_mtu_channel_t channel)
   g_mock_encoder_state.channels[idx].stop_count++;
   return k_rx_ok;
 }
-

@@ -19,11 +19,10 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#include "unity.h"
-
 #include "hardware_pinout.h"
 #include "mock_gpio_hal.h"
 #include "rx_err.h"
+#include "unity.h"
 
 /* =============================================================================
  * Test Fixtures
@@ -288,8 +287,8 @@ void test_gpio_read_returns_input_value(void)
   /* Set simulated input high */
   mock_gpio_set_input_value(k_gpio_pb2, true);
 
-  bool value = false;
-  rx_err_t err = gpio_read(k_gpio_pb2, &value);
+  bool     value = false;
+  rx_err_t err   = gpio_read(k_gpio_pb2, &value);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(value);
@@ -319,7 +318,7 @@ void test_gpio_read_null_pointer(void)
 void test_gpio_read_invalid_port(void)
 {
   gpio_pin_t invalid_pin = gpio_pin_make(0x30, 0);
-  bool value;
+  bool       value;
 
   rx_err_t err = gpio_read(invalid_pin, &value);
 
@@ -332,7 +331,7 @@ void test_gpio_read_invalid_port(void)
 void test_gpio_read_invalid_pin(void)
 {
   gpio_pin_t invalid_pin = gpio_pin_make(k_rx_port_b, 15);
-  bool value;
+  bool       value;
 
   rx_err_t err = gpio_read(invalid_pin, &value);
 
@@ -352,40 +351,40 @@ void test_gpio_valid_ports(void)
   rx_err_t err;
 
   /* Test all valid ports (Port 0, 1, 2, 3, 4, 5, A, B, C, D, E, J) */
-  err = gpio_set_output(k_gpio_p05);  /* Port 0 */
+  err = gpio_set_output(k_gpio_p05); /* Port 0 */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = gpio_set_output(k_gpio_p12);  /* Port 1 */
+  err = gpio_set_output(k_gpio_p12); /* Port 1 */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = gpio_set_output(k_gpio_p20);  /* Port 2 */
+  err = gpio_set_output(k_gpio_p20); /* Port 2 */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = gpio_set_output(k_gpio_p30);  /* Port 3 */
+  err = gpio_set_output(k_gpio_p30); /* Port 3 */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = gpio_set_output(k_gpio_p40);  /* Port 4 */
+  err = gpio_set_output(k_gpio_p40); /* Port 4 */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = gpio_set_output(k_gpio_p50);  /* Port 5 */
+  err = gpio_set_output(k_gpio_p50); /* Port 5 */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = gpio_set_output(k_gpio_pa0);  /* Port A */
+  err = gpio_set_output(k_gpio_pa0); /* Port A */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = gpio_set_output(k_gpio_pb0);  /* Port B */
+  err = gpio_set_output(k_gpio_pb0); /* Port B */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = gpio_set_output(k_gpio_pc0);  /* Port C */
+  err = gpio_set_output(k_gpio_pc0); /* Port C */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = gpio_set_output(k_gpio_pd0);  /* Port D */
+  err = gpio_set_output(k_gpio_pd0); /* Port D */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = gpio_set_output(k_gpio_pe0);  /* Port E */
+  err = gpio_set_output(k_gpio_pe0); /* Port E */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
-  err = gpio_set_output(k_gpio_pj3);  /* Port J */
+  err = gpio_set_output(k_gpio_pj3); /* Port J */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 

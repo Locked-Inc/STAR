@@ -12,8 +12,6 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#include "unity.h"
-
 #include <string.h>
 
 #include "hardware_pinout.h"
@@ -24,6 +22,7 @@
 #include "rx_bus_manager.h"
 #include "rx_bus_onewire.h"
 #include "rx_err.h"
+#include "unity.h"
 
 /* =============================================================================
  * Test Constants
@@ -34,7 +33,7 @@
  * @brief Test constants
  */
 typedef enum {
-  k_test_rom_bytes = 8,       /**< OneWire ROM size in bytes */
+  k_test_rom_bytes          = 8, /**< OneWire ROM size in bytes */
   k_test_max_search_devices = 4, /**< Max devices for search tests */
 } test_constants_t;
 
@@ -143,7 +142,7 @@ void test_rx_bus_onewire_init_wrong_bus_type(void)
 {
   /* Create a GPIO bus (not OneWire) */
   static rx_bus_config_t gpio_config;
-  rx_err_t err = rx_bus_config_init_gpio(&gpio_config, "gpio_bus", k_gpio_pc6);
+  rx_err_t               err = rx_bus_config_init_gpio(&gpio_config, "gpio_bus", k_gpio_pc6);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   err = rx_bus_manager_add_bus(&s_test_manager, &gpio_config);
@@ -624,7 +623,7 @@ void test_rx_bus_onewire_match_rom_success(void)
   mock_gpio_set_read_value(s_test_pin, false);
 
   uint8_t rom[k_test_rom_bytes] = {0x28, 0xFF, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC};
-  err = rx_bus_onewire_match_rom(&s_test_manager, s_test_bus_name, rom);
+  err                           = rx_bus_onewire_match_rom(&s_test_manager, s_test_bus_name, rom);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 
@@ -640,7 +639,7 @@ void test_rx_bus_onewire_match_rom_no_device(void)
   mock_gpio_set_read_value(s_test_pin, true);
 
   uint8_t rom[k_test_rom_bytes] = {0x28, 0xFF, 0x12, 0x34, 0x56, 0x78, 0x9A, 0xBC};
-  err = rx_bus_onewire_match_rom(&s_test_manager, s_test_bus_name, rom);
+  err                           = rx_bus_onewire_match_rom(&s_test_manager, s_test_bus_name, rom);
   TEST_ASSERT_EQUAL(k_rx_err_not_found, err);
 }
 
@@ -662,7 +661,7 @@ void test_rx_bus_onewire_match_rom_null_rom(void)
 void test_rx_bus_onewire_match_rom_not_initialized(void)
 {
   uint8_t  rom[k_test_rom_bytes] = {0};
-  rx_err_t err = rx_bus_onewire_match_rom(&s_test_manager, s_test_bus_name, rom);
+  rx_err_t err                   = rx_bus_onewire_match_rom(&s_test_manager, s_test_bus_name, rom);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -683,7 +682,7 @@ void test_rx_bus_onewire_read_rom_no_device(void)
   mock_gpio_set_read_value(s_test_pin, true);
 
   uint8_t rom[k_test_rom_bytes] = {0};
-  err = rx_bus_onewire_read_rom(&s_test_manager, s_test_bus_name, rom);
+  err                           = rx_bus_onewire_read_rom(&s_test_manager, s_test_bus_name, rom);
   TEST_ASSERT_EQUAL(k_rx_err_not_found, err);
 }
 
@@ -705,7 +704,7 @@ void test_rx_bus_onewire_read_rom_null_rom(void)
 void test_rx_bus_onewire_read_rom_not_initialized(void)
 {
   uint8_t  rom[k_test_rom_bytes] = {0};
-  rx_err_t err = rx_bus_onewire_read_rom(&s_test_manager, s_test_bus_name, rom);
+  rx_err_t err                   = rx_bus_onewire_read_rom(&s_test_manager, s_test_bus_name, rom);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
@@ -715,7 +714,7 @@ void test_rx_bus_onewire_read_rom_not_initialized(void)
 void test_rx_bus_onewire_read_rom_null_manager(void)
 {
   uint8_t  rom[k_test_rom_bytes] = {0};
-  rx_err_t err = rx_bus_onewire_read_rom(NULL, s_test_bus_name, rom);
+  rx_err_t err                   = rx_bus_onewire_read_rom(NULL, s_test_bus_name, rom);
   TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
@@ -738,7 +737,10 @@ void test_rx_bus_onewire_search_no_devices(void)
   uint8_t  roms[k_test_max_search_devices * k_test_rom_bytes];
   uint32_t num_devices = 99; /* Set to non-zero to verify it gets set to 0 */
 
-  err = rx_bus_onewire_search(&s_test_manager, s_test_bus_name, roms, k_test_max_search_devices,
+  err = rx_bus_onewire_search(&s_test_manager,
+                              s_test_bus_name,
+                              roms,
+                              k_test_max_search_devices,
                               &num_devices);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL(0, num_devices);
@@ -770,7 +772,10 @@ void test_rx_bus_onewire_search_null_roms(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   uint32_t num_devices = 0;
-  err = rx_bus_onewire_search(&s_test_manager, s_test_bus_name, NULL, k_test_max_search_devices,
+  err                  = rx_bus_onewire_search(&s_test_manager,
+                              s_test_bus_name,
+                              NULL,
+                              k_test_max_search_devices,
                               &num_devices);
   TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
@@ -797,8 +802,11 @@ void test_rx_bus_onewire_search_not_initialized(void)
   uint8_t  roms[k_test_max_search_devices * k_test_rom_bytes];
   uint32_t num_devices = 0;
 
-  rx_err_t err = rx_bus_onewire_search(&s_test_manager, s_test_bus_name, roms,
-                                       k_test_max_search_devices, &num_devices);
+  rx_err_t err = rx_bus_onewire_search(&s_test_manager,
+                                       s_test_bus_name,
+                                       roms,
+                                       k_test_max_search_devices,
+                                       &num_devices);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 

@@ -74,16 +74,16 @@ typedef struct {
  * @brief State of a single USB pipe
  */
 typedef struct {
-  bool     configured;                       /**< Pipe is configured */
-  uint8_t  endpoint;                         /**< Endpoint number */
-  bool     is_in;                            /**< IN direction (device to host) */
-  uint16_t type;                             /**< Pipe type (bulk, interrupt, etc.) */
-  uint16_t max_packet;                       /**< Maximum packet size */
-  uint8_t  rx_data[MOCK_USB_HW_FIFO_SIZE];   /**< RX FIFO data (host to device) */
-  uint32_t rx_len;                           /**< Bytes in RX FIFO */
-  uint32_t rx_pos;                           /**< Read position in RX FIFO */
-  uint8_t  tx_data[MOCK_USB_HW_FIFO_SIZE];   /**< TX FIFO data (device to host) */
-  uint32_t tx_len;                           /**< Bytes in TX FIFO */
+  bool     configured;                     /**< Pipe is configured */
+  uint8_t  endpoint;                       /**< Endpoint number */
+  bool     is_in;                          /**< IN direction (device to host) */
+  uint16_t type;                           /**< Pipe type (bulk, interrupt, etc.) */
+  uint16_t max_packet;                     /**< Maximum packet size */
+  uint8_t  rx_data[MOCK_USB_HW_FIFO_SIZE]; /**< RX FIFO data (host to device) */
+  uint32_t rx_len;                         /**< Bytes in RX FIFO */
+  uint32_t rx_pos;                         /**< Read position in RX FIFO */
+  uint8_t  tx_data[MOCK_USB_HW_FIFO_SIZE]; /**< TX FIFO data (device to host) */
+  uint32_t tx_len;                         /**< Bytes in TX FIFO */
 } mock_pipe_state_t;
 
 /* =============================================================================
@@ -96,10 +96,10 @@ typedef struct {
  */
 typedef struct {
   /* Hardware state */
-  bool           initialized;                     /**< Hardware initialized */
-  bool           attached;                        /**< D+ pull-up enabled */
-  uint8_t        address;                         /**< USB device address */
-  rx_usb_state_t bus_state;                       /**< Current bus state */
+  bool           initialized; /**< Hardware initialized */
+  bool           attached;    /**< D+ pull-up enabled */
+  uint8_t        address;     /**< USB device address */
+  rx_usb_state_t bus_state;   /**< Current bus state */
 
   /* Pipe states */
   mock_pipe_state_t pipes[MOCK_USB_HW_MAX_PIPES]; /**< Pipe state array */
@@ -107,7 +107,7 @@ typedef struct {
   /* Call tracking */
   mock_usb_hw_call_t call_history[MOCK_USB_HW_CALL_HISTORY_SIZE]; /**< Call history */
   uint32_t           call_count;                                  /**< Total calls recorded */
-  uint32_t           call_write_index;                            /**< Next write index (circular) */
+  uint32_t           call_write_index; /**< Next write index (circular) */
 
   /* Configurable return values for error injection */
   rx_err_t next_init_return;   /**< Return value for next hw_init call */
@@ -213,10 +213,8 @@ void mock_usb_hw_set_bus_state(mock_usb_hw_t* mock, rx_usb_state_t state);
  * @param len Data length
  * @return k_rx_ok on success, k_rx_err_invalid_arg if pipe invalid
  */
-rx_err_t mock_usb_hw_inject_rx_data(mock_usb_hw_t* mock,
-                                    uint8_t        pipe,
-                                    const uint8_t* data,
-                                    uint32_t       len);
+rx_err_t
+mock_usb_hw_inject_rx_data(mock_usb_hw_t* mock, uint8_t pipe, const uint8_t* data, uint32_t len);
 
 /**
  * @brief Get data from a pipe's TX FIFO (simulates host reading data)
@@ -273,9 +271,8 @@ uint32_t mock_usb_hw_get_call_count(mock_usb_hw_t* mock, const char* func);
  * @param out_call Output call record
  * @return k_rx_ok on success, k_rx_err_not_found if function never called
  */
-rx_err_t mock_usb_hw_get_last_call(mock_usb_hw_t*      mock,
-                                   const char*         func,
-                                   mock_usb_hw_call_t* out_call);
+rx_err_t
+mock_usb_hw_get_last_call(mock_usb_hw_t* mock, const char* func, mock_usb_hw_call_t* out_call);
 
 /**
  * @brief Clear call history

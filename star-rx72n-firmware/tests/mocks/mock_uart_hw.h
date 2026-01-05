@@ -85,9 +85,9 @@ typedef struct {
 
 /** @brief Global mock UART state */
 typedef struct {
-  mock_uart_channel_t channels[k_mock_uart_channel_count]; /**< Per-channel state */
+  mock_uart_channel_t channels[k_mock_uart_channel_count];       /**< Per-channel state */
   mock_uart_call_t    call_history[k_mock_uart_call_history_sz]; /**< Call history */
-  uint16_t            call_count; /**< Number of calls recorded */
+  uint16_t            call_count;                                /**< Number of calls recorded */
   rx_err_t            next_error; /**< Error to return on next call */
   bool                error_set;  /**< Whether error injection is active */
 } mock_uart_hw_t;
@@ -270,10 +270,7 @@ rx_err_t uart_putc_channel(uint8_t channel, char data);
 rx_err_t uart_puts_channel(uint8_t channel, const char* str);
 rx_err_t uart_write_channel(uint8_t channel, const uint8_t* data, uint16_t length);
 rx_err_t uart_getc_channel(uint8_t channel, char* data);
-rx_err_t uart_read_channel(uint8_t   channel,
-                           uint8_t*  data,
-                           uint16_t  length,
-                           uint16_t* bytes_read);
+rx_err_t uart_read_channel(uint8_t channel, uint8_t* data, uint16_t length, uint16_t* bytes_read);
 rx_err_t uart_rx_available(uint8_t channel, bool* available);
 
 /* Legacy debug UART functions */

@@ -11,8 +11,6 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#include "unity.h"
-
 #include <string.h>
 
 #include "hardware_pinout.h"
@@ -21,6 +19,7 @@
 #include "rx_bus_manager.h"
 #include "rx_bus_types.h"
 #include "rx_err.h"
+#include "unity.h"
 
 /* =============================================================================
  * Test Constants
@@ -563,8 +562,9 @@ void test_rx_bus_manager_with_bus_callback_error(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Execute callback that returns error */
-  callback_ctx_t ctx = {
-    .callback_called = false, .callback_return = k_rx_err_hw_error, .bus_name_seen = ""};
+  callback_ctx_t ctx = {.callback_called = false,
+                        .callback_return = k_rx_err_hw_error,
+                        .bus_name_seen   = ""};
 
   err = rx_bus_manager_with_bus(&s_test_manager, "error_test", test_callback, &ctx);
   TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);

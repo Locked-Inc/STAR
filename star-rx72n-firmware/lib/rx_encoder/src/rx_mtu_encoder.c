@@ -153,8 +153,7 @@ rx_err_t rx_encoder_init(const rx_encoder_config_t* config)
     system_regs()->mstpcra &= ~(1 << k_mtu_mstpcra_mtu6_7_bit); /* MTU6-MTU7 */
   }
 
-  system_regs()->prcr =
-    (k_prcr_key << k_prcr_key_shift) | k_prcr_lock_all; /* Lock MSTPCR */
+  system_regs()->prcr = (k_prcr_key << k_prcr_key_shift) | k_prcr_lock_all; /* Lock MSTPCR */
 
   /* Stop timer before configuration */
   rx_mtu_stop(channel);

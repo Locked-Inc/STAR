@@ -22,9 +22,9 @@
  * @brief CRC-8 Maxim constants
  */
 typedef enum {
-  k_crc8_maxim_poly  = 0x8C, /**< Reversed polynomial 0x31 */
-  k_bits_per_byte    = 8,
-  k_crc8_lsb_mask    = 0x01,
+  k_crc8_maxim_poly = 0x8C, /**< Reversed polynomial 0x31 */
+  k_bits_per_byte   = 8,
+  k_crc8_lsb_mask   = 0x01,
 } crc8_constants_t;
 
 /* =============================================================================

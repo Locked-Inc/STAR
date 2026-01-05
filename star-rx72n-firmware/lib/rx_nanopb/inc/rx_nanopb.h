@@ -162,8 +162,10 @@ rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* ms
  *
  * @return k_rx_ok on success
  */
-rx_err_t
-rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg, uint8_t* buffer, size_t buffer_size, uint32_t* len);
+rx_err_t rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg,
+                                    uint8_t*                     buffer,
+                                    size_t                       buffer_size,
+                                    uint32_t*                    len);
 
 /* =============================================================================
  * Helper Functions

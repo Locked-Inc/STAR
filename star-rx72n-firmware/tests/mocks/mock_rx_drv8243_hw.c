@@ -37,13 +37,13 @@ typedef enum {
  */
 
 static mock_rx_port_regs_t s_ports[k_mock_max_ports];
-static bool                s_fault_active          = false;
-static uint32_t            s_adc_voltage_mv        = 0;
-static rx_err_t            s_adc_error             = k_rx_ok;
-static uint8_t             s_fault_port            = 0;
-static uint8_t             s_fault_pin             = 0;
-static bool                s_fault_pin_configured  = false;
-static bool                s_pullup_enabled        = false;
+static bool                s_fault_active         = false;
+static uint32_t            s_adc_voltage_mv       = 0;
+static rx_err_t            s_adc_error            = k_rx_ok;
+static uint8_t             s_fault_port           = 0;
+static uint8_t             s_fault_pin            = 0;
+static bool                s_fault_pin_configured = false;
+static bool                s_pullup_enabled       = false;
 
 /* =============================================================================
  * Mock Test Helpers

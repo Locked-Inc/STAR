@@ -27,13 +27,13 @@ extern "C" {
 
 /** @brief MTU base addresses */
 typedef enum {
-  k_mtu0_base_addr    = 0x000D0600, /**< MTU0 register base address */
-  k_mtu1_base_addr    = 0x000D0680, /**< MTU1 register base address */
-  k_mtu2_base_addr    = 0x000D0700, /**< MTU2 register base address */
-  k_mtu3_base_addr    = 0x000D0200, /**< MTU3 register base address */
-  k_mtu4_base_addr    = 0x000D0201, /**< MTU4 register base address */
-  k_mtu6_base_addr    = 0x000D0A00, /**< MTU6 register base address */
-  k_mtu7_base_addr    = 0x000D0A80, /**< MTU7 register base address */
+  k_mtu0_base_addr     = 0x000D0600, /**< MTU0 register base address */
+  k_mtu1_base_addr     = 0x000D0680, /**< MTU1 register base address */
+  k_mtu2_base_addr     = 0x000D0700, /**< MTU2 register base address */
+  k_mtu3_base_addr     = 0x000D0200, /**< MTU3 register base address */
+  k_mtu4_base_addr     = 0x000D0201, /**< MTU4 register base address */
+  k_mtu6_base_addr     = 0x000D0A00, /**< MTU6 register base address */
+  k_mtu7_base_addr     = 0x000D0A80, /**< MTU7 register base address */
   k_mtu_tstr_base_addr = 0x000D0880, /**< MTU TSTR register base address */
 } rx_mtu_addresses_t;
 

@@ -27,11 +27,11 @@ extern "C" {
 
 /** @brief CMT base addresses */
 typedef enum {
-  k_cmt0_base_addr      = 0x00088000, /**< CMT0 register base address */
-  k_cmt1_base_addr      = 0x00088008, /**< CMT1 register base address */
-  k_cmt2_base_addr      = 0x00088010, /**< CMT2 register base address */
-  k_cmt3_base_addr      = 0x00088018, /**< CMT3 register base address */
-  k_cmt_ctrl_base_addr  = 0x00088002, /**< CMT control register base address */
+  k_cmt0_base_addr     = 0x00088000, /**< CMT0 register base address */
+  k_cmt1_base_addr     = 0x00088008, /**< CMT1 register base address */
+  k_cmt2_base_addr     = 0x00088010, /**< CMT2 register base address */
+  k_cmt3_base_addr     = 0x00088018, /**< CMT3 register base address */
+  k_cmt_ctrl_base_addr = 0x00088002, /**< CMT control register base address */
 } rx_cmt_addresses_t;
 
 /**

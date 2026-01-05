@@ -21,9 +21,9 @@
  * @brief Mock GPIO pin state
  */
 typedef struct {
-  bool is_output;      /**< True if configured as output */
-  bool output_value;   /**< Current output value (if output) */
-  bool read_value;     /**< Value to return on read */
+  bool is_output;    /**< True if configured as output */
+  bool output_value; /**< Current output value (if output) */
+  bool read_value;   /**< Value to return on read */
 } mock_pin_state_t;
 
 /**

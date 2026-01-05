@@ -459,10 +459,7 @@ rx_err_t uart_getc_channel(uint8_t channel, char* data);
  *         k_rx_err_invalid_arg if channel is invalid,
  *         k_rx_err_invalid_state if channel not initialized
  */
-rx_err_t uart_read_channel(uint8_t   channel,
-                           uint8_t*  data,
-                           uint16_t  length,
-                           uint16_t* bytes_read);
+rx_err_t uart_read_channel(uint8_t channel, uint8_t* data, uint16_t length, uint16_t* bytes_read);
 
 /**
  * @brief Check if receive data is available on channel
