@@ -14,6 +14,7 @@
 #ifndef STAR_RX72N_SCI_REGS_H
 #define STAR_RX72N_SCI_REGS_H
 
+#include <stddef.h>
 #include <stdint.h>
 
 #ifdef __cplusplus

@@ -198,6 +198,25 @@ static inline uint8_t gpio_pin_get_pin(gpio_pin_t pin)
   return (uint8_t)((uint16_t)pin & 0xFF);
 }
 
+/**
+ * @brief Create gpio_pin_t from port and pin numbers
+ *
+ * This function allows constructing a gpio_pin_t from separate port and pin
+ * values, useful when working with legacy code or configuration data that
+ * stores port and pin separately.
+ *
+ * @param[in] port Port number (0x0-0x10 for ports 0-J)
+ * @param[in] pin Pin number (0-7)
+ *
+ * @return gpio_pin_t enum value
+ *
+ * @note No validation is performed - use valid port/pin combinations
+ */
+static inline gpio_pin_t gpio_pin_make(uint8_t port, uint8_t pin)
+{
+  return (gpio_pin_t)(((uint16_t)port << 8) | (uint16_t)pin);
+}
+
 /* =============================================================================
  * Motor Control - PWM Outputs (GPTW Channels)
  * =============================================================================

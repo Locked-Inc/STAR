@@ -21,38 +21,37 @@
  * =============================================================================
  */
 
-rx_err_t hcsr04_hal_gpio_set_output(uint8_t port, uint8_t pin)
+rx_err_t hcsr04_hal_gpio_set_output(gpio_pin_t pin)
 {
-  return gpio_set_output(port, pin);
+  return gpio_set_output(pin);
 }
 
-rx_err_t hcsr04_hal_gpio_set_input(uint8_t port, uint8_t pin)
+rx_err_t hcsr04_hal_gpio_set_input(gpio_pin_t pin)
 {
-  return gpio_set_input(port, pin);
+  return gpio_set_input(pin);
 }
 
-rx_err_t hcsr04_hal_gpio_write_high(uint8_t port, uint8_t pin)
+rx_err_t hcsr04_hal_gpio_write_high(gpio_pin_t pin)
 {
-  return gpio_write_high(port, pin);
+  return gpio_write_high(pin);
 }
 
-rx_err_t hcsr04_hal_gpio_write_low(uint8_t port, uint8_t pin)
+rx_err_t hcsr04_hal_gpio_write_low(gpio_pin_t pin)
 {
-  return gpio_write_low(port, pin);
+  return gpio_write_low(pin);
 }
 
-rx_err_t hcsr04_hal_gpio_read(uint8_t port, uint8_t pin, bool* value)
+rx_err_t hcsr04_hal_gpio_read(gpio_pin_t pin, bool* value)
 {
-  return gpio_read(port, pin, value);
+  return gpio_read(pin, value);
 }
 
-rx_err_t hcsr04_hal_gpio_deinit(uint8_t port, uint8_t pin)
+rx_err_t hcsr04_hal_gpio_deinit(gpio_pin_t pin)
 {
   /*
    * GPIO_DEINIT is intentionally a no-op: the RX72N GPIO HAL does not provide
    * pin deallocation. GPIO pins are static resources allocated at init time.
    */
-  (void)port;
   (void)pin;
   return k_rx_ok;
 }
