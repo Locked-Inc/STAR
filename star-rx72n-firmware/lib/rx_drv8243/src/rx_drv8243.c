@@ -399,15 +399,17 @@ static volatile rx_port_regs_t* internal_get_port_base(uint8_t port)
       return port4();
     case 5:
       return port5();
-    case 6:
-      return port6();
-    case 7:
-      return port7();
-    case 8:
-      return port8();
-    case 9:
-      return port9();
-    case 10:
+    case 0x0A:
+      return porta();
+    case 0x0B:
+      return portb();
+    case 0x0C:
+      return portc();
+    case 0x0D:
+      return portd();
+    case 0x0E:
+      return porte();
+    case 0x12:
       return portj();
     default:
       return NULL;
