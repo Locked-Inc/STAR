@@ -216,6 +216,14 @@ if (ret != RX_OK) {
 - Simple floating-point constants (use static const)
 - Function aliases for backward compatibility (project has no releases, no backward compatibility needed)
 
+**No Magic Numbers Policy:**
+ALL numeric literals must be named enums, including:
+- Array indices (`buf[0]` → `buf[k_idx_high_byte]`)
+- Bit shift amounts (`val >> 8` → `val >> k_shift_byte`)
+- Protocol offsets (`frame[4]` → `frame[k_offset_payload]`)
+- Register bit positions (`1 << 7` → `1 << k_bit_enable`)
+- Buffer sizes, timeouts, limits (already covered above)
+
 **Compliant Example:**
 ```c
 /* ALWAYS PREFER: Enum for integer constants */
@@ -231,6 +239,45 @@ typedef enum {
 /* ONLY for floating-point (enum can't hold float) */
 static const float s_max_velocity_mps = 2.5f;  /* Must be const - not integer */
 static const float s_pid_kp = 1.0f;            /* Must be const - not integer */
+
+/* NO MAGIC NUMBERS: Array indices as enums */
+typedef enum {
+    k_idx_high_byte = 0,  /* MSB at index 0 (big-endian) */
+    k_idx_low_byte  = 1   /* LSB at index 1 */
+} be16_byte_idx_t;
+
+static void write_be16(uint8_t* buf, uint16_t val) {
+    buf[k_idx_high_byte] = (uint8_t)(val >> k_shift_byte);  /* Named indices! */
+    buf[k_idx_low_byte]  = (uint8_t)(val & k_mask_byte);
+}
+
+/* NO MAGIC NUMBERS: Bit shifts as enums */
+typedef enum {
+    k_shift_byte   = 8,   /* Shift by 8 bits for byte operations */
+    k_shift_enable = 7,   /* Enable bit at position 7 */
+    k_shift_mode   = 3    /* Mode field starts at bit 3 */
+} bit_shifts_t;
+
+/* NO MAGIC NUMBERS: Bit masks as enums */
+typedef enum {
+    k_mask_byte   = 0xFF,    /* Single byte mask */
+    k_mask_enable = 0x80,    /* Enable bit mask (1 << 7) */
+    k_mask_mode   = 0x18     /* Mode field mask (bits 3-4) */
+} bit_masks_t;
+
+/* NO MAGIC NUMBERS: Protocol offsets as enums */
+typedef enum {
+    k_offset_sync    = 0,   /* SYNC marker at offset 0 */
+    k_offset_length  = 2,   /* Length field at offset 2 */
+    k_offset_payload = 4,   /* Payload starts at offset 4 */
+    k_offset_crc     = 8    /* CRC at offset 8 */
+} frame_offsets_t;
+
+static void parse_frame(const uint8_t* frame) {
+    uint16_t sync   = frame[k_offset_sync];      /* Named offset - clear! */
+    uint16_t length = frame[k_offset_length];
+    /* ... */
+}
 
 /* ACCEPTABLE: Macros for reducing duplicated code */
 #define RX_RETURN_ON_ERROR(err, tag, msg) \
@@ -269,16 +316,40 @@ static const float s_pid_kp = 1.0f;            /* Must be const - not integer */
 #define BUFFER_SIZE 256        // WRONG! Use enum
 #define MAX_VELOCITY 2.5f      // WRONG! Use static const float
 
-/* WHY MACROS ARE BAD:
+/* BAD: Magic numbers everywhere */
+static void write_be16_bad(uint8_t* buf, uint16_t val) {
+    buf[0] = (uint8_t)(val >> 8);   // MAGIC! What is 0? What is 8?
+    buf[1] = (uint8_t)(val & 0xFF); // MAGIC! What is 1? What is 0xFF?
+}
+
+static void parse_frame_bad(const uint8_t* frame) {
+    uint16_t sync   = frame[0];     // MAGIC! What's at index 0?
+    uint16_t length = frame[2];     // MAGIC! What's at index 2?
+    uint8_t* data   = &frame[4];    // MAGIC! Why 4?
+}
+
+static void config_register_bad(void) {
+    REG = (1 << 7) | (3 << 3);      // MAGIC! Which bits? Why?
+}
+
+/* WHY MAGIC NUMBERS ARE BAD:
+ * - Unclear intent (what does 0, 8, 0xFF mean?)
+ * - Hard to maintain (what if protocol changes?)
+ * - Error-prone (easy to use wrong index/shift)
+ * - Not searchable (can't grep for "sync offset")
+ * - No semantic meaning in debugger
+ *
+ * WHY MACROS ARE BAD:
  * - No type safety (preprocessor text substitution)
  * - Not visible in debugger
  * - Can't take address of value
  * - No scoping/namespacing
  * - Prone to macro expansion bugs
  *
- * RULE: If it's an integer constant, use enum. Always.
+ * RULE: If it's an integer (even 0, 1, 8!), use enum. Always.
  *       If it's floating-point, use static const.
  *       Never use #define for constants.
+ *       Never use literal numbers.
  */
 ```
 
