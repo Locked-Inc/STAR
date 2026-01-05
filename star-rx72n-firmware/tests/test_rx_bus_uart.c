@@ -1,3 +1,5 @@
+/* tests/test_rx_bus_uart.c */
+
 /**
  * @file test_rx_bus_uart.c
  * @brief Unit Tests for rx_bus_uart Bus Abstraction Layer
@@ -5,8 +7,8 @@
  * Tests the UART bus abstraction layer using mocked UART HAL functions
  * and real bus manager infrastructure.
  *
- * STAR Project - Texas A&M University
- * January 2026
+ * @date 2026-01-04
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "unity.h"

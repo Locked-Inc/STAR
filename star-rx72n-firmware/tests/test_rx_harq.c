@@ -1,3 +1,5 @@
+/* tests/test_rx_harq.c */
+
 /**
  * @file test_rx_harq.c
  * @brief Unit Tests for HARQ Protocol and Chase Combiner
@@ -5,8 +7,8 @@
  * Tests Hybrid Automatic Repeat Request with Chase Combining.
  * Verifies bit-exact compatibility with Go implementation.
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-04
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "unity.h"

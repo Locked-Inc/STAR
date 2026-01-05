@@ -1,3 +1,5 @@
+/* tests/test_rx_crc32.c */
+
 /**
  * @file test_rx_crc32.c
  * @brief Unit Tests for IEEE 802.3 CRC-32 Implementation
@@ -5,8 +7,8 @@
  * Tests the CRC-32 implementation for bit-exact compatibility with
  * Go's crc32.ChecksumIEEE().
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-04
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "unity.h"
