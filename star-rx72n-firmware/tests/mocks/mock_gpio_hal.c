@@ -47,8 +47,8 @@ static void internal_record_call(mock_gpio_call_type_t type, gpio_pin_t pin)
 static rx_err_t internal_check_error(void)
 {
   if (g_mock_gpio.error_set) {
-    rx_err_t err           = g_mock_gpio.next_error;
-    g_mock_gpio.error_set  = false;
+    rx_err_t err          = g_mock_gpio.next_error;
+    g_mock_gpio.error_set = false;
     return err;
   }
   return k_rx_ok;

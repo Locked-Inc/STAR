@@ -29,9 +29,9 @@ extern "C" {
  * @brief Mock CMT channel register structure
  */
 typedef struct {
-  volatile uint16_t cmcr;   /**< Compare Match Timer Control Register */
-  volatile uint16_t cmcnt;  /**< Compare Match Timer Counter */
-  volatile uint16_t cmcor;  /**< Compare Match Timer Constant Register */
+  volatile uint16_t cmcr;  /**< Compare Match Timer Control Register */
+  volatile uint16_t cmcnt; /**< Compare Match Timer Counter */
+  volatile uint16_t cmcor; /**< Compare Match Timer Constant Register */
 } mock_cmt_channel_t;
 
 /**
@@ -46,11 +46,11 @@ typedef struct {
  * @brief Mock System registers
  */
 typedef struct {
-  volatile uint16_t prcr;     /**< Protect Register */
-  volatile uint32_t mstpcra;  /**< Module Stop Control Register A */
-  volatile uint32_t mstpcrb;  /**< Module Stop Control Register B */
-  volatile uint32_t mstpcrc;  /**< Module Stop Control Register C */
-  volatile uint32_t mstpcrd;  /**< Module Stop Control Register D */
+  volatile uint16_t prcr;    /**< Protect Register */
+  volatile uint32_t mstpcra; /**< Module Stop Control Register A */
+  volatile uint32_t mstpcrb; /**< Module Stop Control Register B */
+  volatile uint32_t mstpcrc; /**< Module Stop Control Register C */
+  volatile uint32_t mstpcrd; /**< Module Stop Control Register D */
 } mock_system_regs_t;
 
 /* =============================================================================
@@ -80,8 +80,9 @@ extern uint16_t           g_mock_cmt3_counter_shadow;
  */
 static inline volatile mock_cmt_channel_t* cmt3(void)
 {
-  g_mock_cmt3_counter_shadow = (uint16_t)(g_mock_cmt3_counter_shadow + k_mock_onewire_timer_auto_increment);
-  g_mock_cmt3.cmcnt          = g_mock_cmt3_counter_shadow;
+  g_mock_cmt3_counter_shadow =
+    (uint16_t)(g_mock_cmt3_counter_shadow + k_mock_onewire_timer_auto_increment);
+  g_mock_cmt3.cmcnt = g_mock_cmt3_counter_shadow;
 
   return &g_mock_cmt3;
 }

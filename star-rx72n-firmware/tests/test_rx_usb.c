@@ -14,9 +14,9 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#include "unity.h"
-
 #include <string.h>
+
+#include "unity.h"
 
 /* Source under test includes mock headers when UNIT_TEST is defined */
 #include "mock_usb0_regs.h"
@@ -41,12 +41,8 @@ typedef struct {
 extern void     internal_ring_buffer_init(ring_buffer_t* buf);
 extern uint32_t internal_ring_buffer_available(const ring_buffer_t* buf);
 extern uint32_t internal_ring_buffer_free(const ring_buffer_t* buf);
-extern uint32_t internal_ring_buffer_write(ring_buffer_t* buf,
-                                           const uint8_t* data,
-                                           uint32_t       len);
-extern uint32_t internal_ring_buffer_read(ring_buffer_t* buf,
-                                          uint8_t*       data,
-                                          uint32_t       max_len);
+extern uint32_t internal_ring_buffer_write(ring_buffer_t* buf, const uint8_t* data, uint32_t len);
+extern uint32_t internal_ring_buffer_read(ring_buffer_t* buf, uint8_t* data, uint32_t max_len);
 
 /* =============================================================================
  * Test Fixtures
@@ -62,7 +58,7 @@ static void*          s_callback_context;
 
 static void test_callback(rx_usb_event_t event, void* ctx)
 {
-  s_last_event       = event;
+  s_last_event = event;
   s_callback_count++;
   s_callback_context = ctx;
 }
@@ -349,7 +345,7 @@ void test_usb_init_with_callback(void)
 {
   rx_usb_config_t config = {0};
   config.callback        = test_callback;
-  config.ctx         = (void*)0xDEADBEEF;
+  config.ctx             = (void*)0xDEADBEEF;
 
   rx_err_t err = rx_usb_init(&config);
 
@@ -661,7 +657,7 @@ void test_usb_set_state_triggers_callback(void)
 {
   rx_usb_config_t config = {0};
   config.callback        = test_callback;
-  config.ctx         = (void*)0xCAFEBABE;
+  config.ctx             = (void*)0xCAFEBABE;
   rx_usb_init(&config);
 
   rx_usb_set_state(k_usb_state_configured);
@@ -834,8 +830,8 @@ void test_usb_write_no_trigger_when_buffer_empty_after_write_fails(void)
   mock_usb_hw_clear_calls(NULL);
 
   /* Try to write more - should fail due to full buffer */
-  uint8_t more_data[] = "more";
-  rx_err_t err = rx_usb_write(more_data, 4);
+  uint8_t  more_data[] = "more";
+  rx_err_t err         = rx_usb_write(more_data, 4);
 
   /* Write fails due to full buffer */
   TEST_ASSERT_EQUAL(k_rx_err_busy, err);

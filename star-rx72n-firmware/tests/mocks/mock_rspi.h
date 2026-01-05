@@ -61,16 +61,16 @@ typedef struct {
  * @brief State of a single RSPI channel
  */
 typedef struct {
-  bool     initialized;                              /**< Channel initialized */
-  uint8_t  spi_mode;                                 /**< Configured SPI mode */
-  bool     use_16bit;                                /**< 16-bit frame mode */
-  bool     data_available;                           /**< RX data available */
-  bool     write_ready;                              /**< TX ready */
-  uint8_t  rx_data[k_mock_rspi_buffer_size];         /**< RX buffer for injection */
-  uint32_t rx_len;                                   /**< RX data length */
-  uint32_t rx_pos;                                   /**< RX read position */
-  uint8_t  tx_data[k_mock_rspi_buffer_size];         /**< TX buffer for capture */
-  uint32_t tx_len;                                   /**< TX data length */
+  bool     initialized;                      /**< Channel initialized */
+  uint8_t  spi_mode;                         /**< Configured SPI mode */
+  bool     use_16bit;                        /**< 16-bit frame mode */
+  bool     data_available;                   /**< RX data available */
+  bool     write_ready;                      /**< TX ready */
+  uint8_t  rx_data[k_mock_rspi_buffer_size]; /**< RX buffer for injection */
+  uint32_t rx_len;                           /**< RX data length */
+  uint32_t rx_pos;                           /**< RX read position */
+  uint8_t  tx_data[k_mock_rspi_buffer_size]; /**< TX buffer for capture */
+  uint32_t tx_len;                           /**< TX data length */
 } mock_rspi_channel_t;
 
 /* =============================================================================
@@ -91,11 +91,11 @@ typedef struct {
   uint32_t         call_write_index;                           /**< Next index */
 
   /* Configurable return values for error injection */
-  rx_err_t next_init_return;       /**< Return for next init call */
-  rx_err_t next_transfer_return;   /**< Return for next transfer call */
-  rx_err_t next_available_return;  /**< Return for next available call */
-  rx_err_t next_ready_return;      /**< Return for next ready call */
-  rx_err_t next_deinit_return;     /**< Return for next deinit call */
+  rx_err_t next_init_return;      /**< Return for next init call */
+  rx_err_t next_transfer_return;  /**< Return for next transfer call */
+  rx_err_t next_available_return; /**< Return for next available call */
+  rx_err_t next_ready_return;     /**< Return for next ready call */
+  rx_err_t next_deinit_return;    /**< Return for next deinit call */
 
   /* Statistics */
   uint32_t init_calls;      /**< Number of init calls */
@@ -202,10 +202,8 @@ void mock_rspi_set_deinit_return(mock_rspi_t* mock, rx_err_t ret);
  * @param len Data length
  * @return k_rx_ok on success
  */
-rx_err_t mock_rspi_inject_rx_data(mock_rspi_t*   mock,
-                                  uint8_t        channel,
-                                  const uint8_t* data,
-                                  uint32_t       len);
+rx_err_t
+mock_rspi_inject_rx_data(mock_rspi_t* mock, uint8_t channel, const uint8_t* data, uint32_t len);
 
 /**
  * @brief Get data that was transmitted via SPI
@@ -280,9 +278,7 @@ uint32_t mock_rspi_get_call_count(mock_rspi_t* mock, const char* func);
  * @param out_call Output call record
  * @return k_rx_ok on success, k_rx_err_not_found if never called
  */
-rx_err_t mock_rspi_get_last_call(mock_rspi_t*     mock,
-                                 const char*      func,
-                                 mock_rspi_call_t* out_call);
+rx_err_t mock_rspi_get_last_call(mock_rspi_t* mock, const char* func, mock_rspi_call_t* out_call);
 
 /**
  * @brief Clear call history

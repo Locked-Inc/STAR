@@ -79,10 +79,10 @@ typedef struct {
 /** @brief Global mock GPIO state */
 typedef struct {
   mock_gpio_pin_state_t pins[k_mock_gpio_max_ports][k_mock_gpio_pins_per_port]; /**< Pin states */
-  mock_gpio_call_t      call_history[k_mock_gpio_call_history_size]; /**< Call history */
-  uint16_t              call_count;   /**< Number of calls recorded */
-  rx_err_t              next_error;   /**< Error to return on next call */
-  bool                  error_set;    /**< Whether error injection is active */
+  mock_gpio_call_t      call_history[k_mock_gpio_call_history_size];            /**< Call history */
+  uint16_t              call_count; /**< Number of calls recorded */
+  rx_err_t              next_error; /**< Error to return on next call */
+  bool                  error_set;  /**< Whether error injection is active */
 } mock_gpio_state_t;
 
 /* =============================================================================

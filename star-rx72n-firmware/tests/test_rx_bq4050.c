@@ -22,8 +22,8 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "rx_bq4050.h"
 #include "mocks/mock_rx_bus_smbus.h"
+#include "rx_bq4050.h"
 
 /* =============================================================================
  * Test Constants

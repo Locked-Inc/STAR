@@ -32,10 +32,9 @@
 
 /* Include the encoder source directly to ensure it uses mock registers.
  * This is necessary because the hardware header accessor functions are inline. */
-#include "../lib/rx_encoder/src/rx_mtu_encoder.c"
-
 #include <string.h>
 
+#include "../lib/rx_encoder/src/rx_mtu_encoder.c"
 #include "mock_rx_mtu_encoder.h"
 #include "unity.h"
 
@@ -48,8 +47,8 @@
  * @brief Test constants for encoder configuration
  */
 typedef enum {
-  k_test_counts_per_rev  = 1364, /**< 341 PPR with 4x decoding */
-  k_test_degrees_per_rev = 360,  /**< Degrees in one revolution */
+  k_test_counts_per_rev  = 1364,  /**< 341 PPR with 4x decoding */
+  k_test_degrees_per_rev = 360,   /**< Degrees in one revolution */
   k_test_counter_max     = 65536, /**< 16-bit counter maximum + 1 */
   k_test_counter_half    = 32768, /**< Half of counter range */
 } test_constants_t;
@@ -618,8 +617,8 @@ void test_encoder_read_velocity_one_revolution_per_second(void)
   rx_encoder_init(&s_config);
 
   /* First call establishes baseline */
-  float    velocity_rps;
-  float    delta_time = 1.0f; /* 1 second */
+  float velocity_rps;
+  float delta_time = 1.0f; /* 1 second */
   rx_encoder_read_velocity(s_config.channel, delta_time, &velocity_rps);
 
   /* Move exactly one revolution */
@@ -636,8 +635,8 @@ void test_encoder_read_velocity_reverse(void)
 
   /* Start at 1000 counts */
   mock_encoder_set_counter(s_config.channel, 1000);
-  float    velocity_rps;
-  float    delta_time = 0.1f; /* 100ms */
+  float velocity_rps;
+  float delta_time = 0.1f; /* 100ms */
   rx_encoder_read_velocity(s_config.channel, delta_time, &velocity_rps);
 
   /* Move backward by 136 counts (0.1 revolutions) */

@@ -127,7 +127,8 @@ rx_err_t rx_gptw_set_duty(rx_gptw_channel_t channel, rx_gptw_output_t output, fl
  * @return k_rx_err_invalid_arg if channel, output, or count is invalid
  * @return k_rx_err_invalid_state if channel not initialized
  */
-rx_err_t rx_gptw_set_duty_raw(rx_gptw_channel_t channel, rx_gptw_output_t output, uint32_t duty_count);
+rx_err_t
+rx_gptw_set_duty_raw(rx_gptw_channel_t channel, rx_gptw_output_t output, uint32_t duty_count);
 
 /**
  * @brief Get current duty cycle

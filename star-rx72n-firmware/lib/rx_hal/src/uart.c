@@ -37,7 +37,7 @@ typedef enum {
 /** @brief UART timing constants */
 typedef enum {
   k_uart_bit_time_delay_cycles =
-      1000, /**< Bit time delay (~8.68us at 115200 bps, >520 cycles at 60MHz) */
+    1000, /**< Bit time delay (~8.68us at 115200 bps, >520 cycles at 60MHz) */
 } uart_timing_t;
 
 /** @brief SCI register values */
@@ -214,7 +214,6 @@ static rx_err_t internal_enable_sci_clock(uint8_t channel)
   return k_rx_ok;
 }
 
-
 /**
  * @brief Configure pins for SCI UART operation
  *
@@ -227,10 +226,8 @@ static rx_err_t internal_enable_sci_clock(uint8_t channel)
  *
  * @return k_rx_ok on success, error code on failure
  */
-static rx_err_t internal_configure_uart_pins(uint8_t tx_port,
-                                             uint8_t tx_pin,
-                                             uint8_t rx_port,
-                                             uint8_t rx_pin)
+static rx_err_t
+internal_configure_uart_pins(uint8_t tx_port, uint8_t tx_pin, uint8_t rx_port, uint8_t rx_pin)
 {
   /* Validate pin numbers */
   if (tx_pin > 7 || rx_pin > 7) {
@@ -241,8 +238,7 @@ static rx_err_t internal_configure_uart_pins(uint8_t tx_port,
   volatile rx_port_regs_t* tx_port_base = rx_port_get_base(tx_port);
   volatile rx_port_regs_t* rx_port_base = rx_port_get_base(rx_port);
 
-  if (tx_port_base == (volatile rx_port_regs_t*)0 ||
-      rx_port_base == (volatile rx_port_regs_t*)0) {
+  if (tx_port_base == (volatile rx_port_regs_t*)0 || rx_port_base == (volatile rx_port_regs_t*)0) {
     return k_rx_err_invalid_arg;
   }
 
@@ -388,7 +384,7 @@ rx_err_t uart_putc_channel(uint8_t channel, char data)
 
   /* Clear TDRE flag by reading SSR then writing 0 */
   volatile uint8_t ssr = sci->ssr;
-  sci->ssr = (uint8_t)(ssr & ~k_sci_ssr_tdre_flag);
+  sci->ssr             = (uint8_t)(ssr & ~k_sci_ssr_tdre_flag);
 
   return k_rx_ok;
 }
@@ -488,15 +484,12 @@ rx_err_t uart_getc_channel(uint8_t channel, char* data)
   /* Clear RDRF flag by reading SSR then writing 0 */
   /* Some RX MCUs require explicit clear after reading RDR */
   volatile uint8_t ssr = sci->ssr;
-  sci->ssr = (uint8_t)(ssr & ~k_sci_ssr_rdrf_flag);
+  sci->ssr             = (uint8_t)(ssr & ~k_sci_ssr_rdrf_flag);
 
   return k_rx_ok;
 }
 
-rx_err_t uart_read_channel(uint8_t   channel,
-                           uint8_t*  data,
-                           uint16_t  length,
-                           uint16_t* bytes_read)
+rx_err_t uart_read_channel(uint8_t channel, uint8_t* data, uint16_t length, uint16_t* bytes_read)
 {
   /* Validate parameters */
   if (data == (uint8_t*)0 || bytes_read == (uint16_t*)0) {

@@ -98,10 +98,9 @@ uint16_t mock_uart_hw_inject_rx_data(uint8_t channel, const uint8_t* data, uint1
     return 0;
   }
 
-  mock_uart_channel_t* ch    = &g_mock_uart.channels[channel];
-  uint16_t             space = internal_fifo_space(ch->rx_head, ch->rx_tail);
-  uint16_t             to_write =
-      (len < space) ? len : space;
+  mock_uart_channel_t* ch       = &g_mock_uart.channels[channel];
+  uint16_t             space    = internal_fifo_space(ch->rx_head, ch->rx_tail);
+  uint16_t             to_write = (len < space) ? len : space;
 
   for (uint16_t i = 0; i < to_write; i++) {
     ch->rx_fifo[ch->rx_head] = data[i];
@@ -132,13 +131,12 @@ uint16_t mock_uart_hw_get_tx_data(uint8_t channel, uint8_t* data, uint16_t max_l
     return 0;
   }
 
-  mock_uart_channel_t* ch    = &g_mock_uart.channels[channel];
-  uint16_t             count = internal_fifo_count(ch->tx_head, ch->tx_tail);
-  uint16_t             to_read =
-      (max_len < count) ? max_len : count;
+  mock_uart_channel_t* ch      = &g_mock_uart.channels[channel];
+  uint16_t             count   = internal_fifo_count(ch->tx_head, ch->tx_tail);
+  uint16_t             to_read = (max_len < count) ? max_len : count;
 
   for (uint16_t i = 0; i < to_read; i++) {
-    data[i]    = ch->tx_fifo[ch->tx_tail];
+    data[i]     = ch->tx_fifo[ch->tx_tail];
     ch->tx_tail = (ch->tx_tail + 1) % k_mock_uart_fifo_size;
   }
 
@@ -428,10 +426,7 @@ rx_err_t uart_getc_channel(uint8_t channel, char* data)
   return k_rx_ok;
 }
 
-rx_err_t uart_read_channel(uint8_t   channel,
-                           uint8_t*  data,
-                           uint16_t  length,
-                           uint16_t* bytes_read)
+rx_err_t uart_read_channel(uint8_t channel, uint8_t* data, uint16_t length, uint16_t* bytes_read)
 {
   internal_record_call(k_mock_uart_call_read, channel, length);
 
