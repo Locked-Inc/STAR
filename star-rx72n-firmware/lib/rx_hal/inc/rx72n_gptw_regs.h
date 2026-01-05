@@ -128,24 +128,41 @@ typedef struct {
  * need verification against the official RX72N Hardware Manual.
  */
 
-/** @brief Channel spacing between GPTW registers */
-#define GPTW_CHANNEL_OFFSET (0x100)
+/** @brief GPTW hardware addresses (tentative - verify against HW manual) */
+typedef enum {
+  k_gptw_channel_offset = 0x100,   /**< Channel spacing between GPTW registers */
+  k_gptw_common_addr    = 0x000D3000, /**< GPTW common registers base */
+  k_gptw0_base_addr     = 0x000D4000, /**< GPTW channel 0 base address */
+  k_gptw1_base_addr     = 0x000D4100, /**< GPTW channel 1 base address */
+  k_gptw2_base_addr     = 0x000D4200, /**< GPTW channel 2 base address */
+  k_gptw3_base_addr     = 0x000D4300, /**< GPTW channel 3 base address */
+} gptw_addresses_t;
 
-/** @brief GPTW common registers base (tentative) */
-#define GPTW_COMMON_BASE ((rx_gptw_common_regs_t*)0x000D3000)
+/** @brief GPTW register inline accessor functions */
+static inline volatile rx_gptw_common_regs_t* gptw_common(void)
+{
+  return (volatile rx_gptw_common_regs_t*)k_gptw_common_addr;
+}
 
-/** @brief GPTW channel base addresses (tentative - verify against HW manual) */
-#define GPTW0_BASE ((rx_gptw_channel_regs_t*)0x000D4000)
-#define GPTW1_BASE ((rx_gptw_channel_regs_t*)0x000D4100)
-#define GPTW2_BASE ((rx_gptw_channel_regs_t*)0x000D4200)
-#define GPTW3_BASE ((rx_gptw_channel_regs_t*)0x000D4300)
+static inline volatile rx_gptw_channel_regs_t* gptw0(void)
+{
+  return (volatile rx_gptw_channel_regs_t*)k_gptw0_base_addr;
+}
 
-/** @brief GPTW register access macros */
-#define GPTW_COMMON (*GPTW_COMMON_BASE)
-#define GPTW0       (*GPTW0_BASE)
-#define GPTW1       (*GPTW1_BASE)
-#define GPTW2       (*GPTW2_BASE)
-#define GPTW3       (*GPTW3_BASE)
+static inline volatile rx_gptw_channel_regs_t* gptw1(void)
+{
+  return (volatile rx_gptw_channel_regs_t*)k_gptw1_base_addr;
+}
+
+static inline volatile rx_gptw_channel_regs_t* gptw2(void)
+{
+  return (volatile rx_gptw_channel_regs_t*)k_gptw2_base_addr;
+}
+
+static inline volatile rx_gptw_channel_regs_t* gptw3(void)
+{
+  return (volatile rx_gptw_channel_regs_t*)k_gptw3_base_addr;
+}
 
 /* =============================================================================
  * Write Protection Register (GTWP) Bits
