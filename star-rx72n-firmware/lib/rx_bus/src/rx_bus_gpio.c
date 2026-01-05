@@ -90,9 +90,9 @@ static rx_err_t internal_gpio_init_callback(rx_bus_config_t* bus_config, void* u
   /* Initialize GPIO pin */
   rx_err_t err;
   if (ctx->output) {
-    err = gpio_set_output(bus_config->proto.gpio.port, bus_config->proto.gpio.pin);
+    err = gpio_set_output(bus_config->proto.gpio.pin);
   } else {
-    err = gpio_set_input(bus_config->proto.gpio.port, bus_config->proto.gpio.pin);
+    err = gpio_set_input(bus_config->proto.gpio.pin);
   }
 
   if (err != k_rx_ok) {
@@ -130,9 +130,9 @@ static rx_err_t internal_gpio_write_callback(rx_bus_config_t* bus_config, void* 
   /* Write GPIO value */
   rx_err_t err;
   if (ctx->value) {
-    err = gpio_write_high(bus_config->proto.gpio.port, bus_config->proto.gpio.pin);
+    err = gpio_write_high(bus_config->proto.gpio.pin);
   } else {
-    err = gpio_write_low(bus_config->proto.gpio.port, bus_config->proto.gpio.pin);
+    err = gpio_write_low(bus_config->proto.gpio.pin);
   }
 
   if (err != k_rx_ok) {
@@ -165,7 +165,7 @@ static rx_err_t internal_gpio_read_callback(rx_bus_config_t* bus_config, void* u
   }
 
   /* Read GPIO value */
-  rx_err_t err = gpio_read(bus_config->proto.gpio.port, bus_config->proto.gpio.pin, ctx->value);
+  rx_err_t err = gpio_read(bus_config->proto.gpio.pin, ctx->value);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "GPIO read failed");
@@ -197,7 +197,7 @@ static rx_err_t internal_gpio_toggle_callback(rx_bus_config_t* bus_config, void*
   }
 
   /* Toggle GPIO */
-  rx_err_t err = gpio_toggle(bus_config->proto.gpio.port, bus_config->proto.gpio.pin);
+  rx_err_t err = gpio_toggle(bus_config->proto.gpio.pin);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "GPIO toggle failed");
@@ -329,9 +329,9 @@ __attribute__((unused)) static rx_err_t gpio_write_command_execute(rx_bus_config
   /* Execute GPIO write operation */
   rx_err_t err;
   if (write_data->value) {
-    err = gpio_write_high(bus->proto.gpio.port, bus->proto.gpio.pin);
+    err = gpio_write_high(bus->proto.gpio.pin);
   } else {
-    err = gpio_write_low(bus->proto.gpio.port, bus->proto.gpio.pin);
+    err = gpio_write_low(bus->proto.gpio.pin);
   }
 
   if (err != k_rx_ok) {
@@ -378,7 +378,7 @@ __attribute__((unused)) static rx_err_t gpio_read_command_execute(rx_bus_config_
   }
 
   /* Execute GPIO read operation */
-  rx_err_t err = gpio_read(bus->proto.gpio.port, bus->proto.gpio.pin, read_data->value);
+  rx_err_t err = gpio_read(bus->proto.gpio.pin, read_data->value);
 
   if (err != k_rx_ok) {
     rx_log_error(s_tag, "GPIO read failed");

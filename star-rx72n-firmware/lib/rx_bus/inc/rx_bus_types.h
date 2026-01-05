@@ -23,6 +23,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "hardware_pinout.h"
 #include "rx_err.h"
 #include "rx_error_interface.h"
 #include "rx_gpio_constants.h"
@@ -61,8 +62,7 @@ typedef enum {
  * @brief GPIO bus configuration
  */
 typedef struct {
-  uint8_t port; /**< GPIO port number (0-J = 0-9) */
-  uint8_t pin;  /**< Pin number (0-7) */
+  gpio_pin_t pin; /**< GPIO pin (type-safe enum from hardware_pinout.h) */
 } rx_gpio_bus_config_t;
 
 /**
@@ -78,13 +78,11 @@ typedef struct {
  * @brief I2C bus configuration
  */
 typedef struct {
-  uint8_t  channel;      /**< RIIC channel (0-2) */
-  uint8_t  sda_port;     /**< SDA pin port */
-  uint8_t  sda_pin;      /**< SDA pin number */
-  uint8_t  scl_port;     /**< SCL pin port */
-  uint8_t  scl_pin;      /**< SCL pin number */
-  uint32_t frequency_hz; /**< Clock frequency (100kHz, 400kHz, 1MHz) */
-  uint8_t  device_addr;  /**< 7-bit device address */
+  uint8_t    channel;      /**< RIIC channel (0-2) */
+  gpio_pin_t sda_pin;      /**< SDA pin (type-safe enum) */
+  gpio_pin_t scl_pin;      /**< SCL pin (type-safe enum) */
+  uint32_t   frequency_hz; /**< Clock frequency (100kHz, 400kHz, 1MHz) */
+  uint8_t    device_addr;  /**< 7-bit device address */
 } rx_i2c_bus_config_t;
 
 /**
@@ -99,37 +97,30 @@ typedef struct {
  * @brief SPI bus configuration
  */
 typedef struct {
-  uint8_t  channel;      /**< RSPI channel (0-2) */
-  uint8_t  copi_port;    /**< COPI (MOSI) pin port */
-  uint8_t  copi_pin;     /**< COPI pin number */
-  uint8_t  cipo_port;    /**< CIPO (MISO) pin port */
-  uint8_t  cipo_pin;     /**< CIPO pin number */
-  uint8_t  sck_port;     /**< SCK pin port */
-  uint8_t  sck_pin;      /**< SCK pin number */
-  uint8_t  cs_port;      /**< CS pin port */
-  uint8_t  cs_pin;       /**< CS pin number */
-  uint32_t frequency_hz; /**< SPI clock frequency */
-  uint8_t  mode;         /**< SPI mode (0-3) */
+  uint8_t    channel;      /**< RSPI channel (0-2) */
+  gpio_pin_t copi_pin;     /**< COPI (MOSI) pin (type-safe enum) */
+  gpio_pin_t cipo_pin;     /**< CIPO (MISO) pin (type-safe enum) */
+  gpio_pin_t sck_pin;      /**< SCK pin (type-safe enum) */
+  gpio_pin_t cs_pin;       /**< CS pin (type-safe enum) */
+  uint32_t   frequency_hz; /**< SPI clock frequency */
+  uint8_t    mode;         /**< SPI mode (0-3) */
 } rx_spi_bus_config_t;
 
 /**
  * @brief UART bus configuration
  */
 typedef struct {
-  uint8_t  channel;  /**< SCI channel (0-12) */
-  uint8_t  tx_port;  /**< TX pin port */
-  uint8_t  tx_pin;   /**< TX pin number */
-  uint8_t  rx_port;  /**< RX pin port */
-  uint8_t  rx_pin;   /**< RX pin number */
-  uint32_t baudrate; /**< Baud rate (9600, 115200, etc.) */
+  uint8_t    channel;  /**< SCI channel (0-12) */
+  gpio_pin_t tx_pin;   /**< TX pin (type-safe enum) */
+  gpio_pin_t rx_pin;   /**< RX pin (type-safe enum) */
+  uint32_t   baudrate; /**< Baud rate (9600, 115200, etc.) */
 } rx_uart_bus_config_t;
 
 /**
  * @brief 1-Wire bus configuration
  */
 typedef struct {
-  uint8_t port; /**< 1-Wire data pin port */
-  uint8_t pin;  /**< 1-Wire data pin number */
+  gpio_pin_t pin; /**< 1-Wire data pin (type-safe enum) */
 } rx_onewire_bus_config_t;
 
 /* =============================================================================

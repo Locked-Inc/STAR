@@ -47,12 +47,10 @@ void setUp(void)
   /* Reset sensor handle */
   memset(&s_sensor, 0, sizeof(s_sensor));
 
-  /* Setup default config for sensor 1 (J24) */
-  s_config.trigger_port = 0xC;
-  s_config.trigger_pin  = 6;
-  s_config.echo_port    = 0x5;
-  s_config.echo_pin     = 5;
-  s_config.timeout_us   = 30000;
+  /* Setup default config for sensor 1 (J24) using type-safe GPIO enum */
+  s_config.trigger_pin = k_gpio_pc6;  /* PMOD JB GPIO0 */
+  s_config.echo_pin    = k_gpio_p55;  /* PMOD JB GPIO1 */
+  s_config.timeout_us  = 30000;
 }
 
 /**
@@ -74,9 +72,7 @@ void test_hcsr04_init_success(void)
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(s_sensor.initialized);
-  TEST_ASSERT_EQUAL(s_config.trigger_port, s_sensor.trigger_port);
   TEST_ASSERT_EQUAL(s_config.trigger_pin, s_sensor.trigger_pin);
-  TEST_ASSERT_EQUAL(s_config.echo_port, s_sensor.echo_port);
   TEST_ASSERT_EQUAL(s_config.echo_pin, s_sensor.echo_pin);
 }
 
