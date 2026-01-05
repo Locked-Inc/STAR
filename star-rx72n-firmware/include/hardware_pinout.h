@@ -121,6 +121,7 @@ typedef enum {
   /* Port B GPIO Pins (Debug UART + PMOD) */
   k_gpio_pb0 = 0x0B00, /**< PB0 (pin 61) - PMOD JE GPIO2 */
   k_gpio_pb1 = 0x0B01, /**< PB1 (pin 59) - PMOD JE GPIO1 */
+  k_gpio_pb2 = 0x0B02, /**< PB2 (pin 59) - PMOD JA GPIO */
   k_gpio_pb3 = 0x0B03, /**< PB3 (pin 58) - PMOD JA RST */
   k_gpio_pb4 = 0x0B04, /**< PB4 (pin 57) - PMOD JA DC */
   k_gpio_pb5 = 0x0B05, /**< PB5 (pin 55) - PMOD JA CS1 */
@@ -171,9 +172,6 @@ typedef enum {
   k_gpio_pmod_je_gpio1       = k_gpio_pb1,  /**< PMOD JE GPIO 1 */
   k_gpio_pmod_je_gpio2       = k_gpio_pb0,  /**< PMOD JE GPIO 2 */
   k_gpio_pmod_je_gpio3       = k_gpio_pa1,  /**< PMOD JE GPIO 3 */
-
-  /* Force enum to be 16-bit wide for safety */
-  k_gpio_pin_force_u16 = 0xFFFF
 } gpio_pin_t;
 
 /**
@@ -503,9 +501,6 @@ typedef enum {
  *
  * Standard 12-pin PMOD connector for SPI peripherals (displays, SD cards,
  * sensors). Supports 2 chip selects for dual-device configurations.
- *
- * Note: PMOD JA GPIO pin is not available on LQFP-176 package (PB2 does not
- * exist). Verify actual hardware schematic for correct GPIO assignment.
  */
 typedef enum {
   k_pmod_ja_cs0_port  = 5,   /**< Port 5 */
@@ -520,6 +515,8 @@ typedef enum {
   k_pmod_ja_dc_pin    = 4,   /**< PB4 (pin 57) - Data/Command */
   k_pmod_ja_rst_port  = 0xB, /**< Port B */
   k_pmod_ja_rst_pin   = 3,   /**< PB3 (pin 58) - Reset */
+  k_pmod_ja_gpio_port = 0xB, /**< Port B */
+  k_pmod_ja_gpio_pin  = 2,   /**< PB2 (pin 59) - General Purpose */
   k_pmod_ja_cs1_port  = 0xB, /**< Port B */
   k_pmod_ja_cs1_pin   = 5,   /**< PB5 (pin 55) - SPI CS1 */
 } pmod_ja_pins_t;
