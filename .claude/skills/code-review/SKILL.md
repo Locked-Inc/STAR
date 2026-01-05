@@ -74,10 +74,14 @@ Review rx_pid.c for NASA Power of 10 compliance
 - [ ] Use `static const` ONLY for floating-point values (enum can't hold floats)
 - [ ] Macros ONLY allowed for: (1) reducing duplicated code, (2) conditional compilation, (3) hardware addresses, (4) build flags
 - [ ] **FORBIDDEN**: Macros for simple constants or backward compatibility (no releases = no compatibility needed)
+- [ ] **NO MAGIC NUMBERS**: All numeric literals must be named enums (including array indices, bit shifts, offsets)
 - [ ] No token pasting (`##`) except in allowed macro cases
 - [ ] No recursive macros
 - Good: `typedef enum { k_timeout_ms = 1000, k_max_retries = 3 } limits_t;`
+- Good: `typedef enum { k_idx_high_byte = 0, k_idx_low_byte = 1 } be16_idx_t;`
+- Good: `typedef enum { k_shift_enable = 7, k_shift_mode = 3 } reg_shifts_t;`
 - Good: `#define RX_RETURN_ON_ERROR(err, tag, msg) /* multi-line validation */`
+- Bad: `buf[0] = (val >> 8);` (magic 0 and 8 - use enums!)
 - Bad: `#define TIMEOUT_MS 1000` (should be enum!)
 - Bad: `#define MAX_VELOCITY 2.5f` (should be static const float!)
 - Bad: `#define old_func new_func` (no backward compatibility - just update call sites!)

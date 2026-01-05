@@ -87,6 +87,61 @@ static const float s_max_velocity_mps = 2.5f;
 #define old_func new_func      // No compatibility needed!
 ```
 
+## No Magic Numbers Policy
+
+**ZERO TOLERANCE for magic numbers.** ALL numeric literals must be named enums, including:
+- Array indices (`buf[0]` → `buf[k_idx_high_byte]`)
+- Bit shift amounts (`val >> 8` → `val >> k_shift_byte`)
+- Protocol offsets (`frame[4]` → `frame[k_offset_payload]`)
+- Register bit positions (`1 << 7` → `1 << k_bit_enable`)
+- Bit masks (`0xFF` → `k_mask_byte`)
+
+**Examples:**
+```c
+// ✓ CORRECT: Named indices
+typedef enum {
+    k_idx_high_byte = 0,
+    k_idx_low_byte  = 1
+} be16_byte_idx_t;
+
+buf[k_idx_high_byte] = (val >> k_shift_byte);
+
+// ✓ CORRECT: Named shifts
+typedef enum {
+    k_shift_byte   = 8,
+    k_shift_enable = 7
+} bit_shifts_t;
+
+// ✓ CORRECT: Named offsets
+typedef enum {
+    k_offset_sync    = 0,
+    k_offset_payload = 4
+} frame_offsets_t;
+
+frame[k_offset_sync] = SYNC_MARKER;
+
+// ✓ CORRECT: Named masks
+typedef enum {
+    k_mask_byte   = 0xFF,
+    k_mask_enable = 0x80
+} bit_masks_t;
+
+val &= k_mask_byte;
+
+// ❌ WRONG: Magic numbers
+buf[0] = (val >> 8);         // What is 0? What is 8?
+frame[4] = payload;          // What's at index 4?
+REG = (1 << 7) | (3 << 3);  // Which bits? Why?
+val &= 0xFF;                 // What does 0xFF represent?
+```
+
+**Benefits:**
+- Self-documenting: `k_idx_high_byte` vs `0`
+- Searchable: grep "high_byte" finds all uses
+- Maintainable: change offset in one place
+- Debugger-friendly: see names, not numbers
+- Type-safe: compiler catches typos
+
 ## Project Overview
 
 **STAR (Simultaneous Tracking and Robotics)** - A distributed robotics platform with custom PCB hardware, embedded firmware, and high-level control software.

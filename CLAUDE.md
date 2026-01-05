@@ -211,9 +211,50 @@ star.v1.RequestHeader.request_id max_size:64
    #define old_function new_function  // Wrong! Update call sites instead
    ```
 
+### No Magic Numbers
+
+**ZERO TOLERANCE for magic numbers.** ALL numeric literals must be named enums, including:
+
+```c
+// ✓ CORRECT: Array indices as enums
+typedef enum {
+    k_idx_high_byte = 0,
+    k_idx_low_byte  = 1
+} be16_byte_idx_t;
+
+buf[k_idx_high_byte] = (val >> k_shift_byte);
+
+// ✓ CORRECT: Bit shifts as enums
+typedef enum {
+    k_shift_byte   = 8,
+    k_shift_enable = 7
+} bit_shifts_t;
+
+// ✓ CORRECT: Protocol offsets as enums
+typedef enum {
+    k_offset_sync    = 0,
+    k_offset_payload = 4
+} frame_offsets_t;
+
+// ✓ CORRECT: Bit masks as enums
+typedef enum {
+    k_mask_byte   = 0xFF,
+    k_mask_enable = 0x80
+} bit_masks_t;
+
+// ❌ WRONG: Magic numbers
+buf[0] = (val >> 8);              // What is 0? What is 8?
+frame[4] = payload;               // What's at index 4?
+REG = (1 << 7) | (3 << 3);       // Which bits? Why?
+```
+
 **Why this matters:**
-- Enums provide type safety and debugger support
-- const variables have type information and scope
+- Self-documenting code (k_idx_high_byte vs 0)
+- Searchable (grep for "high_byte" finds all uses)
+- Maintainable (change offset in one place)
+- Debugger-friendly (see names, not numbers)
+- Compile-time checked (typos caught)
+- Enums provide type safety
 - Macros lack type safety and can cause subtle bugs
 
 ### Critical Rules
