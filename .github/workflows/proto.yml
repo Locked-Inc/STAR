@@ -116,7 +116,7 @@ jobs:
       - name: Generate Go Code
         run: |
           mkdir -p gen/go
-          buf generate proto/ --template buf.gen.yaml --include-imports
+          buf generate proto/ --template buf.gen.web.yaml --include-imports
 
       - name: Create go.mod for generated code
         run: |
@@ -159,7 +159,7 @@ jobs:
       - name: Generate TypeScript Code
         run: |
           mkdir -p gen/typescript
-          buf generate proto/ --template buf.gen.yaml --include-imports
+          buf generate proto/ --template buf.gen.web.yaml --include-imports
 
       - name: Upload TypeScript Artifacts
         uses: actions/upload-artifact@v4
