@@ -22,6 +22,126 @@ When writing or modifying code, documentation, or comments:
 
 Note: Renesas RX and other external APIs may still use legacy terminology internally. Map these to our terminology in comments and documentation.
 
+## Backward Compatibility Policy
+
+**IMPORTANT:** This project has not released any versions yet. There is **NO backward compatibility requirement**.
+
+- Do NOT add function aliases or deprecation macros for renamed functions
+- Do NOT keep old API signatures "for compatibility"
+- When refactoring, update all call sites directly - no shims or compatibility layers
+- Clean code now is better than technical debt for non-existent users
+
+**Example - What NOT to do:**
+```c
+// WRONG - No backward compatibility needed!
+#define old_function_name new_function_name  /* ❌ Delete old code instead */
+```
+
+**Example - What to do:**
+```c
+// CORRECT - Just update the function name and all call sites
+rx_err_t new_function_name(...)  /* ✓ Clean break, no compatibility layer */
+```
+
+## Constants and Macros Policy
+
+**Strict hierarchy for constants:**
+
+1. **Enums** - ALWAYS use for ALL integer constants (mandatory)
+2. **static const** - ONLY for floating-point values (enum can't hold floats)
+3. **Macros** - ONLY for these 4 specific cases:
+   - Reducing duplicated code (function-like macros: `RX_RETURN_ON_ERROR`)
+   - Conditional compilation (optimization: `#if LOG_LEVEL >= k_log_error`)
+   - Hardware register addresses (`#define CMT0_BASE ((type*)0x00088000)`)
+   - Build configuration flags (`#ifdef __RX__`)
+
+**Never use macros for:**
+- Simple integer constants (use enum instead)
+- Simple floating-point constants (use static const instead)
+- Backward compatibility/function aliases (no releases = no compatibility)
+
+**Examples:**
+```c
+// ✓ CORRECT - Integer constants use enum
+typedef enum {
+    k_timeout_ms  = 1000,
+    k_max_retries = 3
+} limits_t;
+
+// ✓ CORRECT - Floats use const (enum limitation)
+static const float s_max_velocity_mps = 2.5f;
+
+// ✓ CORRECT - Function-like macro reduces duplication
+#define RX_RETURN_ON_ERROR(err, tag, msg) \
+    do { \
+        rx_err_t _err = (err); \
+        if (_err != k_rx_ok) { \
+            rx_log_error((tag), (msg)); \
+            return _err; \
+        } \
+    } while (0)
+
+// ❌ WRONG - Never use macro for simple constants
+#define TIMEOUT_MS 1000        // Should be enum!
+#define MAX_VELOCITY 2.5f      // Should be static const!
+#define old_func new_func      // No compatibility needed!
+```
+
+## No Magic Numbers Policy
+
+**ZERO TOLERANCE for magic numbers.** ALL numeric literals must be named enums, including:
+- Array indices (`buf[0]` → `buf[k_idx_high_byte]`)
+- Bit shift amounts (`val >> 8` → `val >> k_shift_byte`)
+- Protocol offsets (`frame[4]` → `frame[k_offset_payload]`)
+- Register bit positions (`1 << 7` → `1 << k_bit_enable`)
+- Bit masks (`0xFF` → `k_mask_byte`)
+
+**Examples:**
+```c
+// ✓ CORRECT: Named indices
+typedef enum {
+    k_idx_high_byte = 0,
+    k_idx_low_byte  = 1
+} be16_byte_idx_t;
+
+buf[k_idx_high_byte] = (val >> k_shift_byte);
+
+// ✓ CORRECT: Named shifts
+typedef enum {
+    k_shift_byte   = 8,
+    k_shift_enable = 7
+} bit_shifts_t;
+
+// ✓ CORRECT: Named offsets
+typedef enum {
+    k_offset_sync    = 0,
+    k_offset_payload = 4
+} frame_offsets_t;
+
+frame[k_offset_sync] = SYNC_MARKER;
+
+// ✓ CORRECT: Named masks
+typedef enum {
+    k_mask_byte   = 0xFF,
+    k_mask_enable = 0x80
+} bit_masks_t;
+
+val &= k_mask_byte;
+
+// ❌ WRONG: Magic numbers
+buf[0] = (val >> 8);         // What is 0? What is 8?
+frame[4] = payload;          // What's at index 4?
+REG = (1 << 7) | (3 << 3);  // Which bits? Why?
+val &= 0xFF;                 // What does 0xFF represent?
+```
+
+**Benefits:**
+- Self-documenting: `k_idx_high_byte` vs `0`
+- Searchable: grep "high_byte" finds all uses
+- Maintainable: change offset in one place
+- Debugger-friendly: see names, not numbers
+- Type-safe: compiler catches typos
+
 ## Project Overview
 
 **STAR (Simultaneous Tracking and Robotics)** - A distributed robotics platform with custom PCB hardware, embedded firmware, and high-level control software.
@@ -164,6 +284,96 @@ buf generate
 - **Algorithm:** Discrete PID with anti-windup
 - **Tuning:** MATLAB-based system identification and controller design
 - **Safety:** Watchdog timeout 500ms, emergency stop <20ms
+
+## NASA Power of 10 Rules (STAR Implementation)
+
+The STAR project follows NASA/JPL Power of 10 rules for safety-critical embedded code with one intentional deviation for testability.
+
+### Rule 1: Simplify Control Flow ✓ COMPLIANT
+- No `goto`, `setjmp`/`longjmp`, or recursion
+- All control flow uses `if`/`while`/`for` only
+- Example: `rx_pid_init()` uses sequential error checking, no goto cleanup
+
+### Rule 2: Fixed Loop Upper-Bounds ✓ COMPLIANT
+- All loops have statically provable bounds
+- Exception: Main control loops use `while(1)` with watchdog
+- Example: `for (uint8_t i = 0; i < k_max_retries; i++)` - enum provides bound
+
+### Rule 3: No Dynamic Memory After Initialization ✓ COMPLIANT
+- **Zero malloc/free in RX72N firmware** (safety-critical)
+- All buffers statically allocated with enum-defined sizes
+- ThreadX stacks are static arrays
+- Example: `char items[k_max_items][k_max_desc_len]` - compile-time allocation
+
+### Rule 4: Keep Functions Short (~60 lines) ✓ COMPLIANT
+- Functions represent single verifiable units
+- Example: `rx_pid_compute()` is 44 lines - complete PID algorithm in one screen
+
+### Rule 5: Use Assertions/Validation ✓ COMPLIANT
+- Minimum 2 validation checks per function
+- **Pre-conditions**: `RX_CHECK_NULL_PTR`, state validation
+- **Post-conditions**: Output bounds checking, invariant validation
+- Example: `rx_pid_compute()` has 4 checks (NULL×2, initialized, dt > 0)
+
+### Rule 6: Declare Data at Smallest Scope ✓ COMPLIANT
+- Variables declared close to first use
+- Loop counters in for-statement: `for (uint8_t i = 0; ...)`
+- File-scope variables use `static` prefix (`s_tag`)
+
+### Rule 7: Check All Return Values ✓ COMPLIANT
+- All function returns validated or explicitly cast to `(void)`
+- Use `RX_RETURN_ON_ERROR` macro for propagation
+- Example: `rx_err_t ret = bus_init(config); if (ret != k_rx_ok) return ret;`
+
+### Rule 8: Limit Preprocessor Use ✓ COMPLIANT
+- Enums for ALL integer constants (mandatory)
+- Macros ONLY for: duplicated code, conditional compilation, hardware addresses, build flags
+- See "Constants and Macros Policy" section above for complete policy
+
+### Rule 9: Restrict Pointer Use ⚠️ INTENTIONAL DEVIATION
+- **Standard**: Maximum one level of dereferencing, no function pointers
+- **STAR Deviation**: Function pointers ALLOWED for Dependency Inversion Principle (DIP)
+- **Why**: Enables mock implementations for unit testing and hardware abstraction
+- Example: `typedef struct { rx_err_t (*read)(void* ctx, ...); void* ctx; } bus_interface_t;`
+
+### Rule 10: Compile with Maximum Warnings ✓ COMPLIANT
+- CMake flags: `-Wall -Wextra -Werror`
+- Build fails on ANY warning
+- CI/CD enforces zero-warning builds
+
+## SOLID Principles for C (STAR Implementation)
+
+### Single Responsibility (S)
+- **One module = one purpose**: `rx_pid` handles ONLY PID algorithm (no motor control, no hardware)
+- **One function = one action**: `rx_pid_compute()` does PID math, `rx_pid_reset()` clears state
+- **Separation of concerns**: Configuration (`rx_pid_config_t`) separate from runtime state (`rx_pid_handle_t`)
+
+### Open/Closed (O)
+- **Extensible without modification**: `rx_pid` configured via `rx_pid_config_t` struct
+- **Runtime tuning**: `rx_pid_set_gains()` allows updates without recompilation
+- **Avoid hardcoded values**: All limits defined in config (output_min/max, integral_min/max)
+
+### Liskov Substitution (L)
+- **Interface implementations interchangeable**: Bus manager accepts any bus type (I2C/SPI/1-Wire)
+- **Mocks substitute real implementations**: Tests use `mock_rx_bus_onewire` in place of real hardware
+- **Consistent error handling**: All drivers return `rx_err_t` with same semantics
+
+### Interface Segregation (I)
+- **Small, focused interfaces**: `rx_pid` API has 7 functions, each with clear purpose
+- **No "fat" interfaces**: Bus interface split into `read()`, `write()`, `configure()` - use only what you need
+- **Separate read/write**: Motor encoder read separate from motor driver write operations
+
+### Dependency Inversion (D)
+- **High-level modules don't depend on low-level details**: Motor control uses bus interface, not direct GPIO
+- **Function pointer interfaces for abstraction**:
+  ```c
+  typedef struct {
+      rx_err_t (*read)(void* ctx, uint8_t* data, uint32_t len);
+      rx_err_t (*write)(void* ctx, const uint8_t* data, uint32_t len);
+      void* ctx;
+  } bus_interface_t;
+  ```
+- **Testable via mock injection**: `driver_init(driver, &mock_bus)` vs `driver_init(driver, &real_bus)`
 
 ## Key Files
 
