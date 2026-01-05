@@ -180,11 +180,11 @@ type ChaseCombining struct {
 	retryCount int
 
 	// Dependencies (injected)
-	transport   transport.Transport
-	encoder     frame.Encoder
-	decoder     frame.Decoder
-	fecEncoder  fec.Encoder
-	fecDecoder  fec.Decoder
+	transport    transport.Transport
+	encoder      frame.Encoder
+	decoder      frame.Decoder
+	fecEncoder   fec.Encoder
+	fecDecoder   fec.Decoder
 	softCombiner *fec.ChaseCombiner
 
 	// Thread safety

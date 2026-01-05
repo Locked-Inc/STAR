@@ -113,8 +113,8 @@ func TestConvolutionalEncoder_OutputLength(t *testing.T) {
 		expected int
 	}{
 		{0, 0},
-		{1, 4},   // (8 + 6) * 2 = 28 bits -> ceil(28/8) = 4 bytes
-		{10, 22}, // (80 + 6) * 2 = 172 bits -> ceil(172/8) = 22 bytes
+		{1, 4},     // (8 + 6) * 2 = 28 bits -> ceil(28/8) = 4 bytes
+		{10, 22},   // (80 + 6) * 2 = 172 bits -> ceil(172/8) = 22 bytes
 		{100, 202}, // (800 + 6) * 2 = 1612 bits -> ceil(1612/8) = 202 bytes
 	}
 
@@ -576,8 +576,8 @@ func TestChaseCombining_ImprovesDecode(t *testing.T) {
 	for i := 0; i < numBits; i++ {
 		bit := getOutputBit(encoded, i)
 		if bit == 1 {
-			noisySoft1[i] = 40  // Reduced confidence
-			noisySoft2[i] = 40  // Reduced confidence
+			noisySoft1[i] = 40 // Reduced confidence
+			noisySoft2[i] = 40 // Reduced confidence
 		} else {
 			noisySoft1[i] = -40 // Reduced confidence
 			noisySoft2[i] = -40 // Reduced confidence

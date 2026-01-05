@@ -346,13 +346,13 @@ func (s *StopAndWait) Receive() ([]byte, error) {
 
 	if receivedSeq == previousSeq {
 		// Duplicate frame
-		s.mu.Unlock() // Release lock before I/O
+		s.mu.Unlock()              // Release lock before I/O
 		_ = s.sendAck(receivedSeq) // Best-effort
 		return nil, ErrDuplicateFrame
 	}
 
 	// Out of sequence frame
-	s.mu.Unlock() // Release lock before I/O
+	s.mu.Unlock()               // Release lock before I/O
 	_ = s.sendNack(receivedSeq) // Best-effort
 	return nil, ErrInvalidSequence
 }

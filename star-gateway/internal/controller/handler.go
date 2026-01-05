@@ -22,9 +22,7 @@ type Handler struct {
 }
 
 func NewHandler() *Handler {
-
 	return &Handler{}
-
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
@@ -71,39 +69,25 @@ func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (h *Handler) GetLastState() *starv1.ControllerState {
-
 	h.mu.Lock()
-
 	defer h.mu.Unlock()
-
 	return h.lastState
-
 }
 
 // GetSafeState returns the last state, or a zero state if the last message
-
 // was received more than 200ms ago.
-
 func (h *Handler) GetSafeState() *starv1.ControllerState {
-
 	h.mu.Lock()
-
 	defer h.mu.Unlock()
 
 	if h.lastState == nil {
-
 		return &starv1.ControllerState{}
-
 	}
 
 	if time.Since(h.lastReceived) > 200*time.Millisecond {
-
 		// Watchdog triggered: return zero state
-
 		return &starv1.ControllerState{}
-
 	}
 
 	return h.lastState
-
 }
