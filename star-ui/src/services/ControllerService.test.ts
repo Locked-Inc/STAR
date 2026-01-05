@@ -32,7 +32,9 @@ describe('ControllerService', () => {
     service = new ControllerService('ws://localhost:8080/ws/controller');
     service.connect();
 
-    // @ts-ignore
+    // Access private property via bracket notation to bypass TS check
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-expect-error
     const socket = service['socket'];
     
     expect(socket).not.toBeNull();
@@ -40,8 +42,8 @@ describe('ControllerService', () => {
 
     service.sendState(1.0, -0.5);
 
-    // Cast to any or specific mock type to access .mock
-    const mockSend = socket.send as unknown as { mock: { calls: any[][] } };
+    // Cast to unknown then to specific mock structure
+    const mockSend = socket.send as unknown as { mock: { calls: Uint8Array[][] } };
 
     expect(socket.send).toHaveBeenCalled();
     const sentBytes = mockSend.mock.calls[0][0];
