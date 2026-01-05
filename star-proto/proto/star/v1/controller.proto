@@ -1,0 +1,33 @@
+// controller.proto - STAR Gamepad Controller Protocol
+// Definition for direct robot control via gamepad inputs.
+//
+// Following Boston Dynamics style guide:
+// - Proto3 only, 100 char line limit, 4 space indent
+// - All fields documented with units and valid ranges
+//
+// STAR Project - Texas A&M University
+// January 2026
+
+syntax = "proto3";
+
+package star.v1;
+
+option go_package = "github.com/Locked-Inc/star-proto/gen/go/star/v1;starv1";
+option java_multiple_files = true;
+option java_package = "com.star.proto.v1";
+
+// ControllerState represents the state of a gamepad controller for direct robot control.
+message ControllerState {
+  // Linear velocity (v) from Left Stick Y-axis. Range: [-1.0, 1.0]
+  float linear_vel = 1;
+
+  // Angular velocity (ω) from Left Stick X-axis. Range: [-1.0, 1.0]
+  float angular_vel = 2;
+
+  // Timestamp in milliseconds (e.g., since epoch or monotonic boot time)
+  // Used for jitter buffer and out-of-order packet handling.
+  int64 timestamp = 3;
+
+  // Enable verbose debug logging on the gateway
+  bool debug = 4;
+}
