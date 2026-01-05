@@ -1,7 +1,9 @@
+/* tests/mocks/mock_rx_gptw.h */
+
 /**
  * @file mock_rx_gptw.h
  * @brief Mock GPTW Driver for Unit Testing
- *
+ * @details
  * Provides mock implementation of GPTW driver for host-side testing.
  * Tracks initialization state and duty cycle values without hardware.
  *
