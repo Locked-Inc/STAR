@@ -170,40 +170,43 @@ static rx_err_t internal_configure_mpc(rx_gptw_channel_t channel)
    */
 
   /* Unlock MPC write protection */
-  MPC.pwpr = k_mpc_pwpr_b0wi_clear; /* Clear B0WI */
-  MPC.pwpr = k_mpc_pwpr_pfswe_set;  /* Set PFSWE to enable PFS write */
+  mpc()->pwpr = k_mpc_pwpr_b0wi_clear; /* Clear B0WI */
+  mpc()->pwpr = k_mpc_pwpr_pfswe_set;  /* Set PFSWE to enable PFS write */
 
   /* Configure PFS for the appropriate pins
    * PSEL value for GPTW is 0x14 (verify against HW manual)
-   */
+   * Note: Port E PFS registers not in rx_mpc_regs_t structure,
+   * so we use base + offset calculation */
+  volatile uint8_t* pe_pfs = (volatile uint8_t*)((uintptr_t)mpc() + 0x40 + 0xE * 8);
+
   switch (channel) {
     case k_gptw_channel_0:
       /* PE5/GTIOC0A and PE2/GTIOC0B */
-      MPC_PE5PFS = k_pfs_psel_gptw;
-      MPC_PE2PFS = k_pfs_psel_gptw;
+      pe_pfs[5] = k_pfs_psel_gptw;
+      pe_pfs[2] = k_pfs_psel_gptw;
       break;
     case k_gptw_channel_1:
       /* PE4/GTIOC1A and PE1/GTIOC1B */
-      MPC_PE4PFS = k_pfs_psel_gptw;
-      MPC_PE1PFS = k_pfs_psel_gptw;
+      pe_pfs[4] = k_pfs_psel_gptw;
+      pe_pfs[1] = k_pfs_psel_gptw;
       break;
     case k_gptw_channel_2:
       /* PE3/GTIOC2A and PE0/GTIOC2B */
-      MPC_PE3PFS = k_pfs_psel_gptw;
-      MPC_PE0PFS = k_pfs_psel_gptw;
+      pe_pfs[3] = k_pfs_psel_gptw;
+      pe_pfs[0] = k_pfs_psel_gptw;
       break;
     case k_gptw_channel_3:
       /* PE7/GTIOC3A and PE6/GTIOC3B */
-      MPC_PE7PFS = k_pfs_psel_gptw;
-      MPC_PE6PFS = k_pfs_psel_gptw;
+      pe_pfs[7] = k_pfs_psel_gptw;
+      pe_pfs[6] = k_pfs_psel_gptw;
       break;
     default:
-      MPC.pwpr = k_mpc_pwpr_lock; /* Lock before returning error */
+      mpc()->pwpr = k_mpc_pwpr_lock; /* Lock before returning error */
       return k_rx_err_invalid_arg;
   }
 
   /* Lock MPC write protection */
-  MPC.pwpr = k_mpc_pwpr_lock;
+  mpc()->pwpr = k_mpc_pwpr_lock;
 
   return k_rx_ok;
 }
@@ -232,20 +235,20 @@ static void internal_configure_port_pins(rx_gptw_channel_t channel)
    */
   switch (channel) {
     case k_gptw_channel_0:
-      PORTE.pmr |= (1 << k_porte_gptw0_a) | (1 << k_porte_gptw0_b);
-      PORTE.pdr |= (1 << k_porte_gptw0_a) | (1 << k_porte_gptw0_b);
+      porte()->pmr |= (1 << k_porte_gptw0_a) | (1 << k_porte_gptw0_b);
+      porte()->pdr |= (1 << k_porte_gptw0_a) | (1 << k_porte_gptw0_b);
       break;
     case k_gptw_channel_1:
-      PORTE.pmr |= (1 << k_porte_gptw1_a) | (1 << k_porte_gptw1_b);
-      PORTE.pdr |= (1 << k_porte_gptw1_a) | (1 << k_porte_gptw1_b);
+      porte()->pmr |= (1 << k_porte_gptw1_a) | (1 << k_porte_gptw1_b);
+      porte()->pdr |= (1 << k_porte_gptw1_a) | (1 << k_porte_gptw1_b);
       break;
     case k_gptw_channel_2:
-      PORTE.pmr |= (1 << k_porte_gptw2_a) | (1 << k_porte_gptw2_b);
-      PORTE.pdr |= (1 << k_porte_gptw2_a) | (1 << k_porte_gptw2_b);
+      porte()->pmr |= (1 << k_porte_gptw2_a) | (1 << k_porte_gptw2_b);
+      porte()->pdr |= (1 << k_porte_gptw2_a) | (1 << k_porte_gptw2_b);
       break;
     case k_gptw_channel_3:
-      PORTE.pmr |= (1 << k_porte_gptw3_a) | (1 << k_porte_gptw3_b);
-      PORTE.pdr |= (1 << k_porte_gptw3_a) | (1 << k_porte_gptw3_b);
+      porte()->pmr |= (1 << k_porte_gptw3_a) | (1 << k_porte_gptw3_b);
+      porte()->pdr |= (1 << k_porte_gptw3_a) | (1 << k_porte_gptw3_b);
       break;
     default:
       break;
@@ -281,9 +284,9 @@ rx_err_t rx_gptw_init_pwm(rx_gptw_channel_t channel, const rx_gptw_config_t* con
   rx_log_info(s_tag, "Initializing GPTW");
 
   /* Enable GPTW module (clear module stop bit in MSTPCRC) */
-  SYSTEM.prcr = k_gptw_prcr_unlock;
-  SYSTEM.mstpcrc &= ~(1UL << k_mstpc_gptw);
-  SYSTEM.prcr = k_gptw_prcr_lock;
+  system_regs()->prcr = k_gptw_prcr_unlock;
+  system_regs()->mstpcrc &= ~(1UL << k_mstpc_gptw);
+  system_regs()->prcr = k_gptw_prcr_lock;
 
   /* Stop timer before configuration */
   rx_gptw_stop(channel);
