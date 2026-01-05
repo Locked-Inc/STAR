@@ -37,6 +37,15 @@
 
 static const char* s_tag = "MOTOR";
 
+/** @brief Motor control constants for DRV8243 PH/EN mode */
+typedef enum {
+  k_motor_duty_min  = -100, /**< Minimum duty cycle (full reverse) */
+  k_motor_duty_max  = 100,  /**< Maximum duty cycle (full forward) */
+  k_motor_duty_zero = 0,    /**< Zero duty cycle (stopped) */
+  k_motor_ph_high   = 100,  /**< PH signal for forward direction */
+  k_motor_ph_low    = 0,    /**< PH signal for reverse direction */
+} motor_constants_t;
+
 /* =============================================================================
  * Internal Helper Functions
  * =============================================================================
@@ -51,11 +60,11 @@ static const char* s_tag = "MOTOR";
  */
 static float internal_clamp_duty(float duty)
 {
-  if (duty > 100.0f) {
-    return 100.0f;
+  if (duty > (float)k_motor_duty_max) {
+    return (float)k_motor_duty_max;
   }
-  if (duty < -100.0f) {
-    return -100.0f;
+  if (duty < (float)k_motor_duty_min) {
+    return (float)k_motor_duty_min;
   }
   return duty;
 }
@@ -153,13 +162,13 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
    * EN (output_b) = speed (PWM duty cycle)
    */
   float speed_pwm = fabsf(duty);
-  if (duty >= 0.0f) {
+  if (duty >= (float)k_motor_duty_zero) {
     /* Forward: PH = HIGH, EN = PWM */
-    rx_gptw_set_duty(handle->channel, handle->output_a, 100.0f);
+    rx_gptw_set_duty(handle->channel, handle->output_a, (float)k_motor_ph_high);
     rx_gptw_set_duty(handle->channel, handle->output_b, speed_pwm);
   } else {
     /* Reverse: PH = LOW, EN = PWM */
-    rx_gptw_set_duty(handle->channel, handle->output_a, 0.0f);
+    rx_gptw_set_duty(handle->channel, handle->output_a, (float)k_motor_ph_low);
     rx_gptw_set_duty(handle->channel, handle->output_b, speed_pwm);
   }
 
