@@ -14,10 +14,10 @@
  *
  * This differs from some other MCUs where all registers for a port are grouped together.
  *
- * Package Configuration:
- * - Define RX72N_PACKAGE_* in rx_package_config.h to specify your hardware
- * - Only ports available on your package variant will compile
- * - Attempting to use unavailable ports generates helpful compile errors
+ * Package Support:
+ * - Only 100-pin LFQFP (R5F572NNHGFP#30) is supported
+ * - Available ports: 0-5, A-E, J (some limited)
+ * - Ports 6, 7, 8, 9, F, G, H, K, L, M, N, Q are not available on this package
  *
  * @date 2026-01-05
  * @copyright Copyright (c) 2026 STAR Project
@@ -28,7 +28,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include "rx_package_config.h"
 
 #ifdef __cplusplus
 extern "C" {
