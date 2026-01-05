@@ -112,10 +112,8 @@ typedef enum {
   k_uart_debug_rx_pin  = 6,    /**< PB6 = RXD9 */
 } uart_debug_pins_t;
 
-/** @brief GPIO register bit manipulation constants */
-typedef enum {
-  k_uart_gpio_bit_set = 1, /**< Value used for setting a single bit */
-} uart_gpio_constants_t;
+/** @brief GPIO register bit manipulation constant */
+static const uint8_t k_uart_gpio_bit_set = 1;
 
 /* =============================================================================
  * Private State
@@ -162,8 +160,10 @@ static uint8_t internal_calculate_brr(uint32_t baudrate)
  */
 static void internal_clear_errors(volatile rx_sci_regs_t* sci)
 {
+  volatile uint8_t ssr = 0;
+
   /* Read SSR then clear error flags */
-  volatile uint8_t ssr = sci->ssr;
+  ssr = sci->ssr;
   (void)ssr; /* Suppress unused variable warning */
   sci->ssr = (uint8_t)(ssr & ~k_sci_ssr_error_mask);
 }
@@ -365,7 +365,7 @@ rx_err_t uart_init_channel(uint8_t  channel,
 
   /* Wait for at least 1 bit time */
   /* NOTE: Busy-wait required - may run before ThreadX initialization */
-  for (volatile int32_t i = 0; i < k_uart_bit_time_delay_cycles; i++) {
+  for (volatile uint32_t i = 0; i < k_uart_bit_time_delay_cycles; i++) {
     __asm__ volatile("nop");
   }
 
