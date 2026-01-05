@@ -129,6 +129,12 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
   handle->invert_pwm   = config->invert_pwm;
   handle->initialized  = true;
 
+  /* Post-condition: Verify handle was properly initialized (NASA Rule 5 compliance) */
+  if (!handle->initialized || handle->pwm_freq_hz != config->pwm_freq_hz) {
+    rx_log_error(s_tag, "Post-condition failed: handle not properly initialized");
+    return k_rx_err_invalid_state;
+  }
+
   rx_log_info(s_tag, "Motor initialized successfully");
 
   return k_rx_ok;
@@ -209,6 +215,12 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
   }
 
   handle->current_duty = duty;
+
+  /* Post-condition: Verify duty was updated correctly (NASA Rule 5 compliance) */
+  if (handle->current_duty != duty) {
+    rx_log_error(s_tag, "Post-condition failed: duty not updated correctly");
+    return k_rx_err_invalid_state;
+  }
 
   return k_rx_ok;
 }
