@@ -326,6 +326,26 @@ void test_spi_comm_send_large_payload(void)
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 
+void test_spi_comm_send_missing_host_ack_times_out(void)
+{
+  rx_spi_comm_init(&s_handle, NULL);
+  helper_init_rspi_channel(k_test_channel_default);
+  mock_rspi_clear_calls(NULL);
+  mock_rspi_set_write_ready(NULL, k_test_channel_default, false);
+
+  uint8_t data[] = "test";
+
+  rx_err_t err = rx_spi_comm_send(&s_handle, k_frame_type_response, 0, data, 4);
+
+  TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
+
+  uint32_t transfer_calls = mock_rspi_get_call_count(NULL, "rspi_peripheral_transfer");
+  TEST_ASSERT_EQUAL_UINT32(0, transfer_calls);
+
+  uint32_t ready_calls = mock_rspi_get_call_count(NULL, "rspi_peripheral_write_ready");
+  TEST_ASSERT_TRUE(ready_calls > 0);
+}
+
 /* =============================================================================
  * Send ACK/NACK Tests
  * =============================================================================
@@ -864,6 +884,7 @@ int main(void)
   RUN_TEST(test_spi_comm_send_with_fec_flag);
   RUN_TEST(test_spi_comm_send_transfer_error_propagates);
   RUN_TEST(test_spi_comm_send_large_payload);
+  RUN_TEST(test_spi_comm_send_missing_host_ack_times_out);
 
   /* Send ACK/NACK tests */
   RUN_TEST(test_spi_comm_send_ack_null_handle_fails);
