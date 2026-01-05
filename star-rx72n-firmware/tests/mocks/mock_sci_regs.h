@@ -1,3 +1,5 @@
+/* tests/mocks/mock_sci_regs.h */
+
 /**
  * @file mock_sci_regs.h
  * @brief Mock SCI Register Structures for Host-Side Testing
@@ -11,8 +13,8 @@
  * - Access g_mock_sci[channel] for per-channel register state
  * - Use helper functions to set up register state for tests
  *
- * STAR Project - Texas A&M University
- * January 2026
+ * @date 2026-01-04
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef MOCK_SCI_REGS_H

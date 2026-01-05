@@ -1,3 +1,5 @@
+/* tests/mocks/mock_sci_regs.c */
+
 /**
  * @file mock_sci_regs.c
  * @brief Mock SCI Register Implementation
@@ -5,8 +7,8 @@
  * Provides mock register instances and helper functions for testing
  * UART driver code on the host without actual hardware.
  *
- * STAR Project - Texas A&M University
- * January 2026
+ * @date 2026-01-04
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "mock_sci_regs.h"

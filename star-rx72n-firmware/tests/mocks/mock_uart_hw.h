@@ -1,3 +1,5 @@
+/* tests/mocks/mock_uart_hw.h */
+
 /**
  * @file mock_uart_hw.h
  * @brief Mock UART HAL Functions for Host-Side Testing
@@ -17,8 +19,8 @@
  * - Use mock_uart_hw_get_tx_data() to verify transmitted data
  * - Use mock_uart_hw_set_next_error() for error testing
  *
- * STAR Project - Texas A&M University
- * January 2026
+ * @date 2026-01-04
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #ifndef MOCK_UART_HW_H
