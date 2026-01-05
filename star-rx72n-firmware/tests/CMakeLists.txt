@@ -229,6 +229,55 @@ target_compile_definitions(test_rx_motor PRIVATE UNIT_TEST)
 target_link_libraries(test_rx_motor unity m)
 
 # =============================================================================
+# Bus Manager and OneWire Tests
+# =============================================================================
+
+# Bus config source (used by both mock and real implementations)
+set(RX_BUS_CONFIG_SRC
+    ${CMAKE_SOURCE_DIR}/../lib/rx_bus/src/rx_bus_config.c
+)
+
+# Mock bus manager sources
+set(MOCK_BUS_MANAGER_SRC
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_bus_manager.c
+    ${RX_BUS_CONFIG_SRC}
+)
+
+# OneWire mock sources
+set(MOCK_ONEWIRE_SRC
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_gpio.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_crc.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_onewire_hw.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_log.c
+)
+
+# Test: Bus Manager (uses mock implementation for testing)
+add_executable(test_rx_bus_manager
+    test_rx_bus_manager.c
+    ${MOCK_BUS_MANAGER_SRC}
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_log.c
+)
+target_include_directories(test_rx_bus_manager PRIVATE
+    ${CMAKE_SOURCE_DIR}/mocks
+)
+target_compile_definitions(test_rx_bus_manager PRIVATE UNIT_TEST)
+target_link_libraries(test_rx_bus_manager unity)
+
+# Test: OneWire Bus Protocol
+# Note: mocks directory must come FIRST to override hardware headers
+add_executable(test_rx_bus_onewire
+    test_rx_bus_onewire.c
+    ${CMAKE_SOURCE_DIR}/../lib/rx_bus/src/rx_bus_onewire.c
+    ${MOCK_BUS_MANAGER_SRC}
+    ${MOCK_ONEWIRE_SRC}
+)
+target_include_directories(test_rx_bus_onewire BEFORE PRIVATE
+    ${CMAKE_SOURCE_DIR}/mocks
+)
+target_compile_definitions(test_rx_bus_onewire PRIVATE UNIT_TEST)
+target_link_libraries(test_rx_bus_onewire unity)
+
+# =============================================================================
 # CTest Integration
 # =============================================================================
 
@@ -245,6 +294,8 @@ add_test(NAME test_rx_hcsr04 COMMAND test_rx_hcsr04)
 add_test(NAME test_uart_hal COMMAND test_uart_hal)
 add_test(NAME test_rx_bus_uart COMMAND test_rx_bus_uart)
 add_test(NAME test_rx_motor COMMAND test_rx_motor)
+add_test(NAME test_rx_bus_manager COMMAND test_rx_bus_manager)
+add_test(NAME test_rx_bus_onewire COMMAND test_rx_bus_onewire)
 
 # =============================================================================
 # Convenience Targets
@@ -252,7 +303,7 @@ add_test(NAME test_rx_motor COMMAND test_rx_motor)
 
 add_custom_target(run_all_tests
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS test_rx_crc32 test_rx_frame test_rx_fec test_rx_harq test_rx_usb test_rx_usb_comm test_rx_time test_rx_hcsr04 test_uart_hal test_rx_bus_uart test_rx_motor
+    DEPENDS test_rx_crc32 test_rx_frame test_rx_fec test_rx_harq test_rx_usb test_rx_usb_comm test_rx_time test_rx_hcsr04 test_uart_hal test_rx_bus_uart test_rx_motor test_rx_bus_manager test_rx_bus_onewire
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running all unit tests..."
 )
