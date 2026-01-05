@@ -87,10 +87,12 @@ typedef enum {
 /**
  * @brief Temperature conversion constants
  *
- * Use static const instead of enum for single-value constants (STAR style guide).
+ * Integer constants use enums (STAR style guide - static const only for floats).
  */
-static const int32_t s_temp_kelvin_offset = 2731; /**< Offset: 0.1K to 0.1°C (273.15K × 10) */
-static const int32_t s_temp_decimal_scale = 10;   /**< Scale: 0.1 units to whole units */
+typedef enum {
+  k_temp_kelvin_offset = 2731, /**< Offset: 0.1K to 0.1°C (273.15K × 10) */
+  k_temp_decimal_scale = 10,   /**< Scale: 0.1 units to whole units */
+} bq4050_temp_constants_t;
 
 /**
  * @brief State of Charge (SOC) limits
@@ -132,10 +134,10 @@ typedef enum {
 static int16_t internal_convert_temperature(uint16_t temp_0_1k)
 {
   /* Convert from 0.1K to 0.1°C by subtracting 2731 (273.1K) */
-  int32_t temp_0_1c = (int32_t)temp_0_1k - s_temp_kelvin_offset;
+  int32_t temp_0_1c = (int32_t)temp_0_1k - k_temp_kelvin_offset;
 
   /* Convert to whole degrees Celsius */
-  return (int16_t)(temp_0_1c / s_temp_decimal_scale);
+  return (int16_t)(temp_0_1c / k_temp_decimal_scale);
 }
 
 /* =============================================================================
