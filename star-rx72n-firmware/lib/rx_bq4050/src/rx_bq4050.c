@@ -88,9 +88,32 @@ typedef enum {
  * @brief Temperature conversion constants
  */
 typedef enum {
-  k_temp_kelvin_offset = 2731, /**< Offset to convert 0.1K to 0.1°C (273.15K * 10) */
-  k_temp_decimal_scale = 10,   /**< Scale factor for 0.1 units to whole units */
+  k_temp_kelvin_offset = 2731, /**< Offset: 0.1K to 0.1°C (273.15K × 10) */
+  k_temp_decimal_scale = 10,   /**< Scale: 0.1 units to whole units */
 } bq4050_temp_constants_t;
+
+/**
+ * @brief State of Charge (SOC) limits
+ *
+ * SBS specification allows SOC > 100% in some conditions (e.g., overcharge).
+ * We clamp to valid 0-100% range for application use.
+ */
+typedef enum {
+  k_soc_min_percent = 0,   /**< Minimum SOC percentage */
+  k_soc_max_percent = 100, /**< Maximum SOC percentage */
+} bq4050_soc_limits_t;
+
+/**
+ * @brief Cell voltage array indices
+ *
+ * Named indices for accessing cell voltage register map array.
+ */
+typedef enum {
+  k_cell_idx_1 = 0, /**< Cell 1 index */
+  k_cell_idx_2 = 1, /**< Cell 2 index */
+  k_cell_idx_3 = 2, /**< Cell 3 index */
+  k_cell_idx_4 = 3, /**< Cell 4 index */
+} bq4050_cell_index_t;
 
 /* =============================================================================
  * Internal Helper Functions
@@ -145,7 +168,7 @@ rx_bq4050_init(rx_bus_manager_t* manager, const char* bus_name, const rx_bq4050_
     return err;
   }
 
-  rx_log_info(s_tag, "Info");
+  rx_log_info(s_tag, "BQ4050 initialized successfully at address 0x0B");
 
   return k_rx_ok;
 }
@@ -170,21 +193,21 @@ rx_err_t rx_bq4050_read_cell_voltages(rx_bus_manager_t* manager,
   RX_CHECK_NULL_PTR(cell_voltages, s_tag, "cell_voltages pointer is NULL");
 
   if (num_cells > k_bq4050_max_cells) {
-    rx_log_error(s_tag, "Error occurred");
+    rx_log_error(s_tag, "num_cells exceeds maximum (4 cells)");
     return k_rx_err_invalid_arg;
   }
 
   /* BQ4050 cell voltage registers are 0x3F (cell 1) to 0x3C (cell 4) */
-  static const uint8_t cell_reg_map[k_bq4050_max_cells] = {
-    k_sbs_cell_voltage_1, /* Cell 1 at 0x3F */
-    k_sbs_cell_voltage_2, /* Cell 2 at 0x3E */
-    k_sbs_cell_voltage_3, /* Cell 3 at 0x3D */
-    k_sbs_cell_voltage_4, /* Cell 4 at 0x3C */
+  static const uint8_t s_cell_reg_map[k_bq4050_max_cells] = {
+    [k_cell_idx_1] = k_sbs_cell_voltage_1, /* Cell 1 at 0x3F */
+    [k_cell_idx_2] = k_sbs_cell_voltage_2, /* Cell 2 at 0x3E */
+    [k_cell_idx_3] = k_sbs_cell_voltage_3, /* Cell 3 at 0x3D */
+    [k_cell_idx_4] = k_sbs_cell_voltage_4, /* Cell 4 at 0x3C */
   };
 
   for (uint8_t i = 0; i < num_cells; i++) {
     rx_err_t err =
-      rx_bus_smbus_read_word_data(manager, bus_name, cell_reg_map[i], &cell_voltages[i]);
+      rx_bus_smbus_read_word_data(manager, bus_name, s_cell_reg_map[i], &cell_voltages[i]);
     if (err != k_rx_ok) {
       rx_log_error(s_tag, "Failed to read cell voltage");
       return err;
@@ -245,7 +268,7 @@ rx_bq4050_read_relative_soc(rx_bus_manager_t* manager, const char* bus_name, uin
 
   if (err == k_rx_ok) {
     /* Clamp to 0-100 range (SBS allows > 100% in some conditions) */
-    *soc_percent = (soc_word > 100) ? 100 : (uint8_t)soc_word;
+    *soc_percent = (soc_word > k_soc_max_percent) ? k_soc_max_percent : (uint8_t)soc_word;
   }
 
   return err;
@@ -264,7 +287,7 @@ rx_bq4050_read_absolute_soc(rx_bus_manager_t* manager, const char* bus_name, uin
 
   if (err == k_rx_ok) {
     /* Clamp to 0-100 range */
-    *soc_percent = (soc_word > 100) ? 100 : (uint8_t)soc_word;
+    *soc_percent = (soc_word > k_soc_max_percent) ? k_soc_max_percent : (uint8_t)soc_word;
   }
 
   return err;
@@ -325,7 +348,7 @@ rx_err_t rx_bq4050_read_status(rx_bus_manager_t*   manager,
   RX_CHECK_NULL_PTR(status, s_tag, "status pointer is NULL");
 
   if (num_cells > k_bq4050_max_cells) {
-    rx_log_error(s_tag, "Error occurred");
+    rx_log_error(s_tag, "num_cells parameter exceeds k_bq4050_max_cells");
     return k_rx_err_invalid_arg;
   }
 
