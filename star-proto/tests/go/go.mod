@@ -1,6 +1,6 @@
 module github.com/Locked-Inc/star-proto/tests/go
 
-go 1.21
+go 1.24.11
 
 require (
 	github.com/Locked-Inc/star-proto/gen/go v0.0.0
