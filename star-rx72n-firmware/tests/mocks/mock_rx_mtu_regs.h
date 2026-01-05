@@ -87,6 +87,10 @@ typedef struct {
   volatile uint32_t mstpcrd;
 } rx_system_regs_t;
 
+#ifndef RX_SYSTEM_REGS_T_DEFINED
+#define RX_SYSTEM_REGS_T_DEFINED
+#endif
+
 /* =============================================================================
  * Mock Register Storage (defined in mock_rx_mtu_encoder.c)
  * =============================================================================
