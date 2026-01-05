@@ -230,6 +230,96 @@ buf generate
 - **Tuning:** MATLAB-based system identification and controller design
 - **Safety:** Watchdog timeout 500ms, emergency stop <20ms
 
+## NASA Power of 10 Rules (STAR Implementation)
+
+The STAR project follows NASA/JPL Power of 10 rules for safety-critical embedded code with one intentional deviation for testability.
+
+### Rule 1: Simplify Control Flow ✓ COMPLIANT
+- No `goto`, `setjmp`/`longjmp`, or recursion
+- All control flow uses `if`/`while`/`for` only
+- Example: `rx_pid_init()` uses sequential error checking, no goto cleanup
+
+### Rule 2: Fixed Loop Upper-Bounds ✓ COMPLIANT
+- All loops have statically provable bounds
+- Exception: Main control loops use `while(1)` with watchdog
+- Example: `for (uint8_t i = 0; i < k_max_retries; i++)` - enum provides bound
+
+### Rule 3: No Dynamic Memory After Initialization ✓ COMPLIANT
+- **Zero malloc/free in RX72N firmware** (safety-critical)
+- All buffers statically allocated with enum-defined sizes
+- ThreadX stacks are static arrays
+- Example: `char items[k_max_items][k_max_desc_len]` - compile-time allocation
+
+### Rule 4: Keep Functions Short (~60 lines) ✓ COMPLIANT
+- Functions represent single verifiable units
+- Example: `rx_pid_compute()` is 44 lines - complete PID algorithm in one screen
+
+### Rule 5: Use Assertions/Validation ✓ COMPLIANT
+- Minimum 2 validation checks per function
+- **Pre-conditions**: `RX_CHECK_NULL_PTR`, state validation
+- **Post-conditions**: Output bounds checking, invariant validation
+- Example: `rx_pid_compute()` has 4 checks (NULL×2, initialized, dt > 0)
+
+### Rule 6: Declare Data at Smallest Scope ✓ COMPLIANT
+- Variables declared close to first use
+- Loop counters in for-statement: `for (uint8_t i = 0; ...)`
+- File-scope variables use `static` prefix (`s_tag`)
+
+### Rule 7: Check All Return Values ✓ COMPLIANT
+- All function returns validated or explicitly cast to `(void)`
+- Use `RX_RETURN_ON_ERROR` macro for propagation
+- Example: `rx_err_t ret = bus_init(config); if (ret != k_rx_ok) return ret;`
+
+### Rule 8: Limit Preprocessor Use ✓ COMPLIANT
+- Enums for ALL integer constants (mandatory)
+- Macros ONLY for: duplicated code, conditional compilation, hardware addresses, build flags
+- See "Constants and Macros Policy" section above for complete policy
+
+### Rule 9: Restrict Pointer Use ⚠️ INTENTIONAL DEVIATION
+- **Standard**: Maximum one level of dereferencing, no function pointers
+- **STAR Deviation**: Function pointers ALLOWED for Dependency Inversion Principle (DIP)
+- **Why**: Enables mock implementations for unit testing and hardware abstraction
+- Example: `typedef struct { rx_err_t (*read)(void* ctx, ...); void* ctx; } bus_interface_t;`
+
+### Rule 10: Compile with Maximum Warnings ✓ COMPLIANT
+- CMake flags: `-Wall -Wextra -Werror`
+- Build fails on ANY warning
+- CI/CD enforces zero-warning builds
+
+## SOLID Principles for C (STAR Implementation)
+
+### Single Responsibility (S)
+- **One module = one purpose**: `rx_pid` handles ONLY PID algorithm (no motor control, no hardware)
+- **One function = one action**: `rx_pid_compute()` does PID math, `rx_pid_reset()` clears state
+- **Separation of concerns**: Configuration (`rx_pid_config_t`) separate from runtime state (`rx_pid_handle_t`)
+
+### Open/Closed (O)
+- **Extensible without modification**: `rx_pid` configured via `rx_pid_config_t` struct
+- **Runtime tuning**: `rx_pid_set_gains()` allows updates without recompilation
+- **Avoid hardcoded values**: All limits defined in config (output_min/max, integral_min/max)
+
+### Liskov Substitution (L)
+- **Interface implementations interchangeable**: Bus manager accepts any bus type (I2C/SPI/1-Wire)
+- **Mocks substitute real implementations**: Tests use `mock_rx_bus_onewire` in place of real hardware
+- **Consistent error handling**: All drivers return `rx_err_t` with same semantics
+
+### Interface Segregation (I)
+- **Small, focused interfaces**: `rx_pid` API has 7 functions, each with clear purpose
+- **No "fat" interfaces**: Bus interface split into `read()`, `write()`, `configure()` - use only what you need
+- **Separate read/write**: Motor encoder read separate from motor driver write operations
+
+### Dependency Inversion (D)
+- **High-level modules don't depend on low-level details**: Motor control uses bus interface, not direct GPIO
+- **Function pointer interfaces for abstraction**:
+  ```c
+  typedef struct {
+      rx_err_t (*read)(void* ctx, uint8_t* data, uint32_t len);
+      rx_err_t (*write)(void* ctx, const uint8_t* data, uint32_t len);
+      void* ctx;
+  } bus_interface_t;
+  ```
+- **Testable via mock injection**: `driver_init(driver, &mock_bus)` vs `driver_init(driver, &real_bus)`
+
 ## Key Files
 
 - `star-rx72n-firmware/CLAUDE.md` - RX72N firmware development guide
