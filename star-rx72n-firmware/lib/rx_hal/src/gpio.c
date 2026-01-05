@@ -68,55 +68,55 @@ static volatile rx_port_regs_t* internal_get_port_base(uint8_t port)
 {
   switch (port) {
     case k_gpio_port_0: {
-      return PORT0_BASE;
+      return port0();
     }
     case k_gpio_port_1: {
-      return PORT1_BASE;
+      return port1();
     }
     case k_gpio_port_2: {
-      return PORT2_BASE;
+      return port2();
     }
     case k_gpio_port_3: {
-      return PORT3_BASE;
+      return port3();
     }
     case k_gpio_port_4: {
-      return PORT4_BASE;
+      return port4();
     }
     case k_gpio_port_5: {
-      return PORT5_BASE;
+      return port5();
     }
     case k_gpio_port_6: {
-      return PORT6_BASE;
+      return port6();
     }
     case k_gpio_port_7: {
-      return PORT7_BASE;
+      return port7();
     }
     case k_gpio_port_8: {
-      return PORT8_BASE;
+      return port8();
     }
     case k_gpio_port_9: {
-      return PORT9_BASE;
+      return port9();
     }
     case k_gpio_port_a: {
-      return PORTA_BASE;
+      return porta();
     }
     case k_gpio_port_b: {
-      return PORTB_BASE;
+      return portb();
     }
     case k_gpio_port_c: {
-      return PORTC_BASE;
+      return portc();
     }
     case k_gpio_port_d: {
-      return PORTD_BASE;
+      return portd();
     }
     case k_gpio_port_e: {
-      return PORTE_BASE;
+      return porte();
     }
     case k_gpio_port_f: {
-      return PORTF_BASE;
+      return portf();
     }
     case k_gpio_port_g: {
-      return PORTG_BASE;
+      return portg();
     }
     default: {
       return NULL; /* Invalid port */

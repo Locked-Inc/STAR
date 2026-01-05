@@ -110,19 +110,19 @@ static volatile void* internal_get_mtu_base(rx_mtu_channel_t channel)
 {
   switch (channel) {
     case k_mtu_channel_0:
-      return (volatile void*)MTU0_BASE;
+      return (volatile void*)mtu0();
     case k_mtu_channel_1:
-      return (volatile void*)MTU1_BASE;
+      return (volatile void*)mtu1();
     case k_mtu_channel_2:
-      return (volatile void*)MTU2_BASE;
+      return (volatile void*)mtu2();
     case k_mtu_channel_3:
-      return (volatile void*)MTU3_BASE;
+      return (volatile void*)mtu3();
     case k_mtu_channel_4:
-      return (volatile void*)MTU4_BASE;
+      return (volatile void*)mtu4();
     case k_mtu_channel_6:
-      return (volatile void*)MTU6_BASE;
+      return (volatile void*)mtu6();
     case k_mtu_channel_7:
-      return (volatile void*)MTU7_BASE;
+      return (volatile void*)mtu7();
     default:
       return NULL;
   }
@@ -220,15 +220,15 @@ rx_err_t rx_mtu_init_pwm(rx_mtu_channel_t channel, const rx_mtu_config_t* config
   rx_log_info(s_tag, "Initializing MTU");
 
   /* Enable MTU module (clear module stop bit) */
-  SYSTEM.prcr = k_mtu_prcr_unlock;
+  system_regs()->prcr = k_mtu_prcr_unlock;
 
   if (channel <= k_mtu_channel_4) {
-    SYSTEM.mstpcra &= ~(1UL << k_mtu_mstpa_mtu0_4);
+    system_regs()->mstpcra &= ~(1UL << k_mtu_mstpa_mtu0_4);
   } else {
-    SYSTEM.mstpcra &= ~(1UL << k_mtu_mstpa_mtu6_7);
+    system_regs()->mstpcra &= ~(1UL << k_mtu_mstpa_mtu6_7);
   }
 
-  SYSTEM.prcr = k_mtu_prcr_lock;
+  system_regs()->prcr = k_mtu_prcr_lock;
 
   /* Stop timer before configuration */
   rx_mtu_stop(channel);
@@ -408,19 +408,19 @@ rx_err_t rx_mtu_start(rx_mtu_channel_t channel)
   /* Set corresponding bit in TSTR register */
   switch (channel) {
     case k_mtu_channel_0:
-      MTU_TSTR.tstr |= k_mtu_tstr_cst0;
+      mtu_tstr()->tstr |= k_mtu_tstr_cst0;
       break;
     case k_mtu_channel_1:
-      MTU_TSTR.tstr |= k_mtu_tstr_cst1;
+      mtu_tstr()->tstr |= k_mtu_tstr_cst1;
       break;
     case k_mtu_channel_2:
-      MTU_TSTR.tstr |= k_mtu_tstr_cst2;
+      mtu_tstr()->tstr |= k_mtu_tstr_cst2;
       break;
     case k_mtu_channel_3:
-      MTU_TSTR.tstr |= k_mtu_tstr_cst3;
+      mtu_tstr()->tstr |= k_mtu_tstr_cst3;
       break;
     case k_mtu_channel_4:
-      MTU_TSTR.tstr |= k_mtu_tstr_cst4;
+      mtu_tstr()->tstr |= k_mtu_tstr_cst4;
       break;
     case k_mtu_channel_6:
     case k_mtu_channel_7:
@@ -443,19 +443,19 @@ rx_err_t rx_mtu_stop(rx_mtu_channel_t channel)
   /* Clear corresponding bit in TSTR register */
   switch (channel) {
     case k_mtu_channel_0:
-      MTU_TSTR.tstr &= ~k_mtu_tstr_cst0;
+      mtu_tstr()->tstr &= ~k_mtu_tstr_cst0;
       break;
     case k_mtu_channel_1:
-      MTU_TSTR.tstr &= ~k_mtu_tstr_cst1;
+      mtu_tstr()->tstr &= ~k_mtu_tstr_cst1;
       break;
     case k_mtu_channel_2:
-      MTU_TSTR.tstr &= ~k_mtu_tstr_cst2;
+      mtu_tstr()->tstr &= ~k_mtu_tstr_cst2;
       break;
     case k_mtu_channel_3:
-      MTU_TSTR.tstr &= ~k_mtu_tstr_cst3;
+      mtu_tstr()->tstr &= ~k_mtu_tstr_cst3;
       break;
     case k_mtu_channel_4:
-      MTU_TSTR.tstr &= ~k_mtu_tstr_cst4;
+      mtu_tstr()->tstr &= ~k_mtu_tstr_cst4;
       break;
     case k_mtu_channel_6:
     case k_mtu_channel_7:

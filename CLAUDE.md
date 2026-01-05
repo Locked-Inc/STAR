@@ -179,7 +179,7 @@ star.v1.RequestHeader.request_id max_size:64
    #define MAX_VELOCITY_MPS (2.5f)  // ❌ Should be const!
    ```
 
-3. **Macros** - ONLY for these 4 specific cases:
+3. **Macros** - ONLY for these 3 specific cases:
    ```c
    // ✓ ALLOWED: Reducing duplicated code
    #define RX_RETURN_ON_ERROR(err, tag, msg) \
@@ -198,17 +198,38 @@ star.v1.RequestHeader.request_id max_size:64
    #define rx_log_error(tag, msg) ((void)0)
    #endif
 
-   // ✓ ALLOWED: Hardware register addresses
-   #define CMT0_BASE ((rx_cmt_channel_regs_t*)0x00088000)
-   #define CMT0      (*CMT0_BASE)
-
    // ✓ ALLOWED: Build configuration flags
    #ifdef __RX__
    #define RX_CRC32_USE_HARDWARE
    #endif
 
+   // ❌ FORBIDDEN: Hardware register addresses (use inline accessors)
+   #define CMT0_BASE ((rx_cmt_channel_regs_t*)0x00088000)  // Wrong!
+   #define CMT0      (*CMT0_BASE)                          // Wrong!
+
    // ❌ FORBIDDEN: Backward compatibility (no releases = no compatibility)
    #define old_function new_function  // Wrong! Update call sites instead
+   ```
+
+4. **Hardware Register Access** - Use inline accessor functions:
+   ```c
+   // ✓ CORRECT: Inline accessor with enum address
+   typedef enum {
+       k_cmt0_base_addr  = 0x00088000,
+       k_port0_base_addr = 0x000C0000,
+   } hw_addresses_t;
+
+   static inline CMT_Type* cmt0(void) {
+       return (CMT_Type*)k_cmt0_base_addr;
+   }
+
+   static inline PORT_Type* port0(void) {
+       return (PORT_Type*)k_port0_base_addr;
+   }
+
+   // Usage: Same syntax as macro approach
+   cmt0()->CMCR = 0x0042;
+   port0()->PDR |= (1 << k_bit_led);
    ```
 
 ### No Magic Numbers
@@ -306,7 +327,8 @@ The STAR project follows NASA/JPL Power of 10 rules for safety-critical embedded
 
 ### Rule 8: Limit Preprocessor Use ✓ COMPLIANT
 - Enums for ALL integer constants (mandatory)
-- Macros ONLY for: duplicated code, conditional compilation, hardware addresses, build flags
+- Macros ONLY for: duplicated code, conditional compilation, build flags
+- Hardware register access: Use inline accessor functions (never macros)
 - See "Constants and Macros" section above for complete policy
 
 ### Rule 9: Restrict Pointer Use ⚠️ INTENTIONAL DEVIATION

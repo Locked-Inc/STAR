@@ -49,16 +49,33 @@ rx_err_t new_function_name(...)  /* ✓ Clean break, no compatibility layer */
 
 1. **Enums** - ALWAYS use for ALL integer constants (mandatory)
 2. **static const** - ONLY for floating-point values (enum can't hold floats)
-3. **Macros** - ONLY for these 4 specific cases:
+3. **Macros** - ONLY for these 3 specific cases:
    - Reducing duplicated code (function-like macros: `RX_RETURN_ON_ERROR`)
    - Conditional compilation (optimization: `#if LOG_LEVEL >= k_log_error`)
-   - Hardware register addresses (`#define CMT0_BASE ((type*)0x00088000)`)
    - Build configuration flags (`#ifdef __RX__`)
 
 **Never use macros for:**
 - Simple integer constants (use enum instead)
 - Simple floating-point constants (use static const instead)
+- Hardware register addresses (use inline accessor functions instead)
 - Backward compatibility/function aliases (no releases = no compatibility)
+
+**Hardware register access:**
+Use inline accessor functions with enum addresses (never macros):
+```c
+// ✓ CORRECT - Inline accessor with enum address
+typedef enum {
+    k_cmt0_base_addr  = 0x00088000,
+    k_port0_base_addr = 0x000C0000,
+} hw_addresses_t;
+
+static inline CMT_Type* cmt0(void) {
+    return (CMT_Type*)k_cmt0_base_addr;
+}
+
+// Usage: Same syntax as macro approach
+cmt0()->CMCR = 0x0042;
+```
 
 **Examples:**
 ```c
@@ -84,6 +101,7 @@ static const float s_max_velocity_mps = 2.5f;
 // ❌ WRONG - Never use macro for simple constants
 #define TIMEOUT_MS 1000        // Should be enum!
 #define MAX_VELOCITY 2.5f      // Should be static const!
+#define CMT0_BASE ((CMT_Type*)0x00088000)  // Should be inline accessor!
 #define old_func new_func      // No compatibility needed!
 ```
 
@@ -327,7 +345,8 @@ The STAR project follows NASA/JPL Power of 10 rules for safety-critical embedded
 
 ### Rule 8: Limit Preprocessor Use ✓ COMPLIANT
 - Enums for ALL integer constants (mandatory)
-- Macros ONLY for: duplicated code, conditional compilation, hardware addresses, build flags
+- Macros ONLY for: duplicated code, conditional compilation, build flags
+- Hardware register access: Use inline accessor functions (never macros)
 - See "Constants and Macros Policy" section above for complete policy
 
 ### Rule 9: Restrict Pointer Use ⚠️ INTENTIONAL DEVIATION
