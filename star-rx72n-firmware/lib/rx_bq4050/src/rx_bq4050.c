@@ -86,8 +86,6 @@ typedef enum {
 
 /**
  * @brief Temperature conversion constants
- *
- * Integer constants use enums (STAR style guide - static const only for floats).
  */
 typedef enum {
   k_temp_kelvin_offset = 2731, /**< Offset: 0.1K to 0.1°C (273.15K × 10) */
