@@ -28,45 +28,26 @@ func NewHandler() *Handler {
 }
 
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-
-	//nolint:staticcheck // library is deprecated but migration is out of scope
-
-	c, err := websocket.Accept(w, r, nil)
-
+	c, err := websocket.Accept(w, r, nil) //nolint:staticcheck // library is deprecated but migration is out of scope
 	if err != nil {
-
 		log.Printf("failed to accept websocket: %v", err)
-
 		return
-
 	}
 
 	log.Printf("controller connected from %s", r.RemoteAddr)
 
 	defer func() {
-
-		//nolint:staticcheck
-
-		if err := c.Close(websocket.StatusInternalError, "internal error"); err != nil {
-
+		if err := c.Close(websocket.StatusInternalError, "internal error"); err != nil { //nolint:staticcheck
 			// It's normal for Close to fail if connection is already closed
-
 			log.Printf("websocket close: %v", err)
-
 		}
-
 		log.Printf("controller disconnected from %s", r.RemoteAddr)
-
 	}()
 
 	ctx := r.Context()
 
 	for {
-
-		//nolint:staticcheck
-
-		typ, bytes, err := c.Read(ctx)
-
+		typ, bytes, err := c.Read(ctx) //nolint:staticcheck
 		if err != nil {
 			log.Printf("failed to read: %v", err)
 			break

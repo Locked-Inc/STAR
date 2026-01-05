@@ -404,7 +404,13 @@ func (h *ChaseCombining) Receive() ([]byte, error) {
 			softBits := bytesToSoftBits(f.Payload)
 
 			// Add to combiner
-			h.softCombiner.Add(softBits)
+			if err := h.softCombiner.Add(softBits); err != nil {
+				// Combiner add failed - likely length mismatch or combiner full
+				h.state = StateError
+				h.mu.Unlock()
+				_ = h.sendNack(receivedSeq)
+				return nil, err
+			}
 
 			// Try decode
 			decoded, _, err = h.fecDecoder.DecodeSoft(h.softCombiner.Combined(), h.expectedLen)
