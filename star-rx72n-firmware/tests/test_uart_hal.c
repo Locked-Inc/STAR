@@ -13,9 +13,9 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#include "unity.h"
-
 #include <string.h>
+
+#include "unity.h"
 
 /* Mock includes */
 #include "mock_sci_regs.h"
@@ -58,8 +58,8 @@ void tearDown(void)
 
 void test_uart_init_channel_success(void)
 {
-  rx_err_t err = uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin,
-                                   k_test_rx_port, k_test_rx_pin);
+  rx_err_t err =
+    uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin, k_test_rx_port, k_test_rx_pin);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_TRUE(mock_uart_hw_is_initialized(9));
   TEST_ASSERT_EQUAL(115200, mock_uart_hw_get_baudrate(9));
@@ -75,27 +75,25 @@ void test_uart_init_channel_sci0(void)
 
 void test_uart_init_channel_invalid(void)
 {
-  rx_err_t err = uart_init_channel(13, 115200, k_test_tx_port, k_test_tx_pin,
-                                   k_test_rx_port, k_test_rx_pin);
+  rx_err_t err =
+    uart_init_channel(13, 115200, k_test_tx_port, k_test_tx_pin, k_test_rx_port, k_test_rx_pin);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 void test_uart_init_channel_already_initialized(void)
 {
-  rx_err_t err = uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin,
-                                   k_test_rx_port, k_test_rx_pin);
+  rx_err_t err =
+    uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin, k_test_rx_port, k_test_rx_pin);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Try to initialize again */
-  err = uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin,
-                          k_test_rx_port, k_test_rx_pin);
+  err = uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin, k_test_rx_port, k_test_rx_pin);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
 void test_uart_deinit_channel_success(void)
 {
-  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin,
-                    k_test_rx_port, k_test_rx_pin);
+  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin, k_test_rx_port, k_test_rx_pin);
   rx_err_t err = uart_deinit_channel(9);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_FALSE(mock_uart_hw_is_initialized(9));
@@ -114,14 +112,13 @@ void test_uart_deinit_channel_invalid(void)
 
 void test_uart_putc_channel_success(void)
 {
-  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin,
-                    k_test_rx_port, k_test_rx_pin);
+  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin, k_test_rx_port, k_test_rx_pin);
 
   rx_err_t err = uart_putc_channel(9, 'A');
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify data was transmitted */
-  uint8_t tx_data[8];
+  uint8_t  tx_data[8];
   uint16_t count = mock_uart_hw_get_tx_data(9, tx_data, sizeof(tx_data));
   TEST_ASSERT_EQUAL(1, count);
   TEST_ASSERT_EQUAL('A', tx_data[0]);
@@ -141,14 +138,13 @@ void test_uart_putc_channel_invalid_channel(void)
 
 void test_uart_puts_channel_success(void)
 {
-  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin,
-                    k_test_rx_port, k_test_rx_pin);
+  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin, k_test_rx_port, k_test_rx_pin);
 
   rx_err_t err = uart_puts_channel(9, "Hello");
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify data was transmitted */
-  uint8_t tx_data[32];
+  uint8_t  tx_data[32];
   uint16_t count = mock_uart_hw_get_tx_data(9, tx_data, sizeof(tx_data));
   TEST_ASSERT_EQUAL(5, count);
   TEST_ASSERT_EQUAL_STRING_LEN("Hello", tx_data, 5);
@@ -156,14 +152,13 @@ void test_uart_puts_channel_success(void)
 
 void test_uart_puts_channel_newline_conversion(void)
 {
-  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin,
-                    k_test_rx_port, k_test_rx_pin);
+  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin, k_test_rx_port, k_test_rx_pin);
 
   rx_err_t err = uart_puts_channel(9, "Hi\n");
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify \n was converted to \r\n */
-  uint8_t tx_data[32];
+  uint8_t  tx_data[32];
   uint16_t count = mock_uart_hw_get_tx_data(9, tx_data, sizeof(tx_data));
   TEST_ASSERT_EQUAL(4, count); /* "Hi\r\n" */
   TEST_ASSERT_EQUAL('H', tx_data[0]);
@@ -174,8 +169,7 @@ void test_uart_puts_channel_newline_conversion(void)
 
 void test_uart_puts_channel_null_string(void)
 {
-  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin,
-                    k_test_rx_port, k_test_rx_pin);
+  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin, k_test_rx_port, k_test_rx_pin);
   rx_err_t err = uart_puts_channel(9, NULL);
   TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
@@ -188,15 +182,14 @@ void test_uart_puts_channel_not_initialized(void)
 
 void test_uart_write_channel_success(void)
 {
-  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin,
-                    k_test_rx_port, k_test_rx_pin);
+  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin, k_test_rx_port, k_test_rx_pin);
 
-  uint8_t data[] = {0x01, 0x02, 0x03, 0x04};
-  rx_err_t err = uart_write_channel(9, data, sizeof(data));
+  uint8_t  data[] = {0x01, 0x02, 0x03, 0x04};
+  rx_err_t err    = uart_write_channel(9, data, sizeof(data));
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
   /* Verify data was transmitted */
-  uint8_t tx_data[8];
+  uint8_t  tx_data[8];
   uint16_t count = mock_uart_hw_get_tx_data(9, tx_data, sizeof(tx_data));
   TEST_ASSERT_EQUAL(4, count);
   TEST_ASSERT_EQUAL_MEMORY(data, tx_data, 4);
@@ -204,8 +197,7 @@ void test_uart_write_channel_success(void)
 
 void test_uart_write_channel_null_data(void)
 {
-  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin,
-                    k_test_rx_port, k_test_rx_pin);
+  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin, k_test_rx_port, k_test_rx_pin);
   rx_err_t err = uart_write_channel(9, NULL, 10);
   TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
@@ -217,15 +209,14 @@ void test_uart_write_channel_null_data(void)
 
 void test_uart_getc_channel_success(void)
 {
-  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin,
-                    k_test_rx_port, k_test_rx_pin);
+  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin, k_test_rx_port, k_test_rx_pin);
 
   /* Inject RX data */
   uint8_t rx_byte = 'X';
   mock_uart_hw_inject_rx_data(9, &rx_byte, 1);
 
   /* Read the data */
-  char received;
+  char     received;
   rx_err_t err = uart_getc_channel(9, &received);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_EQUAL('X', received);
@@ -233,40 +224,37 @@ void test_uart_getc_channel_success(void)
 
 void test_uart_getc_channel_no_data(void)
 {
-  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin,
-                    k_test_rx_port, k_test_rx_pin);
+  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin, k_test_rx_port, k_test_rx_pin);
 
-  char received;
+  char     received;
   rx_err_t err = uart_getc_channel(9, &received);
   TEST_ASSERT_EQUAL(k_rx_err_empty, err);
 }
 
 void test_uart_getc_channel_null_buffer(void)
 {
-  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin,
-                    k_test_rx_port, k_test_rx_pin);
+  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin, k_test_rx_port, k_test_rx_pin);
   rx_err_t err = uart_getc_channel(9, NULL);
   TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
 void test_uart_getc_channel_not_initialized(void)
 {
-  char received;
+  char     received;
   rx_err_t err = uart_getc_channel(9, &received);
   TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err);
 }
 
 void test_uart_read_channel_success(void)
 {
-  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin,
-                    k_test_rx_port, k_test_rx_pin);
+  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin, k_test_rx_port, k_test_rx_pin);
 
   /* Inject RX data */
   uint8_t rx_data[] = {0x11, 0x22, 0x33, 0x44};
   mock_uart_hw_inject_rx_data(9, rx_data, sizeof(rx_data));
 
   /* Read the data */
-  uint8_t buffer[8];
+  uint8_t  buffer[8];
   uint16_t bytes_read;
   rx_err_t err = uart_read_channel(9, buffer, sizeof(buffer), &bytes_read);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -276,15 +264,14 @@ void test_uart_read_channel_success(void)
 
 void test_uart_read_channel_partial(void)
 {
-  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin,
-                    k_test_rx_port, k_test_rx_pin);
+  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin, k_test_rx_port, k_test_rx_pin);
 
   /* Inject RX data */
   uint8_t rx_data[] = {0xAA, 0xBB, 0xCC};
   mock_uart_hw_inject_rx_data(9, rx_data, sizeof(rx_data));
 
   /* Read only 2 bytes */
-  uint8_t buffer[8];
+  uint8_t  buffer[8];
   uint16_t bytes_read;
   rx_err_t err = uart_read_channel(9, buffer, 2, &bytes_read);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
@@ -298,8 +285,7 @@ void test_uart_read_channel_partial(void)
 
 void test_uart_read_channel_null_buffer(void)
 {
-  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin,
-                    k_test_rx_port, k_test_rx_pin);
+  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin, k_test_rx_port, k_test_rx_pin);
   uint16_t bytes_read;
   rx_err_t err = uart_read_channel(9, NULL, 10, &bytes_read);
   TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
@@ -307,19 +293,17 @@ void test_uart_read_channel_null_buffer(void)
 
 void test_uart_read_channel_null_bytes_read(void)
 {
-  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin,
-                    k_test_rx_port, k_test_rx_pin);
-  uint8_t buffer[8];
+  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin, k_test_rx_port, k_test_rx_pin);
+  uint8_t  buffer[8];
   rx_err_t err = uart_read_channel(9, buffer, sizeof(buffer), NULL);
   TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
 
 void test_uart_rx_available_success(void)
 {
-  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin,
-                    k_test_rx_port, k_test_rx_pin);
+  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin, k_test_rx_port, k_test_rx_pin);
 
-  bool available;
+  bool     available;
   rx_err_t err = uart_rx_available(9, &available);
   TEST_ASSERT_EQUAL(k_rx_ok, err);
   TEST_ASSERT_FALSE(available);
@@ -335,8 +319,7 @@ void test_uart_rx_available_success(void)
 
 void test_uart_rx_available_null(void)
 {
-  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin,
-                    k_test_rx_port, k_test_rx_pin);
+  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin, k_test_rx_port, k_test_rx_pin);
   rx_err_t err = uart_rx_available(9, NULL);
   TEST_ASSERT_EQUAL(k_rx_err_null_pointer, err);
 }
@@ -350,8 +333,7 @@ void test_uart_channel_isolation(void)
 {
   /* Initialize two channels */
   uart_init_channel(0, 9600, 0, 2, 0, 1);
-  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin,
-                    k_test_rx_port, k_test_rx_pin);
+  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin, k_test_rx_port, k_test_rx_pin);
 
   /* Write to channel 0 */
   uart_putc_channel(0, 'A');
@@ -360,7 +342,7 @@ void test_uart_channel_isolation(void)
   uart_putc_channel(9, 'B');
 
   /* Verify channel 0 data */
-  uint8_t tx_data[8];
+  uint8_t  tx_data[8];
   uint16_t count = mock_uart_hw_get_tx_data(0, tx_data, sizeof(tx_data));
   TEST_ASSERT_EQUAL(1, count);
   TEST_ASSERT_EQUAL('A', tx_data[0]);
@@ -375,8 +357,7 @@ void test_uart_rx_channel_isolation(void)
 {
   /* Initialize two channels */
   uart_init_channel(0, 9600, 0, 2, 0, 1);
-  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin,
-                    k_test_rx_port, k_test_rx_pin);
+  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin, k_test_rx_port, k_test_rx_pin);
 
   /* Inject data to channel 0 */
   uint8_t data0 = 'X';
@@ -404,19 +385,18 @@ void test_uart_rx_channel_isolation(void)
 void test_uart_init_error_injection(void)
 {
   mock_uart_hw_set_next_error(k_rx_err_hw_error);
-  rx_err_t err = uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin,
-                    k_test_rx_port, k_test_rx_pin);
+  rx_err_t err =
+    uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin, k_test_rx_port, k_test_rx_pin);
   TEST_ASSERT_EQUAL(k_rx_err_hw_error, err);
 }
 
 void test_uart_write_error_injection(void)
 {
-  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin,
-                    k_test_rx_port, k_test_rx_pin);
+  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin, k_test_rx_port, k_test_rx_pin);
 
   mock_uart_hw_set_next_error(k_rx_err_timeout);
-  uint8_t data[] = {0x01, 0x02};
-  rx_err_t err = uart_write_channel(9, data, sizeof(data));
+  uint8_t  data[] = {0x01, 0x02};
+  rx_err_t err    = uart_write_channel(9, data, sizeof(data));
   TEST_ASSERT_EQUAL(k_rx_err_timeout, err);
 }
 
@@ -438,7 +418,7 @@ void test_uart_putc_legacy(void)
   uart_init();
   uart_putc('Z');
 
-  uint8_t tx_data[8];
+  uint8_t  tx_data[8];
   uint16_t count = mock_uart_hw_get_tx_data(9, tx_data, sizeof(tx_data));
   TEST_ASSERT_EQUAL(1, count);
   TEST_ASSERT_EQUAL('Z', tx_data[0]);
@@ -449,7 +429,7 @@ void test_uart_puts_legacy(void)
   uart_init();
   uart_puts("Test");
 
-  uint8_t tx_data[32];
+  uint8_t  tx_data[32];
   uint16_t count = mock_uart_hw_get_tx_data(9, tx_data, sizeof(tx_data));
   TEST_ASSERT_EQUAL(4, count);
   TEST_ASSERT_EQUAL_STRING_LEN("Test", tx_data, 4);
@@ -460,7 +440,7 @@ void test_uart_putint_positive(void)
   uart_init();
   uart_putint(12345);
 
-  uint8_t tx_data[32];
+  uint8_t  tx_data[32];
   uint16_t count = mock_uart_hw_get_tx_data(9, tx_data, sizeof(tx_data));
   TEST_ASSERT_EQUAL(5, count);
   TEST_ASSERT_EQUAL_STRING_LEN("12345", tx_data, 5);
@@ -471,7 +451,7 @@ void test_uart_putint_negative(void)
   uart_init();
   uart_putint(-42);
 
-  uint8_t tx_data[32];
+  uint8_t  tx_data[32];
   uint16_t count = mock_uart_hw_get_tx_data(9, tx_data, sizeof(tx_data));
   TEST_ASSERT_EQUAL(3, count);
   TEST_ASSERT_EQUAL_STRING_LEN("-42", tx_data, 3);
@@ -482,7 +462,7 @@ void test_uart_puthex(void)
   uart_init();
   uart_puthex(0xABCD, 4);
 
-  uint8_t tx_data[32];
+  uint8_t  tx_data[32];
   uint16_t count = mock_uart_hw_get_tx_data(9, tx_data, sizeof(tx_data));
   TEST_ASSERT_EQUAL(6, count); /* "0xABCD" */
   TEST_ASSERT_EQUAL_STRING_LEN("0xABCD", tx_data, 6);
@@ -495,8 +475,7 @@ void test_uart_puthex(void)
 
 void test_uart_call_history(void)
 {
-  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin,
-                    k_test_rx_port, k_test_rx_pin);
+  uart_init_channel(9, 115200, k_test_tx_port, k_test_tx_pin, k_test_rx_port, k_test_rx_pin);
   uart_putc_channel(9, 'A');
   uart_deinit_channel(9);
 

@@ -52,6 +52,7 @@ typedef enum {
  * @brief Initialize nanopb wrapper
  *
  * @return k_rx_ok on success
+ * @return k_rx_err_invalid_state if already initialized
  */
 rx_err_t rx_nanopb_init(void);
 
@@ -69,10 +70,12 @@ rx_err_t rx_nanopb_init(void);
  *
  * @return k_rx_ok on success
  * @return k_rx_err_invalid_arg if any pointer is NULL
- * @return k_rx_err_invalid_size if encoding fails
+ * @return k_rx_err_invalid_state if rx_nanopb_init() not called
+ * @return k_rx_err_invalid_size if encoding fails or length exceeds buffer
  */
 rx_err_t rx_nanopb_encode_velocity_request(const star_v1_SetVelocityRequest* msg,
                                            uint8_t*                          buffer,
+                                           size_t                            buffer_size,
                                            uint32_t*                         len);
 
 /**
@@ -83,7 +86,8 @@ rx_err_t rx_nanopb_encode_velocity_request(const star_v1_SetVelocityRequest* msg
  * @param[out] msg    Decoded message
  *
  * @return k_rx_ok on success
- * @return k_rx_err_invalid_arg if any pointer is NULL
+ * @return k_rx_err_invalid_arg if any pointer is NULL or len is invalid
+ * @return k_rx_err_invalid_state if rx_nanopb_init() not called
  * @return k_rx_err_protocol_error if decoding fails
  */
 rx_err_t rx_nanopb_decode_velocity_request(const uint8_t*              buffer,
@@ -100,12 +104,14 @@ rx_err_t rx_nanopb_decode_velocity_request(const uint8_t*              buffer,
  *
  * @param[in]  msg    Message to encode
  * @param[out] buffer Output buffer
+ * @param[in]  buffer_size Size of the output buffer
  * @param[out] len    Actual encoded length
  *
  * @return k_rx_ok on success
  */
 rx_err_t rx_nanopb_encode_velocity_response(const star_v1_SetVelocityResponse* msg,
                                             uint8_t*                           buffer,
+                                            size_t                             buffer_size,
                                             uint32_t*                          len);
 
 /* =============================================================================
@@ -131,12 +137,14 @@ rx_err_t rx_nanopb_decode_estop_request(const uint8_t*                buffer,
  *
  * @param[in]  msg    Message to encode
  * @param[out] buffer Output buffer
+ * @param[in]  buffer_size Size of the output buffer
  * @param[out] len    Actual encoded length
  *
  * @return k_rx_ok on success
  */
 rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* msg,
                                          uint8_t*                             buffer,
+                                         size_t                               buffer_size,
                                          uint32_t*                            len);
 
 /* =============================================================================
@@ -149,12 +157,15 @@ rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* ms
  *
  * @param[in]  msg    Message to encode
  * @param[out] buffer Output buffer
+ * @param[in]  buffer_size Size of the output buffer
  * @param[out] len    Actual encoded length
  *
  * @return k_rx_ok on success
  */
-rx_err_t
-rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg, uint8_t* buffer, uint32_t* len);
+rx_err_t rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg,
+                                    uint8_t*                     buffer,
+                                    size_t                       buffer_size,
+                                    uint32_t*                    len);
 
 /* =============================================================================
  * Helper Functions
@@ -184,6 +195,13 @@ void rx_nanopb_create_velocity_command(star_v1_VelocityCommand* cmd,
 void rx_nanopb_create_response_header(star_v1_ResponseHeader* header,
                                       star_v1_Status          status,
                                       const char*             request_id);
+
+#ifdef UNIT_TEST
+/**
+ * @brief Reset nanopb internal state for unit testing
+ */
+void rx_nanopb_test_reset_state(void);
+#endif
 
 #ifdef __cplusplus
 }

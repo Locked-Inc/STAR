@@ -11,8 +11,6 @@
  * @copyright Copyright (c) 2026 STAR Project
  */
 
-#include "unity.h"
-
 #include <string.h>
 
 #include "mock_time.h"
@@ -21,6 +19,7 @@
 #include "rx_frame.h"
 #include "rx_usb.h"
 #include "rx_usb_comm.h"
+#include "unity.h"
 
 /* =============================================================================
  * Constants & Definitions
@@ -231,16 +230,16 @@ void test_usb_comm_send_with_fec_flag(void)
   rx_err_t err = rx_usb_comm_send(&s_handle, k_frame_type_response, 0, data, 4);
 
   TEST_ASSERT_EQUAL(k_rx_ok, err);
-  
+
   /* Verify FEC flag is set in the transmitted frame header */
   /* Frame: [SYNC(2)][SEQ(2)][LEN(2)][TYPE(1)][FLAGS(1)]... */
   /* Flags are at offset 7 (0-based) */
-  uint8_t tx_data[32];
+  uint8_t  tx_data[32];
   uint32_t tx_len = 0;
-  
+
   /* Read from driver's ring buffer (since driver buffers data) */
   tx_len = rx_usb_tx_pop(tx_data, sizeof(tx_data));
-  
+
   TEST_ASSERT_GREATER_THAN(8, tx_len);
   TEST_ASSERT_EQUAL_HEX8(k_frame_flag_fec_enabled, tx_data[7] & k_frame_flag_fec_enabled);
 }

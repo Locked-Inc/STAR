@@ -136,7 +136,7 @@ rx_err_t rx_usb_hw_init(void)
   /* 7. Configure interrupts */
   /* Enable: VBUS, device state, control transfer, buffer ready/empty */
   usb0()->intenb0 = k_usb_intenb0_vbse | k_usb_intenb0_dvse | k_usb_intenb0_ctre |
-                 k_usb_intenb0_brdye | k_usb_intenb0_bempe;
+                    k_usb_intenb0_brdye | k_usb_intenb0_bempe;
 
   /* 8. Configure Interrupt Controller (ICU) */
   /* Clear pending interrupt */

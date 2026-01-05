@@ -61,25 +61,25 @@ typedef struct {
 
 /** @brief SCR (Serial Control Register) bits */
 typedef enum {
-  k_mock_sci_scr_cke_mask   = 0x03, /**< Clock enable mask */
-  k_mock_sci_scr_teie       = 0x04, /**< Transmit end interrupt enable */
-  k_mock_sci_scr_mpie       = 0x08, /**< Multi-processor interrupt enable */
-  k_mock_sci_scr_re         = 0x10, /**< Receive enable */
-  k_mock_sci_scr_te         = 0x20, /**< Transmit enable */
-  k_mock_sci_scr_rie        = 0x40, /**< Receive interrupt enable */
-  k_mock_sci_scr_tie        = 0x80, /**< Transmit interrupt enable */
+  k_mock_sci_scr_cke_mask = 0x03, /**< Clock enable mask */
+  k_mock_sci_scr_teie     = 0x04, /**< Transmit end interrupt enable */
+  k_mock_sci_scr_mpie     = 0x08, /**< Multi-processor interrupt enable */
+  k_mock_sci_scr_re       = 0x10, /**< Receive enable */
+  k_mock_sci_scr_te       = 0x20, /**< Transmit enable */
+  k_mock_sci_scr_rie      = 0x40, /**< Receive interrupt enable */
+  k_mock_sci_scr_tie      = 0x80, /**< Transmit interrupt enable */
 } mock_sci_scr_bits_t;
 
 /** @brief SSR (Serial Status Register) bits */
 typedef enum {
-  k_mock_sci_ssr_mpbt  = 0x01, /**< Multi-processor bit transfer */
-  k_mock_sci_ssr_mpb   = 0x02, /**< Multi-processor bit */
-  k_mock_sci_ssr_tend  = 0x04, /**< Transmit end flag */
-  k_mock_sci_ssr_per   = 0x08, /**< Parity error flag */
-  k_mock_sci_ssr_fer   = 0x10, /**< Framing error flag */
-  k_mock_sci_ssr_orer  = 0x20, /**< Overrun error flag */
-  k_mock_sci_ssr_rdrf  = 0x40, /**< Receive data register full */
-  k_mock_sci_ssr_tdre  = 0x80, /**< Transmit data register empty */
+  k_mock_sci_ssr_mpbt = 0x01, /**< Multi-processor bit transfer */
+  k_mock_sci_ssr_mpb  = 0x02, /**< Multi-processor bit */
+  k_mock_sci_ssr_tend = 0x04, /**< Transmit end flag */
+  k_mock_sci_ssr_per  = 0x08, /**< Parity error flag */
+  k_mock_sci_ssr_fer  = 0x10, /**< Framing error flag */
+  k_mock_sci_ssr_orer = 0x20, /**< Overrun error flag */
+  k_mock_sci_ssr_rdrf = 0x40, /**< Receive data register full */
+  k_mock_sci_ssr_tdre = 0x80, /**< Transmit data register empty */
 } mock_sci_ssr_bits_t;
 
 /* =============================================================================
