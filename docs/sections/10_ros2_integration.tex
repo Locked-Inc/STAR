@@ -1,0 +1,169 @@
+% =============================================================================
+% ROS2 INTEGRATION STRATEGY
+% =============================================================================
+
+\newpage
+\section{ROS2 Integration Strategy}
+\label{sec:ros2-integration}
+
+This section documents the research and implementation plan for integrating ROS2 (Robot Operating System 2) into the STAR platform. ROS2 serves as the primary middleware for high-level coordination, navigation, and sensor fusion on the Raspberry Pi 5.
+
+\subsection{Architecture Overview}
+
+The STAR robot uses a distributed architecture where ROS2 coordinates between sensors, the motor controller, and the external gateway.
+
+\noindent\makebox[\textwidth]{\
+\begin{tikzpicture}[
+    font=\small,
+    node distance=0.5cm,
+    box/.style={
+        draw, thick, rectangle, minimum width=3.5cm, minimum height=0.8cm, align=center
+    },
+    rosbox/.style={
+        draw, thick, rectangle, fill=blue!10, minimum width=3.2cm, minimum height=0.7cm, align=center
+    },
+    pkgbox/.style={
+        draw, thick, dashed, rectangle, minimum width=11cm, minimum height=4.5cm, label={[anchor=south east]below right:ROS2 Stack (Jazzy)}
+    }
+]
+    % Remote Controller
+    \node[box, fill=green!10] (remote) at (0,3) {Remote Controller\\(Web UI / Joystick)};
+
+    % Gateway
+    \node[box, fill=orange!20] (gateway) at (0,1.5) {\textbf{star-gateway}\\Go Bridge};
+
+    % ROS2 Container
+    \node[rosbox] (gw_bridge) at (-3.5, -0.5) {star_gateway_bridge};
+    \node[rosbox, right=0.5cm of gw_bridge] (nav2) {Navigation 2\\(nav2)};
+    \node[rosbox, right=0.5cm of nav2] (lidar) {rplidar_ros};
+    
+    \node[rosbox, below=0.8cm of gw_bridge] (safety) {star_safety_monitor};
+    \node[rosbox, right=0.5cm of safety] (slam) {slam_toolbox};
+    \node[rosbox, right=0.5cm of slam] (spi_bridge) {star_spi_bridge};
+
+    % Draw the ROS2 container box
+    \begin{scope}[on background layer]
+        \node[pkgbox, fit=(gw_bridge) (nav2) (lidar) (safety) (slam) (spi_bridge)] (ros_stack) {};
+    \end{scope}
+
+    % Hardware
+    \node[box, fill=cyan!20, below=4cm of spi_bridge] (rx72n) {\textbf{RX72N MCU}\\Motor Control};
+    \node[box, fill=red!10, below=4cm of lidar] (lidar_hw) {\textbf{RPLiDAR C1}\\Lidar Sensor};
+
+    % Connections
+    \draw[<->, thick] (remote) -- node[right] {WebSocket/gRPC} (gateway);
+    \draw[<->, thick] (gateway) -- node[right] {ROS2 Topics} (gw_bridge);
+    \draw[<->, thick] (spi_bridge) -- node[right] {SPI @ 10MHz} (rx72n);
+    \draw[->, thick] (lidar_hw) -- node[right] {Serial/USB} (lidar);
+    
+    % Internal ROS2 connections (simplified)
+    \draw[->, thick] (lidar) -- (nav2);
+    \draw[->, thick] (nav2) -- (spi_bridge);
+    \draw[<->, thick] (spi_bridge) -- (nav2);
+    \draw[->, thick] (lidar) -- (slam);
+
+\end{tikzpicture}% 
+}
+
+\subsection{Required ROS2 Packages}
+
+The following standard ROS2 packages are integrated into the Yocto build via \texttt{meta-ros}:
+
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item \textbf{Navigation 2 (nav2):} The primary stack for path planning, obstacle avoidance, and behavior trees.
+    \item \textbf{SLAM Toolbox:} Used for 2D mapping and localization. Preferred over GMapping for its performance and lifecycle management.
+    \item \textbf{robot_localization:} Provides EKF (Extended Kalman Filter) nodes for fusing wheel odometry, IMU data, and LiDAR.
+    \item \textbf{tf2:} Manages coordinate frame transformations (\texttt{map} $\rightarrow$ \texttt{odom} $\rightarrow$ \texttt{base_link} $\rightarrow$ \texttt{laser_link}).
+    \item \textbf{rplidar_ros:} Hardware driver for the RPLiDAR C1 DTOF scanner.
+\end{itemize}
+
+\subsection{Custom Nodes}
+
+Three custom ROS2 nodes bridge the STAR-specific hardware and software.
+
+\subsubsection{SPI Bridge Node (\texttt{star_spi_bridge})}
+This C++ node is the primary interface between ROS2 and the RX72N firmware.
+\begin{itemize}
+    \item \textbf{Subscribes to:} \texttt{/cmd_vel} (geometry_msgs/Twist)
+    \item \textbf{Publishes to:} \texttt{/odom} (nav_msgs/Odometry), \texttt{/joint_states} (sensor_msgs/JointState)
+    \item \textbf{Protocol:} Maps ROS2 messages to Protobuf messages and transmits via \texttt{spidev}.
+\end{itemize}
+
+\subsubsection{Gateway Bridge Node (\texttt{star_gateway_bridge})}
+Bridges the Go-based gateway service with the ROS2 graph.
+\begin{itemize}
+    \item \textbf{Role:} Allows remote control commands (from \texttt{star-ui}) to be injected into ROS2 as velocity commands or navigation goals.
+    \item \textbf{Communication:} Uses gRPC or localized Unix Sockets to talk to the \texttt{star-gateway} process.
+\end{itemize}
+
+\subsubsection{Safety Monitor Node (\texttt{star_safety_monitor})}
+Dedicated safety logic that runs at high priority.
+\begin{itemize}
+    \item \textbf{Role:} Monitors LiDAR data for imminent collisions and system diagnostics.
+    \item \textbf{Action:} Can publish a zero-velocity command or trigger a hardware emergency stop via the SPI bridge if a heartbeat is lost.
+\end{itemize}
+
+\subsection{Coordinate Frames (tf2)}
+
+The STAR platform adheres to REP-105 for coordinate frames:
+
+\begin{table}[H]
+\centering
+\caption{STAR Coordinate Frames}
+\label{tab:tf-frames}
+\begin{tabular}{|l|l|l|}
+\hline
+\textbf{Frame} & \textbf{Parent} & \textbf{Description} \\
+\hline
+\texttt{map} & None & Global fixed frame (SLAM output) \\
+\texttt{odom} & \texttt{map} & Odometry frame (smooth but drifts) \\
+\texttt{base_link} & \texttt{odom} & Robot center of rotation \\
+\texttt{laser_link} & \texttt{base_link} & Center of the LiDAR sensor \\
+\hline
+\end{tabular}
+\end{table}
+
+\subsection{Implementation Plan}
+
+\subsubsection{Phase 1: Research and Planning}
+Document architecture (this document) and validate package compatibility with Yocto Scarthgap / ROS2 Jazzy.
+
+\subsubsection{Phase 2: SPI Communication and Teleop}
+\begin{enumerate}
+    \item Implement \texttt{star_spi_bridge} with basic \texttt{Twist} to motor command mapping.
+    \item Verify hardware SPI loopback and RX72N communication.
+    \item Test manual control via \texttt{teleop_twist_keyboard}.
+\end{enumerate}
+
+\subsubsection{Phase 3: Sensor Integration and Localization}
+\begin{enumerate}
+    \item Integrate \texttt{rplidar_ros} and verify point cloud data in RViz.
+    \item Implement wheel odometry calculation in \texttt{star_spi_bridge}.
+    \item Configure \texttt{robot_localization} to fuse encoders and LiDAR.
+\end{enumerate}
+
+\subsubsection{Phase 4: Navigation and SLAM}
+\begin{enumerate}
+    \item Configure \texttt{slam_toolbox} for mapping.
+    \item Set up \texttt{nav2} with STAR-specific costmap parameters.
+    \item Test autonomous waypoint navigation.
+\end{enumerate}
+
+\subsection{Simulation and Testing}
+
+To enable rapid development while hardware is being assembled, a simulation environment is utilized.
+
+\begin{itemize}[leftmargin=1.5em,topsep=4pt,itemsep=2pt]
+    \item \textbf{Gazebo Ignition / GZ Sim:} The primary simulator for STAR. A URDF (Unified Robot Description Format) model has been created matching the physical dimensions and motor characteristics (1:34 gear ratio, 210 RPM).
+    \item \textbf{Hardware-in-the-Loop (HIL):} Once the \texttt{star_spi_bridge} is stable, it can be tested against the RX72N hardware using a simple loopback or by monitoring motor outputs without a chassis.
+    \item \textbf{RViz2 Visualization:} Used for real-time monitoring of sensor data, tf frames, and navigation goals.
+\end{itemize}
+
+\subsection{Performance Considerations}
+
+The Raspberry Pi 5 (Cortex-A76) is capable of running the full navigation stack. However, to minimize latency:
+\begin{itemize}
+    \item \textbf{Fast DDS Configuration:} Use a custom XML profile to restrict discovery to the local machine.
+    \item \textbf{Lifecycle Management:} Use ROS2 lifecycle nodes to manage power-heavy sensors like LiDAR.
+    \item \textbf{Hardware Acceleration:} Utilize the RX72N for all high-frequency control loops (250Hz), keeping ROS2 loops at 20--50Hz.
+\end{itemize}
