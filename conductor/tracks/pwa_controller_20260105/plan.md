@@ -4,16 +4,16 @@
 - [x] Task: Define Gamepad Control Protobuf message (fields: linear_vel, angular_vel, timestamp) in `star-proto/proto/controller.proto`
 - [x] Task: Generate code for Go and TypeScript using `buf generate`
 - [x] Task: Verify generated artifacts in `star-gateway` and `star-ui`
-- [~] Task: Conductor - User Manual Verification 'Phase 1: Environment & Protocol Setup' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 1: Environment & Protocol Setup' (Protocol in workflow.md) <!-- 710c52e0c1ba4dba03d1ed26f54e8f4e3210b1f5 -->
 
 ## Phase 2: Gateway WebSocket Implementation (Go)
-- [ ] Task: Create `internal/controller` package in `star-gateway` to handle arcade drive logic
-- [ ] Task: Implement `/ws/controller` WebSocket endpoint in `star-gateway/cmd/star-gateway`
-- [ ] Task: Write unit tests for WebSocket message deserialization (Red Phase)
-- [ ] Task: Implement message handler to pass tests (Green Phase)
-- [ ] Task: Implement safety watchdog: Auto-stop robot if no packet received for >200ms
-- [ ] Task: Add logging for received control packets
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Gateway WebSocket Implementation (Go)' (Protocol in workflow.md)
+- [x] Task: Create `internal/controller` package in `star-gateway` to handle arcade drive logic
+- [x] Task: Implement `/ws/controller` WebSocket endpoint in `star-gateway/cmd/star-gateway`
+- [x] Task: Write unit tests for WebSocket message deserialization (Red Phase)
+- [x] Task: Implement message handler to pass tests (Green Phase)
+- [x] Task: Implement safety watchdog: Auto-stop robot if no packet received for >200ms
+- [x] Task: Add logging for received control packets
+- [~] Task: Conductor - User Manual Verification 'Phase 2: Gateway WebSocket Implementation (Go)' (Protocol in workflow.md)
 
 ## Phase 3: UI Gamepad Integration (TypeScript)
 - [ ] Task: Implement `useGamepad` custom hook in `star-ui/src/hooks/useGamepad.ts`
