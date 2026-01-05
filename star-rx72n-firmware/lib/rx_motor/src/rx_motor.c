@@ -60,6 +60,11 @@ typedef enum {
  */
 static float internal_clamp_duty(float duty)
 {
+  /* Safety check for invalid float values (NASA Rule 5 compliance) */
+  if (isnan(duty) || isinf(duty)) {
+    return (float)k_motor_duty_zero;  /* Safe default: stopped */
+  }
+
   if (duty > (float)k_motor_duty_max) {
     return (float)k_motor_duty_max;
   }
@@ -100,9 +105,20 @@ rx_err_t rx_motor_init(rx_motor_handle_t* handle, const rx_motor_config_t* confi
     return err;
   }
 
-  /* Initialize both outputs to 0% duty (stopped) */
-  rx_gptw_set_duty(config->channel, config->output_a, 0.0f);
-  rx_gptw_set_duty(config->channel, config->output_b, 0.0f);
+  /* Initialize both outputs to 0% duty (stopped) - NASA Rule 7 compliance */
+  err = rx_gptw_set_duty(config->channel, config->output_a, 0.0f);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to set output_a initial duty");
+    rx_gptw_deinit(config->channel);
+    return err;
+  }
+
+  err = rx_gptw_set_duty(config->channel, config->output_b, 0.0f);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to set output_b initial duty");
+    rx_gptw_deinit(config->channel);
+    return err;
+  }
 
   /* Save configuration */
   handle->channel      = config->channel;
@@ -161,15 +177,35 @@ rx_err_t rx_motor_set_duty(rx_motor_handle_t* handle, float duty)
    * PH (output_a) = direction (HIGH=forward, LOW=reverse)
    * EN (output_b) = speed (PWM duty cycle)
    */
-  float speed_pwm = fabsf(duty);
+  float    speed_pwm = fabsf(duty);
+  rx_err_t err;
+
   if (duty >= (float)k_motor_duty_zero) {
-    /* Forward: PH = HIGH, EN = PWM */
-    rx_gptw_set_duty(handle->channel, handle->output_a, (float)k_motor_ph_high);
-    rx_gptw_set_duty(handle->channel, handle->output_b, speed_pwm);
+    /* Forward: PH = HIGH, EN = PWM - NASA Rule 7 compliance */
+    err = rx_gptw_set_duty(handle->channel, handle->output_a, (float)k_motor_ph_high);
+    if (err != k_rx_ok) {
+      rx_log_error(s_tag, "Failed to set PH output (forward)");
+      return err;
+    }
+
+    err = rx_gptw_set_duty(handle->channel, handle->output_b, speed_pwm);
+    if (err != k_rx_ok) {
+      rx_log_error(s_tag, "Failed to set EN output (forward)");
+      return err;
+    }
   } else {
-    /* Reverse: PH = LOW, EN = PWM */
-    rx_gptw_set_duty(handle->channel, handle->output_a, (float)k_motor_ph_low);
-    rx_gptw_set_duty(handle->channel, handle->output_b, speed_pwm);
+    /* Reverse: PH = LOW, EN = PWM - NASA Rule 7 compliance */
+    err = rx_gptw_set_duty(handle->channel, handle->output_a, (float)k_motor_ph_low);
+    if (err != k_rx_ok) {
+      rx_log_error(s_tag, "Failed to set PH output (reverse)");
+      return err;
+    }
+
+    err = rx_gptw_set_duty(handle->channel, handle->output_b, speed_pwm);
+    if (err != k_rx_ok) {
+      rx_log_error(s_tag, "Failed to set EN output (reverse)");
+      return err;
+    }
   }
 
   handle->current_duty = duty;
@@ -190,9 +226,19 @@ rx_err_t rx_motor_stop(rx_motor_handle_t* handle, bool brake)
     /* Brake mode not supported in PH/EN mode - coast instead */
     rx_log_warn(s_tag, "Brake not supported in PH/EN mode, coasting");
   }
-  /* Coast mode: set EN (output_b) to LOW for high impedance */
-  rx_gptw_set_duty(handle->channel, handle->output_a, 0.0f);
-  rx_gptw_set_duty(handle->channel, handle->output_b, 0.0f);
+
+  /* Coast mode: set both outputs to LOW for high impedance - NASA Rule 7 compliance */
+  rx_err_t err = rx_gptw_set_duty(handle->channel, handle->output_a, 0.0f);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to set output_a during stop");
+    return err;
+  }
+
+  err = rx_gptw_set_duty(handle->channel, handle->output_b, 0.0f);
+  if (err != k_rx_ok) {
+    rx_log_error(s_tag, "Failed to set output_b during stop");
+    return err;
+  }
 
   handle->current_duty = 0.0f;
 
