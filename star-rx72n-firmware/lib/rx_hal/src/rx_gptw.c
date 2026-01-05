@@ -51,8 +51,8 @@ typedef enum {
 } gptw_prcr_values_t;
 
 /** @brief Period calculation constants */
-#define GPTW_PERIOD_MAX       (0xFFFFFFFFUL) /**< Maximum valid period (32-bit) */
-#define GPTW_NS_PER_SECOND    (1000000000ULL) /**< Nanoseconds per second for deadtime calc */
+static const uint32_t s_gptw_period_max    = 0xFFFFFFFFUL;  /**< Maximum valid period (32-bit) */
+static const uint64_t s_gptw_ns_per_second = 1000000000ULL; /**< Nanoseconds per second */
 
 typedef enum {
   k_gptw_period_min  = 10, /**< Minimum valid period */
@@ -134,7 +134,7 @@ static rx_err_t internal_calculate_period(uint32_t frequency_hz, uint32_t* perio
   uint32_t period_calc = pclka / frequency_hz;
 
   /* Check if period fits in 32-bit register */
-  if (period_calc > GPTW_PERIOD_MAX) {
+  if (period_calc > s_gptw_period_max) {
     rx_log_error(s_tag, "Frequency too low");
     return k_rx_err_invalid_arg;
   }
@@ -323,7 +323,7 @@ rx_err_t rx_gptw_init_pwm(rx_gptw_channel_t channel, const rx_gptw_config_t* con
   /* Configure dead time if requested */
   if (config->deadtime_ns > 0) {
     /* Calculate dead time count: deadtime_ns * (PCLKA / 1e9) */
-    uint32_t deadtime_count = (uint32_t)((uint64_t)config->deadtime_ns * k_pclka_hz / GPTW_NS_PER_SECOND);
+    uint32_t deadtime_count = (uint32_t)((uint64_t)config->deadtime_ns * k_pclka_hz / s_gptw_ns_per_second);
     gptw->gtdvu = deadtime_count;
     gptw->gtdvd = deadtime_count;
     gptw->gtdtcr = k_gptw_gtdtcr_tde; /* Enable dead time */
