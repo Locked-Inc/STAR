@@ -481,8 +481,8 @@ void test_rx_bus_uart_multi_channel_isolation(void)
   rx_err_t err = rx_bus_config_init_uart(&uart0_config,
                                           "uart0",
                                           0,           /* SCI0 */
-                                          k_gpio_p02,  /* TX: Port 0, Pin 2 */
-                                          k_gpio_p01,  /* RX: Port 0, Pin 1 */
+                                          k_gpio_p17,  /* TX: Port 1, Pin 7 */
+                                          k_gpio_p16,  /* RX: Port 1, Pin 6 */
                                           9600);       /* 9600 baud */
   TEST_ASSERT_EQUAL(k_rx_ok, err);
 
