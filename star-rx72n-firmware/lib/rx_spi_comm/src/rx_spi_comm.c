@@ -63,6 +63,11 @@ typedef enum {
   k_poll_sleep_ticks     = 1,   /**< Sleep duration for polling loop (1 tick) */
 } threadx_timing_t;
 
+/** @brief ACK/ready wait timing constants */
+typedef enum {
+  k_ack_wait_timeout_ms = 50, /**< Abort if host doesn't ACK within 50 ms */
+} ack_wait_t;
+
 /* =============================================================================
  * Internal Helpers
  * =============================================================================
@@ -109,6 +114,36 @@ static rx_err_t internal_spi_transfer(rx_spi_comm_handle_t* handle,
   }
 
   return k_rx_ok;
+}
+
+/**
+ * @brief Wait for host ACK/ready signal before transmitting
+ *
+ * Prevents infinite wait states when host never signals readiness.
+ */
+static rx_err_t internal_wait_for_ack(rx_spi_comm_handle_t* handle, uint32_t timeout_ms)
+{
+  uint32_t elapsed_ms = 0;
+
+  while (elapsed_ms < timeout_ms) {
+    bool     ready = false;
+    rx_err_t err   = rspi_peripheral_write_ready(handle->channel, &ready);
+    if (err != k_rx_ok) {
+      return err;
+    }
+
+    if (ready) {
+      return k_rx_ok;
+    }
+
+#ifdef __RX__
+    tx_thread_sleep(k_poll_sleep_ticks);
+#endif
+    elapsed_ms += k_threadx_ms_per_tick;
+  }
+
+  rx_log_error(s_tag, "SPI ACK timeout waiting for host ready");
+  return k_rx_err_timeout;
 }
 
 /* =============================================================================
@@ -232,6 +267,11 @@ rx_err_t rx_spi_comm_send(rx_spi_comm_handle_t* handle,
     return err;
   }
 
+  err = internal_wait_for_ack(handle, k_ack_wait_timeout_ms);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
   /* Transfer via SPI */
   err = internal_spi_transfer(handle, wire_buffer, wire_len, NULL, 0);
   if (err != k_rx_ok) {
@@ -271,6 +311,11 @@ rx_err_t rx_spi_comm_send_ack(rx_spi_comm_handle_t* handle, uint16_t sequence)
     return err;
   }
 
+  err = internal_wait_for_ack(handle, k_ack_wait_timeout_ms);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
   return internal_spi_transfer(handle, wire_buffer, wire_len, NULL, 0);
 }
 
@@ -296,6 +341,11 @@ rx_err_t rx_spi_comm_send_nack(rx_spi_comm_handle_t* handle, uint16_t sequence, 
   uint32_t wire_len = 0;
 
   err = rx_frame_encode(&handle->encoder, &nack_frame, wire_buffer, &wire_len);
+  if (err != k_rx_ok) {
+    return err;
+  }
+
+  err = internal_wait_for_ack(handle, k_ack_wait_timeout_ms);
   if (err != k_rx_ok) {
     return err;
   }
