@@ -1,3 +1,5 @@
+/* tests/mocks/mock_usb_hw.c */
+
 /**
  * @file mock_usb_hw.c
  * @brief Mock USB Hardware Layer Implementation
@@ -6,8 +8,8 @@
  * This file provides mock implementations of rx_usb_hw_* functions
  * that can be linked instead of the real hardware implementations.
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-04
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "mock_usb_hw.h"

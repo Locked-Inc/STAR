@@ -1,3 +1,5 @@
+/* tests/test_rx_fec.c */
+
 /**
  * @file test_rx_fec.c
  * @brief Unit Tests for FEC Codec (K=7 Convolutional + Viterbi)
@@ -5,8 +7,8 @@
  * Tests the Forward Error Correction encoder and decoder.
  * Verifies bit-exact compatibility with Go implementation.
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-04
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "unity.h"

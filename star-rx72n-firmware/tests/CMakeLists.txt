@@ -60,6 +60,12 @@ set(MOCK_LOG_SRC
     ${CMAKE_SOURCE_DIR}/mocks/mock_rx_log.c
 )
 
+# UART mock sources
+set(MOCK_UART_SRC
+    ${CMAKE_SOURCE_DIR}/mocks/mock_sci_regs.c
+    ${CMAKE_SOURCE_DIR}/mocks/mock_uart_hw.c
+)
+
 # Time mock source
 set(MOCK_TIME_SRC
     ${CMAKE_SOURCE_DIR}/../lib/rx_core/src/mock_time.c
@@ -97,6 +103,8 @@ include_directories(
     ${CMAKE_SOURCE_DIR}/../lib/rx_usb_comm/inc
     ${CMAKE_SOURCE_DIR}/../lib/rx_hcsr04/inc
     ${CMAKE_SOURCE_DIR}/../lib/rx_hcsr04/src
+    ${CMAKE_SOURCE_DIR}/../lib/rx_hal/inc
+    ${CMAKE_SOURCE_DIR}/../lib/rx_bus/inc
     ${CMAKE_SOURCE_DIR}/mocks
     ${unity_SOURCE_DIR}/src
 )
@@ -170,6 +178,34 @@ add_executable(test_rx_hcsr04
 )
 target_link_libraries(test_rx_hcsr04 unity)
 
+# Test: UART HAL Driver
+add_executable(test_uart_hal
+    test_uart_hal.c
+    ${MOCK_UART_SRC}
+)
+target_compile_definitions(test_uart_hal PRIVATE UNIT_TEST)
+target_link_libraries(test_uart_hal unity)
+
+# rx_bus sources for bus abstraction tests (using mock bus manager)
+set(RX_BUS_SRC
+    ${CMAKE_SOURCE_DIR}/mocks/mock_rx_bus_manager.c
+    ${CMAKE_SOURCE_DIR}/../lib/rx_bus/src/rx_bus_config.c
+    ${CMAKE_SOURCE_DIR}/../lib/rx_bus/src/rx_bus_uart.c
+)
+
+# Test: UART Bus Abstraction Layer
+# Note: Don't include MOCK_LOG_SRC - mock_uart_hw.c provides uart stubs
+add_executable(test_rx_bus_uart
+    test_rx_bus_uart.c
+    ${RX_BUS_SRC}
+    ${MOCK_UART_SRC}
+)
+target_include_directories(test_rx_bus_uart PRIVATE
+    ${CMAKE_SOURCE_DIR}/mocks
+)
+target_compile_definitions(test_rx_bus_uart PRIVATE UNIT_TEST)
+target_link_libraries(test_rx_bus_uart unity)
+
 # =============================================================================
 # CTest Integration
 # =============================================================================
@@ -184,6 +220,8 @@ add_test(NAME test_rx_usb COMMAND test_rx_usb)
 add_test(NAME test_rx_usb_comm COMMAND test_rx_usb_comm)
 add_test(NAME test_rx_time COMMAND test_rx_time)
 add_test(NAME test_rx_hcsr04 COMMAND test_rx_hcsr04)
+add_test(NAME test_uart_hal COMMAND test_uart_hal)
+add_test(NAME test_rx_bus_uart COMMAND test_rx_bus_uart)
 
 # =============================================================================
 # Convenience Targets
@@ -191,7 +229,7 @@ add_test(NAME test_rx_hcsr04 COMMAND test_rx_hcsr04)
 
 add_custom_target(run_all_tests
     COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
-    DEPENDS test_rx_crc32 test_rx_frame test_rx_fec test_rx_harq test_rx_usb test_rx_usb_comm test_rx_time test_rx_hcsr04
+    DEPENDS test_rx_crc32 test_rx_frame test_rx_fec test_rx_harq test_rx_usb test_rx_usb_comm test_rx_time test_rx_hcsr04 test_uart_hal test_rx_bus_uart
     WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
     COMMENT "Running all unit tests..."
 )
