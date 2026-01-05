@@ -1,3 +1,5 @@
+/* tests/test_rx_time.c */
+
 /**
  * @file test_rx_time.c
  * @brief Unit Tests for Time Interface and Mock Implementation
@@ -8,8 +10,8 @@
  * - Sleep behavior
  * - Elapsed time checking
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-04
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include "unity.h"
