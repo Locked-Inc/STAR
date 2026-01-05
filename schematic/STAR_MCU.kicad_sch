@@ -35094,6 +35094,16 @@
 		)
 		(uuid "07189dee-e3e5-4b98-8ef9-095d3fe2e2cd")
 	)
+	(label "RX72N_PIN_68"
+		(at 814.07 163.83 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "077c4b87-a28a-413e-b10b-afeecaf8845b")
+	)
 	(label "SCI_USBC_USBDN"
 		(at 464.82 139.7 180)
 		(effects
@@ -35114,16 +35124,6 @@
 			(justify left bottom)
 		)
 		(uuid "089e790c-50f1-452c-844b-4734c3a2f428")
-	)
-	(label "PMOD_JB_GPIO3"
-		(at 793.75 163.83 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "09ec1efe-1ffc-46ef-9c7c-ef8d4d73716c")
 	)
 	(label "P6V0_BUCK"
 		(at 608.33 298.45 0)
@@ -35215,6 +35215,16 @@
 		)
 		(uuid "0d7cf757-90ac-4428-ae16-8a49fe03a279")
 	)
+	(label "PMOD_JB_GPIO3"
+		(at 793.75 163.83 180)
+		(effects
+			(font
+				(size 1.27 1.27)
+			)
+			(justify right bottom)
+		)
+		(uuid "0dc94b0a-2992-4a55-abb4-c6782a0d78e1")
+	)
 	(label "EMU_TMS"
 		(at 664.21 185.42 0)
 		(effects
@@ -35274,16 +35284,6 @@
 			(justify left bottom)
 		)
 		(uuid "0f92e897-c647-4c09-abeb-1e4537346a58")
-	)
-	(label "RX72N_PIN_68"
-		(at 814.07 163.83 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "0fea4c15-b196-499e-82e3-5b8f2e6af9d2")
 	)
 	(label "P3V3_BUCK"
 		(at 763.27 412.75 0)
@@ -37218,16 +37218,6 @@
 			(justify left bottom)
 		)
 		(uuid "7462c9f4-feea-43cb-8733-80b09a91dc01")
-	)
-	(label "PMOD_JB_GPIO3"
-		(at 793.75 163.83 180)
-		(effects
-			(font
-				(size 1.27 1.27)
-			)
-			(justify right bottom)
-		)
-		(uuid "749eb03a-2c1a-4175-a60a-e1cf89527f21")
 	)
 	(label "BOARD_3V3"
 		(at 603.25 54.61 0)
