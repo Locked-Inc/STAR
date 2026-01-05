@@ -14,32 +14,12 @@
 
 #include "hardware.h"
 #include "rx72n_regs.h"
+#include "rx_port_constants.h"
 
 /* =============================================================================
  * Constants
  * =============================================================================
  */
-
-/** @brief GPIO port number constants for switch statement cases */
-typedef enum {
-  k_gpio_port_0 = 0,    /**< Port 0 */
-  k_gpio_port_1 = 1,    /**< Port 1 */
-  k_gpio_port_2 = 2,    /**< Port 2 */
-  k_gpio_port_3 = 3,    /**< Port 3 */
-  k_gpio_port_4 = 4,    /**< Port 4 */
-  k_gpio_port_5 = 5,    /**< Port 5 */
-  k_gpio_port_6 = 6,    /**< Port 6 */
-  k_gpio_port_7 = 7,    /**< Port 7 */
-  k_gpio_port_8 = 8,    /**< Port 8 */
-  k_gpio_port_9 = 9,    /**< Port 9 */
-  k_gpio_port_a = 0x0A, /**< Port A */
-  k_gpio_port_b = 0x0B, /**< Port B */
-  k_gpio_port_c = 0x0C, /**< Port C */
-  k_gpio_port_d = 0x0D, /**< Port D */
-  k_gpio_port_e = 0x0E, /**< Port E */
-  k_gpio_port_f = 0x0F, /**< Port F */
-  k_gpio_port_g = 0x10, /**< Port G */
-} gpio_port_number_t;
 
 /** @brief GPIO pin validation constants */
 typedef enum {
@@ -67,55 +47,55 @@ typedef enum {
 static volatile rx_port_regs_t* internal_get_port_base(uint8_t port)
 {
   switch (port) {
-    case k_gpio_port_0: {
+    case k_rx_port_0: {
       return port0();
     }
-    case k_gpio_port_1: {
+    case k_rx_port_1: {
       return port1();
     }
-    case k_gpio_port_2: {
+    case k_rx_port_2: {
       return port2();
     }
-    case k_gpio_port_3: {
+    case k_rx_port_3: {
       return port3();
     }
-    case k_gpio_port_4: {
+    case k_rx_port_4: {
       return port4();
     }
-    case k_gpio_port_5: {
+    case k_rx_port_5: {
       return port5();
     }
-    case k_gpio_port_6: {
+    case k_rx_port_6: {
       return port6();
     }
-    case k_gpio_port_7: {
+    case k_rx_port_7: {
       return port7();
     }
-    case k_gpio_port_8: {
+    case k_rx_port_8: {
       return port8();
     }
-    case k_gpio_port_9: {
+    case k_rx_port_9: {
       return port9();
     }
-    case k_gpio_port_a: {
+    case k_rx_port_a: {
       return porta();
     }
-    case k_gpio_port_b: {
+    case k_rx_port_b: {
       return portb();
     }
-    case k_gpio_port_c: {
+    case k_rx_port_c: {
       return portc();
     }
-    case k_gpio_port_d: {
+    case k_rx_port_d: {
       return portd();
     }
-    case k_gpio_port_e: {
+    case k_rx_port_e: {
       return porte();
     }
-    case k_gpio_port_f: {
+    case k_rx_port_f: {
       return portf();
     }
-    case k_gpio_port_g: {
+    case k_rx_port_g: {
       return portg();
     }
     default: {
