@@ -52,13 +52,13 @@ static const float s_speed_of_sound_coeff = 0.606f;
 static void internal_send_trigger_pulse(const rx_hcsr04_t* handle)
 {
   /* Ensure trigger is low initially */
-  hcsr04_hal_gpio_write_low(handle->trigger_port, handle->trigger_pin);
+  hcsr04_hal_gpio_write_low(handle->trigger_pin);
   hcsr04_hal_delay_us(2);
 
   /* Send 10us HIGH pulse */
-  hcsr04_hal_gpio_write_high(handle->trigger_port, handle->trigger_pin);
+  hcsr04_hal_gpio_write_high(handle->trigger_pin);
   hcsr04_hal_delay_us(k_hcsr04_trigger_pulse_us);
-  hcsr04_hal_gpio_write_low(handle->trigger_port, handle->trigger_pin);
+  hcsr04_hal_gpio_write_low(handle->trigger_pin);
 }
 
 /**
@@ -78,7 +78,7 @@ internal_wait_for_echo(const rx_hcsr04_t* handle, bool target_state, uint32_t ti
   uint32_t elapsed    = 0;
 
   while (true) {
-    hcsr04_hal_gpio_read(handle->echo_port, handle->echo_pin, &pin_state);
+    hcsr04_hal_gpio_read(handle->echo_pin, &pin_state);
 
     if (pin_state == target_state) {
       return k_rx_ok;
@@ -142,23 +142,21 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
   }
 
   /* Configure trigger pin as output */
-  err = hcsr04_hal_gpio_set_output(config->trigger_port, config->trigger_pin);
+  err = hcsr04_hal_gpio_set_output(config->trigger_pin);
   if (err != k_rx_ok) {
     return err;
   }
 
   /* Configure echo pin as input */
-  err = hcsr04_hal_gpio_set_input(config->echo_port, config->echo_pin);
+  err = hcsr04_hal_gpio_set_input(config->echo_pin);
   if (err != k_rx_ok) {
     /* Cleanup trigger pin */
-    hcsr04_hal_gpio_deinit(config->trigger_port, config->trigger_pin);
+    hcsr04_hal_gpio_deinit(config->trigger_pin);
     return err;
   }
 
   /* Initialize handle */
-  handle->trigger_port       = config->trigger_port;
   handle->trigger_pin        = config->trigger_pin;
-  handle->echo_port          = config->echo_port;
   handle->echo_pin           = config->echo_pin;
   handle->timeout_us         = config->timeout_us;
   handle->initialized        = true;
@@ -170,7 +168,7 @@ rx_err_t rx_hcsr04_init(rx_hcsr04_t* handle, const rx_hcsr04_config_t* config)
   handle->range_error_count = 0;
 
   /* Ensure trigger is low */
-  hcsr04_hal_gpio_write_low(handle->trigger_port, handle->trigger_pin);
+  hcsr04_hal_gpio_write_low(handle->trigger_pin);
 
   return k_rx_ok;
 }
@@ -186,8 +184,8 @@ rx_err_t rx_hcsr04_deinit(rx_hcsr04_t* handle)
   }
 
   /* Release GPIO pins */
-  hcsr04_hal_gpio_deinit(handle->trigger_port, handle->trigger_pin);
-  hcsr04_hal_gpio_deinit(handle->echo_port, handle->echo_pin);
+  hcsr04_hal_gpio_deinit(handle->trigger_pin);
+  hcsr04_hal_gpio_deinit(handle->echo_pin);
 
   /* Clear handle */
   handle->initialized = false;
