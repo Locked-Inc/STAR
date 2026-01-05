@@ -349,8 +349,13 @@ rx_err_t rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, ui
   uint32_t elapsed_ms = 0;
   rx_err_t err;
 
-  /* Try to receive a complete frame */
-  while (1) {
+  /*
+   * Try to receive a complete frame.
+   * Rule 2 compliance: Loop bound is statically provable via compile-time
+   * maximum. Prevents infinite loop even if timeout logic fails.
+   */
+  for (uint32_t iterations = 0; iterations < k_usb_comm_max_receive_iterations;
+       iterations++) {
     /* Read any available USB data */
     err = internal_read_usb_data(handle);
     if (err != k_rx_ok && err != k_rx_err_timeout) {
@@ -455,6 +460,9 @@ rx_err_t rx_usb_comm_receive(rx_usb_comm_handle_t* handle, rx_frame_t* frame, ui
 
     return k_rx_ok;
   }
+
+  /* If we exit loop due to iteration limit, return timeout */
+  return k_rx_err_timeout;
 }
 
 rx_err_t rx_usb_comm_data_available(rx_usb_comm_handle_t* handle, bool* available)
