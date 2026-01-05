@@ -1,3 +1,5 @@
+/* tests/mocks/mock_rx_log.c */
+
 /**
  * @file mock_rx_log.c
  * @brief Mock RX Log and UART Implementation for Unit Testing
@@ -5,8 +7,8 @@
  * Provides stub implementations of UART functions used by rx_log.h
  * for host-side testing.
  *
- * STAR Project - Texas A&M University
- * December 2025
+ * @date 2026-01-04
+ * @copyright Copyright (c) 2026 STAR Project
  */
 
 #include <stdint.h>
