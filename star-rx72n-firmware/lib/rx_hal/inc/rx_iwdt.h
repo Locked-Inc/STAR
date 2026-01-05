@@ -5,11 +5,23 @@
  * @brief Independent Watchdog Timer (IWDT) Driver for RX72N
  *
  * The IWDT provides system recovery from infinite loops and software hangs.
- * It runs on a dedicated 120 kHz IWDT-dedicated oscillator, independent of
- * the main system clock. If the main clock fails, IWDT can still reset the chip.
+ * It runs on the dedicated 120 kHz IWDT-dedicated on-chip RC oscillator (IWDTCLK),
+ * which is independent of the main system clock. This internal oscillator
+ * ensures the IWDT can reset the chip even if the main clock fails.
+ * No external components are required for the IWDT clock.
+ *
+ * Sub-clock Pin Handling (XCIN/XCOUT):
+ * The IWDT does not use the sub-clock oscillator pins (XCIN/XCOUT). When the
+ * sub-clock oscillator is unused, the hardware manual specifies the
+ * following connections for these pins:
+ * - XCIN: Connect to VSS (ground) via a pull-down resistor.
+ * - XCOUT: Leave open (unconnected).
+ *
+ * The system_init.c file disables the sub-clock oscillator by setting
+ * the SOSCCR.SOSTP bit. It is also recommended to set RCR3.RTCEN = 0.
  *
  * Features:
- * - Independent 120 kHz clock source
+ * - Internal 120 kHz clock source (IWDTCLK)
  * - Configurable timeout (128ms to 16,384ms)
  * - Window mode (optional - disabled by default)
  * - Reset or NMI on timeout
@@ -56,7 +68,8 @@ extern "C" {
 /**
  * @brief IWDT timeout configuration options
  *
- * Based on 120 kHz IWDT clock with various cycle counts and divisors.
+ * Based on the 120 kHz internal IWDT clock (IWDTCLK) with various
+ * cycle counts and divisors.
  */
 typedef enum {
   k_iwdt_timeout_128ms   = 128,   /**< Minimum timeout */
@@ -88,7 +101,7 @@ typedef enum {
  * watchdog cannot be stopped and must be fed periodically to prevent reset.
  *
  * Configuration:
- * - Clock: 120 kHz IWDT-dedicated oscillator
+ * - Clock: 120 kHz internal IWDT-dedicated oscillator (IWDTCLK)
  * - Window mode: Disabled (refresh allowed anytime)
  * - Action: System reset on timeout
  * - Count stop in sleep: Disabled (continues counting)

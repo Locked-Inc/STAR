@@ -99,6 +99,10 @@ static rx_err_t clock_init(void)
   /* Stop sub-clock oscillator (not used) */
   system_regs()->sosccr = k_sub_clock_stopped;
 
+  /* TODO: Also set RCR3.RTCEN = 0 to fully disable sub-clock.
+   *       Requires RTC register definitions.
+   */
+
   /* Start main oscillator (16 MHz external crystal) */
   system_regs()->mosccr = k_main_osc_enabled;
 
