@@ -430,8 +430,8 @@ rx_err_t uart_putc_channel(uint8_t channel, char data)
   sci->tdr = (uint8_t)data;
 
   /* Clear TDRE flag by reading SSR then writing 0 */
-  (void)sci->ssr;
-  sci->ssr &= ~k_sci_ssr_tdre_flag;
+  volatile uint8_t ssr = sci->ssr;
+  sci->ssr = (uint8_t)(ssr & ~k_sci_ssr_tdre_flag);
 
   return k_rx_ok;
 }
@@ -528,10 +528,10 @@ rx_err_t uart_getc_channel(uint8_t channel, char* data)
   /* Read received data */
   *data = (char)sci->rdr;
 
-  /* Clear RDRF flag by reading RDR (already done above) */
-  /* Some RX MCUs require explicit clear */
-  (void)sci->ssr;
-  sci->ssr &= ~k_sci_ssr_rdrf_flag;
+  /* Clear RDRF flag by reading SSR then writing 0 */
+  /* Some RX MCUs require explicit clear after reading RDR */
+  volatile uint8_t ssr = sci->ssr;
+  sci->ssr = (uint8_t)(ssr & ~k_sci_ssr_rdrf_flag);
 
   return k_rx_ok;
 }
