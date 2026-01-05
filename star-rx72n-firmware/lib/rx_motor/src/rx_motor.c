@@ -213,3 +213,32 @@ rx_err_t rx_motor_get_duty(const rx_motor_handle_t* handle, float* out_duty)
 
   return k_rx_ok;
 }
+
+rx_err_t rx_motor_emergency_stop(rx_motor_handle_t* handle)
+{
+  RX_CHECK_NULL_PTR(handle, s_tag, "handle pointer is NULL");
+
+  if (!handle->initialized) {
+    rx_log_error(s_tag, "Motor not initialized");
+    return k_rx_err_invalid_state;
+  }
+
+  /* Immediately set duty to 0% */
+  rx_gptw_set_duty(handle->channel, handle->output_a, 0.0f);
+  rx_gptw_set_duty(handle->channel, handle->output_b, 0.0f);
+
+  /* Disable GPTW outputs at hardware level */
+  rx_gptw_enable_output(handle->channel, handle->output_a, false);
+  rx_gptw_enable_output(handle->channel, handle->output_b, false);
+
+  /* Stop timer to prevent glitches */
+  rx_gptw_stop(handle->channel);
+
+  /* Mark as no longer initialized - requires re-init to use */
+  handle->initialized  = false;
+  handle->current_duty = 0.0f;
+
+  rx_log_warn(s_tag, "EMERGENCY STOP - motor disabled");
+
+  return k_rx_ok;
+}
