@@ -121,9 +121,9 @@ typedef enum {
   /* Port B GPIO Pins (Debug UART + PMOD) */
   k_gpio_pb0 = 0x0B00, /**< PB0 (pin 61) - PMOD JE GPIO2 */
   k_gpio_pb1 = 0x0B01, /**< PB1 (pin 59) - PMOD JE GPIO1 */
-  k_gpio_pb2 = 0x0B02, /**< PB2 (pin 59) - PMOD JA GPIO */
-  k_gpio_pb3 = 0x0B03, /**< PB3 (pin 58) - PMOD JA RST */
-  k_gpio_pb4 = 0x0B04, /**< PB4 (pin 57) - PMOD JA DC */
+  k_gpio_pb2 = 0x0B02, /**< PB2 (pin 58) - PMOD JA GPIO */
+  k_gpio_pb3 = 0x0B03, /**< PB3 (pin 57) - PMOD JA RST */
+  k_gpio_pb4 = 0x0B04, /**< PB4 (pin 56) - PMOD JA DC */
   k_gpio_pb5 = 0x0B05, /**< PB5 (pin 55) - PMOD JA CS1 */
   k_gpio_pb6 = 0x0B06, /**< PB6 (pin 54) - Debug UART RX */
   k_gpio_pb7 = 0x0B07, /**< PB7 (pin 53) - Debug UART TX */
@@ -512,11 +512,11 @@ typedef enum {
   k_pmod_ja_sck_port  = 5,   /**< Port 5 */
   k_pmod_ja_sck_pin   = 3,   /**< P53 (pin 41) - SPI SCK */
   k_pmod_ja_dc_port   = 0xB, /**< Port B */
-  k_pmod_ja_dc_pin    = 4,   /**< PB4 (pin 57) - Data/Command */
+  k_pmod_ja_dc_pin    = 4,   /**< PB4 (pin 56) - Data/Command */
   k_pmod_ja_rst_port  = 0xB, /**< Port B */
-  k_pmod_ja_rst_pin   = 3,   /**< PB3 (pin 58) - Reset */
+  k_pmod_ja_rst_pin   = 3,   /**< PB3 (pin 57) - Reset */
   k_pmod_ja_gpio_port = 0xB, /**< Port B */
-  k_pmod_ja_gpio_pin  = 2,   /**< PB2 (pin 59) - General Purpose */
+  k_pmod_ja_gpio_pin  = 2,   /**< PB2 (pin 58) - General Purpose */
   k_pmod_ja_cs1_port  = 0xB, /**< Port B */
   k_pmod_ja_cs1_pin   = 5,   /**< PB5 (pin 55) - SPI CS1 */
 } pmod_ja_pins_t;
