@@ -72,11 +72,6 @@ rx_err_t rx_nanopb_init(void)
 
   s_initialized = true;
 
-  /* Post-condition: Verify initialization succeeded */
-  if (!s_initialized) {
-    return k_rx_err_generic;
-  }
-
   return k_rx_ok;
 }
 
@@ -87,6 +82,7 @@ rx_err_t rx_nanopb_init(void)
 
 rx_err_t rx_nanopb_encode_velocity_request(const star_v1_SetVelocityRequest* msg,
                                            uint8_t*                          buffer,
+                                           size_t                            buffer_size,
                                            uint32_t*                         len)
 {
   /* Pre-condition 1: NULL pointer checks */
@@ -96,21 +92,21 @@ rx_err_t rx_nanopb_encode_velocity_request(const star_v1_SetVelocityRequest* msg
 
   /* Pre-condition 2: Module initialized */
   if (!s_initialized) {
-    return k_rx_err_not_initialized;
+    return k_rx_err_invalid_state;
   }
 
-  pb_ostream_t stream = pb_ostream_from_buffer(buffer, k_nanopb_buffer_size);
+  /* Pre-condition 3: Buffer size validation */
+  if (buffer_size < k_nanopb_buffer_size) {
+    return k_rx_err_invalid_size;
+  }
+
+  pb_ostream_t stream = pb_ostream_from_buffer(buffer, buffer_size);
 
   if (!pb_encode(&stream, star_v1_SetVelocityRequest_fields, msg)) {
     return k_rx_err_invalid_size;
   }
 
   *len = stream.bytes_written;
-
-  /* Post-condition: Encoded length within bounds */
-  if (*len > k_nanopb_buffer_size) {
-    return k_rx_err_invalid_size;
-  }
 
   return k_rx_ok;
 }
@@ -131,7 +127,7 @@ rx_err_t rx_nanopb_decode_velocity_request(const uint8_t*              buffer,
 
   /* Pre-condition 3: Module initialized */
   if (!s_initialized) {
-    return k_rx_err_not_initialized;
+    return k_rx_err_invalid_state;
   }
 
   /* Initialize message to default values */
@@ -153,6 +149,7 @@ rx_err_t rx_nanopb_decode_velocity_request(const uint8_t*              buffer,
 
 rx_err_t rx_nanopb_encode_velocity_response(const star_v1_SetVelocityResponse* msg,
                                             uint8_t*                           buffer,
+                                            size_t                             buffer_size,
                                             uint32_t*                          len)
 {
   /* Pre-condition 1: NULL pointer checks */
@@ -162,21 +159,21 @@ rx_err_t rx_nanopb_encode_velocity_response(const star_v1_SetVelocityResponse* m
 
   /* Pre-condition 2: Module initialized */
   if (!s_initialized) {
-    return k_rx_err_not_initialized;
+    return k_rx_err_invalid_state;
   }
 
-  pb_ostream_t stream = pb_ostream_from_buffer(buffer, k_nanopb_buffer_size);
+  /* Pre-condition 3: Buffer size validation */
+  if (buffer_size < k_nanopb_buffer_size) {
+    return k_rx_err_invalid_size;
+  }
+
+  pb_ostream_t stream = pb_ostream_from_buffer(buffer, buffer_size);
 
   if (!pb_encode(&stream, star_v1_SetVelocityResponse_fields, msg)) {
     return k_rx_err_invalid_size;
   }
 
   *len = stream.bytes_written;
-
-  /* Post-condition: Encoded length within bounds */
-  if (*len > k_nanopb_buffer_size) {
-    return k_rx_err_invalid_size;
-  }
 
   return k_rx_ok;
 }
@@ -202,7 +199,7 @@ rx_err_t rx_nanopb_decode_estop_request(const uint8_t*                buffer,
 
   /* Pre-condition 3: Module initialized */
   if (!s_initialized) {
-    return k_rx_err_not_initialized;
+    return k_rx_err_invalid_state;
   }
 
   /* Initialize message to default values */
@@ -219,6 +216,7 @@ rx_err_t rx_nanopb_decode_estop_request(const uint8_t*                buffer,
 
 rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* msg,
                                          uint8_t*                             buffer,
+                                         size_t                               buffer_size,
                                          uint32_t*                            len)
 {
   /* Pre-condition 1: NULL pointer checks */
@@ -228,21 +226,21 @@ rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* ms
 
   /* Pre-condition 2: Module initialized */
   if (!s_initialized) {
-    return k_rx_err_not_initialized;
+    return k_rx_err_invalid_state;
   }
 
-  pb_ostream_t stream = pb_ostream_from_buffer(buffer, k_nanopb_buffer_size);
+  /* Pre-condition 3: Buffer size validation */
+  if (buffer_size < k_nanopb_buffer_size) {
+    return k_rx_err_invalid_size;
+  }
+
+  pb_ostream_t stream = pb_ostream_from_buffer(buffer, buffer_size);
 
   if (!pb_encode(&stream, star_v1_EmergencyStopResponse_fields, msg)) {
     return k_rx_err_invalid_size;
   }
 
   *len = stream.bytes_written;
-
-  /* Post-condition: Encoded length within bounds */
-  if (*len > k_nanopb_buffer_size) {
-    return k_rx_err_invalid_size;
-  }
 
   return k_rx_ok;
 }
@@ -253,7 +251,7 @@ rx_err_t rx_nanopb_encode_estop_response(const star_v1_EmergencyStopResponse* ms
  */
 
 rx_err_t
-rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg, uint8_t* buffer, uint32_t* len)
+rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg, uint8_t* buffer, size_t buffer_size, uint32_t* len)
 {
   /* Pre-condition 1: NULL pointer checks */
   if (msg == NULL || buffer == NULL || len == NULL) {
@@ -262,21 +260,21 @@ rx_nanopb_encode_telemetry(const star_v1_TelemetryData* msg, uint8_t* buffer, ui
 
   /* Pre-condition 2: Module initialized */
   if (!s_initialized) {
-    return k_rx_err_not_initialized;
+    return k_rx_err_invalid_state;
   }
 
-  pb_ostream_t stream = pb_ostream_from_buffer(buffer, k_nanopb_buffer_size);
+  /* Pre-condition 3: Buffer size validation */
+  if (buffer_size < k_nanopb_buffer_size) {
+    return k_rx_err_invalid_size;
+  }
+
+  pb_ostream_t stream = pb_ostream_from_buffer(buffer, buffer_size);
 
   if (!pb_encode(&stream, star_v1_TelemetryData_fields, msg)) {
     return k_rx_err_invalid_size;
   }
 
   *len = stream.bytes_written;
-
-  /* Post-condition: Encoded length within bounds */
-  if (*len > k_nanopb_buffer_size) {
-    return k_rx_err_invalid_size;
-  }
 
   return k_rx_ok;
 }
@@ -319,3 +317,10 @@ void rx_nanopb_create_response_header(star_v1_ResponseHeader* header,
     header->request_id.funcs.encode = internal_encode_string_callback;
   }
 }
+
+#ifdef UNIT_TEST
+void rx_nanopb_test_reset_state(void)
+{
+  s_initialized = false;
+}
+#endif

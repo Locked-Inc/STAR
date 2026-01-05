@@ -30,7 +30,11 @@ extern "C" {
 
 typedef mock_cmt_channel_t rx_cmt_channel_regs_t;
 typedef mock_cmt_ctrl_t    rx_cmt_control_regs_t;
+
+#ifndef RX_SYSTEM_REGS_T_DEFINED
+#define RX_SYSTEM_REGS_T_DEFINED
 typedef mock_system_regs_t rx_system_regs_t;
+#endif
 
 /* =============================================================================
  * Module Stop Bits (from rx72n_system_regs.h)

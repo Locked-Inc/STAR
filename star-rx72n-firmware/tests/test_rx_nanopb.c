@@ -26,6 +26,7 @@
  */
 typedef enum {
     k_test_buffer_size            = 512,
+    k_test_small_buffer_size      = 1,
     k_test_sequence_number        = 42,
     k_test_sequence_max           = 0xFFFFFFFF,
     k_test_timestamp_us           = 1000000,
@@ -73,6 +74,7 @@ static uint8_t s_buffer[k_test_buffer_size];
 void setUp(void)
 {
     memset(s_buffer, 0, sizeof(s_buffer));
+    rx_nanopb_test_reset_state();
     rx_nanopb_init();
 }
 
@@ -91,19 +93,21 @@ void tearDown(void)
  */
 void test_nanopb_init_success(void)
 {
+    rx_nanopb_test_reset_state();
     rx_err_t err = rx_nanopb_init();
     TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 
 /**
- * @brief Test rx_nanopb_init is idempotent (can be called multiple times)
+ * @brief Test rx_nanopb_init detects duplicate initialization attempts
  */
-void test_nanopb_init_idempotent(void)
+void test_nanopb_init_detects_duplicate_call(void)
 {
+    rx_nanopb_test_reset_state();
     rx_err_t err1 = rx_nanopb_init();
     rx_err_t err2 = rx_nanopb_init();
     TEST_ASSERT_EQUAL(k_rx_ok, err1);
-    TEST_ASSERT_EQUAL(k_rx_ok, err2);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_state, err2);
 }
 
 /* =============================================================================
@@ -117,7 +121,7 @@ void test_nanopb_init_idempotent(void)
 void test_encode_velocity_request_null_msg(void)
 {
     uint32_t len;
-    rx_err_t err = rx_nanopb_encode_velocity_request(NULL, s_buffer, &len);
+    rx_err_t err = rx_nanopb_encode_velocity_request(NULL, s_buffer, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -128,7 +132,7 @@ void test_encode_velocity_request_null_buffer(void)
 {
     star_v1_SetVelocityRequest msg = star_v1_SetVelocityRequest_init_zero;
     uint32_t len;
-    rx_err_t err = rx_nanopb_encode_velocity_request(&msg, NULL, &len);
+    rx_err_t err = rx_nanopb_encode_velocity_request(&msg, NULL, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -138,8 +142,22 @@ void test_encode_velocity_request_null_buffer(void)
 void test_encode_velocity_request_null_len(void)
 {
     star_v1_SetVelocityRequest msg = star_v1_SetVelocityRequest_init_zero;
-    rx_err_t err = rx_nanopb_encode_velocity_request(&msg, s_buffer, NULL);
+    rx_err_t err = rx_nanopb_encode_velocity_request(&msg, s_buffer, sizeof(s_buffer), NULL);
     TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+
+/**
+ * @brief Test encode velocity request with a buffer that is too small
+ */
+void test_encode_velocity_request_small_buffer(void)
+{
+    star_v1_SetVelocityRequest msg = star_v1_SetVelocityRequest_init_zero;
+    uint32_t len = 0;
+    uint8_t small_buffer[k_test_small_buffer_size];
+
+    rx_err_t err = rx_nanopb_encode_velocity_request(&msg, small_buffer, sizeof(small_buffer), &len);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
 /**
@@ -150,7 +168,7 @@ void test_encode_velocity_request_empty(void)
     star_v1_SetVelocityRequest msg = star_v1_SetVelocityRequest_init_zero;
     uint32_t len = 0;
 
-    rx_err_t err = rx_nanopb_encode_velocity_request(&msg, s_buffer, &len);
+    rx_err_t err = rx_nanopb_encode_velocity_request(&msg, s_buffer, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     /* Empty message should encode to zero bytes (all default values) */
     TEST_ASSERT_EQUAL(0, len);
@@ -169,7 +187,7 @@ void test_encode_velocity_request_with_command(void)
     msg.command.timestamp_us       = k_test_timestamp_us;
 
     uint32_t len = 0;
-    rx_err_t err = rx_nanopb_encode_velocity_request(&msg, s_buffer, &len);
+    rx_err_t err = rx_nanopb_encode_velocity_request(&msg, s_buffer, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_GREATER_THAN(k_min_encoded_velocity_req, len);
 }
@@ -187,7 +205,7 @@ void test_encode_velocity_request_max_velocity(void)
     msg.command.timestamp_us       = k_test_timestamp_us;
 
     uint32_t len = 0;
-    rx_err_t err = rx_nanopb_encode_velocity_request(&msg, s_buffer, &len);
+    rx_err_t err = rx_nanopb_encode_velocity_request(&msg, s_buffer, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_GREATER_THAN(0, len);
 }
@@ -204,7 +222,7 @@ void test_encode_velocity_request_zero_velocity(void)
     msg.command.sequence           = 1;
 
     uint32_t len = 0;
-    rx_err_t err = rx_nanopb_encode_velocity_request(&msg, s_buffer, &len);
+    rx_err_t err = rx_nanopb_encode_velocity_request(&msg, s_buffer, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 
@@ -220,7 +238,7 @@ void test_encode_velocity_request_negative_velocity(void)
     msg.command.sequence           = k_test_sequence_number;
 
     uint32_t len = 0;
-    rx_err_t err = rx_nanopb_encode_velocity_request(&msg, s_buffer, &len);
+    rx_err_t err = rx_nanopb_encode_velocity_request(&msg, s_buffer, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_GREATER_THAN(0, len);
 }
@@ -259,7 +277,7 @@ void test_decode_velocity_request_empty_buffer(void)
     star_v1_SetVelocityRequest msg = star_v1_SetVelocityRequest_init_zero;
 
     rx_err_t err = rx_nanopb_decode_velocity_request(data, 0, &msg);
-    TEST_ASSERT_EQUAL(k_rx_ok, err);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 /**
@@ -293,7 +311,7 @@ void test_velocity_request_roundtrip_with_command(void)
     original.command.timestamp_us       = k_test_timestamp_us;
 
     uint32_t len = 0;
-    rx_err_t err = rx_nanopb_encode_velocity_request(&original, s_buffer, &len);
+    rx_err_t err = rx_nanopb_encode_velocity_request(&original, s_buffer, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_GREATER_THAN(0, len);
 
@@ -324,7 +342,7 @@ void test_velocity_request_roundtrip_zero_velocity(void)
     original.command.sequence           = 1;
 
     uint32_t len = 0;
-    rx_err_t err = rx_nanopb_encode_velocity_request(&original, s_buffer, &len);
+    rx_err_t err = rx_nanopb_encode_velocity_request(&original, s_buffer, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
 
     star_v1_SetVelocityRequest decoded = star_v1_SetVelocityRequest_init_zero;
@@ -352,7 +370,7 @@ void test_velocity_request_roundtrip_negative_velocity(void)
     original.command.sequence           = k_test_sequence_number;
 
     uint32_t len = 0;
-    rx_err_t err = rx_nanopb_encode_velocity_request(&original, s_buffer, &len);
+    rx_err_t err = rx_nanopb_encode_velocity_request(&original, s_buffer, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
 
     star_v1_SetVelocityRequest decoded = star_v1_SetVelocityRequest_init_zero;
@@ -378,7 +396,7 @@ void test_velocity_request_roundtrip_negative_velocity(void)
 void test_encode_velocity_response_null_msg(void)
 {
     uint32_t len;
-    rx_err_t err = rx_nanopb_encode_velocity_response(NULL, s_buffer, &len);
+    rx_err_t err = rx_nanopb_encode_velocity_response(NULL, s_buffer, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -389,7 +407,7 @@ void test_encode_velocity_response_null_buffer(void)
 {
     star_v1_SetVelocityResponse msg = star_v1_SetVelocityResponse_init_zero;
     uint32_t len;
-    rx_err_t err = rx_nanopb_encode_velocity_response(&msg, NULL, &len);
+    rx_err_t err = rx_nanopb_encode_velocity_response(&msg, NULL, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -399,8 +417,21 @@ void test_encode_velocity_response_null_buffer(void)
 void test_encode_velocity_response_null_len(void)
 {
     star_v1_SetVelocityResponse msg = star_v1_SetVelocityResponse_init_zero;
-    rx_err_t err = rx_nanopb_encode_velocity_response(&msg, s_buffer, NULL);
+    rx_err_t err = rx_nanopb_encode_velocity_response(&msg, s_buffer, sizeof(s_buffer), NULL);
     TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test encode velocity response with a buffer that is too small
+ */
+void test_encode_velocity_response_small_buffer(void)
+{
+    star_v1_SetVelocityResponse msg = star_v1_SetVelocityResponse_init_zero;
+    uint32_t len                    = 0;
+    uint8_t  small_buffer[k_test_small_buffer_size];
+
+    rx_err_t err = rx_nanopb_encode_velocity_response(&msg, small_buffer, sizeof(small_buffer), &len);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
 /**
@@ -411,7 +442,7 @@ void test_encode_velocity_response_empty(void)
     star_v1_SetVelocityResponse msg = star_v1_SetVelocityResponse_init_zero;
     uint32_t len = 0;
 
-    rx_err_t err = rx_nanopb_encode_velocity_response(&msg, s_buffer, &len);
+    rx_err_t err = rx_nanopb_encode_velocity_response(&msg, s_buffer, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 
@@ -426,7 +457,7 @@ void test_encode_velocity_response_with_header(void)
     msg.header.latency_us           = k_test_latency_us;
 
     uint32_t len = 0;
-    rx_err_t err = rx_nanopb_encode_velocity_response(&msg, s_buffer, &len);
+    rx_err_t err = rx_nanopb_encode_velocity_response(&msg, s_buffer, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_GREATER_THAN(k_min_encoded_velocity_resp, len);
 }
@@ -441,7 +472,7 @@ void test_encode_velocity_response_error_status(void)
     msg.header.status               = star_v1_Status_STATUS_INVALID_REQUEST;
 
     uint32_t len = 0;
-    rx_err_t err = rx_nanopb_encode_velocity_response(&msg, s_buffer, &len);
+    rx_err_t err = rx_nanopb_encode_velocity_response(&msg, s_buffer, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_GREATER_THAN(0, len);
 }
@@ -480,7 +511,7 @@ void test_decode_estop_request_empty_buffer(void)
     star_v1_EmergencyStopRequest msg = star_v1_EmergencyStopRequest_init_zero;
 
     rx_err_t err = rx_nanopb_decode_estop_request(data, 0, &msg);
-    TEST_ASSERT_EQUAL(k_rx_ok, err);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
 /**
@@ -506,7 +537,7 @@ void test_decode_estop_request_invalid_data(void)
 void test_encode_estop_response_null_msg(void)
 {
     uint32_t len;
-    rx_err_t err = rx_nanopb_encode_estop_response(NULL, s_buffer, &len);
+    rx_err_t err = rx_nanopb_encode_estop_response(NULL, s_buffer, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -517,7 +548,7 @@ void test_encode_estop_response_null_buffer(void)
 {
     star_v1_EmergencyStopResponse msg = star_v1_EmergencyStopResponse_init_zero;
     uint32_t len;
-    rx_err_t err = rx_nanopb_encode_estop_response(&msg, NULL, &len);
+    rx_err_t err = rx_nanopb_encode_estop_response(&msg, NULL, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -527,8 +558,21 @@ void test_encode_estop_response_null_buffer(void)
 void test_encode_estop_response_null_len(void)
 {
     star_v1_EmergencyStopResponse msg = star_v1_EmergencyStopResponse_init_zero;
-    rx_err_t err = rx_nanopb_encode_estop_response(&msg, s_buffer, NULL);
+    rx_err_t err = rx_nanopb_encode_estop_response(&msg, s_buffer, sizeof(s_buffer), NULL);
     TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test encode estop response with buffer that is too small
+ */
+void test_encode_estop_response_small_buffer(void)
+{
+    star_v1_EmergencyStopResponse msg = star_v1_EmergencyStopResponse_init_zero;
+    uint32_t len                      = 0;
+    uint8_t  small_buffer[k_test_small_buffer_size];
+
+    rx_err_t err = rx_nanopb_encode_estop_response(&msg, small_buffer, sizeof(small_buffer), &len);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
 /**
@@ -542,7 +586,7 @@ void test_encode_estop_response_engaged_true(void)
     msg.estop_engaged                 = true;
 
     uint32_t len = 0;
-    rx_err_t err = rx_nanopb_encode_estop_response(&msg, s_buffer, &len);
+    rx_err_t err = rx_nanopb_encode_estop_response(&msg, s_buffer, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_GREATER_THAN(k_min_encoded_estop_resp, len);
 }
@@ -558,7 +602,7 @@ void test_encode_estop_response_engaged_false(void)
     msg.estop_engaged                 = false;
 
     uint32_t len = 0;
-    rx_err_t err = rx_nanopb_encode_estop_response(&msg, s_buffer, &len);
+    rx_err_t err = rx_nanopb_encode_estop_response(&msg, s_buffer, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 
@@ -573,7 +617,7 @@ void test_encode_estop_response_estop_active_status(void)
     msg.estop_engaged                 = true;
 
     uint32_t len = 0;
-    rx_err_t err = rx_nanopb_encode_estop_response(&msg, s_buffer, &len);
+    rx_err_t err = rx_nanopb_encode_estop_response(&msg, s_buffer, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 
@@ -588,7 +632,7 @@ void test_encode_estop_response_estop_active_status(void)
 void test_encode_telemetry_null_msg(void)
 {
     uint32_t len;
-    rx_err_t err = rx_nanopb_encode_telemetry(NULL, s_buffer, &len);
+    rx_err_t err = rx_nanopb_encode_telemetry(NULL, s_buffer, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -599,7 +643,7 @@ void test_encode_telemetry_null_buffer(void)
 {
     star_v1_TelemetryData msg = star_v1_TelemetryData_init_zero;
     uint32_t len;
-    rx_err_t err = rx_nanopb_encode_telemetry(&msg, NULL, &len);
+    rx_err_t err = rx_nanopb_encode_telemetry(&msg, NULL, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
 }
 
@@ -609,8 +653,21 @@ void test_encode_telemetry_null_buffer(void)
 void test_encode_telemetry_null_len(void)
 {
     star_v1_TelemetryData msg = star_v1_TelemetryData_init_zero;
-    rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, NULL);
+    rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, sizeof(s_buffer), NULL);
     TEST_ASSERT_EQUAL(k_rx_err_invalid_arg, err);
+}
+
+/**
+ * @brief Test encode telemetry with buffer that is too small
+ */
+void test_encode_telemetry_small_buffer(void)
+{
+    star_v1_TelemetryData msg = star_v1_TelemetryData_init_zero;
+    uint32_t len              = 0;
+    uint8_t  small_buffer[k_test_small_buffer_size];
+
+    rx_err_t err = rx_nanopb_encode_telemetry(&msg, small_buffer, sizeof(small_buffer), &len);
+    TEST_ASSERT_EQUAL(k_rx_err_invalid_size, err);
 }
 
 /**
@@ -621,7 +678,7 @@ void test_encode_telemetry_empty(void)
     star_v1_TelemetryData msg = star_v1_TelemetryData_init_zero;
     uint32_t len              = 0;
 
-    rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, &len);
+    rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 
@@ -634,7 +691,7 @@ void test_encode_telemetry_battery(void)
     msg.battery_percent       = s_test_battery_percent;
 
     uint32_t len = 0;
-    rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, &len);
+    rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_GREATER_THAN(k_min_encoded_telemetry, len);
 }
@@ -648,7 +705,7 @@ void test_encode_telemetry_temperature(void)
     msg.temperature_celsius   = s_test_temperature_c;
 
     uint32_t len = 0;
-    rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, &len);
+    rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_GREATER_THAN(0, len);
 }
@@ -662,7 +719,7 @@ void test_encode_telemetry_cpu_usage(void)
     msg.cpu_usage_percent     = s_test_cpu_usage_percent;
 
     uint32_t len = 0;
-    rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, &len);
+    rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 
@@ -675,7 +732,7 @@ void test_encode_telemetry_motor_load(void)
     msg.motor_load_percent    = s_test_motor_load_percent;
 
     uint32_t len = 0;
-    rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, &len);
+    rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 
@@ -688,7 +745,7 @@ void test_encode_telemetry_wifi_signal(void)
     msg.wifi_signal_dbm       = k_test_wifi_signal_dbm;
 
     uint32_t len = 0;
-    rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, &len);
+    rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
 }
 
@@ -707,7 +764,7 @@ void test_encode_telemetry_gps(void)
     msg.gps.fix_type          = star_v1_GpsFix_GPS_FIX_3D;
 
     uint32_t len = 0;
-    rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, &len);
+    rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_GREATER_THAN(0, len);
 }
@@ -725,7 +782,7 @@ void test_encode_telemetry_imu(void)
     msg.imu.accel_z_mps2      = s_test_accel_z_mps2;
 
     uint32_t len = 0;
-    rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, &len);
+    rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_GREATER_THAN(0, len);
 }
@@ -761,7 +818,7 @@ void test_encode_telemetry_all_fields(void)
     msg.imu.accel_z_mps2 = s_test_accel_z_mps2;
 
     uint32_t len = 0;
-    rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, &len);
+    rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, sizeof(s_buffer), &len);
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_GREATER_THAN(0, len);
     TEST_ASSERT_LESS_THAN(k_test_buffer_size, len);
@@ -962,8 +1019,11 @@ void test_encoded_length_increases_with_data(void)
     uint32_t len_small = 0;
     uint32_t len_large = 0;
 
-    rx_nanopb_encode_telemetry(&msg_small, s_buffer, &len_small);
-    rx_nanopb_encode_telemetry(&msg_large, s_buffer, &len_large);
+    rx_err_t err_small = rx_nanopb_encode_telemetry(&msg_small, s_buffer, sizeof(s_buffer), &len_small);
+    rx_err_t err_large = rx_nanopb_encode_telemetry(&msg_large, s_buffer, sizeof(s_buffer), &len_large);
+
+    TEST_ASSERT_EQUAL(k_rx_ok, err_small);
+    TEST_ASSERT_EQUAL(k_rx_ok, err_large);
 
     TEST_ASSERT_GREATER_THAN(len_small, len_large);
 }
@@ -976,7 +1036,8 @@ void test_empty_message_minimal_size(void)
     star_v1_SetVelocityRequest msg = star_v1_SetVelocityRequest_init_zero;
     uint32_t len                   = 0;
 
-    rx_nanopb_encode_velocity_request(&msg, s_buffer, &len);
+    rx_err_t err = rx_nanopb_encode_velocity_request(&msg, s_buffer, sizeof(s_buffer), &len);
+    TEST_ASSERT_EQUAL(k_rx_ok, err);
 
     /* Empty protobuf message should encode to 0 bytes (all fields default) */
     TEST_ASSERT_EQUAL(0, len);
@@ -1000,7 +1061,7 @@ void test_velocity_request_fits_in_buffer(void)
     msg.command.timestamp_us       = k_test_timestamp_us;
 
     uint32_t len = 0;
-    rx_err_t err = rx_nanopb_encode_velocity_request(&msg, s_buffer, &len);
+    rx_err_t err = rx_nanopb_encode_velocity_request(&msg, s_buffer, sizeof(s_buffer), &len);
 
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_LESS_THAN(k_nanopb_buffer_size, len);
@@ -1040,7 +1101,7 @@ void test_telemetry_fits_in_buffer(void)
     msg.imu.gyro_z_rad_per_s   = s_test_yaw_rad;
 
     uint32_t len = 0;
-    rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, &len);
+    rx_err_t err = rx_nanopb_encode_telemetry(&msg, s_buffer, sizeof(s_buffer), &len);
 
     TEST_ASSERT_EQUAL(k_rx_ok, err);
     TEST_ASSERT_LESS_THAN(k_nanopb_buffer_size, len);
@@ -1057,12 +1118,13 @@ int main(void)
 
     /* Initialization tests */
     RUN_TEST(test_nanopb_init_success);
-    RUN_TEST(test_nanopb_init_idempotent);
+    RUN_TEST(test_nanopb_init_detects_duplicate_call);
 
     /* Velocity request encode tests */
     RUN_TEST(test_encode_velocity_request_null_msg);
     RUN_TEST(test_encode_velocity_request_null_buffer);
     RUN_TEST(test_encode_velocity_request_null_len);
+    RUN_TEST(test_encode_velocity_request_small_buffer);
     RUN_TEST(test_encode_velocity_request_empty);
     RUN_TEST(test_encode_velocity_request_with_command);
     RUN_TEST(test_encode_velocity_request_max_velocity);
@@ -1084,6 +1146,7 @@ int main(void)
     RUN_TEST(test_encode_velocity_response_null_msg);
     RUN_TEST(test_encode_velocity_response_null_buffer);
     RUN_TEST(test_encode_velocity_response_null_len);
+    RUN_TEST(test_encode_velocity_response_small_buffer);
     RUN_TEST(test_encode_velocity_response_empty);
     RUN_TEST(test_encode_velocity_response_with_header);
     RUN_TEST(test_encode_velocity_response_error_status);
@@ -1098,6 +1161,7 @@ int main(void)
     RUN_TEST(test_encode_estop_response_null_msg);
     RUN_TEST(test_encode_estop_response_null_buffer);
     RUN_TEST(test_encode_estop_response_null_len);
+    RUN_TEST(test_encode_estop_response_small_buffer);
     RUN_TEST(test_encode_estop_response_engaged_true);
     RUN_TEST(test_encode_estop_response_engaged_false);
     RUN_TEST(test_encode_estop_response_estop_active_status);
@@ -1106,6 +1170,7 @@ int main(void)
     RUN_TEST(test_encode_telemetry_null_msg);
     RUN_TEST(test_encode_telemetry_null_buffer);
     RUN_TEST(test_encode_telemetry_null_len);
+    RUN_TEST(test_encode_telemetry_small_buffer);
     RUN_TEST(test_encode_telemetry_empty);
     RUN_TEST(test_encode_telemetry_battery);
     RUN_TEST(test_encode_telemetry_temperature);
