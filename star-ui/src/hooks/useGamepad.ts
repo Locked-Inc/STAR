@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useRef } from 'react';
 
 export interface GamepadState {
   connected: boolean;
@@ -15,55 +15,51 @@ export const useGamepad = () => {
 
   const requestRef = useRef<number>(0);
 
-  /**
-   * Main polling loop for gamepad input. 
-   * Runs at display refresh rate (~60Hz).
-   * Uses zero-allocation logic where possible to avoid GC spikes.
-   */
-  const updateGamepadState = useCallback(() => {
-    const gamepads = navigator.getGamepads();
-    // Use the first available gamepad
-    const gamepad = gamepads[0] || gamepads.find(gp => gp !== null);
-
-    if (gamepad) {
-      // Arcade Drive Mapping:
-      // Linear (Forward/Backward): Left Stick Y-axis (axis 1 in standard mapping)
-      // Angular (Steering): Left Stick X-axis (axis 0 in standard mapping)
-      // Note: Y-axis is often inverted in browser API (up is -1)
-      const rawLinear = -gamepad.axes[1]; 
-      const rawAngular = gamepad.axes[0];
-
-      // Deadzone handling (0.1)
-      const linear = Math.abs(rawLinear) > 0.1 ? rawLinear : 0;
-      const angular = Math.abs(rawAngular) > 0.1 ? rawAngular : 0;
-
-      setState({
-        connected: true,
-        linearVel: linear,
-        angularVel: angular,
-      });
-    } else {
-      setState(prev => prev.connected ? { connected: false, linearVel: 0, angularVel: 0 } : prev);
-    }
-
-    requestRef.current = requestAnimationFrame(updateGamepadState);
-  }, []);
-
   useEffect(() => {
+    const updateGamepadState = () => {
+      const gamepads = navigator.getGamepads();
+      // Use the first available gamepad
+      const gamepad = gamepads[0] || gamepads.find(gp => gp !== null);
+
+      if (gamepad) {
+        // Arcade Drive Mapping:
+        // Linear (Forward/Backward): Left Stick Y-axis (axis 1 in standard mapping)
+        // Angular (Steering): Left Stick X-axis (axis 0 in standard mapping)
+        // Note: Y-axis is often inverted in browser API (up is -1)
+        const rawLinear = -gamepad.axes[1]; 
+        const rawAngular = gamepad.axes[0];
+
+        // Deadzone handling (0.1)
+        const linear = Math.abs(rawLinear) > 0.1 ? rawLinear : 0;
+        const angular = Math.abs(rawAngular) > 0.1 ? rawAngular : 0;
+
+        setState({
+          connected: true,
+          linearVel: linear,
+          angularVel: angular,
+        });
+      } else {
+        setState(prev => prev.connected ? { connected: false, linearVel: 0, angularVel: 0 } : prev);
+      }
+
+      requestRef.current = requestAnimationFrame(updateGamepadState);
+    };
+
     const handleConnect = () => {
       console.log('Gamepad connected');
+      // Ensure we don't have multiple loops
+      cancelAnimationFrame(requestRef.current);
       requestRef.current = requestAnimationFrame(updateGamepadState);
     };
 
     const handleDisconnect = () => {
       console.log('Gamepad disconnected');
-      // If no gamepads left, the loop will handle setting connected: false
     };
 
     window.addEventListener('gamepadconnected', handleConnect);
     window.addEventListener('gamepaddisconnected', handleDisconnect);
 
-    // Start polling immediately if a gamepad is already there
+    // Start polling immediately
     requestRef.current = requestAnimationFrame(updateGamepadState);
 
     return () => {
@@ -71,7 +67,7 @@ export const useGamepad = () => {
       window.removeEventListener('gamepaddisconnected', handleDisconnect);
       cancelAnimationFrame(requestRef.current);
     };
-  }, [updateGamepadState]);
+  }, []); // Empty dependency array as updateGamepadState is now internal
 
   return state;
 };
