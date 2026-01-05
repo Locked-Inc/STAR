@@ -21,6 +21,7 @@
 #include "hardware_pinout.h"
 #include "rx72n_regs.h"
 #include "rx_mpc.h"
+#include "rx_port_utils.h"
 
 /* =============================================================================
  * Private Definitions
@@ -213,44 +214,6 @@ static rx_err_t internal_enable_sci_clock(uint8_t channel)
   return k_rx_ok;
 }
 
-/**
- * @brief Get PORT base address from port number
- *
- * @param[in] port Port number (0-5, J, or A-E)
- *
- * @return Pointer to PORT register base, or NULL if invalid port
- */
-static volatile rx_port_regs_t* internal_get_port_base(uint8_t port)
-{
-  switch (port) {
-    case 0:
-      return port0();
-    case 1:
-      return port1();
-    case 2:
-      return port2();
-    case 3:
-      return port3();
-    case 4:
-      return port4();
-    case 5:
-      return port5();
-    case 0x0A:
-      return porta();
-    case 0x0B:
-      return portb();
-    case 0x0C:
-      return portc();
-    case 0x0D:
-      return portd();
-    case 0x0E:
-      return porte();
-    case 0x12:
-      return portj();
-    default:
-      return (volatile rx_port_regs_t*)0;
-  }
-}
 
 /**
  * @brief Configure pins for SCI UART operation
@@ -275,8 +238,8 @@ static rx_err_t internal_configure_uart_pins(uint8_t tx_port,
   }
 
   /* Get port bases */
-  volatile rx_port_regs_t* tx_port_base = internal_get_port_base(tx_port);
-  volatile rx_port_regs_t* rx_port_base = internal_get_port_base(rx_port);
+  volatile rx_port_regs_t* tx_port_base = rx_port_get_base(tx_port);
+  volatile rx_port_regs_t* rx_port_base = rx_port_get_base(rx_port);
 
   if (tx_port_base == (volatile rx_port_regs_t*)0 ||
       rx_port_base == (volatile rx_port_regs_t*)0) {
