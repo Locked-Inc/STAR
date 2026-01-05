@@ -130,14 +130,25 @@ extern mock_icu_regs_t    g_mock_icu;
 extern mock_system_regs_t g_mock_system;
 
 /* =============================================================================
- * Macros to Map Hardware Names to Mock Instances
- * Allows code to use USB0.xxx syntax with mock registers
+ * Inline Accessor Functions for Mock Registers
+ * Matches production code pattern (inline accessors instead of macros)
  * =============================================================================
  */
 
-#define USB0   g_mock_usb0
-#define ICU    g_mock_icu
-#define SYSTEM g_mock_system
+static inline volatile mock_usb0_regs_t* usb0(void)
+{
+  return &g_mock_usb0;
+}
+
+static inline volatile mock_icu_regs_t* icu(void)
+{
+  return &g_mock_icu;
+}
+
+static inline volatile mock_system_regs_t* system_regs(void)
+{
+  return &g_mock_system;
+}
 
 /* =============================================================================
  * Pipe Control Register Bits (from rx72n_regs.h)
