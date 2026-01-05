@@ -14,7 +14,7 @@
 #ifndef MOCK_RX_CRC_H
 #define MOCK_RX_CRC_H
 
-#include <stddef.h>
+#include <stdbool.h>
 #include <stdint.h>
 
 #ifdef __cplusplus
@@ -32,7 +32,7 @@ extern "C" {
  *
  * @return Computed CRC-8 value
  */
-uint8_t rx_crc8_maxim(const uint8_t* data, size_t length);
+uint8_t rx_crc8_maxim(const uint8_t* data, uint32_t length);
 
 /**
  * @brief Set fixed CRC-8 value to return (for testing)
